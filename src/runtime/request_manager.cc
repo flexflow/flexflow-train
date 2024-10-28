@@ -678,9 +678,6 @@ void RequestManager::request_update_attainment(int batch_index, bool attained) {
 
 void RequestManager::request_complete_clean_up(int batch_index) {
   RequestGuid guid = guid_of_requests[batch_index];
-  if (profiling_requests[guid].finish_time != 0) {
-    printf("some request has been completed!!\n");
-  }
 
   profiling_requests[guid].finish_time =
       Realm::Clock::current_time_in_microseconds();
@@ -1159,6 +1156,7 @@ BatchConfig RequestManager::prepare_llm_prefilling_batch() {
     bc.requestsInfo[request_index].num_kv_pages = get_num_blocks_allocated(*request);
     if (bc.requestsInfo[request_index].num_kv_pages == 0) {
       // turn this request into not available for one round
+      printf("Request %d has no page allocated, turn it into not available\n", request->guid);
       bc.request_available[request_index] = false;
     }
     bc.requestsInfo[request_index].kv_last_page_len = get_len_last_block(*request);

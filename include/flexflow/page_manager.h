@@ -112,7 +112,7 @@ class PageManager {
 public:
     // Get the singleton instance of the PageManager as it will be shared in multiple places
     static PageManager *get_page_manager();
-    static PageManager *get_page_manager(size_t size_of_dt, int num_kv_heads, int qkv_dim, size_t kv_cache_size_per_layer);
+    static PageManager *get_page_manager(size_t size_of_dt, int num_kv_heads, int qkv_dim, size_t kv_cache_size_per_layer, int total_size);
     using BlockTable = std::vector<PhysicalTokenBlock>;
     using RequestGuid = BatchConfig::RequestGuid;
     PageManager(int block_size, int num_total_blocks);

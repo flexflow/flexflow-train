@@ -503,7 +503,7 @@ IncMultiHeadSelfAttentionMeta::IncMultiHeadSelfAttentionMeta(
        query_tmp_size = num_q_heads * qk_dim * max_tokens_per_batch;
         // a K-ary tree max node is (k^n - 1) / 2
         if (total_size == -1){
-          printf("we should be here this time");
+          printf("we should be here this time\n");
           printf("num_hidden layers: %d\n", _num_hidden_layers);
           // fall back to the default value
           key_cache_size = num_kv_heads * qk_dim * BatchConfig::max_requests_per_batch() *
@@ -511,15 +511,18 @@ IncMultiHeadSelfAttentionMeta::IncMultiHeadSelfAttentionMeta(
           value_cache_size = num_kv_heads * v_dim * BatchConfig::max_requests_per_batch() *
                             max_num_pages * kPagesize;
         }else{
-          key_cache_size = total_size / 2 / _num_hidden_layers;
-          value_cache_size = total_size / 2 / _num_hidden_layers;
-          if (key_cache_size == 0 || value_cache_size == 0){
-            printf("total_size: %d\n", total_size);
-          }
+          key_cache_size = total_size / 2 / num_hidden_layers;
+          value_cache_size = total_size / 2 / num_hidden_layers;
           assert(key_cache_size > 0 && value_cache_size > 0 && "Invalid kvcache size");
         }
+        printf("key_cache_size: %lu\n", key_cache_size);
+        printf("value_cache_size: %lu\n", value_cache_size);
+        printf("size_of_dt: %lu\n", size_of_dt);
+        printf("num_kv_heads: %d\n", num_kv_heads);
+        printf("qk_dim: %d\n", qk_dim);
+        printf("v_dim: %d\n", v_dim);
         PageManager::get_page_manager(size_of_dt, num_kv_heads, qk_dim + v_dim,
-                                      (key_cache_size + value_cache_size));
+                                      (key_cache_size + value_cache_size), total_size);
 
         break;
       case TREE_SEARCH_MODE:

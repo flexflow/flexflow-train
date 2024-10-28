@@ -209,8 +209,10 @@ PageManager *PageManager::get_page_manager() {
   return page_manager_singleton;
 }
 
-PageManager *PageManager::get_page_manager(size_t size_of_dt, int num_kv_heads, int qkv_dim, size_t kv_cache_size_per_layer) {
-//   assert(page_manager_singleton == nullptr);
+PageManager *PageManager::get_page_manager(size_t size_of_dt, int num_kv_heads, int qkv_dim, size_t kv_cache_size_per_layer, int total_size) {
+    if (page_manager_singleton != nullptr) {
+        return page_manager_singleton;
+    }
   int num_total_blocks = kv_cache_size_per_layer * 1024 * 1024 / kPagesize / size_of_dt / num_kv_heads / qkv_dim;
   printf("num_total_blocks assigned: %d\n", num_total_blocks);
   page_manager_singleton = new PageManager(kPagesize, num_total_blocks);
