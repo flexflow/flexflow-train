@@ -23,6 +23,7 @@
 #include "flexflow/ops/kernels/inc_multihead_self_attention_kernels.h"
 #include "flexflow/ops/kernels/inc_multihead_self_attention_utils.cuh"
 #include "flexflow/utils/cuda_helper.h"
+#include "flexflow/page_manager.h"
 
 namespace FlexFlow {
 
@@ -365,7 +366,8 @@ IncMultiHeadSelfAttentionMeta::IncMultiHeadSelfAttentionMeta(
     MemoryAllocator &gpu_mem_allocator,
     int num_samples,
     int _num_q_heads,
-    int _num_kv_heads)
+    int _num_kv_heads,
+    int _num_hidden_layers)
     : IncMultiHeadSelfAttentionMeta(handler,
                                     INC_DECODING_MODE,
                                     attn,
@@ -387,6 +389,7 @@ IncMultiHeadSelfAttentionMeta::IncMultiHeadSelfAttentionMeta(
                                     attn->num_kv_heads,
                                     _num_q_heads,
                                     _num_kv_heads,
+                                    attn->num_hidden_layers,
                                     attn->quantization_type,
                                     attn->offload,
                                     attn->streaming_cache) {}
@@ -413,6 +416,7 @@ IncMultiHeadSelfAttentionMeta::IncMultiHeadSelfAttentionMeta(
     int _global_num_kv_heads,
     int _num_q_heads,
     int _num_kv_heads,
+    int _num_hidden_layers,
     DataType _quantization_type,
     bool _offload,
     bool _streaming_cache)
@@ -492,10 +496,34 @@ IncMultiHeadSelfAttentionMeta::IncMultiHeadSelfAttentionMeta(
     size_t max_num_pages =
         round_up_pages(BatchConfig::max_sequence_length() +
                        BatchConfig::max_spec_tree_token_num());
+    assert(_num_hidden_layers > 0);
+    int total_size = BatchConfig::max_kv_cache_size();
     switch (infer_mode) {
-      case INC_DECODING_MODE:
+      case TREE_VERIFY_MODE:
+       query_tmp_size = num_q_heads * qk_dim * max_tokens_per_batch;
+        // a K-ary tree max node is (k^n - 1) / 2
+        if (total_size == -1){
+          printf("we should be here this time");
+          printf("num_hidden layers: %d\n", _num_hidden_layers);
+          // fall back to the default value
+          key_cache_size = num_kv_heads * qk_dim * BatchConfig::max_requests_per_batch() *
+                           max_num_pages * kPagesize;
+          value_cache_size = num_kv_heads * v_dim * BatchConfig::max_requests_per_batch() *
+                            max_num_pages * kPagesize;
+        }else{
+          key_cache_size = total_size / 2 / _num_hidden_layers;
+          value_cache_size = total_size / 2 / _num_hidden_layers;
+          if (key_cache_size == 0 || value_cache_size == 0){
+            printf("total_size: %d\n", total_size);
+          }
+          assert(key_cache_size > 0 && value_cache_size > 0 && "Invalid kvcache size");
+        }
+        PageManager::get_page_manager(size_of_dt, num_kv_heads, qk_dim + v_dim,
+                                      (key_cache_size + value_cache_size));
+
+        break;
       case TREE_SEARCH_MODE:
-      case TREE_VERIFY_MODE: {
+      case INC_DECODING_MODE:
         query_tmp_size = num_q_heads * qk_dim * max_tokens_per_batch;
         // a K-ary tree max node is (k^n - 1) / 2
         key_cache_size = num_kv_heads * qk_dim *
@@ -524,7 +552,6 @@ IncMultiHeadSelfAttentionMeta::IncMultiHeadSelfAttentionMeta(
               kPagesize;
         }
         break;
-      }
       default:
         assert(false && "Unkown inference mode");
     }

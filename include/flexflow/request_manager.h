@@ -281,8 +281,6 @@ public:
   int get_max_kv_cache_size();
   void set_max_output_length(int max_output_length);
   int get_max_output_length();
-  void set_max_kv_cache_size(int max_kv_cache_size);
-  int get_max_kv_cache_size();
   void set_decoding_mode(DecodingMode mode);
   void set_verbose(bool verbose_);
   int get_k();

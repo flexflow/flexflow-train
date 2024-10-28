@@ -699,7 +699,8 @@ TreeIncMultiHeadSelfAttentionMeta::TreeIncMultiHeadSelfAttentionMeta(
     MemoryAllocator &gpu_mem_allocator,
     int num_samples,
     int _num_q_heads,
-    int _num_kv_heads)
+    int _num_kv_heads,
+    int _num_hidden_layers)
     : IncMultiHeadSelfAttentionMeta(handler,
                                     TREE_VERIFY_MODE,
                                     attn,
@@ -721,10 +722,12 @@ TreeIncMultiHeadSelfAttentionMeta::TreeIncMultiHeadSelfAttentionMeta(
                                     attn->num_kv_heads,
                                     _num_q_heads,
                                     _num_kv_heads,
+                                    attn->num_hidden_layers,
                                     attn->quantization_type,
                                     attn->offload,
                                     false),
       num_active_tokens(0) {
+  printf("num_hidden layers in incmameta: %d\n", _num_hidden_layers);
   cudaStream_t stream;
   checkCUDA(get_legion_stream(&stream));
   checkCUDNN(cudnnSetStream(handler.dnn, stream));

@@ -276,6 +276,7 @@ void InferenceManager::compile_model_and_allocate_buffer(FFModel *model,
 }
 
 void InferenceManager::init_operators_inference(FFModel *model) {
+  printf("Initializing operators for inference...\n");
   for (int batch_index = 0; batch_index < model->config.data_parallelism_degree;
        batch_index++) {
     for (size_t o = 0; o < model->operators.size(); o++) {

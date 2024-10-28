@@ -101,6 +101,7 @@ void LLAMA::create_llama_model(FFModel &ff,
             llama_config.hidden_size,
             llama_config.num_attention_heads,
             llama_config.num_key_value_heads,
+            llama_config.num_hidden_layers,
             llama_config.hidden_size / llama_config.num_attention_heads,
             llama_config.hidden_size / llama_config.num_attention_heads,
             0.0f,    /*dropout*/
@@ -121,11 +122,14 @@ void LLAMA::create_llama_model(FFModel &ff,
         break;
       }
       case TREE_VERIFY_MODE: {
+        printf("llama verify num hidden layers: %d\n",
+               llama_config.num_hidden_layers);
         mha = ff.inc_multiquery_self_attention_verify(
             att_norm,
             llama_config.hidden_size,
             llama_config.num_attention_heads,
             llama_config.num_key_value_heads,
+            llama_config.num_hidden_layers,
             llama_config.hidden_size / llama_config.num_attention_heads,
             llama_config.hidden_size / llama_config.num_attention_heads,
             0.0f,    /*dropout*/
@@ -150,6 +154,7 @@ void LLAMA::create_llama_model(FFModel &ff,
             llama_config.hidden_size,
             llama_config.num_attention_heads,
             llama_config.num_key_value_heads,
+            llama_config.num_hidden_layers,
             llama_config.hidden_size / llama_config.num_attention_heads,
             llama_config.hidden_size / llama_config.num_attention_heads,
             0.0f,            /*dropout*/

@@ -3740,6 +3740,8 @@ bool FFModel::convert_graph_to_operators(
         assert(inList.size() == 1);
         TreeIncMultiHeadSelfAttention *attn =
             (TreeIncMultiHeadSelfAttention *)node.ptr;
+            printf("TreeIncMultiHeadSelfAttention substition\n");
+            printf("attn num_hidden_layers %d\n", attn->num_hidden_layers);
         new_op =
             new TreeIncMultiHeadSelfAttention(*this, *attn, inputs[0], true);
         break;

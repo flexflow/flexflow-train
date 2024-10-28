@@ -205,12 +205,15 @@ int PageManager::get_num_allocated_blocks(const RequestGuid& request_guid) const
 }
 
 PageManager *PageManager::get_page_manager() {
-  if (page_manager_singleton == nullptr) {
-    int num_total_blocks = (BatchConfig::max_spec_tree_token_num() +
-        BatchConfig::max_sequence_length() + kPagesize - 1) /
-        kPagesize * BatchConfig::max_requests_per_batch();
-    page_manager_singleton = new PageManager(kPagesize, num_total_blocks);
-  }
+  assert(page_manager_singleton != nullptr);
+  return page_manager_singleton;
+}
+
+PageManager *PageManager::get_page_manager(size_t size_of_dt, int num_kv_heads, int qkv_dim, size_t kv_cache_size_per_layer) {
+//   assert(page_manager_singleton == nullptr);
+  int num_total_blocks = kv_cache_size_per_layer * 1024 * 1024 / kPagesize / size_of_dt / num_kv_heads / qkv_dim;
+  printf("num_total_blocks assigned: %d\n", num_total_blocks);
+  page_manager_singleton = new PageManager(kPagesize, num_total_blocks);
   return page_manager_singleton;
 }
 

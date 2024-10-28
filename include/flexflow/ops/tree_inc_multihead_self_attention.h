@@ -30,6 +30,7 @@ public:
                                 int _embed_dim,
                                 int _num_q_heads,
                                 int _num_kv_heads,
+                                int _num_hidden_layers,
                                 int _kdim,
                                 int _vdim,
                                 float _dropout,
@@ -52,6 +53,7 @@ public:
                                 int _embed_dim,
                                 int _num_q_heads,
                                 int _num_kv_heads,
+                                int _num_hidden_layers,
                                 int _kdim,
                                 int _vdim,
                                 float _dropout,
@@ -121,7 +123,7 @@ public:
   Params get_params() const;
 
 public:
-  int num_q_heads, num_kv_heads, tensor_parallelism_degree;
+  int num_q_heads, num_kv_heads, num_hidden_layers, tensor_parallelism_degree;
   float dropout, scaling_factor;
   bool qkv_bias;
   bool final_bias, add_zero_attn, apply_rotary_embedding, scaling_query,
@@ -140,7 +142,8 @@ public:
                                     MemoryAllocator &gpu_mem_allocator,
                                     int num_samples,
                                     int _num_q_heads,
-                                    int _num_kv_heads);
+                                    int _num_kv_heads,
+                                    int _num_hidden_layers);
   ~TreeIncMultiHeadSelfAttentionMeta(void);
 
 public:

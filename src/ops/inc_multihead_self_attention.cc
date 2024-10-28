@@ -57,6 +57,7 @@ bool IncMultiHeadSelfAttentionParams::is_valid(
 Tensor FFModel::inc_multihead_self_attention(const Tensor input,
                                              int embed_dim,
                                              int num_heads,
+                                             int num_hidden_layers,
                                              int kdim,
                                              int vdim,
                                              float dropout,
@@ -76,6 +77,7 @@ Tensor FFModel::inc_multihead_self_attention(const Tensor input,
                                    embed_dim,
                                    num_heads,
                                    num_heads,
+                                   num_hidden_layers,
                                    kdim,
                                    vdim,
                                    dropout,
@@ -97,6 +99,7 @@ Tensor FFModel::groupquery_self_attention(const Tensor input,
                                           int embed_dim,
                                           int num_q_heads,
                                           int num_kv_heads,
+                                          int num_hidden_layers,
                                           int kdim,
                                           int vdim,
                                           float dropout,
@@ -194,6 +197,7 @@ Tensor FFModel::groupquery_self_attention(const Tensor input,
   li->add_int_property("embed_dim", embed_dim);
   li->add_int_property("num_q_heads", num_q_heads);
   li->add_int_property("num_kv_heads", num_kv_heads);
+  li->add_int_property("num_hidden_layers", num_hidden_layers);
   li->add_int_property("kdim", kdim);
   li->add_int_property("vdim", vdim);
   li->add_int_property("qkv_bias", qkv_bias);
@@ -226,6 +230,9 @@ Op *IncMultiHeadSelfAttention::create_operator_from_layer(
   int num_q_heads = value;
   layer->get_int_property("num_kv_heads", value);
   int num_kv_heads = value;
+  layer->get_int_property("num_hidden_layers", value);
+  int num_hidden_layers = value;
+  printf("from operatory layer num_hidden_layers = %d\n", num_hidden_layers);
   layer->get_int_property("kdim", value);
   int kdim = value;
   layer->get_int_property("vdim", value);
@@ -264,6 +271,7 @@ Op *IncMultiHeadSelfAttention::create_operator_from_layer(
                                        embed_dim,
                                        num_q_heads,
                                        num_kv_heads,
+                                       num_hidden_layers,
                                        kdim,
                                        vdim,
                                        dropout,
@@ -290,6 +298,7 @@ IncMultiHeadSelfAttention::IncMultiHeadSelfAttention(
     int _embed_dim,
     int _num_q_heads,
     int _num_kv_heads,
+    int _num_hidden_layers,
     int _kdim,
     int _vdim,
     float _dropout,
@@ -316,7 +325,7 @@ IncMultiHeadSelfAttention::IncMultiHeadSelfAttention(
          (_qkv_bias || _final_bias ? 2 : 1), /*weights*/
          1 /*outputs*/,
          _input),
-      num_q_heads(_num_q_heads), num_kv_heads(_num_kv_heads), dropout(_dropout),
+      num_q_heads(_num_q_heads), num_kv_heads(_num_kv_heads), num_hidden_layers(_num_hidden_layers), dropout(_dropout),
       qkv_bias(_qkv_bias), final_bias(_final_bias),
       add_zero_attn(_add_zero_attn),
       apply_rotary_embedding(_apply_rotary_embedding),
@@ -403,6 +412,7 @@ IncMultiHeadSelfAttention::IncMultiHeadSelfAttention(
     int _embed_dim,
     int _num_q_heads,
     int _num_kv_heads,
+    int _num_hidden_layers,
     int _kdim,
     int _vdim,
     float _dropout,
@@ -430,7 +440,7 @@ IncMultiHeadSelfAttention::IncMultiHeadSelfAttention(
          1 /*outputs*/,
          _input,
          _weight),
-      num_q_heads(_num_q_heads), num_kv_heads(_num_kv_heads), dropout(_dropout),
+      num_q_heads(_num_q_heads), num_kv_heads(_num_kv_heads),num_hidden_layers(_num_hidden_layers), dropout(_dropout),
       qkv_bias(_qkv_bias), final_bias(_final_bias),
       add_zero_attn(_add_zero_attn),
       apply_rotary_embedding(_apply_rotary_embedding),
@@ -523,6 +533,7 @@ IncMultiHeadSelfAttention::IncMultiHeadSelfAttention(
                                 other.o_dim,
                                 other.num_q_heads,
                                 other.num_kv_heads,
+                                other.num_hidden_layers,
                                 other.qk_dim,
                                 other.v_dim,
                                 other.dropout,
@@ -553,6 +564,7 @@ IncMultiHeadSelfAttention::IncMultiHeadSelfAttention(
                                 params.embed_dim,
                                 params.num_q_heads,
                                 params.num_kv_heads,
+                                params.num_hidden_layers,
                                 params.kdim,
                                 params.vdim,
                                 params.dropout,
@@ -584,6 +596,7 @@ void IncMultiHeadSelfAttention::init_inference(
   MachineView const *view = mv ? mv : &batch_outputs[0]->machine_view;
   size_t machine_view_hash = view->hash();
   set_argumentmap_for_init_inference(ff, argmap, batch_outputs[0]);
+  printf("init inferece for inc mha\n");
   IndexLauncher launcher(INC_MULTIHEAD_SELF_ATTENTION_INIT_TASK_ID,
                          parallel_is,
                          TaskArgument(this, sizeof(IncMultiHeadSelfAttention)),
@@ -624,6 +637,7 @@ void IncMultiHeadSelfAttention::init(FFModel const &ff) {
   Context ctx = ff.config.lg_ctx;
   Runtime *runtime = ff.config.lg_hlr;
   set_argumentmap_for_init(ff, argmap);
+  printf("init for inc mha\n");
   IndexLauncher launcher(INC_MULTIHEAD_SELF_ATTENTION_INIT_TASK_ID,
                          parallel_is,
                          TaskArgument(this, sizeof(IncMultiHeadSelfAttention)),
@@ -669,6 +683,7 @@ OpMeta *IncMultiHeadSelfAttention::init_task(
   IncMultiHeadSelfAttention const *attn =
       (IncMultiHeadSelfAttention *)task->args;
   FFHandler handle = *((FFHandler const *)task->local_args);
+  printf("init task and we are trying to find the way to fill in the gap\n");
 
   GenericTensorAccessorR input =
       helperGetGenericTensorAccessorRO(attn->inputs[0]->data_type,
@@ -720,7 +735,8 @@ OpMeta *IncMultiHeadSelfAttention::init_task(
                                         gpu_mem_allocator,
                                         num_samples,
                                         num_q_heads,
-                                        num_kv_heads);
+                                        num_kv_heads,
+                                        attn->num_hidden_layers);
   if (handle.offload_reserve_space == nullptr) {
     // assert that we didn't over allocate memory
     assert(gpu_mem_allocator.reserved_allocated_size ==
@@ -902,7 +918,8 @@ bool IncMultiHeadSelfAttention::measure_operator_cost(
 bool operator==(IncMultiHeadSelfAttentionParams const &lhs,
                 IncMultiHeadSelfAttentionParams const &rhs) {
   return lhs.layer_guid == rhs.layer_guid && lhs.embed_dim == rhs.embed_dim &&
-         lhs.num_q_heads == rhs.num_q_heads && lhs.kdim == rhs.kdim &&
+         lhs.num_q_heads == rhs.num_q_heads && lhs.num_hidden_layers == rhs.num_hidden_layers &&
+         lhs.kdim == rhs.kdim &&
          lhs.vdim == rhs.vdim && lhs.dropout == rhs.dropout &&
          lhs.qkv_bias == rhs.qkv_bias && lhs.final_bias == rhs.final_bias &&
          lhs.add_zero_attn == rhs.add_zero_attn &&
@@ -919,6 +936,7 @@ IncMultiHeadSelfAttentionParams IncMultiHeadSelfAttention::get_params() const {
   params.layer_guid = this->layer_guid;
   params.embed_dim = this->o_dim;
   params.num_q_heads = this->num_q_heads;
+  params.num_hidden_layers = this->num_hidden_layers;
   params.kdim = this->qk_dim;
   params.vdim = this->v_dim;
   params.dropout = this->dropout;
@@ -952,6 +970,7 @@ size_t hash<FlexFlow::IncMultiHeadSelfAttentionParams>::operator()(
   hash_combine(key, params.embed_dim);
   hash_combine(key, params.num_q_heads);
   hash_combine(key, params.num_kv_heads);
+  hash_combine(key, params.num_hidden_layers);
   hash_combine(key, params.kdim);
   hash_combine(key, params.vdim);
   hash_combine(key, params.dropout);

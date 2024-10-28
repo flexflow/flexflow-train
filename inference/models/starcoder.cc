@@ -109,6 +109,7 @@ void STARCODER::create_starcoder_model(
             ln_1,
             startcoder_config.hidden_size,
             startcoder_config.num_attention_heads,
+            startcoder_config.num_hidden_layers,
             1,
             startcoder_config.hidden_size /
                 startcoder_config.num_attention_heads,

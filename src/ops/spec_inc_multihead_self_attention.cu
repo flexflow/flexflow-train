@@ -398,6 +398,7 @@ SpecIncMultiHeadSelfAttentionMeta::SpecIncMultiHeadSelfAttentionMeta(
                                     num_samples,
                                     attn->num_q_heads,
                                     attn->num_kv_heads,
+                                    attn->num_hidden_layers,
                                     _num_q_heads,
                                     _num_kv_heads,
                                     DT_NONE,

@@ -354,6 +354,7 @@ void FlexFlow::top_level_task(Task const *task,
                    verbose,
                    max_sequence_length,
                    max_output_length,
+                   max_kv_cache_size,
                    scaling_factor);
   if (max_tokens_per_ssm_batch == -1) {
     max_tokens_per_ssm_batch = max_tokens_per_batch;

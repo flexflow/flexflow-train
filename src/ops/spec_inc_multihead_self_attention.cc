@@ -56,6 +56,7 @@ Tensor
     FFModel::spec_inc_multihead_self_attention(Tensor const input,
                                                int embed_dim,
                                                int num_heads,
+                                               int num_hidden_layers,
                                                int kdim,
                                                int vdim,
                                                float dropout,
@@ -75,6 +76,7 @@ Tensor
                                             embed_dim,
                                             num_heads,
                                             num_heads,
+                                            num_hidden_layers,
                                             kdim,
                                             vdim,
                                             dropout,
@@ -97,6 +99,7 @@ Tensor
                                                 int embed_dim,
                                                 int num_q_heads,
                                                 int num_kv_heads,
+                                                int num_hidden_layers,
                                                 int kdim,
                                                 int vdim,
                                                 float dropout,
@@ -182,6 +185,7 @@ Tensor
   li->add_int_property("embed_dim", embed_dim);
   li->add_int_property("num_q_heads", num_q_heads);
   li->add_int_property("num_kv_heads", num_kv_heads);
+  li->add_int_property("num_hidden_layers", num_hidden_layers);
   li->add_int_property("kdim", kdim);
   li->add_int_property("vdim", vdim);
   li->add_int_property("qkv_bias", qkv_bias);
@@ -211,6 +215,9 @@ Op *SpecIncMultiHeadSelfAttention::create_operator_from_layer(
   int num_q_heads = value;
   layer->get_int_property("num_kv_heads", value);
   int num_kv_heads = value;
+  layer->get_int_property("num_hidden_layers", value);
+  printf("num hidden layers extract from layer: %d\n", value);
+  int num_hidden_layers = value;
   layer->get_int_property("kdim", value);
   int kdim = value;
   layer->get_int_property("vdim", value);
@@ -242,6 +249,7 @@ Op *SpecIncMultiHeadSelfAttention::create_operator_from_layer(
                                            embed_dim,
                                            num_q_heads,
                                            num_kv_heads,
+                                           num_hidden_layers,
                                            kdim,
                                            vdim,
                                            dropout,
@@ -265,6 +273,7 @@ SpecIncMultiHeadSelfAttention::SpecIncMultiHeadSelfAttention(
     int _embed_dim,
     int _num_q_heads,
     int _num_kv_heads,
+    int _num_hidden_layers,
     int _kdim,
     int _vdim,
     float _dropout,
@@ -288,7 +297,7 @@ SpecIncMultiHeadSelfAttention::SpecIncMultiHeadSelfAttention(
          (_qkv_bias || _final_bias ? 2 : 1) /*weights*/,
          1 /*outputs*/,
          _input),
-      num_q_heads(_num_q_heads), num_kv_heads(_num_kv_heads), dropout(_dropout),
+      num_q_heads(_num_q_heads), num_kv_heads(_num_kv_heads),num_hidden_layers(_num_hidden_layers), dropout(_dropout),
       qkv_bias(_qkv_bias), final_bias(_final_bias),
       add_zero_attn(_add_zero_attn),
       apply_rotary_embedding(_apply_rotary_embedding),
@@ -366,6 +375,7 @@ SpecIncMultiHeadSelfAttention::SpecIncMultiHeadSelfAttention(
     int _embed_dim,
     int _num_q_heads,
     int _num_kv_heads,
+    int _num_hidden_layers,
     int _kdim,
     int _vdim,
     float _dropout,
@@ -390,7 +400,7 @@ SpecIncMultiHeadSelfAttention::SpecIncMultiHeadSelfAttention(
          1 /*outputs*/,
          _input,
          _weight),
-      num_q_heads(_num_q_heads), num_kv_heads(_num_kv_heads), dropout(_dropout),
+      num_q_heads(_num_q_heads), num_kv_heads(_num_kv_heads),num_hidden_layers(_num_hidden_layers), dropout(_dropout),
       qkv_bias(_qkv_bias), final_bias(_final_bias),
       add_zero_attn(_add_zero_attn),
       apply_rotary_embedding(_apply_rotary_embedding),
@@ -475,6 +485,7 @@ SpecIncMultiHeadSelfAttention::SpecIncMultiHeadSelfAttention(
                                     other.o_dim,
                                     other.num_q_heads,
                                     other.num_kv_heads,
+                                    other.num_hidden_layers,
                                     other.qk_dim,
                                     other.v_dim,
                                     other.dropout,
@@ -502,6 +513,7 @@ SpecIncMultiHeadSelfAttention::SpecIncMultiHeadSelfAttention(
                                     params.embed_dim,
                                     params.num_q_heads,
                                     params.num_kv_heads,
+                                    params.num_hidden_layers,
                                     params.kdim,
                                     params.vdim,
                                     params.dropout,
@@ -828,7 +840,8 @@ bool SpecIncMultiHeadSelfAttention::measure_operator_cost(
 bool operator==(SpecIncMultiHeadSelfAttentionParams const &lhs,
                 SpecIncMultiHeadSelfAttentionParams const &rhs) {
   return lhs.layer_guid == rhs.layer_guid && lhs.embed_dim == rhs.embed_dim &&
-         lhs.num_q_heads == rhs.num_q_heads && lhs.kdim == rhs.kdim &&
+         lhs.num_q_heads == rhs.num_q_heads && lhs.num_hidden_layers == rhs.num_hidden_layers &&
+         lhs.kdim == rhs.kdim &&
          lhs.vdim == rhs.vdim && lhs.dropout == rhs.dropout &&
          lhs.qkv_bias == rhs.qkv_bias && lhs.final_bias == rhs.final_bias &&
          lhs.add_zero_attn == rhs.add_zero_attn &&
@@ -847,6 +860,7 @@ SpecIncMultiHeadSelfAttentionParams
   params.embed_dim = this->o_dim;
   params.num_q_heads = this->num_q_heads;
   params.num_kv_heads = this->num_kv_heads;
+  params.num_hidden_layers = this->num_hidden_layers;
   params.kdim = this->qk_dim;
   params.vdim = this->v_dim;
   params.dropout = this->dropout;
@@ -876,6 +890,7 @@ size_t hash<FlexFlow::SpecIncMultiHeadSelfAttentionParams>::operator()(
   hash_combine(key, params.embed_dim);
   hash_combine(key, params.num_q_heads);
   hash_combine(key, params.num_kv_heads);
+  hash_combine(key, params.num_hidden_layers);
   hash_combine(key, params.kdim);
   hash_combine(key, params.vdim);
   hash_combine(key, params.dropout);

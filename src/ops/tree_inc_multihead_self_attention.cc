@@ -58,6 +58,7 @@ Tensor FFModel::inc_multihead_self_attention_verify(
     Tensor const input,
     int embed_dim,
     int num_heads,
+    int num_hidden_layers,
     int kdim,
     int vdim,
     float dropout,
@@ -76,6 +77,7 @@ Tensor FFModel::inc_multihead_self_attention_verify(
                                               embed_dim,
                                               num_heads,
                                               num_heads,
+                                              num_hidden_layers,
                                               kdim,
                                               vdim,
                                               dropout,
@@ -97,6 +99,7 @@ Tensor FFModel::inc_multiquery_self_attention_verify(
     int embed_dim,
     int num_q_heads,
     int num_kv_heads,
+    int num_hidden_layers,
     int kdim,
     int vdim,
     float dropout,
@@ -191,6 +194,7 @@ Tensor FFModel::inc_multiquery_self_attention_verify(
   li->add_int_property("embed_dim", embed_dim);
   li->add_int_property("num_q_heads", num_q_heads);
   li->add_int_property("num_kv_heads", num_kv_heads);
+  li->add_int_property("num_hidden_layers", num_hidden_layers);
   li->add_int_property("kdim", kdim);
   li->add_int_property("vdim", vdim);
   li->add_int_property("qkv_bias", qkv_bias);
@@ -214,6 +218,7 @@ Op *TreeIncMultiHeadSelfAttention::create_operator_from_layer(
     FFModel &model,
     Layer const *layer,
     std::vector<ParallelTensor> const &inputs) {
+  printf("we created the operator from the layer\n");
   long long value;
   layer->get_int_property("embed_dim", value);
   int embed_dim = value;
@@ -221,6 +226,9 @@ Op *TreeIncMultiHeadSelfAttention::create_operator_from_layer(
   int num_q_heads = value;
   layer->get_int_property("num_kv_heads", value);
   int num_kv_heads = value;
+  layer->get_int_property("num_hidden_layers", value);
+  int num_hidden_layers = value;
+  printf("the num hidden layers from create operator from layer is %d\n", num_hidden_layers);
   layer->get_int_property("kdim", value);
   int kdim = value;
   layer->get_int_property("vdim", value);
@@ -249,28 +257,32 @@ Op *TreeIncMultiHeadSelfAttention::create_operator_from_layer(
   bool offload = (bool)value;
   layer->get_int_property("tensor_parallelism_degree", value);
   int tensor_parallelism_degree = (int)value;
-  return new TreeIncMultiHeadSelfAttention(model,
-                                           layer->layer_guid,
-                                           inputs[0],
-                                           embed_dim,
-                                           num_q_heads,
-                                           num_kv_heads,
-                                           kdim,
-                                           vdim,
-                                           dropout,
-                                           qkv_bias,
-                                           final_bias,
-                                           add_zero_attn,
-                                           apply_rotary_embedding,
-                                           scaling_query,
-                                           scaling_factor,
-                                           qk_prod_scaling,
-                                           position_bias,
-                                           false /*allocate_weights*/,
-                                           quantization_type,
-                                           offload,
-                                           tensor_parallelism_degree,
-                                           layer->name);
+
+  TreeIncMultiHeadSelfAttention* ret = new TreeIncMultiHeadSelfAttention(model,
+                                               layer->layer_guid,
+                                               inputs[0],
+                                               embed_dim,
+                                               num_q_heads,
+                                               num_kv_heads,
+                                               num_hidden_layers,
+                                               kdim,
+                                               vdim,
+                                               dropout,
+                                               qkv_bias,
+                                               final_bias,
+                                               add_zero_attn,
+                                               apply_rotary_embedding,
+                                               scaling_query,
+                                               scaling_factor,
+                                               qk_prod_scaling,
+                                               position_bias,
+                                               false /*allocate_weights*/,
+                                               quantization_type,
+                                               offload,
+                                               tensor_parallelism_degree,
+                                               layer->name);
+  printf("num hidden layers in operator is %d\n", ret->num_hidden_layers);
+  return ret;
 }
 
 TreeIncMultiHeadSelfAttention::TreeIncMultiHeadSelfAttention(
@@ -280,6 +292,7 @@ TreeIncMultiHeadSelfAttention::TreeIncMultiHeadSelfAttention(
     int _embed_dim,
     int _num_q_heads,
     int _num_kv_heads,
+    int _num_hidden_layers,
     int _kdim,
     int _vdim,
     float _dropout,
@@ -305,7 +318,7 @@ TreeIncMultiHeadSelfAttention::TreeIncMultiHeadSelfAttention(
          (_qkv_bias || _final_bias ? 2 : 1) /*weights*/,
          1 /*outputs*/,
          _input),
-      num_q_heads(_num_q_heads), num_kv_heads(_num_kv_heads), dropout(_dropout),
+      num_q_heads(_num_q_heads), num_kv_heads(_num_kv_heads),num_hidden_layers(_num_hidden_layers), dropout(_dropout),
       qkv_bias(_qkv_bias), final_bias(_final_bias),
       add_zero_attn(_add_zero_attn),
       apply_rotary_embedding(_apply_rotary_embedding),
@@ -383,6 +396,7 @@ TreeIncMultiHeadSelfAttention::TreeIncMultiHeadSelfAttention(
   /* } */
   /* // Check correctness */
   /* assert(check_output_input_weight_parallel_dims()); */
+  printf("num hidden layers in the constructor is %d\n", num_hidden_layers);
 }
 
 TreeIncMultiHeadSelfAttention::TreeIncMultiHeadSelfAttention(
@@ -392,6 +406,7 @@ TreeIncMultiHeadSelfAttention::TreeIncMultiHeadSelfAttention(
     int _embed_dim,
     int _num_q_heads,
     int _num_kv_heads,
+    int _num_hidden_layers,
     int _kdim,
     int _vdim,
     float _dropout,
@@ -418,7 +433,7 @@ TreeIncMultiHeadSelfAttention::TreeIncMultiHeadSelfAttention(
          1 /*outputs*/,
          _input,
          _weight),
-      num_q_heads(_num_q_heads), num_kv_heads(_num_kv_heads), dropout(_dropout),
+      num_q_heads(_num_q_heads), num_kv_heads(_num_kv_heads), num_hidden_layers(_num_hidden_layers), dropout(_dropout),
       qkv_bias(_qkv_bias), final_bias(_final_bias),
       add_zero_attn(_add_zero_attn),
       apply_rotary_embedding(_apply_rotary_embedding),
@@ -509,6 +524,7 @@ TreeIncMultiHeadSelfAttention::TreeIncMultiHeadSelfAttention(
                                     other.o_dim,
                                     other.num_q_heads,
                                     other.num_kv_heads,
+                                    other.num_hidden_layers,
                                     other.qk_dim,
                                     other.v_dim,
                                     other.dropout,
@@ -538,6 +554,7 @@ TreeIncMultiHeadSelfAttention::TreeIncMultiHeadSelfAttention(
                                     params.embed_dim,
                                     params.num_q_heads,
                                     params.num_kv_heads,
+                                    params.num_hidden_layers,
                                     params.kdim,
                                     params.vdim,
                                     params.dropout,
@@ -553,13 +570,16 @@ TreeIncMultiHeadSelfAttention::TreeIncMultiHeadSelfAttention(
                                     params.quantization_type,
                                     params.offload,
                                     params.tensor_parallelism_degree,
-                                    params.name) {}
+                                    params.name) {
+                                      printf("treeattention init num hidden layers %d\n", params.num_hidden_layers);
+                                    }
 
 void TreeIncMultiHeadSelfAttention::init_inference(
     FFModel const &ff,
     std::vector<ParallelTensor> const &batch_inputs,
     std::vector<ParallelTensor> const &batch_outputs,
     MachineView const *mv) {
+  printf("start inference num_hidden_layers %d\n", num_hidden_layers);
   assert(check_output_input_weight_same_parallel_is());
   parallel_is = batch_outputs[0]->parallel_is;
   ArgumentMap argmap;
@@ -699,6 +719,8 @@ OpMeta *TreeIncMultiHeadSelfAttention::init_task(
     gpu_mem_allocator.register_reserved_work_space(
         handle.offload_reserve_space, handle.offload_reserve_space_size);
   }
+  // assert(attn->num_hidden_layers != 0);
+  printf("num_hidden_layers = %d\n", attn->num_hidden_layers);
   TreeIncMultiHeadSelfAttentionMeta *m =
       new TreeIncMultiHeadSelfAttentionMeta(handle,
                                             attn,
@@ -706,7 +728,8 @@ OpMeta *TreeIncMultiHeadSelfAttention::init_task(
                                             gpu_mem_allocator,
                                             num_samples,
                                             num_q_heads,
-                                            num_kv_heads);
+                                            num_kv_heads,
+                                            attn->num_hidden_layers);
   if (!attn->offload) {
     // assert that we didn't over allocate memory
     assert(gpu_mem_allocator.reserved_allocated_size ==
