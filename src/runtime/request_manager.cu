@@ -18,6 +18,7 @@
 #include "flexflow/ops/kernels/inc_multihead_self_attention_utils.cuh"
 #include "flexflow/request_manager.h"
 #include "flexflow/utils/cuda_helper.h"
+#include <cassert>
 
 namespace FlexFlow {
 
@@ -210,18 +211,29 @@ __global__ void
 #define test_bit_orig(bit_mask, idx, pos)                                      \
   (((bit_mask)[idx].bits[(pos) / 64] & (1ULL << ((pos) % 64))) != 0)
 
-// Passing the CPU-side causalMask, then output the bit-packed custom_mask for
-// attention forward.
-// Layout of causalMask: [num_requests][tree_size][tree_size]
-// Layout of custom_mask: [num_requests][q_length][kv_length] (bit-packed)
-// Note that for spec-decoding, q_length == last_layer_length != tree_size
+// cache = (global-sink) % window + sink
+#define cache_2_global_index(cache_info, cache_index)                          \
+  do {                                                                         \
+    if (cache_index >= (cache_info).sink_cache_size) {                         \
+      cache_index -= (cache_info).sink_cache_size;                             \
+      int num_window =                                                         \
+          ((cache_info).total_len - (cache_info).sink_cache_size) /            \
+              (cache_info).window_cache_size -                                 \
+          ((cache_info).window_back <= cache_index);                           \
+      cache_index += (cache_info).sink_cache_size +                            \
+                     num_window * (cache_info).window_cache_size;              \
+    }                                                                          \
+  } while (0)
+
 __global__ void
     update_custom_mask_kernel(uint8_t *custom_mask,
                               int32_t const *qk_indptr,
                               BatchConfig::BitMask *causalMask,
                               BatchConfig::PerRequestInfo *request_infos,
                               bool *request_available,
-                              uint32_t const num_requests) {
+                              uint32_t const num_requests,
+                              StreamingCacheInfo *streaming_cache_infos,
+                              bool streaming_cache) {
   int byte_idx = blockIdx.x * blockDim.x + threadIdx.x;
   int request_idx = 0;
   while (request_idx < num_requests) {
@@ -251,13 +263,23 @@ __global__ void
             q_start = request_infos[requext_idx_in_batch]
                           .first_token_index_in_request -
                       causal_mask.non_tree_cache_size,
-            non_tree_cache_size = causal_mask.non_tree_cache_size;
+            non_tree_cache_size = causal_mask.non_tree_cache_size,
+            kv_len = causal_mask.non_tree_cache_size +
+                     causal_mask.tree_or_prompt_size;
 
   uint8_t packed_bits = 0;
   for (int bit_idx = 0; bit_idx < 8; bit_idx++) {
-    int const bit_offset = byte_idx * 8 + bit_idx,
-              q_idx = bit_offset / (non_tree_cache_size + q_start + q_length),
-              kv_idx = bit_offset % (non_tree_cache_size + q_start + q_length);
+    int const bit_offset = byte_idx * 8 + bit_idx, q_idx = bit_offset / kv_len;
+    int kv_idx = bit_offset % kv_len;
+    if (streaming_cache) { // recover to the original index
+      if (kv_idx < streaming_cache_infos[requext_idx_in_batch].commit_len) {
+        cache_2_global_index(streaming_cache_infos[requext_idx_in_batch],
+                             kv_idx);
+      } else {
+        kv_idx += streaming_cache_infos[requext_idx_in_batch].total_len -
+                  streaming_cache_infos[requext_idx_in_batch].commit_len;
+      }
+    }
     if (kv_idx < non_tree_cache_size || q_idx >= q_length) {
       packed_bits |= 1 << bit_idx;
     } else {
@@ -269,6 +291,47 @@ __global__ void
     }
   }
   custom_mask[qk_indptr[request_idx] + byte_idx] = packed_bits;
+}
+
+// Passing the CPU-side causalMask, then output the bit-packed custom_mask for
+// attention forward.
+// Layout of causalMask: [num_requests][tree_size][tree_size]
+// Layout of custom_mask: [num_requests][q_length][kv_length] (bit-packed)
+// Note that for spec-decoding, q_length == last_layer_length != tree_size
+// Also we should consider the influence of StreamingCache
+void update_custom_mask(BatchConfig const *batch_config,
+                        AttentionMetaData *metadata,
+                        BatchConfig::BitMask *causalMask,
+                        BatchConfig::PerRequestInfo *request_infos,
+                        bool *request_available,
+                        int batch_size,
+                        StreamingCacheInfo *streaming_cache_infos,
+                        cudaStream_t stream) {
+  InferenceMode mode = batch_config->get_mode();
+  assert(mode == TREE_SEARCH_MODE || mode == TREE_VERIFY_MODE);
+  bool streaming_cache =
+      mode == TREE_SEARCH_MODE && batch_config->streaming_cache();
+  int parallelism = 0;
+  for (int req_idx = 0; req_idx < batch_config->max_requests_per_batch();
+       req_idx++) {
+    if (batch_config->request_available[req_idx]) {
+      int q_len = batch_config->requestsInfo[req_idx].num_tokens_in_batch;
+      int kv_len = batch_config->causalMask[req_idx].non_tree_cache_size +
+                   batch_config->causalMask[req_idx].tree_or_prompt_size;
+      parallelism += (q_len * kv_len + 7) / 8;
+    }
+  }
+  update_custom_mask_kernel<<<GET_BLOCKS(parallelism),
+                              min(CUDA_NUM_THREADS, parallelism),
+                              0,
+                              stream>>>(metadata->custom_mask,
+                                        metadata->qk_indptr,
+                                        causalMask,
+                                        request_infos,
+                                        request_available,
+                                        batch_size,
+                                        streaming_cache_infos,
+                                        streaming_cache);
 }
 
 void RequestManager::load_batch_config_task(
@@ -504,6 +567,13 @@ void RequestManager::load_batch_config_task(
                 sizeof(BatchConfig::tokensInfo) +
                 sizeof(BatchConfig::requestsInfo) +
                 sizeof(BatchConfig::request_available));
+        StreamingCacheInfo *streaming_cache_infos =
+            reinterpret_cast<StreamingCacheInfo *>(
+                static_cast<char *>(handle.batch_config_metadata) +
+                sizeof(BatchConfig::tokensInfo) +
+                sizeof(BatchConfig::requestsInfo) +
+                sizeof(BatchConfig::request_available) +
+                sizeof(BatchConfig::causalMask));
         int batch_size = batch_config->num_active_requests();
         uint32_t const max_num_pages =
             round_up_pages(BatchConfig::max_sequence_length() +
@@ -526,30 +596,14 @@ void RequestManager::load_batch_config_task(
 
         // Update gpu-side custom mask referring from CaualMask
         if (!batch_config->prompt_phase) {
-          int parallelism = 0;
-          for (int req_idx = 0;
-               req_idx < batch_config->max_requests_per_batch();
-               req_idx++) {
-            if (batch_config->request_available[req_idx]) {
-              int q_len =
-                  batch_config->requestsInfo[req_idx].num_tokens_in_batch;
-              int kv_len =
-                  batch_config->requestsInfo[req_idx].num_tokens_in_batch +
-                  batch_config->requestsInfo[req_idx]
-                      .first_token_index_in_request;
-              parallelism += (q_len * kv_len + 7) / 8;
-            }
-          }
-          update_custom_mask_kernel<<<GET_BLOCKS(parallelism),
-                                      min(CUDA_NUM_THREADS, parallelism),
-                                      0,
-                                      stream>>>(
-              handle.tree_search_attention_metadata->custom_mask,
-              handle.tree_search_attention_metadata->qk_indptr,
-              causalMask,
-              request_infos,
-              request_available,
-              batch_size);
+          update_custom_mask(batch_config,
+                             handle.tree_search_attention_metadata,
+                             causalMask,
+                             request_infos,
+                             request_available,
+                             batch_size,
+                             streaming_cache_infos,
+                             stream);
         }
       }
 
@@ -641,6 +695,13 @@ void RequestManager::load_batch_config_task(
                 sizeof(BatchConfig::tokensInfo) +
                 sizeof(BatchConfig::requestsInfo) +
                 sizeof(BatchConfig::request_available));
+        StreamingCacheInfo *streaming_cache_infos =
+            reinterpret_cast<StreamingCacheInfo *>(
+                static_cast<char *>(handle.batch_config_metadata) +
+                sizeof(BatchConfig::tokensInfo) +
+                sizeof(BatchConfig::requestsInfo) +
+                sizeof(BatchConfig::request_available) +
+                sizeof(BatchConfig::causalMask));
         int batch_size = batch_config->num_active_requests();
         uint32_t const max_num_pages =
             round_up_pages(BatchConfig::max_sequence_length() +
@@ -660,30 +721,14 @@ void RequestManager::load_batch_config_task(
 
         // Update gpu-side custom mask referring from CaualMask
         if (!batch_config->prompt_phase) {
-          int parallelism = 0;
-          for (int req_idx = 0;
-               req_idx < batch_config->max_requests_per_batch();
-               req_idx++) {
-            if (batch_config->request_available[req_idx]) {
-              int q_len =
-                  batch_config->requestsInfo[req_idx].num_tokens_in_batch;
-              int kv_len =
-                  batch_config->requestsInfo[req_idx].num_tokens_in_batch +
-                  batch_config->requestsInfo[req_idx]
-                      .first_token_index_in_request;
-              parallelism += (q_len * kv_len + 7) / 8;
-            }
-          }
-          update_custom_mask_kernel<<<GET_BLOCKS(parallelism),
-                                      min(CUDA_NUM_THREADS, parallelism),
-                                      0,
-                                      stream>>>(
-              handle.tree_verify_attention_metadata->custom_mask,
-              handle.tree_verify_attention_metadata->qk_indptr,
-              causalMask,
-              request_infos,
-              request_available,
-              batch_size);
+          update_custom_mask(batch_config,
+                             handle.tree_verify_attention_metadata,
+                             causalMask,
+                             request_infos,
+                             request_available,
+                             batch_size,
+                             streaming_cache_infos,
+                             stream);
         }
       }
 
@@ -756,7 +801,7 @@ void RequestManager::load_positions_task(
   int dram_copy[BatchConfig::MAX_NUM_TOKENS];
 
   for (int i = 0; i < batch_config->num_tokens; i++) {
-    dram_copy[i] = batch_config->tokensInfo[i].abs_index_in_request + offset;
+    dram_copy[i] = batch_config->tokensInfo[i].abs_depth_in_request + offset;
   }
 
   cudaStream_t stream;

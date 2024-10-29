@@ -109,7 +109,7 @@ void MPT::create_mpt_model(FFModel &ff,
             false,
             DT_NONE, /*data_type*/
             NULL,
-            false,
+            mpt_config.rotary_embedding_meta,
             /*scaling query*/ true,
             /*scaling factor*/
             pow((mpt_config.hidden_size / mpt_config.n_heads), -0.5),
@@ -134,7 +134,7 @@ void MPT::create_mpt_model(FFModel &ff,
             false,
             DT_NONE, /*data_type*/
             NULL,
-            false,
+            mpt_config.rotary_embedding_meta,
             /*scaling query*/ true,
             /*scaling factor*/
             pow((mpt_config.hidden_size / mpt_config.n_heads), -0.5),
@@ -159,7 +159,7 @@ void MPT::create_mpt_model(FFModel &ff,
             false,
             DT_NONE, /*data_type*/
             NULL,
-            false,
+            mpt_config.rotary_embedding_meta,
             /*scaling query*/ true,
             /*scaling factor*/
             pow((mpt_config.hidden_size / mpt_config.n_heads), -0.5),
