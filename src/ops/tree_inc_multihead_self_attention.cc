@@ -579,7 +579,6 @@ void TreeIncMultiHeadSelfAttention::init_inference(
     std::vector<ParallelTensor> const &batch_inputs,
     std::vector<ParallelTensor> const &batch_outputs,
     MachineView const *mv) {
-  printf("start inference num_hidden_layers %d\n", num_hidden_layers);
   assert(check_output_input_weight_same_parallel_is());
   parallel_is = batch_outputs[0]->parallel_is;
   ArgumentMap argmap;
@@ -720,7 +719,7 @@ OpMeta *TreeIncMultiHeadSelfAttention::init_task(
         handle.offload_reserve_space, handle.offload_reserve_space_size);
   }
   // assert(attn->num_hidden_layers != 0);
-  printf("num_hidden_layers = %d\n", attn->num_hidden_layers);
+  printf("p_layers = %d\n", attn->num_hidden_layers);
   TreeIncMultiHeadSelfAttentionMeta *m =
       new TreeIncMultiHeadSelfAttentionMeta(handle,
                                             attn,
