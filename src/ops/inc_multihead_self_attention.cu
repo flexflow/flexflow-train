@@ -439,6 +439,7 @@ IncMultiHeadSelfAttentionMeta::IncMultiHeadSelfAttentionMeta(
   num_q_heads = _num_q_heads;
   num_kv_heads = _num_kv_heads;
   local_hidden_size = num_q_heads * qk_dim;
+  num_hidden_layers = _num_hidden_layers;
 
   weightSize =
       ((hidden_size * qk_dim + o_dim * (v_dim > 0 ? v_dim : hidden_size)) *
@@ -496,7 +497,10 @@ IncMultiHeadSelfAttentionMeta::IncMultiHeadSelfAttentionMeta(
     size_t max_num_pages =
         round_up_pages(BatchConfig::max_sequence_length() +
                        BatchConfig::max_spec_tree_token_num());
+    printf("_num_hidden_layers: %d\n", _num_hidden_layers);
     assert(_num_hidden_layers > 0);
+    assert(_num_hidden_layers <= 1000);
+
     int total_size = BatchConfig::max_kv_cache_size();
     switch (infer_mode) {
       case TREE_VERIFY_MODE:
@@ -509,9 +513,10 @@ IncMultiHeadSelfAttentionMeta::IncMultiHeadSelfAttentionMeta(
           value_cache_size = num_kv_heads * v_dim * BatchConfig::max_requests_per_batch() *
                             max_num_pages * kPagesize;
         }else{
-          printf("we should be here this time\n");
-          key_cache_size = total_size / 2 / num_hidden_layers;
-          value_cache_size = total_size / 2 / num_hidden_layers;
+          printf("we should be here this time in self defined kv cache size\n");
+          key_cache_size = total_size / 2 / _num_hidden_layers;
+          value_cache_size = total_size / 2 / _num_hidden_layers;
+          printf("total_size: %d, key_cache_size: %d, value_cache_size: %d\n", total_size, key_cache_size, value_cache_size);
           assert(key_cache_size > 0 && value_cache_size > 0 && "Invalid kvcache size");
         }
         PageManager::get_page_manager(size_of_dt, num_kv_heads, qk_dim + v_dim,
