@@ -325,6 +325,16 @@ TEST_SUITE(FF_TEST_SUITE) {
 
         CHECK(sp_decomposition.has_value());
       }
+
+      SUBCASE("dlrm") {
+        ComputationGraph cg =
+            get_dlrm_computation_graph(get_default_dlrm_config());
+
+        std::optional<SeriesParallelDecomposition> sp_decomposition =
+            get_computation_graph_series_parallel_decomposition(cg);
+
+        CHECK(sp_decomposition.has_value());
+      }
     }
   }
 

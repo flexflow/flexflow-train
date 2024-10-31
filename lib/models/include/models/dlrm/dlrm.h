@@ -3,9 +3,10 @@
  *
  * @brief DLRM model
  *
- * @details The DLRM implementation refers to the example from
- * facebookresearch/dlrm at
- * https://github.com/facebookresearch/dlrm/blob/main/dlrm_s_pytorch.py.
+ * @details The DLRM implementation refers to the examples at
+ * https://github.com/flexflow/FlexFlow/blob/inference/examples/cpp/DLRM/dlrm.cc
+ * and
+ * https://github.com/pytorch/torchrec/blob/main/torchrec/models/dlrm.py#L440.
  */
 
 #ifndef _FLEXFLOW_LIB_MODELS_INCLUDE_MODELS_DLRM_H
@@ -20,22 +21,22 @@ namespace FlexFlow {
 
 DLRMConfig get_default_dlrm_config();
 
-tensor_guid_t create_dlrm_mlp(ComputationGraphBuilder &,
-                              DLRMConfig const &,
-                              tensor_guid_t const &,
-                              std::vector<size_t> const &,
-                              int const &);
+tensor_guid_t create_dlrm_mlp(ComputationGraphBuilder &cgb,
+                              DLRMConfig const &config,
+                              tensor_guid_t const &input,
+                              std::vector<size_t> const &mlp_layers);
 
-tensor_guid_t create_dlrm_emb(ComputationGraphBuilder &,
-                              DLRMConfig const &,
-                              tensor_guid_t const &,
-                              int const &,
-                              int const &);
+tensor_guid_t create_dlrm_sparse_embedding_network(ComputationGraphBuilder &cgb,
+                                                   DLRMConfig const &config,
+                                                   tensor_guid_t const &input,
+                                                   int input_dim,
+                                                   int output_dim);
 
-tensor_guid_t create_dlrm_interact_features(ComputationGraphBuilder &,
-                                            DLRMConfig const &,
-                                            tensor_guid_t const &,
-                                            std::vector<tensor_guid_t> const &);
+tensor_guid_t create_dlrm_interact_features(
+    ComputationGraphBuilder &cgb,
+    DLRMConfig const &config,
+    tensor_guid_t const &bottom_mlp_output,
+    std::vector<tensor_guid_t> const &emb_outputs);
 
 /**
  * @brief Get the DLRM computation graph.
@@ -43,7 +44,7 @@ tensor_guid_t create_dlrm_interact_features(ComputationGraphBuilder &,
  * @param DLRMConfig The config of DLRM model.
  * @return ComputationGraph The computation graph of a DLRM model.
  */
-ComputationGraph get_dlrm_computation_graph(DLRMConfig const &);
+ComputationGraph get_dlrm_computation_graph(DLRMConfig const &config);
 
 } // namespace FlexFlow
 

@@ -21,15 +21,7 @@ src_includes = [
 ]
 
 [[fields]]
-name = "sparse_feature_size"
-type = "int"
-
-[[fields]]
-name = "sigmoid_bot"
-type = "int"
-
-[[fields]]
-name = "sigmoid_top"
+name = "embedding_dim"
 type = "int"
 
 [[fields]]
@@ -37,19 +29,15 @@ name = "embedding_bag_size"
 type = "size_t"
 
 [[fields]]
-name = "loss_threshold"
-type = "float"
-
-[[fields]]
 name = "embedding_size"
 type = "std::vector<int>"
 
 [[fields]]
-name = "mlp_bot"
+name = "dense_arch_layer_sizes"
 type = "std::vector<size_t>"
 
 [[fields]]
-name = "mlp_top"
+name = "over_arch_layer_sizes"
 type = "std::vector<size_t>"
 
 [[fields]]
@@ -57,13 +45,9 @@ name = "arch_interaction_op"
 type = "std::string"
 
 [[fields]]
-name = "dataset_path"
-type = "std::string"
-
-[[fields]]
-name = "data_size"
-type = "int"
-
-[[fields]]
 name = "batch_size"
 type = "size_t"
+
+[[fields]]
+name = "seed"
+type = "int"
