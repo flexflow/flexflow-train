@@ -36,7 +36,7 @@ TransposePerDeviceState init_kernel(int num_dim,
   std::vector<legion_dim_t> perm_vector;
   assert(length <= MAX_TENSOR_DIM);
   for (int i = 0; i < length; ++i) {
-    perm_vector.push_back(legion_dim_from_ff_dim(perm[i], num_dim));
+    perm_vector.push_back(legion_dim_from_ff_dim_t(perm[i], num_dim));
   }
 
   return {num_dim, perm_vector};

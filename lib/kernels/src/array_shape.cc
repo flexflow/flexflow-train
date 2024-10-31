@@ -47,7 +47,7 @@ std::size_t ArrayShape::at(legion_dim_t idx) const {
 }
 
 std::size_t ArrayShape::at(ff_dim_t idx) const {
-  return dims.at(legion_dim_from_ff_dim(idx, this->num_dims()));
+  return dims.at(legion_dim_from_ff_dim_t(idx, this->num_dims()));
 }
 
 ArrayShape ArrayShape::sub_shape(
@@ -65,7 +65,7 @@ std::optional<std::size_t> ArrayShape::at_maybe(legion_dim_t index) const {
 }
 
 std::optional<std::size_t> ArrayShape::at_maybe(ff_dim_t index) const {
-  return this->at_maybe(legion_dim_from_ff_dim(index, this->num_dims()));
+  return this->at_maybe(legion_dim_from_ff_dim_t(index, this->num_dims()));
 }
 
 size_t get_volume(ArrayShape const &shape) {

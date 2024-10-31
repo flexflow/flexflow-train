@@ -1,8 +1,7 @@
+#ifndef _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_FF_DIM_T_H
+#define _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_FF_DIM_T_H
 
-#ifndef _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_FF_DIM_H
-#define _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_FF_DIM_H
-
-#include "op-attrs/ff_dim.dtg.h"
+#include "op-attrs/ff_dim_t.dtg.h"
 #include "rapidcheck.h"
 
 namespace rc {
@@ -15,4 +14,4 @@ struct Arbitrary<FlexFlow::ff_dim_t> {
 };
 } // namespace rc
 
-#endif // _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_FF_DIM_H
+#endif // _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_FF_DIM_T_H
