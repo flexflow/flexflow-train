@@ -32,7 +32,7 @@ CandleUnoConfig get_default_candle_uno_config();
  * this model.
  *
  * @param CandleUnoConfig The config of the Candle Uno model.
- * @return ComputationGraph The PCG of a Transformer model.
+ * @return ComputationGraph The computation graph of a Candle Uno model.
  */
 ComputationGraph get_candle_uno_computation_graph(CandleUnoConfig const &);
 
