@@ -1,0 +1,20 @@
+namespace = "FlexFlow"
+name = "MachineMappingResultWithMemory"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "compiler/machine_mapping/memory_optimization/single_machine_mapping.dtg.h",
+]
+
+src_includes = [
+  "utils/hash/unordered_set.h",
+  "utils/fmt/unordered_set.h",
+]
+
+[[fields]]
+name = "machine_mappings"
+type = "std::unordered_set<::FlexFlow::SingleMachineMapping>"

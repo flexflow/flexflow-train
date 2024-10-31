@@ -5,12 +5,17 @@ namespace FlexFlow {
 CostEstimator::CostEstimator(std::shared_ptr<ICostEstimator> implementation_ptr)
     : implementation_ptr(implementation_ptr) {}
 
-CostMetric CostEstimator::estimate_cost(OpCostEstimateKey const &k) const {
+float CostEstimator::estimate_cost(OpCostEstimateKey const &k) const {
   return this->implementation_ptr->estimate_cost(k);
 }
 
-CostMetric CostEstimator::estimate_cost(TensorSetMovement const &m) const {
+float CostEstimator::estimate_cost(TensorSetMovement const &m) const {
   return this->implementation_ptr->estimate_cost(m);
+}
+
+CostMetric
+    CostEstimator::estimate_cost_with_memory(OpCostEstimateKey const &k) const {
+  return this->implementation_ptr->estimate_cost_with_memory(k);
 }
 
 } // namespace FlexFlow

@@ -42,8 +42,35 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
     };
 
-    MachineView mv1 = make_1d_machine_view(gpu_id_t(1), gpu_id_t(2));
-    MachineView mv2 = make_1d_machine_view(gpu_id_t(1), gpu_id_t(3));
+    MachineView mv1 = MachineView{
+        /*start=*/MachineSpaceCoordinate{
+            /*node_idx=*/0,
+            /*device_idx=*/0,
+            /*device_type=*/DeviceType::GPU,
+        },
+        /*dimensions=*/
+        {
+            MachineViewDimension{
+                stride_t{1},
+                MachineSpecificationDimension::INTRA_NODE,
+            },
+        },
+    };
+
+    MachineView mv2 = MachineView{
+        /*start=*/MachineSpaceCoordinate{
+            /*node_idx=*/0,
+            /*device_idx=*/0,
+            /*device_type=*/DeviceType::GPU,
+        },
+        /*dimensions=*/
+        {
+            MachineViewDimension{
+                stride_t{2},
+                MachineSpecificationDimension::INTRA_NODE,
+            },
+        },
+    };
 
     MachineSpecification full_machine_spec = MachineSpecification{
         /*num_nodes=*/2,
@@ -118,22 +145,22 @@ TEST_SUITE(FF_TEST_SUITE) {
         }};
 
     CostEstimator cost_estimator = make_fake_cost_estimator(
-        std::unordered_map<OpCostEstimateKey, CostMetric>{{
-            {map_unmapped_op_cost_estimate_key(k1, mv1), CostMetric{1.0, 1}},
-            {map_unmapped_op_cost_estimate_key(k2, mv1), CostMetric{2.0, 2}},
-            {map_unmapped_op_cost_estimate_key(k1, mv2), CostMetric{1.5, 3}},
-            {map_unmapped_op_cost_estimate_key(k2, mv2), CostMetric{2.5, 3}},
+        std::unordered_map<OpCostEstimateKey, float>{{
+            {map_unmapped_op_cost_estimate_key(k1, mv1), 1.0},
+            {map_unmapped_op_cost_estimate_key(k2, mv1), 2.0},
+            {map_unmapped_op_cost_estimate_key(k1, mv2), 1.5},
+            {map_unmapped_op_cost_estimate_key(k2, mv2), 2.5},
         }},
-        std::unordered_map<TensorSetMovement, CostMetric>{{
-            {TensorSetMovement{{}}, CostMetric{0.0, 0}},
+        std::unordered_map<TensorSetMovement, float>{{
+            {TensorSetMovement{{}}, 0.0},
             {concretize_abstracted_tensor_set_movement(movement1, mm1, mm1),
-             CostMetric{0.1, 0}},
+             0.1},
             {concretize_abstracted_tensor_set_movement(movement1, mm2, mm2),
-             CostMetric{0.2, 0}},
+             0.2},
             {concretize_abstracted_tensor_set_movement(movement1, mm1, mm2),
-             CostMetric{0.3, 0}},
+             0.3},
             {concretize_abstracted_tensor_set_movement(movement1, mm2, mm1),
-             CostMetric{0.4, 0}},
+             0.4},
         }});
 
     MachineMappingContext context = MachineMappingContext{
@@ -150,25 +177,11 @@ TEST_SUITE(FF_TEST_SUITE) {
           get_unconstrained_solution_for_layers(
               get_all_leaf_paths(problem_tree));
 
-      MachineMemoryConstraints memory_constraints = MachineMemoryConstraints{
-          /*memory_limit=*/10,
-      };
-
-      MachineMappingConfig config = MachineMappingConfig{
-          /*enable_memory_optimization=*/false,
-      };
-
-      MachineMappingResult result =
-          get_optimal_machine_mapping(cache,
-                                      context,
-                                      problem_tree,
-                                      full_machine_spec,
-                                      constraints,
-                                      memory_constraints,
-                                      config);
+      MachineMappingResult result = get_optimal_machine_mapping(
+          cache, context, problem_tree, full_machine_spec, constraints);
       MachineMappingResult correct = MachineMappingResult{
           FeasibleMachineMappingResult{
-              /*cost=*/CostMetric{1.0, 1},
+              /*runtime=*/1.0,
               /*machine_mapping=*/
               ParallelLayerGuidObliviousMachineMapping{{
                   {binary_tree_root_path(), mv1},
@@ -187,25 +200,11 @@ TEST_SUITE(FF_TEST_SUITE) {
           get_unconstrained_solution_for_layers(
               get_all_leaf_paths(problem_tree));
 
-      MachineMemoryConstraints memory_constraints = MachineMemoryConstraints{
-          /*memory_limit=*/10,
-      };
-
-      MachineMappingConfig config = MachineMappingConfig{
-          /*enable_memory_optimization=*/false,
-      };
-
-      MachineMappingResult result =
-          get_optimal_machine_mapping(cache,
-                                      context,
-                                      problem_tree,
-                                      full_machine_spec,
-                                      constraints,
-                                      memory_constraints,
-                                      config);
+      MachineMappingResult result = get_optimal_machine_mapping(
+          cache, context, problem_tree, full_machine_spec, constraints);
       MachineMappingResult correct = MachineMappingResult{
           FeasibleMachineMappingResult{
-              /*cost=*/CostMetric{1.0 + 2.0 + 0.1, 1 + 2 + 0},
+              /*runtime=*/1.0 + 2.0 + 0.1,
               /*machine_mapping=*/
               ParallelLayerGuidObliviousMachineMapping{{
                   {
@@ -235,25 +234,11 @@ TEST_SUITE(FF_TEST_SUITE) {
           get_unconstrained_solution_for_layers(
               get_all_leaf_paths(problem_tree));
 
-      MachineMemoryConstraints memory_constraints = MachineMemoryConstraints{
-          /*memory_limit=*/10,
-      };
-
-      MachineMappingConfig config = MachineMappingConfig{
-          /*enable_memory_optimization=*/false,
-      };
-
-      MachineMappingResult result =
-          get_optimal_machine_mapping(cache,
-                                      context,
-                                      problem_tree,
-                                      full_machine_spec,
-                                      constraints,
-                                      memory_constraints,
-                                      config);
+      MachineMappingResult result = get_optimal_machine_mapping(
+          cache, context, problem_tree, full_machine_spec, constraints);
       MachineMappingResult correct = MachineMappingResult{
           FeasibleMachineMappingResult{
-              /*cost=*/CostMetric{2.5, 3},
+              /*runtime=*/2.5,
               /*machine_mapping=*/
               ParallelLayerGuidObliviousMachineMapping{{
                   {
