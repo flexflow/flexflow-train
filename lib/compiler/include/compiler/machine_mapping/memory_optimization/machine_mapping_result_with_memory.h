@@ -3,6 +3,7 @@
 
 #include "compiler/machine_mapping/memory_optimization/machine_mapping_result_with_memory.dtg.h"
 #include "compiler/machine_mapping/parallel_split_transformation.dtg.h"
+#include <optional>
 
 namespace FlexFlow {
 
