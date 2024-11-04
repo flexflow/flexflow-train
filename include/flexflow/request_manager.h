@@ -147,7 +147,7 @@ public:
   int register_ssm_model(FFModel *model);
   void register_tokenizer(ModelType model_type,
                           int bos_token_id,
-                          int eos_token_id,
+                          std::vector<int> eos_token_ids,
                           std::string const &path);
   void register_output_filepath(std::string const &);
   void initBitMask(BatchConfig::BitMask &bitmask, int initLength);
@@ -179,6 +179,7 @@ public:
   bool is_request_completed(RequestGuid const &guid);
   void trigger_request_completion_future(RequestGuid const &guid);
   // Methods for preparing next batches
+  bool is_eos_token(int token_id);
   bool check_inf_req_completion(BatchConfig const &old_bc, int i);
   void check_batch(BatchConfig const &old_bc, BatchConfig const &new_bc);
   BatchConfig prepare_next_batch(BatchConfig const &bc,
@@ -302,7 +303,7 @@ private:
   bool verbose;
   ModelType model_type;
   int bos_token_id;
-  int eos_token_id;
+  std::vector<int> eos_token_ids;
   bool old_llama_tokenizer = false;
   std::string output_filepath;
   std::queue<Request> pending_infr_request_queue;

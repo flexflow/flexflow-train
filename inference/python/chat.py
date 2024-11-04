@@ -81,7 +81,7 @@ def main():
         generation_config,
         max_requests_per_batch=1,
         max_seq_length=2048,
-        max_tokens_per_batch=1024,
+        max_tokens_per_batch=256,
     )
 
     llm.start_server()
@@ -90,7 +90,7 @@ def main():
         {"role": "system", "content": "You are a helpful an honest programming assistant."},
         {"role": "user", "content": "Is Rust better than Python?"},
     ]
-    llm.generate(messages, max_new_tokens=1024)
+    llm.generate(messages, max_new_tokens=256)
     
     llm.stop_server()
 

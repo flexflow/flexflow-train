@@ -1027,7 +1027,8 @@ void flexflow_request_manager_register_tokenizer(
     flexflow_request_manager_t handle_,
     enum ModelType model_type,
     int bos_token_id,
-    int eos_token_id,
+    int num_eos_token_ids,
+    int *eos_token_ids,
     char const *tokenizer_filepath);
 
 void flexflow_request_manager_register_output_filepath(

@@ -179,11 +179,11 @@ void RequestManager::set_inference_finished(bool finished) {
 
 void RequestManager::register_tokenizer(ModelType type,
                                         int bos_token_id,
-                                        int eos_token_id,
+                                        std::vector<int> eos_token_ids,
                                         std::string const &path) {
   this->model_type = type;
   this->bos_token_id = bos_token_id;
-  this->eos_token_id = eos_token_id;
+  this->eos_token_ids = eos_token_ids;
   std::filesystem::path tokenizer_folder(path);
 
   if (model_type == ModelType::LLAMA) {
@@ -563,6 +563,15 @@ BatchConfig RequestManager::prepare_next_batch_task(
   return rm->prepare_next_batch(*bc, result);
 }
 
+bool RequestManager::is_eos_token(int token_id) {
+  for (int eos_token : eos_token_ids) {
+    if (token_id == eos_token) {
+      return true;
+    }
+  }
+  return false;
+}
+
 bool RequestManager::check_inf_req_completion(BatchConfig const &old_bc,
                                               int i) {
   Request &request = all_requests[old_bc.requestsInfo[i].request_guid];
@@ -570,7 +579,7 @@ bool RequestManager::check_inf_req_completion(BatchConfig const &old_bc,
   // printf("model_type = %d\n", this->model_type);
   if (request.tokens.size() >= old_bc.requestsInfo[i].max_length) {
     request_completed = true;
-  } else if (request.tokens.back() == eos_token_id) {
+  } else if (is_eos_token(request.tokens.back())) {
     // Encounter EOS token id
     request_completed = true;
   }

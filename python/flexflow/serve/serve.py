@@ -500,6 +500,10 @@ class LLM:
         eos_token_id = (
             -1 if self.hf_config.eos_token_id is None else self.hf_config.eos_token_id
         )
+        if type(eos_token_id) == int:
+            eos_token_id = [eos_token_id]
+        elif type(eos_token_id) != list:
+            raise ValueError("eos_token_id must be an integer or a list of integers")
         self.rm.register_tokenizer(
             self.model_type, bos_token_id, eos_token_id, self.tokenizer_path
         )

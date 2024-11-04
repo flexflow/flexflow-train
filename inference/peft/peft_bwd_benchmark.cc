@@ -230,9 +230,20 @@ void FlexFlow::top_level_task(Task const *task,
   int bos_token_id = model_config.find("bos_token_id") == model_config.end()
                          ? -1
                          : (int)model_config.at("bos_token_id");
-  int eos_token_id = model_config.find("eos_token_id") == model_config.end()
-                         ? -1
-                         : (int)model_config.at("eos_token_id");
+  // parse eos token id, which can be either a single integer or an array of
+  // integers. Convert to std::vector<int>
+  std::vector<int> eos_token_ids;
+  if (model_config.find("eos_token_id") != model_config.end()) {
+    if (model_config["eos_token_id"].is_array()) {
+      for (auto &eos_token_id : model_config["eos_token_id"]) {
+        eos_token_ids.push_back(eos_token_id);
+      }
+    } else {
+      eos_token_ids.push_back(model_config["eos_token_id"]);
+    }
+  } else {
+    eos_token_ids.push_back(-1);
+  }
 
   assert(model_type != ModelType::UNKNOWN &&
          "Invalid LLM model type passed (or no type was passed).");
@@ -251,7 +262,7 @@ void FlexFlow::top_level_task(Task const *task,
   rm->set_max_tokens_per_batch(max_tokens_per_batch);
   rm->set_max_sequence_length(max_sequence_length);
   rm->register_tokenizer(
-      model_type, bos_token_id, eos_token_id, tokenizer_filepath);
+      model_type, bos_token_id, eos_token_ids, tokenizer_filepath);
   rm->register_output_filepath(file_paths.output_file_path);
   rm->set_enable_peft_finetuning(enable_peft_finetuning);
 
