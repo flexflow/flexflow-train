@@ -548,9 +548,25 @@ class LLM:
                     )
         return self.model.ffmodel.generate(requests)
 
+    def __chat2prompt(self, messages: List[dict]):
+        """Convert a list of messages to a single prompt string
+
+        :param messages: The list of messages to convert
+        :type messages: List[dict]
+        :return: The prompt string
+        :rtype: str
+        """
+        # ensure that each element is a dictionary, containing the "role" and "content" keys
+        for message in messages:
+            if type(message) != dict or "role" not in message or "content" not in message:
+                raise ValueError(
+                    "Each element in the list must be a dictionary with the keys 'role' and 'content'"
+                )
+        return self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+
     def generate(
         self,
-        requests_or_prompts: Union[str, List[str], Request, List[Request]],
+        requests_or_prompts: Union[str, List[str], List[dict], Request, List[Request]],
         max_length: int = -1,
         max_new_tokens: int = -1,
     ):
@@ -591,7 +607,28 @@ class LLM:
                     for req in requests_or_prompts
                 ]
                 return self._generate(requests)
-            else:
+            elif type(requests_or_prompts[0]) == dict:
+                prompt = self.__chat2prompt(requests_or_prompts)
+                request = Request(
+                    req_type=RequestType.REQ_INFERENCE,
+                    prompt=prompt,
+                    max_length=max_length,
+                    max_new_tokens=max_new_tokens,
+                )
+                return self._generate([request])
+            elif type(requests_or_prompts[0]) == list:
+                prompts = [self.__chat2prompt(messages) for messages in requests_or_prompts]
+                requests = [
+                    Request(
+                        req_type=RequestType.REQ_INFERENCE,
+                        prompt=prompt,
+                        max_length=max_length,
+                        max_new_tokens=max_new_tokens,
+                    )
+                    for prompt in prompts
+                ]
+                return self._generate(requests)
+            elif type(requests_or_prompts[0]) == Request:
                 print(requests_or_prompts)
                 return self._generate(requests_or_prompts)
         else:
