@@ -1588,7 +1588,12 @@ class RequestManager(object):
         c_model_type = enum_to_int(ModelType, model_type)
         c_tokenizer_filepath = get_c_name(tokenizer_filepath)
         return ffc().flexflow_request_manager_register_tokenizer(
-            self.handle, c_model_type, bos_token_id, len(eos_token_id), eos_token_id, c_tokenizer_filepath
+            self.handle,
+            c_model_type,
+            bos_token_id,
+            len(eos_token_id),
+            eos_token_id,
+            c_tokenizer_filepath,
         )
 
     def register_output_filepath(self, output_filepath):
@@ -1621,6 +1626,9 @@ class RequestManager(object):
         return ffc().flexflow_request_manager_set_max_sequence_length(
             self.handle, max_length
         )
+
+    def get_max_sequence_length(self):
+        return ffc().flexflow_request_manager_get_max_sequence_length(self.handle)
 
     def set_enable_peft_finetuning(self, enable_peft_finetuning):
         return ffc().flexflow_request_manager_set_enable_peft_finetuning(
@@ -4653,26 +4661,6 @@ class FFModel(object):
         assert ret_val == True
         return np_array
 
-    def _estimate_max_num_tokens(
-        max_length: int, max_new_tokens: int, prompt: Optional[str]
-    ):
-        if prompt is None:
-            assert max_new_tokens == -1
-        return (
-            math.ceil(max_new_tokens + len(prompt.split()) * 1.5)
-            if max_new_tokens != -1
-            else max_length
-        )
-
-    def _estimate_max_num_chars(
-        max_length: int, max_new_tokens: int, prompt: Optional[str]
-    ):
-        return (
-            5 * FFModel._estimate_max_num_tokens(max_length, max_new_tokens, prompt)
-            + 100
-        )
-
-
     def generate(self, requests_list: List[Request]):
         assert isinstance(requests_list, list)
         for request in requests_list:
@@ -4692,31 +4680,20 @@ class FFModel(object):
                 raise ValueError(
                     f"Finetuning requests should not have `max_new_tokens` set."
                 )
+        max_sequence_length = RequestManager().get_max_sequence_length()
         c_input_texts = [
             get_c_name(request.prompt) for request in requests_list
         ]  # entry will be None for finetuning requests
         c_output_texts = [
             (
-                ffi.new(
-                    "char[]",
-                    FFModel._estimate_max_num_chars(
-                        request.max_length, request.max_new_tokens, request.prompt
-                    ),
-                )
+                ffi.new("char[]", max_sequence_length * 5)
                 if request.req_type == RequestType.REQ_INFERENCE
                 else ffi.NULL
             )
             for request in requests_list
         ]
         c_output_length_and_tokens = [
-            ffi.new(
-                "int[]",
-                FFModel._estimate_max_num_tokens(
-                    request.max_length, request.max_new_tokens, request.prompt
-                )
-                + 100,
-            )
-            for request in requests_list
+            ffi.new("int[]", max_sequence_length + 100) for request in requests_list
         ]
         c_request_types = [
             enum_to_int(RequestType, request.req_type) for request in requests_list

@@ -1020,6 +1020,9 @@ void flexflow_request_manager_set_max_spec_tree_token_num(
 void flexflow_request_manager_set_max_sequence_length(
     flexflow_request_manager_t handle_, int max_seq_length);
 
+int flexflow_request_manager_get_max_sequence_length(
+    flexflow_request_manager_t handle_);
+
 void flexflow_request_manager_set_enable_peft_finetuning(
     flexflow_request_manager_t handle_, bool enable_peft_finetuning_);
 

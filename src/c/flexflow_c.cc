@@ -2759,6 +2759,12 @@ void flexflow_request_manager_set_max_sequence_length(
   DEBUG_PRINT("[RequestManager] set max_sequence_length %d", max_seq_length);
 }
 
+int flexflow_request_manager_get_max_sequence_length(
+    flexflow_request_manager_t handle_) {
+  RequestManager *handle = FFCObjectWrapper::unwrap(handle_);
+  return handle->get_max_sequence_length();
+}
+
 void flexflow_request_manager_set_enable_peft_finetuning(
     flexflow_request_manager_t handle_, bool enable_peft_finetuning_) {
   RequestManager *handle = FFCObjectWrapper::unwrap(handle_);
