@@ -27,7 +27,7 @@ from flexflow.serve.models import (
     MPTConfig,
 )
 from flexflow.core import *
-from transformers import AutoConfig, AutoModelForCausalLM
+from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 from peft import PeftModel, PeftConfig, LoraConfig
 from huggingface_hub import HfApi
 import torch, shutil, hashlib, json, gc
@@ -104,6 +104,7 @@ class LLM:
         self.output_file = output_file
         self.rm = None
         self.pefts = {}
+        self.tokenizer=None
 
     def __del__(self):
         # Stop the background server before deleting the object
@@ -562,6 +563,10 @@ class LLM:
                 raise ValueError(
                     "Each element in the list must be a dictionary with the keys 'role' and 'content'"
                 )
+        if self.tokenizer is None:
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        if self.tokenizer.chat_template is None:
+            raise ValueError(f"Model {self.model_name} does not support chat completion")
         return self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
 
     def generate(
@@ -614,6 +619,7 @@ class LLM:
                     prompt=prompt,
                     max_length=max_length,
                     max_new_tokens=max_new_tokens,
+                    add_special_tokens=False,
                 )
                 return self._generate([request])
             elif type(requests_or_prompts[0]) == list:
@@ -624,6 +630,7 @@ class LLM:
                         prompt=prompt,
                         max_length=max_length,
                         max_new_tokens=max_new_tokens,
+                        add_special_tokens=False,
                     )
                     for prompt in prompts
                 ]

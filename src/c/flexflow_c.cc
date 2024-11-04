@@ -1685,6 +1685,7 @@ void flexflow_model_generate(flexflow_model_t handle_,
                              char **output_texts,
                              int *max_lengths,
                              int *max_new_tokens_,
+                             bool *add_special_tokens_,
                              flexflow_peft_model_id_t *peft_model_ids,
                              char const **dataset_filepaths,
                              int *training_steps,
@@ -1701,22 +1702,25 @@ void flexflow_model_generate(flexflow_model_t handle_,
       inference_req.prompt = text_str;
       inference_req.max_length = max_lengths[i];
       inference_req.max_new_tokens = max_new_tokens_[i];
+      inference_req.add_special_tokens = add_special_tokens_[i];
       PEFTModelID *peft_model_id = FFCObjectWrapper::unwrap(peft_model_ids[i]);
       if (peft_model_id != nullptr) {
         inference_req.peft_model_id = *peft_model_id;
       }
       requests.push_back(inference_req);
-      DEBUG_PRINT("[Model] generate[%d] %p %s %i %i",
+      DEBUG_PRINT("[Model] generate[%d] %p %s %i %i %i",
                   i,
                   handle,
                   text_str.c_str(),
                   max_lengths[i],
-                  max_new_tokens_[i]);
+                  max_new_tokens_[i],
+                  add_special_tokens_[i]);
     } else if (request_types[i] == RequestType::REQ_FINETUNING) {
       Request fine_tuning_req;
       fine_tuning_req.req_type = RequestType::REQ_FINETUNING;
       fine_tuning_req.max_length = max_lengths[i];
       fine_tuning_req.max_new_tokens = max_new_tokens_[i];
+      fine_tuning_req.add_special_tokens = add_special_tokens_[i];
       PEFTModelID *peft_model_id = FFCObjectWrapper::unwrap(peft_model_ids[i]);
       if (peft_model_id != nullptr) {
         fine_tuning_req.peft_model_id = *peft_model_id;
@@ -1725,12 +1729,13 @@ void flexflow_model_generate(flexflow_model_t handle_,
       fine_tuning_req.dataset_filepath = dataset_fp;
       fine_tuning_req.max_training_steps = training_steps[i];
       requests.push_back(fine_tuning_req);
-      DEBUG_PRINT("[Model] finetune[%d] %p %s %i %i %i",
+      DEBUG_PRINT("[Model] finetune[%d] %p %s %i %i %i %i",
                   i,
                   handle,
                   dataset_fp.c_str(),
                   max_lengths[i],
-                  max_new_tokens[i],
+                  max_new_tokens_[i],
+                  add_special_tokens_[i],
                   training_steps[i]);
     } else {
       assert(false && "Unknown request type");

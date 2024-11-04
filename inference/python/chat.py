@@ -71,7 +71,6 @@ def main():
         data_type=ff_data_type,
         cache_path=configs.cache_path,
         refresh_cache=configs.refresh_cache,
-        output_file=configs.output_file,
     )
 
     # Compile the LLM for inference and load the weights into memory
@@ -82,7 +81,7 @@ def main():
         generation_config,
         max_requests_per_batch=1,
         max_seq_length=2048,
-        max_tokens_per_batch=256,
+        max_tokens_per_batch=1024,
     )
 
     llm.start_server()
@@ -91,7 +90,7 @@ def main():
         {"role": "system", "content": "You are a helpful an honest programming assistant."},
         {"role": "user", "content": "Is Rust better than Python?"},
     ]
-    llm.generate(messages, max_tokens=256)
+    llm.generate(messages, max_new_tokens=1024)
     
     llm.stop_server()
 
