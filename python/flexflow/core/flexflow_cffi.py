@@ -1588,7 +1588,7 @@ class RequestManager(object):
         c_model_type = enum_to_int(ModelType, model_type)
         c_tokenizer_filepath = get_c_name(tokenizer_filepath)
         return ffc().flexflow_request_manager_register_tokenizer(
-            self.handle, c_model_type, bos_token_id, eos_token_id, c_tokenizer_filepath
+            self.handle, c_model_type, bos_token_id, len(eos_token_id), eos_token_id, c_tokenizer_filepath
         )
 
     def register_output_filepath(self, output_filepath):
