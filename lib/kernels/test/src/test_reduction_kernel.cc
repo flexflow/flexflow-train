@@ -10,7 +10,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     TensorShape input_shape = make_tensor_shape_from_legion_dims(
         {10, 10, 10, 10, 10}, DataType::FLOAT);
 
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
@@ -35,8 +35,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("backward_kernel") {
       TensorShape output_shape = input_shape;
 
-      GenericTensorAccessorR output_grad_accessor =
-          create_filled_accessor_r(output_shape, allocator, 1.0f);
+      GenericTensorAccessorR output_grad_accessor = create_filled_accessor_r(
+          output_shape, allocator, DataTypeValue(1.0f));
       GenericTensorAccessorW input_grad_accessor =
           allocator.allocate_tensor(input_shape);
 

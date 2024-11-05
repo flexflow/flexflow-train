@@ -34,7 +34,7 @@ struct DataTypeDispatch1 {
     template <typename... Args,
               typename Out = decltype(std::declval<F<DataType::FLOAT>>()(
                   std::declval<Args>()...))>
-    Out operator()(Args... args) const {
+    Out operator()(Args &&...args) const {
       return F<DT>{}(std::forward<Args>(args)...);
     }
   };
@@ -42,7 +42,7 @@ struct DataTypeDispatch1 {
   template <typename... Args,
             typename Out = decltype(std::declval<F<DataType::FLOAT>>()(
                 std::declval<Args>()...))>
-  Out operator()(DataType data_type, Args... args) {
+  Out operator()(DataType data_type, Args &&...args) {
     return dispatch<Type1Dispatch>(data_type, std::forward<Args>(args)...);
   }
 };
@@ -55,13 +55,13 @@ struct DataTypeDispatch2 {
     template <DataType OT>
     struct OutputType {
       template <typename... Args>
-      void operator()(Args... args) const {
+      void operator()(Args &&...args) const {
         F<IT, OT>{}(std::forward<Args>(args)...);
       }
     };
 
     template <typename... Args>
-    void operator()(DataType output_type, Args... args) const {
+    void operator()(DataType output_type, Args &&...args) const {
       dispatch<OutputType>(output_type, std::forward<Args>(args)...);
     }
   };
@@ -69,7 +69,7 @@ struct DataTypeDispatch2 {
   template <typename... Args>
   void operator()(DataType input_data_type,
                   DataType output_data_type,
-                  Args... args) {
+                  Args &&...args) {
     dispatch<InputType>(
         input_data_type, output_data_type, std::forward<Args>(args)...);
   }

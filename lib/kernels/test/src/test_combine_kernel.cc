@@ -6,7 +6,7 @@
 using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Call Combine Forward and Backward Kernels") {
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
@@ -70,8 +70,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       Kernels::Combine::cpu_forward_kernel(input_accessor_cpu,
                                            output_accessor_cpu);
 
-      CHECK(w_accessors_are_equal<DataType::FLOAT>(output_accessor_gpu,
-                                                   output_accessor_cpu));
+      CHECK(accessors_are_equal(output_accessor_gpu, output_accessor_cpu));
     }
 
     SUBCASE("backward_kernel") {
@@ -94,8 +93,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       Kernels::Combine::cpu_backward_kernel(output_grad_accessor_cpu,
                                             input_grad_accessor_cpu);
 
-      CHECK(w_accessors_are_equal<DataType::FLOAT>(input_grad_accessor_gpu,
-                                                   input_grad_accessor_cpu));
+      CHECK(accessors_are_equal(input_grad_accessor_gpu,
+                                input_grad_accessor_cpu));
     }
   }
 }

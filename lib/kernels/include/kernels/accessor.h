@@ -13,90 +13,6 @@ namespace FlexFlow {
 
 struct Allocator;
 
-class GenericTensorAccessorW {
-public:
-  template <DataType DT>
-  typename data_type_enum_to_class<DT>::type *get() const {
-    if (this->data_type == DT) {
-      return static_cast<real_type_t<DT> *>(this->ptr);
-    } else {
-      throw mk_runtime_error(fmt::format(
-          "Invalid access data type ({} != {})", this->data_type, DT));
-    }
-  }
-
-  int32_t *get_int32_ptr() const;
-  int64_t *get_int64_ptr() const;
-  float *get_float_ptr() const;
-  double *get_double_ptr() const;
-  half *get_half_ptr() const;
-
-  GenericTensorAccessorW() = delete;
-
-  GenericTensorAccessorW(DataType data_type,
-                         ArrayShape const &shape,
-                         void *ptr,
-                         DeviceType device_type);
-
-  bool operator==(GenericTensorAccessorW const &) const;
-  bool operator!=(GenericTensorAccessorW const &) const;
-
-  template <DataType DT, typename... Indices>
-  real_type_t<DT> &at(Indices... indices) {
-    if (this->device_type != DeviceType::CPU) {
-      throw mk_runtime_error("Calling at() on non-CPU allocated tensor");
-    }
-    if (this->data_type != DT) {
-      throw mk_runtime_error(fmt::format(
-          "Invalid access data type ({} != {})", this->data_type, DT));
-    }
-
-    using T = real_type_t<DT>;
-
-    T *data_ptr = static_cast<T *>(this->ptr);
-    size_t offset = calculate_index_offset({static_cast<size_t>(indices)...});
-
-    return data_ptr[offset];
-  }
-
-  template <DataType DT, typename... Indices>
-  real_type_t<DT> const &at(Indices... indices) const {
-    if (this->device_type != DeviceType::CPU) {
-      throw mk_runtime_error("Calling at() on non-CPU allocated tensor");
-    }
-    if (this->data_type != DT) {
-      throw mk_runtime_error(fmt::format(
-          "Invalid access data type ({} != {})", this->data_type, DT));
-    }
-
-    using T = real_type_t<DT>;
-
-    T const *data_ptr = static_cast<T const *>(this->ptr);
-    size_t offset = calculate_index_offset({static_cast<size_t>(indices)...});
-
-    return data_ptr[offset];
-  }
-
-public:
-  DataType data_type;
-  ArrayShape shape;
-  void *ptr;
-  DeviceType device_type;
-
-private:
-  std::tuple<decltype(data_type) const &,
-             decltype(shape) const &,
-             decltype(ptr) const &,
-             decltype(device_type) const &>
-      tie() const;
-
-  size_t calculate_index_offset(
-      std::initializer_list<size_t> const &indices) const;
-};
-
-std::string format_as(GenericTensorAccessorW const &);
-std::ostream &operator<<(std::ostream &, GenericTensorAccessorW const &);
-
 class GenericTensorAccessorR {
 public:
   template <DataType DT>
@@ -125,8 +41,8 @@ public:
   bool operator==(GenericTensorAccessorR const &) const;
   bool operator!=(GenericTensorAccessorR const &) const;
 
-  template <DataType DT, typename... Indices>
-  real_type_t<DT> const &at(Indices... indices) const {
+  template <DataType DT>
+  real_type_t<DT> const &at(std::vector<size_t> const &indices) const {
     if (this->device_type != DeviceType::CPU) {
       throw mk_runtime_error("Calling at() on non-CPU allocated tensor");
     }
@@ -138,7 +54,7 @@ public:
     using T = real_type_t<DT>;
 
     T const *data_ptr = static_cast<T const *>(this->ptr);
-    size_t offset = calculate_index_offset({static_cast<size_t>(indices)...});
+    size_t offset = calculate_index_offset(indices);
 
     return data_ptr[offset];
   }
@@ -156,27 +72,96 @@ private:
              decltype(device_type) const &>
       tie() const;
 
-  size_t calculate_index_offset(
-      std::initializer_list<size_t> const &indices) const;
+  size_t calculate_index_offset(std::vector<size_t> const &indices) const;
 };
 
 std::string format_as(GenericTensorAccessorR const &);
 std::ostream &operator<<(std::ostream &, GenericTensorAccessorR const &);
 
-int32_t *get_int32_ptr(GenericTensorAccessorW const &);
-int64_t *get_int64_ptr(GenericTensorAccessorW const &);
-float *get_float_ptr(GenericTensorAccessorW const &);
-double *get_double_ptr(GenericTensorAccessorW const &);
-half *get_half_ptr(GenericTensorAccessorW const &);
-std::vector<int32_t *>
-    get_int32_ptrs(std::vector<GenericTensorAccessorW> const &);
-std::vector<int64_t *>
-    get_int64_ptrs(std::vector<GenericTensorAccessorW> const &);
-std::vector<float *>
-    get_float_ptrs(std::vector<GenericTensorAccessorW> const &);
-std::vector<double *>
-    get_double_ptrs(std::vector<GenericTensorAccessorW> const &);
-std::vector<half *> get_half_ptrs(std::vector<GenericTensorAccessorW> const &);
+class GenericTensorAccessorW {
+public:
+  template <DataType DT>
+  typename data_type_enum_to_class<DT>::type *get() const {
+    if (this->data_type == DT) {
+      return static_cast<real_type_t<DT> *>(this->ptr);
+    } else {
+      throw mk_runtime_error(fmt::format(
+          "Invalid access data type ({} != {})", this->data_type, DT));
+    }
+  }
+
+  int32_t *get_int32_ptr() const;
+  int64_t *get_int64_ptr() const;
+  float *get_float_ptr() const;
+  double *get_double_ptr() const;
+  half *get_half_ptr() const;
+
+  GenericTensorAccessorW() = delete;
+
+  GenericTensorAccessorW(DataType data_type,
+                         ArrayShape const &shape,
+                         void *ptr,
+                         DeviceType device_type);
+
+  bool operator==(GenericTensorAccessorW const &) const;
+  bool operator!=(GenericTensorAccessorW const &) const;
+
+  operator GenericTensorAccessorR() const;
+
+  template <DataType DT>
+  real_type_t<DT> &at(std::vector<size_t> const &indices) {
+    if (this->device_type != DeviceType::CPU) {
+      throw mk_runtime_error("Calling at() on non-CPU allocated tensor");
+    }
+    if (this->data_type != DT) {
+      throw mk_runtime_error(fmt::format(
+          "Invalid access data type ({} != {})", this->data_type, DT));
+    }
+
+    using T = real_type_t<DT>;
+
+    T *data_ptr = static_cast<T *>(this->ptr);
+    size_t offset = calculate_index_offset(indices);
+
+    return data_ptr[offset];
+  }
+
+  template <DataType DT>
+  real_type_t<DT> &at(std::vector<size_t> const &indices) const {
+    if (this->device_type != DeviceType::CPU) {
+      throw mk_runtime_error("Calling at() on non-CPU allocated tensor");
+    }
+    if (this->data_type != DT) {
+      throw mk_runtime_error(fmt::format(
+          "Invalid access data type ({} != {})", this->data_type, DT));
+    }
+
+    using T = real_type_t<DT>;
+
+    T const *data_ptr = static_cast<T const *>(this->ptr);
+    size_t offset = calculate_index_offset(indices);
+
+    return data_ptr[offset];
+  }
+
+public:
+  DataType data_type;
+  ArrayShape shape;
+  void *ptr;
+  DeviceType device_type;
+
+private:
+  std::tuple<decltype(data_type) const &,
+             decltype(shape) const &,
+             decltype(ptr) const &,
+             decltype(device_type) const &>
+      tie() const;
+
+  size_t calculate_index_offset(std::vector<size_t> const &indices) const;
+};
+
+std::string format_as(GenericTensorAccessorW const &);
+std::ostream &operator<<(std::ostream &, GenericTensorAccessorW const &);
 
 static_assert(is_fmtable<req<DataType> const &>::value, "");
 
@@ -241,12 +226,8 @@ std::vector<real_type_t<DT> const *>
 GenericTensorAccessorR read_only_accessor_from_write_accessor(
     GenericTensorAccessorW const &write_accessor);
 
-bool is_shape_and_dtype_equal(GenericTensorAccessorW const &acc1,
-                              GenericTensorAccessorW const &acc2);
-
-bool shape_and_dtype_matches(GenericTensorAccessorW const &accessor,
-                             ArrayShape const &expected_shape,
-                             DataType const &expected_dtype);
+bool is_shape_and_dtype_equal(GenericTensorAccessorR const &acc1,
+                              GenericTensorAccessorR const &acc2);
 
 bool shape_and_dtype_matches(GenericTensorAccessorR const &accessor,
                              ArrayShape const &expected_shape,
@@ -254,16 +235,9 @@ bool shape_and_dtype_matches(GenericTensorAccessorR const &accessor,
 
 std::pair<ArrayShape, DataType>
     get_shape_and_datatype(GenericTensorAccessorR const &accessor);
-std::pair<ArrayShape, DataType>
-    get_shape_and_datatype(GenericTensorAccessorW const &accessor);
 
-void transfer_data_between_accessors(
-    GenericTensorAccessorW &dst_accessor,
-    GenericTensorAccessorR const &src_accessor);
-
-void transfer_data_between_accessors(
-    GenericTensorAccessorW &dst_accessor,
-    GenericTensorAccessorW const &src_accessor);
+void copy_accessor_data_to_l_from_r(GenericTensorAccessorW &dst_accessor,
+                                    GenericTensorAccessorR const &src_accessor);
 
 GenericTensorAccessorR
     copy_tensor_accessor_r(GenericTensorAccessorR const &src_accessor,

@@ -8,15 +8,11 @@ namespace FlexFlow::Kernels::Cast {
 
 void forward_kernel(ffStream_t stream,
                     GenericTensorAccessorR const &input,
-                    GenericTensorAccessorW const &output,
-                    DataType input_type,
-                    DataType output_type);
+                    GenericTensorAccessorW const &output);
 
 void backward_kernel(ffStream_t stream,
                      GenericTensorAccessorR const &input,
-                     GenericTensorAccessorW const &output,
-                     DataType input_type,
-                     DataType output_type);
+                     GenericTensorAccessorW const &output);
 
 } // namespace FlexFlow::Kernels::Cast
 

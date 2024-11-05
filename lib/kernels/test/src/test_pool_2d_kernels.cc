@@ -12,7 +12,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     PoolOp pool_type = PoolOp::MAX;
 
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
@@ -56,8 +56,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("backward_kernel") {
-      GenericTensorAccessorW output_grad_accessor =
-          create_filled_accessor_w(output_shape, allocator, 1.0f);
+      GenericTensorAccessorW output_grad_accessor = create_filled_accessor_w(
+          output_shape, allocator, DataTypeValue(1.0f));
       GenericTensorAccessorW input_grad_accessor =
           allocator.allocate_tensor(input_shape);
 

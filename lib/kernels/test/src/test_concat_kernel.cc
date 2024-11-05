@@ -10,7 +10,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     size_t size_per_input = 10;
     ff_dim_t concat_axis = ff_dim_t(1);
 
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
     ManagedFFStream managed_stream{};
 
     TensorShape input_shape =

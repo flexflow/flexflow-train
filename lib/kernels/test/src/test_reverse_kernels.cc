@@ -14,15 +14,15 @@ TEST_SUITE(FF_TEST_SUITE) {
         {num_out_blks, reverse_dim_size, in_blk_size}, DataType::FLOAT);
     TensorShape output_shape = input_shape;
 
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
     SUBCASE("forward_kernel") {
       GenericTensorAccessorR input_accessor =
-          read_only_accessor_from_write_accessor(
-              create_filled_accessor_w(input_shape, allocator, 1.0f));
+          read_only_accessor_from_write_accessor(create_filled_accessor_w(
+              input_shape, allocator, DataTypeValue(1.0f)));
       GenericTensorAccessorW output_accessor =
           allocator.allocate_tensor(output_shape);
 
@@ -57,7 +57,7 @@ TEST_SUITE(FF_TEST_SUITE) {
   }
 
   TEST_CASE("Check Reverse Forward and Backward Kernels against CPU Kernels") {
-    std::size_t num_out_blks = 1;
+    std::size_t num_out_blks = 4;
     std::size_t reverse_dim_size = 3;
     std::size_t in_blk_size = 2;
 
@@ -65,7 +65,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         {num_out_blks, reverse_dim_size, in_blk_size}, DataType::FLOAT);
     TensorShape output_shape = input_shape;
 
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
     ManagedFFStream managed_stream{};
 
     Allocator gpu_allocator = create_local_cuda_memory_allocator();
@@ -99,8 +99,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       Kernels::Reverse::cpu_forward_kernel(input_accessor_cpu,
                                            output_accessor_cpu);
 
-      CHECK(w_accessors_are_equal<DataType::FLOAT>(output_accessor_cpu,
-                                                   output_accessor_cpu));
+      CHECK(accessors_are_equal(output_accessor_cpu, output_accessor_cpu));
     }
 
     SUBCASE("backward_kernel") {
@@ -128,8 +127,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       Kernels::Reverse::cpu_backward_kernel(output_grad_accessor_cpu,
                                             input_grad_accessor_cpu);
 
-      CHECK(w_accessors_are_equal<DataType::FLOAT>(input_grad_accessor_gpu,
-                                                   input_grad_accessor_cpu));
+      CHECK(accessors_are_equal(input_grad_accessor_gpu,
+                                input_grad_accessor_cpu));
     }
   }
 }

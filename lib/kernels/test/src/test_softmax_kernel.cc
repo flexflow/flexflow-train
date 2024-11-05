@@ -8,7 +8,7 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Test Softmax Kernel Operations") {
     int input_n = 1, input_c = 1, input_h = 1, input_w = 100, channels = 100;
 
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();

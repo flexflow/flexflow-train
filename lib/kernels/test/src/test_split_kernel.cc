@@ -12,7 +12,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     coord_t in_blk_size = 100;
     coord_t num_blks = 1;
 
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
@@ -50,7 +50,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       GenericTensorAccessorW input_grad_accessor =
-          create_filled_accessor_w(input_shape, allocator, 0.0f);
+          create_filled_accessor_w(input_shape, allocator, DataTypeValue(0.0f));
 
       Kernels::Split::backward_kernel(managed_stream.raw_stream(),
                                       input_grad_accessor.get_float_ptr(),

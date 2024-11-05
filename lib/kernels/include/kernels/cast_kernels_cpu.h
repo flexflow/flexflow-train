@@ -7,14 +7,10 @@
 namespace FlexFlow::Kernels::Cast {
 
 void cpu_forward_kernel(GenericTensorAccessorR const &input,
-                        GenericTensorAccessorW const &output,
-                        DataType input_type,
-                        DataType output_type);
+                        GenericTensorAccessorW const &output);
 
 void cpu_backward_kernel(GenericTensorAccessorR const &input,
-                         GenericTensorAccessorW const &output,
-                         DataType input_type,
-                         DataType output_type);
+                         GenericTensorAccessorW const &output);
 
 } // namespace FlexFlow::Kernels::Cast
 

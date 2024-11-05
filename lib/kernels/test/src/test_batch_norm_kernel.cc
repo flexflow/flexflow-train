@@ -9,7 +9,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     size_t output_n = 1, output_c = 10, output_h = 10, output_w = 10;
 
     ManagedFFStream managed_stream{};
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
@@ -37,11 +37,11 @@ TEST_SUITE(FF_TEST_SUITE) {
     GenericTensorAccessorW output_accessor =
         create_random_filled_accessor_w(output_shape, allocator);
     GenericTensorAccessorW scale_accessor =
-        create_filled_accessor_w(scale_shape, allocator, 1.0f);
+        create_filled_accessor_w(scale_shape, allocator, DataTypeValue(1.0f));
 
     SUBCASE("forward_kernel") {
       GenericTensorAccessorW bias_accessor =
-          create_filled_accessor_w(bias_shape, allocator, 0.0f);
+          create_filled_accessor_w(bias_shape, allocator, DataTypeValue(0.0f));
 
       Kernels::BatchNorm::forward_kernel(managed_stream.raw_stream(),
                                          state,

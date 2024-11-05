@@ -7,7 +7,10 @@ namespace FlexFlow {
 
 struct ManagedPerDeviceFFHandle {
 public:
-  ManagedPerDeviceFFHandle();
+  ManagedPerDeviceFFHandle() = delete;
+
+  ManagedPerDeviceFFHandle(size_t workSpaceSize,
+                           bool allowTensorOpMathConversion);
 
   ManagedPerDeviceFFHandle(ManagedPerDeviceFFHandle const &) = delete;
   ManagedPerDeviceFFHandle &

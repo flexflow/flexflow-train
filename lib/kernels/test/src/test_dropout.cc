@@ -18,7 +18,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     TensorShape output_shape = input_shape;
 
     ManagedFFStream managed_stream{};
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
 
     Allocator allocator = create_local_cuda_memory_allocator();
 

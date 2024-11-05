@@ -9,7 +9,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     std::vector<ff_dim_t> perm = {ff_dim_t(0), ff_dim_t(1)};
 
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();

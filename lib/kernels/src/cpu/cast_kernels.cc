@@ -37,18 +37,15 @@ struct CPUBackwardKernel {
 };
 
 void cpu_forward_kernel(GenericTensorAccessorR const &input,
-                        GenericTensorAccessorW const &output,
-                        DataType input_type,
-                        DataType output_type) {
-  DataTypeDispatch2<CPUForwardKernel>{}(input_type, output_type, input, output);
+                        GenericTensorAccessorW const &output) {
+  DataTypeDispatch2<CPUForwardKernel>{}(
+      input.data_type, output.data_type, input, output);
 }
 
 void cpu_backward_kernel(GenericTensorAccessorR const &input,
-                         GenericTensorAccessorW const &output,
-                         DataType input_type,
-                         DataType output_type) {
+                         GenericTensorAccessorW const &output) {
   DataTypeDispatch2<CPUBackwardKernel>{}(
-      input_type, output_type, input, output);
+      input.data_type, output.data_type, input, output);
 }
 
 } // namespace FlexFlow::Kernels::Cast

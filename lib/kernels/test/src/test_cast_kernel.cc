@@ -21,11 +21,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       GenericTensorAccessorW output_accessor =
           allocator.allocate_tensor(output_shape);
 
-      Kernels::Cast::forward_kernel(managed_stream.raw_stream(),
-                                    input_accessor,
-                                    output_accessor,
-                                    DataType::FLOAT,
-                                    DataType::DOUBLE);
+      Kernels::Cast::forward_kernel(
+          managed_stream.raw_stream(), input_accessor, output_accessor);
 
       CHECK(contains_non_zero(output_accessor));
     }
@@ -38,9 +35,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       Kernels::Cast::backward_kernel(managed_stream.raw_stream(),
                                      grad_output_accessor,
-                                     grad_input_accessor,
-                                     DataType::DOUBLE,
-                                     DataType::FLOAT);
+                                     grad_input_accessor);
 
       CHECK(contains_non_zero(grad_input_accessor));
     }
@@ -65,11 +60,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       GenericTensorAccessorW output_accessor_gpu =
           create_zero_filled_accessor_w(output_shape, gpu_allocator);
 
-      Kernels::Cast::forward_kernel(managed_stream.raw_stream(),
-                                    input_accessor_gpu,
-                                    output_accessor_gpu,
-                                    DataType::FLOAT,
-                                    DataType::DOUBLE);
+      Kernels::Cast::forward_kernel(
+          managed_stream.raw_stream(), input_accessor_gpu, output_accessor_gpu);
 
       // Run CPU Forward Kernel
       GenericTensorAccessorR input_accessor_cpu =
@@ -78,12 +70,9 @@ TEST_SUITE(FF_TEST_SUITE) {
           create_zero_filled_accessor_w(output_shape, cpu_allocator);
 
       Kernels::Cast::cpu_forward_kernel(input_accessor_cpu,
-                                        output_accessor_cpu,
-                                        DataType::FLOAT,
-                                        DataType::DOUBLE);
+                                        output_accessor_cpu);
 
-      CHECK(w_accessors_are_equal<DataType::DOUBLE>(output_accessor_gpu,
-                                                    output_accessor_cpu));
+      CHECK(accessors_are_equal(output_accessor_gpu, output_accessor_cpu));
     }
   }
 }

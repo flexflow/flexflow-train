@@ -3,10 +3,11 @@
 
 namespace FlexFlow {
 
-ManagedPerDeviceFFHandle::ManagedPerDeviceFFHandle() {
+ManagedPerDeviceFFHandle::ManagedPerDeviceFFHandle(
+    size_t workSpaceSize, bool allowTensorOpMathConversion) {
   this->handle = new PerDeviceFFHandle;
-  this->handle->workSpaceSize = 1024 * 1024;
-  this->handle->allowTensorOpMathConversion = true;
+  this->handle->workSpaceSize = workSpaceSize;
+  this->handle->allowTensorOpMathConversion = allowTensorOpMathConversion;
 
   checkCUDNN(cudnnCreate(&this->handle->dnn));
   checkCUBLAS(cublasCreate(&this->handle->blas));
@@ -37,7 +38,6 @@ ManagedPerDeviceFFHandle::~ManagedPerDeviceFFHandle() {
     checkCUBLAS(cublasDestroy(this->handle->blas));
     checkCUDA(cudaFree(this->handle->workSpace));
     delete this->handle;
-    this->handle = nullptr;
   }
 }
 

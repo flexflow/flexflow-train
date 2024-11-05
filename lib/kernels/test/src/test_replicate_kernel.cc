@@ -13,7 +13,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     TensorShape output_shape =
         make_tensor_shape_from_legion_dims({100}, DataType::FLOAT);
 
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
@@ -53,7 +53,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     TensorShape output_shape =
         make_tensor_shape_from_legion_dims({5, num_replicas}, DataType::FLOAT);
 
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
     ManagedFFStream managed_stream{};
 
     Allocator gpu_allocator = create_local_cuda_memory_allocator();
@@ -78,8 +78,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       Kernels::Replicate::cpu_forward_kernel(input_accessor_cpu,
                                              output_accessor_cpu);
 
-      CHECK(w_accessors_are_equal<DataType::FLOAT>(output_accessor_gpu,
-                                                   output_accessor_cpu));
+      CHECK(accessors_are_equal(output_accessor_gpu, output_accessor_cpu));
     }
 
     SUBCASE("backward_kernel") {
@@ -103,8 +102,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       Kernels::Replicate::cpu_backward_kernel(
           output_grad_accessor_cpu, input_grad_accessor_cpu, num_replicas);
 
-      CHECK(w_accessors_are_equal<DataType::FLOAT>(input_grad_accessor_gpu,
-                                                   input_grad_accessor_cpu));
+      CHECK(accessors_are_equal(input_grad_accessor_gpu,
+                                input_grad_accessor_cpu));
     }
   }
 }

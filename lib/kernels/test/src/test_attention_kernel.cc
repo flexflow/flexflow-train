@@ -13,7 +13,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     size_t qoSeqLength = 20, kvSeqLength = 20;
 
     ManagedFFStream managed_stream{};
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
 
     Allocator allocator = create_local_cuda_memory_allocator();
 

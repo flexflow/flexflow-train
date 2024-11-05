@@ -7,7 +7,7 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Test Flat Kernel") {
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
     ManagedFFStream managed_stream{};
 
     TensorShape input_shape =
@@ -15,8 +15,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     TensorShape output_shape = input_shape;
 
     GenericTensorAccessorR input_accessor =
-        read_only_accessor_from_write_accessor(
-            create_filled_accessor_w(input_shape, allocator, 2.0f));
+        read_only_accessor_from_write_accessor(create_filled_accessor_w(
+            input_shape, allocator, DataTypeValue(2.0f)));
 
     SUBCASE("forward_kernel") {
       GenericTensorAccessorW output_accessor =
@@ -30,10 +30,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("backward_kernel") {
-      GenericTensorAccessorW output_grad_accessor =
-          create_filled_accessor_w(output_shape, allocator, 0.0f);
+      GenericTensorAccessorW output_grad_accessor = create_filled_accessor_w(
+          output_shape, allocator, DataTypeValue(0.0f));
       GenericTensorAccessorW input_grad_accessor =
-          create_filled_accessor_w(input_shape, allocator, 1.0f);
+          create_filled_accessor_w(input_shape, allocator, DataTypeValue(1.0f));
 
       Kernels::Flat::backward_kernel(managed_stream.raw_stream(),
                                      input_accessor,
