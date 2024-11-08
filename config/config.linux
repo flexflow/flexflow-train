@@ -61,6 +61,9 @@ FF_LEGION_NETWORKS=${FF_LEGION_NETWORKS:-}
 # select GASNET conduit
 FF_GASNET_CONDUIT=${FF_GASNET_CONDUIT:-ibv}
 
+# select GASNET system (usually with OFI conduit)
+FF_GASNET_SYSTEM=${FF_GASNET_SYSTEM:-slingshot11}
+
 # set UCX dir if Legion networks is set to ucx
 UCX_DIR=${UCX_DIR:-""}
 

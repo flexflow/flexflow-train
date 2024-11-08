@@ -118,6 +118,13 @@ if [ "$FF_LEGION_NETWORKS" = "gasnet" ]; then
     SET_LEGION_NETWORKS+=" -DFF_GASNET_CONDUIT=mpi"
   elif [ "$FF_GASNET_CONDUIT" = "udp" ]; then
     SET_LEGION_NETWORKS+=" -DFF_GASNET_CONDUIT=udp"
+  elif [ "$FF_GASNET_CONDUIT" = "ofi" ]; then
+    SET_LEGION_NETWORKS+=" -DFF_GASNET_CONDUIT=ofi"
+    if [ "$FF_GASNET_SYSTEM" = "slingshot11" ]; then
+      SET_LEGION_NETWORKS+=" -DFF_GASNET_SYSTEM=slingshot11"
+    elif [ "$FF_GASNET_SYSTEM" = "slingshot10" ]; then
+      SET_LEGION_NETWORKS+=" -DFF_GASNET_SYSTEM=slingshot10"
+    fi
   fi
 elif [ "$FF_LEGION_NETWORKS" = "ucx" ]; then
   SET_LEGION_NETWORKS+=" -DFF_LEGION_NETWORKS=ucx"
