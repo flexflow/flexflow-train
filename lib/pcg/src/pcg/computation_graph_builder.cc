@@ -461,7 +461,7 @@ tensor_guid_t ComputationGraphBuilder::dropout(
 }
 
 tensor_guid_t ComputationGraphBuilder::embedding(
-    tensor_guid_t const &x,
+    tensor_guid_t const &input,
     int num_entries,
     int outDim,
     AggregateOp aggr,
@@ -473,8 +473,6 @@ tensor_guid_t ComputationGraphBuilder::embedding(
       maybe_name.value_or(get_default_name(ComputationGraphOpAttrs{attrs}));
 
   LayerAttrs layer = LayerAttrs{ComputationGraphOpAttrs{attrs}, name};
-  tensor_guid_t input =
-      this->as_type(x, DataType::FLOAT, name + "input_pre_cast");
 
   TensorShape input_shape = this->get_shape(input);
 

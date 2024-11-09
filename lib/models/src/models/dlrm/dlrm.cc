@@ -132,7 +132,7 @@ ComputationGraph get_dlrm_computation_graph(DLRMConfig const &config) {
 
   tensor_guid_t dense_input = create_input_tensor(
       {config.batch_size, config.dense_arch_layer_sizes.front()},
-      DataType::HALF); // TODO: change this to DataType::FLOAT
+      DataType::FLOAT); // TODO: change this to DataType::FLOAT
                        // after cgb.cast is implemented.
 
   // Construct the model
@@ -144,11 +144,11 @@ ComputationGraph get_dlrm_computation_graph(DLRMConfig const &config) {
 
   std::vector<tensor_guid_t> emb_outputs;
   for (size_t i = 0; i < config.embedding_size.size(); i++) {
-    int input_dim = config.embedding_size[i];
+    int input_dim = config.embedding_size.at(i);
     emb_outputs.emplace_back(create_dlrm_sparse_embedding_network(
         /*cgb=*/cgb,
         /*config=*/config,
-        /*input=*/sparse_inputs[i],
+        /*input=*/sparse_inputs.at(i),
         /*input_dim=*/input_dim,
         /*output_dim=*/config.embedding_dim));
   }
