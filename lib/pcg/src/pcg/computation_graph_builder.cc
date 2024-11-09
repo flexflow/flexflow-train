@@ -50,7 +50,6 @@ static std::string get_default_name(ComputationGraphOpAttrs const &attrs) {
   return get_default_name(get_op_type(attrs));
 }
 
-
 ComputationGraphBuilder::ComputationGraphBuilder()
     : computation_graph(make_empty_computation_graph()) {}
 
@@ -170,10 +169,10 @@ tensor_guid_t ComputationGraphBuilder::broadcast(tensor_guid_t const &input,
       this->add_layer(layer, {input}, {}, {make_output_attrs(output_shape)}));
 }
 
-tensor_guid_t
-    ComputationGraphBuilder::cast(tensor_guid_t const &input,
-                                  DataType dtype,
-                                  std::optional<std::string> const &maybe_name) {
+tensor_guid_t ComputationGraphBuilder::cast(
+    tensor_guid_t const &input,
+    DataType dtype,
+    std::optional<std::string> const &maybe_name) {
 
   CastAttrs attrs = CastAttrs{dtype};
 
