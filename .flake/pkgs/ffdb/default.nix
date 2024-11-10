@@ -8,7 +8,7 @@
 
 stdenv.mkDerivation rec {
   pname = "ffdb";
-  version = "0.2";
+  version = "0.1";
 
   pythonPath = with python3.pkgs; makePythonPath [
     proj
@@ -37,14 +37,4 @@ stdenv.mkDerivation rec {
     python3
     proj
   ];
-
-
-  meta = with lib; {
-    # description = "";
-    mainProgram = "ffdb";
-    # homepage = "https://github.com/hugsy/gef";
-    # license = licenses.mit;
-    # platforms = platforms.all;
-    # maintainers = with maintainers; [ freax13 ];
-  };
 }
