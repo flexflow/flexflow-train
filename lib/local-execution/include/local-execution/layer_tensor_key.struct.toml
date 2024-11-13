@@ -1,0 +1,23 @@
+namespace = "FlexFlow"
+name = "LayerTensorKey"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = [
+  "pcg/layer_guid_t.dtg.h",
+  "local-execution/reduced_tensor_t.dtg.h"
+]
+
+[[fields]]
+name = "layer_guid"
+type = "::FlexFlow::layer_guid_t"
+
+[[fields]]
+name = "reduced_tensor"
+type = "::FlexFlow::reduced_tensor_t"

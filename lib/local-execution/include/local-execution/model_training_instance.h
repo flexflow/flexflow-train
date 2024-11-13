@@ -12,11 +12,12 @@ using PerLayerElapsedTime =
 struct ModelTrainingInstance {
   ModelTrainingInstance(Allocator const &,
                         ComputationGraph const &,
-                        TensorBackingMap const &,
+                        LayerTensorBackingMap const &allocated_forward_tensors,
+                        TensorBackingMap const &allocated_non_graph_tensors,
                         RuntimeArgConfig const &,
                         LossAttrs const &,
-                        tensor_guid_t const & logit_tensor,
-                        tensor_guid_t const & label_tensor,
+                        reduced_tensor_t const &logit_tensor,
+                        reduced_tensor_t const &label_tensor,
                         OptimizerAttrs const &);
 
   void execute_init();
@@ -27,11 +28,11 @@ struct ModelTrainingInstance {
   ComputationGraph computation_graph;
   LocalTrainingBacking training_backing;
   LossAttrs loss_attrs;
-  tensor_guid_t logit_tensor;
-  tensor_guid_t label_tensor;
+  reduced_tensor_t logit_tensor;
+  reduced_tensor_t label_tensor;
   OptimizerAttrs optimizer_attrs;
 };
 
-}
+} // namespace FlexFlow
 
 #endif

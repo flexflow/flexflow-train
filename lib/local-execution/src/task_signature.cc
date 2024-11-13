@@ -8,17 +8,17 @@ TaskSignature make_empty_task_signature() {
 
 void add_slot(TaskSignature &task_signature,
               int name,
-              IsGrad is_grad,
+              TensorType tensor_type,
               SlotType slot_type) {
-  add_slot(task_signature, slot_id_t{name}, is_grad, slot_type);
+  add_slot(task_signature, slot_id_t{name}, tensor_type, slot_type);
 }
 
 void add_slot(TaskSignature &task_signature,
               slot_id_t name,
-              IsGrad is_grad,
+              TensorType tensor_type,
               SlotType slot_type) {
-  TensorGuidSlotSpec tensor_guid_slot_spec =
-      TensorGuidSlotSpec{slot_type, is_grad};
+  TensorTypeSlotSpec tensor_guid_slot_spec =
+      TensorTypeSlotSpec{slot_type, tensor_type};
   task_signature.tensor_guid_slots.insert({name, tensor_guid_slot_spec});
 }
 

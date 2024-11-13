@@ -26,7 +26,7 @@ namespace FlexFlow {
 TaskImplFunction get_loss_bwd_task_impl();
 TaskSignature get_loss_bwd_signature();
 TaskInvocation
-    backward(LossAttrs const &, tensor_guid_t logit, tensor_guid_t label);
+    backward(LossAttrs const &, reduced_tensor_t logit, reduced_tensor_t label);
 
 } // namespace FlexFlow
 

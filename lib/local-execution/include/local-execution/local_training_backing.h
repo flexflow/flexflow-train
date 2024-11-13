@@ -15,7 +15,8 @@ using PerLayerElapsedTime =
 struct LocalTrainingBacking {
   LocalTrainingBacking(Allocator const &,
                        ComputationGraph const &,
-                       TensorBackingMap const &,
+                       LayerTensorBackingMap const &allocated_forward_tensors,
+                       TensorBackingMap const &allocated_non_graph_tensors,
                        RuntimeArgConfig const &);
   void register_and_allocate_layer(layer_guid_t const &);
   void allocate_layer_optimizer_tensors(layer_guid_t const &,
@@ -24,16 +25,16 @@ struct LocalTrainingBacking {
   void execute_init(layer_guid_t const &);
   std::optional<float> execute_forward(layer_guid_t const &);
   void compute_loss(LossAttrs const &loss_attrs,
-                    tensor_guid_t const &logit_tensor,
-                    tensor_guid_t const &label_tensor);
+                    reduced_tensor_t const &logit_tensor,
+                    reduced_tensor_t const &label_tensor);
   std::optional<float> execute_backward(layer_guid_t const &);
   void execute_update(layer_guid_t const &, OptimizerAttrs const &);
 
-  TaskArgumentAccessor get_task_arg_accessor(TaskInvocation const &) const;
+  TaskArgumentAccessor
+      get_task_arg_accessor(TaskInvocation const &,
+                            std::optional<layer_guid_t> const &) const;
   TaskArgumentAccessor get_op_task_arg_accessor(OpTaskInvocation const &,
                                                 layer_guid_t const &) const;
-
-  void insert_tensor(tensor_guid_t const &, GenericTensorAccessorW const &);
 
 private:
   DeviceSpecificDeviceStates call_init_task_impl(task_id_t,

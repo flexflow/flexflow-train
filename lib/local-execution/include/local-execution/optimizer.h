@@ -14,21 +14,21 @@ namespace FlexFlow {
 TaskSignature get_update_signature(OptimizerAttrs const &);
 TaskInvocation get_update_invocation(
     OptimizerAttrs const &,
-    tensor_guid_t const &weight,
-    std::vector<non_graph_tensor_guid_t> const &grad_buffer_tensors);
+    reduced_tensor_t const &weight,
+    std::vector<reduced_tensor_t> const &grad_buffer_tensors);
 TaskImplFunction get_update_task_impl(OptimizerAttrs const &);
 
 TaskSignature get_sgd_update_signature();
 TaskInvocation sgd_update(SGDOptimizerAttrs const &,
-                          tensor_guid_t const &weight,
-                          non_graph_tensor_guid_t const &sgd_v);
+                          reduced_tensor_t const &weight,
+                          reduced_tensor_t const &sgd_v);
 TaskImplFunction get_sgd_update_task_impl();
 
 TaskSignature get_adam_update_signature();
 TaskInvocation adam_update(AdamOptimizerAttrs const &,
-                           tensor_guid_t const &weight,
-                           non_graph_tensor_guid_t const &adam_v,
-                           non_graph_tensor_guid_t const &adam_m);
+                           reduced_tensor_t const &weight,
+                           reduced_tensor_t const &adam_v,
+                           reduced_tensor_t const &adam_m);
 TaskImplFunction get_adam_update_task_impl();
 
 } // namespace FlexFlow

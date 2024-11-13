@@ -10,11 +10,11 @@ TaskSignature make_empty_task_signature();
 
 void add_slot(TaskSignature &,
               int name,
-              IsGrad,
+              TensorType,
               SlotType slot_type = SlotType::TENSOR);
 void add_slot(TaskSignature &,
               slot_id_t name,
-              IsGrad,
+              TensorType,
               SlotType slot_type = SlotType::TENSOR);
 
 template <typename T>

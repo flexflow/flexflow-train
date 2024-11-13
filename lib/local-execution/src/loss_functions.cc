@@ -24,20 +24,23 @@ enum Slots { LOGIT, LABEL, ATTRS, PROFILING };
 
 TaskSignature get_loss_bwd_signature() {
   TaskSignature sig = make_empty_task_signature();
-  add_slot(sig, LOGIT, IsGrad::NO);
-  add_slot(sig, LABEL, IsGrad::NO);
-  add_slot(sig, LOGIT, IsGrad::YES);
+  add_slot(sig, LOGIT, TensorType::NON_GRAPH);
+  add_slot(sig, LABEL, TensorType::NON_GRAPH);
+  add_slot(sig, LOGIT, TensorType::GRADIENT);
+
   add_arg_slot<LossAttrs>(sig, ATTRS);
   add_arg_slot<ProfilingSettings>(sig, PROFILING);
   return sig;
 }
 
-TaskInvocation
-    backward(LossAttrs const &attrs, tensor_guid_t logit, tensor_guid_t label) {
+TaskInvocation backward(LossAttrs const &attrs,
+                        reduced_tensor_t logit,
+                        reduced_tensor_t label) {
   TaskBinding b;
-  b.bind(LOGIT, TensorGuidSpec{UnifiedTensorGuid{logit}, IsGrad::NO});
-  b.bind(LABEL, TensorGuidSpec{UnifiedTensorGuid{label}, IsGrad::NO});
-  b.bind(LOGIT, TensorGuidSpec{UnifiedTensorGuid{logit}, IsGrad::YES});
+  b.bind(LOGIT, TensorType::NON_GRAPH, logit);
+  b.bind(LABEL, TensorType::NON_GRAPH, label);
+  b.bind(LOGIT, TensorType::GRADIENT, logit);
+
   b.bind_arg(ATTRS, attrs);
   b.bind_arg(PROFILING, profiling_settings());
 

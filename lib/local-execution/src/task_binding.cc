@@ -4,13 +4,16 @@
 
 namespace FlexFlow {
 
-void TaskBinding::bind(int name, TensorGuidSpec const &tensor_guid_spec) {
-  this->bind(slot_id_t{name}, tensor_guid_spec);
+void TaskBinding::bind(int name,
+                       TensorType const &tensor_type,
+                       reduced_tensor_t const &binding) {
+  this->bind(slot_id_t{name}, tensor_type, binding);
 }
 
-void TaskBinding::bind(slot_id_t name, TensorGuidSpec const &tensor_guid_spec) {
-  this->tensor_bindings.insert(
-      {SlotGradId{name, tensor_guid_spec.is_grad}, tensor_guid_spec});
+void TaskBinding::bind(slot_id_t name,
+                       TensorType const &tensor_type,
+                       reduced_tensor_t const &binding) {
+  this->tensor_bindings.insert({SlotTensorTypeId{name, tensor_type}, binding});
 }
 
 void TaskBinding::insert_arg_spec(slot_id_t name, TaskArgSpec const &arg_spec) {
@@ -26,13 +29,13 @@ bool TaskBinding::operator!=(TaskBinding const &other) const {
   return this->tie() != other.tie();
 }
 
-std::tuple<std::unordered_map<SlotGradId, TensorGuidSpec> const &,
+std::tuple<std::unordered_map<SlotTensorTypeId, reduced_tensor_t> const &,
            std::unordered_map<slot_id_t, TaskArgSpec> const &>
     TaskBinding::tie() const {
   return std::tie(this->tensor_bindings, this->arg_bindings);
 }
 
-std::unordered_map<SlotGradId, TensorGuidSpec> const &
+std::unordered_map<SlotTensorTypeId, reduced_tensor_t> const &
     TaskBinding::get_tensor_bindings() const {
   return this->tensor_bindings;
 }

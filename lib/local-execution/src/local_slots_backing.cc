@@ -1,4 +1,5 @@
 #include "local-execution/local_slots_backing.h"
+#include "local-execution/tensor_reduction.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/computation_graph.h"
 #include "utils/containers/contains_key.h"
@@ -7,22 +8,18 @@
 
 namespace FlexFlow {
 
-LocalSlotsBacking::LocalSlotsBacking(TensorBackingMap const &allocated_tensors,
-                                     RuntimeArgConfig const &runtime_arg_config)
-    : tensor_mapping(allocated_tensors),
+LocalSlotsBacking::LocalSlotsBacking(
+    LayerTensorBackingMap const &allocated_forward_tensors,
+    TensorBackingMap const &allocated_non_graph_tensors,
+    RuntimeArgConfig const &runtime_arg_config)
+    : tensor_mapping(allocated_forward_tensors),
+      non_graph_tensor_mapping(allocated_non_graph_tensors),
       runtime_arg_config(runtime_arg_config){};
 
 void LocalSlotsBacking::add_per_device_op_state(
     layer_guid_t const &op_guid,
     DeviceSpecificDeviceStates const &device_state) {
   this->per_device_op_states.insert({op_guid, device_state});
-}
-
-void LocalSlotsBacking::insert_into_tensor_mapping(
-    tensor_guid_t const &tensor, GenericTensorAccessorW const &tensor_backing) {
-  if (!contains_key(this->tensor_mapping, tensor)) {
-    this->tensor_mapping.insert({tensor, tensor_backing});
-  }
 }
 
 void LocalSlotsBacking::allocate_layer_tensors(
@@ -46,15 +43,15 @@ void LocalSlotsBacking::allocate_tensors_by_role(
   switch (role) {
     case TensorRole::INPUT:
       tensors = get_incoming_inputs(computation_graph, layer_guid);
-      this->input_tensor_slots.insert({layer_guid, tensors});
+      this->input_tensor_slots.insert({layer_guid, lower(tensors)});
       break;
     case TensorRole::WEIGHT:
       tensors = get_incoming_weights(computation_graph, layer_guid);
-      this->weight_tensor_slots.insert({layer_guid, tensors});
+      this->weight_tensor_slots.insert({layer_guid, lower(tensors)});
       break;
     case TensorRole::OUTPUT:
       tensors = get_outgoing_tensors(computation_graph, layer_guid);
-      this->output_tensor_slots.insert({layer_guid, tensors});
+      this->output_tensor_slots.insert({layer_guid, lower(tensors)});
       break;
     default:
       throw mk_runtime_error("Invalid tensor role, got {}", role);
@@ -62,19 +59,22 @@ void LocalSlotsBacking::allocate_tensors_by_role(
 
   for (tensor_guid_t const &tensor : tensors) {
     TensorAttrs tensor_attrs = get_tensor_attrs(computation_graph, tensor);
+    reduced_tensor_t reduced_tensor = lower(tensor);
+    LayerTensorKey layer_tensor_key =
+        LayerTensorKey{layer_guid, reduced_tensor};
     // tensor allocation
-    if (!is_tensor_allocated(tensor)) {
+    if (!is_forward_tensor_allocated(layer_tensor_key)) {
       GenericTensorAccessorW tensor_backing =
           allocator.allocate_tensor(tensor_attrs.shape);
-      this->tensor_mapping.insert({tensor, tensor_backing});
+      this->tensor_mapping.insert({layer_tensor_key, tensor_backing});
     }
 
     // gradient tensor allocation
-    if (tensor_attrs.create_gradients == CreateGrad::YES &&
-        !is_gradient_tensor_allocated(tensor)) {
+    if (tensor_attrs.create_gradients == CreateGrad::YES) {
       GenericTensorAccessorW gradient_tensor_backing =
           allocator.allocate_tensor(tensor_attrs.shape);
-      this->gradient_tensor_mapping.insert({tensor, gradient_tensor_backing});
+      this->gradient_tensor_mapping.insert(
+          {layer_tensor_key, gradient_tensor_backing});
     }
   }
 }
@@ -85,53 +85,52 @@ void LocalSlotsBacking::allocate_optimizer_tensors(
     ComputationGraph const &cg,
     Allocator &allocator,
     TaskSignature const &sig) {
-  GenericTensorAccessorW weight_backing =
-      get_tensor_backing(UnifiedTensorGuid{weight}, IsGrad::NO);
+  GenericTensorAccessorW weight_backing = this->get_tensor_backing(
+      TensorType::FORWARD, lower(weight), weight_layer);
   int num_grad_buffer_tensors =
       sig.tensor_guid_slots.size() - 2; // ignore 2 (weight and weight_grad)
-  std::vector<non_graph_tensor_guid_t> grad_buffer_tensors;
+  std::vector<reduced_tensor_t> optimizer_buffer_tensors;
   for (int i = 0; i < num_grad_buffer_tensors; ++i) {
-    non_graph_tensor_guid_t buffer_tensor_guid = non_graph_tensor_guid_t{i};
+    reduced_tensor_t buffer_tensor = reduced_tensor_t{i};
     GenericTensorAccessorW buffer_backing = allocator.allocate_tensor(
         get_tensor_shape(weight_backing.shape, weight_backing.data_type));
-    this->optimizer_tensor_mapping.insert({buffer_tensor_guid, buffer_backing});
-    grad_buffer_tensors.push_back(buffer_tensor_guid);
+    this->optimizer_tensor_mapping.insert(
+        {LayerTensorKey{weight_layer, buffer_tensor}, buffer_backing});
+    optimizer_buffer_tensors.push_back(buffer_tensor);
   }
   this->weight_optimizer_tensor_guids.insert(
-      {weight_layer, grad_buffer_tensors});
+      {weight_layer, optimizer_buffer_tensors});
 }
 
-bool LocalSlotsBacking::is_tensor_allocated(
-    tensor_guid_t const &tensor_id) const {
-  return contains_key(this->tensor_mapping, tensor_id);
+bool LocalSlotsBacking::is_forward_tensor_allocated(
+    LayerTensorKey const &layer_tensor_id) const {
+  return contains_key(this->tensor_mapping, layer_tensor_id);
 }
 
-bool LocalSlotsBacking::is_gradient_tensor_allocated(
-    tensor_guid_t const &tensor_id) const {
-  return contains_key(this->gradient_tensor_mapping, tensor_id);
+bool LocalSlotsBacking::is_non_graph_tensor_allocated(
+    reduced_tensor_t const &tensor_id) const {
+  return contains_key(this->non_graph_tensor_mapping, tensor_id);
 }
 
-GenericTensorAccessorW const &
-    LocalSlotsBacking::get_tensor_backing(UnifiedTensorGuid const &tensor_id,
-                                          IsGrad is_grad) const {
-  if (tensor_id.has<tensor_guid_t>()) {
-    tensor_guid_t graph_tensor_guid = tensor_id.get<tensor_guid_t>();
-    switch (is_grad) {
-      case IsGrad::NO:
-        assert(contains_key(this->tensor_mapping, graph_tensor_guid));
-        return this->tensor_mapping.at(graph_tensor_guid);
-      case IsGrad::YES:
-        assert(contains_key(this->gradient_tensor_mapping, graph_tensor_guid));
-        return this->gradient_tensor_mapping.at(graph_tensor_guid);
-      default:
-        throw mk_runtime_error(fmt::format(
-            "IsGrad should only have YES or NO, received {}", is_grad));
-    }
-  } else {
-    non_graph_tensor_guid_t non_graph_tensor_guid =
-        tensor_id.get<non_graph_tensor_guid_t>();
-    assert(contains_key(this->optimizer_tensor_mapping, non_graph_tensor_guid));
-    return this->optimizer_tensor_mapping.at(non_graph_tensor_guid);
+GenericTensorAccessorW const &LocalSlotsBacking::get_tensor_backing(
+    TensorType const &tensor_type,
+    reduced_tensor_t const &tensor_id,
+    std::optional<layer_guid_t> const &layer_guid) const {
+  switch (tensor_type) {
+    case TensorType::FORWARD:
+      return this->tensor_mapping.at(
+          LayerTensorKey{layer_guid.value(), tensor_id});
+    case TensorType::NON_GRAPH:
+      return this->non_graph_tensor_mapping.at(tensor_id);
+    case TensorType::GRADIENT:
+      return this->gradient_tensor_mapping.at(
+          LayerTensorKey{layer_guid.value(), tensor_id});
+    case TensorType::OPTIMIZER:
+      return this->optimizer_tensor_mapping.at(
+          LayerTensorKey{layer_guid.value(), tensor_id});
+    default:
+      throw mk_runtime_error(
+          fmt::format("Invalid tensor type {}", tensor_type));
   }
 }
 
@@ -140,9 +139,9 @@ TensorSlotsBacking LocalSlotsBacking::construct_tensor_slots_backing(
   TensorSlotsBacking mapping;
 
   for (auto const &tensor_binding : binding.get_tensor_bindings()) {
-    SlotGradId slot_grad_id = tensor_binding.first;
+    SlotTensorTypeId slot_grad_id = tensor_binding.first;
     OpTensorSpec tensor_spec = tensor_binding.second;
-    std::vector<tensor_guid_t> tensor_guids;
+    std::vector<reduced_tensor_t> tensor_guids;
     int weight_adjusted_idx = 0;
     switch (tensor_spec.role) {
       case TensorRole::WEIGHT:
@@ -162,26 +161,25 @@ TensorSlotsBacking LocalSlotsBacking::construct_tensor_slots_backing(
             fmt::format("Invalid TensorRole {}", tensor_spec.role));
     }
 
-    IsGrad is_grad = slot_grad_id.is_grad;
-    GenericTensorAccessorW tensor_backing = this->get_tensor_backing(
-        UnifiedTensorGuid{tensor_guids.at(tensor_spec.idx)}, is_grad);
-
-    mapping.insert({slot_grad_id, tensor_backing});
+    mapping.insert({slot_grad_id,
+                    this->get_tensor_backing(slot_grad_id.tensor_type,
+                                             tensor_guids.at(tensor_spec.idx),
+                                             op_guid)});
   }
   return mapping;
 }
 
 TensorSlotsBacking LocalSlotsBacking::construct_tensor_slots_backing(
-    TaskBinding const &binding) const {
+    TaskBinding const &binding,
+    std::optional<layer_guid_t> const &layer_guid) const {
   TensorSlotsBacking mapping;
 
   for (auto const &tensor_binding : binding.get_tensor_bindings()) {
-    SlotGradId slot_grad_id = tensor_binding.first;
-    TensorGuidSpec tensor_spec = tensor_binding.second;
-
+    reduced_tensor_t tensor_id = tensor_binding.second;
+    SlotTensorTypeId slot_tensor_type_id = tensor_binding.first;
     GenericTensorAccessorW accessor = this->get_tensor_backing(
-        UnifiedTensorGuid{tensor_spec.tensor_guid}, slot_grad_id.is_grad);
-    mapping.insert({slot_grad_id, accessor});
+        slot_tensor_type_id.tensor_type, tensor_id, layer_guid);
+    mapping.insert({slot_tensor_type_id, accessor});
   }
 
   return mapping;
@@ -229,13 +227,14 @@ ConcreteArgSpec LocalSlotsBacking::resolve_op_arg_ref_spec(
         op_arg_ref_spec.get_ref_type().get<ParallelTensorShapeRefType>();
 
     assert(contains_key(this->input_tensor_slots, op_guid));
-    std::vector<tensor_guid_t> input_tensor_guids =
+    std::vector<reduced_tensor_t> input_tensor_guids =
         this->input_tensor_slots.at(op_guid);
 
     assert(input_tensor_guids.size() > index_op_arg_ref.idx);
-    GenericTensorAccessorW tensor_backing = this->get_tensor_backing(
-        UnifiedTensorGuid{input_tensor_guids.at(index_op_arg_ref.idx)},
-        IsGrad::NO);
+    GenericTensorAccessorW tensor_backing =
+        this->get_tensor_backing(TensorType::FORWARD,
+                                 input_tensor_guids.at(index_op_arg_ref.idx),
+                                 op_guid);
     ParallelTensorShape shape = lift_to_parallel(
         get_tensor_shape(tensor_backing.shape, tensor_backing.data_type));
     return ConcreteArgSpec::create(shape);

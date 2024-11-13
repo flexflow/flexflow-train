@@ -3,6 +3,7 @@
 #include "local-execution/optimizer.h"
 #include "local-execution/task_invocation.h"
 #include "local-execution/task_signature_impl.h"
+#include "local-execution/tensor_reduction.h"
 #include "pcg/computation_graph.h"
 #include "pcg/optimizer_attrs.h"
 #include "utils/containers/contains.h"
@@ -15,10 +16,13 @@ namespace FlexFlow {
 LocalTrainingBacking::LocalTrainingBacking(
     Allocator const &allocator,
     ComputationGraph const &computation_graph,
-    TensorBackingMap const &tensor_backing_mapping,
+    LayerTensorBackingMap const &allocated_forward_tensors,
+    TensorBackingMap const &allocated_non_graph_tensors,
     RuntimeArgConfig const &runtime_arg_config)
     : allocator(allocator), computation_graph(computation_graph),
-      local_slots_backing(tensor_backing_mapping, runtime_arg_config),
+      local_slots_backing(allocated_forward_tensors,
+                          allocated_non_graph_tensors,
+                          runtime_arg_config),
       task_registry(empty_task_registry()) {}
 
 void LocalTrainingBacking::register_and_allocate_layer(
@@ -96,15 +100,16 @@ std::optional<float>
 }
 
 void LocalTrainingBacking::compute_loss(LossAttrs const &loss_attrs,
-                                        tensor_guid_t const &logit_tensor,
-                                        tensor_guid_t const &label_tensor) {
-  assert(this->local_slots_backing.is_tensor_allocated(logit_tensor) &&
-         this->local_slots_backing.is_tensor_allocated(label_tensor));
+                                        reduced_tensor_t const &logit_tensor,
+                                        reduced_tensor_t const &label_tensor) {
+  assert(
+      this->local_slots_backing.is_non_graph_tensor_allocated(logit_tensor) &&
+      this->local_slots_backing.is_non_graph_tensor_allocated(label_tensor));
   TaskInvocation loss_invocation =
       backward(loss_attrs, logit_tensor, label_tensor);
   // assert(is_invocation_valid(get_loss_bwd_signature(), loss_invocation));
   TaskArgumentAccessor loss_accessor =
-      this->get_task_arg_accessor(loss_invocation);
+      this->get_task_arg_accessor(loss_invocation, std::nullopt);
   TaskImplFunction loss_impl_fn = get_loss_bwd_task_impl();
   loss_impl_fn.get<GenericTaskImplFunction>().function_ptr(loss_accessor);
 }
@@ -130,28 +135,30 @@ void LocalTrainingBacking::execute_update(
   LayerAttrs layer_attrs = get_layer_attrs(this->computation_graph, node);
   if (layer_attrs.attrs.has<WeightAttrs>()) {
     // get tensors
-    tensor_guid_t weight_tensor =
-        get_only(get_outgoing_tensors(this->computation_graph, node));
-    std::vector<non_graph_tensor_guid_t> grad_buffer_tensors =
+    reduced_tensor_t weight_tensor =
+        lower(get_only(get_outgoing_tensors(this->computation_graph, node)));
+    std::vector<reduced_tensor_t> optimizer_buffer_tensors =
         this->local_slots_backing.weight_optimizer_tensor_guids.at(node);
 
     // get invocation
     TaskInvocation invocation = get_update_invocation(
-        optimizer_attrs, weight_tensor, grad_buffer_tensors);
+        optimizer_attrs, weight_tensor, optimizer_buffer_tensors);
     // assert(is_invocation_valid(get_update_signature(attrs), invocation));
 
     // execute update
-    TaskArgumentAccessor accessor = this->get_task_arg_accessor(invocation);
+    TaskArgumentAccessor accessor =
+        this->get_task_arg_accessor(invocation, node);
     TaskImplFunction update_impl_fn = get_update_task_impl(optimizer_attrs);
     update_impl_fn.get<GenericTaskImplFunction>().function_ptr(accessor);
   }
 }
 
 TaskArgumentAccessor LocalTrainingBacking::get_task_arg_accessor(
-    TaskInvocation const &invocation) const {
+    TaskInvocation const &invocation,
+    std::optional<layer_guid_t> const &layer_guid) const {
   TensorSlotsBacking tensor_slots_backing =
       this->local_slots_backing.construct_tensor_slots_backing(
-          invocation.binding);
+          invocation.binding, layer_guid);
   ArgSlotsBacking arg_slots_backing =
       this->local_slots_backing.construct_arg_slots_backing(invocation.binding);
   return TaskArgumentAccessor::create<LocalTaskArgumentAccessor>(
@@ -169,11 +176,6 @@ TaskArgumentAccessor LocalTrainingBacking::get_op_task_arg_accessor(
 
   return TaskArgumentAccessor::create<LocalTaskArgumentAccessor>(
       this->allocator, tensor_slots_backing, arg_slots_backing);
-}
-
-void LocalTrainingBacking::insert_tensor(
-    tensor_guid_t const &tensor, GenericTensorAccessorW const &tensor_backing) {
-  this->local_slots_backing.insert_into_tensor_mapping(tensor, tensor_backing);
 }
 
 } // namespace FlexFlow

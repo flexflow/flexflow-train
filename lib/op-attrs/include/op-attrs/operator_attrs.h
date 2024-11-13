@@ -1,8 +1,6 @@
 #ifndef _OPERATOR_PARAMS_H
 #define _OPERATOR_PARAMS_H
 
-#include "op-attrs/ops/core.h"
-#include "op-attrs/pcg_operator_attrs.dtg.h"
 #include "local-execution/ops/attention.h"
 #include "local-execution/ops/batch_matmul.h"
 #include "local-execution/ops/batch_norm.h"
@@ -32,6 +30,8 @@
 #include "local-execution/ops/split.h"
 #include "local-execution/ops/topk.h"
 #include "local-execution/ops/transpose.h"
+#include "op-attrs/ops/core.h"
+#include "op-attrs/pcg_operator_attrs.dtg.h"
 #include "utils/record_formatter.h"
 #include "utils/variant.h"
 #include <variant>

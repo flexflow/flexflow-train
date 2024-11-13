@@ -9,9 +9,10 @@ enum Slots { ATTRS, WEIGHT, SGD_V, PROFILING, ADAM_M, ADAM_V, HANDLE };
 
 TaskSignature get_sgd_update_signature() {
   TaskSignature sig = make_empty_task_signature();
-  add_slot(sig, WEIGHT, IsGrad::YES);
-  add_slot(sig, WEIGHT, IsGrad::NO);
-  add_slot(sig, SGD_V, IsGrad::YES);
+  add_slot(sig, WEIGHT, TensorType::FORWARD);
+  add_slot(sig, WEIGHT, TensorType::GRADIENT);
+  add_slot(sig, SGD_V, TensorType::OPTIMIZER);
+
   add_arg_slot<SGDOptimizerAttrs>(sig, ATTRS);
   add_arg_slot<ProfilingSettings>(sig, PROFILING);
   if (CHOSEN_SYNC_TYPE == ParamSync::NCCL) {
@@ -21,13 +22,14 @@ TaskSignature get_sgd_update_signature() {
 }
 
 TaskInvocation sgd_update(SGDOptimizerAttrs const &attrs,
-                          tensor_guid_t const &weight,
-                          non_graph_tensor_guid_t const &sgd_v) {
+                          reduced_tensor_t const &weight,
+                          reduced_tensor_t const &sgd_v) {
   TaskBinding b;
-  b.bind(WEIGHT, TensorGuidSpec{UnifiedTensorGuid{weight}, IsGrad::YES});
-  b.bind(WEIGHT, TensorGuidSpec{UnifiedTensorGuid{weight}, IsGrad::NO});
+  b.bind(WEIGHT, TensorType::FORWARD, weight);
+  b.bind(WEIGHT, TensorType::GRADIENT, weight);
+
   if (attrs.momentum > 0.0f) {
-    b.bind(SGD_V, TensorGuidSpec{UnifiedTensorGuid{sgd_v}, IsGrad::YES});
+    b.bind(SGD_V, TensorType::OPTIMIZER, sgd_v);
   }
   b.bind_arg(ATTRS, attrs);
   b.bind_arg(PROFILING, profiling_settings());
@@ -97,10 +99,11 @@ TaskImplFunction get_sgd_update_task_impl() {
 
 TaskSignature get_adam_update_signature() {
   TaskSignature sig = make_empty_task_signature();
-  add_slot(sig, WEIGHT, IsGrad::YES);
-  add_slot(sig, WEIGHT, IsGrad::NO);
-  add_slot(sig, ADAM_V, IsGrad::YES);
-  add_slot(sig, ADAM_M, IsGrad::YES);
+  add_slot(sig, WEIGHT, TensorType::FORWARD);
+  add_slot(sig, WEIGHT, TensorType::GRADIENT);
+  add_slot(sig, ADAM_V, TensorType::OPTIMIZER);
+  add_slot(sig, ADAM_M, TensorType::OPTIMIZER);
+
   add_arg_slot<AdamOptimizerAttrs>(sig, ATTRS);
   add_arg_slot<ProfilingSettings>(sig, PROFILING);
   if (CHOSEN_SYNC_TYPE == ParamSync::NCCL) {
@@ -110,14 +113,14 @@ TaskSignature get_adam_update_signature() {
 }
 
 TaskInvocation adam_update(AdamOptimizerAttrs const &attrs,
-                           tensor_guid_t const &weight,
-                           non_graph_tensor_guid_t const &adam_v,
-                           non_graph_tensor_guid_t const &adam_m) {
+                           reduced_tensor_t const &weight,
+                           reduced_tensor_t const &adam_v,
+                           reduced_tensor_t const &adam_m) {
   TaskBinding b;
-  b.bind(WEIGHT, TensorGuidSpec{UnifiedTensorGuid{weight}, IsGrad::YES});
-  b.bind(WEIGHT, TensorGuidSpec{UnifiedTensorGuid{weight}, IsGrad::NO});
-  b.bind(ADAM_M, TensorGuidSpec{UnifiedTensorGuid{adam_m}, IsGrad::YES});
-  b.bind(ADAM_V, TensorGuidSpec{UnifiedTensorGuid{adam_v}, IsGrad::YES});
+  b.bind(WEIGHT, TensorType::FORWARD, weight);
+  b.bind(WEIGHT, TensorType::GRADIENT, weight);
+  b.bind(ADAM_M, TensorType::OPTIMIZER, adam_m);
+  b.bind(ADAM_V, TensorType::OPTIMIZER, adam_v);
   b.bind_arg(ATTRS, attrs);
   b.bind_arg(PROFILING, profiling_settings());
 
@@ -191,8 +194,8 @@ TaskSignature get_update_signature(OptimizerAttrs const &attrs) {
 
 TaskInvocation get_update_invocation(
     OptimizerAttrs const &attrs,
-    tensor_guid_t const &weight,
-    std::vector<non_graph_tensor_guid_t> const &grad_buffer_tensors) {
+    reduced_tensor_t const &weight,
+    std::vector<reduced_tensor_t> const &grad_buffer_tensors) {
   return attrs.visit<TaskInvocation>(overload{
       [&](SGDOptimizerAttrs const &s) {
         return sgd_update(s, weight, grad_buffer_tensors.at(0));
