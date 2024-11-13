@@ -1,4 +1,4 @@
-#include "flat.h"
+#include "local-execution/ops/flat.h"
 #include "kernels/flat_kernels.h"
 #include "op-attrs/get_output_shapes.h"
 

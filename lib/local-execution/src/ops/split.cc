@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "split.h"
+#include "local-execution/ops/split.h"
 #include "kernels/array_shape.h"
 #include "kernels/split_kernels.h"
 #include "op-attrs/get_output_shapes.h"

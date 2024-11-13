@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "noop.h"
+#include "local-execution/ops/noop.h"
 
 namespace FlexFlow {
 

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "batch_norm.h"
+#include "local-execution/ops/batch_norm.h"
 #include "kernels/batch_norm_kernels.h"
 
 namespace FlexFlow {

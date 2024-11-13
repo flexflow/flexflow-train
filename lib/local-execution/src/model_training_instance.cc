@@ -14,16 +14,11 @@ ModelTrainingInstance::ModelTrainingInstance(Allocator const & allocator,
                                              tensor_guid_t const &label_tensor, 
                                              OptimizerAttrs const & optimizer_attrs) 
   : computation_graph(computation_graph), training_backing(allocator, computation_graph, tensor_backing_map, runtime_arg_config),
-  loss_attrs(loss_attrs), logit_tensor(logit_tensor), label_tensor(label_tensor), optimizer_attrs(optimizer_attrs) {}
+  loss_attrs(loss_attrs), logit_tensor(logit_tensor), label_tensor(label_tensor), optimizer_attrs(optimizer_attrs) {
 
-void ModelTrainingInstance::register_and_allocate_layers() {
+  // allocate each layer's tensors
   for (layer_guid_t const & node: topological_ordering(this->computation_graph)) {
     this->training_backing.register_and_allocate_layer(node);
-  }
-}
-
-void ModelTrainingInstance::allocate_optimizer_tensors() {
-  for (layer_guid_t const & node: topological_ordering(this->computation_graph)) {
     this->training_backing.allocate_layer_optimizer_tensors(node, this->optimizer_attrs);
   }
 }
@@ -61,4 +56,4 @@ void ModelTrainingInstance::execute_update() {
   this->optimizer_attrs = get_next_iteration_optimizer_attrs(this->optimizer_attrs);
 }
 
-}
+} // namespace FlexFlow

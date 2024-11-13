@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "layer_norm.h"
+#include "local-execution/ops/layer_norm.h"
 #include "kernels/layer_norm_kernels.h"
 #include "local-execution/legion_tensor_shape.h"
 #include "op-attrs/get_output_shapes.h"

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "reverse.h"
+#include "local-execution/ops/reverse.h"
 #include "kernels/accessor.h"
 #include "kernels/reverse_kernels.h"
 #include "op-attrs/get_output_shapes.h"

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "gather.h"
+#include "local-execution/ops/gather.h"
 #include "kernels/gather_kernels.h"
 #include "local-execution/legion_tensor_shape.h"
 #include "op-attrs/get_output_shapes.h"

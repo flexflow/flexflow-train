@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "topk.h"
+#include "local-execution/ops/topk.h"
 #include "kernels/topk_kernels.h"
 #include "op-attrs/get_output_shapes.h"
 #include "utils/exception.h"

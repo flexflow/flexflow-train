@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "batch_matmul.h"
+#include "local-execution/ops/batch_matmul.h"
 #include "kernels/batch_matmul_kernels.h"
 #include "local-execution/op_task_signature.h"
 #include "op-attrs/get_output_shapes.h"

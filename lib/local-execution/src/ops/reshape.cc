@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "reshape.h"
+#include "local-execution/ops/reshape.h"
 #include "kernels/reshape_kernels.h"
 #include "op-attrs/get_output_shapes.h"
 

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "softmax.h"
+#include "local-execution/ops/softmax.h"
 #include "kernels/softmax_kernels.h"
 #include "op-attrs/get_output_shapes.h"
 #include "op-attrs/parallel_tensor_shape.h"

@@ -19,8 +19,6 @@ struct ModelTrainingInstance {
                         tensor_guid_t const & label_tensor,
                         OptimizerAttrs const &);
 
-  void register_and_allocate_layers();
-  void allocate_optimizer_tensors();
   void execute_init();
   PerLayerElapsedTime execute_forward();
   PerLayerElapsedTime execute_backward();

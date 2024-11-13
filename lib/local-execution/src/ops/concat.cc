@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "concat.h"
+#include "local-execution/ops/concat.h"
 #include "kernels/concat_kernels.h"
 
 #include "local-execution/op_task_signature.h"

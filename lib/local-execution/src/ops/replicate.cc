@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "replicate.h"
+#include "local-execution/ops/replicate.h"
 #include "kernels/replicate_kernels.h"
 #include "op-attrs/get_output_shapes.h"
 #include "op-attrs/parallel_tensor_shape.h"

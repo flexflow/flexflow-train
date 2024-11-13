@@ -1,4 +1,4 @@
-#include "pool_2d.h"
+#include "local-execution/ops/pool_2d.h"
 #include "kernels/pool_2d_kernels.h"
 
 #include "op-attrs/get_output_shapes.h"

@@ -1,4 +1,4 @@
-#include "dropout.h"
+#include "local-execution/ops/dropout.h"
 #include "kernels/dropout_kernels.h"
 #include "local-execution/op_task_invocation.h"
 #include "local-execution/op_task_signature.h"

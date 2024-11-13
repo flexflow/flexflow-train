@@ -1,4 +1,4 @@
-#include "reduce.h"
+#include "local-execution/ops/reduce.h"
 #include "kernels/reduce_kernels.h"
 
 #include "op-attrs/get_output_shapes.h"
