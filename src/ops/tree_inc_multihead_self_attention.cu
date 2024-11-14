@@ -49,6 +49,8 @@ using flashinfer::QKVLayout;
 
 __global__ void commit_tokens_kernel(
     half *kCache_ptr,
+    int32_t *kv_indptr,
+    int32_t *kv_page_indices,
     BatchConfig::CommittedTokensInfo const *committedTokenInfos,
     bool const *request_available,
     int num_requests,
@@ -77,24 +79,30 @@ __global__ void commit_tokens_kernel(
         continue;
       }
 
-      int const req_id = committedTokenInfos[i].request_index;
-      int const tok_id = committedTokenInfos[i].token_depth;
+      int const page_to_idx = committedTokenInfos[i].token_depth / kPagesize;
+      int const page_from_idx =
+          committedTokenInfos[i].index_in_kv_cache / kPagesize;
 
-      size_t from_k_idx = get_k_entry_offset(req_id,
-                                             index_in_kv_cache,
-                                             max_num_pages,
-                                             num_kv_heads,
-                                             head_dim),
-             from_v_idx = get_v_entry_offset(req_id,
-                                             index_in_kv_cache,
-                                             max_num_pages,
-                                             num_kv_heads,
-                                             head_dim);
-      size_t to_k_idx = get_k_entry_offset(
-                 req_id, tok_id, max_num_pages, num_kv_heads, head_dim),
-             to_v_idx = get_v_entry_offset(
-                 req_id, tok_id, max_num_pages, num_kv_heads, head_dim);
-      assert(to_k_idx <= from_k_idx);
+      size_t from_k_idx = get_k_entry_offset_verify(
+                 committedTokenInfos[i].index_in_kv_cache,
+                 page_from_idx,
+                 num_kv_heads,
+                 head_dim),
+             from_v_idx = get_v_entry_offset_verify(
+                 committedTokenInfos[i].index_in_kv_cache,
+                 page_from_idx,
+                 num_kv_heads,
+                 head_dim);
+      size_t to_k_idx =
+                 get_k_entry_offset_verify(committedTokenInfos[i].token_depth,
+                                           page_to_idx,
+                                           num_kv_heads,
+                                           head_dim),
+             to_v_idx =
+                 get_v_entry_offset_verify(committedTokenInfos[i].token_depth,
+                                           page_to_idx,
+                                           num_kv_heads,
+                                           head_dim);
 
       kCache_ptr[to_k_idx + offset] = kCache_ptr[from_k_idx + offset];
       kCache_ptr[to_v_idx + offset] = kCache_ptr[from_v_idx + offset];
@@ -118,14 +126,17 @@ void commit_tokens(TreeIncMultiHeadSelfAttentionMeta const *m,
   commit_tokens_kernel<<<GET_BLOCKS(parallelism),
                          min(CUDA_NUM_THREADS, parallelism),
                          0,
-                         stream>>>(static_cast<half *>(m->kvCache),
-                                   m->committed_token_infos,
-                                   m->request_available,
-                                   num_requests,
-                                   m->num_kv_heads,
-                                   m->qk_dim,
-                                   m->num_tokens_to_commit,
-                                   max_num_pages);
+                         stream>>>(
+      static_cast<half *>(m->kvCache),
+      m->handle.tree_verify_attention_metadata->kv_indptr,
+      m->handle.tree_verify_attention_metadata->kv_indices,
+      m->committed_token_infos,
+      m->request_available,
+      num_requests,
+      m->num_kv_heads,
+      m->qk_dim,
+      m->num_tokens_to_commit,
+      max_num_pages);
   //   cudaEventRecord(t_end, stream);
   //   checkCUDA(cudaEventSynchronize(t_end));
   //   float elapsed = 0;
@@ -330,7 +341,6 @@ void inference_kernel(TreeIncMultiHeadSelfAttentionMeta *m,
                       DT *output_ptr,
                       DT const *bias_ptr,
                       cudaStream_t stream) {
-
   //   int device;
   //   checkCUDA(cudaGetDevice(&device));
   //   cudaEvent_t t_start, t_end;
@@ -418,7 +428,7 @@ void inference_kernel(TreeIncMultiHeadSelfAttentionMeta *m,
   //   cudaEventRecord(t_start, stream);
 
   // Update key-val cache, compact q array
-  update_qkv_in_batch<DT>(m, bc, stream);
+  update_qkv_in_batch<DT>(m, bc, stream, true);
 
   //   cudaEventRecord(t_end, stream);
   //   checkCUDA(cudaEventSynchronize(t_end));

@@ -63,6 +63,11 @@ void FALCON::create_falcon_model(FFModel &ff,
   Tensor mha = nullptr, mlp_output = nullptr;
   Tensor res_ln_outputs[2] = {nullptr, nullptr};
 
+  ff.set_num_transformer_layers(falcon_config.n_layer);
+  ff.set_num_kv_heads(falcon_config.n_head_kv);
+  ff.set_qkv_dim(falcon_config.hidden_size / falcon_config.n_head * 2);
+  ff.set_size_dt(data_type_size(input->data_type));
+
   for (int i = 0; i < falcon_config.n_layer; i++) {
     // set transformer layer id
     ff.set_transformer_layer_id(i);

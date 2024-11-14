@@ -493,6 +493,23 @@ void FFModel::set_transformer_layer_id(int id) {
   assert(id < MAX_NUM_TRANSFORMER_LAYERS);
 }
 
+void FFModel::set_num_transformer_layers(int num_layers) {
+  num_transformer_layers = num_layers;
+}
+
+void FFModel::set_num_kv_heads(int num_heads) {
+  num_kv_heads = num_heads;
+}
+
+void FFModel::set_qkv_dim(int qkv) {
+  qkv_dim = qkv;
+}
+
+void FFModel::set_size_dt(int dt) {
+  printf("Setting size_dt to %d\n", dt);
+  size_dt = dt;
+}
+
 void FFModel::set_position_offset(int offset) {
   assert(offset == 0 || offset == 2);
   position_offset = offset;

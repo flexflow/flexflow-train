@@ -549,6 +549,106 @@ void update_qkv_in_batch(IncMultiHeadSelfAttentionMeta const *m,
                                          num_new_tokens);
 }
 
+template <typename DT>
+__global__ void update_qkv_in_batch_paged_kernel(
+    DT *qkv_proj_array,
+    half *qTmp_ptr,
+    half *kvCache_ptr,
+    int32_t *kv_indptr,
+    int32_t *kv_page_indices,
+    bool const *request_available,
+    BatchConfig::PerTokenInfo const *tokenInfos,
+    int num_q_heads,
+    int num_kv_heads,
+    int head_dim,
+    int num_new_tokens) {
+  int const q_hidden_size = num_q_heads * head_dim;
+  int const temp_kv_hidden_size = num_q_heads * head_dim; // temporary hard code
+  int const kv_hidden_size = num_kv_heads * head_dim;
+  int const thread_idx = blockIdx.x * blockDim.x + threadIdx.x;
+  int const token_idx = thread_idx / q_hidden_size;
+  int const offset = thread_idx % q_hidden_size;
+
+  if (token_idx >= num_new_tokens) {
+    return;
+  }
+
+  int const req_idx = tokenInfos[token_idx].request_index;
+  int token_abs_idx = tokenInfos[token_idx].abs_index_in_request;
+
+  // calculate the compact request index in the easiest way
+  // TODO: recheck
+  int req_idx_compact = -1;
+  int cnt = 0;
+  while (cnt < req_idx + 1) {
+    if (request_available[cnt]) {
+      req_idx_compact++;
+    }
+    cnt++;
+  }
+
+  assert(req_idx_compact >= 0 && "Invalid request index");
+
+  size_t from_idx = token_idx * (q_hidden_size + temp_kv_hidden_size * 2);
+  qTmp_ptr[token_idx * q_hidden_size + offset] =
+      static_cast<half>(qkv_proj_array[from_idx + offset]);
+
+  if (offset < kv_hidden_size) {
+    int start = kv_indptr[req_idx_compact];
+    int end = kv_indptr[req_idx_compact + 1] - 1;
+    assert(start <= end && "Invalid kv_indptr");
+    assert(start + (token_abs_idx / kPagesize) <= end && "Invalid page index");
+    int page_idx = kv_page_indices[start + (token_abs_idx / kPagesize)];
+    size_t to_k_idx = get_k_entry_offset_verify(
+               token_abs_idx, page_idx, num_kv_heads, head_dim),
+           to_v_idx = get_v_entry_offset_verify(
+               token_abs_idx, page_idx, num_kv_heads, head_dim);
+    // key and value cache should be stored interleaved
+    int const stride = num_q_heads / num_kv_heads;
+    int const kv_offset =
+        offset / head_dim * stride * head_dim + offset % head_dim;
+    kvCache_ptr[to_k_idx + offset] =
+        static_cast<half>(qkv_proj_array[from_idx + q_hidden_size + kv_offset]);
+    kvCache_ptr[to_v_idx + offset] =
+        static_cast<half>(qkv_proj_array[from_idx + q_hidden_size +
+                                         temp_kv_hidden_size + kv_offset]);
+  }
+}
+
+template <typename DT>
+void update_qkv_in_batch(IncMultiHeadSelfAttentionMeta const *m,
+                         BatchConfig const *bc,
+                         cudaStream_t stream,
+                         bool is_spec) {
+  // printf("entered update_qkv_in_batch_verify\n");
+  int num_new_tokens = bc->num_active_tokens();
+  if (num_new_tokens == 0) {
+    return;
+  }
+  int parallelism = m->local_hidden_size * num_new_tokens;
+  int32_t *kv_indptr = is_spec
+                           ? m->handle.tree_verify_attention_metadata->kv_indptr
+                           : m->handle.incr_attention_metadata->kv_indptr;
+  int32_t *kv_indices =
+      is_spec ? m->handle.tree_verify_attention_metadata->kv_indices
+              : m->handle.incr_attention_metadata->kv_indices;
+  update_qkv_in_batch_paged_kernel<<<GET_BLOCKS(parallelism),
+                                     min(CUDA_NUM_THREADS, parallelism),
+                                     0,
+                                     stream>>>(
+      static_cast<DT *>(m->devQKVProjArray),
+      static_cast<half *>(m->queryTmp),
+      static_cast<half *>(m->kvCache),
+      kv_indptr,
+      kv_indices,
+      m->request_available,
+      m->token_infos,
+      m->num_q_heads,
+      m->num_kv_heads,
+      m->qk_dim,
+      num_new_tokens);
+}
+
 __global__ void update_kv_in_streaming_cache_kernel(
     half *pre_pos_enc_buf,
     half *kv_cache,
@@ -978,6 +1078,18 @@ template void Kernels::IncMultiHeadAttention::update_qkv_in_batch<half>(
     IncMultiHeadSelfAttentionMeta const *m,
     BatchConfig const *bc,
     cudaStream_t stream);
+
+template void Kernels::IncMultiHeadAttention::update_qkv_in_batch<float>(
+    IncMultiHeadSelfAttentionMeta const *m,
+    BatchConfig const *bc,
+    cudaStream_t stream,
+    bool is_spec);
+
+template void Kernels::IncMultiHeadAttention::update_qkv_in_batch<half>(
+    IncMultiHeadSelfAttentionMeta const *m,
+    BatchConfig const *bc,
+    cudaStream_t stream,
+    bool is_spec);
 
 template void
     Kernels::IncMultiHeadAttention::update_kv_in_streaming_cache<half>(

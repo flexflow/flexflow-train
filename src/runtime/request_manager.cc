@@ -121,6 +121,7 @@ RequestManager::RequestManager()
   max_spec_tree_token_num = -1;
   max_sequence_length = -1;
   max_output_length = -1;
+  max_kv_cache_size = 0;
   max_tree_depth = -1;
   max_tree_width = -1;
   k = -1;
@@ -200,6 +201,14 @@ void RequestManager::set_max_output_length(int max_output_length) {
 int RequestManager::get_max_output_length() {
   assert(max_output_length > 0);
   return max_output_length;
+}
+
+void RequestManager::set_max_kv_cache_size(size_t max_kv_cache_size) {
+  this->max_kv_cache_size = max_kv_cache_size;
+}
+
+size_t RequestManager::get_max_kv_cache_size() {
+  return max_kv_cache_size;
 }
 
 void RequestManager::set_decoding_mode(DecodingMode mode) {
@@ -684,6 +693,7 @@ void RequestManager::request_update_attainment(int batch_index, bool attained) {
 
 void RequestManager::request_complete_clean_up(int batch_index) {
   RequestGuid guid = guid_of_requests[batch_index];
+
   profiling_requests[guid].finish_time =
       Realm::Clock::current_time_in_microseconds();
   Request &request = all_requests[guid];
@@ -692,6 +702,10 @@ void RequestManager::request_complete_clean_up(int batch_index) {
   request_available[batch_index] = false;
   num_available_requests--;
   request.status = Request::COMPLETED;
+
+  // page attention: free the pages
+  PageManager *page_manager = PageManager::get_page_manager();
+  page_manager->free_request(guid);
 
   // Find the sos and eos in the sequence
   auto bos_it = std::find(
@@ -1101,6 +1115,9 @@ BatchConfig RequestManager::prepare_llm_prefilling_batch() {
   assert(prefilling_requests.size() > 0 &&
          "No prefilling request to process in the prefilling phase.");
 
+  // get page manager
+  PageManager *page_manager = PageManager::get_page_manager();
+
   BatchConfig bc;
   if (decoding_mode == INCREMENTAL_DECODING) {
     bc.inference_mode = InferenceMode::INC_DECODING_MODE;
@@ -1143,11 +1160,25 @@ BatchConfig RequestManager::prepare_llm_prefilling_batch() {
       assert(request->llm_prefill_len + idx < request->tokens.size());
       bc.tokensInfo[token_idx].token_id =
           request->tokens[request->llm_prefill_len + idx];
+
+      assert(request->llm_prefill_len + idx < request->tokens.size());
+      append_token_to_block(
+          *request, request->tokens[request->llm_prefill_len + idx], true);
     }
     num_tokens += num_tokens_in_batch;
     if (num_tokens_in_batch > 0) {
       bc.num_available_requests++;
     }
+    // update related page info in batch config
+    bc.requestsInfo[request_index].num_kv_pages =
+        get_num_blocks_allocated(*request);
+    if (bc.requestsInfo[request_index].num_kv_pages == 0) {
+      // turn this request into not available for one round
+      bc.request_available[request_index] = false;
+    }
+    bc.requestsInfo[request_index].kv_last_page_len =
+        get_len_last_block(*request);
+    bc.requestsInfo[request_index].request_guid = request->guid;
   }
   bc.num_tokens = num_tokens;
 
@@ -1264,6 +1295,14 @@ BatchConfig RequestManager::prepare_decoding_batch() {
     bc.tokensInfo[bc.num_tokens].abs_index_in_request = request.llm_cache_size;
     bc.tokensInfo[bc.num_tokens].abs_depth_in_request = request.llm_cache_size;
     bc.tokensInfo[bc.num_tokens].token_id = request.tokens.back();
+    // append the token here
+    int idx_to_physical =
+        append_token_to_block(request, request.tokens.back(), true);
+    bc.requestsInfo[request_index].num_kv_pages =
+        get_num_blocks_allocated(request);
+    bc.requestsInfo[request_index].kv_last_page_len =
+        get_len_last_block(request);
+    bc.requestsInfo[request_index].request_guid = request.guid;
 
     bc.num_tokens++;
 
@@ -1524,6 +1563,9 @@ BatchConfig RequestManager::prepare_verify_batch_config() {
             std::begin(new_bc.request_available));
   new_bc.num_available_requests = num_available_requests;
 
+  // get page manager
+  PageManager *page_manager = PageManager::get_page_manager();
+
   for (int request_index = 0; request_index < get_max_requests_per_batch();
        ++request_index) {
     if (!request_available[request_index]) {
@@ -1532,6 +1574,14 @@ BatchConfig RequestManager::prepare_verify_batch_config() {
     int guid = guid_of_requests[request_index];
     Request &request = all_requests[guid];
     assert(request.status == Request::RUNNING);
+
+    // before commit token, reset the pages assigned by cleaning all the tokens
+    std::vector<int> block_table_before_commit =
+        page_manager->get_block_table_indices(guid);
+    // also need to reset the pages
+    reset_block_table(request);
+
+    int token_offset = request.first_token_offset_in_batch;
 
     // 1. Maintain requestsInfo
     new_bc.requestsInfo[request_index].first_token_index_in_request =
@@ -1551,13 +1601,22 @@ BatchConfig RequestManager::prepare_verify_batch_config() {
          committed_token_index++) {
       Request::CommittedToken &committed_token =
           committed_tokens.at(committed_token_index);
+
+      int idx_to_physical =
+          append_token_to_block(request, committed_token.token_id, true);
+      int idx_from_logical = committed_token.from_index;
+      int idx_from_physical =
+          block_table_before_commit[idx_from_logical / kPagesize] * kPagesize +
+          committed_token.from_index % kPagesize;
+
       new_bc.committed_tokens[new_bc.num_tokens_to_commit].request_index =
           request_index;
       new_bc.committed_tokens[new_bc.num_tokens_to_commit].index_in_kv_cache =
-          committed_token.from_index;
+          idx_from_physical;
       new_bc.committed_tokens[new_bc.num_tokens_to_commit].token_depth =
-          committed_token.to_index;
+          idx_to_physical;
       new_bc.num_tokens_to_commit++;
+      // also append the token to the block
     }
 
     // Load the tokens on the token tree that are not yet pruned to
@@ -1576,6 +1635,9 @@ BatchConfig RequestManager::prepare_verify_batch_config() {
           new_bc.tokensInfo[new_bc.num_tokens].token_id = tree_node->id;
           new_bc.num_tokens++;
           token_tree_index++;
+
+          // Append the token to the block
+          append_token_to_block(request, tree_node->id, false);
         }
       }
       layer_index++;
@@ -1591,6 +1653,13 @@ BatchConfig RequestManager::prepare_verify_batch_config() {
 
     // Copy the streaming cache info
     new_bc.streamingCacheInfo[request_index] = request.streaming_cache_info;
+
+    // page attention information
+    new_bc.requestsInfo[request_index].num_kv_pages =
+        get_num_blocks_allocated(request);
+    new_bc.requestsInfo[request_index].kv_last_page_len =
+        get_len_last_block(request);
+    new_bc.requestsInfo[request_index].request_guid = request.guid;
   }
 
   if (verbose) {
@@ -1905,6 +1974,103 @@ BatchConfig::BitMask RequestManager::create_llm_bitmask(RequestGuid guid) {
   // We don't need to set llm_bitmask.current_layer_size here because they are
   // not used in LLM verification.
   return llm_bitmask;
+}
+
+/* --------- Page Attention Related Functions --------- */
+int RequestManager::get_num_blocks_allocated(Request &request) const {
+  // needs some assertion
+  return request.blocks.size();
+}
+
+int RequestManager::get_len_last_block(Request &request) const {
+  int num_tokens = request.blocks.back().get_num_tokens();
+  if (request.blocks.empty()) {
+    return 0;
+  }
+  return request.blocks.back().get_num_tokens();
+}
+
+// get the index of the last token in the request
+int RequestManager::get_idx_last_logical_token(Request &request) const {
+  if (request.blocks.empty()) {
+    printf("Error: request.blocks is empty\n");
+    return -1;
+  } else {
+    return (request.blocks.size() - 1) * kPagesize +
+           request.blocks.back().get_num_tokens() - 1;
+  }
+}
+
+int RequestManager::idx_logical_to_physical(Request &request, int idx_logical) {
+  // get physical indices
+  PageManager *page_manager = PageManager::get_page_manager();
+  std::vector<int> block_table_indices =
+      page_manager->get_block_table_indices(request.guid);
+  return block_table_indices[idx_logical / kPagesize] * kPagesize +
+         idx_logical % kPagesize;
+}
+
+// this will allocate one logical block and one physical block to the request
+void RequestManager::_append_block_to_request(Request &request,
+                                              bool is_commit) {
+  PageManager *page_manager = PageManager::get_page_manager();
+  // Append the logical block to the request
+  // page attention: in this function we need to remember the last logical block
+  // number that still contains committed tokens
+  LogicalTokenBlock block(request.blocks.size(), kPagesize);
+  request.blocks.push_back(block);
+  page_manager->allocate_one_block(request.guid);
+  std::vector<int> block_table_indices =
+      page_manager->get_block_table_indices(request.guid);
+  // update page_id_commit
+  if (is_commit) {
+    request.page_last_committed++;
+    int size_blocks = request.blocks.size();
+  }
+}
+
+// this function is used for appending a token to the last logical block and
+// also the last physical block it will return the physical position of this
+// token
+int RequestManager::append_token_to_block(Request &request,
+                                          TokenId token,
+                                          bool is_commit) {
+  PageManager *page_manager = PageManager::get_page_manager();
+  if (request.blocks.empty() || request.blocks.back().is_full()) {
+    // Append a new logical block
+    _append_block_to_request(request, is_commit);
+    // also allocate one physical page
+  }
+  // insert token to both logical block and physical block
+  request.blocks.back().append_tokens({token}, is_commit);
+  int idx_logical = get_idx_last_logical_token(request);
+  assert(idx_logical >= 0);
+  int idx_physical = idx_logical_to_physical(request, idx_logical);
+  assert(idx_physical >= 0);
+  return idx_physical;
+}
+
+void RequestManager::reset_block_table(Request &request) {
+  // get the indices of original physical block table for request
+  PageManager *page_manager = PageManager::get_page_manager();
+  assert(request.page_last_committed < static_cast<int>(request.blocks.size()));
+  std::vector<int> block_table_indices =
+      page_manager->get_block_table_indices(request.guid);
+  // reset the block table according to the request's page_last_commit
+  page_manager->free_multiple_blocks(request.guid,
+                                     block_table_indices.size() -
+                                         request.page_last_committed - 1);
+  // reset this request's logical block table
+  if (request.page_last_committed < static_cast<int>(request.blocks.size())) {
+    request.blocks.erase(request.blocks.begin() + request.page_last_committed +
+                             1,
+                         request.blocks.end());
+  }
+  request.blocks.back().reset_num_spec_tokens();
+  // the indices of block table should be the same as the number of blocks
+  std::vector<int> block_table =
+      page_manager->get_block_table_indices(request.guid);
+  return;
 }
 
 /* --------- Bitmask Related Functions --------- */
@@ -2325,6 +2491,9 @@ void RequestManager::background_serving_task(
       ssm->config.lg_ctx = ctx;
     }
   }
+  // page attention: initalize the page manager here
+  int kv_cache_size = rm->get_max_kv_cache_size();
+  PageManager::get_page_manager(llm, rm->get_max_kv_cache_size());
   if (rm->decoding_mode == INCREMENTAL_DECODING) {
     // No SSMs: perform incremental decoding
     rm->serve_decoding(llm);
@@ -2575,6 +2744,7 @@ void RequestManager::terminate_background_server() {
       double latency_ms = (profiling_info.second.finish_time -
                            profiling_info.second.start_time) /
                           1000.0;
+
       // latency_per_request_ms += "[" + std::to_string(profiling_info.first)
       // +
       // ","; latency_per_request_ms += std::to_string(latency_ms) + "] ";
@@ -2708,7 +2878,6 @@ void RequestManager::terminate_background_server() {
     goodput_str += std::to_string(goodput);
     goodput_str += ")";
     str += goodput_str;
-
     write_to_output_file("", str);
     background_server_status = TERMINATED;
     request_queue_cv.notify_all();

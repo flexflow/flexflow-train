@@ -82,6 +82,11 @@ void STARCODER::create_starcoder_model(
   Tensor residual = nullptr, c_proj = nullptr;
   Tensor res_ln_outputs[2] = {nullptr, nullptr};
 
+  ff.set_num_transformer_layers(startcoder_config.num_hidden_layers);
+  ff.set_num_kv_heads(startcoder_config.num_attention_heads);
+  ff.set_qkv_dim(startcoder_config.hidden_size /
+                 startcoder_config.num_attention_heads * 2);
+  ff.set_size_dt(data_type_size(input->data_type));
   for (int i = 0; i < startcoder_config.num_hidden_layers; i++) {
     // set transformer layer id
     ff.set_transformer_layer_id(i);

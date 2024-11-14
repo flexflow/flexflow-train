@@ -16,6 +16,7 @@
 
 // #include "file_loader.h"
 #include "flexflow/batch_config.h"
+#include "flexflow/ffconst_utils.h"
 #include "flexflow/inference.h"
 #include "flexflow/request_manager.h"
 #include <nlohmann/json.hpp>

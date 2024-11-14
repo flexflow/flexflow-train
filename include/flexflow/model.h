@@ -1084,6 +1084,10 @@ public:
                CompMode comp_mode = COMP_MODE_TRAINING);
   void compile_inference();
   void set_transformer_layer_id(int id);
+  void set_num_transformer_layers(int num_layers);
+  void set_num_kv_heads(int num_heads);
+  void set_qkv_dim(int qkv_dim);
+  void set_size_dt(int size_dt);
   void set_position_offset(int offset);
   void graph_optimize(size_t budget,
                       bool only_data_parallel,
@@ -1145,6 +1149,10 @@ public:
   size_t tensor_global_guid, parallel_tensor_global_guid, node_global_guid;
   size_t current_transformer_layer_id;
   // positional embedding start offset
+  int num_transformer_layers;
+  int num_kv_heads;
+  int qkv_dim;
+  int size_dt;
   int position_offset;
   FFConfig config;
   FFIterationConfig iter_config;
