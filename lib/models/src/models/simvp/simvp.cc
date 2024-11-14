@@ -20,19 +20,54 @@ SimVPConfig get_default_simvp_config() {
   };
 }
 
+// TODO: improve with a transform call
+std::vector<bool> create_simvp_samplings(size_t N_S, bool reverse) {
+  std::vector<bool> samplings(N_S, false);
+  for (size_t i = 0; i < N_S; i++) {
+    if (i % 2 == 1) {
+      samplings[i] = true;
+    }
+  }
+  return samplings;
+}
+
+// TODO
+tensor_guid_t create_simvp_convsc(ComputationGraphBuilder &cgb,
+                                  SimVPConfig const &config,
+                                  size_t in_dim,
+                                  size_t out_dim,
+                                  bool downsampling,
+                                  tensor_guid_t const &input) {
+  return input;
+}
+
 std::pair<tensor_guid_t, tensor_guid_t>
     create_simvp_encoder(ComputationGraphBuilder &cgb,
                          SimVPConfig const &config,
                          tensor_guid_t const &input) {
-  return {input, input};
+  size_t C = config.in_shape.at(1); // Channel
+  std::vector<bool> samplings = create_simvp_samplings(config.N_S);
+
+  tensor_guid_t enc1 =
+      create_simvp_convsc(cgb, config, C, config.hid_S, samplings[0], input);
+  tensor_guid_t latent = enc1;
+
+  for (size_t i = 1; i < config.N_S; i++) {
+    latent = create_simvp_convsc(
+        cgb, config, config.hid_S, config.hid_S, samplings[i], latent);
+  }
+
+  return {latent, enc1};
 }
 
+// TODO
 tensor_guid_t create_simvp_middle_net(ComputationGraphBuilder &cgb,
                                       SimVPConfig const &config,
                                       tensor_guid_t const &embed) {
   return embed;
 }
 
+// TODO
 tensor_guid_t create_simvp_decoder(ComputationGraphBuilder &cgb,
                                    SimVPConfig const &config,
                                    tensor_guid_t const &hid,
