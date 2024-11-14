@@ -13,6 +13,15 @@ namespace FlexFlow {
  */
 SimVPConfig get_default_simvp_config();
 
+std::pair<tensor_guid_t, tensor_guid_t>
+    create_simvp_encoder(ComputationGraphBuilder &cgb,
+                         SimVPConfig const &config,
+                         tensor_guid_t const &input);
+
+tensor_guid_t create_simvp_middle_net(ComputationGraphBuilder &cgb,
+                                      SimVPConfig const &config,
+                                      tensor_guid_t const &embed);
+
 /**
  * @brief Get the SimVP computation graph.
  *
