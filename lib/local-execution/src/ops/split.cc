@@ -66,12 +66,15 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto attrs = acc.get_argument<SplitAttrs>(ATTRS);
 
   coord_t num_blocks, in_block_size, out_block_size[MAX_NUM_OUTPUTS];
-  calc_block_size(num_blocks, in_block_size, input.shape, attrs.axis.value);
+  calc_block_size(
+      num_blocks, in_block_size, input.shape, attrs.axis.value.get_value());
 
   for (int i = 0; i < attrs.splits.size(); i++) {
     coord_t out_num_blocks;
-    calc_block_size(
-        out_num_blocks, out_block_size[i], output.shape, attrs.axis.value);
+    calc_block_size(out_num_blocks,
+                    out_block_size[i],
+                    output.shape,
+                    attrs.axis.value.get_value());
   }
   float *output_float_ptr = output.get_float_ptr();
   return profile(forward_kernel,
@@ -94,12 +97,16 @@ static std::optional<float>
   auto attrs = acc.get_argument<SplitAttrs>(ATTRS);
 
   coord_t num_blocks, in_block_size, out_block_size[MAX_NUM_OUTPUTS];
-  calc_block_size(
-      num_blocks, in_block_size, input_grad.shape, attrs.axis.value);
+  calc_block_size(num_blocks,
+                  in_block_size,
+                  input_grad.shape,
+                  attrs.axis.value.get_value());
   for (int i = 0; i < attrs.splits.size(); i++) {
     coord_t out_num_blocks;
-    calc_block_size(
-        out_num_blocks, out_block_size[i], output_grad.shape, attrs.axis.value);
+    calc_block_size(out_num_blocks,
+                    out_block_size[i],
+                    output_grad.shape,
+                    attrs.axis.value.get_value());
   }
   float const *output_grad_ptr = output_grad.get_float_ptr();
   return profile(backward_kernel,

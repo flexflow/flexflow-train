@@ -46,11 +46,18 @@ tl::expected<TensorShape, std::string>
     if (!returned.has_value()) {
       return tl::unexpected(returned.error());
     }
-    returned.value();
+    std::map<ff_dim_t, size_t> returned_wrapped;
+    for (const auto &[key, value] : returned.value()) {
+      ff_dim_t new_key = ff_dim_t{nonnegative_int{key.value}};
+      returned_wrapped[new_key] = value;
+    }
+    returned_wrapped;
   });
 
-  std::vector<size_t> axis_dim_sizes = transform(
-      inputs, [&](TensorShape const &s) { return dim_at_idx(s, attrs.axis); });
+  std::vector<size_t> axis_dim_sizes =
+      transform(inputs, [&](TensorShape const &s) {
+        return dim_at_idx(s, relative_ff_dim_t{attrs.axis.value.get_value()});
+      });
 
   size_t output_axis_dim_size = sum(axis_dim_sizes);
 
@@ -104,7 +111,9 @@ tl::expected<ParallelTensorShape, std::string>
   });
 
   if (!all_of(inputs, [&](ParallelTensorShape const &s) {
-        return shard_dim_at_idx(s, attrs.axis).degree == 1;
+        return shard_dim_at_idx(s,
+                                relative_ff_dim_t{attrs.axis.value.get_value()})
+                   .degree == 1;
       })) {
     return tl::unexpected(fmt::format(
         "get_output_shape for Concat expected input tensors to have parallel "

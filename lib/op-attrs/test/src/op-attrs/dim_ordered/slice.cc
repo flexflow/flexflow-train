@@ -4,8 +4,7 @@
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE(
-      "slice(DimOrdered<Idx, T>, std::optional<Idx>, std::optional<Idx>)") {
+  TEST_CASE("slice(FFOrdered<T>, ff_dim_t, ff_dim_t)") {
     FFOrdered<size_t> d = FFOrdered<size_t>{
         1,
         2,
@@ -13,12 +12,82 @@ TEST_SUITE(FF_TEST_SUITE) {
         4,
     };
 
-    FFOrdered<size_t> result = slice(d, std::nullopt, ff_dim_t{-1});
-    FFOrdered<size_t> correct = FFOrdered<size_t>{
+    FFOrdered<size_t> result =
+        slice(d, ff_dim_t{nonnegative_int{1}}, ff_dim_t{nonnegative_int{3}});
+    FFOrdered<size_t> correct = FFOrdered<size_t>{2, 3};
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("slice(FFOrdered<T>, ff_dim_t, std::nullopt_t)") {
+    FFOrdered<size_t> d = FFOrdered<size_t>{
         1,
         2,
         3,
+        4,
     };
+
+    FFOrdered<size_t> result =
+        slice(d, ff_dim_t{nonnegative_int{1}}, std::nullopt);
+    FFOrdered<size_t> correct = FFOrdered<size_t>{2, 3, 4};
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("slice(FFOrdered<T>, std::nullopt_t, ff_dim_t)") {
+    FFOrdered<size_t> d = FFOrdered<size_t>{
+        1,
+        2,
+        3,
+        4,
+    };
+
+    FFOrdered<size_t> result =
+        slice(d, std::nullopt, ff_dim_t{nonnegative_int{3}});
+    FFOrdered<size_t> correct = FFOrdered<size_t>{1, 2, 3};
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("slice(FFOrdered<T>, relative_ff_dim_t, relative_ff_dim_t)") {
+    FFOrdered<size_t> d = FFOrdered<size_t>{
+        1,
+        2,
+        3,
+        4,
+    };
+
+    FFOrdered<size_t> result =
+        slice(d, relative_ff_dim_t{1}, relative_ff_dim_t{-1});
+    FFOrdered<size_t> correct = FFOrdered<size_t>{2, 3};
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("slice(FFOrdered<T>, relative_ff_dim_t, std::nullopt_t)") {
+    FFOrdered<size_t> d = FFOrdered<size_t>{
+        1,
+        2,
+        3,
+        4,
+    };
+
+    FFOrdered<size_t> result = slice(d, relative_ff_dim_t{-3}, std::nullopt);
+    FFOrdered<size_t> correct = FFOrdered<size_t>{2, 3, 4};
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("slice(FFOrdered<T>, std::nullopt_t, relative_ff_dim_t)") {
+    FFOrdered<size_t> d = FFOrdered<size_t>{
+        1,
+        2,
+        3,
+        4,
+    };
+
+    FFOrdered<size_t> result = slice(d, std::nullopt, relative_ff_dim_t{-1});
+    FFOrdered<size_t> correct = FFOrdered<size_t>{1, 2, 3};
 
     CHECK(result == correct);
   }

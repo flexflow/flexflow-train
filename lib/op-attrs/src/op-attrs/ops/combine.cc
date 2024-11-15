@@ -7,8 +7,8 @@ tl::expected<ParallelTensorShape, std::string>
     get_output_shape(CombineAttrs const &attrs,
                      ParallelTensorShape const &input) {
   ShardParallelDim input_dim = ({
-    std::optional<ShardParallelDim> result =
-        try_get_shard_dim_at_idx(input, attrs.combine_dim);
+    std::optional<ShardParallelDim> result = try_get_shard_dim_at_idx(
+        input, relative_ff_dim_t{attrs.combine_dim.value.get_value()});
     if (!result.has_value()) {
       return tl::unexpected(fmt::format(
           "Failed to get shard dim at index {} in parallel tensor shape {}",
@@ -29,7 +29,9 @@ tl::expected<ParallelTensorShape, std::string>
   }
 
   ParallelTensorShape output = input;
-  shard_dim_at_idx(output, attrs.combine_dim).degree /= attrs.combine_degree;
+  shard_dim_at_idx(output,
+                   relative_ff_dim_t{attrs.combine_dim.value.get_value()})
+      .degree /= attrs.combine_degree;
 
   return output;
 }

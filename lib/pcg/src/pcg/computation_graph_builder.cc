@@ -792,7 +792,7 @@ tensor_guid_t ComputationGraphBuilder::concat(
     int axis,
     std::optional<std::string> const &maybe_name) {
 
-  ConcatAttrs attrs = ConcatAttrs{ff_dim_t{axis}};
+  ConcatAttrs attrs = ConcatAttrs{ff_dim_t{nonnegative_int{axis}}};
 
   std::string name =
       maybe_name.value_or(get_default_name(ComputationGraphOpAttrs{attrs}));
@@ -816,8 +816,8 @@ tensor_guid_t ComputationGraphBuilder::flat(
   int input_num_dims = num_dims(this->get_shape(input));
 
   FlatAttrs attrs = FlatAttrs{
-      /*start_dim=*/ff_dim_t{start_dim},
-      /*end_dim=*/ff_dim_t{end_dim.value_or(input_num_dims)},
+      /*start_dim=*/ff_dim_t{nonnegative_int{start_dim}},
+      /*end_dim=*/ff_dim_t{nonnegative_int{end_dim.value_or(input_num_dims)}},
   };
 
   std::string name =
@@ -849,8 +849,14 @@ tensor_guid_t ComputationGraphBuilder::layer_norm(
         num_dims(input_shape)));
   }
 
+  stack_vector<ff_dim_t, MAX_TENSOR_DIM> axes_stack;
+  std::transform(axes.begin(),
+                 axes.end(),
+                 std::back_inserter(axes_stack),
+                 [](int axis) { return ff_dim_t{nonnegative_int{axis}}; });
+
   LayerNormAttrs attrs = LayerNormAttrs{
-      stack_vector<ff_dim_t, MAX_TENSOR_DIM>{axes.begin(), axes.end()},
+      axes_stack,
       elementwise_affine,
       eps,
   };
@@ -906,7 +912,7 @@ tensor_guid_t ComputationGraphBuilder::softmax(
                     input_shape));
   }
 
-  SoftmaxAttrs attrs = SoftmaxAttrs{ff_dim_t{dim}};
+  SoftmaxAttrs attrs = SoftmaxAttrs{ff_dim_t{nonnegative_int{dim}}};
 
   std::string name =
       maybe_name.value_or(get_default_name(ComputationGraphOpAttrs{attrs}));

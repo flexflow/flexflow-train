@@ -7,10 +7,10 @@ Conv2DParallelInputShape
     parse_parallel_input_shape(ParallelTensorShape const &input) {
   assert(num_shard_dims(input) == 4);
 
-  ShardParallelDim sample_dim = shard_dim_at_idx(input, ff_dim_t{0});
-  ShardParallelDim channel_dim = shard_dim_at_idx(input, ff_dim_t{1});
-  ShardParallelDim height_dim = shard_dim_at_idx(input, ff_dim_t{2});
-  ShardParallelDim width_dim = shard_dim_at_idx(input, ff_dim_t{3});
+  ShardParallelDim sample_dim = shard_dim_at_idx(input, relative_ff_dim_t{0});
+  ShardParallelDim channel_dim = shard_dim_at_idx(input, relative_ff_dim_t{1});
+  ShardParallelDim height_dim = shard_dim_at_idx(input, relative_ff_dim_t{2});
+  ShardParallelDim width_dim = shard_dim_at_idx(input, relative_ff_dim_t{3});
 
   Conv2DParallelInputShape parsed = Conv2DParallelInputShape{
       sample_dim,
