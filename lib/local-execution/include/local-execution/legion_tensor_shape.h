@@ -5,7 +5,7 @@
 #include "op-attrs/datatype.h"
 #include "op-attrs/ff_dim_t.h"
 #include "op-attrs/tensor_shape.dtg.h"
-#include "utils/stack_vector.h"
+#include "utils/stack_vector/stack_vector.h"
 #include "utils/visitable.h"
 #include <cstddef>
 

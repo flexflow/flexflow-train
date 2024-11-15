@@ -13,7 +13,7 @@ includes = [
   "op-attrs/operator_type.dtg.h",
   "op-attrs/ff_dim_t.h",
   "op-attrs/ff_dim_t.dtg.h",
-  "utils/stack_vector.h",
+  "utils/stack_vector/stack_vector.h",
 ]
 
 [[fields]]

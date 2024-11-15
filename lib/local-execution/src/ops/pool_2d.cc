@@ -30,14 +30,14 @@ static DeviceSpecificDeviceStates
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
-  int input_w = input.shape.at(ff_dim_t(0)) + 1;
-  int input_h = input.shape.at(ff_dim_t(1)) + 1;
-  int input_c = input.shape.at(ff_dim_t(2)) + 1;
-  int input_n = input.shape.at(ff_dim_t(3)) + 1;
-  int output_w = output.shape.at(ff_dim_t(0)) + 1;
-  int output_h = output.shape.at(ff_dim_t(1)) + 1;
-  int output_c = output.shape.at(ff_dim_t(2)) + 1;
-  int output_n = output.shape.at(ff_dim_t(3)) + 1;
+  int input_w = input.shape.at(ff_dim_t{nonnegative_int{0}}) + 1;
+  int input_h = input.shape.at(ff_dim_t{nonnegative_int{1}}) + 1;
+  int input_c = input.shape.at(ff_dim_t{nonnegative_int{2}}) + 1;
+  int input_n = input.shape.at(ff_dim_t{nonnegative_int{3}}) + 1;
+  int output_w = output.shape.at(ff_dim_t{nonnegative_int{0}}) + 1;
+  int output_h = output.shape.at(ff_dim_t{nonnegative_int{1}}) + 1;
+  int output_c = output.shape.at(ff_dim_t{nonnegative_int{2}}) + 1;
+  int output_n = output.shape.at(ff_dim_t{nonnegative_int{3}}) + 1;
 
   printf("init pool (input): n(%d) c(%d) h(%d) "
          "w(%d)\n",

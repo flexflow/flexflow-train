@@ -39,8 +39,12 @@ OpTaskInvocation init(TransposeAttrs const &attrs) {
 static DeviceSpecificDeviceStates
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto const &attrs = acc.get_argument<TransposeAttrs>(ATTRS);
-  std::vector<ff_dim_t> perm = inner_to_outer_idxs(attrs.perm);
-  TransposePerDeviceState per_device_state = init_kernel(perm.size(), perm);
+  std::vector<ff_dim_t> perm;
+  size_t const &size = attrs.perm.size();
+  for (size_t const i : range(size)) {
+    perm.push_back(ff_dim_t{nonnegative_int{size - i - 1}});
+  }
+  TransposePerDeviceState per_device_state = init_kernel(size, perm);
 
   return DeviceSpecificDeviceStates{
       DeviceSpecific<TransposePerDeviceState>::create(per_device_state)};
