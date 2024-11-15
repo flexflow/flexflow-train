@@ -73,7 +73,7 @@ tl::expected<TensorShape, std::string>
       [&](ff_dim_t const &dim_idx) { return !contains(attrs.axes, dim_idx); });
   std::vector<size_t> raw_weight_dims =
       transform(non_layer_norm_dim_idxs, [&](ff_dim_t const &dim_idx) {
-        return dim_at_idx(input_shape, dim_idx);
+        return dim_at_idx(input_shape, ff_dim_t_to_relative_ff_dim_t(dim_idx));
       });
 
   return TensorShape{
@@ -117,7 +117,9 @@ static std::optional<std::string>
   }
 
   if (!all_of(attrs.axes, [&](ff_dim_t axis) {
-        return shard_dim_at_idx(input_shape, axis).degree == 1;
+        return shard_dim_at_idx(input_shape,
+                                ff_dim_t_to_relative_ff_dim_t(axis))
+                   .degree == 1;
       })) {
     return fmt::format("Expected parallel degree of all dimensions in "
                        "LayerNorm axes {} to be 1, but received input shape {}",
@@ -163,7 +165,8 @@ tl::expected<ParallelTensorShape, std::string>
       [&](ff_dim_t const &dim_idx) { return !contains(attrs.axes, dim_idx); });
   std::vector<ShardParallelDim> raw_weight_shard_dims =
       transform(non_layer_norm_dim_idxs, [&](ff_dim_t const &dim_idx) {
-        return shard_dim_at_idx(input_shape, dim_idx);
+        return shard_dim_at_idx(input_shape,
+                                ff_dim_t_to_relative_ff_dim_t(dim_idx));
       });
 
   return ParallelTensorShape{

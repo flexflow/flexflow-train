@@ -19,6 +19,7 @@
 #include "op-attrs/ops/pool_2d.h"
 #include "op-attrs/ops/softmax.h"
 #include "op-attrs/ops/weight_attrs.dtg.h"
+#include "op-attrs/relative_ff_dim_t.h"
 #include "op-attrs/tensor_dims.h"
 #include "pcg/computation_graph.h"
 #include "utils/containers/any_of.h"
@@ -480,13 +481,8 @@ tensor_guid_t ComputationGraphBuilder::embedding(
 tensor_guid_t ComputationGraphBuilder::gather(
     tensor_guid_t const &input,
     tensor_guid_t const &index,
-    ff_dim_t dim,
+    relative_ff_dim_t dim,
     std::optional<std::string> const &maybe_name) {
-  GatherAttrs attrs = GatherAttrs{dim};
-  std::string name =
-      maybe_name.value_or(get_default_name(ComputationGraphOpAttrs{attrs}));
-
-  LayerAttrs layer = LayerAttrs{ComputationGraphOpAttrs{attrs}, name};
   if (this->get_shape(index).data_type != DataType::INT32 &&
       this->get_shape(index).data_type != DataType::INT64) {
     throw mk_runtime_error(
@@ -496,6 +492,13 @@ tensor_guid_t ComputationGraphBuilder::gather(
                     DataType::INT32,
                     DataType::INT64));
   }
+
+  GatherAttrs attrs = GatherAttrs{
+      relative_ff_dim_t_to_ff_dim_t(dim, num_dims(this->get_shape(input)))};
+  std::string name =
+      maybe_name.value_or(get_default_name(ComputationGraphOpAttrs{attrs}));
+
+  LayerAttrs layer = LayerAttrs{ComputationGraphOpAttrs{attrs}, name};
   TensorShape output_shape =
       get_output_shape(attrs, this->get_shape(input), this->get_shape(index));
 
@@ -792,7 +795,9 @@ tensor_guid_t ComputationGraphBuilder::concat(
     int axis,
     std::optional<std::string> const &maybe_name) {
 
-  ConcatAttrs attrs = ConcatAttrs{ff_dim_t{axis}};
+  relative_ff_dim_t wrapped_axis = relative_ff_dim_t{axis};
+  ConcatAttrs attrs = ConcatAttrs{relative_ff_dim_t_to_ff_dim_t(
+      wrapped_axis, num_dims(this->get_shape(inputs[0])))};
 
   std::string name =
       maybe_name.value_or(get_default_name(ComputationGraphOpAttrs{attrs}));
@@ -816,8 +821,11 @@ tensor_guid_t ComputationGraphBuilder::flat(
   int input_num_dims = num_dims(this->get_shape(input));
 
   FlatAttrs attrs = FlatAttrs{
-      /*start_dim=*/ff_dim_t{start_dim},
-      /*end_dim=*/ff_dim_t{end_dim.value_or(input_num_dims)},
+      /*start_dim=*/relative_ff_dim_t_to_ff_dim_t(relative_ff_dim_t{start_dim},
+                                                  input_num_dims),
+      /*end_dim=*/
+      relative_ff_dim_t_to_ff_dim_t(
+          relative_ff_dim_t{end_dim.value_or(input_num_dims)}, input_num_dims),
   };
 
   std::string name =
@@ -849,8 +857,17 @@ tensor_guid_t ComputationGraphBuilder::layer_norm(
         num_dims(input_shape)));
   }
 
+  stack_vector<ff_dim_t, MAX_TENSOR_DIM> axes_stack;
+  std::transform(axes.begin(),
+                 axes.end(),
+                 std::back_inserter(axes_stack),
+                 [&input_shape](int axis) {
+                   return relative_ff_dim_t_to_ff_dim_t(relative_ff_dim_t{axis},
+                                                        num_dims(input_shape));
+                 });
+
   LayerNormAttrs attrs = LayerNormAttrs{
-      stack_vector<ff_dim_t, MAX_TENSOR_DIM>{axes.begin(), axes.end()},
+      axes_stack,
       elementwise_affine,
       eps,
   };
@@ -906,7 +923,8 @@ tensor_guid_t ComputationGraphBuilder::softmax(
                     input_shape));
   }
 
-  SoftmaxAttrs attrs = SoftmaxAttrs{ff_dim_t{dim}};
+  SoftmaxAttrs attrs = SoftmaxAttrs{relative_ff_dim_t_to_ff_dim_t(
+      relative_ff_dim_t{dim}, num_dims(input_shape))};
 
   std::string name =
       maybe_name.value_or(get_default_name(ComputationGraphOpAttrs{attrs}));

@@ -23,22 +23,22 @@ TEST_SUITE(FF_TEST_SUITE) {
     nonnegative_int nn_int_1b = nonnegative_int{1};
     nonnegative_int nn_int_2 = nonnegative_int{2};
     SUBCASE("LHS: nonnegative_int, RHS: nonnegative_int, equal") {
-      CHECK((nn_int_1a == nn_int_1b) == true);
+      CHECK(nn_int_1a == nn_int_1b);
     }
     SUBCASE("LHS: nonnegative_int, RHS: nonnegative_int, not equal") {
-      CHECK((nn_int_1a == nn_int_2) == false);
+      CHECK_FALSE(nn_int_1a == nn_int_2);
     }
     SUBCASE("LHS: nonnegative_int, RHS: int, equal") {
-      CHECK((nn_int_1a == 1) == true);
+      CHECK(nn_int_1a == 1);
     }
     SUBCASE("LHS: nonnegative_int, RHS: int, not equal") {
-      CHECK((nn_int_1a == 2) == false);
+      CHECK_FALSE(nn_int_1a == 2);
     }
     SUBCASE("LHS: int, RHS: nonnegative_int, equal") {
-      CHECK((1 == nn_int_1b) == true);
+      CHECK(1 == nn_int_1b);
     }
     SUBCASE("LHS: int, RHS: nonnegative_int, not equal") {
-      CHECK((2 == nn_int_1b) == false);
+      CHECK_FALSE(2 == nn_int_1b);
     }
   }
 
@@ -47,22 +47,22 @@ TEST_SUITE(FF_TEST_SUITE) {
     nonnegative_int nn_int_1b = nonnegative_int{1};
     nonnegative_int nn_int_2 = nonnegative_int{2};
     SUBCASE("LHS: nonnegative_int, RHS: nonnegative_int, equal") {
-      CHECK((nn_int_1a != nn_int_1b) == false);
+      CHECK_FALSE(nn_int_1a != nn_int_1b);
     }
     SUBCASE("LHS: nonnegative_int, RHS: nonnegative_int, not equal") {
-      CHECK((nn_int_1a != nn_int_2) == true);
+      CHECK(nn_int_1a != nn_int_2);
     }
     SUBCASE("LHS: nonnegative_int, RHS: int, equal") {
-      CHECK((nn_int_1a != 1) == false);
+      CHECK_FALSE(nn_int_1a != 1);
     }
     SUBCASE("LHS: nonnegative_int, RHS: int, not equal") {
-      CHECK((nn_int_1a != 2) == true);
+      CHECK(nn_int_1a != 2);
     }
     SUBCASE("LHS: int, RHS: nonnegative_int, equal") {
-      CHECK((1 != nn_int_1b) == false);
+      CHECK_FALSE(1 != nn_int_1b);
     }
     SUBCASE("LHS: int, RHS: nonnegative_int, not equal") {
-      CHECK((2 != nn_int_1b) == true);
+      CHECK(2 != nn_int_1b);
     }
   }
 
@@ -71,31 +71,31 @@ TEST_SUITE(FF_TEST_SUITE) {
     nonnegative_int nn_int_1b = nonnegative_int{1};
     nonnegative_int nn_int_2 = nonnegative_int{2};
     SUBCASE("LHS: nonnegative_int, RHS: nonnegative_int, less than") {
-      CHECK((nn_int_1a < nn_int_2) == true);
+      CHECK(nn_int_1a < nn_int_2);
     }
     SUBCASE("LHS: nonnegative_int, RHS: nonnegative_int, equals") {
-      CHECK((nn_int_1a < nn_int_1b) == false);
+      CHECK_FALSE(nn_int_1a < nn_int_1b);
     }
     SUBCASE("LHS: nonnegative_int, RHS: nonnegative_int, greater than") {
-      CHECK((nn_int_2 < nn_int_1b) == false);
+      CHECK_FALSE(nn_int_2 < nn_int_1b);
     }
     SUBCASE("LHS: nonnegative_int, RHS: int, less than") {
-      CHECK((nn_int_1a < 2) == true);
+      CHECK(nn_int_1a < 2);
     }
     SUBCASE("LHS: nonnegative_int, RHS: int, equals") {
-      CHECK((nn_int_1a < 1) == false);
+      CHECK_FALSE(nn_int_1a < 1);
     }
     SUBCASE("LHS: nonnegative_int, RHS: int, greater than") {
-      CHECK((nn_int_2 < 1) == false);
+      CHECK_FALSE(nn_int_2 < 1);
     }
     SUBCASE("LHS: int, RHS: nonnegative_int, less than") {
-      CHECK((1 < nn_int_2) == true);
+      CHECK(1 < nn_int_2);
     }
     SUBCASE("LHS: int, RHS: nonnegative_int, equals") {
-      CHECK((1 < nn_int_1b) == false);
+      CHECK_FALSE(1 < nn_int_1b);
     }
     SUBCASE("LHS: int, RHS: nonnegative_int, greater than") {
-      CHECK((2 < nn_int_1b) == false);
+      CHECK_FALSE(2 < nn_int_1b);
     }
   }
 
@@ -104,31 +104,31 @@ TEST_SUITE(FF_TEST_SUITE) {
     nonnegative_int nn_int_1b = nonnegative_int{1};
     nonnegative_int nn_int_2 = nonnegative_int{2};
     SUBCASE("LHS: nonnegative_int, RHS: nonnegative_int, less than") {
-      CHECK((nn_int_1a <= nn_int_2) == true);
+      CHECK(nn_int_1a <= nn_int_2);
     }
     SUBCASE("LHS: nonnegative_int, RHS: nonnegative_int, equals") {
-      CHECK((nn_int_1a <= nn_int_1b) == true);
+      CHECK(nn_int_1a <= nn_int_1b);
     }
     SUBCASE("LHS: nonnegative_int, RHS: nonnegative_int, greater than") {
-      CHECK((nn_int_2 <= nn_int_1b) == false);
+      CHECK_FALSE(nn_int_2 <= nn_int_1b);
     }
     SUBCASE("LHS: nonnegative_int, RHS: int, less than") {
-      CHECK((nn_int_1a <= 2) == true);
+      CHECK(nn_int_1a <= 2);
     }
     SUBCASE("LHS: nonnegative_int, RHS: int, equals") {
-      CHECK((nn_int_1a <= 1) == true);
+      CHECK(nn_int_1a <= 1);
     }
     SUBCASE("LHS: nonnegative_int, RHS: int, greater than") {
-      CHECK((nn_int_2 <= 1) == false);
+      CHECK_FALSE(nn_int_2 <= 1);
     }
     SUBCASE("LHS: int, RHS: nonnegative_int, less than") {
-      CHECK((1 <= nn_int_2) == true);
+      CHECK(1 <= nn_int_2);
     }
     SUBCASE("LHS: int, RHS: nonnegative_int, equals") {
-      CHECK((1 <= nn_int_1b) == true);
+      CHECK(1 <= nn_int_1b);
     }
     SUBCASE("LHS: int, RHS: nonnegative_int, greater than") {
-      CHECK((2 <= nn_int_1b) == false);
+      CHECK_FALSE(2 <= nn_int_1b);
     }
   }
 
@@ -137,31 +137,31 @@ TEST_SUITE(FF_TEST_SUITE) {
     nonnegative_int nn_int_1b = nonnegative_int{1};
     nonnegative_int nn_int_2 = nonnegative_int{2};
     SUBCASE("LHS: nonnegative_int, RHS: nonnegative_int, less than") {
-      CHECK((nn_int_1a > nn_int_2) == false);
+      CHECK_FALSE(nn_int_1a > nn_int_2);
     }
     SUBCASE("LHS: nonnegative_int, RHS: nonnegative_int, equals") {
-      CHECK((nn_int_1a > nn_int_1b) == false);
+      CHECK_FALSE(nn_int_1a > nn_int_1b);
     }
     SUBCASE("LHS: nonnegative_int, RHS: nonnegative_int, greater than") {
-      CHECK((nn_int_2 > nn_int_1b) == true);
+      CHECK(nn_int_2 > nn_int_1b);
     }
     SUBCASE("LHS: nonnegative_int, RHS: int, less than") {
-      CHECK((nn_int_1a > 2) == false);
+      CHECK_FALSE(nn_int_1a > 2);
     }
     SUBCASE("LHS: nonnegative_int, RHS: int, equals") {
-      CHECK((nn_int_1a > 1) == false);
+      CHECK_FALSE(nn_int_1a > 1);
     }
     SUBCASE("LHS: nonnegative_int, RHS: int, greater than") {
-      CHECK((nn_int_2 > 1) == true);
+      CHECK(nn_int_2 > 1);
     }
     SUBCASE("LHS: int, RHS: nonnegative_int, less than") {
-      CHECK((1 > nn_int_2) == false);
+      CHECK_FALSE(1 > nn_int_2);
     }
     SUBCASE("LHS: int, RHS: nonnegative_int, equals") {
-      CHECK((1 > nn_int_1b) == false);
+      CHECK_FALSE(1 > nn_int_1b);
     }
     SUBCASE("LHS: int, RHS: nonnegative_int, greater than") {
-      CHECK((2 > nn_int_1b) == true);
+      CHECK(2 > nn_int_1b);
     }
   }
 
@@ -170,35 +170,35 @@ TEST_SUITE(FF_TEST_SUITE) {
     nonnegative_int nn_int_1b = nonnegative_int{1};
     nonnegative_int nn_int_2 = nonnegative_int{2};
     SUBCASE("LHS: nonnegative_int, RHS: nonnegative_int, less than") {
-      CHECK((nn_int_1a >= nn_int_2) == false);
+      CHECK_FALSE(nn_int_1a >= nn_int_2);
     }
     SUBCASE("LHS: nonnegative_int, RHS: nonnegative_int, equals") {
-      CHECK((nn_int_1a >= nn_int_1b) == true);
+      CHECK(nn_int_1a >= nn_int_1b);
     }
     SUBCASE("LHS: nonnegative_int, RHS: nonnegative_int, greater than") {
-      CHECK((nn_int_2 >= nn_int_1b) == true);
+      CHECK(nn_int_2 >= nn_int_1b);
     }
     SUBCASE("LHS: nonnegative_int, RHS: int, less than") {
-      CHECK((nn_int_1a >= 2) == false);
+      CHECK_FALSE(nn_int_1a >= 2);
     }
     SUBCASE("LHS: nonnegative_int, RHS: int, equals") {
-      CHECK((nn_int_1a >= 1) == true);
+      CHECK(nn_int_1a >= 1);
     }
     SUBCASE("LHS: nonnegative_int, RHS: int, greater than") {
-      CHECK((nn_int_2 >= 1) == true);
+      CHECK(nn_int_2 >= 1);
     }
     SUBCASE("LHS: int, RHS: nonnegative_int, less than") {
-      CHECK((1 >= nn_int_2) == false);
+      CHECK_FALSE(1 >= nn_int_2);
     }
     SUBCASE("LHS: int, RHS: nonnegative_int, equals") {
-      CHECK((1 >= nn_int_1b) == true);
+      CHECK(1 >= nn_int_1b);
     }
     SUBCASE("LHS: int, RHS: nonnegative_int, greater than") {
-      CHECK((2 >= nn_int_1b) == true);
+      CHECK(2 >= nn_int_1b);
     }
   }
 
-  TEST_CASE("nonnegative_int adl_serializer") {
+  TEST_CASE("adl_serializer<nonnegative_int>") {
     SUBCASE("to_json") {
       nonnegative_int input = nonnegative_int{5};
 
@@ -230,7 +230,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(hash_fn(nn_int_1a) != hash_fn(nn_int_2));
     }
     SUBCASE("Unordered set works with nonnegative_int") {
-      std::unordered_set<FlexFlow::nonnegative_int> nonnegative_int_set;
+      std::unordered_set<::FlexFlow::nonnegative_int> nonnegative_int_set;
       nonnegative_int_set.insert(nn_int_1a);
       nonnegative_int_set.insert(nn_int_1b);
       nonnegative_int_set.insert(nn_int_2);
@@ -245,5 +245,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     oss << nn_int_1;
 
     CHECK(oss.str() == "1");
+  }
+
+  TEST_CASE("nonnegative int fmt::to_string") {
+    nonnegative_int nn_int_1 = nonnegative_int{1};
+    CHECK(fmt::to_string(nn_int_1) == "1");
   }
 }

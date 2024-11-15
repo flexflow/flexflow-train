@@ -9,12 +9,12 @@ features = [
 ]
 
 includes = [
-  "op-attrs/ff_dim_t.dtg.h",
+  "op-attrs/relative_ff_dim_t.dtg.h",
   "op-attrs/replica_type.dtg.h",
 ]
 
 [[values]]
-type = "::FlexFlow::ff_dim_t"
+type = "::FlexFlow::relative_ff_dim_t"
 
 [[values]]
 type = "::FlexFlow::ReplicaType"
