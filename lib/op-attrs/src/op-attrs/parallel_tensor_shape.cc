@@ -41,11 +41,13 @@ bool is_valid(ParallelTensorShape const &shape) {
   return is_valid(shape.dims);
 }
 
-ShardParallelDim shard_dim_at_idx(ParallelTensorShape const &s, ff_dim_t d) {
+ShardParallelDim shard_dim_at_idx(ParallelTensorShape const &s,
+                                  relative_ff_dim_t d) {
   return shard_dim_at_idx(s.dims, d);
 }
 
-ShardParallelDim &shard_dim_at_idx(ParallelTensorShape &s, ff_dim_t d) {
+ShardParallelDim &shard_dim_at_idx(ParallelTensorShape &s,
+                                   relative_ff_dim_t d) {
   return shard_dim_at_idx(s.dims, d);
 }
 
@@ -54,7 +56,8 @@ FFOrdered<int> ff_ordered_shard_degrees(ParallelTensorShape const &s) {
 }
 
 std::optional<ShardParallelDim>
-    try_get_shard_dim_at_idx(ParallelTensorShape const &s, ff_dim_t d) {
+    try_get_shard_dim_at_idx(ParallelTensorShape const &s,
+                             relative_ff_dim_t d) {
   if (s.dims.shard_dims.idx_is_valid(d)) {
     return s.dims.shard_dims.at(d);
   } else {
@@ -138,10 +141,10 @@ std::unordered_set<parallel_tensor_dim_idx_t>
     get_parallel_tensor_dim_indices(ParallelTensorShape const &shape) {
   std::unordered_set<parallel_tensor_dim_idx_t> indices;
   extend(indices, transform(range(num_shard_dims(shape.dims)), [](int idx) {
-           return parallel_tensor_dim_idx_t(ff_dim_t(idx));
+           return parallel_tensor_dim_idx_t{ff_dim_t{nonnegative_int{idx}}};
          }));
-  indices.insert(parallel_tensor_dim_idx_t(ReplicaType::SUM));
-  indices.insert(parallel_tensor_dim_idx_t(ReplicaType::DISCARD_COPY));
+  indices.insert(parallel_tensor_dim_idx_t{ReplicaType::SUM});
+  indices.insert(parallel_tensor_dim_idx_t{ReplicaType::DISCARD_COPY});
   return indices;
 }
 

@@ -79,6 +79,10 @@ std::ostream &operator<<(std::ostream &os, nonnegative_int const &n) {
 int nonnegative_int::get_value() const {
   return this->value_;
 }
+
+int format_as(nonnegative_int const &x) {
+  return x.get_value();
+}
 } // namespace FlexFlow
 
 namespace nlohmann {
@@ -94,7 +98,7 @@ void adl_serializer<::FlexFlow::nonnegative_int>::to_json(
 } // namespace nlohmann
 
 namespace std {
-std::size_t hash<FlexFlow::nonnegative_int>::operator()(
+std::size_t hash<::FlexFlow::nonnegative_int>::operator()(
     FlexFlow::nonnegative_int const &n) const noexcept {
   return std::hash<int>{}(n.get_value());
 }
