@@ -40,6 +40,8 @@ public:
 
   friend std::ostream &operator<<(std::ostream &os, nonnegative_int const &n);
 
+  friend int format_as(nonnegative_int const &);
+
   int get_value() const;
 
 private:
@@ -57,7 +59,7 @@ struct adl_serializer<::FlexFlow::nonnegative_int> {
 
 namespace std {
 template <>
-struct hash<FlexFlow::nonnegative_int> {
+struct hash<::FlexFlow::nonnegative_int> {
   std::size_t operator()(FlexFlow::nonnegative_int const &n) const noexcept;
 };
 } // namespace std

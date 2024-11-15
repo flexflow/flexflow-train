@@ -2,7 +2,7 @@
 #define _FLEXFLOW_UTILS_INCLUDE_STACK_STRING_H
 
 #include "fmt/core.h"
-#include "stack_vector.h"
+#include "stack_vector/stack_vector.h"
 #include "utils/fmt.h"
 #include "utils/type_traits.h"
 #include <cstring>
