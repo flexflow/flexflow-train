@@ -52,7 +52,8 @@ using namespace FlexFlow;
 //     OperatorAttrAssignment op_ass_n1{
 //         {{OperatorAttributeKey::OP_TYPE,
 //           AttrConstant{OperatorType::REPARTITION}},
-//          {OperatorAttributeKey::PARALLEL_DIM, AttrConstant{ff_dim_t{0}}},
+//          {OperatorAttributeKey::PARALLEL_DIM,
+//          AttrConstant{ff_dim_t{nonnegative_int{0}}}},
 //          {OperatorAttributeKey::PARALLEL_DEGREE, AttrConstant{2}}}};
 //
 //     OperatorAttrAssignment op_ass_n2{
@@ -71,7 +72,8 @@ using namespace FlexFlow;
 //     OperatorAttrAssignment op_ass_n3{
 //         {{OperatorAttributeKey::OP_TYPE,
 //         AttrConstant{OperatorType::REDUCTION}},
-//          {OperatorAttributeKey::PARALLEL_DIM, AttrConstant{ff_dim_t{0}}},
+//          {OperatorAttributeKey::PARALLEL_DIM,
+//          AttrConstant{ff_dim_t{nonnegative_int{0}}}},
 //          {OperatorAttributeKey::PARALLEL_DEGREE, AttrConstant{2}}}};
 //
 //     auto og = NodeLabelledOpenMultiDiGraph<OperatorAttrAssignment>::create<
