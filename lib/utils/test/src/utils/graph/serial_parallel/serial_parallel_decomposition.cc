@@ -206,4 +206,51 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK_FALSE(is_empty(sp));
     }
   }
+  TEST_CASE("delete_node") {
+    Node n1{1}, n2{2}, n3{3}, n4{4}, n5{5};
+
+    SUBCASE("Node") {
+      SerialParallelDecomposition sp{n1};
+
+      SerialParallelDecomposition result = delete_node(sp, n2);
+      CHECK(result == sp);
+    }
+
+    SUBCASE("SerialSplit") {
+      SerialParallelDecomposition sp{SerialSplit{{n1, n2, n3}}};
+
+      auto result = delete_node(sp, n2);
+      SerialParallelDecomposition expected{SerialSplit{{n1, n3}}};
+      CHECK(result == expected);
+
+      result = delete_node(sp, n4);
+      CHECK(result == sp);
+    }
+
+    SUBCASE("ParallelSplit") {
+      SerialParallelDecomposition sp{ParallelSplit{{n1, n2, n3}}};
+
+      auto result = delete_node(sp, n2);
+      SerialParallelDecomposition expected{ParallelSplit{{n1, n3}}};
+      CHECK(result == expected);
+
+      result = delete_node(sp, n4);
+      CHECK(result == sp);
+    }
+
+    SUBCASE("nested structure, duplicate nodes") {
+      SerialParallelDecomposition sp{SerialSplit{
+          {n1, ParallelSplit{{n2, SerialSplit{{n3, n4, n1}}, n5, n1}}}}};
+
+      auto result = delete_node(sp, n3);
+      SerialParallelDecomposition expected{SerialSplit{
+          {n1, ParallelSplit{{n2, SerialSplit{{n4, n1}}, n5, n1}}}}};
+      CHECK(result == expected);
+
+      result = delete_node(sp, n1);
+      expected = SerialParallelDecomposition{
+          SerialSplit{{ParallelSplit{{n2, SerialSplit{{n3, n4}}, n5}}}}};
+      CHECK(result == expected);
+    }
+  }
 }

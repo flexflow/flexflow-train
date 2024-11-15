@@ -22,6 +22,11 @@ bool is_empty(SerialSplit const &serial);
 bool is_empty(ParallelSplit const &parallel);
 bool is_empty(SerialParallelDecomposition const &sp);
 
+bool has_no_duplicate_nodes(SerialParallelDecomposition const &sp);
+
+SerialParallelDecomposition delete_node(SerialParallelDecomposition sp,
+                                        Node const &node);
+
 // duplicate nodes within `sp` are counted multiple times
 size_t num_nodes(SerialParallelDecomposition const &sp);
 

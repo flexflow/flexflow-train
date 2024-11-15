@@ -8,6 +8,7 @@
 #include "utils/containers/unordered_set_of.h"
 #include "utils/containers/values.h"
 #include "utils/graph/serial_parallel/intermediate_sp_decomposition_tree.h"
+#include "utils/graph/serial_parallel/normalize_sp_decomposition.h"
 #include "utils/graph/serial_parallel/serial_parallel_metrics.h"
 #include "utils/hash/unordered_set.h"
 #include "utils/variant.h"
@@ -97,8 +98,52 @@ bool is_empty(SerialParallelDecomposition const &sp) {
   return sp.visit<bool>([](auto const &t) { return is_empty(t); });
 }
 
+SerialParallelDecomposition delete_node(SerialParallelDecomposition sp,
+                                        Node const &n) {
+  return sp.visit<SerialParallelDecomposition>(
+      [&n](auto const &t) { return delete_node(t, n); });
+}
+
+SerialParallelDecomposition delete_node(ParallelSplit const &parallel,
+                                        Node const &n) {
+  std::unordered_set<SerialParallelDecomposition> children;
+  for (auto const &child : parallel.children) {
+    auto widened = widen<SerialParallelDecomposition>(child);
+    if (!(widened.has<Node>() && widened.get<Node>() == n)) {
+      children.insert(delete_node(widened, n));
+    }
+  }
+  return parallel_composition(children);
+}
+
+SerialParallelDecomposition delete_node(SerialSplit const &serial,
+                                        Node const &n) {
+  std::vector<SerialParallelDecomposition> children;
+  for (auto const &child : serial.children) {
+    auto widened = widen<SerialParallelDecomposition>(child);
+    if (!(widened.has<Node>() && widened.get<Node>() == n)) {
+      children.push_back(delete_node(widened, n));
+    }
+  }
+  return serial_composition(children);
+}
+
+SerialParallelDecomposition delete_node(Node const &node, Node const &n) {
+  if (node == n) {
+    throw mk_runtime_error(
+        "Cannot delete Node from Node, only from ParallelSplit or SerialSplit");
+  }
+
+  return SerialParallelDecomposition{node};
+}
+
 size_t num_nodes(SerialParallelDecomposition const &sp) {
   return sum(values(get_node_frequency_map(sp)));
+}
+
+bool has_no_duplicate_nodes(SerialParallelDecomposition const &sp) {
+  return all_of(values(get_node_frequency_map(sp)),
+                [](int count) { return count == 1; });
 }
 
 SerialParallelDecomposition serial_composition(

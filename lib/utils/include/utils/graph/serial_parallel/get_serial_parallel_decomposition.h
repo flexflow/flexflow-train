@@ -4,13 +4,16 @@
 #include "utils/graph/digraph/digraph.h"
 #include "utils/graph/serial_parallel/serial_parallel_decomposition.dtg.h"
 #include "utils/optional.h"
+#include <unordered_set>
 #include <variant>
-#include <vector>
 
 namespace FlexFlow {
 
 std::optional<SerialParallelDecomposition>
     get_serial_parallel_decomposition(DiGraphView const &);
+std::optional<SerialParallelDecomposition>
+    get_serial_parallel_decomposition_with_dummy_nodes(
+        DiGraphView const &, std::unordered_set<Node> const &);
 
 } // namespace FlexFlow
 

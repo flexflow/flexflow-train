@@ -4,11 +4,14 @@
 #include "utils/graph/digraph/algorithms/get_successors.h"
 #include "utils/graph/digraph/algorithms/is_acyclic.h"
 #include "utils/graph/digraph/digraph_view.h"
+#include "utils/graph/node/algorithms.h"
 
 namespace FlexFlow {
 std::unordered_set<Node> get_descendants(DiGraphView const &g,
                                          Node const &starting_node) {
   assert(is_acyclic(g));
+  assert(contains(get_nodes(g), starting_node));
+
   std::unordered_set<Node> descendants;
   std::stack<Node> to_visit;
   for (Node const &successor : get_successors(g, starting_node)) {
@@ -18,12 +21,15 @@ std::unordered_set<Node> get_descendants(DiGraphView const &g,
     Node current = to_visit.top();
     to_visit.pop();
     descendants.insert(current);
+
+    // add all unvisited successors of `current` to `to_visit`
     for (auto const &s : filter(get_successors(g, current), [&](Node const &n) {
            return !contains(descendants, n);
          })) {
       to_visit.push(s);
     }
   }
+
   return descendants;
 };
 

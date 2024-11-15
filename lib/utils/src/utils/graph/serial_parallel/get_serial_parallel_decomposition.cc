@@ -6,6 +6,7 @@
 #include "utils/graph/instances/adjacency_multidigraph.h"
 #include "utils/graph/multidigraph/algorithms/get_edges.h"
 #include "utils/graph/node/algorithms.h"
+#include "utils/graph/serial_parallel/normalize_sp_decomposition.h"
 #include "utils/graph/serial_parallel/parallel_reduction.h"
 #include "utils/graph/serial_parallel/serial_parallel_decomposition.h"
 #include "utils/graph/serial_parallel/series_reduction.h"
@@ -86,6 +87,21 @@ std::optional<SerialParallelDecomposition>
       return to_final_ast(ttsp_edge_to_sp_tree.at(e));
     }
   }
+}
+
+std::optional<SerialParallelDecomposition>
+    get_serial_parallel_decomposition_with_dummy_nodes(
+        DiGraphView const &g, std::unordered_set<Node> const &dummy_nodes) {
+  std::optional<SerialParallelDecomposition> maybe_sp =
+      get_serial_parallel_decomposition(g);
+  if (!maybe_sp) {
+    return std::nullopt;
+  }
+  SerialParallelDecomposition sp = maybe_sp.value();
+  for (Node const &dummy : dummy_nodes) {
+    sp = delete_node(sp, dummy);
+  }
+  return normalize_sp_decomposition(sp);
 }
 
 } // namespace FlexFlow

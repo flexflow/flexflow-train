@@ -215,6 +215,11 @@ typename C::value_type maximum(C const &v) {
   return *std::max_element(v.begin(), v.end());
 }
 
+template <typename F, typename C, typename T = typename C::value_type>
+T maximum_by(C const &c, F const &f) {
+  return *std::max_element(c.begin(), c.end(), f);
+}
+
 template <typename T>
 std::vector<T> value_all(std::vector<std::optional<T>> const &v) {
   return transform(v, [](std::optional<T> const &element) {

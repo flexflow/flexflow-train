@@ -159,4 +159,43 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     CHECK(result == correct);
   }
+
+  TEST_CASE("get_serial_parallel_decomposition") {
+    DiGraph g = DiGraph::create<AdjacencyDiGraph>();
+    SUBCASE("base case") {
+      Node n = g.add_node();
+      std::optional<SerialParallelDecomposition> result =
+          get_serial_parallel_decomposition_with_dummy_nodes(g, {});
+      std::optional<SerialParallelDecomposition> correct =
+          SerialParallelDecomposition{n};
+      CHECK(result == correct);
+    }
+    SUBCASE("SerialSplit") {
+      std::vector<Node> n = add_nodes(g, 3);
+      add_edges(
+          g, {DirectedEdge{n.at(0), n.at(1)}, DirectedEdge{n.at(1), n.at(2)}});
+      std::optional<SerialParallelDecomposition> result =
+          get_serial_parallel_decomposition_with_dummy_nodes(g, {n[1]});
+      std::optional<SerialParallelDecomposition> correct =
+          SerialParallelDecomposition{SerialSplit{n[0], n[2]}};
+      CHECK(result == correct);
+    }
+
+    SUBCASE("ParallelSplit") {
+      std::vector<Node> n = add_nodes(g, 5);
+      add_edges(g,
+                {DirectedEdge{n.at(0), n.at(2)},
+                 DirectedEdge{n.at(1), n.at(2)},
+                 DirectedEdge{n.at(2), n.at(3)},
+                 DirectedEdge{n.at(2), n.at(4)}});
+      std::optional<SerialParallelDecomposition> result =
+          get_serial_parallel_decomposition_with_dummy_nodes(g, {n[2]});
+      std::optional<SerialParallelDecomposition> correct =
+          SerialParallelDecomposition{SerialSplit{ParallelSplit{n[0], n[1]},
+                                                  ParallelSplit{n[3], n[4]}}};
+      CHECK(result == correct);
+    }
+
+    // TODO(@pietro) additional testing
+  }
 }

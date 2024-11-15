@@ -22,6 +22,7 @@
 #include "utils/graph/serial_parallel/serial_parallel_decomposition.dtg.h"
 #include "utils/graph/serial_parallel/serial_parallel_decomposition.h"
 #include "utils/graph/serial_parallel/serial_parallel_metrics.h"
+#include "utils/graph/serial_parallel/sp_ization/is_valid_sp_ization.h"
 #include "utils/hash/unordered_set.h"
 #include "utils/hash/vector.h"
 #include <unordered_set>
@@ -60,7 +61,9 @@ SerialParallelDecomposition
 
 SerialParallelDecomposition stratum_sync_sp_ization(DiGraphView const &g) {
   assert(is_acyclic(g));
-  return stratum_sync_sp_ization_unchecked(g);
+  SerialParallelDecomposition sp = stratum_sync_sp_ization_unchecked(g);
+  assert(is_valid_sp_ization(g, sp));
+  return sp;
 }
 
 static std::unordered_set<Node> get_heads(
@@ -162,13 +165,13 @@ static std::vector<std::unordered_set<std::unordered_set<Node>>>
 
 SerialParallelDecomposition cost_aware_stratum_sync_sp_ization_unchecked(
     DiGraphView const &g, std::unordered_map<Node, float> const &cost_map) {
+
   if (get_nodes(g).size() == 1) {
     return SerialParallelDecomposition(get_only(get_nodes(g)));
   }
-  std::vector<std::unordered_set<std::unordered_set<Node>>> stratum_split =
-      cost_aware_stratum_split(g, cost_map);
+
   std::vector<std::unordered_set<SerialParallelDecomposition>> sp_ized_strata;
-  for (auto const &stratum : stratum_split) {
+  for (auto const &stratum : cost_aware_stratum_split(g, cost_map)) {
     auto sp_ized_stratum =
         transform(stratum, [&](std::unordered_set<Node> const &nodes) {
           return cost_aware_stratum_sync_sp_ization_unchecked(
@@ -184,7 +187,11 @@ SerialParallelDecomposition cost_aware_stratum_sync_sp_ization_unchecked(
 SerialParallelDecomposition cost_aware_stratum_sync_sp_ization(
     DiGraphView const &g, std::unordered_map<Node, float> const &cost_map) {
   assert(is_acyclic(g));
-  return cost_aware_stratum_sync_sp_ization_unchecked(g, cost_map);
+
+  SerialParallelDecomposition sp =
+      cost_aware_stratum_sync_sp_ization_unchecked(g, cost_map);
+  assert(is_valid_sp_ization(g, sp));
+  return sp;
 }
 
 } // namespace FlexFlow
