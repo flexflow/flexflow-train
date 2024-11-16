@@ -1,5 +1,6 @@
 #include "doctest/doctest.h"
 #include "kernels/split_kernels.h"
+#include "op-attrs/make_datatype_value.h"
 #include "test_utils.h"
 #include "utils/containers/repeat.h"
 
@@ -12,7 +13,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     coord_t in_blk_size = 100;
     coord_t num_blks = 1;
 
-    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
+    ManagedPerDeviceFFHandle managed_handle{
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true};
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
@@ -49,8 +52,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         output_grad_ptrs[i] = output_grad_accessor.get_float_ptr();
       }
 
-      GenericTensorAccessorW input_grad_accessor =
-          create_filled_accessor_w(input_shape, allocator, DataTypeValue(0.0f));
+      GenericTensorAccessorW input_grad_accessor = create_filled_accessor_w(
+          input_shape, allocator, make_float_data_type_value(0));
 
       Kernels::Split::backward_kernel(managed_stream.raw_stream(),
                                       input_grad_accessor.get_float_ptr(),

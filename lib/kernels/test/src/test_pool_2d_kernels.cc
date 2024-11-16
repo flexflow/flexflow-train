@@ -1,5 +1,6 @@
 #include "doctest/doctest.h"
 #include "kernels/pool_2d_kernels.h"
+#include "op-attrs/make_datatype_value.h"
 #include "test_utils.h"
 
 using namespace ::FlexFlow;
@@ -12,7 +13,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     PoolOp pool_type = PoolOp::MAX;
 
-    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
+    ManagedPerDeviceFFHandle managed_handle{
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true};
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
@@ -57,7 +60,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("backward_kernel") {
       GenericTensorAccessorW output_grad_accessor = create_filled_accessor_w(
-          output_shape, allocator, DataTypeValue(1.0f));
+          output_shape, allocator, make_float_data_type_value(1));
       GenericTensorAccessorW input_grad_accessor =
           allocator.allocate_tensor(input_shape);
 

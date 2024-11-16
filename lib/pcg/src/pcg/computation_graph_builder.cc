@@ -3,6 +3,7 @@
 #include "op-attrs/get_incoming_tensor_roles.h"
 #include "op-attrs/get_op_type.h"
 #include "op-attrs/get_output_shapes.h"
+#include "op-attrs/make_datatype_value.h"
 #include "op-attrs/ops/attention.h"
 #include "op-attrs/ops/batch_norm.h"
 #include "op-attrs/ops/broadcast.h"
@@ -609,14 +610,14 @@ tensor_guid_t ComputationGraphBuilder::batch_norm(
 
     TensorShape gamma_shape =
         throw_if_unexpected(get_gamma_weights_shape(attrs, input_shape));
-    InitializerAttrs gamma_initializer =
-        InitializerAttrs{ConstantInitializerAttrs{DataTypeValue{float{1}}}};
+    InitializerAttrs gamma_initializer = InitializerAttrs{
+        ConstantInitializerAttrs{make_float_data_type_value(1)}};
     weights.push_back(make_weight_attrs(gamma_shape, gamma_initializer));
 
     TensorShape beta_shape =
         throw_if_unexpected(get_beta_weights_shape(attrs, input_shape));
-    InitializerAttrs beta_initializer =
-        InitializerAttrs{ConstantInitializerAttrs{DataTypeValue{float{0}}}};
+    InitializerAttrs beta_initializer = InitializerAttrs{
+        ConstantInitializerAttrs{make_float_data_type_value(0)}};
     weights.push_back(make_weight_attrs(beta_shape, beta_initializer));
   }
 
@@ -688,8 +689,8 @@ tensor_guid_t ComputationGraphBuilder::multihead_attention(
         get_input_bias_shape(attrs, query_shape, key_shape, value_shape));
     // initializer chosen based on
     // https://github.com/pytorch/pytorch/blob/31c4e0d37d8efc37a0697159e5b9121ec34d5141/torch/nn/modules/activation.py#L1120-L1121
-    InitializerAttrs input_bias_initializer =
-        InitializerAttrs{ConstantInitializerAttrs{DataTypeValue{float{0}}}};
+    InitializerAttrs input_bias_initializer = InitializerAttrs{
+        ConstantInitializerAttrs{make_float_data_type_value(0)}};
 
     weights.push_back(
         make_weight_attrs(input_bias_shape, input_bias_initializer));
@@ -698,8 +699,8 @@ tensor_guid_t ComputationGraphBuilder::multihead_attention(
         get_output_bias_shape(attrs, query_shape, key_shape, value_shape));
     // initializer chosen based on
     // https://github.com/pytorch/pytorch/blob/31c4e0d37d8efc37a0697159e5b9121ec34d5141/torch/nn/modules/activation.py#L1120-L1121
-    InitializerAttrs output_bias_initializer =
-        InitializerAttrs{ConstantInitializerAttrs{DataTypeValue{float{0}}}};
+    InitializerAttrs output_bias_initializer = InitializerAttrs{
+        ConstantInitializerAttrs{make_float_data_type_value(0)}};
 
     weights.push_back(
         make_weight_attrs(output_bias_shape, output_bias_initializer));
@@ -870,14 +871,14 @@ tensor_guid_t ComputationGraphBuilder::layer_norm(
 
     TensorShape gamma_shape =
         throw_if_unexpected(get_gamma_weights_shape(attrs, input_shape));
-    InitializerAttrs gamma_initializer =
-        InitializerAttrs{ConstantInitializerAttrs{DataTypeValue{float{1}}}};
+    InitializerAttrs gamma_initializer = InitializerAttrs{
+        ConstantInitializerAttrs{make_float_data_type_value(1)}};
     weights.push_back(make_weight_attrs(gamma_shape, gamma_initializer));
 
     TensorShape beta_shape =
         throw_if_unexpected(get_beta_weights_shape(attrs, input_shape));
-    InitializerAttrs beta_initializer =
-        InitializerAttrs{ConstantInitializerAttrs{DataTypeValue{float{0}}}};
+    InitializerAttrs beta_initializer = InitializerAttrs{
+        ConstantInitializerAttrs{make_float_data_type_value(0)}};
     weights.push_back(make_weight_attrs(beta_shape, beta_initializer));
   }
 

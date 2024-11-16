@@ -1,6 +1,7 @@
 #include "doctest/doctest.h"
 #include "kernels/reverse_kernels.h"
 #include "kernels/reverse_kernels_cpu.h"
+#include "op-attrs/make_datatype_value.h"
 #include "test_utils.h"
 
 using namespace ::FlexFlow;
@@ -14,7 +15,9 @@ TEST_SUITE(FF_TEST_SUITE) {
         {num_out_blks, reverse_dim_size, in_blk_size}, DataType::FLOAT);
     TensorShape output_shape = input_shape;
 
-    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
+    ManagedPerDeviceFFHandle managed_handle{
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true};
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
@@ -22,7 +25,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("forward_kernel") {
       GenericTensorAccessorR input_accessor =
           read_only_accessor_from_write_accessor(create_filled_accessor_w(
-              input_shape, allocator, DataTypeValue(1.0f)));
+              input_shape, allocator, make_float_data_type_value(1)));
       GenericTensorAccessorW output_accessor =
           allocator.allocate_tensor(output_shape);
 
@@ -65,7 +68,9 @@ TEST_SUITE(FF_TEST_SUITE) {
         {num_out_blks, reverse_dim_size, in_blk_size}, DataType::FLOAT);
     TensorShape output_shape = input_shape;
 
-    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
+    ManagedPerDeviceFFHandle managed_handle{
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true};
     ManagedFFStream managed_stream{};
 
     Allocator gpu_allocator = create_local_cuda_memory_allocator();

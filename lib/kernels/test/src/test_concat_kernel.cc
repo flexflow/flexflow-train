@@ -8,9 +8,11 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Test concat kernel forward and backward") {
     size_t num_inputs = 2;
     size_t size_per_input = 10;
-    ff_dim_t concat_axis = ff_dim_t(1);
+    ff_dim_t concat_axis = ff_dim_t{1};
 
-    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
+    ManagedPerDeviceFFHandle managed_handle{
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true};
     ManagedFFStream managed_stream{};
 
     TensorShape input_shape =

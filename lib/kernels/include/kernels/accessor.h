@@ -11,8 +11,6 @@
 
 namespace FlexFlow {
 
-struct Allocator;
-
 class GenericTensorAccessorR {
 public:
   template <DataType DT>
@@ -42,7 +40,7 @@ public:
   bool operator!=(GenericTensorAccessorR const &) const;
 
   template <DataType DT>
-  real_type_t<DT> const &at(std::vector<size_t> const &indices) const {
+  real_type_t<DT> const &at(std::vector<int> const &indices) const {
     if (this->device_type != DeviceType::CPU) {
       throw mk_runtime_error("Calling at() on non-CPU allocated tensor");
     }
@@ -50,11 +48,31 @@ public:
       throw mk_runtime_error(fmt::format(
           "Invalid access data type ({} != {})", this->data_type, DT));
     }
+    if (indices.size() != this->shape.num_dims()) {
+      throw mk_runtime_error(fmt::format("Number of indices ({}) does not "
+                                         "match the number of dimensions ({}).",
+                                         indices.size(),
+                                         this->shape.num_dims()));
+    }
 
     using T = real_type_t<DT>;
-
     T const *data_ptr = static_cast<T const *>(this->ptr);
-    size_t offset = calculate_index_offset(indices);
+
+    int offset = 0;
+    int multiplier = 1;
+    for (int i = 0; i < this->shape.num_dims(); i++) {
+      if (indices.at(i) >= this->shape.at(legion_dim_t{i})) {
+        throw mk_runtime_error(
+            fmt::format("In {} dimension, attempting to access index {} "
+                        "when only {} indexes exist",
+                        i,
+                        indices.at(i),
+                        this->shape.at(legion_dim_t{i})));
+      }
+
+      offset += indices.at(i) * multiplier;
+      multiplier *= this->shape.at(legion_dim_t{i});
+    }
 
     return data_ptr[offset];
   }
@@ -71,8 +89,6 @@ private:
              decltype(ptr) const &,
              decltype(device_type) const &>
       tie() const;
-
-  size_t calculate_index_offset(std::vector<size_t> const &indices) const;
 };
 
 std::string format_as(GenericTensorAccessorR const &);
@@ -109,25 +125,45 @@ public:
   operator GenericTensorAccessorR() const;
 
   template <DataType DT>
-  real_type_t<DT> &at(std::vector<size_t> const &indices) {
+  real_type_t<DT> &at(std::vector<int> const &indices) {
     if (this->device_type != DeviceType::CPU) {
       throw mk_runtime_error("Calling at() on non-CPU allocated tensor");
     }
     if (this->data_type != DT) {
       throw mk_runtime_error(fmt::format(
           "Invalid access data type ({} != {})", this->data_type, DT));
+    }
+    if (indices.size() != this->shape.num_dims()) {
+      throw mk_runtime_error(fmt::format("Number of indices ({}) does not "
+                                         "match the number of dimensions ({}).",
+                                         indices.size(),
+                                         this->shape.num_dims()));
     }
 
     using T = real_type_t<DT>;
 
     T *data_ptr = static_cast<T *>(this->ptr);
-    size_t offset = calculate_index_offset(indices);
+    int offset = 0;
+    int multiplier = 1;
+    for (int i = 0; i < this->shape.num_dims(); i++) {
+      if (indices.at(i) >= this->shape.at(legion_dim_t{i})) {
+        throw mk_runtime_error(
+            fmt::format("In {} dimension, attempting to access index {} "
+                        "when only {} indexes exist",
+                        i,
+                        indices.at(i),
+                        this->shape.at(legion_dim_t{i})));
+      }
+
+      offset += indices.at(i) * multiplier;
+      multiplier *= this->shape.at(legion_dim_t{i});
+    }
 
     return data_ptr[offset];
   }
 
   template <DataType DT>
-  real_type_t<DT> &at(std::vector<size_t> const &indices) const {
+  real_type_t<DT> &at(std::vector<int> const &indices) const {
     if (this->device_type != DeviceType::CPU) {
       throw mk_runtime_error("Calling at() on non-CPU allocated tensor");
     }
@@ -135,11 +171,31 @@ public:
       throw mk_runtime_error(fmt::format(
           "Invalid access data type ({} != {})", this->data_type, DT));
     }
+    if (indices.size() != this->shape.num_dims()) {
+      throw mk_runtime_error(fmt::format("Number of indices ({}) does not "
+                                         "match the number of dimensions ({}).",
+                                         indices.size(),
+                                         this->shape.num_dims()));
+    }
 
     using T = real_type_t<DT>;
 
     T const *data_ptr = static_cast<T const *>(this->ptr);
-    size_t offset = calculate_index_offset(indices);
+    int offset = 0;
+    int multiplier = 1;
+    for (int i = 0; i < this->shape.num_dims(); i++) {
+      if (indices.at(i) >= this->shape.at(legion_dim_t{i})) {
+        throw mk_runtime_error(
+            fmt::format("In {} dimension, attempting to access index {} "
+                        "when only {} indexes exist",
+                        i,
+                        indices.at(i),
+                        this->shape.at(legion_dim_t{i})));
+      }
+
+      offset += indices.at(i) * multiplier;
+      multiplier *= this->shape.at(legion_dim_t{i});
+    }
 
     return data_ptr[offset];
   }
@@ -156,8 +212,6 @@ private:
              decltype(ptr) const &,
              decltype(device_type) const &>
       tie() const;
-
-  size_t calculate_index_offset(std::vector<size_t> const &indices) const;
 };
 
 std::string format_as(GenericTensorAccessorW const &);
@@ -213,6 +267,21 @@ std::vector<double const *>
 std::vector<half const *>
     get_half_ptrs(std::vector<GenericTensorAccessorR> const &);
 
+int32_t *get_int32_ptr(GenericTensorAccessorW const &);
+int64_t *get_int64_ptr(GenericTensorAccessorW const &);
+float *get_float_ptr(GenericTensorAccessorW const &);
+double *get_double_ptr(GenericTensorAccessorW const &);
+half *get_half_ptr(GenericTensorAccessorW const &);
+std::vector<int32_t *>
+    get_int32_ptrs(std::vector<GenericTensorAccessorW> const &);
+std::vector<int64_t *>
+    get_int64_ptrs(std::vector<GenericTensorAccessorW> const &);
+std::vector<float *>
+    get_float_ptrs(std::vector<GenericTensorAccessorW> const &);
+std::vector<double *>
+    get_double_ptrs(std::vector<GenericTensorAccessorW> const &);
+std::vector<half *> get_half_ptrs(std::vector<GenericTensorAccessorW> const &);
+
 template <DataType DT>
 std::vector<real_type_t<DT> const *>
     get(std::vector<GenericTensorAccessorR> const &accs) {
@@ -238,14 +307,6 @@ std::pair<ArrayShape, DataType>
 
 void copy_accessor_data_to_l_from_r(GenericTensorAccessorW &dst_accessor,
                                     GenericTensorAccessorR const &src_accessor);
-
-GenericTensorAccessorR
-    copy_tensor_accessor_r(GenericTensorAccessorR const &src_accessor,
-                           Allocator &allocator);
-
-GenericTensorAccessorW
-    copy_tensor_accessor_w(GenericTensorAccessorW const &src_accessor,
-                           Allocator &allocator);
 
 } // namespace FlexFlow
 

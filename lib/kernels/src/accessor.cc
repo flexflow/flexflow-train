@@ -26,7 +26,7 @@ void copy_accessor_data_to_l_from_r(
         dst_accessor.ptr, src_accessor.ptr, num_bytes, cudaMemcpyDeviceToHost));
   } else {
     assert(src_device_type == DeviceType::GPU);
-    assert(src_device_type == DeviceType::CPU);
+    assert(dst_device_type == DeviceType::GPU);
     checkCUDA(cudaMemcpy(dst_accessor.ptr,
                          src_accessor.ptr,
                          num_bytes,
@@ -51,36 +51,6 @@ std::tuple<DataType const &,
            DeviceType const &>
     GenericTensorAccessorW::tie() const {
   return std::tie(this->data_type, this->shape, this->ptr, this->device_type);
-}
-
-size_t GenericTensorAccessorW::calculate_index_offset(
-    std::vector<size_t> const &indices) const {
-
-  if (indices.size() != this->shape.num_dims()) {
-    throw mk_runtime_error(fmt::format(
-        "Number of indices ({}) does not match the number of dimensions ({}).",
-        indices.size(),
-        this->shape.num_dims()));
-  }
-
-  size_t offset = 0;
-  size_t multiplier = 1;
-
-  for (size_t i = 0; i < this->shape.num_dims(); i++) {
-    if (indices[i] >= this->shape.at(legion_dim_t(i))) {
-      throw mk_runtime_error(
-          fmt::format("In {} dimension, attempting to access index {} "
-                      "when only {} indexes exist",
-                      i,
-                      indices[i],
-                      this->shape.at(legion_dim_t(i))));
-    }
-
-    offset += indices[i] * multiplier;
-    multiplier *= this->shape.at(legion_dim_t(i));
-  }
-
-  return offset;
 }
 
 bool GenericTensorAccessorW::operator==(
@@ -137,36 +107,6 @@ std::tuple<DataType const &,
            DeviceType const &>
     GenericTensorAccessorR::tie() const {
   return std::tie(this->data_type, this->shape, this->ptr, this->device_type);
-}
-
-size_t GenericTensorAccessorR::calculate_index_offset(
-    std::vector<size_t> const &indices) const {
-
-  if (indices.size() != this->shape.num_dims()) {
-    throw mk_runtime_error(fmt::format(
-        "Number of indices ({}) does not match the number of dimensions ({}).",
-        indices.size(),
-        this->shape.num_dims()));
-  }
-
-  ssize_t offset = 0;
-  size_t multiplier = 1;
-
-  for (size_t i = 0; i < this->shape.num_dims(); i++) {
-    if (indices[i] >= this->shape.at(legion_dim_t(i))) {
-      throw mk_runtime_error(
-          fmt::format("In {} dimension, attempting to access index {} "
-                      "when only {} indexes exist",
-                      i,
-                      indices[i],
-                      this->shape.at(legion_dim_t(i))));
-    }
-
-    offset += indices[i] * multiplier;
-    multiplier *= this->shape.at(legion_dim_t(i));
-  }
-
-  return offset;
 }
 
 bool GenericTensorAccessorR::operator==(
@@ -278,48 +218,6 @@ bool shape_and_dtype_matches(GenericTensorAccessorR const &accessor,
 std::pair<ArrayShape, DataType>
     get_shape_and_datatype(GenericTensorAccessorR const &accessor) {
   return std::make_pair(accessor.shape, accessor.data_type);
-}
-
-template <DataType DT>
-struct CopyTensorAccessorW {
-  GenericTensorAccessorW operator()(GenericTensorAccessorW const &src_accessor,
-                                    Allocator &allocator) {
-    TensorShape shape =
-        get_tensor_shape(src_accessor.shape, src_accessor.data_type);
-    GenericTensorAccessorW dst_accessor = allocator.allocate_tensor(shape);
-
-    copy_accessor_data_to_l_from_r(dst_accessor, src_accessor);
-
-    return dst_accessor;
-  }
-};
-
-GenericTensorAccessorW
-    copy_tensor_accessor_w(GenericTensorAccessorW const &src_accessor,
-                           Allocator &allocator) {
-  return DataTypeDispatch1<CopyTensorAccessorW>{}(
-      src_accessor.data_type, src_accessor, allocator);
-}
-
-template <DataType DT>
-struct CopyTensorAccessorR {
-  GenericTensorAccessorR operator()(GenericTensorAccessorR const &src_accessor,
-                                    Allocator &allocator) {
-    TensorShape shape =
-        get_tensor_shape(src_accessor.shape, src_accessor.data_type);
-    GenericTensorAccessorW dst_accessor = allocator.allocate_tensor(shape);
-
-    copy_accessor_data_to_l_from_r(dst_accessor, src_accessor);
-
-    return read_only_accessor_from_write_accessor(dst_accessor);
-  }
-};
-
-GenericTensorAccessorR
-    copy_tensor_accessor_r(GenericTensorAccessorR const &src_accessor,
-                           Allocator &allocator) {
-  return DataTypeDispatch1<CopyTensorAccessorR>{}(
-      src_accessor.data_type, src_accessor, allocator);
 }
 
 } // namespace FlexFlow

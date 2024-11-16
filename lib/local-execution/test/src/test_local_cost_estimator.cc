@@ -12,7 +12,11 @@
 // TEST_SUITE(FF_CUDA_TEST_SUITE) {
 //   TEST_CASE("Local Cost Estimator") {
 //     // local backing initialization
-//     ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
+//     ManagedPerDeviceFFHandle managed_handle{
+/*workSpaceSize=*/1024 * 1024,
+    /*allowTensorOpMathConversion=*/true
+}
+;
 
 //     RuntimeArgConfig runtime_arg_config = RuntimeArgConfig{
 //         DeviceSpecific<PerDeviceFFHandle>::create(managed_handle.raw_handle()),

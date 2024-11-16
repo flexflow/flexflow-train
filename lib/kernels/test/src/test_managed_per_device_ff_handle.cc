@@ -4,33 +4,35 @@
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("Test Managed Per Device FF Handle") {
+  TEST_CASE("ManagedPerDeviceFFHandle") {
     ManagedPerDeviceFFHandle base_handle{1024 * 1024, true};
     PerDeviceFFHandle const *base_handle_ptr = &base_handle.raw_handle();
 
-    SUBCASE("Test ManagedPerDeviceFFHandle Constructor") {
+    SUBCASE("constructor") {
       CHECK(base_handle.raw_handle().workSpaceSize == 1024 * 1024);
       CHECK(base_handle.raw_handle().allowTensorOpMathConversion == true);
     }
 
-    SUBCASE("Test ManagedPerDeviceFFHandle Move Constructor") {
+    SUBCASE("move constructor") {
       ManagedPerDeviceFFHandle new_handle(std::move(base_handle));
 
       CHECK(&base_handle.raw_handle() == nullptr);
       CHECK(&new_handle.raw_handle() == base_handle_ptr);
     }
 
-    SUBCASE("Test ManagedPerDeviceFFHandle Assignment Operator") {
-      ManagedPerDeviceFFHandle new_handle{1024 * 1024, true};
-      new_handle = std::move(base_handle);
+    SUBCASE("move assignment operator") {
+      SUBCASE("move assign to other") {
+        ManagedPerDeviceFFHandle new_handle{1024 * 1024, true};
+        new_handle = std::move(base_handle);
 
-      CHECK(&base_handle.raw_handle() == nullptr);
-      CHECK(&new_handle.raw_handle() == base_handle_ptr);
-    }
+        CHECK(&base_handle.raw_handle() == nullptr);
+        CHECK(&new_handle.raw_handle() == base_handle_ptr);
+      }
 
-    SUBCASE("Test Self-Assignment") {
-      base_handle = std::move(base_handle);
-      CHECK(&base_handle.raw_handle() == base_handle_ptr);
+      SUBCASE("move assign to self") {
+        base_handle = std::move(base_handle);
+        CHECK(&base_handle.raw_handle() == base_handle_ptr);
+      }
     }
   }
 }

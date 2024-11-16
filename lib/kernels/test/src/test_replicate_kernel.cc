@@ -13,7 +13,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     TensorShape output_shape =
         make_tensor_shape_from_legion_dims({100}, DataType::FLOAT);
 
-    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
+    ManagedPerDeviceFFHandle managed_handle{
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true};
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
@@ -53,7 +55,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     TensorShape output_shape =
         make_tensor_shape_from_legion_dims({5, num_replicas}, DataType::FLOAT);
 
-    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
+    ManagedPerDeviceFFHandle managed_handle{
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true};
     ManagedFFStream managed_stream{};
 
     Allocator gpu_allocator = create_local_cuda_memory_allocator();

@@ -1,5 +1,6 @@
 #include "doctest/doctest.h"
 #include "kernels/batch_norm_kernels.h"
+#include "op-attrs/make_datatype_value.h"
 #include "test_utils.h"
 
 using namespace ::FlexFlow;
@@ -9,7 +10,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     size_t output_n = 1, output_c = 10, output_h = 10, output_w = 10;
 
     ManagedFFStream managed_stream{};
-    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
+    ManagedPerDeviceFFHandle managed_handle{
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true};
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
@@ -36,12 +39,12 @@ TEST_SUITE(FF_TEST_SUITE) {
         create_random_filled_accessor_w(input_shape, allocator);
     GenericTensorAccessorW output_accessor =
         create_random_filled_accessor_w(output_shape, allocator);
-    GenericTensorAccessorW scale_accessor =
-        create_filled_accessor_w(scale_shape, allocator, DataTypeValue(1.0f));
+    GenericTensorAccessorW scale_accessor = create_filled_accessor_w(
+        scale_shape, allocator, make_float_data_type_value(1));
 
     SUBCASE("forward_kernel") {
-      GenericTensorAccessorW bias_accessor =
-          create_filled_accessor_w(bias_shape, allocator, DataTypeValue(0.0f));
+      GenericTensorAccessorW bias_accessor = create_filled_accessor_w(
+          bias_shape, allocator, make_float_data_type_value(0));
 
       Kernels::BatchNorm::forward_kernel(managed_stream.raw_stream(),
                                          state,

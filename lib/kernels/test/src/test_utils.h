@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_KERNELS_TEST_UTILS
 #define _FLEXFLOW_KERNELS_TEST_UTILS
 
+#include "kernels/copy_tensor_accessor.h"
 #include "kernels/datatype_dispatch.h"
 #include "kernels/device.h"
 #include "kernels/local_cpu_allocator.h"
@@ -37,7 +38,7 @@ GenericTensorAccessorR
     copy_accessor_r_to_cpu_if_necessary(GenericTensorAccessorR const &accessor,
                                         Allocator &allocator);
 
-void print_tensor_accessor_contents(GenericTensorAccessorR const &accessor);
+void print_2d_tensor_accessor_contents(GenericTensorAccessorR const &accessor);
 
 bool accessors_are_equal(GenericTensorAccessorR const &accessor_a,
                          GenericTensorAccessorR const &accessor_b);

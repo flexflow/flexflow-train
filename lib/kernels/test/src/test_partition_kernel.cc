@@ -1,12 +1,15 @@
 #include "doctest/doctest.h"
 #include "kernels/partition_kernels.h"
+#include "op-attrs/make_datatype_value.h"
 #include "test_utils.h"
 
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Test Partition Forward and Backward") {
-    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
+    ManagedPerDeviceFFHandle managed_handle{
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true};
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
@@ -19,8 +22,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     TensorShape output_shape = input_shape;
 
     SUBCASE("forward_kernel") {
-      GenericTensorAccessorR input_accessor =
-          create_filled_accessor_r(input_shape, allocator, DataTypeValue(1.0f));
+      GenericTensorAccessorR input_accessor = create_filled_accessor_r(
+          input_shape, allocator, make_float_data_type_value(1));
       GenericTensorAccessorW output_accessor =
           allocator.allocate_tensor(output_shape);
 
@@ -32,9 +35,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("backward_kernel") {
       GenericTensorAccessorR output_grad_accessor = create_filled_accessor_r(
-          output_shape, allocator, DataTypeValue(1.0f));
-      GenericTensorAccessorW input_grad_accessor =
-          create_filled_accessor_w(input_shape, allocator, DataTypeValue(2.0f));
+          output_shape, allocator, make_float_data_type_value(1));
+      GenericTensorAccessorW input_grad_accessor = create_filled_accessor_w(
+          input_shape, allocator, make_float_data_type_value(2));
 
       Kernels::Repartition::backward_kernel(managed_stream.raw_stream(),
                                             state,

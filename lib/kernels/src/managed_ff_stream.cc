@@ -12,16 +12,17 @@ ManagedFFStream::ManagedFFStream(ManagedFFStream &&other) noexcept
 
 ManagedFFStream &ManagedFFStream::operator=(ManagedFFStream &&other) noexcept {
   if (this != &other) {
-    if (this->stream != nullptr) {
-      checkCUDA(cudaStreamDestroy(*this->stream));
-      delete stream;
-    }
+    this->cleanup();
     this->stream = std::exchange(other.stream, nullptr);
   }
   return *this;
 }
 
 ManagedFFStream::~ManagedFFStream() {
+  this->cleanup();
+}
+
+void ManagedFFStream::cleanup() {
   if (this->stream != nullptr) {
     checkCUDA(cudaStreamDestroy(*this->stream));
     delete this->stream;

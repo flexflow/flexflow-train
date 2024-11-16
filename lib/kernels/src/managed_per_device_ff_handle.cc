@@ -5,7 +5,7 @@ namespace FlexFlow {
 
 ManagedPerDeviceFFHandle::ManagedPerDeviceFFHandle(
     size_t workSpaceSize, bool allowTensorOpMathConversion) {
-  this->handle = new PerDeviceFFHandle;
+  this->handle = new PerDeviceFFHandle{};
   this->handle->workSpaceSize = workSpaceSize;
   this->handle->allowTensorOpMathConversion = allowTensorOpMathConversion;
 
@@ -21,18 +21,17 @@ ManagedPerDeviceFFHandle::ManagedPerDeviceFFHandle(
 ManagedPerDeviceFFHandle &ManagedPerDeviceFFHandle::operator=(
     ManagedPerDeviceFFHandle &&other) noexcept {
   if (this != &other) {
-    if (this->handle != nullptr) {
-      checkCUDNN(cudnnDestroy(this->handle->dnn));
-      checkCUBLAS(cublasDestroy(this->handle->blas));
-      checkCUDA(cudaFree(this->handle->workSpace));
-      delete this->handle;
-    }
+    this->cleanup();
     this->handle = std::exchange(other.handle, nullptr);
   }
   return *this;
 }
 
 ManagedPerDeviceFFHandle::~ManagedPerDeviceFFHandle() {
+  this->cleanup();
+}
+
+void ManagedPerDeviceFFHandle::cleanup() {
   if (this->handle != nullptr) {
     checkCUDNN(cudnnDestroy(this->handle->dnn));
     checkCUBLAS(cublasDestroy(this->handle->blas));

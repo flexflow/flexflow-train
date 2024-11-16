@@ -19,6 +19,8 @@ public:
 
   ffStream_t const &raw_stream() const;
 
+  void cleanup();
+
 private:
   ffStream_t *stream;
 };

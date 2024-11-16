@@ -137,25 +137,35 @@ GenericTensorAccessorW
 }
 
 template <DataType DT>
-struct PrintCPUAccessorR {
+struct Print2DCPUAccessorR {
   void operator()(GenericTensorAccessorR const &accessor,
                   std::ostream &stream) {
     using T = real_type_t<DT>;
 
     T const *data_ptr = accessor.get<DT>();
-    for (size_t i = 0; i < accessor.shape.num_elements(); i++) {
-      stream << data_ptr[i] << " ";
+    int rows = accessor.shape.at(legion_dim_t{0});
+    int cols = accessor.shape.at(legion_dim_t{1});
+
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < cols; j++) {
+        stream << data_ptr[i * cols + j];
+
+        if (j < cols - 1) {
+          stream << " ";
+        }
+      }
+      stream << std::endl;
     }
-    stream << "\n";
   }
 };
 
-void print_tensor_accessor_contents(GenericTensorAccessorR const &accessor,
-                                    std::ostream &stream) {
+void print_2d_tensor_accessor_contents(GenericTensorAccessorR const &accessor,
+                                       std::ostream &stream) {
   Allocator cpu_allocator = create_local_cpu_memory_allocator();
   GenericTensorAccessorR cpu_accessor =
       copy_accessor_r_to_cpu_if_necessary(accessor, cpu_allocator);
-  DataTypeDispatch1<PrintCPUAccessorR>{}(accessor.data_type, accessor, stream);
+  DataTypeDispatch1<Print2DCPUAccessorR>{}(
+      accessor.data_type, accessor, stream);
 }
 
 template <DataType DT>

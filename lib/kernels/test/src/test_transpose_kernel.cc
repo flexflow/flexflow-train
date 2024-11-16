@@ -7,9 +7,11 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Test Transpose Kernel Operations") {
     std::size_t num_dims = 2;
 
-    std::vector<ff_dim_t> perm = {ff_dim_t(0), ff_dim_t(1)};
+    std::vector<ff_dim_t> perm = {ff_dim_t{0}, ff_dim_t{1}};
 
-    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
+    ManagedPerDeviceFFHandle managed_handle{
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true};
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();

@@ -19,9 +19,9 @@ struct CPUBackwardKernel {
                   GenericTensorAccessorW &input,
                   size_t num_replicas) {
     using T = real_type_t<DT>;
-    for (size_t i = 0; i < input.shape.num_elements(); i++) {
+    for (int i = 0; i < input.shape.num_elements(); i++) {
       T cur_sum = 0;
-      for (size_t j = 0; j < num_replicas; j++) {
+      for (int j = 0; j < num_replicas; j++) {
         cur_sum += output.at<DT>({i, j});
       }
       input.at<DT>({i}) = cur_sum;

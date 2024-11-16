@@ -1,5 +1,6 @@
 #include "doctest/doctest.h"
 #include "kernels/reduction_kernels.h"
+#include "op-attrs/make_datatype_value.h"
 #include "test_utils.h"
 
 using namespace ::FlexFlow;
@@ -10,7 +11,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     TensorShape input_shape = make_tensor_shape_from_legion_dims(
         {10, 10, 10, 10, 10}, DataType::FLOAT);
 
-    ManagedPerDeviceFFHandle managed_handle(1024 * 1024, true);
+    ManagedPerDeviceFFHandle managed_handle{
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true};
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
@@ -36,7 +39,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       TensorShape output_shape = input_shape;
 
       GenericTensorAccessorR output_grad_accessor = create_filled_accessor_r(
-          output_shape, allocator, DataTypeValue(1.0f));
+          output_shape, allocator, make_float_data_type_value(1));
       GenericTensorAccessorW input_grad_accessor =
           allocator.allocate_tensor(input_shape);
 

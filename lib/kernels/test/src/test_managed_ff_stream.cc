@@ -4,26 +4,28 @@
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("Test Managed FF Stream") {
+  TEST_CASE("ManagedFFStream") {
     ManagedFFStream base_stream{};
     ffStream_t const *base_stream_ptr = &base_stream.raw_stream();
 
-    SUBCASE("Test ManagedFFStream Move Constructor") {
+    SUBCASE("move constructor") {
       ManagedFFStream new_stream(std::move(base_stream));
       CHECK(&base_stream.raw_stream() == nullptr);
       CHECK(&new_stream.raw_stream() == base_stream_ptr);
     }
 
-    SUBCASE("Test ManagedFFStream Assignment Operator") {
-      ManagedFFStream new_stream{};
-      new_stream = std::move(base_stream);
-      CHECK(&base_stream.raw_stream() == nullptr);
-      CHECK(&new_stream.raw_stream() == base_stream_ptr);
-    }
+    SUBCASE("move assignment operator") {
+      SUBCASE("move assign to other") {
+        ManagedFFStream new_stream{};
+        new_stream = std::move(base_stream);
+        CHECK(&base_stream.raw_stream() == nullptr);
+        CHECK(&new_stream.raw_stream() == base_stream_ptr);
+      }
 
-    SUBCASE("Test Self-Assignment") {
-      base_stream = std::move(base_stream);
-      CHECK(&base_stream.raw_stream() == base_stream_ptr);
+      SUBCASE("move assign to self") {
+        base_stream = std::move(base_stream);
+        CHECK(&base_stream.raw_stream() == base_stream_ptr);
+      }
     }
   }
 }
