@@ -125,4 +125,11 @@ if [ -f "$hf_token_path" ]; then
   hf_token_volume+="-v $hf_token_path:/root/.cache/huggingface/token"
 fi
 
-eval docker run -it "$gpu_arg" "--shm-size=${SHM_SIZE}" "${hf_token_volume}" "${port_forward_arg}" "${image}-${FF_GPU_BACKEND}${gpu_backend_version}:latest"
+ssh_key_volume=""
+ssh_key_path="$HOME/.ssh/id_rsa"
+if [ -f "$ssh_key_path" ]; then
+  # If the token exists, add the volume mount to the Docker command
+  ssh_key_volume+="-v $ssh_key_path:/root/.ssh/id_rsa"
+fi
+
+eval docker run -it "$gpu_arg" "--shm-size=${SHM_SIZE}" "${ssh_key_volume}" "${hf_token_volume}" "${port_forward_arg}" "${image}-${FF_GPU_BACKEND}${gpu_backend_version}:latest"
