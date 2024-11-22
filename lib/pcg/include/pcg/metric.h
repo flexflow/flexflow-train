@@ -1,9 +1,9 @@
 #ifndef _FF_METRICS_H_
 #define _FF_METRICS_H_
 
-#include <unordered_set>
-#include "utils/fmt.h"
 #include "op-attrs/ops/loss_functions/loss_functions.h"
+#include "utils/fmt.h"
+#include <unordered_set>
 
 namespace FlexFlow {
 
@@ -68,6 +68,5 @@ struct formatter<::FlexFlow::Metric> : formatter<string_view> {
 };
 
 } // namespace fmt
-
 
 #endif

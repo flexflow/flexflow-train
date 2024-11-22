@@ -74,7 +74,6 @@ void backward_kernel(cudaStream_t stream,
                      void const *input_ptr,
                      void *input_grad_ptr);
 
-
 } // namespace Kernels::Pool2D
 } // namespace FlexFlow
 

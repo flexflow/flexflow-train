@@ -200,10 +200,7 @@ void update_metrics_label_kernel_wrapper(float const *logit_ptr,
 
   cudaStream_t stream;
   checkCUDA(get_legion_stream(&stream));
-  update_metrics_label_kernel<<<GET_BLOCKS(num_samples),
-                                256,
-                                0,
-                                stream>>>(
+  update_metrics_label_kernel<<<GET_BLOCKS(num_samples), 256, 0, stream>>>(
       logit_ptr, label_ptr, perf_cuda, *me, num_samples, num_classes);
   checkCUDA(cudaStreamSynchronize(stream));
   checkCUDA(cudaMemcpy(
