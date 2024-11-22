@@ -25,8 +25,8 @@ void forward_kernel(ffStream_t stream,
 
 void backward_kernel(ffStream_t stream,
                      RepartitionPerDeviceState const &m,
-                     GenericTensorAccessorW const &output_grad,
-                     GenericTensorAccessorR const &input_grad);
+                     GenericTensorAccessorR const &output_grad,
+                     GenericTensorAccessorW const &input_grad);
 
 } // namespace Kernels::Repartition
 } // namespace FlexFlow

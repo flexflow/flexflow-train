@@ -7,8 +7,7 @@ file(GLOB_RECURSE SRC
      CONFIGURE_DEPENDS
      LIST_DIRECTORIES False
      src/*.cc
-     src/cuda/cuda_helper.cu
-     src/cuda/ops/*.cu
+     src/cuda/*.cu
      )
 
 add_library(

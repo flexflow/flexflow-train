@@ -44,8 +44,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           allocator.allocate_tensor(input_shape);
 
       Kernels::Reduction::backward_kernel(managed_stream.raw_stream(),
-                                          input_grad_accessor,
-                                          output_grad_accessor);
+                                          output_grad_accessor,
+                                          input_grad_accessor);
 
       CHECK(contains_non_zero(input_grad_accessor));
     }

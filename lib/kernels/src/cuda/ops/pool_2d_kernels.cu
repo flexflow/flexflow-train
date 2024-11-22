@@ -112,10 +112,10 @@ void forward_kernel(cudaStream_t stream,
 
 void backward_kernel(cudaStream_t stream,
                      Pool2DPerDeviceState const &m,
-                     void const *input_ptr,
-                     void *input_grad_ptr,
                      void const *output_ptr,
-                     void const *output_grad_ptr) {
+                     void const *output_grad_ptr,
+                     void const *input_ptr,
+                     void *input_grad_ptr) {
 
   checkCUDNN(cudnnSetStream(m.handle.dnn, stream));
 

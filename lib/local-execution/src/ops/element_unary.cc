@@ -89,10 +89,10 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 
 static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
-  auto input = acc.get_tensor<Permissions::RO>(INPUT);
-  auto input_grad = acc.get_tensor_grad<Permissions::RW>(INPUT);
   auto output = acc.get_tensor<Permissions::RO>(OUTPUT);
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
+  auto input = acc.get_tensor<Permissions::RO>(INPUT);
+  auto input_grad = acc.get_tensor_grad<Permissions::RW>(INPUT);
 
   auto const &attrs = acc.get_argument<ElementUnaryAttrs>(ATTRS);
   auto handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
@@ -107,10 +107,10 @@ static std::optional<float>
                  per_device_state,
                  attrs,
                  handle,
-                 input,
-                 input_grad,
                  output,
-                 output_grad);
+                 output_grad,
+                 input,
+                 input_grad);
 }
 
 TaskImplFunction get_element_unary_init_task_impl() {

@@ -42,8 +42,8 @@ struct ForwardKernel {
 template <DataType T>
 struct BackwardKernel {
   void operator()(cudaStream_t stream,
-                  GenericTensorAccessorW const &input,
-                  GenericTensorAccessorR const &output) {
+                  GenericTensorAccessorR const &output,
+                  GenericTensorAccessorW const &input) {
     float alpha = 1.0f;
     apply_add_with_scale<real_type_t<T>>
         <<<GET_BLOCKS(input.shape.num_elements()),
@@ -65,9 +65,9 @@ void forward_kernel(cudaStream_t stream,
 
 void backward_kernel(cudaStream_t stream,
                      ReshapePerDeviceState const &m,
-                     GenericTensorAccessorW const &input,
-                     GenericTensorAccessorR const &output) {
-  DataTypeDispatch1<BackwardKernel>{}(m.data_type, stream, input, output);
+                     GenericTensorAccessorR const &output,
+                     GenericTensorAccessorW const &input) {
+  DataTypeDispatch1<BackwardKernel>{}(m.data_type, stream, output, input);
 }
 
 } // namespace Reshape

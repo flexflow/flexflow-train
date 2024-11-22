@@ -13,7 +13,9 @@
  * limitations under the License.
  */
 
+#include "device.h"
 #include "kernels/optimizer_kernels.h"
+#include "utils/exception.h"
 
 namespace FlexFlow {
 
@@ -80,13 +82,28 @@ __host__ void SGDOptimizer::nccl_update_task_gpu(SGDOptimizer const *op,
   // fprintf(stderr, "weight(%p) Before ncclAllReduce...\n", w_grad_ptr);
   cudaStream_t stream;
   checkCUDA(get_legion_stream(&stream));
+
+  const auto& state = meta->raw_variant;
+  ncclComm_t comm = std::visit([](const auto& s) -> ncclComm_t {
+    using T = std::decay_t<decltype(s)>;
+    if constexpr (std::is_same_v<T, FlexFlow::ElementUnaryPerDeviceState> ||
+                 std::is_same_v<T, FlexFlow::ReshapePerDeviceState> ||
+                 std::is_same_v<T, FlexFlow::TopKPerDeviceState> ||
+                 std::is_same_v<T, FlexFlow::TransposePerDeviceState>) {
+      throw mk_runtime_error("State type does not support NCCL operations");
+    } else {
+      return s.handle.ncclComm;
+    }
+  }, state);
+
   checkNCCL(ncclAllReduce(w_grad_ptr,
-                          (float *)w_grad_ptr,
-                          size,
-                          ncclFloat,
-                          ncclSum,
-                          meta->handle.ncclComm,
-                          stream));
+                         (float *)w_grad_ptr,
+                         size,
+                         ncclFloat,
+                         ncclSum,
+                         comm,
+                         stream));
+
   // fprintf(stderr, "weight(%p) After ncclAllReduce...\n", w_grad_ptr);
   // print_tensor<float>((float*)w_grad_ptr, 16, "[After ncclAllReduce]");
 
@@ -157,7 +174,7 @@ __host__ void AdamOptimizer::ps_update_task_gpu(AdamOptimizer const *op,
   for (int i = 1; i < num_replicas; i++) {
     float const *src = w_grad_ptr + i * size;
     add_kernel<<<GET_BLOCKS(size), CUDA_NUM_THREADS, 0, stream>>>(
-        size, 1.0f, src, (float *)w_grad_ptr);
+        (float *)w_grad_ptr, src, size);
   }
   // checkCUDA(cudaDeviceSynchronize());
   // fprintf(stderr, "alpha = %.8lf alpha_t = %.8lf decay = %.8lf\n",
@@ -188,13 +205,27 @@ __host__ void AdamOptimizer::nccl_update_task_gpu(AdamOptimizer const *op,
   // Use NCCL to sync gradients
   cudaStream_t stream;
   checkCUDA(get_legion_stream(&stream));
+ 
+  const auto& state = meta->raw_variant;
+  ncclComm_t comm = std::visit([](const auto& s) -> ncclComm_t {
+    using T = std::decay_t<decltype(s)>;
+    if constexpr (std::is_same_v<T, FlexFlow::ElementUnaryPerDeviceState> ||
+                 std::is_same_v<T, FlexFlow::ReshapePerDeviceState> ||
+                 std::is_same_v<T, FlexFlow::TopKPerDeviceState> ||
+                 std::is_same_v<T, FlexFlow::TransposePerDeviceState>) {
+      throw mk_runtime_error("State type does not support NCCL operations");
+    } else {
+      return s.handle.ncclComm;
+    }
+  }, state);
+
   checkNCCL(ncclAllReduce(w_grad_ptr,
-                          (float *)w_grad_ptr,
-                          size,
-                          ncclFloat,
-                          ncclSum,
-                          meta->handle.ncclComm,
-                          stream));
+                         (float *)w_grad_ptr,
+                         size,
+                         ncclFloat,
+                         ncclSum,
+                         comm,
+                         stream));
   // fprintf(stderr, "alpha = %.8lf alpha_t = %.8lf decay = %.8lf\n",
   //         op->alpha, op->alpha_t, op->weight_decay);
   //  Step 2: Adam update

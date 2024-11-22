@@ -36,10 +36,10 @@ void backward_kernel(ffStream_t stream,
                      ElementUnaryPerDeviceState const &device_state,
                      ElementUnaryAttrs const &attrs,
                      PerDeviceFFHandle const &handle,
-                     GenericTensorAccessorR const &input,
-                     GenericTensorAccessorW const &input_grad,
                      GenericTensorAccessorR const &output,
-                     GenericTensorAccessorR const &output_grad);
+                     GenericTensorAccessorR const &output_grad,
+                     GenericTensorAccessorR const &input,
+                     GenericTensorAccessorW const &input_grad);
 
 } // namespace Kernels::ElementUnary
 } // namespace FlexFlow

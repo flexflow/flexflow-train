@@ -61,8 +61,8 @@ void forward_kernel(cudaStream_t stream,
 }
 
 void backward_kernel(cudaStream_t stream,
-                     float *input_grad_ptr,
                      float const *output_grad_ptr,
+                     float *input_grad_ptr,
                      size_t num_elements) {
 
   checkCUDA(cudaMemcpyAsync(input_grad_ptr,

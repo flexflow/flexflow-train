@@ -45,8 +45,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       Kernels::Softmax::backward_kernel(
           managed_stream.raw_stream(),
-          input_grad_accessor.get_float_ptr(),
           output_grad_accessor.get_float_ptr(),
+          input_grad_accessor.get_float_ptr(),
           output_grad_accessor.shape.num_elements());
 
       CHECK(contains_non_zero(input_grad_accessor));

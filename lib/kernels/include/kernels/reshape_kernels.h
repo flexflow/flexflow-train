@@ -24,8 +24,8 @@ void forward_kernel(ffStream_t stream,
 
 void backward_kernel(ffStream_t stream,
                      ReshapePerDeviceState const &per_device_state,
-                     GenericTensorAccessorW const &input,
-                     GenericTensorAccessorR const &output);
+                     GenericTensorAccessorR const &output,
+                     GenericTensorAccessorW const &input);
 
 } // namespace Kernels::Reshape
 } // namespace FlexFlow

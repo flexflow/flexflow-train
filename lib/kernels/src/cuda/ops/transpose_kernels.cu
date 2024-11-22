@@ -91,8 +91,8 @@ void forward_kernel(cudaStream_t stream,
 
 void backward_kernel(cudaStream_t stream,
                      TransposePerDeviceState const &m,
-                     GenericTensorAccessorW const &in_grad,
-                     GenericTensorAccessorR const &out_grad) {
+                     GenericTensorAccessorR const &out_grad,
+                     GenericTensorAccessorW const &in_grad) {
 
   TransposeStrides info;
   info.num_dim = in_grad.shape.num_dims();

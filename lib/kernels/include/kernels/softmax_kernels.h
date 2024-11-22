@@ -30,8 +30,8 @@ void forward_kernel(ffStream_t stream,
                     float *output_ptr);
 
 void backward_kernel(ffStream_t stream,
-                     float *input_grad_ptr,
                      float const *output_grad_ptr,
+                     float *input_grad_ptr,
                      size_t num_elements);
 
 } // namespace Kernels::Softmax

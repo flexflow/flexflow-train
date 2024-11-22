@@ -66,10 +66,10 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       Kernels::Pool2D::backward_kernel(managed_stream.raw_stream(),
                                        state,
-                                       input_accessor.ptr,
-                                       input_grad_accessor.ptr,
                                        output_accessor.ptr,
-                                       output_grad_accessor.ptr);
+                                       output_grad_accessor.ptr,
+                                       input_accessor.ptr,
+                                       input_grad_accessor.ptr);
 
       CHECK(contains_non_zero(input_grad_accessor));
     }

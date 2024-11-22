@@ -88,8 +88,8 @@ static std::optional<float>
                  profiling,
                  "[Transpose] Backward_time = {:.2lf} [ms]",
                  per_device_state,
-                 input_grad,
-                 output_grad);
+                 output_grad,
+                 input_grad);
 }
 
 OpTaskInvocation backward(TransposeAttrs const &attrs) {

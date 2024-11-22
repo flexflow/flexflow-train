@@ -41,8 +41,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       Kernels::Repartition::backward_kernel(managed_stream.raw_stream(),
                                             state,
-                                            input_grad_accessor,
-                                            output_grad_accessor);
+                                            output_grad_accessor,
+                                            input_grad_accessor);
 
       CHECK(contains_non_zero(input_grad_accessor));
     }

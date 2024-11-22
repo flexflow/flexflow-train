@@ -108,8 +108,8 @@ static std::optional<float>
       acc.get_argument<Conv2DPerDeviceState>(PER_DEVICE_STATE);
   auto attrs = acc.get_argument<Conv2DAttrs>(ATTRS);
 
-  auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
+  auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto filter = acc.get_tensor<Permissions::RO>(FILTER);
 
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(INPUT);
@@ -121,10 +121,10 @@ static std::optional<float>
                  profiling,
                  "[Conv2d] backward_time = {:.2lf}ms\n",
                  per_device_state,
-                 input.get_float_ptr(),
-                 input_grad.get_float_ptr(),
                  output.get_float_ptr(),
                  output_grad.get_float_ptr(),
+                 input.get_float_ptr(),
+                 input_grad.get_float_ptr(),
                  filter.get_float_ptr(),
                  filter_grad.get_float_ptr(),
                  bias_grad.get_float_ptr(),

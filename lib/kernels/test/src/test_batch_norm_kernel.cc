@@ -68,9 +68,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       Kernels::BatchNorm::backward_kernel(managed_stream.raw_stream(),
                                           state,
-                                          input_accessor.get_float_ptr(),
-                                          output_grad_accessor.get_float_ptr(),
                                           output_accessor.get_float_ptr(),
+                                          output_grad_accessor.get_float_ptr(),
+                                          input_accessor.get_float_ptr(),
                                           input_grad_accessor.get_float_ptr(),
                                           scale_accessor.get_float_ptr(),
                                           scale_grad_accessor.get_float_ptr(),

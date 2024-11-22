@@ -33,15 +33,15 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("backward_kernel") {
-      GenericTensorAccessorW output_grad_accessor = create_filled_accessor_w(
+      GenericTensorAccessorR output_grad_accessor = create_filled_accessor_r(
           output_shape, allocator, make_float_data_type_value(0));
       GenericTensorAccessorW input_grad_accessor = create_filled_accessor_w(
           input_shape, allocator, make_float_data_type_value(1));
 
       Kernels::Flat::backward_kernel(managed_stream.raw_stream(),
                                      input_accessor,
-                                     input_grad_accessor.get_float_ptr(),
-                                     output_grad_accessor.get_float_ptr());
+                                     output_grad_accessor.get_float_ptr(),
+                                     input_grad_accessor.get_float_ptr());
 
       CHECK(contains_non_zero(input_grad_accessor));
     }

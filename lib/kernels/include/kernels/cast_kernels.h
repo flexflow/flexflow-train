@@ -11,8 +11,8 @@ void forward_kernel(ffStream_t stream,
                     GenericTensorAccessorW const &output);
 
 void backward_kernel(ffStream_t stream,
-                     GenericTensorAccessorR const &input,
-                     GenericTensorAccessorW const &output);
+                     GenericTensorAccessorR const &output,
+                     GenericTensorAccessorW const &input);
 
 } // namespace FlexFlow::Kernels::Cast
 

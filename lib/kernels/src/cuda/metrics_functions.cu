@@ -13,17 +13,42 @@
  * limitations under the License.
  */
 
-#include "flexflow/model.h"
-#include "flexflow/utils/cuda_helper.h"
+#include "device.h"
+#include "kernels/metrics_kernels.h"
+#include "kernels/perf_metrics.h"
+#include "pcg/metric.h"
 
 namespace FlexFlow {
+
+struct CUDAPerfMetrics {
+  int train_all;
+  int train_correct;
+  float cce_loss;
+  float sparse_cce_loss;
+  float mse_loss;
+  float rmse_loss;
+  float mae_loss;
+  double start_time;
+  double current_time;
+
+  CUDAPerfMetrics() = delete;
+  CUDAPerfMetrics(PerfMetrics const &perf)
+      : train_all(perf.train_all),
+        train_correct(perf.train_correct.value_or(-1)),
+        cce_loss(perf.cce_loss.value_or(-1)),
+        sparse_cce_loss(perf.sparse_cce_loss.value_or(-1)),
+        mse_loss(perf.mse_loss.value_or(-1)),
+        rmse_loss(perf.rmse_loss.value_or(-1)),
+        mae_loss(perf.mae_loss.value_or(-1)), start_time(perf.start_time),
+        current_time(perf.current_time) {}
+};
 
 float const LOG_MIN_VALUE = 0.00000001f;
 
 __global__ void update_metrics_sparse_label_kernel(float const *logits,
                                                    int const *labels,
-                                                   PerfMetrics *perf,
-                                                   const Metrics metrics,
+                                                   CUDAPerfMetrics *perf,
+                                                   const MetricsAttrs metrics,
                                                    int num_samples,
                                                    int num_classes) {
   CUDA_KERNEL_LOOP(b, num_samples) {
@@ -72,8 +97,8 @@ __global__ void update_metrics_sparse_label_kernel(float const *logits,
 
 __global__ void update_metrics_label_kernel(float const *logits,
                                             float const *labels,
-                                            PerfMetrics *perf,
-                                            const Metrics metrics,
+                                            CUDAPerfMetrics *perf,
+                                            const MetricsAttrs metrics,
                                             int num_samples,
                                             int num_classes) {
   CUDA_KERNEL_LOOP(b, num_samples) {
@@ -136,17 +161,17 @@ __global__ void update_metrics_label_kernel(float const *logits,
   }
 }
 
-void Metrics::update_metrics_sparse_label_kernel_wrapper(
-    float const *logit_ptr,
-    int const *label_ptr,
-    Metrics const *me,
-    int num_effective_samples,
-    int num_classes,
-    PerfMetrics &perf_zc) {
-  PerfMetrics *perf;
-  checkCUDA(cudaMalloc(&perf, sizeof(PerfMetrics)));
-  checkCUDA(
-      cudaMemcpy(perf, &perf_zc, sizeof(PerfMetrics), cudaMemcpyHostToDevice));
+void update_metrics_sparse_label_kernel_wrapper(float const *logit_ptr,
+                                                int const *label_ptr,
+                                                MetricsAttrs const *me,
+                                                int num_effective_samples,
+                                                int num_classes,
+                                                PerfMetrics &perf_zc) {
+  CUDAPerfMetrics perf(perf_zc);
+  CUDAPerfMetrics *perf_cuda;
+  checkCUDA(cudaMalloc(&perf_cuda, sizeof(CUDAPerfMetrics)));
+  checkCUDA(cudaMemcpy(
+      perf_cuda, &perf, sizeof(CUDAPerfMetrics), cudaMemcpyHostToDevice));
 
   cudaStream_t stream;
   checkCUDA(get_legion_stream(&stream));
@@ -154,32 +179,36 @@ void Metrics::update_metrics_sparse_label_kernel_wrapper(
                                        CUDA_NUM_THREADS,
                                        0,
                                        stream>>>(
-      logit_ptr, label_ptr, perf, *me, num_effective_samples, num_classes);
+      logit_ptr, label_ptr, perf_cuda, *me, num_effective_samples, num_classes);
   checkCUDA(cudaStreamSynchronize(stream));
-  checkCUDA(
-      cudaMemcpy(&perf_zc, perf, sizeof(PerfMetrics), cudaMemcpyDeviceToHost));
-  checkCUDA(cudaFree(perf));
+  checkCUDA(cudaMemcpy(
+      &perf, perf_cuda, sizeof(CUDAPerfMetrics), cudaMemcpyDeviceToHost));
+  checkCUDA(cudaFree(perf_cuda));
 }
 
-void Metrics::update_metrics_label_kernel_wrapper(float const *logit_ptr,
-                                                  float const *label_ptr,
-                                                  Metrics const *me,
-                                                  int num_samples,
-                                                  int num_classes,
-                                                  PerfMetrics &perf_zc) {
-  PerfMetrics *perf;
-  checkCUDA(cudaMalloc(&perf, sizeof(PerfMetrics)));
-  checkCUDA(
-      cudaMemcpy(perf, &perf_zc, sizeof(PerfMetrics), cudaMemcpyHostToDevice));
+void update_metrics_label_kernel_wrapper(float const *logit_ptr,
+                                         float const *label_ptr,
+                                         MetricsAttrs const *me,
+                                         int num_samples,
+                                         int num_classes,
+                                         PerfMetrics &perf_zc) {
+  CUDAPerfMetrics perf(perf_zc);
+  CUDAPerfMetrics *perf_cuda;
+  checkCUDA(cudaMalloc(&perf_cuda, sizeof(CUDAPerfMetrics)));
+  checkCUDA(cudaMemcpy(
+      perf_cuda, &perf, sizeof(CUDAPerfMetrics), cudaMemcpyHostToDevice));
 
   cudaStream_t stream;
   checkCUDA(get_legion_stream(&stream));
-  update_metrics_label_kernel<<<GET_BLOCKS(num_samples), 256, 0, stream>>>(
-      logit_ptr, label_ptr, perf, *me, num_samples, num_classes);
+  update_metrics_label_kernel<<<GET_BLOCKS(num_samples),
+                                256,
+                                0,
+                                stream>>>(
+      logit_ptr, label_ptr, perf_cuda, *me, num_samples, num_classes);
   checkCUDA(cudaStreamSynchronize(stream));
-  checkCUDA(
-      cudaMemcpy(&perf_zc, perf, sizeof(PerfMetrics), cudaMemcpyDeviceToHost));
-  checkCUDA(cudaFree(perf));
+  checkCUDA(cudaMemcpy(
+      &perf, perf_cuda, sizeof(CUDAPerfMetrics), cudaMemcpyDeviceToHost));
+  checkCUDA(cudaFree(perf_cuda));
 }
 
 }; // namespace FlexFlow

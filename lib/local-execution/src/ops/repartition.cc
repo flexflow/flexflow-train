@@ -86,8 +86,8 @@ static std::optional<float>
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   auto per_device_state =
       acc.get_argument<RepartitionPerDeviceState>(PER_DEVICE_STATE);
-  auto input_grad = acc.get_tensor_grad<Permissions::RO>(INPUT);
-  auto output_grad = acc.get_tensor_grad<Permissions::WO>(OUTPUT);
+  auto output_grad = acc.get_tensor_grad<Permissions::RO>(INPUT);
+  auto input_grad = acc.get_tensor_grad<Permissions::WO>(OUTPUT);
 
   return profile(backward_kernel,
                  profiling,

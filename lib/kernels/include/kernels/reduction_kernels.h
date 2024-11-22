@@ -12,8 +12,8 @@ void forward_kernel(ffStream_t stream,
                     size_t num_replicas);
 
 void backward_kernel(ffStream_t stream,
-                     GenericTensorAccessorW const &input,
-                     GenericTensorAccessorR const &output);
+                     GenericTensorAccessorR const &output,
+                     GenericTensorAccessorW const &input);
 
 } // namespace FlexFlow::Kernels::Reduction
 

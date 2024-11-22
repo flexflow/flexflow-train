@@ -67,12 +67,13 @@ void forward_kernel(ffStream_t stream,
                     void const *input_ptr,
                     void *output_ptr);
 
-void backward_kernel(ffStream_t stream,
+void backward_kernel(cudaStream_t stream,
                      Pool2DPerDeviceState const &m,
-                     void const *input_ptr,
-                     void *input_grad_ptr,
                      void const *output_ptr,
-                     void const *output_grad_ptr);
+                     void const *output_grad_ptr,
+                     void const *input_ptr,
+                     void *input_grad_ptr);
+
 
 } // namespace Kernels::Pool2D
 } // namespace FlexFlow
