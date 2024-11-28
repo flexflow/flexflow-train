@@ -26,7 +26,7 @@ type = "int"
 
 [[fields]]
 name = "embedding_bag_size"
-type = "size_t"
+type = "int"
 
 [[fields]]
 name = "embedding_size"
@@ -34,11 +34,11 @@ type = "std::vector<int>"
 
 [[fields]]
 name = "dense_arch_layer_sizes"
-type = "std::vector<size_t>"
+type = "std::vector<int>"
 
 [[fields]]
 name = "over_arch_layer_sizes"
-type = "std::vector<size_t>"
+type = "std::vector<int>"
 
 [[fields]]
 name = "arch_interaction_op"
@@ -46,7 +46,7 @@ type = "std::string"
 
 [[fields]]
 name = "batch_size"
-type = "size_t"
+type = "int"
 
 [[fields]]
 name = "seed"

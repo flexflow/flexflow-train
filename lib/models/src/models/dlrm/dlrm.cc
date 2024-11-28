@@ -6,12 +6,6 @@
 
 namespace FlexFlow {
 
-/**
- * @brief Get the default DLRM config.
- *
- * @details The configs here refer to the example at
- * https://github.com/flexflow/FlexFlow/blob/inference/examples/cpp/DLRM/dlrm.cc.
- */
 DLRMConfig get_default_dlrm_config() {
   return DLRMConfig{
       /*embedding_dim=*/64,
@@ -24,13 +18,13 @@ DLRMConfig get_default_dlrm_config() {
           1000000,
       },
       /*dense_arch_layer_sizes=*/
-      std::vector<size_t>{
+      std::vector<int>{
           4,
           64,
           64,
       },
       /*over_arch_layer_sizes=*/
-      std::vector<size_t>{
+      std::vector<int>{
           64,
           64,
           2,
@@ -44,10 +38,14 @@ DLRMConfig get_default_dlrm_config() {
 tensor_guid_t create_dlrm_mlp(ComputationGraphBuilder &cgb,
                               DLRMConfig const &config,
                               tensor_guid_t const &input,
-                              std::vector<size_t> const &mlp_layers) {
+                              std::vector<int> const &mlp_layers) {
   tensor_guid_t t = input;
+
+  // Refer to
+  // https://github.com/facebookresearch/dlrm/blob/64063a359596c72a29c670b4fcc9450bb342e764/dlrm_s_pytorch.py#L218-L228
+  // for example initializer.
   for (size_t i = 0; i < mlp_layers.size() - 1; i++) {
-    float std_dev = sqrt(2.0f / (mlp_layers[i + 1] + mlp_layers[i]));
+    float std_dev = sqrt(2.0f / (mlp_layers.at(i + 1) + mlp_layers.at(i)));
     InitializerAttrs projection_initializer =
         InitializerAttrs{NormInitializerAttrs{
             /*seed=*/config.seed,
@@ -55,7 +53,7 @@ tensor_guid_t create_dlrm_mlp(ComputationGraphBuilder &cgb,
             /*stddev=*/std_dev,
         }};
 
-    std_dev = sqrt(2.0f / mlp_layers[i + 1]);
+    std_dev = sqrt(2.0f / mlp_layers.at(i + 1));
     InitializerAttrs bias_initializer = InitializerAttrs{NormInitializerAttrs{
         /*seed=*/config.seed,
         /*mean=*/0,
@@ -63,7 +61,7 @@ tensor_guid_t create_dlrm_mlp(ComputationGraphBuilder &cgb,
     }};
 
     t = cgb.dense(/*input=*/t,
-                  /*outDim=*/mlp_layers[i + 1],
+                  /*outDim=*/mlp_layers.at(i + 1),
                   /*activation=*/Activation::RELU,
                   /*use_bias=*/true,
                   /*data_type=*/DataType::FLOAT,
@@ -127,11 +125,13 @@ ComputationGraph get_dlrm_computation_graph(DLRMConfig const &config) {
   // Create input tensors
   std::vector<tensor_guid_t> sparse_inputs(
       config.embedding_size.size(),
-      create_input_tensor({config.batch_size, config.embedding_bag_size},
+      create_input_tensor({static_cast<size_t>(config.batch_size),
+                           static_cast<size_t>(config.embedding_bag_size)},
                           DataType::INT64));
 
   tensor_guid_t dense_input = create_input_tensor(
-      {config.batch_size, config.dense_arch_layer_sizes.front()},
+      {static_cast<size_t>(config.batch_size),
+       static_cast<size_t>(config.dense_arch_layer_sizes.front())},
       DataType::FLOAT);
 
   // Construct the model

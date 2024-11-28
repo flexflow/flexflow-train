@@ -4,9 +4,9 @@
  * @brief DLRM model
  *
  * @details The DLRM implementation refers to the examples at
- * https://github.com/flexflow/FlexFlow/blob/inference/examples/cpp/DLRM/dlrm.cc
+ * https://github.com/flexflow/FlexFlow/blob/78307b0e8beb5d41ee003be8b5db168c2b3ef4e2/examples/cpp/DLRM/dlrm.cc
  * and
- * https://github.com/pytorch/torchrec/blob/main/torchrec/models/dlrm.py#L440.
+ * https://github.com/pytorch/torchrec/blob/7e7819e284398d7dc420e3bf149107ad310fa861/torchrec/models/dlrm.py#L440.
  */
 
 #ifndef _FLEXFLOW_LIB_MODELS_INCLUDE_MODELS_DLRM_H
@@ -19,6 +19,12 @@ namespace FlexFlow {
 
 // Helper functions to construct the DLRM model
 
+/**
+ * @brief Get the default DLRM config.
+ *
+ * @details The configs here refer to the example at
+ * https://github.com/flexflow/FlexFlow/blob/78307b0e8beb5d41ee003be8b5db168c2b3ef4e2/examples/cpp/DLRM/dlrm.cc.
+ */
 DLRMConfig get_default_dlrm_config();
 
 tensor_guid_t create_dlrm_mlp(ComputationGraphBuilder &cgb,
