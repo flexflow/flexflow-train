@@ -17,10 +17,31 @@ std::vector<bool> create_simvp_samplings(size_t N_S, bool reverse = false);
 
 tensor_guid_t create_simvp_convsc(ComputationGraphBuilder &cgb,
                                   SimVPConfig const &config,
+                                  tensor_guid_t const &input,
                                   size_t in_dim,
                                   size_t out_dim,
-                                  bool downsampling,
-                                  tensor_guid_t const &input);
+                                  int kernel_size = 3,
+                                  bool downsampling = false,
+                                  bool upsampling = false);
+
+tensor_guid_t create_simvp_gsta_meta_block(ComputationGraphBuilder &cgb,
+                                           SimVPConfig const &config,
+                                           tensor_guid_t const &input,
+                                           int in_channels,
+                                           int out_channels,
+                                           float mlp_ratio = 8.0,
+                                           float drop = 0.0,
+                                           float drop_path = 0.0);
+
+tensor_guid_t create_simvp_ga_sub_block(ComputationGraphBuilder &cgb,
+                                        SimVPConfig const &config,
+                                        tensor_guid_t const &input,
+                                        int dim,
+                                        int kernel_size = 21,
+                                        float mlp_ratio = 4.0,
+                                        float drop = 0.0,
+                                        float drop_path = 0.1,
+                                        float init_value = 1e-2);
 
 std::pair<tensor_guid_t, tensor_guid_t>
     create_simvp_encoder(ComputationGraphBuilder &cgb,
@@ -29,7 +50,12 @@ std::pair<tensor_guid_t, tensor_guid_t>
 
 tensor_guid_t create_simvp_middle_net(ComputationGraphBuilder &cgb,
                                       SimVPConfig const &config,
-                                      tensor_guid_t const &embed);
+                                      tensor_guid_t const &embed,
+                                      int channel_in,
+                                      int channel_hid,
+                                      float mlp_ratio = 4.0,
+                                      float drop = 0.0,
+                                      float drop_path = 0.1);
 
 tensor_guid_t create_simvp_decoder(ComputationGraphBuilder &cgb,
                                    SimVPConfig const &config,
