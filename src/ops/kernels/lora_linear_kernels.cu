@@ -193,7 +193,7 @@ void inference_kernel(LoraLinearMeta *m,
         bc->requestsInfo[i].peft_model_id == PEFTModelID::NO_ID) {
       continue;
     }
-    if (bc->requestsInfo[i].peft_bwd) {
+    if (bc->requestsInfo[i].finetuning_request) {
       num_peft_requests++;
     }
     std::string peft_model_config_str =
@@ -205,17 +205,18 @@ void inference_kernel(LoraLinearMeta *m,
     }
     // std::cout << "Lora layer activated!" << std::endl;
     // std::cout << "Lora Config: " << peft_model_config_str << std::endl;
-    assert(lora_config.trainable == bc->requestsInfo[i].peft_bwd &&
+    assert(lora_config.trainable == bc->requestsInfo[i].finetuning_request &&
            "Trainable flag mismatch");
     int num_peft_tokens = bc->requestsInfo[i].num_tokens_in_batch;
+    // assert(num_peft_tokens == bc->num_finetuning_fwd_tokens());
     // int max_peft_tokens = bc->requestsInfo[i].max_length;
     int first_token_offset = bc->requestsInfo[i].first_token_offset_in_batch;
     LoraLinearWeight weight = m->peft_memory_manager->get_peft(
         bc->requestsInfo[i].peft_model_id, lora_config);
-    void *intermediate_result_ptr = (bc->requestsInfo[i].peft_bwd)
+    void *intermediate_result_ptr = (bc->requestsInfo[i].finetuning_request)
                                         ? weight.low_rank_activation
                                         : m->handle.workSpace;
-    if (bc->requestsInfo[i].peft_bwd) {
+    if (bc->requestsInfo[i].finetuning_request) {
       checkCUDA(cudaMemcpyAsync(weight.input_activation,
                                 input_ptr + first_token_offset * in_dim,
                                 data_type_size(m->input_type[0]) *
@@ -321,205 +322,196 @@ void peft_bwd_kernel(Context ctx,
   cudaDataType_t lr_actv_type = output_type;
   cudaDataType_t compute_type = output_type;
 
-  for (int i = 0; i < bc->max_requests_per_batch(); i++) {
-    // Skip completed, non-PEFT and PEFT forward-only requests
-    if (bc->request_completed[i] ||
-        bc->requestsInfo[i].peft_model_id == PEFTModelID::NO_ID ||
-        !bc->requestsInfo[i].peft_bwd) {
-      continue;
-    }
-    std::string peft_model_config_str =
-        std::string(bc->requestsInfo[i].peft_model_config_str);
-    LoraLinearConfig lora_config =
-        LoraLinearConfig::deserialize_from_json_string(peft_model_config_str);
-    if (!lora_applies_to_this_layer(m, lora_config)) {
-      continue;
-    }
-    // std::cout << "Lora layer activated!" << std::endl;
-    // std::cout << "Lora Config: " << peft_model_config_str << std::endl;
-    assert(lora_config.trainable == bc->requestsInfo[i].peft_bwd &&
-           "Trainable flag mismatch");
-    m->peft_memory_manager->check_ft_model_id(
-        bc->requestsInfo[i].peft_model_id);
-    int num_peft_tokens = bc->requestsInfo[i].num_tokens_in_batch;
-    // int max_peft_tokens = bc->requestsInfo[i].max_length;
-    // int first_token_offset = bc->requestsInfo[i].first_token_offset_in_batch;
-    LoraLinearWeight weight = m->peft_memory_manager->get_peft(
-        bc->requestsInfo[i].peft_model_id, lora_config);
-    DT scaling_constant = (DT)(lora_config.lora_alpha / lora_config.rank);
+  assert(
+      bc->peft_bwd_applies_to_this_layer(m->layer_guid.transformer_layer_id));
+  int i = bc->finetuning_request_index();
+  std::string peft_model_config_str =
+      std::string(bc->requestsInfo[i].peft_model_config_str);
+  LoraLinearConfig lora_config =
+      LoraLinearConfig::deserialize_from_json_string(peft_model_config_str);
+  if (!lora_applies_to_this_layer(m, lora_config)) {
+    return;
+  }
+  // std::cout << "Lora layer activated!" << std::endl;
+  // std::cout << "Lora Config: " << peft_model_config_str << std::endl;
+  assert(lora_config.trainable == bc->requestsInfo[i].finetuning_request &&
+         "Trainable flag mismatch");
+  m->peft_memory_manager->check_ft_model_id(bc->requestsInfo[i].peft_model_id);
+  int num_peft_tokens = bc->requestsInfo[i].num_tokens_in_batch;
+  assert(num_peft_tokens == bc->num_finetuning_bwd_tokens());
+  // int max_peft_tokens = bc->requestsInfo[i].max_length;
+  // int first_token_offset = bc->requestsInfo[i].first_token_offset_in_batch;
+  LoraLinearWeight weight = m->peft_memory_manager->get_peft(
+      bc->requestsInfo[i].peft_model_id, lora_config);
+  DT scaling_constant = (DT)(lora_config.lora_alpha / lora_config.rank);
 
-    // Compute LORA_B weight's gradient
-    if (bc->requestsInfo[i].optimizer_tasks.compute_gradients) {
-      DT alpha = 1.0f;
-      DT beta = (bc->requestsInfo[i].optimizer_tasks.reset_gradients_to_zero)
-                    ? 0.0f
-                    : 1.0f;
-      // std::cout << "Lora B gradient computation, beta = " << (float) beta <<
-      // std::endl;
-      if (m->inference_debugging) {
-        // save result to file for checking
-        std::string filename =
-            get_peft_dbg_folder(m, shard_id, false) + ".low_rank_activation";
-        std::cout << "Save low_rank_activation (" << lora_config.rank << ", "
-                  << num_peft_tokens << ") to " << filename << std::endl;
-        save_tensor(static_cast<const DT *>(weight.low_rank_activation),
-                    lora_config.rank * num_peft_tokens,
-                    filename.c_str());
-      }
-      checkCUDA(cublasGemmEx(m->handle.blas,
-                             CUBLAS_OP_N,
-                             CUBLAS_OP_T,
-                             lora_config.rank,
-                             out_dim,
-                             num_peft_tokens,
-                             &scaling_constant,
-                             weight.low_rank_activation,
-                             lr_actv_type,
-                             lora_config.rank,
-                             output_grad_ptr,
-                             output_type,
-                             out_dim,
-                             &beta,
-                             weight.w1_grad_ptr,
-                             weight_type,
-                             lora_config.rank,
-                             compute_type,
-                             CUBLAS_GEMM_DEFAULT_TENSOR_OP));
+  // Compute LORA_B weight's gradient
+  if (bc->requestsInfo[i].optimizer_tasks.compute_gradients) {
+    DT alpha = 1.0f;
+    DT beta = (bc->requestsInfo[i].optimizer_tasks.reset_gradients_to_zero)
+                  ? 0.0f
+                  : 1.0f;
+    // std::cout << "Lora B gradient computation, beta = " << (float) beta <<
+    // std::endl;
+    if (m->inference_debugging) {
+      // save result to file for checking
+      std::string filename =
+          get_peft_dbg_folder(m, shard_id, false) + ".low_rank_activation";
+      std::cout << "Save low_rank_activation (" << lora_config.rank << ", "
+                << num_peft_tokens << ") to " << filename << std::endl;
+      save_tensor(static_cast<const DT *>(weight.low_rank_activation),
+                  lora_config.rank * num_peft_tokens,
+                  filename.c_str());
     }
+    checkCUDA(cublasGemmEx(m->handle.blas,
+                           CUBLAS_OP_N,
+                           CUBLAS_OP_T,
+                           lora_config.rank,
+                           out_dim,
+                           num_peft_tokens,
+                           &scaling_constant,
+                           weight.low_rank_activation,
+                           lr_actv_type,
+                           lora_config.rank,
+                           output_grad_ptr,
+                           output_type,
+                           out_dim,
+                           &beta,
+                           weight.w1_grad_ptr,
+                           weight_type,
+                           lora_config.rank,
+                           compute_type,
+                           CUBLAS_GEMM_DEFAULT_TENSOR_OP));
+  }
 
-    // Compute LORA_B input's (and LORA_A output's) gradient inplace in
-    // low_rank_activation
-    {
-      DT alpha = 1.0f, beta = 0.0f;
-      checkCUDA(cublasGemmEx(m->handle.blas,
-                             CUBLAS_OP_N,
-                             CUBLAS_OP_N,
-                             lora_config.rank,
-                             num_peft_tokens,
-                             out_dim,
-                             &scaling_constant,
-                             weight.w1_ptr,
-                             weight_type,
-                             lora_config.rank,
-                             output_grad_ptr,
-                             output_type,
-                             out_dim,
-                             &beta,
-                             weight.low_rank_activation,
-                             lr_actv_type,
-                             lora_config.rank,
-                             compute_type,
-                             CUBLAS_GEMM_DEFAULT_TENSOR_OP));
-    }
+  // Compute LORA_B input's (and LORA_A output's) gradient inplace in
+  // low_rank_activation
+  {
+    DT alpha = 1.0f, beta = 0.0f;
+    checkCUDA(cublasGemmEx(m->handle.blas,
+                           CUBLAS_OP_N,
+                           CUBLAS_OP_N,
+                           lora_config.rank,
+                           num_peft_tokens,
+                           out_dim,
+                           &scaling_constant,
+                           weight.w1_ptr,
+                           weight_type,
+                           lora_config.rank,
+                           output_grad_ptr,
+                           output_type,
+                           out_dim,
+                           &beta,
+                           weight.low_rank_activation,
+                           lr_actv_type,
+                           lora_config.rank,
+                           compute_type,
+                           CUBLAS_GEMM_DEFAULT_TENSOR_OP));
+  }
 
-    // Compute LORA_A weight's gradient
-    if (bc->requestsInfo[i].optimizer_tasks.compute_gradients) {
-      DT alpha = 1.0f;
-      DT beta = (bc->requestsInfo[i].optimizer_tasks.reset_gradients_to_zero)
-                    ? 0.0f
-                    : 1.0f;
-      checkCUDA(cublasGemmEx(m->handle.blas,
-                             CUBLAS_OP_N,
-                             CUBLAS_OP_T,
-                             in_dim,
-                             lora_config.rank,
-                             num_peft_tokens,
-                             &alpha,
-                             weight.input_activation,
-                             input_type,
-                             in_dim,
-                             weight.low_rank_activation,
-                             lr_actv_type,
-                             lora_config.rank,
-                             &beta,
-                             weight.w0_grad_ptr,
-                             weight_type,
-                             in_dim,
-                             compute_type,
-                             CUBLAS_GEMM_DEFAULT_TENSOR_OP));
-    }
-    // Compute input gradient
-    // NOTE: we use beta=1 for input_grad to accumulate gradients when needed
-    if (input_grad_ptr != nullptr) {
-      DT alpha = 1.0f;
-      DT beta = m->reset_input_grads[0] ? 0.0f : 1.0f;
-      checkCUDA(cublasGemmEx(m->handle.blas,
-                             CUBLAS_OP_N,
-                             CUBLAS_OP_N,
-                             in_dim,
-                             num_peft_tokens,
-                             lora_config.rank,
-                             &alpha,
-                             weight.w0_ptr,
-                             weight_type,
-                             in_dim,
-                             weight.low_rank_activation,
-                             lr_actv_type,
-                             lora_config.rank,
-                             &beta,
-                             input_grad_ptr,
-                             input_type,
-                             in_dim,
-                             compute_type,
-                             CUBLAS_GEMM_DEFAULT_TENSOR_OP));
-    }
+  // Compute LORA_A weight's gradient
+  if (bc->requestsInfo[i].optimizer_tasks.compute_gradients) {
+    DT alpha = 1.0f;
+    DT beta = (bc->requestsInfo[i].optimizer_tasks.reset_gradients_to_zero)
+                  ? 0.0f
+                  : 1.0f;
+    checkCUDA(cublasGemmEx(m->handle.blas,
+                           CUBLAS_OP_N,
+                           CUBLAS_OP_T,
+                           in_dim,
+                           lora_config.rank,
+                           num_peft_tokens,
+                           &alpha,
+                           weight.input_activation,
+                           input_type,
+                           in_dim,
+                           weight.low_rank_activation,
+                           lr_actv_type,
+                           lora_config.rank,
+                           &beta,
+                           weight.w0_grad_ptr,
+                           weight_type,
+                           in_dim,
+                           compute_type,
+                           CUBLAS_GEMM_DEFAULT_TENSOR_OP));
+  }
+  // Compute input gradient
+  // NOTE: we use beta=1 for input_grad to accumulate gradients when needed
+  if (input_grad_ptr != nullptr) {
+    DT alpha = 1.0f;
+    DT beta = m->reset_input_grads[0] ? 0.0f : 1.0f;
+    checkCUDA(cublasGemmEx(m->handle.blas,
+                           CUBLAS_OP_N,
+                           CUBLAS_OP_N,
+                           in_dim,
+                           num_peft_tokens,
+                           lora_config.rank,
+                           &alpha,
+                           weight.w0_ptr,
+                           weight_type,
+                           in_dim,
+                           weight.low_rank_activation,
+                           lr_actv_type,
+                           lora_config.rank,
+                           &beta,
+                           input_grad_ptr,
+                           input_type,
+                           in_dim,
+                           compute_type,
+                           CUBLAS_GEMM_DEFAULT_TENSOR_OP));
+  }
 
-    if (bc->requestsInfo[i].optimizer_tasks.update_weights) {
-      assert(lora_config.optimizer_config != nullptr);
-      int w0_num_elements = lora_config.rank * in_dim;
-      int w1_num_elements = lora_config.rank * out_dim;
+  if (bc->requestsInfo[i].optimizer_tasks.update_weights) {
+    assert(lora_config.optimizer_config != nullptr);
+    int w0_num_elements = lora_config.rank * in_dim;
+    int w1_num_elements = lora_config.rank * out_dim;
 
-      // Get optimizer config
+    // Get optimizer config
 
-      if (lora_config.optimizer_config->getType() == "SGD") {
-        LoraSGDOptimizerConfig const *sgd_config =
-            static_cast<LoraSGDOptimizerConfig const *>(
-                lora_config.optimizer_config);
-        // LoRA_A weight is split in tensor parallelism, so no need to apply
-        // all-reduce
-        sgd_update<<<GET_BLOCKS(w0_num_elements),
-                     CUDA_NUM_THREADS,
-                     0,
-                     stream>>>(w0_num_elements,
-                               sgd_config->lr,
-                               sgd_config->weight_decay,
-                               sgd_config->momentum,
-                               sgd_config->nesterov,
-                               static_cast<DT const *>(weight.w0_grad_ptr),
-                               static_cast<DT *>(weight.w0_v_values_ptr),
-                               static_cast<DT *>(weight.w0_ptr));
-        // LoRA_B weight is replicated w tensor parallelism, so we need to sync
-        // and sum first
+    if (lora_config.optimizer_config->getType() == "SGD") {
+      LoraSGDOptimizerConfig const *sgd_config =
+          static_cast<LoraSGDOptimizerConfig const *>(
+              lora_config.optimizer_config);
+      // LoRA_A weight is split in tensor parallelism, so no need to apply
+      // all-reduce
+      sgd_update<<<GET_BLOCKS(w0_num_elements), CUDA_NUM_THREADS, 0, stream>>>(
+          w0_num_elements,
+          sgd_config->lr,
+          sgd_config->weight_decay,
+          sgd_config->momentum,
+          sgd_config->nesterov,
+          static_cast<DT const *>(weight.w0_grad_ptr),
+          static_cast<DT *>(weight.w0_v_values_ptr),
+          static_cast<DT *>(weight.w0_ptr));
+      // LoRA_B weight is replicated w tensor parallelism, so we need to sync
+      // and sum first
 #ifdef FF_USE_NCCL
-        ncclDataType_t nccl_data_type = ff_to_nccl_datatype(m->output_type[0]);
-        runtime->concurrent_task_barrier(ctx);
-        checkNCCL(ncclAllReduce(static_cast<DT const *>(weight.w1_grad_ptr),
-                                static_cast<DT *>(weight.w1_grad_ptr),
-                                w1_num_elements,
-                                nccl_data_type,
-                                ncclSum,
-                                m->handle.ncclComm,
-                                stream));
-        runtime->concurrent_task_barrier(ctx);
+      ncclDataType_t nccl_data_type = ff_to_nccl_datatype(m->output_type[0]);
+      runtime->concurrent_task_barrier(ctx);
+      checkNCCL(ncclAllReduce(static_cast<DT const *>(weight.w1_grad_ptr),
+                              static_cast<DT *>(weight.w1_grad_ptr),
+                              w1_num_elements,
+                              nccl_data_type,
+                              ncclSum,
+                              m->handle.ncclComm,
+                              stream));
+      runtime->concurrent_task_barrier(ctx);
 #else
-        assert(false && "Must enable FF_USE_NCCL to use AllReduce operators");
+      assert(false && "Must enable FF_USE_NCCL to use AllReduce operators");
 #endif
-        sgd_update<<<GET_BLOCKS(w1_num_elements),
-                     CUDA_NUM_THREADS,
-                     0,
-                     stream>>>(w1_num_elements,
-                               sgd_config->lr,
-                               sgd_config->weight_decay,
-                               sgd_config->momentum,
-                               sgd_config->nesterov,
-                               static_cast<DT const *>(weight.w1_grad_ptr),
-                               static_cast<DT *>(weight.w1_v_values_ptr),
-                               static_cast<DT *>(weight.w1_ptr));
-      } else if (lora_config.optimizer_config->getType() == "Adam") {
-        assert(false && "Adam optimizer type not implemented yet");
-      } else {
-        assert(false && "Unsupported optimizer type");
-      }
+      sgd_update<<<GET_BLOCKS(w1_num_elements), CUDA_NUM_THREADS, 0, stream>>>(
+          w1_num_elements,
+          sgd_config->lr,
+          sgd_config->weight_decay,
+          sgd_config->momentum,
+          sgd_config->nesterov,
+          static_cast<DT const *>(weight.w1_grad_ptr),
+          static_cast<DT *>(weight.w1_v_values_ptr),
+          static_cast<DT *>(weight.w1_ptr));
+    } else if (lora_config.optimizer_config->getType() == "Adam") {
+      assert(false && "Adam optimizer type not implemented yet");
+    } else {
+      assert(false && "Unsupported optimizer type");
     }
   }
 }

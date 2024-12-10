@@ -592,6 +592,7 @@ OpMeta *Experts::init_task(Task const *task,
   ExpertsMeta *m = new ExpertsMeta(handle, exp);
   m->profiling = exp->profiling;
   m->inference_debugging = exp->inference_debugging;
+  m->enable_peft_finetuning = exp->enable_peft_finetuning;
   std::strcpy(m->op_name, exp->name);
   m->layer_guid = exp->layer_guid;
   return m;
@@ -671,7 +672,7 @@ FutureMap Experts::inference(FFModel const &ff,
   size_t machine_view_hash = view->hash();
   /* std::cout << "Experts op machine_view: " << *(MachineView const *)mv
             << std::endl; */
-  // int num_active_infr_tokens = bc->num_active_infr_tokens();
+  // int num_active_infr_tokens = bc->num_active_tokens();
   IndexLauncher launcher(EXPERTS_INF_TASK_ID,
                          parallel_is,
                          TaskArgument(nullptr, 0),
@@ -1064,7 +1065,7 @@ void Experts::inference_task(Task const *task,
                                   output_ptr,
                                   weights_ptr,
                                   bias_ptr,
-                                  bc->num_active_infr_tokens(),
+                                  bc->num_active_tokens(),
                                   chosen_experts,
                                   batch_size,
                                   out_dim);

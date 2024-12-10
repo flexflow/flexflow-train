@@ -282,6 +282,7 @@ OpMeta *BatchMatmul::init_task(Task const *task,
   BatchMatmulMeta *m = new BatchMatmulMeta(handle, bmm);
   m->profiling = bmm->profiling;
   m->inference_debugging = bmm->inference_debugging;
+  m->enable_peft_finetuning = bmm->enable_peft_finetuning;
   m->a_seq_length_dim = bmm->a_seq_length_dim;
   m->b_seq_length_dim = bmm->b_seq_length_dim;
   std::strcpy(m->op_name, bmm->name);

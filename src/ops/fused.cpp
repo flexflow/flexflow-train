@@ -226,7 +226,7 @@ __host__ void
         }
         assert(m->input_type[0] == my_input_accessor[0].data_type);
         assert(m->input_type[0] == my_output_accessor[0].data_type);
-        batch_size = bc->num_active_infr_tokens();
+        batch_size = bc->num_active_tokens();
         Kernels::Linear::forward_kernel_wrapper(m,
                                                 my_input_accessor[0].ptr,
                                                 my_output_accessor[0].ptr,
@@ -674,7 +674,7 @@ __host__ void
   regions[...](I): weights
   regions[...](O): outputs
 */
-__host__ void FusedOp::peft_bwd_task(Task const *task,
+__host__ bool FusedOp::peft_bwd_task(Task const *task,
                                      std::vector<PhysicalRegion> const &regions,
                                      Context ctx,
                                      Runtime *runtime) {
@@ -684,7 +684,7 @@ __host__ void FusedOp::peft_bwd_task(Task const *task,
   // BatchConfig const *bc = (BatchConfig *)task->args;
   BatchConfig const *bc = BatchConfig::from_future(task->futures[0]);
   // Return if no active PEFT bwd tokens
-  if (bc->num_active_peft_tokens() == 0) {
+  if (bc->num_finetuning_bwd_tokens() == 0) {
     return;
   }
 
@@ -839,10 +839,14 @@ __host__ void FusedOp::peft_bwd_task(Task const *task,
         assert(my_input_grad_accessor[0].domain.get_volume() ==
                in_dim * batch_size);
         LinearMeta *m = (LinearMeta *)metas->meta[op];
+        if (!bc->peft_bwd_applies_to_this_layer(
+                m->layer_guid.transformer_layer_id)) {
+          return;
+        }
         assert(m->input_type[0] == my_input_grad_accessor[0].data_type);
         assert(m->input_type[0] == my_output_grad_accessor[0].data_type);
-        int num_infr_tokens = bc->num_active_infr_tokens();
-        int num_peft_tokens = bc->num_active_peft_tokens();
+        int num_infr_tokens = bc->num_active_tokens();
+        int num_peft_tokens = bc->num_finetuning_bwd_tokens();
         Kernels::Linear::peft_bwd_kernel_wrapper(m,
                                                  my_input_grad_accessor[0].ptr,
                                                  my_output_grad_accessor[0].ptr,
@@ -866,6 +870,10 @@ __host__ void FusedOp::peft_bwd_task(Task const *task,
         assert(my_input_grad_accessor[0].domain.get_volume() ==
                in_dim * batch_size);
         LoraLinearMeta *m = (LoraLinearMeta *)metas->meta[op];
+        if (!bc->peft_bwd_applies_to_this_layer(
+                m->layer_guid.transformer_layer_id)) {
+          return;
+        }
         assert(m->input_type[0] == my_input_grad_accessor[0].data_type);
         assert(m->output_type[0] == my_output_grad_accessor[0].data_type);
         // Assert that the output and the second input are at the same place
@@ -981,6 +989,10 @@ __host__ void FusedOp::peft_bwd_task(Task const *task,
         assert(fused->op_num_weights[op] == 1);
         assert(fused->op_num_outputs[op] == 1);
         RMSNormMeta const *m = (RMSNormMeta *)metas->meta[op];
+        if (!bc->peft_bwd_applies_to_this_layer(
+                m->layer_guid.transformer_layer_id)) {
+          return;
+        }
         Kernels::RMSNorm::peft_bwd_kernel_wrapper(m,
                                                   bc,
                                                   my_output_grad_accessor[0],
@@ -993,6 +1005,10 @@ __host__ void FusedOp::peft_bwd_task(Task const *task,
         assert(fused->op_num_weights[op] == 1);
         assert(fused->op_num_outputs[op] == 2);
         ResidualRMSNormMeta const *m = (ResidualRMSNormMeta *)metas->meta[op];
+        if (!bc->peft_bwd_applies_to_this_layer(
+                m->layer_guid.transformer_layer_id)) {
+          return;
+        }
         Kernels::ResidualRMSNorm::peft_bwd_kernel_wrapper(
             m,
             bc,
@@ -1008,6 +1024,10 @@ __host__ void FusedOp::peft_bwd_task(Task const *task,
         assert(fused->op_num_outputs[op] == 1);
         IncMultiHeadSelfAttentionMeta *m =
             (IncMultiHeadSelfAttentionMeta *)metas->meta[op];
+        if (!bc->peft_bwd_applies_to_this_layer(
+                m->layer_guid.transformer_layer_id)) {
+          return;
+        }
         assert(fused->op_num_weights[op] == 0);
         IncMultiHeadSelfAttention::peft_bwd_kernel_wrapper(
             m,
@@ -1027,6 +1047,10 @@ __host__ void FusedOp::peft_bwd_task(Task const *task,
         assert(fused->op_num_inputs[op] == 1);
         assert(fused->op_num_outputs[op] == 1);
         LayerNormMeta const *m = (LayerNormMeta *)metas->meta[op];
+        if (!bc->peft_bwd_applies_to_this_layer(
+                m->layer_guid.transformer_layer_id)) {
+          return;
+        }
         if (m->elementwise_affine) {
           assert(fused->op_num_weights[op] == 1 + (int)(m->use_bias));
         }
@@ -1045,6 +1069,10 @@ __host__ void FusedOp::peft_bwd_task(Task const *task,
         assert(fused->op_num_outputs[op] == 2);
         ResidualLayerNormMeta const *m =
             (ResidualLayerNormMeta *)metas->meta[op];
+        if (!bc->peft_bwd_applies_to_this_layer(
+                m->layer_guid.transformer_layer_id)) {
+          return;
+        }
         if (m->use_two_residuals) {
           assert(fused->op_num_inputs[op] == 3);
         } else {
@@ -1080,6 +1108,10 @@ __host__ void FusedOp::peft_bwd_task(Task const *task,
         assert(fused->op_num_outputs[op] == 2);
         AddBiasResidualLayerNormMeta const *m =
             (AddBiasResidualLayerNormMeta *)metas->meta[op];
+        if (!bc->peft_bwd_applies_to_this_layer(
+                m->layer_guid.transformer_layer_id)) {
+          return;
+        }
         if (!m->elementwise_affine) {
           assert(fused->op_num_weights[op] == 1); // attn bias
         } else {
@@ -1106,6 +1138,10 @@ __host__ void FusedOp::peft_bwd_task(Task const *task,
         assert(fused->op_num_inputs[op] == 2);
         assert(fused->op_num_outputs[op] == 1);
         SigmoidSiluMultiMeta const *m = (SigmoidSiluMultiMeta *)metas->meta[op];
+        if (!bc->peft_bwd_applies_to_this_layer(
+                m->layer_guid.transformer_layer_id)) {
+          return;
+        }
         SigmoidSiluMulti::peft_bwd_kernel_wrapper(m,
                                                   bc,
                                                   my_output_grad_accessor[0],
@@ -1120,6 +1156,10 @@ __host__ void FusedOp::peft_bwd_task(Task const *task,
         assert(my_input_grad_accessor[0].domain.get_volume() ==
                my_output_grad_accessor[0].domain.get_volume());
         SoftmaxMeta *m = (SoftmaxMeta *)metas->meta[op];
+        if (!bc->peft_bwd_applies_to_this_layer(
+                m->layer_guid.transformer_layer_id)) {
+          return;
+        }
         Kernels::Softmax::peft_bwd_kernel_wrapper(
             m, bc, my_input_grad_accessor[0], my_output_grad_accessor[0]);
         break;
@@ -1128,6 +1168,10 @@ __host__ void FusedOp::peft_bwd_task(Task const *task,
         assert(fused->op_num_inputs[op] == 1);
         assert(fused->op_num_outputs[op] == 1);
         AllReduceMeta const *m = (AllReduceMeta *)metas->meta[op];
+        if (!bc->peft_bwd_applies_to_this_layer(
+                m->layer_guid.transformer_layer_id)) {
+          return;
+        }
         Kernels::AllReduce::peft_bwd_kernel_wrapper(
             m, bc, my_input_grad_accessor[0], my_output_grad_accessor[0]);
         break;
@@ -1136,6 +1180,10 @@ __host__ void FusedOp::peft_bwd_task(Task const *task,
         assert(fused->op_num_inputs[op] == 1);
         assert(fused->op_num_outputs[op] == 1);
         ParallelIdentityMeta const *m = (ParallelIdentityMeta *)metas->meta[op];
+        if (!bc->peft_bwd_applies_to_this_layer(
+                m->layer_guid.transformer_layer_id)) {
+          return;
+        }
         runtime->concurrent_task_barrier(ctx);
         Kernels::ParallelIdentity::peft_bwd_kernel_wrapper(
             m, bc, my_input_grad_accessor[0], my_output_grad_accessor[0]);
@@ -1155,6 +1203,10 @@ __host__ void FusedOp::peft_bwd_task(Task const *task,
           fused->op_op_type[op] == OP_REPLICATE ||
           fused->op_op_type[op] == OP_REPARTITION ||
           fused->op_op_type[op] == OP_COMBINE)) {
+      if (!bc->peft_bwd_applies_to_this_layer(
+              metas->meta[op]->layer_guid.transformer_layer_id)) {
+        return;
+      }
       std::vector<GenericTensorAccessorR> input_accessors_to_save;
       std::vector<GenericTensorAccessorR> weight_accessors_to_save;
       std::vector<GenericTensorAccessorR> output_accessors_to_save;
@@ -1178,6 +1230,7 @@ __host__ void FusedOp::peft_bwd_task(Task const *task,
                                               false);
     }
   }
+  return true;
 }
 
 /*

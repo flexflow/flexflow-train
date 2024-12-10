@@ -18,7 +18,6 @@ ff_init_configs = {
     "use_4bit_quantization": False,
     "use_8bit_quantization": False,
     "enable_peft": False,
-    "peft_activation_reserve_space_size": 1024, # 1GB
     "profiling": False,
     "benchmarking": False,
     "inference_debugging": False,

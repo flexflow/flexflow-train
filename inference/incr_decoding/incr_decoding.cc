@@ -33,7 +33,7 @@ Legion::Logger log_app("llama");
 struct FilePaths {
   std::string cache_folder_path;
   std::string prompt_file_path;
-  std::string output_file_path;
+  std::string output_folder_path;
 };
 
 void parse_input_args(char **argv,
@@ -68,8 +68,8 @@ void parse_input_args(char **argv,
       continue;
     }
     // output file
-    if (!strcmp(argv[i], "-output-file")) {
-      paths.output_file_path = std::string(argv[++i]);
+    if (!strcmp(argv[i], "-output-folder")) {
+      paths.output_folder_path = std::string(argv[++i]);
       continue;
     }
     if (!strcmp(argv[i], "--use-full-precision")) {
@@ -118,6 +118,69 @@ void parse_input_args(char **argv,
   wordfree(&p);
 }
 
+std::vector<Request> make_warmup_requests(int num_requests) {
+  std::vector<Request> warmup_requests;
+  for (int i = 0; i < num_requests; i++) {
+    Request inference_req;
+    inference_req.benchmarking_tokens = 512;
+    inference_req.max_new_tokens = 30;
+    inference_req.warmup = true;
+    warmup_requests.push_back(inference_req);
+  }
+  return warmup_requests;
+}
+
+std::vector<Request> load_prompt_old(std::string trace_file_path) {
+  int total_num_requests = 0;
+
+  std::ifstream file_handle(trace_file_path);
+  assert(file_handle.good() && "Prompt file does not exist.");
+  nlohmann::json prompt_json = nlohmann::json::parse(file_handle,
+                                  /*parser_callback_t */ nullptr,
+                                  /*allow_exceptions */ true,
+                                  /*ignore_comments */ true);
+
+  std::vector<Request> requests;
+  for (auto &prompt : prompt_json) {
+    std::string text = prompt.get<std::string>();
+    printf("Prompt[%d]: %s\n", total_num_requests, text.c_str());
+    Request inference_req;
+    inference_req.prompt = text;
+    inference_req.max_length = 128;
+    requests.push_back(inference_req);
+    total_num_requests++;
+  }
+  return requests;
+}
+
+std::vector<Request> load_trace(std::string trace_file_path) {
+  std::vector<Request> requests;
+  
+  std::ifstream file_handle(trace_file_path);
+  assert(file_handle.good() && "Prompt file does not exist.");
+  nlohmann::ordered_json prompt_json =
+      nlohmann::ordered_json::parse(file_handle,
+                                    /*parser_callback_t */ nullptr,
+                                    /*allow_exceptions */ true,
+                                    /*ignore_comments */ true);
+  file_handle.close();
+  auto &metadata = prompt_json["metadata"];
+  
+  for (auto &entry : prompt_json["entries"]) {
+    int prompt_length = entry["prompt_length"];
+    int response_length = entry["response_length"];
+    std::string text = entry["prompt"];
+
+    Request inference_req;
+    // inference_req.prompt = text;
+    inference_req.benchmarking_tokens = prompt_length;
+    // inference_req.add_special_tokens = false;
+    inference_req.max_new_tokens = response_length;
+    requests.push_back(inference_req);
+  }
+  return requests;
+}
+
 void FlexFlow::top_level_task(Task const *task,
                               std::vector<PhysicalRegion> const &regions,
                               Context ctx,
@@ -134,8 +197,8 @@ void FlexFlow::top_level_task(Task const *task,
   float temperature = 0.0f;
   float topp = 0.0f;
   int max_requests_per_batch = 8;
-  int max_tokens_per_batch = 128;
-  int max_sequence_length = 256;
+  int max_tokens_per_batch = 256;
+  int max_sequence_length = 2048;
 
   InputArgs const &command_args = HighLevelRuntime::get_input_args();
   char **argv = command_args.argv;
@@ -219,12 +282,15 @@ void FlexFlow::top_level_task(Task const *task,
 
   GenerationConfig generationConfig(do_sample, temperature, topp);
   RequestManager *rm = RequestManager::get_request_manager();
+  rm->set_verbose(verbose);
   rm->set_max_requests_per_batch(max_requests_per_batch);
   rm->set_max_tokens_per_batch(max_tokens_per_batch);
   rm->set_max_sequence_length(max_sequence_length);
   rm->register_tokenizer(
       model_type, bos_token_id, eos_token_ids, tokenizer_filepath);
-  rm->register_output_filepath(file_paths.output_file_path);
+  std::string output_filepath = join_path(
+      {file_paths.output_folder_path, "output.log"});
+  rm->register_output_filepath(output_filepath);
 
   FFModel model(ffconfig, ffconfig.cpu_offload);
   if (model_type == ModelType::LLAMA) {
@@ -264,30 +330,17 @@ void FlexFlow::top_level_task(Task const *task,
     assert(false && "unknow model type");
   }
 
+  assert(!model.config.enable_peft);
+
   rm->start_background_server(&model);
+  
 
-  int total_num_requests = 0;
-  {
-    using json = nlohmann::json;
-    std::ifstream file_handle(file_paths.prompt_file_path);
-    assert(file_handle.good() && "Prompt file does not exist.");
-    json prompt_json = json::parse(file_handle,
-                                   /*parser_callback_t */ nullptr,
-                                   /*allow_exceptions */ true,
-                                   /*ignore_comments */ true);
-
-    std::vector<Request> requests;
-    for (auto &prompt : prompt_json) {
-      std::string text = prompt.get<std::string>();
-      printf("Prompt[%d]: %s\n", total_num_requests, text.c_str());
-      Request inference_req;
-      inference_req.prompt = text;
-      inference_req.max_length = 128;
-      requests.push_back(inference_req);
-      total_num_requests++;
-    }
-    std::vector<GenerationResult> result = model.generate(requests);
-  }
+  std::vector<Request> warmup_requests = make_warmup_requests(10);
+  std::vector<GenerationResult> warmup_result = model.generate(warmup_requests);
+  std::cout << "----------warmup finished--------------" << std::endl;
+  std::vector<Request> requests = load_trace(file_paths.prompt_file_path);
+  std::vector<GenerationResult> result = model.generate(requests);
+  std::cout << "----------inference finished--------------" << std::endl;
 
   // terminate the request manager by stopping the background thread
   rm->terminate_background_server();
@@ -298,8 +351,25 @@ void FlexFlow::top_level_task(Task const *task,
     future.get_void_result();
   }
 
-  // float* data
-  std::cout << "----------inference finished--------------" << std::endl;
+  std::string dataset_name;
+  // set dataset name to "wildchat" if the prompt file path contains "wildchat"
+  if (file_paths.prompt_file_path.find("wildchat") != std::string::npos) {
+    dataset_name = "wildchat";
+  } else if (file_paths.prompt_file_path.find("sharegpt") != std::string::npos) {
+    dataset_name = "sharegpt";
+  } else {
+    dataset_name = "unknown";
+  }
+
+  std::cout << "Saving profiling info..." << std::endl;
+  rm->save_profiling_info_to_csv(file_paths.output_folder_path,
+                                 dataset_name,
+                                 llm_model_name,
+                                 ffconfig.tensor_parallelism_degree,
+                                 max_requests_per_batch,
+                                 max_tokens_per_batch,
+                                 0.0, // arrival rate
+                                 10); // num_warmup_requests
 
   // free tokenizer space in memory
 }

@@ -128,7 +128,8 @@ Op::Op(FFModel &model,
     : op_type(_otype), data_type(_dtype), op_guid(model.op_global_guid++),
       numInputs(_numInputs), numWeights(_numWeights), numOutputs(_numOutputs),
       profiling(model.config.profiling),
-      inference_debugging(model.config.inference_debugging) {
+      inference_debugging(model.config.inference_debugging),
+      enable_peft_finetuning(model.config.enable_peft_finetuning) {
   for (int i = 0; i < MAX_NUM_INPUTS; i++) {
     inputs[i] = NULL;
   }
@@ -176,7 +177,8 @@ Op::Op(FFModel &model,
     : op_type(_otype), data_type(_dtype), op_guid(model.op_global_guid++),
       numInputs(_numInputs), numWeights(_numWeights), numOutputs(_numOutputs),
       profiling(model.config.profiling),
-      inference_debugging(model.config.inference_debugging) {
+      inference_debugging(model.config.inference_debugging),
+      enable_peft_finetuning(model.config.enable_peft_finetuning) {
   std::string pcname;
   if (_name == NULL) {
     pcname = get_operator_type_name(op_type);
@@ -1492,30 +1494,10 @@ bool Op::get_weight_parameter(TNParameter tnp,
   return true;
 }
 
-#ifdef DEADCODE
-OpMeta::OpMeta(FFHandler _handle)
-    : handle(_handle), profiling(false), inference_debugging(false) {
-  for (int i = 0; i < MAX_NUM_INPUTS; i++) {
-    trainable_inputs[i] = true;
-    reset_input_grads[i] = true;
-  }
-  for (int i = 0; i < MAX_NUM_INPUTS; i++) {
-    input_type[i] = DT_NONE;
-  }
-  for (int i = 0; i < MAX_NUM_WEIGHTS; i++) {
-    weight_type[i] = DT_NONE;
-  }
-  for (int i = 0; i < MAX_NUM_OUTPUTS; i++) {
-    output_type[i] = DT_NONE;
-  }
-  decoding_step = 0;
-  bwd_step = 0;
-}
-#endif
-
 OpMeta::OpMeta(FFHandler _handle, Op const *op)
     : handle(_handle), profiling(op->profiling),
-      inference_debugging(op->inference_debugging) {
+      inference_debugging(op->inference_debugging),
+      enable_peft_finetuning(op->enable_peft_finetuning) {
   for (int i = 0; i < op->numInputs; i++) {
     trainable_inputs[i] = op->trainable_inputs[i];
     reset_input_grads[i] = op->reset_input_grads[i];
@@ -1548,8 +1530,6 @@ FFRuntime::FFRuntime(FFConfig &config) {
     info.workSpaceSize = config.workSpaceSize;
     info.offload_reserve_space_size =
         config.cpu_offload ? config.offload_reserve_space_size : 0;
-    info.peft_activation_reserve_space_size =
-        config.enable_peft ? config.peft_activation_reserve_space_size : 0;
     info.quantization_type = config.quantization_type;
     info.allowTensorOpMathConversion = config.allow_tensor_op_math_conversion;
     argmap.set_point(*it, TaskArgument(&info, sizeof(FFInitInfo)));
@@ -4307,6 +4287,7 @@ struct DefaultConfig {
   const static bool profiling = false;
   const static bool benchmarking = false;
   const static bool inference_debugging = false;
+  const static bool enable_peft_finetuning = false;
   constexpr static float learningRate = 0.01f;
   constexpr static float weightDecay = 0.0001f;
   const static size_t workSpaceSize = (size_t)128 * 1024 * 1024; // 128 MB
@@ -4322,10 +4303,6 @@ struct DefaultConfig {
       (size_t)8 * 1024 * 1024 * 1024; // 8 GB
   // PEFT related fields
   const static bool enablePeft = false;
-  const static size_t peftActivationReserveSpaceSize =
-      (size_t)1 * 1024 * 1024 * 1024; // 1GB
-  const static size_t peftWeightReserveSpaceSize =
-      (size_t)1 * 1024 * 1024 * 1024; // 1GB
   const static bool cpuOffload = false;
   const static bool onlyDataParallel = true;
   const static bool enableSampleParallel = true;
@@ -4350,6 +4327,7 @@ FFConfig::FFConfig() {
   log_instance_creation = DefaultConfig::log_instance_creation;
   benchmarking = DefaultConfig::benchmarking;
   inference_debugging = DefaultConfig::inference_debugging;
+  enable_peft_finetuning = DefaultConfig::enable_peft_finetuning;
   learningRate = DefaultConfig::learningRate;
   weightDecay = DefaultConfig::weightDecay;
   workSpaceSize = DefaultConfig::workSpaceSize;
@@ -4365,8 +4343,6 @@ FFConfig::FFConfig() {
   offload_reserve_space_size = DefaultConfig::offloadReserveSpaceSize;
   // PEFT related fields
   enable_peft = DefaultConfig::enablePeft;
-  peft_activation_reserve_space_size =
-      DefaultConfig::peftActivationReserveSpaceSize;
   quantization_type = DT_NONE;
   only_data_parallel = DefaultConfig::onlyDataParallel;
   data_parallelism_degree = 1;
@@ -4495,10 +4471,6 @@ void FFConfig::parse_args(char **argv, int argc) {
     }
     if ((!strcmp(argv[i], "-enable-peft"))) {
       enable_peft = true;
-      continue;
-    }
-    if (!strcmp(argv[i], "-peft-activation-reserve-space-size")) {
-      peft_activation_reserve_space_size = atoll(argv[++i]) * 1024 * 1024;
       continue;
     }
     if ((!strcmp(argv[i], "--only-data-parallel"))) {
@@ -4716,7 +4688,26 @@ void register_flexflow_internal_tasks(Runtime *runtime,
           registrar);
     }
   }
-  // RequestManager prepare_next_batch
+  // RequestManager process_work_from_old_batches_task
+  // {
+  //   TaskVariantRegistrar registrar(
+  //       RM_PROCESS_WORK_FROM_OLD_BATCHES_TASK_ID,
+  //       "RequestManager Process Work from Old Batches");
+  //   registrar.add_constraint(ProcessorConstraint(Processor::LOC_PROC));
+  //   registrar.set_leaf();
+  //   if (pre_register) {
+  //     Runtime::preregister_task_variant<bool,
+  //         RequestManager::process_work_from_old_batches_task>(
+  //         registrar, "RequestManager Process Work from Old Batches Task");
+  //   } else {
+  //     if (enable_control_replication) {
+  //       registrar.global_registration = false;
+  //     }
+  //     runtime->register_task_variant<bool,
+  //         RequestManager::process_work_from_old_batches_task>(registrar);
+  //   }
+  // }
+  // RequestManager prepare_next_batch_task
   {
     TaskVariantRegistrar registrar(RM_PREPARE_NEXT_BATCH_TASK_ID,
                                    "RequestManager Prepare Next Batch");
@@ -4731,11 +4722,33 @@ void register_flexflow_internal_tasks(Runtime *runtime,
       if (enable_control_replication) {
         registrar.global_registration = false;
       }
-      runtime->register_task_variant<BatchConfig,
-                                     RequestManager::prepare_next_batch_task>(
-          registrar);
+      runtime
+          ->register_task_variant<BatchConfig,
+                                  RequestManager::prepare_next_batch_task>(
+              registrar);
     }
   }
+  // RequestManager prepare_next_bwd_batch_task
+  // {
+  //   TaskVariantRegistrar registrar(RM_PREPARE_NEXT_BWD_BATCH_TASK_ID,
+  //                                  "RequestManager Prepare Next BWD Batch");
+  //   registrar.add_constraint(ProcessorConstraint(Processor::LOC_PROC));
+  //   registrar.set_leaf();
+  //   if (pre_register) {
+  //     Runtime::preregister_task_variant<
+  //         BatchConfig,
+  //         RequestManager::prepare_next_bwd_batch_task>(
+  //         registrar, "RequestManager Prepare Next BWD Batch Task");
+  //   } else {
+  //     if (enable_control_replication) {
+  //       registrar.global_registration = false;
+  //     }
+  //     runtime
+  //         ->register_task_variant<BatchConfig,
+  //                                 RequestManager::prepare_next_bwd_batch_task>(
+  //             registrar);
+  //   }
+  // }
   // RequestManager prepare_next_batch_beam
   {
     TaskVariantRegistrar registrar(RM_PREPARE_NEXT_BATCH_BEAM_TASK_ID,
@@ -5191,6 +5204,20 @@ void register_flexflow_internal_tasks(Runtime *runtime,
         registrar.global_registration = false;
       }
       runtime->register_task_variant<Embedding::inference_task>(registrar);
+    }
+  }
+  {
+    TaskVariantRegistrar registrar(EMBED_PEFT_BWD_TASK_ID, "Embedding PEFT BWD");
+    registrar.add_constraint(ProcessorConstraint(Processor::TOC_PROC));
+    registrar.set_leaf();
+    if (pre_register) {
+      Runtime::preregister_task_variant<bool, Embedding::peft_bwd_task>(
+          registrar, "Embedding PEFT BWD Task");
+    } else {
+      if (enable_control_replication) {
+        registrar.global_registration = false;
+      }
+      runtime->register_task_variant<bool, Embedding::peft_bwd_task>(registrar);
     }
   }
   {
@@ -6978,13 +7005,13 @@ void register_flexflow_internal_tasks(Runtime *runtime,
     registrar.set_concurrent();
     registrar.set_concurrent_barrier();
     if (pre_register) {
-      Runtime::preregister_task_variant<FusedOp::peft_bwd_task>(
+      Runtime::preregister_task_variant<bool, FusedOp::peft_bwd_task>(
           registrar, "FusedOp PEFT Backward Task");
     } else {
       if (enable_control_replication) {
         registrar.global_registration = false;
       }
-      runtime->register_task_variant<FusedOp::peft_bwd_task>(registrar);
+      runtime->register_task_variant<bool, FusedOp::peft_bwd_task>(registrar);
     }
   }
 

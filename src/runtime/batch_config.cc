@@ -46,19 +46,32 @@ void set_optimizer_tasks(OptimizerTasks &tasks,
       ((completed_training_steps + 1) % gradient_accumulation_steps == 0);
 
   // Save updated weights only in the very last training step
-  tasks.save_updated_weights =
-      (completed_training_steps == max_training_steps - 1);
+  tasks.save_updated_weights = false;
+  // tasks.save_updated_weights =
+  //     (completed_training_steps == max_training_steps - 1);
   if (tasks.save_updated_weights) {
     assert(tasks.update_weights);
   }
 }
 
-BatchConfig::BatchConfig() : num_tokens(0), num_peft_tokens(0) {
+BatchConfig::BatchConfig() : num_tokens(0), num_generation_tokens(0) {
   for (int i = 0; i < MAX_NUM_REQUESTS; i++) {
     requestsInfo[i].first_token_depth_in_request = 0;
     requestsInfo[i].first_token_offset_in_batch = 0;
     requestsInfo[i].num_tokens_in_batch = 0;
+    requestsInfo[i].max_length = 0;
+    requestsInfo[i].request_guid = 0;
+    requestsInfo[i].peft_model_id = PEFTModelID::NO_ID;
+    requestsInfo[i].finetuning_request = false;
+    requestsInfo[i].finetuning_backward_phase = false;
+    requestsInfo[i].peft_bwd_first_layer = -1;
+    requestsInfo[i].peft_bwd_last_layer = -1;
+    requestsInfo[i].optimizer_tasks = {true, false, false, false};
+    requestsInfo[i].prompt_phase = false;
+    requestsInfo[i].batch_config_request_id = -1;
+    std::memset(requestsInfo[i].peft_model_config_str, 0, MAX_PEFT_CONFIG_SIZE);
     request_completed[i] = true;
+    request_running[i] = false;
   }
   for (int i = 0; i < MAX_NUM_TOKENS; i++) {
     tokensInfo[i].abs_depth_in_request = 0;
@@ -102,12 +115,54 @@ int BatchConfig::num_active_tokens() const {
   return num_tokens;
 }
 
-int BatchConfig::num_active_infr_tokens() const {
-  return num_tokens;
+int BatchConfig::finetuning_request_index() const {
+  assert(max_requests_per_batch() > 0);
+  return max_requests_per_batch() - 1;
 }
 
-int BatchConfig::num_active_peft_tokens() const {
-  return num_peft_tokens;
+int BatchConfig::num_finetuning_fwd_requests() const {
+  if (request_completed[finetuning_request_index()] || 
+      !requestsInfo[finetuning_request_index()].finetuning_request || 
+      requestsInfo[finetuning_request_index()].finetuning_backward_phase) {
+    return 0;
+  }
+  return 1;
+}
+
+int BatchConfig::num_finetuning_fwd_tokens() const {
+  if (num_finetuning_fwd_requests() == 0) {
+    return 0;
+  }
+  return requestsInfo[finetuning_request_index()].num_tokens_in_batch;
+}
+
+int BatchConfig::num_finetuning_bwd_requests() const {
+  if (request_completed[finetuning_request_index()] || 
+      !requestsInfo[finetuning_request_index()].finetuning_request || 
+      !requestsInfo[finetuning_request_index()].finetuning_backward_phase) {
+    return 0;
+  }
+  return 1;
+}
+
+int BatchConfig::num_finetuning_bwd_tokens() const {
+  if (num_finetuning_bwd_requests() == 0) {
+    return 0;
+  }
+  return requestsInfo[finetuning_request_index()].num_tokens_in_batch;
+}
+
+bool BatchConfig::peft_bwd_applies_to_this_layer(int layer) const {
+  if (!requestsInfo[finetuning_request_index()].finetuning_request ||
+      !requestsInfo[finetuning_request_index()].finetuning_backward_phase) {
+    return false;
+  }
+  assert(requestsInfo[finetuning_request_index()].peft_bwd_first_layer >= 0);
+  assert(requestsInfo[finetuning_request_index()].peft_bwd_last_layer >= 0);
+  assert(layer >= 0);
+  return (
+      layer >= requestsInfo[finetuning_request_index()].peft_bwd_first_layer &&
+      layer <= requestsInfo[finetuning_request_index()].peft_bwd_last_layer);
 }
 
 /*static*/
@@ -131,8 +186,27 @@ int BatchConfig::max_sequence_length() {
   return RequestManager::get_request_manager()->get_max_sequence_length();
 }
 
+/*static*/
+int BatchConfig::max_finetuning_sequence_length() {
+  return RequestManager::get_request_manager()->get_max_finetuning_sequence_length();
+}
+
 int BatchConfig::max_spec_tree_token_num() {
   return RequestManager::get_request_manager()->get_max_spec_tree_token_num();
+}
+
+// print InferenceResult
+std::ostream &operator<<(std::ostream &os, InferenceResult const &result) {
+  os << "InferenceResult {";
+  os << "MAX_NUM_TOKENS: " << InferenceResult::MAX_NUM_TOKENS << ", ";
+  os << "token_ids: [";
+  for (int i = 0; i < 16; i++) {
+    os << result.token_ids[i] << ", ";
+  }
+  os << "], ";
+  os << "finetuning_loss: " << result.finetuning_loss;
+  os << "}";
+  return os;
 }
 
 std::ostream &operator<<(std::ostream &os, BatchConfig const &bc) {
@@ -143,13 +217,14 @@ std::ostream &operator<<(std::ostream &os, BatchConfig const &bc) {
   os << "Max number of tokens: " << bc.max_tokens_per_batch() << std::endl;
   os << "Max sequence length: " << bc.max_sequence_length() << std::endl;
   // Current values
-  os << "Number of active tokens: " << bc.num_active_tokens() << std::endl;
-  os << "Number of inference tokens: " << bc.num_active_infr_tokens()
-     << std::endl;
-  os << "Number of peft tokens: " << bc.num_active_peft_tokens() << std::endl;
   os << "Number of requests: " << bc.num_active_requests() << std::endl;
+  os << "Number of peft fwd requests: " << bc.num_finetuning_fwd_requests() << std::endl;
+  os << "Number of peft bwd requests: " << bc.num_finetuning_bwd_requests() << std::endl;
+  os << "Number of active tokens: " << bc.num_active_tokens() << std::endl;
   os << "Number of generation tokens: " << bc.num_generation_tokens
      << std::endl;
+  os << "Number of peft fwd tokens: " << bc.num_finetuning_fwd_tokens() << std::endl;
+  os << "Number of peft bwd tokens: " << bc.num_finetuning_bwd_tokens() << std::endl;
 
   // Per-request info
   os << "Per-request info:\n";
@@ -172,7 +247,14 @@ std::ostream &operator<<(std::ostream &os, BatchConfig const &bc) {
       // PEFT values
       os << "    PEFT Model ID: " << bc.requestsInfo[i].peft_model_id
          << std::endl;
-      os << "    PEFT bwd: " << bc.requestsInfo[i].peft_bwd << std::endl;
+      os << "    Finetuning req: " << bc.requestsInfo[i].finetuning_request
+         << std::endl;
+      os << "    Finetuning backward phase: "
+         << bc.requestsInfo[i].finetuning_backward_phase << std::endl;
+      os << "    PEFT backward first layer: "
+         << bc.requestsInfo[i].peft_bwd_first_layer << std::endl;
+      os << "    PEFT backward last layer: "
+          << bc.requestsInfo[i].peft_bwd_last_layer << std::endl;
       os << "    optimizer_tasks: {"
          << "compute_gradients: " << std::boolalpha
          << bc.requestsInfo[i].optimizer_tasks.compute_gradients

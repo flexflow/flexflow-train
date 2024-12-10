@@ -202,6 +202,7 @@ OpMeta *Concat::init_task(Task const *task,
   init_meta(m, cc->legion_axis);
   m->profiling = cc->profiling;
   m->inference_debugging = cc->inference_debugging;
+  m->enable_peft_finetuning = cc->enable_peft_finetuning;
   std::strcpy(m->op_name, cc->name);
   m->layer_guid = cc->layer_guid;
   return m;

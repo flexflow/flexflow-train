@@ -434,6 +434,7 @@ OpMeta *ElementBinary::init_task(Task const *task,
   m->op_type = eb->op_type;
   m->profiling = eb->profiling;
   m->inference_debugging = eb->inference_debugging;
+  m->enable_peft_finetuning = eb->enable_peft_finetuning;
   m->inplace_a = eb->inplace_a;
   m->has_same_operands = eb->has_same_operands;
   m->broadcast_input1 = eb->broadcast_input1;
@@ -1033,6 +1034,7 @@ bool ElementBinary::measure_operator_cost(Simulator *sim,
   m->op_type = op_type;
   m->profiling = this->profiling;
   m->inference_debugging = this->inference_debugging;
+  m->enable_peft_finetuning = this->enable_peft_finetuning;
   m->inplace_a = this->inplace_a;
   m->has_same_operands = this->has_same_operands;
   m->broadcast_input1 = this->broadcast_input1;

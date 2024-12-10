@@ -593,6 +593,7 @@ OpMeta *Conv2D::init_task(Task const *task,
   m->use_bias = conv->use_bias;
   m->profiling = conv->profiling;
   m->inference_debugging = conv->inference_debugging;
+  m->enable_peft_finetuning = conv->enable_peft_finetuning;
   m->trainable_inputs[0] = conv->trainable_inputs[0];
   m->reset_input_grads[0] = conv->trainable_inputs[0];
   std::strcpy(m->op_name, conv->name);

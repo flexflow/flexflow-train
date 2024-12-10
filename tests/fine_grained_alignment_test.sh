@@ -29,7 +29,7 @@ mkdir -p ./inference/output
 
 # Enable backtrace in case we run into a segfault or assertion failure
 export LEGION_BACKTRACE=1
-export FF_DEBG_NO_WEIGHTS=1
+export FF_DEBG_NO_WEIGHTS=0
 FUSION=true
 
 

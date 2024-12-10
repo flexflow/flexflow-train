@@ -530,6 +530,7 @@ OpMeta *IncMultiHeadSelfAttention::init_task(
   }
   m->profiling = attn->profiling;
   m->inference_debugging = attn->inference_debugging;
+  m->enable_peft_finetuning = attn->enable_peft_finetuning;
   std::strcpy(m->op_name, attn->name);
   m->layer_guid = attn->layer_guid;
 
@@ -689,12 +690,13 @@ void IncMultiHeadSelfAttention::peft_bwd_task(
   log_inc_mha.debug("BatchConfig, num_tokens: %d, num_requests: %d",
                     bc->num_tokens,
                     bc->num_active_requests());
-  if (bc->num_active_peft_tokens() == 0) {
-    return;
-  }
 
   IncMultiHeadSelfAttentionMeta *m =
       *((IncMultiHeadSelfAttentionMeta **)task->local_args);
+
+  if (!bc->peft_bwd_applies_to_this_layer(m->layer_guid.transformer_layer_id)) {
+    return;
+  }
 
   assert(regions.size() == 2); // input grad, output grad
 

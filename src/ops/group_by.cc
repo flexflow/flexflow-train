@@ -274,6 +274,7 @@ OpMeta *Group_by::init_task(Task const *task,
   GroupByMeta *m = new GroupByMeta(handle, gb);
   m->profiling = gb->profiling;
   m->inference_debugging = gb->inference_debugging;
+  m->enable_peft_finetuning = gb->enable_peft_finetuning;
   std::strcpy(m->op_name, gb->name);
   m->layer_guid = gb->layer_guid;
   return m;

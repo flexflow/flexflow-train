@@ -169,6 +169,7 @@ OpMeta *Cache::init_task(Task const *task,
   m->cache_score = 0.0f;
   m->profiling = c->profiling;
   m->inference_debugging = c->inference_debugging;
+  m->enable_peft_finetuning = c->enable_peft_finetuning;
   std::strcpy(m->op_name, c->name);
   m->layer_guid = c->layer_guid;
   return m;

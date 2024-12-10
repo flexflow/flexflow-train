@@ -105,7 +105,6 @@ public:
 private:
   Linear(int guid,
          bool profiling,
-         bool inference_debugging,
          const ParallelTensor input,
          int out_dim,
          ActiMode activation,

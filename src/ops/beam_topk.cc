@@ -276,6 +276,7 @@ OpMeta *BeamTopK::init_task(Task const *task,
   BeamTopKMeta *m = new BeamTopKMeta(handle, topk, gpu_mem_allocator);
   m->profiling = topk->profiling;
   m->inference_debugging = topk->inference_debugging;
+  m->enable_peft_finetuning = topk->enable_peft_finetuning;
   std::strcpy(m->op_name, topk->name);
   m->layer_guid = topk->layer_guid;
   m->sorted = topk->sorted;
@@ -375,7 +376,7 @@ BeamInferenceResult
   // embedding size: eg. 4096
   int length = input_domain.hi()[0] - input_domain.lo()[0] + 1;
   // total token nums
-  size_t batch_size = bc.num_active_infr_tokens();
+  size_t batch_size = bc.num_active_tokens();
 
   // need meta for: how many sub requests in a main request
   BeamTopK::forward_kernel_wrapper(m,

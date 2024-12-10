@@ -245,6 +245,7 @@ OpMeta *Aggregate::init_task(Task const *task,
   AggregateMeta *m = new AggregateMeta(handle, agg);
   m->profiling = agg->profiling;
   m->inference_debugging = agg->inference_debugging;
+  m->enable_peft_finetuning = agg->enable_peft_finetuning;
   std::strcpy(m->op_name, agg->name);
   m->layer_guid = agg->layer_guid;
   return m;

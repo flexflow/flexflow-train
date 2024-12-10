@@ -34,7 +34,7 @@ def print_trainable_parameters(model):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model-name", type=str, default="meta-llama/Llama-2-7b-hf")
+    parser.add_argument("--model-name", type=str, default="mistralai/Mistral-7B-v0.3")
     parser.add_argument("--lora-rank", type=int, default=16)
     parser.add_argument("--lora-alpha", type=int, default=32)
     parser.add_argument(
@@ -48,7 +48,7 @@ def main():
         "--use-full-precision", action="store_true", help="Use full precision"
     )
     parser.add_argument("--output-dir", type=str, default="")
-    parser.add_argument("--publish-peft-with-id", type=str, default="")
+    parser.add_argument("--publish-peft-with-id", type=str, default="goliaro/mistral-7b-lora")
     args = parser.parse_args()
     model_name = args.model_name
     use_full_precision = args.use_full_precision
@@ -122,29 +122,29 @@ def main():
     data = load_dataset("Abirate/english_quotes")
     data = data.map(lambda samples: tokenizer(samples["quote"]), batched=True)
 
-    trainer = transformers.Trainer(
-        model=model,
-        train_dataset=data["train"],
-        args=transformers.TrainingArguments(
-            per_device_train_batch_size=4,
-            gradient_accumulation_steps=4,
-            warmup_steps=100,
-            max_steps=200,
-            learning_rate=2e-4,
-            fp16=True if not use_full_precision else False,
-            logging_steps=1,
-            output_dir=os.path.join(
-                output_dir if len(output_dir) > 0 else "./", "lora_training_logs"
-            ),
-        ),
-        data_collator=transformers.DataCollatorForLanguageModeling(
-            tokenizer, mlm=False
-        ),
-    )
-    model.config.use_cache = (
-        False
-    )  # silence the warnings. Please re-enable for inference!
-    trainer.train()
+    # trainer = transformers.Trainer(
+    #     model=model,
+    #     train_dataset=data["train"],
+    #     args=transformers.TrainingArguments(
+    #         per_device_train_batch_size=4,
+    #         gradient_accumulation_steps=4,
+    #         warmup_steps=100,
+    #         max_steps=200,
+    #         learning_rate=2e-4,
+    #         fp16=True if not use_full_precision else False,
+    #         logging_steps=1,
+    #         output_dir=os.path.join(
+    #             output_dir if len(output_dir) > 0 else "./", "lora_training_logs"
+    #         ),
+    #     ),
+    #     data_collator=transformers.DataCollatorForLanguageModeling(
+    #         tokenizer, mlm=False
+    #     ),
+    # )
+    # model.config.use_cache = (
+    #     False
+    # )  # silence the warnings. Please re-enable for inference!
+    # trainer.train()
 
     if len(output_dir) > 0:
         print(f"Done training! Saving the model to {output_dir}...")

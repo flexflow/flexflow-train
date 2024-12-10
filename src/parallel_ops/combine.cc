@@ -497,11 +497,11 @@ void Combine::peft_bwd_task(Task const *task,
                             Runtime *runtime) {
   assert(regions.size() == 2);
   assert(task->regions.size() == 2);
-  // CombineMeta const *m = *((CombineMeta **)task->local_args);
+  CombineMeta const *m = *((CombineMeta **)task->local_args);
   BatchConfig const *bc = BatchConfig::from_future(task->futures[0]);
-  if (bc->num_active_peft_tokens() == 0) {
-    return;
-  }
+  // if (!bc->peft_bwd_applies_to_this_layer(m->layer_guid.transformer_layer_id)) {
+  //   return;
+  // }
   // TODO: figure out why m->output_type[0] or m->input_type[0] are not working
   DataType data_type = *((DataType *)task->args);
   GenericTensorAccessorR output_grad = helperGetGenericTensorAccessorRO(
@@ -510,7 +510,7 @@ void Combine::peft_bwd_task(Task const *task,
       data_type, regions[1], task->regions[1], FID_DATA, ctx, runtime);
   assert(input_grad.data_type == data_type);
   assert(output_grad.domain == input_grad.domain);
-  CombineMeta const *m = *((CombineMeta **)task->local_args);
+
   int shard_id = task->index_point.point_data[0];
   if (shard_id == 0 && m->inference_debugging) {
     // m is null when shard_id > 0 for some reason

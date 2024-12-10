@@ -91,7 +91,6 @@ ff_arg_to_sysarg = {
     "use_4bit_quantization": "--4bit-quantization",
     "use_8bit_quantization": "--8bit-quantization",
     "enable_peft": "-enable-peft",
-    "peft_activation_reserve_space_size": "-peft-activation-reserve-space-size",
 }
 
 

@@ -268,18 +268,21 @@ class LlamaAlignmentTest(AlignmentTest):
                 tp_type=TPType.PARTITION
             )
             head_dim = hf_q_proj_out.shape[2] // self.num_attention_heads
-            heads_per_shard = self.num_attention_heads // self.tp_degree
-            chunk_size = head_dim * heads_per_shard
+            q_heads_per_shard = self.num_attention_heads // self.tp_degree
+            kv_heads_per_shard = self.num_key_value_heads // self.tp_degree
+            q_chunk_size = head_dim * q_heads_per_shard
+            kv_chunk_size = head_dim * kv_heads_per_shard
+            # print(q_chunk_size, kv_chunk_size)
             # print(ff_qkv_tensor_out.shape)
-            ff_qproj_out = ff_qkv_tensor_out[:chunk_size, :, :]
-            ff_kproj_out = ff_qkv_tensor_out[chunk_size:2*chunk_size, :, :]
-            ff_vproj_out = ff_qkv_tensor_out[2*chunk_size : 3*chunk_size, :, :]
-            qkv_chunk_size = 3*chunk_size
+            ff_qproj_out = ff_qkv_tensor_out[: q_chunk_size, :, :]
+            ff_kproj_out = ff_qkv_tensor_out[q_chunk_size : q_chunk_size + kv_chunk_size, :, :]
+            ff_vproj_out = ff_qkv_tensor_out[q_chunk_size + kv_chunk_size : q_chunk_size + 2*kv_chunk_size, :, :]
+            qkv_chunk_size = q_chunk_size + 2*kv_chunk_size
             for tp_idx in range(1, self.tp_degree):
                 prev_size = tp_idx * qkv_chunk_size
-                ff_qproj_out_ = ff_qkv_tensor_out[prev_size : prev_size + chunk_size, :, :]
-                ff_kproj_out_ = ff_qkv_tensor_out[prev_size + chunk_size : prev_size + 2*chunk_size, :, :]
-                ff_vproj_out_ = ff_qkv_tensor_out[prev_size + 2*chunk_size : prev_size + 3*chunk_size, :, :]
+                ff_qproj_out_ = ff_qkv_tensor_out[prev_size : prev_size + q_chunk_size, :, :]
+                ff_kproj_out_ = ff_qkv_tensor_out[prev_size + q_chunk_size : prev_size + q_chunk_size + kv_chunk_size, :, :]
+                ff_vproj_out_ = ff_qkv_tensor_out[prev_size + q_chunk_size + kv_chunk_size : prev_size + q_chunk_size + 2*kv_chunk_size, :, :]
                 ff_qproj_out = np.concatenate((ff_qproj_out, ff_qproj_out_), axis=0)
                 ff_kproj_out = np.concatenate((ff_kproj_out, ff_kproj_out_), axis=0)
                 ff_vproj_out = np.concatenate((ff_vproj_out, ff_vproj_out_), axis=0)

@@ -140,7 +140,10 @@ std::ostream &operator<<(std::ostream &os, BeamSearchBatchConfig const &bc) {
       // PEFT values
       os << "    PEFT Model ID: " << bc.requestsInfo[i].peft_model_id
          << std::endl;
-      os << "    PEFT bwd: " << bc.requestsInfo[i].peft_bwd << std::endl;
+      os << "    Finetuning req: " << bc.requestsInfo[i].finetuning_request
+         << std::endl;
+      os << "   Finetuning backward phase: "
+         << bc.requestsInfo[i].finetuning_backward_phase << std::endl;
       os << "    Max sequence length: " << bc.requestsInfo[i].max_length
          << std::endl;
       os << "    Request completed: " << bc.request_completed[i] << std::endl;

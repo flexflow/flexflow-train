@@ -35,9 +35,17 @@ AddBiasResidualLayerNormMeta::AddBiasResidualLayerNormMeta(
   effective_num_elements = ln->effective_num_elements;
   profiling = ln->profiling;
   inference_debugging = ln->inference_debugging;
+  enable_peft_finetuning = ln->enable_peft_finetuning;
   eps = ln->eps;
   DataType data_type = ln->data_type;
-  size_t totalSize = effective_batch_size * data_type_size(data_type) * 3;
+  size_t in_dim = ln->inputs[0]->dims[0].size / ln->inputs[0]->dims[0].degree;
+  allocated_peft_buffer_size =
+      enable_peft_finetuning ? (data_type_size(data_type) *
+                                BatchConfig::max_finetuning_sequence_length() * in_dim)
+                             : 0;
+  size_t totalSize = effective_batch_size * data_type_size(data_type) * 3 +
+                     allocated_peft_buffer_size;
+
   gpu_mem_allocator.create_legion_instance(
       reserveInst, totalSize, "AddBiasResidualLayerNormMeta");
   mean_ptr = gpu_mem_allocator.allocate_instance_untyped(
@@ -46,7 +54,10 @@ AddBiasResidualLayerNormMeta::AddBiasResidualLayerNormMeta(
       data_type_size(data_type) * effective_batch_size);
   bias_ptr = gpu_mem_allocator.allocate_instance_untyped(
       data_type_size(data_type) * effective_batch_size);
-  allocated_peft_buffer_size = 0;
+  if (enable_peft_finetuning) {
+    input_activation =
+        gpu_mem_allocator.allocate_instance_untyped(allocated_peft_buffer_size);
+  }
 }
 
 AddBiasResidualLayerNormMeta::~AddBiasResidualLayerNormMeta(void) {
@@ -198,62 +209,36 @@ void AddBiasResidualLayerNorm::inference_kernel_wrapper(
     cudaEventRecord(t_start, stream);
   }
   // save input activation if needed for PEFT
-  if (bc->num_active_peft_tokens() > 0) {
+  if (bc->num_finetuning_fwd_requests() > 0) {
     // Check that we have at most one request that requires peft_bwd
-    int num_peft_requests = 0;
-    for (int i = 0; i < bc->max_requests_per_batch(); i++) {
-      if (bc->request_completed[i]) {
-        continue;
-      }
-      if (bc->requestsInfo[i].peft_model_id == PEFTModelID::NO_ID) {
-        continue;
-      }
-      if (bc->requestsInfo[i].peft_bwd) {
-        num_peft_requests++;
-      }
-    }
-    assert(num_peft_requests <= 1);
-
-    for (int i = 0; i < bc->max_requests_per_batch(); i++) {
-      if (bc->request_completed[i]) {
-        continue;
-      }
-      // Skip non-PEFT requests
-      if (bc->requestsInfo[i].peft_model_id == PEFTModelID::NO_ID) {
-        continue;
-      }
-      int num_peft_tokens = bc->requestsInfo[i].num_tokens_in_batch;
-      int max_peft_tokens = bc->requestsInfo[i].max_length;
-      int first_token_offset = bc->requestsInfo[i].first_token_offset_in_batch;
-      int in_dim = input.domain.hi()[0] - input.domain.lo()[0] + 1;
-      if (bc->requestsInfo[i].peft_bwd) {
-        size_t activation_size_needed =
-            data_type_size(m->input_type[0]) * max_peft_tokens * in_dim;
-        if (activation_size_needed > m->allocated_peft_buffer_size) {
-          MemoryAllocator *allocator = m->handle.peft_activation_allocator;
-          m->input_activation =
-              allocator->allocate_instance_untyped(activation_size_needed);
-          m->allocated_peft_buffer_size = activation_size_needed;
-        }
-        // copy input activation
-        if (m->input_type[0] == DT_FLOAT) {
-          checkCUDA(cudaMemcpyAsync(
-              m->input_activation,
-              added_output.get_float_ptr() + first_token_offset * in_dim,
-              data_type_size(m->input_type[0]) * num_peft_tokens * in_dim,
-              cudaMemcpyDeviceToDevice,
-              stream));
-        } else if (m->input_type[0] == DT_HALF) {
-          checkCUDA(cudaMemcpyAsync(
-              m->input_activation,
-              added_output.get_half_ptr() + first_token_offset * in_dim,
-              data_type_size(m->input_type[0]) * num_peft_tokens * in_dim,
-              cudaMemcpyDeviceToDevice,
-              stream));
-        } else {
-          assert(false && "unsupport datatype in layernorm");
-        }
-      }
+    assert(bc->num_finetuning_fwd_tokens() >= 1);
+    int i = bc->finetuning_request_index();
+    assert(bc->requestsInfo[i].peft_model_id != PEFTModelID::NO_ID);
+    assert(!bc->requestsInfo[i].finetuning_backward_phase);
+    int in_dim = input.domain.hi()[0] - input.domain.lo()[0] + 1;
+    assert(m->allocated_peft_buffer_size ==
+           data_type_size(m->input_type[0]) *
+               BatchConfig::max_finetuning_sequence_length() * in_dim);
+    int num_peft_tokens = bc->requestsInfo[i].num_tokens_in_batch;
+    assert(num_peft_tokens == bc->num_finetuning_fwd_tokens());
+    int first_token_offset = bc->requestsInfo[i].first_token_offset_in_batch;
+    // copy input activation
+    if (m->input_type[0] == DT_FLOAT) {
+      checkCUDA(cudaMemcpyAsync(
+          m->input_activation,
+          added_output.get_float_ptr() + first_token_offset * in_dim,
+          data_type_size(m->input_type[0]) * num_peft_tokens * in_dim,
+          cudaMemcpyDeviceToDevice,
+          stream));
+    } else if (m->input_type[0] == DT_HALF) {
+      checkCUDA(cudaMemcpyAsync(
+          m->input_activation,
+          added_output.get_half_ptr() + first_token_offset * in_dim,
+          data_type_size(m->input_type[0]) * num_peft_tokens * in_dim,
+          cudaMemcpyDeviceToDevice,
+          stream));
+    } else {
+      assert(false && "unsupport datatype in layernorm");
     }
   }
 

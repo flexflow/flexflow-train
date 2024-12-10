@@ -213,61 +213,36 @@ void inference_kernel_wrapper(LinearMeta *m,
 
   if (m->activation == AC_MODE_RELU || m->activation == AC_MODE_SIGMOID) {
     // save input activation if needed for PEFT
-    if (bc->num_active_peft_tokens() > 0) {
+    if (bc->num_finetuning_fwd_requests() > 0) {
       // Check that we have at most one request that requires peft_bwd
-      int num_peft_requests = 0;
-      for (int i = 0; i < bc->max_requests_per_batch(); i++) {
-        if (bc->request_completed[i]) {
-          continue;
-        }
-        if (bc->requestsInfo[i].peft_model_id == PEFTModelID::NO_ID) {
-          continue;
-        }
-        if (bc->requestsInfo[i].peft_bwd) {
-          num_peft_requests++;
-        }
-      }
-      assert(num_peft_requests <= 1);
-
-      for (int i = 0; i < bc->max_requests_per_batch(); i++) {
-        if (bc->request_completed[i]) {
-          continue;
-        }
-        // Skip non-PEFT requests
-        if (bc->requestsInfo[i].peft_model_id == PEFTModelID::NO_ID) {
-          continue;
-        }
-        int num_peft_tokens = bc->requestsInfo[i].num_tokens_in_batch;
-        int max_peft_tokens = bc->requestsInfo[i].max_length;
-        int first_token_offset = bc->requestsInfo[i].num_tokens_in_batch;
-        if (bc->requestsInfo[i].peft_bwd) {
-          size_t activation_size_needed =
-              data_type_size(m->output_type[0]) * max_peft_tokens * out_dim;
-          if (activation_size_needed > m->allocated_peft_buffer_size) {
-            MemoryAllocator *allocator = m->handle.peft_activation_allocator;
-            m->output_activation_buffer =
-                allocator->allocate_instance_untyped(activation_size_needed);
-            m->allocated_peft_buffer_size = activation_size_needed;
-          }
-          // copy output activation
-          if (m->output_type[0] == DT_FLOAT) {
-            checkCUDA(hipMemcpyAsync(
-                m->output_activation_buffer,
-                static_cast<float *>(output_ptr) + first_token_offset * out_dim,
-                data_type_size(m->output_type[0]) * num_peft_tokens * out_dim,
-                hipMemcpyDeviceToDevice,
-                stream));
-          } else if (m->output_type[0] == DT_HALF) {
-            checkCUDA(hipMemcpyAsync(
-                m->output_activation_buffer,
-                static_cast<half *>(output_ptr) + first_token_offset * out_dim,
-                data_type_size(m->output_type[0]) * num_peft_tokens * out_dim,
-                hipMemcpyDeviceToDevice,
-                stream));
-          } else {
-            assert(false && "unsupport datatype in layernorm");
-          }
-        }
+      assert(bc->num_finetuning_fwd_tokens() >= 1);
+      int i = bc->finetuning_request_index();
+      assert(bc->requestsInfo[i].peft_model_id != PEFTModelID::NO_ID);
+      assert(!bc->requestsInfo[i].finetuning_backward_phase);
+      int in_dim = input.domain.hi()[0] - input.domain.lo()[0] + 1;
+      assert(m->allocated_peft_buffer_size ==
+             data_type_size(m->input_type[0]) *
+                 BatchConfig::max_finetuning_sequence_length() * in_dim);
+      int num_peft_tokens = bc->requestsInfo[i].num_tokens_in_batch;
+      assert(num_peft_tokens == bc->num_finetuning_fwd_tokens());
+      int first_token_offset = bc->requestsInfo[i].first_token_offset_in_batch;
+      // copy input activation
+      if (m->input_type[0] == DT_FLOAT) {
+        checkCUDA(hipMemcpyAsync(
+            m->input_activation,
+            added_output.get_float_ptr() + first_token_offset * in_dim,
+            data_type_size(m->input_type[0]) * num_peft_tokens * in_dim,
+            hipMemcpyDeviceToDevice,
+            stream));
+      } else if (m->input_type[0] == DT_HALF) {
+        checkCUDA(hipMemcpyAsync(
+            m->input_activation,
+            added_output.get_half_ptr() + first_token_offset * in_dim,
+            data_type_size(m->input_type[0]) * num_peft_tokens * in_dim,
+            hipMemcpyDeviceToDevice,
+            stream));
+      } else {
+        assert(false && "unsupport datatype in layernorm");
       }
     }
   }

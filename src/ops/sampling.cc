@@ -232,6 +232,7 @@ OpMeta *Sampling::init_task(Task const *task,
       handle, s, batch_size, length * batch_size, acc_input, gpu_mem_allocator);
   m->profiling = s->profiling;
   m->inference_debugging = s->inference_debugging;
+  m->enable_peft_finetuning = s->enable_peft_finetuning;
   std::strcpy(m->op_name, s->name);
   m->layer_guid = s->layer_guid;
   m->top_p = s->top_p;
@@ -302,7 +303,7 @@ InferenceResult
   GenericTensorAccessorW indices = helperGetGenericTensorAccessorWO(
       DT_INT32, regions[1], task->regions[1], FID_DATA, ctx, runtime);
 
-  int batch_size = bc->num_active_infr_tokens();
+  int batch_size = bc->num_active_tokens();
   Sampling::forward_kernel_wrapper(m, input, indices, batch_size);
 
   if (m->inference_debugging) {

@@ -98,11 +98,12 @@ void FALCON::create_falcon_model(FFModel &ff,
       att_norm = res_ln_outputs[1];
     }
 
+    assert(falcon_config.hidden_size % falcon_config.n_head == 0);
+    size_t head_dim = falcon_config.hidden_size / falcon_config.n_head;
+
     qkv_proj = ff.dense(
         att_norm,
-        falcon_config.hidden_size *
-            3, // q, k, v. need to change if want to remove replication.
-               // (q_heads + 2 * kv_heads) * proj_size
+        head_dim * (falcon_config.n_head + 2*falcon_config.n_head_kv),
         AC_MODE_NONE,
         false,         // seems like it does not use bias
         DT_NONE,       // what is this
@@ -113,7 +114,7 @@ void FALCON::create_falcon_model(FFModel &ff,
         0.0f,          // no dropout
         std::string("layers." + std::to_string(i) + ".self_attention.qkv_proj")
             .c_str());
-    qkv_proj->print("qkv_proj");
+    // qkv_proj->print("qkv_proj");
 
     switch (mode) {
       case BEAM_SEARCH_MODE: {

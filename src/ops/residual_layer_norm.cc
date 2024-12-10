@@ -799,12 +799,12 @@ void ResidualLayerNorm::peft_bwd_task(
     Context ctx,
     Runtime *runtime) {
   BatchConfig const *bc = BatchConfig::from_future(task->futures[0]);
-  if (bc->num_active_peft_tokens() == 0) {
-    return;
-  }
   assert(task->regions.size() == regions.size());
   ResidualLayerNormMeta *m = *((ResidualLayerNormMeta **)task->local_args);
   assert(regions.size() == 3 + m->use_two_residuals + m->elementwise_affine);
+  if (!bc->peft_bwd_applies_to_this_layer(m->layer_guid.transformer_layer_id)) {
+    return;
+  }
 
   int region_idx = 0, task_region_idx = 0;
 

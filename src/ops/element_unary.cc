@@ -361,6 +361,7 @@ OpMeta *ElementUnary::init_task(Task const *task,
   assert(eu->outputs[0]->data_type == eu->inputs[0]->data_type);
   m->profiling = eu->profiling;
   m->inference_debugging = eu->inference_debugging;
+  m->enable_peft_finetuning = eu->enable_peft_finetuning;
   m->inplace = eu->inplace;
   m->scalar = eu->scalar;
   std::strcpy(m->op_name, eu->name);

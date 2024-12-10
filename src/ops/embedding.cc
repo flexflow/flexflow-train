@@ -411,6 +411,7 @@ OpMeta *Embedding::init_task(Task const *task,
   EmbeddingMeta *m = new EmbeddingMeta(handle, embed);
   m->profiling = embed->profiling;
   m->inference_debugging = embed->inference_debugging;
+  m->enable_peft_finetuning = embed->enable_peft_finetuning;
   m->aggr = embed->aggr;
   std::strcpy(m->op_name, embed->name);
   m->layer_guid = embed->layer_guid;
@@ -666,14 +667,60 @@ void Embedding::backward(FFModel const &ff) {
   runtime->execute_index_space(ctx, launcher);
 }
 
+bool Embedding::peft_bwd_task(Task const *task,
+                           std::vector<PhysicalRegion> const &regions,
+                           Context ctx,
+                           Runtime *runtime) {
+  EmbeddingMeta *m = *((EmbeddingMeta **)task->local_args);
+  assert(regions.size() == 2);
+  assert(task->regions.size() == 2);
+  BatchConfig const *bc = BatchConfig::from_future(task->futures[0]);
+  GenericTensorAccessorW grad_input = helperGetGenericTensorAccessorWO(
+      m->input_type[0], regions[0], task->regions[0], FID_DATA, ctx, runtime);
+  GenericTensorAccessorR grad_output = helperGetGenericTensorAccessorRO(
+      m->output_type[0], regions[1], task->regions[1], FID_DATA, ctx, runtime);
+  return true;
+}
+
 Legion::FutureMap
     Embedding::peft_bwd(FFModel const &ff,
                         BatchConfigFuture const &bc,
                         std::vector<ParallelTensor> const &batch_inputs,
                         std::vector<ParallelTensor> const &batch_outputs,
                         MachineView const *mv) {
-  // nothing to do (backward function only updates weights)
-  return FutureMap();
+  ArgumentMap argmap;
+  Context ctx = ff.config.lg_ctx;
+  Runtime *runtime = ff.config.lg_hlr;
+  parallel_is = batch_outputs[0]->parallel_is;
+  MachineView const *view = mv ? mv : &batch_outputs[0]->machine_view;
+  set_argumentmap_for_inference(ff, argmap, batch_outputs[0]);
+  size_t machine_view_hash = view->hash();
+  /* std::cout << "Linear op machine_view: " << *(MachineView const *)mv
+            << std::endl; */
+  IndexLauncher launcher(EMBED_PEFT_BWD_TASK_ID,
+                         parallel_is,
+                         TaskArgument(nullptr, 0),
+                         argmap,
+                         Predicate::TRUE_PRED,
+                         false /*must*/,
+                         0 /*mapper_id*/,
+                         machine_view_hash);
+  launcher.add_future(bc);
+  launcher.add_region_requirement(
+      RegionRequirement(batch_inputs[0]->part_grad,
+                        0 /*projection id*/,
+                        WRITE_ONLY,
+                        EXCLUSIVE,
+                        batch_inputs[0]->region_grad));
+  launcher.add_field(0, FID_DATA);
+  launcher.add_region_requirement(
+      RegionRequirement(batch_outputs[0]->part_grad,
+                        0 /*projection id*/,
+                        READ_ONLY,
+                        EXCLUSIVE,
+                        batch_outputs[0]->region_grad));
+  launcher.add_field(1, FID_DATA);
+  return runtime->execute_index_space(ctx, launcher);
 }
 
 void Embedding::backward_task(Task const *task,

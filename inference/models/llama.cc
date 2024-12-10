@@ -91,11 +91,13 @@ void LLAMA::create_llama_model(FFModel &ff,
       token = token_att_norm[0];
       att_norm = token_att_norm[1];
     }
+
+    assert(llama_config.hidden_size % llama_config.num_attention_heads == 0);
+    size_t head_dim = llama_config.hidden_size / llama_config.num_attention_heads;
+    
     Tensor qkv_proj = ff.dense(
         att_norm,
-        llama_config.hidden_size *
-            3, // q, k, v. need to change if want to remove replication.
-               // (q_heads + 2 * kv_heads) * proj_size
+        head_dim * (llama_config.num_attention_heads + 2 * llama_config.num_key_value_heads),
         AC_MODE_NONE,
         false,         // seems like llama does not use bias
         DT_NONE,       // what is this

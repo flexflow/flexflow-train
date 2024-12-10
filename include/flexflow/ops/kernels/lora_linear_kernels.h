@@ -38,6 +38,11 @@ void peft_bwd_kernel_wrapper(Context ctx,
                              int shard_id,
                              GenericTensorAccessorW const &input_grad,
                              GenericTensorAccessorR const &output_grad);
+void save_peft_weights_if_needed(LoraLinearMeta *m,
+                                 BatchConfig const *bc,
+                                 int in_dim,
+                                 int out_dim,
+                                 int shard_id);
 
 namespace Internal {
 // template <typename DT>

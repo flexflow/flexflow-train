@@ -168,23 +168,6 @@ FFHandler
   } else {
     handle.batch_config_metadata = nullptr;
   }
-  // #ifdef DEADCODE
-  if (info->peft_activation_reserve_space_size > 0) {
-    // allocate memory for peft activation reserve space
-    Memory gpu_mem = Machine::MemoryQuery(Machine::get_machine())
-                         .only_kind(Memory::GPU_FB_MEM)
-                         .best_affinity_to(task->target_proc)
-                         .first();
-    Realm::RegionInstance workspaceInst;
-    handle.peft_activation_allocator = new MemoryAllocator(gpu_mem);
-    handle.peft_activation_allocator->create_legion_instance(
-        workspaceInst,
-        info->peft_activation_reserve_space_size,
-        "PEFT Activation Reserve Space");
-  } else {
-    handle.peft_activation_allocator = nullptr;
-  }
-// #endif
 // checkCUDA(cudaMalloc(&handle.workSpace, handle.workSpaceSize));
 #ifdef FF_USE_NCCL
   handle.ncclComm = NULL;

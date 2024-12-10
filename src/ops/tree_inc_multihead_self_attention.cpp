@@ -615,7 +615,7 @@ void inference_kernel(TreeIncMultiHeadSelfAttentionMeta *m,
 
   // After commit we update m->num_active_infr_tokens to be the number of active
   // tokens for the current batch
-  m->num_active_infr_tokens = bc->num_active_infr_tokens();
+  m->num_active_infr_tokens = bc->num_active_tokens();
 
   // phase 0: copy calculated qkv into devQKVProjArray
   // [qProjSize, num_heads, 3, num_new_tokens]

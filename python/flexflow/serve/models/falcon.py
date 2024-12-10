@@ -144,9 +144,12 @@ class FlexFlowFalcon(FlexFlowModel):
                     name=f"layers.{i}.input_layernorm",
                 )
 
+            assert(self.falcon_config.hidden_size % self.falcon_config.n_head == 0)
+            head_dim = self.falcon_config.hidden_size // self.falcon_config.n_head
+
             qkv_proj = ffmodel.dense(
                 att_norm,
-                3 * self.falcon_config.hidden_size,
+                head_dim * (self.falcon_config.n_head + 2*self.falcon_config.n_head_kv),
                 ActiMode.AC_MODE_NONE,
                 False,
                 name=f"layers.{i}.self_attention.qkv_proj",
@@ -158,8 +161,8 @@ class FlexFlowFalcon(FlexFlowModel):
                     self.falcon_config.hidden_size,
                     self.falcon_config.n_head,
                     self.falcon_config.n_head_kv,
-                    self.falcon_config.hidden_size // self.falcon_config.n_head,
-                    self.falcon_config.hidden_size // self.falcon_config.n_head,
+                    head_dim,
+                    head_dim,
                     0.0,  # dropout
                     False,  # add_zero_attn
                     DataType.DT_NONE,  # data_type

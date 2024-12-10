@@ -277,6 +277,7 @@ BatchNormMeta::BatchNormMeta(FFHandler handler,
   relu = bn->relu;
   profiling = bn->profiling;
   inference_debugging = bn->inference_debugging;
+  enable_peft_finetuning = bn->enable_peft_finetuning;
   mode = CUDNN_BATCHNORM_SPATIAL;
 #if CUDNN_VERSION >= 7000
   mode = CUDNN_BATCHNORM_SPATIAL_PERSISTENT;

@@ -20,6 +20,8 @@ using Legion::Task;
 using Legion::TaskArgument;
 using Legion::TaskLauncher;
 
+Legion::Logger log_peft_mem_allocator("MemoryAllocator");
+
 void PEFTMemoryManager::allocate_inference_memory() {
   // allocate chunk of memory for all the PEFT adapters
   Realm::Rect<1, coord_t> bounds(
@@ -35,6 +37,16 @@ void PEFTMemoryManager::allocate_inference_memory() {
                                          Realm::ProfilingRequestSet())
       .wait();
   base_ptr = peftLegionInst.pointer_untyped(0, sizeof(char));
+  if (log_instance_creation) {
+    log_peft_mem_allocator.print(
+        "Created instance in memory_kind: %s memory_id: %llx size: %zu "
+        "(capacity %lu) task_name: %s",
+        Legion::Mapping::Utilities::to_string(gpu_mem.kind()),
+        gpu_mem.id,
+        max_lora_size * max_concurrent_adapters,
+        gpu_mem.capacity(),
+        "LoRA inference");
+  }
 }
 
 void PEFTMemoryManager::allocate_finetuning_memory() {
@@ -54,6 +66,16 @@ void PEFTMemoryManager::allocate_finetuning_memory() {
                                          Realm::ProfilingRequestSet())
       .wait();
   finetuning_ptr = peftLegionInst.pointer_untyped(0, sizeof(char));
+  if (log_instance_creation) {
+    log_peft_mem_allocator.print(
+        "Created instance in memory_kind: %s memory_id: %llx size: %zu "
+        "(capacity %lu) task_name: %s",
+        Legion::Mapping::Utilities::to_string(gpu_mem.kind()),
+        gpu_mem.id,
+        ft_size,
+        gpu_mem.capacity(),
+        "LoRA finetuning");
+  }
 }
 
 void PEFTMemoryManager::get_finetuning_slot(PEFTModelID const &model_id,

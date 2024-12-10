@@ -380,9 +380,9 @@ void InferenceManager::init_operators_inference(FFModel *model) {
   }
 }
 
-FutureMap InferenceManager::inference(FFModel *model,
-                                      int index,
-                                      BatchConfig const &bc) {
+InferenceResultFuture InferenceManager::inference(FFModel *model,
+                                                  int index,
+                                                  BatchConfig const &bc) {
   if (bc.get_mode() == INC_DECODING_MODE) {
     BatchConfigFuture bcf = Future::from_value<BatchConfig>(bc);
     return inference(model, index, bcf);
@@ -405,15 +405,15 @@ FutureMap InferenceManager::inference(FFModel *model,
   }
 }
 
-FutureMap InferenceManager::inference(FFModel *model,
-                                      int index,
-                                      BatchConfigFuture const &bc) {
+InferenceResultFuture InferenceManager::inference(FFModel *model,
+                                                  int index,
+                                                  BatchConfigFuture const &bc) {
   // log_inf_mgr.print("mode(%d) num_active_infr_tokens(%d)
   // num_active_requests(%d)",
   //                   bc.get_mode(),
-  //                   bc.num_active_infr_tokens(),
+  //                   bc.num_active_tokens(),
   //                   bc.num_active_requests());
-  //  assert(bc.num_active_infr_tokens() > 0 && bc.num_active_requests() > 0);
+  //  assert(bc.num_active_tokens() > 0 && bc.num_active_requests() > 0);
   //  We currently assume that the index-th batch will be placed
   //  on the device_index-th device (except for the experts layers)
   int batch_index = index % model->config.data_parallelism_degree;
@@ -464,12 +464,14 @@ FutureMap InferenceManager::inference(FFModel *model,
     }
     fm = op->inference(*model, bc, inputs, outputs);
   }
-  return fm;
+  assert(fm.get_future_map_domain().get_volume() == 1);
+  InferenceResultFuture irf = fm.get_future(0);
+  return irf;
 };
 
-void InferenceManager::peft_bwd(FFModel *model,
-                                int index,
-                                BatchConfigFuture const &bc) {
+std::vector<FinetuningBwdFuture> InferenceManager::peft_bwd(FFModel *model,
+                                                            int index,
+                                                            BatchConfigFuture const &bc) {
   int batch_index = index % model->config.data_parallelism_degree;
   FutureMap fm;
   bool found_input_operator = false;
@@ -510,8 +512,14 @@ void InferenceManager::peft_bwd(FFModel *model,
       outputs[i] = tensor_buffer[op->outputs[i]][batch_index];
       assert(outputs[i]->parallel_is != IndexSpace::NO_SPACE);
     }
-    op->peft_bwd(*model, bc, inputs, outputs);
+    fm = op->peft_bwd(*model, bc, inputs, outputs);
   }
+  assert(fm.get_future_map_domain().get_volume() == model->config.tensor_parallelism_degree);
+  std::vector<FinetuningBwdFuture> irf;
+  for (int i = 0; i < model->config.tensor_parallelism_degree; i++) {
+    irf.push_back(fm.get_future(i));
+  }
+  return irf;
 };
 
 void InferenceManager::load_input_tokens_from_batch_config(

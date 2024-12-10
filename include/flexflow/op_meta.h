@@ -16,6 +16,7 @@ public:
   FFHandler handle;
   bool profiling; // Measure the run time of the task
   bool inference_debugging;
+  bool enable_peft_finetuning;
   int decoding_step;
   int bwd_step;
   char op_name[MAX_OPNAME];

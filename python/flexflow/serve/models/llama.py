@@ -134,9 +134,12 @@ class FlexFlowLLAMA(FlexFlowModel):
                     name=f"layers.{i}.input_layernorm",
                 )
 
+            assert( self.llama_config.hidden_size % self.llama_config.num_attention_heads == 0 )
+            head_dim = self.llama_config.hidden_size // self.llama_config.num_attention_heads
+            
             qkv_proj = ffmodel.dense(
                 attn_norm,
-                3 * self.llama_config.hidden_size,
+                head_dim * (self.llama_config.num_attention_heads + 2 * self.llama_config.num_key_value_heads),
                 ActiMode.AC_MODE_NONE,
                 False,
                 name=f"layers.{i}.self_attn.qkv_proj",
@@ -148,10 +151,8 @@ class FlexFlowLLAMA(FlexFlowModel):
                     self.llama_config.hidden_size,
                     self.llama_config.num_attention_heads,
                     self.llama_config.num_key_value_heads,
-                    self.llama_config.hidden_size
-                    // self.llama_config.num_attention_heads,
-                    self.llama_config.hidden_size
-                    // self.llama_config.num_attention_heads,
+                    head_dim,
+                    head_dim,
                     0.0,  # dropout
                     False,  # add_zero_attn
                     DataType.DT_NONE,  # data_type

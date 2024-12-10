@@ -318,6 +318,7 @@ OpMeta *Pool2D::init_task(Task const *task,
   Pool2DMeta *m = new Pool2DMeta(handle, pool);
   m->profiling = pool->profiling;
   m->inference_debugging = pool->inference_debugging;
+  m->enable_peft_finetuning = pool->enable_peft_finetuning;
   std::strcpy(m->op_name, pool->name);
   m->layer_guid = pool->layer_guid;
   TensorAccessorR<float, Pool2DInput::NUMDIM> acc_input(

@@ -19,9 +19,18 @@
 #include "flexflow/config.h"
 #include "flexflow/ffconst_utils.h"
 #include "flexflow/ops/lora_linear_params.h"
+#include "flexflow/mapper.h"
 // #include <mutex>
 
 namespace FlexFlow {
+
+  using Legion::coord_t;
+using Legion::Machine;
+using Legion::Memory;
+using Legion::Processor;
+using Realm::RegionInstance;
+using namespace Legion;
+using namespace Mapping;
 
 struct LoraLinearWeight {
   // weights
@@ -72,7 +81,7 @@ public:
         max_peft_tokens(max_peft_tokens_),
         lora_layername_substr(lora_layername_substr_), dt(dt_),
         base_ptr(nullptr), finetuning_ptr(nullptr),
-        finetuning_model_id(PEFTModelID::NO_ID) {
+        finetuning_model_id(PEFTModelID::NO_ID), log_instance_creation(false) {
     max_lora_size =
         data_type_size(dt) * (max_rank * in_dim + max_rank * out_dim);
     assert(max_concurrent_adapters > 0 &&
@@ -82,6 +91,15 @@ public:
     allocate_inference_memory();
     // finetuning memory is allocated upon the first finetuning request, so we
     // can skip for inference-only workloads
+    InputArgs const &command_args = HighLevelRuntime::get_input_args();
+    char **argv = command_args.argv;
+    int argc = command_args.argc;
+    for (int i = 1; i < argc; i++) {
+      if (!strcmp(argv[i], "--log-instance-creation")) {
+        log_instance_creation = true;
+        break;
+      }
+    }
   }
 
   // allocate memory for all the PEFT adapters for a given layer on a given
@@ -130,6 +148,7 @@ private:
   std::string lora_layername_substr;
   DataType dt;
   PEFTModelID finetuning_model_id;
+  bool log_instance_creation;
 };
 
 } // namespace FlexFlow

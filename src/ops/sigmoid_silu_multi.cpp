@@ -26,6 +26,16 @@ SigmoidSiluMultiMeta::SigmoidSiluMultiMeta(FFHandler handle,
     : OpMeta(handle, ssm) {
   profiling = ssm->profiling;
   inference_debugging = ssm->inference_debugging;
+  enable_peft_finetuning = ssm->enable_peft_finetuning;
+  if (enable_peft_finetuning) {
+    size_t in_dim = ln->inputs[0]->dims[0].size / ln->inputs[0]->dims[0].degree;
+    allocated_peft_buffer_size = 2 * data_type_size(data_type) *
+                                 BatchConfig::max_finetuning_sequence_length() * in_dim;
+    gpu_mem_allocator.create_legion_instance(reserveInst,
+                                             allocated_peft_buffer_size, "SigmoidSiluMultiMeta");
+    input_activation =
+        gpu_mem_allocator.allocate_instance_untyped(allocated_peft_buffer_size);
+  }
 }
 
 SigmoidSiluMultiMeta::~SigmoidSiluMultiMeta(void) {
@@ -102,78 +112,48 @@ void SigmoidSiluMulti::inference_kernel_wrapper(
   }
 
   // save input activation if needed for PEFT
-  if (bc->num_active_peft_tokens() > 0) {
+  if (bc->num_finetuning_fwd_requests() > 0) {
     // Check that we have at most one request that requires peft_bwd
-    int num_peft_requests = 0;
-    for (int i = 0; i < bc->max_requests_per_batch(); i++) {
-      if (bc->request_completed[i]) {
-        continue;
-      }
-      if (bc->requestsInfo[i].peft_model_id == PEFTModelID::NO_ID) {
-        continue;
-      }
-      if (bc->requestsInfo[i].peft_bwd) {
-        num_peft_requests++;
-      }
-    }
-    assert(num_peft_requests <= 1);
-
-    int tokens_previous_requests = 0;
-    for (int i = 0; i < bc->max_requests_per_batch(); i++) {
-      if (bc->request_completed[i]) {
-        continue;
-      }
-      // Skip non-PEFT requests
-      if (bc->requestsInfo[i].peft_model_id == PEFTModelID::NO_ID) {
-        // FIXME: use the new approach to computing token offset
-        tokens_previous_requests += bc->requestsInfo[i].num_tokens_in_batch;
-        continue;
-      }
-      int num_peft_tokens = bc->requestsInfo[i].num_tokens_in_batch;
-      int max_peft_tokens = bc->requestsInfo[i].max_length;
-      int in_dim = input1.domain.hi()[0] - input1.domain.lo()[0] + 1;
-      if (bc->requestsInfo[i].peft_bwd) {
-        size_t input_tensor_size =
-            data_type_size(m->input_type[0]) * num_peft_tokens * in_dim;
-        size_t activation_size_needed =
-            2 * data_type_size(m->input_type[0]) * max_peft_tokens * in_dim;
-        if (activation_size_needed > m->allocated_peft_buffer_size) {
-          MemoryAllocator *allocator = m->handle.peft_activation_allocator;
-          m->input_activation =
-              allocator->allocate_instance_untyped(activation_size_needed);
-          m->allocated_peft_buffer_size = activation_size_needed;
-        }
-        // copy input activation
-        if (m->input_type[0] == DT_FLOAT) {
-          checkCUDA(hipMemcpyAsync(m->input_activation,
-                                   input1.get_float_ptr() +
-                                       tokens_previous_requests * in_dim,
-                                   input_tensor_size,
-                                   hipMemcpyDeviceToDevice,
-                                   stream));
-          checkCUDA(hipMemcpyAsync(
-              (void *)((char *)m->input_activation + input_tensor_size),
-              input2.get_float_ptr() + tokens_previous_requests * in_dim,
-              input_tensor_size,
-              hipMemcpyDeviceToDevice,
-              stream));
-        } else if (m->input_type[0] == DT_HALF) {
-          checkCUDA(hipMemcpyAsync(m->input_activation,
-                                   input1.get_half_ptr() +
-                                       tokens_previous_requests * in_dim,
-                                   input_tensor_size,
-                                   hipMemcpyDeviceToDevice,
-                                   stream));
-          checkCUDA(hipMemcpyAsync(
-              (void *)((char *)m->input_activation + input_tensor_size),
-              input2.get_half_ptr() + tokens_previous_requests * in_dim,
-              input_tensor_size,
-              hipMemcpyDeviceToDevice,
-              stream));
-        } else {
-          assert(false && "unsupport datatype in layernorm");
-        }
-      }
+    assert(bc->num_finetuning_fwd_tokens() >= 1);
+    int i = bc->finetuning_request_index();
+    assert(bc->requestsInfo[i].peft_model_id != PEFTModelID::NO_ID);
+    assert(!bc->requestsInfo[i].finetuning_backward_phase);
+    int in_dim = input.domain.hi()[0] - input.domain.lo()[0] + 1;
+    int num_peft_tokens = bc->requestsInfo[i].num_tokens_in_batch;
+    assert(num_peft_tokens == bc->num_finetuning_fwd_tokens());
+    int first_token_offset = bc->requestsInfo[i].first_token_offset_in_batch;
+    size_t input_tensor_size =
+        data_type_size(m->input_type[0]) * num_peft_tokens * in_dim;
+    assert(m->allocated_peft_buffer_size == 2 * input_tensor_size);
+    // copy input activation
+    if (m->input_type[0] == DT_FLOAT) {
+      checkCUDA(
+          hipMemcpyAsync(m->input_activation,
+                         input1.get_float_ptr() + first_token_offset * in_dim,
+                         input_tensor_size,
+                         hipMemcpyDeviceToDevice,
+                         stream));
+      checkCUDA(hipMemcpyAsync(
+          (void *)((char *)m->input_activation + input_tensor_size),
+          input2.get_float_ptr() + first_token_offset * in_dim,
+          input_tensor_size,
+          hipMemcpyDeviceToDevice,
+          stream));
+    } else if (m->input_type[0] == DT_HALF) {
+      checkCUDA(
+          hipMemcpyAsync(m->input_activation,
+                         input1.get_half_ptr() + first_token_offset * in_dim,
+                         input_tensor_size,
+                         hipMemcpyDeviceToDevice,
+                         stream));
+      checkCUDA(hipMemcpyAsync(
+          (void *)((char *)m->input_activation + input_tensor_size),
+          input2.get_half_ptr() + first_token_offset * in_dim,
+          input_tensor_size,
+          hipMemcpyDeviceToDevice,
+          stream));
+    } else {
+      assert(false && "unsupport datatype in layernorm");
     }
   }
 
@@ -298,28 +278,11 @@ void SigmoidSiluMulti::peft_bwd_kernel_wrapper(
     checkCUDA(hipEventRecord(t_start, stream));
   }
 
-  int num_peft_requests = 0;
-  int num_peft_tokens = 0;
-  for (int i = 0; i < bc->max_requests_per_batch(); i++) {
-    if (bc->request_completed[i]) {
-      continue;
-    }
-    if (bc->requestsInfo[i].peft_model_id == PEFTModelID::NO_ID) {
-      continue;
-    }
-    if (bc->requestsInfo[i].peft_bwd) {
-      num_peft_requests++;
-      num_peft_tokens = bc->requestsInfo[i].num_tokens_in_batch;
-    }
-  }
-  if (num_peft_requests == 0) {
-    // No PEFT requests
-    return;
-  } else {
-    // Otherwise assume at most 1 peft request
-    assert(num_peft_requests == 1);
-    assert(num_peft_tokens >= 1);
-  }
+  assert(
+      bc->peft_bwd_applies_to_this_layer(m->layer_guid.transformer_layer_id));
+  int i = bc->finetuning_request_index();
+
+  int num_peft_tokens = bc->requestsInfo[i].num_tokens_in_batch;
   int in_dim = output_grad.domain.hi()[0] - output_grad.domain.lo()[0] + 1;
   int num_elements = in_dim * num_peft_tokens;
 

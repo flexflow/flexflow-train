@@ -5,14 +5,18 @@
 #include "flexflow/fftype.h"
 #include "flexflow/op_meta.h"
 #include "flexflow/ops/softmax.h"
+#include "flexflow/ffconst_utils.h"
+#include "flexflow/utils/memory_allocator.h"
 
 namespace FlexFlow {
 
 class SoftmaxMeta : public OpMeta {
 public:
-  SoftmaxMeta(FFHandler handle,
+  SoftmaxMeta(FFHandler handler,
               Softmax const *softmax,
-              Legion::Domain const &input_domain);
+              Legion::Domain const &input_domain,
+              bool is_last_op,
+              MemoryAllocator &gpu_mem_allocator);
 #if defined(FF_USE_CUDA) || defined(FF_USE_HIP_CUDA)
   cudnnTensorDescriptor_t inputTensor;
   cudnnTensorDescriptor_t outputTensor;
@@ -20,9 +24,11 @@ public:
   miopenTensorDescriptor_t inputTensor;
   miopenTensorDescriptor_t outputTensor;
 #endif
-  bool profiling;
-  bool inference_debugging;
   int dim;
+  // PEFT related fields
+  Realm::RegionInstance reserveInst;
+  void *output_grad_ptr = nullptr;
+  size_t allocated_peft_buffer_size = 0;
 };
 
 namespace Kernels {
@@ -40,13 +46,11 @@ void inference_kernel_wrapper(SoftmaxMeta const *m,
                               BatchConfig const *bc,
                               bool is_last_op,
                               GenericTensorAccessorR const &input,
-                              GenericTensorAccessorW const &output,
-                              GenericTensorAccessorW const &output_grad);
+                              GenericTensorAccessorW const &output);
 
 void peft_bwd_kernel_wrapper(SoftmaxMeta const *m,
                              BatchConfig const *bc,
-                             GenericTensorAccessorW const &input_grad,
-                             GenericTensorAccessorR const &output_grad);
+                             GenericTensorAccessorW const &input_grad);
 
 namespace Internal {
 template <typename DT>
@@ -74,7 +78,6 @@ template <typename DT>
 void peft_bwd_kernel(SoftmaxMeta const *m,
                      BatchConfig const *bc,
                      DT *input_grad_ptr,
-                     DT const *output_grad_ptr,
                      int num_classes,
                      ffStream_t stream);
 

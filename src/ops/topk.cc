@@ -229,6 +229,7 @@ OpMeta *TopK::init_task(Task const *task,
   TopKMeta *m = new TopKMeta(handle, topk);
   m->profiling = topk->profiling;
   m->inference_debugging = topk->inference_debugging;
+  m->enable_peft_finetuning = topk->enable_peft_finetuning;
   m->sorted = topk->sorted;
   std::strcpy(m->op_name, topk->name);
   m->layer_guid = topk->layer_guid;

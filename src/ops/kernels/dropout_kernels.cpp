@@ -31,6 +31,7 @@ DropoutMeta::DropoutMeta(FFHandler handler,
     : OpMeta(handler, dropout) {
   profiling = dropout->profiling;
   inference_debugging = dropout->inference_debugging;
+  enable_peft_finetuning = dropout->enable_peft_finetuning;
   checkCUDNN(miopenCreateTensorDescriptor(&inputTensor));
   checkCUDNN(miopenCreateTensorDescriptor(&outputTensor));
   checkCUDNN(miopenCreateDropoutDescriptor(&dropoutDesc));

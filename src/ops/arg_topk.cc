@@ -278,6 +278,7 @@ OpMeta *ArgTopK::init_task(Task const *task,
   ArgTopKMeta *m = new ArgTopKMeta(handle, topk);
   m->profiling = topk->profiling;
   m->inference_debugging = topk->inference_debugging;
+  m->enable_peft_finetuning = topk->enable_peft_finetuning;
   m->sorted = topk->sorted;
   m->k = topk->k;
   std::strcpy(m->op_name, topk->name);
@@ -387,7 +388,7 @@ InferenceResult
       DT_INT32, regions[1], task->regions[1], FID_DATA, ctx, runtime);
   GenericTensorAccessorW probs;
 
-  int batch_size = bc->num_active_infr_tokens();
+  int batch_size = bc->num_active_tokens();
   ArgTopK::forward_kernel_wrapper(
       m, input, probs, indices, batch_size, nullptr);
 

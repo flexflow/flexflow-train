@@ -246,6 +246,7 @@ OpMeta *ArgMax::init_task(Task const *task,
                                  gpu_mem_allocator);
   m->profiling = s->profiling;
   m->inference_debugging = s->inference_debugging;
+  m->enable_peft_finetuning = s->enable_peft_finetuning;
   m->beam_search = s->beam_search;
   std::strcpy(m->op_name, s->name);
   m->layer_guid = s->layer_guid;
@@ -348,7 +349,7 @@ BeamInferenceResult
       m->input_type[0], regions[0], task->regions[0], FID_DATA, ctx, runtime);
   GenericTensorAccessorW indices = helperGetGenericTensorAccessorWO(
       DT_INT32, regions[1], task->regions[1], FID_DATA, ctx, runtime);
-  int batch_size = bc->num_active_infr_tokens();
+  int batch_size = bc->num_active_tokens();
   GenericTensorAccessorW parent = helperGetGenericTensorAccessorWO(
       DT_INT32, regions[2], task->regions[2], FID_DATA, ctx, runtime);
   float loss = 0.0f;
@@ -391,7 +392,7 @@ InferenceResult
   GenericTensorAccessorW indices = helperGetGenericTensorAccessorWO(
       DT_INT32, regions[1], task->regions[1], FID_DATA, ctx, runtime);
   GenericTensorAccessorW parent;
-  int batch_size = bc->num_active_infr_tokens();
+  int batch_size = bc->num_active_tokens();
   float loss = 0.0f;
 
   ArgMax::forward_kernel_wrapper(
@@ -400,9 +401,9 @@ InferenceResult
   InferenceResult ir;
   ir.finetuning_loss = loss;
 
-  if (bc->num_active_peft_tokens() > 0) {
-    printf("Loss: %.4f\n", loss);
-  }
+  // if (bc->num_finetuning_fwd_tokens() > 0) {
+  //   printf("Loss: %.4f\n", loss);
+  // }
 
   if (m->inference_debugging) {
     assert(task->index_point.get_dim() == 1);

@@ -197,6 +197,7 @@ OpMeta *Transpose::init_task(Task const *task,
   transpose->init_meta(m, in_domain, out_domain);
   m->profiling = transpose->profiling;
   m->inference_debugging = transpose->inference_debugging;
+  m->enable_peft_finetuning = transpose->enable_peft_finetuning;
   std::strcpy(m->op_name, transpose->name);
   m->layer_guid = transpose->layer_guid;
   return m;

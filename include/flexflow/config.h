@@ -101,9 +101,6 @@ struct FFHandler {
   size_t batch_config_metadata_size = sizeof(CombinedBatchConfigMetaStruct);
   void *offload_reserve_space;
   size_t offload_reserve_space_size;
-  // PEFT related fields
-  MemoryAllocator *peft_activation_allocator;
-  size_t peft_activation_reserve_space_size;
   // Quantization fields
   DataType quantization_type;
   bool allowTensorOpMathConversion;
@@ -115,7 +112,6 @@ struct FFHandler {
 struct FFInitInfo {
   size_t workSpaceSize;
   size_t offload_reserve_space_size;
-  size_t peft_activation_reserve_space_size;
   DataType quantization_type;
   bool allowTensorOpMathConversion;
   // int myRank, allRanks;
@@ -175,8 +171,7 @@ public:
   size_t offload_reserve_space_size;
   DataType quantization_type;
   // PEFT related fields
-  bool enable_peft;
-  size_t peft_activation_reserve_space_size;
+  bool enable_peft, enable_peft_finetuning;
   // Control parallelizable dimensions
   bool only_data_parallel;
   bool enable_sample_parallel;
