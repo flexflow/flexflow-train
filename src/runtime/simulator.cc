@@ -315,8 +315,9 @@ SimTask *TaskManager::new_comm_task(std::string const &name,
 SimTask *TaskManager::new_forward_task(Op const *op, int idx) {
   SimTask *task = new_task();
   task->type = SimTask::TASK_FORWARD;
-  size_t hash = 17 * 31 + (size_t)(op);
-  hash = hash * 31 + std::hash<int>()(idx);
+  size_t hash = 0;
+  hash_combine(hash, (size_t)op);
+  hash_combine(hash, idx);
   hash_to_forward_task[hash] = task;
   task->name = op->name;
   return task;
@@ -325,23 +326,26 @@ SimTask *TaskManager::new_forward_task(Op const *op, int idx) {
 SimTask *TaskManager::new_backward_task(Op const *op, int idx) {
   SimTask *task = new_task();
   task->type = SimTask::TASK_BACKWARD;
-  size_t hash = 17 * 31 + (size_t)(op);
-  hash = hash * 31 + std::hash<int>()(idx);
+  size_t hash = 0;
+  hash_combine(hash, (size_t)op);
+  hash_combine(hash, idx);
   hash_to_backward_task[hash] = task;
   task->name = op->name;
   return task;
 }
 
 SimTask *TaskManager::get_forward_task(Op const *op, int idx) {
-  size_t hash = 17 * 31 + (size_t)(op);
-  hash = hash * 31 + std::hash<int>()(idx);
+  size_t hash = 0;
+  hash_combine(hash, (size_t)op);
+  hash_combine(hash, idx);
   assert(hash_to_forward_task.find(hash) != hash_to_forward_task.end());
   return hash_to_forward_task[hash];
 }
 
 SimTask *TaskManager::get_backward_task(Op const *op, int idx) {
-  size_t hash = 17 * 31 + (size_t)(op);
-  hash = hash * 31 + std::hash<int>()(idx);
+  size_t hash = 0;
+  hash_combine(hash, (size_t)op);
+  hash_combine(hash, idx);
   assert(hash_to_backward_task.find(hash) != hash_to_backward_task.end());
   return hash_to_backward_task[hash];
 }
@@ -535,11 +539,12 @@ CostMetrics Simulator::measure_operator_cost(Op const *op,
     return this->strict_hash_to_operator_cost.at(key);
   }
 
-  size_t hash = 17 * 31 + op->get_untyped_params_hash();
-  hash = hash * 31 + std::hash<int>()(mv.device_type);
-  hash = hash * 31 + std::hash<int>()(mv.ndims);
+  size_t hash = 0;
+  hash_combine(hash, op->get_untyped_params_hash());
+  hash_combine(hash, mv.device_type);
+  hash_combine(hash, mv.ndims);
   for (int i = 0; i < mv.ndims; i++) {
-    hash = hash * 31 + std::hash<int>()(mv.dim[i]);
+    hash_combine(hash, mv.dim[i]);
   }
   std::unordered_map<size_t, CostMetrics>::const_iterator iter =
       hash_to_operator_cost.find(hash);

@@ -1,4 +1,5 @@
 #include "flexflow/machine_view.h"
+#include "flexflow/utils/hash_utils.h"
 
 namespace FlexFlow {
 
@@ -47,13 +48,13 @@ size_t MachineView::num_parts() const {
 }
 
 size_t MachineView::hash() const {
-  size_t ret = 17;
-  ret = ret * 31 + std::hash<int>()(device_type);
-  ret = ret * 31 + std::hash<int>()(ndims);
-  ret = ret * 31 + std::hash<int>()(start_device_id);
+  size_t ret = 0;
+  hash_combine(ret, device_type);
+  hash_combine(ret, ndims);
+  hash_combine(ret, start_device_id);
   for (int i = 0; i < ndims; i++) {
-    ret = ret * 31 + std::hash<int>()(dim[i]);
-    ret = ret * 31 + std::hash<int>()(stride[i]);
+    hash_combine(ret, dim[i]);
+    hash_combine(ret, stride[i]);
   }
   return ret;
 }
@@ -116,12 +117,12 @@ MachineResource::MachineResource(FFConfig const &config)
       available_gpus_per_node(config.workersPerNode) {}
 
 size_t MachineResource::hash() const {
-  size_t ret = 17;
-  ret = ret * 31 + std::hash<int>()(num_nodes);
-  ret = ret * 31 + std::hash<int>()(available_gpus_per_node);
-  ret = ret * 31 + std::hash<int>()(available_cpus_per_node);
-  ret = ret * 31 + std::hash<int>()(start_gpu_id);
-  ret = ret * 31 + std::hash<int>()(start_cpu_id);
+  size_t ret = 0;
+  hash_combine(ret, num_nodes);
+  hash_combine(ret, available_gpus_per_node);
+  hash_combine(ret, available_cpus_per_node);
+  hash_combine(ret, start_gpu_id);
+  hash_combine(ret, start_cpu_id);
   return ret;
 }
 

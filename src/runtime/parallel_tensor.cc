@@ -449,13 +449,14 @@ bool ParallelTensorBase::get_output_sub_tensor(ParallelConfig const &pc,
 }
 
 size_t ParallelTensorBase::get_owner_independent_hash() const {
-  size_t hash = 17 * 31 + std::hash<int>()((int)data_type);
-  hash = hash * 31 + std::hash<int>()((int)sync_type);
-  hash = hash * 31 + std::hash<int>()(num_dims);
+  size_t hash = 0;
+  hash_combine(hash, static_cast<int>(data_type));
+  hash_combine(hash, static_cast<int>(sync_type));
+  hash_combine(hash, num_dims);
   for (int i = 0; i < num_dims; i++) {
-    hash = hash * 31 + std::hash<int>()(dims[i].size);
-    hash = hash * 31 + std::hash<int>()(dims[i].degree);
-    hash = hash * 31 + std::hash<int>()(dims[i].parallel_idx);
+    hash_combine(hash, dims[i].size);
+    hash_combine(hash, dims[i].degree);
+    hash_combine(hash, dims[i].parallel_idx);
   }
   return hash;
 }
