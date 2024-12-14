@@ -1,8 +1,8 @@
 #ifndef _FLEXFLOW_HASH_UTILS_H
 #define _FLEXFLOW_HASH_UTILS_H
 
-#include <cstdint>
 #include <climits>
+#include <cstdint>
 #include <functional>
 #include <tuple>
 #include <type_traits>

@@ -8,8 +8,8 @@
 #include "tl/optional.hpp"
 #include <algorithm>
 #include <functional>
-#include <queue>
 #include <limits>
+#include <queue>
 
 namespace FlexFlow::PCG::Utils {
 template <typename G, typename Structure = GraphStructure<G>>

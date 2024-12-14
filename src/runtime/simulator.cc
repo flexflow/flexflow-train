@@ -501,7 +501,7 @@ CostMetrics Simulator::measure_operator_cost(Op const *op,
 ParallelConfig Op::view_to_pc(MachineView const &view) const {
   ParallelConfig config;
   config.device_type = (ParallelConfig::DeviceType)view.device_type;
-  const ParallelTensor output = this->outputs[0];
+  ParallelTensor const output = this->outputs[0];
   config.nDims = output->num_dims;
   for (int i = 0; i < config.nDims; i++) {
     if (output->dims[i].parallel_idx == -1) {
@@ -612,14 +612,14 @@ float Simulator::estimate_xfer_cost(Op const *op,
                                     MachineView const &sink_view) {
   // assert(tensor->is_valid_machine_view(source_view));
   // assert(tensor->is_valid_machine_view(sink_view));
-  const ParallelTensor input_tensor = op->inputs[input_idx];
+  ParallelTensor const input_tensor = op->inputs[input_idx];
   if (input_tensor->owner_op->op_type == OP_INPUT) {
     return 0.0f;
   }
 
   if (op->is_parallel_op()) {
     assert(input_idx == 0);
-    const ParallelTensor output_tensor = op->outputs[0];
+    ParallelTensor const output_tensor = op->outputs[0];
     switch (op->op_type) {
       case OP_REPARTITION: {
         Repartition *rp = (Repartition *)op;
@@ -632,7 +632,7 @@ float Simulator::estimate_xfer_cost(Op const *op,
       }
       case OP_COMBINE: {
         Combine *combine = (Combine *)op;
-        const ParallelTensor output_tensor = op->outputs[0];
+        ParallelTensor const output_tensor = op->outputs[0];
         return this->estimate_repartition_xfer_cost(combine->combine_dim,
                                                     combine->combine_degree,
                                                     output_tensor->get_shape(),
@@ -654,7 +654,7 @@ float Simulator::estimate_xfer_cost(Op const *op,
       }
       case OP_REDUCTION: {
         Reduction *reduction = (Reduction *)op;
-        const ParallelTensor output_tensor = op->outputs[0];
+        ParallelTensor const output_tensor = op->outputs[0];
         ParallelTensorShape fake_output_shape = output_tensor->get_shape();
         fake_output_shape.dims[reduction->reduction_dim].size *=
             reduction->reduction_degree;
@@ -667,8 +667,8 @@ float Simulator::estimate_xfer_cost(Op const *op,
       }
       case OP_FUSED_PARALLEL: {
         FusedParallelOp const *fused = (FusedParallelOp const *)op;
-        const ParallelTensor input_tensor = op->inputs[0];
-        const ParallelTensor output_tensor = op->outputs[0];
+        ParallelTensor const input_tensor = op->inputs[0];
+        ParallelTensor const output_tensor = op->outputs[0];
         ParallelTensorShape input_shape = input_tensor->get_shape();
         ParallelTensorShape output_shape = output_tensor->get_shape();
         // FIXME: we currently calculate an over estimation
@@ -722,7 +722,7 @@ float Simulator::estimate_xfer_cost(Op const *op,
       d.rect_data[i] = 0;
       d.rect_data[i + d.dim] = source_view.dim[i] - 1;
     }
-    const ParallelTensor input_tensor = op->inputs[input_idx];
+    ParallelTensor const input_tensor = op->inputs[input_idx];
     size_t total_size = data_type_size(input_tensor->data_type);
     for (int i = 0; i < input_tensor->num_dims; i++) {
       total_size *= input_tensor->dims[i].size / input_tensor->dims[i].degree;
@@ -753,7 +753,7 @@ bool Op::estimate_sync_cost(Simulator *sim,
 }
 
 float Simulator::default_estimate_sync_cost(
-    const ParallelDim tensor_dims[MAX_TENSOR_DIM],
+    ParallelDim const tensor_dims[MAX_TENSOR_DIM],
     int tensor_ndims,
     MachineView const &view) {
   ParallelTensorShape tensor_shape(tensor_ndims, tensor_dims, DT_FLOAT);
@@ -762,7 +762,7 @@ float Simulator::default_estimate_sync_cost(
       tensor_shape, view, tensor_shape.get_num_replica_dims());
 }
 
-float Simulator::default_estimate_sync_cost(const ParallelTensor tensor,
+float Simulator::default_estimate_sync_cost(ParallelTensor const tensor,
                                             MachineView const &view,
                                             int num_replica_dims) {
   return this->default_estimate_sync_cost(

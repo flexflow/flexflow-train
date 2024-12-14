@@ -5,7 +5,7 @@ namespace FlexFlow {
 
 using namespace Legion;
 
-const MachineView MachineView::NO_VIEW = MachineView();
+MachineView const MachineView::NO_VIEW = MachineView();
 
 MachineView::MachineView()
     : device_type(MachineView::GPU), ndims(0), start_device_id(0) {

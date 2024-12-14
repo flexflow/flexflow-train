@@ -274,7 +274,7 @@ void ParallelTensorBase::attach_raw_ptr(FFConfig &config,
   Runtime *runtime = config.lg_hlr;
   AttachLauncher launcher(EXTERNAL_INSTANCE, region, region);
   std::vector<FieldID> fields(1, FID_DATA);
-  const Memory local_sysmem =
+  Memory const local_sysmem =
       Machine::MemoryQuery(Machine::get_machine())
           .has_affinity_to(runtime->get_executing_processor(ctx))
           .only_kind(Memory::SYSTEM_MEM)

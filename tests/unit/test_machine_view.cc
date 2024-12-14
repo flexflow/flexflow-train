@@ -138,7 +138,7 @@ TEST(machine_view_hash, known_collision) {
   mv1.start_device_id = 0;
   mv1.dim[0] = 32;
   mv1.stride[0] = 1;
-  
+
   MachineView mv2;
   mv2.device_type = MachineView::GPU;
   mv2.ndims = 1;
