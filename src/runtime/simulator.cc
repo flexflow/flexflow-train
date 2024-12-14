@@ -315,8 +315,9 @@ SimTask *TaskManager::new_comm_task(std::string const &name,
 SimTask *TaskManager::new_forward_task(Op const *op, int idx) {
   SimTask *task = new_task();
   task->type = SimTask::TASK_FORWARD;
-  size_t hash = 17 * 31 + (size_t)(op);
-  hash = hash * 31 + std::hash<int>()(idx);
+  size_t hash = 0;
+  hash_combine(hash, (size_t)op);
+  hash_combine(hash, idx);
   hash_to_forward_task[hash] = task;
   task->name = op->name;
   return task;
@@ -325,23 +326,26 @@ SimTask *TaskManager::new_forward_task(Op const *op, int idx) {
 SimTask *TaskManager::new_backward_task(Op const *op, int idx) {
   SimTask *task = new_task();
   task->type = SimTask::TASK_BACKWARD;
-  size_t hash = 17 * 31 + (size_t)(op);
-  hash = hash * 31 + std::hash<int>()(idx);
+  size_t hash = 0;
+  hash_combine(hash, (size_t)op);
+  hash_combine(hash, idx);
   hash_to_backward_task[hash] = task;
   task->name = op->name;
   return task;
 }
 
 SimTask *TaskManager::get_forward_task(Op const *op, int idx) {
-  size_t hash = 17 * 31 + (size_t)(op);
-  hash = hash * 31 + std::hash<int>()(idx);
+  size_t hash = 0;
+  hash_combine(hash, (size_t)op);
+  hash_combine(hash, idx);
   assert(hash_to_forward_task.find(hash) != hash_to_forward_task.end());
   return hash_to_forward_task[hash];
 }
 
 SimTask *TaskManager::get_backward_task(Op const *op, int idx) {
-  size_t hash = 17 * 31 + (size_t)(op);
-  hash = hash * 31 + std::hash<int>()(idx);
+  size_t hash = 0;
+  hash_combine(hash, (size_t)op);
+  hash_combine(hash, idx);
   assert(hash_to_backward_task.find(hash) != hash_to_backward_task.end());
   return hash_to_backward_task[hash];
 }
@@ -497,7 +501,7 @@ CostMetrics Simulator::measure_operator_cost(Op const *op,
 ParallelConfig Op::view_to_pc(MachineView const &view) const {
   ParallelConfig config;
   config.device_type = (ParallelConfig::DeviceType)view.device_type;
-  const ParallelTensor output = this->outputs[0];
+  ParallelTensor const output = this->outputs[0];
   config.nDims = output->num_dims;
   for (int i = 0; i < config.nDims; i++) {
     if (output->dims[i].parallel_idx == -1) {
@@ -535,11 +539,12 @@ CostMetrics Simulator::measure_operator_cost(Op const *op,
     return this->strict_hash_to_operator_cost.at(key);
   }
 
-  size_t hash = 17 * 31 + op->get_untyped_params_hash();
-  hash = hash * 31 + std::hash<int>()(mv.device_type);
-  hash = hash * 31 + std::hash<int>()(mv.ndims);
+  size_t hash = 0;
+  hash_combine(hash, op->get_untyped_params_hash());
+  hash_combine(hash, mv.device_type);
+  hash_combine(hash, mv.ndims);
   for (int i = 0; i < mv.ndims; i++) {
-    hash = hash * 31 + std::hash<int>()(mv.dim[i]);
+    hash_combine(hash, mv.dim[i]);
   }
   std::unordered_map<size_t, CostMetrics>::const_iterator iter =
       hash_to_operator_cost.find(hash);
@@ -607,14 +612,14 @@ float Simulator::estimate_xfer_cost(Op const *op,
                                     MachineView const &sink_view) {
   // assert(tensor->is_valid_machine_view(source_view));
   // assert(tensor->is_valid_machine_view(sink_view));
-  const ParallelTensor input_tensor = op->inputs[input_idx];
+  ParallelTensor const input_tensor = op->inputs[input_idx];
   if (input_tensor->owner_op->op_type == OP_INPUT) {
     return 0.0f;
   }
 
   if (op->is_parallel_op()) {
     assert(input_idx == 0);
-    const ParallelTensor output_tensor = op->outputs[0];
+    ParallelTensor const output_tensor = op->outputs[0];
     switch (op->op_type) {
       case OP_REPARTITION: {
         Repartition *rp = (Repartition *)op;
@@ -627,7 +632,7 @@ float Simulator::estimate_xfer_cost(Op const *op,
       }
       case OP_COMBINE: {
         Combine *combine = (Combine *)op;
-        const ParallelTensor output_tensor = op->outputs[0];
+        ParallelTensor const output_tensor = op->outputs[0];
         return this->estimate_repartition_xfer_cost(combine->combine_dim,
                                                     combine->combine_degree,
                                                     output_tensor->get_shape(),
@@ -649,7 +654,7 @@ float Simulator::estimate_xfer_cost(Op const *op,
       }
       case OP_REDUCTION: {
         Reduction *reduction = (Reduction *)op;
-        const ParallelTensor output_tensor = op->outputs[0];
+        ParallelTensor const output_tensor = op->outputs[0];
         ParallelTensorShape fake_output_shape = output_tensor->get_shape();
         fake_output_shape.dims[reduction->reduction_dim].size *=
             reduction->reduction_degree;
@@ -662,8 +667,8 @@ float Simulator::estimate_xfer_cost(Op const *op,
       }
       case OP_FUSED_PARALLEL: {
         FusedParallelOp const *fused = (FusedParallelOp const *)op;
-        const ParallelTensor input_tensor = op->inputs[0];
-        const ParallelTensor output_tensor = op->outputs[0];
+        ParallelTensor const input_tensor = op->inputs[0];
+        ParallelTensor const output_tensor = op->outputs[0];
         ParallelTensorShape input_shape = input_tensor->get_shape();
         ParallelTensorShape output_shape = output_tensor->get_shape();
         // FIXME: we currently calculate an over estimation
@@ -717,7 +722,7 @@ float Simulator::estimate_xfer_cost(Op const *op,
       d.rect_data[i] = 0;
       d.rect_data[i + d.dim] = source_view.dim[i] - 1;
     }
-    const ParallelTensor input_tensor = op->inputs[input_idx];
+    ParallelTensor const input_tensor = op->inputs[input_idx];
     size_t total_size = data_type_size(input_tensor->data_type);
     for (int i = 0; i < input_tensor->num_dims; i++) {
       total_size *= input_tensor->dims[i].size / input_tensor->dims[i].degree;
@@ -748,7 +753,7 @@ bool Op::estimate_sync_cost(Simulator *sim,
 }
 
 float Simulator::default_estimate_sync_cost(
-    const ParallelDim tensor_dims[MAX_TENSOR_DIM],
+    ParallelDim const tensor_dims[MAX_TENSOR_DIM],
     int tensor_ndims,
     MachineView const &view) {
   ParallelTensorShape tensor_shape(tensor_ndims, tensor_dims, DT_FLOAT);
@@ -757,7 +762,7 @@ float Simulator::default_estimate_sync_cost(
       tensor_shape, view, tensor_shape.get_num_replica_dims());
 }
 
-float Simulator::default_estimate_sync_cost(const ParallelTensor tensor,
+float Simulator::default_estimate_sync_cost(ParallelTensor const tensor,
                                             MachineView const &view,
                                             int num_replica_dims) {
   return this->default_estimate_sync_cost(
