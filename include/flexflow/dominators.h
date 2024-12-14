@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <functional>
 #include <queue>
+#include <limits>
 
 namespace FlexFlow::PCG::Utils {
 template <typename G, typename Structure = GraphStructure<G>>
