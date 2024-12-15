@@ -582,6 +582,14 @@ class ResidualRMSNorm(Op):
 
 
 # -----------------------------------------------------------------------
+# TopK
+# -----------------------------------------------------------------------
+class TopK(Op):
+    def __init__(self, handle, idx=None, name=None):
+        super(TopK, self).__init__(handle, idx, name)
+
+
+# -----------------------------------------------------------------------
 # ArgTopK
 # -----------------------------------------------------------------------
 class ArgTopK(Op):
@@ -611,6 +619,20 @@ class Sampling(Op):
 class ArgMax(Op):
     def __init__(self, handle, idx=None, name=None):
         super(ArgMax, self).__init__(handle, idx, name)
+
+# -----------------------------------------------------------------------
+# GroupBy
+# -----------------------------------------------------------------------
+class GroupBy(Op):
+    def __init__(self, handle, idx=None, name=None):
+        super(GroupBy, self).__init__(handle, idx, name)
+
+# -----------------------------------------------------------------------
+# Aggregate
+# -----------------------------------------------------------------------
+class Aggregate(Op):
+    def __init__(self, handle, idx=None, name=None):
+        super(Aggregate, self).__init__(handle, idx, name)
 
 
 # -----------------------------------------------------------------------
@@ -709,6 +731,8 @@ def convert_op_handle_to_op(op_type, handle, idx=None, name=None):
         return RMSNorm(handle, idx, name)
     elif op_type == OpType.RESIDUAL_RMS_NORM:
         return ResidualRMSNorm(handle, idx, name)
+    elif op_type == OpType.TOPK:
+        return TopK(handle, idx, name)
     elif op_type == OpType.ARG_TOPK:
         return ArgTopK(handle, idx, name)
     elif op_type == OpType.BEAM_TOPK:
@@ -725,6 +749,10 @@ def convert_op_handle_to_op(op_type, handle, idx=None, name=None):
         return Mean(handle, idx, name)
     elif op_type == OpType.GATHER:
         return Gather(handle, idx, name)
+    elif op_type == OpType.GROUP_BY:
+        return GroupBy(handle, idx, name)
+    elif op_type == OpType.AGGREGATE:
+        return Aggregate(handle, idx, name)
     else:
         assert 0, "unknown layer type {}".format(op_type)
         return None
@@ -3269,7 +3297,9 @@ class FFModel(object):
         :param name: the name of the layer. Default is None.
         :type name: string
 
-        :returns:  Tensor -- the output tensor.
+        :returns:
+            - Tensor -- the residual tensor
+            - Tensor -- the output tensor.
         """
         c_name = get_c_name(name)
         handle = ffc().flexflow_model_add_scalar_add(
@@ -3277,6 +3307,94 @@ class FFModel(object):
         )
         self.add_layer(OpType.SCALAR_ADD, name)
         return Tensor(handle, owner_op_type=OpType.SCALAR_ADD)
+
+    def top_k(self, input, k, sorted, name=None):
+        """Defines the TopK layer.
+
+        :param input: the input Tensor.
+        :type input: Tensor
+
+        :param k: the top k indices to select
+        :type k: int
+
+        :param sorted: Whether the entries should be sorted
+        :type sorted: bool
+
+        :param name: the name of the layer. Default is None.
+        :type name: string
+
+        :returns:
+            - Tensor -- the top K values
+            - Tensor -- the top K indices
+        """
+        c_name = get_c_name(name)
+        handles_array = ffc().flexflow_model_add_top_k(
+            self.handle, input.handle, k, sorted, c_name
+        )
+        self.add_layer(OpType.TOPK, name)
+        return Tensor(handles_array[0], owner_op_type=OpType.TOPK), Tensor(
+            handles_array[1], owner_op_type=OpType.TOPK
+        )
+
+    def group_by(self, input, topk_indices, num_experts, name=None):
+        """Defines the GroupBy layer.
+
+        :param input: the input Tensor.
+        :type input: Tensor
+
+        :param num_experts: the number of experts
+        :type num_experts: int
+
+        :param name: the name of the layer. Default is None.
+        :type name: string
+
+        :returns: List[Tensor] -- the tokens grouped by assigned expert.
+        """
+        c_name = get_c_name(name)
+        handles_array = ffc().flexflow_model_add_group_by(
+            self.handle, input.handle, topk_indices.handle, num_experts, c_name
+        )
+        self.add_layer(OpType.GROUP_BY, name)
+        return [
+            Tensor(handles_array[i], owner_op_type=OpType.GROUP_BY)
+            for i in range(num_experts)
+        ]
+
+    def aggregate(
+        self,
+        topk_coefficients,
+        topk_indices,
+        expert_predictions,
+        num_experts,
+        name=None,
+    ):
+        """Defines the Aggregate layer for MoE experts.
+
+        :param topk_coefficients: the K coefficients for the prediction from the k experts assigned to each token.
+        :type topk_coefficients: Tensor
+
+        :param topk_indices: the indices of the K experts assigned to each token
+        :type topk_indices: Tensor
+
+        :param num_experts: the number of experts
+        :type num_experts: int
+
+        :param name: the name of the layer. Default is None.
+        :type name: string
+
+        :returns: Tensor -- the aggregated output from all experts, weighted by the topk_coefficients
+        """
+        c_name = get_c_name(name)
+        handle = ffc().flexflow_model_add_aggregate(
+            self.handle,
+            topk_coefficients.handle,
+            topk_indices.handle,
+            [exp_tensor.handle for exp_tensor in expert_predictions],
+            num_experts,
+            c_name,
+        )
+        self.add_layer(OpType.AGGREGATE, name)
+        return Tensor(handle, owner_op_type=OpType.AGGREGATE)
 
     def scalar_sub(self, input, scalar, inplace=True, name=None):
         """Scalar subtraction of a scalar to each entry of a tensor.

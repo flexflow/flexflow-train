@@ -18,6 +18,7 @@ from flexflow.serve.models import (
     FlexFlowFalcon,
     FlexFlowSTARCODER,
     FlexFlowMPT,
+    FlexFlowMixtral,
 )
 from flexflow.serve.models import (
     LLAMAConfig,
@@ -25,6 +26,7 @@ from flexflow.serve.models import (
     FalconConfig,
     STARCODERConfig,
     MPTConfig,
+    MixtralConfig,
 )
 from flexflow.core import *
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
@@ -59,6 +61,7 @@ class _SupportedModels:
                 STARCODERConfig,
             ),
             "MPTForCausalLM": (ModelType.MPT, FlexFlowMPT, MPTConfig),
+            "MixtralForCausalLM": (ModelType.MIXTRAL, FlexFlowMixtral, MixtralConfig),
         }
 
     def get_ff_model_type(self, hf_config):
