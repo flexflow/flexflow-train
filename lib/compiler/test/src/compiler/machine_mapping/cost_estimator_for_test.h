@@ -25,7 +25,8 @@ struct TestCostEstimator : public ICostEstimator {
 };
 
 CostEstimator make_fake_cost_estimator(
-    std::function<OpCostMetrics(OpCostEstimateKey const &)> const &get_operator_cost,
+    std::function<OpCostMetrics(OpCostEstimateKey const &)> const
+        &get_operator_cost,
     std::function<float(TensorSetMovement const &)> const
         &get_communication_cost);
 

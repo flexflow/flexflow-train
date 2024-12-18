@@ -147,11 +147,11 @@ TEST_SUITE(FF_TEST_SUITE) {
     printf("Before constructing cost_estimator\n");
 
     auto map1 = std::unordered_map<OpCostEstimateKey, OpCostMetrics>{{
-            {map_unmapped_op_cost_estimate_key(k1, mv1), OpCostMetrics(1.0, 0)},
-            {map_unmapped_op_cost_estimate_key(k2, mv1), OpCostMetrics(2.0, 0)},
-            {map_unmapped_op_cost_estimate_key(k1, mv2), OpCostMetrics(1.5, 0)},
-            {map_unmapped_op_cost_estimate_key(k2, mv2), OpCostMetrics(2.5, 0)},
-        }};
+        {map_unmapped_op_cost_estimate_key(k1, mv1), OpCostMetrics(1.0, 0)},
+        {map_unmapped_op_cost_estimate_key(k2, mv1), OpCostMetrics(2.0, 0)},
+        {map_unmapped_op_cost_estimate_key(k1, mv2), OpCostMetrics(1.5, 0)},
+        {map_unmapped_op_cost_estimate_key(k2, mv2), OpCostMetrics(2.5, 0)},
+    }};
 
     printf("After constructing map1\n");
 
@@ -171,10 +171,12 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     // CostEstimator cost_estimator = make_fake_cost_estimator(
     //     std::unordered_map<OpCostEstimateKey, OpCostMetrics>{{
-    //         {map_unmapped_op_cost_estimate_key(k1, mv1), OpCostMetrics(1.0, 0)},
-    //         {map_unmapped_op_cost_estimate_key(k2, mv1), OpCostMetrics(2.0, 0)},
-    //         {map_unmapped_op_cost_estimate_key(k1, mv2), OpCostMetrics(1.5, 0)},
-    //         {map_unmapped_op_cost_estimate_key(k2, mv2), OpCostMetrics(2.5, 0)},
+    //         {map_unmapped_op_cost_estimate_key(k1, mv1), OpCostMetrics(1.0,
+    //         0)}, {map_unmapped_op_cost_estimate_key(k2, mv1),
+    //         OpCostMetrics(2.0, 0)}, {map_unmapped_op_cost_estimate_key(k1,
+    //         mv2), OpCostMetrics(1.5, 0)},
+    //         {map_unmapped_op_cost_estimate_key(k2, mv2), OpCostMetrics(2.5,
+    //         0)},
     //     }},
     //     std::unordered_map<TensorSetMovement, float>{{
     //         {TensorSetMovement{{}}, 0.0},

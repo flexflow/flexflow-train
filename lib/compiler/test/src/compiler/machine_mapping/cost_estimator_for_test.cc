@@ -5,13 +5,15 @@
 namespace FlexFlow {
 
 TestCostEstimator::TestCostEstimator(
-    std::function<OpCostMetrics(OpCostEstimateKey const &)> const &get_operator_cost,
+    std::function<OpCostMetrics(OpCostEstimateKey const &)> const
+        &get_operator_cost,
     std::function<float(TensorSetMovement const &)> const
         &get_communication_cost)
     : get_operator_cost(get_operator_cost),
       get_communication_cost(get_communication_cost) {}
 
-OpCostMetrics TestCostEstimator::estimate_cost(OpCostEstimateKey const &k) const {
+OpCostMetrics
+    TestCostEstimator::estimate_cost(OpCostEstimateKey const &k) const {
   return this->get_operator_cost(k);
 }
 
@@ -20,11 +22,12 @@ float TestCostEstimator::estimate_cost(TensorSetMovement const &m) const {
 }
 
 CostEstimator make_fake_cost_estimator(
-    std::function<OpCostMetrics(OpCostEstimateKey const &)> const &get_operator_cost,
+    std::function<OpCostMetrics(OpCostEstimateKey const &)> const
+        &get_operator_cost,
     std::function<float(TensorSetMovement const &)> const
         &get_communication_cost) {
-  return CostEstimator::create<TestCostEstimator>(
-      get_operator_cost, get_communication_cost);
+  return CostEstimator::create<TestCostEstimator>(get_operator_cost,
+                                                  get_communication_cost);
 }
 
 CostEstimator make_fake_cost_estimator(

@@ -1,8 +1,8 @@
 #ifndef _FLEXFLOW_LIB_COMPILER_INCLUDE_COMPILER_COST_ESTIMATOR_COST_ESTIMATOR_H
 #define _FLEXFLOW_LIB_COMPILER_INCLUDE_COMPILER_COST_ESTIMATOR_COST_ESTIMATOR_H
 
-#include "compiler/cost_estimator/op_cost_metrics.dtg.h"
 #include "compiler/cost_estimator/op_cost_estimate_key.dtg.h"
+#include "compiler/cost_estimator/op_cost_metrics.dtg.h"
 #include "compiler/cost_estimator/tensor_set_movement.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "op-attrs/pcg_operator_attrs.dtg.h"
