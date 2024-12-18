@@ -3,8 +3,9 @@
 #include "utils/containers/extend.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/values.h"
-#include "utils/graph/open_dataflow_graph/algorithms.h"
+#include "utils/graph/open_dataflow_graph/algorithms/get_incoming_edges.h"
 #include "utils/graph/open_dataflow_graph/open_dataflow_edge.h"
+#include "utils/hash/vector.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {
@@ -28,7 +29,7 @@ std::unordered_set<OpenDataflowValue>
     extend(relevant_edges, filter(incoming, comes_from_outside_subgraph));
   }
 
-  return transform(relevant_edges, get_open_dataflow_edge_source);
+  return transform(relevant_edges, get_open_dataflow_edge_src);
 }
 
 } // namespace FlexFlow

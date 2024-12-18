@@ -245,3 +245,4 @@ TEST_SUITE(FF_TEST_SUITE) {
     CHECK(get_weakly_connected_components(g) == expected_components);
   }
 }
+

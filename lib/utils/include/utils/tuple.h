@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_UTILS_TUPLE_H
 #define _FLEXFLOW_UTILS_TUPLE_H
 
-#include "utils/exception.decl.h"
+#include "utils/exception.h"
 #include "utils/type_traits_core.h"
 #include <any>
 #include <cstddef>
@@ -67,8 +67,8 @@ template <typename... Types>
 std::any get(std::tuple<Types...> const &t, int idx) {
   size_t tuple_size = std::tuple_size<decltype(t)>::value;
   if (idx < 0 || idx >= tuple_size) {
-    throw mk_runtime_error(
-        "Error: idx {} out of bounds for tuple of size {}", idx, tuple_size);
+    throw mk_runtime_error(fmt::format(
+        "Error: idx {} out of bounds for tuple of size {}", idx, tuple_size));
   }
   std::any result;
   visit_tuple(t, tuple_get_visitor{idx, result});
