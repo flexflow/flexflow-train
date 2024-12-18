@@ -144,13 +144,19 @@ TEST_SUITE(FF_TEST_SUITE) {
             {binary_tree_root_path(), mv2},
         }};
 
+    printf("Before constructing cost_estimator\n");
+
+    auto map1 = std::unordered_map<OpCostEstimateKey, OpCostMetrics>{{
+            {map_unmapped_op_cost_estimate_key(k1, mv1), OpCostMetrics(1.0, 0)},
+            {map_unmapped_op_cost_estimate_key(k2, mv1), OpCostMetrics(2.0, 0)},
+            {map_unmapped_op_cost_estimate_key(k1, mv2), OpCostMetrics(1.5, 0)},
+            {map_unmapped_op_cost_estimate_key(k2, mv2), OpCostMetrics(2.5, 0)},
+        }};
+
+    printf("After constructing map1\n");
+
     CostEstimator cost_estimator = make_fake_cost_estimator(
-        std::unordered_map<OpCostEstimateKey, float>{{
-            {map_unmapped_op_cost_estimate_key(k1, mv1), 1.0},
-            {map_unmapped_op_cost_estimate_key(k2, mv1), 2.0},
-            {map_unmapped_op_cost_estimate_key(k1, mv2), 1.5},
-            {map_unmapped_op_cost_estimate_key(k2, mv2), 2.5},
-        }},
+        map1,
         std::unordered_map<TensorSetMovement, float>{{
             {TensorSetMovement{{}}, 0.0},
             {concretize_abstracted_tensor_set_movement(movement1, mm1, mm1),
@@ -163,10 +169,33 @@ TEST_SUITE(FF_TEST_SUITE) {
              0.4},
         }});
 
+    // CostEstimator cost_estimator = make_fake_cost_estimator(
+    //     std::unordered_map<OpCostEstimateKey, OpCostMetrics>{{
+    //         {map_unmapped_op_cost_estimate_key(k1, mv1), OpCostMetrics(1.0, 0)},
+    //         {map_unmapped_op_cost_estimate_key(k2, mv1), OpCostMetrics(2.0, 0)},
+    //         {map_unmapped_op_cost_estimate_key(k1, mv2), OpCostMetrics(1.5, 0)},
+    //         {map_unmapped_op_cost_estimate_key(k2, mv2), OpCostMetrics(2.5, 0)},
+    //     }},
+    //     std::unordered_map<TensorSetMovement, float>{{
+    //         {TensorSetMovement{{}}, 0.0},
+    //         {concretize_abstracted_tensor_set_movement(movement1, mm1, mm1),
+    //          0.1},
+    //         {concretize_abstracted_tensor_set_movement(movement1, mm2, mm2),
+    //          0.2},
+    //         {concretize_abstracted_tensor_set_movement(movement1, mm1, mm2),
+    //          0.3},
+    //         {concretize_abstracted_tensor_set_movement(movement1, mm2, mm1),
+    //          0.4},
+    //     }});
+
+    printf("After constructing cost_estimator\n");
+
     MachineMappingContext context = MachineMappingContext{
         cost_estimator,
         allowed_machine_views1,
     };
+
+    printf("After constructing context\n");
 
     MachineMappingCache cache = empty_machine_mapping_cache();
 

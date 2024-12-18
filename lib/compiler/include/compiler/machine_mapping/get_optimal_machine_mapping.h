@@ -2,7 +2,6 @@
 #define _FLEXFLOW_COMPILER_MACHINE_MAPPING_GET_OPTIMAL_MACHINE_MAPPING_H
 
 #include "compiler/machine_mapping/machine_mapping_cache.dtg.h"
-#include "compiler/machine_mapping/machine_mapping_config.dtg.h"
 #include "compiler/machine_mapping/machine_mapping_constraints.dtg.h"
 #include "compiler/machine_mapping/machine_mapping_context.dtg.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.dtg.h"

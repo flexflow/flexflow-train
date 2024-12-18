@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "CostMetric"
+name = "OpCostMetrics"
 features = [
   "eq",
   "fmt",

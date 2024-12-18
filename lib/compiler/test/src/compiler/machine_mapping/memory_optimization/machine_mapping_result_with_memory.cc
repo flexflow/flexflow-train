@@ -1,11 +1,11 @@
-#include "compiler/machine_mapping/memory_optimization/machine_mapping_result_with_memory.h"
+#include "compiler/machine_mapping/memory_optimization/machine_mapping_with_memory_result.h"
 #include "pcg/machine_view.h"
 #include <doctest/doctest.h>
 
 using namespace FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("remove_non_dominating_machine_mapping_result") {
+  TEST_CASE("remove_non_pareto_optimal_machine_mapping_result") {
     MachineView machine_view_0 = MachineView{
         /*start=*/MachineSpaceCoordinate{
             /*node_idx=*/0,
@@ -51,15 +51,15 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    CostMetric cost1 = CostMetric{
+    OpCostMetrics cost1 = OpCostMetrics{
         2.0,
         2,
     };
-    CostMetric cost2 = CostMetric{
+    OpCostMetrics cost2 = OpCostMetrics{
         4.0,
         1,
     };
-    CostMetric cost3 = CostMetric{
+    OpCostMetrics cost3 = OpCostMetrics{
         2.0,
         3,
     };
@@ -101,41 +101,41 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     SUBCASE("empty") {
-      MachineMappingResultWithMemory to_remove =
-          empty_machine_mapping_result_with_memory();
-      MachineMappingResultWithMemory result =
-          remove_non_dominating_machine_mapping_result(to_remove);
-      MachineMappingResultWithMemory correct =
-          empty_machine_mapping_result_with_memory();
+      MachineMappingWithMemoryResult to_remove =
+          empty_machine_mapping_with_memory_result();
+      MachineMappingWithMemoryResult result =
+          remove_non_pareto_optimal_machine_mapping_result(to_remove);
+      MachineMappingWithMemoryResult correct =
+          empty_machine_mapping_with_memory_result();
 
       CHECK(result == correct);
     }
 
-    SUBCASE("no non-dominating") {
-      MachineMappingResultWithMemory to_remove = MachineMappingResultWithMemory{
+    SUBCASE("no non-pareto_optimal") {
+      MachineMappingWithMemoryResult to_remove = MachineMappingWithMemoryResult{
           {
               mm1,
               mm2,
           },
       };
-      MachineMappingResultWithMemory result =
-          remove_non_dominating_machine_mapping_result(to_remove);
-      MachineMappingResultWithMemory correct = to_remove;
+      MachineMappingWithMemoryResult result =
+          remove_non_pareto_optimal_machine_mapping_result(to_remove);
+      MachineMappingWithMemoryResult correct = to_remove;
 
       CHECK(result == correct);
     }
 
-    SUBCASE("non-dominating") {
-      MachineMappingResultWithMemory to_remove = MachineMappingResultWithMemory{
+    SUBCASE("non-pareto_optimal") {
+      MachineMappingWithMemoryResult to_remove = MachineMappingWithMemoryResult{
           {
               mm1,
               mm2,
               mm3,
           },
       };
-      MachineMappingResultWithMemory result =
-          remove_non_dominating_machine_mapping_result(to_remove);
-      MachineMappingResultWithMemory correct = MachineMappingResultWithMemory{
+      MachineMappingWithMemoryResult result =
+          remove_non_pareto_optimal_machine_mapping_result(to_remove);
+      MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{
           {
               mm1,
               mm2,
@@ -177,11 +177,11 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    CostMetric pre_cost = CostMetric{
+    OpCostMetrics pre_cost = OpCostMetrics{
         2.0,
         2,
     };
-    MachineMappingResultWithMemory pre = MachineMappingResultWithMemory{{
+    MachineMappingWithMemoryResult pre = MachineMappingWithMemoryResult{{
         SingleMachineMapping{
             pre_cost,
             ParallelLayerGuidObliviousMachineMapping{
@@ -203,12 +203,12 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     }};
 
-    CostMetric post_cost = CostMetric{
+    OpCostMetrics post_cost = OpCostMetrics{
         4.0,
         1,
     };
 
-    MachineMappingResultWithMemory post = MachineMappingResultWithMemory{{
+    MachineMappingWithMemoryResult post = MachineMappingWithMemoryResult{{
         SingleMachineMapping{
             post_cost,
             ParallelLayerGuidObliviousMachineMapping{
@@ -222,33 +222,33 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     }};
 
-    MachineMappingResultWithMemory empty =
-        empty_machine_mapping_result_with_memory();
+    MachineMappingWithMemoryResult empty =
+        empty_machine_mapping_with_memory_result();
 
     float comm_cost = 3.0;
 
     SUBCASE("pre is empty") {
-      MachineMappingResultWithMemory result = series_combine(
+      MachineMappingWithMemoryResult result = series_combine(
           comm_cost, empty, post, ParallelSplitTransformation::LthenR);
-      MachineMappingResultWithMemory correct = empty;
+      MachineMappingWithMemoryResult correct = empty;
 
       CHECK(result == correct);
     }
 
     SUBCASE("post is empty") {
-      MachineMappingResultWithMemory result = series_combine(
+      MachineMappingWithMemoryResult result = series_combine(
           comm_cost, pre, empty, ParallelSplitTransformation::LthenR);
-      MachineMappingResultWithMemory correct = empty;
+      MachineMappingWithMemoryResult correct = empty;
 
       CHECK(result == correct);
     }
 
     SUBCASE("both are nonempty") {
-      MachineMappingResultWithMemory no_parallel_split_transform =
-          MachineMappingResultWithMemory{
+      MachineMappingWithMemoryResult no_parallel_split_transform =
+          MachineMappingWithMemoryResult{
               {
                   SingleMachineMapping{
-                      /*cost=*/CostMetric{
+                      /*cost=*/OpCostMetrics{
                           pre_cost.runtime + comm_cost + post_cost.runtime,
                           pre_cost.memory + post_cost.memory,
                       },
@@ -280,28 +280,28 @@ TEST_SUITE(FF_TEST_SUITE) {
           };
 
       SUBCASE("parallel_split_transformation = std::nullopt") {
-        MachineMappingResultWithMemory result =
+        MachineMappingWithMemoryResult result =
             series_combine(comm_cost, pre, post, std::nullopt);
-        MachineMappingResultWithMemory correct = no_parallel_split_transform;
+        MachineMappingWithMemoryResult correct = no_parallel_split_transform;
 
         CHECK(result == correct);
       }
 
       SUBCASE("parallel_split_transformation = LthenR") {
-        MachineMappingResultWithMemory result = series_combine(
+        MachineMappingWithMemoryResult result = series_combine(
             comm_cost, pre, post, ParallelSplitTransformation::LthenR);
-        MachineMappingResultWithMemory correct = no_parallel_split_transform;
+        MachineMappingWithMemoryResult correct = no_parallel_split_transform;
 
         CHECK(result == correct);
       }
 
       SUBCASE("parallel_split_transformation = RthenL") {
-        MachineMappingResultWithMemory result = series_combine(
+        MachineMappingWithMemoryResult result = series_combine(
             comm_cost, pre, post, ParallelSplitTransformation::RthenL);
-        MachineMappingResultWithMemory correct = MachineMappingResultWithMemory{
+        MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{
             {
                 SingleMachineMapping{
-                    /*cost=*/CostMetric{
+                    /*cost=*/OpCostMetrics{
                         pre_cost.runtime + comm_cost + post_cost.runtime,
                         pre_cost.memory + post_cost.memory,
                     },
@@ -368,11 +368,11 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    CostMetric lhs_cost = CostMetric{
+    OpCostMetrics lhs_cost = OpCostMetrics{
         2.0,
         2,
     };
-    MachineMappingResultWithMemory lhs = MachineMappingResultWithMemory{{
+    MachineMappingWithMemoryResult lhs = MachineMappingWithMemoryResult{{
         SingleMachineMapping{
             lhs_cost,
             ParallelLayerGuidObliviousMachineMapping{
@@ -394,11 +394,11 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     }};
 
-    CostMetric rhs_cost = CostMetric{
+    OpCostMetrics rhs_cost = OpCostMetrics{
         4.0,
         1,
     };
-    MachineMappingResultWithMemory rhs = MachineMappingResultWithMemory{{
+    MachineMappingWithMemoryResult rhs = MachineMappingWithMemoryResult{{
         SingleMachineMapping{
             rhs_cost,
             ParallelLayerGuidObliviousMachineMapping{
@@ -412,28 +412,28 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     }};
 
-    MachineMappingResultWithMemory empty =
-        empty_machine_mapping_result_with_memory();
+    MachineMappingWithMemoryResult empty =
+        empty_machine_mapping_with_memory_result();
 
     SUBCASE("lhs is empty") {
-      MachineMappingResultWithMemory result = parallel_combine(empty, rhs);
-      MachineMappingResultWithMemory correct = empty;
+      MachineMappingWithMemoryResult result = parallel_combine(empty, rhs);
+      MachineMappingWithMemoryResult correct = empty;
 
       CHECK(result == correct);
     }
 
     SUBCASE("rhs is empty") {
-      MachineMappingResultWithMemory result = parallel_combine(lhs, empty);
-      MachineMappingResultWithMemory correct = empty;
+      MachineMappingWithMemoryResult result = parallel_combine(lhs, empty);
+      MachineMappingWithMemoryResult correct = empty;
 
       CHECK(result == correct);
     }
 
     SUBCASE("both are nonempty") {
-      MachineMappingResultWithMemory result = parallel_combine(lhs, rhs);
-      MachineMappingResultWithMemory correct = MachineMappingResultWithMemory{{
+      MachineMappingWithMemoryResult result = parallel_combine(lhs, rhs);
+      MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{{
           SingleMachineMapping{
-              /*cost=*/CostMetric{
+              /*cost=*/OpCostMetrics{
                   std::max(lhs_cost.runtime, rhs_cost.runtime),
                   std::max(lhs_cost.memory, rhs_cost.memory),
               },
@@ -509,15 +509,15 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    CostMetric cost1 = CostMetric{
+    OpCostMetrics cost1 = OpCostMetrics{
         2.0,
         2,
     };
-    CostMetric cost2 = CostMetric{
+    OpCostMetrics cost2 = OpCostMetrics{
         4.0,
         1,
     };
-    CostMetric cost3 = CostMetric{
+    OpCostMetrics cost3 = OpCostMetrics{
         2.0,
         3,
     };
@@ -558,22 +558,22 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    MachineMappingResultWithMemory result1 = MachineMappingResultWithMemory{
+    MachineMappingWithMemoryResult result1 = MachineMappingWithMemoryResult{
         {
             mm1,
             mm2,
         },
     };
 
-    MachineMappingResultWithMemory result2 = MachineMappingResultWithMemory{
+    MachineMappingWithMemoryResult result2 = MachineMappingWithMemoryResult{
         {
             mm2,
             mm3,
         },
     };
 
-    MachineMappingResultWithMemory result = minimize_runtime(result1, result2);
-    MachineMappingResultWithMemory correct = MachineMappingResultWithMemory{
+    MachineMappingWithMemoryResult result = minimize_runtime(result1, result2);
+    MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{
         {
             mm1,
             mm2,

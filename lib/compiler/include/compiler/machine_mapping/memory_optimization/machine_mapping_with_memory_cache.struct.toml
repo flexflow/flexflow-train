@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "MachineMappingCacheWithMemory"
+name = "MachineMappingWithMemoryCache"
 features = [
   "eq",
   "hash",
@@ -9,7 +9,7 @@ features = [
 includes = [
   "<unordered_map>",
   "compiler/machine_mapping/machine_mapping_state.dtg.h",
-  "compiler/machine_mapping/memory_optimization/machine_mapping_result_with_memory.dtg.h",
+  "compiler/machine_mapping/memory_optimization/machine_mapping_with_memory_result.dtg.h",
 ]
 
 src_includes = [
@@ -19,4 +19,4 @@ src_includes = [
 
 [[fields]]
 name = "raw_map"
-type = "std::unordered_map<::FlexFlow::MachineMappingState, ::FlexFlow::MachineMappingResultWithMemory>"
+type = "std::unordered_map<::FlexFlow::MachineMappingState, ::FlexFlow::MachineMappingWithMemoryResult>"

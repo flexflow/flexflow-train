@@ -4,8 +4,8 @@
 #include "compiler/machine_mapping/machine_mapping_constraints.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
-#include "compiler/machine_mapping/memory_optimization/machine_mapping_cache_with_memory.h"
-#include "compiler/machine_mapping/memory_optimization/machine_mapping_result_with_memory.h"
+#include "compiler/machine_mapping/memory_optimization/machine_mapping_with_memory_result.h"
+#include "compiler/machine_mapping/memory_optimization/machine_mapping_with_memory_cache.h"
 #include "compiler/machine_mapping/transitive_reduced_pcg.h"
 #include "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.dtg.h"
 #include "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.h"
@@ -24,8 +24,8 @@
 
 namespace FlexFlow {
 
-MachineMappingResultWithMemory get_optimal_machine_mapping_with_memory(
-    MachineMappingCacheWithMemory &result_cache,
+MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
+    MachineMappingWithMemoryCache &result_cache,
     MachineMappingContext const &context,
     MachineMappingProblemTree const &problem_tree,
     MachineSpecification const &resources,
@@ -38,15 +38,15 @@ MachineMappingResultWithMemory get_optimal_machine_mapping_with_memory(
   };
 
   {
-    std::optional<MachineMappingResultWithMemory> cached_result =
-        machine_mapping_cache_with_memory_load(result_cache, state);
+    std::optional<MachineMappingWithMemoryResult> cached_result =
+        machine_mapping_with_memory_cache_load(result_cache, state);
     if (cached_result) {
       return cached_result.value();
     }
   }
 
-  MachineMappingResultWithMemory result =
-      problem_tree.visit<MachineMappingResultWithMemory>(overload{
+  MachineMappingWithMemoryResult result =
+      problem_tree.visit<MachineMappingWithMemoryResult>(overload{
           [&](MMProblemTreeSeriesSplit const &series_split) {
             return get_optimal_machine_mapping_with_memory(
                 result_cache,
@@ -65,12 +65,12 @@ MachineMappingResultWithMemory get_optimal_machine_mapping_with_memory(
           },
       });
 
-  machine_mapping_cache_with_memory_save(result_cache, state, result);
+  machine_mapping_with_memory_cache_save(result_cache, state, result);
   return result;
 }
 
-MachineMappingResultWithMemory get_optimal_machine_mapping_with_memory(
-    MachineMappingCacheWithMemory &result_cache,
+MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
+    MachineMappingWithMemoryCache &result_cache,
     MachineMappingContext const &context,
     MMProblemTreeSeriesSplit const &series_split,
     MachineSpecification const &resources,
@@ -105,7 +105,7 @@ MachineMappingResultWithMemory get_optimal_machine_mapping_with_memory(
         MachineMappingConstraints pre_candidate = with_additional_constraints(
             restrict_to_left_child(constraints), assigned_pre_machine_views);
 
-        MachineMappingResultWithMemory pre_result =
+        MachineMappingWithMemoryResult pre_result =
             get_optimal_machine_mapping_with_memory(
                 result_cache,
                 context,
@@ -122,7 +122,7 @@ MachineMappingResultWithMemory get_optimal_machine_mapping_with_memory(
         MachineMappingConstraints post_candidate = with_additional_constraints(
             restrict_to_right_child(constraints), assigned_post_machine_views);
 
-        MachineMappingResultWithMemory post_result =
+        MachineMappingWithMemoryResult post_result =
             get_optimal_machine_mapping_with_memory(
                 result_cache,
                 context,
@@ -133,8 +133,8 @@ MachineMappingResultWithMemory get_optimal_machine_mapping_with_memory(
         return post_result;
       };
 
-  MachineMappingResultWithMemory result =
-      empty_machine_mapping_result_with_memory();
+  MachineMappingWithMemoryResult result =
+      empty_machine_mapping_with_memory_result();
   AbstractedTensorSetMovement tensor_movement =
       series_split.tensor_set_movement;
 
@@ -142,7 +142,7 @@ MachineMappingResultWithMemory get_optimal_machine_mapping_with_memory(
            &assigned_pre_machine_views :
        get_boundary_machine_view_assignments(get_src_layers(tensor_movement))) {
 
-    MachineMappingResultWithMemory pre_result =
+    MachineMappingWithMemoryResult pre_result =
         eval_pre_boundary_mapping(assigned_pre_machine_views);
 
     for (ParallelLayerGuidObliviousMachineMapping const
@@ -150,7 +150,7 @@ MachineMappingResultWithMemory get_optimal_machine_mapping_with_memory(
          get_boundary_machine_view_assignments(
              get_dst_layers(tensor_movement))) {
 
-      MachineMappingResultWithMemory post_result =
+      MachineMappingWithMemoryResult post_result =
           eval_post_boundary_mapping(assigned_post_machine_views);
 
       TensorSetMovement comm_across_split =
@@ -172,8 +172,8 @@ MachineMappingResultWithMemory get_optimal_machine_mapping_with_memory(
   return result;
 }
 
-MachineMappingResultWithMemory get_optimal_machine_mapping_with_memory(
-    MachineMappingCacheWithMemory &result_cache,
+MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
+    MachineMappingWithMemoryCache &result_cache,
     MachineMappingContext const &context,
     MMProblemTreeParallelSplit const &parallel_split,
     MachineSpecification const &resources,
@@ -182,7 +182,7 @@ MachineMappingResultWithMemory get_optimal_machine_mapping_with_memory(
   MachineMappingProblemTree lhs = parallel_split.get_left_child();
   MachineMappingProblemTree rhs = parallel_split.get_right_child();
 
-  MachineMappingResultWithMemory series_result = [&] {
+  MachineMappingWithMemoryResult series_result = [&] {
     MMProblemTreeSeriesSplit series_split = MMProblemTreeSeriesSplit{
         /*tensor_set_movement=*/empty_abstracted_tensor_set_movement(),
         /*left_child=*/lhs,
@@ -206,13 +206,13 @@ MachineMappingResultWithMemory get_optimal_machine_mapping_with_memory(
   auto evaluate_resource_split =
       [&](std::pair<MachineSpecification, MachineSpecification> const
               &resource_split) {
-        MachineMappingResultWithMemory left_result =
+        MachineMappingWithMemoryResult left_result =
             get_optimal_machine_mapping_with_memory(result_cache,
                                                     context,
                                                     lhs,
                                                     resource_split.first,
                                                     left_constraints);
-        MachineMappingResultWithMemory right_result =
+        MachineMappingWithMemoryResult right_result =
             get_optimal_machine_mapping_with_memory(result_cache,
                                                     context,
                                                     rhs,
@@ -222,7 +222,7 @@ MachineMappingResultWithMemory get_optimal_machine_mapping_with_memory(
         return parallel_combine(left_result, right_result);
       };
 
-  std::unordered_set<MachineMappingResultWithMemory> parallel_results =
+  std::unordered_set<MachineMappingWithMemoryResult> parallel_results =
       transform(get_machine_resource_splits(resources),
                 evaluate_resource_split);
 
@@ -230,8 +230,8 @@ MachineMappingResultWithMemory get_optimal_machine_mapping_with_memory(
                           get_mapping_with_minimal_runtime(parallel_results));
 }
 
-MachineMappingResultWithMemory get_optimal_machine_mapping_with_memory(
-    MachineMappingCacheWithMemory &result_cache,
+MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
+    MachineMappingWithMemoryCache &result_cache,
     MachineMappingContext const &context,
     UnmappedOpCostEstimateKey const &leaf,
     MachineSpecification const &resource,
@@ -249,13 +249,13 @@ MachineMappingResultWithMemory get_optimal_machine_mapping_with_memory(
   auto get_mapping_result = [&](MachineView const &machine_view) {
     OpCostEstimateKey mapped =
         map_unmapped_op_cost_estimate_key(leaf, machine_view);
-    CostMetric cost = context.cost_estimator.estimate_cost_with_memory(mapped);
+    OpCostMetrics cost = context.cost_estimator.estimate_cost(mapped);
 
-    return make_singleton_machine_mapping_result_with_memory(cost,
+    return make_singleton_machine_mapping_with_memory_result(cost,
                                                              machine_view);
   };
 
-  std::unordered_set<MachineMappingResultWithMemory> candidate_results =
+  std::unordered_set<MachineMappingWithMemoryResult> candidate_results =
       transform(candidates, get_mapping_result);
 
   return get_mapping_with_minimal_runtime(candidate_results);
