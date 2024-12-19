@@ -10,5 +10,8 @@ features = [
 [[values]]
 name = "SUM"
 
-[[value]]
+[[values]]
 name = "AVG"
+
+[[values]]
+name = "NONE"

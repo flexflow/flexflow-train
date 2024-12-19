@@ -54,8 +54,8 @@ struct ForwardKernel {
 template <DataType T>
 struct BackwardKernel {
   void operator()(cudaStream_t stream,
-                  GenericTensorAccessorW const &input,
-                  GenericTensorAccessorR const &output) {
+                  GenericTensorAccessorR const &output,
+                  GenericTensorAccessorW const &input) {
     checkCUDA(cudaMemcpyAsync(input.get<T>(),
                               output.get<T>(),
                               input.shape.num_elements() * size_of_datatype(T),
@@ -73,9 +73,9 @@ void forward_kernel(cudaStream_t stream,
 }
 
 void backward_kernel(cudaStream_t stream,
-                     GenericTensorAccessorW const &input,
-                     GenericTensorAccessorR const &output) {
-  DataTypeDispatch1<BackwardKernel>{}(input.data_type, stream, input, output);
+                     GenericTensorAccessorR const &output,
+                     GenericTensorAccessorW const &input) {
+  DataTypeDispatch1<BackwardKernel>{}(output.data_type, stream, output, input);
 }
 
 } // namespace Reduction

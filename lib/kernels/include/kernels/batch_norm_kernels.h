@@ -43,8 +43,7 @@ FF_VISITABLE_STRUCT_NONSTANDARD_CONSTRUCTION(BatchNormPerDeviceState,
                                              output_w,
                                              relu);
 
-namespace Kernels {
-namespace BatchNorm {
+namespace Kernels::BatchNorm {
 
 BatchNormPerDeviceState init_kernel(PerDeviceFFHandle handle,
                                     Allocator allocator,
@@ -64,9 +63,9 @@ void forward_kernel(ffStream_t stream,
 
 void backward_kernel(ffStream_t stream,
                      BatchNormPerDeviceState const &m,
-                     float const *input_ptr,
-                     float *output_grad_ptr,
                      float const *output_ptr,
+                     float *output_grad_ptr,
+                     float const *input_ptr,
                      float *input_grad_ptr,
                      float const *scale_ptr,
                      float *scale_grad_ptr,
@@ -81,8 +80,7 @@ void cleanup_kernel(Allocator allocator,
                     bool relu,
                     float *runningMean);
 
-} // namespace BatchNorm
-} // namespace Kernels
+} // namespace Kernels::BatchNorm
 } // namespace FlexFlow
 
 #endif

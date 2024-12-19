@@ -13,8 +13,7 @@ struct ReshapePerDeviceState {
 
 FF_VISITABLE_STRUCT(ReshapePerDeviceState, data_type);
 
-namespace Kernels {
-namespace Reshape {
+namespace Kernels::Reshape {
 
 ReshapePerDeviceState init_kernel(DataType data_type);
 
@@ -25,11 +24,10 @@ void forward_kernel(ffStream_t stream,
 
 void backward_kernel(ffStream_t stream,
                      ReshapePerDeviceState const &per_device_state,
-                     GenericTensorAccessorW const &input,
-                     GenericTensorAccessorR const &output);
+                     GenericTensorAccessorR const &output,
+                     GenericTensorAccessorW const &input);
 
-} // namespace Reshape
-} // namespace Kernels
+} // namespace Kernels::Reshape
 } // namespace FlexFlow
 
 #endif // _FLEXFLOW_OPS_KERNELS_RESHAPE_KERNELS_H

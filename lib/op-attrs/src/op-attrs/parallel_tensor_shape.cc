@@ -138,7 +138,7 @@ std::unordered_set<parallel_tensor_dim_idx_t>
     get_parallel_tensor_dim_indices(ParallelTensorShape const &shape) {
   std::unordered_set<parallel_tensor_dim_idx_t> indices;
   extend(indices, transform(range(num_shard_dims(shape.dims)), [](int idx) {
-           return parallel_tensor_dim_idx_t(ff_dim_t(idx));
+           return parallel_tensor_dim_idx_t(ff_dim_t{idx});
          }));
   indices.insert(parallel_tensor_dim_idx_t(ReplicaType::SUM));
   indices.insert(parallel_tensor_dim_idx_t(ReplicaType::DISCARD_COPY));

@@ -3,14 +3,15 @@
 
 namespace FlexFlow {
 
-ManagedPerDeviceFFHandle::ManagedPerDeviceFFHandle() {
-  handle = new PerDeviceFFHandle;
-  handle->workSpaceSize = 1024 * 1024;
-  handle->allowTensorOpMathConversion = true;
+ManagedPerDeviceFFHandle::ManagedPerDeviceFFHandle(
+    size_t workSpaceSize, bool allowTensorOpMathConversion) {
+  this->handle = new PerDeviceFFHandle{};
+  this->handle->workSpaceSize = workSpaceSize;
+  this->handle->allowTensorOpMathConversion = allowTensorOpMathConversion;
 
-  checkCUDNN(cudnnCreate(&handle->dnn));
-  checkCUBLAS(cublasCreate(&handle->blas));
-  checkCUDA(cudaMalloc(&handle->workSpace, handle->workSpaceSize));
+  checkCUDNN(cudnnCreate(&this->handle->dnn));
+  checkCUBLAS(cublasCreate(&this->handle->blas));
+  checkCUDA(cudaMalloc(&this->handle->workSpace, this->handle->workSpaceSize));
 }
 
 ManagedPerDeviceFFHandle::ManagedPerDeviceFFHandle(
@@ -19,16 +20,23 @@ ManagedPerDeviceFFHandle::ManagedPerDeviceFFHandle(
 
 ManagedPerDeviceFFHandle &ManagedPerDeviceFFHandle::operator=(
     ManagedPerDeviceFFHandle &&other) noexcept {
-  std::swap(this->handle, other.handle);
+  if (this != &other) {
+    this->cleanup();
+    this->handle = std::exchange(other.handle, nullptr);
+  }
   return *this;
 }
 
 ManagedPerDeviceFFHandle::~ManagedPerDeviceFFHandle() {
-  if (handle != nullptr) {
-    checkCUDNN(cudnnDestroy(handle->dnn));
-    checkCUBLAS(cublasDestroy(handle->blas));
-    checkCUDA(cudaFree(handle->workSpace));
-    delete handle;
+  this->cleanup();
+}
+
+void ManagedPerDeviceFFHandle::cleanup() {
+  if (this->handle != nullptr) {
+    checkCUDNN(cudnnDestroy(this->handle->dnn));
+    checkCUBLAS(cublasDestroy(this->handle->blas));
+    checkCUDA(cudaFree(this->handle->workSpace));
+    delete this->handle;
   }
 }
 

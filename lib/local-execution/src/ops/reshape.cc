@@ -87,8 +87,8 @@ static std::optional<float>
                  profiling,
                  "[Reshape] backward time = {:.2lf}ms\n",
                  per_device_state,
-                 input_grad,
-                 output_grad);
+                 output_grad,
+                 input_grad);
 }
 
 TaskImplFunction get_reshape_init_task_impl() {

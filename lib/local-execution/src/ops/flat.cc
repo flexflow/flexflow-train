@@ -41,15 +41,15 @@ static std::optional<float>
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
-  auto input_grad = acc.get_tensor_grad<Permissions::RW>(INPUT);
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
+  auto input_grad = acc.get_tensor_grad<Permissions::RW>(INPUT);
 
   return profile(backward_kernel,
                  profiling,
                  "[Flat] backward_time = {:.2lf}ms\n",
                  input,
-                 input_grad.get_float_ptr(),
-                 output_grad.get_float_ptr());
+                 output_grad.get_float_ptr(),
+                 input_grad.get_float_ptr());
 }
 
 TaskImplFunction get_flat_fwd_task_impl() {
