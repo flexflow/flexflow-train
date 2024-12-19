@@ -1,8 +1,21 @@
-# FlexFlow
-![build](https://github.com/flexflow/flexflow/workflows/build/badge.svg?branch=master) ![gpu tests](https://github.com/flexflow/flexflow/workflows/gpu-ci/badge.svg?branch=master) ![multinode gpu tests](https://github.com/flexflow/flexflow/workflows/multinode-test/badge.svg?branch=master) ![docker](https://github.com/flexflow/flexflow/workflows/docker-build/badge.svg?branch=master) ![pip](https://github.com/flexflow/flexflow/workflows/pip-install/badge.svg?branch=master) ![shell-check](https://github.com/flexflow/flexflow/workflows/Shell%20Check/badge.svg?branch=master) ![clang-format](https://github.com/flexflow/flexflow/workflows/clang-format%20Check/badge.svg?branch=master) [![Documentation Status](https://readthedocs.org/projects/flexflow/badge/?version=latest)](https://flexflow.readthedocs.io/en/latest/?badge=latest)
+# flexflow-train
+[![clang-format Check](https://github.com/flexflow/flexflow-train/actions/workflows/clang-format-check.yml/badge.svg?branch=master)](https://github.com/flexflow/flexflow-train/actions/workflows/clang-format-check.yml)
+[![per-lib-checks](https://github.com/flexflow/flexflow-train/actions/workflows/per-lib-check.yml/badge.svg)](https://github.com/flexflow/flexflow-train/actions/workflows/per-lib-check.yml)
+[![shell-check](https://github.com/flexflow/flexflow-train/actions/workflows/shell-check.yml/badge.svg)](https://github.com/flexflow/flexflow-train/actions/workflows/shell-check.yml)
+[![Documentation Status](https://readthedocs.org/projects/flexflow/badge/?version=latest)](https://flexflow.readthedocs.io/en/latest/?badge=latest)
 
-FlexFlow is a deep learning framework that accelerates distributed DNN training by automatically searching for efficient parallelization strategies. FlexFlow provides a drop-in replacement for PyTorch and TensorFlow Keras. Running existing PyTorch and Keras programs in FlexFlow only requires [a few lines of changes to the program](https://flexflow.ai/keras).
+> [!WARNING]
+> The FlexFlow repository has been split into separate [flexflow-train](https://github.com/flexflow/flexflow-train) and [flexflow-serve](https://github.com/flexflow/flexflow-serve) repositories.
+> You are currently viewing [flexflow-train](https://github.com/flexflow/flexflow-train). 
+> For anything inference/serving-related, go to [flexflow-serve](https://github.com/flexflow/flexflow-serve). 
 
+FlexFlow is a deep learning framework that accelerates distributed DNN training by automatically searching for efficient parallelization strategies. 
+
+<!--
+FlexFlow provides a drop-in replacement for PyTorch and TensorFlow Keras. Running existing PyTorch and Keras programs in FlexFlow only requires [a few lines of changes to the program](https://flexflow.ai/keras).
+-->
+
+<!--
 ## Install FlexFlow
 To install FlexFlow from source code, please read the [instructions](INSTALL.md). If you would like to quickly try FlexFlow, we also provide pre-built Docker packages ([flexflow-cuda](https://github.com/flexflow/FlexFlow/pkgs/container/flexflow-cuda) with a CUDA backend, [flexflow-hip_rocm](https://github.com/flexflow/FlexFlow/pkgs/container/flexflow-hip_rocm) with a HIP-ROCM backend) with all dependencies pre-installed (N.B.: currently, the CUDA pre-built containers are only fully compatible with host machines that have CUDA 11.7 installed), together with [Dockerfiles](./docker) if you wish to build the containers manually. You can also use `conda` to install the FlexFlow Python package (coming soon).
 
@@ -67,10 +80,11 @@ Performance auto-tuning flags:
 * `--enable-parameter-parallel`: allow FlexFlow to explore parameter parallelism for performance auto-tuning. (By default FlexFlow only considers data and model parallelism.)
 * `--enable-attribute-parallel`: allow FlexFlow to explore attribute parallelism for performance auto-tuning. (By default FlexFlow only considers data and model parallelism.)
 For performance tuning related flags: see [performance autotuning](https://flexflow.ai/search).
+-->
 
 ## Contributing
 
-Please let us know if you encounter any bugs or have any suggestions by [submitting an issue](https://github.com/flexflow/flexflow/issues).
+Please let us know if you encounter any bugs or have any suggestions by [submitting an issue](https://github.com/flexflow/flexflow-train/issues).
 
 We welcome all contributions to FlexFlow from bug fixes to new features and extensions.
 
