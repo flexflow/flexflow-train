@@ -1,5 +1,17 @@
 #include "utils/graph/series_parallel/parallel_reduction.h"
+#include "utils/containers/get_one_of.h"
+#include "utils/containers/group_by.h"
+#include "utils/containers/unordered_set_of.h"
+#include "utils/containers/values.h"
+#include "utils/graph/digraph/directed_edge.dtg.h"
+#include "utils/graph/multidigraph/algorithms/get_directed_edge.h"
 #include "utils/graph/multidigraph/algorithms/get_edges.h"
+#include "utils/graph/multidigraph/multidiedge.dtg.h"
+#include "utils/graph/multidigraph/multidigraph.h"
+#include "utils/graph/node/algorithms.h"
+#include "utils/hash/unordered_set.h"
+#include <unordered_map>
+#include <unordered_set>
 
 namespace FlexFlow {
 
@@ -10,24 +22,49 @@ ParallelReduction make_parallel_reduction(MultiDiEdge const &e1,
 
 std::optional<ParallelReduction>
     find_parallel_reduction(MultiDiGraphView const &g) {
-  std::unordered_set<MultiDiEdge> edges = get_edges(g);
 
-  for (MultiDiEdge const &e1 : edges) {
-    for (MultiDiEdge const &e2 : edges) {
-      if (e1 != e2 && g.get_multidiedge_src(e1) == g.get_multidiedge_src(e2) &&
-          g.get_multidiedge_dst(e1) == g.get_multidiedge_dst(e2)) {
-        return make_parallel_reduction(e1, e2);
-      }
+  std::unordered_map<DirectedEdge, MultiDiEdge> seen;
+  for (MultiDiEdge const &edge : get_edges(g)) {
+    DirectedEdge diedge = get_directed_edge(g, edge);
+    if (seen.find(diedge) != seen.end()) {
+      return make_parallel_reduction(seen.at(diedge), edge);
     }
+    seen.emplace(diedge, edge);
   }
-
   return std::nullopt;
+}
+
+std::unordered_map<DirectedEdge, std::unordered_set<MultiDiEdge>>
+    find_all_extended_parallel_reductions(MultiDiGraphView const &g) {
+  std::unordered_map<DirectedEdge, std::unordered_set<MultiDiEdge>>
+      parallel_groups = group_by(get_edges(g), [&](MultiDiEdge const &edge) {
+        return get_directed_edge(g, edge);
+      });
+
+  return filter(
+      parallel_groups,
+      [](std::pair<DirectedEdge, std::unordered_set<MultiDiEdge>> const
+             &group) { return group.second.size() > 1; });
 }
 
 MultiDiEdge apply_parallel_reduction(MultiDiGraph &g,
                                      ParallelReduction const &r) {
   g.remove_edge(r.edges.max());
   return r.edges.min();
+}
+
+MultiDiEdge apply_extended_parallel_reduction(
+    MultiDiGraph &g, std::unordered_set<MultiDiEdge> const &parallel_edges) {
+
+  MultiDiEdge keep_edge = get_one_of(parallel_edges);
+
+  for (MultiDiEdge const &parallel_edge : parallel_edges) {
+    if (parallel_edge != keep_edge) {
+      g.remove_edge(parallel_edge);
+    }
+  }
+
+  return keep_edge;
 }
 
 } // namespace FlexFlow
