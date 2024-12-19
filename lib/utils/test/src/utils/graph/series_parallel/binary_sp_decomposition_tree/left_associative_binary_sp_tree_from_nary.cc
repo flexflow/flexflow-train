@@ -62,7 +62,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       BinarySPDecompositionTree result =
           left_associative_binary_sp_tree_from_nary(input);
 
-      // we use multiple checks here because SerialParallelDecomposition's
+      // we use multiple checks here because SeriesParallelDecomposition's
       // ParallelSplit is unordered, so there are multiple possible
       // left-associative binary SP trees
       CHECK(is_binary_sp_tree_left_associative(result));

@@ -29,10 +29,10 @@
 #include "utils/graph/digraph/algorithms/transitive_reduction.h"
 #include "utils/graph/digraph/digraph_view.h"
 #include "utils/graph/node/algorithms.h"
-#include "utils/graph/serial_parallel/serial_parallel_decomposition.dtg.h"
-#include "utils/graph/serial_parallel/serial_parallel_metrics.h"
-#include "utils/graph/serial_parallel/sp_ization/critical_path_preserving_sp_ization.h"
-#include "utils/graph/serial_parallel/sp_ization/work_preserving_sp_ization.h"
+#include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
+#include "utils/graph/series_parallel/series_parallel_metrics.h"
+#include "utils/graph/series_parallel/sp_ization/critical_path_preserving_sp_ization.h"
+#include "utils/graph/series_parallel/sp_ization/work_preserving_sp_ization.h"
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -56,10 +56,10 @@ CombinedResult perform_benchmark_given_graph(DiGraphView const &g,
   for (int i = 0; i < repeat; i++) {
     auto cost_map = make_cost_map(get_nodes(g), Dist);
 
-    SerialParallelDecomposition sp1 =
+    SeriesParallelDecomposition sp1 =
         critical_path_preserving_sp_ization_with_coalescing(g);
-    SerialParallelDecomposition sp2 = stratum_sync_sp_ization(g);
-    SerialParallelDecomposition sp3 =
+    SeriesParallelDecomposition sp2 = stratum_sync_sp_ization(g);
+    SeriesParallelDecomposition sp3 =
         cost_aware_stratum_sync_sp_ization(g, cost_map);
 
     auto noisy_cost_map = add_noise_to_cost_map(cost_map, Noise);
@@ -108,10 +108,10 @@ CombinedResult
     DiGraphView g = graph_generator();
     auto cost_map = make_cost_map(get_nodes(g), Dist);
 
-    SerialParallelDecomposition sp1 =
+    SeriesParallelDecomposition sp1 =
         critical_path_preserving_sp_ization_with_coalescing(g);
-    SerialParallelDecomposition sp2 = stratum_sync_sp_ization(g);
-    SerialParallelDecomposition sp3 =
+    SeriesParallelDecomposition sp2 = stratum_sync_sp_ization(g);
+    SeriesParallelDecomposition sp3 =
         cost_aware_stratum_sync_sp_ization(g, cost_map);
 
     auto noisy_cost_map = add_noise_to_cost_map(cost_map, Noise);

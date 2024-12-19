@@ -1,5 +1,5 @@
 #include "utils/graph/digraph/algorithms/get_longest_path_lengths_from_root.h"
-#include "utils/containers.h"
+#include "utils/containers/maximum.h"
 #include "utils/graph/digraph/algorithms.h"
 #include "utils/graph/digraph/algorithms/get_predecessors.h"
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"

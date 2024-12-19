@@ -1,22 +1,24 @@
-#include "utils/graph/serial_parallel/sp_ization/critical_path_preserving_sp_ization.h"
-#include "utils/containers/as_vector.h"
+#include "utils/graph/series_parallel/sp_ization/critical_path_preserving_sp_ization.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/transform.h"
+#include "utils/containers/unordered_multiset_of.h"
+#include "utils/containers/vector_of.h"
 #include "utils/graph/digraph/algorithms.h"
 #include "utils/graph/digraph/algorithms/get_predecessors.h"
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"
 #include "utils/graph/digraph/algorithms/is_2_terminal_dag.h"
 #include "utils/graph/digraph/digraph_view.h"
-#include "utils/graph/serial_parallel/normalize_sp_decomposition.h"
-#include "utils/graph/serial_parallel/serial_parallel_decomposition.dtg.h"
-#include "utils/graph/serial_parallel/serial_parallel_decomposition.h"
+#include "utils/graph/series_parallel/normalize_sp_decomposition.h"
+#include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
+#include "utils/graph/series_parallel/series_parallel_decomposition.h"
 #include "utils/variant.h"
+#include <unordered_set>
 
 namespace FlexFlow {
 
-static SerialSplit cut_off_head(SerialSplit const &s) {
+static SeriesSplit cut_off_head(SeriesSplit const &s) {
   assert(s.children.size() > 0);
-  return SerialSplit{std::vector<std::variant<ParallelSplit, Node>>(
+  return SeriesSplit{std::vector<std::variant<ParallelSplit, Node>>(
       s.children.begin() + 1, s.children.end())};
 }
 
@@ -26,17 +28,17 @@ static SerialSplit cut_off_head(SerialSplit const &s) {
  *  without coalescing: P(S(1, 2, 5), S(1, 3, 4))
  *  with coalescing: S(1, P( S(2,5), S(3,4) ))
  */
-static SerialParallelDecomposition parallel_composition_with_coalescing(
-    std::unordered_set<SerialSplit> const &strands) {
+static SeriesParallelDecomposition parallel_composition_with_coalescing(
+    std::unordered_set<SeriesSplit> const &strands) {
   if (strands.size() == 1) {
-    return SerialParallelDecomposition(get_only(strands));
+    return SeriesParallelDecomposition(get_only(strands));
   }
 
   // group strands by their first ("head") node
   std::unordered_map<std::variant<ParallelSplit, Node>,
-                     std::unordered_set<SerialSplit>>
+                     std::unordered_set<SeriesSplit>>
       grouped_strands;
-  for (SerialSplit predecessor : filter(strands, [](SerialSplit const &serial) {
+  for (SeriesSplit predecessor : filter(strands, [](SeriesSplit const &serial) {
          return !is_empty(serial);
        })) {
     grouped_strands[predecessor.children.at(0)].insert(
@@ -44,64 +46,65 @@ static SerialParallelDecomposition parallel_composition_with_coalescing(
   }
 
   // recursively coalesce the strands
-  std::unordered_set<SerialParallelDecomposition> coalesced_strands;
+  std::unordered_multiset<SeriesParallelDecomposition> coalesced_strands;
   for (auto const &[head, tails] : grouped_strands) {
-    SerialParallelDecomposition parallel_comp =
+    SeriesParallelDecomposition parallel_comp =
         parallel_composition_with_coalescing(tails);
-    coalesced_strands.insert(serial_composition(
-        {widen<SerialParallelDecomposition>(head), parallel_comp}));
+    coalesced_strands.insert(series_composition(
+        {widen<SeriesParallelDecomposition>(head), parallel_comp}));
   }
 
   return normalize_sp_decomposition(parallel_composition(coalesced_strands));
 }
 
-static SerialParallelDecomposition
+static SeriesParallelDecomposition
     critical_path_preserving_sp_ization_unchecked_with_coalescing(
         DiGraphView const &g) {
-  std::unordered_map<Node, SerialSplit> node_to_sp;
+  std::unordered_map<Node, SeriesSplit> node_to_sp;
 
   Node source = get_only(get_sources(g));
-  node_to_sp[source] = SerialSplit{{source}};
+  node_to_sp.emplace(source, SeriesSplit{{source}});
 
   for (Node const &node : get_topological_ordering(g)) {
     if (node == source) {
       continue;
     }
-    std::unordered_set<SerialSplit> predecessors_as_sp =
+    std::unordered_set<SeriesSplit> predecessors_as_sp =
         transform(get_predecessors(g, node),
                   [&](Node const &p) { return node_to_sp.at(p); });
 
-    SerialParallelDecomposition parallel_composed_predecessors =
+    SeriesParallelDecomposition parallel_composed_predecessors =
         parallel_composition_with_coalescing(predecessors_as_sp);
-    SerialParallelDecomposition sp_decomp = serial_composition(
-        {parallel_composed_predecessors, SerialParallelDecomposition(node)});
-    node_to_sp[node] = sp_decomp.get<SerialSplit>();
+    SeriesParallelDecomposition sp_decomp = series_composition(
+        {parallel_composed_predecessors, SeriesParallelDecomposition(node)});
+    node_to_sp.emplace(node, sp_decomp.get<SeriesSplit>());
   }
 
   Node sink = get_only(get_sinks(g));
   return normalize_sp_decomposition(
-      SerialParallelDecomposition(node_to_sp.at(sink)));
+      SeriesParallelDecomposition(node_to_sp.at(sink)));
 }
 
-SerialParallelDecomposition
+SeriesParallelDecomposition
     critical_path_preserving_sp_ization_with_coalescing(DiGraphView const &g) {
   assert(is_2_terminal_dag(g));
   return critical_path_preserving_sp_ization_unchecked_with_coalescing(g);
 }
 
-static SerialParallelDecomposition
+static SeriesParallelDecomposition
     critical_path_preserving_sp_ization_unchecked(DiGraphView const &g) {
-  std::unordered_map<Node, SerialParallelDecomposition> node_to_sp;
+  std::unordered_map<Node, SeriesParallelDecomposition> node_to_sp;
 
   for (Node const &node : get_topological_ordering(g)) {
 
-    std::unordered_set<SerialParallelDecomposition> predecessors_as_sp =
-        transform(get_predecessors(g, node),
-                  [&](Node const &p) { return node_to_sp.at(p); });
+    std::unordered_multiset<SeriesParallelDecomposition> predecessors_as_sp =
+        unordered_multiset_of(
+            transform(get_predecessors(g, node),
+                      [&](Node const &p) { return node_to_sp.at(p); }));
 
-    SerialParallelDecomposition sp_decomp = serial_composition(
+    SeriesParallelDecomposition sp_decomp = series_composition(
         {normalize_sp_decomposition(parallel_composition(predecessors_as_sp)),
-         SerialParallelDecomposition(node)});
+         SeriesParallelDecomposition(node)});
 
     node_to_sp.emplace(node, sp_decomp);
   }
@@ -110,7 +113,7 @@ static SerialParallelDecomposition
   return node_to_sp.at(sink);
 }
 
-SerialParallelDecomposition
+SeriesParallelDecomposition
     critical_path_preserving_sp_ization(DiGraphView const &g) {
   assert(is_2_terminal_dag(g));
   return critical_path_preserving_sp_ization_unchecked(g);

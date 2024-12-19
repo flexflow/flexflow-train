@@ -12,7 +12,7 @@
 #include "utils/graph/digraph/algorithms/transitive_reduction.h"
 #include "utils/graph/instances/adjacency_digraph.h"
 #include "utils/graph/node/algorithms.h"
-#include "utils/graph/serial_parallel/digraph_generation.h"
+#include "utils/graph/series_parallel/digraph_generation.h"
 #include <optional>
 #include <vector>
 
@@ -118,7 +118,7 @@ DiGraph generate_nasnet_bench_cell() {
 }
 
 DiGraph generate_nasnet_bench_network() {
-  DiGraph g = serial_composition(
+  DiGraph g = series_composition(
       transform(repeat(NUM_CELLS, generate_nasnet_bench_cell),
                 [](auto const cell) -> DiGraphView { return cell; }));
   return g;

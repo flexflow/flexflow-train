@@ -22,7 +22,6 @@ std::unordered_set<Node> get_descendants(DiGraphView const &g,
     to_visit.pop();
     descendants.insert(current);
 
-    // add all unvisited successors of `current` to `to_visit`
     for (auto const &s : filter(get_successors(g, current), [&](Node const &n) {
            return !contains(descendants, n);
          })) {

@@ -1,5 +1,6 @@
 #include "utils/graph/digraph/algorithms/transitive_reduction.h"
 #include "utils/bidict/algorithms/bidict_from_enumerating.h"
+#include "utils/containers/contains.h"
 #include "utils/containers/is_subseteq_of.h"
 #include "utils/containers/vector_of.h"
 #include "utils/graph/digraph/algorithms.h"
@@ -7,6 +8,7 @@
 #include "utils/graph/digraph/algorithms/is_acyclic.h"
 #include "utils/graph/digraph/algorithms/materialize_digraph_view.h"
 #include "utils/graph/digraph/algorithms/transitive_closure.h"
+#include "utils/graph/digraph/digraph.h"
 #include "utils/graph/instances/adjacency_digraph.h"
 #include "utils/graph/node/algorithms.h"
 
@@ -30,7 +32,7 @@ DirectedEdgeMaskView *DirectedEdgeMaskView::clone() const {
   return new DirectedEdgeMaskView(this->g, this->edge_mask);
 }
 
-DiGraphView transitive_reduction(DiGraphView const &g) {
+DiGraph transitive_reduction(DiGraphView const &g) {
   // Logic dropped down to raw adjacency matrix for performance.
   // The version going through the full graph abstraction was
   // incredibly slow (> minutes) for even moderately sized graphs
@@ -85,11 +87,6 @@ DiGraphView transitive_reduction(DiGraphView const &g) {
   }
 
   return result;
-}
-
-DiGraphView transitive_reduction(DiGraphView const &g) {
-  assert(is_acyclic(g));
-  return unchecked_transitive_reduction(g);
 }
 
 } // namespace FlexFlow

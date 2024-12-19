@@ -1,6 +1,6 @@
-#include "utils/containers.h"
 #include "utils/containers/intersection.h"
 #include "utils/containers/is_subseteq_of.h"
+#include "utils/containers/maximum.h"
 #include "utils/containers/transform.h"
 #include "utils/graph/digraph/algorithms.h"
 #include "utils/graph/digraph/algorithms/get_ancestors.h"

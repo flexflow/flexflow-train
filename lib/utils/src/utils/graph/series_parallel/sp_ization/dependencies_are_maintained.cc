@@ -1,19 +1,20 @@
-#include "utils/graph/serial_parallel/sp_ization/dependencies_are_maintained.h" 
+#include "utils/graph/series_parallel/sp_ization/dependencies_are_maintained.h"
 #include "utils/containers/is_subseteq_of.h"
+#include "utils/containers/unordered_set_of.h"
 #include "utils/graph/algorithms.h"
 #include "utils/graph/digraph/algorithms/get_ancestors.h"
 #include "utils/graph/digraph/algorithms/get_descendants.h"
 #include "utils/graph/node/algorithms.h"
-#include "utils/graph/serial_parallel/digraph_generation.h"
-#include "utils/graph/serial_parallel/get_ancestors.h"
-#include "utils/graph/serial_parallel/serial_parallel_decomposition.h"
+#include "utils/graph/series_parallel/digraph_generation.h"
+#include "utils/graph/series_parallel/get_ancestors.h"
+#include "utils/graph/series_parallel/series_parallel_decomposition.h"
 
 namespace FlexFlow {
 
 bool dependencies_are_maintained(DiGraphView const &g,
-                         SerialParallelDecomposition const &sp) {
+                                 SeriesParallelDecomposition const &sp) {
   assert(has_no_duplicate_nodes(sp));
-  if (get_nodes(sp) != get_nodes(g)) {
+  if (unordered_set_of(get_nodes(sp)) != get_nodes(g)) {
     return false;
   }
 

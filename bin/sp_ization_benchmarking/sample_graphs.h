@@ -10,7 +10,7 @@
 #include "utils/graph/digraph/algorithms/is_acyclic.h"
 #include "utils/graph/digraph/digraph.h"
 #include "utils/graph/instances/adjacency_digraph.h"
-#include "utils/graph/serial_parallel/digraph_generation.h"
+#include "utils/graph/series_parallel/digraph_generation.h"
 #include <tuple>
 
 namespace FlexFlow {

@@ -1,12 +1,14 @@
-#include "utils/graph/serial_parallel/sp_ization/critical_path_preserving_sp_ization.h"
-#include "test/utils/doctest.h"
+#include "utils/graph/series_parallel/sp_ization/critical_path_preserving_sp_ization.h"
 #include "utils/graph/algorithms.h"
 #include "utils/graph/digraph/algorithms.h"
 #include "utils/graph/digraph/digraph.h"
 #include "utils/graph/instances/adjacency_digraph.h"
-#include "utils/graph/serial_parallel/serial_parallel_decomposition.dtg.h"
-#include "utils/graph/serial_parallel/serial_parallel_metrics.h"
-#include "utils/graph/serial_parallel/serial_parallel_splits.h"
+#include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
+#include "utils/graph/series_parallel/series_parallel_metrics.h"
+#include "utils/graph/series_parallel/series_parallel_splits.h"
+#include <doctest/doctest.h>
+
+using namespace FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
 
@@ -37,17 +39,17 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(work_cost(g, cost_map) == 13);
       CHECK(critical_path_cost(g, cost_map) == 12);
 
-      SerialParallelDecomposition sp = critical_path_preserving_sp_ization(g);
+      SeriesParallelDecomposition sp = critical_path_preserving_sp_ization(g);
 
       SUBCASE("structure") {
         Node sp0 = n.at(0);
-        SerialSplit sp1 = SerialSplit{sp0, n.at(1)};
-        SerialSplit sp2 = SerialSplit{ParallelSplit{sp0, sp1}, n.at(2)};
-        SerialSplit sp3 = SerialSplit{n.at(0), n.at(1), n.at(3)};
-        SerialSplit sp4 = SerialSplit{ParallelSplit{sp2, sp3}, n.at(4)};
-        SerialSplit sp5 = SerialSplit{ParallelSplit{sp3, sp4}, n.at(5)};
-        SerialParallelDecomposition correct(sp5);
-        SerialParallelDecomposition result = sp;
+        SeriesSplit sp1 = SeriesSplit{{sp0, n.at(1)}};
+        SeriesSplit sp2 = SeriesSplit{{ParallelSplit{{sp0, sp1}}, n.at(2)}};
+        SeriesSplit sp3 = SeriesSplit{{n.at(0), n.at(1), n.at(3)}};
+        SeriesSplit sp4 = SeriesSplit{{ParallelSplit{{sp2, sp3}}, n.at(4)}};
+        SeriesSplit sp5 = SeriesSplit{{ParallelSplit{{sp3, sp4}}, n.at(5)}};
+        SeriesParallelDecomposition correct = SeriesParallelDecomposition{sp5};
+        SeriesParallelDecomposition result = sp;
         CHECK(correct == result);
       }
       SUBCASE("work cost") {
@@ -86,14 +88,15 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(work_cost(g, cost_map) == 15);
       CHECK(critical_path_cost(g, cost_map) == 12);
 
-      SerialParallelDecomposition sp = critical_path_preserving_sp_ization(g);
+      SeriesParallelDecomposition sp = critical_path_preserving_sp_ization(g);
 
       SUBCASE("structure") {
-        SerialParallelDecomposition correct(SerialSplit{
-            ParallelSplit{SerialSplit{n.at(0), n.at(1), n.at(3), n.at(4)},
-                          SerialSplit{n.at(0), n.at(2)}},
-            n.at(5)});
-        SerialParallelDecomposition result = sp;
+        SeriesParallelDecomposition correct = SeriesParallelDecomposition{
+            SeriesSplit{{ParallelSplit{
+                             {SeriesSplit{{n.at(0), n.at(1), n.at(3), n.at(4)}},
+                              SeriesSplit{{n.at(0), n.at(2)}}}},
+                         n.at(5)}}};
+        SeriesParallelDecomposition result = sp;
         CHECK(correct == result);
       }
       SUBCASE("work cost") {
@@ -137,17 +140,19 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(work_cost(g, cost_map) == 9);
       CHECK(critical_path_cost(g, cost_map) == 7);
 
-      SerialParallelDecomposition sp =
+      SeriesParallelDecomposition sp =
           critical_path_preserving_sp_ization_with_coalescing(g);
 
       SUBCASE("structure") {
-        SerialParallelDecomposition correct(SerialSplit{
-            n.at(0),
-            n.at(1),
-            ParallelSplit{SerialSplit{ParallelSplit{n.at(2), n.at(3)}, n.at(4)},
-                          n.at(3)},
-            n.at(5)});
-        SerialParallelDecomposition result = sp;
+        SeriesParallelDecomposition correct =
+            SeriesParallelDecomposition{SeriesSplit{
+                {n.at(0),
+                 n.at(1),
+                 ParallelSplit{
+                     {SeriesSplit{{ParallelSplit{{n.at(2), n.at(3)}}, n.at(4)}},
+                      n.at(3)}},
+                 n.at(5)}}};
+        SeriesParallelDecomposition result = sp;
         CHECK(correct == result);
       }
       SUBCASE("work cost") {
@@ -186,15 +191,15 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(work_cost(g, cost_map) == 15);
       CHECK(critical_path_cost(g, cost_map) == 12);
 
-      SerialParallelDecomposition sp =
+      SeriesParallelDecomposition sp =
           critical_path_preserving_sp_ization_with_coalescing(g);
 
       SUBCASE("structure") {
-        SerialParallelDecomposition correct(SerialSplit{
-            n.at(0),
-            ParallelSplit{SerialSplit{n.at(1), n.at(3), n.at(4)}, n.at(2)},
-            n.at(5)});
-        SerialParallelDecomposition result = sp;
+        SeriesParallelDecomposition correct(SeriesSplit{
+            {n.at(0),
+             ParallelSplit{{SeriesSplit{{n.at(1), n.at(3), n.at(4)}}, n.at(2)}},
+             n.at(5)}});
+        SeriesParallelDecomposition result = sp;
         CHECK(correct == result);
       }
       SUBCASE("work cost") {
@@ -243,24 +248,27 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(work_cost(g, cost_map) == 43);
       CHECK(critical_path_cost(g, cost_map) == 26);
 
-      SerialParallelDecomposition sp =
+      SeriesParallelDecomposition sp =
           critical_path_preserving_sp_ization_with_coalescing(g);
 
       SUBCASE("structure") {
 
-        SerialParallelDecomposition correct(SerialSplit{
-            n.at(0),
-            ParallelSplit{
-                SerialSplit{n.at(1), n.at(2), n.at(6)},
-                SerialSplit{ParallelSplit{
-                                SerialSplit{ParallelSplit{n.at(1), n.at(3)},
-                                            ParallelSplit{
-                                                n.at(4),
-                                                SerialSplit{n.at(5), n.at(7)}}},
-                                n.at(3)},
-                            n.at(8)}},
-            n.at(9)});
-        SerialParallelDecomposition result = sp;
+        SeriesParallelDecomposition correct =
+            SeriesParallelDecomposition{SeriesSplit{
+                {n.at(0),
+                 ParallelSplit{
+                     {SeriesSplit{{n.at(1), n.at(2), n.at(6)}},
+                      SeriesSplit{
+                          {ParallelSplit{
+                               {SeriesSplit{
+                                    {ParallelSplit{{n.at(1), n.at(3)}},
+                                     ParallelSplit{
+                                         {n.at(4),
+                                          SeriesSplit{{n.at(5), n.at(7)}}}}}},
+                                n.at(3)}},
+                           n.at(8)}}}},
+                 n.at(9)}}};
+        SeriesParallelDecomposition result = sp;
         CHECK(correct == result);
       };
       SUBCASE("work cost") {
@@ -290,10 +298,10 @@ TEST_SUITE(FF_TEST_SUITE) {
                     DirectedEdge{n.at(3), n.at(4)},
                 });
 
-      SerialParallelDecomposition result =
+      SeriesParallelDecomposition result =
           critical_path_preserving_sp_ization_with_coalescing(g);
-      SerialParallelDecomposition correct =
-          SerialParallelDecomposition{SerialSplit{
+      SeriesParallelDecomposition correct =
+          SeriesParallelDecomposition{SeriesSplit{
               {n.at(0), n.at(1), ParallelSplit{{n.at(2), n.at(3)}}, n.at(4)}}};
       CHECK(result == correct);
     }

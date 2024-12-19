@@ -1,0 +1,17 @@
+namespace = "FlexFlow"
+name = "NodeRole"
+features = [
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+[[values]]
+name = "PURE"
+
+[[values]]
+name = "SYNC"
+
+[[values]]
+name = "DUMMY"

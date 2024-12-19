@@ -2,7 +2,7 @@
 #define _FLEXFLOW_UTILS_GRAPH_SERIAL_PARALLEL_CRITICAL_PATH_PRESERVING_SP_IZATION_H
 
 #include "utils/graph/digraph/digraph_view.h"
-#include "utils/graph/serial_parallel/serial_parallel_decomposition.dtg.h"
+#include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
 #include <unordered_map>
 
 namespace FlexFlow {
@@ -13,10 +13,10 @@ namespace FlexFlow {
  * through node (work) duplication.
  *
  * @details
- * The resulting graph, encoded as a SerialParallelDecomposition, is a tree
+ * The resulting graph, encoded as a SeriesParallelDecomposition, is a tree
  * whose critical path is the same as that of the original graph. The tree is
  * constructed as follows:
- * - Denote SP(n) as the SerialParallelDecomposition of the subgraph of g whose
+ * - Denote SP(n) as the SeriesParallelDecomposition of the subgraph of g whose
  * nodes are all the ancestors of n.
  * - Denote the predecessors of n as M.
  * - Then:
@@ -63,7 +63,7 @@ namespace FlexFlow {
  * @note g must be a 2 terminal (i.e. single source and single sink) directed
  * acyclic graph.
  */
-SerialParallelDecomposition
+SeriesParallelDecomposition
     critical_path_preserving_sp_ization(DiGraphView const &g);
 
 /**
@@ -111,7 +111,7 @@ SerialParallelDecomposition
  * }
  * </tt>
  */
-SerialParallelDecomposition
+SeriesParallelDecomposition
     critical_path_preserving_sp_ization_with_coalescing(DiGraphView const &g);
 
 } // namespace FlexFlow

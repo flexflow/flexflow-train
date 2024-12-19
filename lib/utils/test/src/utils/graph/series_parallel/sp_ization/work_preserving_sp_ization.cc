@@ -1,16 +1,18 @@
-#include "utils/graph/serial_parallel/sp_ization/work_preserving_sp_ization.h"
-#include "test/utils/doctest.h"
+#include "utils/graph/series_parallel/sp_ization/work_preserving_sp_ization.h"
 #include "utils/graph/algorithms.h"
 #include "utils/graph/digraph/algorithms.h"
 #include "utils/graph/digraph/digraph.h"
 #include "utils/graph/instances/adjacency_digraph.h"
-#include "utils/graph/serial_parallel/serial_parallel_decomposition.dtg.h"
-#include "utils/graph/serial_parallel/serial_parallel_metrics.h"
-#include "utils/graph/serial_parallel/serial_parallel_splits.h"
+#include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
+#include "utils/graph/series_parallel/series_parallel_metrics.h"
+#include "utils/graph/series_parallel/series_parallel_splits.h"
+#include <doctest/doctest.h>
+
+using namespace FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
 
-  TEST_CASE("work_preserving_") {
+  TEST_CASE("work_preserving_sp_ization") {
 
     SUBCASE("Sample Graph #1") {
       DiGraph g = DiGraph::create<AdjacencyDiGraph>();
@@ -33,12 +35,12 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(work_cost(g, cost_map) == 9);
       CHECK(critical_path_cost(g, cost_map) == 7);
 
-      SerialParallelDecomposition sp = stratum_sync_sp_ization(g);
+      SeriesParallelDecomposition sp = stratum_sync_sp_ization(g);
 
       SUBCASE("structure") {
-        SerialParallelDecomposition correct(
-            SerialSplit{n[0], n[1], ParallelSplit{n[2], n[3]}, n[4], n[5]});
-        SerialParallelDecomposition result = sp;
+        SeriesParallelDecomposition correct = SeriesParallelDecomposition{
+            SeriesSplit{{n[0], n[1], ParallelSplit{{n[2], n[3]}}, n[4], n[5]}}};
+        SeriesParallelDecomposition result = sp;
         CHECK(correct == result);
       }
       SUBCASE("work cost") {
@@ -73,12 +75,12 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(work_cost(g, cost_map) == 15);
       CHECK(critical_path_cost(g, cost_map) == 12);
 
-      SerialParallelDecomposition sp = stratum_sync_sp_ization(g);
+      SeriesParallelDecomposition sp = stratum_sync_sp_ization(g);
 
       SUBCASE("structure") {
-        SerialParallelDecomposition correct(
-            SerialSplit{n[0], ParallelSplit{n[1], n[2]}, n[3], n[4], n[5]});
-        SerialParallelDecomposition result = sp;
+        SeriesParallelDecomposition correct = SeriesParallelDecomposition{
+            SeriesSplit{{n[0], ParallelSplit{{n[1], n[2]}}, n[3], n[4], n[5]}}};
+        SeriesParallelDecomposition result = sp;
         CHECK(correct == result);
       }
       SUBCASE("work cost") {
@@ -126,16 +128,16 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(work_cost(g, cost_map) == 45);
       CHECK(critical_path_cost(g, cost_map) == 23);
 
-      SerialParallelDecomposition sp = stratum_sync_sp_ization(g);
+      SeriesParallelDecomposition sp = stratum_sync_sp_ization(g);
 
       SUBCASE("structure") {
-        SerialParallelDecomposition correct(
-            SerialSplit{n[0],
-                        ParallelSplit{n[1], n[3]},
-                        ParallelSplit{n[2], n[4], n[5]},
-                        ParallelSplit{n[6], n[7]},
-                        n[8]});
-        SerialParallelDecomposition result = sp;
+        SeriesParallelDecomposition correct = SeriesParallelDecomposition{
+            SeriesSplit{{n[0],
+                         ParallelSplit{{n[1], n[3]}},
+                         ParallelSplit{{n[2], n[4], n[5]}},
+                         ParallelSplit{{n[6], n[7]}},
+                         n[8]}}};
+        SeriesParallelDecomposition result = sp;
         CHECK(correct == result);
       }
       SUBCASE("work cost") {
@@ -175,13 +177,13 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(work_cost(g, cost_map) == 9);
       CHECK(critical_path_cost(g, cost_map) == 7);
 
-      SerialParallelDecomposition sp =
+      SeriesParallelDecomposition sp =
           cost_aware_stratum_sync_sp_ization(g, cost_map);
 
       SUBCASE("structure") {
-        SerialParallelDecomposition correct(
-            SerialSplit{n[0], n[1], ParallelSplit{n[2], n[3]}, n[4], n[5]});
-        SerialParallelDecomposition result = sp;
+        SeriesParallelDecomposition correct = SeriesParallelDecomposition{
+            SeriesSplit{{n[0], n[1], ParallelSplit{{n[2], n[3]}}, n[4], n[5]}}};
+        SeriesParallelDecomposition result = sp;
         CHECK(correct == result);
       }
       SUBCASE("work cost") {
@@ -216,13 +218,15 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(work_cost(g, cost_map) == 15);
       CHECK(critical_path_cost(g, cost_map) == 12);
 
-      SerialParallelDecomposition sp =
+      SeriesParallelDecomposition sp =
           cost_aware_stratum_sync_sp_ization(g, cost_map);
 
       SUBCASE("structure") {
-        SerialParallelDecomposition correct(SerialSplit{
-            n[0], ParallelSplit{SerialSplit{n[1], n[3], n[4]}, n[2]}, n[5]});
-        SerialParallelDecomposition result = sp;
+        SeriesParallelDecomposition correct = SeriesParallelDecomposition{
+            SeriesSplit{{n[0],
+                         ParallelSplit{{SeriesSplit{{n[1], n[3], n[4]}}, n[2]}},
+                         n[5]}}};
+        SeriesParallelDecomposition result = sp;
         CHECK(correct == result);
       }
       SUBCASE("work cost") {
@@ -270,16 +274,16 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(work_cost(g, cost_map) == 42);
       CHECK(critical_path_cost(g, cost_map) == 25);
 
-      SerialParallelDecomposition sp =
+      SeriesParallelDecomposition sp =
           cost_aware_stratum_sync_sp_ization(g, cost_map);
 
       SUBCASE("structure") {
-        SerialParallelDecomposition correct(
-            SerialSplit{n[0],
-                        ParallelSplit{SerialSplit{n[1], n[2], n[6]}, n[3]},
-                        ParallelSplit{n[4], SerialSplit{n[5], n[7]}},
-                        n[8]});
-        SerialParallelDecomposition result = sp;
+        SeriesParallelDecomposition correct = SeriesParallelDecomposition{
+            SeriesSplit{{n[0],
+                         ParallelSplit{{SeriesSplit{{n[1], n[2], n[6]}}, n[3]}},
+                         ParallelSplit{{n[4], SeriesSplit{{n[5], n[7]}}}},
+                         n[8]}}};
+        SeriesParallelDecomposition result = sp;
         CHECK(correct == result);
       }
       SUBCASE("work cost") {
@@ -333,19 +337,21 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(work_cost(g, cost_map) == 41);
       CHECK(critical_path_cost(g, cost_map) == 24);
 
-      SerialParallelDecomposition sp =
+      SeriesParallelDecomposition sp =
           cost_aware_stratum_sync_sp_ization(g, cost_map);
 
       SUBCASE("structure") {
-        SerialParallelDecomposition correct(SerialSplit{
-            n[0],
-            ParallelSplit{SerialSplit{n[1], ParallelSplit{n[2], n[3]}, n[7]},
-                          n[5]},
-            ParallelSplit{n[4], n[8], n[10]},
-            ParallelSplit{n[6], n[12]},
-            ParallelSplit{n[11], SerialSplit{n[9], n[13]}},
-            n[14]});
-        SerialParallelDecomposition result = sp;
+        SeriesParallelDecomposition correct =
+            SeriesParallelDecomposition{SeriesSplit{
+                {n[0],
+                 ParallelSplit{
+                     {SeriesSplit{{n[1], ParallelSplit{{n[2], n[3]}}, n[7]}},
+                      n[5]}},
+                 ParallelSplit{{n[4], n[8], n[10]}},
+                 ParallelSplit{{n[6], n[12]}},
+                 ParallelSplit{{n[11], SeriesSplit{{n[9], n[13]}}}},
+                 n[14]}}};
+        SeriesParallelDecomposition result = sp;
         CHECK(correct == result);
       }
       SUBCASE("work cost") {

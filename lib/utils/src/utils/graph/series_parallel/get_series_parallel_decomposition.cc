@@ -9,6 +9,7 @@
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/binary_sp_decomposition_tree.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/nary_sp_tree_from_binary.h"
+#include "utils/graph/series_parallel/normalize_sp_decomposition.h"
 #include "utils/graph/series_parallel/parallel_reduction.h"
 #include "utils/graph/series_parallel/series_parallel_decomposition.h"
 #include "utils/graph/series_parallel/series_reduction.h"
@@ -90,6 +91,21 @@ std::optional<SeriesParallelDecomposition>
       return nary_sp_tree_from_binary(ttsp_edge_to_sp_tree.at(e));
     }
   }
+}
+
+std::optional<SeriesParallelDecomposition>
+    get_series_parallel_decomposition_with_sync_nodes(
+        DiGraphView const &g, std::unordered_set<Node> const &dummy_nodes) {
+  std::optional<SeriesParallelDecomposition> maybe_sp =
+      get_series_parallel_decomposition(g);
+  if (!maybe_sp) {
+    return std::nullopt;
+  }
+  SeriesParallelDecomposition sp = maybe_sp.value();
+  for (Node const &dummy : dummy_nodes) {
+    sp = delete_node(sp, dummy);
+  }
+  return normalize_sp_decomposition(sp);
 }
 
 } // namespace FlexFlow

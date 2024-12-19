@@ -1,13 +1,14 @@
-#include "utils/graph/serial_parallel/sp_ization/work_preserving_sp_ization.h"
-#include "utils/containers.h"
+#include "utils/graph/series_parallel/sp_ization/work_preserving_sp_ization.h"
 #include "utils/containers/all_of.h"
-#include "utils/containers/as_vector.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/invert_map.h"
 #include "utils/containers/keys.h"
+#include "utils/containers/maximum.h"
 #include "utils/containers/sorted.h"
+#include "utils/containers/unordered_multiset_of.h"
 #include "utils/containers/unordered_set_of.h"
 #include "utils/containers/values.h"
+#include "utils/fmt/unordered_multiset.h"
 #include "utils/graph/algorithms.h"
 #include "utils/graph/digraph/algorithms.h"
 #include "utils/graph/digraph/algorithms/get_longest_path_lengths_from_root.h"
@@ -18,11 +19,11 @@
 #include "utils/graph/digraph/algorithms/is_acyclic.h"
 #include "utils/graph/digraph/digraph.h"
 #include "utils/graph/node/algorithms.h"
-#include "utils/graph/serial_parallel/normalize_sp_decomposition.h"
-#include "utils/graph/serial_parallel/serial_parallel_decomposition.dtg.h"
-#include "utils/graph/serial_parallel/serial_parallel_decomposition.h"
-#include "utils/graph/serial_parallel/serial_parallel_metrics.h"
-#include "utils/graph/serial_parallel/sp_ization/dependencies_are_maintained.h"
+#include "utils/graph/series_parallel/normalize_sp_decomposition.h"
+#include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
+#include "utils/graph/series_parallel/series_parallel_decomposition.h"
+#include "utils/graph/series_parallel/series_parallel_metrics.h"
+#include "utils/graph/series_parallel/sp_ization/dependencies_are_maintained.h"
 #include "utils/hash/unordered_set.h"
 #include "utils/hash/vector.h"
 #include <unordered_set>
@@ -30,11 +31,11 @@
 
 namespace FlexFlow {
 
-std::vector<std::unordered_set<Node>>
+std::vector<std::unordered_multiset<Node>>
     stratum_split_assuming_unit_cost(DiGraphView const &g) {
   std::unordered_map<Node, int> node_to_stratum =
       get_longest_path_lengths_from_root(g);
-  std::vector<std::unordered_set<Node>> result(
+  std::vector<std::unordered_multiset<Node>> result(
       maximum(values(node_to_stratum)));
   for (auto const &[node, depth] : node_to_stratum) {
     result[depth - 1].insert(node);
@@ -42,26 +43,28 @@ std::vector<std::unordered_set<Node>>
   return result;
 }
 
-static SerialParallelDecomposition
-    naive_stratum_merge(std::vector<std::unordered_set<Node>> stratum_split) {
-  std::vector<SerialParallelDecomposition> strata = transform(
-      stratum_split, [](std::unordered_set<Node> const &stratum_nodes) {
-        return SerialParallelDecomposition(ParallelSplit{stratum_nodes});
+static SeriesParallelDecomposition naive_stratum_merge(
+    std::vector<std::unordered_multiset<Node>> stratum_split) {
+  std::vector<SeriesParallelDecomposition> strata = transform(
+      stratum_split, [](std::unordered_multiset<Node> const &stratum_nodes) {
+        return parallel_composition(transform(stratum_nodes, [](Node const &n) {
+          return SeriesParallelDecomposition{n};
+        }));
       });
-  return normalize_sp_decomposition(serial_composition(strata));
+  return normalize_sp_decomposition(series_composition(strata));
 }
 
-SerialParallelDecomposition
+SeriesParallelDecomposition
     stratum_sync_sp_ization_unchecked(DiGraphView const &g) {
 
-  std::vector<std::unordered_set<Node>> stratum_split =
+  std::vector<std::unordered_multiset<Node>> stratum_split =
       stratum_split_assuming_unit_cost(g);
   return naive_stratum_merge(stratum_split);
 }
 
-SerialParallelDecomposition stratum_sync_sp_ization(DiGraphView const &g) {
+SeriesParallelDecomposition stratum_sync_sp_ization(DiGraphView const &g) {
   assert(is_acyclic(g));
-  SerialParallelDecomposition sp = stratum_sync_sp_ization_unchecked(g);
+  SeriesParallelDecomposition sp = stratum_sync_sp_ization_unchecked(g);
   assert(dependencies_are_maintained(g, sp));
   return sp;
 }
@@ -163,32 +166,33 @@ static std::vector<std::unordered_set<std::unordered_set<Node>>>
   return strata;
 }
 
-SerialParallelDecomposition cost_aware_stratum_sync_sp_ization_unchecked(
+SeriesParallelDecomposition cost_aware_stratum_sync_sp_ization_unchecked(
     DiGraphView const &g, std::unordered_map<Node, float> const &cost_map) {
 
   if (get_nodes(g).size() == 1) {
-    return SerialParallelDecomposition(get_only(get_nodes(g)));
+    return SeriesParallelDecomposition(get_only(get_nodes(g)));
   }
 
-  std::vector<std::unordered_set<SerialParallelDecomposition>> sp_ized_strata;
+  std::vector<std::unordered_multiset<SeriesParallelDecomposition>>
+      sp_ized_strata;
   for (auto const &stratum : cost_aware_stratum_split(g, cost_map)) {
-    auto sp_ized_stratum =
+    auto sp_ized_stratum = unordered_multiset_of(
         transform(stratum, [&](std::unordered_set<Node> const &nodes) {
           return cost_aware_stratum_sync_sp_ization_unchecked(
               get_subgraph(g, nodes), cost_map);
-        });
+        }));
     sp_ized_strata.push_back(sp_ized_stratum);
   }
 
   return normalize_sp_decomposition(
-      serial_composition(transform(sp_ized_strata, parallel_composition)));
+      series_composition(transform(sp_ized_strata, parallel_composition)));
 }
 
-SerialParallelDecomposition cost_aware_stratum_sync_sp_ization(
+SeriesParallelDecomposition cost_aware_stratum_sync_sp_ization(
     DiGraphView const &g, std::unordered_map<Node, float> const &cost_map) {
   assert(is_acyclic(g));
 
-  SerialParallelDecomposition sp =
+  SeriesParallelDecomposition sp =
       cost_aware_stratum_sync_sp_ization_unchecked(g, cost_map);
   assert(dependencies_are_maintained(g, sp));
   return sp;

@@ -2,7 +2,7 @@
 #define _FLEXFLOW_UTILS_GRAPH_SERIAL_PARALLEL_WORK_PRESERVING_SP_IZATION_H
 
 #include "utils/graph/digraph/digraph_view.h"
-#include "utils/graph/serial_parallel/serial_parallel_decomposition.dtg.h"
+#include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
 #include <unordered_map>
 
 namespace FlexFlow {
@@ -44,7 +44,7 @@ namespace FlexFlow {
  * </tt>
  * @note g must be a directed acyclic graph.
  **/
-SerialParallelDecomposition stratum_sync_sp_ization(DiGraphView const &g);
+SeriesParallelDecomposition stratum_sync_sp_ization(DiGraphView const &g);
 
 /**
  * @brief
@@ -61,7 +61,7 @@ SerialParallelDecomposition stratum_sync_sp_ization(DiGraphView const &g);
  *similar critical path cost, thus minimizing the overall critical path cost of
  *the SP-ized graph.
  **/
-SerialParallelDecomposition cost_aware_stratum_sync_sp_ization(
+SeriesParallelDecomposition cost_aware_stratum_sync_sp_ization(
     DiGraphView const &g, std::unordered_map<Node, float> const &cost_map);
 
 } // namespace FlexFlow
