@@ -12,6 +12,10 @@ namespace FlexFlow {
 std::optional<SeriesParallelDecomposition>
     get_series_parallel_decomposition(DiGraphView const &);
 
+std::optional<SeriesParallelDecomposition>
+    get_series_parallel_decomposition_with_sync_nodes(
+        DiGraphView const &, std::unordered_set<Node> const &);
+
 } // namespace FlexFlow
 
 #endif
