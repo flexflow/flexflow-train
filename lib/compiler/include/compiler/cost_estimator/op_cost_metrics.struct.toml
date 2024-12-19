@@ -1,0 +1,18 @@
+namespace = "FlexFlow"
+name = "OpCostMetrics"
+features = [
+  "eq",
+  "fmt",
+  "hash",
+]
+
+includes = [
+]
+
+[[fields]]
+name = "runtime"
+type = "float"
+
+[[fields]]
+name = "memory"
+type = "size_t"
