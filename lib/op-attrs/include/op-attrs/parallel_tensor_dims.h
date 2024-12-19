@@ -31,8 +31,9 @@ int total_replica_degree(ParallelTensorDims const &);
 int total_shard_degree(ParallelTensorDims const &);
 int total_parallel_degree(ParallelTensorDims const &);
 
-ShardParallelDim shard_dim_at_idx(ParallelTensorDims const &, ff_dim_t);
-ShardParallelDim &shard_dim_at_idx(ParallelTensorDims &, ff_dim_t);
+ShardParallelDim shard_dim_at_idx(ParallelTensorDims const &,
+                                  relative_ff_dim_t);
+ShardParallelDim &shard_dim_at_idx(ParallelTensorDims &, relative_ff_dim_t);
 
 bool is_valid(ParallelTensorDims const &);
 TensorDims get_piece_dims(ParallelTensorDims const &);

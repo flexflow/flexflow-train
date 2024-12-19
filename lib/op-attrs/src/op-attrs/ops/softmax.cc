@@ -39,7 +39,8 @@ tl::expected<ParallelTensorShape, std::string>
         get_discard_copy_degree(input_shape)));
   }
 
-  if (shard_dim_at_idx(input_shape, attrs.dim).degree != 1) {
+  if (shard_dim_at_idx(input_shape, ff_dim_t_to_relative_ff_dim_t(attrs.dim))
+          .degree != 1) {
     return tl::unexpected(
         fmt::format("Expected parallel degree of Softmax dimension {} to be 1, "
                     "but received input shape {}",

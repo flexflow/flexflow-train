@@ -7,7 +7,7 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Test concat kernel forward and backward") {
     size_t num_inputs = 3;
     size_t size_per_input = 100;
-    ff_dim_t concat_axis = ff_dim_t(0);
+    ff_dim_t concat_axis = ff_dim_t{nonnegative_int{0}};
 
     ManagedPerDeviceFFHandle managed_handle{};
     ManagedFFStream managed_stream{};

@@ -10,9 +10,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     std::map<ff_dim_t, std::string> result = enumerate(input);
     std::map<ff_dim_t, std::string> correct = {
-        {ff_dim_t{0}, "zero"},
-        {ff_dim_t{1}, "one"},
-        {ff_dim_t{2}, "two"},
+        {ff_dim_t{nonnegative_int{0}}, "zero"},
+        {ff_dim_t{nonnegative_int{1}}, "one"},
+        {ff_dim_t{nonnegative_int{2}}, "two"},
     };
 
     CHECK(result == correct);

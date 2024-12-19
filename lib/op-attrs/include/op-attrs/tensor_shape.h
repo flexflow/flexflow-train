@@ -6,8 +6,8 @@
 namespace FlexFlow {
 
 size_t num_dims(TensorShape const &);
-size_t dim_at_idx(TensorShape const &, ff_dim_t);
-size_t &dim_at_idx(TensorShape &, ff_dim_t);
+size_t dim_at_idx(TensorShape const &, relative_ff_dim_t);
+size_t &dim_at_idx(TensorShape &, relative_ff_dim_t);
 size_t get_num_elements(TensorShape const &);
 size_t get_size_in_bytes(TensorShape const &);
 

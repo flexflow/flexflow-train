@@ -6,7 +6,7 @@ using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Repartition shape inference") {
-    ff_dim_t dim = ff_dim_t{2};
+    ff_dim_t dim = ff_dim_t{nonnegative_int{2}};
     int degree = 4;
     RepartitionAttrs attrs = RepartitionAttrs{
         /*repartition_dim=*/dim,

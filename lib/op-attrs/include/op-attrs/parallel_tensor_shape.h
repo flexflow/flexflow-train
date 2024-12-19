@@ -1,6 +1,7 @@
 #ifndef _OP_META_PARALLEL_TENSOR_SHAPE_H
 #define _OP_META_PARALLEL_TENSOR_SHAPE_H
 
+#include "op-attrs/ff_dim_t.h"
 #include "op-attrs/parallel_dim.h"
 #include "op-attrs/parallel_tensor_dim_degrees.dtg.h"
 #include "op-attrs/parallel_tensor_dim_idx_t.dtg.h"
@@ -12,13 +13,14 @@
 namespace FlexFlow {
 
 int num_shard_dims(ParallelTensorShape const &);
-ShardParallelDim shard_dim_at_idx(ParallelTensorShape const &, ff_dim_t);
-ShardParallelDim &shard_dim_at_idx(ParallelTensorShape &, ff_dim_t);
+ShardParallelDim shard_dim_at_idx(ParallelTensorShape const &,
+                                  relative_ff_dim_t);
+ShardParallelDim &shard_dim_at_idx(ParallelTensorShape &, relative_ff_dim_t);
 
 FFOrdered<int> ff_ordered_shard_degrees(ParallelTensorShape const &);
 
 std::optional<ShardParallelDim>
-    try_get_shard_dim_at_idx(ParallelTensorShape const &, ff_dim_t);
+    try_get_shard_dim_at_idx(ParallelTensorShape const &, relative_ff_dim_t);
 
 ParallelTensorDimDegrees get_parallel_degrees(ParallelTensorShape const &);
 

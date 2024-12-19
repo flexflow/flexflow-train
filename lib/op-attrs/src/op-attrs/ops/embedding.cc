@@ -34,7 +34,7 @@ tl::expected<TensorShape, std::string>
   }
 
   TensorShape output = input;
-  dim_at_idx(output, ff_dim_t{-1}) = attrs.out_channels;
+  dim_at_idx(output, relative_ff_dim_t{-1}) = attrs.out_channels;
   output.data_type = attrs.data_type;
   return output;
 }
@@ -73,12 +73,12 @@ tl::expected<ParallelTensorShape, std::string>
   });
 
   SumDegree sum_degree =
-      SumDegree{shard_dim_at_idx(input, ff_dim_t{-1}).degree};
+      SumDegree{shard_dim_at_idx(input, relative_ff_dim_t{-1}).degree};
   DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{1};
   FFOrdered<int> shard_degrees =
       transform(input.dims.shard_dims,
                 [](ShardParallelDim const &d) { return d.degree; });
-  shard_degrees.at(ff_dim_t{-1}) = get_discard_copy_degree(input);
+  shard_degrees.at(relative_ff_dim_t{-1}) = get_discard_copy_degree(input);
 
   return lift_to_parallel_with_degrees(
       unpar, sum_degree, discard_copy_degree, shard_degrees);

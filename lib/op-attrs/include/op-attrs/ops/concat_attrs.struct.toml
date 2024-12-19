@@ -10,8 +10,8 @@ features = [
 ]
 
 includes = [
-  "op-attrs/ff_dim.h",
-  "op-attrs/ff_dim.dtg.h"
+  "op-attrs/ff_dim_t.h",
+  "op-attrs/ff_dim_t.dtg.h"
 ]
 
 [[fields]]

@@ -24,7 +24,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     SUBCASE("valid") {
-      ff_dim_t dim = ff_dim_t{2};
+      ff_dim_t dim = ff_dim_t{nonnegative_int{2}};
       int degree = 3;
       CombineAttrs attrs = CombineAttrs{
           /*repartition_dim=*/dim,
@@ -44,7 +44,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("invalid") {
-      ff_dim_t dim = ff_dim_t{2};
+      ff_dim_t dim = ff_dim_t{nonnegative_int{2}};
       int degree = 4;
       CombineAttrs attrs = CombineAttrs{
           /*repartition_dim=*/dim,

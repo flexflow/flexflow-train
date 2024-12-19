@@ -19,11 +19,11 @@ size_t num_dims(TensorDims const &dims) {
   return dims.ff_ordered.size();
 }
 
-size_t dim_at_idx(TensorDims const &dims, ff_dim_t idx) {
+size_t dim_at_idx(TensorDims const &dims, relative_ff_dim_t idx) {
   return dims.ff_ordered.at(idx);
 }
 
-size_t &dim_at_idx(TensorDims &dims, ff_dim_t idx) {
+size_t &dim_at_idx(TensorDims &dims, relative_ff_dim_t idx) {
   return dims.ff_ordered.at(idx);
 }
 

@@ -64,8 +64,13 @@ static DeviceSpecificDeviceStates
   int output_c = output.shape.at(legion_dim_t(2));
   int output_n = output.shape.at(legion_dim_t(3));
 
-  SoftmaxPerDeviceState per_device_state = init_kernel(
-      handle, attrs.dim.value, output_n, output_c, output_h, output_w);
+  SoftmaxPerDeviceState per_device_state =
+      init_kernel(handle,
+                  attrs.dim.value.get_value(),
+                  output_n,
+                  output_c,
+                  output_h,
+                  output_w);
 
   return DeviceSpecificDeviceStates{
       DeviceSpecific<SoftmaxPerDeviceState>::create(per_device_state)};
