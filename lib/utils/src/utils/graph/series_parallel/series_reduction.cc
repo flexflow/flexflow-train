@@ -1,13 +1,21 @@
 #include "utils/graph/series_parallel/series_reduction.h"
 #include "utils/containers/contains.h"
+#include "utils/containers/contains_key.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/require_same.h"
+#include "utils/containers/subvec.h"
+#include "utils/containers/unordered_set_of.h"
+#include "utils/containers/values.h"
+#include "utils/graph/digraph/algorithms/get_predecessors.h"
+#include "utils/graph/digraph/algorithms/get_topological_ordering.h"
 #include "utils/graph/multidigraph/algorithms/get_edges.h"
 #include "utils/graph/multidigraph/algorithms/get_incoming_edges.h"
 #include "utils/graph/multidigraph/algorithms/get_outgoing_edges.h"
+#include "utils/graph/multidigraph/multidiedge.dtg.h"
 #include "utils/graph/multidigraph/multidigraph.h"
 #include "utils/graph/multidigraph/multidigraph_view.h"
 #include "utils/graph/node/algorithms.h"
+#include "utils/hash/unordered_set.h"
 #include <unordered_set>
 
 namespace FlexFlow {
@@ -42,6 +50,34 @@ std::optional<SeriesReduction>
   return std::nullopt;
 }
 
+std::unordered_set<std::vector<MultiDiEdge>>
+    find_all_extended_series_reductions(MultiDiGraphView const &g) {
+  std::unordered_map<Node, std::unordered_set<MultiDiEdge>> incoming_edges =
+      get_incoming_edges(g);
+  std::unordered_map<Node, std::unordered_set<MultiDiEdge>> outgoing_edges =
+      get_outgoing_edges(g);
+  std::unordered_map<Node, std::vector<MultiDiEdge>> strands;
+  std::unordered_map<Node, Node> node_to_head_of_strand;
+  for (Node const &n : get_topological_ordering(g)) {
+    if ((incoming_edges.at(n).size() == 1) &&
+        (outgoing_edges.at(n).size() == 1)) {
+      MultiDiEdge incoming = get_only(incoming_edges.at(n));
+      MultiDiEdge outgoing = get_only(outgoing_edges.at(n));
+      Node pre = g.get_multidiedge_src(incoming);
+      if (contains_key(node_to_head_of_strand, pre)) {
+        Node head = node_to_head_of_strand.at(pre);
+        node_to_head_of_strand.emplace(n, head);
+        strands.at(head).push_back(outgoing);
+      } else {
+        node_to_head_of_strand.emplace(n, n);
+        strands[n].push_back(incoming);
+        strands[n].push_back(outgoing);
+      }
+    }
+  }
+  return unordered_set_of(values(strands));
+}
+
 MultiDiEdge apply_series_reduction(MultiDiGraph &g, SeriesReduction const &r) {
   Node pre_node = get_pre_node(g, r);
   Node center_node = get_center_node(g, r);
@@ -51,4 +87,19 @@ MultiDiEdge apply_series_reduction(MultiDiGraph &g, SeriesReduction const &r) {
   return g.add_edge(pre_node, post_node);
 }
 
+MultiDiEdge apply_extended_series_reduction(
+    MultiDiGraph &g, std::vector<MultiDiEdge> const &series_edges) {
+
+  Node first = g.get_multidiedge_src(series_edges.at(0));
+  Node last = g.get_multidiedge_dst(series_edges.at(series_edges.size() - 1));
+
+  std::vector<Node> internal_nodes;
+  for (MultiDiEdge const &e : subvec(series_edges, std::nullopt, -1)) {
+    internal_nodes.push_back(g.get_multidiedge_dst(e));
+  }
+  for (Node const &n : internal_nodes) {
+    g.remove_node(n);
+  }
+  return g.add_edge(first, last);
+}
 } // namespace FlexFlow

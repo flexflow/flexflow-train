@@ -18,13 +18,8 @@ At their core, they are as follows:
 - `UndirectedGraph`: at most one edge allowed between every pair of nodes, edges are undirected.
 - `DiGraph`: at most one edge allowed between every ordered pair of nodes, edges are directed (i.e., have a source node and a destination node)
 - `MultiDiGraph`: arbitrary numbers of directed edges allowed between every pair of nodes.
-- `DataflowGraph`: similar to `MultiDiGraph`, but with the following differences:
-  - The edges entering, exiting a given nodes now have a well-defined order. 
-  - Due to the interface used to construct them (where essentially a node can only be added to the graph after all of its predecessor nodes have been added) `DataflowGraph`s are directed acyclic graphs.
-  - Each node has an associated ordered sequence of inputs and outputs, with the restriction that one and only one edge can enter an individual input.
+- `DataflowGraph`: used to model computation graphs. See the [DataflowGraph](#dataflowgraph) section for a detailed explanation.
 
-Conceptually, `DataflowGraph` is used within FlexFlow to represent computation-style graphs, where edges represent value uses and nodes represent multivariate functions from tuples of inputs to tuples of outputs. 
-   
 Examples of the different graph variants are shown below.
 
 Example of `UndirectedGraph`:
@@ -89,7 +84,9 @@ Nodes are of type `Node`, and from a user perspective are simply opaque handles,
 In addition, nodes should only be used in the context of their graph, so comparing or checking equality of nodes between different graphs (even of the same type) is undefined behavior[^1].
 
 All three core graph variants allow insertion and deletion of both edges and nodes. 
-To add a node to an `UndirectedGraph g`, simply call `g.add_node()` (the interface is identical for `DiGraph` and `MultiDiGraph`).
+To add a node to an `UndirectedGraph g`, simply call `g.add_node()`, which will return a `Node` object.
+For semantics closer to `networkx`'s method of adding nodes, `g.add_node_unsafe(my_node)` can be used. This is useful when constructing a modified copy of an existing graph (given that it maintains node bijection), though it is not generally recommended. 
+The interface for node addition is identical for `DiGraph` and `MultiDiGraph`.
 To add an edge between two nodes `Node n1` and `Node n2` to an `UndirectedGraph g`, call `g.add_edge({n1, n2})`.
 In `UndirectedGraph` the order of the arguments of `add_edge` doesn't matter as edges are undirected, but the order does matter for `DiGraph`, `MultiDiGraph` and `DataflowGraph`.
 
@@ -114,8 +111,8 @@ Both `Graph` and `GraphView` types follow normal value semantics.
 This may seem wasteful (oftentimes graphs are large objects that are passed around via reference to avoid making additional copies), but the `Graph` and `GraphView` types internally implement copy-on-write optimizations to only perform the minimum number of actual copies while maintaining immutability and lifetime safety (if you allocate a `DiGraph` use for example `get_subgraph` to get a `DiGraphView` representing a part of this graph, modifications to the underlying `DiGraph` will not be mirrored in the `DiGraphView` and the `DiGraphView` will remain valid even after the base `DiGraph` leaves scope.
 
 At this point, however, we still have not discussed how to create a graph.
-The user-facing graph interface is intentially separated from the underlying graph representations, so representations can be changed without requiring any user-side code modifications besides the choice of which implementation to use.
-For example, to construct a `DiGDiraph` which internally uses a representation such as `AdjacencyDiGraph` we do the following:
+The user-facing graph interface is intentionally separated from the underlying graph representations, so representations can be changed without requiring any user-side code modifications besides the choice of which implementation to use.
+For example, to construct a `DiGraph` which internally uses a representation such as `AdjacencyDiGraph` we do the following:
 ```cpp
 DiGraph g = DiGraph::create<AdjacencyDiGraph>();
 ```
@@ -124,7 +121,104 @@ Generally users will use underlying representations provided by the graph librar
 [^1]: At some point we will likely add actual runtime checks on this, but for now we rely on the user not to mess up. Currently the implementation will keep going silently until the incorrectness grows so large that something breaks/crashes.
 [^2]: See <https://en.wikipedia.org/wiki/Type_conversion> if you're not familiar with the term _type coercion_
 
-### Open DataFlow Variant
+### DataflowGraph
+
+The primary abstraction for representing computation graphs / task graphs is the `DataflowGraph` interface (along with its variants, `OpenDataflowGraph`, `LabelleledDataflowGraph` and `OpenLabelleledDataflowGraph`).
+At a high level, nodes represent multivariate functions (from tuples of inputs to tuple of outputs), while edges represent value uses of such functions.
+
+`DataflowGraph` is similar to `MultiDiGraph`, but with the following important differences:
+  - The edges entering, exiting a given nodes have a well-defined order. 
+  - `DataflowGraph`s are directed acyclic graphs. This is enforced by the interface used to construct them, since a node can only be added to the graph after all of its predecessor nodes have already been added.
+
+The main components of `DataflowGraph` are as follows:
+- `DataflowInput`: used to represent the ordered sequence of incoming dependencies (arguments) of a given node (operator). 
+- `DataflowOutput`: used to represent the ordered sequence of outgoing results (value uses) from a given node (operator).
+- `DataflowEdge`: wrapper around a `DataflowInput`, `DataflowOutput` pair between 2 nodes.
+- `NodeAddedResult`: returned upon adding a new node. Contains the newly generated `Node` and the vector of `DataflowOutput`s for the given node.
+
+`DataflowGraph`s are constructed as follows:
+
+```cpp
+    auto g = DataflowGraph::create<UnorderedSetDataflowGraph>();
+    
+    // Node with no inputs and 2 outputs
+    NodeAddedResult n1_result = g.add_node({}, 2);
+    Node n1 = n1_result.node;
+    DataflowOutput n1_o1 = n1_result.outputs[0];
+    DataflowOutput n1_o2 = n1_result.outputs[1];
+
+    // Node with 2 inputs and 1 output
+    NodeAddedResult n2_result = g.add_node({n1_o1, n1_o2}, 1);
+    Node n2 = n2_result.node;
+    DataflowOutput n2_o1 = n2_result.outputs[0];
+
+    // Node with 1 input and 2 outputs
+    NodeAddedResult n3_result = g.add_node({n1_o2}, 1);
+    Node n3 = n3_result.node;
+    DataflowOutput n3_o1 = n3_result.outputs[0];
+    DataflowOutput n3_o2 = n3_result.outputs[1];
+
+    // Node with 2 inputs and 1 output
+    NodeAddedResult n4_result = g.add_node({n2_o1, n3_o1}, 1);
+    Node n4 = n4_result.node;
+    DataflowOutput n4_o1 = n4_result.outputs[0];
+```
+
+which generates the following graph
+
+```mermaid
+flowchart TD
+    subgraph Node1[ ]
+        direction TB
+        N1Process[n1]
+        n1_o1((n1_o1))
+        n1_o2((n1_o2))
+        N1Process --> n1_o1
+        N1Process --> n1_o2
+    end
+
+    subgraph Node2[ ]
+        direction TB
+        n2_i1((n2_i1))
+        n2_i2((n2_i2))
+        N2Process[n2]
+        n2_o1((o1))
+        n2_i1 --> N2Process
+        n2_i2 --> N2Process
+        N2Process --> n2_o1
+    end
+
+    subgraph Node3[ ]
+        direction TB
+        n3_i1((n3_i1))
+        N3Process[n3]
+        n3_o1((n3_o1))
+        n3_o2((n3_o2))
+        n3_i1 --> N3Process
+        N3Process --> n3_o1
+        N3Process --> n3_o2
+    end
+
+    subgraph Node4[ ]
+        direction TB
+        n4_i1((n4_i1))
+        n4_i2((n4_i2))
+        N4Process[n4]
+        n4_o1((n4_o1))
+        n4_i1 --> N4Process
+        n4_i2 --> N4Process
+        N4Process --> n4_o1
+    end
+
+    n1_o1 --> n2_i1
+    n1_o2 --> n2_i2
+    n1_o2 --> n3_i1
+    n2_o1 --> n4_i1
+    n3_o1 --> n4_i2
+```
+
+
+### Open Dataflow Variant
 
 `Open` is to be intended similarly to the topological sense: that is, a graph that contains some edges where one of the 2 nodes is not present in the graph itself.
 This graph class is particularly useful for processing a sub-graph of a given graph while still maintaining information regarding the edges that cross the cut.
