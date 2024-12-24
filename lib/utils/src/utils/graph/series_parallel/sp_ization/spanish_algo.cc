@@ -98,11 +98,12 @@ DiGraph
   return g;
 }
 
-DiGraph
-    delete_sync_nodes(DiGraph g,
-                      std::unordered_map<Node, NodeRole> const &node_roles) {
+DiGraph delete_nodes_of_given_role(
+    DiGraph g,
+    NodeRole const &role,
+    std::unordered_map<Node, NodeRole> const &node_roles) {
   for (Node const &n : get_nodes(g)) {
-    if (node_roles.at(n) == NodeRole::SYNC) {
+    if (node_roles.at(n) == role) {
       for (Node const &pred : get_predecessors(g, n)) {
         for (Node const &succ : get_successors(g, n)) {
           g.add_edge(DirectedEdge{pred, succ});
@@ -252,13 +253,9 @@ SeriesParallelDecomposition spanish_strata_sync(DiGraph g) {
       sp.add_edge(e);
     }
   }
-  sp = delete_dummy_nodes(sp, node_roles);
+  sp = delete_nodes_of_given_role(sp, NodeRole::DUMMY, node_roles);
   sp = transitive_reduction(sp);
-  std::unordered_set<Node> sync_nodes =
-      filter(get_nodes(sp), [&](Node const &node) {
-        return node_roles.at(node) == NodeRole::SYNC;
-      });
-  return get_series_parallel_decomposition_with_sync_nodes(sp, sync_nodes)
-      .value();
+  sp = delete_nodes_of_given_role(sp, NodeRole::SYNC, node_roles);
+  return get_series_parallel_decomposition(sp).value();
 }
 } // namespace FlexFlow

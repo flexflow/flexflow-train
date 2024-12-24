@@ -6,8 +6,6 @@
 #include "utils/graph/digraph/algorithms/is_acyclic.h"
 #include <unordered_map>
 
-// TODO(@pietro): change to have unweighted call the weighted version
-
 namespace FlexFlow {
 
 std::unordered_map<Node, float> get_weighted_longest_path_lengths_from_root(

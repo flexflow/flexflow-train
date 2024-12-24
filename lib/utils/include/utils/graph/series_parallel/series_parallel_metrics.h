@@ -1,5 +1,5 @@
-#ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_series_parallel_metrics_H
-#define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_series_parallel_metrics_H
+#ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_SERIES_PARALLEL_METRICS_H
+#define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_SERIES_PARALLEL_METRICS_H
 
 #include "utils/graph/digraph/digraph_view.h"
 #include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
@@ -45,4 +45,4 @@ float relative_num_dependencies_increase(DiGraphView const &g,
 
 } // namespace FlexFlow
 
-#endif // FLEXFLOW_series_parallel_metrics_H
+#endif // _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_SERIES_PARALLEL_METRICS_H

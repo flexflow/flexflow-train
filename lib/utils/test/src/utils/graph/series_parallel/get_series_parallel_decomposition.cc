@@ -189,43 +189,4 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     CHECK(result == correct);
   }
-
-  TEST_CASE("get_series_parallel_decomposition with dummy nodes") {
-    DiGraph g = DiGraph::create<AdjacencyDiGraph>();
-
-    SUBCASE("base case") {
-      Node n = g.add_node();
-      std::optional<SeriesParallelDecomposition> result =
-          get_series_parallel_decomposition_with_sync_nodes(g, {});
-      std::optional<SeriesParallelDecomposition> correct =
-          SeriesParallelDecomposition{n};
-      CHECK(result == correct);
-    }
-
-    SUBCASE("SeriesSplit") {
-      std::vector<Node> n = add_nodes(g, 3);
-      add_edges(
-          g, {DirectedEdge{n.at(0), n.at(1)}, DirectedEdge{n.at(1), n.at(2)}});
-      std::optional<SeriesParallelDecomposition> result =
-          get_series_parallel_decomposition_with_sync_nodes(g, {n[1]});
-      std::optional<SeriesParallelDecomposition> correct =
-          SeriesParallelDecomposition{SeriesSplit{{n[0], n[2]}}};
-      CHECK(result == correct);
-    }
-
-    SUBCASE("ParallelSplit") {
-      std::vector<Node> n = add_nodes(g, 5);
-      add_edges(g,
-                {DirectedEdge{n.at(0), n.at(2)},
-                 DirectedEdge{n.at(1), n.at(2)},
-                 DirectedEdge{n.at(2), n.at(3)},
-                 DirectedEdge{n.at(2), n.at(4)}});
-      std::optional<SeriesParallelDecomposition> result =
-          get_series_parallel_decomposition_with_sync_nodes(g, {n[2]});
-      std::optional<SeriesParallelDecomposition> correct =
-          SeriesParallelDecomposition{SeriesSplit{
-              {ParallelSplit{{n[0], n[1]}}, ParallelSplit{{n[3], n[4]}}}}};
-      CHECK(result == correct);
-    }
-  }
 }

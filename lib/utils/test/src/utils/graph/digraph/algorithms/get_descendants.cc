@@ -11,70 +11,118 @@ TEST_SUITE(FF_TEST_SUITE) {
     DiGraph g = DiGraph::create<AdjacencyDiGraph>();
 
     SUBCASE("single node") {
-      std::vector<Node> nodes = add_nodes(g, 1);
-      std::unordered_set<Node> expected = {};
-      CHECK(get_descendants(g, nodes[0]) == expected);
+      std::vector<Node> n = add_nodes(g, 1);
+
+      std::unordered_set<Node> correct = {};
+      std::unordered_set<Node> result = get_descendants(g, n.at(0));
+      CHECK(correct == result);
     }
 
     SUBCASE("linear graph") {
-      std::vector<Node> nodes = add_nodes(g, 4);
+      std::vector<Node> n = add_nodes(g, 4);
       add_edges(g,
-                {DirectedEdge{nodes[0], nodes[1]},
-                 DirectedEdge{nodes[1], nodes[2]},
-                 DirectedEdge{nodes[2], nodes[3]}});
+                {DirectedEdge{n.at(0), n.at(1)},
+                 DirectedEdge{n.at(1), n.at(2)},
+                 DirectedEdge{n.at(2), n.at(3)}});
 
-      std::unordered_set<Node> expected_0 = {nodes[1], nodes[2], nodes[3]};
-      std::unordered_set<Node> expected_1 = {nodes[2], nodes[3]};
-      std::unordered_set<Node> expected_2 = {nodes[3]};
-      std::unordered_set<Node> expected_3 = {};
+      SUBCASE("n.at(0)") {
+        std::unordered_set<Node> correct = {n.at(1), n.at(2), n.at(3)};
+        std::unordered_set<Node> result = get_descendants(g, n.at(0));
+        CHECK(correct == result);
+      }
 
-      CHECK(get_descendants(g, nodes[0]) == expected_0);
-      CHECK(get_descendants(g, nodes[1]) == expected_1);
-      CHECK(get_descendants(g, nodes[2]) == expected_2);
-      CHECK(get_descendants(g, nodes[3]) == expected_3);
+      SUBCASE("n.at(1)") {
+        std::unordered_set<Node> correct = {n.at(2), n.at(3)};
+        std::unordered_set<Node> result = get_descendants(g, n.at(1));
+        CHECK(correct == result);
+      }
+
+      SUBCASE("n.at(2)") {
+        std::unordered_set<Node> correct = {n.at(3)};
+        std::unordered_set<Node> result = get_descendants(g, n.at(2));
+        CHECK(correct == result);
+      }
+
+      SUBCASE("n.at(3)") {
+        std::unordered_set<Node> correct = {};
+        std::unordered_set<Node> result = get_descendants(g, n.at(3));
+        CHECK(correct == result);
+      }
     }
 
     SUBCASE("rhombus") {
-      std::vector<Node> nodes = add_nodes(g, 5);
+      std::vector<Node> n = add_nodes(g, 5);
       add_edges(g,
                 {
-                    DirectedEdge{nodes[0], nodes[1]},
-                    DirectedEdge{nodes[0], nodes[2]},
-                    DirectedEdge{nodes[1], nodes[3]},
-                    DirectedEdge{nodes[2], nodes[3]},
+                    DirectedEdge{n.at(0), n.at(1)},
+                    DirectedEdge{n.at(0), n.at(2)},
+                    DirectedEdge{n.at(1), n.at(3)},
+                    DirectedEdge{n.at(2), n.at(3)},
                 });
 
-      std::unordered_set<Node> expected_0 = {nodes[1], nodes[2], nodes[3]};
-      std::unordered_set<Node> expected_1 = {nodes[3]};
-      std::unordered_set<Node> expected_2 = {nodes[3]};
-      std::unordered_set<Node> expected_3 = {};
+      SUBCASE("n.at(0)") {
+        std::unordered_set<Node> correct = {n.at(1), n.at(2), n.at(3)};
+        std::unordered_set<Node> result = get_descendants(g, n.at(0));
+        CHECK(correct == result);
+      }
 
-      CHECK(get_descendants(g, nodes[0]) == expected_0);
-      CHECK(get_descendants(g, nodes[1]) == expected_1);
-      CHECK(get_descendants(g, nodes[2]) == expected_2);
-      CHECK(get_descendants(g, nodes[3]) == expected_3);
+      SUBCASE("n.at(1)") {
+        std::unordered_set<Node> correct = {n.at(3)};
+        std::unordered_set<Node> result = get_descendants(g, n.at(1));
+        CHECK(correct == result);
+      }
+
+      SUBCASE("n.at(2)") {
+        std::unordered_set<Node> correct = {n.at(3)};
+        std::unordered_set<Node> result = get_descendants(g, n.at(2));
+        CHECK(correct == result);
+      }
+
+      SUBCASE("n.at(3)") {
+        std::unordered_set<Node> correct = {};
+        std::unordered_set<Node> result = get_descendants(g, n.at(3));
+        CHECK(correct == result);
+      }
     }
 
     SUBCASE("disconnected graph") {
-      std::vector<Node> nodes = add_nodes(g, 6);
+      std::vector<Node> n = add_nodes(g, 6);
       add_edges(g,
                 {
-                    DirectedEdge{nodes[0], nodes[1]},
-                    DirectedEdge{nodes[1], nodes[2]},
-                    DirectedEdge{nodes[3], nodes[4]},
+                    DirectedEdge{n.at(0), n.at(1)},
+                    DirectedEdge{n.at(1), n.at(2)},
+                    DirectedEdge{n.at(3), n.at(4)},
                 });
 
-      std::unordered_set<Node> expected_0 = {nodes[1], nodes[2]};
-      std::unordered_set<Node> expected_1 = {nodes[2]};
-      std::unordered_set<Node> expected_2 = {};
-      std::unordered_set<Node> expected_3 = {nodes[4]};
-      std::unordered_set<Node> expected_4 = {};
+      SUBCASE("n.at(0)") {
+        std::unordered_set<Node> correct = {n.at(1), n.at(2)};
+        std::unordered_set<Node> result = get_descendants(g, n.at(0));
+        CHECK(correct == result);
+      }
 
-      CHECK(get_descendants(g, nodes[0]) == expected_0);
-      CHECK(get_descendants(g, nodes[1]) == expected_1);
-      CHECK(get_descendants(g, nodes[2]) == expected_2);
-      CHECK(get_descendants(g, nodes[3]) == expected_3);
-      CHECK(get_descendants(g, nodes[4]) == expected_4);
+      SUBCASE("n.at(1)") {
+        std::unordered_set<Node> correct = {n.at(2)};
+        std::unordered_set<Node> result = get_descendants(g, n.at(1));
+        CHECK(correct == result);
+      }
+
+      SUBCASE("n.at(2)") {
+        std::unordered_set<Node> correct = {};
+        std::unordered_set<Node> result = get_descendants(g, n.at(2));
+        CHECK(correct == result);
+      }
+
+      SUBCASE("n.at(3)") {
+        std::unordered_set<Node> correct = {n.at(4)};
+        std::unordered_set<Node> result = get_descendants(g, n.at(3));
+        CHECK(correct == result);
+      }
+
+      SUBCASE("n.at(4)") {
+        std::unordered_set<Node> correct = {};
+        std::unordered_set<Node> result = get_descendants(g, n.at(4));
+        CHECK(correct == result);
+      }
     }
   }
 }

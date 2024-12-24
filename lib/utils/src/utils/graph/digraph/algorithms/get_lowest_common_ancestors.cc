@@ -6,7 +6,6 @@
 #include "utils/graph/digraph/algorithms/get_ancestors.h"
 #include "utils/graph/digraph/algorithms/get_longest_path_lengths_from_root.h"
 #include "utils/graph/digraph/algorithms/is_acyclic.h"
-#include "utils/graph/digraph/algorithms/is_tree.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/hash/unordered_set.h"
 #include <optional>

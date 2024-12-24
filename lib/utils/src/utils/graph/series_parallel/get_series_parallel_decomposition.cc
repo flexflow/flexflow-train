@@ -93,19 +93,4 @@ std::optional<SeriesParallelDecomposition>
   }
 }
 
-std::optional<SeriesParallelDecomposition>
-    get_series_parallel_decomposition_with_sync_nodes(
-        DiGraphView const &g, std::unordered_set<Node> const &dummy_nodes) {
-  std::optional<SeriesParallelDecomposition> maybe_sp =
-      get_series_parallel_decomposition(g);
-  if (!maybe_sp) {
-    return std::nullopt;
-  }
-  SeriesParallelDecomposition sp = maybe_sp.value();
-  for (Node const &dummy : dummy_nodes) {
-    sp = delete_node(sp, dummy);
-  }
-  return normalize_sp_decomposition(sp);
-}
-
 } // namespace FlexFlow

@@ -40,15 +40,6 @@ namespace FlexFlow {
  * becomes
  *
  * digraph SP {
- *     n1 [label="n1"];
- *     n2 [label="n2"];
- *     n3 [label="n4"];
- *     n4 [label="n6"];
- *     n5 [label="n1"];
- *     n6 [label="n2"];
- *     n7 [label="n5"];
- *     n8 [label="n1"];
- *     n9 [label="n3"];
  *     n1 -> n2;
  *     n2 -> n3;
  *     n3 -> n4;
@@ -93,13 +84,6 @@ SeriesParallelDecomposition
  * becomes
  *
  * digraph SP {
- *     n1 [label="n1"];
- *     n2 [label="n2"];
- *     n3 [label="n4"];
- *     n4 [label="n6"];
- *     n6 [label="n2"];
- *     n7 [label="n5"];
- *     n9 [label="n3"];
  *     n1 -> n2;
  *     n2 -> n3;
  *     n3 -> n4;

@@ -317,12 +317,12 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SeriesParallelDecomposition sp = spanish_strata_sync(g);
       CHECK(dependencies_are_maintained(g, sp));
-      // SeriesParallelDecomposition correct = SeriesParallelDecomposition{
-      //     SeriesSplit{{n[0],
-      //                  ParallelSplit{{SeriesSplit{{n[1], n[3], n[4]}},
-      //                  n[2]}}, n[5]}}};
-      // SeriesParallelDecomposition result = sp;
-      // CHECK(correct == result);
+      SeriesParallelDecomposition correct = SeriesParallelDecomposition{
+          SeriesSplit{{n[0],
+                       ParallelSplit{{SeriesSplit{{n[1], n[3], n[4]}}, n[2]}},
+                       n[5]}}};
+      SeriesParallelDecomposition result = sp;
+      CHECK(correct == result);
     }
 
     SUBCASE("Diamond Graph") {
