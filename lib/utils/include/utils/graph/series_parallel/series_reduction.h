@@ -4,6 +4,7 @@
 #include "utils/graph/multidigraph/multidiedge.dtg.h"
 #include "utils/graph/multidigraph/multidigraph.h"
 #include "utils/graph/series_parallel/series_reduction.dtg.h"
+#include "utils/hash/vector.h"
 
 namespace FlexFlow {
 
@@ -14,7 +15,13 @@ Node get_center_node(MultiDiGraphView const &, SeriesReduction const &);
 SeriesReduction make_series_reduction(MultiDiEdge const &, MultiDiEdge const &);
 std::optional<SeriesReduction> find_series_reduction(MultiDiGraphView const &);
 
+std::unordered_set<std::vector<MultiDiEdge>>
+    find_all_extended_series_reductions(MultiDiGraphView const &g);
+
 MultiDiEdge apply_series_reduction(MultiDiGraph &, SeriesReduction const &);
+
+MultiDiEdge apply_extended_series_reduction(
+    MultiDiGraph &g, std::vector<MultiDiEdge> const &series_edges);
 
 } // namespace FlexFlow
 
