@@ -54,9 +54,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
                  profiling,
                  "[Cast] forward_time = {:.2lf}ms\n",
                  input,
-                 output,
-                 input.data_type,
-                 attrs.dtype);
+                 output);
 }
 
 static std::optional<float>
@@ -73,9 +71,7 @@ static std::optional<float>
                  profiling,
                  "[Cast] forward_time = {:.2lf}ms\n",
                  input_grad,
-                 output_grad,
-                 input.data_type,
-                 attrs.dtype);
+                 output_grad);
 }
 
 TaskImplFunction get_cast_fwd_task_impl() {

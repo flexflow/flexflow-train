@@ -30,14 +30,14 @@ static DeviceSpecificDeviceStates
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
-  int input_w = input.shape.at(ff_dim_t(0)) + 1;
-  int input_h = input.shape.at(ff_dim_t(1)) + 1;
-  int input_c = input.shape.at(ff_dim_t(2)) + 1;
-  int input_n = input.shape.at(ff_dim_t(3)) + 1;
-  int output_w = output.shape.at(ff_dim_t(0)) + 1;
-  int output_h = output.shape.at(ff_dim_t(1)) + 1;
-  int output_c = output.shape.at(ff_dim_t(2)) + 1;
-  int output_n = output.shape.at(ff_dim_t(3)) + 1;
+  int input_w = input.shape.at(ff_dim_t{0}) + 1;
+  int input_h = input.shape.at(ff_dim_t{1}) + 1;
+  int input_c = input.shape.at(ff_dim_t{2}) + 1;
+  int input_n = input.shape.at(ff_dim_t{3}) + 1;
+  int output_w = output.shape.at(ff_dim_t{0}) + 1;
+  int output_h = output.shape.at(ff_dim_t{1}) + 1;
+  int output_c = output.shape.at(ff_dim_t{2}) + 1;
+  int output_n = output.shape.at(ff_dim_t{3}) + 1;
 
   printf("init pool (input): n(%d) c(%d) h(%d) "
          "w(%d)\n",
@@ -125,19 +125,19 @@ static std::optional<float>
   Pool2DPerDeviceState state =
       acc.get_argument<Pool2DPerDeviceState>(PER_DEVICE_STATE);
 
-  auto input = acc.get_tensor<Permissions::RO>(INPUT);
-  auto input_grad = acc.get_tensor<Permissions::RW>(INPUT);
   auto output = acc.get_tensor<Permissions::RO>(OUTPUT);
   auto output_grad = acc.get_tensor<Permissions::RO>(OUTPUT);
+  auto input = acc.get_tensor<Permissions::RO>(INPUT);
+  auto input_grad = acc.get_tensor<Permissions::RW>(INPUT);
 
   return profile(backward_kernel,
                  profiling,
                  "[Pool2D] backward_time = {:.2lf}ms\n",
                  state,
-                 input.get_float_ptr(),
-                 input_grad.get_float_ptr(),
                  output.get_float_ptr(),
-                 output_grad.get_float_ptr());
+                 output_grad.get_float_ptr(),
+                 input.get_float_ptr(),
+                 input_grad.get_float_ptr());
 }
 
 TaskImplFunction get_pool_2d_init_task_impl() {

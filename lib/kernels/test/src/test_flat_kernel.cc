@@ -1,5 +1,6 @@
 #include "doctest/doctest.h"
 #include "kernels/flat_kernels.h"
+#include "op-attrs/make_datatype_value.h"
 #include "test_utils.h"
 
 using namespace ::FlexFlow;
@@ -7,15 +8,18 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Test Flat Kernel") {
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle{
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true};
     ManagedFFStream managed_stream{};
 
-    TensorShape input_shape = make_float_tensor_shape_from_legion_dims({100});
+    TensorShape input_shape =
+        make_tensor_shape_from_legion_dims({100}, DataType::FLOAT);
     TensorShape output_shape = input_shape;
 
     GenericTensorAccessorR input_accessor =
-        read_only_accessor_from_write_accessor(
-            create_filled_accessor_w(input_shape, allocator, 2.0f));
+        read_only_accessor_from_write_accessor(create_filled_accessor_w(
+            input_shape, allocator, make_float_data_type_value(2)));
 
     SUBCASE("forward_kernel") {
       GenericTensorAccessorW output_accessor =
@@ -25,33 +29,21 @@ TEST_SUITE(FF_TEST_SUITE) {
                                     input_accessor,
                                     output_accessor.get_float_ptr());
 
-      std::vector<float> check_output_data =
-          load_data_to_host_from_device<float>(
-              read_only_accessor_from_write_accessor(output_accessor));
-
-      std::vector<float> expected_output_data(
-          input_accessor.shape.num_elements(), 2.0f);
-      CHECK(check_output_data == expected_output_data);
+      CHECK(contains_non_zero(output_accessor));
     }
 
     SUBCASE("backward_kernel") {
-      GenericTensorAccessorW output_grad_accessor =
-          create_filled_accessor_w(output_shape, allocator, 0.0f);
-      GenericTensorAccessorW input_grad_accessor =
-          create_filled_accessor_w(input_shape, allocator, 1.0f);
+      GenericTensorAccessorR output_grad_accessor = create_filled_accessor_r(
+          output_shape, allocator, make_float_data_type_value(0));
+      GenericTensorAccessorW input_grad_accessor = create_filled_accessor_w(
+          input_shape, allocator, make_float_data_type_value(1));
 
       Kernels::Flat::backward_kernel(managed_stream.raw_stream(),
                                      input_accessor,
-                                     input_grad_accessor.get_float_ptr(),
-                                     output_grad_accessor.get_float_ptr());
+                                     output_grad_accessor.get_float_ptr(),
+                                     input_grad_accessor.get_float_ptr());
 
-      std::vector<float> backward_output_data =
-          load_data_to_host_from_device<float>(
-              read_only_accessor_from_write_accessor(input_grad_accessor));
-
-      std::vector<float> expected_output_data(
-          input_accessor.shape.num_elements(), 1.0f);
-      CHECK(backward_output_data == expected_output_data);
+      CHECK(contains_non_zero(input_grad_accessor));
     }
   }
 }

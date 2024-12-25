@@ -1,5 +1,6 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include "op-attrs/get_incoming_tensor_roles.h"
+#include "op-attrs/make_datatype_value.h"
 #include "op-attrs/ops/attention.h"
 #include "op-attrs/ops/batch_matmul.h"
 #include "op-attrs/ops/batch_norm.h"
@@ -385,14 +386,14 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::batch_norm(
 
     ParallelTensorShape gamma_shape =
         throw_if_unexpected(get_gamma_weights_shape(attrs, input_shape));
-    InitializerAttrs gamma_initializer =
-        InitializerAttrs{ConstantInitializerAttrs{DataTypeValue{float{1}}}};
+    InitializerAttrs gamma_initializer = InitializerAttrs{
+        ConstantInitializerAttrs{make_float_data_type_value(1)}};
     weights.push_back(make_weight_attrs(gamma_shape, gamma_initializer));
 
     ParallelTensorShape beta_shape =
         throw_if_unexpected(get_beta_weights_shape(attrs, input_shape));
-    InitializerAttrs beta_initializer =
-        InitializerAttrs{ConstantInitializerAttrs{DataTypeValue{float{0}}}};
+    InitializerAttrs beta_initializer = InitializerAttrs{
+        ConstantInitializerAttrs{make_float_data_type_value(0)}};
     weights.push_back(make_weight_attrs(beta_shape, beta_initializer));
   }
 

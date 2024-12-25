@@ -1,5 +1,6 @@
 #include "doctest/doctest.h"
 #include "kernels/layer_norm_kernels.h"
+#include "op-attrs/make_datatype_value.h"
 #include "test_utils.h"
 
 using namespace ::FlexFlow;
@@ -11,13 +12,15 @@ TEST_SUITE(FF_TEST_SUITE) {
     float epsilon = 1e-5f;
     bool elementwise_affine = true;
 
-    TensorShape input_shape =
-        make_float_tensor_shape_from_legion_dims({batch_size, feature_size});
+    TensorShape input_shape = make_tensor_shape_from_legion_dims(
+        {batch_size, feature_size}, DataType::FLOAT);
     TensorShape output_shape = input_shape;
     TensorShape feature_shape =
-        make_float_tensor_shape_from_legion_dims({feature_size});
+        make_tensor_shape_from_legion_dims({feature_size}, DataType::FLOAT);
 
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle{
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true};
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
@@ -31,16 +34,15 @@ TEST_SUITE(FF_TEST_SUITE) {
                                         epsilon);
 
     GenericTensorAccessorR input_accessor =
-        read_only_accessor_from_write_accessor(
-            create_random_filled_accessor_w(input_shape, allocator));
-    GenericTensorAccessorW gamma_accessor =
-        create_filled_accessor_w(feature_shape, allocator, 1.0f);
+        create_random_filled_accessor_r(input_shape, allocator);
+    GenericTensorAccessorW gamma_accessor = create_filled_accessor_w(
+        feature_shape, allocator, make_float_data_type_value(1));
 
     SUBCASE("forward_kernel") {
       GenericTensorAccessorW output_accessor =
           allocator.allocate_tensor(output_shape);
-      GenericTensorAccessorW beta_accessor =
-          create_filled_accessor_w(feature_shape, allocator, 0.0f);
+      GenericTensorAccessorW beta_accessor = create_filled_accessor_w(
+          feature_shape, allocator, make_float_data_type_value(0));
 
       Kernels::LayerNorm::forward_kernel(managed_stream.raw_stream(),
                                          state,
@@ -52,8 +54,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("backward_kernel") {
       GenericTensorAccessorR output_grad_accessor =
-          read_only_accessor_from_write_accessor(
-              create_random_filled_accessor_w(output_shape, allocator));
+          create_random_filled_accessor_r(output_shape, allocator);
       GenericTensorAccessorW input_grad_accessor =
           create_random_filled_accessor_w(input_shape, allocator);
       GenericTensorAccessorW gamma_grad_accessor =

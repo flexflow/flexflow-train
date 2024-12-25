@@ -77,15 +77,15 @@ static std::optional<float>
   return profile(backward_kernel,
                  profiling,
                  "[Embedding] backward_time = {:.2lf}ms\n",
-                 input,
                  output,
+                 input,
                  weight_grad,
-                 input.data_type,
                  output.data_type,
+                 input.data_type,
                  attrs.aggr,
                  input.shape.get_dim(),
                  output.shape.get_dim(),
-                 input.shape.at(ff_dim_t(0)));
+                 input.shape.at(ff_dim_t{0}));
 }
 
 TaskImplFunction get_embedding_fwd_task_impl() {

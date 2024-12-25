@@ -16,8 +16,7 @@ FF_VISITABLE_STRUCT_NONSTANDARD_CONSTRUCTION(TransposePerDeviceState,
                                              num_dim,
                                              perm);
 
-namespace Kernels {
-namespace Transpose {
+namespace Kernels::Transpose {
 
 TransposePerDeviceState init_kernel(int num_dim,
                                     std::vector<ff_dim_t> const &perm);
@@ -29,11 +28,10 @@ void forward_kernel(cudaStream_t stream,
 
 void backward_kernel(cudaStream_t stream,
                      TransposePerDeviceState const &m,
-                     GenericTensorAccessorW const &in_grad,
-                     GenericTensorAccessorR const &out_grad);
+                     GenericTensorAccessorR const &out_grad,
+                     GenericTensorAccessorW const &in_grad);
 
-} // namespace Transpose
-} // namespace Kernels
+} // namespace Kernels::Transpose
 } // namespace FlexFlow
 
 #endif // _FLEXFLOW_OPS_KERNELS_TRANSPOSE_KERNELS_H
