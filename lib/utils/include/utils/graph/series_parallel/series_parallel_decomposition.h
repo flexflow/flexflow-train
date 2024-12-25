@@ -17,6 +17,25 @@ std::unordered_multiset<Node> get_nodes(SeriesSplit const &);
 std::unordered_multiset<Node> get_nodes(ParallelSplit const &);
 std::unordered_multiset<Node> get_nodes(Node const &);
 
+bool is_empty(Node const &node);
+bool is_empty(SeriesSplit const &serial);
+bool is_empty(ParallelSplit const &parallel);
+bool is_empty(SeriesParallelDecomposition const &sp);
+
+bool has_no_duplicate_nodes(SeriesParallelDecomposition const &sp);
+
+SeriesParallelDecomposition delete_node(SeriesParallelDecomposition sp,
+                                        Node const &node);
+
+// duplicate nodes within `sp` are counted multiple times
+size_t num_nodes(SeriesParallelDecomposition const &sp);
+
+SeriesParallelDecomposition series_composition(
+    std::vector<SeriesParallelDecomposition> const &sp_compositions);
+SeriesParallelDecomposition parallel_composition(
+    std::unordered_multiset<SeriesParallelDecomposition> const
+        &sp_compositions);
+
 } // namespace FlexFlow
 
 #endif

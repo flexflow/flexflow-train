@@ -157,4 +157,110 @@ TEST_SUITE(FF_TEST_SUITE) {
     std::unordered_multiset<Node> correct = {input};
     CHECK(result == correct);
   }
+
+  TEST_CASE("is_empty(SeriesParallelDecomposition)") {
+    Node n1{1};
+    Node n2{2};
+
+    SUBCASE("Node Decomposition") {
+      SeriesParallelDecomposition sp{n1};
+      CHECK_FALSE(is_empty(sp));
+    }
+
+    SUBCASE("Empty Serial") {
+      SeriesParallelDecomposition sp{
+          SeriesSplit{std::vector<std::variant<ParallelSplit, Node>>{}}};
+      CHECK(is_empty(sp));
+    }
+
+    SUBCASE("Empty Parallel") {
+      SeriesParallelDecomposition sp{ParallelSplit{{}}};
+      CHECK(is_empty(sp));
+    }
+
+    SUBCASE("Serial with Node") {
+      SeriesParallelDecomposition sp{SeriesSplit{{n1}}};
+      CHECK_FALSE(is_empty(sp));
+    }
+
+    SUBCASE("Parallel with Node") {
+      SeriesParallelDecomposition sp{ParallelSplit{{n1}}};
+      CHECK_FALSE(is_empty(sp));
+    }
+
+    SUBCASE("Nested Serial") {
+      SeriesParallelDecomposition sp{SeriesSplit{{ParallelSplit{{}}}}};
+      CHECK(is_empty(sp));
+    }
+
+    SUBCASE("Nested Parallel") {
+      SeriesParallelDecomposition sp{ParallelSplit{
+          {SeriesSplit{std::vector<std::variant<ParallelSplit, Node>>{}}}}};
+      CHECK(is_empty(sp));
+    }
+
+    SUBCASE("Sparse") {
+      SeriesSplit sp{{ParallelSplit{{}},
+                      ParallelSplit{{SeriesSplit{
+                          std::vector<std::variant<ParallelSplit, Node>>{}}}}}};
+      CHECK(is_empty(sp));
+    }
+
+    SUBCASE("Sparse with Node") {
+      SeriesSplit sp{
+          {ParallelSplit{{}},
+           ParallelSplit{
+               {SeriesSplit{std::vector<std::variant<ParallelSplit, Node>>{}},
+                n2}}}};
+      CHECK_FALSE(is_empty(sp));
+    }
+  }
+
+  TEST_CASE("delete_node") {
+    Node n1{1}, n2{2}, n3{3}, n4{4}, n5{5};
+
+    SUBCASE("Node") {
+      SeriesParallelDecomposition sp{n1};
+
+      SeriesParallelDecomposition result = delete_node(sp, n2);
+      CHECK(result == sp);
+    }
+
+    SUBCASE("SeriesSplit") {
+      SeriesParallelDecomposition sp{SeriesSplit{{n1, n2, n3}}};
+
+      auto result = delete_node(sp, n2);
+      SeriesParallelDecomposition expected{SeriesSplit{{n1, n3}}};
+      CHECK(result == expected);
+
+      result = delete_node(sp, n4);
+      CHECK(result == sp);
+    }
+
+    SUBCASE("ParallelSplit") {
+      SeriesParallelDecomposition sp{ParallelSplit{{n1, n2, n3}}};
+
+      auto result = delete_node(sp, n2);
+      SeriesParallelDecomposition expected{ParallelSplit{{n1, n3}}};
+      CHECK(result == expected);
+
+      result = delete_node(sp, n4);
+      CHECK(result == sp);
+    }
+
+    SUBCASE("nested structure, duplicate nodes") {
+      SeriesParallelDecomposition sp{SeriesSplit{
+          {n1, ParallelSplit{{n2, SeriesSplit{{n3, n4, n1}}, n5, n1}}}}};
+
+      auto result = delete_node(sp, n3);
+      SeriesParallelDecomposition expected{SeriesSplit{
+          {n1, ParallelSplit{{n2, SeriesSplit{{n4, n1}}, n5, n1}}}}};
+      CHECK(result == expected);
+
+      result = delete_node(sp, n1);
+      expected = SeriesParallelDecomposition{
+          SeriesSplit{{ParallelSplit{{n2, SeriesSplit{{n3, n4}}, n5}}}}};
+      CHECK(result == expected);
+    }
+  }
 }
