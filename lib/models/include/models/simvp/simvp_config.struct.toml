@@ -1,0 +1,72 @@
+namespace = "FlexFlow"
+name = "SimVPConfig"
+
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = [
+  "<vector>",
+  "<map>",
+  "<string>",
+]
+
+src_includes = [
+  "utils/fmt/vector.h",
+  "utils/fmt/map.h",
+  "utils/hash/vector.h",
+  "utils/hash/map.h",
+]
+
+[[fields]]
+name = "batch_size"
+type = "size_t"
+
+[[fields]]
+name = "hid_S"
+type = "size_t"
+
+[[fields]]
+name = "hid_T"
+type = "size_t"
+
+[[fields]]
+name = "N_S"
+type = "size_t"
+
+[[fields]]
+name = "N_T"
+type = "size_t"
+
+[[fields]]
+name = "model_type"
+type = "std::string"
+
+[[fields]]
+name = "mlp_ratio"
+type = "float"
+
+[[fields]]
+name = "drop"
+type = "float"
+
+[[fields]]
+name = "drop_path"
+type = "float"
+
+[[fields]]
+name = "spatio_kernel_enc"
+type = "size_t"
+
+[[fields]]
+name = "spatio_kernel_dec"
+type = "size_t"
+
+[[fields]]
+name = "in_shape"
+type = "std::vector<size_t>"
