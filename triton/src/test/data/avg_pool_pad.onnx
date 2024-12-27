@@ -1,19 +1,0 @@
-model:©
-X
-inputoutput"AveragePool*
-kernel_shape@@ *
-pads@@@@ *
-strides@@ 
-test_graphZ
-input
-
-
-
-
-b 
-output
-
-
-
-
-B

@@ -1,18 +1,0 @@
-model:
-M
-inputoutput"AveragePool*
-count_include_pad *
-kernel_shape@@ 
-test_graphZ
-input
-
-
-
-
-b 
-output
-
-
-
-
-B

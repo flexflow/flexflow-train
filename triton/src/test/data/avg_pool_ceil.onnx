@@ -1,18 +1,0 @@
-model:–
-E
-inputoutput"AveragePool*
-	ceil_mode *
-kernel_shape@@ 
-test_graphZ
-input
-
-
-
-
-b 
-output
-
-
-
-
-B
