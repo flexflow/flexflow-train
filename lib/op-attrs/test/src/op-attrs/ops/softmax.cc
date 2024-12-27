@@ -19,7 +19,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     SUBCASE("attrs.dim in bounds") {
-      SoftmaxAttrs attrs = SoftmaxAttrs{ff_dim_t{1}};
+      SoftmaxAttrs attrs = SoftmaxAttrs{ff_dim_t{nonnegative_int{1}}};
 
       tl::expected<TensorShape, std::string> result =
           get_output_shape(attrs, input);
@@ -29,7 +29,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("attrs.dims out of bounds") {
-      SoftmaxAttrs attrs = SoftmaxAttrs{ff_dim_t{4}};
+      SoftmaxAttrs attrs = SoftmaxAttrs{ff_dim_t{nonnegative_int{4}}};
 
       std::optional<TensorShape> result =
           optional_from_expected(get_output_shape(attrs, input));
@@ -70,7 +70,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           make_input(SumDegree{1}, DiscardCopyDegree{1}, degree0, 1, degree2);
 
       SUBCASE("attrs.dim in bounds") {
-        SoftmaxAttrs attrs = SoftmaxAttrs{ff_dim_t{1}};
+        SoftmaxAttrs attrs = SoftmaxAttrs{ff_dim_t{nonnegative_int{1}}};
 
         tl::expected<ParallelTensorShape, std::string> result =
             get_output_shape(attrs, par_input);
@@ -81,7 +81,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SUBCASE("attrs.dims out of bounds") {
-        SoftmaxAttrs attrs = SoftmaxAttrs{ff_dim_t{4}};
+        SoftmaxAttrs attrs = SoftmaxAttrs{ff_dim_t{nonnegative_int{4}}};
 
         std::optional<ParallelTensorShape> result =
             optional_from_expected(get_output_shape(attrs, par_input));
@@ -94,7 +94,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("partition parallism in softmax dim (invalid)") {
       int degree1 = 2;
 
-      SoftmaxAttrs attrs = SoftmaxAttrs{ff_dim_t{1}};
+      SoftmaxAttrs attrs = SoftmaxAttrs{ff_dim_t{nonnegative_int{1}}};
 
       ParallelTensorShape par_input =
           make_input(SumDegree{1}, DiscardCopyDegree{1}, 1, degree1, 1);
@@ -109,7 +109,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("sum parallelism (invalid)") {
       SumDegree sum_degree = SumDegree{2};
 
-      SoftmaxAttrs attrs = SoftmaxAttrs{ff_dim_t{1}};
+      SoftmaxAttrs attrs = SoftmaxAttrs{ff_dim_t{nonnegative_int{1}}};
 
       ParallelTensorShape par_input =
           make_input(sum_degree, DiscardCopyDegree{1}, 1, 1, 1);
@@ -124,7 +124,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("discard copy parallelism (invalid)") {
       DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{2};
 
-      SoftmaxAttrs attrs = SoftmaxAttrs{ff_dim_t{1}};
+      SoftmaxAttrs attrs = SoftmaxAttrs{ff_dim_t{nonnegative_int{1}}};
 
       ParallelTensorShape par_input =
           make_input(SumDegree{1}, discard_copy_degree, 1, 1, 1);

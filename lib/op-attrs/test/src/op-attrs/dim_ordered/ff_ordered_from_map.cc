@@ -20,9 +20,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("input is missing keys") {
       SUBCASE("missing key is in middle") {
         T m = {
-            {ff_dim_t{0}, 4},
-            {ff_dim_t{1}, 2},
-            {ff_dim_t{3}, 5},
+            {ff_dim_t{nonnegative_int{0}}, 4},
+            {ff_dim_t{nonnegative_int{1}}, 2},
+            {ff_dim_t{nonnegative_int{3}}, 5},
         };
 
         CHECK_THROWS(ff_ordered_from_map(m));
@@ -30,31 +30,21 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("missing key is 0 idx") {
         T m = {
-            {ff_dim_t{1}, 2},
-            {ff_dim_t{2}, 7},
-            {ff_dim_t{3}, 5},
+            {ff_dim_t{nonnegative_int{1}}, 2},
+            {ff_dim_t{nonnegative_int{2}}, 7},
+            {ff_dim_t{nonnegative_int{3}}, 5},
         };
 
         CHECK_THROWS(ff_ordered_from_map(m));
       }
     }
 
-    SUBCASE("input has negative keys") {
-      T m = {
-          {ff_dim_t{0}, 4},
-          {ff_dim_t{1}, 5},
-          {ff_dim_t{-1}, 2},
-      };
-
-      CHECK_THROWS(ff_ordered_from_map(m));
-    }
-
     SUBCASE("input is valid") {
       T m = {
-          {ff_dim_t{0}, 4},
-          {ff_dim_t{1}, 5},
-          {ff_dim_t{2}, 2},
-          {ff_dim_t{3}, 7},
+          {ff_dim_t{nonnegative_int{0}}, 4},
+          {ff_dim_t{nonnegative_int{1}}, 5},
+          {ff_dim_t{nonnegative_int{2}}, 2},
+          {ff_dim_t{nonnegative_int{3}}, 7},
       };
 
       FFOrdered<int> result = ff_ordered_from_map(m);

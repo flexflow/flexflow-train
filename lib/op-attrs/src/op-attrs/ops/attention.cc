@@ -33,15 +33,15 @@ int get_oProjSize(MultiHeadAttentionAttrs const &attrs) {
 }
 
 int get_qSize(TensorShape const &query_shape) {
-  return dim_at_idx(query_shape, ff_dim_t(0));
+  return dim_at_idx(query_shape, relative_ff_dim_t{0});
 }
 
 int get_kSize(TensorShape const &key_shape) {
-  return dim_at_idx(key_shape, ff_dim_t(0));
+  return dim_at_idx(key_shape, relative_ff_dim_t{0});
 }
 
 int get_vSize(TensorShape const &value_shape) {
-  return dim_at_idx(value_shape, ff_dim_t(0));
+  return dim_at_idx(value_shape, relative_ff_dim_t{0});
 }
 
 int get_qSize(MultiHeadAttentionParallelInputs const &inputs) {

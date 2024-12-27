@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_PARALLEL_OPS_PARALLEL_OP_INFO_H
 #define _FLEXFLOW_PARALLEL_OPS_PARALLEL_OP_INFO_H
 
-#include "op-attrs/ff_dim.h"
+#include "op-attrs/ff_dim_t.h"
 #include "op-attrs/operator_type.h"
 #include "utils/visitable.h"
 #include <functional>

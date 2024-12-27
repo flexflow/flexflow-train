@@ -47,11 +47,11 @@ OpTaskInvocation backward(SplitAttrs const &attrs) {
 void calc_block_size(coord_t &num_blocks,
                      coord_t &block_size,
                      ArrayShape const &array_shape,
-                     int axis) {
+                     ff_dim_t axis) {
   num_blocks = 1;
   block_size = 1;
   for (int d = 0; d < array_shape.num_elements(); d++) {
-    if (d <= axis) {
+    if (d <= axis.value.get_value()) {
       block_size *= array_shape.at(legion_dim_t(d));
     } else {
       num_blocks *= array_shape.at(legion_dim_t(d));
@@ -66,12 +66,12 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto attrs = acc.get_argument<SplitAttrs>(ATTRS);
 
   coord_t num_blocks, in_block_size, out_block_size[MAX_NUM_OUTPUTS];
-  calc_block_size(num_blocks, in_block_size, input.shape, attrs.axis.value);
+  calc_block_size(num_blocks, in_block_size, input.shape, attrs.axis);
 
   for (int i = 0; i < attrs.splits.size(); i++) {
     coord_t out_num_blocks;
     calc_block_size(
-        out_num_blocks, out_block_size[i], output.shape, attrs.axis.value);
+        out_num_blocks, out_block_size[i], output.shape, attrs.axis);
   }
   float *output_float_ptr = output.get_float_ptr();
   return profile(forward_kernel,
@@ -94,12 +94,11 @@ static std::optional<float>
   auto attrs = acc.get_argument<SplitAttrs>(ATTRS);
 
   coord_t num_blocks, in_block_size, out_block_size[MAX_NUM_OUTPUTS];
-  calc_block_size(
-      num_blocks, in_block_size, input_grad.shape, attrs.axis.value);
+  calc_block_size(num_blocks, in_block_size, input_grad.shape, attrs.axis);
   for (int i = 0; i < attrs.splits.size(); i++) {
     coord_t out_num_blocks;
     calc_block_size(
-        out_num_blocks, out_block_size[i], output_grad.shape, attrs.axis.value);
+        out_num_blocks, out_block_size[i], output_grad.shape, attrs.axis);
   }
   float const *output_grad_ptr = output_grad.get_float_ptr();
   return profile(backward_kernel,

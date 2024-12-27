@@ -13,7 +13,7 @@ includes = [
   "<vector>",
   "<optional>",
   "op-attrs/operator_type.dtg.h",
-  "op-attrs/ff_dim.dtg.h",
+  "op-attrs/ff_dim_t.dtg.h",
   "op-attrs/activation.dtg.h",
   "op-attrs/aggregate_op.dtg.h",
   "op-attrs/regularizer_attrs.dtg.h",

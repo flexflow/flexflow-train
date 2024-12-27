@@ -57,13 +57,13 @@ tl::expected<TensorShape, std::string>
                                       input_rhs.data_type));
   }
 
-  size_t lhs_b = dim_at_idx(input_lhs, ff_dim_t{0});
-  size_t n = dim_at_idx(input_lhs, ff_dim_t{1});
-  size_t lhs_m = dim_at_idx(input_lhs, ff_dim_t{2});
+  size_t lhs_b = dim_at_idx(input_lhs, relative_ff_dim_t{0});
+  size_t n = dim_at_idx(input_lhs, relative_ff_dim_t{1});
+  size_t lhs_m = dim_at_idx(input_lhs, relative_ff_dim_t{2});
 
-  size_t rhs_b = dim_at_idx(input_rhs, ff_dim_t{0});
-  size_t rhs_m = dim_at_idx(input_rhs, ff_dim_t{1});
-  size_t p = dim_at_idx(input_rhs, ff_dim_t{2});
+  size_t rhs_b = dim_at_idx(input_rhs, relative_ff_dim_t{0});
+  size_t rhs_m = dim_at_idx(input_rhs, relative_ff_dim_t{1});
+  size_t p = dim_at_idx(input_rhs, relative_ff_dim_t{2});
 
   if (lhs_b != rhs_b) {
     return tl::unexpected(
@@ -111,13 +111,13 @@ tl::expected<ParallelTensorShape, std::string>
   assert(get_total_parallel_degree(input_lhs) ==
          get_total_parallel_degree(input_rhs));
 
-  ShardParallelDim lhs_b = shard_dim_at_idx(input_lhs, ff_dim_t{0});
-  ShardParallelDim n = shard_dim_at_idx(input_lhs, ff_dim_t{1});
-  ShardParallelDim lhs_m = shard_dim_at_idx(input_lhs, ff_dim_t{2});
+  ShardParallelDim lhs_b = shard_dim_at_idx(input_lhs, relative_ff_dim_t{0});
+  ShardParallelDim n = shard_dim_at_idx(input_lhs, relative_ff_dim_t{1});
+  ShardParallelDim lhs_m = shard_dim_at_idx(input_lhs, relative_ff_dim_t{2});
 
-  ShardParallelDim rhs_b = shard_dim_at_idx(input_rhs, ff_dim_t{0});
-  ShardParallelDim rhs_m = shard_dim_at_idx(input_rhs, ff_dim_t{1});
-  ShardParallelDim p = shard_dim_at_idx(input_rhs, ff_dim_t{2});
+  ShardParallelDim rhs_b = shard_dim_at_idx(input_rhs, relative_ff_dim_t{0});
+  ShardParallelDim rhs_m = shard_dim_at_idx(input_rhs, relative_ff_dim_t{1});
+  ShardParallelDim p = shard_dim_at_idx(input_rhs, relative_ff_dim_t{2});
 
   if (lhs_b != rhs_b) {
     return tl::unexpected(

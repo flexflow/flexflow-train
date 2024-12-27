@@ -492,7 +492,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     parallel_tensor_guid_t input = b.create_input_tensor(input_shape);
-    parallel_tensor_guid_t output = b.parallel_partition(input, ff_dim_t{0}, 2);
+    parallel_tensor_guid_t output =
+        b.parallel_partition(input, ff_dim_t{nonnegative_int{0}}, 2);
     parallel_layer_guid_t layer = get_source_layer(output);
 
     SUBCASE("incoming") {
@@ -531,7 +532,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     parallel_tensor_guid_t input = b.create_input_tensor(input_shape);
-    parallel_tensor_guid_t output = b.parallel_combine(input, ff_dim_t{0}, 2);
+    parallel_tensor_guid_t output =
+        b.parallel_combine(input, ff_dim_t{nonnegative_int{0}}, 2);
     parallel_layer_guid_t layer = get_source_layer(output);
 
     SUBCASE("incoming") {

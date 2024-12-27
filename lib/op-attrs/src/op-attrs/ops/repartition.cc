@@ -6,8 +6,9 @@ tl::expected<ParallelTensorShape, std::string>
     get_output_shape(RepartitionAttrs const &attrs,
                      ParallelTensorShape const &input_shape) {
   ParallelTensorShape output_shape = input_shape;
-  output_shape.dims.shard_dims.at(attrs.repartition_dim).degree *=
-      attrs.repartition_degree;
+  output_shape.dims.shard_dims
+      .at(relative_ff_dim_t_from_ff_dim_t(attrs.repartition_dim))
+      .degree *= attrs.repartition_degree;
   return output_shape;
 }
 
