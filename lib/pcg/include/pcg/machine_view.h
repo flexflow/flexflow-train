@@ -37,6 +37,14 @@ std::unordered_set<MachineSpaceCoordinate>
                                   MachineView const &mv,
                                   MachineSpecification const &ms);
 
+std::unordered_set<device_id_t> get_device_ids(OperatorTaskSpace const &task,
+                                               MachineView const &mv,
+                                               MachineSpecification const &ms);
+
+MachineView make_1d_machine_view(MachineSpaceCoordinate const &start,
+                                 MachineSpecificationDimension const &dim,
+                                 stride_t stride);
+
 } // namespace FlexFlow
 
 #endif

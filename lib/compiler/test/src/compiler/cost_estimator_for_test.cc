@@ -38,4 +38,11 @@ CostEstimator make_fake_cost_estimator(
       });
 }
 
+CostEstimator make_fake_constant_cost_estimator(float const &op_cost,
+                                                float const &comm_cost) {
+  return make_fake_cost_estimator(
+      [=](OpCostEstimateKey const &op) { return op_cost; },
+      [=](TensorSetMovement const &op) { return comm_cost; });
+}
+
 } // namespace FlexFlow

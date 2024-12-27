@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_PCG_INCLUDE_OPERATOR_TASK_SPACE_H
 #define _FLEXFLOW_PCG_INCLUDE_OPERATOR_TASK_SPACE_H
 
+#include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "pcg/operator_task_space.dtg.h"
 #include "pcg/task_space_coordinate.dtg.h"
 #include <cstddef>
@@ -16,6 +17,8 @@ TaskSpaceCoordinate
 
 size_t num_dims(OperatorTaskSpace const &task);
 size_t num_tasks(OperatorTaskSpace const &task);
+
+OperatorTaskSpace get_operator_task_space(ParallelTensorShape const &shape);
 
 } // namespace FlexFlow
 

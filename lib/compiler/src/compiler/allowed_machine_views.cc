@@ -24,6 +24,10 @@ namespace FlexFlow {
 bool is_valid_machine_view(MachineView const &mv,
                            OperatorTaskSpace const &task,
                            MachineSpecification const &ms) {
+  if (num_dims(mv) != num_dims(task)) {
+    return false;
+  }
+
   std::optional<MachineSpaceCoordinate> maximum_device_coord =
       get_machine_space_coordinate(
           task, mv, get_task_space_maximum_coordinate(task), ms);

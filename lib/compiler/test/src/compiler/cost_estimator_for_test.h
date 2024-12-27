@@ -33,6 +33,9 @@ CostEstimator make_fake_cost_estimator(
     std::unordered_map<OpCostEstimateKey, float> const &op_cost_map,
     std::unordered_map<TensorSetMovement, float> const &comm_cost_map);
 
+CostEstimator make_fake_constant_cost_estimator(float const &op_cost,
+                                                float const &comm_cost);
+
 } // namespace FlexFlow
 
 #endif

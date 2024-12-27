@@ -15,6 +15,11 @@ OpCostEstimateKey
     map_unmapped_op_cost_estimate_key(UnmappedOpCostEstimateKey const &unmapped,
                                       MachineView const &machine_view);
 
+OpCostEstimateKey get_mapped_op_cost_estimate_key_for_layer(
+    ParallelComputationGraph const &pcg,
+    parallel_layer_guid_t const &layer,
+    MachineView const &machine_view);
+
 } // namespace FlexFlow
 
 #endif
