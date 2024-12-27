@@ -1,14 +1,20 @@
 #include "pcg/machine_view.h"
+#include "pcg/machine_specification.dtg.h"
 #include "pcg/machine_specification.h"
+#include "pcg/machine_specification_dimension.dtg.h"
+#include "pcg/machine_view_dimension.dtg.h"
+#include "pcg/operator_task_space.dtg.h"
 #include "pcg/operator_task_space.h"
+#include "pcg/stride_t.dtg.h"
 #include "utils/containers/contains.h"
 #include "utils/containers/count.h"
 #include "utils/containers/filter.h"
+#include "utils/containers/get_only.h"
 #include "utils/containers/scanl.h"
 #include "utils/containers/sum.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/zip.h"
-
+#include "utils/exception.h"
 namespace FlexFlow {
 
 size_t num_dims(MachineView const &mv) {
@@ -35,6 +41,13 @@ MachineView machine_view_from_strides_and_machine_spec_dimensions(
     MachineSpaceCoordinate const &start,
     std::vector<stride_t> const &strides,
     std::vector<MachineSpecificationDimension> const &dims) {
+  if (strides.size() != dims.size()) {
+    throw mk_runtime_error(
+        fmt::format("Dimensions of {} and {} must match when calling "
+                    "machine_view_from_strides_and_machine_spec_dimensions",
+                    start,
+                    strides));
+  }
   std::vector<MachineViewDimension> dimensions =
       transform(zip(strides, dims), [&](auto const &p) {
         return MachineViewDimension{p.first, p.second};
@@ -48,6 +61,7 @@ std::optional<MachineSpaceCoordinate> get_machine_space_coordinate(
     TaskSpaceCoordinate const &coord,
     MachineSpecification const &machine_specification) {
 
+  assert(num_dims(machine_view) == task.degrees.size());
   auto get_dimension_indices_for_dimension =
       [&](MachineSpecificationDimension dimension) {
         std::vector<MachineSpecificationDimension> mv_dimensions =
@@ -110,6 +124,23 @@ std::unordered_set<MachineSpaceCoordinate> get_machine_space_coordinates(
                    task, machine_view, coord, machine_specification)
             .value();
       });
+}
+
+std::unordered_set<device_id_t> get_device_ids(OperatorTaskSpace const &task,
+                                               MachineView const &mv,
+                                               MachineSpecification const &ms) {
+  return transform(get_machine_space_coordinates(task, mv, ms),
+                   [&](MachineSpaceCoordinate const &coord) {
+                     return get_device_id(ms, coord);
+                   });
+}
+
+MachineView make_1d_machine_view(MachineSpaceCoordinate const &start,
+                                 MachineSpecificationDimension const &dim,
+                                 stride_t stride) {
+
+  return machine_view_from_strides_and_machine_spec_dimensions(
+      start, {stride}, {dim});
 }
 
 } // namespace FlexFlow

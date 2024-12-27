@@ -1,5 +1,5 @@
 #include "compiler/machine_mapping/get_optimal_machine_mapping.h"
-#include "./cost_estimator_for_test.h"
+#include "../cost_estimator_for_test.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.h"
 #include "compiler/machine_mapping/machine_mapping_cache.h"
 #include "compiler/machine_mapping/machine_mapping_constraints.h"
