@@ -1,12 +1,22 @@
 # Developers Guide
 
+## Setup
+
+### sapling
+
+
+
 ## Code Organization
+
 The bulk of the FlexFlow source code is stored in the following folders:
 
-1. `examples`: example DNNs in C++ and Python
-2. `include`: the FlexFlow headers
-3. `src`: the FlexFlow source code
-4. `python`: bindings for the Python interface
+1. `lib`: 
+2. `bin`:
+3. `bindings`:
+4. `docs`:
+5. `cmake`:
+6. `deps`:
+7. `config`:
 
 The `src` folder is divided into the following subfolders:
 
