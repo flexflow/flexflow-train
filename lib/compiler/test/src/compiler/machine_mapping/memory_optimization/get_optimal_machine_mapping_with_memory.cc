@@ -212,7 +212,10 @@ TEST_SUITE(FF_TEST_SUITE) {
               cache, context, problem_tree, full_machine_spec, constraints);
       MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{{
           SingleMachineMapping{
-              OpCostMetrics{1.0 + 2.0 + 0.1, 2 + 3},
+              OpCostMetrics{
+                  /*runtime=*/1.0 + 2.0 + 0.1,
+                  /*memory=*/2 + 3,
+              },
               ParallelLayerGuidObliviousMachineMapping{{
                   {
                       BinaryTreePath{{
