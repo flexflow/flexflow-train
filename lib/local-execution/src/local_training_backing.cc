@@ -68,7 +68,7 @@ std::optional<float>
 }
 
 void LocalTrainingBacking::execute_init(layer_guid_t const &operator_node) {
-  if (registry_contains_op_task(
+  if (registry_contains_task_for_layer(
           this->task_registry, operator_node, OpTaskType::INIT)) {
     ComputationGraphOpAttrs attrs =
         get_layer_attrs(this->computation_graph, operator_node).attrs;
@@ -85,7 +85,7 @@ void LocalTrainingBacking::execute_init(layer_guid_t const &operator_node) {
 
 std::optional<float>
     LocalTrainingBacking::execute_forward(layer_guid_t const &operator_node) {
-  if (registry_contains_op_task(
+  if (registry_contains_task_for_layer(
           this->task_registry, operator_node, OpTaskType::FWD)) {
     ComputationGraphOpAttrs attrs =
         get_layer_attrs(this->computation_graph, operator_node).attrs;
@@ -102,11 +102,10 @@ std::optional<float>
 void LocalTrainingBacking::compute_loss(LossAttrs const &loss_attrs,
                                         reduced_tensor_t const &logit_tensor,
                                         reduced_tensor_t const &label_tensor) {
-  assert(
-      this->local_slots_backing.is_non_graph_tensor_allocated(logit_tensor) &&
-      this->local_slots_backing.is_non_graph_tensor_allocated(label_tensor));
+  assert(this->local_slots_backing.is_non_graph_tensor_allocated(label_tensor));
   TaskInvocation loss_invocation =
       backward(loss_attrs, logit_tensor, label_tensor);
+  // TODO: https://github.com/flexflow/flexflow-train/issues/1442
   // assert(is_invocation_valid(get_loss_bwd_signature(), loss_invocation));
   TaskArgumentAccessor loss_accessor =
       this->get_task_arg_accessor(loss_invocation, std::nullopt);
@@ -116,7 +115,7 @@ void LocalTrainingBacking::compute_loss(LossAttrs const &loss_attrs,
 
 std::optional<float>
     LocalTrainingBacking::execute_backward(layer_guid_t const &operator_node) {
-  if (registry_contains_op_task(
+  if (registry_contains_task_for_layer(
           this->task_registry, operator_node, OpTaskType::BWD)) {
     ComputationGraphOpAttrs attrs =
         get_layer_attrs(this->computation_graph, operator_node).attrs;
@@ -143,6 +142,8 @@ void LocalTrainingBacking::execute_update(
     // get invocation
     TaskInvocation invocation = get_update_invocation(
         optimizer_attrs, weight_tensor, optimizer_buffer_tensors);
+
+    // TODO: https://github.com/flexflow/flexflow-train/issues/1442
     // assert(is_invocation_valid(get_update_signature(attrs), invocation));
 
     // execute update

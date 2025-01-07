@@ -42,7 +42,7 @@ void register_tasks_for_layer(TaskRegistry &task_registry,
   }
 }
 
-bool registry_contains_op_task(TaskRegistry const &task_registry,
+bool registry_contains_task_for_layer(TaskRegistry const &task_registry,
                                layer_guid_t const &op,
                                OpTaskType const &op_task_type) {
   std::unordered_map<layer_guid_t, std::optional<task_id_t>> task_ids;

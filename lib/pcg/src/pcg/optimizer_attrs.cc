@@ -3,7 +3,7 @@
 namespace FlexFlow {
 
 OptimizerAttrs
-    get_next_iteration_optimizer_attrs(OptimizerAttrs const &old_attrs) {
+    get_optimizer_attrs_for_next_iter(OptimizerAttrs const &old_attrs) {
   if (old_attrs.has<AdamOptimizerAttrs>()) {
     AdamOptimizerAttrs old = old_attrs.get<AdamOptimizerAttrs>();
     double new_beta1_t = old.beta_t * old.beta1;

@@ -1,6 +1,7 @@
 #include "local-execution/task_binding.h"
 #include "utils/containers/contains_key.h"
 #include "utils/fmt/unordered_map.h"
+#include "utils/hash/unordered_map.h"
 
 namespace FlexFlow {
 
@@ -58,3 +59,15 @@ std::ostream &operator<<(std::ostream &s, TaskBinding const &x) {
 }
 
 } // namespace FlexFlow
+
+namespace std {
+
+size_t hash<::FlexFlow::TaskBinding>::operator() (
+  ::FlexFlow::TaskBinding const &s) const {
+    size_t result = 0;
+    hash_combine(result, s.get_tensor_bindings());
+    hash_combine(result, s.get_arg_bindings());
+    return result;
+  }
+
+} // namespace std

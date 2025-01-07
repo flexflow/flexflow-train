@@ -18,7 +18,7 @@ void add_slot(TaskSignature &task_signature,
               TensorType tensor_type,
               SlotType slot_type) {
   TensorTypeSlotSpec tensor_guid_slot_spec =
-      TensorTypeSlotSpec{slot_type, tensor_type};
+      TensorTypeSlotSpec{name, tensor_type, slot_type};
   task_signature.tensor_guid_slots.insert({name, tensor_guid_slot_spec});
 }
 

@@ -24,6 +24,10 @@ public:
     return this->type_idx;
   }
 
+  std::shared_ptr<void const> get_ptr() const {
+    return this->ptr;
+  }
+
   bool operator==(ConcreteArgSpec const &other) const;
   bool operator!=(ConcreteArgSpec const &other) const;
 
@@ -60,7 +64,7 @@ template <>
 struct hash<::FlexFlow::ConcreteArgSpec> {
   size_t operator()(::FlexFlow::ConcreteArgSpec const &s) const {
     size_t result = 0;
-    ::FlexFlow::hash_combine(result, s.get_type_index());
+    ::FlexFlow::hash_combine(result, s.get_type_index(), s.get_ptr());
     return result;
   }
 };

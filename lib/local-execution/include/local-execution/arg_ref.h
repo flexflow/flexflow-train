@@ -82,7 +82,7 @@ template <typename LABEL_TYPE>
 struct hash<::FlexFlow::ArgRefSpec<LABEL_TYPE>> {
   size_t operator()(::FlexFlow::ArgRefSpec<LABEL_TYPE> const &s) const {
     size_t result = 0;
-    ::FlexFlow::hash_combine(result, s.type_idx);
+    ::FlexFlow::hash_combine(result, s.type_idx, s.get_ref_type());
     return result;
   }
 };

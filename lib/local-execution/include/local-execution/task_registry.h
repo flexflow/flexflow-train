@@ -14,7 +14,7 @@ void register_tasks_for_layer(TaskRegistry &,
                               layer_guid_t const &,
                               ComputationGraphOpAttrs const &attrs);
 
-bool registry_contains_op_task(TaskRegistry const &,
+bool registry_contains_task_for_layer(TaskRegistry const &,
                                layer_guid_t const &,
                                OpTaskType const &);
 

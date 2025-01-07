@@ -27,18 +27,6 @@ RuntimeArgRef<ProfilingSettings> profiling_settings();
 RuntimeArgRef<DeviceSpecific<PerDeviceFFHandle>> ff_handle();
 RuntimeArgRef<FFIterationConfig> iteration_config();
 
-// std::string format_as(RuntimeArgRefSpec const & x) {
-//   std::ostringstream oss;
-//   oss << "<RuntimeArgRefSpec";
-//   oss << " type_idx=" << x.get_type_index().name();
-//   oss << ">";
-//   return oss.str();
-// }
-
-// std::ostream &operator<<(std::ostream & s, RuntimeArgRefSpec const & x) {
-//   return (s << fmt::to_string(x));
-// }
-
 } // namespace FlexFlow
 
 #endif

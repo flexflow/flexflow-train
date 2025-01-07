@@ -7,7 +7,6 @@
 #include "local-execution/task_arg_spec.dtg.h"
 #include "local-execution/task_id_t.dtg.h"
 #include "local-execution/task_signature.dtg.h"
-#include "utils/hash/unordered_map.h"
 
 namespace FlexFlow {
 
@@ -63,12 +62,7 @@ namespace std {
 
 template <>
 struct hash<::FlexFlow::TaskBinding> {
-  size_t operator()(::FlexFlow::TaskBinding const &s) const {
-    size_t result = 0;
-    hash_combine(result, s.get_tensor_bindings());
-    hash_combine(result, s.get_arg_bindings());
-    return result;
-  }
+  size_t operator()(::FlexFlow::TaskBinding const &s) const;
 };
 
 } // namespace std

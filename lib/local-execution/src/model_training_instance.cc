@@ -71,7 +71,7 @@ void ModelTrainingInstance::execute_update() {
     this->training_backing.execute_update(node, this->optimizer_attrs);
   }
   this->optimizer_attrs =
-      get_next_iteration_optimizer_attrs(this->optimizer_attrs);
+      get_optimizer_attrs_for_next_iter(this->optimizer_attrs);
 }
 
 } // namespace FlexFlow

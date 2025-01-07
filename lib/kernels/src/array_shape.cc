@@ -1,6 +1,7 @@
 #include "kernels/array_shape.h"
 #include "op-attrs/dim_ordered/slice.h"
 #include "utils/containers/product.h"
+#include "utils/containers/transform.h"
 
 namespace FlexFlow {
 
@@ -54,17 +55,17 @@ std::size_t ArrayShape::at(ff_dim_t idx) const {
   return dims.at(legion_dim_from_ff_dim(idx, this->num_dims()));
 }
 
-ArrayShape ArrayShape::sub_shape(legion_dim_t start, ff_dim_t end) const {
-  legion_dim_t legion_end = legion_dim_from_ff_dim(end, num_dims());
-  return this->sub_shape(start, legion_end);
-}
-
 ArrayShape ArrayShape::sub_shape(std::optional<ff_dim_t> start,
                                  std::optional<ff_dim_t> end) const {
-  std::optional<legion_dim_t> legion_start =
-      legion_dim_from_ff_dim(start, num_dims());
-  std::optional<legion_dim_t> legion_end =
-      legion_dim_from_ff_dim(end, num_dims());
+  std::optional<legion_dim_t> legion_start = transform(
+    start, [&](auto const &start_unwrapped) {
+      return legion_dim_from_ff_dim(start_unwrapped, num_dims());
+  });
+
+  std::optional<legion_dim_t> legion_end = transform(
+    end, [&](auto const &end_unwrapped) {
+      return legion_dim_from_ff_dim(end_unwrapped, num_dims());
+  });
   return this->sub_shape(legion_start, legion_end);
 }
 

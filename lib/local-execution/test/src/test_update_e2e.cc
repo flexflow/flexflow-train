@@ -3,6 +3,7 @@
 #include "kernels/managed_ff_stream.h"
 #include "kernels/managed_per_device_ff_handle.h"
 #include "local-execution/local_training_backing.h"
+#include "local-execution/tensor_reduction.h"
 #include "pcg/computation_graph.h"
 #include "pcg/computation_graph_builder.h"
 #include "pcg/optimizer_attrs.dtg.h"
@@ -37,14 +38,10 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     // allocate memory
     Allocator allocator = create_local_cuda_memory_allocator();
-    TensorBackingMap tensor_backing_map;
-    GenericTensorAccessorW input_backing =
-        allocator.allocate_tensor(input_shape);
-    tensor_backing_map.insert({input_tensor, input_backing});
-
     LocalTrainingBacking local_backing(allocator,
                                        cg_builder.computation_graph,
-                                       tensor_backing_map,
+                                       LayerTensorBackingMap{},
+                                       TensorBackingMap{},
                                        runtime_arg_config);
     // for (layer_guid_t const & node:
     // topological_ordering(cg_builder.computation_graph)) {

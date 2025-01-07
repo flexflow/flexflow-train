@@ -35,6 +35,7 @@ struct LocalTrainingBacking {
                             std::optional<layer_guid_t> const &) const;
   TaskArgumentAccessor get_op_task_arg_accessor(OpTaskInvocation const &,
                                                 layer_guid_t const &) const;
+  LocalSlotsBacking local_slots_backing;
 
 private:
   DeviceSpecificDeviceStates call_init_task_impl(task_id_t,
@@ -45,7 +46,6 @@ private:
   Allocator allocator;
   ComputationGraph computation_graph;
   TaskRegistry task_registry;
-  LocalSlotsBacking local_slots_backing;
 };
 
 } // namespace FlexFlow

@@ -43,8 +43,6 @@ public:
   std::optional<std::size_t> at_maybe(legion_dim_t) const;
   std::optional<std::size_t> at_maybe(ff_dim_t) const;
 
-  ArrayShape sub_shape(legion_dim_t start, ff_dim_t end) const;
-
   ArrayShape sub_shape(std::optional<ff_dim_t> start,
                        std::optional<ff_dim_t> end) const;
 
