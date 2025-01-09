@@ -182,13 +182,13 @@ TEST_SUITE(FF_TEST_SUITE) {
           get_optimal_machine_mapping_with_memory(
               cache, context, problem_tree, full_machine_spec, constraints);
       MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{{
-          SingleMachineMapping{
+          MachineMappingForSingleLayer{
               OpCostMetrics{1.0, 2},
               ParallelLayerGuidObliviousMachineMapping{{
                   {binary_tree_root_path(), mv1},
               }},
           },
-          SingleMachineMapping{
+          MachineMappingForSingleLayer{
               OpCostMetrics{1.5, 1},
               ParallelLayerGuidObliviousMachineMapping{{
                   {binary_tree_root_path(), mv2},
@@ -211,7 +211,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           get_optimal_machine_mapping_with_memory(
               cache, context, problem_tree, full_machine_spec, constraints);
       MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{{
-          SingleMachineMapping{
+          MachineMappingForSingleLayer{
               OpCostMetrics{
                   /*runtime=*/1.0 + 2.0 + 0.1,
                   /*memory=*/2 + 3,
@@ -231,7 +231,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                   },
               }},
           },
-          SingleMachineMapping{
+          MachineMappingForSingleLayer{
               OpCostMetrics{1.5 + 2.5 + 0.1, 1 + 2},
               ParallelLayerGuidObliviousMachineMapping{{
                   {
@@ -265,7 +265,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           get_optimal_machine_mapping_with_memory(
               cache, context, problem_tree, full_machine_spec, constraints);
       MachineMappingWithMemoryResult correct =
-          MachineMappingWithMemoryResult{{SingleMachineMapping{
+          MachineMappingWithMemoryResult{{MachineMappingForSingleLayer{
               OpCostMetrics{2.5, 2},
               ParallelLayerGuidObliviousMachineMapping{{
                   {

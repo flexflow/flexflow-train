@@ -7,7 +7,7 @@ features = [
 ]
 
 includes = [
-  "compiler/machine_mapping/memory_optimization/single_machine_mapping.dtg.h",
+  "compiler/machine_mapping/memory_optimization/machine_mapping_for_single_layer.dtg.h",
 ]
 
 src_includes = [
@@ -17,4 +17,4 @@ src_includes = [
 
 [[fields]]
 name = "machine_mappings"
-type = "std::unordered_set<::FlexFlow::SingleMachineMapping>"
+type = "std::unordered_set<::FlexFlow::MachineMappingForSingleLayer>"

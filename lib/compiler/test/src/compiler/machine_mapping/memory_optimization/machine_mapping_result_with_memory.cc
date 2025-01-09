@@ -64,7 +64,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*memory=*/3,
     };
 
-    SingleMachineMapping mm1 = SingleMachineMapping{
+    MachineMappingForSingleLayer mm1 = MachineMappingForSingleLayer{
         cost1,
         ParallelLayerGuidObliviousMachineMapping{
             {
@@ -76,7 +76,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    SingleMachineMapping mm2 = SingleMachineMapping{
+    MachineMappingForSingleLayer mm2 = MachineMappingForSingleLayer{
         cost2,
         ParallelLayerGuidObliviousMachineMapping{
             {
@@ -88,7 +88,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    SingleMachineMapping mm3 = SingleMachineMapping{
+    MachineMappingForSingleLayer mm3 = MachineMappingForSingleLayer{
         cost3,
         ParallelLayerGuidObliviousMachineMapping{
             {
@@ -186,7 +186,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*memory=*/2,
     };
     MachineMappingWithMemoryResult pre = MachineMappingWithMemoryResult{{
-        SingleMachineMapping{
+        MachineMappingForSingleLayer{
             pre_cost,
             ParallelLayerGuidObliviousMachineMapping{
                 {
@@ -213,7 +213,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     MachineMappingWithMemoryResult post = MachineMappingWithMemoryResult{{
-        SingleMachineMapping{
+        MachineMappingForSingleLayer{
             post_cost,
             ParallelLayerGuidObliviousMachineMapping{
                 {
@@ -251,7 +251,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       MachineMappingWithMemoryResult no_parallel_split_transform =
           MachineMappingWithMemoryResult{
               {
-                  SingleMachineMapping{
+                  MachineMappingForSingleLayer{
                       /*cost=*/OpCostMetrics{
                           /*runtime=*/pre_cost.runtime + comm_cost +
                               post_cost.runtime,
@@ -305,7 +305,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             comm_cost, pre, post, ParallelSplitTransformation::RthenL);
         MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{
             {
-                SingleMachineMapping{
+                MachineMappingForSingleLayer{
                     /*cost=*/OpCostMetrics{
                         /*runtime=*/pre_cost.runtime + comm_cost +
                             post_cost.runtime,
@@ -381,7 +381,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*memory=*/2,
     };
     MachineMappingWithMemoryResult lhs = MachineMappingWithMemoryResult{{
-        SingleMachineMapping{
+        MachineMappingForSingleLayer{
             lhs_cost,
             ParallelLayerGuidObliviousMachineMapping{
                 {
@@ -407,7 +407,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*memory=*/1,
     };
     MachineMappingWithMemoryResult rhs = MachineMappingWithMemoryResult{{
-        SingleMachineMapping{
+        MachineMappingForSingleLayer{
             rhs_cost,
             ParallelLayerGuidObliviousMachineMapping{
                 {
@@ -440,7 +440,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("both are nonempty") {
       MachineMappingWithMemoryResult result = parallel_combine(lhs, rhs);
       MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{{
-          SingleMachineMapping{
+          MachineMappingForSingleLayer{
               /*cost=*/OpCostMetrics{
                   /*runtime=*/std::max(lhs_cost.runtime, rhs_cost.runtime),
                   /*memory=*/std::max(lhs_cost.memory, rhs_cost.memory),
@@ -530,7 +530,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*memory=*/3,
     };
 
-    SingleMachineMapping mm1 = SingleMachineMapping{
+    MachineMappingForSingleLayer mm1 = MachineMappingForSingleLayer{
         cost1,
         ParallelLayerGuidObliviousMachineMapping{
             {
@@ -542,7 +542,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    SingleMachineMapping mm2 = SingleMachineMapping{
+    MachineMappingForSingleLayer mm2 = MachineMappingForSingleLayer{
         cost2,
         ParallelLayerGuidObliviousMachineMapping{
             {
@@ -554,7 +554,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    SingleMachineMapping mm3 = SingleMachineMapping{
+    MachineMappingForSingleLayer mm3 = MachineMappingForSingleLayer{
         cost3,
         ParallelLayerGuidObliviousMachineMapping{
             {

@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "SingleMachineMapping"
+name = "MachineMappingForSingleLayer"
 features = [
   "eq",
   "hash",

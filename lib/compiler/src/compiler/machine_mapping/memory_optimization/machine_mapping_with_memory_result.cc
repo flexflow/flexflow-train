@@ -25,10 +25,10 @@ MachineMappingWithMemoryResult get_mapping_with_minimal_runtime(
 
 MachineMappingWithMemoryResult remove_non_pareto_optimal_machine_mapping_result(
     MachineMappingWithMemoryResult const &result) {
-  std::unordered_set<SingleMachineMapping> non_pareto_optimal_mappings;
-  for (SingleMachineMapping const &mapping : result.machine_mappings) {
+  std::unordered_set<MachineMappingForSingleLayer> non_pareto_optimal_mappings;
+  for (MachineMappingForSingleLayer const &mapping : result.machine_mappings) {
     bool is_pareto_optimal = true;
-    for (SingleMachineMapping const &other_mapping : result.machine_mappings) {
+    for (MachineMappingForSingleLayer const &other_mapping : result.machine_mappings) {
       if (mapping.cost.runtime >= other_mapping.cost.runtime &&
           mapping.cost.memory >= other_mapping.cost.memory &&
           mapping != other_mapping) {
@@ -49,8 +49,8 @@ MachineMappingWithMemoryResult
                    MachineMappingWithMemoryResult const &post_result,
                    std::optional<ParallelSplitTransformation> const
                        &parallel_split_transformation) {
-  auto combine_machine_mapping = [&](SingleMachineMapping const &pre_mm,
-                                     SingleMachineMapping const &post_mm) {
+  auto combine_machine_mapping = [&](MachineMappingForSingleLayer const &pre_mm,
+                                     MachineMappingForSingleLayer const &post_mm) {
     OpCostMetrics cost = OpCostMetrics{
         pre_mm.cost.runtime + comm_cost + post_mm.cost.runtime,
         pre_mm.cost.memory + post_mm.cost.memory,
@@ -68,13 +68,13 @@ MachineMappingWithMemoryResult
       }
     }();
 
-    return SingleMachineMapping{cost, mapping};
+    return MachineMappingForSingleLayer{cost, mapping};
   };
 
   MachineMappingWithMemoryResult result =
       empty_machine_mapping_with_memory_result();
-  for (SingleMachineMapping const &pre_mm : pre_result.machine_mappings) {
-    for (SingleMachineMapping const &post_mm : post_result.machine_mappings) {
+  for (MachineMappingForSingleLayer const &pre_mm : pre_result.machine_mappings) {
+    for (MachineMappingForSingleLayer const &post_mm : post_result.machine_mappings) {
       result.machine_mappings.insert(combine_machine_mapping(pre_mm, post_mm));
     }
   }
@@ -85,8 +85,8 @@ MachineMappingWithMemoryResult
 MachineMappingWithMemoryResult
     parallel_combine(MachineMappingWithMemoryResult const &lhs_result,
                      MachineMappingWithMemoryResult const &rhs_result) {
-  auto combine_machine_mapping = [&](SingleMachineMapping const &lhs_mm,
-                                     SingleMachineMapping const &rhs_mm) {
+  auto combine_machine_mapping = [&](MachineMappingForSingleLayer const &lhs_mm,
+                                     MachineMappingForSingleLayer const &rhs_mm) {
     OpCostMetrics cost = OpCostMetrics{
         std::max(lhs_mm.cost.runtime, rhs_mm.cost.runtime),
         std::max(lhs_mm.cost.memory, rhs_mm.cost.memory),
@@ -95,13 +95,13 @@ MachineMappingWithMemoryResult
     ParallelLayerGuidObliviousMachineMapping mapping =
         binary_combine_mappings(lhs_mm.machine_mapping, rhs_mm.machine_mapping);
 
-    return SingleMachineMapping{cost, mapping};
+    return MachineMappingForSingleLayer{cost, mapping};
   };
 
   MachineMappingWithMemoryResult result =
       empty_machine_mapping_with_memory_result();
-  for (SingleMachineMapping const &lhs_mm : lhs_result.machine_mappings) {
-    for (SingleMachineMapping const &rhs_mm : rhs_result.machine_mappings) {
+  for (MachineMappingForSingleLayer const &lhs_mm : lhs_result.machine_mappings) {
+    for (MachineMappingForSingleLayer const &rhs_mm : rhs_result.machine_mappings) {
       result.machine_mappings.insert(combine_machine_mapping(lhs_mm, rhs_mm));
     }
   }
@@ -122,7 +122,7 @@ MachineMappingWithMemoryResult
     make_singleton_machine_mapping_with_memory_result(
         OpCostMetrics cost, MachineView const &machine_view) {
   return MachineMappingWithMemoryResult{{
-      SingleMachineMapping{
+      MachineMappingForSingleLayer{
           cost,
           ParallelLayerGuidObliviousMachineMapping{{
               {binary_tree_root_path(), machine_view},
