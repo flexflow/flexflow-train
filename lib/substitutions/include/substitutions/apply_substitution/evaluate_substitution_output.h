@@ -1,10 +1,10 @@
-#ifndef _FLEXFLOW_LIB_SUBSTITUTIONS_INCLUDE_SUBSTITUTIONS_SUBSTITUTION_INTERNAL_EVALUATE_SUBSTITUTION_OUTPUT_H
-#define _FLEXFLOW_LIB_SUBSTITUTIONS_INCLUDE_SUBSTITUTIONS_SUBSTITUTION_INTERNAL_EVALUATE_SUBSTITUTION_OUTPUT_H
+#ifndef _FLEXFLOW_LIB_SUBSTITUTIONS_INCLUDE_SUBSTITUTIONS_APPLY_SUBSTITUTION_EVALUATE_SUBSTITUTION_OUTPUT_H
+#define _FLEXFLOW_LIB_SUBSTITUTIONS_INCLUDE_SUBSTITUTIONS_APPLY_SUBSTITUTION_EVALUATE_SUBSTITUTION_OUTPUT_H
 
+#include "substitutions/apply_substitution/output_expr_to_result_sub_pcg_mapping.dtg.h"
 #include "substitutions/pcg_pattern_match.dtg.h"
 #include "substitutions/sub_parallel_computation_graph.dtg.h"
 #include "substitutions/substitution.dtg.h"
-#include "substitutions/substitution_internal/output_expr_to_result_sub_pcg_mapping.dtg.h"
 #include <utility>
 
 namespace FlexFlow {

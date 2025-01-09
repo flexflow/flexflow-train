@@ -13,6 +13,7 @@
 #include "utils/cli/cli_parse.h"
 #include "utils/cli/cli_parse_result.h"
 #include "utils/cli/cli_spec.h"
+#include "utils/graph/open_dataflow_graph/algorithms/as_dot.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/right_associative_binary_sp_tree_from_nary.h"
 #include "utils/graph/series_parallel/get_series_parallel_decomposition.h"
 

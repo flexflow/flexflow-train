@@ -1,30 +1,89 @@
 #include "utils/containers/merge_maps.h"
 #include "test/utils/doctest/fmt/unordered_map.h"
 #include <doctest/doctest.h>
-#include <unordered_map>
 
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
-
   TEST_CASE("merge_maps") {
+    SUBCASE("maps are disjoint") {
+      std::unordered_map<int, std::string> l_map = {
+          {1, "one"},
+          {2, "two"},
+      };
 
-    SUBCASE("disjoint keys") {
-      std::unordered_map<int, std::string> lhs = {{1, "one"}, {2, "two"}};
-      std::unordered_map<int, std::string> rhs = {{3, "three"}, {4, "four"}};
+      std::unordered_map<int, std::string> r_map = {
+          {3, "three"},
+      };
 
-      std::unordered_map<int, std::string> result = merge_maps(lhs, rhs);
       std::unordered_map<int, std::string> correct = {
-          {1, "one"}, {2, "two"}, {3, "three"}, {4, "four"}};
+          {1, "one"},
+          {2, "two"},
+          {3, "three"},
+      };
 
-      CHECK(result == correct);
+      SUBCASE("MergeMethod::REQUIRE_DISJOINT") {
+        std::unordered_map<int, std::string> result =
+            merge_maps(l_map, r_map, MergeMethod::REQUIRE_DISJOINT);
+
+        CHECK(result == correct);
+      }
+
+      SUBCASE("MergeMethod::LEFT_DOMINATES") {
+        std::unordered_map<int, std::string> result =
+            merge_maps(l_map, r_map, MergeMethod::LEFT_DOMINATES);
+
+        CHECK(result == correct);
+      }
+
+      SUBCASE("MergeMethod::RIGHT_DOMINATES") {
+        std::unordered_map<int, std::string> result =
+            merge_maps(l_map, r_map, MergeMethod::RIGHT_DOMINATES);
+
+        CHECK(result == correct);
+      }
     }
 
-    SUBCASE("overlapping keys") {
-      std::unordered_map<int, std::string> lhs = {{1, "one"}, {2, "two"}};
-      std::unordered_map<int, std::string> rhs = {{2, "three"}, {3, "four"}};
+    SUBCASE("maps are not disjoint") {
+      std::unordered_map<int, std::string> l_map = {
+          {1, "one"},
+          {2, "left_two"},
+      };
 
-      CHECK_THROWS(merge_maps(lhs, rhs));
+      std::unordered_map<int, std::string> r_map = {
+          {2, "right_two"},
+          {3, "three"},
+      };
+
+      SUBCASE("MergeMethod::REQUIRE_DISJOINT") {
+        CHECK_THROWS(merge_maps(l_map, r_map, MergeMethod::REQUIRE_DISJOINT));
+      }
+
+      SUBCASE("MergeMethod::LEFT_DOMINATES") {
+        std::unordered_map<int, std::string> correct = {
+            {1, "one"},
+            {2, "left_two"},
+            {3, "three"},
+        };
+
+        std::unordered_map<int, std::string> result =
+            merge_maps(l_map, r_map, MergeMethod::LEFT_DOMINATES);
+
+        CHECK(result == correct);
+      }
+
+      SUBCASE("MergeMethod::RIGHT_DOMINATES") {
+        std::unordered_map<int, std::string> correct = {
+            {1, "one"},
+            {2, "right_two"},
+            {3, "three"},
+        };
+
+        std::unordered_map<int, std::string> result =
+            merge_maps(l_map, r_map, MergeMethod::RIGHT_DOMINATES);
+
+        CHECK(result == correct);
+      }
     }
   }
 }

@@ -6,6 +6,7 @@
 namespace FlexFlow {
 
 TensorAttributePattern tensor_attribute_pattern_match_all();
+TensorAttributePattern tensor_attr_pattern_require_num_dims(int num_dims);
 
 } // namespace FlexFlow
 

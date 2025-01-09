@@ -1,4 +1,4 @@
-#include "substitutions/substitution_internal/evaluate_substitution_output.h"
+#include "substitutions/apply_substitution/evaluate_substitution_output.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include "substitutions/open_parallel_tensor_guid_t.h"
 #include "substitutions/operator_pattern/operator_attribute_constraint.h"
@@ -64,20 +64,23 @@ TEST_SUITE(FF_TEST_SUITE) {
         OutputGraphExprInput{output_g.add_input({})};
 
     OutputOperatorAttrsAssignment fused_mm_relu_attrs_assignment =
-        OutputOperatorAttrsAssignment{{
-            set_attr_to_constant(OperatorAttributeKey::OP_TYPE,
-                                 OperatorAttributeValue{OperatorType::LINEAR}),
-            copy_attr_from_pattern_node(OperatorAttributeKey::OUT_CHANNELS,
-                                        pattern_mm_node),
-            copy_attr_from_pattern_node(OperatorAttributeKey::USE_BIAS,
-                                        pattern_mm_node),
-            copy_attr_from_pattern_node(OperatorAttributeKey::DATA_TYPE,
-                                        pattern_mm_node),
-            set_attr_to_constant(OperatorAttributeKey::ACTIVATION,
-                                 OperatorAttributeValue{Activation::RELU}),
-            copy_attr_from_pattern_node(OperatorAttributeKey::REGULARIZER,
-                                        pattern_mm_node),
-        }};
+        OutputOperatorAttrsAssignment{
+            std::nullopt,
+            {
+                set_attr_to_constant(
+                    OperatorAttributeKey::OP_TYPE,
+                    OperatorAttributeValue{OperatorType::LINEAR}),
+                copy_attr_from_pattern_node(OperatorAttributeKey::OUT_CHANNELS,
+                                            pattern_mm_node),
+                copy_attr_from_pattern_node(OperatorAttributeKey::USE_BIAS,
+                                            pattern_mm_node),
+                copy_attr_from_pattern_node(OperatorAttributeKey::DATA_TYPE,
+                                            pattern_mm_node),
+                set_attr_to_constant(OperatorAttributeKey::ACTIVATION,
+                                     OperatorAttributeValue{Activation::RELU}),
+                copy_attr_from_pattern_node(OperatorAttributeKey::REGULARIZER,
+                                            pattern_mm_node),
+            }};
     NodeAddedResult fused_mm_relu_added = output_g.add_node(
         fused_mm_relu_attrs_assignment,
         {OpenDataflowValue{output_i_activation.raw_dataflow_graph_input},

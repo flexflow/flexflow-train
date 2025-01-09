@@ -2,13 +2,16 @@
 #include "utils/dot_file.h"
 #include "utils/graph/dataflow_graph/algorithms.h"
 #include "utils/graph/dataflow_graph/algorithms/as_dot.h"
+#include "utils/graph/labelled_dataflow_graph/labelled_dataflow_graph.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_incoming_edges.h"
+#include "utils/graph/open_dataflow_graph/algorithms/get_inputs.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_open_dataflow_graph_inputs.h"
 
 namespace FlexFlow {
 
 std::string as_dot(OpenDataflowGraphView const &g) {
+
   std::function<std::string(Node const &)> get_node_label = [](Node const &n) {
     return fmt::format("n{}", n.raw_uid);
   };

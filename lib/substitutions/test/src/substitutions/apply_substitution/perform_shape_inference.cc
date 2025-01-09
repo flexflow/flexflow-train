@@ -1,4 +1,4 @@
-#include "substitutions/substitution_internal/perform_shape_inference.h"
+#include "substitutions/apply_substitution/perform_shape_inference.h"
 #include "op-attrs/ops/element_unary.h"
 #include "op-attrs/ops/linear.h"
 #include "op-attrs/parallel_tensor_shape.h"
