@@ -3,7 +3,7 @@
 ## Setup
 
 > [!NOTE]
-> If you are developing on Stanford's sapling cluster, instead see the instructions at [TODO].
+> If you are developing on Stanford's sapling cluster, instead see the instructions [here](./docs/SAPLING.md).
 > If you don't know what this means, you're not using sapling so you should just continue reading.
 
 1. FlexFlow Train uses [nix](https://nix.dev/manual/nix/2.24/) to manage dependencies and the development environment. 
