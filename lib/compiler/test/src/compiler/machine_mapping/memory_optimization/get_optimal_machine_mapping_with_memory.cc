@@ -1,10 +1,10 @@
-#include "compiler/machine_mapping/get_optimal_machine_mapping.h"
-#include "./cost_estimator_for_test.h"
+#include "compiler/machine_mapping/memory_optimization/get_optimal_machine_mapping_with_memory.h"
+#include "../cost_estimator_for_test.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.h"
-#include "compiler/machine_mapping/machine_mapping_cache.h"
 #include "compiler/machine_mapping/machine_mapping_constraints.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
+#include "compiler/machine_mapping/memory_optimization/machine_mapping_with_memory_cache.h"
 #include "pcg/machine_view.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include "utils/containers/get_only.h"
@@ -14,7 +14,7 @@
 using namespace FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("get_optimal_machine_mapping") {
+  TEST_CASE("get_optimal_machine_mapping_with_memory") {
     auto make_leaf = [](UnmappedOpCostEstimateKey const &k) {
       return MachineMappingProblemTree{k};
     };
@@ -144,19 +144,13 @@ TEST_SUITE(FF_TEST_SUITE) {
             {binary_tree_root_path(), mv2},
         }};
 
-    auto map1 = std::unordered_map<OpCostEstimateKey, OpCostMetrics>{{
-        {map_unmapped_op_cost_estimate_key(k1, mv1),
-         OpCostMetrics{/*runtime=*/1.0, /*memory=*/0}},
-        {map_unmapped_op_cost_estimate_key(k2, mv1),
-         OpCostMetrics{/*runtime=*/2.0, /*memory=*/0}},
-        {map_unmapped_op_cost_estimate_key(k1, mv2),
-         OpCostMetrics{/*runtime=*/1.5, /*memory=*/0}},
-        {map_unmapped_op_cost_estimate_key(k2, mv2),
-         OpCostMetrics{/*runtime=*/2.5, /*memory=*/0}},
-    }};
-
     CostEstimator cost_estimator = make_fake_cost_estimator(
-        map1,
+        std::unordered_map<OpCostEstimateKey, OpCostMetrics>{{
+            {map_unmapped_op_cost_estimate_key(k1, mv1), OpCostMetrics{1.0, 2}},
+            {map_unmapped_op_cost_estimate_key(k2, mv1), OpCostMetrics{2.0, 3}},
+            {map_unmapped_op_cost_estimate_key(k1, mv2), OpCostMetrics{1.5, 1}},
+            {map_unmapped_op_cost_estimate_key(k2, mv2), OpCostMetrics{2.5, 2}},
+        }},
         std::unordered_map<TensorSetMovement, float>{{
             {TensorSetMovement{{}}, 0.0},
             {concretize_abstracted_tensor_set_movement(movement1, mm1, mm1),
@@ -174,7 +168,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         allowed_machine_views1,
     };
 
-    MachineMappingCache cache = empty_machine_mapping_cache();
+    MachineMappingWithMemoryCache cache =
+        empty_machine_mapping_with_memory_cache();
 
     SUBCASE("single layer") {
       MachineMappingProblemTree problem_tree = make_leaf(k1);
@@ -183,17 +178,23 @@ TEST_SUITE(FF_TEST_SUITE) {
           get_unconstrained_solution_for_layers(
               get_all_leaf_paths(problem_tree));
 
-      MachineMappingResult result = get_optimal_machine_mapping(
-          cache, context, problem_tree, full_machine_spec, constraints);
-      MachineMappingResult correct = MachineMappingResult{
-          FeasibleMachineMappingResult{
-              /*runtime=*/1.0,
-              /*machine_mapping=*/
+      MachineMappingWithMemoryResult result =
+          get_optimal_machine_mapping_with_memory(
+              cache, context, problem_tree, full_machine_spec, constraints);
+      MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{{
+          MachineMappingForSingleLayer{
+              OpCostMetrics{1.0, 2},
               ParallelLayerGuidObliviousMachineMapping{{
                   {binary_tree_root_path(), mv1},
               }},
           },
-      };
+          MachineMappingForSingleLayer{
+              OpCostMetrics{1.5, 1},
+              ParallelLayerGuidObliviousMachineMapping{{
+                  {binary_tree_root_path(), mv2},
+              }},
+          },
+      }};
 
       CHECK(result == correct);
     }
@@ -206,12 +207,15 @@ TEST_SUITE(FF_TEST_SUITE) {
           get_unconstrained_solution_for_layers(
               get_all_leaf_paths(problem_tree));
 
-      MachineMappingResult result = get_optimal_machine_mapping(
-          cache, context, problem_tree, full_machine_spec, constraints);
-      MachineMappingResult correct = MachineMappingResult{
-          FeasibleMachineMappingResult{
-              /*runtime=*/1.0 + 2.0 + 0.1,
-              /*machine_mapping=*/
+      MachineMappingWithMemoryResult result =
+          get_optimal_machine_mapping_with_memory(
+              cache, context, problem_tree, full_machine_spec, constraints);
+      MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{{
+          MachineMappingForSingleLayer{
+              OpCostMetrics{
+                  /*runtime=*/1.0 + 2.0 + 0.1,
+                  /*memory=*/2 + 3,
+              },
               ParallelLayerGuidObliviousMachineMapping{{
                   {
                       BinaryTreePath{{
@@ -227,7 +231,24 @@ TEST_SUITE(FF_TEST_SUITE) {
                   },
               }},
           },
-      };
+          MachineMappingForSingleLayer{
+              OpCostMetrics{1.5 + 2.5 + 0.1, 1 + 2},
+              ParallelLayerGuidObliviousMachineMapping{{
+                  {
+                      BinaryTreePath{{
+                          BinaryTreePathEntry::LEFT_CHILD,
+                      }},
+                      mv2,
+                  },
+                  {
+                      BinaryTreePath{{
+                          BinaryTreePathEntry::RIGHT_CHILD,
+                      }},
+                      mv2,
+                  },
+              }},
+          },
+      }};
 
       CHECK(result == correct);
     }
@@ -240,12 +261,12 @@ TEST_SUITE(FF_TEST_SUITE) {
           get_unconstrained_solution_for_layers(
               get_all_leaf_paths(problem_tree));
 
-      MachineMappingResult result = get_optimal_machine_mapping(
-          cache, context, problem_tree, full_machine_spec, constraints);
-      MachineMappingResult correct = MachineMappingResult{
-          FeasibleMachineMappingResult{
-              /*runtime=*/2.5,
-              /*machine_mapping=*/
+      MachineMappingWithMemoryResult result =
+          get_optimal_machine_mapping_with_memory(
+              cache, context, problem_tree, full_machine_spec, constraints);
+      MachineMappingWithMemoryResult correct =
+          MachineMappingWithMemoryResult{{MachineMappingForSingleLayer{
+              OpCostMetrics{2.5, 2},
               ParallelLayerGuidObliviousMachineMapping{{
                   {
                       BinaryTreePath{{
@@ -260,8 +281,8 @@ TEST_SUITE(FF_TEST_SUITE) {
                       mv2,
                   },
               }},
-          },
-      };
+
+          }}};
 
       CHECK(result == correct);
     }

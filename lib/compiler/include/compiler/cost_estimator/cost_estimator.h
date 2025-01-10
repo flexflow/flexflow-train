@@ -2,6 +2,7 @@
 #define _FLEXFLOW_LIB_COMPILER_INCLUDE_COMPILER_COST_ESTIMATOR_COST_ESTIMATOR_H
 
 #include "compiler/cost_estimator/op_cost_estimate_key.dtg.h"
+#include "compiler/cost_estimator/op_cost_metrics.dtg.h"
 #include "compiler/cost_estimator/tensor_set_movement.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "op-attrs/pcg_operator_attrs.dtg.h"
@@ -11,7 +12,7 @@
 namespace FlexFlow {
 
 struct ICostEstimator {
-  virtual float estimate_cost(OpCostEstimateKey const &) const = 0;
+  virtual OpCostMetrics estimate_cost(OpCostEstimateKey const &) const = 0;
   virtual float estimate_cost(TensorSetMovement const &) const = 0;
 
   ICostEstimator() = default;
@@ -23,7 +24,7 @@ struct ICostEstimator {
 CHECK_RC_COPY_VIRTUAL_COMPLIANT(ICostEstimator);
 
 struct CostEstimator {
-  float estimate_cost(OpCostEstimateKey const &k) const;
+  OpCostMetrics estimate_cost(OpCostEstimateKey const &) const;
   float estimate_cost(TensorSetMovement const &m) const;
 
   template <typename T, typename... Args>
