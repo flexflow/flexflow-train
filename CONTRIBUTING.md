@@ -19,13 +19,15 @@
       > some other non-NFS location. 
 
       While you should at least skim nix-portable's setup instructions, you'll probably end up doing something like this:
-      ```console
+      ```
       $ USERBIN="${XDG_BIN_HOME:-$HOME/.local/bin}"
       $ wget 'https://github.com/DavHau/nix-portable/releases/download/v010/nix-portable' -O "$USERBIN/nix-portable"
       ...
       $ chmod u+x "$USERBIN/nix-portable"
       ...
       $ ln -sf "$USERBIN/nix-portable" "$USERBIN/nix"
+      ...
+      $ echo 'export PATH=$USERBIN:$PATH' >> ~/.bashrc
       ...
       ```
       Now if everything is setup properly, you should be able to see something like the following (don't worry if the version number is slightly different) if you run `nix --version`:
@@ -36,7 +38,7 @@
 
 2. Clone the flexflow-train repository (or, if you'd prefer, follow the alternative setup instructions in the [ff-dev](#ff-dev) section)
 
-```console
+```
 $ FF_DIR="$HOME/flexflow-train" # or wherever else you want to put the repository
 $ git clone --recursive git@github.com:flexflow/flexflow-train.git "$FF_DIR"
 ...
@@ -44,28 +46,27 @@ $ git clone --recursive git@github.com:flexflow/flexflow-train.git "$FF_DIR"
 
 3. Enter the nix-provided development environment
 
-```console
+```
 $ cd "$FF_DIR"
 $ nix develop . --accept-flake-config
 ```
 
 4. Build and run the tests
 
-```console
+```
 (ff) $ proj cmake
 ...
 (ff) $ proj test
 ...
 ```
 If everything is correctly configured, you should see a bunch of build messages followed by something like
-```console
+```
 (ff) $ proj test
 TODO
 ```
 
-If you don't, or you see any tests failing, please double check that you have followed
-the instructions above. If you have and are still encountering an issue, please [contact us] with a detailed description of your platform and the 
-commands you have run.
+If you don't, or you see any tests failing, please double check that you have followed the instructions above. 
+If you have and are still encountering an issue, please [contact us](#contact-us) with a detailed description of your platform and the commands you have run.
 
 ### ff-dev
 
@@ -75,6 +76,9 @@ to automate many common git operations associated with flexflow-train developmen
 > [!NOTE]
 > ff-dev is totally optional: if you feel comfortable working with git's CLI you are more than welcome to skip this part.
 
+To setup ff-dev, run **TODO**
+
+<!--
 To use ff-dev, instead of cloning the flexflow-train repo directly, you'll instead clone ff-dev to `~/ff`:
 
 ```console
@@ -122,54 +126,82 @@ At this point, perform the following steps:
 
 Once these steps are completed, you should be able to `cd ~/ff/master` and resume the standard setup instructions from step 3 (i.e., entering the nix-provided development environment).
 You can find more instructions for how to use ff-dev [here]().
+-->
+
+## Building, Testing, etc.
+
+Most operations you'll want to perform while developing FlexFlow Train are provided through a small python utility called [proj](https://github.com/lockshaw/proj). 
+`proj` is automatically pulled in by nix when you enter the dev shell, so you should be able to run 
+```
+(ff) $ proj -h
+```
+and see the full list of operations that `proj` supports.
+`proj` commands can be run from anywhere in the repository (i.e., they do not have to be run from the root).
+To help you get started, however, a list of common command invocations is included here:
+
+- To build FlexFlow Train:
+```
+(ff) $ proj build
+```
+- To build and run FlexFlow Train tests:
+```
+(ff) $ proj test
+```
+- To regenerate CMake files (necessary anytime you switch branches or modify the CMake source. If you're ever running into weird build issues, try running this and see if it fixes things):
+```
+(ff) $ proj cmake
+```
+- To format all of the FlexFlow Train sources files: 
+```
+(ff) $ proj format
+```
+- To build the FlexFlow Train Doxygen docs:
+```
+(ff) $ proj doxygen
+```
+You can also add the `--browser` command to automatically open the built docs in your default browser if you are working on your local machine.
 
 ## Code Organization
 
 The bulk of the FlexFlow source code is stored in the following folders:
 
-1. `lib`: 
-2. `bin`:
-3. `bindings`:
-4. `docs`:
-5. `cmake`:
-6. `deps`:
-7. `config`:
+1. `lib`: The C++ code that makes up FlexFlow's core, split up into a number of libraries. You can find a description of each library [here](./lib/README.md).
+2. `bin`: Command-line interfaces for FlexFlow and associated tools (all in C++). Generally, these are just thin wrappers that parse command-line arguments and then call out to functions defined in `lib` for the actual processing/logic. You can find a description of each binary [here](./bin/README.md).
+3. `bindings`: Python (or any additional languages added in the future) bindings for FlexFlow Train
+4. `docs`: Config files for documentation generators and code for generating diagrams. The actual documentation itself is included in the source directories/files as either `.md` files or inline in the language's documentation syntax (i.e., [Doxygen](https://www.doxygen.nl/manual/index.html) for C++ and [Sphinx](https://www.sphinx-doc.org/en/master/) for Python).
+5. `cmake`: CMake configuration for building FlexFlow Train. Note that unless you're modifying the build configuration (i.e., adding a library, additional dependencies, etc.), you generally should use [proj](#proj) instead of interacting with CMake directly. 
+6. `deps`: Third-party dependencies included as submodules. Note that since FlexFlow Train moved to [nix](https://nix.dev/manual/nix/2.24/) for managing dependencies many (but not all) of these are used in the default configuration.
 
 ## Continuous Integration
 
 We currently implement CI testing using Github Workflows. Each workflow is defined by its corresponding YAML file in the [.github/workflows](.github/workflows) folder of the repo. We currently have the following workflows:
 
-1. `build.yml`: checks that the build & installation of FlexFlow succeed, using both the CMake and Makefile systems
-2. `clang-format-check.yml`: ensures that the source code is properly formatted.
-4. `gpu-ci.yml`: runs all the tests that require a GPU to run.
-8. `shell-check.yml`: runs shellcheck on all bash scripts in the repo
+1. [`per-lib-check.yml`](./.github/workflows/per-lib-check.yml): Builds and runs unit tests for all of the code under `lib` (and confusingly also `bin`). Also uploads coverage numbers to [codecov.io](https://app.codecov.io/gh/flexflow/flexflow-train).
+2. [`clang-format-check.yml`](./.github/workflows/clang-format-check.yml): ensures that the source code is properly formatted using `clang-format`. To format your code locally, run `proj format` (see [here](#proj) for more information on `proj`).
+4. [`shell-check.yml`](./.github/workflows/shell-check.yml): runs shellcheck on all bash scripts in the repo.
+
+GPU machines for CI are managed using [runs-on](https://runs-on.com/).
 
 ## Contributing to FlexFlow
 
-We want to make contributing to this project as easy and transparent as possible.
+We actively welcome your pull requests. Note that we may already be working on the feature/fix you're looking for, so we suggest searching through the [open issues](https://github.com/flexflow/flexflow-train/issues), [open PRs](https://github.com/flexflow/flexflow-train/pulls), and [contacting us](#contact-us) to make sure you're not duplicating existing effort!
 
-### Formatting
-We use `clang-format` to format our C++ code. If you make changes to the code and the Clang format CI test is failing, you can lint your code by running: `./scripts/format.sh` from the main folder of this repo.
+The steps for getting changes merged into FlexFlow are relatively standard:
 
-### Pull Requests
-We actively welcome your pull requests.
+1. [Fork the repo](https://github.com/flexflow/flexflow-train/fork) and either create a new branch based on `master`, or just modify `master` directly.
+2. If you've added code that should be tested, add tests. The process for adding tests for code under `lib` is documented [here](./lib/README.md#tests). Adding tests for other parts of the code is currently undocumented, so you will [contact us](#contact-us) for information on how to do it.
+3. Ensure the code builds (i.e., run `proj build`).
+4. Ensure the test suite passes (i.e., run `proj test`).
+5. Format the code (i.e., run `proj format`).
+6. Create a new PR from your modified branch to the `master` branch in FlexFlow Train. 
+   Provide a brief description of the changes you've made and link any related/closed issues.
 
-1. Fork the repo and create your branch from `master`.
-2. If you've added code that should be tested, add tests.
-3. If you've changed APIs, update the documentation.
-4. Ensure the test suite passes.
-5. Make sure your code lints.
+## Contact Us
 
-### Contact Us
+Either [create an issue](https://github.com/flexflow/flexflow-train/issues/new) or join the [Zulip](https://flexflow.zulipchat.com/join/mtiwtwttgggnivrkb6vlakbr/). 
+For any reported bugs, please ensure that your description clear and has sufficient information for us to reproduce the issue.
 
-[Zulip](https://flexflow.zulipchat.com/join/mtiwtwttgggnivrkb6vlakbr/) <!-- guest link -->
+## License
 
-### Issues
-
-We use GitHub issues to track public bugs. Please ensure your description is
-clear and has sufficient instructions to be able to reproduce the issue.
-
-### License
-
-By contributing to FlexFlow, you agree that your contributions will be licensed
-under the LICENSE file in the root directory of this source tree.
+By contributing to FlexFlow Train, you agree that your contributions will be licensed
+under the [LICENSE](./LICENSE) file in the root directory of this source tree.
