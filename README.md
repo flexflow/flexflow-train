@@ -1,4 +1,4 @@
-# flexflow-train
+# FlexFlow Train
 [![clang-format Check](https://github.com/flexflow/flexflow-train/actions/workflows/clang-format-check.yml/badge.svg?branch=master)](https://github.com/flexflow/flexflow-train/actions/workflows/clang-format-check.yml)
 [![per-lib-checks](https://github.com/flexflow/flexflow-train/actions/workflows/per-lib-check.yml/badge.svg)](https://github.com/flexflow/flexflow-train/actions/workflows/per-lib-check.yml)
 [![shell-check](https://github.com/flexflow/flexflow-train/actions/workflows/shell-check.yml/badge.svg)](https://github.com/flexflow/flexflow-train/actions/workflows/shell-check.yml)
@@ -9,7 +9,7 @@
 > You are currently viewing [flexflow-train](https://github.com/flexflow/flexflow-train). 
 > For anything inference/serving-related, go to [flexflow-serve](https://github.com/flexflow/flexflow-serve). 
 
-FlexFlow is a deep learning framework that accelerates distributed DNN training by automatically searching for efficient parallelization strategies. 
+FlexFlow Train is a deep learning framework that accelerates distributed DNN training by automatically searching for efficient parallelization strategies. 
 
 <!--
 FlexFlow provides a drop-in replacement for PyTorch and TensorFlow Keras. Running existing PyTorch and Keras programs in FlexFlow only requires [a few lines of changes to the program](https://flexflow.ai/keras).
@@ -99,7 +99,7 @@ We welcome all contributions to FlexFlow Train from bug fixes to new features an
 * Zhihao Jia, Sina Lin, Charles R. Qi, and Alex Aiken. [Exploring Hidden Dimensions in Parallelizing Convolutional Neural Networks](http://proceedings.mlr.press/v80/jia18a/jia18a.pdf). In Proceedings of the International Conference on Machine Learning (ICML), July 2018.
 
 ## The Team
-FlexFlow is developed and maintained by teams at CMU, Facebook, Los Alamos National Lab, MIT, Stanford, and UCSD (alphabetically).
+FlexFlow Train is developed and maintained by teams at CMU, Facebook, Los Alamos National Lab, MIT, Stanford, and UCSD (alphabetically).
 
 ## License
 FlexFlow Train uses Apache License 2.0.
