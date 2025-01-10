@@ -34,7 +34,7 @@
       nix (Nix) 2.20.6
       ```
 
-2. Clone the FlexFlow Train repository (or, if you'd prefer, follow the alternative setup instructions in the [ff-dev](#ff-dev) section)
+2. Clone the FlexFlow Train repository (or, if you'd prefer, follow the alternative setup instructions in the [ff-dev](#ff-dev-optional) section)
 
 ```
 $ FF_DIR="$HOME/flexflow-train" # or wherever else you want to put the repository
@@ -182,7 +182,7 @@ The bulk of the FlexFlow source code is stored in the following folders:
 2. `bin`: Command-line interfaces for FlexFlow and associated tools (all in C++). Generally, these are just thin wrappers that parse command-line arguments and then call out to functions defined in `lib` for the actual processing/logic. You can find a description of each binary [here](./bin/README.md).
 3. `bindings`: Python (or any additional languages added in the future) bindings for FlexFlow Train
 4. `docs`: Config files for documentation generators and code for generating diagrams. The actual documentation itself is included in the source directories/files as either `.md` files or inline in the language's documentation syntax (i.e., [Doxygen](https://www.doxygen.nl/manual/index.html) for C++ and [Sphinx](https://www.sphinx-doc.org/en/master/) for Python).
-5. `cmake`: CMake configuration for building FlexFlow Train. Note that unless you're modifying the build configuration (i.e., adding a library, additional dependencies, etc.), you generally should use [proj](#proj) instead of interacting with CMake directly. 
+5. `cmake`: CMake configuration for building FlexFlow Train. Note that unless you're modifying the build configuration (i.e., adding a library, additional dependencies, etc.), you generally should use [proj](#building-testing-etc) instead of interacting with CMake directly. 
 6. `deps`: Third-party dependencies included as submodules. Note that since FlexFlow Train moved to [nix](https://nix.dev/manual/nix/2.24/) for managing dependencies many (but not all) of these are used in the default configuration.
 
 ## Continuous Integration
@@ -190,7 +190,7 @@ The bulk of the FlexFlow source code is stored in the following folders:
 We currently implement CI testing using Github Workflows. Each workflow is defined by its corresponding YAML file in the [.github/workflows](.github/workflows) folder of the repo. We currently have the following workflows:
 
 1. [`per-lib-check.yml`](./.github/workflows/per-lib-check.yml): Builds and runs unit tests for all of the code under `lib` (and confusingly also `bin`). Also uploads coverage numbers to [codecov.io](https://app.codecov.io/gh/flexflow/flexflow-train).
-2. [`clang-format-check.yml`](./.github/workflows/clang-format-check.yml): ensures that the source code is properly formatted using `clang-format`. To format your code locally, run `proj format` (see [here](#proj) for more information on `proj`).
+2. [`clang-format-check.yml`](./.github/workflows/clang-format-check.yml): ensures that the source code is properly formatted using `clang-format`. To format your code locally, run `proj format` (see [here](#building-testing-etc) for more information on `proj`).
 4. [`shell-check.yml`](./.github/workflows/shell-check.yml): runs shellcheck on all bash scripts in the repo.
 
 GPU machines for CI are managed using [runs-on](https://runs-on.com/).
