@@ -4,9 +4,9 @@
 
 > [!NOTE]
 > If you are developing on Stanford's sapling cluster, instead see the instructions at [TODO].
-> If you don't know what this means, don't worry about it: just continue reading.
+> If you don't know what this means, you're not using sapling so you should just continue reading.
 
-1. flexflow-train uses [nix](https://nix.dev/manual/nix/2.24/) to manage dependencies and the development environment. 
+1. FlexFlow Train uses [nix](https://nix.dev/manual/nix/2.24/) to manage dependencies and the development environment. 
    There exist a number of ways to install nix, but we recommend one of the following:
 
    1. If you have root permissions: [DeterminateSystems/nix-installer](https://github.com/DeterminateSystems/nix-installer)
@@ -34,7 +34,7 @@
       nix (Nix) 2.20.6
       ```
 
-2. Clone the flexflow-train repository (or, if you'd prefer, follow the alternative setup instructions in the [ff-dev](#ff-dev) section)
+2. Clone the FlexFlow Train repository (or, if you'd prefer, follow the alternative setup instructions in the [ff-dev](#ff-dev) section)
 
 ```
 $ FF_DIR="$HOME/flexflow-train" # or wherever else you want to put the repository
@@ -44,7 +44,7 @@ $ git clone --recursive git@github.com:flexflow/flexflow-train.git "$FF_DIR"
 
 3. Enter the nix-provided development environment[^1]
 
-[^1] aka "dev shell"
+[^1]: aka "dev shell"
 
 ```
 $ cd "$FF_DIR"
@@ -70,16 +70,13 @@ If you have and are still encountering an issue, please [contact us](#contact-us
 
 ### ff-dev (optional)
 
-Many of the flexflow-train developers use an additional set of scripts called [ff-dev](https://github.com/lockshaw/ff-dev) 
-to automate many common git operations associated with flexflow-train development. 
-
-<!--> [!NOTE]-->
-<!--> ff-dev is totally optional: if you feel comfortable working with git's CLI you are more than welcome to skip this part.-->
+Many of the FlexFlow Train developers use an additional set of scripts called [ff-dev](https://github.com/lockshaw/ff-dev) 
+to automate many common git operations associated with FlexFlow Train development. 
 
 To setup ff-dev, run **TODO**
 
 <!--
-To use ff-dev, instead of cloning the flexflow-train repo directly, you'll instead clone ff-dev to `~/ff`:
+To use ff-dev, instead of cloning the FlexFlow Train repo directly, you'll instead clone ff-dev to `~/ff`:
 
 ```console
 $ git clone --recursive git@github.com:lockshaw/ff-dev.git "$HOME/ff"
@@ -97,12 +94,12 @@ $ ff-dev-init
 
 > [!NOTE]
 > The development environment provided by ff-dev is different than the environment provided 
-> by flexflow-train. Whenever you are running any scripts from ff-dev, make sure that your 
-> shell prompt begins with `(ff-dev)`. Whenever you are actually doing flexflow-train development,
+> by FlexFlow Train. Whenever you are running any scripts from ff-dev, make sure that your 
+> shell prompt begins with `(ff-dev)`. Whenever you are actually doing FlexFlow Train development,
 > make sure that your shell prompt begins with `(ff)`.
 
 As part of `ff-dev-init`, you'll likely need to add a github authentication token to allow `ff-dev` to
-create and modify your fork of the flexflow-train repository. 
+create and modify your fork of the FlexFlow Train repository. 
 If this is necessary, you'll see a prompt saying something like 
 
 ```console
