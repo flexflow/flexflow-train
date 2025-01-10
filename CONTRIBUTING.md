@@ -211,7 +211,7 @@ The steps for getting changes merged into FlexFlow are relatively standard:
 
 ## Contact Us
 
-Either [create an issue](https://github.com/flexflow/flexflow-train/issues/new) or join the [Zulip](https://flexflow.zulipchat.com/join/mtiwtwttgggnivrkb6vlakbr/). 
+Either [create an issue](https://github.com/flexflow/flexflow-train/issues/new) or join the FlexFlow [Zulip](https://flexflow.zulipchat.com/join/mtiwtwttgggnivrkb6vlakbr/) instance. 
 For any reported bugs, please ensure that your description clear and has sufficient information for us to reproduce the issue.
 
 ## License
