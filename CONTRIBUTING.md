@@ -12,11 +12,9 @@
    1. If you have root permissions: [DeterminateSystems/nix-installer](https://github.com/DeterminateSystems/nix-installer)
 
    2. If you don't have root permissions: [DavHau/nix-portable](https://github.com/DavHau/nix-portable). 
-      
-      > [!NOTE]
-      > nix-portable does not work particularly well if the nix store is in NFS, so if you are running on an 
-      > HPC cluster where the home directory is mounted via NFS we recommend setting the `NP_LOCATION` environment to `/tmp` or 
-      > some other non-NFS location. 
+      Note that nix-portable does not work particularly well if the nix store is in NFS, so if you are running on an 
+      HPC cluster where the home directory is mounted via NFS we recommend setting the `NP_LOCATION` environment to `/tmp` or 
+      some other non-NFS location. 
 
       While you should at least skim nix-portable's setup instructions, you'll probably end up doing something like this:
       ```
@@ -44,11 +42,13 @@ $ git clone --recursive git@github.com:flexflow/flexflow-train.git "$FF_DIR"
 ...
 ```
 
-3. Enter the nix-provided development environment
+3. Enter the nix-provided development environment[^1]
+
+[^1] aka "dev shell"
 
 ```
 $ cd "$FF_DIR"
-$ nix develop . --accept-flake-config
+$ nix develop --accept-flake-config
 ```
 
 4. Build and run the tests
@@ -68,13 +68,13 @@ TODO
 If you don't, or you see any tests failing, please double check that you have followed the instructions above. 
 If you have and are still encountering an issue, please [contact us](#contact-us) with a detailed description of your platform and the commands you have run.
 
-### ff-dev
+### ff-dev (optional)
 
 Many of the flexflow-train developers use an additional set of scripts called [ff-dev](https://github.com/lockshaw/ff-dev) 
 to automate many common git operations associated with flexflow-train development. 
 
-> [!NOTE]
-> ff-dev is totally optional: if you feel comfortable working with git's CLI you are more than welcome to skip this part.
+<!--> [!NOTE]-->
+<!--> ff-dev is totally optional: if you feel comfortable working with git's CLI you are more than welcome to skip this part.-->
 
 To setup ff-dev, run **TODO**
 
@@ -128,6 +128,22 @@ Once these steps are completed, you should be able to `cd ~/ff/master` and resum
 You can find more instructions for how to use ff-dev [here]().
 -->
 
+### nix-direnv (optional)
+
+If you installed nix system-wide (e.g., using [DeterminateSystems/nix-installer](https://github.com/DeterminateSystems/nix-installer)), 
+you can use [direnv](https://direnv.net/) to automatically enter the FlexFlow Train development environment when you `cd` into the repository, rather
+than having to manually run `nix develop`.
+[direnv](https://direnv.net) will also automatically exit the environment when you `cd` out of the repository, and (if configured using [nix-direnv](https://github.com/nix-community/nix-direnv)) will even automatically reload the environment if the `flake.nix` file changes.
+You can find the installation instructions for direnv [here](https://direnv.net/docs/installation.html), and if you would like automatic environment reloading you can also install nix-direnv using the instructions [here](https://github.com/nix-community/nix-direnv?tab=readme-ov-file#installation).
+
+Once you have direnv (and optionally nix-direnv) installed, cd into the root of your cloned FlexFlow Train repository and run
+```
+$ echo 'use flake . --accept-flake-config' > .envrc
+```
+You should see a message that the `.envrc` file you just created is blocked. 
+Run the command shown in the error message (i.e., `direnv allow`), and direnv should automatically place you in the environment.
+For more information on using direnv with nix, see [here](https://github.com/direnv/direnv/wiki/Nix).
+
 ## Building, Testing, etc.
 
 Most operations you'll want to perform while developing FlexFlow Train are provided through a small python utility called [proj](https://github.com/lockshaw/proj). 
@@ -140,26 +156,26 @@ and see the full list of operations that `proj` supports.
 To help you get started, however, a list of common command invocations is included here:
 
 - To build FlexFlow Train:
-```
-(ff) $ proj build
-```
+  ```
+  (ff) $ proj build
+  ```
 - To build and run FlexFlow Train tests:
-```
-(ff) $ proj test
-```
+  ```
+  (ff) $ proj test
+  ```
 - To regenerate CMake files (necessary anytime you switch branches or modify the CMake source. If you're ever running into weird build issues, try running this and see if it fixes things):
-```
-(ff) $ proj cmake
-```
+  ```
+  (ff) $ proj cmake
+  ```
 - To format all of the FlexFlow Train sources files: 
-```
-(ff) $ proj format
-```
+  ```
+  (ff) $ proj format
+  ```
 - To build the FlexFlow Train Doxygen docs:
-```
-(ff) $ proj doxygen
-```
-You can also add the `--browser` command to automatically open the built docs in your default browser if you are working on your local machine.
+  ```
+  (ff) $ proj doxygen
+  ```
+  You can also add the `--browser` command to automatically open the built docs in your default browser if you are working on your local machine.
 
 ## Code Organization
 
