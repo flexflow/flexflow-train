@@ -7,10 +7,11 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph.dtg.h"
 
 namespace FlexFlow {
-float task_simulator_forward_pass(ParallelComputationGraph const &pcg,
-                                  CostEstimator const &estimator,
-                                  MachineMapping const &machine_mapping,
-                                  MachineSpecification const &machine_spec);
+float task_simulator_estimate_forward_pass_time(
+    ParallelComputationGraph const &pcg,
+    CostEstimator const &estimator,
+    MachineMapping const &machine_mapping,
+    MachineSpecification const &machine_spec);
 
 } // namespace FlexFlow
 

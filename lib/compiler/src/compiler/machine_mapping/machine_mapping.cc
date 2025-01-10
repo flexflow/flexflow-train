@@ -28,9 +28,7 @@ std::unordered_map<parallel_layer_guid_t, std::unordered_set<device_id_t>>
   std::unordered_map<parallel_layer_guid_t, std::unordered_set<device_id_t>>
       device_mapping;
   for (auto const &[layer, machine_view] : machine_mapping.machine_views) {
-    parallel_tensor_guid_t out_tensor = get_layer_outputs(pcg, layer).at(0);
-    OperatorTaskSpace op =
-        get_operator_task_space(get_parallel_tensor_shape(pcg, out_tensor));
+    OperatorTaskSpace op = get_operator_task_space(pcg, layer);
     device_mapping.insert(
         {layer, get_device_ids(op, machine_view, machine_spec)});
   }

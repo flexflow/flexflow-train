@@ -105,7 +105,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
   }
 
-  TEST_CASE("get_source_layer") {
+  TEST_CASE(
+      "get_source_layer(ParallelComputationGraph, parallel_tensor_guid_t)") {
     ParallelTensorShape tensor_shape = ParallelTensorShape{
         ParallelTensorDims{
             FFOrdered<ShardParallelDim>{
@@ -131,11 +132,9 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_layer_guid_t layer1 = layer1_added.parallel_layer;
       parallel_tensor_guid_t tensor1 = get_only(layer1_added.outputs);
 
-      SUBCASE("get_source_layer") {
-        parallel_layer_guid_t result = get_source_layer(pcg, tensor1);
-        parallel_layer_guid_t correct = layer1;
-        CHECK(result == correct);
-      }
+      parallel_layer_guid_t result = get_source_layer(pcg, tensor1);
+      parallel_layer_guid_t correct = layer1;
+      CHECK(result == correct);
     }
 
     SUBCASE("two connected layers") {
@@ -148,14 +147,12 @@ TEST_SUITE(FF_TEST_SUITE) {
           add_parallel_layer(pcg, layer_label, {tensor1}, {tensor_label});
       parallel_layer_guid_t layer2 = layer2_added.parallel_layer;
 
-      SUBCASE("get_source_layer") {
-        parallel_layer_guid_t result = get_source_layer(pcg, tensor1);
-        parallel_layer_guid_t correct = layer1;
-        CHECK(result == correct);
-      }
+      parallel_layer_guid_t result = get_source_layer(pcg, tensor1);
+      parallel_layer_guid_t correct = layer1;
+      CHECK(result == correct);
     }
 
-    SUBCASE("three layers in serial") {
+    SUBCASE("three layers in series") {
       ParallelLayerAddedResult layer1_added =
           add_parallel_layer(pcg, layer_label, {}, {tensor_label});
       parallel_layer_guid_t layer1 = layer1_added.parallel_layer;
@@ -170,13 +167,13 @@ TEST_SUITE(FF_TEST_SUITE) {
           add_parallel_layer(pcg, layer_label, {tensor2}, {tensor_label});
       parallel_layer_guid_t layer3 = layer3_added.parallel_layer;
 
-      SUBCASE("get_source_layer - tensor 1") {
+      SUBCASE("tensor 1") {
         parallel_layer_guid_t result = get_source_layer(pcg, tensor1);
         parallel_layer_guid_t correct = layer1;
         CHECK(result == correct);
       }
 
-      SUBCASE("get_source_layer - tensor 2") {
+      SUBCASE("tensor 2") {
         parallel_layer_guid_t result = get_source_layer(pcg, tensor2);
         parallel_layer_guid_t correct = layer2;
         CHECK(result == correct);

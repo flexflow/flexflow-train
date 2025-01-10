@@ -1,4 +1,3 @@
-
 namespace = "FlexFlow"
 name = "TimedLayer"
 features = [
@@ -13,9 +12,9 @@ includes = [
 ]
 
 [[fields]]
-name = "layer"
-type = "::FlexFlow::parallel_layer_guid_t"
-
-[[fields]]
 name = "endtime"
 type = "float"
+
+[[fields]]
+name = "layer"
+type = "::FlexFlow::parallel_layer_guid_t"

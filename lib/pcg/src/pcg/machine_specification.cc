@@ -51,12 +51,4 @@ device_id_t get_device_id(MachineSpecification const &ms,
   return device_id_from_index(raw_idx, coord.device_type);
 }
 
-std::unordered_set<device_id_t>
-    get_device_ids(MachineSpecification const &ms,
-                   std::unordered_set<MachineSpaceCoordinate> const &coords) {
-  return transform(coords, [&](MachineSpaceCoordinate const &coord) {
-    return get_device_id(ms, coord);
-  });
-}
-
 } // namespace FlexFlow

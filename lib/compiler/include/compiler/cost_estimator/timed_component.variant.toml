@@ -1,0 +1,19 @@
+namespace = "FlexFlow"
+name = "TimedComponent"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+  "ord"
+]
+
+includes = [ 
+  "compiler/cost_estimator/timed_dependency.dtg.h",
+  "compiler/cost_estimator/timed_layer.dtg.h",
+]
+
+[[values]]
+type = "::FlexFlow::TimedLayer"
+
+[[values]]
+type = "::FlexFlow::TimedDependency"

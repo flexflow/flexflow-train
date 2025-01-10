@@ -21,10 +21,6 @@ bool is_valid_machine_space_coordinate(MachineSpecification const &ms,
 device_id_t get_device_id(MachineSpecification const &ms,
                           MachineSpaceCoordinate const &coord);
 
-std::unordered_set<device_id_t>
-    get_device_ids(MachineSpecification const &ms,
-                   std::unordered_set<MachineSpaceCoordinate> const &coords);
-
 } // namespace FlexFlow
 
 #endif

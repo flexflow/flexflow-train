@@ -42,11 +42,11 @@ MachineView machine_view_from_strides_and_machine_spec_dimensions(
     std::vector<stride_t> const &strides,
     std::vector<MachineSpecificationDimension> const &dims) {
   if (strides.size() != dims.size()) {
-    throw mk_runtime_error(
-        fmt::format("Dimensions of {} and {} must match when calling "
-                    "machine_view_from_strides_and_machine_spec_dimensions",
-                    start,
-                    strides));
+    throw mk_runtime_error(fmt::format(
+        "Length of strides ({}) and dims ({}) must match when calling "
+        "machine_view_from_strides_and_machine_spec_dimensions",
+        start,
+        strides));
   }
   std::vector<MachineViewDimension> dimensions =
       transform(zip(strides, dims), [&](auto const &p) {
@@ -61,7 +61,14 @@ std::optional<MachineSpaceCoordinate> get_machine_space_coordinate(
     TaskSpaceCoordinate const &coord,
     MachineSpecification const &machine_specification) {
 
-  assert(num_dims(machine_view) == task.degrees.size());
+  if (num_dims(machine_view) != task.degrees.size()) {
+    throw mk_runtime_error(
+        fmt::format("Dimension of machine_view ({}) must match dimension of "
+                    "task ({}) when computing machine space coordinate",
+                    machine_view,
+                    task.degrees));
+  }
+
   auto get_dimension_indices_for_dimension =
       [&](MachineSpecificationDimension dimension) {
         std::vector<MachineSpecificationDimension> mv_dimensions =

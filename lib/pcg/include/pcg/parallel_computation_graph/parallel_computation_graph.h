@@ -41,7 +41,7 @@ std::unordered_set<ParallelComputationGraphEdge>
                        parallel_layer_guid_t const &);
 
 std::unordered_set<parallel_layer_guid_t>
-    get_source_layers(ParallelComputationGraph const &);
+    get_initial_layers(ParallelComputationGraph const &);
 
 std::vector<parallel_tensor_guid_t>
     get_incoming_tensors(ParallelComputationGraph const &,
