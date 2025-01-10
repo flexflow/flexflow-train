@@ -73,7 +73,7 @@ If you have and are still encountering an issue, please [contact us](#contact-us
 Many of the FlexFlow Train developers use an additional set of scripts called [ff-dev](https://github.com/lockshaw/ff-dev) 
 to automate many common git operations associated with FlexFlow Train development. 
 
-To setup ff-dev, run **TODO**
+To setup ff-dev, run TODO (tracked in [#1573](https://github.com/flexflow/flexflow-train/issues/1573)).
 
 <!--
 To use ff-dev, instead of cloning the FlexFlow Train repo directly, you'll instead clone ff-dev to `~/ff`:
