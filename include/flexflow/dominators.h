@@ -8,6 +8,7 @@
 #include "tl/optional.hpp"
 #include <algorithm>
 #include <functional>
+#include <limits>
 #include <queue>
 
 namespace FlexFlow::PCG::Utils {
