@@ -779,7 +779,7 @@ Legion::FutureMap
   regions[2](I/O): Residual input 1 grad
   regions[3](I): weight
 */
-void ResidualRMSNorm::peft_bwd_task(Task const *task,
+bool ResidualRMSNorm::peft_bwd_task(Task const *task,
                                     std::vector<PhysicalRegion> const &regions,
                                     Context ctx,
                                     Runtime *runtime) {
@@ -790,7 +790,7 @@ void ResidualRMSNorm::peft_bwd_task(Task const *task,
   assert(regions.size() == expected_regions);
   BatchConfig const *bc = BatchConfig::from_future(task->futures[0]);
   if (!bc->peft_bwd_applies_to_this_layer(m->layer_guid.transformer_layer_id)) {
-    return;
+    return false;
   }
 
   int rid = 0, t_rid = 0;
@@ -869,6 +869,7 @@ void ResidualRMSNorm::peft_bwd_task(Task const *task,
           false);
     }
   }
+  return true;
 }
 
 Op *ResidualRMSNorm::materialize(FFModel &ff,

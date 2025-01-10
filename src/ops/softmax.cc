@@ -539,7 +539,7 @@ FutureMap Softmax::peft_bwd(FFModel const &ff,
   return runtime->execute_index_space(ctx, launcher);
 }
 
-void Softmax::peft_bwd_task(Task const *task,
+bool Softmax::peft_bwd_task(Task const *task,
                             std::vector<PhysicalRegion> const &regions,
                             Context ctx,
                             Runtime *runtime) {
@@ -549,7 +549,7 @@ void Softmax::peft_bwd_task(Task const *task,
   BatchConfig const *bc = BatchConfig::from_future(task->futures[0]);
   SoftmaxMeta *m = *((SoftmaxMeta **)task->local_args);
   if (!bc->peft_bwd_applies_to_this_layer(m->layer_guid.transformer_layer_id)) {
-    return;
+    return false;
   }
   Domain in_domain = runtime->get_index_space_domain(
       ctx, task->regions[0].region.get_index_space());
@@ -564,6 +564,7 @@ void Softmax::peft_bwd_task(Task const *task,
     Softmax::save_inference_tensors_to_file(
         m, shard_id, bc, {input_grad}, {}, {}, false);
   }
+  return true;
 }
 
 bool Softmax::get_int_parameter(PMParameter para, int *value) const {

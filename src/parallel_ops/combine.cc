@@ -491,7 +491,7 @@ void Combine::forward_task_with_type(Task const *task,
   forward_kernel<DT>(input_ptr, output_ptr, output_domain.get_volume());
 }
 
-void Combine::peft_bwd_task(Task const *task,
+bool Combine::peft_bwd_task(Task const *task,
                             std::vector<PhysicalRegion> const &regions,
                             Context ctx,
                             Runtime *runtime) {
@@ -539,6 +539,7 @@ void Combine::peft_bwd_task(Task const *task,
   } else {
     assert(false && "Unsupported data type in Combine backward");
   }
+  return true;
 }
 
 void Combine::backward_task(Task const *task,

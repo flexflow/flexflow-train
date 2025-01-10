@@ -437,7 +437,7 @@ void Replicate::forward_task(Task const *task,
   }
 }
 
-void Replicate::peft_bwd_task(Task const *task,
+bool Replicate::peft_bwd_task(Task const *task,
                               std::vector<PhysicalRegion> const &regions,
                               Context ctx,
                               Runtime *runtime) {
@@ -466,6 +466,7 @@ void Replicate::peft_bwd_task(Task const *task,
 
   backward_kernel<float>(
       output_grad_ptr, input_grad_ptr, num_elements, num_replicas);
+  return true;
 }
 
 void Replicate::backward_task(Task const *task,

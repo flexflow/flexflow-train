@@ -401,7 +401,7 @@ FutureMap
   regions[3](I/O): input 1 grad
   regions[4](I/O): input 2 grad
 */
-void SigmoidSiluMulti::peft_bwd_task(Task const *task,
+bool SigmoidSiluMulti::peft_bwd_task(Task const *task,
                                      std::vector<PhysicalRegion> const &regions,
                                      Context ctx,
                                      Runtime *runtime) {
@@ -412,7 +412,7 @@ void SigmoidSiluMulti::peft_bwd_task(Task const *task,
   SigmoidSiluMultiMeta *m = *((SigmoidSiluMultiMeta **)task->local_args);
   BatchConfig const *bc = BatchConfig::from_future(task->futures[0]);
   if (!bc->peft_bwd_applies_to_this_layer(m->layer_guid.transformer_layer_id)) {
-    return;
+    return false;
   }
 
   GenericTensorAccessorR output_grad = helperGetGenericTensorAccessorRO(
@@ -436,6 +436,7 @@ void SigmoidSiluMulti::peft_bwd_task(Task const *task,
                                                      {output_grad},
                                                      false);
   }
+  return true;
 }
 
 FutureMap SigmoidSiluMulti::inference(

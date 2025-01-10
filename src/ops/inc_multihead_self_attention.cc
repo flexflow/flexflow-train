@@ -679,7 +679,7 @@ FutureMap IncMultiHeadSelfAttention::peft_bwd(
   regions[0](I): input
   regions[1](O): output
 */
-void IncMultiHeadSelfAttention::peft_bwd_task(
+bool IncMultiHeadSelfAttention::peft_bwd_task(
     Task const *task,
     std::vector<PhysicalRegion> const &regions,
     Context ctx,
@@ -695,7 +695,7 @@ void IncMultiHeadSelfAttention::peft_bwd_task(
       *((IncMultiHeadSelfAttentionMeta **)task->local_args);
 
   if (!bc->peft_bwd_applies_to_this_layer(m->layer_guid.transformer_layer_id)) {
-    return;
+    return false;
   }
 
   assert(regions.size() == 2); // input grad, output grad
@@ -724,6 +724,7 @@ void IncMultiHeadSelfAttention::peft_bwd_task(
     IncMultiHeadSelfAttention::save_inference_tensors_to_file(
         m, shard_id, bc, {input_grad}, {}, {output_grad}, false);
   }
+  return true;
 }
 
 void IncMultiHeadSelfAttention::backward(FFModel const &ff) {

@@ -405,7 +405,7 @@ FutureMap
 }
 
 /*static*/
-void ParallelIdentity::peft_bwd_task(Task const *task,
+bool ParallelIdentity::peft_bwd_task(Task const *task,
                                      std::vector<PhysicalRegion> const &regions,
                                      Context ctx,
                                      Runtime *runtime) {
@@ -415,7 +415,7 @@ void ParallelIdentity::peft_bwd_task(Task const *task,
   ParallelIdentityMeta *m = *((ParallelIdentityMeta **)task->local_args);
   BatchConfig const *bc = BatchConfig::from_future(task->futures[0]);
   if (!bc->peft_bwd_applies_to_this_layer(m->layer_guid.transformer_layer_id)) {
-    return;
+    return false;
   }
   GenericTensorAccessorW input_grad = helperGetGenericTensorAccessorRW(
       m->input_type[0], regions[0], task->regions[0], FID_DATA, ctx, runtime);
@@ -432,6 +432,7 @@ void ParallelIdentity::peft_bwd_task(Task const *task,
     ParallelIdentity::save_inference_tensors_to_file(
         m, shard_id, bc, {input_grad}, {}, {output_grad}, false);
   }
+  return true;
 }
 
 bool ParallelIdentity::measure_operator_cost(Simulator *sim,

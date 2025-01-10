@@ -615,8 +615,8 @@ void Linear::inference_task(Task const *task,
       ctx, task->regions[0].region.get_index_space());
   LinearMeta *m = *((LinearMeta **)task->local_args);
   BatchConfig const *bc = BatchConfig::from_future(task->futures[0]);
-  std::string op_name_without_uid = get_op_name_without_uid(m);
-  std::cout << "Linear INF " << op_name_without_uid << std::endl;
+  // std::string op_name_without_uid = get_op_name_without_uid(m);
+  // std::cout << "Linear INF " << op_name_without_uid << std::endl;
   if (bc->num_tokens == 0) {
     return;
   }
@@ -729,7 +729,7 @@ FutureMap Linear::peft_bwd(FFModel const &ff,
   return runtime->execute_index_space(ctx, launcher);
 }
 
-void Linear::peft_bwd_task(Task const *task,
+bool Linear::peft_bwd_task(Task const *task,
                            std::vector<PhysicalRegion> const &regions,
                            Context ctx,
                            Runtime *runtime) {
@@ -737,10 +737,10 @@ void Linear::peft_bwd_task(Task const *task,
       ctx, task->regions[0].region.get_index_space());
   LinearMeta *m = *((LinearMeta **)task->local_args);
   BatchConfig const *bc = BatchConfig::from_future(task->futures[0]);
-  std::string op_name_without_uid = get_op_name_without_uid(m);
-  std::cout << "Linear PEFT BWD " << op_name_without_uid << std::endl;
+  // std::string op_name_without_uid = get_op_name_without_uid(m);
+  // std::cout << "Linear PEFT BWD " << op_name_without_uid << std::endl;
   if (!bc->peft_bwd_applies_to_this_layer(m->layer_guid.transformer_layer_id)) {
-    return;
+    return false;
   }
   assert(regions.size() == 3);
   assert(task->regions.size() == 3);
@@ -788,6 +788,7 @@ void Linear::peft_bwd_task(Task const *task,
     Linear::save_inference_tensors_to_file(
         m, shard_id, bc, {input_grad}, {weight}, {output_grad}, false);
   }
+  return true;
 }
 
 void Linear::forward_task(Task const *task,

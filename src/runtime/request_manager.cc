@@ -281,6 +281,7 @@ RequestManager::RequestManager()
   max_sequence_length = -1;
   max_finetuning_sequence_length = -1;
   step_idx = 0;
+  run_idx = 0;
 }
 
 void RequestManager::set_verbose(bool verbose_) { verbose = verbose_; }
@@ -1278,13 +1279,19 @@ void RequestManager::add_finetuning_req_bwd_batch(BatchConfig &new_bc) {
       new_bc, inference_batch_size, get_peft_config(request.peft_model_id));
   new_bc.requestsInfo[inference_batch_size].finetuning_request = true;
   new_bc.requestsInfo[inference_batch_size].finetuning_backward_phase = true;
-  new_bc.requestsInfo[inference_batch_size].peft_bwd_last_layer =
-      min(request.peft_finetuning_info.last_processed_bwd_layer - 1,
-          get_num_transformer_layers() - 1);
-  assert(new_bc.requestsInfo[inference_batch_size].peft_bwd_last_layer >= 0);
-  new_bc.requestsInfo[inference_batch_size].peft_bwd_first_layer =
-      std::max(0, new_bc.requestsInfo[inference_batch_size].peft_bwd_last_layer -
-      get_num_layers_per_finetuning_step() + 1); //inclusive
+  
+  if (get_num_layers_per_finetuning_step() == 0) {
+    new_bc.requestsInfo[inference_batch_size].peft_bwd_last_layer = new_bc.requestsInfo[inference_batch_size].peft_bwd_first_layer = INT_MAX;
+  } else {
+    new_bc.requestsInfo[inference_batch_size].peft_bwd_last_layer =
+        min(request.peft_finetuning_info.last_processed_bwd_layer - 1,
+            get_num_transformer_layers() - 1);
+    assert(new_bc.requestsInfo[inference_batch_size].peft_bwd_last_layer >= 0);
+    new_bc.requestsInfo[inference_batch_size].peft_bwd_first_layer =
+        std::max(0, new_bc.requestsInfo[inference_batch_size].peft_bwd_last_layer -
+        get_num_layers_per_finetuning_step() + 1); //inclusive
+  }
+  
   // if (new_bc.requestsInfo[inference_batch_size].peft_bwd_first_layer < 0) {
   //   std::cout << "Error: peft_bwd_first_layer < 0" << std::endl;
   //   std::cout << "new_bc: " << new_bc << std::endl;
@@ -1406,7 +1413,7 @@ void RequestManager::process_finetuning_req_bwd_progress(BatchConfig const &old_
   request.peft_finetuning_info.last_processed_bwd_layer =
       old_bc.requestsInfo[inference_batch_size].peft_bwd_first_layer;
   assert(request.peft_finetuning_info.last_processed_bwd_layer >= 0);
-  if (request.peft_finetuning_info.last_processed_bwd_layer == 0) {
+  if (request.peft_finetuning_info.last_processed_bwd_layer == 0 || get_num_transformer_layers() == 0) {
     request.peft_finetuning_info.completed_training_steps += 1;
     request.peft_finetuning_info.status = Request::FORWARD_PHASE;
     request.peft_finetuning_info.last_processed_bwd_layer = INT_MAX;
@@ -1420,6 +1427,7 @@ void RequestManager::process_finetuning_req_bwd_progress(BatchConfig const &old_
 void RequestManager::record_step_profile_info(BatchConfig const &old_bc) {
   StepProfileInfo step_profile_info;
   step_profile_info.step_idx = step_idx++;
+  step_profile_info.run_idx = run_idx;
   step_profile_info.timestamp = Realm::Clock::current_time_in_microseconds();
   // set is_warmup true if all requets in the batch are warmup requests, false otherwise
   step_profile_info.is_warmup_step = false;
@@ -1571,7 +1579,7 @@ void RequestManager::save_profiling_info_to_csv(std::string output_folder,
   if (StepInfoOutputFile.is_open()) {
     // print CSV header
     StepInfoOutputFile << "llm_model_name,dataset_name,tensor_parallelism_degree,max_requests_per_batch,max_tokens_per_batch,arrival_rate,num_warmup_requests,"
-                       << "step_idx,is_warmup_step,timestamp,num_inference_requests,num_prefilling_tokens,num_decoding_tokens,num_finetuning_fwd_tokens,num_finetuning_bwd_tokens,num_bwd_layers\n";
+                       << "run_idx,step_idx,is_warmup_step,timestamp,num_inference_requests,num_prefilling_tokens,num_decoding_tokens,num_finetuning_fwd_tokens,num_finetuning_bwd_tokens,num_bwd_layers\n";
     for (size_t i = 0; i < step_profile_infos.size(); i++) {
       StepProfileInfo &step_profile_info = step_profile_infos[i];
       StepInfoOutputFile << llm_model_name << ","
@@ -1581,6 +1589,7 @@ void RequestManager::save_profiling_info_to_csv(std::string output_folder,
                           << max_tokens_per_batch << ","
                           << arrival_rate << ","
                           << num_warmup_requests << ","
+                          << step_profile_info.run_idx << ","
                           << step_profile_info.step_idx << ","
                           << step_profile_info.is_warmup_step << ","
                           << step_profile_info.timestamp << ","
@@ -3406,6 +3415,7 @@ std::vector<GenerationResult> FFModel::generate(std::vector<Request> const &requ
   for (int i = 0; i < peft_guids.size(); i++) {
     results.push_back(rm->get_generation_result(peft_guids[i]));
   }
+  rm->run_idx++;
   return results;
 }
 

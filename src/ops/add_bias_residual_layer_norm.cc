@@ -1045,7 +1045,7 @@ Legion::FutureMap AddBiasResidualLayerNorm::peft_bwd(
   return runtime->execute_index_space(ctx, launcher);
 }
 
-void AddBiasResidualLayerNorm::peft_bwd_task(
+bool AddBiasResidualLayerNorm::peft_bwd_task(
     Task const *task,
     std::vector<PhysicalRegion> const &regions,
     Context ctx,
@@ -1056,7 +1056,7 @@ void AddBiasResidualLayerNorm::peft_bwd_task(
       *((AddBiasResidualLayerNormMeta **)task->local_args);
   assert(regions.size() == 3 + m->elementwise_affine);
   if (!bc->peft_bwd_applies_to_this_layer(m->layer_guid.transformer_layer_id)) {
-    return;
+    return false;
   }
 
   int region_idx = 0, task_region_idx = 0;
@@ -1111,6 +1111,7 @@ void AddBiasResidualLayerNorm::peft_bwd_task(
         {output_grad},
         false /*fwd_pass*/);
   }
+  return true;
 }
 
 bool AddBiasResidualLayerNorm::measure_operator_cost(

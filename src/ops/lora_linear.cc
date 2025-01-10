@@ -811,7 +811,7 @@ void Kernels::LoraLinear::save_peft_weights_if_needed(LoraLinearMeta *m,
   }
 }
 
-void LoraLinear::peft_bwd_task(Task const *task,
+bool LoraLinear::peft_bwd_task(Task const *task,
                                std::vector<PhysicalRegion> const &regions,
                                Context ctx,
                                Runtime *runtime) {
@@ -820,7 +820,7 @@ void LoraLinear::peft_bwd_task(Task const *task,
   LoraLinearMeta *m = *((LoraLinearMeta **)task->local_args);
   BatchConfig const *bc = BatchConfig::from_future(task->futures[0]);
   if (!bc->peft_bwd_applies_to_this_layer(m->layer_guid.transformer_layer_id)) {
-    return;
+    return false;
   }
   assert(regions.size() == 2);
   assert(task->regions.size() == regions.size());
@@ -845,6 +845,7 @@ void LoraLinear::peft_bwd_task(Task const *task,
   if (m->inference_debugging) {
     lora_inference_debugging(m, bc, input_grad, output_grad, shard_id);
   }
+  return true;
 }
 
 void LoraLinear::backward(FFModel const &ff) {

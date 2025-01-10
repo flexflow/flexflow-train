@@ -66,6 +66,7 @@ public:
 
 struct StepProfileInfo {
   int step_idx;
+  int run_idx;
   bool is_warmup_step;
   int num_inference_requests;
   int num_prefilling_tokens;
@@ -380,6 +381,8 @@ public:
       std::vector<Legion::PhysicalRegion> const &regions,
       Legion::Context ctx,
       Legion::Runtime *runtime);
+  
+  int run_idx=0;
 
 private:
   // configuration parameters

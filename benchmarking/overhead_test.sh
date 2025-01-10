@@ -40,7 +40,7 @@ max_finetuning_fwd_tokens_values=(
     "0,8,24,56,120,248"
     "0,8,24,56,120,248,504"
 )
-max_finetuning_bwd_layers="1,2,4,8,16,32,64"
+max_finetuning_bwd_layers="0,1,2,4,8,16,32,64"
 
 mkdir -p $OUTPUT_FOLDER
 
