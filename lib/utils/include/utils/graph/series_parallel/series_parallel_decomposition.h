@@ -24,10 +24,10 @@ bool is_empty(SeriesParallelDecomposition const &sp);
 
 bool has_no_duplicate_nodes(SeriesParallelDecomposition const &sp);
 
-SeriesParallelDecomposition delete_node(SeriesParallelDecomposition sp,
-                                        Node const &node);
-
-// duplicate nodes within `sp` are counted multiple times
+/**
+ * @brief Counts the total number of nodes in a series-parallel decomposition
+ * @note Nodes that appear multiple times in the decomposition are counted multiple times
+ */
 size_t num_nodes(SeriesParallelDecomposition const &sp);
 
 SeriesParallelDecomposition series_composition(

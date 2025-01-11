@@ -100,45 +100,6 @@ bool is_empty(SeriesParallelDecomposition const &sp) {
   return sp.visit<bool>([](auto const &t) { return is_empty(t); });
 }
 
-SeriesParallelDecomposition delete_node(SeriesParallelDecomposition sp,
-                                        Node const &n) {
-  return sp.visit<SeriesParallelDecomposition>(
-      [&n](auto const &t) { return delete_node(t, n); });
-}
-
-SeriesParallelDecomposition delete_node(ParallelSplit const &parallel,
-                                        Node const &n) {
-  std::unordered_multiset<SeriesParallelDecomposition> children;
-  for (auto const &child : parallel.get_children()) {
-    auto widened = widen<SeriesParallelDecomposition>(child);
-    if (!(widened.has<Node>() && widened.get<Node>() == n)) {
-      children.insert(delete_node(widened, n));
-    }
-  }
-  return parallel_composition(children);
-}
-
-SeriesParallelDecomposition delete_node(SeriesSplit const &serial,
-                                        Node const &n) {
-  std::vector<SeriesParallelDecomposition> children;
-  for (auto const &child : serial.children) {
-    auto widened = widen<SeriesParallelDecomposition>(child);
-    if (!(widened.has<Node>() && widened.get<Node>() == n)) {
-      children.push_back(delete_node(widened, n));
-    }
-  }
-  return series_composition(children);
-}
-
-SeriesParallelDecomposition delete_node(Node const &node, Node const &n) {
-  if (node == n) {
-    throw mk_runtime_error(
-        "Cannot delete Node from Node, only from ParallelSplit or SeriesSplit");
-  }
-
-  return SeriesParallelDecomposition{node};
-}
-
 size_t num_nodes(SeriesParallelDecomposition const &sp) {
   return sum(values(get_node_frequency_map(sp)));
 }
