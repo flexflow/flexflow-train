@@ -15,6 +15,7 @@
 #include "utils/graph/multidigraph/multidigraph.h"
 #include "utils/graph/multidigraph/multidigraph_view.h"
 #include "utils/graph/node/algorithms.h"
+#include "utils/graph/series_parallel/extended_series_reduction.dtg.h"
 #include "utils/hash/unordered_set.h"
 #include <unordered_set>
 
@@ -50,24 +51,28 @@ std::optional<SeriesReduction>
   return std::nullopt;
 }
 
-std::unordered_set<std::vector<MultiDiEdge>>
+std::unordered_set<ExtendedSeriesReduction>
     find_all_extended_series_reductions(MultiDiGraphView const &g) {
-  std::unordered_map<Node, std::unordered_set<MultiDiEdge>> incoming_edges =
-      get_incoming_edges(g);
-  std::unordered_map<Node, std::unordered_set<MultiDiEdge>> outgoing_edges =
-      get_outgoing_edges(g);
+
+  auto incoming_edges_map = get_incoming_edges(g, get_nodes(g));
+  auto outgoing_edges_map = get_outgoing_edges(g, get_nodes(g));
+
   std::unordered_map<Node, std::vector<MultiDiEdge>> strands;
   std::unordered_map<Node, Node> node_to_head_of_strand;
+
   for (Node const &n : get_topological_ordering(g)) {
-    if ((incoming_edges.at(n).size() == 1) &&
-        (outgoing_edges.at(n).size() == 1)) {
-      MultiDiEdge incoming = get_only(incoming_edges.at(n));
-      MultiDiEdge outgoing = get_only(outgoing_edges.at(n));
+    if ((incoming_edges_map.at(n).size() == 1) &&
+        (outgoing_edges_map.at(n).size() == 1)) {
+
+      MultiDiEdge incoming = get_only(incoming_edges_map.at(n));
+      MultiDiEdge outgoing = get_only(outgoing_edges_map.at(n));
       Node pre = g.get_multidiedge_src(incoming);
+
       if (contains_key(node_to_head_of_strand, pre)) {
         Node head = node_to_head_of_strand.at(pre);
         node_to_head_of_strand.emplace(n, head);
         strands.at(head).push_back(outgoing);
+
       } else {
         node_to_head_of_strand.emplace(n, n);
         strands[n].push_back(incoming);
@@ -75,7 +80,10 @@ std::unordered_set<std::vector<MultiDiEdge>>
       }
     }
   }
-  return unordered_set_of(values(strands));
+
+  return transform(unordered_set_of(values(strands)), [&](auto const &edges) {
+    return ExtendedSeriesReduction{edges};
+  });
 }
 
 MultiDiEdge apply_series_reduction(MultiDiGraph &g, SeriesReduction const &r) {
@@ -87,16 +95,18 @@ MultiDiEdge apply_series_reduction(MultiDiGraph &g, SeriesReduction const &r) {
   return g.add_edge(pre_node, post_node);
 }
 
-MultiDiEdge apply_extended_series_reduction(
-    MultiDiGraph &g, std::vector<MultiDiEdge> const &series_edges) {
+MultiDiEdge
+    apply_extended_series_reduction(MultiDiGraph &g,
+                                    ExtendedSeriesReduction const &reduction) {
 
-  Node first = g.get_multidiedge_src(series_edges.at(0));
-  Node last = g.get_multidiedge_dst(series_edges.at(series_edges.size() - 1));
+  Node first = g.get_multidiedge_src(reduction.edges.at(0));
+  Node last = g.get_multidiedge_dst(reduction.edges.back());
 
   std::vector<Node> internal_nodes;
-  for (MultiDiEdge const &e : subvec(series_edges, std::nullopt, -1)) {
+  for (MultiDiEdge const &e : subvec(reduction.edges, std::nullopt, -1)) {
     internal_nodes.push_back(g.get_multidiedge_dst(e));
   }
+
   for (Node const &n : internal_nodes) {
     g.remove_node(n);
   }

@@ -10,13 +10,13 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("std::vector") {
       std::vector<int> v = {1, 2, 3, 4, 5};
       CHECK(contains(v, 3));
-      CHECK(!contains(v, 6));
+      CHECK_FALSE(contains(v, 6));
     }
 
     SUBCASE("std::unordered_set") {
       std::unordered_set<int> s = {1, 2, 3, 4, 5};
       CHECK(contains(s, 3));
-      CHECK(!contains(s, 6));
+      CHECK_FALSE(contains(s, 6));
     }
   }
 }

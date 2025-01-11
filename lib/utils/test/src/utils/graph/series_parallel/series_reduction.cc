@@ -245,6 +245,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
     }
   }
+
   TEST_CASE("find_all_extended_series_reductions") {
     MultiDiGraph g = MultiDiGraph::create<AdjacencyMultiDiGraph>();
 
@@ -257,14 +258,14 @@ TEST_SUITE(FF_TEST_SUITE) {
                                                  {n.at(2), n.at(3)},
                                              });
 
-      std::unordered_set<std::vector<MultiDiEdge>> result =
+      std::unordered_set<ExtendedSeriesReduction> result =
           find_all_extended_series_reductions(g);
-      std::unordered_set<std::vector<MultiDiEdge>> correct = {
-          {e[0], e[1], e[2]}};
+      std::unordered_set<ExtendedSeriesReduction> correct = {
+          ExtendedSeriesReduction({e.at(0), e.at(1), e.at(2)})};
       CHECK(result == correct);
     }
 
-    SUBCASE("2 linear strands") {
+    SUBCASE("2 linear strands with a common terminal node") {
       std::vector<Node> n = add_nodes(g, 4);
       std::vector<MultiDiEdge> e = add_edges(g,
                                              {{n.at(0), n.at(1)},
@@ -272,10 +273,11 @@ TEST_SUITE(FF_TEST_SUITE) {
                                               {n.at(1), n.at(3)},
                                               {n.at(2), n.at(3)}});
 
-      std::unordered_set<std::vector<MultiDiEdge>> result =
+      std::unordered_set<ExtendedSeriesReduction> result =
           find_all_extended_series_reductions(g);
-      std::unordered_set<std::vector<MultiDiEdge>> correct = {{e[0], e[2]},
-                                                              {e[1], e[3]}};
+      std::unordered_set<ExtendedSeriesReduction> correct = {
+          ExtendedSeriesReduction({e.at(0), e.at(2)}),
+          ExtendedSeriesReduction({e.at(1), e.at(3)})};
       CHECK(result == correct);
     }
 
@@ -294,10 +296,12 @@ TEST_SUITE(FF_TEST_SUITE) {
                                               {n.at(6), n.at(8)},
                                               {n.at(7), n.at(8)}});
 
-      std::unordered_set<std::vector<MultiDiEdge>> result =
+      std::unordered_set<ExtendedSeriesReduction> result =
           find_all_extended_series_reductions(g);
-      std::unordered_set<std::vector<MultiDiEdge>> correct = {
-          {e[0], e[2], e[7]}, {e[3], e[6]}, {e[5], e[9]}};
+      std::unordered_set<ExtendedSeriesReduction> correct = {
+          ExtendedSeriesReduction({e.at(0), e.at(2), e.at(7)}),
+          ExtendedSeriesReduction({e.at(3), e.at(6)}),
+          ExtendedSeriesReduction({e.at(5), e.at(9)})};
       CHECK(result == correct);
     }
   }
@@ -310,7 +314,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::vector<MultiDiEdge> e = add_edges(
           g, {{n.at(0), n.at(1)}, {n.at(1), n.at(2)}, {n.at(2), n.at(3)}});
 
-      std::vector<MultiDiEdge> reduction = {e.at(0), e.at(1), e.at(2)};
+      ExtendedSeriesReduction reduction({e.at(0), e.at(1), e.at(2)});
 
       MultiDiEdge returned_edge = apply_extended_series_reduction(g, reduction);
 
@@ -355,7 +359,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                                                  {n.at(5), n.at(7)},
                                              });
 
-      std::vector<MultiDiEdge> reduction = {e.at(3), e.at(4), e.at(5)};
+      ExtendedSeriesReduction reduction({e.at(3), e.at(4), e.at(5)});
 
       MultiDiEdge returned_edge = apply_extended_series_reduction(g, reduction);
 
@@ -370,9 +374,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         std::unordered_set<MultiDiEdge> result_edges = get_edges(g);
         std::unordered_set<MultiDiEdge> correct_edges = [&] {
           std::unordered_set<MultiDiEdge> new_edges = unordered_set_of(e);
-          new_edges.erase(e.at(3));
-          new_edges.erase(e.at(4));
-          new_edges.erase(e.at(5));
+          new_edges = set_minus(new_edges, {e.at(3), e.at(4), e.at(5)});
           new_edges.insert(returned_edge);
           return new_edges;
         }();

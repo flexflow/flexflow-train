@@ -11,29 +11,45 @@
 using namespace FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("get_outgoing_edges(MultiDiGraph, Node)") {
+  TEST_CASE("get_outgoing_edges") {
     MultiDiGraph g = MultiDiGraph::create<AdjacencyMultiDiGraph>();
     std::vector<Node> n = add_nodes(g, 3);
 
-    std::vector<std::pair<Node, Node>> input = {
-        {n.at(0), n.at(0)},
-        {n.at(0), n.at(1)},
-        {n.at(0), n.at(1)},
-        {n.at(1), n.at(0)},
-    };
+    std::vector<MultiDiEdge> edges = add_edges(g,
+                                               {
+                                                   {n.at(0), n.at(0)},
+                                                   {n.at(0), n.at(1)},
+                                                   {n.at(0), n.at(1)},
+                                                   {n.at(0), n.at(2)},
+                                                   {n.at(1), n.at(0)},
+                                               });
 
-    std::vector<MultiDiEdge> edges = add_edges(g, input);
+    SUBCASE("get_outgoing_edges(MultiDiGraphView, Node)") {
 
-    SUBCASE("node has outgoing edges") {
-      std::unordered_set<MultiDiEdge> result = get_outgoing_edges(g, n.at(0));
-      std::unordered_set<MultiDiEdge> correct = {
-          edges.at(0), edges.at(1), edges.at(2)};
-      CHECK(result == correct);
+      SUBCASE("node has outgoing edges") {
+        std::unordered_set<MultiDiEdge> result = get_outgoing_edges(g, n.at(0));
+        std::unordered_set<MultiDiEdge> correct = {
+            edges.at(0), edges.at(1), edges.at(2), edges.at(3)};
+        CHECK(result == correct);
+      }
+
+      SUBCASE("node has no outgoing edges") {
+        std::unordered_set<MultiDiEdge> result = get_outgoing_edges(g, n.at(2));
+        std::unordered_set<MultiDiEdge> correct = {};
+        CHECK(result == correct);
+      }
     }
 
-    SUBCASE("node has no outgoing edges") {
-      std::unordered_set<MultiDiEdge> result = get_outgoing_edges(g, n.at(2));
-      std::unordered_set<MultiDiEdge> correct = {};
+    SUBCASE("get_outgoing_edges(MultiDiGraphView, std::unordered_set<Node>)") {
+
+      std::unordered_set<Node> ns = {n.at(0), n.at(1)};
+      std::unordered_map<Node, std::unordered_set<MultiDiEdge>> result =
+          get_outgoing_edges(g, ns);
+
+      std::unordered_map<Node, std::unordered_set<MultiDiEdge>> correct = {
+          {n.at(0), {edges.at(0), edges.at(1), edges.at(2), edges.at(3)}},
+          {n.at(1), {edges.at(4)}}};
+
       CHECK(result == correct);
     }
   }

@@ -1,12 +1,8 @@
 #include "utils/graph/views/views.h"
-#include "utils/bidict/algorithms/right_entries.h"
 #include "utils/containers/flatmap.h"
 #include "utils/containers/transform.h"
-#include "utils/disjoint_set.h"
-#include "utils/exception.h"
 #include "utils/graph/algorithms.h"
 #include "utils/graph/digraph/directed_edge_query.h"
-#include "utils/graph/node/algorithms.h"
 #include "utils/graph/node/node_query.h"
 #include "utils/graph/query_set.h"
 #include "utils/graph/undirected/undirected_edge_query.h"
@@ -118,8 +114,7 @@ ViewUndirectedGraphAsDiGraph *ViewUndirectedGraphAsDiGraph::clone() const {
 std::unordered_set<DirectedEdge> ViewUndirectedGraphAsDiGraph::query_edges(
     DirectedEdgeQuery const &q) const {
   std::unordered_set<UndirectedEdge> undirected_edges =
-      set_union(g.query_edges(UndirectedEdgeQuery{q.srcs}),
-                g.query_edges(UndirectedEdgeQuery{q.dsts}));
+      g.query_edges(UndirectedEdgeQuery{query_union(q.srcs, q.dsts)});
   std::unordered_set<DirectedEdge> directed_edges =
       flatmap(undirected_edges,
               [](UndirectedEdge const &e) { return to_directed_edges(e); });

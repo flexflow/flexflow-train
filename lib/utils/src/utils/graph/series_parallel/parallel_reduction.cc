@@ -1,6 +1,7 @@
 #include "utils/graph/series_parallel/parallel_reduction.h"
 #include "utils/containers/get_one_of.h"
 #include "utils/containers/group_by.h"
+#include "utils/containers/transform.h"
 #include "utils/containers/unordered_set_of.h"
 #include "utils/containers/values.h"
 #include "utils/graph/digraph/directed_edge.dtg.h"
@@ -9,6 +10,7 @@
 #include "utils/graph/multidigraph/multidiedge.dtg.h"
 #include "utils/graph/multidigraph/multidigraph.h"
 #include "utils/graph/node/algorithms.h"
+#include "utils/graph/series_parallel/extended_parallel_reduction.dtg.h"
 #include "utils/hash/unordered_set.h"
 #include <unordered_map>
 #include <unordered_set>
@@ -34,17 +36,22 @@ std::optional<ParallelReduction>
   return std::nullopt;
 }
 
-std::unordered_map<DirectedEdge, std::unordered_set<MultiDiEdge>>
+std::unordered_set<ExtendedParallelReduction>
     find_all_extended_parallel_reductions(MultiDiGraphView const &g) {
   std::unordered_map<DirectedEdge, std::unordered_set<MultiDiEdge>>
-      parallel_groups = group_by(get_edges(g), [&](MultiDiEdge const &edge) {
-        return get_directed_edge(g, edge);
-      });
+      reduction_groups;
+  for (MultiDiEdge const &edge : get_edges(g)) {
+    reduction_groups[get_directed_edge(g, edge)].insert(edge);
+  }
 
-  return filter(
-      parallel_groups,
-      [](std::pair<DirectedEdge, std::unordered_set<MultiDiEdge>> const
-             &group) { return group.second.size() > 1; });
+  std::unordered_set<std::unordered_set<MultiDiEdge>> reductions = filter(
+      unordered_set_of(values(reduction_groups)),
+      [](std::unordered_set<MultiDiEdge> const &s) { return s.size() > 1; });
+
+  return transform(reductions,
+                   [&](std::unordered_set<MultiDiEdge> const &edges) {
+                     return ExtendedParallelReduction{edges};
+                   });
 }
 
 MultiDiEdge apply_parallel_reduction(MultiDiGraph &g,
@@ -54,11 +61,11 @@ MultiDiEdge apply_parallel_reduction(MultiDiGraph &g,
 }
 
 MultiDiEdge apply_extended_parallel_reduction(
-    MultiDiGraph &g, std::unordered_set<MultiDiEdge> const &parallel_edges) {
+    MultiDiGraph &g, ExtendedParallelReduction const &reduction) {
 
-  MultiDiEdge keep_edge = get_one_of(parallel_edges);
+  MultiDiEdge keep_edge = get_one_of(reduction.edges);
 
-  for (MultiDiEdge const &parallel_edge : parallel_edges) {
+  for (MultiDiEdge const &parallel_edge : reduction.edges) {
     if (parallel_edge != keep_edge) {
       g.remove_edge(parallel_edge);
     }

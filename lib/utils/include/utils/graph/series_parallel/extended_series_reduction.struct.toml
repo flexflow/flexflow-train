@@ -1,0 +1,21 @@
+namespace = "FlexFlow"
+name = "ExtendedSeriesReduction"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "utils/graph/multidigraph/multidiedge.dtg.h",
+  "<vector>"
+]
+
+src_includes = [   
+  "utils/hash/vector.h",
+  "utils/fmt/vector.h",
+]
+
+[[fields]]
+name = "edges"
+type = "std::vector<::FlexFlow::MultiDiEdge>"

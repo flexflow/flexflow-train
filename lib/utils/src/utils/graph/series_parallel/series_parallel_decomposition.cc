@@ -99,7 +99,7 @@ bool is_empty(SeriesParallelDecomposition const &sp) {
   return sp.visit<bool>([](auto const &t) { return is_empty(t); });
 }
 
-SeriesParallelDecomposition serial_composition(
+SeriesParallelDecomposition series_composition(
     std::vector<SeriesParallelDecomposition> const &sp_compositions) {
   std::vector<std::variant<ParallelSplit, Node>> composition{};
   for (SeriesParallelDecomposition const &sp_comp : sp_compositions) {

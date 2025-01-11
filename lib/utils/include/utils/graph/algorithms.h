@@ -139,10 +139,10 @@ std::unordered_set<Node> get_neighbors(DiGraphView const &, Node const &);
 // &);
 
 // return the set of nodes without incoming edges
-std::unordered_set<Node> get_sources(DiGraphView const &);
+std::unordered_set<Node> get_initial_nodes(DiGraphView const &);
 
 // return the set of nodes without outgoing edges
-std::unordered_set<Node> get_sinks(DiGraphView const &);
+std::unordered_set<Node> get_terminal_nodes(DiGraphView const &);
 
 // std::unordered_set<Node> get_closed_sources(OpenMultiDiGraphView const &g);
 // std::unordered_set<Node> get_closed_sinks(OpenMultiDiGraphView const &g);

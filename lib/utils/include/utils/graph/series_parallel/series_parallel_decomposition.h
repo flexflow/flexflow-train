@@ -30,7 +30,7 @@ SeriesParallelDecomposition delete_node(SeriesParallelDecomposition sp,
 // duplicate nodes within `sp` are counted multiple times
 size_t num_nodes(SeriesParallelDecomposition const &sp);
 
-SeriesParallelDecomposition serial_composition(
+SeriesParallelDecomposition series_composition(
     std::vector<SeriesParallelDecomposition> const &sp_compositions);
 SeriesParallelDecomposition parallel_composition(
     std::unordered_multiset<SeriesParallelDecomposition> const

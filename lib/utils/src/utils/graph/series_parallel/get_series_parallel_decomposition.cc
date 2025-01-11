@@ -12,6 +12,7 @@
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/binary_sp_decomposition_tree.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/nary_sp_tree_from_binary.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/right_associative_binary_sp_tree_from_nary.h"
+#include "utils/graph/series_parallel/extended_series_reduction.dtg.h"
 #include "utils/graph/series_parallel/parallel_reduction.h"
 #include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
 #include "utils/graph/series_parallel/series_parallel_decomposition.h"
@@ -45,19 +46,19 @@ std::optional<SeriesParallelDecomposition>
   while (true) {
     int reductions = 0;
 
-    std::unordered_map<DirectedEdge, std::unordered_set<MultiDiEdge>>
-        parallel_reductions = find_all_extended_parallel_reductions(ttsp);
+    std::unordered_set<ExtendedParallelReduction> parallel_reductions =
+        find_all_extended_parallel_reductions(ttsp);
 
     if (!parallel_reductions.empty()) {
-      for (auto const &[_, parallel_reduction] : parallel_reductions) {
+      for (ExtendedParallelReduction parallel_reduction : parallel_reductions) {
         MultiDiEdge merged =
             apply_extended_parallel_reduction(ttsp, parallel_reduction);
 
         SeriesParallelDecomposition new_tree = parallel_composition(transform(
-            unordered_multiset_of(parallel_reduction),
+            unordered_multiset_of(parallel_reduction.edges),
             [&](MultiDiEdge const &e) { return ttsp_edge_to_sp_tree.at(e); }));
 
-        for (MultiDiEdge const &e : parallel_reduction) {
+        for (MultiDiEdge const &e : parallel_reduction.edges) {
           ttsp_edge_to_sp_tree.erase(e);
         }
         ttsp_edge_to_sp_tree.insert({merged, new_tree});
@@ -65,19 +66,19 @@ std::optional<SeriesParallelDecomposition>
       reductions++;
     }
 
-    std::unordered_set<std::vector<MultiDiEdge>> series_reductions =
+    std::unordered_set<ExtendedSeriesReduction> series_reductions =
         find_all_extended_series_reductions(ttsp);
     if (!series_reductions.empty()) {
-      for (std::vector<MultiDiEdge> series_reduction : series_reductions) {
+      for (ExtendedSeriesReduction series_reduction : series_reductions) {
         MultiDiEdge merged =
             apply_extended_series_reduction(ttsp, series_reduction);
 
-        SeriesParallelDecomposition new_tree = serial_composition(
-            transform(series_reduction, [&](MultiDiEdge const &e) {
+        SeriesParallelDecomposition new_tree = series_composition(
+            transform(series_reduction.edges, [&](MultiDiEdge const &e) {
               return ttsp_edge_to_sp_tree.at(e);
             }));
 
-        for (MultiDiEdge const &e : series_reduction) {
+        for (MultiDiEdge const &e : series_reduction.edges) {
           ttsp_edge_to_sp_tree.erase(e);
         }
         ttsp_edge_to_sp_tree.insert({merged, new_tree});

@@ -2,6 +2,7 @@
 #include "utils/containers/group_by.h"
 #include "utils/graph/multidigraph/algorithms/get_edges.h"
 #include "utils/graph/node/algorithms.h"
+#include <unordered_set>
 namespace FlexFlow {
 
 std::unordered_set<MultiDiEdge> get_outgoing_edges(MultiDiGraphView const &g,
@@ -10,12 +11,14 @@ std::unordered_set<MultiDiEdge> get_outgoing_edges(MultiDiGraphView const &g,
 }
 
 std::unordered_map<Node, std::unordered_set<MultiDiEdge>>
-    get_outgoing_edges(MultiDiGraphView const &g) {
+    get_outgoing_edges(MultiDiGraphView const &g,
+                       std::unordered_set<Node> const &ns) {
   std::unordered_map<Node, std::unordered_set<MultiDiEdge>> result =
-      group_by(get_edges(g),
+      group_by(g.query_edges(MultiDiEdgeQuery{query_set<Node>{ns},
+                                              query_set<Node>::matchall()}),
                [&](MultiDiEdge const &e) { return g.get_multidiedge_src(e); });
 
-  for (Node const &n : get_nodes(g)) {
+  for (Node const &n : ns) {
     result[n];
   }
 

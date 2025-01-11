@@ -9,28 +9,29 @@ using namespace FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_dominators") {
     DiGraph g = DiGraph::create<AdjacencyDiGraph>();
+    SUBCASE("acyclic graph") {
+      std::vector<Node> n = add_nodes(g, 4);
+      std::vector<DirectedEdge> e = {
+          DirectedEdge{n.at(0), n.at(3)},
+          DirectedEdge{n.at(0), n.at(1)},
+          DirectedEdge{n.at(0), n.at(2)},
+          DirectedEdge{n.at(1), n.at(2)},
+      };
+      add_edges(g, e);
 
-    std::vector<Node> n = add_nodes(g, 4);
-    std::vector<DirectedEdge> e = {
-        DirectedEdge{n.at(0), n.at(3)},
-        DirectedEdge{n.at(0), n.at(1)},
-        DirectedEdge{n.at(0), n.at(2)},
-        DirectedEdge{n.at(1), n.at(2)},
-    };
-    add_edges(g, e);
+      SUBCASE("get_dominators(DiGraph, Node)") {
+        Node node = n.at(2);
+        std::unordered_set<Node> correct = {n.at(0), n.at(2)};
+        std::unordered_set<Node> result = get_dominators(g, node);
+        CHECK(correct == result);
+      }
 
-    SUBCASE("single node") {
-      Node node = n.at(2);
-      std::unordered_set<Node> correct = {n.at(0), n.at(2)};
-      std::unordered_set<Node> result = get_dominators(g, node);
-      CHECK(correct == result);
-    }
-
-    SUBCASE("multiple nodes") {
-      std::unordered_set<Node> nodes = {n.at(1), n.at(3)};
-      std::unordered_set<Node> result = get_dominators(g, nodes);
-      std::unordered_set<Node> correct = {n.at(0)};
-      CHECK(correct == result);
+      SUBCASE("get_dominators(DiGraph, std::unordered_set<Node>)") {
+        std::unordered_set<Node> nodes = {n.at(1), n.at(3)};
+        std::unordered_set<Node> result = get_dominators(g, nodes);
+        std::unordered_set<Node> correct = {n.at(0)};
+        CHECK(correct == result);
+      }
     }
 
     SUBCASE("graph with cycles") {
