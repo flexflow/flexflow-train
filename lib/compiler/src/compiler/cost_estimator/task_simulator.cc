@@ -43,6 +43,20 @@
 
 namespace FlexFlow {
 
+struct TimedComponentComparator {
+  bool operator()(TimedComponent const &lhs, TimedComponent const &rhs) const {
+    float lhs_endtime = lhs.visit<float>(
+        overload{[](TimedLayer const &layer) { return layer.endtime; },
+                 [](TimedDependency const &dep) { return dep.endtime; }});
+
+    float rhs_endtime = rhs.visit<float>(
+        overload{[](TimedLayer const &layer) { return layer.endtime; },
+                 [](TimedDependency const &dep) { return dep.endtime; }});
+
+    return lhs_endtime > rhs_endtime;
+  }
+};
+
 static float
     single_parallel_layer_cost_estimator(parallel_layer_guid_t const &layer,
                                          ParallelComputationGraph const &pcg,
@@ -77,7 +91,9 @@ float task_simulator_estimate_forward_pass_time(
   float current_time = 0.0f;
 
   std::unordered_set<parallel_layer_guid_t> ready_layers;
-  DeduplicatedPriorityQueue<TimedComponent, std::vector<TimedComponent>>
+  DeduplicatedPriorityQueue<TimedComponent,
+                            std::vector<TimedComponent>,
+                            TimedComponentComparator>
       component_processing;
   std::unordered_set<TimedComponent> processed_components;
 

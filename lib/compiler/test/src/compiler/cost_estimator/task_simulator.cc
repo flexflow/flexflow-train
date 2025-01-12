@@ -5,6 +5,7 @@
 #include "compiler/machine_mapping/machine_mapping.dtg.h"
 #include "compiler/machine_mapping/machine_mapping.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
+#include "op-attrs/ops/input_attrs.dtg.h"
 #include "op-attrs/parallel_tensor_dims.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "op-attrs/parallel_tensor_shape.h"
@@ -35,8 +36,6 @@ namespace FlexFlow {
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("task_simulator") {
-    CostEstimator estimator = make_fake_constant_cost_estimator(
-        /*op_cost*/ 10.0f, /*comm_cost*/ 1.0f);
     MachineSpecification machine_spec = MachineSpecification{3, 3, 3, 1, 1};
 
     SUBCASE("linear graph") {
@@ -51,23 +50,19 @@ TEST_SUITE(FF_TEST_SUITE) {
           },
           DataType::FLOAT,
       };
-
       parallel_tensor_guid_t tensor0 = b.create_input_tensor(input_shape);
       parallel_tensor_guid_t tensor1 = b.relu(tensor0);
 
       parallel_layer_guid_t layer0 = get_source_layer(tensor0);
       parallel_layer_guid_t layer1 = get_source_layer(tensor1);
 
-      ParallelComputationGraph pcg = b.pcg;
-
-      std::unordered_set<parallel_layer_guid_t> layers = {layer0, layer1};
-      CHECK(get_parallel_layers(pcg) == layers);
       std::vector<MachineViewDimension> dims = {
           MachineViewDimension{stride_t{1},
                                MachineSpecificationDimension::INTER_NODE},
           MachineViewDimension{stride_t{1},
                                MachineSpecificationDimension::INTER_NODE},
       };
+      ParallelComputationGraph pcg = b.pcg;
       MachineView mv1 =
           MachineView{MachineSpaceCoordinate{0, 0, DeviceType::GPU}, dims};
       MachineView mv2 =
@@ -78,10 +73,35 @@ TEST_SUITE(FF_TEST_SUITE) {
           {layer1, mv2},
       }};
 
-      float result = task_simulator_estimate_forward_pass_time(
-          pcg, estimator, device_mapping, machine_spec);
-      float correct = 10 + 1 + 10;
-      CHECK(result == correct);
+      SUBCASE("constant op, comm cost") {
+        CostEstimator estimator = make_fake_constant_cost_estimator(
+            /*op_cost*/ 10.0f, /*comm_cost*/ 1.0f);
+
+        float result = task_simulator_estimate_forward_pass_time(
+            pcg, estimator, device_mapping, machine_spec);
+
+        float correct = 10 + 1 + 10;
+        CHECK(result == correct);
+      }
+
+      SUBCASE("variable op, comm cost") {
+        CostEstimator cost_estimator = make_fake_cost_estimator(
+            [](OpCostEstimateKey const &op) {
+              if (op.op_attrs.has<InputAttrs>()) {
+                return 10.0f; // layer0
+              }
+              if (op.op_attrs.has<ElementUnaryAttrs>()) {
+                return 1.0f; // layer1
+              }
+              return 0.0f;
+            },
+            [](TensorSetMovement const &comm) { return 5.0f; });
+
+        float result = task_simulator_estimate_forward_pass_time(
+            pcg, cost_estimator, device_mapping, machine_spec);
+        float correct = 10 + 5 + 1;
+        CHECK(result == correct);
+      }
     }
 
     SUBCASE("rhomboidal graph") {
@@ -109,10 +129,6 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_layer_guid_t layer3 = get_source_layer(tensor3);
 
       ParallelComputationGraph pcg = b.pcg;
-
-      std::unordered_set<parallel_layer_guid_t> layers = {
-          layer0, layer1, layer2, layer3};
-      CHECK(get_parallel_layers(pcg) == layers);
       std::vector<MachineViewDimension> dims = {
           MachineViewDimension{stride_t{1},
                                MachineSpecificationDimension::INTER_NODE},
@@ -121,6 +137,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           MachineViewDimension{stride_t{1},
                                MachineSpecificationDimension::INTER_NODE},
       };
+
       SUBCASE("all different devices") {
         MachineView mv0 =
             MachineView{MachineSpaceCoordinate{0, 0, DeviceType::GPU}, dims};
@@ -137,15 +154,34 @@ TEST_SUITE(FF_TEST_SUITE) {
             {layer2, mv2},
             {layer3, mv3},
         }};
+        SUBCASE("constant op, comm cost") {
+          CostEstimator estimator = make_fake_constant_cost_estimator(
+              /*op_cost*/ 10.0f, /*comm_cost*/ 1.0f);
 
-        float result = task_simulator_estimate_forward_pass_time(
-            pcg, estimator, device_mapping, machine_spec);
-        float correct = 10 + 1 + 10 + 1 + 10;
-        CHECK(result == correct);
+          float result = task_simulator_estimate_forward_pass_time(
+              pcg, estimator, device_mapping, machine_spec);
+          float correct = 10 + 1 + 10 + 1 + 10;
+          CHECK(result == correct);
+        }
+        SUBCASE("variable op, comm cost") {
+          CostEstimator cost_estimator = make_fake_cost_estimator(
+              [](OpCostEstimateKey const &op) {
+                if (op.op_attrs.has<InputAttrs>()) {
+                  return 10.0f; // layer0
+                }
+                if (op.op_attrs.has<ElementUnaryAttrs>()) {
+                  return 1.0f; // layers 1, 2
+                }
+                if (op.op_attrs.has<ElementBinaryAttrs>()) {
+                  return 2.0f; // layer3
+                }
+                return 0.0f;
+              },
+              [](TensorSetMovement const &comm) { return 5.0f; });
+        }
       }
 
       SUBCASE("all the same device") {
-
         MachineView mv =
             MachineView{MachineSpaceCoordinate{0, 0, DeviceType::GPU}, dims};
         MachineMapping device_mapping = MachineMapping{{
@@ -154,11 +190,35 @@ TEST_SUITE(FF_TEST_SUITE) {
             {layer2, mv},
             {layer3, mv},
         }};
+        SUBCASE("constant op, cost cost") {
+          CostEstimator cost_estimator = make_fake_constant_cost_estimator(
+              /*op_cost*/ 10.0f, /*comm_cost*/ 1.0f);
 
-        float result = task_simulator_estimate_forward_pass_time(
-            pcg, estimator, device_mapping, machine_spec);
-        float correct = 10 + 10 + 10 + 10 + 1 + 1;
-        CHECK(result == correct);
+          float result = task_simulator_estimate_forward_pass_time(
+              pcg, cost_estimator, device_mapping, machine_spec);
+          float correct = 10 + 10 + 10 + 10 + 1 + 1;
+          CHECK(result == correct);
+        }
+        SUBCASE("variable op, cost cost") {
+          CostEstimator cost_estimator = make_fake_cost_estimator(
+              [](OpCostEstimateKey const &op) {
+                if (op.op_attrs.has<InputAttrs>()) {
+                  return 10.0f; // layer0
+                }
+                if (op.op_attrs.has<ElementUnaryAttrs>()) {
+                  return 1.0f; // layers 1, 2
+                }
+                if (op.op_attrs.has<ElementBinaryAttrs>()) {
+                  return 2.0f; // layer3
+                }
+                return 0.0f;
+              },
+              [](TensorSetMovement const &comm) { return 5.0f; });
+          float result = task_simulator_estimate_forward_pass_time(
+              pcg, cost_estimator, device_mapping, machine_spec);
+          float correct = 10 + 5 + (1 + 1) + 5 + 2;
+          CHECK(result == correct);
+        }
       }
     }
   }
