@@ -1,0 +1,32 @@
+namespace = "FlexFlow"
+name = "TasksStateTracker"
+
+features = [
+]
+
+includes = [
+  "utils/deduplicated_priority_queue.h",
+  "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h",
+  "compiler/cost_estimator/timed_component.dtg.h",
+  "compiler/cost_estimator/timed_component_comparator.h",
+  "<unordered_set>" 
+]
+
+src_includes = [
+  "utils/hash/unordered_set.h", 
+  "utils/fmt/unordered_set.h",
+  "utils/fmt/vector.h", 
+  "utils/hash/vector.h"
+]
+
+[[fields]]
+name = "ready_layers"
+type = "std::unordered_set<::FlexFlow::parallel_layer_guid_t>"
+
+[[fields]]
+name = "component_processing"
+type = "::FlexFlow::DeduplicatedPriorityQueue<::FlexFlow::TimedComponent, std::vector<::FlexFlow::TimedComponent>, ::FlexFlow::TimedComponentComparator>"
+
+[[fields]]
+name = "processed_components"
+type = "std::unordered_set<::FlexFlow::TimedComponent>"

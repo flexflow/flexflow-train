@@ -2,26 +2,21 @@
 #include "compiler/cost_estimator/cost_estimator.h"
 #include "compiler/cost_estimator/op_cost_estimate_key.h"
 #include "compiler/cost_estimator/single_tensor_movement.dtg.h"
+#include "compiler/cost_estimator/tasks_state_tracker.dtg.h"
 #include "compiler/cost_estimator/tensor_set_movement.dtg.h"
 #include "compiler/cost_estimator/timed_component.dtg.h"
 #include "compiler/cost_estimator/timed_dependency.dtg.h"
 #include "compiler/cost_estimator/timed_layer.dtg.h"
 #include "compiler/machine_mapping/device_mapping.h"
 #include "compiler/machine_mapping/machine_mapping.h"
-#include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/device_id.h"
-#include "pcg/device_id_t.dtg.h"
-#include "pcg/machine_specification.h"
 #include "pcg/machine_view.dtg.h"
-#include "pcg/parallel_computation_graph/parallel_computation_graph.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
-#include "pcg/parallel_computation_graph/parallel_computation_graph_edge.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_edge.h"
 #include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_tensor_guid_t.h"
 #include "substitutions/sub_parallel_computation_graph.h"
-#include "substitutions/sub_parallel_computation_graph_edge.dtg.h"
 #include "utils/containers/all_of.h"
 #include "utils/containers/filtrans.h"
 #include "utils/containers/generate_map.h"
@@ -32,7 +27,6 @@
 #include "utils/containers/transform.h"
 #include "utils/containers/unordered_set_of.h"
 #include "utils/containers/values.h"
-#include "utils/deduplicated_priority_queue.h"
 #include "utils/graph/dataflow_graph/algorithms/get_outgoing_edges.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_open_dataflow_graph_inputs.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_source_nodes.h"
@@ -42,20 +36,6 @@
 #include <unordered_set>
 
 namespace FlexFlow {
-
-struct TimedComponentComparator {
-  bool operator()(TimedComponent const &lhs, TimedComponent const &rhs) const {
-    float lhs_endtime = lhs.visit<float>(
-        overload{[](TimedLayer const &layer) { return layer.endtime; },
-                 [](TimedDependency const &dep) { return dep.endtime; }});
-
-    float rhs_endtime = rhs.visit<float>(
-        overload{[](TimedLayer const &layer) { return layer.endtime; },
-                 [](TimedDependency const &dep) { return dep.endtime; }});
-
-    return lhs_endtime > rhs_endtime;
-  }
-};
 
 static float
     single_parallel_layer_cost_estimator(parallel_layer_guid_t const &layer,
@@ -90,12 +70,8 @@ float task_simulator_estimate_forward_pass_time(
 
   float current_time = 0.0f;
 
-  std::unordered_set<parallel_layer_guid_t> ready_layers;
-  DeduplicatedPriorityQueue<TimedComponent,
-                            std::vector<TimedComponent>,
-                            TimedComponentComparator>
-      component_processing;
-  std::unordered_set<TimedComponent> processed_components;
+  TasksStateTracker state_tracker =
+      TasksStateTracker(get_initial_layers(pcg), {}, {});
 
   DeviceMapping device_mapping =
       get_device_mapping(machine_mapping, machine_spec, pcg);
@@ -107,19 +83,19 @@ float task_simulator_estimate_forward_pass_time(
   auto start_layer_processing = [&](parallel_layer_guid_t const &layer) {
     float cost = single_parallel_layer_cost_estimator(
         layer, pcg, estimator, machine_mapping.machine_views.at(layer));
-    component_processing.push(
+    state_tracker.component_processing.push(
         TimedComponent{TimedLayer{current_time + cost, layer}});
     for (device_id_t d : device_mapping.raw_device_map.at(layer)) {
       devices.at(d) = true;
     }
-    ready_layers.erase(layer);
+    state_tracker.ready_layers.erase(layer);
   };
 
   auto start_dependency_processing =
       [&](ParallelComputationGraphEdge const &dependency, float start_time) {
         float cost = single_dependency_cost_estimator(
             dependency, pcg, machine_mapping, estimator);
-        component_processing.push(
+        state_tracker.component_processing.push(
             TimedComponent{TimedDependency{start_time + cost, dependency}});
       };
 
@@ -127,7 +103,7 @@ float task_simulator_estimate_forward_pass_time(
     for (device_id_t d : device_mapping.raw_device_map.at(timed_layer.layer)) {
       devices.at(d) = false;
     }
-    processed_components.insert(TimedComponent{timed_layer});
+    state_tracker.processed_components.insert(TimedComponent{timed_layer});
     current_time = timed_layer.endtime;
     std::unordered_set<ParallelComputationGraphEdge> outgoing_dependencies =
         get_outgoing_edges(pcg, timed_layer.layer);
@@ -138,14 +114,16 @@ float task_simulator_estimate_forward_pass_time(
 
   auto finish_dependency_processing =
       [&](TimedDependency const &timed_dependency) {
-        processed_components.insert(TimedComponent{timed_dependency});
+        state_tracker.processed_components.insert(
+            TimedComponent{timed_dependency});
         parallel_layer_guid_t destination_layer =
             get_dst_layer(timed_dependency.raw_edge);
         std::unordered_set<ParallelComputationGraphEdge> incoming_dependencies =
             get_incoming_edges(pcg, destination_layer);
         std::unordered_set<ParallelComputationGraphEdge>
             non_timed_processed_dependencies = filtrans(
-                processed_components, [](TimedComponent const &component) {
+                state_tracker.processed_components,
+                [](TimedComponent const &component) {
                   return component
                       .visit<std::optional<ParallelComputationGraphEdge>>(
                           overload{[&](TimedLayer const &layer) {
@@ -159,18 +137,15 @@ float task_simulator_estimate_forward_pass_time(
         // already
         if (is_subseteq_of(incoming_dependencies,
                            non_timed_processed_dependencies)) {
-          ready_layers.insert(destination_layer);
+          state_tracker.ready_layers.insert(destination_layer);
         }
         current_time = timed_dependency.endtime;
       };
 
-  for (parallel_layer_guid_t const &layer : get_initial_layers(pcg)) {
-    ready_layers.insert(layer);
-  }
+  while (!state_tracker.ready_layers.empty() ||
+         !state_tracker.component_processing.empty()) {
 
-  while (!ready_layers.empty() || !component_processing.empty()) {
-
-    auto frontier_copy = ready_layers;
+    auto frontier_copy = state_tracker.ready_layers;
     for (parallel_layer_guid_t const &layer : frontier_copy) {
       auto layer_devices = device_mapping.raw_device_map.at(layer);
       if (all_of(layer_devices,
@@ -179,9 +154,9 @@ float task_simulator_estimate_forward_pass_time(
       }
     }
 
-    if (!component_processing.empty()) {
-      TimedComponent component = component_processing.top();
-      component_processing.pop();
+    if (!state_tracker.component_processing.empty()) {
+      TimedComponent component = state_tracker.component_processing.top();
+      state_tracker.component_processing.pop();
 
       if (component.has<TimedDependency>()) {
         finish_dependency_processing(component.get<TimedDependency>());
