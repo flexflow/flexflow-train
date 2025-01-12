@@ -101,11 +101,11 @@ bool is_empty(SeriesParallelDecomposition const &sp) {
 }
 
 size_t num_nodes(SeriesParallelDecomposition const &sp) {
-  return sum(values(get_node_frequency_map(sp)));
+  return sum(values(get_node_counter_map(sp)));
 }
 
 bool has_no_duplicate_nodes(SeriesParallelDecomposition const &sp) {
-  return all_of(values(get_node_frequency_map(sp)),
+  return all_of(values(get_node_counter_map(sp)),
                 [](int count) { return count == 1; });
 }
 

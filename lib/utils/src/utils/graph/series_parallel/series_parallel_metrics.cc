@@ -15,16 +15,16 @@
 #include <unordered_map>
 namespace FlexFlow {
 
-std::unordered_map<Node, size_t> get_node_frequency_map(Node const &node) {
+std::unordered_map<Node, size_t> get_node_counter_map(Node const &node) {
   return {{node, 1}};
 }
 
 std::unordered_map<Node, size_t>
-    get_node_frequency_map(ParallelSplit const &parallel) {
+    get_node_counter_map(ParallelSplit const &parallel) {
   std::unordered_map<Node, size_t> counter;
   for (std::variant<SeriesSplit, Node> const &child : parallel.get_children()) {
     for (auto const &[node, count] :
-         get_node_frequency_map(widen<SeriesParallelDecomposition>(child))) {
+         get_node_counter_map(widen<SeriesParallelDecomposition>(child))) {
       counter[node] += count;
     }
   }
@@ -32,11 +32,11 @@ std::unordered_map<Node, size_t>
 }
 
 std::unordered_map<Node, size_t>
-    get_node_frequency_map(SeriesSplit const &serial) {
+    get_node_counter_map(SeriesSplit const &serial) {
   std::unordered_map<Node, size_t> counter;
   for (std::variant<ParallelSplit, Node> const &child : serial.children) {
     for (auto const &[node, count] :
-         get_node_frequency_map(widen<SeriesParallelDecomposition>(child))) {
+         get_node_counter_map(widen<SeriesParallelDecomposition>(child))) {
       counter[node] += count;
     }
   }
@@ -44,9 +44,9 @@ std::unordered_map<Node, size_t>
 }
 
 std::unordered_map<Node, size_t>
-    get_node_frequency_map(SeriesParallelDecomposition const &sp) {
+    get_node_counter_map(SeriesParallelDecomposition const &sp) {
   return sp.visit<std::unordered_map<Node, size_t>>(
-      [](auto const &t) { return get_node_frequency_map(t); });
+      [](auto const &t) { return get_node_counter_map(t); });
 }
 
 float work_cost(SeriesParallelDecomposition const &sp,
@@ -54,7 +54,7 @@ float work_cost(SeriesParallelDecomposition const &sp,
   auto cost_per_node_group = [&](std::pair<Node, float> const &pair) {
     return pair.second * cost_map.at(pair.first);
   };
-  std::unordered_map<Node, size_t> counter = get_node_frequency_map(sp);
+  std::unordered_map<Node, size_t> counter = get_node_counter_map(sp);
   std::vector<std::pair<Node, size_t>> pairs(counter.cbegin(), counter.cend());
   return sum(transform(pairs, cost_per_node_group));
 }
