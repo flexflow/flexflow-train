@@ -8,7 +8,7 @@ foreach(ctest_tests_file IN LISTS ctest_tests_files)
   # add nix run prefix
   string(REGEX REPLACE 
     "add_test\\([ \t\r\n]*\\[==\\[([^]]+)\\]==\\][ \t\r\n]+([^ ]+)[ \t\r\n]+\\[==\\[([^]]+)\\]==\\]\\)" 
-    "add_test( [==[\\1]==] nix run --impure github:nix-community/nixGL -- \\2 [==[\\3]==])" 
+    "add_test( [==[\\1]==] nixGL -- \\2 [==[\\3]==])" 
     content "${content}")
 
   # add environment
