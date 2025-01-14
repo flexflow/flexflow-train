@@ -1,0 +1,17 @@
+name: "gpu-ci"
+on: [workflow_dispatch, push, pull_request]
+concurrency:
+  group: build-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  example:
+    name: Example runs-on GPU
+    runs-on: [runs-on,runner=gpu-nvidia]
+
+    steps:
+      - name: Display NVIDIA SMI details
+        run: |
+          nvidia-smi
+          nvidia-smi -L
+          nvidia-smi -q -d Memory
