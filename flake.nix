@@ -23,7 +23,11 @@
       inputs.flake-utils.follows = "flake-utils";
     };
 
-    nixGL.url = "github:nix-community/nixGL";
+    nixGL = {
+      url = "github:nix-community/nixGL";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
   };
 
   outputs = { self, nixpkgs, flake-utils, proj-repo, nixGL, ... }: flake-utils.lib.eachSystem [ "x86_64-linux" ] (system: 
@@ -31,7 +35,6 @@
       pkgs = import nixpkgs {
         inherit system;
         config.allowUnfree = true;
-        overlays = [ nixGL.overlay ];
       };
       lib = pkgs.lib;
 
@@ -108,6 +111,9 @@
             ])
             (with proj-repo.packages.${system}; [
               proj
+            ])
+            (with nixGL.packages.${system}; [
+              nixGLDefault
             ])
             (with self.packages.${system}; [
               legion
