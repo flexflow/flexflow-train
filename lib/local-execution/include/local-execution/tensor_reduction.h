@@ -8,8 +8,6 @@ namespace FlexFlow {
 
 reduced_tensor_t lower(tensor_guid_t const &);
 
-std::vector<reduced_tensor_t> lower(std::vector<tensor_guid_t> const &);
-
 } // namespace FlexFlow
 
 #endif

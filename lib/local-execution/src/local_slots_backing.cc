@@ -43,15 +43,27 @@ void LocalSlotsBacking::allocate_tensors_by_role(
   switch (role) {
     case TensorRole::INPUT:
       tensors = get_incoming_inputs(computation_graph, layer_guid);
-      this->input_tensor_slots.insert({layer_guid, lower(tensors)});
+      this->input_tensor_slots.insert({layer_guid, 
+        transform(tensors, [&](tensor_guid_t const &tensor_guid) {
+          return lower(tensor_guid);
+        })
+      });
       break;
     case TensorRole::WEIGHT:
       tensors = get_incoming_weights(computation_graph, layer_guid);
-      this->weight_tensor_slots.insert({layer_guid, lower(tensors)});
+      this->weight_tensor_slots.insert({layer_guid, 
+        transform(tensors, [&](tensor_guid_t const &tensor_guid) {
+          return lower(tensor_guid);
+        })
+      });
       break;
     case TensorRole::OUTPUT:
       tensors = get_outgoing_tensors(computation_graph, layer_guid);
-      this->output_tensor_slots.insert({layer_guid, lower(tensors)});
+      this->output_tensor_slots.insert({layer_guid, 
+        transform(tensors, [&](tensor_guid_t const &tensor_guid) {
+          return lower(tensor_guid);
+        })
+      });
       break;
     default:
       throw mk_runtime_error("Invalid tensor role, got {}", role);

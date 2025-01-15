@@ -164,21 +164,27 @@ TEST_SUITE(FF_TEST_SUITE) {
         local_slots_backing.allocate_layer_tensors(
             layer_guid, cg_builder.computation_graph, allocator);
         SUBCASE("Input tensor slots") {
-          std::vector<tensor_guid_t> correct_incoming_input_tensors =
-              get_incoming_inputs(cg_builder.computation_graph, layer_guid);
-          CHECK(lower(correct_incoming_input_tensors) ==
+          std::vector<reduced_tensor_t> correct_incoming_input_tensors = 
+            transform(get_incoming_inputs(cg_builder.computation_graph, layer_guid), [&](tensor_guid_t const &tensor_guid) {
+              return lower(tensor_guid);
+            });
+          CHECK(correct_incoming_input_tensors ==
                 local_slots_backing.input_tensor_slots.at(layer_guid));
         }
         SUBCASE("Weight tensor slots") {
-          std::vector<tensor_guid_t> correct_incoming_weight_tensors =
-              get_incoming_weights(cg_builder.computation_graph, layer_guid);
-          CHECK(lower(correct_incoming_weight_tensors) ==
+          std::vector<reduced_tensor_t> correct_incoming_weight_tensors = 
+            transform(get_incoming_weights(cg_builder.computation_graph, layer_guid), [&](tensor_guid_t const &tensor_guid) {
+              return lower(tensor_guid);
+            });
+          CHECK(correct_incoming_weight_tensors ==
                 local_slots_backing.weight_tensor_slots.at(layer_guid));
         }
         SUBCASE("Output tensor slots") {
-          std::vector<tensor_guid_t> correct_outgoing_tensors =
-              get_outgoing_tensors(cg_builder.computation_graph, layer_guid);
-          CHECK(lower(correct_outgoing_tensors) ==
+          std::vector<reduced_tensor_t> correct_output_tensors = 
+            transform(get_outgoing_tensors(cg_builder.computation_graph, layer_guid), [&](tensor_guid_t const &tensor_guid) {
+              return lower(tensor_guid);
+            });
+          CHECK(correct_output_tensors ==
                 local_slots_backing.output_tensor_slots.at(layer_guid));
         }
       }
