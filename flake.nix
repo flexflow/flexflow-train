@@ -35,10 +35,13 @@
       mkShell = pkgs.mkShell.override {
         stdenv = pkgs.cudaPackages.backendStdenv;
       };
+
+      proj = proj-repo.packages.${system}.proj;
     in 
     {
       packages = {
         legion = pkgs.callPackage ./.flake/pkgs/legion.nix { };
+        ffdb = pkgs.callPackage ./.flake/pkgs/ffdb { inherit proj; };
         hpp2plantuml = pkgs.python3Packages.callPackage ./.flake/pkgs/hpp2plantuml.nix { };
         rapidcheckFull = pkgs.symlinkJoin {
           name = "rapidcheckFull";
@@ -102,9 +105,7 @@
               doxygen
               lcov # for code coverage
             ])
-            (with proj-repo.packages.${system}; [
-              proj
-            ])
+            [ proj ]
             (with self.packages.${system}; [
               legion
               hpp2plantuml
@@ -128,7 +129,6 @@
               gh-markdown-preview
               shellcheck
               plantuml
-              gdb
               ruff
               compdb
               jq
@@ -147,6 +147,9 @@
               frozendict
               black
               toml
+            ])
+            (with self.packages.${system}; [
+              ffdb
             ])
           ];
         };
