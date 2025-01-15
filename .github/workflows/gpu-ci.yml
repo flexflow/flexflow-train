@@ -14,15 +14,15 @@ jobs:
       fail-fast: false
 
     steps:
-      - name: Checkout Git Repository
+      - name: checkout git repository
         uses: actions/checkout@v3
         with:
           submodules: recursive
 
-      - name: Free additional space on runner
+      - name: free additional space on runner
         run: ./.github/workflows/helpers/free_space_on_runner.sh
 
-      - name: Install nix
+      - name: install nix
         uses: cachix/install-nix-action@v25
         with:
           github_access_token: '${{ secrets.GITHUB_TOKEN }}'
@@ -40,8 +40,16 @@ jobs:
         with:
           arguments: "--accept-flake-config --impure"
 
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+
+      - name: regenerate all dtgen files
+        run: |
+          proj dtgen --force
+
       - name: run cmake
-        run: rm -rf build && mkdir build && cd build && cmake -DFF_CUDA_ARCH=60 -DCMAKE_CUDA_ARCHITECTURES=60 $CMAKE_FLAGS ..
+        run: |
+          proj cmake
 
       - name: build test binaries
         run: cd build && make -j kernels-tests
