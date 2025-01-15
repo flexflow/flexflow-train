@@ -1,0 +1,14 @@
+namespace = "FlexFlow"
+name = "DataParallelismConfig"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+]
+
+[[fields]]
+name = "degree"
+type = "int"

@@ -1,0 +1,21 @@
+namespace = "FlexFlow"
+name = "GetMachineMappingProblemTreeResult"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.dtg.h",
+  "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.dtg.h",
+  "utils/bidict/bidict.h"
+]
+
+[[fields]]
+type = "::FlexFlow::MachineMappingProblemTree"
+name = "mm_problem_tree"
+
+[[fields]]
+type = "::FlexFlow::bidict<::FlexFlow::UnmappedOpCostEstimateKey, ::FlexFlow::parallel_layer_guid_t>"
+name = "mapping"

@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "OptimizerConfig"
+name = "UnitySearchConfig"
 features = [
   "eq",
   "hash",

@@ -36,4 +36,9 @@ size_t num_tasks(OperatorTaskSpace const &task) {
   return product(task.degrees);
 }
 
+OperatorTaskSpace get_operator_task_space(ParallelComputationGraph const &pcg,
+                                          parallel_layer_guid_t const &layer) {
+  NOT_IMPLEMENTED();
+}
+
 } // namespace FlexFlow

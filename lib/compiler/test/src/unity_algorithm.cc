@@ -1,7 +1,8 @@
-#include "compiler/unity_algorithm.h"
+#include "compiler/unity_algorithm/unity_algorithm.h"
 #include "doctest/doctest.h"
 
 TEST_SUITE(FF_TEST_SUITE) {
+  // TODO: to be udpated
   // Rapidcheck does not work for now
   // TEST_CASE("graph_optimize") {
   //   RC_SUBCASE([](ComputationGraph const &g,
