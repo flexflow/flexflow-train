@@ -8,4 +8,4 @@ images:
 runners:
   gpu-nvidia:
     family: ["g4dn.xlarge"]
-    image: dlami-x64
+    image: ubuntu22-full-x64
