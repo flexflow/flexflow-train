@@ -12,10 +12,10 @@ foreach(ctest_tests_file IN LISTS ctest_tests_files)
     content "${content}")
 
   # add environment
-  string(REGEX REPLACE 
-    "set_tests_properties\\([ \t\r\n]*\\[==\\[([^]]+)\\]==\\][ \t\r\n]+PROPERTIES[ \t\r\n]+([^)]+)\\)" 
-    "set_tests_properties( [==[\\1]==] PROPERTIES \\2 ENVIRONMENT \"NIXPKGS_ALLOW_UNFREE=1\")" 
-    content "${content}")
+  # string(REGEX REPLACE 
+  #   "set_tests_properties\\([ \t\r\n]*\\[==\\[([^]]+)\\]==\\][ \t\r\n]+PROPERTIES[ \t\r\n]+([^)]+)\\)" 
+  #   "set_tests_properties( [==[\\1]==] PROPERTIES \\2 ENVIRONMENT \"NIXPKGS_ALLOW_UNFREE=1\")" 
+  #   content "${content}")
 
   file(WRITE "${ctest_tests_file}" "${content}")
 endforeach()
