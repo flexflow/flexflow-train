@@ -52,7 +52,7 @@ jobs:
           proj cmake
 
       - name: build test binaries
-        run: cd build && make -j kernels-tests
+        run: cd build/normal && make -j kernels-tests
 
       - name: run tests
-        run: cd build && ctest --progress --output-on-failure -L "^(kernels-tests)$"
+        run: cd build/normal && ctest --progress --output-on-failure -L "^(kernels-tests)$"
