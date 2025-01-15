@@ -5,13 +5,43 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  example:
-    name: Example runs-on GPU
+  gpu-ci:
+    name: GPU-CI
     runs-on: [runs-on,runner=gpu-nvidia]
 
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+
     steps:
-      - name: Display NVIDIA SMI details
-        run: |
-          nvidia-smi
-          nvidia-smi -L
-          nvidia-smi -q -d Memory
+      - name: Checkout Git Repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install nix
+        uses: cachix/install-nix-action@v25
+        with:
+          github_access_token: '${{ secrets.GITHUB_TOKEN }}'
+
+      - uses: cachix/cachix-action@v14
+        with:
+          name: ff
+          skipPush: true
+          # authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+
+      - name: setup nix develop shell
+        uses: nicknovitski/nix-develop@v1.1.0
+        env:
+          NIXPKGS_ALLOW_UNFREE: 1
+        with:
+          arguments: "--accept-flake-config --impure"
+
+      - name: run cmake
+        run: rm -rf build && mkdir build && cd build && cmake -DFF_CUDA_ARCH=60 -DCMAKE_CUDA_ARCHITECTURES=60 $CMAKE_FLAGS ..
+
+      - name: build test binaries
+        run: cd build && make -j kernels-tests
+
+      - name: run tests
+        run: cd build && ctest --progress --output-on-failure -L "^(kernels-tests)$"

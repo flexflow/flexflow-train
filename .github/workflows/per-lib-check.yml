@@ -39,8 +39,10 @@ jobs:
 
       - name: setup nix develop shell
         uses: nicknovitski/nix-develop@v1.1.0
+        env:
+          NIXPKGS_ALLOW_UNFREE: 1
         with:
-          arguments: "--accept-flake-config .#ci"
+          arguments: "--accept-flake-config --impure"
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
