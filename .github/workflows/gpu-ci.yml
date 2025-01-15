@@ -55,4 +55,5 @@ jobs:
         run: cd build/normal && make -j8 kernels-tests
 
       - name: run tests
-        run: cd build/normal && ctest --progress --output-on-failure -L "^(kernels-tests)$"
+        # run: cd build/normal && ctest --progress --output-on-failure -L "^(kernels-tests)$"
+        run: cd build/normal && nixGL -- lib/kernels/test/kernels-tests
