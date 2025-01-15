@@ -1,0 +1,20 @@
+namespace = "FlexFlow"
+name = "MachineMappingForSingleLayer"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "compiler/machine_mapping/parallel_layer_guid_oblivious_machine_mapping.dtg.h",
+  "compiler/cost_estimator/op_cost_metrics.dtg.h",
+]
+
+[[fields]]
+name = "cost"
+type = "::FlexFlow::OpCostMetrics"
+
+[[fields]]
+name = "machine_mapping"
+type = "::FlexFlow::ParallelLayerGuidObliviousMachineMapping"
