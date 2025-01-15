@@ -7,7 +7,7 @@ concurrency:
 jobs:
   gpu-ci:
     name: GPU-CI
-    runs-on: [runs-on,runner=gpu-nvidia]
+    runs-on: [runs-on,runner=gpu-nvidia-lightweight]
 
     strategy:
       max-parallel: 1
