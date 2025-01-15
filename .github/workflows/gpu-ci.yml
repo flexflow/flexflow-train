@@ -19,6 +19,9 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Free additional space on runner
+        run: ./.github/workflows/helpers/free_space_on_runner.sh
+
       - name: Install nix
         uses: cachix/install-nix-action@v25
         with:
