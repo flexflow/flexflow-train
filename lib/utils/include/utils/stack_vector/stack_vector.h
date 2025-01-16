@@ -292,10 +292,6 @@ public:
     return (this->m_size == 0);
   }
 
-  std::array<element_type, MAXSIZE> stack_contents() const {
-    return this->contents;
-  }
-
   friend std::string format_as(stack_vector<T, MAXSIZE> const &v) {
     CHECK_FMTABLE(T);
 
@@ -305,7 +301,6 @@ public:
         });
     return "[" + result + "]";
   }
-
 private:
   std::size_t m_size = 0;
   std::array<element_type, MAXSIZE> contents;
