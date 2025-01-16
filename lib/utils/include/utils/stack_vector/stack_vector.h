@@ -292,8 +292,8 @@ public:
     return (this->m_size == 0);
   }
 
-  T const *data() const {
-    return this->contents.data();
+  std::array<element_type, MAXSIZE> stack_contents() const {
+    return this->contents;
   }
 
   friend std::string format_as(stack_vector<T, MAXSIZE> const &v) {

@@ -59,7 +59,7 @@ struct stack_basic_string {
 
   friend fmt::basic_string_view<Char>
       format_as(stack_basic_string<Char, MAXSIZE> const &s) {
-    return {s.contents.data(), s.length()};
+    return {s.contents.stack_contents().data(), s.length()};
   }
 
 private:
