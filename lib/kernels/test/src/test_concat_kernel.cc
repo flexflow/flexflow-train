@@ -29,7 +29,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           allocator.allocate_tensor(output_shape);
 
       Kernels::Concat::forward_kernel(managed_stream.raw_stream(),
-                                      output_accessor, input_accessors,
+                                      output_accessor,
+                                      input_accessors,
                                       concat_axis);
 
       std::vector<float> host_output_data =
@@ -49,7 +50,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           });
       Kernels::Concat::backward_kernel(managed_stream.raw_stream(),
                                        output_grad_accessor,
-                                       input_grad_accessors, concat_axis);
+                                       input_grad_accessors,
+                                       concat_axis);
     }
   }
 }
