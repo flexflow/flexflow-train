@@ -1,5 +1,5 @@
 name: "per-lib-checks"
-on: [pull_request, workflow_dispatch]
+on: [push, pull_request, workflow_dispatch]
 concurrency:
   group: build-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
