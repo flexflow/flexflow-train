@@ -301,6 +301,7 @@ public:
         });
     return "[" + result + "]";
   }
+
 private:
   std::size_t m_size = 0;
   std::array<element_type, MAXSIZE> contents;

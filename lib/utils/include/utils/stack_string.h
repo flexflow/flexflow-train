@@ -57,8 +57,7 @@ struct stack_basic_string {
 
   friend struct std::hash<stack_basic_string>;
 
-  friend std::string
-      format_as(stack_basic_string<Char, MAXSIZE> const &s) {
+  friend std::string format_as(stack_basic_string<Char, MAXSIZE> const &s) {
     return {s.contents.cbegin(), s.contents.cend()};
   }
 
