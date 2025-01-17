@@ -7,9 +7,11 @@ features = [
 includes = [
   "utils/deduplicated_priority_queue.h",
   "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h",
+  "pcg/parallel_computation_graph/parallel_computation_graph_edge.dtg.h",
+  "pcg/parallel_computation_graph/parallel_computation_graph.dtg.h",
   "compiler/cost_estimator/timed_component.dtg.h",
-  "compiler/cost_estimator/timed_component_comparator.h",
-  "<unordered_set>" 
+  "<unordered_set>",
+  "<functional>"
 ]
 
 src_includes = [
@@ -25,8 +27,24 @@ type = "std::unordered_set<::FlexFlow::parallel_layer_guid_t>"
 
 [[fields]]
 name = "component_processing"
-type = "::FlexFlow::DeduplicatedPriorityQueue<::FlexFlow::TimedComponent, std::vector<::FlexFlow::TimedComponent>, ::FlexFlow::TimedComponentComparator>"
+type = "::FlexFlow::DeduplicatedPriorityQueue<::FlexFlow::TimedComponent, std::vector<::FlexFlow::TimedComponent>>"
 
 [[fields]]
 name = "processed_components"
 type = "std::unordered_set<::FlexFlow::TimedComponent>"
+
+[[fields]]
+name = "current_time"
+type = "float"
+
+[[fields]]
+name = "dependency_cost_estimator"
+type = "std::function<float(::FlexFlow::ParallelComputationGraphEdge const&)>"
+
+[[fields]]
+name = "layer_cost_estimator"
+type = "std::function<float(::FlexFlow::parallel_layer_guid_t const&)>"
+
+[[fields]]
+name = "pcg"
+type = "ParallelComputationGraph"
