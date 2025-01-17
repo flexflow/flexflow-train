@@ -20,13 +20,15 @@
 #include "local-execution/task_invocation.dtg.h"
 #include "local-execution/task_signature.h"
 #include "op-attrs/ops/loss_functions.h"
+#include "pcg/tensor_guid_t.dtg.h"
+#include "local-execution/loss_tensor_t.dtg.h"
 
 namespace FlexFlow {
 
 TaskImplFunction get_loss_bwd_task_impl();
 TaskSignature get_loss_bwd_signature();
 TaskInvocation
-    backward(LossAttrs const &, reduced_tensor_t logit, reduced_tensor_t label);
+    backward(LossAttrs const &, tensor_guid_t logit, loss_tensor_t label);
 
 } // namespace FlexFlow
 

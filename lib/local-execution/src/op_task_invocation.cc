@@ -21,7 +21,7 @@ void OpTaskBinding::bind(int slot, OpTensorSpec const &tensor_spec) {
 
 void OpTaskBinding::bind(slot_id_t slot, OpTensorSpec const &tensor_spec) {
   this->tensor_bindings.insert(
-      {SlotTensorTypeId{slot, TensorType::FORWARD}, tensor_spec});
+      {SlotGradId{slot, IsGrad::NO}, tensor_spec});
 }
 
 void OpTaskBinding::bind_grad(int slot, OpTensorSpec const &tensor_spec) {
@@ -30,7 +30,7 @@ void OpTaskBinding::bind_grad(int slot, OpTensorSpec const &tensor_spec) {
 
 void OpTaskBinding::bind_grad(slot_id_t slot, OpTensorSpec const &tensor_spec) {
   this->tensor_bindings.insert(
-      {SlotTensorTypeId{slot, TensorType::GRADIENT}, tensor_spec});
+      {SlotGradId{slot, IsGrad::YES}, tensor_spec});
 }
 
 void OpTaskBinding::insert_arg_spec(slot_id_t name, OpArgSpec const &arg_spec) {
@@ -46,13 +46,13 @@ bool OpTaskBinding::operator!=(OpTaskBinding const &other) const {
   return this->tie() != other.tie();
 }
 
-std::tuple<std::unordered_map<SlotTensorTypeId, OpTensorSpec> const &,
+std::tuple<std::unordered_map<SlotGradId, OpTensorSpec> const &,
            std::unordered_map<slot_id_t, OpArgSpec> const &>
     OpTaskBinding::tie() const {
   return std::tie(this->tensor_bindings, this->arg_bindings);
 }
 
-std::unordered_map<SlotTensorTypeId, OpTensorSpec> const &
+std::unordered_map<SlotGradId, OpTensorSpec> const &
     OpTaskBinding::get_tensor_bindings() const {
   return this->tensor_bindings;
 }
@@ -91,8 +91,8 @@ bool is_tensor_invocation_valid(OpTaskSignature const &sig,
                                 OpTaskInvocation const &inv) {
   auto tensor_bindings = inv.binding.get_tensor_bindings();
   for (OpTensorSlotSpec const &op_tensor_slot_spec : sig.get_tensor_slots()) {
-    SlotTensorTypeId tensor_key = SlotTensorTypeId{
-        op_tensor_slot_spec.name, op_tensor_slot_spec.tensor_type};
+    SlotGradId tensor_key = SlotGradId{
+        op_tensor_slot_spec.name, op_tensor_slot_spec.is_grad};
     OpTensorSpec op_tensor_spec = tensor_bindings.at(tensor_key);
     if (is_op_tensor_spec_invalid(op_tensor_slot_spec, op_tensor_spec)) {
       return false;

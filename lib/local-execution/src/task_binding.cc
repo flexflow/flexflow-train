@@ -2,19 +2,48 @@
 #include "utils/containers/contains_key.h"
 #include "utils/fmt/unordered_map.h"
 #include "utils/hash/unordered_map.h"
+#include "pcg/tensor_guid_t.dtg.h"
 
 namespace FlexFlow {
 
 void TaskBinding::bind(int name,
-                       TensorType const &tensor_type,
-                       reduced_tensor_t const &binding) {
-  this->bind(slot_id_t{name}, tensor_type, binding);
+                       tensor_guid_t const &binding) {
+  this->bind(slot_id_t{name}, binding);
 }
 
 void TaskBinding::bind(slot_id_t name,
-                       TensorType const &tensor_type,
-                       reduced_tensor_t const &binding) {
-  this->tensor_bindings.insert({SlotTensorTypeId{name, tensor_type}, binding});
+                       tensor_guid_t const &binding) {
+  this->tensor_bindings.insert({SlotTensorTypeId{name, TensorType::FORWARD}, TensorTypeVariant{binding}});
+}
+
+void TaskBinding::bind_grad(int name,
+                       tensor_guid_t const &binding) {
+  this->bind(slot_id_t{name}, binding);
+}
+
+void TaskBinding::bind_grad(slot_id_t name,
+                       tensor_guid_t const &binding) {
+  this->tensor_bindings.insert({SlotTensorTypeId{name, TensorType::GRADIENT}, TensorTypeVariant{binding}});
+}
+
+void TaskBinding::bind(int name,
+                       optimizer_tensor_t const &binding) {
+  this->bind(slot_id_t{name}, binding);
+}
+
+void TaskBinding::bind(slot_id_t name,
+                       optimizer_tensor_t const &binding) {
+  this->tensor_bindings.insert({SlotTensorTypeId{name, TensorType::OPTIMIZER}, TensorTypeVariant{binding}});
+}
+
+void TaskBinding::bind(int name,
+                       loss_tensor_t const &binding) {
+  this->bind(slot_id_t{name}, binding);
+}
+
+void TaskBinding::bind(slot_id_t name,
+                       loss_tensor_t const &binding) {
+  this->tensor_bindings.insert({SlotTensorTypeId{name, TensorType::LOSS}, TensorTypeVariant{binding}});
 }
 
 void TaskBinding::insert_arg_spec(slot_id_t name, TaskArgSpec const &arg_spec) {
@@ -30,13 +59,13 @@ bool TaskBinding::operator!=(TaskBinding const &other) const {
   return this->tie() != other.tie();
 }
 
-std::tuple<std::unordered_map<SlotTensorTypeId, reduced_tensor_t> const &,
+std::tuple<std::unordered_map<SlotTensorTypeId, TensorTypeVariant> const &,
            std::unordered_map<slot_id_t, TaskArgSpec> const &>
     TaskBinding::tie() const {
   return std::tie(this->tensor_bindings, this->arg_bindings);
 }
 
-std::unordered_map<SlotTensorTypeId, reduced_tensor_t> const &
+std::unordered_map<SlotTensorTypeId, TensorTypeVariant> const &
     TaskBinding::get_tensor_bindings() const {
   return this->tensor_bindings;
 }

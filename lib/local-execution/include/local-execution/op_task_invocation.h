@@ -10,7 +10,7 @@
 #include "local-execution/op_tensor_spec.h"
 #include "local-execution/profiling.h"
 #include "local-execution/runtime_arg_ref.h"
-#include "local-execution/slot_tensor_type_id.dtg.h"
+#include "local-execution/slot_grad_id.dtg.h"
 #include "local-execution/task_id_t.dtg.h"
 #include "local-execution/variadic_tensor_ref.h"
 #include <typeindex>
@@ -84,14 +84,14 @@ struct OpTaskBinding {
   bool operator==(OpTaskBinding const &other) const;
   bool operator!=(OpTaskBinding const &other) const;
 
-  std::unordered_map<SlotTensorTypeId, OpTensorSpec> const &
+  std::unordered_map<SlotGradId, OpTensorSpec> const &
       get_tensor_bindings() const;
   std::unordered_map<slot_id_t, OpArgSpec> const &get_arg_bindings() const;
 
   void bind_from_forward(OpTaskBinding const &fwd);
 
 private:
-  std::unordered_map<SlotTensorTypeId, OpTensorSpec> tensor_bindings;
+  std::unordered_map<SlotGradId, OpTensorSpec> tensor_bindings;
   std::unordered_map<slot_id_t, OpArgSpec> arg_bindings;
 
 private:

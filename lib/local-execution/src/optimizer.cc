@@ -22,14 +22,14 @@ TaskSignature get_sgd_update_signature() {
 }
 
 TaskInvocation sgd_update(SGDOptimizerAttrs const &attrs,
-                          reduced_tensor_t const &weight,
-                          reduced_tensor_t const &sgd_v) {
+                          tensor_guid_t const &weight,
+                          optimizer_tensor_t const &sgd_v) {
   TaskBinding b;
-  b.bind(WEIGHT, TensorType::FORWARD, weight);
-  b.bind(WEIGHT, TensorType::GRADIENT, weight);
+  b.bind(WEIGHT, weight);
+  b.bind_grad(WEIGHT, weight);
 
   if (attrs.momentum > 0.0f) {
-    b.bind(SGD_V, TensorType::OPTIMIZER, sgd_v);
+    b.bind(SGD_V, sgd_v);
   }
   b.bind_arg(ATTRS, attrs);
   b.bind_arg(PROFILING, profiling_settings());
@@ -113,14 +113,14 @@ TaskSignature get_adam_update_signature() {
 }
 
 TaskInvocation adam_update(AdamOptimizerAttrs const &attrs,
-                           reduced_tensor_t const &weight,
-                           reduced_tensor_t const &adam_v,
-                           reduced_tensor_t const &adam_m) {
+                           tensor_guid_t const &weight,
+                           optimizer_tensor_t const &adam_v,
+                           optimizer_tensor_t const &adam_m) {
   TaskBinding b;
-  b.bind(WEIGHT, TensorType::FORWARD, weight);
-  b.bind(WEIGHT, TensorType::GRADIENT, weight);
-  b.bind(ADAM_M, TensorType::OPTIMIZER, adam_m);
-  b.bind(ADAM_V, TensorType::OPTIMIZER, adam_v);
+  b.bind(WEIGHT, weight);
+  b.bind_grad(WEIGHT, weight);
+  b.bind(ADAM_M, adam_m);
+  b.bind(ADAM_V, adam_v);
   b.bind_arg(ATTRS, attrs);
   b.bind_arg(PROFILING, profiling_settings());
 
@@ -194,8 +194,8 @@ TaskSignature get_update_signature(OptimizerAttrs const &attrs) {
 
 TaskInvocation get_update_invocation(
     OptimizerAttrs const &attrs,
-    reduced_tensor_t const &weight,
-    std::vector<reduced_tensor_t> const &grad_buffer_tensors) {
+    tensor_guid_t const &weight,
+    std::vector<optimizer_tensor_t> const &grad_buffer_tensors) {
   return attrs.visit<TaskInvocation>(overload{
       [&](SGDOptimizerAttrs const &s) {
         return sgd_update(s, weight, grad_buffer_tensors.at(0));

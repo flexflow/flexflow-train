@@ -24,8 +24,8 @@ enum Slots { LOGIT, LABEL, ATTRS, PROFILING };
 
 TaskSignature get_loss_bwd_signature() {
   TaskSignature sig = make_empty_task_signature();
-  add_slot(sig, LOGIT, TensorType::NON_GRAPH);
-  add_slot(sig, LABEL, TensorType::NON_GRAPH);
+  add_slot(sig, LOGIT, TensorType::FORWARD);
+  add_slot(sig, LABEL, TensorType::LOSS);
   add_slot(sig, LOGIT, TensorType::GRADIENT);
 
   add_arg_slot<LossAttrs>(sig, ATTRS);
@@ -34,12 +34,12 @@ TaskSignature get_loss_bwd_signature() {
 }
 
 TaskInvocation backward(LossAttrs const &attrs,
-                        reduced_tensor_t logit,
-                        reduced_tensor_t label) {
+                        tensor_guid_t logit,
+                        loss_tensor_t label) {
   TaskBinding b;
-  b.bind(LOGIT, TensorType::NON_GRAPH, logit);
-  b.bind(LABEL, TensorType::NON_GRAPH, label);
-  b.bind(LOGIT, TensorType::GRADIENT, logit);
+  b.bind(LOGIT, logit);
+  b.bind(LABEL, label);
+  b.bind_grad(LOGIT, logit);
 
   b.bind_arg(ATTRS, attrs);
   b.bind_arg(PROFILING, profiling_settings());

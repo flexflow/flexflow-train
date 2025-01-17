@@ -8,7 +8,7 @@ features = [
 ]
 
 [[values]]
-name = "NON_GRAPH"
+name = "LOSS"
 
 [[values]]
 name = "FORWARD"

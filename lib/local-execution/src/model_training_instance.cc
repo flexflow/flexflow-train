@@ -8,18 +8,14 @@ namespace FlexFlow {
 ModelTrainingInstance::ModelTrainingInstance(
     Allocator const &allocator,
     ComputationGraph const &computation_graph,
-    LayerTensorBackingMap const &allocated_forward_tensors,
-    TensorBackingMap const &allocated_non_graph_tensors,
     RuntimeArgConfig const &runtime_arg_config,
     LossAttrs const &loss_attrs,
-    reduced_tensor_t const &logit_tensor,
-    reduced_tensor_t const &label_tensor,
+    tensor_guid_t const &logit_tensor,
+    loss_tensor_t const &label_tensor,
     OptimizerAttrs const &optimizer_attrs)
     : computation_graph(computation_graph),
       training_backing(allocator,
                        computation_graph,
-                       allocated_forward_tensors,
-                       allocated_non_graph_tensors,
                        runtime_arg_config),
       loss_attrs(loss_attrs), logit_tensor(logit_tensor),
       label_tensor(label_tensor), optimizer_attrs(optimizer_attrs) {

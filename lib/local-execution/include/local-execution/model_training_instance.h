@@ -3,6 +3,8 @@
 
 #include "local-execution/local_training_backing.h"
 #include "op-attrs/ops/loss_functions/loss_attrs.dtg.h"
+#include "pcg/tensor_guid_t.dtg.h"
+#include "local-execution/loss_tensor_t.dtg.h"
 
 namespace FlexFlow {
 
@@ -12,12 +14,10 @@ using PerLayerElapsedTime =
 struct ModelTrainingInstance {
   ModelTrainingInstance(Allocator const &,
                         ComputationGraph const &,
-                        LayerTensorBackingMap const &allocated_forward_tensors,
-                        TensorBackingMap const &allocated_non_graph_tensors,
                         RuntimeArgConfig const &,
                         LossAttrs const &,
-                        reduced_tensor_t const &logit_tensor,
-                        reduced_tensor_t const &label_tensor,
+                        tensor_guid_t const &logit_tensor,
+                        loss_tensor_t const &label_tensor,
                         OptimizerAttrs const &);
 
   void execute_init();
@@ -28,8 +28,8 @@ struct ModelTrainingInstance {
   ComputationGraph computation_graph;
   LocalTrainingBacking training_backing;
   LossAttrs loss_attrs;
-  reduced_tensor_t logit_tensor;
-  reduced_tensor_t label_tensor;
+  tensor_guid_t logit_tensor;
+  loss_tensor_t label_tensor;
   OptimizerAttrs optimizer_attrs;
 };
 

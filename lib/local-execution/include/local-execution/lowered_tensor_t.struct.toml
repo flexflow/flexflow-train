@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "reduced_tensor_t"
+name = "lowered_tensor_t"
 features = [
   "eq",
   "ord",
