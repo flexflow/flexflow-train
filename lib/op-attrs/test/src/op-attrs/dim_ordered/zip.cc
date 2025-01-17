@@ -1,5 +1,5 @@
 #include "op-attrs/dim_ordered/zip.h"
-#include "op-attrs/ff_dim.dtg.h"
+#include "op-attrs/ff_dim_t.dtg.h"
 #include "test/utils/doctest/fmt/pair.h"
 #include <doctest/doctest.h>
 

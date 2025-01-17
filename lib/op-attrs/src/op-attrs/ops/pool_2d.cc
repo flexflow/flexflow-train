@@ -22,10 +22,10 @@ tl::expected<Pool2DAttrs, std::string>
                     input_dims));
   }
 
-  size_t num_samples = dim_at_idx(input_dims, ff_dim_t{0});
-  size_t num_channels = dim_at_idx(input_dims, ff_dim_t{1});
-  size_t input_h = dim_at_idx(input_dims, ff_dim_t{2});
-  size_t input_w = dim_at_idx(input_dims, ff_dim_t{3});
+  size_t num_samples = dim_at_idx(input_dims, relative_ff_dim_t{0});
+  size_t num_channels = dim_at_idx(input_dims, relative_ff_dim_t{1});
+  size_t input_h = dim_at_idx(input_dims, relative_ff_dim_t{2});
+  size_t input_w = dim_at_idx(input_dims, relative_ff_dim_t{3});
 
   if (input_h % output_h != 0) {
     return tl::unexpected(fmt::format(
@@ -113,10 +113,10 @@ tl::expected<TensorShape, std::string>
                     input_shape));
   }
 
-  size_t num_samples = dim_at_idx(input_shape, ff_dim_t{0});
-  size_t num_channels = dim_at_idx(input_shape, ff_dim_t{1});
-  size_t input_height = dim_at_idx(input_shape, ff_dim_t{2});
-  size_t input_width = dim_at_idx(input_shape, ff_dim_t{3});
+  size_t num_samples = dim_at_idx(input_shape, relative_ff_dim_t{0});
+  size_t num_channels = dim_at_idx(input_shape, relative_ff_dim_t{1});
+  size_t input_height = dim_at_idx(input_shape, relative_ff_dim_t{2});
+  size_t input_width = dim_at_idx(input_shape, relative_ff_dim_t{3});
 
   size_t output_height =
       (input_height + 2 * attrs.padding_h - attrs.kernel_h) / attrs.stride_h +

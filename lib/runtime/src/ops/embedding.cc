@@ -85,7 +85,7 @@ static std::optional<float>
                  attrs.aggr,
                  input.shape.get_dim(),
                  output.shape.get_dim(),
-                 input.shape.at(ff_dim_t(0)));
+                 input.shape.at(ff_dim_t{nonnegative_int{0}}));
 }
 
 TaskImplFunction get_embedding_fwd_task_impl() {

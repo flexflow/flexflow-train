@@ -41,7 +41,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("mismatched dim size") {
       TensorShape incorrect_rhs = input_lhs;
-      dim_at_idx(incorrect_rhs, ff_dim_t{0}) += 1;
+      dim_at_idx(incorrect_rhs, relative_ff_dim_t{0}) += 1;
 
       tl::expected<TensorShape, std::string> result =
           get_output_shape(attrs, input_lhs, incorrect_rhs);

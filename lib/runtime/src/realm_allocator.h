@@ -3,7 +3,7 @@
 
 #include "kernels/allocation.h"
 #include "legion.h"
-#include "utils/stack_vector.h"
+#include "utils/stack_vector/stack_vector.h"
 #include <memory>
 
 #define MAX_INSTANCE_ALLOCATIONS 1
