@@ -71,7 +71,7 @@
         ci = mkShell {
           shellHook = ''
             export PATH="$HOME/ff/.scripts/:$PATH"
-            export RC_PARAMS="max_discard_ration=100"
+            export RC_PARAMS="max_discard_ratio=100"
             export CMAKE_FLAGS="-DFF_USE_EXTERNAL_LEGION=ON \
                                 -DFF_USE_EXTERNAL_NCCL=ON \
                                 -DFF_USE_EXTERNAL_JSON=ON \
