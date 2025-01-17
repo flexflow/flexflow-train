@@ -1,0 +1,12 @@
+namespace = "FlexFlow"
+name = "orthotope_dim_idx_t"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+[[fields]]
+name = "raw_idx"
+type = "int"

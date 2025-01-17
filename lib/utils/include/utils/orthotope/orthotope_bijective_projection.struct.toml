@@ -1,0 +1,25 @@
+namespace = "FlexFlow"
+name = "OrthotopeBijectiveProjection"
+features = [
+  "eq",
+  "fmt",
+  "hash",
+]
+
+includes = [
+  "<vector>",
+  "utils/orthotope/orthotope_dim_idx_t.dtg.h",
+]
+
+src_includes = [
+  "utils/hash/vector.h",
+  "utils/fmt/vector.h",
+]
+
+[[fields]]
+name = "dim_mapping"
+type = "std::vector<::FlexFlow::orthotope_dim_idx_t>"
+
+[[fields]]
+name = "reversed"
+type = "bool"

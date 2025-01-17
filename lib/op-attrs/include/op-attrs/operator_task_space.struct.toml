@@ -1,0 +1,18 @@
+namespace = "FlexFlow"
+name = "OperatorTaskSpace"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  # "rapidcheck",
+  "fmt",
+]
+
+includes = [ 
+  "utils/orthotope/orthotope.dtg.h",
+]
+
+[[fields]]
+name = "raw_orthotope"
+type = "::FlexFlow::Orthotope"

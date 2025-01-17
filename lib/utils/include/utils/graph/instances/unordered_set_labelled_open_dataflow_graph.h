@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_LABELLED_DATAFLOW_GRAPH_UNORDERED_SET_LABELLED_DATAFLOW_GRAPH_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_LABELLED_DATAFLOW_GRAPH_UNORDERED_SET_LABELLED_DATAFLOW_GRAPH_H
 
-#include "utils/containers/count.h"
+#include "utils/containers/range.h"
 #include "utils/containers/enumerate_vector.h"
 #include "utils/containers/filter.h"
 #include "utils/containers/generate_map.h"
@@ -57,7 +57,7 @@ public:
     }
 
     std::vector<DataflowOutput> new_outputs =
-        transform(count(output_labels.size()), [&](int output_idx) {
+        transform(range(output_labels.size()), [&](int output_idx) {
           return DataflowOutput{new_node, output_idx};
         });
 

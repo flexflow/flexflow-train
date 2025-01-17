@@ -5,6 +5,7 @@
 #include <optional>
 #include <stdexcept>
 #include <vector>
+#include "utils/fmt/optional.h"
 
 namespace FlexFlow {
 
@@ -23,7 +24,7 @@ std::vector<T> subvec(std::vector<T> const &v,
           new_idx = size + idx;
         }
         if (new_idx < 0 || new_idx > size) {
-          throw mk_runtime_error("Index {} is out of bounds for array {}");
+          throw mk_runtime_error(fmt::format("Index {} is out of bounds for array of size {}", new_idx, v.size()));
         }
         return new_idx;
       };

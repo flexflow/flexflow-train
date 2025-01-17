@@ -1,0 +1,29 @@
+namespace = "FlexFlow"
+name = "DimProjection"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+template_params = [
+  "L", "R"
+]
+
+includes = [
+  "utils/orthotope/up_projection.dtg.h",
+  "utils/orthotope/eq_projection.dtg.h",
+  "utils/orthotope/down_projection.dtg.h",
+]
+
+[[values]]
+type = "::FlexFlow::UpProjection<L, R>"
+key = "up_proj"
+
+[[values]]
+type = "::FlexFlow::EqProjection<L, R>"
+key = "eq_proj"
+
+[[values]]
+type = "::FlexFlow::DownProjection<L, R>"
+key = "down_proj"

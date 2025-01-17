@@ -1,0 +1,21 @@
+namespace = "FlexFlow"
+name = "OrthotopeCoordinate"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+  "json",
+]
+
+includes = [
+  "utils/orthotope/orthotope_dim_indexed/orthotope_dim_indexed.h",
+]
+
+src_includes = [
+  "utils/orthotope/orthotope_dim_indexed/json.h",
+]
+
+[[fields]]
+name = "idxs"
+type = "::FlexFlow::OrthotopeDimIndexed<int>"

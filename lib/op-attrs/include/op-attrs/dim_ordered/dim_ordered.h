@@ -125,7 +125,7 @@ struct DimOrdered {
   }
 
   reverse_iterator rend() {
-    return this->contents.crend();
+    return this->contents.rend();
   }
 
   const_reverse_iterator rend() const {

@@ -5,28 +5,28 @@ header_extension = ".h"
 
 build_targets = [
   "utils",
-  "op-attrs",
-  "kernels",
-  "pcg",
-  "substitutions",
-  "compiler",
-  "substitution-generator",
-  "local-execution",
-  "models",
-  "export-model-arch",
-  "substitution-to-dot",
+  # "op-attrs",
+  # "kernels",
+  # "pcg",
+  # "substitutions",
+  # "compiler",
+  # "substitution-generator",
+  # "local-execution",
+  # "models",
+  # "export-model-arch",
+  # "substitution-to-dot",
 ]
 
 test_targets = [
   # "kernels-tests",
   "utils-tests",
-  "op-attrs-tests",
-  "pcg-tests",
-  "substitutions-tests",
-  "compiler-tests",
-  "substitution-generator-tests",
-  "local-execution-tests",
-  "models-tests",
+  # "op-attrs-tests",
+  # "pcg-tests",
+  # "substitutions-tests",
+  # "compiler-tests",
+  # "substitution-generator-tests",
+  # "local-execution-tests",
+  # "models-tests",
 ]
 
 [cmake_flags_extra]

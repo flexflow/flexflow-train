@@ -30,6 +30,19 @@ std::unordered_map<K, V> merge_maps(std::unordered_map<K, V> const &lhs,
   return result;
 }
 
+template <typename C, 
+          typename K = typename C::value_type::key_type, 
+          typename V = typename C::value_type::mapped_type>
+std::unordered_map<K, V> merge_maps(C const &c) {
+  std::unordered_map<K, V> result; 
+
+  for (std::unordered_map<K, V> const &m : c) {
+    result = merge_maps(result, m);
+  }
+
+  return result;
+}
+
 } // namespace FlexFlow
 
 #endif

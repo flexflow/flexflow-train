@@ -41,7 +41,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
   }
 
-  TEST_CASE("topological_ordering") {
+  TEST_CASE("topological_ordering(DataflowGraphView)") {
     DataflowGraph g = DataflowGraph::create<UnorderedSetDataflowGraph>();
 
     NodeAddedResult n1_added = g.add_node({}, 1);

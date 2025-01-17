@@ -11,10 +11,10 @@ template <typename K,
           typename F,
           typename V2 = std::invoke_result_t<F, V>>
 std::unordered_map<K, V2> map_values(std::unordered_map<K, V> const &m,
-                                     F const &f) {
+                                     F &&f) {
   std::unordered_map<K, V2> result;
-  for (auto const &kv : m) {
-    result.insert({kv.first, f(kv.second)});
+  for (std::pair<K, V> const &kv : m) {
+    result.insert(std::pair<K, V2>{kv.first, f(kv.second)});
   }
   return result;
 }

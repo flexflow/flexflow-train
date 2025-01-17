@@ -1,0 +1,25 @@
+namespace = "FlexFlow"
+name = "ParallelTensorSpaceCoordinate"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+]
+
+includes = [
+  "op-attrs/dim_ordered/dim_ordered.h",
+]
+
+[[fields]]
+name = "sum_idx"
+type = "int"
+
+[[fields]]
+name = "discard_copy_idx"
+type = "int"
+
+[[fields]]
+name = "shard_idxs"
+type = "::FlexFlow::FFOrdered<int>"

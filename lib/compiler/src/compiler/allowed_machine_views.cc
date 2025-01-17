@@ -2,7 +2,7 @@
 #include "pcg/machine_specification.h"
 #include "pcg/machine_view.h"
 #include "pcg/multi_dimensional_stride.dtg.h"
-#include "pcg/operator_task_space.h"
+#include "op-attrs/operator_task_space.h"
 #include "utils/containers/all_of.h"
 #include "utils/containers/cartesian_product.h"
 #include "utils/containers/extend.h"

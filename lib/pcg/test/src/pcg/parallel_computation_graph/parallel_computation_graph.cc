@@ -9,7 +9,7 @@
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("topological_ordering") {
+  TEST_CASE("topological_ordering(ParallelComputationGraph)") {
     // TODO(@lockshaw) should probably be replaced with a rapidcheck test that
     // compares ParallelComputationGraph to DataflowGraph, but since we
     // currently don't have rapidcheck generation for DataflowGraph this will

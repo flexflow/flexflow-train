@@ -1,5 +1,5 @@
 #include "utils/cli/cli_spec.h"
-#include "utils/containers/count.h"
+#include "utils/containers/range.h"
 #include "utils/containers/transform.h"
 #include "utils/integer_conversions.h"
 
@@ -10,7 +10,7 @@ CLISpec empty_cli_spec() {
 }
 
 std::vector<CLIFlagKey> cli_get_flag_keys(CLISpec const &cli) {
-  return transform(count(cli.flags.size()),
+  return transform(range(cli.flags.size()),
                    [](int idx) { return CLIFlagKey{idx}; });
 }
 

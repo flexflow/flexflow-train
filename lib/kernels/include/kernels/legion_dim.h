@@ -6,6 +6,8 @@
 
 namespace FlexFlow {
 
+std::set<legion_dim_t> legion_dim_range(int end);
+
 legion_dim_t add_to_legion_dim(legion_dim_t legion_dim, int value);
 
 legion_dim_t legion_dim_from_ff_dim(ff_dim_t, int num_dimensions);

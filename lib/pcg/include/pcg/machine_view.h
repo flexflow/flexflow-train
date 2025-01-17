@@ -1,11 +1,11 @@
 #ifndef _FLEXFLOW_PCG_INCLUDE_PCG_MACHINE_VIEW_H
 #define _FLEXFLOW_PCG_INCLUDE_PCG_MACHINE_VIEW_H
 
-#include "machine_specification.dtg.h"
-#include "machine_view.dtg.h"
+#include "pcg/machine_specification.dtg.h"
+#include "pcg/machine_view.dtg.h"
 #include "pcg/device_id_t.dtg.h"
-#include "pcg/operator_task_space.dtg.h"
-#include "task_space_coordinate.dtg.h"
+#include "op-attrs/operator_task_space.dtg.h"
+#include "op-attrs/task_space_coordinate.dtg.h"
 #include <cstddef>
 #include <optional>
 #include <unordered_set>

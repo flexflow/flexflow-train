@@ -1,0 +1,14 @@
+namespace = "FlexFlow"
+name = "TensorNumDims"
+features = [
+  "eq",
+  "hash",
+  "ord",
+  "fmt",
+  "rapidcheck",
+  "json",
+]
+
+[[fields]]
+name = "value"
+type = "int"

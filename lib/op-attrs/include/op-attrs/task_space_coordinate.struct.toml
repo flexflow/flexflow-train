@@ -1,0 +1,18 @@
+namespace = "FlexFlow"
+name = "TaskSpaceCoordinate"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  # "rapidcheck",
+  "fmt",
+]
+
+includes = [ 
+  "utils/orthotope/orthotope_coordinate.dtg.h",
+]
+
+[[fields]]
+name = "orthotope_coord"
+type = "::FlexFlow::OrthotopeCoordinate"

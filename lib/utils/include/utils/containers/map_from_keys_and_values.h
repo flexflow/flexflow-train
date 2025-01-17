@@ -4,6 +4,7 @@
 #include "utils/containers/zip.h"
 #include "utils/exception.h"
 #include <unordered_map>
+#include <set>
 
 namespace FlexFlow {
 

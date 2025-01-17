@@ -15,6 +15,9 @@ includes = [
 
 [[values]]
 type = "::FlexFlow::ff_dim_t"
+key = "shard_dim"
+
 
 [[values]]
 type = "::FlexFlow::ReplicaType"
+key = "replica_dim"

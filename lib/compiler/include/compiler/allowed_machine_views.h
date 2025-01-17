@@ -3,7 +3,7 @@
 
 #include "pcg/machine_specification.dtg.h"
 #include "pcg/machine_view.dtg.h"
-#include "pcg/operator_task_space.dtg.h"
+#include "op-attrs/operator_task_space.dtg.h"
 
 namespace FlexFlow {
 

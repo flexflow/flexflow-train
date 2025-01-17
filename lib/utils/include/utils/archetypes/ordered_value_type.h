@@ -34,7 +34,16 @@ struct ordered_value_type {
   bool operator<(ordered_value_type const &) const {
     assert(false);
   }
+
   bool operator>(ordered_value_type const &) const {
+    assert(false);
+  }
+
+  bool operator<=(ordered_value_type const &) const {
+    assert(false);
+  }
+
+  bool operator>=(ordered_value_type const &) const {
     assert(false);
   }
 };

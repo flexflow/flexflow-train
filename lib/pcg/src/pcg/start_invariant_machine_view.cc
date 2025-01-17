@@ -1,7 +1,7 @@
 #include "pcg/start_invariant_machine_view.h"
 #include "pcg/machine_space_offset.h"
 #include "pcg/machine_view.h"
-#include "pcg/operator_task_space.h"
+#include "op-attrs/operator_task_space.h"
 #include "utils/containers/count.h"
 #include "utils/containers/filter.h"
 #include "utils/containers/scanl.h"

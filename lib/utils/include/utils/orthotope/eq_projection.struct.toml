@@ -1,0 +1,19 @@
+namespace = "FlexFlow"
+name = "EqProjection"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+template_params = [
+  "L", "R"
+]
+
+includes = [
+  "utils/bidict/bidict.h",
+]
+
+[[fields]]
+name = "dim_mapping"
+type = "::FlexFlow::bidict<L, R>"

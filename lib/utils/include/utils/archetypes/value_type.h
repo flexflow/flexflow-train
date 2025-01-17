@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <functional>
+#include <fmt/format.h>
 
 namespace FlexFlow {
 
@@ -31,6 +32,11 @@ struct value_type {
     assert(false);
   }
 };
+
+template <int TAG>
+std::string format_as(value_type<TAG> const &) {
+  assert (false);
+}
 
 } // namespace FlexFlow
 

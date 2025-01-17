@@ -17,8 +17,6 @@ int count(C const &c, F const &f) {
   return result;
 }
 
-std::vector<size_t> count(size_t n);
-
 } // namespace FlexFlow
 
 #endif

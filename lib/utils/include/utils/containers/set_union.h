@@ -2,6 +2,7 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_SET_UNION_H
 
 #include <unordered_set>
+#include <set>
 
 namespace FlexFlow {
 
@@ -9,6 +10,13 @@ template <typename T>
 std::unordered_set<T> set_union(std::unordered_set<T> const &l,
                                 std::unordered_set<T> const &r) {
   std::unordered_set<T> result = l;
+  result.insert(r.cbegin(), r.cend());
+  return result;
+}
+
+template <typename T>
+std::set<T> set_union(std::set<T> const &l, std::set<T> const &r) {
+  std::set<T> result = l;
   result.insert(r.cbegin(), r.cend());
   return result;
 }

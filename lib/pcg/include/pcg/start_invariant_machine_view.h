@@ -4,9 +4,9 @@
 #include "pcg/machine_space_offset.h"
 #include "pcg/machine_specification.dtg.h"
 #include "pcg/machine_view.dtg.h"
-#include "pcg/operator_task_space.dtg.h"
+#include "op-attrs/operator_task_space.dtg.h"
 #include "pcg/start_invariant_machine_view.dtg.h"
-#include "pcg/task_space_coordinate.dtg.h"
+#include "op-attrs/task_space_coordinate.dtg.h"
 #include <optional>
 
 namespace FlexFlow {

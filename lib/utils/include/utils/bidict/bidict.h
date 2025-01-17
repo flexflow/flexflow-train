@@ -6,6 +6,7 @@
 #include <cassert>
 #include <optional>
 #include <unordered_map>
+#include "utils/containers/keys.h"
 
 namespace FlexFlow {
 
@@ -83,6 +84,14 @@ struct bidict {
 
   L const &at_r(R const &r) const {
     return bwd_map.at(r);
+  }
+
+  std::unordered_set<L> left_values() const {
+    return keys(this->fwd_map);
+  }
+
+  std::unordered_set<R> right_values() const {
+    return keys(this->bwd_map);
   }
 
   std::size_t size() const {
@@ -206,95 +215,6 @@ std::ostream &operator<<(std::ostream &s, bidict<L, R> const &b) {
   CHECK_FMTABLE(R);
 
   return s << fmt::to_string(b);
-}
-
-template <typename K,
-          typename V,
-          typename F,
-          typename K2 = decltype(std::declval<F>()(std::declval<K>()))>
-bidict<K2, V> map_keys(bidict<K, V> const &m, F const &f) {
-  bidict<K2, V> result;
-  for (auto const &kv : m) {
-    result.equate(f(kv.first), kv.second);
-  }
-  return result;
-}
-
-template <typename K,
-          typename V,
-          typename F,
-          typename V2 = decltype(std::declval<F>()(std::declval<V>()))>
-bidict<K, V2> map_values(bidict<K, V> const &m, F const &f) {
-  bidict<K, V2> result;
-  for (auto const &kv : m) {
-    result.equate({kv.first, f(kv.second)});
-  }
-  return result;
-}
-
-template <typename K, typename V, typename F>
-bidict<K, V> filter_keys(bidict<K, V> const &m, F const &f) {
-  bidict<K, V> result;
-  for (auto const &kv : m) {
-    if (f(kv.first)) {
-      result.equate(kv);
-    }
-  }
-  return result;
-}
-
-template <typename K, typename V, typename F>
-bidict<K, V> filter_values(bidict<K, V> const &m, F const &f) {
-  bidict<K, V> result;
-  for (auto const &kv : m) {
-    if (f(kv.second)) {
-      result.equate(kv);
-    }
-  }
-  return result;
-}
-
-template <typename K,
-          typename V,
-          typename F,
-          typename K2 = typename std::invoke_result_t<F, K>::value_type>
-bidict<K2, V> filtermap_keys(bidict<K, V> const &m, F const &f) {
-  bidict<K2, V> result;
-  for (auto const &[k, v] : m) {
-    std::optional<K2> new_k = f(k);
-    if (new_k.has_value()) {
-      result.equate(new_k.value(), v);
-    }
-  }
-  return result;
-}
-
-template <typename K,
-          typename V,
-          typename F,
-          typename V2 = typename std::invoke_result_t<F, V>::value_type>
-bidict<K, V2> filtermap_values(bidict<K, V> const &m, F const &f) {
-  bidict<K, V2> result;
-  for (auto const &[k, v] : m) {
-    std::optional<V2> new_v = f(v);
-    if (new_v.has_value()) {
-      result.equate(k, new_v.value());
-    }
-  }
-  return result;
-}
-
-template <typename K,
-          typename V,
-          typename F,
-          typename K2 = typename std::invoke_result_t<F, K, V>::first_type,
-          typename V2 = typename std::invoke_result_t<F, K, V>::second_type>
-bidict<K2, V2> transform(bidict<K, V> const &m, F const &f) {
-  bidict<K2, V2> result;
-  for (auto const &[k, v] : m) {
-    result.equate(f(k, v));
-  }
-  return result;
 }
 
 } // namespace FlexFlow

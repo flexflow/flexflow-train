@@ -11,16 +11,16 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("sum") {
       std::vector<int> input = {1, 2, 3, 4};
       std::vector<int> result =
-          scanl(input, 0, [](int a, int b) { return a + b; });
+          scanl(input, 0, [](int accum, int x) { return accum + x; });
       std::vector<int> correct = {0, 1, 3, 6, 10};
       CHECK(result == correct);
     }
 
-    SUBCASE("custom function") {
+    SUBCASE("noncommutative function") {
       std::vector<int> input = {1, 3, 1, 2};
-      auto op = [](int a, int b) { return (a + 1) * (b + 1); };
+      auto op = [](int accum, int x) { return accum - x; };
       std::vector<int> result = scanl(input, 1, op);
-      std::vector<int> correct = {1, 4, 20, 42, 129};
+      std::vector<int> correct = {1, 0, -3, -4, -6};
       CHECK(result == correct);
     }
 
@@ -37,34 +37,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("empty input") {
       std::vector<int> input = {};
       std::vector<int> result =
-          scanl(input, 0, [](int a, int b) { return a + b; });
-      std::vector<int> correct = {0};
-      CHECK(result == correct);
-    }
-  }
-
-  TEST_CASE("scanl1") {
-    SUBCASE("sum") {
-      std::vector<int> input = {1, 2, 3, 4};
-      std::vector<int> result =
-          scanl1(input, [](int a, int b) { return a + b; });
-      std::vector<int> correct = {1, 3, 6, 10};
-      CHECK(result == correct);
-    }
-
-    SUBCASE("custom function") {
-      std::vector<int> input = {1, 2, 5, 2};
-      auto op = [](int a, int b) { return a * b + 1; };
-      std::vector<int> result = scanl1(input, op);
-      std::vector<int> correct = {1, 3, 16, 33};
-      CHECK(result == correct);
-    }
-
-    SUBCASE("empty input") {
-      std::vector<int> input = {};
-      std::vector<int> result =
-          scanl1(input, [](int a, int b) { return a + b; });
-      std::vector<int> correct = {};
+          scanl(input, 2, [](int accum, int x) -> int { throw std::runtime_error("should not be called"); });
+      std::vector<int> correct = {2};
       CHECK(result == correct);
     }
   }

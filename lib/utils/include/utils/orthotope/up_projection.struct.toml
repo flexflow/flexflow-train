@@ -1,0 +1,20 @@
+namespace = "FlexFlow"
+name = "UpProjection"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+template_params = [
+  "L", "R"
+]
+
+includes = [
+  "utils/one_to_many/one_to_many.h",
+  "utils/orthotope/orthotope_dim_idx_t.dtg.h",
+]
+
+[[fields]]
+name = "dim_mapping"
+type = "::FlexFlow::OneToMany<L, R>"

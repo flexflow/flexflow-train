@@ -1,0 +1,16 @@
+namespace = "FlexFlow"
+name = "ParallelTensorSpaceMapping"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "utils/orthotope/dim_projection.dtg.h",
+  "op-attrs/parallel_tensor_dim_idx_t.dtg.h",
+]
+
+[[fields]]
+name = "raw_projection"
+type = "::FlexFlow::DimProjection<::FlexFlow::parallel_tensor_dim_idx_t, ::FlexFlow::parallel_tensor_dim_idx_t>"

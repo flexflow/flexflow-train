@@ -1,6 +1,6 @@
 #include "utils/graph/instances/unordered_set_dataflow_graph.h"
 #include "utils/containers/are_disjoint.h"
-#include "utils/containers/count.h"
+#include "utils/containers/range.h"
 #include "utils/containers/enumerate_vector.h"
 #include "utils/containers/extend.h"
 #include "utils/containers/transform.h"
@@ -36,7 +36,7 @@ NodeAddedResult UnorderedSetDataflowGraph::add_node(
   Node new_node = this->node_source.new_node();
 
   std::vector<DataflowOutput> new_outputs =
-      transform(count(num_outputs), [&](int output_idx) {
+      transform(range(num_outputs), [&](int output_idx) {
         return DataflowOutput{new_node, output_idx};
       });
 
