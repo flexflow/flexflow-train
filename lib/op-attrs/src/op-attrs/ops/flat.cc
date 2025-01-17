@@ -11,8 +11,9 @@ namespace FlexFlow {
 
 TensorShape get_output_shape(FlatAttrs const &attrs,
                              TensorShape const &input_shape) {
-  FFOrdered<size_t> leading_dims =
-      slice(ff_ordered(input_shape.dims), ff_dim_t{0}, attrs.start_dim);
+  FFOrdered<size_t> leading_dims = slice(ff_ordered(input_shape.dims),
+                                         ff_dim_t{nonnegative_int{0}},
+                                         attrs.start_dim);
   FFOrdered<size_t> flattened_dims =
       slice(ff_ordered(input_shape.dims), attrs.start_dim, attrs.end_dim);
   FFOrdered<size_t> trailing_dims =
@@ -57,7 +58,9 @@ tl::expected<ParallelTensorDimDegrees, std::string>
       /*discard_copy_degree=*/input_degrees.discard_copy_degree,
       /*shard_degrees=*/
       concat(std::vector{
-          slice(input_degrees.shard_degrees, ff_dim_t{0}, attrs.start_dim),
+          slice(input_degrees.shard_degrees,
+                ff_dim_t{nonnegative_int{0}},
+                attrs.start_dim),
           {product(flattened_dim_degrees)},
           slice(input_degrees.shard_degrees, attrs.end_dim, std::nullopt),
       }),

@@ -2,7 +2,7 @@
 #define _FLEXFLOW_UTILS_INCLUDE_STACK_STRING_H
 
 #include "fmt/core.h"
-#include "stack_vector.h"
+#include "stack_vector/stack_vector.h"
 #include "utils/fmt.h"
 #include "utils/type_traits.h"
 #include <cstring>
@@ -57,9 +57,8 @@ struct stack_basic_string {
 
   friend struct std::hash<stack_basic_string>;
 
-  friend fmt::basic_string_view<Char>
-      format_as(stack_basic_string<Char, MAXSIZE> const &s) {
-    return {s.contents.data(), s.length()};
+  friend std::string format_as(stack_basic_string<Char, MAXSIZE> const &s) {
+    return {s.contents.cbegin(), s.contents.cend()};
   }
 
 private:

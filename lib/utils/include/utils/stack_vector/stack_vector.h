@@ -292,10 +292,6 @@ public:
     return (this->m_size == 0);
   }
 
-  T const *data() const {
-    return this->contents.data();
-  }
-
   friend std::string format_as(stack_vector<T, MAXSIZE> const &v) {
     CHECK_FMTABLE(T);
 
