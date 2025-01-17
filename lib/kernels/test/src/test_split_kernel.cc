@@ -23,7 +23,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       GenericTensorAccessorW input_accessor =
           create_random_filled_accessor_w(input_shape, allocator);
 
-      std::vector<float *> output_ptrs = repeat(num_outputs, [&]() {
+      std::vector<float *> output_ptrs(num_outputs);
+      generate_n(output_ptrs.begin(), num_outputs, [&]() {
         GenericTensorAccessorW output_accessor =
             allocator.allocate_tensor(output_shape);
         return output_accessor.get_float_ptr();

@@ -10,7 +10,7 @@ namespace FlexFlow {
 std::vector<Substitution>
     get_substitution_set(MachineSpecification const &resources) {
   std::vector<Substitution> substitutions;
-  for (int num_dims = 1; num_dims <= MAX_TENSOR_DIM; num_dims++) {
+  for (int num_dims : range(MAX_TENSOR_DIM)) {
     for (int degree = 1; degree <= resources.num_nodes; degree *= 2) {
       substitutions.push_back(
           create_replicate_linear_combine(num_dims, degree, true));
@@ -83,7 +83,7 @@ Substitution
               set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
                                    degree),
               set_attr_to_constant(OperatorAttributeKey::PARALLEL_DIM,
-                                   ff_dim_t{1}),
+                                   ff_dim_t{nonnegative_int{1}}),
           }};
   OutputGraphExprValue o_partition_weights_output =
       get_only(b.add_output_graph_node(partition_weights_expr, {o_weight}, 1));
@@ -101,7 +101,7 @@ Substitution
                 set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
                                      degree),
                 set_attr_to_constant(OperatorAttributeKey::PARALLEL_DIM,
-                                     ff_dim_t{1}),
+                                     ff_dim_t{nonnegative_int{1}}),
             }};
     OutputGraphExprValue o_partition_bias_output = get_only(
         b.add_output_graph_node(partition_bias_expr, {o_bias.value()}, 1));
@@ -122,7 +122,7 @@ Substitution
                                OperatorType::COMBINE),
           set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE, degree),
           set_attr_to_constant(OperatorAttributeKey::PARALLEL_DIM,
-                               ff_dim_t{num_dims - 1}),
+                               ff_dim_t{nonnegative_int{num_dims - 1}}),
       },
   };
   OutputGraphExprValue o_combine_output =
