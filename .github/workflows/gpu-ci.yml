@@ -52,8 +52,8 @@ jobs:
 
       - name: run cmake
         run: |
-          proj cmake
+          proj cmake --dtgen-skip
 
       - name: build and run gpu tests
         run: |
-          proj test -j$(nproc) --skip-build-cpu-tests
+          proj test --dtgen-skip -j$(nproc) --skip-build-cpu-tests

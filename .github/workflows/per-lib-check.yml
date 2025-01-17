@@ -57,7 +57,7 @@ jobs:
 
       - name: Run build and tests
         run: |
-          proj test -j$(nproc) --coverage --skip-gpu-tests
+          proj test --dtgen-skip -j$(nproc) --coverage --skip-gpu-tests
 
       - name: Upload code coverage
         uses: codecov/codecov-action@v4

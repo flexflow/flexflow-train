@@ -106,13 +106,13 @@
               tl-expected
               doxygen
               lcov # for code coverage
+              compdb
             ])
             (with proj-repo.packages.${system}; [
               proj
             ])
             (with self.packages.${system}; [
               legion
-              hpp2plantuml
               rapidcheckFull
               doctest
             ])
@@ -142,10 +142,8 @@
               shellcheck
               plantuml
               ruff
-              compdb
               jq
               gh
-              lcov # for code coverage
             ])
             (with pkgs.python3Packages; [
               gitpython
@@ -162,6 +160,7 @@
             ])
             (with self.packages.${system}; [
               ffdb
+              hpp2plantuml
             ])
           ];
         };
