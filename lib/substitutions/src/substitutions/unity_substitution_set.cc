@@ -7,6 +7,24 @@
 
 namespace FlexFlow {
 
+std::vector<Substitution>
+    get_substitution_set(MachineSpecification const &resources) {
+  std::vector<Substitution> substitutions;
+  for (int num_dims = 1; num_dims <= MAX_TENSOR_DIM; num_dims++) {
+    for (int degree = 1; degree <= resources.num_nodes; degree *= 2) {
+      substitutions.push_back(
+          create_replicate_linear_combine(num_dims, degree, true));
+      substitutions.push_back(
+          create_replicate_linear_combine(num_dims, degree, false));
+    }
+  }
+  substitutions.push_back(create_fuse_linear_activation(Activation::RELU));
+  substitutions.push_back(create_fuse_linear_activation(Activation::SIGMOID));
+  substitutions.push_back(create_fuse_linear_activation(Activation::TANH));
+  substitutions.push_back(create_fuse_linear_activation(Activation::GELU));
+  return substitutions;
+}
+
 Substitution create_combine_inception(int num_convs, int num_dims, int degree) {
   NOT_IMPLEMENTED();
 }
@@ -119,11 +137,6 @@ Substitution create_partition_linear_combine(int num_dims,
                                              int degree,
                                              Activation activation,
                                              bool use_bias) {
-  NOT_IMPLEMENTED();
-}
-
-Substitution create_partition_linear_combine(int degree,
-                                             Activation activation) {
   NOT_IMPLEMENTED();
 }
 
