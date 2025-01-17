@@ -28,7 +28,8 @@ void finish_dependency_processing(TasksStateTracker &state_tracker,
 
 bool is_processing_done(TasksStateTracker const &state_tracker);
 
-TimedComponent process_next_component(TasksStateTracker &state_tracker);
+TimedComponent
+    finish_processing_next_component(TasksStateTracker &state_tracker);
 
 } // namespace FlexFlow
 

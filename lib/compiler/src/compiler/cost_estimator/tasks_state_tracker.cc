@@ -72,7 +72,8 @@ bool is_processing_done(TasksStateTracker const &state_tracker) {
          state_tracker.component_processing.empty();
 }
 
-TimedComponent process_next_component(TasksStateTracker &state_tracker) {
+TimedComponent
+    finish_processing_next_component(TasksStateTracker &state_tracker) {
   if (state_tracker.component_processing.empty()) {
     throw mk_runtime_error(
         "Processing queue is empty, cannot process next component");

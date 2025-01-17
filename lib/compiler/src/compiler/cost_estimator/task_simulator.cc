@@ -101,7 +101,7 @@ float task_simulator_estimate_forward_pass_time(
         occupy_devices(layer);
       }
     }
-    TimedComponent component = process_next_component(state_tracker);
+    TimedComponent component = finish_processing_next_component(state_tracker);
     if (component.has<TimedLayer>()) {
       parallel_layer_guid_t layer = component.get<TimedLayer>().layer;
       free_devices(layer);
