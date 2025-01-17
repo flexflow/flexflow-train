@@ -66,15 +66,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1737077524,
+        "lastModified": 1737085085,
         "narHash": "sha256-5b6ytCXd7RTQAt0/4uFbZPre98SkCEKNeedaLsbdYE4=",
-        "owner": "chenzhuofu",
+        "owner": "lockshaw",
         "repo": "proj",
-        "rev": "95e2fda74c81f4544311130db87fd43003b8e35f",
+        "rev": "d6a664dfc4a378d6b9cfaf9937cd9514f164c558",
         "type": "github"
       },
       "original": {
-        "owner": "chenzhuofu",
+        "owner": "lockshaw",
         "repo": "proj",
         "type": "github"
       }
