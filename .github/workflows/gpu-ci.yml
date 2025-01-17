@@ -41,7 +41,7 @@ jobs:
         env:
           NIXPKGS_ALLOW_UNFREE: 1
         with:
-          arguments: "--accept-flake-config --impure"
+          arguments: ".#gpu-ci --accept-flake-config --impure"
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -54,8 +54,6 @@ jobs:
         run: |
           proj cmake
 
-      - name: build test binaries
-        run: cd build/normal && make -j8 kernels-tests
-
-      - name: run tests
-        run: cd build/normal && ctest --progress --output-on-failure -L "^(kernels-tests)$"
+      - name: build and run gpu tests
+        run: |
+          proj test -j$(nproc) --skip-build-cpu-tests

@@ -42,20 +42,10 @@ jobs:
         env:
           NIXPKGS_ALLOW_UNFREE: 1
         with:
-          arguments: "--accept-flake-config --impure"
+          arguments: ".#ci --accept-flake-config"
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
-
-      # - name: Install system dependencies
-      #   run: FF_GPU_BACKEND=${{ matrix.gpu_backend }} .github/workflows/helpers/install_dependencies.sh
-
-      # - name: Install conda and FlexFlow dependencies
-      #   uses: conda-incubator/setup-miniconda@v2
-      #   with:
-      #     activate-environment: flexflow
-      #     environment-file: packaging/conda/environment.yml
-      #     auto-activate-base: false
 
       - name: Regenerate all dtgen files
         run: |
@@ -63,92 +53,12 @@ jobs:
 
       - name: Run cmake
         run: |
-          cmake_${{ matrix.gpu_backend }}.sh
+          proj cmake --dtgen-skip
 
-      - name: Build utils
+      - name: Run build and tests
         run: |
-          build_target.sh utils
+          proj test -j$(nproc) --coverage --skip-gpu-tests
 
-      - name: Build op-attrs
-        run: |
-          build_target.sh op-attrs
-
-      - name: Build pcg
-        run: |
-          build_target.sh pcg
-
-      - name: Build kernels
-        run: |
-          build_target.sh kernels
-
-      - name: Build substitutions
-        run: |
-          build_target.sh substitutions
-
-      - name: Build compiler
-        run: |
-          build_target.sh compiler
-
-      - name: Build substitution-generator
-        run: |
-          build_target.sh substitution-generator
-
-      - name: Build local-execution
-        run: |
-          build_target.sh local-execution
-
-      - name: Build models
-        run: |
-          build_target.sh models
-
-      - name: Build substitution-to-dot
-        run: |
-          build_target.sh substitution-to-dot
-
-      - name: Build export-model-arch
-        run: |
-          build_target.sh export-model-arch
-
-      - name: Test utils
-        run: |
-          test_target.sh utils
-
-      - name: Test op-attrs
-        run: |
-          test_target.sh op-attrs
-
-      - name: Test pcg
-        run: |
-          test_target.sh pcg
-
-      - name: Test substitutions
-        run: |
-          test_target.sh substitutions
-
-      - name: Test compiler
-        run: |
-          test_target.sh compiler
-
-      - name: Test substitution-generator
-        run: |
-          test_target.sh substitution-generator
-
-      - name: Test local-execution
-        run: |
-          test_target.sh local-execution
-
-      - name: Test models
-        run: |
-          test_target.sh models
-
-      - name: Generate code coverage
-        run: |
-          echo "gitwork: $GITHUB_WORKSPACE"
-          lcov --capture --directory . --output-file main_coverage.info
-          lcov --extract main_coverage.info "$GITHUB_WORKSPACE/lib/*" --output-file main_coverage.info
-          lcov --remove main_coverage.info "$GITHUB_WORKSPACE/lib/*.dtg.h" "$GITHUB_WORKSPACE/lib/*.dtg.cc"  --output-file main_coverage.info
-          lcov --list main_coverage.info
-      
       - name: Upload code coverage
         uses: codecov/codecov-action@v4
         with:
