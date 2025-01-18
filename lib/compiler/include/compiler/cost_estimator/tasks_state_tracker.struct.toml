@@ -25,7 +25,7 @@ type = "std::unordered_set<::FlexFlow::Node>"
 
 [[fields]]
 name = "tasks_processing"
-type = "::FlexFlow::DeduplicatedPriorityQueue<::FlexFlow::TimedTask, std::vector<::FlexFlow::TimedTask>>"
+type = "::FlexFlow::DeduplicatedPriorityQueue<::FlexFlow::TimedTask, std::vector<::FlexFlow::TimedTask>, std::greater<::FlexFlow::TimedTask>>"
 
 [[fields]]
 name = "processed_tasks"

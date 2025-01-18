@@ -1,4 +1,3 @@
-
 #include "compiler/cost_estimator/task_graph.dtg.h"
 #include "compiler/cost_estimator/tasks_state_tracker.dtg.h"
 #include "compiler/cost_estimator/timed_task.dtg.h"
@@ -18,7 +17,7 @@ static void start_task_processing(TasksStateTracker &state_tracker,
                                   Node const &task) {
   float cost = task_graph.cost_map.at(task);
   state_tracker.tasks_processing.push(
-      TimedTask{task, state_tracker.current_time + cost});
+      TimedTask{state_tracker.current_time + cost, task});
   state_tracker.ready_tasks.erase(task);
 }
 
@@ -56,6 +55,7 @@ static TimedTask get_next_task(TasksStateTracker &state_tracker) {
 float simulate_forward_pass(TaskGraph const &task_graph) {
   TasksStateTracker state_tracker =
       TasksStateTracker{get_sources(task_graph.graph), {}, {}, 0.0};
+
   while (!is_processing_done(state_tracker)) {
     auto ready_tasks_copy = state_tracker.ready_tasks;
     for (Node const &task : ready_tasks_copy) {
@@ -63,11 +63,12 @@ float simulate_forward_pass(TaskGraph const &task_graph) {
         start_task_processing(state_tracker, task_graph, task);
       }
     }
-
-    TimedTask next_task = get_next_task(state_tracker);
-    finish_task_processing(state_tracker, task_graph, next_task);
+    if (!state_tracker.tasks_processing.contents().empty()) {
+      TimedTask next_task = get_next_task(state_tracker);
+      finish_task_processing(state_tracker, task_graph, next_task);
+    }
   }
-
   return state_tracker.current_time;
 }
+
 } // namespace FlexFlow
