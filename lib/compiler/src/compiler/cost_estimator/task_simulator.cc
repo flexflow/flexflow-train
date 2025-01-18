@@ -167,6 +167,6 @@ float task_simulator_estimate_forward_pass_time(
   };
   TaskGraph task_graph = TaskGraph{digraph, cost_map, is_allowed_to_run};
 
-  return simulate_forward_pass(task_graph);
+  return simulate_forward_pass(task_graph).end_time;
 }
 } // namespace FlexFlow

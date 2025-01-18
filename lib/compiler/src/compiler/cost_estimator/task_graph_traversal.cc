@@ -1,9 +1,11 @@
 #include "compiler/cost_estimator/task_graph.dtg.h"
+#include "compiler/cost_estimator/task_graph_profile.dtg.h"
 #include "compiler/cost_estimator/tasks_state_tracker.dtg.h"
 #include "compiler/cost_estimator/timed_task.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "utils/containers/filtrans.h"
 #include "utils/containers/is_subseteq_of.h"
+#include "utils/containers/sorted.h"
 #include "utils/exception.h"
 #include "utils/graph/digraph/algorithms.h"
 #include "utils/graph/digraph/algorithms/get_predecessors.h"
@@ -29,15 +31,21 @@ static bool dependencies_are_satisfied(TasksStateTracker const &state_tracker,
   return is_subseteq_of(incoming_dependencies, state_tracker.processed_tasks);
 }
 
-static void finish_task_processing(TasksStateTracker &state_tracker,
-                                   TaskGraph const &task_graph,
-                                   TimedTask const &timed_task) {
+static void
+    finish_task_processing(TasksStateTracker &state_tracker,
+                           TaskGraph const &task_graph,
+                           TimedTask const &timed_task,
+                           std::unordered_set<TaskProfile> &task_profiles) {
   state_tracker.processed_tasks.insert(timed_task.node);
   for (Node const &task : get_successors(task_graph.graph, timed_task.node)) {
     if (dependencies_are_satisfied(state_tracker, task_graph, task)) {
       state_tracker.ready_tasks.insert(task);
     }
   }
+  task_profiles.insert(
+      TaskProfile{timed_task.node,
+                  timed_task.endtime - task_graph.cost_map.at(timed_task.node),
+                  timed_task.endtime});
   state_tracker.current_time = timed_task.endtime;
 }
 
@@ -52,23 +60,29 @@ static TimedTask get_next_task(TasksStateTracker &state_tracker) {
   return task;
 }
 
-float simulate_forward_pass(TaskGraph const &task_graph) {
+TaskGraphProfile simulate_forward_pass(TaskGraph const &task_graph) {
   TasksStateTracker state_tracker =
       TasksStateTracker{get_sources(task_graph.graph), {}, {}, 0.0};
 
+  std::unordered_set<TaskProfile> task_profiles;
+
   while (!is_processing_done(state_tracker)) {
     auto ready_tasks_copy = state_tracker.ready_tasks;
-    for (Node const &task : ready_tasks_copy) {
+    for (Node const &task : sorted(ready_tasks_copy)) {
       if (task_graph.is_allowed_to_run(task, state_tracker)) {
         start_task_processing(state_tracker, task_graph, task);
       }
     }
     if (!state_tracker.tasks_processing.contents().empty()) {
       TimedTask next_task = get_next_task(state_tracker);
-      finish_task_processing(state_tracker, task_graph, next_task);
+      finish_task_processing(
+          state_tracker, task_graph, next_task, task_profiles);
+    } else {
+      throw mk_runtime_error("Constraints cannot be satisfied");
     }
   }
-  return state_tracker.current_time;
+
+  return TaskGraphProfile{task_profiles, state_tracker.current_time};
 }
 
 } // namespace FlexFlow

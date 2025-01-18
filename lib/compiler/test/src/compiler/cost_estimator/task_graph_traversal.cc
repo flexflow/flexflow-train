@@ -1,5 +1,6 @@
 #include "compiler/cost_estimator/task_graph_traversal.h"
 #include "compiler/cost_estimator/task_graph.dtg.h"
+#include "compiler/cost_estimator/task_graph_profile.dtg.h"
 #include "compiler/cost_estimator/tasks_state_tracker.dtg.h"
 #include "utils/graph/algorithms.h"
 #include "utils/graph/digraph/directed_edge.dtg.h"
@@ -29,8 +30,15 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       TaskGraph task_graph = TaskGraph{g, cost_map, is_allowed_to_run};
 
-      float result = simulate_forward_pass(task_graph);
-      float correct = 1 + 10 + 100 + 1000;
+      TaskGraphProfile result = simulate_forward_pass(task_graph);
+      TaskGraphProfile correct =
+          TaskGraphProfile{{
+                               TaskProfile{n.at(0), 0, 1},
+                               TaskProfile{n.at(1), 1, 11},
+                               TaskProfile{n.at(2), 11, 111},
+                               TaskProfile{n.at(3), 111, 1111},
+                           },
+                           1111};
       CHECK(correct == result);
     }
 
@@ -54,8 +62,15 @@ TEST_SUITE(FF_TEST_SUITE) {
         };
 
         TaskGraph task_graph = TaskGraph{g, cost_map, is_allowed_to_run};
-        float result = simulate_forward_pass(task_graph);
-        float correct = 10 + 20 + 25;
+        TaskGraphProfile result = simulate_forward_pass(task_graph);
+        TaskGraphProfile correct =
+            TaskGraphProfile{{
+                                 TaskProfile{n.at(0), 0, 10},
+                                 TaskProfile{n.at(1), 10, 25},
+                                 TaskProfile{n.at(2), 10, 30},
+                                 TaskProfile{n.at(3), 30, 55},
+                             },
+                             55};
         CHECK(correct == result);
       }
 
@@ -66,8 +81,15 @@ TEST_SUITE(FF_TEST_SUITE) {
         };
 
         TaskGraph task_graph = TaskGraph{g, cost_map, is_allowed_to_run};
-        float result = simulate_forward_pass(task_graph);
-        float correct = 10 + 20 + 15 + 25;
+        TaskGraphProfile result = simulate_forward_pass(task_graph);
+        TaskGraphProfile correct =
+            TaskGraphProfile{{
+                                 TaskProfile{n.at(0), 0, 10},
+                                 TaskProfile{n.at(1), 10, 25},
+                                 TaskProfile{n.at(2), 25, 45},
+                                 TaskProfile{n.at(3), 45, 70},
+                             },
+                             70};
         CHECK(correct == result);
       }
     }
@@ -101,8 +123,17 @@ TEST_SUITE(FF_TEST_SUITE) {
         };
 
         TaskGraph task_graph = TaskGraph{g, cost_map, is_allowed_to_run};
-        float result = simulate_forward_pass(task_graph);
-        float correct = 10 + std::max({15 + 25, 20 + 25, 20 + 30}) + 35;
+        TaskGraphProfile result = simulate_forward_pass(task_graph);
+        TaskGraphProfile correct =
+            TaskGraphProfile{{
+                                 TaskProfile{n.at(0), 0, 10},
+                                 TaskProfile{n.at(1), 10, 25},
+                                 TaskProfile{n.at(2), 10, 30},
+                                 TaskProfile{n.at(3), 30, 55},
+                                 TaskProfile{n.at(4), 30, 60},
+                                 TaskProfile{n.at(5), 60, 95},
+                             },
+                             95};
         CHECK(correct == result);
       }
 
@@ -113,8 +144,17 @@ TEST_SUITE(FF_TEST_SUITE) {
         };
 
         TaskGraph task_graph = TaskGraph{g, cost_map, is_allowed_to_run};
-        float result = simulate_forward_pass(task_graph);
-        float correct = 10 + 15 + 20 + 25 + 30 + 35;
+        TaskGraphProfile result = simulate_forward_pass(task_graph);
+        TaskGraphProfile correct =
+            TaskGraphProfile{{
+                                 TaskProfile{n.at(0), 0, 10},
+                                 TaskProfile{n.at(1), 10, 25},
+                                 TaskProfile{n.at(2), 25, 45},
+                                 TaskProfile{n.at(3), 45, 70},
+                                 TaskProfile{n.at(4), 70, 100},
+                                 TaskProfile{n.at(5), 100, 135},
+                             },
+                             135};
         CHECK(correct == result);
       }
     }
@@ -144,8 +184,16 @@ TEST_SUITE(FF_TEST_SUITE) {
         };
 
         TaskGraph task_graph = TaskGraph{g, cost_map, is_allowed_to_run};
-        float result = simulate_forward_pass(task_graph);
-        float correct = 10 + (100 + 100) + 20;
+        TaskGraphProfile result = simulate_forward_pass(task_graph);
+        TaskGraphProfile correct =
+            TaskGraphProfile{{
+                                 TaskProfile{n.at(0), 0, 10},
+                                 TaskProfile{n.at(1), 10, 110},
+                                 TaskProfile{n.at(2), 10, 110},
+                                 TaskProfile{n.at(3), 110, 210},
+                                 TaskProfile{n.at(4), 210, 230},
+                             },
+                             230};
         CHECK(correct == result);
       }
     }

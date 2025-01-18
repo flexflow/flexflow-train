@@ -1,0 +1,27 @@
+namespace = "FlexFlow"
+name = "TaskGraphProfile"
+
+features = [
+  "hash",
+  "fmt",
+  "eq"
+]
+
+includes = [
+  "compiler/cost_estimator/task_profile.dtg.h",
+  "<unordered_set>"
+]
+
+src_includes = [
+  "utils/fmt/unordered_set.h",
+  "utils/hash/unordered_set.h"
+]
+
+
+[[fields]]
+name = "task_profiles"
+type = "std::unordered_set<::FlexFlow::TaskProfile>"
+
+[[fields]]
+name = "end_time" 
+type = "float"
