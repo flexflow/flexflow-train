@@ -1,7 +1,6 @@
 #include "compiler/cost_estimator/task_simulator.h"
 #include "../cost_estimator_for_test.h"
 #include "compiler/cost_estimator/cost_estimator.h"
-#include "compiler/cost_estimator/timed_layer.dtg.h"
 #include "compiler/machine_mapping/machine_mapping.dtg.h"
 #include "compiler/machine_mapping/machine_mapping.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"

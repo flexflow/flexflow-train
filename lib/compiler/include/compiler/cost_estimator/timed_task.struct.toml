@@ -1,0 +1,21 @@
+namespace = "FlexFlow"
+name = "TimedTask"
+
+features = [
+  "eq",
+  "hash",
+  "fmt",
+  "ord"
+]
+
+includes = [
+  "utils/graph/node/node.dtg.h"
+]
+
+[[fields]]
+name = "node"
+type = "::FlexFlow::Node"
+
+[[fields]]
+name = "endtime"
+type = "float"

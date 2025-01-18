@@ -33,6 +33,9 @@ std::unordered_set<ParallelComputationGraphEdge>
                                       parallel_layer_guid_t const &);
 
 std::unordered_set<ParallelComputationGraphEdge>
+    get_edges(ParallelComputationGraph const &);
+
+std::unordered_set<ParallelComputationGraphEdge>
     get_outgoing_edges(ParallelComputationGraph const &,
                        parallel_layer_guid_t const &);
 

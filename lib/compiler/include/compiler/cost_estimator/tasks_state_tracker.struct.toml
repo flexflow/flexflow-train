@@ -6,10 +6,8 @@ features = [
 
 includes = [
   "utils/deduplicated_priority_queue.h",
-  "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h",
-  "pcg/parallel_computation_graph/parallel_computation_graph_edge.dtg.h",
-  "pcg/parallel_computation_graph/parallel_computation_graph.dtg.h",
-  "compiler/cost_estimator/timed_component.dtg.h",
+  "utils/graph/node/node.dtg.h",
+  "compiler/cost_estimator/timed_task.dtg.h",
   "<unordered_set>",
   "<functional>"
 ]
@@ -22,29 +20,17 @@ src_includes = [
 ]
 
 [[fields]]
-name = "ready_layers"
-type = "std::unordered_set<::FlexFlow::parallel_layer_guid_t>"
+name = "ready_tasks"
+type = "std::unordered_set<::FlexFlow::Node>"
 
 [[fields]]
-name = "component_processing"
-type = "::FlexFlow::DeduplicatedPriorityQueue<::FlexFlow::TimedComponent, std::vector<::FlexFlow::TimedComponent>>"
+name = "tasks_processing"
+type = "::FlexFlow::DeduplicatedPriorityQueue<::FlexFlow::TimedTask, std::vector<::FlexFlow::TimedTask>>"
 
 [[fields]]
-name = "processed_components"
-type = "std::unordered_set<::FlexFlow::TimedComponent>"
+name = "processed_tasks"
+type = "std::unordered_set<::FlexFlow::Node>"
 
 [[fields]]
 name = "current_time"
 type = "float"
-
-[[fields]]
-name = "dependency_cost_estimator"
-type = "std::function<float(::FlexFlow::ParallelComputationGraphEdge const&)>"
-
-[[fields]]
-name = "layer_cost_estimator"
-type = "std::function<float(::FlexFlow::parallel_layer_guid_t const&)>"
-
-[[fields]]
-name = "pcg"
-type = "ParallelComputationGraph"

@@ -38,6 +38,17 @@ public:
     impl.pop();
   }
 
+  std::vector<Elem> contents() const {
+    auto temp = impl;
+    std::vector<Elem> result;
+    result.reserve(temp.size());
+    while (!temp.empty()) {
+      result.push_back(temp.top());
+      temp.pop();
+    }
+    return result;
+  }
+
 private:
   std::priority_queue<Elem, Container, Compare> impl;
   std::unordered_set<Elem, Hash> hashmap;

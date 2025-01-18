@@ -1,0 +1,28 @@
+namespace = "FlexFlow"
+name = "TaskGraph"
+features = [
+]
+
+includes = [
+  "utils/graph/digraph/digraph_view.h",
+  "<unordered_map>",
+  "<functional>",
+  "compiler/cost_estimator/tasks_state_tracker.dtg.h"
+]
+
+src_includes = [
+  "utils/hash/unordered_map.h",
+  "utils/fmt/unordered_map.h",
+]
+
+[[fields]]
+name = "graph"
+type = "::FlexFlow::DiGraphView"
+
+[[fields]]
+name = "cost_map"
+type = "std::unordered_map<::FlexFlow::Node, float>"
+
+[[fields]]
+name = "is_allowed_to_run"
+type = "std::function<bool(::FlexFlow::Node, ::FlexFlow::TasksStateTracker)>"

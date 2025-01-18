@@ -1,5 +1,7 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "op-attrs/get_incoming_tensor_roles.h"
+#include "pcg/parallel_computation_graph/parallel_computation_graph.dtg.h"
+#include "pcg/parallel_computation_graph/parallel_computation_graph_edge.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 #include "utils/containers/filtrans.h"
 #include "utils/containers/get_only.h"
@@ -9,6 +11,7 @@
 #include "utils/graph/dataflow_graph/algorithms/get_dataflow_edges_from_node_to_node.h"
 #include "utils/graph/dataflow_graph/algorithms/get_incoming_edges.h"
 #include "utils/graph/dataflow_graph/algorithms/get_outgoing_edges.h"
+#include "utils/graph/dataflow_graph/dataflow_edge.dtg.h"
 #include "utils/graph/digraph/algorithms.h"
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"
 #include "utils/graph/instances/unordered_set_labelled_open_dataflow_graph.h"
@@ -16,6 +19,7 @@
 #include "utils/graph/labelled_dataflow_graph/algorithms/rewrite_node_labels.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/node/node.dtg.h"
+#include <unordered_set>
 
 namespace FlexFlow {
 
@@ -70,6 +74,13 @@ ParallelLayerAddedResult
                             /*layer_attrs=*/layer_attrs,
                             /*inputs=*/{},
                             /*output_labels=*/{tensor_attrs});
+}
+
+std::unordered_set<ParallelComputationGraphEdge>
+    get_edges(ParallelComputationGraph const &pcg) {
+  return transform(get_edges(pcg.raw_graph), [](DataflowEdge const &e) {
+    return ParallelComputationGraphEdge{e};
+  });
 }
 
 std::unordered_set<ParallelComputationGraphEdge>
