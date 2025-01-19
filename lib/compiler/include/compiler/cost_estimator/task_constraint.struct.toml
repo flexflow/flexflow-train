@@ -1,0 +1,16 @@
+namespace = "FlexFlow"
+name = "TaskConstraint"
+features = [
+]
+
+includes = [
+  "utils/graph/node/node.dtg.h",
+  "compiler/cost_estimator/task_graph.dtg.h",
+  "<functional>",
+  "<unordered_set>"
+]
+
+
+[[fields]]
+name = "is_satisfied"
+type = "std::function<bool(Node const &, std::unordered_set<Node> const &, std::unordered_set<Node> const &)>"

@@ -7,7 +7,7 @@ includes = [
   "utils/graph/digraph/digraph_view.h",
   "<unordered_map>",
   "<functional>",
-  "compiler/cost_estimator/tasks_state_tracker.dtg.h"
+  "compiler/cost_estimator/task_graph_execution_state.dtg.h"
 ]
 
 src_includes = [
@@ -22,7 +22,3 @@ type = "::FlexFlow::DiGraphView"
 [[fields]]
 name = "cost_map"
 type = "std::unordered_map<::FlexFlow::Node, float>"
-
-[[fields]]
-name = "is_allowed_to_run"
-type = "std::function<bool(::FlexFlow::Node, ::FlexFlow::TasksStateTracker)>"

@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "TimedTask"
+name = "InProgressTask"
 
 features = [
   "eq",

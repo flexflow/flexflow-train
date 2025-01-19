@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "TasksStateTracker"
+name = "TaskGraphExecutionState"
 
 features = [
 ]
@@ -7,7 +7,8 @@ features = [
 includes = [
   "utils/deduplicated_priority_queue.h",
   "utils/graph/node/node.dtg.h",
-  "compiler/cost_estimator/timed_task.dtg.h",
+  "compiler/cost_estimator/in_progress_task.dtg.h", 
+  "compiler/cost_estimator/in_progress_task_comparator.h",
   "<unordered_set>",
   "<functional>"
 ]
@@ -25,7 +26,7 @@ type = "std::unordered_set<::FlexFlow::Node>"
 
 [[fields]]
 name = "tasks_processing"
-type = "::FlexFlow::DeduplicatedPriorityQueue<::FlexFlow::TimedTask, std::vector<::FlexFlow::TimedTask>, std::greater<::FlexFlow::TimedTask>>"
+type = "::FlexFlow::DeduplicatedPriorityQueue<::FlexFlow::InProgressTask, std::vector<::FlexFlow::InProgressTask>, ::FlexFlow::InProgressTaskComparator>"
 
 [[fields]]
 name = "processed_tasks"

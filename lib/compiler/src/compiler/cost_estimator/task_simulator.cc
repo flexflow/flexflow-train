@@ -1,10 +1,12 @@
 #include "compiler/cost_estimator/task_simulator.h"
 #include "compiler/cost_estimator/cost_estimator.h"
+#include "compiler/cost_estimator/in_progress_task.dtg.h"
 #include "compiler/cost_estimator/op_cost_estimate_key.h"
+#include "compiler/cost_estimator/pcg_task.dtg.h"
+#include "compiler/cost_estimator/simulate_task_graph_execution.h"
+#include "compiler/cost_estimator/task_constraint.dtg.h"
 #include "compiler/cost_estimator/task_graph.dtg.h"
-#include "compiler/cost_estimator/task_graph_traversal.h"
-#include "compiler/cost_estimator/tasks_state_tracker.dtg.h"
-#include "compiler/cost_estimator/timed_task.dtg.h"
+#include "compiler/cost_estimator/task_graph_execution_state.dtg.h"
 #include "compiler/machine_mapping/device_mapping.dtg.h"
 #include "compiler/machine_mapping/device_mapping.h"
 #include "compiler/machine_mapping/machine_mapping.dtg.h"
@@ -30,7 +32,6 @@
 #include <cstdio>
 #include <unordered_map>
 #include <unordered_set>
-#include <variant>
 
 namespace FlexFlow {
 
@@ -60,32 +61,27 @@ static float single_dependency_cost_estimator(
   return estimator.estimate_cost(movement);
 }
 
-static std::pair<
-    DiGraph,
-    bidict<Node,
-           std::variant<parallel_layer_guid_t, ParallelComputationGraphEdge>>>
+static std::pair<DiGraph, bidict<Node, PCGTask>>
     get_digraph(ParallelComputationGraph const &pcg) {
   DiGraph digraph = DiGraph::create<AdjacencyDiGraph>();
-  bidict<Node,
-         std::variant<parallel_layer_guid_t, ParallelComputationGraphEdge>>
-      node_map;
+  bidict<Node, PCGTask> node_map;
 
   for (parallel_layer_guid_t const &layer : get_parallel_layers(pcg)) {
-    node_map.equate(digraph.add_node(), layer);
+    node_map.equate(digraph.add_node(), PCGTask{layer});
   }
 
   for (ParallelComputationGraphEdge const &edge : get_edges(pcg)) {
-    node_map.equate(digraph.add_node(), edge);
+    node_map.equate(digraph.add_node(), PCGTask{edge});
   }
 
-  for (auto const &[node, component] : node_map.as_unordered_map()) {
-    if (std::holds_alternative<ParallelComputationGraphEdge>(component)) {
-      auto edge = std::get<ParallelComputationGraphEdge>(component);
+  for (auto const &[node, task] : node_map.as_unordered_map()) {
+    if (task.is_edge()) {
+      auto edge = task.require_edge();
       parallel_layer_guid_t src_layer = get_src_layer(edge);
       parallel_layer_guid_t dst_layer = get_dst_layer(edge);
 
-      Node src_node = node_map.at_r(src_layer);
-      Node dst_node = node_map.at_r(dst_layer);
+      Node src_node = node_map.at_r(PCGTask{src_layer});
+      Node dst_node = node_map.at_r(PCGTask{dst_layer});
 
       digraph.add_edge(DirectedEdge{src_node, node});
       digraph.add_edge(DirectedEdge{node, dst_node});
@@ -94,55 +90,45 @@ static std::pair<
   return {digraph, node_map};
 }
 
-static std::unordered_map<Node, float> get_cost_map(
-    bidict<Node,
-           std::variant<parallel_layer_guid_t,
-                        ParallelComputationGraphEdge>> const &node_map,
-    ParallelComputationGraph const &pcg,
-    MachineMapping const &machine_mapping,
-    CostEstimator const &estimator) {
+static std::unordered_map<Node, float>
+    get_cost_map(bidict<Node, PCGTask> const &node_map,
+                 ParallelComputationGraph const &pcg,
+                 MachineMapping const &machine_mapping,
+                 CostEstimator const &estimator) {
   std::unordered_map<Node, float> cost_map;
-  for (auto const &[node, component] : node_map) {
-    if (std::holds_alternative<parallel_layer_guid_t>(component)) {
-      parallel_layer_guid_t layer = std::get<parallel_layer_guid_t>(component);
+  for (auto const &[node, task] : node_map) {
+    if (task.is_layer()) {
       cost_map[node] = single_parallel_layer_cost_estimator(
-          layer, pcg, machine_mapping, estimator);
-    } else if (std::holds_alternative<ParallelComputationGraphEdge>(
-                   component)) {
-      ParallelComputationGraphEdge edge =
-          std::get<ParallelComputationGraphEdge>(component);
+          task.require_layer(), pcg, machine_mapping, estimator);
+    } else {
       cost_map[node] = single_dependency_cost_estimator(
-          edge, pcg, machine_mapping, estimator);
+          task.require_edge(), pcg, machine_mapping, estimator);
     }
   }
   return cost_map;
 }
 
-static bool is_allowed_to_run_super(
-    Node const &task,
-    TasksStateTracker const &state_tracker,
-    DeviceMapping const &device_map,
-    bidict<Node,
-           std::variant<parallel_layer_guid_t,
-                        ParallelComputationGraphEdge>> const &node_map) {
-  auto component = node_map.at_l(task);
+static bool
+    is_allowed_to_run_super(Node const &task,
+                            std::unordered_set<Node> const &tasks_processing,
+                            std::unordered_set<Node> const &tasks_processed,
+                            DeviceMapping const &device_map,
+                            bidict<Node, PCGTask> const &node_map) {
+  auto current_task = node_map.at_l(task);
 
-  if (std::holds_alternative<ParallelComputationGraphEdge>(component)) {
+  if (current_task.is_edge()) {
     return true;
   }
 
-  parallel_layer_guid_t current_layer =
-      std::get<parallel_layer_guid_t>(component);
+  parallel_layer_guid_t current_layer = current_task.require_layer();
   std::unordered_set<device_id_t> devices_occupied;
 
-  for (TimedTask const &timed_task :
-       state_tracker.tasks_processing.contents()) {
-    auto task_component = node_map.at_l(timed_task.node);
-    if (std::holds_alternative<parallel_layer_guid_t>(task_component)) {
-      parallel_layer_guid_t processing_layer =
-          std::get<parallel_layer_guid_t>(task_component);
+  for (Node const &in_progress_task : tasks_processing) {
+    auto task_component = node_map.at_l(in_progress_task);
+    if (task_component.is_layer()) {
       devices_occupied = set_union(
-          devices_occupied, device_map.raw_device_map.at(processing_layer));
+          devices_occupied,
+          device_map.raw_device_map.at(task_component.require_layer()));
     }
   }
 
@@ -161,12 +147,17 @@ float task_simulator_estimate_forward_pass_time(
 
   auto [digraph, node_map] = get_digraph(pcg);
   auto cost_map = get_cost_map(node_map, pcg, machine_mapping, estimator);
-  auto is_allowed_to_run = [&](Node const &task,
-                               TasksStateTracker const &state_tracker) {
-    return is_allowed_to_run_super(task, state_tracker, device_map, node_map);
+  auto is_allowed_to_run =
+      [&](Node const &task,
+          std::unordered_set<Node> const &tasks_processing,
+          std::unordered_set<Node> const &processed_tasks) -> bool {
+    return is_allowed_to_run_super(
+        task, tasks_processing, processed_tasks, device_map, node_map);
   };
-  TaskGraph task_graph = TaskGraph{digraph, cost_map, is_allowed_to_run};
+  TaskGraph task_graph = TaskGraph{digraph, cost_map};
+  TaskConstraint constraint = TaskConstraint{is_allowed_to_run};
 
-  return simulate_forward_pass(task_graph).end_time;
+  return simulate_task_graph_execution(task_graph, constraint).end_time;
 }
+
 } // namespace FlexFlow

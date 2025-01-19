@@ -1,0 +1,21 @@
+namespace = "FlexFlow"
+name = "PCGTask"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h",
+  "pcg/parallel_computation_graph/parallel_computation_graph_edge.dtg.h",
+]
+
+[[values]]
+type = "::FlexFlow::parallel_layer_guid_t"
+key = "layer"
+
+[[values]]
+type = "::FlexFlow::ParallelComputationGraphEdge"
+key = "edge"

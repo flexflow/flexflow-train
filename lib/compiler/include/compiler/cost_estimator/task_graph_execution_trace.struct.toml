@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "TaskGraphProfile"
+name = "TaskGraphExecutionTrace"
 
 features = [
   "hash",
