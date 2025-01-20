@@ -1,5 +1,5 @@
-#include <doctest/doctest.h>
 #include "utils/containers/func_from_map.h"
+#include <doctest/doctest.h>
 #include <string>
 
 using namespace FlexFlow;
@@ -24,7 +24,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("empty map") {
       std::unordered_map<std::string, int> map = {};
       auto func = func_from_map(map);
-      CHECK_THROWS(func("a")); 
+      CHECK_THROWS(func("a"));
     }
   }
 }
