@@ -11,11 +11,11 @@ size_t num_dims(TensorShape const &s) {
   return s.dims.ff_ordered.size();
 }
 
-size_t dim_at_idx(TensorShape const &s, ff_dim_t idx) {
+size_t dim_at_idx(TensorShape const &s, relative_ff_dim_t idx) {
   return dim_at_idx(s.dims, idx);
 }
 
-size_t &dim_at_idx(TensorShape &s, ff_dim_t idx) {
+size_t &dim_at_idx(TensorShape &s, relative_ff_dim_t idx) {
   return dim_at_idx(s.dims, idx);
 }
 

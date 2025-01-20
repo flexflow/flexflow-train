@@ -11,7 +11,7 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_layer_norm_incoming_tensor_roles(LayerNormAttrs)") {
     auto make_attrs = [](bool elementwise_affine) {
       return LayerNormAttrs{
-          /*axes=*/{ff_dim_t{0}, ff_dim_t{2}},
+          /*axes=*/{ff_dim_t{nonnegative_int{0}}, ff_dim_t{nonnegative_int{2}}},
           elementwise_affine,
           /*eps=*/1.0,
       };
@@ -46,7 +46,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
   TEST_CASE("shape inference (LayerNorm)") {
     LayerNormAttrs attrs_affine_true = LayerNormAttrs{
-        /*axes=*/{ff_dim_t{1}, ff_dim_t{3}},
+        /*axes=*/{ff_dim_t{nonnegative_int{1}}, ff_dim_t{nonnegative_int{3}}},
         /*elementwise_affine=*/true,
         /*eps=*/0.1,
     };
