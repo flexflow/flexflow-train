@@ -5,7 +5,6 @@ features = [
 
 includes = [
   "utils/graph/node/node.dtg.h",
-  "compiler/task_graph_simulator/task_graph.dtg.h",
   "<functional>",
   "<unordered_set>"
 ]
