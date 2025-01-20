@@ -1,7 +1,7 @@
 #include "compiler/task_graph_simulator/simulate_task_graph_execution.h"
 #include "compiler/task_graph_simulator/task_graph_execution_state.dtg.h"
 #include "compiler/task_graph_simulator/task_graph_execution_trace.dtg.h"
-#include "utils/containers/func_from_map.h"
+#include "utils/containers/lookup_in_map.h"
 #include "utils/graph/algorithms.h"
 #include "utils/graph/digraph/directed_edge.dtg.h"
 #include "utils/graph/instances/adjacency_digraph.h"
@@ -22,7 +22,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                     DirectedEdge{n.at(2), n.at(3)},
                 });
 
-      auto cost_function = func_from_map<Node, float>(
+      auto cost_function = lookup_in_map<Node, float>(
           {{n.at(0), 1}, {n.at(1), 10}, {n.at(2), 100}, {n.at(3), 1000}});
 
       auto is_allowed_to_run =
@@ -53,7 +53,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                  DirectedEdge{n.at(1), n.at(3)},
                  DirectedEdge{n.at(2), n.at(3)}});
 
-      auto cost_function = func_from_map<Node, float>(
+      auto cost_function = lookup_in_map<Node, float>(
           {{n.at(0), 10}, {n.at(1), 15}, {n.at(2), 20}, {n.at(3), 25}});
 
       SUBCASE("no processing constraints") {
@@ -113,7 +113,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                     DirectedEdge{n.at(4), n.at(5)},
                 });
 
-      auto cost_function = func_from_map<Node, float>({{n.at(0), 10},
+      auto cost_function = lookup_in_map<Node, float>({{n.at(0), 10},
                                                        {n.at(1), 15},
                                                        {n.at(2), 20},
                                                        {n.at(3), 25},
@@ -178,7 +178,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                  DirectedEdge{n.at(2), n.at(4)},
                  DirectedEdge{n.at(3), n.at(4)}});
 
-      auto cost_function = func_from_map<Node, float>({{n.at(0), 10},
+      auto cost_function = lookup_in_map<Node, float>({{n.at(0), 10},
                                                        {n.at(1), 100},
                                                        {n.at(2), 100},
                                                        {n.at(3), 100},

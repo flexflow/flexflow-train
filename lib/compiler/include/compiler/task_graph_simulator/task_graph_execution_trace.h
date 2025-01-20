@@ -5,7 +5,7 @@
 
 namespace FlexFlow {
 
-float get_endtime(TaskGraphExecutionTrace const &trace);
+float get_total_execution_time(TaskGraphExecutionTrace const &trace);
 
 } // namespace FlexFlow
 

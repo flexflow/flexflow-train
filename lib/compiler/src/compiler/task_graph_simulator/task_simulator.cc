@@ -39,33 +39,6 @@
 #include <unordered_set>
 namespace FlexFlow {
 
-static float
-    single_parallel_layer_cost_estimator(parallel_layer_guid_t const &layer,
-                                         ParallelComputationGraph const &pcg,
-                                         MachineMapping const &machine_mapping,
-                                         CostEstimator const &estimator) {
-  MachineView mv = machine_mapping.machine_views.at(layer);
-  return estimator
-      .estimate_cost(get_mapped_op_cost_estimate_key_for_layer(pcg, layer, mv))
-      .runtime;
-}
-
-static float single_dependency_cost_estimator(
-    ParallelComputationGraphEdge const &dependency,
-    ParallelComputationGraph const &pcg,
-    MachineMapping const &machine_mapping,
-    CostEstimator const &estimator) {
-  parallel_layer_guid_t incoming = get_src_layer(dependency);
-  parallel_layer_guid_t outgoing = get_dst_layer(dependency);
-  MachineView src_mv = machine_mapping.machine_views.at(incoming);
-  MachineView dst_mv = machine_mapping.machine_views.at(outgoing);
-  ParallelTensorShape tensor_shape = get_parallel_tensor_shape(
-      pcg, parallel_tensor_guid_t{dependency.raw_edge.src});
-  TensorSetMovement movement = TensorSetMovement{
-      {SingleTensorMovement{tensor_shape, {src_mv}, {dst_mv}}}};
-  return estimator.estimate_cost(movement);
-}
-
 float task_simulator_estimate_forward_pass_time(
     ParallelComputationGraph const &pcg,
     CostEstimator const &estimator,
@@ -77,14 +50,34 @@ float task_simulator_estimate_forward_pass_time(
 
   PCGTaskGraph task_graph = get_pcg_task_graph(pcg);
 
+  auto single_parallel_layer_cost_estimator =
+      [&](parallel_layer_guid_t const &layer) {
+        MachineView mv = machine_mapping.machine_views.at(layer);
+        return estimator
+            .estimate_cost(
+                get_mapped_op_cost_estimate_key_for_layer(pcg, layer, mv))
+            .runtime;
+      };
+
+  auto single_dependency_cost_estimator =
+      [&](ParallelComputationGraphEdge const &dependency) {
+        MachineView src_mv =
+            machine_mapping.machine_views.at(get_src_layer(dependency));
+        MachineView dst_mv =
+            machine_mapping.machine_views.at(get_dst_layer(dependency));
+        ParallelTensorShape tensor_shape = get_parallel_tensor_shape(
+            pcg, parallel_tensor_guid_t{dependency.raw_edge.src});
+        TensorSetMovement movement = TensorSetMovement{
+            {SingleTensorMovement{tensor_shape, {src_mv}, {dst_mv}}}};
+        return estimator.estimate_cost(movement);
+      };
+
   auto cost_function = [&](Node const &node) {
     PCGTask task = task_graph.node_map.at_l(node);
     if (task.is_layer()) {
-      return single_parallel_layer_cost_estimator(
-          task.require_layer(), pcg, machine_mapping, estimator);
+      return single_parallel_layer_cost_estimator(task.require_layer());
     } else {
-      return single_dependency_cost_estimator(
-          task.require_edge(), pcg, machine_mapping, estimator);
+      return single_dependency_cost_estimator(task.require_edge());
     }
   };
 
@@ -118,7 +111,7 @@ float task_simulator_estimate_forward_pass_time(
   TaskExecutionConstraint constraint =
       TaskExecutionConstraint{is_allowed_to_run};
 
-  return get_endtime(simulate_task_graph_execution(
+  return get_total_execution_time(simulate_task_graph_execution(
       task_graph.graph, cost_function, constraint));
 }
 

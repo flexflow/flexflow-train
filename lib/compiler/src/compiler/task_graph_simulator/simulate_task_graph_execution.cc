@@ -5,6 +5,7 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "utils/containers/filtrans.h"
 #include "utils/containers/is_subseteq_of.h"
+#include "utils/containers/set_of.h"
 #include "utils/containers/sorted.h"
 #include "utils/exception.h"
 #include "utils/graph/digraph/algorithms.h"
@@ -29,7 +30,7 @@ TaskGraphExecutionTrace simulate_task_graph_execution(
   }
 
   TaskGraphExecutionState execution_state =
-      TaskGraphExecutionState{/*ready_tasks=*/get_sources(task_graph),
+      TaskGraphExecutionState{/*ready_tasks=*/set_of(get_sources(task_graph)),
                               /*in_progress_tasks=*/{},
                               /*finished_tasks=*/{},
                               /*current_time=*/0.0};
@@ -77,7 +78,8 @@ TaskGraphExecutionTrace simulate_task_graph_execution(
   };
 
   while (!is_processing_done()) {
-    for (Node const &task : sorted(execution_state.ready_tasks)) {
+    auto ready_tasks_copy = execution_state.ready_tasks;
+    for (Node const &task : ready_tasks_copy) {
       std::unordered_set<Node> raw_in_progress_tasks = transform(
           unordered_set_of(execution_state.in_progress_tasks.contents()),
           [](InProgressTask const &t) { return t.node; });

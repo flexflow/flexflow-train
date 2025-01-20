@@ -2,7 +2,10 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_ARCHETYPES_VALUE_TYPE_H
 
 #include <cassert>
+#include <fmt/format.h>
 #include <functional>
+#include <ostream>
+#include <sstream>
 
 namespace FlexFlow {
 
@@ -31,6 +34,18 @@ struct value_type {
     assert(false);
   }
 };
+
+template <int TAG>
+std::string format_as(value_type<TAG> const &) {
+  std::ostringstream oss;
+  oss << "<value_type<" << TAG << ">>";
+  return oss.str();
+}
+
+template <int TAG>
+std::ostream &operator<<(std::ostream &s, value_type<TAG> const &x) {
+  return s << format_as(x);
+}
 
 } // namespace FlexFlow
 

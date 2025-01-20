@@ -7,6 +7,7 @@
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.dtg.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.dtg.h"
 #include "compiler/machine_mapping/parallel_layer_guid_oblivious_machine_mapping.dtg.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 
 namespace FlexFlow {
 
@@ -36,7 +37,7 @@ CostEstimator make_fake_cost_estimator(
 
 CostEstimator make_fake_constant_cost_estimator(float op_cost,
                                                 float comm_cost,
-                                                size_t memory_cost);
+                                                nonnegative_int memory_cost);
 
 } // namespace FlexFlow
 

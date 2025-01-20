@@ -27,6 +27,7 @@
 #include "utils/containers/get_only.h"
 #include "utils/deduplicated_priority_queue.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_source_nodes.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include <doctest/doctest.h>
 #include <optional>
 #include <unordered_map>
@@ -36,7 +37,12 @@ namespace FlexFlow {
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("task_simulator_estimate_forward_pass_time") {
-    MachineSpecification machine_spec = MachineSpecification{3, 3, 3, 1, 1};
+    MachineSpecification machine_spec =
+        MachineSpecification{/*num_nodes=*/3,
+                             /*num_cpus_per_node=*/3,
+                             /*num_gpus_per_node=*/3,
+                             /*inter_node_bandwidth=*/1.0f,
+                             /*intra_node_bandwidth=*/1.0f};
 
     SUBCASE("linear graph") {
       ParallelComputationGraphBuilder b;
@@ -75,7 +81,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("constant op, comm cost") {
         CostEstimator estimator = make_fake_constant_cost_estimator(
-            /*op_cost*/ 10.0f, /*comm_cost*/ 1.0f, /*memory_cost*/ 0);
+            /*op_cost=*/10.0f,
+            /*comm_cost=*/1.0f,
+            /*memory_cost=*/nonnegative_int{0});
 
         float result = task_simulator_estimate_forward_pass_time(
             pcg, estimator, device_mapping, machine_spec);
@@ -156,7 +164,9 @@ TEST_SUITE(FF_TEST_SUITE) {
         }};
         SUBCASE("constant op, comm cost") {
           CostEstimator estimator = make_fake_constant_cost_estimator(
-              /*op_cost*/ 10.0f, /*comm_cost*/ 1.0f, /*memory_cost*/ 0);
+              /*op_cost=*/10.0f,
+              /*comm_cost=*/1.0f,
+              /*memory_cost=*/nonnegative_int{0});
 
           float result = task_simulator_estimate_forward_pass_time(
               pcg, estimator, device_mapping, machine_spec);
@@ -192,7 +202,9 @@ TEST_SUITE(FF_TEST_SUITE) {
         }};
         SUBCASE("constant op, cost cost") {
           CostEstimator cost_estimator = make_fake_constant_cost_estimator(
-              /*op_cost*/ 10.0f, /*comm_cost*/ 1.0f, /*memory_cost*/ 0);
+              /*op_cost=*/10.0f,
+              /*comm_cost=*/1.0f,
+              /*memory_cost=*/nonnegative_int{0});
 
           float result = task_simulator_estimate_forward_pass_time(
               pcg, cost_estimator, device_mapping, machine_spec);

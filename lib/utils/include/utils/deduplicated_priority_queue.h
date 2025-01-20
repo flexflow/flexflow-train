@@ -3,6 +3,7 @@
 
 #include "utils/containers/contains.h"
 #include <queue>
+#include <set>
 #include <unordered_set>
 #include <vector>
 
@@ -38,12 +39,11 @@ public:
     impl.pop();
   }
 
-  std::vector<Elem> contents() const {
+  std::set<Elem> contents() const {
     auto temp = impl;
-    std::vector<Elem> result;
-    result.reserve(temp.size());
+    std::set<Elem> result;
     while (!temp.empty()) {
-      result.push_back(temp.top());
+      result.insert(temp.top());
       temp.pop();
     }
     return result;

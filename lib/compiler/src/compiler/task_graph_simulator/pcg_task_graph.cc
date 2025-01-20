@@ -1,5 +1,6 @@
 #include "compiler/task_graph_simulator/pcg_task_graph.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
+#include "pcg/parallel_computation_graph/parallel_computation_graph_edge.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_edge.h"
 #include "utils/graph/instances/adjacency_digraph.h"
 
@@ -19,7 +20,7 @@ PCGTaskGraph get_pcg_task_graph(ParallelComputationGraph const &pcg) {
 
   for (auto const &[node, task] : node_map.as_unordered_map()) {
     if (task.is_edge()) {
-      auto edge = task.require_edge();
+      ParallelComputationGraphEdge edge = task.require_edge();
       parallel_layer_guid_t src_layer = get_src_layer(edge);
       parallel_layer_guid_t dst_layer = get_dst_layer(edge);
 
