@@ -14,7 +14,11 @@ includes = [
 
 
 [[fields]]
-name = "endtime"
+name = "start_time"
+type = "float"
+
+[[fields]]
+name = "end_time"
 type = "float"
 
 [[fields]]

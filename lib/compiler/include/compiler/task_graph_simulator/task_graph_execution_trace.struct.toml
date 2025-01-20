@@ -8,7 +8,7 @@ features = [
 ]
 
 includes = [
-  "compiler/cost_estimator/task_profile.dtg.h",
+  "compiler/task_graph_simulator/task_profile.dtg.h",
   "<unordered_set>"
 ]
 

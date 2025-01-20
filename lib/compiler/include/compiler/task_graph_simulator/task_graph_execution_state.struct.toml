@@ -7,8 +7,8 @@ features = [
 includes = [
   "utils/deduplicated_priority_queue.h",
   "utils/graph/node/node.dtg.h",
-  "compiler/cost_estimator/in_progress_task.dtg.h", 
-  "compiler/cost_estimator/in_progress_task_comparator.h",
+  "compiler/task_graph_simulator/in_progress_task.dtg.h", 
+  "compiler/task_graph_simulator/in_progress_task_comparator.h",
   "<unordered_set>",
   "<functional>"
 ]
@@ -25,11 +25,11 @@ name = "ready_tasks"
 type = "std::unordered_set<::FlexFlow::Node>"
 
 [[fields]]
-name = "tasks_processing"
+name = "in_progress_tasks"
 type = "::FlexFlow::DeduplicatedPriorityQueue<::FlexFlow::InProgressTask, std::vector<::FlexFlow::InProgressTask>, ::FlexFlow::InProgressTaskComparator>"
 
 [[fields]]
-name = "processed_tasks"
+name = "finished_tasks"
 type = "std::unordered_set<::FlexFlow::Node>"
 
 [[fields]]

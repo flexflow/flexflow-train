@@ -7,7 +7,7 @@ includes = [
   "utils/graph/digraph/digraph_view.h",
   "<unordered_map>",
   "<functional>",
-  "compiler/cost_estimator/task_graph_execution_state.dtg.h"
+  "compiler/task_graph_simulator/task_graph_execution_state.dtg.h"
 ]
 
 src_includes = [

@@ -1,4 +1,4 @@
-#include "compiler/cost_estimator/task_simulator.h"
+#include "compiler/task_graph_simulator/task_simulator.h"
 #include "../cost_estimator_for_test.h"
 #include "compiler/cost_estimator/cost_estimator.h"
 #include "compiler/machine_mapping/machine_mapping.dtg.h"

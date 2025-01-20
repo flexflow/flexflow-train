@@ -21,18 +21,4 @@ bool nodes_are_disjoint(MachineMapping const &m1, MachineMapping const &m2) {
   return are_disjoint(keys(m1.machine_views), keys(m2.machine_views));
 }
 
-std::unordered_map<parallel_layer_guid_t, std::unordered_set<device_id_t>>
-    get_device_mapping(MachineMapping const &machine_mapping,
-                       MachineSpecification const &machine_spec,
-                       ParallelComputationGraph const &pcg) {
-  std::unordered_map<parallel_layer_guid_t, std::unordered_set<device_id_t>>
-      device_mapping;
-  for (auto const &[layer, machine_view] : machine_mapping.machine_views) {
-    OperatorTaskSpace op = get_operator_task_space(pcg, layer);
-    device_mapping.insert(
-        {layer, get_device_ids(op, machine_view, machine_spec)});
-  }
-  return device_mapping;
-}
-
 } // namespace FlexFlow

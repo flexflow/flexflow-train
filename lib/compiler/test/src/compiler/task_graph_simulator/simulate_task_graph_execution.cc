@@ -1,7 +1,7 @@
-#include "compiler/cost_estimator/simulate_task_graph_execution.h"
-#include "compiler/cost_estimator/task_graph.dtg.h"
-#include "compiler/cost_estimator/task_graph_execution_state.dtg.h"
-#include "compiler/cost_estimator/task_graph_execution_trace.dtg.h"
+#include "compiler/task_graph_simulator/simulate_task_graph_execution.h"
+#include "compiler/task_graph_simulator/task_graph.dtg.h"
+#include "compiler/task_graph_simulator/task_graph_execution_state.dtg.h"
+#include "compiler/task_graph_simulator/task_graph_execution_trace.dtg.h"
 #include "utils/graph/algorithms.h"
 #include "utils/graph/digraph/directed_edge.dtg.h"
 #include "utils/graph/instances/adjacency_digraph.h"
@@ -27,11 +27,12 @@ TEST_SUITE(FF_TEST_SUITE) {
           {n.at(0), 1}, {n.at(1), 10}, {n.at(2), 100}, {n.at(3), 1000}};
       auto is_allowed_to_run =
           [&](Node const &n,
-              std::unordered_set<Node> const &tasks_processing,
-              std::unordered_set<Node> const &processed_tasks) { return true; };
+              std::unordered_set<Node> const &in_progress_tasks,
+              std::unordered_set<Node> const &finished_tasks) { return true; };
 
       TaskGraph task_graph = TaskGraph{g, cost_map};
-      TaskConstraint constraint = TaskConstraint{is_allowed_to_run};
+      TaskExecutionConstraint constraint =
+          TaskExecutionConstraint{is_allowed_to_run};
 
       TaskGraphExecutionTrace result =
           simulate_task_graph_execution(task_graph, constraint);
@@ -62,13 +63,14 @@ TEST_SUITE(FF_TEST_SUITE) {
       SUBCASE("no processing constraints") {
         auto is_allowed_to_run =
             [&](Node const &n,
-                std::unordered_set<Node> const &tasks_processing,
-                std::unordered_set<Node> const &processed_tasks) {
+                std::unordered_set<Node> const &in_progress_tasks,
+                std::unordered_set<Node> const &finished_tasks) {
               return true;
             };
 
         TaskGraph task_graph = TaskGraph{g, cost_map};
-        TaskConstraint constraint = TaskConstraint{is_allowed_to_run};
+        TaskExecutionConstraint constraint =
+            TaskExecutionConstraint{is_allowed_to_run};
         TaskGraphExecutionTrace result =
             simulate_task_graph_execution(task_graph, constraint);
         TaskGraphExecutionTrace correct =
@@ -85,13 +87,14 @@ TEST_SUITE(FF_TEST_SUITE) {
       SUBCASE("processing constraint") {
         auto is_allowed_to_run =
             [&](Node const &n,
-                std::unordered_set<Node> const &tasks_processing,
-                std::unordered_set<Node> const &processed_tasks) {
-              return tasks_processing.size() == 0;
+                std::unordered_set<Node> const &in_progress_tasks,
+                std::unordered_set<Node> const &finished_tasks) {
+              return in_progress_tasks.size() == 0;
             };
 
         TaskGraph task_graph = TaskGraph{g, cost_map};
-        TaskConstraint constraint = TaskConstraint{is_allowed_to_run};
+        TaskExecutionConstraint constraint =
+            TaskExecutionConstraint{is_allowed_to_run};
         TaskGraphExecutionTrace result =
             simulate_task_graph_execution(task_graph, constraint);
         TaskGraphExecutionTrace correct =
@@ -131,13 +134,14 @@ TEST_SUITE(FF_TEST_SUITE) {
       SUBCASE("no processing constraints") {
         auto is_allowed_to_run =
             [&](Node const &n,
-                std::unordered_set<Node> const &tasks_processing,
-                std::unordered_set<Node> const &processed_tasks) {
+                std::unordered_set<Node> const &in_progress_tasks,
+                std::unordered_set<Node> const &finished_tasks) {
               return true;
             };
 
         TaskGraph task_graph = TaskGraph{g, cost_map};
-        TaskConstraint constraint = TaskConstraint{is_allowed_to_run};
+        TaskExecutionConstraint constraint =
+            TaskExecutionConstraint{is_allowed_to_run};
         TaskGraphExecutionTrace result =
             simulate_task_graph_execution(task_graph, constraint);
         TaskGraphExecutionTrace correct =
@@ -156,13 +160,14 @@ TEST_SUITE(FF_TEST_SUITE) {
       SUBCASE("one node at a time") {
         auto is_allowed_to_run =
             [&](Node const &n,
-                std::unordered_set<Node> const &tasks_processing,
-                std::unordered_set<Node> const &processed_tasks) {
-              return tasks_processing.size() == 0;
+                std::unordered_set<Node> const &in_progress_tasks,
+                std::unordered_set<Node> const &finished_tasks) {
+              return in_progress_tasks.size() == 0;
             };
 
         TaskGraph task_graph = TaskGraph{g, cost_map};
-        TaskConstraint constraint = TaskConstraint{is_allowed_to_run};
+        TaskExecutionConstraint constraint =
+            TaskExecutionConstraint{is_allowed_to_run};
         TaskGraphExecutionTrace result =
             simulate_task_graph_execution(task_graph, constraint);
         TaskGraphExecutionTrace correct =
@@ -200,13 +205,14 @@ TEST_SUITE(FF_TEST_SUITE) {
       SUBCASE("at most two nodes at a time") {
         auto is_allowed_to_run =
             [&](Node const &n,
-                std::unordered_set<Node> const &tasks_processing,
-                std::unordered_set<Node> const &processed_tasks) {
-              return tasks_processing.size() < 2;
+                std::unordered_set<Node> const &in_progress_tasks,
+                std::unordered_set<Node> const &finished_tasks) {
+              return in_progress_tasks.size() < 2;
             };
 
         TaskGraph task_graph = TaskGraph{g, cost_map};
-        TaskConstraint constraint = TaskConstraint{is_allowed_to_run};
+        TaskExecutionConstraint constraint =
+            TaskExecutionConstraint{is_allowed_to_run};
         TaskGraphExecutionTrace result =
             simulate_task_graph_execution(task_graph, constraint);
         TaskGraphExecutionTrace correct =

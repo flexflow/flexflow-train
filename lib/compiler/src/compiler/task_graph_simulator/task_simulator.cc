@@ -1,15 +1,15 @@
-#include "compiler/cost_estimator/task_simulator.h"
+#include "compiler/task_graph_simulator/task_simulator.h"
 #include "compiler/cost_estimator/cost_estimator.h"
-#include "compiler/cost_estimator/in_progress_task.dtg.h"
 #include "compiler/cost_estimator/op_cost_estimate_key.h"
-#include "compiler/cost_estimator/pcg_task.dtg.h"
-#include "compiler/cost_estimator/simulate_task_graph_execution.h"
-#include "compiler/cost_estimator/task_constraint.dtg.h"
-#include "compiler/cost_estimator/task_graph.dtg.h"
-#include "compiler/cost_estimator/task_graph_execution_state.dtg.h"
-#include "compiler/machine_mapping/device_mapping.dtg.h"
-#include "compiler/machine_mapping/device_mapping.h"
 #include "compiler/machine_mapping/machine_mapping.dtg.h"
+#include "compiler/machine_mapping/unstructured_device_mapping.dtg.h"
+#include "compiler/machine_mapping/unstructured_device_mapping.h"
+#include "compiler/task_graph_simulator/in_progress_task.dtg.h"
+#include "compiler/task_graph_simulator/pcg_task.dtg.h"
+#include "compiler/task_graph_simulator/simulate_task_graph_execution.h"
+#include "compiler/task_graph_simulator/task_execution_constraint.dtg.h"
+#include "compiler/task_graph_simulator/task_graph.dtg.h"
+#include "compiler/task_graph_simulator/task_graph_execution_state.dtg.h"
 #include "pcg/computation_graph.h"
 #include "pcg/device_id.h"
 #include "pcg/device_id_t.dtg.h"
@@ -20,8 +20,10 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph_edge.h"
 #include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 #include "utils/containers/all_of.h"
+#include "utils/containers/filter.h"
 #include "utils/containers/generate_map.h"
 #include "utils/containers/set_union.h"
+#include "utils/containers/transform.h"
 #include "utils/containers/values.h"
 #include "utils/graph/digraph/algorithms.h"
 #include "utils/graph/digraph/digraph.h"
@@ -110,29 +112,31 @@ static std::unordered_map<Node, float>
 
 static bool
     is_allowed_to_run_super(Node const &task,
-                            std::unordered_set<Node> const &tasks_processing,
+                            std::unordered_set<Node> const &in_progress_tasks,
                             std::unordered_set<Node> const &tasks_processed,
-                            DeviceMapping const &device_map,
+                            UnstructuredDeviceMapping const &device_map,
                             bidict<Node, PCGTask> const &node_map) {
-  auto current_task = node_map.at_l(task);
+  PCGTask current_task = node_map.at_l(task);
 
   if (current_task.is_edge()) {
     return true;
   }
 
-  parallel_layer_guid_t current_layer = current_task.require_layer();
-  std::unordered_set<device_id_t> devices_occupied;
+  std::unordered_set<Node> layer_nodes =
+      filter(in_progress_tasks,
+             [&](Node const &n) { return node_map.at_l(n).is_layer(); });
+  std::unordered_set<parallel_layer_guid_t> layers =
+      transform(layer_nodes, [&](Node const &n) {
+        return node_map.at_l(n).require_layer();
+      });
+  std::unordered_set<device_id_t> devices_occupied =
+      set_union(transform(layers, [&](parallel_layer_guid_t const &layer) {
+        return device_map.raw_device_map.at(layer);
+      }));
 
-  for (Node const &in_progress_task : tasks_processing) {
-    auto task_component = node_map.at_l(in_progress_task);
-    if (task_component.is_layer()) {
-      devices_occupied = set_union(
-          devices_occupied,
-          device_map.raw_device_map.at(task_component.require_layer()));
-    }
-  }
+  std::unordered_set<device_id_t> required_devices =
+      device_map.raw_device_map.at(current_task.require_layer());
 
-  auto required_devices = device_map.raw_device_map.at(current_layer);
   return intersection(devices_occupied, required_devices).empty();
 }
 
@@ -142,20 +146,21 @@ float task_simulator_estimate_forward_pass_time(
     MachineMapping const &machine_mapping,
     MachineSpecification const &machine_spec) {
 
-  DeviceMapping device_map =
+  UnstructuredDeviceMapping device_map =
       get_device_mapping(machine_mapping, machine_spec, pcg);
 
   auto [digraph, node_map] = get_digraph(pcg);
   auto cost_map = get_cost_map(node_map, pcg, machine_mapping, estimator);
   auto is_allowed_to_run =
       [&](Node const &task,
-          std::unordered_set<Node> const &tasks_processing,
-          std::unordered_set<Node> const &processed_tasks) -> bool {
+          std::unordered_set<Node> const &in_progress_tasks,
+          std::unordered_set<Node> const &finished_tasks) -> bool {
     return is_allowed_to_run_super(
-        task, tasks_processing, processed_tasks, device_map, node_map);
+        task, in_progress_tasks, finished_tasks, device_map, node_map);
   };
   TaskGraph task_graph = TaskGraph{digraph, cost_map};
-  TaskConstraint constraint = TaskConstraint{is_allowed_to_run};
+  TaskExecutionConstraint constraint =
+      TaskExecutionConstraint{is_allowed_to_run};
 
   return simulate_task_graph_execution(task_graph, constraint).end_time;
 }
