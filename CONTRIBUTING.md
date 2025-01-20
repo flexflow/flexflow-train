@@ -12,9 +12,9 @@
    1. If you have root permissions: [DeterminateSystems/nix-installer](https://github.com/DeterminateSystems/nix-installer)
 
    2. If you don't have root permissions: [DavHau/nix-portable](https://github.com/DavHau/nix-portable). 
-      Note that nix-portable does not work particularly well if the nix store is in NFS, so if you are running on an 
-      HPC cluster where the home directory is mounted via NFS we recommend setting the `NP_LOCATION` environment to `/tmp` or 
-      some other non-NFS location. 
+      Note that nix-portable does not work particularly well if the nix store is in NFS[^1] or other distributed file systems, 
+      so if you are running on an HPC cluster where the home directory is mounted via a distributed file system we recommend setting the 
+      `NP_LOCATION` environment to `/tmp` or some other non-NFS location. 
 
       While you should at least skim nix-portable's setup instructions, you'll probably end up doing something like this:
       ```
@@ -34,6 +34,8 @@
       nix (Nix) 2.20.6
       ```
 
+[^1]: [Network File System](https://en.wikipedia.org/wiki/Network_File_System)
+
 2. Clone the FlexFlow Train repository (or, if you'd prefer, follow the alternative setup instructions in the [ff-dev](#ff-dev-optional) section)
 
 ```
@@ -42,31 +44,63 @@ $ git clone --recursive git@github.com:flexflow/flexflow-train.git "$FF_DIR"
 ...
 ```
 
-3. Enter the nix-provided development environment[^1]
+3. Enter the nix-provided `default` development environment[^2]
 
-[^1]: aka "dev shell"
+[^2]: aka "dev shell"
 
 ```
 $ cd "$FF_DIR"
 $ nix develop --accept-flake-config
 ```
 
-4. Build and run the tests
+4. Build and run the non-GPU-required tests (systems that have access to CUDA GPUs can also run the GPU-mandatory tests by following the instructions [here](#gpu-setup))
 
 ```
 (ff) $ proj cmake
 ...
-(ff) $ proj test
+(ff) $ proj test --skip-gpu-tests
 ...
 ```
 If everything is correctly configured, you should see a bunch of build messages followed by something like
 ```
-(ff) $ proj test
-TODO
+(ff) $ proj test --skip-gpu-tests
+421/421 Test #441: get_transformer_computation_graph
+100% tests passed, 0 tests failed out of 421
+
+Label Time Summary:
+compiler-tests                  =   6.13 sec*proc (19 tests)
+local-execution-tests           =   0.13 sec*proc (3 tests)
+models-tests                    =   0.05 sec*proc (4 tests)
+op-attrs-tests                  =   0.48 sec*proc (59 tests)
+pcg-tests                       =   0.33 sec*proc (33 tests)
+substitution-generator-tests    =   0.06 sec*proc (2 tests)
+substitutions-tests             =   0.10 sec*proc (9 tests)
+utils-tests                     =   1.20 sec*proc (293 tests)
+
+Total Test time (real) =   8.64 sec
 ```
 
-If you don't, or you see any tests failing, please double check that you have followed the instructions above. 
+If you don't, or if you see any tests failing, please double check that you have followed the instructions above. 
 If you have and are still encountering an issue, please [contact us](#contact-us) with a detailed description of your platform and the commands you have run.
+
+### GPU setup
+
+If you are developing on a machine with one or more CUDA GPUs, you can also run the tests that require a GPU by entering the `gpu` devshell instead of the `default` devshell:
+```
+$ nix develop .#gpu --accept-flake-config --impure
+```
+and then running
+```
+(ff) $ proj test
+...
+```
+You should see the additional GPU tests run. If you instead see a message like 
+
+> `Error: ... Pass --skip-gpu-tests to skip running tests that require a GPU`
+
+Double check that you are correctly in the `gpu` devshell, not the `default` devshell. 
+If you've confirmed that you are in the correct devshell and are still encountering issues, [contact us](#contact-us) 
+with a detailed description of your platform and the commands you have run.
 
 ### ff-dev (optional)
 
@@ -156,7 +190,11 @@ To help you get started, however, a list of common command invocations is includ
   ```
   (ff) $ proj build
   ```
-- To build and run FlexFlow Train tests:
+- To build and run FlexFlow Train tests (without a GPU):
+  ```
+  (ff) $ proj test --skip-gpu-tests
+  ```
+- To build and run FlexFlow Train tests (with a GPU):
   ```
   (ff) $ proj test
   ```
@@ -189,7 +227,7 @@ The bulk of the FlexFlow source code is stored in the following folders:
 
 We currently implement CI testing using Github Workflows. Each workflow is defined by its corresponding YAML file in the [.github/workflows](.github/workflows) folder of the repo. We currently have the following workflows:
 
-1. [`per-lib-check.yml`](./.github/workflows/per-lib-check.yml): Builds and runs unit tests for all of the code under `lib` (and confusingly also `bin`). Also uploads coverage numbers to [codecov.io](https://app.codecov.io/gh/flexflow/flexflow-train).
+1. [`tests`](./.github/workflows/per-lib-check.yml): Builds and runs GPU and non-GPU unit tests for all of the code under `lib` and `bin`. Also uploads coverage numbers to [codecov.io](https://app.codecov.io/gh/flexflow/flexflow-train).
 2. [`clang-format-check.yml`](./.github/workflows/clang-format-check.yml): ensures that the source code is properly formatted using `clang-format`. To format your code locally, run `proj format` (see [here](#building-testing-etc) for more information on `proj`).
 4. [`shell-check.yml`](./.github/workflows/shell-check.yml): runs shellcheck on all bash scripts in the repo.
 
@@ -208,6 +246,9 @@ The steps for getting changes merged into FlexFlow are relatively standard:
 5. Format the code (i.e., run `proj format`).
 6. Create a new PR from your modified branch to the `master` branch in FlexFlow Train. 
    Provide a brief description of the changes you've made and link any related/closed issues.
+
+Code review is done using [Reviewable](https://reviewable.io/).
+If you haven't used Reviewable before, please read through (or at least skim) the ["Reviews" section](https://docs.reviewable.io/reviews.html) of the Reviewable documentation.
 
 ## Contact Us
 
