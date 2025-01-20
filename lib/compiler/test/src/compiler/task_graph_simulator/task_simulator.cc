@@ -1,6 +1,7 @@
 #include "compiler/task_graph_simulator/task_simulator.h"
 #include "../cost_estimator_for_test.h"
 #include "compiler/cost_estimator/cost_estimator.h"
+#include "compiler/cost_estimator/op_cost_metrics.dtg.h"
 #include "compiler/machine_mapping/machine_mapping.dtg.h"
 #include "compiler/machine_mapping/machine_mapping.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
@@ -74,7 +75,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("constant op, comm cost") {
         CostEstimator estimator = make_fake_constant_cost_estimator(
-            /*op_cost*/ 10.0f, /*comm_cost*/ 1.0f);
+            /*op_cost*/ 10.0f, /*comm_cost*/ 1.0f, /*memory_cost*/ 0);
 
         float result = task_simulator_estimate_forward_pass_time(
             pcg, estimator, device_mapping, machine_spec);
@@ -87,12 +88,12 @@ TEST_SUITE(FF_TEST_SUITE) {
         CostEstimator cost_estimator = make_fake_cost_estimator(
             [](OpCostEstimateKey const &op) {
               if (op.op_attrs.has<InputAttrs>()) {
-                return 10.0f; // layer0
+                return OpCostMetrics{10.0f, 0}; // layer0
               }
               if (op.op_attrs.has<ElementUnaryAttrs>()) {
-                return 1.0f; // layer1
+                return OpCostMetrics{1.0f, 0}; // layer1
               }
-              return 0.0f;
+              return OpCostMetrics{0.0f, 0};
             },
             [](TensorSetMovement const &comm) { return 5.0f; });
 
@@ -155,7 +156,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         }};
         SUBCASE("constant op, comm cost") {
           CostEstimator estimator = make_fake_constant_cost_estimator(
-              /*op_cost*/ 10.0f, /*comm_cost*/ 1.0f);
+              /*op_cost*/ 10.0f, /*comm_cost*/ 1.0f, /*memory_cost*/ 0);
 
           float result = task_simulator_estimate_forward_pass_time(
               pcg, estimator, device_mapping, machine_spec);
@@ -166,15 +167,15 @@ TEST_SUITE(FF_TEST_SUITE) {
           CostEstimator cost_estimator = make_fake_cost_estimator(
               [](OpCostEstimateKey const &op) {
                 if (op.op_attrs.has<InputAttrs>()) {
-                  return 10.0f; // layer0
+                  return OpCostMetrics{10.0f, 0}; // layer0
                 }
                 if (op.op_attrs.has<ElementUnaryAttrs>()) {
-                  return 1.0f; // layers 1, 2
+                  return OpCostMetrics{1.0f, 0}; // layers 1, 2
                 }
                 if (op.op_attrs.has<ElementBinaryAttrs>()) {
-                  return 2.0f; // layer3
+                  return OpCostMetrics{2.0f, 0}; // layer3
                 }
-                return 0.0f;
+                return OpCostMetrics{0.0f, 0};
               },
               [](TensorSetMovement const &comm) { return 5.0f; });
         }
@@ -191,7 +192,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         }};
         SUBCASE("constant op, cost cost") {
           CostEstimator cost_estimator = make_fake_constant_cost_estimator(
-              /*op_cost*/ 10.0f, /*comm_cost*/ 1.0f);
+              /*op_cost*/ 10.0f, /*comm_cost*/ 1.0f, /*memory_cost*/ 0);
 
           float result = task_simulator_estimate_forward_pass_time(
               pcg, cost_estimator, device_mapping, machine_spec);
@@ -202,15 +203,15 @@ TEST_SUITE(FF_TEST_SUITE) {
           CostEstimator cost_estimator = make_fake_cost_estimator(
               [](OpCostEstimateKey const &op) {
                 if (op.op_attrs.has<InputAttrs>()) {
-                  return 10.0f; // layer0
+                  return OpCostMetrics{10.0f, 0}; // layer0
                 }
                 if (op.op_attrs.has<ElementUnaryAttrs>()) {
-                  return 1.0f; // layers 1, 2
+                  return OpCostMetrics{1.0f, 0}; // layers 1, 2
                 }
                 if (op.op_attrs.has<ElementBinaryAttrs>()) {
-                  return 2.0f; // layer3
+                  return OpCostMetrics{2.0f, 0}; // layer3
                 }
-                return 0.0f;
+                return OpCostMetrics{0.0f, 0};
               },
               [](TensorSetMovement const &comm) { return 5.0f; });
           float result = task_simulator_estimate_forward_pass_time(

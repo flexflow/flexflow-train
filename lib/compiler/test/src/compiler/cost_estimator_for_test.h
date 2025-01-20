@@ -1,5 +1,5 @@
-#ifndef _FLEXFLOW_TEST_COST_ESTIMATOR_H
-#define _FLEXFLOW_TEST_COST_ESTIMATOR_H
+#ifndef _FLEXFLOW_TEST_COST_ESTIMATOR_FOR_TEST_H
+#define _FLEXFLOW_TEST_COST_ESTIMATOR_FOR_TEST_H
 
 #include "compiler/cost_estimator/cost_estimator.h"
 #include "compiler/cost_estimator/op_cost_estimate_key.dtg.h"
@@ -34,7 +34,9 @@ CostEstimator make_fake_cost_estimator(
     std::unordered_map<OpCostEstimateKey, OpCostMetrics> const &op_cost_map,
     std::unordered_map<TensorSetMovement, float> const &comm_cost_map);
 
-CostEstimator make_fake_constant_cost_estimator(float op_cost, float comm_cost);
+CostEstimator make_fake_constant_cost_estimator(float op_cost,
+                                                float comm_cost,
+                                                size_t memory_cost);
 
 } // namespace FlexFlow
 

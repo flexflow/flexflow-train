@@ -1,4 +1,5 @@
 #include "./cost_estimator_for_test.h"
+#include "compiler/cost_estimator/op_cost_metrics.dtg.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
 
@@ -41,9 +42,12 @@ CostEstimator make_fake_cost_estimator(
 }
 
 CostEstimator make_fake_constant_cost_estimator(float op_cost,
-                                                float comm_cost) {
+                                                float comm_cost,
+                                                size_t memory_cost) {
   return make_fake_cost_estimator(
-      [=](OpCostEstimateKey const &op) { return op_cost; },
+      [=](OpCostEstimateKey const &op) {
+        return OpCostMetrics{op_cost, memory_cost};
+      },
       [=](TensorSetMovement const &op) { return comm_cost; });
 }
 

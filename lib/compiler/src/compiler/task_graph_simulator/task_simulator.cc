@@ -45,8 +45,9 @@ static float
                                          MachineMapping const &machine_mapping,
                                          CostEstimator const &estimator) {
   MachineView mv = machine_mapping.machine_views.at(layer);
-  return estimator.estimate_cost(
-      get_mapped_op_cost_estimate_key_for_layer(pcg, layer, mv));
+  return estimator
+      .estimate_cost(get_mapped_op_cost_estimate_key_for_layer(pcg, layer, mv))
+      .runtime;
 }
 
 static float single_dependency_cost_estimator(
