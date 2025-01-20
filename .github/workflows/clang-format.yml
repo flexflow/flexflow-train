@@ -10,4 +10,4 @@ jobs:
         uses: lockshaw/clang-format-action@v4.11.0-flexflow-3
         with:
           clang-format-version: "16"
-          exclude-regex: ${{ matrix.path['exclude'] }}
+          exclude-regex: '\.proto$'
