@@ -1,7 +1,7 @@
 #include "linear.h"
 #include "kernels/linear_kernels.h"
 #include "local-execution/task_argument_accessor.h"
-#include "op-attrs/ff_dim.h"
+#include "op-attrs/ff_dim_t.h"
 #include "op-attrs/get_output_shapes.h"
 #include "utils/exception.h"
 #include "utils/hash-utils.h"
@@ -66,8 +66,8 @@ static DeviceSpecificDeviceStates
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto weight = acc.get_tensor<Permissions::RO>(WEIGHT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
-  int out_dim = output.shape.at(ff_dim_t{0});
-  int batch_size = output.shape.at(ff_dim_t{1});
+  int out_dim = output.shape.at(ff_dim_t{nonnegative_int{0}});
+  int batch_size = output.shape.at(ff_dim_t{nonnegative_int{1}});
 
   float *one_ptr;
 
@@ -96,8 +96,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   auto attrs = acc.get_argument<LinearAttrs>(ATTRS);
 
-  int in_dim = input.shape.at(ff_dim_t{0}) + 1;
-  int out_dim = output.shape.at(ff_dim_t{0}) + 1;
+  int in_dim = input.shape.at(ff_dim_t{nonnegative_int{0}}) + 1;
+  int out_dim = output.shape.at(ff_dim_t{nonnegative_int{0}}) + 1;
   int batch_size = output.shape.get_volume() / out_dim;
 
   float const *bias_ptr = NULL;
@@ -140,8 +140,8 @@ static std::optional<float>
     bias_ptr = bias.get_float_ptr();
   }
 
-  int in_dim = input.shape.at(ff_dim_t{0}) + 1;
-  int out_dim = output.shape.at(ff_dim_t{0}) + 1;
+  int in_dim = input.shape.at(ff_dim_t{nonnegative_int{0}}) + 1;
+  int out_dim = output.shape.at(ff_dim_t{nonnegative_int{0}}) + 1;
   int batch_size = output.shape.get_volume() / out_dim;
 
   return profile(backward_kernel,

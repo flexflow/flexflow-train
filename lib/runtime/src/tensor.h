@@ -25,7 +25,7 @@
 #include "op-attrs/param_sync.h"
 #include "op-attrs/tensor_shape.h"
 #include "utils/optional.h"
-#include "utils/stack_vector.h"
+#include "utils/stack_vector/stack_vector.h"
 #include <memory>
 #include <type_traits>
 #include <unordered_map>

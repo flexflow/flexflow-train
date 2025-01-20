@@ -42,7 +42,7 @@ tl::expected<MultiHeadAttentionParallelInputs, std::string>
                     3));
   }
 
-  ShardParallelDim seq_len_q = shard_dim_at_idx(input_q, ff_dim_t{-2});
+  ShardParallelDim seq_len_q = shard_dim_at_idx(input_q, relative_ff_dim_t{-2});
   if (seq_len_q.degree != 1) {
     return tl::unexpected(
         fmt::format("Query sequence length parallel degree expected to be 1, "
@@ -50,7 +50,7 @@ tl::expected<MultiHeadAttentionParallelInputs, std::string>
                     seq_len_q.degree));
   }
 
-  ShardParallelDim seq_len_k = shard_dim_at_idx(input_k, ff_dim_t{-2});
+  ShardParallelDim seq_len_k = shard_dim_at_idx(input_k, relative_ff_dim_t{-2});
   if (seq_len_k.degree != 1) {
     return tl::unexpected(
         fmt::format("Key sequence length parallel degree expected to be 1, but "
@@ -58,7 +58,7 @@ tl::expected<MultiHeadAttentionParallelInputs, std::string>
                     seq_len_k.degree));
   }
 
-  ShardParallelDim seq_len_v = shard_dim_at_idx(input_v, ff_dim_t{-2});
+  ShardParallelDim seq_len_v = shard_dim_at_idx(input_v, relative_ff_dim_t{-2});
   if (seq_len_v.degree != 1) {
     return tl::unexpected(
         fmt::format("Value sequence length parallel degree expected to be 1, "
@@ -66,9 +66,12 @@ tl::expected<MultiHeadAttentionParallelInputs, std::string>
                     seq_len_v.degree));
   }
 
-  ShardParallelDim batch_size_q = shard_dim_at_idx(input_q, ff_dim_t{-3});
-  ShardParallelDim batch_size_k = shard_dim_at_idx(input_k, ff_dim_t{-3});
-  ShardParallelDim batch_size_v = shard_dim_at_idx(input_v, ff_dim_t{-3});
+  ShardParallelDim batch_size_q =
+      shard_dim_at_idx(input_q, relative_ff_dim_t{-3});
+  ShardParallelDim batch_size_k =
+      shard_dim_at_idx(input_k, relative_ff_dim_t{-3});
+  ShardParallelDim batch_size_v =
+      shard_dim_at_idx(input_v, relative_ff_dim_t{-3});
 
   if (!all_same(
           batch_size_q.degree, batch_size_k.degree, batch_size_v.degree)) {
@@ -80,7 +83,7 @@ tl::expected<MultiHeadAttentionParallelInputs, std::string>
                     batch_size_v.degree));
   }
 
-  ShardParallelDim query_dim = shard_dim_at_idx(input_q, ff_dim_t{-1});
+  ShardParallelDim query_dim = shard_dim_at_idx(input_q, relative_ff_dim_t{-1});
   if (query_dim.degree > 1) {
     return tl::unexpected(
         fmt::format("Expected query tensor to have query dim parallel degree "
@@ -88,7 +91,7 @@ tl::expected<MultiHeadAttentionParallelInputs, std::string>
                     query_dim.degree));
   }
 
-  ShardParallelDim key_dim = shard_dim_at_idx(input_k, ff_dim_t{-1});
+  ShardParallelDim key_dim = shard_dim_at_idx(input_k, relative_ff_dim_t{-1});
   if (key_dim.degree > 1) {
     return tl::unexpected(
         fmt::format("Expected key tensor to have key dim parallel degree 1, "
@@ -96,7 +99,7 @@ tl::expected<MultiHeadAttentionParallelInputs, std::string>
                     key_dim.degree));
   }
 
-  ShardParallelDim value_dim = shard_dim_at_idx(input_v, ff_dim_t{-1});
+  ShardParallelDim value_dim = shard_dim_at_idx(input_v, relative_ff_dim_t{-1});
   if (value_dim.degree > 1) {
     return tl::unexpected(
         fmt::format("Expected value tensor to have value dim parallel degree "
