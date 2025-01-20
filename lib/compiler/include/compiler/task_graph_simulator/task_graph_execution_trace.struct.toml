@@ -21,7 +21,3 @@ src_includes = [
 [[fields]]
 name = "task_profiles"
 type = "std::unordered_set<::FlexFlow::TaskProfile>"
-
-[[fields]]
-name = "end_time" 
-type = "float"

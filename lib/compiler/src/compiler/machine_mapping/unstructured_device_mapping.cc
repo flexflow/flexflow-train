@@ -12,9 +12,9 @@
 namespace FlexFlow {
 
 UnstructuredDeviceMapping
-    get_device_mapping(MachineMapping const &machine_mapping,
-                       MachineSpecification const &machine_spec,
-                       ParallelComputationGraph const &pcg) {
+    get_unstructured_device_mapping(MachineMapping const &machine_mapping,
+                                    MachineSpecification const &machine_spec,
+                                    ParallelComputationGraph const &pcg) {
   std::unordered_map<parallel_layer_guid_t, std::unordered_set<device_id_t>>
       device_mapping;
   for (auto const &[layer, machine_view] : machine_mapping.machine_views) {

@@ -11,22 +11,25 @@
 #include "utils/graph/digraph/algorithms/get_predecessors.h"
 #include "utils/graph/digraph/algorithms/get_successors.h"
 #include "utils/graph/digraph/algorithms/is_acyclic.h"
+#include "utils/graph/digraph/digraph_view.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/overload.h"
+#include <functional>
 #include <unordered_set>
 
 namespace FlexFlow {
 
-TaskGraphExecutionTrace
-    simulate_task_graph_execution(TaskGraph const &task_graph,
-                                  TaskExecutionConstraint const &constraint) {
-  if (!is_acyclic(task_graph.graph)) {
+TaskGraphExecutionTrace simulate_task_graph_execution(
+    DiGraphView const &task_graph,
+    std::function<float(Node const &)> cost_function,
+    TaskExecutionConstraint const &constraint) {
+  if (!is_acyclic(task_graph)) {
     throw mk_runtime_error(
         "simulate_task_graph_execution cannot simulate cyclic directed graphs");
   }
 
   TaskGraphExecutionState execution_state =
-      TaskGraphExecutionState{/*ready_tasks=*/get_sources(task_graph.graph),
+      TaskGraphExecutionState{/*ready_tasks=*/get_sources(task_graph),
                               /*in_progress_tasks=*/{},
                               /*finished_tasks=*/{},
                               /*current_time=*/0.0};
@@ -34,7 +37,7 @@ TaskGraphExecutionTrace
   std::unordered_set<TaskProfile> task_profiles;
 
   auto start_task_processing = [&](Node const &task) {
-    float cost = task_graph.cost_map.at(task);
+    float cost = cost_function(task);
     execution_state.in_progress_tasks.push(
         InProgressTask{execution_state.current_time,
                        execution_state.current_time + cost,
@@ -44,15 +47,14 @@ TaskGraphExecutionTrace
 
   auto dependencies_are_satisfied = [&](Node const &task) {
     std::unordered_set<Node> incoming_dependencies =
-        get_predecessors(task_graph.graph, task);
+        get_predecessors(task_graph, task);
     return is_subseteq_of(incoming_dependencies,
                           execution_state.finished_tasks);
   };
 
   auto finish_task_processing = [&](InProgressTask const &in_progress_task) {
     execution_state.finished_tasks.insert(in_progress_task.node);
-    for (Node const &task :
-         get_successors(task_graph.graph, in_progress_task.node)) {
+    for (Node const &task : get_successors(task_graph, in_progress_task.node)) {
       if (dependencies_are_satisfied(task)) {
         execution_state.ready_tasks.insert(task);
       }
@@ -93,11 +95,11 @@ TaskGraphExecutionTrace
       throw mk_runtime_error("Constraints cannot be satisfied");
     }
   }
-  if (execution_state.finished_tasks.size() != num_nodes(task_graph.graph)) {
-    throw mk_runtime_error("Some tasks within the TaskGraph are unreachable");
+  if (execution_state.finished_tasks.size() != num_nodes(task_graph)) {
+    throw mk_runtime_error("Failed to execute all tasks in given graph");
   }
 
-  return TaskGraphExecutionTrace{task_profiles, execution_state.current_time};
+  return TaskGraphExecutionTrace{task_profiles};
 }
 
 } // namespace FlexFlow

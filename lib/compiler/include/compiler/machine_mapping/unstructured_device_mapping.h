@@ -9,9 +9,9 @@
 namespace FlexFlow {
 
 UnstructuredDeviceMapping
-    get_device_mapping(MachineMapping const &machine_mapping,
-                       MachineSpecification const &machine_spec,
-                       ParallelComputationGraph const &pcg);
+    get_unstructured_device_mapping(MachineMapping const &machine_mapping,
+                                    MachineSpecification const &machine_spec,
+                                    ParallelComputationGraph const &pcg);
 
 } // namespace FlexFlow
 

@@ -1,0 +1,19 @@
+namespace = "FlexFlow"
+name = "PCGTaskGraph"
+
+features = [
+]
+
+includes = [
+  "utils/graph/digraph/digraph_view.h",
+  "utils/bidict/bidict.h",
+  "compiler/task_graph_simulator/pcg_task.dtg.h"
+]
+
+[[fields]]
+name = "graph"
+type = "::FlexFlow::DiGraphView"
+
+[[fields]]
+name = "node_map"
+type = "::FlexFlow::bidict<::FlexFlow::Node, ::FlexFlow::PCGTask>"

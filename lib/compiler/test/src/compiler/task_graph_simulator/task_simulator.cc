@@ -34,7 +34,7 @@
 namespace FlexFlow {
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("task_simulator") {
+  TEST_CASE("task_simulator_estimate_forward_pass_time") {
     MachineSpecification machine_spec = MachineSpecification{3, 3, 3, 1, 1};
 
     SUBCASE("linear graph") {
