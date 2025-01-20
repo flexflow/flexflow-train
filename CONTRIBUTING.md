@@ -87,7 +87,7 @@ If you have and are still encountering an issue, please [contact us](#contact-us
 
 If you are developing on a machine with one or more CUDA GPUs, you can also run the tests that require a GPU by entering the `gpu` devshell instead of the `default` devshell:
 ```
-$ nix develop .#gpu --accept-flake-config --impure
+$ NIXPKGS_ALLOW_UNFREE=1 nix develop .#gpu --accept-flake-config --impure
 ```
 and then running
 ```
