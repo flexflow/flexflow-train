@@ -146,10 +146,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     CostEstimator cost_estimator = make_fake_cost_estimator(
         std::unordered_map<OpCostEstimateKey, OpCostMetrics>{{
-            {map_unmapped_op_cost_estimate_key(k1, mv1), OpCostMetrics{1.0, nonnegative_int{2}}},
-            {map_unmapped_op_cost_estimate_key(k2, mv1), OpCostMetrics{2.0, nonnegative_int{3}}},
-            {map_unmapped_op_cost_estimate_key(k1, mv2), OpCostMetrics{1.5, nonnegative_int{1}}},
-            {map_unmapped_op_cost_estimate_key(k2, mv2), OpCostMetrics{2.5, nonnegative_int{2}}},
+            {map_unmapped_op_cost_estimate_key(k1, mv1),
+             OpCostMetrics{1.0, nonnegative_int{2}}},
+            {map_unmapped_op_cost_estimate_key(k2, mv1),
+             OpCostMetrics{2.0, nonnegative_int{3}}},
+            {map_unmapped_op_cost_estimate_key(k1, mv2),
+             OpCostMetrics{1.5, nonnegative_int{1}}},
+            {map_unmapped_op_cost_estimate_key(k2, mv2),
+             OpCostMetrics{2.5, nonnegative_int{2}}},
         }},
         std::unordered_map<TensorSetMovement, float>{{
             {TensorSetMovement{{}}, 0.0},

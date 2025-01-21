@@ -198,7 +198,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
   }
 
-   TEST_CASE("nonnegative_int + operation") {
+  TEST_CASE("nonnegative_int + operation") {
     nonnegative_int nn_int_1a = nonnegative_int{1};
     nonnegative_int nn_int_1b = nonnegative_int{1};
     nonnegative_int nn_int_2 = nonnegative_int{2};
