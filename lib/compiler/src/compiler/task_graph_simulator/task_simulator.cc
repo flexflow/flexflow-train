@@ -49,23 +49,15 @@ float task_simulator_estimate_forward_pass_time(
     if (current_task.is_tensor_movement()) {
       return true;
     }
+    assert(current_task.is_operator());
 
-    auto in_progress_ops = filtrans(in_progress_tasks, [&](Node const &n) {
-      PCGTask task = task_graph.node_to_task.at_l(n);
-      return task.try_require_operator();
-    });
-
-    auto get_devices_for_op = [&](OpCostEstimateKey const &op) {
-      parallel_layer_guid_t layer = task_graph.node_to_layer.at_l(
-          task_graph.node_to_task.at_r(PCGTask{op}));
-      return device_map.raw_device_map.at(layer);
+    auto get_devices = [&](Node const &n) {
+      return task_graph.node_to_devices.at(n);
     };
 
     std::unordered_set<device_id_t> devices_occupied =
-        set_union(transform(in_progress_ops, get_devices_for_op));
-    std::unordered_set<device_id_t> required_devices =
-        get_devices_for_op(current_task.require_operator());
-
+        set_union(transform(in_progress_tasks, get_devices));
+    std::unordered_set<device_id_t> required_devices = get_devices(task);
     return intersection(devices_occupied, required_devices).empty();
   };
 
