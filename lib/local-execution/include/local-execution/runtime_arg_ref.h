@@ -5,6 +5,8 @@
 #include "local-execution/config.h"
 #include "local-execution/device_specific.h"
 #include "local-execution/profiling.h"
+#include "utils/fmt.h"
+#include "utils/type_index.h"
 
 namespace FlexFlow {
 
@@ -13,6 +15,8 @@ enum class RuntimeArgRefType {
   PROFILING_SETTINGS,
   FF_ITERATION_CONFIG
 };
+
+std::string to_string(RuntimeArgRefType const &);
 
 template <typename T>
 using RuntimeArgRef = ArgRef<RuntimeArgRefType, T>;

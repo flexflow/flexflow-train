@@ -1,13 +1,12 @@
-#ifndef _FLEXFLOW_PCG_INCLUDE_PCG_OPTIMIZER_H
-#define _FLEXFLOW_PCG_INCLUDE_PCG_OPTIMIZER_H
 
-#include "pcg/optimizers/adam_optimizer_attrs.h"
-#include "pcg/optimizers/sgd_optimizer_attrs.h"
-#include <variant>
+#ifndef _FLEXFLOW_PCG_OPTIMIZER_ATTRS_H
+#define _FLEXFLOW_PCG_OPTIMIZER_ATTRS_H
+
+#include "pcg/optimizer_attrs.dtg.h"
 
 namespace FlexFlow {
 
-using OptimizerAttrs = std::variant<SGDOptimizerAttrs, AdamOptimizerAttrs>;
+OptimizerAttrs get_optimizer_attrs_for_next_iter(OptimizerAttrs const &old);
 
 } // namespace FlexFlow
 

@@ -3,6 +3,7 @@
 
 #include "fmt/format.h"
 #include "local-execution/serialization.h"
+#include "utils/hash-utils.h"
 #include "utils/type_index.h"
 #include <memory>
 
@@ -21,6 +22,10 @@ public:
 
   std::type_index get_type_index() const {
     return this->type_idx;
+  }
+
+  std::shared_ptr<void const> get_ptr() const {
+    return this->ptr;
   }
 
   bool operator==(ConcreteArgSpec const &other) const;
@@ -52,5 +57,18 @@ std::string format_as(ConcreteArgSpec const &);
 std::ostream &operator<<(std::ostream &, ConcreteArgSpec const &);
 
 } // namespace FlexFlow
+
+namespace std {
+
+template <>
+struct hash<::FlexFlow::ConcreteArgSpec> {
+  size_t operator()(::FlexFlow::ConcreteArgSpec const &s) const {
+    size_t result = 0;
+    ::FlexFlow::hash_combine(result, s.get_type_index(), s.get_ptr());
+    return result;
+  }
+};
+
+} // namespace std
 
 #endif

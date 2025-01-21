@@ -2,10 +2,12 @@
 #include "local-execution/local_cost_estimator.h"
 #include "local-execution/local_cpu_allocator.h"
 #include "local-execution/local_slots_backing.h"
+#include "local-execution/tensor_reduction.h"
 #include "op-attrs/ops/attention.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/computation_graph.h"
 #include "pcg/computation_graph_builder.h"
+#include "utils/containers/get_only.h"
 #include "test/utils/doctest/fmt/pair.h"
 #include "test/utils/doctest/fmt/unordered_map.h"
 #include "test/utils/doctest/fmt/variant.h"
@@ -66,8 +68,12 @@ TEST_SUITE(FF_TEST_SUITE) {
     layer_guid_t layer_guid =
         get_layer_by_name(cg_builder.computation_graph, layer_name);
 
-    TensorBackingMap tensor_backing_map = {
-        {query_guid, query}, {key_guid, key}, {value_guid, value}};
+    LayerTensorBackingMap layer_tensor_backing_map = {
+      {LayerTensorKey{layer_guid, lower(query_guid)}, query}, 
+      {LayerTensorKey{layer_guid, lower(key_guid)}, key}, 
+      {LayerTensorKey{layer_guid, lower(value_guid)}, value},
+      //{LayerTensorKey{layer_guid, lower(output_guid), output}}
+    };
 
     // runtime arg config
     ProfilingSettings settings = ProfilingSettings{/*warmup_iters=*/0,
@@ -78,33 +84,31 @@ TEST_SUITE(FF_TEST_SUITE) {
                          EnableProfiling::NO,
                          settings};
 
-    LocalSlotsBacking local_slots_backing = {tensor_backing_map,
+    LocalSlotsBacking local_slots_backing = {layer_tensor_backing_map,
+                                             TensorBackingMap{},
                                              runtime_arg_config};
 
-    SUBCASE("LocalSlotsBacking::allocate_outgoing_tensors") {
+    SUBCASE("LocalSlotsBacking::allocate_tensors_by_role") {
       auto get_result_shape_and_dtype_for_tensor_guid_and_map =
-          [&](tensor_guid_t t,
-              TensorBackingMap m) -> std::pair<ArrayShape, DataType> {
-        GenericTensorAccessorW accessor = m.at(t);
+          [&](tensor_guid_t t, layer_guid_t l,
+              LayerTensorBackingMap m) -> std::pair<ArrayShape, DataType> {
+        GenericTensorAccessorW accessor = m.at(LayerTensorKey{l, lower(t)});
         return get_shape_and_datatype(accessor);
       };
 
       SUBCASE("Input (QKV) and gradient tensors allocation") {
 
         // allocate all tensors from input nodes
-        for (layer_guid_t const &node :
-             topological_ordering(cg_builder.computation_graph)) {
-          if (node == layer_guid) {
-            break;
-          }
-          local_slots_backing.allocate_outgoing_tensors(
-              node, cg_builder.computation_graph, allocator);
-        }
+        local_slots_backing.allocate_tensors_by_role(
+            TensorRole::INPUT,
+            layer_guid,
+            cg_builder.computation_graph,
+            allocator);
 
         SUBCASE("Query grad") {
           std::pair<ArrayShape, DataType> result =
               get_result_shape_and_dtype_for_tensor_guid_and_map(
-                  query_guid, local_slots_backing.gradient_tensor_mapping);
+                  query_guid, layer_guid, local_slots_backing.gradient_tensor_mapping);
           std::pair<ArrayShape, DataType> correct = {ArrayShape{query_shape},
                                                      dtype};
           CHECK(result == correct);
@@ -112,7 +116,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         SUBCASE("Key grad") {
           std::pair<ArrayShape, DataType> result =
               get_result_shape_and_dtype_for_tensor_guid_and_map(
-                  key_guid, local_slots_backing.gradient_tensor_mapping);
+                  key_guid, layer_guid, local_slots_backing.gradient_tensor_mapping);
           std::pair<ArrayShape, DataType> correct = {ArrayShape{key_shape},
                                                      dtype};
           CHECK(result == correct);
@@ -120,19 +124,22 @@ TEST_SUITE(FF_TEST_SUITE) {
         SUBCASE("Value grad") {
           std::pair<ArrayShape, DataType> result =
               get_result_shape_and_dtype_for_tensor_guid_and_map(
-                  value_guid, local_slots_backing.gradient_tensor_mapping);
+                  value_guid, layer_guid, local_slots_backing.gradient_tensor_mapping);
           std::pair<ArrayShape, DataType> correct = {ArrayShape{value_shape},
                                                      dtype};
           CHECK(result == correct);
         }
       }
       SUBCASE("Output and gradient tensors allocation") {
-        local_slots_backing.allocate_outgoing_tensors(
-            layer_guid, cg_builder.computation_graph, allocator);
+        local_slots_backing.allocate_tensors_by_role(
+            TensorRole::OUTPUT,
+            layer_guid,
+            cg_builder.computation_graph,
+            allocator);
         SUBCASE("Output") {
           std::pair<ArrayShape, DataType> result =
               get_result_shape_and_dtype_for_tensor_guid_and_map(
-                  output_guid, local_slots_backing.tensor_mapping);
+                  output_guid, layer_guid, local_slots_backing.tensor_mapping);
           std::pair<ArrayShape, DataType> correct = {
               ArrayShape{
                   get_tensor_attrs(cg_builder.computation_graph, output_guid)
@@ -143,7 +150,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         SUBCASE("Output grad") {
           std::pair<ArrayShape, DataType> result =
               get_result_shape_and_dtype_for_tensor_guid_and_map(
-                  output_guid, local_slots_backing.gradient_tensor_mapping);
+                  output_guid, layer_guid, local_slots_backing.gradient_tensor_mapping);
           std::pair<ArrayShape, DataType> correct = {
               ArrayShape{
                   get_tensor_attrs(cg_builder.computation_graph, output_guid)
@@ -154,18 +161,30 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SUBCASE("Tensor slots") {
-        local_slots_backing.allocate_outgoing_tensors(
+        local_slots_backing.allocate_layer_tensors(
             layer_guid, cg_builder.computation_graph, allocator);
         SUBCASE("Input tensor slots") {
-          std::vector<tensor_guid_t> correct_incoming_tensors =
-              get_incoming_tensors(cg_builder.computation_graph, layer_guid);
-          CHECK(correct_incoming_tensors ==
+          std::vector<reduced_tensor_t> correct_incoming_input_tensors = 
+            transform(get_incoming_inputs(cg_builder.computation_graph, layer_guid), [&](tensor_guid_t const &tensor_guid) {
+              return lower(tensor_guid);
+            });
+          CHECK(correct_incoming_input_tensors ==
                 local_slots_backing.input_tensor_slots.at(layer_guid));
         }
+        SUBCASE("Weight tensor slots") {
+          std::vector<reduced_tensor_t> correct_incoming_weight_tensors = 
+            transform(get_incoming_weights(cg_builder.computation_graph, layer_guid), [&](tensor_guid_t const &tensor_guid) {
+              return lower(tensor_guid);
+            });
+          CHECK(correct_incoming_weight_tensors ==
+                local_slots_backing.weight_tensor_slots.at(layer_guid));
+        }
         SUBCASE("Output tensor slots") {
-          std::vector<tensor_guid_t> correct_outgoing_tensors =
-              get_outgoing_tensors(cg_builder.computation_graph, layer_guid);
-          CHECK(correct_outgoing_tensors ==
+          std::vector<reduced_tensor_t> correct_output_tensors = 
+            transform(get_outgoing_tensors(cg_builder.computation_graph, layer_guid), [&](tensor_guid_t const &tensor_guid) {
+              return lower(tensor_guid);
+            });
+          CHECK(correct_output_tensors ==
                 local_slots_backing.output_tensor_slots.at(layer_guid));
         }
       }
@@ -192,7 +211,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         b.bind(QUERY, input_tensor(0));
         b.bind(KEY, input_tensor(1));
         b.bind(VALUE, input_tensor(2));
-        b.bind(WEIGHTS, weight_tensor(3));
+        b.bind(WEIGHTS, weight_tensor(0));
         b.bind(OUTPUT, output_tensor(0));
 
         b.bind_grad(QUERY, input_tensor(0));
@@ -205,12 +224,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         return b;
       }();
 
-      // allocate all incoming and outgoing tensors for graph
-      for (layer_guid_t const &node :
-           topological_ordering(cg_builder.computation_graph)) {
-        local_slots_backing.allocate_outgoing_tensors(
-            node, cg_builder.computation_graph, allocator);
-      }
+      local_slots_backing.allocate_layer_tensors(
+          layer_guid, cg_builder.computation_graph, allocator);
 
       SUBCASE("LocalSlotsBacking::construct_tensor_slots_backing") {
         TensorSlotsBackingWithoutAddresses result =
@@ -229,12 +244,12 @@ TEST_SUITE(FF_TEST_SUITE) {
               allocator.allocate_tensor(output_attrs.shape);
           return get_slots_backing_without_tensor_allocation_addresses(
               TensorSlotsBacking{
-                  {SlotGradId{slot_id_t{QUERY}, IsGrad::NO}, query},
-                  {SlotGradId{slot_id_t{KEY}, IsGrad::NO}, key},
-                  {SlotGradId{slot_id_t{VALUE}, IsGrad::NO}, value},
-                  {SlotGradId{slot_id_t{WEIGHTS}, IsGrad::NO}, weights},
-                  {SlotGradId{slot_id_t{OUTPUT}, IsGrad::NO}, output},
-                  {SlotGradId{slot_id_t{QUERY}, IsGrad::YES}, query}});
+                  {SlotTensorTypeId{slot_id_t{QUERY}, TensorType::FORWARD}, query},
+                  {SlotTensorTypeId{slot_id_t{KEY}, TensorType::FORWARD}, key},
+                  {SlotTensorTypeId{slot_id_t{VALUE}, TensorType::FORWARD}, value},
+                  {SlotTensorTypeId{slot_id_t{WEIGHTS}, TensorType::FORWARD}, weights},
+                  {SlotTensorTypeId{slot_id_t{OUTPUT}, TensorType::FORWARD}, output},
+                  {SlotTensorTypeId{slot_id_t{QUERY}, TensorType::GRADIENT}, query}});
         }();
 
         CHECK(result == correct);

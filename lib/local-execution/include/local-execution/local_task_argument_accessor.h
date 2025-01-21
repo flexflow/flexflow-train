@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_LOCAL_EXECUTION_LOCAL_TASK_ARGUMENT_ACCESSOR_H
 #define _FLEXFLOW_LOCAL_EXECUTION_LOCAL_TASK_ARGUMENT_ACCESSOR_H
 
-#include "local-execution/slot_grad_id.dtg.h"
+#include "local-execution/slot_tensor_type_id.dtg.h"
 #include "local-execution/task_argument_accessor.h"
 #include <unordered_map>
 #include <variant>
@@ -9,7 +9,7 @@
 namespace FlexFlow {
 
 using TensorSlotsBacking = std::unordered_map<
-    SlotGradId,
+    SlotTensorTypeId,
     std::variant<GenericTensorAccessorW, std::vector<GenericTensorAccessorW>>>;
 using ArgSlotsBacking = std::unordered_map<slot_id_t, ConcreteArgSpec>;
 
@@ -25,9 +25,9 @@ struct LocalTaskArgumentAccessor : public ITaskArgumentAccessor {
 
   GenericTensorAccessor get_tensor(slot_id_t slot,
                                    Permissions priv,
-                                   IsGrad is_grad) const override;
+                                   TensorType tensor_type) const override;
   VariadicGenericTensorAccessor get_variadic_tensor(
-      slot_id_t slot, Permissions priv, IsGrad is_grad) const override;
+      slot_id_t slot, Permissions priv, TensorType tensor_type) const override;
 
   Allocator get_allocator() const override;
 
@@ -40,7 +40,7 @@ private:
 };
 
 using TensorSlotsBackingWithoutAddresses = std::unordered_map<
-    SlotGradId,
+    SlotTensorTypeId,
     std::variant<std::pair<ArrayShape, DataType>,
                  std::vector<std::pair<ArrayShape, DataType>>>>;
 
