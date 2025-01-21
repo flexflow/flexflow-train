@@ -20,8 +20,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("flatten all dims") {
       FlatAttrs attrs = FlatAttrs{
-          /*start_dim=*/ff_dim_t{0},
-          /*end_dim=*/ff_dim_t{4},
+          /*start_dim=*/ff_dim_t{nonnegative_int{0}},
+          /*end_dim=*/ff_dim_t{nonnegative_int{4}},
       };
 
       TensorShape result = get_output_shape(attrs, input_shape);
@@ -37,8 +37,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("flatten trailing dims") {
       FlatAttrs attrs = FlatAttrs{
-          /*start_dim=*/ff_dim_t{2},
-          /*end_dim=*/ff_dim_t{4},
+          /*start_dim=*/ff_dim_t{nonnegative_int{2}},
+          /*end_dim=*/ff_dim_t{nonnegative_int{4}},
       };
 
       TensorShape result = get_output_shape(attrs, input_shape);
@@ -56,8 +56,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("flatten leading dims") {
       FlatAttrs attrs = FlatAttrs{
-          /*start_dim=*/ff_dim_t{0},
-          /*end_dim=*/ff_dim_t{2},
+          /*start_dim=*/ff_dim_t{nonnegative_int{0}},
+          /*end_dim=*/ff_dim_t{nonnegative_int{2}},
       };
 
       TensorShape result = get_output_shape(attrs, input_shape);
@@ -75,8 +75,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("flatten middle dims") {
       FlatAttrs attrs = FlatAttrs{
-          /*start_dim=*/ff_dim_t{1},
-          /*end_dim=*/ff_dim_t{3},
+          /*start_dim=*/ff_dim_t{nonnegative_int{1}},
+          /*end_dim=*/ff_dim_t{nonnegative_int{3}},
       };
 
       TensorShape result = get_output_shape(attrs, input_shape);
@@ -94,8 +94,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("flatten no dims (start_dim == end_dim)") {
       FlatAttrs attrs = FlatAttrs{
-          /*start_dim=*/ff_dim_t{2},
-          /*end_dim=*/ff_dim_t{2},
+          /*start_dim=*/ff_dim_t{nonnegative_int{2}},
+          /*end_dim=*/ff_dim_t{nonnegative_int{2}},
       };
 
       TensorShape result = get_output_shape(attrs, input_shape);
@@ -106,8 +106,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("flatten no dims (start_dim < end_dim)") {
       FlatAttrs attrs = FlatAttrs{
-          /*start_dim=*/ff_dim_t{2},
-          /*end_dim=*/ff_dim_t{1},
+          /*start_dim=*/ff_dim_t{nonnegative_int{2}},
+          /*end_dim=*/ff_dim_t{nonnegative_int{1}},
       };
 
       TensorShape result = get_output_shape(attrs, input_shape);
@@ -119,8 +119,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
   TEST_CASE(
       "get_output_parallel_dim_degrees(FlatAttrs, ParallelTensorDimDegrees)") {
-    FlatAttrs attrs = FlatAttrs{/*start_dim=*/ff_dim_t{1},
-                                /*end_dim=*/ff_dim_t{3}};
+    FlatAttrs attrs = FlatAttrs{/*start_dim=*/ff_dim_t{nonnegative_int{1}},
+                                /*end_dim=*/ff_dim_t{nonnegative_int{3}}};
 
     SUBCASE("allows shard parallelism in non-flattened dims") {
       ParallelTensorDimDegrees input = ParallelTensorDimDegrees{
@@ -217,8 +217,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     FlatAttrs attrs = FlatAttrs{
-        /*start_dim=*/ff_dim_t{1},
-        /*end_dim=*/ff_dim_t{3},
+        /*start_dim=*/ff_dim_t{nonnegative_int{1}},
+        /*end_dim=*/ff_dim_t{nonnegative_int{3}},
     };
 
     tl::expected<ParallelTensorShape, std::string> result =
