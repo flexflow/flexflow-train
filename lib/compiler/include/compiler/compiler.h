@@ -16,9 +16,7 @@ enum class SearchAlgorithm {
 SearchResult optimize(ComputationGraph const &,
                       MachineSpecification const &,
                       CostEstimator const &,
-                      SearchAlgorithm,
-                      AlgorithmConfig const &,
-                      DeviceType);
+                      AlgorithmConfig const &);
 
 } // namespace FlexFlow
 

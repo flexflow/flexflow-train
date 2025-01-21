@@ -3,6 +3,7 @@
 #include "utils/containers/are_disjoint.h"
 #include "utils/containers/keys.h"
 #include "utils/containers/merge_maps.h"
+#include "utils/containers/map_keys.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/binary_sp_decomposition_tree.h"
 
 namespace FlexFlow {
@@ -28,14 +29,14 @@ MachineMapping get_machine_mapping_from_machine_mapping_result(
     std::optional<BinarySPDecompositionTree> subtree_optional =
         binary_sp_decomposition_tree_get_subtree_at_path(sp_tree, path);
     if (!subtree_optional.has_value()) {
-      throw std::runtime_error("Invalid tree path");
+      throw std::runtime_error(fmt::format("Invalid tree path {}", path));
     }
     BinarySPDecompositionTree subtree = subtree_optional.value();
     if (!subtree.is_node()) {
-      throw std::runtime_error("Invalid tree path to a leaf");
+      throw std::runtime_error(fmt::format("Invalid tree path to a leaf: found {} instead", subtree));
     }
     return parallel_layer_guid_t{
-        subtree.get<Node>(),
+        subtree.require_node(),
     };
   };
 
@@ -44,10 +45,7 @@ MachineMapping get_machine_mapping_from_machine_mapping_result(
   if (mm_result.raw_result) {
     FeasibleMachineMappingResult const &feasible_mm_result =
         mm_result.raw_result.value();
-    for (auto const &[path, mv] :
-         feasible_mm_result.machine_mapping.raw_mapping) {
-      mm.insert({get_layer_from_path(path), mv});
-    }
+    mm = map_keys(feasible_mm_result.machine_mapping.raw_mapping, get_layer_from_path);
   }
 
   return MachineMapping{mm};

@@ -13,6 +13,9 @@
 #include "substitutions/substitution.h"
 #include "utils/deduplicated_priority_queue.h"
 #include "utils/graph/node/algorithms.h"
+#include "compiler/machine_mapping/machine_mapping_cache.h"
+#include "compiler/machine_mapping/machine_mapping_constraints.h"
+#include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
 
 namespace FlexFlow {
 
@@ -58,9 +61,7 @@ SearchResult graph_optimize(ParallelComputationGraph &pcg,
         return mapping;
       }();
 
-  MachineMappingCache cached_subgraph_costs = MachineMappingCache{
-      {},
-  };
+  MachineMappingCache cached_subgraph_costs = empty_machine_mapping_cache();
   DeduplicatedPriorityQueue<GraphOptimizeState> candidates;
 
   MachineMappingContext context = MachineMappingContext{
@@ -79,6 +80,14 @@ SearchResult graph_optimize(ParallelComputationGraph &pcg,
       },
   };
 
+  auto get_runtime_cost = [](MachineMappingResult const &mm_result) {
+    if (mm_result.raw_result == std::nullopt) {
+      return std::numeric_limits<float>::infinity();
+    } else {
+      return mm_result.raw_result.value().runtime;
+    }
+  };
+
   auto optimize_pcg = [&](ParallelComputationGraph const &pcg)
       -> std::pair<GraphOptimizeState, MachineMapping> {
     std::optional<PCGBinarySPDecomposition> maybe_sp_decomp =
@@ -90,9 +99,9 @@ SearchResult graph_optimize(ParallelComputationGraph &pcg,
 
     PCGBinarySPDecomposition sp_decomp = maybe_sp_decomp.value();
 
-    MachineMappingConstraints constraints = MachineMappingConstraints{
-        /*machine_views=*/{},
-    };
+    MachineMappingProblemTree problem_tree = get_machine_mapping_problem_tree(pcg, sp_decomp);
+    MachineMappingConstraints constraints = 
+      get_unconstrained_solution_for_layers(get_all_leaf_paths(problem_tree));
 
     MachineMappingResult mm_result = get_optimal_machine_mapping(
         cached_subgraph_costs,
@@ -101,16 +110,10 @@ SearchResult graph_optimize(ParallelComputationGraph &pcg,
         resources,
         constraints);
 
-    float runtime_with_optimal_mm;
-    if (mm_result.raw_result == std::nullopt) {
-      runtime_with_optimal_mm = std::numeric_limits<float>::infinity();
-    } else {
-      runtime_with_optimal_mm = mm_result.raw_result.value().runtime;
-    }
     return {
         GraphOptimizeState{
             /*pcg=*/pcg,
-            /*runtime_with_optimal_mm=*/runtime_with_optimal_mm,
+            /*runtime_with_optimal_mm=*/get_runtime_cost(mm_result),
         },
         get_machine_mapping_from_machine_mapping_result(sp_decomp, mm_result),
     };
