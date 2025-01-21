@@ -1,6 +1,7 @@
 #include "pcg/operator_task_space.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "pcg/operator_task_space.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_tensor_guid_t.dtg.h"
@@ -42,16 +43,26 @@ size_t num_tasks(OperatorTaskSpace const &task) {
   return product(task.degrees);
 }
 
-OperatorTaskSpace get_operator_task_space(ParallelComputationGraph const &pcg,
-                                          parallel_layer_guid_t const &layer) {
-  parallel_tensor_guid_t out_tensor = get_layer_outputs(pcg, layer).at(0);
-  ParallelTensorShape shape = get_parallel_tensor_shape(pcg, out_tensor);
-
+OperatorTaskSpace get_operator_task_space_from_parallel_tensor_shape(
+    ParallelComputationGraph const &pcg, ParallelTensorShape const &shape) {
   std::vector<int> degrees;
   extend(degrees, vector_of(ff_ordered_shard_degrees(shape)));
   degrees.push_back(get_sum_degree(shape));
   degrees.push_back(get_discard_copy_degree(shape));
   return OperatorTaskSpace{degrees};
+}
+
+OperatorTaskSpace
+    get_operator_task_space_from_layer(ParallelComputationGraph const &pcg,
+                                       parallel_layer_guid_t const &layer) {
+  assert(get_layer_outputs(pcg, layer).size() > 0);
+  parallel_tensor_guid_t out_tensor =
+      get_layer_outputs(pcg, layer)
+          .at(0); // TODO(@pietro): will have to be changed when
+                  // OperatorTaskSpace changes
+  ParallelTensorShape shape = get_parallel_tensor_shape(pcg, out_tensor);
+
+  return get_operator_task_space_from_parallel_tensor_shape(pcg, shape);
 }
 
 } // namespace FlexFlow

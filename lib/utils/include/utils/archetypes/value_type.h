@@ -37,14 +37,12 @@ struct value_type {
 
 template <int TAG>
 std::string format_as(value_type<TAG> const &) {
-  std::ostringstream oss;
-  oss << "<value_type<" << TAG << ">>";
-  return oss.str();
+  assert(false);
 }
 
 template <int TAG>
 std::ostream &operator<<(std::ostream &s, value_type<TAG> const &x) {
-  return s << format_as(x);
+  assert(false);
 }
 
 } // namespace FlexFlow

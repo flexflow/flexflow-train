@@ -2,20 +2,19 @@ namespace = "FlexFlow"
 name = "PCGTask"
 features = [
   "eq",
-  "ord",
   "hash",
   "fmt",
 ]
 
 includes = [
-  "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h",
-  "pcg/parallel_computation_graph/parallel_computation_graph_edge.dtg.h",
+  "compiler/cost_estimator/op_cost_estimate_key.dtg.h",
+  "compiler/cost_estimator/tensor_set_movement.dtg.h",
 ]
 
 [[values]]
-type = "::FlexFlow::parallel_layer_guid_t"
-key = "layer"
+type = "::FlexFlow::OpCostEstimateKey"
+key = "operator"
 
 [[values]]
-type = "::FlexFlow::ParallelComputationGraphEdge"
-key = "edge"
+type = "::FlexFlow::TensorSetMovement"
+key = "tensor_movement"

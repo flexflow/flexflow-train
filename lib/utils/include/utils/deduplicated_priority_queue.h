@@ -39,9 +39,9 @@ public:
     impl.pop();
   }
 
-  std::set<Elem> contents() const {
+  std::set<Elem, Compare> contents() const {
     auto temp = impl;
-    std::set<Elem> result;
+    std::set<Elem, Compare> result;
     while (!temp.empty()) {
       result.insert(temp.top());
       temp.pop();

@@ -1,36 +1,48 @@
 #include "compiler/task_graph_simulator/pcg_task_graph.h"
+#include "compiler/cost_estimator/op_cost_estimate_key.h"
+#include "compiler/cost_estimator/tensor_set_movement.h"
+#include "compiler/machine_mapping/machine_mapping.dtg.h"
+#include "pcg/machine_specification.dtg.h"
+#include "pcg/machine_view.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_edge.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_edge.h"
+#include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 #include "utils/graph/instances/adjacency_digraph.h"
+#include <unordered_map>
 
 namespace FlexFlow {
 
-PCGTaskGraph get_pcg_task_graph(ParallelComputationGraph const &pcg) {
+PCGTaskGraph get_pcg_task_graph(ParallelComputationGraph const &pcg,
+                                MachineMapping const &machine_mapping,
+                                MachineSpecification const &machine_spec) {
   DiGraph digraph = DiGraph::create<AdjacencyDiGraph>();
   bidict<Node, PCGTask> node_map;
+  bidict<parallel_layer_guid_t, Node> layer_map;
 
   for (parallel_layer_guid_t const &layer : get_parallel_layers(pcg)) {
-    node_map.equate(digraph.add_node(), PCGTask{layer});
+    MachineView mv = machine_mapping.machine_views.at(layer);
+    OpCostEstimateKey op_key =
+        get_mapped_op_cost_estimate_key_for_layer(pcg, layer, mv);
+    Node n = digraph.add_node();
+    node_map.equate(n, PCGTask{op_key});
+    layer_map.equate({layer, n});
   }
 
   for (ParallelComputationGraphEdge const &edge : get_edges(pcg)) {
-    node_map.equate(digraph.add_node(), PCGTask{edge});
+    MachineView src_mv = machine_mapping.machine_views.at(get_src_layer(edge));
+    MachineView dst_mv = machine_mapping.machine_views.at(get_dst_layer(edge));
+    TensorSetMovement movement =
+        get_tensor_set_movement_from_pcg_edge(edge, pcg, src_mv, dst_mv);
+    Node node = digraph.add_node();
+    node_map.equate(node, PCGTask{movement});
+    Node src_node = layer_map.at_l(get_src_layer(edge));
+    Node dst_node = layer_map.at_l(get_dst_layer(edge));
+
+    digraph.add_edge(DirectedEdge{src_node, node});
+    digraph.add_edge(DirectedEdge{node, dst_node});
   }
 
-  for (auto const &[node, task] : node_map.as_unordered_map()) {
-    if (task.is_edge()) {
-      ParallelComputationGraphEdge edge = task.require_edge();
-      parallel_layer_guid_t src_layer = get_src_layer(edge);
-      parallel_layer_guid_t dst_layer = get_dst_layer(edge);
-
-      Node src_node = node_map.at_r(PCGTask{src_layer});
-      Node dst_node = node_map.at_r(PCGTask{dst_layer});
-
-      digraph.add_edge(DirectedEdge{src_node, node});
-      digraph.add_edge(DirectedEdge{node, dst_node});
-    }
-  }
   return PCGTaskGraph{digraph, node_map};
 }
 
