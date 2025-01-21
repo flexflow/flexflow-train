@@ -12,6 +12,7 @@ build_targets = [
   "compiler",
   "substitution-generator",
   "local-execution",
+  "realm-backend",
   "models",
   "export-model-arch",
   "substitution-to-dot",
