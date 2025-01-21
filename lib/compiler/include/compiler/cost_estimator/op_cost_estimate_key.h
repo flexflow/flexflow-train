@@ -14,11 +14,6 @@ OpCostEstimateKey get_mapped_op_cost_estimate_key_for_layer(
     parallel_layer_guid_t const &layer,
     MachineView const &machine_view);
 
-std::unordered_set<device_id_t>
-    get_devices_from_op_key(OpCostEstimateKey const &op_key,
-                            ParallelComputationGraph const &pcg,
-                            MachineSpecification const &machine_spec);
-
 } // namespace FlexFlow
 
 #endif

@@ -19,12 +19,8 @@ TaskSpaceCoordinate
 size_t num_dims(OperatorTaskSpace const &task);
 size_t num_tasks(OperatorTaskSpace const &task);
 
-OperatorTaskSpace
-    get_operator_task_space_from_layer(ParallelComputationGraph const &pcg,
-                                       parallel_layer_guid_t const &layer);
-
-OperatorTaskSpace get_operator_task_space_from_parallel_tensor_shape(
-    ParallelComputationGraph const &pcg, ParallelTensorShape const &shape);
+OperatorTaskSpace get_operator_task_space(ParallelComputationGraph const &pcg,
+                                          parallel_layer_guid_t const &layer);
 
 } // namespace FlexFlow
 

@@ -240,7 +240,7 @@ MachineMappingResult
   auto get_mapping_result = [&](MachineView const &machine_view) {
     OpCostEstimateKey mapped =
         map_unmapped_op_cost_estimate_key(leaf, machine_view);
-    float cost = context.cost_estimator.estimate_cost(mapped).runtime;
+    float cost = context.cost_estimator.estimate_cost(mapped).forward_runtime; //TODO(@pietro)(@wmdi) incorporate backward pass?
 
     return make_singleton_machine_mapping_result(cost, machine_view);
   };

@@ -18,7 +18,7 @@ UnstructuredDeviceMapping
   std::unordered_map<parallel_layer_guid_t, std::unordered_set<device_id_t>>
       device_mapping;
   for (auto const &[layer, machine_view] : machine_mapping.machine_views) {
-    OperatorTaskSpace op = get_operator_task_space_from_layer(pcg, layer);
+    OperatorTaskSpace op = get_operator_task_space(pcg, layer);
     device_mapping.insert(
         {layer, get_device_ids(op, machine_view, machine_spec)});
   }

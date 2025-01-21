@@ -1,4 +1,5 @@
 #include "pcg/machine_view.h"
+#include "pcg/machine_space_coordinate.dtg.h"
 #include "pcg/machine_specification.dtg.h"
 #include "pcg/machine_specification.h"
 #include "pcg/machine_specification_dimension.dtg.h"
@@ -127,9 +128,19 @@ std::unordered_set<MachineSpaceCoordinate> get_machine_space_coordinates(
     MachineSpecification const &machine_specification) {
   return transform(
       get_task_space_coordinates(task), [&](TaskSpaceCoordinate const &coord) {
-        return get_machine_space_coordinate(
-                   task, machine_view, coord, machine_specification)
-            .value();
+        std::optional<MachineSpaceCoordinate> maybe_coordinate =
+            get_machine_space_coordinate(
+                task, machine_view, coord, machine_specification);
+        if (!maybe_coordinate.has_value()) {
+          throw mk_runtime_error(
+              fmt::format("In get_machine_space_coordinates, the given "
+                          "OperatorTaskSpace {} and MachineView {} are not "
+                          "compatible with the given MachineSpecification {}",
+                          task,
+                          machine_view,
+                          machine_specification));
+        }
+        return maybe_coordinate.value();
       });
 }
 

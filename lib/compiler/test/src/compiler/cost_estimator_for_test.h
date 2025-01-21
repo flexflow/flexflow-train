@@ -35,7 +35,8 @@ CostEstimator make_fake_cost_estimator(
     std::unordered_map<OpCostEstimateKey, OpCostMetrics> const &op_cost_map,
     std::unordered_map<TensorSetMovement, float> const &comm_cost_map);
 
-CostEstimator make_fake_constant_cost_estimator(float op_cost,
+CostEstimator make_fake_constant_cost_estimator(float forward_op_cost,
+                                                float backward_op_cost,
                                                 float comm_cost,
                                                 nonnegative_int memory_cost);
 

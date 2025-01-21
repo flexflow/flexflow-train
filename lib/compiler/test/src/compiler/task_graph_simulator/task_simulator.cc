@@ -81,7 +81,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("constant op, comm cost") {
         CostEstimator estimator = make_fake_constant_cost_estimator(
-            /*op_cost=*/10.0f,
+            /*forward_op_cost=*/10.0f,
+            /*backward_op_cost=*/10.0f,
             /*comm_cost=*/1.0f,
             /*memory_cost=*/nonnegative_int{0});
 
@@ -96,12 +97,18 @@ TEST_SUITE(FF_TEST_SUITE) {
         CostEstimator cost_estimator = make_fake_cost_estimator(
             [](OpCostEstimateKey const &op) {
               if (op.op_attrs.has<InputAttrs>()) {
-                return OpCostMetrics{10.0f, 0}; // layer0
+                return OpCostMetrics{/*forward_runtime=*/10.0f,
+                                     /*backward_runtime=*/10.0f,
+                                     /*memory=*/0}; // layer0
               }
               if (op.op_attrs.has<ElementUnaryAttrs>()) {
-                return OpCostMetrics{1.0f, 0}; // layer1
+                return OpCostMetrics{/*forward_runtime=*/1.0f,
+                                     /*backward_runtime=*/1.0f,
+                                     /*memory=*/0}; // layer1
               }
-              return OpCostMetrics{0.0f, 0};
+              return OpCostMetrics{/*forward_runtime=*/0.0f,
+                                   /*backward_runtime=*/0.0f,
+                                   /*memory=*/0};
             },
             [](TensorSetMovement const &comm) { return 5.0f; });
 
@@ -164,7 +171,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         }};
         SUBCASE("constant op, comm cost") {
           CostEstimator estimator = make_fake_constant_cost_estimator(
-              /*op_cost=*/10.0f,
+              /*forward_op_cost=*/10.0f,
+              /*backward_op_cost=*/10.0f,
               /*comm_cost=*/1.0f,
               /*memory_cost=*/nonnegative_int{0});
 
@@ -177,15 +185,23 @@ TEST_SUITE(FF_TEST_SUITE) {
           CostEstimator cost_estimator = make_fake_cost_estimator(
               [](OpCostEstimateKey const &op) {
                 if (op.op_attrs.has<InputAttrs>()) {
-                  return OpCostMetrics{10.0f, 0}; // layer0
+                  return OpCostMetrics{/*forward_runtime=*/10.0f,
+                                       /*backward_runtime=*/10.0f,
+                                       /*memory=*/0}; // layer0
                 }
                 if (op.op_attrs.has<ElementUnaryAttrs>()) {
-                  return OpCostMetrics{1.0f, 0}; // layers 1, 2
+                  return OpCostMetrics{/*forward_runtime=*/1.0f,
+                                       /*backward_runtime=*/1.0f,
+                                       /*memory=*/0}; // layers 1, 2
                 }
                 if (op.op_attrs.has<ElementBinaryAttrs>()) {
-                  return OpCostMetrics{2.0f, 0}; // layer3
+                  return OpCostMetrics{/*forward_runtime=*/2.0f,
+                                       /*backward_runtime=*/2.0f,
+                                       /*memory=*/0}; // layer3
                 }
-                return OpCostMetrics{0.0f, 0};
+                return OpCostMetrics{/*forward_runtime=*/0.0f,
+                                     /*backward_runtime=*/0.0f,
+                                     /*memory=*/0};
               },
               [](TensorSetMovement const &comm) { return 5.0f; });
         }
@@ -202,7 +218,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         }};
         SUBCASE("constant op, cost cost") {
           CostEstimator cost_estimator = make_fake_constant_cost_estimator(
-              /*op_cost=*/10.0f,
+              /*forward_op_cost=*/10.0f,
+              /*backward_op_cost=*/10.0f,
               /*comm_cost=*/1.0f,
               /*memory_cost=*/nonnegative_int{0});
 
@@ -215,15 +232,23 @@ TEST_SUITE(FF_TEST_SUITE) {
           CostEstimator cost_estimator = make_fake_cost_estimator(
               [](OpCostEstimateKey const &op) {
                 if (op.op_attrs.has<InputAttrs>()) {
-                  return OpCostMetrics{10.0f, 0}; // layer0
+                  return OpCostMetrics{/*forward_runtime=*/10.0f,
+                                       /*backward_runtime=*/10.0f,
+                                       /*memory=*/0}; // layer0
                 }
                 if (op.op_attrs.has<ElementUnaryAttrs>()) {
-                  return OpCostMetrics{1.0f, 0}; // layers 1, 2
+                  return OpCostMetrics{/*forward_runtime=*/1.0f,
+                                       /*backward_runtime=*/1.0f,
+                                       /*memory=*/0}; // layers 1, 2
                 }
                 if (op.op_attrs.has<ElementBinaryAttrs>()) {
-                  return OpCostMetrics{2.0f, 0}; // layer3
+                  return OpCostMetrics{/*forward_runtime=*/2.0f,
+                                       /*backward_runtime=*/2.0f,
+                                       /*memory=*/0}; // layer3
                 }
-                return OpCostMetrics{0.0f, 0};
+                return OpCostMetrics{/*forward_runtime=*/0.0f,
+                                     /*backward_runtime=*/0.0f,
+                                     /*memory=*/0};
               },
               [](TensorSetMovement const &comm) { return 5.0f; });
           float result = task_simulator_estimate_forward_pass_time(

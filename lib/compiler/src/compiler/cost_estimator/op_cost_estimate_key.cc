@@ -20,16 +20,4 @@ OpCostEstimateKey get_mapped_op_cost_estimate_key_for_layer(
       get_unmapped_op_cost_estimate_key_for_layer(pcg, layer), machine_view);
 }
 
-std::unordered_set<device_id_t>
-    get_devices_from_op_key(OpCostEstimateKey const &op_key,
-                            ParallelComputationGraph const &pcg,
-                            MachineSpecification const &machine_spec) {
-  ParallelTensorShape out_shape =
-      op_key.output_shapes.at(0); // TODO(@pietro): will have to be changed when
-                                  // OperatorTaskSpace changes
-  OperatorTaskSpace op_space =
-      get_operator_task_space_from_parallel_tensor_shape(pcg, out_shape);
-  return get_device_ids(op_space, op_key.machine_view, machine_spec);
-}
-
 } // namespace FlexFlow

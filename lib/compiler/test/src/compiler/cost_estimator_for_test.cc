@@ -42,12 +42,14 @@ CostEstimator make_fake_cost_estimator(
       });
 }
 
-CostEstimator make_fake_constant_cost_estimator(float op_cost,
+CostEstimator make_fake_constant_cost_estimator(float forward_op_cost,
+                                                float backward_op_cost,
                                                 float comm_cost,
                                                 nonnegative_int memory_cost) {
   return make_fake_cost_estimator(
       [=](OpCostEstimateKey const &op) {
-        return OpCostMetrics{op_cost, size_t{memory_cost.get_value()}};
+        return OpCostMetrics{
+            forward_op_cost, backward_op_cost, size_t{memory_cost.get_value()}};
       },
       [=](TensorSetMovement const &op) { return comm_cost; });
 }

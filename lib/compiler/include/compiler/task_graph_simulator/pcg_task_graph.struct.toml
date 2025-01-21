@@ -7,7 +7,8 @@ features = [
 includes = [
   "utils/graph/digraph/digraph_view.h",
   "utils/bidict/bidict.h",
-  "compiler/task_graph_simulator/pcg_task.dtg.h"
+  "compiler/task_graph_simulator/pcg_task.dtg.h",
+  "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 ]
 
 [[fields]]
@@ -15,5 +16,9 @@ name = "graph"
 type = "::FlexFlow::DiGraphView"
 
 [[fields]]
-name = "node_map"
+name = "node_to_task"
 type = "::FlexFlow::bidict<::FlexFlow::Node, ::FlexFlow::PCGTask>"
+
+[[fields]]
+name = "node_to_layer"
+type = "::FlexFlow::bidict<::FlexFlow::Node, ::FlexFlow::parallel_layer_guid_t>"

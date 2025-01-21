@@ -10,7 +10,11 @@ includes = [
 ]
 
 [[fields]]
-name = "runtime"
+name = "forward_runtime"
+type = "float"
+
+[[fields]]
+name = "backward_runtime"
 type = "float"
 
 [[fields]]
