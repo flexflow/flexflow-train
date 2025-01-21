@@ -22,9 +22,15 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
+
+    nixGL = {
+      url = "github:nix-community/nixGL";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
   };
 
-  outputs = { self, nixpkgs, flake-utils, proj-repo, ... }: flake-utils.lib.eachSystem [ "x86_64-linux" ] (system: 
+  outputs = { self, nixpkgs, flake-utils, proj-repo, nixGL, ... }: flake-utils.lib.eachSystem [ "x86_64-linux" ] (system: 
     let 
       pkgs = import nixpkgs {
         inherit system;
@@ -35,10 +41,13 @@
       mkShell = pkgs.mkShell.override {
         stdenv = pkgs.cudaPackages.backendStdenv;
       };
+
+      proj = proj-repo.packages.${system}.proj;
     in 
     {
       packages = {
         legion = pkgs.callPackage ./.flake/pkgs/legion.nix { };
+        ffdb = pkgs.callPackage ./.flake/pkgs/ffdb { inherit proj; };
         hpp2plantuml = pkgs.python3Packages.callPackage ./.flake/pkgs/hpp2plantuml.nix { };
         rapidcheckFull = pkgs.symlinkJoin {
           name = "rapidcheckFull";
@@ -62,24 +71,20 @@
         ci = mkShell {
           shellHook = ''
             export PATH="$HOME/ff/.scripts/:$PATH"
+            export RC_PARAMS="max_discard_ratio=100"
+            export CMAKE_FLAGS="-DFF_USE_EXTERNAL_LEGION=ON \
+                                -DFF_USE_EXTERNAL_NCCL=ON \
+                                -DFF_USE_EXTERNAL_JSON=ON \
+                                -DFF_USE_EXTERNAL_FMT=ON \
+                                -DFF_USE_EXTERNAL_SPDLOG=ON \
+                                -DFF_USE_EXTERNAL_DOCTEST=ON \
+                                -DFF_USE_EXTERNAL_RAPIDCHECK=ON \
+                                -DFF_USE_EXTERNAL_EXPECTED=ON \
+                                -DFF_USE_EXTERNAL_RANGEV3=ON \
+                                -DFF_USE_EXTERNAL_BOOST_PREPROCESSOR=ON \
+                                -DFF_USE_EXTERNAL_TYPE_INDEX=ON"
           '';
           
-          CMAKE_FLAGS = lib.strings.concatStringsSep " " [
-            "-DFF_USE_EXTERNAL_LEGION=ON"
-            "-DFF_USE_EXTERNAL_NCCL=ON"
-            "-DFF_USE_EXTERNAL_JSON=ON"
-            "-DFF_USE_EXTERNAL_FMT=ON"
-            "-DFF_USE_EXTERNAL_SPDLOG=ON"
-            "-DFF_USE_EXTERNAL_DOCTEST=ON"
-            "-DFF_USE_EXTERNAL_RAPIDCHECK=ON"
-            "-DFF_USE_EXTERNAL_EXPECTED=ON"
-            "-DFF_USE_EXTERNAL_RANGEV3=ON"
-            "-DFF_USE_EXTERNAL_BOOST_PREPROCESSOR=ON"
-            "-DFF_USE_EXTERNAL_TYPE_INDEX=ON"
-          ];
-
-          RC_PARAMS = "max_discard_ratio=100";
-
           buildInputs = builtins.concatLists [
             (with pkgs; [
               zlib
@@ -101,22 +106,30 @@
               tl-expected
               doxygen
               lcov # for code coverage
+              compdb
             ])
             (with proj-repo.packages.${system}; [
               proj
             ])
             (with self.packages.${system}; [
               legion
-              hpp2plantuml
               rapidcheckFull
               doctest
             ])
           ];
         };
 
+        gpu-ci = mkShell {
+          inputsFrom = [ ci ];
+          buildInputs = builtins.concatLists [
+            (with nixGL.packages.${system}; [
+              nixGLDefault
+            ])
+          ];
+        };
+
         default = mkShell {
           inputsFrom = [ ci ];
-          inherit (ci) CMAKE_FLAGS RC_PARAMS;
 
           VIMPLUGINS = lib.strings.concatStringsSep "," [
             "${proj-repo.packages.${system}.proj-nvim}"
@@ -128,12 +141,9 @@
               gh-markdown-preview
               shellcheck
               plantuml
-              gdb
               ruff
-              compdb
               jq
               gh
-              lcov # for code coverage
             ])
             (with pkgs.python3Packages; [
               gitpython
@@ -148,7 +158,15 @@
               black
               toml
             ])
+            (with self.packages.${system}; [
+              ffdb
+              hpp2plantuml
+            ])
           ];
+        };
+
+        gpu = mkShell {
+          inputsFrom = [ gpu-ci default ];
         };
       };
     }
