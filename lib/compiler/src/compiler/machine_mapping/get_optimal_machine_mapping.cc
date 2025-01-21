@@ -240,7 +240,7 @@ MachineMappingResult
   auto get_mapping_result = [&](MachineView const &machine_view) {
     OpCostEstimateKey mapped =
         map_unmapped_op_cost_estimate_key(leaf, machine_view);
-    float cost = context.cost_estimator.estimate_cost(mapped);
+    float cost = context.cost_estimator.estimate_cost(mapped).runtime;
 
     return make_singleton_machine_mapping_result(cost, machine_view);
   };

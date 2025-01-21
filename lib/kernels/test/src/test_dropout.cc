@@ -25,7 +25,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         managed_handle.raw_handle(), dropout_rate, seed, shape, allocator);
 
     auto get_zero_count = [](std::vector<float> const &data) {
-      return count(data, [](float x) { return x == 0.0f; });
+      return std::count_if(
+          data.begin(), data.end(), [](float x) { return x == 0.0f; });
     };
 
     SUBCASE("forward_kernel") {
