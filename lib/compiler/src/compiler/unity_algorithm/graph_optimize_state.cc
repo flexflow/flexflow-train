@@ -28,11 +28,13 @@ size_t hash<::FlexFlow::GraphOptimizeState>::operator()(
   // TODO(@wmdi): Eventually it might be good to use a proper graph hash like
   // https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.graph_hashing.weisfeiler_lehman_graph_hash.html#networkx.algorithms.graph_hashing.weisfeiler_lehman_graph_hash
   size_t seed = 0;
-  std::vector<::FlexFlow::parallel_layer_guid_t> layers = topological_ordering(state.pcg);
+  std::vector<::FlexFlow::parallel_layer_guid_t> layers =
+      topological_ordering(state.pcg);
   ::FlexFlow::hash_combine(seed, layers.size());
-  for (::FlexFlow::parallel_layer_guid_t const & layer : layers) {
+  for (::FlexFlow::parallel_layer_guid_t const &layer : layers) {
     ::FlexFlow::hash_combine(seed, get_parallel_layer_attrs(state.pcg, layer));
-    std::vector<::FlexFlow::parallel_tensor_guid_t> inputs = get_incoming_tensors(state.pcg, layer);
+    std::vector<::FlexFlow::parallel_tensor_guid_t> inputs =
+        get_incoming_tensors(state.pcg, layer);
     ::FlexFlow::hash_combine(seed, inputs.size());
     for (::FlexFlow::parallel_tensor_guid_t input : inputs) {
       for (size_t i = 0; i < layers.size(); ++i) {

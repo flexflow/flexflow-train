@@ -1,21 +1,23 @@
 #include "compiler/unity_algorithm/unity_algorithm.h"
+#include "compiler/machine_mapping/allowed_machine_views.h"
 #include "compiler/machine_mapping/get_optimal_machine_mapping.h"
 #include "compiler/machine_mapping/machine_mapping.h"
+#include "compiler/machine_mapping/machine_mapping_cache.h"
+#include "compiler/machine_mapping/machine_mapping_constraints.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/get_machine_mapping_problem_tree.h"
+#include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
 #include "compiler/series_parallel/pcg/get_pcg_balanced_binary_sp_decomposition.h"
-#include "compiler/unity_algorithm/allowed_machine_views.h"
 #include "compiler/unity_algorithm/graph_optimize_state.h"
 #include "pcg/machine_specification.dtg.h"
 #include "pcg/operator_task_space.h"
 #include "substitutions/pcg_pattern.h"
 #include "substitutions/sub_parallel_computation_graph.h"
 #include "substitutions/substitution.h"
+#include "utils/containers/generate_map.h"
 #include "utils/deduplicated_priority_queue.h"
 #include "utils/graph/node/algorithms.h"
-#include "compiler/machine_mapping/machine_mapping_cache.h"
-#include "compiler/machine_mapping/machine_mapping_constraints.h"
-#include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
+#include "utils/optional.h"
 
 namespace FlexFlow {
 
@@ -44,8 +46,7 @@ SearchResult graph_optimize(ParallelComputationGraph &pcg,
                             CostEstimator const &cost_estimator,
                             MachineSpecification const &resources,
                             std::vector<Substitution> const &substitutions,
-                            UnitySearchConfig const &search_config,
-                            DeviceType device_type) {
+                            UnitySearchConfig const &search_config) {
 
   // NOTE(@wmdi): This mapping is only used for allowed_machine_views
   std::unordered_map<UnmappedOpCostEstimateKey, parallel_layer_guid_t>
@@ -76,7 +77,7 @@ SearchResult graph_optimize(ParallelComputationGraph &pcg,
                 pcg,
                 mapping_from_unmapped_op_cost_estimate_key_parallel_layer.at(
                     key)),
-            device_type);
+            DeviceType::GPU);
       },
   };
 
@@ -90,18 +91,14 @@ SearchResult graph_optimize(ParallelComputationGraph &pcg,
 
   auto optimize_pcg = [&](ParallelComputationGraph const &pcg)
       -> std::pair<GraphOptimizeState, MachineMapping> {
-    std::optional<PCGBinarySPDecomposition> maybe_sp_decomp =
-        get_pcg_balanced_binary_sp_decomposition(pcg);
+    PCGBinarySPDecomposition sp_decomp =
+        expect(get_pcg_balanced_binary_sp_decomposition(pcg),
+               "Failed to get SP decomposition of PCG");
 
-    if (!maybe_sp_decomp.has_value()) {
-      throw std::runtime_error("Fail to SP-ize PCG");
-    }
-
-    PCGBinarySPDecomposition sp_decomp = maybe_sp_decomp.value();
-
-    MachineMappingProblemTree problem_tree = get_machine_mapping_problem_tree(pcg, sp_decomp);
-    MachineMappingConstraints constraints = 
-      get_unconstrained_solution_for_layers(get_all_leaf_paths(problem_tree));
+    MachineMappingProblemTree problem_tree =
+        get_machine_mapping_problem_tree(pcg, sp_decomp);
+    MachineMappingConstraints constraints =
+        get_unconstrained_solution_for_layers(get_all_leaf_paths(problem_tree));
 
     MachineMappingResult mm_result = get_optimal_machine_mapping(
         cached_subgraph_costs,

@@ -1,4 +1,4 @@
-#include "compiler/unity_algorithm/allowed_machine_views.h"
+#include "compiler/machine_mapping/allowed_machine_views.h"
 #include "pcg/machine_specification.h"
 #include "pcg/machine_view.h"
 #include "pcg/multi_dimensional_stride.dtg.h"
