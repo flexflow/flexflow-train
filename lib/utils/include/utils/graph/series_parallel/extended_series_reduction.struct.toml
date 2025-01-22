@@ -1,5 +1,13 @@
 namespace = "FlexFlow"
 name = "ExtendedSeriesReduction"
+
+docstring = """\
+/**
+ * @brief An ExtendedParallelReduction is a unordered collection of
+ * `MultiDiEdge`s such that they share a common source and destination node.
+ */
+"""
+
 features = [
   "eq",
   "hash",

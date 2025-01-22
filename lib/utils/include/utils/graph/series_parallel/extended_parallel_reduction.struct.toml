@@ -6,6 +6,13 @@ features = [
   "fmt",
 ]
 
+docstring = """\
+/**
+ * @brief An ExtendedParallelReduction is a unordered collection of
+ * `MultiDiEdge`s such that they share a common source and destination node.
+ */
+"""
+
 includes = [
   "utils/graph/multidigraph/multidiedge.dtg.h",
   "<unordered_set>"

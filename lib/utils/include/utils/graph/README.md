@@ -78,7 +78,7 @@ flowchart TD
     E --> E
 ```
 
-Note that the node names are just nameless things: they have no apparent ordering or other meaning besides representing the topology of the graph.
+Note that the node names are completely arbitrary: they have no apparent ordering or other meaning besides representing the topology of the graph.
 This is the case with all of the 4 core graph classes.
 Nodes are of type `Node`, and from a user perspective are simply opaque handles, and source and destination indices should similarly be considered opaque from a user point of view.
 In addition, nodes should only be used in the context of their graph, so comparing or checking equality of nodes between different graphs (even of the same type) is undefined behavior[^1].
@@ -127,12 +127,13 @@ The primary abstraction for representing computation graphs / task graphs is the
 At a high level, nodes represent multivariate functions (from tuples of inputs to tuple of outputs), while edges represent value uses of such functions.
 
 `DataflowGraph` is similar to `MultiDiGraph`, but with the following important differences:
-  - The edges entering, exiting a given nodes have a well-defined order. 
+  - The edges entering, exiting a given nodes have a well-defined order.
+  - The outputs of a given node also have a well-defined order. 
   - `DataflowGraph`s are directed acyclic graphs. This is enforced by the interface used to construct them, since a node can only be added to the graph after all of its predecessor nodes have already been added.
 
 The main components of `DataflowGraph` are as follows:
-- `DataflowInput`: used to represent the ordered sequence of incoming dependencies (arguments) of a given node (operator). 
-- `DataflowOutput`: used to represent the ordered sequence of outgoing results (value uses) from a given node (operator).
+- `DataflowInput`: used to denote an entry in the ordered sequence of incoming dependencies (arguments) of a given node (operator). 
+- `DataflowOutput`: used to denote an entry in the ordered sequence of outgoing results (value uses) from a given node (operator).
 - `DataflowEdge`: wrapper around a `DataflowInput`, `DataflowOutput` pair between 2 nodes.
 - `NodeAddedResult`: returned upon adding a new node. Contains the newly generated `Node` and the vector of `DataflowOutput`s for the given node.
 
@@ -220,15 +221,16 @@ flowchart TD
 
 ### Open Dataflow Variant
 
-`Open` is to be intended similarly to the topological sense: that is, a graph that contains some edges where one of the 2 nodes is not present in the graph itself.
+`Open` should be interpreted in the topological sense: that is, a graph that contains some edges where one of the edge's 2 nodes is not present in the graph itself.
 This graph class is particularly useful for processing a sub-graph of a given graph while still maintaining information regarding the edges that cross the cut.
+`DataflowGraphInput` is used to represent the open (incoming) inputs to the graph. Note that, unlike `DataFlowInput`, `DataflowGraphInput`s are unordered (given that they are inputs to possibly several different nodes within the graph).
 
 ### Labelled Dataflow Variant
 
 As nice as all of the above is, graphs without labels are mostly useless--in practice, nodes and edges represent some other system and the properties of that system (or at least a way to map the result of graph algorithms back to the underlying system) are necessary.
 Thus, FlexFlow's graph library provides the ability to add labels to `DataflowGraph`, through the `LabelleledDataflowGraph` and `OpenLabelleledDataflowGraph`, which allow users to label different components of the graph. 
 - `LabelledDataflowGraph` allows for labelling of `Node`s and `DataflowOutput`s.
-- `OpenLabelledDataflowGraph` allows for labelling of `Node`s and `OpenDataflowValue`s, which is a variant describing both `DataflowOutput`s and `DataflowGraphInput`s, which represent the open inputs to the graph (i.e. the inputs for which their corresponding output is not present in the graph).
+- `OpenLabelledDataflowGraph` allows for labelling of `Node`s and `OpenDataflowValue`s, which is a variant describing both `DataflowOutput`s and `DataflowGraphInput`s.
 
 While the interfaces of these graphs differ slightly from the core graph variants, they still have the corresponding `add_node` methods, and `query_nodes`/`query_edges` methods. (Note that there is no `add_edge` method since, for `DataflowGraph`, edges are implicitly added when we add a node and specify its predecessors)
 Note that all of the labelled graph types require that each element of the labelled types have a label, which is enforced via the interfaces they provide.

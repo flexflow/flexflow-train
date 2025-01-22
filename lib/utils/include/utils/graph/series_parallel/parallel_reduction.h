@@ -17,8 +17,6 @@ std::optional<ParallelReduction>
 
 /**
  * @brief Finds all ExtendedParallelReduction for a given MultiDiGraph
- * @details An ExtendedParallelReduction is a unordered collection of
- * `MultiDiEdge`s such that they share a common source and destination node.
  */
 std::unordered_set<ExtendedParallelReduction>
     find_all_extended_parallel_reductions(MultiDiGraphView const &);
