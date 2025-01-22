@@ -67,8 +67,6 @@ CostDetails LocalCostEstimator::estimate_cost(
 
   LocalTrainingBacking local_backing(allocator,
                                      cg_builder.computation_graph,
-                                     LayerTensorBackingMap{},
-                                     TensorBackingMap{},
                                      this->runtime_arg_config);
   local_backing.register_and_allocate_layer(layer_added_result.layer);
   local_backing.execute_init(layer_added_result.layer);
