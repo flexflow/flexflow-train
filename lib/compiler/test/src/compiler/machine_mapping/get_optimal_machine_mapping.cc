@@ -146,13 +146,13 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     auto map1 = std::unordered_map<OpCostEstimateKey, OpCostMetrics>{{
         {map_unmapped_op_cost_estimate_key(k1, mv1),
-         OpCostMetrics{/*runtime=*/1.0, /*memory=*/0}},
+         OpCostMetrics{/*runtime=*/1.0, /*memory=*/nonnegative_int{0}}},
         {map_unmapped_op_cost_estimate_key(k2, mv1),
-         OpCostMetrics{/*runtime=*/2.0, /*memory=*/0}},
+         OpCostMetrics{/*runtime=*/2.0, /*memory=*/nonnegative_int{0}}},
         {map_unmapped_op_cost_estimate_key(k1, mv2),
-         OpCostMetrics{/*runtime=*/1.5, /*memory=*/0}},
+         OpCostMetrics{/*runtime=*/1.5, /*memory=*/nonnegative_int{0}}},
         {map_unmapped_op_cost_estimate_key(k2, mv2),
-         OpCostMetrics{/*runtime=*/2.5, /*memory=*/0}},
+         OpCostMetrics{/*runtime=*/2.5, /*memory=*/nonnegative_int{0}}},
     }};
 
     CostEstimator cost_estimator = make_fake_cost_estimator(

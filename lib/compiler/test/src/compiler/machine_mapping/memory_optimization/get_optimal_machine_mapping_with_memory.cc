@@ -146,10 +146,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     CostEstimator cost_estimator = make_fake_cost_estimator(
         std::unordered_map<OpCostEstimateKey, OpCostMetrics>{{
-            {map_unmapped_op_cost_estimate_key(k1, mv1), OpCostMetrics{1.0, 2}},
-            {map_unmapped_op_cost_estimate_key(k2, mv1), OpCostMetrics{2.0, 3}},
-            {map_unmapped_op_cost_estimate_key(k1, mv2), OpCostMetrics{1.5, 1}},
-            {map_unmapped_op_cost_estimate_key(k2, mv2), OpCostMetrics{2.5, 2}},
+            {map_unmapped_op_cost_estimate_key(k1, mv1),
+             OpCostMetrics{1.0, nonnegative_int{2}}},
+            {map_unmapped_op_cost_estimate_key(k2, mv1),
+             OpCostMetrics{2.0, nonnegative_int{3}}},
+            {map_unmapped_op_cost_estimate_key(k1, mv2),
+             OpCostMetrics{1.5, nonnegative_int{1}}},
+            {map_unmapped_op_cost_estimate_key(k2, mv2),
+             OpCostMetrics{2.5, nonnegative_int{2}}},
         }},
         std::unordered_map<TensorSetMovement, float>{{
             {TensorSetMovement{{}}, 0.0},
@@ -183,13 +187,13 @@ TEST_SUITE(FF_TEST_SUITE) {
               cache, context, problem_tree, full_machine_spec, constraints);
       MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{{
           MachineMappingForSingleLayer{
-              OpCostMetrics{1.0, 2},
+              OpCostMetrics{1.0, nonnegative_int{2}},
               ParallelLayerGuidObliviousMachineMapping{{
                   {binary_tree_root_path(), mv1},
               }},
           },
           MachineMappingForSingleLayer{
-              OpCostMetrics{1.5, 1},
+              OpCostMetrics{1.5, nonnegative_int{1}},
               ParallelLayerGuidObliviousMachineMapping{{
                   {binary_tree_root_path(), mv2},
               }},
@@ -214,7 +218,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           MachineMappingForSingleLayer{
               OpCostMetrics{
                   /*runtime=*/1.0 + 2.0 + 0.1,
-                  /*memory=*/2 + 3,
+                  /*memory=*/nonnegative_int{2 + 3},
               },
               ParallelLayerGuidObliviousMachineMapping{{
                   {
@@ -232,7 +236,7 @@ TEST_SUITE(FF_TEST_SUITE) {
               }},
           },
           MachineMappingForSingleLayer{
-              OpCostMetrics{1.5 + 2.5 + 0.1, 1 + 2},
+              OpCostMetrics{1.5 + 2.5 + 0.1, nonnegative_int{1 + 2}},
               ParallelLayerGuidObliviousMachineMapping{{
                   {
                       BinaryTreePath{{
@@ -266,7 +270,7 @@ TEST_SUITE(FF_TEST_SUITE) {
               cache, context, problem_tree, full_machine_spec, constraints);
       MachineMappingWithMemoryResult correct =
           MachineMappingWithMemoryResult{{MachineMappingForSingleLayer{
-              OpCostMetrics{2.5, 2},
+              OpCostMetrics{2.5, nonnegative_int{2}},
               ParallelLayerGuidObliviousMachineMapping{{
                   {
                       BinaryTreePath{{

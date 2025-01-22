@@ -7,6 +7,7 @@ features = [
 ]
 
 includes = [
+  "utils/nonnegative_int/nonnegative_int.h"
 ]
 
 [[fields]]
@@ -15,4 +16,4 @@ type = "float"
 
 [[fields]]
 name = "memory"
-type = "size_t"
+type = "::FlexFlow::nonnegative_int"
