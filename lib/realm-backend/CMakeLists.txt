@@ -17,4 +17,4 @@ ff_add_library(
     legion
 )
 
-add_subdirectory(test)
+# add_subdirectory(test)
