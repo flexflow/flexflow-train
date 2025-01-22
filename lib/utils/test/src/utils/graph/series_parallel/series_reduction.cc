@@ -198,8 +198,8 @@ TEST_SUITE(FF_TEST_SUITE) {
                                                  {n.at(1), n.at(2)},
                                                  {n.at(2), n.at(3)},
                                                  {n.at(2), n.at(3)},
-                                                 {n.at(3), n.at(4)}, //*
-                                                 {n.at(4), n.at(5)}, //*
+                                                 {n.at(3), n.at(4)},
+                                                 {n.at(4), n.at(5)},
                                                  {n.at(5), n.at(6)},
                                                  {n.at(5), n.at(7)},
                                              });
@@ -261,7 +261,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::unordered_set<ExtendedSeriesReduction> result =
           find_all_extended_series_reductions(g);
       std::unordered_set<ExtendedSeriesReduction> correct = {
-          ExtendedSeriesReduction({e.at(0), e.at(1), e.at(2)})};
+          ExtendedSeriesReduction{{e.at(0), e.at(1), e.at(2)}}};
       CHECK(result == correct);
     }
 
@@ -276,8 +276,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::unordered_set<ExtendedSeriesReduction> result =
           find_all_extended_series_reductions(g);
       std::unordered_set<ExtendedSeriesReduction> correct = {
-          ExtendedSeriesReduction({e.at(0), e.at(2)}),
-          ExtendedSeriesReduction({e.at(1), e.at(3)})};
+          ExtendedSeriesReduction{{e.at(0), e.at(2)}},
+          ExtendedSeriesReduction{{e.at(1), e.at(3)}}};
       CHECK(result == correct);
     }
 
@@ -299,9 +299,9 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::unordered_set<ExtendedSeriesReduction> result =
           find_all_extended_series_reductions(g);
       std::unordered_set<ExtendedSeriesReduction> correct = {
-          ExtendedSeriesReduction({e.at(0), e.at(2), e.at(7)}),
-          ExtendedSeriesReduction({e.at(3), e.at(6)}),
-          ExtendedSeriesReduction({e.at(5), e.at(9)})};
+          ExtendedSeriesReduction{{e.at(0), e.at(2), e.at(7)}},
+          ExtendedSeriesReduction{{e.at(3), e.at(6)}},
+          ExtendedSeriesReduction{{e.at(5), e.at(9)}}};
       CHECK(result == correct);
     }
   }
@@ -314,7 +314,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::vector<MultiDiEdge> e = add_edges(
           g, {{n.at(0), n.at(1)}, {n.at(1), n.at(2)}, {n.at(2), n.at(3)}});
 
-      ExtendedSeriesReduction reduction({e.at(0), e.at(1), e.at(2)});
+      ExtendedSeriesReduction reduction =
+          ExtendedSeriesReduction{{e.at(0), e.at(1), e.at(2)}};
 
       MultiDiEdge returned_edge = apply_extended_series_reduction(g, reduction);
 
@@ -359,7 +360,8 @@ TEST_SUITE(FF_TEST_SUITE) {
                                                  {n.at(5), n.at(7)},
                                              });
 
-      ExtendedSeriesReduction reduction({e.at(3), e.at(4), e.at(5)});
+      ExtendedSeriesReduction reduction =
+          ExtendedSeriesReduction{{e.at(3), e.at(4), e.at(5)}};
 
       MultiDiEdge returned_edge = apply_extended_series_reduction(g, reduction);
 

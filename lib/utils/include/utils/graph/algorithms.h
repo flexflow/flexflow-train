@@ -138,7 +138,6 @@ std::unordered_set<Node> get_neighbors(DiGraphView const &, Node const &);
 // std::unordered_set<Node> get_neighbors(MultiDiGraphView const &, Node const
 // &);
 
-
 // std::unordered_set<Node> get_closed_sources(OpenMultiDiGraphView const &g);
 // std::unordered_set<Node> get_closed_sinks(OpenMultiDiGraphView const &g);
 // std::unordered_set<Node> get_open_sources(OpenMultiDiGraphView const &g);

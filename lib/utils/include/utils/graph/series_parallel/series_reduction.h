@@ -19,13 +19,6 @@ std::optional<SeriesReduction> find_series_reduction(MultiDiGraphView const &);
 /**
  * @brief Finds all the ExtendedSeriesReduction structures in a given graph.
  *
- * @details An `ExtendedSeriesReduction` is an ordered collection of
- * `MultiDiEdges` such that:
- * - The destination node of the nth edge is the same as the source node of the
- * (n+1)th edge.
- * - Such a node (intermediate node) has exactly two edges: one incoming (nth
- * edge) and one outgoing ((n+1)th edge).
- *
  * For example, in the following graph:
  *
  *     A -> B -> D -> E

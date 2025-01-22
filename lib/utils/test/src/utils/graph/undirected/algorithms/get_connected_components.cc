@@ -2,6 +2,7 @@
 #include "utils/fmt/unordered_set.h"
 #include "utils/graph/algorithms.h"
 #include "utils/graph/instances/hashmap_undirected_graph.h"
+#include "utils/graph/undirected/algorithms/make_undirected_edge.h"
 #include "utils/graph/undirected/undirected_graph.h"
 #include <doctest/doctest.h>
 
@@ -29,10 +30,10 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::vector<Node> n = add_nodes(g, 4);
       add_edges(g,
                 {
-                    UndirectedEdge{{n.at(0), n.at(1)}},
-                    UndirectedEdge{{n.at(1), n.at(2)}},
-                    UndirectedEdge{{n.at(2), n.at(3)}},
-                    UndirectedEdge{{n.at(3), n.at(0)}},
+                    make_undirected_edge(n.at(0), n.at(1)),
+                    make_undirected_edge(n.at(1), n.at(2)),
+                    make_undirected_edge(n.at(2), n.at(3)),
+                    make_undirected_edge(n.at(3), n.at(0)),
                 });
 
       std::unordered_set<std::unordered_set<Node>> correct = {
@@ -47,8 +48,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("2 components") {
       std::vector<Node> n = add_nodes(g, 4);
       add_edges(g,
-                {UndirectedEdge{{n.at(0), n.at(1)}},
-                 UndirectedEdge{{n.at(2), n.at(1)}}});
+                {
+                    make_undirected_edge(n.at(0), n.at(1)),
+                    make_undirected_edge(n.at(2), n.at(1)),
+                });
 
       std::unordered_set<std::unordered_set<Node>> correct = {
           {n.at(0), n.at(1), n.at(2)},
@@ -64,10 +67,10 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::vector<Node> n = add_nodes(g, 6);
       add_edges(g,
                 {
-                    UndirectedEdge{{n.at(0), n.at(1)}},
-                    UndirectedEdge{{n.at(0), n.at(2)}},
-                    UndirectedEdge{{n.at(1), n.at(2)}},
-                    UndirectedEdge{{n.at(3), n.at(4)}},
+                    make_undirected_edge(n.at(0), n.at(1)),
+                    make_undirected_edge(n.at(0), n.at(2)),
+                    make_undirected_edge(n.at(1), n.at(2)),
+                    make_undirected_edge(n.at(3), n.at(4)),
                 });
 
       std::unordered_set<std::unordered_set<Node>> correct = {

@@ -43,14 +43,8 @@ std::optional<SeriesParallelDecomposition>
               .as_unordered_map(),
           [](Node const &n) { return SeriesParallelDecomposition{n}; });
 
-  while (true) {
-    int reductions = 0;
-
-    std::unordered_set<ExtendedParallelReduction> parallel_reductions =
-        find_all_extended_parallel_reductions(ttsp);
-
-    if (!parallel_reductions.empty()) {
-      for (ExtendedParallelReduction parallel_reduction : parallel_reductions) {
+  auto handle_parallel_reduction =
+      [&](ExtendedParallelReduction const &parallel_reduction) {
         MultiDiEdge merged =
             apply_extended_parallel_reduction(ttsp, parallel_reduction);
 
@@ -62,14 +56,12 @@ std::optional<SeriesParallelDecomposition>
           ttsp_edge_to_sp_tree.erase(e);
         }
         ttsp_edge_to_sp_tree.insert({merged, new_tree});
-      }
-      reductions++;
-    }
 
-    std::unordered_set<ExtendedSeriesReduction> series_reductions =
-        find_all_extended_series_reductions(ttsp);
-    if (!series_reductions.empty()) {
-      for (ExtendedSeriesReduction series_reduction : series_reductions) {
+        return new_tree;
+      };
+
+  auto handle_series_reduction =
+      [&](ExtendedSeriesReduction const &series_reduction) {
         MultiDiEdge merged =
             apply_extended_series_reduction(ttsp, series_reduction);
 
@@ -82,11 +74,33 @@ std::optional<SeriesParallelDecomposition>
           ttsp_edge_to_sp_tree.erase(e);
         }
         ttsp_edge_to_sp_tree.insert({merged, new_tree});
+
+        return new_tree;
+      };
+
+  while (true) {
+    bool reduction_has_happened = false;
+
+    std::unordered_set<ExtendedParallelReduction> parallel_reductions =
+        find_all_extended_parallel_reductions(ttsp);
+
+    if (!parallel_reductions.empty()) {
+      for (ExtendedParallelReduction parallel_reduction : parallel_reductions) {
+        handle_parallel_reduction(parallel_reduction);
       }
-      reductions++;
+      reduction_has_happened = true;
     }
 
-    if (reductions > 0) {
+    std::unordered_set<ExtendedSeriesReduction> series_reductions =
+        find_all_extended_series_reductions(ttsp);
+    if (!series_reductions.empty()) {
+      for (ExtendedSeriesReduction series_reduction : series_reductions) {
+        handle_series_reduction(series_reduction);
+      }
+      reduction_has_happened = true;
+    }
+
+    if (reduction_has_happened) {
       continue;
     }
 
@@ -97,6 +111,83 @@ std::optional<SeriesParallelDecomposition>
     MultiDiEdge e = get_only(get_edges(ttsp));
     if (ttsp.get_multidiedge_src(e) != ttsp.get_multidiedge_dst(e)) {
       return ttsp_edge_to_sp_tree.at(e);
+    }
+  }
+}
+
+std::optional<SeriesParallelDecomposition>
+    get_series_parallel_decomposition_unoptimized(DiGraphView const &g) {
+
+  DiGraphView transitively_reduced = transitive_reduction(g);
+
+  InverseLineGraphResult inverse_line_graph_result = ({
+    std::optional<InverseLineGraphResult> maybe_line_graph =
+        get_inverse_line_graph(transitively_reduced);
+    if (!maybe_line_graph.has_value()) {
+      return std::nullopt;
+    }
+
+    maybe_line_graph.value();
+  });
+
+  MultiDiGraph ttsp = MultiDiGraph::materialize_copy_of<AdjacencyMultiDiGraph>(
+      inverse_line_graph_result.graph);
+  std::unordered_map<MultiDiEdge, BinarySPDecompositionTree>
+      ttsp_edge_to_sp_tree = map_values(
+          inverse_line_graph_result.inverse_edge_to_line_node_bidict
+              .as_unordered_map(),
+          [](Node const &n) { return BinarySPDecompositionTree{n}; });
+
+  while (true) {
+    assert(ttsp_edge_to_sp_tree.size() == get_edges(ttsp).size());
+    std::optional<ParallelReduction> maybe_parallel_reduction =
+        find_parallel_reduction(ttsp);
+    if (maybe_parallel_reduction.has_value()) {
+      ParallelReduction parallel_reduction = maybe_parallel_reduction.value();
+      auto [e1, e2] = parallel_reduction.edges.ordered();
+      MultiDiEdge merged = apply_parallel_reduction(ttsp, parallel_reduction);
+      BinarySPDecompositionTree new_tree = BinarySPDecompositionTree{
+          BinaryParallelSplit{
+              ttsp_edge_to_sp_tree.at(e1),
+              ttsp_edge_to_sp_tree.at(e2),
+          },
+      };
+      ttsp_edge_to_sp_tree.erase(e1);
+      ttsp_edge_to_sp_tree.erase(e2);
+      ttsp_edge_to_sp_tree.insert({merged, new_tree});
+
+      continue;
+    }
+
+    std::optional<SeriesReduction> maybe_series_reduction =
+        find_series_reduction(ttsp);
+    if (maybe_series_reduction.has_value()) {
+      SeriesReduction series_reduction = maybe_series_reduction.value();
+      MultiDiEdge e1 = series_reduction.first;
+      MultiDiEdge e2 = series_reduction.second;
+      MultiDiEdge merged = apply_series_reduction(ttsp, series_reduction);
+      BinarySPDecompositionTree new_tree = BinarySPDecompositionTree{
+          BinarySeriesSplit{
+              ttsp_edge_to_sp_tree.at(e1),
+              ttsp_edge_to_sp_tree.at(e2),
+          },
+      };
+      ttsp_edge_to_sp_tree.erase(e1);
+      ttsp_edge_to_sp_tree.erase(e2);
+      ttsp_edge_to_sp_tree.insert({merged, new_tree});
+      continue;
+    }
+
+    if (get_nodes(ttsp).size() != 2) {
+      return std::nullopt;
+    }
+    if (get_edges(ttsp).size() != 1) {
+      return std::nullopt;
+    }
+
+    MultiDiEdge e = get_only(get_edges(ttsp));
+    if (ttsp.get_multidiedge_src(e) != ttsp.get_multidiedge_dst(e)) {
+      return nary_sp_tree_from_binary(ttsp_edge_to_sp_tree.at(e));
     }
   }
 }

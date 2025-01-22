@@ -1,4 +1,6 @@
 #include "utils/graph/series_parallel/parallel_reduction.h"
+#include "utils/commutative_pair.h"
+#include "utils/containers/contains_key.h"
 #include "utils/containers/get_one_of.h"
 #include "utils/containers/group_by.h"
 #include "utils/containers/transform.h"
@@ -19,7 +21,7 @@ namespace FlexFlow {
 
 ParallelReduction make_parallel_reduction(MultiDiEdge const &e1,
                                           MultiDiEdge const &e2) {
-  return ParallelReduction{{e1, e2}};
+  return ParallelReduction{commutative_pair{e1, e2}};
 }
 
 std::optional<ParallelReduction>
@@ -28,7 +30,7 @@ std::optional<ParallelReduction>
   std::unordered_map<DirectedEdge, MultiDiEdge> seen;
   for (MultiDiEdge const &edge : get_edges(g)) {
     DirectedEdge diedge = get_directed_edge(g, edge);
-    if (seen.find(diedge) != seen.end()) {
+    if (contains_key(seen, diedge)) {
       return make_parallel_reduction(seen.at(diedge), edge);
     }
     seen.emplace(diedge, edge);

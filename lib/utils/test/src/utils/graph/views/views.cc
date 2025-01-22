@@ -7,6 +7,7 @@
 #include "utils/graph/instances/adjacency_digraph.h"
 #include "utils/graph/instances/hashmap_undirected_graph.h"
 #include "utils/graph/node/algorithms.h"
+#include "utils/graph/undirected/algorithms/make_undirected_edge.h"
 #include "utils/graph/undirected/undirected_graph.h"
 #include "utils/graph/undirected/undirected_graph_view.h"
 #include <doctest/doctest.h>
@@ -18,12 +19,12 @@ TEST_SUITE(FF_TEST_SUITE) {
     UndirectedGraph g = UndirectedGraph::create<HashmapUndirectedGraph>();
     std::vector<Node> n = add_nodes(g, 5);
     add_edges(g,
-              {UndirectedEdge{{n.at(0), n.at(3)}},
-               UndirectedEdge{{n.at(1), n.at(1)}},
-               UndirectedEdge{{n.at(1), n.at(2)}},
-               UndirectedEdge{{n.at(1), n.at(3)}},
-               UndirectedEdge{{n.at(2), n.at(3)}},
-               UndirectedEdge{{n.at(2), n.at(4)}}});
+              {make_undirected_edge(n.at(0), n.at(3)),
+               make_undirected_edge(n.at(1), n.at(1)),
+               make_undirected_edge(n.at(1), n.at(2)),
+               make_undirected_edge(n.at(1), n.at(3)),
+               make_undirected_edge(n.at(2), n.at(3)),
+               make_undirected_edge(n.at(2), n.at(4))});
     std::unordered_set<Node> sub_nodes = {n.at(0), n.at(1), n.at(3)};
     UndirectedGraphView view = view_subgraph(g, sub_nodes);
 
@@ -37,9 +38,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("get_edges") {
       std::unordered_set<UndirectedEdge> expected = {
-          UndirectedEdge{{n.at(0), n.at(3)}},
-          UndirectedEdge{{n.at(1), n.at(1)}},
-          UndirectedEdge{{n.at(1), n.at(3)}},
+          make_undirected_edge(n.at(0), n.at(3)),
+          make_undirected_edge(n.at(1), n.at(1)),
+          make_undirected_edge(n.at(1), n.at(3)),
       };
 
       std::unordered_set<UndirectedEdge> result = get_edges(view);
@@ -106,9 +107,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("get_edges") {
       std::unordered_set<UndirectedEdge> expected = {
-          UndirectedEdge{{n.at(0), n.at(1)}},
-          UndirectedEdge{{n.at(1), n.at(2)}},
-          UndirectedEdge{{n.at(2), n.at(0)}}};
+          make_undirected_edge(n.at(0), n.at(1)),
+          make_undirected_edge(n.at(1), n.at(2)),
+          make_undirected_edge(n.at(2), n.at(0))};
 
       std::unordered_set<UndirectedEdge> result = get_edges(view);
 
@@ -120,10 +121,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     UndirectedGraph g = UndirectedGraph::create<HashmapUndirectedGraph>();
     std::vector<Node> n = add_nodes(g, 3);
     add_edges(g,
-              {UndirectedEdge{{n.at(0), n.at(0)}},
-               UndirectedEdge{{n.at(0), n.at(1)}},
-               UndirectedEdge{{n.at(1), n.at(2)}},
-               UndirectedEdge{{n.at(2), n.at(0)}}});
+              {make_undirected_edge(n.at(0), n.at(0)),
+               make_undirected_edge(n.at(0), n.at(1)),
+               make_undirected_edge(n.at(1), n.at(2)),
+               make_undirected_edge(n.at(2), n.at(0))});
 
     DiGraphView view = as_digraph(g);
 

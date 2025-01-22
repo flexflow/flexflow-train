@@ -8,7 +8,7 @@
 using namespace FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("get_edges(DiGraph)") {
+  TEST_CASE("get_edges(DiGraphView)") {
     DiGraph g = DiGraph::create<AdjacencyDiGraph>();
 
     std::vector<Node> n = add_nodes(g, 4);
@@ -51,7 +51,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
   }
 
-  TEST_CASE("get_terminal_nodes(DiGraph)") {
+  TEST_CASE("get_terminal_nodes(DiGraphView)") {
     DiGraph g = DiGraph::create<AdjacencyDiGraph>();
 
     std::vector<Node> n = add_nodes(g, 4);
@@ -84,7 +84,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
   }
 
-  TEST_CASE("get_initial_nodes(DiGraph)") {
+  TEST_CASE("get_initial_nodes(DiGraphView)") {
     DiGraph g = DiGraph::create<AdjacencyDiGraph>();
 
     std::vector<Node> n = add_nodes(g, 4);

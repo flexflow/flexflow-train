@@ -31,23 +31,25 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("query_nodes") {
-
       CHECK(g.query_nodes(node_query_all()) ==
             std::unordered_set<Node>{n[0], n[1], n[2], n[3], n[4]});
 
       CHECK(g.query_nodes(NodeQuery{query_set<Node>{{n[0], n[2]}}}) ==
             std::unordered_set<Node>{n[0], n[2]});
 
-      std::unordered_set<DirectedEdge> queried_edges =
-          g.query_edges(directed_edge_query_all());
-      std::unordered_set<DirectedEdge> expected = {
-          e[0], e[1], e[2], e[3], e[4]};
-      CHECK(queried_edges == expected);
+      SUBCASE("query_edges") {
 
-      queried_edges = g.query_edges(
-          DirectedEdgeQuery{query_set<Node>{{n[0]}}, query_set<Node>{{n[1]}}});
-      expected = std::unordered_set<DirectedEdge>{e[0]};
-      CHECK(queried_edges == expected);
+        std::unordered_set<DirectedEdge> queried_edges =
+            g.query_edges(directed_edge_query_all());
+        std::unordered_set<DirectedEdge> expected = {
+            e[0], e[1], e[2], e[3], e[4]};
+        CHECK(queried_edges == expected);
+
+        queried_edges = g.query_edges(DirectedEdgeQuery{
+            query_set<Node>{{n[0]}}, query_set<Node>{{n[1]}}});
+        expected = std::unordered_set<DirectedEdge>{e[0]};
+        CHECK(queried_edges == expected);
+      }
     }
     SUBCASE("remove_node_unsafe") {
       g.remove_node_unsafe(n[0]);

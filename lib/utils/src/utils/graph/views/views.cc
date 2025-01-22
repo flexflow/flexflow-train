@@ -5,6 +5,7 @@
 #include "utils/graph/digraph/directed_edge_query.h"
 #include "utils/graph/node/node_query.h"
 #include "utils/graph/query_set.h"
+#include "utils/graph/undirected/algorithms/make_undirected_edge.h"
 #include "utils/graph/undirected/undirected_edge_query.h"
 namespace FlexFlow {
 
@@ -63,7 +64,7 @@ DiGraphView view_subgraph(DiGraphView const &g,
 }
 
 UndirectedEdge to_undirected_edge(DirectedEdge const &e) {
-  return UndirectedEdge{{e.src, e.dst}};
+  return make_undirected_edge(e.src, e.dst);
 }
 
 std::unordered_set<UndirectedEdge> to_undirected_edges(

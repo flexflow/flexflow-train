@@ -2,8 +2,12 @@ namespace = "FlexFlow"
 name = "ExtendedSeriesReduction"
 
 docstring = """\
-@brief An ExtendedParallelReduction is a unordered collection of
-`MultiDiEdge`s such that they share a common source and destination node.
+@details An `ExtendedSeriesReduction` is an ordered collection of
+`MultiDiEdges` such that:
+- The destination node of the nth edge is the same as the source node of the
+  (n+1)th edge.
+- Such a node (intermediate node) has exactly two edges: one incoming (nth
+  edge) and one outgoing ((n+1)th edge).
 """
 
 features = [

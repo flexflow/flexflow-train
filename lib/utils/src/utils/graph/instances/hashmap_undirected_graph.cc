@@ -1,7 +1,9 @@
 #include "utils/graph/instances/hashmap_undirected_graph.h"
+#include "utils/commutative_pair.h"
 #include "utils/containers/contains_key.h"
 #include "utils/containers/keys.h"
 #include "utils/exception.h"
+#include "utils/graph/undirected/algorithms/make_undirected_edge.h"
 
 namespace FlexFlow {
 
@@ -18,6 +20,9 @@ void HashmapUndirectedGraph::add_node_unsafe(Node const &node) {
 }
 
 void HashmapUndirectedGraph::remove_node_unsafe(Node const &n) {
+  for (Node const &neighbor : this->adjacency.at(n)) {
+    this->adjacency.at(neighbor).erase(n);
+  }
   this->adjacency.erase(n);
 }
 
@@ -49,7 +54,7 @@ std::unordered_set<UndirectedEdge> HashmapUndirectedGraph::query_edges(
   std::unordered_set<UndirectedEdge> result;
   for (auto const &src_kv : query_keys(query.nodes, this->adjacency)) {
     for (auto const &dst : apply_query(query.nodes, src_kv.second)) {
-      result.insert(UndirectedEdge{{src_kv.first, dst}});
+      result.insert(make_undirected_edge(src_kv.first, dst));
     }
   }
   return result;
