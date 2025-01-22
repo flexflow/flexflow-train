@@ -76,7 +76,7 @@ void LocalTrainingBacking::execute_init(layer_guid_t const &operator_node) {
     ComputationGraphOpAttrs attrs =
         get_layer_attrs(this->computation_graph, operator_node).attrs;
 
-    TaskInvocation invocation = this->lower_to_task_invocation(init(attrs));
+    TaskInvocation invocation = this->lower_to_task_invocation(init(attrs), operator_node);
     TaskArgumentAccessor accessor =
         this->get_task_arg_accessor(invocation);
     DeviceSpecificDeviceStates device_state =
@@ -93,7 +93,7 @@ std::optional<float>
     ComputationGraphOpAttrs attrs =
         get_layer_attrs(this->computation_graph, operator_node).attrs;
 
-    TaskInvocation invocation = this->lower_to_task_invocation(forward(attrs));
+    TaskInvocation invocation = this->lower_to_task_invocation(forward(attrs), operator_node);
     TaskArgumentAccessor accessor =
         this->get_task_arg_accessor(invocation);
     return this->call_task_impl(invocation.task_id, accessor);
@@ -122,7 +122,7 @@ std::optional<float>
     ComputationGraphOpAttrs attrs =
         get_layer_attrs(this->computation_graph, operator_node).attrs;
 
-    TaskInvocation invocation = this->lower_to_task_invocation(backward(attrs));
+    TaskInvocation invocation = this->lower_to_task_invocation(backward(attrs), operator_node);
     TaskArgumentAccessor accessor =
         this->get_task_arg_accessor(invocation);
     return this->call_task_impl(invocation.task_id, accessor);
