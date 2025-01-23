@@ -13,6 +13,7 @@ features = [
 includes = [
   "<vector>",
   "<string>",
+  "models/dlrm/dlrm_arch_interaction_op.dtg.h",
 ]
 
 src_includes = [
@@ -42,7 +43,7 @@ type = "std::vector<int>"
 
 [[fields]]
 name = "arch_interaction_op"
-type = "std::string"
+type = "FlexFlow::DLRMArchInteractionOp"
 
 [[fields]]
 name = "batch_size"

@@ -1,6 +1,7 @@
 #include "models/dlrm/dlrm.h"
 #include "pcg/computation_graph.h"
 #include "utils/containers/concat_vectors.h"
+#include "utils/containers/repeat.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/zip.h"
 
@@ -29,7 +30,7 @@ DLRMConfig get_default_dlrm_config() {
           64,
           2,
       },
-      /*arch_interaction_op=*/"cat",
+      /*arch_interaction_op=*/DLRMArchInteractionOp::CAT,
       /*batch_size=*/64,
       /*seed=*/std::rand(),
   };
@@ -97,12 +98,13 @@ tensor_guid_t create_dlrm_interact_features(
     DLRMConfig const &config,
     tensor_guid_t const &bottom_mlp_output,
     std::vector<tensor_guid_t> const &emb_outputs) {
-  if (config.arch_interaction_op != "cat") {
+  if (config.arch_interaction_op != DLRMArchInteractionOp::CAT) {
     throw mk_runtime_error(fmt::format(
-        "Currently only arch_interaction_op=cat is supported, but found "
-        "arch_interaction_op={}. If you need support for additional "
+        "Currently only arch_interaction_op=DLRMArchInteractionOp::CAT is "
+        "supported, but found arch_interaction_op={}. If you need support for "
+        "additional "
         "arch_interaction_op value, please create an issue.",
-        config.arch_interaction_op));
+        format_as(config.arch_interaction_op)));
   }
 
   return cgb.concat(
@@ -123,11 +125,13 @@ ComputationGraph get_dlrm_computation_graph(DLRMConfig const &config) {
   };
 
   // Create input tensors
-  std::vector<tensor_guid_t> sparse_inputs(
-      config.embedding_size.size(),
-      create_input_tensor({static_cast<size_t>(config.batch_size),
-                           static_cast<size_t>(config.embedding_bag_size)},
-                          DataType::INT64));
+  std::vector<tensor_guid_t> sparse_inputs =
+      repeat(config.embedding_size.size(), [&]() {
+        return create_input_tensor(
+            {static_cast<size_t>(config.batch_size),
+             static_cast<size_t>(config.embedding_bag_size)},
+            DataType::INT64);
+      });
 
   tensor_guid_t dense_input = create_input_tensor(
       {static_cast<size_t>(config.batch_size),
@@ -141,16 +145,16 @@ ComputationGraph get_dlrm_computation_graph(DLRMConfig const &config) {
       /*input=*/dense_input,
       /*mlp_layers=*/config.dense_arch_layer_sizes);
 
-  std::vector<tensor_guid_t> emb_outputs;
-  for (size_t i = 0; i < config.embedding_size.size(); i++) {
-    int input_dim = config.embedding_size.at(i);
-    emb_outputs.emplace_back(create_dlrm_sparse_embedding_network(
-        /*cgb=*/cgb,
-        /*config=*/config,
-        /*input=*/sparse_inputs.at(i),
-        /*input_dim=*/input_dim,
-        /*output_dim=*/config.embedding_dim));
-  }
+  std::vector<tensor_guid_t> emb_outputs = transform(
+      zip(config.embedding_size, sparse_inputs),
+      [&](std::pair<int, tensor_guid_t> const &combined_pair) -> tensor_guid_t {
+        return create_dlrm_sparse_embedding_network(
+            /*cgb=*/cgb,
+            /*config=*/config,
+            /*input=*/combined_pair.second,
+            /*input_dim=*/combined_pair.first,
+            /*output_dim=*/config.embedding_dim);
+      });
 
   tensor_guid_t interacted_features = create_dlrm_interact_features(
       /*cgb=*/cgb,

@@ -12,6 +12,7 @@
 #ifndef _FLEXFLOW_LIB_MODELS_INCLUDE_MODELS_DLRM_H
 #define _FLEXFLOW_LIB_MODELS_INCLUDE_MODELS_DLRM_H
 
+#include "models/dlrm/dlrm_arch_interaction_op.dtg.h"
 #include "models/dlrm/dlrm_config.dtg.h"
 #include "pcg/computation_graph_builder.h"
 
