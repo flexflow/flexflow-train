@@ -7,7 +7,8 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Test Transpose Kernel Operations") {
     std::size_t num_dims = 2;
 
-    std::vector<ff_dim_t> perm = {ff_dim_t(0), ff_dim_t(1)};
+    std::vector<ff_dim_t> perm = {ff_dim_t{nonnegative_int{0}},
+                                  ff_dim_t{nonnegative_int{1}}};
 
     ManagedPerDeviceFFHandle managed_handle{};
     ManagedFFStream managed_stream{};
