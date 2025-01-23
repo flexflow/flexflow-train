@@ -1,0 +1,22 @@
+namespace = "FlexFlow"
+name = "MachineMappingWithMemoryCache"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "<unordered_map>",
+  "compiler/machine_mapping/machine_mapping_state.dtg.h",
+  "compiler/machine_mapping/memory_optimization/machine_mapping_with_memory_result.dtg.h",
+]
+
+src_includes = [
+  "utils/fmt/unordered_map.h",
+  "utils/hash/unordered_map.h",
+]
+
+[[fields]]
+name = "raw_map"
+type = "std::unordered_map<::FlexFlow::MachineMappingState, ::FlexFlow::MachineMappingWithMemoryResult>"

@@ -96,11 +96,13 @@ bool is_valid(ParallelTensorDims const &dims) {
                 [](ReplicaParallelDim const &d) { return is_valid(d); });
 }
 
-ShardParallelDim shard_dim_at_idx(ParallelTensorDims const &d, ff_dim_t idx) {
+ShardParallelDim shard_dim_at_idx(ParallelTensorDims const &d,
+                                  relative_ff_dim_t idx) {
   return d.shard_dims.at(idx);
 }
 
-ShardParallelDim &shard_dim_at_idx(ParallelTensorDims &d, ff_dim_t idx) {
+ShardParallelDim &shard_dim_at_idx(ParallelTensorDims &d,
+                                   relative_ff_dim_t idx) {
   return d.shard_dims.at(idx);
 }
 

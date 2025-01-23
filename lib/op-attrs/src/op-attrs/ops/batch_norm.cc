@@ -67,7 +67,7 @@ tl::expected<TensorShape, std::string>
     return tl::unexpected("No gamma weights exist for attrs.affine = false");
   }
 
-  size_t num_channels = dim_at_idx(input_shape, ff_dim_t{1});
+  size_t num_channels = dim_at_idx(input_shape, relative_ff_dim_t{1});
 
   return TensorShape{
       TensorDims{FFOrdered<size_t>{
@@ -109,8 +109,12 @@ static std::optional<std::string>
   }
 
   FFOrdered<int> non_channel_degrees =
-      concat(slice(input_degrees.shard_degrees, ff_dim_t{0}, ff_dim_t{1}),
-             slice(input_degrees.shard_degrees, ff_dim_t{2}, std::nullopt));
+      concat(slice(input_degrees.shard_degrees,
+                   ff_dim_t{nonnegative_int{0}},
+                   ff_dim_t{nonnegative_int{1}}),
+             slice(input_degrees.shard_degrees,
+                   ff_dim_t{nonnegative_int{2}},
+                   std::nullopt));
 
   if (any_of(non_channel_degrees, [](int degree) { return degree != 1; })) {
     return fmt::format("Expected parallel degree of all non-channel dimensions "
@@ -152,7 +156,7 @@ tl::expected<ParallelTensorDimDegrees, std::string>
     return tl::unexpected("No gamma weights exist for attrs.affine = false");
   }
 
-  ff_dim_t channel_dim = ff_dim_t{1};
+  relative_ff_dim_t channel_dim = relative_ff_dim_t{1};
 
   return ParallelTensorDimDegrees{
       SumDegree{1},

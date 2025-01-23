@@ -39,7 +39,7 @@ function(ff_set_cxx_properties target)
       CXX_EXTENSIONS NO
   )
   target_compile_options(${target}
-    PRIVATE $<$<COMPILE_LANGUAGE:CXX>:> # add C++ compile flags here
+    PRIVATE $<$<COMPILE_LANGUAGE:CXX>:> "-ffile-prefix-map=${CMAKE_SOURCE_DIR}=." # add C++ compile flags here
   )
 endfunction()
 

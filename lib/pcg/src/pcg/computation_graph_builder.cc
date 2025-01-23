@@ -19,6 +19,7 @@
 #include "op-attrs/ops/pool_2d.h"
 #include "op-attrs/ops/softmax.h"
 #include "op-attrs/ops/weight_attrs.dtg.h"
+#include "op-attrs/relative_ff_dim_t.h"
 #include "op-attrs/tensor_dims.h"
 #include "pcg/computation_graph.h"
 #include "utils/containers/any_of.h"
@@ -27,6 +28,7 @@
 #include "utils/containers/get_only.h"
 #include "utils/containers/transform.h"
 #include "utils/expected.h"
+#include "utils/stack_vector/stack_vector_of.h"
 #include <fmt/format.h>
 
 namespace FlexFlow {
@@ -480,13 +482,8 @@ tensor_guid_t ComputationGraphBuilder::embedding(
 tensor_guid_t ComputationGraphBuilder::gather(
     tensor_guid_t const &input,
     tensor_guid_t const &index,
-    ff_dim_t dim,
+    relative_ff_dim_t dim,
     std::optional<std::string> const &maybe_name) {
-  GatherAttrs attrs = GatherAttrs{dim};
-  std::string name =
-      maybe_name.value_or(get_default_name(ComputationGraphOpAttrs{attrs}));
-
-  LayerAttrs layer = LayerAttrs{ComputationGraphOpAttrs{attrs}, name};
   if (this->get_shape(index).data_type != DataType::INT32 &&
       this->get_shape(index).data_type != DataType::INT64) {
     throw mk_runtime_error(
@@ -496,6 +493,13 @@ tensor_guid_t ComputationGraphBuilder::gather(
                     DataType::INT32,
                     DataType::INT64));
   }
+
+  GatherAttrs attrs = GatherAttrs{
+      ff_dim_t_from_relative_ff_dim_t(dim, num_dims(this->get_shape(input)))};
+  std::string name =
+      maybe_name.value_or(get_default_name(ComputationGraphOpAttrs{attrs}));
+
+  LayerAttrs layer = LayerAttrs{ComputationGraphOpAttrs{attrs}, name};
   TensorShape output_shape =
       get_output_shape(attrs, this->get_shape(input), this->get_shape(index));
 
@@ -792,7 +796,9 @@ tensor_guid_t ComputationGraphBuilder::concat(
     int axis,
     std::optional<std::string> const &maybe_name) {
 
-  ConcatAttrs attrs = ConcatAttrs{ff_dim_t{axis}};
+  relative_ff_dim_t wrapped_axis = relative_ff_dim_t{axis};
+  ConcatAttrs attrs = ConcatAttrs{ff_dim_t_from_relative_ff_dim_t(
+      wrapped_axis, num_dims(this->get_shape(inputs[0])))};
 
   std::string name =
       maybe_name.value_or(get_default_name(ComputationGraphOpAttrs{attrs}));
@@ -816,8 +822,11 @@ tensor_guid_t ComputationGraphBuilder::flat(
   int input_num_dims = num_dims(this->get_shape(input));
 
   FlatAttrs attrs = FlatAttrs{
-      /*start_dim=*/ff_dim_t{start_dim},
-      /*end_dim=*/ff_dim_t{end_dim.value_or(input_num_dims)},
+      /*start_dim=*/ff_dim_t_from_relative_ff_dim_t(
+          relative_ff_dim_t{start_dim}, input_num_dims),
+      /*end_dim=*/
+      ff_dim_t_from_relative_ff_dim_t(
+          relative_ff_dim_t{end_dim.value_or(input_num_dims)}, input_num_dims),
   };
 
   std::string name =
@@ -833,15 +842,24 @@ tensor_guid_t ComputationGraphBuilder::flat(
 
 tensor_guid_t ComputationGraphBuilder::layer_norm(
     tensor_guid_t const &input,
-    std::vector<int> const &axes,
+    std::vector<int> const &relative_axes,
     bool elementwise_affine,
     float eps,
     std::optional<std::string> const &maybe_name) {
 
   TensorShape input_shape = this->get_shape(input);
 
-  if (any_of(axes,
-             [&](size_t axis) { return axis >= num_dims(input_shape); })) {
+  auto resolve_dim_idx = [&](int dim_idx) {
+    return ff_dim_t_from_relative_ff_dim_t(relative_ff_dim_t{dim_idx},
+                                           num_dims(input_shape));
+  };
+
+  stack_vector<ff_dim_t, MAX_TENSOR_DIM> axes = stack_vector_of<MAX_TENSOR_DIM>(
+      transform(relative_axes, resolve_dim_idx));
+
+  if (any_of(axes, [&](ff_dim_t axis) {
+        return axis.value >= num_dims(input_shape);
+      })) {
     throw mk_runtime_error(fmt::format(
         "ComputationGraphBuilder::layer_norm received axes {} with "
         "out-of-bound element (input tensor has num dimensions = {})",
@@ -850,7 +868,7 @@ tensor_guid_t ComputationGraphBuilder::layer_norm(
   }
 
   LayerNormAttrs attrs = LayerNormAttrs{
-      stack_vector<ff_dim_t, MAX_TENSOR_DIM>{axes.begin(), axes.end()},
+      axes,
       elementwise_affine,
       eps,
   };
@@ -898,15 +916,16 @@ tensor_guid_t ComputationGraphBuilder::softmax(
 
   int dim = maybe_dim.value_or(num_dims(input_shape) - 1);
 
-  if (dim >= num_dims(input_shape)) {
+  SoftmaxAttrs attrs = SoftmaxAttrs{ff_dim_t_from_relative_ff_dim_t(
+      relative_ff_dim_t{dim}, num_dims(input_shape))};
+
+  if (attrs.dim.value >= num_dims(input_shape)) {
     throw mk_runtime_error(
         fmt::format("ComputationGraphBuilder::softmax received out-of-bounds "
                     "dim {} for input tensor shape {}",
-                    dim,
+                    attrs.dim.value,
                     input_shape));
   }
-
-  SoftmaxAttrs attrs = SoftmaxAttrs{ff_dim_t{dim}};
 
   std::string name =
       maybe_name.value_or(get_default_name(ComputationGraphOpAttrs{attrs}));

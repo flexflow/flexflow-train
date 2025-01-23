@@ -11,14 +11,14 @@ features = [
 
 includes = [
   "<optional>",
-  "op-attrs/ff_dim.dtg.h",
+  "op-attrs/ff_dim_t.dtg.h",
 ]
 
 src_includes = [
   "utils/fmt/optional.h",
   "utils/json/optional.h",
   "utils/rapidcheck/optional.h",
-  "op-attrs/ff_dim.h",
+  "op-attrs/ff_dim_t.h",
 ]
 
 [[fields]]

@@ -17,6 +17,7 @@
 #include "kernels/transpose_kernels.h"
 #include "op-attrs/get_output_shapes.h"
 #include "op-attrs/ops/transpose.h"
+#include "utils/integer_conversions.h"
 
 using namespace FlexFlow::Kernels::Transpose;
 
@@ -39,8 +40,17 @@ OpTaskInvocation init(TransposeAttrs const &attrs) {
 static DeviceSpecificDeviceStates
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto const &attrs = acc.get_argument<TransposeAttrs>(ATTRS);
-  std::vector<ff_dim_t> perm = inner_to_outer_idxs(attrs.perm);
-  TransposePerDeviceState per_device_state = init_kernel(perm.size(), perm);
+  int size = int_from_size_t(attrs.perm.size());
+
+  std::vector<ff_dim_t> perm = [&] {
+    std::vector<ff_dim_t> result;
+    for (int i : range(size)) {
+      result.push_back(ff_dim_t{nonnegative_int{size - i - 1}});
+    }
+    return result;
+  }();
+
+  TransposePerDeviceState per_device_state = init_kernel(size, perm);
 
   return DeviceSpecificDeviceStates{
       DeviceSpecific<TransposePerDeviceState>::create(per_device_state)};
