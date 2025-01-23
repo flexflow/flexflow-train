@@ -1,0 +1,19 @@
+namespace = "FlexFlow"
+name = "OpCostMetrics"
+features = [
+  "eq",
+  "fmt",
+  "hash",
+]
+
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h"
+]
+
+[[fields]]
+name = "runtime"
+type = "float"
+
+[[fields]]
+name = "memory"
+type = "::FlexFlow::nonnegative_int"

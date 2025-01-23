@@ -1,9 +1,11 @@
 #ifndef _FLEXFLOW_OPATTRS_INCLUDE_OPATTRS_FF_STACK_VECTOR_H
 #define _FLEXFLOW_OPATTRS_INCLUDE_OPATTRS_FF_STACK_VECTOR_H
 
-#include "op-attrs/ff_dim.dtg.h"
+#include "op-attrs/ff_dim_t.dtg.h"
+#include "op-attrs/relative_ff_dim_t.dtg.h"
+#include "utils/containers/range.h"
 #include "utils/fmt/vector.h"
-#include "utils/stack_vector.h"
+#include "utils/stack_vector/stack_vector.h"
 #include <nlohmann/json.hpp>
 
 namespace FlexFlow {
@@ -153,6 +155,169 @@ private:
 };
 
 template <typename T>
+struct DimOrdered<ff_dim_t, T> {
+  DimOrdered() {}
+
+  DimOrdered(std::initializer_list<T> const &l)
+      : contents(l.begin(), l.end()) {}
+
+  DimOrdered(std::vector<T> const &contents)
+      : contents(contents.begin(), contents.end()) {}
+
+  template <typename It>
+  DimOrdered(It begin, It end) : contents(begin, end) {}
+
+  template <size_t MAXSIZE>
+  DimOrdered(stack_vector<T, MAXSIZE> const &contents)
+      : contents(contents.begin(), contents.end()) {}
+
+  T const &at(ff_dim_t idx) const {
+    int raw = idx.value.get_value();
+    return this->contents.at(raw);
+  }
+
+  T const &at(relative_ff_dim_t idx) const {
+    int raw = idx.value;
+    if (raw < 0) {
+      raw = this->contents.size() + raw;
+    }
+    return this->contents.at(raw);
+  }
+
+  T &at(ff_dim_t idx) {
+    int raw = idx.value.get_value();
+    return this->contents.at(raw);
+  }
+
+  T &at(relative_ff_dim_t idx) {
+    int raw = idx.value;
+    if (raw < 0) {
+      raw = this->contents.size() + raw;
+    }
+    return this->contents.at(raw);
+  }
+
+  T const &operator[](ff_dim_t idx) const {
+    return this->at(idx);
+  }
+
+  T const &operator[](relative_ff_dim_t idx) const {
+    return this->at(idx);
+  }
+
+  T &operator[](ff_dim_t idx) {
+    return this->at(idx);
+  }
+
+  T &operator[](relative_ff_dim_t idx) {
+    return this->at(idx);
+  }
+
+  bool idx_is_valid(ff_dim_t const &idx) const {
+    int raw = idx.value.get_value();
+    return raw < this->contents.size();
+  }
+
+  bool idx_is_valid(relative_ff_dim_t const &idx) const {
+    int raw = idx.value;
+    if (raw < 0) {
+      raw = this->contents.size() + raw;
+    }
+    return (raw >= 0 && raw < this->contents.size());
+  }
+
+  bool operator==(DimOrdered const &other) const {
+    return this->contents == other.contents;
+  }
+
+  bool operator!=(DimOrdered const &other) const {
+    return this->contents != other.contents;
+  }
+
+  bool operator<(DimOrdered const &other) const {
+    return this->contents < other.contents;
+  }
+
+  using iterator = typename stack_vector<T, MAX_TENSOR_DIM>::iterator;
+  using const_iterator =
+      typename stack_vector<T, MAX_TENSOR_DIM>::const_iterator;
+  using reverse_iterator =
+      typename stack_vector<T, MAX_TENSOR_DIM>::reverse_iterator;
+  using const_reverse_iterator =
+      typename stack_vector<T, MAX_TENSOR_DIM>::const_reverse_iterator;
+  using value_type = T;
+  using pointer = value_type *;
+  using const_pointer = value_type const *;
+  using reference = value_type &;
+  using const_reference = value_type const &;
+
+  iterator begin() {
+    return this->contents.begin();
+  }
+
+  const_iterator begin() const {
+    return this->cbegin();
+  }
+
+  const_iterator cbegin() const {
+    return this->contents.cbegin();
+  }
+
+  iterator end() {
+    return this->contents.end();
+  }
+
+  const_iterator end() const {
+    return this->cend();
+  }
+
+  const_iterator cend() const {
+    return this->contents.cend();
+  }
+
+  reverse_iterator rbegin() {
+    return this->contents.rbegin();
+  }
+
+  const_reverse_iterator rbegin() const {
+    return this->crbegin();
+  }
+
+  const_reverse_iterator crbegin() const {
+    return this->contents.crbegin();
+  }
+
+  reverse_iterator rend() {
+    return this->contents.crend();
+  }
+
+  const_reverse_iterator rend() const {
+    return this->crend();
+  }
+
+  const_reverse_iterator crend() const {
+    return this->contents.crend();
+  }
+
+  size_t size() const {
+    return this->contents.size();
+  }
+
+  size_t empty() const {
+    return this->contents.empty();
+  }
+
+  size_t num_dims() const {
+    return this->size();
+  }
+
+  friend struct ::std::hash<DimOrdered>;
+
+private:
+  stack_vector<T, MAX_TENSOR_DIM> contents;
+};
+
+template <typename T>
 using FFOrdered = DimOrdered<ff_dim_t, T>;
 
 template <typename T>
@@ -164,31 +329,6 @@ std::string format_as(FFOrdered<T> const &v) {
 template <typename T>
 std::ostream &operator<<(std::ostream &s, FFOrdered<T> const &v) {
   return (s << fmt::to_string(v));
-}
-
-template <typename T>
-auto inner_to_outer(FFOrdered<T> const &ff_ordered)
-    -> decltype(reversed_container(ff_ordered)) {
-  return reversed_container(ff_ordered);
-}
-
-template <typename T>
-std::vector<ff_dim_t> inner_to_outer_idxs(FFOrdered<T> const &ff_ordered) {
-  std::vector<ff_dim_t> idxs;
-  for (size_t i = 0; i < ff_ordered.size(); i++) {
-    idxs.push_back(ff_dim_t(ff_ordered.size() - i - 1));
-  }
-  return idxs;
-}
-
-template <typename T>
-std::vector<ff_dim_t> outer_to_inner_idxs(FFOrdered<T> const &ff_ordered) {
-  return reversed(inner_to_outer_idxs<T>(ff_ordered));
-}
-
-template <typename T>
-FFOrdered<T> const &outer_to_inner(FFOrdered<T> const &ff_ordered) {
-  return ff_ordered;
 }
 
 } // namespace FlexFlow

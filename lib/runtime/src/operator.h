@@ -9,7 +9,7 @@
 #include "runtime/config.h"
 #include "tasks.h"
 #include "utils/stack_string.h"
-#include "utils/stack_vector.h"
+#include "utils/stack_vector/stack_vector.h"
 #include "utils/strong_typedef.h"
 #include <stdexcept>
 #include <vector>

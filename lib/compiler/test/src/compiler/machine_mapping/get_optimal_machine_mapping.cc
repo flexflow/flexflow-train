@@ -144,13 +144,19 @@ TEST_SUITE(FF_TEST_SUITE) {
             {binary_tree_root_path(), mv2},
         }};
 
+    auto map1 = std::unordered_map<OpCostEstimateKey, OpCostMetrics>{{
+        {map_unmapped_op_cost_estimate_key(k1, mv1),
+         OpCostMetrics{/*runtime=*/1.0, /*memory=*/nonnegative_int{0}}},
+        {map_unmapped_op_cost_estimate_key(k2, mv1),
+         OpCostMetrics{/*runtime=*/2.0, /*memory=*/nonnegative_int{0}}},
+        {map_unmapped_op_cost_estimate_key(k1, mv2),
+         OpCostMetrics{/*runtime=*/1.5, /*memory=*/nonnegative_int{0}}},
+        {map_unmapped_op_cost_estimate_key(k2, mv2),
+         OpCostMetrics{/*runtime=*/2.5, /*memory=*/nonnegative_int{0}}},
+    }};
+
     CostEstimator cost_estimator = make_fake_cost_estimator(
-        std::unordered_map<OpCostEstimateKey, float>{{
-            {map_unmapped_op_cost_estimate_key(k1, mv1), 1.0},
-            {map_unmapped_op_cost_estimate_key(k2, mv1), 2.0},
-            {map_unmapped_op_cost_estimate_key(k1, mv2), 1.5},
-            {map_unmapped_op_cost_estimate_key(k2, mv2), 2.5},
-        }},
+        map1,
         std::unordered_map<TensorSetMovement, float>{{
             {TensorSetMovement{{}}, 0.0},
             {concretize_abstracted_tensor_set_movement(movement1, mm1, mm1),
