@@ -21,6 +21,7 @@ includes = [
   "op-attrs/tensor_shape.dtg.h",
   "op-attrs/datatype.dtg.h",
   "<cstddef>",
+  "utils/nonnegative_int/nonnegative_int.h",
 ]
 
 src_includes = [
@@ -74,3 +75,6 @@ type = "::FlexFlow::TensorDims"
 
 [[values]]
 type = "::FlexFlow::DataType"
+
+[[values]]
+type = "::FlexFlow::nonnegative_int"

@@ -73,7 +73,7 @@ std::vector<PatternValue> SubstitutionBuilder::add_pattern_node(
 std::vector<OutputGraphExprValue> SubstitutionBuilder::add_output_graph_node(
     OutputOperatorAttrsAssignment const &node_expr,
     std::vector<OutputGraphExprValue> const &inputs,
-    int num_outputs) {
+    nonnegative_int num_outputs) {
   NodeAddedResult node_added = this->output_g.add_node(
       node_expr,
       transform(inputs, raw_open_dataflow_value_from_output_graph_expr_value),
@@ -95,7 +95,7 @@ void SubstitutionBuilder::equate_outputs(
             throw mk_runtime_error(fmt::format(
                 "SubstitutionBuilder::equate_outputs expected a PatternValue "
                 "holding a PatternNodeOutput, but received {}",
-                maybe_pattern_output));
+                maybe_output_graph_expr_output));
           },
       });
 
@@ -111,8 +111,22 @@ void SubstitutionBuilder::equate_outputs(
           },
       });
 
-  assert(!this->output_mapping.contains_l(pattern_output));
-  assert(!this->output_mapping.contains_r(output_graph_expr_output));
+  if (this->output_mapping.contains_l(pattern_output)) {
+    throw mk_runtime_error(
+        fmt::format("SubstitutionBuilder::equate_outputs expected a "
+                    "PatternValue holding a PatternValueOutput"
+                    "that is not contained in the output_mapping forward graph,"
+                    "but received {}",
+                    pattern_output));
+  }
+  if (this->output_mapping.contains_r(output_graph_expr_output)) {
+    throw mk_runtime_error(fmt::format(
+        "SubstitutionBuilder::output_graph_expr_output expected a "
+        "OutputGraphExprValue holding a OutputGraphExprNodeOutput"
+        "that is not contained in the output_mapping backward graph,"
+        "but received {}",
+        output_graph_expr_output));
+  }
 
   this->output_mapping.equate(pattern_output, output_graph_expr_output);
 }

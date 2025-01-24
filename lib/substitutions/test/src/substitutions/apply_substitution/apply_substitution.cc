@@ -53,8 +53,8 @@ TEST_SUITE(FF_TEST_SUITE) {
                                    OperatorAttributeValue{Activation::RELU}),
           }};
 
-      return get_only(
-          b.add_output_graph_node(node_expr, {o_input, o_weight}, 1));
+      return get_only(b.add_output_graph_node(
+          node_expr, {o_input, o_weight}, nonnegative_int{1}));
     }();
 
     b.equate_outputs(p_relu_output, o_fused_output);

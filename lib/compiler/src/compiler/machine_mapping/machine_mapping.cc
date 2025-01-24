@@ -7,7 +7,8 @@ namespace FlexFlow {
 
 MachineMapping combine_disjoint_mappings(MachineMapping const &s1,
                                          MachineMapping const &s2) {
-  return MachineMapping{merge_maps(s1.machine_views, s2.machine_views)};
+  return MachineMapping{
+      merge_disjoint_maps(s1.machine_views, s2.machine_views)};
 }
 
 bool nodes_are_disjoint(MachineMapping const &m1, MachineMapping const &m2) {

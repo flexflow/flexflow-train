@@ -62,8 +62,8 @@ TEST_SUITE(FF_TEST_SUITE) {
                                      OperatorAttributeValue{Activation::RELU}),
             }};
 
-        return get_only(
-            b.add_output_graph_node(node_expr, {o_input, o_weight}, 1));
+        return get_only(b.add_output_graph_node(
+            node_expr, {o_input, o_weight}, nonnegative_int{1}));
       }();
 
       b.equate_outputs(p_relu_output, o_fused_output);
@@ -78,7 +78,75 @@ TEST_SUITE(FF_TEST_SUITE) {
     CHECK(is_isomorphic_to(sub1, sub2));
   }
 
-  // TEST_CASE("is_valid_substitution") {
-  //   FAIL("TODO");
-  // }
+  TEST_CASE("is_valid_substitution") {
+    SubstitutionBuilder b;
+
+    auto [p_input, o_input] = b.add_input(tensor_attribute_pattern_match_all());
+    auto [p_weight, o_weight] =
+        b.add_input(tensor_attribute_pattern_match_all());
+
+    PatternValue p_mm_output = [&] {
+      auto pattern = OperatorAttributePattern{{
+          op_type_equals_constraint(OperatorType::LINEAR),
+          op_attr_key_equals(
+              OperatorAttributeKey::ACTIVATION,
+              OperatorAttributeValue{std::optional<Activation>{std::nullopt}}),
+      }};
+
+      return get_only(b.add_pattern_node(pattern,
+                                         {p_input, p_weight},
+                                         {tensor_attribute_pattern_match_all()},
+                                         "mm"));
+    }();
+
+    PatternValue p_relu_output = [&] {
+      auto pattern = OperatorAttributePattern{{
+          op_type_equals_constraint(OperatorType::RELU),
+      }};
+
+      return get_only(b.add_pattern_node(pattern,
+                                         {p_mm_output},
+                                         {tensor_attribute_pattern_match_all()},
+                                         "relu"));
+    }();
+
+    OutputGraphExprValue o_fused_output = [&] {
+      auto node_expr = OutputOperatorAttrsAssignment{
+          b.pattern_node_named("mm"),
+          {
+              set_attr_to_constant(OperatorAttributeKey::ACTIVATION,
+                                   OperatorAttributeValue{Activation::RELU}),
+          }};
+
+      return get_only(b.add_output_graph_node(
+          node_expr, {o_input, o_weight}, nonnegative_int{1}));
+    }();
+
+    b.equate_outputs(p_relu_output, o_fused_output);
+
+    SUBCASE("pattern inputs != mapped inputs") {
+      Substitution sub = b.get_substitution();
+      sub.inputs_mapping.erase_l((*sub.inputs_mapping.cbegin()).first);
+      CHECK_FALSE(is_valid_substitution(sub));
+    }
+
+    SUBCASE("output graph inputs != mapped inputs") {
+      Substitution sub = b.get_substitution();
+      sub.inputs_mapping = {};
+      CHECK_FALSE(is_valid_substitution(sub));
+    }
+
+    SUBCASE("pattern nodes is empty") {
+      // TODO
+    }
+
+    SUBCASE("output graph nodes is empty") {
+      // TODO
+    }
+
+    SUBCASE("valid substitution") {
+      Substitution sub = b.get_substitution();
+      CHECK(is_valid_substitution(sub));
+    }
+  }
 }

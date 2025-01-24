@@ -46,7 +46,8 @@ SubParallelComputationGraph
         std::unordered_map<parallel_layer_guid_t, ParallelLayerAttrs>
             post_node_data_from_sub = output_graph_data.node_data;
 
-        return merge_maps(post_node_data_from_orig, post_node_data_from_sub);
+        return merge_disjoint_maps(post_node_data_from_orig,
+                                   post_node_data_from_sub);
       }();
 
   std::unordered_set<SubParallelComputationGraphEdge> post_edges = [&] {
@@ -147,7 +148,8 @@ SubParallelComputationGraph
 
         std::unordered_map<open_parallel_tensor_guid_t, ParallelTensorAttrs>
             post_value_data_from_sub = output_graph_data.value_data;
-        return merge_maps(post_value_data_from_orig, post_value_data_from_sub);
+        return merge_disjoint_maps(post_value_data_from_orig,
+                                   post_value_data_from_sub);
       }();
 
   SubParallelComputationGraphData post_data = SubParallelComputationGraphData{
