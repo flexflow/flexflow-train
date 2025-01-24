@@ -30,10 +30,9 @@ MachineMappingWithMemoryResult remove_non_pareto_optimal_machine_mapping_result(
     bool is_pareto_optimal = true;
     for (MachineMappingForSingleLayer const &other_mapping :
          result.machine_mappings) {
-      if (mapping.cost.forward_runtime >=
-              other_mapping.cost
-                  .forward_runtime && // TODO(@wmdi) does it have to be modified
-                                      // to also check for backward_runtime?
+      if (mapping.cost.forward_runtime >= other_mapping.cost.forward_runtime &&
+          mapping.cost.backward_runtime >=
+              other_mapping.cost.backward_runtime &&
           mapping.cost.memory >= other_mapping.cost.memory &&
           mapping != other_mapping) {
         is_pareto_optimal = false;
