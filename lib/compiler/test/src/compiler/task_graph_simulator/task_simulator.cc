@@ -99,16 +99,16 @@ TEST_SUITE(FF_TEST_SUITE) {
               if (op.op_attrs.has<InputAttrs>()) {
                 return OpCostMetrics{/*forward_runtime=*/10.0f,
                                      /*backward_runtime=*/10.0f,
-                                     /*memory=*/0}; // layer0
+                                     /*memory=*/nonnegative_int{0}}; // layer0
               }
               if (op.op_attrs.has<ElementUnaryAttrs>()) {
                 return OpCostMetrics{/*forward_runtime=*/1.0f,
                                      /*backward_runtime=*/1.0f,
-                                     /*memory=*/0}; // layer1
+                                     /*memory=*/nonnegative_int{0}}; // layer1
               }
               return OpCostMetrics{/*forward_runtime=*/0.0f,
                                    /*backward_runtime=*/0.0f,
-                                   /*memory=*/0};
+                                   /*memory=*/nonnegative_int{0}};
             },
             [](TensorSetMovement const &comm) { return 5.0f; });
 
@@ -187,21 +187,21 @@ TEST_SUITE(FF_TEST_SUITE) {
                 if (op.op_attrs.has<InputAttrs>()) {
                   return OpCostMetrics{/*forward_runtime=*/10.0f,
                                        /*backward_runtime=*/10.0f,
-                                       /*memory=*/0}; // layer0
+                                       /*memory=*/nonnegative_int{0}}; // layer0
                 }
                 if (op.op_attrs.has<ElementUnaryAttrs>()) {
                   return OpCostMetrics{/*forward_runtime=*/1.0f,
                                        /*backward_runtime=*/1.0f,
-                                       /*memory=*/0}; // layers 1, 2
+                                       /*memory=*/nonnegative_int{0}}; // layers 1, 2
                 }
                 if (op.op_attrs.has<ElementBinaryAttrs>()) {
                   return OpCostMetrics{/*forward_runtime=*/2.0f,
                                        /*backward_runtime=*/2.0f,
-                                       /*memory=*/0}; // layer3
+                                       /*memory=*/nonnegative_int{0}}; // layer3
                 }
                 return OpCostMetrics{/*forward_runtime=*/0.0f,
                                      /*backward_runtime=*/0.0f,
-                                     /*memory=*/0};
+                                     /*memory=*/nonnegative_int{0}};
               },
               [](TensorSetMovement const &comm) { return 5.0f; });
         }
@@ -234,21 +234,21 @@ TEST_SUITE(FF_TEST_SUITE) {
                 if (op.op_attrs.has<InputAttrs>()) {
                   return OpCostMetrics{/*forward_runtime=*/10.0f,
                                        /*backward_runtime=*/10.0f,
-                                       /*memory=*/0}; // layer0
+                                       /*memory=*/nonnegative_int{0}}; // layer0
                 }
                 if (op.op_attrs.has<ElementUnaryAttrs>()) {
                   return OpCostMetrics{/*forward_runtime=*/1.0f,
                                        /*backward_runtime=*/1.0f,
-                                       /*memory=*/0}; // layers 1, 2
+                                       /*memory=*/nonnegative_int{0}}; // layers 1, 2
                 }
                 if (op.op_attrs.has<ElementBinaryAttrs>()) {
                   return OpCostMetrics{/*forward_runtime=*/2.0f,
                                        /*backward_runtime=*/2.0f,
-                                       /*memory=*/0}; // layer3
+                                       /*memory=*/nonnegative_int{0}}; // layer3
                 }
                 return OpCostMetrics{/*forward_runtime=*/0.0f,
                                      /*backward_runtime=*/0.0f,
-                                     /*memory=*/0};
+                                     /*memory=*/nonnegative_int{0}};
               },
               [](TensorSetMovement const &comm) { return 5.0f; });
           float result = task_simulator_estimate_forward_pass_time(

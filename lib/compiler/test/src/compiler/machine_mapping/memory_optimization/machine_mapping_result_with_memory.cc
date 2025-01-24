@@ -1,5 +1,6 @@
 #include "compiler/machine_mapping/memory_optimization/machine_mapping_with_memory_result.h"
 #include "pcg/machine_view.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include <doctest/doctest.h>
 
 using namespace FlexFlow;
@@ -54,19 +55,19 @@ TEST_SUITE(FF_TEST_SUITE) {
     OpCostMetrics cost1 = OpCostMetrics{
         /*forward_runtime=*/2.0,
         /*backward_runtime=*/2.0,
-        /*memory=*/2,
+        /*memory=*/nonnegative_int{2},
     };
 
     OpCostMetrics cost2 = OpCostMetrics{
         /*forward_runtime=*/4.0,
         /*backward_runtime=*/4.0,
-        /*memory=*/1,
+        /*memory=*/nonnegative_int{1},
     };
 
     OpCostMetrics cost3 = OpCostMetrics{
         /*forward_runtime=*/2.0,
         /*backward_runtime=*/2.0,
-        /*memory=*/3,
+        /*memory=*/nonnegative_int{3},
     };
 
     MachineMappingForSingleLayer mm1 = MachineMappingForSingleLayer{
@@ -189,7 +190,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     OpCostMetrics pre_cost = OpCostMetrics{
         /*forward_runtime=*/2.0,
         /*backward_runtime=*/2.0,
-        /*memory=*/2,
+        /*memory=*/nonnegative_int{2},
     };
     MachineMappingWithMemoryResult pre = MachineMappingWithMemoryResult{{
         MachineMappingForSingleLayer{
@@ -216,7 +217,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     OpCostMetrics post_cost = OpCostMetrics{
         /*forward_runtime=*/4.0,
         /*backward_runtime=*/4.0,
-        /*memory=*/1,
+        /*memory=*/nonnegative_int{1},
     };
 
     MachineMappingWithMemoryResult post = MachineMappingWithMemoryResult{{
@@ -390,7 +391,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     OpCostMetrics lhs_cost = OpCostMetrics{
         /*forward_runtime=*/2.0,
         /*backward_runtime=*/2.0,
-        /*memory=*/2,
+        /*memory=*/nonnegative_int{2},
     };
     MachineMappingWithMemoryResult lhs = MachineMappingWithMemoryResult{{
         MachineMappingForSingleLayer{
@@ -417,7 +418,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     OpCostMetrics rhs_cost = OpCostMetrics{
         /*forward_runtime=*/4.0,
         /*backward_runtime=*/4.0,
-        /*memory=*/1,
+        /*memory=*/nonnegative_int{1},
     };
     MachineMappingWithMemoryResult rhs = MachineMappingWithMemoryResult{{
         MachineMappingForSingleLayer{
@@ -537,17 +538,17 @@ TEST_SUITE(FF_TEST_SUITE) {
     OpCostMetrics cost1 = OpCostMetrics{
         /*forward_runtime=*/2.0,
         /*backward_runtime=*/2.0,
-        /*memory=*/2,
+        /*memory=*/nonnegative_int{2},
     };
     OpCostMetrics cost2 = OpCostMetrics{
         /*forward_runtime=*/4.0,
         /*backward_runtime=*/4.0,
-        /*memory=*/1,
+        /*memory=*/nonnegative_int{1},
     };
     OpCostMetrics cost3 = OpCostMetrics{
         /*forward_runtime=*/2.0,
         /*backward_runtime=*/2.0,
-        /*memory=*/3,
+        /*memory=*/nonnegative_int{3},
     };
 
     MachineMappingForSingleLayer mm1 = MachineMappingForSingleLayer{

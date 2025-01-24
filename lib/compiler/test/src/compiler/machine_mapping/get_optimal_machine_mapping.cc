@@ -9,6 +9,7 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include "utils/containers/get_only.h"
 #include "utils/full_binary_tree/binary_tree_path.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include <doctest/doctest.h>
 
 using namespace FlexFlow;
@@ -148,19 +149,19 @@ TEST_SUITE(FF_TEST_SUITE) {
         {map_unmapped_op_cost_estimate_key(k1, mv1),
          OpCostMetrics{/*forward_runtime=*/1.0,
                        /*backward_runtime=*/1.0,
-                       /*memory=*/0}},
+                       /*memory=*/nonnegative_int{0}}},
         {map_unmapped_op_cost_estimate_key(k2, mv1),
          OpCostMetrics{/*forward_runtime=*/2.0,
                        /*backward_runtime=*/2.0,
-                       /*memory=*/0}},
+                       /*memory=*/nonnegative_int{0}}},
         {map_unmapped_op_cost_estimate_key(k1, mv2),
          OpCostMetrics{/*forward_runtime=*/1.5,
                        /*backward_runtime=*/1.5,
-                       /*memory=*/0}},
+                       /*memory=*/nonnegative_int{0}}},
         {map_unmapped_op_cost_estimate_key(k2, mv2),
          OpCostMetrics{/*forward_runtime=*/2.5,
                        /*backward_runtime=*/2.5,
-                       /*memory=*/0}},
+                       /*memory=*/nonnegative_int{0}}},
     }};
 
     CostEstimator cost_estimator = make_fake_cost_estimator(

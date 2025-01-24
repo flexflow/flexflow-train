@@ -9,6 +9,7 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include "utils/containers/get_only.h"
 #include "utils/full_binary_tree/binary_tree_path.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include <doctest/doctest.h>
 
 using namespace FlexFlow;
@@ -149,19 +150,19 @@ TEST_SUITE(FF_TEST_SUITE) {
             {map_unmapped_op_cost_estimate_key(k1, mv1),
              OpCostMetrics{/*forward_runtime=*/1.0,
                            /*backward_runtime=*/1.0,
-                           /*memory=*/2}},
+                           /*memory=*/nonnegative_int{2}}},
             {map_unmapped_op_cost_estimate_key(k2, mv1),
              OpCostMetrics{/*forward_runtime=*/2.0,
                            /*backward_runtime=*/2.0,
-                           /*memory=*/3}},
+                           /*memory=*/nonnegative_int{3}}},
             {map_unmapped_op_cost_estimate_key(k1, mv2),
              OpCostMetrics{/*forward_runtime=*/1.5,
                            /*backward_runtime=*/1.5,
-                           /*memory=*/1}},
+                           /*memory=*/nonnegative_int{1}}},
             {map_unmapped_op_cost_estimate_key(k2, mv2),
              OpCostMetrics{/*forward_runtime=*/2.5,
                            /*backward_runtime=*/2.5,
-                           /*memory=*/2}},
+                           /*memory=*/nonnegative_int{2}}},
         }},
         std::unordered_map<TensorSetMovement, float>{{
             {TensorSetMovement{/*movements=*/{}}, /*cost=*/0.0},
@@ -197,7 +198,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           MachineMappingForSingleLayer{
               OpCostMetrics{/*forward_runtime=*/1.0,
                             /*backward_runtime=*/1.0,
-                            /*memory=*/2},
+                            /*memory=*/nonnegative_int{2}},
               ParallelLayerGuidObliviousMachineMapping{{
                   {binary_tree_root_path(), mv1},
               }},
@@ -205,7 +206,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           MachineMappingForSingleLayer{
               OpCostMetrics{/*forward_runtime=*/1.5,
                             /*backward_runtime=*/1.5,
-                            /*memory=*/1},
+                            /*memory=*/nonnegative_int{1}},
               ParallelLayerGuidObliviousMachineMapping{{
                   {binary_tree_root_path(), mv2},
               }},
@@ -231,7 +232,7 @@ TEST_SUITE(FF_TEST_SUITE) {
               OpCostMetrics{
                   /*forward_runtime=*/1.0 + 2.0 + 0.1,
                   /*backward_runtime=*/1.0 + 2.0 + 0.1,
-                  /*memory=*/2 + 3,
+                  /*memory=*/nonnegative_int{2 + 3},
               },
               ParallelLayerGuidObliviousMachineMapping{{
                   {
@@ -251,7 +252,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           MachineMappingForSingleLayer{
               OpCostMetrics{/*forward_runtime=*/1.5 + 2.5 + 0.1,
                             /*backward_runtime=*/1.5 + 2.5 + 0.1,
-                            /*memory=*/1 + 2},
+                            /*memory=*/nonnegative_int{1 + 2}},
               ParallelLayerGuidObliviousMachineMapping{{
                   {
                       BinaryTreePath{{
@@ -287,7 +288,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           MachineMappingWithMemoryResult{{MachineMappingForSingleLayer{
               OpCostMetrics{/*forward_runtime=*/2.5,
                             /*backward_runtime=*/2.5,
-                            /*memory=*/2},
+                            /*memory=*/nonnegative_int{2}},
               ParallelLayerGuidObliviousMachineMapping{{
                   {
                       BinaryTreePath{{
