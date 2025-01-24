@@ -48,8 +48,7 @@ CostEstimator make_fake_constant_cost_estimator(float forward_op_cost,
                                                 nonnegative_int memory_cost) {
   return make_fake_cost_estimator(
       [=](OpCostEstimateKey const &op) {
-        return OpCostMetrics{
-            forward_op_cost, backward_op_cost, memory_cost};
+        return OpCostMetrics{forward_op_cost, backward_op_cost, memory_cost};
       },
       [=](TensorSetMovement const &op) { return comm_cost; });
 }

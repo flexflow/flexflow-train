@@ -190,9 +190,10 @@ TEST_SUITE(FF_TEST_SUITE) {
                                        /*memory=*/nonnegative_int{0}}; // layer0
                 }
                 if (op.op_attrs.has<ElementUnaryAttrs>()) {
-                  return OpCostMetrics{/*forward_runtime=*/1.0f,
-                                       /*backward_runtime=*/1.0f,
-                                       /*memory=*/nonnegative_int{0}}; // layers 1, 2
+                  return OpCostMetrics{
+                      /*forward_runtime=*/1.0f,
+                      /*backward_runtime=*/1.0f,
+                      /*memory=*/nonnegative_int{0}}; // layers 1, 2
                 }
                 if (op.op_attrs.has<ElementBinaryAttrs>()) {
                   return OpCostMetrics{/*forward_runtime=*/2.0f,
@@ -237,9 +238,10 @@ TEST_SUITE(FF_TEST_SUITE) {
                                        /*memory=*/nonnegative_int{0}}; // layer0
                 }
                 if (op.op_attrs.has<ElementUnaryAttrs>()) {
-                  return OpCostMetrics{/*forward_runtime=*/1.0f,
-                                       /*backward_runtime=*/1.0f,
-                                       /*memory=*/nonnegative_int{0}}; // layers 1, 2
+                  return OpCostMetrics{
+                      /*forward_runtime=*/1.0f,
+                      /*backward_runtime=*/1.0f,
+                      /*memory=*/nonnegative_int{0}}; // layers 1, 2
                 }
                 if (op.op_attrs.has<ElementBinaryAttrs>()) {
                   return OpCostMetrics{/*forward_runtime=*/2.0f,
