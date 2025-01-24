@@ -198,6 +198,15 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
   }
 
+  TEST_CASE("nonnegative_int + operation") {
+    nonnegative_int nn_int_1a = nonnegative_int{1};
+    nonnegative_int nn_int_1b = nonnegative_int{1};
+    nonnegative_int nn_int_2 = nonnegative_int{2};
+    SUBCASE("LHS: nonnegative_int, RHS: nonnegative_int") {
+      CHECK(nn_int_1a + nn_int_1b == nn_int_2);
+    }
+  }
+
   TEST_CASE("adl_serializer<nonnegative_int>") {
     SUBCASE("to_json") {
       nonnegative_int input = nonnegative_int{5};

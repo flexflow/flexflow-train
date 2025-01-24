@@ -53,15 +53,15 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     OpCostMetrics cost1 = OpCostMetrics{
         /*runtime=*/2.0,
-        /*memory=*/2,
+        /*memory=*/nonnegative_int{2},
     };
     OpCostMetrics cost2 = OpCostMetrics{
         /*runtime=*/4.0,
-        /*memory=*/1,
+        /*memory=*/nonnegative_int{1},
     };
     OpCostMetrics cost3 = OpCostMetrics{
         /*runtime=*/2.0,
-        /*memory=*/3,
+        /*memory=*/nonnegative_int{3},
     };
 
     MachineMappingForSingleLayer mm1 = MachineMappingForSingleLayer{
@@ -183,7 +183,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     OpCostMetrics pre_cost = OpCostMetrics{
         /*runtime=*/2.0,
-        /*memory=*/2,
+        /*memory=*/nonnegative_int{2},
     };
     MachineMappingWithMemoryResult pre = MachineMappingWithMemoryResult{{
         MachineMappingForSingleLayer{
@@ -209,7 +209,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     OpCostMetrics post_cost = OpCostMetrics{
         /*runtime=*/4.0,
-        /*memory=*/1,
+        /*memory=*/nonnegative_int{1},
     };
 
     MachineMappingWithMemoryResult post = MachineMappingWithMemoryResult{{
@@ -378,7 +378,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     OpCostMetrics lhs_cost = OpCostMetrics{
         /*runtime=*/2.0,
-        /*memory=*/2,
+        /*memory=*/nonnegative_int{2},
     };
     MachineMappingWithMemoryResult lhs = MachineMappingWithMemoryResult{{
         MachineMappingForSingleLayer{
@@ -404,7 +404,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     OpCostMetrics rhs_cost = OpCostMetrics{
         /*runtime=*/4.0,
-        /*memory=*/1,
+        /*memory=*/nonnegative_int{1},
     };
     MachineMappingWithMemoryResult rhs = MachineMappingWithMemoryResult{{
         MachineMappingForSingleLayer{
@@ -519,15 +519,15 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     OpCostMetrics cost1 = OpCostMetrics{
         /*runtime=*/2.0,
-        /*memory=*/2,
+        /*memory=*/nonnegative_int{2},
     };
     OpCostMetrics cost2 = OpCostMetrics{
         /*runtime=*/4.0,
-        /*memory=*/1,
+        /*memory=*/nonnegative_int{1},
     };
     OpCostMetrics cost3 = OpCostMetrics{
         /*runtime=*/2.0,
-        /*memory=*/3,
+        /*memory=*/nonnegative_int{3},
     };
 
     MachineMappingForSingleLayer mm1 = MachineMappingForSingleLayer{
