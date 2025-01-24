@@ -147,20 +147,20 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     auto map1 = std::unordered_map<OpCostEstimateKey, OpCostMetrics>{{
         {map_unmapped_op_cost_estimate_key(k1, mv1),
+         OpCostMetrics{/*forward_runtime=*/0.5,
+                       /*backward_runtime=*/0.5,
+                       /*memory=*/nonnegative_int{0}}},
+        {map_unmapped_op_cost_estimate_key(k2, mv1),
          OpCostMetrics{/*forward_runtime=*/1.0,
                        /*backward_runtime=*/1.0,
                        /*memory=*/nonnegative_int{0}}},
-        {map_unmapped_op_cost_estimate_key(k2, mv1),
-         OpCostMetrics{/*forward_runtime=*/2.0,
-                       /*backward_runtime=*/2.0,
-                       /*memory=*/nonnegative_int{0}}},
         {map_unmapped_op_cost_estimate_key(k1, mv2),
-         OpCostMetrics{/*forward_runtime=*/1.5,
-                       /*backward_runtime=*/1.5,
+         OpCostMetrics{/*forward_runtime=*/0.75,
+                       /*backward_runtime=*/0.75,
                        /*memory=*/nonnegative_int{0}}},
         {map_unmapped_op_cost_estimate_key(k2, mv2),
-         OpCostMetrics{/*forward_runtime=*/2.5,
-                       /*backward_runtime=*/2.5,
+         OpCostMetrics{/*forward_runtime=*/1.25,
+                       /*backward_runtime=*/1.25,
                        /*memory=*/nonnegative_int{0}}},
     }};
 
