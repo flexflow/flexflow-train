@@ -1,4 +1,4 @@
-#include "utils/render_dot.h"
+#include "utils/graph/render_dot.h"
 #include "utils/containers/flatmap.h"
 #include "utils/containers/try_at.h"
 #include "utils/graph/dataflow_graph/algorithms.h"

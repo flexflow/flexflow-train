@@ -6,8 +6,8 @@
 #include "utils/graph/dataflow_graph/algorithms/view_as_open_dataflow_graph.h"
 #include "utils/graph/labelled_open_dataflow_graph/algorithms/with_labelling.h"
 #include "utils/graph/node/algorithms.h"
+#include "utils/graph/render_dot.h"
 #include "utils/record_formatter.h"
-#include "utils/render_dot.h"
 
 namespace FlexFlow {
 

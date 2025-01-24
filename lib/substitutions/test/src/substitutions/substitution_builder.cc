@@ -130,8 +130,10 @@ TEST_SUITE(FF_TEST_SUITE) {
               b.pattern_node_named("mm"),
               fused_mm_relu_attr_assignments,
           };
-      OutputGraphExprValue o_fused_output = get_only(b.add_output_graph_node(
-          fused_mm_relu_attrs_assignment, {o_input, o_weight}, 1));
+      OutputGraphExprValue o_fused_output =
+          get_only(b.add_output_graph_node(fused_mm_relu_attrs_assignment,
+                                           {o_input, o_weight},
+                                           nonnegative_int{1}));
 
       b.equate_outputs(p_relu_output, o_fused_output);
 

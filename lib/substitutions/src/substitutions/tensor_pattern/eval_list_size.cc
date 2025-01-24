@@ -10,7 +10,7 @@ TensorAttributeValue eval_list_size(ParallelTensorAttrs const &attrs,
 
   return from_attr.visit<TensorAttributeValue>(overload{
       [](std::vector<int> const &v) -> TensorAttributeValue {
-        return TensorAttributeValue{v.size()};
+        return TensorAttributeValue{nonnegative_int{v.size()}};
       },
       [](auto &&) -> TensorAttributeValue {
         throw mk_runtime_error("Invalid operand");

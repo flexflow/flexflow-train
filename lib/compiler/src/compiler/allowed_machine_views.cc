@@ -60,7 +60,8 @@ static std::unordered_set<MachineView>
         transform(range(1, max_stride_upper_bound + 1),
                   [](int stride) { return stride_t{stride}; });
     std::unordered_multiset<std::vector<stride_t>> raw_stride_vectors =
-        cartesian_product(replicate(tensor_dims.size(), single_stride_range));
+        cartesian_product(replicate(nonnegative_int{tensor_dims.size()},
+                                    single_stride_range));
     std::unordered_multiset<MultiDimensionalStride> strides =
         transform(raw_stride_vectors, [](auto const &stride_vec) {
           return MultiDimensionalStride{stride_vec};

@@ -26,7 +26,7 @@ public:
   std::vector<OutputGraphExprValue>
       add_output_graph_node(OutputOperatorAttrsAssignment const &node_expr,
                             std::vector<OutputGraphExprValue> const &inputs,
-                            int num_outputs);
+                            nonnegative_int num_outputs);
 
   PatternNode pattern_node_named(std::string const &) const;
   PatternInput pattern_input_named(std::string const &) const;

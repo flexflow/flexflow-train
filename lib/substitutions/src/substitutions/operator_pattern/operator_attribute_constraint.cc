@@ -20,8 +20,9 @@ OperatorAttributeConstraint
   };
 }
 
-OperatorAttributeConstraint op_attr_key_divisible_by(OperatorAttributeKey key,
-                                                     int denominator) {
+OperatorAttributeConstraint
+    op_attr_key_divisible_by(OperatorAttributeKey key,
+                             nonnegative_int denominator) {
   return OperatorAttributeConstraint{
       ConstraintType::DIVISIBLE_BY,
       OperatorAttributeExpr{key},

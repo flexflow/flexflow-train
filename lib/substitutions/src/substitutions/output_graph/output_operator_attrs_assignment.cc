@@ -35,9 +35,8 @@ PCGOperatorAttrs materialize_output_operator_from_attrs_assignment(
           });
 
   std::unordered_map<OperatorAttributeKey, OperatorAttributeValue>
-      joined_attrs_map = merge_maps(template_attrs_map,
-                                    assignments_attrs_map,
-                                    MergeMethod::RIGHT_DOMINATES);
+      joined_attrs_map =
+          merge_map_right_dominates(template_attrs_map, assignments_attrs_map);
 
   return materialize_operator_from_attrs_map(joined_attrs_map);
 }

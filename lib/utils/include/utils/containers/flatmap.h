@@ -53,7 +53,7 @@ std::unordered_map<OutK, OutV> flatmap(std::unordered_map<InK, InV> const &m,
   std::unordered_map<OutK, OutV> result;
 
   for (auto const &[k, v] : m) {
-    result = merge_maps(result, f(k, v));
+    result = merge_disjoint_maps(result, f(k, v));
   }
 
   return result;

@@ -1,9 +1,11 @@
 #include "substitutions/unity_substitution_set.h"
+#include "pcg/machine_specification.h"
 #include "substitutions/operator_pattern/operator_attribute_constraint.h"
 #include "substitutions/output_graph/output_operator_attrs_assignment.h"
 #include "substitutions/substitution_builder.h"
 #include "substitutions/tensor_pattern/tensor_attribute_pattern.h"
 #include "utils/containers/get_only.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 
 namespace FlexFlow {
 
@@ -11,7 +13,7 @@ std::vector<Substitution>
     get_substitution_set(MachineSpecification const &resources) {
   std::vector<Substitution> substitutions;
   for (int num_dims : range(MAX_TENSOR_DIM)) {
-    for (int degree = 1; degree <= resources.num_nodes; degree *= 2) {
+    for (int degree = 1; degree <= get_num_gpus(resources); degree *= 2) {
       substitutions.push_back(
           create_replicate_linear_combine(num_dims, degree, true));
       substitutions.push_back(
@@ -53,14 +55,15 @@ Substitution
       op_type_equals_constraint(OperatorType::LINEAR),
       op_attr_key_equals(OperatorAttributeKey::BIAS,
                          OperatorAttributeValue{use_bias}),
-      op_attr_key_divisible_by(OperatorAttributeKey::OUT_CHANNELS, degree),
+      op_attr_key_divisible_by(OperatorAttributeKey::OUT_CHANNELS,
+                               nonnegative_int{degree}),
   }};
 
-  PatternValue p_linear_output = get_only(
-      b.add_pattern_node(linear_pattern,
-                         p_inputs,
-                         {tensor_attr_pattern_require_num_dims(num_dims)},
-                         "linear"));
+  PatternValue p_linear_output = get_only(b.add_pattern_node(
+      linear_pattern,
+      p_inputs,
+      {tensor_attr_pattern_require_num_dims(nonnegative_int{num_dims})},
+      "linear"));
 
   OutputOperatorAttrsAssignment replicate_input_expr =
       OutputOperatorAttrsAssignment{
@@ -72,7 +75,8 @@ Substitution
                                    degree),
           }};
   OutputGraphExprValue o_replicate_input_output =
-      get_only(b.add_output_graph_node(replicate_input_expr, {o_input}, 1));
+      get_only(b.add_output_graph_node(
+          replicate_input_expr, {o_input}, nonnegative_int{1}));
 
   OutputOperatorAttrsAssignment partition_weights_expr =
       OutputOperatorAttrsAssignment{
@@ -86,7 +90,8 @@ Substitution
                                    ff_dim_t{nonnegative_int{1}}),
           }};
   OutputGraphExprValue o_partition_weights_output =
-      get_only(b.add_output_graph_node(partition_weights_expr, {o_weight}, 1));
+      get_only(b.add_output_graph_node(
+          partition_weights_expr, {o_weight}, nonnegative_int{1}));
 
   std::vector<OutputGraphExprValue> o_linear_inputs = {
       o_replicate_input_output, o_partition_weights_output};
@@ -103,8 +108,9 @@ Substitution
                 set_attr_to_constant(OperatorAttributeKey::PARALLEL_DIM,
                                      ff_dim_t{nonnegative_int{1}}),
             }};
-    OutputGraphExprValue o_partition_bias_output = get_only(
-        b.add_output_graph_node(partition_bias_expr, {o_bias.value()}, 1));
+    OutputGraphExprValue o_partition_bias_output =
+        get_only(b.add_output_graph_node(
+            partition_bias_expr, {o_bias.value()}, nonnegative_int{1}));
     o_linear_inputs.push_back(o_partition_bias_output);
   }
 
@@ -112,8 +118,8 @@ Substitution
       b.pattern_node_named("linear"),
       {},
   };
-  OutputGraphExprValue o_linear_output =
-      get_only(b.add_output_graph_node(linear_expr, o_linear_inputs, 1));
+  OutputGraphExprValue o_linear_output = get_only(b.add_output_graph_node(
+      linear_expr, o_linear_inputs, nonnegative_int{1}));
 
   OutputOperatorAttrsAssignment combine_expr = OutputOperatorAttrsAssignment{
       std::nullopt,
@@ -125,8 +131,8 @@ Substitution
                                ff_dim_t{nonnegative_int{num_dims - 1}}),
       },
   };
-  OutputGraphExprValue o_combine_output =
-      get_only(b.add_output_graph_node(combine_expr, {o_linear_output}, 1));
+  OutputGraphExprValue o_combine_output = get_only(b.add_output_graph_node(
+      combine_expr, {o_linear_output}, nonnegative_int{1}));
 
   b.equate_outputs(p_linear_output, o_combine_output);
 
@@ -208,8 +214,8 @@ Substitution create_fuse_linear_activation(Activation activation) {
           set_attr_to_constant(OperatorAttributeKey::ACTIVATION,
                                OperatorAttributeValue{activation}),
       }};
-  OutputGraphExprValue o_fused_node_output = get_only(
-      b.add_output_graph_node(fused_node_expr, {o_input, o_weight}, 1));
+  OutputGraphExprValue o_fused_node_output = get_only(b.add_output_graph_node(
+      fused_node_expr, {o_input, o_weight}, nonnegative_int{1}));
 
   b.equate_outputs(p_relu_output, o_fused_node_output);
 
