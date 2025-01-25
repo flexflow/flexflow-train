@@ -1,5 +1,5 @@
 #include "compiler/machine_mapping/get_tensor_set_movement_across_split.h"
-#include "./cost_estimator_for_test.h"
+#include "../cost_estimator_for_test.h"
 #include "compiler/machine_mapping/transitive_reduced_pcg.h"
 #include "pcg/machine_view.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"

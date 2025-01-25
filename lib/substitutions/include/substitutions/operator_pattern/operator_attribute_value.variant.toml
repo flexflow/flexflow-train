@@ -56,9 +56,6 @@ type = "std::optional<::FlexFlow::Activation>"
 type = "::FlexFlow::ff_dim_t"
 
 [[values]]
-type = "size_t"
-
-[[values]]
 type = "::FlexFlow::AggregateOp"
 
 [[values]]

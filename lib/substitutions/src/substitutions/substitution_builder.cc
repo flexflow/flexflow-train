@@ -95,7 +95,7 @@ void SubstitutionBuilder::equate_outputs(
             throw mk_runtime_error(fmt::format(
                 "SubstitutionBuilder::equate_outputs expected a PatternValue "
                 "holding a PatternNodeOutput, but received {}",
-                maybe_output_graph_expr_output));
+                maybe_pattern_output));
           },
       });
 
@@ -107,7 +107,7 @@ void SubstitutionBuilder::equate_outputs(
                 fmt::format("SubstitutionBuilder::equate_outputs expected an "
                             "OutputGraphExprValue holding a "
                             "OutputGraphExprNodeOutput, but received {}",
-                            maybe_pattern_output));
+                            maybe_output_graph_expr_output));
           },
       });
 

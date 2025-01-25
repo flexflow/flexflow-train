@@ -36,8 +36,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     parallel_tensor_guid_t tensor3 = get_only(layer3_added.outputs);
 
     std::vector<parallel_layer_guid_t> result = topological_ordering(pcg);
-    // std::vector<parallel_layer_guid_t> correct = {layer1, layer2, layer3};
-    // CHECK(result == correct);
+    std::vector<parallel_layer_guid_t> correct = {layer1, layer2, layer3};
+    CHECK(result == correct);
   }
 
   TEST_CASE(
@@ -102,6 +102,82 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::vector<parallel_tensor_guid_t> correct = {input};
 
       CHECK(result == correct);
+    }
+  }
+
+  TEST_CASE(
+      "get_source_layer(ParallelComputationGraph, parallel_tensor_guid_t)") {
+    ParallelTensorShape tensor_shape = ParallelTensorShape{
+        ParallelTensorDims{
+            FFOrdered<ShardParallelDim>{
+                ShardParallelDim{10, 2},
+                ShardParallelDim{12, 1},
+            },
+            ReplicaParallelDimSet{
+                SumDegree{1},
+                DiscardCopyDegree{1},
+            },
+        },
+        DataType::FLOAT,
+    };
+
+    ParallelComputationGraph pcg = empty_parallel_computation_graph();
+
+    ParallelLayerAttrs layer_label = some<ParallelLayerAttrs>();
+    ParallelTensorAttrs tensor_label = some<ParallelTensorAttrs>();
+
+    SUBCASE("single layer") {
+      ParallelLayerAddedResult layer1_added =
+          add_parallel_layer(pcg, layer_label, {}, {tensor_label});
+      parallel_layer_guid_t layer1 = layer1_added.parallel_layer;
+      parallel_tensor_guid_t tensor1 = get_only(layer1_added.outputs);
+
+      parallel_layer_guid_t result = get_source_layer(pcg, tensor1);
+      parallel_layer_guid_t correct = layer1;
+      CHECK(result == correct);
+    }
+
+    SUBCASE("two connected layers") {
+      ParallelLayerAddedResult layer1_added =
+          add_parallel_layer(pcg, layer_label, {}, {tensor_label});
+      parallel_layer_guid_t layer1 = layer1_added.parallel_layer;
+      parallel_tensor_guid_t tensor1 = get_only(layer1_added.outputs);
+
+      ParallelLayerAddedResult layer2_added =
+          add_parallel_layer(pcg, layer_label, {tensor1}, {tensor_label});
+      parallel_layer_guid_t layer2 = layer2_added.parallel_layer;
+
+      parallel_layer_guid_t result = get_source_layer(pcg, tensor1);
+      parallel_layer_guid_t correct = layer1;
+      CHECK(result == correct);
+    }
+
+    SUBCASE("three layers in series") {
+      ParallelLayerAddedResult layer1_added =
+          add_parallel_layer(pcg, layer_label, {}, {tensor_label});
+      parallel_layer_guid_t layer1 = layer1_added.parallel_layer;
+      parallel_tensor_guid_t tensor1 = get_only(layer1_added.outputs);
+
+      ParallelLayerAddedResult layer2_added =
+          add_parallel_layer(pcg, layer_label, {tensor1}, {tensor_label});
+      parallel_layer_guid_t layer2 = layer2_added.parallel_layer;
+      parallel_tensor_guid_t tensor2 = get_only(layer2_added.outputs);
+
+      ParallelLayerAddedResult layer3_added =
+          add_parallel_layer(pcg, layer_label, {tensor2}, {tensor_label});
+      parallel_layer_guid_t layer3 = layer3_added.parallel_layer;
+
+      SUBCASE("tensor 1") {
+        parallel_layer_guid_t result = get_source_layer(pcg, tensor1);
+        parallel_layer_guid_t correct = layer1;
+        CHECK(result == correct);
+      }
+
+      SUBCASE("tensor 2") {
+        parallel_layer_guid_t result = get_source_layer(pcg, tensor2);
+        parallel_layer_guid_t correct = layer2;
+        CHECK(result == correct);
+      }
     }
   }
 
