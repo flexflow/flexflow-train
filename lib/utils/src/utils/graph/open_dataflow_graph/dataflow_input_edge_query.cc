@@ -6,14 +6,14 @@ DataflowInputEdgeQuery dataflow_input_edge_query_all() {
   return DataflowInputEdgeQuery{
       query_set<DataflowGraphInput>::matchall(),
       query_set<Node>::matchall(),
-      query_set<int>::matchall(),
+      query_set<nonnegative_int>::matchall(),
   };
 }
 DataflowInputEdgeQuery dataflow_input_edge_query_none() {
   return DataflowInputEdgeQuery{
       query_set<DataflowGraphInput>::match_none(),
       query_set<Node>::match_none(),
-      query_set<int>::match_none(),
+      query_set<nonnegative_int>::match_none(),
   };
 }
 
@@ -28,7 +28,7 @@ DataflowInputEdgeQuery
   return DataflowInputEdgeQuery{
       query_set<DataflowGraphInput>{e.src},
       query_set<Node>{e.dst.node},
-      query_set<int>{e.dst.idx},
+      query_set<nonnegative_int>{e.dst.idx},
   };
 }
 
@@ -37,7 +37,7 @@ DataflowInputEdgeQuery
   return DataflowInputEdgeQuery{
       query_set<DataflowGraphInput>{src},
       query_set<Node>::matchall(),
-      query_set<int>::matchall(),
+      query_set<nonnegative_int>::matchall(),
   };
 }
 
@@ -46,7 +46,7 @@ DataflowInputEdgeQuery
   return DataflowInputEdgeQuery{
       query_set<DataflowGraphInput>::matchall(),
       query_set<Node>{dst.node},
-      query_set<int>{dst.idx},
+      query_set<nonnegative_int>{dst.idx},
   };
 }
 

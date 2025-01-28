@@ -51,7 +51,7 @@ void calc_block_size(coord_t &num_blocks,
   num_blocks = 1;
   block_size = 1;
   for (int d = 0; d < array_shape.num_elements(); d++) {
-    if (d <= axis.value.get_value()) {
+    if (d <= axis.value.value()) {
       block_size *= array_shape.at(legion_dim_t(d));
     } else {
       num_blocks *= array_shape.at(legion_dim_t(d));

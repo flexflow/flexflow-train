@@ -1,6 +1,7 @@
 #include "substitutions/tensor_pattern/eval_list_size.h"
 #include "substitutions/tensor_pattern/get_attribute.h"
 #include "utils/overload.h"
+#include "utils/nonnegative_int/num_elements.h"
 
 namespace FlexFlow {
 
@@ -9,8 +10,8 @@ TensorAttributeValue eval_list_size(ParallelTensorAttrs const &attrs,
   TensorAttributeValue from_attr = get_attribute(attrs, acc.attribute_key);
 
   return from_attr.visit<TensorAttributeValue>(overload{
-      [](std::vector<int> const &v) -> TensorAttributeValue {
-        return TensorAttributeValue{nonnegative_int{v.size()}};
+      [](std::vector<nonnegative_int> const &v) -> TensorAttributeValue {
+        return TensorAttributeValue{num_elements(v)};
       },
       [](auto &&) -> TensorAttributeValue {
         throw mk_runtime_error("Invalid operand");

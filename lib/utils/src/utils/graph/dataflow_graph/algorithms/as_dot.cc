@@ -38,9 +38,9 @@ void as_dot(DotFile<std::string> &dot,
             std::function<std::string(Node const &)> const &get_node_label) {
   auto get_node_name = [](Node n) { return fmt::format("n{}", n.raw_uid); };
 
-  auto get_input_field = [](int idx) { return fmt::format("i{}", idx); };
+  auto get_input_field = [](nonnegative_int idx) { return fmt::format("i{}", idx); };
 
-  auto get_output_field = [](int idx) { return fmt::format("o{}", idx); };
+  auto get_output_field = [](nonnegative_int idx) { return fmt::format("o{}", idx); };
 
   for (Node const &n : get_nodes(g)) {
     std::vector<DataflowInput> n_inputs = get_dataflow_inputs(g, n);

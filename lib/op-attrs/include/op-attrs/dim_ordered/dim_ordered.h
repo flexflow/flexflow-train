@@ -172,7 +172,7 @@ struct DimOrdered<ff_dim_t, T> {
       : contents(contents.begin(), contents.end()) {}
 
   T const &at(ff_dim_t idx) const {
-    int raw = idx.value.get_value();
+    int raw = idx.value.value();
     return this->contents.at(raw);
   }
 
@@ -185,7 +185,7 @@ struct DimOrdered<ff_dim_t, T> {
   }
 
   T &at(ff_dim_t idx) {
-    int raw = idx.value.get_value();
+    int raw = idx.value.value();
     return this->contents.at(raw);
   }
 
@@ -214,7 +214,7 @@ struct DimOrdered<ff_dim_t, T> {
   }
 
   bool idx_is_valid(ff_dim_t const &idx) const {
-    int raw = idx.value.get_value();
+    int raw = idx.value.value();
     return raw < this->contents.size();
   }
 

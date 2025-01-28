@@ -79,7 +79,7 @@ static std::optional<float>
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
   auto attrs = acc.get_argument<ReverseAttrs>(ATTRS);
 
-  int axis = input_grad.shape.get_dim() - attrs.axis.value.get_value() - 1;
+  int axis = input_grad.shape.get_dim() - attrs.axis.value.value() - 1;
   coord_t in_blk_size = 1, reverse_dim_size = 1, num_out_blks = 1;
   for (int i = 0; i < input_grad.shape.get_dim(); i++) {
     if (i < axis) {

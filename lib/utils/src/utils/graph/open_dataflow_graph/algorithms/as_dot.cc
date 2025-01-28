@@ -39,9 +39,9 @@ std::string
 
   auto get_node_name = [](Node n) { return fmt::format("n{}", n.raw_uid); };
 
-  auto get_input_field = [](int idx) { return fmt::format("i{}", idx); };
+  auto get_input_field = [](nonnegative_int idx) { return fmt::format("i{}", idx); };
 
-  auto get_output_field = [](int idx) { return fmt::format("o{}", idx); };
+  auto get_output_field = [](nonnegative_int idx) { return fmt::format("o{}", idx); };
 
   auto get_graph_input_name = [](DataflowGraphInput i) {
     return fmt::format("gi{}", i.idx);

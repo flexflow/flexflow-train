@@ -32,7 +32,7 @@ tl::expected<CLIParseResult, std::string>
       {},
   };
 
-  int consumed_positional_args = 0;
+  nonnegative_int consumed_positional_args = 0_n;
   auto parse_positional_arg =
       [&](std::string const &arg) -> std::optional<std::string> {
     if (consumed_positional_args >= cli.positional_arguments.size()) {
@@ -41,7 +41,7 @@ tl::expected<CLIParseResult, std::string>
     }
 
     CLIPositionalArgumentSpec arg_spec =
-        cli.positional_arguments.at(consumed_positional_args);
+        cli.positional_arguments.at(consumed_positional_args.value());
 
     if (arg_spec.choices.has_value() &&
         !contains(arg_spec.choices.value(), arg)) {

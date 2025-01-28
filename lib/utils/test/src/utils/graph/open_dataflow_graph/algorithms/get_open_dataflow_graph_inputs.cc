@@ -13,7 +13,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     DataflowGraphInput i0 = g.add_input();
     DataflowGraphInput i1 = g.add_input();
 
-    NodeAddedResult n0_added = g.add_node({}, 1);
+    NodeAddedResult n0_added = g.add_node({}, 1_n);
 
     std::unordered_set<DataflowGraphInput> result =
         get_open_dataflow_graph_inputs(g);

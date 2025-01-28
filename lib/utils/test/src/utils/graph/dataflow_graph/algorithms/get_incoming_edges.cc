@@ -10,34 +10,34 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_incoming_edges(DataflowGraphView, Node)") {
     DataflowGraph g = DataflowGraph::create<UnorderedSetDataflowGraph>();
 
-    NodeAddedResult n1_added = g.add_node({}, 1);
+    NodeAddedResult n1_added = g.add_node({}, 1_n);
     Node n1 = n1_added.node;
     DataflowOutput o1 = get_only(n1_added.outputs);
 
-    NodeAddedResult n2_added = g.add_node({}, 1);
+    NodeAddedResult n2_added = g.add_node({}, 1_n);
     Node n2 = n2_added.node;
     DataflowOutput o2 = get_only(n2_added.outputs);
 
-    NodeAddedResult n3_added = g.add_node({o2}, 1);
+    NodeAddedResult n3_added = g.add_node({o2}, 1_n);
     Node n3 = n3_added.node;
     DataflowOutput o3 = get_only(n3_added.outputs);
 
-    NodeAddedResult n4_added = g.add_node({o2, o3}, 1);
+    NodeAddedResult n4_added = g.add_node({o2, o3}, 1_n);
     Node n4 = n4_added.node;
     DataflowOutput o4 = get_only(n4_added.outputs);
 
     SUBCASE("n4 - multiple incoming edges") {
       std::vector<DataflowEdge> result = get_incoming_edges(g, n4);
       std::vector<DataflowEdge> correct = {
-          DataflowEdge{o2, DataflowInput{n4, 0}},
-          DataflowEdge{o3, DataflowInput{n4, 1}}};
+          DataflowEdge{o2, DataflowInput{n4, 0_n}},
+          DataflowEdge{o3, DataflowInput{n4, 1_n}}};
       CHECK(result == correct);
     }
 
     SUBCASE("n3- single incoming edge") {
       std::vector<DataflowEdge> result = get_incoming_edges(g, n3);
       std::vector<DataflowEdge> correct = {
-          DataflowEdge{o2, DataflowInput{n3, 0}},
+          DataflowEdge{o2, DataflowInput{n3, 0_n}},
       };
       CHECK(result == correct);
     }

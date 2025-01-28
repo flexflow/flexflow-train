@@ -66,7 +66,7 @@ static DeviceSpecificDeviceStates
 
   SoftmaxPerDeviceState per_device_state =
       init_kernel(handle,
-                  attrs.dim.value.get_value(),
+                  attrs.dim.value.value(),
                   output_n,
                   output_c,
                   output_h,

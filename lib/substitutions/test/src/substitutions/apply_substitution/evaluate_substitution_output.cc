@@ -111,9 +111,9 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    int in_channels = 24;
-    int batch_size = 4;
-    int batch_degree = 2;
+    nonnegative_int in_channels = 24_n;
+    nonnegative_int batch_size = 4_n;
+    nonnegative_int batch_degree = 2_n;
     std::string mm_match = "mm_match";
     std::string relu_match = "relu_match";
 
@@ -122,12 +122,12 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_tensor_guid_t t = b.create_input_tensor(ParallelTensorShape{
           ParallelTensorDims{
               FFOrdered<ShardParallelDim>{
-                  ShardParallelDim{size_t_from_int(batch_size), batch_degree},
-                  ShardParallelDim{size_t_from_int(in_channels), 1},
+                  ShardParallelDim{batch_size, batch_degree},
+                  ShardParallelDim{in_channels, 1_n},
               },
               ReplicaParallelDimSet{
-                  SumDegree{1},
-                  DiscardCopyDegree{1},
+                  SumDegree{1_n},
+                  DiscardCopyDegree{1_n},
               },
           },
           DataType::FLOAT,
@@ -189,10 +189,10 @@ TEST_SUITE(FF_TEST_SUITE) {
           result_input_map = result.second.input_mapping;
 
       LinearAttrs correct_result_fused_mm_relu_attrs = LinearAttrs{
-          12,
+          /*out_channels=*/12_n,
           /*use_bias=*/false,
-          DataType::FLOAT,
-          Activation::RELU,
+          /*data_type=*/DataType::FLOAT,
+          /*activation=*/Activation::RELU,
           /*regularizer=*/std::nullopt,
       };
 
@@ -231,7 +231,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                               result_i_activation.raw_dataflow_graph_input,
                               DataflowInput{
                                   result_fused_mm_relu_node.raw_graph_node,
-                                  0,
+                                  0_n,
                               },
                           },
                       },
@@ -242,7 +242,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                               result_i_weights.raw_dataflow_graph_input,
                               DataflowInput{
                                   result_fused_mm_relu_node.raw_graph_node,
-                                  1,
+                                  1_n,
                               },
                           },
                       },

@@ -57,7 +57,7 @@ public:
     }
 
     std::vector<DataflowOutput> new_outputs =
-        transform(count(output_labels.size()), [&](int output_idx) {
+        transform(nonnegative_range(num_elements(output_labels)), [&](nonnegative_int output_idx) {
           return DataflowOutput{new_node, output_idx};
         });
 

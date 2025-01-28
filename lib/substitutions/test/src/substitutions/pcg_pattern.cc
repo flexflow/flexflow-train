@@ -15,19 +15,19 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("find_pattern_matches(PCGPattern, SubParallelComputationGraph)") {
     ParallelComputationGraphBuilder builder;
 
-    size_t batch_size = 16;
-    int batch_degree = 2;
-    size_t num_channels = 24;
+    nonnegative_int batch_size = 16_n;
+    nonnegative_int batch_degree = 2_n;
+    nonnegative_int num_channels = 24_n;
 
     ParallelTensorShape a_shape = ParallelTensorShape{
         ParallelTensorDims{
             FFOrdered<ShardParallelDim>{
                 ShardParallelDim{batch_size, batch_degree},
-                ShardParallelDim{num_channels, 1},
+                ShardParallelDim{num_channels, 1_n},
             },
             ReplicaParallelDimSet{
-                SumDegree{1},
-                DiscardCopyDegree{1},
+                SumDegree{1_n},
+                DiscardCopyDegree{1_n},
             },
         },
         DataType::FLOAT,

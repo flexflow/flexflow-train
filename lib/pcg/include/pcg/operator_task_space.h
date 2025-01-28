@@ -16,8 +16,8 @@ std::unordered_set<TaskSpaceCoordinate>
 TaskSpaceCoordinate
     get_task_space_maximum_coordinate(OperatorTaskSpace const &task);
 
-size_t num_dims(OperatorTaskSpace const &task);
-size_t num_tasks(OperatorTaskSpace const &task);
+nonnegative_int num_dims(OperatorTaskSpace const &task);
+nonnegative_int num_tasks(OperatorTaskSpace const &task);
 
 OperatorTaskSpace get_operator_task_space(ParallelComputationGraph const &pcg,
                                           parallel_layer_guid_t const &layer);

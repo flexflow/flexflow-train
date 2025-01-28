@@ -54,16 +54,16 @@ TEST_SUITE(FF_TEST_SUITE) {
           }};
 
       return get_only(b.add_output_graph_node(
-          node_expr, {o_input, o_weight}, nonnegative_int{1}));
+          node_expr, {o_input, o_weight}, 1_n));
     }();
 
     b.equate_outputs(p_relu_output, o_fused_output);
 
     Substitution sub = b.get_substitution();
 
-    int in_channels = 24;
-    int batch_size = 4;
-    int batch_degree = 2;
+    nonnegative_int in_channels = 24_n;
+    nonnegative_int batch_size = 4_n;
+    nonnegative_int batch_degree = 2_n;
     std::string mm_match = "mm_match";
     std::string relu_match = "relu_match";
 
@@ -72,12 +72,12 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_tensor_guid_t t = b.create_input_tensor(ParallelTensorShape{
           ParallelTensorDims{
               FFOrdered<ShardParallelDim>{
-                  ShardParallelDim{size_t_from_int(batch_size), batch_degree},
-                  ShardParallelDim{size_t_from_int(in_channels), 1},
+                  ShardParallelDim{batch_size, batch_degree},
+                  ShardParallelDim{in_channels, 1_n},
               },
               ReplicaParallelDimSet{
-                  SumDegree{1},
-                  DiscardCopyDegree{1},
+                  SumDegree{1_n},
+                  DiscardCopyDegree{1_n},
               },
           },
           DataType::FLOAT,
@@ -137,12 +137,12 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_tensor_guid_t t = b.create_input_tensor(ParallelTensorShape{
           ParallelTensorDims{
               FFOrdered<ShardParallelDim>{
-                  ShardParallelDim{size_t_from_int(batch_size), batch_degree},
-                  ShardParallelDim{size_t_from_int(in_channels), 1},
+                  ShardParallelDim{batch_size, batch_degree},
+                  ShardParallelDim{in_channels, 1_n},
               },
               ReplicaParallelDimSet{
-                  SumDegree{1},
-                  DiscardCopyDegree{1},
+                  SumDegree{1_n},
+                  DiscardCopyDegree{1_n},
               },
           },
           DataType::FLOAT,

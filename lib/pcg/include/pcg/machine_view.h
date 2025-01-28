@@ -5,7 +5,7 @@
 #include "machine_view.dtg.h"
 #include "pcg/device_id_t.dtg.h"
 #include "pcg/operator_task_space.dtg.h"
-#include "task_space_coordinate.dtg.h"
+#include "pcg/task_space_coordinate.dtg.h"
 #include <cstddef>
 #include <optional>
 #include <unordered_set>

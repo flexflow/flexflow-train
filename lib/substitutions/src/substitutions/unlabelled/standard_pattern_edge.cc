@@ -10,11 +10,11 @@ PatternNode get_dst_node(StandardPatternEdge const &e) {
   return PatternNode{e.raw_edge.dst.node};
 }
 
-int get_src_idx(StandardPatternEdge const &e) {
+nonnegative_int get_src_idx(StandardPatternEdge const &e) {
   return e.raw_edge.src.idx;
 }
 
-int get_dst_idx(StandardPatternEdge const &e) {
+nonnegative_int get_dst_idx(StandardPatternEdge const &e) {
   return e.raw_edge.dst.idx;
 }
 

@@ -18,6 +18,7 @@ includes = [
   "<unordered_map>",
   "pcg/file_format/v1/graphs/v1_dataflow_graph.dtg.h",
   "pcg/file_format/v1/graphs/v1_graph_output.dtg.h",
+  "utils/nonnegative_int/nonnegative_int.h",
 ]
 
 src_includes = [
@@ -29,11 +30,11 @@ src_includes = [
 
 [[fields]]
 name = "node_labels"
-type = "std::unordered_map<int, NodeLabel>"
+type = "std::unordered_map<::FlexFlow::nonnegative_int, NodeLabel>"
 
 [[fields]]
 name = "output_labels"
-type = "std::unordered_map<int, std::vector<OutputLabel>>"
+type = "std::unordered_map<::FlexFlow::nonnegative_int, std::vector<OutputLabel>>"
 
 [[fields]]
 name = "graph"

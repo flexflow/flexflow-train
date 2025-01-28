@@ -9,18 +9,22 @@ features = [
   "fmt",
 ]
 
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
 [[fields]]
 name = "srcNode"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "srcIdx"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "dstNode"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "dstIdx"
-type = "int"
+type = "::FlexFlow::nonnegative_int"

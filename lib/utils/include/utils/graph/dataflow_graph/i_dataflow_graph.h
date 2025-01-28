@@ -9,7 +9,7 @@ namespace FlexFlow {
 
 struct IDataflowGraph : virtual public IDataflowGraphView {
   virtual NodeAddedResult add_node(std::vector<DataflowOutput> const &inputs,
-                                   int num_outputs) = 0;
+                                   nonnegative_int num_outputs) = 0;
 
   virtual void add_node_unsafe(Node const &node,
                                std::vector<DataflowOutput> const &inputs,

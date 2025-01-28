@@ -10,6 +10,7 @@
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_inputs.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_open_dataflow_graph_inputs.h"
+#include "substitutions/unlabelled/find_pattern_matches.h"
 
 namespace FlexFlow {
 

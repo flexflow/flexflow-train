@@ -17,12 +17,12 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     DataflowGraphInput i0 = g.add_input();
 
-    NodeAddedResult n0_added = g.add_node({OpenDataflowValue{i0}}, 1);
+    NodeAddedResult n0_added = g.add_node({OpenDataflowValue{i0}}, 1_n);
     Node n0 = n0_added.node;
     DataflowOutput n0_output = get_only(n0_added.outputs);
 
     NodeAddedResult n1_added =
-        g.add_node({OpenDataflowValue{i0}, OpenDataflowValue{n0_output}}, 1);
+        g.add_node({OpenDataflowValue{i0}, OpenDataflowValue{n0_output}}, 1_n);
     Node n1 = n1_added.node;
     DataflowOutput n1_output = get_only(n1_added.outputs);
 
@@ -45,7 +45,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                     i0,
                     DataflowInput{
                         new_node0,
-                        0,
+                        0_n,
                     },
                 },
             },
@@ -54,7 +54,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                     i0,
                     DataflowInput{
                         new_node1,
-                        0,
+                        0_n,
                     },
                 },
             },
@@ -62,11 +62,11 @@ TEST_SUITE(FF_TEST_SUITE) {
                 DataflowEdge{
                     DataflowOutput{
                         new_node0,
-                        0,
+                        0_n,
                     },
                     DataflowInput{
                         new_node1,
-                        1,
+                        1_n,
                     },
                 },
             },
@@ -75,11 +75,11 @@ TEST_SUITE(FF_TEST_SUITE) {
         {
             DataflowOutput{
                 new_node0,
-                0,
+                0_n,
             },
             DataflowOutput{
                 new_node1,
-                0,
+                0_n,
             },
         },
     };
@@ -109,9 +109,9 @@ TEST_SUITE(FF_TEST_SUITE) {
       SUBCASE("check access to old edges") {
         OpenDataflowEdgeQuery query = OpenDataflowEdgeQuery{
             dataflow_input_edge_query_for_edge(
-                DataflowInputEdge{i0, DataflowInput{n0, 0}}),
+                DataflowInputEdge{i0, DataflowInput{n0, 0_n}}),
             dataflow_edge_query_for_edge(
-                DataflowEdge{n0_output, DataflowInput{n1, 1}}),
+                DataflowEdge{n0_output, DataflowInput{n1, 1_n}}),
         };
         std::unordered_set<OpenDataflowEdge> result_nodes =
             result.query_edges(query);
@@ -121,12 +121,12 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("check access to new edges") {
         DataflowEdge new_standard_edge = DataflowEdge{
-            DataflowOutput{new_node0, 0},
-            DataflowInput{new_node1, 1},
+            DataflowOutput{new_node0, 0_n},
+            DataflowInput{new_node1, 1_n},
         };
         DataflowInputEdge new_input_edge = DataflowInputEdge{
             i0,
-            DataflowInput{new_node0, 0},
+            DataflowInput{new_node0, 0_n},
         };
         OpenDataflowEdgeQuery query = OpenDataflowEdgeQuery{
             dataflow_input_edge_query_for_edge(new_input_edge),
@@ -159,7 +159,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SUBCASE("check access to new outputs") {
-        DataflowOutput new_output = DataflowOutput{new_node0, 0};
+        DataflowOutput new_output = DataflowOutput{new_node0, 0_n};
 
         DataflowOutputQuery query =
             dataflow_output_query_for_output(new_output);

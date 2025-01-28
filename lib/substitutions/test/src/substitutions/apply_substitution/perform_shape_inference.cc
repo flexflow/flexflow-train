@@ -18,21 +18,21 @@ TEST_SUITE(FF_TEST_SUITE) {
             UnorderedSetLabelledOpenDataflowGraph<ParallelLayerAttrs,
                                                   std::monostate>>();
 
-    int in_channels = 24;
-    int out_channels = 16;
-    int batch_size = 4;
-    int batch_degree = 2;
+    nonnegative_int in_channels = 24_n;
+    nonnegative_int out_channels = 16_n;
+    nonnegative_int batch_size = 4_n;
+    nonnegative_int batch_degree = 2_n;
 
     DataflowGraphInput i0 = g.add_input({});
     ParallelTensorShape i0_shape = ParallelTensorShape{
         ParallelTensorDims{
             FFOrdered<ShardParallelDim>{
-                ShardParallelDim{size_t_from_int(batch_size), batch_degree},
-                ShardParallelDim{size_t_from_int(in_channels), 1},
+                ShardParallelDim{batch_size, batch_degree},
+                ShardParallelDim{in_channels, 1_n},
             },
             ReplicaParallelDimSet{
-                SumDegree{1},
-                DiscardCopyDegree{1},
+                SumDegree{1_n},
+                DiscardCopyDegree{1_n},
             },
         },
         DataType::FLOAT,
@@ -40,28 +40,28 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     bool use_bias = false;
     LinearAttrs n1_op_attrs = LinearAttrs{
-        out_channels,
-        use_bias,
-        DataType::FLOAT,
-        std::nullopt,
-        std::nullopt,
+        /*out_channels=*/out_channels,
+        /*use_bias=*/use_bias,
+        /*data_type=*/DataType::FLOAT,
+        /*activation=*/std::nullopt,
+        /*regularizer=*/std::nullopt,
     };
     ParallelLayerAttrs n1_attrs = ParallelLayerAttrs{
-        PCGOperatorAttrs{
+        /*op_attrs=*/PCGOperatorAttrs{
             n1_op_attrs,
         },
-        std::nullopt,
+        /*name=*/std::nullopt,
     };
 
     ElementUnaryAttrs n2_op_attrs = ElementUnaryAttrs{
-        OperatorType::RELU,
-        std::nullopt,
+        /*op_type=*/OperatorType::RELU,
+        /*scalar=*/std::nullopt,
     };
     ParallelLayerAttrs n2_attrs = ParallelLayerAttrs{
-        PCGOperatorAttrs{
+        /*op_attrs=*/PCGOperatorAttrs{
             n2_op_attrs,
         },
-        std::nullopt,
+        /*name=*/std::nullopt,
     };
 
     ParallelTensorShape n1_output_shape =
@@ -131,22 +131,22 @@ TEST_SUITE(FF_TEST_SUITE) {
                 OpenDataflowEdge{
                     DataflowInputEdge{
                         i0,
-                        DataflowInput{n1, 0},
+                        DataflowInput{n1, 0_n},
                     },
                 },
                 OpenDataflowEdge{DataflowEdge{
-                    DataflowOutput{n1_weight_node, 0},
-                    DataflowInput{n1_weight_replicate_node, 0},
+                    DataflowOutput{n1_weight_node, 0_n},
+                    DataflowInput{n1_weight_replicate_node, 0_n},
                 }},
                 OpenDataflowEdge{
                     DataflowEdge{
-                        DataflowOutput{n1_weight_replicate_node, 0},
-                        DataflowInput{n1, 1},
+                        DataflowOutput{n1_weight_replicate_node, 0_n},
+                        DataflowInput{n1, 1_n},
                     },
                 },
                 OpenDataflowEdge{DataflowEdge{
-                    DataflowOutput{n1, 0},
-                    DataflowInput{n2, 0},
+                    DataflowOutput{n1, 0_n},
+                    DataflowInput{n2, 0_n},
                 }},
             },
             {i0},
@@ -155,19 +155,19 @@ TEST_SUITE(FF_TEST_SUITE) {
                  i0_shape,
              },
              {
-                 OpenDataflowValue{DataflowOutput{n1_weight_node, 0}},
+                 OpenDataflowValue{DataflowOutput{n1_weight_node, 0_n}},
                  lift_to_parallel(get_reduced_shape(n1_weight_shape)),
              },
              {
-                 OpenDataflowValue{DataflowOutput{n1_weight_replicate_node, 0}},
+                 OpenDataflowValue{DataflowOutput{n1_weight_replicate_node, 0_n}},
                  n1_weight_shape,
              },
              {
-                 OpenDataflowValue{DataflowOutput{n1, 0}},
+                 OpenDataflowValue{DataflowOutput{n1, 0_n}},
                  n1_output_shape,
              },
              {
-                 OpenDataflowValue{DataflowOutput{n2, 0}},
+                 OpenDataflowValue{DataflowOutput{n2, 0_n}},
                  n2_output_shape,
              }}};
 

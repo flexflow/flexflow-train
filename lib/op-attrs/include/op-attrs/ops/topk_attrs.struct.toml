@@ -9,9 +9,13 @@ features = [
   "fmt",
 ]
 
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
 [[fields]]
 name = "k"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "sorted"

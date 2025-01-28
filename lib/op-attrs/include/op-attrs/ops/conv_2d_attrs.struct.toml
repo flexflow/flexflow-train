@@ -12,6 +12,7 @@ features = [
 includes = [
   "<optional>",
   "op-attrs/activation.dtg.h",
+  "utils/nonnegative_int/nonnegative_int.h",
 ]
 
 src_includes = [
@@ -21,14 +22,14 @@ src_includes = [
 ]
 
 fields = [
-  { name = "out_channels", type = "int" },
-  { name = "kernel_h", type = "int" },
-  { name = "kernel_w", type = "int" },
-  { name = "stride_h", type = "int" },
-  { name = "stride_w", type = "int" },
-  { name = "padding_h", type = "int" },
-  { name = "padding_w", type = "int" },
-  { name = "groups", type = "int" },
+  { name = "out_channels", type = "::FlexFlow::nonnegative_int" },
+  { name = "kernel_h", type = "::FlexFlow::nonnegative_int" },
+  { name = "kernel_w", type = "::FlexFlow::nonnegative_int" },
+  { name = "stride_h", type = "::FlexFlow::nonnegative_int" },
+  { name = "stride_w", type = "::FlexFlow::nonnegative_int" },
+  { name = "padding_h", type = "::FlexFlow::nonnegative_int" },
+  { name = "padding_w", type = "::FlexFlow::nonnegative_int" },
+  { name = "groups", type = "::FlexFlow::nonnegative_int" },
   { name = "activation", type = "std::optional<::FlexFlow::Activation>" },
   { name = "use_bias", type = "bool" },
 ]

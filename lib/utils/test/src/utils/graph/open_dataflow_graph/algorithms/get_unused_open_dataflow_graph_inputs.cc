@@ -13,7 +13,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       DataflowGraphInput g_i2 = g.add_input();
       DataflowGraphInput g_i3 = g.add_input();
 
-      NodeAddedResult g_n1_added = g.add_node({OpenDataflowValue{g_i2}}, 1);
+      NodeAddedResult g_n1_added = g.add_node({OpenDataflowValue{g_i2}}, 1_n);
 
       std::unordered_set<DataflowGraphInput> result =
           get_unused_open_dataflow_graph_inputs(g);
@@ -28,7 +28,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       DataflowGraphInput g_i2 = g.add_input();
 
       NodeAddedResult g_n1_added =
-          g.add_node({OpenDataflowValue{g_i1}, OpenDataflowValue{g_i2}}, 1);
+          g.add_node({OpenDataflowValue{g_i1}, OpenDataflowValue{g_i2}}, 1_n);
 
       std::unordered_set<DataflowGraphInput> result =
           get_unused_open_dataflow_graph_inputs(g);

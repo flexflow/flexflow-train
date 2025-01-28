@@ -10,7 +10,8 @@ features = [
 ]
 
 includes = [
-  "substitutions/operator_pattern/operator_attribute_key.dtg.h"
+  "substitutions/operator_pattern/operator_attribute_key.dtg.h",
+  "utils/nonnegative_int/nonnegative_int.h",
 ]
 
 [[fields]]
@@ -19,4 +20,4 @@ type = "::FlexFlow::OperatorAttributeKey"
 
 [[fields]]
 name = "index"
-type = "int"
+type = "::FlexFlow::nonnegative_int"

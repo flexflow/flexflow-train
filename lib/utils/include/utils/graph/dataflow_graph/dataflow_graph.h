@@ -4,13 +4,14 @@
 #include "utils/graph/dataflow_graph/dataflow_graph_view.h"
 #include "utils/graph/dataflow_graph/i_dataflow_graph.h"
 #include "utils/graph/dataflow_graph/node_added_result.dtg.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 
 namespace FlexFlow {
 
 struct DataflowGraph : virtual public DataflowGraphView {
 public:
   NodeAddedResult add_node(std::vector<DataflowOutput> const &inputs,
-                           int num_outputs);
+                           nonnegative_int num_outputs);
 
   void add_node_unsafe(Node const &node,
                        std::vector<DataflowOutput> const &inputs,

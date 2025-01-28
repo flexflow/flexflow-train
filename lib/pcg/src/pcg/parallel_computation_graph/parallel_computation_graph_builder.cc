@@ -107,8 +107,8 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::batch_matmul(
     std::optional<std::string> const &maybe_name) {
 
   BatchMatmulAttrs attrs = BatchMatmulAttrs{
-      /*a_seq_length_dim=*/-1,
-      /*b_seq_length_dim=*/-1,
+      /*a_seq_length_dim=*/std::nullopt,
+      /*b_seq_length_dim=*/std::nullopt,
   };
 
   std::string name =
@@ -154,16 +154,18 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::conv2d(
     std::optional<InitializerAttrs> const &bias_initializer,
     std::optional<RegularizerAttrs> const &kernel_regularizer,
     std::optional<std::string> const &maybe_name) {
-  Conv2DAttrs attrs = Conv2DAttrs{outChannels,
-                                  kernelH,
-                                  kernelW,
-                                  strideH,
-                                  strideW,
-                                  paddingH,
-                                  paddingW,
-                                  groups,
-                                  activation,
-                                  use_bias};
+  Conv2DAttrs attrs = Conv2DAttrs{
+    /*out_channels=*/nonnegative_int{outChannels},
+    /*kernel_h=*/nonnegative_int{kernelH},
+    /*kernel_w=*/nonnegative_int{kernelW},
+    /*stride_h=*/nonnegative_int{strideH},
+    /*stride_w=*/nonnegative_int{strideW},
+    /*padding_h=*/nonnegative_int{paddingH},
+    /*padding_w=*/nonnegative_int{paddingW},
+    /*groups=*/nonnegative_int{groups},
+    /*activation=*/activation,
+    /*use_bias=*/use_bias,
+  };
 
   std::string name =
       maybe_name.value_or(get_default_name(PCGOperatorAttrs{attrs}));
@@ -199,11 +201,11 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::dense(
     std::optional<InitializerAttrs> const &bias_initializer,
     std::optional<std::string> const &maybe_name) {
   LinearAttrs attrs = LinearAttrs{
-      outDim,
-      use_bias,
-      data_type,
-      activation,
-      std::nullopt,
+      /*out_channels=*/nonnegative_int{outDim},
+      /*use_bias=*/use_bias,
+      /*data_type=*/data_type,
+      /*activation=*/activation,
+      /*regularizer=*/std::nullopt,
   };
 
   std::string name =
@@ -246,10 +248,10 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::embedding(
     std::optional<std::string> const &maybe_name) {
 
   EmbeddingAttrs attrs = EmbeddingAttrs{
-      num_entries,
-      outDim,
-      aggr,
-      dtype,
+      /*num_entries=*/nonnegative_int{num_entries},
+      /*out_channels=*/nonnegative_int{outDim},
+      /*aggr=*/aggr,
+      /*data_type=*/dtype,
   };
 
   std::string name =
@@ -290,10 +292,10 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::multihead_attention(
   int vdim = maybe_vdim.value_or(embed_dim);
 
   MultiHeadAttentionAttrs attrs = MultiHeadAttentionAttrs{
-      /*embed_dim=*/embed_dim,
-      /*num_heads=*/num_heads,
-      /*kdim=*/kdim,
-      /*vdim=*/vdim,
+      /*embed_dim=*/nonnegative_int{embed_dim},
+      /*num_heads=*/nonnegative_int{num_heads},
+      /*kdim=*/nonnegative_int{kdim},
+      /*vdim=*/nonnegative_int{vdim},
       /*dropout=*/dropout,
       /*bias=*/bias,
       /*add_bias_kv=*/add_bias_kv,
@@ -493,7 +495,10 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::parallel_partition(
     int degree,
     std::optional<std::string> const &maybe_name) {
 
-  RepartitionAttrs attrs = RepartitionAttrs{dim, degree};
+  RepartitionAttrs attrs = RepartitionAttrs{
+    /*repartition_dim=*/dim, 
+    /*repartition_degree=*/nonnegative_int{degree},
+  };
 
   std::string name =
       maybe_name.value_or(get_default_name(PCGOperatorAttrs{attrs}));
@@ -512,7 +517,10 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::parallel_combine(
     int degree,
     std::optional<std::string> const &maybe_name) {
 
-  CombineAttrs attrs = CombineAttrs{dim, degree};
+  CombineAttrs attrs = CombineAttrs{
+    /*combine_dim=*/dim, 
+    /*combine_degree=*/nonnegative_int{degree},
+  };
 
   std::string name =
       maybe_name.value_or(get_default_name(PCGOperatorAttrs{attrs}));
@@ -530,7 +538,7 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::parallel_replicate(
     int degree,
     std::optional<std::string> const &maybe_name) {
 
-  ReplicateAttrs attrs = ReplicateAttrs{degree};
+  ReplicateAttrs attrs = ReplicateAttrs{nonnegative_int{degree}};
 
   std::string name =
       maybe_name.value_or(get_default_name(PCGOperatorAttrs{attrs}));
@@ -548,7 +556,7 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::parallel_reduce(
     int degree,
     std::optional<std::string> const &maybe_name) {
 
-  ReductionAttrs attrs = ReductionAttrs{degree};
+  ReductionAttrs attrs = ReductionAttrs{nonnegative_int{degree}};
 
   std::string name =
       maybe_name.value_or(get_default_name(PCGOperatorAttrs{attrs}));
@@ -661,7 +669,7 @@ std::vector<parallel_tensor_guid_t> ParallelComputationGraphBuilder::add_layer(
 
   std::vector<DataflowOutput> raw_weight_tensors;
   for (auto const &kv : enumerate_vector(weights)) {
-    int weight_idx = kv.first;
+    nonnegative_int weight_idx = kv.first;
     ParallelTensorAttrs weight_tensor_attrs = kv.second;
 
     std::optional<std::string> weight_name =
