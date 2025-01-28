@@ -71,6 +71,10 @@ bool operator>=(int const &lhs, nonnegative_int const &rhs) {
   return lhs >= rhs.value_;
 }
 
+nonnegative_int nonnegative_int::operator+(nonnegative_int const &other) const {
+  return nonnegative_int{this->value_ + other.value_};
+}
+
 std::ostream &operator<<(std::ostream &os, nonnegative_int const &n) {
   os << n.value_;
   return os;

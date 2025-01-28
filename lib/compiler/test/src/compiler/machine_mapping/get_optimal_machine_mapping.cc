@@ -1,5 +1,5 @@
 #include "compiler/machine_mapping/get_optimal_machine_mapping.h"
-#include "./cost_estimator_for_test.h"
+#include "../cost_estimator_for_test.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.h"
 #include "compiler/machine_mapping/machine_mapping_cache.h"
 #include "compiler/machine_mapping/machine_mapping_constraints.h"
@@ -9,6 +9,7 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include "utils/containers/get_only.h"
 #include "utils/full_binary_tree/binary_tree_path.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include <doctest/doctest.h>
 
 using namespace FlexFlow;
@@ -146,13 +147,21 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     auto map1 = std::unordered_map<OpCostEstimateKey, OpCostMetrics>{{
         {map_unmapped_op_cost_estimate_key(k1, mv1),
-         OpCostMetrics{/*runtime=*/1.0, /*memory=*/0}},
+         OpCostMetrics{/*forward_runtime=*/0.5,
+                       /*backward_runtime=*/0.5,
+                       /*memory=*/nonnegative_int{0}}},
         {map_unmapped_op_cost_estimate_key(k2, mv1),
-         OpCostMetrics{/*runtime=*/2.0, /*memory=*/0}},
+         OpCostMetrics{/*forward_runtime=*/1.0,
+                       /*backward_runtime=*/1.0,
+                       /*memory=*/nonnegative_int{0}}},
         {map_unmapped_op_cost_estimate_key(k1, mv2),
-         OpCostMetrics{/*runtime=*/1.5, /*memory=*/0}},
+         OpCostMetrics{/*forward_runtime=*/0.75,
+                       /*backward_runtime=*/0.75,
+                       /*memory=*/nonnegative_int{0}}},
         {map_unmapped_op_cost_estimate_key(k2, mv2),
-         OpCostMetrics{/*runtime=*/2.5, /*memory=*/0}},
+         OpCostMetrics{/*forward_runtime=*/1.25,
+                       /*backward_runtime=*/1.25,
+                       /*memory=*/nonnegative_int{0}}},
     }};
 
     CostEstimator cost_estimator = make_fake_cost_estimator(

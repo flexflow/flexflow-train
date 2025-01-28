@@ -1,0 +1,26 @@
+namespace = "FlexFlow"
+name = "InProgressTask"
+
+features = [
+  "eq",
+  "hash",
+  "fmt",
+  "ord"
+]
+
+includes = [
+  "utils/graph/node/node.dtg.h"
+]
+
+
+[[fields]]
+name = "start_time"
+type = "float"
+
+[[fields]]
+name = "end_time"
+type = "float"
+
+[[fields]]
+name = "node"
+type = "::FlexFlow::Node"

@@ -2,6 +2,8 @@
 #define _FLEXFLOW_PCG_INCLUDE_OPERATOR_TASK_SPACE_H
 
 #include "pcg/operator_task_space.dtg.h"
+#include "pcg/parallel_computation_graph/parallel_computation_graph.dtg.h"
+#include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 #include "pcg/task_space_coordinate.dtg.h"
 #include <cstddef>
 #include <unordered_set>
@@ -16,6 +18,9 @@ TaskSpaceCoordinate
 
 size_t num_dims(OperatorTaskSpace const &task);
 size_t num_tasks(OperatorTaskSpace const &task);
+
+OperatorTaskSpace get_operator_task_space(ParallelComputationGraph const &pcg,
+                                          parallel_layer_guid_t const &layer);
 
 } // namespace FlexFlow
 

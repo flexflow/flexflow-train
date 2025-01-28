@@ -1,4 +1,4 @@
-# flexflow-train
+# FlexFlow Train
 [![clang-format Check](https://github.com/flexflow/flexflow-train/actions/workflows/clang-format-check.yml/badge.svg?branch=master)](https://github.com/flexflow/flexflow-train/actions/workflows/clang-format-check.yml)
 [![per-lib-checks](https://github.com/flexflow/flexflow-train/actions/workflows/per-lib-check.yml/badge.svg)](https://github.com/flexflow/flexflow-train/actions/workflows/per-lib-check.yml)
 [![shell-check](https://github.com/flexflow/flexflow-train/actions/workflows/shell-check.yml/badge.svg)](https://github.com/flexflow/flexflow-train/actions/workflows/shell-check.yml)
@@ -9,7 +9,7 @@
 > You are currently viewing [flexflow-train](https://github.com/flexflow/flexflow-train). 
 > For anything inference/serving-related, go to [flexflow-serve](https://github.com/flexflow/flexflow-serve). 
 
-FlexFlow is a deep learning framework that accelerates distributed DNN training by automatically searching for efficient parallelization strategies. 
+FlexFlow Train is a deep learning framework that accelerates distributed DNN training by automatically searching for efficient parallelization strategies. 
 
 <!--
 FlexFlow provides a drop-in replacement for PyTorch and TensorFlow Keras. Running existing PyTorch and Keras programs in FlexFlow only requires [a few lines of changes to the program](https://flexflow.ai/keras).
@@ -86,9 +86,12 @@ For performance tuning related flags: see [performance autotuning](https://flexf
 
 Please let us know if you encounter any bugs or have any suggestions by [submitting an issue](https://github.com/flexflow/flexflow-train/issues).
 
-We welcome all contributions to FlexFlow from bug fixes to new features and extensions.
+For instructions on how to contribute code to FlexFlow Train, see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+We welcome all contributions to FlexFlow Train from bug fixes to new features and extensions.
 
 ## Citations
+
 * Colin Unger, Zhihao Jia, Wei Wu, Sina Lin, Mandeep Baines, Carlos Efrain Quintero Narvaez, Vinay Ramakrishnaiah, Nirmal Prajapati, Pat McCormick, Jamaludin Mohd-Yusof, Xi Luo, Dheevatsa Mudigere, Jongsoo Park, Misha Smelyanskiy, and Alex Aiken. [Unity: Accelerating DNN Training Through Joint Optimization of Algebraic Transformations and Parallelization](https://www.usenix.org/conference/osdi22/presentation/unger). In Proceedings of the Symposium on Operating Systems Design and Implementation (OSDI), July 2022. 
 
 * Zhihao Jia, Matei Zaharia, and Alex Aiken. [Beyond Data and Model Parallelism for Deep Neural Networks](https://cs.stanford.edu/~zhihao/papers/sysml19a.pdf). In Proceedings of the 2nd Conference on Machine Learning and Systems (MLSys), April 2019.
@@ -96,7 +99,7 @@ We welcome all contributions to FlexFlow from bug fixes to new features and exte
 * Zhihao Jia, Sina Lin, Charles R. Qi, and Alex Aiken. [Exploring Hidden Dimensions in Parallelizing Convolutional Neural Networks](http://proceedings.mlr.press/v80/jia18a/jia18a.pdf). In Proceedings of the International Conference on Machine Learning (ICML), July 2018.
 
 ## The Team
-FlexFlow is developed and maintained by teams at CMU, Facebook, Los Alamos National Lab, MIT, and Stanford (alphabetically).
+FlexFlow Train is developed and maintained by teams at CMU, Facebook, Los Alamos National Lab, MIT, Stanford, and UCSD (alphabetically).
 
 ## License
-FlexFlow uses Apache License 2.0.
+FlexFlow Train uses Apache License 2.0.

@@ -38,6 +38,8 @@ public:
   friend bool operator!=(int const &lhs, nonnegative_int const &rhs);
   friend bool operator>=(int const &lhs, nonnegative_int const &rhs);
 
+  nonnegative_int operator+(nonnegative_int const &other) const;
+
   friend std::ostream &operator<<(std::ostream &os, nonnegative_int const &n);
 
   friend int format_as(nonnegative_int const &);

@@ -1,5 +1,6 @@
 #include "pcg/machine_specification.h"
 #include "pcg/device_id.h"
+#include "utils/containers/transform.h"
 #include "utils/exception.h"
 namespace FlexFlow {
 
