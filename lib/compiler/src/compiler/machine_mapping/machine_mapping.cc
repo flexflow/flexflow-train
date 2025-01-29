@@ -4,7 +4,8 @@
 #include "utils/containers/keys.h"
 #include "utils/containers/map_keys.h"
 #include "utils/containers/merge_maps.h"
-#include "utils/graph/series_parallel/binary_sp_decomposition_tree/binary_sp_decomposition_tree.h"
+#include "utils/containers/transform.h"
+#include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/get_subtree_at_path.h"
 
 namespace FlexFlow {
 
@@ -17,40 +18,39 @@ bool nodes_are_disjoint(MachineMapping const &m1, MachineMapping const &m2) {
   return are_disjoint(keys(m1.machine_views), keys(m2.machine_views));
 }
 
-MachineMapping get_machine_mapping_from_machine_mapping_result(
+parallel_layer_guid_t
+    get_layer_from_path(PCGBinarySPDecomposition const &sp_decomposition,
+                        BinaryTreePath const &path) {
+  std::optional<PCGBinarySPDecomposition> subtree_optional =
+      get_subtree_at_path(
+          sp_decomposition, generic_impl_for_pcg_sp_tree(), path);
+
+  if (!subtree_optional.has_value()) {
+    throw std::runtime_error(fmt::format("Invalid tree path {}", path));
+  }
+
+  PCGBinarySPDecomposition subtree = subtree_optional.value();
+  if (!subtree.is_leaf()) {
+    throw std::runtime_error(
+        fmt::format("Invalid tree path to a leaf: found {} instead", subtree));
+  }
+  return subtree.require_leaf();
+}
+
+std::optional<MachineMapping> get_machine_mapping_from_machine_mapping_result(
     PCGBinarySPDecomposition const &sp_decomposition,
     MachineMappingResult const &mm_result) {
 
-  BinarySPDecompositionTree sp_tree =
-      binary_sp_tree_from_pcg_sp_tree(sp_decomposition);
-
-  auto get_layer_from_path =
-      [&](BinaryTreePath const &path) -> parallel_layer_guid_t {
-    std::optional<BinarySPDecompositionTree> subtree_optional =
-        binary_sp_decomposition_tree_get_subtree_at_path(sp_tree, path);
-    if (!subtree_optional.has_value()) {
-      throw std::runtime_error(fmt::format("Invalid tree path {}", path));
-    }
-    BinarySPDecompositionTree subtree = subtree_optional.value();
-    if (!subtree.is_node()) {
-      throw std::runtime_error(fmt::format(
-          "Invalid tree path to a leaf: found {} instead", subtree));
-    }
-    return parallel_layer_guid_t{
-        subtree.require_node(),
-    };
-  };
-
-  std::unordered_map<parallel_layer_guid_t, MachineView> mm;
-
-  if (mm_result.raw_result) {
-    FeasibleMachineMappingResult const &feasible_mm_result =
-        mm_result.raw_result.value();
-    mm = map_keys(feasible_mm_result.machine_mapping.raw_mapping,
-                  get_layer_from_path);
-  }
-
-  return MachineMapping{mm};
+  return transform(
+      mm_result.raw_result,
+      [&](FeasibleMachineMappingResult const &feasible_mm_result) {
+        return MachineMapping{
+            map_keys(feasible_mm_result.machine_mapping.raw_mapping,
+                     [&](BinaryTreePath const &path) {
+                       return get_layer_from_path(sp_decomposition, path);
+                     }),
+        };
+      });
 }
 
 } // namespace FlexFlow

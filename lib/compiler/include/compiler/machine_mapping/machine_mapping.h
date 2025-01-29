@@ -12,7 +12,11 @@ MachineMapping combine_disjoint_mappings(MachineMapping const &,
 
 bool nodes_are_disjoint(MachineMapping const &m1, MachineMapping const &m2);
 
-MachineMapping get_machine_mapping_from_machine_mapping_result(
+parallel_layer_guid_t
+    get_layer_from_path(PCGBinarySPDecomposition const &sp_decomposition,
+                        BinaryTreePath const &path);
+
+std::optional<MachineMapping> get_machine_mapping_from_machine_mapping_result(
     PCGBinarySPDecomposition const &, MachineMappingResult const &);
 
 } // namespace FlexFlow

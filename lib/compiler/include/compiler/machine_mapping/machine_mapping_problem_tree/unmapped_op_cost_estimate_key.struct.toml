@@ -11,6 +11,7 @@ includes = [
   "op-attrs/parallel_tensor_shape.dtg.h",
   "<vector>",
   "pcg/machine_view.dtg.h",
+  "pcg/operator_task_space.dtg.h",
 ]
 
 src_includes = [
@@ -34,3 +35,6 @@ type = "std::vector<::FlexFlow::ParallelTensorShape>"
 name = "output_shapes"
 type = "std::vector<::FlexFlow::ParallelTensorShape>"
 
+[[fields]]
+name = "op_task_space"
+type = "::FlexFlow::OperatorTaskSpace"

@@ -7,6 +7,7 @@
 #include "compiler/machine_mapping/machine_mapping_problem_tree/get_machine_mapping_problem_tree.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
+#include "compiler/machine_mapping/machine_mapping_result.h"
 #include "compiler/series_parallel/pcg/get_pcg_balanced_binary_sp_decomposition.h"
 #include "compiler/unity_algorithm/graph_optimize_state.h"
 #include "pcg/machine_specification.dtg.h"
@@ -48,20 +49,6 @@ SearchResult graph_optimize(ParallelComputationGraph &pcg,
                             std::vector<Substitution> const &substitutions,
                             UnitySearchConfig const &search_config) {
 
-  // NOTE(@wmdi): This mapping is only used for allowed_machine_views
-  std::unordered_map<UnmappedOpCostEstimateKey, parallel_layer_guid_t>
-      mapping_from_unmapped_op_cost_estimate_key_parallel_layer = [&] {
-        std::unordered_map<UnmappedOpCostEstimateKey, parallel_layer_guid_t>
-            mapping;
-        for (parallel_layer_guid_t layer : get_parallel_layers(pcg)) {
-          // NOTE(@wmdi): Assume layers with the same key have the same allowed
-          // machine views
-          mapping.insert(
-              {get_unmapped_op_cost_estimate_key_for_layer(pcg, layer), layer});
-        }
-        return mapping;
-      }();
-
   MachineMappingCache cached_subgraph_costs = empty_machine_mapping_cache();
   DeduplicatedPriorityQueue<GraphOptimizeState> candidates;
 
@@ -72,25 +59,12 @@ SearchResult graph_optimize(ParallelComputationGraph &pcg,
           MachineSpecification const &resources)
           -> std::unordered_set<MachineView> {
         return get_allowed_machine_views(
-            resources,
-            get_operator_task_space(
-                pcg,
-                mapping_from_unmapped_op_cost_estimate_key_parallel_layer.at(
-                    key)),
-            DeviceType::GPU);
+            resources, key.op_task_space, DeviceType::GPU);
       },
   };
 
-  auto get_runtime_cost = [](MachineMappingResult const &mm_result) {
-    if (mm_result.raw_result == std::nullopt) {
-      return std::numeric_limits<float>::infinity();
-    } else {
-      return mm_result.raw_result.value().runtime;
-    }
-  };
-
   auto optimize_pcg = [&](ParallelComputationGraph const &pcg)
-      -> std::pair<GraphOptimizeState, MachineMapping> {
+      -> std::pair<GraphOptimizeState, std::optional<MachineMapping>> {
     PCGBinarySPDecomposition sp_decomp =
         expect(get_pcg_balanced_binary_sp_decomposition(pcg),
                "Failed to get SP decomposition of PCG");
@@ -148,9 +122,16 @@ SearchResult graph_optimize(ParallelComputationGraph &pcg,
     }
   }
 
+  std::optional<MachineMapping> best_mapping =
+      optimize_pcg(best_state.pcg).second;
+
+  if (best_mapping == std::nullopt) {
+    throw std::runtime_error("Failed to find any solutions");
+  }
+
   return SearchResult{
       /*pcg=*/best_state.pcg,
-      /*machine_mapping=*/optimize_pcg(best_state.pcg).second,
+      /*machine_mapping=*/best_mapping.value(),
   };
 }
 

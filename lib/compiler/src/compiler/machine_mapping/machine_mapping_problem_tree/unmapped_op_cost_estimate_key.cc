@@ -1,4 +1,5 @@
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
+#include "pcg/operator_task_space.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "pcg/parallel_computation_graph/parallel_tensor_guid_t.dtg.h"
 
@@ -18,6 +19,8 @@ UnmappedOpCostEstimateKey get_unmapped_op_cost_estimate_key_for_layer(
       transform(get_incoming_weights(pcg, layer), get_tensor_shape),
       /*output_shapes=*/
       transform(get_layer_outputs(pcg, layer), get_tensor_shape),
+      /*op_task_space=*/
+      get_operator_task_space(pcg, layer),
   };
 }
 
