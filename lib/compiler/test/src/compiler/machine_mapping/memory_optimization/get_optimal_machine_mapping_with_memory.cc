@@ -96,12 +96,15 @@ TEST_SUITE(FF_TEST_SUITE) {
         return std::unordered_set<MachineView>{mv2};
       }
     };
+        
+    OperatorTaskSpace fake_op_task_space = OperatorTaskSpace {{}};
 
     UnmappedOpCostEstimateKey k1 = UnmappedOpCostEstimateKey{
         /*op_attrs=*/PCGOperatorAttrs{InputAttrs{}},
         /*input_shapes=*/{},
         /*weight_shapes=*/{},
         /*output_shapes=*/{},
+        /*op_task_space=*/fake_op_task_space,
     };
 
     UnmappedOpCostEstimateKey k2 = UnmappedOpCostEstimateKey{
@@ -114,6 +117,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*input_shapes=*/{},
         /*weight_shapes=*/{},
         /*output_shapes=*/{},
+        /*op_task_space=*/fake_op_task_space,
     };
 
     ParallelTensorShape tensor_shape1 = ParallelTensorShape{
