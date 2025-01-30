@@ -1,4 +1,10 @@
 images:
+  amazon-linux-gpu-x64:
+    platform: "linux"
+    arch: "x64"
+    owner: "898082745236" # AWS
+    name: "Amazon Linux 2 AMI with NVIDIA TESLA GPU Driver*"
+
   dlami-x64:
     platform: "linux"
     arch: "x64"
@@ -8,4 +14,4 @@ images:
 runners:
   gpu-nvidia:
     family: ["g4dn.xlarge"]
-    image: dlami-x64
+    image: amazon-linux-gpu-x64
