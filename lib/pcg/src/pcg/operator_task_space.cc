@@ -14,7 +14,6 @@
 #include "utils/containers/unordered_set_of.h"
 #include "utils/containers/vector_of.h"
 #include "utils/fmt/unordered_set.h"
-
 namespace FlexFlow {
 
 std::unordered_set<TaskSpaceCoordinate>

@@ -20,6 +20,7 @@ bool is_valid_machine_space_coordinate(MachineSpecification const &ms,
 
 device_id_t get_device_id(MachineSpecification const &ms,
                           MachineSpaceCoordinate const &coord);
+
 } // namespace FlexFlow
 
 #endif

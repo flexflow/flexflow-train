@@ -1,11 +1,11 @@
 #include "compiler/machine_mapping/machine_mapping_problem_tree/get_machine_mapping_problem_tree.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
-#include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "pcg/operator_task_space.h"
+#include "pcg/parallel_computation_graph/parallel_computation_graph.h"
+#include "utils/containers/extend.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/vector_of.h"
-#include "utils/containers/extend.h"
-#include "pcg/operator_task_space.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -162,7 +162,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_layer_guid_t relu_layer = relu_added.parallel_layer;
       parallel_tensor_guid_t relu_output = get_only(relu_added.outputs);
 
-      OperatorTaskSpace relu_task_space = get_operator_task_space(pcg, relu_layer);
+      OperatorTaskSpace relu_task_space =
+          get_operator_task_space(pcg, relu_layer);
 
       UnmappedOpCostEstimateKey relu_key = UnmappedOpCostEstimateKey{
           /*op_attrs=*/relu_attrs,
@@ -250,7 +251,8 @@ TEST_SUITE(FF_TEST_SUITE) {
                              {input1_tensor, input2_tensor},
                              {make_output_attrs(ew_op_output_shape)});
       parallel_layer_guid_t ew_op_layer = ew_op_added.parallel_layer;
-      OperatorTaskSpace ew_op_task_space = get_operator_task_space(pcg, ew_op_layer);
+      OperatorTaskSpace ew_op_task_space =
+          get_operator_task_space(pcg, ew_op_layer);
       UnmappedOpCostEstimateKey ew_op_key = UnmappedOpCostEstimateKey{
           /*op_attrs=*/ew_op_attrs,
           /*input_shapes=*/{input_shape, input_shape},

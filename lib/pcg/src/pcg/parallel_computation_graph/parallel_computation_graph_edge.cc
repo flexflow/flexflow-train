@@ -1,4 +1,5 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph_edge.h"
+#include "pcg/parallel_computation_graph/parallel_computation_graph_edge.dtg.h"
 
 namespace FlexFlow {
 

@@ -8,7 +8,6 @@ TEST_SUITE(FF_TEST_SUITE) {
     ParallelComputationGraph pcg1 = empty_parallel_computation_graph();
     ParallelComputationGraph pcg2 = empty_parallel_computation_graph();
 
-
     ParallelTensorShape input_shape = ParallelTensorShape{
         ParallelTensorDims{
             FFOrdered<ShardParallelDim>{
@@ -39,13 +38,12 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     PCGOperatorAttrs input_attrs = PCGOperatorAttrs{InputAttrs{}};
-    
-    add_parallel_layer(
-          pcg2,
-          /*layer_attrs=*/make_layer_attrs(input_attrs),
-          /*inputs=*/{},
-          /*output_labels=*/{make_output_attrs(input_shape)});
-    
+
+    add_parallel_layer(pcg2,
+                       /*layer_attrs=*/make_layer_attrs(input_attrs),
+                       /*inputs=*/{},
+                       /*output_labels=*/{make_output_attrs(input_shape)});
+
     SUBCASE("same pcgs") {
       GraphOptimizeState state1 = GraphOptimizeState(pcg1, 0.0);
       GraphOptimizeState state2 = GraphOptimizeState(pcg1, 0.0);

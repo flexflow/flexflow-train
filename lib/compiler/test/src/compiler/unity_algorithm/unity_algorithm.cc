@@ -1,20 +1,21 @@
 #include "compiler/unity_algorithm/unity_algorithm.h"
-#include "pcg/computation_graph_builder.h"
-#include "../machine_mapping/cost_estimator_for_test.h"
+#include "../cost_estimator_for_test.h"
+#include "doctest/doctest.h"
 #include "op-attrs/parallel_tensor_dims.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
-#include "op-attrs/shard_parallel_dim.h"
 #include "op-attrs/replica_type.dtg.h"
+#include "op-attrs/shard_parallel_dim.h"
+#include "pcg/computation_graph_builder.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include "utils/integer_conversions.h"
-#include "doctest/doctest.h"
 
 using namespace FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("graph_optimize") {
-    // TODO: recover this by implementing parallel_computation_graph_from_computation_graph
-    // ComputationGraph cg = [&] {
+    // TODO: recover this by implementing
+    // parallel_computation_graph_from_computation_graph ComputationGraph cg =
+    // [&] {
     //   ComputationGraphBuilder b;
     //   TensorShape input_tensor_shape = TensorShape{
     //     TensorDims{
@@ -41,7 +42,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     //   return b.computation_graph;
     // }();
 
-    // ParallelComputationGraph pcg = parallel_computation_graph_from_computation_graph(cg);
+    // ParallelComputationGraph pcg =
+    // parallel_computation_graph_from_computation_graph(cg);
 
     ParallelComputationGraph pcg = [&] {
       ParallelComputationGraphBuilder b;
@@ -80,15 +82,15 @@ TEST_SUITE(FF_TEST_SUITE) {
       return b.pcg;
     }();
 
-    CostEstimator cost_estimator = make_fake_cost_estimator([](OpCostEstimateKey const &k) {
-      return OpCostMetrics{
-        /*runtime=*/1.0,
-        /*memory=*/1,
-      };
-    },
-    [](TensorSetMovement const &) {
-      return 1.0;
-    });
+    CostEstimator cost_estimator = make_fake_cost_estimator(
+        [](OpCostEstimateKey const &k) {
+          return OpCostMetrics{
+              /*forward_runtime=*/1.0,
+              /*backward_runtime=*/2.0,
+              /*memory=*/nonnegative_int{1},
+          };
+        },
+        [](TensorSetMovement const &) { return 1.0; });
 
     MachineSpecification full_machine_spec = MachineSpecification{
         /*num_nodes=*/2,
@@ -108,7 +110,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*max_num_ops=*/100,
     };
 
-    // SearchResult result = graph_optimize(pcg, cost_estimator, full_machine_spec, substitutions, search_config);
+    // SearchResult result = graph_optimize(pcg, cost_estimator,
+    // full_machine_spec, substitutions, search_config);
 
     // TODO: check the result
   }

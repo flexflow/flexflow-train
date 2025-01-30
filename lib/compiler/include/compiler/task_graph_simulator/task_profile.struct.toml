@@ -1,0 +1,26 @@
+namespace = "FlexFlow"
+name = "TaskProfile"
+
+features = [
+  "eq",
+  "hash",
+  "fmt",
+  "ord"
+]
+
+includes = [
+  "utils/graph/node/node.dtg.h"
+]
+
+
+[[fields]]
+name = "node"
+type = "::FlexFlow::Node"
+
+[[fields]]
+name = "start_time"
+type = "float"
+
+[[fields]]
+name = "end_time"
+type = "float"
