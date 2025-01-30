@@ -18,13 +18,13 @@ in
 
 stdenv.mkDerivation rec {
   pname = "legion_flexflow";
-  version = "2024-03-13";
+  version = "2025-01-21";
 
   src = fetchFromGitLab {
     owner = "StanfordLegion";
     repo = "legion";
-    rev = "24e8c452341dea41427e0ce61e154d61715e6835";
-    sha256 = "sha256-NjCSjphOIew/V24i74I6DModSGcWKLeiSIjts3cFtx4=";
+    rev = "0c5a181e59c07e3af1091a2007378ff9355047fa";
+    sha256 = "sha256-oapo7klN17gmRsmaSsrpup4YJ0dtHxiKFtwz8jyPqzU=";
     fetchSubmodules = true;
   };
 
@@ -33,7 +33,7 @@ stdenv.mkDerivation rec {
   ];
 
   cmakeFlags = [
-    "-DLegion_USE_Python=1"
+    "-DLegion_USE_Python=0"
     "-DLegion_BUILD_BINDINGS=1"
     "-DLegion_USE_CUDA=1"
     "-DLegion_CUDA_ARCH=${lib.concatStringsSep "," cudaCapabilities}"
