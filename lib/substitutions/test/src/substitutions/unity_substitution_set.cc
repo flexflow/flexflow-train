@@ -15,6 +15,6 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     std::vector<Substitution> result = get_substitution_set(machine_spec);
 
-    CHECK(result.size() == 15);
+    CHECK(result.size() == 36);
   }
 }

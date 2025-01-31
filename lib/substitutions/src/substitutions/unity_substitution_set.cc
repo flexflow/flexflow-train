@@ -13,7 +13,7 @@ namespace FlexFlow {
 std::vector<Substitution>
     get_substitution_set(MachineSpecification const &resources) {
   std::vector<Substitution> substitutions;
-  for (nonnegative_int num_dims : nonnegative_range(nonnegative_int{MAX_TENSOR_DIM})) {
+  for (nonnegative_int num_dims : nonnegative_range(1_n, nonnegative_int{MAX_TENSOR_DIM})) {
     for (nonnegative_int degree = 1_n; degree <= get_num_gpus(resources); degree *= 2_n) {
       substitutions.push_back(
           create_replicate_linear_combine(num_dims, degree, true));

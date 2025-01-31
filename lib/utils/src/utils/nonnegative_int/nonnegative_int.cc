@@ -11,6 +11,15 @@ nonnegative_int::nonnegative_int(int value) {
   this->value_ = value;
 }
 
+nonnegative_int::nonnegative_int(size_t value) {
+  if (value > std::numeric_limits<int>::max()) {
+    throw std::invalid_argument(
+        fmt::format("Input {} to nonnegative_int(size_t) is out-of-bounds for int", value));
+  }
+  this->value_ = static_cast<int>(value);
+  assert(this->value_ >= 0);
+}
+
 nonnegative_int::operator int() const noexcept {
   return this->value_;
 }

@@ -8,7 +8,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     std::size_t num_replicas = 5;
 
     TensorShape input_shape =
-        make_float_tensor_shape_from_legion_dims({10, 10, 10, 10, 10});
+        make_float_tensor_shape_from_legion_dims({10_n, 10_n, 10_n, 10_n, 10_n});
 
     ManagedPerDeviceFFHandle managed_handle{};
     ManagedFFStream managed_stream{};
@@ -16,7 +16,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     Allocator allocator = create_local_cuda_memory_allocator();
 
     SUBCASE("forward_kernel") {
-      TensorShape output_shape = make_float_tensor_shape_from_legion_dims({10});
+      TensorShape output_shape = make_float_tensor_shape_from_legion_dims({10_n});
 
       GenericTensorAccessorR input_accessor =
           read_only_accessor_from_write_accessor(

@@ -164,7 +164,7 @@ std::unordered_multiset<layer_guid_t>
 
 V1BinarySPDecomposition
     to_v1(ComputationGraphBinarySPDecomposition const &tree,
-          bidict<int, layer_guid_t> const &layer_numbering) {
+          bidict<nonnegative_int, layer_guid_t> const &layer_numbering) {
   return tree.visit<V1BinarySPDecomposition>(
       overload{[&](ComputationGraphBinarySeriesSplit const &series) {
                  return V1BinarySPDecomposition{

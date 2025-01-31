@@ -15,7 +15,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         managed_handle.raw_handle(), DataType::FLOAT);
 
     TensorShape input_shape =
-        make_float_tensor_shape_from_legion_dims({10, 10});
+        make_float_tensor_shape_from_legion_dims({10_n, 10_n});
     TensorShape output_shape = input_shape;
 
     SUBCASE("forward_kernel") {

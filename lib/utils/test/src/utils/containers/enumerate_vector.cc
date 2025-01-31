@@ -24,7 +24,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         {1_n, 3},
         {2_n, 1},
         {3_n, 3},
-        {3_n, 3},
+        {4_n, 3},
       };
 
       CHECK(result == correct);

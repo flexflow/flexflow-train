@@ -13,6 +13,7 @@ class nonnegative_int {
 public:
   nonnegative_int() = delete;
   explicit nonnegative_int(int value);
+  explicit nonnegative_int(size_t value);
 
   explicit operator int() const noexcept;
 

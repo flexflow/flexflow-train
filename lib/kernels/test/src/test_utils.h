@@ -52,16 +52,6 @@ bool contains_non_zero(std::vector<T> &data) {
       data.begin(), data.end(), [](T const &val) { return val == 0; });
 }
 
-template <typename T, typename Func>
-std::vector<T> repeat(std::size_t n, Func &&func) {
-  std::vector<T> result;
-  // result.reserve(n); // Sometimes we don't have default constructor for T
-  for (std::size_t i = 0; i < n; ++i) {
-    result.push_back(func());
-  }
-  return result;
-}
-
 // Specialize doctest's StringMaker for std::vector<float>
 template <>
 struct doctest::StringMaker<std::vector<float>> {

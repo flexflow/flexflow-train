@@ -145,7 +145,7 @@ BatchNormPerDeviceState init_kernel(PerDeviceFFHandle handle,
         actiDesc, CUDNN_ACTIVATION_RELU, CUDNN_PROPAGATE_NAN, 0.0));
   }
 
-  BatchNormPerDeviceState per_device_state = {handle,
+  BatchNormPerDeviceState per_device_state = BatchNormPerDeviceState{handle,
                                               inputTensor,
                                               outputTensor,
                                               biasTensor,
@@ -159,7 +159,7 @@ BatchNormPerDeviceState init_kernel(PerDeviceFFHandle handle,
                                               output_c,
                                               output_h,
                                               output_w,
-                                              relu};
+                                              relu,};
 
   checkCUDA(cudaStreamDestroy(stream));
   return per_device_state;

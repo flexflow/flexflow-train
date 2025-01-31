@@ -72,7 +72,6 @@ GenericTensorAccessorW create_iota_filled_accessor_w(TensorShape const &shape,
 void fill_tensor_accessor_w(GenericTensorAccessorW accessor,
                             float val,
                             bool cpu_fill) {
-  LegionTensorDims dims = accessor.shape.dims;
   size_t volume = accessor.shape.num_elements().unwrap_nonnegative();
   std::vector<float> host_data(volume, val);
 

@@ -6,7 +6,7 @@ features = [
 
 includes = [
   "kernels/attention_kernels.h",
-  "kernels/batch_norm_kernels.h",
+  "kernels/batch_norm_per_device_state.dtg.h",
   "kernels/conv_2d_kernels.h",
   "kernels/dropout_kernels.h",
   "kernels/element_binary_kernels.h",
