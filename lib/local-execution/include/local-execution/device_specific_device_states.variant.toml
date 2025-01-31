@@ -84,7 +84,3 @@ key = "device_specific_softmax_per_device_state"
 [[values]]
 type = "::FlexFlow::DeviceSpecific<::FlexFlow::TopKPerDeviceState>"
 key = "device_specific_topk_per_device_state"
-
-[[values]]
-type = "::FlexFlow::DeviceSpecific<::FlexFlow::TransposePerDeviceState>"
-key = "device_specific_transpose_per_device_state"

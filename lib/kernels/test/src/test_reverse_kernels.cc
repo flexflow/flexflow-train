@@ -30,7 +30,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                                        num_out_blks,
                                        reverse_dim_size,
                                        in_blk_size,
-                                       input_accessor.shape.num_elements());
+                                       input_accessor.shape.num_elements().unwrap_nonnegative());
 
       std::vector<float> check_output_data =
           load_data_to_host_from_device<float>(
@@ -51,7 +51,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           num_out_blks,
           reverse_dim_size,
           in_blk_size,
-          input_grad_accessor.shape.num_elements());
+          input_grad_accessor.shape.num_elements().unwrap_nonnegative());
 
       std::vector<float> host_grad_input_data =
           load_data_to_host_from_device<float>(

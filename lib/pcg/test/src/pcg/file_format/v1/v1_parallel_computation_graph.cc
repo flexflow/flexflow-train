@@ -24,7 +24,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
 
       parallel_tensor_guid_t input = b.create_input_tensor(input_shape);
-      parallel_tensor_guid_t mm_output = b.dense(input, 8);
+      parallel_tensor_guid_t mm_output = b.dense(input, 8_n);
       parallel_tensor_guid_t relu_output = b.relu(mm_output);
 
       return b.pcg;

@@ -29,9 +29,9 @@ TEST_SUITE(FF_TEST_SUITE) {
       ComputationGraph cg = [&] {
         ComputationGraphBuilder b;
 
-        TensorShape input_shape = TensorShape{TensorDims{FFOrdered<size_t>{
-                                                  10,
-                                                  12,
+        TensorShape input_shape = TensorShape{TensorDims{FFOrdered<nonnegative_int>{
+                                                  10_n,
+                                                  12_n,
                                               }},
                                               DataType::FLOAT};
         b.create_input(input_shape, CreateGrad::YES, input_layer_name);
@@ -57,16 +57,16 @@ TEST_SUITE(FF_TEST_SUITE) {
       ComputationGraph cg = [&] {
         ComputationGraphBuilder b;
 
-        TensorShape input_shape = TensorShape{TensorDims{FFOrdered<size_t>{
-                                                  10,
-                                                  12,
+        TensorShape input_shape = TensorShape{TensorDims{FFOrdered<nonnegative_int>{
+                                                  10_n,
+                                                  12_n,
                                               }},
                                               DataType::FLOAT};
         tensor_guid_t input =
             b.create_input(input_shape, CreateGrad::YES, input_layer_name);
 
         b.dense(input,
-                /*outDim=*/14,
+                /*outDim=*/14_n,
                 /*activation=*/std::nullopt,
                 /*use_bias=*/true,
                 /*data_type=*/DataType::FLOAT,
@@ -119,9 +119,9 @@ TEST_SUITE(FF_TEST_SUITE) {
         ComputationGraphBuilder b;
 
         TensorShape input_shape = TensorShape{
-            TensorDims{FFOrdered<size_t>{
-                10,
-                12,
+            TensorDims{FFOrdered<nonnegative_int>{
+                10_n,
+                12_n,
             }},
             DataType::FLOAT,
         };
@@ -129,7 +129,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             b.create_input(input_shape, CreateGrad::YES, input_name);
 
         b.dense(input,
-                /*outDim=*/14,
+                /*outDim=*/14_n,
                 /*activation=*/std::nullopt,
                 /*use_bias=*/false,
                 /*data_type=*/DataType::FLOAT,
@@ -138,7 +138,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                 /*name=*/op1_name,
                 /*projection_name=*/w1_name);
         b.dense(input,
-                /*outDim=*/14,
+                /*outDim=*/14_n,
                 /*activation=*/std::nullopt,
                 /*use_bias=*/false,
                 /*data_type=*/DataType::FLOAT,
@@ -189,9 +189,9 @@ TEST_SUITE(FF_TEST_SUITE) {
         ComputationGraphBuilder b;
 
         TensorShape input_shape = TensorShape{
-            TensorDims{FFOrdered<size_t>{
-                10,
-                12,
+            TensorDims{FFOrdered<nonnegative_int>{
+                10_n,
+                12_n,
             }},
             DataType::FLOAT,
         };
@@ -246,9 +246,9 @@ TEST_SUITE(FF_TEST_SUITE) {
         ComputationGraphBuilder b;
 
         TensorShape input_shape = TensorShape{
-            TensorDims{FFOrdered<size_t>{
-                10,
-                12,
+            TensorDims{FFOrdered<nonnegative_int>{
+                10_n,
+                12_n,
             }},
             DataType::FLOAT,
         };
@@ -277,7 +277,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("real models") {
       SUBCASE("split_test") {
         ComputationGraph cg =
-            get_split_test_computation_graph(/*batch_size=*/8);
+            get_split_test_computation_graph(/*batch_size=*/8_n);
 
         std::optional<SeriesParallelDecomposition> sp_decomposition =
             get_computation_graph_series_parallel_decomposition(cg);
@@ -339,14 +339,14 @@ TEST_SUITE(FF_TEST_SUITE) {
       ComputationGraph cg = [&] {
         ComputationGraphBuilder b;
 
-        TensorShape input_shape = TensorShape{TensorDims{FFOrdered<size_t>{
-                                                  10,
-                                                  12,
+        TensorShape input_shape = TensorShape{TensorDims{FFOrdered<nonnegative_int>{
+                                                  10_n,
+                                                  12_n,
                                               }},
                                               DataType::FLOAT};
         tensor_guid_t input = b.create_input(input_shape, CreateGrad::YES);
 
-        b.dense(input, /*outDim=*/14);
+        b.dense(input, /*outDim=*/14_n);
 
         return b.computation_graph;
       }();
@@ -356,7 +356,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("split_test") {
-      ComputationGraph cg = get_split_test_computation_graph(/*batch_size=*/8);
+      ComputationGraph cg = get_split_test_computation_graph(/*batch_size=*/8_n);
 
       std::string result =
           render_preprocessed_computation_graph_for_sp_decomposition(cg);

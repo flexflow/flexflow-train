@@ -124,12 +124,12 @@ std::ostream &operator<<(std::ostream &os, nonnegative_int const &n) {
   return os;
 }
 
-int nonnegative_int::value() const {
+int nonnegative_int::unwrap_nonnegative() const {
   return this->value_;
 }
 
 int format_as(nonnegative_int const &x) {
-  return x.value();
+  return x.unwrap_nonnegative();
 }
 
 nonnegative_int operator ""_n(unsigned long long int x) {
@@ -150,7 +150,7 @@ namespace nlohmann {
 
 void adl_serializer<::FlexFlow::nonnegative_int>::to_json(
     json &j, ::FlexFlow::nonnegative_int t) {
-  j = t.value();
+  j = t.unwrap_nonnegative();
 }
 } // namespace nlohmann
 
@@ -163,6 +163,6 @@ Gen<::FlexFlow::nonnegative_int> Arbitrary<::FlexFlow::nonnegative_int>::arbitra
 namespace std {
 std::size_t hash<::FlexFlow::nonnegative_int>::operator()(
     FlexFlow::nonnegative_int const &n) const noexcept {
-  return std::hash<int>{}(n.value());
+  return std::hash<int>{}(n.unwrap_nonnegative());
 }
 } // namespace std

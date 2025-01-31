@@ -83,11 +83,11 @@ TEST_SUITE(FF_TEST_SUITE) {
           DataType::FLOAT,
       });
       t = b.dense(t,
-                  /*outDim=*/16,
+                  /*outDim=*/16_n,
                   /*activation=*/std::nullopt);
       t = b.gelu(t);
       t = b.dense(t,
-                  /*outDim=*/12,
+                  /*outDim=*/12_n,
                   /*activation=*/std::nullopt,
                   /*use_bias=*/false,
                   /*data_type=*/DataType::FLOAT,
@@ -97,7 +97,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       t = b.relu(t,
                  /*name=*/relu_match);
       t = b.dense(t,
-                  /*outDim=*/8,
+                  /*outDim=*/8_n,
                   /*activation=*/Activation::RELU);
 
       return sub_pcg_from_full_pcg(b.pcg);
@@ -148,11 +148,11 @@ TEST_SUITE(FF_TEST_SUITE) {
           DataType::FLOAT,
       });
       t = b.dense(t,
-                  /*outDim=*/16,
+                  /*outDim=*/16_n,
                   /*activation=*/std::nullopt);
       t = b.gelu(t);
       t = b.dense(t,
-                  /*outDim=*/12,
+                  /*outDim=*/12_n,
                   /*activation=*/Activation::RELU,
                   /*use_bias=*/false,
                   /*data_type=*/DataType::FLOAT,
@@ -160,7 +160,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                   /*bias_initializer=*/std::nullopt,
                   /*name=*/std::nullopt);
       t = b.dense(t,
-                  /*outDim=*/8,
+                  /*outDim=*/8_n,
                   /*activation=*/Activation::RELU);
 
       return sub_pcg_from_full_pcg(b.pcg);

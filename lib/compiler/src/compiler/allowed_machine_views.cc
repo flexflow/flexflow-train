@@ -17,6 +17,7 @@
 #include "utils/containers/unordered_multiset_of.h"
 #include "utils/containers/unordered_set_of.h"
 #include "utils/containers/zip.h"
+#include "utils/nonnegative_int/ceildiv.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include "utils/nonnegative_int/num_elements.h"
 #include "utils/overload.h"
@@ -52,9 +53,8 @@ static std::unordered_set<MachineView>
   auto get_max_stride_upper_bound = [](std::vector<nonnegative_int> const &tensor_dims,
                                        nonnegative_int total_devices) -> nonnegative_int {
     nonnegative_int min_num_devices_with_full_stride_volume = product(transform(
-        tensor_dims, [](nonnegative_int num_devices) { return nonnegative_int{num_devices.value() - 1}; }));
-    return nonnegative_int{TODO colin
-      static_cast<int>(std::ceil(static_cast<float>(total_devices.value()) / min_num_devices_with_full_stride_volume.value()))};
+        tensor_dims, [](nonnegative_int num_devices) { return nonnegative_int{num_devices.unwrap_nonnegative() - 1}; }));
+    return ceildiv(total_devices, min_num_devices_with_full_stride_volume);
   };
 
   auto candidate_strides = [&](std::vector<nonnegative_int> const &tensor_dims,

@@ -128,9 +128,9 @@ void forward_kernel(ffStream_t stream,
 
   coord_t stride =
       output.shape.sub_shape(std::nullopt, add_to_legion_dim(m.legion_dim, 1))
-          .num_elements();
-  coord_t output_dim_size = output.shape[m.legion_dim];
-  coord_t input_dim_size = input.shape[m.legion_dim];
+          .num_elements().unwrap_nonnegative();
+  coord_t output_dim_size = output.shape.at(m.legion_dim).unwrap_nonnegative();
+  coord_t input_dim_size = input.shape.at(m.legion_dim).unwrap_nonnegative();
 
   assert(index.data_type == DataType::INT32 ||
          index.data_type == DataType::INT64);
@@ -140,7 +140,7 @@ void forward_kernel(ffStream_t stream,
                                      input,
                                      index,
                                      output,
-                                     output.shape.get_volume(),
+                                     output.shape.get_volume().unwrap_nonnegative(),
                                      stride,
                                      input_dim_size,
                                      output_dim_size);
@@ -156,9 +156,9 @@ void backward_kernel(ffStream_t stream,
   coord_t stride =
       output_grad.shape
           .sub_shape(std::nullopt, add_to_legion_dim(m.legion_dim, 1))
-          .get_volume();
-  coord_t output_dim_size = output_grad.shape[m.legion_dim];
-  coord_t input_dim_size = input_grad.shape[m.legion_dim];
+          .get_volume().unwrap_nonnegative();
+  coord_t output_dim_size = output_grad.shape.at(m.legion_dim).unwrap_nonnegative();
+  coord_t input_dim_size = input_grad.shape.at(m.legion_dim).unwrap_nonnegative();
 
   assert(index.data_type == DataType::INT32 ||
          index.data_type == DataType::INT64);
@@ -168,7 +168,7 @@ void backward_kernel(ffStream_t stream,
                                       output_grad,
                                       index,
                                       input_grad,
-                                      output_grad.shape.get_volume(),
+                                      output_grad.shape.get_volume().unwrap_nonnegative(),
                                       stride,
                                       input_dim_size,
                                       output_dim_size);

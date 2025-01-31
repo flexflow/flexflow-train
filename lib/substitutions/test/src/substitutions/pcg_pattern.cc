@@ -37,7 +37,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     parallel_tensor_guid_t a_tensor =
         builder.create_input_tensor(a_shape, CreateGrad::YES, a_name);
 
-    int outDim = 16;
+    nonnegative_int outDim = 16_n;
     std::string x_matmul_name = "x_matmul";
     std::string y_matmul_name = "y_matmul";
     parallel_tensor_guid_t t0 =

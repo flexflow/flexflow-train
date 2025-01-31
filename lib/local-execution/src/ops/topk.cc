@@ -75,8 +75,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
-  int length = input.shape.at(legion_dim_t(0)) + 1;
-  size_t batch_size = input.shape.get_volume() / length;
+  nonnegative_int length = input.shape.at(legion_dim_t{0_n});
+  nonnegative_int batch_size = input.shape.get_volume() / length;
   auto indices = acc.get_tensor<Permissions::WO>(INDICES);
 
   return profile(forward_kernel,
@@ -86,9 +86,9 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
                  input.get_float_ptr(),
                  output.get_float_ptr(),
                  indices.get_int32_ptr(),
-                 batch_size,
-                 length,
-                 attrs.k,
+                 batch_size.unwrap_nonnegative(),
+                 length.unwrap_nonnegative(),
+                 attrs.k.unwrap_nonnegative(),
                  attrs.sorted);
 }
 
@@ -104,8 +104,8 @@ static std::optional<float>
 
   auto indices = acc.get_tensor<Permissions::RO>(INDICES);
 
-  int length = input_grad.shape.at(legion_dim_t(0)) + 1;
-  size_t batch_size = input_grad.shape.get_volume() / length;
+  nonnegative_int length = input_grad.shape.at(legion_dim_t{0_n});
+  nonnegative_int batch_size = input_grad.shape.get_volume() / length;
 
   return profile(backward_kernel,
                  profiling,
@@ -114,9 +114,9 @@ static std::optional<float>
                  output_grad.get_float_ptr(),
                  indices.get_int32_ptr(),
                  input_grad.get_float_ptr(),
-                 batch_size,
-                 length,
-                 attrs.k);
+                 batch_size.unwrap_nonnegative(),
+                 length.unwrap_nonnegative(),
+                 attrs.k.unwrap_nonnegative());
 }
 
 TaskImplFunction get_topk_init_task_impl() {

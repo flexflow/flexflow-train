@@ -13,7 +13,7 @@ template <typename T>
 std::map<nonnegative_int, T> enumerate_vector(std::vector<T> const &v) {
   std::map<nonnegative_int, T> result;
   for (nonnegative_int i : nonnegative_range(num_elements(v))) {
-    result.insert({i, v.at(i.value())});
+    result.insert({i, v.at(i.unwrap_nonnegative())});
   }
   return result;
 }

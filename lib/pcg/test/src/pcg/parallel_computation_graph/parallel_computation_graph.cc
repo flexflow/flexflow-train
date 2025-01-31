@@ -84,7 +84,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_tensor_guid_t input =
           b.create_input_tensor(input_shape, CreateGrad::YES);
       b.dense(input,
-              /*outDim=*/14,
+              /*outDim=*/14_n,
               /*activation=*/Activation::RELU,
               /*use_bias=*/true,
               /*data_type=*/DataType::FLOAT,

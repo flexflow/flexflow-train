@@ -12,7 +12,7 @@ std::optional<E> at_idx(std::vector<E> const &v, nonnegative_int idx) {
   if (idx >= v.size()) {
     return std::nullopt;
   } else {
-    return v.at(idx.value());
+    return v.at(idx.unwrap_nonnegative());
   }
 }
 

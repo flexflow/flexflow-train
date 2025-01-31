@@ -49,7 +49,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                                           output_grad_accessor);
 
       std::vector<float> expected_grad_input_data(
-          input_grad_accessor.shape.num_elements(), 1.0f);
+          input_grad_accessor.shape.num_elements().unwrap_nonnegative(), 1.0f);
       std::vector<float> host_grad_data = load_data_to_host_from_device<float>(
           read_only_accessor_from_write_accessor(input_grad_accessor));
       CHECK(host_grad_data == expected_grad_input_data);

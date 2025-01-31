@@ -30,9 +30,9 @@ void fill_tensor_accessor_w(GenericTensorAccessorW accessor,
                             float val,
                             bool cpu_fill = false);
 
-TensorShape make_float_tensor_shape_from_legion_dims(FFOrdered<size_t> dims);
+TensorShape make_float_tensor_shape_from_legion_dims(FFOrdered<nonnegative_int> dims);
 
-TensorShape make_double_tensor_shape_from_legion_dims(FFOrdered<size_t> dims);
+TensorShape make_double_tensor_shape_from_legion_dims(FFOrdered<nonnegative_int> dims);
 
 template <typename T>
 std::vector<T> load_data_to_host_from_device(GenericTensorAccessorR accessor) {

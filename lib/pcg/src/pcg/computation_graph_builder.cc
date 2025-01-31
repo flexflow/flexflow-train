@@ -839,7 +839,7 @@ tensor_guid_t ComputationGraphBuilder::flat(
           start_dim, input_num_dims),
       /*end_dim=*/
       ff_dim_t_from_relative_ff_dim_t(
-          end_dim.value_or(relative_ff_dim_t{input_num_dims.value()}), input_num_dims),
+          end_dim.value_or(relative_ff_dim_t{input_num_dims.unwrap_nonnegative()}), input_num_dims),
   };
 
   std::string name =
@@ -927,7 +927,7 @@ tensor_guid_t ComputationGraphBuilder::softmax(
 
   TensorShape input_shape = this->get_shape(input);
 
-  relative_ff_dim_t dim = maybe_dim.value_or(relative_ff_dim_t{num_dims(input_shape).value() - 1});
+  relative_ff_dim_t dim = maybe_dim.value_or(relative_ff_dim_t{num_dims(input_shape).unwrap_nonnegative() - 1});
 
   SoftmaxAttrs attrs = SoftmaxAttrs{ff_dim_t_from_relative_ff_dim_t(
       dim, num_dims(input_shape))};

@@ -48,21 +48,33 @@ TensorShape get_bias_shape(Conv2DAttrs const &attrs,
   };
 }
 
+static nonnegative_int calculate_output_size(nonnegative_int input_size,
+                                             nonnegative_int padding_size,
+                                             nonnegative_int kernel_size,
+                                             nonnegative_int stride) {
+  int input_size_raw = input_size.unwrap_nonnegative();
+  int padding_raw = padding_size.unwrap_nonnegative();
+  int kernel_size_raw = kernel_size.unwrap_nonnegative();
+  int stride_raw = stride.unwrap_nonnegative();
+
+  return nonnegative_int{
+      (input_size_raw + (2 * padding_raw) - kernel_size_raw) / stride_raw + 1
+  };
+}
+
 TensorShape get_output_shape(Conv2DAttrs const &attrs,
                              TensorShape const &raw_input_shape) {
   assert(attrs.groups == 1); // TODO(@lockshaw): currently not supported
   Conv2DInputShape input = parse_input_shape(raw_input_shape);
 
-  nonnegative_int out_height = nonnegative_int{
-      (input.height.value() + (2 * attrs.padding_h.value()) - attrs.kernel_h.value()) / attrs.stride_h.value() +
-      1
-  };
-  nonnegative_int out_width = nonnegative_int{
-      (input.width.value() + (2 * attrs.padding_w.value()) - attrs.kernel_w.value()) / attrs.stride_w.value() +
-      1
-  };
-
-  assert(attrs.out_channels > 0);
+  nonnegative_int out_height = calculate_output_size(/*input_size=*/input.height,
+                                                     /*padding_size=*/attrs.padding_h,
+                                                     /*kernel_size=*/attrs.kernel_h,
+                                                     /*stride_size=*/attrs.stride_h);
+  nonnegative_int out_width = calculate_output_size(/*input_size=*/input.width,
+                                                    /*padding_size=*/attrs.padding_w,
+                                                    /*kernel_size=*/attrs.kernel_w,
+                                                    /*stride_size=*/attrs.stride_w);
 
   return TensorShape{TensorDims{FFOrdered<nonnegative_int>{
                          input.num_samples,

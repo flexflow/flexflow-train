@@ -104,6 +104,20 @@ tl::expected<Pool2DAttrs, std::string>
   return attrs;
 }
 
+static nonnegative_int calculate_output_size(nonnegative_int input_size,
+                                             nonnegative_int padding_size,
+                                             nonnegative_int kernel_size,
+                                             nonnegative_int stride) {
+  int input_size_raw = input_size.unwrap_nonnegative();
+  int padding_raw = padding_size.unwrap_nonnegative();
+  int kernel_size_raw = kernel_size.unwrap_nonnegative();
+  int stride_raw = stride.unwrap_nonnegative();
+
+  return nonnegative_int{
+      (input_size_raw + (2 * padding_raw) - kernel_size_raw) / stride_raw + 1
+  };
+}
+
 tl::expected<TensorShape, std::string>
     get_output_shape(Pool2DAttrs const &attrs, TensorShape const &input_shape) {
   if (num_dims(input_shape) != 4) {
@@ -118,14 +132,14 @@ tl::expected<TensorShape, std::string>
   nonnegative_int input_height = dim_at_idx(input_shape, relative_ff_dim_t{2});
   nonnegative_int input_width = dim_at_idx(input_shape, relative_ff_dim_t{3});
 
-  nonnegative_int output_height = nonnegative_int{
-      (input_height.value() + 2 * attrs.padding_h.value() - attrs.kernel_h.value()) / attrs.stride_h.value() +
-      1
-  };
-
-  nonnegative_int output_width = nonnegative_int{
-      (input_width.value() + 2 * attrs.padding_w.value() - attrs.kernel_w.value()) / attrs.stride_w.value() + 1
-  };
+  nonnegative_int output_height = calculate_output_size(/*input_size=*/input_height,
+                                                        /*padding_size=*/attrs.padding_h,
+                                                        /*kernel_size=*/attrs.kernel_h,
+                                                        /*stride_size=*/attrs.stride_h);
+  nonnegative_int output_width = calculate_output_size(/*input_size=*/input_width,
+                                                       /*padding_size=*/attrs.padding_w,
+                                                       /*kernel_size=*/attrs.kernel_w,
+                                                       /*stride_size=*/attrs.stride_w);
 
   return TensorShape{TensorDims{FFOrdered<nonnegative_int>{
                          num_samples,

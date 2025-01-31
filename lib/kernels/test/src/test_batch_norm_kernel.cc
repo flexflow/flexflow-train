@@ -75,7 +75,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                                           scale_accessor.get_float_ptr(),
                                           scale_grad_accessor.get_float_ptr(),
                                           bias_grad_accessor.get_float_ptr(),
-                                          input_accessor.shape.num_elements());
+                                          input_accessor.shape.num_elements().unwrap_nonnegative());
 
       std::vector<float> host_input_grad_data =
           load_data_to_host_from_device<float>(

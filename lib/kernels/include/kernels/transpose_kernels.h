@@ -3,32 +3,21 @@
 
 #include "device.h"
 #include "kernels/accessor.h"
+#include "op-attrs/ops/transpose_attrs.dtg.h"
 #include <vector>
 
 namespace FlexFlow {
 
-struct TransposePerDeviceState {
-  int num_dim;
-  req<std::vector<legion_dim_t>> perm;
-};
-
-FF_VISITABLE_STRUCT_NONSTANDARD_CONSTRUCTION(TransposePerDeviceState,
-                                             num_dim,
-                                             perm);
-
 namespace Kernels {
 namespace Transpose {
 
-TransposePerDeviceState init_kernel(int num_dim,
-                                    std::vector<ff_dim_t> const &perm);
-
 void forward_kernel(cudaStream_t stream,
-                    TransposePerDeviceState const &m,
+                    TransposeAttrs const &attrs,
                     GenericTensorAccessorR const &input,
                     GenericTensorAccessorW const &output);
 
 void backward_kernel(cudaStream_t stream,
-                     TransposePerDeviceState const &m,
+                     TransposeAttrs const &attrs,
                      GenericTensorAccessorW const &in_grad,
                      GenericTensorAccessorR const &out_grad);
 

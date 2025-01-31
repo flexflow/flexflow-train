@@ -55,7 +55,7 @@ public:
 
   friend int format_as(nonnegative_int const &);
 
-  int value() const;
+  int unwrap_nonnegative() const;
 
 private:
   int value_;

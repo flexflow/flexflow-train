@@ -10,7 +10,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    GatherPerDeviceState state = {managed_handle.raw_handle(), legion_dim_t(2)};
+    GatherPerDeviceState state = {managed_handle.raw_handle(), legion_dim_t{2_n}};
 
     TensorShape input_shape = make_float_tensor_shape_from_legion_dims({100});
     TensorShape output_shape = make_float_tensor_shape_from_legion_dims({50});

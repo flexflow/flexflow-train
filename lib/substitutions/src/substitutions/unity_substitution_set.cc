@@ -129,7 +129,7 @@ Substitution
                                OperatorType::COMBINE),
           set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE, degree),
           set_attr_to_constant(OperatorAttributeKey::PARALLEL_DIM,
-                               ff_dim_t{nonnegative_int{num_dims.value() - 1}}),
+                               ff_dim_t{nonnegative_int{num_dims.unwrap_nonnegative() - 1}}),
       },
   };
   OutputGraphExprValue o_combine_output = get_only(b.add_output_graph_node(

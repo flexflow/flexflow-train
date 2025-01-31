@@ -202,13 +202,13 @@ TEST_SUITE(FF_TEST_SUITE) {
     nonnegative_int paddingH = 1_n;
     nonnegative_int paddingW = 0_n;
     parallel_tensor_guid_t output = b.conv2d(input,
-                                             /*outChannels=*/outChannels.value(),
-                                             /*kernelH=*/kernelH.value(),
-                                             /*kernelW=*/kernelW.value(),
-                                             /*strideH=*/strideH.value(),
-                                             /*strideW=*/strideW.value(),
-                                             /*paddingH=*/paddingH.value(),
-                                             /*paddingW=*/paddingW.value());
+                                             /*outChannels=*/outChannels,
+                                             /*kernelH=*/kernelH,
+                                             /*kernelW=*/kernelW,
+                                             /*strideH=*/strideH,
+                                             /*strideW=*/strideW,
+                                             /*paddingH=*/paddingH,
+                                             /*paddingW=*/paddingW);
 
     std::unordered_map<parallel_layer_guid_t, ParallelLayerAttrs> layers =
         generate_map(get_parallel_layers(b.pcg),
@@ -312,7 +312,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         DataType::FLOAT,
     };
 
-    int outDim = 14;
+    nonnegative_int outDim = 14_n;
 
     parallel_tensor_guid_t input = b.create_input_tensor(input_shape);
     parallel_tensor_guid_t output = b.dense(input,
@@ -359,8 +359,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     parallel_tensor_guid_t input = b.create_input_tensor(input_shape);
     parallel_tensor_guid_t output = b.embedding(input,
-                                                /*num_entries=*/32,
-                                                /*outDim=*/8,
+                                                /*num_entries=*/32_n,
+                                                /*outDim=*/8_n,
                                                 AggregateOp::SUM,
                                                 DataType::FLOAT);
     parallel_layer_guid_t layer = get_source_layer(output);
@@ -405,8 +405,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     ParallelTensorShape key_shape = query_shape;
     ParallelTensorShape value_shape = query_shape;
 
-    int embed_dim = 8;
-    int num_heads = 6;
+    nonnegative_int embed_dim = 8_n;
+    nonnegative_int num_heads = 6_n;
 
     parallel_tensor_guid_t query = b.create_input_tensor(query_shape);
     parallel_tensor_guid_t key = b.create_input_tensor(key_shape);
@@ -493,7 +493,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     parallel_tensor_guid_t input = b.create_input_tensor(input_shape);
     parallel_tensor_guid_t output =
-        b.parallel_partition(input, ff_dim_t{nonnegative_int{0}}, 2);
+        b.parallel_partition(input, ff_dim_t{nonnegative_int{0}}, 2_n);
     parallel_layer_guid_t layer = get_source_layer(output);
 
     SUBCASE("incoming") {
@@ -533,7 +533,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     parallel_tensor_guid_t input = b.create_input_tensor(input_shape);
     parallel_tensor_guid_t output =
-        b.parallel_combine(input, ff_dim_t{nonnegative_int{0}}, 2);
+        b.parallel_combine(input, ff_dim_t{nonnegative_int{0}}, 2_n);
     parallel_layer_guid_t layer = get_source_layer(output);
 
     SUBCASE("incoming") {
@@ -572,7 +572,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     parallel_tensor_guid_t input = b.create_input_tensor(input_shape);
-    parallel_tensor_guid_t output = b.parallel_replicate(input, 2);
+    parallel_tensor_guid_t output = b.parallel_replicate(input, 2_n);
     parallel_layer_guid_t layer = get_source_layer(output);
 
     SUBCASE("incoming") {
@@ -611,7 +611,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     parallel_tensor_guid_t input = b.create_input_tensor(input_shape);
-    parallel_tensor_guid_t output = b.parallel_reduce(input, 2);
+    parallel_tensor_guid_t output = b.parallel_reduce(input, 2_n);
     parallel_layer_guid_t layer = get_source_layer(output);
 
     SUBCASE("incoming") {

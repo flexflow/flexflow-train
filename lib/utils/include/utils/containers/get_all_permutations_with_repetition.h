@@ -23,16 +23,16 @@ std::unordered_multiset<std::vector<T>>
   }
 
   std::vector<T> elements(std::begin(container), std::end(container));
-  std::vector<int> indices(n.value(), 0);
+  std::vector<int> indices(n.unwrap_nonnegative(), 0);
 
   while (true) {
-    std::vector<T> perm(n);
+    std::vector<T> perm(n.unwrap_nonnegative());
     for (int i = 0; i < n; ++i) {
       perm[i] = elements[indices[i]];
     }
     result.insert(perm);
 
-    int i = n.value() - 1;
+    int i = n.unwrap_nonnegative() - 1;
     while (i != -1 && ++indices[i] == elements.size()) {
       indices[i] = 0;
       --i;

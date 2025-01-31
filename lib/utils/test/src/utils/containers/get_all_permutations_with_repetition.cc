@@ -13,7 +13,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::vector<int> input = {1, 2, 3};
 
       std::unordered_multiset<std::vector<int>> result =
-          get_all_permutations_with_repetition(input, 1);
+          get_all_permutations_with_repetition(input, 1_n);
       std::unordered_multiset<std::vector<int>> correct = {
           {1},
           {2},
@@ -27,7 +27,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::vector<int> input = {1};
 
       std::unordered_multiset<std::vector<int>> result =
-          get_all_permutations_with_repetition(input, 2);
+          get_all_permutations_with_repetition(input, 2_n);
       std::unordered_multiset<std::vector<int>> correct = {
           {1, 1},
       };
@@ -39,7 +39,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::vector<int> input = {1, 2};
 
       std::unordered_multiset<std::vector<int>> result =
-          get_all_permutations_with_repetition(input, 3);
+          get_all_permutations_with_repetition(input, 3_n);
       std::unordered_multiset<std::vector<int>> correct = {
           {1, 1, 1},
           {1, 1, 2},
@@ -58,7 +58,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::vector<int> input = {1, 2, 2};
 
       std::unordered_multiset<std::vector<int>> result =
-          get_all_permutations_with_repetition(input, 2);
+          get_all_permutations_with_repetition(input, 2_n);
       std::unordered_multiset<std::vector<int>> correct = {{1, 1},
                                                            {1, 2},
                                                            {1, 2},

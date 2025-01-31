@@ -17,7 +17,7 @@ DiGraphView transitive_closure(DiGraphView const &g) {
   // (i.e., 200 nodes) without optimization enabled.
 
   bidict<int, Node> nodes = map_keys(bidict_from_enumerating(get_nodes(g)),
-                                     [](nonnegative_int x) { return x.value(); });
+                                     [](nonnegative_int x) { return x.unwrap_nonnegative(); });
   std::unordered_set<DirectedEdge> edges = get_edges(g);
 
   int num_nodes = nodes.size();

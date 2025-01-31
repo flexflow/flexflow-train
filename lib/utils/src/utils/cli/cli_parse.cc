@@ -41,7 +41,7 @@ tl::expected<CLIParseResult, std::string>
     }
 
     CLIPositionalArgumentSpec arg_spec =
-        cli.positional_arguments.at(consumed_positional_args.value());
+        cli.positional_arguments.at(consumed_positional_args.unwrap_nonnegative());
 
     if (arg_spec.choices.has_value() &&
         !contains(arg_spec.choices.value(), arg)) {
