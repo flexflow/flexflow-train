@@ -247,4 +247,9 @@ bool pcgs_are_isomorphic(ParallelComputationGraph const &lhs,
       .has_value();
 }
 
+ParallelComputationGraph parallel_computation_graph_from_computation_graph(
+    ComputationGraph const &) {
+  NOT_IMPLEMENTED();
+}
+
 } // namespace FlexFlow
