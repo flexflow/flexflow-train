@@ -137,6 +137,40 @@ function(ff_add_test_executable)
   doctest_discover_tests(${FF_TEST_EXEC_NAME} ADD_LABELS 1)
 endfunction()
 
+function(ff_add_benchmark_executable)
+  ff_parse_args(
+    PREFIX 
+      FF_TEST_EXEC
+    ARGS
+      NAME
+    VARIADIC_ARGS
+      SRC_PATTERNS
+      PRIVATE_INCLUDE
+      DEPS
+    PARSE
+      ${ARGN}
+  )
+
+  project(${FF_TEST_EXEC_NAME})
+  file(GLOB_RECURSE SRC
+       CONFIGURE_DEPENDS
+       LIST_DIRECTORIES False
+       ${FF_TEST_EXEC_SRC_PATTERNS})
+
+  add_executable(
+    ${FF_TEST_EXEC_NAME}
+    ${SRC})
+
+  target_link_libraries(
+    ${FF_TEST_EXEC_NAME}
+    ${FF_TEST_EXEC_DEPS}
+    gbenchmark
+    gbenchmark-main)
+
+  define_ff_vars(${FF_TEST_EXEC_NAME})
+  ff_set_cxx_properties(${FF_TEST_EXEC_NAME})
+endfunction()
+
 function(ff_add_executable)
   ff_parse_args(
     PREFIX 

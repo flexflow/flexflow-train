@@ -86,6 +86,7 @@
                                 -DFF_USE_EXTERNAL_DOCTEST=ON \
                                 -DFF_USE_EXTERNAL_RAPIDCHECK=ON \
                                 -DFF_USE_EXTERNAL_EXPECTED=ON \
+                                -DFF_USE_EXTERNAL_GBENCHMARK=ON \
                                 -DFF_USE_EXTERNAL_RANGEV3=ON \
                                 -DFF_USE_EXTERNAL_BOOST_PREPROCESSOR=ON \
                                 -DFF_USE_EXTERNAL_TYPE_INDEX=ON"
@@ -113,6 +114,7 @@
               doxygen
               lcov # for code coverage
               compdb
+              gbenchmark
             ])
             (with proj-repo.packages.${system}; [
               proj
