@@ -9,9 +9,9 @@
 namespace FlexFlow {
 
 template <typename T>
-std::vector<T> replicate(nonnegative_int n, T const &element) {
+std::vector<T> repeat_element(nonnegative_int num_times, T const &element) {
   std::vector<T> result;
-  for (int i = 0; i < n; ++i) {
+  for (int i = 0; i < num_times; ++i) {
     result.push_back(element);
   }
   return result;

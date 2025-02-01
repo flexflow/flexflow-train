@@ -58,4 +58,10 @@ std::pair<OperatorAttributeKey, OutputOperatorAttributeExpr>
   };
 }
 
+std::pair<OperatorAttributeKey, OutputOperatorAttributeExpr>
+    set_op_type_attr(OperatorType op_type) {
+  return set_attr_to_constant(OperatorAttributeKey::OP_TYPE,
+                              OperatorAttributeValue{op_type});
+}
+
 } // namespace FlexFlow

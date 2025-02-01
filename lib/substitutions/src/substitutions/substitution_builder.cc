@@ -2,7 +2,7 @@
 #include "substitutions/output_graph/output_graph_expr_value.h"
 #include "substitutions/substitution.h"
 #include "substitutions/unlabelled/pattern_value.h"
-#include "utils/containers/replicate.h"
+#include "utils/containers/repeat_element.h"
 #include "utils/graph/instances/unordered_set_labelled_open_dataflow_graph.h"
 #include "utils/overload.h"
 
@@ -77,7 +77,7 @@ std::vector<OutputGraphExprValue> SubstitutionBuilder::add_output_graph_node(
   NodeAddedResult node_added = this->output_g.add_node(
       node_expr,
       transform(inputs, raw_open_dataflow_value_from_output_graph_expr_value),
-      replicate(num_outputs, std::monostate{}));
+      repeat_element(/*num_times=*/num_outputs, /*element=*/std::monostate{}));
 
   return transform(node_added.outputs, [](DataflowOutput const &o) {
     return output_graph_expr_value_from_raw_open_dataflow_value(

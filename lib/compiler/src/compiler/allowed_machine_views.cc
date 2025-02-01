@@ -11,7 +11,7 @@
 #include "utils/containers/map_from_keys_and_values.h"
 #include "utils/containers/product.h"
 #include "utils/containers/range.h"
-#include "utils/containers/replicate.h"
+#include "utils/containers/repeat_element.h"
 #include "utils/containers/sorted.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/unordered_multiset_of.h"
@@ -67,8 +67,8 @@ static std::unordered_set<MachineView>
         transform(nonnegative_range(1_n, max_stride_upper_bound + 1_n),
                   [](nonnegative_int stride) { return stride_t{stride}; });
     std::unordered_multiset<std::vector<stride_t>> raw_stride_vectors =
-        cartesian_product(replicate(num_elements(tensor_dims),
-                                    single_stride_range));
+        cartesian_product(repeat_element(/*num_times=*/num_elements(tensor_dims),
+                                         /*element=*/single_stride_range));
     std::unordered_multiset<MultiDimensionalStride> strides =
         transform(raw_stride_vectors, [](auto const &stride_vec) {
           return MultiDimensionalStride{stride_vec};

@@ -1,13 +1,14 @@
 #include "models/candle_uno/candle_uno.h"
 #include "pcg/initializers/glorot_normal_attrs.dtg.h"
+#include "utils/containers/repeat_element.h"
 
 namespace FlexFlow {
 
 CandleUnoConfig get_default_candle_uno_config() {
   return CandleUnoConfig{
       /*batch_size=*/64_n,
-      /*dense_layers=*/std::vector<nonnegative_int>{4_n, 4192_n},
-      /*dense_feature_layers=*/std::vector<nonnegative_int>{8_n, 4192_n},
+      /*dense_layers=*/repeat_element(/*num_times=*/4_n, /*element=*/4192_n),
+      /*dense_feature_layers=*/repeat_element(/*num_times=*/8_n, /*element=*/4192_n),
       /*feature_shapes=*/ {
         {"dose", 1_n},
         {"cell.rnaseq", 942_n},

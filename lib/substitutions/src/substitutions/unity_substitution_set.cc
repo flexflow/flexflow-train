@@ -70,10 +70,9 @@ Substitution
       OutputOperatorAttrsAssignment{
           std::nullopt,
           {
-              set_attr_to_constant(OperatorAttributeKey::OP_TYPE,
-                                   OperatorType::REPLICATE),
+              set_op_type_attr(OperatorType::REPLICATE),
               set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
-                                   degree),
+                                   OperatorAttributeValue{degree}),
           }};
   OutputGraphExprValue o_replicate_input_output =
       get_only(b.add_output_graph_node(
@@ -83,12 +82,11 @@ Substitution
       OutputOperatorAttrsAssignment{
           std::nullopt,
           {
-              set_attr_to_constant(OperatorAttributeKey::OP_TYPE,
-                                   OperatorType::REPARTITION),
+              set_op_type_attr(OperatorType::REPARTITION),
               set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
-                                   degree),
+                                   OperatorAttributeValue{degree}),
               set_attr_to_constant(OperatorAttributeKey::PARALLEL_DIM,
-                                   ff_dim_t{1_n}),
+                                   OperatorAttributeValue{ff_dim_t{1_n}}),
           }};
   OutputGraphExprValue o_partition_weights_output =
       get_only(b.add_output_graph_node(
@@ -102,12 +100,11 @@ Substitution
         OutputOperatorAttrsAssignment{
             std::nullopt,
             {
-                set_attr_to_constant(OperatorAttributeKey::OP_TYPE,
-                                     OperatorType::REPARTITION),
+                set_op_type_attr(OperatorType::REPARTITION),
                 set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
-                                     degree),
+                                     OperatorAttributeValue{degree}),
                 set_attr_to_constant(OperatorAttributeKey::PARALLEL_DIM,
-                                     ff_dim_t{1_n}),
+                                     OperatorAttributeValue{ff_dim_t{1_n}}),
             }};
     OutputGraphExprValue o_partition_bias_output =
         get_only(b.add_output_graph_node(
@@ -125,11 +122,10 @@ Substitution
   OutputOperatorAttrsAssignment combine_expr = OutputOperatorAttrsAssignment{
       std::nullopt,
       {
-          set_attr_to_constant(OperatorAttributeKey::OP_TYPE,
-                               OperatorType::COMBINE),
-          set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE, degree),
+          set_op_type_attr(OperatorType::COMBINE),
+          set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE, OperatorAttributeValue{degree}),
           set_attr_to_constant(OperatorAttributeKey::PARALLEL_DIM,
-                               ff_dim_t{nonnegative_int{num_dims.unwrap_nonnegative() - 1}}),
+                               OperatorAttributeValue{ff_dim_t{nonnegative_int{num_dims.unwrap_nonnegative() - 1},}}),
       },
   };
   OutputGraphExprValue o_combine_output = get_only(b.add_output_graph_node(

@@ -7,7 +7,7 @@
 #include "op-attrs/tensor_dims.h"
 #include "utils/containers/all_of.h"
 #include "utils/containers/product.h"
-#include "utils/containers/replicate.h"
+#include "utils/containers/repeat_element.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/vector_of.h"
 #include "utils/integer_conversions.h"
@@ -42,7 +42,7 @@ ParallelTensorDimDegrees get_parallel_degrees(ParallelTensorDims const &d) {
 }
 
 ParallelTensorDims lift_to_parallel(TensorDims const &dims) {
-  std::vector<nonnegative_int> shard_degrees = replicate(num_dims(dims), 1_n);
+  std::vector<nonnegative_int> shard_degrees = repeat_element(/*num_times=*/num_dims(dims), /*element=*/1_n);
   return lift_to_parallel_with_degrees(
       dims, SumDegree{1_n}, DiscardCopyDegree{1_n}, shard_degrees);
 }
