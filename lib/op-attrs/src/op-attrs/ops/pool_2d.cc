@@ -114,8 +114,7 @@ static nonnegative_int calculate_output_size(nonnegative_int input_size,
   int stride_raw = stride.unwrap_nonnegative();
 
   return nonnegative_int{
-      (input_size_raw + (2 * padding_raw) - kernel_size_raw) / stride_raw + 1
-  };
+      (input_size_raw + (2 * padding_raw) - kernel_size_raw) / stride_raw + 1};
 }
 
 tl::expected<TensorShape, std::string>
@@ -132,14 +131,16 @@ tl::expected<TensorShape, std::string>
   nonnegative_int input_height = dim_at_idx(input_shape, relative_ff_dim_t{2});
   nonnegative_int input_width = dim_at_idx(input_shape, relative_ff_dim_t{3});
 
-  nonnegative_int output_height = calculate_output_size(/*input_size=*/input_height,
-                                                        /*padding_size=*/attrs.padding_h,
-                                                        /*kernel_size=*/attrs.kernel_h,
-                                                        /*stride_size=*/attrs.stride_h);
-  nonnegative_int output_width = calculate_output_size(/*input_size=*/input_width,
-                                                       /*padding_size=*/attrs.padding_w,
-                                                       /*kernel_size=*/attrs.kernel_w,
-                                                       /*stride_size=*/attrs.stride_w);
+  nonnegative_int output_height =
+      calculate_output_size(/*input_size=*/input_height,
+                            /*padding_size=*/attrs.padding_h,
+                            /*kernel_size=*/attrs.kernel_h,
+                            /*stride_size=*/attrs.stride_h);
+  nonnegative_int output_width =
+      calculate_output_size(/*input_size=*/input_width,
+                            /*padding_size=*/attrs.padding_w,
+                            /*kernel_size=*/attrs.kernel_w,
+                            /*stride_size=*/attrs.stride_w);
 
   return TensorShape{TensorDims{FFOrdered<nonnegative_int>{
                          num_samples,

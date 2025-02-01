@@ -1,6 +1,6 @@
 #include "utils/containers/enumerate_vector.h"
-#include <doctest/doctest.h>
 #include "test/utils/doctest/fmt/map.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
@@ -20,11 +20,11 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       std::map<nonnegative_int, int> result = enumerate_vector(input);
       std::map<nonnegative_int, int> correct = {
-        {0_n, 2},
-        {1_n, 3},
-        {2_n, 1},
-        {3_n, 3},
-        {4_n, 3},
+          {0_n, 2},
+          {1_n, 3},
+          {2_n, 1},
+          {3_n, 3},
+          {4_n, 3},
       };
 
       CHECK(result == correct);

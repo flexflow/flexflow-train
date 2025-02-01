@@ -39,8 +39,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           float expectedProbability = w / sum(weights);
           int num_occurrences =
               filter(trials, [&](int c) { return (c == v); }).size();
-          float observedProbability =
-              static_cast<float>(num_occurrences) / num_iterations.unwrap_nonnegative();
+          float observedProbability = static_cast<float>(num_occurrences) /
+                                      num_iterations.unwrap_nonnegative();
           CHECK(observedProbability ==
                 doctest::Approx(expectedProbability).epsilon(0.01f));
         }

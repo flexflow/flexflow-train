@@ -11,9 +11,9 @@ namespace FlexFlow {
 nonnegative_int get_num_gpus(MachineSpecification const &ms);
 nonnegative_int get_num_cpus(MachineSpecification const &ms);
 nonnegative_int get_num_devices(MachineSpecification const &ms,
-                    DeviceType const &device_type);
+                                DeviceType const &device_type);
 nonnegative_int get_num_devices_per_node(MachineSpecification const &ms,
-                             DeviceType const &device_type);
+                                         DeviceType const &device_type);
 
 bool is_valid_machine_space_coordinate(MachineSpecification const &ms,
                                        MachineSpaceCoordinate const &coord);

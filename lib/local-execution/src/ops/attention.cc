@@ -117,20 +117,21 @@ static DeviceSpecificDeviceStates
   nonnegative_int num_samples = get_num_samples(parsed);
   nonnegative_int num_heads = attrs.num_heads;
 
-  MHAPerDeviceState per_device_state = init_kernel(handle,
-                                                   allocator,
-                                                   num_samples.unwrap_nonnegative(),
-                                                   num_heads.unwrap_nonnegative(),
-                                                   qSize.unwrap_nonnegative(),
-                                                   kSize.unwrap_nonnegative(),
-                                                   vSize.unwrap_nonnegative(),
-                                                   qProjSize.unwrap_nonnegative(),
-                                                   kProjSize.unwrap_nonnegative(),
-                                                   vProjSize.unwrap_nonnegative(),
-                                                   oProjSize.unwrap_nonnegative(),
-                                                   qoSeqLength.unwrap_nonnegative(),
-                                                   kvSeqLength.unwrap_nonnegative(),
-                                                   attrs.add_bias_kv);
+  MHAPerDeviceState per_device_state =
+      init_kernel(handle,
+                  allocator,
+                  num_samples.unwrap_nonnegative(),
+                  num_heads.unwrap_nonnegative(),
+                  qSize.unwrap_nonnegative(),
+                  kSize.unwrap_nonnegative(),
+                  vSize.unwrap_nonnegative(),
+                  qProjSize.unwrap_nonnegative(),
+                  kProjSize.unwrap_nonnegative(),
+                  vProjSize.unwrap_nonnegative(),
+                  oProjSize.unwrap_nonnegative(),
+                  qoSeqLength.unwrap_nonnegative(),
+                  kvSeqLength.unwrap_nonnegative(),
+                  attrs.add_bias_kv);
   return DeviceSpecificDeviceStates{
       DeviceSpecific<MHAPerDeviceState>::create(per_device_state)};
 }

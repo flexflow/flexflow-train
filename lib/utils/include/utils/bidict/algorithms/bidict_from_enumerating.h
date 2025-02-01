@@ -8,7 +8,8 @@
 namespace FlexFlow {
 
 template <typename T>
-bidict<nonnegative_int, T> bidict_from_enumerating(std::unordered_set<T> const &s) {
+bidict<nonnegative_int, T>
+    bidict_from_enumerating(std::unordered_set<T> const &s) {
   bidict<nonnegative_int, T> result;
   nonnegative_int idx = 0_n;
   for (T const &t : s) {

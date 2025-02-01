@@ -75,7 +75,8 @@ static DeviceSpecificDeviceStates
   for (nonnegative_int i : nonnegative_range(input.shape.get_dim())) {
     assert(index.shape.at(legion_dim_t{i}) == output.shape.at(legion_dim_t{i}));
     if (i != legion_dim.value) {
-      assert(input.shape.at(legion_dim_t{i}) == index.shape.at(legion_dim_t{i}));
+      assert(input.shape.at(legion_dim_t{i}) ==
+             index.shape.at(legion_dim_t{i}));
     }
   }
 

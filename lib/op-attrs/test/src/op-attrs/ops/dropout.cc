@@ -46,29 +46,35 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TensorShape output = input;
 
-    auto make_input =
-        [&](SumDegree o_sum, DiscardCopyDegree o_eq, nonnegative_int o0, nonnegative_int o1, nonnegative_int o2) {
-          return lift_to_parallel_with_degrees(
-              input, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o1, o2});
-        };
+    auto make_input = [&](SumDegree o_sum,
+                          DiscardCopyDegree o_eq,
+                          nonnegative_int o0,
+                          nonnegative_int o1,
+                          nonnegative_int o2) {
+      return lift_to_parallel_with_degrees(
+          input, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o1, o2});
+    };
 
-    auto make_output =
-        [&](SumDegree o_sum, DiscardCopyDegree o_eq, nonnegative_int o0, nonnegative_int o1, nonnegative_int o2) {
-          return lift_to_parallel_with_degrees(
-              output, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o1, o2});
-        };
+    auto make_output = [&](SumDegree o_sum,
+                           DiscardCopyDegree o_eq,
+                           nonnegative_int o0,
+                           nonnegative_int o1,
+                           nonnegative_int o2) {
+      return lift_to_parallel_with_degrees(
+          output, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o1, o2});
+    };
 
     SUBCASE("partition parallelism (allowed)") {
       nonnegative_int degree0 = 2_n;
       nonnegative_int degree2 = 4_n;
 
-      ParallelTensorShape par_input =
-          make_input(SumDegree{1_n}, DiscardCopyDegree{1_n}, degree0, 1_n, degree2);
+      ParallelTensorShape par_input = make_input(
+          SumDegree{1_n}, DiscardCopyDegree{1_n}, degree0, 1_n, degree2);
 
       tl::expected<ParallelTensorShape, std::string> result =
           get_output_shape(attrs, par_input);
-      tl::expected<ParallelTensorShape, std::string> correct =
-          make_output(SumDegree{1_n}, DiscardCopyDegree{1_n}, degree0, 1_n, degree2);
+      tl::expected<ParallelTensorShape, std::string> correct = make_output(
+          SumDegree{1_n}, DiscardCopyDegree{1_n}, degree0, 1_n, degree2);
 
       CHECK(result == correct);
     }

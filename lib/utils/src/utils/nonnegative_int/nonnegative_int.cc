@@ -13,8 +13,8 @@ nonnegative_int::nonnegative_int(int value) {
 
 nonnegative_int::nonnegative_int(size_t value) {
   if (value > std::numeric_limits<int>::max()) {
-    throw std::invalid_argument(
-        fmt::format("Input {} to nonnegative_int(size_t) is out-of-bounds for int", value));
+    throw std::invalid_argument(fmt::format(
+        "Input {} to nonnegative_int(size_t) is out-of-bounds for int", value));
   }
   this->value_ = static_cast<int>(value);
   assert(this->value_ >= 0);
@@ -141,9 +141,11 @@ int format_as(nonnegative_int const &x) {
   return x.unwrap_nonnegative();
 }
 
-nonnegative_int operator ""_n(unsigned long long int x) {
-  if (x > static_cast<unsigned long long int>(std::numeric_limits<int>::max())) {
-    throw mk_runtime_error(fmt::format("Value too large to wrap as nonnegative_int: {}", x));
+nonnegative_int operator""_n(unsigned long long int x) {
+  if (x >
+      static_cast<unsigned long long int>(std::numeric_limits<int>::max())) {
+    throw mk_runtime_error(
+        fmt::format("Value too large to wrap as nonnegative_int: {}", x));
   }
 
   return nonnegative_int{static_cast<int>(x)};
@@ -164,10 +166,11 @@ void adl_serializer<::FlexFlow::nonnegative_int>::to_json(
 } // namespace nlohmann
 
 namespace rc {
-Gen<::FlexFlow::nonnegative_int> Arbitrary<::FlexFlow::nonnegative_int>::arbitrary() {
+Gen<::FlexFlow::nonnegative_int>
+    Arbitrary<::FlexFlow::nonnegative_int>::arbitrary() {
   return gen::construct<::FlexFlow::nonnegative_int>(gen::nonNegative<int>());
 }
-}
+} // namespace rc
 
 namespace std {
 std::size_t hash<::FlexFlow::nonnegative_int>::operator()(

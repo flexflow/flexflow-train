@@ -82,14 +82,15 @@ static DeviceSpecificDeviceStates
 
   float *runningMean;
 
-  BatchNormPerDeviceState per_device_state = init_kernel(handle,
-                                                         allocator,
-                                                         runningMean,
-                                                         output_n.unwrap_nonnegative(),
-                                                         output_c.unwrap_nonnegative(),
-                                                         output_h.unwrap_nonnegative(),
-                                                         output_w.unwrap_nonnegative(),
-                                                         attrs.relu);
+  BatchNormPerDeviceState per_device_state =
+      init_kernel(handle,
+                  allocator,
+                  runningMean,
+                  output_n.unwrap_nonnegative(),
+                  output_c.unwrap_nonnegative(),
+                  output_h.unwrap_nonnegative(),
+                  output_w.unwrap_nonnegative(),
+                  attrs.relu);
 
   return DeviceSpecificDeviceStates{
       DeviceSpecific<BatchNormPerDeviceState>::create(per_device_state)};

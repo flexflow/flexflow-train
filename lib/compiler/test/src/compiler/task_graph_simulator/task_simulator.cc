@@ -154,14 +154,14 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
 
       SUBCASE("all different devices") {
-        MachineView mv0 =
-            MachineView{MachineSpaceCoordinate{0_n, 0_n, DeviceType::GPU}, dims};
-        MachineView mv1 =
-            MachineView{MachineSpaceCoordinate{0_n, 1_n, DeviceType::GPU}, dims};
-        MachineView mv2 =
-            MachineView{MachineSpaceCoordinate{1_n, 0_n, DeviceType::GPU}, dims};
-        MachineView mv3 =
-            MachineView{MachineSpaceCoordinate{1_n, 1_n, DeviceType::GPU}, dims};
+        MachineView mv0 = MachineView{
+            MachineSpaceCoordinate{0_n, 0_n, DeviceType::GPU}, dims};
+        MachineView mv1 = MachineView{
+            MachineSpaceCoordinate{0_n, 1_n, DeviceType::GPU}, dims};
+        MachineView mv2 = MachineView{
+            MachineSpaceCoordinate{1_n, 0_n, DeviceType::GPU}, dims};
+        MachineView mv3 = MachineView{
+            MachineSpaceCoordinate{1_n, 1_n, DeviceType::GPU}, dims};
 
         MachineMapping device_mapping = MachineMapping{{
             {layer0, mv0},
@@ -190,10 +190,9 @@ TEST_SUITE(FF_TEST_SUITE) {
                                        /*memory=*/0_n}; // layer0
                 }
                 if (op.op_attrs.has<ElementUnaryAttrs>()) {
-                  return OpCostMetrics{
-                      /*forward_runtime=*/1.0f,
-                      /*backward_runtime=*/1.0f,
-                      /*memory=*/0_n}; // layers 1, 2
+                  return OpCostMetrics{/*forward_runtime=*/1.0f,
+                                       /*backward_runtime=*/1.0f,
+                                       /*memory=*/0_n}; // layers 1, 2
                 }
                 if (op.op_attrs.has<ElementBinaryAttrs>()) {
                   return OpCostMetrics{/*forward_runtime=*/2.0f,
@@ -209,8 +208,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SUBCASE("all the same device") {
-        MachineView mv =
-            MachineView{MachineSpaceCoordinate{0_n, 0_n, DeviceType::GPU}, dims};
+        MachineView mv = MachineView{
+            MachineSpaceCoordinate{0_n, 0_n, DeviceType::GPU}, dims};
         MachineMapping device_mapping = MachineMapping{{
             {layer0, mv},
             {layer1, mv},
@@ -238,10 +237,9 @@ TEST_SUITE(FF_TEST_SUITE) {
                                        /*memory=*/0_n}; // layer0
                 }
                 if (op.op_attrs.has<ElementUnaryAttrs>()) {
-                  return OpCostMetrics{
-                      /*forward_runtime=*/1.0f,
-                      /*backward_runtime=*/1.0f,
-                      /*memory=*/0_n}; // layers 1, 2
+                  return OpCostMetrics{/*forward_runtime=*/1.0f,
+                                       /*backward_runtime=*/1.0f,
+                                       /*memory=*/0_n}; // layers 1, 2
                 }
                 if (op.op_attrs.has<ElementBinaryAttrs>()) {
                   return OpCostMetrics{/*forward_runtime=*/2.0f,

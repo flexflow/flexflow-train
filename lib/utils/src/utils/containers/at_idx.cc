@@ -5,7 +5,6 @@ namespace FlexFlow {
 
 using E = value_type<0>;
 
-template
-  std::optional<E> at_idx(std::vector<E> const &, nonnegative_int);
+template std::optional<E> at_idx(std::vector<E> const &, nonnegative_int);
 
 } // namespace FlexFlow

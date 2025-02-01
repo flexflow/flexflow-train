@@ -7,20 +7,20 @@ namespace FlexFlow {
 
 BertConfig get_default_bert_config() {
   return BertConfig{
-    /*vocab_size=*/30522_n,
-    /*hidden_size=*/768_n,
-    /*num_encoder_layers=*/12_n,
-    /*num_heads=*/12_n,
-    /*dim_feedforward=*/3072_n,
-    /*hidden_act=*/Activation::GELU,
-    /*hidden_dropout_prob=*/0.1,
-    /*attention_probs_dropout_prob=*/0.1,
-    /*initializer_range=*/0.02,
-    /*layer_norm_eps=*/1e-12,
-    /*position_embedding_type=*/"absolute",
-    /*classifier_dropout=*/0.1,
-    /*sequence_length=*/512_n,
-    /*batch_size=*/64_n,
+      /*vocab_size=*/30522_n,
+      /*hidden_size=*/768_n,
+      /*num_encoder_layers=*/12_n,
+      /*num_heads=*/12_n,
+      /*dim_feedforward=*/3072_n,
+      /*hidden_act=*/Activation::GELU,
+      /*hidden_dropout_prob=*/0.1,
+      /*attention_probs_dropout_prob=*/0.1,
+      /*initializer_range=*/0.02,
+      /*layer_norm_eps=*/1e-12,
+      /*position_embedding_type=*/"absolute",
+      /*classifier_dropout=*/0.1,
+      /*sequence_length=*/512_n,
+      /*batch_size=*/64_n,
   };
 }
 
@@ -58,7 +58,8 @@ tensor_guid_t
                               InitializerAttrs const &bias_initializer,
                               InitializerAttrs const &projection_initializer) {
   assert(num_dims(cgb.get_shape(input)) == 3);
-  std::vector<relative_ff_dim_t> layer_norm_axis = {relative_ff_dim_t{-1}}; // Apply layernorm across the last dim
+  std::vector<relative_ff_dim_t> layer_norm_axis = {
+      relative_ff_dim_t{-1}}; // Apply layernorm across the last dim
   nonnegative_int kdim = config.dim_feedforward / config.num_heads;
   nonnegative_int vdim = config.dim_feedforward / config.num_heads;
   tensor_guid_t self_attention =

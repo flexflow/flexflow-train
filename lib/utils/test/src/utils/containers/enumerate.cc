@@ -29,14 +29,15 @@ TEST_SUITE(FF_TEST_SUITE) {
     CHECK(result == correct);
 
     SUBCASE("check iteration order") {
-      std::vector<std::pair<nonnegative_int const, std::string>> iterated_result =
-          vector_of(result);
-      std::vector<std::pair<nonnegative_int const, std::string>> correct_iteration_order = {
-          {0_n, "zero"},
-          {1_n, "one"},
-          {2_n, "two"},
-          {3_n, "three"},
-      };
+      std::vector<std::pair<nonnegative_int const, std::string>>
+          iterated_result = vector_of(result);
+      std::vector<std::pair<nonnegative_int const, std::string>>
+          correct_iteration_order = {
+              {0_n, "zero"},
+              {1_n, "one"},
+              {2_n, "two"},
+              {3_n, "three"},
+          };
 
       CHECK(iterated_result == correct_iteration_order);
     }

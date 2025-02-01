@@ -7,7 +7,7 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Test Pool2D Forward and Backward Kernel") {
     nonnegative_int input_w = 10_n;
     nonnegative_int input_h = 10_n;
-    nonnegative_int input_c = 3_n; 
+    nonnegative_int input_c = 3_n;
     nonnegative_int input_n = 1_n;
     nonnegative_int output_w = 5_n;
     nonnegative_int output_h = 5_n;

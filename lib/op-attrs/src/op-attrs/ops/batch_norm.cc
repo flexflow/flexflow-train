@@ -109,14 +109,11 @@ static std::optional<std::string>
   }
 
   FFOrdered<nonnegative_int> non_channel_degrees =
-      concat(slice(input_degrees.shard_degrees,
-                   ff_dim_t{0_n},
-                   ff_dim_t{1_n}),
-             slice(input_degrees.shard_degrees,
-                   ff_dim_t{2_n},
-                   std::nullopt));
+      concat(slice(input_degrees.shard_degrees, ff_dim_t{0_n}, ff_dim_t{1_n}),
+             slice(input_degrees.shard_degrees, ff_dim_t{2_n}, std::nullopt));
 
-  if (any_of(non_channel_degrees, [](nonnegative_int degree) { return degree != 1_n; })) {
+  if (any_of(non_channel_degrees,
+             [](nonnegative_int degree) { return degree != 1_n; })) {
     return fmt::format("Expected parallel degree of all non-channel dimensions "
                        "to be 1, but received input with degrees {}",
                        input_degrees);

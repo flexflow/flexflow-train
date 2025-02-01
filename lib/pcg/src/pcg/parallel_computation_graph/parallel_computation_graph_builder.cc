@@ -155,16 +155,16 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::conv2d(
     std::optional<RegularizerAttrs> const &kernel_regularizer,
     std::optional<std::string> const &maybe_name) {
   Conv2DAttrs attrs = Conv2DAttrs{
-    /*out_channels=*/outChannels,
-    /*kernel_h=*/kernelH,
-    /*kernel_w=*/kernelW,
-    /*stride_h=*/strideH,
-    /*stride_w=*/strideW,
-    /*padding_h=*/paddingH,
-    /*padding_w=*/paddingW,
-    /*groups=*/groups,
-    /*activation=*/activation,
-    /*use_bias=*/use_bias,
+      /*out_channels=*/outChannels,
+      /*kernel_h=*/kernelH,
+      /*kernel_w=*/kernelW,
+      /*stride_h=*/strideH,
+      /*stride_w=*/strideW,
+      /*padding_h=*/paddingH,
+      /*padding_w=*/paddingW,
+      /*groups=*/groups,
+      /*activation=*/activation,
+      /*use_bias=*/use_bias,
   };
 
   std::string name =
@@ -496,8 +496,8 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::parallel_partition(
     std::optional<std::string> const &maybe_name) {
 
   RepartitionAttrs attrs = RepartitionAttrs{
-    /*repartition_dim=*/dim, 
-    /*repartition_degree=*/degree,
+      /*repartition_dim=*/dim,
+      /*repartition_degree=*/degree,
   };
 
   std::string name =
@@ -518,8 +518,8 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::parallel_combine(
     std::optional<std::string> const &maybe_name) {
 
   CombineAttrs attrs = CombineAttrs{
-    /*combine_dim=*/dim, 
-    /*combine_degree=*/degree,
+      /*combine_dim=*/dim,
+      /*combine_degree=*/degree,
   };
 
   std::string name =

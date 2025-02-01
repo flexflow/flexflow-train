@@ -5,5 +5,4 @@ namespace FlexFlow {
 
 template decltype(auto) make<std::vector<int>>();
 
-
 } // namespace FlexFlow

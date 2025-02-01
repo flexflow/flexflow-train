@@ -102,8 +102,7 @@ OpTaskSignature get_transpose_bwd_signature() {
 }
 
 std::vector<task_id_t> get_task_ids(TransposeAttrs const &) {
-  return {task_id_t::TRANSPOSE_FWD_TASK_ID,
-          task_id_t::TRANSPOSE_BWD_TASK_ID};
+  return {task_id_t::TRANSPOSE_FWD_TASK_ID, task_id_t::TRANSPOSE_BWD_TASK_ID};
 }
 
 } // namespace FlexFlow

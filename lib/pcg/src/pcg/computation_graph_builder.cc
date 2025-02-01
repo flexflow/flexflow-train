@@ -390,16 +390,16 @@ tensor_guid_t ComputationGraphBuilder::conv2d(
     std::optional<RegularizerAttrs> const &kernel_regularizer,
     std::optional<std::string> const &maybe_name) {
   Conv2DAttrs attrs = Conv2DAttrs{
-    /*out_channels=*/outChannels,
-    /*kernel_h=*/kernelH,
-    /*kernel_w=*/kernelW,
-    /*stride_h=*/strideH,
-    /*stride_w=*/strideW,
-    /*padding_h=*/paddingH,
-    /*padding_w=*/paddingW,
-    /*groups=*/groups,
-    /*activation=*/activation,
-    /*use_bias=*/use_bias,
+      /*out_channels=*/outChannels,
+      /*kernel_h=*/kernelH,
+      /*kernel_w=*/kernelW,
+      /*stride_h=*/strideH,
+      /*stride_w=*/strideW,
+      /*padding_h=*/paddingH,
+      /*padding_w=*/paddingW,
+      /*groups=*/groups,
+      /*activation=*/activation,
+      /*use_bias=*/use_bias,
   };
 
   std::string name =
@@ -459,10 +459,10 @@ tensor_guid_t ComputationGraphBuilder::embedding(
     std::optional<InitializerAttrs> const &kernel_initializer,
     std::optional<std::string> const &maybe_name) {
   EmbeddingAttrs attrs = EmbeddingAttrs{
-    /*num_entries=*/num_entries, 
-    /*out_channels=*/outDim, 
-    /*aggr=*/aggr, 
-    /*data_type=*/dtype,
+      /*num_entries=*/num_entries,
+      /*out_channels=*/outDim,
+      /*aggr=*/aggr,
+      /*data_type=*/dtype,
   };
   std::string name =
       maybe_name.value_or(get_default_name(ComputationGraphOpAttrs{attrs}));
@@ -669,14 +669,14 @@ tensor_guid_t ComputationGraphBuilder::multihead_attention(
   }
 
   MultiHeadAttentionAttrs attrs = MultiHeadAttentionAttrs{
-    /*embed_dim=*/embed_dim,
-    /*num_heads=*/num_heads,
-    /*kdim=*/kdim,
-    /*vdim=*/vdim,
-    /*dropout=*/dropout,
-    /*bias=*/bias,
-    /*add_bias_kv=*/add_bias_kv,
-    /*add_zero_attn=*/add_zero_attn,
+      /*embed_dim=*/embed_dim,
+      /*num_heads=*/num_heads,
+      /*kdim=*/kdim,
+      /*vdim=*/vdim,
+      /*dropout=*/dropout,
+      /*bias=*/bias,
+      /*add_bias_kv=*/add_bias_kv,
+      /*add_zero_attn=*/add_zero_attn,
   };
 
   std::string name =
@@ -761,11 +761,11 @@ tensor_guid_t ComputationGraphBuilder::dense(
     std::optional<std::string> const &projection_name,
     std::optional<std::string> const &bias_name) {
   LinearAttrs attrs = LinearAttrs{
-    /*out_channels=*/outDim, 
-    /*use_bias=*/use_bias, 
-    /*data_type=*/data_type, 
-    /*activation=*/activation, 
-    /*regularizer=*/std::nullopt,
+      /*out_channels=*/outDim,
+      /*use_bias=*/use_bias,
+      /*data_type=*/data_type,
+      /*activation=*/activation,
+      /*regularizer=*/std::nullopt,
   };
 
   std::string name =
@@ -835,11 +835,11 @@ tensor_guid_t ComputationGraphBuilder::flat(
   nonnegative_int input_num_dims = num_dims(this->get_shape(input));
 
   FlatAttrs attrs = FlatAttrs{
-      /*start_dim=*/ff_dim_t_from_relative_ff_dim_t(
-          start_dim, input_num_dims),
+      /*start_dim=*/ff_dim_t_from_relative_ff_dim_t(start_dim, input_num_dims),
       /*end_dim=*/
-      ff_dim_t_from_relative_ff_dim_t(
-          end_dim.value_or(relative_ff_dim_t{input_num_dims.unwrap_nonnegative()}), input_num_dims),
+      ff_dim_t_from_relative_ff_dim_t(end_dim.value_or(relative_ff_dim_t{
+                                          input_num_dims.unwrap_nonnegative()}),
+                                      input_num_dims),
   };
 
   std::string name =
@@ -863,8 +863,7 @@ tensor_guid_t ComputationGraphBuilder::layer_norm(
   TensorShape input_shape = this->get_shape(input);
 
   auto resolve_dim_idx = [&](relative_ff_dim_t dim_idx) {
-    return ff_dim_t_from_relative_ff_dim_t(dim_idx,
-                                           num_dims(input_shape));
+    return ff_dim_t_from_relative_ff_dim_t(dim_idx, num_dims(input_shape));
   };
 
   stack_vector<ff_dim_t, MAX_TENSOR_DIM> axes = stack_vector_of<MAX_TENSOR_DIM>(
@@ -927,10 +926,11 @@ tensor_guid_t ComputationGraphBuilder::softmax(
 
   TensorShape input_shape = this->get_shape(input);
 
-  relative_ff_dim_t dim = maybe_dim.value_or(relative_ff_dim_t{num_dims(input_shape).unwrap_nonnegative() - 1});
+  relative_ff_dim_t dim = maybe_dim.value_or(
+      relative_ff_dim_t{num_dims(input_shape).unwrap_nonnegative() - 1});
 
-  SoftmaxAttrs attrs = SoftmaxAttrs{ff_dim_t_from_relative_ff_dim_t(
-      dim, num_dims(input_shape))};
+  SoftmaxAttrs attrs =
+      SoftmaxAttrs{ff_dim_t_from_relative_ff_dim_t(dim, num_dims(input_shape))};
 
   if (attrs.dim.value >= num_dims(input_shape)) {
     throw mk_runtime_error(

@@ -21,9 +21,9 @@ std::unordered_set<ReplicaParallelDim>
 }
 
 nonnegative_int get_num_replicas(ParallelTensorShape const &shape) {
-  return product(
-      transform(replica_dims(shape),
-                [](ReplicaParallelDim const &d) -> nonnegative_int { return d.degree; }));
+  return product(transform(
+      replica_dims(shape),
+      [](ReplicaParallelDim const &d) -> nonnegative_int { return d.degree; }));
 }
 
 nonnegative_int get_sum_degree(ParallelTensorShape const &shape) {
@@ -52,7 +52,8 @@ ShardParallelDim &shard_dim_at_idx(ParallelTensorShape &s,
   return shard_dim_at_idx(s.dims, d);
 }
 
-FFOrdered<nonnegative_int> ff_ordered_shard_degrees(ParallelTensorShape const &s) {
+FFOrdered<nonnegative_int>
+    ff_ordered_shard_degrees(ParallelTensorShape const &s) {
   return ff_ordered_shard_degrees(s.dims);
 }
 
@@ -74,11 +75,11 @@ ParallelTensorShape lift_to_parallel(TensorShape const &s) {
   return ParallelTensorShape{lift_to_parallel(s.dims), s.data_type};
 }
 
-ParallelTensorShape
-    lift_to_parallel_with_degrees(TensorShape const &unpar,
-                                  SumDegree const &sum_degree,
-                                  DiscardCopyDegree const &discard_copy_degree,
-                                  FFOrdered<nonnegative_int> const &shard_degrees) {
+ParallelTensorShape lift_to_parallel_with_degrees(
+    TensorShape const &unpar,
+    SumDegree const &sum_degree,
+    DiscardCopyDegree const &discard_copy_degree,
+    FFOrdered<nonnegative_int> const &shard_degrees) {
   return ParallelTensorShape{
       lift_to_parallel_with_degrees(
           unpar.dims, sum_degree, discard_copy_degree, shard_degrees),
@@ -125,25 +126,27 @@ TensorShape get_reduced_shape(ParallelTensorShape const &s) {
 
 ParallelDim get_parallel_dim_at_idx(ParallelTensorShape const &shape,
                                     parallel_tensor_dim_idx_t idx) {
-  return idx.visit<ParallelDim>(
-      overload{[&](ff_dim_t shard_dim) {
-                 return ParallelDim{shape.dims.shard_dims.at(shard_dim)};
-               },
-               [&](ReplicaType replica_type) {
-                 ReplicaParallelDimSet replicas = shape.dims.replica_dims;
-                 nonnegative_int degree = (ReplicaType::SUM == replica_type
-                                   ? replicas.sum_degree.value
-                                   : replicas.discard_copy_degree.value);
-                 return ParallelDim{ReplicaParallelDim{degree, replica_type}};
-               }});
+  return idx.visit<ParallelDim>(overload{
+      [&](ff_dim_t shard_dim) {
+        return ParallelDim{shape.dims.shard_dims.at(shard_dim)};
+      },
+      [&](ReplicaType replica_type) {
+        ReplicaParallelDimSet replicas = shape.dims.replica_dims;
+        nonnegative_int degree = (ReplicaType::SUM == replica_type
+                                      ? replicas.sum_degree.value
+                                      : replicas.discard_copy_degree.value);
+        return ParallelDim{ReplicaParallelDim{degree, replica_type}};
+      }});
 }
 
 std::unordered_set<parallel_tensor_dim_idx_t>
     get_parallel_tensor_dim_indices(ParallelTensorShape const &shape) {
   std::unordered_set<parallel_tensor_dim_idx_t> indices;
-  extend(indices, transform(nonnegative_range(num_shard_dims(shape.dims)), [](nonnegative_int idx) {
-           return parallel_tensor_dim_idx_t{ff_dim_t{idx}};
-         }));
+  extend(indices,
+         transform(nonnegative_range(num_shard_dims(shape.dims)),
+                   [](nonnegative_int idx) {
+                     return parallel_tensor_dim_idx_t{ff_dim_t{idx}};
+                   }));
   indices.insert(parallel_tensor_dim_idx_t{ReplicaType::SUM});
   indices.insert(parallel_tensor_dim_idx_t{ReplicaType::DISCARD_COPY});
   return indices;

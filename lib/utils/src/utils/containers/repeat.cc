@@ -6,7 +6,6 @@ namespace FlexFlow {
 using Out = value_type<0>;
 using F = std::function<Out()>;
 
-template
-  std::vector<Out> repeat(nonnegative_int, F const &);
+template std::vector<Out> repeat(nonnegative_int, F const &);
 
 } // namespace FlexFlow

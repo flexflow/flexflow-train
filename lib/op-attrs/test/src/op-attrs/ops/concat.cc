@@ -145,33 +145,46 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     TensorShape output_shape = TensorShape{
-        TensorDims{FFOrdered<nonnegative_int>{dim0_size, 14_n + 16_n + 18_n, dim2_size}},
+        TensorDims{FFOrdered<nonnegative_int>{
+            dim0_size, 14_n + 16_n + 18_n, dim2_size}},
         DataType::FLOAT,
     };
 
-    auto lift_input1 =
-        [&](SumDegree o_sum, DiscardCopyDegree o_eq, nonnegative_int o0, nonnegative_int o1, nonnegative_int o2) {
-          return lift_to_parallel_with_degrees(
-              input_shape1, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o1, o2});
-        };
+    auto lift_input1 = [&](SumDegree o_sum,
+                           DiscardCopyDegree o_eq,
+                           nonnegative_int o0,
+                           nonnegative_int o1,
+                           nonnegative_int o2) {
+      return lift_to_parallel_with_degrees(
+          input_shape1, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o1, o2});
+    };
 
-    auto lift_input2 =
-        [&](SumDegree o_sum, DiscardCopyDegree o_eq, nonnegative_int o0, nonnegative_int o1, nonnegative_int o2) {
-          return lift_to_parallel_with_degrees(
-              input_shape2, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o1, o2});
-        };
+    auto lift_input2 = [&](SumDegree o_sum,
+                           DiscardCopyDegree o_eq,
+                           nonnegative_int o0,
+                           nonnegative_int o1,
+                           nonnegative_int o2) {
+      return lift_to_parallel_with_degrees(
+          input_shape2, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o1, o2});
+    };
 
-    auto lift_input3 =
-        [&](SumDegree o_sum, DiscardCopyDegree o_eq, nonnegative_int o0, nonnegative_int o1, nonnegative_int o2) {
-          return lift_to_parallel_with_degrees(
-              input_shape3, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o1, o2});
-        };
+    auto lift_input3 = [&](SumDegree o_sum,
+                           DiscardCopyDegree o_eq,
+                           nonnegative_int o0,
+                           nonnegative_int o1,
+                           nonnegative_int o2) {
+      return lift_to_parallel_with_degrees(
+          input_shape3, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o1, o2});
+    };
 
-    auto lift_output =
-        [&](SumDegree o_sum, DiscardCopyDegree o_eq, nonnegative_int o0, nonnegative_int o1, nonnegative_int o2) {
-          return lift_to_parallel_with_degrees(
-              output_shape, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o1, o2});
-        };
+    auto lift_output = [&](SumDegree o_sum,
+                           DiscardCopyDegree o_eq,
+                           nonnegative_int o0,
+                           nonnegative_int o1,
+                           nonnegative_int o2) {
+      return lift_to_parallel_with_degrees(
+          output_shape, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o1, o2});
+    };
 
     SUBCASE("sum reduction parallelism") {
       SUBCASE("matching") {
@@ -244,9 +257,12 @@ TEST_SUITE(FF_TEST_SUITE) {
         nonnegative_int degree = 2_n;
 
         std::vector<ParallelTensorShape> inputs = {
-            lift_input1(SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, degree, 1_n),
-            lift_input2(SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, degree, 1_n),
-            lift_input3(SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, degree, 1_n),
+            lift_input1(
+                SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, degree, 1_n),
+            lift_input2(
+                SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, degree, 1_n),
+            lift_input3(
+                SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, degree, 1_n),
         };
 
         std::optional<ParallelTensorShape> result =

@@ -11,9 +11,8 @@ namespace FlexFlow {
 
 TensorShape get_output_shape(FlatAttrs const &attrs,
                              TensorShape const &input_shape) {
-  FFOrdered<nonnegative_int> leading_dims = slice(ff_ordered(input_shape.dims),
-                                         ff_dim_t{0_n},
-                                         attrs.start_dim);
+  FFOrdered<nonnegative_int> leading_dims =
+      slice(ff_ordered(input_shape.dims), ff_dim_t{0_n}, attrs.start_dim);
   FFOrdered<nonnegative_int> flattened_dims =
       slice(ff_ordered(input_shape.dims), attrs.start_dim, attrs.end_dim);
   FFOrdered<nonnegative_int> trailing_dims =
@@ -45,7 +44,8 @@ tl::expected<ParallelTensorDimDegrees, std::string>
     return input_degrees;
   }
 
-  if (any_of(flattened_dim_degrees, [](nonnegative_int degree) { return degree != 1; })) {
+  if (any_of(flattened_dim_degrees,
+             [](nonnegative_int degree) { return degree != 1; })) {
     return tl::unexpected(
         fmt::format("get_output_parallel_dim_degrees for {} expected all shard "
                     "degrees of flattened dimensions to be 1, but received {}",
@@ -58,9 +58,7 @@ tl::expected<ParallelTensorDimDegrees, std::string>
       /*discard_copy_degree=*/input_degrees.discard_copy_degree,
       /*shard_degrees=*/
       concat(std::vector{
-          slice(input_degrees.shard_degrees,
-                ff_dim_t{0_n},
-                attrs.start_dim),
+          slice(input_degrees.shard_degrees, ff_dim_t{0_n}, attrs.start_dim),
           {product(flattened_dim_degrees)},
           slice(input_degrees.shard_degrees, attrs.end_dim, std::nullopt),
       }),

@@ -35,8 +35,8 @@ NodeAddedResult UnorderedSetDataflowGraph::add_node(
     std::vector<OpenDataflowValue> const &inputs, nonnegative_int num_outputs) {
   Node new_node = this->node_source.new_node();
 
-  std::vector<DataflowOutput> new_outputs =
-      transform(nonnegative_range(num_outputs), [&](nonnegative_int output_idx) {
+  std::vector<DataflowOutput> new_outputs = transform(
+      nonnegative_range(num_outputs), [&](nonnegative_int output_idx) {
         return DataflowOutput{new_node, output_idx};
       });
 

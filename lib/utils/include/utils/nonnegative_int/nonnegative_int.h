@@ -5,8 +5,8 @@
 #include <fmt/format.h>
 #include <functional>
 #include <nlohmann/json.hpp>
-#include <string>
 #include <rapidcheck.h>
+#include <string>
 
 namespace FlexFlow {
 class nonnegative_int {
@@ -62,7 +62,7 @@ private:
   int value_;
 };
 
-nonnegative_int operator ""_n(unsigned long long int);
+nonnegative_int operator""_n(unsigned long long int);
 
 } // namespace FlexFlow
 
@@ -79,8 +79,7 @@ template <>
 struct Arbitrary<::FlexFlow::nonnegative_int> {
   static Gen<::FlexFlow::nonnegative_int> arbitrary();
 };
-}
-
+} // namespace rc
 
 namespace std {
 template <>

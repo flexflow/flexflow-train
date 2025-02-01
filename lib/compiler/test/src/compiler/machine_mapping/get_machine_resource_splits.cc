@@ -8,7 +8,8 @@ using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_machine_resource_splits") {
-    auto make_machine_spec = [](nonnegative_int num_nodes, nonnegative_int num_gpus_per_node) {
+    auto make_machine_spec = [](nonnegative_int num_nodes,
+                                nonnegative_int num_gpus_per_node) {
       return MachineSpecification{
           /*num_nodes=*/num_nodes,
           /*num_cpus_per_node=*/1_n,
@@ -60,8 +61,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("returns splits in node dimension in powers of two") {
       SUBCASE("num_nodes is a power of 2") {
-        MachineSpecification input = make_machine_spec(/*num_nodes=*/8_n,
-                                                       /*num_gpus_per_node=*/1_n);
+        MachineSpecification input =
+            make_machine_spec(/*num_nodes=*/8_n,
+                              /*num_gpus_per_node=*/1_n);
 
         std::unordered_set<
             std::pair<MachineSpecification, MachineSpecification>>
@@ -106,8 +108,9 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SUBCASE("num_nodes is not a power of 2") {
-        MachineSpecification input = make_machine_spec(/*num_nodes=*/6_n,
-                                                       /*num_gpus_per_node=*/1_n);
+        MachineSpecification input =
+            make_machine_spec(/*num_nodes=*/6_n,
+                              /*num_gpus_per_node=*/1_n);
 
         std::unordered_set<
             std::pair<MachineSpecification, MachineSpecification>>
@@ -148,8 +151,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("returns splits in gpu dimension in powers of two") {
       SUBCASE("num_gpus_per_node is a power of 2") {
-        MachineSpecification input = make_machine_spec(/*num_nodes=*/1_n,
-                                                       /*num_gpus_per_node=*/8_n);
+        MachineSpecification input =
+            make_machine_spec(/*num_nodes=*/1_n,
+                              /*num_gpus_per_node=*/8_n);
 
         std::unordered_set<
             std::pair<MachineSpecification, MachineSpecification>>
@@ -194,8 +198,9 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SUBCASE("num_gpus_per_node is not a power of 2") {
-        MachineSpecification input = make_machine_spec(/*num_nodes=*/1_n,
-                                                       /*num_gpus_per_node=*/6_n);
+        MachineSpecification input =
+            make_machine_spec(/*num_nodes=*/1_n,
+                              /*num_gpus_per_node=*/6_n);
 
         std::unordered_set<
             std::pair<MachineSpecification, MachineSpecification>>

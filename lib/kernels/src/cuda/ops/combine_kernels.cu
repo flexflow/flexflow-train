@@ -29,7 +29,8 @@ struct ForwardKernel {
                   GenericTensorAccessorW const &output) {
     checkCUDA(cudaMemcpyAsync(output.get<DT>(),
                               input.get<DT>(),
-                              input.shape.get_volume().unwrap_nonnegative() * size_of_datatype(DT).unwrap_nonnegative(),
+                              input.shape.get_volume().unwrap_nonnegative() *
+                                  size_of_datatype(DT).unwrap_nonnegative(),
                               cudaMemcpyDeviceToDevice,
                               stream));
   }

@@ -3,6 +3,7 @@
 #include "substitutions/pcg_pattern_match.h"
 #include "substitutions/sub_parallel_computation_graph.h"
 #include "substitutions/tensor_pattern/satisfies_pattern.h"
+#include "substitutions/unlabelled/find_pattern_matches.h"
 #include "substitutions/unlabelled/pattern_value.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/transform.h"
@@ -10,7 +11,6 @@
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_inputs.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_open_dataflow_graph_inputs.h"
-#include "substitutions/unlabelled/find_pattern_matches.h"
 
 namespace FlexFlow {
 

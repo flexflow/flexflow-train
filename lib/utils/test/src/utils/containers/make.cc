@@ -1,7 +1,7 @@
 #include "utils/containers/make.h"
 #include <doctest/doctest.h>
 
-using namespace ::FlexFlow; 
+using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("make") {

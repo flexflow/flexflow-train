@@ -31,7 +31,8 @@ CLIArgumentKey cli_add_flag(CLISpec &cli, CLIFlagSpec const &flag_spec) {
 CLIArgumentKey
     cli_add_positional_argument(CLISpec &cli,
                                 CLIPositionalArgumentSpec const &arg) {
-  CLIArgumentKey key = CLIArgumentKey{CLIPositionalArgumentKey{num_elements(cli.positional_arguments)}};
+  CLIArgumentKey key = CLIArgumentKey{
+      CLIPositionalArgumentKey{num_elements(cli.positional_arguments)}};
   cli.positional_arguments.push_back(arg);
   return key;
 }

@@ -45,9 +45,8 @@ OpTaskInvocation backward(SplitAttrs const &attrs) {
   return {task_id_t::SPLIT_BWD_TASK_ID, binding};
 }
 
-static std::pair<nonnegative_int, nonnegative_int> calc_block_size(
-                     ArrayShape const &array_shape,
-                     ff_dim_t axis) {
+static std::pair<nonnegative_int, nonnegative_int>
+    calc_block_size(ArrayShape const &array_shape, ff_dim_t axis) {
   nonnegative_int num_blocks = 1_n;
   nonnegative_int block_size = 1_n;
   for (nonnegative_int d : nonnegative_range(array_shape.num_elements())) {
@@ -94,7 +93,8 @@ static std::optional<float>
   auto attrs = acc.get_argument<SplitAttrs>(ATTRS);
 
   coord_t out_block_sizes[MAX_NUM_OUTPUTS];
-  auto [num_blocks, in_block_size] = calc_block_size(input_grad.shape, attrs.axis);
+  auto [num_blocks, in_block_size] =
+      calc_block_size(input_grad.shape, attrs.axis);
 
   for (int i = 0; i < attrs.splits.size(); i++) {
     coord_t out_num_blocks;

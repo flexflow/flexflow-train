@@ -121,8 +121,8 @@ static DeviceSpecificDeviceStates
 
   nonnegative_int M = 1_n;
   for (int i = 0; i < attrs.axes.size(); i++) {
-    legion_dim_t legion_dim = legion_dim_from_ff_dim(
-        attrs.axes[i], input.shape.num_dims());
+    legion_dim_t legion_dim =
+        legion_dim_from_ff_dim(attrs.axes[i], input.shape.num_dims());
     M *= input.shape.at(legion_dim);
   }
   nonnegative_int num_replicas = 1_n;

@@ -10,9 +10,11 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("bidict_from_enumerating(std::unordered_set<T>)") {
     std::unordered_set<std::string> input = {"zero", "one", "two"};
 
-    bidict<nonnegative_int, std::string> result = bidict_from_enumerating(input);
+    bidict<nonnegative_int, std::string> result =
+        bidict_from_enumerating(input);
 
-    std::unordered_set<nonnegative_int> result_left_entries = left_entries(result);
+    std::unordered_set<nonnegative_int> result_left_entries =
+        left_entries(result);
     std::unordered_set<nonnegative_int> correct_left_entries = {0_n, 1_n, 2_n};
     CHECK(result_left_entries == correct_left_entries);
 
@@ -31,7 +33,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         {2_n, "c"},
     };
 
-    bidict<nonnegative_int, std::string> result = bidict_from_enumerating(input);
+    bidict<nonnegative_int, std::string> result =
+        bidict_from_enumerating(input);
 
     CHECK(result == correct);
   }

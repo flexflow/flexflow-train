@@ -130,7 +130,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("op attrs") {
       PCGOperatorAttrs result = get_parallel_layer_attrs(b.pcg, layer).op_attrs;
-      PCGOperatorAttrs correct = PCGOperatorAttrs{BatchMatmulAttrs{std::nullopt, std::nullopt}};
+      PCGOperatorAttrs correct =
+          PCGOperatorAttrs{BatchMatmulAttrs{std::nullopt, std::nullopt}};
       CHECK(result == correct);
     }
   }
@@ -186,11 +187,11 @@ TEST_SUITE(FF_TEST_SUITE) {
         DataType::FLOAT,
     };
 
-    ParallelTensorShape input_shape =
-        lift_to_parallel_with_degrees(unpar_input_shape,
-                                      SumDegree{1_n},
-                                      DiscardCopyDegree{1_n},
-                                      FFOrdered<nonnegative_int>{2_n, 1_n, 1_n, 1_n});
+    ParallelTensorShape input_shape = lift_to_parallel_with_degrees(
+        unpar_input_shape,
+        SumDegree{1_n},
+        DiscardCopyDegree{1_n},
+        FFOrdered<nonnegative_int>{2_n, 1_n, 1_n, 1_n});
 
     parallel_tensor_guid_t input = b.create_input_tensor(input_shape);
 

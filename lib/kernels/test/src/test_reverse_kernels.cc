@@ -24,13 +24,14 @@ TEST_SUITE(FF_TEST_SUITE) {
       GenericTensorAccessorW output_accessor =
           allocator.allocate_tensor(output_shape);
 
-      Kernels::Reverse::forward_kernel(managed_stream.raw_stream(),
-                                       input_accessor.get_float_ptr(),
-                                       output_accessor.get_float_ptr(),
-                                       num_out_blks.unwrap_nonnegative(),
-                                       reverse_dim_size.unwrap_nonnegative(),
-                                       in_blk_size.unwrap_nonnegative(),
-                                       input_accessor.shape.num_elements().unwrap_nonnegative());
+      Kernels::Reverse::forward_kernel(
+          managed_stream.raw_stream(),
+          input_accessor.get_float_ptr(),
+          output_accessor.get_float_ptr(),
+          num_out_blks.unwrap_nonnegative(),
+          reverse_dim_size.unwrap_nonnegative(),
+          in_blk_size.unwrap_nonnegative(),
+          input_accessor.shape.num_elements().unwrap_nonnegative());
 
       std::vector<float> check_output_data =
           load_data_to_host_from_device<float>(

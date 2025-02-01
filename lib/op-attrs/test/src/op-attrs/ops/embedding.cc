@@ -77,7 +77,10 @@ TEST_SUITE(FF_TEST_SUITE) {
                            nonnegative_int o_batch,
                            nonnegative_int o_outchannels) {
       return lift_to_parallel_with_degrees(
-          output, o_sum, o_eq, FFOrdered<nonnegative_int>{o_batch, o_outchannels});
+          output,
+          o_sum,
+          o_eq,
+          FFOrdered<nonnegative_int>{o_batch, o_outchannels});
     };
 
     auto make_weights = [&](SumDegree o_sum,
@@ -85,7 +88,10 @@ TEST_SUITE(FF_TEST_SUITE) {
                             nonnegative_int o_entries,
                             nonnegative_int o_outchannels) {
       return lift_to_parallel_with_degrees(
-          weights, o_sum, o_eq, FFOrdered<nonnegative_int>{o_entries, o_outchannels});
+          weights,
+          o_sum,
+          o_eq,
+          FFOrdered<nonnegative_int>{o_entries, o_outchannels});
     };
 
     SUBCASE("data parallelism") {

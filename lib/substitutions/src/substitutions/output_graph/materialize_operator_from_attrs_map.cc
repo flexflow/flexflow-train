@@ -33,8 +33,10 @@ PCGOperatorAttrs materialize_operator_from_attrs_map(
   switch (op_type) {
     case OperatorType::MULTIHEAD_ATTENTION:
       return PCGOperatorAttrs{MultiHeadAttentionAttrs{
-          /*embed_dim=*/acc.get<nonnegative_int>(OperatorAttributeKey::EMBED_DIM),
-          /*num_heads=*/acc.get<nonnegative_int>(OperatorAttributeKey::NUM_HEADS),
+          /*embed_dim=*/acc.get<nonnegative_int>(
+              OperatorAttributeKey::EMBED_DIM),
+          /*num_heads=*/
+          acc.get<nonnegative_int>(OperatorAttributeKey::NUM_HEADS),
           /*kdim=*/acc.get<nonnegative_int>(OperatorAttributeKey::KDIM),
           /*vdim=*/acc.get<nonnegative_int>(OperatorAttributeKey::VDIM),
           /*dropout=*/acc.get<float>(OperatorAttributeKey::DROPOUT),
@@ -48,8 +50,10 @@ PCGOperatorAttrs materialize_operator_from_attrs_map(
           /*kernel_w=*/acc.get<nonnegative_int>(OperatorAttributeKey::KERNEL_W),
           /*stride_h=*/acc.get<nonnegative_int>(OperatorAttributeKey::STRIDE_H),
           /*stride_w=*/acc.get<nonnegative_int>(OperatorAttributeKey::STRIDE_W),
-          /*padding_h=*/acc.get<nonnegative_int>(OperatorAttributeKey::PADDING_H),
-          /*padding_w=*/acc.get<nonnegative_int>(OperatorAttributeKey::PADDING_W),
+          /*padding_h=*/
+          acc.get<nonnegative_int>(OperatorAttributeKey::PADDING_H),
+          /*padding_w=*/
+          acc.get<nonnegative_int>(OperatorAttributeKey::PADDING_W),
           /*pool_type=*/acc.get<PoolOp>(OperatorAttributeKey::POOL_TYPE),
           /*activation=*/
           acc.get<std::optional<Activation>>(OperatorAttributeKey::ACTIVATION)
@@ -62,7 +66,8 @@ PCGOperatorAttrs materialize_operator_from_attrs_map(
     case OperatorType::DROPOUT:
     case OperatorType::LINEAR:
       return PCGOperatorAttrs{LinearAttrs{
-          /*out_channels=*/acc.get<nonnegative_int>(OperatorAttributeKey::OUT_CHANNELS),
+          /*out_channels=*/acc.get<nonnegative_int>(
+              OperatorAttributeKey::OUT_CHANNELS),
           /*use_bias=*/acc.get<bool>(OperatorAttributeKey::USE_BIAS),
           /*data_type=*/acc.get<DataType>(OperatorAttributeKey::DATA_TYPE),
           /*activation=*/

@@ -159,7 +159,8 @@ TEST_SUITE(FF_TEST_SUITE) {
                  lift_to_parallel(get_reduced_shape(n1_weight_shape)),
              },
              {
-                 OpenDataflowValue{DataflowOutput{n1_weight_replicate_node, 0_n}},
+                 OpenDataflowValue{
+                     DataflowOutput{n1_weight_replicate_node, 0_n}},
                  n1_weight_shape,
              },
              {

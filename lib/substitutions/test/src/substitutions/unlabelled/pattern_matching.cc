@@ -1,6 +1,6 @@
+#include "substitutions/unlabelled/pattern_matching.h"
 #include "substitutions/unlabelled/find_pattern_matches.h"
 #include "substitutions/unlabelled/match_additional_criterion.h"
-#include "substitutions/unlabelled/pattern_matching.h"
 #include "utils/containers/get_only.h"
 #include "utils/graph/instances/unordered_set_dataflow_graph.h"
 #include "utils/graph/node/algorithms.h"
@@ -63,7 +63,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     OpenDataflowValue pattern_v0 =
         OpenDataflowValue{get_only(pattern_n0_added.outputs)};
 
-    NodeAddedResult pattern_n1_added = pattern_graph.add_node({pattern_v0}, 1_n);
+    NodeAddedResult pattern_n1_added =
+        pattern_graph.add_node({pattern_v0}, 1_n);
     Node pattern_n1 = pattern_n1_added.node;
     OpenDataflowValue pattern_v1 =
         OpenDataflowValue{get_only(pattern_n1_added.outputs)};

@@ -1,6 +1,6 @@
 #include "utils/containers/at_idx.h"
-#include <doctest/doctest.h>
 #include "test/utils/doctest/fmt/optional.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 

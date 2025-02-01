@@ -25,8 +25,11 @@ void calc_blk_size(size_t &num_blocks,
                    size_t &blk_size,
                    ArrayShape const &shape,
                    ff_dim_t axis) {
-  blk_size = shape.sub_shape(legion_dim_t{0_n}, axis).num_elements().unwrap_nonnegative();
-  num_blocks = shape.sub_shape(axis, std::nullopt).num_elements().unwrap_nonnegative();
+  blk_size = shape.sub_shape(legion_dim_t{0_n}, axis)
+                 .num_elements()
+                 .unwrap_nonnegative();
+  num_blocks =
+      shape.sub_shape(axis, std::nullopt).num_elements().unwrap_nonnegative();
 }
 
 void forward_kernel(cudaStream_t stream,

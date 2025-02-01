@@ -68,7 +68,8 @@ nonnegative_int get_vSize(MultiHeadAttentionInputs const &inputs) {
   return inputs.value_size;
 }
 
-nonnegative_int get_kvSeqLength(MultiHeadAttentionParallelInputs const &inputs) {
+nonnegative_int
+    get_kvSeqLength(MultiHeadAttentionParallelInputs const &inputs) {
   return inputs.sequence_dim.size;
 }
 
@@ -76,7 +77,8 @@ nonnegative_int get_kvSeqLength(MultiHeadAttentionInputs const &inputs) {
   return inputs.sequence_length;
 }
 
-nonnegative_int get_qoSeqLength(MultiHeadAttentionParallelInputs const &inputs) {
+nonnegative_int
+    get_qoSeqLength(MultiHeadAttentionParallelInputs const &inputs) {
   return inputs.sequence_dim.size; // FIXME -- assumes only prefill
 }
 
@@ -84,7 +86,8 @@ nonnegative_int get_qoSeqLength(MultiHeadAttentionInputs const &inputs) {
   return inputs.sequence_length; // FIXME -- assumes only prefil
 }
 
-nonnegative_int get_num_samples(MultiHeadAttentionParallelInputs const &inputs) {
+nonnegative_int
+    get_num_samples(MultiHeadAttentionParallelInputs const &inputs) {
   return inputs.batch_dim.size;
 }
 
@@ -360,4 +363,4 @@ nonnegative_int get_oSize(TensorShape const &) {
   NOT_IMPLEMENTED();
 }
 
-}
+} // namespace FlexFlow

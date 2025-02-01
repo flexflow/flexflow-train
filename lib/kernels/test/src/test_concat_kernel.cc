@@ -45,10 +45,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       GenericTensorAccessorR output_grad_accessor =
           read_only_accessor_from_write_accessor(
               create_random_filled_accessor_w(output_shape, allocator));
-      std::vector<GenericTensorAccessorW> input_grad_accessors =
-          repeat(num_inputs, [&]() {
-            return allocator.allocate_tensor(input_shape);
-          });
+      std::vector<GenericTensorAccessorW> input_grad_accessors = repeat(
+          num_inputs, [&]() { return allocator.allocate_tensor(input_shape); });
       Kernels::Concat::backward_kernel(managed_stream.raw_stream(),
                                        output_grad_accessor,
                                        input_grad_accessors,

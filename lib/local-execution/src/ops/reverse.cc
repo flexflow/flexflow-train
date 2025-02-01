@@ -82,7 +82,8 @@ static std::optional<float>
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
   auto attrs = acc.get_argument<ReverseAttrs>(ATTRS);
 
-  int axis = input_grad.shape.num_dims().unwrap_nonnegative() - attrs.axis.value.unwrap_nonnegative() - 1;
+  int axis = input_grad.shape.num_dims().unwrap_nonnegative() -
+             attrs.axis.value.unwrap_nonnegative() - 1;
   nonnegative_int in_blk_size = 1_n;
   nonnegative_int reverse_dim_size = 1_n;
   nonnegative_int num_out_blks = 1_n;

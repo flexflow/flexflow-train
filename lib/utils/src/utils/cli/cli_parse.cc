@@ -40,8 +40,8 @@ tl::expected<CLIParseResult, std::string>
                          cli.positional_arguments.size());
     }
 
-    CLIPositionalArgumentSpec arg_spec =
-        cli.positional_arguments.at(consumed_positional_args.unwrap_nonnegative());
+    CLIPositionalArgumentSpec arg_spec = cli.positional_arguments.at(
+        consumed_positional_args.unwrap_nonnegative());
 
     if (arg_spec.choices.has_value() &&
         !contains(arg_spec.choices.value(), arg)) {

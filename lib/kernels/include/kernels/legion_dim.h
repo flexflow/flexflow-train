@@ -20,7 +20,7 @@ FFOrdered<T>
 }
 
 template <typename T>
-LegionOrdered<T> 
+LegionOrdered<T>
     legion_ordered_from_ff_ordered(FFOrdered<T> const &ff_ordered) {
   return LegionOrdered<T>(ff_ordered.rbegin(), ff_ordered.rend());
 }

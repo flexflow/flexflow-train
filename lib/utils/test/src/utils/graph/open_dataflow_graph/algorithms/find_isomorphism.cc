@@ -26,7 +26,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("input graphs are not empty") {
       DataflowGraphInput g1_i1 = g1.add_input();
-      NodeAddedResult g1_n1_added = g1.add_node({OpenDataflowValue{g1_i1}}, 1_n);
+      NodeAddedResult g1_n1_added =
+          g1.add_node({OpenDataflowValue{g1_i1}}, 1_n);
       Node g1_n1_node = g1_n1_added.node;
       DataflowOutput g1_n1_output = get_only(g1_n1_added.outputs);
 

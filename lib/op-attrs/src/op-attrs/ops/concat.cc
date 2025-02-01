@@ -17,7 +17,8 @@ tl::expected<TensorShape, std::string>
     get_output_shape(ConcatAttrs const &attrs,
                      std::vector<TensorShape> const &inputs) {
   auto get_non_axis_dims = [&](TensorShape const &s) {
-    std::map<ff_dim_t, nonnegative_int> dim_sizes = enumerate(ff_ordered(s.dims));
+    std::map<ff_dim_t, nonnegative_int> dim_sizes =
+        enumerate(ff_ordered(s.dims));
     dim_sizes.erase(attrs.axis);
     return dim_sizes;
   };

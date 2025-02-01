@@ -101,8 +101,8 @@ tl::expected<JsonSPModelExport, std::string>
     result.value();
   });
 
-  std::pair<V1ComputationGraph, bidict<nonnegative_int, layer_guid_t>> v1_result =
-      to_v1_including_node_numbering(computation_graph);
+  std::pair<V1ComputationGraph, bidict<nonnegative_int, layer_guid_t>>
+      v1_result = to_v1_including_node_numbering(computation_graph);
   V1ComputationGraph v1_cg = v1_result.first;
   bidict<nonnegative_int, layer_guid_t> layer_numbering = v1_result.second;
   V1BinarySPDecomposition v1_sp_decomposition =

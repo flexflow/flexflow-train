@@ -22,7 +22,7 @@ OpTaskInvocation init(Pool2DAttrs const &attrs) {
   return {task_id_t::POOL2D_INIT_TASK_ID, binding};
 }
 
-static nonnegative_int calculate_padding(nonnegative_int output_size, 
+static nonnegative_int calculate_padding(nonnegative_int output_size,
                                          nonnegative_int stride,
                                          nonnegative_int kernel_size,
                                          nonnegative_int input_size) {
@@ -32,7 +32,7 @@ static nonnegative_int calculate_padding(nonnegative_int output_size,
   int i = kernel_size.unwrap_nonnegative();
 
   return nonnegative_int{
-    ((o - 1) * s + k - i + 1) / 2,
+      ((o - 1) * s + k - i + 1) / 2,
   };
 }
 
@@ -53,23 +53,24 @@ static DeviceSpecificDeviceStates
   nonnegative_int output_c = output.shape.at(ff_dim_t{2_n});
   nonnegative_int output_n = output.shape.at(ff_dim_t{3_n});
 
-  Pool2DPerDeviceState per_device_state = init_kernel(handle,
-                                                      attrs.activation,
-                                                      input_w.unwrap_nonnegative(),
-                                                      input_h.unwrap_nonnegative(),
-                                                      input_c.unwrap_nonnegative(),
-                                                      input_n.unwrap_nonnegative(),
-                                                      output_w.unwrap_nonnegative(),
-                                                      output_h.unwrap_nonnegative(),
-                                                      output_c.unwrap_nonnegative(),
-                                                      output_n.unwrap_nonnegative(),
-                                                      attrs.padding_h.unwrap_nonnegative(),
-                                                      attrs.padding_w.unwrap_nonnegative(),
-                                                      attrs.kernel_h.unwrap_nonnegative(),
-                                                      attrs.kernel_w.unwrap_nonnegative(),
-                                                      attrs.stride_h.unwrap_nonnegative(),
-                                                      attrs.stride_w.unwrap_nonnegative(),
-                                                      attrs.pool_type);
+  Pool2DPerDeviceState per_device_state =
+      init_kernel(handle,
+                  attrs.activation,
+                  input_w.unwrap_nonnegative(),
+                  input_h.unwrap_nonnegative(),
+                  input_c.unwrap_nonnegative(),
+                  input_n.unwrap_nonnegative(),
+                  output_w.unwrap_nonnegative(),
+                  output_h.unwrap_nonnegative(),
+                  output_c.unwrap_nonnegative(),
+                  output_n.unwrap_nonnegative(),
+                  attrs.padding_h.unwrap_nonnegative(),
+                  attrs.padding_w.unwrap_nonnegative(),
+                  attrs.kernel_h.unwrap_nonnegative(),
+                  attrs.kernel_w.unwrap_nonnegative(),
+                  attrs.stride_h.unwrap_nonnegative(),
+                  attrs.stride_w.unwrap_nonnegative(),
+                  attrs.pool_type);
 
   return DeviceSpecificDeviceStates{
       DeviceSpecific<Pool2DPerDeviceState>::create(per_device_state)};

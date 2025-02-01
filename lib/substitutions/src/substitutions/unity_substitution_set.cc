@@ -13,8 +13,10 @@ namespace FlexFlow {
 std::vector<Substitution>
     get_substitution_set(MachineSpecification const &resources) {
   std::vector<Substitution> substitutions;
-  for (nonnegative_int num_dims : nonnegative_range(1_n, nonnegative_int{MAX_TENSOR_DIM})) {
-    for (nonnegative_int degree = 1_n; degree <= get_num_gpus(resources); degree *= 2_n) {
+  for (nonnegative_int num_dims :
+       nonnegative_range(1_n, nonnegative_int{MAX_TENSOR_DIM})) {
+    for (nonnegative_int degree = 1_n; degree <= get_num_gpus(resources);
+         degree *= 2_n) {
       substitutions.push_back(
           create_replicate_linear_combine(num_dims, degree, true));
       substitutions.push_back(
@@ -28,16 +30,21 @@ std::vector<Substitution>
   return substitutions;
 }
 
-Substitution create_combine_inception(nonnegative_int num_convs, nonnegative_int num_dims, nonnegative_int degree) {
+Substitution create_combine_inception(nonnegative_int num_convs,
+                                      nonnegative_int num_dims,
+                                      nonnegative_int degree) {
   NOT_IMPLEMENTED();
 }
 
-Substitution create_combine_concat(nonnegative_int num_inputs, nonnegative_int num_dims, nonnegative_int degree) {
+Substitution create_combine_concat(nonnegative_int num_inputs,
+                                   nonnegative_int num_dims,
+                                   nonnegative_int degree) {
   NOT_IMPLEMENTED();
 }
 
-Substitution
-    create_replicate_linear_combine(nonnegative_int num_dims, nonnegative_int degree, bool use_bias) {
+Substitution create_replicate_linear_combine(nonnegative_int num_dims,
+                                             nonnegative_int degree,
+                                             bool use_bias) {
   SubstitutionBuilder b;
 
   auto [p_input, o_input] = b.add_input(tensor_attribute_pattern_match_all());
@@ -75,8 +82,7 @@ Substitution
                                    OperatorAttributeValue{degree}),
           }};
   OutputGraphExprValue o_replicate_input_output =
-      get_only(b.add_output_graph_node(
-          replicate_input_expr, {o_input}, 1_n));
+      get_only(b.add_output_graph_node(replicate_input_expr, {o_input}, 1_n));
 
   OutputOperatorAttrsAssignment partition_weights_expr =
       OutputOperatorAttrsAssignment{
@@ -88,9 +94,8 @@ Substitution
               set_attr_to_constant(OperatorAttributeKey::PARALLEL_DIM,
                                    OperatorAttributeValue{ff_dim_t{1_n}}),
           }};
-  OutputGraphExprValue o_partition_weights_output =
-      get_only(b.add_output_graph_node(
-          partition_weights_expr, {o_weight}, 1_n));
+  OutputGraphExprValue o_partition_weights_output = get_only(
+      b.add_output_graph_node(partition_weights_expr, {o_weight}, 1_n));
 
   std::vector<OutputGraphExprValue> o_linear_inputs = {
       o_replicate_input_output, o_partition_weights_output};
@@ -106,9 +111,8 @@ Substitution
                 set_attr_to_constant(OperatorAttributeKey::PARALLEL_DIM,
                                      OperatorAttributeValue{ff_dim_t{1_n}}),
             }};
-    OutputGraphExprValue o_partition_bias_output =
-        get_only(b.add_output_graph_node(
-            partition_bias_expr, {o_bias.value()}, 1_n));
+    OutputGraphExprValue o_partition_bias_output = get_only(
+        b.add_output_graph_node(partition_bias_expr, {o_bias.value()}, 1_n));
     o_linear_inputs.push_back(o_partition_bias_output);
   }
 
@@ -116,20 +120,24 @@ Substitution
       b.pattern_node_named("linear"),
       {},
   };
-  OutputGraphExprValue o_linear_output = get_only(b.add_output_graph_node(
-      linear_expr, o_linear_inputs, 1_n));
+  OutputGraphExprValue o_linear_output =
+      get_only(b.add_output_graph_node(linear_expr, o_linear_inputs, 1_n));
 
   OutputOperatorAttrsAssignment combine_expr = OutputOperatorAttrsAssignment{
       std::nullopt,
       {
           set_op_type_attr(OperatorType::COMBINE),
-          set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE, OperatorAttributeValue{degree}),
-          set_attr_to_constant(OperatorAttributeKey::PARALLEL_DIM,
-                               OperatorAttributeValue{ff_dim_t{nonnegative_int{num_dims.unwrap_nonnegative() - 1},}}),
+          set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
+                               OperatorAttributeValue{degree}),
+          set_attr_to_constant(
+              OperatorAttributeKey::PARALLEL_DIM,
+              OperatorAttributeValue{ff_dim_t{
+                  nonnegative_int{num_dims.unwrap_nonnegative() - 1},
+              }}),
       },
   };
-  OutputGraphExprValue o_combine_output = get_only(b.add_output_graph_node(
-      combine_expr, {o_linear_output}, 1_n));
+  OutputGraphExprValue o_combine_output =
+      get_only(b.add_output_graph_node(combine_expr, {o_linear_output}, 1_n));
 
   b.equate_outputs(p_linear_output, o_combine_output);
 
@@ -143,23 +151,28 @@ Substitution create_partition_linear_combine(nonnegative_int num_dims,
   NOT_IMPLEMENTED();
 }
 
-Substitution create_partition_conv2d_combine(nonnegative_int num_dims, nonnegative_int degree) {
+Substitution create_partition_conv2d_combine(nonnegative_int num_dims,
+                                             nonnegative_int degree) {
   NOT_IMPLEMENTED();
 }
 
-Substitution create_partition_attention_combine(nonnegative_int num_heads, nonnegative_int degree) {
+Substitution create_partition_attention_combine(nonnegative_int num_heads,
+                                                nonnegative_int degree) {
   NOT_IMPLEMENTED();
 }
 
-Substitution create_replicate_attention_reduce(nonnegative_int num_heads, nonnegative_int degree) {
+Substitution create_replicate_attention_reduce(nonnegative_int num_heads,
+                                               nonnegative_int degree) {
   NOT_IMPLEMENTED();
 }
 
-Substitution create_partition_add_combine(ff_dim_t parallel_dim, nonnegative_int degree) {
+Substitution create_partition_add_combine(ff_dim_t parallel_dim,
+                                          nonnegative_int degree) {
   NOT_IMPLEMENTED();
 }
 
-Substitution create_partition_relu_combine(ff_dim_t parallel_dim, nonnegative_int degree) {
+Substitution create_partition_relu_combine(ff_dim_t parallel_dim,
+                                           nonnegative_int degree) {
   NOT_IMPLEMENTED();
 }
 
@@ -211,8 +224,8 @@ Substitution create_fuse_linear_activation(Activation activation) {
           set_attr_to_constant(OperatorAttributeKey::ACTIVATION,
                                OperatorAttributeValue{activation}),
       }};
-  OutputGraphExprValue o_fused_node_output = get_only(b.add_output_graph_node(
-      fused_node_expr, {o_input, o_weight}, 1_n));
+  OutputGraphExprValue o_fused_node_output = get_only(
+      b.add_output_graph_node(fused_node_expr, {o_input, o_weight}, 1_n));
 
   b.equate_outputs(p_relu_output, o_fused_node_output);
 

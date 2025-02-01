@@ -8,25 +8,27 @@ CandleUnoConfig get_default_candle_uno_config() {
   return CandleUnoConfig{
       /*batch_size=*/64_n,
       /*dense_layers=*/repeat_element(/*num_times=*/4_n, /*element=*/4192_n),
-      /*dense_feature_layers=*/repeat_element(/*num_times=*/8_n, /*element=*/4192_n),
-      /*feature_shapes=*/ {
-        {"dose", 1_n},
-        {"cell.rnaseq", 942_n},
-        {"drug.descriptors", 5270_n},
-        {"drug.fingerprints", 2048_n},
+      /*dense_feature_layers=*/
+      repeat_element(/*num_times=*/8_n, /*element=*/4192_n),
+      /*feature_shapes=*/
+      {
+          {"dose", 1_n},
+          {"cell.rnaseq", 942_n},
+          {"drug.descriptors", 5270_n},
+          {"drug.fingerprints", 2048_n},
       },
-      /*input_features=*/{
-        {"dose1", "dose"},
-        {"dose2", "dose"},
-        {"cell.rnaseq", "cell.rnaseq"},
-        {"drug1.descriptors", "drug.descriptors"},
-        {"drug1.fingerprints", "drug.fingerprints"},
-        {"drug2.descriptors", "drug.descriptors"},
-        {"drug2.fingerprints", "drug.fingerprints"},
+      /*input_features=*/
+      {
+          {"dose1", "dose"},
+          {"dose2", "dose"},
+          {"cell.rnaseq", "cell.rnaseq"},
+          {"drug1.descriptors", "drug.descriptors"},
+          {"drug1.fingerprints", "drug.fingerprints"},
+          {"drug2.descriptors", "drug.descriptors"},
+          {"drug2.fingerprints", "drug.fingerprints"},
       },
       /*dropout=*/0.1,
-      /*residual=*/false
-  };
+      /*residual=*/false};
 }
 
 tensor_guid_t create_candle_uno_feature_model(
@@ -94,7 +96,8 @@ ComputationGraph
     }
   }
 
-  tensor_guid_t output = cgb.concat(encoded_inputs, /*axis=*/relative_ff_dim_t{1});
+  tensor_guid_t output =
+      cgb.concat(encoded_inputs, /*axis=*/relative_ff_dim_t{1});
   for (nonnegative_int dense_layer_dim : config.dense_layers) {
     tensor_guid_t residual_input = output;
     output = cgb.dense(output,

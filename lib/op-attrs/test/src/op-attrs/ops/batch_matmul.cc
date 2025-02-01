@@ -12,8 +12,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     nonnegative_int p = 10_n;
 
     BatchMatmulAttrs attrs = BatchMatmulAttrs{
-        /*a_seq_length_dim=*/0_n, // TODO figure out if these arguments are still
-                                // relevant
+        /*a_seq_length_dim=*/0_n, // TODO figure out if these arguments are
+                                  // still relevant
         /*b_seq_length_dim=*/0_n,
     };
 
@@ -106,8 +106,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     nonnegative_int o_sum = 11_n;
 
     BatchMatmulAttrs attrs = BatchMatmulAttrs{
-        /*a_seq_length_dim=*/0_n, // TODO figure out if these arguments are still
-                                // relevant
+        /*a_seq_length_dim=*/0_n, // TODO figure out if these arguments are
+                                  // still relevant
         /*b_seq_length_dim=*/0_n,
     };
 
@@ -245,8 +245,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           attrs,
           make_lhs(SumDegree{o_sum}, DiscardCopyDegree{o_sum}, 1_n, 1_n, 1_n),
           make_rhs(SumDegree{o_sum}, DiscardCopyDegree{o_sum}, 1_n, 1_n, 1_n));
-      tl::expected<ParallelTensorShape, std::string> correct =
-          make_output(SumDegree{o_sum * o_sum}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n);
+      tl::expected<ParallelTensorShape, std::string> correct = make_output(
+          SumDegree{o_sum * o_sum}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n);
 
       CHECK(result == correct);
     }
@@ -265,7 +265,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       tl::expected<ParallelTensorShape, std::string> result = get_output_shape(
           attrs,
           make_lhs(SumDegree{o_sum}, DiscardCopyDegree{1_n}, 1_n, o_n, 1_n),
-          make_rhs(SumDegree{1_n}, DiscardCopyDegree{o_sum * o_n}, 1_n, 1_n, 1_n));
+          make_rhs(
+              SumDegree{1_n}, DiscardCopyDegree{o_sum * o_n}, 1_n, 1_n, 1_n));
       tl::expected<ParallelTensorShape, std::string> correct =
           make_output(SumDegree{o_sum}, DiscardCopyDegree{1_n}, 1_n, o_n, 1_n);
 
@@ -276,7 +277,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       tl::expected<ParallelTensorShape, std::string> result = get_output_shape(
           attrs,
           make_lhs(SumDegree{o_sum}, DiscardCopyDegree{o_sum}, 1_n, o_n, 1_n),
-          make_rhs(SumDegree{o_sum}, DiscardCopyDegree{o_sum * o_n}, 1_n, 1_n, 1_n));
+          make_rhs(
+              SumDegree{o_sum}, DiscardCopyDegree{o_sum * o_n}, 1_n, 1_n, 1_n));
       tl::expected<ParallelTensorShape, std::string> correct = make_output(
           SumDegree{o_sum * o_sum}, DiscardCopyDegree{1_n}, 1_n, o_n, 1_n);
 
@@ -289,8 +291,12 @@ TEST_SUITE(FF_TEST_SUITE) {
           make_lhs(SumDegree{o_sum}, DiscardCopyDegree{o_sum}, 1_n, o_n, o_m),
           make_rhs(
               SumDegree{o_sum}, DiscardCopyDegree{o_sum * o_n}, 1_n, o_m, 1_n));
-      tl::expected<ParallelTensorShape, std::string> correct = make_output(
-          SumDegree{o_sum * o_sum * o_m}, DiscardCopyDegree{1_n}, 1_n, o_n, 1_n);
+      tl::expected<ParallelTensorShape, std::string> correct =
+          make_output(SumDegree{o_sum * o_sum * o_m},
+                      DiscardCopyDegree{1_n},
+                      1_n,
+                      o_n,
+                      1_n);
 
       CHECK(result == correct);
     }

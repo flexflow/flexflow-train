@@ -32,10 +32,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     CHECK(result == correct);
 
     auto make_input = [&](SumDegree o_sum,
-                      DiscardCopyDegree o_eq,
-                      nonnegative_int o_1,
-                      nonnegative_int o_2,
-                      nonnegative_int o_3) {
+                          DiscardCopyDegree o_eq,
+                          nonnegative_int o_1,
+                          nonnegative_int o_2,
+                          nonnegative_int o_3) {
       return lift_to_parallel_with_degrees(
           input, o_sum, o_eq, FFOrdered<nonnegative_int>{o_1, o_2, o_3});
     };
@@ -43,8 +43,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("partition i.e., sharding parallelism") {
       nonnegative_int degree1 = 4_n;
       nonnegative_int degree2 = 8_n;
-      ParallelTensorShape par_input =
-          make_input(SumDegree{1_n}, DiscardCopyDegree{1_n}, degree1, 1_n, degree2);
+      ParallelTensorShape par_input = make_input(
+          SumDegree{1_n}, DiscardCopyDegree{1_n}, degree1, 1_n, degree2);
 
       tl::expected<ParallelTensorShape, std::string> result =
           get_output_shape(attrs, par_input);
@@ -57,7 +57,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       nonnegative_int degree = 2_n;
 
       tl::expected<ParallelTensorShape, std::string> result = get_output_shape(
-          attrs, make_input(SumDegree{degree}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n));
+          attrs,
+          make_input(SumDegree{degree}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n));
 
       CHECK_MESSAGE(!result.has_value(),
                     "Unexpected successful result: ",
@@ -68,7 +69,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       nonnegative_int degree = 2_n;
 
       tl::expected<ParallelTensorShape, std::string> result = get_output_shape(
-          attrs, make_input(SumDegree{1_n}, DiscardCopyDegree{degree}, 1_n, 1_n, 1_n));
+          attrs,
+          make_input(SumDegree{1_n}, DiscardCopyDegree{degree}, 1_n, 1_n, 1_n));
 
       CHECK_MESSAGE(!result.has_value(),
                     "Unexpected successful result: ",

@@ -15,7 +15,10 @@ struct CheckShape {
   ComputationGraphBuilder const &cgb;
   InceptionV3Config const &config;
 
-  void operator()(tensor_guid_t t, nonnegative_int c, nonnegative_int h, nonnegative_int w) const {
+  void operator()(tensor_guid_t t,
+                  nonnegative_int c,
+                  nonnegative_int h,
+                  nonnegative_int w) const {
     TensorShape current_shape = cgb.get_shape(t);
     TensorShape expected_shape = TensorShape{
         TensorDims{FFOrdered<nonnegative_int>{
@@ -219,7 +222,8 @@ static tensor_guid_t create_inception_module_b(ComputationGraphBuilder &cgb,
                                          /*paddingW=*/0_n,
                                          /*type=*/PoolOp::MAX);
 
-  return cgb.concat({branch3x3, branch3x3dbl, branch_pool}, /*axis=*/relative_ff_dim_t{1});
+  return cgb.concat({branch3x3, branch3x3dbl, branch_pool},
+                    /*axis=*/relative_ff_dim_t{1});
 }
 
 static tensor_guid_t create_inception_module_c(ComputationGraphBuilder &cgb,
@@ -389,7 +393,8 @@ static tensor_guid_t create_inception_module_d(ComputationGraphBuilder &cgb,
                                          /*paddingW=*/0_n,
                                          /*type=*/PoolOp::MAX);
 
-  return cgb.concat({branch3x3, branch7x7x3, branch_pool}, /*axis=*/relative_ff_dim_t{1});
+  return cgb.concat({branch3x3, branch7x7x3, branch_pool},
+                    /*axis=*/relative_ff_dim_t{1});
 }
 
 static tensor_guid_t create_inception_module_e(ComputationGraphBuilder &cgb,

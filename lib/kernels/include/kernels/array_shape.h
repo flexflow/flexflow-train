@@ -3,12 +3,12 @@
 
 #include "kernels/legion_dim.h"
 #include "op-attrs/tensor_shape.dtg.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include "utils/stack_vector/stack_vector.h"
 #include "utils/visitable.h"
 #include <cstddef>
 #include <optional>
 #include <vector>
-#include "utils/nonnegative_int/nonnegative_int.h"
 
 namespace FlexFlow {
 
@@ -52,6 +52,7 @@ public:
 
 public:
   LegionOrdered<nonnegative_int> dims;
+
 private:
   std::tuple<decltype(dims) const &> tie() const;
 };

@@ -13,7 +13,7 @@ nonnegative_int get_num_cpus(MachineSpecification const &ms) {
 }
 
 nonnegative_int get_num_devices(MachineSpecification const &ms,
-                    DeviceType const &device_type) {
+                                DeviceType const &device_type) {
   switch (device_type) {
     case DeviceType::GPU:
       return get_num_gpus(ms);
@@ -25,7 +25,7 @@ nonnegative_int get_num_devices(MachineSpecification const &ms,
 }
 
 nonnegative_int get_num_devices_per_node(MachineSpecification const &ms,
-                             DeviceType const &device_type) {
+                                         DeviceType const &device_type) {
   switch (device_type) {
     case DeviceType::GPU:
       return ms.num_gpus_per_node;

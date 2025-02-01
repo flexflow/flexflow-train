@@ -58,8 +58,7 @@ static nonnegative_int calculate_output_size(nonnegative_int input_size,
   int stride_raw = stride.unwrap_nonnegative();
 
   return nonnegative_int{
-      (input_size_raw + (2 * padding_raw) - kernel_size_raw) / stride_raw + 1
-  };
+      (input_size_raw + (2 * padding_raw) - kernel_size_raw) / stride_raw + 1};
 }
 
 TensorShape get_output_shape(Conv2DAttrs const &attrs,
@@ -67,14 +66,16 @@ TensorShape get_output_shape(Conv2DAttrs const &attrs,
   assert(attrs.groups == 1); // TODO(@lockshaw): currently not supported
   Conv2DInputShape input = parse_input_shape(raw_input_shape);
 
-  nonnegative_int out_height = calculate_output_size(/*input_size=*/input.height,
-                                                     /*padding_size=*/attrs.padding_h,
-                                                     /*kernel_size=*/attrs.kernel_h,
-                                                     /*stride_size=*/attrs.stride_h);
-  nonnegative_int out_width = calculate_output_size(/*input_size=*/input.width,
-                                                    /*padding_size=*/attrs.padding_w,
-                                                    /*kernel_size=*/attrs.kernel_w,
-                                                    /*stride_size=*/attrs.stride_w);
+  nonnegative_int out_height =
+      calculate_output_size(/*input_size=*/input.height,
+                            /*padding_size=*/attrs.padding_h,
+                            /*kernel_size=*/attrs.kernel_h,
+                            /*stride_size=*/attrs.stride_h);
+  nonnegative_int out_width =
+      calculate_output_size(/*input_size=*/input.width,
+                            /*padding_size=*/attrs.padding_w,
+                            /*kernel_size=*/attrs.kernel_w,
+                            /*stride_size=*/attrs.stride_w);
 
   return TensorShape{TensorDims{FFOrdered<nonnegative_int>{
                          input.num_samples,

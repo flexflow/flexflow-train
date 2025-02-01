@@ -165,31 +165,33 @@ TEST_SUITE(FF_TEST_SUITE) {
           kernel,
           o_sum,
           o_eq,
-          FFOrdered<nonnegative_int>{o_outchannels, o_inchannels, o_kernel_h, o_kernel_w});
+          FFOrdered<nonnegative_int>{
+              o_outchannels, o_inchannels, o_kernel_h, o_kernel_w});
     };
 
-    auto make_bias =
-        [&](SumDegree o_sum, DiscardCopyDegree o_eq, nonnegative_int o_outchannels) {
-          return lift_to_parallel_with_degrees(
-              bias, o_sum, o_eq, FFOrdered<nonnegative_int>{o_outchannels});
-        };
+    auto make_bias = [&](SumDegree o_sum,
+                         DiscardCopyDegree o_eq,
+                         nonnegative_int o_outchannels) {
+      return lift_to_parallel_with_degrees(
+          bias, o_sum, o_eq, FFOrdered<nonnegative_int>{o_outchannels});
+    };
 
     SUBCASE("data parallelism") {
       nonnegative_int degree = 2_n;
-      ParallelTensorShape par_input =
-          make_input(SumDegree{1_n}, DiscardCopyDegree{1_n}, degree, 1_n, 1_n, 1_n);
+      ParallelTensorShape par_input = make_input(
+          SumDegree{1_n}, DiscardCopyDegree{1_n}, degree, 1_n, 1_n, 1_n);
 
       SUBCASE("get_output_shape") {
         ParallelTensorShape result = get_output_shape(attrs, par_input);
-        ParallelTensorShape correct =
-            make_output(SumDegree{1_n}, DiscardCopyDegree{1_n}, degree, 1_n, 1_n, 1_n);
+        ParallelTensorShape correct = make_output(
+            SumDegree{1_n}, DiscardCopyDegree{1_n}, degree, 1_n, 1_n, 1_n);
         CHECK(result == correct);
       }
 
       SUBCASE("get_kernel_shape") {
         ParallelTensorShape result = get_kernel_shape(attrs, par_input);
-        ParallelTensorShape correct =
-            make_kernel(SumDegree{1_n}, DiscardCopyDegree{degree}, 1_n, 1_n, 1_n, 1_n);
+        ParallelTensorShape correct = make_kernel(
+            SumDegree{1_n}, DiscardCopyDegree{degree}, 1_n, 1_n, 1_n, 1_n);
         CHECK(result == correct);
       }
 
@@ -203,20 +205,20 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("input channel parallelism") {
       nonnegative_int degree = 2_n;
-      ParallelTensorShape par_input =
-          make_input(SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, degree, 1_n, 1_n);
+      ParallelTensorShape par_input = make_input(
+          SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, degree, 1_n, 1_n);
 
       SUBCASE("get_output_shape") {
         ParallelTensorShape result = get_output_shape(attrs, par_input);
-        ParallelTensorShape correct =
-            make_output(SumDegree{degree}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n, 1_n);
+        ParallelTensorShape correct = make_output(
+            SumDegree{degree}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n, 1_n);
         CHECK(result == correct);
       }
 
       SUBCASE("get_kernel_shape") {
         ParallelTensorShape result = get_kernel_shape(attrs, par_input);
-        ParallelTensorShape correct =
-            make_kernel(SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, degree, 1_n, 1_n);
+        ParallelTensorShape correct = make_kernel(
+            SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, degree, 1_n, 1_n);
         CHECK(result == correct);
       }
 
@@ -230,20 +232,20 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("output channel parallelism") {
       nonnegative_int degree = 2_n;
-      ParallelTensorShape par_input =
-          make_input(SumDegree{1_n}, DiscardCopyDegree{degree}, 1_n, 1_n, 1_n, 1_n);
+      ParallelTensorShape par_input = make_input(
+          SumDegree{1_n}, DiscardCopyDegree{degree}, 1_n, 1_n, 1_n, 1_n);
 
       SUBCASE("get_output_shape") {
         ParallelTensorShape result = get_output_shape(attrs, par_input);
-        ParallelTensorShape correct =
-            make_output(SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, degree, 1_n, 1_n);
+        ParallelTensorShape correct = make_output(
+            SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, degree, 1_n, 1_n);
         CHECK(result == correct);
       }
 
       SUBCASE("get_kernel_shape") {
         ParallelTensorShape result = get_kernel_shape(attrs, par_input);
-        ParallelTensorShape correct =
-            make_kernel(SumDegree{1_n}, DiscardCopyDegree{1_n}, degree, 1_n, 1_n, 1_n);
+        ParallelTensorShape correct = make_kernel(
+            SumDegree{1_n}, DiscardCopyDegree{1_n}, degree, 1_n, 1_n, 1_n);
         CHECK(result == correct);
       }
 
@@ -257,20 +259,20 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("propagating sum degree") {
       nonnegative_int degree = 2_n;
-      ParallelTensorShape par_input =
-          make_input(SumDegree{degree}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n, 1_n);
+      ParallelTensorShape par_input = make_input(
+          SumDegree{degree}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n, 1_n);
 
       SUBCASE("get_output_shape") {
         ParallelTensorShape result = get_output_shape(attrs, par_input);
-        ParallelTensorShape correct =
-            make_output(SumDegree{degree}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n, 1_n);
+        ParallelTensorShape correct = make_output(
+            SumDegree{degree}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n, 1_n);
         CHECK(result == correct);
       }
 
       SUBCASE("get_kernel_shape") {
         ParallelTensorShape result = get_kernel_shape(attrs, par_input);
-        ParallelTensorShape correct =
-            make_kernel(SumDegree{1_n}, DiscardCopyDegree{degree}, 1_n, 1_n, 1_n, 1_n);
+        ParallelTensorShape correct = make_kernel(
+            SumDegree{1_n}, DiscardCopyDegree{degree}, 1_n, 1_n, 1_n, 1_n);
         CHECK(result == correct);
       }
 

@@ -157,12 +157,12 @@ public:
                  float eps,
                  std::optional<float> const &momentum,
                  std::optional<std::string> const &name = std::nullopt);
-  tensor_guid_t
-      batch_matmul(tensor_guid_t const &A,
-                   tensor_guid_t const &B,
-                   std::optional<nonnegative_int> const &a_seq_length_dim = std::nullopt,
-                   std::optional<nonnegative_int> const &b_seq_length_dim = std::nullopt,
-                   std::optional<std::string> const &name = std::nullopt);
+  tensor_guid_t batch_matmul(
+      tensor_guid_t const &A,
+      tensor_guid_t const &B,
+      std::optional<nonnegative_int> const &a_seq_length_dim = std::nullopt,
+      std::optional<nonnegative_int> const &b_seq_length_dim = std::nullopt,
+      std::optional<std::string> const &name = std::nullopt);
   tensor_guid_t dense(
       tensor_guid_t const &input,
       nonnegative_int outDim,
@@ -195,10 +195,11 @@ public:
             relative_ff_dim_t axis,
             std::optional<std::string> const &name = std::nullopt);
   // Add a flat layer
-  tensor_guid_t flat(tensor_guid_t const &input,
-                     relative_ff_dim_t start_dim = relative_ff_dim_t{0},
-                     std::optional<relative_ff_dim_t> const &end_dim = std::nullopt,
-                     std::optional<std::string> const &name = std::nullopt);
+  tensor_guid_t
+      flat(tensor_guid_t const &input,
+           relative_ff_dim_t start_dim = relative_ff_dim_t{0},
+           std::optional<relative_ff_dim_t> const &end_dim = std::nullopt,
+           std::optional<std::string> const &name = std::nullopt);
   // Add a softmax layer
   tensor_guid_t softmax(tensor_guid_t const &input,
                         std::optional<relative_ff_dim_t> dim = std::nullopt,

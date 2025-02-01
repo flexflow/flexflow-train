@@ -16,9 +16,9 @@
 #include "device.h"
 #include "kernels/accessor.h"
 #include "kernels/transpose_kernels.h"
+#include "op-attrs/dim_ordered/transform.h"
 #include "utils/exception.h"
 #include "utils/nonnegative_int/num_elements.h"
-#include "op-attrs/dim_ordered/transform.h"
 
 namespace FlexFlow {
 
@@ -48,11 +48,13 @@ __global__ void transpose_simple_kernel(std::size_t volume,
   }
 }
 
-static LegionOrdered<legion_dim_t> legion_ordered_perm_from_ff_ordered(FFOrdered<ff_dim_t> const &perm) {
+static LegionOrdered<legion_dim_t>
+    legion_ordered_perm_from_ff_ordered(FFOrdered<ff_dim_t> const &perm) {
   nonnegative_int perm_size = num_elements(perm);
-  LegionOrdered<legion_dim_t> legion_ordered_perm
-    = transform(legion_ordered_from_ff_ordered(perm) ,
-                                     [&](ff_dim_t d) { return legion_dim_from_ff_dim(d, perm_size); });
+  LegionOrdered<legion_dim_t> legion_ordered_perm =
+      transform(legion_ordered_from_ff_ordered(perm), [&](ff_dim_t d) {
+        return legion_dim_from_ff_dim(d, perm_size);
+      });
 
   return legion_ordered_perm;
 }
@@ -66,30 +68,34 @@ void forward_kernel(cudaStream_t stream,
   info.num_dim = input.shape.num_dims().unwrap_nonnegative();
   assert(info.num_dim == m.perm.size());
 
-  LegionOrdered<legion_dim_t> legion_ordered_perm
-    = legion_ordered_perm_from_ff_ordered(m.perm);
+  LegionOrdered<legion_dim_t> legion_ordered_perm =
+      legion_ordered_perm_from_ff_ordered(m.perm);
 
   for (int i = 0; i < info.num_dim; i++) {
     if (i == 0) {
       info.in_strides[i] = 1;
       info.out_strides[i] = 1;
     } else {
-      int in_dim_size = input.shape.at(legion_dim_t{nonnegative_int{i}}).unwrap_nonnegative();
-      int out_dim_size = output.shape.at(legion_dim_t{nonnegative_int{i}}).unwrap_nonnegative();
+      int in_dim_size =
+          input.shape.at(legion_dim_t{nonnegative_int{i}}).unwrap_nonnegative();
+      int out_dim_size = output.shape.at(legion_dim_t{nonnegative_int{i}})
+                             .unwrap_nonnegative();
       info.in_strides[i] = info.in_strides[i - 1] * in_dim_size;
       info.out_strides[i] = info.out_strides[i - 1] * out_dim_size;
     }
 
-    info.perm[i] = legion_ordered_perm.at(legion_dim_t{nonnegative_int{i}}).value.unwrap_nonnegative();
+    info.perm[i] = legion_ordered_perm.at(legion_dim_t{nonnegative_int{i}})
+                       .value.unwrap_nonnegative();
   }
-  transpose_simple_kernel<<<GET_BLOCKS(output.shape.get_volume().unwrap_nonnegative()),
-                            CUDA_NUM_THREADS,
-                            0,
-                            stream>>>(output.shape.get_volume().unwrap_nonnegative(),
-                                      input.get_float_ptr(),
-                                      output.get_float_ptr(),
-                                      info,
-                                      0.0f /*beta*/);
+  transpose_simple_kernel<<<
+      GET_BLOCKS(output.shape.get_volume().unwrap_nonnegative()),
+      CUDA_NUM_THREADS,
+      0,
+      stream>>>(output.shape.get_volume().unwrap_nonnegative(),
+                input.get_float_ptr(),
+                output.get_float_ptr(),
+                info,
+                0.0f /*beta*/);
 }
 
 void backward_kernel(cudaStream_t stream,
@@ -101,29 +107,33 @@ void backward_kernel(cudaStream_t stream,
   info.num_dim = in_grad.shape.num_dims().unwrap_nonnegative();
   assert(info.num_dim == m.perm.size());
 
-  LegionOrdered<legion_dim_t> legion_ordered_perm
-    = legion_ordered_perm_from_ff_ordered(m.perm);
+  LegionOrdered<legion_dim_t> legion_ordered_perm =
+      legion_ordered_perm_from_ff_ordered(m.perm);
 
   for (int i = 0; i < info.num_dim; i++) {
     if (i == 0) {
       info.in_strides[i] = 1;
       info.out_strides[i] = 1;
     } else {
-      int in_dim_size = out_grad.shape.at(legion_dim_t{nonnegative_int{i}}).unwrap_nonnegative();
-      int out_dim_size = in_grad.shape.at(legion_dim_t{nonnegative_int{i}}).unwrap_nonnegative();
+      int in_dim_size = out_grad.shape.at(legion_dim_t{nonnegative_int{i}})
+                            .unwrap_nonnegative();
+      int out_dim_size = in_grad.shape.at(legion_dim_t{nonnegative_int{i}})
+                             .unwrap_nonnegative();
       info.in_strides[i] = info.in_strides[i - 1] * in_dim_size;
       info.out_strides[i] = info.out_strides[i - 1] * out_dim_size;
     }
-    info.perm[legion_ordered_perm.at(legion_dim_t{nonnegative_int{i}}).value.unwrap_nonnegative()] = i;
+    info.perm[legion_ordered_perm.at(legion_dim_t{nonnegative_int{i}})
+                  .value.unwrap_nonnegative()] = i;
   }
-  transpose_simple_kernel<<<GET_BLOCKS(in_grad.shape.get_volume().unwrap_nonnegative()),
-                            CUDA_NUM_THREADS,
-                            0,
-                            stream>>>(in_grad.shape.get_volume().unwrap_nonnegative(),
-                                      out_grad.get_float_ptr(),
-                                      in_grad.get_float_ptr(),
-                                      info,
-                                      1.0f /*beta*/);
+  transpose_simple_kernel<<<
+      GET_BLOCKS(in_grad.shape.get_volume().unwrap_nonnegative()),
+      CUDA_NUM_THREADS,
+      0,
+      stream>>>(in_grad.shape.get_volume().unwrap_nonnegative(),
+                out_grad.get_float_ptr(),
+                in_grad.get_float_ptr(),
+                info,
+                1.0f /*beta*/);
 }
 
 } // namespace Transpose

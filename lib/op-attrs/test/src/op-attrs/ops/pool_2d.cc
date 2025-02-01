@@ -16,8 +16,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     Activation activation = Activation::RELU;
     PoolOp op = PoolOp::AVG;
 
-    TensorDims input_dims =
-        TensorDims{FFOrdered<nonnegative_int>{input_n, input_c, input_h, input_w}};
+    TensorDims input_dims = TensorDims{
+        FFOrdered<nonnegative_int>{input_n, input_c, input_h, input_w}};
 
     SUBCASE("input_h divisible by output_h && input_w divisible by output_w") {
       nonnegative_int output_h = 5_n;

@@ -85,7 +85,8 @@ void fill_tensor_accessor_w(GenericTensorAccessorW accessor,
   }
 }
 
-TensorShape make_float_tensor_shape_from_legion_dims(FFOrdered<nonnegative_int> dims) {
+TensorShape
+    make_float_tensor_shape_from_legion_dims(FFOrdered<nonnegative_int> dims) {
   return TensorShape{
       TensorDims{
           dims,
@@ -94,7 +95,8 @@ TensorShape make_float_tensor_shape_from_legion_dims(FFOrdered<nonnegative_int> 
   };
 }
 
-TensorShape make_double_tensor_shape_from_legion_dims(FFOrdered<nonnegative_int> dims) {
+TensorShape
+    make_double_tensor_shape_from_legion_dims(FFOrdered<nonnegative_int> dims) {
   return TensorShape{
       TensorDims{
           dims,

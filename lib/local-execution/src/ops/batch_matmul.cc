@@ -18,8 +18,8 @@
 #include "local-execution/op_task_signature.h"
 #include "op-attrs/get_output_shapes.h"
 #include "op-attrs/ops/batch_matmul.h"
-#include "utils/nonnegative_int/nonnegative_range.h"
 #include "utils/containers/transform.h"
+#include "utils/nonnegative_int/nonnegative_range.h"
 
 namespace FlexFlow {
 
@@ -86,7 +86,9 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   }
 
   auto get_raw_seq_len = [](std::optional<nonnegative_int> seq_len) -> int {
-    return transform(seq_len, [](nonnegative_int x) { return x.unwrap_nonnegative(); }).value_or(-1);
+    return transform(seq_len,
+                     [](nonnegative_int x) { return x.unwrap_nonnegative(); })
+        .value_or(-1);
   };
 
   return profile(forward_kernel,

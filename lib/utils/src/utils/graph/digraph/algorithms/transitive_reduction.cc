@@ -37,8 +37,9 @@ DiGraphView transitive_reduction(DiGraphView const &g) {
   // transitive_closure inlined to avoid any drifts in node numbering
   // between transitive_closure and transitive_reduction
 
-  bidict<int, Node> nodes = map_keys(bidict_from_enumerating(get_nodes(g)),
-                                     [](nonnegative_int x) { return x.unwrap_nonnegative(); });
+  bidict<int, Node> nodes =
+      map_keys(bidict_from_enumerating(get_nodes(g)),
+               [](nonnegative_int x) { return x.unwrap_nonnegative(); });
   int num_nodes = nodes.size();
 
   std::vector<bool> edge_matrix(num_nodes * num_nodes, false);

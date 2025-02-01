@@ -3,9 +3,9 @@
 
 #include "device.h"
 #include "kernels/allocation.h"
+#include "kernels/batch_norm_per_device_state.dtg.h"
 #include "kernels/ff_handle.h"
 #include <memory>
-#include "kernels/batch_norm_per_device_state.dtg.h"
 
 namespace FlexFlow {
 namespace Kernels {

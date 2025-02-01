@@ -32,18 +32,20 @@ tensor_guid_t create_feedforward_network(ComputationGraphBuilder &cgb,
 tensor_guid_t create_transformer_encoder_layer(ComputationGraphBuilder &cgb,
                                                TransformerConfig const &config,
                                                tensor_guid_t const &input) {
-  std::vector<relative_ff_dim_t> layer_norm_axis = {relative_ff_dim_t{-1}}; // Normalize the last dim
+  std::vector<relative_ff_dim_t> layer_norm_axis = {
+      relative_ff_dim_t{-1}}; // Normalize the last dim
   nonnegative_int kdim = config.dim_feedforward / config.num_heads;
   nonnegative_int vdim = config.dim_feedforward / config.num_heads;
-  tensor_guid_t self_attention = cgb.multihead_attention(/*query=*/input,
-                                                         /*key=*/input,
-                                                         /*value=*/input,
-                                                         /*embed_dim=*/config.num_features,
-                                                         /*num_heads=*/config.num_heads,
-                                                         /*kdim=*/kdim,
-                                                         /*vdim=*/vdim,
-                                                         /*dropout=*/config.dropout,
-                                                         /*bias=*/false);
+  tensor_guid_t self_attention =
+      cgb.multihead_attention(/*query=*/input,
+                              /*key=*/input,
+                              /*value=*/input,
+                              /*embed_dim=*/config.num_features,
+                              /*num_heads=*/config.num_heads,
+                              /*kdim=*/kdim,
+                              /*vdim=*/vdim,
+                              /*dropout=*/config.dropout,
+                              /*bias=*/false);
   assert(are_tensor_guid_shapes_equivalent(
       cgb.computation_graph, input, self_attention));
 
@@ -79,18 +81,20 @@ tensor_guid_t
                                      TransformerConfig const &config,
                                      tensor_guid_t const &input,
                                      tensor_guid_t const &encoder_output) {
-  std::vector<relative_ff_dim_t> layer_norm_axis = {relative_ff_dim_t{-1}}; // Normalize the last dim
+  std::vector<relative_ff_dim_t> layer_norm_axis = {
+      relative_ff_dim_t{-1}}; // Normalize the last dim
   nonnegative_int kdim = config.dim_feedforward / config.num_heads;
   nonnegative_int vdim = config.dim_feedforward / config.num_heads;
-  tensor_guid_t self_attention = cgb.multihead_attention(/*query=*/input,
-                                                         /*key=*/input,
-                                                         /*value=*/input,
-                                                         /*embed_dim=*/config.num_features,
-                                                         /*num_heads=*/config.num_heads,
-                                                         /*kdim=*/kdim,
-                                                         /*vdim=*/vdim,
-                                                         /*dropout=*/config.dropout,
-                                                         /*bias=*/false);
+  tensor_guid_t self_attention =
+      cgb.multihead_attention(/*query=*/input,
+                              /*key=*/input,
+                              /*value=*/input,
+                              /*embed_dim=*/config.num_features,
+                              /*num_heads=*/config.num_heads,
+                              /*kdim=*/kdim,
+                              /*vdim=*/vdim,
+                              /*dropout=*/config.dropout,
+                              /*bias=*/false);
   assert(are_tensor_guid_shapes_equivalent(
       cgb.computation_graph, input, self_attention));
 
@@ -102,15 +106,16 @@ tensor_guid_t
   assert(are_tensor_guid_shapes_equivalent(
       cgb.computation_graph, input, self_attention_normalized));
 
-  tensor_guid_t mha = cgb.multihead_attention(/*query=*/self_attention_normalized,
-                                              /*key=*/encoder_output,
-                                              /*value=*/encoder_output,
-                                              /*embed_dim=*/config.num_features,
-                                              /*num_heads=*/config.num_heads,
-                                              /*kdim=*/kdim,
-                                              /*vdim=*/vdim,
-                                              /*dropout=*/config.dropout,
-                                              /*bias=*/false);
+  tensor_guid_t mha =
+      cgb.multihead_attention(/*query=*/self_attention_normalized,
+                              /*key=*/encoder_output,
+                              /*value=*/encoder_output,
+                              /*embed_dim=*/config.num_features,
+                              /*num_heads=*/config.num_heads,
+                              /*kdim=*/kdim,
+                              /*vdim=*/vdim,
+                              /*dropout=*/config.dropout,
+                              /*bias=*/false);
   assert(are_tensor_guid_shapes_equivalent(cgb.computation_graph, input, mha));
 
   tensor_guid_t mha_normalized =

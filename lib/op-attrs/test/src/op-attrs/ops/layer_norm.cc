@@ -143,17 +143,21 @@ TEST_SUITE(FF_TEST_SUITE) {
           output, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o1, o2, o3});
     };
 
-    auto make_gamma_weights =
-        [&](SumDegree o_sum, DiscardCopyDegree o_eq, nonnegative_int o0, nonnegative_int o2) {
-          return lift_to_parallel_with_degrees(
-              gamma, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o2});
-        };
+    auto make_gamma_weights = [&](SumDegree o_sum,
+                                  DiscardCopyDegree o_eq,
+                                  nonnegative_int o0,
+                                  nonnegative_int o2) {
+      return lift_to_parallel_with_degrees(
+          gamma, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o2});
+    };
 
-    auto make_beta_weights =
-        [&](SumDegree o_sum, DiscardCopyDegree o_eq, nonnegative_int o0, nonnegative_int o2) {
-          return lift_to_parallel_with_degrees(
-              beta, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o2});
-        };
+    auto make_beta_weights = [&](SumDegree o_sum,
+                                 DiscardCopyDegree o_eq,
+                                 nonnegative_int o0,
+                                 nonnegative_int o2) {
+      return lift_to_parallel_with_degrees(
+          beta, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o2});
+    };
 
     SUBCASE("parallel shape inference (LayerNorm)") {
       SUBCASE("partition parallelism (not in axes)") {
@@ -166,8 +170,13 @@ TEST_SUITE(FF_TEST_SUITE) {
         SUBCASE("get_output_shape(LayerNormAttrs, ParallelTensorShape)") {
           tl::expected<ParallelTensorShape, std::string> result =
               get_output_shape(attrs_affine_true, par_input);
-          tl::expected<ParallelTensorShape, std::string> correct = make_output(
-              SumDegree{1_n}, DiscardCopyDegree{1_n}, degree0, 1_n, degree2, 1_n);
+          tl::expected<ParallelTensorShape, std::string> correct =
+              make_output(SumDegree{1_n},
+                          DiscardCopyDegree{1_n},
+                          degree0,
+                          1_n,
+                          degree2,
+                          1_n);
 
           CHECK(result == correct);
         }

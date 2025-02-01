@@ -10,11 +10,11 @@
 #include "utils/containers/maximum.h"
 #include "utils/containers/product.h"
 #include "utils/containers/range.h"
-#include "utils/nonnegative_int/nonnegative_range.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/unordered_set_of.h"
 #include "utils/containers/vector_of.h"
 #include "utils/fmt/unordered_set.h"
+#include "utils/nonnegative_int/nonnegative_range.h"
 #include "utils/nonnegative_int/num_elements.h"
 
 namespace FlexFlow {
@@ -22,8 +22,10 @@ namespace FlexFlow {
 std::unordered_set<TaskSpaceCoordinate>
     get_task_space_coordinates(OperatorTaskSpace const &task) {
 
-  std::vector<std::vector<nonnegative_int>> coordinate_ranges = transform(
-      task.degrees, [&](nonnegative_int num_points) { return nonnegative_range(num_points); });
+  std::vector<std::vector<nonnegative_int>> coordinate_ranges =
+      transform(task.degrees, [&](nonnegative_int num_points) {
+        return nonnegative_range(num_points);
+      });
 
   std::unordered_set<std::vector<nonnegative_int>> raw_coordinates =
       unordered_set_of(cartesian_product(coordinate_ranges));

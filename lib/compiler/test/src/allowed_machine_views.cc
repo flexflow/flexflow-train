@@ -86,13 +86,19 @@ TEST_SUITE(FF_TEST_SUITE) {
       auto intra = MachineSpecificationDimension::INTRA_NODE;
       auto inter = MachineSpecificationDimension::INTER_NODE;
       std::unordered_set<MachineView> correct = {
-          make_2d_view(0_n, 0_n, /*stride1=*/1_n, /*stride2=*/1_n, inter, intra),
-          make_2d_view(1_n, 0_n, /*stride1=*/1_n, /*stride2=*/1_n, inter, intra),
-          make_2d_view(0_n, 0_n, /*stride1=*/2_n, /*stride2=*/1_n, inter, intra),
+          make_2d_view(
+              0_n, 0_n, /*stride1=*/1_n, /*stride2=*/1_n, inter, intra),
+          make_2d_view(
+              1_n, 0_n, /*stride1=*/1_n, /*stride2=*/1_n, inter, intra),
+          make_2d_view(
+              0_n, 0_n, /*stride1=*/2_n, /*stride2=*/1_n, inter, intra),
 
-          make_2d_view(0_n, 0_n, /*stride1=*/1_n, /*stride2=*/1_n, intra, inter),
-          make_2d_view(0_n, 1_n, /*stride1=*/1_n, /*stride2=*/1_n, intra, inter),
-          make_2d_view(0_n, 0_n, /*stride1=*/2_n, /*stride2=*/1_n, intra, inter),
+          make_2d_view(
+              0_n, 0_n, /*stride1=*/1_n, /*stride2=*/1_n, intra, inter),
+          make_2d_view(
+              0_n, 1_n, /*stride1=*/1_n, /*stride2=*/1_n, intra, inter),
+          make_2d_view(
+              0_n, 0_n, /*stride1=*/2_n, /*stride2=*/1_n, intra, inter),
       };
 
       std::unordered_set<MachineView> result =

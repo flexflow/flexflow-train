@@ -28,7 +28,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     ParallelTensorShape result = get_output_shape(attrs, input);
 
     ParallelTensorShape correct_output = input;
-    correct_output.dims.replica_dims.discard_copy_degree = DiscardCopyDegree{8_n};
+    correct_output.dims.replica_dims.discard_copy_degree =
+        DiscardCopyDegree{8_n};
 
     CHECK(result == correct_output);
   }

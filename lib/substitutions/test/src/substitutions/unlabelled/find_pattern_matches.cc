@@ -52,24 +52,23 @@ namespace rc {
 
 } // namespace rc
 
-  // TEST_CASE("find_pattern_matches") {
-  //   RC_SUBCASE([](MultiDiGraph const &g) {
-  //     std::unordered_set<Node> subgraph_nodes = *rc::subset_of(get_nodes(g));
-  //     OpenMultiDiGraphView subgraph =
-  //         get_subgraph<OpenMultiDiSubgraphView>(as_openmultidigraph(g),
-  //         subgraph_nodes);
-  //
-  //     std::vector<MultiDiGraphPatternMatch> matches =
-  //         find_pattern_matches(subgraph, as_openmultidigraph(g), AlwaysTrue{});
-  //
-  //     RC_ASSERT(!matches.empty());
-  //
-  //     for (MultiDiGraphPatternMatch const &match : matches) {
-  //       RC_ASSERT(pattern_matches(subgraph, as_openmultidigraph(g), match,
-  //       AlwaysTrue{}));
-  //     }
-  //   });
-
+// TEST_CASE("find_pattern_matches") {
+//   RC_SUBCASE([](MultiDiGraph const &g) {
+//     std::unordered_set<Node> subgraph_nodes = *rc::subset_of(get_nodes(g));
+//     OpenMultiDiGraphView subgraph =
+//         get_subgraph<OpenMultiDiSubgraphView>(as_openmultidigraph(g),
+//         subgraph_nodes);
+//
+//     std::vector<MultiDiGraphPatternMatch> matches =
+//         find_pattern_matches(subgraph, as_openmultidigraph(g), AlwaysTrue{});
+//
+//     RC_ASSERT(!matches.empty());
+//
+//     for (MultiDiGraphPatternMatch const &match : matches) {
+//       RC_ASSERT(pattern_matches(subgraph, as_openmultidigraph(g), match,
+//       AlwaysTrue{}));
+//     }
+//   });
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("find_pattern_matches") {
@@ -81,7 +80,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     OpenDataflowValue pattern_v0 =
         OpenDataflowValue{get_only(pattern_n0_added.outputs)};
 
-    NodeAddedResult pattern_n1_added = pattern_graph.add_node({pattern_v0}, 1_n);
+    NodeAddedResult pattern_n1_added =
+        pattern_graph.add_node({pattern_v0}, 1_n);
     Node pattern_n1 = pattern_n1_added.node;
     OpenDataflowValue pattern_v1 =
         OpenDataflowValue{get_only(pattern_n1_added.outputs)};

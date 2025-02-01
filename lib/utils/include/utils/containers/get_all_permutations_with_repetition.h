@@ -15,7 +15,8 @@ namespace FlexFlow {
  **/
 template <typename C, typename T = typename C::value_type>
 std::unordered_multiset<std::vector<T>>
-    get_all_permutations_with_repetition(C const &container, nonnegative_int n) {
+    get_all_permutations_with_repetition(C const &container,
+                                         nonnegative_int n) {
   std::unordered_multiset<std::vector<T>> result;
 
   if (container.empty() || n == 0) {

@@ -12,8 +12,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     nonnegative_int kSize = 64_n;
     nonnegative_int vSize = 64_n;
     nonnegative_int qProjSize = 64_n;
-    nonnegative_int kProjSize = 64_n; 
-    nonnegative_int vProjSize = 64_n; 
+    nonnegative_int kProjSize = 64_n;
+    nonnegative_int vProjSize = 64_n;
     nonnegative_int oProjSize = 64_n;
     nonnegative_int qoSeqLength = 20_n;
     nonnegative_int kvSeqLength = 20_n;
@@ -23,21 +23,21 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    MHAPerDeviceState state =
-        Kernels::MultiHeadAttention::init_kernel(managed_handle.raw_handle(),
-                                                 allocator,
-                                                 /*num_samples=*/num_samples.unwrap_nonnegative(),
-                                                 /*num_heads=*/num_heads.unwrap_nonnegative(),
-                                                 /*qSize=*/qSize.unwrap_nonnegative(),
-                                                 /*kSize=*/kSize.unwrap_nonnegative(),
-                                                 /*vSize=*/vSize.unwrap_nonnegative(),
-                                                 /*qProjSize=*/qProjSize.unwrap_nonnegative(),
-                                                 /*kProjSize=*/kProjSize.unwrap_nonnegative(),
-                                                 /*vProjSize=*/vProjSize.unwrap_nonnegative(),
-                                                 /*oProjSize=*/oProjSize.unwrap_nonnegative(),
-                                                 /*qoSeqLength=*/qoSeqLength.unwrap_nonnegative(),
-                                                 /*kvSeqLength=*/kvSeqLength.unwrap_nonnegative(),
-                                                 /*add_bias_kv=*/false);
+    MHAPerDeviceState state = Kernels::MultiHeadAttention::init_kernel(
+        managed_handle.raw_handle(),
+        allocator,
+        /*num_samples=*/num_samples.unwrap_nonnegative(),
+        /*num_heads=*/num_heads.unwrap_nonnegative(),
+        /*qSize=*/qSize.unwrap_nonnegative(),
+        /*kSize=*/kSize.unwrap_nonnegative(),
+        /*vSize=*/vSize.unwrap_nonnegative(),
+        /*qProjSize=*/qProjSize.unwrap_nonnegative(),
+        /*kProjSize=*/kProjSize.unwrap_nonnegative(),
+        /*vProjSize=*/vProjSize.unwrap_nonnegative(),
+        /*oProjSize=*/oProjSize.unwrap_nonnegative(),
+        /*qoSeqLength=*/qoSeqLength.unwrap_nonnegative(),
+        /*kvSeqLength=*/kvSeqLength.unwrap_nonnegative(),
+        /*add_bias_kv=*/false);
 
     TensorShape query_shape = make_float_tensor_shape_from_legion_dims(
         {qoSeqLength, num_samples, qSize});
@@ -47,8 +47,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         {kvSeqLength, num_samples, vSize});
     TensorShape output_shape = make_float_tensor_shape_from_legion_dims(
         {qoSeqLength, num_samples, oProjSize});
-    TensorShape weight_shape =
-        make_float_tensor_shape_from_legion_dims({nonnegative_int{state.weightSize}});
+    TensorShape weight_shape = make_float_tensor_shape_from_legion_dims(
+        {nonnegative_int{state.weightSize}});
 
     GenericTensorAccessorW query_accessor =
         create_random_filled_accessor_w(query_shape, allocator);

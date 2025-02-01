@@ -71,16 +71,17 @@ static DeviceSpecificDeviceStates
 
   float *one_ptr;
 
-  LinearPerDeviceState per_device_state = init_kernel(handle,
-                                                      one_ptr,
-                                                      attrs.activation,
-                                                      attrs.regularizer,
-                                                      attrs.use_bias,
-                                                      input.data_type,
-                                                      weight.data_type,
-                                                      output.data_type,
-                                                      batch_size.unwrap_nonnegative(),
-                                                      attrs.out_channels.unwrap_nonnegative());
+  LinearPerDeviceState per_device_state =
+      init_kernel(handle,
+                  one_ptr,
+                  attrs.activation,
+                  attrs.regularizer,
+                  attrs.use_bias,
+                  input.data_type,
+                  weight.data_type,
+                  output.data_type,
+                  batch_size.unwrap_nonnegative(),
+                  attrs.out_channels.unwrap_nonnegative());
   return DeviceSpecificDeviceStates{
       DeviceSpecific<LinearPerDeviceState>::create(per_device_state)};
 }

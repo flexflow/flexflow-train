@@ -1,10 +1,10 @@
 #include "utils/containers/product.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
+#include <climits>
 #include <doctest/doctest.h>
 #include <set>
 #include <unordered_set>
 #include <vector>
-#include "utils/nonnegative_int/nonnegative_int.h"
-#include <climits>
 
 using namespace ::FlexFlow;
 
