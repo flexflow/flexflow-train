@@ -33,9 +33,8 @@ TaskSignature get_loss_bwd_signature() {
   return sig;
 }
 
-TaskInvocation backward(LossAttrs const &attrs,
-                        tensor_guid_t logit,
-                        loss_tensor_t label) {
+TaskInvocation
+    backward(LossAttrs const &attrs, tensor_guid_t logit, loss_tensor_t label) {
   TaskBinding b;
   b.bind(LOGIT, logit);
   b.bind(LABEL, label);

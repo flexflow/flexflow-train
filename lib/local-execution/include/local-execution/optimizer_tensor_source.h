@@ -14,8 +14,7 @@ public:
 private:
   static size_t next_available_optimizer_tensor_id;
 };
-  
-} // namespace FlexFlow
 
+} // namespace FlexFlow
 
 #endif

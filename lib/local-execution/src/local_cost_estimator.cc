@@ -1,16 +1,16 @@
 #include "local-execution/local_cost_estimator.h"
-#include "local-execution/tensor_lowering.h"
 #include "kernels/device.h"
 #include "kernels/local_cuda_allocator.h"
+#include "local-execution/tensor_lowering.h"
 #include "local-execution/tracked_allocator.h"
 #include "op-attrs/computation_graph_op_attrs.h"
 #include "op-attrs/pcg_operator_attrs.h"
 #include "pcg/computation_graph/layer_added_result.dtg.h"
 #include "pcg/computation_graph_builder.h"
 #include "pcg/parallel_tensor_attrs.h"
+#include "utils/containers/sum.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/values.h"
-#include "utils/containers/sum.h"
 
 namespace FlexFlow {
 
@@ -64,9 +64,8 @@ CostDetails LocalCostEstimator::estimate_cost(
                     }),
           get_vector_piece_attrs(outputs));
 
-  LocalTrainingBacking local_backing(allocator,
-                                     cg_builder.computation_graph,
-                                     this->runtime_arg_config);
+  LocalTrainingBacking local_backing(
+      allocator, cg_builder.computation_graph, this->runtime_arg_config);
   local_backing.register_and_allocate_layer(layer_added_result.layer);
   local_backing.execute_init(layer_added_result.layer);
   float fwd = local_backing.execute_forward(layer_added_result.layer).value();

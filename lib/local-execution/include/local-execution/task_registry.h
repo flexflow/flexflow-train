@@ -15,8 +15,11 @@ void register_tasks_for_layer(TaskRegistry &,
                               ComputationGraphOpAttrs const &attrs);
 
 bool registry_contains_task_for_layer(TaskRegistry const &,
-                               layer_guid_t const &,
-                               OpTaskType const &);
+                                      layer_guid_t const &,
+                                      OpTaskType const &);
+
+void register_all_computation_graph_tasks(TaskRegistry &,
+                                          ComputationGraph const &);
 
 } // namespace FlexFlow
 

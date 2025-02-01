@@ -65,7 +65,8 @@ struct TaskArgumentAccessor {
   // }
 
   // template <Permissions PRIV>
-  // privilege_mode_to_accessor<PRIV> get_non_graph_tensor(slot_id_t slot) const {
+  // privilege_mode_to_accessor<PRIV> get_non_graph_tensor(slot_id_t slot) const
+  // {
   //   return std::get<privilege_mode_to_accessor<PRIV>>(
   //       this->ptr->get_tensor(slot, PRIV, TensorType::NON_GRAPH));
   // }

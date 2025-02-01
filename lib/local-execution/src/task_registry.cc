@@ -1,5 +1,6 @@
 #include "local-execution/task_registry.h"
 #include "local-execution/task_signature_impl.h"
+#include "pcg/computation_graph.h"
 
 namespace FlexFlow {
 
@@ -43,8 +44,8 @@ void register_tasks_for_layer(TaskRegistry &task_registry,
 }
 
 bool registry_contains_task_for_layer(TaskRegistry const &task_registry,
-                               layer_guid_t const &op,
-                               OpTaskType const &op_task_type) {
+                                      layer_guid_t const &op,
+                                      OpTaskType const &op_task_type) {
   std::unordered_map<layer_guid_t, std::optional<task_id_t>> task_ids;
   switch (op_task_type) {
     case OpTaskType::INIT:
@@ -61,6 +62,14 @@ bool registry_contains_task_for_layer(TaskRegistry const &task_registry,
   }
 
   return task_ids.at(op).has_value();
+}
+
+void register_all_computation_graph_tasks(TaskRegistry &registry,
+                                          ComputationGraph const &cg) {
+  for (layer_guid_t const &node : topological_ordering(cg)) {
+    ComputationGraphOpAttrs attrs = get_layer_attrs(cg, node).attrs;
+    register_tasks_for_layer(registry, node, attrs);
+  }
 }
 
 } // namespace FlexFlow

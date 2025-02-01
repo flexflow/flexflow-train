@@ -20,8 +20,7 @@ void OpTaskBinding::bind(int slot, OpTensorSpec const &tensor_spec) {
 }
 
 void OpTaskBinding::bind(slot_id_t slot, OpTensorSpec const &tensor_spec) {
-  this->tensor_bindings.insert(
-      {SlotGradId{slot, IsGrad::NO}, tensor_spec});
+  this->tensor_bindings.insert({SlotGradId{slot, IsGrad::NO}, tensor_spec});
 }
 
 void OpTaskBinding::bind_grad(int slot, OpTensorSpec const &tensor_spec) {
@@ -29,8 +28,7 @@ void OpTaskBinding::bind_grad(int slot, OpTensorSpec const &tensor_spec) {
 }
 
 void OpTaskBinding::bind_grad(slot_id_t slot, OpTensorSpec const &tensor_spec) {
-  this->tensor_bindings.insert(
-      {SlotGradId{slot, IsGrad::YES}, tensor_spec});
+  this->tensor_bindings.insert({SlotGradId{slot, IsGrad::YES}, tensor_spec});
 }
 
 void OpTaskBinding::insert_arg_spec(slot_id_t name, OpArgSpec const &arg_spec) {
@@ -91,8 +89,8 @@ bool is_tensor_invocation_valid(OpTaskSignature const &sig,
                                 OpTaskInvocation const &inv) {
   auto tensor_bindings = inv.binding.get_tensor_bindings();
   for (OpTensorSlotSpec const &op_tensor_slot_spec : sig.get_tensor_slots()) {
-    SlotGradId tensor_key = SlotGradId{
-        op_tensor_slot_spec.name, op_tensor_slot_spec.is_grad};
+    SlotGradId tensor_key =
+        SlotGradId{op_tensor_slot_spec.name, op_tensor_slot_spec.is_grad};
     OpTensorSpec op_tensor_spec = tensor_bindings.at(tensor_key);
     if (is_op_tensor_spec_invalid(op_tensor_slot_spec, op_tensor_spec)) {
       return false;

@@ -57,15 +57,15 @@ std::size_t ArrayShape::at(ff_dim_t idx) const {
 
 ArrayShape ArrayShape::sub_shape(std::optional<ff_dim_t> start,
                                  std::optional<ff_dim_t> end) const {
-  std::optional<legion_dim_t> legion_start = transform(
-    start, [&](auto const &start_unwrapped) {
-      return legion_dim_from_ff_dim(start_unwrapped, num_dims());
-  });
+  std::optional<legion_dim_t> legion_start =
+      transform(start, [&](auto const &start_unwrapped) {
+        return legion_dim_from_ff_dim(start_unwrapped, num_dims());
+      });
 
-  std::optional<legion_dim_t> legion_end = transform(
-    end, [&](auto const &end_unwrapped) {
-      return legion_dim_from_ff_dim(end_unwrapped, num_dims());
-  });
+  std::optional<legion_dim_t> legion_end =
+      transform(end, [&](auto const &end_unwrapped) {
+        return legion_dim_from_ff_dim(end_unwrapped, num_dims());
+      });
   return this->sub_shape(legion_start, legion_end);
 }
 

@@ -121,6 +121,11 @@ std::vector<tensor_guid_t> get_incoming_weights(ComputationGraph const &cg,
   return get_incoming_tensors_with_role(cg, l, IncomingTensorRole::WEIGHT);
 }
 
+std::unordered_set<tensor_guid_t> get_all_tensors(ComputationGraph const &cg) {
+  return transform(get_all_dataflow_outputs(cg.raw_graph),
+                   [](DataflowOutput const &t) { return tensor_guid_t(t); });
+}
+
 std::unordered_set<ComputationGraphEdge> get_subgraph_incoming_edges(
     ComputationGraph const &cg,
     std::unordered_set<layer_guid_t> const &subgraph_nodes) {

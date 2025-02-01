@@ -12,12 +12,8 @@ void OpTaskSignature::add_input_slot(int name, SlotType slot_type) {
 }
 
 void OpTaskSignature::add_input_slot(slot_id_t name, SlotType slot_type) {
-  OpTensorSlotSpec op_tensor_slot_spec =
-      OpTensorSlotSpec{name,
-                       slot_type,
-                       TensorRole::INPUT,
-                       IsGrad::NO,
-                       OpSlotOptions::NECESSARY};
+  OpTensorSlotSpec op_tensor_slot_spec = OpTensorSlotSpec{
+      name, slot_type, TensorRole::INPUT, IsGrad::NO, OpSlotOptions::NECESSARY};
   this->op_tensor_slots.insert(op_tensor_slot_spec);
 }
 
@@ -27,12 +23,8 @@ void OpTaskSignature::add_optional_input_slot(int name, SlotType slot_type) {
 
 void OpTaskSignature::add_optional_input_slot(slot_id_t name,
                                               SlotType slot_type) {
-  OpTensorSlotSpec op_tensor_slot_spec =
-      OpTensorSlotSpec{name,
-                       slot_type,
-                       TensorRole::INPUT,
-                       IsGrad::NO,
-                       OpSlotOptions::OPTIONAL};
+  OpTensorSlotSpec op_tensor_slot_spec = OpTensorSlotSpec{
+      name, slot_type, TensorRole::INPUT, IsGrad::NO, OpSlotOptions::OPTIONAL};
   this->op_tensor_slots.insert(op_tensor_slot_spec);
 }
 
@@ -88,12 +80,8 @@ void OpTaskSignature::add_bwd_optional_output_slot(int name,
 
 void OpTaskSignature::add_bwd_optional_output_slot(slot_id_t name,
                                                    SlotType slot_type) {
-  OpTensorSlotSpec op_tensor_slot_spec =
-      OpTensorSlotSpec{name,
-                       slot_type,
-                       TensorRole::OUTPUT,
-                       IsGrad::NO,
-                       OpSlotOptions::OPTIONAL};
+  OpTensorSlotSpec op_tensor_slot_spec = OpTensorSlotSpec{
+      name, slot_type, TensorRole::OUTPUT, IsGrad::NO, OpSlotOptions::OPTIONAL};
   this->op_tensor_slots.insert(op_tensor_slot_spec);
 }
 
@@ -117,12 +105,8 @@ void OpTaskSignature::add_optional_weight_slot(int name, SlotType slot_type) {
 
 void OpTaskSignature::add_optional_weight_slot(slot_id_t name,
                                                SlotType slot_type) {
-  OpTensorSlotSpec op_tensor_slot_spec =
-      OpTensorSlotSpec{name,
-                       slot_type,
-                       TensorRole::WEIGHT,
-                       IsGrad::NO,
-                       OpSlotOptions::OPTIONAL};
+  OpTensorSlotSpec op_tensor_slot_spec = OpTensorSlotSpec{
+      name, slot_type, TensorRole::WEIGHT, IsGrad::NO, OpSlotOptions::OPTIONAL};
   this->op_tensor_slots.insert(op_tensor_slot_spec);
 }
 

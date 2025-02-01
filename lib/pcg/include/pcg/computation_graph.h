@@ -37,6 +37,8 @@ std::vector<tensor_guid_t> get_incoming_inputs(ComputationGraph const &,
 std::vector<tensor_guid_t> get_incoming_weights(ComputationGraph const &,
                                                 layer_guid_t const &);
 
+std::unordered_set<tensor_guid_t> get_all_tensors(ComputationGraph const &);
+
 std::unordered_set<ComputationGraphEdge>
     get_subgraph_incoming_edges(ComputationGraph const &,
                                 std::unordered_set<layer_guid_t> const &);
