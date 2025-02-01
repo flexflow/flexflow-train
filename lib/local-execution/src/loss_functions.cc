@@ -20,25 +20,27 @@
 
 namespace FlexFlow {
 
-enum Slots { LOGIT, LABEL, ATTRS, PROFILING };
+enum Slots { LOGIT, LABEL, LOGIT_GRAD, ATTRS, PROFILING };
 
 TaskSignature get_loss_bwd_signature() {
   TaskSignature sig = make_empty_task_signature();
   add_slot(sig, LOGIT, TensorType::FORWARD);
   add_slot(sig, LABEL, TensorType::LOSS);
-  add_slot(sig, LOGIT, TensorType::GRADIENT);
+  add_slot(sig, LOGIT_GRAD, TensorType::GRADIENT);
 
   add_arg_slot<LossAttrs>(sig, ATTRS);
   add_arg_slot<ProfilingSettings>(sig, PROFILING);
   return sig;
 }
 
-TaskInvocation
-    backward(LossAttrs const &attrs, tensor_guid_t logit, loss_tensor_t label) {
+TaskInvocation backward(LossAttrs const &attrs,
+                        tensor_guid_t logit,
+                        gradient_tensor_t logit_grad,
+                        loss_tensor_t label) {
   TaskBinding b;
   b.bind(LOGIT, logit);
-  b.bind(LABEL, label);
-  b.bind_grad(LOGIT, logit);
+  b.bind_loss(LABEL, label);
+  b.bind_grad(LOGIT_GRAD, logit_grad);
 
   b.bind_arg(ATTRS, attrs);
   b.bind_arg(PROFILING, profiling_settings());
@@ -49,9 +51,9 @@ TaskInvocation
 static void backward_task_impl(TaskArgumentAccessor const &acc) {
   auto attrs = acc.get_argument<LossAttrs>(ATTRS);
   auto profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  auto logit_grad = acc.get_tensor_grad<Permissions::RW>(LOGIT);
+  auto logit_grad = acc.get_tensor_grad<Permissions::RW>(LOGIT_GRAD);
   auto logit = acc.get_tensor<Permissions::RO>(LOGIT);
-  auto label = acc.get_tensor<Permissions::RO>(LABEL);
+  auto label = acc.get_loss_tensor<Permissions::RO>(LABEL);
   int batch_size = logit.shape.at(legion_dim_t{1});
   // assuming logit shape is [batch dim, num classes]
 

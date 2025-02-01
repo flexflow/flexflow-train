@@ -25,7 +25,6 @@ public:
   ComputationGraph computation_graph;
   TaskRegistry task_registry;
 
-private:
   GradientTensorSource gradient_tensor_source;
 };
 
@@ -42,7 +41,7 @@ std::optional<float> execute_forward(LocalTrainingBacking &,
                                      layer_guid_t const &);
 std::optional<float> execute_backward(LocalTrainingBacking &,
                                       layer_guid_t const &);
-void compute_loss(LocalTrainingBacking const &,
+void compute_loss(LocalTrainingBacking &,
                   LossAttrs const &,
                   tensor_guid_t const &logit_tensor,
                   loss_tensor_t const &label_tensor);

@@ -16,19 +16,21 @@
 #ifndef _FLEXFLOW_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_LOSS_FUNCTIONS_H_
 #define _FLEXFLOW_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_LOSS_FUNCTIONS_H_
 
+#include "local-execution/loss_tensor_t.dtg.h"
 #include "local-execution/task_impl_function.dtg.h"
 #include "local-execution/task_invocation.dtg.h"
 #include "local-execution/task_signature.h"
 #include "op-attrs/ops/loss_functions.h"
 #include "pcg/tensor_guid_t.dtg.h"
-#include "local-execution/loss_tensor_t.dtg.h"
 
 namespace FlexFlow {
 
 TaskImplFunction get_loss_bwd_task_impl();
 TaskSignature get_loss_bwd_signature();
-TaskInvocation
-    backward(LossAttrs const &, tensor_guid_t logit, loss_tensor_t label);
+TaskInvocation backward(LossAttrs const &,
+                        tensor_guid_t logit,
+                        gradient_tensor_t logit_grad,
+                        loss_tensor_t label);
 
 } // namespace FlexFlow
 

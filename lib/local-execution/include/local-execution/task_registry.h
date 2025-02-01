@@ -5,6 +5,7 @@
 #include "local-execution/op_task_type.dtg.h"
 #include "local-execution/task_registry.dtg.h"
 #include "op-attrs/computation_graph_op_attrs.h"
+#include "pcg/computation_graph.dtg.h"
 
 namespace FlexFlow {
 

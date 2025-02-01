@@ -257,12 +257,6 @@ public:
   std::vector<tensor_guid_t> get_outputs(LayerAttrs const &) const;
   tensor_guid_t get_output(LayerAttrs const &, int idx) const;
 
-  LayerAddedResult add_layer_and_get_layer_added_result(
-      LayerAttrs const &layer,
-      std::vector<tensor_guid_t> const &inputs,
-      std::vector<tensor_guid_t> const &weights,
-      std::vector<TensorAttrs> const &outputs);
-
   std::vector<tensor_guid_t>
       add_layer(LayerAttrs const &layer,
                 std::vector<tensor_guid_t> const &inputs,

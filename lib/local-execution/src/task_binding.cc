@@ -15,29 +15,30 @@ void TaskBinding::bind(slot_id_t name, tensor_guid_t const &binding) {
                                 TensorTypeVariant{binding}});
 }
 
-void TaskBinding::bind_grad(int name, tensor_guid_t const &binding) {
-  this->bind(slot_id_t{name}, binding);
+void TaskBinding::bind_grad(int name, gradient_tensor_t const &binding) {
+  this->bind_grad(slot_id_t{name}, binding);
 }
 
-void TaskBinding::bind_grad(slot_id_t name, tensor_guid_t const &binding) {
+void TaskBinding::bind_grad(slot_id_t name, gradient_tensor_t const &binding) {
   this->tensor_bindings.insert({SlotTensorTypeId{name, TensorType::GRADIENT},
                                 TensorTypeVariant{binding}});
 }
 
-void TaskBinding::bind(int name, optimizer_tensor_t const &binding) {
-  this->bind(slot_id_t{name}, binding);
+void TaskBinding::bind_optimizer(int name, optimizer_tensor_t const &binding) {
+  this->bind_optimizer(slot_id_t{name}, binding);
 }
 
-void TaskBinding::bind(slot_id_t name, optimizer_tensor_t const &binding) {
+void TaskBinding::bind_optimizer(slot_id_t name,
+                                 optimizer_tensor_t const &binding) {
   this->tensor_bindings.insert({SlotTensorTypeId{name, TensorType::OPTIMIZER},
                                 TensorTypeVariant{binding}});
 }
 
-void TaskBinding::bind(int name, loss_tensor_t const &binding) {
-  this->bind(slot_id_t{name}, binding);
+void TaskBinding::bind_loss(int name, loss_tensor_t const &binding) {
+  this->bind_loss(slot_id_t{name}, binding);
 }
 
-void TaskBinding::bind(slot_id_t name, loss_tensor_t const &binding) {
+void TaskBinding::bind_loss(slot_id_t name, loss_tensor_t const &binding) {
   this->tensor_bindings.insert(
       {SlotTensorTypeId{name, TensorType::LOSS}, TensorTypeVariant{binding}});
 }

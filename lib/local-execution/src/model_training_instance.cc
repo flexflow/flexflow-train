@@ -7,7 +7,7 @@ namespace FlexFlow {
 
 ModelTrainingInstance::ModelTrainingInstance(
     LocalTrainingBacking const &local_training_backing,
-    tensor_guid_t const & logit_tensor,
+    tensor_guid_t const &logit_tensor,
     TensorShape const &label_tensor_shape,
     LossAttrs const &loss_attrs,
     OptimizerAttrs const &optimizer_attrs)
@@ -45,7 +45,7 @@ PerLayerElapsedTime forward(ModelTrainingInstance &model_training_instance) {
 
 PerLayerElapsedTime backward(ModelTrainingInstance &model_training_instance) {
   compute_loss(model_training_instance.training_backing,
-               model_training_instance.loss_attrs, 
+               model_training_instance.loss_attrs,
                model_training_instance.logit_tensor,
                model_training_instance.label_tensor);
 
@@ -59,13 +59,15 @@ PerLayerElapsedTime backward(ModelTrainingInstance &model_training_instance) {
   return per_layer_elapsed_time;
 }
 
-void update(ModelTrainingInstance & model_training_instance) {
-  for (layer_guid_t const &node :
-       topological_ordering(model_training_instance.training_backing.computation_graph)) {
-    execute_update(model_training_instance.training_backing, node, model_training_instance.optimizer_attrs);
+void update(ModelTrainingInstance &model_training_instance) {
+  for (layer_guid_t const &node : topological_ordering(
+           model_training_instance.training_backing.computation_graph)) {
+    execute_update(model_training_instance.training_backing,
+                   node,
+                   model_training_instance.optimizer_attrs);
   }
-  model_training_instance.optimizer_attrs =
-      get_optimizer_attrs_for_next_iter(model_training_instance.optimizer_attrs);
+  model_training_instance.optimizer_attrs = get_optimizer_attrs_for_next_iter(
+      model_training_instance.optimizer_attrs);
 }
 
 } // namespace FlexFlow

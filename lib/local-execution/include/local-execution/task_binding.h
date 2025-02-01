@@ -19,14 +19,14 @@ struct TaskBinding {
   void bind(int, tensor_guid_t const &);
   void bind(slot_id_t, tensor_guid_t const &);
 
-  void bind_grad(int, tensor_guid_t const &);
-  void bind_grad(slot_id_t, tensor_guid_t const &);
+  void bind_grad(int, gradient_tensor_t const &);
+  void bind_grad(slot_id_t, gradient_tensor_t const &);
 
-  void bind(int, optimizer_tensor_t const &);
-  void bind(slot_id_t, optimizer_tensor_t const &);
+  void bind_optimizer(int, optimizer_tensor_t const &);
+  void bind_optimizer(slot_id_t, optimizer_tensor_t const &);
 
-  void bind(int, loss_tensor_t const &);
-  void bind(slot_id_t, loss_tensor_t const &);
+  void bind_loss(int, loss_tensor_t const &);
+  void bind_loss(slot_id_t, loss_tensor_t const &);
 
   template <typename T>
   void bind_arg(int name, T const &t) {

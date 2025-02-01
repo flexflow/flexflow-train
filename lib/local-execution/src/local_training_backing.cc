@@ -60,15 +60,17 @@ void execute_init(LocalTrainingBacking &local_training_backing,
         get_layer_attrs(local_training_backing.computation_graph, operator_node)
             .attrs;
 
-    TaskInvocation invocation =
-        lower_to_task_invocation(init(attrs),
-                                 operator_node,
-                                 local_training_backing.computation_graph,
-                                 std::nullopt);
+    TaskInvocation invocation = lower_to_task_invocation(
+        init(attrs),
+        operator_node,
+        local_training_backing.computation_graph,
+        local_training_backing.local_tensor_backing.tensor_gradient_mapping,
+        std::nullopt);
     TaskArgumentAccessor accessor =
         get_task_arg_accessor(local_training_backing.local_tensor_backing,
                               local_training_backing.local_args_backing,
-                              invocation);
+                              invocation,
+                              local_training_backing.allocator);
     DeviceSpecificDeviceStates device_state = call_init_task_impl(
         local_training_backing.task_registry, invocation.task_id, accessor);
     add_per_device_op_state(
@@ -89,11 +91,12 @@ std::optional<float>
     std::optional<DeviceSpecificDeviceStates> device_state =
         get_per_device_op_state_if_exists(
             local_training_backing.local_args_backing, operator_node);
-    TaskInvocation invocation =
-        lower_to_task_invocation(forward(attrs),
-                                 operator_node,
-                                 local_training_backing.computation_graph,
-                                 device_state);
+    TaskInvocation invocation = lower_to_task_invocation(
+        forward(attrs),
+        operator_node,
+        local_training_backing.computation_graph,
+        local_training_backing.local_tensor_backing.tensor_gradient_mapping,
+        device_state);
     TaskArgumentAccessor accessor =
         get_task_arg_accessor(local_training_backing.local_tensor_backing,
                               local_training_backing.local_args_backing,
@@ -106,18 +109,23 @@ std::optional<float>
   }
 }
 
-void compute_loss(LocalTrainingBacking const &local_training_backing,
+void compute_loss(LocalTrainingBacking &local_training_backing,
                   LossAttrs const &loss_attrs,
                   tensor_guid_t const &logit_tensor,
                   loss_tensor_t const &label_tensor) {
-  TaskInvocation loss_invocation =
-      backward(loss_attrs, logit_tensor, label_tensor);
+  TaskInvocation loss_invocation = backward(
+      loss_attrs,
+      logit_tensor,
+      local_training_backing.local_tensor_backing.tensor_gradient_mapping.at(
+          logit_tensor),
+      label_tensor);
   // TODO: https://github.com/flexflow/flexflow-train/issues/1442
   // assert(is_invocation_valid(get_loss_bwd_signature(), loss_invocation));
   TaskArgumentAccessor loss_accessor =
       get_task_arg_accessor(local_training_backing.local_tensor_backing,
                             local_training_backing.local_args_backing,
-                            loss_invocation);
+                            loss_invocation,
+                            local_training_backing.allocator);
   TaskImplFunction loss_impl_fn = get_loss_bwd_task_impl();
   loss_impl_fn.get<GenericTaskImplFunction>().function_ptr(loss_accessor);
 }
@@ -135,11 +143,12 @@ std::optional<float>
     std::optional<DeviceSpecificDeviceStates> device_state =
         get_per_device_op_state_if_exists(
             local_training_backing.local_args_backing, operator_node);
-    TaskInvocation invocation =
-        lower_to_task_invocation(backward(attrs),
-                                 operator_node,
-                                 local_training_backing.computation_graph,
-                                 device_state);
+    TaskInvocation invocation = lower_to_task_invocation(
+        backward(attrs),
+        operator_node,
+        local_training_backing.computation_graph,
+        local_training_backing.local_tensor_backing.tensor_gradient_mapping,
+        device_state);
     TaskArgumentAccessor accessor =
         get_task_arg_accessor(local_training_backing.local_tensor_backing,
                               local_training_backing.local_args_backing,
@@ -161,13 +170,19 @@ void execute_update(LocalTrainingBacking &local_training_backing,
     // get tensors
     tensor_guid_t weight_tensor = get_only(
         get_outgoing_tensors(local_training_backing.computation_graph, node));
+
+    gradient_tensor_t weight_grad_tensor =
+        local_training_backing.local_tensor_backing.tensor_gradient_mapping.at(
+            weight_tensor);
     std::vector<optimizer_tensor_t> optimizer_buffer_tensors =
         local_training_backing.local_tensor_backing.tensor_optimizer_mapping.at(
             weight_tensor);
 
     // get invocation
-    TaskInvocation invocation = get_update_invocation(
-        optimizer_attrs, weight_tensor, optimizer_buffer_tensors);
+    TaskInvocation invocation = get_update_invocation(optimizer_attrs,
+                                                      weight_tensor,
+                                                      weight_grad_tensor,
+                                                      optimizer_buffer_tensors);
 
     // TODO: https://github.com/flexflow/flexflow-train/issues/1442
     // assert(is_invocation_valid(get_update_signature(attrs), invocation));

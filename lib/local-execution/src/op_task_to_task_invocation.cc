@@ -8,6 +8,8 @@ TaskInvocation lower_to_task_invocation(
     OpTaskInvocation const &op_task_invocation,
     layer_guid_t const &layer_guid,
     ComputationGraph const &computation_graph,
+    std::unordered_map<tensor_guid_t, gradient_tensor_t> const
+        &tensor_gradient_mapping,
     std::optional<DeviceSpecificDeviceStates> const &device_states) {
   TaskBinding binding;
   // tensors
@@ -40,7 +42,8 @@ TaskInvocation lower_to_task_invocation(
     if (slot_grad_id.is_grad == IsGrad::NO) {
       binding.bind(slot_grad_id.slot_id, tensor_to_bind);
     } else if (slot_grad_id.is_grad == IsGrad::YES) {
-      binding.bind_grad(slot_grad_id.slot_id, tensor_to_bind);
+      binding.bind_grad(slot_grad_id.slot_id,
+                        tensor_gradient_mapping.at(tensor_to_bind));
     } else {
       throw mk_runtime_error(fmt::format("Invalid value for IsGrad {}",
                                          tensor_binding.first.is_grad));

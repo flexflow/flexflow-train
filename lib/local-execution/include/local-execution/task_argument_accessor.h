@@ -50,7 +50,7 @@ struct TaskArgumentAccessor {
 
   template <Permissions PRIV>
   privilege_mode_to_accessor<PRIV> get_optimizer_tensor(int slot) const {
-    return this->get_tensor_grad<PRIV>(slot_id_t{slot});
+    return this->get_optimizer_tensor<PRIV>(slot_id_t{slot});
   }
 
   template <Permissions PRIV>
@@ -59,17 +59,16 @@ struct TaskArgumentAccessor {
         this->ptr->get_tensor(slot, PRIV, TensorType::OPTIMIZER));
   }
 
-  // template <Permissions PRIV>
-  // privilege_mode_to_accessor<PRIV> get_non_graph_tensor(int slot) const {
-  //   return this->get_tensor_grad<PRIV>(slot_id_t{slot});
-  // }
+  template <Permissions PRIV>
+  privilege_mode_to_accessor<PRIV> get_loss_tensor(int slot) const {
+    return this->get_loss_tensor<PRIV>(slot_id_t{slot});
+  }
 
-  // template <Permissions PRIV>
-  // privilege_mode_to_accessor<PRIV> get_non_graph_tensor(slot_id_t slot) const
-  // {
-  //   return std::get<privilege_mode_to_accessor<PRIV>>(
-  //       this->ptr->get_tensor(slot, PRIV, TensorType::NON_GRAPH));
-  // }
+  template <Permissions PRIV>
+  privilege_mode_to_accessor<PRIV> get_loss_tensor(slot_id_t slot) const {
+    return std::get<privilege_mode_to_accessor<PRIV>>(
+        this->ptr->get_tensor(slot, PRIV, TensorType::LOSS));
+  }
 
   // variadic tensors
   template <Permissions PRIV>
@@ -101,7 +100,7 @@ struct TaskArgumentAccessor {
   template <Permissions PRIV>
   std::vector<privilege_mode_to_accessor<PRIV>>
       get_variadic_optimizer_tensor(int slot) const {
-    return this->get_variadic_tensor_grad<PRIV>(slot_id_t{slot});
+    return this->get_variadic_optimizer_tensor<PRIV>(slot_id_t{slot});
   }
 
   template <Permissions PRIV>
@@ -111,18 +110,18 @@ struct TaskArgumentAccessor {
         this->ptr->get_variadic_tensor(slot, PRIV, TensorType::OPTIMIZER));
   }
 
-  // template <Permissions PRIV>
-  // std::vector<privilege_mode_to_accessor<PRIV>>
-  //     get_variadic_non_graph_tensor(int slot) const {
-  //   return this->get_variadic_tensor_grad<PRIV>(slot_id_t{slot});
-  // }
+  template <Permissions PRIV>
+  std::vector<privilege_mode_to_accessor<PRIV>>
+      get_variadic_loss_tensor(int slot) const {
+    return this->get_variadic_loss_tensor<PRIV>(slot_id_t{slot});
+  }
 
-  // template <Permissions PRIV>
-  // std::vector<privilege_mode_to_accessor<PRIV>>
-  //     get_variadic_non_graph_tensor(slot_id_t slot) const {
-  //   return std::get<std::vector<privilege_mode_to_accessor<PRIV>>>(
-  //       this->ptr->get_variadic_tensor(slot, PRIV, TensorType::NON_GRAPH));
-  // }
+  template <Permissions PRIV>
+  std::vector<privilege_mode_to_accessor<PRIV>>
+      get_variadic_loss_tensor(slot_id_t slot) const {
+    return std::get<std::vector<privilege_mode_to_accessor<PRIV>>>(
+        this->ptr->get_variadic_tensor(slot, PRIV, TensorType::LOSS));
+  }
 
   Allocator get_allocator() const {
     return this->ptr->get_allocator();
