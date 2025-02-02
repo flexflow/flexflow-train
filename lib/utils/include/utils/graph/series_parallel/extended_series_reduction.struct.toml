@@ -1,0 +1,31 @@
+namespace = "FlexFlow"
+name = "ExtendedSeriesReduction"
+
+docstring = """\
+@details An `ExtendedSeriesReduction` is an ordered collection of
+`MultiDiEdges` such that:
+- The destination node of the nth edge is the same as the source node of the
+  (n+1)th edge.
+- Such a node (intermediate node) has exactly two edges: one incoming (nth
+  edge) and one outgoing ((n+1)th edge).
+"""
+
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "utils/graph/multidigraph/multidiedge.dtg.h",
+  "<vector>"
+]
+
+src_includes = [   
+  "utils/hash/vector.h",
+  "utils/fmt/vector.h",
+]
+
+[[fields]]
+name = "edges"
+type = "std::vector<::FlexFlow::MultiDiEdge>"

@@ -9,7 +9,7 @@ namespace FlexFlow {
 
 static std::vector<Node>
     get_unchecked_topological_ordering(DiGraphView const &g) {
-  auto dfs_view = unchecked_dfs(g, get_sources(g));
+  auto dfs_view = unchecked_dfs(g, get_initial_nodes(g));
   std::vector<Node> order;
   std::unordered_set<Node> seen;
   std::unordered_map<Node, std::unordered_set<Node>> predecessors =

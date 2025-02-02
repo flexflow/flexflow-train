@@ -8,6 +8,10 @@ namespace FlexFlow {
 std::unordered_set<MultiDiEdge> get_incoming_edges(MultiDiGraphView const &,
                                                    Node const &);
 
+std::unordered_map<Node, std::unordered_set<MultiDiEdge>>
+    get_incoming_edges(MultiDiGraphView const &g,
+                       std::unordered_set<Node> const &nodes);
+
 } // namespace FlexFlow
 
 #endif

@@ -1,0 +1,26 @@
+namespace = "FlexFlow"
+name = "ExtendedParallelReduction"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+docstring = """\
+@brief An ExtendedParallelReduction is a unordered collection of
+`MultiDiEdge`s such that they share a common source and destination node.
+"""
+
+includes = [
+  "utils/graph/multidigraph/multidiedge.dtg.h",
+  "<unordered_set>"
+]
+
+src_includes = [   
+  "utils/hash/unordered_set.h",
+  "utils/fmt/unordered_set.h",
+]
+
+[[fields]]
+name = "edges"
+type = "std::unordered_set<::FlexFlow::MultiDiEdge>"

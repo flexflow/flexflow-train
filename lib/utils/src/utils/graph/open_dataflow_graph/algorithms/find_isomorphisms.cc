@@ -34,14 +34,14 @@ static std::optional<OpenDataflowGraphIsomorphism>
   {
     std::unordered_set<Node> already_mapped_src_nodes =
         left_entries(sink_node_mapping);
-    std::unordered_set<Node> src_g_sink_nodes = get_sinks(src_g);
+    std::unordered_set<Node> src_g_sink_nodes = get_terminal_nodes(src_g);
     assert(already_mapped_src_nodes == src_g_sink_nodes);
   }
 
   {
     std::unordered_set<Node> already_mapped_dst_nodes =
         right_entries(sink_node_mapping);
-    std::unordered_set<Node> dst_g_sink_nodes = get_sinks(dst_g);
+    std::unordered_set<Node> dst_g_sink_nodes = get_terminal_nodes(dst_g);
     assert(already_mapped_dst_nodes == dst_g_sink_nodes);
   }
 
@@ -201,8 +201,8 @@ std::unordered_set<OpenDataflowGraphIsomorphism>
                       OpenDataflowGraphView const &dst) {
   std::unordered_set<OpenDataflowGraphIsomorphism> result;
 
-  std::vector<Node> src_sink_nodes = vector_of(get_sinks(src));
-  std::unordered_set<Node> dst_sink_nodes = get_sinks(dst);
+  std::vector<Node> src_sink_nodes = vector_of(get_terminal_nodes(src));
+  std::unordered_set<Node> dst_sink_nodes = get_terminal_nodes(dst);
 
   if (src_sink_nodes.size() != dst_sink_nodes.size()) {
     return {};

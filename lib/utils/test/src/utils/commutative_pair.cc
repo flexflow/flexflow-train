@@ -7,9 +7,9 @@ using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("commutative_pair") {
-    commutative_pair<int> x = {1, 2};
-    commutative_pair<int> y = {2, 1};
-    commutative_pair<int> z = {1, 1};
+    commutative_pair<int> x = commutative_pair{1, 2};
+    commutative_pair<int> y = commutative_pair{2, 1};
+    commutative_pair<int> z = commutative_pair{1, 1};
 
     SUBCASE("max and min") {
       SUBCASE("max") {
