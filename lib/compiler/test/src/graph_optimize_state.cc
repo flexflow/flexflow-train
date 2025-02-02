@@ -11,35 +11,37 @@ TEST_SUITE(FF_TEST_SUITE) {
     ParallelTensorShape input_shape =
         ParallelTensorShape{ParallelTensorDims{
                                 FFOrdered<ShardParallelDim>{
-                                    ShardParallelDim{32, 2},
-                                    ShardParallelDim{16, 1},
+                                    ShardParallelDim{32_n, 2_n},
+                                    ShardParallelDim{16_n, 1_n},
                                 },
                                 ReplicaParallelDimSet{
-                                    SumDegree{1},
-                                    DiscardCopyDegree{1},
+                                    SumDegree{1_n},
+                                    DiscardCopyDegree{1_n},
                                 },
                             },
                             DataType::FLOAT};
 
     parallel_tensor_guid_t input0 =
         builder.create_input_tensor(input_shape, CreateGrad::YES, "input0");
-    parallel_tensor_guid_t dense0 = builder.dense(input0,
-                                                  8,
-                                                  Activation::RELU,
-                                                  true,
-                                                  DataType::FLOAT,
-                                                  std::nullopt,
-                                                  std::nullopt,
-                                                  "dense0");
+    parallel_tensor_guid_t dense0 =
+        builder.dense(/*input=*/input0,
+                      /*outDim=*/8_n,
+                      /*activation=*/Activation::RELU,
+                      /*use_bias=*/true,
+                      /*data_type=*/DataType::FLOAT,
+                      /*projection_initializer=*/std::nullopt,
+                      /*bias_initializer=*/std::nullopt,
+                      /*name=*/"dense0");
 
-    parallel_tensor_guid_t dense1 = builder.dense(dense0,
-                                                  4,
-                                                  Activation::RELU,
-                                                  true,
-                                                  DataType::FLOAT,
-                                                  std::nullopt,
-                                                  std::nullopt,
-                                                  "dense1");
+    parallel_tensor_guid_t dense1 =
+        builder.dense(/*input=*/dense0,
+                      /*outDim=*/4_n,
+                      /*activation=*/Activation::RELU,
+                      /*use_bias=*/true,
+                      /*data_type=*/DataType::FLOAT,
+                      /*projection_initializer=*/std::nullopt,
+                      /*bias_initializer=*/std::nullopt,
+                      /*name=*/"dense1");
 
     ParallelComputationGraph pcg = builder.pcg;
 
@@ -59,14 +61,15 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     parallel_tensor_guid_t input0_ =
         builder.create_input_tensor(input_shape, CreateGrad::YES, "input0");
-    parallel_tensor_guid_t dense0_ = builder.dense(input0,
-                                                   8,
-                                                   Activation::RELU,
-                                                   true,
-                                                   DataType::FLOAT,
-                                                   std::nullopt,
-                                                   std::nullopt,
-                                                   "dense0");
+    parallel_tensor_guid_t dense0_ =
+        builder.dense(/*input=*/input0,
+                      /*outDim=*/8_n,
+                      /*activation=*/Activation::RELU,
+                      /*use_bias=*/true,
+                      /*data_type=*/DataType::FLOAT,
+                      /*projection_initializer=*/std::nullopt,
+                      /*bias_initializer=*/std::nullopt,
+                      /*name=*/"dense0");
 
     ParallelComputationGraph pcg_ = builder.pcg;
 

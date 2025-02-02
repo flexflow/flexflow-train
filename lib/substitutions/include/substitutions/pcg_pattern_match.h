@@ -6,7 +6,7 @@
 #include "substitutions/pcg_pattern_match.dtg.h"
 #include "substitutions/sub_parallel_computation_graph.dtg.h"
 #include "substitutions/unlabelled/pattern_node_output.dtg.h"
-#include "substitutions/unlabelled/unlabelled_dataflow_graph_pattern_match.dtg.h"
+#include "substitutions/unlabelled/unlabelled_dataflow_graph_pattern_match.h"
 
 namespace FlexFlow {
 
@@ -17,7 +17,7 @@ bidict<PatternNodeOutput, parallel_tensor_guid_t>
         SubParallelComputationGraph const &spcg);
 
 UnlabelledDataflowGraphPatternMatch
-    get_unlabelled_pattern_match(PCGPatternMatch const &);
+    get_unlabelled_pattern_match(PCGPatternMatch const &match);
 
 } // namespace FlexFlow
 

@@ -10,6 +10,10 @@ features = [
 includes = [
   "utils/graph/query_set.h",
   "utils/graph/node/node.dtg.h",
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
+src_includes = [
   "utils/fmt/unordered_set.h",
 ]
 
@@ -19,4 +23,4 @@ type = "::FlexFlow::query_set<::FlexFlow::Node>"
 
 [[fields]]
 name = "output_idxs"
-type = "::FlexFlow::query_set<int>"
+type = "::FlexFlow::query_set<::FlexFlow::nonnegative_int>"

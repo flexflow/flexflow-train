@@ -7,7 +7,7 @@
 
 namespace FlexFlow {
 ff_dim_t ff_dim_t_from_relative_ff_dim_t(relative_ff_dim_t ff_dim,
-                                         int input_dim);
+                                         nonnegative_int input_dim);
 } // namespace FlexFlow
 
 namespace rc {

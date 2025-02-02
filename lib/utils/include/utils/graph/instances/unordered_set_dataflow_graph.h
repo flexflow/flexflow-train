@@ -14,9 +14,9 @@ public:
   UnorderedSetDataflowGraph();
 
   NodeAddedResult add_node(std::vector<DataflowOutput> const &inputs,
-                           int num_outputs) override;
+                           nonnegative_int num_outputs) override;
   NodeAddedResult add_node(std::vector<OpenDataflowValue> const &inputs,
-                           int num_outputs) override;
+                           nonnegative_int num_outputs) override;
   DataflowGraphInput add_input() override;
 
   std::unordered_set<Node> query_nodes(NodeQuery const &) const override;

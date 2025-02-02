@@ -7,9 +7,9 @@ std::unordered_set<DirectedEdge>
     IDataflowGraphView::query_edges(DirectedEdgeQuery const &q) const {
   DataflowEdgeQuery dataflow_query = DataflowEdgeQuery{
       q.srcs,
-      matchall<int>(),
+      matchall<nonnegative_int>(),
       q.dsts,
-      matchall<int>(),
+      matchall<nonnegative_int>(),
   };
   std::unordered_set<DataflowEdge> dataflow_edges =
       this->query_edges(dataflow_query);

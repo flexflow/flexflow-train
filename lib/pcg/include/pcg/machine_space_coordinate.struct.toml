@@ -11,15 +11,16 @@ features = [
 
 includes = [ 
   "pcg/device_type.dtg.h",
+  "utils/nonnegative_int/nonnegative_int.h",
 ]
 
 [[fields]]
 name = "node_idx"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "device_idx"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "device_type"

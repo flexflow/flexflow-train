@@ -13,6 +13,7 @@ includes = [
   "op-attrs/parallel_tensor_shape/sum_degree.dtg.h",
   "op-attrs/parallel_tensor_shape/discard_copy_degree.dtg.h",
   "op-attrs/dim_ordered/dim_ordered.h",
+  "utils/nonnegative_int/nonnegative_int.h",
 ]
 
 [[fields]]
@@ -25,4 +26,4 @@ type = "::FlexFlow::DiscardCopyDegree"
 
 [[fields]]
 name = "shard_degrees"
-type = "::FlexFlow::FFOrdered<int>"
+type = "::FlexFlow::FFOrdered<::FlexFlow::nonnegative_int>"

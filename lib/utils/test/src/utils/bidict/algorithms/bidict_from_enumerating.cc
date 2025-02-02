@@ -10,10 +10,12 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("bidict_from_enumerating(std::unordered_set<T>)") {
     std::unordered_set<std::string> input = {"zero", "one", "two"};
 
-    bidict<int, std::string> result = bidict_from_enumerating(input);
+    bidict<nonnegative_int, std::string> result =
+        bidict_from_enumerating(input);
 
-    std::unordered_set<int> result_left_entries = left_entries(result);
-    std::unordered_set<int> correct_left_entries = {0, 1, 2};
+    std::unordered_set<nonnegative_int> result_left_entries =
+        left_entries(result);
+    std::unordered_set<nonnegative_int> correct_left_entries = {0_n, 1_n, 2_n};
     CHECK(result_left_entries == correct_left_entries);
 
     std::unordered_set<std::string> result_right_entries =
@@ -25,13 +27,14 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("bidict_from_enumerating(std::set<T>)") {
     std::set<std::string> input = {"a", "c", "b"};
 
-    bidict<int, std::string> correct = {
-        {0, "a"},
-        {1, "b"},
-        {2, "c"},
+    bidict<nonnegative_int, std::string> correct = {
+        {0_n, "a"},
+        {1_n, "b"},
+        {2_n, "c"},
     };
 
-    bidict<int, std::string> result = bidict_from_enumerating(input);
+    bidict<nonnegative_int, std::string> result =
+        bidict_from_enumerating(input);
 
     CHECK(result == correct);
   }

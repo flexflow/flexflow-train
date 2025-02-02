@@ -107,9 +107,9 @@ tl::expected<MultiHeadAttentionParallelInputs, std::string>
                     value_dim.degree));
   }
 
-  int discard_copy_q = get_discard_copy_degree(input_q);
-  int discard_copy_k = get_discard_copy_degree(input_k);
-  int discard_copy_v = get_discard_copy_degree(input_v);
+  nonnegative_int discard_copy_q = get_discard_copy_degree(input_q);
+  nonnegative_int discard_copy_k = get_discard_copy_degree(input_k);
+  nonnegative_int discard_copy_v = get_discard_copy_degree(input_v);
 
   if (!all_same(discard_copy_q, discard_copy_k, discard_copy_v)) {
     return tl::unexpected(fmt::format("Q, K, V disagree on the discard-copy "

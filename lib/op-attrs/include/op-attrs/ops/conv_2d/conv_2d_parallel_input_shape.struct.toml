@@ -12,6 +12,7 @@ features = [
 includes = [
   "op-attrs/shard_parallel_dim.dtg.h",
   "op-attrs/datatype.dtg.h",
+  "utils/nonnegative_int/nonnegative_int.h",
 ]
 
 [[fields]]
@@ -32,11 +33,11 @@ type = "::FlexFlow::ShardParallelDim"
 
 [[fields]]
 name = "sum_reduction_degree"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "discard_copy_reduction_degree"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "datatype"

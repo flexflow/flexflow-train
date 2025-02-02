@@ -9,6 +9,10 @@ features = [
   "fmt",
 ]
 
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
 [[fields]]
 name = "reduction_degree"
-type = "int"
+type = "::FlexFlow::nonnegative_int"

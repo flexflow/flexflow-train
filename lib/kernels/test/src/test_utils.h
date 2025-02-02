@@ -30,9 +30,11 @@ void fill_tensor_accessor_w(GenericTensorAccessorW accessor,
                             float val,
                             bool cpu_fill = false);
 
-TensorShape make_float_tensor_shape_from_legion_dims(FFOrdered<size_t> dims);
+TensorShape
+    make_float_tensor_shape_from_legion_dims(FFOrdered<nonnegative_int> dims);
 
-TensorShape make_double_tensor_shape_from_legion_dims(FFOrdered<size_t> dims);
+TensorShape
+    make_double_tensor_shape_from_legion_dims(FFOrdered<nonnegative_int> dims);
 
 template <typename T>
 std::vector<T> load_data_to_host_from_device(GenericTensorAccessorR accessor) {
@@ -50,16 +52,6 @@ template <typename T>
 bool contains_non_zero(std::vector<T> &data) {
   return !all_of(
       data.begin(), data.end(), [](T const &val) { return val == 0; });
-}
-
-template <typename T, typename Func>
-std::vector<T> repeat(std::size_t n, Func &&func) {
-  std::vector<T> result;
-  // result.reserve(n); // Sometimes we don't have default constructor for T
-  for (std::size_t i = 0; i < n; ++i) {
-    result.push_back(func());
-  }
-  return result;
 }
 
 // Specialize doctest's StringMaker for std::vector<float>

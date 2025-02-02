@@ -1,5 +1,6 @@
 #include "substitutions/operator_pattern/eval_list_size.h"
 #include "substitutions/operator_pattern/get_attribute.h"
+#include "utils/nonnegative_int/num_elements.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {
@@ -18,9 +19,9 @@ std::optional<OperatorAttributeValue>
       [&](auto const &v) -> std::optional<OperatorAttributeValue> {
         using T = std::decay_t<decltype(v)>;
 
-        if constexpr (std::is_same_v<T, std::vector<int>> ||
+        if constexpr (std::is_same_v<T, std::vector<nonnegative_int>> ||
                       std::is_same_v<T, std::vector<ff_dim_t>>) {
-          size_t size = v.size();
+          nonnegative_int size = num_elements(v);
           return OperatorAttributeValue{size};
         } else {
           throw mk_runtime_error("Invalid operand");

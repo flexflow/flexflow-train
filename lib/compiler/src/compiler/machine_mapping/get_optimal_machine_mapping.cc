@@ -1,4 +1,5 @@
 #include "compiler/machine_mapping/get_optimal_machine_mapping.h"
+#include "compiler/cost_estimator/op_cost_metrics.dtg.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.h"
 #include "compiler/machine_mapping/get_machine_resource_splits.h"
 #include "compiler/machine_mapping/machine_mapping_cache.h"
@@ -240,8 +241,8 @@ MachineMappingResult
   auto get_mapping_result = [&](MachineView const &machine_view) {
     OpCostEstimateKey mapped =
         map_unmapped_op_cost_estimate_key(leaf, machine_view);
-    float cost = context.cost_estimator.estimate_cost(mapped).runtime;
-
+    OpCostMetrics metrics = context.cost_estimator.estimate_cost(mapped);
+    float cost = metrics.forward_runtime + metrics.backward_runtime;
     return make_singleton_machine_mapping_result(cost, machine_view);
   };
 

@@ -17,7 +17,8 @@ tl::expected<TensorShape, std::string>
     get_output_shape(ConcatAttrs const &attrs,
                      std::vector<TensorShape> const &inputs) {
   auto get_non_axis_dims = [&](TensorShape const &s) {
-    std::map<ff_dim_t, size_t> dim_sizes = enumerate(ff_ordered(s.dims));
+    std::map<ff_dim_t, nonnegative_int> dim_sizes =
+        enumerate(ff_ordered(s.dims));
     dim_sizes.erase(attrs.axis);
     return dim_sizes;
   };
@@ -40,8 +41,8 @@ tl::expected<TensorShape, std::string>
                     inputs));
   }
 
-  std::map<ff_dim_t, size_t> non_axis_dims = ({
-    tl::expected<std::map<ff_dim_t, size_t>, std::string> returned =
+  std::map<ff_dim_t, nonnegative_int> non_axis_dims = ({
+    tl::expected<std::map<ff_dim_t, nonnegative_int>, std::string> returned =
         require_all_same1(transform(inputs, get_non_axis_dims));
     if (!returned.has_value()) {
       return tl::unexpected(returned.error());
@@ -49,12 +50,12 @@ tl::expected<TensorShape, std::string>
     returned.value();
   });
 
-  std::vector<size_t> axis_dim_sizes =
+  std::vector<nonnegative_int> axis_dim_sizes =
       transform(inputs, [&](TensorShape const &s) {
         return dim_at_idx(s, relative_ff_dim_t_from_ff_dim_t(attrs.axis));
       });
 
-  size_t output_axis_dim_size = sum(axis_dim_sizes);
+  nonnegative_int output_axis_dim_size = sum(axis_dim_sizes);
 
   non_axis_dims.insert({attrs.axis, output_axis_dim_size});
 
@@ -88,7 +89,7 @@ tl::expected<ParallelTensorShape, std::string>
   });
 
   SumDegree sum_degree = ({
-    tl::expected<int, std::string> returned =
+    tl::expected<nonnegative_int, std::string> returned =
         require_all_same1(transform(inputs, get_sum_degree));
     if (!returned.has_value()) {
       return tl::unexpected(returned.error());
@@ -97,7 +98,7 @@ tl::expected<ParallelTensorShape, std::string>
   });
 
   DiscardCopyDegree discard_copy_degree = ({
-    tl::expected<int, std::string> returned =
+    tl::expected<nonnegative_int, std::string> returned =
         require_all_same1(transform(inputs, get_discard_copy_degree));
     if (!returned.has_value()) {
       return tl::unexpected(returned.error());

@@ -15,39 +15,39 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("1 degree of parallelism") {
       MachineSpecification ms = MachineSpecification{
-          /*num_nodes=*/1,
-          /*num_cpus_per_node=*/5,
-          /*num_gpus_per_node=*/5,
+          /*num_nodes=*/1_n,
+          /*num_cpus_per_node=*/5_n,
+          /*num_gpus_per_node=*/5_n,
           /*inter_node_bandwidth=*/0,
           /*intra_node_bandwidth=*/0,
       };
 
-      OperatorTaskSpace task = OperatorTaskSpace{{3}};
+      OperatorTaskSpace task = OperatorTaskSpace{{3_n}};
 
       std::unordered_set<MachineView> correct = {
           MachineView{
               MachineSpaceCoordinate{
-                  /*node_idx=*/0, /*device_idx=*/0, DeviceType::GPU},
-              {MachineViewDimension{stride_t{1},
+                  /*node_idx=*/0_n, /*device_idx=*/0_n, DeviceType::GPU},
+              {MachineViewDimension{stride_t{1_n},
                                     MachineSpecificationDimension::INTRA_NODE}},
           },
 
           MachineView{
               MachineSpaceCoordinate{
-                  /*node_idx=*/0, /*device_idx=*/1, DeviceType::GPU},
-              {MachineViewDimension{stride_t{1},
+                  /*node_idx=*/0_n, /*device_idx=*/1_n, DeviceType::GPU},
+              {MachineViewDimension{stride_t{1_n},
                                     MachineSpecificationDimension::INTRA_NODE}},
           },
           MachineView{
               MachineSpaceCoordinate{
-                  /*node_idx=*/0, /*device_idx=*/2, DeviceType::GPU},
-              {MachineViewDimension{stride_t{1},
+                  /*node_idx=*/0_n, /*device_idx=*/2_n, DeviceType::GPU},
+              {MachineViewDimension{stride_t{1_n},
                                     MachineSpecificationDimension::INTRA_NODE}},
           },
           MachineView{
               MachineSpaceCoordinate{
-                  /*node_idx=*/0, /*device_idx=*/0, DeviceType::GPU},
-              {MachineViewDimension{stride_t{2},
+                  /*node_idx=*/0_n, /*device_idx=*/0_n, DeviceType::GPU},
+              {MachineViewDimension{stride_t{2_n},
                                     MachineSpecificationDimension::INTRA_NODE}},
           },
       };
@@ -61,18 +61,18 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("2 degrees of parallelism") {
 
       MachineSpecification ms = MachineSpecification{
-          /*num_nodes=*/3,
-          /*num_cpus_per_node=*/3,
-          /*num_gpus_per_node=*/3,
+          /*num_nodes=*/3_n,
+          /*num_cpus_per_node=*/3_n,
+          /*num_gpus_per_node=*/3_n,
           /*inter_node_bandwidth=*/0,
           /*intra_node_bandwidth=*/0,
       };
-      OperatorTaskSpace task = OperatorTaskSpace{{2, 3}};
+      OperatorTaskSpace task = OperatorTaskSpace{{2_n, 3_n}};
 
-      auto make_2d_view = [&](int start_node_idx,
-                              int start_device_idx,
-                              int stride1,
-                              int stride2,
+      auto make_2d_view = [&](nonnegative_int start_node_idx,
+                              nonnegative_int start_device_idx,
+                              nonnegative_int stride1,
+                              nonnegative_int stride2,
                               MachineSpecificationDimension m1,
                               MachineSpecificationDimension m2) {
         return MachineView{
@@ -86,13 +86,19 @@ TEST_SUITE(FF_TEST_SUITE) {
       auto intra = MachineSpecificationDimension::INTRA_NODE;
       auto inter = MachineSpecificationDimension::INTER_NODE;
       std::unordered_set<MachineView> correct = {
-          make_2d_view(0, 0, /*stride1=*/1, /*stride2=*/1, inter, intra),
-          make_2d_view(1, 0, /*stride1=*/1, /*stride2=*/1, inter, intra),
-          make_2d_view(0, 0, /*stride1=*/2, /*stride2=*/1, inter, intra),
+          make_2d_view(
+              0_n, 0_n, /*stride1=*/1_n, /*stride2=*/1_n, inter, intra),
+          make_2d_view(
+              1_n, 0_n, /*stride1=*/1_n, /*stride2=*/1_n, inter, intra),
+          make_2d_view(
+              0_n, 0_n, /*stride1=*/2_n, /*stride2=*/1_n, inter, intra),
 
-          make_2d_view(0, 0, /*stride1=*/1, /*stride2=*/1, intra, inter),
-          make_2d_view(0, 1, /*stride1=*/1, /*stride2=*/1, intra, inter),
-          make_2d_view(0, 0, /*stride1=*/2, /*stride2=*/1, intra, inter),
+          make_2d_view(
+              0_n, 0_n, /*stride1=*/1_n, /*stride2=*/1_n, intra, inter),
+          make_2d_view(
+              0_n, 1_n, /*stride1=*/1_n, /*stride2=*/1_n, intra, inter),
+          make_2d_view(
+              0_n, 0_n, /*stride1=*/2_n, /*stride2=*/1_n, intra, inter),
       };
 
       std::unordered_set<MachineView> result =

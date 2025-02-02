@@ -9,3 +9,6 @@ features = [
 
 [[values]]
 name = "EQUAL"
+
+[[values]]
+name = "DIVISIBLE_BY"

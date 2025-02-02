@@ -10,21 +10,21 @@ TEST_SUITE(FF_TEST_SUITE) {
     ParallelTensorShape input = ParallelTensorShape{
         ParallelTensorDims{
             FFOrdered<ShardParallelDim>{
-                ShardParallelDim{12, 2},
-                ShardParallelDim{14, 1},
-                ShardParallelDim{16, 3},
-                ShardParallelDim{18, 2},
+                ShardParallelDim{12_n, 2_n},
+                ShardParallelDim{14_n, 1_n},
+                ShardParallelDim{16_n, 3_n},
+                ShardParallelDim{18_n, 2_n},
             },
             ReplicaParallelDimSet{
-                SumDegree{3},
-                DiscardCopyDegree{2},
+                SumDegree{3_n},
+                DiscardCopyDegree{2_n},
             },
         },
         DataType::FLOAT,
     };
 
     SUBCASE("valid") {
-      int degree = 3;
+      nonnegative_int degree = 3_n;
       ReductionAttrs attrs = ReductionAttrs{
           /*repartition_degree=*/degree,
       };
@@ -42,7 +42,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("invalid") {
-      int degree = 4;
+      nonnegative_int degree = 4_n;
       ReductionAttrs attrs = ReductionAttrs{
           /*repartition_degree=*/degree,
       };

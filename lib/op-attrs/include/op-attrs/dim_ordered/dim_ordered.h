@@ -32,19 +32,13 @@ struct DimOrdered {
       : contents(contents.begin(), contents.end()) {}
 
   T const &at(Idx idx) const {
-    int raw = idx.value;
-    if (raw < 0) {
-      raw = this->contents.size() + raw;
-    }
-    return this->contents.at(raw);
+    nonnegative_int raw = idx.value;
+    return this->contents.at(raw.unwrap_nonnegative());
   }
 
   T &at(Idx idx) {
-    int raw = idx.value;
-    if (raw < 0) {
-      raw = this->contents.size() + raw;
-    }
-    return this->contents.at(raw);
+    nonnegative_int raw = idx.value;
+    return this->contents.at(raw.unwrap_nonnegative());
   }
 
   T const &operator[](Idx idx) const {
@@ -56,11 +50,8 @@ struct DimOrdered {
   }
 
   bool idx_is_valid(Idx const &idx) const {
-    int raw = idx.value;
-    if (raw < 0) {
-      raw = this->contents.size() + raw;
-    }
-    return (raw >= 0 && raw < this->contents.size());
+    nonnegative_int raw = idx.value;
+    return (raw < this->contents.size());
   }
 
   bool operator==(DimOrdered const &other) const {
@@ -172,7 +163,7 @@ struct DimOrdered<ff_dim_t, T> {
       : contents(contents.begin(), contents.end()) {}
 
   T const &at(ff_dim_t idx) const {
-    int raw = idx.value.get_value();
+    int raw = idx.value.unwrap_nonnegative();
     return this->contents.at(raw);
   }
 
@@ -185,7 +176,7 @@ struct DimOrdered<ff_dim_t, T> {
   }
 
   T &at(ff_dim_t idx) {
-    int raw = idx.value.get_value();
+    int raw = idx.value.unwrap_nonnegative();
     return this->contents.at(raw);
   }
 
@@ -214,7 +205,7 @@ struct DimOrdered<ff_dim_t, T> {
   }
 
   bool idx_is_valid(ff_dim_t const &idx) const {
-    int raw = idx.value.get_value();
+    int raw = idx.value.unwrap_nonnegative();
     return raw < this->contents.size();
   }
 

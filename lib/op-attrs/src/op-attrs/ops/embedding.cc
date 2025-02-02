@@ -50,9 +50,9 @@ tl::expected<TensorShape, std::string>
 
   return TensorShape{
       TensorDims{
-          FFOrdered<size_t>{
-              size_t_from_int(attrs.num_entries),
-              size_t_from_int(attrs.out_channels),
+          FFOrdered<nonnegative_int>{
+              attrs.num_entries,
+              attrs.out_channels,
           },
       },
       attrs.data_type,
@@ -74,8 +74,8 @@ tl::expected<ParallelTensorShape, std::string>
 
   SumDegree sum_degree =
       SumDegree{shard_dim_at_idx(input, relative_ff_dim_t{-1}).degree};
-  DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{1};
-  FFOrdered<int> shard_degrees =
+  DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{1_n};
+  FFOrdered<nonnegative_int> shard_degrees =
       transform(input.dims.shard_dims,
                 [](ShardParallelDim const &d) { return d.degree; });
   shard_degrees.at(relative_ff_dim_t{-1}) = get_discard_copy_degree(input);
@@ -96,13 +96,13 @@ tl::expected<ParallelTensorShape, std::string>
     result_unpar.value();
   });
 
-  SumDegree sum_degree = SumDegree{1};
-  DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{product(
-      transform(ff_ordered_shard_dims(input.dims),
-                [](ShardParallelDim const &d) -> int { return d.degree; }))};
-  int entry_dim_degree = 1;
-  int out_channel_degree = get_discard_copy_degree(input);
-  FFOrdered<int> shard_degrees = {
+  SumDegree sum_degree = SumDegree{1_n};
+  DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{product(transform(
+      ff_ordered_shard_dims(input.dims),
+      [](ShardParallelDim const &d) -> nonnegative_int { return d.degree; }))};
+  nonnegative_int entry_dim_degree = 1_n;
+  nonnegative_int out_channel_degree = get_discard_copy_degree(input);
+  FFOrdered<nonnegative_int> shard_degrees = {
       entry_dim_degree,
       out_channel_degree,
   };

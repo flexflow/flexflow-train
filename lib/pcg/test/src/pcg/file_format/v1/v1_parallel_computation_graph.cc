@@ -12,19 +12,19 @@ TEST_SUITE(FF_TEST_SUITE) {
       ParallelTensorShape input_shape = ParallelTensorShape{
           ParallelTensorDims{
               FFOrdered<ShardParallelDim>{
-                  ShardParallelDim{12, 2},
-                  ShardParallelDim{16, 1},
+                  ShardParallelDim{12_n, 2_n},
+                  ShardParallelDim{16_n, 1_n},
               },
               ReplicaParallelDimSet{
-                  SumDegree{1},
-                  DiscardCopyDegree{1},
+                  SumDegree{1_n},
+                  DiscardCopyDegree{1_n},
               },
           },
           DataType::FLOAT,
       };
 
       parallel_tensor_guid_t input = b.create_input_tensor(input_shape);
-      parallel_tensor_guid_t mm_output = b.dense(input, 8);
+      parallel_tensor_guid_t mm_output = b.dense(input, 8_n);
       parallel_tensor_guid_t relu_output = b.relu(mm_output);
 
       return b.pcg;

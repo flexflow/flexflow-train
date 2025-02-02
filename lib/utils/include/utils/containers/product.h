@@ -10,7 +10,7 @@ namespace FlexFlow {
  **/
 template <typename Container, typename Element = typename Container::value_type>
 Element product(Container const &container) {
-  Element result = 1;
+  Element result = Element{1};
   for (Element const &element : container) {
     result *= element;
   }

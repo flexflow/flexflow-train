@@ -31,7 +31,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       REQUIRE(result == correct);
     }
 
-    NodeAddedResult added = g.add_node({}, 2);
+    NodeAddedResult added = g.add_node({}, 2_n);
 
     {
       std::unordered_set<Node> result = g.query_nodes(node_query_all());
@@ -54,7 +54,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       REQUIRE(result == correct);
     }
 
-    NodeAddedResult added2 = g.add_node(added.outputs, 3);
+    NodeAddedResult added2 = g.add_node(added.outputs, 3_n);
 
     {
       std::unordered_set<Node> result = g.query_nodes(node_query_all());
@@ -66,8 +66,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::unordered_set<DataflowEdge> result =
           g.query_edges(dataflow_edge_query_all());
       std::unordered_set<DataflowEdge> correct = {
-          DataflowEdge{added.outputs.at(0), DataflowInput{added2.node, 0}},
-          DataflowEdge{added.outputs.at(1), DataflowInput{added2.node, 1}},
+          DataflowEdge{added.outputs.at(0), DataflowInput{added2.node, 0_n}},
+          DataflowEdge{added.outputs.at(1), DataflowInput{added2.node, 1_n}},
       };
       REQUIRE(result == correct);
     }

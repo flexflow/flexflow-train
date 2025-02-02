@@ -15,7 +15,7 @@ using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_pre/post/center_node") {
     MultiDiGraph g = MultiDiGraph::create<AdjacencyMultiDiGraph>();
-    std::vector<Node> n = add_nodes(g, 3);
+    std::vector<Node> n = add_nodes(g, 3_n);
     std::vector<MultiDiEdge> e = add_edges(g,
                                            {
                                                {n.at(0), n.at(1)},
@@ -45,7 +45,7 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("find_series_reduction") {
     MultiDiGraph g = MultiDiGraph::create<AdjacencyMultiDiGraph>();
     SUBCASE("base case") {
-      std::vector<Node> n = add_nodes(g, 3);
+      std::vector<Node> n = add_nodes(g, 3_n);
       std::vector<MultiDiEdge> e = add_edges(g,
                                              {
                                                  {n.at(0), n.at(1)},
@@ -60,7 +60,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("does not find if other edges are involved with center node") {
       SUBCASE("duplicate edge") {
-        std::vector<Node> n = add_nodes(g, 3);
+        std::vector<Node> n = add_nodes(g, 3_n);
         std::vector<MultiDiEdge> e = add_edges(g,
                                                {
                                                    {n.at(0), n.at(1)},
@@ -74,7 +74,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SUBCASE("misc edge") {
-        std::vector<Node> n = add_nodes(g, 4);
+        std::vector<Node> n = add_nodes(g, 4_n);
         std::vector<MultiDiEdge> e = add_edges(g,
                                                {
                                                    {n.at(0), n.at(1)},
@@ -89,7 +89,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("does find if other edges are involved with non-center node") {
-      std::vector<Node> n = add_nodes(g, 4);
+      std::vector<Node> n = add_nodes(g, 4_n);
       SUBCASE("edge from dst") {
         std::vector<MultiDiEdge> e = add_edges(g,
                                                {
@@ -110,7 +110,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("finds one reduction when there are multiple") {
-      std::vector<Node> n = add_nodes(g, 4);
+      std::vector<Node> n = add_nodes(g, 4_n);
       std::vector<MultiDiEdge> e = add_edges(g,
                                              {
                                                  {n.at(0), n.at(1)},
@@ -128,7 +128,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("in larger graph") {
-      std::vector<Node> n = add_nodes(g, 8);
+      std::vector<Node> n = add_nodes(g, 8_n);
       std::vector<MultiDiEdge> e = add_edges(g,
                                              {
                                                  {n.at(0), n.at(2)},
@@ -152,7 +152,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     MultiDiGraph g = MultiDiGraph::create<AdjacencyMultiDiGraph>();
 
     SUBCASE("base case") {
-      std::vector<Node> n = add_nodes(g, 3);
+      std::vector<Node> n = add_nodes(g, 3_n);
       std::vector<MultiDiEdge> e = add_edges(g,
                                              {
                                                  {n.at(0), n.at(1)},
@@ -191,7 +191,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("in larger graph") {
-      std::vector<Node> n = add_nodes(g, 8);
+      std::vector<Node> n = add_nodes(g, 8_n);
       std::vector<MultiDiEdge> e = add_edges(g,
                                              {
                                                  {n.at(0), n.at(2)},

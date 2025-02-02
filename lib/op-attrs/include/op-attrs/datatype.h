@@ -4,6 +4,7 @@
 #include "op-attrs/datatype.dtg.h"
 #include "utils/fmt.h"
 #include "utils/fp16.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include <variant>
 
 namespace FlexFlow {
@@ -49,7 +50,7 @@ typename data_type_enum_to_class<DT>::type cast_to(T t) {
 template <DataType DT>
 using real_type_t = typename data_type_enum_to_class<DT>::type;
 
-size_t size_of_datatype(DataType);
+nonnegative_int size_of_datatype(DataType);
 
 bool can_strictly_promote_datatype_from_to(DataType, DataType);
 

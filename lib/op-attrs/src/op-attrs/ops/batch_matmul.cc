@@ -57,13 +57,13 @@ tl::expected<TensorShape, std::string>
                                       input_rhs.data_type));
   }
 
-  size_t lhs_b = dim_at_idx(input_lhs, relative_ff_dim_t{0});
-  size_t n = dim_at_idx(input_lhs, relative_ff_dim_t{1});
-  size_t lhs_m = dim_at_idx(input_lhs, relative_ff_dim_t{2});
+  nonnegative_int lhs_b = dim_at_idx(input_lhs, relative_ff_dim_t{0});
+  nonnegative_int n = dim_at_idx(input_lhs, relative_ff_dim_t{1});
+  nonnegative_int lhs_m = dim_at_idx(input_lhs, relative_ff_dim_t{2});
 
-  size_t rhs_b = dim_at_idx(input_rhs, relative_ff_dim_t{0});
-  size_t rhs_m = dim_at_idx(input_rhs, relative_ff_dim_t{1});
-  size_t p = dim_at_idx(input_rhs, relative_ff_dim_t{2});
+  nonnegative_int rhs_b = dim_at_idx(input_rhs, relative_ff_dim_t{0});
+  nonnegative_int rhs_m = dim_at_idx(input_rhs, relative_ff_dim_t{1});
+  nonnegative_int p = dim_at_idx(input_rhs, relative_ff_dim_t{2});
 
   if (lhs_b != rhs_b) {
     return tl::unexpected(
@@ -76,7 +76,7 @@ tl::expected<TensorShape, std::string>
 
   return TensorShape{
       TensorDims{
-          FFOrdered<size_t>{
+          FFOrdered<nonnegative_int>{
               lhs_b,
               n,
               p,
@@ -151,9 +151,10 @@ tl::expected<ParallelTensorShape, std::string>
   ShardParallelDim output_n = n;
   ShardParallelDim output_p = p;
 
-  int output_discard_copy_degree = 1;
-  int output_sum_degree = get_total_parallel_degree(input_lhs) /
-                          (output_b.degree * output_n.degree * output_p.degree);
+  nonnegative_int output_discard_copy_degree = 1_n;
+  nonnegative_int output_sum_degree =
+      get_total_parallel_degree(input_lhs) /
+      (output_b.degree * output_n.degree * output_p.degree);
 
   ParallelTensorShape result = ParallelTensorShape{
       ParallelTensorDims{

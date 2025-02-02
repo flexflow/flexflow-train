@@ -1,15 +1,25 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "op-attrs/get_incoming_tensor_roles.h"
+#include "pcg/parallel_computation_graph/parallel_computation_graph.dtg.h"
+#include "pcg/parallel_computation_graph/parallel_computation_graph_edge.dtg.h"
+#include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 #include "utils/containers/filtrans.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/transform.h"
+#include "utils/containers/unordered_set_of.h"
 #include "utils/graph/dataflow_graph/algorithms.h"
 #include "utils/graph/dataflow_graph/algorithms/get_dataflow_edges_from_node_to_node.h"
+#include "utils/graph/dataflow_graph/algorithms/get_incoming_edges.h"
+#include "utils/graph/dataflow_graph/algorithms/get_outgoing_edges.h"
+#include "utils/graph/dataflow_graph/dataflow_edge.dtg.h"
+#include "utils/graph/digraph/algorithms.h"
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"
 #include "utils/graph/instances/unordered_set_labelled_open_dataflow_graph.h"
 #include "utils/graph/labelled_dataflow_graph/algorithms/find_isomorphism.h"
 #include "utils/graph/labelled_dataflow_graph/algorithms/rewrite_node_labels.h"
 #include "utils/graph/node/algorithms.h"
+#include "utils/graph/node/node.dtg.h"
+#include <unordered_set>
 
 namespace FlexFlow {
 
@@ -67,6 +77,13 @@ ParallelLayerAddedResult
 }
 
 std::unordered_set<ParallelComputationGraphEdge>
+    get_edges(ParallelComputationGraph const &pcg) {
+  return transform(get_edges(pcg.raw_graph), [](DataflowEdge const &e) {
+    return ParallelComputationGraphEdge{e};
+  });
+}
+
+std::unordered_set<ParallelComputationGraphEdge>
     get_pcg_edges_from_layer_to_layer(ParallelComputationGraph const &pcg,
                                       parallel_layer_guid_t const &src,
                                       parallel_layer_guid_t const &dst) {
@@ -76,6 +93,33 @@ std::unordered_set<ParallelComputationGraphEdge>
   return transform(raw_edges, [](DataflowEdge const &e) {
     return ParallelComputationGraphEdge{e};
   });
+}
+
+std::unordered_set<ParallelComputationGraphEdge>
+    get_outgoing_edges(ParallelComputationGraph const &pcg,
+                       parallel_layer_guid_t const &l) {
+  std::unordered_set<DataflowEdge> raw_edges =
+      get_outgoing_edges(pcg.raw_graph, l.raw_graph_node);
+  return transform(raw_edges, [](DataflowEdge const &e) {
+    return ParallelComputationGraphEdge{e};
+  });
+}
+
+std::unordered_set<ParallelComputationGraphEdge>
+    get_incoming_edges(ParallelComputationGraph const &pcg,
+                       parallel_layer_guid_t const &l) {
+  std::unordered_set<DataflowEdge> raw_edges =
+      unordered_set_of(get_incoming_edges(pcg.raw_graph, l.raw_graph_node));
+  return transform(raw_edges, [](DataflowEdge const &e) {
+    return ParallelComputationGraphEdge{e};
+  });
+}
+
+std::unordered_set<parallel_layer_guid_t>
+    get_initial_layers(ParallelComputationGraph const &pcg) {
+  std::unordered_set<Node> raw_sources = get_sources(pcg.raw_graph);
+  return transform(raw_sources,
+                   [](Node const &n) { return parallel_layer_guid_t{n}; });
 }
 
 std::vector<parallel_tensor_guid_t>
