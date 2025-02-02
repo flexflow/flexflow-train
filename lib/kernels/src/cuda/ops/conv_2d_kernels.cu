@@ -137,15 +137,15 @@ Conv2DPerDeviceState init_kernel(PerDeviceFFHandle handle,
   ffConvolutionBwdFilterAlgo_t bwdFilterAlgo;
   ffConvolutionBwdDataAlgo_t bwdDataAlgo;
 
-  int input_w = input.shape[legion_dim_t(0)];
-  int input_h = input.shape[legion_dim_t(1)];
-  int input_c = input.shape[legion_dim_t(2)];
-  int input_n = input.shape[legion_dim_t(3)];
+  int input_w = input.shape.at(legion_dim_t(0_n)).unwrap_nonnegative();
+  int input_h = input.shape.at(legion_dim_t(1_n)).unwrap_nonnegative();
+  int input_c = input.shape.at(legion_dim_t(2_n)).unwrap_nonnegative();
+  int input_n = input.shape.at(legion_dim_t(3_n)).unwrap_nonnegative();
 
-  int output_w = output.shape[legion_dim_t(0)];
-  int output_h = output.shape[legion_dim_t(1)];
-  int output_c = output.shape[legion_dim_t(2)];
-  int output_n = output.shape[legion_dim_t(3)];
+  int output_w = output.shape.at(legion_dim_t(0_n)).unwrap_nonnegative();
+  int output_h = output.shape.at(legion_dim_t(1_n)).unwrap_nonnegative();
+  int output_c = output.shape.at(legion_dim_t(2_n)).unwrap_nonnegative();
+  int output_n = output.shape.at(legion_dim_t(3_n)).unwrap_nonnegative();
 
   checkCUDNN(cudnnCreateTensorDescriptor(&inputTensor));
   checkCUDNN(cudnnCreateTensorDescriptor(&biasTensor));

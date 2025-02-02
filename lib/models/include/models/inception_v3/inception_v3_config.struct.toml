@@ -10,13 +10,17 @@ features = [
   "fmt",
 ]
 
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
 [[fields]]
 name = "num_classes"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "batch_size"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "aux_logits"

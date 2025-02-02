@@ -12,31 +12,31 @@
 
 namespace FlexFlow {
 
-int get_qProjSize(MultiHeadAttentionAttrs const &);
-int get_vProjSize(MultiHeadAttentionAttrs const &);
-int get_kProjSize(MultiHeadAttentionAttrs const &);
-int get_oProjSize(MultiHeadAttentionAttrs const &);
+nonnegative_int get_qProjSize(MultiHeadAttentionAttrs const &);
+nonnegative_int get_vProjSize(MultiHeadAttentionAttrs const &);
+nonnegative_int get_kProjSize(MultiHeadAttentionAttrs const &);
+nonnegative_int get_oProjSize(MultiHeadAttentionAttrs const &);
 
-int get_qSize(MultiHeadAttentionParallelInputs const &);
-int get_qSize(MultiHeadAttentionInputs const &);
+nonnegative_int get_qSize(MultiHeadAttentionParallelInputs const &);
+nonnegative_int get_qSize(MultiHeadAttentionInputs const &);
 
-int get_kSize(MultiHeadAttentionParallelInputs const &);
-int get_kSize(MultiHeadAttentionInputs const &);
+nonnegative_int get_kSize(MultiHeadAttentionParallelInputs const &);
+nonnegative_int get_kSize(MultiHeadAttentionInputs const &);
 
-int get_vSize(MultiHeadAttentionParallelInputs const &);
-int get_vSize(MultiHeadAttentionInputs const &);
+nonnegative_int get_vSize(MultiHeadAttentionParallelInputs const &);
+nonnegative_int get_vSize(MultiHeadAttentionInputs const &);
 
-int get_oSize(ParallelTensorShape const &);
-int get_oSize(TensorShape const &);
+nonnegative_int get_oSize(ParallelTensorShape const &);
+nonnegative_int get_oSize(TensorShape const &);
 
-int get_qoSeqLength(MultiHeadAttentionParallelInputs const &);
-int get_qoSeqLength(MultiHeadAttentionInputs const &);
+nonnegative_int get_qoSeqLength(MultiHeadAttentionParallelInputs const &);
+nonnegative_int get_qoSeqLength(MultiHeadAttentionInputs const &);
 
-int get_kvSeqLength(MultiHeadAttentionParallelInputs const &);
-int get_kvSeqLength(MultiHeadAttentionInputs const &);
+nonnegative_int get_kvSeqLength(MultiHeadAttentionParallelInputs const &);
+nonnegative_int get_kvSeqLength(MultiHeadAttentionInputs const &);
 
-int get_num_samples(MultiHeadAttentionParallelInputs const &);
-int get_num_samples(MultiHeadAttentionInputs const &);
+nonnegative_int get_num_samples(MultiHeadAttentionParallelInputs const &);
+nonnegative_int get_num_samples(MultiHeadAttentionInputs const &);
 
 std::vector<IncomingTensorRole>
     get_attention_incoming_tensor_roles(MultiHeadAttentionAttrs const &);

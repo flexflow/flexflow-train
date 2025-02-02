@@ -20,6 +20,7 @@ function(define_ff_vars target)
     MAX_TENSOR_DIM=${FF_MAX_DIM}
     MAX_NUM_TASK_REGIONS=${FF_MAX_NUM_TASK_REGIONS}
     MAX_NUM_TASK_ARGUMENTS=${FF_MAX_NUM_TASK_ARGUMENTS}
+    # _FORTIFY_SOURCE=0
     )
 
   if (FF_GPU_BACKEND STREQUAL "cuda")
@@ -39,7 +40,18 @@ function(ff_set_cxx_properties target)
       CXX_EXTENSIONS NO
   )
   target_compile_options(${target}
-    PRIVATE $<$<COMPILE_LANGUAGE:CXX>:> "-ffile-prefix-map=${CMAKE_SOURCE_DIR}=." # add C++ compile flags here
+    PUBLIC 
+    $<$<COMPILE_LANGUAGE:CXX>:> 
+    "-ffile-prefix-map=${CMAKE_SOURCE_DIR}=." 
+    "-fsanitize=undefined" 
+    "-fno-sanitize-recover=all"
+    # add C++ compile flags here
+  )
+  target_link_options(${target}
+    PUBLIC 
+    $<$<COMPILE_LANGUAGE:CXX>:> 
+    "-fsanitize=undefined" 
+    "-fno-sanitize-recover=all"
   )
 endfunction()
 

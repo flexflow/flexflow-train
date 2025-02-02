@@ -11,7 +11,7 @@ namespace FlexFlow {
 struct OpenDataflowGraph : virtual public OpenDataflowGraphView {
 public:
   NodeAddedResult add_node(std::vector<OpenDataflowValue> const &inputs,
-                           int num_outputs);
+                           nonnegative_int num_outputs);
   DataflowGraphInput add_input();
 
   template <typename T, typename... Args>

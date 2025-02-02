@@ -10,7 +10,7 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("add_edges(MultiDiGraph &, std::vector<std::pair<Node, Node>>)") {
     MultiDiGraph g = MultiDiGraph::create<AdjacencyMultiDiGraph>();
 
-    std::vector<Node> n = add_nodes(g, 3);
+    std::vector<Node> n = add_nodes(g, 3_n);
 
     std::vector<std::pair<Node, Node>> input = {
         {n.at(0), n.at(1)},

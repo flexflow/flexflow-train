@@ -7,12 +7,17 @@ features = [
 ]
 
 includes = [
+  "utils/nonnegative_int/nonnegative_int.h"
 ]
 
 [[fields]]
-name = "runtime"
+name = "forward_runtime"
+type = "float"
+
+[[fields]]
+name = "backward_runtime"
 type = "float"
 
 [[fields]]
 name = "memory"
-type = "size_t"
+type = "::FlexFlow::nonnegative_int"

@@ -17,26 +17,27 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("enumerate(std::vector<T>)") {
     std::vector<std::string> input = {"zero", "one", "two", "three"};
 
-    std::map<int, std::string> correct = {
-        {0, "zero"},
-        {1, "one"},
-        {2, "two"},
-        {3, "three"},
+    std::map<nonnegative_int, std::string> correct = {
+        {0_n, "zero"},
+        {1_n, "one"},
+        {2_n, "two"},
+        {3_n, "three"},
     };
 
-    std::map<int, std::string> result = enumerate(input);
+    std::map<nonnegative_int, std::string> result = enumerate(input);
 
     CHECK(result == correct);
 
     SUBCASE("check iteration order") {
-      std::vector<std::pair<int const, std::string>> iterated_result =
-          vector_of(result);
-      std::vector<std::pair<int const, std::string>> correct_iteration_order = {
-          {0, "zero"},
-          {1, "one"},
-          {2, "two"},
-          {3, "three"},
-      };
+      std::vector<std::pair<nonnegative_int const, std::string>>
+          iterated_result = vector_of(result);
+      std::vector<std::pair<nonnegative_int const, std::string>>
+          correct_iteration_order = {
+              {0_n, "zero"},
+              {1_n, "one"},
+              {2_n, "two"},
+              {3_n, "three"},
+          };
 
       CHECK(iterated_result == correct_iteration_order);
     }
@@ -45,9 +46,9 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("enumerate(std::unordered_set<T>)") {
     std::unordered_set<std::string> input = {"A", "B", "C", "D"};
 
-    std::unordered_set<int> correct_keys = {0, 1, 2, 3};
+    std::unordered_set<nonnegative_int> correct_keys = {0_n, 1_n, 2_n, 3_n};
     std::unordered_multiset<std::string> correct_values = {"A", "B", "C", "D"};
-    std::map<int, std::string> result = enumerate(input);
+    std::map<nonnegative_int, std::string> result = enumerate(input);
 
     CHECK(keys(result) == correct_keys);
     CHECK(unordered_multiset_of(values(result)) == correct_values);

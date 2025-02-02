@@ -8,17 +8,21 @@ namespace FlexFlow {
 
 legion_dim_t add_to_legion_dim(legion_dim_t legion_dim, int value);
 
-legion_dim_t legion_dim_from_ff_dim(ff_dim_t, int num_dimensions);
+legion_dim_t legion_dim_from_ff_dim(ff_dim_t, nonnegative_int num_dimensions);
 
 template <typename T>
 using LegionOrdered = DimOrdered<legion_dim_t, T>;
-
-using LegionTensorDims = LegionOrdered<size_t>;
 
 template <typename T>
 FFOrdered<T>
     ff_ordered_from_legion_ordered(LegionOrdered<T> const &legion_ordered) {
   return FFOrdered<T>(legion_ordered.rbegin(), legion_ordered.rend());
+}
+
+template <typename T>
+LegionOrdered<T>
+    legion_ordered_from_ff_ordered(FFOrdered<T> const &ff_ordered) {
+  return LegionOrdered<T>(ff_ordered.rbegin(), ff_ordered.rend());
 }
 
 template <typename T>

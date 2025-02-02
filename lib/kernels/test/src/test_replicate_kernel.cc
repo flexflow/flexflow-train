@@ -5,9 +5,9 @@
 using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Test Replicate Kernel") {
-    std::size_t num_replicas = 10;
+    nonnegative_int num_replicas = 10_n;
 
-    TensorShape input_shape = make_float_tensor_shape_from_legion_dims({100});
+    TensorShape input_shape = make_float_tensor_shape_from_legion_dims({100_n});
     TensorShape output_shape = input_shape;
 
     ManagedPerDeviceFFHandle managed_handle{};
@@ -30,7 +30,7 @@ TEST_SUITE(FF_TEST_SUITE) {
               read_only_accessor_from_write_accessor(output_accessor));
 
       std::vector<float> expected_output_data(
-          input_accessor.shape.num_elements(), 1.0f);
+          input_accessor.shape.num_elements().unwrap_nonnegative(), 1.0f);
       CHECK(check_output_data == expected_output_data);
     }
 
@@ -44,7 +44,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       Kernels::Replicate::backward_kernel(managed_stream.raw_stream(),
                                           input_grad_accessor,
                                           output_grad_accessor,
-                                          num_replicas);
+                                          num_replicas.unwrap_nonnegative());
 
       std::vector<float> check_aggregated_data =
           load_data_to_host_from_device<float>(

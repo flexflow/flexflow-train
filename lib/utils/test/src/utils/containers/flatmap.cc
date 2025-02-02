@@ -73,6 +73,38 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
   }
 
+  TEST_CASE("flatmap(std::string, F)") {
+    std::string input = "aBabcBc";
+
+    SUBCASE("replacement length > 1") {
+      std::string result = flatmap(input, [](char c) -> std::string {
+        if (c == 'B') {
+          return "..";
+        } else {
+          return std::string{c};
+        }
+      });
+
+      std::string correct = "a..abc..c";
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("replacement length == 0") {
+      std::string result = flatmap(input, [](char c) -> std::string {
+        if (c == 'B') {
+          return "";
+        } else {
+          return std::string{c};
+        }
+      });
+
+      std::string correct = "aabcc";
+
+      CHECK(result == correct);
+    }
+  }
+
   TEST_CASE("flatmap(std::unordered_map<K, V>, F)") {
     auto de_nest_keys = [](int k1,
                            std::unordered_map<int, std::string> const &v) {

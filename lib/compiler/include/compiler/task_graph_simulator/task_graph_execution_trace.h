@@ -1,0 +1,12 @@
+#ifndef _FLEXFLOW_LIB_COMPILER_INCLUDE_COMPILER_TASK_GRAPH_SIMULATOR_TASK_GRAPH_EXECUTION_TRACE_H
+#define _FLEXFLOW_LIB_COMPILER_INCLUDE_COMPILER_TASK_GRAPH_SIMULATOR_TASK_GRAPH_EXECUTION_TRACE_H
+
+#include "compiler/task_graph_simulator/task_graph_execution_trace.dtg.h"
+
+namespace FlexFlow {
+
+float get_total_execution_time(TaskGraphExecutionTrace const &trace);
+
+} // namespace FlexFlow
+
+#endif // _FLEXFLOW_LIB_COMPILER_INCLUDE_COMPILER_TASK_GRAPH_SIMULATOR_TASK_GRAPH_EXECUTION_TRACE_H

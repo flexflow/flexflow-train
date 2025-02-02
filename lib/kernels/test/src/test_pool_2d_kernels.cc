@@ -5,10 +5,20 @@
 using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Test Pool2D Forward and Backward Kernel") {
-    size_t input_w = 10, input_h = 10, input_c = 3, input_n = 1;
-    size_t output_w = 5, output_h = 5, output_c = 3, output_n = 1;
-    size_t pad_h = 0, pad_w = 0, kernel_h = 2, kernel_w = 2, stride_h = 2,
-           stride_w = 2;
+    nonnegative_int input_w = 10_n;
+    nonnegative_int input_h = 10_n;
+    nonnegative_int input_c = 3_n;
+    nonnegative_int input_n = 1_n;
+    nonnegative_int output_w = 5_n;
+    nonnegative_int output_h = 5_n;
+    nonnegative_int output_c = 3_n;
+    nonnegative_int output_n = 1_n;
+    nonnegative_int pad_h = 0_n;
+    nonnegative_int pad_w = 0_n;
+    nonnegative_int kernel_h = 2_n;
+    nonnegative_int kernel_w = 2_n;
+    nonnegative_int stride_h = 2_n;
+    nonnegative_int stride_w = 2_n;
 
     PoolOp pool_type = PoolOp::MAX;
 
@@ -18,23 +28,23 @@ TEST_SUITE(FF_TEST_SUITE) {
     Allocator allocator = create_local_cuda_memory_allocator();
 
     Pool2DPerDeviceState state =
-        Kernels::Pool2D::init_kernel(managed_handle.raw_handle(),
-                                     std::nullopt,
-                                     input_w,
-                                     input_h,
-                                     input_c,
-                                     input_n,
-                                     output_w,
-                                     output_h,
-                                     output_c,
-                                     output_n,
-                                     pad_h,
-                                     pad_w,
-                                     kernel_h,
-                                     kernel_w,
-                                     stride_h,
-                                     stride_w,
-                                     pool_type);
+        Kernels::Pool2D::init_kernel(/*handle=*/managed_handle.raw_handle(),
+                                     /*activation=*/std::nullopt,
+                                     /*input_w=*/input_w.unwrap_nonnegative(),
+                                     /*input_h=*/input_h.unwrap_nonnegative(),
+                                     /*input_c=*/input_c.unwrap_nonnegative(),
+                                     /*input_n=*/input_n.unwrap_nonnegative(),
+                                     /*output_w=*/output_w.unwrap_nonnegative(),
+                                     /*output_h=*/output_h.unwrap_nonnegative(),
+                                     /*output_c=*/output_c.unwrap_nonnegative(),
+                                     /*output_n=*/output_n.unwrap_nonnegative(),
+                                     /*pad_h=*/pad_h.unwrap_nonnegative(),
+                                     /*pad_w=*/pad_w.unwrap_nonnegative(),
+                                     /*kernel_h=*/kernel_h.unwrap_nonnegative(),
+                                     /*kernel_w=*/kernel_w.unwrap_nonnegative(),
+                                     /*stride_h=*/stride_h.unwrap_nonnegative(),
+                                     /*stride_w=*/stride_w.unwrap_nonnegative(),
+                                     /*pool_type=*/pool_type);
 
     TensorShape input_shape = make_float_tensor_shape_from_legion_dims(
         {input_w, input_h, input_c, input_n});

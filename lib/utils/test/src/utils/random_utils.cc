@@ -29,7 +29,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("correct distribution") {
       auto check_probabilities = [](std::vector<int> const &values,
                                     std::vector<float> const &weights) {
-        int num_iterations = 10'000;
+        nonnegative_int num_iterations = 10'000_n;
         std::vector<int> trials = repeat(
             num_iterations, [&]() { return select_random(values, weights); });
 
@@ -39,8 +39,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           float expectedProbability = w / sum(weights);
           int num_occurrences =
               filter(trials, [&](int c) { return (c == v); }).size();
-          float observedProbability =
-              static_cast<float>(num_occurrences) / num_iterations;
+          float observedProbability = static_cast<float>(num_occurrences) /
+                                      num_iterations.unwrap_nonnegative();
           CHECK(observedProbability ==
                 doctest::Approx(expectedProbability).epsilon(0.01f));
         }

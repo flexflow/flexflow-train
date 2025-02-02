@@ -6,7 +6,7 @@ using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_attribute(LinearAttrs, OperatorAttributeKey)") {
-    int out_channels = 16;
+    nonnegative_int out_channels = 16_n;
     bool use_bias = true;
     std::optional<Activation> activation = Activation::GELU;
     std::optional<RegularizerAttrs> regularizer = RegularizerAttrs{

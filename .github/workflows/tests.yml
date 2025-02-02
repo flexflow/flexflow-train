@@ -16,7 +16,7 @@ jobs:
           submodules: recursive
 
       - name: Free additional space on runner
-        run: ./.github/workflows/helpers/free_space_on_runner_gpu.sh
+        run: ./.github/workflows/helpers/free_space_on_runner.sh
 
       - name: Install nix
         uses: cachix/install-nix-action@v25
@@ -67,7 +67,7 @@ jobs:
     runs-on:
       - runs-on
       - family=g4dn.xlarge
-      - image=ubuntu22-full-x64
+      - image=runs-on-gpu-pinned
 
     strategy:
       max-parallel: 1
@@ -79,8 +79,9 @@ jobs:
         with:
           submodules: recursive
 
-      - name: free additional space on runner
-        run: ./.github/workflows/helpers/free_space_on_runner_gpu.sh
+      - name: mount ephemeral drive to nix
+        run: |
+          sudo mkdir $HOME/_work/nix && sudo mkdir /nix && sudo mount --bind $HOME/_work/nix /nix
 
       - name: install nix
         uses: cachix/install-nix-action@v25

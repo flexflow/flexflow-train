@@ -25,19 +25,19 @@ TEST_SUITE(FF_TEST_SUITE) {
     auto make_leaf = [](Node const &n) { return BinarySPDecompositionTree{n}; };
 
     SUBCASE("multiple nodes with edges across") {
-      NodeAddedResult n1_added = g.add_node({}, 1);
+      NodeAddedResult n1_added = g.add_node({}, 1_n);
       Node n1 = n1_added.node;
       DataflowOutput o1 = get_only(n1_added.outputs);
 
-      NodeAddedResult n2_added = g.add_node({}, 1);
+      NodeAddedResult n2_added = g.add_node({}, 1_n);
       Node n2 = n2_added.node;
       DataflowOutput o2 = get_only(n2_added.outputs);
 
-      NodeAddedResult n3_added = g.add_node({o2, o1}, 1);
+      NodeAddedResult n3_added = g.add_node({o2, o1}, 1_n);
       Node n3 = n3_added.node;
       DataflowOutput o3 = get_only(n3_added.outputs);
 
-      NodeAddedResult n4_added = g.add_node({o1}, 1);
+      NodeAddedResult n4_added = g.add_node({o1}, 1_n);
       Node n4 = n4_added.node;
       DataflowOutput o4 = get_only(n4_added.outputs);
 
@@ -54,15 +54,15 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::unordered_set<DataflowEdge> correct = {
           DataflowEdge{
               o1,
-              DataflowInput{n3, 1},
+              DataflowInput{n3, 1_n},
           },
           DataflowEdge{
               o2,
-              DataflowInput{n3, 0},
+              DataflowInput{n3, 0_n},
           },
           DataflowEdge{
               o1,
-              DataflowInput{n4, 0},
+              DataflowInput{n4, 0_n},
           },
       };
 
@@ -70,12 +70,12 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("nodes each have multiple edges across") {
-      NodeAddedResult n1_added = g.add_node({}, 2);
+      NodeAddedResult n1_added = g.add_node({}, 2_n);
       Node n1 = n1_added.node;
       DataflowOutput n1_o1 = n1_added.outputs.at(0);
       DataflowOutput n1_o2 = n1_added.outputs.at(1);
 
-      NodeAddedResult n2_added = g.add_node({n1_o1, n1_o2, n1_o1}, 1);
+      NodeAddedResult n2_added = g.add_node({n1_o1, n1_o2, n1_o1}, 1_n);
       Node n2 = n2_added.node;
 
       TransitiveReducedDataflowGraphView tr_g =
@@ -91,15 +91,15 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::unordered_set<DataflowEdge> correct = {
           DataflowEdge{
               n1_o1,
-              DataflowInput{n2, 0},
+              DataflowInput{n2, 0_n},
           },
           DataflowEdge{
               n1_o2,
-              DataflowInput{n2, 1},
+              DataflowInput{n2, 1_n},
           },
           DataflowEdge{
               n1_o1,
-              DataflowInput{n2, 2},
+              DataflowInput{n2, 2_n},
           },
       };
 
@@ -107,19 +107,19 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("does not return edges eliminated by transitive reduction") {
-      NodeAddedResult n1_added = g.add_node({}, 1);
+      NodeAddedResult n1_added = g.add_node({}, 1_n);
       Node n1 = n1_added.node;
       DataflowOutput o1 = get_only(n1_added.outputs);
 
-      NodeAddedResult n2_added = g.add_node({o1}, 1);
+      NodeAddedResult n2_added = g.add_node({o1}, 1_n);
       Node n2 = n2_added.node;
       DataflowOutput o2 = get_only(n2_added.outputs);
 
-      NodeAddedResult n3_added = g.add_node({o1, o2}, 1);
+      NodeAddedResult n3_added = g.add_node({o1, o2}, 1_n);
       Node n3 = n3_added.node;
       DataflowOutput o3 = get_only(n3_added.outputs);
 
-      NodeAddedResult n4_added = g.add_node({o2, o3}, 1);
+      NodeAddedResult n4_added = g.add_node({o2, o3}, 1_n);
       Node n4 = n4_added.node;
       DataflowOutput o4 = get_only(n4_added.outputs);
 
@@ -136,7 +136,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::unordered_set<DataflowEdge> correct = {
           DataflowEdge{
               o2,
-              DataflowInput{n3, 1},
+              DataflowInput{n3, 1_n},
           },
       };
 

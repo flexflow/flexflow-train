@@ -60,11 +60,11 @@ TEST_SUITE(FF_TEST_SUITE) {
     }();
 
     TensorShape input = TensorShape{
-        TensorDims{FFOrdered<size_t>{
-            12,
-            14,
-            16,
-            18,
+        TensorDims{FFOrdered<nonnegative_int>{
+            12_n,
+            14_n,
+            16_n,
+            18_n,
         }},
         DataType::FLOAT,
     };
@@ -72,8 +72,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     TensorShape output = input;
 
     TensorShape gamma = TensorShape{
-        TensorDims{FFOrdered<size_t>{
-            14,
+        TensorDims{FFOrdered<nonnegative_int>{
+            14_n,
         }},
         DataType::FLOAT,
     };
@@ -140,16 +140,16 @@ TEST_SUITE(FF_TEST_SUITE) {
     }();
 
     SUBCASE("partition parallelism (in channel dim)") {
-      int degree = 2;
+      nonnegative_int degree = 2_n;
 
       ParallelTensorDimDegrees input = ParallelTensorDimDegrees{
-          SumDegree{1},
-          DiscardCopyDegree{1},
-          FFOrdered<int>{
-              1,
+          SumDegree{1_n},
+          DiscardCopyDegree{1_n},
+          FFOrdered<nonnegative_int>{
+              1_n,
               degree,
-              1,
-              1,
+              1_n,
+              1_n,
           },
       };
 
@@ -169,9 +169,9 @@ TEST_SUITE(FF_TEST_SUITE) {
               get_gamma_weights_parallel_dim_degrees(attrs_affine_true, input);
           tl::expected<ParallelTensorDimDegrees, std::string> correct =
               ParallelTensorDimDegrees{
-                  SumDegree{1},
-                  DiscardCopyDegree{1},
-                  FFOrdered<int>{degree},
+                  SumDegree{1_n},
+                  DiscardCopyDegree{1_n},
+                  FFOrdered<nonnegative_int>{degree},
               };
 
           CHECK(result == correct);
@@ -194,9 +194,9 @@ TEST_SUITE(FF_TEST_SUITE) {
               get_beta_weights_parallel_dim_degrees(attrs_affine_true, input);
           tl::expected<ParallelTensorDimDegrees, std::string> correct =
               ParallelTensorDimDegrees{
-                  SumDegree{1},
-                  DiscardCopyDegree{1},
-                  FFOrdered<int>{degree},
+                  SumDegree{1_n},
+                  DiscardCopyDegree{1_n},
+                  FFOrdered<nonnegative_int>{degree},
               };
 
           CHECK(result == correct);
@@ -214,12 +214,12 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("partition parallelism (not in channel dim)") {
-      int degree = 2;
+      nonnegative_int degree = 2_n;
 
       ParallelTensorDimDegrees input = ParallelTensorDimDegrees{
-          SumDegree{1},
-          DiscardCopyDegree{1},
-          FFOrdered<int>{1, 1, degree, 1},
+          SumDegree{1_n},
+          DiscardCopyDegree{1_n},
+          FFOrdered<nonnegative_int>{1_n, 1_n, degree, 1_n},
       };
 
       SUBCASE("get_output_parallel_dim_degrees(BatchNormAttrs, "
@@ -251,12 +251,12 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("sum parallelism") {
-      SumDegree sum_degree = SumDegree{2};
+      SumDegree sum_degree = SumDegree{2_n};
 
       ParallelTensorDimDegrees input = ParallelTensorDimDegrees{
           sum_degree,
-          DiscardCopyDegree{1},
-          FFOrdered<int>{1, 1, 1, 1},
+          DiscardCopyDegree{1_n},
+          FFOrdered<nonnegative_int>{1_n, 1_n, 1_n, 1_n},
       };
 
       SUBCASE("get_output_parallel_dim_degrees(BatchNormAttrs, "
@@ -288,12 +288,12 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("discard copy parallelism") {
-      DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{2};
+      DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{2_n};
 
       ParallelTensorDimDegrees input = ParallelTensorDimDegrees{
-          SumDegree{1},
+          SumDegree{1_n},
           discard_copy_degree,
-          FFOrdered<int>{1, 1, 1, 1},
+          FFOrdered<nonnegative_int>{1_n, 1_n, 1_n, 1_n},
       };
 
       SUBCASE("get_output_parallel_dim_degrees(BatchNormAttrs, "
@@ -340,14 +340,14 @@ TEST_SUITE(FF_TEST_SUITE) {
     ParallelTensorShape input = ParallelTensorShape{
         ParallelTensorDims{
             FFOrdered<ShardParallelDim>{
-                ShardParallelDim{12, 1},
-                ShardParallelDim{14, 2},
-                ShardParallelDim{16, 1},
-                ShardParallelDim{18, 1},
+                ShardParallelDim{12_n, 1_n},
+                ShardParallelDim{14_n, 2_n},
+                ShardParallelDim{16_n, 1_n},
+                ShardParallelDim{18_n, 1_n},
             },
             ReplicaParallelDimSet{
-                SumDegree{1},
-                DiscardCopyDegree{1},
+                SumDegree{1_n},
+                DiscardCopyDegree{1_n},
             },
         },
         DataType::FLOAT,
@@ -368,11 +368,11 @@ TEST_SUITE(FF_TEST_SUITE) {
           ParallelTensorShape{
               ParallelTensorDims{
                   FFOrdered<ShardParallelDim>{
-                      ShardParallelDim{14, 2},
+                      ShardParallelDim{14_n, 2_n},
                   },
                   ReplicaParallelDimSet{
-                      SumDegree{1},
-                      DiscardCopyDegree{1},
+                      SumDegree{1_n},
+                      DiscardCopyDegree{1_n},
                   },
               },
               DataType::FLOAT,
@@ -388,11 +388,11 @@ TEST_SUITE(FF_TEST_SUITE) {
           ParallelTensorShape{
               ParallelTensorDims{
                   FFOrdered<ShardParallelDim>{
-                      ShardParallelDim{14, 2},
+                      ShardParallelDim{14_n, 2_n},
                   },
                   ReplicaParallelDimSet{
-                      SumDegree{1},
-                      DiscardCopyDegree{1},
+                      SumDegree{1_n},
+                      DiscardCopyDegree{1_n},
                   },
               },
               DataType::FLOAT,

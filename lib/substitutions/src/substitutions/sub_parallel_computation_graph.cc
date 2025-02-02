@@ -188,33 +188,34 @@ bool sub_pcgs_are_isomorphic(SubParallelComputationGraph const &lhs,
 }
 
 std::string as_dot(SubParallelComputationGraph const &spcg) {
-  std::function<std::string(ParallelLayerAttrs const &)> get_node_label =
-      [](ParallelLayerAttrs const &a) -> std::string {
-    RecordFormatter r = as_dot(a.op_attrs);
-
-    if (a.name.has_value()) {
-      RecordFormatter rr;
-      rr << "Name" << a.name.value();
-      r << rr;
-    }
-
-    std::ostringstream oss;
-    oss << r;
-    return oss.str();
-  };
-
-  std::function<std::string(ParallelTensorAttrs const &)> get_input_label =
-      [](ParallelTensorAttrs const &a) -> std::string {
-    RecordFormatter r;
-
-    r << fmt::to_string(a.shape);
-
-    std::ostringstream oss;
-    oss << r;
-    return oss.str();
-  };
-
-  return as_dot(spcg.raw_graph, get_node_label, get_input_label);
+  NOT_IMPLEMENTED();
+  // std::function<std::string(ParallelLayerAttrs const &)> get_node_label =
+  //     [](ParallelLayerAttrs const &a) -> std::string {
+  //   RecordFormatter r = as_dot(a.op_attrs);
+  //
+  //   if (a.name.has_value()) {
+  //     RecordFormatter rr;
+  //     rr << "Name" << a.name.value();
+  //     r << rr;
+  //   }
+  //
+  //   std::ostringstream oss;
+  //   oss << r;
+  //   return oss.str();
+  // };
+  //
+  // std::function<std::string(ParallelTensorAttrs const &)> get_input_label =
+  //     [](ParallelTensorAttrs const &a) -> std::string {
+  //   RecordFormatter r;
+  //
+  //   r << fmt::to_string(a.shape);
+  //
+  //   std::ostringstream oss;
+  //   oss << r;
+  //   return oss.str();
+  // };
+  //
+  // return as_dot(spcg.raw_graph, get_node_label, get_input_label);
 }
 
 void debug_print_dot(SubParallelComputationGraph const &spcg) {

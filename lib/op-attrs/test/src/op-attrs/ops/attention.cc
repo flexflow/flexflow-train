@@ -10,10 +10,10 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_attention_incoming_tensor_roles(MultiHeadAttentionAttrs)") {
     auto make_attrs = [](bool bias) {
       return MultiHeadAttentionAttrs{
-          /*embed_dim=*/32,
-          /*num_heads=*/10,
-          /*kdim=*/32,
-          /*vdim=*/32,
+          /*embed_dim=*/32_n,
+          /*num_heads=*/10_n,
+          /*kdim=*/32_n,
+          /*vdim=*/32_n,
           /*dropout=*/0.0,
           /*bias=*/bias,
           /*add_bias_kv=*/false,
@@ -58,8 +58,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
   TEST_CASE("get_output_shape(MultiHeadAttentionAttrs, TensorShape, "
             "TensorShape, TensorShape)") {
-    int embed_dim = 32;
-    int num_heads = 10;
+    nonnegative_int embed_dim = 32_n;
+    nonnegative_int num_heads = 10_n;
 
     /* Parameter meanings match those at
      * https://pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html
@@ -75,13 +75,13 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*add_zero_attn=*/false,
     };
 
-    size_t batch_size = 40;
-    size_t seq_len = 48;
-    size_t feature_size = 36;
+    nonnegative_int batch_size = 40_n;
+    nonnegative_int seq_len = 48_n;
+    nonnegative_int feature_size = 36_n;
 
     TensorShape input_q = TensorShape{
         TensorDims{
-            FFOrdered<size_t>{
+            FFOrdered<nonnegative_int>{
                 batch_size,
                 seq_len,
                 feature_size,
@@ -92,7 +92,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TensorShape input_k = TensorShape{
         TensorDims{
-            FFOrdered<size_t>{
+            FFOrdered<nonnegative_int>{
                 batch_size,
                 seq_len,
                 feature_size,
@@ -103,7 +103,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TensorShape input_v = TensorShape{
         TensorDims{
-            FFOrdered<size_t>{
+            FFOrdered<nonnegative_int>{
                 batch_size,
                 seq_len,
                 feature_size,
@@ -114,10 +114,10 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TensorShape output = TensorShape{
         TensorDims{
-            FFOrdered<size_t>{
+            FFOrdered<nonnegative_int>{
                 batch_size,
                 seq_len,
-                size_t_from_int(attrs.embed_dim),
+                attrs.embed_dim,
             },
         },
         DataType::FLOAT,
@@ -125,9 +125,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TensorShape weights = TensorShape{
         TensorDims{
-            FFOrdered<size_t>{
-                (feature_size * embed_dim) * 3 + (embed_dim * embed_dim),
-                size_t_from_int(num_heads),
+            FFOrdered<nonnegative_int>{
+                (feature_size * embed_dim) * 3_n + (embed_dim * embed_dim),
+                num_heads,
             },
         },
         DataType::FLOAT,
@@ -135,8 +135,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TensorShape input_bias = TensorShape{
         TensorDims{
-            FFOrdered<size_t>{
-                size_t_from_int(embed_dim * 3),
+            FFOrdered<nonnegative_int>{
+                embed_dim * 3_n,
             },
         },
         DataType::FLOAT,
@@ -144,8 +144,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TensorShape output_bias = TensorShape{
         TensorDims{
-            FFOrdered<size_t>{
-                size_t_from_int(embed_dim),
+            FFOrdered<nonnegative_int>{
+                embed_dim,
             },
         },
         DataType::FLOAT,
@@ -184,72 +184,94 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("parallel shape inference") {
       auto make_q = [&](SumDegree o_sum,
                         DiscardCopyDegree o_eq,
-                        int o_batch,
-                        int o_seq_len,
-                        int o_q) {
+                        nonnegative_int o_batch,
+                        nonnegative_int o_seq_len,
+                        nonnegative_int o_q) {
         return lift_to_parallel_with_degrees(
-            input_q, o_sum, o_eq, FFOrdered<int>{o_batch, o_seq_len, o_q});
+            input_q,
+            o_sum,
+            o_eq,
+            FFOrdered<nonnegative_int>{o_batch, o_seq_len, o_q});
       };
 
       auto make_k = [&](SumDegree o_sum,
                         DiscardCopyDegree o_eq,
-                        int o_batch,
-                        int o_seq_len,
-                        int o_k) {
+                        nonnegative_int o_batch,
+                        nonnegative_int o_seq_len,
+                        nonnegative_int o_k) {
         return lift_to_parallel_with_degrees(
-            input_k, o_sum, o_eq, FFOrdered<int>{o_batch, o_seq_len, o_k});
+            input_k,
+            o_sum,
+            o_eq,
+            FFOrdered<nonnegative_int>{o_batch, o_seq_len, o_k});
       };
 
       auto make_v = [&](SumDegree o_sum,
                         DiscardCopyDegree o_eq,
-                        int o_batch,
-                        int o_seq_len,
-                        int o_v) {
+                        nonnegative_int o_batch,
+                        nonnegative_int o_seq_len,
+                        nonnegative_int o_v) {
         return lift_to_parallel_with_degrees(
-            input_v, o_sum, o_eq, FFOrdered<int>{o_batch, o_seq_len, o_v});
+            input_v,
+            o_sum,
+            o_eq,
+            FFOrdered<nonnegative_int>{o_batch, o_seq_len, o_v});
       };
 
       auto make_o = [&](SumDegree o_sum,
                         DiscardCopyDegree o_eq,
-                        int o_batch,
-                        int o_seq_len,
-                        int o_o) {
+                        nonnegative_int o_batch,
+                        nonnegative_int o_seq_len,
+                        nonnegative_int o_o) {
         return lift_to_parallel_with_degrees(
-            output, o_sum, o_eq, FFOrdered<int>{o_batch, o_seq_len, o_o});
+            output,
+            o_sum,
+            o_eq,
+            FFOrdered<nonnegative_int>{o_batch, o_seq_len, o_o});
       };
 
-      auto make_w =
-          [&](SumDegree o_sum, DiscardCopyDegree o_eq, int o_e, int o_h) {
-            return lift_to_parallel_with_degrees(
-                weights, o_sum, o_eq, FFOrdered<int>{o_e, o_h});
-          };
+      auto make_w = [&](SumDegree o_sum,
+                        DiscardCopyDegree o_eq,
+                        nonnegative_int o_e,
+                        nonnegative_int o_h) {
+        return lift_to_parallel_with_degrees(
+            weights, o_sum, o_eq, FFOrdered<nonnegative_int>{o_e, o_h});
+      };
 
-      auto make_input_bias =
-          [&](SumDegree o_sum, DiscardCopyDegree o_eq, int o_in_proj_channel) {
-            return lift_to_parallel_with_degrees(
-                input_bias, o_sum, o_eq, FFOrdered<int>{o_in_proj_channel});
-          };
+      auto make_input_bias = [&](SumDegree o_sum,
+                                 DiscardCopyDegree o_eq,
+                                 nonnegative_int o_in_proj_channel) {
+        return lift_to_parallel_with_degrees(
+            input_bias,
+            o_sum,
+            o_eq,
+            FFOrdered<nonnegative_int>{o_in_proj_channel});
+      };
 
-      auto make_output_bias =
-          [&](SumDegree o_sum, DiscardCopyDegree o_eq, int o_out_proj_channel) {
-            return lift_to_parallel_with_degrees(
-                output_bias, o_sum, o_eq, FFOrdered<int>{o_out_proj_channel});
-          };
+      auto make_output_bias = [&](SumDegree o_sum,
+                                  DiscardCopyDegree o_eq,
+                                  nonnegative_int o_out_proj_channel) {
+        return lift_to_parallel_with_degrees(
+            output_bias,
+            o_sum,
+            o_eq,
+            FFOrdered<nonnegative_int>{o_out_proj_channel});
+      };
 
       SUBCASE("data parallelism") {
-        int o_b = 4;
+        nonnegative_int o_b = 4_n;
         ParallelTensorShape q =
-            make_q(SumDegree{1}, DiscardCopyDegree{1}, o_b, 1, 1);
+            make_q(SumDegree{1_n}, DiscardCopyDegree{1_n}, o_b, 1_n, 1_n);
         ParallelTensorShape k =
-            make_k(SumDegree{1}, DiscardCopyDegree{1}, o_b, 1, 1);
+            make_k(SumDegree{1_n}, DiscardCopyDegree{1_n}, o_b, 1_n, 1_n);
         ParallelTensorShape v =
-            make_v(SumDegree{1}, DiscardCopyDegree{1}, o_b, 1, 1);
+            make_v(SumDegree{1_n}, DiscardCopyDegree{1_n}, o_b, 1_n, 1_n);
 
         SUBCASE("get_output_shape") {
           tl::expected<ParallelTensorShape, std::string> result =
               get_output_shape(attrs, q, k, v);
           tl::expected<ParallelTensorShape, std::string> correct =
-              make_o(SumDegree{1}, DiscardCopyDegree{1}, o_b, 1, 1);
+              make_o(SumDegree{1_n}, DiscardCopyDegree{1_n}, o_b, 1_n, 1_n);
           CHECK(result == correct);
         }
 
@@ -257,7 +279,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           tl::expected<ParallelTensorShape, std::string> result =
               get_weights_shape(attrs, q, k, v);
           tl::expected<ParallelTensorShape, std::string> correct =
-              make_w(SumDegree{1}, DiscardCopyDegree{o_b}, 1, 1);
+              make_w(SumDegree{1_n}, DiscardCopyDegree{o_b}, 1_n, 1_n);
           CHECK(result == correct);
         }
 
@@ -265,7 +287,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           tl::expected<ParallelTensorShape, std::string> result =
               get_input_bias_shape(attrs, q, k, v);
           tl::expected<ParallelTensorShape, std::string> correct =
-              make_input_bias(SumDegree{1}, DiscardCopyDegree{o_b}, 1);
+              make_input_bias(SumDegree{1_n}, DiscardCopyDegree{o_b}, 1_n);
           CHECK(result == correct);
         }
 
@@ -273,25 +295,25 @@ TEST_SUITE(FF_TEST_SUITE) {
           tl::expected<ParallelTensorShape, std::string> result =
               get_output_bias_shape(attrs, q, k, v);
           tl::expected<ParallelTensorShape, std::string> correct =
-              make_output_bias(SumDegree{1}, DiscardCopyDegree{o_b}, 1);
+              make_output_bias(SumDegree{1_n}, DiscardCopyDegree{o_b}, 1_n);
           CHECK(result == correct);
         }
       }
 
       SUBCASE("attention head parallelism") {
-        int o_h = 2;
+        nonnegative_int o_h = 2_n;
         ParallelTensorShape q =
-            make_q(SumDegree{1}, DiscardCopyDegree{o_h}, 1, 1, 1);
+            make_q(SumDegree{1_n}, DiscardCopyDegree{o_h}, 1_n, 1_n, 1_n);
         ParallelTensorShape k =
-            make_k(SumDegree{1}, DiscardCopyDegree{o_h}, 1, 1, 1);
+            make_k(SumDegree{1_n}, DiscardCopyDegree{o_h}, 1_n, 1_n, 1_n);
         ParallelTensorShape v =
-            make_v(SumDegree{1}, DiscardCopyDegree{o_h}, 1, 1, 1);
+            make_v(SumDegree{1_n}, DiscardCopyDegree{o_h}, 1_n, 1_n, 1_n);
 
         SUBCASE("get_output_shape") {
           tl::expected<ParallelTensorShape, std::string> result =
               get_output_shape(attrs, q, k, v);
           tl::expected<ParallelTensorShape, std::string> correct =
-              make_o(SumDegree{o_h}, DiscardCopyDegree{1}, 1, 1, 1);
+              make_o(SumDegree{o_h}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n);
           CHECK(result == correct);
         }
 
@@ -299,7 +321,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           tl::expected<ParallelTensorShape, std::string> result =
               get_weights_shape(attrs, q, k, v);
           tl::expected<ParallelTensorShape, std::string> correct =
-              make_w(SumDegree{1}, DiscardCopyDegree{1}, 1, o_h);
+              make_w(SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, o_h);
           CHECK(result == correct);
         }
 
@@ -307,7 +329,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           tl::expected<ParallelTensorShape, std::string> result =
               get_input_bias_shape(attrs, q, k, v);
           tl::expected<ParallelTensorShape, std::string> correct =
-              make_input_bias(SumDegree{1}, DiscardCopyDegree{o_h}, 1);
+              make_input_bias(SumDegree{1_n}, DiscardCopyDegree{o_h}, 1_n);
           CHECK(result == correct);
         }
 
@@ -315,26 +337,26 @@ TEST_SUITE(FF_TEST_SUITE) {
           tl::expected<ParallelTensorShape, std::string> result =
               get_output_bias_shape(attrs, q, k, v);
           tl::expected<ParallelTensorShape, std::string> correct =
-              make_output_bias(SumDegree{1}, DiscardCopyDegree{o_h}, 1);
+              make_output_bias(SumDegree{1_n}, DiscardCopyDegree{o_h}, 1_n);
           CHECK(result == correct);
         }
       }
 
       SUBCASE("combined data & attention head parallelism") {
-        int o_b = 4;
-        int o_h = 2;
+        nonnegative_int o_b = 4_n;
+        nonnegative_int o_h = 2_n;
         ParallelTensorShape q =
-            make_q(SumDegree{1}, DiscardCopyDegree{o_h}, o_b, 1, 1);
+            make_q(SumDegree{1_n}, DiscardCopyDegree{o_h}, o_b, 1_n, 1_n);
         ParallelTensorShape k =
-            make_k(SumDegree{1}, DiscardCopyDegree{o_h}, o_b, 1, 1);
+            make_k(SumDegree{1_n}, DiscardCopyDegree{o_h}, o_b, 1_n, 1_n);
         ParallelTensorShape v =
-            make_v(SumDegree{1}, DiscardCopyDegree{o_h}, o_b, 1, 1);
+            make_v(SumDegree{1_n}, DiscardCopyDegree{o_h}, o_b, 1_n, 1_n);
 
         SUBCASE("get_output_shape") {
           tl::expected<ParallelTensorShape, std::string> result =
               get_output_shape(attrs, q, k, v);
           tl::expected<ParallelTensorShape, std::string> correct =
-              make_o(SumDegree{o_h}, DiscardCopyDegree{1}, o_b, 1, 1);
+              make_o(SumDegree{o_h}, DiscardCopyDegree{1_n}, o_b, 1_n, 1_n);
           CHECK(result == correct);
         }
 
@@ -342,7 +364,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           tl::expected<ParallelTensorShape, std::string> result =
               get_weights_shape(attrs, q, k, v);
           tl::expected<ParallelTensorShape, std::string> correct =
-              make_w(SumDegree{1}, DiscardCopyDegree{o_b}, 1, o_h);
+              make_w(SumDegree{1_n}, DiscardCopyDegree{o_b}, 1_n, o_h);
           CHECK(result == correct);
         }
 
@@ -350,7 +372,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           tl::expected<ParallelTensorShape, std::string> result =
               get_input_bias_shape(attrs, q, k, v);
           tl::expected<ParallelTensorShape, std::string> correct =
-              make_input_bias(SumDegree{1}, DiscardCopyDegree{o_b * o_h}, 1);
+              make_input_bias(
+                  SumDegree{1_n}, DiscardCopyDegree{o_b * o_h}, 1_n);
           CHECK(result == correct);
         }
 
@@ -358,7 +381,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           tl::expected<ParallelTensorShape, std::string> result =
               get_output_bias_shape(attrs, q, k, v);
           tl::expected<ParallelTensorShape, std::string> correct =
-              make_output_bias(SumDegree{1}, DiscardCopyDegree{o_b * o_h}, 1);
+              make_output_bias(
+                  SumDegree{1_n}, DiscardCopyDegree{o_b * o_h}, 1_n);
           CHECK(result == correct);
         }
       }

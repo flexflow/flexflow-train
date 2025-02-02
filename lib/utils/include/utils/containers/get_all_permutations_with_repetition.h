@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_GET_ALL_PERMUTATIONS_WITH_REPETITION_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_GET_ALL_PERMUTATIONS_WITH_REPETITION_H
 
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include <unordered_set>
 #include <vector>
 
@@ -14,7 +15,8 @@ namespace FlexFlow {
  **/
 template <typename C, typename T = typename C::value_type>
 std::unordered_multiset<std::vector<T>>
-    get_all_permutations_with_repetition(C const &container, int n) {
+    get_all_permutations_with_repetition(C const &container,
+                                         nonnegative_int n) {
   std::unordered_multiset<std::vector<T>> result;
 
   if (container.empty() || n == 0) {
@@ -22,16 +24,16 @@ std::unordered_multiset<std::vector<T>>
   }
 
   std::vector<T> elements(std::begin(container), std::end(container));
-  std::vector<int> indices(n, 0);
+  std::vector<int> indices(n.unwrap_nonnegative(), 0);
 
   while (true) {
-    std::vector<T> perm(n);
+    std::vector<T> perm(n.unwrap_nonnegative());
     for (int i = 0; i < n; ++i) {
       perm[i] = elements[indices[i]];
     }
     result.insert(perm);
 
-    int i = n - 1;
+    int i = n.unwrap_nonnegative() - 1;
     while (i != -1 && ++indices[i] == elements.size()) {
       indices[i] = 0;
       --i;

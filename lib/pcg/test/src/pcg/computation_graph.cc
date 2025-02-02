@@ -13,9 +13,9 @@ TEST_SUITE(FF_TEST_SUITE) {
         ComputationGraphBuilder b;
 
         TensorShape input_shape = TensorShape{
-            TensorDims{FFOrdered<size_t>{
-                10,
-                12,
+            TensorDims{FFOrdered<nonnegative_int>{
+                10_n,
+                12_n,
             }},
             DataType::FLOAT,
         };
@@ -40,9 +40,9 @@ TEST_SUITE(FF_TEST_SUITE) {
       ComputationGraphBuilder b;
 
       TensorShape input_shape = TensorShape{
-          TensorDims{FFOrdered<size_t>{
-              10,
-              12,
+          TensorDims{FFOrdered<nonnegative_int>{
+              10_n,
+              12_n,
           }},
           DataType::FLOAT,
       };
@@ -66,16 +66,16 @@ TEST_SUITE(FF_TEST_SUITE) {
       ComputationGraphBuilder b;
 
       TensorShape input_shape = TensorShape{
-          TensorDims{FFOrdered<size_t>{
-              10,
-              12,
+          TensorDims{FFOrdered<nonnegative_int>{
+              10_n,
+              12_n,
           }},
           DataType::FLOAT,
       };
 
       tensor_guid_t input = b.create_input(input_shape, CreateGrad::YES);
       b.dense(input,
-              /*outDim=*/14,
+              /*outDim=*/14_n,
               /*activation=*/Activation::RELU,
               /*use_bias=*/true,
               /*data_type=*/DataType::FLOAT,
@@ -103,9 +103,9 @@ TEST_SUITE(FF_TEST_SUITE) {
         ComputationGraphBuilder b;
 
         TensorShape input_shape = TensorShape{
-            TensorDims{FFOrdered<size_t>{
-                10,
-                12,
+            TensorDims{FFOrdered<nonnegative_int>{
+                10_n,
+                12_n,
             }},
             DataType::FLOAT,
         };
@@ -131,9 +131,9 @@ TEST_SUITE(FF_TEST_SUITE) {
         ComputationGraphBuilder b;
 
         TensorShape input_shape = TensorShape{
-            TensorDims{FFOrdered<size_t>{
-                10,
-                12,
+            TensorDims{FFOrdered<nonnegative_int>{
+                10_n,
+                12_n,
             }},
             DataType::FLOAT,
         };
@@ -161,16 +161,16 @@ TEST_SUITE(FF_TEST_SUITE) {
         ComputationGraphBuilder b;
 
         TensorShape input_shape = TensorShape{
-            TensorDims{FFOrdered<size_t>{
-                10,
-                12,
+            TensorDims{FFOrdered<nonnegative_int>{
+                10_n,
+                12_n,
             }},
             DataType::FLOAT,
         };
 
         tensor_guid_t input = b.create_input(input_shape, CreateGrad::YES);
         b.dense(input,
-                /*outDim=*/14,
+                /*outDim=*/14_n,
                 /*activation=*/Activation::RELU,
                 /*use_bias=*/true,
                 /*data_type=*/DataType::FLOAT,

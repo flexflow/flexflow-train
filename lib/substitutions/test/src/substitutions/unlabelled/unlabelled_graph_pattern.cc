@@ -17,7 +17,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK_FALSE(is_singleton_pattern(pattern));
     }
 
-    NodeAddedResult n0_added = g.add_node({}, 1);
+    NodeAddedResult n0_added = g.add_node({}, 1_n);
     OpenDataflowValue v0 = OpenDataflowValue{get_only(n0_added.outputs)};
 
     SUBCASE("1 node") {
@@ -26,7 +26,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(is_singleton_pattern(pattern));
     }
 
-    NodeAddedResult n1_added = g.add_node({v0}, 1);
+    NodeAddedResult n1_added = g.add_node({v0}, 1_n);
     OpenDataflowValue v1 = OpenDataflowValue{get_only(n1_added.outputs)};
 
     SUBCASE("more than 1 node") {

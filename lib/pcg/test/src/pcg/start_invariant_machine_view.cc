@@ -8,15 +8,15 @@ using namespace FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("StartInvariantMachineView - utility functions") {
     StartInvariantMachineView simv = StartInvariantMachineView{
-        {MachineViewDimension{stride_t{2},
+        {MachineViewDimension{stride_t{2_n},
                               MachineSpecificationDimension::INTER_NODE},
-         MachineViewDimension{stride_t{2},
+         MachineViewDimension{stride_t{2_n},
                               MachineSpecificationDimension::INTER_NODE}},
         DeviceType::GPU};
 
     SUBCASE("num_dims") {
-      int result = num_dims(simv);
-      int correct = 2;
+      nonnegative_int result = num_dims(simv);
+      nonnegative_int correct = 2_n;
       CHECK(result == correct);
     }
 
@@ -28,7 +28,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("get_strides") {
       std::vector<stride_t> result = get_strides(simv);
-      std::vector<stride_t> correct = {stride_t{2}, stride_t{2}};
+      std::vector<stride_t> correct = {stride_t{2_n}, stride_t{2_n}};
       CHECK(result == correct);
     }
 
@@ -43,11 +43,11 @@ TEST_SUITE(FF_TEST_SUITE) {
 
   TEST_CASE("StartInvariantMachineView - conversions") {
     MachineSpaceCoordinate start =
-        MachineSpaceCoordinate{1, 2, DeviceType::GPU};
+        MachineSpaceCoordinate{1_n, 2_n, DeviceType::GPU};
     std::vector<MachineViewDimension> dimensions = {
-        MachineViewDimension{stride_t{2},
+        MachineViewDimension{stride_t{2_n},
                              MachineSpecificationDimension::INTER_NODE},
-        MachineViewDimension{stride_t{3},
+        MachineViewDimension{stride_t{3_n},
                              MachineSpecificationDimension::INTRA_NODE}};
 
     MachineView mv = MachineView{start, dimensions};
@@ -94,21 +94,21 @@ TEST_SUITE(FF_TEST_SUITE) {
        *  | (0,)  |       | (1,)  |       | (2,)  |       |
        *  +-------+-------+-------+-------+-------+-------+
        */
-      OperatorTaskSpace task = OperatorTaskSpace{{3}};
+      OperatorTaskSpace task = OperatorTaskSpace{{3_n}};
       StartInvariantMachineView simv = StartInvariantMachineView{
-          {MachineViewDimension{stride_t{2},
+          {MachineViewDimension{stride_t{2_n},
                                 MachineSpecificationDimension::INTRA_NODE}},
           DeviceType::GPU};
       MachineSpecification ms =
-          MachineSpecification{/*num_nodes=*/1,
-                               /*num_cpus_per_node=*/6,
-                               /*num_gpus_per_node=*/6,
-                               /*inter_node_bandwidth=*/0,
-                               /*intra_node_bandwidth=*/0};
+          MachineSpecification{/*num_nodes=*/1_n,
+                               /*num_cpus_per_node=*/6_n,
+                               /*num_gpus_per_node=*/6_n,
+                               /*inter_node_bandwidth=*/0.0,
+                               /*intra_node_bandwidth=*/0.0};
 
       SUBCASE("get_machine_space_offset") {
         SUBCASE("Task with TaskSpaceCoordinate = (0,)") {
-          TaskSpaceCoordinate coord = TaskSpaceCoordinate{{0}};
+          TaskSpaceCoordinate coord = TaskSpaceCoordinate{{0_n}};
           MachineSpaceOffset correct =
               MachineSpaceOffset{0, 0, DeviceType::GPU};
           MachineSpaceOffset result =
@@ -117,7 +117,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         }
 
         SUBCASE("Task with TaskSpaceCoordinate = (1,)") {
-          TaskSpaceCoordinate coord = TaskSpaceCoordinate{{1}};
+          TaskSpaceCoordinate coord = TaskSpaceCoordinate{{1_n}};
           MachineSpaceOffset correct =
               MachineSpaceOffset{0, 2, DeviceType::GPU};
           MachineSpaceOffset result =
@@ -126,7 +126,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         }
 
         SUBCASE("Task with TaskSpaceCoordinate = (2,)") {
-          TaskSpaceCoordinate coord = TaskSpaceCoordinate{{2}};
+          TaskSpaceCoordinate coord = TaskSpaceCoordinate{{2_n}};
           MachineSpaceOffset correct =
               MachineSpaceOffset{0, 4, DeviceType::GPU};
           MachineSpaceOffset result =
@@ -162,23 +162,23 @@ TEST_SUITE(FF_TEST_SUITE) {
        *  +-------+-------+-------+-------+
        */
 
-      OperatorTaskSpace task = OperatorTaskSpace{{2, 2}};
+      OperatorTaskSpace task = OperatorTaskSpace{{2_n, 2_n}};
       StartInvariantMachineView simv = StartInvariantMachineView{
-          {MachineViewDimension{stride_t{1},
+          {MachineViewDimension{stride_t{1_n},
                                 MachineSpecificationDimension::INTER_NODE},
-           MachineViewDimension{stride_t{2},
+           MachineViewDimension{stride_t{2_n},
                                 MachineSpecificationDimension::INTRA_NODE}},
           DeviceType::GPU};
       MachineSpecification ms =
-          MachineSpecification{/*num_nodes=*/2,
-                               /*num_cpus_per_node=*/4,
-                               /*num_gpus_per_node=*/4,
+          MachineSpecification{/*num_nodes=*/2_n,
+                               /*num_cpus_per_node=*/4_n,
+                               /*num_gpus_per_node=*/4_n,
                                /*inter_node_bandwidth=*/0,
                                /*intra_node_bandwidth=*/0};
 
       SUBCASE("get_machine_space_offset") {
         SUBCASE("Task with TaskSpaceCoordinate = (0,0)") {
-          TaskSpaceCoordinate coord = TaskSpaceCoordinate{{0, 0}};
+          TaskSpaceCoordinate coord = TaskSpaceCoordinate{{0_n, 0_n}};
           MachineSpaceOffset correct =
               MachineSpaceOffset{0, 0, DeviceType::GPU};
           MachineSpaceOffset result =
@@ -187,7 +187,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         }
 
         SUBCASE("Task with TaskSpaceCoordinate = (0,1)") {
-          TaskSpaceCoordinate coord = TaskSpaceCoordinate{{0, 1}};
+          TaskSpaceCoordinate coord = TaskSpaceCoordinate{{0_n, 1_n}};
           MachineSpaceOffset correct =
               MachineSpaceOffset{0, 2, DeviceType::GPU};
           MachineSpaceOffset result =
@@ -196,7 +196,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         }
 
         SUBCASE("Task with TaskSpaceCoordinate = (1,0)") {
-          TaskSpaceCoordinate coord = TaskSpaceCoordinate{{1, 0}};
+          TaskSpaceCoordinate coord = TaskSpaceCoordinate{{1_n, 0_n}};
           MachineSpaceOffset correct =
               MachineSpaceOffset{1, 0, DeviceType::GPU};
           MachineSpaceOffset result =
@@ -205,7 +205,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         }
 
         SUBCASE("Task with TaskSpaceCoordinate = (1,1)") {
-          TaskSpaceCoordinate coord = TaskSpaceCoordinate{{1, 1}};
+          TaskSpaceCoordinate coord = TaskSpaceCoordinate{{1_n, 1_n}};
           MachineSpaceOffset correct =
               MachineSpaceOffset{1, 2, DeviceType::GPU};
           MachineSpaceOffset result =

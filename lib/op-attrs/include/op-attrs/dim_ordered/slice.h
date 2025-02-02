@@ -27,8 +27,8 @@ FFOrdered<T> ff_dim_t_nonoverloaded_slice(FFOrdered<T> const &d,
                                           std::optional<ff_dim_t> const &end) {
   auto to_raw_idx =
       [](std::optional<ff_dim_t> const &idx) -> std::optional<int> {
-    return transform(idx,
-                     [](ff_dim_t const &i) { return i.value.get_value(); });
+    return transform(
+        idx, [](ff_dim_t const &i) { return i.value.unwrap_nonnegative(); });
   };
 
   return FFOrdered<T>{subvec(vector_of(d), to_raw_idx(start), to_raw_idx(end))};

@@ -10,7 +10,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     ManagedPerDeviceFFHandle managed_handle{};
     ManagedFFStream managed_stream{};
 
-    TensorShape input_shape = make_float_tensor_shape_from_legion_dims({100});
+    TensorShape input_shape = make_float_tensor_shape_from_legion_dims({100_n});
     TensorShape output_shape = input_shape;
 
     GenericTensorAccessorR input_accessor =
@@ -30,7 +30,7 @@ TEST_SUITE(FF_TEST_SUITE) {
               read_only_accessor_from_write_accessor(output_accessor));
 
       std::vector<float> expected_output_data(
-          input_accessor.shape.num_elements(), 2.0f);
+          input_accessor.shape.num_elements().unwrap_nonnegative(), 2.0f);
       CHECK(check_output_data == expected_output_data);
     }
 
@@ -50,7 +50,7 @@ TEST_SUITE(FF_TEST_SUITE) {
               read_only_accessor_from_write_accessor(input_grad_accessor));
 
       std::vector<float> expected_output_data(
-          input_accessor.shape.num_elements(), 1.0f);
+          input_accessor.shape.num_elements().unwrap_nonnegative(), 1.0f);
       CHECK(backward_output_data == expected_output_data);
     }
   }
