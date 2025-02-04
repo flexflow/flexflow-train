@@ -50,14 +50,14 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   auto attrs = acc.get_argument<ReductionAttrs>(ATTRS);
 
-  size_t num_replicas = attrs.reduction_degree;
+  nonnegative_int num_replicas = attrs.reduction_degree;
 
   return profile(forward_kernel,
                  profiling_settings,
                  "[Reduction] forward_time = {:.2lf}ms\n",
                  input,
                  output,
-                 num_replicas);
+                 num_replicas.unwrap_nonnegative());
 }
 
 static std::optional<float>

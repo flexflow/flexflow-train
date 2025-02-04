@@ -3,6 +3,7 @@
 
 #include "utils/containers/contains.h"
 #include <queue>
+#include <set>
 #include <unordered_set>
 #include <vector>
 
@@ -36,6 +37,16 @@ public:
   void pop() {
     hashmap.erase(impl.top());
     impl.pop();
+  }
+
+  std::set<Elem, Compare> contents() const {
+    auto temp = impl;
+    std::set<Elem, Compare> result;
+    while (!temp.empty()) {
+      result.insert(temp.top());
+      temp.pop();
+    }
+    return result;
   }
 
 private:

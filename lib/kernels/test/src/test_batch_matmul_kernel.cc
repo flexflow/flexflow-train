@@ -6,13 +6,13 @@ using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Test BatchMatmul Kernel") {
-    size_t m = 10;
-    size_t n = 10;
-    size_t k = 10;
-    size_t batch = 5;
-    size_t a_seq_length_dim = -1;
-    size_t b_seq_length_dim = -1;
-    size_t seq_length = -1;
+    nonnegative_int m = 10_n;
+    nonnegative_int n = 10_n;
+    nonnegative_int k = 10_n;
+    nonnegative_int batch = 5_n;
+    int a_seq_length_dim = -1;
+    int b_seq_length_dim = -1;
+    int seq_length = -1;
 
     ManagedFFStream managed_stream{};
     ManagedPerDeviceFFHandle managed_handle{};
@@ -39,10 +39,10 @@ TEST_SUITE(FF_TEST_SUITE) {
                                            output_accessor.get_float_ptr(),
                                            a_accessor.get_float_ptr(),
                                            b_accessor.get_float_ptr(),
-                                           m,
-                                           n,
-                                           k,
-                                           batch,
+                                           m.unwrap_nonnegative(),
+                                           n.unwrap_nonnegative(),
+                                           k.unwrap_nonnegative(),
+                                           batch.unwrap_nonnegative(),
                                            a_seq_length_dim,
                                            b_seq_length_dim,
                                            seq_length);
@@ -64,10 +64,10 @@ TEST_SUITE(FF_TEST_SUITE) {
                                             a_grad_accessor.get_float_ptr(),
                                             b_accessor.get_float_ptr(),
                                             b_grad_accessor.get_float_ptr(),
-                                            m,
-                                            n,
-                                            k,
-                                            batch);
+                                            m.unwrap_nonnegative(),
+                                            n.unwrap_nonnegative(),
+                                            k.unwrap_nonnegative(),
+                                            batch.unwrap_nonnegative());
     }
   }
 }

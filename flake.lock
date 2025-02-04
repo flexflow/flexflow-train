@@ -18,6 +18,29 @@
         "type": "github"
       }
     },
+    "nixGL": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1713543440,
+        "narHash": "sha256-lnzZQYG0+EXl/6NkGpyIz+FEOc/DSEG57AP1VsdeNrM=",
+        "owner": "nix-community",
+        "repo": "nixGL",
+        "rev": "310f8e49a149e4c9ea52f1adf70cdc768ec53f8a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "nixGL",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1710162809,
@@ -43,11 +66,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1722923482,
-        "narHash": "sha256-myUec+oBcnKNCqLQqSiPCyXFsIsvlrsGoj/mQFlHVrY=",
+        "lastModified": 1737340566,
+        "narHash": "sha256-fIRXCPLjOZ7QweKH6GanI4BjMotMdp4M9r6/V3l/eXo=",
         "owner": "lockshaw",
         "repo": "proj",
-        "rev": "c650b0e52337652ea7190131988c0370e0ee7f25",
+        "rev": "2394e855baeea5757c75eadde748902988db5509",
         "type": "github"
       },
       "original": {
@@ -59,6 +82,7 @@
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
+        "nixGL": "nixGL",
         "nixpkgs": "nixpkgs",
         "proj-repo": "proj-repo"
       }

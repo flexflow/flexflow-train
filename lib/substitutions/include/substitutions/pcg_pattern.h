@@ -10,6 +10,8 @@
 
 namespace FlexFlow {
 
+std::unordered_set<PatternNode> get_nodes(PCGPattern const &);
+
 /**
  * @brief Find all locations in \p pcg that match \p pattern
  */

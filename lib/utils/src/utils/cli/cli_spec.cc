@@ -2,6 +2,8 @@
 #include "utils/containers/count.h"
 #include "utils/containers/transform.h"
 #include "utils/integer_conversions.h"
+#include "utils/nonnegative_int/nonnegative_range.h"
+#include "utils/nonnegative_int/num_elements.h"
 
 namespace FlexFlow {
 
@@ -10,8 +12,8 @@ CLISpec empty_cli_spec() {
 }
 
 std::vector<CLIFlagKey> cli_get_flag_keys(CLISpec const &cli) {
-  return transform(count(cli.flags.size()),
-                   [](int idx) { return CLIFlagKey{idx}; });
+  return transform(nonnegative_range(num_elements(cli.flags)),
+                   [](nonnegative_int idx) { return CLIFlagKey{idx}; });
 }
 
 CLIArgumentKey cli_add_help_flag(CLISpec &cli) {
@@ -21,17 +23,18 @@ CLIArgumentKey cli_add_help_flag(CLISpec &cli) {
 }
 
 CLIArgumentKey cli_add_flag(CLISpec &cli, CLIFlagSpec const &flag_spec) {
+  CLIArgumentKey key = CLIArgumentKey{CLIFlagKey{num_elements(cli.flags)}};
   cli.flags.push_back(flag_spec);
-
-  return CLIArgumentKey{CLIFlagKey{int_from_size_t(cli.flags.size()) - 1}};
+  return key;
 }
 
 CLIArgumentKey
     cli_add_positional_argument(CLISpec &cli,
                                 CLIPositionalArgumentSpec const &arg) {
+  CLIArgumentKey key = CLIArgumentKey{
+      CLIPositionalArgumentKey{num_elements(cli.positional_arguments)}};
   cli.positional_arguments.push_back(arg);
-  return CLIArgumentKey{CLIPositionalArgumentKey{
-      int_from_size_t(cli.positional_arguments.size()) - 1}};
+  return key;
 }
 
 } // namespace FlexFlow

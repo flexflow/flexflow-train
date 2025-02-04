@@ -1,0 +1,26 @@
+namespace = "FlexFlow"
+name = "UnstructuredDeviceMapping"
+features = [
+  "eq",
+  # "ord",
+  "hash",
+  # "json",
+  # "rapidcheck",
+  "fmt",
+]
+
+includes = [
+  "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h",
+  "pcg/device_id_t.dtg.h"
+]  
+
+src_includes = [   
+  "utils/hash/unordered_map.h",
+  "utils/fmt/unordered_map.h",  
+  "utils/hash/unordered_set.h",  
+  "utils/fmt/unordered_set.h" 
+]
+
+[[fields]]
+name = "raw_device_map"
+type = "std::unordered_map<::FlexFlow::parallel_layer_guid_t, std::unordered_set<::FlexFlow::device_id_t>>"

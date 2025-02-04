@@ -13,6 +13,7 @@ includes = [
   "op-attrs/pool_op.dtg.h",
   "op-attrs/activation.dtg.h",
   "<optional>",
+  "utils/nonnegative_int/nonnegative_int.h",
 ]
 
 src_includes = [
@@ -23,27 +24,27 @@ src_includes = [
 
 [[fields]]
 name = "kernel_h"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "kernel_w"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "stride_h"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "stride_w"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "padding_h"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "padding_w"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "pool_type"

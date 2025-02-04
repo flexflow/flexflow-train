@@ -1,5 +1,5 @@
-#include "compiler/series_parallel/computation_graph_binary_sp_decomposition.h"
-#include "compiler/series_parallel/get_computation_graph_series_parallel_decomposition.h"
+#include "compiler/series_parallel/computation_graph/computation_graph_binary_sp_decomposition.h"
+#include "compiler/series_parallel/computation_graph/get_computation_graph_series_parallel_decomposition.h"
 #include "export_model_arch/json_sp_model_export.dtg.h"
 #include "models/bert/bert.h"
 #include "models/candle_uno/candle_uno.h"
@@ -13,7 +13,7 @@
 #include "utils/cli/cli_parse.h"
 #include "utils/cli/cli_parse_result.h"
 #include "utils/cli/cli_spec.h"
-#include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/transform.h"
+#include "utils/graph/open_dataflow_graph/algorithms/as_dot.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/right_associative_binary_sp_tree_from_nary.h"
 #include "utils/graph/series_parallel/get_series_parallel_decomposition.h"
 
@@ -22,11 +22,11 @@ using namespace ::FlexFlow;
 ComputationGraph get_single_operator_computation_graph() {
   ComputationGraphBuilder b;
 
-  size_t batch_size = 8;
-  size_t in_channels = 16;
-  size_t out_channels = 12;
+  nonnegative_int batch_size = 8_n;
+  nonnegative_int in_channels = 16_n;
+  nonnegative_int out_channels = 12_n;
   TensorShape input_shape = TensorShape{
-      TensorDims{FFOrdered<size_t>{
+      TensorDims{FFOrdered<nonnegative_int>{
           batch_size,
           in_channels,
           out_channels,
@@ -70,7 +70,7 @@ tl::expected<ComputationGraph, std::string>
   } else if (model_name == "bert") {
     return get_bert_computation_graph(get_default_bert_config());
   } else if (model_name == "split_test") {
-    int batch_size = 8;
+    nonnegative_int batch_size = 8_n;
     return get_split_test_computation_graph(batch_size);
   } else if (model_name == "single_operator") {
     return get_single_operator_computation_graph();
@@ -101,13 +101,12 @@ tl::expected<JsonSPModelExport, std::string>
     result.value();
   });
 
-  std::pair<V1ComputationGraph, bidict<int, layer_guid_t>> v1_result =
-      to_v1_including_node_numbering(computation_graph);
+  std::pair<V1ComputationGraph, bidict<nonnegative_int, layer_guid_t>>
+      v1_result = to_v1_including_node_numbering(computation_graph);
   V1ComputationGraph v1_cg = v1_result.first;
-  bidict<int, layer_guid_t> layer_numbering = v1_result.second;
-  GenericBinarySPDecompositionTree<int> v1_sp_decomposition =
-      transform(sp_decomposition.raw_tree,
-                [&](layer_guid_t const &l) { return layer_numbering.at_r(l); });
+  bidict<nonnegative_int, layer_guid_t> layer_numbering = v1_result.second;
+  V1BinarySPDecomposition v1_sp_decomposition =
+      to_v1(sp_decomposition, layer_numbering);
 
   return JsonSPModelExport{
       v1_sp_decomposition,

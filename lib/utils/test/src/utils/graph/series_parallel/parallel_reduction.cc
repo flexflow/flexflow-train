@@ -14,7 +14,7 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("find_parallel_reduction") {
     MultiDiGraph g = MultiDiGraph::create<AdjacencyMultiDiGraph>();
     SUBCASE("base case") {
-      std::vector<Node> n = add_nodes(g, 2);
+      std::vector<Node> n = add_nodes(g, 2_n);
       std::vector<MultiDiEdge> e = add_edges(g,
                                              {
                                                  {n.at(0), n.at(1)},
@@ -28,7 +28,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("does not apply when there is only one edge") {
-      std::vector<Node> n = add_nodes(g, 2);
+      std::vector<Node> n = add_nodes(g, 2_n);
       std::vector<MultiDiEdge> e = add_edges(g,
                                              {
                                                  {n.at(0), n.at(1)},
@@ -40,7 +40,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("requires both ends be the same") {
-      std::vector<Node> n = add_nodes(g, 3);
+      std::vector<Node> n = add_nodes(g, 3_n);
       SUBCASE("branch out") {
         std::vector<MultiDiEdge> e = add_edges(g,
                                                {
@@ -67,7 +67,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("finds one reduction when there are multiple") {
-      std::vector<Node> n = add_nodes(g, 2);
+      std::vector<Node> n = add_nodes(g, 2_n);
       std::vector<MultiDiEdge> e = add_edges(g,
                                              {
                                                  {n.at(0), n.at(1)},
@@ -86,7 +86,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("in larger graph") {
-      std::vector<Node> n = add_nodes(g, 5);
+      std::vector<Node> n = add_nodes(g, 5_n);
       std::vector<MultiDiEdge> e = add_edges(g,
                                              {
                                                  {n.at(0), n.at(1)},
@@ -109,7 +109,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     MultiDiGraph g = MultiDiGraph::create<AdjacencyMultiDiGraph>();
 
     SUBCASE("base case") {
-      std::vector<Node> n = add_nodes(g, 2);
+      std::vector<Node> n = add_nodes(g, 2_n);
       std::vector<MultiDiEdge> e = add_edges(g,
                                              {
                                                  {n.at(0), n.at(1)},
@@ -142,7 +142,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("in larger graph") {
-      std::vector<Node> n = add_nodes(g, 5);
+      std::vector<Node> n = add_nodes(g, 5_n);
       std::vector<MultiDiEdge> e = add_edges(g,
                                              {
                                                  {n.at(0), n.at(1)},

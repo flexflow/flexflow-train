@@ -4,7 +4,7 @@
 #include "utils/containers/values.h"
 #include "utils/graph/dataflow_graph/algorithms/get_subgraph_outgoing_edges.h"
 #include "utils/graph/instances/unordered_set_labelled_open_dataflow_graph.h"
-#include "utils/graph/labelled_dataflow_graph/algorithms/create_lazy_copy_of_labelled_open_dataflow_graph_view.h"
+#include "utils/graph/labelled_dataflow_graph/algorithms/create_lazy_copy_of_labelled_dataflow_graph_view.h"
 #include "utils/graph/labelled_dataflow_graph/algorithms/view_as_labelled_open_dataflow_graph.h"
 #include "utils/graph/labelled_open_dataflow_graph/algorithms/as_dot.h"
 #include "utils/graph/labelled_open_dataflow_graph/algorithms/find_isomorphism.h"
@@ -54,12 +54,6 @@ ParallelComputationGraph pcg_from_sub_pcg_by_dropping_inputs(
               UnorderedSetLabelledOpenDataflowGraph<ParallelLayerAttrs,
                                                     ParallelTensorAttrs>>(
               sub_pcg.raw_graph)};
-  // return ParallelComputationGraph{
-  //   make_lazy_copy_of<
-  //     UnorderedSetLabelledOpenDataflowGraph<ParallelLayerAttrs,
-  //     ParallelTensorAttrs>
-  //     >(sub_pcg.raw_graph)
-  // };
 }
 
 parallel_layer_guid_t
@@ -194,33 +188,34 @@ bool sub_pcgs_are_isomorphic(SubParallelComputationGraph const &lhs,
 }
 
 std::string as_dot(SubParallelComputationGraph const &spcg) {
-  std::function<std::string(ParallelLayerAttrs const &)> get_node_label =
-      [](ParallelLayerAttrs const &a) -> std::string {
-    RecordFormatter r = as_dot(a.op_attrs);
-
-    if (a.name.has_value()) {
-      RecordFormatter rr;
-      rr << "Name" << a.name.value();
-      r << rr;
-    }
-
-    std::ostringstream oss;
-    oss << r;
-    return oss.str();
-  };
-
-  std::function<std::string(ParallelTensorAttrs const &)> get_input_label =
-      [](ParallelTensorAttrs const &a) -> std::string {
-    RecordFormatter r;
-
-    r << fmt::to_string(a.shape);
-
-    std::ostringstream oss;
-    oss << r;
-    return oss.str();
-  };
-
-  return as_dot(spcg.raw_graph, get_node_label, get_input_label);
+  NOT_IMPLEMENTED();
+  // std::function<std::string(ParallelLayerAttrs const &)> get_node_label =
+  //     [](ParallelLayerAttrs const &a) -> std::string {
+  //   RecordFormatter r = as_dot(a.op_attrs);
+  //
+  //   if (a.name.has_value()) {
+  //     RecordFormatter rr;
+  //     rr << "Name" << a.name.value();
+  //     r << rr;
+  //   }
+  //
+  //   std::ostringstream oss;
+  //   oss << r;
+  //   return oss.str();
+  // };
+  //
+  // std::function<std::string(ParallelTensorAttrs const &)> get_input_label =
+  //     [](ParallelTensorAttrs const &a) -> std::string {
+  //   RecordFormatter r;
+  //
+  //   r << fmt::to_string(a.shape);
+  //
+  //   std::ostringstream oss;
+  //   oss << r;
+  //   return oss.str();
+  // };
+  //
+  // return as_dot(spcg.raw_graph, get_node_label, get_input_label);
 }
 
 void debug_print_dot(SubParallelComputationGraph const &spcg) {

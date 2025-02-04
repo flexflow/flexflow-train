@@ -17,6 +17,7 @@
 #include "kernels/transpose_kernels.h"
 #include "op-attrs/get_output_shapes.h"
 #include "op-attrs/ops/transpose.h"
+#include "utils/integer_conversions.h"
 
 using namespace FlexFlow::Kernels::Transpose;
 
@@ -49,8 +50,6 @@ static DeviceSpecificDeviceStates
 OpTaskInvocation forward(TransposeAttrs const &attrs) {
   OpTaskBinding binding;
 
-  binding.bind_arg(PER_DEVICE_STATE,
-                   per_device_op_state<TransposePerDeviceState>());
   binding.bind_arg(PROFILING, profiling_settings());
 
   binding.bind(INPUT, input_tensor(0));
@@ -61,8 +60,7 @@ OpTaskInvocation forward(TransposeAttrs const &attrs) {
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  auto per_device_state =
-      acc.get_argument<TransposePerDeviceState>(PER_DEVICE_STATE);
+  auto attrs = acc.get_argument<TransposeAttrs>(ATTRS);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
@@ -70,7 +68,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   return profile(forward_kernel,
                  profiling,
                  "[Transpose] Forward_time = {:.2lf} [ms]",
-                 per_device_state,
+                 attrs,
                  input,
                  output);
 }
@@ -78,8 +76,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  auto per_device_state =
-      acc.get_argument<TransposePerDeviceState>(PER_DEVICE_STATE);
+  auto attrs = acc.get_argument<TransposeAttrs>(ATTRS);
 
   auto input_grad = acc.get_tensor_grad<Permissions::WO>(INPUT);
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
@@ -87,7 +84,7 @@ static std::optional<float>
   return profile(backward_kernel,
                  profiling,
                  "[Transpose] Backward_time = {:.2lf} [ms]",
-                 per_device_state,
+                 attrs,
                  input_grad,
                  output_grad);
 }
@@ -101,9 +98,11 @@ OpTaskInvocation backward(TransposeAttrs const &attrs) {
 TaskImplFunction get_transpose_init_task_impl() {
   return TaskImplFunction{InitOpTaskImplFunction{init_task_impl}};
 }
+
 TaskImplFunction get_transpose_fwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{forward_task_impl}};
 }
+
 TaskImplFunction get_transpose_bwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{backward_task_impl}};
 }
@@ -115,25 +114,24 @@ OpTaskSignature get_transpose_init_signature() {
   init.add_return_value<TransposePerDeviceState>();
   return init;
 }
+
 OpTaskSignature get_transpose_fwd_signature() {
   OpTaskSignature fwd(OpTaskType::FWD);
 
   fwd.add_arg_slot<ProfilingSettings>(PROFILING);
-  fwd.add_unchecked_arg_slot<TransposePerDeviceState>(PER_DEVICE_STATE);
 
   fwd.add_input_slot(INPUT);
   fwd.add_output_slot(OUTPUT);
   return fwd;
 }
+
 OpTaskSignature get_transpose_bwd_signature() {
   OpTaskSignature bwd = infer_bwd_signature(get_transpose_fwd_signature());
   return bwd;
 }
 
 std::vector<task_id_t> get_task_ids(TransposeAttrs const &) {
-  return {task_id_t::TRANSPOSE_INIT_TASK_ID,
-          task_id_t::TRANSPOSE_FWD_TASK_ID,
-          task_id_t::TRANSPOSE_BWD_TASK_ID};
+  return {task_id_t::TRANSPOSE_INIT_TASK_ID, task_id_t::TRANSPOSE_FWD_TASK_ID, task_id_t::TRANSPOSE_BWD_TASK_ID};
 }
 
 } // namespace FlexFlow

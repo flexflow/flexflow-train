@@ -11,7 +11,7 @@ features = [
 
 includes = [
   "op-attrs/ops/attention_attrs.dtg.h", 
-  "op-attrs/ops/batch_matmul.dtg.h", 
+  "op-attrs/ops/batch_matmul_attrs.dtg.h", 
   "op-attrs/ops/batch_norm_attrs.dtg.h", 
   "op-attrs/ops/broadcast_attrs.dtg.h",
   "op-attrs/ops/cast_attrs.dtg.h", 

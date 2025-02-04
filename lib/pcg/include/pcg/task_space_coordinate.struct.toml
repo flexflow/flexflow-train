@@ -1,0 +1,24 @@
+namespace = "FlexFlow"
+name = "TaskSpaceCoordinate"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  # "rapidcheck",
+  "fmt",
+]
+
+includes = [ 
+  "<vector>",
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
+src_includes = [
+  "utils/hash/vector.h",
+  "utils/fmt/vector.h",
+]
+
+[[fields]]
+name = "raw_coord"
+type = "std::vector<::FlexFlow::nonnegative_int>"

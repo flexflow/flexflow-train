@@ -4,11 +4,11 @@
 namespace FlexFlow {
 
 ReplicaParallelDimSet empty_replica_parallel_dim_set() {
-  return ReplicaParallelDimSet{SumDegree{1}, DiscardCopyDegree{1}};
+  return ReplicaParallelDimSet{SumDegree{1_n}, DiscardCopyDegree{1_n}};
 }
 
-int get_order_of_replica_type(ReplicaParallelDimSet const &s,
-                              ReplicaType replica_type) {
+nonnegative_int get_degree_of_replica_type(ReplicaParallelDimSet const &s,
+                                           ReplicaType replica_type) {
   switch (replica_type) {
     case ReplicaType::SUM:
       return s.sum_degree.value;

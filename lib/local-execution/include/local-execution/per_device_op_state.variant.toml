@@ -19,7 +19,6 @@ includes = [
   "kernels/reshape_kernels.h",
   "kernels/softmax_kernels.h",
   "kernels/topk_kernels.h",
-  "kernels/transpose_kernels.h",
 ]
 
 [[values]]
@@ -81,7 +80,3 @@ key = "softmax_per_device_state"
 [[values]]
 type = "::FlexFlow::TopKPerDeviceState"
 key = "topk_per_device_state"
-
-[[values]]
-type = "::FlexFlow::TransposePerDeviceState"
-key = "transpose_per_device_state"

@@ -7,7 +7,6 @@
 #include "op-attrs/datatype.h"
 #include "utils/exception.h"
 #include "utils/required.h"
-#include "utils/variant.h"
 
 namespace FlexFlow {
 
@@ -18,8 +17,8 @@ public:
     if (this->data_type == DT) {
       return static_cast<real_type_t<DT> *>(this->ptr);
     } else {
-      throw mk_runtime_error(
-          "Invalid access data type ({} != {})", this->data_type, DT);
+      throw mk_runtime_error(fmt::format(
+          "Invalid access data type ({} != {})", this->data_type, DT));
     }
   }
 
@@ -49,8 +48,8 @@ public:
     if (this->data_type == DT) {
       return static_cast<real_type_t<DT> const *>(this->ptr);
     } else {
-      throw mk_runtime_error(
-          "Invalid access data type ({} != {})", this->data_type, DT);
+      throw mk_runtime_error(fmt::format(
+          "Invalid access data type ({} != {})", this->data_type, DT));
     }
   }
 
@@ -97,7 +96,7 @@ typename data_type_enum_to_class<DT>::type *
     return static_cast<real_type_t<DT> *>(a.ptr);
   } else {
     throw mk_runtime_error(
-        "Invalid access data type ({} != {})", a.data_type, DT);
+        fmt::format("Invalid access data type ({} != {})", a.data_type, DT));
   }
 }
 
@@ -118,7 +117,7 @@ typename data_type_enum_to_class<DT>::type const *
     return static_cast<real_type_t<DT> const *>(a.ptr);
   } else {
     throw mk_runtime_error(
-        "Invalid access data type ({} != {})", a.data_type, DT);
+        fmt::format("Invalid access data type ({} != {})", a.data_type, DT));
   }
 }
 

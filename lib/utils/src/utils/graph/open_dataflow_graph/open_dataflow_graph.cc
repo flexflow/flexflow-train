@@ -4,7 +4,7 @@ namespace FlexFlow {
 
 NodeAddedResult
     OpenDataflowGraph::add_node(std::vector<OpenDataflowValue> const &inputs,
-                                int num_outputs) {
+                                nonnegative_int num_outputs) {
   return this->get_interface().add_node(inputs, num_outputs);
 }
 

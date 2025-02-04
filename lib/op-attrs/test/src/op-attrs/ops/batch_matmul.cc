@@ -6,20 +6,20 @@ using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_output_shape(BatchMatmulAttrs, TensorShape)") {
-    size_t b = 4;
-    size_t m = 6;
-    size_t n = 8;
-    size_t p = 10;
+    nonnegative_int b = 4_n;
+    nonnegative_int m = 6_n;
+    nonnegative_int n = 8_n;
+    nonnegative_int p = 10_n;
 
     BatchMatmulAttrs attrs = BatchMatmulAttrs{
-        /*a_seq_length_dim=*/0, // TODO figure out if these arguments are still
-                                // relevant
-        /*b_seq_length_dim=*/0,
+        /*a_seq_length_dim=*/0_n, // TODO figure out if these arguments are
+                                  // still relevant
+        /*b_seq_length_dim=*/0_n,
     };
 
     TensorShape input_lhs_shape = TensorShape{
         TensorDims{
-            FFOrdered<size_t>{
+            FFOrdered<nonnegative_int>{
                 b,
                 n,
                 m,
@@ -31,7 +31,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("valid") {
       TensorShape input_rhs_shape = TensorShape{
           TensorDims{
-              FFOrdered<size_t>{
+              FFOrdered<nonnegative_int>{
                   b,
                   m,
                   p,
@@ -45,7 +45,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       tl::expected<TensorShape, std::string> correct_output_shape = TensorShape{
           TensorDims{
-              FFOrdered<size_t>{
+              FFOrdered<nonnegative_int>{
                   b,
                   n,
                   p,
@@ -60,8 +60,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("mismatched b") {
       TensorShape input_rhs_shape = TensorShape{
           TensorDims{
-              FFOrdered<size_t>{
-                  b + 1,
+              FFOrdered<nonnegative_int>{
+                  b + 1_n,
                   m,
                   p,
               },
@@ -78,9 +78,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("mismatched m") {
       TensorShape input_rhs_shape = TensorShape{
           TensorDims{
-              FFOrdered<size_t>{
+              FFOrdered<nonnegative_int>{
                   b,
-                  m + 1,
+                  m + 1_n,
                   p,
               },
           },
@@ -95,27 +95,27 @@ TEST_SUITE(FF_TEST_SUITE) {
   }
 
   TEST_CASE("get_output_shape(BatchMatmulAttrs, ParallelTensorShape)") {
-    size_t b = 2 * 2;
-    int o_b = 2;
-    size_t m = 3 * 3;
-    int o_m = 3;
-    size_t n = 5 * 5;
-    int o_n = 5;
-    size_t p = 7 * 7;
-    int o_p = 7;
-    int o_sum = 11;
+    nonnegative_int b = 2_n * 2_n;
+    nonnegative_int o_b = 2_n;
+    nonnegative_int m = 3_n * 3_n;
+    nonnegative_int o_m = 3_n;
+    nonnegative_int n = 5_n * 5_n;
+    nonnegative_int o_n = 5_n;
+    nonnegative_int p = 7_n * 7_n;
+    nonnegative_int o_p = 7_n;
+    nonnegative_int o_sum = 11_n;
 
     BatchMatmulAttrs attrs = BatchMatmulAttrs{
-        /*a_seq_length_dim=*/0, // TODO figure out if these arguments are still
-                                // relevant
-        /*b_seq_length_dim=*/0,
+        /*a_seq_length_dim=*/0_n, // TODO figure out if these arguments are
+                                  // still relevant
+        /*b_seq_length_dim=*/0_n,
     };
 
     auto make_lhs = [&](SumDegree o_sum,
                         DiscardCopyDegree o_eq,
-                        int o_b,
-                        int o_n,
-                        int o_m) {
+                        nonnegative_int o_b,
+                        nonnegative_int o_n,
+                        nonnegative_int o_m) {
       return ParallelTensorShape{
           ParallelTensorDims{
               FFOrdered<ShardParallelDim>{
@@ -134,9 +134,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     auto make_rhs = [&](SumDegree o_sum,
                         DiscardCopyDegree o_eq,
-                        int o_b,
-                        int o_m,
-                        int o_p) {
+                        nonnegative_int o_b,
+                        nonnegative_int o_m,
+                        nonnegative_int o_p) {
       return ParallelTensorShape{
           ParallelTensorDims{
               FFOrdered<ShardParallelDim>{
@@ -155,9 +155,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     auto make_output = [&](SumDegree o_sum,
                            DiscardCopyDegree o_eq,
-                           int o_b,
-                           int o_n,
-                           int o_p) {
+                           nonnegative_int o_b,
+                           nonnegative_int o_n,
+                           nonnegative_int o_p) {
       return ParallelTensorShape{
           ParallelTensorDims{
               FFOrdered<ShardParallelDim>{
@@ -177,10 +177,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("data parallel") {
       tl::expected<ParallelTensorShape, std::string> result = get_output_shape(
           attrs,
-          make_lhs(SumDegree{1}, DiscardCopyDegree{1}, o_b, 1, 1),
-          make_rhs(SumDegree{1}, DiscardCopyDegree{1}, o_b, 1, 1));
+          make_lhs(SumDegree{1_n}, DiscardCopyDegree{1_n}, o_b, 1_n, 1_n),
+          make_rhs(SumDegree{1_n}, DiscardCopyDegree{1_n}, o_b, 1_n, 1_n));
       tl::expected<ParallelTensorShape, std::string> correct =
-          make_output(SumDegree{1}, DiscardCopyDegree{1}, o_b, 1, 1);
+          make_output(SumDegree{1_n}, DiscardCopyDegree{1_n}, o_b, 1_n, 1_n);
 
       CHECK(result == correct);
     }
@@ -188,10 +188,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("n parallel") {
       tl::expected<ParallelTensorShape, std::string> result = get_output_shape(
           attrs,
-          make_lhs(SumDegree{1}, DiscardCopyDegree{1}, 1, o_n, 1),
-          make_rhs(SumDegree{1}, DiscardCopyDegree{o_n}, 1, 1, 1));
+          make_lhs(SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, o_n, 1_n),
+          make_rhs(SumDegree{1_n}, DiscardCopyDegree{o_n}, 1_n, 1_n, 1_n));
       tl::expected<ParallelTensorShape, std::string> correct =
-          make_output(SumDegree{1}, DiscardCopyDegree{1}, 1, o_n, 1);
+          make_output(SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, o_n, 1_n);
 
       CHECK(result == correct);
     }
@@ -199,10 +199,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("p parallel") {
       tl::expected<ParallelTensorShape, std::string> result = get_output_shape(
           attrs,
-          make_lhs(SumDegree{1}, DiscardCopyDegree{o_p}, 1, 1, 1),
-          make_rhs(SumDegree{1}, DiscardCopyDegree{1}, 1, 1, o_p));
+          make_lhs(SumDegree{1_n}, DiscardCopyDegree{o_p}, 1_n, 1_n, 1_n),
+          make_rhs(SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, 1_n, o_p));
       tl::expected<ParallelTensorShape, std::string> correct =
-          make_output(SumDegree{1}, DiscardCopyDegree{1}, 1, 1, o_p);
+          make_output(SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, 1_n, o_p);
 
       CHECK(result == correct);
     }
@@ -210,10 +210,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("reduction parallel") {
       tl::expected<ParallelTensorShape, std::string> result = get_output_shape(
           attrs,
-          make_lhs(SumDegree{1}, DiscardCopyDegree{1}, 1, 1, o_m),
-          make_rhs(SumDegree{1}, DiscardCopyDegree{1}, 1, o_m, 1));
+          make_lhs(SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, 1_n, o_m),
+          make_rhs(SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, o_m, 1_n));
       tl::expected<ParallelTensorShape, std::string> correct =
-          make_output(SumDegree{o_m}, DiscardCopyDegree{1}, 1, 1, 1);
+          make_output(SumDegree{o_m}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n);
 
       CHECK(result == correct);
     }
@@ -221,10 +221,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("propagate reduction lhs") {
       tl::expected<ParallelTensorShape, std::string> result = get_output_shape(
           attrs,
-          make_lhs(SumDegree{o_sum}, DiscardCopyDegree{1}, 1, 1, 1),
-          make_rhs(SumDegree{1}, DiscardCopyDegree{o_sum}, 1, 1, 1));
+          make_lhs(SumDegree{o_sum}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n),
+          make_rhs(SumDegree{1_n}, DiscardCopyDegree{o_sum}, 1_n, 1_n, 1_n));
       tl::expected<ParallelTensorShape, std::string> correct =
-          make_output(SumDegree{o_sum}, DiscardCopyDegree{1}, 1, 1, 1);
+          make_output(SumDegree{o_sum}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n);
 
       CHECK(result == correct);
     }
@@ -232,10 +232,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("propagate reduction rhs") {
       tl::expected<ParallelTensorShape, std::string> result = get_output_shape(
           attrs,
-          make_lhs(SumDegree{1}, DiscardCopyDegree{o_sum}, 1, 1, 1),
-          make_rhs(SumDegree{o_sum}, DiscardCopyDegree{1}, 1, 1, 1));
+          make_lhs(SumDegree{1_n}, DiscardCopyDegree{o_sum}, 1_n, 1_n, 1_n),
+          make_rhs(SumDegree{o_sum}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n));
       tl::expected<ParallelTensorShape, std::string> correct =
-          make_output(SumDegree{o_sum}, DiscardCopyDegree{1}, 1, 1, 1);
+          make_output(SumDegree{o_sum}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n);
 
       CHECK(result == correct);
     }
@@ -243,10 +243,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("reduction lhs & reduction rhs") {
       tl::expected<ParallelTensorShape, std::string> result = get_output_shape(
           attrs,
-          make_lhs(SumDegree{o_sum}, DiscardCopyDegree{o_sum}, 1, 1, 1),
-          make_rhs(SumDegree{o_sum}, DiscardCopyDegree{o_sum}, 1, 1, 1));
-      tl::expected<ParallelTensorShape, std::string> correct =
-          make_output(SumDegree{o_sum * o_sum}, DiscardCopyDegree{1}, 1, 1, 1);
+          make_lhs(SumDegree{o_sum}, DiscardCopyDegree{o_sum}, 1_n, 1_n, 1_n),
+          make_rhs(SumDegree{o_sum}, DiscardCopyDegree{o_sum}, 1_n, 1_n, 1_n));
+      tl::expected<ParallelTensorShape, std::string> correct = make_output(
+          SumDegree{o_sum * o_sum}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n);
 
       CHECK(result == correct);
     }
@@ -254,8 +254,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("reduction lhs & rhs (invalid)") {
       tl::expected<ParallelTensorShape, std::string> result = get_output_shape(
           attrs,
-          make_lhs(SumDegree{o_sum}, DiscardCopyDegree{1}, 1, 1, 1),
-          make_rhs(SumDegree{o_sum}, DiscardCopyDegree{1}, 1, 1, 1));
+          make_lhs(SumDegree{o_sum}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n),
+          make_rhs(SumDegree{o_sum}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n));
 
       CHECK_MESSAGE(
           !result.has_value(), "Unexpected successful value: ", result);
@@ -264,10 +264,11 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("reduction lhs & n") {
       tl::expected<ParallelTensorShape, std::string> result = get_output_shape(
           attrs,
-          make_lhs(SumDegree{o_sum}, DiscardCopyDegree{1}, 1, o_n, 1),
-          make_rhs(SumDegree{1}, DiscardCopyDegree{o_sum * o_n}, 1, 1, 1));
+          make_lhs(SumDegree{o_sum}, DiscardCopyDegree{1_n}, 1_n, o_n, 1_n),
+          make_rhs(
+              SumDegree{1_n}, DiscardCopyDegree{o_sum * o_n}, 1_n, 1_n, 1_n));
       tl::expected<ParallelTensorShape, std::string> correct =
-          make_output(SumDegree{o_sum}, DiscardCopyDegree{1}, 1, o_n, 1);
+          make_output(SumDegree{o_sum}, DiscardCopyDegree{1_n}, 1_n, o_n, 1_n);
 
       CHECK(result == correct);
     }
@@ -275,10 +276,11 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("reduction lhs & reduction rhs & n") {
       tl::expected<ParallelTensorShape, std::string> result = get_output_shape(
           attrs,
-          make_lhs(SumDegree{o_sum}, DiscardCopyDegree{o_sum}, 1, o_n, 1),
-          make_rhs(SumDegree{o_sum}, DiscardCopyDegree{o_sum * o_n}, 1, 1, 1));
+          make_lhs(SumDegree{o_sum}, DiscardCopyDegree{o_sum}, 1_n, o_n, 1_n),
+          make_rhs(
+              SumDegree{o_sum}, DiscardCopyDegree{o_sum * o_n}, 1_n, 1_n, 1_n));
       tl::expected<ParallelTensorShape, std::string> correct = make_output(
-          SumDegree{o_sum * o_sum}, DiscardCopyDegree{1}, 1, o_n, 1);
+          SumDegree{o_sum * o_sum}, DiscardCopyDegree{1_n}, 1_n, o_n, 1_n);
 
       CHECK(result == correct);
     }
@@ -286,11 +288,15 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("reduction lhs & reduction rhs & n & m") {
       tl::expected<ParallelTensorShape, std::string> result = get_output_shape(
           attrs,
-          make_lhs(SumDegree{o_sum}, DiscardCopyDegree{o_sum}, 1, o_n, o_m),
+          make_lhs(SumDegree{o_sum}, DiscardCopyDegree{o_sum}, 1_n, o_n, o_m),
           make_rhs(
-              SumDegree{o_sum}, DiscardCopyDegree{o_sum * o_n}, 1, o_m, 1));
-      tl::expected<ParallelTensorShape, std::string> correct = make_output(
-          SumDegree{o_sum * o_sum * o_m}, DiscardCopyDegree{1}, 1, o_n, 1);
+              SumDegree{o_sum}, DiscardCopyDegree{o_sum * o_n}, 1_n, o_m, 1_n));
+      tl::expected<ParallelTensorShape, std::string> correct =
+          make_output(SumDegree{o_sum * o_sum * o_m},
+                      DiscardCopyDegree{1_n},
+                      1_n,
+                      o_n,
+                      1_n);
 
       CHECK(result == correct);
     }

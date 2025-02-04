@@ -21,12 +21,13 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("input graphs are not empty") {
       DataflowGraphInput g1_i1 = g1.add_input();
-      NodeAddedResult g1_n1_added = g1.add_node({OpenDataflowValue{g1_i1}}, 1);
+      NodeAddedResult g1_n1_added =
+          g1.add_node({OpenDataflowValue{g1_i1}}, 1_n);
       Node g1_n1_node = g1_n1_added.node;
       DataflowOutput g1_n1_output = get_only(g1_n1_added.outputs);
 
       NodeAddedResult g1_n2_added = g1.add_node(
-          {OpenDataflowValue{g1_i1}, OpenDataflowValue{g1_n1_output}}, 1);
+          {OpenDataflowValue{g1_i1}, OpenDataflowValue{g1_n1_output}}, 1_n);
       Node g1_n2_node = g1_n2_added.node;
 
       SUBCASE("one input graph is empty") {
@@ -39,11 +40,11 @@ TEST_SUITE(FF_TEST_SUITE) {
       SUBCASE("input graphs are isomorphic") {
         DataflowGraphInput g2_i1 = g2.add_input();
         NodeAddedResult g2_n1_added =
-            g2.add_node({OpenDataflowValue{g2_i1}}, 1);
+            g2.add_node({OpenDataflowValue{g2_i1}}, 1_n);
         Node g2_n1_node = g2_n1_added.node;
         DataflowOutput g2_n1_output = get_only(g2_n1_added.outputs);
         NodeAddedResult g2_n2_added = g2.add_node(
-            {OpenDataflowValue{g2_i1}, OpenDataflowValue{g2_n1_output}}, 1);
+            {OpenDataflowValue{g2_i1}, OpenDataflowValue{g2_n1_output}}, 1_n);
         Node g2_n2_node = g2_n2_added.node;
 
         bool correct = true;
@@ -57,11 +58,11 @@ TEST_SUITE(FF_TEST_SUITE) {
         DataflowGraphInput g2_i1 = g2.add_input();
         DataflowGraphInput g2_i2 = g2.add_input();
         NodeAddedResult g2_n1_added =
-            g2.add_node({OpenDataflowValue{g2_i1}}, 1);
+            g2.add_node({OpenDataflowValue{g2_i1}}, 1_n);
         Node g2_n1_node = g2_n1_added.node;
         DataflowOutput g2_n1_output = get_only(g2_n1_added.outputs);
         NodeAddedResult g2_n2_added = g2.add_node(
-            {OpenDataflowValue{g2_i1}, OpenDataflowValue{g2_n1_output}}, 1);
+            {OpenDataflowValue{g2_i1}, OpenDataflowValue{g2_n1_output}}, 1_n);
         Node g2_n2_node = g2_n2_added.node;
 
         bool correct = false;
@@ -73,12 +74,12 @@ TEST_SUITE(FF_TEST_SUITE) {
       SUBCASE("input graphs are not isomorphic (different connectivity)") {
         DataflowGraphInput g2_i1 = g2.add_input();
         NodeAddedResult g2_n1_added =
-            g2.add_node({OpenDataflowValue{g2_i1}}, 1);
+            g2.add_node({OpenDataflowValue{g2_i1}}, 1_n);
         Node g2_n1_node = g2_n1_added.node;
         DataflowOutput g2_n1_output = get_only(g2_n1_added.outputs);
         NodeAddedResult g2_n2_added = g2.add_node(
             {OpenDataflowValue{g2_n1_output}, OpenDataflowValue{g2_n1_output}},
-            1);
+            1_n);
         Node g2_n2_node = g2_n2_added.node;
 
         bool correct = false;
@@ -90,14 +91,14 @@ TEST_SUITE(FF_TEST_SUITE) {
       SUBCASE("input graphs are not isomorphic (different numbers of nodes)") {
         DataflowGraphInput g2_i1 = g2.add_input();
         NodeAddedResult g2_n1_added =
-            g2.add_node({OpenDataflowValue{g2_i1}}, 1);
+            g2.add_node({OpenDataflowValue{g2_i1}}, 1_n);
         Node g2_n1_node = g2_n1_added.node;
         DataflowOutput g2_n1_output = get_only(g2_n1_added.outputs);
         NodeAddedResult g2_n2_added = g2.add_node(
-            {OpenDataflowValue{g2_i1}, OpenDataflowValue{g2_n1_output}}, 1);
+            {OpenDataflowValue{g2_i1}, OpenDataflowValue{g2_n1_output}}, 1_n);
         Node g2_n2_node = g2_n2_added.node;
 
-        NodeAddedResult g2_n3_added = g2.add_node({}, 0);
+        NodeAddedResult g2_n3_added = g2.add_node({}, 0_n);
         Node g2_n3_node = g2_n3_added.node;
 
         bool correct = false;

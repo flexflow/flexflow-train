@@ -6,7 +6,7 @@ features = [
 
 includes = [
   "kernels/attention_kernels.h",
-  "kernels/batch_norm_kernels.h",
+  "kernels/batch_norm_per_device_state.dtg.h",
   "kernels/conv_2d_kernels.h",
   "kernels/dropout_kernels.h",
   "kernels/element_binary_kernels.h",
@@ -84,7 +84,3 @@ key = "device_specific_softmax_per_device_state"
 [[values]]
 type = "::FlexFlow::DeviceSpecific<::FlexFlow::TopKPerDeviceState>"
 key = "device_specific_topk_per_device_state"
-
-[[values]]
-type = "::FlexFlow::DeviceSpecific<::FlexFlow::TransposePerDeviceState>"
-key = "device_specific_transpose_per_device_state"

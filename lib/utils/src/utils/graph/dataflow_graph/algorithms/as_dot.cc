@@ -1,27 +1,36 @@
 #include "utils/graph/dataflow_graph/algorithms/as_dot.h"
+#include "utils/containers/generate_map.h"
+#include "utils/containers/map_keys.h"
 #include "utils/dot_file.h"
 #include "utils/graph/dataflow_graph/algorithms.h"
+#include "utils/graph/dataflow_graph/algorithms/view_as_open_dataflow_graph.h"
+#include "utils/graph/labelled_open_dataflow_graph/algorithms/with_labelling.h"
 #include "utils/graph/node/algorithms.h"
+#include "utils/graph/render_dot.h"
 #include "utils/record_formatter.h"
 
 namespace FlexFlow {
 
-// WARN(@lockshaw): doing this all with string ids is ugly and error prone,
-// as it requires duplicating the stringification logic across functions.
-//
-// Fixing this is tracked in issue
 std::string as_dot(DataflowGraphView const &g) {
-  std::ostringstream oss;
-  DotFile<std::string> dot = DotFile<std::string>{oss};
-
-  std::function<std::string(Node const &)> get_node_label =
-      [](Node const &n) -> std::string {
-    return fmt::format("n{}", n.raw_uid);
+  auto get_node_attrs = [](Node const &) {
+    return std::unordered_map<std::string, std::string>{};
   };
-  as_dot(dot, g, get_node_label);
 
-  dot.close();
-  return oss.str();
+  std::unordered_map<Node, std::unordered_map<std::string, std::string>>
+      node_labels = generate_map(get_nodes(g), get_node_attrs);
+
+  auto get_output_label = [](DataflowOutput const &o) {
+    return fmt::to_string(o.idx);
+  };
+
+  std::unordered_map<DataflowOutput, std::string> output_labels =
+      generate_map(get_all_dataflow_outputs(g), get_output_label);
+  std::unordered_map<OpenDataflowValue, std::string> value_labels =
+      map_keys(output_labels,
+               [](DataflowOutput const &o) { return OpenDataflowValue{o}; });
+
+  return render_dot(with_labelling(
+      view_as_open_dataflow_graph(g), node_labels, value_labels));
 }
 
 void as_dot(DotFile<std::string> &dot,
@@ -29,9 +38,13 @@ void as_dot(DotFile<std::string> &dot,
             std::function<std::string(Node const &)> const &get_node_label) {
   auto get_node_name = [](Node n) { return fmt::format("n{}", n.raw_uid); };
 
-  auto get_input_field = [](int idx) { return fmt::format("i{}", idx); };
+  auto get_input_field = [](nonnegative_int idx) {
+    return fmt::format("i{}", idx);
+  };
 
-  auto get_output_field = [](int idx) { return fmt::format("o{}", idx); };
+  auto get_output_field = [](nonnegative_int idx) {
+    return fmt::format("o{}", idx);
+  };
 
   for (Node const &n : get_nodes(g)) {
     std::vector<DataflowInput> n_inputs = get_dataflow_inputs(g, n);
