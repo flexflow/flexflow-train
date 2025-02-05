@@ -27,12 +27,12 @@ name = "shape"
 type = "::FlexFlow::TensorShape"
 
 [[fields]]
-name = "initializer"
-type = "std::optional<::FlexFlow::InitializerAttrs>"
-
-[[fields]]
 name = "sync_type"
 type = "std::optional<::FlexFlow::ParamSync>"
+
+[[fields]]
+name = "initializer"
+type = "std::optional<::FlexFlow::InitializerAttrs>"
 
 [[fields]]
 name = "create_gradients"

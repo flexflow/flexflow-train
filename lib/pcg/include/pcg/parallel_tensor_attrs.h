@@ -9,6 +9,9 @@ namespace FlexFlow {
 
 TensorAttrs get_piece_attrs(ParallelTensorAttrs const &);
 
+ParallelTensorAttrs
+    parallel_tensor_attrs_from_tensor_attrs(TensorAttrs const &);
+
 } // namespace FlexFlow
 
 #endif
