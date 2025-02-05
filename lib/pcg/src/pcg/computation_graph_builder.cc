@@ -36,7 +36,7 @@ namespace FlexFlow {
 static TensorAttrs make_weight_attrs(
     TensorShape const &shape,
     std::optional<InitializerAttrs> const &initializer_attrs) {
-  return TensorAttrs{shape, initializer_attrs, std::nullopt, CreateGrad::YES};
+  return TensorAttrs{shape, std::nullopt, initializer_attrs, CreateGrad::YES};
 }
 
 static TensorAttrs make_output_attrs(TensorShape const &shape) {
@@ -85,7 +85,7 @@ tensor_guid_t ComputationGraphBuilder::create_weight(
     std::optional<ParamSync> param_sync,
     std::optional<std::string> const &maybe_name) {
   TensorAttrs tensor_attrs =
-      TensorAttrs{shape, initializer, param_sync, create_grad};
+      TensorAttrs{shape, param_sync, initializer, create_grad};
 
   return this->create_weight(tensor_attrs, maybe_name);
 }

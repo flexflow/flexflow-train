@@ -33,4 +33,10 @@ PCGOperatorAttrs pcg_op_attrs_from_compgraph_op_attrs(
   });
 }
 
+PCGOperatorAttrs
+    pcg_op_attrs_from_cg_op_attrs(ComputationGraphOpAttrs const &cg_attrs) {
+  return cg_attrs.visit<PCGOperatorAttrs>(
+      [](auto const &attrs) { return PCGOperatorAttrs(attrs); });
+}
+
 } // namespace FlexFlow
