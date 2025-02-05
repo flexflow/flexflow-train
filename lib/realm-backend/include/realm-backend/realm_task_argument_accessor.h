@@ -13,13 +13,13 @@ using TensorSlotsBacking = std::unordered_map<
     std::variant<GenericTensorAccessorW, std::vector<GenericTensorAccessorW>>>;
 using ArgSlotsBacking = std::unordered_map<slot_id_t, ConcreteArgSpec>;
 
-struct LocalTaskArgumentAccessor : public ITaskArgumentAccessor {
-  LocalTaskArgumentAccessor(Allocator const &allocator,
+struct RealmTaskArgumentAccessor : public ITaskArgumentAccessor {
+  RealmTaskArgumentAccessor(Allocator const &allocator,
                             TensorSlotsBacking const &tensor_slots_backing,
                             ArgSlotsBacking const &arg_slots_backing);
 
-  LocalTaskArgumentAccessor(LocalTaskArgumentAccessor const &) = delete;
-  LocalTaskArgumentAccessor(LocalTaskArgumentAccessor &&) = delete;
+  RealmTaskArgumentAccessor(RealmTaskArgumentAccessor const &) = delete;
+  RealmTaskArgumentAccessor(RealmTaskArgumentAccessor &&) = delete;
 
   ConcreteArgSpec const &get_concrete_arg(slot_id_t) const override;
 
@@ -48,7 +48,7 @@ TensorSlotsBackingWithoutAddresses
     get_slots_backing_without_tensor_allocation_addresses(
         TensorSlotsBacking const &);
 
-CHECK_RC_COPY_VIRTUAL_COMPLIANT(LocalTaskArgumentAccessor);
+CHECK_RC_COPY_VIRTUAL_COMPLIANT(RealmTaskArgumentAccessor);
 
 } // namespace FlexFlow
 
