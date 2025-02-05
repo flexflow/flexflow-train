@@ -6,31 +6,31 @@ using namespace Realm;
 
 void init_wrapper_task(const void *args, size_t arglen, const void *userdata,
                        size_t userlen, Processor p) {
-  RealmTaskArgs const &task_args =
-      *reinterpret_cast<const RealmTaskArgs *>(args);
+  RealmTaskArgs<DeviceSpecificDeviceStates> const &task_args =
+      *reinterpret_cast<const RealmTaskArgs<DeviceSpecificDeviceStates> *>(args);
   auto fn =
-      RealmTaskArgs.impl_function.get<InitOpTaskImplFunction>().function_ptr;
-  *reinterpret_cast<DeviceSpecificDeviceStates *>(RealmTaskArgs.result) =
-      fn(RealmTaskArgs.acc);
+      task_args.impl_function.get<InitOpTaskImplFunction>().function_ptr;
+  DeviceSpecificDeviceStates result = fn(task_args.accessor);
+  task_args.promise.set_value(std::move(result));
 }
 
 void fwdbwd_wrapper_task(const void *args, size_t arglen, const void *userdata,
                          size_t userlen, Processor p) {
-  RealmTaskArgs const &task_args =
-      *reinterpret_cast<const RealmTaskArgs *>(args);
+  RealmTaskArgs<std::optional<float>> const &task_args =
+      *reinterpret_cast<const RealmTaskArgs<std::optional<float>> *>(args);
   auto fn =
-      RealmTaskArgs.impl_function.get<FwdBwdOpTaskImplFunction>().function_ptr;
-  *reinterpret_cast<std::optional<float> *>(RealmTaskArgs.result) =
-      fn(RealmTaskArgs.acc);
+      task_args.impl_function.get<FwdBwdOpTaskImplFunction>().function_ptr;
+  std::optional<float> result = fn(task_args.accessor);
+  task_args.promise.set_value(std::move(result));
 }
 
 void generic_wrapper_task(const void *args, size_t arglen, const void *userdata,
                           size_t userlen, Processor p) {
-  RealmTaskArgs const &task_args =
-      *reinterpret_cast<const RealmTaskArgs *>(args);
+  RealmTaskArgs<void> const &task_args =
+      *reinterpret_cast<const RealmTaskArgs<void> *>(args);
   auto fn =
-      RealmTaskArgs.impl_function.get<GenericTaskImplFunction>().function_ptr;
-  fn(RealmTaskArgs.acc);
+      task_args.impl_function.get<GenericTaskImplFunction>().function_ptr;
+  fn(task_args.accessor);
 }
 
 void register_wrapper_tasks_init(Processor p, task_id_t task_id) {
