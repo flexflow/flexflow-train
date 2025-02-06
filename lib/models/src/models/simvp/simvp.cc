@@ -1,4 +1,8 @@
 #include "models/simvp/simvp.h"
+#include "models/simvp/simvp_model_type.dtg.h"
+#include "utils/containers/range.h"
+#include "utils/containers/subvec.h"
+#include "utils/containers/transform.h"
 
 namespace FlexFlow {
 
@@ -9,7 +13,7 @@ SimVPConfig get_default_simvp_config() {
       /*hid_T=*/256,
       /*N_S=*/4,
       /*N_T=*/4,
-      /*model_type=*/"gSTA",
+      /*model_type=*/FlexFlow::SimVPModelType::gSTA,
       /*mlp_ratio=*/8.0,
       /*drop=*/0.0,
       /*drop_path=*/0.0,
@@ -21,20 +25,17 @@ SimVPConfig get_default_simvp_config() {
 }
 
 std::vector<bool> create_simvp_samplings(size_t N_S, bool reverse) {
-  size_t N_S_even_floor = (N_S / 2) * 2;
+  auto const round_down_to_nearest_even = [](size_t num) -> size_t {
+    return (num / 2) * 2;
+  };
 
-  auto const change_to_true = [&](size_t idx) -> bool {
+  auto const change_to_true_at_idx = [&](size_t idx) -> bool {
     return (reverse == false) ? (idx % 2 == 1) : (idx % 2 == 0);
   };
 
-  std::vector<bool> samplings(N_S_even_floor, false);
-  for (size_t i = 0; i < N_S_even_floor; i++) {
-    if (change_to_true(i)) {
-      samplings[i] = true;
-    }
-  }
+  size_t N_S_even_floor = round_down_to_nearest_even(N_S);
 
-  return samplings;
+  return transform(range(N_S_even_floor), change_to_true_at_idx);
 }
 
 tensor_guid_t create_simvp_convsc(ComputationGraphBuilder &cgb,
@@ -85,7 +86,7 @@ std::pair<tensor_guid_t, tensor_guid_t>
                                  config.hid_S,
                                  config.hid_S,
                                  config.spatio_kernel_enc,
-                                 samplings[i],
+                                 samplings.at(i),
                                  false);
   }
 
@@ -113,8 +114,14 @@ tensor_guid_t create_simvp_gsta_meta_block(ComputationGraphBuilder &cgb,
                                            float mlp_ratio,
                                            float drop,
                                            float drop_path) {
-  tensor_guid_t z = create_simvp_ga_sub_block(
-      cgb, config, input, in_channels, 21, mlp_ratio, drop, drop_path);
+  tensor_guid_t z = create_simvp_ga_sub_block(/*cgb=*/cgb,
+                                              /*config=*/config,
+                                              /*input=*/input,
+                                              /*dim=*/in_channels,
+                                              /*kernel_size=*/21,
+                                              /*mlp_ratio=*/mlp_ratio,
+                                              /*drop=*/drop,
+                                              /*drop_path=*/drop_path);
 
   if (in_channels == out_channels) {
     return z;
@@ -131,30 +138,48 @@ tensor_guid_t create_simvp_middle_net(ComputationGraphBuilder &cgb,
                                       float mlp_ratio,
                                       float drop,
                                       float drop_path) {
-  if (config.model_type != "gSTA") {
+  if (config.model_type != FlexFlow::SimVPModelType::gSTA) {
     throw mk_runtime_error(
         fmt::format("Currently only model_type=gSTA is "
                     "supported, but found model_type={}. "
                     "If you need support for additional "
                     "model_type values, please create an issue.",
-                    config.model_type));
+                    format_as(config.model_type)));
   }
 
   tensor_guid_t z = embed;
 
   // Downsample
-  z = create_simvp_gsta_meta_block(
-      cgb, config, z, channel_in, channel_hid, mlp_ratio, drop, drop_path);
+  z = create_simvp_gsta_meta_block(/*cgb=*/cgb,
+                                   /*config=*/config,
+                                   /*input=*/z,
+                                   /*in_channels=*/channel_in,
+                                   /*out_channels=*/channel_hid,
+                                   /*mlp_ratio=*/mlp_ratio,
+                                   /*drop=*/drop,
+                                   /*drop_path=*/drop_path);
 
   // Middle layers
-  for (size_t i = 1; i < config.N_T - 1; i++) {
-    z = create_simvp_gsta_meta_block(
-        cgb, config, z, channel_hid, channel_hid, mlp_ratio, drop, drop_path);
+  for (int i : range(1, config.N_T - 1)) {
+    z = create_simvp_gsta_meta_block(/*cgb=*/cgb,
+                                     /*config=*/config,
+                                     /*input=*/z,
+                                     /*in_channels=*/channel_hid,
+                                     /*out_channels=*/channel_hid,
+                                     /*mlp_ratio=*/mlp_ratio,
+                                     /*drop=*/drop,
+                                     /*drop_path=*/drop_path);
   }
 
   // Upsample
-  z = create_simvp_gsta_meta_block(
-      cgb, config, z, channel_hid, channel_in, mlp_ratio, drop, drop_path);
+  z = create_simvp_gsta_meta_block(/*cgb=*/cgb,
+                                   /*config=*/config,
+                                   /*input=*/z,
+                                   /*in_channels=*/channel_hid,
+                                   /*out_channels=*/channel_in,
+                                   /*mlp_ratio=*/mlp_ratio,
+                                   /*drop=*/drop,
+                                   /*drop_path=*/drop_path);
 
   return z;
 }
@@ -189,7 +214,7 @@ tensor_guid_t create_simvp_decoder(ComputationGraphBuilder &cgb,
                                           config.hid_S,
                                           config.spatio_kernel_dec,
                                           false,
-                                          samplings[samplings.size() - 1]);
+                                          samplings.back());
 
   return cgb.conv2d(out, C, 1, 1, 1, 1, 0, 0, std::nullopt);
 }
@@ -198,7 +223,7 @@ ComputationGraph get_simvp_computation_graph(SimVPConfig const &config) {
   ComputationGraphBuilder cgb;
 
   // Create input tensor
-  size_t B = config.batch_size;     // Number of samples
+  int B = config.batch_size;        // Number of samples
   size_t T = config.in_shape.at(0); // Number of frames in each sample
   size_t C = config.in_shape.at(1); // Channel
   size_t H = config.in_shape.at(2); // Height
