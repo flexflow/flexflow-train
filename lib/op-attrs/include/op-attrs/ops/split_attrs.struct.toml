@@ -13,11 +13,12 @@ includes = [
   "utils/stack_vector/stack_vector.h",
   "op-attrs/ff_dim_t.h",
   "op-attrs/ff_dim_t.dtg.h",
+  "utils/nonnegative_int/nonnegative_int.h",
 ]
 
 [[fields]]
 name = "splits"
-type = "::FlexFlow::stack_vector<int, MAX_NUM_OUTPUTS>"
+type = "::FlexFlow::stack_vector<::FlexFlow::nonnegative_int, MAX_NUM_OUTPUTS>"
 
 [[fields]]
 name = "axis"

@@ -1,6 +1,5 @@
 namespace = "FlexFlow"
 name = "TransformerConfig"
-
 features = [
   "eq",
   "ord",
@@ -10,33 +9,37 @@ features = [
   "fmt",
 ]
 
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
 [[fields]]
 name = "num_features"
-type = "size_t"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "sequence_length"
-type = "size_t"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "batch_size"
-type = "size_t"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "dim_feedforward"
-type = "size_t"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "num_heads"
-type = "size_t"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "num_encoder_layers"
-type = "size_t"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "num_decoder_layers"
-type = "size_t"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "dropout"
@@ -48,4 +51,4 @@ type = "float"
 
 [[fields]]
 name = "vocab_size"
-type = "size_t"
+type = "::FlexFlow::nonnegative_int"

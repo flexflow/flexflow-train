@@ -12,27 +12,28 @@ features = [
 
 includes = [
   "op-attrs/activation.dtg.h",
+  "utils/nonnegative_int/nonnegative_int.h",
 ]
 
 [[fields]]
 name = "vocab_size"
-type = "size_t"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "hidden_size"
-type = "size_t"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "num_encoder_layers"
-type = "size_t"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "num_heads"
-type = "size_t"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "dim_feedforward"
-type = "size_t"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "hidden_act"
@@ -64,8 +65,8 @@ type = "float"
 
 [[fields]]
 name = "sequence_length"
-type = "size_t"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "batch_size"
-type = "size_t"
+type = "::FlexFlow::nonnegative_int"

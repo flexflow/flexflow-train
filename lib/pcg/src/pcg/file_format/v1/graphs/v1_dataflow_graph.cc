@@ -10,15 +10,15 @@
 namespace FlexFlow {
 
 V1DataflowGraph to_v1(DataflowGraphView const &g) {
-  bidict<int, Node> node_enumeration_bidict =
+  bidict<nonnegative_int, Node> node_enumeration_bidict =
       bidict_from_enumerating(get_nodes(g));
-  std::unordered_map<Node, int> node_enumeration =
+  std::unordered_map<Node, nonnegative_int> node_enumeration =
       node_enumeration_bidict.reversed().as_unordered_map();
   return to_v1(g, node_enumeration);
 }
 
 V1DataflowGraph to_v1(DataflowGraphView const &g,
-                      std::unordered_map<Node, int> const &nodes) {
+                      std::unordered_map<Node, nonnegative_int> const &nodes) {
   std::unordered_set<V1GraphEdge> edges;
   for (DataflowEdge const &e : get_edges(g)) {
     edges.insert(V1GraphEdge{

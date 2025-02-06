@@ -11,12 +11,12 @@ TEST_SUITE(FF_TEST_SUITE) {
     DataflowGraph g = DataflowGraph::create<UnorderedSetDataflowGraph>();
 
     SUBCASE("gets edges if there are multiple") {
-      NodeAddedResult n1_added = g.add_node({}, 2);
+      NodeAddedResult n1_added = g.add_node({}, 2_n);
       Node n1 = n1_added.node;
       DataflowOutput n1_o0 = n1_added.outputs.at(0);
       DataflowOutput n1_o1 = n1_added.outputs.at(1);
 
-      NodeAddedResult n2_added = g.add_node({n1_o0, n1_o0, n1_o1}, 0);
+      NodeAddedResult n2_added = g.add_node({n1_o0, n1_o0, n1_o1}, 0_n);
       Node n2 = n2_added.node;
 
       std::unordered_set<DataflowEdge> result =
@@ -24,15 +24,15 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::unordered_set<DataflowEdge> correct = {
           DataflowEdge{
               n1_o0,
-              DataflowInput{n2, 0},
+              DataflowInput{n2, 0_n},
           },
           DataflowEdge{
               n1_o0,
-              DataflowInput{n2, 1},
+              DataflowInput{n2, 1_n},
           },
           DataflowEdge{
               n1_o1,
-              DataflowInput{n2, 2},
+              DataflowInput{n2, 2_n},
           },
       };
 
@@ -40,15 +40,15 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("does not get edges to/from other nodes") {
-      NodeAddedResult n1_added = g.add_node({}, 1);
+      NodeAddedResult n1_added = g.add_node({}, 1_n);
       Node n1 = n1_added.node;
       DataflowOutput o1 = get_only(n1_added.outputs);
 
-      NodeAddedResult n2_added = g.add_node({o1}, 1);
+      NodeAddedResult n2_added = g.add_node({o1}, 1_n);
       Node n2 = n2_added.node;
       DataflowOutput o2 = get_only(n2_added.outputs);
 
-      NodeAddedResult n3_added = g.add_node({o2}, 1);
+      NodeAddedResult n3_added = g.add_node({o2}, 1_n);
       Node n3 = n3_added.node;
       DataflowOutput o3 = get_only(n3_added.outputs);
 
@@ -61,11 +61,11 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE(
         "does not get flipped edges (i.e., respects from vs to direction)") {
-      NodeAddedResult n1_added = g.add_node({}, 1);
+      NodeAddedResult n1_added = g.add_node({}, 1_n);
       Node n1 = n1_added.node;
       DataflowOutput o1 = get_only(n1_added.outputs);
 
-      NodeAddedResult n2_added = g.add_node({o1}, 0);
+      NodeAddedResult n2_added = g.add_node({o1}, 0_n);
       Node n2 = n2_added.node;
 
       std::unordered_set<DataflowEdge> result =
@@ -76,10 +76,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("returns empty set if no edges exist between the given nodes") {
-      NodeAddedResult n1_added = g.add_node({}, 1);
+      NodeAddedResult n1_added = g.add_node({}, 1_n);
       Node n1 = n1_added.node;
 
-      NodeAddedResult n2_added = g.add_node({}, 1);
+      NodeAddedResult n2_added = g.add_node({}, 1_n);
       Node n2 = n2_added.node;
 
       std::unordered_set<DataflowEdge> result =
@@ -91,7 +91,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("returns empty set if src node == dst node (as cycles cannot exist "
             "in DataflowGraph") {
-      NodeAddedResult n1_added = g.add_node({}, 1);
+      NodeAddedResult n1_added = g.add_node({}, 1_n);
       Node n1 = n1_added.node;
 
       std::unordered_set<DataflowEdge> result =

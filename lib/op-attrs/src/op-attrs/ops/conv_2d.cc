@@ -25,11 +25,11 @@ TensorShape get_kernel_shape(Conv2DAttrs const &attrs,
   Conv2DInputShape input = parse_input_shape(raw_input_shape);
 
   return TensorShape{
-      TensorDims{FFOrdered<size_t>{
-          size_t_from_int(attrs.out_channels),
+      TensorDims{FFOrdered<nonnegative_int>{
+          attrs.out_channels,
           input.num_channels,
-          size_t_from_int(attrs.kernel_h),
-          size_t_from_int(attrs.kernel_w),
+          attrs.kernel_h,
+          attrs.kernel_w,
       }},
       input.datatype,
   };
@@ -42,10 +42,23 @@ TensorShape get_bias_shape(Conv2DAttrs const &attrs,
 
   return TensorShape{
       TensorDims{
-          FFOrdered<size_t>{size_t_from_int(attrs.out_channels)},
+          FFOrdered<nonnegative_int>{attrs.out_channels},
       },
       input.datatype,
   };
+}
+
+static nonnegative_int calculate_output_size(nonnegative_int input_size,
+                                             nonnegative_int padding_size,
+                                             nonnegative_int kernel_size,
+                                             nonnegative_int stride) {
+  int input_size_raw = input_size.unwrap_nonnegative();
+  int padding_raw = padding_size.unwrap_nonnegative();
+  int kernel_size_raw = kernel_size.unwrap_nonnegative();
+  int stride_raw = stride.unwrap_nonnegative();
+
+  return nonnegative_int{
+      (input_size_raw + (2 * padding_raw) - kernel_size_raw) / stride_raw + 1};
 }
 
 TensorShape get_output_shape(Conv2DAttrs const &attrs,
@@ -53,18 +66,20 @@ TensorShape get_output_shape(Conv2DAttrs const &attrs,
   assert(attrs.groups == 1); // TODO(@lockshaw): currently not supported
   Conv2DInputShape input = parse_input_shape(raw_input_shape);
 
-  size_t out_height =
-      (input.height + (2 * attrs.padding_h) - attrs.kernel_h) / attrs.stride_h +
-      1;
-  size_t out_width =
-      (input.width + (2 * attrs.padding_w) - attrs.kernel_w) / attrs.stride_w +
-      1;
+  nonnegative_int out_height =
+      calculate_output_size(/*input_size=*/input.height,
+                            /*padding_size=*/attrs.padding_h,
+                            /*kernel_size=*/attrs.kernel_h,
+                            /*stride_size=*/attrs.stride_h);
+  nonnegative_int out_width =
+      calculate_output_size(/*input_size=*/input.width,
+                            /*padding_size=*/attrs.padding_w,
+                            /*kernel_size=*/attrs.kernel_w,
+                            /*stride_size=*/attrs.stride_w);
 
-  assert(attrs.out_channels > 0);
-
-  return TensorShape{TensorDims{FFOrdered<size_t>{
+  return TensorShape{TensorDims{FFOrdered<nonnegative_int>{
                          input.num_samples,
-                         size_t_from_int(attrs.out_channels),
+                         attrs.out_channels,
                          out_height,
                          out_width,
                      }},
@@ -82,14 +97,14 @@ ParallelTensorShape get_kernel_shape(Conv2DAttrs const &attrs,
   assert(parsed.height_dim.degree == 1);
   assert(parsed.width_dim.degree == 1);
 
-  SumDegree sum_degree = SumDegree{1};
+  SumDegree sum_degree = SumDegree{1_n};
   DiscardCopyDegree discard_copy_degree =
       DiscardCopyDegree{parsed.sample_dim.degree * parsed.sum_reduction_degree};
-  FFOrdered<int> shard_degrees = {
+  FFOrdered<nonnegative_int> shard_degrees = {
       parsed.discard_copy_reduction_degree,
       parsed.channel_dim.degree,
-      1,
-      1,
+      1_n,
+      1_n,
   };
 
   return lift_to_parallel_with_degrees(
@@ -109,7 +124,7 @@ ParallelTensorShape get_bias_shape(Conv2DAttrs const &attrs,
   DiscardCopyDegree discard_copy_degree =
       DiscardCopyDegree{parsed.height_dim.degree * parsed.width_dim.degree *
                         parsed.sample_dim.degree};
-  FFOrdered<int> shard_degrees = {
+  FFOrdered<nonnegative_int> shard_degrees = {
       parsed.discard_copy_reduction_degree,
   };
 
@@ -130,12 +145,12 @@ ParallelTensorShape get_output_shape(Conv2DAttrs const &attrs,
 
   SumDegree sum_degree =
       SumDegree{parsed.sum_reduction_degree * parsed.channel_dim.degree};
-  DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{1};
-  FFOrdered<int> shard_degrees = {
+  DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{1_n};
+  FFOrdered<nonnegative_int> shard_degrees = {
       parsed.sample_dim.degree,
       parsed.discard_copy_reduction_degree,
-      1,
-      1,
+      1_n,
+      1_n,
   };
 
   return lift_to_parallel_with_degrees(

@@ -1,0 +1,19 @@
+namespace = "FlexFlow"
+name = "OutputGraphExprValue"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "substitutions/output_graph/output_graph_expr_input.dtg.h",
+  "substitutions/output_graph/output_graph_expr_node_output.dtg.h",
+]
+
+[[values]]
+type = "::FlexFlow::OutputGraphExprNodeOutput"
+
+[[values]]
+type = "::FlexFlow::OutputGraphExprInput"

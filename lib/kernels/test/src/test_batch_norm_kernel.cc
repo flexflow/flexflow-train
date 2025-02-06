@@ -6,22 +6,25 @@ using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Test BatchNorm Kernel") {
-    size_t output_n = 1, output_c = 10, output_h = 10, output_w = 10;
+    nonnegative_int output_n = 1_n;
+    nonnegative_int output_c = 10_n;
+    nonnegative_int output_h = 10_n;
+    nonnegative_int output_w = 10_n;
 
     ManagedFFStream managed_stream{};
     ManagedPerDeviceFFHandle managed_handle{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    BatchNormPerDeviceState state =
-        Kernels::BatchNorm::init_kernel(managed_handle.raw_handle(),
-                                        allocator,
-                                        nullptr,
-                                        output_n,
-                                        output_c,
-                                        output_h,
-                                        output_w,
-                                        true);
+    BatchNormPerDeviceState state = Kernels::BatchNorm::init_kernel(
+        /*handle=*/managed_handle.raw_handle(),
+        /*allocator=*/allocator,
+        /*runningMean=*/nullptr,
+        /*output_n=*/output_n.unwrap_nonnegative(),
+        /*output_c=*/output_c.unwrap_nonnegative(),
+        /*output_h=*/output_h.unwrap_nonnegative(),
+        /*output_w=*/output_w.unwrap_nonnegative(),
+        /*relu=*/true);
 
     TensorShape input_shape = make_float_tensor_shape_from_legion_dims(
         {output_n, output_c, output_h, output_w});
@@ -43,12 +46,13 @@ TEST_SUITE(FF_TEST_SUITE) {
       GenericTensorAccessorW bias_accessor =
           create_filled_accessor_w(bias_shape, allocator, 0.0f);
 
-      Kernels::BatchNorm::forward_kernel(managed_stream.raw_stream(),
-                                         state,
-                                         input_accessor.get_float_ptr(),
-                                         output_accessor.get_float_ptr(),
-                                         scale_accessor.get_float_ptr(),
-                                         bias_accessor.get_float_ptr());
+      Kernels::BatchNorm::forward_kernel(
+          /*stream=*/managed_stream.raw_stream(),
+          /*per_device_state=*/state,
+          /*input_ptr=*/input_accessor.get_float_ptr(),
+          /*output_ptr=*/output_accessor.get_float_ptr(),
+          /*scale_ptr=*/scale_accessor.get_float_ptr(),
+          /*bias_ptr=*/bias_accessor.get_float_ptr());
 
       std::vector<float> host_output_data =
           load_data_to_host_from_device<float>(
@@ -66,16 +70,18 @@ TEST_SUITE(FF_TEST_SUITE) {
       GenericTensorAccessorW bias_grad_accessor =
           create_random_filled_accessor_w(bias_shape, allocator);
 
-      Kernels::BatchNorm::backward_kernel(managed_stream.raw_stream(),
-                                          state,
-                                          input_accessor.get_float_ptr(),
-                                          output_grad_accessor.get_float_ptr(),
-                                          output_accessor.get_float_ptr(),
-                                          input_grad_accessor.get_float_ptr(),
-                                          scale_accessor.get_float_ptr(),
-                                          scale_grad_accessor.get_float_ptr(),
-                                          bias_grad_accessor.get_float_ptr(),
-                                          input_accessor.shape.num_elements());
+      Kernels::BatchNorm::backward_kernel(
+          /*stream=*/managed_stream.raw_stream(),
+          /*per_device_state=*/state,
+          /*input_ptr=*/input_accessor.get_float_ptr(),
+          /*output_grad_ptr=*/output_grad_accessor.get_float_ptr(),
+          /*output_ptr=*/output_accessor.get_float_ptr(),
+          /*input_grad_ptr=*/input_grad_accessor.get_float_ptr(),
+          /*scale_ptr=*/scale_accessor.get_float_ptr(),
+          /*scale_grad_ptr=*/scale_grad_accessor.get_float_ptr(),
+          /*bias_grad_ptr=*/bias_grad_accessor.get_float_ptr(),
+          /*numElements=*/
+          input_accessor.shape.num_elements().unwrap_nonnegative());
 
       std::vector<float> host_input_grad_data =
           load_data_to_host_from_device<float>(

@@ -17,6 +17,7 @@
 #include "kernels/accessor.h"
 #include "kernels/reverse_kernels.h"
 #include "op-attrs/get_output_shapes.h"
+#include "utils/nonnegative_int/nonnegative_range.h"
 
 namespace FlexFlow {
 
@@ -48,16 +49,18 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   auto attrs = acc.get_argument<ReverseAttrs>(ATTRS);
 
-  int output_size = output.shape.get_volume();
+  nonnegative_int output_size = output.shape.get_volume();
   auto axis = attrs.axis;
-  coord_t in_blk_size = 1, reverse_dim_size = 1, num_out_blks = 1;
-  for (int i = 0; i < output.shape.get_dim(); i++) {
+  nonnegative_int in_blk_size = 1_n;
+  nonnegative_int reverse_dim_size = 1_n;
+  nonnegative_int num_out_blks = 1_n;
+  for (nonnegative_int i : nonnegative_range(output.shape.get_dim())) {
     if (i < axis.value) {
-      in_blk_size *= output.shape.at(ff_dim_t{nonnegative_int{i}});
+      in_blk_size *= output.shape.at(ff_dim_t{i});
     } else if (i == axis.value) {
-      reverse_dim_size = output.shape.at(ff_dim_t{nonnegative_int{i}});
+      reverse_dim_size = output.shape.at(ff_dim_t{i});
     } else {
-      num_out_blks *= output.shape.at(ff_dim_t{nonnegative_int{i}});
+      num_out_blks *= output.shape.at(ff_dim_t{i});
     }
   }
 
@@ -66,10 +69,10 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
                  "[reverse] forward_time = {:.2lf}ms\n",
                  input.get_float_ptr(),
                  output.get_float_ptr(),
-                 num_out_blks,
-                 reverse_dim_size,
-                 in_blk_size,
-                 output_size);
+                 num_out_blks.unwrap_nonnegative(),
+                 reverse_dim_size.unwrap_nonnegative(),
+                 in_blk_size.unwrap_nonnegative(),
+                 output_size.unwrap_nonnegative());
 }
 
 static std::optional<float>
@@ -79,15 +82,18 @@ static std::optional<float>
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
   auto attrs = acc.get_argument<ReverseAttrs>(ATTRS);
 
-  int axis = input_grad.shape.get_dim() - attrs.axis.value.get_value() - 1;
-  coord_t in_blk_size = 1, reverse_dim_size = 1, num_out_blks = 1;
-  for (int i = 0; i < input_grad.shape.get_dim(); i++) {
+  int axis = input_grad.shape.num_dims().unwrap_nonnegative() -
+             attrs.axis.value.unwrap_nonnegative() - 1;
+  nonnegative_int in_blk_size = 1_n;
+  nonnegative_int reverse_dim_size = 1_n;
+  nonnegative_int num_out_blks = 1_n;
+  for (nonnegative_int i : nonnegative_range(input_grad.shape.get_dim())) {
     if (i < axis) {
-      in_blk_size *= input_grad.shape.at(ff_dim_t{nonnegative_int{i}});
+      in_blk_size *= input_grad.shape.at(ff_dim_t{i});
     } else if (i == axis) {
-      reverse_dim_size = input_grad.shape.at(ff_dim_t{nonnegative_int{i}});
+      reverse_dim_size = input_grad.shape.at(ff_dim_t{i});
     } else {
-      num_out_blks *= input_grad.shape.at(ff_dim_t{nonnegative_int{i}});
+      num_out_blks *= input_grad.shape.at(ff_dim_t{i});
     }
   }
 
@@ -96,10 +102,10 @@ static std::optional<float>
                  "[reverse] backward_time = {:.2lf}ms\n",
                  output_grad.get_float_ptr(),
                  input_grad.get_float_ptr(),
-                 num_out_blks,
-                 reverse_dim_size,
-                 in_blk_size,
-                 input_grad.shape.get_volume());
+                 num_out_blks.unwrap_nonnegative(),
+                 reverse_dim_size.unwrap_nonnegative(),
+                 in_blk_size.unwrap_nonnegative(),
+                 input_grad.shape.get_volume().unwrap_nonnegative());
 }
 
 TaskImplFunction get_reverse_fwd_task_impl() {

@@ -85,15 +85,15 @@ public:
   // Add a 2D convolutional layer
   tensor_guid_t conv2d(
       tensor_guid_t const &input,
-      int outChannels,
-      int kernelH,
-      int kernelW,
-      int strideH,
-      int strideW,
-      int paddingH,
-      int paddingW,
+      nonnegative_int outChannels,
+      nonnegative_int kernelH,
+      nonnegative_int kernelW,
+      nonnegative_int strideH,
+      nonnegative_int strideW,
+      nonnegative_int paddingH,
+      nonnegative_int paddingW,
       std::optional<Activation> const &activation = std::nullopt,
-      int groups = 1,
+      nonnegative_int groups = 1_n,
       bool use_bias = true,
       std::optional<InitializerAttrs> const &kernel_initializer = std::nullopt,
       std::optional<InitializerAttrs> const &bias_initializer = std::nullopt,
@@ -107,8 +107,8 @@ public:
   // Add an embedding layer
   tensor_guid_t embedding(
       tensor_guid_t const &input,
-      int num_entries,
-      int outDim,
+      nonnegative_int num_entries,
+      nonnegative_int outDim,
       AggregateOp aggr,
       DataType dtype = DataType::FLOAT,
       std::optional<InitializerAttrs> const &kernel_initializer = std::nullopt,
@@ -121,32 +121,32 @@ public:
   // Add a cache layer
   tensor_guid_t
       cache(tensor_guid_t const &input,
-            int num_batches,
+            nonnegative_int num_batches,
             std::function<float(float *, void const *, void const *, int)>
                 score_f = {},
             std::optional<std::string> const &name = std::nullopt);
   // Add a 2D pooling layer
   tensor_guid_t
       pool2d(tensor_guid_t const &input,
-             int kernelH,
-             int kernelW,
-             int strideH,
-             int strideW,
-             int paddingH,
-             int paddingW,
+             nonnegative_int kernelH,
+             nonnegative_int kernelW,
+             nonnegative_int strideH,
+             nonnegative_int strideW,
+             nonnegative_int paddingH,
+             nonnegative_int paddingW,
              PoolOp type = PoolOp::MAX,
              std::optional<Activation> const &activation = std::nullopt,
              std::optional<std::string> const &name = std::nullopt);
   tensor_guid_t adaptive_pool2d(
       tensor_guid_t const &input,
-      int output_h,
-      int output_w,
+      nonnegative_int output_h,
+      nonnegative_int output_w,
       PoolOp type = PoolOp::MAX,
       std::optional<Activation> const &activation = std::nullopt,
       std::optional<std::string> const &name = std::nullopt);
   tensor_guid_t
       layer_norm(tensor_guid_t const &input,
-                 std::vector<int> const &axes,
+                 std::vector<relative_ff_dim_t> const &axes,
                  bool elementwise_affine,
                  float eps,
                  std::optional<std::string> const &name = std::nullopt);
@@ -157,15 +157,15 @@ public:
                  float eps,
                  std::optional<float> const &momentum,
                  std::optional<std::string> const &name = std::nullopt);
-  tensor_guid_t
-      batch_matmul(tensor_guid_t const &A,
-                   tensor_guid_t const &B,
-                   int a_seq_length_dim = -1,
-                   int b_seq_length_dim = -1,
-                   std::optional<std::string> const &name = std::nullopt);
+  tensor_guid_t batch_matmul(
+      tensor_guid_t const &A,
+      tensor_guid_t const &B,
+      std::optional<nonnegative_int> const &a_seq_length_dim = std::nullopt,
+      std::optional<nonnegative_int> const &b_seq_length_dim = std::nullopt,
+      std::optional<std::string> const &name = std::nullopt);
   tensor_guid_t dense(
       tensor_guid_t const &input,
-      int outDim,
+      nonnegative_int outDim,
       std::optional<Activation> activation = std::nullopt,
       bool use_bias = true,
       DataType data_type = DataType::FLOAT,
@@ -181,7 +181,7 @@ public:
                      std::optional<std::string> const &name = std::nullopt);
   // Add a concat layer
   tensor_guid_t concat(std::vector<tensor_guid_t> const &tensors,
-                       int axis,
+                       relative_ff_dim_t axis,
                        std::optional<std::string> const &name = std::nullopt);
   // Add a mean layer
   tensor_guid_t mean(tensor_guid_t const &input,
@@ -191,47 +191,48 @@ public:
   // Add a split layer
   std::vector<tensor_guid_t>
       split(tensor_guid_t const &input,
-            std::vector<int> const &split,
-            int axis,
+            std::vector<nonnegative_int> const &split,
+            relative_ff_dim_t axis,
             std::optional<std::string> const &name = std::nullopt);
   // Add a flat layer
-  tensor_guid_t flat(tensor_guid_t const &input,
-                     int start_dim = 0,
-                     std::optional<int> const &end_dim = std::nullopt,
-                     std::optional<std::string> const &name = std::nullopt);
+  tensor_guid_t
+      flat(tensor_guid_t const &input,
+           relative_ff_dim_t start_dim = relative_ff_dim_t{0},
+           std::optional<relative_ff_dim_t> const &end_dim = std::nullopt,
+           std::optional<std::string> const &name = std::nullopt);
   // Add a softmax layer
   tensor_guid_t softmax(tensor_guid_t const &input,
-                        std::optional<int> dim = std::nullopt,
+                        std::optional<relative_ff_dim_t> dim = std::nullopt,
                         std::optional<std::string> const &name = std::nullopt);
   // Create input tensors and constants
   tensor_guid_t
       transpose(tensor_guid_t const &input,
-                std::vector<int> const &perm,
+                std::vector<nonnegative_int> const &perm,
                 std::optional<std::string> const &name = std::nullopt);
   tensor_guid_t
       reduce_sum(tensor_guid_t const &input,
-                 std::vector<int> const &axes,
+                 std::vector<relative_ff_dim_t> const &axes,
                  bool keepdims = false,
                  std::optional<std::string> const &name = std::nullopt);
   tensor_guid_t reshape(tensor_guid_t const &input,
-                        std::vector<int> const &shape,
+                        std::vector<nonnegative_int> const &shape,
                         std::optional<std::string> const &name = std::nullopt);
   tensor_guid_t reverse(tensor_guid_t const &input,
-                        int axis,
+                        relative_ff_dim_t axis,
                         std::optional<std::string> const &name = std::nullopt);
   std::vector<tensor_guid_t>
       top_k(tensor_guid_t const &input,
-            int k,
+            nonnegative_int k,
             bool sorted,
             std::optional<std::string> const &name = std::nullopt);
   tensor_guid_t multihead_attention(
       tensor_guid_t const &query,
       tensor_guid_t const &key,
       tensor_guid_t const &value,
-      int embed_dim,
-      int num_heads,
-      int kdim = 0,
-      int vdim = 0,
+      nonnegative_int embed_dim,
+      nonnegative_int num_heads,
+      nonnegative_int kdim = 0_n,
+      nonnegative_int vdim = 0_n,
       float dropout = 0.0f,
       bool bias = true,
       bool add_bias_kv = false,
@@ -254,7 +255,7 @@ public:
                     std::optional<std::string> const &name = std::nullopt);
 
   std::vector<tensor_guid_t> get_outputs(LayerAttrs const &) const;
-  tensor_guid_t get_output(LayerAttrs const &, int idx) const;
+  tensor_guid_t get_output(LayerAttrs const &, nonnegative_int idx) const;
 
   std::vector<tensor_guid_t>
       add_layer(LayerAttrs const &layer,

@@ -13,8 +13,8 @@ CHECK_VALID_OP_ATTR(Pool2DAttrs);
 
 tl::expected<Pool2DAttrs, std::string>
     make_adaptive_pool2d_attrs(TensorDims const &input_dims,
-                               int output_h,
-                               int output_w,
+                               nonnegative_int output_h,
+                               nonnegative_int output_w,
                                PoolOp pool_type,
                                std::optional<Activation> const &activation);
 

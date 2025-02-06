@@ -33,15 +33,15 @@ public:
 
   parallel_tensor_guid_t conv2d(
       parallel_tensor_guid_t const &input,
-      int outChannels,
-      int kernelH,
-      int kernelW,
-      int strideH,
-      int strideW,
-      int paddingH,
-      int paddingW,
+      nonnegative_int outChannels,
+      nonnegative_int kernelH,
+      nonnegative_int kernelW,
+      nonnegative_int strideH,
+      nonnegative_int strideW,
+      nonnegative_int paddingH,
+      nonnegative_int paddingW,
       std::optional<Activation> const &activation = std::nullopt,
-      int groups = 1,
+      nonnegative_int groups = 1_n,
       bool use_bias = true,
       std::optional<InitializerAttrs> const &kernel_initializer = std::nullopt,
       std::optional<InitializerAttrs> const &bias_initializer = std::nullopt,
@@ -50,7 +50,7 @@ public:
 
   parallel_tensor_guid_t dense(
       parallel_tensor_guid_t const &input,
-      int outDim,
+      nonnegative_int outDim,
       std::optional<Activation> activation = std::nullopt,
       bool use_bias = true,
       DataType data_type = DataType::FLOAT,
@@ -61,8 +61,8 @@ public:
 
   parallel_tensor_guid_t embedding(
       parallel_tensor_guid_t const &input,
-      int num_entries,
-      int outDim,
+      nonnegative_int num_entries,
+      nonnegative_int outDim,
       AggregateOp aggr,
       DataType dtype = DataType::FLOAT,
       std::optional<InitializerAttrs> const &kernel_initializer = std::nullopt,
@@ -72,10 +72,10 @@ public:
       parallel_tensor_guid_t const &query,
       parallel_tensor_guid_t const &key,
       parallel_tensor_guid_t const &value,
-      int embed_dim,
-      int num_heads,
-      std::optional<int> kdim = std::nullopt,
-      std::optional<int> vdim = std::nullopt,
+      nonnegative_int embed_dim,
+      nonnegative_int num_heads,
+      std::optional<nonnegative_int> kdim = std::nullopt,
+      std::optional<nonnegative_int> vdim = std::nullopt,
       float dropout = 0.0f,
       bool bias = true,
       bool add_bias_kv = false,
@@ -120,20 +120,20 @@ public:
   parallel_tensor_guid_t
       parallel_partition(parallel_tensor_guid_t const &x,
                          ff_dim_t dim,
-                         int degree,
+                         nonnegative_int degree,
                          std::optional<std::string> const &name = std::nullopt);
   parallel_tensor_guid_t
       parallel_combine(parallel_tensor_guid_t const &x,
                        ff_dim_t dim,
-                       int degree,
+                       nonnegative_int degree,
                        std::optional<std::string> const &name = std::nullopt);
   parallel_tensor_guid_t
       parallel_replicate(parallel_tensor_guid_t const &x,
-                         int degree,
+                         nonnegative_int degree,
                          std::optional<std::string> const &name = std::nullopt);
   parallel_tensor_guid_t
       parallel_reduce(parallel_tensor_guid_t const &x,
-                      int degree,
+                      nonnegative_int degree,
                       std::optional<std::string> const &name = std::nullopt);
 
 private:

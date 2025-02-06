@@ -1,5 +1,5 @@
 #include "compiler/machine_mapping/get_optimal_machine_mapping.h"
-#include "./cost_estimator_for_test.h"
+#include "../cost_estimator_for_test.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.h"
 #include "compiler/machine_mapping/machine_mapping_cache.h"
 #include "compiler/machine_mapping/machine_mapping_constraints.h"
@@ -9,6 +9,7 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include "utils/containers/get_only.h"
 #include "utils/full_binary_tree/binary_tree_path.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include <doctest/doctest.h>
 
 using namespace FlexFlow;
@@ -44,14 +45,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineView mv1 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0,
-            /*device_idx=*/0,
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{1},
+                stride_t{1_n},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -59,31 +60,31 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineView mv2 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0,
-            /*device_idx=*/0,
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{2},
+                stride_t{2_n},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
     };
 
     MachineSpecification full_machine_spec = MachineSpecification{
-        /*num_nodes=*/2,
-        /*num_cpus_per_node=*/1,
-        /*num_gpus_per_node=*/1,
+        /*num_nodes=*/2_n,
+        /*num_cpus_per_node=*/1_n,
+        /*num_gpus_per_node=*/1_n,
         /*inter_node_bandwidth=*/1,
         /*intra_node_bandwidth=*/1,
     };
 
     MachineSpecification split_machine_spec = MachineSpecification{
-        /*num_nodes=*/1,
-        /*num_cpus_per_node=*/1,
-        /*num_gpus_per_node=*/1,
+        /*num_nodes=*/1_n,
+        /*num_cpus_per_node=*/1_n,
+        /*num_gpus_per_node=*/1_n,
         /*inter_node_bandwidth=*/1,
         /*intra_node_bandwidth=*/1,
     };
@@ -120,8 +121,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         ParallelTensorDims{
             FFOrdered<ShardParallelDim>{},
             ReplicaParallelDimSet{
-                SumDegree{1},
-                DiscardCopyDegree{1},
+                SumDegree{1_n},
+                DiscardCopyDegree{1_n},
             },
         },
         DataType::FLOAT,
@@ -146,13 +147,21 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     auto map1 = std::unordered_map<OpCostEstimateKey, OpCostMetrics>{{
         {map_unmapped_op_cost_estimate_key(k1, mv1),
-         OpCostMetrics{/*runtime=*/1.0, /*memory=*/nonnegative_int{0}}},
+         OpCostMetrics{/*forward_runtime=*/0.5,
+                       /*backward_runtime=*/0.5,
+                       /*memory=*/nonnegative_int{0}}},
         {map_unmapped_op_cost_estimate_key(k2, mv1),
-         OpCostMetrics{/*runtime=*/2.0, /*memory=*/nonnegative_int{0}}},
+         OpCostMetrics{/*forward_runtime=*/1.0,
+                       /*backward_runtime=*/1.0,
+                       /*memory=*/nonnegative_int{0}}},
         {map_unmapped_op_cost_estimate_key(k1, mv2),
-         OpCostMetrics{/*runtime=*/1.5, /*memory=*/nonnegative_int{0}}},
+         OpCostMetrics{/*forward_runtime=*/0.75,
+                       /*backward_runtime=*/0.75,
+                       /*memory=*/nonnegative_int{0}}},
         {map_unmapped_op_cost_estimate_key(k2, mv2),
-         OpCostMetrics{/*runtime=*/2.5, /*memory=*/nonnegative_int{0}}},
+         OpCostMetrics{/*forward_runtime=*/1.25,
+                       /*backward_runtime=*/1.25,
+                       /*memory=*/nonnegative_int{0}}},
     }};
 
     CostEstimator cost_estimator = make_fake_cost_estimator(

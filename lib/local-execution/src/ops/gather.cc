@@ -15,8 +15,8 @@
 
 #include "gather.h"
 #include "kernels/gather_kernels.h"
-#include "local-execution/legion_tensor_shape.h"
 #include "op-attrs/get_output_shapes.h"
+#include "utils/nonnegative_int/nonnegative_range.h"
 #include <optional>
 
 namespace FlexFlow {
@@ -72,10 +72,11 @@ static DeviceSpecificDeviceStates
   assert(input.shape.get_dim() == index.shape.get_dim());
   assert(output.shape.get_dim() == index.shape.get_dim());
 
-  for (int i = 0; i < input.shape.get_dim(); i++) {
-    assert(index.shape[legion_dim_t(i)] == output.shape[legion_dim_t(i)]);
+  for (nonnegative_int i : nonnegative_range(input.shape.get_dim())) {
+    assert(index.shape.at(legion_dim_t{i}) == output.shape.at(legion_dim_t{i}));
     if (i != legion_dim.value) {
-      assert(input.shape[legion_dim_t(i)] == index.shape[legion_dim_t(i)]);
+      assert(input.shape.at(legion_dim_t{i}) ==
+             index.shape.at(legion_dim_t{i}));
     }
   }
 

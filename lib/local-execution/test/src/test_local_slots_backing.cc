@@ -19,16 +19,17 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("LocalSlotsBacking -- Attention Op") {
     // allocate input memory
     Allocator allocator = create_local_cpu_memory_allocator();
-    int embed_dim = 32;
-    int num_heads = 10;
+    nonnegative_int embed_dim = 32_n;
+    nonnegative_int num_heads = 10_n;
 
-    size_t batch_size = 40;
-    size_t seq_len = 48;
-    size_t feature_size = 36;
+    nonnegative_int batch_size = 40_n;
+    nonnegative_int seq_len = 48_n;
+    nonnegative_int feature_size = 36_n;
 
     DataType dtype = DataType::FLOAT;
     TensorShape input_tensor_shape = TensorShape{
-        TensorDims{FFOrdered<size_t>{batch_size, seq_len, feature_size}},
+        TensorDims{
+            FFOrdered<nonnegative_int>{batch_size, seq_len, feature_size}},
         DataType::FLOAT,
     };
     TensorShape query_shape = input_tensor_shape;

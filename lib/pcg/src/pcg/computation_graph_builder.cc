@@ -375,30 +375,32 @@ tensor_guid_t
 
 tensor_guid_t ComputationGraphBuilder::conv2d(
     tensor_guid_t const &x,
-    int outChannels,
-    int kernelH,
-    int kernelW,
-    int strideH,
-    int strideW,
-    int paddingH,
-    int paddingW,
+    nonnegative_int outChannels,
+    nonnegative_int kernelH,
+    nonnegative_int kernelW,
+    nonnegative_int strideH,
+    nonnegative_int strideW,
+    nonnegative_int paddingH,
+    nonnegative_int paddingW,
     std::optional<Activation> const &activation,
-    int groups,
+    nonnegative_int groups,
     bool use_bias,
     std::optional<InitializerAttrs> const &kernel_initializer,
     std::optional<InitializerAttrs> const &bias_initializer,
     std::optional<RegularizerAttrs> const &kernel_regularizer,
     std::optional<std::string> const &maybe_name) {
-  Conv2DAttrs attrs = Conv2DAttrs{outChannels,
-                                  kernelH,
-                                  kernelW,
-                                  strideH,
-                                  strideW,
-                                  paddingH,
-                                  paddingW,
-                                  groups,
-                                  activation,
-                                  use_bias};
+  Conv2DAttrs attrs = Conv2DAttrs{
+      /*out_channels=*/outChannels,
+      /*kernel_h=*/kernelH,
+      /*kernel_w=*/kernelW,
+      /*stride_h=*/strideH,
+      /*stride_w=*/strideW,
+      /*padding_h=*/paddingH,
+      /*padding_w=*/paddingW,
+      /*groups=*/groups,
+      /*activation=*/activation,
+      /*use_bias=*/use_bias,
+  };
 
   std::string name =
       maybe_name.value_or(get_default_name(ComputationGraphOpAttrs{attrs}));
@@ -450,13 +452,18 @@ tensor_guid_t ComputationGraphBuilder::dropout(
 
 tensor_guid_t ComputationGraphBuilder::embedding(
     tensor_guid_t const &x,
-    int num_entries,
-    int outDim,
+    nonnegative_int num_entries,
+    nonnegative_int outDim,
     AggregateOp aggr,
     DataType dtype,
     std::optional<InitializerAttrs> const &kernel_initializer,
     std::optional<std::string> const &maybe_name) {
-  EmbeddingAttrs attrs = EmbeddingAttrs{num_entries, outDim, aggr, dtype};
+  EmbeddingAttrs attrs = EmbeddingAttrs{
+      /*num_entries=*/num_entries,
+      /*out_channels=*/outDim,
+      /*aggr=*/aggr,
+      /*data_type=*/dtype,
+  };
   std::string name =
       maybe_name.value_or(get_default_name(ComputationGraphOpAttrs{attrs}));
 
@@ -508,12 +515,12 @@ tensor_guid_t ComputationGraphBuilder::gather(
 }
 tensor_guid_t ComputationGraphBuilder::pool2d(
     tensor_guid_t const &x,
-    int kernelH,
-    int kernelW,
-    int strideH,
-    int strideW,
-    int paddingH,
-    int paddingW,
+    nonnegative_int kernelH,
+    nonnegative_int kernelW,
+    nonnegative_int strideH,
+    nonnegative_int strideW,
+    nonnegative_int paddingH,
+    nonnegative_int paddingW,
     PoolOp type,
     std::optional<Activation> const &activation,
     std::optional<std::string> const &maybe_name) {
@@ -546,8 +553,8 @@ tensor_guid_t ComputationGraphBuilder::pool2d(
 
 tensor_guid_t ComputationGraphBuilder::adaptive_pool2d(
     tensor_guid_t const &uncasted_input,
-    int output_h,
-    int output_w,
+    nonnegative_int output_h,
+    nonnegative_int output_w,
     PoolOp type,
     std::optional<Activation> const &activation,
     std::optional<std::string> const &maybe_name) {
@@ -636,10 +643,10 @@ tensor_guid_t ComputationGraphBuilder::multihead_attention(
     tensor_guid_t const &query,
     tensor_guid_t const &key,
     tensor_guid_t const &value,
-    int embed_dim,
-    int num_heads,
-    int kdim,
-    int vdim,
+    nonnegative_int embed_dim,
+    nonnegative_int num_heads,
+    nonnegative_int kdim,
+    nonnegative_int vdim,
     float dropout,
     bool bias,
     bool add_bias_kv,
@@ -661,14 +668,16 @@ tensor_guid_t ComputationGraphBuilder::multihead_attention(
         "If you need this functionality, please create an issue.");
   }
 
-  MultiHeadAttentionAttrs attrs = MultiHeadAttentionAttrs{embed_dim,
-                                                          num_heads,
-                                                          kdim,
-                                                          vdim,
-                                                          dropout,
-                                                          bias,
-                                                          add_bias_kv,
-                                                          add_zero_attn};
+  MultiHeadAttentionAttrs attrs = MultiHeadAttentionAttrs{
+      /*embed_dim=*/embed_dim,
+      /*num_heads=*/num_heads,
+      /*kdim=*/kdim,
+      /*vdim=*/vdim,
+      /*dropout=*/dropout,
+      /*bias=*/bias,
+      /*add_bias_kv=*/add_bias_kv,
+      /*add_zero_attn=*/add_zero_attn,
+  };
 
   std::string name =
       maybe_name.value_or(get_default_name(ComputationGraphOpAttrs{attrs}));
@@ -742,7 +751,7 @@ TensorDims ComputationGraphBuilder::get_broadcast_target_dims(
 
 tensor_guid_t ComputationGraphBuilder::dense(
     tensor_guid_t const &input,
-    int outDim,
+    nonnegative_int outDim,
     std::optional<Activation> activation,
     bool use_bias,
     DataType data_type,
@@ -751,8 +760,13 @@ tensor_guid_t ComputationGraphBuilder::dense(
     std::optional<std::string> const &maybe_name,
     std::optional<std::string> const &projection_name,
     std::optional<std::string> const &bias_name) {
-  LinearAttrs attrs =
-      LinearAttrs{outDim, use_bias, data_type, activation, std::nullopt};
+  LinearAttrs attrs = LinearAttrs{
+      /*out_channels=*/outDim,
+      /*use_bias=*/use_bias,
+      /*data_type=*/data_type,
+      /*activation=*/activation,
+      /*regularizer=*/std::nullopt,
+  };
 
   std::string name =
       maybe_name.value_or(get_default_name(ComputationGraphOpAttrs{attrs}));
@@ -793,12 +807,11 @@ tensor_guid_t ComputationGraphBuilder::dense(
 
 tensor_guid_t ComputationGraphBuilder::concat(
     std::vector<tensor_guid_t> const &inputs,
-    int axis,
+    relative_ff_dim_t axis,
     std::optional<std::string> const &maybe_name) {
 
-  relative_ff_dim_t wrapped_axis = relative_ff_dim_t{axis};
   ConcatAttrs attrs = ConcatAttrs{ff_dim_t_from_relative_ff_dim_t(
-      wrapped_axis, num_dims(this->get_shape(inputs[0])))};
+      axis, num_dims(this->get_shape(inputs[0])))};
 
   std::string name =
       maybe_name.value_or(get_default_name(ComputationGraphOpAttrs{attrs}));
@@ -816,17 +829,17 @@ tensor_guid_t ComputationGraphBuilder::concat(
 
 tensor_guid_t ComputationGraphBuilder::flat(
     tensor_guid_t const &input,
-    int start_dim,
-    std::optional<int> const &end_dim,
+    relative_ff_dim_t start_dim,
+    std::optional<relative_ff_dim_t> const &end_dim,
     std::optional<std::string> const &maybe_name) {
-  int input_num_dims = num_dims(this->get_shape(input));
+  nonnegative_int input_num_dims = num_dims(this->get_shape(input));
 
   FlatAttrs attrs = FlatAttrs{
-      /*start_dim=*/ff_dim_t_from_relative_ff_dim_t(
-          relative_ff_dim_t{start_dim}, input_num_dims),
+      /*start_dim=*/ff_dim_t_from_relative_ff_dim_t(start_dim, input_num_dims),
       /*end_dim=*/
-      ff_dim_t_from_relative_ff_dim_t(
-          relative_ff_dim_t{end_dim.value_or(input_num_dims)}, input_num_dims),
+      ff_dim_t_from_relative_ff_dim_t(end_dim.value_or(relative_ff_dim_t{
+                                          input_num_dims.unwrap_nonnegative()}),
+                                      input_num_dims),
   };
 
   std::string name =
@@ -842,16 +855,15 @@ tensor_guid_t ComputationGraphBuilder::flat(
 
 tensor_guid_t ComputationGraphBuilder::layer_norm(
     tensor_guid_t const &input,
-    std::vector<int> const &relative_axes,
+    std::vector<relative_ff_dim_t> const &relative_axes,
     bool elementwise_affine,
     float eps,
     std::optional<std::string> const &maybe_name) {
 
   TensorShape input_shape = this->get_shape(input);
 
-  auto resolve_dim_idx = [&](int dim_idx) {
-    return ff_dim_t_from_relative_ff_dim_t(relative_ff_dim_t{dim_idx},
-                                           num_dims(input_shape));
+  auto resolve_dim_idx = [&](relative_ff_dim_t dim_idx) {
+    return ff_dim_t_from_relative_ff_dim_t(dim_idx, num_dims(input_shape));
   };
 
   stack_vector<ff_dim_t, MAX_TENSOR_DIM> axes = stack_vector_of<MAX_TENSOR_DIM>(
@@ -909,15 +921,16 @@ tensor_guid_t ComputationGraphBuilder::layer_norm(
 
 tensor_guid_t ComputationGraphBuilder::softmax(
     tensor_guid_t const &input,
-    std::optional<int> maybe_dim,
+    std::optional<relative_ff_dim_t> maybe_dim,
     std::optional<std::string> const &maybe_name) {
 
   TensorShape input_shape = this->get_shape(input);
 
-  int dim = maybe_dim.value_or(num_dims(input_shape) - 1);
+  relative_ff_dim_t dim = maybe_dim.value_or(
+      relative_ff_dim_t{num_dims(input_shape).unwrap_nonnegative() - 1});
 
-  SoftmaxAttrs attrs = SoftmaxAttrs{ff_dim_t_from_relative_ff_dim_t(
-      relative_ff_dim_t{dim}, num_dims(input_shape))};
+  SoftmaxAttrs attrs =
+      SoftmaxAttrs{ff_dim_t_from_relative_ff_dim_t(dim, num_dims(input_shape))};
 
   if (attrs.dim.value >= num_dims(input_shape)) {
     throw mk_runtime_error(

@@ -38,9 +38,15 @@
       };
       lib = pkgs.lib;
 
-      mkShell = pkgs.mkShell.override {
+      mkShell = attrs: pkgs.mkShell.override {
         stdenv = pkgs.cudaPackages.backendStdenv;
-      };
+      } (attrs // {
+        hardeningDisable = ["all"]; # disable nixpkgs default compiler arguments, otherwise ubsan doesn't catch 
+                                    # signed overflows due to the signedoverflow hardening setting. 
+                                    # for more details, see the following (long-running) nixpkgs github issues: 
+                                    # - https://github.com/NixOS/nixpkgs/issues/18995
+                                    # - https://github.com/NixOS/nixpkgs/issues/60919
+      });
 
       proj = proj-repo.packages.${system}.proj;
     in 
@@ -121,6 +127,8 @@
 
         gpu-ci = mkShell {
           inputsFrom = [ ci ];
+          hardeningDisable = [ "all" ];
+
           buildInputs = builtins.concatLists [
             (with nixGL.packages.${system}; [
               nixGLDefault
@@ -134,6 +142,8 @@
           VIMPLUGINS = lib.strings.concatStringsSep "," [
             "${proj-repo.packages.${system}.proj-nvim}"
           ];
+
+          hardeningDisable = [ "all" ];
 
           buildInputs = builtins.concatLists [
             (with pkgs; [

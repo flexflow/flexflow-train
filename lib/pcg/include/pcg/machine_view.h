@@ -5,7 +5,7 @@
 #include "machine_view.dtg.h"
 #include "pcg/device_id_t.dtg.h"
 #include "pcg/operator_task_space.dtg.h"
-#include "task_space_coordinate.dtg.h"
+#include "pcg/task_space_coordinate.dtg.h"
 #include <cstddef>
 #include <optional>
 #include <unordered_set>
@@ -36,6 +36,14 @@ std::unordered_set<MachineSpaceCoordinate>
     get_machine_space_coordinates(OperatorTaskSpace const &task,
                                   MachineView const &mv,
                                   MachineSpecification const &ms);
+
+std::unordered_set<device_id_t> get_device_ids(OperatorTaskSpace const &task,
+                                               MachineView const &mv,
+                                               MachineSpecification const &ms);
+
+MachineView make_1d_machine_view(MachineSpaceCoordinate const &start,
+                                 MachineSpecificationDimension const &dim,
+                                 stride_t stride);
 
 } // namespace FlexFlow
 

@@ -20,6 +20,9 @@ std::pair<OperatorAttributeKey, OutputOperatorAttributeExpr>
     set_attr_to_constant(OperatorAttributeKey key,
                          OperatorAttributeValue const &value);
 
+std::pair<OperatorAttributeKey, OutputOperatorAttributeExpr>
+    set_op_type_attr(OperatorType);
+
 } // namespace FlexFlow
 
 #endif

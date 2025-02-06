@@ -1,0 +1,20 @@
+namespace = "FlexFlow"
+name = "PCGTask"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "compiler/cost_estimator/op_cost_estimate_key.dtg.h",
+  "compiler/cost_estimator/tensor_set_movement.dtg.h",
+]
+
+[[values]]
+type = "::FlexFlow::OpCostEstimateKey"
+key = "operator"
+
+[[values]]
+type = "::FlexFlow::TensorSetMovement"
+key = "tensor_movement"

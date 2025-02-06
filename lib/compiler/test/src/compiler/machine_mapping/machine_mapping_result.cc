@@ -8,14 +8,14 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("series_combine") {
     MachineView machine_view_0 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0,
-            /*device_idx=*/0,
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{1},
+                stride_t{1_n},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -23,14 +23,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineView machine_view_1 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0,
-            /*device_idx=*/0,
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{2},
+                stride_t{2_n},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -189,14 +189,14 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("parallel_combine") {
     MachineView machine_view_0 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0,
-            /*device_idx=*/0,
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{1},
+                stride_t{1_n},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -204,14 +204,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineView machine_view_1 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0,
-            /*device_idx=*/0,
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{2},
+                stride_t{2_n},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -312,14 +312,14 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("minimize_runtime") {
     MachineView machine_view_0 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0,
-            /*device_idx=*/0,
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{1},
+                stride_t{1_n},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -327,14 +327,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineView machine_view_1 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0,
-            /*device_idx=*/0,
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{2},
+                stride_t{2_n},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },

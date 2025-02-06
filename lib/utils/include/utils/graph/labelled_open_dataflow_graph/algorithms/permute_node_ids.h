@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_LABELLED_OPEN_DATAFLOW_GRAPH_ALGORITHMS_PERMUTE_NODE_IDS_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_LABELLED_OPEN_DATAFLOW_GRAPH_ALGORITHMS_PERMUTE_NODE_IDS_H
 
+#include "utils/containers/generate_map.h"
 #include "utils/graph/labelled_open_dataflow_graph/algorithms/with_labelling.h"
 #include "utils/graph/labelled_open_dataflow_graph/labelled_open_dataflow_graph_view.h"
 #include "utils/graph/node/algorithms.h"

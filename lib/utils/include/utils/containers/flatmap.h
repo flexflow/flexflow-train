@@ -4,6 +4,7 @@
 #include "utils/containers/extend.h"
 #include "utils/containers/get_element_type.h"
 #include "utils/containers/merge_maps.h"
+#include <string>
 #include <type_traits>
 #include <unordered_map>
 
@@ -52,7 +53,19 @@ std::unordered_map<OutK, OutV> flatmap(std::unordered_map<InK, InV> const &m,
   std::unordered_map<OutK, OutV> result;
 
   for (auto const &[k, v] : m) {
-    result = merge_maps(result, f(k, v));
+    result = merge_disjoint_maps(result, f(k, v));
+  }
+
+  return result;
+}
+
+template <typename F>
+std::string flatmap(std::string const &input, F const &f) {
+  std::string result = "";
+
+  for (char c : input) {
+    std::string for_c = f(c);
+    result += for_c;
   }
 
   return result;

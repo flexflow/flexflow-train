@@ -5,14 +5,14 @@ namespace FlexFlow {
 DataflowOutputQuery dataflow_output_query_all() {
   return DataflowOutputQuery{
       query_set<Node>::matchall(),
-      query_set<int>::matchall(),
+      query_set<nonnegative_int>::matchall(),
   };
 }
 
 DataflowOutputQuery dataflow_output_query_none() {
   return DataflowOutputQuery{
       query_set<Node>::match_none(),
-      query_set<int>::match_none(),
+      query_set<nonnegative_int>::match_none(),
   };
 }
 
@@ -24,7 +24,7 @@ bool dataflow_output_query_includes_dataflow_output(
 DataflowOutputQuery dataflow_output_query_for_output(DataflowOutput const &o) {
   return DataflowOutputQuery{
       query_set<Node>{o.node},
-      query_set<int>{o.idx},
+      query_set<nonnegative_int>{o.idx},
   };
 }
 

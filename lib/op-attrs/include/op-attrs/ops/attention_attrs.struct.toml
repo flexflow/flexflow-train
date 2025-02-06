@@ -10,21 +10,25 @@ features = [
   "fmt",
 ]
 
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
 [[fields]]
 name = "embed_dim"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "num_heads"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "kdim"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "vdim"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "dropout"

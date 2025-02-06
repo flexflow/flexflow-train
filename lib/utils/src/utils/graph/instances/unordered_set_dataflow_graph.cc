@@ -1,6 +1,5 @@
 #include "utils/graph/instances/unordered_set_dataflow_graph.h"
 #include "utils/containers/are_disjoint.h"
-#include "utils/containers/count.h"
 #include "utils/containers/enumerate_vector.h"
 #include "utils/containers/extend.h"
 #include "utils/containers/transform.h"
@@ -9,6 +8,7 @@
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/open_dataflow_graph/open_dataflow_edge.h"
 #include "utils/graph/open_dataflow_graph/open_dataflow_edge_query.h"
+#include "utils/nonnegative_int/nonnegative_range.h"
 
 namespace FlexFlow {
 
@@ -25,18 +25,18 @@ UnorderedSetDataflowGraph::UnorderedSetDataflowGraph(
 }
 
 NodeAddedResult UnorderedSetDataflowGraph::add_node(
-    std::vector<DataflowOutput> const &inputs, int num_outputs) {
+    std::vector<DataflowOutput> const &inputs, nonnegative_int num_outputs) {
   std::vector<OpenDataflowValue> open_inputs = transform(
       inputs, [](DataflowOutput const &o) { return OpenDataflowValue{o}; });
   return this->add_node(open_inputs, num_outputs);
 }
 
 NodeAddedResult UnorderedSetDataflowGraph::add_node(
-    std::vector<OpenDataflowValue> const &inputs, int num_outputs) {
+    std::vector<OpenDataflowValue> const &inputs, nonnegative_int num_outputs) {
   Node new_node = this->node_source.new_node();
 
-  std::vector<DataflowOutput> new_outputs =
-      transform(count(num_outputs), [&](int output_idx) {
+  std::vector<DataflowOutput> new_outputs = transform(
+      nonnegative_range(num_outputs), [&](nonnegative_int output_idx) {
         return DataflowOutput{new_node, output_idx};
       });
 
