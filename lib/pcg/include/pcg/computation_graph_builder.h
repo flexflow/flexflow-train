@@ -2,6 +2,7 @@
 #define _FLEXFLOW_PCG_INCLUDE_PCG_COMPUTATION_GRAPH_BUILDER_H
 
 #include "pcg/computation_graph.dtg.h"
+#include "pcg/computation_graph/layer_added_result.dtg.h"
 #include "pcg/initializer_attrs.dtg.h"
 #include "pcg/tensor_guid_t.dtg.h"
 
