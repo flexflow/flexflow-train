@@ -19,7 +19,7 @@ namespace FlexFlow {
 LocalCostEstimator::LocalCostEstimator(RuntimeArgConfig const &config)
     : runtime_arg_config(config) {}
 
-static ComputationGraph const &
+static ComputationGraph
     create_computation_graph_for_local_cost_estimation(
         PCGOperatorAttrs const &op,
         std::vector<ParallelTensorShape> const &inputs,

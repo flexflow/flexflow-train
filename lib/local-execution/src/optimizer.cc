@@ -59,11 +59,11 @@ static void sgd_update_task_impl(TaskArgumentAccessor const &acc) {
   auto profiling = acc.get_argument<ProfilingSettings>(PROFILING);
 
   assert(weight.shape == weight_grad.shape);
-  size_t size = weight_grad.shape.get_volume();
+  int size = weight_grad.shape.get_volume().unwrap_nonnegative();
 
-  assert(weight_grad.shape.get_volume() & weight.shape.get_volume() == 0);
-  size_t num_replicas =
-      weight_grad.shape.get_volume() / weight.shape.get_volume();
+  assert(weight_grad.shape.get_volume().unwrap_nonnegative() & weight.shape.get_volume().unwrap_nonnegative() == 0);
+  int num_replicas =
+      weight_grad.shape.get_volume().unwrap_nonnegative() / weight.shape.get_volume().unwrap_nonnegative();
 
   float *sgd_v_ptr;
   if (attrs.momentum > 0.0f) {
@@ -153,11 +153,11 @@ static void adam_update_task_impl(TaskArgumentAccessor const &acc) {
   auto profiling = acc.get_argument<ProfilingSettings>(PROFILING);
 
   assert(weight.shape == weight_grad.shape);
-  size_t size = weight_grad.shape.get_volume();
+  int size = weight_grad.shape.get_volume().unwrap_nonnegative();
 
-  assert(weight_grad.shape.get_volume() % weight.shape.get_volume() == 0);
-  size_t num_replicas =
-      weight_grad.shape.get_volume() / weight.shape.get_volume();
+  assert(weight_grad.shape.get_volume().unwrap_nonnegative() % weight.shape.get_volume().unwrap_nonnegative() == 0);
+  int num_replicas =
+      weight_grad.shape.get_volume().unwrap_nonnegative() / weight.shape.get_volume().unwrap_nonnegative();
 
   if (CHOSEN_SYNC_TYPE == ParamSync::NCCL) {
     auto handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);

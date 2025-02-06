@@ -36,8 +36,8 @@ void register_tasks_for_layer(TaskRegistry &task_registry,
         task_registry.backward_task_ids[op_id] = task_id;
         break;
       default:
-        throw mk_runtime_error("Invalid OpTaskType, got {}",
-                               task_signature_impl.task_signature.type);
+        throw mk_runtime_error(fmt::format("Invalid OpTaskType, got {}",
+                               task_signature_impl.task_signature.type));
     }
     task_registry.task_mapping.insert({task_id, task_signature_impl});
   }
@@ -58,7 +58,7 @@ bool registry_contains_task_for_layer(TaskRegistry const &task_registry,
       task_ids = task_registry.backward_task_ids;
       break;
     default:
-      throw mk_runtime_error("Invalid OpTaskType, got {}", op_task_type);
+      throw mk_runtime_error(fmt::format("Invalid OpTaskType, got {}", op_task_type));
   }
 
   return task_ids.at(op).has_value();

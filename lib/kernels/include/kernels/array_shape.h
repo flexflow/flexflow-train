@@ -18,7 +18,7 @@ public:
   explicit ArrayShape(nonnegative_int *dims, nonnegative_int num_dims);
   explicit ArrayShape(TensorShape const &shape);
   explicit ArrayShape(std::vector<nonnegative_int> const &);
-  explicit ArrayShape(LegionTensorDims const &);
+  explicit ArrayShape(LegionOrdered<nonnegative_int> const &);
 
   /**
    * @brief Alias of ArrayShape::num_elements for compatibility with
@@ -52,9 +52,6 @@ public:
 
   ArrayShape sub_shape(std::optional<legion_dim_t> start,
                        std::optional<legion_dim_t> end) const;
-
-  bool operator==(ArrayShape const &) const;
-  bool operator!=(ArrayShape const &) const;
 
 public:
   LegionOrdered<nonnegative_int> dims;

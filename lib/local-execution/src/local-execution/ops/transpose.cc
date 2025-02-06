@@ -28,24 +28,8 @@ enum Slots {
   OUTPUT, // tensor
   ATTRS,
   PROFILING,
-  PER_DEVICE_STATE,
 };
 
-OpTaskInvocation init(TransposeAttrs const &attrs) {
-  OpTaskBinding binding;
-  binding.bind_arg(ATTRS, attrs);
-  return {task_id_t::TRANSPOSE_INIT_TASK_ID, binding};
-}
-
-static DeviceSpecificDeviceStates
-    init_task_impl(TaskArgumentAccessor const &acc) {
-  auto const &attrs = acc.get_argument<TransposeAttrs>(ATTRS);
-  std::vector<ff_dim_t> perm = inner_to_outer_idxs(attrs.perm);
-  TransposePerDeviceState per_device_state = init_kernel(perm.size(), perm);
-
-  return DeviceSpecificDeviceStates{
-      DeviceSpecific<TransposePerDeviceState>::create(per_device_state)};
-}
 
 OpTaskInvocation forward(TransposeAttrs const &attrs) {
   OpTaskBinding binding;
@@ -95,9 +79,6 @@ OpTaskInvocation backward(TransposeAttrs const &attrs) {
   return {task_id_t::TRANSPOSE_BWD_TASK_ID, binding};
 }
 
-TaskImplFunction get_transpose_init_task_impl() {
-  return TaskImplFunction{InitOpTaskImplFunction{init_task_impl}};
-}
 
 TaskImplFunction get_transpose_fwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{forward_task_impl}};
@@ -107,13 +88,6 @@ TaskImplFunction get_transpose_bwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{backward_task_impl}};
 }
 
-OpTaskSignature get_transpose_init_signature() {
-  OpTaskSignature init(OpTaskType::INIT);
-
-  init.add_arg_slot<TransposeAttrs>(ATTRS);
-  init.add_return_value<TransposePerDeviceState>();
-  return init;
-}
 
 OpTaskSignature get_transpose_fwd_signature() {
   OpTaskSignature fwd(OpTaskType::FWD);
@@ -131,7 +105,7 @@ OpTaskSignature get_transpose_bwd_signature() {
 }
 
 std::vector<task_id_t> get_task_ids(TransposeAttrs const &) {
-  return {task_id_t::TRANSPOSE_INIT_TASK_ID, task_id_t::TRANSPOSE_FWD_TASK_ID, task_id_t::TRANSPOSE_BWD_TASK_ID};
+  return {task_id_t::TRANSPOSE_FWD_TASK_ID, task_id_t::TRANSPOSE_BWD_TASK_ID};
 }
 
 } // namespace FlexFlow

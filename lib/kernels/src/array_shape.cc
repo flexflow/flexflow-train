@@ -22,7 +22,7 @@ ArrayShape::ArrayShape(TensorShape const &shape)
 ArrayShape::ArrayShape(std::vector<nonnegative_int> const &input_dims)
     : dims(input_dims) {}
 
-ArrayShape::ArrayShape(LegionTensorDims const &legion_tensor_dims)
+ArrayShape::ArrayShape(LegionOrdered<nonnegative_int> const &legion_tensor_dims)
     : dims(legion_tensor_dims) {}
 
 nonnegative_int ArrayShape::get_volume() const {
@@ -58,21 +58,21 @@ nonnegative_int ArrayShape::at(ff_dim_t idx) const {
 
 ArrayShape ArrayShape::sub_shape(std::optional<ff_dim_t> start,
                                  std::optional<ff_dim_t> end) const {
-  std::optional<legion_dim_t> legion_start =
-      transform(start, [&](auto const &start_unwrapped) {
-        return legion_dim_from_ff_dim(start_unwrapped, num_dims());
-      });
-
-  std::optional<legion_dim_t> legion_end =
-      transform(end, [&](auto const &end_unwrapped) {
-        return legion_dim_from_ff_dim(end_unwrapped, num_dims());
-      });
-  return this->sub_shape(legion_start, legion_end);
+  return ArrayShape{legion_ordered_from_ff_ordered(slice(ff_ordered_from_legion_ordered(this->dims), start, end))};
 }
 
 ArrayShape ArrayShape::sub_shape(std::optional<legion_dim_t> start,
                                  std::optional<legion_dim_t> end) const {
-  return ArrayShape{slice(this->dims, start, end)};
+  std::optional<ff_dim_t> legion_start =
+      transform(start, [&](auto const &start_unwrapped) {
+        return ff_dim_from_legion_dim(start_unwrapped, num_dims());
+      });
+
+  std::optional<ff_dim_t> legion_end =
+      transform(end, [&](auto const &end_unwrapped) {
+        return ff_dim_from_legion_dim(end_unwrapped, num_dims());
+      });
+  return this->sub_shape(legion_start, legion_end);
 }
 
 bool ArrayShape::operator==(ArrayShape const &other) const {
@@ -83,11 +83,11 @@ bool ArrayShape::operator!=(ArrayShape const &other) const {
   return this->tie() != other.tie();
 }
 
-ArrayShape ArrayShape::sub_shape(
-    std::optional<std::variant<ff_dim_t, legion_dim_t>> start,
-    std::optional<std::variant<ff_dim_t, legion_dim_t>> end) const {
-  NOT_IMPLEMENTED();
-}
+// ArrayShape ArrayShape::sub_shape(
+//     std::optional<std::variant<ff_dim_t, legion_dim_t>> start,
+//     std::optional<std::variant<ff_dim_t, legion_dim_t>> end) const {
+//   NOT_IMPLEMENTED();
+// }
 
 std::optional<nonnegative_int> ArrayShape::at_maybe(legion_dim_t index) const {
   if (index.value < dims.size()) {
@@ -112,14 +112,6 @@ nonnegative_int get_volume(ArrayShape const &shape) {
 TensorShape get_tensor_shape(ArrayShape const &shape, DataType dtype) {
   return TensorShape{TensorDims{ff_ordered_from_legion_ordered(shape.dims)},
                      dtype};
-}
-
-bool ArrayShape::operator==(ArrayShape const &other) const {
-  return this->dims == other.dims;
-}
-
-bool ArrayShape::operator!=(ArrayShape const &other) const {
-  return this->dims != other.dims;
 }
 
 std::string format_as(ArrayShape const &x) {
