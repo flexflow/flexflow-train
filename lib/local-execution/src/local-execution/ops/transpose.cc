@@ -30,7 +30,6 @@ enum Slots {
   PROFILING,
 };
 
-
 OpTaskInvocation forward(TransposeAttrs const &attrs) {
   OpTaskBinding binding;
 
@@ -79,7 +78,6 @@ OpTaskInvocation backward(TransposeAttrs const &attrs) {
   return {task_id_t::TRANSPOSE_BWD_TASK_ID, binding};
 }
 
-
 TaskImplFunction get_transpose_fwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{forward_task_impl}};
 }
@@ -87,7 +85,6 @@ TaskImplFunction get_transpose_fwd_task_impl() {
 TaskImplFunction get_transpose_bwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{backward_task_impl}};
 }
-
 
 OpTaskSignature get_transpose_fwd_signature() {
   OpTaskSignature fwd(OpTaskType::FWD);

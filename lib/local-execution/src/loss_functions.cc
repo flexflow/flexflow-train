@@ -55,7 +55,8 @@ static void backward_task_impl(TaskArgumentAccessor const &acc) {
   auto logit_grad = acc.get_tensor_grad<Permissions::RW>(LOGIT_GRAD);
   auto logit = acc.get_tensor<Permissions::RO>(LOGIT);
   auto label = acc.get_loss_tensor<Permissions::RO>(LABEL);
-  int batch_size = logit.shape.at(legion_dim_t{nonnegative_int{1}}).unwrap_nonnegative();
+  int batch_size =
+      logit.shape.at(legion_dim_t{nonnegative_int{1}}).unwrap_nonnegative();
   // assuming logit shape is [batch dim, num classes]
 
   LossFunction loss_type = get_loss_function(attrs);
@@ -69,21 +70,29 @@ static void backward_task_impl(TaskArgumentAccessor const &acc) {
     // label shape is [batch dim, 1]
     auto scce_attrs = attrs.get<SparseCategoricalCrossEntropyLossAttrs>();
     size_t ndim = logit.shape.num_dims().unwrap_nonnegative();
-    int num_classes = logit.shape.at(legion_dim_t{nonnegative_int{0}}).unwrap_nonnegative();
+    int num_classes =
+        logit.shape.at(legion_dim_t{nonnegative_int{0}}).unwrap_nonnegative();
     assert(logit_grad.shape == logit.shape);
     int k = 1;
     if (scce_attrs.replace_labels) {
-      k = logit.shape.at(legion_dim_t(nonnegative_int{ndim - 1})).unwrap_nonnegative() /
-          label.shape.at(legion_dim_t(
-              nonnegative_int{ndim - 1})).unwrap_nonnegative(); // TODO FIXME something seems wrong here, isn't the
-                          // numerator guaranteed to be 1? <--- this is not the
-                          // case because of the potential parallel dim
+      k = logit.shape.at(legion_dim_t(nonnegative_int{ndim - 1}))
+              .unwrap_nonnegative() /
+          label.shape.at(legion_dim_t(nonnegative_int{ndim - 1}))
+              .unwrap_nonnegative(); // TODO FIXME something seems wrong here,
+                                     // isn't the numerator guaranteed to be 1?
+                                     // <--- this is not the case because of the
+                                     // potential parallel dim
     }
-    assert(label.shape.sub_shape(legion_dim_t(nonnegative_int{1}), std::nullopt) ==
-           logit.shape.sub_shape(legion_dim_t(nonnegative_int{1}), std::nullopt));
-    assert(k * label.shape.at(legion_dim_t(nonnegative_int{ndim - 1})).unwrap_nonnegative() ==
-           logit.shape.at(legion_dim_t(nonnegative_int{ndim - 1})).unwrap_nonnegative());
-    assert(label.shape.at(legion_dim_t(nonnegative_int{0})).unwrap_nonnegative() == 1);
+    assert(
+        label.shape.sub_shape(legion_dim_t(nonnegative_int{1}), std::nullopt) ==
+        logit.shape.sub_shape(legion_dim_t(nonnegative_int{1}), std::nullopt));
+    assert(k * label.shape.at(legion_dim_t(nonnegative_int{ndim - 1}))
+                   .unwrap_nonnegative() ==
+           logit.shape.at(legion_dim_t(nonnegative_int{ndim - 1}))
+               .unwrap_nonnegative());
+    assert(
+        label.shape.at(legion_dim_t(nonnegative_int{0})).unwrap_nonnegative() ==
+        1);
 
     profile(sparse_categorical_crossentropy_loss_backward_kernel,
             profiling,
@@ -100,7 +109,8 @@ static void backward_task_impl(TaskArgumentAccessor const &acc) {
   } else {
     assert(logit.shape == label.shape);
     assert(logit_grad.shape == logit.shape);
-    int num_channels = logit.shape.at(legion_dim_t{nonnegative_int{0}}).unwrap_nonnegative();
+    int num_channels =
+        logit.shape.at(legion_dim_t{nonnegative_int{0}}).unwrap_nonnegative();
     switch (loss_type) {
       case LossFunction::CATEGORICAL_CROSSENTROPY: {
         profile(categorical_crossentropy_loss_backward_kernel,

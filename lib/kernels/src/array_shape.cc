@@ -1,8 +1,8 @@
 #include "kernels/array_shape.h"
 #include "op-attrs/dim_ordered/slice.h"
 #include "utils/containers/product.h"
-#include "utils/containers/transform.h"
 #include "utils/containers/reversed.h"
+#include "utils/containers/transform.h"
 #include "utils/containers/vector_of.h"
 #include "utils/nonnegative_int/num_elements.h"
 
@@ -58,7 +58,8 @@ nonnegative_int ArrayShape::at(ff_dim_t idx) const {
 
 ArrayShape ArrayShape::sub_shape(std::optional<ff_dim_t> start,
                                  std::optional<ff_dim_t> end) const {
-  return ArrayShape{legion_ordered_from_ff_ordered(slice(ff_ordered_from_legion_ordered(this->dims), start, end))};
+  return ArrayShape{legion_ordered_from_ff_ordered(
+      slice(ff_ordered_from_legion_ordered(this->dims), start, end))};
 }
 
 ArrayShape ArrayShape::sub_shape(std::optional<legion_dim_t> start,
