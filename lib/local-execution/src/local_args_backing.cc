@@ -1,6 +1,6 @@
 #include "local-execution/local_args_backing.h"
-#include "local-execution/op_task_to_task_invocation.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "task-spec/op_task_to_task_invocation.h"
 #include "utils/containers/contains_key.h"
 #include "utils/containers/map_values.h"
 #include "utils/overload.h"

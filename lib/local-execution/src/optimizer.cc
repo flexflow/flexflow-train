@@ -1,6 +1,6 @@
 #include "local-execution/optimizer.h"
 #include "kernels/optimizer_kernels.h"
-#include "local-execution/profiling.h"
+#include "task-spec/profiling.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {

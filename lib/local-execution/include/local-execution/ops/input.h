@@ -1,8 +1,8 @@
 #ifndef _FLEXFLOW_INPUT_H
 #define _FLEXFLOW_INPUT_H
 
-#include "local-execution/op_task_invocation.h"
 #include "op-attrs/ops/input_attrs.dtg.h"
+#include "task-spec/op_task_invocation.h"
 
 namespace FlexFlow {
 

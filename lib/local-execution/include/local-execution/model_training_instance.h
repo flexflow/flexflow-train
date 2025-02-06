@@ -2,9 +2,9 @@
 #define _FLEXFLOW_LOCAL_EXECUTION_MODEL_TRAINING_INSTANCE_H
 
 #include "local-execution/local_training_backing.h"
-#include "local-execution/loss_tensor_t.dtg.h"
 #include "op-attrs/ops/loss_functions/loss_attrs.dtg.h"
 #include "pcg/tensor_guid_t.dtg.h"
+#include "task-spec/loss_tensor_t.dtg.h"
 
 namespace FlexFlow {
 

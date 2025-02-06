@@ -1,4 +1,4 @@
-#include "local-execution/task_binding.h"
+#include "task-spec/task_binding.h"
 #include "pcg/tensor_guid_t.dtg.h"
 #include "utils/containers/contains_key.h"
 #include "utils/fmt/unordered_map.h"

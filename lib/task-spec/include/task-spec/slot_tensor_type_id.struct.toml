@@ -1,0 +1,21 @@
+namespace = "FlexFlow"
+name = "SlotTensorTypeId"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "task-spec/tensor_type.dtg.h",
+  "task-spec/slot_id_t.dtg.h",
+]
+
+[[fields]]
+name = "slot_id"
+type = "::FlexFlow::slot_id_t"
+
+[[fields]]
+name = "tensor_type"
+type = "::FlexFlow::TensorType"

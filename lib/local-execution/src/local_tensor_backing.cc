@@ -1,6 +1,6 @@
 #include "local-execution/local_tensor_backing.h"
-#include "local-execution/slot_grad_id.dtg.h"
-#include "local-execution/tensor_lowering.h"
+#include "task-spec/slot_grad_id.dtg.h"
+
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/computation_graph.h"
 #include "pcg/optimizer_attrs.h"

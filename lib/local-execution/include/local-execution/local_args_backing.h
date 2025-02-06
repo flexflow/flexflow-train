@@ -2,12 +2,12 @@
 #define _FLEXFLOW_LOCAL_EXECUTION_LOCAL_ARGS_BACKING_H
 
 #include "local-execution/local_task_argument_accessor.h"
-#include "local-execution/op_task_invocation.h"
-#include "local-execution/per_device_op_state.h"
-#include "local-execution/runtime_arg_config.h"
-#include "local-execution/task_invocation.dtg.h"
 #include "pcg/computation_graph.h"
 #include "pcg/layer_guid_t.dtg.h"
+#include "task-spec/op_task_invocation.h"
+#include "task-spec/per_device_op_state.h"
+#include "task-spec/runtime_arg_config.h"
+#include "task-spec/task_invocation.dtg.h"
 
 namespace FlexFlow {
 

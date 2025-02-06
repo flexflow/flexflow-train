@@ -1,7 +1,7 @@
 #include "local-execution/local_cost_estimator.h"
 #include "kernels/device.h"
 #include "kernels/local_cuda_allocator.h"
-#include "local-execution/tensor_lowering.h"
+
 #include "local-execution/tracked_allocator.h"
 #include "op-attrs/computation_graph_op_attrs.h"
 #include "op-attrs/pcg_operator_attrs.h"

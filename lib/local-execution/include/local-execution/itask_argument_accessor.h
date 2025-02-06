@@ -2,10 +2,10 @@
 #define _FLEXFLOW_LOCAL_EXECUTION_ITASK_ARGUMENT_ACCESSOR_H
 
 #include "kernels/allocation.h"
-#include "local-execution/concrete_arg.h"
-#include "local-execution/op_task_signature.h"
 #include "local-execution/privilege_tensor_accessor.h"
-#include "local-execution/tensor_type.dtg.h"
+#include "task-spec/concrete_arg.h"
+#include "task-spec/op_task_signature.h"
+#include "task-spec/tensor_type.dtg.h"
 
 namespace FlexFlow {
 

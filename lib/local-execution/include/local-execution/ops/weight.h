@@ -1,8 +1,8 @@
 #ifndef _FLEXFLOW_WEIGHT_H
 #define _FLEXFLOW_WEIGHT_H
 
-#include "local-execution/op_task_invocation.h"
 #include "op-attrs/ops/weight_attrs.dtg.h"
+#include "task-spec/op_task_invocation.h"
 
 namespace FlexFlow {
 

@@ -15,9 +15,9 @@
 
 #include "local-execution/ops/attention.h"
 #include "kernels/attention_kernels.h"
-#include "local-execution/op_task_signature.h"
 #include "op-attrs/ops/attention.h"
 #include "op-attrs/ops/attention/multihead_attention_parallel_inputs.h"
+#include "task-spec/op_task_signature.h"
 
 namespace FlexFlow {
 

@@ -2,10 +2,10 @@
 #ifndef _FLEXFLOW_LOCAL_EXECUTION_TASK_REGISTRY_H
 #define _FLEXFLOW_LOCAL_EXECUTION_TASK_REGISTRY_H
 
-#include "local-execution/op_task_type.dtg.h"
 #include "local-execution/task_registry.dtg.h"
 #include "op-attrs/computation_graph_op_attrs.h"
 #include "pcg/computation_graph.dtg.h"
+#include "task-spec/op_task_type.dtg.h"
 
 namespace FlexFlow {
 

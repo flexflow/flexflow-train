@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_LOCAL_EXECUTION_LOSS_TENSOR_SOURCE_H
 #define _FLEXFLOW_LOCAL_EXECUTION_LOSS_TENSOR_SOURCE_H
 
-#include "local-execution/loss_tensor_t.dtg.h"
+#include "task-spec/loss_tensor_t.dtg.h"
 
 namespace FlexFlow {
 

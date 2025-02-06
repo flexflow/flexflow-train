@@ -15,9 +15,9 @@
 
 #include "local-execution/ops/batch_matmul.h"
 #include "kernels/batch_matmul_kernels.h"
-#include "local-execution/op_task_signature.h"
 #include "op-attrs/get_output_shapes.h"
 #include "op-attrs/ops/batch_matmul.h"
+#include "task-spec/op_task_signature.h"
 #include "utils/containers/transform.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 

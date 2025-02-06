@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_ELEMENT_BINARY_H
 #define _FLEXFLOW_ELEMENT_BINARY_H
 
-#include "local-execution/sim_environment.h"
+#include "local-execution/task_impl_function.dtg.h"
 #include "local-execution/task_signature_impl.h"
 #include "op-attrs/ops/element_binary_attrs.dtg.h"
 

@@ -16,7 +16,7 @@
 #include "op-attrs/ops/loss_functions.h"
 #include "kernels/loss_function_kernels.h"
 #include "local-execution/loss_functions.h"
-#include "local-execution/profiling.h"
+#include "task-spec/profiling.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
 
 namespace FlexFlow {

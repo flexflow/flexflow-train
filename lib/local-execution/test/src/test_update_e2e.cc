@@ -3,7 +3,7 @@
 #include "kernels/managed_ff_stream.h"
 #include "kernels/managed_per_device_ff_handle.h"
 #include "local-execution/local_training_backing.h"
-#include "local-execution/tensor_lowering.h"
+
 #include "pcg/computation_graph.h"
 #include "pcg/computation_graph_builder.h"
 #include "pcg/optimizer_attrs.dtg.h"

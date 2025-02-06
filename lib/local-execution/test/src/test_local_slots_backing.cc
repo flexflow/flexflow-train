@@ -2,7 +2,7 @@
 #include "local-execution/local_cost_estimator.h"
 #include "local-execution/local_cpu_allocator.h"
 #include "local-execution/local_tensor_backing.h"
-#include "local-execution/tensor_lowering.h"
+
 #include "op-attrs/ops/attention.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/computation_graph.h"
