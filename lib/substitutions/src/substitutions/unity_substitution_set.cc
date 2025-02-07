@@ -63,6 +63,7 @@ Substitution create_replicate_linear_combine(nonnegative_int num_dims,
       op_type_equals_constraint(OperatorType::LINEAR),
       op_attr_key_equals(OperatorAttributeKey::BIAS,
                          OperatorAttributeValue{use_bias}),
+
       op_attr_key_divisible_by(OperatorAttributeKey::OUT_CHANNELS, degree),
   }};
 
@@ -147,6 +148,7 @@ Substitution create_partition_linear_combine(nonnegative_int num_dims,
                                              nonnegative_int degree,
                                              Activation activation,
                                              bool use_bias) {
+
   SubstitutionBuilder b;
 
   auto [p_input, o_input] = b.add_input(tensor_attribute_pattern_match_all());
