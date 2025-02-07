@@ -63,15 +63,14 @@ Substitution create_replicate_linear_combine(nonnegative_int num_dims,
       op_type_equals_constraint(OperatorType::LINEAR),
       op_attr_key_equals(OperatorAttributeKey::BIAS,
                          OperatorAttributeValue{use_bias}),
-      op_attr_key_divisible_by(OperatorAttributeKey::OUT_CHANNELS,
-                               nonnegative_int{degree}),
+      op_attr_key_divisible_by(OperatorAttributeKey::OUT_CHANNELS, degree),
   }};
 
-  PatternValue p_linear_output = get_only(b.add_pattern_node(
-      linear_pattern,
-      p_inputs,
-      {tensor_attr_pattern_require_num_dims(nonnegative_int{num_dims})},
-      "linear"));
+  PatternValue p_linear_output = get_only(
+      b.add_pattern_node(linear_pattern,
+                         p_inputs,
+                         {tensor_attr_pattern_require_num_dims(num_dims)},
+                         "linear"));
 
   OutputOperatorAttrsAssignment replicate_input_expr =
       OutputOperatorAttrsAssignment{
@@ -148,7 +147,100 @@ Substitution create_partition_linear_combine(nonnegative_int num_dims,
                                              nonnegative_int degree,
                                              Activation activation,
                                              bool use_bias) {
-  NOT_IMPLEMENTED();
+  SubstitutionBuilder b;
+
+  auto [p_input, o_input] = b.add_input(tensor_attribute_pattern_match_all());
+  auto [p_weight, o_weight] = b.add_input(tensor_attribute_pattern_match_all());
+  std::vector<PatternValue> p_inputs = {p_input, p_weight};
+
+  std::optional<OutputGraphExprValue> o_bias = std::nullopt;
+  if (use_bias) {
+    std::pair<PatternValue, OutputGraphExprValue> bias =
+        b.add_input(tensor_attribute_pattern_match_all());
+    p_inputs.push_back(bias.first);
+    o_bias = bias.second;
+  }
+
+  OperatorAttributePattern linear_pattern = OperatorAttributePattern{{
+      op_type_equals_constraint(OperatorType::LINEAR),
+      op_attr_key_equals(OperatorAttributeKey::BIAS,
+                         OperatorAttributeValue{use_bias}),
+      op_attr_key_divisible_by(OperatorAttributeKey::OUT_CHANNELS, degree),
+  }};
+
+  PatternValue p_linear_output = get_only(
+      b.add_pattern_node(linear_pattern,
+                         p_inputs,
+                         {tensor_attr_pattern_require_num_dims(num_dims)},
+                         "linear"));
+
+  OutputOperatorAttrsAssignment partition_input_expr =
+      OutputOperatorAttrsAssignment{
+          std::nullopt,
+          {
+              set_op_type_attr(OperatorType::REPARTITION),
+              set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
+                                   OperatorAttributeValue{degree}),
+              set_attr_to_constant(OperatorAttributeKey::PARALLEL_DIM,
+                                   OperatorAttributeValue{ff_dim_t{1_n}}),
+          }};
+  OutputGraphExprValue o_partition_input_output =
+      get_only(b.add_output_graph_node(partition_input_expr, {o_input}, 1_n));
+
+  OutputOperatorAttrsAssignment replicate_weights_expr =
+      OutputOperatorAttrsAssignment{
+          std::nullopt,
+          {
+              set_op_type_attr(OperatorType::REPLICATE),
+              set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
+                                   OperatorAttributeValue{degree}),
+          }};
+  OutputGraphExprValue o_replicate_weights_output = get_only(
+      b.add_output_graph_node(replicate_weights_expr, {o_weight}, 1_n));
+
+  std::vector<OutputGraphExprValue> o_linear_inputs = {
+      o_partition_input_output, o_replicate_weights_output};
+
+  if (use_bias) {
+    OutputOperatorAttrsAssignment replicate_bias_expr =
+        OutputOperatorAttrsAssignment{
+            std::nullopt,
+            {
+                set_op_type_attr(OperatorType::REPLICATE),
+                set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
+                                     OperatorAttributeValue{degree}),
+            }};
+    OutputGraphExprValue o_replicate_bias_output = get_only(
+        b.add_output_graph_node(replicate_bias_expr, {o_bias.value()}, 1_n));
+    o_linear_inputs.push_back(o_replicate_bias_output);
+  }
+
+  OutputOperatorAttrsAssignment linear_expr = OutputOperatorAttrsAssignment{
+      b.pattern_node_named("linear"),
+      {},
+  };
+  OutputGraphExprValue o_linear_output =
+      get_only(b.add_output_graph_node(linear_expr, o_linear_inputs, 1_n));
+
+  OutputOperatorAttrsAssignment combine_expr = OutputOperatorAttrsAssignment{
+      std::nullopt,
+      {
+          set_op_type_attr(OperatorType::COMBINE),
+          set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
+                               OperatorAttributeValue{degree}),
+          set_attr_to_constant(
+              OperatorAttributeKey::PARALLEL_DIM,
+              OperatorAttributeValue{ff_dim_t{
+                  nonnegative_int{num_dims.unwrap_nonnegative() - 1},
+              }}),
+      },
+  };
+  OutputGraphExprValue o_combine_output =
+      get_only(b.add_output_graph_node(combine_expr, {o_linear_output}, 1_n));
+
+  b.equate_outputs(p_linear_output, o_combine_output);
+
+  return b.get_substitution();
 }
 
 Substitution create_partition_conv2d_combine(nonnegative_int num_dims,
