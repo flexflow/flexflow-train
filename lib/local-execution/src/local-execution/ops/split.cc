@@ -19,6 +19,7 @@
 #include "op-attrs/get_output_shapes.h"
 #include "utils/exception.h"
 #include "utils/hash-utils.h"
+#include "utils/nonnegative_int/nonnegative_range.h"
 
 namespace FlexFlow {
 
@@ -44,19 +45,18 @@ OpTaskInvocation backward(SplitAttrs const &attrs) {
   return {task_id_t::SPLIT_BWD_TASK_ID, binding};
 }
 
-void calc_block_size(coord_t &num_blocks,
-                     coord_t &block_size,
-                     ArrayShape const &array_shape,
-                     ff_dim_t axis) {
-  num_blocks = 1;
-  block_size = 1;
-  for (int d = 0; d < array_shape.num_elements(); d++) {
-    if (d <= axis.value.get_value()) {
-      block_size *= array_shape.at(legion_dim_t(d));
+static std::pair<nonnegative_int, nonnegative_int>
+    calc_block_size(ArrayShape const &array_shape, ff_dim_t axis) {
+  nonnegative_int num_blocks = 1_n;
+  nonnegative_int block_size = 1_n;
+  for (nonnegative_int d : nonnegative_range(array_shape.num_elements())) {
+    if (d <= axis.value) {
+      block_size *= array_shape.at(legion_dim_t{d});
     } else {
-      num_blocks *= array_shape.at(legion_dim_t(d));
+      num_blocks *= array_shape.at(legion_dim_t{d});
     }
   }
+  return {num_blocks, block_size};
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
@@ -65,13 +65,12 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   auto attrs = acc.get_argument<SplitAttrs>(ATTRS);
 
-  coord_t num_blocks, in_block_size, out_block_size[MAX_NUM_OUTPUTS];
-  calc_block_size(num_blocks, in_block_size, input.shape, attrs.axis);
+  coord_t out_block_sizes[MAX_NUM_OUTPUTS];
+  auto [num_blocks, in_block_size] = calc_block_size(input.shape, attrs.axis);
 
   for (int i = 0; i < attrs.splits.size(); i++) {
-    coord_t out_num_blocks;
-    calc_block_size(
-        out_num_blocks, out_block_size[i], output.shape, attrs.axis);
+    auto [_, out_block_size] = calc_block_size(output.shape, attrs.axis);
+    out_block_sizes[i] = out_block_size.unwrap_nonnegative();
   }
   float *output_float_ptr = output.get_float_ptr();
   return profile(forward_kernel,
@@ -79,9 +78,9 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
                  "Split forward_time = {:.2lf}ms\n",
                  &output_float_ptr,
                  input.get_float_ptr(),
-                 out_block_size,
-                 in_block_size,
-                 num_blocks,
+                 out_block_sizes,
+                 in_block_size.unwrap_nonnegative(),
+                 num_blocks.unwrap_nonnegative(),
                  attrs.splits.size());
 }
 
@@ -93,12 +92,14 @@ static std::optional<float>
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
   auto attrs = acc.get_argument<SplitAttrs>(ATTRS);
 
-  coord_t num_blocks, in_block_size, out_block_size[MAX_NUM_OUTPUTS];
-  calc_block_size(num_blocks, in_block_size, input_grad.shape, attrs.axis);
+  coord_t out_block_sizes[MAX_NUM_OUTPUTS];
+  auto [num_blocks, in_block_size] =
+      calc_block_size(input_grad.shape, attrs.axis);
+
   for (int i = 0; i < attrs.splits.size(); i++) {
     coord_t out_num_blocks;
-    calc_block_size(
-        out_num_blocks, out_block_size[i], output_grad.shape, attrs.axis);
+    auto [_, out_block_size] = calc_block_size(output_grad.shape, attrs.axis);
+    out_block_sizes[i] = out_block_size.unwrap_nonnegative();
   }
   float const *output_grad_ptr = output_grad.get_float_ptr();
   return profile(backward_kernel,
@@ -106,9 +107,9 @@ static std::optional<float>
                  "Split backward_time = {:.2lf}ms\n",
                  input_grad.get_float_ptr(),
                  &output_grad_ptr,
-                 out_block_size,
-                 in_block_size,
-                 num_blocks,
+                 out_block_sizes,
+                 in_block_size.unwrap_nonnegative(),
+                 num_blocks.unwrap_nonnegative(),
                  attrs.splits.size());
 }
 

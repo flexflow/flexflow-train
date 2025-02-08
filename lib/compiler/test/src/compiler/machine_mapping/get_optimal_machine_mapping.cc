@@ -45,14 +45,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineView mv1 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0,
-            /*device_idx=*/0,
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{1},
+                stride_t{1_n},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -60,31 +60,31 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineView mv2 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0,
-            /*device_idx=*/0,
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{2},
+                stride_t{2_n},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
     };
 
     MachineSpecification full_machine_spec = MachineSpecification{
-        /*num_nodes=*/2,
-        /*num_cpus_per_node=*/1,
-        /*num_gpus_per_node=*/1,
+        /*num_nodes=*/2_n,
+        /*num_cpus_per_node=*/1_n,
+        /*num_gpus_per_node=*/1_n,
         /*inter_node_bandwidth=*/1,
         /*intra_node_bandwidth=*/1,
     };
 
     MachineSpecification split_machine_spec = MachineSpecification{
-        /*num_nodes=*/1,
-        /*num_cpus_per_node=*/1,
-        /*num_gpus_per_node=*/1,
+        /*num_nodes=*/1_n,
+        /*num_cpus_per_node=*/1_n,
+        /*num_gpus_per_node=*/1_n,
         /*inter_node_bandwidth=*/1,
         /*intra_node_bandwidth=*/1,
     };
@@ -121,8 +121,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         ParallelTensorDims{
             FFOrdered<ShardParallelDim>{},
             ReplicaParallelDimSet{
-                SumDegree{1},
-                DiscardCopyDegree{1},
+                SumDegree{1_n},
+                DiscardCopyDegree{1_n},
             },
         },
         DataType::FLOAT,

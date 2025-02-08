@@ -13,9 +13,9 @@ std::unordered_set<DataflowEdge>
 
   DataflowEdgeQuery query = DataflowEdgeQuery{
       query_set<Node>{ns},
-      query_set<int>::matchall(),
+      query_set<nonnegative_int>::matchall(),
       dst_query,
-      query_set<int>::matchall(),
+      query_set<nonnegative_int>::matchall(),
   };
 
   return g.query_edges(query);

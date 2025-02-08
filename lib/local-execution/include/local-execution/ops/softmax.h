@@ -1,9 +1,9 @@
 #ifndef _FLEXFLOW_SOFTMAX_H
 #define _FLEXFLOW_SOFTMAX_H
 
-#include "local-execution/op_task_invocation.h"
-#include "local-execution/sim_environment.h"
+#include "local-execution/task_impl_function.dtg.h"
 #include "op-attrs/ops/softmax_attrs.dtg.h"
+#include "task-spec/op_task_invocation.h"
 
 namespace FlexFlow {
 

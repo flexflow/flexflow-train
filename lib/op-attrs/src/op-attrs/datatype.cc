@@ -1,23 +1,24 @@
 #include "op-attrs/datatype.h"
 #include "utils/containers/contains.h"
 #include "utils/exception.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 
 namespace FlexFlow {
 
-size_t size_of_datatype(DataType data_type) {
+nonnegative_int size_of_datatype(DataType data_type) {
   switch (data_type) {
     case DataType::BOOL:
-      return sizeof(bool);
+      return nonnegative_int{sizeof(bool)};
     case DataType::INT32:
-      return sizeof(int32_t);
+      return nonnegative_int{sizeof(int32_t)};
     case DataType::INT64:
-      return sizeof(int64_t);
+      return nonnegative_int{sizeof(int64_t)};
     case DataType::HALF:
-      return sizeof(float) / 2;
+      return nonnegative_int{sizeof(float)} / 2_n;
     case DataType::FLOAT:
-      return sizeof(float);
+      return nonnegative_int{sizeof(float)};
     case DataType::DOUBLE:
-      return sizeof(double);
+      return nonnegative_int{sizeof(double)};
     default:
       throw mk_runtime_error(fmt::format("Unknown DataType {}", data_type));
   }

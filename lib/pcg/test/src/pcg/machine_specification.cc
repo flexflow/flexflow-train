@@ -7,11 +7,10 @@ using namespace FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
 
   TEST_CASE("MachineSpecification") {
-
     MachineSpecification ms = MachineSpecification{
-        /*num_nodes=*/4,
-        /*num_cpus_per_node=*/16,
-        /*num_gpus_per_node=*/8,
+        /*num_nodes=*/4_n,
+        /*num_cpus_per_node=*/16_n,
+        /*num_gpus_per_node=*/8_n,
         /*inter_node_bandwidth=*/0,
         /*intra_node_bandwidth=*/0,
     };
@@ -32,19 +31,19 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("get_device_id") {
       SUBCASE("valid MachineSpaceCoordinate") {
         MachineSpaceCoordinate coord = MachineSpaceCoordinate{
-            /*node_idx=*/2,
-            /*device_idx=*/12,
+            /*node_idx=*/2_n,
+            /*device_idx=*/12_n,
             DeviceType::CPU,
         };
         device_id_t correct =
-            device_id_from_index(2 * 16 + 12, DeviceType::CPU);
+            device_id_from_index(nonnegative_int{2 * 16 + 12}, DeviceType::CPU);
         device_id_t result = get_device_id(ms, coord);
         CHECK(correct == result);
       }
       SUBCASE("MachineSpaceCoordinate out of bounds for given machine spec") {
         MachineSpaceCoordinate coord = MachineSpaceCoordinate{
-            /*node_idx=*/2,
-            /*device_idx=*/18,
+            /*node_idx=*/2_n,
+            /*device_idx=*/18_n,
             DeviceType::CPU,
         };
         CHECK_THROWS(get_device_id(ms, coord));

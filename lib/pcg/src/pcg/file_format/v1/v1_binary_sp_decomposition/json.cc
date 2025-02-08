@@ -21,7 +21,7 @@ V1BinarySPDecomposition
     };
   } else if (type == "leaf") {
     return V1BinarySPDecomposition{
-        j.at("value").get<int>(),
+        j.at("value").get<nonnegative_int>(),
     };
   } else {
     throw mk_runtime_error(fmt::format(
@@ -45,7 +45,7 @@ void adl_serializer<V1BinarySPDecomposition>::to_json(
         j["type"] = "parallel";
         return std::monostate{};
       },
-      [&](int leaf) {
+      [&](nonnegative_int leaf) {
         j["value"] = leaf;
         j["type"] = "leaf";
         return std::monostate{};

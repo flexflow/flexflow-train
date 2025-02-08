@@ -41,9 +41,14 @@ static DeviceSpecificDeviceStates
 
   OperatorType op_type = attrs.op_type;
 
-  size_t reduction_size = input.shape.get_volume() / output.shape.get_volume();
+  nonnegative_int reduction_size =
+      input.shape.get_volume() / output.shape.get_volume();
   ReducePerDeviceState per_device_state =
-      init_kernel(handle, op_type, reduction_size, input.shape, output.shape);
+      init_kernel(handle,
+                  op_type,
+                  reduction_size.unwrap_nonnegative(),
+                  input.shape,
+                  output.shape);
   return DeviceSpecificDeviceStates{
       DeviceSpecific<ReducePerDeviceState>::create(per_device_state)};
 }

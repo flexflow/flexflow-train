@@ -193,9 +193,6 @@ TaskSignatureAndImpl get_task_sig_impl(task_id_t const &task_id) {
     case task_id_t::TOPK_BWD_TASK_ID:
       return TaskSignatureAndImpl{get_topk_bwd_task_impl(),
                                   get_topk_bwd_signature()};
-    case task_id_t::TRANSPOSE_INIT_TASK_ID:
-      return TaskSignatureAndImpl{get_transpose_init_task_impl(),
-                                  get_transpose_init_signature()};
     case task_id_t::TRANSPOSE_FWD_TASK_ID:
       return TaskSignatureAndImpl{get_transpose_fwd_task_impl(),
                                   get_transpose_fwd_signature()};
@@ -296,7 +293,6 @@ OpTaskInvocation init(ComputationGraphOpAttrs const &op) {
       [](ReshapeAttrs const &attrs) { return init(attrs); },
       [](SoftmaxAttrs const &attrs) { return init(attrs); },
       [](TopKAttrs const &attrs) { return init(attrs); },
-      [](TransposeAttrs const &attrs) { return init(attrs); },
       [](auto const &attrs) -> OpTaskInvocation {
         throw mk_runtime_error(fmt::format("Unhandled attr type {}", attrs));
       },

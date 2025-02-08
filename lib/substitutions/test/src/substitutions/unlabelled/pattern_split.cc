@@ -13,11 +13,11 @@ TEST_SUITE(FF_TEST_SUITE) {
     OpenDataflowGraph g =
         OpenDataflowGraph::create<UnorderedSetDataflowGraph>();
 
-    NodeAddedResult n0_added = g.add_node({}, 1);
+    NodeAddedResult n0_added = g.add_node({}, 1_n);
     Node n0 = n0_added.node;
     OpenDataflowValue v0 = OpenDataflowValue{get_only(n0_added.outputs)};
 
-    NodeAddedResult n1_added = g.add_node({v0}, 1);
+    NodeAddedResult n1_added = g.add_node({v0}, 1_n);
     Node n1 = n1_added.node;
     OpenDataflowValue v1 = OpenDataflowValue{get_only(n1_added.outputs)};
 
@@ -77,11 +77,11 @@ TEST_SUITE(FF_TEST_SUITE) {
     DataflowGraphInput i0 = g.add_input();
     DataflowGraphInput i1 = g.add_input();
 
-    NodeAddedResult n0_added = g.add_node({OpenDataflowValue{i0}}, 1);
+    NodeAddedResult n0_added = g.add_node({OpenDataflowValue{i0}}, 1_n);
     Node n0 = n0_added.node;
     OpenDataflowValue v0 = OpenDataflowValue{get_only(n0_added.outputs)};
 
-    NodeAddedResult n1_added = g.add_node({OpenDataflowValue{i1}}, 1);
+    NodeAddedResult n1_added = g.add_node({OpenDataflowValue{i1}}, 1_n);
     Node n1 = n1_added.node;
     OpenDataflowValue v1 = OpenDataflowValue{get_only(n1_added.outputs)};
 

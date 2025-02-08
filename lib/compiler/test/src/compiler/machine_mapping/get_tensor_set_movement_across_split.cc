@@ -30,12 +30,12 @@ TEST_SUITE(FF_TEST_SUITE) {
     ParallelTensorShape input_shape = ParallelTensorShape{
         ParallelTensorDims{
             FFOrdered<ShardParallelDim>{
-                ShardParallelDim{10, 2},
-                ShardParallelDim{12, 1},
+                ShardParallelDim{10_n, 2_n},
+                ShardParallelDim{12_n, 1_n},
             },
             ReplicaParallelDimSet{
-                SumDegree{1},
-                DiscardCopyDegree{1},
+                SumDegree{1_n},
+                DiscardCopyDegree{1_n},
             },
         },
         DataType::FLOAT,
@@ -66,14 +66,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineView pre_mv1 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0,
-            /*device_idx=*/0,
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{1},
+                stride_t{1_n},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -81,14 +81,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineView pre_mv2 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0,
-            /*device_idx=*/0,
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{2},
+                stride_t{2_n},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -96,14 +96,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineView post_mv1 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0,
-            /*device_idx=*/0,
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{3},
+                stride_t{3_n},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -111,14 +111,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineView post_mv2 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0,
-            /*device_idx=*/0,
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{4},
+                stride_t{4_n},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },

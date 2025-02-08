@@ -9,17 +9,21 @@ features = [
   "fmt",
 ]
 
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
 [[fields]]
 name = "num_nodes"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "num_cpus_per_node"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "num_gpus_per_node"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "inter_node_bandwidth"

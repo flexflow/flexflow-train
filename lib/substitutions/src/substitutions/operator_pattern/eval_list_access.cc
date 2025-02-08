@@ -1,5 +1,8 @@
 #include "substitutions/operator_pattern/eval_list_access.h"
 #include "substitutions/operator_pattern/get_attribute.h"
+#include "utils/containers/at_idx.h"
+#include "utils/containers/make.h"
+#include "utils/containers/transform.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {
@@ -18,20 +21,12 @@ std::optional<OperatorAttributeValue>
       [&](auto const &v) -> std::optional<OperatorAttributeValue> {
         using T = std::decay_t<decltype(v)>;
 
-        if constexpr (std::is_same_v<T, std::vector<int>>) {
-          if (acc.index >= v.size()) {
-            return std::nullopt;
-          } else {
-            int value = v.at(acc.index);
-            return OperatorAttributeValue{value};
-          }
+        if constexpr (std::is_same_v<T, std::vector<nonnegative_int>>) {
+          return transform(at_idx(v, acc.index),
+                           make<OperatorAttributeValue>());
         } else if constexpr (std::is_same_v<T, std::vector<ff_dim_t>>) {
-          if (acc.index >= v.size()) {
-            return std::nullopt;
-          } else {
-            ff_dim_t value = v.at(acc.index);
-            return OperatorAttributeValue{value};
-          }
+          return transform(at_idx(v, acc.index),
+                           make<OperatorAttributeValue>());
         } else {
           throw mk_runtime_error("Invalid operand");
         }

@@ -59,18 +59,18 @@ static DeviceSpecificDeviceStates
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   auto const &attrs = acc.get_argument<SoftmaxAttrs>(ATTRS);
 
-  int output_w = output.shape.at(legion_dim_t(0));
-  int output_h = output.shape.at(legion_dim_t(1));
-  int output_c = output.shape.at(legion_dim_t(2));
-  int output_n = output.shape.at(legion_dim_t(3));
+  nonnegative_int output_w = output.shape.at(legion_dim_t{0_n});
+  nonnegative_int output_h = output.shape.at(legion_dim_t{1_n});
+  nonnegative_int output_c = output.shape.at(legion_dim_t{2_n});
+  nonnegative_int output_n = output.shape.at(legion_dim_t{3_n});
 
   SoftmaxPerDeviceState per_device_state =
       init_kernel(handle,
-                  attrs.dim.value.get_value(),
-                  output_n,
-                  output_c,
-                  output_h,
-                  output_w);
+                  attrs.dim.value.unwrap_nonnegative(),
+                  output_n.unwrap_nonnegative(),
+                  output_c.unwrap_nonnegative(),
+                  output_h.unwrap_nonnegative(),
+                  output_w.unwrap_nonnegative());
 
   return DeviceSpecificDeviceStates{
       DeviceSpecific<SoftmaxPerDeviceState>::create(per_device_state)};
@@ -109,7 +109,7 @@ static std::optional<float>
                  "[SoftMax] backward_time = {:.2lf}ms\n",
                  input_grad.get_float_ptr(),
                  output_grad.get_float_ptr(),
-                 output_grad.shape.get_volume());
+                 output_grad.shape.get_volume().unwrap_nonnegative());
 }
 
 TaskImplFunction get_softmax_init_task_impl() {

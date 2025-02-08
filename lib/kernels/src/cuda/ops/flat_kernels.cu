@@ -27,7 +27,8 @@ void forward_kernel(cudaStream_t stream,
 
   checkCUDA(cudaMemcpyAsync(output_ptr,
                             input.get_float_ptr(),
-                            (input.shape.num_elements()) * sizeof(float),
+                            input.shape.num_elements().unwrap_nonnegative() *
+                                sizeof(float),
                             cudaMemcpyDeviceToDevice,
                             stream));
 }
@@ -39,8 +40,13 @@ void backward_kernel(cudaStream_t stream,
 
   float alpha = 1.0f;
   apply_add_with_scale<float>
-      <<<GET_BLOCKS(input.shape.num_elements()), CUDA_NUM_THREADS, 0, stream>>>(
-          input_grad_ptr, output_grad_ptr, input.shape.num_elements(), alpha);
+      <<<GET_BLOCKS(input.shape.num_elements().unwrap_nonnegative()),
+         CUDA_NUM_THREADS,
+         0,
+         stream>>>(input_grad_ptr,
+                   output_grad_ptr,
+                   input.shape.num_elements().unwrap_nonnegative(),
+                   alpha);
 }
 
 } // namespace Flat

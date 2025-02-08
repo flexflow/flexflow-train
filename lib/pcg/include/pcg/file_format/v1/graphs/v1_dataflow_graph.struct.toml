@@ -13,6 +13,7 @@ includes = [
   "<vector>",
   "<unordered_set>",
   "pcg/file_format/v1/graphs/v1_graph_edge.dtg.h",
+  "utils/nonnegative_int/nonnegative_int.h",
 ]
 
 src_includes = [
@@ -24,7 +25,7 @@ src_includes = [
 
 [[fields]]
 name = "nodes"
-type = "std::vector<int>"
+type = "std::vector<::FlexFlow::nonnegative_int>"
 
 [[fields]]
 name = "edges"

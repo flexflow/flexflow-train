@@ -1,5 +1,6 @@
 #include "utils/containers/range.h"
 #include <cassert>
+#include <iostream>
 
 namespace FlexFlow {
 

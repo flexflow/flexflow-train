@@ -1,0 +1,20 @@
+namespace = "FlexFlow"
+name = "TaskArgSpec"
+features = [
+  "eq",
+  "fmt",
+  "hash"
+]
+
+includes = [
+  "task-spec/concrete_arg.h",
+  "task-spec/runtime_arg_ref.h"
+]
+
+[[values]]
+type = "::FlexFlow::ConcreteArgSpec"
+key = "concrete_arg_spec"
+
+[[values]]
+type = "::FlexFlow::RuntimeArgRefSpec"
+key = "runtime_arg_ref"

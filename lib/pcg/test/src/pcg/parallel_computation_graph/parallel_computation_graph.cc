@@ -45,12 +45,12 @@ TEST_SUITE(FF_TEST_SUITE) {
     ParallelTensorShape input_shape = ParallelTensorShape{
         ParallelTensorDims{
             FFOrdered<ShardParallelDim>{
-                ShardParallelDim{10, 2},
-                ShardParallelDim{12, 1},
+                ShardParallelDim{10_n, 2_n},
+                ShardParallelDim{12_n, 1_n},
             },
             ReplicaParallelDimSet{
-                SumDegree{1},
-                DiscardCopyDegree{1},
+                SumDegree{1_n},
+                DiscardCopyDegree{1_n},
             },
         },
         DataType::FLOAT,
@@ -84,7 +84,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_tensor_guid_t input =
           b.create_input_tensor(input_shape, CreateGrad::YES);
       b.dense(input,
-              /*outDim=*/14,
+              /*outDim=*/14_n,
               /*activation=*/Activation::RELU,
               /*use_bias=*/true,
               /*data_type=*/DataType::FLOAT,
@@ -110,12 +110,12 @@ TEST_SUITE(FF_TEST_SUITE) {
     ParallelTensorShape tensor_shape = ParallelTensorShape{
         ParallelTensorDims{
             FFOrdered<ShardParallelDim>{
-                ShardParallelDim{10, 2},
-                ShardParallelDim{12, 1},
+                ShardParallelDim{10_n, 2_n},
+                ShardParallelDim{12_n, 1_n},
             },
             ReplicaParallelDimSet{
-                SumDegree{1},
-                DiscardCopyDegree{1},
+                SumDegree{1_n},
+                DiscardCopyDegree{1_n},
             },
         },
         DataType::FLOAT,
@@ -186,12 +186,12 @@ TEST_SUITE(FF_TEST_SUITE) {
     ParallelTensorShape input_shape = ParallelTensorShape{
         ParallelTensorDims{
             FFOrdered<ShardParallelDim>{
-                ShardParallelDim{10, 2},
-                ShardParallelDim{12, 1},
+                ShardParallelDim{10_n, 2_n},
+                ShardParallelDim{12_n, 1_n},
             },
             ReplicaParallelDimSet{
-                SumDegree{1},
-                DiscardCopyDegree{1},
+                SumDegree{1_n},
+                DiscardCopyDegree{1_n},
             },
         },
         DataType::FLOAT,
@@ -246,7 +246,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       ParallelComputationGraph pcg = empty_parallel_computation_graph();
 
       LinearAttrs op_attrs = LinearAttrs{
-          /*out_channels=*/14,
+          /*out_channels=*/14_n,
           /*use_bias=*/false,
           /*data_type=*/DataType::FLOAT,
           /*activation=*/Activation::RELU,
@@ -293,7 +293,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                                {},
                                {raw_projection_tensor_attrs});
 
-        ReplicateAttrs replicate_attrs = ReplicateAttrs{/*degree=*/2};
+        ReplicateAttrs replicate_attrs = ReplicateAttrs{/*degree=*/2_n};
         ParallelLayerAttrs replicate_layer_attrs = ParallelLayerAttrs{
             PCGOperatorAttrs{replicate_attrs},
             std::nullopt,
@@ -346,12 +346,12 @@ TEST_SUITE(FF_TEST_SUITE) {
     ParallelTensorShape tensor_shape = ParallelTensorShape{
         ParallelTensorDims{
             FFOrdered<ShardParallelDim>{
-                ShardParallelDim{12, 2},
-                ShardParallelDim{10, 1},
+                ShardParallelDim{12_n, 2_n},
+                ShardParallelDim{10_n, 1_n},
             },
             ReplicaParallelDimSet{
-                SumDegree{2},
-                DiscardCopyDegree{2},
+                SumDegree{2_n},
+                DiscardCopyDegree{2_n},
             },
         },
         DataType::FLOAT,

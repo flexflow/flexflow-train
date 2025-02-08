@@ -1,7 +1,7 @@
 #include "local-execution/local_cost_estimator.h"
-#include "local-execution/tensor_lowering.h"
 #include "kernels/device.h"
 #include "kernels/local_cuda_allocator.h"
+
 #include "local-execution/tracked_allocator.h"
 #include "op-attrs/computation_graph_op_attrs.h"
 #include "op-attrs/pcg_operator_attrs.h"
@@ -9,14 +9,61 @@
 #include "pcg/computation_graph_builder.h"
 #include "pcg/machine_view.dtg.h"
 #include "pcg/parallel_tensor_attrs.h"
+#include "utils/containers/concat_vectors.h"
+#include "utils/containers/sum.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/values.h"
-#include "utils/containers/sum.h"
 
 namespace FlexFlow {
 
 LocalCostEstimator::LocalCostEstimator(RuntimeArgConfig const &config)
     : runtime_arg_config(config) {}
+
+static ComputationGraph create_computation_graph_for_local_cost_estimation(
+    PCGOperatorAttrs const &op,
+    std::vector<ParallelTensorShape> const &inputs,
+    std::vector<ParallelTensorAttrs> const &weights,
+    std::vector<ParallelTensorAttrs> const &outputs) {
+  ComputationGraph computation_graph = make_empty_computation_graph();
+
+  // create layer for inputs
+  auto get_vector_piece_attrs_from_parallel_tensor_shape =
+      [](std::vector<ParallelTensorShape> const &parallel_shapes) {
+        return transform(parallel_shapes, [](ParallelTensorShape const &p) {
+          return TensorAttrs{
+              get_piece_shape(p), std::nullopt, std::nullopt, CreateGrad::YES};
+        });
+      };
+
+  LayerAddedResult inputs_layer =
+      add_layer(computation_graph,
+                LayerAttrs{ComputationGraphOpAttrs{InputAttrs{}}, "inputs"},
+                {},
+                get_vector_piece_attrs_from_parallel_tensor_shape(inputs));
+
+  // create layer for weights
+  auto get_vector_piece_attrs_from_parallel_tensor_attrs =
+      [](std::vector<ParallelTensorAttrs> const &parallel_attrs) {
+        return transform(parallel_attrs, [](ParallelTensorAttrs const &p) {
+          return get_piece_attrs(p);
+        });
+      };
+
+  LayerAddedResult weights_layer =
+      add_layer(computation_graph,
+                LayerAttrs{ComputationGraphOpAttrs{InputAttrs{}}, "weights"},
+                {},
+                get_vector_piece_attrs_from_parallel_tensor_attrs(weights));
+
+  // create operator layer
+  LayerAddedResult operator_layer = add_layer(
+      computation_graph,
+      LayerAttrs{compgraph_op_attrs_from_pcg_op_attrs(op), "operator"},
+      concat_vectors(inputs_layer.outputs, weights_layer.outputs),
+      get_vector_piece_attrs_from_parallel_tensor_attrs(outputs));
+
+  return computation_graph;
+}
 
 CostDetails LocalCostEstimator::estimate_cost(
     PCGOperatorAttrs const &op,
@@ -30,48 +77,34 @@ CostDetails LocalCostEstimator::estimate_cost(
     return CostDetails{0, 0};
   }
 
-  LayerAttrs layer_attrs =
-      LayerAttrs{compgraph_op_attrs_from_pcg_op_attrs(op), std::nullopt};
+  // construct computation graph
+  ComputationGraph computation_graph =
+      create_computation_graph_for_local_cost_estimation(
+          op, inputs, weights, outputs);
 
-  // allocate memory for inputs
+  // allocate memory
   std::shared_ptr<TrackedAllocator> tracked_allocator_ptr =
       std::make_shared<TrackedAllocator>(create_local_cuda_memory_allocator());
   Allocator allocator = Allocator(tracked_allocator_ptr);
-  std::vector<tensor_guid_t> input_tensor_ids;
 
-  ComputationGraphBuilder cg_builder;
-  for (ParallelTensorShape const &input : inputs) {
-    TensorShape tensor_shape = get_piece_shape(input);
-    tensor_guid_t tensor_id =
-        cg_builder.create_input(tensor_shape, CreateGrad::YES);
-    input_tensor_ids.push_back(tensor_id);
-  }
+  LocalTrainingBacking local_backing(
+      allocator,
+      computation_graph,
+      LocalTensorBacking{},
+      LocalArgsBacking{this->runtime_arg_config});
 
-  auto get_vector_piece_attrs =
-      [](std::vector<ParallelTensorAttrs> const &parallel_attrs) {
-        return transform(parallel_attrs, [](ParallelTensorAttrs const &p) {
-          return get_piece_attrs(p);
-        });
-      };
+  allocate_all_computation_graph_tensors(local_backing.local_tensor_backing,
+                                         local_backing.gradient_tensor_source,
+                                         local_backing.computation_graph,
+                                         local_backing.allocator);
 
-  // add operator to graph
-  LayerAddedResult layer_added_result =
-      cg_builder.add_layer_and_get_layer_added_result(
-          layer_attrs,
-          input_tensor_ids,
-          transform(get_vector_piece_attrs(weights),
-                    [&](TensorAttrs const &a) {
-                      return cg_builder.create_weight(a);
-                    }),
-          get_vector_piece_attrs(outputs));
+  // execute layer
+  layer_guid_t operator_layer_guid =
+      get_layer_by_name(computation_graph, "operator");
+  execute_init(local_backing, operator_layer_guid);
+  float fwd = execute_forward(local_backing, operator_layer_guid).value();
+  float bwd = execute_backward(local_backing, operator_layer_guid).value();
 
-  LocalTrainingBacking local_backing(allocator,
-                                     cg_builder.computation_graph,
-                                     this->runtime_arg_config);
-  local_backing.register_and_allocate_layer(layer_added_result.layer);
-  local_backing.execute_init(layer_added_result.layer);
-  float fwd = local_backing.execute_forward(layer_added_result.layer).value();
-  float bwd = local_backing.execute_backward(layer_added_result.layer).value();
   float total_execution_time = fwd + bwd;
 
   return CostDetails{total_execution_time,

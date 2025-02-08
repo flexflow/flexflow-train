@@ -10,7 +10,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    TensorShape input_shape = make_float_tensor_shape_from_legion_dims({100});
+    TensorShape input_shape = make_float_tensor_shape_from_legion_dims({100_n});
     TensorShape output_shape = input_shape;
 
     ReshapePerDeviceState state =
@@ -31,7 +31,7 @@ TEST_SUITE(FF_TEST_SUITE) {
               read_only_accessor_from_write_accessor(output_accessor));
 
       std::vector<float> expected_output_data(
-          input_accessor.shape.num_elements(), 1.0f);
+          input_accessor.shape.num_elements().unwrap_nonnegative(), 1.0f);
       CHECK(check_output_data == expected_output_data);
     }
 
@@ -52,7 +52,7 @@ TEST_SUITE(FF_TEST_SUITE) {
               read_only_accessor_from_write_accessor(input_grad_accessor));
 
       std::vector<float> expected_grad_input_data(
-          input_grad_accessor.shape.num_elements(), 3.0f);
+          input_grad_accessor.shape.num_elements().unwrap_nonnegative(), 3.0f);
       CHECK(host_grad_input_data == expected_grad_input_data);
     }
   }

@@ -7,9 +7,9 @@ std::vector<DataflowEdge> get_incoming_edges(DataflowGraphView const &g,
                                              Node const &n) {
   return sorted_by(g.query_edges(DataflowEdgeQuery{
                        query_set<Node>::matchall(),
-                       query_set<int>::matchall(),
+                       query_set<nonnegative_int>::matchall(),
                        {n},
-                       query_set<int>::matchall(),
+                       query_set<nonnegative_int>::matchall(),
                    }),
                    [](DataflowEdge const &l, DataflowEdge const &r) {
                      return l.dst.idx < r.dst.idx;
@@ -21,9 +21,9 @@ std::unordered_set<DataflowEdge>
                        std::unordered_set<Node> const &ns) {
   DataflowEdgeQuery query = DataflowEdgeQuery{
       query_set<Node>::matchall(),
-      query_set<int>::matchall(),
+      query_set<nonnegative_int>::matchall(),
       query_set<Node>{ns},
-      query_set<int>::matchall(),
+      query_set<nonnegative_int>::matchall(),
   };
   return g.query_edges(query);
 }

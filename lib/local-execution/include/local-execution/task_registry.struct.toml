@@ -8,7 +8,7 @@ features = [
 
 includes = [
   "local-execution/task_signature_impl.dtg.h",
-  "local-execution/task_id_t.dtg.h",
+  "task-spec/task_id_t.dtg.h",
   "pcg/layer_guid_t.dtg.h",
 ]
 

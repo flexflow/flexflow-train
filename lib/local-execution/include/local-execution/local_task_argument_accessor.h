@@ -1,8 +1,8 @@
 #ifndef _FLEXFLOW_LOCAL_EXECUTION_LOCAL_TASK_ARGUMENT_ACCESSOR_H
 #define _FLEXFLOW_LOCAL_EXECUTION_LOCAL_TASK_ARGUMENT_ACCESSOR_H
 
-#include "local-execution/slot_tensor_type_id.dtg.h"
 #include "local-execution/task_argument_accessor.h"
+#include "task-spec/slot_tensor_type_id.dtg.h"
 #include <unordered_map>
 #include <variant>
 

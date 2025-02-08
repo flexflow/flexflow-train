@@ -14,18 +14,23 @@
 #include "utils/containers/unordered_set_of.h"
 #include "utils/containers/vector_of.h"
 #include "utils/fmt/unordered_set.h"
+#include "utils/nonnegative_int/nonnegative_range.h"
+#include "utils/nonnegative_int/num_elements.h"
+
 namespace FlexFlow {
 
 std::unordered_set<TaskSpaceCoordinate>
     get_task_space_coordinates(OperatorTaskSpace const &task) {
 
-  std::vector<std::vector<int>> coordinate_ranges = transform(
-      task.degrees, [&](int const &num_points) { return range(num_points); });
+  std::vector<std::vector<nonnegative_int>> coordinate_ranges =
+      transform(task.degrees, [&](nonnegative_int num_points) {
+        return nonnegative_range(num_points);
+      });
 
-  std::unordered_set<std::vector<int>> raw_coordinates =
+  std::unordered_set<std::vector<nonnegative_int>> raw_coordinates =
       unordered_set_of(cartesian_product(coordinate_ranges));
   std::unordered_set<TaskSpaceCoordinate> task_space_coordinates =
-      transform(raw_coordinates, [](std::vector<int> const &point) {
+      transform(raw_coordinates, [](std::vector<nonnegative_int> const &point) {
         return TaskSpaceCoordinate{point};
       });
   return task_space_coordinates;
@@ -36,10 +41,11 @@ TaskSpaceCoordinate
   return maximum(get_task_space_coordinates(task));
 }
 
-size_t num_dims(OperatorTaskSpace const &task) {
-  return task.degrees.size();
+nonnegative_int num_dims(OperatorTaskSpace const &task) {
+  return num_elements(task.degrees);
 }
-size_t num_tasks(OperatorTaskSpace const &task) {
+
+nonnegative_int num_tasks(OperatorTaskSpace const &task) {
   return product(task.degrees);
 }
 
@@ -48,7 +54,7 @@ OperatorTaskSpace get_operator_task_space(ParallelComputationGraph const &pcg,
   parallel_tensor_guid_t out_tensor = get_layer_outputs(pcg, layer).at(0);
   ParallelTensorShape shape = get_parallel_tensor_shape(pcg, out_tensor);
 
-  std::vector<int> degrees;
+  std::vector<nonnegative_int> degrees;
   extend(degrees, vector_of(ff_ordered_shard_degrees(shape)));
   degrees.push_back(get_sum_degree(shape));
   degrees.push_back(get_discard_copy_degree(shape));

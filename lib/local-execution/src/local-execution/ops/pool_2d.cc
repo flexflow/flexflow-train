@@ -22,6 +22,20 @@ OpTaskInvocation init(Pool2DAttrs const &attrs) {
   return {task_id_t::POOL2D_INIT_TASK_ID, binding};
 }
 
+static nonnegative_int calculate_padding(nonnegative_int output_size,
+                                         nonnegative_int stride,
+                                         nonnegative_int kernel_size,
+                                         nonnegative_int input_size) {
+  int o = output_size.unwrap_nonnegative();
+  int s = stride.unwrap_nonnegative();
+  int k = kernel_size.unwrap_nonnegative();
+  int i = kernel_size.unwrap_nonnegative();
+
+  return nonnegative_int{
+      ((o - 1) * s + k - i + 1) / 2,
+  };
+}
+
 static DeviceSpecificDeviceStates
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto const &attrs = acc.get_argument<Pool2DAttrs>(ATTRS);
@@ -30,56 +44,33 @@ static DeviceSpecificDeviceStates
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
-  int input_w = input.shape.at(ff_dim_t{nonnegative_int{0}}) + 1;
-  int input_h = input.shape.at(ff_dim_t{nonnegative_int{1}}) + 1;
-  int input_c = input.shape.at(ff_dim_t{nonnegative_int{2}}) + 1;
-  int input_n = input.shape.at(ff_dim_t{nonnegative_int{3}}) + 1;
-  int output_w = output.shape.at(ff_dim_t{nonnegative_int{0}}) + 1;
-  int output_h = output.shape.at(ff_dim_t{nonnegative_int{1}}) + 1;
-  int output_c = output.shape.at(ff_dim_t{nonnegative_int{2}}) + 1;
-  int output_n = output.shape.at(ff_dim_t{nonnegative_int{3}}) + 1;
+  nonnegative_int input_w = input.shape.at(ff_dim_t{0_n});
+  nonnegative_int input_h = input.shape.at(ff_dim_t{1_n});
+  nonnegative_int input_c = input.shape.at(ff_dim_t{2_n});
+  nonnegative_int input_n = input.shape.at(ff_dim_t{3_n});
+  nonnegative_int output_w = output.shape.at(ff_dim_t{0_n});
+  nonnegative_int output_h = output.shape.at(ff_dim_t{1_n});
+  nonnegative_int output_c = output.shape.at(ff_dim_t{2_n});
+  nonnegative_int output_n = output.shape.at(ff_dim_t{3_n});
 
-  printf("init pool (input): n(%d) c(%d) h(%d) "
-         "w(%d)\n",
-         input_n,
-         input_c,
-         input_h,
-         input_w);
-  printf("init pool (output): n(%d) c(%d) h(%d) w(%d)\n",
-         output_n,
-         output_c,
-         output_h,
-         output_w);
-
-  int pad_h =
-      ((output_h - 1) * attrs.stride_h + attrs.kernel_h - input_h + 1) / 2;
-  int pad_w =
-      ((output_w - 1) * attrs.stride_w + attrs.kernel_w - input_w + 1) / 2;
-  if (pad_h != attrs.padding_h) {
-    printf("Warning: changing pool_padding_h to satisfy output_h size\n");
-  }
-
-  if (pad_w != attrs.padding_w) {
-    printf("Warning: changing pool_padding_w to satisfy output_w size\n");
-  }
-
-  Pool2DPerDeviceState per_device_state = init_kernel(handle,
-                                                      attrs.activation,
-                                                      input_w,
-                                                      input_h,
-                                                      input_c,
-                                                      input_n,
-                                                      output_w,
-                                                      output_h,
-                                                      output_c,
-                                                      output_n,
-                                                      pad_h,
-                                                      pad_w,
-                                                      attrs.kernel_h,
-                                                      attrs.kernel_w,
-                                                      attrs.stride_h,
-                                                      attrs.stride_w,
-                                                      attrs.pool_type);
+  Pool2DPerDeviceState per_device_state =
+      init_kernel(handle,
+                  attrs.activation,
+                  input_w.unwrap_nonnegative(),
+                  input_h.unwrap_nonnegative(),
+                  input_c.unwrap_nonnegative(),
+                  input_n.unwrap_nonnegative(),
+                  output_w.unwrap_nonnegative(),
+                  output_h.unwrap_nonnegative(),
+                  output_c.unwrap_nonnegative(),
+                  output_n.unwrap_nonnegative(),
+                  attrs.padding_h.unwrap_nonnegative(),
+                  attrs.padding_w.unwrap_nonnegative(),
+                  attrs.kernel_h.unwrap_nonnegative(),
+                  attrs.kernel_w.unwrap_nonnegative(),
+                  attrs.stride_h.unwrap_nonnegative(),
+                  attrs.stride_w.unwrap_nonnegative(),
+                  attrs.pool_type);
 
   return DeviceSpecificDeviceStates{
       DeviceSpecific<Pool2DPerDeviceState>::create(per_device_state)};

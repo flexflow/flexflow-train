@@ -8,7 +8,7 @@ namespace FlexFlow {
 
 V1DataflowGraph to_v1(DataflowGraphView const &);
 V1DataflowGraph to_v1(DataflowGraphView const &,
-                      std::unordered_map<Node, int> const &);
+                      std::unordered_map<Node, nonnegative_int> const &);
 
 } // namespace FlexFlow
 

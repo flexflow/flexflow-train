@@ -7,7 +7,7 @@ Node get_open_dataflow_edge_dst_node(OpenDataflowEdge const &e) {
   return get_open_dataflow_edge_dst(e).node;
 }
 
-int get_open_dataflow_edge_dst_idx(OpenDataflowEdge const &e) {
+nonnegative_int get_open_dataflow_edge_dst_idx(OpenDataflowEdge const &e) {
   return get_open_dataflow_edge_dst(e).idx;
 }
 

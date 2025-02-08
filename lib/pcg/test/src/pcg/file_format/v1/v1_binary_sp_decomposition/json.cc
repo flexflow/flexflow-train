@@ -9,11 +9,11 @@ TEST_SUITE(FF_TEST_SUITE) {
         V1BinarySeriesSplit{
             V1BinarySPDecomposition{
                 V1BinaryParallelSplit{
-                    V1BinarySPDecomposition{2},
-                    V1BinarySPDecomposition{2},
+                    V1BinarySPDecomposition{2_n},
+                    V1BinarySPDecomposition{2_n},
                 },
             },
-            V1BinarySPDecomposition{3},
+            V1BinarySPDecomposition{3_n},
         },
     };
 
@@ -68,11 +68,11 @@ TEST_SUITE(FF_TEST_SUITE) {
     V1BinarySeriesSplit example_split = V1BinarySeriesSplit{
         V1BinarySPDecomposition{
             V1BinaryParallelSplit{
-                V1BinarySPDecomposition{2},
-                V1BinarySPDecomposition{2},
+                V1BinarySPDecomposition{2_n},
+                V1BinarySPDecomposition{2_n},
             },
         },
-        V1BinarySPDecomposition{3},
+        V1BinarySPDecomposition{3_n},
     };
 
     nlohmann::json example_json = {
@@ -124,11 +124,11 @@ TEST_SUITE(FF_TEST_SUITE) {
     V1BinaryParallelSplit example_split = V1BinaryParallelSplit{
         V1BinarySPDecomposition{
             V1BinaryParallelSplit{
-                V1BinarySPDecomposition{2},
-                V1BinarySPDecomposition{2},
+                V1BinarySPDecomposition{2_n},
+                V1BinarySPDecomposition{2_n},
             },
         },
-        V1BinarySPDecomposition{3},
+        V1BinarySPDecomposition{3_n},
     };
 
     nlohmann::json example_json = {

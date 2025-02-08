@@ -6,68 +6,68 @@
 namespace FlexFlow {
 
 ModelTrainingInstance::ModelTrainingInstance(
-    Allocator const &allocator,
-    ComputationGraph const &computation_graph,
-    RuntimeArgConfig const &runtime_arg_config,
-    LossAttrs const &loss_attrs,
+    LocalTrainingBacking const &local_training_backing,
     tensor_guid_t const &logit_tensor,
-    loss_tensor_t const &label_tensor,
+    TensorShape const &label_tensor_shape,
+    LossAttrs const &loss_attrs,
     OptimizerAttrs const &optimizer_attrs)
-    : computation_graph(computation_graph),
-      training_backing(allocator,
-                       computation_graph,
-                       runtime_arg_config),
-      loss_attrs(loss_attrs), logit_tensor(logit_tensor),
-      label_tensor(label_tensor), optimizer_attrs(optimizer_attrs) {
+    : training_backing(local_training_backing), loss_attrs(loss_attrs),
+      optimizer_attrs(optimizer_attrs), logit_tensor(logit_tensor),
+      label_tensor(
+          allocate_loss_tensor(this->training_backing.local_tensor_backing,
+                               this->loss_tensor_source,
+                               label_tensor_shape,
+                               this->training_backing.allocator)) {
+  allocate_all_optimizer_tensors(this->training_backing.local_tensor_backing,
+                                 this->optimizer_tensor_source,
+                                 this->training_backing.computation_graph,
+                                 this->training_backing.allocator,
+                                 this->optimizer_attrs);
+}
 
-  // allocate each layer's tensors
-  for (layer_guid_t const &node :
-       topological_ordering(this->computation_graph)) {
-    this->training_backing.register_and_allocate_layer(node);
-    this->training_backing.allocate_layer_optimizer_tensors(
-        node, this->optimizer_attrs);
+void init(ModelTrainingInstance &model_training_instance) {
+  for (layer_guid_t const &node : topological_ordering(
+           model_training_instance.training_backing.computation_graph)) {
+    execute_init(model_training_instance.training_backing, node);
   }
 }
 
-void ModelTrainingInstance::execute_init() {
-  for (layer_guid_t const &node :
-       topological_ordering(this->computation_graph)) {
-    this->training_backing.execute_init(node);
-  }
-}
-
-PerLayerElapsedTime ModelTrainingInstance::execute_forward() {
+PerLayerElapsedTime forward(ModelTrainingInstance &model_training_instance) {
   PerLayerElapsedTime per_layer_elapsed_time;
-  for (layer_guid_t const &node :
-       topological_ordering(this->computation_graph)) {
+  for (layer_guid_t const &node : topological_ordering(
+           model_training_instance.training_backing.computation_graph)) {
     std::optional<float> elapsed_time =
-        this->training_backing.execute_forward(node);
+        execute_forward(model_training_instance.training_backing, node);
     per_layer_elapsed_time.insert({node, elapsed_time});
   }
   return per_layer_elapsed_time;
 }
 
-PerLayerElapsedTime ModelTrainingInstance::execute_backward() {
-  this->training_backing.compute_loss(
-      this->loss_attrs, this->logit_tensor, this->label_tensor);
+PerLayerElapsedTime backward(ModelTrainingInstance &model_training_instance) {
+  compute_loss(model_training_instance.training_backing,
+               model_training_instance.loss_attrs,
+               model_training_instance.logit_tensor,
+               model_training_instance.label_tensor);
 
   PerLayerElapsedTime per_layer_elapsed_time;
-  for (layer_guid_t const &node :
-       reversed(topological_ordering(this->computation_graph))) {
+  for (layer_guid_t const &node : reversed(topological_ordering(
+           model_training_instance.training_backing.computation_graph))) {
     std::optional<float> elapsed_time =
-        this->training_backing.execute_backward(node);
+        execute_backward(model_training_instance.training_backing, node);
     per_layer_elapsed_time.insert({node, elapsed_time});
   }
   return per_layer_elapsed_time;
 }
 
-void ModelTrainingInstance::execute_update() {
-  for (layer_guid_t const &node :
-       topological_ordering(this->computation_graph)) {
-    this->training_backing.execute_update(node, this->optimizer_attrs);
+void update(ModelTrainingInstance &model_training_instance) {
+  for (layer_guid_t const &node : topological_ordering(
+           model_training_instance.training_backing.computation_graph)) {
+    execute_update(model_training_instance.training_backing,
+                   node,
+                   model_training_instance.optimizer_attrs);
   }
-  this->optimizer_attrs =
-      get_optimizer_attrs_for_next_iter(this->optimizer_attrs);
+  model_training_instance.optimizer_attrs = get_optimizer_attrs_for_next_iter(
+      model_training_instance.optimizer_attrs);
 }
 
 } // namespace FlexFlow

@@ -1,16 +1,25 @@
 #include "local-execution/optimizer.h"
 #include "kernels/optimizer_kernels.h"
-#include "local-execution/profiling.h"
+#include "task-spec/profiling.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {
 
-enum Slots { ATTRS, WEIGHT, SGD_V, PROFILING, ADAM_M, ADAM_V, HANDLE };
+enum Slots {
+  ATTRS,
+  WEIGHT,
+  WEIGHT_GRAD,
+  SGD_V,
+  PROFILING,
+  ADAM_M,
+  ADAM_V,
+  HANDLE
+};
 
 TaskSignature get_sgd_update_signature() {
   TaskSignature sig = make_empty_task_signature();
   add_slot(sig, WEIGHT, TensorType::FORWARD);
-  add_slot(sig, WEIGHT, TensorType::GRADIENT);
+  add_slot(sig, WEIGHT_GRAD, TensorType::GRADIENT);
   add_slot(sig, SGD_V, TensorType::OPTIMIZER);
 
   add_arg_slot<SGDOptimizerAttrs>(sig, ATTRS);
@@ -23,13 +32,14 @@ TaskSignature get_sgd_update_signature() {
 
 TaskInvocation sgd_update(SGDOptimizerAttrs const &attrs,
                           tensor_guid_t const &weight,
+                          gradient_tensor_t const &weight_grad,
                           optimizer_tensor_t const &sgd_v) {
   TaskBinding b;
   b.bind(WEIGHT, weight);
-  b.bind_grad(WEIGHT, weight);
+  b.bind_grad(WEIGHT_GRAD, weight_grad);
 
   if (attrs.momentum > 0.0f) {
-    b.bind(SGD_V, sgd_v);
+    b.bind_optimizer(SGD_V, sgd_v);
   }
   b.bind_arg(ATTRS, attrs);
   b.bind_arg(PROFILING, profiling_settings());
@@ -44,20 +54,21 @@ TaskInvocation sgd_update(SGDOptimizerAttrs const &attrs,
 
 static void sgd_update_task_impl(TaskArgumentAccessor const &acc) {
   auto attrs = acc.get_argument<SGDOptimizerAttrs>(ATTRS);
-  auto weight_grad = acc.get_tensor_grad<Permissions::RO>(WEIGHT);
+  auto weight_grad = acc.get_tensor_grad<Permissions::RO>(WEIGHT_GRAD);
   auto weight = acc.get_tensor<Permissions::RW>(WEIGHT);
   auto profiling = acc.get_argument<ProfilingSettings>(PROFILING);
 
   assert(weight.shape == weight_grad.shape);
-  size_t size = weight_grad.shape.get_volume();
+  int size = weight_grad.shape.get_volume().unwrap_nonnegative();
 
-  assert(weight_grad.shape.get_volume() & weight.shape.get_volume() == 0);
-  size_t num_replicas =
-      weight_grad.shape.get_volume() / weight.shape.get_volume();
+  assert(weight_grad.shape.get_volume().unwrap_nonnegative() &
+         weight.shape.get_volume().unwrap_nonnegative() == 0);
+  int num_replicas = weight_grad.shape.get_volume().unwrap_nonnegative() /
+                     weight.shape.get_volume().unwrap_nonnegative();
 
   float *sgd_v_ptr;
   if (attrs.momentum > 0.0f) {
-    auto sgd_v = acc.get_tensor<Permissions::RW>(SGD_V);
+    auto sgd_v = acc.get_optimizer_tensor<Permissions::RW>(SGD_V);
     assert(sgd_v.shape == weight.shape);
     sgd_v_ptr = sgd_v.get_float_ptr();
   }
@@ -100,7 +111,7 @@ TaskImplFunction get_sgd_update_task_impl() {
 TaskSignature get_adam_update_signature() {
   TaskSignature sig = make_empty_task_signature();
   add_slot(sig, WEIGHT, TensorType::FORWARD);
-  add_slot(sig, WEIGHT, TensorType::GRADIENT);
+  add_slot(sig, WEIGHT_GRAD, TensorType::GRADIENT);
   add_slot(sig, ADAM_V, TensorType::OPTIMIZER);
   add_slot(sig, ADAM_M, TensorType::OPTIMIZER);
 
@@ -114,13 +125,14 @@ TaskSignature get_adam_update_signature() {
 
 TaskInvocation adam_update(AdamOptimizerAttrs const &attrs,
                            tensor_guid_t const &weight,
+                           gradient_tensor_t const &weight_grad,
                            optimizer_tensor_t const &adam_v,
                            optimizer_tensor_t const &adam_m) {
   TaskBinding b;
   b.bind(WEIGHT, weight);
-  b.bind_grad(WEIGHT, weight);
-  b.bind(ADAM_M, adam_m);
-  b.bind(ADAM_V, adam_v);
+  b.bind_grad(WEIGHT_GRAD, weight_grad);
+  b.bind_optimizer(ADAM_M, adam_m);
+  b.bind_optimizer(ADAM_V, adam_v);
   b.bind_arg(ATTRS, attrs);
   b.bind_arg(PROFILING, profiling_settings());
 
@@ -134,19 +146,21 @@ TaskInvocation adam_update(AdamOptimizerAttrs const &attrs,
 
 static void adam_update_task_impl(TaskArgumentAccessor const &acc) {
   auto attrs = acc.get_argument<AdamOptimizerAttrs>(ATTRS);
-  auto weight_grad = acc.get_tensor_grad<Permissions::RO>(WEIGHT);
+  auto weight_grad = acc.get_tensor_grad<Permissions::RO>(WEIGHT_GRAD);
   auto weight = acc.get_tensor<Permissions::RW>(WEIGHT);
-  auto v_tensor = acc.get_tensor<Permissions::RW>(ADAM_V);
-  auto m_tensor = acc.get_tensor<Permissions::RW>(ADAM_M);
+  auto v_tensor = acc.get_optimizer_tensor<Permissions::RW>(ADAM_V);
+  auto m_tensor = acc.get_optimizer_tensor<Permissions::RW>(ADAM_M);
 
   auto profiling = acc.get_argument<ProfilingSettings>(PROFILING);
 
   assert(weight.shape == weight_grad.shape);
-  size_t size = weight_grad.shape.get_volume();
+  int size = weight_grad.shape.get_volume().unwrap_nonnegative();
 
-  assert(weight_grad.shape.get_volume() % weight.shape.get_volume() == 0);
-  size_t num_replicas =
-      weight_grad.shape.get_volume() / weight.shape.get_volume();
+  assert(weight_grad.shape.get_volume().unwrap_nonnegative() %
+             weight.shape.get_volume().unwrap_nonnegative() ==
+         0);
+  int num_replicas = weight_grad.shape.get_volume().unwrap_nonnegative() /
+                     weight.shape.get_volume().unwrap_nonnegative();
 
   if (CHOSEN_SYNC_TYPE == ParamSync::NCCL) {
     auto handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
@@ -195,14 +209,18 @@ TaskSignature get_update_signature(OptimizerAttrs const &attrs) {
 TaskInvocation get_update_invocation(
     OptimizerAttrs const &attrs,
     tensor_guid_t const &weight,
+    gradient_tensor_t const &weight_grad,
     std::vector<optimizer_tensor_t> const &grad_buffer_tensors) {
   return attrs.visit<TaskInvocation>(overload{
       [&](SGDOptimizerAttrs const &s) {
-        return sgd_update(s, weight, grad_buffer_tensors.at(0));
+        return sgd_update(s, weight, weight_grad, grad_buffer_tensors.at(0));
       },
       [&](AdamOptimizerAttrs const &s) {
-        return adam_update(
-            s, weight, grad_buffer_tensors.at(0), grad_buffer_tensors.at(1));
+        return adam_update(s,
+                           weight,
+                           weight_grad,
+                           grad_buffer_tensors.at(0),
+                           grad_buffer_tensors.at(1));
       }});
 }
 

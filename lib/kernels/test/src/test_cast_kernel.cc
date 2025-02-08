@@ -11,9 +11,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     Allocator allocator = create_local_cuda_memory_allocator();
 
     TensorShape input_shape =
-        make_float_tensor_shape_from_legion_dims({100, 100});
+        make_float_tensor_shape_from_legion_dims({100_n, 100_n});
     TensorShape output_shape =
-        make_double_tensor_shape_from_legion_dims({100, 100});
+        make_double_tensor_shape_from_legion_dims({100_n, 100_n});
 
     GenericTensorAccessorW output_accessor =
         create_random_filled_accessor_w(output_shape, allocator);

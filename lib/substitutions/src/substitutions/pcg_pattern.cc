@@ -3,12 +3,22 @@
 #include "substitutions/pcg_pattern_match.h"
 #include "substitutions/sub_parallel_computation_graph.h"
 #include "substitutions/tensor_pattern/satisfies_pattern.h"
+#include "substitutions/unlabelled/find_pattern_matches.h"
 #include "substitutions/unlabelled/pattern_value.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/transform.h"
 #include "utils/graph/dataflow_graph/algorithms.h"
+#include "utils/graph/node/algorithms.h"
+#include "utils/graph/open_dataflow_graph/algorithms/get_inputs.h"
+#include "utils/graph/open_dataflow_graph/algorithms/get_open_dataflow_graph_inputs.h"
 
 namespace FlexFlow {
+
+std::unordered_set<PatternNode> get_nodes(PCGPattern const &p) {
+  std::unordered_set<Node> raw_nodes = get_nodes(p.raw_graph);
+
+  return transform(raw_nodes, [](Node const &n) { return PatternNode{n}; });
+}
 
 static MatchAdditionalCriterion
     pcg_pattern_criteria(PCGPattern const &pattern,
@@ -61,6 +71,14 @@ TensorAttributePattern get_tensor_pattern(PCGPattern const &p,
 OperatorAttributePattern get_operator_pattern(PCGPattern const &p,
                                               PatternNode const &n) {
   return p.raw_graph.at(n.raw_node);
+}
+
+std::unordered_set<PatternInput> get_inputs(PCGPattern const &p) {
+  std::unordered_set<DataflowGraphInput> raw_inputs =
+      get_open_dataflow_graph_inputs(p.raw_graph);
+
+  return transform(raw_inputs,
+                   [](DataflowGraphInput const &i) { return PatternInput{i}; });
 }
 
 std::vector<PatternNodeOutput>

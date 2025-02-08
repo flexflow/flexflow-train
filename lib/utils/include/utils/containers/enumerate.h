@@ -11,14 +11,14 @@ namespace FlexFlow {
 /**
  * @brief Generate a map from indices to elements of \p c.
  *
- * @note We return a <tt>std::map<int, T></tt> rather than a
- * <tt>std::vector<std::pair<int, T>></tt> for consistency
+ * @note We return a <tt>std::map<nonnegative_int, T></tt> rather than a
+ * <tt>std::vector<std::pair<nonnegative_int, T>></tt> for consistency
  * with enumerate(FFOrdered<T> const &). Note that <tt>std::map</tt>
  * provides ordered iteration in increasing order, so iterating through
  * the result of this function should still function as expected.
  */
 template <typename T>
-std::map<int, T> enumerate(std::vector<T> const &c) {
+std::map<nonnegative_int, T> enumerate(std::vector<T> const &c) {
   return enumerate_vector(c);
 }
 
@@ -27,16 +27,16 @@ std::map<int, T> enumerate(std::vector<T> const &c) {
  * return a map from indices of this ordering to elements of \p c.
 
  *
- * @note We return a <tt>std::map<int, T></tt> rather than a
- * <tt>std::vector<std::pair<int, T>></tt> for consistency
+ * @note We return a <tt>std::map<nonnegative_int, T></tt> rather than a
+ * <tt>std::vector<std::pair<nonnegative_int, T>></tt> for consistency
  * with enumerate(FFOrdered<T> const &). Note that <tt>std::map</tt>
  * provides ordered iteration in increasing order, so iterating through
  * the result of this function should still function as expected.
  */
 template <typename T>
-std::map<int, T> enumerate(std::unordered_set<T> const &c) {
-  std::map<int, T> result;
-  int idx = 0;
+std::map<nonnegative_int, T> enumerate(std::unordered_set<T> const &c) {
+  std::map<nonnegative_int, T> result;
+  nonnegative_int idx = 0_n;
   for (auto const &v : c) {
     result.insert({idx++, v});
   }

@@ -1,4 +1,4 @@
-#include "local-execution/per_device_op_state.h"
+#include "task-spec/per_device_op_state.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {

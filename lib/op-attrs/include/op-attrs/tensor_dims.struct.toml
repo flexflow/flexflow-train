@@ -8,10 +8,12 @@ features = [
   "rapidcheck",
   "fmt",
 ]
+
 includes = [
   "op-attrs/dim_ordered/dim_ordered.h",
+  "utils/nonnegative_int/nonnegative_int.h",
 ]
 
 [[fields]]
 name = "ff_ordered"
-type = "::FlexFlow::FFOrdered<size_t>"
+type = "::FlexFlow::FFOrdered<::FlexFlow::nonnegative_int>"

@@ -1,9 +1,9 @@
 #ifndef _FLEXFLOW_TOPK_H_
 #define _FLEXFLOW_TOPK_H_
 
-#include "local-execution/op_task_invocation.h"
-#include "local-execution/sim_environment.h"
+#include "local-execution/task_impl_function.dtg.h"
 #include "op-attrs/ops/topk_attrs.dtg.h"
+#include "task-spec/op_task_invocation.h"
 
 namespace FlexFlow {
 

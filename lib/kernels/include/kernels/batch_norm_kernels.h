@@ -3,46 +3,11 @@
 
 #include "device.h"
 #include "kernels/allocation.h"
+#include "kernels/batch_norm_per_device_state.dtg.h"
 #include "kernels/ff_handle.h"
 #include <memory>
 
 namespace FlexFlow {
-
-struct BatchNormPerDeviceState {
-  PerDeviceFFHandle handle;
-  ffTensorDescriptor_t inputTensor;
-  ffTensorDescriptor_t outputTensor;
-  ffTensorDescriptor_t biasTensor;
-  ffActivationDescriptor_t actiDesc;
-  ffBatchNormMode_t mode;
-  float *runningMean;
-  float *runningVar;
-  float *saveMean;
-  float *saveVar;
-  int output_n;
-  int output_c;
-  int output_h;
-  int output_w;
-  req<bool> relu;
-};
-
-FF_VISITABLE_STRUCT_NONSTANDARD_CONSTRUCTION(BatchNormPerDeviceState,
-                                             handle,
-                                             inputTensor,
-                                             outputTensor,
-                                             biasTensor,
-                                             actiDesc,
-                                             mode,
-                                             runningMean,
-                                             runningVar,
-                                             saveMean,
-                                             saveVar,
-                                             output_n,
-                                             output_c,
-                                             output_h,
-                                             output_w,
-                                             relu);
-
 namespace Kernels {
 namespace BatchNorm {
 
@@ -56,14 +21,14 @@ BatchNormPerDeviceState init_kernel(PerDeviceFFHandle handle,
                                     bool relu);
 
 void forward_kernel(ffStream_t stream,
-                    BatchNormPerDeviceState const &m,
+                    BatchNormPerDeviceState const &per_device_statem,
                     float const *input_ptr,
                     float *output_ptr,
                     float const *scale_ptr,
                     float const *bias_ptr);
 
 void backward_kernel(ffStream_t stream,
-                     BatchNormPerDeviceState const &m,
+                     BatchNormPerDeviceState const &per_device_state,
                      float const *input_ptr,
                      float *output_grad_ptr,
                      float const *output_ptr,

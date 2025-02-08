@@ -1,4 +1,5 @@
 #include "pcg/optimizer_attrs.h"
+#include "utils/overload.h"
 
 namespace FlexFlow {
 
@@ -20,6 +21,18 @@ OptimizerAttrs
   } else {
     return old_attrs;
   }
+}
+
+int get_num_optimizer_tensors(OptimizerAttrs const &attrs) {
+  return attrs.visit<int>(
+      overload{[&](SGDOptimizerAttrs const &o) {
+                 if (o.momentum > 0.0f) {
+                   return 1;
+                 } else {
+                   return 0;
+                 }
+               },
+               [&](AdamOptimizerAttrs const &) { return 2; }});
 }
 
 } // namespace FlexFlow

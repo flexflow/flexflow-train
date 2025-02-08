@@ -4,16 +4,16 @@
 namespace FlexFlow {
 
 TransformerConfig get_default_transformer_config() {
-  return TransformerConfig{/*num_features=*/512,
-                           /*sequence_length=*/512,
-                           /*batch_size=*/64,
-                           /*dim_feedforward=*/2048,
-                           /*num_heads=*/8,
-                           /*num_encoder_layers=*/6,
-                           /*num_decoder_layers=*/6,
+  return TransformerConfig{/*num_features=*/512_n,
+                           /*sequence_length=*/512_n,
+                           /*batch_size=*/64_n,
+                           /*dim_feedforward=*/2048_n,
+                           /*num_heads=*/8_n,
+                           /*num_encoder_layers=*/6_n,
+                           /*num_decoder_layers=*/6_n,
                            /*dropout=*/0.1,
                            /*layer_norm_eps=*/1e-05,
-                           /*vocab_size=*/64};
+                           /*vocab_size=*/64_n};
 }
 
 tensor_guid_t create_feedforward_network(ComputationGraphBuilder &cgb,
@@ -32,18 +32,20 @@ tensor_guid_t create_feedforward_network(ComputationGraphBuilder &cgb,
 tensor_guid_t create_transformer_encoder_layer(ComputationGraphBuilder &cgb,
                                                TransformerConfig const &config,
                                                tensor_guid_t const &input) {
-  std::vector<int> layer_norm_axis{2}; // Normalize the last dim
-  int kdim = config.dim_feedforward / config.num_heads;
-  int vdim = config.dim_feedforward / config.num_heads;
-  tensor_guid_t self_attention = cgb.multihead_attention(input,
-                                                         input,
-                                                         input,
-                                                         config.num_features,
-                                                         config.num_heads,
-                                                         kdim,
-                                                         vdim,
-                                                         config.dropout,
-                                                         /*bias=*/false);
+  std::vector<relative_ff_dim_t> layer_norm_axis = {
+      relative_ff_dim_t{-1}}; // Normalize the last dim
+  nonnegative_int kdim = config.dim_feedforward / config.num_heads;
+  nonnegative_int vdim = config.dim_feedforward / config.num_heads;
+  tensor_guid_t self_attention =
+      cgb.multihead_attention(/*query=*/input,
+                              /*key=*/input,
+                              /*value=*/input,
+                              /*embed_dim=*/config.num_features,
+                              /*num_heads=*/config.num_heads,
+                              /*kdim=*/kdim,
+                              /*vdim=*/vdim,
+                              /*dropout=*/config.dropout,
+                              /*bias=*/false);
   assert(are_tensor_guid_shapes_equivalent(
       cgb.computation_graph, input, self_attention));
 
@@ -79,18 +81,20 @@ tensor_guid_t
                                      TransformerConfig const &config,
                                      tensor_guid_t const &input,
                                      tensor_guid_t const &encoder_output) {
-  std::vector<int> layer_norm_axis{2}; // Normalize the last dim
-  int kdim = config.dim_feedforward / config.num_heads;
-  int vdim = config.dim_feedforward / config.num_heads;
-  tensor_guid_t self_attention = cgb.multihead_attention(input,
-                                                         input,
-                                                         input,
-                                                         config.num_features,
-                                                         config.num_heads,
-                                                         kdim,
-                                                         vdim,
-                                                         config.dropout,
-                                                         /*bias=*/false);
+  std::vector<relative_ff_dim_t> layer_norm_axis = {
+      relative_ff_dim_t{-1}}; // Normalize the last dim
+  nonnegative_int kdim = config.dim_feedforward / config.num_heads;
+  nonnegative_int vdim = config.dim_feedforward / config.num_heads;
+  tensor_guid_t self_attention =
+      cgb.multihead_attention(/*query=*/input,
+                              /*key=*/input,
+                              /*value=*/input,
+                              /*embed_dim=*/config.num_features,
+                              /*num_heads=*/config.num_heads,
+                              /*kdim=*/kdim,
+                              /*vdim=*/vdim,
+                              /*dropout=*/config.dropout,
+                              /*bias=*/false);
   assert(are_tensor_guid_shapes_equivalent(
       cgb.computation_graph, input, self_attention));
 
@@ -102,15 +106,16 @@ tensor_guid_t
   assert(are_tensor_guid_shapes_equivalent(
       cgb.computation_graph, input, self_attention_normalized));
 
-  tensor_guid_t mha = cgb.multihead_attention(self_attention_normalized,
-                                              encoder_output,
-                                              encoder_output,
-                                              config.num_features,
-                                              config.num_heads,
-                                              kdim,
-                                              vdim,
-                                              config.dropout,
-                                              /*bias=*/false);
+  tensor_guid_t mha =
+      cgb.multihead_attention(/*query=*/self_attention_normalized,
+                              /*key=*/encoder_output,
+                              /*value=*/encoder_output,
+                              /*embed_dim=*/config.num_features,
+                              /*num_heads=*/config.num_heads,
+                              /*kdim=*/kdim,
+                              /*vdim=*/vdim,
+                              /*dropout=*/config.dropout,
+                              /*bias=*/false);
   assert(are_tensor_guid_shapes_equivalent(cgb.computation_graph, input, mha));
 
   tensor_guid_t mha_normalized =
@@ -148,7 +153,7 @@ ComputationGraph
   ComputationGraphBuilder cgb;
 
   TensorShape input_shape = TensorShape{
-      TensorDims{FFOrdered<size_t>{
+      TensorDims{FFOrdered<nonnegative_int>{
           config.batch_size, config.sequence_length, config.num_features}},
       DataType::FLOAT,
   };

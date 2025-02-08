@@ -5,21 +5,20 @@
 using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Test Transpose Kernel Operations") {
-    std::size_t num_dims = 2;
-
-    std::vector<ff_dim_t> perm = {ff_dim_t{nonnegative_int{0}},
-                                  ff_dim_t{nonnegative_int{1}}};
+    TransposeAttrs attrs = TransposeAttrs{
+        FFOrdered<ff_dim_t>{
+            ff_dim_t{0_n},
+            ff_dim_t{1_n},
+        },
+    };
 
     ManagedPerDeviceFFHandle managed_handle{};
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    TransposePerDeviceState state =
-        Kernels::Transpose::init_kernel(num_dims, perm);
-
     TensorShape input_shape =
-        make_float_tensor_shape_from_legion_dims({10, 10});
+        make_float_tensor_shape_from_legion_dims({10_n, 10_n});
     TensorShape output_shape = input_shape;
 
     SUBCASE("forward_kernel") {
@@ -30,7 +29,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           allocator.allocate_tensor(output_shape);
 
       Kernels::Transpose::forward_kernel(
-          managed_stream.raw_stream(), state, input_accessor, output_accessor);
+          managed_stream.raw_stream(), attrs, input_accessor, output_accessor);
 
       std::vector<float> host_output_data =
           load_data_to_host_from_device<float>(
@@ -46,7 +45,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           create_random_filled_accessor_w(input_shape, allocator);
 
       Kernels::Transpose::backward_kernel(managed_stream.raw_stream(),
-                                          state,
+                                          attrs,
                                           input_grad_accessor,
                                           output_grad_accessor);
 

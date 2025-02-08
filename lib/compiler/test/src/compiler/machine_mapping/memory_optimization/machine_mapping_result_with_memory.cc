@@ -9,14 +9,14 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("remove_non_pareto_optimal_machine_mapping_result") {
     MachineView machine_view_0 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0,
-            /*device_idx=*/0,
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{1},
+                stride_t{1_n},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -24,14 +24,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineView machine_view_1 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0,
-            /*device_idx=*/0,
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{2},
+                stride_t{2_n},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -39,14 +39,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineView machine_view_2 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0,
-            /*device_idx=*/0,
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{4},
+                stride_t{4_n},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -55,19 +55,19 @@ TEST_SUITE(FF_TEST_SUITE) {
     OpCostMetrics cost1 = OpCostMetrics{
         /*forward_runtime=*/2.0,
         /*backward_runtime=*/2.0,
-        /*memory=*/nonnegative_int{2},
+        /*memory=*/2_n,
     };
 
     OpCostMetrics cost2 = OpCostMetrics{
         /*forward_runtime=*/4.0,
         /*backward_runtime=*/4.0,
-        /*memory=*/nonnegative_int{1},
+        /*memory=*/1_n,
     };
 
     OpCostMetrics cost3 = OpCostMetrics{
         /*forward_runtime=*/2.0,
         /*backward_runtime=*/2.0,
-        /*memory=*/nonnegative_int{3},
+        /*memory=*/3_n,
     };
 
     MachineMappingForSingleLayer mm1 = MachineMappingForSingleLayer{
@@ -159,14 +159,14 @@ TEST_SUITE(FF_TEST_SUITE) {
             "std::optional<ParallelSplitTransformation> const&)") {
     MachineView machine_view_0 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0,
-            /*device_idx=*/0,
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{1},
+                stride_t{1_n},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -174,14 +174,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineView machine_view_1 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0,
-            /*device_idx=*/0,
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{2},
+                stride_t{2_n},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -190,7 +190,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     OpCostMetrics pre_cost = OpCostMetrics{
         /*forward_runtime=*/2.0,
         /*backward_runtime=*/2.0,
-        /*memory=*/nonnegative_int{2},
+        /*memory=*/2_n,
     };
     MachineMappingWithMemoryResult pre = MachineMappingWithMemoryResult{{
         MachineMappingForSingleLayer{
@@ -217,7 +217,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     OpCostMetrics post_cost = OpCostMetrics{
         /*forward_runtime=*/4.0,
         /*backward_runtime=*/4.0,
-        /*memory=*/nonnegative_int{1},
+        /*memory=*/1_n,
     };
 
     MachineMappingWithMemoryResult post = MachineMappingWithMemoryResult{{
@@ -360,14 +360,14 @@ TEST_SUITE(FF_TEST_SUITE) {
             "std::optional<ParallelSplitTransformation> const&)") {
     MachineView machine_view_0 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0,
-            /*device_idx=*/0,
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{1},
+                stride_t{1_n},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -375,14 +375,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineView machine_view_1 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0,
-            /*device_idx=*/0,
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{2},
+                stride_t{2_n},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -391,7 +391,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     OpCostMetrics lhs_cost = OpCostMetrics{
         /*forward_runtime=*/2.0,
         /*backward_runtime=*/2.0,
-        /*memory=*/nonnegative_int{2},
+        /*memory=*/2_n,
     };
     MachineMappingWithMemoryResult lhs = MachineMappingWithMemoryResult{{
         MachineMappingForSingleLayer{
@@ -418,7 +418,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     OpCostMetrics rhs_cost = OpCostMetrics{
         /*forward_runtime=*/4.0,
         /*backward_runtime=*/4.0,
-        /*memory=*/nonnegative_int{1},
+        /*memory=*/1_n,
     };
     MachineMappingWithMemoryResult rhs = MachineMappingWithMemoryResult{{
         MachineMappingForSingleLayer{
@@ -492,14 +492,14 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("minimize_runtime(memory)") {
     MachineView machine_view_0 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0,
-            /*device_idx=*/0,
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{1},
+                stride_t{1_n},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -507,14 +507,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineView machine_view_1 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0,
-            /*device_idx=*/0,
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{2},
+                stride_t{2_n},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -522,14 +522,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineView machine_view_2 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0,
-            /*device_idx=*/0,
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{4},
+                stride_t{4_n},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -538,17 +538,17 @@ TEST_SUITE(FF_TEST_SUITE) {
     OpCostMetrics cost1 = OpCostMetrics{
         /*forward_runtime=*/2.0,
         /*backward_runtime=*/2.0,
-        /*memory=*/nonnegative_int{2},
+        /*memory=*/2_n,
     };
     OpCostMetrics cost2 = OpCostMetrics{
         /*forward_runtime=*/4.0,
         /*backward_runtime=*/4.0,
-        /*memory=*/nonnegative_int{1},
+        /*memory=*/1_n,
     };
     OpCostMetrics cost3 = OpCostMetrics{
         /*forward_runtime=*/2.0,
         /*backward_runtime=*/2.0,
-        /*memory=*/nonnegative_int{3},
+        /*memory=*/3_n,
     };
 
     MachineMappingForSingleLayer mm1 = MachineMappingForSingleLayer{

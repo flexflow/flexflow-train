@@ -16,17 +16,18 @@
 #include "op-attrs/ops/loss_functions.h"
 #include "kernels/loss_function_kernels.h"
 #include "local-execution/loss_functions.h"
-#include "local-execution/profiling.h"
+#include "task-spec/profiling.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 
 namespace FlexFlow {
 
-enum Slots { LOGIT, LABEL, ATTRS, PROFILING };
+enum Slots { LOGIT, LABEL, LOGIT_GRAD, ATTRS, PROFILING };
 
 TaskSignature get_loss_bwd_signature() {
   TaskSignature sig = make_empty_task_signature();
   add_slot(sig, LOGIT, TensorType::FORWARD);
   add_slot(sig, LABEL, TensorType::LOSS);
-  add_slot(sig, LOGIT, TensorType::GRADIENT);
+  add_slot(sig, LOGIT_GRAD, TensorType::GRADIENT);
 
   add_arg_slot<LossAttrs>(sig, ATTRS);
   add_arg_slot<ProfilingSettings>(sig, PROFILING);
@@ -35,11 +36,12 @@ TaskSignature get_loss_bwd_signature() {
 
 TaskInvocation backward(LossAttrs const &attrs,
                         tensor_guid_t logit,
+                        gradient_tensor_t logit_grad,
                         loss_tensor_t label) {
   TaskBinding b;
   b.bind(LOGIT, logit);
-  b.bind(LABEL, label);
-  b.bind_grad(LOGIT, logit);
+  b.bind_loss(LABEL, label);
+  b.bind_grad(LOGIT_GRAD, logit_grad);
 
   b.bind_arg(ATTRS, attrs);
   b.bind_arg(PROFILING, profiling_settings());
@@ -50,38 +52,47 @@ TaskInvocation backward(LossAttrs const &attrs,
 static void backward_task_impl(TaskArgumentAccessor const &acc) {
   auto attrs = acc.get_argument<LossAttrs>(ATTRS);
   auto profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  auto logit_grad = acc.get_tensor_grad<Permissions::RW>(LOGIT);
+  auto logit_grad = acc.get_tensor_grad<Permissions::RW>(LOGIT_GRAD);
   auto logit = acc.get_tensor<Permissions::RO>(LOGIT);
-  auto label = acc.get_tensor<Permissions::RO>(LABEL);
-  int batch_size = logit.shape.at(legion_dim_t{1});
+  auto label = acc.get_loss_tensor<Permissions::RO>(LABEL);
+  int batch_size =
+      logit.shape.at(legion_dim_t{nonnegative_int{1}}).unwrap_nonnegative();
   // assuming logit shape is [batch dim, num classes]
 
   LossFunction loss_type = get_loss_function(attrs);
   float scale_factor = 1.0f / batch_size;
   if (loss_type == LossFunction::MEAN_SQUARED_ERROR_AVG_REDUCE) {
     assert(logit.shape.get_volume() == label.shape.get_volume());
-    scale_factor = 2.0f / logit.shape.get_volume();
+    scale_factor = 2.0f / logit.shape.get_volume().unwrap_nonnegative();
   }
 
   if (loss_type == LossFunction::SPARSE_CATEGORICAL_CROSSENTROPY) {
     // label shape is [batch dim, 1]
     auto scce_attrs = attrs.get<SparseCategoricalCrossEntropyLossAttrs>();
-    size_t ndim = logit.shape.num_dims();
-    int num_classes = logit.shape.at(legion_dim_t{0});
+    size_t ndim = logit.shape.num_dims().unwrap_nonnegative();
+    int num_classes =
+        logit.shape.at(legion_dim_t{nonnegative_int{0}}).unwrap_nonnegative();
     assert(logit_grad.shape == logit.shape);
     int k = 1;
     if (scce_attrs.replace_labels) {
-      k = logit.shape.at(legion_dim_t(ndim - 1)) /
-          label.shape.at(legion_dim_t(
-              ndim - 1)); // TODO FIXME something seems wrong here, isn't the
-                          // numerator guaranteed to be 1? <--- this is not the
-                          // case because of the potential parallel dim
+      k = logit.shape.at(legion_dim_t(nonnegative_int{ndim - 1}))
+              .unwrap_nonnegative() /
+          label.shape.at(legion_dim_t(nonnegative_int{ndim - 1}))
+              .unwrap_nonnegative(); // TODO FIXME something seems wrong here,
+                                     // isn't the numerator guaranteed to be 1?
+                                     // <--- this is not the case because of the
+                                     // potential parallel dim
     }
-    assert(label.shape.sub_shape(legion_dim_t(1), std::nullopt) ==
-           logit.shape.sub_shape(legion_dim_t(1), std::nullopt));
-    assert(k * label.shape.at(legion_dim_t(ndim - 1)) ==
-           logit.shape.at(legion_dim_t(ndim - 1)));
-    assert(label.shape.at(legion_dim_t(0)) == 1);
+    assert(
+        label.shape.sub_shape(legion_dim_t(nonnegative_int{1}), std::nullopt) ==
+        logit.shape.sub_shape(legion_dim_t(nonnegative_int{1}), std::nullopt));
+    assert(k * label.shape.at(legion_dim_t(nonnegative_int{ndim - 1}))
+                   .unwrap_nonnegative() ==
+           logit.shape.at(legion_dim_t(nonnegative_int{ndim - 1}))
+               .unwrap_nonnegative());
+    assert(
+        label.shape.at(legion_dim_t(nonnegative_int{0})).unwrap_nonnegative() ==
+        1);
 
     profile(sparse_categorical_crossentropy_loss_backward_kernel,
             profiling,
@@ -89,8 +100,8 @@ static void backward_task_impl(TaskArgumentAccessor const &acc) {
             get_float_ptr(logit_grad),
             get_float_ptr(logit),
             reinterpret_cast<int const *>(get_float_ptr(label)),
-            get_volume(logit.shape),
-            get_volume(logit_grad.shape),
+            get_volume(logit.shape).unwrap_nonnegative(),
+            get_volume(logit_grad.shape).unwrap_nonnegative(),
             batch_size,
             num_classes,
             k,
@@ -98,7 +109,8 @@ static void backward_task_impl(TaskArgumentAccessor const &acc) {
   } else {
     assert(logit.shape == label.shape);
     assert(logit_grad.shape == logit.shape);
-    int num_channels = logit.shape.at(legion_dim_t{0});
+    int num_channels =
+        logit.shape.at(legion_dim_t{nonnegative_int{0}}).unwrap_nonnegative();
     switch (loss_type) {
       case LossFunction::CATEGORICAL_CROSSENTROPY: {
         profile(categorical_crossentropy_loss_backward_kernel,
@@ -107,8 +119,8 @@ static void backward_task_impl(TaskArgumentAccessor const &acc) {
                 get_float_ptr(logit_grad),
                 get_float_ptr(logit),
                 get_float_ptr(label),
-                get_volume(logit.shape),
-                get_volume(logit_grad.shape),
+                get_volume(logit.shape).unwrap_nonnegative(),
+                get_volume(logit_grad.shape).unwrap_nonnegative(),
                 scale_factor);
         break;
       }
@@ -119,8 +131,8 @@ static void backward_task_impl(TaskArgumentAccessor const &acc) {
                 get_float_ptr(logit_grad),
                 get_float_ptr(logit),
                 get_float_ptr(label),
-                get_volume(logit.shape),
-                get_volume(logit_grad.shape),
+                get_volume(logit.shape).unwrap_nonnegative(),
+                get_volume(logit_grad.shape).unwrap_nonnegative(),
                 scale_factor);
         break;
       }
@@ -130,15 +142,15 @@ static void backward_task_impl(TaskArgumentAccessor const &acc) {
                 "[IdentityLoss] backward_time = %.2lfms\n",
                 get_float_ptr(logit_grad),
                 get_float_ptr(logit),
-                get_volume(logit.shape),
-                get_volume(logit_grad.shape),
+                get_volume(logit.shape).unwrap_nonnegative(),
+                get_volume(logit_grad.shape).unwrap_nonnegative(),
                 scale_factor);
         break;
       }
       default:
-        throw mk_runtime_error(
+        throw mk_runtime_error(fmt::format(
             "Unsupported loss function {}. Please report this as an issue.",
-            loss_type);
+            loss_type));
     }
   }
 }

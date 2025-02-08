@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_LOCAL_EXECUTION_LOWERED_TENSOR_SOURCE_H
 #define _FLEXFLOW_LOCAL_EXECUTION_LOWERED_TENSOR_SOURCE_H
 
-#include "local-execution/lowered_tensor_t.dtg.h"
+#include "task-spec/lowered_tensor_t.dtg.h"
 
 namespace FlexFlow {
 
@@ -14,8 +14,7 @@ public:
 private:
   static size_t next_available_lowered_tensor_id;
 };
-  
-} // namespace FlexFlow
 
+} // namespace FlexFlow
 
 #endif

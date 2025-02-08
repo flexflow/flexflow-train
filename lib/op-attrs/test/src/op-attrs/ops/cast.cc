@@ -12,15 +12,15 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     CastAttrs attrs = CastAttrs{output_datatype};
 
-    size_t d1 = 12;
-    size_t d2 = 16;
+    nonnegative_int d1 = 12_n;
+    nonnegative_int d2 = 16_n;
     TensorShape input = TensorShape{
-        TensorDims{FFOrdered<size_t>{d1, d2}},
+        TensorDims{FFOrdered<nonnegative_int>{d1, d2}},
         input_datatype,
     };
 
     TensorShape output = TensorShape{
-        TensorDims{FFOrdered<size_t>{d1, d2}},
+        TensorDims{FFOrdered<nonnegative_int>{d1, d2}},
         output_datatype,
     };
 
@@ -34,24 +34,30 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("get_output_shape(CastAttrs, ParallelTensorShape)") {
       auto make_input = [&](SumDegree o_sum,
                             DiscardCopyDegree o_eq,
-                            int o_batch,
-                            int o_features) {
+                            nonnegative_int o_batch,
+                            nonnegative_int o_features) {
         return lift_to_parallel_with_degrees(
-            input, o_sum, o_eq, FFOrdered<int>{o_batch, o_features});
+            input,
+            o_sum,
+            o_eq,
+            FFOrdered<nonnegative_int>{o_batch, o_features});
       };
 
       auto make_output = [&](SumDegree o_sum,
                              DiscardCopyDegree o_eq,
-                             int o_batch,
-                             int o_outchannels) {
+                             nonnegative_int o_batch,
+                             nonnegative_int o_outchannels) {
         return lift_to_parallel_with_degrees(
-            output, o_sum, o_eq, FFOrdered<int>{o_batch, o_outchannels});
+            output,
+            o_sum,
+            o_eq,
+            FFOrdered<nonnegative_int>{o_batch, o_outchannels});
       };
 
-      SumDegree sum_degree = SumDegree{2};
-      DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{3};
-      int batch_degree = 4;
-      int feature_degree = 8;
+      SumDegree sum_degree = SumDegree{2_n};
+      DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{3_n};
+      nonnegative_int batch_degree = 4_n;
+      nonnegative_int feature_degree = 8_n;
       ParallelTensorShape par_input = make_input(
           sum_degree, discard_copy_degree, batch_degree, feature_degree);
 

@@ -16,6 +16,7 @@
 #include "device.h"
 #include "kernels/concat_kernels.h"
 #include "kernels/legion_dim.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include <cassert>
 
 namespace FlexFlow {
@@ -27,8 +28,11 @@ void calc_blk_size(size_t &num_blocks,
                    ArrayShape const &shape,
                    ff_dim_t axis) {
   legion_dim_t axis_legion_dim = legion_dim_from_ff_dim(axis, shape.num_dims());
-  blk_size = shape.sub_shape(legion_dim_t{0}, axis_legion_dim).num_elements();
-  num_blocks = shape.sub_shape(axis, std::nullopt).num_elements();
+  blk_size = shape.sub_shape(legion_dim_t{nonnegative_int{0}}, axis_legion_dim)
+                 .num_elements()
+                 .unwrap_nonnegative();
+  num_blocks =
+      shape.sub_shape(axis, std::nullopt).num_elements().unwrap_nonnegative();
 }
 
 void forward_kernel(cudaStream_t stream,

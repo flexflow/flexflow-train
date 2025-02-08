@@ -11,6 +11,7 @@ includes = [
   "utils/graph/query_set.h",
   "utils/graph/open_dataflow_graph/dataflow_graph_input.dtg.h",
   "utils/graph/node/node.dtg.h",
+  "utils/nonnegative_int/nonnegative_int.h",
 ]
 
 [[fields]]
@@ -23,4 +24,4 @@ type = "::FlexFlow::query_set<::FlexFlow::Node>"
 
 [[fields]]
 name = "dst_idxs"
-type = "::FlexFlow::query_set<int>"
+type = "::FlexFlow::query_set<::FlexFlow::nonnegative_int>"

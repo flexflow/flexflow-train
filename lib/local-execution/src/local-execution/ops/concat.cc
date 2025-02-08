@@ -16,9 +16,9 @@
 #include "local-execution/ops/concat.h"
 #include "kernels/concat_kernels.h"
 
-#include "local-execution/op_task_signature.h"
-#include "local-execution/variadic_tensor_ref.h"
 #include "op-attrs/get_output_shapes.h"
+#include "task-spec/op_task_signature.h"
+#include "task-spec/variadic_tensor_ref.h"
 #include "utils/hash-utils.h"
 
 namespace FlexFlow {
