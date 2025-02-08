@@ -17,7 +17,6 @@
 #include "kernels/reverse_kernels.h"
 
 namespace FlexFlow {
-
 namespace Kernels {
 namespace Reverse {
 
@@ -27,13 +26,14 @@ __global__ void reverse_forward_kernel(float const *in_ptr,
                                        coord_t reverse_dim_size,
                                        coord_t in_blk_size) {
   CUDA_KERNEL_LOOP(i, num_out_blks * reverse_dim_size * in_blk_size) {
+    coord_t out_idx = i;
     coord_t blk_idx = i / (reverse_dim_size * in_blk_size);
     i = i - blk_idx * (reverse_dim_size * in_blk_size);
     coord_t reverse_dim_idx = i / in_blk_size;
     i = i - reverse_dim_idx * in_blk_size;
     coord_t in_idx = blk_idx * (reverse_dim_size * in_blk_size) +
                      (reverse_dim_size - 1 - reverse_dim_idx) * in_blk_size + i;
-    out_ptr[i] = in_ptr[in_idx];
+    out_ptr[out_idx] = in_ptr[in_idx];
   }
 }
 

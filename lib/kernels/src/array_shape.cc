@@ -11,7 +11,7 @@ static LegionOrdered<nonnegative_int>
   return LegionOrdered<nonnegative_int>{reversed(vector_of(ff_ordered))};
 }
 
-ArrayShape::ArrayShape(nonnegative_int *_dims, nonnegative_int num_dims)
+ArrayShape::ArrayShape(nonnegative_int const *_dims, nonnegative_int num_dims)
     : dims(_dims, _dims + num_dims.unwrap_nonnegative()) {}
 
 ArrayShape::ArrayShape(TensorShape const &shape)
@@ -62,7 +62,30 @@ bool ArrayShape::operator!=(ArrayShape const &other) const {
 ArrayShape ArrayShape::sub_shape(
     std::optional<std::variant<ff_dim_t, legion_dim_t>> start,
     std::optional<std::variant<ff_dim_t, legion_dim_t>> end) const {
-  NOT_IMPLEMENTED();
+
+  nonnegative_int num_dims = this->num_dims();
+
+  auto to_legion_index = [num_dims](auto arg) -> nonnegative_int {
+    using T = std::decay_t<decltype(arg)>;
+    if constexpr (std::is_same_v<T, ff_dim_t>) {
+      return legion_dim_from_ff_dim(arg, num_dims).value;
+    } else {
+      return arg.value;
+    }
+  };
+
+  nonnegative_int start_idx =
+      (start.has_value()) ? std::visit(to_legion_index, start.value()) : 0_n;
+
+  nonnegative_int end_idx =
+      (end.has_value()) ? std::visit(to_legion_index, end.value()) : num_dims;
+
+  if (start_idx > num_dims || end_idx > num_dims || start_idx > end_idx) {
+    throw mk_runtime_error(fmt::format(
+        "Invalid sub_shape range: start={}, end={}", start_idx, end_idx));
+  }
+
+  return ArrayShape(&this->dims[legion_dim_t{start_idx}], end_idx - start_idx);
 }
 
 std::optional<nonnegative_int> ArrayShape::at_maybe(legion_dim_t index) const {
