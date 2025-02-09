@@ -129,8 +129,7 @@ ComputationGraph get_dlrm_computation_graph(DLRMConfig const &config) {
   std::vector<tensor_guid_t> sparse_inputs =
       repeat(num_elements(config.embedding_size), [&]() {
         return create_input_tensor(
-            {config.batch_size, config.embedding_bag_size},
-            DataType::INT64);
+            {config.batch_size, config.embedding_bag_size}, DataType::INT64);
       });
 
   tensor_guid_t dense_input = create_input_tensor(
@@ -146,7 +145,8 @@ ComputationGraph get_dlrm_computation_graph(DLRMConfig const &config) {
 
   std::vector<tensor_guid_t> emb_outputs = transform(
       zip(config.embedding_size, sparse_inputs),
-      [&](std::pair<nonnegative_int, tensor_guid_t> const &combined_pair) -> tensor_guid_t {
+      [&](std::pair<nonnegative_int, tensor_guid_t> const &combined_pair)
+          -> tensor_guid_t {
         return create_dlrm_sparse_embedding_network(
             /*cgb=*/cgb,
             /*config=*/config,

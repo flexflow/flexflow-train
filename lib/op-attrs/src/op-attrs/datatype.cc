@@ -28,8 +28,11 @@ bool can_strictly_promote_datatype_from_to(DataType src, DataType dst) {
   std::unordered_set<DataType> allowed;
   switch (src) {
     case DataType::BOOL:
-      allowed = {
-          DataType::INT32, DataType::INT64, DataType::HALF, DataType::FLOAT, DataType::DOUBLE};
+      allowed = {DataType::INT32,
+                 DataType::INT64,
+                 DataType::HALF,
+                 DataType::FLOAT,
+                 DataType::DOUBLE};
       break;
     case DataType::INT32:
       allowed = {DataType::INT64};
@@ -55,14 +58,19 @@ bool can_torch_strictly_promote_datatype_from_to(DataType src, DataType dst) {
   std::unordered_set<DataType> allowed;
   switch (src) {
     case DataType::BOOL:
-      allowed = {
-          DataType::INT32, DataType::INT64, DataType::HALF, DataType::FLOAT, DataType::DOUBLE};
+      allowed = {DataType::INT32,
+                 DataType::INT64,
+                 DataType::HALF,
+                 DataType::FLOAT,
+                 DataType::DOUBLE};
       break;
     case DataType::INT32:
-      allowed = {DataType::INT64, DataType::HALF, DataType::FLOAT, DataType::DOUBLE};
+      allowed = {
+          DataType::INT64, DataType::HALF, DataType::FLOAT, DataType::DOUBLE};
       break;
     case DataType::INT64:
-      allowed = {DataType::INT32, DataType::HALF, DataType::FLOAT, DataType::DOUBLE};
+      allowed = {
+          DataType::INT32, DataType::HALF, DataType::FLOAT, DataType::DOUBLE};
       break;
     case DataType::HALF:
       allowed = {DataType::FLOAT, DataType::DOUBLE};
