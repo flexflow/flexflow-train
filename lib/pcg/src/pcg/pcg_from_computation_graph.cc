@@ -1,3 +1,4 @@
+#include "pcg/pcg_from_computation_graph.h"
 #include "op-attrs/pcg_operator_attrs.h"
 #include "pcg/computation_graph.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.dtg.h"
@@ -14,7 +15,7 @@
 
 namespace FlexFlow {
 
-ParallelComputationGraph cg_to_pcg(ComputationGraph const &cg) {
+ParallelComputationGraph pcg_from_computation_graph(ComputationGraph const &cg) {
   auto layer_map = [&](Node const &_, LayerAttrs const &layer) {
     return parallel_layer_attrs_from_layer_attrs(layer);
   };

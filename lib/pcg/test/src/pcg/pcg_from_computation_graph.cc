@@ -1,4 +1,4 @@
-#include "pcg/cg_to_pcg.h"
+#include "pcg/pcg_from_computation_graph.h"
 #include "pcg/computation_graph.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "utils/containers/get_only.h"
@@ -7,7 +7,7 @@
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("cg_to_pcg") {
+  TEST_CASE("pcg_from_computation_graph") {
     std::string input_name = "input";
     std::string dense_name = "dense";
     std::string relu_name = "relu";
@@ -18,11 +18,11 @@ TEST_SUITE(FF_TEST_SUITE) {
       TensorShape input_shape = TensorShape{
           TensorDims{FFOrdered<nonnegative_int>{10_n, 12_n}}, DataType::FLOAT};
       TensorAttrs input_attrs =
-          TensorAttrs{input_shape, std::nullopt, std::nullopt, CreateGrad::YES};
+          TensorAttrs{input_shape, /*sync_type=*/std::nullopt, /*initializer=*/std::nullopt, CreateGrad::YES};
       LayerAttrs input_layer_attrs =
           LayerAttrs{ComputationGraphOpAttrs{InputAttrs{}}, input_name};
       LayerAddedResult input_added =
-          add_layer(cg, input_layer_attrs, {}, {input_attrs});
+          add_layer(cg, input_layer_attrs, /*inputs=*/{}, /*outputs=*/{input_attrs});
       tensor_guid_t input_tensor = get_only(input_added.outputs);
 
       LinearAttrs linear_attrs = LinearAttrs{/*out_channels=*/8_n,
@@ -35,24 +35,24 @@ TEST_SUITE(FF_TEST_SUITE) {
       LayerAttrs dense_layer_attrs =
           LayerAttrs{ComputationGraphOpAttrs{linear_attrs}, dense_name};
       LayerAddedResult dense_added = add_layer(cg,
-                                               dense_layer_attrs,
-                                               {input_tensor},
-                                               {TensorAttrs{dense_output_shape,
-                                                            std::nullopt,
-                                                            std::nullopt,
+                                               /*attrs=*/dense_layer_attrs,
+                                               /*inputs=*/{input_tensor},
+                                               /*outputs=*/{TensorAttrs{dense_output_shape,
+                                                            /*sync_type=*/std::nullopt,
+                                                            /*initializer=*/std::nullopt,
                                                             CreateGrad::YES}});
       tensor_guid_t dense_output = get_only(dense_added.outputs);
 
       ElementUnaryAttrs relu_attrs =
-          ElementUnaryAttrs{OperatorType::RELU, std::nullopt};
+          ElementUnaryAttrs{OperatorType::RELU, /*scalar=*/std::nullopt};
       LayerAttrs relu_layer_attrs =
           LayerAttrs{ComputationGraphOpAttrs{relu_attrs}, relu_name};
       add_layer(cg,
-                relu_layer_attrs,
-                {dense_output},
-                {TensorAttrs{dense_output_shape,
-                             std::nullopt,
-                             std::nullopt,
+                /*attrs=*/relu_layer_attrs,
+                /*inputs=*/{dense_output},
+                /*outputs=*/{TensorAttrs{dense_output_shape,
+                             /*sync_type=*/std::nullopt,
+                             /*initializer=*/std::nullopt,
                              CreateGrad::YES}});
 
       return cg;
@@ -73,9 +73,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       ParallelLayerAddedResult input_added = add_parallel_layer(
           pcg,
-          input_layer_attrs,
-          {},
-          {ParallelTensorAttrs{
+          /*attrs=*/input_layer_attrs,
+          /*inputs=*/{},
+          /*outputs=*/{ParallelTensorAttrs{
               input_shape, std::nullopt, std::nullopt, CreateGrad::YES}});
 
       parallel_tensor_guid_t input_tensor = get_only(input_added.outputs);
@@ -98,11 +98,11 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       ParallelLayerAddedResult dense_added =
           add_parallel_layer(pcg,
-                             dense_layer_attrs,
-                             {input_tensor},
-                             {ParallelTensorAttrs{dense_output_shape,
-                                                  std::nullopt,
-                                                  std::nullopt,
+                             /*attrs=*/dense_layer_attrs,
+                             /*inputs=*/{input_tensor},
+                             /*outputs=*/{ParallelTensorAttrs{dense_output_shape,
+                                                  /*sync_type=*/std::nullopt,
+                                                  /*initializer=*/std::nullopt,
                                                   CreateGrad::YES}});
 
       parallel_tensor_guid_t dense_output = get_only(dense_added.outputs);
@@ -113,16 +113,16 @@ TEST_SUITE(FF_TEST_SUITE) {
           ParallelLayerAttrs{PCGOperatorAttrs{relu_attrs}, relu_name};
 
       add_parallel_layer(pcg,
-                         relu_layer_attrs,
-                         {dense_output},
-                         {ParallelTensorAttrs{dense_output_shape,
-                                              std::nullopt,
-                                              std::nullopt,
+                         /*attrs=*/relu_layer_attrs,
+                         /*inputs=*/{dense_output},
+                         /*outputs=*/{ParallelTensorAttrs{dense_output_shape,
+                                              /*sync_type=*/std::nullopt,
+                                              /*initializer=*/std::nullopt,
                                               CreateGrad::YES}});
       return pcg;
     }();
 
-    ParallelComputationGraph result = cg_to_pcg(cg);
+    ParallelComputationGraph result = pcg_from_computation_graph(cg);
 
     CHECK(pcgs_are_isomorphic(result, correct));
   }

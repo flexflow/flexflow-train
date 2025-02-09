@@ -6,7 +6,7 @@
 
 namespace FlexFlow {
 
-ParallelComputationGraph cg_to_pcg(ComputationGraph const &cg);
+ParallelComputationGraph pcg_from_computation_graph(ComputationGraph const &cg);
 
 } // namespace FlexFlow
 

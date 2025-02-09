@@ -13,8 +13,6 @@ PCGOperatorAttrs
     pcg_op_attrs_from_compgraph_op_attrs(ComputationGraphOpAttrs const &);
 RecordFormatter as_dot(PCGOperatorAttrs const &);
 
-PCGOperatorAttrs pcg_op_attrs_from_cg_op_attrs(ComputationGraphOpAttrs const &);
-
 } // namespace FlexFlow
 
 #endif
