@@ -43,7 +43,7 @@ type = "std::vector<int>"
 
 [[fields]]
 name = "arch_interaction_op"
-type = "FlexFlow::DLRMArchInteractionOp"
+type = "::FlexFlow::DLRMArchInteractionOp"
 
 [[fields]]
 name = "batch_size"
