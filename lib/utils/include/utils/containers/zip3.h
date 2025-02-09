@@ -1,10 +1,10 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_ZIP3_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_ZIP3_H
 
-#include <vector>
-#include <tuple>
-#include <set>
 #include <algorithm>
+#include <set>
+#include <tuple>
+#include <vector>
 
 namespace FlexFlow {
 

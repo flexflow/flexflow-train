@@ -9,7 +9,6 @@ using C = value_type<2>;
 
 namespace doctest {
 
-template
-  struct StringMaker<std::tuple<A, B, C>>;
+template struct StringMaker<std::tuple<A, B, C>>;
 
 } // namespace doctest

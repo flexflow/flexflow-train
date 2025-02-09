@@ -8,7 +8,6 @@ using R = value_type<1>;
 
 namespace doctest {
 
-template
-  struct StringMaker<std::pair<L, R>>;
+template struct StringMaker<std::pair<L, R>>;
 
 } // namespace doctest

@@ -1,8 +1,8 @@
-#include <doctest/doctest.h>
 #include "utils/containers/zip3.h"
-#include <string>
-#include "test/utils/doctest/fmt/vector.h"
 #include "test/utils/doctest/fmt/tuple.h"
+#include "test/utils/doctest/fmt/vector.h"
+#include <doctest/doctest.h>
+#include <string>
 
 using namespace ::FlexFlow;
 
@@ -13,8 +13,10 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::vector<int> input_b = {5, 4, 5};
       std::vector<int> input_c = {3, 4, 3};
 
-      std::vector<std::tuple<int, int, int>> result = zip3(input_a, input_b, input_c);
-      std::vector<std::tuple<int, int, int>> correct = {{2, 5, 3}, {1, 4, 4}, {2, 5, 3}};
+      std::vector<std::tuple<int, int, int>> result =
+          zip3(input_a, input_b, input_c);
+      std::vector<std::tuple<int, int, int>> correct = {
+          {2, 5, 3}, {1, 4, 4}, {2, 5, 3}};
 
       CHECK(result == correct);
     }
@@ -24,11 +26,12 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::vector<std::string> input_b = {"a", "d", "d"};
       std::vector<std::vector<int>> input_c = {{1, 2}, {}, {3, 1}};
 
-      std::vector<std::tuple<int, std::string, std::vector<int>>> result = zip3(input_a, input_b, input_c);
+      std::vector<std::tuple<int, std::string, std::vector<int>>> result =
+          zip3(input_a, input_b, input_c);
       std::vector<std::tuple<int, std::string, std::vector<int>>> correct = {
-        {2, "a", {1, 2}},
-        {1, "d", {}},
-        {2, "d", {3, 1}},
+          {2, "a", {1, 2}},
+          {1, "d", {}},
+          {2, "d", {3, 1}},
       };
 
       CHECK(result == correct);
@@ -39,7 +42,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::vector<int> input_b = {5, 4, 5};
       std::vector<int> input_c = {3, 4};
 
-      std::vector<std::tuple<int, int, int>> result = zip3(input_a, input_b, input_c);
+      std::vector<std::tuple<int, int, int>> result =
+          zip3(input_a, input_b, input_c);
       std::vector<std::tuple<int, int, int>> correct = {{2, 5, 3}};
 
       CHECK(result == correct);
@@ -50,7 +54,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::vector<int> input_b = {5, 4};
       std::vector<int> input_c = {3, 4, 3};
 
-      std::vector<std::tuple<int, int, int>> result = zip3(input_a, input_b, input_c);
+      std::vector<std::tuple<int, int, int>> result =
+          zip3(input_a, input_b, input_c);
       std::vector<std::tuple<int, int, int>> correct = {{2, 5, 3}, {1, 4, 4}};
 
       CHECK(result == correct);
@@ -61,7 +66,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::vector<int> input_b = {5, 4, 5};
       std::vector<int> input_c = {3, 3};
 
-      std::vector<std::tuple<int, int, int>> result = zip3(input_a, input_b, input_c);
+      std::vector<std::tuple<int, int, int>> result =
+          zip3(input_a, input_b, input_c);
       std::vector<std::tuple<int, int, int>> correct = {{2, 5, 3}, {1, 4, 3}};
 
       CHECK(result == correct);
@@ -72,7 +78,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::vector<int> input_b = {5, 4, 5};
       std::vector<int> input_c = {};
 
-      std::vector<std::tuple<int, int, int>> result = zip3(input_a, input_b, input_c);
+      std::vector<std::tuple<int, int, int>> result =
+          zip3(input_a, input_b, input_c);
       std::vector<std::tuple<int, int, int>> correct = {};
 
       CHECK(result == correct);
@@ -83,7 +90,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::vector<int> input_b = {};
       std::vector<int> input_c = {};
 
-      std::vector<std::tuple<int, int, int>> result = zip3(input_a, input_b, input_c);
+      std::vector<std::tuple<int, int, int>> result =
+          zip3(input_a, input_b, input_c);
       std::vector<std::tuple<int, int, int>> correct = {};
 
       CHECK(result == correct);

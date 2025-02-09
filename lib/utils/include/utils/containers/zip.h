@@ -1,9 +1,9 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_ZIP_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_ZIP_H
 
+#include <set>
 #include <utility>
 #include <vector>
-#include <set>
 
 namespace FlexFlow {
 

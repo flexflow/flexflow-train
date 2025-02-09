@@ -1,13 +1,15 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_TUPLE_VISIT_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_TUPLE_VISIT_H
 
-#include <utility>
 #include <tuple>
+#include <utility>
 
 namespace FlexFlow {
 
 template <typename Tuple, typename Visitor, std::size_t... Idxs>
-void visit_tuple_impl(Tuple const &tuple, Visitor &&v, std::index_sequence<Idxs...>) {
+void visit_tuple_impl(Tuple const &tuple,
+                      Visitor &&v,
+                      std::index_sequence<Idxs...>) {
   (v(std::get<Idxs>(tuple)), ...);
 }
 
