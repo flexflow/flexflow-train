@@ -6,7 +6,7 @@ namespace FlexFlow {
 tl::expected<TensorShape, std::string>
     get_output_shape(CastAttrs const &attrs, TensorShape const &input) {
 
-  if (!can_strictly_promote_datatype_from_to(input.data_type, attrs.dtype)) {
+  if (!can_torch_strictly_promote_datatype_from_to(input.data_type, attrs.dtype)) {
     return tl::unexpected(fmt::format(
         "Cast cannot strictly promote input datatype {} to output datatype {}",
         input.data_type,
@@ -21,7 +21,7 @@ tl::expected<TensorShape, std::string>
 tl::expected<ParallelTensorShape, std::string>
     get_output_shape(CastAttrs const &attrs, ParallelTensorShape const &input) {
 
-  if (!can_strictly_promote_datatype_from_to(input.data_type, attrs.dtype)) {
+  if (!can_torch_strictly_promote_datatype_from_to(input.data_type, attrs.dtype)) {
     return tl::unexpected(fmt::format(
         "Cast cannot strictly promote input datatype {} to output datatype {}",
         input.data_type,

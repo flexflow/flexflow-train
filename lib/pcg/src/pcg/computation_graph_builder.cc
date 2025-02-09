@@ -481,20 +481,18 @@ tensor_guid_t ComputationGraphBuilder::embedding(
       maybe_name.value_or(get_default_name(ComputationGraphOpAttrs{attrs}));
 
   LayerAttrs layer = LayerAttrs{ComputationGraphOpAttrs{attrs}, name};
-  tensor_guid_t casted_input =
-      this->as_type(x, DataType::FLOAT, name + "input_pre_cast");
 
-  TensorShape casted_input_shape = this->get_shape(casted_input);
+  TensorShape input_shape = this->get_shape(input);
 
   TensorAttrs weight_attrs = make_weight_attrs(
-      throw_if_unexpected(get_weights_shape(attrs, casted_input_shape)),
+      throw_if_unexpected(get_weights_shape(attrs, input_shape)),
       kernel_initializer);
 
   TensorShape output_shape =
-      throw_if_unexpected(get_output_shape(attrs, this->get_shape(casted_input)));
+      throw_if_unexpected(get_output_shape(attrs, input_shape));
 
   return get_only(this->add_layer(layer,
-                                  {casted_input},
+                                  {input},
                                   {this->create_weight(weight_attrs)},
                                   {make_output_attrs(output_shape)}));
 }

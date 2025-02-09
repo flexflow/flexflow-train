@@ -4,34 +4,35 @@
 #include "utils/containers/repeat.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/zip.h"
+#include "utils/nonnegative_int/num_elements.h"
 
 namespace FlexFlow {
 
 DLRMConfig get_default_dlrm_config() {
   return DLRMConfig{
-      /*embedding_dim=*/64,
-      /*embedding_bag_size=*/1,
+      /*embedding_dim=*/64_n,
+      /*embedding_bag_size=*/1_n,
       /*embedding_size=*/
-      std::vector<int>{
-          1000000,
-          1000000,
-          1000000,
-          1000000,
+      std::vector<nonnegative_int>{
+          1000000_n,
+          1000000_n,
+          1000000_n,
+          1000000_n,
       },
       /*dense_arch_layer_sizes=*/
-      std::vector<int>{
-          4,
-          64,
-          64,
+      std::vector<nonnegative_int>{
+          4_n,
+          64_n,
+          64_n,
       },
       /*over_arch_layer_sizes=*/
-      std::vector<int>{
-          64,
-          64,
-          2,
+      std::vector<nonnegative_int>{
+          64_n,
+          64_n,
+          2_n,
       },
       /*arch_interaction_op=*/DLRMArchInteractionOp::CAT,
-      /*batch_size=*/64,
+      /*batch_size=*/64_n,
       /*seed=*/std::rand(),
   };
 }
@@ -39,7 +40,7 @@ DLRMConfig get_default_dlrm_config() {
 tensor_guid_t create_dlrm_mlp(ComputationGraphBuilder &cgb,
                               DLRMConfig const &config,
                               tensor_guid_t const &input,
-                              std::vector<int> const &mlp_layers) {
+                              std::vector<nonnegative_int> const &mlp_layers) {
   tensor_guid_t t = input;
 
   // Refer to
@@ -75,8 +76,8 @@ tensor_guid_t create_dlrm_mlp(ComputationGraphBuilder &cgb,
 tensor_guid_t create_dlrm_sparse_embedding_network(ComputationGraphBuilder &cgb,
                                                    DLRMConfig const &config,
                                                    tensor_guid_t const &input,
-                                                   int input_dim,
-                                                   int output_dim) {
+                                                   nonnegative_int input_dim,
+                                                   nonnegative_int output_dim) {
   float range = sqrt(1.0f / input_dim);
   InitializerAttrs embed_initializer = InitializerAttrs{UniformInitializerAttrs{
       /*seed=*/config.seed,
@@ -109,13 +110,13 @@ tensor_guid_t create_dlrm_interact_features(
 
   return cgb.concat(
       /*tensors=*/concat_vectors({bottom_mlp_output}, emb_outputs),
-      /*axis=*/1);
+      /*axis=*/relative_ff_dim_t{1});
 }
 
 ComputationGraph get_dlrm_computation_graph(DLRMConfig const &config) {
   ComputationGraphBuilder cgb;
 
-  auto create_input_tensor = [&](FFOrdered<size_t> const &dims,
+  auto create_input_tensor = [&](FFOrdered<nonnegative_int> const &dims,
                                  DataType const &data_type) -> tensor_guid_t {
     TensorShape input_shape = TensorShape{
         TensorDims{dims},
@@ -126,16 +127,14 @@ ComputationGraph get_dlrm_computation_graph(DLRMConfig const &config) {
 
   // Create input tensors
   std::vector<tensor_guid_t> sparse_inputs =
-      repeat(config.embedding_size.size(), [&]() {
+      repeat(num_elements(config.embedding_size), [&]() {
         return create_input_tensor(
-            {static_cast<size_t>(config.batch_size),
-             static_cast<size_t>(config.embedding_bag_size)},
+            {config.batch_size, config.embedding_bag_size},
             DataType::INT64);
       });
 
   tensor_guid_t dense_input = create_input_tensor(
-      {static_cast<size_t>(config.batch_size),
-       static_cast<size_t>(config.dense_arch_layer_sizes.front())},
+      {config.batch_size, config.dense_arch_layer_sizes.front()},
       DataType::FLOAT);
 
   // Construct the model
@@ -147,7 +146,7 @@ ComputationGraph get_dlrm_computation_graph(DLRMConfig const &config) {
 
   std::vector<tensor_guid_t> emb_outputs = transform(
       zip(config.embedding_size, sparse_inputs),
-      [&](std::pair<int, tensor_guid_t> const &combined_pair) -> tensor_guid_t {
+      [&](std::pair<nonnegative_int, tensor_guid_t> const &combined_pair) -> tensor_guid_t {
         return create_dlrm_sparse_embedding_network(
             /*cgb=*/cgb,
             /*config=*/config,
