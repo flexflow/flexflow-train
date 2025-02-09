@@ -9,6 +9,7 @@
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/binary_sp_decomposition_tree.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/nary_sp_tree_from_binary.h"
+#include "utils/graph/series_parallel/normalize_sp_decomposition.h"
 #include "utils/graph/series_parallel/parallel_reduction.h"
 #include "utils/graph/series_parallel/series_parallel_decomposition.h"
 #include "utils/graph/series_parallel/series_reduction.h"
