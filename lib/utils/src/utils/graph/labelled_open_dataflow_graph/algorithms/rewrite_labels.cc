@@ -18,8 +18,8 @@ struct F {
   }
 };
 
-template
-  LabelledOpenDataflowGraphView<NewNodeLabel, NewValueLabel> rewrite_labels(
-      LabelledOpenDataflowGraphView<NodeLabel, ValueLabel> const &, F);
+template LabelledOpenDataflowGraphView<NewNodeLabel, NewValueLabel>
+    rewrite_labels(LabelledOpenDataflowGraphView<NodeLabel, ValueLabel> const &,
+                   F);
 
 } // namespace FlexFlow

@@ -17,12 +17,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       TensorShape input_shape = TensorShape{
           TensorDims{FFOrdered<nonnegative_int>{10_n, 12_n}}, DataType::FLOAT};
-      TensorAttrs input_attrs =
-          TensorAttrs{input_shape, /*sync_type=*/std::nullopt, /*initializer=*/std::nullopt, CreateGrad::YES};
+      TensorAttrs input_attrs = TensorAttrs{input_shape,
+                                            /*sync_type=*/std::nullopt,
+                                            /*initializer=*/std::nullopt,
+                                            CreateGrad::YES};
       LayerAttrs input_layer_attrs =
           LayerAttrs{ComputationGraphOpAttrs{InputAttrs{}}, input_name};
-      LayerAddedResult input_added =
-          add_layer(cg, input_layer_attrs, /*inputs=*/{}, /*outputs=*/{input_attrs});
+      LayerAddedResult input_added = add_layer(
+          cg, input_layer_attrs, /*inputs=*/{}, /*outputs=*/{input_attrs});
       tensor_guid_t input_tensor = get_only(input_added.outputs);
 
       LinearAttrs linear_attrs = LinearAttrs{/*out_channels=*/8_n,
@@ -34,13 +36,15 @@ TEST_SUITE(FF_TEST_SUITE) {
           TensorDims{FFOrdered<nonnegative_int>{10_n, 8_n}}, DataType::FLOAT};
       LayerAttrs dense_layer_attrs =
           LayerAttrs{ComputationGraphOpAttrs{linear_attrs}, dense_name};
-      LayerAddedResult dense_added = add_layer(cg,
-                                               /*attrs=*/dense_layer_attrs,
-                                               /*inputs=*/{input_tensor},
-                                               /*outputs=*/{TensorAttrs{dense_output_shape,
-                                                            /*sync_type=*/std::nullopt,
-                                                            /*initializer=*/std::nullopt,
-                                                            CreateGrad::YES}});
+      LayerAddedResult dense_added =
+          add_layer(cg,
+                    /*attrs=*/dense_layer_attrs,
+                    /*inputs=*/{input_tensor},
+                    /*outputs=*/
+                    {TensorAttrs{dense_output_shape,
+                                 /*sync_type=*/std::nullopt,
+                                 /*initializer=*/std::nullopt,
+                                 CreateGrad::YES}});
       tensor_guid_t dense_output = get_only(dense_added.outputs);
 
       ElementUnaryAttrs relu_attrs =
@@ -50,7 +54,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       add_layer(cg,
                 /*attrs=*/relu_layer_attrs,
                 /*inputs=*/{dense_output},
-                /*outputs=*/{TensorAttrs{dense_output_shape,
+                /*outputs=*/
+                {TensorAttrs{dense_output_shape,
                              /*sync_type=*/std::nullopt,
                              /*initializer=*/std::nullopt,
                              CreateGrad::YES}});
@@ -75,7 +80,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           pcg,
           /*attrs=*/input_layer_attrs,
           /*inputs=*/{},
-          /*outputs=*/{ParallelTensorAttrs{
+          /*outputs=*/
+          {ParallelTensorAttrs{
               input_shape, std::nullopt, std::nullopt, CreateGrad::YES}});
 
       parallel_tensor_guid_t input_tensor = get_only(input_added.outputs);
@@ -100,7 +106,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           add_parallel_layer(pcg,
                              /*attrs=*/dense_layer_attrs,
                              /*inputs=*/{input_tensor},
-                             /*outputs=*/{ParallelTensorAttrs{dense_output_shape,
+                             /*outputs=*/
+                             {ParallelTensorAttrs{dense_output_shape,
                                                   /*sync_type=*/std::nullopt,
                                                   /*initializer=*/std::nullopt,
                                                   CreateGrad::YES}});
@@ -115,7 +122,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       add_parallel_layer(pcg,
                          /*attrs=*/relu_layer_attrs,
                          /*inputs=*/{dense_output},
-                         /*outputs=*/{ParallelTensorAttrs{dense_output_shape,
+                         /*outputs=*/
+                         {ParallelTensorAttrs{dense_output_shape,
                                               /*sync_type=*/std::nullopt,
                                               /*initializer=*/std::nullopt,
                                               CreateGrad::YES}});

@@ -6,10 +6,11 @@ namespace FlexFlow {
 using NodeLabel = value_type<0>;
 using ValueLabel = value_type<1>;
 using NewValueLabel = value_type<2>;
-using F = std::function<NewValueLabel(OpenDataflowValue const &, ValueLabel const &)>;
+using F =
+    std::function<NewValueLabel(OpenDataflowValue const &, ValueLabel const &)>;
 
-template
-  LabelledOpenDataflowGraphView<NodeLabel, NewValueLabel> rewrite_value_labels(
-      LabelledOpenDataflowGraphView<NodeLabel, ValueLabel> const &, F);
+template LabelledOpenDataflowGraphView<NodeLabel, NewValueLabel>
+    rewrite_value_labels(
+        LabelledOpenDataflowGraphView<NodeLabel, ValueLabel> const &, F);
 
 } // namespace FlexFlow

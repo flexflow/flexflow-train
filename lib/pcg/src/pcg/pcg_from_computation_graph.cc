@@ -15,7 +15,8 @@
 
 namespace FlexFlow {
 
-ParallelComputationGraph pcg_from_computation_graph(ComputationGraph const &cg) {
+ParallelComputationGraph
+    pcg_from_computation_graph(ComputationGraph const &cg) {
   auto layer_map = [&](Node const &_, LayerAttrs const &layer) {
     return parallel_layer_attrs_from_layer_attrs(layer);
   };

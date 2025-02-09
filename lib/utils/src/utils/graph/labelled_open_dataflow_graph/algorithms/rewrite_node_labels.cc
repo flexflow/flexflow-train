@@ -8,8 +8,8 @@ using ValueLabel = value_type<1>;
 using NewNodeLabel = value_type<2>;
 using F = std::function<NewNodeLabel(Node const &, NodeLabel const &)>;
 
-template
-  LabelledOpenDataflowGraphView<NewNodeLabel, ValueLabel> rewrite_node_labels(
-      LabelledOpenDataflowGraphView<NodeLabel, ValueLabel> const &, F);
+template LabelledOpenDataflowGraphView<NewNodeLabel, ValueLabel>
+    rewrite_node_labels(
+        LabelledOpenDataflowGraphView<NodeLabel, ValueLabel> const &, F);
 
 } // namespace FlexFlow
