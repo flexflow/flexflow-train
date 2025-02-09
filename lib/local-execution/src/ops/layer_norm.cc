@@ -15,12 +15,12 @@
 
 #include "layer_norm.h"
 #include "kernels/layer_norm_kernels.h"
-#include "local-execution/legion_tensor_shape.h"
 #include "op-attrs/get_output_shapes.h"
 #include "op-attrs/ops/layer_norm.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "utils/exception.h"
 #include "utils/hash-utils.h"
+#include "utils/nonnegative_int/nonnegative_range.h"
 #include <type_traits>
 
 namespace FlexFlow {
@@ -119,27 +119,25 @@ static DeviceSpecificDeviceStates
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
 
-  // question: how to get batch_size and effective_num_elements
-  int64_t effective_batch_size, effective_num_elements;
-  int M = 1;
+  nonnegative_int M = 1_n;
   for (int i = 0; i < attrs.axes.size(); i++) {
-    legion_dim_t legion_dim = legion_dim_from_ff_dim(
-        attrs.axes[i], get_tensor_shape(input.shape, input.data_type));
+    legion_dim_t legion_dim =
+        legion_dim_from_ff_dim(attrs.axes[i], input.shape.num_dims());
     M *= input.shape.at(legion_dim);
   }
-  int num_replicas = 1;
-  for (int i = 0; i < input.shape.num_dims(); i++) {
-    num_replicas *= input.shape.at(legion_dim_t(i));
-    effective_num_elements = M;
-    effective_batch_size = input.shape.get_volume() / M;
+  nonnegative_int num_replicas = 1_n;
+  for (nonnegative_int i : nonnegative_range(input.shape.num_dims())) {
+    num_replicas *= input.shape.at(legion_dim_t{i});
   }
+  nonnegative_int effective_num_elements = M;
+  nonnegative_int effective_batch_size = input.shape.get_volume() / M;
 
   LayerNormPerDeviceState per_device_state =
       init_kernel(handle,
                   allocator,
                   attrs.elementwise_affine,
-                  effective_batch_size,
-                  effective_num_elements,
+                  effective_batch_size.unwrap_nonnegative(),
+                  effective_num_elements.unwrap_nonnegative(),
                   attrs.eps);
   return DeviceSpecificDeviceStates{
       DeviceSpecific<LayerNormPerDeviceState>::create(per_device_state)};

@@ -9,25 +9,25 @@ using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_output_shape(FlatAttrs, TensorShape)") {
     TensorShape input_shape = TensorShape{
-        TensorDims{FFOrdered<size_t>{
-            2,
-            4,
-            2,
-            3,
+        TensorDims{FFOrdered<nonnegative_int>{
+            2_n,
+            4_n,
+            2_n,
+            3_n,
         }},
         DataType::FLOAT,
     };
 
     SUBCASE("flatten all dims") {
       FlatAttrs attrs = FlatAttrs{
-          /*start_dim=*/ff_dim_t{nonnegative_int{0}},
-          /*end_dim=*/ff_dim_t{nonnegative_int{4}},
+          /*start_dim=*/ff_dim_t{0_n},
+          /*end_dim=*/ff_dim_t{4_n},
       };
 
       TensorShape result = get_output_shape(attrs, input_shape);
       TensorShape correct = TensorShape{
-          TensorDims{FFOrdered<size_t>{
-              2 * 4 * 2 * 3,
+          TensorDims{FFOrdered<nonnegative_int>{
+              2_n * 4_n * 2_n * 3_n,
           }},
           DataType::FLOAT,
       };
@@ -43,10 +43,10 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       TensorShape result = get_output_shape(attrs, input_shape);
       TensorShape correct = TensorShape{
-          TensorDims{FFOrdered<size_t>{
-              2,
-              4,
-              2 * 3,
+          TensorDims{FFOrdered<nonnegative_int>{
+              2_n,
+              4_n,
+              2_n * 3_n,
           }},
           DataType::FLOAT,
       };
@@ -62,10 +62,10 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       TensorShape result = get_output_shape(attrs, input_shape);
       TensorShape correct = TensorShape{
-          TensorDims{FFOrdered<size_t>{
-              2 * 4,
-              2,
-              3,
+          TensorDims{FFOrdered<nonnegative_int>{
+              2_n * 4_n,
+              2_n,
+              3_n,
           }},
           DataType::FLOAT,
       };
@@ -81,10 +81,10 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       TensorShape result = get_output_shape(attrs, input_shape);
       TensorShape correct = TensorShape{
-          TensorDims{FFOrdered<size_t>{
-              2,
-              4 * 2,
-              3,
+          TensorDims{FFOrdered<nonnegative_int>{
+              2_n,
+              4_n * 2_n,
+              3_n,
           }},
           DataType::FLOAT,
       };
@@ -124,18 +124,18 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("allows shard parallelism in non-flattened dims") {
       ParallelTensorDimDegrees input = ParallelTensorDimDegrees{
-          SumDegree{1},
-          DiscardCopyDegree{1},
-          FFOrdered<int>{2, 1, 1, 3},
+          SumDegree{1_n},
+          DiscardCopyDegree{1_n},
+          FFOrdered<nonnegative_int>{2_n, 1_n, 1_n, 3_n},
       };
 
       tl::expected<ParallelTensorDimDegrees, std::string> result =
           get_output_parallel_dim_degrees(attrs, input);
       tl::expected<ParallelTensorDimDegrees, std::string> correct =
           ParallelTensorDimDegrees{
-              SumDegree{1},
-              DiscardCopyDegree{1},
-              FFOrdered<int>{2, 1, 3},
+              SumDegree{1_n},
+              DiscardCopyDegree{1_n},
+              FFOrdered<nonnegative_int>{2_n, 1_n, 3_n},
           };
 
       CHECK(result == correct);
@@ -143,9 +143,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("does not allow shard parallelism in flattened dims") {
       ParallelTensorDimDegrees input = ParallelTensorDimDegrees{
-          SumDegree{1},
-          DiscardCopyDegree{1},
-          FFOrdered<int>{1, 1, 2, 1},
+          SumDegree{1_n},
+          DiscardCopyDegree{1_n},
+          FFOrdered<nonnegative_int>{1_n, 1_n, 2_n, 1_n},
       };
 
       std::optional<ParallelTensorDimDegrees> result =
@@ -157,18 +157,18 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("allows sum parallelism") {
       ParallelTensorDimDegrees input = ParallelTensorDimDegrees{
-          SumDegree{2},
-          DiscardCopyDegree{1},
-          FFOrdered<int>{1, 1, 1, 1},
+          SumDegree{2_n},
+          DiscardCopyDegree{1_n},
+          FFOrdered<nonnegative_int>{1_n, 1_n, 1_n, 1_n},
       };
 
       std::optional<ParallelTensorDimDegrees> result =
           optional_from_expected(get_output_parallel_dim_degrees(attrs, input));
       std::optional<ParallelTensorDimDegrees> correct =
           ParallelTensorDimDegrees{
-              SumDegree{2},
-              DiscardCopyDegree{1},
-              FFOrdered<int>{1, 1, 1},
+              SumDegree{2_n},
+              DiscardCopyDegree{1_n},
+              FFOrdered<nonnegative_int>{1_n, 1_n, 1_n},
           };
 
       CHECK(result == correct);
@@ -176,18 +176,18 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("allows discard copy parallelism") {
       ParallelTensorDimDegrees input = ParallelTensorDimDegrees{
-          SumDegree{1},
-          DiscardCopyDegree{2},
-          FFOrdered<int>{1, 1, 1, 1},
+          SumDegree{1_n},
+          DiscardCopyDegree{2_n},
+          FFOrdered<nonnegative_int>{1_n, 1_n, 1_n, 1_n},
       };
 
       std::optional<ParallelTensorDimDegrees> result =
           optional_from_expected(get_output_parallel_dim_degrees(attrs, input));
       std::optional<ParallelTensorDimDegrees> correct =
           ParallelTensorDimDegrees{
-              SumDegree{1},
-              DiscardCopyDegree{2},
-              FFOrdered<int>{1, 1, 1},
+              SumDegree{1_n},
+              DiscardCopyDegree{2_n},
+              FFOrdered<nonnegative_int>{1_n, 1_n, 1_n},
           };
 
       CHECK(result == correct);
@@ -203,22 +203,22 @@ TEST_SUITE(FF_TEST_SUITE) {
     ParallelTensorShape input_shape = ParallelTensorShape{
         ParallelTensorDims{
             FFOrdered<ShardParallelDim>{
-                ShardParallelDim{4, 2},
-                ShardParallelDim{8, 1},
-                ShardParallelDim{6, 1},
-                ShardParallelDim{9, 3},
+                ShardParallelDim{4_n, 2_n},
+                ShardParallelDim{8_n, 1_n},
+                ShardParallelDim{6_n, 1_n},
+                ShardParallelDim{9_n, 3_n},
             },
             ReplicaParallelDimSet{
-                SumDegree{7},
-                DiscardCopyDegree{5},
+                SumDegree{7_n},
+                DiscardCopyDegree{5_n},
             },
         },
         DataType::FLOAT,
     };
 
     FlatAttrs attrs = FlatAttrs{
-        /*start_dim=*/ff_dim_t{nonnegative_int{1}},
-        /*end_dim=*/ff_dim_t{nonnegative_int{3}},
+        /*start_dim=*/ff_dim_t{nonnegative_int{1_n}},
+        /*end_dim=*/ff_dim_t{nonnegative_int{3_n}},
     };
 
     tl::expected<ParallelTensorShape, std::string> result =
@@ -227,13 +227,13 @@ TEST_SUITE(FF_TEST_SUITE) {
         ParallelTensorShape{
             ParallelTensorDims{
                 FFOrdered<ShardParallelDim>{
-                    ShardParallelDim{4, 2},
-                    ShardParallelDim{8 * 6, 1},
-                    ShardParallelDim{9, 3},
+                    ShardParallelDim{4_n, 2_n},
+                    ShardParallelDim{8_n * 6_n, 1_n},
+                    ShardParallelDim{9_n, 3_n},
                 },
                 ReplicaParallelDimSet{
-                    SumDegree{7},
-                    DiscardCopyDegree{5},
+                    SumDegree{7_n},
+                    DiscardCopyDegree{5_n},
                 },
             },
             DataType::FLOAT,

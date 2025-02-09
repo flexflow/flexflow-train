@@ -224,10 +224,10 @@ ffStatus_t
       tensor,
       CUDNN_TENSOR_NCHW,
       CUDNN_DATA_FLOAT,
-      shape.at_maybe(legion_dim_t{0}).value_or(1),
-      shape.at_maybe(legion_dim_t{1}).value_or(1),
-      shape.at_maybe(legion_dim_t{2}).value_or(1),
-      shape.at_maybe(legion_dim_t{3}).value_or(1));
+      shape.at_maybe(legion_dim_t{0_n}).value_or(1_n).unwrap_nonnegative(),
+      shape.at_maybe(legion_dim_t{1_n}).value_or(1_n).unwrap_nonnegative(),
+      shape.at_maybe(legion_dim_t{2_n}).value_or(1_n).unwrap_nonnegative(),
+      shape.at_maybe(legion_dim_t{3_n}).value_or(1_n).unwrap_nonnegative());
 }
 
 cudnnDataType_t ff_to_cudnn_datatype(DataType type) {

@@ -8,8 +8,8 @@ namespace FlexFlow {
 
 tl::expected<Pool2DAttrs, std::string>
     make_adaptive_pool2d_attrs(TensorDims const &input_dims,
-                               int output_h,
-                               int output_w,
+                               nonnegative_int output_h,
+                               nonnegative_int output_w,
                                PoolOp pool_type,
                                std::optional<Activation> const &activation) {
   // AdaptivePool2D semantics pulled from
@@ -22,10 +22,10 @@ tl::expected<Pool2DAttrs, std::string>
                     input_dims));
   }
 
-  size_t num_samples = dim_at_idx(input_dims, relative_ff_dim_t{0});
-  size_t num_channels = dim_at_idx(input_dims, relative_ff_dim_t{1});
-  size_t input_h = dim_at_idx(input_dims, relative_ff_dim_t{2});
-  size_t input_w = dim_at_idx(input_dims, relative_ff_dim_t{3});
+  nonnegative_int num_samples = dim_at_idx(input_dims, relative_ff_dim_t{0});
+  nonnegative_int num_channels = dim_at_idx(input_dims, relative_ff_dim_t{1});
+  nonnegative_int input_h = dim_at_idx(input_dims, relative_ff_dim_t{2});
+  nonnegative_int input_w = dim_at_idx(input_dims, relative_ff_dim_t{3});
 
   if (input_h % output_h != 0) {
     return tl::unexpected(fmt::format(
@@ -55,29 +55,29 @@ tl::expected<Pool2DAttrs, std::string>
   //               = `ind / outd`
   //               = `stride`
 
-  int kernel_h = input_h / output_h;
-  int kernel_w = input_w / output_w;
+  nonnegative_int kernel_h = input_h / output_h;
+  nonnegative_int kernel_w = input_w / output_w;
 
-  int stride_h = kernel_h;
-  int stride_w = kernel_w;
+  nonnegative_int stride_h = kernel_h;
+  nonnegative_int stride_w = kernel_w;
 
   Pool2DAttrs attrs = Pool2DAttrs{
       /*kernel_h=*/kernel_h,
       /*kernel_w=*/kernel_w,
       /*stride_h=*/stride_h,
       /*stride_w=*/stride_w,
-      /*padding_h=*/0,
-      /*padding_w=*/0,
+      /*padding_h=*/0_n,
+      /*padding_w=*/0_n,
       /*pool_type=*/pool_type,
       /*activation=*/activation,
   };
 
   TensorShape expected_ouput_shape = TensorShape{
-      TensorDims{FFOrdered<size_t>{
+      TensorDims{FFOrdered<nonnegative_int>{
           num_samples,
           num_channels,
-          size_t_from_int(output_h),
-          size_t_from_int(output_w),
+          output_h,
+          output_w,
       }},
       DataType::FLOAT,
   };
@@ -104,6 +104,19 @@ tl::expected<Pool2DAttrs, std::string>
   return attrs;
 }
 
+static nonnegative_int calculate_output_size(nonnegative_int input_size,
+                                             nonnegative_int padding_size,
+                                             nonnegative_int kernel_size,
+                                             nonnegative_int stride) {
+  int input_size_raw = input_size.unwrap_nonnegative();
+  int padding_raw = padding_size.unwrap_nonnegative();
+  int kernel_size_raw = kernel_size.unwrap_nonnegative();
+  int stride_raw = stride.unwrap_nonnegative();
+
+  return nonnegative_int{
+      (input_size_raw + (2 * padding_raw) - kernel_size_raw) / stride_raw + 1};
+}
+
 tl::expected<TensorShape, std::string>
     get_output_shape(Pool2DAttrs const &attrs, TensorShape const &input_shape) {
   if (num_dims(input_shape) != 4) {
@@ -113,19 +126,23 @@ tl::expected<TensorShape, std::string>
                     input_shape));
   }
 
-  size_t num_samples = dim_at_idx(input_shape, relative_ff_dim_t{0});
-  size_t num_channels = dim_at_idx(input_shape, relative_ff_dim_t{1});
-  size_t input_height = dim_at_idx(input_shape, relative_ff_dim_t{2});
-  size_t input_width = dim_at_idx(input_shape, relative_ff_dim_t{3});
+  nonnegative_int num_samples = dim_at_idx(input_shape, relative_ff_dim_t{0});
+  nonnegative_int num_channels = dim_at_idx(input_shape, relative_ff_dim_t{1});
+  nonnegative_int input_height = dim_at_idx(input_shape, relative_ff_dim_t{2});
+  nonnegative_int input_width = dim_at_idx(input_shape, relative_ff_dim_t{3});
 
-  size_t output_height =
-      (input_height + 2 * attrs.padding_h - attrs.kernel_h) / attrs.stride_h +
-      1;
+  nonnegative_int output_height =
+      calculate_output_size(/*input_size=*/input_height,
+                            /*padding_size=*/attrs.padding_h,
+                            /*kernel_size=*/attrs.kernel_h,
+                            /*stride_size=*/attrs.stride_h);
+  nonnegative_int output_width =
+      calculate_output_size(/*input_size=*/input_width,
+                            /*padding_size=*/attrs.padding_w,
+                            /*kernel_size=*/attrs.kernel_w,
+                            /*stride_size=*/attrs.stride_w);
 
-  size_t output_width =
-      (input_width + 2 * attrs.padding_w - attrs.kernel_w) / attrs.stride_w + 1;
-
-  return TensorShape{TensorDims{FFOrdered<size_t>{
+  return TensorShape{TensorDims{FFOrdered<nonnegative_int>{
                          num_samples,
                          num_channels,
                          output_height,

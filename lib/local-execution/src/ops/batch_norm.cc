@@ -75,21 +75,22 @@ static DeviceSpecificDeviceStates
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   auto const &attrs = acc.get_argument<BatchNormAttrs>(ATTRS);
 
-  int output_w = output.shape[legion_dim_t(0)];
-  int output_h = output.shape[legion_dim_t(1)];
-  int output_c = output.shape[legion_dim_t(2)];
-  int output_n = output.shape[legion_dim_t(3)];
+  nonnegative_int output_w = output.shape.at(legion_dim_t{0_n});
+  nonnegative_int output_h = output.shape.at(legion_dim_t{1_n});
+  nonnegative_int output_c = output.shape.at(legion_dim_t{2_n});
+  nonnegative_int output_n = output.shape.at(legion_dim_t{3_n});
 
   float *runningMean;
 
-  BatchNormPerDeviceState per_device_state = init_kernel(handle,
-                                                         allocator,
-                                                         runningMean,
-                                                         output_n,
-                                                         output_c,
-                                                         output_h,
-                                                         output_w,
-                                                         attrs.relu);
+  BatchNormPerDeviceState per_device_state =
+      init_kernel(handle,
+                  allocator,
+                  runningMean,
+                  output_n.unwrap_nonnegative(),
+                  output_c.unwrap_nonnegative(),
+                  output_h.unwrap_nonnegative(),
+                  output_w.unwrap_nonnegative(),
+                  attrs.relu);
 
   return DeviceSpecificDeviceStates{
       DeviceSpecific<BatchNormPerDeviceState>::create(per_device_state)};
@@ -140,7 +141,7 @@ static std::optional<float>
                  scale.get_float_ptr(),
                  scale_grad.get_float_ptr(),
                  bias_grad.get_float_ptr(),
-                 output.shape.get_volume());
+                 output.shape.get_volume().unwrap_nonnegative());
 }
 
 TaskImplFunction get_batch_norm_init_task_impl() {

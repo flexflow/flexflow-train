@@ -4,6 +4,7 @@
 #include "rapidcheck.h"
 #include "utils/type_traits.h"
 #include <optional>
+#include <utility>
 #include <variant>
 
 namespace FlexFlow {

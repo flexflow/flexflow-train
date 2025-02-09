@@ -2,7 +2,7 @@
 
 namespace FlexFlow {
 relative_ff_dim_t relative_ff_dim_t_from_ff_dim_t(ff_dim_t ff_dim) {
-  return relative_ff_dim_t{ff_dim.value.get_value()};
+  return relative_ff_dim_t{ff_dim.value.unwrap_nonnegative()};
 }
 } // namespace FlexFlow
 

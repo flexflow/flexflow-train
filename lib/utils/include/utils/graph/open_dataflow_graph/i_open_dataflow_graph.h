@@ -9,7 +9,7 @@ namespace FlexFlow {
 
 struct IOpenDataflowGraph : virtual public IOpenDataflowGraphView {
   virtual NodeAddedResult add_node(std::vector<OpenDataflowValue> const &inputs,
-                                   int num_outputs) = 0;
+                                   nonnegative_int num_outputs) = 0;
   virtual DataflowGraphInput add_input() = 0;
   virtual IOpenDataflowGraph *clone() const = 0;
 

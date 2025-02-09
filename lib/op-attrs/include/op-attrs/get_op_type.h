@@ -2,7 +2,7 @@
 #define _FLEXFLOW_OP_ATTRS_GET_OP_TYPE_H
 
 #include "op-attrs/ops/attention_attrs.dtg.h"
-#include "op-attrs/ops/batch_matmul.dtg.h"
+#include "op-attrs/ops/batch_matmul_attrs.dtg.h"
 #include "op-attrs/ops/batch_norm_attrs.dtg.h"
 #include "op-attrs/ops/broadcast_attrs.dtg.h"
 #include "op-attrs/ops/cast_attrs.dtg.h"

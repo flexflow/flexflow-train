@@ -13,13 +13,13 @@ std::unordered_set<OpenDataflowEdge>
       DataflowInputEdgeQuery{
           query_set<DataflowGraphInput>::matchall(),
           query_set<Node>{ns},
-          query_set<int>::matchall(),
+          query_set<nonnegative_int>::matchall(),
       },
       DataflowEdgeQuery{
           query_set<Node>{nodes_not_in_ns},
-          query_set<int>::matchall(),
+          query_set<nonnegative_int>::matchall(),
           query_set<Node>{ns},
-          query_set<int>::matchall(),
+          query_set<nonnegative_int>::matchall(),
       },
   };
 

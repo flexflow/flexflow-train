@@ -1,0 +1,17 @@
+namespace = "FlexFlow"
+name = "MergeMethod"
+features = [
+  "json",
+  "hash",
+  "fmt",
+  "rapidcheck",
+]
+
+[[values]]
+name = "REQUIRE_DISJOINT"
+
+[[values]]
+name = "LEFT_DOMINATES"
+
+[[values]]
+name = "RIGHT_DOMINATES"

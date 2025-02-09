@@ -198,13 +198,89 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
   }
 
-  TEST_CASE("nonnegative_int + operation") {
-    nonnegative_int nn_int_1a = nonnegative_int{1};
-    nonnegative_int nn_int_1b = nonnegative_int{1};
-    nonnegative_int nn_int_2 = nonnegative_int{2};
-    SUBCASE("LHS: nonnegative_int, RHS: nonnegative_int") {
-      CHECK(nn_int_1a + nn_int_1b == nn_int_2);
-    }
+  TEST_CASE("nonnegative_int::operator+(nonnegative_int)") {
+    nonnegative_int result = nonnegative_int{1} + nonnegative_int{2};
+    nonnegative_int correct = nonnegative_int{3};
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("nonnegative_int::operator++() (pre-increment)") {
+    nonnegative_int input = nonnegative_int{1};
+
+    nonnegative_int result = ++input;
+    nonnegative_int correct = nonnegative_int{2};
+
+    CHECK(result == correct);
+    CHECK(input == correct);
+  }
+
+  TEST_CASE("nonnegative_int::operator++(int) (post-increment)") {
+    nonnegative_int input = nonnegative_int{1};
+
+    nonnegative_int result = input++;
+    nonnegative_int correct_input = nonnegative_int{2};
+    nonnegative_int correct_result = nonnegative_int{1};
+
+    CHECK(result == correct_result);
+    CHECK(input == correct_input);
+  }
+
+  TEST_CASE("nonnegative_int::operator+=(nonnegative_int)") {
+    nonnegative_int result = nonnegative_int{1};
+    result += nonnegative_int{3};
+
+    nonnegative_int correct = nonnegative_int{4};
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("nonnegative_int::operator*(nonnegative_int)") {
+    nonnegative_int result = nonnegative_int{2} * nonnegative_int{3};
+    nonnegative_int correct = nonnegative_int{6};
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("nonnegative_int::operator*=(nonnegative_int)") {
+    nonnegative_int result = nonnegative_int{3};
+    result *= nonnegative_int{6};
+
+    nonnegative_int correct = nonnegative_int{18};
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("nonnegative_int::operator/(nonnegative_int)") {
+    nonnegative_int result = nonnegative_int{5} / nonnegative_int{2};
+    nonnegative_int correct = nonnegative_int{2};
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("nonnegative_int::operator/=(nonnegative_int)") {
+    nonnegative_int result = nonnegative_int{13};
+    result /= nonnegative_int{3};
+
+    nonnegative_int correct = nonnegative_int{4};
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("nonnegative_int::operator%(nonnegative_int)") {
+    nonnegative_int result = nonnegative_int{5} % nonnegative_int{2};
+    nonnegative_int correct = nonnegative_int{1};
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("nonnegative_int::operator%=(nonnegative_int)") {
+    nonnegative_int result = nonnegative_int{15};
+    result %= nonnegative_int{4};
+
+    nonnegative_int correct = nonnegative_int{3};
+
+    CHECK(result == correct);
   }
 
   TEST_CASE("adl_serializer<nonnegative_int>") {

@@ -62,14 +62,14 @@ static std::optional<float>
 
   auto input_grad = acc.get_tensor_grad<Permissions::WO>(INPUT);
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
-  auto const &attrs = acc.get_argument<ReplicateAttrs>(ATTRS);
+  auto attrs = acc.get_argument<ReplicateAttrs>(ATTRS);
 
   return profile(backward_kernel,
                  profiling,
                  "[replicate] backward_time = {:.2lf}ms\n",
                  input_grad,
                  output_grad,
-                 attrs.replicate_degree);
+                 attrs.replicate_degree.unwrap_nonnegative());
 }
 
 TaskImplFunction get_replicate_fwd_task_impl() {

@@ -11,8 +11,9 @@ std::unordered_set<std::pair<MachineSpecification, MachineSpecification>>
   for (int i = 1; i < resource.num_nodes; i *= 2) {
     MachineSpecification sub_resource1 = resource;
     MachineSpecification sub_resource2 = resource;
-    sub_resource1.num_nodes = i;
-    sub_resource2.num_nodes = resource.num_nodes - i;
+    sub_resource1.num_nodes = nonnegative_int{i};
+    sub_resource2.num_nodes =
+        nonnegative_int{resource.num_nodes.unwrap_nonnegative() - i};
     result.insert(std::make_pair(sub_resource1, sub_resource2));
     result.insert(std::make_pair(sub_resource2, sub_resource1));
   }
@@ -20,8 +21,9 @@ std::unordered_set<std::pair<MachineSpecification, MachineSpecification>>
   for (int i = 1; i < resource.num_gpus_per_node; i *= 2) {
     MachineSpecification sub_resource1 = resource;
     MachineSpecification sub_resource2 = resource;
-    sub_resource1.num_gpus_per_node = i;
-    sub_resource2.num_gpus_per_node = resource.num_gpus_per_node - i;
+    sub_resource1.num_gpus_per_node = nonnegative_int{i};
+    sub_resource2.num_gpus_per_node =
+        nonnegative_int{resource.num_gpus_per_node.unwrap_nonnegative() - i};
     result.insert(std::make_pair(sub_resource1, sub_resource2));
     result.insert(std::make_pair(sub_resource2, sub_resource1));
   }

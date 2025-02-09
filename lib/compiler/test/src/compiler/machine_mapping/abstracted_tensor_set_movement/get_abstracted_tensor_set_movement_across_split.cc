@@ -28,12 +28,12 @@ TEST_SUITE(FF_TEST_SUITE) {
     ParallelTensorShape input_shape = ParallelTensorShape{
         ParallelTensorDims{
             FFOrdered<ShardParallelDim>{
-                ShardParallelDim{10, 2},
-                ShardParallelDim{12, 1},
+                ShardParallelDim{10_n, 2_n},
+                ShardParallelDim{12_n, 1_n},
             },
             ReplicaParallelDimSet{
-                SumDegree{1},
-                DiscardCopyDegree{1},
+                SumDegree{1_n},
+                DiscardCopyDegree{1_n},
             },
         },
         DataType::FLOAT,

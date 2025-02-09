@@ -12,7 +12,7 @@ namespace FlexFlow {
  * @note This is a tiny model developed for testing the original Unity
  * implementation. It is not a "real" model and has never been trained.
  */
-ComputationGraph get_split_test_computation_graph(int batch_size);
+ComputationGraph get_split_test_computation_graph(nonnegative_int batch_size);
 
 } // namespace FlexFlow
 

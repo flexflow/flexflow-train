@@ -15,14 +15,17 @@ struct CheckShape {
   ComputationGraphBuilder const &cgb;
   InceptionV3Config const &config;
 
-  void operator()(tensor_guid_t t, int c, int h, int w) const {
+  void operator()(tensor_guid_t t,
+                  nonnegative_int c,
+                  nonnegative_int h,
+                  nonnegative_int w) const {
     TensorShape current_shape = cgb.get_shape(t);
     TensorShape expected_shape = TensorShape{
-        TensorDims{FFOrdered<size_t>{
-            size_t_from_int(config.batch_size),
-            size_t_from_int(c),
-            size_t_from_int(h),
-            size_t_from_int(w),
+        TensorDims{FFOrdered<nonnegative_int>{
+            config.batch_size,
+            c,
+            h,
+            w,
         }},
         DataType::FLOAT,
     };
@@ -35,12 +38,12 @@ struct CheckShape {
     }
   }
 
-  void operator()(tensor_guid_t t, int c) const {
+  void operator()(tensor_guid_t t, nonnegative_int c) const {
     TensorShape current_shape = cgb.get_shape(t);
     TensorShape expected_shape = TensorShape{
-        TensorDims{FFOrdered<size_t>{
-            size_t_from_int(config.batch_size),
-            size_t_from_int(c),
+        TensorDims{FFOrdered<nonnegative_int>{
+            config.batch_size,
+            c,
         }},
         DataType::FLOAT,
     };
@@ -56,11 +59,11 @@ struct CheckShape {
 
 InceptionV3Config get_default_inception_v3_training_config() {
   return InceptionV3Config{
-      /*num_classes=*/1000,
+      /*num_classes=*/1000_n,
 
       // see section 8 of https://arxiv.org/abs/1512.00567 for the source of the
       // batch size
-      /*batch_size=*/32,
+      /*batch_size=*/32_n,
 
       // see section 4 of https://arxiv.org/abs/1512.00567 for a discussion of
       // auxiliary logits. they are used by default in training
@@ -70,13 +73,13 @@ InceptionV3Config get_default_inception_v3_training_config() {
 
 static tensor_guid_t create_conv_block(ComputationGraphBuilder &cgb,
                                        tensor_guid_t const &input,
-                                       int filters,
-                                       int kernel_size_h,
-                                       int kernel_size_w,
-                                       int stride_h = 1,
-                                       int stride_w = 1,
-                                       int padding_h = 0,
-                                       int padding_w = 0,
+                                       nonnegative_int filters,
+                                       nonnegative_int kernel_size_h,
+                                       nonnegative_int kernel_size_w,
+                                       nonnegative_int stride_h = 1_n,
+                                       nonnegative_int stride_w = 1_n,
+                                       nonnegative_int padding_h = 0_n,
+                                       nonnegative_int padding_w = 0_n,
                                        bool use_bias = false) {
   tensor_guid_t conv = cgb.conv2d(input,
                                   /*outChannels=*/filters,
@@ -87,7 +90,7 @@ static tensor_guid_t create_conv_block(ComputationGraphBuilder &cgb,
                                   /*paddingH=*/padding_h,
                                   /*paddingW=*/padding_w,
                                   /*activation=*/std::nullopt,
-                                  /*groups=*/1,
+                                  /*groups=*/1_n,
                                   /*use_bias=*/use_bias);
   return cgb.batch_norm(conv,
                         /*affine=*/true,
@@ -98,29 +101,29 @@ static tensor_guid_t create_conv_block(ComputationGraphBuilder &cgb,
 
 static tensor_guid_t create_inception_module_a(ComputationGraphBuilder &cgb,
                                                tensor_guid_t const &input,
-                                               int pool_features) {
+                                               nonnegative_int pool_features) {
   tensor_guid_t branch1x1 = create_conv_block(cgb,
                                               input,
-                                              /*filters=*/64,
-                                              /*kernel_size_h=*/1,
-                                              /*kernel_size_w=*/1);
+                                              /*filters=*/64_n,
+                                              /*kernel_size_h=*/1_n,
+                                              /*kernel_size_w=*/1_n);
 
   tensor_guid_t branch5x5 = [&] {
     tensor_guid_t t = input;
     t = create_conv_block(cgb,
                           t,
-                          /*filters=*/48,
-                          /*kernel_size_h=*/1,
-                          /*kernel_size_w=*/1);
+                          /*filters=*/48_n,
+                          /*kernel_size_h=*/1_n,
+                          /*kernel_size_w=*/1_n);
     t = create_conv_block(cgb,
                           t,
-                          /*filters=*/64,
-                          /*kernel_size_h=*/5,
-                          /*kernel_size_w=*/5,
-                          /*stride_h=*/1,
-                          /*stride_w=*/1,
-                          /*padding_h=*/2,
-                          /*padding_w=*/2);
+                          /*filters=*/64_n,
+                          /*kernel_size_h=*/5_n,
+                          /*kernel_size_w=*/5_n,
+                          /*stride_h=*/1_n,
+                          /*stride_w=*/1_n,
+                          /*padding_h=*/2_n,
+                          /*padding_w=*/2_n);
     return t;
   }();
 
@@ -128,208 +131,209 @@ static tensor_guid_t create_inception_module_a(ComputationGraphBuilder &cgb,
     tensor_guid_t t = input;
     t = create_conv_block(cgb,
                           t,
-                          /*filters=*/64,
-                          /*kernel_size_h=*/1,
-                          /*kernel_size_w=*/1);
+                          /*filters=*/64_n,
+                          /*kernel_size_h=*/1_n,
+                          /*kernel_size_w=*/1_n);
     t = create_conv_block(cgb,
                           t,
-                          /*filters=*/96,
-                          /*kernel_size_h=*/3,
-                          /*kernel_size_w=*/3,
-                          /*stride_h=*/1,
-                          /*stride_w=*/1,
-                          /*padding_h=*/1,
-                          /*padding_w=*/1);
+                          /*filters=*/96_n,
+                          /*kernel_size_h=*/3_n,
+                          /*kernel_size_w=*/3_n,
+                          /*stride_h=*/1_n,
+                          /*stride_w=*/1_n,
+                          /*padding_h=*/1_n,
+                          /*padding_w=*/1_n);
     t = create_conv_block(cgb,
                           t,
-                          /*filters=*/96,
-                          /*kernel_size_h=*/3,
-                          /*kernel_size_w=*/3,
-                          /*stride_h=*/1,
-                          /*stride_w=*/1,
-                          /*padding_h=*/1,
-                          /*padding_w=*/1);
+                          /*filters=*/96_n,
+                          /*kernel_size_h=*/3_n,
+                          /*kernel_size_w=*/3_n,
+                          /*stride_h=*/1_n,
+                          /*stride_w=*/1_n,
+                          /*padding_h=*/1_n,
+                          /*padding_w=*/1_n);
     return t;
   }();
 
   tensor_guid_t branch_pool = [&] {
     tensor_guid_t t = input;
     t = cgb.pool2d(t,
-                   /*kernelH=*/3,
-                   /*kernelW=*/3,
-                   /*strideH=*/1,
-                   /*strideW=*/1,
-                   /*paddingH=*/1,
-                   /*paddingW=*/1,
+                   /*kernelH=*/3_n,
+                   /*kernelW=*/3_n,
+                   /*strideH=*/1_n,
+                   /*strideW=*/1_n,
+                   /*paddingH=*/1_n,
+                   /*paddingW=*/1_n,
                    /*type=*/PoolOp::AVG);
     t = create_conv_block(cgb,
                           t,
                           /*filters=*/pool_features,
-                          /*kernel_stride_h=*/1,
-                          /*kernel_stride_w=*/1);
+                          /*kernel_stride_h=*/1_n,
+                          /*kernel_stride_w=*/1_n);
     return t;
   }();
 
   return cgb.concat({branch1x1, branch5x5, branch3x3dbl, branch_pool},
-                    /*axis=*/1);
+                    /*axis=*/relative_ff_dim_t{1});
 }
 
 static tensor_guid_t create_inception_module_b(ComputationGraphBuilder &cgb,
                                                tensor_guid_t const &input) {
   tensor_guid_t branch3x3 = create_conv_block(cgb,
                                               input,
-                                              /*filters=*/384,
-                                              /*kernel_size_h=*/3,
-                                              /*kernel_size_w=*/3,
-                                              /*stride_h=*/2,
-                                              /*stride_w=*/2);
+                                              /*filters=*/384_n,
+                                              /*kernel_size_h=*/3_n,
+                                              /*kernel_size_w=*/3_n,
+                                              /*stride_h=*/2_n,
+                                              /*stride_w=*/2_n);
 
   tensor_guid_t branch3x3dbl = [&] {
     tensor_guid_t t = input;
     t = create_conv_block(cgb,
                           t,
-                          /*filters=*/64,
-                          /*kernel_size_h=*/1,
-                          /*kernel_size_w=*/1);
+                          /*filters=*/64_n,
+                          /*kernel_size_h=*/1_n,
+                          /*kernel_size_w=*/1_n);
     t = create_conv_block(cgb,
                           t,
-                          /*filters=*/96,
-                          /*kernel_size_h=*/3,
-                          /*kernel_size_w=*/3,
-                          /*stride_h=*/1,
-                          /*stride_w=*/1,
-                          /*padding_h=*/1,
-                          /*padding_w=*/1);
+                          /*filters=*/96_n,
+                          /*kernel_size_h=*/3_n,
+                          /*kernel_size_w=*/3_n,
+                          /*stride_h=*/1_n,
+                          /*stride_w=*/1_n,
+                          /*padding_h=*/1_n,
+                          /*padding_w=*/1_n);
     t = create_conv_block(cgb,
                           t,
-                          /*filters=*/96,
-                          /*kernel_stride_h=*/3,
-                          /*kernel_stride_w=*/3,
-                          /*stride_h=*/2,
-                          /*stride_w=*/2);
+                          /*filters=*/96_n,
+                          /*kernel_stride_h=*/3_n,
+                          /*kernel_stride_w=*/3_n,
+                          /*stride_h=*/2_n,
+                          /*stride_w=*/2_n);
     return t;
   }();
 
   tensor_guid_t branch_pool = cgb.pool2d(input,
-                                         /*kernelH=*/3,
-                                         /*kernelW=*/3,
-                                         /*strideH=*/2,
-                                         /*strideW=*/2,
-                                         /*paddingH=*/0,
-                                         /*paddingW=*/0,
+                                         /*kernelH=*/3_n,
+                                         /*kernelW=*/3_n,
+                                         /*strideH=*/2_n,
+                                         /*strideW=*/2_n,
+                                         /*paddingH=*/0_n,
+                                         /*paddingW=*/0_n,
                                          /*type=*/PoolOp::MAX);
 
-  return cgb.concat({branch3x3, branch3x3dbl, branch_pool}, /*axis=*/1);
+  return cgb.concat({branch3x3, branch3x3dbl, branch_pool},
+                    /*axis=*/relative_ff_dim_t{1});
 }
 
 static tensor_guid_t create_inception_module_c(ComputationGraphBuilder &cgb,
                                                CheckShape const &check_shape,
                                                tensor_guid_t const &input,
-                                               int channels_7x7) {
+                                               nonnegative_int channels_7x7) {
   tensor_guid_t branch1x1 = create_conv_block(cgb,
                                               input,
-                                              /*filters=*/192,
-                                              /*kernel_size_h=*/1,
-                                              /*kernel_size_w=*/1);
-  check_shape(branch1x1, 192, 17, 17);
+                                              /*filters=*/192_n,
+                                              /*kernel_size_h=*/1_n,
+                                              /*kernel_size_w=*/1_n);
+  check_shape(branch1x1, 192_n, 17_n, 17_n);
 
   tensor_guid_t branch7x7 = [&] {
     tensor_guid_t t = input;
     t = create_conv_block(cgb,
                           t,
                           /*filters=*/channels_7x7,
-                          /*kernel_size_h=*/1,
-                          /*kernel_size_w=*/1);
+                          /*kernel_size_h=*/1_n,
+                          /*kernel_size_w=*/1_n);
     t = create_conv_block(cgb,
                           t,
                           /*filters=*/channels_7x7,
-                          /*kernel_size_h=*/1,
-                          /*kernel_size_w=*/7,
-                          /*stride_h=*/1,
-                          /*stride_w=*/1,
-                          /*padding_h=*/0,
-                          /*padding_w=*/3);
+                          /*kernel_size_h=*/1_n,
+                          /*kernel_size_w=*/7_n,
+                          /*stride_h=*/1_n,
+                          /*stride_w=*/1_n,
+                          /*padding_h=*/0_n,
+                          /*padding_w=*/3_n);
     t = create_conv_block(cgb,
                           t,
-                          /*filters=*/192,
-                          /*kernel_size_h=*/7,
-                          /*kernel_size_w=*/1,
-                          /*stride_h=*/1,
-                          /*stride_w=*/1,
-                          /*padding_h=*/3,
-                          /*padding_w=*/0);
+                          /*filters=*/192_n,
+                          /*kernel_size_h=*/7_n,
+                          /*kernel_size_w=*/1_n,
+                          /*stride_h=*/1_n,
+                          /*stride_w=*/1_n,
+                          /*padding_h=*/3_n,
+                          /*padding_w=*/0_n);
     return t;
   }();
-  check_shape(branch7x7, 192, 17, 17);
+  check_shape(branch7x7, 192_n, 17_n, 17_n);
 
   tensor_guid_t branch7x7dbl = [&] {
     tensor_guid_t t = input;
     t = create_conv_block(cgb,
                           t,
                           /*filters=*/channels_7x7,
-                          /*kernel_size_h=*/1,
-                          /*kernel_size_w=*/1);
+                          /*kernel_size_h=*/1_n,
+                          /*kernel_size_w=*/1_n);
     t = create_conv_block(cgb,
                           t,
                           /*filters=*/channels_7x7,
-                          /*kernel_size_h=*/7,
-                          /*kernel_size_w=*/1,
-                          /*stride_h=*/1,
-                          /*stride_w=*/1,
-                          /*padding_h=*/3,
-                          /*padding_w=*/0);
+                          /*kernel_size_h=*/7_n,
+                          /*kernel_size_w=*/1_n,
+                          /*stride_h=*/1_n,
+                          /*stride_w=*/1_n,
+                          /*padding_h=*/3_n,
+                          /*padding_w=*/0_n);
     t = create_conv_block(cgb,
                           t,
                           /*filters=*/channels_7x7,
-                          /*kernel_size_h=*/1,
-                          /*kernel_size_w=*/7,
-                          /*stride_h=*/1,
-                          /*stride_w=*/1,
-                          /*padding_h=*/0,
-                          /*padding_w=*/3);
+                          /*kernel_size_h=*/1_n,
+                          /*kernel_size_w=*/7_n,
+                          /*stride_h=*/1_n,
+                          /*stride_w=*/1_n,
+                          /*padding_h=*/0_n,
+                          /*padding_w=*/3_n);
     t = create_conv_block(cgb,
                           t,
                           /*filters=*/channels_7x7,
-                          /*kernel_size_h=*/7,
-                          /*kernel_size_w=*/1,
-                          /*stride_h=*/1,
-                          /*stride_w=*/1,
-                          /*padding_h=*/3,
-                          /*padding_w=*/0);
+                          /*kernel_size_h=*/7_n,
+                          /*kernel_size_w=*/1_n,
+                          /*stride_h=*/1_n,
+                          /*stride_w=*/1_n,
+                          /*padding_h=*/3_n,
+                          /*padding_w=*/0_n);
     t = create_conv_block(cgb,
                           t,
-                          /*filters=*/192,
-                          /*kernel_size_h=*/1,
-                          /*kernel_size_w=*/7,
-                          /*stride_h=*/1,
-                          /*stride_w=*/1,
-                          /*padding_h=*/0,
-                          /*padding_w=*/3);
+                          /*filters=*/192_n,
+                          /*kernel_size_h=*/1_n,
+                          /*kernel_size_w=*/7_n,
+                          /*stride_h=*/1_n,
+                          /*stride_w=*/1_n,
+                          /*padding_h=*/0_n,
+                          /*padding_w=*/3_n);
     return t;
   }();
-  check_shape(branch7x7dbl, 192, 17, 17);
+  check_shape(branch7x7dbl, 192_n, 17_n, 17_n);
 
   tensor_guid_t branch_pool = [&] {
     tensor_guid_t t = input;
     t = cgb.pool2d(t,
-                   /*kernelH=*/3,
-                   /*kernelW=*/3,
-                   /*strideH=*/1,
-                   /*strideW=*/1,
-                   /*paddingH=*/1,
-                   /*paddingW=*/1,
+                   /*kernelH=*/3_n,
+                   /*kernelW=*/3_n,
+                   /*strideH=*/1_n,
+                   /*strideW=*/1_n,
+                   /*paddingH=*/1_n,
+                   /*paddingW=*/1_n,
                    /*type=*/PoolOp::AVG);
     t = create_conv_block(cgb,
                           t,
-                          /*filters=*/192,
-                          /*kernel_size_h=*/1,
-                          /*kernel_size_w=*/1);
+                          /*filters=*/192_n,
+                          /*kernel_size_h=*/1_n,
+                          /*kernel_size_w=*/1_n);
     return t;
   }();
-  check_shape(branch_pool, 192, 17, 17);
+  check_shape(branch_pool, 192_n, 17_n, 17_n);
 
   return cgb.concat({branch1x1, branch7x7, branch7x7dbl, branch_pool},
-                    /*axis=*/1);
+                    /*axis=*/relative_ff_dim_t{1});
 }
 
 static tensor_guid_t create_inception_module_d(ComputationGraphBuilder &cgb,
@@ -338,10 +342,10 @@ static tensor_guid_t create_inception_module_d(ComputationGraphBuilder &cgb,
     tensor_guid_t t = input;
     t = create_conv_block(cgb,
                           t,
-                          /*filters=*/192,
-                          /*kernel_size_h=*/1,
-                          /*kernel_size_w=*/1);
-    t = create_conv_block(cgb, t, 320, 3, 3, 2, 2);
+                          /*filters=*/192_n,
+                          /*kernel_size_h=*/1_n,
+                          /*kernel_size_w=*/1_n);
+    t = create_conv_block(cgb, t, 320_n, 3_n, 3_n, 2_n, 2_n);
     return t;
   }();
 
@@ -349,83 +353,84 @@ static tensor_guid_t create_inception_module_d(ComputationGraphBuilder &cgb,
     tensor_guid_t t = input;
     t = create_conv_block(cgb,
                           t,
-                          /*filters=*/192,
-                          /*kernel_size_h=*/1,
-                          /*kernel_size_w=*/1);
+                          /*filters=*/192_n,
+                          /*kernel_size_h=*/1_n,
+                          /*kernel_size_w=*/1_n);
     t = create_conv_block(cgb,
                           t,
-                          /*filters=*/192,
-                          /*kernel_size_h=*/1,
-                          /*kernel_size_w=*/7,
-                          /*stride_h=*/1,
-                          /*stride_w=*/1,
-                          /*padding_h=*/0,
-                          /*padding_w=*/3);
+                          /*filters=*/192_n,
+                          /*kernel_size_h=*/1_n,
+                          /*kernel_size_w=*/7_n,
+                          /*stride_h=*/1_n,
+                          /*stride_w=*/1_n,
+                          /*padding_h=*/0_n,
+                          /*padding_w=*/3_n);
     t = create_conv_block(cgb,
                           t,
-                          /*filters=*/192,
-                          /*kernel_size_h=*/7,
-                          /*kernel_size_w=*/1,
-                          /*stride_h=*/1,
-                          /*stride_w=*/1,
-                          /*padding_h=*/3,
-                          /*padding_w=*/0);
+                          /*filters=*/192_n,
+                          /*kernel_size_h=*/7_n,
+                          /*kernel_size_w=*/1_n,
+                          /*stride_h=*/1_n,
+                          /*stride_w=*/1_n,
+                          /*padding_h=*/3_n,
+                          /*padding_w=*/0_n);
     t = create_conv_block(cgb,
                           t,
-                          /*filters=*/192,
-                          /*kernel_size_h=*/3,
-                          /*kernel_size_w=*/3,
-                          /*stride_h=*/2,
-                          /*stride_w=*/2);
+                          /*filters=*/192_n,
+                          /*kernel_size_h=*/3_n,
+                          /*kernel_size_w=*/3_n,
+                          /*stride_h=*/2_n,
+                          /*stride_w=*/2_n);
     return t;
   }();
 
   tensor_guid_t branch_pool = cgb.pool2d(input,
-                                         /*kernelH=*/3,
-                                         /*kernelW=*/3,
-                                         /*strideH=*/2,
-                                         /*strideW=*/2,
-                                         /*paddingH=*/0,
-                                         /*paddingW=*/0,
+                                         /*kernelH=*/3_n,
+                                         /*kernelW=*/3_n,
+                                         /*strideH=*/2_n,
+                                         /*strideW=*/2_n,
+                                         /*paddingH=*/0_n,
+                                         /*paddingW=*/0_n,
                                          /*type=*/PoolOp::MAX);
 
-  return cgb.concat({branch3x3, branch7x7x3, branch_pool}, /*axis=*/1);
+  return cgb.concat({branch3x3, branch7x7x3, branch_pool},
+                    /*axis=*/relative_ff_dim_t{1});
 }
 
 static tensor_guid_t create_inception_module_e(ComputationGraphBuilder &cgb,
                                                tensor_guid_t const &input) {
   tensor_guid_t branch1x1 = create_conv_block(cgb,
                                               input,
-                                              /*filters=*/320,
-                                              /*kernel_size_h=*/1,
-                                              /*kernel_size_w=*/1);
+                                              /*filters=*/320_n,
+                                              /*kernel_size_h=*/1_n,
+                                              /*kernel_size_w=*/1_n);
 
   tensor_guid_t branch3x3 = [&] {
     tensor_guid_t t = input;
     t = create_conv_block(cgb,
                           t,
-                          /*filters=*/384,
-                          /*kernel_size_h=*/1,
-                          /*kernel_size_w=*/1);
+                          /*filters=*/384_n,
+                          /*kernel_size_h=*/1_n,
+                          /*kernel_size_w=*/1_n);
     tensor_guid_t t_1 = create_conv_block(cgb,
                                           t,
-                                          /*filters=*/384,
-                                          /*kernel_size_h=*/1,
-                                          /*kernel_size_w=*/3,
-                                          /*stride_h=*/1,
-                                          /*stride_w=*/1,
-                                          /*padding_h=*/0,
-                                          /*padding_w=*/1);
+                                          /*filters=*/384_n,
+                                          /*kernel_size_h=*/1_n,
+                                          /*kernel_size_w=*/3_n,
+                                          /*stride_h=*/1_n,
+                                          /*stride_w=*/1_n,
+                                          /*padding_h=*/0_n,
+                                          /*padding_w=*/1_n);
     tensor_guid_t t_2 = create_conv_block(cgb,
                                           t,
-                                          /*filters=*/384,
-                                          /*kernel_size_h=*/3,
-                                          /*kernel_size_w=*/1,
-                                          /*stride_h=*/1,
-                                          /*stride_w=*/1,
-                                          /*padding_h=*/1,
-                                          /*padding_w=*/0);
-    t = cgb.concat({t_1, t_2}, /*axis=*/1);
+                                          /*filters=*/384_n,
+                                          /*kernel_size_h=*/3_n,
+                                          /*kernel_size_w=*/1_n,
+                                          /*stride_h=*/1_n,
+                                          /*stride_w=*/1_n,
+                                          /*padding_h=*/1_n,
+                                          /*padding_w=*/0_n);
+    t = cgb.concat({t_1, t_2}, /*axis=*/relative_ff_dim_t{1});
     return t;
   }();
 
@@ -433,60 +438,60 @@ static tensor_guid_t create_inception_module_e(ComputationGraphBuilder &cgb,
     tensor_guid_t t = input;
     t = create_conv_block(cgb,
                           t,
-                          /*filters=*/448,
-                          /*kernel_size_h=*/1,
-                          /*kernel_size_w=*/1);
+                          /*filters=*/448_n,
+                          /*kernel_size_h=*/1_n,
+                          /*kernel_size_w=*/1_n);
     t = create_conv_block(cgb,
                           t,
-                          /*filters=*/384,
-                          /*kernel_size_h=*/3,
-                          /*kernel_size_w=*/3,
-                          /*stride_h=*/1,
-                          /*stride_w=*/1,
-                          /*padding_h=*/1,
-                          /*padding_w=*/1);
+                          /*filters=*/384_n,
+                          /*kernel_size_h=*/3_n,
+                          /*kernel_size_w=*/3_n,
+                          /*stride_h=*/1_n,
+                          /*stride_w=*/1_n,
+                          /*padding_h=*/1_n,
+                          /*padding_w=*/1_n);
     tensor_guid_t t_1 = create_conv_block(cgb,
                                           t,
-                                          /*filters=*/384,
-                                          /*kernel_size_h=*/1,
-                                          /*kernel_size_w=*/3,
-                                          /*stride_h=*/1,
-                                          /*stride_w=*/1,
-                                          /*padding_h=*/0,
-                                          /*padding_w=*/1);
+                                          /*filters=*/384_n,
+                                          /*kernel_size_h=*/1_n,
+                                          /*kernel_size_w=*/3_n,
+                                          /*stride_h=*/1_n,
+                                          /*stride_w=*/1_n,
+                                          /*padding_h=*/0_n,
+                                          /*padding_w=*/1_n);
     tensor_guid_t t_2 = create_conv_block(cgb,
                                           t,
-                                          /*filters=*/384,
-                                          /*kernel_size_h=*/3,
-                                          /*kernel_size_w=*/1,
-                                          /*stride_h=*/1,
-                                          /*stride_w=*/1,
-                                          /*padding_h=*/1,
-                                          /*padding_w=*/0);
-    t = cgb.concat({t_1, t_2}, /*axis=*/1);
+                                          /*filters=*/384_n,
+                                          /*kernel_size_h=*/3_n,
+                                          /*kernel_size_w=*/1_n,
+                                          /*stride_h=*/1_n,
+                                          /*stride_w=*/1_n,
+                                          /*padding_h=*/1_n,
+                                          /*padding_w=*/0_n);
+    t = cgb.concat({t_1, t_2}, /*axis=*/relative_ff_dim_t{1});
     return t;
   }();
 
   tensor_guid_t branch_pool = [&] {
     tensor_guid_t t = input;
     t = cgb.pool2d(t,
-                   /*kernelH=*/3,
-                   /*kernelW=*/3,
-                   /*strideH=*/1,
-                   /*strideW=*/1,
-                   /*paddingH=*/1,
-                   /*paddingW=*/1,
+                   /*kernelH=*/3_n,
+                   /*kernelW=*/3_n,
+                   /*strideH=*/1_n,
+                   /*strideW=*/1_n,
+                   /*paddingH=*/1_n,
+                   /*paddingW=*/1_n,
                    /*type=*/PoolOp::AVG);
     t = create_conv_block(cgb,
                           t,
-                          /*filters=*/192,
-                          /*kernel_size_h=*/1,
-                          /*kernel_size_w=*/1);
+                          /*filters=*/192_n,
+                          /*kernel_size_h=*/1_n,
+                          /*kernel_size_w=*/1_n);
     return t;
   }();
 
   return cgb.concat({branch1x1, branch3x3, branch3x3dbl, branch_pool},
-                    /*axis=*/1);
+                    /*axis=*/relative_ff_dim_t{1});
 }
 
 static tensor_guid_t create_initial_layers(ComputationGraphBuilder &cgb,
@@ -494,75 +499,75 @@ static tensor_guid_t create_initial_layers(ComputationGraphBuilder &cgb,
                                            tensor_guid_t const &input) {
   tensor_guid_t t = input;
 
-  check_shape(t, 3, 299, 299);
+  check_shape(t, 3_n, 299_n, 299_n);
 
   // Conv2d_1a_3x3
   t = create_conv_block(cgb,
                         t,
-                        /*filters=*/32,
-                        /*kernel_size_h=*/3,
-                        /*kernel_size_w=*/3,
-                        /*stride_h=*/2,
-                        /*stride_w=*/2);
-  check_shape(t, 32, 149, 149);
+                        /*filters=*/32_n,
+                        /*kernel_size_h=*/3_n,
+                        /*kernel_size_w=*/3_n,
+                        /*stride_h=*/2_n,
+                        /*stride_w=*/2_n);
+  check_shape(t, 32_n, 149_n, 149_n);
 
   // Conv2d_2a_3x3
   t = create_conv_block(cgb,
                         t,
-                        /*filters=*/32,
-                        /*kernel_size_h=*/3,
-                        /*kernel_size_w=*/3);
-  check_shape(t, 32, 147, 147);
+                        /*filters=*/32_n,
+                        /*kernel_size_h=*/3_n,
+                        /*kernel_size_w=*/3_n);
+  check_shape(t, 32_n, 147_n, 147_n);
 
   // Conv2d_2b_3x3
   t = create_conv_block(cgb,
                         t,
-                        /*filters=*/64,
-                        /*kernel_size_h=*/3,
-                        /*kernel_size_w=*/3,
-                        /*stride_h=*/1,
-                        /*stride_w=*/1,
-                        /*padding_h=*/1,
-                        /*padding_w=*/1);
-  check_shape(t, 64, 147, 147);
+                        /*filters=*/64_n,
+                        /*kernel_size_h=*/3_n,
+                        /*kernel_size_w=*/3_n,
+                        /*stride_h=*/1_n,
+                        /*stride_w=*/1_n,
+                        /*padding_h=*/1_n,
+                        /*padding_w=*/1_n);
+  check_shape(t, 64_n, 147_n, 147_n);
 
   // maxpool1
   t = cgb.pool2d(t,
-                 /*kernelH=*/3,
-                 /*kernelW=*/3,
-                 /*strideH=*/2,
-                 /*strideW=*/2,
-                 /*paddingH=*/0,
-                 /*paddingW=*/0,
+                 /*kernelH=*/3_n,
+                 /*kernelW=*/3_n,
+                 /*strideH=*/2_n,
+                 /*strideW=*/2_n,
+                 /*paddingH=*/0_n,
+                 /*paddingW=*/0_n,
                  /*type=*/PoolOp::MAX);
-  check_shape(t, 64, 73, 73);
+  check_shape(t, 64_n, 73_n, 73_n);
 
   // Conv2d_3b_1x1
   t = create_conv_block(cgb,
                         t,
-                        /*filters=*/80,
-                        /*kernel_size_h=*/1,
-                        /*kernel_size_w=*/1);
-  check_shape(t, 80, 73, 73);
+                        /*filters=*/80_n,
+                        /*kernel_size_h=*/1_n,
+                        /*kernel_size_w=*/1_n);
+  check_shape(t, 80_n, 73_n, 73_n);
 
   // Conv2d_4a_3x3
   t = create_conv_block(cgb,
                         t,
-                        /*filters=*/192,
-                        /*kernel_size_h=*/3,
-                        /*kernel_size_w=*/3);
-  check_shape(t, 192, 71, 71);
+                        /*filters=*/192_n,
+                        /*kernel_size_h=*/3_n,
+                        /*kernel_size_w=*/3_n);
+  check_shape(t, 192_n, 71_n, 71_n);
 
   // maxpool2
   t = cgb.pool2d(t,
-                 /*kernelH=*/3,
-                 /*kernelW=*/3,
-                 /*strideH=*/2,
-                 /*strideW=*/2,
-                 /*paddingH=*/0,
-                 /*paddingW=*/0,
+                 /*kernelH=*/3_n,
+                 /*kernelW=*/3_n,
+                 /*strideH=*/2_n,
+                 /*strideW=*/2_n,
+                 /*paddingH=*/0_n,
+                 /*paddingW=*/0_n,
                  /*type=*/PoolOp::MAX);
-  check_shape(t, 192, 35, 35);
+  check_shape(t, 192_n, 35_n, 35_n);
 
   return t;
 }
@@ -570,26 +575,26 @@ static tensor_guid_t create_initial_layers(ComputationGraphBuilder &cgb,
 static tensor_guid_t create_final_layers(ComputationGraphBuilder &cgb,
                                          CheckShape const &check_shape,
                                          tensor_guid_t const &input,
-                                         size_t num_classes) {
+                                         nonnegative_int num_classes) {
   // avgpool
   tensor_guid_t x = cgb.pool2d(input,
-                               /*kernelH=*/8,
-                               /*kernelW=*/8,
-                               /*strideH=*/1,
-                               /*strideW=*/1,
-                               /*paddingH=*/0,
-                               /*paddingW=*/0,
+                               /*kernelH=*/8_n,
+                               /*kernelW=*/8_n,
+                               /*strideH=*/1_n,
+                               /*strideW=*/1_n,
+                               /*paddingH=*/0_n,
+                               /*paddingW=*/0_n,
                                /*type=*/PoolOp::AVG);
-  check_shape(x, 2048, 1, 1);
+  check_shape(x, 2048_n, 1_n, 1_n);
 
   // dropout
   x = cgb.dropout(x,
                   /*rate=*/0.5);
-  check_shape(x, 2048, 1, 1);
+  check_shape(x, 2048_n, 1_n, 1_n);
 
   x = cgb.flat(x,
-               /*start_dim=*/1);
-  check_shape(x, 2048);
+               /*start_dim=*/relative_ff_dim_t{1});
+  check_shape(x, 2048_n);
 
   // fc
   x = cgb.dense(x,
@@ -597,7 +602,7 @@ static tensor_guid_t create_final_layers(ComputationGraphBuilder &cgb,
   check_shape(x, num_classes);
 
   // softmax (not in pytorch model, but shown in Table 1 on p6 of
-  // https://arxiv.org/abs/1512.00567)
+  // https://arxiv.org/abs/1512.00567_n)
   x = cgb.softmax(x);
   check_shape(x, num_classes);
 
@@ -607,44 +612,44 @@ static tensor_guid_t create_final_layers(ComputationGraphBuilder &cgb,
 static tensor_guid_t create_inception_aux(ComputationGraphBuilder &cgb,
                                           CheckShape const &check_shape,
                                           tensor_guid_t const &input,
-                                          size_t num_classes) {
+                                          nonnegative_int num_classes) {
   tensor_guid_t x = input;
-  check_shape(x, 768, 17, 17);
+  check_shape(x, 768_n, 17_n, 17_n);
 
   x = cgb.pool2d(x,
-                 /*kernelH=*/5,
-                 /*kernelW=*/5,
-                 /*strideH=*/3,
-                 /*strideW=*/3,
-                 /*paddingH=*/0,
-                 /*paddingW=*/0,
+                 /*kernelH=*/5_n,
+                 /*kernelW=*/5_n,
+                 /*strideH=*/3_n,
+                 /*strideW=*/3_n,
+                 /*paddingH=*/0_n,
+                 /*paddingW=*/0_n,
                  /*type=*/PoolOp::AVG);
-  check_shape(x, 768, 5, 5);
+  check_shape(x, 768_n, 5_n, 5_n);
 
   // conv0
   x = create_conv_block(cgb,
                         x,
-                        /*filters=*/128,
-                        /*kernel_size_h=*/1,
-                        /*kernel_size_w=*/1);
-  check_shape(x, 128, 5, 5);
+                        /*filters=*/128_n,
+                        /*kernel_size_h=*/1_n,
+                        /*kernel_size_w=*/1_n);
+  check_shape(x, 128_n, 5_n, 5_n);
 
   // conv1
   x = create_conv_block(cgb,
                         x,
-                        /*filters=*/768,
-                        /*kernel_size_h=*/5,
-                        /*kernel_size_w=*/5);
-  check_shape(x, 768, 1, 1);
+                        /*filters=*/768_n,
+                        /*kernel_size_h=*/5_n,
+                        /*kernel_size_w=*/5_n);
+  check_shape(x, 768_n, 1_n, 1_n);
 
   x = cgb.adaptive_pool2d(x,
-                          /*output_h=*/1,
-                          /*output_w=*/1);
-  check_shape(x, 768, 1, 1);
+                          /*output_h=*/1_n,
+                          /*output_w=*/1_n);
+  check_shape(x, 768_n, 1_n, 1_n);
 
   x = cgb.flat(x,
-               /*start_dim=*/1);
-  check_shape(x, 768);
+               /*start_dim=*/relative_ff_dim_t{1});
+  check_shape(x, 768_n);
 
   // fc
   x = cgb.dense(x,
@@ -666,39 +671,39 @@ static InceptionV3Output create_inception_v3(ComputationGraphBuilder &cgb,
   };
 
   tensor_guid_t x = create_initial_layers(cgb, check_shape, input);
-  check_shape(x, 192, 35, 35);
+  check_shape(x, 192_n, 35_n, 35_n);
 
   // Mixed_5b
-  x = create_inception_module_a(cgb, x, 32);
-  check_shape(x, 256, 35, 35);
+  x = create_inception_module_a(cgb, x, 32_n);
+  check_shape(x, 256_n, 35_n, 35_n);
 
   // Mixed_5c
-  x = create_inception_module_a(cgb, x, 64);
-  check_shape(x, 288, 35, 35);
+  x = create_inception_module_a(cgb, x, 64_n);
+  check_shape(x, 288_n, 35_n, 35_n);
 
   // Mixed_5d
-  x = create_inception_module_a(cgb, x, 64);
-  check_shape(x, 288, 35, 35);
+  x = create_inception_module_a(cgb, x, 64_n);
+  check_shape(x, 288_n, 35_n, 35_n);
 
   // Mixed_6a
   x = create_inception_module_b(cgb, x);
-  check_shape(x, 768, 17, 17);
+  check_shape(x, 768_n, 17_n, 17_n);
 
   // Mixed_6b
-  x = create_inception_module_c(cgb, check_shape, x, 128);
-  check_shape(x, 768, 17, 17);
+  x = create_inception_module_c(cgb, check_shape, x, 128_n);
+  check_shape(x, 768_n, 17_n, 17_n);
 
   // Mixed_6c
-  x = create_inception_module_c(cgb, check_shape, x, 160);
-  check_shape(x, 768, 17, 17);
+  x = create_inception_module_c(cgb, check_shape, x, 160_n);
+  check_shape(x, 768_n, 17_n, 17_n);
 
   // Mixed_6d
-  x = create_inception_module_c(cgb, check_shape, x, 160);
-  check_shape(x, 768, 17, 17);
+  x = create_inception_module_c(cgb, check_shape, x, 160_n);
+  check_shape(x, 768_n, 17_n, 17_n);
 
   // Mixed_6e
-  x = create_inception_module_c(cgb, check_shape, x, 192);
-  check_shape(x, 768, 17, 17);
+  x = create_inception_module_c(cgb, check_shape, x, 192_n);
+  check_shape(x, 768_n, 17_n, 17_n);
 
   std::optional<tensor_guid_t> aux;
   if (config.aux_logits) {
@@ -708,15 +713,15 @@ static InceptionV3Output create_inception_v3(ComputationGraphBuilder &cgb,
 
   // Mixed_7a
   x = create_inception_module_d(cgb, x);
-  check_shape(x, 1280, 8, 8);
+  check_shape(x, 1280_n, 8_n, 8_n);
 
   // Mixed_7b
   x = create_inception_module_e(cgb, x);
-  check_shape(x, 2048, 8, 8);
+  check_shape(x, 2048_n, 8_n, 8_n);
 
   // Mixed_7c
   x = create_inception_module_e(cgb, x);
-  check_shape(x, 2048, 8, 8);
+  check_shape(x, 2048_n, 8_n, 8_n);
 
   x = create_final_layers(cgb, check_shape, x, config.num_classes);
   check_shape(x, config.num_classes);
@@ -732,11 +737,11 @@ ComputationGraph
   ComputationGraphBuilder cgb;
 
   TensorShape input_shape = TensorShape{
-      TensorDims{FFOrdered<size_t>{
-          size_t_from_int(config.batch_size),
-          3,
-          299,
-          299,
+      TensorDims{FFOrdered<nonnegative_int>{
+          config.batch_size,
+          3_n,
+          299_n,
+          299_n,
       }},
       DataType::FLOAT,
   };

@@ -206,9 +206,6 @@ name = "TOPK_FWD_TASK_ID"
 name = "TOPK_BWD_TASK_ID"
 
 [[values]]
-name = "TRANSPOSE_INIT_TASK_ID"
-
-[[values]]
 name = "TRANSPOSE_FWD_TASK_ID"
 
 [[values]]

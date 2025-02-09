@@ -9,6 +9,10 @@ features = [
   "fmt",
 ]
 
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
 [[fields]]
 name = "gpu_index"
-type = "int"
+type = "::FlexFlow::nonnegative_int"

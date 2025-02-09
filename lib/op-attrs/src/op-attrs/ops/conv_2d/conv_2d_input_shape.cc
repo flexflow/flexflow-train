@@ -6,10 +6,10 @@ namespace FlexFlow {
 Conv2DInputShape parse_input_shape(TensorShape const &input) {
   assert(num_dims(input) == 4);
 
-  size_t num_samples = dim_at_idx(input, relative_ff_dim_t{0});
-  size_t in_channels = dim_at_idx(input, relative_ff_dim_t{1});
-  size_t in_height = dim_at_idx(input, relative_ff_dim_t{2});
-  size_t in_width = dim_at_idx(input, relative_ff_dim_t{3});
+  nonnegative_int num_samples = dim_at_idx(input, relative_ff_dim_t{0});
+  nonnegative_int in_channels = dim_at_idx(input, relative_ff_dim_t{1});
+  nonnegative_int in_height = dim_at_idx(input, relative_ff_dim_t{2});
+  nonnegative_int in_width = dim_at_idx(input, relative_ff_dim_t{3});
 
   return Conv2DInputShape{
       num_samples,
