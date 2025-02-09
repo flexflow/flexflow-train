@@ -14,7 +14,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       "UndirectedGraph implementations", T, HashmapUndirectedGraph) {
 
     UndirectedGraph g = UndirectedGraph::create<T>();
-    std::vector<Node> n = repeat(5, [&] { return g.add_node(); });
+    std::vector<Node> n = repeat(5_n, [&] { return g.add_node(); });
     std::vector<UndirectedEdge> e = {make_undirected_edge(n.at(0), n.at(1)),
                                      make_undirected_edge(n.at(0), n.at(2)),
                                      make_undirected_edge(n.at(1), n.at(2)),

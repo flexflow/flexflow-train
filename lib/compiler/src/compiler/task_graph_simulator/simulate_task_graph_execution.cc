@@ -30,7 +30,7 @@ TaskGraphExecutionTrace simulate_task_graph_execution(
   }
 
   TaskGraphExecutionState execution_state =
-      TaskGraphExecutionState{/*ready_tasks=*/set_of(get_sources(task_graph)),
+      TaskGraphExecutionState{/*ready_tasks=*/set_of(get_initial_nodes(task_graph)),
                               /*in_progress_tasks=*/{},
                               /*finished_tasks=*/{},
                               /*current_time=*/0.0};

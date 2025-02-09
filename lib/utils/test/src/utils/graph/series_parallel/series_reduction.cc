@@ -250,7 +250,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     MultiDiGraph g = MultiDiGraph::create<AdjacencyMultiDiGraph>();
 
     SUBCASE("linear graph") {
-      std::vector<Node> n = add_nodes(g, 4);
+      std::vector<Node> n = add_nodes(g, 4_n);
       std::vector<MultiDiEdge> e = add_edges(g,
                                              {
                                                  {n.at(0), n.at(1)},
@@ -266,7 +266,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("2 linear strands with a common terminal node") {
-      std::vector<Node> n = add_nodes(g, 4);
+      std::vector<Node> n = add_nodes(g, 4_n);
       std::vector<MultiDiEdge> e = add_edges(g,
                                              {{n.at(0), n.at(1)},
                                               {n.at(0), n.at(2)},
@@ -282,7 +282,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("graph with multiple separate serial strands") {
-      std::vector<Node> n = add_nodes(g, 9);
+      std::vector<Node> n = add_nodes(g, 9_n);
       std::vector<MultiDiEdge> e = add_edges(g,
                                              {{n.at(0), n.at(1)},
                                               {n.at(0), n.at(2)},
@@ -310,7 +310,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     MultiDiGraph g = MultiDiGraph::create<AdjacencyMultiDiGraph>();
 
     SUBCASE("base case") {
-      std::vector<Node> n = add_nodes(g, 4);
+      std::vector<Node> n = add_nodes(g, 4_n);
       std::vector<MultiDiEdge> e = add_edges(
           g, {{n.at(0), n.at(1)}, {n.at(1), n.at(2)}, {n.at(2), n.at(3)}});
 
@@ -347,7 +347,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("in larger graph") {
-      std::vector<Node> n = add_nodes(g, 8);
+      std::vector<Node> n = add_nodes(g, 8_n);
       std::vector<MultiDiEdge> e = add_edges(g,
                                              {
                                                  {n.at(0), n.at(2)},

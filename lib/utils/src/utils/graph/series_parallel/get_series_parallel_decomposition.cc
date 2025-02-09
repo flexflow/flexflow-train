@@ -43,7 +43,7 @@ std::optional<SeriesParallelDecomposition>
               .as_unordered_map(),
           [](Node const &n) { return SeriesParallelDecomposition{n}; });
 
-  auto handle_parallel_reduction =
+  auto perform_extended_parallel_reduction =
       [&](ExtendedParallelReduction const &parallel_reduction) {
         MultiDiEdge merged =
             apply_extended_parallel_reduction(ttsp, parallel_reduction);
@@ -60,7 +60,7 @@ std::optional<SeriesParallelDecomposition>
         return new_tree;
       };
 
-  auto handle_series_reduction =
+  auto perform_extended_series_reduction =
       [&](ExtendedSeriesReduction const &series_reduction) {
         MultiDiEdge merged =
             apply_extended_series_reduction(ttsp, series_reduction);
@@ -86,7 +86,7 @@ std::optional<SeriesParallelDecomposition>
 
     if (!parallel_reductions.empty()) {
       for (ExtendedParallelReduction parallel_reduction : parallel_reductions) {
-        handle_parallel_reduction(parallel_reduction);
+        perform_extended_parallel_reduction(parallel_reduction);
       }
       reduction_has_happened = true;
     }
@@ -95,7 +95,7 @@ std::optional<SeriesParallelDecomposition>
         find_all_extended_series_reductions(ttsp);
     if (!series_reductions.empty()) {
       for (ExtendedSeriesReduction series_reduction : series_reductions) {
-        handle_series_reduction(series_reduction);
+        perform_extended_series_reduction(series_reduction);
       }
       reduction_has_happened = true;
     }

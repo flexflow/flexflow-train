@@ -20,7 +20,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     */
 
     DiGraph g = DiGraph::create<T>();
-    std::vector<Node> n = repeat(5, [&] { return g.add_node(); });
+    std::vector<Node> n = repeat(5_n, [&] { return g.add_node(); });
     std::vector<DirectedEdge> e = {DirectedEdge{n[0], n[1]},
                                    DirectedEdge{n[0], n[2]},
                                    DirectedEdge{n[1], n[2]},
