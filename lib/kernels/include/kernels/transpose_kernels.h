@@ -8,8 +8,7 @@
 
 namespace FlexFlow {
 
-namespace Kernels {
-namespace Transpose {
+namespace Kernels::Transpose {
 
 void forward_kernel(cudaStream_t stream,
                     TransposeAttrs const &attrs,
@@ -18,11 +17,10 @@ void forward_kernel(cudaStream_t stream,
 
 void backward_kernel(cudaStream_t stream,
                      TransposeAttrs const &attrs,
-                     GenericTensorAccessorW const &in_grad,
-                     GenericTensorAccessorR const &out_grad);
+                     GenericTensorAccessorR const &out_grad,
+                     GenericTensorAccessorW const &in_grad);
 
-} // namespace Transpose
-} // namespace Kernels
+} // namespace Kernels::Transpose
 } // namespace FlexFlow
 
 #endif // _FLEXFLOW_OPS_KERNELS_TRANSPOSE_KERNELS_H

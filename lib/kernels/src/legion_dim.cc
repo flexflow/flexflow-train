@@ -9,8 +9,8 @@ legion_dim_t add_to_legion_dim(legion_dim_t legion_dim, int value) {
 
 legion_dim_t legion_dim_from_ff_dim(ff_dim_t ff_dim,
                                     nonnegative_int num_dimensions) {
-  return legion_dim_t{nonnegative_int{num_dimensions.unwrap_nonnegative() -
-                                      ff_dim.value.unwrap_nonnegative() - 1}};
+  return legion_dim_t{num_dimensions - ff_dim.value - 1_n};
+  ;
 }
 
 } // namespace FlexFlow

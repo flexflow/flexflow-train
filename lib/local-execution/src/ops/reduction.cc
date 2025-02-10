@@ -64,13 +64,13 @@ static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
 
-  auto input_grad = acc.get_tensor_grad<Permissions::WO>(INPUT);
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
+  auto input_grad = acc.get_tensor_grad<Permissions::WO>(INPUT);
   return profile(backward_kernel,
                  profiling,
                  "[Reduction] backward_time = {:.2lf}ms\n",
-                 input_grad,
-                 output_grad);
+                 output_grad,
+                 input_grad);
 }
 
 TaskImplFunction get_reduction_fwd_task_impl() {
