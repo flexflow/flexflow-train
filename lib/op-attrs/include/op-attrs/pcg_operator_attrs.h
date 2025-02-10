@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_PCG_OPERATOR_ATTRS_H
 #define _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_PCG_OPERATOR_ATTRS_H
 
+#include "op-attrs/computation_graph_op_attrs.dtg.h"
 #include "op-attrs/computation_graph_op_attrs.h"
 #include "op-attrs/pcg_operator_attrs.dtg.h"
 

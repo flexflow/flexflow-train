@@ -1,4 +1,4 @@
-#include "utils/graph/labelled_open_dataflow_graph/algorithms/rewrite_value_labels.h"
+#include "utils/graph/labelled_dataflow_graph/algorithms/rewrite_value_labels.h"
 #include "utils/archetypes/value_type.h"
 
 namespace FlexFlow {
@@ -9,8 +9,8 @@ using NewValueLabel = value_type<2>;
 using F =
     std::function<NewValueLabel(OpenDataflowValue const &, ValueLabel const &)>;
 
-template LabelledOpenDataflowGraphView<NodeLabel, NewValueLabel>
+template LabelledDataflowGraphView<NodeLabel, NewValueLabel>
     rewrite_value_labels(
-        LabelledOpenDataflowGraphView<NodeLabel, ValueLabel> const &, F);
+        LabelledDataflowGraphView<NodeLabel, ValueLabel> const &, F);
 
 } // namespace FlexFlow
