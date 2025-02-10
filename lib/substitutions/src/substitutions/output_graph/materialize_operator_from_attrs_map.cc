@@ -76,6 +76,24 @@ PCGOperatorAttrs materialize_operator_from_attrs_map(
           acc.get<std::optional<RegularizerAttrs>>(
               OperatorAttributeKey::REGULARIZER),
       }};
+    case OperatorType::REPLICATE:
+      return PCGOperatorAttrs{ReplicateAttrs{
+          /*replicate_degree=*/acc.get<nonnegative_int>(
+              OperatorAttributeKey::PARALLEL_DEGREE),
+      }};
+    case OperatorType::REPARTITION:
+      return PCGOperatorAttrs{RepartitionAttrs{
+          /*repartition_dim=*/acc.get<ff_dim_t>(
+              OperatorAttributeKey::PARALLEL_DIM),
+          /*repartition_Degree=*/
+          acc.get<nonnegative_int>(OperatorAttributeKey::PARALLEL_DEGREE),
+      }};
+    case OperatorType::COMBINE:
+      return PCGOperatorAttrs{CombineAttrs{
+          /*combine_dim=*/acc.get<ff_dim_t>(OperatorAttributeKey::PARALLEL_DIM),
+          /*combine_degree=*/
+          acc.get<nonnegative_int>(OperatorAttributeKey::PARALLEL_DEGREE),
+      }};
     case OperatorType::BATCHMATMUL:
     case OperatorType::SCALAR_MULTIPLY:
     case OperatorType::SCALAR_ADD:
@@ -144,9 +162,6 @@ PCGOperatorAttrs materialize_operator_from_attrs_map(
     case OperatorType::LAYERNORM:
     case OperatorType::GATHER:
     case OperatorType::BROADCAST:
-    case OperatorType::REPARTITION:
-    case OperatorType::COMBINE:
-    case OperatorType::REPLICATE:
     case OperatorType::REDUCTION:
     case OperatorType::BATCH:
     case OperatorType::PIPELINE:

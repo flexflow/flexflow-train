@@ -15,6 +15,7 @@
 #include "op-attrs/ops/layer_norm.h"
 #include "op-attrs/ops/linear.h"
 #include "op-attrs/ops/pool_2d.h"
+#include "op-attrs/ops/repartition.h"
 #include "op-attrs/ops/replicate.h"
 #include "op-attrs/ops/weight.h"
 #include "utils/overload.h"
@@ -77,6 +78,9 @@ std::vector<ParallelTensorShape>
       },
       [&](ReplicateAttrs const &attrs) -> std::vector<ParallelTensorShape> {
         return {get_output_shape(attrs, inputs.at(0))};
+      },
+      [&](RepartitionAttrs const &attrs) -> std::vector<ParallelTensorShape> {
+        return {throw_if_unexpected(get_output_shape(attrs, inputs.at(0)))};
       },
       [&](WeightAttrs const &attrs) -> std::vector<ParallelTensorShape> {
         return {get_output_parallel_tensor_shape(attrs)};
