@@ -21,7 +21,6 @@ Substitution create_replicate_linear_combine(nonnegative_int num_dims,
                                              bool use_bias);
 Substitution create_partition_linear_combine(nonnegative_int num_dims,
                                              nonnegative_int degree,
-                                             Activation activation,
                                              bool use_bias);
 Substitution create_partition_conv2d_combine(nonnegative_int num_dims,
                                              nonnegative_int degree);
