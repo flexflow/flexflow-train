@@ -21,9 +21,7 @@ RecordFormatter as_dot(ComputationGraphOpAttrs const &attrs) {
       [](EmbeddingAttrs const &a) { return as_dot(a); },
       [](WeightAttrs const &a) { return as_dot(a); },
       [](BroadcastAttrs const &a) { return as_dot(a); },
-      [&](auto const &) {
-        return RecordFormatter{};
-      },
+      [&](auto const &) { return RecordFormatter{}; },
   });
 
   RecordFormatter rr;

@@ -16,9 +16,8 @@ RecordFormatter as_dot(EmbeddingAttrs const &attrs) {
     return rr;
   };
 
-  r << kv("num_entries", attrs.num_entries) 
-    << kv("out_channels", attrs.out_channels)
-    << kv("aggr", attrs.aggr) 
+  r << kv("num_entries", attrs.num_entries)
+    << kv("out_channels", attrs.out_channels) << kv("aggr", attrs.aggr)
     << kv("output_type", attrs.data_type);
 
   return r;
