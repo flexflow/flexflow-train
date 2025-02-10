@@ -3,6 +3,20 @@
 
 namespace FlexFlow {
 
+RecordFormatter as_dot(CastAttrs const &attrs) {
+  RecordFormatter r;
+
+  auto kv = [](std::string const &label, auto const &val) {
+    RecordFormatter rr;
+    rr << label << fmt::to_string(val);
+    return rr;
+  };
+
+  r << kv("to", attrs.dtype);
+
+  return r;
+}
+
 tl::expected<TensorShape, std::string>
     get_output_shape(CastAttrs const &attrs, TensorShape const &input) {
 
