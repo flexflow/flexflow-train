@@ -13,7 +13,10 @@ ff_add_library(
     fmt
     json
     cuda
+    rapidcheck
+    libassert
 )      
 
 add_subdirectory(ffi)
 add_subdirectory(test)
+add_subdirectory(benchmark)
