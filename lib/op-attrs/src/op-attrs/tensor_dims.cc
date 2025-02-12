@@ -8,22 +8,23 @@
 #include "utils/containers/vector_of.h"
 #include "utils/containers/zip.h"
 #include "utils/integer_conversions.h"
+#include "utils/nonnegative_int/num_elements.h"
 
 namespace FlexFlow {
 
-FFOrdered<size_t> const &ff_ordered(TensorDims const &dims) {
+FFOrdered<nonnegative_int> const &ff_ordered(TensorDims const &dims) {
   return dims.ff_ordered;
 }
 
-size_t num_dims(TensorDims const &dims) {
-  return dims.ff_ordered.size();
+nonnegative_int num_dims(TensorDims const &dims) {
+  return num_elements(dims.ff_ordered);
 }
 
-size_t dim_at_idx(TensorDims const &dims, relative_ff_dim_t idx) {
+nonnegative_int dim_at_idx(TensorDims const &dims, relative_ff_dim_t idx) {
   return dims.ff_ordered.at(idx);
 }
 
-size_t &dim_at_idx(TensorDims &dims, relative_ff_dim_t idx) {
+nonnegative_int &dim_at_idx(TensorDims &dims, relative_ff_dim_t idx) {
   return dims.ff_ordered.at(idx);
 }
 
@@ -33,8 +34,8 @@ bool tensor_dims_is_broadcastable_to(TensorDims const &curr,
     return false;
   }
 
-  std::vector<size_t> curr_dims = vector_of(curr.ff_ordered);
-  std::vector<size_t> goal_dims = vector_of(goal.ff_ordered);
+  std::vector<nonnegative_int> curr_dims = vector_of(curr.ff_ordered);
+  std::vector<nonnegative_int> goal_dims = vector_of(goal.ff_ordered);
 
   for (auto const &[curr_dim, goal_dim] :
        zip(reversed(curr_dims), reversed(goal_dims))) {

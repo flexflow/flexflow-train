@@ -14,8 +14,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     TaskRegistry task_registry = empty_task_registry();
 
     layer_guid_t layer_guid = layer_guid_t{Node{0}};
-    int embed_dim = 32;
-    int num_heads = 10;
+    nonnegative_int embed_dim = 32_n;
+    nonnegative_int num_heads = 10_n;
     ComputationGraphOpAttrs attrs =
         ComputationGraphOpAttrs{MultiHeadAttentionAttrs{
             /*embed_dim=*/embed_dim,
@@ -76,7 +76,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         CHECK(correct_task_mapping == task_registry.task_mapping);
       }
       SUBCASE("different attrs, still same task fn mapping") {
-        int embed_dim = 100;
+        nonnegative_int embed_dim = 100_n;
         layer_guid_t layer_3 = layer_guid_t{Node{3}};
         ComputationGraphOpAttrs other_attrs =
             ComputationGraphOpAttrs{MultiHeadAttentionAttrs{
@@ -98,7 +98,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("equality") {
       TaskRegistry other_task_registry = empty_task_registry();
       SUBCASE("different attrs is still equal") {
-        int embed_dim = 100;
+        nonnegative_int embed_dim = 100_n;
         ComputationGraphOpAttrs other_attrs =
             ComputationGraphOpAttrs{MultiHeadAttentionAttrs{
                 /*embed_dim=*/embed_dim,

@@ -1,0 +1,55 @@
+namespace = "FlexFlow"
+name = "DLRMConfig"
+
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = [
+  "<vector>",
+  "<string>",
+  "models/dlrm/dlrm_arch_interaction_op.dtg.h",
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
+src_includes = [
+  "utils/fmt/vector.h",
+  "utils/hash/vector.h",
+]
+
+[[fields]]
+name = "embedding_dim"
+type = "::FlexFlow::nonnegative_int"
+
+[[fields]]
+name = "embedding_bag_size"
+type = "::FlexFlow::nonnegative_int"
+
+[[fields]]
+name = "embedding_size"
+type = "std::vector<::FlexFlow::nonnegative_int>"
+
+[[fields]]
+name = "dense_arch_layer_sizes"
+type = "std::vector<::FlexFlow::nonnegative_int>"
+
+[[fields]]
+name = "over_arch_layer_sizes"
+type = "std::vector<::FlexFlow::nonnegative_int>"
+
+[[fields]]
+name = "arch_interaction_op"
+type = "::FlexFlow::DLRMArchInteractionOp"
+
+[[fields]]
+name = "batch_size"
+type = "::FlexFlow::nonnegative_int"
+
+[[fields]]
+name = "seed"
+type = "int"

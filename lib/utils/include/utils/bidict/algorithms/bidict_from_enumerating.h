@@ -2,14 +2,16 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_BIDICT_ALGORITHMS_BIDICT_FROM_ENUMERATING_H
 
 #include "utils/bidict/bidict.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include <set>
 
 namespace FlexFlow {
 
 template <typename T>
-bidict<int, T> bidict_from_enumerating(std::unordered_set<T> const &s) {
-  bidict<int, T> result;
-  int idx = 0;
+bidict<nonnegative_int, T>
+    bidict_from_enumerating(std::unordered_set<T> const &s) {
+  bidict<nonnegative_int, T> result;
+  nonnegative_int idx = 0_n;
   for (T const &t : s) {
     result.equate(idx, t);
     idx++;
@@ -19,9 +21,9 @@ bidict<int, T> bidict_from_enumerating(std::unordered_set<T> const &s) {
 }
 
 template <typename T>
-bidict<int, T> bidict_from_enumerating(std::set<T> const &s) {
-  bidict<int, T> result;
-  int idx = 0;
+bidict<nonnegative_int, T> bidict_from_enumerating(std::set<T> const &s) {
+  bidict<nonnegative_int, T> result;
+  nonnegative_int idx = 0_n;
   for (T const &t : s) {
     result.equate(idx, t);
     idx++;

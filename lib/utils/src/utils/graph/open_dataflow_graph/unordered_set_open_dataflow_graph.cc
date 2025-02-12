@@ -18,7 +18,7 @@ UnorderedSetOpenDataflowGraph::UnorderedSetOpenDataflowGraph(
       outputs(outputs), graph_inputs(graph_inputs) {}
 
 NodeAddedResult UnorderedSetOpenDataflowGraph::add_node(
-    std::vector<OpenDataflowValue> const &inputs, int num_outputs) {
+    std::vector<OpenDataflowValue> const &inputs, nonnegative_int num_outputs) {
   NOT_IMPLEMENTED();
 }
 

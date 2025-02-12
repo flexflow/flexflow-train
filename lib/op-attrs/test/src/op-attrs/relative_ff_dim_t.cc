@@ -5,13 +5,13 @@ using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("ff_dim_t_from_relative_ff_dim_t") {
-    int input_dim = 5;
+    nonnegative_int input_dim = 5_n;
 
     SUBCASE("relative index is zero") {
       relative_ff_dim_t relative_ff_dim = relative_ff_dim_t{0};
       ff_dim_t ff_dim =
           ff_dim_t_from_relative_ff_dim_t(relative_ff_dim, input_dim);
-      CHECK(ff_dim == ff_dim_t{nonnegative_int{0}});
+      CHECK(ff_dim == ff_dim_t{0_n});
     }
 
     SUBCASE("relative index is positive") {
@@ -20,14 +20,14 @@ TEST_SUITE(FF_TEST_SUITE) {
         relative_ff_dim_t relative_ff_dim = relative_ff_dim_t{1};
         ff_dim_t ff_dim =
             ff_dim_t_from_relative_ff_dim_t(relative_ff_dim, input_dim);
-        CHECK(ff_dim == ff_dim_t{nonnegative_int{1}});
+        CHECK(ff_dim == ff_dim_t{1_n});
       }
 
       SUBCASE("relative index is out of range") {
         relative_ff_dim_t relative_ff_dim = relative_ff_dim_t{10};
         ff_dim_t ff_dim =
             ff_dim_t_from_relative_ff_dim_t(relative_ff_dim, input_dim);
-        CHECK(ff_dim == ff_dim_t{nonnegative_int{10}});
+        CHECK(ff_dim == ff_dim_t{10_n});
       }
     }
 
@@ -37,7 +37,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         relative_ff_dim_t relative_ff_dim = relative_ff_dim_t{-1};
         ff_dim_t ff_dim =
             ff_dim_t_from_relative_ff_dim_t(relative_ff_dim, input_dim);
-        CHECK(ff_dim == ff_dim_t{nonnegative_int{4}});
+        CHECK(ff_dim == ff_dim_t{4_n});
       }
 
       SUBCASE("relative index is out of range") {

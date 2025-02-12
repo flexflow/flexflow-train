@@ -7,16 +7,16 @@ using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("ReLU shape inference") {
-    size_t d1 = 16;
-    size_t d2 = 32;
-    size_t d3 = 24;
+    nonnegative_int d1 = 16_n;
+    nonnegative_int d2 = 32_n;
+    nonnegative_int d3 = 24_n;
 
     ElementUnaryAttrs attrs =
         ElementUnaryAttrs{OperatorType::RELU, std::nullopt};
 
     TensorShape input = TensorShape{
         TensorDims{
-            FFOrdered<size_t>{
+            FFOrdered<nonnegative_int>{
                 d1,
                 d2,
                 d3,
@@ -31,20 +31,20 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     CHECK(result == correct);
 
-    auto make_i = [&](SumDegree o_sum,
-                      DiscardCopyDegree o_eq,
-                      int o_1,
-                      int o_2,
-                      int o_3) {
+    auto make_input = [&](SumDegree o_sum,
+                          DiscardCopyDegree o_eq,
+                          nonnegative_int o_1,
+                          nonnegative_int o_2,
+                          nonnegative_int o_3) {
       return lift_to_parallel_with_degrees(
-          input, o_sum, o_eq, FFOrdered<int>{o_1, o_2, o_3});
+          input, o_sum, o_eq, FFOrdered<nonnegative_int>{o_1, o_2, o_3});
     };
 
     SUBCASE("partition i.e., sharding parallelism") {
-      int degree1 = 4;
-      int degree2 = 8;
-      ParallelTensorShape par_input =
-          make_i(SumDegree{1}, DiscardCopyDegree{1}, degree1, 1, degree2);
+      nonnegative_int degree1 = 4_n;
+      nonnegative_int degree2 = 8_n;
+      ParallelTensorShape par_input = make_input(
+          SumDegree{1_n}, DiscardCopyDegree{1_n}, degree1, 1_n, degree2);
 
       tl::expected<ParallelTensorShape, std::string> result =
           get_output_shape(attrs, par_input);
@@ -54,10 +54,11 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("sum degree > 1") {
-      int degree = 2;
+      nonnegative_int degree = 2_n;
 
       tl::expected<ParallelTensorShape, std::string> result = get_output_shape(
-          attrs, make_i(SumDegree{degree}, DiscardCopyDegree{1}, 1, 1, 1));
+          attrs,
+          make_input(SumDegree{degree}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n));
 
       CHECK_MESSAGE(!result.has_value(),
                     "Unexpected successful result: ",
@@ -65,10 +66,11 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("discard copy degree > 1") {
-      int degree = 2;
+      nonnegative_int degree = 2_n;
 
       tl::expected<ParallelTensorShape, std::string> result = get_output_shape(
-          attrs, make_i(SumDegree{1}, DiscardCopyDegree{degree}, 1, 1, 1));
+          attrs,
+          make_input(SumDegree{1_n}, DiscardCopyDegree{degree}, 1_n, 1_n, 1_n));
 
       CHECK_MESSAGE(!result.has_value(),
                     "Unexpected successful result: ",

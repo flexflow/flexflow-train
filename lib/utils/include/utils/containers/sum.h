@@ -8,7 +8,7 @@ namespace FlexFlow {
  **/
 template <typename Container, typename Element = typename Container::value_type>
 Element sum(Container const &container) {
-  Element result = 0;
+  Element result = Element{0};
   for (Element const &element : container) {
     result += element;
   }

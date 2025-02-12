@@ -1,6 +1,5 @@
 namespace = "FlexFlow"
 name = "legion_dim_t"
-
 features = [
   "eq",
   "ord",
@@ -9,6 +8,10 @@ features = [
   "fmt",
 ]
 
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
 [[fields]]
 name = "value"
-type = "int"
+type = "::FlexFlow::nonnegative_int"

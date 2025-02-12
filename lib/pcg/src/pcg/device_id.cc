@@ -25,7 +25,7 @@ cpu_id_t unwrap_cpu(device_id_t device_id) {
   return device_id.get<cpu_id_t>();
 }
 
-int get_raw_id(device_id_t device_id) {
+nonnegative_int get_raw_id(device_id_t device_id) {
   switch (get_device_type(device_id)) {
     case DeviceType::GPU:
       return unwrap_gpu(device_id).gpu_index;
@@ -36,7 +36,7 @@ int get_raw_id(device_id_t device_id) {
   }
 }
 
-device_id_t device_id_from_index(int idx, DeviceType device_type) {
+device_id_t device_id_from_index(nonnegative_int idx, DeviceType device_type) {
   switch (device_type) {
     case DeviceType::GPU:
       return device_id_t{gpu_id_t{idx}};

@@ -13,18 +13,19 @@
 namespace FlexFlow {
 
 template <typename NodeLabel, typename OutputLabel>
-std::pair<V1LabelledDataflowGraph<NodeLabel, OutputLabel>, bidict<int, Node>>
+std::pair<V1LabelledDataflowGraph<NodeLabel, OutputLabel>,
+          bidict<nonnegative_int, Node>>
     to_v1_including_node_numbering(
         LabelledDataflowGraphView<NodeLabel, OutputLabel> const &g) {
 
-  bidict<int, Node> nodes = bidict_from_enumerating(get_nodes(g));
+  bidict<nonnegative_int, Node> nodes = bidict_from_enumerating(get_nodes(g));
 
   V1DataflowGraph unlabelled = to_v1(g, nodes.reversed());
 
-  std::unordered_map<int, NodeLabel> node_labels = map_values(
+  std::unordered_map<nonnegative_int, NodeLabel> node_labels = map_values(
       nodes.as_unordered_map(), [&](Node const &n) { return g.at(n); });
 
-  std::unordered_map<int, std::vector<OutputLabel>> output_labels =
+  std::unordered_map<nonnegative_int, std::vector<OutputLabel>> output_labels =
       map_values(nodes.as_unordered_map(), [&](Node const &n) {
         return transform(get_outputs(g, n),
                          [&](DataflowOutput const &o) { return g.at(o); });

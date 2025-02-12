@@ -62,19 +62,19 @@ static DeviceSpecificDeviceStates
   auto filter_grad = acc.get_tensor_grad<Permissions::RW>(FILTER);
 
   Conv2DPerDeviceState per_device_state =
-      init_kernel(handle,
-                  attrs.activation,
-                  attrs.kernel_h,
-                  attrs.kernel_w,
-                  attrs.groups,
-                  attrs.padding_h,
-                  attrs.padding_w,
-                  attrs.stride_h,
-                  attrs.stride_w,
-                  input,
-                  output,
-                  filter.get_float_ptr(),
-                  filter_grad.get_float_ptr());
+      init_kernel(/*handle=*/handle,
+                  /*activation=*/attrs.activation,
+                  /*kernel_h=*/attrs.kernel_h.unwrap_nonnegative(),
+                  /*kernel_w=*/attrs.kernel_w.unwrap_nonnegative(),
+                  /*groups=*/attrs.groups.unwrap_nonnegative(),
+                  /*padding_h=*/attrs.padding_h.unwrap_nonnegative(),
+                  /*padding_w=*/attrs.padding_w.unwrap_nonnegative(),
+                  /*stride_h=*/attrs.stride_h.unwrap_nonnegative(),
+                  /*stride_w=*/attrs.stride_w.unwrap_nonnegative(),
+                  /*input=*/input,
+                  /*output=*/output,
+                  /*filter_ptr=*/filter.get_float_ptr(),
+                  /*filter_grad_ptr=*/filter_grad.get_float_ptr());
   return DeviceSpecificDeviceStates{
       DeviceSpecific<Conv2DPerDeviceState>::create(per_device_state)};
 }

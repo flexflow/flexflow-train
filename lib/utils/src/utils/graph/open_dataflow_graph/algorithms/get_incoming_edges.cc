@@ -27,13 +27,13 @@ std::vector<OpenDataflowEdge> get_incoming_edges(OpenDataflowGraphView const &g,
                        DataflowInputEdgeQuery{
                            query_set<DataflowGraphInput>::matchall(),
                            {n},
-                           query_set<int>::matchall(),
+                           query_set<nonnegative_int>::matchall(),
                        },
                        DataflowEdgeQuery{
                            query_set<Node>::matchall(),
-                           query_set<int>::matchall(),
+                           query_set<nonnegative_int>::matchall(),
                            {n},
-                           query_set<int>::matchall(),
+                           query_set<nonnegative_int>::matchall(),
                        },
                    }),
                    [](OpenDataflowEdge const &l, OpenDataflowEdge const &r) {

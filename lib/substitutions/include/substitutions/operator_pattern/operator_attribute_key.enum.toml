@@ -56,6 +56,7 @@ values = [
   { name = "SHOULD_BROADCAST_RHS" },
   { name = "DIM" },
   { name = "AFFINE" },
+  { name = "ELEMENTWISE_AFFINE" },
   { name = "MOMENTUM" },
   { name = "REGULARIZER" },
   { name = "SHAPE" },

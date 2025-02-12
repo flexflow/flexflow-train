@@ -1,11 +1,12 @@
 images:
-  dlami-x64:
+  runs-on-gpu-pinned:
     platform: "linux"
     arch: "x64"
-    owner: "898082745236" # AWS
-    name: "Deep Learning Base OSS Nvidia Driver GPU AMI (Ubuntu 22.04)*"
+    owner: "135269210855" # runs-on
+    name: "runs-on-v2.2-ubuntu22-gpu-x64-20250123194414"
 
-runners:
-  gpu-nvidia:
-    family: ["g4dn.xlarge"]
-    image: dlami-x64
+  runs-on-cpu-pinned:
+    platform: "linux"
+    arch: "x64"
+    owner: "135269210855" # runs-on
+    name: "runs-on-v2.2-ubuntu22-full-x64-20250101080516"

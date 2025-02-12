@@ -38,9 +38,9 @@ namespace FlexFlow {
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("task_simulator_estimate_forward_pass_time") {
     MachineSpecification machine_spec =
-        MachineSpecification{/*num_nodes=*/3,
-                             /*num_cpus_per_node=*/3,
-                             /*num_gpus_per_node=*/3,
+        MachineSpecification{/*num_nodes=*/3_n,
+                             /*num_cpus_per_node=*/3_n,
+                             /*num_gpus_per_node=*/3_n,
                              /*inter_node_bandwidth=*/1.0f,
                              /*intra_node_bandwidth=*/1.0f};
 
@@ -50,8 +50,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           ParallelTensorDims{
               FFOrdered<ShardParallelDim>{},
               ReplicaParallelDimSet{
-                  SumDegree{1},
-                  DiscardCopyDegree{1},
+                  SumDegree{1_n},
+                  DiscardCopyDegree{1_n},
               },
           },
           DataType::FLOAT,
@@ -63,16 +63,16 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_layer_guid_t layer1 = get_source_layer(tensor1);
 
       std::vector<MachineViewDimension> dims = {
-          MachineViewDimension{stride_t{1},
+          MachineViewDimension{stride_t{1_n},
                                MachineSpecificationDimension::INTER_NODE},
-          MachineViewDimension{stride_t{1},
+          MachineViewDimension{stride_t{1_n},
                                MachineSpecificationDimension::INTER_NODE},
       };
       ParallelComputationGraph pcg = b.pcg;
       MachineView mv1 =
-          MachineView{MachineSpaceCoordinate{0, 0, DeviceType::GPU}, dims};
+          MachineView{MachineSpaceCoordinate{0_n, 0_n, DeviceType::GPU}, dims};
       MachineView mv2 =
-          MachineView{MachineSpaceCoordinate{0, 1, DeviceType::GPU}, dims};
+          MachineView{MachineSpaceCoordinate{0_n, 1_n, DeviceType::GPU}, dims};
 
       MachineMapping device_mapping = MachineMapping{{
           {layer0, mv1},
@@ -84,7 +84,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*forward_op_cost=*/10.0f,
             /*backward_op_cost=*/10.0f,
             /*comm_cost=*/1.0f,
-            /*memory_cost=*/nonnegative_int{0});
+            /*memory_cost=*/0_n);
 
         float result = task_simulator_estimate_forward_pass_time(
             pcg, estimator, device_mapping, machine_spec);
@@ -99,16 +99,16 @@ TEST_SUITE(FF_TEST_SUITE) {
               if (op.op_attrs.has<InputAttrs>()) {
                 return OpCostMetrics{/*forward_runtime=*/10.0f,
                                      /*backward_runtime=*/10.0f,
-                                     /*memory=*/nonnegative_int{0}}; // layer0
+                                     /*memory=*/0_n}; // layer0
               }
               if (op.op_attrs.has<ElementUnaryAttrs>()) {
                 return OpCostMetrics{/*forward_runtime=*/1.0f,
                                      /*backward_runtime=*/1.0f,
-                                     /*memory=*/nonnegative_int{0}}; // layer1
+                                     /*memory=*/0_n}; // layer1
               }
               return OpCostMetrics{/*forward_runtime=*/0.0f,
                                    /*backward_runtime=*/0.0f,
-                                   /*memory=*/nonnegative_int{0}};
+                                   /*memory=*/0_n};
             },
             [](TensorSetMovement const &comm) { return 5.0f; });
 
@@ -124,10 +124,10 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       ParallelTensorShape input_shape = ParallelTensorShape{
           ParallelTensorDims{
-              FFOrdered<ShardParallelDim>{ShardParallelDim{10, 1}},
+              FFOrdered<ShardParallelDim>{ShardParallelDim{10_n, 1_n}},
               ReplicaParallelDimSet{
-                  SumDegree{1},
-                  DiscardCopyDegree{1},
+                  SumDegree{1_n},
+                  DiscardCopyDegree{1_n},
               },
           },
           DataType::FLOAT,
@@ -145,23 +145,23 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       ParallelComputationGraph pcg = b.pcg;
       std::vector<MachineViewDimension> dims = {
-          MachineViewDimension{stride_t{1},
+          MachineViewDimension{stride_t{1_n},
                                MachineSpecificationDimension::INTER_NODE},
-          MachineViewDimension{stride_t{1},
+          MachineViewDimension{stride_t{1_n},
                                MachineSpecificationDimension::INTER_NODE},
-          MachineViewDimension{stride_t{1},
+          MachineViewDimension{stride_t{1_n},
                                MachineSpecificationDimension::INTER_NODE},
       };
 
       SUBCASE("all different devices") {
-        MachineView mv0 =
-            MachineView{MachineSpaceCoordinate{0, 0, DeviceType::GPU}, dims};
-        MachineView mv1 =
-            MachineView{MachineSpaceCoordinate{0, 1, DeviceType::GPU}, dims};
-        MachineView mv2 =
-            MachineView{MachineSpaceCoordinate{1, 0, DeviceType::GPU}, dims};
-        MachineView mv3 =
-            MachineView{MachineSpaceCoordinate{1, 1, DeviceType::GPU}, dims};
+        MachineView mv0 = MachineView{
+            MachineSpaceCoordinate{0_n, 0_n, DeviceType::GPU}, dims};
+        MachineView mv1 = MachineView{
+            MachineSpaceCoordinate{0_n, 1_n, DeviceType::GPU}, dims};
+        MachineView mv2 = MachineView{
+            MachineSpaceCoordinate{1_n, 0_n, DeviceType::GPU}, dims};
+        MachineView mv3 = MachineView{
+            MachineSpaceCoordinate{1_n, 1_n, DeviceType::GPU}, dims};
 
         MachineMapping device_mapping = MachineMapping{{
             {layer0, mv0},
@@ -174,7 +174,7 @@ TEST_SUITE(FF_TEST_SUITE) {
               /*forward_op_cost=*/10.0f,
               /*backward_op_cost=*/10.0f,
               /*comm_cost=*/1.0f,
-              /*memory_cost=*/nonnegative_int{0});
+              /*memory_cost=*/0_n);
 
           float result = task_simulator_estimate_forward_pass_time(
               pcg, estimator, device_mapping, machine_spec);
@@ -187,30 +187,29 @@ TEST_SUITE(FF_TEST_SUITE) {
                 if (op.op_attrs.has<InputAttrs>()) {
                   return OpCostMetrics{/*forward_runtime=*/10.0f,
                                        /*backward_runtime=*/10.0f,
-                                       /*memory=*/nonnegative_int{0}}; // layer0
+                                       /*memory=*/0_n}; // layer0
                 }
                 if (op.op_attrs.has<ElementUnaryAttrs>()) {
-                  return OpCostMetrics{
-                      /*forward_runtime=*/1.0f,
-                      /*backward_runtime=*/1.0f,
-                      /*memory=*/nonnegative_int{0}}; // layers 1, 2
+                  return OpCostMetrics{/*forward_runtime=*/1.0f,
+                                       /*backward_runtime=*/1.0f,
+                                       /*memory=*/0_n}; // layers 1, 2
                 }
                 if (op.op_attrs.has<ElementBinaryAttrs>()) {
                   return OpCostMetrics{/*forward_runtime=*/2.0f,
                                        /*backward_runtime=*/2.0f,
-                                       /*memory=*/nonnegative_int{0}}; // layer3
+                                       /*memory=*/0_n}; // layer3
                 }
                 return OpCostMetrics{/*forward_runtime=*/0.0f,
                                      /*backward_runtime=*/0.0f,
-                                     /*memory=*/nonnegative_int{0}};
+                                     /*memory=*/0_n};
               },
               [](TensorSetMovement const &comm) { return 5.0f; });
         }
       }
 
       SUBCASE("all the same device") {
-        MachineView mv =
-            MachineView{MachineSpaceCoordinate{0, 0, DeviceType::GPU}, dims};
+        MachineView mv = MachineView{
+            MachineSpaceCoordinate{0_n, 0_n, DeviceType::GPU}, dims};
         MachineMapping device_mapping = MachineMapping{{
             {layer0, mv},
             {layer1, mv},
@@ -222,7 +221,7 @@ TEST_SUITE(FF_TEST_SUITE) {
               /*forward_op_cost=*/10.0f,
               /*backward_op_cost=*/10.0f,
               /*comm_cost=*/1.0f,
-              /*memory_cost=*/nonnegative_int{0});
+              /*memory_cost=*/0_n);
 
           float result = task_simulator_estimate_forward_pass_time(
               pcg, cost_estimator, device_mapping, machine_spec);
@@ -235,22 +234,21 @@ TEST_SUITE(FF_TEST_SUITE) {
                 if (op.op_attrs.has<InputAttrs>()) {
                   return OpCostMetrics{/*forward_runtime=*/10.0f,
                                        /*backward_runtime=*/10.0f,
-                                       /*memory=*/nonnegative_int{0}}; // layer0
+                                       /*memory=*/0_n}; // layer0
                 }
                 if (op.op_attrs.has<ElementUnaryAttrs>()) {
-                  return OpCostMetrics{
-                      /*forward_runtime=*/1.0f,
-                      /*backward_runtime=*/1.0f,
-                      /*memory=*/nonnegative_int{0}}; // layers 1, 2
+                  return OpCostMetrics{/*forward_runtime=*/1.0f,
+                                       /*backward_runtime=*/1.0f,
+                                       /*memory=*/0_n}; // layers 1, 2
                 }
                 if (op.op_attrs.has<ElementBinaryAttrs>()) {
                   return OpCostMetrics{/*forward_runtime=*/2.0f,
                                        /*backward_runtime=*/2.0f,
-                                       /*memory=*/nonnegative_int{0}}; // layer3
+                                       /*memory=*/0_n}; // layer3
                 }
                 return OpCostMetrics{/*forward_runtime=*/0.0f,
                                      /*backward_runtime=*/0.0f,
-                                     /*memory=*/nonnegative_int{0}};
+                                     /*memory=*/0_n};
               },
               [](TensorSetMovement const &comm) { return 5.0f; });
           float result = task_simulator_estimate_forward_pass_time(

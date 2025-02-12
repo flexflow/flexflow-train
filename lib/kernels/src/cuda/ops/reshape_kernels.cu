@@ -33,7 +33,8 @@ struct ForwardKernel {
                   GenericTensorAccessorW const &output) {
     checkCUDA(cudaMemcpyAsync(output.get<T>(),
                               input.get<T>(),
-                              input.shape.num_elements() * size_of_datatype(T),
+                              input.shape.num_elements().unwrap_nonnegative() *
+                                  size_of_datatype(T).unwrap_nonnegative(),
                               cudaMemcpyDeviceToDevice,
                               stream));
   }
@@ -46,12 +47,12 @@ struct BackwardKernel {
                   GenericTensorAccessorR const &output) {
     float alpha = 1.0f;
     apply_add_with_scale<real_type_t<T>>
-        <<<GET_BLOCKS(input.shape.num_elements()),
+        <<<GET_BLOCKS(input.shape.num_elements().unwrap_nonnegative()),
            CUDA_NUM_THREADS,
            0,
            stream>>>(input.get<T>(),
                      output.get<T>(),
-                     input.shape.num_elements(),
+                     input.shape.num_elements().unwrap_nonnegative(),
                      static_cast<real_type_t<T>>(alpha));
   }
 };

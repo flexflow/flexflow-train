@@ -24,8 +24,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         {},
     };
 
-    CLIFlagKey key_flag1 = CLIFlagKey{0};
-    CLIFlagKey key_flag2 = CLIFlagKey{1};
+    CLIFlagKey key_flag1 = CLIFlagKey{0_n};
+    CLIFlagKey key_flag2 = CLIFlagKey{1_n};
 
     SUBCASE("correctly parses short flag") {
       std::string input = "-2";
@@ -94,8 +94,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           },
           {},
       };
-      CLIFlagKey key_flag1 = CLIFlagKey{0};
-      CLIFlagKey key_flag2 = CLIFlagKey{1};
+      CLIFlagKey key_flag1 = CLIFlagKey{0_n};
+      CLIFlagKey key_flag2 = CLIFlagKey{1_n};
 
       SUBCASE("parses flags in any order") {
         std::vector<std::string> inputs = {"prog_name", "-2", "--flag1"};
@@ -180,8 +180,8 @@ TEST_SUITE(FF_TEST_SUITE) {
             },
         };
 
-        CLIPositionalArgumentKey key_posarg1 = CLIPositionalArgumentKey{0};
-        CLIPositionalArgumentKey key_posarg2 = CLIPositionalArgumentKey{1};
+        CLIPositionalArgumentKey key_posarg1 = CLIPositionalArgumentKey{0_n};
+        CLIPositionalArgumentKey key_posarg2 = CLIPositionalArgumentKey{1_n};
 
         SUBCASE("can parse multiple positional arguments") {
           std::vector<std::string> inputs = {"prog_name", "hello", "world"};
@@ -266,7 +266,7 @@ TEST_SUITE(FF_TEST_SUITE) {
               },
           };
 
-          CLIPositionalArgumentKey key_posarg = CLIPositionalArgumentKey{0};
+          CLIPositionalArgumentKey key_posarg = CLIPositionalArgumentKey{0_n};
 
           SUBCASE(
               "succeeds if a positional argument is set to a valid choice") {
@@ -351,11 +351,11 @@ TEST_SUITE(FF_TEST_SUITE) {
               },
           },
       };
-      CLIFlagKey key_flag1 = CLIFlagKey{0};
-      CLIFlagKey key_flag2 = CLIFlagKey{1};
-      CLIFlagKey key_flag3 = CLIFlagKey{2};
-      CLIPositionalArgumentKey key_posarg1 = CLIPositionalArgumentKey{0};
-      CLIPositionalArgumentKey key_posarg2 = CLIPositionalArgumentKey{1};
+      CLIFlagKey key_flag1 = CLIFlagKey{0_n};
+      CLIFlagKey key_flag2 = CLIFlagKey{1_n};
+      CLIFlagKey key_flag3 = CLIFlagKey{2_n};
+      CLIPositionalArgumentKey key_posarg1 = CLIPositionalArgumentKey{0_n};
+      CLIPositionalArgumentKey key_posarg2 = CLIPositionalArgumentKey{1_n};
 
       SUBCASE("works if flags are before positional arguments") {
         std::vector<std::string> inputs = {
@@ -449,11 +449,11 @@ TEST_SUITE(FF_TEST_SUITE) {
             },
         },
     };
-    CLIFlagKey key_flag1 = CLIFlagKey{0};
-    CLIFlagKey key_flag2 = CLIFlagKey{1};
-    CLIFlagKey key_flag3 = CLIFlagKey{2};
-    CLIPositionalArgumentKey key_posarg1 = CLIPositionalArgumentKey{0};
-    CLIPositionalArgumentKey key_posarg2 = CLIPositionalArgumentKey{1};
+    CLIFlagKey key_flag1 = CLIFlagKey{0_n};
+    CLIFlagKey key_flag2 = CLIFlagKey{1_n};
+    CLIFlagKey key_flag3 = CLIFlagKey{2_n};
+    CLIPositionalArgumentKey key_posarg1 = CLIPositionalArgumentKey{0_n};
+    CLIPositionalArgumentKey key_posarg2 = CLIPositionalArgumentKey{1_n};
 
     int argc = 5;
     char const *argv[] = {"prog_name", "red", "-f", "world", "--flag3"};

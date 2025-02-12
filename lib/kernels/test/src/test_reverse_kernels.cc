@@ -5,11 +5,11 @@
 using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Call Reverse Forward and Backward Kernels") {
-    std::size_t reverse_dim_size = 10;
-    std::size_t in_blk_size = 10;
-    std::size_t num_out_blks = 1;
+    nonnegative_int reverse_dim_size = 10_n;
+    nonnegative_int in_blk_size = 10_n;
+    nonnegative_int num_out_blks = 1_n;
 
-    TensorShape input_shape = make_float_tensor_shape_from_legion_dims({100});
+    TensorShape input_shape = make_float_tensor_shape_from_legion_dims({100_n});
     TensorShape output_shape = input_shape;
 
     ManagedPerDeviceFFHandle managed_handle{};
@@ -24,13 +24,14 @@ TEST_SUITE(FF_TEST_SUITE) {
       GenericTensorAccessorW output_accessor =
           allocator.allocate_tensor(output_shape);
 
-      Kernels::Reverse::forward_kernel(managed_stream.raw_stream(),
-                                       input_accessor.get_float_ptr(),
-                                       output_accessor.get_float_ptr(),
-                                       num_out_blks,
-                                       reverse_dim_size,
-                                       in_blk_size,
-                                       input_accessor.shape.num_elements());
+      Kernels::Reverse::forward_kernel(
+          managed_stream.raw_stream(),
+          input_accessor.get_float_ptr(),
+          output_accessor.get_float_ptr(),
+          num_out_blks.unwrap_nonnegative(),
+          reverse_dim_size.unwrap_nonnegative(),
+          in_blk_size.unwrap_nonnegative(),
+          input_accessor.shape.num_elements().unwrap_nonnegative());
 
       std::vector<float> check_output_data =
           load_data_to_host_from_device<float>(
@@ -48,10 +49,10 @@ TEST_SUITE(FF_TEST_SUITE) {
           managed_stream.raw_stream(),
           output_grad_accessor.get_float_ptr(),
           input_grad_accessor.get_float_ptr(),
-          num_out_blks,
-          reverse_dim_size,
-          in_blk_size,
-          input_grad_accessor.shape.num_elements());
+          num_out_blks.unwrap_nonnegative(),
+          reverse_dim_size.unwrap_nonnegative(),
+          in_blk_size.unwrap_nonnegative(),
+          input_grad_accessor.shape.num_elements().unwrap_nonnegative());
 
       std::vector<float> host_grad_input_data =
           load_data_to_host_from_device<float>(

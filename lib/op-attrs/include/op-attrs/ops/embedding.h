@@ -5,11 +5,14 @@
 #include "op-attrs/ops/embedding_attrs.dtg.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/tensor_shape.h"
+#include "utils/record_formatter.h"
 #include <tl/expected.hpp>
 
 namespace FlexFlow {
 
 CHECK_VALID_OP_ATTR(EmbeddingAttrs);
+
+RecordFormatter as_dot(EmbeddingAttrs const &);
 
 tl::expected<TensorShape, std::string> get_output_shape(EmbeddingAttrs const &,
                                                         TensorShape const &);

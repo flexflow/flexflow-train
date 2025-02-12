@@ -117,7 +117,7 @@ std::unordered_set<ParallelComputationGraphEdge>
 
 std::unordered_set<parallel_layer_guid_t>
     get_initial_layers(ParallelComputationGraph const &pcg) {
-  std::unordered_set<Node> raw_sources = get_sources(pcg.raw_graph);
+  std::unordered_set<Node> raw_sources = get_initial_nodes(pcg.raw_graph);
   return transform(raw_sources,
                    [](Node const &n) { return parallel_layer_guid_t{n}; });
 }

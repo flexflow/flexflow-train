@@ -1,32 +1,34 @@
 #include "models/candle_uno/candle_uno.h"
 #include "pcg/initializers/glorot_normal_attrs.dtg.h"
+#include "utils/containers/repeat_element.h"
 
 namespace FlexFlow {
 
 CandleUnoConfig get_default_candle_uno_config() {
-  CandleUnoConfig config{
-      /*batch_size=*/64,
-      /*dense_layers=*/std::vector<int>(4, 4192),
-      /*dense_feature_layers=*/std::vector<int>(8, 4192),
-      /*feature_shapes=*/std::map<std::string, int>{},
-      /*input_features=*/std::map<std::string, std::string>{},
+  return CandleUnoConfig{
+      /*batch_size=*/64_n,
+      /*dense_layers=*/repeat_element(/*num_times=*/4_n, /*element=*/4192_n),
+      /*dense_feature_layers=*/
+      repeat_element(/*num_times=*/8_n, /*element=*/4192_n),
+      /*feature_shapes=*/
+      {
+          {"dose", 1_n},
+          {"cell.rnaseq", 942_n},
+          {"drug.descriptors", 5270_n},
+          {"drug.fingerprints", 2048_n},
+      },
+      /*input_features=*/
+      {
+          {"dose1", "dose"},
+          {"dose2", "dose"},
+          {"cell.rnaseq", "cell.rnaseq"},
+          {"drug1.descriptors", "drug.descriptors"},
+          {"drug1.fingerprints", "drug.fingerprints"},
+          {"drug2.descriptors", "drug.descriptors"},
+          {"drug2.fingerprints", "drug.fingerprints"},
+      },
       /*dropout=*/0.1,
       /*residual=*/false};
-
-  config.feature_shapes["dose"] = 1;
-  config.feature_shapes["cell.rnaseq"] = 942;
-  config.feature_shapes["drug.descriptors"] = 5270;
-  config.feature_shapes["drug.fingerprints"] = 2048;
-
-  config.input_features["dose1"] = "dose";
-  config.input_features["dose2"] = "dose";
-  config.input_features["cell.rnaseq"] = "cell.rnaseq";
-  config.input_features["drug1.descriptors"] = "drug.descriptors";
-  config.input_features["drug1.fingerprints"] = "drug.fingerprints";
-  config.input_features["drug2.descriptors"] = "drug.descriptors";
-  config.input_features["drug2.fingerprints"] = "drug.fingerprints";
-
-  return config;
 }
 
 tensor_guid_t create_candle_uno_feature_model(
@@ -35,7 +37,7 @@ tensor_guid_t create_candle_uno_feature_model(
     tensor_guid_t const &input,
     InitializerAttrs const &kernel_initializer) {
   tensor_guid_t t = input;
-  for (int const dense_dim : config.dense_feature_layers) {
+  for (nonnegative_int dense_dim : config.dense_feature_layers) {
     t = cgb.dense(t,
                   dense_dim,
                   Activation::RELU,
@@ -56,7 +58,7 @@ ComputationGraph
       InitializerAttrs{GlorotNormalAttrs{/*seed=*/0}};
 
   auto create_input_tensor =
-      [&](FFOrdered<size_t> const &dims) -> tensor_guid_t {
+      [&](FFOrdered<nonnegative_int> const &dims) -> tensor_guid_t {
     TensorShape input_shape = TensorShape{
         TensorDims{dims},
         DataType::FLOAT,
@@ -82,7 +84,7 @@ ComputationGraph
 
   for (auto const &input_feature : config.input_features) {
     std::string const &feature_name = input_feature.second;
-    size_t shape = config.feature_shapes.at(feature_name);
+    nonnegative_int shape = config.feature_shapes.at(feature_name);
     tensor_guid_t input = create_input_tensor({config.batch_size, shape});
     all_inputs.push_back(input);
 
@@ -94,8 +96,9 @@ ComputationGraph
     }
   }
 
-  tensor_guid_t output = cgb.concat(encoded_inputs, /*axis=*/1);
-  for (int const &dense_layer_dim : config.dense_layers) {
+  tensor_guid_t output =
+      cgb.concat(encoded_inputs, /*axis=*/relative_ff_dim_t{1});
+  for (nonnegative_int dense_layer_dim : config.dense_layers) {
     tensor_guid_t residual_input = output;
     output = cgb.dense(output,
                        dense_layer_dim,
@@ -111,7 +114,7 @@ ComputationGraph
     }
   }
   output = cgb.dense(output,
-                     /*outDim=*/1,
+                     /*outDim=*/1_n,
                      /*activation=*/std::nullopt,
                      /*use_bias=*/false,
                      /*data_type=*/DataType::FLOAT,

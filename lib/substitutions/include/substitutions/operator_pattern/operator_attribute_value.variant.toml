@@ -7,7 +7,6 @@ features = [
   "fmt",
   "json",
 ]
-explicit_constructors = false
 
 includes = [
   "<vector>",
@@ -21,6 +20,7 @@ includes = [
   "op-attrs/tensor_shape.dtg.h",
   "op-attrs/datatype.dtg.h",
   "<cstddef>",
+  "utils/nonnegative_int/nonnegative_int.h",
 ]
 
 src_includes = [
@@ -31,7 +31,7 @@ src_includes = [
 ]
 
 [[values]]
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[values]]
 type = "bool"
@@ -40,7 +40,10 @@ type = "bool"
 type = "float"
 
 [[values]]
-type = "std::vector<int>"
+type = "std::optional<float>"
+
+[[values]]
+type = "std::vector<::FlexFlow::nonnegative_int>"
 
 [[values]]
 type = "std::vector<::FlexFlow::ff_dim_t>"
@@ -55,10 +58,7 @@ type = "std::optional<::FlexFlow::Activation>"
 type = "::FlexFlow::ff_dim_t"
 
 [[values]]
-type = "size_t"
-
-[[values]]
-type = "::FlexFlow::AggregateOp"
+type = "std::optional<::FlexFlow::AggregateOp>"
 
 [[values]]
 type = "std::optional<::FlexFlow::RegularizerAttrs>"

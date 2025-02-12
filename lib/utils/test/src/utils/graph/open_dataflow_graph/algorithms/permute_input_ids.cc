@@ -17,11 +17,11 @@ TEST_SUITE(FF_TEST_SUITE) {
     DataflowGraphInput i0 = g.add_input();
     DataflowGraphInput i1 = g.add_input();
 
-    NodeAddedResult n0_added = g.add_node({OpenDataflowValue{i0}}, 1);
+    NodeAddedResult n0_added = g.add_node({OpenDataflowValue{i0}}, 1_n);
     Node n0 = n0_added.node;
     DataflowOutput n0_output = get_only(n0_added.outputs);
 
-    NodeAddedResult n1_added = g.add_node({OpenDataflowValue{n0_output}}, 1);
+    NodeAddedResult n1_added = g.add_node({OpenDataflowValue{n0_output}}, 1_n);
     Node n1 = n1_added.node;
     DataflowOutput n1_output = get_only(n1_added.outputs);
 
@@ -44,7 +44,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                     new_i0,
                     DataflowInput{
                         n0,
-                        0,
+                        0_n,
                     },
                 },
             },
@@ -52,11 +52,11 @@ TEST_SUITE(FF_TEST_SUITE) {
                 DataflowEdge{
                     DataflowOutput{
                         n0,
-                        0,
+                        0_n,
                     },
                     DataflowInput{
                         n1,
-                        0,
+                        0_n,
                     },
                 },
             },
@@ -65,11 +65,11 @@ TEST_SUITE(FF_TEST_SUITE) {
         {
             DataflowOutput{
                 n0,
-                0,
+                0_n,
             },
             DataflowOutput{
                 n1,
-                0,
+                0_n,
             },
         },
     };

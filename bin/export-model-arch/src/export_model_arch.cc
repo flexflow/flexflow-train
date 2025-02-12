@@ -3,6 +3,7 @@
 #include "export_model_arch/json_sp_model_export.dtg.h"
 #include "models/bert/bert.h"
 #include "models/candle_uno/candle_uno.h"
+#include "models/dlrm/dlrm.h"
 #include "models/inception_v3/inception_v3.h"
 #include "models/split_test/split_test.h"
 #include "models/transformer/transformer.h"
@@ -13,6 +14,7 @@
 #include "utils/cli/cli_parse.h"
 #include "utils/cli/cli_parse_result.h"
 #include "utils/cli/cli_spec.h"
+#include "utils/graph/open_dataflow_graph/algorithms/as_dot.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/right_associative_binary_sp_tree_from_nary.h"
 #include "utils/graph/series_parallel/get_series_parallel_decomposition.h"
 
@@ -21,11 +23,11 @@ using namespace ::FlexFlow;
 ComputationGraph get_single_operator_computation_graph() {
   ComputationGraphBuilder b;
 
-  size_t batch_size = 8;
-  size_t in_channels = 16;
-  size_t out_channels = 12;
+  nonnegative_int batch_size = 8_n;
+  nonnegative_int in_channels = 16_n;
+  nonnegative_int out_channels = 12_n;
   TensorShape input_shape = TensorShape{
-      TensorDims{FFOrdered<size_t>{
+      TensorDims{FFOrdered<nonnegative_int>{
           batch_size,
           in_channels,
           out_channels,
@@ -68,8 +70,10 @@ tl::expected<ComputationGraph, std::string>
     return get_candle_uno_computation_graph(get_default_candle_uno_config());
   } else if (model_name == "bert") {
     return get_bert_computation_graph(get_default_bert_config());
+  } else if (model_name == "dlrm") {
+    return get_dlrm_computation_graph(get_default_dlrm_config());
   } else if (model_name == "split_test") {
-    int batch_size = 8;
+    nonnegative_int batch_size = 8_n;
     return get_split_test_computation_graph(batch_size);
   } else if (model_name == "single_operator") {
     return get_single_operator_computation_graph();
@@ -100,10 +104,10 @@ tl::expected<JsonSPModelExport, std::string>
     result.value();
   });
 
-  std::pair<V1ComputationGraph, bidict<int, layer_guid_t>> v1_result =
-      to_v1_including_node_numbering(computation_graph);
+  std::pair<V1ComputationGraph, bidict<nonnegative_int, layer_guid_t>>
+      v1_result = to_v1_including_node_numbering(computation_graph);
   V1ComputationGraph v1_cg = v1_result.first;
-  bidict<int, layer_guid_t> layer_numbering = v1_result.second;
+  bidict<nonnegative_int, layer_guid_t> layer_numbering = v1_result.second;
   V1BinarySPDecomposition v1_sp_decomposition =
       to_v1(sp_decomposition, layer_numbering);
 
@@ -143,6 +147,7 @@ int main(int argc, char **argv) {
                                             "inception_v3",
                                             "candle_uno",
                                             "bert",
+                                            "dlrm",
                                             "split_test",
                                             "single_operator"};
   CLIArgumentKey key_model_name = cli_add_positional_argument(

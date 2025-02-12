@@ -1,6 +1,7 @@
 #include "doctest/doctest.h"
 #include "kernels/dropout_kernels.h"
 #include "test_utils.h"
+#include "utils/containers/count.h"
 
 using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
@@ -9,11 +10,11 @@ TEST_SUITE(FF_TEST_SUITE) {
     float dropout_rate = 0.1;
 
     ArrayShape shape = ArrayShape{
-        std::vector<size_t>{10, 10},
+        std::vector<nonnegative_int>{10_n, 10_n},
     };
 
     TensorShape input_shape =
-        make_float_tensor_shape_from_legion_dims({10, 10});
+        make_float_tensor_shape_from_legion_dims({10_n, 10_n});
     TensorShape output_shape = input_shape;
 
     ManagedFFStream managed_stream{};
@@ -25,8 +26,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         managed_handle.raw_handle(), dropout_rate, seed, shape, allocator);
 
     auto get_zero_count = [](std::vector<float> const &data) {
-      return std::count_if(
-          data.begin(), data.end(), [](float x) { return x == 0.0f; });
+      return count(data, [](float x) { return x == 0.0f; });
     };
 
     SUBCASE("forward_kernel") {

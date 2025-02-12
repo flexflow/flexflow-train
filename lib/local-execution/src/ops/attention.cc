@@ -85,10 +85,10 @@ static DeviceSpecificDeviceStates
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto const &attrs = acc.get_argument<MultiHeadAttentionAttrs>(ATTRS);
   Allocator allocator = acc.get_allocator();
-  size_t qProjSize = acc.get_argument<int>(QPROJSIZE);
-  size_t kProjSize = acc.get_argument<int>(KPROJSIZE);
-  size_t vProjSize = acc.get_argument<int>(VPROJSIZE);
-  size_t oProjSize = acc.get_argument<int>(OPROJSIZE);
+  nonnegative_int qProjSize = acc.get_argument<nonnegative_int>(QPROJSIZE);
+  nonnegative_int kProjSize = acc.get_argument<nonnegative_int>(KPROJSIZE);
+  nonnegative_int vProjSize = acc.get_argument<nonnegative_int>(VPROJSIZE);
+  nonnegative_int oProjSize = acc.get_argument<nonnegative_int>(OPROJSIZE);
 
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
   ParallelTensorShape query_parallel_tensor_shape =
@@ -108,29 +108,30 @@ static DeviceSpecificDeviceStates
                                             key_parallel_tensor_shape,
                                             value_parallel_tensor_shape));
 
-  int kvSeqLength = get_kvSeqLength(parsed);
-  int qSize = get_qSize(parsed);
-  int kSize = get_kSize(parsed);
-  int vSize = get_vSize(parsed);
+  nonnegative_int kvSeqLength = get_kvSeqLength(parsed);
+  nonnegative_int qSize = get_qSize(parsed);
+  nonnegative_int kSize = get_kSize(parsed);
+  nonnegative_int vSize = get_vSize(parsed);
 
-  int qoSeqLength = get_qoSeqLength(parsed);
-  int num_samples = get_num_samples(parsed);
-  int num_heads = attrs.num_heads;
+  nonnegative_int qoSeqLength = get_qoSeqLength(parsed);
+  nonnegative_int num_samples = get_num_samples(parsed);
+  nonnegative_int num_heads = attrs.num_heads;
 
-  MHAPerDeviceState per_device_state = init_kernel(handle,
-                                                   allocator,
-                                                   num_samples,
-                                                   num_heads,
-                                                   qSize,
-                                                   kSize,
-                                                   vSize,
-                                                   qProjSize,
-                                                   kProjSize,
-                                                   vProjSize,
-                                                   oProjSize,
-                                                   qoSeqLength,
-                                                   kvSeqLength,
-                                                   attrs.add_bias_kv);
+  MHAPerDeviceState per_device_state =
+      init_kernel(handle,
+                  allocator,
+                  num_samples.unwrap_nonnegative(),
+                  num_heads.unwrap_nonnegative(),
+                  qSize.unwrap_nonnegative(),
+                  kSize.unwrap_nonnegative(),
+                  vSize.unwrap_nonnegative(),
+                  qProjSize.unwrap_nonnegative(),
+                  kProjSize.unwrap_nonnegative(),
+                  vProjSize.unwrap_nonnegative(),
+                  oProjSize.unwrap_nonnegative(),
+                  qoSeqLength.unwrap_nonnegative(),
+                  kvSeqLength.unwrap_nonnegative(),
+                  attrs.add_bias_kv);
   return DeviceSpecificDeviceStates{
       DeviceSpecific<MHAPerDeviceState>::create(per_device_state)};
 }

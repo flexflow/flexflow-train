@@ -1,20 +1,25 @@
 #include "utils/graph/labelled_open_dataflow_graph/algorithms/rewrite_labels.h"
+#include "utils/archetypes/value_type.h"
+#include "utils/overload.h"
 
 namespace FlexFlow {
 
-// TODO(@lockshaw) eventually move this over to tests
+using NodeLabel = value_type<0>;
+using ValueLabel = value_type<1>;
+using NewNodeLabel = value_type<2>;
+using NewValueLabel = value_type<3>;
 
-struct Visitor {
-  std::string operator()(Node const &, int) {
+struct F {
+  NewNodeLabel operator()(Node const &, NodeLabel const &) {
     NOT_IMPLEMENTED();
   }
-  float operator()(OpenDataflowValue const &, int) {
+  NewValueLabel operator()(OpenDataflowValue const &, ValueLabel) {
     NOT_IMPLEMENTED();
   }
 };
 
-template LabelledOpenDataflowGraphView<std::string, float>
-    rewrite_labels<int, int, Visitor>(
-        LabelledOpenDataflowGraphView<int, int> const &, Visitor);
+template LabelledOpenDataflowGraphView<NewNodeLabel, NewValueLabel>
+    rewrite_labels(LabelledOpenDataflowGraphView<NodeLabel, ValueLabel> const &,
+                   F);
 
 } // namespace FlexFlow

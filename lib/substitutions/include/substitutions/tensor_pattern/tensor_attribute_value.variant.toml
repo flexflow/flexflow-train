@@ -12,10 +12,11 @@ includes = [
   "<vector>",
   "utils/hash/vector.h",
   "utils/fmt/vector.h",
+  "utils/nonnegative_int/nonnegative_int.h",
 ]
 
 [[values]]
-type = "size_t"
+type = "::FlexFlow::nonnegative_int"
 
 [[values]]
-type = "std::vector<size_t>"
+type = "std::vector<::FlexFlow::nonnegative_int>"

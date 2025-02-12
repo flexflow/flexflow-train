@@ -9,6 +9,7 @@ features = [
 
 includes = [
   "utils/graph/node/node.dtg.h",
+  "utils/nonnegative_int/nonnegative_int.h",
 ]
 
 [[fields]]
@@ -17,4 +18,4 @@ type = "::FlexFlow::Node"
 
 [[fields]]
 name = "idx"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
