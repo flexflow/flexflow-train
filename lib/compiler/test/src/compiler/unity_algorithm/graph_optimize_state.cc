@@ -10,12 +10,13 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     ParallelTensorShape input_shape = ParallelTensorShape{
         ParallelTensorDims{
-            FFOrdered<ShardParallelDim>{
-                ShardParallelDim{10, 1},
-            },
+            FFOrdered<ShardParallelDim>{ShardParallelDim{
+                nonnegative_int{10},
+                nonnegative_int{1},
+            }},
             ReplicaParallelDimSet{
-                SumDegree{1},
-                DiscardCopyDegree{1},
+                SumDegree{nonnegative_int{1}},
+                DiscardCopyDegree{nonnegative_int{1}},
             },
         },
         DataType::FLOAT,

@@ -85,9 +85,6 @@ ParallelComputationGraph without_layer_names(ParallelComputationGraph const &);
 bool pcgs_are_isomorphic(ParallelComputationGraph const &,
                          ParallelComputationGraph const &);
 
-ParallelComputationGraph
-    parallel_computation_graph_from_computation_graph(ComputationGraph const &);
-
 } // namespace FlexFlow
 
 #endif

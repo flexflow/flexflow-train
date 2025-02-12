@@ -12,6 +12,7 @@
 #include "compiler/unity_algorithm/graph_optimize_state.h"
 #include "pcg/machine_specification.dtg.h"
 #include "pcg/operator_task_space.h"
+#include "substitutions/apply_substitution/apply_substitution.h"
 #include "substitutions/pcg_pattern.h"
 #include "substitutions/sub_parallel_computation_graph.h"
 #include "substitutions/substitution.h"

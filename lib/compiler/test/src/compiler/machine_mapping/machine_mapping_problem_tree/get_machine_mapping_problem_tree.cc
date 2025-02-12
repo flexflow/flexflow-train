@@ -98,7 +98,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     PCGOperatorAttrs input_attrs = PCGOperatorAttrs{InputAttrs{}};
 
     auto make_operator_task_space = [&](ParallelTensorShape const &shape) {
-      std::vector<int> degrees;
+      std::vector<nonnegative_int> degrees;
       extend(degrees, vector_of(ff_ordered_shard_degrees(shape)));
       degrees.push_back(get_sum_degree(shape));
       degrees.push_back(get_discard_copy_degree(shape));

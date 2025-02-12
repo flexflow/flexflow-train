@@ -1,5 +1,6 @@
 #include "compiler/compiler.h"
 #include "compiler/unity_algorithm/unity_algorithm.h"
+#include "pcg/pcg_from_computation_graph.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {
@@ -15,8 +16,7 @@ SearchResult optimize(ComputationGraph const &computation_graph,
       },
       [&](UnitySearchConfig const &config) {
         ParallelComputationGraph pcg =
-            parallel_computation_graph_from_computation_graph(
-                computation_graph);
+            pcg_from_computation_graph(computation_graph);
         std::vector<Substitution> substitutions; // TODO: Implement this
         return graph_optimize(
             pcg, cost_estimator, machine_specification, substitutions, config);

@@ -7,68 +7,29 @@
 #include "op-attrs/shard_parallel_dim.h"
 #include "pcg/computation_graph_builder.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
+#include "pcg/pcg_from_computation_graph.h"
 #include "utils/integer_conversions.h"
 
 using namespace FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("graph_optimize") {
-    // TODO: recover this by implementing
-    // parallel_computation_graph_from_computation_graph ComputationGraph cg =
-    // [&] {
-    //   ComputationGraphBuilder b;
-    //   TensorShape input_tensor_shape = TensorShape{
-    //     TensorDims{
-    //       FFOrdered<size_t> {32, 64},
-    //     },
-    //     DataType::FLOAT,
-    //   };
-    //   tensor_guid_t t = b.create_input(input_tensor_shape, CreateGrad::YES);
-    //   t = b.dense(t,
-    //               /*outDim=*/16,
-    //               /*activation=*/std::nullopt);
-    //   t = b.gelu(t);
-    //   t = b.dense(t,
-    //               /*outDim=*/12,
-    //               /*activation=*/std::nullopt,
-    //               /*use_bias=*/false,
-    //               /*data_type=*/DataType::FLOAT,
-    //               /*kernel_initializer=*/std::nullopt,
-    //               /*bias_initializer=*/std::nullopt);
-    //   t = b.relu(t);
-    //   t = b.dense(t,
-    //               /*outDim=*/8,
-    //               /*activation=*/Activation::RELU);
-    //   return b.computation_graph;
-    // }();
-
-    // ParallelComputationGraph pcg =
-    // parallel_computation_graph_from_computation_graph(cg);
-
-    ParallelComputationGraph pcg = [&] {
-      ParallelComputationGraphBuilder b;
-      int in_channels = 24;
-      int batch_size = 4;
-      int batch_degree = 2;
-      parallel_tensor_guid_t t = b.create_input_tensor(ParallelTensorShape{
-          ParallelTensorDims{
-              FFOrdered<ShardParallelDim>{
-                  ShardParallelDim{size_t_from_int(batch_size), batch_degree},
-                  ShardParallelDim{size_t_from_int(in_channels), 1},
-              },
-              ReplicaParallelDimSet{
-                  SumDegree{1},
-                  DiscardCopyDegree{1},
-              },
+    ComputationGraph cg = [&] {
+      ComputationGraphBuilder b;
+      TensorShape input_tensor_shape = TensorShape{
+          TensorDims{
+              FFOrdered<nonnegative_int>{nonnegative_int{32},
+                                         nonnegative_int{64}},
           },
           DataType::FLOAT,
-      });
+      };
+      tensor_guid_t t = b.create_input(input_tensor_shape, CreateGrad::YES);
       t = b.dense(t,
-                  /*outDim=*/16,
+                  /*outDim=*/nonnegative_int{16},
                   /*activation=*/std::nullopt);
       t = b.gelu(t);
       t = b.dense(t,
-                  /*outDim=*/12,
+                  /*outDim=*/nonnegative_int{12},
                   /*activation=*/std::nullopt,
                   /*use_bias=*/false,
                   /*data_type=*/DataType::FLOAT,
@@ -76,11 +37,12 @@ TEST_SUITE(FF_TEST_SUITE) {
                   /*bias_initializer=*/std::nullopt);
       t = b.relu(t);
       t = b.dense(t,
-                  /*outDim=*/8,
+                  /*outDim=*/nonnegative_int{8},
                   /*activation=*/Activation::RELU);
-
-      return b.pcg;
+      return b.computation_graph;
     }();
+
+    ParallelComputationGraph pcg = pcg_from_computation_graph(cg);
 
     CostEstimator cost_estimator = make_fake_cost_estimator(
         [](OpCostEstimateKey const &k) {
@@ -93,9 +55,9 @@ TEST_SUITE(FF_TEST_SUITE) {
         [](TensorSetMovement const &) { return 1.0; });
 
     MachineSpecification full_machine_spec = MachineSpecification{
-        /*num_nodes=*/2,
-        /*num_cpus_per_node=*/1,
-        /*num_gpus_per_node=*/1,
+        /*num_nodes=*/nonnegative_int{2},
+        /*num_cpus_per_node=*/nonnegative_int{1},
+        /*num_gpus_per_node=*/nonnegative_int{1},
         /*inter_node_bandwidth=*/1,
         /*intra_node_bandwidth=*/1,
     };
