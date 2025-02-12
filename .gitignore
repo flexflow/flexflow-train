@@ -5,6 +5,9 @@
 *.dtg.cc
 *.dtg.h
 
+# nix build result
+/result
+
 # ctest-created files
 Testing/
 
