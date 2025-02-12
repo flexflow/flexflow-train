@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_PCG_INCLUDE_PCG_PARALLEL_COMPUTATION_GRAPH_H
 #define _FLEXFLOW_PCG_INCLUDE_PCG_PARALLEL_COMPUTATION_GRAPH_H
 
+#include "pcg/computation_graph.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_edge.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_layer_added_result.dtg.h"
