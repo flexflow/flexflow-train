@@ -3,6 +3,18 @@
 
 namespace FlexFlow {
 
+RecordFormatter as_dot(WeightAttrs const &attrs) {
+  RecordFormatter r;
+
+  for (nonnegative_int dim : attrs.tensor_shape.dims.ff_ordered) {
+    r << fmt::to_string(dim);
+  }
+
+  r << fmt::to_string(attrs.tensor_shape.data_type);
+
+  return r;
+}
+
 TensorShape get_output_shape(WeightAttrs const &attrs) {
   return attrs.tensor_shape;
 }

@@ -49,6 +49,9 @@ public:
   nonnegative_int operator/(nonnegative_int const &other) const;
   nonnegative_int &operator/=(nonnegative_int const &other);
 
+  friend float operator/(float lhs, nonnegative_int rhs);
+  friend float &operator/=(float &lhs, nonnegative_int rhs);
+
   nonnegative_int operator%(nonnegative_int const &other) const;
   nonnegative_int &operator%=(nonnegative_int const &other);
 

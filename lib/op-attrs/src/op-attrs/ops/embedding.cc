@@ -7,6 +7,22 @@
 
 namespace FlexFlow {
 
+RecordFormatter as_dot(EmbeddingAttrs const &attrs) {
+  RecordFormatter r;
+
+  auto kv = [](std::string const &label, auto const &val) {
+    RecordFormatter rr;
+    rr << label << fmt::to_string(val);
+    return rr;
+  };
+
+  r << kv("num_entries", attrs.num_entries)
+    << kv("out_channels", attrs.out_channels) << kv("aggr", attrs.aggr)
+    << kv("output_type", attrs.data_type);
+
+  return r;
+}
+
 static std::optional<std::string> basic_check(EmbeddingAttrs const &attrs,
                                               TensorShape const &input) {
   if (input.data_type != DataType::INT32 &&

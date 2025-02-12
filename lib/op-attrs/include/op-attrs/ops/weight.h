@@ -5,10 +5,13 @@
 #include "op-attrs/ops/weight_attrs.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "op-attrs/tensor_shape.dtg.h"
+#include "utils/record_formatter.h"
 
 namespace FlexFlow {
 
 CHECK_VALID_OP_ATTR(WeightAttrs);
+
+RecordFormatter as_dot(WeightAttrs const &);
 
 TensorShape get_output_shape(WeightAttrs const &);
 ParallelTensorShape get_output_parallel_tensor_shape(WeightAttrs const &);
