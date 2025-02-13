@@ -11,4 +11,8 @@ gradient_tensor_t GradientTensorSource::new_gradient_tensor() {
       GradientTensorSource::next_available_gradient_tensor_id++};
 }
 
+void GradientTensorSource::reset() {
+  GradientTensorSource::next_available_gradient_tensor_id = 0;
+}
+
 } // namespace FlexFlow

@@ -101,8 +101,7 @@ std::optional<float> call_task_impl(TaskRegistry const &task_registry,
 
 std::optional<float>
     execute_forward(LocalTrainingBacking const &local_training_backing,
-                    layer_guid_t const &operator_node,
-                    Allocator &allocator) {
+                    layer_guid_t const &operator_node) {
   if (registry_contains_task_for_layer(local_training_backing.task_registry,
                                        operator_node,
                                        OpTaskType::FWD)) {

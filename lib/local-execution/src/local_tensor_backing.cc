@@ -135,7 +135,7 @@ UnallocatedTensors generate_unallocated_tensors(
       gradient_tensor_t gradient_tensor =
           gradient_tensor_source.new_gradient_tensor();
       tensor_type_shapes.insert(
-          {TensorTypeVariant{tensor_guid}, tensor_attrs.shape});
+          {TensorTypeVariant{gradient_tensor}, tensor_attrs.shape});
       gradient_mapping.insert({tensor_guid, gradient_tensor});
     }
   }
@@ -168,8 +168,7 @@ UnallocatedTensors generate_unallocated_tensors_with_optimizer(
        tensor_attrs_mapping) {
     tensor_guid_t tensor_guid = tensor_guid_attrs.first;
     TensorAttrs tensor_attrs = tensor_guid_attrs.second;
-    if (tensor_attrs.create_gradients == CreateGrad::YES &&
-        !allocated_tensors.optimizer_mapping.count(tensor_guid)) {
+    if (tensor_attrs.create_gradients == CreateGrad::YES) {
       std::vector<optimizer_tensor_t> optimizer_tensors;
 
       int num_optimizer_tensors_to_allocate =
@@ -178,6 +177,7 @@ UnallocatedTensors generate_unallocated_tensors_with_optimizer(
         num_optimizer_tensors_to_allocate -=
             allocated_tensors.optimizer_mapping.at(tensor_guid).size();
       }
+      std::cout << num_optimizer_tensors_to_allocate;
 
       for (int i = 0; i < num_optimizer_tensors_to_allocate; ++i) {
         optimizer_tensor_t optimizer_tensor =
@@ -186,7 +186,10 @@ UnallocatedTensors generate_unallocated_tensors_with_optimizer(
         tensor_type_shapes.insert(
             {TensorTypeVariant{optimizer_tensor}, tensor_attrs.shape});
       }
-      optimizer_mapping.insert({tensor_guid, optimizer_tensors});
+
+      if (num_optimizer_tensors_to_allocate > 0) {
+        optimizer_mapping.insert({tensor_guid, optimizer_tensors});
+      }
     }
   }
 

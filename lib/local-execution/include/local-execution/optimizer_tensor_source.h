@@ -11,6 +11,8 @@ public:
 
   optimizer_tensor_t new_optimizer_tensor();
 
+  void reset();
+
 private:
   static size_t next_available_optimizer_tensor_id;
 };

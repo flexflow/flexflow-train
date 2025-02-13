@@ -85,7 +85,7 @@ std::vector<tensor_guid_t> get_incoming_tensors(ComputationGraph const &cg,
 }
 
 std::vector<TensorShape> get_incoming_input_shapes(ComputationGraph const &cg,
-                                                   layer_guid_t n) {
+                                                   layer_guid_t const &n) {
   return transform(get_incoming_inputs(cg, n), [&](tensor_guid_t const &t) {
     return get_tensor_attrs(cg, t).shape;
   });

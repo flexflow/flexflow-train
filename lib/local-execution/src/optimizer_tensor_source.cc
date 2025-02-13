@@ -11,4 +11,8 @@ optimizer_tensor_t OptimizerTensorSource::new_optimizer_tensor() {
       OptimizerTensorSource::next_available_optimizer_tensor_id++};
 }
 
+void OptimizerTensorSource::reset() {
+  OptimizerTensorSource::next_available_optimizer_tensor_id = 0;
+}
+
 } // namespace FlexFlow

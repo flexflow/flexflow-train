@@ -17,7 +17,11 @@ using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("UnallocatedTensors") {
     MockTensorGuidSource tensor_guid_source;
+    GradientTensorSource gradient_tensor_source;
     OptimizerTensorSource optimizer_tensor_source;
+
+    gradient_tensor_source.reset();
+    optimizer_tensor_source.reset();
 
     Allocator allocator = create_local_cpu_memory_allocator();
 
@@ -25,6 +29,13 @@ TEST_SUITE(FF_TEST_SUITE) {
     tensor_guid_t mock_tensor_2 = tensor_guid_source.new_mock_tensor_guid();
     tensor_guid_t mock_tensor_3_with_grad =
         tensor_guid_source.new_mock_tensor_guid();
+
+    gradient_tensor_t grad_tensor =
+        gradient_tensor_source.new_gradient_tensor();
+    optimizer_tensor_t optimizer_tensor_1 =
+        optimizer_tensor_source.new_optimizer_tensor();
+    optimizer_tensor_t optimizer_tensor_2 =
+        optimizer_tensor_source.new_optimizer_tensor();
 
     TensorAttrs tensor_attrs_1_no_grad = TensorAttrs{
         TensorShape{TensorDims{FFOrdered<nonnegative_int>{16_n, 10_n}},
@@ -61,13 +72,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("Without optimizer") {
       SUBCASE("AllocatedTensors is empty") {
         AllocatedTensors empty = AllocatedTensors{{}, {}, {}};
-        GradientTensorSource gradient_tensor_source;
+        gradient_tensor_source.reset();
         UnallocatedTensors result = generate_unallocated_tensors(
             empty, tensor_attrs_mapping, gradient_tensor_source);
 
-        GradientTensorSource mock_gradient_tensor_source;
-        gradient_tensor_t grad_tensor =
-            mock_gradient_tensor_source.new_gradient_tensor();
         std::unordered_map<TensorTypeVariant, TensorShape>
             correct_tensor_type_shapes = {
                 {TensorTypeVariant{mock_tensor_1},
@@ -93,15 +101,12 @@ TEST_SUITE(FF_TEST_SUITE) {
             },
             {},
             {}};
-        GradientTensorSource gradient_tensor_source;
+
+        gradient_tensor_source.reset();
         UnallocatedTensors result =
             generate_unallocated_tensors(allocated_forward_tensors,
                                          tensor_attrs_mapping,
                                          gradient_tensor_source);
-
-        GradientTensorSource mock_gradient_tensor_source;
-        gradient_tensor_t grad_tensor =
-            mock_gradient_tensor_source.new_gradient_tensor();
         std::unordered_map<TensorTypeVariant, TensorShape>
             correct_tensor_type_shapes = {
                 {TensorTypeVariant{mock_tensor_2},
@@ -127,15 +132,13 @@ TEST_SUITE(FF_TEST_SUITE) {
             },
             {},
             {}};
-        GradientTensorSource gradient_tensor_source;
+
+        gradient_tensor_source.reset();
         UnallocatedTensors result =
             generate_unallocated_tensors(allocated_forward_tensors,
                                          tensor_attrs_mapping,
                                          gradient_tensor_source);
 
-        GradientTensorSource mock_gradient_tensor_source;
-        gradient_tensor_t grad_tensor =
-            mock_gradient_tensor_source.new_gradient_tensor();
         std::unordered_map<TensorTypeVariant, TensorShape>
             correct_tensor_type_shapes = {
                 {TensorTypeVariant{grad_tensor},
@@ -149,9 +152,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SUBCASE("AllocatedTensors contains only gradient tensor") {
-        GradientTensorSource gradient_tensor_source;
-        gradient_tensor_t grad_tensor =
-            gradient_tensor_source.new_gradient_tensor();
+
         AllocatedTensors allocated_forward_tensors = AllocatedTensors{
             {
                 {TensorTypeVariant{grad_tensor}, tensor_backing_3},
@@ -178,9 +179,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SUBCASE("AllocatedTensors contains mixture") {
-        GradientTensorSource gradient_tensor_source;
-        gradient_tensor_t grad_tensor =
-            gradient_tensor_source.new_gradient_tensor();
+
         AllocatedTensors allocated_forward_tensors = AllocatedTensors{
             {
                 {TensorTypeVariant{mock_tensor_1}, tensor_backing_1},
@@ -206,9 +205,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SUBCASE("Fully AllocatedTensors") {
-        GradientTensorSource gradient_tensor_source;
-        gradient_tensor_t grad_tensor =
-            gradient_tensor_source.new_gradient_tensor();
+
         AllocatedTensors allocated_forward_tensors = AllocatedTensors{
             {
                 {TensorTypeVariant{mock_tensor_1}, tensor_backing_1},
@@ -235,8 +232,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           OptimizerAttrs attrs =
               OptimizerAttrs{SGDOptimizerAttrs{0.0, momentum, false, 0.0}};
           AllocatedTensors empty = AllocatedTensors{{}, {}, {}};
-          GradientTensorSource gradient_tensor_source;
-          OptimizerTensorSource optimizer_tensour_source;
+
+          gradient_tensor_source.reset();
           UnallocatedTensors result =
               generate_unallocated_tensors_with_optimizer(
                   empty,
@@ -245,9 +242,9 @@ TEST_SUITE(FF_TEST_SUITE) {
                   optimizer_tensor_source,
                   attrs);
 
-          GradientTensorSource mock_gradient_tensor_source;
+          gradient_tensor_source.reset();
           UnallocatedTensors correct = generate_unallocated_tensors(
-              empty, tensor_attrs_mapping, mock_gradient_tensor_source);
+              empty, tensor_attrs_mapping, gradient_tensor_source);
           CHECK(result == correct);
         }
         SUBCASE("with momentum") {
@@ -257,8 +254,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
           SUBCASE("unallocated") {
             AllocatedTensors empty = AllocatedTensors{{}, {}, {}};
-            GradientTensorSource gradient_tensor_source;
-            OptimizerTensorSource optimizer_tensour_source;
+
+            gradient_tensor_source.reset();
+            optimizer_tensor_source.reset();
             UnallocatedTensors result =
                 generate_unallocated_tensors_with_optimizer(
                     empty,
@@ -266,13 +264,6 @@ TEST_SUITE(FF_TEST_SUITE) {
                     gradient_tensor_source,
                     optimizer_tensor_source,
                     attrs);
-
-            GradientTensorSource mock_gradient_tensor_source;
-            gradient_tensor_t grad_tensor =
-                mock_gradient_tensor_source.new_gradient_tensor();
-            OptimizerTensorSource mock_optimizer_tensour_source;
-            optimizer_tensor_t optimizer_tensor =
-                mock_optimizer_tensour_source.new_optimizer_tensor();
 
             std::unordered_map<TensorTypeVariant, TensorShape>
                 correct_tensor_type_shapes = {
@@ -284,26 +275,25 @@ TEST_SUITE(FF_TEST_SUITE) {
                      tensor_attrs_3_with_grad.shape},
                     {TensorTypeVariant{grad_tensor},
                      tensor_attrs_3_with_grad.shape},
-                    {TensorTypeVariant{optimizer_tensor},
+                    {TensorTypeVariant{optimizer_tensor_1},
                      tensor_attrs_3_with_grad.shape},
                 };
             UnallocatedTensors correct = UnallocatedTensors{
                 correct_tensor_type_shapes,
                 {{mock_tensor_3_with_grad, grad_tensor}},
-                {{mock_tensor_3_with_grad, {optimizer_tensor}}}};
+                {{mock_tensor_3_with_grad, {optimizer_tensor_1}}}};
 
             CHECK(result == correct);
           }
 
           SUBCASE("allocated") {
-            OptimizerTensorSource optimizer_tensour_source;
-            optimizer_tensor_t optimizer_tensor =
-                optimizer_tensour_source.new_optimizer_tensor();
+
             AllocatedTensors allocated_optimizer_tensor = AllocatedTensors{
-                {{TensorTypeVariant{optimizer_tensor}, tensor_backing_3}},
+                {{TensorTypeVariant{optimizer_tensor_1}, tensor_backing_3}},
                 {},
-                {{mock_tensor_3_with_grad, {optimizer_tensor}}}};
-            GradientTensorSource gradient_tensor_source;
+                {{mock_tensor_3_with_grad, {optimizer_tensor_1}}}};
+
+            gradient_tensor_source.reset();
             UnallocatedTensors result =
                 generate_unallocated_tensors_with_optimizer(
                     allocated_optimizer_tensor,
@@ -311,10 +301,6 @@ TEST_SUITE(FF_TEST_SUITE) {
                     gradient_tensor_source,
                     optimizer_tensor_source,
                     attrs);
-
-            GradientTensorSource mock_gradient_tensor_source;
-            gradient_tensor_t grad_tensor =
-                mock_gradient_tensor_source.new_gradient_tensor();
 
             std::unordered_map<TensorTypeVariant, TensorShape>
                 correct_tensor_type_shapes = {
@@ -348,8 +334,9 @@ TEST_SUITE(FF_TEST_SUITE) {
                                               /*epsilon=*/1e-8}};
         SUBCASE("Empty") {
           AllocatedTensors empty = AllocatedTensors{{}, {}, {}};
-          GradientTensorSource gradient_tensor_source;
-          OptimizerTensorSource optimizer_tensour_source;
+
+          gradient_tensor_source.reset();
+          optimizer_tensor_source.reset();
           UnallocatedTensors result =
               generate_unallocated_tensors_with_optimizer(
                   empty,
@@ -357,15 +344,6 @@ TEST_SUITE(FF_TEST_SUITE) {
                   gradient_tensor_source,
                   optimizer_tensor_source,
                   attrs);
-
-          GradientTensorSource mock_gradient_tensor_source;
-          gradient_tensor_t grad_tensor =
-              mock_gradient_tensor_source.new_gradient_tensor();
-          OptimizerTensorSource mock_optimizer_tensour_source;
-          optimizer_tensor_t optimizer_tensor_1 =
-              mock_optimizer_tensour_source.new_optimizer_tensor();
-          optimizer_tensor_t optimizer_tensor_2 =
-              mock_optimizer_tensour_source.new_optimizer_tensor();
 
           std::unordered_map<TensorTypeVariant, TensorShape>
               correct_tensor_type_shapes = {
@@ -391,14 +369,16 @@ TEST_SUITE(FF_TEST_SUITE) {
           CHECK(result == correct);
         }
         SUBCASE("Partially allocated") {
-          OptimizerTensorSource optimizer_tensour_source;
-          optimizer_tensor_t optimizer_tensor_1 =
-              optimizer_tensour_source.new_optimizer_tensor();
+          gradient_tensor_source.reset();
+          optimizer_tensor_source.reset();
+          optimizer_tensor_t optimizer_tensor_pre_allocated =
+              optimizer_tensor_source.new_optimizer_tensor();
           AllocatedTensors allocated_optimizer_tensor = AllocatedTensors{
-              {{TensorTypeVariant{optimizer_tensor_1}, tensor_backing_3}},
+              {{TensorTypeVariant{optimizer_tensor_pre_allocated},
+                tensor_backing_3}},
               {},
-              {{mock_tensor_3_with_grad, {optimizer_tensor_1}}}};
-          GradientTensorSource gradient_tensor_source;
+              {{mock_tensor_3_with_grad, {optimizer_tensor_pre_allocated}}}};
+
           UnallocatedTensors result =
               generate_unallocated_tensors_with_optimizer(
                   allocated_optimizer_tensor,
@@ -406,14 +386,6 @@ TEST_SUITE(FF_TEST_SUITE) {
                   gradient_tensor_source,
                   optimizer_tensor_source,
                   attrs);
-
-          GradientTensorSource mock_gradient_tensor_source;
-          gradient_tensor_t grad_tensor =
-              mock_gradient_tensor_source.new_gradient_tensor();
-          OptimizerTensorSource mock_optimizer_tensour_source;
-          optimizer_tensor_source.new_optimizer_tensor();
-          optimizer_tensor_t optimizer_tensor_2 =
-              optimizer_tensour_source.new_optimizer_tensor();
 
           std::unordered_map<TensorTypeVariant, TensorShape>
               correct_tensor_type_shapes = {
@@ -437,18 +409,14 @@ TEST_SUITE(FF_TEST_SUITE) {
         }
 
         SUBCASE("Fully allocated") {
-          OptimizerTensorSource optimizer_tensour_source;
-          optimizer_tensor_t optimizer_tensor_1 =
-              optimizer_tensour_source.new_optimizer_tensor();
-          optimizer_tensor_t optimizer_tensor_2 =
-              optimizer_tensour_source.new_optimizer_tensor();
           AllocatedTensors allocated_optimizer_tensor = AllocatedTensors{
               {{TensorTypeVariant{optimizer_tensor_1}, tensor_backing_3},
                {TensorTypeVariant{optimizer_tensor_2}, tensor_backing_3}},
               {},
               {{mock_tensor_3_with_grad,
                 {optimizer_tensor_1, optimizer_tensor_2}}}};
-          GradientTensorSource gradient_tensor_source;
+
+          gradient_tensor_source.reset();
           UnallocatedTensors result =
               generate_unallocated_tensors_with_optimizer(
                   allocated_optimizer_tensor,
@@ -456,10 +424,6 @@ TEST_SUITE(FF_TEST_SUITE) {
                   gradient_tensor_source,
                   optimizer_tensor_source,
                   attrs);
-
-          GradientTensorSource mock_gradient_tensor_source;
-          gradient_tensor_t grad_tensor =
-              mock_gradient_tensor_source.new_gradient_tensor();
 
           std::unordered_map<TensorTypeVariant, TensorShape>
               correct_tensor_type_shapes = {
