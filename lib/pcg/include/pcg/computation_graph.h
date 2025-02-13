@@ -57,6 +57,9 @@ std::unordered_set<layer_guid_t>
 
 LayerAttrs get_layer_attrs(ComputationGraph const &cg, layer_guid_t const &n);
 
+std::unordered_map<layer_guid_t, LayerAttrs>
+    get_layer_attrs_mapping(ComputationGraph const &cg);
+
 layer_guid_t get_layer_by_name(ComputationGraph const &cg,
                                std::string const &name);
 

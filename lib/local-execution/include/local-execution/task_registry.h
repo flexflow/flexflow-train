@@ -9,7 +9,8 @@
 
 namespace FlexFlow {
 
-TaskRegistry construct_task_registry(ComputationGraph const &);
+TaskRegistry construct_task_registry(
+    std::unordered_map<layer_guid_t, LayerAttrs> const &);
 
 bool registry_contains_task_for_layer(TaskRegistry const &,
                                       layer_guid_t const &,

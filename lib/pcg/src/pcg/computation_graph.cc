@@ -190,6 +190,15 @@ LayerAttrs get_layer_attrs(ComputationGraph const &cg, layer_guid_t const &n) {
   return cg.raw_graph.at(n.raw_node);
 }
 
+std::unordered_map<layer_guid_t, LayerAttrs>
+    get_layer_attrs_mapping(ComputationGraph const &cg) {
+  std::unordered_map<layer_guid_t, LayerAttrs> layer_attrs_mapping;
+  for (layer_guid_t const &layer_guid : get_layers(cg)) {
+    layer_attrs_mapping.insert({layer_guid, get_layer_attrs(cg, layer_guid)});
+  }
+  return layer_attrs_mapping;
+}
+
 layer_guid_t get_layer_by_name(ComputationGraph const &cg,
                                std::string const &name) {
   std::unordered_set<layer_guid_t> found =

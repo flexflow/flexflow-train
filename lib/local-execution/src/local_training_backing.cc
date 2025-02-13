@@ -20,7 +20,8 @@ LocalTrainingBacking::LocalTrainingBacking(
     ComputationGraph const &computation_graph,
     RuntimeArgConfig const &runtime_arg_config)
     : computation_graph(computation_graph),
-      task_registry(construct_task_registry(computation_graph)),
+      task_registry(construct_task_registry(
+          get_layer_attrs_mapping(this->computation_graph))),
       local_tensor_backing(allocated_tensors,
                            generate_unallocated_tensors(
                                allocated_tensors,
@@ -39,7 +40,8 @@ LocalTrainingBacking::LocalTrainingBacking(
     RuntimeArgConfig const &runtime_arg_config,
     OptimizerAttrs const &optimizer_attrs)
     : computation_graph(computation_graph),
-      task_registry(construct_task_registry(computation_graph)),
+      task_registry(construct_task_registry(
+          get_layer_attrs_mapping(this->computation_graph))),
       local_tensor_backing(allocated_tensors,
                            generate_unallocated_tensors_with_optimizer(
                                allocated_tensors,

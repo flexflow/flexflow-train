@@ -4,7 +4,9 @@ ff_add_test_executable(
   SRC_PATTERNS
     src/test_allocated_tensors.cc
     src/test_unallocated_tensors.cc
+    src/test_task_registry.cc
     src/test_utils.cc
+    src/test_local_task_arg_accessor.cc
   PRIVATE_INCLUDE 
     src/
   DEPS

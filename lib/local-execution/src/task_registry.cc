@@ -4,19 +4,22 @@
 
 namespace FlexFlow {
 
-TaskRegistry construct_task_registry(ComputationGraph const &cg) {
+TaskRegistry construct_task_registry(
+    std::unordered_map<layer_guid_t, LayerAttrs> const &layer_attrs_mapping) {
   std::unordered_map<layer_guid_t, std::optional<task_id_t>> init_task_ids;
   std::unordered_map<layer_guid_t, std::optional<task_id_t>> fwd_task_ids;
   std::unordered_map<layer_guid_t, std::optional<task_id_t>> bwd_task_ids;
 
   std::unordered_map<task_id_t, TaskSignatureAndImpl> task_mapping;
 
-  for (layer_guid_t const &node : topological_ordering(cg)) {
+  for (std::pair<layer_guid_t, LayerAttrs> const &layer_attrs :
+       layer_attrs_mapping) {
+    layer_guid_t node = layer_attrs.first;
     init_task_ids.insert({node, std::nullopt});
     fwd_task_ids.insert({node, std::nullopt});
     bwd_task_ids.insert({node, std::nullopt});
 
-    ComputationGraphOpAttrs attrs = get_layer_attrs(cg, node).attrs;
+    ComputationGraphOpAttrs attrs = layer_attrs.second.attrs;
     std::vector<task_id_t> task_ids = get_task_ids(attrs);
 
     for (task_id_t const &task_id : task_ids) {
@@ -29,13 +32,13 @@ TaskRegistry construct_task_registry(ComputationGraph const &cg) {
           break;
         case OpTaskType::FWD:
           assert(is_invocation_valid(task_signature_impl.task_signature,
-                                     init(attrs)));
+                                     forward(attrs)));
           fwd_task_ids[node] = task_id;
           break;
         case OpTaskType::BWD:
           assert(is_invocation_valid(task_signature_impl.task_signature,
-                                     init(attrs)));
-          fwd_task_ids[node] = task_id;
+                                     backward(attrs)));
+          bwd_task_ids[node] = task_id;
           break;
         default:
           throw mk_runtime_error(
