@@ -61,21 +61,25 @@ lowered_tensor_t
     LocalTensorBacking::insert_tensor(TensorTypeVariant const &tensor_type) {
   lowered_tensor_t lowered_tensor =
       this->lowered_tensor_source.new_lowered_tensor();
-  tensor_type.visit<void>(overload{
+  tensor_type.visit<std::nullopt_t>(overload{
       [&](tensor_guid_t const &tensor_guid) {
         this->tensor_lowering_mapping.insert({tensor_guid, lowered_tensor});
+        return std::nullopt;
       },
       [&](gradient_tensor_t const &gradient_tensor) {
         this->gradient_tensor_lowering_mapping.insert(
             {gradient_tensor, lowered_tensor});
+        return std::nullopt;
       },
       [&](optimizer_tensor_t const &optimizer_tensor) {
         this->optimizer_tensor_lowering_mapping.insert(
             {optimizer_tensor, lowered_tensor});
+        return std::nullopt;
       },
       [&](loss_tensor_t const &loss_tensor) {
         this->loss_tensor_lowering_mapping.insert(
             {loss_tensor, lowered_tensor});
+        return std::nullopt;
       },
       [&](auto const &any_tensor) {
         throw mk_runtime_error(
@@ -88,16 +92,16 @@ GenericTensorAccessorW
     LocalTensorBacking::get_tensor(TensorTypeVariant const &tensor_type) const {
   lowered_tensor_t lowered_tensor = tensor_type.visit<lowered_tensor_t>(
       overload{[&](tensor_guid_t const &tensor_guid) {
-                 this->tensor_lowering_mapping.at(tensor_guid);
+                 return this->tensor_lowering_mapping.at(tensor_guid);
                },
                [&](gradient_tensor_t const &gradient_tensor) {
-                 this->gradient_tensor_lowering_mapping.at(gradient_tensor);
+                 return this->gradient_tensor_lowering_mapping.at(gradient_tensor);
                },
                [&](optimizer_tensor_t const &optimizer_tensor) {
-                 this->optimizer_tensor_lowering_mapping.at(optimizer_tensor);
+                 return this->optimizer_tensor_lowering_mapping.at(optimizer_tensor);
                },
                [&](loss_tensor_t const &loss_tensor) {
-                 this->loss_tensor_lowering_mapping.at(loss_tensor);
+                 return this->loss_tensor_lowering_mapping.at(loss_tensor);
                },
                [&](auto const &any_tensor) {
                  throw mk_runtime_error(
@@ -108,18 +112,18 @@ GenericTensorAccessorW
 
 UnallocatedTensors
     generate_unallocated_tensors(AllocatedTensors const &allocated_tensors,
-                                 ComputationGraph const &computation_graph,
+                                std::unordered_map<tensor_guid_t, TensorAttrs> const &tensor_attrs_mapping,
                                  GradientTensorSource &gradient_tensor_source) {
-  assert(are_allocated_forward_tensors_valid(allocated_tensors,
-                                             computation_graph));
-  assert(are_allocated_gradient_tensors_valid(allocated_tensors,
-                                              computation_graph));
+
+  assert(are_allocated_tensors_valid(
+      allocated_tensors, tensor_attrs_mapping));
 
   std::unordered_map<TensorTypeVariant, TensorShape> tensor_type_shapes;
   std::unordered_map<tensor_guid_t, gradient_tensor_t> gradient_mapping;
 
-  for (tensor_guid_t const &tensor_guid : get_all_tensors(computation_graph)) {
-    TensorAttrs tensor_attrs = get_tensor_attrs(computation_graph, tensor_guid);
+  for (std::pair<tensor_guid_t, TensorAttrs> const &tensor_guid_attrs : tensor_attrs_mapping) {
+    tensor_guid_t tensor_guid = tensor_guid_attrs.first;
+    TensorAttrs tensor_attrs = tensor_guid_attrs.second;
     TensorTypeVariant tensor_guid_type = TensorTypeVariant{tensor_guid};
     if (!allocated_tensors.tensor_type_backings.count(tensor_guid_type)) {
       tensor_type_shapes.insert({tensor_guid_type, tensor_attrs.shape});
@@ -140,15 +144,17 @@ UnallocatedTensors
 
 UnallocatedTensors generate_unallocated_tensors_with_optimizer(
     AllocatedTensors const &allocated_tensors,
-    ComputationGraph const &computation_graph,
+    std::unordered_map<tensor_guid_t, TensorAttrs> const &tensor_attrs_mapping,
     GradientTensorSource &gradient_tensor_source,
     OptimizerTensorSource &optimizer_tensor_source,
     OptimizerAttrs const &optimizer_attrs) {
 
   UnallocatedTensors unallocated_tensors = generate_unallocated_tensors(
-      allocated_tensors, computation_graph, gradient_tensor_source);
-  assert(are_allocated_optimizer_tensors_valid(allocated_tensors,
-                                               computation_graph));
+      allocated_tensors, tensor_attrs_mapping, gradient_tensor_source);
+  
+  if (!get_num_optimizer_tensors(optimizer_attrs)) {
+    return unallocated_tensors;
+  }
 
   std::unordered_map<TensorTypeVariant, TensorShape> tensor_type_shapes =
       unallocated_tensors.tensor_type_shapes;
@@ -157,8 +163,9 @@ UnallocatedTensors generate_unallocated_tensors_with_optimizer(
   std::unordered_map<tensor_guid_t, std::vector<optimizer_tensor_t>>
       optimizer_mapping;
 
-  for (tensor_guid_t const &tensor_guid : get_all_tensors(computation_graph)) {
-    TensorAttrs tensor_attrs = get_tensor_attrs(computation_graph, tensor_guid);
+  for (std::pair<tensor_guid_t, TensorAttrs> const &tensor_guid_attrs : tensor_attrs_mapping) {
+    tensor_guid_t tensor_guid = tensor_guid_attrs.first;
+    TensorAttrs tensor_attrs = tensor_guid_attrs.second;
     if (tensor_attrs.create_gradients == CreateGrad::YES &&
         !allocated_tensors.optimizer_mapping.count(tensor_guid)) {
       std::vector<optimizer_tensor_t> optimizer_tensors;

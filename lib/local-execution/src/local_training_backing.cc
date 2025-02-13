@@ -24,7 +24,7 @@ LocalTrainingBacking::LocalTrainingBacking(
       local_tensor_backing(
           allocated_tensors,
           generate_unallocated_tensors(allocated_tensors,
-                                       computation_graph,
+                                       get_all_tensor_attrs(this->computation_graph),
                                        this->gradient_tensor_source),
           allocator),
       local_args_backing(initialize_args_backing(this->task_registry,
@@ -43,7 +43,7 @@ LocalTrainingBacking::LocalTrainingBacking(
       local_tensor_backing(allocated_tensors,
                            generate_unallocated_tensors_with_optimizer(
                                allocated_tensors,
-                               computation_graph,
+                               get_all_tensor_attrs(this->computation_graph),
                                this->gradient_tensor_source,
                                this->optimizer_tensor_source,
                                optimizer_attrs),

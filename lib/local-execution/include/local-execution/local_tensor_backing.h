@@ -54,12 +54,12 @@ private:
 };
 
 UnallocatedTensors generate_unallocated_tensors(AllocatedTensors const &,
-                                                ComputationGraph const &,
+                                                std::unordered_map<tensor_guid_t, TensorAttrs> const &,
                                                 GradientTensorSource &);
 
 UnallocatedTensors
     generate_unallocated_tensors_with_optimizer(AllocatedTensors const &,
-                                                ComputationGraph const &,
+                                                std::unordered_map<tensor_guid_t, TensorAttrs> const &,
                                                 GradientTensorSource &,
                                                 OptimizerTensorSource &,
                                                 OptimizerAttrs const &);

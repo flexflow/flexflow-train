@@ -6,12 +6,17 @@
 
 namespace FlexFlow {
 
-bool are_allocated_forward_tensors_valid(AllocatedTensors const &,
-                                         ComputationGraph const &);
-bool are_allocated_gradient_tensors_valid(AllocatedTensors const &,
-                                          ComputationGraph const &);
-bool are_allocated_optimizer_tensors_valid(AllocatedTensors const &,
-                                           ComputationGraph const &);
+bool are_allocated_forward_tensors_valid(
+    AllocatedTensors const &,
+    std::unordered_map<tensor_guid_t, TensorAttrs> const &);
+bool are_allocated_gradient_tensors_valid(
+    AllocatedTensors const &,
+    std::unordered_map<tensor_guid_t, TensorAttrs> const &);
+bool are_allocated_optimizer_tensors_valid(
+    AllocatedTensors const &,
+    std::unordered_map<tensor_guid_t, TensorAttrs> const &);
+
+bool are_allocated_tensors_valid(AllocatedTensors const &, std::unordered_map<tensor_guid_t, TensorAttrs> const &);
 
 bool is_allocated_tensor_backing_valid(
     TensorTypeVariant const &,

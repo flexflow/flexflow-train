@@ -89,19 +89,13 @@ CostDetails LocalCostEstimator::estimate_cost(
 
   LocalTrainingBacking local_backing(
       allocator,
+      AllocatedTensors{{}, {}, {}},
       computation_graph,
-      LocalTensorBacking{},
-      LocalArgsBacking{this->runtime_arg_config});
-
-  allocate_all_computation_graph_tensors(local_backing.local_tensor_backing,
-                                         local_backing.gradient_tensor_source,
-                                         local_backing.computation_graph,
-                                         local_backing.allocator);
+      this->runtime_arg_config);
 
   // execute layer
   layer_guid_t operator_layer_guid =
       get_layer_by_name(computation_graph, "operator");
-  execute_init(local_backing, operator_layer_guid);
   float fwd = execute_forward(local_backing, operator_layer_guid).value();
   float bwd = execute_backward(local_backing, operator_layer_guid).value();
 

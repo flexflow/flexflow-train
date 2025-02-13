@@ -4,7 +4,6 @@ features = [
   "eq",
   "fmt",
   "hash",
-  "ord"
 ]
 
 includes = [
@@ -14,7 +13,9 @@ includes = [
 
 src_includes = [
   "utils/hash/unordered_map.h",
-  "utils/fmt/unordered_map.h"
+  "utils/fmt/unordered_map.h",
+  "utils/hash/vector.h",
+  "utils/fmt/vector.h"
 ]
 
 [[fields]]

@@ -135,6 +135,16 @@ std::unordered_set<tensor_guid_t> get_all_tensors(ComputationGraph const &cg) {
                    [](DataflowOutput const &t) { return tensor_guid_t(t); });
 }
 
+std::unordered_map<tensor_guid_t, TensorAttrs>
+    get_all_tensor_attrs(ComputationGraph const &cg) {
+  std::unordered_set<tensor_guid_t> all_tensors = get_all_tensors(cg);
+  std::unordered_map<tensor_guid_t, TensorAttrs> all_tensor_attrs;
+  for (tensor_guid_t const &tensor_guid : all_tensors) {
+    all_tensor_attrs.insert({tensor_guid, get_tensor_attrs(cg, tensor_guid)});
+  }
+  return all_tensor_attrs;
+}
+
 std::unordered_set<ComputationGraphEdge> get_subgraph_incoming_edges(
     ComputationGraph const &cg,
     std::unordered_set<layer_guid_t> const &subgraph_nodes) {

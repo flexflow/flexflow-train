@@ -128,3 +128,14 @@ std::ostream &operator<<(std::ostream &s, ArrayShape const &x) {
 }
 
 } // namespace FlexFlow
+
+namespace std {
+size_t hash<FlexFlow::ArrayShape>::operator()(
+    ::FlexFlow::ArrayShape const &x) const {
+  size_t result = 0;
+  result ^= std::hash<::FlexFlow::LegionOrdered<::FlexFlow::nonnegative_int>>{}(
+                x.dims) +
+            0x9e3779b9 + (result << 6) + (result >> 2);
+  return result;
+}
+} // namespace std

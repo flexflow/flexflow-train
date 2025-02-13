@@ -5,6 +5,16 @@
 
 namespace FlexFlow {
 
+struct MockTensorGuidSource {
+public:
+  MockTensorGuidSource();
+
+  tensor_guid_t new_mock_tensor_guid();
+
+private:
+  static size_t next_available_mock_tensor_guid;
+};
+
 PerDeviceFFHandle get_mock_per_device_ff_handle();
 
 } // namespace FlexFlow

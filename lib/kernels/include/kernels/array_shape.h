@@ -69,4 +69,11 @@ std::ostream &operator<<(std::ostream &, ArrayShape const &);
 
 } // namespace FlexFlow
 
+namespace std {
+template <>
+struct hash<::FlexFlow::ArrayShape> {
+  size_t operator()(::FlexFlow::ArrayShape const &) const;
+};
+} // namespace std
+
 #endif

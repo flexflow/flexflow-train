@@ -2,7 +2,9 @@ ff_add_test_executable(
   NAME
     local-execution-tests
   SRC_PATTERNS
-    src/*.cc
+    src/test_allocated_tensors.cc
+    src/test_unallocated_tensors.cc
+    src/test_utils.cc
   PRIVATE_INCLUDE 
     src/
   DEPS
