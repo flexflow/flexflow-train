@@ -19,10 +19,10 @@ ConcreteArgSpec const &
 }
 
 GenericTensorAccessor LocalTaskArgumentAccessor::get_tensor(
-    slot_id_t slot, Permissions priv, IsGrad is_grad) const {
-  SlotGradId slot_grad_pair = SlotGradId{slot, is_grad};
+    slot_id_t slot, Permissions priv, TensorType tensor_type) const {
+  SlotTensorTypeId slot_tensor_type = SlotTensorTypeId{slot, tensor_type};
   auto tensor_backing = std::get<GenericTensorAccessorW>(
-      this->tensor_slots_backing.at(slot_grad_pair));
+      this->tensor_slots_backing.at(slot_tensor_type));
   if (priv == Permissions::RO) {
     GenericTensorAccessorR readonly_tensor_backing = {
         tensor_backing.data_type, tensor_backing.shape, tensor_backing.ptr};
@@ -34,10 +34,10 @@ GenericTensorAccessor LocalTaskArgumentAccessor::get_tensor(
   }
 }
 VariadicGenericTensorAccessor LocalTaskArgumentAccessor::get_variadic_tensor(
-    slot_id_t slot, Permissions priv, IsGrad is_grad) const {
-  SlotGradId slot_grad_pair = SlotGradId{slot, is_grad};
+    slot_id_t slot, Permissions priv, TensorType tensor_type) const {
+  SlotTensorTypeId slot_tensor_type = SlotTensorTypeId{slot, tensor_type};
   auto variadic_tensor_backing = std::get<std::vector<GenericTensorAccessorW>>(
-      this->tensor_slots_backing.at(slot_grad_pair));
+      this->tensor_slots_backing.at(slot_tensor_type));
   if (priv == Permissions::RO) {
     std::vector<GenericTensorAccessorR> readonly_variadic_tensor_backing = {};
     for (GenericTensorAccessorW const &tensor_backing :
