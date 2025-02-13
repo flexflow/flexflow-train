@@ -24,14 +24,11 @@ bool are_allocated_forward_tensors_valid(
     AllocatedTensors const &allocated_tensors,
     std::unordered_map<tensor_guid_t, TensorAttrs> const &tensor_attrs) {
 
-  std::unordered_set<tensor_guid_t> all_tensor_guids =
-      transform(
-          keys(filter_keys(allocated_tensors.tensor_type_backings,
-                           [&](TensorTypeVariant const &k) {
-                             return k.has<tensor_guid_t>();
-                           })),
-          [&](TensorTypeVariant const &t) { return t.get<tensor_guid_t>(); }
-    );
+  std::unordered_set<tensor_guid_t> all_tensor_guids = transform(
+      keys(filter_keys(
+          allocated_tensors.tensor_type_backings,
+          [&](TensorTypeVariant const &k) { return k.has<tensor_guid_t>(); })),
+      [&](TensorTypeVariant const &t) { return t.get<tensor_guid_t>(); });
 
   for (tensor_guid_t const &tensor_guid : all_tensor_guids) {
     if (tensor_attrs.count(tensor_guid)) {
@@ -62,7 +59,8 @@ bool are_allocated_gradient_tensors_valid(
         return false;
       }
 
-      ArrayShape tensor_guid_array_shape = ArrayShape{tensor_attrs.at(tensor_to_grad.first).shape};
+      ArrayShape tensor_guid_array_shape =
+          ArrayShape{tensor_attrs.at(tensor_to_grad.first).shape};
       TensorTypeVariant gradient_tensor =
           TensorTypeVariant{tensor_to_grad.second};
       if (is_allocated_tensor_backing_valid(
@@ -103,7 +101,8 @@ bool are_allocated_optimizer_tensors_valid(
         return false;
       }
 
-      ArrayShape tensor_guid_array_shape = ArrayShape{tensor_attrs.at(tensor_to_optimizers.first).shape};
+      ArrayShape tensor_guid_array_shape =
+          ArrayShape{tensor_attrs.at(tensor_to_optimizers.first).shape};
       for (optimizer_tensor_t const &optimizer_tensor :
            tensor_to_optimizers.second) {
         if (is_allocated_tensor_backing_valid(
@@ -130,10 +129,13 @@ bool are_allocated_optimizer_tensors_valid(
   return true;
 }
 
-bool are_allocated_tensors_valid(AllocatedTensors const & allocated_tensors, std::unordered_map<tensor_guid_t, TensorAttrs> const & tensor_attrs) {
-  return are_allocated_forward_tensors_valid(allocated_tensors, tensor_attrs) 
-    && are_allocated_gradient_tensors_valid(allocated_tensors, tensor_attrs)
-    && are_allocated_optimizer_tensors_valid(allocated_tensors, tensor_attrs);
+bool are_allocated_tensors_valid(
+    AllocatedTensors const &allocated_tensors,
+    std::unordered_map<tensor_guid_t, TensorAttrs> const &tensor_attrs) {
+  return are_allocated_forward_tensors_valid(allocated_tensors, tensor_attrs) &&
+         are_allocated_gradient_tensors_valid(allocated_tensors,
+                                              tensor_attrs) &&
+         are_allocated_optimizer_tensors_valid(allocated_tensors, tensor_attrs);
 }
 
 } // namespace FlexFlow

@@ -87,11 +87,10 @@ CostDetails LocalCostEstimator::estimate_cost(
       std::make_shared<TrackedAllocator>(create_local_cuda_memory_allocator());
   Allocator allocator = Allocator(tracked_allocator_ptr);
 
-  LocalTrainingBacking local_backing(
-      allocator,
-      AllocatedTensors{{}, {}, {}},
-      computation_graph,
-      this->runtime_arg_config);
+  LocalTrainingBacking local_backing(allocator,
+                                     AllocatedTensors{{}, {}, {}},
+                                     computation_graph,
+                                     this->runtime_arg_config);
 
   // execute layer
   layer_guid_t operator_layer_guid =

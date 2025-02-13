@@ -53,16 +53,17 @@ private:
   LoweredTensorSource lowered_tensor_source;
 };
 
-UnallocatedTensors generate_unallocated_tensors(AllocatedTensors const &,
-                                                std::unordered_map<tensor_guid_t, TensorAttrs> const &,
-                                                GradientTensorSource &);
+UnallocatedTensors generate_unallocated_tensors(
+    AllocatedTensors const &,
+    std::unordered_map<tensor_guid_t, TensorAttrs> const &,
+    GradientTensorSource &);
 
-UnallocatedTensors
-    generate_unallocated_tensors_with_optimizer(AllocatedTensors const &,
-                                                std::unordered_map<tensor_guid_t, TensorAttrs> const &,
-                                                GradientTensorSource &,
-                                                OptimizerTensorSource &,
-                                                OptimizerAttrs const &);
+UnallocatedTensors generate_unallocated_tensors_with_optimizer(
+    AllocatedTensors const &,
+    std::unordered_map<tensor_guid_t, TensorAttrs> const &,
+    GradientTensorSource &,
+    OptimizerTensorSource &,
+    OptimizerAttrs const &);
 
 TensorSlotsBacking construct_tensor_slots_backing(LocalTensorBacking const &,
                                                   TaskBinding const &);

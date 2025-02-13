@@ -21,12 +21,12 @@ LocalTrainingBacking::LocalTrainingBacking(
     RuntimeArgConfig const &runtime_arg_config)
     : computation_graph(computation_graph),
       task_registry(construct_task_registry(computation_graph)),
-      local_tensor_backing(
-          allocated_tensors,
-          generate_unallocated_tensors(allocated_tensors,
-                                       get_all_tensor_attrs(this->computation_graph),
-                                       this->gradient_tensor_source),
-          allocator),
+      local_tensor_backing(allocated_tensors,
+                           generate_unallocated_tensors(
+                               allocated_tensors,
+                               get_all_tensor_attrs(this->computation_graph),
+                               this->gradient_tensor_source),
+                           allocator),
       local_args_backing(initialize_args_backing(this->task_registry,
                                                  this->computation_graph,
                                                  runtime_arg_config,
