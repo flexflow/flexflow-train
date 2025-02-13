@@ -84,6 +84,13 @@ std::vector<tensor_guid_t> get_incoming_tensors(ComputationGraph const &cg,
                    [](DataflowOutput const &o) { return tensor_guid_t{o}; });
 }
 
+std::vector<TensorShape> get_incoming_input_shapes(ComputationGraph const &cg,
+                                                   layer_guid_t n) {
+  return transform(get_incoming_inputs(cg, n), [&](tensor_guid_t const &t) {
+    return get_tensor_attrs(cg, t).shape;
+  });
+}
+
 static std::vector<tensor_guid_t>
     get_incoming_tensors_with_role(ComputationGraph const &cg,
                                    layer_guid_t const &l,
