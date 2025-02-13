@@ -30,7 +30,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     TensorAttrs tensor_attrs_1_no_grad = TensorAttrs{
       TensorShape{
         TensorDims{
-          FFOrdered<nonnegative_int>{16, 10}
+          FFOrdered<nonnegative_int>{16_n, 10_n}
         },
         DataType::FLOAT
       },
@@ -41,7 +41,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     TensorAttrs tensor_attrs_2_no_grad = TensorAttrs{
       TensorShape{
         TensorDims{
-          FFOrdered<nonnegative_int>{16, 20}
+          FFOrdered<nonnegative_int>{16_n, 20_n}
         },
         DataType::FLOAT
       },
@@ -52,7 +52,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     TensorAttrs tensor_attrs_3_with_grad = TensorAttrs{
       TensorShape{
         TensorDims{
-          FFOrdered<nonnegative_int>{16, 30}
+          FFOrdered<nonnegative_int>{16_n, 30_n}
         },
         DataType::FLOAT
       },

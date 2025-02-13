@@ -2,6 +2,7 @@
 #define _FLEXFLOW_LOCAL_EXECUTION_TEST_UTILS
 
 #include "kernels/ff_handle.h"
+#include "pcg/tensor_guid_t.dtg.h"
 
 namespace FlexFlow {
 

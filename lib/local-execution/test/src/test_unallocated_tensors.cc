@@ -28,7 +28,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     TensorAttrs tensor_attrs_1_no_grad = TensorAttrs{
       TensorShape{
         TensorDims{
-          FFOrdered<nonnegative_int>{16, 10}
+          FFOrdered<nonnegative_int>{16_n, 10_n}
         },
         DataType::FLOAT
       },
@@ -39,7 +39,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     TensorAttrs tensor_attrs_2_no_grad = TensorAttrs{
       TensorShape{
         TensorDims{
-          FFOrdered<nonnegative_int>{16, 20}
+          FFOrdered<nonnegative_int>{16_n, 20_n}
         },
         DataType::FLOAT
       },
@@ -50,7 +50,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     TensorAttrs tensor_attrs_3_with_grad = TensorAttrs{
       TensorShape{
         TensorDims{
-          FFOrdered<nonnegative_int>{16, 30}
+          FFOrdered<nonnegative_int>{16_n, 30_n}
         },
         DataType::FLOAT
       },
@@ -359,9 +359,6 @@ TEST_SUITE(FF_TEST_SUITE) {
             
           GradientTensorSource mock_gradient_tensor_source;
           gradient_tensor_t grad_tensor = mock_gradient_tensor_source.new_gradient_tensor();
-          OptimizerTensorSource mock_optimizer_tensour_source;
-          optimizer_tensor_source.new_optimizer_tensor();
-          optimizer_tensor_t optimizer_tensor_2 = optimizer_tensour_source.new_optimizer_tensor();
           
           std::unordered_map<TensorTypeVariant, TensorShape> correct_tensor_type_shapes = {
             {TensorTypeVariant{mock_tensor_1}, tensor_attrs_1_no_grad.shape},
