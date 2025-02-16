@@ -84,6 +84,13 @@ std::vector<tensor_guid_t> get_incoming_tensors(ComputationGraph const &cg,
                    [](DataflowOutput const &o) { return tensor_guid_t{o}; });
 }
 
+std::vector<TensorShape> get_incoming_input_shapes(ComputationGraph const &cg,
+                                                   layer_guid_t const &n) {
+  return transform(get_incoming_inputs(cg, n), [&](tensor_guid_t const &t) {
+    return get_tensor_attrs(cg, t).shape;
+  });
+}
+
 static std::vector<tensor_guid_t>
     get_incoming_tensors_with_role(ComputationGraph const &cg,
                                    layer_guid_t const &l,
@@ -126,6 +133,16 @@ std::vector<tensor_guid_t> get_incoming_weights(ComputationGraph const &cg,
 std::unordered_set<tensor_guid_t> get_all_tensors(ComputationGraph const &cg) {
   return transform(get_all_dataflow_outputs(cg.raw_graph),
                    [](DataflowOutput const &t) { return tensor_guid_t(t); });
+}
+
+std::unordered_map<tensor_guid_t, TensorAttrs>
+    get_all_tensor_attrs(ComputationGraph const &cg) {
+  std::unordered_set<tensor_guid_t> all_tensors = get_all_tensors(cg);
+  std::unordered_map<tensor_guid_t, TensorAttrs> all_tensor_attrs;
+  for (tensor_guid_t const &tensor_guid : all_tensors) {
+    all_tensor_attrs.insert({tensor_guid, get_tensor_attrs(cg, tensor_guid)});
+  }
+  return all_tensor_attrs;
 }
 
 std::unordered_set<ComputationGraphEdge> get_subgraph_incoming_edges(
@@ -171,6 +188,15 @@ std::unordered_set<layer_guid_t> get_subgraph_successors(
 
 LayerAttrs get_layer_attrs(ComputationGraph const &cg, layer_guid_t const &n) {
   return cg.raw_graph.at(n.raw_node);
+}
+
+std::unordered_map<layer_guid_t, LayerAttrs>
+    get_layer_attrs_mapping(ComputationGraph const &cg) {
+  std::unordered_map<layer_guid_t, LayerAttrs> layer_attrs_mapping;
+  for (layer_guid_t const &layer_guid : get_layers(cg)) {
+    layer_attrs_mapping.insert({layer_guid, get_layer_attrs(cg, layer_guid)});
+  }
+  return layer_attrs_mapping;
 }
 
 layer_guid_t get_layer_by_name(ComputationGraph const &cg,

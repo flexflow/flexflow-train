@@ -34,10 +34,16 @@ std::vector<tensor_guid_t> get_incoming_tensors(ComputationGraph const &cg,
 
 std::vector<tensor_guid_t> get_incoming_inputs(ComputationGraph const &,
                                                layer_guid_t const &);
+
+std::vector<TensorShape> get_incoming_input_shapes(ComputationGraph const &,
+                                                   layer_guid_t const &);
+
 std::vector<tensor_guid_t> get_incoming_weights(ComputationGraph const &,
                                                 layer_guid_t const &);
 
 std::unordered_set<tensor_guid_t> get_all_tensors(ComputationGraph const &);
+std::unordered_map<tensor_guid_t, TensorAttrs>
+    get_all_tensor_attrs(ComputationGraph const &);
 
 std::unordered_set<ComputationGraphEdge>
     get_subgraph_incoming_edges(ComputationGraph const &,
@@ -50,6 +56,9 @@ std::unordered_set<layer_guid_t>
                             std::unordered_set<layer_guid_t> const &);
 
 LayerAttrs get_layer_attrs(ComputationGraph const &cg, layer_guid_t const &n);
+
+std::unordered_map<layer_guid_t, LayerAttrs>
+    get_layer_attrs_mapping(ComputationGraph const &cg);
 
 layer_guid_t get_layer_by_name(ComputationGraph const &cg,
                                std::string const &name);

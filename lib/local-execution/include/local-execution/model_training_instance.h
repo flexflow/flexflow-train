@@ -14,24 +14,19 @@ using PerLayerElapsedTime =
 struct ModelTrainingInstance {
   ModelTrainingInstance(LocalTrainingBacking const &,
                         tensor_guid_t const &logit_tensor,
-                        TensorShape const &label_tensor_shape,
+                        loss_tensor_t const &label_tensor,
                         LossAttrs const &,
                         OptimizerAttrs const &);
 
   LocalTrainingBacking training_backing;
-  LossAttrs loss_attrs;
-  OptimizerAttrs optimizer_attrs;
   tensor_guid_t logit_tensor;
   loss_tensor_t label_tensor;
-
-private:
-  OptimizerTensorSource optimizer_tensor_source;
-  LossTensorSource loss_tensor_source;
+  LossAttrs loss_attrs;
+  OptimizerAttrs optimizer_attrs;
 };
 
-void init(ModelTrainingInstance &);
-PerLayerElapsedTime forward(ModelTrainingInstance &);
-PerLayerElapsedTime backward(ModelTrainingInstance &);
+PerLayerElapsedTime forward(ModelTrainingInstance const &);
+PerLayerElapsedTime backward(ModelTrainingInstance const &);
 void update(ModelTrainingInstance &);
 
 } // namespace FlexFlow

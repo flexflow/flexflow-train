@@ -11,6 +11,8 @@ public:
 
   gradient_tensor_t new_gradient_tensor();
 
+  void reset();
+
 private:
   static size_t next_available_gradient_tensor_id;
 };

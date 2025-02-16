@@ -12,18 +12,19 @@
 namespace FlexFlow {
 
 struct LocalArgsBacking {
-  LocalArgsBacking(RuntimeArgConfig const &);
+  LocalArgsBacking(
+      RuntimeArgConfig const &,
+      std::unordered_map<layer_guid_t, DeviceSpecificDeviceStates> const &);
 
 public:
   // arguments
+  RuntimeArgConfig runtime_arg_config;
   std::unordered_map<layer_guid_t, DeviceSpecificDeviceStates>
       per_device_op_states;
-  RuntimeArgConfig runtime_arg_config;
 };
 
-void add_per_device_op_state(LocalArgsBacking &,
-                             layer_guid_t const &,
-                             DeviceSpecificDeviceStates const &);
+LocalArgsBacking
+    make_args_backing_with_empty_device_states(RuntimeArgConfig const &);
 
 std::optional<DeviceSpecificDeviceStates>
     get_per_device_op_state_if_exists(LocalArgsBacking const &,

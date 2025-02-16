@@ -2,11 +2,10 @@
 #include "local-execution/loss_functions.h"
 #include "local-execution/optimizer.h"
 #include "local-execution/task_signature_impl.h"
-#include "task-spec/op_task_to_task_invocation.h"
-#include "task-spec/task_invocation.h"
-
 #include "pcg/computation_graph.h"
 #include "pcg/optimizer_attrs.h"
+#include "task-spec/op_task_to_task_invocation.h"
+#include "task-spec/task_invocation.h"
 #include "utils/containers/contains.h"
 #include "utils/containers/contains_key.h"
 #include "utils/containers/get_only.h"
@@ -17,69 +16,93 @@ namespace FlexFlow {
 
 LocalTrainingBacking::LocalTrainingBacking(
     Allocator const &allocator,
+    AllocatedTensors const &allocated_tensors,
     ComputationGraph const &computation_graph,
-    LocalTensorBacking const &local_tensor_backing,
-    LocalArgsBacking const &local_args_backing)
-    : allocator(allocator), computation_graph(computation_graph),
-      task_registry(empty_task_registry()),
-      local_tensor_backing(local_tensor_backing),
-      local_args_backing(local_args_backing) {
-  allocate_all_computation_graph_tensors(this->local_tensor_backing,
-                                         this->gradient_tensor_source,
-                                         this->computation_graph,
-                                         this->allocator);
-  register_all_computation_graph_tasks(this->task_registry,
-                                       this->computation_graph);
-}
+    RuntimeArgConfig const &runtime_arg_config)
+    : computation_graph(computation_graph),
+      task_registry(construct_task_registry(
+          get_layer_attrs_mapping(this->computation_graph))),
+      local_tensor_backing(allocated_tensors,
+                           generate_unallocated_tensors(
+                               allocated_tensors,
+                               get_all_tensor_attrs(this->computation_graph),
+                               this->gradient_tensor_source),
+                           allocator),
+      local_args_backing(initialize_args_backing(this->task_registry,
+                                                 this->computation_graph,
+                                                 runtime_arg_config,
+                                                 this->local_tensor_backing)){};
 
-DeviceSpecificDeviceStates
-    call_init_task_impl(TaskRegistry const &task_registry,
-                        task_id_t task_id,
-                        TaskArgumentAccessor const &acc) {
-  TaskSignatureAndImpl task_sig_impl = task_registry.task_mapping.at(task_id);
-  auto fn =
-      task_sig_impl.impl_function.get<InitOpTaskImplFunction>().function_ptr;
-  return fn(acc);
+LocalTrainingBacking::LocalTrainingBacking(
+    Allocator const &allocator,
+    AllocatedTensors const &allocated_tensors,
+    ComputationGraph const &computation_graph,
+    RuntimeArgConfig const &runtime_arg_config,
+    OptimizerAttrs const &optimizer_attrs)
+    : computation_graph(computation_graph),
+      task_registry(construct_task_registry(
+          get_layer_attrs_mapping(this->computation_graph))),
+      local_tensor_backing(allocated_tensors,
+                           generate_unallocated_tensors_with_optimizer(
+                               allocated_tensors,
+                               get_all_tensor_attrs(this->computation_graph),
+                               this->gradient_tensor_source,
+                               this->optimizer_tensor_source,
+                               optimizer_attrs),
+                           allocator),
+      local_args_backing(initialize_args_backing(this->task_registry,
+                                                 this->computation_graph,
+                                                 runtime_arg_config,
+                                                 this->local_tensor_backing)){};
+
+LocalArgsBacking
+    initialize_args_backing(TaskRegistry const &task_registry,
+                            ComputationGraph const &cg,
+                            RuntimeArgConfig const &runtime_arg_config,
+                            LocalTensorBacking const &local_tensor_backing) {
+  std::unordered_map<layer_guid_t, DeviceSpecificDeviceStates>
+      per_device_op_states;
+  for (layer_guid_t const &node : topological_ordering(cg)) {
+    if (registry_contains_task_for_layer(
+            task_registry, node, OpTaskType::INIT)) {
+      ComputationGraphOpAttrs attrs = get_layer_attrs(cg, node).attrs;
+
+      TaskInvocation invocation =
+          lower_to_task_invocation(init(attrs),
+                                   node,
+                                   get_incoming_inputs(cg, node),
+                                   get_incoming_input_shapes(cg, node),
+                                   get_outgoing_tensors(cg, node),
+                                   get_incoming_weights(cg, node),
+                                   local_tensor_backing.tensor_gradient_mapping,
+                                   std::nullopt);
+      TaskArgumentAccessor accessor = get_task_arg_accessor(
+          local_tensor_backing,
+          make_args_backing_with_empty_device_states(runtime_arg_config),
+          invocation);
+      TaskSignatureAndImpl task_sig_impl =
+          task_registry.task_mapping.at(invocation.task_id);
+      auto fn = task_sig_impl.impl_function.get<InitOpTaskImplFunction>()
+                    .function_ptr;
+      DeviceSpecificDeviceStates device_state = fn(accessor);
+      per_device_op_states.insert({node, device_state});
+    }
+  }
+
+  return LocalArgsBacking{runtime_arg_config, per_device_op_states};
 }
 
 std::optional<float> call_task_impl(TaskRegistry const &task_registry,
-                                    task_id_t task_id,
-                                    TaskArgumentAccessor acc) {
+                                    task_id_t const &task_id,
+                                    TaskArgumentAccessor const &acc) {
   TaskSignatureAndImpl task_sig_impl = task_registry.task_mapping.at(task_id);
   auto fn =
       task_sig_impl.impl_function.get<FwdBwdOpTaskImplFunction>().function_ptr;
   return fn(acc);
 }
 
-void execute_init(LocalTrainingBacking &local_training_backing,
-                  layer_guid_t const &operator_node) {
-  if (registry_contains_task_for_layer(local_training_backing.task_registry,
-                                       operator_node,
-                                       OpTaskType::INIT)) {
-    ComputationGraphOpAttrs attrs =
-        get_layer_attrs(local_training_backing.computation_graph, operator_node)
-            .attrs;
-
-    TaskInvocation invocation = lower_to_task_invocation(
-        init(attrs),
-        operator_node,
-        local_training_backing.computation_graph,
-        local_training_backing.local_tensor_backing.tensor_gradient_mapping,
-        std::nullopt);
-    TaskArgumentAccessor accessor =
-        get_task_arg_accessor(local_training_backing.local_tensor_backing,
-                              local_training_backing.local_args_backing,
-                              invocation,
-                              local_training_backing.allocator);
-    DeviceSpecificDeviceStates device_state = call_init_task_impl(
-        local_training_backing.task_registry, invocation.task_id, accessor);
-    add_per_device_op_state(
-        local_training_backing.local_args_backing, operator_node, device_state);
-  }
-}
-
 std::optional<float>
-    execute_forward(LocalTrainingBacking &local_training_backing,
+    execute_forward(LocalTrainingBacking const &local_training_backing,
                     layer_guid_t const &operator_node) {
   if (registry_contains_task_for_layer(local_training_backing.task_registry,
                                        operator_node,
@@ -94,14 +117,20 @@ std::optional<float>
     TaskInvocation invocation = lower_to_task_invocation(
         forward(attrs),
         operator_node,
-        local_training_backing.computation_graph,
+        get_incoming_inputs(local_training_backing.computation_graph,
+                            operator_node),
+        get_incoming_input_shapes(local_training_backing.computation_graph,
+                                  operator_node),
+        get_outgoing_tensors(local_training_backing.computation_graph,
+                             operator_node),
+        get_incoming_weights(local_training_backing.computation_graph,
+                             operator_node),
         local_training_backing.local_tensor_backing.tensor_gradient_mapping,
         device_state);
     TaskArgumentAccessor accessor =
         get_task_arg_accessor(local_training_backing.local_tensor_backing,
                               local_training_backing.local_args_backing,
-                              invocation,
-                              local_training_backing.allocator);
+                              invocation);
     return call_task_impl(
         local_training_backing.task_registry, invocation.task_id, accessor);
   } else {
@@ -109,7 +138,7 @@ std::optional<float>
   }
 }
 
-void compute_loss(LocalTrainingBacking &local_training_backing,
+void compute_loss(LocalTrainingBacking const &local_training_backing,
                   LossAttrs const &loss_attrs,
                   tensor_guid_t const &logit_tensor,
                   loss_tensor_t const &label_tensor) {
@@ -124,14 +153,13 @@ void compute_loss(LocalTrainingBacking &local_training_backing,
   TaskArgumentAccessor loss_accessor =
       get_task_arg_accessor(local_training_backing.local_tensor_backing,
                             local_training_backing.local_args_backing,
-                            loss_invocation,
-                            local_training_backing.allocator);
+                            loss_invocation);
   TaskImplFunction loss_impl_fn = get_loss_bwd_task_impl();
   loss_impl_fn.get<GenericTaskImplFunction>().function_ptr(loss_accessor);
 }
 
 std::optional<float>
-    execute_backward(LocalTrainingBacking &local_training_backing,
+    execute_backward(LocalTrainingBacking const &local_training_backing,
                      layer_guid_t const &operator_node) {
   if (registry_contains_task_for_layer(local_training_backing.task_registry,
                                        operator_node,
@@ -146,14 +174,20 @@ std::optional<float>
     TaskInvocation invocation = lower_to_task_invocation(
         backward(attrs),
         operator_node,
-        local_training_backing.computation_graph,
+        get_incoming_inputs(local_training_backing.computation_graph,
+                            operator_node),
+        get_incoming_input_shapes(local_training_backing.computation_graph,
+                                  operator_node),
+        get_outgoing_tensors(local_training_backing.computation_graph,
+                             operator_node),
+        get_incoming_weights(local_training_backing.computation_graph,
+                             operator_node),
         local_training_backing.local_tensor_backing.tensor_gradient_mapping,
         device_state);
     TaskArgumentAccessor accessor =
         get_task_arg_accessor(local_training_backing.local_tensor_backing,
                               local_training_backing.local_args_backing,
-                              invocation,
-                              local_training_backing.allocator);
+                              invocation);
     return call_task_impl(
         local_training_backing.task_registry, invocation.task_id, accessor);
   } else {
@@ -161,7 +195,7 @@ std::optional<float>
   }
 }
 
-void execute_update(LocalTrainingBacking &local_training_backing,
+void execute_update(LocalTrainingBacking const &local_training_backing,
                     layer_guid_t const &node,
                     OptimizerAttrs const &optimizer_attrs) {
   LayerAttrs layer_attrs =
@@ -191,8 +225,7 @@ void execute_update(LocalTrainingBacking &local_training_backing,
     TaskArgumentAccessor accessor =
         get_task_arg_accessor(local_training_backing.local_tensor_backing,
                               local_training_backing.local_args_backing,
-                              invocation,
-                              local_training_backing.allocator);
+                              invocation);
     TaskImplFunction update_impl_fn = get_update_task_impl(optimizer_attrs);
     update_impl_fn.get<GenericTaskImplFunction>().function_ptr(accessor);
   }
@@ -201,14 +234,13 @@ void execute_update(LocalTrainingBacking &local_training_backing,
 TaskArgumentAccessor
     get_task_arg_accessor(LocalTensorBacking const &local_tensor_backing,
                           LocalArgsBacking const &local_args_backing,
-                          TaskInvocation const &invocation,
-                          Allocator &allocator) {
+                          TaskInvocation const &invocation) {
   TensorSlotsBacking tensor_slots_backing =
       construct_tensor_slots_backing(local_tensor_backing, invocation.binding);
   ArgSlotsBacking arg_slots_backing = construct_arg_slots_backing(
       invocation.binding, local_args_backing.runtime_arg_config);
   return TaskArgumentAccessor::create<LocalTaskArgumentAccessor>(
-      allocator, tensor_slots_backing, arg_slots_backing);
+      local_tensor_backing.allocator, tensor_slots_backing, arg_slots_backing);
 }
 
 } // namespace FlexFlow

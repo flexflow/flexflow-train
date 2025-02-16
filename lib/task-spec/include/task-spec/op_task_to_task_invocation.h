@@ -13,7 +13,10 @@ namespace FlexFlow {
 TaskInvocation lower_to_task_invocation(
     OpTaskInvocation const &,
     layer_guid_t const &,
-    ComputationGraph const &,
+    std::vector<tensor_guid_t> const &input_tensors,
+    std::vector<TensorShape> const &input_tensor_shapes,
+    std::vector<tensor_guid_t> const &output_tensors,
+    std::vector<tensor_guid_t> const &weight_tensors,
     std::unordered_map<tensor_guid_t, gradient_tensor_t> const &,
     std::optional<DeviceSpecificDeviceStates> const &);
 
@@ -22,7 +25,7 @@ ConcreteArgSpec lower_to_concrete_arg_spec(RuntimeArgRefSpec const &,
 
 ConcreteArgSpec lower_to_concrete_arg_spec(
     OpArgRefSpec const &,
-    ComputationGraph const &,
+    std::vector<TensorShape> const &,
     layer_guid_t const &,
     std::optional<DeviceSpecificDeviceStates> const &);
 

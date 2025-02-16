@@ -4,44 +4,52 @@
 
 namespace FlexFlow {
 
-TaskRegistry empty_task_registry() {
-  return TaskRegistry{{}, {}, {}, {}};
-}
+TaskRegistry construct_task_registry(
+    std::unordered_map<layer_guid_t, LayerAttrs> const &layer_attrs_mapping) {
+  std::unordered_map<layer_guid_t, std::optional<task_id_t>> init_task_ids;
+  std::unordered_map<layer_guid_t, std::optional<task_id_t>> fwd_task_ids;
+  std::unordered_map<layer_guid_t, std::optional<task_id_t>> bwd_task_ids;
 
-void register_tasks_for_layer(TaskRegistry &task_registry,
-                              layer_guid_t const &op_id,
-                              ComputationGraphOpAttrs const &attrs) {
-  task_registry.init_task_ids.insert({op_id, std::nullopt});
-  task_registry.forward_task_ids.insert({op_id, std::nullopt});
-  task_registry.backward_task_ids.insert({op_id, std::nullopt});
+  std::unordered_map<task_id_t, TaskSignatureAndImpl> task_mapping;
 
-  // register tasks
-  std::vector<task_id_t> task_ids = get_task_ids(attrs);
-  for (task_id_t task_id : task_ids) {
-    TaskSignatureAndImpl task_signature_impl = get_task_sig_impl(task_id);
-    switch (task_signature_impl.task_signature.type) {
-      case OpTaskType::INIT:
-        assert(is_invocation_valid(task_signature_impl.task_signature,
-                                   init(attrs)));
-        task_registry.init_task_ids[op_id] = task_id;
-        break;
-      case OpTaskType::FWD:
-        assert(is_invocation_valid(task_signature_impl.task_signature,
-                                   forward(attrs)));
-        task_registry.forward_task_ids[op_id] = task_id;
-        break;
-      case OpTaskType::BWD:
-        assert(is_invocation_valid(task_signature_impl.task_signature,
-                                   backward(attrs)));
-        task_registry.backward_task_ids[op_id] = task_id;
-        break;
-      default:
-        throw mk_runtime_error(
-            fmt::format("Invalid OpTaskType, got {}",
-                        task_signature_impl.task_signature.type));
+  for (std::pair<layer_guid_t, LayerAttrs> const &layer_attrs :
+       layer_attrs_mapping) {
+    layer_guid_t node = layer_attrs.first;
+    init_task_ids.insert({node, std::nullopt});
+    fwd_task_ids.insert({node, std::nullopt});
+    bwd_task_ids.insert({node, std::nullopt});
+
+    ComputationGraphOpAttrs attrs = layer_attrs.second.attrs;
+    std::vector<task_id_t> task_ids = get_task_ids(attrs);
+
+    for (task_id_t const &task_id : task_ids) {
+      TaskSignatureAndImpl task_signature_impl = get_task_sig_impl(task_id);
+      switch (task_signature_impl.task_signature.type) {
+        case OpTaskType::INIT:
+          assert(is_invocation_valid(task_signature_impl.task_signature,
+                                     init(attrs)));
+          init_task_ids[node] = task_id;
+          break;
+        case OpTaskType::FWD:
+          assert(is_invocation_valid(task_signature_impl.task_signature,
+                                     forward(attrs)));
+          fwd_task_ids[node] = task_id;
+          break;
+        case OpTaskType::BWD:
+          assert(is_invocation_valid(task_signature_impl.task_signature,
+                                     backward(attrs)));
+          bwd_task_ids[node] = task_id;
+          break;
+        default:
+          throw mk_runtime_error(
+              fmt::format("Invalid OpTaskType, got {}",
+                          task_signature_impl.task_signature.type));
+      }
+      task_mapping.insert({task_id, task_signature_impl});
     }
-    task_registry.task_mapping.insert({task_id, task_signature_impl});
   }
+
+  return TaskRegistry{init_task_ids, fwd_task_ids, bwd_task_ids, task_mapping};
 }
 
 bool registry_contains_task_for_layer(TaskRegistry const &task_registry,
@@ -64,14 +72,6 @@ bool registry_contains_task_for_layer(TaskRegistry const &task_registry,
   }
 
   return task_ids.at(op).has_value();
-}
-
-void register_all_computation_graph_tasks(TaskRegistry &registry,
-                                          ComputationGraph const &cg) {
-  for (layer_guid_t const &node : topological_ordering(cg)) {
-    ComputationGraphOpAttrs attrs = get_layer_attrs(cg, node).attrs;
-    register_tasks_for_layer(registry, node, attrs);
-  }
 }
 
 } // namespace FlexFlow

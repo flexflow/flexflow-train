@@ -7,18 +7,14 @@ namespace FlexFlow {
 TaskInvocation lower_to_task_invocation(
     OpTaskInvocation const &op_task_invocation,
     layer_guid_t const &layer_guid,
-    ComputationGraph const &computation_graph,
+    std::vector<tensor_guid_t> const &input_tensors,
+    std::vector<TensorShape> const &input_tensor_shapes,
+    std::vector<tensor_guid_t> const &output_tensors,
+    std::vector<tensor_guid_t> const &weight_tensors,
     std::unordered_map<tensor_guid_t, gradient_tensor_t> const
         &tensor_gradient_mapping,
     std::optional<DeviceSpecificDeviceStates> const &device_states) {
   TaskBinding binding;
-  // tensors
-  std::vector<tensor_guid_t> input_tensors =
-      get_incoming_inputs(computation_graph, layer_guid);
-  std::vector<tensor_guid_t> output_tensors =
-      get_outgoing_tensors(computation_graph, layer_guid);
-  std::vector<tensor_guid_t> weight_tensors =
-      get_incoming_weights(computation_graph, layer_guid);
 
   for (auto const &tensor_binding :
        op_task_invocation.binding.get_tensor_bindings()) {
@@ -56,7 +52,7 @@ TaskInvocation lower_to_task_invocation(
     if (arg_binding.second.has<OpArgRefSpec>()) {
       ConcreteArgSpec concrete_arg =
           lower_to_concrete_arg_spec(arg_binding.second.get<OpArgRefSpec>(),
-                                     computation_graph,
+                                     input_tensor_shapes,
                                      layer_guid,
                                      device_states);
       binding.insert_arg_spec(arg_binding.first, TaskArgSpec{concrete_arg});
@@ -76,7 +72,7 @@ TaskInvocation lower_to_task_invocation(
 
 ConcreteArgSpec lower_to_concrete_arg_spec(
     OpArgRefSpec const &op_arg_ref_spec,
-    ComputationGraph const &cg,
+    std::vector<TensorShape> const &input_tensor_shapes,
     layer_guid_t const &op_guid,
     std::optional<DeviceSpecificDeviceStates> const &device_states) {
   if (op_arg_ref_spec.holds<DeviceSpecificDeviceStates>()) {
@@ -86,10 +82,9 @@ ConcreteArgSpec lower_to_concrete_arg_spec(
   } else if (op_arg_ref_spec.holds<ParallelTensorShape>()) {
     ParallelTensorShapeRefType index_op_arg_ref =
         op_arg_ref_spec.get_ref_type().get<ParallelTensorShapeRefType>();
-    tensor_guid_t input_tensor =
-        get_incoming_inputs(cg, op_guid).at(index_op_arg_ref.idx);
-    TensorAttrs tensor_attrs = get_tensor_attrs(cg, input_tensor);
-    ParallelTensorShape shape = lift_to_parallel(tensor_attrs.shape);
+    TensorShape input_tensor_shape =
+        input_tensor_shapes.at(index_op_arg_ref.idx);
+    ParallelTensorShape shape = lift_to_parallel(input_tensor_shape);
     return ConcreteArgSpec::create(shape);
   } else {
     throw mk_runtime_error("Unhandled op arg ref type");
