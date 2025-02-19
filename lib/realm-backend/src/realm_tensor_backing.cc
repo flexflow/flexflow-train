@@ -1,124 +1,220 @@
-#include "realm-backend/realm_tensor_backing.h"
-#include "local-execution/tensor_lowering.h"
 #include "op-attrs/parallel_tensor_shape.h"
-#include "op-attrs/tensor_shape.dtg.h"
+#include "op-attrs/tensor_shape.h"
 #include "pcg/computation_graph.h"
+#include "pcg/optimizer_attrs.h"
+#include "realm-backend/allocated_tensors.h"
 #include "realm-backend/realm_allocator.h"
+#include "realm-backend/realm_tensor_backing.h"
+#include "task-spec/slot_grad_id.dtg.h"
 #include "utils/containers/contains_key.h"
+#include "utils/containers/keys.h"
 #include "utils/overload.h"
-#include "local-execution/slot_grad_id.dtg.h"
 
 namespace FlexFlow {
 
-RealmTensorBacking::RealmTensorBacking() {};
-
-void RealmTensorBacking::allocate_layer_tensors(
-    layer_guid_t const &layer_guid,
-    ComputationGraph const &computation_graph,
-    RealmAllocator &allocator) {
-  this->allocate_tensors_by_role(
-      TensorRole::INPUT, layer_guid, computation_graph, allocator);
-  this->allocate_tensors_by_role(
-      TensorRole::WEIGHT, layer_guid, computation_graph, allocator);
-  this->allocate_tensors_by_role(
-      TensorRole::OUTPUT, layer_guid, computation_graph, allocator);
-}
-
-void RealmTensorBacking::allocate_tensors_by_role(
-    TensorRole const &role,
-    layer_guid_t const &layer_guid,
-    ComputationGraph const &computation_graph,
-    RealmAllocator &allocator) {
-  std::vector<tensor_guid_t> tensors;
-  switch (role) {
-    case TensorRole::INPUT:
-      tensors = get_incoming_inputs(computation_graph, layer_guid);
-      break;
-    case TensorRole::WEIGHT:
-      tensors = get_incoming_weights(computation_graph, layer_guid);
-      break;
-    case TensorRole::OUTPUT:
-      tensors = get_outgoing_tensors(computation_graph, layer_guid);
-      break;
-    default:
-      throw mk_runtime_error("Invalid tensor role, got {}", role);
-  }
-
-  for (tensor_guid_t const &tensor : tensors) {
-    TensorAttrs tensor_attrs = get_tensor_attrs(computation_graph, tensor);
-    // tensor allocation
-    if (!contains_key(this->tensor_lowering_mapping, tensor)) {
-      lowered_tensor_t reduced_tensor = this->lowered_tensor_source.new_lowered_tensor();
-      this->tensor_lowering_mapping.insert({tensor, reduced_tensor});
-      RealmRegion region = allocator.allocate(get_size_in_bytes(tensor_attrs.shape));
-      this->tensor_regions.insert({reduced_tensor, region});
-      this->tensor_shapes.insert({reduced_tensor, tensor_attrs.shape});
-    }
-
-    // gradient tensor allocation
-    if (tensor_attrs.create_gradients == CreateGrad::YES && !contains_key(this->gradient_tensor_lowering_mapping, tensor)) {
-      lowered_tensor_t reduced_tensor = this->lowered_tensor_source.new_lowered_tensor();
-      this->gradient_tensor_lowering_mapping.insert({tensor, reduced_tensor});
-      RealmRegion region = allocator.allocate(get_size_in_bytes(tensor_attrs.shape));
-      this->tensor_regions.insert({reduced_tensor, region});
-      this->tensor_shapes.insert({reduced_tensor, tensor_attrs.shape});
-    }
-  }
-}
-
-void RealmTensorBacking::allocate_optimizer_tensors(
-    tensor_guid_t const &weight,
-    std::vector<optimizer_tensor_t> const& optimizer_tensors,
-    RealmAllocator &allocator) {
-  GenericTensorAccessorW weight_backing = this->get_tensor_backing(this->tensor_lowering_mapping.at(weight));
-  for (optimizer_tensor_t const & optimizer_tensor: optimizer_tensors) {
-    // optimizer tensor allocation
-    if (!contains_key(this->optimizer_tensor_lowering_mapping, optimizer_tensor)) {
-      lowered_tensor_t buffer_tensor = this->lowered_tensor_source.new_lowered_tensor();
-      this->optimizer_tensor_lowering_mapping.insert({optimizer_tensor, buffer_tensor});
-      TensorShape tensor_shape = get_tensor_shape(weight_backing.shape, weight_backing.data_type);
-      RealmRegion region = allocator.allocate(get_size_in_bytes(tensor_shape));
-      this->tensor_regions.insert({buffer_tensor, region});
-      this->tensor_shapes.insert({buffer_tensor, tensor_shape});
-    }
-  }
-}
-
-bool RealmTensorBacking::is_tensor_allocated(lowered_tensor_t const & tensor_id) const {
-  return contains_key(tensor_regions, tensor_id);
-}
-
-GenericTensorAccessorW const &RealmTensorBacking::get_tensor_backing(
-    lowered_tensor_t const &tensor_id) const {
-  void *ptr = this->tensor_regions.at(tensor_id).instance.pointer_untyped(0, 0);
-  TensorShape shape = this->tensor_shapes.at(tensor_id);
+GenericTensorAccessorW wrappup_tensor_accessor(
+    std::pair<RealmRegion, TensorShape> const &tensor_region_shape) {
+  void *ptr = tensor_region_shape.first.instance.pointer_untyped(0, 0);
+  TensorShape shape = tensor_region_shape.second;
   return {shape.data_type, ArrayShape{shape}, ptr};
 }
 
-TensorSlotsBacking RealmTensorBacking::construct_tensor_slots_backing(
-    TaskBinding const &binding) const {
+RealmTensorBacking::RealmTensorBacking(
+    AllocatedTensors const &allocated_tensors,
+    UnallocatedTensors const &unallocated_tensors,
+    RealmAllocator const &allocator)
+    : tensor_gradient_mapping(allocated_tensors.gradient_mapping),
+      tensor_optimizer_mapping(allocated_tensors.optimizer_mapping),
+      allocator(allocator) {
+
+  // handle already-allocated tensors
+  for (std::pair<TensorTypeVariant, std::pair<RealmRegion, TensorShape>> const
+           &tensor_type_backing : allocated_tensors.tensor_type_backings) {
+    lowered_tensor_t lowered_tensor =
+        this->insert_tensor(tensor_type_backing.first);
+    this->tensor_backings.insert({lowered_tensor, tensor_type_backing.second});
+  }
+
+  // allocate new tensors
+  this->tensor_gradient_mapping.insert(
+      unallocated_tensors.gradient_mapping.begin(),
+      unallocated_tensors.gradient_mapping.end());
+
+  for (std::pair<tensor_guid_t, std::vector<optimizer_tensor_t>> const
+           &unallocated_optimizer_tensors :
+       unallocated_tensors.optimizer_mapping) {
+    if (this->tensor_optimizer_mapping.count(
+            unallocated_optimizer_tensors.first)) {
+      for (optimizer_tensor_t const &optimizer_tensor :
+           unallocated_optimizer_tensors.second) {
+        this->tensor_optimizer_mapping[unallocated_optimizer_tensors.first]
+            .push_back(optimizer_tensor);
+      }
+    } else {
+      this->tensor_optimizer_mapping.insert({unallocated_optimizer_tensors});
+    }
+  }
+
+  for (std::pair<TensorTypeVariant, TensorShape> const &tensor_type_shape :
+       unallocated_tensors.tensor_type_shapes) {
+    lowered_tensor_t lowered_tensor =
+        this->insert_tensor(tensor_type_shape.first);
+    RealmRegion region = allocator.allocate(
+        get_size_in_bytes(tensor_type_shape.second).unwrap_nonnegative());
+    this->tensor_backings.insert(
+        {lowered_tensor, {region, tensor_type_shape.second}});
+  }
+};
+
+lowered_tensor_t
+RealmTensorBacking::insert_tensor(TensorTypeVariant const &tensor_type) {
+  lowered_tensor_t lowered_tensor =
+      this->lowered_tensor_source.new_lowered_tensor();
+  tensor_type.visit<std::nullopt_t>(overload{
+      [&](tensor_guid_t const &tensor_guid) {
+        this->tensor_lowering_mapping.insert({tensor_guid, lowered_tensor});
+        return std::nullopt;
+      },
+      [&](gradient_tensor_t const &gradient_tensor) {
+        this->gradient_tensor_lowering_mapping.insert(
+            {gradient_tensor, lowered_tensor});
+        return std::nullopt;
+      },
+      [&](optimizer_tensor_t const &optimizer_tensor) {
+        this->optimizer_tensor_lowering_mapping.insert(
+            {optimizer_tensor, lowered_tensor});
+        return std::nullopt;
+      },
+      [&](loss_tensor_t const &loss_tensor) {
+        this->loss_tensor_lowering_mapping.insert(
+            {loss_tensor, lowered_tensor});
+        return std::nullopt;
+      },
+      [&](auto const &any_tensor) {
+        throw mk_runtime_error(
+            fmt::format("Unhandled tensor type {}", any_tensor));
+      }});
+  return lowered_tensor;
+}
+
+GenericTensorAccessorW
+RealmTensorBacking::get_tensor(TensorTypeVariant const &tensor_type) const {
+  lowered_tensor_t lowered_tensor =
+      tensor_type.visit<lowered_tensor_t>(overload{
+          [&](tensor_guid_t const &tensor_guid) {
+            return this->tensor_lowering_mapping.at(tensor_guid);
+          },
+          [&](gradient_tensor_t const &gradient_tensor) {
+            return this->gradient_tensor_lowering_mapping.at(gradient_tensor);
+          },
+          [&](optimizer_tensor_t const &optimizer_tensor) {
+            return this->optimizer_tensor_lowering_mapping.at(optimizer_tensor);
+          },
+          [&](loss_tensor_t const &loss_tensor) {
+            return this->loss_tensor_lowering_mapping.at(loss_tensor);
+          },
+          [&](auto const &any_tensor) {
+            throw mk_runtime_error(
+                fmt::format("Unhandled tensor type {}", any_tensor));
+          }});
+  return wrappup_tensor_accessor(this->tensor_backings.at(lowered_tensor));
+}
+
+UnallocatedTensors generate_unallocated_tensors(
+    AllocatedTensors const &allocated_tensors,
+    std::unordered_map<tensor_guid_t, TensorAttrs> const &tensor_attrs_mapping,
+    GradientTensorSource &gradient_tensor_source) {
+
+  assert(are_allocated_tensors_valid(allocated_tensors, tensor_attrs_mapping));
+
+  std::unordered_map<TensorTypeVariant, TensorShape> tensor_type_shapes;
+  std::unordered_map<tensor_guid_t, gradient_tensor_t> gradient_mapping;
+
+  for (std::pair<tensor_guid_t, TensorAttrs> const &tensor_guid_attrs :
+       tensor_attrs_mapping) {
+    tensor_guid_t tensor_guid = tensor_guid_attrs.first;
+    TensorAttrs tensor_attrs = tensor_guid_attrs.second;
+    TensorTypeVariant tensor_guid_type = TensorTypeVariant{tensor_guid};
+    if (!allocated_tensors.tensor_type_backings.count(tensor_guid_type)) {
+      tensor_type_shapes.insert({tensor_guid_type, tensor_attrs.shape});
+    }
+
+    if (tensor_attrs.create_gradients == CreateGrad::YES &&
+        !allocated_tensors.gradient_mapping.count(tensor_guid)) {
+      gradient_tensor_t gradient_tensor =
+          gradient_tensor_source.new_gradient_tensor();
+      tensor_type_shapes.insert(
+          {TensorTypeVariant{gradient_tensor}, tensor_attrs.shape});
+      gradient_mapping.insert({tensor_guid, gradient_tensor});
+    }
+  }
+
+  return UnallocatedTensors{tensor_type_shapes, gradient_mapping, {}};
+}
+
+UnallocatedTensors generate_unallocated_tensors_with_optimizer(
+    AllocatedTensors const &allocated_tensors,
+    std::unordered_map<tensor_guid_t, TensorAttrs> const &tensor_attrs_mapping,
+    GradientTensorSource &gradient_tensor_source,
+    OptimizerTensorSource &optimizer_tensor_source,
+    OptimizerAttrs const &optimizer_attrs) {
+
+  UnallocatedTensors unallocated_tensors = generate_unallocated_tensors(
+      allocated_tensors, tensor_attrs_mapping, gradient_tensor_source);
+
+  if (!get_num_optimizer_tensors(optimizer_attrs)) {
+    return unallocated_tensors;
+  }
+
+  std::unordered_map<TensorTypeVariant, TensorShape> tensor_type_shapes =
+      unallocated_tensors.tensor_type_shapes;
+  std::unordered_map<tensor_guid_t, gradient_tensor_t> gradient_mapping =
+      unallocated_tensors.gradient_mapping;
+  std::unordered_map<tensor_guid_t, std::vector<optimizer_tensor_t>>
+      optimizer_mapping;
+
+  for (std::pair<tensor_guid_t, TensorAttrs> const &tensor_guid_attrs :
+       tensor_attrs_mapping) {
+    tensor_guid_t tensor_guid = tensor_guid_attrs.first;
+    TensorAttrs tensor_attrs = tensor_guid_attrs.second;
+    if (tensor_attrs.create_gradients == CreateGrad::YES) {
+      std::vector<optimizer_tensor_t> optimizer_tensors;
+
+      int num_optimizer_tensors_to_allocate =
+          get_num_optimizer_tensors(optimizer_attrs);
+      if (allocated_tensors.optimizer_mapping.count(tensor_guid)) {
+        num_optimizer_tensors_to_allocate -=
+            allocated_tensors.optimizer_mapping.at(tensor_guid).size();
+      }
+      std::cout << num_optimizer_tensors_to_allocate;
+
+      for (int i = 0; i < num_optimizer_tensors_to_allocate; ++i) {
+        optimizer_tensor_t optimizer_tensor =
+            optimizer_tensor_source.new_optimizer_tensor();
+        optimizer_tensors.push_back(optimizer_tensor);
+        tensor_type_shapes.insert(
+            {TensorTypeVariant{optimizer_tensor}, tensor_attrs.shape});
+      }
+
+      if (num_optimizer_tensors_to_allocate > 0) {
+        optimizer_mapping.insert({tensor_guid, optimizer_tensors});
+      }
+    }
+  }
+
+  return UnallocatedTensors{tensor_type_shapes, gradient_mapping,
+                            optimizer_mapping};
+}
+
+TensorSlotsBacking
+construct_tensor_slots_backing(RealmTensorBacking const &realm_tensor_backing,
+                               TaskBinding const &binding) {
   TensorSlotsBacking mapping;
 
-  for (auto const &tensor_binding : binding.get_tensor_bindings()) {
-    SlotTensorTypeId slot_tensor_type_id = tensor_binding.first;
-
-    lowered_tensor_t tensor_id = [&] {
-      TensorTypeVariant tensor_type = tensor_binding.second;
-      if (tensor_type.has<tensor_guid_t>() and slot_tensor_type_id.tensor_type == TensorType::FORWARD) {
-        return this->tensor_lowering_mapping.at(tensor_type.get<tensor_guid_t>());
-      } else if (tensor_type.has<tensor_guid_t>() and slot_tensor_type_id.tensor_type == TensorType::GRADIENT) {
-        return this->gradient_tensor_lowering_mapping.at(tensor_type.get<tensor_guid_t>());
-      } else if (tensor_type.has<optimizer_tensor_t>()) {
-        return this->optimizer_tensor_lowering_mapping.at(tensor_type.get<optimizer_tensor_t>());
-      } else if (tensor_type.has<loss_tensor_t>()) {
-        return this->loss_tensor_lowering_mapping.at(tensor_type.get<loss_tensor_t>());
-      } else {
-        throw mk_runtime_error(fmt::format("Tensor binding has invalid type"));
-      }
-    }();
-
-    GenericTensorAccessorW accessor = this->get_tensor_backing(tensor_id);
-    mapping.insert({slot_tensor_type_id, accessor});
+  for (std::pair<SlotTensorTypeId, TensorTypeVariant> const &tensor_binding :
+       binding.get_tensor_bindings()) {
+    mapping.insert({tensor_binding.first,
+                    realm_tensor_backing.get_tensor(tensor_binding.second)});
   }
 
   return mapping;

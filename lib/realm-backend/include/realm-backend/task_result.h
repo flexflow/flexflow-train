@@ -3,6 +3,7 @@
 
 #include "realm-backend/driver.h"
 #include <cassert>
+#include <memory>
 
 namespace FlexFlow {
 
