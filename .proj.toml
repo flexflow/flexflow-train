@@ -29,6 +29,11 @@ test_targets = [
   "models-tests",
 ]
 
+benchmark_targets = [
+  "utils-benchmarks",
+  "compiler-benchmarks",
+]
+
 [cmake_flags_extra]
 FF_CUDA_ARCH = "60"
 CMAKE_CUDA_ARCHITECTURES = "60"
