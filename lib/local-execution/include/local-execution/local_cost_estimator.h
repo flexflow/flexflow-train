@@ -2,7 +2,7 @@
 #define _FLEXFLOW_LOCAL_EXECUTION_LOCAL_COST_ESTIMATOR_H
 
 #include "local-execution/cost_estimate.h"
-#include "local-execution/runtime_arg_config.h"
+#include "task-spec/runtime_arg_config.h"
 
 namespace FlexFlow {
 

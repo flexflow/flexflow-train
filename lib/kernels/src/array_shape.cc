@@ -1,6 +1,8 @@
 #include "kernels/array_shape.h"
+#include "op-attrs/dim_ordered/slice.h"
 #include "utils/containers/product.h"
 #include "utils/containers/reversed.h"
+#include "utils/containers/transform.h"
 #include "utils/containers/vector_of.h"
 #include "utils/nonnegative_int/num_elements.h"
 
@@ -19,6 +21,9 @@ ArrayShape::ArrayShape(TensorShape const &shape)
 
 ArrayShape::ArrayShape(std::vector<nonnegative_int> const &input_dims)
     : dims(input_dims) {}
+
+ArrayShape::ArrayShape(LegionOrdered<nonnegative_int> const &legion_tensor_dims)
+    : dims(legion_tensor_dims) {}
 
 nonnegative_int ArrayShape::get_volume() const {
   return this->num_elements();
@@ -51,6 +56,26 @@ nonnegative_int ArrayShape::at(ff_dim_t idx) const {
   return dims.at(legion_dim_from_ff_dim(idx, this->num_dims()));
 }
 
+ArrayShape ArrayShape::sub_shape(std::optional<ff_dim_t> start,
+                                 std::optional<ff_dim_t> end) const {
+  return ArrayShape{legion_ordered_from_ff_ordered(
+      slice(ff_ordered_from_legion_ordered(this->dims), start, end))};
+}
+
+ArrayShape ArrayShape::sub_shape(std::optional<legion_dim_t> start,
+                                 std::optional<legion_dim_t> end) const {
+  std::optional<ff_dim_t> legion_start =
+      transform(start, [&](auto const &start_unwrapped) {
+        return ff_dim_from_legion_dim(start_unwrapped, num_dims());
+      });
+
+  std::optional<ff_dim_t> legion_end =
+      transform(end, [&](auto const &end_unwrapped) {
+        return ff_dim_from_legion_dim(end_unwrapped, num_dims());
+      });
+  return this->sub_shape(legion_start, legion_end);
+}
+
 bool ArrayShape::operator==(ArrayShape const &other) const {
   return this->tie() == other.tie();
 }
@@ -59,11 +84,11 @@ bool ArrayShape::operator!=(ArrayShape const &other) const {
   return this->tie() != other.tie();
 }
 
-ArrayShape ArrayShape::sub_shape(
-    std::optional<std::variant<ff_dim_t, legion_dim_t>> start,
-    std::optional<std::variant<ff_dim_t, legion_dim_t>> end) const {
-  NOT_IMPLEMENTED();
-}
+// ArrayShape ArrayShape::sub_shape(
+//     std::optional<std::variant<ff_dim_t, legion_dim_t>> start,
+//     std::optional<std::variant<ff_dim_t, legion_dim_t>> end) const {
+//   NOT_IMPLEMENTED();
+// }
 
 std::optional<nonnegative_int> ArrayShape::at_maybe(legion_dim_t index) const {
   if (index.value < dims.size()) {
@@ -103,3 +128,14 @@ std::ostream &operator<<(std::ostream &s, ArrayShape const &x) {
 }
 
 } // namespace FlexFlow
+
+namespace std {
+size_t hash<FlexFlow::ArrayShape>::operator()(
+    ::FlexFlow::ArrayShape const &x) const {
+  size_t result = 0;
+  result ^= std::hash<::FlexFlow::LegionOrdered<::FlexFlow::nonnegative_int>>{}(
+                x.dims) +
+            0x9e3779b9 + (result << 6) + (result >> 2);
+  return result;
+}
+} // namespace std

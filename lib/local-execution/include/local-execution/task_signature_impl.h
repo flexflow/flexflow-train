@@ -1,10 +1,10 @@
 #ifndef _FLEXFLOW_LOCAL_EXECUTION_TASK_SIGNATURE_IMPL_H
 #define _FLEXFLOW_LOCAL_EXECUTION_TASK_SIGNATURE_IMPL_H
 
-#include "local-execution/op_task_invocation.h"
-#include "local-execution/task_id_t.dtg.h"
 #include "local-execution/task_signature_impl.dtg.h"
 #include "op-attrs/computation_graph_op_attrs.h"
+#include "task-spec/op_task_invocation.h"
+#include "task-spec/task_id_t.dtg.h"
 
 namespace FlexFlow {
 

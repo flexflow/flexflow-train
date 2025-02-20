@@ -1,0 +1,14 @@
+ff_add_test_executable(
+  NAME
+    realm-backend-tests
+  SRC_PATTERNS
+    src/*.cc
+  PRIVATE_INCLUDE 
+    src/
+  DEPS
+    doctest
+    utils-test-common
+    realm-backend
+    kernels
+    op-attrs
+)

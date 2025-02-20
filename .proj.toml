@@ -12,6 +12,8 @@ build_targets = [
   "compiler",
   "substitution-generator",
   "local-execution",
+  "realm-backend",
+  "task-spec",
   "models",
   "export-model-arch",
   "substitution-to-dot",
@@ -26,6 +28,7 @@ test_targets = [
   "compiler-tests",
   "substitution-generator-tests",
   "local-execution-tests",
+  #"realm-backend-tests",
   "models-tests",
 ]
 
