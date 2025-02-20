@@ -8,7 +8,7 @@
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
 #include "compiler/machine_mapping/machine_mapping_result.h"
-#include "compiler/series_parallel/pcg/get_pcg_balanced_binary_sp_decomposition.h"
+#include "compiler/series_parallel/pcg/get_pcg_series_parallel_decomposition.h"
 #include "compiler/unity_algorithm/graph_optimize_state.h"
 #include "pcg/machine_specification.dtg.h"
 #include "pcg/operator_task_space.h"
@@ -16,6 +16,7 @@
 #include "substitutions/pcg_pattern.h"
 #include "substitutions/sub_parallel_computation_graph.h"
 #include "substitutions/substitution.h"
+#include "substitutions/unity_substitution_set.h"
 #include "utils/containers/generate_map.h"
 #include "utils/deduplicated_priority_queue.h"
 #include "utils/graph/node/algorithms.h"
@@ -47,8 +48,9 @@ std::vector<ParallelComputationGraph>
 SearchResult graph_optimize(ParallelComputationGraph &pcg,
                             CostEstimator const &cost_estimator,
                             MachineSpecification const &resources,
-                            std::vector<Substitution> const &substitutions,
                             UnitySearchConfig const &search_config) {
+
+  std::vector<Substitution> substitutions = get_substitution_set(resources);
 
   MachineMappingCache cached_subgraph_costs = empty_machine_mapping_cache();
   DeduplicatedPriorityQueue<GraphOptimizeState> candidates;
@@ -67,7 +69,7 @@ SearchResult graph_optimize(ParallelComputationGraph &pcg,
   auto optimize_pcg = [&](ParallelComputationGraph const &pcg)
       -> std::pair<GraphOptimizeState, std::optional<MachineMapping>> {
     PCGBinarySPDecomposition sp_decomp =
-        expect(get_pcg_balanced_binary_sp_decomposition(pcg),
+        expect(get_pcg_series_parallel_decomposition(pcg),
                "Failed to get SP decomposition of PCG");
 
     MachineMappingProblemTree problem_tree =

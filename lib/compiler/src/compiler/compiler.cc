@@ -17,9 +17,8 @@ SearchResult optimize(ComputationGraph const &computation_graph,
       [&](UnitySearchConfig const &config) {
         ParallelComputationGraph pcg =
             pcg_from_computation_graph(computation_graph);
-        std::vector<Substitution> substitutions; // TODO: Implement this
         return graph_optimize(
-            pcg, cost_estimator, machine_specification, substitutions, config);
+            pcg, cost_estimator, machine_specification, config);
       },
   });
 }

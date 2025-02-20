@@ -12,7 +12,6 @@ namespace FlexFlow {
 SearchResult graph_optimize(ParallelComputationGraph &pcg,
                             CostEstimator const &cost_estimator,
                             MachineSpecification const &resources,
-                            std::vector<Substitution> const &substitutions,
                             UnitySearchConfig const &search_config);
 
 } // namespace FlexFlow
