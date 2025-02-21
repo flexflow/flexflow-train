@@ -52,7 +52,18 @@ using real_type_t = typename data_type_enum_to_class<DT>::type;
 
 nonnegative_int size_of_datatype(DataType);
 
-bool can_strictly_promote_datatype_from_to(DataType, DataType);
+/**
+ * @brief Maximally semantics-preserving casts, not including identity
+ * casts (e.g., `float -> float` returns `false`)
+ */
+bool can_strictly_promote_datatype_from_to(DataType from, DataType to);
+
+/**
+ * @brief Equivalent to
+ * [`torch.can_cast`](https://pytorch.org/docs/stable/generated/torch.can_cast.html),
+ * except that identity casts (e.g., `float -> float`) return `false`
+ */
+bool can_torch_strictly_promote_datatype_from_to(DataType from, DataType to);
 
 } // namespace FlexFlow
 

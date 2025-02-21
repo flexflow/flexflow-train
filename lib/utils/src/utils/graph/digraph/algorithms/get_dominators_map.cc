@@ -15,11 +15,11 @@ namespace FlexFlow {
 
 std::unordered_map<Node, std::unordered_set<Node>>
     get_dominators_map(DiGraphView const &g) {
-  std::unordered_set<Node> sources = get_sources(g);
+  std::unordered_set<Node> initial_nodes = get_initial_nodes(g);
 
   std::queue<Node> queue;
 
-  for (Node src : get_sources(g)) {
+  for (Node src : get_initial_nodes(g)) {
     queue.push(src);
   }
 

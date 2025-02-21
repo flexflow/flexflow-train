@@ -15,10 +15,16 @@ ComputationGraph make_empty_computation_graph();
 
 std::unordered_set<layer_guid_t> get_layers(ComputationGraph const &);
 
-LayerAddedResult add_layer(ComputationGraph &computation_graph,
-                           LayerAttrs const &attrs,
-                           std::vector<tensor_guid_t> const &inputs,
-                           std::vector<TensorAttrs> const &outputs);
+LayerAddedResult add_layer(
+    ComputationGraph &computation_graph,
+    LayerAttrs const &attrs,
+    std::vector<tensor_guid_t> const &inputs,
+    std::vector<tensor_guid_t> const &weights,
+    std::optional<std::vector<CreateGrad>> const &outputs = std::nullopt);
+
+LayerAddedResult add_input_layer(ComputationGraph &computation_graph,
+                                 TensorShape const &tensor_shape);
+
 TensorAttrs get_tensor_attrs(ComputationGraph const &, tensor_guid_t const &);
 bool are_tensor_guid_shapes_equivalent(ComputationGraph const &cg,
                                        tensor_guid_t const &t1,

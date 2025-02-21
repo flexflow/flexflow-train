@@ -2,7 +2,6 @@
 #include "kernels/dropout_kernels.h"
 #include "local-execution/op_task_invocation.h"
 #include "local-execution/op_task_signature.h"
-#include "op-attrs/get_output_shapes.h"
 #include "utils/hash-utils.h"
 
 namespace FlexFlow {

@@ -8,6 +8,7 @@
 #include "utils/containers/contains.h"
 #include "utils/containers/extend.h"
 #include "utils/containers/filter.h"
+#include "utils/expected.h"
 
 namespace FlexFlow {
 
@@ -92,6 +93,21 @@ tl::expected<TensorShape, std::string>
   }
 
   return get_gamma_weights_shape(attrs, input_shape);
+}
+
+tl::expected<std::vector<TensorShape>, std::string>
+    get_weight_shapes(LayerNormAttrs const &attrs,
+                      TensorShape const &input_shape) {
+
+  TensorShape gamma_shape =
+      PROPAGATE_ERR(get_gamma_weights_shape(attrs, input_shape));
+  TensorShape beta_shape =
+      PROPAGATE_ERR(get_beta_weights_shape(attrs, input_shape));
+
+  return std::vector{
+      gamma_shape,
+      beta_shape,
+  };
 }
 
 static std::optional<std::string>
@@ -191,6 +207,35 @@ tl::expected<ParallelTensorShape, std::string>
   }
 
   return get_gamma_weights_shape(attrs, input_shape);
+}
+
+tl::expected<std::vector<ParallelTensorShape>, std::string>
+    get_weight_shapes(LayerNormAttrs const &attrs,
+                      ParallelTensorShape const &input_shape) {
+
+  ParallelTensorShape gamma_shape =
+      PROPAGATE_ERR(get_gamma_weights_shape(attrs, input_shape));
+  ParallelTensorShape beta_shape =
+      PROPAGATE_ERR(get_beta_weights_shape(attrs, input_shape));
+
+  return std::vector{
+      gamma_shape,
+      beta_shape,
+  };
+}
+
+std::vector<InitializerAttrs> get_initializers(LayerNormAttrs const &attrs) {
+  if (attrs.elementwise_affine) {
+    InitializerAttrs gamma_initializer =
+        InitializerAttrs{ConstantInitializerAttrs{DataTypeValue{float{1}}}};
+
+    InitializerAttrs beta_initializer =
+        InitializerAttrs{ConstantInitializerAttrs{DataTypeValue{float{0}}}};
+
+    return {gamma_initializer, beta_initializer};
+  } else {
+    return {};
+  }
 }
 
 } // namespace FlexFlow

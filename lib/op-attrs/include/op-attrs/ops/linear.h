@@ -2,6 +2,7 @@
 #define _FLEXFLOW_LINEAR_ATTRS_H
 
 #include "op-attrs/incoming_tensor_role.dtg.h"
+#include "op-attrs/initializer_attrs.dtg.h"
 #include "op-attrs/ops/core.h"
 #include "op-attrs/ops/linear_attrs.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
@@ -25,6 +26,9 @@ tl::expected<TensorShape, std::string> get_bias_shape(LinearAttrs const &attrs,
 tl::expected<TensorShape, std::string>
     get_output_shape(LinearAttrs const &attrs, TensorShape const &input);
 
+tl::expected<std::vector<TensorShape>, std::string>
+    get_weight_shapes(LinearAttrs const &attrs, TensorShape const &input_shape);
+
 tl::expected<ParallelTensorShape, std::string>
     get_projection_shape(LinearAttrs const &attrs,
                          ParallelTensorShape const &input);
@@ -33,6 +37,17 @@ tl::expected<ParallelTensorShape, std::string>
 tl::expected<ParallelTensorShape, std::string>
     get_output_shape(LinearAttrs const &attrs,
                      ParallelTensorShape const &input);
+
+tl::expected<std::vector<ParallelTensorShape>, std::string>
+    get_weight_shapes(LinearAttrs const &attrs,
+                      ParallelTensorShape const &input_shape);
+
+tl::expected<std::vector<InitializerAttrs>, std::string> get_initializers(
+    LinearAttrs const &,
+    TensorShape const &input_shape,
+    std::optional<InitializerAttrs> const &projection_initializer =
+        std::nullopt,
+    std::optional<InitializerAttrs> const &kernel_initializer = std::nullopt);
 
 } // namespace FlexFlow
 
