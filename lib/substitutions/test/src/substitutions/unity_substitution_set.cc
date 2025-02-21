@@ -1,4 +1,6 @@
 #include "substitutions/unity_substitution_set.h"
+#include "op-attrs/computation_graph_op_attrs.h"
+#include "op-attrs/operator_type.h"
 #include "op-attrs/ops/combine.h"
 #include "op-attrs/ops/linear.h"
 #include "op-attrs/ops/repartition.h"
@@ -629,6 +631,441 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(sub_pcgs_are_isomorphic(result, correct));
     }
   }
+
+  TEST_CASE("create_partition_attention_combine") {
+    nonnegative_int embed_dim = 8_n;
+    nonnegative_int num_heads = 6_n;
+    nonnegative_int degree = 1_n;
+    std::string mm_match = "MULTIHEAD_ATTENTION";
+
+    Substitution sub = create_partition_attention_combine(num_heads, degree);
+
+    ShardParallelDim batch_dim = ShardParallelDim{12_n, 2_n};
+    ShardParallelDim sequence_dim = ShardParallelDim{16_n, 1_n};
+    ShardParallelDim feature_dim = ShardParallelDim{10_n, 1_n};
+    ParallelTensorShape query_shape = ParallelTensorShape{
+        ParallelTensorDims{
+            FFOrdered<ShardParallelDim>{
+                batch_dim,
+                sequence_dim,
+                feature_dim,
+            },
+            ReplicaParallelDimSet{
+                SumDegree{1_n},
+                DiscardCopyDegree{1_n},
+            },
+        },
+        DataType::FLOAT,
+    };
+
+    SubParallelComputationGraph pcg = [&] {
+      ParallelComputationGraphBuilder b;
+      parallel_tensor_guid_t input = b.create_input_tensor(query_shape);
+      parallel_tensor_guid_t output =
+          b.multihead_attention(input, input, input, embed_dim, num_heads);
+      return sub_pcg_from_full_pcg(b.pcg);
+    }();
+
+    PCGPatternMatch match = [&] {
+      parallel_layer_guid_t mm_match_layer =
+          get_parallel_layer_by_name(pcg, mm_match);
+      open_parallel_tensor_guid_t mm_match_layer_input_activations =
+          get_layer_inputs(pcg, mm_match_layer).at(0);
+      open_parallel_tensor_guid_t mm_match_layer_input_query_weights =
+          get_layer_inputs(pcg, mm_match_layer).at(3);
+      open_parallel_tensor_guid_t mm_match_layer_input_key_weights =
+          get_layer_inputs(pcg, mm_match_layer).at(4);
+      open_parallel_tensor_guid_t mm_match_layer_input_value_weights =
+          get_layer_inputs(pcg, mm_match_layer).at(5);
+
+      return PCGPatternMatch{
+          bidict<PatternNode, parallel_layer_guid_t>{
+              {PatternNode{Node{0}}, mm_match_layer},
+          },
+          std::unordered_map<PatternInput, open_parallel_tensor_guid_t>{
+              {
+                  PatternInput{DataflowGraphInput{0}},
+                  mm_match_layer_input_activations,
+              },
+              {
+                  PatternInput{DataflowGraphInput{2}},
+                  mm_match_layer_input_query_weights,
+              },
+              {
+                  PatternInput{DataflowGraphInput{4}},
+                  mm_match_layer_input_key_weights,
+              },
+              {
+                  PatternInput{DataflowGraphInput{6}},
+                  mm_match_layer_input_value_weights,
+              }},
+      };
+    }();
+
+    SubParallelComputationGraph correct = [&] {
+      ParallelComputationGraphBuilder b;
+
+      parallel_tensor_guid_t t = b.create_input_tensor(query_shape);
+      t = b.parallel_partition(t,
+                               /*repartition_dim=*/ff_dim_t{1_n},
+                               /*repartition_degree=*/degree);
+      t = b.multihead_attention(t, t, t, embed_dim, num_heads);
+      t = b.parallel_combine(t,
+                             /*combine_dim=*/ff_dim_t{2_n},
+                             /*combine_degree=*/degree);
+
+      return sub_pcg_from_full_pcg(b.pcg);
+    }();
+
+    SubParallelComputationGraph result = apply_substitution(pcg, sub, match);
+
+    CHECK(sub_pcgs_are_isomorphic(result, correct));
+  }
+
+  TEST_CASE("create_replicate_attention_reduce") {
+    nonnegative_int embed_dim = 8_n;
+    nonnegative_int num_heads = 6_n;
+    nonnegative_int degree = 1_n;
+    std::string mm_match = "MULTIHEAD_ATTENTION";
+
+    Substitution sub = create_replicate_attention_reduce(num_heads, degree);
+
+    ShardParallelDim batch_dim = ShardParallelDim{12_n, 2_n};
+    ShardParallelDim sequence_dim = ShardParallelDim{16_n, 1_n};
+    ShardParallelDim feature_dim = ShardParallelDim{10_n, 1_n};
+    ParallelTensorShape query_shape = ParallelTensorShape{
+        ParallelTensorDims{
+            FFOrdered<ShardParallelDim>{
+                batch_dim,
+                sequence_dim,
+                feature_dim,
+            },
+            ReplicaParallelDimSet{
+                SumDegree{1_n},
+                DiscardCopyDegree{1_n},
+            },
+        },
+        DataType::FLOAT,
+    };
+
+    SubParallelComputationGraph pcg = [&] {
+      ParallelComputationGraphBuilder b;
+      parallel_tensor_guid_t input = b.create_input_tensor(query_shape);
+      parallel_tensor_guid_t output =
+          b.multihead_attention(input, input, input, embed_dim, num_heads);
+      return sub_pcg_from_full_pcg(b.pcg);
+    }();
+
+    PCGPatternMatch match = [&] {
+      parallel_layer_guid_t mm_match_layer =
+          get_parallel_layer_by_name(pcg, mm_match);
+      open_parallel_tensor_guid_t mm_match_layer_input_activations =
+          get_layer_inputs(pcg, mm_match_layer).at(0);
+      open_parallel_tensor_guid_t mm_match_layer_input_query_weights =
+          get_layer_inputs(pcg, mm_match_layer).at(3);
+      open_parallel_tensor_guid_t mm_match_layer_input_key_weights =
+          get_layer_inputs(pcg, mm_match_layer).at(4);
+      open_parallel_tensor_guid_t mm_match_layer_input_value_weights =
+          get_layer_inputs(pcg, mm_match_layer).at(5);
+
+      return PCGPatternMatch{
+          bidict<PatternNode, parallel_layer_guid_t>{
+              {PatternNode{Node{0}}, mm_match_layer},
+          },
+          std::unordered_map<PatternInput, open_parallel_tensor_guid_t>{
+              {
+                  PatternInput{DataflowGraphInput{0}},
+                  mm_match_layer_input_activations,
+              },
+              {
+                  PatternInput{DataflowGraphInput{2}},
+                  mm_match_layer_input_query_weights,
+              },
+              {
+                  PatternInput{DataflowGraphInput{4}},
+                  mm_match_layer_input_key_weights,
+              },
+              {
+                  PatternInput{DataflowGraphInput{6}},
+                  mm_match_layer_input_value_weights,
+              }},
+      };
+    }();
+
+    SubParallelComputationGraph correct = [&] {
+      ParallelComputationGraphBuilder b;
+
+      parallel_tensor_guid_t t = b.create_input_tensor(query_shape);
+      t = b.parallel_replicate(t, degree);
+      t = b.multihead_attention(t, t, t, embed_dim, num_heads);
+      t = b.parallel_reduce(t, degree);
+
+      return sub_pcg_from_full_pcg(b.pcg);
+    }();
+
+    SubParallelComputationGraph result = apply_substitution(pcg, sub, match);
+
+    CHECK(sub_pcgs_are_isomorphic(result, correct));
+  }
+
+  TEST_CASE("create_partition_conv2d_combine") {
+    nonnegative_int batch_size = 2_n;
+    nonnegative_int batch_degree = 2_n;
+    nonnegative_int num_dims = 4_n;
+    nonnegative_int degree = 1_n;
+    std::string mm_match = "mm_match";
+
+    Substitution sub = create_partition_conv2d_combine(num_dims, degree);
+
+    ParallelTensorShape input_shape = ParallelTensorShape{
+        ParallelTensorDims{
+            FFOrdered<ShardParallelDim>{
+                ShardParallelDim{batch_size, batch_degree},
+                ShardParallelDim{3_n, 1_n},
+                ShardParallelDim{10_n, 1_n},
+                ShardParallelDim{10_n, 1_n},
+            },
+            ReplicaParallelDimSet{
+                SumDegree{1_n},
+                DiscardCopyDegree{1_n},
+            },
+        },
+        DataType::FLOAT,
+    };
+
+    SubParallelComputationGraph pcg = [&] {
+      ParallelComputationGraphBuilder b;
+      parallel_tensor_guid_t t = b.create_input_tensor(input_shape);
+      nonnegative_int outChannels = 6_n;
+      nonnegative_int kernelH = 5_n;
+      nonnegative_int kernelW = 4_n;
+      nonnegative_int strideH = 3_n;
+      nonnegative_int strideW = 2_n;
+      nonnegative_int paddingH = 1_n;
+      nonnegative_int paddingW = 0_n;
+      t = b.conv2d(t,
+                   /*outChannels=*/outChannels,
+                   /*kernelH=*/kernelH,
+                   /*kernelW=*/kernelW,
+                   /*strideH=*/strideH,
+                   /*strideW=*/strideW,
+                   /*paddingH=*/paddingH,
+                   /*paddingW=*/paddingW,
+                   std::nullopt,
+                   1_n,
+                   false,
+                   std::nullopt,
+                   std::nullopt,
+                   std::nullopt,
+                   mm_match);
+      return sub_pcg_from_full_pcg(b.pcg);
+    }();
+
+    PCGPatternMatch match = [&] {
+      parallel_layer_guid_t mm_match_layer =
+          get_parallel_layer_by_name(pcg, mm_match);
+      open_parallel_tensor_guid_t mm_match_layer_input_activations =
+          get_layer_inputs(pcg, mm_match_layer).at(0);
+      open_parallel_tensor_guid_t mm_match_layer_input_weights =
+          get_layer_inputs(pcg, mm_match_layer).at(1);
+
+      return PCGPatternMatch{
+          bidict<PatternNode, parallel_layer_guid_t>{
+              {PatternNode{Node{0}}, mm_match_layer},
+          },
+          std::unordered_map<PatternInput, open_parallel_tensor_guid_t>{
+              {
+                  PatternInput{DataflowGraphInput{0}},
+                  mm_match_layer_input_activations,
+              },
+              {
+                  PatternInput{DataflowGraphInput{2}},
+                  mm_match_layer_input_weights,
+              }},
+      };
+    }();
+
+    SubParallelComputationGraph result = apply_substitution(pcg, sub, match);
+
+    SubParallelComputationGraph correct = [&] {
+      ParallelComputationGraphBuilder b;
+      parallel_tensor_guid_t t = b.create_input_tensor(input_shape);
+      nonnegative_int outChannels = 6_n;
+      nonnegative_int kernelH = 5_n;
+      nonnegative_int kernelW = 4_n;
+      nonnegative_int strideH = 3_n;
+      nonnegative_int strideW = 2_n;
+      nonnegative_int paddingH = 1_n;
+      nonnegative_int paddingW = 0_n;
+      t = b.parallel_partition(t,
+                               /*repartition_dim=*/ff_dim_t{1_n},
+                               /*repartition_degree=*/degree);
+      t = b.conv2d(t,
+                   /*outChannels=*/outChannels,
+                   /*kernelH=*/kernelH,
+                   /*kernelW=*/kernelW,
+                   /*strideH=*/strideH,
+                   /*strideW=*/strideW,
+                   /*paddingH=*/paddingH,
+                   /*paddingW=*/paddingW,
+                   std::nullopt,
+                   1_n,
+                   false,
+                   std::nullopt,
+                   std::nullopt,
+                   std::nullopt,
+                   mm_match);
+      t = b.parallel_combine(
+          t,
+          /*combine_dim=*/
+          ff_dim_t{
+              nonnegative_int{num_dims.unwrap_nonnegative() - 1},
+          },
+          /*combine_degree=*/degree);
+      return sub_pcg_from_full_pcg(b.pcg);
+    }();
+
+    CHECK(sub_pcgs_are_isomorphic(result, correct));
+  }
+
+  TEST_CASE("create_partition_relu_combine") {
+    nonnegative_int degree = 1_n;
+    ff_dim_t parallel_dim = ff_dim_t{1_n};
+    std::string relu_match = "relu_match";
+
+    Substitution sub = create_partition_relu_combine(parallel_dim, degree);
+
+    ShardParallelDim batch_dim = ShardParallelDim{18_n, 3_n};
+    ShardParallelDim feature_dim = ShardParallelDim{32_n, 1_n};
+
+    ParallelTensorShape input_shape = ParallelTensorShape{
+        ParallelTensorDims{
+            FFOrdered<ShardParallelDim>{
+                batch_dim,
+                feature_dim,
+            },
+            ReplicaParallelDimSet{
+                SumDegree{1_n},
+                DiscardCopyDegree{1_n},
+            },
+        },
+        DataType::FLOAT,
+    };
+
+    SubParallelComputationGraph pcg = [&] {
+      ParallelComputationGraphBuilder b;
+      parallel_tensor_guid_t t = b.create_input_tensor(input_shape);
+      t = b.relu(t, relu_match);
+      return sub_pcg_from_full_pcg(b.pcg);
+    }();
+
+    PCGPatternMatch match = [&] {
+      parallel_layer_guid_t relu_match_layer =
+          get_parallel_layer_by_name(pcg, relu_match);
+      open_parallel_tensor_guid_t relu_match_layer_input =
+          get_layer_inputs(pcg, relu_match_layer).at(0);
+
+      return PCGPatternMatch{
+          bidict<PatternNode, parallel_layer_guid_t>{
+              {PatternNode{Node{0}}, relu_match_layer},
+          },
+          std::unordered_map<PatternInput, open_parallel_tensor_guid_t>{{
+              PatternInput{DataflowGraphInput{0}},
+              relu_match_layer_input,
+          }},
+      };
+    }();
+
+    SubParallelComputationGraph result = apply_substitution(pcg, sub, match);
+
+    SubParallelComputationGraph correct = [&] {
+      ParallelComputationGraphBuilder b;
+      parallel_tensor_guid_t t = b.create_input_tensor(input_shape);
+      t = b.parallel_partition(t, parallel_dim, degree);
+      t = b.relu(t, relu_match);
+      t = b.parallel_combine(t, parallel_dim, degree);
+      return sub_pcg_from_full_pcg(b.pcg);
+    }();
+
+    CHECK(sub_pcgs_are_isomorphic(result, correct));
+  }
+
+  TEST_CASE("create_partition_add_combine") {
+    nonnegative_int degree = 1_n;
+    ff_dim_t parallel_dim = ff_dim_t{1_n};
+    std::string add_match = "add_match";
+
+    Substitution sub = create_partition_add_combine(parallel_dim, degree);
+
+    ShardParallelDim d1 = ShardParallelDim{10_n, 2_n};
+    ShardParallelDim d2 = ShardParallelDim{15_n, 3_n};
+
+    ParallelTensorShape lhs_shape = ParallelTensorShape{
+        ParallelTensorDims{
+            FFOrdered<ShardParallelDim>{
+                ShardParallelDim{10_n, 2_n},
+                ShardParallelDim{15_n, 3_n},
+            },
+            ReplicaParallelDimSet{
+                SumDegree{2_n},
+                DiscardCopyDegree{1_n},
+            },
+        },
+        DataType::FLOAT,
+    };
+
+    ParallelTensorShape rhs_shape = lhs_shape;
+
+    SubParallelComputationGraph pcg = [&] {
+      ParallelComputationGraphBuilder b;
+      parallel_tensor_guid_t lhs = b.create_input_tensor(lhs_shape);
+      parallel_tensor_guid_t rhs = b.create_input_tensor(rhs_shape);
+      parallel_tensor_guid_t out = b.add(lhs, rhs, add_match);
+      return sub_pcg_from_full_pcg(b.pcg);
+    }();
+
+    PCGPatternMatch match = [&] {
+      parallel_layer_guid_t add_match_layer =
+          get_parallel_layer_by_name(pcg, add_match);
+      open_parallel_tensor_guid_t add_match_layer_input1 =
+          get_layer_inputs(pcg, add_match_layer).at(0);
+      open_parallel_tensor_guid_t add_match_layer_input2 =
+          get_layer_inputs(pcg, add_match_layer).at(1);
+
+      return PCGPatternMatch{
+          bidict<PatternNode, parallel_layer_guid_t>{
+              {PatternNode{Node{0}}, add_match_layer},
+          },
+          std::unordered_map<PatternInput, open_parallel_tensor_guid_t>{
+              {
+                  PatternInput{DataflowGraphInput{0}},
+                  add_match_layer_input1,
+              },
+              {
+                  PatternInput{DataflowGraphInput{2}},
+                  add_match_layer_input2,
+              }}};
+    }();
+
+    SubParallelComputationGraph result = apply_substitution(pcg, sub, match);
+
+    SubParallelComputationGraph correct = [&] {
+      ParallelComputationGraphBuilder b;
+      parallel_tensor_guid_t lhs = b.create_input_tensor(lhs_shape);
+      parallel_tensor_guid_t rhs = b.create_input_tensor(rhs_shape);
+      lhs = b.parallel_partition(lhs, parallel_dim, degree);
+      rhs = b.parallel_partition(rhs, parallel_dim, degree);
+      parallel_tensor_guid_t t = b.add(lhs, rhs);
+      t = b.parallel_combine(t, parallel_dim, degree);
+      return sub_pcg_from_full_pcg(b.pcg);
+    }();
+
+    CHECK(sub_pcgs_are_isomorphic(result, correct));
+  }
+
+  // TEST_CASE("create_partition_softmax_combine") {
+  //   CHECK(false);
+  // }
 
   TEST_CASE("create_fuse_linear_activation") {
     Substitution sub = create_fuse_linear_activation(Activation::SIGMOID);

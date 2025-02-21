@@ -34,18 +34,6 @@ std::vector<Substitution>
   return substitutions;
 }
 
-Substitution create_combine_inception(nonnegative_int num_convs,
-                                      nonnegative_int num_dims,
-                                      nonnegative_int degree) {
-  NOT_IMPLEMENTED();
-}
-
-Substitution create_combine_concat(nonnegative_int num_inputs,
-                                   nonnegative_int num_dims,
-                                   nonnegative_int degree) {
-  NOT_IMPLEMENTED();
-}
-
 Substitution create_replicate_linear_combine(nonnegative_int num_dims,
                                              nonnegative_int degree,
                                              bool use_bias) {
@@ -248,40 +236,341 @@ Substitution create_partition_linear_combine(nonnegative_int num_dims,
 
 Substitution create_partition_conv2d_combine(nonnegative_int num_dims,
                                              nonnegative_int degree) {
-  NOT_IMPLEMENTED();
+  if (num_dims != 4) {
+    throw mk_runtime_error(fmt::format("num_dims must be 4, not {}", num_dims));
+  }
+
+  SubstitutionBuilder b;
+
+  auto [p_input, o_input] = b.add_input(tensor_attribute_pattern_match_all());
+  auto [p_weight, o_weight] = b.add_input(tensor_attribute_pattern_match_all());
+  std::vector<PatternValue> p_inputs = {p_input, p_weight};
+
+  OperatorAttributePattern conv2d_pattern = OperatorAttributePattern{{
+      op_type_equals_constraint(OperatorType::CONV2D),
+      op_attr_key_divisible_by(OperatorAttributeKey::OUT_CHANNELS, degree),
+  }};
+
+  PatternValue p_conv2d_output = get_only(
+      b.add_pattern_node(conv2d_pattern,
+                         p_inputs,
+                         {tensor_attr_pattern_require_num_dims(num_dims)},
+                         "conv2d"));
+
+  OutputOperatorAttrsAssignment partition_input_expr =
+      OutputOperatorAttrsAssignment{
+          std::nullopt,
+          {
+              set_op_type_attr(OperatorType::REPARTITION),
+              set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
+                                   OperatorAttributeValue{degree}),
+              set_attr_to_constant(OperatorAttributeKey::PARALLEL_DIM,
+                                   OperatorAttributeValue{ff_dim_t{1_n}}),
+          }};
+
+  OutputGraphExprValue o_partition_input_output =
+      get_only(b.add_output_graph_node(partition_input_expr, {o_input}, 1_n));
+
+  /*OutputOperatorAttrsAssignment replicate_weights_expr =
+      OutputOperatorAttrsAssignment{
+          std::nullopt,
+          {
+              set_op_type_attr(OperatorType::REPLICATE),
+              set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
+                                   OperatorAttributeValue{degree}),
+          }};
+  OutputGraphExprValue o_replicate_weights_output = get_only(
+      b.add_output_graph_node(replicate_weights_expr, {o_weight}, 1_n));
+
+  std::vector<OutputGraphExprValue> o_conv2d_inputs = {
+      o_partition_input_output, o_replicate_weights_output};*/
+
+  std::vector<OutputGraphExprValue> o_conv2d_inputs = {o_partition_input_output,
+                                                       o_weight};
+
+  OutputOperatorAttrsAssignment conv2d_expr = OutputOperatorAttrsAssignment{
+      b.pattern_node_named("conv2d"),
+      {},
+  };
+  OutputGraphExprValue o_conv2d_output =
+      get_only(b.add_output_graph_node(conv2d_expr, o_conv2d_inputs, 1_n));
+
+  OutputOperatorAttrsAssignment combine_expr = OutputOperatorAttrsAssignment{
+      std::nullopt,
+      {
+          set_op_type_attr(OperatorType::COMBINE),
+          set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
+                               OperatorAttributeValue{degree}),
+          set_attr_to_constant(
+              OperatorAttributeKey::PARALLEL_DIM,
+              OperatorAttributeValue{ff_dim_t{
+                  nonnegative_int{num_dims.unwrap_nonnegative() - 1},
+              }}),
+      },
+  };
+  OutputGraphExprValue o_combine_output =
+      get_only(b.add_output_graph_node(combine_expr, {o_conv2d_output}, 1_n));
+
+  b.equate_outputs(p_conv2d_output, o_combine_output);
+
+  return b.get_substitution();
 }
 
 Substitution create_partition_attention_combine(nonnegative_int num_heads,
                                                 nonnegative_int degree) {
-  NOT_IMPLEMENTED();
+
+  SubstitutionBuilder b;
+
+  auto [p_input, o_input] = b.add_input(tensor_attribute_pattern_match_all());
+  auto [p_query_weight, o_query_weight] =
+      b.add_input(tensor_attribute_pattern_match_all());
+  auto [p_key_weight, o_key_weight] =
+      b.add_input(tensor_attribute_pattern_match_all());
+  auto [p_value_weight, o_value_weight] =
+      b.add_input(tensor_attribute_pattern_match_all());
+  std::vector<PatternValue> p_inputs = {
+      p_input, p_input, p_input, p_query_weight, p_key_weight, p_value_weight};
+
+  OperatorAttributePattern attention_pattern = OperatorAttributePattern{{
+      op_type_equals_constraint(OperatorType::MULTIHEAD_ATTENTION),
+      op_attr_key_divisible_by(OperatorAttributeKey::OUT_CHANNELS, degree),
+      op_attr_key_divisible_by(OperatorAttributeKey::NUM_HEADS, num_heads),
+  }};
+
+  PatternValue p_attention_output =
+      get_only(b.add_pattern_node(attention_pattern,
+                                  p_inputs,
+                                  {tensor_attr_pattern_require_num_dims(3_n)},
+                                  "attention"));
+
+  OutputOperatorAttrsAssignment partition_input_expr =
+      OutputOperatorAttrsAssignment{
+          std::nullopt,
+          {
+              set_op_type_attr(OperatorType::REPARTITION),
+              set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
+                                   OperatorAttributeValue{degree}),
+              set_attr_to_constant(OperatorAttributeKey::PARALLEL_DIM,
+                                   OperatorAttributeValue{ff_dim_t{1_n}}),
+          }};
+
+  OutputGraphExprValue o_partition_input_output =
+      get_only(b.add_output_graph_node(partition_input_expr, {o_input}, 1_n));
+
+  std::vector<OutputGraphExprValue> o_attention_inputs = {
+      o_partition_input_output,
+      o_partition_input_output,
+      o_partition_input_output,
+      o_query_weight,
+      o_key_weight,
+      o_value_weight};
+
+  OutputOperatorAttrsAssignment attention_expr = OutputOperatorAttrsAssignment{
+      b.pattern_node_named("attention"),
+      {},
+  };
+  OutputGraphExprValue o_attention_output = get_only(
+      b.add_output_graph_node(attention_expr, o_attention_inputs, 1_n));
+
+  OutputOperatorAttrsAssignment combine_expr = OutputOperatorAttrsAssignment{
+      std::nullopt,
+      {
+          set_op_type_attr(OperatorType::COMBINE),
+          set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
+                               OperatorAttributeValue{degree}),
+          set_attr_to_constant(OperatorAttributeKey::PARALLEL_DIM,
+                               OperatorAttributeValue{ff_dim_t{
+                                   2_n,
+                               }}),
+      },
+  };
+  OutputGraphExprValue o_combine_output = get_only(
+      b.add_output_graph_node(combine_expr, {o_attention_output}, 1_n));
+
+  b.equate_outputs(p_attention_output, o_combine_output);
+
+  return b.get_substitution();
 }
 
 Substitution create_replicate_attention_reduce(nonnegative_int num_heads,
                                                nonnegative_int degree) {
-  NOT_IMPLEMENTED();
+  SubstitutionBuilder b;
+
+  auto [p_input, o_input] = b.add_input(tensor_attribute_pattern_match_all());
+  auto [p_query_weight, o_query_weight] =
+      b.add_input(tensor_attribute_pattern_match_all());
+  auto [p_key_weight, o_key_weight] =
+      b.add_input(tensor_attribute_pattern_match_all());
+  auto [p_value_weight, o_value_weight] =
+      b.add_input(tensor_attribute_pattern_match_all());
+  std::vector<PatternValue> p_inputs = {
+      p_input, p_input, p_input, p_query_weight, p_key_weight, p_value_weight};
+
+  OperatorAttributePattern attention_pattern = OperatorAttributePattern{{
+      op_type_equals_constraint(OperatorType::MULTIHEAD_ATTENTION),
+      op_attr_key_divisible_by(OperatorAttributeKey::OUT_CHANNELS, degree),
+      op_attr_key_divisible_by(OperatorAttributeKey::NUM_HEADS, num_heads),
+  }};
+
+  PatternValue p_attention_output =
+      get_only(b.add_pattern_node(attention_pattern,
+                                  p_inputs,
+                                  {tensor_attr_pattern_require_num_dims(3_n)},
+                                  "attention"));
+
+  OutputOperatorAttrsAssignment replicate_input_expr =
+      OutputOperatorAttrsAssignment{
+          std::nullopt,
+          {set_op_type_attr(OperatorType::REPLICATE),
+           set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
+                                OperatorAttributeValue{degree})}};
+
+  OutputGraphExprValue o_replicate_input_output =
+      get_only(b.add_output_graph_node(replicate_input_expr, {o_input}, 1_n));
+
+  std::vector<OutputGraphExprValue> o_attention_inputs = {
+      o_replicate_input_output,
+      o_replicate_input_output,
+      o_replicate_input_output,
+      o_query_weight,
+      o_key_weight,
+      o_value_weight};
+
+  OutputOperatorAttrsAssignment attention_expr = OutputOperatorAttrsAssignment{
+      b.pattern_node_named("attention"),
+      {},
+  };
+  OutputGraphExprValue o_attention_output = get_only(
+      b.add_output_graph_node(attention_expr, o_attention_inputs, 1_n));
+
+  OutputOperatorAttrsAssignment reduce_expr = OutputOperatorAttrsAssignment{
+      std::nullopt,
+      {
+          set_op_type_attr(OperatorType::REDUCTION),
+          set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
+                               OperatorAttributeValue{degree}),
+      },
+  };
+  OutputGraphExprValue o_reduce_output = get_only(
+      b.add_output_graph_node(reduce_expr, {o_attention_output}, 1_n));
+
+  b.equate_outputs(p_attention_output, o_reduce_output);
+
+  return b.get_substitution();
 }
 
 Substitution create_partition_add_combine(ff_dim_t parallel_dim,
                                           nonnegative_int degree) {
-  NOT_IMPLEMENTED();
+  SubstitutionBuilder b;
+
+  auto [p_input1, o_input1] = b.add_input(tensor_attribute_pattern_match_all());
+  auto [p_input2, o_input2] = b.add_input(tensor_attribute_pattern_match_all());
+  std::vector<PatternValue> p_inputs = {p_input1, p_input2};
+
+  OperatorAttributePattern add_pattern = OperatorAttributePattern{{
+      op_type_equals_constraint(OperatorType::EW_ADD),
+      op_attr_key_divisible_by(OperatorAttributeKey::OUT_CHANNELS, degree),
+  }};
+
+  PatternValue p_add_output = get_only(b.add_pattern_node(
+      add_pattern, p_inputs, {tensor_attribute_pattern_match_all()}, "add"));
+
+  OutputOperatorAttrsAssignment partition_input_expr =
+      OutputOperatorAttrsAssignment{
+          std::nullopt,
+          {
+              set_op_type_attr(OperatorType::REPARTITION),
+              set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
+                                   OperatorAttributeValue{degree}),
+              set_attr_to_constant(OperatorAttributeKey::PARALLEL_DIM,
+                                   OperatorAttributeValue{parallel_dim}),
+          }};
+
+  OutputGraphExprValue o_partition_input1_output =
+      get_only(b.add_output_graph_node(partition_input_expr, {o_input1}, 1_n));
+
+  OutputGraphExprValue o_partition_input2_output =
+      get_only(b.add_output_graph_node(partition_input_expr, {o_input2}, 1_n));
+
+  std::vector<OutputGraphExprValue> o_add_inputs = {o_partition_input1_output,
+                                                    o_partition_input2_output};
+
+  OutputOperatorAttrsAssignment add_expr = OutputOperatorAttrsAssignment{
+      b.pattern_node_named("add"),
+      {},
+  };
+  OutputGraphExprValue o_add_output =
+      get_only(b.add_output_graph_node(add_expr, o_add_inputs, 1_n));
+
+  OutputOperatorAttrsAssignment combine_expr = OutputOperatorAttrsAssignment{
+      std::nullopt,
+      {
+          set_op_type_attr(OperatorType::COMBINE),
+          set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
+                               OperatorAttributeValue{degree}),
+          set_attr_to_constant(OperatorAttributeKey::PARALLEL_DIM,
+                               OperatorAttributeValue{parallel_dim}),
+      },
+  };
+  OutputGraphExprValue o_combine_output =
+      get_only(b.add_output_graph_node(combine_expr, {o_add_output}, 1_n));
+
+  b.equate_outputs(p_add_output, o_combine_output);
+
+  return b.get_substitution();
 }
 
 Substitution create_partition_relu_combine(ff_dim_t parallel_dim,
                                            nonnegative_int degree) {
-  NOT_IMPLEMENTED();
-}
+  SubstitutionBuilder b;
 
-Substitution create_partition_concat_combine(nonnegative_int num_inputs,
-                                             ff_dim_t concat_dim,
-                                             ff_dim_t parallel_dim,
-                                             nonnegative_int degree) {
-  NOT_IMPLEMENTED();
-}
+  auto [p_input, o_input] = b.add_input(tensor_attribute_pattern_match_all());
 
-Substitution create_partition_softmax_combine(ff_dim_t softmax_dim,
-                                              ff_dim_t partition_dim,
-                                              nonnegative_int degree) {
-  NOT_IMPLEMENTED();
+  OperatorAttributePattern relu_pattern = OperatorAttributePattern{{
+      op_type_equals_constraint(OperatorType::RELU),
+      op_attr_key_divisible_by(OperatorAttributeKey::OUT_CHANNELS, degree),
+  }};
+
+  PatternValue p_relu_output = get_only(b.add_pattern_node(
+      relu_pattern, {p_input}, {tensor_attribute_pattern_match_all()}, "relu"));
+
+  OutputOperatorAttrsAssignment partition_input_expr =
+      OutputOperatorAttrsAssignment{
+          std::nullopt,
+          {
+              set_op_type_attr(OperatorType::REPARTITION),
+              set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
+                                   OperatorAttributeValue{degree}),
+              set_attr_to_constant(OperatorAttributeKey::PARALLEL_DIM,
+                                   OperatorAttributeValue{parallel_dim}),
+          }};
+
+  OutputGraphExprValue o_partition_input_output =
+      get_only(b.add_output_graph_node(partition_input_expr, {o_input}, 1_n));
+
+  OutputOperatorAttrsAssignment relu_expr = OutputOperatorAttrsAssignment{
+      b.pattern_node_named("relu"),
+      {},
+  };
+  OutputGraphExprValue o_relu_output = get_only(
+      b.add_output_graph_node(relu_expr, {o_partition_input_output}, 1_n));
+
+  OutputOperatorAttrsAssignment combine_expr = OutputOperatorAttrsAssignment{
+      std::nullopt,
+      {
+          set_op_type_attr(OperatorType::COMBINE),
+          set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
+                               OperatorAttributeValue{degree}),
+          set_attr_to_constant(OperatorAttributeKey::PARALLEL_DIM,
+                               OperatorAttributeValue{parallel_dim}),
+      },
+  };
+  OutputGraphExprValue o_combine_output =
+      get_only(b.add_output_graph_node(combine_expr, {o_relu_output}, 1_n));
+
+  b.equate_outputs(p_relu_output, o_combine_output);
+
+  return b.get_substitution();
 }
 
 Substitution create_fuse_linear_activation(Activation activation) {

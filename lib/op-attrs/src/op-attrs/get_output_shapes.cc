@@ -1,4 +1,5 @@
 #include "op-attrs/get_output_shapes.h"
+#include "op-attrs/ops/attention.h"
 #include "op-attrs/ops/batch_matmul.h"
 #include "op-attrs/ops/batch_norm.h"
 #include "op-attrs/ops/cast.h"
@@ -15,6 +16,7 @@
 #include "op-attrs/ops/layer_norm.h"
 #include "op-attrs/ops/linear.h"
 #include "op-attrs/ops/pool_2d.h"
+#include "op-attrs/ops/reduction.h"
 #include "op-attrs/ops/repartition.h"
 #include "op-attrs/ops/replicate.h"
 #include "op-attrs/ops/weight.h"
@@ -73,7 +75,15 @@ std::vector<ParallelTensorShape>
       [&](LinearAttrs const &attrs) -> std::vector<ParallelTensorShape> {
         return {throw_if_unexpected(get_output_shape(attrs, inputs.at(0)))};
       },
+      [&](MultiHeadAttentionAttrs const &attrs)
+          -> std::vector<ParallelTensorShape> {
+        return {throw_if_unexpected(
+            get_output_shape(attrs, inputs.at(0), inputs.at(1), inputs.at(2)))};
+      },
       [&](Pool2DAttrs const &attrs) -> std::vector<ParallelTensorShape> {
+        return {throw_if_unexpected(get_output_shape(attrs, inputs.at(0)))};
+      },
+      [&](ReductionAttrs const &attrs) -> std::vector<ParallelTensorShape> {
         return {throw_if_unexpected(get_output_shape(attrs, inputs.at(0)))};
       },
       [&](ReplicateAttrs const &attrs) -> std::vector<ParallelTensorShape> {
