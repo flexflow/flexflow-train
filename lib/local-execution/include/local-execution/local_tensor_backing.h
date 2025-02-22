@@ -8,7 +8,6 @@
 #include "local-execution/local_task_argument_accessor.h"
 #include "local-execution/local_tensor_backing.dtg.h"
 #include "local-execution/loss_tensor_source.h"
-#include "local-execution/lowered_tensor_source.h"
 #include "local-execution/optimizer_tensor_source.h"
 #include "local-execution/unallocated_tensors.dtg.h"
 #include "pcg/computation_graph.dtg.h"
