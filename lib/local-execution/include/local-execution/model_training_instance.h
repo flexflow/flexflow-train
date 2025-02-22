@@ -12,22 +12,25 @@ using PerLayerElapsedTime =
     std::unordered_map<layer_guid_t, std::optional<float>>;
 
 struct ModelTrainingInstance {
-  ModelTrainingInstance(LocalTrainingBacking const &,
+  ModelTrainingInstance(Allocator const &,
+                        LocalTrainingBacking const &,
                         tensor_guid_t const &logit_tensor,
                         loss_tensor_t const &label_tensor,
                         LossAttrs const &,
                         OptimizerAttrs const &);
 
+  Allocator allocator;
   LocalTrainingBacking training_backing;
   tensor_guid_t logit_tensor;
   loss_tensor_t label_tensor;
   LossAttrs loss_attrs;
   OptimizerAttrs optimizer_attrs;
-};
 
-PerLayerElapsedTime forward(ModelTrainingInstance const &);
-PerLayerElapsedTime backward(ModelTrainingInstance const &);
-void update(ModelTrainingInstance &);
+public:
+  PerLayerElapsedTime forward();
+  PerLayerElapsedTime backward();
+  void update();
+};
 
 } // namespace FlexFlow
 

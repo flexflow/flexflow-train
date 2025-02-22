@@ -6,6 +6,7 @@
 #include "local-execution/allocated_tensors.dtg.h"
 #include "local-execution/gradient_tensor_source.h"
 #include "local-execution/local_task_argument_accessor.h"
+#include "local-execution/local_tensor_backing.dtg.h"
 #include "local-execution/loss_tensor_source.h"
 #include "local-execution/lowered_tensor_source.h"
 #include "local-execution/optimizer_tensor_source.h"
@@ -19,51 +20,25 @@
 
 namespace FlexFlow {
 
-using TensorBackingMap =
-    std::unordered_map<lowered_tensor_t, GenericTensorAccessorW>;
+GenericTensorAccessorW get_tensor(LocalTensorBacking const &,
+                                  TensorTypeVariant const &);
 
-struct LocalTensorBacking {
-  LocalTensorBacking(AllocatedTensors const &,
-                     UnallocatedTensors const &,
-                     Allocator const &);
+std::unordered_map<TensorTypeVariant, GenericTensorAccessorW>
+    get_tensor_backings(
+        std::unordered_map<TensorTypeVariant, GenericTensorAccessorW> const &,
+        std::unordered_map<TensorTypeVariant, TensorShape> const &,
+        Allocator &);
 
-public:
-  GenericTensorAccessorW get_tensor(TensorTypeVariant const &) const;
+std::unordered_map<tensor_guid_t, std::vector<optimizer_tensor_t>>
+    merge_optimizer_mappings(
+        std::unordered_map<tensor_guid_t, std::vector<optimizer_tensor_t>> const
+            &allocated,
+        std::unordered_map<tensor_guid_t, std::vector<optimizer_tensor_t>> const
+            &unallocated);
 
-public:
-  // tensors
-  TensorBackingMap tensor_backings;
-
-  std::unordered_map<tensor_guid_t, lowered_tensor_t> tensor_lowering_mapping;
-  std::unordered_map<gradient_tensor_t, lowered_tensor_t>
-      gradient_tensor_lowering_mapping;
-  std::unordered_map<optimizer_tensor_t, lowered_tensor_t>
-      optimizer_tensor_lowering_mapping;
-  std::unordered_map<loss_tensor_t, lowered_tensor_t>
-      loss_tensor_lowering_mapping;
-
-  std::unordered_map<tensor_guid_t, gradient_tensor_t> tensor_gradient_mapping;
-  std::unordered_map<tensor_guid_t, std::vector<optimizer_tensor_t>>
-      tensor_optimizer_mapping;
-
-  Allocator allocator;
-
-private:
-  lowered_tensor_t insert_tensor(TensorTypeVariant const &);
-  LoweredTensorSource lowered_tensor_source;
-};
-
-UnallocatedTensors generate_unallocated_tensors(
-    AllocatedTensors const &,
-    std::unordered_map<tensor_guid_t, TensorAttrs> const &,
-    GradientTensorSource &);
-
-UnallocatedTensors generate_unallocated_tensors_with_optimizer(
-    AllocatedTensors const &,
-    std::unordered_map<tensor_guid_t, TensorAttrs> const &,
-    GradientTensorSource &,
-    OptimizerTensorSource &,
-    OptimizerAttrs const &);
+LocalTensorBacking construct_local_tensor_backing(AllocatedTensors const &,
+                                                  UnallocatedTensors const &,
+                                                  Allocator &);
 
 TensorSlotsBacking construct_tensor_slots_backing(LocalTensorBacking const &,
                                                   TaskBinding const &);

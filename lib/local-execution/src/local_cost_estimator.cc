@@ -95,8 +95,10 @@ CostDetails LocalCostEstimator::estimate_cost(
   // execute layer
   layer_guid_t operator_layer_guid =
       get_layer_by_name(computation_graph, "operator");
-  float fwd = execute_forward(local_backing, operator_layer_guid).value();
-  float bwd = execute_backward(local_backing, operator_layer_guid).value();
+  float fwd =
+      execute_forward(local_backing, operator_layer_guid, allocator).value();
+  float bwd =
+      execute_backward(local_backing, operator_layer_guid, allocator).value();
 
   float total_execution_time = fwd + bwd;
 
