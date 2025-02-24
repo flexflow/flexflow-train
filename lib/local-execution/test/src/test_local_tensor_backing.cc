@@ -96,14 +96,10 @@ TEST_SUITE(FF_TEST_SUITE) {
       TensorAttrs allocated_tensor_attrs = TensorAttrs{
           TensorShape{TensorDims{FFOrdered<nonnegative_int>{16_n, 10_n}},
                       DataType::FLOAT},
-          std::nullopt,
-          std::nullopt,
           CreateGrad::NO};
       TensorAttrs unallocated_tensor_attrs = TensorAttrs{
           TensorShape{TensorDims{FFOrdered<nonnegative_int>{16_n, 20_n}},
                       DataType::FLOAT},
-          std::nullopt,
-          std::nullopt,
           CreateGrad::YES};
 
       GenericTensorAccessorW allocated_tensor_backing =

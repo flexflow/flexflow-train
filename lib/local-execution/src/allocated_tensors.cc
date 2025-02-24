@@ -54,8 +54,7 @@ bool are_allocated_gradient_tensors_valid(
   for (std::pair<tensor_guid_t, gradient_tensor_t> const &tensor_to_grad :
        allocated_tensors.gradient_mapping) {
     if (tensor_attrs.count(tensor_to_grad.first)) {
-      if (tensor_attrs.at(tensor_to_grad.first).create_gradients ==
-          CreateGrad::NO) {
+      if (tensor_attrs.at(tensor_to_grad.first).create_grad == CreateGrad::NO) {
         return false;
       }
 
@@ -96,7 +95,7 @@ bool are_allocated_optimizer_tensors_valid(
   for (std::pair<tensor_guid_t, std::vector<optimizer_tensor_t>> const
            &tensor_to_optimizers : allocated_tensors.optimizer_mapping) {
     if (tensor_attrs.count(tensor_to_optimizers.first)) {
-      if (tensor_attrs.at(tensor_to_optimizers.first).create_gradients ==
+      if (tensor_attrs.at(tensor_to_optimizers.first).create_grad ==
           CreateGrad::NO) {
         return false;
       }

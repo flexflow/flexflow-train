@@ -9,6 +9,7 @@
 #include "pcg/computation_graph_builder.h"
 #include "pcg/optimizer_attrs.dtg.h"
 #include "test_utils.h"
+#include "utils/containers/get_only.h"
 
 namespace FlexFlow {
 
@@ -24,19 +25,20 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         loss_tensor_source.new_loss_tensor();
 
     nonnegative_int batch_size = 10_n;
-    nonnegative_int data_dim = 100_n;
+    nonnegative_int data_dim = 16_n;
+    nonnegative_int output_dim = 32_n;
 
-    TensorShape input_tensor_shape = TensorShape{
-        TensorDims{FFOrdered<nonnegative_int>{batch_size, data_dim}},
+    TensorShape output_tensor_shape = TensorShape{
+        TensorDims{FFOrdered<nonnegative_int>{batch_size, output_dim}},
         DataType::FLOAT};
-    TensorShape reduced_input_tensor_shape =
+    TensorShape reduced_tensor_shape =
         TensorShape{TensorDims{FFOrdered<nonnegative_int>{batch_size, 1_n}},
                     DataType::FLOAT};
 
     GenericTensorAccessorW label_for_nonconfigurable_loss_attrs_backing =
-        allocator.allocate_tensor(reduced_input_tensor_shape);
+        allocator.allocate_tensor(output_tensor_shape);
     GenericTensorAccessorW label_for_sparse_cce_loss_attrs_backing =
-        allocator.allocate_tensor(reduced_input_tensor_shape);
+        allocator.allocate_tensor(reduced_tensor_shape);
     AllocatedTensors allocated_tensors = AllocatedTensors{
         {{TensorTypeVariant{label_for_nonconfigurable_loss_attrs},
           label_for_nonconfigurable_loss_attrs_backing},
@@ -48,24 +50,40 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     // construct computation graph
     ComputationGraph computation_graph = make_empty_computation_graph();
 
-    TensorAttrs input_tensor_attrs = TensorAttrs{
-        input_tensor_shape, std::nullopt, std::nullopt, CreateGrad::YES};
+    TensorShape input_tensor_shape = TensorShape{
+        TensorDims{FFOrdered<nonnegative_int>{batch_size, data_dim}},
+        DataType::FLOAT};
 
-    LayerAddedResult inputs_layer =
-        add_layer(computation_graph,
-                  LayerAttrs{ComputationGraphOpAttrs{InputAttrs{}}, "inputs"},
-                  {},
-                  {input_tensor_attrs});
+    TensorShape weight_shape = TensorShape{
+        TensorDims{FFOrdered<nonnegative_int>{data_dim, output_dim}},
+        DataType::FLOAT};
 
-    float scalar = 4.0;
-    LayerAddedResult scalar_multiply_operator =
-        add_layer(computation_graph,
-                  LayerAttrs{ComputationGraphOpAttrs{ElementUnaryAttrs{
-                                 OperatorType::SCALAR_MULTIPLY, scalar}},
-                             "scalar_mult"},
-                  inputs_layer.outputs,
-                  {input_tensor_attrs});
-    tensor_guid_t label_tensor = scalar_multiply_operator.outputs.at(0);
+    LayerAddedResult inputs_layer = add_layer(
+        computation_graph,
+        LayerAttrs{ComputationGraphOpAttrs{InputAttrs{input_tensor_shape}},
+                   "inputs"},
+        {},
+        {});
+
+    LayerAddedResult weights_layer = add_layer(
+        computation_graph,
+        LayerAttrs{ComputationGraphOpAttrs{WeightAttrs{
+                       weight_shape, InitializerAttrs{ZeroInitializerAttrs{}}}},
+                   "weights"},
+        {},
+        {});
+
+    LayerAddedResult linear_operator = add_layer(
+        computation_graph,
+        LayerAttrs{ComputationGraphOpAttrs{LinearAttrs{output_dim,
+                                                       /*use_bias=*/true,
+                                                       DataType::FLOAT,
+                                                       std::nullopt,
+                                                       std::nullopt}},
+                   "linear"},
+        inputs_layer.outputs,
+        {});
+    tensor_guid_t logit_tensor = get_only(linear_operator.outputs);
 
     // initialize runtime configs
     ManagedPerDeviceFFHandle managed_handle{};
@@ -85,7 +103,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
       compute_loss(local_training_backing,
                    loss_attrs,
-                   label_tensor,
+                   logit_tensor,
                    label_for_sparse_cce_loss_attrs,
                    allocator);
     }
@@ -96,7 +114,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
             NonconfigurableLossAttrs{LossFunction::CATEGORICAL_CROSSENTROPY}};
         compute_loss(local_training_backing,
                      loss_attrs,
-                     label_tensor,
+                     logit_tensor,
                      label_for_nonconfigurable_loss_attrs,
                      allocator);
       }
@@ -106,7 +124,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
             LossFunction::MEAN_SQUARED_ERROR_AVG_REDUCE}};
         compute_loss(local_training_backing,
                      loss_attrs,
-                     label_tensor,
+                     logit_tensor,
                      label_for_nonconfigurable_loss_attrs,
                      allocator);
       }
@@ -116,7 +134,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
             LossAttrs{NonconfigurableLossAttrs{LossFunction::IDENTITY}};
         compute_loss(local_training_backing,
                      loss_attrs,
-                     label_tensor,
+                     logit_tensor,
                      label_for_nonconfigurable_loss_attrs,
                      allocator);
       }

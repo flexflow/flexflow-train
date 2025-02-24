@@ -20,29 +20,42 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     ComputationGraph computation_graph = make_empty_computation_graph();
 
     nonnegative_int batch_size = 10_n;
-    nonnegative_int data_dim = 100_n;
+    nonnegative_int data_dim = 16_n;
+    nonnegative_int output_dim = 32_n;
 
     TensorShape input_tensor_shape = TensorShape{
         TensorDims{FFOrdered<nonnegative_int>{batch_size, data_dim}},
         DataType::FLOAT};
 
-    TensorAttrs input_tensor_attrs = TensorAttrs{
-        input_tensor_shape, std::nullopt, std::nullopt, CreateGrad::YES};
+    TensorShape weight_shape = TensorShape{
+        TensorDims{FFOrdered<nonnegative_int>{data_dim, output_dim}},
+        DataType::FLOAT};
 
-    LayerAddedResult inputs_layer =
-        add_layer(computation_graph,
-                  LayerAttrs{ComputationGraphOpAttrs{InputAttrs{}}, "inputs"},
-                  {},
-                  {input_tensor_attrs});
+    LayerAddedResult inputs_layer = add_layer(
+        computation_graph,
+        LayerAttrs{ComputationGraphOpAttrs{InputAttrs{input_tensor_shape}},
+                   "inputs"},
+        {},
+        {});
 
-    float scalar = 4.0;
-    LayerAddedResult scalar_multiply_operator =
-        add_layer(computation_graph,
-                  LayerAttrs{ComputationGraphOpAttrs{ElementUnaryAttrs{
-                                 OperatorType::SCALAR_MULTIPLY, scalar}},
-                             "scalar_mult"},
-                  inputs_layer.outputs,
-                  {input_tensor_attrs});
+    LayerAddedResult weights_layer = add_layer(
+        computation_graph,
+        LayerAttrs{ComputationGraphOpAttrs{WeightAttrs{
+                       weight_shape, InitializerAttrs{ZeroInitializerAttrs{}}}},
+                   "weights"},
+        {},
+        {});
+
+    LayerAddedResult linear_operator = add_layer(
+        computation_graph,
+        LayerAttrs{ComputationGraphOpAttrs{LinearAttrs{output_dim,
+                                                       /*use_bias=*/true,
+                                                       DataType::FLOAT,
+                                                       std::nullopt,
+                                                       std::nullopt}},
+                   "linear"},
+        inputs_layer.outputs,
+        {});
 
     // initialize runtime configs
     ManagedPerDeviceFFHandle managed_handle{};
@@ -66,7 +79,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                                  runtime_arg_config,
                                  optimizer_attrs};
         execute_update(local_training_backing,
-                       scalar_multiply_operator.layer,
+                       linear_operator.layer,
                        optimizer_attrs,
                        allocator);
       }
@@ -83,7 +96,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                                  runtime_arg_config,
                                  optimizer_attrs};
         execute_update(local_training_backing,
-                       scalar_multiply_operator.layer,
+                       linear_operator.layer,
                        optimizer_attrs,
                        allocator);
       }
@@ -105,7 +118,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                                runtime_arg_config,
                                optimizer_attrs};
       execute_update(local_training_backing,
-                     scalar_multiply_operator.layer,
+                     linear_operator.layer,
                      optimizer_attrs,
                      allocator);
     }

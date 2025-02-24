@@ -1,6 +1,7 @@
 #include "local-execution/optimizer.h"
 #include "kernels/optimizer_kernels.h"
 #include "task-spec/profiling.h"
+#include "utils/containers/get_only.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {
@@ -24,9 +25,12 @@ TaskSignature get_sgd_update_signature() {
 
   add_arg_slot<SGDOptimizerAttrs>(sig, ATTRS);
   add_arg_slot<ProfilingSettings>(sig, PROFILING);
-  if (CHOSEN_SYNC_TYPE == ParamSync::NCCL) {
-    add_unchecked_arg_slot<PerDeviceFFHandle>(sig, HANDLE);
-  }
+  add_unchecked_arg_slot<PerDeviceFFHandle>(
+      sig, HANDLE); // how to deal with removal of ParamSync?
+
+  // if (CHOSEN_SYNC_TYPE == ParamSync::NCCL) {
+  //   add_unchecked_arg_slot<PerDeviceFFHandle>(sig, HANDLE);
+  // }
   return sig;
 }
 
@@ -44,12 +48,16 @@ TaskInvocation sgd_update(SGDOptimizerAttrs const &attrs,
   b.bind_arg(ATTRS, attrs);
   b.bind_arg(PROFILING, profiling_settings());
 
-  if (CHOSEN_SYNC_TYPE == ParamSync::NCCL) {
-    b.bind_arg(HANDLE, ff_handle());
-    return TaskInvocation{task_id_t::SGD_UPD_NCCL_TASK_ID, b};
-  } else {
-    return TaskInvocation{task_id_t::SGD_UPD_PS_TASK_ID, b};
-  }
+  b.bind_arg(HANDLE, ff_handle());
+  return TaskInvocation{task_id_t::SGD_UPD_NCCL_TASK_ID,
+                        b}; // how to deal with removal of ParamSync?
+
+  // if (CHOSEN_SYNC_TYPE == ParamSync::NCCL) {
+  //   b.bind_arg(HANDLE, ff_handle());
+  //   return TaskInvocation{task_id_t::SGD_UPD_NCCL_TASK_ID, b};
+  // } else {
+  //   return TaskInvocation{task_id_t::SGD_UPD_PS_TASK_ID, b};
+  // }
 }
 
 static void sgd_update_task_impl(TaskArgumentAccessor const &acc) {
@@ -73,35 +81,49 @@ static void sgd_update_task_impl(TaskArgumentAccessor const &acc) {
     sgd_v_ptr = sgd_v.get_float_ptr();
   }
 
-  if (CHOSEN_SYNC_TYPE == ParamSync::NCCL) {
-    auto handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
-    profile(sgd_nccl_update_task_gpu,
-            profiling,
-            "[SGD NCCL] update_time = %.2lfms\n",
-            attrs.lr,
-            attrs.momentum,
-            attrs.nesterov,
-            attrs.weight_decay,
-            handle,
-            weight_grad.get_float_ptr(),
-            size,
-            weight.get_float_ptr(),
-            sgd_v_ptr);
+  auto handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  profile(sgd_nccl_update_task_gpu,
+          profiling,
+          "[SGD NCCL] update_time = %.2lfms\n",
+          attrs.lr,
+          attrs.momentum,
+          attrs.nesterov,
+          attrs.weight_decay,
+          handle,
+          weight_grad.get_float_ptr(),
+          size,
+          weight.get_float_ptr(),
+          sgd_v_ptr); // how to deal with removal of ParamSync?
 
-  } else {
-    profile(sgd_ps_update_task_gpu,
-            profiling,
-            "[SGD PS] update_time = %.2lfms\n",
-            attrs.lr,
-            attrs.momentum,
-            attrs.nesterov,
-            attrs.weight_decay,
-            weight_grad.get_float_ptr(),
-            size,
-            num_replicas,
-            weight.get_float_ptr(),
-            sgd_v_ptr);
-  }
+  // if (CHOSEN_SYNC_TYPE == ParamSync::NCCL) {
+  //   auto handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  //   profile(sgd_nccl_update_task_gpu,
+  //           profiling,
+  //           "[SGD NCCL] update_time = %.2lfms\n",
+  //           attrs.lr,
+  //           attrs.momentum,
+  //           attrs.nesterov,
+  //           attrs.weight_decay,
+  //           handle,
+  //           weight_grad.get_float_ptr(),
+  //           size,
+  //           weight.get_float_ptr(),
+  //           sgd_v_ptr);
+
+  // } else {
+  //   profile(sgd_ps_update_task_gpu,
+  //           profiling,
+  //           "[SGD PS] update_time = %.2lfms\n",
+  //           attrs.lr,
+  //           attrs.momentum,
+  //           attrs.nesterov,
+  //           attrs.weight_decay,
+  //           weight_grad.get_float_ptr(),
+  //           size,
+  //           num_replicas,
+  //           weight.get_float_ptr(),
+  //           sgd_v_ptr);
+  // }
 }
 
 TaskImplFunction get_sgd_update_task_impl() {
@@ -117,9 +139,11 @@ TaskSignature get_adam_update_signature() {
 
   add_arg_slot<AdamOptimizerAttrs>(sig, ATTRS);
   add_arg_slot<ProfilingSettings>(sig, PROFILING);
-  if (CHOSEN_SYNC_TYPE == ParamSync::NCCL) {
-    add_unchecked_arg_slot<PerDeviceFFHandle>(sig, HANDLE);
-  }
+  add_unchecked_arg_slot<PerDeviceFFHandle>(
+      sig, HANDLE); // how to deal with removal of ParamSync?
+  // if (CHOSEN_SYNC_TYPE == ParamSync::NCCL) {
+  //   add_unchecked_arg_slot<PerDeviceFFHandle>(sig, HANDLE);
+  // }
   return sig;
 }
 
@@ -135,13 +159,16 @@ TaskInvocation adam_update(AdamOptimizerAttrs const &attrs,
   b.bind_optimizer(ADAM_V, adam_v);
   b.bind_arg(ATTRS, attrs);
   b.bind_arg(PROFILING, profiling_settings());
+  b.bind_arg(HANDLE, ff_handle());
+  return TaskInvocation{task_id_t::ADAM_UPD_NCCL_TASK_ID,
+                        b}; // how to deal with removal of ParamSync?
 
-  if (CHOSEN_SYNC_TYPE == ParamSync::NCCL) {
-    b.bind_arg(HANDLE, ff_handle());
-    return TaskInvocation{task_id_t::ADAM_UPD_NCCL_TASK_ID, b};
-  } else {
-    return TaskInvocation{task_id_t::ADAM_UPD_PS_TASK_ID, b};
-  }
+  // if (CHOSEN_SYNC_TYPE == ParamSync::NCCL) {
+  //   b.bind_arg(HANDLE, ff_handle());
+  //   return TaskInvocation{task_id_t::ADAM_UPD_NCCL_TASK_ID, b};
+  // } else {
+  //   return TaskInvocation{task_id_t::ADAM_UPD_PS_TASK_ID, b};
+  // }
 }
 
 static void adam_update_task_impl(TaskArgumentAccessor const &acc) {
@@ -162,38 +189,54 @@ static void adam_update_task_impl(TaskArgumentAccessor const &acc) {
   int num_replicas = weight_grad.shape.get_volume().unwrap_nonnegative() /
                      weight.shape.get_volume().unwrap_nonnegative();
 
-  if (CHOSEN_SYNC_TYPE == ParamSync::NCCL) {
-    auto handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
-    profile(adam_nccl_update_task_gpu,
-            profiling,
-            "[Adam NCCL] update_time = %.2lfms\n",
-            attrs.alpha_t,
-            attrs.beta1,
-            attrs.beta2,
-            attrs.weight_decay,
-            attrs.epsilon,
-            size,
-            handle,
-            weight_grad.get_float_ptr(),
-            m_tensor.get_float_ptr(),
-            v_tensor.get_float_ptr(),
-            weight.get_float_ptr());
-  } else {
-    profile(adam_ps_update_task_gpu,
-            profiling,
-            "[Adam NCCL] update_time = %.2lfms\n",
-            attrs.alpha_t,
-            attrs.beta1,
-            attrs.beta2,
-            attrs.weight_decay,
-            attrs.epsilon,
-            size,
-            num_replicas,
-            weight_grad.get_float_ptr(),
-            m_tensor.get_float_ptr(),
-            v_tensor.get_float_ptr(),
-            weight.get_float_ptr());
-  }
+  auto handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  profile(adam_nccl_update_task_gpu,
+          profiling,
+          "[Adam NCCL] update_time = %.2lfms\n",
+          attrs.alpha_t,
+          attrs.beta1,
+          attrs.beta2,
+          attrs.weight_decay,
+          attrs.epsilon,
+          size,
+          handle,
+          weight_grad.get_float_ptr(),
+          m_tensor.get_float_ptr(),
+          v_tensor.get_float_ptr(),
+          weight.get_float_ptr()); // how to deal with removal of ParamSync?
+
+  // if (CHOSEN_SYNC_TYPE == ParamSync::NCCL) {
+  //   auto handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  //   profile(adam_nccl_update_task_gpu,
+  //           profiling,
+  //           "[Adam NCCL] update_time = %.2lfms\n",
+  //           attrs.alpha_t,
+  //           attrs.beta1,
+  //           attrs.beta2,
+  //           attrs.weight_decay,
+  //           attrs.epsilon,
+  //           size,
+  //           handle,
+  //           weight_grad.get_float_ptr(),
+  //           m_tensor.get_float_ptr(),
+  //           v_tensor.get_float_ptr(),
+  //           weight.get_float_ptr());
+  // } else {
+  //   profile(adam_ps_update_task_gpu,
+  //           profiling,
+  //           "[Adam NCCL] update_time = %.2lfms\n",
+  //           attrs.alpha_t,
+  //           attrs.beta1,
+  //           attrs.beta2,
+  //           attrs.weight_decay,
+  //           attrs.epsilon,
+  //           size,
+  //           num_replicas,
+  //           weight_grad.get_float_ptr(),
+  //           m_tensor.get_float_ptr(),
+  //           v_tensor.get_float_ptr(),
+  //           weight.get_float_ptr());
+  // }
 }
 
 TaskImplFunction get_adam_update_task_impl() {
@@ -211,17 +254,18 @@ TaskInvocation get_update_invocation(
     tensor_guid_t const &weight,
     gradient_tensor_t const &weight_grad,
     std::vector<optimizer_tensor_t> const &grad_buffer_tensors) {
-  return attrs.visit<TaskInvocation>(overload{
-      [&](SGDOptimizerAttrs const &s) {
-        return sgd_update(s, weight, weight_grad, grad_buffer_tensors.at(0));
-      },
-      [&](AdamOptimizerAttrs const &s) {
-        return adam_update(s,
-                           weight,
-                           weight_grad,
-                           grad_buffer_tensors.at(0),
-                           grad_buffer_tensors.at(1));
-      }});
+  return attrs.visit<TaskInvocation>(
+      overload{[&](SGDOptimizerAttrs const &s) {
+                 return sgd_update(
+                     s, weight, weight_grad, get_only(grad_buffer_tensors));
+               },
+               [&](AdamOptimizerAttrs const &s) {
+                 return adam_update(s,
+                                    weight,
+                                    weight_grad,
+                                    grad_buffer_tensors.at(0),
+                                    grad_buffer_tensors.at(1));
+               }});
 }
 
 TaskImplFunction get_update_task_impl(OptimizerAttrs const &attrs) {

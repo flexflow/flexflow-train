@@ -23,7 +23,7 @@ UnallocatedTensors generate_unallocated_tensors(
       tensor_type_shapes.insert({tensor_guid_type, tensor_attrs.shape});
     }
 
-    if (tensor_attrs.create_gradients == CreateGrad::YES &&
+    if (tensor_attrs.create_grad == CreateGrad::YES &&
         !allocated_tensors.gradient_mapping.count(tensor_guid)) {
       gradient_tensor_t gradient_tensor =
           gradient_tensor_source.new_gradient_tensor();
@@ -61,7 +61,7 @@ UnallocatedTensors generate_unallocated_tensors_with_optimizer(
        tensor_attrs_mapping) {
     tensor_guid_t tensor_guid = tensor_guid_attrs.first;
     TensorAttrs tensor_attrs = tensor_guid_attrs.second;
-    if (tensor_attrs.create_gradients == CreateGrad::YES) {
+    if (tensor_attrs.create_grad == CreateGrad::YES) {
       std::vector<optimizer_tensor_t> optimizer_tensors;
 
       int num_optimizer_tensors_to_allocate =

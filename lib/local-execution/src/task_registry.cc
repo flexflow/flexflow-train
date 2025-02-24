@@ -19,7 +19,7 @@ TaskRegistry construct_task_registry(
     fwd_task_ids.insert({node, std::nullopt});
     bwd_task_ids.insert({node, std::nullopt});
 
-    ComputationGraphOpAttrs attrs = layer_attrs.second.attrs;
+    ComputationGraphOpAttrs attrs = layer_attrs.second.op_attrs;
     std::vector<task_id_t> task_ids = get_task_ids(attrs);
 
     for (task_id_t const &task_id : task_ids) {

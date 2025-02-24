@@ -50,18 +50,12 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       ParallelTensorShape weights_shape = throw_if_unexpected(
           get_weights_shape(attrs, inputs_shape, inputs_shape, inputs_shape));
       ParallelTensorAttrs weight_attrs =
-          ParallelTensorAttrs{weights_shape,
-                              /*sync_type=*/std::nullopt,
-                              /*initializer=*/std::nullopt,
-                              CreateGrad::YES};
+          ParallelTensorAttrs{weights_shape, CreateGrad::YES};
 
       ParallelTensorShape output_shape = throw_if_unexpected(
           get_output_shape(attrs, inputs_shape, inputs_shape, inputs_shape));
       ParallelTensorAttrs output_attrs =
-          ParallelTensorAttrs{output_shape,
-                              /*sync_type=*/std::nullopt,
-                              /*initializer=*/std::nullopt,
-                              CreateGrad::YES};
+          ParallelTensorAttrs{output_shape, CreateGrad::YES};
 
       CostDetails result = cost_estimator.estimate_cost(
           PCGOperatorAttrs{attrs},
