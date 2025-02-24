@@ -125,7 +125,11 @@ PCGOperatorAttrs materialize_operator_from_attrs_map(
       }};
     case OperatorType::REDUCTION:
       return PCGOperatorAttrs{ReductionAttrs{
-        acc.get<nonnegative_int>(OperatorAttributeKey::PARALLEL_DEGREE),
+          acc.get<nonnegative_int>(OperatorAttributeKey::PARALLEL_DEGREE),
+      }};
+    case OperatorType::SOFTMAX:
+      return PCGOperatorAttrs{SoftmaxAttrs{
+          acc.get<ff_dim_t>(OperatorAttributeKey::AXIS),
       }};
     case OperatorType::BATCHMATMUL:
     case OperatorType::SCALAR_MULTIPLY:
@@ -138,7 +142,6 @@ PCGOperatorAttrs materialize_operator_from_attrs_map(
     case OperatorType::TANH:
     case OperatorType::ELU:
     case OperatorType::FLAT:
-    case OperatorType::SOFTMAX:
     case OperatorType::BATCHNORM:
     case OperatorType::CONCAT:
     case OperatorType::SPLIT:
