@@ -78,8 +78,6 @@ std::pair<SubParallelComputationGraph, OutputExprToResultSubPCGMapping>
           [](OpenDataflowValue const &, ParallelTensorShape const &s) {
             return ParallelTensorAttrs{
                 s,
-                std::nullopt,
-                std::nullopt,
                 CreateGrad::YES,
             };
           });

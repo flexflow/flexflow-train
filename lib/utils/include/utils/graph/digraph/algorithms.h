@@ -6,8 +6,16 @@
 namespace FlexFlow {
 
 std::unordered_set<DirectedEdge> get_edges(DiGraphView const &);
-std::unordered_set<Node> get_sources(DiGraphView const &);
-std::unordered_set<Node> get_sinks(DiGraphView const &);
+
+/**
+ * @brief Returns the set of nodes in the graph with no incoming edges.
+ */
+std::unordered_set<Node> get_initial_nodes(DiGraphView const &graph);
+
+/**
+ * @brief Returns the set of nodes in the graph with no outgoing edges.
+ */
+std::unordered_set<Node> get_terminal_nodes(DiGraphView const &graph);
 
 } // namespace FlexFlow
 

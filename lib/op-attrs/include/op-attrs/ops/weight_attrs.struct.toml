@@ -11,8 +11,13 @@ features = [
 
 includes = [
   "op-attrs/tensor_shape.dtg.h",
+  "op-attrs/initializer_attrs.dtg.h",
 ]
 
 [[fields]]
 name = "tensor_shape"
 type = "::FlexFlow::TensorShape"
+
+[[fields]]
+name = "initializer"
+type = "::FlexFlow::InitializerAttrs"

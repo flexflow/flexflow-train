@@ -6,7 +6,7 @@
 namespace FlexFlow {
 
 bool is_complete_bipartite_digraph(DiGraphView const &g) {
-  return is_complete_bipartite_digraph(g, get_sources(g));
+  return is_complete_bipartite_digraph(g, get_initial_nodes(g));
 }
 
 bool is_complete_bipartite_digraph(DiGraphView const &g,

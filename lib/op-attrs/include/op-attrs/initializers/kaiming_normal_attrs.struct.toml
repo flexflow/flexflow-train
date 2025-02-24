@@ -1,0 +1,32 @@
+namespace = "FlexFlow"
+name = "KaimingNormalAttrs"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = [
+  "op-attrs/initializers/kaiming_initializer_mode.dtg.h",
+  "op-attrs/initializers/kaiming_initializer_nonlinearity.dtg.h",
+]
+
+[[fields]]
+name = "a"
+type = "float"
+
+[[fields]]
+name = "mode"
+type = "::FlexFlow::KaimingInitializerMode"
+
+[[fields]]
+name = "nonlinearity"
+type = "::FlexFlow::KaimingInitializerNonlinearity"
+
+[[fields]]
+name = "seed"
+type = "int"
+

@@ -9,11 +9,11 @@ std::optional<bool> is_acyclic(DiGraphView const &g) {
   if (num_nodes(g) == 0) {
     return std::nullopt;
   }
-  std::unordered_set<Node> sources = get_sources(g);
-  if (sources.size() == 0) {
+  std::unordered_set<Node> initial_nodes = get_initial_nodes(g);
+  if (initial_nodes.size() == 0) {
     return false;
   }
-  auto dfs_view = unchecked_dfs(g, sources);
+  auto dfs_view = unchecked_dfs(g, initial_nodes);
   std::unordered_set<Node> seen;
   for (unchecked_dfs_iterator it = dfs_view.begin(); it != dfs_view.end();
        it++) {

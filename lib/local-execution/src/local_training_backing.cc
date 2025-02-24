@@ -59,7 +59,6 @@ LocalTrainingBacking::LocalTrainingBacking(
                                                  runtime_arg_config,
                                                  this->local_tensor_backing,
                                                  allocator)){};
-
 LocalArgsBacking
     initialize_args_backing(TaskRegistry const &task_registry,
                             ComputationGraph const &cg,
@@ -71,7 +70,7 @@ LocalArgsBacking
   for (layer_guid_t const &node : topological_ordering(cg)) {
     if (registry_contains_task_for_layer(
             task_registry, node, OpTaskType::INIT)) {
-      ComputationGraphOpAttrs attrs = get_layer_attrs(cg, node).attrs;
+      ComputationGraphOpAttrs attrs = get_layer_attrs(cg, node).op_attrs;
 
       TaskInvocation invocation =
           lower_to_task_invocation(init(attrs),
@@ -117,7 +116,7 @@ std::optional<float>
                                        OpTaskType::FWD)) {
     ComputationGraphOpAttrs attrs =
         get_layer_attrs(local_training_backing.computation_graph, operator_node)
-            .attrs;
+            .op_attrs;
 
     std::optional<DeviceSpecificDeviceStates> device_state =
         get_per_device_op_state_if_exists(
@@ -178,7 +177,7 @@ std::optional<float>
                                        OpTaskType::BWD)) {
     ComputationGraphOpAttrs attrs =
         get_layer_attrs(local_training_backing.computation_graph, operator_node)
-            .attrs;
+            .op_attrs;
 
     std::optional<DeviceSpecificDeviceStates> device_state =
         get_per_device_op_state_if_exists(
@@ -218,7 +217,6 @@ void execute_update(LocalTrainingBacking const &local_training_backing,
     // get tensors
     tensor_guid_t weight_tensor = get_only(
         get_outgoing_tensors(local_training_backing.computation_graph, node));
-
     gradient_tensor_t weight_grad_tensor =
         local_training_backing.local_tensor_backing.tensor_gradient_mapping.at(
             weight_tensor);

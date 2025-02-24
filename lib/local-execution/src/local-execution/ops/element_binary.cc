@@ -1,7 +1,6 @@
 #include "local-execution/ops/element_binary.h"
 #include "kernels/element_binary_kernels.h"
 #include "local-execution/task_signature_impl.h"
-#include "op-attrs/get_output_shapes.h"
 #include "utils/hash-utils.h"
 
 namespace FlexFlow {

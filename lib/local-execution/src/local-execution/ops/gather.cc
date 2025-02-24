@@ -15,7 +15,6 @@
 
 #include "local-execution/ops/gather.h"
 #include "kernels/gather_kernels.h"
-#include "op-attrs/get_output_shapes.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include <optional>
 

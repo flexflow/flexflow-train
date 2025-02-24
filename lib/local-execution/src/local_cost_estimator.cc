@@ -1,16 +1,16 @@
 #include "local-execution/local_cost_estimator.h"
 #include "kernels/device.h"
 #include "kernels/local_cuda_allocator.h"
-
 #include "local-execution/tracked_allocator.h"
 #include "op-attrs/computation_graph_op_attrs.h"
 #include "op-attrs/pcg_operator_attrs.h"
 #include "pcg/computation_graph/layer_added_result.dtg.h"
-#include "pcg/computation_graph_builder.h"
+#include "pcg/computation_graph.h"
 #include "pcg/machine_view.dtg.h"
 #include "pcg/parallel_tensor_attrs.h"
 #include "utils/containers/concat_vectors.h"
 #include "utils/containers/sum.h"
+#include "pcg/parallel_tensor_attrs.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/values.h"
 
@@ -91,7 +91,6 @@ CostDetails LocalCostEstimator::estimate_cost(
                                      AllocatedTensors{{}, {}, {}},
                                      computation_graph,
                                      this->runtime_arg_config);
-
   // execute layer
   layer_guid_t operator_layer_guid =
       get_layer_by_name(computation_graph, "operator");
