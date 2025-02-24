@@ -25,6 +25,8 @@ bool is_allocated_tensor_backing_valid(
     std::unordered_map<TensorTypeVariant, GenericTensorAccessorW> const &,
     ArrayShape const &);
 
+AllocatedTensors make_empty_allocated_tensors();
+
 } // namespace FlexFlow
 
 #endif

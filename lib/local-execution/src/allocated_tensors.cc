@@ -138,4 +138,8 @@ bool are_allocated_tensors_valid(
          are_allocated_optimizer_tensors_valid(allocated_tensors, tensor_attrs);
 }
 
+AllocatedTensors make_empty_allocated_tensors() {
+  return AllocatedTensors{{}, {}, {}};
+}
+
 } // namespace FlexFlow
