@@ -10,7 +10,7 @@
 namespace FlexFlow {
 
 bool is_valid_machine_mapping_problem_tree(
-        MachineMappingProblemTree const &problem_tree);
+    MachineMappingProblemTree const &problem_tree);
 
 MachineMappingProblemTree
     get_machine_mapping_problem_tree(ParallelComputationGraph const &pcg,

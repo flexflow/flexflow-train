@@ -21,8 +21,8 @@ bool GraphOptimizeState::operator<(GraphOptimizeState const &other) const {
 
 std::string format_as(GraphOptimizeState const &st) {
   return fmt::format("<GraphOptimizeState pcg={} runtime_with_optimal_mm={}>",
-    as_dot(st.pcg),
-    st.runtime_with_optimal_mm);
+                     as_dot(st.pcg),
+                     st.runtime_with_optimal_mm);
 }
 
 std::ostream &operator<<(std::ostream &s, GraphOptimizeState const &st) {

@@ -86,12 +86,12 @@ MachineMappingResult
         allowed = generate_map(
             boundary_layers,
             [&](BinaryTreePath const &l) -> std::unordered_set<MachineView> {
-              MachineMappingProblemTree subtree_at_path = expect(
-                mm_problem_tree_get_subtree_at_path(
-                    MachineMappingProblemTree{series_split}, l),
-                "Failed to get subtree at path"
-              );
-              UnmappedOpCostEstimateKey leaf = subtree_at_path.get<UnmappedOpCostEstimateKey>();
+              MachineMappingProblemTree subtree_at_path =
+                  expect(mm_problem_tree_get_subtree_at_path(
+                             MachineMappingProblemTree{series_split}, l),
+                         "Failed to get subtree at path");
+              UnmappedOpCostEstimateKey leaf =
+                  subtree_at_path.get<UnmappedOpCostEstimateKey>();
               return context.allowed_machine_views(leaf, resources);
             });
     return transform(

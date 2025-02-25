@@ -8,8 +8,8 @@
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
 #include "compiler/machine_mapping/machine_mapping_result.h"
-#include "compiler/series_parallel/pcg/get_pcg_series_parallel_decomposition.h"
 #include "compiler/series_parallel/pcg/get_pcg_balanced_binary_sp_decomposition.h"
+#include "compiler/series_parallel/pcg/get_pcg_series_parallel_decomposition.h"
 #include "compiler/unity_algorithm/graph_optimize_state.h"
 #include "pcg/machine_specification.dtg.h"
 #include "pcg/operator_task_space.h"
@@ -79,11 +79,7 @@ SearchResult graph_optimize(ParallelComputationGraph &pcg,
         get_unconstrained_solution_for_layers(get_all_leaf_paths(problem_tree));
 
     MachineMappingResult mm_result = get_optimal_machine_mapping(
-        cached_subgraph_costs,
-        context,
-        problem_tree,
-        resources,
-        constraints);
+        cached_subgraph_costs, context, problem_tree, resources, constraints);
 
     return {
         GraphOptimizeState{

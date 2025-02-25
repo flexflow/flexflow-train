@@ -1,8 +1,12 @@
 #include "compiler/machine_mapping/machine_mapping_problem_tree/get_machine_mapping_problem_tree.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
+#include "compiler/series_parallel/pcg/get_pcg_balanced_binary_sp_decomposition.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "pcg/computation_graph_builder.h"
 #include "pcg/operator_task_space.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
+#include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
+#include "pcg/pcg_from_computation_graph.h"
 #include "utils/containers/extend.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/vector_of.h"
@@ -298,5 +302,44 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       CHECK(result == correct);
     }
+  }
+
+  TEST_CASE("from pcg") {
+    ComputationGraph cg = [&] {
+      ComputationGraphBuilder b;
+      TensorShape input_tensor_shape = TensorShape{
+          TensorDims{
+              FFOrdered<nonnegative_int>{nonnegative_int{32},
+                                         nonnegative_int{64}},
+          },
+          DataType::FLOAT,
+      };
+      tensor_guid_t t = b.create_input(input_tensor_shape, CreateGrad::YES);
+      t = b.dense(t,
+                  /*outDim=*/nonnegative_int{16},
+                  /*activation=*/std::nullopt);
+      t = b.gelu(t);
+      t = b.dense(t,
+                  /*outDim=*/nonnegative_int{12},
+                  /*activation=*/std::nullopt,
+                  /*use_bias=*/false,
+                  /*data_type=*/DataType::FLOAT,
+                  /*kernel_initializer=*/std::nullopt,
+                  /*bias_initializer=*/std::nullopt);
+      t = b.relu(t);
+      t = b.dense(t,
+                  /*outDim=*/nonnegative_int{8},
+                  /*activation=*/Activation::RELU);
+      return b.computation_graph;
+    }();
+
+    ParallelComputationGraph pcg = pcg_from_computation_graph(cg);
+
+    PCGBinarySPDecomposition sp_decomp =
+        expect(get_pcg_balanced_binary_sp_decomposition(pcg),
+               "Failed to get SP decomposition of PCG");
+
+    MachineMappingProblemTree problem_tree =
+        get_machine_mapping_problem_tree(pcg, sp_decomp);
   }
 }

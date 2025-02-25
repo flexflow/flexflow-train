@@ -7,13 +7,13 @@ using namespace FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("GraphOptimizeState::operator==") {
     TensorShape input_shape = TensorShape{
-      TensorDims{
-          FFOrdered<nonnegative_int>{
-              32_n,
-              16_n,
-          },
-      },
-      DataType::FLOAT,
+        TensorDims{
+            FFOrdered<nonnegative_int>{
+                32_n,
+                16_n,
+            },
+        },
+        DataType::FLOAT,
     };
 
     InitializerAttrs zero_init = InitializerAttrs{ZeroInitializerAttrs{}};
@@ -50,14 +50,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("returns true if the PCGs are isomorphic") {
       ParallelComputationGraph pcg2 = create_pcg();
-      
+
       GraphOptimizeState state1 = GraphOptimizeState{
-        pcg1,
-        .0,
+          pcg1,
+          .0,
       };
       GraphOptimizeState state2 = GraphOptimizeState{
-        pcg2,
-        .0,
+          pcg2,
+          .0,
       };
 
       CHECK(state1 == state2);
@@ -70,13 +70,13 @@ TEST_SUITE(FF_TEST_SUITE) {
           builder_.create_input_tensor(input_shape, "input0");
       parallel_tensor_guid_t dense0_ =
           builder_.dense(/*input=*/input0_,
-                          /*outDim=*/8_n,
-                          /*activation=*/Activation::RELU,
-                          /*use_bias=*/true,
-                          /*data_type=*/DataType::FLOAT,
-                          /*projection_initializer=*/zero_init,
-                          /*bias_initializer=*/zero_init,
-                          /*name=*/"dense0");
+                         /*outDim=*/8_n,
+                         /*activation=*/Activation::RELU,
+                         /*use_bias=*/true,
+                         /*data_type=*/DataType::FLOAT,
+                         /*projection_initializer=*/zero_init,
+                         /*bias_initializer=*/zero_init,
+                         /*name=*/"dense0");
 
       ParallelComputationGraph pcg_ = builder_.pcg;
 
@@ -98,12 +98,12 @@ TEST_SUITE(FF_TEST_SUITE) {
     ParallelComputationGraph pcg1 = empty_parallel_computation_graph();
     ParallelComputationGraph pcg2 = empty_parallel_computation_graph();
     GraphOptimizeState state1 = GraphOptimizeState{
-      pcg1,
-      1.0,
+        pcg1,
+        1.0,
     };
     GraphOptimizeState state2 = GraphOptimizeState{
-      pcg2,
-      2.0,
+        pcg2,
+        2.0,
     };
     CHECK(state1 < state2);
   }
