@@ -5,21 +5,13 @@ features = [
   "ord",
   "hash",
   "json",
-  # "rapidcheck",
+  "rapidcheck",
   "fmt",
 ]
 
 includes = [
   "op-attrs/tensor_shape.dtg.h",
-  "pcg/initializer_attrs.dtg.h",
-  "op-attrs/param_sync.dtg.h",
   "pcg/create_grad.dtg.h",
-  "<optional>",
-]
-
-src_includes = [
-  "utils/fmt/optional.h",
-  "utils/json/optional.h",
 ]
 
 [[fields]]
@@ -27,13 +19,5 @@ name = "shape"
 type = "::FlexFlow::TensorShape"
 
 [[fields]]
-name = "sync_type"
-type = "std::optional<::FlexFlow::ParamSync>"
-
-[[fields]]
-name = "initializer"
-type = "std::optional<::FlexFlow::InitializerAttrs>"
-
-[[fields]]
-name = "create_gradients"
+name = "create_grad"
 type = "::FlexFlow::CreateGrad"

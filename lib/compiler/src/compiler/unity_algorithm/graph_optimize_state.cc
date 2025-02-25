@@ -19,6 +19,16 @@ bool GraphOptimizeState::operator<(GraphOptimizeState const &other) const {
   return runtime_with_optimal_mm < other.runtime_with_optimal_mm;
 }
 
+std::string format_as(GraphOptimizeState const &st) {
+  return fmt::format("<GraphOptimizeState pcg={} runtime_with_optimal_mm={}>",
+    as_dot(st.pcg),
+    st.runtime_with_optimal_mm);
+}
+
+std::ostream &operator<<(std::ostream &s, GraphOptimizeState const &st) {
+  return (s << fmt::to_string(st));
+}
+
 } // namespace FlexFlow
 
 namespace std {

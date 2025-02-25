@@ -5,6 +5,7 @@
 #include "compiler/machine_mapping/machine_mapping_constraints.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
+#include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/machine_view.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include "utils/containers/get_only.h"
@@ -98,11 +99,20 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
     };
 
-    // Operator task spaces are not used in this test. Just make a placeholder.
+    TensorShape tensor_shape = TensorShape{
+        TensorDims{
+            FFOrdered<nonnegative_int>{
+                10_n,
+                8_n,
+            },
+        },
+        DataType::FLOAT,
+    };
+
     OperatorTaskSpace fake_op_task_space = OperatorTaskSpace{{}};
 
     UnmappedOpCostEstimateKey k1 = UnmappedOpCostEstimateKey{
-        /*op_attrs=*/PCGOperatorAttrs{InputAttrs{}},
+        /*op_attrs=*/PCGOperatorAttrs{InputAttrs{tensor_shape}},
         /*input_shapes=*/{},
         /*weight_shapes=*/{},
         /*output_shapes=*/{},
@@ -122,20 +132,11 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*op_task_space=*/fake_op_task_space,
     };
 
-    ParallelTensorShape tensor_shape1 = ParallelTensorShape{
-        ParallelTensorDims{
-            FFOrdered<ShardParallelDim>{},
-            ReplicaParallelDimSet{
-                SumDegree{1_n},
-                DiscardCopyDegree{1_n},
-            },
-        },
-        DataType::FLOAT,
-    };
+    ParallelTensorShape par_tensor_shape = lift_to_parallel(tensor_shape);
 
     AbstractedTensorSetMovement movement1 = AbstractedTensorSetMovement{{
         AbstractedSingleTensorMovement{
-            /*parallel_tensor_shape=*/tensor_shape1,
+            /*parallel_tensor_shape=*/par_tensor_shape,
             /*src_machine_views=*/{},
             /*dst_machine_views=*/{},
         },

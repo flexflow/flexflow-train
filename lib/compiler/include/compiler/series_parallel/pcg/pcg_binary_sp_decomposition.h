@@ -27,6 +27,10 @@ std::optional<PCGBinarySPDecomposition>
 std::unordered_multiset<parallel_layer_guid_t>
     get_parallel_layers(PCGBinarySPDecomposition const &);
 
+PCGBinarySPDecomposition
+    pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
+        BinarySPDecompositionTree const &);
+
 SPDecompositionTreeNodeType get_node_type(PCGBinarySPDecomposition const &);
 
 std::unordered_set<BinaryTreePath>

@@ -9,6 +9,7 @@
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
 #include "compiler/machine_mapping/machine_mapping_result.h"
 #include "compiler/series_parallel/pcg/get_pcg_series_parallel_decomposition.h"
+#include "compiler/series_parallel/pcg/get_pcg_balanced_binary_sp_decomposition.h"
 #include "compiler/unity_algorithm/graph_optimize_state.h"
 #include "pcg/machine_specification.dtg.h"
 #include "pcg/operator_task_space.h"
@@ -69,7 +70,7 @@ SearchResult graph_optimize(ParallelComputationGraph &pcg,
   auto optimize_pcg = [&](ParallelComputationGraph const &pcg)
       -> std::pair<GraphOptimizeState, std::optional<MachineMapping>> {
     PCGBinarySPDecomposition sp_decomp =
-        expect(get_pcg_series_parallel_decomposition(pcg),
+        expect(get_pcg_balanced_binary_sp_decomposition(pcg),
                "Failed to get SP decomposition of PCG");
 
     MachineMappingProblemTree problem_tree =
@@ -80,7 +81,7 @@ SearchResult graph_optimize(ParallelComputationGraph &pcg,
     MachineMappingResult mm_result = get_optimal_machine_mapping(
         cached_subgraph_costs,
         context,
-        get_machine_mapping_problem_tree(pcg, sp_decomp),
+        problem_tree,
         resources,
         constraints);
 

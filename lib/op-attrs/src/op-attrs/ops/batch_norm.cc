@@ -5,6 +5,7 @@
 #include "op-attrs/tensor_shape.h"
 #include "utils/containers/any_of.h"
 #include "utils/containers/extend.h"
+#include "utils/expected.h"
 
 namespace FlexFlow {
 
@@ -86,6 +87,21 @@ tl::expected<TensorShape, std::string>
   }
 
   return get_gamma_weights_shape(attrs, input_shape);
+}
+
+tl::expected<std::vector<TensorShape>, std::string>
+    get_weight_shapes(BatchNormAttrs const &attrs,
+                      TensorShape const &input_shape) {
+
+  TensorShape gamma_shape =
+      PROPAGATE_ERR(get_gamma_weights_shape(attrs, input_shape));
+  TensorShape beta_shape =
+      PROPAGATE_ERR(get_beta_weights_shape(attrs, input_shape));
+
+  return std::vector{
+      gamma_shape,
+      beta_shape,
+  };
 }
 
 static std::optional<std::string>
@@ -181,6 +197,22 @@ tl::expected<ParallelTensorDimDegrees, std::string>
   return get_gamma_weights_parallel_dim_degrees(attrs, input_degrees);
 }
 
+tl::expected<std::vector<ParallelTensorDimDegrees>, std::string>
+    get_weight_parallel_dim_degrees(
+        BatchNormAttrs const &attrs,
+        ParallelTensorDimDegrees const &input_degrees) {
+
+  ParallelTensorDimDegrees gamma_degrees = PROPAGATE_ERR(
+      get_gamma_weights_parallel_dim_degrees(attrs, input_degrees));
+  ParallelTensorDimDegrees beta_degrees = PROPAGATE_ERR(
+      get_beta_weights_parallel_dim_degrees(attrs, input_degrees));
+
+  return std::vector{
+      gamma_degrees,
+      beta_degrees,
+  };
+}
+
 tl::expected<ParallelTensorShape, std::string>
     get_output_shape(BatchNormAttrs const &attrs,
                      ParallelTensorShape const &input_shape) {
@@ -256,6 +288,36 @@ tl::expected<ParallelTensorShape, std::string>
   });
 
   return lift_to_parallel_with_degrees(unpar, degrees);
+}
+
+tl::expected<std::vector<ParallelTensorShape>, std::string>
+    get_weight_shapes(BatchNormAttrs const &attrs,
+                      ParallelTensorShape const &input_shape) {
+
+  ParallelTensorShape gamma_shape =
+      PROPAGATE_ERR(get_gamma_weights_shape(attrs, input_shape));
+  ParallelTensorShape beta_shape =
+      PROPAGATE_ERR(get_beta_weights_shape(attrs, input_shape));
+
+  return std::vector{
+      gamma_shape,
+      beta_shape,
+  };
+}
+
+tl::expected<std::vector<InitializerAttrs>, std::string>
+    get_initializers(BatchNormAttrs const &attrs) {
+  if (attrs.affine) {
+    InitializerAttrs gamma_initializer =
+        InitializerAttrs{ConstantInitializerAttrs{DataTypeValue{float{1}}}};
+
+    InitializerAttrs beta_initializer =
+        InitializerAttrs{ConstantInitializerAttrs{DataTypeValue{float{0}}}};
+
+    return std::vector{gamma_initializer, beta_initializer};
+  } else {
+    return std::vector<InitializerAttrs>{};
+  }
 }
 
 } // namespace FlexFlow

@@ -1,7 +1,10 @@
 #include "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.h"
 #include "compiler/series_parallel/pcg/pcg_binary_series_split.h"
+#include "compiler/series_parallel/pcg/pcg_binary_parallel_split.h"
+#include "compiler/series_parallel/pcg/get_pcg_series_parallel_decomposition.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/find_paths_to_leaf.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/get_leaves.h"
+#include "utils/graph/series_parallel/binary_sp_decomposition_tree/left_associative_binary_sp_tree_from_nary.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {
@@ -82,8 +85,56 @@ BinarySPDecompositionTree
 }
 
 std::optional<PCGBinarySPDecomposition>
-    get_pcg_balanced_binary_sp_decomposition(ParallelComputationGraph const &) {
-  NOT_IMPLEMENTED();
+    get_pcg_balanced_binary_sp_decomposition(ParallelComputationGraph const &pcg) {
+  SeriesParallelDecomposition sp_decomp = expect(get_pcg_series_parallel_decomposition(pcg), "Failed to get SP decomposition of PCG");
+  BinarySPDecompositionTree binary_sp_tree = left_associative_binary_sp_tree_from_nary(sp_decomp);
+  return pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(binary_sp_tree);
+}
+
+PCGBinarySeriesSplit pcg_binary_series_split_from_binary_series_split(BinarySeriesSplit const &split) {
+  return PCGBinarySeriesSplit{
+    pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
+        split.get_left_child()),
+    pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
+        split.get_right_child()),
+  };
+}
+
+PCGBinaryParallelSplit pcg_binary_parallel_split_from_binary_parallel_split(BinaryParallelSplit const &split) {
+  return PCGBinaryParallelSplit{
+    pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
+        split.get_left_child()),
+    pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
+        split.get_right_child()),
+  };
+}
+
+PCGBinarySPDecomposition
+    pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
+        BinarySPDecompositionTree const &sp_tree) {
+
+  return sp_tree.visit<PCGBinarySPDecomposition>(overload{
+      [](BinarySeriesSplit const &series) -> PCGBinarySPDecomposition {
+        return PCGBinarySPDecomposition{
+            pcg_binary_series_split_from_binary_series_split(series),
+        };
+      },
+      [](BinaryParallelSplit const &parallel) -> PCGBinarySPDecomposition {
+        return PCGBinarySPDecomposition{
+            PCGBinaryParallelSplit{
+                pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
+                    parallel.get_left_child()),
+                pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
+                    parallel.get_right_child()),
+            },
+        };
+      },
+      [](Node const &node) -> PCGBinarySPDecomposition {
+        return PCGBinarySPDecomposition{
+          parallel_layer_guid_t{node},
+        };
+      },
+  });
 }
 
 std::unordered_multiset<parallel_layer_guid_t>

@@ -1,8 +1,10 @@
 #include "op-attrs/tensor_dims.h"
+#include "op-attrs/dim_ordered/slice.h"
 #include "op-attrs/dim_ordered/zip.h"
 #include "op-attrs/replica_parallel_dim_set.h"
 #include "op-attrs/shard_parallel_dim.dtg.h"
 #include "utils/containers/all_of.h"
+#include "utils/containers/product.h"
 #include "utils/containers/reversed.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/vector_of.h"
@@ -26,6 +28,10 @@ nonnegative_int dim_at_idx(TensorDims const &dims, relative_ff_dim_t idx) {
 
 nonnegative_int &dim_at_idx(TensorDims &dims, relative_ff_dim_t idx) {
   return dims.ff_ordered.at(idx);
+}
+
+nonnegative_int get_num_elements(TensorDims const &d) {
+  return product(d.ff_ordered);
 }
 
 bool tensor_dims_is_broadcastable_to(TensorDims const &curr,
@@ -58,6 +64,14 @@ std::optional<TensorDims>
   }
 
   return std::nullopt;
+}
+
+TensorDims slice_tensor_dims(TensorDims const &dims,
+                             std::optional<relative_ff_dim_t> const &start,
+                             std::optional<relative_ff_dim_t> const &stop) {
+  return TensorDims{
+      slice(dims.ff_ordered, start, stop),
+  };
 }
 
 } // namespace FlexFlow

@@ -127,4 +127,18 @@ tl::expected<ParallelTensorShape, std::string>
       unpar, sum_degree, discard_copy_degree, shard_degrees);
 }
 
+std::vector<InitializerAttrs> get_initializers(
+    EmbeddingAttrs const &,
+    std::optional<InitializerAttrs> const &maybe_initializer_attrs) {
+  InitializerAttrs default_initializer_attrs = InitializerAttrs{
+      NormInitializerAttrs{
+          /*seed=*/0,
+          /*mean=*/0.0,
+          /*stddev=*/1.0,
+      },
+  };
+
+  return {maybe_initializer_attrs.value_or(default_initializer_attrs)};
+}
+
 } // namespace FlexFlow

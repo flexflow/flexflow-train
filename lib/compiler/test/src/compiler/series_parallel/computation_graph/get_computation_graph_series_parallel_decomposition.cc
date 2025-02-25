@@ -5,8 +5,10 @@
 #include "models/inception_v3/inception_v3.h"
 #include "models/split_test/split_test.h"
 #include "models/transformer/transformer.h"
+#include "op-attrs/ops/linear.h"
 #include "pcg/computation_graph.h"
 #include "pcg/computation_graph_builder.h"
+#include "utils/containers/get_only.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -14,9 +16,16 @@ using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE(
       "get_computation_graph_series_parallel_decomposition(ComputationGraph)") {
-    SUBCASE("empty computation graph") {
-      ComputationGraph cg = make_empty_computation_graph();
+    auto make_layer_attrs = [](auto const &op_attrs) {
+      return LayerAttrs{
+          /*op_attrs=*/ComputationGraphOpAttrs{op_attrs},
+          /*name=*/std::nullopt,
+      };
+    };
 
+    ComputationGraph cg = make_empty_computation_graph();
+
+    SUBCASE("empty computation graph") {
       std::optional<SeriesParallelDecomposition> result =
           get_computation_graph_series_parallel_decomposition(cg);
       // technically an empty graph is non-SP
@@ -25,80 +34,84 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(result == correct);
     }
 
+    InitializerAttrs zero_init = InitializerAttrs{ZeroInitializerAttrs{}};
+
+    TensorShape input_shape = TensorShape{TensorDims{
+                                              FFOrdered<nonnegative_int>{
+                                                  10_n,
+                                                  12_n,
+                                              },
+                                          },
+                                          DataType::FLOAT};
+
+    InputAttrs input_attrs = InputAttrs{
+        /*shape=*/input_shape,
+    };
+
     SUBCASE("just a single input") {
-      std::string input_layer_name = "my input";
-      ComputationGraph cg = [&] {
-        ComputationGraphBuilder b;
-
-        TensorShape input_shape =
-            TensorShape{TensorDims{FFOrdered<nonnegative_int>{
-                            10_n,
-                            12_n,
-                        }},
-                        DataType::FLOAT};
-        b.create_input(input_shape, CreateGrad::YES, input_layer_name);
-
-        return b.computation_graph;
-      }();
-
-      layer_guid_t input_layer = get_layer_by_name(cg, input_layer_name);
+      LayerAddedResult input_added =
+          add_layer(cg, make_layer_attrs(input_attrs), {}, {});
 
       std::optional<SeriesParallelDecomposition> result =
           get_computation_graph_series_parallel_decomposition(cg);
       std::optional<SeriesParallelDecomposition> correct =
-          SeriesParallelDecomposition{input_layer.raw_node};
+          SeriesParallelDecomposition{input_added.layer.raw_node};
 
       CHECK(result == correct);
     }
 
     SUBCASE("single operator plus inputs and weights") {
-      std::string input_layer_name = "my input";
-      std::string projection_weights_layer_name = "my projection weights";
-      std::string bias_weights_layer_name = "my bias weights";
-      std::string operator_name = "my operator";
-      ComputationGraph cg = [&] {
-        ComputationGraphBuilder b;
+      LinearAttrs linear_attrs = LinearAttrs{
+          /*out_channels=*/14_n,
+          /*use_bias=*/true,
+          /*data_type=*/DataType::FLOAT,
+          /*activation=*/std::nullopt,
+          /*regularizer=*/std::nullopt,
+      };
 
-        TensorShape input_shape =
-            TensorShape{TensorDims{FFOrdered<nonnegative_int>{
-                            10_n,
-                            12_n,
-                        }},
-                        DataType::FLOAT};
-        tensor_guid_t input =
-            b.create_input(input_shape, CreateGrad::YES, input_layer_name);
+      TensorShape projection_weight_shape =
+          throw_if_unexpected(get_projection_shape(linear_attrs, input_shape));
 
-        b.dense(input,
-                /*outDim=*/14_n,
-                /*activation=*/std::nullopt,
-                /*use_bias=*/true,
-                /*data_type=*/DataType::FLOAT,
-                /*projection_initializer=*/std::nullopt,
-                /*bias_initializer=*/std::nullopt,
-                /*name=*/operator_name,
-                /*projection_name=*/projection_weights_layer_name,
-                /*bias_name=*/bias_weights_layer_name);
+      TensorShape bias_weight_shape =
+          throw_if_unexpected(get_bias_shape(linear_attrs, input_shape));
 
-        return b.computation_graph;
-      }();
+      WeightAttrs projection_weight_attrs = WeightAttrs{
+          /*tensor_shape=*/projection_weight_shape,
+          /*initializer=*/zero_init,
+      };
 
-      layer_guid_t input_layer = get_layer_by_name(cg, input_layer_name);
-      layer_guid_t projection_weights_layer =
-          get_layer_by_name(cg, projection_weights_layer_name);
-      layer_guid_t bias_weights_layer =
-          get_layer_by_name(cg, bias_weights_layer_name);
-      layer_guid_t operator_layer = get_layer_by_name(cg, operator_name);
+      WeightAttrs bias_weight_attrs = WeightAttrs{
+          /*tensor_shape=*/bias_weight_shape,
+          /*initializer=*/zero_init,
+      };
+
+      LayerAddedResult input_added =
+          add_layer(cg, make_layer_attrs(input_attrs), {}, {});
+      tensor_guid_t t_input = get_only(input_added.outputs);
+
+      LayerAddedResult projection_weight_added =
+          add_layer(cg, make_layer_attrs(projection_weight_attrs), {}, {});
+      tensor_guid_t t_projection = get_only(projection_weight_added.outputs);
+
+      LayerAddedResult bias_weight_added =
+          add_layer(cg, make_layer_attrs(bias_weight_attrs), {}, {});
+      tensor_guid_t t_bias = get_only(bias_weight_added.outputs);
+
+      LayerAddedResult linear_added = add_layer(cg,
+                                                make_layer_attrs(linear_attrs),
+                                                {t_input},
+                                                {t_projection, t_bias});
 
       std::optional<SeriesParallelDecomposition> result =
           get_computation_graph_series_parallel_decomposition(cg);
       std::optional<SeriesParallelDecomposition> correct =
           SeriesParallelDecomposition{SeriesSplit{{
               ParallelSplit{{
-                  input_layer.raw_node,
-                  projection_weights_layer.raw_node,
-                  bias_weights_layer.raw_node,
+                  input_added.layer.raw_node,
+                  projection_weight_added.layer.raw_node,
+                  bias_weight_added.layer.raw_node,
               }},
-              operator_layer.raw_node,
+              linear_added.layer.raw_node,
           }}};
 
       CHECK(result == correct);
@@ -112,70 +125,65 @@ TEST_SUITE(FF_TEST_SUITE) {
       //  \   /   \   /
       //   op1     op2
 
-      std::string w1_name = "w1";
-      std::string input_name = "input";
-      std::string w2_name = "w2";
-      std::string op1_name = "op1";
-      std::string op2_name = "op2";
+      LinearAttrs linear_attrs = LinearAttrs{
+          /*out_channels=*/14_n,
+          /*use_bias=*/false,
+          /*data_type=*/DataType::FLOAT,
+          /*activation=*/std::nullopt,
+          /*regularizer=*/std::nullopt,
+      };
 
-      ComputationGraph cg = [&] {
-        ComputationGraphBuilder b;
+      TensorShape projection_weight_shape =
+          throw_if_unexpected(get_projection_shape(linear_attrs, input_shape));
 
-        TensorShape input_shape = TensorShape{
-            TensorDims{FFOrdered<nonnegative_int>{
-                10_n,
-                12_n,
-            }},
-            DataType::FLOAT,
-        };
-        tensor_guid_t input =
-            b.create_input(input_shape, CreateGrad::YES, input_name);
+      WeightAttrs projection_weight_attrs = WeightAttrs{
+          /*tensor_shape=*/projection_weight_shape,
+          /*initializer=*/zero_init,
+      };
 
-        b.dense(input,
-                /*outDim=*/14_n,
-                /*activation=*/std::nullopt,
-                /*use_bias=*/false,
-                /*data_type=*/DataType::FLOAT,
-                /*projection_initializer=*/std::nullopt,
-                /*bias_initializer=*/std::nullopt,
-                /*name=*/op1_name,
-                /*projection_name=*/w1_name);
-        b.dense(input,
-                /*outDim=*/14_n,
-                /*activation=*/std::nullopt,
-                /*use_bias=*/false,
-                /*data_type=*/DataType::FLOAT,
-                /*projection_initializer=*/std::nullopt,
-                /*bias_initializer=*/std::nullopt,
-                /*name=*/op2_name,
-                /*projection_name=*/w2_name);
+      LayerAddedResult input_added =
+          add_layer(cg, make_layer_attrs(input_attrs), {}, {});
+      tensor_guid_t t_input = get_only(input_added.outputs);
 
-        return b.computation_graph;
-      }();
+      LayerAddedResult w1_added =
+          add_layer(cg, make_layer_attrs(projection_weight_attrs), {}, {});
+      tensor_guid_t t_w1 = get_only(w1_added.outputs);
 
-      layer_guid_t w1 = get_layer_by_name(cg, w1_name);
-      layer_guid_t input = get_layer_by_name(cg, input_name);
-      layer_guid_t w2 = get_layer_by_name(cg, w2_name);
-      layer_guid_t op1 = get_layer_by_name(cg, op1_name);
-      layer_guid_t op2 = get_layer_by_name(cg, op2_name);
+      LayerAddedResult w2_added =
+          add_layer(cg, make_layer_attrs(projection_weight_attrs), {}, {});
+      tensor_guid_t t_w2 = get_only(w2_added.outputs);
+
+      LayerAddedResult op1_added =
+          add_layer(cg, make_layer_attrs(linear_attrs), {t_input}, {t_w1});
+
+      LayerAddedResult op2_added =
+          add_layer(cg, make_layer_attrs(linear_attrs), {t_input}, {t_w2});
 
       std::optional<SeriesParallelDecomposition> result =
           get_computation_graph_series_parallel_decomposition(cg);
       std::optional<SeriesParallelDecomposition> correct =
           SeriesParallelDecomposition{SeriesSplit{{
               ParallelSplit{{
-                  w1.raw_node,
-                  input.raw_node,
-                  w2.raw_node,
+                  w1_added.layer.raw_node,
+                  input_added.layer.raw_node,
+                  w2_added.layer.raw_node,
               }},
               ParallelSplit{{
-                  op1.raw_node,
-                  op2.raw_node,
+                  op1_added.layer.raw_node,
+                  op2_added.layer.raw_node,
               }},
           }}};
+
+      CHECK(result == correct);
     }
 
-    SUBCASE("SP with or without preprocessing, but preprocessing would SP "
+    ElementUnaryAttrs relu_attrs = ElementUnaryAttrs{
+        /*op_type=*/OperatorType::RELU,
+        /*scalar=*/std::nullopt,
+    };
+
+    SUBCASE("SP with or without preprocessing, but preprocessing would change "
+            "resulting SP "
             "decomposition") {
       // computation graph:
       //
@@ -183,50 +191,35 @@ TEST_SUITE(FF_TEST_SUITE) {
       //    |        |
       //   op1      op2
 
-      std::string input1_name = "input1";
-      std::string input2_name = "input2";
-      std::string op1_name = "op1";
-      std::string op2_name = "op2";
+      LayerAddedResult input1_added =
+          add_layer(cg, make_layer_attrs(input_attrs), {}, {});
+      tensor_guid_t t_input1 = get_only(input1_added.outputs);
 
-      ComputationGraph cg = [&] {
-        ComputationGraphBuilder b;
+      LayerAddedResult input2_added =
+          add_layer(cg, make_layer_attrs(input_attrs), {}, {});
+      tensor_guid_t t_input2 = get_only(input2_added.outputs);
 
-        TensorShape input_shape = TensorShape{
-            TensorDims{FFOrdered<nonnegative_int>{
-                10_n,
-                12_n,
-            }},
-            DataType::FLOAT,
-        };
-        tensor_guid_t input1 =
-            b.create_input(input_shape, CreateGrad::YES, input1_name);
-        tensor_guid_t input2 =
-            b.create_input(input_shape, CreateGrad::YES, input2_name);
+      LayerAddedResult op1_added =
+          add_layer(cg, make_layer_attrs(relu_attrs), {t_input1}, {});
 
-        b.relu(input1, op1_name);
-        b.relu(input2, op2_name);
-
-        return b.computation_graph;
-      }();
-
-      layer_guid_t input1 = get_layer_by_name(cg, input1_name);
-      layer_guid_t input2 = get_layer_by_name(cg, input2_name);
-      layer_guid_t op1 = get_layer_by_name(cg, op1_name);
-      layer_guid_t op2 = get_layer_by_name(cg, op2_name);
+      LayerAddedResult op2_added =
+          add_layer(cg, make_layer_attrs(relu_attrs), {t_input2}, {});
 
       std::optional<SeriesParallelDecomposition> result =
           get_computation_graph_series_parallel_decomposition(cg);
       std::optional<SeriesParallelDecomposition> correct =
           SeriesParallelDecomposition{ParallelSplit{{
               SeriesSplit{{
-                  input1.raw_node,
-                  op1.raw_node,
+                  input1_added.layer.raw_node,
+                  op1_added.layer.raw_node,
               }},
               SeriesSplit{{
-                  input2.raw_node,
-                  op2.raw_node,
+                  input2_added.layer.raw_node,
+                  op2_added.layer.raw_node,
               }},
           }}};
+
+      CHECK(result == correct);
     }
 
     SUBCASE("not SP with or without weight nodes") {
@@ -239,42 +232,36 @@ TEST_SUITE(FF_TEST_SUITE) {
       //    |  \ |
       //   op3  op4
 
-      std::string input1_name = "input1";
-      std::string op1_name = "op1";
-      std::string op2_name = "op2";
-      std::string op3_name = "op3";
-      std::string op4_name = "op4";
+      LayerAddedResult input1_added =
+          add_layer(cg, make_layer_attrs(input_attrs), {}, {});
+      tensor_guid_t t_input1 = get_only(input1_added.outputs);
 
-      ComputationGraph cg = [&] {
-        ComputationGraphBuilder b;
+      ElementBinaryAttrs ew_add_attrs = ElementBinaryAttrs{
+          /*type=*/OperatorType::EW_ADD,
+          /*compute_type=*/DataType::FLOAT,
+          /*should_broadcast_lhs=*/false,
+          /*should_broadcast_rhs=*/false,
+      };
 
-        TensorShape input_shape = TensorShape{
-            TensorDims{FFOrdered<nonnegative_int>{
-                10_n,
-                12_n,
-            }},
-            DataType::FLOAT,
-        };
-        tensor_guid_t input1 =
-            b.create_input(input_shape, CreateGrad::YES, input1_name);
+      LayerAddedResult op1_added =
+          add_layer(cg, make_layer_attrs(relu_attrs), {t_input1}, {});
+      tensor_guid_t t_op1 = get_only(op1_added.outputs);
 
-        tensor_guid_t op1_output = b.relu(input1, op1_name);
-        tensor_guid_t op2_output = b.relu(input1, op2_name);
-        b.relu(op1_output, op3_name);
-        b.add(op1_output, op2_output, op4_name);
+      LayerAddedResult op2_added =
+          add_layer(cg, make_layer_attrs(relu_attrs), {t_input1}, {});
+      tensor_guid_t t_op2 = get_only(op2_added.outputs);
 
-        return b.computation_graph;
-      }();
+      LayerAddedResult op3_added =
+          add_layer(cg, make_layer_attrs(relu_attrs), {t_op1}, {});
 
-      layer_guid_t input1 = get_layer_by_name(cg, input1_name);
-      layer_guid_t op1 = get_layer_by_name(cg, op1_name);
-      layer_guid_t op2 = get_layer_by_name(cg, op2_name);
-      layer_guid_t op3 = get_layer_by_name(cg, op3_name);
-      layer_guid_t op4 = get_layer_by_name(cg, op4_name);
+      LayerAddedResult op4_added =
+          add_layer(cg, make_layer_attrs(ew_add_attrs), {t_op1, t_op2}, {});
 
       std::optional<SeriesParallelDecomposition> result =
           get_computation_graph_series_parallel_decomposition(cg);
       std::optional<SeriesParallelDecomposition> correct = std::nullopt;
+
+      CHECK(result == correct);
     }
 
     SUBCASE("real models") {
