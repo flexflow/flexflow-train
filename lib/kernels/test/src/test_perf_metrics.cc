@@ -1,5 +1,5 @@
-#include "kernels/perf_metrics.h"
 #include "doctest/doctest.h"
+#include "kernels/perf_metrics.h"
 
 using namespace ::FlexFlow;
 
@@ -16,9 +16,9 @@ TEST_SUITE(FF_TEST_SUITE) {
       if (pm.train_correct.has_value()) {
         CHECK(pm.train_correct.value() == 0);
       }
-      
+
       CHECK(!pm.cce_loss.has_value());
-      
+
       if (pm.sparse_cce_loss.has_value()) {
         CHECK(pm.sparse_cce_loss.value() == doctest::Approx(0.0f));
       }

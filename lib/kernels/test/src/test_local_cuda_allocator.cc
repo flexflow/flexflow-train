@@ -1,5 +1,5 @@
-#include "kernels/local_cuda_allocator.h"
 #include "doctest/doctest.h"
+#include "kernels/local_cuda_allocator.h"
 
 using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {

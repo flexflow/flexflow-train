@@ -52,8 +52,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TensorShape input_shape =
         make_tensor_shape_from_ff_ordered({5_n}, DataType::FLOAT);
-    TensorShape output_shape = make_tensor_shape_from_ff_ordered(
-        {num_replicas, 5_n}, DataType::FLOAT);
+    TensorShape output_shape =
+        make_tensor_shape_from_ff_ordered({num_replicas, 5_n}, DataType::FLOAT);
 
     ManagedPerDeviceFFHandle managed_handle{
         /*workSpaceSize=*/1024 * 1024,
@@ -109,7 +109,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           num_replicas.unwrap_nonnegative());
 
       CHECK(accessor_data_is_equal(input_grad_accessor_gpu,
-                                input_grad_accessor_cpu));
+                                   input_grad_accessor_cpu));
     }
   }
 }

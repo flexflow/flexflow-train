@@ -140,7 +140,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           in_blk_size.unwrap_nonnegative());
 
       CHECK(accessor_data_is_equal(input_grad_accessor_gpu,
-                                input_grad_accessor_cpu));
+                                   input_grad_accessor_cpu));
     }
   }
 }

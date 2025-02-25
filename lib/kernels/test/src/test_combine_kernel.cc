@@ -95,7 +95,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       Kernels::Combine::cpu_backward_kernel(output_grad_accessor_cpu,
                                             input_grad_accessor_cpu);
 
-      CHECK(accessor_data_is_equal(input_grad_accessor_gpu, 
+      CHECK(accessor_data_is_equal(input_grad_accessor_gpu,
                                    input_grad_accessor_cpu));
     }
   }
