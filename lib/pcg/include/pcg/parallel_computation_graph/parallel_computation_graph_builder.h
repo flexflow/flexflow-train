@@ -12,8 +12,7 @@ public:
   ParallelComputationGraphBuilder();
 
   parallel_tensor_guid_t create_input_tensor(
-      ParallelTensorShape const &shape,
-      CreateGrad create_grad = CreateGrad::YES,
+      TensorShape const &shape,
       std::optional<std::string> const &name = std::nullopt);
 
   parallel_tensor_guid_t
@@ -118,7 +117,7 @@ public:
           std::optional<std::string> const &name = std::nullopt);
 
   parallel_tensor_guid_t
-      parallel_partition(parallel_tensor_guid_t const &x,
+      parallel_partition(parallel_tensor_guid_t const &input,
                          ff_dim_t dim,
                          nonnegative_int degree,
                          std::optional<std::string> const &name = std::nullopt);
@@ -136,38 +135,22 @@ public:
                       nonnegative_int degree,
                       std::optional<std::string> const &name = std::nullopt);
 
+  ParallelTensorShape get_shape(parallel_tensor_guid_t const &) const;
+
 private:
   parallel_tensor_guid_t as_type(parallel_tensor_guid_t const &,
                                  DataType,
                                  std::string const &name);
 
 private:
-  ParallelTensorShape get_shape(parallel_tensor_guid_t const &) const;
-
-private:
   std::vector<parallel_tensor_guid_t>
       add_layer(ParallelLayerAttrs const &layer,
                 std::vector<parallel_tensor_guid_t> const &inputs,
-                std::vector<ParallelTensorAttrs> const &weights,
-                std::vector<ParallelTensorAttrs> const &outputs);
-  std::vector<parallel_tensor_guid_t>
-      add_layer(ParallelLayerAttrs const &layer,
-                std::vector<parallel_tensor_guid_t> const &inputs,
-                std::vector<ParallelTensorAttrs> const &weights,
-                std::vector<ParallelTensorShape> const &output);
-  parallel_tensor_guid_t
-      add_layer(ParallelLayerAttrs const &layer,
-                std::vector<parallel_tensor_guid_t> const &inputs,
-                std::vector<ParallelTensorAttrs> const &weights,
-                ParallelTensorAttrs const &output);
-  parallel_tensor_guid_t
-      add_layer(ParallelLayerAttrs const &layer,
-                std::vector<parallel_tensor_guid_t> const &inputs,
-                std::vector<ParallelTensorAttrs> const &weights,
-                ParallelTensorShape const &output);
+                std::vector<InitializerAttrs> const &weight_initializers);
 
   parallel_tensor_guid_t
-      add_weight(ParallelTensorAttrs const &weight_tensor_attrs,
+      add_weight(ParallelTensorShape const &weight_tensor_shape,
+                 InitializerAttrs const &initializer,
                  std::optional<std::string> const &name = std::nullopt);
 
   parallel_tensor_guid_t

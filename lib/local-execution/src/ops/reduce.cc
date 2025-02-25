@@ -1,7 +1,6 @@
 #include "reduce.h"
 #include "kernels/reduce_kernels.h"
 
-#include "op-attrs/get_output_shapes.h"
 #include "utils/exception.h"
 #include "utils/hash-utils.h"
 #include "utils/type_traits_core.h"

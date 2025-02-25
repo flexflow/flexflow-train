@@ -15,7 +15,6 @@
 
 #include "reduction.h"
 #include "kernels/reduction_kernels.h"
-#include "op-attrs/get_output_shapes.h"
 #include "utils/exception.h"
 #include "utils/hash-utils.h"
 

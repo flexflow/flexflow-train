@@ -46,12 +46,11 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("linear graph") {
       ParallelComputationGraphBuilder b;
-      ParallelTensorShape input_shape = ParallelTensorShape{
-          ParallelTensorDims{
-              FFOrdered<ShardParallelDim>{},
-              ReplicaParallelDimSet{
-                  SumDegree{1_n},
-                  DiscardCopyDegree{1_n},
+      TensorShape input_shape = TensorShape{
+          TensorDims{
+              FFOrdered<nonnegative_int>{
+                  10_n,
+                  7_n,
               },
           },
           DataType::FLOAT,
@@ -63,6 +62,10 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_layer_guid_t layer1 = get_source_layer(tensor1);
 
       std::vector<MachineViewDimension> dims = {
+          MachineViewDimension{stride_t{1_n},
+                               MachineSpecificationDimension::INTER_NODE},
+          MachineViewDimension{stride_t{1_n},
+                               MachineSpecificationDimension::INTER_NODE},
           MachineViewDimension{stride_t{1_n},
                                MachineSpecificationDimension::INTER_NODE},
           MachineViewDimension{stride_t{1_n},
@@ -122,12 +125,11 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("rhomboidal graph") {
       ParallelComputationGraphBuilder b;
 
-      ParallelTensorShape input_shape = ParallelTensorShape{
-          ParallelTensorDims{
-              FFOrdered<ShardParallelDim>{ShardParallelDim{10_n, 1_n}},
-              ReplicaParallelDimSet{
-                  SumDegree{1_n},
-                  DiscardCopyDegree{1_n},
+      TensorShape input_shape = TensorShape{
+          TensorDims{
+              FFOrdered<nonnegative_int>{
+                  10_n,
+                  1_n,
               },
           },
           DataType::FLOAT,
@@ -145,6 +147,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       ParallelComputationGraph pcg = b.pcg;
       std::vector<MachineViewDimension> dims = {
+          MachineViewDimension{stride_t{1_n},
+                               MachineSpecificationDimension::INTER_NODE},
           MachineViewDimension{stride_t{1_n},
                                MachineSpecificationDimension::INTER_NODE},
           MachineViewDimension{stride_t{1_n},

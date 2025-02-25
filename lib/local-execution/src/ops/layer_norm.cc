@@ -15,7 +15,6 @@
 
 #include "layer_norm.h"
 #include "kernels/layer_norm_kernels.h"
-#include "op-attrs/get_output_shapes.h"
 #include "op-attrs/ops/layer_norm.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "utils/exception.h"
