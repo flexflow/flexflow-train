@@ -364,19 +364,7 @@ struct ForwardKernel {
            weight.data_type == DataType::FLOAT ||
            weight.data_type == DataType::DOUBLE);
 
-    if (aggr == AggregateOp::NONE) {
-      hipLaunchKernelGGL(HIP_KERNEL_NAME(embed_forward_no_aggr<TI, TD>),
-                         GET_BLOCKS(output.shape.get_volume()),
-                         CUDA_NUM_THREADS,
-                         0,
-                         stream,
-                         input.get<TI>(),
-                         output.get<TD>(),
-                         weight.get<TD>(),
-                         out_dim,
-                         batch_size);
-    } else {
-      assert(aggr == AggregateOp::AVG || aggr == AggregateOp::SUM);
+    if (aggr == AggregateOp::AVG || aggr == AggregateOp::SUM) {
       hipLaunchKernelGGL(HIP_KERNEL_NAME(embed_forward_with_aggr<TI, TD>),
                          GET_BLOCKS(output.shape.get_volume()),
                          CUDA_NUM_THREADS,
@@ -389,6 +377,17 @@ struct ForwardKernel {
                          in_dim,
                          batch_size,
                          aggr);
+    } else {
+      hipLaunchKernelGGL(HIP_KERNEL_NAME(embed_forward_no_aggr<TI, TD>),
+                         GET_BLOCKS(output.shape.get_volume()),
+                         CUDA_NUM_THREADS,
+                         0,
+                         stream,
+                         input.get<TI>(),
+                         output.get<TD>(),
+                         weight.get<TD>(),
+                         out_dim,
+                         batch_size);
     }
   }
 }
@@ -408,18 +407,8 @@ struct BackwardKernel {
     assert(output.data_type == DataType::HALF ||
            output.data_type == DataType::FLOAT ||
            output.data_type == DataType::DOUBLE);
-    if (aggr == AggregateOp::NONE) {
-      hipLaunchKernelGGL(HIP_KERNEL_NAME(embed_backward_no_aggr<TI, TD>),
-                         GET_BLOCKS(output.shape.get_volume()),
-                         CUDA_NUM_THREADS,
-                         0,
-                         stream,
-                         input.get<TI>(),
-                         output.get<TD>(),
-                         weight_grad.get<TD>(),
-                         out_dim,
-                         batch_size);
-    } else {
+
+    if (aggr == AggregateOp::AVG || aggr == AggregateOp::SUM) {
       hipLaunchKernelGGL(HIP_KERNEL_NAME(embed_backward_with_aggr<TI, TD>),
                          GET_BLOCKS(output.shape.get_volume()),
                          CUDA_NUM_THREADS,
@@ -432,6 +421,17 @@ struct BackwardKernel {
                          in_dim,
                          batch_size,
                          aggr);
+    } else {
+      hipLaunchKernelGGL(HIP_KERNEL_NAME(embed_backward_no_aggr<TI, TD>),
+                         GET_BLOCKS(output.shape.get_volume()),
+                         CUDA_NUM_THREADS,
+                         0,
+                         stream,
+                         input.get<TI>(),
+                         output.get<TD>(),
+                         weight_grad.get<TD>(),
+                         out_dim,
+                         batch_size);
     }
   }
 }

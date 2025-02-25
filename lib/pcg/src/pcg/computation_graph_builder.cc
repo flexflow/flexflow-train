@@ -1,5 +1,6 @@
 #include "pcg/computation_graph_builder.h"
 #include "op-attrs/computation_graph_op_attrs.h"
+#include "op-attrs/datatype_value.h"
 #include "op-attrs/get_incoming_tensor_roles.h"
 #include "op-attrs/get_op_type.h"
 #include "op-attrs/ops/attention.h"
