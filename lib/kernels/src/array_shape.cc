@@ -51,18 +51,40 @@ nonnegative_int ArrayShape::at(ff_dim_t idx) const {
   return dims.at(legion_dim_from_ff_dim(idx, this->num_dims()));
 }
 
+legion_dim_t ArrayShape::last_idx() const {
+  if (this->dims.size() == 0) {
+    throw mk_runtime_error("Cannot get last index of an empty shape");
+  }
+  return legion_dim_t(nonnegative_int{this->dims.size() - 1});
+}
+
+legion_dim_t ArrayShape::neg_idx(int idx) const {
+  if (std::abs(idx) > this->dims.size()) {
+    throw mk_runtime_error(
+        fmt::format("Invalid negative index: {} (shape has {} dimensions)",
+                    idx,
+                    this->dims.size()));
+  }
+
+  if (idx >= 0) {
+    throw mk_runtime_error(fmt::format(
+        "Idx should be negative for negative indexing, got {}", idx));
+  }
+
+  return legion_dim_t(nonnegative_int{this->dims.size() + idx});
+}
+
 bool ArrayShape::operator==(ArrayShape const &other) const {
-  return this->tie() == other.tie();
+  return this->dims == other.dims;
 }
 
 bool ArrayShape::operator!=(ArrayShape const &other) const {
-  return this->tie() != other.tie();
+  return !(this->dims == other.dims);
 }
 
 ArrayShape ArrayShape::sub_shape(
     std::optional<std::variant<ff_dim_t, legion_dim_t>> start,
     std::optional<std::variant<ff_dim_t, legion_dim_t>> end) const {
-
   nonnegative_int num_dims = this->num_dims();
 
   auto to_legion_index = [num_dims](auto arg) -> nonnegative_int {
@@ -85,7 +107,9 @@ ArrayShape ArrayShape::sub_shape(
         "Invalid sub_shape range: start={}, end={}", start_idx, end_idx));
   }
 
-  return ArrayShape(&this->dims[legion_dim_t{start_idx}], end_idx - start_idx);
+  return ArrayShape(std::vector<nonnegative_int>(
+      this->dims.begin() + start_idx.unwrap_nonnegative(),
+      this->dims.begin() + end_idx.unwrap_nonnegative()));
 }
 
 std::optional<nonnegative_int> ArrayShape::at_maybe(legion_dim_t index) const {
@@ -97,7 +121,11 @@ std::optional<nonnegative_int> ArrayShape::at_maybe(legion_dim_t index) const {
 }
 
 std::optional<nonnegative_int> ArrayShape::at_maybe(ff_dim_t index) const {
-  return this->at_maybe(legion_dim_from_ff_dim(index, this->num_dims()));
+  if (index.value < this->num_dims()) {
+    return this->at_maybe(legion_dim_from_ff_dim(index, this->num_dims()));
+  } else {
+    return std::nullopt;
+  }
 }
 
 std::tuple<LegionOrdered<nonnegative_int> const &> ArrayShape::tie() const {

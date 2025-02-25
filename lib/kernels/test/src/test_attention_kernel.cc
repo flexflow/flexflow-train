@@ -41,15 +41,15 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*kvSeqLength=*/kvSeqLength.unwrap_nonnegative(),
         /*add_bias_kv=*/false);
 
-    TensorShape query_shape = make_tensor_shape_from_legion_dims(
+    TensorShape query_shape = make_tensor_shape_from_ff_ordered(
         {qoSeqLength, num_samples, qSize}, DataType::FLOAT);
-    TensorShape key_shape = make_tensor_shape_from_legion_dims(
+    TensorShape key_shape = make_tensor_shape_from_ff_ordered(
         {kvSeqLength, num_samples, kSize}, DataType::FLOAT);
-    TensorShape value_shape = make_tensor_shape_from_legion_dims(
+    TensorShape value_shape = make_tensor_shape_from_ff_ordered(
         {kvSeqLength, num_samples, vSize}, DataType::FLOAT);
-    TensorShape output_shape = make_tensor_shape_from_legion_dims(
+    TensorShape output_shape = make_tensor_shape_from_ff_ordered(
         {qoSeqLength, num_samples, oProjSize}, DataType::FLOAT);
-    TensorShape weight_shape = make_tensor_shape_from_legion_dims(
+    TensorShape weight_shape = make_tensor_shape_from_ff_ordered(
         {nonnegative_int{state.weightSize}}, DataType::FLOAT);
 
     GenericTensorAccessorW query_accessor =

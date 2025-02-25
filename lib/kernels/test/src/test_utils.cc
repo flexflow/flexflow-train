@@ -1,12 +1,13 @@
 #include "test_utils.h"
+#include "kernels/datatype_dispatch.h"
 #include "op-attrs/tensor_shape.h"
 #include "utils/join_strings.h"
 #include <random>
 
 namespace FlexFlow {
 
-TensorShape make_tensor_shape_from_legion_dims(FFOrdered<nonnegative_int> dims,
-                                               DataType DT) {
+TensorShape make_tensor_shape_from_ff_ordered(FFOrdered<nonnegative_int> dims,
+                                              DataType DT) {
   return TensorShape{
       TensorDims{
           dims,
@@ -128,26 +129,6 @@ bool contains_non_zero(GenericTensorAccessorR const &accessor) {
       cpu_accessor.data_type, cpu_accessor);
 }
 
-GenericTensorAccessorR
-    copy_accessor_r_to_cpu_if_necessary(GenericTensorAccessorR const &accessor,
-                                        Allocator &cpu_allocator) {
-  GenericTensorAccessorR cpu_accessor = accessor;
-  if (accessor.device_type == DeviceType::GPU) {
-    cpu_accessor = copy_tensor_accessor_r(accessor, cpu_allocator);
-  }
-  return cpu_accessor;
-}
-
-GenericTensorAccessorW
-    copy_accessor_w_to_cpu_if_necessary(GenericTensorAccessorW const &accessor,
-                                        Allocator &cpu_allocator) {
-  GenericTensorAccessorW cpu_accessor = accessor;
-  if (accessor.device_type == DeviceType::GPU) {
-    cpu_accessor = copy_tensor_accessor_w(accessor, cpu_allocator);
-  }
-  return cpu_accessor;
-}
-
 template <DataType DT>
 struct Print2DCPUAccessorR {
   void operator()(GenericTensorAccessorR const &accessor,
@@ -177,44 +158,6 @@ void print_2d_tensor_accessor_contents(GenericTensorAccessorR const &accessor,
       copy_accessor_r_to_cpu_if_necessary(accessor, cpu_allocator);
   DataTypeDispatch1<Print2DCPUAccessorR>{}(
       accessor.data_type, cpu_accessor, stream);
-}
-
-template <DataType DT>
-struct AccessorsAreEqual {
-  bool operator()(GenericTensorAccessorR const &accessor_a,
-                  GenericTensorAccessorR const &accessor_b) {
-    Allocator cpu_allocator = create_local_cpu_memory_allocator();
-    GenericTensorAccessorR cpu_accessor_a =
-        copy_accessor_r_to_cpu_if_necessary(accessor_a, cpu_allocator);
-    GenericTensorAccessorR cpu_accessor_b =
-        copy_accessor_r_to_cpu_if_necessary(accessor_b, cpu_allocator);
-
-    using T = real_type_t<DT>;
-    T const *a_data_ptr = cpu_accessor_a.get<DT>();
-    T const *b_data_ptr = cpu_accessor_b.get<DT>();
-
-    int volume = accessor_a.shape.num_elements().unwrap_nonnegative();
-    for (size_t i = 0; i < volume; i++) {
-      if (a_data_ptr[i] != b_data_ptr[i]) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-};
-
-bool accessors_are_equal(GenericTensorAccessorR const &accessor_a,
-                         GenericTensorAccessorR const &accessor_b) {
-  if (accessor_a.shape != accessor_b.shape) {
-    throw mk_runtime_error(
-        fmt::format("accessors_are_equal expected accessors to have the same "
-                    "shape, but received: {} != {}",
-                    accessor_a.shape,
-                    accessor_b.shape));
-  }
-  return DataTypeDispatch1<AccessorsAreEqual>{}(
-      accessor_a.data_type, accessor_a, accessor_b);
 }
 
 template <DataType DT>

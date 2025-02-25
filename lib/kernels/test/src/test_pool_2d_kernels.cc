@@ -49,9 +49,9 @@ TEST_SUITE(FF_TEST_SUITE) {
                                      /*stride_w=*/stride_w.unwrap_nonnegative(),
                                      /*pool_type=*/pool_type);
 
-    TensorShape input_shape = make_tensor_shape_from_legion_dims(
+    TensorShape input_shape = make_tensor_shape_from_ff_ordered(
         {input_w, input_h, input_c, input_n}, DataType::FLOAT);
-    TensorShape output_shape = make_tensor_shape_from_legion_dims(
+    TensorShape output_shape = make_tensor_shape_from_ff_ordered(
         {output_w, output_h, output_c, output_n}, DataType::FLOAT);
 
     GenericTensorAccessorW input_accessor =

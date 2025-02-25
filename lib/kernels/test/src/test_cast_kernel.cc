@@ -11,9 +11,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     Allocator allocator = create_local_cuda_memory_allocator();
 
     TensorShape input_shape =
-        make_tensor_shape_from_legion_dims({100_n, 100_n}, DataType::FLOAT);
+        make_tensor_shape_from_ff_ordered({100_n, 100_n}, DataType::FLOAT);
     TensorShape output_shape =
-        make_tensor_shape_from_legion_dims({100_n, 100_n}, DataType::DOUBLE);
+        make_tensor_shape_from_ff_ordered({100_n, 100_n}, DataType::DOUBLE);
 
     SUBCASE("forward_kernel") {
       GenericTensorAccessorR input_accessor =
@@ -48,9 +48,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
     TensorShape input_shape =
-        make_tensor_shape_from_legion_dims({10_n, 2_n}, DataType::FLOAT);
+        make_tensor_shape_from_ff_ordered({10_n, 2_n}, DataType::FLOAT);
     TensorShape output_shape =
-        make_tensor_shape_from_legion_dims({10_n, 2_n}, DataType::DOUBLE);
+        make_tensor_shape_from_ff_ordered({10_n, 2_n}, DataType::DOUBLE);
 
     // Only calling forward kernel as backward kernel is exactly the same
     SUBCASE("forward_kernel") {
@@ -72,7 +72,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       Kernels::Cast::cpu_forward_kernel(input_accessor_cpu,
                                         output_accessor_cpu);
 
-      CHECK(accessors_are_equal(output_accessor_gpu, output_accessor_cpu));
+      CHECK(accessor_data_is_equal(output_accessor_gpu, output_accessor_cpu));
     }
   }
 }

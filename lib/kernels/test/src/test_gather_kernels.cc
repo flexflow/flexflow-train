@@ -37,21 +37,21 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("test gather forward, 2D") {
         TensorShape input_shape =
-            make_tensor_shape_from_legion_dims({2_n, 100_n}, DataType::FLOAT);
+            make_tensor_shape_from_ff_ordered({2_n, 100_n}, DataType::FLOAT);
         TensorShape index_shape =
-            make_tensor_shape_from_legion_dims({2_n, 20_n}, DataType::INT32);
+            make_tensor_shape_from_ff_ordered({2_n, 20_n}, DataType::INT32);
         TensorShape output_shape =
-            make_tensor_shape_from_legion_dims({2_n, 20_n}, DataType::FLOAT);
+            make_tensor_shape_from_ff_ordered({2_n, 20_n}, DataType::FLOAT);
         run_forward_test(input_shape, index_shape, output_shape);
       }
 
       SUBCASE("test gather forward, 1D") {
         TensorShape input_shape =
-            make_tensor_shape_from_legion_dims({100_n}, DataType::FLOAT);
+            make_tensor_shape_from_ff_ordered({100_n}, DataType::FLOAT);
         TensorShape index_shape =
-            make_tensor_shape_from_legion_dims({10_n}, DataType::INT32);
+            make_tensor_shape_from_ff_ordered({10_n}, DataType::INT32);
         TensorShape output_shape =
-            make_tensor_shape_from_legion_dims({10_n}, DataType::FLOAT);
+            make_tensor_shape_from_ff_ordered({10_n}, DataType::FLOAT);
         run_forward_test(input_shape, index_shape, output_shape);
       }
     }
@@ -77,11 +77,11 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("test gather backward, 2D") {
         TensorShape input_shape =
-            make_tensor_shape_from_legion_dims({2_n, 100_n}, DataType::FLOAT);
+            make_tensor_shape_from_ff_ordered({2_n, 100_n}, DataType::FLOAT);
         TensorShape index_shape =
-            make_tensor_shape_from_legion_dims({2_n, 25_n}, DataType::INT32);
+            make_tensor_shape_from_ff_ordered({2_n, 25_n}, DataType::INT32);
         TensorShape output_shape =
-            make_tensor_shape_from_legion_dims({2_n, 25_n}, DataType::FLOAT);
+            make_tensor_shape_from_ff_ordered({2_n, 25_n}, DataType::FLOAT);
         run_backward_test(input_shape, index_shape, output_shape);
       }
     }

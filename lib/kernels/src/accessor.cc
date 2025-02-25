@@ -1,38 +1,45 @@
 #include "kernels/accessor.h"
-#include "kernels/allocation.h"
+#include "kernels/copy_tensor_accessor.h"
 #include "kernels/datatype_dispatch.h"
+#include "kernels/local_cpu_allocator.h"
+#include <cstring>
+#include <iostream>
 
 namespace FlexFlow {
 
-void copy_accessor_data_to_l_from_r(
-    GenericTensorAccessorW &dst_accessor,
-    GenericTensorAccessorR const &src_accessor) {
-  size_t num_bytes =
-      dst_accessor.shape.get_volume().unwrap_nonnegative() *
-      size_of_datatype(dst_accessor.data_type).unwrap_nonnegative();
+template <DataType DT>
+struct AccessorDataIsEqual {
+  bool operator()(GenericTensorAccessorR const &a,
+                  GenericTensorAccessorR const &b) {
+    int const num_elements = a.shape.num_elements().unwrap_nonnegative();
+    if (num_elements != b.shape.num_elements().unwrap_nonnegative()) {
+      return false;
+    }
 
-  DeviceType dst_device_type = dst_accessor.device_type;
-  DeviceType src_device_type = src_accessor.device_type;
+    Allocator cpu_allocator = create_local_cpu_memory_allocator();
+    auto cpu_a = copy_accessor_r_to_cpu_if_necessary(a, cpu_allocator);
+    auto cpu_b = copy_accessor_r_to_cpu_if_necessary(b, cpu_allocator);
 
-  if (src_device_type == DeviceType::CPU &&
-      dst_device_type == DeviceType::CPU) {
-    memcpy(dst_accessor.ptr, src_accessor.ptr, num_bytes);
-  } else if (src_device_type == DeviceType::CPU &&
-             dst_device_type == DeviceType::GPU) {
-    checkCUDA(cudaMemcpy(
-        dst_accessor.ptr, src_accessor.ptr, num_bytes, cudaMemcpyHostToDevice));
-  } else if (src_device_type == DeviceType::GPU &&
-             dst_device_type == DeviceType::CPU) {
-    checkCUDA(cudaMemcpy(
-        dst_accessor.ptr, src_accessor.ptr, num_bytes, cudaMemcpyDeviceToHost));
-  } else {
-    assert(src_device_type == DeviceType::GPU);
-    assert(dst_device_type == DeviceType::GPU);
-    checkCUDA(cudaMemcpy(dst_accessor.ptr,
-                         src_accessor.ptr,
-                         num_bytes,
-                         cudaMemcpyDeviceToDevice));
+    using T = real_type_t<DT>;
+    T const *a_ptr = cpu_a.get<DT>();
+    T const *b_ptr = cpu_b.get<DT>();
+
+    return std::equal(a_ptr, a_ptr + num_elements, b_ptr);
   }
+};
+
+bool accessor_data_is_equal(GenericTensorAccessorR const &accessor_a,
+                            GenericTensorAccessorR const &accessor_b) {
+  return DataTypeDispatch1<AccessorDataIsEqual>{}(
+      accessor_a.data_type, accessor_a, accessor_b);
+}
+
+bool accessors_are_equal(GenericTensorAccessorR const &accessor_a,
+                         GenericTensorAccessorR const &accessor_b) {
+  return accessor_a.data_type == accessor_b.data_type &&
+         accessor_a.device_type == accessor_b.device_type &&
+         accessor_a.shape == accessor_b.shape &&
+         accessor_data_is_equal(accessor_a, accessor_b);
 }
 
 GenericTensorAccessorW::operator GenericTensorAccessorR() const {
@@ -56,12 +63,12 @@ std::tuple<DataType const &,
 
 bool GenericTensorAccessorW::operator==(
     GenericTensorAccessorW const &other) const {
-  return this->tie() == other.tie();
+  return accessors_are_equal(*this, other);
 }
 
 bool GenericTensorAccessorW::operator!=(
     GenericTensorAccessorW const &other) const {
-  return this->tie() != other.tie();
+  return !(accessors_are_equal(*this, other));
 }
 
 int32_t *GenericTensorAccessorW::get_int32_ptr() const {
@@ -112,12 +119,12 @@ std::tuple<DataType const &,
 
 bool GenericTensorAccessorR::operator==(
     GenericTensorAccessorR const &other) const {
-  return this->tie() == other.tie();
+  return accessors_are_equal(*this, other);
 }
 
 bool GenericTensorAccessorR::operator!=(
     GenericTensorAccessorR const &other) const {
-  return this->tie() != other.tie();
+  return !(accessors_are_equal(*this, other));
 }
 
 int32_t const *GenericTensorAccessorR::get_int32_ptr() const {

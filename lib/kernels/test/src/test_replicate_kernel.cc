@@ -9,9 +9,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     nonnegative_int num_replicas = 10_n;
 
     TensorShape input_shape =
-        make_tensor_shape_from_legion_dims({100_n}, DataType::FLOAT);
+        make_tensor_shape_from_ff_ordered({100_n}, DataType::FLOAT);
     TensorShape output_shape =
-        make_tensor_shape_from_legion_dims({100_n}, DataType::FLOAT);
+        make_tensor_shape_from_ff_ordered({100_n}, DataType::FLOAT);
 
     ManagedPerDeviceFFHandle managed_handle{
         /*workSpaceSize=*/1024 * 1024,
@@ -51,8 +51,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     nonnegative_int num_replicas = 2_n;
 
     TensorShape input_shape =
-        make_tensor_shape_from_legion_dims({5_n}, DataType::FLOAT);
-    TensorShape output_shape = make_tensor_shape_from_legion_dims(
+        make_tensor_shape_from_ff_ordered({5_n}, DataType::FLOAT);
+    TensorShape output_shape = make_tensor_shape_from_ff_ordered(
         {num_replicas, 5_n}, DataType::FLOAT);
 
     ManagedPerDeviceFFHandle managed_handle{
@@ -82,7 +82,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       Kernels::Replicate::cpu_forward_kernel(input_accessor_cpu,
                                              output_accessor_cpu);
 
-      CHECK(accessors_are_equal(output_accessor_gpu, output_accessor_cpu));
+      CHECK(accessor_data_is_equal(output_accessor_gpu, output_accessor_cpu));
     }
 
     SUBCASE("backward_kernel") {
@@ -108,7 +108,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           input_grad_accessor_cpu,
           num_replicas.unwrap_nonnegative());
 
-      CHECK(accessors_are_equal(input_grad_accessor_gpu,
+      CHECK(accessor_data_is_equal(input_grad_accessor_gpu,
                                 input_grad_accessor_cpu));
     }
   }

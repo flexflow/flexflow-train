@@ -14,7 +14,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     ManagedFFStream managed_stream{};
 
     TensorShape input_shape =
-        make_tensor_shape_from_legion_dims({100_n}, DataType::FLOAT);
+        make_tensor_shape_from_ff_ordered({100_n}, DataType::FLOAT);
     TensorShape output_shape = input_shape;
 
     GenericTensorAccessorR input_accessor =

@@ -2,7 +2,6 @@
 #define _FLEXFLOW_KERNELS_TEST_UTILS
 
 #include "kernels/copy_tensor_accessor.h"
-#include "kernels/datatype_dispatch.h"
 #include "kernels/device.h"
 #include "kernels/local_cpu_allocator.h"
 #include "kernels/local_cuda_allocator.h"
@@ -29,26 +28,15 @@ GenericTensorAccessorW create_zero_filled_accessor_w(TensorShape const &shape,
 GenericTensorAccessorR create_zero_filled_accessor_r(TensorShape const &shape,
                                                      Allocator &allocator);
 
-TensorShape make_tensor_shape_from_legion_dims(FFOrdered<nonnegative_int> dims,
-                                               DataType DT);
+TensorShape make_tensor_shape_from_ff_ordered(FFOrdered<nonnegative_int> dims,
+                                              DataType DT);
 
 bool contains_non_zero(GenericTensorAccessorR const &accessor);
 
 void fill_with_zeros(GenericTensorAccessorW const &accessor);
 
-GenericTensorAccessorW
-    copy_accessor_w_to_cpu_if_necessary(GenericTensorAccessorW const &accessor,
-                                        Allocator &allocator);
-
-GenericTensorAccessorR
-    copy_accessor_r_to_cpu_if_necessary(GenericTensorAccessorR const &accessor,
-                                        Allocator &allocator);
-
 void print_2d_tensor_accessor_contents(GenericTensorAccessorR const &accessor,
                                        std::ostream &stream);
-
-bool accessors_are_equal(GenericTensorAccessorR const &accessor_a,
-                         GenericTensorAccessorR const &accessor_b);
 
 GenericTensorAccessorW create_filled_accessor_w(TensorShape const &shape,
                                                 Allocator &allocator,

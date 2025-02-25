@@ -267,6 +267,12 @@ std::vector<real_type_t<DT> const *>
   return out;
 }
 
+bool accessor_data_is_equal(GenericTensorAccessorR const &accessor_a,
+                            GenericTensorAccessorR const &accessor_b);
+
+bool accessors_are_equal(GenericTensorAccessorR const &accessor_a,
+                         GenericTensorAccessorR const &accessor_b);
+
 GenericTensorAccessorR read_only_accessor_from_write_accessor(
     GenericTensorAccessorW const &write_accessor);
 
@@ -279,9 +285,6 @@ bool shape_and_dtype_matches(GenericTensorAccessorR const &accessor,
 
 std::pair<ArrayShape, DataType>
     get_shape_and_datatype(GenericTensorAccessorR const &accessor);
-
-void copy_accessor_data_to_l_from_r(GenericTensorAccessorW &dst_accessor,
-                                    GenericTensorAccessorR const &src_accessor);
 
 } // namespace FlexFlow
 
