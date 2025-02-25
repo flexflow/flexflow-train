@@ -19,7 +19,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                                   nonnegative_int input_cols,
                                   TensorShape output_shape,
                                   ff_dim_t concat_axis) {
-        TensorShape input_shape = make_tensor_shape_from_legion_dims(
+        TensorShape input_shape = make_tensor_shape_from_ff_ordered(
             {input_rows, input_cols}, DataType::FLOAT);
 
         std::vector<GenericTensorAccessorR> input_accessors =
@@ -41,7 +41,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       SUBCASE("test forward concat, axis = 0") {
         nonnegative_int input_rows = 2_n;
         nonnegative_int input_cols = 4_n;
-        TensorShape output_shape = make_tensor_shape_from_legion_dims(
+        TensorShape output_shape = make_tensor_shape_from_ff_ordered(
             {num_inputs * input_rows, input_cols}, DataType::FLOAT);
         run_forward_test(input_rows, input_cols, output_shape, ff_dim_t{0_n});
       }
@@ -49,7 +49,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       SUBCASE("test forward concat, axis = 1") {
         nonnegative_int input_rows = 4_n;
         nonnegative_int input_cols = 2_n;
-        TensorShape output_shape = make_tensor_shape_from_legion_dims(
+        TensorShape output_shape = make_tensor_shape_from_ff_ordered(
             {input_rows, num_inputs * input_cols}, DataType::FLOAT);
         run_forward_test(input_rows, input_cols, output_shape, ff_dim_t{1_n});
       }
@@ -60,7 +60,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                                    nonnegative_int input_cols,
                                    TensorShape output_shape,
                                    ff_dim_t concat_axis) {
-        TensorShape input_shape = make_tensor_shape_from_legion_dims(
+        TensorShape input_shape = make_tensor_shape_from_ff_ordered(
             {input_rows, input_cols}, DataType::FLOAT);
 
         GenericTensorAccessorR output_grad_accessor =
@@ -84,7 +84,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       SUBCASE("test backward concat, axis = 0") {
         nonnegative_int input_rows = 2_n;
         nonnegative_int input_cols = 4_n;
-        TensorShape output_shape = make_tensor_shape_from_legion_dims(
+        TensorShape output_shape = make_tensor_shape_from_ff_ordered(
             {num_inputs * input_rows, input_cols}, DataType::FLOAT);
         run_backward_test(input_rows, input_cols, output_shape, ff_dim_t{0_n});
       }
@@ -92,7 +92,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       SUBCASE("test backward concat, axis = 1") {
         nonnegative_int input_rows = 4_n;
         nonnegative_int input_cols = 2_n;
-        TensorShape output_shape = make_tensor_shape_from_legion_dims(
+        TensorShape output_shape = make_tensor_shape_from_ff_ordered(
             {input_rows, num_inputs * input_cols}, DataType::FLOAT);
         run_backward_test(input_rows, input_cols, output_shape, ff_dim_t{1_n});
       }

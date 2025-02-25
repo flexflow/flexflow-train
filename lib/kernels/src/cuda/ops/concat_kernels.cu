@@ -23,7 +23,7 @@ void calc_blk_size(size_t &num_blocks,
                    size_t &blk_size,
                    ArrayShape const &shape,
                    ff_dim_t axis) {
-  legion_dim_t legion_axis = (legion_dim_from_ff_dim(axis, shape.num_dims()));
+  legion_dim_t legion_axis = legion_dim_from_ff_dim(axis, shape.num_dims());
   assert(legion_axis.value < shape.num_dims());
   if (legion_axis.value == 0_n) {
     legion_axis.value = 1_n;
@@ -45,7 +45,7 @@ void forward_kernel(cudaStream_t stream,
   calc_blk_size(num_blocks, output_blk_size, output.shape, axis);
   off_t offset = 0;
 
-  for (auto const &input : inputs) {
+  for (GenericTensorAccessorR const &input : inputs) {
     size_t input_num_blocks = 1, input_blk_size = 1;
     calc_blk_size(input_num_blocks, input_blk_size, input.shape, axis);
     assert(input_num_blocks == num_blocks || output_blk_size == input_blk_size);

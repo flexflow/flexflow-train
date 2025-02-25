@@ -18,7 +18,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         managed_handle.raw_handle(), DataType::FLOAT);
 
     TensorShape input_shape =
-        make_tensor_shape_from_legion_dims({10_n, 10_n}, DataType::FLOAT);
+        make_tensor_shape_from_ff_ordered({10_n, 10_n}, DataType::FLOAT);
     TensorShape output_shape = input_shape;
 
     SUBCASE("forward_kernel") {

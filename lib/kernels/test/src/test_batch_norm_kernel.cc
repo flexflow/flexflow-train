@@ -29,13 +29,13 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*output_w=*/output_w.unwrap_nonnegative(),
         /*relu=*/true);
 
-    TensorShape input_shape = make_tensor_shape_from_legion_dims(
+    TensorShape input_shape = make_tensor_shape_from_ff_ordered(
         {output_n, output_c, output_h, output_w}, DataType::FLOAT);
-    TensorShape output_shape = make_tensor_shape_from_legion_dims(
+    TensorShape output_shape = make_tensor_shape_from_ff_ordered(
         {output_n, output_c, output_h, output_w}, DataType::FLOAT);
-    TensorShape scale_shape = make_tensor_shape_from_legion_dims(
+    TensorShape scale_shape = make_tensor_shape_from_ff_ordered(
         {output_n, output_c, output_h, output_w}, DataType::FLOAT);
-    TensorShape bias_shape = make_tensor_shape_from_legion_dims(
+    TensorShape bias_shape = make_tensor_shape_from_ff_ordered(
         {output_n, output_c, output_h, output_w}, DataType::FLOAT);
 
     GenericTensorAccessorW input_accessor =

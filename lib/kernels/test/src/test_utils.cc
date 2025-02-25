@@ -5,8 +5,8 @@
 
 namespace FlexFlow {
 
-TensorShape make_tensor_shape_from_legion_dims(FFOrdered<nonnegative_int> dims,
-                                               DataType DT) {
+TensorShape make_tensor_shape_from_ff_ordered(FFOrdered<nonnegative_int> dims,
+                                              DataType DT) {
   return TensorShape{
       TensorDims{
           dims,
