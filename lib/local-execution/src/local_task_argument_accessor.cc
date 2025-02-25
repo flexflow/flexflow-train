@@ -19,10 +19,10 @@ ConcreteArgSpec const &
 }
 
 GenericTensorAccessor LocalTaskArgumentAccessor::get_tensor(
-    slot_id_t slot, Permissions priv, IsGrad is_grad) const {
-  SlotGradId slot_grad_pair = SlotGradId{slot, is_grad};
+    slot_id_t slot, Permissions priv, TensorType tensor_type) const {
+  SlotTensorTypeId slot_tensor_type = SlotTensorTypeId{slot, tensor_type};
   auto tensor_backing = std::get<GenericTensorAccessorW>(
-      this->tensor_slots_backing.at(slot_grad_pair));
+      this->tensor_slots_backing.at(slot_tensor_type));
   if (priv == Permissions::RO) {
     GenericTensorAccessorR readonly_tensor_backing = {
         tensor_backing.data_type, tensor_backing.shape, tensor_backing.ptr};
@@ -34,10 +34,10 @@ GenericTensorAccessor LocalTaskArgumentAccessor::get_tensor(
   }
 }
 VariadicGenericTensorAccessor LocalTaskArgumentAccessor::get_variadic_tensor(
-    slot_id_t slot, Permissions priv, IsGrad is_grad) const {
-  SlotGradId slot_grad_pair = SlotGradId{slot, is_grad};
+    slot_id_t slot, Permissions priv, TensorType tensor_type) const {
+  SlotTensorTypeId slot_tensor_type = SlotTensorTypeId{slot, tensor_type};
   auto variadic_tensor_backing = std::get<std::vector<GenericTensorAccessorW>>(
-      this->tensor_slots_backing.at(slot_grad_pair));
+      this->tensor_slots_backing.at(slot_tensor_type));
   if (priv == Permissions::RO) {
     std::vector<GenericTensorAccessorR> readonly_variadic_tensor_backing = {};
     for (GenericTensorAccessorW const &tensor_backing :
@@ -55,37 +55,6 @@ VariadicGenericTensorAccessor LocalTaskArgumentAccessor::get_variadic_tensor(
 
 Allocator LocalTaskArgumentAccessor::get_allocator() const {
   return this->allocator;
-}
-
-TensorSlotsBackingWithoutAddresses
-    get_slots_backing_without_tensor_allocation_addresses(
-        TensorSlotsBacking const &slots_backing) {
-
-  TensorSlotsBackingWithoutAddresses addressless_slots_backing;
-
-  using TensorAccessorVariant =
-      std::variant<GenericTensorAccessorW, std::vector<GenericTensorAccessorW>>;
-  for (auto const &slot_tensor : slots_backing) {
-    TensorAccessorVariant accessor_variant = slot_tensor.second;
-    std::visit(
-        overload{
-            [&](GenericTensorAccessorW const &accessor) {
-              addressless_slots_backing.insert(
-                  {slot_tensor.first, get_shape_and_datatype(accessor)});
-            },
-            [&](std::vector<GenericTensorAccessorW> const &variadic_accessor) {
-              std::vector<std::pair<ArrayShape, DataType>>
-                  variadic_addressless_accessor =
-                      transform(variadic_accessor,
-                                [](GenericTensorAccessorW const &accessor) {
-                                  return get_shape_and_datatype(accessor);
-                                });
-              addressless_slots_backing.insert(
-                  {slot_tensor.first, variadic_addressless_accessor});
-            }},
-        accessor_variant);
-  }
-  return addressless_slots_backing;
 }
 
 size_t LocalTaskArgumentAccessor::get_device_idx() const {

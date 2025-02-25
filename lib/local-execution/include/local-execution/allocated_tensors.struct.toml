@@ -1,0 +1,31 @@
+namespace = "FlexFlow"
+name = "AllocatedTensors"
+features = [
+  "eq",
+  "fmt",
+  "hash",
+]
+
+includes = [
+  "task-spec/tensor_type_t.dtg.h",
+  "kernels/accessor.h"
+]
+
+src_includes = [
+  "utils/hash/unordered_map.h",
+  "utils/fmt/unordered_map.h",
+  "utils/hash/vector.h",
+  "utils/fmt/vector.h"
+]
+
+[[fields]]
+name = "tensor_type_backings"
+type = "std::unordered_map<::FlexFlow::TensorTypeVariant, ::FlexFlow::GenericTensorAccessorW>"
+
+[[fields]]
+name = "gradient_mapping"
+type = "std::unordered_map<::FlexFlow::tensor_guid_t, ::FlexFlow::gradient_tensor_t>"
+
+[[fields]]
+name = "optimizer_mapping"
+type = "std::unordered_map<::FlexFlow::tensor_guid_t, std::vector<::FlexFlow::optimizer_tensor_t>>"
