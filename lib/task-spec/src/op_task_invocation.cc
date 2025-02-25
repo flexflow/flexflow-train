@@ -79,43 +79,40 @@ OpTaskBinding infer_bwd_binding(OpTaskBinding const &fwd) {
   return bwd;
 }
 
-bool is_op_tensor_spec_invalid(OpTensorSlotSpec const &tensor_slot_spec,
-                               OpTensorSpec const &tensor_spec) {
-  return tensor_spec.role != tensor_slot_spec.tensor_role ||
-         tensor_spec.slot_option != tensor_slot_spec.slot_option;
-}
-
 bool is_tensor_invocation_valid(OpTaskSignature const &sig,
                                 OpTaskInvocation const &inv) {
-  auto tensor_bindings = inv.binding.get_tensor_bindings();
-  for (OpTensorSlotSpec const &op_tensor_slot_spec : sig.get_tensor_slots()) {
-    SlotGradId tensor_key =
-        SlotGradId{op_tensor_slot_spec.name, op_tensor_slot_spec.is_grad};
-    OpTensorSpec op_tensor_spec = tensor_bindings.at(tensor_key);
-    if (is_op_tensor_spec_invalid(op_tensor_slot_spec, op_tensor_spec)) {
+  // TODO: fix for variadic inputs (need to implement .bind() for variadic
+  // first)
+  for (std::pair<SlotGradId, OpTensorSpec> const &tensor_binding :
+       inv.binding.get_tensor_bindings()) {
+    OpTensorSlotSpec op_tensor_slot_spec =
+        OpTensorSlotSpec{tensor_binding.first.slot_id,
+                         SlotType::TENSOR,
+                         tensor_binding.second.role,
+                         tensor_binding.first.is_grad,
+                         tensor_binding.second.slot_option};
+
+    if (!sig.get_tensor_slots().count(op_tensor_slot_spec)) {
       return false;
     }
   }
 
-  // FIXME -- make sure invocation doesn't contain MORE than signature
-  // https://github.com/flexflow/FlexFlow/issues/1442
   return true;
-}
-
-bool is_arg_type_invalid(std::type_index expected_arg_type,
-                         OpArgSpec op_arg_spec) {
-  std::type_index arg_spec_type = get_op_arg_spec_type_index(op_arg_spec);
-  return arg_spec_type != expected_arg_type;
 }
 
 bool is_arg_invocation_valid(OpTaskSignature const &sig,
                              OpTaskInvocation const &inv) {
-  // FIXME -- arg signature/invocation checking
-  // https://github.com/flexflow/FlexFlow/issues/1442
-  // auto sig_arg_types = sig.get_arg_types();
-  // for (auto arg_binding : inv.binding.get_arg_bindings()) {
-  //   std::type_index arg_type = sig_arg_types.at(arg_binding.first);
-  //   assert (!is_arg_type_invalid(arg_type, arg_binding.second));
+  // TODO: fix for device specific args
+  // for (std::pair<slot_id_t, OpArgSpec> const & arg_binding :
+  // inv.binding.get_arg_bindings()) {
+  //   if (sig.get_arg_types().count(arg_binding.first)) {
+  //     if (get_op_arg_spec_type_index(arg_binding.second) !=
+  //     sig.get_arg_types().at(arg_binding.first)) {
+  //       return false;
+  //     }
+  //   } else {
+  //     return false;
+  //   }
   // }
 
   return true;

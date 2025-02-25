@@ -9,10 +9,14 @@
 #include "pcg/optimizer_attrs.dtg.h"
 #include "test_utils.h"
 
-namespace FlexFlow {
+using namespace ::FlexFlow;
 
-TEST_SUITE(FF_CUDA_TEST_SUITE) {
+TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Execute Update") {
+    // initialize runtime configs
+    ManagedFFStream managed_stream{};
+    ManagedPerDeviceFFHandle managed_handle{};
+
     Allocator allocator = create_local_cuda_memory_allocator();
     AllocatedTensors allocated_tensors = make_empty_allocated_tensors();
 
@@ -31,12 +35,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         TensorDims{FFOrdered<nonnegative_int>{data_dim, output_dim}},
         DataType::FLOAT};
 
-    LayerAddedResult inputs_layer = add_layer(
-        computation_graph,
-        LayerAttrs{ComputationGraphOpAttrs{InputAttrs{input_tensor_shape}},
-                   "inputs"},
-        {},
-        {});
+    LayerAddedResult inputs_layer =
+        add_input_layer(computation_graph, input_tensor_shape);
 
     LayerAddedResult weights_layer = add_layer(
         computation_graph,
@@ -49,21 +49,21 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     LayerAddedResult linear_operator = add_layer(
         computation_graph,
         LayerAttrs{ComputationGraphOpAttrs{LinearAttrs{output_dim,
-                                                       /*use_bias=*/true,
+                                                       /*use_bias=*/false,
                                                        DataType::FLOAT,
-                                                       std::nullopt,
+                                                       Activation::RELU,
                                                        std::nullopt}},
                    "linear"},
         inputs_layer.outputs,
-        {});
-
-    // initialize runtime configs
-    ManagedPerDeviceFFHandle managed_handle{};
+        weights_layer.outputs);
 
     RuntimeArgConfig runtime_arg_config = RuntimeArgConfig{
         DeviceSpecific<PerDeviceFFHandle>::create(managed_handle.raw_handle()),
         EnableProfiling::YES,
         ProfilingSettings{/*warmup_iters=*/0, /*measure_iters=*/1}};
+
+    GradientTensorSource gradient_tensor_source;
+    OptimizerTensorSource optimizer_tensor_source;
 
     SUBCASE("SGDOptimizerAttrs") {
       SUBCASE("momentum=0") {
@@ -75,6 +75,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         LocalTrainingBacking local_training_backing =
             LocalTrainingBacking{allocator,
                                  allocated_tensors,
+                                 gradient_tensor_source,
+                                 optimizer_tensor_source,
                                  computation_graph,
                                  runtime_arg_config,
                                  optimizer_attrs};
@@ -92,6 +94,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         LocalTrainingBacking local_training_backing =
             LocalTrainingBacking{allocator,
                                  allocated_tensors,
+                                 gradient_tensor_source,
+                                 optimizer_tensor_source,
                                  computation_graph,
                                  runtime_arg_config,
                                  optimizer_attrs};
@@ -114,6 +118,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       LocalTrainingBacking local_training_backing =
           LocalTrainingBacking{allocator,
                                allocated_tensors,
+                               gradient_tensor_source,
+                               optimizer_tensor_source,
                                computation_graph,
                                runtime_arg_config,
                                optimizer_attrs};
@@ -124,5 +130,3 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     }
   }
 }
-
-} // namespace FlexFlow
