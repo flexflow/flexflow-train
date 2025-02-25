@@ -15,7 +15,6 @@ build_targets = [
   "models",
   "export-model-arch",
   "substitution-to-dot",
-  "kernels-tests",
 ]
 
 test_targets = [
