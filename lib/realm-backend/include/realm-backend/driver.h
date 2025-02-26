@@ -3,7 +3,7 @@
 
 #include "realm.h"
 #include "realm/cmdline.h"
-#include "local-execution/task_invocation.h"
+#include "task-spec/op_task_invocation.h"
 
 void top_level_task(const void *args, size_t arglen, const void *userdata,
                size_t userlen, Realm::Processor p);
