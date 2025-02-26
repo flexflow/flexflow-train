@@ -7,6 +7,7 @@
 #include "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "utils/overload.h"
+#include "utils/containers/all_of.h"
 
 namespace FlexFlow {
 
@@ -16,12 +17,15 @@ bool is_valid_machine_mapping_problem_tree(
       [&](MMProblemTreeSeriesSplit const &series_split) {
         AbstractedTensorSetMovement tensor_movement =
             series_split.tensor_set_movement;
-        for (BinaryTreePath const &path : get_src_layers(tensor_movement)) {
-          if (!mm_problem_tree_get_subtree_at_path(problem_tree, path)) {
-            return false;
-          }
-        }
-        return is_valid_machine_mapping_problem_tree(
+
+        auto contains_paths = [](MachineMappingProblemTree const &t,
+                                 std::unordered_set<BinaryTreePath> const &paths) {
+          return all_of(paths, [&](BinaryTreePath const &p) { return mm_problem_tree_get_subtree_at_path(t, p).has_value(); });
+        };
+
+        return contains_paths(series_split.get_left_child(), get_src_layers(tensor_movement)) &&
+               contains_paths(series_split.get_right_child(), get_dst_layers(tensor_movement)) &&
+               is_valid_machine_mapping_problem_tree(
                    series_split.get_left_child()) &&
                is_valid_machine_mapping_problem_tree(
                    series_split.get_right_child());
@@ -50,26 +54,32 @@ MachineMappingProblemTree get_machine_mapping_problem_tree(
         [&](PCGBinarySeriesSplit const &series) {
           AbstractedTensorSetMovement tensor_movement =
               get_abstracted_tensor_set_movement_across_split(tr_pcg, series);
-          return MachineMappingProblemTree{
-              MMProblemTreeSeriesSplit{
-                  /*tensor_set_movement=*/tensor_movement,
-                  /*lhs=*/to_problem_tree(series.get_left_child()),
-                  /*rhs=*/to_problem_tree(series.get_right_child()),
-              },
+          MachineMappingProblemTree result = MachineMappingProblemTree{
+            MMProblemTreeSeriesSplit{
+              /*tensor_set_movement=*/tensor_movement,
+              /*lhs=*/to_problem_tree(series.get_left_child()),
+              /*rhs=*/to_problem_tree(series.get_right_child()),
+            },
           };
+          assert (is_valid_machine_mapping_problem_tree(result));
+          return result;
         },
         [&](PCGBinaryParallelSplit const &parallel) {
-          return MachineMappingProblemTree{
-              MMProblemTreeParallelSplit{
-                  to_problem_tree(parallel.get_left_child()),
-                  to_problem_tree(parallel.get_right_child()),
-              },
+          MachineMappingProblemTree result = MachineMappingProblemTree{
+            MMProblemTreeParallelSplit{
+                to_problem_tree(parallel.get_left_child()),
+                to_problem_tree(parallel.get_right_child()),
+            },
           };
+          assert (is_valid_machine_mapping_problem_tree(result));
+          return result;
         },
         [&](parallel_layer_guid_t const &leaf) {
-          return MachineMappingProblemTree{
+          MachineMappingProblemTree result = MachineMappingProblemTree{
               get_unmapped_op_cost_estimate_key_for_layer(pcg, leaf),
           };
+          assert (is_valid_machine_mapping_problem_tree(result));
+          return result;
         },
     });
   };

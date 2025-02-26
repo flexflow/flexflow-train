@@ -28,6 +28,9 @@ std::optional<MachineMappingProblemTree>
     mm_problem_tree_get_subtree_at_path(MachineMappingProblemTree const &,
                                         BinaryTreePath const &);
 
+std::string as_dot(MachineMappingProblemTree const &);
+void debug_print_dot(MachineMappingProblemTree const &);
+
 } // namespace FlexFlow
 
 #endif
