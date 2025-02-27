@@ -10,21 +10,21 @@
 #include "pcg/computation_graph.dtg.h"
 #include "pcg/layer_guid_t.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
-#include "realm-backend/allocated_tensors.dtg.h"
+#include "local-execution/allocated_tensors.dtg.h"
 #include "realm-backend/realm_allocator.h"
 #include "realm-backend/realm_task_argument_accessor.h"
-#include "realm-backend/unallocated_tensors.dtg.h"
+#include "local-execution/unallocated_tensors.dtg.h"
 #include "task-spec/lowered_tensor_t.dtg.h"
 #include "task-spec/task_invocation.dtg.h"
 #include "task-spec/tensor_role.dtg.h"
 
 namespace FlexFlow {
 
-using TensorBackingMap = std::unordered_map<lowered_tensor_t, std::pair<RealmRegion, TensorShape>>;
+using TensorBackingMap = std::unordered_map<lowered_tensor_t, GenericTensorAccessorW>;
 
 struct RealmTensorBacking {
   RealmTensorBacking(AllocatedTensors const &, UnallocatedTensors const &,
-                     RealmAllocator const &);
+                     Allocator const &);
 
 public:
   GenericTensorAccessorW get_tensor(TensorTypeVariant const &) const;
@@ -45,14 +45,12 @@ public:
   std::unordered_map<tensor_guid_t, std::vector<optimizer_tensor_t>>
       tensor_optimizer_mapping;
 
-  RealmAllocator allocator;
+  Allocator allocator;
 
 private:
   lowered_tensor_t insert_tensor(TensorTypeVariant const &);
   LoweredTensorSource lowered_tensor_source;
 };
-
-GenericTensorAccessorW wrappup_tensor_accessor(std::pair<RealmRegion, TensorShape> const &);
 
 UnallocatedTensors generate_unallocated_tensors(
     AllocatedTensors const &,

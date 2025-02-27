@@ -15,7 +15,7 @@ using TensorSlotsBacking = std::unordered_map<
 using ArgSlotsBacking = std::unordered_map<slot_id_t, ConcreteArgSpec>;
 
 struct RealmTaskArgumentAccessor : public ITaskArgumentAccessor {
-  RealmTaskArgumentAccessor(RealmAllocator const &allocator,
+  RealmTaskArgumentAccessor(Allocator const &allocator,
                             TensorSlotsBacking const &tensor_slots_backing,
                             ArgSlotsBacking const &arg_slots_backing);
 
@@ -35,7 +35,7 @@ struct RealmTaskArgumentAccessor : public ITaskArgumentAccessor {
   size_t get_device_idx() const override;
 
 private:
-  RealmAllocator allocator;
+  Allocator allocator;
   TensorSlotsBacking tensor_slots_backing;
   ArgSlotsBacking arg_slots_backing;
 };

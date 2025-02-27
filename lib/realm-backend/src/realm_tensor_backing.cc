@@ -2,7 +2,7 @@
 #include "op-attrs/tensor_shape.h"
 #include "pcg/computation_graph.h"
 #include "pcg/optimizer_attrs.h"
-#include "realm-backend/allocated_tensors.h"
+#include "local-execution/allocated_tensors.h"
 #include "realm-backend/realm_allocator.h"
 #include "realm-backend/realm_tensor_backing.h"
 #include "task-spec/slot_grad_id.dtg.h"
@@ -12,23 +12,16 @@
 
 namespace FlexFlow {
 
-GenericTensorAccessorW wrappup_tensor_accessor(
-    std::pair<RealmRegion, TensorShape> const &tensor_region_shape) {
-  void *ptr = tensor_region_shape.first.instance.pointer_untyped(0, 0);
-  TensorShape shape = tensor_region_shape.second;
-  return {shape.data_type, ArrayShape{shape}, ptr};
-}
-
 RealmTensorBacking::RealmTensorBacking(
     AllocatedTensors const &allocated_tensors,
     UnallocatedTensors const &unallocated_tensors,
-    RealmAllocator const &allocator)
+    Allocator const &allocator)
     : tensor_gradient_mapping(allocated_tensors.gradient_mapping),
       tensor_optimizer_mapping(allocated_tensors.optimizer_mapping),
       allocator(allocator) {
 
   // handle already-allocated tensors
-  for (std::pair<TensorTypeVariant, std::pair<RealmRegion, TensorShape>> const
+  for (std::pair<TensorTypeVariant, GenericTensorAccessorW> const
            &tensor_type_backing : allocated_tensors.tensor_type_backings) {
     lowered_tensor_t lowered_tensor =
         this->insert_tensor(tensor_type_backing.first);
@@ -59,10 +52,9 @@ RealmTensorBacking::RealmTensorBacking(
        unallocated_tensors.tensor_type_shapes) {
     lowered_tensor_t lowered_tensor =
         this->insert_tensor(tensor_type_shape.first);
-    RealmRegion region = allocator.allocate(
-        get_size_in_bytes(tensor_type_shape.second).unwrap_nonnegative());
-    this->tensor_backings.insert(
-        {lowered_tensor, {region, tensor_type_shape.second}});
+    GenericTensorAccessorW tensor_backing =
+        this->allocator.allocate_tensor(tensor_type_shape.second);
+    this->tensor_backings.insert({lowered_tensor, tensor_backing});
   }
 };
 
@@ -117,7 +109,7 @@ RealmTensorBacking::get_tensor(TensorTypeVariant const &tensor_type) const {
             throw mk_runtime_error(
                 fmt::format("Unhandled tensor type {}", any_tensor));
           }});
-  return wrappup_tensor_accessor(this->tensor_backings.at(lowered_tensor));
+  return this->tensor_backings.at(lowered_tensor);
 }
 
 UnallocatedTensors generate_unallocated_tensors(

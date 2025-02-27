@@ -14,7 +14,7 @@ using PerLayerElapsedTime =
 struct ModelTrainingInstance {
   ModelTrainingInstance(RealmTrainingBacking const &,
                         tensor_guid_t const &logit_tensor,
-                        TensorShape const &label_tensor_shape,
+                        loss_tensor_t const &label_tensor,
                         LossAttrs const &,
                         OptimizerAttrs const &);
 

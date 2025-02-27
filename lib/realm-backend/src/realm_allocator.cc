@@ -15,40 +15,29 @@ RealmAllocatorImpl::RealmAllocatorImpl(Processor proc) : proc(proc) {
 }
 
 // TODO: now the region instance only corresponds to one tensor
-RealmRegion RealmAllocatorImpl::allocate(size_t requested_memory_size) {
+void *RealmAllocatorImpl::allocate(size_t requested_memory_size) {
   Rect<1> bounds(Point<1>(0), Point<1>(requested_memory_size - 1));
   RegionInstance requested_instance = RegionInstance::NO_INST;
   RegionInstance::create_instance(requested_instance, mem, bounds, field_sizes,
                                   /*SOA*/ 1, ProfilingRequestSet())
       .wait();
   void *ptr = requested_instance.pointer_untyped(0, 0);
-  this->ptrs.insert({requested_instance, ptr});
-  return {requested_instance, this};
+  this->ptrs.insert({ptr, requested_instance});
+  return ptr;
 }
 
-void RealmAllocatorImpl::deallocate(RealmRegion region) {
-  if (region.allocator == this and contains_key(this->ptrs, region.instance)) {
-    RegionInstance instance = this->ptrs.at(region.instance);
-    instance.destroy();
+void RealmAllocatorImpl::deallocate(void *ptr) {
+  if (this->ptrs.count(ptr)) {
+    RegionInstance region = this->ptrs.at(ptr);
+    region.destroy();
   } else {
     throw std::runtime_error(
         "Deallocating a pointer that was not allocated by this Allocator");
   }
 }
 
-
-/*********** RealmAllocator ***********/
-
-RealmRegion RealmAllocator::allocate(size_t mem_size) {
-  return this->i_allocator->allocate(mem_size);
-}
-
-void RealmAllocator::deallocate(RealmRegion region) {
-  this->i_allocator->deallocate(region);
-}
-
-RealmAllocator create_realm_memory_allocator(Processor proc) {
-  return RealmAllocator::create<RealmAllocatorImpl>(proc);
+Allocator create_realm_memory_allocator(Processor proc) {
+  return Allocator::create<RealmAllocatorImpl>(proc);
 }
 
 } // namespace FlexFlow

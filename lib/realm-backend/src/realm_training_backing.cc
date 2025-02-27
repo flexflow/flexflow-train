@@ -23,26 +23,34 @@ namespace FlexFlow {
 using namespace Realm;
 
 RealmTrainingBacking::RealmTrainingBacking(
-    Processor master_proc, AllocatedTensors const &allocated_tensors,
+    Processor master_proc, std::vector<Processor> const &worker_procs,
+    std::vector<Allocator> const &allocators,
+    AllocatedTensors const &allocated_tensors,
     ComputationGraph const &computation_graph,
     RuntimeArgConfig const &runtime_arg_config)
-    : computation_graph(computation_graph),
+    : master_proc(master_proc), worker_procs(worker_procs),
+      allocators(allocators), computation_graph(computation_graph),
       task_registry(construct_task_registry(
-          get_layer_attrs_mapping(this->computation_graph)))) {
-  master_proc = master_proc;
-  proc_events.insert({master_proc, Realm::Event::NO_EVENT});
+          get_layer_attrs_mapping(this->computation_graph))),
+      realm_tensor_backing(RealmTensorBacking( // TODO: multi gpu
+          allocated_tensors,
+          generate_unallocated_tensors(
+              allocated_tensors, get_all_tensor_attrs(this->computation_graph),
+              this->gradient_tensor_source),
+          this->allocators[0])),
+      realm_args_backing(initialize_args_backing(this, runtime_arg_config)) {
+  master_event = Realm::Event::NO_EVENT;
   master_mem = Machine::MemoryQuery(Machine::get_machine())
                    .only_kind(Memory::SYSTEM_MEM)
                    .best_affinity_to(master_proc)
                    .first();
-  Machine::ProcessorQuery pq = Machine::ProcessorQuery(Machine::get_machine())
-                                   .only_kind(Processor::TOC_PROC);
-  for (Processor p : pq) {
-    worker_procs.push_back(p);
-    proc_events.insert({p, Realm::Event::NO_EVENT});
-    allocators.push_back(RealmAllocator::create<RealmAllocatorImpl>(p));
+  for (Processor p : worker_procs) {
+    worker_events.push_back(Realm::Event::NO_EVENT);
   }
-  assert(worker_procs.size() > 0);
+  //   Machine::ProcessorQuery pq =
+  //   Machine::ProcessorQuery(Machine::get_machine())
+  //                                    .only_kind(Processor::TOC_PROC);
+  // allocators.push_back(create_realm_memory_allocator(p));
 
   // register tasks for realm
   for (layer_guid_t const &node :
@@ -60,41 +68,35 @@ RealmTrainingBacking::RealmTrainingBacking(
       }
     }
   }
-
-  // TODO: multi gpu
-  realm_tensor_backing = RealmTensorBacking(
-      allocated_tensors,
-      generate_unallocated_tensors(
-          allocated_tensors, get_all_tensor_attrs(this->computation_graph),
-          this->gradient_tensor_source),
-      allocators[0]);
-  realm_args_backing =
-      initialize_args_backing(this->task_registry, this->computation_graph,
-                              runtime_arg_config, this->realm_tensor_backing);
 }
 
 RealmTrainingBacking::RealmTrainingBacking(
-  Processor master_proc, AllocatedTensors const &allocated_tensors,
-  ComputationGraph const &computation_graph,
-  RuntimeArgConfig const &runtime_arg_config,
-  OptimizerAttrs const &optimizer_attrs)
-  : computation_graph(computation_graph),
-    task_registry(construct_task_registry(
-        get_layer_attrs_mapping(this->computation_graph)))) {
-  master_proc = master_proc;
-  proc_events.insert({master_proc, Realm::Event::NO_EVENT});
+    Processor master_proc, std::vector<Processor> const &worker_procs,
+    std::vector<Allocator> const &allocators,
+    AllocatedTensors const &allocated_tensors,
+    ComputationGraph const &computation_graph,
+    RuntimeArgConfig const &runtime_arg_config,
+    OptimizerAttrs const &optimizer_attrs)
+    : master_proc(master_proc), worker_procs(worker_procs),
+      allocators(allocators), computation_graph(computation_graph),
+      task_registry(construct_task_registry(
+          get_layer_attrs_mapping(this->computation_graph))),
+      realm_tensor_backing(RealmTensorBacking( // TODO: multi gpu
+          allocated_tensors,
+          generate_unallocated_tensors_with_optimizer(
+              allocated_tensors, get_all_tensor_attrs(this->computation_graph),
+              this->gradient_tensor_source, this->optimizer_tensor_source,
+              optimizer_attrs),
+          this->allocators[0])),
+      realm_args_backing(initialize_args_backing(this, runtime_arg_config)) {
+  master_event = Realm::Event::NO_EVENT;
   master_mem = Machine::MemoryQuery(Machine::get_machine())
                    .only_kind(Memory::SYSTEM_MEM)
                    .best_affinity_to(master_proc)
                    .first();
-  Machine::ProcessorQuery pq = Machine::ProcessorQuery(Machine::get_machine())
-                                   .only_kind(Processor::TOC_PROC);
-  for (Processor p : pq) {
-    worker_procs.push_back(p);
-    proc_events.insert({p, Realm::Event::NO_EVENT});
-    allocators.push_back(RealmAllocator::create<RealmAllocatorImpl>(p));
+  for (Processor p : worker_procs) {
+    worker_events.push_back(Realm::Event::NO_EVENT);
   }
-  assert(worker_procs.size() > 0);
 
   // register tasks for realm
   for (layer_guid_t const &node :
@@ -112,16 +114,6 @@ RealmTrainingBacking::RealmTrainingBacking(
       }
     }
   }
-
-  // TODO: multi gpu
-  realm_tensor_backing = RealmTensorBacking(
-      allocated_tensors,
-      generate_unallocated_tensors_with_optimizer(
-          allocated_tensors, get_all_tensor_attrs(this->computation_graph),
-          this->gradient_tensor_source, this->optimizer_tensor_source,
-          optimizer_attrs),
-      allocators[0]);
-  realm_args_backing = initialize_args_backing(this, runtime_arg_config);
 }
 
 RealmArgsBacking
@@ -140,7 +132,7 @@ initialize_args_backing(RealmTrainingBacking *backing,
   Processor master_proc = backing->master_proc;
   Memory master_mem = backing->master_mem;
   std::vector<Processor> &worker_procs = backing->worker_procs;
-  std::unordered_map<Processor, Event> &proc_events = backing->proc_events;
+  std::vector<Event> &worker_events = backing->worker_events;
 
   for (layer_guid_t const &node : topological_ordering(cg)) {
     if (registry_contains_task_for_layer(task_registry, node,
@@ -164,10 +156,10 @@ initialize_args_backing(RealmTrainingBacking *backing,
       Future<DeviceSpecificDeviceStates> future = promise.get_future();
       RealmTaskArgs<DeviceSpecificDeviceStates> args{
           task_id, impl_function, accessor, std::move(promise)};
-      Event e = worker_procs[0].spawn(
-          static_cast<Processor::TaskFuncID>(task_id), &args, sizeof(args),
-          proc_events[worker_procs[0]]);
-      proc_events[worker_procs[0]] = e;
+      Event e =
+          worker_procs[0].spawn(static_cast<Processor::TaskFuncID>(task_id),
+                                &args, sizeof(args), worker_events[0]);
+      worker_events[0] = e;
       future.set_event(e);
       per_device_op_states.insert({node, std::move(future.get())});
     }
@@ -175,35 +167,6 @@ initialize_args_backing(RealmTrainingBacking *backing,
 
   return RealmArgsBacking{runtime_arg_config, per_device_op_states};
 }
-
-// void RealmTrainingBacking::register_and_allocate_layer(
-//     layer_guid_t const &node) {
-//   ComputationGraphOpAttrs attrs =
-//       get_layer_attrs(this->computation_graph, node).attrs;
-//   this->realm_tensor_backing.allocate_layer_tensors(
-//       node, this->computation_graph, this->allocators[0]);
-// }
-
-// void RealmTrainingBacking::allocate_layer_optimizer_tensors(
-//     layer_guid_t const &node, OptimizerAttrs const &optimizer_attrs) {
-//   ComputationGraphOpAttrs attrs =
-//       get_layer_attrs(this->computation_graph, node).attrs;
-//   if (attrs.has<WeightAttrs>()) {
-//     TaskSignature sig = get_update_signature(optimizer_attrs);
-//     tensor_guid_t weight_tensor =
-//         get_only(get_outgoing_tensors(this->computation_graph, node));
-
-//     std::vector<optimizer_tensor_t> optimizer_tensors;
-//     for (TensorTypeSlotSpec const &tensor_type_slot_spec :
-//          values(sig.tensor_guid_slots)) {
-//       optimizer_tensors.push_back(
-//           this->optimizer_tensor_source.new_optimizer_tensor());
-//     }
-//     this->layer_optimizer_tensor_ids.insert({node, optimizer_tensors});
-//     this->realm_tensor_backing.allocate_optimizer_tensors(
-//         weight_tensor, optimizer_tensors, this->allocators[0]);
-//   }
-// }
 
 Future<std::optional<float>>
 execute_forward(RealmTrainingBacking &realm_training_backing,
@@ -242,10 +205,8 @@ execute_forward(RealmTrainingBacking &realm_training_backing,
                                              std::move(promise)};
     Event e = realm_training_backing.worker_procs[0].spawn(
         static_cast<Processor::TaskFuncID>(task_id), &args, sizeof(args),
-        realm_training_backing
-            .proc_events[realm_training_backing.worker_procs[0]]);
-    realm_training_backing.proc_events[realm_training_backing.worker_procs[0]] =
-        e;
+        realm_training_backing.worker_events[0]);
+    realm_training_backing.worker_events[0] = e;
     future.set_event(e);
     return future;
   } else {
@@ -290,10 +251,8 @@ execute_backward(RealmTrainingBacking &realm_training_backing,
                                              std::move(promise)};
     Event e = realm_training_backing.worker_procs[0].spawn(
         static_cast<Processor::TaskFuncID>(task_id), &args, sizeof(args),
-        realm_training_backing
-            .proc_events[realm_training_backing.worker_procs[0]]);
-    realm_training_backing.proc_events[realm_training_backing.worker_procs[0]] =
-        e;
+        realm_training_backing.worker_events[0]);
+    realm_training_backing.worker_events[0] = e;
     future.set_event(e);
     return future;
   } else {
@@ -301,7 +260,7 @@ execute_backward(RealmTrainingBacking &realm_training_backing,
   }
 }
 
-Future<void> execute_update(RealmTrainingBacking const &realm_training_backing,
+Future<void> execute_update(RealmTrainingBacking &realm_training_backing,
                             layer_guid_t const &node,
                             OptimizerAttrs const &optimizer_attrs) {
   LayerAttrs layer_attrs =
@@ -341,10 +300,8 @@ Future<void> execute_update(RealmTrainingBacking const &realm_training_backing,
                              std::move(promise)};
     Event e = realm_training_backing.worker_procs[0].spawn(
         static_cast<Processor::TaskFuncID>(task_id), &args, sizeof(args),
-        realm_training_backing
-            .proc_events[realm_training_backing.worker_procs[0]]);
-    realm_training_backing.proc_events[realm_training_backing.worker_procs[0]] =
-        e;
+        realm_training_backing.worker_events[0]);
+    realm_training_backing.worker_events[0] = e;
     future.set_event(e);
     return future;
   } else {
@@ -352,7 +309,7 @@ Future<void> execute_update(RealmTrainingBacking const &realm_training_backing,
   }
 }
 
-Future<void> compute_loss(RealmTrainingBacking const &realm_training_backing,
+Future<void> compute_loss(RealmTrainingBacking &realm_training_backing,
                           LossAttrs const &loss_attrs,
                           tensor_guid_t const &logit_tensor,
                           loss_tensor_t const &label_tensor) {
@@ -377,10 +334,8 @@ Future<void> compute_loss(RealmTrainingBacking const &realm_training_backing,
                            std::move(promise)};
   Event e = realm_training_backing.worker_procs[0].spawn(
       static_cast<Processor::TaskFuncID>(task_id), &args, sizeof(args),
-      realm_training_backing
-          .proc_events[realm_training_backing.worker_procs[0]]);
-  realm_training_backing.proc_events[realm_training_backing.worker_procs[0]] =
-      e;
+      realm_training_backing.worker_events[0]);
+  realm_training_backing.worker_events[0] = e;
   future.set_event(e);
   return future;
 }
