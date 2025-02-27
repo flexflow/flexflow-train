@@ -64,7 +64,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     UnitySearchConfig search_config = UnitySearchConfig{
         /*alpha=*/1.0,
-        /*budget=*/20,
+        /*budget=*/0,
         /*threshold=*/1000.0,
         /*max_num_ops=*/100,
     };

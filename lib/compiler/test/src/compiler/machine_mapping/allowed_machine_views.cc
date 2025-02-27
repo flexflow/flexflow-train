@@ -106,5 +106,21 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       CHECK(correct == result);
     }
+
+    SUBCASE("4D operator task space") {
+      MachineSpecification full_machine_spec = MachineSpecification{
+          /*num_nodes=*/nonnegative_int{2},
+          /*num_cpus_per_node=*/nonnegative_int{1},
+          /*num_gpus_per_node=*/nonnegative_int{1},
+          /*inter_node_bandwidth=*/1,
+          /*intra_node_bandwidth=*/1,
+      };
+      OperatorTaskSpace task = OperatorTaskSpace{{1_n, 1_n, 1_n, 1_n}};
+
+      std::unordered_set<MachineView> result =
+          get_allowed_machine_views(full_machine_spec, task, DeviceType::GPU);
+
+      CHECK(result.size() < 10);
+    }
   }
 }

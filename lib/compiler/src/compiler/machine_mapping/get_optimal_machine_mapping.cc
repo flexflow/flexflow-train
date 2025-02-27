@@ -80,15 +80,15 @@ MachineMappingResult
                                     &parallel_split_transformation) {
 
   auto get_boundary_machine_view_assignments =
-      [&](std::unordered_set<BinaryTreePath> const &boundary_layers)
+      [&](std::unordered_set<BinaryTreePath> const &boundary_layers,
+          MachineMappingProblemTree const &t)
       -> std::unordered_set<ParallelLayerGuidObliviousMachineMapping> {
     std::unordered_map<BinaryTreePath, std::unordered_set<MachineView>>
         allowed = generate_map(
             boundary_layers,
             [&](BinaryTreePath const &l) -> std::unordered_set<MachineView> {
               MachineMappingProblemTree subtree_at_path =
-                  expect(mm_problem_tree_get_subtree_at_path(
-                             MachineMappingProblemTree{series_split}, l),
+                  expect(mm_problem_tree_get_subtree_at_path(t, l),
                          "Failed to get subtree at path");
               UnmappedOpCostEstimateKey leaf =
                   subtree_at_path.get<UnmappedOpCostEstimateKey>();
@@ -139,7 +139,8 @@ MachineMappingResult
 
   for (ParallelLayerGuidObliviousMachineMapping const
            &assigned_pre_machine_views :
-       get_boundary_machine_view_assignments(get_src_layers(tensor_movement))) {
+       get_boundary_machine_view_assignments(get_src_layers(tensor_movement),
+                                             series_split.get_left_child())) {
 
     MachineMappingResult pre_result =
         eval_pre_boundary_mapping(assigned_pre_machine_views);
@@ -147,7 +148,7 @@ MachineMappingResult
     for (ParallelLayerGuidObliviousMachineMapping const
              &assigned_post_machine_views :
          get_boundary_machine_view_assignments(
-             get_dst_layers(tensor_movement))) {
+             get_dst_layers(tensor_movement), series_split.get_right_child())) {
 
       MachineMappingResult post_result =
           eval_post_boundary_mapping(assigned_post_machine_views);

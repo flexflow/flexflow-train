@@ -8,11 +8,14 @@ using Series = value_type<1>;
 using Parallel = value_type<2>;
 using Leaf = value_type<3>;
 
-template
-  std::string as_dot(Tree const &, 
-                     GenericBinarySPDecompositionTreeImplementation<Tree, Series, Parallel, Leaf> const &,
-                     std::function<std::string(Series const &)> const &,
-                     std::function<std::string(Parallel const &)> const &,
-                     std::function<std::string(Leaf const &)> const &);
+template std::string
+    as_dot(Tree const &,
+           GenericBinarySPDecompositionTreeImplementation<Tree,
+                                                          Series,
+                                                          Parallel,
+                                                          Leaf> const &,
+           std::function<std::string(Series const &)> const &,
+           std::function<std::string(Parallel const &)> const &,
+           std::function<std::string(Leaf const &)> const &);
 
 } // namespace FlexFlow
