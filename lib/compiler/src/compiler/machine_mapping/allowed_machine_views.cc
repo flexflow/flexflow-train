@@ -68,13 +68,19 @@ static std::unordered_set<MachineView>
     nonnegative_int max_stride_upper_bound =
         get_max_stride_upper_bound(tensor_dims, total_devices);
 
-    std::vector<stride_t> single_stride_range =
-        transform(nonnegative_range(1_n, max_stride_upper_bound + 1_n),
-                  [](nonnegative_int stride) { return stride_t{stride}; });
+    std::vector<std::vector<stride_t>> stride_options =
+        transform(tensor_dims, [&](nonnegative_int dim_size) {
+          if (dim_size != 1_n) {
+            return transform(
+                nonnegative_range(1_n, max_stride_upper_bound + 1_n),
+                [](nonnegative_int stride) { return stride_t{stride}; });
+          } else {
+            return std::vector<stride_t>{stride_t{1_n}};
+          }
+        });
+
     std::unordered_multiset<std::vector<stride_t>> raw_stride_vectors =
-        cartesian_product(
-            repeat_element(/*num_times=*/num_elements(tensor_dims),
-                           /*element=*/single_stride_range));
+        cartesian_product(stride_options);
     std::unordered_multiset<MultiDimensionalStride> strides =
         transform(raw_stride_vectors, [](auto const &stride_vec) {
           return MultiDimensionalStride{stride_vec};
@@ -96,10 +102,18 @@ static std::unordered_set<MachineView>
   };
 
   auto candidate_dimensions = [](OperatorTaskSpace const &task) {
-    std::unordered_set<MachineSpecificationDimension> options = {
-        MachineSpecificationDimension::INTER_NODE,
-        MachineSpecificationDimension::INTRA_NODE};
-    return get_all_permutations_with_repetition(options, num_dims(task));
+    std::vector<std::vector<MachineSpecificationDimension>> dimension_options =
+        transform(task.degrees, [](nonnegative_int dim_size) {
+          if (dim_size == 1_n) {
+            return std::vector<MachineSpecificationDimension>{
+                MachineSpecificationDimension::INTRA_NODE};
+          } else {
+            return std::vector<MachineSpecificationDimension>{
+                MachineSpecificationDimension::INTER_NODE,
+                MachineSpecificationDimension::INTRA_NODE};
+          }
+        });
+    return cartesian_product(dimension_options);
   };
 
   std::vector<nonnegative_int> tensor_dims = task.degrees;
