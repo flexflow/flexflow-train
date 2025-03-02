@@ -2,6 +2,20 @@
 
 namespace FlexFlow {
 
+RecordFormatter as_dot(ReplicateAttrs const &attrs) {
+  RecordFormatter r;
+
+  auto kv = [](std::string const &label, auto const &val) {
+    RecordFormatter rr;
+    rr << label << fmt::to_string(val);
+    return rr;
+  };
+
+  r << kv("degree", attrs.replicate_degree);
+
+  return r;
+}
+
 ParallelTensorShape get_output_shape(ReplicateAttrs const &attrs,
                                      ParallelTensorShape const &input_shape) {
   ParallelTensorShape output_shape = input_shape;

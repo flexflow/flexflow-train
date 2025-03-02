@@ -14,7 +14,8 @@
 #include "utils/containers/scanl.h"
 #include "utils/containers/sum.h"
 #include "utils/containers/transform.h"
-#include "utils/containers/zip.h"
+#include "utils/containers/zip3_strict.h"
+#include "utils/containers/zip_with_strict.h"
 #include "utils/exception.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include "utils/nonnegative_int/num_elements.h"
@@ -52,9 +53,9 @@ MachineView machine_view_from_strides_and_machine_spec_dimensions(
         start,
         strides));
   }
-  std::vector<MachineViewDimension> dimensions =
-      transform(zip(strides, dims), [&](auto const &p) {
-        return MachineViewDimension{p.first, p.second};
+  std::vector<MachineViewDimension> dimensions = zip_with_strict(
+      strides, dims, [](stride_t s, MachineSpecificationDimension d) {
+        return MachineViewDimension{s, d};
       });
   return MachineView{start, dimensions};
 }
@@ -109,7 +110,7 @@ std::optional<MachineSpaceCoordinate> get_machine_space_coordinate(
 
         nonnegative_int index = start_idx;
         for (auto [coeff, coord_point, stride] :
-             zip(coeffs, coord_points, strides)) {
+             zip3(coeffs, coord_points, strides)) {
           index += coeff * coord_point * stride;
         }
         return index;

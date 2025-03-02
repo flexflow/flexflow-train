@@ -13,7 +13,7 @@ template <typename T>
 struct commutative_pair {
 public:
   commutative_pair() = delete;
-  commutative_pair(T const &x, T const &y) : first(x), second(y) {}
+  explicit commutative_pair(T const &x, T const &y) : first(x), second(y) {}
 
   bool operator==(commutative_pair const &other) const {
     return this->tie() == other.tie() || this->rtie() == other.tie();

@@ -1,7 +1,7 @@
 #include "models/bert/bert.h"
+#include "op-attrs/initializers/truncated_normal_initializer_attrs.dtg.h"
 #include "op-attrs/tensor_shape.h"
 #include "pcg/computation_graph.h"
-#include "pcg/initializers/truncated_normal_initializer_attrs.dtg.h"
 
 namespace FlexFlow {
 

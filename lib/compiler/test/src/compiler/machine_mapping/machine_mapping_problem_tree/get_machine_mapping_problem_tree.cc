@@ -1,5 +1,6 @@
 #include "compiler/machine_mapping/machine_mapping_problem_tree/get_machine_mapping_problem_tree.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
+#include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "utils/containers/get_only.h"
 #include <doctest/doctest.h>
@@ -62,24 +63,20 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     ParallelComputationGraph pcg = empty_parallel_computation_graph();
 
-    ParallelTensorShape input_shape = ParallelTensorShape{
-        ParallelTensorDims{
-            FFOrdered<ShardParallelDim>{
-                ShardParallelDim{10_n, 1_n},
-            },
-            ReplicaParallelDimSet{
-                SumDegree{1_n},
-                DiscardCopyDegree{1_n},
+    TensorShape input_shape = TensorShape{
+        TensorDims{
+            FFOrdered<nonnegative_int>{
+                10_n,
+                1_n,
             },
         },
         DataType::FLOAT,
     };
+    ParallelTensorShape par_input_shape = lift_to_parallel(input_shape);
 
     auto make_output_attrs = [](ParallelTensorShape const &shape) {
       return ParallelTensorAttrs{
           /*shape=*/shape,
-          /*sync_type=*/std::nullopt,
-          /*initializer=*/std::nullopt,
           /*create_gradients=*/CreateGrad::YES,
       };
     };
@@ -91,7 +88,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
     };
 
-    PCGOperatorAttrs input_attrs = PCGOperatorAttrs{InputAttrs{}};
+    PCGOperatorAttrs input_attrs = PCGOperatorAttrs{InputAttrs{input_shape}};
 
     auto make_input_key =
         [&](ParallelTensorShape const &parallel_tensor_shape) {
@@ -104,14 +101,14 @@ TEST_SUITE(FF_TEST_SUITE) {
         };
 
     SUBCASE("single layer") {
-      ParallelLayerAddedResult input_added = add_parallel_layer(
-          pcg,
-          /*layer_attrs=*/make_layer_attrs(input_attrs),
-          /*inputs=*/{},
-          /*output_labels=*/{make_output_attrs(input_shape)});
+      ParallelLayerAddedResult input_added =
+          add_parallel_layer(pcg,
+                             /*layer_attrs=*/make_layer_attrs(input_attrs),
+                             /*inputs=*/{},
+                             /*output_labels=*/{});
       parallel_layer_guid_t input_layer = input_added.parallel_layer;
 
-      UnmappedOpCostEstimateKey input_key = make_input_key(input_shape);
+      UnmappedOpCostEstimateKey input_key = make_input_key(par_input_shape);
 
       PCGBinarySPDecomposition sp_decomposition =
           PCGBinarySPDecomposition{input_layer};
@@ -124,15 +121,15 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("two layers in series") {
-      ParallelLayerAddedResult input_added = add_parallel_layer(
-          pcg,
-          /*layer_attrs=*/make_layer_attrs(input_attrs),
-          /*inputs=*/{},
-          /*output_labels=*/{make_output_attrs(input_shape)});
+      ParallelLayerAddedResult input_added =
+          add_parallel_layer(pcg,
+                             /*layer_attrs=*/make_layer_attrs(input_attrs),
+                             /*inputs=*/{},
+                             /*output_labels=*/{});
       parallel_layer_guid_t input_layer = input_added.parallel_layer;
       parallel_tensor_guid_t input = get_only(input_added.outputs);
 
-      UnmappedOpCostEstimateKey input_key = make_input_key(input_shape);
+      UnmappedOpCostEstimateKey input_key = make_input_key(par_input_shape);
 
       PCGOperatorAttrs relu_attrs = PCGOperatorAttrs{
           ElementUnaryAttrs{
@@ -140,18 +137,15 @@ TEST_SUITE(FF_TEST_SUITE) {
               /*scalar=*/std::nullopt,
           },
       };
-      ParallelTensorShape relu_output_shape = input_shape;
+      ParallelTensorShape relu_output_shape = par_input_shape;
       ParallelLayerAddedResult relu_added =
-          add_parallel_layer(pcg,
-                             make_layer_attrs(relu_attrs),
-                             {input},
-                             {make_output_attrs(relu_output_shape)});
+          add_parallel_layer(pcg, make_layer_attrs(relu_attrs), {input}, {});
       parallel_layer_guid_t relu_layer = relu_added.parallel_layer;
       parallel_tensor_guid_t relu_output = get_only(relu_added.outputs);
 
       UnmappedOpCostEstimateKey relu_key = UnmappedOpCostEstimateKey{
           /*op_attrs=*/relu_attrs,
-          /*input_shapes=*/{input_shape},
+          /*input_shapes=*/{par_input_shape},
           /*weight_shapes=*/{},
           /*output_shapes=*/{relu_output_shape},
       };
@@ -165,7 +159,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       MachineMappingProblemTree correct = mm_problem_tree_make_series(
           AbstractedTensorSetMovement{{
               AbstractedSingleTensorMovement{
-                  /*parallel_tensor_shape=*/input_shape,
+                  /*parallel_tensor_shape=*/par_input_shape,
                   /*src_machine_views=*/
                   {
                       BinaryTreePath{{}},
@@ -186,12 +180,12 @@ TEST_SUITE(FF_TEST_SUITE) {
       ParallelLayerAddedResult input1_added =
           pcg_add_input_layer(pcg, input_shape);
       parallel_layer_guid_t input1_layer = input1_added.parallel_layer;
-      UnmappedOpCostEstimateKey input1_key = make_input_key(input_shape);
+      UnmappedOpCostEstimateKey input1_key = make_input_key(par_input_shape);
 
       ParallelLayerAddedResult input2_added =
           pcg_add_input_layer(pcg, input_shape);
       parallel_layer_guid_t input2_layer = input2_added.parallel_layer;
-      UnmappedOpCostEstimateKey input2_key = make_input_key(input_shape);
+      UnmappedOpCostEstimateKey input2_key = make_input_key(par_input_shape);
 
       PCGBinarySPDecomposition sp_decomposition = pcg_make_parallel(
           pcg_make_leaf(input1_layer), pcg_make_leaf(input2_layer));
@@ -211,13 +205,13 @@ TEST_SUITE(FF_TEST_SUITE) {
           pcg_add_input_layer(pcg, input_shape);
       parallel_layer_guid_t input1_layer = input1_added.parallel_layer;
       parallel_tensor_guid_t input1_tensor = get_only(input1_added.outputs);
-      UnmappedOpCostEstimateKey input1_key = make_input_key(input_shape);
+      UnmappedOpCostEstimateKey input1_key = make_input_key(par_input_shape);
 
       ParallelLayerAddedResult input2_added =
           pcg_add_input_layer(pcg, input_shape);
       parallel_layer_guid_t input2_layer = input2_added.parallel_layer;
       parallel_tensor_guid_t input2_tensor = get_only(input2_added.outputs);
-      UnmappedOpCostEstimateKey input2_key = make_input_key(input_shape);
+      UnmappedOpCostEstimateKey input2_key = make_input_key(par_input_shape);
 
       PCGOperatorAttrs ew_op_attrs = PCGOperatorAttrs{
           ElementBinaryAttrs{
@@ -227,16 +221,16 @@ TEST_SUITE(FF_TEST_SUITE) {
               /*should_broadcast_rhs=*/false,
           },
       };
-      ParallelTensorShape ew_op_output_shape = input_shape;
+      ParallelTensorShape ew_op_output_shape = par_input_shape;
       ParallelLayerAddedResult ew_op_added =
           add_parallel_layer(pcg,
                              make_layer_attrs(ew_op_attrs),
                              {input1_tensor, input2_tensor},
-                             {make_output_attrs(ew_op_output_shape)});
+                             {});
       parallel_layer_guid_t ew_op_layer = ew_op_added.parallel_layer;
       UnmappedOpCostEstimateKey ew_op_key = UnmappedOpCostEstimateKey{
           /*op_attrs=*/ew_op_attrs,
-          /*input_shapes=*/{input_shape, input_shape},
+          /*input_shapes=*/{par_input_shape, par_input_shape},
           /*weight_shapes=*/{},
           /*output_shapes=*/{ew_op_output_shape},
       };
@@ -252,7 +246,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       MachineMappingProblemTree correct = mm_problem_tree_make_series(
           AbstractedTensorSetMovement{{
               AbstractedSingleTensorMovement{
-                  /*parallel_tensor_shape=*/input_shape,
+                  /*parallel_tensor_shape=*/par_input_shape,
                   /*src_machine_views=*/
                   {
                       BinaryTreePath{{
@@ -265,7 +259,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                   },
               },
               AbstractedSingleTensorMovement{
-                  /*parallel_tensor_shape=*/input_shape,
+                  /*parallel_tensor_shape=*/par_input_shape,
                   /*src_machine_views=*/
                   {
                       BinaryTreePath{{

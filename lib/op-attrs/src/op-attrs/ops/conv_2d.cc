@@ -1,6 +1,8 @@
 #include "op-attrs/ops/conv_2d.h"
+#include "op-attrs/initializers/kaiming_initializer_mode.h"
 #include "op-attrs/ops/conv_2d/conv_2d_input_shape.h"
 #include "op-attrs/ops/conv_2d/conv_2d_parallel_input_shape.h"
+#include "utils/fmt/optional.h"
 #include "utils/integer_conversions.h"
 
 namespace FlexFlow {
@@ -86,6 +88,19 @@ TensorShape get_output_shape(Conv2DAttrs const &attrs,
                      input.datatype};
 }
 
+std::vector<TensorShape> get_weight_shapes(Conv2DAttrs const &attrs,
+                                           TensorShape const &input_shape) {
+  std::vector<TensorShape> weight_shapes = {
+      get_kernel_shape(attrs, input_shape),
+  };
+
+  if (attrs.use_bias) {
+    weight_shapes.push_back(get_bias_shape(attrs, input_shape));
+  }
+
+  return weight_shapes;
+}
+
 ParallelTensorShape get_kernel_shape(Conv2DAttrs const &attrs,
                                      ParallelTensorShape const &input) {
   assert(attrs.groups == 1); // TODO(@lockshaw): currently not supported
@@ -155,6 +170,74 @@ ParallelTensorShape get_output_shape(Conv2DAttrs const &attrs,
 
   return lift_to_parallel_with_degrees(
       unpar, sum_degree, discard_copy_degree, shard_degrees);
+}
+
+std::vector<ParallelTensorShape>
+    get_weight_shapes(Conv2DAttrs const &attrs,
+                      ParallelTensorShape const &input_shape) {
+  std::vector<ParallelTensorShape> weight_shapes = {
+      get_kernel_shape(attrs, input_shape),
+  };
+
+  if (attrs.use_bias) {
+    weight_shapes.push_back(get_bias_shape(attrs, input_shape));
+  }
+
+  return weight_shapes;
+}
+
+/**
+ * @brief Chosen to match pytorch implementation
+ *
+ * see
+ * https://github.com/pytorch/pytorch/blob/1eba9b3aa3c43f86f4a2c807ac8e12c4a7767340/torch/nn/modules/conv.py#L178-L187
+ */
+std::vector<InitializerAttrs>
+    get_initializers(Conv2DAttrs const &attrs,
+                     TensorShape const &input_shape,
+                     std::optional<InitializerAttrs> maybe_kernel_initializer,
+                     std::optional<InitializerAttrs> maybe_bias_initializer) {
+
+  if (!attrs.use_bias && maybe_bias_initializer.has_value()) {
+    throw mk_runtime_error(fmt::format(
+        "Unexpectedly received bias initializer while use_bias=false: {}",
+        maybe_bias_initializer));
+  }
+
+  TensorShape kernel_shape = get_kernel_shape(attrs, input_shape);
+
+  InitializerAttrs kernel_default_initializer =
+      InitializerAttrs{KaimingNormalAttrs{
+          /*a=*/sqrtf(5.0),
+          /*mode=*/KaimingInitializerMode::FAN_IN,
+          /*nonlinearity=*/KaimingInitializerNonlinearity::LEAKY_RELU,
+          /*seed=*/0,
+      }};
+
+  InitializerAttrs kernel_initializer =
+      maybe_kernel_initializer.value_or(kernel_default_initializer);
+
+  nonnegative_int fan_in =
+      calculate_fan_for_mode(kernel_shape.dims, KaimingInitializerMode::FAN_IN);
+  assert(fan_in != 0_n);
+
+  float bound = 1 / sqrtf(static_cast<float>(fan_in.unwrap_nonnegative()));
+
+  InitializerAttrs bias_default_initializer =
+      InitializerAttrs{UniformInitializerAttrs{
+          /*seed=*/0,
+          /*min_val=*/-bound,
+          /*max_val=*/bound,
+      }};
+
+  InitializerAttrs bias_initializer =
+      maybe_bias_initializer.value_or(bias_default_initializer);
+
+  if (attrs.use_bias) {
+    return {kernel_initializer, bias_initializer};
+  } else {
+    return {kernel_initializer};
+  }
 }
 
 } // namespace FlexFlow

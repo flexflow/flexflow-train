@@ -7,6 +7,22 @@
 
 namespace FlexFlow {
 
+RecordFormatter as_dot(EmbeddingAttrs const &attrs) {
+  RecordFormatter r;
+
+  auto kv = [](std::string const &label, auto const &val) {
+    RecordFormatter rr;
+    rr << label << fmt::to_string(val);
+    return rr;
+  };
+
+  r << kv("num_entries", attrs.num_entries)
+    << kv("out_channels", attrs.out_channels) << kv("aggr", attrs.aggr)
+    << kv("output_type", attrs.data_type);
+
+  return r;
+}
+
 static std::optional<std::string> basic_check(EmbeddingAttrs const &attrs,
                                               TensorShape const &input) {
   if (input.data_type != DataType::INT32 &&
@@ -109,6 +125,20 @@ tl::expected<ParallelTensorShape, std::string>
 
   return lift_to_parallel_with_degrees(
       unpar, sum_degree, discard_copy_degree, shard_degrees);
+}
+
+std::vector<InitializerAttrs> get_initializers(
+    EmbeddingAttrs const &,
+    std::optional<InitializerAttrs> const &maybe_initializer_attrs) {
+  InitializerAttrs default_initializer_attrs = InitializerAttrs{
+      NormInitializerAttrs{
+          /*seed=*/0,
+          /*mean=*/0.0,
+          /*stddev=*/1.0,
+      },
+  };
+
+  return {maybe_initializer_attrs.value_or(default_initializer_attrs)};
 }
 
 } // namespace FlexFlow
