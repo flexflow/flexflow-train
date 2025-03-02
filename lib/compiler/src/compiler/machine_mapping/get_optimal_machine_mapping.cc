@@ -16,14 +16,14 @@
 #include "pcg/machine_view.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "utils/containers/contains.h"
+#include "utils/containers/contains_key.h"
 #include "utils/containers/flatmap.h"
 #include "utils/containers/generate_map.h"
 #include "utils/containers/get_all_assignments.h"
-#include "utils/containers/unordered_set_of.h"
-#include "utils/containers/set_minus.h"
 #include "utils/containers/keys.h"
-#include "utils/containers/contains_key.h"
 #include "utils/containers/merge_maps.h"
+#include "utils/containers/set_minus.h"
+#include "utils/containers/unordered_set_of.h"
 #include "utils/exception.h"
 #include "utils/overload.h"
 
@@ -88,9 +88,9 @@ MachineMappingResult
           MachineMappingProblemTree const &t,
           BinaryTreePathEntry const &prefix)
       -> std::unordered_set<ParallelLayerGuidObliviousMachineMapping> {
-
-    std::unordered_set<BinaryTreePath> unconstrained_boundary_layers = set_minus(
-      boundary_layers, keys(restrict_to_child(constraints, prefix).machine_views));
+    std::unordered_set<BinaryTreePath> unconstrained_boundary_layers =
+        set_minus(boundary_layers,
+                  keys(restrict_to_child(constraints, prefix).machine_views));
 
     std::unordered_map<BinaryTreePath, std::unordered_set<MachineView>>
         allowed = generate_map(
@@ -154,7 +154,7 @@ MachineMappingResult
 
     MachineMappingResult pre_result =
         eval_pre_boundary_mapping(assigned_pre_machine_views);
-    
+
     if (is_infeasible(pre_result)) {
       continue;
     }
@@ -162,7 +162,9 @@ MachineMappingResult
     for (ParallelLayerGuidObliviousMachineMapping const
              &assigned_post_machine_views :
          get_boundary_machine_view_assignments(
-             get_dst_layers(tensor_movement), series_split.get_right_child(), BinaryTreePathEntry::RIGHT_CHILD)) {
+             get_dst_layers(tensor_movement),
+             series_split.get_right_child(),
+             BinaryTreePathEntry::RIGHT_CHILD)) {
 
       MachineMappingResult post_result =
           eval_post_boundary_mapping(assigned_post_machine_views);
