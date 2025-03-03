@@ -1,7 +1,10 @@
 #include "op-attrs/computation_graph_op_attrs.h"
 #include "op-attrs/get_op_type.h"
 #include "op-attrs/ops/broadcast.h"
+#include "op-attrs/ops/cast.h"
+#include "op-attrs/ops/embedding.h"
 #include "op-attrs/ops/linear.h"
+#include "op-attrs/ops/weight.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {
@@ -12,15 +15,20 @@ OperatorType get_op_type(ComputationGraphOpAttrs const &attrs) {
 }
 
 RecordFormatter as_dot(ComputationGraphOpAttrs const &attrs) {
-  return attrs.visit<RecordFormatter>(overload{
+  RecordFormatter result = attrs.visit<RecordFormatter>(overload{
       [](LinearAttrs const &l) { return as_dot(l); },
+      [](CastAttrs const &a) { return as_dot(a); },
+      [](EmbeddingAttrs const &a) { return as_dot(a); },
+      [](WeightAttrs const &a) { return as_dot(a); },
       [](BroadcastAttrs const &a) { return as_dot(a); },
-      [&](auto const &) {
-        RecordFormatter r;
-        r << fmt::to_string(get_op_type(attrs));
-        return r;
-      },
+      [&](auto const &) { return RecordFormatter{}; },
   });
+
+  RecordFormatter rr;
+  rr << "Op Type" << fmt::to_string(get_op_type(attrs));
+  result << rr;
+
+  return result;
 }
 
 ComputationGraphOpAttrs

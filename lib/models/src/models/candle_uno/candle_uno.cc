@@ -1,5 +1,5 @@
 #include "models/candle_uno/candle_uno.h"
-#include "pcg/initializers/glorot_normal_attrs.dtg.h"
+#include "op-attrs/initializers/glorot_normal_attrs.dtg.h"
 #include "utils/containers/repeat_element.h"
 
 namespace FlexFlow {

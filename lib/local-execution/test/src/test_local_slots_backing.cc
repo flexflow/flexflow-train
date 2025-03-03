@@ -187,7 +187,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
       MultiHeadAttentionAttrs attrs =
           get_layer_attrs(cg_builder.computation_graph, layer_guid)
-              .attrs.get<MultiHeadAttentionAttrs>();
+              .op_attrs.get<MultiHeadAttentionAttrs>();
       OpTaskBinding binding = [&] {
         OpTaskBinding b;
         b.bind(QUERY, input_tensor(0));

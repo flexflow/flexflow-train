@@ -36,7 +36,7 @@ void LocalSlotsBacking::allocate_outgoing_tensors(
     }
 
     // gradient tensor allocation
-    if (tensor_attrs.create_gradients == CreateGrad::YES &&
+    if (tensor_attrs.create_grad == CreateGrad::YES &&
         !is_gradient_tensor_allocated(output_tensor)) {
       GenericTensorAccessorW gradient_tensor_backing =
           allocator.allocate_tensor(tensor_attrs.shape);

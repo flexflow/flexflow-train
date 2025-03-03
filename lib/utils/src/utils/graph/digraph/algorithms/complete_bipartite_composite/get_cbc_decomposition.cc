@@ -71,8 +71,8 @@ std::optional<CompleteBipartiteCompositeDecomposition>
     extend(already_in_a_tail, tail);
   }
 
-  assert(already_in_a_head == set_minus(get_nodes(g), get_sinks(g)));
-  assert(already_in_a_tail == set_minus(get_nodes(g), get_sources(g)));
+  assert(already_in_a_head == set_minus(get_nodes(g), get_terminal_nodes(g)));
+  assert(already_in_a_tail == set_minus(get_nodes(g), get_initial_nodes(g)));
 
   return result;
 }

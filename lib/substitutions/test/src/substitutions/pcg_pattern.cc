@@ -19,23 +19,21 @@ TEST_SUITE(FF_TEST_SUITE) {
     nonnegative_int batch_degree = 2_n;
     nonnegative_int num_channels = 24_n;
 
-    ParallelTensorShape a_shape = ParallelTensorShape{
-        ParallelTensorDims{
-            FFOrdered<ShardParallelDim>{
-                ShardParallelDim{batch_size, batch_degree},
-                ShardParallelDim{num_channels, 1_n},
-            },
-            ReplicaParallelDimSet{
-                SumDegree{1_n},
-                DiscardCopyDegree{1_n},
+    TensorShape a_shape = TensorShape{
+        TensorDims{
+            FFOrdered<nonnegative_int>{
+                batch_size,
+                num_channels,
             },
         },
         DataType::FLOAT,
     };
+
     std::string a_name = "a";
 
-    parallel_tensor_guid_t a_tensor =
-        builder.create_input_tensor(a_shape, CreateGrad::YES, a_name);
+    parallel_tensor_guid_t a_tensor = builder.create_input_tensor(a_shape);
+    a_tensor =
+        builder.parallel_partition(a_tensor, ff_dim_t{0_n}, batch_degree);
 
     nonnegative_int outDim = 16_n;
     std::string x_matmul_name = "x_matmul";
