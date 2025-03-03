@@ -32,6 +32,11 @@ T const &assert_unwrap(std::optional<T> const &o) {
   return o.value();
 }
 
+template <typename T>
+T expect(std::optional<T> const &x, std::string const &err) {
+  return unwrap(x, [&]() { throw mk_runtime_error(err); });
+}
+
 } // namespace FlexFlow
 
 #endif
