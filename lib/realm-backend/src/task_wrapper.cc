@@ -16,12 +16,12 @@ void init_wrapper_task(const void *args, size_t arglen, const void *userdata,
 
 void fwdbwd_wrapper_task(const void *args, size_t arglen, const void *userdata,
                          size_t userlen, Processor p) {
-  RealmTaskArgs<std::optional<float>> const &task_args =
-      *reinterpret_cast<const RealmTaskArgs<std::optional<float>> *>(args);
+  RealmTaskArgs<float> const &task_args =
+      *reinterpret_cast<const RealmTaskArgs<float> *>(args);
   auto fn =
       task_args.impl_function.get<FwdBwdOpTaskImplFunction>().function_ptr;
   std::optional<float> result = fn(task_args.accessor);
-  task_args.promise.set_value(std::move(result));
+  task_args.promise.set_value(result.has_value() ? result.value() : 0.0f);
 }
 
 void generic_wrapper_task(const void *args, size_t arglen, const void *userdata,

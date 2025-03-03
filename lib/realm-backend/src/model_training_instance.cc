@@ -17,7 +17,7 @@ namespace FlexFlow {
 
 PerLayerElapsedTime forward(ModelTrainingInstance &model_training_instance) {
   PerLayerElapsedTime per_layer_elapsed_time;
-  std::unordered_map<layer_guid_t, Future<std::optional<float>>>
+  std::unordered_map<layer_guid_t, Future<float>>
       per_layer_elapsed_time_future;
   for (layer_guid_t const &node : topological_ordering(
            model_training_instance.training_backing.computation_graph)) {
@@ -26,7 +26,7 @@ PerLayerElapsedTime forward(ModelTrainingInstance &model_training_instance) {
   }
   for (layer_guid_t const &node : topological_ordering(
            model_training_instance.training_backing.computation_graph)) {
-    std::optional<float> elapsed_time =
+    float elapsed_time =
         per_layer_elapsed_time_future[node].get();
     per_layer_elapsed_time.insert({node, elapsed_time});
   }
@@ -40,7 +40,7 @@ PerLayerElapsedTime backward(ModelTrainingInstance &model_training_instance) {
                model_training_instance.label_tensor);
 
   PerLayerElapsedTime per_layer_elapsed_time;
-  std::unordered_map<layer_guid_t, Future<std::optional<float>>>
+  std::unordered_map<layer_guid_t, Future<float>>
       per_layer_elapsed_time_future;
   for (layer_guid_t const &node : reversed(topological_ordering(
            model_training_instance.training_backing.computation_graph))) {
@@ -49,7 +49,7 @@ PerLayerElapsedTime backward(ModelTrainingInstance &model_training_instance) {
   }
   for (layer_guid_t const &node : reversed(topological_ordering(
            model_training_instance.training_backing.computation_graph))) {
-    std::optional<float> elapsed_time =
+    float elapsed_time =
         per_layer_elapsed_time_future[node].get();
     per_layer_elapsed_time.insert({node, elapsed_time});
   }

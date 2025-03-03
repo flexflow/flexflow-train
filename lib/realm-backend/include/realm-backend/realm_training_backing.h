@@ -55,10 +55,10 @@ RealmArgsBacking initialize_args_backing(RealmTrainingBacking *,
                                         RuntimeArgConfig const &);
 
 void execute_init(RealmTrainingBacking &, layer_guid_t const &);
-Future<std::optional<float>> execute_forward(RealmTrainingBacking &,
-                                             layer_guid_t const &);
-Future<std::optional<float>> execute_backward(RealmTrainingBacking &,
-                                              layer_guid_t const &);
+Future<float> execute_forward(RealmTrainingBacking &,
+                              layer_guid_t const &);
+Future<float> execute_backward(RealmTrainingBacking &,
+                              layer_guid_t const &);
 Future<void> compute_loss(RealmTrainingBacking &, LossAttrs const &,
                           tensor_guid_t const &logit_tensor,
                           loss_tensor_t const &label_tensor);
