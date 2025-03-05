@@ -47,17 +47,18 @@ template <typename T> class Future {
 public:
   explicit Future(std::shared_ptr<SharedState<T>> state)
       : state_(std::move(state)) {}
+  explicit Future() = default;
   explicit Future(T value) : value_(std::move(value)) {}
   void set_event(Realm::Event e) { state_->set_event(e); }
   T get() {
-    value_ = state_->get_value();
-    return value_;
+    value_ = std::make_optional(state_->get_value());
+    return value_.value();
   }
   void wait() { state_->wait(); }
 
 private:
   std::shared_ptr<SharedState<T>> state_;
-  T value_;
+  std::optional<T> value_ = std::nullopt;
 };
 
 // Specialization of Future for the `void` type, as it does not carry a value.
@@ -67,6 +68,7 @@ public:
       : state_(std::move(state)) {}
   explicit Future() = default;
   void set_event(Realm::Event e) { state_->set_event(e); }
+  void get() { state_->wait(); }
   void wait() { state_->wait(); }
 
 private:

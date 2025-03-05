@@ -53,19 +53,16 @@ RealmTrainingBacking::RealmTrainingBacking(
   // allocators.push_back(create_realm_memory_allocator(p));
 
   // register tasks for realm
-  for (layer_guid_t const &node :
-       topological_ordering(this->computation_graph)) {
-    ComputationGraphOpAttrs attrs =
-        get_layer_attrs(this->computation_graph, node).attrs;
-    if (attrs.has<OpTaskInvocation>()) {
-      OpTaskInvocation op_task_invocation = attrs.get<OpTaskInvocation>();
-      std::vector<task_id_t> task_ids = get_task_ids(attrs);
-      for (task_id_t task_id : task_ids) {
-        TaskSignatureAndImpl task_signature_impl =
-            this->task_registry.task_mapping.at(task_id);
+  std::unordered_map<layer_guid_t, LayerAttrs> const &layer_attrs_mapping =
+      get_layer_attrs_mapping(this->computation_graph);
+  for (std::pair<layer_guid_t, LayerAttrs> const &layer_attrs :
+      layer_attrs_mapping) {
+    ComputationGraphOpAttrs attrs = layer_attrs.second.attrs;
+    std::vector<task_id_t> task_ids = get_task_ids(attrs);
+    for (task_id_t task_id : task_ids) {
+        TaskSignatureAndImpl task_signature_impl = get_task_sig_impl(task_id);
         // TODO: multi gpu
         register_wrapper_tasks(worker_procs[0], task_id, task_signature_impl);
-      }
     }
   }
 }
@@ -99,19 +96,16 @@ RealmTrainingBacking::RealmTrainingBacking(
   }
 
   // register tasks for realm
-  for (layer_guid_t const &node :
-       topological_ordering(this->computation_graph)) {
-    ComputationGraphOpAttrs attrs =
-        get_layer_attrs(this->computation_graph, node).attrs;
-    if (attrs.has<OpTaskInvocation>()) {
-      OpTaskInvocation op_task_invocation = attrs.get<OpTaskInvocation>();
-      std::vector<task_id_t> task_ids = get_task_ids(attrs);
-      for (task_id_t task_id : task_ids) {
-        TaskSignatureAndImpl task_signature_impl =
-            this->task_registry.task_mapping.at(task_id);
+  std::unordered_map<layer_guid_t, LayerAttrs> const &layer_attrs_mapping =
+      get_layer_attrs_mapping(this->computation_graph);
+  for (std::pair<layer_guid_t, LayerAttrs> const &layer_attrs :
+      layer_attrs_mapping) {
+    ComputationGraphOpAttrs attrs = layer_attrs.second.attrs;
+    std::vector<task_id_t> task_ids = get_task_ids(attrs);
+    for (task_id_t task_id : task_ids) {
+        TaskSignatureAndImpl task_signature_impl = get_task_sig_impl(task_id);
         // TODO: multi gpu
         register_wrapper_tasks(worker_procs[0], task_id, task_signature_impl);
-      }
     }
   }
 }
@@ -168,7 +162,7 @@ initialize_args_backing(RealmTrainingBacking *backing,
   return RealmArgsBacking{runtime_arg_config, per_device_op_states};
 }
 
-Future<std::optional<float>>
+Future<float>
 execute_forward(RealmTrainingBacking &realm_training_backing,
                 layer_guid_t const &operator_node) {
   if (registry_contains_task_for_layer(realm_training_backing.task_registry,
@@ -199,10 +193,10 @@ execute_forward(RealmTrainingBacking &realm_training_backing,
         realm_training_backing.task_registry.task_mapping.at(task_id)
             .impl_function;
     // TODO: multi gpu launching
-    Promise<std::optional<float>> promise(realm_training_backing.master_mem);
-    Future<std::optional<float>> future = promise.get_future();
-    RealmTaskArgs<std::optional<float>> args{task_id, impl_function, accessor,
-                                             std::move(promise)};
+    Promise<float> promise(realm_training_backing.master_mem);
+    Future<float> future = promise.get_future();
+    RealmTaskArgs<float> args{task_id, impl_function, accessor,
+                                std::move(promise)};
     Event e = realm_training_backing.worker_procs[0].spawn(
         static_cast<Processor::TaskFuncID>(task_id), &args, sizeof(args),
         realm_training_backing.worker_events[0]);
@@ -210,11 +204,11 @@ execute_forward(RealmTrainingBacking &realm_training_backing,
     future.set_event(e);
     return future;
   } else {
-    return Future<std::optional<float>>(std::nullopt);
+    return Future<float>(0.0f);
   }
 }
 
-Future<std::optional<float>>
+Future<float>
 execute_backward(RealmTrainingBacking &realm_training_backing,
                  layer_guid_t const &operator_node) {
   if (registry_contains_task_for_layer(realm_training_backing.task_registry,
@@ -245,10 +239,10 @@ execute_backward(RealmTrainingBacking &realm_training_backing,
         realm_training_backing.task_registry.task_mapping.at(task_id)
             .impl_function;
     // TODO: multi gpu launching
-    Promise<std::optional<float>> promise(realm_training_backing.master_mem);
-    Future<std::optional<float>> future = promise.get_future();
-    RealmTaskArgs<std::optional<float>> args{task_id, impl_function, accessor,
-                                             std::move(promise)};
+    Promise<float> promise(realm_training_backing.master_mem);
+    Future<float> future = promise.get_future();
+    RealmTaskArgs<float> args{task_id, impl_function, accessor,
+                                std::move(promise)};
     Event e = realm_training_backing.worker_procs[0].spawn(
         static_cast<Processor::TaskFuncID>(task_id), &args, sizeof(args),
         realm_training_backing.worker_events[0]);
@@ -256,7 +250,7 @@ execute_backward(RealmTrainingBacking &realm_training_backing,
     future.set_event(e);
     return future;
   } else {
-    return Future<std::optional<float>>(std::nullopt);
+    return Future<float>(0.0f);
   }
 }
 
