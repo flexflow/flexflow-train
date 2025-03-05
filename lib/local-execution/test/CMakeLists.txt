@@ -7,6 +7,7 @@ ff_add_test_executable(
     src/test_task_registry.cc
     src/test_utils.cc
     src/test_local_task_arg_accessor.cc
+    src/test_local_tensor_backing.cc
   PRIVATE_INCLUDE 
     src/
   DEPS

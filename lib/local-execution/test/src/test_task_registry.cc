@@ -143,5 +143,74 @@ TEST_SUITE(FF_TEST_SUITE) {
         CHECK(task_registry != other_task_registry);
       }
     }
+
+    SUBCASE("registry_contains_task_for_layer") {
+      SUBCASE("Task exists") {
+        TaskRegistry task_registry = construct_task_registry({
+            {layer_guid, LayerAttrs{attrs, std::nullopt}},
+        });
+        SUBCASE("Init") {
+          bool result = registry_contains_task_for_layer(
+              task_registry, layer_guid, OpTaskType::INIT);
+          CHECK(result == true);
+        }
+        SUBCASE("Fwd") {
+          bool result = registry_contains_task_for_layer(
+              task_registry, layer_guid, OpTaskType::FWD);
+          CHECK(result == true);
+        }
+        SUBCASE("Bwd") {
+          bool result = registry_contains_task_for_layer(
+              task_registry, layer_guid, OpTaskType::BWD);
+          CHECK(result == true);
+        }
+      }
+
+      SUBCASE("Partial task does not exist") {
+        ComputationGraphOpAttrs bmm_attrs = ComputationGraphOpAttrs{
+            BatchMatmulAttrs{/*a_seq_length_dim=*/10_n,
+                             /*b_seq_length_dim=*/20_n}};
+        TaskRegistry task_registry = construct_task_registry({
+            {layer_guid, LayerAttrs{bmm_attrs, std::nullopt}},
+        });
+        SUBCASE("Init") {
+          bool result = registry_contains_task_for_layer(
+              task_registry, layer_guid, OpTaskType::INIT);
+          CHECK(result == false);
+        }
+        SUBCASE("Fwd") {
+          bool result = registry_contains_task_for_layer(
+              task_registry, layer_guid, OpTaskType::FWD);
+          CHECK(result == true);
+        }
+        SUBCASE("Bwd") {
+          bool result = registry_contains_task_for_layer(
+              task_registry, layer_guid, OpTaskType::BWD);
+          CHECK(result == true);
+        }
+      }
+
+      SUBCASE("Empty tasks") {
+        std::unordered_map<layer_guid_t, std::optional<task_id_t>>
+            empty_task_ids = {{layer_guid, std::nullopt}};
+        TaskRegistry task_registry =
+            TaskRegistry{empty_task_ids, empty_task_ids, empty_task_ids, {}};
+        SUBCASE("Init") {
+          bool result = registry_contains_task_for_layer(
+              task_registry, layer_guid, OpTaskType::INIT);
+          CHECK(result == false);
+        }
+        SUBCASE("Fwd") {
+          bool result = registry_contains_task_for_layer(
+              task_registry, layer_guid, OpTaskType::FWD);
+          CHECK(result == false);
+        }
+        SUBCASE("Bwd") {
+          bool result = registry_contains_task_for_layer(
+              task_registry, layer_guid, OpTaskType::BWD);
+          CHECK(result == false);
+        }
+      }
+    }
   }
 }

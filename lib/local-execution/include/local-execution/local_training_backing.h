@@ -13,12 +13,12 @@
 namespace FlexFlow {
 
 struct LocalTrainingBacking {
-  LocalTrainingBacking(Allocator const &,
+  LocalTrainingBacking(Allocator &,
                        AllocatedTensors const &,
                        ComputationGraph const &,
                        RuntimeArgConfig const &);
 
-  LocalTrainingBacking(Allocator const &,
+  LocalTrainingBacking(Allocator &,
                        AllocatedTensors const &,
                        ComputationGraph const &,
                        RuntimeArgConfig const &,
@@ -38,27 +38,33 @@ public:
 LocalArgsBacking initialize_args_backing(TaskRegistry const &,
                                          ComputationGraph const &,
                                          RuntimeArgConfig const &,
-                                         LocalTensorBacking const &);
+                                         LocalTensorBacking const &,
+                                         Allocator &);
 
 std::optional<float> call_task_impl(TaskRegistry const &,
                                     task_id_t const &task_id,
                                     TaskArgumentAccessor const &acc);
 
 std::optional<float> execute_forward(LocalTrainingBacking const &,
-                                     layer_guid_t const &);
+                                     layer_guid_t const &,
+                                     Allocator &);
 std::optional<float> execute_backward(LocalTrainingBacking const &,
-                                      layer_guid_t const &);
+                                      layer_guid_t const &,
+                                      Allocator &);
 void compute_loss(LocalTrainingBacking const &,
                   LossAttrs const &,
                   tensor_guid_t const &logit_tensor,
-                  loss_tensor_t const &label_tensor);
+                  loss_tensor_t const &label_tensor,
+                  Allocator &);
 void execute_update(LocalTrainingBacking const &,
                     layer_guid_t const &,
-                    OptimizerAttrs const &);
+                    OptimizerAttrs const &,
+                    Allocator &);
 
 TaskArgumentAccessor get_task_arg_accessor(LocalTensorBacking const &,
                                            LocalArgsBacking const &,
-                                           TaskInvocation const &);
+                                           TaskInvocation const &,
+                                           Allocator &);
 
 } // namespace FlexFlow
 

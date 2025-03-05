@@ -39,15 +39,6 @@ private:
   ArgSlotsBacking arg_slots_backing;
 };
 
-using TensorSlotsBackingWithoutAddresses = std::unordered_map<
-    SlotTensorTypeId,
-    std::variant<std::pair<ArrayShape, DataType>,
-                 std::vector<std::pair<ArrayShape, DataType>>>>;
-
-TensorSlotsBackingWithoutAddresses
-    get_slots_backing_without_tensor_allocation_addresses(
-        TensorSlotsBacking const &);
-
 CHECK_RC_COPY_VIRTUAL_COMPLIANT(LocalTaskArgumentAccessor);
 
 } // namespace FlexFlow
