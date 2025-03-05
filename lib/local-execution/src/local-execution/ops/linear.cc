@@ -2,7 +2,6 @@
 #include "kernels/linear_kernels.h"
 #include "local-execution/task_argument_accessor.h"
 #include "op-attrs/ff_dim_t.h"
-#include "op-attrs/get_output_shapes.h"
 #include "utils/exception.h"
 #include "utils/hash-utils.h"
 

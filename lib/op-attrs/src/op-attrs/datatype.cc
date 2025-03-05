@@ -28,8 +28,11 @@ bool can_strictly_promote_datatype_from_to(DataType src, DataType dst) {
   std::unordered_set<DataType> allowed;
   switch (src) {
     case DataType::BOOL:
-      allowed = {
-          DataType::INT32, DataType::INT64, DataType::FLOAT, DataType::DOUBLE};
+      allowed = {DataType::INT32,
+                 DataType::INT64,
+                 DataType::HALF,
+                 DataType::FLOAT,
+                 DataType::DOUBLE};
       break;
     case DataType::INT32:
       allowed = {DataType::INT64};
@@ -43,6 +46,40 @@ bool can_strictly_promote_datatype_from_to(DataType src, DataType dst) {
       allowed = {DataType::DOUBLE};
       break;
     case DataType::DOUBLE:
+      break;
+    default:
+      throw mk_runtime_error(fmt::format("Unknown DataType {}", src));
+  }
+
+  return contains(allowed, dst);
+}
+
+bool can_torch_strictly_promote_datatype_from_to(DataType src, DataType dst) {
+  std::unordered_set<DataType> allowed;
+  switch (src) {
+    case DataType::BOOL:
+      allowed = {DataType::INT32,
+                 DataType::INT64,
+                 DataType::HALF,
+                 DataType::FLOAT,
+                 DataType::DOUBLE};
+      break;
+    case DataType::INT32:
+      allowed = {
+          DataType::INT64, DataType::HALF, DataType::FLOAT, DataType::DOUBLE};
+      break;
+    case DataType::INT64:
+      allowed = {
+          DataType::INT32, DataType::HALF, DataType::FLOAT, DataType::DOUBLE};
+      break;
+    case DataType::HALF:
+      allowed = {DataType::FLOAT, DataType::DOUBLE};
+      break;
+    case DataType::FLOAT:
+      allowed = {DataType::HALF, DataType::DOUBLE};
+      break;
+    case DataType::DOUBLE:
+      allowed = {DataType::HALF, DataType::FLOAT};
       break;
     default:
       throw mk_runtime_error(fmt::format("Unknown DataType {}", src));

@@ -265,7 +265,7 @@ Future<void> execute_update(RealmTrainingBacking &realm_training_backing,
                             OptimizerAttrs const &optimizer_attrs) {
   LayerAttrs layer_attrs =
       get_layer_attrs(realm_training_backing.computation_graph, node);
-  if (layer_attrs.attrs.has<WeightAttrs>()) {
+  if (layer_attrs.op_attrs.has<WeightAttrs>()) {
     // get tensors
     tensor_guid_t weight_tensor = get_only(
         get_outgoing_tensors(realm_training_backing.computation_graph, node));

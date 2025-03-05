@@ -1,0 +1,14 @@
+namespace = "FlexFlow"
+name = "DLRMArchInteractionOp"
+features = [
+  "hash", 
+  "json", 
+  "rapidcheck", 
+  "fmt",
+]
+
+[[values]]
+name = "DOT"
+
+[[values]]
+name = "CAT"

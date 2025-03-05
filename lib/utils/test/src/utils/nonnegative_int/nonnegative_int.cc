@@ -267,6 +267,38 @@ TEST_SUITE(FF_TEST_SUITE) {
     CHECK(result == correct);
   }
 
+  TEST_CASE("operator/(float, nonnegative_int)") {
+    float result = 5.0 / nonnegative_int{2};
+    float correct = 5.0 / 2;
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("operator/=(float, nonnegative_int)") {
+    float result = 13.0;
+    result /= nonnegative_int{3};
+
+    float correct = 13.0 / 3;
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("nonnegative_int::operator/(nonnegative_int)") {
+    nonnegative_int result = nonnegative_int{5} / nonnegative_int{2};
+    nonnegative_int correct = nonnegative_int{2};
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("nonnegative_int::operator/=(nonnegative_int)") {
+    nonnegative_int result = nonnegative_int{13};
+    result /= nonnegative_int{3};
+
+    nonnegative_int correct = nonnegative_int{4};
+
+    CHECK(result == correct);
+  }
+
   TEST_CASE("nonnegative_int::operator%(nonnegative_int)") {
     nonnegative_int result = nonnegative_int{5} % nonnegative_int{2};
     nonnegative_int correct = nonnegative_int{1};

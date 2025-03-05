@@ -1,15 +1,15 @@
 #include "local-execution/local_cost_estimator.h"
 #include "kernels/device.h"
 #include "kernels/local_cuda_allocator.h"
-
 #include "local-execution/tracked_allocator.h"
 #include "op-attrs/computation_graph_op_attrs.h"
 #include "op-attrs/pcg_operator_attrs.h"
+#include "pcg/computation_graph.h"
 #include "pcg/computation_graph/layer_added_result.dtg.h"
-#include "pcg/computation_graph_builder.h"
 #include "pcg/machine_view.dtg.h"
 #include "pcg/parallel_tensor_attrs.h"
 #include "utils/containers/concat_vectors.h"
+#include "utils/containers/get_only.h"
 #include "utils/containers/sum.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/values.h"
@@ -26,41 +26,36 @@ static ComputationGraph create_computation_graph_for_local_cost_estimation(
     std::vector<ParallelTensorAttrs> const &outputs) {
   ComputationGraph computation_graph = make_empty_computation_graph();
 
-  // create layer for inputs
-  auto get_vector_piece_attrs_from_parallel_tensor_shape =
-      [](std::vector<ParallelTensorShape> const &parallel_shapes) {
-        return transform(parallel_shapes, [](ParallelTensorShape const &p) {
-          return TensorAttrs{
-              get_piece_shape(p), std::nullopt, std::nullopt, CreateGrad::YES};
-        });
-      };
+  std::vector<tensor_guid_t> input_tensors;
+  for (ParallelTensorShape const &input : inputs) {
+    LayerAddedResult inputs_layer = add_layer(
+        computation_graph,
+        LayerAttrs{ComputationGraphOpAttrs{InputAttrs{get_piece_shape(input)}},
+                   std::nullopt},
+        {},
+        {});
+    input_tensors.push_back(get_only(inputs_layer.outputs));
+  }
 
-  LayerAddedResult inputs_layer =
-      add_layer(computation_graph,
-                LayerAttrs{ComputationGraphOpAttrs{InputAttrs{}}, "inputs"},
-                {},
-                get_vector_piece_attrs_from_parallel_tensor_shape(inputs));
-
-  // create layer for weights
-  auto get_vector_piece_attrs_from_parallel_tensor_attrs =
-      [](std::vector<ParallelTensorAttrs> const &parallel_attrs) {
-        return transform(parallel_attrs, [](ParallelTensorAttrs const &p) {
-          return get_piece_attrs(p);
-        });
-      };
-
-  LayerAddedResult weights_layer =
-      add_layer(computation_graph,
-                LayerAttrs{ComputationGraphOpAttrs{InputAttrs{}}, "weights"},
-                {},
-                get_vector_piece_attrs_from_parallel_tensor_attrs(weights));
+  std::vector<tensor_guid_t> weight_tensors;
+  for (ParallelTensorAttrs const &weight : weights) {
+    LayerAddedResult weights_layer =
+        add_layer(computation_graph,
+                  LayerAttrs{ComputationGraphOpAttrs{WeightAttrs{
+                                 get_piece_shape(weight.shape),
+                                 InitializerAttrs{ZeroInitializerAttrs{}}}},
+                             std::nullopt},
+                  {},
+                  {});
+    weight_tensors.push_back(get_only(weights_layer.outputs));
+  }
 
   // create operator layer
   LayerAddedResult operator_layer = add_layer(
       computation_graph,
       LayerAttrs{compgraph_op_attrs_from_pcg_op_attrs(op), "operator"},
-      concat_vectors(inputs_layer.outputs, weights_layer.outputs),
-      get_vector_piece_attrs_from_parallel_tensor_attrs(outputs));
+      input_tensors,
+      weight_tensors);
 
   return computation_graph;
 }
@@ -91,7 +86,6 @@ CostDetails LocalCostEstimator::estimate_cost(
                                      AllocatedTensors{{}, {}, {}},
                                      computation_graph,
                                      this->runtime_arg_config);
-
   // execute layer
   layer_guid_t operator_layer_guid =
       get_layer_by_name(computation_graph, "operator");

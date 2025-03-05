@@ -73,7 +73,10 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     ParallelLayerAttrs n1_weight_attrs = ParallelLayerAttrs{
         PCGOperatorAttrs{
-            WeightAttrs{get_reduced_shape(n1_weight_shape)},
+            WeightAttrs{
+                get_reduced_shape(n1_weight_shape),
+                InitializerAttrs{ZeroInitializerAttrs{}},
+            },
         },
         std::nullopt,
     };

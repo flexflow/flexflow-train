@@ -1,6 +1,5 @@
 #include "local-execution/ops/dropout.h"
 #include "kernels/dropout_kernels.h"
-#include "op-attrs/get_output_shapes.h"
 #include "task-spec/op_task_invocation.h"
 #include "task-spec/op_task_signature.h"
 #include "utils/hash-utils.h"

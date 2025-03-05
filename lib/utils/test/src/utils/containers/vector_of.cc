@@ -14,4 +14,24 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     CHECK(result == correct);
   }
+
+  TEST_CASE("vector_of(std::optional<T>)") {
+    SUBCASE("input has value") {
+      std::optional<int> input = 4;
+
+      std::vector<int> result = vector_of(input);
+      std::vector<int> correct = {4};
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("input is nullopt") {
+      std::optional<int> input = std::nullopt;
+
+      std::vector<int> result = vector_of(input);
+      std::vector<int> correct = {};
+
+      CHECK(result == correct);
+    }
+  }
 }

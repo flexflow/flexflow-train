@@ -15,7 +15,6 @@
 
 #include "local-execution/ops/repartition.h"
 #include "kernels/partition_kernels.h"
-#include "op-attrs/get_output_shapes.h"
 #include "utils/exception.h"
 #include "utils/hash-utils.h"
 
