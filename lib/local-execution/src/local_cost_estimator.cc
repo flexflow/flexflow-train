@@ -82,8 +82,11 @@ CostDetails LocalCostEstimator::estimate_cost(
       std::make_shared<TrackedAllocator>(create_local_cuda_memory_allocator());
   Allocator allocator = Allocator(tracked_allocator_ptr);
 
+  GradientTensorSource gradient_tensor_source;
+
   LocalTrainingBacking local_backing(allocator,
                                      AllocatedTensors{{}, {}, {}},
+                                     gradient_tensor_source,
                                      computation_graph,
                                      this->runtime_arg_config);
   // execute layer

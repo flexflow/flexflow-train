@@ -71,6 +71,7 @@ bool registry_contains_task_for_layer(TaskRegistry const &task_registry,
           fmt::format("Invalid OpTaskType, got {}", op_task_type));
   }
 
+  assert(task_ids.count(op));
   return task_ids.at(op).has_value();
 }
 

@@ -64,16 +64,16 @@ ArrayShape ArrayShape::sub_shape(std::optional<ff_dim_t> start,
 
 ArrayShape ArrayShape::sub_shape(std::optional<legion_dim_t> start,
                                  std::optional<legion_dim_t> end) const {
-  std::optional<ff_dim_t> legion_start =
+  std::optional<ff_dim_t> ff_end =
       transform(start, [&](auto const &start_unwrapped) {
         return ff_dim_from_legion_dim(start_unwrapped, num_dims());
       });
 
-  std::optional<ff_dim_t> legion_end =
+  std::optional<ff_dim_t> ff_start =
       transform(end, [&](auto const &end_unwrapped) {
         return ff_dim_from_legion_dim(end_unwrapped, num_dims());
       });
-  return this->sub_shape(legion_start, legion_end);
+  return this->sub_shape(ff_start, ff_end);
 }
 
 bool ArrayShape::operator==(ArrayShape const &other) const {

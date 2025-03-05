@@ -18,20 +18,20 @@ namespace FlexFlow {
 LocalTrainingBacking::LocalTrainingBacking(
     Allocator &allocator,
     AllocatedTensors const &allocated_tensors,
+    GradientTensorSource &gradient_tensor_source,
     ComputationGraph const &computation_graph,
     RuntimeArgConfig const &runtime_arg_config)
     : computation_graph(computation_graph),
-      task_registry(construct_task_registry(
-          get_layer_attrs_mapping(this->computation_graph))),
+      task_registry(
+          construct_task_registry(get_layer_attrs_mapping(computation_graph))),
       local_tensor_backing(construct_local_tensor_backing(
           allocated_tensors,
-          generate_unallocated_tensors(
-              allocated_tensors,
-              get_all_tensor_attrs(this->computation_graph),
-              this->gradient_tensor_source),
+          generate_unallocated_tensors(allocated_tensors,
+                                       get_all_tensor_attrs(computation_graph),
+                                       gradient_tensor_source),
           allocator)),
       local_args_backing(initialize_args_backing(this->task_registry,
-                                                 this->computation_graph,
+                                                 computation_graph,
                                                  runtime_arg_config,
                                                  this->local_tensor_backing,
                                                  allocator)){};
@@ -39,23 +39,25 @@ LocalTrainingBacking::LocalTrainingBacking(
 LocalTrainingBacking::LocalTrainingBacking(
     Allocator &allocator,
     AllocatedTensors const &allocated_tensors,
+    GradientTensorSource &gradient_tensor_source,
+    OptimizerTensorSource &optimizer_tensor_source,
     ComputationGraph const &computation_graph,
     RuntimeArgConfig const &runtime_arg_config,
     OptimizerAttrs const &optimizer_attrs)
     : computation_graph(computation_graph),
-      task_registry(construct_task_registry(
-          get_layer_attrs_mapping(this->computation_graph))),
+      task_registry(
+          construct_task_registry(get_layer_attrs_mapping(computation_graph))),
       local_tensor_backing(construct_local_tensor_backing(
           allocated_tensors,
           generate_unallocated_tensors_with_optimizer(
               allocated_tensors,
-              get_all_tensor_attrs(this->computation_graph),
-              this->gradient_tensor_source,
-              this->optimizer_tensor_source,
+              get_all_tensor_attrs(computation_graph),
+              gradient_tensor_source,
+              optimizer_tensor_source,
               optimizer_attrs),
           allocator)),
       local_args_backing(initialize_args_backing(this->task_registry,
-                                                 this->computation_graph,
+                                                 computation_graph,
                                                  runtime_arg_config,
                                                  this->local_tensor_backing,
                                                  allocator)){};

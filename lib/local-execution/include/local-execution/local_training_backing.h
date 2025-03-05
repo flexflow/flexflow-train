@@ -15,24 +15,23 @@ namespace FlexFlow {
 struct LocalTrainingBacking {
   LocalTrainingBacking(Allocator &,
                        AllocatedTensors const &,
+                       GradientTensorSource &,
                        ComputationGraph const &,
                        RuntimeArgConfig const &);
 
   LocalTrainingBacking(Allocator &,
                        AllocatedTensors const &,
+                       GradientTensorSource &,
+                       OptimizerTensorSource &,
                        ComputationGraph const &,
                        RuntimeArgConfig const &,
                        OptimizerAttrs const &);
 
 public:
-  LocalTensorBacking local_tensor_backing;
-  LocalArgsBacking local_args_backing;
-
   ComputationGraph computation_graph;
   TaskRegistry task_registry;
-
-  GradientTensorSource gradient_tensor_source;
-  OptimizerTensorSource optimizer_tensor_source;
+  LocalTensorBacking local_tensor_backing;
+  LocalArgsBacking local_args_backing;
 };
 
 LocalArgsBacking initialize_args_backing(TaskRegistry const &,

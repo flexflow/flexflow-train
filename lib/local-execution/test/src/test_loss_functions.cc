@@ -11,10 +11,14 @@
 #include "test_utils.h"
 #include "utils/containers/get_only.h"
 
-namespace FlexFlow {
+using namespace ::FlexFlow;
 
-TEST_SUITE(FF_CUDA_TEST_SUITE) {
+TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Loss Functions") {
+    // initialize runtime
+    ManagedFFStream managed_stream{};
+    ManagedPerDeviceFFHandle managed_handle{};
+
     Allocator allocator = create_local_cuda_memory_allocator();
 
     // allocate label tensors
@@ -58,35 +62,28 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         TensorDims{FFOrdered<nonnegative_int>{data_dim, output_dim}},
         DataType::FLOAT};
 
-    LayerAddedResult inputs_layer = add_layer(
-        computation_graph,
-        LayerAttrs{ComputationGraphOpAttrs{InputAttrs{input_tensor_shape}},
-                   "inputs"},
-        {},
-        {});
+    LayerAddedResult inputs_layer =
+        add_input_layer(computation_graph, input_tensor_shape);
 
     LayerAddedResult weights_layer = add_layer(
         computation_graph,
         LayerAttrs{ComputationGraphOpAttrs{WeightAttrs{
                        weight_shape, InitializerAttrs{ZeroInitializerAttrs{}}}},
-                   "weights"},
+                   std::nullopt},
         {},
         {});
 
     LayerAddedResult linear_operator = add_layer(
         computation_graph,
         LayerAttrs{ComputationGraphOpAttrs{LinearAttrs{output_dim,
-                                                       /*use_bias=*/true,
+                                                       /*use_bias=*/false,
                                                        DataType::FLOAT,
-                                                       std::nullopt,
+                                                       Activation::RELU,
                                                        std::nullopt}},
-                   "linear"},
+                   std::nullopt},
         inputs_layer.outputs,
-        {});
+        weights_layer.outputs);
     tensor_guid_t logit_tensor = get_only(linear_operator.outputs);
-
-    // initialize runtime configs
-    ManagedPerDeviceFFHandle managed_handle{};
 
     RuntimeArgConfig runtime_arg_config = RuntimeArgConfig{
         DeviceSpecific<PerDeviceFFHandle>::create(managed_handle.raw_handle()),
@@ -94,8 +91,13 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         ProfilingSettings{/*warmup_iters=*/0, /*measure_iters=*/1}};
 
     // initialize training backing
-    LocalTrainingBacking local_training_backing = LocalTrainingBacking{
-        allocator, allocated_tensors, computation_graph, runtime_arg_config};
+    GradientTensorSource gradient_tensor_source;
+    LocalTrainingBacking local_training_backing =
+        LocalTrainingBacking{allocator,
+                             allocated_tensors,
+                             gradient_tensor_source,
+                             computation_graph,
+                             runtime_arg_config};
 
     SUBCASE("SparseCategoricalCrossEntropyLossAttrs") {
       LossAttrs loss_attrs = LossAttrs{
@@ -141,5 +143,3 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     }
   }
 }
-
-} // namespace FlexFlow
