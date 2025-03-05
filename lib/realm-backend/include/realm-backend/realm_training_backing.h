@@ -6,7 +6,8 @@
 #include "op-attrs/ops/loss_functions/loss_attrs.dtg.h"
 #include "pcg/computation_graph.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
-#include "local-execution/allocated_tensors.dtg.h"
+#include "local-execution/allocated_tensors.h"
+#include "local-execution/unallocated_tensors.h"
 #include "realm-backend/driver.h"
 #include "realm-backend/realm_allocator.h"
 #include "realm-backend/realm_args_backing.h"
@@ -67,7 +68,8 @@ Future<void> execute_update(RealmTrainingBacking &, layer_guid_t const &,
 
 TaskArgumentAccessor get_task_arg_accessor(RealmTensorBacking const &,
                                            RealmArgsBacking const &,
-                                           TaskInvocation const &);
+                                           TaskInvocation const &,
+                                           Allocator &);
 
 } // namespace FlexFlow
 

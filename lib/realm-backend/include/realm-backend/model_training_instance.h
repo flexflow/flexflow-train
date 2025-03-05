@@ -23,11 +23,12 @@ struct ModelTrainingInstance {
   loss_tensor_t label_tensor;
   LossAttrs loss_attrs;
   OptimizerAttrs optimizer_attrs;
-};
 
-PerLayerElapsedTime forward(ModelTrainingInstance &);
-PerLayerElapsedTime backward(ModelTrainingInstance &);
-void update(ModelTrainingInstance &);
+public:
+  PerLayerElapsedTime forward();
+  PerLayerElapsedTime backward();
+  void update();
+};
 
 } // namespace FlexFlow
 

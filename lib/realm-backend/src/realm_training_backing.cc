@@ -1,3 +1,4 @@
+#include "kernels/allocation.h"
 #include "local-execution/loss_functions.h"
 #include "local-execution/optimizer.h"
 #include "local-execution/task_signature_impl.h"
@@ -32,12 +33,12 @@ RealmTrainingBacking::RealmTrainingBacking(
       allocators(allocators), computation_graph(computation_graph),
       task_registry(construct_task_registry(
           get_layer_attrs_mapping(this->computation_graph))),
-      realm_tensor_backing(RealmTensorBacking( // TODO: multi gpu
-          allocated_tensors,
-          generate_unallocated_tensors(
-              allocated_tensors, get_all_tensor_attrs(this->computation_graph),
-              this->gradient_tensor_source),
-          this->allocators[0])),
+      realm_tensor_backing(construct_realm_tensor_backing( // TODO: multi gpu
+        allocated_tensors,
+        generate_unallocated_tensors(
+            allocated_tensors, get_all_tensor_attrs(this->computation_graph),
+            this->gradient_tensor_source),
+        this->allocators[0])),
       realm_args_backing(initialize_args_backing(this, runtime_arg_config)) {
   master_event = Realm::Event::NO_EVENT;
   master_mem = Machine::MemoryQuery(Machine::get_machine())
@@ -78,13 +79,13 @@ RealmTrainingBacking::RealmTrainingBacking(
       allocators(allocators), computation_graph(computation_graph),
       task_registry(construct_task_registry(
           get_layer_attrs_mapping(this->computation_graph))),
-      realm_tensor_backing(RealmTensorBacking( // TODO: multi gpu
-          allocated_tensors,
-          generate_unallocated_tensors_with_optimizer(
-              allocated_tensors, get_all_tensor_attrs(this->computation_graph),
-              this->gradient_tensor_source, this->optimizer_tensor_source,
-              optimizer_attrs),
-          this->allocators[0])),
+    realm_tensor_backing(construct_realm_tensor_backing( // TODO: multi gpu
+        allocated_tensors,
+        generate_unallocated_tensors_with_optimizer(
+            allocated_tensors, get_all_tensor_attrs(this->computation_graph),
+            this->gradient_tensor_source, this->optimizer_tensor_source,
+            optimizer_attrs),
+        this->allocators[0])),
       realm_args_backing(initialize_args_backing(this, runtime_arg_config)) {
   master_event = Realm::Event::NO_EVENT;
   master_mem = Machine::MemoryQuery(Machine::get_machine())
@@ -127,6 +128,8 @@ initialize_args_backing(RealmTrainingBacking *backing,
   Memory master_mem = backing->master_mem;
   std::vector<Processor> &worker_procs = backing->worker_procs;
   std::vector<Event> &worker_events = backing->worker_events;
+  // TODO: multi gpu
+  Allocator &allocator = backing->allocators[0];
 
   for (layer_guid_t const &node : topological_ordering(cg)) {
     if (registry_contains_task_for_layer(task_registry, node,
@@ -141,7 +144,8 @@ initialize_args_backing(RealmTrainingBacking *backing,
       TaskArgumentAccessor accessor = get_task_arg_accessor(
           realm_tensor_backing,
           make_args_backing_with_empty_device_states(runtime_arg_config),
-          invocation);
+          invocation,
+          allocator);
       task_id_t task_id = invocation.task_id;
       TaskImplFunction impl_function =
           task_registry.task_mapping.at(task_id).impl_function;
@@ -187,7 +191,8 @@ execute_forward(RealmTrainingBacking &realm_training_backing,
         device_state);
     TaskArgumentAccessor accessor = get_task_arg_accessor(
         realm_training_backing.realm_tensor_backing,
-        realm_training_backing.realm_args_backing, invocation);
+        realm_training_backing.realm_args_backing, invocation,
+        realm_training_backing.allocators[0]);
     task_id_t task_id = invocation.task_id;
     TaskImplFunction impl_function =
         realm_training_backing.task_registry.task_mapping.at(task_id)
@@ -233,7 +238,8 @@ execute_backward(RealmTrainingBacking &realm_training_backing,
         device_state);
     TaskArgumentAccessor accessor = get_task_arg_accessor(
         realm_training_backing.realm_tensor_backing,
-        realm_training_backing.realm_args_backing, invocation);
+        realm_training_backing.realm_args_backing, invocation,
+        realm_training_backing.allocators[0]);
     task_id_t task_id = invocation.task_id;
     TaskImplFunction impl_function =
         realm_training_backing.task_registry.task_mapping.at(task_id)
@@ -282,7 +288,8 @@ Future<void> execute_update(RealmTrainingBacking &realm_training_backing,
     // execute update
     TaskArgumentAccessor accessor = get_task_arg_accessor(
         realm_training_backing.realm_tensor_backing,
-        realm_training_backing.realm_args_backing, invocation);
+        realm_training_backing.realm_args_backing, invocation,
+        realm_training_backing.allocators[0]);
     task_id_t task_id = invocation.task_id;
     register_wrapper_tasks_generic(realm_training_backing.worker_procs[0],
                                    task_id);
@@ -316,7 +323,8 @@ Future<void> compute_loss(RealmTrainingBacking &realm_training_backing,
   // assert(is_invocation_valid(get_loss_bwd_signature(), loss_invocation));
   TaskArgumentAccessor loss_accessor = get_task_arg_accessor(
       realm_training_backing.realm_tensor_backing,
-      realm_training_backing.realm_args_backing, loss_invocation);
+      realm_training_backing.realm_args_backing, loss_invocation,
+        realm_training_backing.allocators[0]);
   task_id_t task_id = loss_invocation.task_id;
   register_wrapper_tasks_generic(realm_training_backing.worker_procs[0],
                                  task_id);
@@ -337,14 +345,15 @@ Future<void> compute_loss(RealmTrainingBacking &realm_training_backing,
 TaskArgumentAccessor
 get_task_arg_accessor(RealmTensorBacking const &realm_tensor_backing,
                       RealmArgsBacking const &realm_args_backing,
-                      TaskInvocation const &invocation) {
+                      TaskInvocation const &invocation,
+                      Allocator &allocator) {
   TensorSlotsBacking tensor_slots_backing =
       construct_tensor_slots_backing(realm_tensor_backing, invocation.binding);
   ArgSlotsBacking arg_slots_backing = construct_arg_slots_backing(
       invocation.binding, realm_args_backing.runtime_arg_config);
   // TODO: multi gpu
   return TaskArgumentAccessor::create<RealmTaskArgumentAccessor>(
-      realm_tensor_backing.allocator, tensor_slots_backing, arg_slots_backing);
+      allocator, tensor_slots_backing, arg_slots_backing);
 }
 
 } // namespace FlexFlow
