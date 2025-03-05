@@ -27,19 +27,20 @@ RealmTrainingBacking::RealmTrainingBacking(
     Processor master_proc, std::vector<Processor> const &worker_procs,
     std::vector<Allocator> const &allocators,
     AllocatedTensors const &allocated_tensors,
+    GradientTensorSource &gradient_tensor_source,
     ComputationGraph const &computation_graph,
     RuntimeArgConfig const &runtime_arg_config)
     : master_proc(master_proc), worker_procs(worker_procs),
       allocators(allocators), computation_graph(computation_graph),
       task_registry(construct_task_registry(
-          get_layer_attrs_mapping(this->computation_graph))),
+          get_layer_attrs_mapping(computation_graph))),
       realm_tensor_backing(construct_realm_tensor_backing( // TODO: multi gpu
         allocated_tensors,
         generate_unallocated_tensors(
-            allocated_tensors, get_all_tensor_attrs(this->computation_graph),
-            this->gradient_tensor_source),
+            allocated_tensors, get_all_tensor_attrs(computation_graph),
+            gradient_tensor_source),
         this->allocators[0])),
-      realm_args_backing(initialize_args_backing(this, runtime_arg_config)) {
+      realm_args_backing(initialize_args_backing(this, computation_graph, runtime_arg_config)) {
   master_event = Realm::Event::NO_EVENT;
   master_mem = Machine::MemoryQuery(Machine::get_machine())
                    .only_kind(Memory::SYSTEM_MEM)
@@ -58,7 +59,7 @@ RealmTrainingBacking::RealmTrainingBacking(
       get_layer_attrs_mapping(this->computation_graph);
   for (std::pair<layer_guid_t, LayerAttrs> const &layer_attrs :
       layer_attrs_mapping) {
-    ComputationGraphOpAttrs attrs = layer_attrs.second.attrs;
+    ComputationGraphOpAttrs attrs = layer_attrs.second.op_attrs;
     std::vector<task_id_t> task_ids = get_task_ids(attrs);
     for (task_id_t task_id : task_ids) {
         TaskSignatureAndImpl task_signature_impl = get_task_sig_impl(task_id);
@@ -72,21 +73,23 @@ RealmTrainingBacking::RealmTrainingBacking(
     Processor master_proc, std::vector<Processor> const &worker_procs,
     std::vector<Allocator> const &allocators,
     AllocatedTensors const &allocated_tensors,
+    GradientTensorSource &gradient_tensor_source,
+    OptimizerTensorSource &optimizer_tensor_source,
     ComputationGraph const &computation_graph,
     RuntimeArgConfig const &runtime_arg_config,
     OptimizerAttrs const &optimizer_attrs)
     : master_proc(master_proc), worker_procs(worker_procs),
       allocators(allocators), computation_graph(computation_graph),
       task_registry(construct_task_registry(
-          get_layer_attrs_mapping(this->computation_graph))),
+          get_layer_attrs_mapping(computation_graph))),
     realm_tensor_backing(construct_realm_tensor_backing( // TODO: multi gpu
         allocated_tensors,
         generate_unallocated_tensors_with_optimizer(
-            allocated_tensors, get_all_tensor_attrs(this->computation_graph),
-            this->gradient_tensor_source, this->optimizer_tensor_source,
+            allocated_tensors, get_all_tensor_attrs(computation_graph),
+            gradient_tensor_source, optimizer_tensor_source,
             optimizer_attrs),
         this->allocators[0])),
-      realm_args_backing(initialize_args_backing(this, runtime_arg_config)) {
+      realm_args_backing(initialize_args_backing(this, computation_graph, runtime_arg_config)) {
   master_event = Realm::Event::NO_EVENT;
   master_mem = Machine::MemoryQuery(Machine::get_machine())
                    .only_kind(Memory::SYSTEM_MEM)
@@ -101,7 +104,7 @@ RealmTrainingBacking::RealmTrainingBacking(
       get_layer_attrs_mapping(this->computation_graph);
   for (std::pair<layer_guid_t, LayerAttrs> const &layer_attrs :
       layer_attrs_mapping) {
-    ComputationGraphOpAttrs attrs = layer_attrs.second.attrs;
+    ComputationGraphOpAttrs attrs = layer_attrs.second.op_attrs;
     std::vector<task_id_t> task_ids = get_task_ids(attrs);
     for (task_id_t task_id : task_ids) {
         TaskSignatureAndImpl task_signature_impl = get_task_sig_impl(task_id);
@@ -113,6 +116,7 @@ RealmTrainingBacking::RealmTrainingBacking(
 
 RealmArgsBacking
 initialize_args_backing(RealmTrainingBacking *backing,
+                        ComputationGraph const &cg,
                         RuntimeArgConfig const &runtime_arg_config) {
   // initialize_args_backing(TaskRegistry const &task_registry,
   //                         ComputationGraph const &cg,
@@ -121,7 +125,6 @@ initialize_args_backing(RealmTrainingBacking *backing,
   std::unordered_map<layer_guid_t, DeviceSpecificDeviceStates>
       per_device_op_states;
   TaskRegistry const &task_registry = backing->task_registry;
-  ComputationGraph const &cg = backing->computation_graph;
   RealmTensorBacking const &realm_tensor_backing =
       backing->realm_tensor_backing;
   Processor master_proc = backing->master_proc;
@@ -134,7 +137,7 @@ initialize_args_backing(RealmTrainingBacking *backing,
   for (layer_guid_t const &node : topological_ordering(cg)) {
     if (registry_contains_task_for_layer(task_registry, node,
                                          OpTaskType::INIT)) {
-      ComputationGraphOpAttrs attrs = get_layer_attrs(cg, node).attrs;
+      ComputationGraphOpAttrs attrs = get_layer_attrs(cg, node).op_attrs;
 
       TaskInvocation invocation = lower_to_task_invocation(
           init(attrs), node, get_incoming_inputs(cg, node),
@@ -173,7 +176,7 @@ execute_forward(RealmTrainingBacking &realm_training_backing,
                                        operator_node, OpTaskType::FWD)) {
     ComputationGraphOpAttrs attrs =
         get_layer_attrs(realm_training_backing.computation_graph, operator_node)
-            .attrs;
+            .op_attrs;
     std::optional<DeviceSpecificDeviceStates> device_state =
         get_per_device_op_state_if_exists(
             realm_training_backing.realm_args_backing, operator_node);
@@ -220,7 +223,7 @@ execute_backward(RealmTrainingBacking &realm_training_backing,
                                        operator_node, OpTaskType::BWD)) {
     ComputationGraphOpAttrs attrs =
         get_layer_attrs(realm_training_backing.computation_graph, operator_node)
-            .attrs;
+            .op_attrs;
     std::optional<DeviceSpecificDeviceStates> device_state =
         get_per_device_op_state_if_exists(
             realm_training_backing.realm_args_backing, operator_node);

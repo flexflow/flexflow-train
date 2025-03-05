@@ -24,12 +24,15 @@ struct RealmTrainingBacking {
     std::vector<Realm::Processor> const &, 
     std::vector<Allocator> const &,
                       AllocatedTensors const &,
+                      GradientTensorSource &,
                        ComputationGraph const &, RuntimeArgConfig const &);
 
   RealmTrainingBacking(Realm::Processor, 
     std::vector<Realm::Processor> const &, 
     std::vector<Allocator> const &,
     AllocatedTensors const &,
+    GradientTensorSource &,
+    OptimizerTensorSource &,
                        ComputationGraph const &, RuntimeArgConfig const &,
                        OptimizerAttrs const &);
 
@@ -47,12 +50,10 @@ public:
 
   ComputationGraph computation_graph;
   TaskRegistry task_registry;
-
-  GradientTensorSource gradient_tensor_source;
-  OptimizerTensorSource optimizer_tensor_source;
 };
 
 RealmArgsBacking initialize_args_backing(RealmTrainingBacking *,
+                                        ComputationGraph const &,
                                         RuntimeArgConfig const &);
 
 void execute_init(RealmTrainingBacking &, layer_guid_t const &);
