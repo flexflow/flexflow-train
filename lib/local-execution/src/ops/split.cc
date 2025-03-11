@@ -16,7 +16,6 @@
 #include "split.h"
 #include "kernels/array_shape.h"
 #include "kernels/split_kernels.h"
-#include "op-attrs/get_output_shapes.h"
 #include "utils/exception.h"
 #include "utils/hash-utils.h"
 #include "utils/nonnegative_int/nonnegative_range.h"

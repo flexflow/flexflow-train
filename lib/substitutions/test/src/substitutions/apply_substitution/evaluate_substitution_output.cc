@@ -117,21 +117,21 @@ TEST_SUITE(FF_TEST_SUITE) {
     std::string mm_match = "mm_match";
     std::string relu_match = "relu_match";
 
+    TensorShape input_shape = TensorShape{
+        TensorDims{
+            FFOrdered<nonnegative_int>{
+                batch_size,
+                in_channels,
+            },
+        },
+        DataType::FLOAT,
+    };
+
     SubParallelComputationGraph pcg = [&] {
       ParallelComputationGraphBuilder b;
-      parallel_tensor_guid_t t = b.create_input_tensor(ParallelTensorShape{
-          ParallelTensorDims{
-              FFOrdered<ShardParallelDim>{
-                  ShardParallelDim{batch_size, batch_degree},
-                  ShardParallelDim{in_channels, 1_n},
-              },
-              ReplicaParallelDimSet{
-                  SumDegree{1_n},
-                  DiscardCopyDegree{1_n},
-              },
-          },
-          DataType::FLOAT,
-      });
+
+      parallel_tensor_guid_t t = b.create_input_tensor(input_shape);
+      t = b.parallel_partition(t, ff_dim_t{0_n}, batch_degree);
       t = b.dense(t,
                   /*outDim=*/16_n,
                   /*activation=*/std::nullopt);

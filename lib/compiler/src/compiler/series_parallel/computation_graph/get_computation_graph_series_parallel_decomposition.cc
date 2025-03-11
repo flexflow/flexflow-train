@@ -15,7 +15,7 @@ std::string render_preprocessed_computation_graph_for_sp_decomposition(
     ComputationGraph const &cg) {
   std::unordered_set<layer_guid_t> weight_and_input_layers =
       filter(get_layers(cg), [&](layer_guid_t const &l) {
-        ComputationGraphOpAttrs op_attrs = get_layer_attrs(cg, l).attrs;
+        ComputationGraphOpAttrs op_attrs = get_layer_attrs(cg, l).op_attrs;
         return op_attrs.has<WeightAttrs>() || op_attrs.has<InputAttrs>();
       });
 
@@ -41,7 +41,7 @@ std::string render_preprocessed_computation_graph_for_sp_decomposition(
       return "FAKE";
     }
     LayerAttrs a = cg.raw_graph.at(n);
-    RecordFormatter r = as_dot(a.attrs);
+    RecordFormatter r = as_dot(a.op_attrs);
 
     if (a.name.has_value()) {
       RecordFormatter rr;
@@ -75,7 +75,7 @@ std::optional<SeriesParallelDecomposition>
   DiGraphView preprocessed_digraph = [&] {
     std::unordered_set<layer_guid_t> weight_and_input_layers =
         filter(get_layers(cg), [&](layer_guid_t const &l) {
-          ComputationGraphOpAttrs op_attrs = get_layer_attrs(cg, l).attrs;
+          ComputationGraphOpAttrs op_attrs = get_layer_attrs(cg, l).op_attrs;
           return op_attrs.has<WeightAttrs>() || op_attrs.has<InputAttrs>();
         });
 

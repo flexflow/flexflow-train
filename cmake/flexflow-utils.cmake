@@ -137,6 +137,45 @@ function(ff_add_test_executable)
   doctest_discover_tests(${FF_TEST_EXEC_NAME} ADD_LABELS 1)
 endfunction()
 
+function(ff_add_benchmark_executable)
+  ff_parse_args(
+    PREFIX 
+      FF_BENCHMARK_EXEC
+    ARGS
+      NAME
+    VARIADIC_ARGS
+      SRC_PATTERNS
+      PRIVATE_INCLUDE
+      DEPS
+    PARSE
+      ${ARGN}
+  )
+
+  if(NOT FF_BENCHMARK_EXEC_NAME MATCHES "^(.*)-benchmarks\$")
+    message(FATAL_ERROR "Benchmark name ${FF_BENCHMARK_EXEC_NAME} must end with -benchmarks")
+  endif()
+  set(FF_LIBRARY_NAME ${CMAKE_MATCH_1})
+
+  project(${FF_BENCHMARK_EXEC_NAME})
+  file(GLOB_RECURSE SRC
+       CONFIGURE_DEPENDS
+       LIST_DIRECTORIES False
+       ${FF_BENCHMARK_EXEC_SRC_PATTERNS})
+
+  add_executable(
+    ${FF_BENCHMARK_EXEC_NAME}
+    ${SRC})
+
+  target_link_libraries(
+    ${FF_BENCHMARK_EXEC_NAME}
+    ${FF_BENCHMARK_EXEC_DEPS}
+    gbenchmark
+    gbenchmark-main)
+
+  define_ff_vars(${FF_BENCHMARK_EXEC_NAME})
+  ff_set_cxx_properties(${FF_BENCHMARK_EXEC_NAME})
+endfunction()
+
 function(ff_add_executable)
   ff_parse_args(
     PREFIX 

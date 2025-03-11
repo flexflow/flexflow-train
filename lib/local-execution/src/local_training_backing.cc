@@ -17,7 +17,7 @@ LocalTrainingBacking::LocalTrainingBacking(
 
   for (layer_guid_t const &node : topological_ordering(computation_graph)) {
     ComputationGraphOpAttrs attrs =
-        get_layer_attrs(computation_graph, node).attrs;
+        get_layer_attrs(computation_graph, node).op_attrs;
 
     // allocate outgoing tensors
     this->local_slots_backing.allocate_outgoing_tensors(
@@ -53,7 +53,7 @@ void LocalTrainingBacking::execute_init() {
        topological_ordering(this->computation_graph)) {
     if (this->task_registry.init_task_ids.at(operator_node).has_value()) {
       ComputationGraphOpAttrs attrs =
-          get_layer_attrs(this->computation_graph, operator_node).attrs;
+          get_layer_attrs(this->computation_graph, operator_node).op_attrs;
 
       OpTaskInvocation invocation = init(attrs);
       TaskArgumentAccessor accessor =
@@ -72,7 +72,7 @@ PerLayerElapsedTime LocalTrainingBacking::execute_forward() {
        topological_ordering(this->computation_graph)) {
     if (this->task_registry.forward_task_ids.at(operator_node).has_value()) {
       ComputationGraphOpAttrs attrs =
-          get_layer_attrs(this->computation_graph, operator_node).attrs;
+          get_layer_attrs(this->computation_graph, operator_node).op_attrs;
 
       OpTaskInvocation invocation = forward(attrs);
       TaskArgumentAccessor accessor =
@@ -91,7 +91,7 @@ PerLayerElapsedTime LocalTrainingBacking::execute_backward() {
        reversed(topological_ordering(this->computation_graph))) {
     if (this->task_registry.backward_task_ids.at(operator_node).has_value()) {
       ComputationGraphOpAttrs attrs =
-          get_layer_attrs(this->computation_graph, operator_node).attrs;
+          get_layer_attrs(this->computation_graph, operator_node).op_attrs;
 
       OpTaskInvocation invocation = backward(attrs);
       TaskArgumentAccessor accessor =

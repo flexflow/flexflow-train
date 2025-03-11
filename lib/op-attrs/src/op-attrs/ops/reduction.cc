@@ -3,6 +3,20 @@
 
 namespace FlexFlow {
 
+RecordFormatter as_dot(ReductionAttrs const &attrs) {
+  RecordFormatter r;
+
+  auto kv = [](std::string const &label, auto const &val) {
+    RecordFormatter rr;
+    rr << label << fmt::to_string(val);
+    return rr;
+  };
+
+  r << kv("degree", attrs.reduction_degree);
+
+  return r;
+}
+
 tl::expected<ParallelTensorShape, std::string>
     get_output_shape(ReductionAttrs const &attrs,
                      ParallelTensorShape const &input_shape) {

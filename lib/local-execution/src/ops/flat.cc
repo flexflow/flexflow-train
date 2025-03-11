@@ -1,6 +1,5 @@
 #include "flat.h"
 #include "kernels/flat_kernels.h"
-#include "op-attrs/get_output_shapes.h"
 
 namespace FlexFlow {
 

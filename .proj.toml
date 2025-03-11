@@ -3,31 +3,68 @@ testsuite_macro = "FF_TEST_SUITE"
 namespace_name = "FlexFlow"
 header_extension = ".h"
 
-build_targets = [
-  "utils",
-  "op-attrs",
-  "kernels",
-  "pcg",
-  "substitutions",
-  "compiler",
-  "substitution-generator",
-  "local-execution",
-  "models",
-  "export-model-arch",
-  "substitution-to-dot",
-]
+[targets.utils]
+type = "lib"
+tests = true
+benchmarks = true
 
-test_targets = [
-  "utils-tests",
-  "op-attrs-tests",
-  "kernels-tests",
-  "pcg-tests",
-  "substitutions-tests",
-  "compiler-tests",
-  "substitution-generator-tests",
-  "local-execution-tests",
-  "models-tests",
-]
+[targets.op-attrs]
+type = "lib"
+tests = true
+benchmarks = false
+
+[targets.kernels]
+type = "lib"
+tests = true
+benchmarks = false
+
+[targets.pcg]
+type = "lib"
+tests = true
+benchmarks = false
+
+[targets.substitutions]
+type = "lib"
+tests = true
+benchmarks = false
+
+[targets.compiler]
+type = "lib"
+tests = true
+benchmarks = true
+
+[targets.substitution-generator]
+type = "lib"
+tests = true
+benchmarks = false
+
+[targets.local-execution]
+type = "lib"
+tests = true
+benchmarks = false
+
+[targets.models]
+type = "lib"
+tests = true
+benchmarks = false
+
+[targets.export-model-arch]
+type = "bin"
+
+[targets.substitution-to-dot]
+type = "bin"
+
+# default_build_targets = [
+#   "utils",
+# ]
+
+# default_test_targets = [
+#   "utils",
+# ]
+
+# default_benchmark_targets = [
+#   "utils",
+# ]
 
 [cmake_flags_extra]
 FF_CUDA_ARCH = "60"

@@ -1,7 +1,6 @@
 #include "pool_2d.h"
 #include "kernels/pool_2d_kernels.h"
 
-#include "op-attrs/get_output_shapes.h"
 #include "op-attrs/ops/pool_2d.h"
 #include "utils/exception.h"
 #include "utils/hash-utils.h"

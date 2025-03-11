@@ -1,4 +1,4 @@
-#include "pcg/initializers/uniform_initializer_attrs.h"
+#include "op-attrs/initializers/uniform_initializer_attrs.h"
 #include "test/utils/rapidcheck.h"
 #include <doctest/doctest.h>
 

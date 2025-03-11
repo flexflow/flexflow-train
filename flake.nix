@@ -51,8 +51,12 @@
       proj = proj-repo.packages.${system}.proj;
     in 
     {
-      packages = {
+      packages = rec {
+        libdwarf-lite = pkgs.callPackage ./.flake/pkgs/libdwarf-lite.nix { };
+        cpptrace = pkgs.callPackage ./.flake/pkgs/cpptrace.nix { inherit libdwarf-lite; };
+        libassert = pkgs.callPackage ./.flake/pkgs/libassert.nix { inherit cpptrace; };
         legion = pkgs.callPackage ./.flake/pkgs/legion.nix { };
+        bencher-cli = pkgs.callPackage ./.flake/pkgs/bencher-cli.nix { };
         ffdb = pkgs.callPackage ./.flake/pkgs/ffdb { inherit proj; };
         hpp2plantuml = pkgs.python3Packages.callPackage ./.flake/pkgs/hpp2plantuml.nix { };
         rapidcheckFull = pkgs.symlinkJoin {
@@ -86,6 +90,8 @@
                                 -DFF_USE_EXTERNAL_DOCTEST=ON \
                                 -DFF_USE_EXTERNAL_RAPIDCHECK=ON \
                                 -DFF_USE_EXTERNAL_EXPECTED=ON \
+                                -DFF_USE_EXTERNAL_GBENCHMARK=ON \
+                                -DFF_USE_EXTERNAL_LIBASSERT=ON \
                                 -DFF_USE_EXTERNAL_RANGEV3=ON \
                                 -DFF_USE_EXTERNAL_BOOST_PREPROCESSOR=ON \
                                 -DFF_USE_EXTERNAL_TYPE_INDEX=ON"
@@ -113,11 +119,13 @@
               doxygen
               lcov # for code coverage
               compdb
+              gbenchmark
             ])
             (with proj-repo.packages.${system}; [
               proj
             ])
             (with self.packages.${system}; [
+              libassert
               legion
               rapidcheckFull
               doctest
