@@ -1,5 +1,5 @@
-#ifndef _FLEXFLOW_COMPILER_MCMC_STATE_H
-#define _FLEXFLOW_COMPILER_MCMC_STATE_H
+#ifndef _FLEXFLOW_COMPILER_UNITY_ALGORITHM_STATE_H
+#define _FLEXFLOW_COMPILER_UNITY_ALGORITHM_STATE_H
 
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 

@@ -13,9 +13,14 @@ bool operator_satisfies_constraint(
     return false;
   }
 
+  // std::cout << constraint.constraint_type << std::endl;
   switch (constraint.constraint_type) {
     case ConstraintType::EQUAL:
       return expr_val.value() == constraint.attribute_value;
+    case ConstraintType::DIVISIBLE_BY:
+      return (expr_val.value().get<nonnegative_int>() %
+                 constraint.attribute_value.get<nonnegative_int>()) ==
+             0;
     default:
       throw mk_runtime_error(
           fmt::format("Unknown constraint type {}",

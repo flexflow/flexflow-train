@@ -1,25 +1,60 @@
-#include "substitutions/apply_substitution/apply_substitution.h"
+#include "compiler/mcmc/mcmc_algorithm.h"
+#include "compiler/machine_mapping/allowed_machine_views.h"
+#include "compiler/mcmc/machine_mapping_mutation_set.h"
+#include "compiler/mcmc/mcmc_graph_optimize_state.h"
+#include "compiler/task_graph_simulator/task_simulator.h"
+#include "pcg/operator_task_space.h"
+#include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_edge.h"
 #include "pcg/parallel_computation_graph/parallel_tensor_guid_t.h"
+#include "substitutions/apply_substitution/apply_substitution.h"
 #include "substitutions/apply_substitution/evaluate_substitution_output.h"
 #include "substitutions/apply_substitution/output_expr_to_result_sub_pcg_mapping.h"
 #include "substitutions/open_parallel_tensor_guid_t.h"
+#include "substitutions/pcg_pattern.h"
 #include "substitutions/pcg_pattern_match.h"
 #include "substitutions/sub_parallel_computation_graph.h"
 #include "substitutions/sub_parallel_computation_graph_data.dtg.h"
 #include "substitutions/sub_parallel_computation_graph_edge.h"
+#include "substitutions/substitution.h"
+#include "substitutions/unity_substitution_set.h"
 #include "utils/containers/keys.h"
 #include "utils/containers/merge_maps.h"
 #include "utils/containers/restrict_keys.h"
 #include "utils/containers/set_minus.h"
+#include "utils/containers/transform.h"
 #include "utils/containers/values.h"
+#include "utils/deduplicated_priority_queue.h"
+#include "utils/full_binary_tree/binary_tree_path.h"
+#include "utils/graph/node/algorithms.h"
+#include "utils/optional.h"
 
 namespace FlexFlow {
 
-SubParallelComputationGraph
-    apply_substitution(SubParallelComputationGraph const &spcg,
-                       Substitution const &sub,
-                       PCGPatternMatch const &match) {
+std::optional<MachineMapping>
+    get_naive_mapping(ParallelComputationGraph &pcg,
+                      MachineSpecification const &resources) {
+  std::vector<parallel_layer_guid_t> layers = topological_ordering(pcg);
+  std::unordered_map<parallel_layer_guid_t, MachineView> machine_views;
+  for (parallel_layer_guid_t layer : layers) {
+    OperatorTaskSpace task = get_operator_task_space(pcg, layer);
+    std::unordered_set<MachineView> allowed_machine_views =
+        get_allowed_machine_views(resources, task, DeviceType::GPU);
+    if (allowed_machine_views.empty()) {
+      return std::nullopt;
+    }
+    machine_views.insert({layer, *(allowed_machine_views.begin())});
+  }
+  return MachineMapping{machine_views};
+}
+
+SearchResult apply_substitution_and_update_machine_mapping(
+    SearchResult const &mapped_pcg,
+    Substitution const &sub,
+    PCGPatternMatch const &match) {
+  // std::cout << "applying substitution" << std::endl;
+  SubParallelComputationGraph spcg = sub_pcg_from_full_pcg(mapped_pcg.pcg);
+
   auto substitution_output_result =
       evaluate_substitution_output(spcg, sub, match);
   SubParallelComputationGraph substitution_output_graph =
@@ -38,6 +73,14 @@ SubParallelComputationGraph
   std::unordered_set<parallel_layer_guid_t> post_nodes_from_original_graph =
       set_minus(pre_nodes, matched_nodes);
 
+  std::unordered_map<parallel_layer_guid_t, MachineView> machine_views =
+      mapped_pcg.machine_mapping.machine_views;
+
+  std::unordered_set<MachineView> substituted_machine_views =
+      transform(matched_nodes, [&](parallel_layer_guid_t const &node) {
+        return machine_views.at(node);
+      });
+
   std::unordered_map<parallel_layer_guid_t, ParallelLayerAttrs> post_node_data =
       [&] {
         std::unordered_map<parallel_layer_guid_t, ParallelLayerAttrs>
@@ -45,6 +88,12 @@ SubParallelComputationGraph
                 pre_data.node_data, post_nodes_from_original_graph);
         std::unordered_map<parallel_layer_guid_t, ParallelLayerAttrs>
             post_node_data_from_sub = output_graph_data.node_data;
+
+        // just taking the first substituted machine view, not sure if this
+        // is fine
+        for (auto [layer, attrs] : post_node_data_from_sub) {
+          machine_views.try_emplace(layer, *substituted_machine_views.begin());
+        }
 
         return merge_disjoint_maps(post_node_data_from_orig,
                                    post_node_data_from_sub);
@@ -159,9 +208,113 @@ SubParallelComputationGraph
       post_value_data,
   };
 
-  std::cout << as_dot(sub_pcg_from_graph_data(post_data)) << std::endl;
+  return SearchResult{
+      pcg_from_sub_pcg_by_dropping_inputs(sub_pcg_from_graph_data(post_data)),
+      MachineMapping{machine_views}};
+}
 
-  return sub_pcg_from_graph_data(post_data);
+std::vector<SearchResult> all_pcgs_obtained_by_applying_a_substitution(
+    SearchResult const &mapped_pcg,
+    std::vector<Substitution> const &substitutions) {
+  std::vector<SearchResult> results;
+  SubParallelComputationGraph subpcg = sub_pcg_from_full_pcg(mapped_pcg.pcg);
+  // std::cout << "len" << substitutions.size() << std::endl;
+  for (Substitution const &substitution : substitutions) {
+     std::cout << "in outer loop" << std::endl;
+    for (PCGPatternMatch const &pattern_match :
+         find_pattern_matches(substitution.pcg_pattern, subpcg)) {
+       std::cout << "getting stuff" << std::endl;
+      SearchResult mapped_pcg_from_substitution =
+          apply_substitution_and_update_machine_mapping(
+              mapped_pcg, substitution, pattern_match);
+      results.push_back(mapped_pcg_from_substitution);
+    }
+  }
+  return results;
+}
+
+SearchResult mcmc_graph_optimize(ParallelComputationGraph &pcg,
+                                 CostEstimator const &cost_estimator,
+                                 MachineSpecification const &resources,
+                                 UnitySearchConfig const &search_config) {
+
+  std::vector<Substitution> substitutions = get_substitution_set(resources);
+  DeduplicatedPriorityQueue<MCMCOptimizeState> candidates;
+
+  std::optional<MachineMapping> naive_mapping =
+      get_naive_mapping(pcg, resources);
+  if (naive_mapping == std::nullopt) {
+    throw std::runtime_error("Failed to find any solutions");
+  }
+
+  // multiply runtime by -1 to make it minheap instead of maxheap
+  MCMCOptimizeState best_state = MCMCOptimizeState{
+      SearchResult{pcg, naive_mapping.value()},
+      -1 * task_simulator_estimate_forward_pass_time(
+               pcg, cost_estimator, naive_mapping.value(), resources)};
+
+  candidates.push(best_state);
+
+  for (int iteration = 0;
+       !candidates.empty() && iteration < search_config.budget;
+       ++iteration) {
+    MCMCOptimizeState current_state = candidates.top();
+    candidates.pop();
+
+    SearchResult current_mapped_pcg = current_state.mapped_pcg;
+    float current_estimate = current_state.runtime * -1;
+    float best_estimate = best_state.runtime * -1;
+
+    if (current_estimate < best_estimate) {
+      best_state = current_state;
+      std::cout << "new best state" << std::endl;
+      std::cout << current_estimate << std::endl;
+      std::cout << best_estimate << std::endl;
+    } else if (current_estimate > best_estimate * search_config.alpha) {
+      continue;
+    } else {
+      std::cout << current_estimate << best_estimate * search_config.alpha
+                << std::endl;
+    }
+    // std::cout << "Hello" << std::endl;
+
+    for (SearchResult const &new_mapped_pcg :
+         all_pcgs_obtained_by_applying_a_substitution(current_mapped_pcg,
+                                                      substitutions)) {
+      float new_estimate = task_simulator_estimate_forward_pass_time(
+          new_mapped_pcg.pcg,
+          cost_estimator,
+          new_mapped_pcg.machine_mapping,
+          resources);
+
+      std::cout << "new substitution" << std::endl;
+
+      std::cout << "new estimate" << new_estimate << std::endl;
+      if (new_estimate <= search_config.threshold &&
+          get_nodes(new_mapped_pcg.pcg.raw_graph).size() <=
+              search_config.max_num_ops) {
+        candidates.push(MCMCOptimizeState{new_mapped_pcg, -1 * new_estimate});
+      }
+    }
+
+    for (MachineMapping const &new_machine_mapping :
+         get_possible_mutations(current_mapped_pcg, resources)) {
+      float new_estimate =
+          task_simulator_estimate_forward_pass_time(current_mapped_pcg.pcg,
+                                                    cost_estimator,
+                                                    new_machine_mapping,
+                                                    resources);
+      //std::cout << "new mapping" << std::endl;
+
+      //std::cout << "new estimate" << new_estimate << std::endl;
+      if (new_estimate <= search_config.threshold) {
+        //std::cout << "pushed" << std::endl;
+        candidates.push(
+            MCMCOptimizeState{SearchResult{current_mapped_pcg.pcg, new_machine_mapping}, -1 * new_estimate});
+      }
+    }
+  }
+  return best_state.mapped_pcg;
 }
 
 } // namespace FlexFlow

@@ -97,23 +97,29 @@ bool pattern_matches_subgraph_under(
         &full_graph_values_to_subgraph_inputs,
     UnlabelledDataflowGraphPatternMatch const &match,
     MatchAdditionalCriterion const &additional_criterion) {
+  // std::cout << "pattern amtches subgrpah under" << std::endl;
   SubgraphConcreteFromPattern concrete_from_pattern{
       match, full_graph_values_to_subgraph_inputs};
 
   std::unordered_set<Node> concrete_nodes = get_nodes(subgraph);
   std::unordered_set<Node> concrete_nodes_from_match =
       transform(get_nodes(pattern), concrete_from_pattern);
+  // std::cout << "mid of pattern amtches subgrpah under" << std::endl;
 
   if (concrete_nodes != concrete_nodes_from_match) {
     return false;
   }
 
   for (PatternNode const &pattern_node : get_nodes(pattern)) {
+    // std::cout << "hello hello hello" << std::endl;
     if (!additional_criterion.node_criterion(
             pattern_node, concrete_from_pattern(pattern_node))) {
+      // std::cout << "hello hello hello hello hello" << std::endl;
       return false;
     }
   }
+
+  // std::cout << "later mid of pattern amtches subgrpah under" << std::endl;
 
   std::unordered_set<OpenDataflowEdge> concrete_edges = get_edges(subgraph);
   std::unordered_set<OpenDataflowEdge> concrete_edge_from_match =
@@ -138,6 +144,7 @@ bool pattern_matches_subgraph_under(
       return false;
     }
   }
+  // std::cout << "end of pattern amtches subgrpah under" << std::endl;
 
   return true;
 }
@@ -147,12 +154,14 @@ bool unlabelled_pattern_does_match(
     OpenDataflowGraphView const &graph,
     UnlabelledDataflowGraphPatternMatch const &match,
     MatchAdditionalCriterion const &additional_criterion) {
+  // std::cout << "unlabelled_pattern_does_match" << std::endl;
 
   OpenDataflowSubgraphResult subgraph_result = subgraph_matched(graph, match);
   OpenDataflowGraphView matched_subgraph = subgraph_result.graph;
 
   assert(left_entries(match.node_assignment) == get_nodes(pattern));
   assert(right_entries(match.node_assignment) == get_nodes(matched_subgraph));
+  // std::cout << "middle of" << std::endl;
 
   MatchAdditionalCriterion through_subgraph_operation =
       MatchAdditionalCriterion{
@@ -171,6 +180,7 @@ bool unlabelled_pattern_does_match(
                 }});
           },
       };
+  // std::cout << "end of unlabelled_pattern_does_match" << std::endl;
 
   return pattern_matches_subgraph_under(
       pattern,

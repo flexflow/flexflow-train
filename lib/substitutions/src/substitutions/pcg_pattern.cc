@@ -23,6 +23,8 @@ std::unordered_set<PatternNode> get_nodes(PCGPattern const &p) {
 static MatchAdditionalCriterion
     pcg_pattern_criteria(PCGPattern const &pattern,
                          SubParallelComputationGraph const &pcg) {
+  // std::cout << "GGETTING pattern criteria" << std::endl;
+  // std::cout << get_nodes(pattern) << std::endl;
   return MatchAdditionalCriterion{
       [&](PatternNode const &patternNode, Node const &pcgNode) {
         return operator_satisfies_pattern(
@@ -40,6 +42,8 @@ static MatchAdditionalCriterion
 std::vector<PCGPatternMatch>
     find_pattern_matches(PCGPattern const &pattern,
                          SubParallelComputationGraph const &pcg) {
+
+  // std::cout << "IN PATTERN MATCH"<< std::endl;
   std::vector<UnlabelledDataflowGraphPatternMatch> unlabelled_matches =
       find_pattern_matches(get_unlabelled_pattern(pattern),
                            pcg.raw_graph,
@@ -65,11 +69,20 @@ UnlabelledGraphPattern get_unlabelled_pattern(PCGPattern const &p) {
 
 TensorAttributePattern get_tensor_pattern(PCGPattern const &p,
                                           PatternValue const &v) {
+
+  // std::cout << "get tensor pattern"<< std::endl;
+  // std::cout << v << std::endl;
+  // std::cout << raw_open_dataflow_value_from_pattern_value(v) << std::endl;
+  TensorAttributePattern t =
+      p.raw_graph.at(raw_open_dataflow_value_from_pattern_value(v));
+  // std::cout << "hmm" << std::endl;
   return p.raw_graph.at(raw_open_dataflow_value_from_pattern_value(v));
 }
 
 OperatorAttributePattern get_operator_pattern(PCGPattern const &p,
                                               PatternNode const &n) {
+
+  // std::cout << "get op pattern"<< std::endl;
   return p.raw_graph.at(n.raw_node);
 }
 
