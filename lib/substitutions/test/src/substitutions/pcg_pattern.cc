@@ -152,5 +152,116 @@ TEST_SUITE(FF_TEST_SUITE) {
     std::unordered_set<PCGPatternMatch> correct = {match1, match2};
 
     CHECK(result == correct);
+
+    SUBCASE("pcg is a chain") {
+        ParallelComputationGraphBuilder builder;
+
+        nonnegative_int batch_size = 16_n;
+        nonnegative_int batch_degree = 2_n;
+        nonnegative_int num_channels = 24_n;
+    
+        TensorShape a_shape = TensorShape{
+            TensorDims{
+                FFOrdered<nonnegative_int>{
+                    batch_size,
+                    num_channels,
+                },
+            },
+            DataType::FLOAT,
+        };
+    
+        std::string a_name = "a";
+    
+        parallel_tensor_guid_t a_tensor = builder.create_input_tensor(a_shape);
+        a_tensor =
+            builder.parallel_partition(a_tensor, ff_dim_t{0_n}, batch_degree);
+    
+        nonnegative_int outDim = 16_n;
+        std::string x_matmul_name = "x_matmul";
+        std::string y_matmul_name = "y_matmul";
+        parallel_tensor_guid_t t0 =
+            builder.dense(a_tensor,
+                          outDim,
+                          /*activation=*/std::nullopt,
+                          /*use_bias=*/false,
+                          DataType::FLOAT,
+                          /*kernel_initializer=*/std::nullopt,
+                          /*bias_initializer=*/std::nullopt,
+                          x_matmul_name);
+        parallel_tensor_guid_t t1 =
+            builder.dense(t0,
+                          outDim,
+                          /*activation=*/std::nullopt,
+                          /*use_bias=*/false,
+                          DataType::FLOAT,
+                          /*kernel_initializer=*/std::nullopt,
+                          /*bias_initializer=*/std::nullopt,
+                          y_matmul_name);
+        parallel_tensor_guid_t t2 =
+            builder.dense(t1,
+                          outDim,
+                          /*activation=*/std::nullopt,
+                          /*use_bias=*/false,
+                          DataType::FLOAT,
+                          /*kernel_initializer=*/std::nullopt,
+                          /*bias_initializer=*/std::nullopt);
+        parallel_tensor_guid_t t3 = builder.dense(t2,
+                          outDim,
+                          /*activation=*/std::nullopt,
+                          /*use_bias=*/false,
+                          DataType::FLOAT,
+                          /*kernel_initializer=*/std::nullopt,
+                          /*bias_initializer=*/std::nullopt);
+        ParallelComputationGraph pcg = builder.pcg;
+
+        LabelledOpenDataflowGraph<OperatorAttributePattern, TensorAttributePattern>
+        g = LabelledOpenDataflowGraph<OperatorAttributePattern,
+                                    TensorAttributePattern>::
+            create<UnorderedSetLabelledOpenDataflowGraph<
+                OperatorAttributePattern,
+                TensorAttributePattern>>();
+
+        TensorAttributePattern pattern_tensor_a =
+            tensor_attribute_pattern_match_all();
+        TensorAttributePattern pattern_tensor_b =
+            tensor_attribute_pattern_match_all();
+        TensorAttributePattern pattern_tensor_c =
+            tensor_attribute_pattern_match_all();
+        TensorAttributePattern pattern_tensor_x =
+            tensor_attribute_pattern_match_all();
+        TensorAttributePattern pattern_tensor_y =
+            tensor_attribute_pattern_match_all();
+        
+        OperatorAttributePattern op_pattern_1 = OperatorAttributePattern{{
+            op_type_equals_constraint(OperatorType::LINEAR),
+        }};
+
+        OperatorAttributePattern op_pattern_2 = op_pattern_1;
+
+        DataflowGraphInput pt_a = g.add_input(pattern_tensor_a);
+        DataflowGraphInput pt_b = g.add_input(pattern_tensor_b);
+        DataflowGraphInput pt_c = g.add_input(pattern_tensor_c);
+
+        NodeAddedResult op_pattern_1_added =
+            g.add_node(op_pattern_1,
+                    {OpenDataflowValue{pt_a}, OpenDataflowValue{pt_b}},
+                    {pattern_tensor_x});
+        PatternNode op_pattern_1_node = PatternNode{op_pattern_1_added.node};
+        OpenDataflowValue pt_x =
+            OpenDataflowValue{get_only(op_pattern_1_added.outputs)};
+
+        NodeAddedResult op_pattern_2_added =
+            g.add_node(op_pattern_2,
+                    {OpenDataflowValue{pt_x}, OpenDataflowValue{pt_c}},
+                    {pattern_tensor_y});
+        PatternNode op_pattern_2_node = PatternNode{op_pattern_2_added.node};
+
+        PCGPattern pattern = PCGPattern{g};
+
+        std::unordered_set<PCGPatternMatch> result = unordered_set_of(
+            find_pattern_matches(pattern, sub_pcg_from_full_pcg(pcg)));
+
+        CHECK(result.size() == 2);
+    }
   }
 }

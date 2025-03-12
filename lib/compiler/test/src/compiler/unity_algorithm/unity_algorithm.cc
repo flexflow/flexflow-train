@@ -62,16 +62,27 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*intra_node_bandwidth=*/1,
     };
 
-    UnitySearchConfig search_config = UnitySearchConfig{
-        /*alpha=*/1.0,
-        /*budget=*/0,
-        /*threshold=*/1000.0,
-        /*max_num_ops=*/100,
-    };
+    SUBCASE("do not apply substitution") {
+      UnitySearchConfig search_config = UnitySearchConfig{
+          /*alpha=*/1.0,
+          /*budget=*/0,
+          /*threshold=*/1000.0,
+          /*max_num_ops=*/100,
+      };
+      SearchResult result =
+          graph_optimize(pcg, cost_estimator, full_machine_spec, search_config);
+      CHECK(pcgs_are_isomorphic(pcg, result.pcg));
+    }
 
-    SearchResult result =
-        graph_optimize(pcg, cost_estimator, full_machine_spec, search_config);
-
-    // TODO: check the result
+    SUBCASE("apply substitution") {
+      UnitySearchConfig search_config = UnitySearchConfig{
+          /*alpha=*/1.0,
+          /*budget=*/1,
+          /*threshold=*/1000.0,
+          /*max_num_ops=*/100,
+      };
+      SearchResult result =
+          graph_optimize(pcg, cost_estimator, full_machine_spec, search_config);
+    }
   }
 }
