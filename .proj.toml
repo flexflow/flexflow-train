@@ -28,7 +28,7 @@ test_targets = [
   "compiler-tests",
   "substitution-generator-tests",
   "local-execution-tests",
-  #"realm-backend-tests",
+  "realm-backend-tests",
   "models-tests",
 ]
 

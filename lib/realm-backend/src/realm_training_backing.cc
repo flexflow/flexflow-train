@@ -49,10 +49,6 @@ RealmTrainingBacking::RealmTrainingBacking(
   for (Processor p : worker_procs) {
     worker_events.push_back(Realm::Event::NO_EVENT);
   }
-  //   Machine::ProcessorQuery pq =
-  //   Machine::ProcessorQuery(Machine::get_machine())
-  //                                    .only_kind(Processor::TOC_PROC);
-  // allocators.push_back(create_realm_memory_allocator(p));
 
   // register tasks for realm
   std::unordered_map<layer_guid_t, LayerAttrs> const &layer_attrs_mapping =
