@@ -73,16 +73,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     SearchResult result = mcmc_graph_optimize(
         pcg, cost_estimator, full_machine_spec, search_config);
 
-        std::cout << task_simulator_estimate_forward_pass_time(result.pcg,
-          cost_estimator,
-          result.machine_mapping,
-          full_machine_spec) << std::endl;
-
     CHECK(task_simulator_estimate_forward_pass_time(result.pcg,
                                                     cost_estimator,
                                                     result.machine_mapping,
                                                     full_machine_spec) < 16);
                                                     
-    CHECK(false);
   }
 }

@@ -28,6 +28,8 @@
 #include "utils/full_binary_tree/binary_tree_path.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/optional.h"
+#include "utils/graph/labelled_open_dataflow_graph/algorithms/as_dot.h"
+
 
 namespace FlexFlow {
 
@@ -52,7 +54,6 @@ SearchResult apply_substitution_and_update_machine_mapping(
     SearchResult const &mapped_pcg,
     Substitution const &sub,
     PCGPatternMatch const &match) {
-  // std::cout << "applying substitution" << std::endl;
   SubParallelComputationGraph spcg = sub_pcg_from_full_pcg(mapped_pcg.pcg);
 
   auto substitution_output_result =
@@ -217,19 +218,17 @@ std::vector<SearchResult> all_pcgs_obtained_by_applying_a_substitution(
     SearchResult const &mapped_pcg,
     std::vector<Substitution> const &substitutions) {
   std::vector<SearchResult> results;
-  SubParallelComputationGraph subpcg = sub_pcg_from_full_pcg(mapped_pcg.pcg);
-  // std::cout << "len" << substitutions.size() << std::endl;
+  //currently not functional
+  /*SubParallelComputationGraph subpcg = sub_pcg_from_full_pcg(mapped_pcg.pcg);
   for (Substitution const &substitution : substitutions) {
-     std::cout << "in outer loop" << std::endl;
     for (PCGPatternMatch const &pattern_match :
          find_pattern_matches(substitution.pcg_pattern, subpcg)) {
-       std::cout << "getting stuff" << std::endl;
       SearchResult mapped_pcg_from_substitution =
           apply_substitution_and_update_machine_mapping(
               mapped_pcg, substitution, pattern_match);
       results.push_back(mapped_pcg_from_substitution);
     }
-  }
+  }*/
   return results;
 }
 
@@ -267,16 +266,9 @@ SearchResult mcmc_graph_optimize(ParallelComputationGraph &pcg,
 
     if (current_estimate < best_estimate) {
       best_state = current_state;
-      std::cout << "new best state" << std::endl;
-      std::cout << current_estimate << std::endl;
-      std::cout << best_estimate << std::endl;
     } else if (current_estimate > best_estimate * search_config.alpha) {
       continue;
-    } else {
-      std::cout << current_estimate << best_estimate * search_config.alpha
-                << std::endl;
     }
-    // std::cout << "Hello" << std::endl;
 
     for (SearchResult const &new_mapped_pcg :
          all_pcgs_obtained_by_applying_a_substitution(current_mapped_pcg,
@@ -287,9 +279,6 @@ SearchResult mcmc_graph_optimize(ParallelComputationGraph &pcg,
           new_mapped_pcg.machine_mapping,
           resources);
 
-      std::cout << "new substitution" << std::endl;
-
-      std::cout << "new estimate" << new_estimate << std::endl;
       if (new_estimate <= search_config.threshold &&
           get_nodes(new_mapped_pcg.pcg.raw_graph).size() <=
               search_config.max_num_ops) {
@@ -304,11 +293,7 @@ SearchResult mcmc_graph_optimize(ParallelComputationGraph &pcg,
                                                     cost_estimator,
                                                     new_machine_mapping,
                                                     resources);
-      //std::cout << "new mapping" << std::endl;
-
-      //std::cout << "new estimate" << new_estimate << std::endl;
       if (new_estimate <= search_config.threshold) {
-        //std::cout << "pushed" << std::endl;
         candidates.push(
             MCMCOptimizeState{SearchResult{current_mapped_pcg.pcg, new_machine_mapping}, -1 * new_estimate});
       }

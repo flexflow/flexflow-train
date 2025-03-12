@@ -71,22 +71,16 @@ std::vector<UnlabelledDataflowGraphPatternMatch>
     find_pattern_matches(UnlabelledGraphPattern const &pattern,
                          OpenDataflowGraphView const &graph,
                          MatchAdditionalCriterion const &additional_criterion) {
-  // std::cout << "find pattern matches" << std::endl;
   std::vector<UnlabelledDataflowGraphPatternMatch> matches;
   if (is_singleton_pattern(pattern)) {
-    // std::cout << "singleton pattern" << std::endl;
     for (Node const &graph_node : get_nodes(graph)) {
-      // std::cout << "11111" << std::endl;
       std::optional<UnlabelledDataflowGraphPatternMatch> candidate =
           get_candidate_singleton_match(pattern, graph, graph_node);
-      // std::cout << "22222" << std::endl;
       if (candidate.has_value() &&
           unlabelled_pattern_does_match(
               pattern, graph, candidate.value(), additional_criterion)) {
-        // std::cout << "2.555" << std::endl;
         matches.push_back(candidate.value());
       }
-      // std::cout << "33333" << std::endl;
     }
   } else {
     PatternSplit split = find_even_split(pattern);
@@ -116,7 +110,6 @@ std::vector<UnlabelledDataflowGraphPatternMatch>
       }
     }
   }
-  // std::cout << "return from pattern matches" << std::endl;
   return matches;
 }
 
