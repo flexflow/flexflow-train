@@ -1,4 +1,4 @@
-#include "compiler/graph_optimize_state.h"
+#include "compiler/unity_algorithm/graph_optimize_state.h"
 #include "doctest/doctest.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 
@@ -15,24 +15,6 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
         DataType::FLOAT,
     };
-    // ParallelTensorShape input_shape =
-    //     ParallelTensorShape{ParallelTensorDims{
-    //                             FFOrdered<ShardParallelDim>{
-    //                                 ShardParallelDim{32_n, 2_n},
-    //                                 ShardParallelDim{16_n, 1_n},
-    //                             },
-    //                             ReplicaParallelDimSet{
-    //                                 SumDegree{1_n},
-    //                                 DiscardCopyDegree{1_n},
-    //                             },
-    //                         },
-    //                         DataType::FLOAT};
-
-    // `machine_mapping` is determined by the PCG and the device mapping
-    // algorithm, and `runtime` is determined by the PCG and the device mapping,
-    // so their values here do not matter.
-    std::unordered_map<parallel_layer_guid_t, MachineView> empty_machine_views;
-    MachineMapping empty_machine_mapping(empty_machine_views);
 
     InitializerAttrs zero_init = InitializerAttrs{ZeroInitializerAttrs{}};
 
@@ -70,13 +52,12 @@ TEST_SUITE(FF_TEST_SUITE) {
       ParallelComputationGraph pcg2 = create_pcg();
 
       GraphOptimizeState state1 = GraphOptimizeState{
-          GraphOptimizeResult{pcg1, empty_machine_mapping},
-          0,
+          pcg1,
+          .0,
       };
-
       GraphOptimizeState state2 = GraphOptimizeState{
-          GraphOptimizeResult{pcg2, empty_machine_mapping},
-          0,
+          pcg2,
+          .0,
       };
 
       CHECK(state1 == state2);
@@ -100,16 +81,30 @@ TEST_SUITE(FF_TEST_SUITE) {
       ParallelComputationGraph pcg_ = builder_.pcg;
 
       GraphOptimizeState state1 = GraphOptimizeState{
-          GraphOptimizeResult{pcg1, empty_machine_mapping},
-          0,
+          pcg1,
+          .0,
       };
 
       GraphOptimizeState state_ = GraphOptimizeState{
-          GraphOptimizeResult{pcg_, empty_machine_mapping},
-          0,
+          pcg_,
+          .0,
       };
 
       CHECK_FALSE(state1 == state_);
     }
+  }
+
+  TEST_CASE("GraphOptimizeState::operator<") {
+    ParallelComputationGraph pcg1 = empty_parallel_computation_graph();
+    ParallelComputationGraph pcg2 = empty_parallel_computation_graph();
+    GraphOptimizeState state1 = GraphOptimizeState{
+        pcg1,
+        1.0,
+    };
+    GraphOptimizeState state2 = GraphOptimizeState{
+        pcg2,
+        2.0,
+    };
+    CHECK(state1 < state2);
   }
 }

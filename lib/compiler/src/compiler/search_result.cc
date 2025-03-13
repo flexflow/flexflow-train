@@ -1,14 +1,14 @@
-#include "compiler/graph_optimize_result.h"
+#include "compiler/search_result.h"
 
 namespace FlexFlow {
 
-std::string format_as(GraphOptimizeResult const &r) {
+std::string format_as(SearchResult const &r) {
   return fmt::format("<GraphOptimizeResult\npcg={}\nmachine_mapping={}>",
                      as_dot(r.pcg),
                      r.machine_mapping);
 }
 
-std::ostream &operator<<(std::ostream &s, GraphOptimizeResult const &r) {
+std::ostream &operator<<(std::ostream &s, SearchResult const &r) {
   return (s << fmt::to_string(r));
 }
 
