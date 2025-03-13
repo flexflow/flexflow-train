@@ -15,16 +15,18 @@ TEST_SUITE(FF_TEST_SUITE) {
     int seq_length = -1;
 
     ManagedFFStream managed_stream{};
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle{
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true};
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    TensorShape input_shape_a =
-        make_float_tensor_shape_from_legion_dims({m, k, batch});
-    TensorShape input_shape_b =
-        make_float_tensor_shape_from_legion_dims({k, n, batch});
-    TensorShape output_shape =
-        make_float_tensor_shape_from_legion_dims({m, n, batch});
+    TensorShape input_shape_a = make_tensor_shape(
+        LegionOrdered<nonnegative_int>{m, k, batch}, DataType::FLOAT);
+    TensorShape input_shape_b = make_tensor_shape(
+        LegionOrdered<nonnegative_int>{k, n, batch}, DataType::FLOAT);
+    TensorShape output_shape = make_tensor_shape(
+        LegionOrdered<nonnegative_int>{m, n, batch}, DataType::FLOAT);
 
     GenericTensorAccessorW a_accessor =
         create_random_filled_accessor_w(input_shape_a, allocator);

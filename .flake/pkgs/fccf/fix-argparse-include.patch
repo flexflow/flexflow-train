@@ -1,0 +1,13 @@
+diff --git a/source/main.cpp b/source/main.cpp
+index 7e131d3..6c05d89 100644
+--- a/source/main.cpp
++++ b/source/main.cpp
+@@ -6,7 +6,7 @@
+ #include <string_view>
+ #include <vector>
+ 
+-#include <argparse.hpp>
++#include <argparse/argparse.hpp>
+ #include <nlohmann/json.hpp>
+ #include "searcher.hpp"
+ #include <unistd.h>

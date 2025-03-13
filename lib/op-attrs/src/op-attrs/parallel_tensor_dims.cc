@@ -1,6 +1,6 @@
 #include "op-attrs/parallel_tensor_dims.h"
-#include "op-attrs/dim_ordered/transform.h"
-#include "op-attrs/dim_ordered/zip.h"
+#include "op-attrs/ff_ordered/transform.h"
+#include "op-attrs/ff_ordered/zip.h"
 #include "op-attrs/replica_parallel_dim.h"
 #include "op-attrs/replica_parallel_dim_set.h"
 #include "op-attrs/shard_parallel_dim.h"

@@ -1,8 +1,10 @@
 #include "op-attrs/ops/embedding.h"
-#include "op-attrs/dim_ordered/slice.h"
-#include "op-attrs/dim_ordered/transform.h"
+#include "op-attrs/ff_ordered/slice.h"
+#include "op-attrs/ff_ordered/transform.h"
+#include "op-attrs/ops/embedding_attrs.dtg.h"
 #include "op-attrs/parallel_tensor_dims.h"
 #include "utils/containers/product.h"
+#include "utils/fmt/optional.h"
 #include "utils/integer_conversions.h"
 
 namespace FlexFlow {

@@ -1,6 +1,6 @@
 #include "op-attrs/tensor_dims.h"
-#include "op-attrs/dim_ordered/slice.h"
-#include "op-attrs/dim_ordered/zip.h"
+#include "op-attrs/ff_ordered/slice.h"
+#include "op-attrs/ff_ordered/zip.h"
 #include "op-attrs/replica_parallel_dim_set.h"
 #include "op-attrs/shard_parallel_dim.dtg.h"
 #include "utils/containers/all_of.h"

@@ -1,0 +1,12 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 20bcbbf..923075f 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -48,6 +48,7 @@ FetchContent_MakeAvailable(fmt)
+ 
+ FetchContent_Declare(json
+   URL https://github.com/nlohmann/json/releases/download/v3.10.5/json.tar.xz
++  FIND_PACKAGE_ARGS NAMES nlohmann_json
+ )
+ FetchContent_MakeAvailable(json)
+ 
