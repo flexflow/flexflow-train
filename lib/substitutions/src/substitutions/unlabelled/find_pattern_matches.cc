@@ -110,7 +110,6 @@ std::vector<UnlabelledDataflowGraphPatternMatch>
       }
     }
   }
-
   return matches;
 }
 
