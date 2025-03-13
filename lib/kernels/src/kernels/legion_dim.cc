@@ -1,6 +1,10 @@
 #include "kernels/legion_dim.h"
+#include "utils/archetypes/value_type.h"
 
 namespace FlexFlow {
+
+using T = value_type<0>;
+template std::set<legion_dim_t> key_range(LegionOrdered<T> const &);
 
 legion_dim_t add_to_legion_dim(legion_dim_t legion_dim, int value) {
   return legion_dim_t{

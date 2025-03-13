@@ -18,13 +18,13 @@ FF_VISITABLE_STRUCT_NONSTANDARD_CONSTRUCTION(GatherPerDeviceState,
 namespace Kernels::Gather {
 
 void forward_kernel(ffStream_t stream,
-                    GatherPerDeviceState const &m,
+                    GatherPerDeviceState const &per_device_state,
                     GenericTensorAccessorR const &input,
                     GenericTensorAccessorR const &index,
                     GenericTensorAccessorW const &output);
 
 void backward_kernel(ffStream_t stream,
-                     GatherPerDeviceState const &m,
+                     GatherPerDeviceState const &per_device_state,
                      GenericTensorAccessorR const &output_grad,
                      GenericTensorAccessorR const &index,
                      GenericTensorAccessorW const &input_grad);

@@ -1,4 +1,4 @@
-#include "op-attrs/dim_ordered/concat.h"
+#include "op-attrs/ff_ordered/concat.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;

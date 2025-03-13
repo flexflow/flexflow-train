@@ -1,11 +1,12 @@
 #include "op-attrs/ops/linear.h"
-#include "op-attrs/dim_ordered/slice.h"
-#include "op-attrs/dim_ordered/transform.h"
+#include "op-attrs/ff_ordered/slice.h"
+#include "op-attrs/ff_ordered/transform.h"
 #include "op-attrs/initializers/kaiming_initializer_mode.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/tensor_shape.h"
 #include "utils/containers/product.h"
 #include "utils/expected.h"
+#include "utils/fmt/optional.h"
 #include "utils/integer_conversions.h"
 
 namespace FlexFlow {

@@ -14,7 +14,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     TensorShape input_shape =
-        make_tensor_shape_from_ff_ordered({10_n, 10_n}, DataType::FLOAT);
+        make_tensor_shape(FFOrdered{10_n, 10_n}, DataType::FLOAT);
     TensorShape output_shape = input_shape;
 
     ManagedFFStream managed_stream{};

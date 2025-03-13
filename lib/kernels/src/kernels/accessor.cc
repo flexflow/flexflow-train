@@ -1,8 +1,31 @@
 #include "kernels/accessor.h"
 #include "kernels/allocation.h"
 #include "kernels/datatype_dispatch.h"
+#include "utils/nonnegative_int/nonnegative_range.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
+
+nonnegative_int
+    calculate_accessor_offset(LegionOrdered<nonnegative_int> const &indices,
+                              ArrayShape const &shape) {
+  ASSERT(indices.size() == shape.num_dims(),
+         "Number of indices does not match the number of dimensions");
+
+  nonnegative_int offset = 0_n;
+  nonnegative_int multiplier = 1_n;
+
+  for (legion_dim_t dim : key_range(shape.dims)) {
+    ASSERT(indices.at(dim) < shape.at(legion_dim_t{dim}),
+           "Out of bounds access",
+           dim);
+
+    offset += indices.at(dim) * multiplier;
+    multiplier *= shape.at(legion_dim_t{dim});
+  }
+
+  return offset;
+}
 
 void copy_accessor_data_to_l_from_r(
     GenericTensorAccessorW &dst_accessor,

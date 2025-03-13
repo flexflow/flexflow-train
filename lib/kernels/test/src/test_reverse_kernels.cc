@@ -11,8 +11,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     nonnegative_int reverse_dim_size = 10_n;
     nonnegative_int in_blk_size = 10_n;
 
-    TensorShape input_shape = make_tensor_shape_from_ff_ordered(
-        {num_out_blks, reverse_dim_size, in_blk_size}, DataType::FLOAT);
+    TensorShape input_shape = make_tensor_shape(
+        FFOrdered{num_out_blks, reverse_dim_size, in_blk_size},
+        DataType::FLOAT);
     TensorShape output_shape = input_shape;
 
     ManagedPerDeviceFFHandle managed_handle{
@@ -65,8 +66,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     nonnegative_int reverse_dim_size = 4_n;
     nonnegative_int in_blk_size = 3_n;
 
-    TensorShape input_shape = make_tensor_shape_from_ff_ordered(
-        {num_out_blks, reverse_dim_size, in_blk_size}, DataType::FLOAT);
+    TensorShape input_shape = make_tensor_shape(
+        FFOrdered{num_out_blks, reverse_dim_size, in_blk_size},
+        DataType::FLOAT);
     TensorShape output_shape = input_shape;
 
     ManagedPerDeviceFFHandle managed_handle{

@@ -1,4 +1,4 @@
-#include "op-attrs/dim_ordered/enumerate.h"
+#include "op-attrs/ff_ordered/enumerate.h"
 #include "test/utils/doctest/fmt/map.h"
 #include <doctest/doctest.h>
 

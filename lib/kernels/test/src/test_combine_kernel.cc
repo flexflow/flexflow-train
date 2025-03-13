@@ -14,7 +14,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     Allocator allocator = create_local_cuda_memory_allocator();
 
     TensorShape input_shape =
-        make_tensor_shape_from_ff_ordered({100_n, 100_n}, DataType::FLOAT);
+        make_tensor_shape(FFOrdered{100_n, 100_n}, DataType::FLOAT);
     TensorShape output_shape = input_shape;
 
     SUBCASE("forward_kernel") {
@@ -50,7 +50,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
     TensorShape input_shape =
-        make_tensor_shape_from_ff_ordered({5_n, 5_n}, DataType::FLOAT);
+        make_tensor_shape(FFOrdered{5_n, 5_n}, DataType::FLOAT);
     TensorShape output_shape = input_shape;
 
     SUBCASE("forward_kernel") {

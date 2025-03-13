@@ -18,7 +18,7 @@
     flake-utils.url = "github:numtide/flake-utils";
 
     proj-repo = {
-      url = "github:lockshaw/proj";
+      url = "github:lockshaw/proj/feat/query-path";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
@@ -59,6 +59,7 @@
         bencher-cli = pkgs.callPackage ./.flake/pkgs/bencher-cli.nix { };
         ffdb = pkgs.callPackage ./.flake/pkgs/ffdb { inherit proj; };
         hpp2plantuml = pkgs.python3Packages.callPackage ./.flake/pkgs/hpp2plantuml.nix { };
+        fccf = pkgs.callPackage ./.flake/pkgs/fccf { };
         rapidcheckFull = pkgs.symlinkJoin {
           name = "rapidcheckFull";
           paths = (with pkgs; [ rapidcheck.out rapidcheck.dev ]);
@@ -179,6 +180,7 @@
             (with self.packages.${system}; [
               ffdb
               hpp2plantuml
+              fccf
             ])
           ];
         };

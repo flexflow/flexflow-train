@@ -5,12 +5,19 @@
 
 namespace FlexFlow {
 
-TensorShape make_tensor_shape_from_ff_ordered(FFOrdered<nonnegative_int> dims,
-                                              DataType DT) {
+TensorShape make_tensor_shape(LegionOrdered<nonnegative_int> dims,
+                              DataType DT) {
   return TensorShape{
       TensorDims{
-          dims,
+          ff_ordered_from_legion_ordered(dims),
       },
+      DT,
+  };
+}
+
+TensorShape make_tensor_shape(FFOrdered<nonnegative_int> dims, DataType DT) {
+  return TensorShape{
+      TensorDims{dims},
       DT,
   };
 }

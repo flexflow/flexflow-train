@@ -6,7 +6,7 @@ using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Test Transpose Kernel Operations") {
     TransposeAttrs attrs = TransposeAttrs{
-        FFOrdered<ff_dim_t>{
+        FFOrdered{
             ff_dim_t{0_n},
             ff_dim_t{1_n},
         },
@@ -20,7 +20,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     Allocator allocator = create_local_cuda_memory_allocator();
 
     TensorShape input_shape =
-        make_tensor_shape_from_ff_ordered({10_n, 10_n}, DataType::FLOAT);
+        make_tensor_shape(FFOrdered{10_n, 10_n}, DataType::FLOAT);
     TensorShape output_shape = input_shape;
 
     SUBCASE("forward_kernel") {

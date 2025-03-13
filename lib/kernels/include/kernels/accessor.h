@@ -1,49 +1,28 @@
 #ifndef _FLEXFLOW_KERNELS_ACCESSOR_H
 #define _FLEXFLOW_KERNELS_ACCESSOR_H
 
-#include "array_shape.h"
-#include "device.h"
+#include "kernels/array_shape.h"
+#include "kernels/device.h"
 #include "kernels/ff_handle.h"
 #include "op-attrs/datatype.h"
 #include "pcg/device_type.dtg.h"
-#include "utils/exception.h"
+#include "utils/containers/transform.h"
 #include "utils/required.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
-inline int calculate_accessor_offset(std::vector<int> const &indices,
-                                     ArrayShape const &shape) {
-  int offset = 0;
-  int multiplier = 1;
-
-  for (int i = 0; i < shape.num_dims(); i++) {
-    if (indices.at(i) >= shape.at(legion_dim_t{nonnegative_int{i}})) {
-      throw mk_runtime_error(
-          fmt::format("In {} dimension, attempting to access index {} "
-                      "when only {} indexes exist",
-                      i,
-                      indices.at(i),
-                      shape.at(legion_dim_t{nonnegative_int{i}})));
-    }
-
-    offset += indices.at(i) * multiplier;
-    multiplier *=
-        shape.at(legion_dim_t{nonnegative_int{i}}).unwrap_nonnegative();
-  }
-
-  return offset;
-}
+nonnegative_int
+    calculate_accessor_offset(LegionOrdered<nonnegative_int> const &,
+                              ArrayShape const &);
 
 class GenericTensorAccessorR {
 public:
   template <DataType DT>
   typename data_type_enum_to_class<DT>::type const *get() const {
-    if (this->data_type == DT) {
-      return static_cast<real_type_t<DT> const *>(this->ptr);
-    } else {
-      throw mk_runtime_error(fmt::format(
-          "Invalid access data type ({} != {})", this->data_type, DT));
-    }
+    ASSERT(this->data_type == DT, "Invalid datatype requested");
+
+    return static_cast<real_type_t<DT> const *>(this->ptr);
   }
 
   int32_t const *get_int32_ptr() const;
@@ -64,24 +43,17 @@ public:
 
   template <DataType DT>
   real_type_t<DT> const &at(std::vector<int> const &indices) const {
-    if (this->device_type != DeviceType::CPU) {
-      throw mk_runtime_error("Calling at() on non-CPU allocated tensor");
-    }
-    if (this->data_type != DT) {
-      throw mk_runtime_error(fmt::format(
-          "Invalid access data type ({} != {})", this->data_type, DT));
-    }
-    if (indices.size() != this->shape.num_dims()) {
-      throw mk_runtime_error(fmt::format("Number of indices ({}) does not "
-                                         "match the number of dimensions ({}).",
-                                         indices.size(),
-                                         this->shape.num_dims()));
-    }
+    ASSERT(this->device_type == DeviceType::CPU,
+           "GenericTensorAccessorR::at() requires CPU-allocated tensor");
+    ASSERT(this->data_type == DT, "Invalid datatype requested");
 
     using T = real_type_t<DT>;
     T const *data_ptr = static_cast<T const *>(this->ptr);
-    int offset = calculate_accessor_offset(indices, this->shape);
-    return data_ptr[offset];
+    std::vector<nonnegative_int> checked_indices =
+        transform(indices, [](int idx) { return nonnegative_int{idx}; });
+    nonnegative_int offset =
+        calculate_accessor_offset(checked_indices, this->shape);
+    return data_ptr[offset.unwrap_nonnegative()];
   }
 
 public:
@@ -105,12 +77,9 @@ class GenericTensorAccessorW {
 public:
   template <DataType DT>
   typename data_type_enum_to_class<DT>::type *get() const {
-    if (this->data_type == DT) {
-      return static_cast<real_type_t<DT> *>(this->ptr);
-    } else {
-      throw mk_runtime_error(fmt::format(
-          "Invalid access data type ({} != {})", this->data_type, DT));
-    }
+    ASSERT(this->data_type == DT, "Invalid datatype requested");
+
+    return static_cast<real_type_t<DT> *>(this->ptr);
   }
 
   int32_t *get_int32_ptr() const;
@@ -133,45 +102,31 @@ public:
 
   template <DataType DT>
   real_type_t<DT> &at(std::vector<int> const &indices) {
-    if (this->device_type != DeviceType::CPU) {
-      throw mk_runtime_error("Calling at() on non-CPU allocated tensor");
-    }
-    if (this->data_type != DT) {
-      throw mk_runtime_error(fmt::format(
-          "Invalid access data type ({} != {})", this->data_type, DT));
-    }
-    if (indices.size() != this->shape.num_dims()) {
-      throw mk_runtime_error(fmt::format("Number of indices ({}) does not "
-                                         "match the number of dimensions ({}).",
-                                         indices.size(),
-                                         this->shape.num_dims()));
-    }
+    ASSERT(this->device_type == DeviceType::CPU,
+           "GenericTensorAccessorW::at() requires CPU-allocated tensor");
+    ASSERT(this->data_type == DT, "Invalid datatype requested");
 
     using T = real_type_t<DT>;
     T *data_ptr = static_cast<T *>(this->ptr);
-    int offset = calculate_accessor_offset(indices, this->shape);
-    return data_ptr[offset];
+    std::vector<nonnegative_int> checked_indices =
+        transform(indices, [](int idx) { return nonnegative_int{idx}; });
+    nonnegative_int offset =
+        calculate_accessor_offset(checked_indices, this->shape);
+    return data_ptr[offset.unwrap_nonnegative()];
   }
 
   template <DataType DT>
   real_type_t<DT> &at(std::vector<int> const &indices) const {
-    if (this->device_type != DeviceType::CPU) {
-      throw mk_runtime_error("Calling at() on non-CPU allocated tensor");
-    }
-    if (this->data_type != DT) {
-      throw mk_runtime_error(fmt::format(
-          "Invalid access data type ({} != {})", this->data_type, DT));
-    }
-    if (indices.size() != this->shape.num_dims()) {
-      throw mk_runtime_error(fmt::format("Number of indices ({}) does not "
-                                         "match the number of dimensions ({}).",
-                                         indices.size(),
-                                         this->shape.num_dims()));
-    }
+    ASSERT(this->device_type == DeviceType::CPU,
+           "GenericTensorAccessorW::at() requires CPU-allocated tensor");
+    ASSERT(this->data_type == DT, "Invalid datatype requested");
 
     using T = real_type_t<DT>;
     T const *data_ptr = static_cast<T const *>(this->ptr);
-    int offset = calculate_accessor_offset(indices, this->shape);
+    std::vector<nonnegative_int> checked_indices =
+        transform(indices, [](int idx) { return nonnegative_int{idx}; });
+    nonnegative_int offset =
+        calculate_accessor_offset(checked_indices, this->shape);
     return data_ptr[offset];
   }
 
@@ -197,12 +152,8 @@ static_assert(is_fmtable<req<DataType> const &>::value, "");
 template <DataType DT>
 typename data_type_enum_to_class<DT>::type *
     get(GenericTensorAccessorW const &a) {
-  if (a.data_type == DT) {
-    return static_cast<real_type_t<DT> *>(a.ptr);
-  } else {
-    throw mk_runtime_error(
-        fmt::format("Invalid access data type ({} != {})", a.data_type, DT));
-  }
+  ASSERT(a.data_type == DT, "Invalid datatype requested");
+  return static_cast<real_type_t<DT> *>(a.ptr);
 }
 
 template <DataType DT>
@@ -218,12 +169,8 @@ std::vector<real_type_t<DT> *>
 template <DataType DT>
 typename data_type_enum_to_class<DT>::type const *
     get(GenericTensorAccessorR const &a) {
-  if (a.data_type == DT) {
-    return static_cast<real_type_t<DT> const *>(a.ptr);
-  } else {
-    throw mk_runtime_error(
-        fmt::format("Invalid access data type ({} != {})", a.data_type, DT));
-  }
+  ASSERT(a.data_type == DT, "Invalid datatype requested");
+  return static_cast<real_type_t<DT> const *>(a.ptr);
 }
 
 int32_t const *get_int32_ptr(GenericTensorAccessorR const &);

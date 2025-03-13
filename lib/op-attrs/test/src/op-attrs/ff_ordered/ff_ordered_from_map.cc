@@ -1,4 +1,4 @@
-#include "op-attrs/dim_ordered/ff_ordered_from_map.h"
+#include "op-attrs/ff_ordered/ff_ordered_from_map.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;

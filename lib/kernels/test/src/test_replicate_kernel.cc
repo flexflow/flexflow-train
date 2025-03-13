@@ -9,9 +9,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     nonnegative_int num_replicas = 10_n;
 
     TensorShape input_shape =
-        make_tensor_shape_from_ff_ordered({100_n}, DataType::FLOAT);
+        make_tensor_shape(FFOrdered{100_n}, DataType::FLOAT);
     TensorShape output_shape =
-        make_tensor_shape_from_ff_ordered({100_n}, DataType::FLOAT);
+        make_tensor_shape(FFOrdered{100_n}, DataType::FLOAT);
 
     ManagedPerDeviceFFHandle managed_handle{
         /*workSpaceSize=*/1024 * 1024,
@@ -51,9 +51,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     nonnegative_int num_replicas = 2_n;
 
     TensorShape input_shape =
-        make_tensor_shape_from_ff_ordered({5_n}, DataType::FLOAT);
+        make_tensor_shape(FFOrdered{5_n}, DataType::FLOAT);
     TensorShape output_shape =
-        make_tensor_shape_from_ff_ordered({num_replicas, 5_n}, DataType::FLOAT);
+        make_tensor_shape(FFOrdered{num_replicas, 5_n}, DataType::FLOAT);
 
     ManagedPerDeviceFFHandle managed_handle{
         /*workSpaceSize=*/1024 * 1024,

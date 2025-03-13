@@ -4,21 +4,17 @@
 #include "utils/containers/zip.h"
 #include "utils/exception.h"
 #include "utils/fmt/vector.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
 template <typename L, typename R>
 std::vector<std::pair<L, R>> zip_strict(std::vector<L> const &lhs,
                                         std::vector<R> const &rhs) {
-  if (lhs.size() != rhs.size()) {
-    throw mk_runtime_error(
-        fmt::format("zip_strict requires lhs and rhs to have the same length, "
-                    "but received lhs={} (length {}), rhs={} (length {})",
-                    lhs,
-                    lhs.size(),
-                    rhs,
-                    rhs.size()));
-  }
+  ASSERT(lhs.size() == rhs.size(),
+         "zip_strict requires lhs and rhs to have the same length",
+         lhs,
+         rhs);
 
   return zip(lhs, rhs);
 }

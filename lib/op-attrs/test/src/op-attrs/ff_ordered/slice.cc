@@ -1,4 +1,4 @@
-#include "op-attrs/dim_ordered/slice.h"
+#include "op-attrs/ff_ordered/slice.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
