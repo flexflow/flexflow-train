@@ -1,4 +1,5 @@
 #include "realm-backend/task_wrapper.h"
+#include <optional>
 
 namespace FlexFlow {
 
@@ -6,12 +7,12 @@ using namespace Realm;
 
 void init_wrapper_task(const void *args, size_t arglen, const void *userdata,
                        size_t userlen, Processor p) {
-  RealmTaskArgs<DeviceSpecificDeviceStates> const &task_args =
-      *reinterpret_cast<const RealmTaskArgs<DeviceSpecificDeviceStates> *>(args);
+  RealmTaskArgs<std::optional<DeviceSpecificDeviceStates>> const &task_args =
+      *reinterpret_cast<const RealmTaskArgs<std::optional<DeviceSpecificDeviceStates>> *>(args);
   auto fn =
       task_args.impl_function.get<InitOpTaskImplFunction>().function_ptr;
   DeviceSpecificDeviceStates result = fn(task_args.accessor);
-  task_args.promise.set_value(std::move(result));
+  task_args.promise.set_value(std::make_optional(result));
 }
 
 void fwdbwd_wrapper_task(const void *args, size_t arglen, const void *userdata,

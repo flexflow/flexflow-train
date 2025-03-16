@@ -19,11 +19,25 @@ template <typename T> struct SharedState {
   Realm::RegionInstance inst;
 
   SharedState() = delete;
-  SharedState(Realm::Memory);
-  void set_event(Realm::Event);
-  void set_value(T &&);
-  void wait();
-  T get_value();
+  SharedState(Realm::Memory mem) {
+    Realm::Rect<1> bounds(Realm::Point<1>(0), Realm::Point<1>(0));
+    this->inst = Realm::RegionInstance::NO_INST;
+    Realm::RegionInstance::create_instance(
+        this->inst, mem, bounds, {sizeof(T)}, /*SOA*/ 1,
+        Realm::ProfilingRequestSet(), Realm::Event::NO_EVENT)
+        .wait();
+  }
+  void set_event(Realm::Event e) { this->event = e; }
+  void set_value(T &&value) {
+    Realm::GenericAccessor<T, 1> acc(this->inst, 0);
+    acc[Realm::Point<1>(0)] = std::move(value);
+  }
+  void wait() { this->event.wait(); }
+  T get_value() {
+    wait();
+    Realm::GenericAccessor<T, 1> acc(this->inst, 0);
+    return acc[Realm::Point<1>(0)];
+  }
 };
 
 // Specialization of SharedState for the `void` type, as it does not carry a
@@ -33,8 +47,8 @@ template <> struct SharedState<void> {
   Realm::Event event = Realm::Event::NO_EVENT;
 
   SharedState() = default;
-  void set_event(Realm::Event);
-  void wait();
+  void set_event(Realm::Event e) { this->event = e; }
+  void wait() { this->event.wait(); }
 };
 
 /**

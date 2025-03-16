@@ -149,16 +149,16 @@ initialize_args_backing(RealmTrainingBacking *backing,
       TaskImplFunction impl_function =
           task_registry.task_mapping.at(task_id).impl_function;
       // TODO: multi gpu launching
-      Promise<DeviceSpecificDeviceStates> promise(master_mem);
-      Future<DeviceSpecificDeviceStates> future = promise.get_future();
-      RealmTaskArgs<DeviceSpecificDeviceStates> args{
+      Promise<std::optional<DeviceSpecificDeviceStates>> promise(master_mem);
+      Future<std::optional<DeviceSpecificDeviceStates>> future = promise.get_future();
+      RealmTaskArgs<std::optional<DeviceSpecificDeviceStates>> args{
           task_id, impl_function, accessor, std::move(promise)};
       Event e =
           worker_procs[0].spawn(static_cast<Processor::TaskFuncID>(task_id),
                                 &args, sizeof(args), worker_events[0]);
       worker_events[0] = e;
       future.set_event(e);
-      per_device_op_states.insert({node, std::move(future.get())});
+      per_device_op_states.insert({node, std::move(future.get().value())});
     }
   }
 
