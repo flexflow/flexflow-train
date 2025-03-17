@@ -26,8 +26,8 @@ jobs:
       - uses: cachix/cachix-action@v14
         with:
           name: ff
-          skipPush: true
-          # authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          skipPush: ${{ github.head_ref == 'master' }}
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
       - name: setup nix develop shell
         uses: nicknovitski/nix-develop@v1.1.0
