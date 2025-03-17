@@ -1,4 +1,4 @@
-#include "doctest/doctest.h"
+#include <doctest/doctest.h>
 #include "kernels/managed_per_device_ff_handle.h"
 
 using namespace ::FlexFlow;

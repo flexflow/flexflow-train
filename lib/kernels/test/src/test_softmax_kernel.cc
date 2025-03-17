@@ -1,4 +1,4 @@
-#include "doctest/doctest.h"
+#include <doctest/doctest.h>
 #include "kernels/softmax_kernels.h"
 #include "test_utils.h"
 

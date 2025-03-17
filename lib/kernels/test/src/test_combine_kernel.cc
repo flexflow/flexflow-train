@@ -1,4 +1,4 @@
-#include "doctest/doctest.h"
+#include <doctest/doctest.h>
 #include "kernels/combine_kernels.h"
 #include "kernels/combine_kernels_cpu.h"
 #include "test_utils.h"

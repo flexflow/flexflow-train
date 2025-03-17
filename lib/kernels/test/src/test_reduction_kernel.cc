@@ -1,4 +1,4 @@
-#include "doctest/doctest.h"
+#include <doctest/doctest.h>
 #include "kernels/reduction_kernels.h"
 #include "op-attrs/datatype_value.h"
 #include "test_utils.h"
