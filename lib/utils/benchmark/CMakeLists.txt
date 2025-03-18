@@ -1,0 +1,10 @@
+ff_add_benchmark_executable(
+  NAME
+    utils-benchmarks
+  SRC_PATTERNS
+    src/*.cc
+  PRIVATE_INCLUDE
+    src/
+  DEPS
+    utils
+)
