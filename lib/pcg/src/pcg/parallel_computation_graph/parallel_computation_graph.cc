@@ -1,24 +1,33 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "op-attrs/get_incoming_tensor_roles.h"
+#include "op-attrs/pcg_operator_attrs.h"
+#include "op-attrs/shape_inference.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_edge.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
+#include "utils/containers/concat_vectors.h"
 #include "utils/containers/filtrans.h"
 #include "utils/containers/get_only.h"
+#include "utils/containers/repeat_element.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/unordered_set_of.h"
+#include "utils/containers/zip_with_strict.h"
 #include "utils/graph/dataflow_graph/algorithms.h"
 #include "utils/graph/dataflow_graph/algorithms/get_dataflow_edges_from_node_to_node.h"
 #include "utils/graph/dataflow_graph/algorithms/get_incoming_edges.h"
 #include "utils/graph/dataflow_graph/algorithms/get_outgoing_edges.h"
 #include "utils/graph/dataflow_graph/dataflow_edge.dtg.h"
 #include "utils/graph/digraph/algorithms.h"
+#include "utils/graph/digraph/algorithms/get_subgraph_successors.h"
+#include "utils/graph/digraph/algorithms/get_successors.h"
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"
 #include "utils/graph/instances/unordered_set_labelled_open_dataflow_graph.h"
 #include "utils/graph/labelled_dataflow_graph/algorithms/find_isomorphism.h"
 #include "utils/graph/labelled_dataflow_graph/algorithms/rewrite_node_labels.h"
+#include "utils/graph/labelled_open_dataflow_graph/algorithms/as_dot.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/node/node.dtg.h"
+#include "utils/record_formatter.h"
 #include <unordered_set>
 
 namespace FlexFlow {
@@ -36,17 +45,61 @@ std::unordered_set<parallel_layer_guid_t>
                    [&](Node const &n) { return parallel_layer_guid_t{n}; });
 }
 
-ParallelLayerAddedResult
-    add_parallel_layer(ParallelComputationGraph &pcg,
-                       ParallelLayerAttrs const &layer_attrs,
-                       std::vector<parallel_tensor_guid_t> const &inputs,
-                       std::vector<ParallelTensorAttrs> const &output_labels) {
+ParallelLayerAddedResult add_parallel_layer(
+    ParallelComputationGraph &pcg,
+    ParallelLayerAttrs const &layer_attrs,
+    std::vector<parallel_tensor_guid_t> const &inputs,
+    std::vector<parallel_tensor_guid_t> const &weights,
+    std::optional<std::vector<CreateGrad>> const &maybe_output_flags) {
+  std::vector<ParallelTensorShape> input_shapes =
+      transform(inputs, [&](parallel_tensor_guid_t const &i) {
+        return get_parallel_tensor_shape(pcg, i);
+      });
+
+  std::vector<ParallelTensorShape> weight_shapes =
+      transform(weights, [&](parallel_tensor_guid_t const &i) {
+        return get_parallel_tensor_shape(pcg, i);
+      });
+
+  std::vector<ParallelTensorShape> correct_weight_shapes =
+      get_weight_shapes(layer_attrs.op_attrs, input_shapes);
+
+  if (weight_shapes != correct_weight_shapes) {
+    throw mk_runtime_error(
+        fmt::format("add_parallel_layer expected weight shapes {}, but "
+                    "received weights with shapes {}",
+                    correct_weight_shapes,
+                    weight_shapes));
+  }
+
+  std::vector<ParallelTensorShape> output_shapes =
+      get_output_shapes(layer_attrs.op_attrs, input_shapes);
+
   std::vector<DataflowOutput> unwrapped_inputs =
       transform(inputs, [](parallel_tensor_guid_t const &t) {
         return t.raw_graph_output;
       });
-  NodeAddedResult op_added =
-      pcg.raw_graph.add_node(layer_attrs, unwrapped_inputs, output_labels);
+
+  std::vector<DataflowOutput> unwrapped_weights =
+      transform(weights, [](parallel_tensor_guid_t const &t) {
+        return t.raw_graph_output;
+      });
+
+  std::vector<CreateGrad> output_flags = maybe_output_flags.value_or(
+      repeat_element(num_elements(output_shapes), CreateGrad::YES));
+
+  std::vector<ParallelTensorAttrs> output_attrs = zip_with_strict(
+      output_shapes,
+      output_flags,
+      [](ParallelTensorShape const &shape, CreateGrad const &create_grad) {
+        return ParallelTensorAttrs{shape, create_grad};
+      });
+
+  NodeAddedResult op_added = pcg.raw_graph.add_node(
+      layer_attrs,
+      concat_vectors(unwrapped_inputs, unwrapped_weights),
+      output_attrs);
+
   return ParallelLayerAddedResult{
       parallel_layer_guid_t{op_added.node},
       transform(
@@ -55,25 +108,18 @@ ParallelLayerAddedResult
   };
 }
 
-ParallelLayerAddedResult
-    pcg_add_input_layer(ParallelComputationGraph &pcg,
-                        ParallelTensorShape const &tensor_shape) {
+ParallelLayerAddedResult pcg_add_input_layer(ParallelComputationGraph &pcg,
+                                             TensorShape const &tensor_shape) {
   ParallelLayerAttrs layer_attrs = ParallelLayerAttrs{
-      /*op_attrs=*/PCGOperatorAttrs{InputAttrs{}},
+      /*op_attrs=*/PCGOperatorAttrs{InputAttrs{tensor_shape}},
       /*name=*/std::nullopt,
-  };
-
-  ParallelTensorAttrs tensor_attrs = ParallelTensorAttrs{
-      /*shape=*/tensor_shape,
-      /*sync_type=*/std::nullopt,
-      /*initializer=*/std::nullopt,
-      /*create_gradients=*/CreateGrad::NO,
   };
 
   return add_parallel_layer(/*pcg=*/pcg,
                             /*layer_attrs=*/layer_attrs,
                             /*inputs=*/{},
-                            /*output_labels=*/{tensor_attrs});
+                            /*weights=*/{},
+                            /*output_flags=*/std::vector{CreateGrad::NO});
 }
 
 std::unordered_set<ParallelComputationGraphEdge>
@@ -180,6 +226,28 @@ std::vector<parallel_tensor_guid_t>
   return get_incoming_tensors_with_role(pcg, l, IncomingTensorRole::WEIGHT);
 }
 
+std::unordered_set<parallel_layer_guid_t>
+    get_successors(ParallelComputationGraph const &pcg,
+                   parallel_layer_guid_t const &l) {
+  return transform(get_successors(pcg.raw_graph, l.raw_graph_node),
+                   [](Node const &n) { return parallel_layer_guid_t{n}; });
+}
+
+std::unordered_set<parallel_layer_guid_t> get_subgraph_successors(
+    ParallelComputationGraph const &pcg,
+    std::unordered_set<parallel_layer_guid_t> const &subgraph_layers) {
+
+  std::unordered_set<Node> raw_subgraph_nodes =
+      transform(subgraph_layers, [](parallel_layer_guid_t const &l) {
+        return l.raw_graph_node;
+      });
+  std::unordered_set<Node> raw_successors =
+      get_subgraph_successors(pcg.raw_graph, raw_subgraph_nodes);
+
+  return transform(raw_successors,
+                   [](Node const &n) { return parallel_layer_guid_t{n}; });
+}
+
 parallel_layer_guid_t get_source_layer(ParallelComputationGraph const &g,
                                        parallel_tensor_guid_t const &t) {
   return parallel_layer_guid_t{t.raw_graph_output.node};
@@ -245,6 +313,42 @@ bool pcgs_are_isomorphic(ParallelComputationGraph const &lhs,
   return find_isomorphism(without_layer_names(lhs).raw_graph,
                           without_layer_names(rhs).raw_graph)
       .has_value();
+}
+
+std::string as_dot(ParallelComputationGraph const &cg) {
+  std::function<std::string(ParallelLayerAttrs const &)> get_node_label =
+      [](ParallelLayerAttrs const &a) -> std::string {
+    RecordFormatter r = as_dot(a.op_attrs);
+
+    if (a.name.has_value()) {
+      RecordFormatter rr;
+      rr << "Name" << a.name.value();
+      r << rr;
+    }
+
+    std::ostringstream oss;
+    oss << r;
+    return oss.str();
+  };
+
+  std::function<std::string(ParallelTensorAttrs const &)> get_input_label =
+      [](ParallelTensorAttrs const &a) -> std::string {
+    RecordFormatter r;
+
+    r << fmt::to_string(a.shape);
+
+    std::ostringstream oss;
+    oss << r;
+    return oss.str();
+  };
+
+  return as_dot(view_as_labelled_open_dataflow_graph(cg.raw_graph),
+                get_node_label,
+                get_input_label);
+}
+
+void debug_print_dot(ParallelComputationGraph const &cg) {
+  std::cout << as_dot(cg) << std::endl;
 }
 
 } // namespace FlexFlow

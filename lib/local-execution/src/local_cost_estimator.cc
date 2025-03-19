@@ -4,9 +4,12 @@
 #include "local-execution/tracked_allocator.h"
 #include "op-attrs/computation_graph_op_attrs.h"
 #include "op-attrs/pcg_operator_attrs.h"
+#include "op-attrs/shape_inference.h"
+#include "pcg/computation_graph.h"
 #include "pcg/computation_graph_builder.h"
 #include "pcg/machine_view.dtg.h"
 #include "pcg/parallel_tensor_attrs.h"
+#include "utils/containers/get_only.h"
 #include "utils/containers/transform.h"
 
 namespace FlexFlow {
@@ -48,11 +51,11 @@ CostDetails LocalCostEstimator::estimate_cost(
   TensorBackingMap tensor_backing_map;
   std::vector<tensor_guid_t> input_tensor_ids;
 
-  ComputationGraphBuilder cg_builder;
+  ComputationGraph cg = make_empty_computation_graph();
   for (ParallelTensorShape const &input : inputs) {
     TensorShape tensor_shape = get_piece_shape(input);
     tensor_guid_t tensor_id =
-        cg_builder.create_input(tensor_shape, CreateGrad::YES);
+        get_only(add_input_layer(cg, tensor_shape).outputs);
     GenericTensorAccessorW tensor_backing =
         allocator.allocate_tensor(tensor_shape);
     tensor_backing_map.insert({tensor_id, tensor_backing});
@@ -67,19 +70,34 @@ CostDetails LocalCostEstimator::estimate_cost(
       };
 
   // add operator to graph
-  std::vector<tensor_guid_t> output_tensor_ids =
-      cg_builder.add_layer(layer_attrs,
-                           input_tensor_ids,
-                           transform(get_vector_piece_attrs(weights),
-                                     [&](TensorAttrs const &a) {
-                                       return cg_builder.create_weight(a);
-                                     }),
-                           get_vector_piece_attrs(outputs));
+  std::vector<TensorShape> weight_shapes = get_weight_shapes(
+      layer_attrs.op_attrs, transform(inputs, get_piece_shape));
 
-  LocalTrainingBacking local_backing(allocator,
-                                     cg_builder.computation_graph,
-                                     tensor_backing_map,
-                                     this->runtime_arg_config);
+  std::vector<tensor_guid_t> weight_tensor_ids =
+      transform(weight_shapes, [&](TensorShape const &tensor_shape) {
+        LayerAttrs attrs = LayerAttrs{
+            ComputationGraphOpAttrs{
+                WeightAttrs{
+                    /*tensor_shape=*/tensor_shape,
+                    /*initializer=*/InitializerAttrs{ZeroInitializerAttrs{}},
+                },
+            },
+            /*name=*/std::nullopt,
+        };
+
+        return get_only(
+            add_layer(cg, attrs, /*inputs=*/{}, /*weights=*/{}).outputs);
+      });
+
+  std::vector<tensor_guid_t> output_tensor_ids =
+      add_layer(cg,
+                layer_attrs,
+                /*inputs=*/input_tensor_ids,
+                /*weights=*/weight_tensor_ids)
+          .outputs;
+
+  LocalTrainingBacking local_backing(
+      allocator, cg, tensor_backing_map, this->runtime_arg_config);
 
   local_backing.execute_init();
   PerLayerElapsedTime fwd = local_backing.execute_forward();

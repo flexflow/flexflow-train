@@ -1,10 +1,14 @@
 #include "pcg/computation_graph.h"
 #include "op-attrs/computation_graph_op_attrs.h"
 #include "op-attrs/get_incoming_tensor_roles.h"
+#include "op-attrs/shape_inference.h"
+#include "utils/containers/concat_vectors.h"
 #include "utils/containers/filtrans.h"
 #include "utils/containers/get_only.h"
+#include "utils/containers/repeat_element.h"
 #include "utils/containers/reversed.h"
 #include "utils/containers/transform.h"
+#include "utils/containers/zip_with_strict.h"
 #include "utils/graph/dataflow_graph/algorithms.h"
 #include "utils/graph/dataflow_graph/algorithms/get_subgraph_incoming_edges.h"
 #include "utils/graph/dataflow_graph/algorithms/get_subgraph_outgoing_edges.h"
@@ -31,21 +35,69 @@ std::unordered_set<layer_guid_t> get_layers(ComputationGraph const &cg) {
                    [&](Node const &n) { return layer_guid_t{n}; });
 }
 
-LayerAddedResult add_layer(ComputationGraph &computation_graph,
-                           LayerAttrs const &attrs,
-                           std::vector<tensor_guid_t> const &inputs,
-                           std::vector<TensorAttrs> const &outputs) {
+LayerAddedResult add_layer(
+    ComputationGraph &computation_graph,
+    LayerAttrs const &layer_attrs,
+    std::vector<tensor_guid_t> const &inputs,
+    std::vector<tensor_guid_t> const &weights,
+    std::optional<std::vector<CreateGrad>> const &maybe_output_flags) {
+  std::vector<TensorShape> input_shapes =
+      transform(inputs, [&](tensor_guid_t const &i) {
+        return get_tensor_attrs(computation_graph, i).shape;
+      });
+
+  std::vector<TensorShape> provided_weight_shapes =
+      transform(weights, [&](tensor_guid_t const &w) {
+        return get_tensor_attrs(computation_graph, w).shape;
+      });
+
+  std::vector<TensorShape> expected_weight_shapes =
+      get_weight_shapes(layer_attrs.op_attrs, input_shapes);
+
   std::vector<DataflowOutput> raw_inputs = transform(
       inputs, [](tensor_guid_t const &t) { return t.raw_graph_output; });
 
-  NodeAddedResult added =
-      computation_graph.raw_graph.add_node(attrs, raw_inputs, outputs);
+  std::vector<DataflowOutput> raw_weights = transform(
+      weights, [](tensor_guid_t const &t) { return t.raw_graph_output; });
+
+  std::vector<TensorShape> output_shapes =
+      get_output_shapes(layer_attrs.op_attrs, input_shapes);
+
+  std::vector<CreateGrad> output_flags = maybe_output_flags.value_or(
+      repeat_element(num_elements(output_shapes), CreateGrad::YES));
+
+  std::vector<TensorAttrs> output_attrs = zip_with_strict(
+      output_shapes,
+      output_flags,
+      [](TensorShape const &shape, CreateGrad const &create_grad) {
+        return TensorAttrs{
+            /*shape=*/shape,
+            /*create_grad=*/create_grad,
+        };
+      });
+
+  NodeAddedResult added = computation_graph.raw_graph.add_node(
+      layer_attrs, concat_vectors(raw_inputs, raw_weights), output_attrs);
 
   return LayerAddedResult{
       layer_guid_t{added.node},
       transform(added.outputs,
                 [](DataflowOutput const &o) { return tensor_guid_t{o}; }),
   };
+}
+
+LayerAddedResult add_input_layer(ComputationGraph &cg,
+                                 TensorShape const &tensor_shape) {
+  LayerAttrs layer_attrs = LayerAttrs{
+      /*op_attrs=*/ComputationGraphOpAttrs{InputAttrs{tensor_shape}},
+      /*name=*/std::nullopt,
+  };
+
+  return add_layer(cg,
+                   layer_attrs,
+                   /*inputs=*/{},
+                   /*weights=*/{},
+                   /*outputs=*/std::vector{CreateGrad::NO});
 }
 
 TensorAttrs get_tensor_attrs(ComputationGraph const &cg,
@@ -88,7 +140,7 @@ static std::vector<tensor_guid_t>
     get_incoming_tensors_with_role(ComputationGraph const &cg,
                                    layer_guid_t const &l,
                                    IncomingTensorRole desired_role) {
-  ComputationGraphOpAttrs attrs = get_layer_attrs(cg, l).attrs;
+  ComputationGraphOpAttrs attrs = get_layer_attrs(cg, l).op_attrs;
 
   std::vector<tensor_guid_t> incoming_tensors = get_incoming_tensors(cg, l);
 
@@ -200,7 +252,7 @@ bool computation_graphs_are_isomorphic(ComputationGraph const &lhs,
 std::string as_dot(ComputationGraph const &cg) {
   std::function<std::string(LayerAttrs const &)> get_node_label =
       [](LayerAttrs const &a) -> std::string {
-    RecordFormatter r = as_dot(a.attrs);
+    RecordFormatter r = as_dot(a.op_attrs);
 
     if (a.name.has_value()) {
       RecordFormatter rr;

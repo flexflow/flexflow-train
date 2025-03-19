@@ -11,7 +11,7 @@ OperatorType get_op_type(ParallelLayerAttrs const &a) {
 ParallelLayerAttrs
     parallel_layer_attrs_from_layer_attrs(LayerAttrs const &layer_attrs) {
   return ParallelLayerAttrs{
-      pcg_op_attrs_from_compgraph_op_attrs(layer_attrs.attrs),
+      pcg_op_attrs_from_compgraph_op_attrs(layer_attrs.op_attrs),
       layer_attrs.name};
 }
 

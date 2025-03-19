@@ -9,21 +9,19 @@ TEST_SUITE(FF_TEST_SUITE) {
     ParallelComputationGraph pcg = [] {
       ParallelComputationGraphBuilder b;
 
-      ParallelTensorShape input_shape = ParallelTensorShape{
-          ParallelTensorDims{
-              FFOrdered<ShardParallelDim>{
-                  ShardParallelDim{12_n, 2_n},
-                  ShardParallelDim{16_n, 1_n},
-              },
-              ReplicaParallelDimSet{
-                  SumDegree{1_n},
-                  DiscardCopyDegree{1_n},
+      TensorShape input_shape = TensorShape{
+          TensorDims{
+              FFOrdered<nonnegative_int>{
+                  12_n,
+                  16_n,
               },
           },
           DataType::FLOAT,
       };
 
       parallel_tensor_guid_t input = b.create_input_tensor(input_shape);
+      parallel_tensor_guid_t t_partition =
+          b.parallel_partition(input, ff_dim_t{0_n}, 2_n);
       parallel_tensor_guid_t mm_output = b.dense(input, 8_n);
       parallel_tensor_guid_t relu_output = b.relu(mm_output);
 

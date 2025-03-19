@@ -15,7 +15,6 @@
 
 #include "transpose.h"
 #include "kernels/transpose_kernels.h"
-#include "op-attrs/get_output_shapes.h"
 #include "op-attrs/ops/transpose.h"
 #include "utils/integer_conversions.h"
 
