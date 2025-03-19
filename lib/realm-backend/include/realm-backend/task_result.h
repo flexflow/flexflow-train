@@ -2,6 +2,7 @@
 #define _FLEXFLOW_LOCAL_EXECUTION_TASK_RESULT_H
 
 #include "realm-backend/driver.h"
+#include "realm-backend/realm_task_argument_accessor.h"
 #include <cassert>
 #include <optional>
 
@@ -92,6 +93,24 @@ private:
   SharedState<void> state_;
 };
 
+template <> class Future<DeviceSpecificDeviceStates> {
+public:
+  explicit Future(
+      std::shared_ptr<std::optional<DeviceSpecificDeviceStates>> value)
+      : value_(value) {}
+  Future() = delete;
+  void set_event(Realm::Event e) { event_ = e; }
+  std::optional<DeviceSpecificDeviceStates> get() {
+    wait();
+    return *value_;
+  }
+  void wait() { event_.wait(); }
+
+private:
+  Realm::Event event_;
+  std::shared_ptr<std::optional<DeviceSpecificDeviceStates>> value_;
+};
+
 /**
  * @brief Promise class template that allows setting a result in a SharedState
  * object. It is used to fulfill a Future with a value, and provides methods to
@@ -116,6 +135,26 @@ public:
 
 private:
   SharedState<void> state_;
+};
+
+// Specialization of Promise for the `DeviceSpecificDeviceStates` type.
+// It has an inner shared_ptr value, so we need to find a way to avoid the value
+// to deconstruct early. `shared_ptr` can work because DeveiceState will stored
+// in the same node with the device that launch init task. Wrap a std::optional
+// because we don't know the specific DeviceSpecificDeviceStates size.
+template <> class Promise<DeviceSpecificDeviceStates> {
+public:
+  Promise()
+      : value_(std::make_shared<std::optional<DeviceSpecificDeviceStates>>()) {}
+  void set_value(DeviceSpecificDeviceStates value) const {
+    *value_ = std::make_optional(value);
+  }
+  Future<DeviceSpecificDeviceStates> get_future() {
+    return Future<DeviceSpecificDeviceStates>(value_);
+  }
+
+private:
+  std::shared_ptr<std::optional<DeviceSpecificDeviceStates>> value_;
 };
 
 } // namespace FlexFlow

@@ -6,20 +6,17 @@ namespace FlexFlow {
 
 using namespace Realm;
 
-// After get device specific states from init task, storage a copy here to avoid auto destruction.
-std::vector<DeviceSpecificDeviceStates> device_state_storage;
 
 std::unordered_set<std::pair<int, task_id_t>> registered_tasks;
 
 void init_wrapper_task(const void *args, size_t arglen, const void *userdata,
                        size_t userlen, Processor p) {
-  RealmTaskArgs<std::optional<DeviceSpecificDeviceStates>> const &task_args =
-      *reinterpret_cast<const RealmTaskArgs<std::optional<DeviceSpecificDeviceStates>> *>(args);
+  RealmTaskArgs<DeviceSpecificDeviceStates> const &task_args =
+      *reinterpret_cast<const RealmTaskArgs<DeviceSpecificDeviceStates> *>(args);
   auto fn =
       task_args.impl_function.get<InitOpTaskImplFunction>().function_ptr;
   DeviceSpecificDeviceStates result = fn(task_args.accessor);
-  device_state_storage.push_back(result);
-  task_args.promise.set_value(std::make_optional(result));
+  task_args.promise.set_value(result);
 }
 
 void fwdbwd_wrapper_task(const void *args, size_t arglen, const void *userdata,

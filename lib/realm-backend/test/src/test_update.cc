@@ -21,6 +21,7 @@ void top_level_task(const void *args, size_t arglen, const void *userdata,
   std::vector<Allocator> allocators;
   Machine::ProcessorQuery pq = Machine::ProcessorQuery(Machine::get_machine())
                                    .only_kind(Processor::TOC_PROC);
+  assert(pq.count() > 0);
   for (Processor p : pq) {
     worker_procs.push_back(p);
     allocators.push_back(create_realm_memory_allocator(p));
@@ -73,7 +74,7 @@ void top_level_task(const void *args, size_t arglen, const void *userdata,
   int test_id = 0;
 
   {
-    printf("Running test %d: SGDOptimizerAttrs, momentum=0\n", ++test_id);
+    printf("Running test %d: SGDOptimizerAttrs, momentum=0...", ++test_id);
     OptimizerAttrs optimizer_attrs =
         OptimizerAttrs{SGDOptimizerAttrs{/*lr=*/0.001,
                                         /*momentum=*/0.0f,
@@ -83,11 +84,12 @@ void top_level_task(const void *args, size_t arglen, const void *userdata,
         p, worker_procs, allocators, allocated_tensors, gradient_tensor_source,
         optimizer_tensor_source, computation_graph, runtime_arg_config,
         optimizer_attrs);
-    execute_update(realm_training_backing, linear_operator.layer, optimizer_attrs);
+    execute_update(realm_training_backing, linear_operator.layer, optimizer_attrs).wait();
+    printf("passed\n");
   }
 
   {
-    printf("Running test %d: SGDOptimizerAttrs, momentum=0.9\n", ++test_id);
+    printf("Running test %d: SGDOptimizerAttrs, momentum=0.9...", ++test_id);
     OptimizerAttrs optimizer_attrs =
         OptimizerAttrs{SGDOptimizerAttrs{/*lr=*/0.001,
                                         /*momentum=*/0.9,
@@ -97,11 +99,12 @@ void top_level_task(const void *args, size_t arglen, const void *userdata,
         p, worker_procs, allocators, allocated_tensors, gradient_tensor_source,
         optimizer_tensor_source, computation_graph, runtime_arg_config,
         optimizer_attrs);
-    execute_update(realm_training_backing, linear_operator.layer, optimizer_attrs);
+    execute_update(realm_training_backing, linear_operator.layer, optimizer_attrs).wait();
+    printf("passed\n");
   }
   
   {
-    printf("Running test %d: AdamOptimizerAttrs\n", ++test_id);
+    printf("Running test %d: AdamOptimizerAttrs...", ++test_id);
     OptimizerAttrs optimizer_attrs =
         OptimizerAttrs{AdamOptimizerAttrs{/*alpha=*/0.001,
                                         /*beta1=*/0.9,
@@ -115,6 +118,7 @@ void top_level_task(const void *args, size_t arglen, const void *userdata,
         p, worker_procs, allocators, allocated_tensors, gradient_tensor_source,
         optimizer_tensor_source, computation_graph, runtime_arg_config,
         optimizer_attrs);
-    execute_update(realm_training_backing, linear_operator.layer, optimizer_attrs);
+    execute_update(realm_training_backing, linear_operator.layer, optimizer_attrs).wait();
+    printf("passed\n");
   }
 }

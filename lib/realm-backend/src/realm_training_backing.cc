@@ -93,7 +93,7 @@ TaskRegistry construct_task_registry_and_register_tasks_for_realm(
     for (task_id_t task_id : task_ids) {
         TaskSignatureAndImpl task_signature_impl = get_task_sig_impl(task_id);
         // TODO: multi gpu
-        register_wrapper_tasks(worker_procs[0], task_id, task_signature_impl);
+        register_wrapper_tasks(0, worker_procs[0], task_id, task_signature_impl);
     }
   }
 
@@ -135,16 +135,16 @@ initialize_args_backing(RealmTrainingBacking *backing,
       TaskImplFunction impl_function =
           task_registry.task_mapping.at(task_id).impl_function;
       // TODO: multi gpu launching
-      Promise<std::optional<DeviceSpecificDeviceStates>> promise(master_mem);
-      Future<std::optional<DeviceSpecificDeviceStates>> future = promise.get_future();
-      RealmTaskArgs<std::optional<DeviceSpecificDeviceStates>> args{
+      Promise<DeviceSpecificDeviceStates> promise = Promise<DeviceSpecificDeviceStates>();
+      Future<DeviceSpecificDeviceStates> future = promise.get_future();
+      RealmTaskArgs<DeviceSpecificDeviceStates> args{
           task_id, impl_function, accessor, std::move(promise)};
       Event e =
           worker_procs[0].spawn(get_realm_task_id(task_id),
                                 &args, sizeof(args), worker_events[0]);
       worker_events[0] = e;
       future.set_event(e);
-      per_device_op_states.insert({node, std::move(future.get().value())});
+      per_device_op_states.insert({node, future.get().value()});
     }
   }
 
