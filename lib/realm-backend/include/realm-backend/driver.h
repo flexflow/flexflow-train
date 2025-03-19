@@ -5,6 +5,8 @@
 #include "realm/cmdline.h"
 #include "task-spec/op_task_invocation.h"
 
+Realm::Processor::TaskFuncID get_realm_task_id(FlexFlow::task_id_t task_id);
+
 void top_level_task(const void *args, size_t arglen, const void *userdata,
                size_t userlen, Realm::Processor p);
 

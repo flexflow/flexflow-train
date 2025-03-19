@@ -1,4 +1,4 @@
-ff_add_test_executable(
+ff_add_executable(
   NAME
     realm-backend-tests
   SRC_PATTERNS
@@ -6,10 +6,7 @@ ff_add_test_executable(
   PRIVATE_INCLUDE 
     src/
   DEPS
-    utils-test-common
     realm-backend
-    kernels
-    op-attrs
 )
 
 set(FF_TEST_EXEC_NAME "realm-backend-tests")

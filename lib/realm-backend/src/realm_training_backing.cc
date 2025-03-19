@@ -154,7 +154,7 @@ initialize_args_backing(RealmTrainingBacking *backing,
       RealmTaskArgs<std::optional<DeviceSpecificDeviceStates>> args{
           task_id, impl_function, accessor, std::move(promise)};
       Event e =
-          worker_procs[0].spawn(static_cast<Processor::TaskFuncID>(task_id),
+          worker_procs[0].spawn(get_realm_task_id(task_id),
                                 &args, sizeof(args), worker_events[0]);
       worker_events[0] = e;
       future.set_event(e);
@@ -202,7 +202,7 @@ execute_forward(RealmTrainingBacking &realm_training_backing,
     RealmTaskArgs<float> args{task_id, impl_function, accessor,
                                 std::move(promise)};
     Event e = realm_training_backing.worker_procs[0].spawn(
-        static_cast<Processor::TaskFuncID>(task_id), &args, sizeof(args),
+        get_realm_task_id(task_id), &args, sizeof(args),
         realm_training_backing.worker_events[0]);
     realm_training_backing.worker_events[0] = e;
     future.set_event(e);
@@ -249,7 +249,7 @@ execute_backward(RealmTrainingBacking &realm_training_backing,
     RealmTaskArgs<float> args{task_id, impl_function, accessor,
                                 std::move(promise)};
     Event e = realm_training_backing.worker_procs[0].spawn(
-        static_cast<Processor::TaskFuncID>(task_id), &args, sizeof(args),
+        get_realm_task_id(task_id), &args, sizeof(args),
         realm_training_backing.worker_events[0]);
     realm_training_backing.worker_events[0] = e;
     future.set_event(e);
@@ -299,7 +299,7 @@ Future<void> execute_update(RealmTrainingBacking &realm_training_backing,
     RealmTaskArgs<void> args{task_id, update_impl_fn, accessor,
                              std::move(promise)};
     Event e = realm_training_backing.worker_procs[0].spawn(
-        static_cast<Processor::TaskFuncID>(task_id), &args, sizeof(args),
+        get_realm_task_id(task_id), &args, sizeof(args),
         realm_training_backing.worker_events[0]);
     realm_training_backing.worker_events[0] = e;
     future.set_event(e);
@@ -334,7 +334,7 @@ Future<void> compute_loss(RealmTrainingBacking &realm_training_backing,
   RealmTaskArgs<void> args{task_id, loss_impl_fn, loss_accessor,
                            std::move(promise)};
   Event e = realm_training_backing.worker_procs[0].spawn(
-      static_cast<Processor::TaskFuncID>(task_id), &args, sizeof(args),
+      get_realm_task_id(task_id), &args, sizeof(args),
       realm_training_backing.worker_events[0]);
   realm_training_backing.worker_events[0] = e;
   future.set_event(e);

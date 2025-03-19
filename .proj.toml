@@ -43,6 +43,11 @@ type = "lib"
 tests = true
 benchmarks = false
 
+[targets.realm-backend]
+type = "lib"
+tests = false
+benchmarks = false
+
 [targets.models]
 type = "lib"
 tests = true

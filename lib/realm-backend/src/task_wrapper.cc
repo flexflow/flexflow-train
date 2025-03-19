@@ -36,21 +36,21 @@ void generic_wrapper_task(const void *args, size_t arglen, const void *userdata,
 
 void register_wrapper_tasks_init(Processor p, task_id_t task_id) {
   Processor::register_task_by_kind(
-      p.kind(), false /*!global*/, static_cast<Processor::TaskFuncID>(task_id),
+      p.kind(), false /*!global*/, get_realm_task_id(task_id),
       CodeDescriptor(init_wrapper_task), ProfilingRequestSet())
       .external_wait();
 }
 
 void register_wrapper_tasks_fwdbwd(Realm::Processor p, task_id_t task_id) {
   Processor::register_task_by_kind(
-      p.kind(), false /*!global*/, static_cast<Processor::TaskFuncID>(task_id),
+      p.kind(), false /*!global*/, get_realm_task_id(task_id),
       CodeDescriptor(fwdbwd_wrapper_task), ProfilingRequestSet())
       .external_wait();
 }
 
 void register_wrapper_tasks_generic(Realm::Processor p, task_id_t task_id) {
   Processor::register_task_by_kind(
-      p.kind(), false /*!global*/, static_cast<Processor::TaskFuncID>(task_id),
+      p.kind(), false /*!global*/, get_realm_task_id(task_id),
       CodeDescriptor(generic_wrapper_task), ProfilingRequestSet())
       .external_wait();
 }
