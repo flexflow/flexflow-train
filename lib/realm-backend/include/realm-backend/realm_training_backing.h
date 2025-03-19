@@ -45,12 +45,15 @@ public:
   std::vector<Realm::Event> worker_events;
   std::vector<Allocator> allocators;
 
-  RealmTensorBacking realm_tensor_backing;
-  RealmArgsBacking realm_args_backing;
-
   ComputationGraph computation_graph;
   TaskRegistry task_registry;
+
+  RealmTensorBacking realm_tensor_backing;
+  RealmArgsBacking realm_args_backing;
 };
+
+TaskRegistry construct_task_registry_and_register_tasks_for_realm(
+    ComputationGraph const &, std::vector<Realm::Processor> const &);
 
 RealmArgsBacking initialize_args_backing(RealmTrainingBacking *,
                                         ComputationGraph const &,

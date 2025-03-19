@@ -30,40 +30,24 @@ RealmTrainingBacking::RealmTrainingBacking(
     GradientTensorSource &gradient_tensor_source,
     ComputationGraph const &computation_graph,
     RuntimeArgConfig const &runtime_arg_config)
-    : master_proc(master_proc), worker_procs(worker_procs),
+    : master_proc(master_proc), master_event(Realm::Event::NO_EVENT),
+      master_mem(Machine::MemoryQuery(Machine::get_machine())
+                     .only_kind(Memory::SYSTEM_MEM)
+                     .best_affinity_to(master_proc)
+                     .first()),
+    worker_procs(worker_procs),
+    worker_events(std::vector<Realm::Event>(worker_procs.size(),
+                                           Realm::Event::NO_EVENT)),
       allocators(allocators), computation_graph(computation_graph),
-      task_registry(construct_task_registry(
-          get_layer_attrs_mapping(computation_graph))),
+      task_registry(construct_task_registry_and_register_tasks_for_realm(
+          computation_graph, worker_procs)),
       realm_tensor_backing(construct_realm_tensor_backing( // TODO: multi gpu
         allocated_tensors,
         generate_unallocated_tensors(
             allocated_tensors, get_all_tensor_attrs(computation_graph),
             gradient_tensor_source),
         this->allocators[0])),
-      realm_args_backing(initialize_args_backing(this, computation_graph, runtime_arg_config)) {
-  master_event = Realm::Event::NO_EVENT;
-  master_mem = Machine::MemoryQuery(Machine::get_machine())
-                   .only_kind(Memory::SYSTEM_MEM)
-                   .best_affinity_to(master_proc)
-                   .first();
-  for (Processor p : worker_procs) {
-    worker_events.push_back(Realm::Event::NO_EVENT);
-  }
-
-  // register tasks for realm
-  std::unordered_map<layer_guid_t, LayerAttrs> const &layer_attrs_mapping =
-      get_layer_attrs_mapping(this->computation_graph);
-  for (std::pair<layer_guid_t, LayerAttrs> const &layer_attrs :
-      layer_attrs_mapping) {
-    ComputationGraphOpAttrs attrs = layer_attrs.second.op_attrs;
-    std::vector<task_id_t> task_ids = get_task_ids(attrs);
-    for (task_id_t task_id : task_ids) {
-        TaskSignatureAndImpl task_signature_impl = get_task_sig_impl(task_id);
-        // TODO: multi gpu
-        register_wrapper_tasks(worker_procs[0], task_id, task_signature_impl);
-    }
-  }
-}
+      realm_args_backing(initialize_args_backing(this, computation_graph, runtime_arg_config)) {}
 
 RealmTrainingBacking::RealmTrainingBacking(
     Processor master_proc, std::vector<Processor> const &worker_procs,
@@ -74,10 +58,17 @@ RealmTrainingBacking::RealmTrainingBacking(
     ComputationGraph const &computation_graph,
     RuntimeArgConfig const &runtime_arg_config,
     OptimizerAttrs const &optimizer_attrs)
-    : master_proc(master_proc), worker_procs(worker_procs),
+    : master_proc(master_proc), master_event(Realm::Event::NO_EVENT),
+      master_mem(Machine::MemoryQuery(Machine::get_machine())
+                     .only_kind(Memory::SYSTEM_MEM)
+                     .best_affinity_to(master_proc)
+                     .first()),
+    worker_procs(worker_procs),
+    worker_events(std::vector<Realm::Event>(worker_procs.size(),
+                                           Realm::Event::NO_EVENT)),
       allocators(allocators), computation_graph(computation_graph),
-      task_registry(construct_task_registry(
-          get_layer_attrs_mapping(computation_graph))),
+      task_registry(construct_task_registry_and_register_tasks_for_realm(
+          computation_graph, worker_procs)),
     realm_tensor_backing(construct_realm_tensor_backing( // TODO: multi gpu
         allocated_tensors,
         generate_unallocated_tensors_with_optimizer(
@@ -85,19 +76,16 @@ RealmTrainingBacking::RealmTrainingBacking(
             gradient_tensor_source, optimizer_tensor_source,
             optimizer_attrs),
         this->allocators[0])),
-      realm_args_backing(initialize_args_backing(this, computation_graph, runtime_arg_config)) {
-  master_event = Realm::Event::NO_EVENT;
-  master_mem = Machine::MemoryQuery(Machine::get_machine())
-                   .only_kind(Memory::SYSTEM_MEM)
-                   .best_affinity_to(master_proc)
-                   .first();
-  for (Processor p : worker_procs) {
-    worker_events.push_back(Realm::Event::NO_EVENT);
-  }
+      realm_args_backing(initialize_args_backing(this, computation_graph, runtime_arg_config)) {}
+
+TaskRegistry construct_task_registry_and_register_tasks_for_realm(
+    ComputationGraph const &cg, std::vector<Realm::Processor> const &worker_procs) {
+  TaskRegistry task_registry = construct_task_registry(
+    get_layer_attrs_mapping(cg));
 
   // register tasks for realm
   std::unordered_map<layer_guid_t, LayerAttrs> const &layer_attrs_mapping =
-      get_layer_attrs_mapping(this->computation_graph);
+      get_layer_attrs_mapping(cg);
   for (std::pair<layer_guid_t, LayerAttrs> const &layer_attrs :
       layer_attrs_mapping) {
     ComputationGraphOpAttrs attrs = layer_attrs.second.op_attrs;
@@ -108,16 +96,14 @@ RealmTrainingBacking::RealmTrainingBacking(
         register_wrapper_tasks(worker_procs[0], task_id, task_signature_impl);
     }
   }
+
+  return task_registry;
 }
 
 RealmArgsBacking
 initialize_args_backing(RealmTrainingBacking *backing,
                         ComputationGraph const &cg,
                         RuntimeArgConfig const &runtime_arg_config) {
-  // initialize_args_backing(TaskRegistry const &task_registry,
-  //                         ComputationGraph const &cg,
-  //                         RuntimeArgConfig const &runtime_arg_config,
-  //                         RealmTensorBacking const &realm_tensor_backing) {
   std::unordered_map<layer_guid_t, DeviceSpecificDeviceStates>
       per_device_op_states;
   TaskRegistry const &task_registry = backing->task_registry;
