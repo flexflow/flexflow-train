@@ -31,7 +31,7 @@ void register_wrapper_tasks_fwdbwd(Realm::Processor p, task_id_t task_id);
 
 void register_wrapper_tasks_generic(Realm::Processor p, task_id_t task_id);
 
-void register_wrapper_tasks(Realm::Processor p, task_id_t task_id,
+void register_wrapper_tasks(int pid, Realm::Processor p, task_id_t task_id,
                             TaskSignatureAndImpl task_sig_impl);
 
 } // namespace FlexFlow

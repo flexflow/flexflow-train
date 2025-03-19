@@ -7,15 +7,6 @@
 
 namespace FlexFlow {
 
-// void RealmArgsBacking::add_per_device_op_state(
-//     layer_guid_t const &op_guid, Future<DeviceSpecificDeviceStates> &&future)
-//     {
-//   if (per_device_op_states.find(op_guid) != per_device_op_states.end()) {
-//     throw mk_runtime_error("Op state already exists");
-//   }
-//   per_device_op_states.insert({op_guid, std::move(future)});
-// }
-
 RealmArgsBacking make_args_backing_with_empty_device_states(
   RuntimeArgConfig const &runtime_arg_config) {
 return RealmArgsBacking{runtime_arg_config, {}};

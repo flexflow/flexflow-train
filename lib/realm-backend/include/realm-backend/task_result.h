@@ -3,7 +3,7 @@
 
 #include "realm-backend/driver.h"
 #include <cassert>
-#include <memory>
+#include <optional>
 
 namespace FlexFlow {
 
@@ -16,27 +16,30 @@ template <typename T> struct SharedState {
   // synchronization primitives
   Realm::Event event = Realm::Event::NO_EVENT;
   // where the result is stored
-  Realm::RegionInstance inst;
+  Realm::RegionInstance inst = Realm::RegionInstance::NO_INST;
 
-  SharedState() = delete;
+  SharedState() = default;
   SharedState(Realm::Memory mem) {
     Realm::Rect<1> bounds(Realm::Point<1>(0), Realm::Point<1>(0));
-    this->inst = Realm::RegionInstance::NO_INST;
     Realm::RegionInstance::create_instance(
         this->inst, mem, bounds, {sizeof(T)}, /*SOA*/ 1,
         Realm::ProfilingRequestSet(), Realm::Event::NO_EVENT)
         .wait();
   }
   void set_event(Realm::Event e) { this->event = e; }
-  void set_value(T &&value) {
+  void set_value(T &&value) const {
+    assert(this->inst.exists());
     Realm::GenericAccessor<T, 1> acc(this->inst, 0);
     acc[Realm::Point<1>(0)] = std::move(value);
   }
   void wait() { this->event.wait(); }
   T get_value() {
     wait();
+    assert(this->inst.exists());
     Realm::GenericAccessor<T, 1> acc(this->inst, 0);
-    return acc[Realm::Point<1>(0)];
+    T value = acc[Realm::Point<1>(0)];
+    this->inst.destroy();
+    return value;
   }
 };
 
@@ -59,34 +62,34 @@ template <> struct SharedState<void> {
  */
 template <typename T> class Future {
 public:
-  explicit Future(std::shared_ptr<SharedState<T>> state)
-      : state_(std::move(state)) {}
+  explicit Future(SharedState<T> state) : state_(state) {}
   explicit Future() = default;
   explicit Future(T value) : value_(std::move(value)) {}
-  void set_event(Realm::Event e) { state_->set_event(e); }
+  void set_event(Realm::Event e) { state_.set_event(e); }
   T get() {
-    value_ = std::make_optional(state_->get_value());
+    if (!value_.has_value()) {
+      value_ = std::make_optional(state_.get_value());
+    }
     return value_.value();
   }
-  void wait() { state_->wait(); }
+  void wait() { state_.wait(); }
 
 private:
-  std::shared_ptr<SharedState<T>> state_;
-  std::optional<T> value_ = std::nullopt;
+  SharedState<T> state_;
+  std::optional<T> value_;
 };
 
 // Specialization of Future for the `void` type, as it does not carry a value.
 template <> class Future<void> {
 public:
-  explicit Future(std::shared_ptr<SharedState<void>> state)
-      : state_(std::move(state)) {}
+  explicit Future(SharedState<void> state) : state_(state) {}
   explicit Future() = default;
-  void set_event(Realm::Event e) { state_->set_event(e); }
-  void get() { state_->wait(); }
-  void wait() { state_->wait(); }
+  void set_event(Realm::Event e) { state_.set_event(e); }
+  void get() { state_.wait(); }
+  void wait() { state_.wait(); }
 
 private:
-  std::shared_ptr<SharedState<void>> state_;
+  SharedState<void> state_;
 };
 
 /**
@@ -97,22 +100,22 @@ private:
 template <typename T> class Promise {
 public:
   Promise() = delete;
-  Promise(Realm::Memory mem) : state_(std::make_shared<SharedState<T>>(mem)) {}
+  Promise(Realm::Memory mem) : state_(SharedState<T>(mem)) {}
   Future<T> get_future() { return Future<T>(state_); }
-  void set_value(T &&value) const { state_->set_value(std::move(value)); }
+  void set_value(T &&value) const { state_.set_value(std::move(value)); }
 
 private:
-  std::shared_ptr<SharedState<T>> state_;
+  SharedState<T> state_;
 };
 
 // Specialization of Promise for the `void` type, as it does not carry a value.
 template <> class Promise<void> {
 public:
-  Promise() : state_(std::make_shared<SharedState<void>>()) {}
+  Promise() : state_(SharedState<void>()) {}
   Future<void> get_future() { return Future<void>(state_); }
 
 private:
-  std::shared_ptr<SharedState<void>> state_;
+  SharedState<void> state_;
 };
 
 } // namespace FlexFlow
