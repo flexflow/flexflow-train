@@ -74,7 +74,7 @@ void top_level_task(const void *args, size_t arglen, const void *userdata,
   int test_id = 0;
 
   {
-    printf("Running test %d: SGDOptimizerAttrs, momentum=0...", ++test_id);
+    printf("\nRunning test %d: SGDOptimizerAttrs, momentum=0...\n", ++test_id);
     OptimizerAttrs optimizer_attrs =
         OptimizerAttrs{SGDOptimizerAttrs{/*lr=*/0.001,
                                         /*momentum=*/0.0f,
@@ -89,7 +89,7 @@ void top_level_task(const void *args, size_t arglen, const void *userdata,
   }
 
   {
-    printf("Running test %d: SGDOptimizerAttrs, momentum=0.9...", ++test_id);
+    printf("\nRunning test %d: SGDOptimizerAttrs, momentum=0.9...\n", ++test_id);
     OptimizerAttrs optimizer_attrs =
         OptimizerAttrs{SGDOptimizerAttrs{/*lr=*/0.001,
                                         /*momentum=*/0.9,
@@ -104,7 +104,7 @@ void top_level_task(const void *args, size_t arglen, const void *userdata,
   }
   
   {
-    printf("Running test %d: AdamOptimizerAttrs...", ++test_id);
+    printf("\nRunning test %d: AdamOptimizerAttrs...\n", ++test_id);
     OptimizerAttrs optimizer_attrs =
         OptimizerAttrs{AdamOptimizerAttrs{/*alpha=*/0.001,
                                         /*beta1=*/0.9,
