@@ -1,14 +1,14 @@
 #include <doctest/doctest.h>
 #include "kernels/transpose_kernels.h"
-#include "test_utils.h"
+#include "internal/test_utils.h"
 
 using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Test Transpose Kernel Operations") {
     TransposeAttrs attrs = TransposeAttrs{
         FFOrdered{
-            ff_dim_t{0_n},
             ff_dim_t{1_n},
+            ff_dim_t{0_n},
         },
     };
 

@@ -42,17 +42,20 @@ public:
   bool operator!=(GenericTensorAccessorR const &) const;
 
   template <DataType DT>
-  real_type_t<DT> const &at(std::vector<int> const &indices) const {
+  real_type_t<DT> const &at(FFOrdered<nonnegative_int> const &indices) const {
+    return this->at<DT>(legion_ordered_from_ff_ordered(indices));
+  }
+
+  template <DataType DT>
+  real_type_t<DT> const &at(LegionOrdered<nonnegative_int> const &indices) const {
     ASSERT(this->device_type == DeviceType::CPU,
            "GenericTensorAccessorR::at() requires CPU-allocated tensor");
     ASSERT(this->data_type == DT, "Invalid datatype requested");
 
     using T = real_type_t<DT>;
     T const *data_ptr = static_cast<T const *>(this->ptr);
-    std::vector<nonnegative_int> checked_indices =
-        transform(indices, [](int idx) { return nonnegative_int{idx}; });
     nonnegative_int offset =
-        calculate_accessor_offset(checked_indices, this->shape);
+        calculate_accessor_offset(indices, this->shape);
     return data_ptr[offset.unwrap_nonnegative()];
   }
 
@@ -72,6 +75,8 @@ private:
 
 std::string format_as(GenericTensorAccessorR const &);
 std::ostream &operator<<(std::ostream &, GenericTensorAccessorR const &);
+
+std::string format_2d_accessor_contents(GenericTensorAccessorR const &);
 
 class GenericTensorAccessorW {
 public:
@@ -99,34 +104,40 @@ public:
   bool operator!=(GenericTensorAccessorW const &) const;
 
   operator GenericTensorAccessorR() const;
+  
+  template <DataType DT>
+  real_type_t<DT> &at(FFOrdered<nonnegative_int> const &indices) {
+    return this->at<DT>(legion_ordered_from_ff_ordered(indices));
+  }
 
   template <DataType DT>
-  real_type_t<DT> &at(std::vector<int> const &indices) {
+  real_type_t<DT> &at(LegionOrdered<nonnegative_int> const &indices) {
     ASSERT(this->device_type == DeviceType::CPU,
            "GenericTensorAccessorW::at() requires CPU-allocated tensor");
     ASSERT(this->data_type == DT, "Invalid datatype requested");
 
     using T = real_type_t<DT>;
     T *data_ptr = static_cast<T *>(this->ptr);
-    std::vector<nonnegative_int> checked_indices =
-        transform(indices, [](int idx) { return nonnegative_int{idx}; });
     nonnegative_int offset =
-        calculate_accessor_offset(checked_indices, this->shape);
+        calculate_accessor_offset(indices, this->shape);
     return data_ptr[offset.unwrap_nonnegative()];
   }
 
   template <DataType DT>
-  real_type_t<DT> &at(std::vector<int> const &indices) const {
+  real_type_t<DT> const &at(FFOrdered<nonnegative_int> const &indices) const {
+    return this->at<DT>(legion_ordered_from_ff_ordered(indices));
+  }
+
+  template <DataType DT>
+  real_type_t<DT> &at(LegionOrdered<nonnegative_int> const &indices) const {
     ASSERT(this->device_type == DeviceType::CPU,
            "GenericTensorAccessorW::at() requires CPU-allocated tensor");
     ASSERT(this->data_type == DT, "Invalid datatype requested");
 
     using T = real_type_t<DT>;
     T const *data_ptr = static_cast<T const *>(this->ptr);
-    std::vector<nonnegative_int> checked_indices =
-        transform(indices, [](int idx) { return nonnegative_int{idx}; });
     nonnegative_int offset =
-        calculate_accessor_offset(checked_indices, this->shape);
+        calculate_accessor_offset(indices, this->shape);
     return data_ptr[offset];
   }
 
@@ -146,6 +157,8 @@ private:
 
 std::string format_as(GenericTensorAccessorW const &);
 std::ostream &operator<<(std::ostream &, GenericTensorAccessorW const &);
+
+std::string format_2d_accessor_contents(GenericTensorAccessorW const &);
 
 static_assert(is_fmtable<req<DataType> const &>::value, "");
 

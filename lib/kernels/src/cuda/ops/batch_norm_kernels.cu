@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/allocation.h"
 #include "kernels/batch_norm_kernels.h"
 #include "kernels/ff_handle.h"

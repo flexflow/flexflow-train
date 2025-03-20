@@ -1,4 +1,4 @@
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/datatype_dispatch.h"
 #include "utils/containers/reversed.h"
 

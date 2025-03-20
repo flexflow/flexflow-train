@@ -102,7 +102,7 @@ tl::expected<ParallelTensorShape, std::string>
   SumDegree sum_degree = SumDegree{1_n};
   DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{
       get_sum_degree(input) * product(slice(ff_ordered_shard_degrees(input),
-                                            std::nullopt,
+                                            relative_ff_dim_t{0},
                                             relative_ff_dim_t{-1}))};
   FFOrdered<nonnegative_int> shard_degrees = FFOrdered<nonnegative_int>{
       shard_dim_at_idx(input, relative_ff_dim_t{-1}).degree,
@@ -128,7 +128,7 @@ tl::expected<ParallelTensorShape, std::string>
       SumDegree{get_sum_degree(input) *
                 shard_dim_at_idx(input, relative_ff_dim_t{-1}).degree};
   DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{product(slice(
-      ff_ordered_shard_degrees(input), std::nullopt, relative_ff_dim_t{-1}))};
+      ff_ordered_shard_degrees(input), relative_ff_dim_t{0}, relative_ff_dim_t{-1}))};
   FFOrdered<nonnegative_int> shard_degrees =
       FFOrdered<nonnegative_int>{get_discard_copy_degree(input)};
 

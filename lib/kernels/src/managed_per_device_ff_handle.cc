@@ -1,5 +1,5 @@
 #include "kernels/managed_per_device_ff_handle.h"
-#include "device.h"
+#include "internal/device.h"
 
 namespace FlexFlow {
 

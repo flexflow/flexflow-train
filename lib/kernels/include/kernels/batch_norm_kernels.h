@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_KERNELS_BATCH_NORM_KERNELS_H
 #define _FLEXFLOW_KERNELS_BATCH_NORM_KERNELS_H
 
-#include "device.h"
+#include "kernels/device.h"
 #include "kernels/allocation.h"
 #include "kernels/batch_norm_per_device_state.dtg.h"
 #include "kernels/ff_handle.h"

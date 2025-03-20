@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_ELEMENT_BINARY_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_ELEMENT_BINARY_KERNELS_H
 
-#include "device.h"
+#include "kernels/device.h"
 #include "ff_handle.h"
 #include "kernels/array_shape.h"
 #include "op-attrs/datatype.h"

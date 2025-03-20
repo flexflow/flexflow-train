@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_KERNELS_MANAGED_FF_STREAM_H
 #define _FLEXFLOW_KERNELS_MANAGED_FF_STREAM_H
 
-#include "device.h"
+#include "kernels/device.h"
 
 namespace FlexFlow {
 

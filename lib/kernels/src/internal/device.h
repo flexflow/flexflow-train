@@ -1,5 +1,5 @@
-#ifndef _FLEXFLOW_KERNELS_SRC_DEVICE_H
-#define _FLEXFLOW_KERNELS_SRC_DEVICE_H
+#ifndef _FLEXFLOW_LIB_KERNELS_INCLUDE_INTERNAL_DEVICE_H
+#define _FLEXFLOW_LIB_KERNELS_INCLUDE_INTERNAL_DEVICE_H
 
 #include "kernels/array_shape.h"
 #include "kernels/device.h"

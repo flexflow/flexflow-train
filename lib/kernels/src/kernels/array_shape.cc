@@ -3,21 +3,12 @@
 #include "utils/containers/reversed.h"
 #include "utils/containers/vector_of.h"
 #include "utils/nonnegative_int/num_elements.h"
+#include "kernels/legion_ordered/slice.h"
+#include "op-attrs/ff_ordered/slice.h"
 
 namespace FlexFlow {
 
-static LegionOrdered<nonnegative_int>
-    legion_dims_from_ff_dims(FFOrdered<nonnegative_int> const &ff_ordered) {
-  return LegionOrdered<nonnegative_int>{reversed(vector_of(ff_ordered))};
-}
-
-ArrayShape::ArrayShape(nonnegative_int const *_dims, nonnegative_int num_dims)
-    : dims(_dims, _dims + num_dims.unwrap_nonnegative()) {}
-
-ArrayShape::ArrayShape(TensorShape const &shape)
-    : dims(legion_dims_from_ff_dims(shape.dims.ff_ordered)) {}
-
-ArrayShape::ArrayShape(std::vector<nonnegative_int> const &input_dims)
+ArrayShape::ArrayShape(LegionOrdered<nonnegative_int> const &input_dims)
     : dims(input_dims) {}
 
 nonnegative_int ArrayShape::get_volume() const {
@@ -60,32 +51,16 @@ bool ArrayShape::operator!=(ArrayShape const &other) const {
 }
 
 ArrayShape ArrayShape::sub_shape(
-    std::optional<std::variant<ff_dim_t, legion_dim_t>> start,
-    std::optional<std::variant<ff_dim_t, legion_dim_t>> end) const {
+    ff_dim_t const &start,
+    std::optional<ff_dim_t> const &maybe_end) const {
+  FFOrdered<nonnegative_int> ff_ordered_dims = ff_ordered_from_legion_ordered(this->dims);
+  FFOrdered<nonnegative_int> sliced = slice(ff_ordered_dims, start, maybe_end);
+  return ArrayShape{legion_ordered_from_ff_ordered(sliced)};
+}
 
-  nonnegative_int num_dims = this->num_dims();
-
-  auto to_legion_index = [num_dims](auto arg) -> nonnegative_int {
-    using T = std::decay_t<decltype(arg)>;
-    if constexpr (std::is_same_v<T, ff_dim_t>) {
-      return legion_dim_from_ff_dim(arg, num_dims).value;
-    } else {
-      return arg.value;
-    }
-  };
-
-  nonnegative_int start_idx =
-      (start.has_value()) ? std::visit(to_legion_index, start.value()) : 0_n;
-
-  nonnegative_int end_idx =
-      (end.has_value()) ? std::visit(to_legion_index, end.value()) : num_dims;
-
-  if (start_idx > num_dims || end_idx > num_dims || start_idx > end_idx) {
-    throw mk_runtime_error(fmt::format(
-        "Invalid sub_shape range: start={}, end={}", start_idx, end_idx));
-  }
-
-  return ArrayShape(&this->dims[legion_dim_t{start_idx}], end_idx - start_idx);
+ArrayShape ArrayShape::sub_shape(legion_dim_t const &start,
+                                 std::optional<legion_dim_t> const &maybe_end) const {
+  return ArrayShape{slice(this->dims, start, maybe_end)};
 }
 
 std::optional<nonnegative_int> ArrayShape::at_maybe(legion_dim_t index) const {
@@ -106,6 +81,10 @@ std::tuple<LegionOrdered<nonnegative_int> const &> ArrayShape::tie() const {
 
 nonnegative_int get_volume(ArrayShape const &shape) {
   return shape.get_volume();
+}
+
+ArrayShape array_shape_from_tensor_shape(TensorShape const &tensor_shape) {
+  return ArrayShape{legion_ordered_from_ff_ordered(tensor_shape.dims.ff_ordered)};
 }
 
 TensorShape get_tensor_shape(ArrayShape const &shape, DataType dtype) {

@@ -26,9 +26,9 @@ OpTaskInvocation init(LinearAttrs const &attrs) {
   binding.bind_arg(HANDLE, ff_handle());
   binding.bind_arg(ATTRS, attrs);
 
-  binding.bind(INPUT, input_tensor(0));   // input
-  binding.bind(WEIGHT, weight_tensor(0)); // weight
-  binding.bind(OUTPUT, output_tensor(0)); // output
+  binding.bind(INPUT, input_tensor(0));
+  binding.bind(WEIGHT, weight_tensor(0));
+  binding.bind(OUTPUT, output_tensor(0));
 
   return {task_id_t::LINEAR_INIT_TASK_ID, binding};
 }
@@ -36,11 +36,11 @@ OpTaskInvocation init(LinearAttrs const &attrs) {
 OpTaskInvocation forward(LinearAttrs const &attrs) {
   OpTaskBinding binding;
 
-  binding.bind(INPUT, input_tensor(0));   // input
-  binding.bind(WEIGHT, weight_tensor(0)); // weight
-  binding.bind(OUTPUT, output_tensor(0)); // output
+  binding.bind(INPUT, input_tensor(0));
+  binding.bind(WEIGHT, weight_tensor(0));
+  binding.bind(OUTPUT, output_tensor(0));
   if (attrs.use_bias) {
-    binding.bind(BIAS, weight_tensor(1)); // bias
+    binding.bind(BIAS, weight_tensor(1));
   }
 
   binding.bind_arg(PROFILING, profiling_settings());
@@ -124,20 +124,21 @@ static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto weight = acc.get_tensor<Permissions::RO>(WEIGHT);
-  auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
-  auto bias = acc.get_tensor<Permissions::RW>(BIAS);
+  auto output = acc.get_tensor<Permissions::RO>(OUTPUT);
 
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(INPUT);
   auto weight_grad = acc.get_tensor_grad<Permissions::RW>(WEIGHT);
   auto output_grad = acc.get_tensor_grad<Permissions::RW>(OUTPUT);
+
   auto per_device_state =
       acc.get_argument<LinearPerDeviceState>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   auto attrs = acc.get_argument<LinearAttrs>(ATTRS);
 
-  float *bias_ptr = NULL;
+  float *bias_grad_ptr = NULL;
   if (attrs.use_bias) {
-    bias_ptr = bias.get_float_ptr();
+    auto bias_grad = acc.get_tensor_grad<Permissions::RW>(BIAS);
+    bias_grad_ptr = bias_grad.get_float_ptr();
   }
 
   nonnegative_int in_dim = input.shape.at(ff_dim_t{0_n});
@@ -154,7 +155,7 @@ static std::optional<float>
                  input_grad.get_float_ptr(),
                  weight.get_float_ptr(),
                  weight_grad.get_float_ptr(),
-                 bias_ptr,
+                 bias_grad_ptr,
                  in_dim.unwrap_nonnegative(),
                  out_dim.unwrap_nonnegative(),
                  batch_size.unwrap_nonnegative());

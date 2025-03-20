@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_SPLIT_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_SPLIT_KERNELS_H
 
-#include "device.h"
+#include "kernels/device.h"
 
 namespace FlexFlow::Kernels::Split {
 void forward_kernel(ffStream_t stream,

@@ -43,9 +43,6 @@ public:
   nonnegative_int operator++(int);
   nonnegative_int &operator+=(nonnegative_int const &other);
 
-  nonnegative_int operator-(nonnegative_int const &other) const;
-  nonnegative_int &operator-=(nonnegative_int const &other);
-
   nonnegative_int operator*(nonnegative_int const &other) const;
   nonnegative_int &operator*=(nonnegative_int const &other);
 

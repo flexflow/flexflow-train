@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_LINEAR_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_LINEAR_KERNELS_H
 
-#include "device.h"
+#include "kernels/device.h"
 #include "ff_handle.h"
 #include "op-attrs/datatype.h"
 #include "op-attrs/ops/linear_attrs.dtg.h"
@@ -66,7 +66,7 @@ void backward_kernel(ffStream_t stream,
                      float *input_grad_ptr,
                      float const *kernel_ptr,
                      float *kernel_grad_ptr,
-                     float *bias_ptr,
+                     float *bias_grad_ptr,
                      int in_dim,
                      int out_dim,
                      int batch_size);

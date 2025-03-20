@@ -1,7 +1,7 @@
 #include <doctest/doctest.h>
 #include "kernels/partition_kernels.h"
 #include "op-attrs/datatype_value.h"
-#include "test_utils.h"
+#include "internal/test_utils.h"
 
 using namespace ::FlexFlow;
 

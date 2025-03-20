@@ -9,9 +9,9 @@
 namespace FlexFlow {
 
 template <typename T>
-std::vector<T> subvec(std::vector<T> const &v,
-                      std::optional<int> const &maybe_start,
-                      std::optional<int> const &maybe_end) {
+std::vector<T> slice(std::vector<T> const &v,
+                     int const &maybe_start,
+                     std::optional<int> const &maybe_end) {
   auto begin_iter = v.cbegin();
   auto end_iter = v.cend();
 
@@ -22,15 +22,13 @@ std::vector<T> subvec(std::vector<T> const &v,
         if (idx < 0) {
           new_idx = size + idx;
         }
-        if (new_idx < 0 || new_idx > size) {
-          throw mk_runtime_error("Index {} is out of bounds for array {}");
-        }
+
+        ASSERT(new_idx >= 0, "Index out of bounds");
+        ASSERT(new_idx <= size, "Index out of bounds");
         return new_idx;
       };
 
-  if (maybe_start.has_value()) {
-    begin_iter += resolve_loc(maybe_start.value());
-  }
+  begin_iter += resolve_loc(maybe_start);
 
   if (maybe_end.has_value()) {
     end_iter = v.cbegin() + resolve_loc(maybe_end.value());

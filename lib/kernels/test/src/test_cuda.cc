@@ -1,5 +1,5 @@
 #include <doctest/doctest.h>
-#include "test_utils.h"
+#include "internal/test_utils.h"
 
 #include <random>
 

@@ -1,11 +1,12 @@
-#include "test_utils.h"
+#include "internal/test_utils.h"
 #include "op-attrs/tensor_shape.h"
+#include "utils/containers/require_all_same1.h"
 #include "utils/join_strings.h"
 #include <random>
 
 namespace FlexFlow {
 
-TensorShape make_tensor_shape(LegionOrdered<nonnegative_int> dims,
+TensorShape make_tensor_shape(LegionOrdered<nonnegative_int> const &dims,
                               DataType DT) {
   return TensorShape{
       TensorDims{
@@ -15,7 +16,7 @@ TensorShape make_tensor_shape(LegionOrdered<nonnegative_int> dims,
   };
 }
 
-TensorShape make_tensor_shape(FFOrdered<nonnegative_int> dims, DataType DT) {
+TensorShape make_tensor_shape(FFOrdered<nonnegative_int> const &dims, DataType DT) {
   return TensorShape{
       TensorDims{dims},
       DT,
@@ -34,6 +35,38 @@ GenericTensorAccessorR create_zero_filled_accessor_r(TensorShape const &shape,
   GenericTensorAccessorW accessor =
       create_zero_filled_accessor_w(shape, allocator);
   return read_only_accessor_from_write_accessor(accessor);
+}
+
+GenericTensorAccessorW create_2d_accessor_w_with_contents(std::vector<std::vector<float>> const &contents, 
+                                                          Allocator &allocator) {
+  nonnegative_int nrows = num_elements(contents);
+  ASSERT(nrows > 0);
+  
+  nonnegative_int ncols = throw_if_unexpected(
+    require_all_same1(transform(contents, [](std::vector<float> const &row) { return num_elements(row); }))
+  );
+
+  TensorShape shape = TensorShape{
+    TensorDims{FFOrdered{nrows, ncols}},
+    DataType::FLOAT,
+  };
+
+  GenericTensorAccessorW accessor = allocator.allocate_tensor(shape);
+
+  for (nonnegative_int row_idx : nonnegative_range(nrows)) {
+    for (nonnegative_int col_idx : nonnegative_range(ncols)) {
+      accessor.at<DataType::FLOAT>(FFOrdered{row_idx, col_idx}) = 
+        contents.at(row_idx.unwrap_nonnegative())
+                .at(col_idx.unwrap_nonnegative());
+    }
+  }
+  
+  return accessor;
+}
+
+GenericTensorAccessorR create_2d_accessor_r_with_contents(std::vector<std::vector<float>> const &contents, 
+                                                          Allocator &allocator) {
+  return read_only_accessor_from_write_accessor(create_2d_accessor_w_with_contents(contents, allocator));
 }
 
 template <DataType DT>
@@ -153,37 +186,6 @@ GenericTensorAccessorW
     cpu_accessor = copy_tensor_accessor_w(accessor, cpu_allocator);
   }
   return cpu_accessor;
-}
-
-template <DataType DT>
-struct Print2DCPUAccessorR {
-  void operator()(GenericTensorAccessorR const &accessor,
-                  std::ostream &stream) {
-    int const dims = accessor.shape.num_dims();
-    int const cols = accessor.shape.at(legion_dim_t{0_n});
-    int const rows = (dims == 2) ? accessor.shape.at(legion_dim_t{1_n}) : 1_n;
-
-    auto get_element = [dims, &accessor](int j, int i) {
-      return (dims == 1) ? accessor.at<DT>({j}) : accessor.at<DT>({j, i});
-    };
-
-    std::vector<int> indices(cols);
-    std::iota(indices.begin(), indices.end(), 0);
-    for (int i = 0; i < rows; ++i) {
-      stream << join_strings(indices, " ", [=](int j) {
-        return get_element(j, i);
-      }) << std::endl;
-    }
-  }
-};
-
-void print_2d_tensor_accessor_contents(GenericTensorAccessorR const &accessor,
-                                       std::ostream &stream) {
-  Allocator cpu_allocator = create_local_cpu_memory_allocator();
-  GenericTensorAccessorR cpu_accessor =
-      copy_accessor_r_to_cpu_if_necessary(accessor, cpu_allocator);
-  DataTypeDispatch1<Print2DCPUAccessorR>{}(
-      accessor.data_type, cpu_accessor, stream);
 }
 
 template <DataType DT>

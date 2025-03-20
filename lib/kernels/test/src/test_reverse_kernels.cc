@@ -2,7 +2,7 @@
 #include "kernels/reverse_kernels.h"
 #include "kernels/reverse_kernels_cpu.h"
 #include "op-attrs/datatype_value.h"
-#include "test_utils.h"
+#include "internal/test_utils.h"
 
 using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {

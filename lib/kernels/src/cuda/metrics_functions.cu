@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/metrics_kernels.h"
 #include "kernels/perf_metrics.h"
 #include "pcg/metric_attrs.h"

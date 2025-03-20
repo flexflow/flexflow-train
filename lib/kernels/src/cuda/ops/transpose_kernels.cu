@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/accessor.h"
 #include "kernels/legion_ordered/transform.h"
 #include "kernels/transpose_kernels.h"

@@ -25,13 +25,6 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       CHECK(result == correct);
     }
-    SUBCASE("std::nullopt_t, ff_dim_t") {
-      FFOrdered<size_t> result =
-          slice(d, std::nullopt, ff_dim_t{nonnegative_int{3}});
-      FFOrdered<size_t> correct = FFOrdered<size_t>{1, 2, 3};
-
-      CHECK(result == correct);
-    }
     SUBCASE("relative_ff_dim_t, relative_ff_dim_t") {
       FFOrdered<size_t> result =
           slice(d, relative_ff_dim_t{1}, relative_ff_dim_t{-1});
@@ -42,12 +35,6 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("relative_ff_dim_t, std::nullopt_t") {
       FFOrdered<size_t> result = slice(d, relative_ff_dim_t{-3}, std::nullopt);
       FFOrdered<size_t> correct = FFOrdered<size_t>{2, 3, 4};
-
-      CHECK(result == correct);
-    }
-    SUBCASE("std::nullopt_t, relative_ff_dim_t") {
-      FFOrdered<size_t> result = slice(d, std::nullopt, relative_ff_dim_t{-1});
-      FFOrdered<size_t> correct = FFOrdered<size_t>{1, 2, 3};
 
       CHECK(result == correct);
     }
@@ -86,10 +73,10 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK_THROWS(slice(d, relative_ff_dim_t{10}, std::nullopt));
     }
     SUBCASE("stop index out of bounds (too low)") {
-      CHECK_THROWS(slice(d, std::nullopt, relative_ff_dim_t{-10}));
+      CHECK_THROWS(slice(d, relative_ff_dim_t{0}, relative_ff_dim_t{-10}));
     }
     SUBCASE("stop index out of bounds (too high)") {
-      CHECK_THROWS(slice(d, std::nullopt, relative_ff_dim_t{10}));
+      CHECK_THROWS(slice(d, relative_ff_dim_t{0}, relative_ff_dim_t{10}));
     }
   }
 }

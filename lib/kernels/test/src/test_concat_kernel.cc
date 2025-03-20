@@ -1,6 +1,6 @@
 #include <doctest/doctest.h>
 #include "kernels/concat_kernels.h"
-#include "test_utils.h"
+#include "internal/test_utils.h"
 #include "utils/containers/repeat.h"
 
 using namespace ::FlexFlow;

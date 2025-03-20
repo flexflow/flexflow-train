@@ -126,6 +126,11 @@ function(ff_add_test_executable)
     ${FF_TEST_EXEC_NAME}
     ${SRC})
 
+  target_include_directories(
+    ${FF_TEST_EXEC_NAME}
+    PRIVATE
+    ${FF_TEST_EXEC_PRIVATE_INCLUDE})
+
   target_link_libraries(
     ${FF_TEST_EXEC_NAME}
     ${FF_TEST_EXEC_DEPS})

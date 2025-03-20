@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/datatype_dispatch.h"
 #include "kernels/device.h"
 #include "kernels/gather_kernels.h"
@@ -124,7 +124,7 @@ void forward_kernel(ffStream_t stream,
                     GenericTensorAccessorW const &output) {
   checkCUDA(get_legion_stream(&stream));
   coord_t stride =
-      output.shape.sub_shape(std::nullopt, add_to_legion_dim(m.legion_dim, 1))
+      output.shape.sub_shape(legion_dim_t{0_n}, add_to_legion_dim(m.legion_dim, 1))
           .num_elements()
           .unwrap_nonnegative();
   if (m.legion_dim.value == 0_n) {
@@ -158,7 +158,7 @@ void backward_kernel(ffStream_t stream,
 
   coord_t stride =
       output_grad.shape
-          .sub_shape(std::nullopt, add_to_legion_dim(m.legion_dim, 1))
+          .sub_shape(legion_dim_t{0_n}, add_to_legion_dim(m.legion_dim, 1))
           .num_elements()
           .unwrap_nonnegative();
   if (m.legion_dim.value == 0_n) {

@@ -1,6 +1,6 @@
 #include <doctest/doctest.h>
 #include "kernels/softmax_kernels.h"
-#include "test_utils.h"
+#include "internal/test_utils.h"
 
 using namespace ::FlexFlow;
 

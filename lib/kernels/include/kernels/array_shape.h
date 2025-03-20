@@ -15,9 +15,7 @@ namespace FlexFlow {
 struct ArrayShape {
 public:
   ArrayShape() = delete;
-  ArrayShape(nonnegative_int const *dims, nonnegative_int num_dims);
-  ArrayShape(TensorShape const &shape);
-  ArrayShape(std::vector<nonnegative_int> const &);
+  explicit ArrayShape(LegionOrdered<nonnegative_int> const &dims);
 
   /**
    * @brief Alias of ArrayShape::num_elements for compatibility with
@@ -46,9 +44,11 @@ public:
   std::optional<nonnegative_int> at_maybe(legion_dim_t) const;
   std::optional<nonnegative_int> at_maybe(ff_dim_t) const;
 
-  ArrayShape
-      sub_shape(std::optional<std::variant<ff_dim_t, legion_dim_t>> start,
-                std::optional<std::variant<ff_dim_t, legion_dim_t>> end) const;
+  ArrayShape sub_shape(ff_dim_t const &start,
+                       std::optional<ff_dim_t> const &end) const;
+
+  ArrayShape sub_shape(legion_dim_t const &start,
+                       std::optional<legion_dim_t> const &end) const;
 
 public:
   LegionOrdered<nonnegative_int> dims;
@@ -59,6 +59,7 @@ private:
 
 nonnegative_int get_volume(ArrayShape const &);
 
+ArrayShape array_shape_from_tensor_shape(TensorShape const &);
 TensorShape get_tensor_shape(ArrayShape const &, DataType);
 
 std::string format_as(ArrayShape const &);

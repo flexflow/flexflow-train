@@ -163,6 +163,7 @@
               ruff
               jq
               gh
+              expect
             ])
             (with pkgs.python3Packages; [
               gitpython

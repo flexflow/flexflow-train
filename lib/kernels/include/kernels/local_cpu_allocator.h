@@ -1,3 +1,6 @@
+#ifndef _FLEXFLOW_LIB_KERNELS_INCLUDE_KERNELS_LOCAL_CPU_ALLOCATOR_H
+#define _FLEXFLOW_LIB_KERNELS_INCLUDE_KERNELS_LOCAL_CPU_ALLOCATOR_H
+
 #include "kernels/allocation.h"
 #include <unordered_set>
 
@@ -22,3 +25,5 @@ CHECK_RC_COPY_VIRTUAL_COMPLIANT(LocalCPUAllocator);
 Allocator create_local_cpu_memory_allocator();
 
 } // namespace FlexFlow
+
+#endif

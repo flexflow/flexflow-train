@@ -1,6 +1,6 @@
 #include <doctest/doctest.h>
 #include "kernels/dropout_kernels.h"
-#include "test_utils.h"
+#include "internal/test_utils.h"
 #include "utils/containers/count.h"
 
 using namespace ::FlexFlow;
@@ -10,7 +10,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     float dropout_rate = 0.1;
 
     ArrayShape shape = ArrayShape{
-        std::vector<nonnegative_int>{10_n, 10_n},
+        std::vector{10_n, 10_n},
     };
 
     TensorShape input_shape =

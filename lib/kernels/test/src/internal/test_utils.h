@@ -1,5 +1,5 @@
-#ifndef _FLEXFLOW_KERNELS_TEST_UTILS
-#define _FLEXFLOW_KERNELS_TEST_UTILS
+#ifndef _FLEXFLOW_KERNELS_TEST_SRC_INTERNAL_TEST_UTILS_H
+#define _FLEXFLOW_KERNELS_TEST_SRC_INTERNAL_TEST_UTILS_H
 
 #include "kernels/copy_tensor_accessor.h"
 #include "kernels/datatype_dispatch.h"
@@ -29,8 +29,13 @@ GenericTensorAccessorW create_zero_filled_accessor_w(TensorShape const &shape,
 GenericTensorAccessorR create_zero_filled_accessor_r(TensorShape const &shape,
                                                      Allocator &allocator);
 
-TensorShape make_tensor_shape(LegionOrdered<nonnegative_int> dims, DataType DT);
-TensorShape make_tensor_shape(FFOrdered<nonnegative_int> dims, DataType DT);
+GenericTensorAccessorW create_2d_accessor_w_with_contents(std::vector<std::vector<float>> const &contents, 
+                                                          Allocator &allocator);
+GenericTensorAccessorR create_2d_accessor_r_with_contents(std::vector<std::vector<float>> const &contents, 
+                                                          Allocator &allocator);
+
+TensorShape make_tensor_shape(LegionOrdered<nonnegative_int> const &dims, DataType DT);
+TensorShape make_tensor_shape(FFOrdered<nonnegative_int> const &dims, DataType DT);
 
 bool contains_non_zero(GenericTensorAccessorR const &accessor);
 
@@ -58,31 +63,6 @@ GenericTensorAccessorR create_filled_accessor_r(TensorShape const &shape,
                                                 Allocator &allocator,
                                                 DataTypeValue val);
 
-template <typename T, typename Func>
-std::vector<T> repeat(std::size_t n, Func &&func) {
-  std::vector<T> result;
-  // result.reserve(n); // Sometimes we don't have default constructor for T
-  for (std::size_t i = 0; i < n; ++i) {
-    result.push_back(func());
-  }
-  return result;
-}
-
 } // namespace FlexFlow
-
-// Specialize doctest's StringMaker for std::vector<float>
-template <>
-struct doctest::StringMaker<std::vector<float>> {
-  static doctest::String convert(std::vector<float> const &vec) {
-    std::ostringstream oss;
-    for (size_t i = 0; i < vec.size(); ++i) {
-      oss << vec[i];
-      if (i != vec.size() - 1) {
-        oss << ", ";
-      }
-    }
-    return doctest::String(("[" + oss.str() + "]").c_str());
-  }
-};
 
 #endif
