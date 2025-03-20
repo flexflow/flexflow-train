@@ -24,7 +24,7 @@
     };
 
     nixGL = {
-      url = "github:nix-community/nixGL";
+      url = "github:lockshaw/nixGL/rhel"; # fix for missing nvidia download: https://github.com/nix-community/nixGL/pull/197
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
@@ -140,7 +140,7 @@
 
           buildInputs = builtins.concatLists [
             (with nixGL.packages.${system}; [
-              nixGLDefault
+              rhelNixGLNvidia
             ])
           ];
         };
