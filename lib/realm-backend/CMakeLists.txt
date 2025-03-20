@@ -1,6 +1,6 @@
 ff_add_library(
   NAME
-    compiler
+    realm-backend
   SRC_PATTERNS
     src/*.cc
   PUBLIC_INCLUDE
@@ -10,12 +10,11 @@ ff_add_library(
   DEPS
     op-attrs
     utils
-    json
+    kernels
+    local-execution
     pcg
     spdlog
-    substitutions
+    legion
 )
 
-add_subdirectory(ffi)
 add_subdirectory(test)
-add_subdirectory(benchmark)
