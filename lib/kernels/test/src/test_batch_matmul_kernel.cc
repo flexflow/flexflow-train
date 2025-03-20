@@ -1,6 +1,6 @@
-#include <doctest/doctest.h>
-#include "kernels/batch_matmul_kernels.h"
 #include "internal/test_utils.h"
+#include "kernels/batch_matmul_kernels.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
@@ -21,12 +21,12 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    TensorShape input_shape_a = make_tensor_shape(
-        LegionOrdered{m, k, batch}, DataType::FLOAT);
-    TensorShape input_shape_b = make_tensor_shape(
-        LegionOrdered{k, n, batch}, DataType::FLOAT);
-    TensorShape output_shape = make_tensor_shape(
-        LegionOrdered{m, n, batch}, DataType::FLOAT);
+    TensorShape input_shape_a =
+        make_tensor_shape(LegionOrdered{m, k, batch}, DataType::FLOAT);
+    TensorShape input_shape_b =
+        make_tensor_shape(LegionOrdered{k, n, batch}, DataType::FLOAT);
+    TensorShape output_shape =
+        make_tensor_shape(LegionOrdered{m, n, batch}, DataType::FLOAT);
 
     GenericTensorAccessorW a_accessor =
         create_random_filled_accessor_w(input_shape_a, allocator);

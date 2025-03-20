@@ -15,13 +15,13 @@ struct CPUReverseForwardKernel {
       for (int rev_idx = 0; rev_idx < reverse_dim_size; rev_idx++) {
         for (int inner_idx = 0; inner_idx < in_blk_size; inner_idx++) {
           output.at<DT>(LegionOrdered{
-            nonnegative_int{inner_idx}, 
-            nonnegative_int{rev_idx}, 
-            nonnegative_int{blk_idx},
+              nonnegative_int{inner_idx},
+              nonnegative_int{rev_idx},
+              nonnegative_int{blk_idx},
           }) = input.at<DT>(LegionOrdered{
-            nonnegative_int{inner_idx}, 
-            nonnegative_int{reverse_dim_size - 1 - rev_idx}, 
-            nonnegative_int{blk_idx},
+              nonnegative_int{inner_idx},
+              nonnegative_int{reverse_dim_size - 1 - rev_idx},
+              nonnegative_int{blk_idx},
           });
         }
       }

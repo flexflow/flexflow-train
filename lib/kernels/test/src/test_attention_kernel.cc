@@ -1,6 +1,6 @@
-#include <doctest/doctest.h>
-#include "kernels/attention_kernels.h"
 #include "internal/test_utils.h"
+#include "kernels/attention_kernels.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
@@ -42,20 +42,15 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*add_bias_kv=*/false);
 
     TensorShape query_shape = make_tensor_shape(
-        FFOrdered{qoSeqLength, num_samples, qSize},
-        DataType::FLOAT);
+        FFOrdered{qoSeqLength, num_samples, qSize}, DataType::FLOAT);
     TensorShape key_shape = make_tensor_shape(
-        FFOrdered{kvSeqLength, num_samples, kSize},
-        DataType::FLOAT);
+        FFOrdered{kvSeqLength, num_samples, kSize}, DataType::FLOAT);
     TensorShape value_shape = make_tensor_shape(
-        FFOrdered{kvSeqLength, num_samples, vSize},
-        DataType::FLOAT);
+        FFOrdered{kvSeqLength, num_samples, vSize}, DataType::FLOAT);
     TensorShape output_shape = make_tensor_shape(
-        FFOrdered{qoSeqLength, num_samples, oProjSize},
-        DataType::FLOAT);
+        FFOrdered{qoSeqLength, num_samples, oProjSize}, DataType::FLOAT);
     TensorShape weight_shape = make_tensor_shape(
-        FFOrdered{nonnegative_int{state.weightSize}},
-        DataType::FLOAT);
+        FFOrdered{nonnegative_int{state.weightSize}}, DataType::FLOAT);
 
     GenericTensorAccessorW query_accessor =
         create_random_filled_accessor_w(query_shape, allocator);

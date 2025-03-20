@@ -124,7 +124,8 @@ void forward_kernel(ffStream_t stream,
                     GenericTensorAccessorW const &output) {
   checkCUDA(get_legion_stream(&stream));
   coord_t stride =
-      output.shape.sub_shape(legion_dim_t{0_n}, add_to_legion_dim(m.legion_dim, 1))
+      output.shape
+          .sub_shape(legion_dim_t{0_n}, add_to_legion_dim(m.legion_dim, 1))
           .num_elements()
           .unwrap_nonnegative();
   if (m.legion_dim.value == 0_n) {

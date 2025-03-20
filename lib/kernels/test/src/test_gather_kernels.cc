@@ -1,6 +1,6 @@
-#include <doctest/doctest.h>
-#include "kernels/gather_kernels.h"
 #include "internal/test_utils.h"
+#include "kernels/gather_kernels.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 

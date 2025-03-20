@@ -1,6 +1,6 @@
 #include "kernels/attention_kernels.h"
-#include "local-execution/local_cost_estimator.h"
 #include "kernels/local_cpu_allocator.h"
+#include "local-execution/local_cost_estimator.h"
 #include "local-execution/local_slots_backing.h"
 #include "op-attrs/ops/attention.h"
 #include "op-attrs/parallel_tensor_shape.h"
@@ -106,24 +106,24 @@ TEST_SUITE(FF_TEST_SUITE) {
           std::pair<ArrayShape, DataType> result =
               get_result_shape_and_dtype_for_tensor_guid_and_map(
                   query_guid, local_slots_backing.gradient_tensor_mapping);
-          std::pair<ArrayShape, DataType> correct = {array_shape_from_tensor_shape(query_shape),
-                                                     dtype};
+          std::pair<ArrayShape, DataType> correct = {
+              array_shape_from_tensor_shape(query_shape), dtype};
           CHECK(result == correct);
         }
         SUBCASE("Key grad") {
           std::pair<ArrayShape, DataType> result =
               get_result_shape_and_dtype_for_tensor_guid_and_map(
                   key_guid, local_slots_backing.gradient_tensor_mapping);
-          std::pair<ArrayShape, DataType> correct = {array_shape_from_tensor_shape(key_shape),
-                                                     dtype};
+          std::pair<ArrayShape, DataType> correct = {
+              array_shape_from_tensor_shape(key_shape), dtype};
           CHECK(result == correct);
         }
         SUBCASE("Value grad") {
           std::pair<ArrayShape, DataType> result =
               get_result_shape_and_dtype_for_tensor_guid_and_map(
                   value_guid, local_slots_backing.gradient_tensor_mapping);
-          std::pair<ArrayShape, DataType> correct = {array_shape_from_tensor_shape(value_shape),
-                                                     dtype};
+          std::pair<ArrayShape, DataType> correct = {
+              array_shape_from_tensor_shape(value_shape), dtype};
           CHECK(result == correct);
         }
       }

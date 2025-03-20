@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 
-#include "kernels/optimizer_kernels.h"
 #include "internal/device.h"
-#include "utils/exception.h"
 #include "kernels/nccl.h"
+#include "kernels/optimizer_kernels.h"
+#include "utils/exception.h"
 
 namespace FlexFlow {
 
@@ -60,30 +60,29 @@ __host__ void sgd_ps_update_task_gpu(ffStream_t stream,
         <<<GET_BLOCKS(size), CUDA_NUM_THREADS, 0, stream>>>(
             (float *)weight_grad_ptr, src, size, 1.0f);
   }
-  
+
   //  Step 2: SGD update
-  sgd_update<<<GET_BLOCKS(size), CUDA_NUM_THREADS, 0, stream>>>(
-      size,
-      lr,
-      weight_decay,
-      momentum,
-      nesterov,
-      weight_grad_ptr,
-      sgd_v_ptr,
-      weight_ptr);
+  sgd_update<<<GET_BLOCKS(size), CUDA_NUM_THREADS, 0, stream>>>(size,
+                                                                lr,
+                                                                weight_decay,
+                                                                momentum,
+                                                                nesterov,
+                                                                weight_grad_ptr,
+                                                                sgd_v_ptr,
+                                                                weight_ptr);
 }
 
 #ifdef FF_USE_NCCL
 __host__ void sgd_nccl_update_task_gpu(ffStream_t stream,
-                                                 float lr,
-                                                 float momentum,
-                                                 bool nesterov,
-                                                 float weight_decay,
-                                                 PerDeviceFFHandle const &handle,
-                                                 float const *w_grad_ptr,
-                                                 size_t size,
-                                                 float *w_ptr,
-                                                 float *v_ptr) {
+                                       float lr,
+                                       float momentum,
+                                       bool nesterov,
+                                       float weight_decay,
+                                       PerDeviceFFHandle const &handle,
+                                       float const *w_grad_ptr,
+                                       size_t size,
+                                       float *w_ptr,
+                                       float *v_ptr) {
   // Step 1: Use NCCL to sync gradients
   ncclComm_t comm = handle.ncclComm;
   checkNCCL(ncclAllReduce(
@@ -91,14 +90,7 @@ __host__ void sgd_nccl_update_task_gpu(ffStream_t stream,
 
   //  Step 2: SGD update
   sgd_update<<<GET_BLOCKS(size), CUDA_NUM_THREADS, 0, stream>>>(
-      size,
-      lr,
-      weight_decay,
-      momentum,
-      nesterov,
-      w_grad_ptr,
-      v_ptr,
-      w_ptr);
+      size, lr, weight_decay, momentum, nesterov, w_grad_ptr, v_ptr, w_ptr);
 }
 #endif
 
@@ -162,17 +154,16 @@ __host__ void adam_ps_update_task_gpu(ffStream_t stream,
   }
 
   //  Step 2: Adam update
-  adam_update<<<GET_BLOCKS(size), CUDA_NUM_THREADS, 0, stream>>>(
-      size,
-      alpha_t,
-      beta1,
-      beta2,
-      weight_decay,
-      epsilon,
-      w_grad_ptr,
-      m_ptr,
-      v_ptr,
-      w_ptr);
+  adam_update<<<GET_BLOCKS(size), CUDA_NUM_THREADS, 0, stream>>>(size,
+                                                                 alpha_t,
+                                                                 beta1,
+                                                                 beta2,
+                                                                 weight_decay,
+                                                                 epsilon,
+                                                                 w_grad_ptr,
+                                                                 m_ptr,
+                                                                 v_ptr,
+                                                                 w_ptr);
 }
 
 #ifdef FF_USE_NCCL
@@ -189,21 +180,25 @@ __host__ void nccl_update_task_gpu(ffStream_t stream,
                                    float *v_ptr,
                                    float *m_ptr) {
   // Step 1: Use NCCL to sync gradients
-  checkNCCL(ncclAllReduce(
-      w_grad_ptr, (float *)w_grad_ptr, size, ncclFloat, ncclSum, handle.ncclComm, stream));
+  checkNCCL(ncclAllReduce(w_grad_ptr,
+                          (float *)w_grad_ptr,
+                          size,
+                          ncclFloat,
+                          ncclSum,
+                          handle.ncclComm,
+                          stream));
 
   //  Step 2: Adam update
-  adam_update<<<GET_BLOCKS(size), CUDA_NUM_THREADS, 0, stream>>>(
-      size,
-      alpha_t,
-      beta1,
-      beta2,
-      weight_decay,
-      epsilon,
-      w_grad_ptr,
-      m_ptr,
-      v_ptr,
-      w_ptr);
+  adam_update<<<GET_BLOCKS(size), CUDA_NUM_THREADS, 0, stream>>>(size,
+                                                                 alpha_t,
+                                                                 beta1,
+                                                                 beta2,
+                                                                 weight_decay,
+                                                                 epsilon,
+                                                                 w_grad_ptr,
+                                                                 m_ptr,
+                                                                 v_ptr,
+                                                                 w_ptr);
 }
 #endif
 

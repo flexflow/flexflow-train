@@ -16,7 +16,8 @@ TensorShape make_tensor_shape(LegionOrdered<nonnegative_int> const &dims,
   };
 }
 
-TensorShape make_tensor_shape(FFOrdered<nonnegative_int> const &dims, DataType DT) {
+TensorShape make_tensor_shape(FFOrdered<nonnegative_int> const &dims,
+                              DataType DT) {
   return TensorShape{
       TensorDims{dims},
       DT,
@@ -37,36 +38,38 @@ GenericTensorAccessorR create_zero_filled_accessor_r(TensorShape const &shape,
   return read_only_accessor_from_write_accessor(accessor);
 }
 
-GenericTensorAccessorW create_2d_accessor_w_with_contents(std::vector<std::vector<float>> const &contents, 
-                                                          Allocator &allocator) {
+GenericTensorAccessorW create_2d_accessor_w_with_contents(
+    std::vector<std::vector<float>> const &contents, Allocator &allocator) {
   nonnegative_int nrows = num_elements(contents);
   ASSERT(nrows > 0);
-  
+
   nonnegative_int ncols = throw_if_unexpected(
-    require_all_same1(transform(contents, [](std::vector<float> const &row) { return num_elements(row); }))
-  );
+      require_all_same1(transform(contents, [](std::vector<float> const &row) {
+        return num_elements(row);
+      })));
 
   TensorShape shape = TensorShape{
-    TensorDims{FFOrdered{nrows, ncols}},
-    DataType::FLOAT,
+      TensorDims{FFOrdered{nrows, ncols}},
+      DataType::FLOAT,
   };
 
   GenericTensorAccessorW accessor = allocator.allocate_tensor(shape);
 
   for (nonnegative_int row_idx : nonnegative_range(nrows)) {
     for (nonnegative_int col_idx : nonnegative_range(ncols)) {
-      accessor.at<DataType::FLOAT>(FFOrdered{row_idx, col_idx}) = 
-        contents.at(row_idx.unwrap_nonnegative())
-                .at(col_idx.unwrap_nonnegative());
+      accessor.at<DataType::FLOAT>(FFOrdered{row_idx, col_idx}) =
+          contents.at(row_idx.unwrap_nonnegative())
+              .at(col_idx.unwrap_nonnegative());
     }
   }
-  
+
   return accessor;
 }
 
-GenericTensorAccessorR create_2d_accessor_r_with_contents(std::vector<std::vector<float>> const &contents, 
-                                                          Allocator &allocator) {
-  return read_only_accessor_from_write_accessor(create_2d_accessor_w_with_contents(contents, allocator));
+GenericTensorAccessorR create_2d_accessor_r_with_contents(
+    std::vector<std::vector<float>> const &contents, Allocator &allocator) {
+  return read_only_accessor_from_write_accessor(
+      create_2d_accessor_w_with_contents(contents, allocator));
 }
 
 template <DataType DT>

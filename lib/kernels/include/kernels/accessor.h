@@ -47,15 +47,15 @@ public:
   }
 
   template <DataType DT>
-  real_type_t<DT> const &at(LegionOrdered<nonnegative_int> const &indices) const {
+  real_type_t<DT> const &
+      at(LegionOrdered<nonnegative_int> const &indices) const {
     ASSERT(this->device_type == DeviceType::CPU,
            "GenericTensorAccessorR::at() requires CPU-allocated tensor");
     ASSERT(this->data_type == DT, "Invalid datatype requested");
 
     using T = real_type_t<DT>;
     T const *data_ptr = static_cast<T const *>(this->ptr);
-    nonnegative_int offset =
-        calculate_accessor_offset(indices, this->shape);
+    nonnegative_int offset = calculate_accessor_offset(indices, this->shape);
     return data_ptr[offset.unwrap_nonnegative()];
   }
 
@@ -104,7 +104,7 @@ public:
   bool operator!=(GenericTensorAccessorW const &) const;
 
   operator GenericTensorAccessorR() const;
-  
+
   template <DataType DT>
   real_type_t<DT> &at(FFOrdered<nonnegative_int> const &indices) {
     return this->at<DT>(legion_ordered_from_ff_ordered(indices));
@@ -118,8 +118,7 @@ public:
 
     using T = real_type_t<DT>;
     T *data_ptr = static_cast<T *>(this->ptr);
-    nonnegative_int offset =
-        calculate_accessor_offset(indices, this->shape);
+    nonnegative_int offset = calculate_accessor_offset(indices, this->shape);
     return data_ptr[offset.unwrap_nonnegative()];
   }
 
@@ -136,8 +135,7 @@ public:
 
     using T = real_type_t<DT>;
     T const *data_ptr = static_cast<T const *>(this->ptr);
-    nonnegative_int offset =
-        calculate_accessor_offset(indices, this->shape);
+    nonnegative_int offset = calculate_accessor_offset(indices, this->shape);
     return data_ptr[offset];
   }
 

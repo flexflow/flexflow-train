@@ -1,8 +1,8 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_CAST_KERNELS_CPU_H
 #define _FLEXFLOW_OPS_KERNELS_CAST_KERNELS_CPU_H
 
-#include "kernels/device.h"
 #include "kernels/accessor.h"
+#include "kernels/device.h"
 
 namespace FlexFlow::Kernels::Cast {
 

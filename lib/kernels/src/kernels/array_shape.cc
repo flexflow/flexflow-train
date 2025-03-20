@@ -1,10 +1,10 @@
 #include "kernels/array_shape.h"
+#include "kernels/legion_ordered/slice.h"
+#include "op-attrs/ff_ordered/slice.h"
 #include "utils/containers/product.h"
 #include "utils/containers/reversed.h"
 #include "utils/containers/vector_of.h"
 #include "utils/nonnegative_int/num_elements.h"
-#include "kernels/legion_ordered/slice.h"
-#include "op-attrs/ff_ordered/slice.h"
 
 namespace FlexFlow {
 
@@ -50,16 +50,18 @@ bool ArrayShape::operator!=(ArrayShape const &other) const {
   return this->tie() != other.tie();
 }
 
-ArrayShape ArrayShape::sub_shape(
-    ff_dim_t const &start,
-    std::optional<ff_dim_t> const &maybe_end) const {
-  FFOrdered<nonnegative_int> ff_ordered_dims = ff_ordered_from_legion_ordered(this->dims);
+ArrayShape
+    ArrayShape::sub_shape(ff_dim_t const &start,
+                          std::optional<ff_dim_t> const &maybe_end) const {
+  FFOrdered<nonnegative_int> ff_ordered_dims =
+      ff_ordered_from_legion_ordered(this->dims);
   FFOrdered<nonnegative_int> sliced = slice(ff_ordered_dims, start, maybe_end);
   return ArrayShape{legion_ordered_from_ff_ordered(sliced)};
 }
 
-ArrayShape ArrayShape::sub_shape(legion_dim_t const &start,
-                                 std::optional<legion_dim_t> const &maybe_end) const {
+ArrayShape
+    ArrayShape::sub_shape(legion_dim_t const &start,
+                          std::optional<legion_dim_t> const &maybe_end) const {
   return ArrayShape{slice(this->dims, start, maybe_end)};
 }
 
@@ -84,7 +86,8 @@ nonnegative_int get_volume(ArrayShape const &shape) {
 }
 
 ArrayShape array_shape_from_tensor_shape(TensorShape const &tensor_shape) {
-  return ArrayShape{legion_ordered_from_ff_ordered(tensor_shape.dims.ff_ordered)};
+  return ArrayShape{
+      legion_ordered_from_ff_ordered(tensor_shape.dims.ff_ordered)};
 }
 
 TensorShape get_tensor_shape(ArrayShape const &shape, DataType dtype) {

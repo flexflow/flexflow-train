@@ -13,7 +13,8 @@ FFOrdered<T> ff_dim_t_nonoverloaded_slice(FFOrdered<T> const &d,
                                           ff_dim_t const &start,
                                           std::optional<ff_dim_t> const &end) {
   int raw_start = start.value.unwrap_nonnegative();
-  std::optional<int> raw_end = transform(end, [](ff_dim_t const &i) { return i.value.unwrap_nonnegative(); });
+  std::optional<int> raw_end = transform(
+      end, [](ff_dim_t const &i) { return i.value.unwrap_nonnegative(); });
   return FFOrdered<T>{slice(vector_of(d), raw_start, raw_end)};
 }
 
@@ -23,7 +24,8 @@ FFOrdered<T> relative_ff_dim_t_nonoverloaded_slice(
     relative_ff_dim_t const &start,
     std::optional<relative_ff_dim_t> const &end) {
   int raw_start = start.value;
-  std::optional<int> raw_end = transform(end, [](relative_ff_dim_t const &i) { return i.value; });
+  std::optional<int> raw_end =
+      transform(end, [](relative_ff_dim_t const &i) { return i.value; });
 
   return FFOrdered<T>{slice(vector_of(d), raw_start, raw_end)};
 }

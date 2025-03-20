@@ -20,10 +20,10 @@ GenericTensorAccessorW
   void *ptr =
       this->allocate(get_size_in_bytes(tensor_shape).unwrap_nonnegative());
   return GenericTensorAccessorW{
-    tensor_shape.data_type,
-    array_shape_from_tensor_shape(tensor_shape),
-    ptr,
-    this->get_allocation_device_type(),
+      tensor_shape.data_type,
+      array_shape_from_tensor_shape(tensor_shape),
+      ptr,
+      this->get_allocation_device_type(),
   };
 }
 

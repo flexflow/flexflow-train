@@ -12,8 +12,9 @@ TEST_SUITE(FF_TEST_SUITE) {
         4,
     };
     SUBCASE("legion_dim_t, legion_dim_t") {
-      LegionOrdered<size_t> result =
-          slice(d, legion_dim_t{nonnegative_int{1}}, legion_dim_t{nonnegative_int{3}});
+      LegionOrdered<size_t> result = slice(d,
+                                           legion_dim_t{nonnegative_int{1}},
+                                           legion_dim_t{nonnegative_int{3}});
       LegionOrdered<size_t> correct = LegionOrdered<size_t>{2, 3};
 
       CHECK(result == correct);

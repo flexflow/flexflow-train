@@ -1,7 +1,7 @@
-#include <doctest/doctest.h>
+#include "internal/test_utils.h"
 #include "kernels/replicate_kernels.h"
 #include "kernels/replicate_kernels_cpu.h"
-#include "internal/test_utils.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {

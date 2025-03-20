@@ -1,8 +1,8 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_LINEAR_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_LINEAR_KERNELS_H
 
-#include "kernels/device.h"
 #include "ff_handle.h"
+#include "kernels/device.h"
 #include "op-attrs/datatype.h"
 #include "op-attrs/ops/linear_attrs.dtg.h"
 

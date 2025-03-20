@@ -1,8 +1,8 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_CONV_2D_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_CONV_2D_KERNELS_H
 
-#include "kernels/device.h"
 #include "kernels/accessor.h"
+#include "kernels/device.h"
 #include "kernels/ff_handle.h"
 #include "op-attrs/activation.dtg.h"
 #include "utils/visitable.h"

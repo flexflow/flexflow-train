@@ -5,10 +5,8 @@ namespace FlexFlow {
 
 using T = value_type<0>;
 
-template FFOrdered<T>
-    ff_dim_t_nonoverloaded_slice(FFOrdered<T> const &,
-                                 ff_dim_t const &,
-                                 std::optional<ff_dim_t> const &);
+template FFOrdered<T> ff_dim_t_nonoverloaded_slice(
+    FFOrdered<T> const &, ff_dim_t const &, std::optional<ff_dim_t> const &);
 
 template FFOrdered<T> relative_ff_dim_t_nonoverloaded_slice(
     FFOrdered<T> const &,

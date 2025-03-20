@@ -129,7 +129,7 @@ struct Print2DCPUAccessorR {
     nonnegative_int nrows = accessor.shape.at(legion_dim_t{1_n});
 
     auto render_row = [&](nonnegative_int row_idx) {
-      stream << "[ "; 
+      stream << "[ ";
       for (nonnegative_int col_idx : nonnegative_range(ncols)) {
         stream << accessor.at<DT>(LegionOrdered{col_idx, row_idx}) << " ";
       }
@@ -142,7 +142,8 @@ struct Print2DCPUAccessorR {
   }
 };
 
-std::string format_2d_accessor_contents(GenericTensorAccessorR const &accessor) {
+std::string
+    format_2d_accessor_contents(GenericTensorAccessorR const &accessor) {
   ASSERT(accessor.device_type == DeviceType::CPU);
   ASSERT(accessor.shape.num_dims() == 2_n);
 
@@ -207,8 +208,10 @@ std::ostream &operator<<(std::ostream &s, GenericTensorAccessorR const &a) {
   return (s << fmt::to_string(a));
 }
 
-std::string format_2d_accessor_contents(GenericTensorAccessorW const &accessor) {
-  return format_2d_accessor_contents(read_only_accessor_from_write_accessor(accessor));
+std::string
+    format_2d_accessor_contents(GenericTensorAccessorW const &accessor) {
+  return format_2d_accessor_contents(
+      read_only_accessor_from_write_accessor(accessor));
 }
 
 int32_t const *get_int32_ptr(GenericTensorAccessorR const &a) {

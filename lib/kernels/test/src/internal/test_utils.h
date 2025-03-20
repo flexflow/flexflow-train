@@ -29,13 +29,15 @@ GenericTensorAccessorW create_zero_filled_accessor_w(TensorShape const &shape,
 GenericTensorAccessorR create_zero_filled_accessor_r(TensorShape const &shape,
                                                      Allocator &allocator);
 
-GenericTensorAccessorW create_2d_accessor_w_with_contents(std::vector<std::vector<float>> const &contents, 
-                                                          Allocator &allocator);
-GenericTensorAccessorR create_2d_accessor_r_with_contents(std::vector<std::vector<float>> const &contents, 
-                                                          Allocator &allocator);
+GenericTensorAccessorW create_2d_accessor_w_with_contents(
+    std::vector<std::vector<float>> const &contents, Allocator &allocator);
+GenericTensorAccessorR create_2d_accessor_r_with_contents(
+    std::vector<std::vector<float>> const &contents, Allocator &allocator);
 
-TensorShape make_tensor_shape(LegionOrdered<nonnegative_int> const &dims, DataType DT);
-TensorShape make_tensor_shape(FFOrdered<nonnegative_int> const &dims, DataType DT);
+TensorShape make_tensor_shape(LegionOrdered<nonnegative_int> const &dims,
+                              DataType DT);
+TensorShape make_tensor_shape(FFOrdered<nonnegative_int> const &dims,
+                              DataType DT);
 
 bool contains_non_zero(GenericTensorAccessorR const &accessor);
 

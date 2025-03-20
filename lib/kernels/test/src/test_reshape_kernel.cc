@@ -1,6 +1,6 @@
-#include <doctest/doctest.h>
-#include "kernels/reshape_kernels.h"
 #include "internal/test_utils.h"
+#include "kernels/reshape_kernels.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {

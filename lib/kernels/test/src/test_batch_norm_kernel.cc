@@ -1,7 +1,7 @@
-#include <doctest/doctest.h>
+#include "internal/test_utils.h"
 #include "kernels/batch_norm_kernels.h"
 #include "op-attrs/datatype_value.h"
-#include "internal/test_utils.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
@@ -30,17 +30,13 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*relu=*/true);
 
     TensorShape input_shape = make_tensor_shape(
-        FFOrdered{output_n, output_c, output_h, output_w},
-        DataType::FLOAT);
+        FFOrdered{output_n, output_c, output_h, output_w}, DataType::FLOAT);
     TensorShape output_shape = make_tensor_shape(
-        FFOrdered{output_n, output_c, output_h, output_w},
-        DataType::FLOAT);
+        FFOrdered{output_n, output_c, output_h, output_w}, DataType::FLOAT);
     TensorShape scale_shape = make_tensor_shape(
-        FFOrdered{output_n, output_c, output_h, output_w},
-        DataType::FLOAT);
+        FFOrdered{output_n, output_c, output_h, output_w}, DataType::FLOAT);
     TensorShape bias_shape = make_tensor_shape(
-        FFOrdered{output_n, output_c, output_h, output_w},
-        DataType::FLOAT);
+        FFOrdered{output_n, output_c, output_h, output_w}, DataType::FLOAT);
 
     GenericTensorAccessorW input_accessor =
         create_random_filled_accessor_w(input_shape, allocator);
