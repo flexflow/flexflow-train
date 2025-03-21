@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/accessor.h"
 #include "kernels/combine_kernels.h"
 #include "kernels/datatype_dispatch.h"

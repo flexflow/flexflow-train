@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/allocation.h"
 #include "kernels/batch_norm_kernels.h"
 #include "kernels/ff_handle.h"
@@ -53,9 +53,9 @@ void forward_kernel(cudaStream_t stream,
 
 void backward_kernel(cudaStream_t stream,
                      BatchNormPerDeviceState const &m,
-                     float const *input_ptr,
-                     float *output_grad_ptr,
                      float const *output_ptr,
+                     float *output_grad_ptr,
+                     float const *input_ptr,
                      float *input_grad_ptr,
                      float const *scale_ptr,
                      float *scale_grad_ptr,

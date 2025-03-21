@@ -14,7 +14,7 @@
  */
 
 #include "kernels/attention_kernels.h"
-#include "device.h"
+#include "internal/device.h"
 #include <hip/hip_runtime.h>
 
 namespace FlexFlow {

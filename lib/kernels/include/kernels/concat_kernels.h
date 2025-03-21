@@ -1,12 +1,10 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_CONCAT_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_CONCAT_KERNELS_H
 
-#include "device.h"
 #include "kernels/accessor.h"
+#include "kernels/device.h"
 
-namespace FlexFlow {
-namespace Kernels {
-namespace Concat {
+namespace FlexFlow::Kernels::Concat {
 
 void forward_kernel(ffStream_t stream,
                     GenericTensorAccessorW const &output,
@@ -18,8 +16,6 @@ void backward_kernel(ffStream_t stream,
                      std::vector<GenericTensorAccessorW> const &input_grads,
                      ff_dim_t axis);
 
-} // namespace Concat
-} // namespace Kernels
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::Concat
 
 #endif

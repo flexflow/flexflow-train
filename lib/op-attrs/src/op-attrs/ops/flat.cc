@@ -1,6 +1,6 @@
 #include "op-attrs/ops/flat.h"
-#include "op-attrs/dim_ordered/concat.h"
-#include "op-attrs/dim_ordered/slice.h"
+#include "op-attrs/ff_ordered/concat.h"
+#include "op-attrs/ff_ordered/slice.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/tensor_dims.h"
 #include "utils/containers/any_of.h"

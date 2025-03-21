@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/element_binary_kernels.h"
 #include "kernels/ff_handle.h"
 #include "op-attrs/datatype.h"

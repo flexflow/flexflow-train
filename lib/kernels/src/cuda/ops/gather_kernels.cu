@@ -13,14 +13,12 @@
  * limitations under the License.
  */
 
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/datatype_dispatch.h"
 #include "kernels/device.h"
 #include "kernels/gather_kernels.h"
 
-namespace FlexFlow {
-namespace Kernels {
-namespace Gather {
+namespace FlexFlow::Kernels::Gather {
 
 template <typename IndexType>
 __global__ void gather_forward(float const *input,
@@ -125,11 +123,15 @@ void forward_kernel(ffStream_t stream,
                     GenericTensorAccessorR const &index,
                     GenericTensorAccessorW const &output) {
   checkCUDA(get_legion_stream(&stream));
-
   coord_t stride =
-      output.shape.sub_shape(std::nullopt, add_to_legion_dim(m.legion_dim, 1))
+      output.shape
+          .sub_shape(legion_dim_t{0_n}, add_to_legion_dim(m.legion_dim, 1))
           .num_elements()
           .unwrap_nonnegative();
+  if (m.legion_dim.value == 0_n) {
+    stride = 1;
+  }
+
   coord_t output_dim_size = output.shape.at(m.legion_dim).unwrap_nonnegative();
   coord_t input_dim_size = input.shape.at(m.legion_dim).unwrap_nonnegative();
 
@@ -157,9 +159,13 @@ void backward_kernel(ffStream_t stream,
 
   coord_t stride =
       output_grad.shape
-          .sub_shape(std::nullopt, add_to_legion_dim(m.legion_dim, 1))
-          .get_volume()
+          .sub_shape(legion_dim_t{0_n}, add_to_legion_dim(m.legion_dim, 1))
+          .num_elements()
           .unwrap_nonnegative();
+  if (m.legion_dim.value == 0_n) {
+    stride = 1;
+  }
+
   coord_t output_dim_size =
       output_grad.shape.at(m.legion_dim).unwrap_nonnegative();
   coord_t input_dim_size =
@@ -180,6 +186,4 @@ void backward_kernel(ffStream_t stream,
       output_dim_size);
 }
 
-} // namespace Gather
-} // namespace Kernels
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::Gather

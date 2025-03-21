@@ -29,7 +29,7 @@ nonnegative_int get_size_in_bytes(TensorShape const &s) {
 }
 
 TensorShape slice_tensor_shape(TensorShape const &shape,
-                               std::optional<relative_ff_dim_t> const &start,
+                               relative_ff_dim_t const &start,
                                std::optional<relative_ff_dim_t> const &stop) {
   return TensorShape{
       slice_tensor_dims(shape.dims, start, stop),

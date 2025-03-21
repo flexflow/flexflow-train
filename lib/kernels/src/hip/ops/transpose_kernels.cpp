@@ -14,7 +14,7 @@
  */
 
 #include "kernels/transpose_kernels.h"
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/accessor.h"
 #include "utils/exception.h"
 #include <hip/hip_runtime.h>

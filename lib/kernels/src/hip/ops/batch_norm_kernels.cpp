@@ -14,7 +14,7 @@
  */
 
 #include "kernels/batch_norm_kernels.h"
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/allocation.h"
 #include "kernels/ff_handle.h"
 #include <hip/hip_runtime.h>

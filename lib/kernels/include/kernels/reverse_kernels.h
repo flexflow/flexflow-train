@@ -1,11 +1,9 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_REVERSE_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_REVERSE_KERNELS_H
 
-#include "device.h"
+#include "kernels/device.h"
 
-namespace FlexFlow {
-namespace Kernels {
-namespace Reverse {
+namespace FlexFlow::Kernels::Reverse {
 
 void forward_kernel(ffStream_t stream,
                     float const *in_ptr,
@@ -23,8 +21,6 @@ void backward_kernel(ffStream_t stream,
                      coord_t in_blk_size,
                      coord_t input_size);
 
-} // namespace Reverse
-} // namespace Kernels
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::Reverse
 
 #endif // _FLEXFLOW_OPS_KERNELS_REVERSE_KERNELS_H

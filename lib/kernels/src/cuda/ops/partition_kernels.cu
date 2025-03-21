@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/datatype_dispatch.h"
 #include "kernels/partition_kernels.h"
 
@@ -40,8 +40,8 @@ template <DataType T>
 struct BackwardKernel {
   void operator()(cudaStream_t stream,
                   RepartitionPerDeviceState const &m,
-                  GenericTensorAccessorW const &input_grad,
-                  GenericTensorAccessorR const &output_grad) {
+                  GenericTensorAccessorR const &output_grad,
+                  GenericTensorAccessorW const &input_grad) {
     add_kernel<real_type_t<T>>
         <<<GET_BLOCKS(input_grad.shape.num_elements().unwrap_nonnegative()),
            CUDA_NUM_THREADS,
@@ -67,10 +67,10 @@ void forward_kernel(cudaStream_t stream,
 
 void backward_kernel(cudaStream_t stream,
                      RepartitionPerDeviceState const &m,
-                     GenericTensorAccessorW const &input_grad,
-                     GenericTensorAccessorR const &output_grad) {
+                     GenericTensorAccessorR const &output_grad,
+                     GenericTensorAccessorW const &input_grad) {
   DataTypeDispatch1<BackwardKernel>{}(
-      m.data_type, stream, m, input_grad, output_grad);
+      m.data_type, stream, m, output_grad, input_grad);
 }
 
 } // namespace Repartition

@@ -1,6 +1,6 @@
 #include "op-attrs/ops/layer_norm.h"
-#include "op-attrs/dim_ordered/ff_ordered_of.h"
-#include "op-attrs/dim_ordered/get_idxs.h"
+#include "op-attrs/ff_ordered/ff_ordered_of.h"
+#include "op-attrs/ff_ordered/get_idxs.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/tensor_shape.h"
 #include "utils/containers/all_of.h"

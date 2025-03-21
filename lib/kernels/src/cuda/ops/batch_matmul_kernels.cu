@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/batch_matmul_kernels.h"
 
 namespace FlexFlow {

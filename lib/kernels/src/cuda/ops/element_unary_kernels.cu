@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/datatype_dispatch.h"
 #include "kernels/element_unary_kernels.h"
 #include "op-attrs/get_op_type.h"
@@ -290,10 +290,10 @@ struct BackwardKernel {
                   OperatorType op_type,
                   std::optional<float> scalar,
                   PerDeviceFFHandle const &handle,
-                  GenericTensorAccessorR const &input,
-                  GenericTensorAccessorW const &input_grad,
                   GenericTensorAccessorR const &output,
-                  GenericTensorAccessorR const &output_grad) {
+                  GenericTensorAccessorR const &output_grad,
+                  GenericTensorAccessorR const &input,
+                  GenericTensorAccessorW const &input_grad) {
     checkCUDNN(cudnnSetStream(handle.dnn, stream));
 
     if (use_cudnn(op_type)) {
@@ -356,20 +356,20 @@ void backward_kernel(ffStream_t stream,
                      ElementUnaryPerDeviceState const &device_state,
                      ElementUnaryAttrs const &attrs,
                      PerDeviceFFHandle const &handle,
-                     GenericTensorAccessorR const &input,
-                     GenericTensorAccessorW const &input_grad,
                      GenericTensorAccessorR const &output,
-                     GenericTensorAccessorR const &output_grad) {
+                     GenericTensorAccessorR const &output_grad,
+                     GenericTensorAccessorR const &input,
+                     GenericTensorAccessorW const &input_grad) {
   DataTypeDispatch1<BackwardKernel>{}(input.data_type,
                                       stream,
                                       device_state,
                                       get_op_type(attrs),
                                       attrs.scalar,
                                       handle,
-                                      input,
-                                      input_grad,
                                       output,
-                                      output_grad);
+                                      output_grad,
+                                      input,
+                                      input_grad);
 }
 
 } // namespace ElementUnary

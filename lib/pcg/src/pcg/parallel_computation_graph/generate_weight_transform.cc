@@ -1,5 +1,5 @@
 #include "pcg/parallel_computation_graph/generate_weight_transform.h"
-#include "op-attrs/dim_ordered/enumerate.h"
+#include "op-attrs/ff_ordered/enumerate.h"
 #include "op-attrs/parallel_tensor_shape.h"
 
 namespace FlexFlow {

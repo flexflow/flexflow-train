@@ -14,7 +14,7 @@
  */
 
 #include "kernels/reshape_kernels.h"
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/datatype_dispatch.h"
 #include <hip/hip_runtime.h>
 
