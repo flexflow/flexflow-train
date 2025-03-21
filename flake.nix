@@ -140,7 +140,7 @@
 
           buildInputs = builtins.concatLists [
             (with nixGL.packages.${system}; [
-              rhelNixGLNvidia
+              rhelNixGL
             ])
           ];
         };
