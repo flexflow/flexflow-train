@@ -1,0 +1,26 @@
+namespace = "FlexFlow"
+name = "MCMCSearchConfig"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+]
+
+[[fields]]
+name = "temperature"
+type = "float"
+
+[[fields]]
+name = "num_iterations"
+type = "int"
+
+[[fields]]
+name = "num_mutations_per_iteration"
+type = "int"
+
+[[fields]]
+name = "max_num_ops"
+type = "int"

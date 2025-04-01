@@ -1,5 +1,6 @@
 #include "compiler/mcmc/mcmc_algorithm.h"
 #include "../cost_estimator_for_test.h"
+#include "compiler/task_graph_simulator/task_simulator.h"
 #include "doctest/doctest.h"
 #include "op-attrs/parallel_tensor_dims.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
@@ -9,7 +10,6 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include "pcg/pcg_from_computation_graph.h"
 #include "utils/integer_conversions.h"
-#include "compiler/task_graph_simulator/task_simulator.h"
 
 using namespace FlexFlow;
 
@@ -19,18 +19,17 @@ TEST_SUITE(FF_TEST_SUITE) {
       ComputationGraphBuilder b;
       TensorShape input_tensor_shape = TensorShape{
           TensorDims{
-              FFOrdered<nonnegative_int>{nonnegative_int{32},
-                                         nonnegative_int{64}},
+              FFOrdered<nonnegative_int>{32_n, 64_n},
           },
           DataType::FLOAT,
       };
       tensor_guid_t t = b.create_input(input_tensor_shape, CreateGrad::YES);
       t = b.dense(t,
-                  /*outDim=*/nonnegative_int{16},
+                  /*outDim=*/16_n,
                   /*activation=*/std::nullopt);
       t = b.gelu(t);
       t = b.dense(t,
-                  /*outDim=*/nonnegative_int{12},
+                  /*outDim=*/12_n,
                   /*activation=*/std::nullopt,
                   /*use_bias=*/false,
                   /*data_type=*/DataType::FLOAT,
@@ -38,7 +37,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                   /*bias_initializer=*/std::nullopt);
       t = b.relu(t);
       t = b.dense(t,
-                  /*outDim=*/nonnegative_int{8},
+                  /*outDim=*/8_n,
                   /*activation=*/Activation::RELU);
       return b.computation_graph;
     }();
@@ -50,33 +49,33 @@ TEST_SUITE(FF_TEST_SUITE) {
           return OpCostMetrics{
               /*forward_runtime=*/1.0,
               /*backward_runtime=*/2.0,
-              /*memory=*/nonnegative_int{1},
+              /*memory=*/1_n,
           };
         },
         [](TensorSetMovement const &) { return 1.0; });
 
     MachineSpecification full_machine_spec = MachineSpecification{
-        /*num_nodes=*/nonnegative_int{2},
-        /*num_cpus_per_node=*/nonnegative_int{1},
-        /*num_gpus_per_node=*/nonnegative_int{1},
+        /*num_nodes=*/2_n,
+        /*num_cpus_per_node=*/1_n,
+        /*num_gpus_per_node=*/1_n,
         /*inter_node_bandwidth=*/1,
         /*intra_node_bandwidth=*/1,
     };
 
-    UnitySearchConfig search_config = UnitySearchConfig{
-        /*alpha=*/1.2,
-        /*budget=*/10,
-        /*threshold=*/30.0,
+    MCMCSearchConfig search_config = MCMCSearchConfig{
+        /*temperature=*/1.0,
+        /*num_iterations=*/100,
+        /*num_mutations_per_iteration=*/10,
         /*max_num_ops=*/100,
     };
 
     SearchResult result = mcmc_graph_optimize(
         pcg, cost_estimator, full_machine_spec, search_config);
+    float runtime = task_simulator_estimate_forward_pass_time(
+        result.pcg, cost_estimator, result.machine_mapping, full_machine_spec);
+    std::cout << runtime << std::endl;
 
-    CHECK(task_simulator_estimate_forward_pass_time(result.pcg,
-                                                    cost_estimator,
-                                                    result.machine_mapping,
-                                                    full_machine_spec) < 16);
-                                                    
+    CHECK(runtime < 16);
+    CHECK(false);
   }
 }
