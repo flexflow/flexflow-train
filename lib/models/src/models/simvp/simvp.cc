@@ -8,56 +8,59 @@ namespace FlexFlow {
 
 SimVPConfig get_default_simvp_config() {
   return SimVPConfig{
-      /*batch_size=*/1,
-      /*hid_S=*/16,
-      /*hid_T=*/256,
-      /*N_S=*/4,
-      /*N_T=*/4,
+      /*batch_size=*/1_n,
+      /*hid_S=*/16_n,
+      /*hid_T=*/256_n,
+      /*N_S=*/4_n,
+      /*N_T=*/4_n,
       /*model_type=*/SimVPModelType::gSTA,
       /*mlp_ratio=*/8.0,
       /*drop=*/0.0,
       /*drop_path=*/0.0,
-      /*spatio_kernel_enc=*/3,
-      /*spatio_kernel_dec=*/3,
+      /*spatio_kernel_enc=*/3_n,
+      /*spatio_kernel_dec=*/3_n,
       /*in_shape=*/
-      {10, 3, 32, 32},
+      {10_n, 3_n, 32_n, 32_n},
   };
 }
 
-std::vector<bool> create_simvp_samplings(size_t N_S, bool reverse) {
-  auto const round_down_to_nearest_even = [](size_t num) -> size_t {
-    return (num / 2) * 2;
+std::vector<bool> create_simvp_samplings(nonnegative_int N_S, bool reverse) {
+  auto const round_down_to_nearest_even =
+      [](nonnegative_int num) -> nonnegative_int { return (num / 2) * 2; };
+
+  auto const change_to_true_at_idx = [&](nonnegative_int idx) -> bool {
+    return (reverse == false) ? (idx.unwrap_nonnegative() % 2 == 1)
+                              : (idx.unwrap_nonnegative() % 2 == 0);
   };
 
-  auto const change_to_true_at_idx = [&](size_t idx) -> bool {
-    return (reverse == false) ? (idx % 2 == 1) : (idx % 2 == 0);
-  };
+  nonnegative_int N_S_even_floor = round_down_to_nearest_even(N_S);
 
-  size_t N_S_even_floor = round_down_to_nearest_even(N_S);
-
-  return transform(range(N_S_even_floor), change_to_true_at_idx);
+  return transform(range(N_S_even_floor.unwrap_nonnegative()),
+                   change_to_true_at_idx);
 }
 
 tensor_guid_t create_simvp_convsc(ComputationGraphBuilder &cgb,
                                   SimVPConfig const &config,
                                   tensor_guid_t const &input,
-                                  size_t in_dim,
-                                  size_t out_dim,
-                                  int kernel_size,
+                                  nonnegative_int in_dim,
+                                  nonnegative_int out_dim,
+                                  nonnegative_int kernel_size,
                                   bool downsampling,
                                   bool upsampling) {
-  int stride = (downsampling == true) ? 2 : 1;
-  int padding = (kernel_size - stride + 1) / 2;
-  int out_channels = upsampling ? out_dim * 4 : out_dim;
+  nonnegative_int stride = (downsampling == true) ? 2 : 1;
+  nonnegative_int padding =
+      (kernel_size.unwrap_nonnegative() - stride.unwrap_nonnegative() + 1) / 2;
+  nonnegative_int out_channels = upsampling ? out_dim.unwrap_nonnegative() * 4
+                                            : out_dim.unwrap_nonnegative();
 
   tensor_guid_t conv_out = cgb.conv2d(input,
-                                      out_channels,
-                                      kernel_size,
-                                      kernel_size,
-                                      stride,
-                                      stride,
-                                      padding,
-                                      padding);
+                                      nonnegative_int{out_channels},
+                                      nonnegative_int{kernel_size},
+                                      nonnegative_int{kernel_size},
+                                      nonnegative_int{stride},
+                                      nonnegative_int{stride},
+                                      nonnegative_int{padding},
+                                      nonnegative_int{padding});
 
   return conv_out;
 }
@@ -66,7 +69,7 @@ std::pair<tensor_guid_t, tensor_guid_t>
     create_simvp_encoder(ComputationGraphBuilder &cgb,
                          SimVPConfig const &config,
                          tensor_guid_t const &input) {
-  size_t C = config.in_shape.at(1); // Channel
+  nonnegative_int C = nonnegative_int{config.in_shape.at(1)}; // Channel
   std::vector<bool> samplings = create_simvp_samplings(config.N_S);
 
   tensor_guid_t enc1 = create_simvp_convsc(cgb,
@@ -79,7 +82,7 @@ std::pair<tensor_guid_t, tensor_guid_t>
                                            false);
   tensor_guid_t latent = enc1;
 
-  for (size_t i = 1; i < samplings.size(); i++) {
+  for (nonnegative_int i = 1; i < samplings.size(); i++) {
     latent = create_simvp_convsc(cgb,
                                  config,
                                  latent,
@@ -97,8 +100,8 @@ std::pair<tensor_guid_t, tensor_guid_t>
 tensor_guid_t create_simvp_ga_sub_block(ComputationGraphBuilder &cgb,
                                         SimVPConfig const &config,
                                         tensor_guid_t const &input,
-                                        int dim,
-                                        int kernel_size,
+                                        nonnegative_int dim,
+                                        nonnegative_int kernel_size,
                                         float mlp_ratio,
                                         float drop,
                                         float drop_path,
@@ -109,8 +112,8 @@ tensor_guid_t create_simvp_ga_sub_block(ComputationGraphBuilder &cgb,
 tensor_guid_t create_simvp_gsta_meta_block(ComputationGraphBuilder &cgb,
                                            SimVPConfig const &config,
                                            tensor_guid_t const &input,
-                                           int in_channels,
-                                           int out_channels,
+                                           nonnegative_int in_channels,
+                                           nonnegative_int out_channels,
                                            float mlp_ratio,
                                            float drop,
                                            float drop_path) {
@@ -133,8 +136,8 @@ tensor_guid_t create_simvp_gsta_meta_block(ComputationGraphBuilder &cgb,
 tensor_guid_t create_simvp_middle_net(ComputationGraphBuilder &cgb,
                                       SimVPConfig const &config,
                                       tensor_guid_t const &embed,
-                                      int channel_in,
-                                      int channel_hid,
+                                      nonnegative_int channel_in,
+                                      nonnegative_int channel_hid,
                                       float mlp_ratio,
                                       float drop,
                                       float drop_path) {
@@ -160,7 +163,7 @@ tensor_guid_t create_simvp_middle_net(ComputationGraphBuilder &cgb,
                                    /*drop_path=*/drop_path);
 
   // Middle layers
-  for (int i : range(1, config.N_T - 1)) {
+  for (nonnegative_int i : range(1, config.N_T - 1)) {
     z = create_simvp_gsta_meta_block(/*cgb=*/cgb,
                                      /*config=*/config,
                                      /*input=*/z,
@@ -192,11 +195,11 @@ tensor_guid_t create_simvp_decoder(ComputationGraphBuilder &cgb,
   std::cout << "hid shape: " << cgb.get_shape(hid) << std::endl;
   std::cout << "skip shape: " << cgb.get_shape(skip) << std::endl;
 
-  size_t C = config.in_shape.at(1); // Channel
+  nonnegative_int C = config.in_shape.at(1); // Channel
   std::vector<bool> samplings = create_simvp_samplings(config.N_S, true);
 
   tensor_guid_t latent = hid;
-  for (size_t i = 0; i < samplings.size() - 1; i++) {
+  for (nonnegative_int i = 0; i < samplings.size() - 1; i++) {
     latent = create_simvp_convsc(cgb,
                                  config,
                                  latent,
@@ -223,17 +226,17 @@ ComputationGraph get_simvp_computation_graph(SimVPConfig const &config) {
   ComputationGraphBuilder cgb;
 
   // Create input tensor
-  int B = config.batch_size;        // Number of samples
-  size_t T = config.in_shape.at(0); // Number of frames in each sample
-  size_t C = config.in_shape.at(1); // Channel
-  size_t H = config.in_shape.at(2); // Height
-  size_t W = config.in_shape.at(3); // Width
+  nonnegative_int B = config.batch_size;     // Number of samples
+  nonnegative_int T = config.in_shape.at(0); // Number of frames in each sample
+  nonnegative_int C = config.in_shape.at(1); // Channel
+  nonnegative_int H = config.in_shape.at(2); // Height
+  nonnegative_int W = config.in_shape.at(3); // Width
 
   // std::cout << "B T C H W: " << B << " " << T << " " << C << " " << H << " "
   //           << W << std::endl;
 
   TensorShape input_shape = TensorShape{
-      TensorDims{FFOrdered<size_t>{B * T, C, H, W}},
+      TensorDims{FFOrdered<nonnegative_int>{B * T, C, H, W}},
       DataType::FLOAT,
   };
   tensor_guid_t input = cgb.create_input(input_shape, CreateGrad::YES);
@@ -257,11 +260,11 @@ ComputationGraph get_simvp_computation_graph(SimVPConfig const &config) {
   // TODO: need to reshape hid here
   // std::cout << "hid shape: " << cgb.get_shape(hid) << std::endl;
   // auto const embed_shape = cgb.get_shape(embed).dims.ff_ordered;
-  // std::vector<int> hid_shape = {
-  //     static_cast<int>(B * T),
-  //     static_cast<int>(embed_shape.at(ff_dim_t{1})),
-  //     static_cast<int>(embed_shape.at(ff_dim_t{2})),
-  //     static_cast<int>(embed_shape.at(ff_dim_t{3})),
+  // std::vector<nonnegative_int> hid_shape = {
+  //     static_cast<nonnegative_int>(B * T),
+  //     static_cast<nonnegative_int>(embed_shape.at(ff_dim_t{1})),
+  //     static_cast<nonnegative_int>(embed_shape.at(ff_dim_t{2})),
+  //     static_cast<nonnegative_int>(embed_shape.at(ff_dim_t{3})),
   // };
   // hid = cgb.reshape(hid, hid_shape);
   // std::cout << "hid new shape: " << cgb.get_shape(hid) << std::endl;
