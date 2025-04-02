@@ -13,7 +13,7 @@ SimVPConfig get_default_simvp_config() {
       /*hid_T=*/256,
       /*N_S=*/4,
       /*N_T=*/4,
-      /*model_type=*/FlexFlow::SimVPModelType::gSTA,
+      /*model_type=*/SimVPModelType::gSTA,
       /*mlp_ratio=*/8.0,
       /*drop=*/0.0,
       /*drop_path=*/0.0,

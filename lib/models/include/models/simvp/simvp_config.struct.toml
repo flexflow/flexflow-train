@@ -15,6 +15,7 @@ includes = [
   "<map>",
   "<string>",
   "models/simvp/simvp_model_type.dtg.h",
+  "utils/nonnegative_int/nonnegative_int.h",
 ]
 
 src_includes = [
@@ -26,23 +27,23 @@ src_includes = [
 
 [[fields]]
 name = "batch_size"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "hid_S"
-type = "size_t"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "hid_T"
-type = "size_t"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "N_S"
-type = "size_t"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "N_T"
-type = "size_t"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "model_type"
@@ -62,12 +63,12 @@ type = "float"
 
 [[fields]]
 name = "spatio_kernel_enc"
-type = "size_t"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "spatio_kernel_dec"
-type = "size_t"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "in_shape"
-type = "std::vector<size_t>"
+type = "std::vector<::FlexFlow::nonnegative_int>"
