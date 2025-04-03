@@ -11,7 +11,8 @@ namespace FlexFlow {
 
 std::optional<MachineMapping>
     get_naive_mapping(ParallelComputationGraph &pcg,
-                      MachineSpecification const &resources) {
+                      MachineSpecification const &resources,
+                      DeviceType const &device_type) {
   std::vector<parallel_layer_guid_t> layers = topological_ordering(pcg);
   std::unordered_map<parallel_layer_guid_t, MachineView> machine_views;
   for (parallel_layer_guid_t layer : layers) {
@@ -27,9 +28,9 @@ std::optional<MachineMapping>
 }
 
 std::optional<MachineMapping>
-    get_random_mutation_notlazy(SearchResult mapped_pcg,
-                                MachineSpecification const &resources,
-                                DeviceType const &device_type) {
+    get_random_mutation(SearchResult mapped_pcg,
+                        MachineSpecification const &resources,
+                        DeviceType const &device_type) {
   ParallelComputationGraph pcg = mapped_pcg.pcg;
   std::vector<parallel_layer_guid_t> layers = topological_ordering(pcg);
   if (layers.size() == 0) {
@@ -90,25 +91,26 @@ std::optional<MachineMapping>
   return machine_mapping;
 }
 
+// "lazy" version just picks a random available machine view for a random layer
 std::optional<MachineMapping>
-    get_random_mutation(SearchResult mapped_pcg,
-                        MachineSpecification const &resources,
-                        DeviceType const &device_type) {
+    get_random_mutation_lazy(SearchResult mapped_pcg,
+                             MachineSpecification const &resources,
+                             DeviceType const &device_type) {
   ParallelComputationGraph pcg = mapped_pcg.pcg;
   std::vector<parallel_layer_guid_t> layers = topological_ordering(pcg);
   if (layers.size() == 0) {
     return std::nullopt;
   }
-  parallel_layer_guid_t random_layer = layers.at(rand() % layers.size());
+  parallel_layer_guid_t random_layer = select_random(layers);
+  ;
 
   MachineMapping machine_mapping = mapped_pcg.machine_mapping;
   MachineView machine_view = machine_mapping.machine_views.at(random_layer);
   OperatorTaskSpace task = get_operator_task_space(pcg, random_layer);
 
   std::vector<MachineView> allowed_machine_views =
-      vector_of(get_allowed_machine_views(resources, task, DeviceType::GPU));
-  MachineView random_new_machine_view =
-      allowed_machine_views.at(rand() % allowed_machine_views.size());
+      vector_of(get_allowed_machine_views(resources, task, device_type));
+  MachineView random_new_machine_view = select_random(allowed_machine_views);
 
   machine_mapping.machine_views.at(random_layer) = random_new_machine_view;
   return machine_mapping;

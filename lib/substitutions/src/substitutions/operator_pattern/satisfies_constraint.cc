@@ -13,7 +13,6 @@ bool operator_satisfies_constraint(
     return false;
   }
 
-  // std::cout << constraint.constraint_type << std::endl;
   switch (constraint.constraint_type) {
     case ConstraintType::EQUAL:
       return expr_val.value() == constraint.attribute_value;

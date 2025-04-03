@@ -62,12 +62,12 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*intra_node_bandwidth=*/1,
     };
 
-    MCMCSearchConfig search_config = MCMCSearchConfig{
-        /*temperature=*/1.0,
-        /*num_iterations=*/100,
-        /*num_mutations_per_iteration=*/10,
-        /*max_num_ops=*/100,
-    };
+    MCMCSearchConfig search_config =
+        MCMCSearchConfig{/*temperature=*/1.0,
+                         /*num_iterations=*/5,
+                         /*num_mutations_per_iteration=*/10,
+                         /*max_num_ops=*/100,
+                         /*device_type=*/DeviceType::GPU};
 
     SearchResult result = mcmc_graph_optimize(
         pcg, cost_estimator, full_machine_spec, search_config);

@@ -1,4 +1,4 @@
-#include "substitutions/apply_substitution/apply_substitution_and_update_machine_mapping.h"
+#include "compiler/machine_mapping/apply_substitution_and_update_machine_mapping.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_edge.h"
 #include "pcg/parallel_computation_graph/parallel_tensor_guid_t.h"
 #include "substitutions/apply_substitution/evaluate_substitution_output.h"
@@ -181,5 +181,3 @@ SearchResult apply_substitution_and_update_machine_mapping(
 }
 
 } // namespace FlexFlow
-
-#endif

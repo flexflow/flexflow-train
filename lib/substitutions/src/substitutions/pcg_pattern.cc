@@ -11,6 +11,7 @@
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_inputs.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_open_dataflow_graph_inputs.h"
+#include "utils/random_utils.h"
 
 namespace FlexFlow {
 
@@ -35,6 +36,17 @@ static MatchAdditionalCriterion
                                       open_parallel_tensor_guid_t{pcgValue}),
             get_tensor_pattern(pattern, patternValue));
       }};
+}
+
+std::optional<PCGPatternMatch>
+    get_random_pattern_match(PCGPattern const &pattern,
+                             SubParallelComputationGraph const &pcg) {
+  std::vector<PCGPatternMatch> pattern_matches =
+      find_pattern_matches(pattern, pcg);
+  if (pattern_matches.empty()) {
+    return std::nullopt;
+  }
+  return select_random(pattern_matches);
 }
 
 std::vector<PCGPatternMatch>

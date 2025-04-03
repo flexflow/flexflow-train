@@ -97,8 +97,6 @@ bool pattern_matches_subgraph_under(
         &full_graph_values_to_subgraph_inputs,
     UnlabelledDataflowGraphPatternMatch const &match,
     MatchAdditionalCriterion const &additional_criterion) {
-  std::cout << "gamer" << std::endl;
-  std::cout << get_open_dataflow_values(pattern.raw_graph) << std::endl;
   SubgraphConcreteFromPattern concrete_from_pattern{
       match, full_graph_values_to_subgraph_inputs};
 
@@ -133,20 +131,13 @@ bool pattern_matches_subgraph_under(
   if (concrete_values != concrete_values_from_match) {
     return false;
   }
-  std::cout << "later later mid of pattern amtches subgrpah under" << std::endl;
 
   for (PatternValue const &pattern_value : get_values(pattern)) {
-    std::cout << "dfjsahdfkiasjhdfkasjhdfkasdjhdfbgk awerhurgvt " << std::endl;
-    std::cout << get_open_dataflow_values(pattern.raw_graph) << std::endl;
-    std::cout << pattern_value << std::endl;
     if (!additional_criterion.value_criterion(
             pattern_value, concrete_from_pattern(pattern_value))) {
-      std::cout << "dfjsahdfkiasjhdfkasjhdfkasdjhdfbgk awerhurgvtfwewefewfewf "
-                << std::endl;
       return false;
     }
   }
-  std::cout << "end of pattern amtches subgrpah under" << std::endl;
 
   return true;
 }
@@ -156,19 +147,12 @@ bool unlabelled_pattern_does_match(
     OpenDataflowGraphView const &graph,
     UnlabelledDataflowGraphPatternMatch const &match,
     MatchAdditionalCriterion const &additional_criterion) {
-  std::cout << "unlabelled_pattern_does_match" << std::endl;
 
   OpenDataflowSubgraphResult subgraph_result = subgraph_matched(graph, match);
   OpenDataflowGraphView matched_subgraph = subgraph_result.graph;
 
   assert(left_entries(match.node_assignment) == get_nodes(pattern));
   assert(right_entries(match.node_assignment) == get_nodes(matched_subgraph));
-  std::cout << "middle of" << std::endl;
-  std::cout << get_open_dataflow_values(pattern.raw_graph) << std::endl;
-  std::cout << left_entries(match.node_assignment) << std::endl;
-  std::cout << right_entries(match.node_assignment) << std::endl;
-  std::cout << get_nodes(pattern) << std::endl;
-  std::cout << get_nodes(matched_subgraph) << std::endl;
 
   MatchAdditionalCriterion through_subgraph_operation =
       MatchAdditionalCriterion{
@@ -176,24 +160,17 @@ bool unlabelled_pattern_does_match(
           [&](PatternValue const &pv, OpenDataflowValue const &v) {
             return v.visit<bool>(overload{
                 [&](DataflowOutput const &) {
-                  // std::cout << "whefihweoifhewfi" <<std::endl;
                   return additional_criterion.value_criterion(pv, v);
                 },
                 [&](DataflowGraphInput const &subgraph_input) {
-                  // std::cout << "bobobobobob" << std::endl;
                   OpenDataflowValue full_graph_value =
                       subgraph_result.full_graph_values_to_subgraph_inputs.at_r(
                           subgraph_input);
-                  /*std::cout << "ppopopopopopo" << std::endl;
-                  bool ss = additional_criterion.value_criterion(pv,
-                    full_graph_value);
-                    std::cout << "lolololololo" << std::endl;*/
                   return additional_criterion.value_criterion(pv,
                                                               full_graph_value);
                 }});
           },
       };
-  // std::cout << "end of unlabelled_pattern_does_match" << std::endl;
 
   return pattern_matches_subgraph_under(
       pattern,
