@@ -77,21 +77,26 @@ BinarySPDecompositionTree
   });
 }
 
-PCGBinarySPDecomposition pcg_binary_sp_decomposition_from_binary_sp_tree(BinarySPDecompositionTree const &spd_tree) {
+PCGBinarySPDecomposition pcg_binary_sp_decomposition_from_binary_sp_tree(
+    BinarySPDecompositionTree const &spd_tree) {
   return spd_tree.visit<PCGBinarySPDecomposition>(overload{
       [](BinarySeriesSplit const &series) -> PCGBinarySPDecomposition {
         return PCGBinarySPDecomposition{
             PCGBinarySeriesSplit{
-                pcg_binary_sp_decomposition_from_binary_sp_tree(series.get_left_child()),
-                pcg_binary_sp_decomposition_from_binary_sp_tree(series.get_right_child()),
+                pcg_binary_sp_decomposition_from_binary_sp_tree(
+                    series.get_left_child()),
+                pcg_binary_sp_decomposition_from_binary_sp_tree(
+                    series.get_right_child()),
             },
         };
       },
       [](BinaryParallelSplit const &parallel) -> PCGBinarySPDecomposition {
         return PCGBinarySPDecomposition{
             PCGBinaryParallelSplit{
-                pcg_binary_sp_decomposition_from_binary_sp_tree(parallel.get_left_child()),
-                pcg_binary_sp_decomposition_from_binary_sp_tree(parallel.get_right_child()),
+                pcg_binary_sp_decomposition_from_binary_sp_tree(
+                    parallel.get_left_child()),
+                pcg_binary_sp_decomposition_from_binary_sp_tree(
+                    parallel.get_right_child()),
             },
         };
       },

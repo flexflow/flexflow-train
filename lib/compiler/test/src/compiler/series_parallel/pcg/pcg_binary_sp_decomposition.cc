@@ -12,24 +12,26 @@ TEST_SUITE(FF_TEST_SUITE) {
     Node n3 = Node{3};
 
     auto make_binary_series_split = [](BinarySPDecompositionTree const &lhs,
-                                BinarySPDecompositionTree const &rhs) {
+                                       BinarySPDecompositionTree const &rhs) {
       return BinarySPDecompositionTree{BinarySeriesSplit{lhs, rhs}};
     };
 
     auto make_binary_parallel_split = [](BinarySPDecompositionTree const &lhs,
-                                  BinarySPDecompositionTree const &rhs) {
+                                         BinarySPDecompositionTree const &rhs) {
       return BinarySPDecompositionTree{BinaryParallelSplit{lhs, rhs}};
     };
 
-    auto make_binary_leaf = [](Node const &n) { return BinarySPDecompositionTree{n}; };
+    auto make_binary_leaf = [](Node const &n) {
+      return BinarySPDecompositionTree{n};
+    };
 
     auto make_pcg_series_split = [](PCGBinarySPDecomposition const &lhs,
-                                   PCGBinarySPDecomposition const &rhs) {
+                                    PCGBinarySPDecomposition const &rhs) {
       return PCGBinarySPDecomposition{PCGBinarySeriesSplit{lhs, rhs}};
     };
 
     auto make_pcg_parallel_split = [](PCGBinarySPDecomposition const &lhs,
-                                     PCGBinarySPDecomposition const &rhs) {
+                                      PCGBinarySPDecomposition const &rhs) {
       return PCGBinarySPDecomposition{PCGBinaryParallelSplit{lhs, rhs}};
     };
 
@@ -39,52 +41,51 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("single node") {
       BinarySPDecompositionTree input = make_binary_leaf(n1);
-      
-      PCGBinarySPDecomposition result = 
+
+      PCGBinarySPDecomposition result =
           pcg_binary_sp_decomposition_from_binary_sp_tree(input);
-      
+
       PCGBinarySPDecomposition expected = make_pcg_leaf(n1);
-      
+
       CHECK(result == expected);
     }
 
     SUBCASE("series split") {
-      BinarySPDecompositionTree input = make_binary_series_split(
-          make_binary_leaf(n1), make_binary_leaf(n2));
-      
-      PCGBinarySPDecomposition result = 
+      BinarySPDecompositionTree input =
+          make_binary_series_split(make_binary_leaf(n1), make_binary_leaf(n2));
+
+      PCGBinarySPDecomposition result =
           pcg_binary_sp_decomposition_from_binary_sp_tree(input);
-      
-      PCGBinarySPDecomposition expected = make_pcg_series_split(
-          make_pcg_leaf(n1), make_pcg_leaf(n2));
-      
+
+      PCGBinarySPDecomposition expected =
+          make_pcg_series_split(make_pcg_leaf(n1), make_pcg_leaf(n2));
+
       CHECK(result == expected);
     }
 
     SUBCASE("parallel split") {
       BinarySPDecompositionTree input = make_binary_parallel_split(
           make_binary_leaf(n1), make_binary_leaf(n2));
-      
-      PCGBinarySPDecomposition result = 
+
+      PCGBinarySPDecomposition result =
           pcg_binary_sp_decomposition_from_binary_sp_tree(input);
-      
-      PCGBinarySPDecomposition expected = make_pcg_parallel_split(
-          make_pcg_leaf(n1), make_pcg_leaf(n2));
-      
+
+      PCGBinarySPDecomposition expected =
+          make_pcg_parallel_split(make_pcg_leaf(n1), make_pcg_leaf(n2));
+
       CHECK(result == expected);
     }
 
     SUBCASE("bijectiveness") {
       BinarySPDecompositionTree original = make_binary_parallel_split(
           make_binary_series_split(make_binary_leaf(n1), make_binary_leaf(n2)),
-          make_binary_leaf(n3)
-      );
-      
-      PCGBinarySPDecomposition pcg_tree = 
+          make_binary_leaf(n3));
+
+      PCGBinarySPDecomposition pcg_tree =
           pcg_binary_sp_decomposition_from_binary_sp_tree(original);
-      BinarySPDecompositionTree converted = 
+      BinarySPDecompositionTree converted =
           binary_sp_tree_from_pcg_sp_tree(pcg_tree);
-      
+
       CHECK(original == converted);
     }
   }

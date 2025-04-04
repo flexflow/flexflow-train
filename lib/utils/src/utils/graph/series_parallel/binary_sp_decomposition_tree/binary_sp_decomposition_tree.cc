@@ -94,9 +94,7 @@ int get_tree_height(BinarySPDecompositionTree const &tree) {
         int right_height = get_tree_height(parallel.get_right_child());
         return std::max(left_height, right_height) + 1;
       },
-      [](Node const &) -> int {
-        return 0;
-      },
+      [](Node const &) -> int { return 0; },
   });
 }
 
