@@ -33,6 +33,8 @@ std::unordered_set<BinaryTreePath>
     find_paths_to_leaf(PCGBinarySPDecomposition const &,
                        parallel_layer_guid_t const &);
 
+PCGBinarySPDecomposition pcg_binary_sp_decomposition_from_binary_sp_tree(BinarySPDecompositionTree const &spd_tree);
+
 } // namespace FlexFlow
 
 #endif

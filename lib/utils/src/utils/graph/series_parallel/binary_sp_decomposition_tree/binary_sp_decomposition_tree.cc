@@ -82,4 +82,43 @@ SPDecompositionTreeNodeType
   });
 }
 
+int get_tree_height(BinarySPDecompositionTree const &tree) {
+  return tree.visit<int>(overload{
+      [](BinarySeriesSplit const &series) -> int {
+        int left_height = get_tree_height(series.get_left_child());
+        int right_height = get_tree_height(series.get_right_child());
+        return std::max(left_height, right_height) + 1;
+      },
+      [](BinaryParallelSplit const &parallel) -> int {
+        int left_height = get_tree_height(parallel.get_left_child());
+        int right_height = get_tree_height(parallel.get_right_child());
+        return std::max(left_height, right_height) + 1;
+      },
+      [](Node const &) -> int {
+        return 0;
+      },
+  });
+}
+
+std::unordered_multiset<Node> get_nodes(BinarySPDecompositionTree const &tree) {
+  return tree.visit<std::unordered_multiset<Node>>(overload{
+      [](BinarySeriesSplit const &series) -> std::unordered_multiset<Node> {
+        auto left_nodes = get_nodes(series.get_left_child());
+        auto right_nodes = get_nodes(series.get_right_child());
+        left_nodes.insert(right_nodes.begin(), right_nodes.end());
+        return left_nodes;
+      },
+      [](BinaryParallelSplit const &parallel) -> std::unordered_multiset<Node> {
+        auto left_nodes = get_nodes(parallel.get_left_child());
+        auto right_nodes = get_nodes(parallel.get_right_child());
+        left_nodes.insert(right_nodes.begin(), right_nodes.end());
+        return left_nodes;
+      },
+      [](Node const &node) -> std::unordered_multiset<Node> {
+        // For a leaf node, just return a set containing that node
+        return {node};
+      },
+  });
+}
+
 } // namespace FlexFlow
