@@ -1,8 +1,12 @@
 #include "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.h"
 #include "compiler/series_parallel/pcg/pcg_binary_parallel_split.h"
 #include "compiler/series_parallel/pcg/pcg_binary_series_split.h"
-#include "utils/graph/series_parallel/binary_sp_decomposition_tree/binary_sp_decomposition_tree.dtg.h"
+#include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/find_paths_to_leaf.h"
+#include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/get_leaves.h"
+#include "utils/graph/series_parallel/get_series_parallel_decomposition.h"
+#include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
 #include "utils/overload.h"
+
 namespace FlexFlow {
 
 GenericBinarySPDecompositionTreeImplementation<PCGBinarySPDecomposition,
