@@ -113,7 +113,6 @@ std::unordered_multiset<Node> get_nodes(BinarySPDecompositionTree const &tree) {
         return left_nodes;
       },
       [](Node const &node) -> std::unordered_multiset<Node> {
-        // For a leaf node, just return a set containing that node
         return {node};
       },
   });
