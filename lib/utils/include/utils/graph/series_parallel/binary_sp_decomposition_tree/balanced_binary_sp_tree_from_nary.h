@@ -6,8 +6,8 @@
 
 namespace FlexFlow {
 
-BinarySPDecompositionTree balanced_binary_sp_tree_from_nary(
-    SeriesParallelDecomposition const &nary);
+BinarySPDecompositionTree
+    balanced_binary_sp_tree_from_nary(SeriesParallelDecomposition const &nary);
 
 } // namespace FlexFlow
 
