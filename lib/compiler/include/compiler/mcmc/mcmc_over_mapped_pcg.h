@@ -1,8 +1,8 @@
-#ifndef _FLEXFLOW_COMPILER_MCMC_ALGORITHM_H
-#define _FLEXFLOW_COMPILER_MCMC_ALGORITHM_H
+#ifndef _FLEXFLOW_COMPILER_MCMC_OVER_MAPPED_PCG_H
+#define _FLEXFLOW_COMPILER_MCMC_OVER_MAPPED_PCG_H
 
 #include "compiler/cost_estimator/cost_estimator.h"
-#include "compiler/mcmc/mcmc_search_config.dtg.h"
+#include "compiler/mcmc/mcmc_over_mapped_pcg_config.dtg.h"
 #include "compiler/search_result.dtg.h"
 #include "pcg/computation_graph.h"
 #include "pcg/machine_specification.dtg.h"
@@ -15,7 +15,7 @@ namespace FlexFlow {
 SearchResult mcmc_graph_optimize(ParallelComputationGraph &pcg,
                                  CostEstimator const &cost_estimator,
                                  MachineSpecification const &resources,
-                                 MCMCSearchConfig const &search_config);
+                                 MCMCOverMappedPCGConfig const &search_config);
 
 } // namespace FlexFlow
 

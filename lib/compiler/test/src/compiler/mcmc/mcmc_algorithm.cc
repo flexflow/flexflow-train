@@ -1,5 +1,5 @@
-#include "compiler/mcmc/mcmc_algorithm.h"
 #include "../cost_estimator_for_test.h"
+#include "compiler/mcmc/mcmc_over_mapped_pcg.h"
 #include "compiler/task_graph_simulator/task_simulator.h"
 #include "doctest/doctest.h"
 #include "op-attrs/parallel_tensor_dims.h"
@@ -62,12 +62,11 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*intra_node_bandwidth=*/1,
     };
 
-    MCMCSearchConfig search_config =
-        MCMCSearchConfig{/*temperature=*/1.0,
-                         /*num_iterations=*/5,
-                         /*num_mutations_per_iteration=*/10,
-                         /*max_num_ops=*/100,
-                         /*device_type=*/DeviceType::GPU};
+    MCMCOverMappedPCGConfig search_config =
+        MCMCOverMappedPCGConfig{/*temperature=*/1.0,
+                                /*num_iterations=*/100_n,
+                                /*substitution_interval=*/100_n,
+                                /*device_type=*/DeviceType::GPU};
 
     SearchResult result = mcmc_graph_optimize(
         pcg, cost_estimator, full_machine_spec, search_config);

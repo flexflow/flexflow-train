@@ -18,8 +18,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       return new_x;
     };
     auto scoring_func = [](float x) { return (x - 0.5) * (x - 0.5); };
-    GenericMCMCConfig config = GenericMCMCConfig{/*temperature*/ 1.0,
-                                                 /*num_iterations*/ 10_n};
+    GenericMCMCConfig config = GenericMCMCConfig{/*temperature=*/1.0,
+                                                 /*num_iterations=*/10_n};
     Generic_MCMC_state<float, float> result =
         minimize_score(starting_state, generating_func, scoring_func, config);
     float answer = result.get_state();

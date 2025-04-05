@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "MCMCSearchConfig"
+name = "MCMCOverMappedPCGConfig"
 features = [
   "eq",
   "hash",
@@ -7,7 +7,8 @@ features = [
 ]
 
 includes = [
-  "pcg/device_type.dtg.h"
+  "pcg/device_type.dtg.h",
+  "utils/nonnegative_int/nonnegative_int.h"
 ]
 
 [[fields]]
@@ -16,15 +17,11 @@ type = "float"
 
 [[fields]]
 name = "num_iterations"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
-name = "num_mutations_per_iteration"
-type = "int"
-
-[[fields]]
-name = "max_num_ops"
-type = "int"
+name = "substitution_interval"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "device_type"

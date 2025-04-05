@@ -9,22 +9,19 @@
 
 namespace FlexFlow {
 
-bool mcmc_accept(float delta, float temperature) {
-  return delta < 0 || (randf() < exp(-delta / temperature));
-}
-
 template <typename State, typename ScoringFunc>
-void modify_state(Generic_MCMC_state<State, float> &best_state,
-                  Generic_MCMC_state<State, float> &current_state,
-                  State candidate,
-                  ScoringFunc scorer,
-                  float temperature) {
+void modify_state_for_minimization(
+    Generic_MCMC_state<State, float> &best_state,
+    Generic_MCMC_state<State, float> &current_state,
+    State candidate,
+    ScoringFunc scorer,
+    float temperature) {
   float best_estimate = best_state.get_score();
   float new_estimate = scorer(candidate);
-  float runtime_delta = new_estimate - best_estimate;
-  if (mcmc_accept(runtime_delta, temperature)) {
+  float delta = new_estimate - best_estimate;
+  if (delta < 0 || (randf() < exp(-delta / temperature))) {
     current_state = Generic_MCMC_state<State, float>(candidate, new_estimate);
-    if (runtime_delta < 0) {
+    if (delta < 0) {
       best_state = current_state;
     }
   }
@@ -45,11 +42,11 @@ Generic_MCMC_state<State, float>
   for (nonnegative_int i : nonnegative_range(search_config.num_iterations)) {
     std::optional<State> candidate = generator(current_state.get_state(), i);
     if (candidate != std::nullopt) {
-      modify_state(best_state,
-                   current_state,
-                   candidate.value(),
-                   scorer,
-                   search_config.temperature);
+      modify_state_for_minimization(best_state,
+                                    current_state,
+                                    candidate.value(),
+                                    scorer,
+                                    search_config.temperature);
     }
   }
   return best_state;
