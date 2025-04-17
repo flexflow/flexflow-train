@@ -16,7 +16,6 @@
 #ifndef _FLEXFLOW_LOCAL_EXECUTION_CONFIG_H_
 #define _FLEXFLOW_LOCAL_EXECUTION_CONFIG_H_
 
-#include "op-attrs/param_sync.dtg.h"
 #include "utils/fmt.h"
 #include "utils/visitable.h"
 #include <cstring>
@@ -34,12 +33,6 @@ enum class ComputationMode {
 // Pre-assigned const flags
 #define MAP_TO_FB_MEMORY 0xABCD0000
 #define MAP_TO_ZC_MEMORY 0xABCE0000
-
-#ifdef FF_USE_NCCL
-constexpr ParamSync CHOSEN_SYNC_TYPE = ParamSync::NCCL;
-#else
-constexpr ParamSync CHOSEN_SYNC_TYPE = ParamSync::PS;
-#endif
 
 struct FFInitInfo : public use_visitable_cmp<FFInitInfo> {
   size_t workSpaceSize;

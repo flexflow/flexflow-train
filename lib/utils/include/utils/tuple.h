@@ -2,6 +2,7 @@
 #define _FLEXFLOW_UTILS_TUPLE_H
 
 #include "utils/exception.h"
+#include "utils/tuple/visit.h"
 #include "utils/type_traits_core.h"
 #include <any>
 #include <cstddef>
@@ -31,21 +32,6 @@ template <typename T, typename... Types>
 struct index_of : index_of_impl<T, 0, Types...> {};
 
 } // namespace TupleUtils
-
-template <int Idx, typename Visitor, typename... Types>
-void visit_tuple_impl(Visitor &v, std::tuple<Types...> const &tup) {
-  v(Idx, std::get<Idx>(tup));
-  if (Idx >= std::tuple_size<decltype(tup)>::value) {
-    return;
-  } else {
-    visit_tuple_impl<(Idx + 1)>(v, tup);
-  }
-}
-
-template <typename Visitor, typename... Types>
-void visit_tuple(Visitor &v, std::tuple<Types...> const &tup) {
-  visit_tuple_impl<0>(v, tup);
-}
 
 struct tuple_get_visitor {
   tuple_get_visitor() = delete;

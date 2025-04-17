@@ -4,6 +4,7 @@
 #include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/tensor_shape.h"
 #include "utils/containers/extend.h"
+#include "utils/expected.h"
 #include "utils/integer_conversions.h"
 
 namespace FlexFlow {
@@ -95,8 +96,17 @@ nonnegative_int get_num_samples(MultiHeadAttentionInputs const &inputs) {
   return inputs.batch_size;
 }
 
+static void check_attrs(MultiHeadAttentionAttrs const &attrs) {
+  if (attrs.add_bias_kv) {
+    throw mk_runtime_error("add_bias_kv is not yet supported. If you need this "
+                           "functionality, please create an issue.");
+  }
+}
+
 std::vector<IncomingTensorRole>
     get_attention_incoming_tensor_roles(MultiHeadAttentionAttrs const &attrs) {
+
+  check_attrs(attrs);
 
   std::vector<IncomingTensorRole> roles = std::vector{
       IncomingTensorRole::INPUT,
@@ -118,6 +128,8 @@ tl::expected<TensorShape, std::string>
                      TensorShape const &input_q,
                      TensorShape const &input_k,
                      TensorShape const &input_v) {
+  check_attrs(attrs);
+
   tl::expected<MultiHeadAttentionInputs, std::string> parse_result =
       parse_attention_input_shape(input_q, input_k, input_v);
   if (!parse_result.has_value()) {
@@ -141,6 +153,8 @@ tl::expected<TensorShape, std::string>
                       TensorShape const &input_q,
                       TensorShape const &input_k,
                       TensorShape const &input_v) {
+  check_attrs(attrs);
+
   tl::expected<MultiHeadAttentionInputs, std::string> parse_result =
       parse_attention_input_shape(input_q, input_k, input_v);
   if (!parse_result.has_value()) {
@@ -177,6 +191,8 @@ tl::expected<TensorShape, std::string>
                          TensorShape const &input_q,
                          TensorShape const &input_k,
                          TensorShape const &input_v) {
+  check_attrs(attrs);
+
   MultiHeadAttentionInputs parsed = ({
     tl::expected<MultiHeadAttentionInputs, std::string> parse_result =
         parse_attention_input_shape(input_q, input_k, input_v);
@@ -199,6 +215,8 @@ tl::expected<TensorShape, std::string>
                           TensorShape const &input_q,
                           TensorShape const &input_k,
                           TensorShape const &input_v) {
+  check_attrs(attrs);
+
   MultiHeadAttentionInputs parsed = ({
     tl::expected<MultiHeadAttentionInputs, std::string> parse_result =
         parse_attention_input_shape(input_q, input_k, input_v);
@@ -216,11 +234,33 @@ tl::expected<TensorShape, std::string>
   };
 }
 
+tl::expected<std::vector<TensorShape>, std::string>
+    get_weight_shapes(MultiHeadAttentionAttrs const &attrs,
+                      TensorShape const &input_q,
+                      TensorShape const &input_k,
+                      TensorShape const &input_v) {
+
+  std::vector<TensorShape> weight_shapes = {
+      PROPAGATE_ERR(get_weights_shape(attrs, input_q, input_k, input_v)),
+  };
+
+  if (attrs.bias) {
+    weight_shapes.push_back(
+        PROPAGATE_ERR(get_input_bias_shape(attrs, input_q, input_k, input_v)));
+    weight_shapes.push_back(
+        PROPAGATE_ERR(get_output_bias_shape(attrs, input_q, input_k, input_v)));
+  }
+
+  return weight_shapes;
+}
+
 tl::expected<ParallelTensorShape, std::string>
     get_weights_shape(MultiHeadAttentionAttrs const &attrs,
                       ParallelTensorShape const &input_q,
                       ParallelTensorShape const &input_k,
                       ParallelTensorShape const &input_v) {
+  check_attrs(attrs);
+
   tl::expected<MultiHeadAttentionParallelInputs, std::string> parse_result =
       parse_attention_parallel_input_shape(input_q, input_k, input_v);
   if (!parse_result.has_value()) {
@@ -253,6 +293,8 @@ tl::expected<ParallelTensorShape, std::string>
                          ParallelTensorShape const &input_q,
                          ParallelTensorShape const &input_k,
                          ParallelTensorShape const &input_v) {
+  check_attrs(attrs);
+
   MultiHeadAttentionParallelInputs parsed = ({
     tl::expected<MultiHeadAttentionParallelInputs, std::string> parse_result =
         parse_attention_parallel_input_shape(input_q, input_k, input_v);
@@ -289,6 +331,8 @@ tl::expected<ParallelTensorShape, std::string>
                           ParallelTensorShape const &input_q,
                           ParallelTensorShape const &input_k,
                           ParallelTensorShape const &input_v) {
+  check_attrs(attrs);
+
   MultiHeadAttentionParallelInputs parsed = ({
     tl::expected<MultiHeadAttentionParallelInputs, std::string> parse_result =
         parse_attention_parallel_input_shape(input_q, input_k, input_v);
@@ -325,6 +369,8 @@ tl::expected<ParallelTensorShape, std::string>
                      ParallelTensorShape const &input_q,
                      ParallelTensorShape const &input_k,
                      ParallelTensorShape const &input_v) {
+  check_attrs(attrs);
+
   tl::expected<MultiHeadAttentionParallelInputs, std::string> parse_result =
       parse_attention_parallel_input_shape(input_q, input_k, input_v);
   if (!parse_result.has_value()) {
@@ -361,6 +407,84 @@ nonnegative_int get_oSize(ParallelTensorShape const &) {
 
 nonnegative_int get_oSize(TensorShape const &) {
   NOT_IMPLEMENTED();
+}
+
+tl::expected<std::vector<ParallelTensorShape>, std::string>
+    get_weight_shapes(MultiHeadAttentionAttrs const &attrs,
+                      ParallelTensorShape const &input_q,
+                      ParallelTensorShape const &input_k,
+                      ParallelTensorShape const &input_v) {
+
+  std::vector<ParallelTensorShape> weight_shapes = {
+      PROPAGATE_ERR(get_weights_shape(attrs, input_q, input_k, input_v)),
+  };
+
+  if (attrs.bias) {
+    weight_shapes.push_back(
+        PROPAGATE_ERR(get_input_bias_shape(attrs, input_q, input_k, input_v)));
+    weight_shapes.push_back(
+        PROPAGATE_ERR(get_output_bias_shape(attrs, input_q, input_k, input_v)));
+  }
+
+  return weight_shapes;
+}
+
+tl::expected<std::vector<InitializerAttrs>, std::string> get_initializers(
+    MultiHeadAttentionAttrs const &attrs,
+    TensorShape const &input_q,
+    TensorShape const &input_k,
+    TensorShape const &input_v,
+    std::optional<InitializerAttrs> const &maybe_weights_initializer,
+    std::optional<InitializerAttrs> const &maybe_input_bias_initializer,
+    std::optional<InitializerAttrs> const &maybe_output_bias_initializer) {
+  check_attrs(attrs);
+
+  if (!attrs.bias && maybe_input_bias_initializer.has_value()) {
+    return tl::unexpected(
+        fmt::format("Expected input_bias_initializer=std::nullopt since "
+                    "bias=false, but received input_bias_initializer: {}",
+                    maybe_input_bias_initializer.value()));
+  }
+
+  if (!attrs.bias && maybe_output_bias_initializer.has_value()) {
+    return tl::unexpected(
+        fmt::format("Expected output_bias_initializer=std::nullopt since "
+                    "bias=false, but received output_bias_initializer: {}",
+                    maybe_output_bias_initializer.value()));
+  }
+
+  InitializerAttrs default_weights_initializer = InitializerAttrs{
+      GlorotUniformAttrs{
+          /*seed=*/0,
+      },
+  };
+
+  InitializerAttrs default_input_bias_initializer = InitializerAttrs{
+      ZeroInitializerAttrs{},
+  };
+
+  InitializerAttrs default_output_bias_initializer = InitializerAttrs{
+      ZeroInitializerAttrs{},
+  };
+
+  InitializerAttrs weights_initializer =
+      maybe_weights_initializer.value_or(default_weights_initializer);
+  InitializerAttrs input_bias_initializer =
+      maybe_input_bias_initializer.value_or(default_input_bias_initializer);
+  InitializerAttrs output_bias_initializer =
+      maybe_output_bias_initializer.value_or(default_output_bias_initializer);
+
+  if (attrs.bias) {
+    return std::vector{
+        weights_initializer,
+        input_bias_initializer,
+        output_bias_initializer,
+    };
+  } else {
+    return std::vector{
+        weights_initializer,
+    };
+  }
 }
 
 } // namespace FlexFlow

@@ -8,6 +8,15 @@
 
 namespace FlexFlow {
 
+#define PROPAGATE_ERR(...)                                                     \
+  ({                                                                           \
+    auto result = __VA_ARGS__;                                                 \
+    if (!result.has_value()) {                                                 \
+      return tl::unexpected(result.error());                                   \
+    }                                                                          \
+    result.value();                                                            \
+  })
+
 template <typename... Args>
 tl::unexpected<std::string> error_msg(Args &&...args) {
   return tl::make_unexpected(fmt::format(std::forward<Args>(args)...));

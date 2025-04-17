@@ -3,6 +3,13 @@
 
 namespace FlexFlow {
 
+ElementUnaryAttrs make_relu_attrs() {
+  return ElementUnaryAttrs{
+      /*op_type=*/OperatorType::RELU,
+      /*scalar=*/std::nullopt,
+  };
+}
+
 tl::expected<TensorShape, std::string>
     get_output_shape(ElementUnaryAttrs const &attrs,
                      TensorShape const &input_shape) {

@@ -21,7 +21,7 @@ src_includes = [
 ]
 
 [[fields]]
-name = "attrs"
+name = "op_attrs"
 type = "::FlexFlow::ComputationGraphOpAttrs"
 
 [[fields]]

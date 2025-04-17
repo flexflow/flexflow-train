@@ -17,15 +17,15 @@ std::unordered_set<parallel_layer_guid_t>
 std::unordered_set<parallel_tensor_guid_t>
     get_parallel_tensors(ParallelComputationGraph const &);
 
-ParallelLayerAddedResult
-    add_parallel_layer(ParallelComputationGraph &pcg,
-                       ParallelLayerAttrs const &layer_attrs,
-                       std::vector<parallel_tensor_guid_t> const &inputs,
-                       std::vector<ParallelTensorAttrs> const &output_labels);
+ParallelLayerAddedResult add_parallel_layer(
+    ParallelComputationGraph &pcg,
+    ParallelLayerAttrs const &layer_attrs,
+    std::vector<parallel_tensor_guid_t> const &inputs,
+    std::vector<parallel_tensor_guid_t> const &weights,
+    std::optional<std::vector<CreateGrad>> const &outputs = std::nullopt);
 
-ParallelLayerAddedResult
-    pcg_add_input_layer(ParallelComputationGraph &pcg,
-                        ParallelTensorShape const &tensor_shape);
+ParallelLayerAddedResult pcg_add_input_layer(ParallelComputationGraph &pcg,
+                                             TensorShape const &tensor_shape);
 
 std::unordered_set<ParallelComputationGraphEdge>
     get_pcg_edges_from_layer_to_layer(ParallelComputationGraph const &,
@@ -60,6 +60,14 @@ std::vector<parallel_tensor_guid_t>
     get_incoming_weights(ParallelComputationGraph const &,
                          parallel_layer_guid_t const &);
 
+std::unordered_set<parallel_layer_guid_t>
+    get_successors(ParallelComputationGraph const &,
+                   parallel_layer_guid_t const &);
+
+std::unordered_set<parallel_layer_guid_t>
+    get_subgraph_successors(ParallelComputationGraph const &,
+                            std::unordered_set<parallel_layer_guid_t> const &);
+
 parallel_layer_guid_t get_source_layer(ParallelComputationGraph const &g,
                                        parallel_tensor_guid_t const &t);
 
@@ -83,6 +91,9 @@ ParallelComputationGraph without_layer_names(ParallelComputationGraph const &);
 
 bool pcgs_are_isomorphic(ParallelComputationGraph const &,
                          ParallelComputationGraph const &);
+
+std::string as_dot(ParallelComputationGraph const &);
+void debug_print_dot(ParallelComputationGraph const &);
 
 } // namespace FlexFlow
 
