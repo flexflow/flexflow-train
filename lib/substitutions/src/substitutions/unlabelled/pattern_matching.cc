@@ -7,10 +7,13 @@
 #include "substitutions/unlabelled/unlabelled_graph_pattern.h"
 #include "utils/bidict/algorithms/left_entries.h"
 #include "utils/bidict/algorithms/right_entries.h"
+#include "utils/containers/is_subseteq_of.h"
 #include "utils/containers/keys.h"
 #include "utils/containers/transform.h"
+#include "utils/containers/values.h"
 #include "utils/graph/dataflow_graph/algorithms.h"
 #include "utils/graph/node/algorithms.h"
+#include "utils/graph/open_dataflow_graph/algorithms/as_dot.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_edges.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_open_dataflow_values.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_subgraph.h"
@@ -18,6 +21,8 @@
 #include "utils/graph/open_dataflow_graph/open_dataflow_edge.dtg.h"
 #include "utils/graph/open_dataflow_graph/open_dataflow_edge.h"
 #include "utils/overload.h"
+#include <libassert/assert.hpp>
+
 #include <memory>
 
 namespace FlexFlow {
@@ -148,11 +153,27 @@ bool unlabelled_pattern_does_match(
     UnlabelledDataflowGraphPatternMatch const &match,
     MatchAdditionalCriterion const &additional_criterion) {
 
+  std::unordered_set<OpenDataflowValue> matched_by_pattern_inputs =
+      unordered_set_of(values(match.input_assignment));
+
+  ASSERT(left_entries(match.node_assignment) == get_nodes(pattern));
+  ASSERT(
+      is_subseteq_of(right_entries(match.node_assignment), get_nodes(graph)));
+  ASSERT(keys(match.input_assignment) == get_graph_inputs(pattern));
+  ASSERT(is_subseteq_of(matched_by_pattern_inputs,
+                        get_open_dataflow_values(graph)));
+
   OpenDataflowSubgraphResult subgraph_result = subgraph_matched(graph, match);
   OpenDataflowGraphView matched_subgraph = subgraph_result.graph;
 
-  assert(left_entries(match.node_assignment) == get_nodes(pattern));
-  assert(right_entries(match.node_assignment) == get_nodes(matched_subgraph));
+  std::unordered_set<OpenDataflowValue> full_values_split_by_subgraph =
+      left_entries(subgraph_result.full_graph_values_to_subgraph_inputs);
+
+  ASSERT(right_entries(match.node_assignment) == get_nodes(matched_subgraph));
+  ASSERT(is_subseteq_of(full_values_split_by_subgraph,
+                        get_open_dataflow_values(graph)),
+         full_values_split_by_subgraph,
+         get_open_dataflow_values(graph));
 
   MatchAdditionalCriterion through_subgraph_operation =
       MatchAdditionalCriterion{
