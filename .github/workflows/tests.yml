@@ -7,7 +7,7 @@ concurrency:
 jobs:
   cpu-ci:
     name: CPU unit tests and build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout Git Repository
@@ -59,7 +59,7 @@ jobs:
     runs-on:
       - runs-on
       - family=g4dn.xlarge
-      - image=runs-on-gpu-pinned
+      - image=custom-image-2025-04-18
 
     strategy:
       max-parallel: 1
@@ -71,14 +71,14 @@ jobs:
         with:
           submodules: recursive
 
-      - name: mount ephemeral drive to nix
-        run: |
-          sudo mkdir $HOME/_work/nix && sudo mkdir /nix && sudo mount --bind $HOME/_work/nix /nix
+      # - name: mount ephemeral drive to nix
+      #   run: |
+      #     sudo mkdir $HOME/_work/nix && sudo mkdir /nix && sudo mount --bind $HOME/_work/nix /nix
 
-      - name: install nix
-        uses: cachix/install-nix-action@v25
-        with:
-          github_access_token: '${{ secrets.GITHUB_TOKEN }}'
+      # - name: install nix
+      #   uses: cachix/install-nix-action@v25
+      #   with:
+      #     github_access_token: '${{ secrets.GITHUB_TOKEN }}'
 
       - uses: cachix/cachix-action@v14
         with:
