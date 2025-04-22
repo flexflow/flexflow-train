@@ -265,7 +265,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::unordered_set<PCGPatternMatch> result = unordered_set_of(
           find_pattern_matches(pattern, sub_pcg_from_full_pcg(pcg)));
 
-      CHECK(result.size() == 2);
+      CHECK(result.size() == 3);
     }
   }
 }

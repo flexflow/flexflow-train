@@ -22,7 +22,6 @@
 #include "utils/graph/open_dataflow_graph/open_dataflow_edge.h"
 #include "utils/overload.h"
 #include <libassert/assert.hpp>
-
 #include <memory>
 
 namespace FlexFlow {
@@ -51,8 +50,13 @@ struct SubgraphConcreteFromPattern {
   }
 
   OpenDataflowValue operator()(PatternInput const &i) const {
-    return OpenDataflowValue{full_graph_values_to_subgraph_inputs.at_l(
-        match.input_assignment.at(i))};
+    OpenDataflowValue mapped_input = match.input_assignment.at(i);
+    if (full_graph_values_to_subgraph_inputs.contains_l(mapped_input)) {
+      return OpenDataflowValue{
+          full_graph_values_to_subgraph_inputs.at_l(mapped_input)};
+    } else {
+      return mapped_input;
+    }
   }
 
   OpenDataflowEdge operator()(InputPatternEdge const &e) const {
