@@ -57,7 +57,7 @@ jobs:
     name: GPU unit tests
     needs: cpu-ci
     runs-on:
-      - runs-on
+      - runs-on=${{ github.run_id }}
       - family=g4dn.xlarge
       - image=custom-image-2025-04-18
 
