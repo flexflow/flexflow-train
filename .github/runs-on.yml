@@ -13,17 +13,14 @@ images:
     owner: "135269210855" # runs-on
     name: "runs-on-v2.2-ubuntu22-full-x64-20250220122045"
 
-  custom-image-2025-04-18:
-    platform: "linux"
-    arch: "x64"
-    ami: "ami-0c38c1bd40602cb52"
-
   official-ubuntu-ami:
     platform: "linux"
     arch: "x64"
     ami: "ami-0a60b027285c0d4c5"
 
-  custom-image-2024-04-22:
+  flexflow-gpu-ci:
     platform: "linux"
     arch: "x64"
-    ami: "ami-00bad164b36e30475"
+    owner: "409719625166" # flexflow
+    name: "flexflow-gpu-ci"
+
