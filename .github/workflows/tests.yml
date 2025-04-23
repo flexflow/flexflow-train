@@ -59,7 +59,7 @@ jobs:
     runs-on:
       - runs-on=${{ github.run_id }}
       - family=g4dn.xlarge
-      - image=official-ubuntu-ami
+      - image=custom-image-2024-04-22
 
     strategy:
       max-parallel: 1
