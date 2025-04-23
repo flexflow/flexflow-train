@@ -59,7 +59,7 @@ jobs:
     runs-on:
       - runs-on=${{ github.run_id }}
       - family=g4dn.xlarge
-      - image=custom-image-2024-04-22
+      - image=flexflow-gpu-ci
 
     strategy:
       max-parallel: 1
