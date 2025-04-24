@@ -73,7 +73,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       REQUIRE(y_incoming.size() == 2);
       parallel_tensor_guid_t y_weights = y_incoming.at(1);
 
-      LabelledOpenDataflowGraph<OperatorAttributePattern, TensorAttributePattern>
+      LabelledOpenDataflowGraph<OperatorAttributePattern,
+                                TensorAttributePattern>
           g = LabelledOpenDataflowGraph<OperatorAttributePattern,
                                         TensorAttributePattern>::
               create<UnorderedSetLabelledOpenDataflowGraph<
@@ -122,33 +123,33 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::unordered_set<PCGPatternMatch> result = unordered_set_of(
           find_pattern_matches(pattern, sub_pcg_from_full_pcg(pcg)));
 
-      PCGPatternMatch match1 =
-          PCGPatternMatch{bidict<PatternNode, parallel_layer_guid_t>{
-                              {op_pattern_1_node, x_matmul},
-                              {op_pattern_2_node, y_matmul},
-                          },
-                          bidict<PatternInput, open_parallel_tensor_guid_t>{
-                              {PatternInput{pt_a},
-                               open_parallel_tensor_guid_from_closed(a_tensor)},
-                              {PatternInput{pt_b},
-                               open_parallel_tensor_guid_from_closed(x_weights)},
-                              {PatternInput{pt_c},
-                               open_parallel_tensor_guid_from_closed(y_weights)},
-                          }};
+      PCGPatternMatch match1 = PCGPatternMatch{
+          bidict<PatternNode, parallel_layer_guid_t>{
+              {op_pattern_1_node, x_matmul},
+              {op_pattern_2_node, y_matmul},
+          },
+          bidict<PatternInput, open_parallel_tensor_guid_t>{
+              {PatternInput{pt_a},
+               open_parallel_tensor_guid_from_closed(a_tensor)},
+              {PatternInput{pt_b},
+               open_parallel_tensor_guid_from_closed(x_weights)},
+              {PatternInput{pt_c},
+               open_parallel_tensor_guid_from_closed(y_weights)},
+          }};
 
-      PCGPatternMatch match2 =
-          PCGPatternMatch{bidict<PatternNode, parallel_layer_guid_t>{
-                              {op_pattern_1_node, y_matmul},
-                              {op_pattern_2_node, x_matmul},
-                          },
-                          bidict<PatternInput, open_parallel_tensor_guid_t>{
-                              {PatternInput{pt_a},
-                               open_parallel_tensor_guid_from_closed(a_tensor)},
-                              {PatternInput{pt_b},
-                               open_parallel_tensor_guid_from_closed(y_weights)},
-                              {PatternInput{pt_c},
-                               open_parallel_tensor_guid_from_closed(x_weights)},
-                          }};
+      PCGPatternMatch match2 = PCGPatternMatch{
+          bidict<PatternNode, parallel_layer_guid_t>{
+              {op_pattern_1_node, y_matmul},
+              {op_pattern_2_node, x_matmul},
+          },
+          bidict<PatternInput, open_parallel_tensor_guid_t>{
+              {PatternInput{pt_a},
+               open_parallel_tensor_guid_from_closed(a_tensor)},
+              {PatternInput{pt_b},
+               open_parallel_tensor_guid_from_closed(y_weights)},
+              {PatternInput{pt_c},
+               open_parallel_tensor_guid_from_closed(x_weights)},
+          }};
 
       std::unordered_set<PCGPatternMatch> correct = {match1, match2};
 
