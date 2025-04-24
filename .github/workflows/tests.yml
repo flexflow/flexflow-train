@@ -55,7 +55,7 @@ jobs:
 
   gpu-ci:
     name: GPU unit tests
-    # needs: cpu-ci
+    needs: cpu-ci
     runs-on:
       - runs-on=${{ github.run_id }}
       - family=g4dn.xlarge

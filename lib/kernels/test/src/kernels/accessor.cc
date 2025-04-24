@@ -71,6 +71,32 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
   }
 
+  TEST_CASE("format_1d_accessor_contents(GenericTensorAccessorR)") {
+    Allocator cpu_allocator = create_local_cpu_memory_allocator();
+
+    SUBCASE("accessor is 1d") {
+      GenericTensorAccessorR accessor = create_1d_accessor_r_with_contents({1, 2, 3, 2}, cpu_allocator);
+
+      std::string correct = "[ 1 2 3 2 ]";
+
+      std::string result = format_1d_accessor_contents(accessor);
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("accessor is not 1d") {
+      GenericTensorAccessorR accessor = create_2d_accessor_r_with_contents(
+          {
+              {1, 2, 3},
+              {4, 3, 3},
+              {1, 1, 5},
+          },
+          cpu_allocator);
+
+      CHECK_THROWS(format_1d_accessor_contents(accessor));
+    }
+  }
+
   TEST_CASE("format_2d_accessor_contents(GenericTensorAccessorR)") {
     Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
@@ -83,13 +109,19 @@ TEST_SUITE(FF_TEST_SUITE) {
           },
           cpu_allocator);
 
-      std::string correct = "[ 1 2 3 ]"
-                            "[ 4 3 3 ]"
+      std::string correct = "[ 1 2 3 ]\n"
+                            "[ 4 3 3 ]\n"
                             "[ 1 1 5 ]";
+
+      std::string result = format_2d_accessor_contents(accessor);
+
+      CHECK(result == correct);
     }
 
     SUBCASE("accessor is not 2d") {
-      NOT_IMPLEMENTED();
+      GenericTensorAccessorR accessor = create_1d_accessor_r_with_contents({1, 2, 3}, cpu_allocator);
+
+      CHECK_THROWS(format_2d_accessor_contents(accessor));
     }
   }
 }

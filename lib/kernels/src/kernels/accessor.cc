@@ -3,6 +3,8 @@
 #include "kernels/datatype_dispatch.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include <libassert/assert.hpp>
+#include "utils/containers/vector_of.h"
+#include "utils/containers/reversed.h"
 
 namespace FlexFlow {
 
@@ -15,7 +17,7 @@ nonnegative_int
   nonnegative_int offset = 0_n;
   nonnegative_int multiplier = 1_n;
 
-  for (legion_dim_t dim : key_range(shape.dims)) {
+  for (legion_dim_t dim : reversed(vector_of(key_range(shape.dims)))) {
     ASSERT(indices.at(dim) < shape.at(legion_dim_t{dim}),
            "Out of bounds access",
            dim);
@@ -116,6 +118,33 @@ std::string format_as(GenericTensorAccessorW const &a) {
 
 std::ostream &operator<<(std::ostream &s, GenericTensorAccessorW const &a) {
   return (s << fmt::to_string(a));
+}
+
+template <DataType DT>
+struct Print1DCPUAccessorR {
+  void operator()(GenericTensorAccessorR const &accessor,
+                  std::ostream &stream) {
+    ASSERT(accessor.device_type == DeviceType::CPU);
+    nonnegative_int dims = accessor.shape.num_dims();
+    ASSERT(dims == 1_n);
+
+    nonnegative_int ncols = accessor.shape.at(legion_dim_t{0_n});
+
+    stream << "[ ";
+    for (nonnegative_int col_idx : nonnegative_range(ncols)) {
+      stream << accessor.at<DT>(LegionOrdered{col_idx}) << " ";
+    }
+    stream << "]" << std::endl;
+  }
+};
+
+std::string format_1d_accessor_contents(GenericTensorAccessorR const &accessor) {
+  ASSERT(accessor.device_type == DeviceType::CPU);
+  ASSERT(accessor.shape.num_dims() == 1_n);
+
+  std::ostringstream oss;
+  DataTypeDispatch1<Print1DCPUAccessorR>{}(accessor.data_type, accessor, oss);
+  return oss.str();
 }
 
 template <DataType DT>

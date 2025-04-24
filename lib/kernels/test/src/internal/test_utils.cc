@@ -38,6 +38,26 @@ GenericTensorAccessorR create_zero_filled_accessor_r(TensorShape const &shape,
   return read_only_accessor_from_write_accessor(accessor);
 }
 
+GenericTensorAccessorW create_1d_accessor_w_with_contents(
+    std::vector<float> const &contents, Allocator &allocator) {
+  nonnegative_int ncols = num_elements(contents);
+  ASSERT(ncols > 0);
+
+  TensorShape shape = TensorShape{
+      TensorDims{FFOrdered{ncols}},
+      DataType::FLOAT,
+  };
+
+  GenericTensorAccessorW accessor = allocator.allocate_tensor(shape);
+
+  for (nonnegative_int col_idx : nonnegative_range(ncols)) {
+    accessor.at<DataType::FLOAT>(FFOrdered{col_idx}) =
+        contents.at(col_idx.unwrap_nonnegative());
+  }
+
+  return accessor;
+}
+
 GenericTensorAccessorW create_2d_accessor_w_with_contents(
     std::vector<std::vector<float>> const &contents, Allocator &allocator) {
   nonnegative_int nrows = num_elements(contents);
@@ -64,6 +84,12 @@ GenericTensorAccessorW create_2d_accessor_w_with_contents(
   }
 
   return accessor;
+}
+
+GenericTensorAccessorR create_1d_accessor_r_with_contents(
+    std::vector<float> const &contents, Allocator &allocator) {
+  return read_only_accessor_from_write_accessor(
+      create_1d_accessor_w_with_contents(contents, allocator));
 }
 
 GenericTensorAccessorR create_2d_accessor_r_with_contents(
