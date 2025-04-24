@@ -130,11 +130,14 @@ struct Print1DCPUAccessorR {
 
     nonnegative_int ncols = accessor.shape.at(legion_dim_t{0_n});
 
-    stream << "[ ";
-    for (nonnegative_int col_idx : nonnegative_range(ncols)) {
-      stream << accessor.at<DT>(LegionOrdered{col_idx}) << " ";
-    }
-    stream << "]" << std::endl;
+    stream << "["
+           << join_strings(nonnegative_range(ncols),
+                           " ",
+                           [&](nonnegative_int col_idx) -> std::string {
+                             return fmt::to_string(
+                                 accessor.at<DT>(LegionOrdered{col_idx}));
+                           })
+           << "]";
   }
 };
 
@@ -158,17 +161,18 @@ struct Print2DCPUAccessorR {
     nonnegative_int ncols = accessor.shape.at(legion_dim_t{0_n});
     nonnegative_int nrows = accessor.shape.at(legion_dim_t{1_n});
 
-    auto render_row = [&](nonnegative_int row_idx) {
-      stream << "[ ";
-      for (nonnegative_int col_idx : nonnegative_range(ncols)) {
-        stream << accessor.at<DT>(LegionOrdered{col_idx, row_idx}) << " ";
-      }
-      stream << "]" << std::endl;
+    auto render_row = [&](nonnegative_int row_idx) -> std::string {
+      return "[" +
+             join_strings(nonnegative_range(ncols),
+                          " ",
+                          [&](nonnegative_int col_idx) -> std::string {
+                            return fmt::to_string(accessor.at<DT>(
+                                LegionOrdered{col_idx, row_idx}));
+                          }) +
+             "]";
     };
 
-    for (nonnegative_int row_idx : nonnegative_range(nrows)) {
-      render_row(row_idx);
-    }
+    stream << join_strings(nonnegative_range(nrows), "\n", render_row);
   }
 };
 

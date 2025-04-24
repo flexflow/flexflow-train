@@ -78,7 +78,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       GenericTensorAccessorR accessor =
           create_1d_accessor_r_with_contents({1, 2, 3, 2}, cpu_allocator);
 
-      std::string correct = "[ 1 2 3 2 ]";
+      std::string correct = "[1 2 3 2]";
 
       std::string result = format_1d_accessor_contents(accessor);
 
@@ -110,9 +110,9 @@ TEST_SUITE(FF_TEST_SUITE) {
           },
           cpu_allocator);
 
-      std::string correct = "[ 1 2 3 ]\n"
-                            "[ 4 3 3 ]\n"
-                            "[ 1 1 5 ]";
+      std::string correct = "[1 2 3]\n"
+                            "[4 3 3]\n"
+                            "[1 1 5]";
 
       std::string result = format_2d_accessor_contents(accessor);
 
