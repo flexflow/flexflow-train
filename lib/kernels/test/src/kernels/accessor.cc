@@ -75,7 +75,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
     SUBCASE("accessor is 1d") {
-      GenericTensorAccessorR accessor = create_1d_accessor_r_with_contents({1, 2, 3, 2}, cpu_allocator);
+      GenericTensorAccessorR accessor =
+          create_1d_accessor_r_with_contents({1, 2, 3, 2}, cpu_allocator);
 
       std::string correct = "[ 1 2 3 2 ]";
 
@@ -119,7 +120,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("accessor is not 2d") {
-      GenericTensorAccessorR accessor = create_1d_accessor_r_with_contents({1, 2, 3}, cpu_allocator);
+      GenericTensorAccessorR accessor =
+          create_1d_accessor_r_with_contents({1, 2, 3}, cpu_allocator);
 
       CHECK_THROWS(format_2d_accessor_contents(accessor));
     }

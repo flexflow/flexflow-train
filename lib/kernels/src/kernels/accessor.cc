@@ -1,10 +1,10 @@
 #include "kernels/accessor.h"
 #include "kernels/allocation.h"
 #include "kernels/datatype_dispatch.h"
+#include "utils/containers/reversed.h"
+#include "utils/containers/vector_of.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include <libassert/assert.hpp>
-#include "utils/containers/vector_of.h"
-#include "utils/containers/reversed.h"
 
 namespace FlexFlow {
 
@@ -138,7 +138,8 @@ struct Print1DCPUAccessorR {
   }
 };
 
-std::string format_1d_accessor_contents(GenericTensorAccessorR const &accessor) {
+std::string
+    format_1d_accessor_contents(GenericTensorAccessorR const &accessor) {
   ASSERT(accessor.device_type == DeviceType::CPU);
   ASSERT(accessor.shape.num_dims() == 1_n);
 

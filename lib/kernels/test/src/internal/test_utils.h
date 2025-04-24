@@ -29,10 +29,12 @@ GenericTensorAccessorW create_zero_filled_accessor_w(TensorShape const &shape,
 GenericTensorAccessorR create_zero_filled_accessor_r(TensorShape const &shape,
                                                      Allocator &allocator);
 
-GenericTensorAccessorW create_1d_accessor_w_with_contents(
-    std::vector<float> const &contents, Allocator &allocator);
-GenericTensorAccessorR create_1d_accessor_r_with_contents(
-    std::vector<float> const &contents, Allocator &allocator);
+GenericTensorAccessorW
+    create_1d_accessor_w_with_contents(std::vector<float> const &contents,
+                                       Allocator &allocator);
+GenericTensorAccessorR
+    create_1d_accessor_r_with_contents(std::vector<float> const &contents,
+                                       Allocator &allocator);
 
 GenericTensorAccessorW create_2d_accessor_w_with_contents(
     std::vector<std::vector<float>> const &contents, Allocator &allocator);
