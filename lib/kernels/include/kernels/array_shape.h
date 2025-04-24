@@ -15,7 +15,7 @@ namespace FlexFlow {
 struct ArrayShape {
 public:
   ArrayShape() = delete;
-  ArrayShape(nonnegative_int *dims, nonnegative_int num_dims);
+  ArrayShape(nonnegative_int const *dims, nonnegative_int num_dims);
   ArrayShape(TensorShape const &shape);
   ArrayShape(std::vector<nonnegative_int> const &);
 

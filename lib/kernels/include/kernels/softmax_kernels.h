@@ -15,8 +15,7 @@ struct SoftmaxPerDeviceState {
 
 FF_VISITABLE_STRUCT(SoftmaxPerDeviceState, handle, inputTensor, dim);
 
-namespace Kernels {
-namespace Softmax {
+namespace Kernels::Softmax {
 
 SoftmaxPerDeviceState init_kernel(PerDeviceFFHandle const &handle,
                                   int dim,
@@ -31,12 +30,11 @@ void forward_kernel(ffStream_t stream,
                     float *output_ptr);
 
 void backward_kernel(ffStream_t stream,
-                     float *input_grad_ptr,
                      float const *output_grad_ptr,
+                     float *input_grad_ptr,
                      size_t num_elements);
 
-} // namespace Softmax
-} // namespace Kernels
+} // namespace Kernels::Softmax
 } // namespace FlexFlow
 
 #endif

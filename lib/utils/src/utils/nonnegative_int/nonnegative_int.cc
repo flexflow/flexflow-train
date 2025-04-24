@@ -101,6 +101,15 @@ nonnegative_int &nonnegative_int::operator+=(nonnegative_int const &other) {
   return *this;
 }
 
+nonnegative_int nonnegative_int::operator-(nonnegative_int const &other) const {
+  return nonnegative_int{this->value_ - other.value_};
+}
+
+nonnegative_int &nonnegative_int::operator-=(nonnegative_int const &other) {
+  *this = nonnegative_int{this->value_ - other.value_};
+  return *this;
+}
+
 nonnegative_int nonnegative_int::operator*(nonnegative_int const &other) const {
   return nonnegative_int{this->value_ * other.value_};
 }

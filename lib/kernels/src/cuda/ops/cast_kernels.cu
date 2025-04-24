@@ -50,30 +50,26 @@ struct ForwardKernel {
 template <DataType IDT, DataType ODT>
 struct BackwardKernel {
   void operator()(ffStream_t stream,
-                  GenericTensorAccessorR const &input,
-                  GenericTensorAccessorW const &output) {
-    size_t volume = input.shape.get_volume().unwrap_nonnegative();
+                  GenericTensorAccessorR const &output,
+                  GenericTensorAccessorW const &input) {
+    size_t volume = output.shape.get_volume().unwrap_nonnegative();
     cast_backward<<<GET_BLOCKS(volume), CUDA_NUM_THREADS, 0, stream>>>(
-        input.get<IDT>(), output.get<ODT>(), volume, cast_to<ODT>(1.0f));
+        output.get<IDT>(), input.get<ODT>(), volume, cast_to<ODT>(1.0f));
   }
 };
 
 void forward_kernel(ffStream_t stream,
                     GenericTensorAccessorR const &input,
-                    GenericTensorAccessorW const &output,
-                    DataType input_type,
-                    DataType output_type) {
+                    GenericTensorAccessorW const &output) {
   DataTypeDispatch2<ForwardKernel>{}(
-      input_type, output_type, stream, input, output);
+      input.data_type, output.data_type, stream, input, output);
 }
 
 void backward_kernel(ffStream_t stream,
-                     GenericTensorAccessorR const &input,
-                     GenericTensorAccessorW const &output,
-                     DataType input_type,
-                     DataType output_type) {
+                     GenericTensorAccessorR const &output,
+                     GenericTensorAccessorW const &input) {
   DataTypeDispatch2<BackwardKernel>{}(
-      input_type, output_type, stream, input, output);
+      output.data_type, input.data_type, stream, output, input);
 }
 
 } // namespace Cast
