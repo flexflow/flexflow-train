@@ -3,10 +3,24 @@ images:
     platform: "linux"
     arch: "x64"
     owner: "135269210855" # runs-on
-    name: "runs-on-v2.2-ubuntu22-gpu-x64-20250123194414"
+    # to find, go to 
+    # https://us-east-2.console.aws.amazon.com/ec2/home?region=us-east-2#Images:visibility=public-images;search=:runs-on;v=3;$case=tags:false%5C,client:false;$regex=tags:false%5C,client:false
+    name: "runs-on-v2.2-ubuntu22-gpu-x64-20250220122045"
 
   runs-on-cpu-pinned:
     platform: "linux"
     arch: "x64"
     owner: "135269210855" # runs-on
-    name: "runs-on-v2.2-ubuntu22-full-x64-20250101080516"
+    name: "runs-on-v2.2-ubuntu22-full-x64-20250220122045"
+
+  official-ubuntu-ami:
+    platform: "linux"
+    arch: "x64"
+    ami: "ami-0a60b027285c0d4c5"
+
+  flexflow-gpu-ci:
+    platform: "linux"
+    arch: "x64"
+    owner: "409719625166" # flexflow
+    name: "flexflow-gpu-ci"
+
