@@ -12,7 +12,7 @@
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("Execute Update") {
+  TEST_CASE("ExecuteUpdate") {
     // initialize runtime configs
     ManagedFFStream managed_stream{};
     ManagedPerDeviceFFHandle managed_handle{};
