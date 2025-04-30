@@ -14,7 +14,13 @@ struct TaskArgumentAccessor {
     if constexpr (PerDeviceOpState::IsPartOfPerDeviceOpState_v<T>) {
       PerDeviceOpState device_states =
           this->ptr->get_concrete_arg(slot).get<PerDeviceOpState>();
-      return device_states.get<T>();
+      if (device_states.has<T>()) {
+        return device_states.get<T>();
+      } else {
+        throw mk_runtime_error(
+            fmt::format("Invalid access to PerDeviceOpState attempted, instead it holds: ",
+                        device_states.index()));
+      }
     } else {
       return this->ptr->get_concrete_arg(slot).get<T>();
     }
