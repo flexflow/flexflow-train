@@ -104,8 +104,7 @@ std::optional<float> call_task_impl(TaskRegistry const &task_registry,
                                     task_id_t const &task_id,
                                     TaskArgumentAccessor const &acc) {
   TaskSignatureAndImpl task_sig_impl = task_registry.task_mapping.at(task_id);
-  auto fn =
-      task_sig_impl.impl_function.get<FwdBwdOpTaskImplFunction>().function_ptr;
+  auto fn = task_sig_impl.impl_function.get<FwdBwdOpTaskImplFunction>().function_ptr;
   return fn(acc);
 }
 
@@ -116,13 +115,15 @@ std::optional<float>
   if (registry_contains_task_for_layer(local_training_backing.task_registry,
                                        operator_node,
                                        OpTaskType::FWD)) {
+    
     ComputationGraphOpAttrs attrs =
         get_layer_attrs(local_training_backing.computation_graph, operator_node)
             .op_attrs;
-
+    
     std::optional<DeviceSpecificDeviceStates> device_state =
         get_per_device_op_state_if_exists(
             local_training_backing.local_args_backing, operator_node);
+    
     TaskInvocation invocation = lower_to_task_invocation(
         forward(attrs),
         operator_node,
