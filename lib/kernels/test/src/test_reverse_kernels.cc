@@ -5,7 +5,7 @@
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
-TEST_SUITE(FF_TEST_SUITE) {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Call Reverse Forward and Backward Kernels") {
     nonnegative_int num_out_blks = 1_n;
     nonnegative_int reverse_dim_size = 10_n;

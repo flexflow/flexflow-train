@@ -4,7 +4,7 @@
 
 using namespace ::FlexFlow;
 
-TEST_SUITE(FF_TEST_SUITE) {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test BatchMatmul Kernel") {
     nonnegative_int m = 10_n;
     nonnegative_int n = 10_n;

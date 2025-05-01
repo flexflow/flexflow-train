@@ -6,7 +6,7 @@
 
 using namespace ::FlexFlow;
 
-TEST_SUITE(FF_TEST_SUITE) {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test Split Forward and Backward Kernel") {
     nonnegative_int num_outputs = 2_n;
     coord_t out_blk_sizes[] = {50, 50};

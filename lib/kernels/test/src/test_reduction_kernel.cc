@@ -4,7 +4,7 @@
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
-TEST_SUITE(FF_TEST_SUITE) {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test Reduction Forward and Backward Kernel") {
     std::size_t num_replicas = 5;
 

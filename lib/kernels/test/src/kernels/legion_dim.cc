@@ -4,7 +4,7 @@
 
 using namespace ::FlexFlow;
 
-TEST_SUITE(FF_TEST_SUITE) {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("key_range(LegionOrdered<T>)") {
     SUBCASE("input is non-empty") {
       LegionOrdered<int> input = {5, 3, 2, 3};

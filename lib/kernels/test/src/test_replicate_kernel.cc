@@ -4,7 +4,7 @@
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
-TEST_SUITE(FF_TEST_SUITE) {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Call Replicate Forward and Backward Kernels") {
     nonnegative_int num_replicas = 10_n;
 

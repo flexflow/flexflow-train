@@ -4,7 +4,7 @@
 
 using namespace ::FlexFlow;
 
-TEST_SUITE(FF_TEST_SUITE) {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test multi-head attention kernel") {
     nonnegative_int num_samples = 10_n;
     nonnegative_int num_heads = 4_n;

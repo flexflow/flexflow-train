@@ -243,6 +243,12 @@ std::ostream &operator<<(std::ostream &s, GenericTensorAccessorR const &a) {
 }
 
 std::string
+    format_1d_accessor_contents(GenericTensorAccessorW const &accessor) {
+  return format_1d_accessor_contents(
+      read_only_accessor_from_write_accessor(accessor));
+}
+
+std::string
     format_2d_accessor_contents(GenericTensorAccessorW const &accessor) {
   return format_2d_accessor_contents(
       read_only_accessor_from_write_accessor(accessor));

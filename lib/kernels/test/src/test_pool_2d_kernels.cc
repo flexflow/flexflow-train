@@ -4,7 +4,7 @@
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
-TEST_SUITE(FF_TEST_SUITE) {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test Pool2D Forward and Backward Kernel") {
     nonnegative_int input_w = 10_n;
     nonnegative_int input_h = 10_n;

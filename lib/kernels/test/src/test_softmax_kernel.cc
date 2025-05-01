@@ -4,7 +4,7 @@
 
 using namespace ::FlexFlow;
 
-TEST_SUITE(FF_TEST_SUITE) {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test Softmax Kernel Operations") {
     nonnegative_int input_n = 1_n;
     nonnegative_int input_c = 1_n;

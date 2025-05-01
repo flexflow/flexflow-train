@@ -3,7 +3,7 @@
 
 using namespace ::FlexFlow;
 
-TEST_SUITE(FF_TEST_SUITE) {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("slice(LegionOrdered<T>, ..., ...") {
     LegionOrdered<size_t> d = LegionOrdered<size_t>{
         1,

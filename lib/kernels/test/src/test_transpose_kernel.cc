@@ -3,7 +3,7 @@
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
-TEST_SUITE(FF_TEST_SUITE) {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test Transpose Kernel Operations") {
     TransposeAttrs attrs = TransposeAttrs{
         FFOrdered{

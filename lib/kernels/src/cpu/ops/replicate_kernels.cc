@@ -18,16 +18,16 @@ template <DataType DT>
 struct CPUBackwardKernel {
   void operator()(GenericTensorAccessorR const &output,
                   GenericTensorAccessorW &input,
-                  size_t num_elements,
-                  size_t num_replicas) {
+                  nonnegative_int num_elements,
+                  nonnegative_int num_replicas) {
     using T = real_type_t<DT>;
-    for (int i = 0; i < num_elements; i++) {
+
+    for (nonnegative_int i : nonnegative_range(num_elements)) {
       T cur_sum = 0;
-      for (int j = 0; j < num_replicas; j++) {
-        cur_sum += output.at<DT>(
-            LegionOrdered{nonnegative_int{i}, nonnegative_int{j}});
+      for (nonnegative_int replica_idx : nonnegative_range(num_replicas)) {
+        cur_sum += output.at<DT>(LegionOrdered{i, replica_idx});
       }
-      input.at<DT>(LegionOrdered{nonnegative_int{i}}) = cur_sum;
+      input.at<DT>(LegionOrdered{i}) = cur_sum;
     }
   }
 };
@@ -40,9 +40,12 @@ void cpu_forward_kernel(GenericTensorAccessorR const &input,
 void cpu_backward_kernel(GenericTensorAccessorR const &output,
                          GenericTensorAccessorW &input,
                          size_t num_replicas) {
-  size_t num_elements = input.shape.num_elements().unwrap_nonnegative();
-  DataTypeDispatch1<CPUBackwardKernel>{}(
-      input.data_type, output, input, num_elements, num_replicas);
+  nonnegative_int num_elements = input.shape.num_elements();
+  DataTypeDispatch1<CPUBackwardKernel>{}(input.data_type,
+                                         output,
+                                         input,
+                                         num_elements,
+                                         nonnegative_int{num_replicas});
 }
 
 } // namespace FlexFlow::Kernels::Replicate

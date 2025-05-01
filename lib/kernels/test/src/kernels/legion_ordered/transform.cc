@@ -3,7 +3,7 @@
 
 using namespace ::FlexFlow;
 
-TEST_SUITE(FF_TEST_SUITE) {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("transform(LegionOrdered<T>, F)") {
     SUBCASE("input is empty") {
       LegionOrdered<std::string> input = {};
