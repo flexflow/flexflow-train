@@ -1,0 +1,7 @@
+namespace = "FlexFlow"
+name = "SimVPModelType"
+
+features = ["hash", "json", "rapidcheck", "fmt"]
+
+[[values]]
+name = "gSTA"
