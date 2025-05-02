@@ -8,8 +8,8 @@ using namespace ::FlexFlow;
 TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Call Reverse Forward and Backward Kernels") {
     TensorShape input_shape = TensorShape{
-      TensorDims{FFOrdered{1_n, 10_n, 10_n}},
-      DataType::FLOAT,
+        TensorDims{FFOrdered{1_n, 10_n, 10_n}},
+        DataType::FLOAT,
     };
     TensorShape output_shape = input_shape;
 
@@ -21,7 +21,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     Allocator allocator = create_local_cuda_memory_allocator();
 
     ReverseAttrs attrs = ReverseAttrs{
-      /*axis=*/ff_dim_t{0_n}, 
+        /*axis=*/ff_dim_t{0_n},
     };
 
     SUBCASE("forward_kernel") {
@@ -32,10 +32,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           allocator.allocate_tensor(output_shape);
 
       Kernels::Reverse::forward_kernel(
-          managed_stream.raw_stream(),
-          input_accessor,
-          output_accessor,
-          attrs);
+          managed_stream.raw_stream(), input_accessor, output_accessor, attrs);
 
       CHECK(contains_non_zero(output_accessor));
     }
@@ -46,11 +43,10 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       GenericTensorAccessorW input_grad_accessor =
           allocator.allocate_tensor(input_shape);
 
-      Kernels::Reverse::backward_kernel(
-          managed_stream.raw_stream(),
-          output_grad_accessor,
-          input_grad_accessor,
-          attrs);
+      Kernels::Reverse::backward_kernel(managed_stream.raw_stream(),
+                                        output_grad_accessor,
+                                        input_grad_accessor,
+                                        attrs);
 
       CHECK(contains_non_zero(input_grad_accessor));
     }
@@ -58,8 +54,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
   TEST_CASE("Check Reverse Forward and Backward Kernels against CPU Kernels") {
     TensorShape input_shape = TensorShape{
-      TensorDims{FFOrdered{1_n, 4_n, 3_n}},
-      DataType::FLOAT,
+        TensorDims{FFOrdered{1_n, 4_n, 3_n}},
+        DataType::FLOAT,
     };
     TensorShape output_shape = input_shape;
 
@@ -72,7 +68,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
     ReverseAttrs attrs = ReverseAttrs{
-      /*axis=*/ff_dim_t{0_n}, 
+        /*axis=*/ff_dim_t{0_n},
     };
 
     SUBCASE("forward_kernel") {
@@ -82,11 +78,10 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       GenericTensorAccessorW output_accessor_gpu =
           create_zero_filled_accessor_w(output_shape, gpu_allocator);
 
-      Kernels::Reverse::forward_kernel(
-          managed_stream.raw_stream(),
-          input_accessor_gpu,
-          output_accessor_gpu,
-          attrs);
+      Kernels::Reverse::forward_kernel(managed_stream.raw_stream(),
+                                       input_accessor_gpu,
+                                       output_accessor_gpu,
+                                       attrs);
 
       // Run CPU Cast Forward Kernel
       GenericTensorAccessorR input_accessor_cpu =
@@ -95,9 +90,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           create_zero_filled_accessor_w(output_shape, cpu_allocator);
 
       Kernels::Reverse::cpu_forward_kernel(
-          input_accessor_cpu,
-          output_accessor_cpu,
-          attrs);
+          input_accessor_cpu, output_accessor_cpu, attrs);
 
       CHECK(accessors_are_equal(output_accessor_cpu, output_accessor_cpu));
     }
@@ -110,11 +103,10 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       GenericTensorAccessorW input_grad_accessor_gpu =
           create_zero_filled_accessor_w(input_shape, gpu_allocator);
 
-      Kernels::Reverse::backward_kernel(
-          managed_stream.raw_stream(),
-          output_grad_accessor_gpu,
-          input_grad_accessor_gpu,
-          attrs);
+      Kernels::Reverse::backward_kernel(managed_stream.raw_stream(),
+                                        output_grad_accessor_gpu,
+                                        input_grad_accessor_gpu,
+                                        attrs);
 
       // Run CPU Cast Backward Kernel
       GenericTensorAccessorR output_grad_accessor_cpu =
@@ -123,9 +115,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           create_zero_filled_accessor_w(input_shape, cpu_allocator);
 
       Kernels::Reverse::cpu_backward_kernel(
-          output_grad_accessor_cpu,
-          input_grad_accessor_cpu,
-          attrs);
+          output_grad_accessor_cpu, input_grad_accessor_cpu, attrs);
 
       CHECK(accessors_are_equal(input_grad_accessor_gpu,
                                 input_grad_accessor_cpu));

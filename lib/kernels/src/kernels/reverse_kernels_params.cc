@@ -2,8 +2,9 @@
 
 namespace FlexFlow {
 
-ReverseKernelsParams compute_reverse_kernels_params
-  (ArrayShape const &output_shape, ReverseAttrs const &attrs) {
+ReverseKernelsParams
+    compute_reverse_kernels_params(ArrayShape const &output_shape,
+                                   ReverseAttrs const &attrs) {
   auto axis = attrs.axis;
   nonnegative_int in_blk_size = 1_n;
   nonnegative_int reverse_dim_size = 1_n;
@@ -19,10 +20,10 @@ ReverseKernelsParams compute_reverse_kernels_params
   }
 
   return ReverseKernelsParams{
-    num_out_blks,
-    reverse_dim_size,
-    in_blk_size,
-    output_shape.get_volume(),
+      num_out_blks,
+      reverse_dim_size,
+      in_blk_size,
+      output_shape.get_volume(),
   };
 }
 

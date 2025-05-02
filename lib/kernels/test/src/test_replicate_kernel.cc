@@ -10,12 +10,12 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     nonnegative_int num_replicas = 10_n;
 
     TensorShape input_shape = TensorShape{
-      TensorDims{FFOrdered{100_n}}, 
-      DataType::FLOAT,
+        TensorDims{FFOrdered{100_n}},
+        DataType::FLOAT,
     };
     TensorShape output_shape = TensorShape{
-      TensorDims{FFOrdered{100_n}}, 
-      DataType::FLOAT,
+        TensorDims{FFOrdered{100_n}},
+        DataType::FLOAT,
     };
 
     ManagedPerDeviceFFHandle managed_handle{
@@ -56,12 +56,12 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     nonnegative_int num_replicas = 2_n;
 
     TensorShape input_shape = TensorShape{
-      TensorDims{FFOrdered{5_n}}, 
-      DataType::FLOAT,
+        TensorDims{FFOrdered{5_n}},
+        DataType::FLOAT,
     };
     TensorShape output_shape = TensorShape{
-      TensorDims{FFOrdered{num_replicas, 5_n}}, 
-      DataType::FLOAT,
+        TensorDims{FFOrdered{num_replicas, 5_n}},
+        DataType::FLOAT,
     };
 
     ManagedPerDeviceFFHandle managed_handle{

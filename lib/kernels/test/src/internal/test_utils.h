@@ -42,14 +42,18 @@ GenericTensorAccessorR create_2d_accessor_r_with_contents(
     std::vector<std::vector<float>> const &contents, Allocator &allocator);
 
 GenericTensorAccessorW create_3d_accessor_w_with_contents(
-    std::vector<std::vector<std::vector<float>>> const &contents, Allocator &allocator);
+    std::vector<std::vector<std::vector<float>>> const &contents,
+    Allocator &allocator);
 GenericTensorAccessorR create_3d_accessor_r_with_contents(
-    std::vector<std::vector<std::vector<float>>> const &contents, Allocator &allocator);
+    std::vector<std::vector<std::vector<float>>> const &contents,
+    Allocator &allocator);
 
 GenericTensorAccessorW create_4d_accessor_w_with_contents(
-    std::vector<std::vector<std::vector<std::vector<float>>>> const &contents, Allocator &allocator);
+    std::vector<std::vector<std::vector<std::vector<float>>>> const &contents,
+    Allocator &allocator);
 GenericTensorAccessorR create_4d_accessor_r_with_contents(
-    std::vector<std::vector<std::vector<std::vector<float>>>> const &contents, Allocator &allocator);
+    std::vector<std::vector<std::vector<std::vector<float>>>> const &contents,
+    Allocator &allocator);
 
 bool contains_non_zero(GenericTensorAccessorR const &accessor);
 

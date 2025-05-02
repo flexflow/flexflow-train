@@ -71,22 +71,23 @@ GenericTensorAccessorW create_2d_accessor_w_with_contents(
 }
 
 GenericTensorAccessorW create_3d_accessor_w_with_contents(
-    std::vector<std::vector<std::vector<float>>> const &contents, Allocator &allocator) {
+    std::vector<std::vector<std::vector<float>>> const &contents,
+    Allocator &allocator) {
   nonnegative_int dim0_size = num_elements(contents);
   ASSERT(dim0_size > 0);
 
-  nonnegative_int dim1_size = throw_if_unexpected(
-      require_all_same1(transform(contents, [](std::vector<std::vector<float>> const &m) {
+  nonnegative_int dim1_size = throw_if_unexpected(require_all_same1(
+      transform(contents, [](std::vector<std::vector<float>> const &m) {
         return num_elements(m);
       })));
   ASSERT(dim1_size > 0);
-  
-  nonnegative_int dim2_size = throw_if_unexpected(
-      require_all_same1(transform(contents, [](std::vector<std::vector<float>> const &m) {
+
+  nonnegative_int dim2_size = throw_if_unexpected(require_all_same1(
+      transform(contents, [](std::vector<std::vector<float>> const &m) {
         return throw_if_unexpected(
-          require_all_same1(transform(m, [](std::vector<float> const &vec) {
-            return num_elements(vec); 
-          })));
+            require_all_same1(transform(m, [](std::vector<float> const &vec) {
+              return num_elements(vec);
+            })));
       })));
   ASSERT(dim2_size > 0);
 
@@ -112,34 +113,35 @@ GenericTensorAccessorW create_3d_accessor_w_with_contents(
 }
 
 GenericTensorAccessorW create_4d_accessor_w_with_contents(
-    std::vector<std::vector<std::vector<std::vector<float>>>> const &contents, Allocator &allocator) {
+    std::vector<std::vector<std::vector<std::vector<float>>>> const &contents,
+    Allocator &allocator) {
   nonnegative_int dim0_size = num_elements(contents);
   ASSERT(dim0_size > 0);
 
-  nonnegative_int dim1_size = throw_if_unexpected(
-      require_all_same1(transform(contents, [](std::vector<std::vector<std::vector<float>>> const &t) {
+  nonnegative_int dim1_size = throw_if_unexpected(require_all_same1(transform(
+      contents, [](std::vector<std::vector<std::vector<float>>> const &t) {
         return num_elements(t);
       })));
   ASSERT(dim1_size > 0);
-  
-  nonnegative_int dim2_size = throw_if_unexpected(
-      require_all_same1(transform(contents, [](std::vector<std::vector<std::vector<float>>> const &m) {
-        return throw_if_unexpected(
-          require_all_same1(transform(m, [](std::vector<std::vector<float>> const &vec) {
-            return num_elements(vec); 
-          })));
+
+  nonnegative_int dim2_size = throw_if_unexpected(require_all_same1(transform(
+      contents, [](std::vector<std::vector<std::vector<float>>> const &m) {
+        return throw_if_unexpected(require_all_same1(
+            transform(m, [](std::vector<std::vector<float>> const &vec) {
+              return num_elements(vec);
+            })));
       })));
   ASSERT(dim2_size > 0);
 
-  nonnegative_int dim3_size = throw_if_unexpected(
-      require_all_same1(transform(contents, [](std::vector<std::vector<std::vector<float>>> const &t) {
-        return throw_if_unexpected(
-          require_all_same1(transform(t, [](std::vector<std::vector<float>> const &mat) {
-            return throw_if_unexpected(
-              require_all_same1(transform(mat, [](std::vector<float> const &vec) {
-                return num_elements(vec); 
-              })));
-          })));
+  nonnegative_int dim3_size = throw_if_unexpected(require_all_same1(transform(
+      contents, [](std::vector<std::vector<std::vector<float>>> const &t) {
+        return throw_if_unexpected(require_all_same1(
+            transform(t, [](std::vector<std::vector<float>> const &mat) {
+              return throw_if_unexpected(require_all_same1(
+                  transform(mat, [](std::vector<float> const &vec) {
+                    return num_elements(vec);
+                  })));
+            })));
       })));
   ASSERT(dim3_size > 0);
 
@@ -154,7 +156,8 @@ GenericTensorAccessorW create_4d_accessor_w_with_contents(
     for (nonnegative_int dim1_idx : nonnegative_range(dim1_size)) {
       for (nonnegative_int dim2_idx : nonnegative_range(dim2_size)) {
         for (nonnegative_int dim3_idx : nonnegative_range(dim3_size)) {
-          accessor.at<DataType::FLOAT>(FFOrdered{dim0_idx, dim1_idx, dim2_idx, dim3_idx}) =
+          accessor.at<DataType::FLOAT>(
+              FFOrdered{dim0_idx, dim1_idx, dim2_idx, dim3_idx}) =
               contents.at(dim0_idx.unwrap_nonnegative())
                   .at(dim1_idx.unwrap_nonnegative())
                   .at(dim2_idx.unwrap_nonnegative())
@@ -181,18 +184,18 @@ GenericTensorAccessorR create_2d_accessor_r_with_contents(
 }
 
 GenericTensorAccessorR create_3d_accessor_r_with_contents(
-    std::vector<std::vector<std::vector<float>>> const &contents, Allocator &allocator) {
+    std::vector<std::vector<std::vector<float>>> const &contents,
+    Allocator &allocator) {
   return read_only_accessor_from_write_accessor(
       create_3d_accessor_w_with_contents(contents, allocator));
 }
 
 GenericTensorAccessorR create_4d_accessor_r_with_contents(
-    std::vector<std::vector<std::vector<std::vector<float>>>> const &contents, Allocator &allocator) {
+    std::vector<std::vector<std::vector<std::vector<float>>>> const &contents,
+    Allocator &allocator) {
   return read_only_accessor_from_write_accessor(
       create_4d_accessor_w_with_contents(contents, allocator));
 }
-
-
 
 template <DataType DT>
 struct CreateRandomFilledAccessorW {

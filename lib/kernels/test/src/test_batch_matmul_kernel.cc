@@ -22,16 +22,16 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     Allocator allocator = create_local_cuda_memory_allocator();
 
     TensorShape input_shape_a = TensorShape{
-      TensorDims{FFOrdered{batch, k, m}}, 
-      DataType::FLOAT,
+        TensorDims{FFOrdered{batch, k, m}},
+        DataType::FLOAT,
     };
     TensorShape input_shape_b = TensorShape{
-      TensorDims{FFOrdered{batch, n, k}},
-      DataType::FLOAT,
+        TensorDims{FFOrdered{batch, n, k}},
+        DataType::FLOAT,
     };
     TensorShape output_shape = TensorShape{
-      TensorDims{FFOrdered{batch, n, m}}, 
-      DataType::FLOAT,
+        TensorDims{FFOrdered{batch, n, m}},
+        DataType::FLOAT,
     };
 
     GenericTensorAccessorW a_accessor =

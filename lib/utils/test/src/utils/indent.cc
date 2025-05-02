@@ -1,5 +1,5 @@
-#include <doctest/doctest.h>
 #include "utils/indent.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
@@ -7,7 +7,7 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("indent") {
     SUBCASE("string is empty") {
       std::string input = "";
-      
+
       std::string result = indent(input);
       std::string correct = "  ";
 

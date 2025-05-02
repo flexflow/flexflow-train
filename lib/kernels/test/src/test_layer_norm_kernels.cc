@@ -13,13 +13,13 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     bool elementwise_affine = true;
 
     TensorShape input_shape = TensorShape{
-      TensorDims{FFOrdered{batch_size, feature_size}}, 
-      DataType::FLOAT,
+        TensorDims{FFOrdered{batch_size, feature_size}},
+        DataType::FLOAT,
     };
     TensorShape output_shape = input_shape;
     TensorShape feature_shape = TensorShape{
-      TensorDims{FFOrdered{feature_size}}, 
-      DataType::FLOAT,
+        TensorDims{FFOrdered{feature_size}},
+        DataType::FLOAT,
     };
 
     ManagedPerDeviceFFHandle managed_handle{

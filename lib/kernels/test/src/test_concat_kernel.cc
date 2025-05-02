@@ -20,8 +20,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                                   TensorShape output_shape,
                                   ff_dim_t concat_axis) {
         TensorShape input_shape = TensorShape{
-          TensorDims{FFOrdered{input_rows, input_cols}}, 
-          DataType::FLOAT,
+            TensorDims{FFOrdered{input_rows, input_cols}},
+            DataType::FLOAT,
         };
 
         std::vector<GenericTensorAccessorR> input_accessors =
@@ -44,8 +44,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         nonnegative_int input_rows = 2_n;
         nonnegative_int input_cols = 4_n;
         TensorShape output_shape = TensorShape{
-          TensorDims{FFOrdered{num_inputs * input_rows, input_cols}}, 
-          DataType::FLOAT,
+            TensorDims{FFOrdered{num_inputs * input_rows, input_cols}},
+            DataType::FLOAT,
         };
         run_forward_test(input_rows, input_cols, output_shape, ff_dim_t{0_n});
       }
@@ -54,8 +54,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         nonnegative_int input_rows = 4_n;
         nonnegative_int input_cols = 2_n;
         TensorShape output_shape = TensorShape{
-          TensorDims{FFOrdered{input_rows, num_inputs * input_cols}}, 
-          DataType::FLOAT,
+            TensorDims{FFOrdered{input_rows, num_inputs * input_cols}},
+            DataType::FLOAT,
         };
         run_forward_test(input_rows, input_cols, output_shape, ff_dim_t{1_n});
       }
@@ -67,8 +67,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                                    TensorShape output_shape,
                                    ff_dim_t concat_axis) {
         TensorShape input_shape = TensorShape{
-          TensorDims{FFOrdered{input_rows, input_cols}}, 
-          DataType::FLOAT,
+            TensorDims{FFOrdered{input_rows, input_cols}},
+            DataType::FLOAT,
         };
 
         GenericTensorAccessorR output_grad_accessor =
@@ -93,8 +93,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         nonnegative_int input_rows = 2_n;
         nonnegative_int input_cols = 4_n;
         TensorShape output_shape = TensorShape{
-          TensorDims{FFOrdered{num_inputs * input_rows, input_cols}}, 
-          DataType::FLOAT,
+            TensorDims{FFOrdered{num_inputs * input_rows, input_cols}},
+            DataType::FLOAT,
         };
         run_backward_test(input_rows, input_cols, output_shape, ff_dim_t{0_n});
       }
@@ -103,8 +103,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         nonnegative_int input_rows = 4_n;
         nonnegative_int input_cols = 2_n;
         TensorShape output_shape = TensorShape{
-          TensorDims{FFOrdered{input_rows, num_inputs * input_cols}}, 
-          DataType::FLOAT,
+            TensorDims{FFOrdered{input_rows, num_inputs * input_cols}},
+            DataType::FLOAT,
         };
         run_backward_test(input_rows, input_cols, output_shape, ff_dim_t{1_n});
       }

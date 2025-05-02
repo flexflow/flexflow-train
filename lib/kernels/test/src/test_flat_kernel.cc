@@ -14,8 +14,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     ManagedFFStream managed_stream{};
 
     TensorShape input_shape = TensorShape{
-      TensorDims{FFOrdered{100_n}}, 
-      DataType::FLOAT,
+        TensorDims{FFOrdered{100_n}},
+        DataType::FLOAT,
     };
     TensorShape output_shape = input_shape;
 

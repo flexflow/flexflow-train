@@ -50,12 +50,12 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                                      /*pool_type=*/pool_type);
 
     TensorShape input_shape = TensorShape{
-      TensorDims{FFOrdered{input_n, input_c, input_h, input_w}}, 
-      DataType::FLOAT,
+        TensorDims{FFOrdered{input_n, input_c, input_h, input_w}},
+        DataType::FLOAT,
     };
     TensorShape output_shape = TensorShape{
-      TensorDims{FFOrdered{output_n, input_c, output_h, output_w}},
-      DataType::FLOAT,
+        TensorDims{FFOrdered{output_n, input_c, output_h, output_w}},
+        DataType::FLOAT,
     };
 
     GenericTensorAccessorW input_accessor =

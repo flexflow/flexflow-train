@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_KERNELS_ARRAY_SHAPE_H
 #define _FLEXFLOW_KERNELS_ARRAY_SHAPE_H
 
+#include "kernels/array_coord.dtg.h"
 #include "kernels/legion_dim.h"
 #include "op-attrs/tensor_shape.dtg.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
@@ -9,7 +10,6 @@
 #include <cstddef>
 #include <optional>
 #include <vector>
-#include "kernels/array_coord.dtg.h"
 
 namespace FlexFlow {
 

@@ -1,6 +1,6 @@
 #include "internal/test_utils.h"
-#include "kernels/replicate_kernels_cpu.h"
 #include "kernels/format_accessor_contents.h"
+#include "kernels/replicate_kernels_cpu.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -9,9 +9,8 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Replicate::cpu_forward_kernel") {
     Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
-    GenericTensorAccessorR input = create_1d_accessor_r_with_contents(
-        {1, 3, 2},
-        cpu_allocator);
+    GenericTensorAccessorR input =
+        create_1d_accessor_r_with_contents({1, 3, 2}, cpu_allocator);
 
     TensorShape result_shape = TensorShape{
         TensorDims{FFOrdered{3_n}},

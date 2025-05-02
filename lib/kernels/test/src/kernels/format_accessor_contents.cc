@@ -1,6 +1,6 @@
+#include "kernels/format_accessor_contents.h"
 #include "internal/test_utils.h"
 #include "kernels/local_cpu_allocator.h"
-#include "kernels/format_accessor_contents.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -43,21 +43,21 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("accessor is 3d") {
       GenericTensorAccessorR accessor = create_3d_accessor_r_with_contents(
           {
-            {
-              {1, 2, 3, 6},
-              {4, 3, 3, 9},
-              {1, 1, 5, 1},
-            },
-            {
-              {4, 1, 8, 7},
-              {9, 4, 2, 4},
-              {1, 0, 0, 6},
-            },
-            {
-              {2, 1, 1, 9},
-              {1, 3, 6, 2},
-              {1, 9, 8, 9},
-            },
+              {
+                  {1, 2, 3, 6},
+                  {4, 3, 3, 9},
+                  {1, 1, 5, 1},
+              },
+              {
+                  {4, 1, 8, 7},
+                  {9, 4, 2, 4},
+                  {1, 0, 0, 6},
+              },
+              {
+                  {2, 1, 1, 9},
+                  {1, 3, 6, 2},
+                  {1, 9, 8, 9},
+              },
           },
           cpu_allocator);
 

@@ -9,8 +9,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     std::size_t num_replicas = 5;
 
     TensorShape input_shape = TensorShape{
-      TensorDims{FFOrdered{10_n, 10_n, 10_n, 10_n, 10_n}}, 
-      DataType::FLOAT,
+        TensorDims{FFOrdered{10_n, 10_n, 10_n, 10_n, 10_n}},
+        DataType::FLOAT,
     };
 
     ManagedPerDeviceFFHandle managed_handle{
@@ -22,8 +22,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     SUBCASE("forward_kernel") {
       TensorShape output_shape = TensorShape{
-        TensorDims{FFOrdered{10_n}}, 
-        DataType::FLOAT,
+          TensorDims{FFOrdered{10_n}},
+          DataType::FLOAT,
       };
 
       GenericTensorAccessorR input_accessor =

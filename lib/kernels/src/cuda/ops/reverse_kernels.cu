@@ -37,12 +37,12 @@ __global__ void reverse_forward_kernel(float const *in_ptr,
 }
 
 static void forward_kernel_internal(cudaStream_t stream,
-                    float const *in_ptr,
-                    float *out_ptr,
-                    coord_t num_out_blks,
-                    coord_t reverse_dim_size,
-                    coord_t in_blk_size,
-                    coord_t output_size) {
+                                    float const *in_ptr,
+                                    float *out_ptr,
+                                    coord_t num_out_blks,
+                                    coord_t reverse_dim_size,
+                                    coord_t in_blk_size,
+                                    coord_t output_size) {
 
   reverse_forward_kernel<<<GET_BLOCKS(output_size),
                            CUDA_NUM_THREADS,
@@ -51,30 +51,31 @@ static void forward_kernel_internal(cudaStream_t stream,
       in_ptr, out_ptr, num_out_blks, reverse_dim_size, in_blk_size);
 }
 
-
 void forward_kernel(ffStream_t stream,
                     GenericTensorAccessorR const &input_accessor,
                     GenericTensorAccessorW &output_accessor,
                     ReverseAttrs const &attrs) {
-   
-  auto reverse_kernels_params = compute_reverse_kernels_params(output_accessor.shape, attrs);
 
-  forward_kernel_internal(stream,
-                           input_accessor.get_float_ptr(),
-                           output_accessor.get_float_ptr(),
-                           reverse_kernels_params.num_out_blks.unwrap_nonnegative(),
-                           reverse_kernels_params.reverse_dim_size.unwrap_nonnegative(),
-                           reverse_kernels_params.in_blk_size.unwrap_nonnegative(),
-                           reverse_kernels_params.out_size.unwrap_nonnegative());
+  auto reverse_kernels_params =
+      compute_reverse_kernels_params(output_accessor.shape, attrs);
+
+  forward_kernel_internal(
+      stream,
+      input_accessor.get_float_ptr(),
+      output_accessor.get_float_ptr(),
+      reverse_kernels_params.num_out_blks.unwrap_nonnegative(),
+      reverse_kernels_params.reverse_dim_size.unwrap_nonnegative(),
+      reverse_kernels_params.in_blk_size.unwrap_nonnegative(),
+      reverse_kernels_params.out_size.unwrap_nonnegative());
 }
 
 void backward_kernel_internal(cudaStream_t stream,
-                     float const *out_grad_ptr,
-                     float *in_grad_ptr,
-                     coord_t num_out_blks,
-                     coord_t reverse_dim_size,
-                     coord_t in_blk_size,
-                     coord_t input_size) {
+                              float const *out_grad_ptr,
+                              float *in_grad_ptr,
+                              coord_t num_out_blks,
+                              coord_t reverse_dim_size,
+                              coord_t in_blk_size,
+                              coord_t input_size) {
 
   reverse_forward_kernel<<<GET_BLOCKS(input_size),
                            CUDA_NUM_THREADS,
@@ -87,15 +88,17 @@ void backward_kernel(ffStream_t stream,
                      GenericTensorAccessorR const &output_grad_accessor,
                      GenericTensorAccessorW &input_grad_accessor,
                      ReverseAttrs const &attrs) {
-  auto reverse_kernels_params = compute_reverse_kernels_params(input_grad_accessor.shape, attrs);
+  auto reverse_kernels_params =
+      compute_reverse_kernels_params(input_grad_accessor.shape, attrs);
 
-  backward_kernel_internal(stream,
-                           output_grad_accessor.get_float_ptr(),
-                           input_grad_accessor.get_float_ptr(),
-                           reverse_kernels_params.num_out_blks.unwrap_nonnegative(),
-                           reverse_kernels_params.reverse_dim_size.unwrap_nonnegative(),
-                           reverse_kernels_params.in_blk_size.unwrap_nonnegative(),
-                           reverse_kernels_params.out_size.unwrap_nonnegative());
+  backward_kernel_internal(
+      stream,
+      output_grad_accessor.get_float_ptr(),
+      input_grad_accessor.get_float_ptr(),
+      reverse_kernels_params.num_out_blks.unwrap_nonnegative(),
+      reverse_kernels_params.reverse_dim_size.unwrap_nonnegative(),
+      reverse_kernels_params.in_blk_size.unwrap_nonnegative(),
+      reverse_kernels_params.out_size.unwrap_nonnegative());
 }
 
 } // namespace FlexFlow::Kernels::Reverse

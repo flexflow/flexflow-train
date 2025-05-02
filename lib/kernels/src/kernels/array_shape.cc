@@ -2,15 +2,15 @@
 #include "kernels/legion_ordered/slice.h"
 #include "op-attrs/ff_ordered/ff_ordered_of.h"
 #include "op-attrs/ff_ordered/slice.h"
+#include "utils/containers/cartesian_product.h"
 #include "utils/containers/product.h"
 #include "utils/containers/reversed.h"
-#include "utils/containers/vector_of.h"
-#include "utils/nonnegative_int/num_elements.h"
 #include "utils/containers/transform.h"
-#include "utils/containers/cartesian_product.h"
 #include "utils/containers/unordered_set_of.h"
-#include "utils/hash/vector.h"
+#include "utils/containers/vector_of.h"
 #include "utils/hash/tuple.h"
+#include "utils/hash/vector.h"
+#include "utils/nonnegative_int/num_elements.h"
 
 namespace FlexFlow {
 
@@ -114,19 +114,19 @@ TensorShape get_tensor_shape(ArrayShape const &shape, DataType dtype) {
 }
 
 std::unordered_set<ArrayCoord> get_array_coord_set(ArrayShape const &shape) {
-  std::vector<std::vector<nonnegative_int>> per_dim_ranges = 
-    transform(
-      vector_of(ff_ordered_from_legion_ordered(shape.dims)),
-      [](nonnegative_int dim_size) -> std::vector<nonnegative_int> {
-        return nonnegative_range(dim_size); 
-      });
+  std::vector<std::vector<nonnegative_int>> per_dim_ranges =
+      transform(vector_of(ff_ordered_from_legion_ordered(shape.dims)),
+                [](nonnegative_int dim_size) -> std::vector<nonnegative_int> {
+                  return nonnegative_range(dim_size);
+                });
 
-  std::unordered_set<std::vector<nonnegative_int>> raw_points = 
-    unordered_set_of(cartesian_product(per_dim_ranges));
+  std::unordered_set<std::vector<nonnegative_int>> raw_points =
+      unordered_set_of(cartesian_product(per_dim_ranges));
 
-  return transform(raw_points, [](std::vector<nonnegative_int> const &raw_point) {
-    return ArrayCoord{ff_ordered_of(raw_point)};
-  });
+  return transform(raw_points,
+                   [](std::vector<nonnegative_int> const &raw_point) {
+                     return ArrayCoord{ff_ordered_of(raw_point)};
+                   });
 }
 
 } // namespace FlexFlow
@@ -138,5 +138,5 @@ using namespace FlexFlow;
 size_t hash<ArrayShape>::operator()(ArrayShape const &s) const {
   return get_std_hash(s.tie());
 }
-  
-}
+
+} // namespace std

@@ -1,8 +1,8 @@
 #include "kernels/format_accessor_contents.h"
 #include "kernels/datatype_dispatch.h"
-#include <libassert/assert.hpp>
 #include "utils/indent.h"
- 
+#include <libassert/assert.hpp>
+
 namespace FlexFlow {
 
 template <DataType DT>
@@ -51,13 +51,16 @@ struct Print2DCPUAccessorR {
              join_strings(nonnegative_range(dim1_size),
                           " ",
                           [&](nonnegative_int dim1_idx) -> std::string {
-                            return fmt::to_string(accessor.at<DT>(
-                                FFOrdered{dim0_idx, dim1_idx}));
+                            return fmt::to_string(
+                                accessor.at<DT>(FFOrdered{dim0_idx, dim1_idx}));
                           }) +
              "]";
     };
 
-    stream << "[\n" << indent(join_strings(nonnegative_range(dim0_size), "\n", render_1d)) << "\n]";
+    stream << "[\n"
+           << indent(
+                  join_strings(nonnegative_range(dim0_size), "\n", render_1d))
+           << "\n]";
   }
 };
 
@@ -83,7 +86,8 @@ struct Print3DCPUAccessorR {
     nonnegative_int dim1_size = accessor.shape.at(ff_dim_t{1_n});
     nonnegative_int dim2_size = accessor.shape.at(ff_dim_t{2_n});
 
-    auto render_1d = [&](nonnegative_int dim0_idx, nonnegative_int dim1_idx) -> std::string {
+    auto render_1d = [&](nonnegative_int dim0_idx,
+                         nonnegative_int dim1_idx) -> std::string {
       return "[" +
              join_strings(nonnegative_range(dim2_size),
                           " ",
@@ -95,18 +99,19 @@ struct Print3DCPUAccessorR {
     };
 
     auto render_2d = [&](nonnegative_int dim0_idx) -> std::string {
-      return "[\n" + 
-        indent(join_strings(nonnegative_range(dim1_size),
-                            "\n",
-                            [&](nonnegative_int dim1_idx) -> std::string {
-                              return render_1d(dim0_idx, dim1_idx);
-                            }))
-        + "\n]";
-
-
+      return "[\n" +
+             indent(join_strings(nonnegative_range(dim1_size),
+                                 "\n",
+                                 [&](nonnegative_int dim1_idx) -> std::string {
+                                   return render_1d(dim0_idx, dim1_idx);
+                                 })) +
+             "\n]";
     };
 
-    stream << "[\n" << indent(join_strings(nonnegative_range(dim0_size), "\n", render_2d)) << "\n]";
+    stream << "[\n"
+           << indent(
+                  join_strings(nonnegative_range(dim0_size), "\n", render_2d))
+           << "\n]";
   }
 };
 
@@ -165,6 +170,5 @@ std::string format_accessor_w_contents(GenericTensorAccessorW const &accessor) {
       PANIC("Unhandled accessor dimensionality", num_dims);
   }
 }
-
 
 } // namespace FlexFlow

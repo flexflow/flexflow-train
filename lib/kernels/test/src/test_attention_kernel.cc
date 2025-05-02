@@ -42,24 +42,24 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         /*add_bias_kv=*/false);
 
     TensorShape query_shape = TensorShape{
-      TensorDims{FFOrdered{qoSeqLength, num_samples, qSize}}, 
-      DataType::FLOAT,
+        TensorDims{FFOrdered{qoSeqLength, num_samples, qSize}},
+        DataType::FLOAT,
     };
     TensorShape key_shape = TensorShape{
-      TensorDims{FFOrdered{kvSeqLength, num_samples, kSize}}, 
-      DataType::FLOAT,
+        TensorDims{FFOrdered{kvSeqLength, num_samples, kSize}},
+        DataType::FLOAT,
     };
     TensorShape value_shape = TensorShape{
-      TensorDims{FFOrdered{kvSeqLength, num_samples, vSize}}, 
-      DataType::FLOAT,
+        TensorDims{FFOrdered{kvSeqLength, num_samples, vSize}},
+        DataType::FLOAT,
     };
     TensorShape output_shape = TensorShape{
-      TensorDims{FFOrdered{qoSeqLength, num_samples, oProjSize}}, 
-      DataType::FLOAT,
+        TensorDims{FFOrdered{qoSeqLength, num_samples, oProjSize}},
+        DataType::FLOAT,
     };
     TensorShape weight_shape = TensorShape{
-      TensorDims{FFOrdered{nonnegative_int{state.weightSize}}}, 
-      DataType::FLOAT,
+        TensorDims{FFOrdered{nonnegative_int{state.weightSize}}},
+        DataType::FLOAT,
     };
 
     GenericTensorAccessorW query_accessor =
