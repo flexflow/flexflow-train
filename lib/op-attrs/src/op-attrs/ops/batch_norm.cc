@@ -1,6 +1,6 @@
 #include "op-attrs/ops/batch_norm.h"
-#include "op-attrs/dim_ordered/concat.h"
-#include "op-attrs/dim_ordered/slice.h"
+#include "op-attrs/ff_ordered/concat.h"
+#include "op-attrs/ff_ordered/slice.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/tensor_shape.h"
 #include "utils/containers/any_of.h"

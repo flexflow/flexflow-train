@@ -1,9 +1,10 @@
-#include "doctest/doctest.h"
+#include "internal/test_utils.h"
 #include "kernels/pool_2d_kernels.h"
-#include "test_utils.h"
+#include "op-attrs/datatype_value.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
-TEST_SUITE(FF_TEST_SUITE) {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test Pool2D Forward and Backward Kernel") {
     nonnegative_int input_w = 10_n;
     nonnegative_int input_h = 10_n;
@@ -22,7 +23,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     PoolOp pool_type = PoolOp::MAX;
 
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle{
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true};
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
@@ -46,10 +49,14 @@ TEST_SUITE(FF_TEST_SUITE) {
                                      /*stride_w=*/stride_w.unwrap_nonnegative(),
                                      /*pool_type=*/pool_type);
 
-    TensorShape input_shape = make_float_tensor_shape_from_legion_dims(
-        {input_w, input_h, input_c, input_n});
-    TensorShape output_shape = make_float_tensor_shape_from_legion_dims(
-        {output_w, output_h, output_c, output_n});
+    TensorShape input_shape = TensorShape{
+        TensorDims{FFOrdered{input_n, input_c, input_h, input_w}},
+        DataType::FLOAT,
+    };
+    TensorShape output_shape = TensorShape{
+        TensorDims{FFOrdered{output_n, input_c, output_h, output_w}},
+        DataType::FLOAT,
+    };
 
     GenericTensorAccessorW input_accessor =
         create_random_filled_accessor_w(input_shape, allocator);
@@ -62,28 +69,23 @@ TEST_SUITE(FF_TEST_SUITE) {
                                       input_accessor.ptr,
                                       output_accessor.ptr);
 
-      std::vector<float> host_output_data =
-          load_data_to_host_from_device<float>(
-              read_only_accessor_from_write_accessor(output_accessor));
-      CHECK(contains_non_zero(host_output_data));
+      CHECK(contains_non_zero(output_accessor));
     }
 
     SUBCASE("backward_kernel") {
-      GenericTensorAccessorW output_grad_accessor =
-          create_filled_accessor_w(output_shape, allocator, 1.0f);
+      GenericTensorAccessorW output_grad_accessor = create_filled_accessor_w(
+          output_shape, allocator, make_float_data_type_value(1));
       GenericTensorAccessorW input_grad_accessor =
           allocator.allocate_tensor(input_shape);
 
       Kernels::Pool2D::backward_kernel(managed_stream.raw_stream(),
                                        state,
-                                       input_accessor.ptr,
-                                       input_grad_accessor.ptr,
                                        output_accessor.ptr,
-                                       output_grad_accessor.ptr);
+                                       output_grad_accessor.ptr,
+                                       input_accessor.ptr,
+                                       input_grad_accessor.ptr);
 
-      std::vector<float> host_input_grad = load_data_to_host_from_device<float>(
-          read_only_accessor_from_write_accessor(input_grad_accessor));
-      CHECK(contains_non_zero(host_input_grad));
+      CHECK(contains_non_zero(input_grad_accessor));
     }
   }
 }

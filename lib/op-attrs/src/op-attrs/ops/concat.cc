@@ -1,6 +1,6 @@
 #include "op-attrs/ops/concat.h"
-#include "op-attrs/dim_ordered/enumerate.h"
-#include "op-attrs/dim_ordered/ff_ordered_from_map.h"
+#include "op-attrs/ff_ordered/enumerate.h"
+#include "op-attrs/ff_ordered/ff_ordered_from_map.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/tensor_dims.h"
 #include "op-attrs/tensor_shape.h"

@@ -57,9 +57,9 @@ jobs:
     name: GPU unit tests
     needs: cpu-ci
     runs-on:
-      - runs-on
+      - runs-on=${{ github.run_id }}
       - family=g4dn.xlarge
-      - image=runs-on-gpu-pinned
+      - image=flexflow-gpu-ci
 
     strategy:
       max-parallel: 1

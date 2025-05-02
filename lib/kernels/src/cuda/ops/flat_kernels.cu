@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/accessor.h"
 #include "kernels/flat_kernels.h"
 
@@ -35,8 +35,8 @@ void forward_kernel(cudaStream_t stream,
 
 void backward_kernel(cudaStream_t stream,
                      GenericTensorAccessorR input,
-                     float *input_grad_ptr,
-                     float const *output_grad_ptr) {
+                     float const *output_grad_ptr,
+                     float *input_grad_ptr) {
 
   float alpha = 1.0f;
   apply_add_with_scale<float>

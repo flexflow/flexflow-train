@@ -1,10 +1,10 @@
-#include "doctest/doctest.h"
+#include "internal/test_utils.h"
 #include "kernels/attention_kernels.h"
-#include "test_utils.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
-TEST_SUITE(FF_TEST_SUITE) {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test multi-head attention kernel") {
     nonnegative_int num_samples = 10_n;
     nonnegative_int num_heads = 4_n;
@@ -19,7 +19,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     nonnegative_int kvSeqLength = 20_n;
 
     ManagedFFStream managed_stream{};
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle{
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true};
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
@@ -39,16 +41,26 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*kvSeqLength=*/kvSeqLength.unwrap_nonnegative(),
         /*add_bias_kv=*/false);
 
-    TensorShape query_shape = make_float_tensor_shape_from_legion_dims(
-        {qoSeqLength, num_samples, qSize});
-    TensorShape key_shape = make_float_tensor_shape_from_legion_dims(
-        {kvSeqLength, num_samples, kSize});
-    TensorShape value_shape = make_float_tensor_shape_from_legion_dims(
-        {kvSeqLength, num_samples, vSize});
-    TensorShape output_shape = make_float_tensor_shape_from_legion_dims(
-        {qoSeqLength, num_samples, oProjSize});
-    TensorShape weight_shape = make_float_tensor_shape_from_legion_dims(
-        {nonnegative_int{state.weightSize}});
+    TensorShape query_shape = TensorShape{
+        TensorDims{FFOrdered{qoSeqLength, num_samples, qSize}},
+        DataType::FLOAT,
+    };
+    TensorShape key_shape = TensorShape{
+        TensorDims{FFOrdered{kvSeqLength, num_samples, kSize}},
+        DataType::FLOAT,
+    };
+    TensorShape value_shape = TensorShape{
+        TensorDims{FFOrdered{kvSeqLength, num_samples, vSize}},
+        DataType::FLOAT,
+    };
+    TensorShape output_shape = TensorShape{
+        TensorDims{FFOrdered{qoSeqLength, num_samples, oProjSize}},
+        DataType::FLOAT,
+    };
+    TensorShape weight_shape = TensorShape{
+        TensorDims{FFOrdered{nonnegative_int{state.weightSize}}},
+        DataType::FLOAT,
+    };
 
     GenericTensorAccessorW query_accessor =
         create_random_filled_accessor_w(query_shape, allocator);
@@ -72,9 +84,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           weight_accessor.get_float_ptr(),
           output_accessor.get_float_ptr());
 
-      std::vector<float> host_output = load_data_to_host_from_device<float>(
-          read_only_accessor_from_write_accessor(output_accessor));
-      CHECK(contains_non_zero(host_output));
+      CHECK(contains_non_zero(output_accessor));
     }
 
     SUBCASE("backward_kernel") {
