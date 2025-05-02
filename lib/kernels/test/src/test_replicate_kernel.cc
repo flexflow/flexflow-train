@@ -12,11 +12,11 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     nonnegative_int num_replicas = 10_n;
 
     TensorShape input_shape = TensorShape{
-        TensorDims{FFOrdered{100_n}},
+        TensorDims{FFOrdered{3_n}},
         DataType::FLOAT,
     };
     TensorShape output_shape = TensorShape{
-        TensorDims{FFOrdered{100_n}},
+        TensorDims{FFOrdered{3_n}},
         DataType::FLOAT,
     };
 
