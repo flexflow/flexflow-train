@@ -52,5 +52,15 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       CHECK(result == correct);
     }
+
+    SUBCASE("allows custom indent size") {
+      std::string input = "hello\nworld";
+
+      std::string result = indent(input, /*indent_size=*/4);
+      std::string correct = "    hello\n"
+                            "    world";
+
+      CHECK(result == correct);
+    }
   }
 }

@@ -1,6 +1,8 @@
 #include "internal/test_utils.h"
+#include "kernels/format_accessor_contents.h"
 #include "kernels/replicate_kernels.h"
 #include "kernels/replicate_kernels_cpu.h"
+#include "test/utils/doctest/check_kv.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -91,7 +93,10 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       Kernels::Replicate::cpu_forward_kernel(input_accessor_cpu,
                                              output_accessor_cpu);
 
-      CHECK(accessors_are_equal(output_accessor_gpu, output_accessor_cpu));
+      CHECK_MESSAGE(
+          accessors_are_equal(output_accessor_gpu, output_accessor_cpu),
+          check_kv("gpu", format_accessor_w_contents(output_accessor_gpu)),
+          check_kv("cpu", format_accessor_w_contents(output_accessor_cpu)));
     }
 
     SUBCASE("backward_kernel") {
@@ -117,8 +122,10 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           input_grad_accessor_cpu,
           num_replicas.unwrap_nonnegative());
 
-      CHECK(accessors_are_equal(input_grad_accessor_gpu,
-                                input_grad_accessor_cpu));
+      CHECK_MESSAGE(
+          accessors_are_equal(input_grad_accessor_gpu, input_grad_accessor_cpu),
+          check_kv("gpu", format_accessor_w_contents(input_grad_accessor_gpu)),
+          check_kv("cpu", format_accessor_w_contents(input_grad_accessor_cpu)));
     }
   }
 }

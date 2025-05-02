@@ -5,7 +5,7 @@
 
 namespace FlexFlow {
 
-std::string indent(std::string const &);
+std::string indent(std::string const &, int indent_size = 2);
 
 } // namespace FlexFlow
 

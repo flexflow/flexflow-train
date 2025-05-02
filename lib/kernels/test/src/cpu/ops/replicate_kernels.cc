@@ -1,6 +1,7 @@
 #include "internal/test_utils.h"
 #include "kernels/format_accessor_contents.h"
 #include "kernels/replicate_kernels_cpu.h"
+#include "test/utils/doctest/check_kv.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -51,7 +52,6 @@ TEST_SUITE(FF_TEST_SUITE) {
     Kernels::Replicate::cpu_backward_kernel(output, result, 3);
 
     CHECK_MESSAGE(accessors_are_equal(result, correct),
-                  "result=",
-                  format_accessor_w_contents(result));
+                  check_kv("result", format_accessor_w_contents(result)));
   }
 }
