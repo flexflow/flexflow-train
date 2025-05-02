@@ -78,7 +78,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         DataType::FLOAT,
     };
     TensorShape output_shape = TensorShape{
-        TensorDims{FFOrdered{num_replicas, 5_n}},
+        TensorDims{FFOrdered{5_n, num_replicas}},
         DataType::FLOAT,
     };
 
