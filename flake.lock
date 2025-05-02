@@ -75,7 +75,6 @@
       },
       "original": {
         "owner": "lockshaw",
-        "ref": "feat/query-path",
         "repo": "proj",
         "type": "github"
       }
