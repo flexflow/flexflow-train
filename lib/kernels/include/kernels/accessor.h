@@ -76,9 +76,6 @@ private:
 std::string format_as(GenericTensorAccessorR const &);
 std::ostream &operator<<(std::ostream &, GenericTensorAccessorR const &);
 
-std::string format_1d_accessor_contents(GenericTensorAccessorR const &);
-std::string format_2d_accessor_contents(GenericTensorAccessorR const &);
-
 class GenericTensorAccessorW {
 public:
   template <DataType DT>
@@ -156,9 +153,6 @@ private:
 
 std::string format_as(GenericTensorAccessorW const &);
 std::ostream &operator<<(std::ostream &, GenericTensorAccessorW const &);
-
-std::string format_1d_accessor_contents(GenericTensorAccessorW const &);
-std::string format_2d_accessor_contents(GenericTensorAccessorW const &);
 
 static_assert(is_fmtable<req<DataType> const &>::value, "");
 

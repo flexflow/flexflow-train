@@ -21,12 +21,18 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    TensorShape input_shape_a =
-        make_tensor_shape(LegionOrdered{m, k, batch}, DataType::FLOAT);
-    TensorShape input_shape_b =
-        make_tensor_shape(LegionOrdered{k, n, batch}, DataType::FLOAT);
-    TensorShape output_shape =
-        make_tensor_shape(LegionOrdered{m, n, batch}, DataType::FLOAT);
+    TensorShape input_shape_a = TensorShape{
+      TensorDims{FFOrdered{batch, k, m}}, 
+      DataType::FLOAT,
+    };
+    TensorShape input_shape_b = TensorShape{
+      TensorDims{FFOrdered{batch, n, k}},
+      DataType::FLOAT,
+    };
+    TensorShape output_shape = TensorShape{
+      TensorDims{FFOrdered{batch, n, m}}, 
+      DataType::FLOAT,
+    };
 
     GenericTensorAccessorW a_accessor =
         create_random_filled_accessor_w(input_shape_a, allocator);

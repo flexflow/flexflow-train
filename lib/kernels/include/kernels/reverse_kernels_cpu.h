@@ -3,20 +3,17 @@
 
 #include "kernels/accessor.h"
 #include "kernels/device.h"
+#include "op-attrs/ops/reverse_attrs.dtg.h"
 
 namespace FlexFlow::Kernels::Reverse {
 
 void cpu_forward_kernel(GenericTensorAccessorR const &input_accessor,
                         GenericTensorAccessorW &output_accessor,
-                        int num_out_blks,
-                        int reverse_dim_size,
-                        int in_blk_size);
+                        ReverseAttrs const &);
 
 void cpu_backward_kernel(GenericTensorAccessorR const &output_accessor,
                          GenericTensorAccessorW &input_accessor,
-                         int num_out_blks,
-                         int reverse_dim_size,
-                         int in_blk_size);
+                         ReverseAttrs const &);
 
 } // namespace FlexFlow::Kernels::Reverse
 

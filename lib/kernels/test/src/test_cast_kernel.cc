@@ -10,10 +10,14 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    TensorShape input_shape =
-        make_tensor_shape(FFOrdered{100_n, 100_n}, DataType::FLOAT);
-    TensorShape output_shape =
-        make_tensor_shape(FFOrdered{100_n, 100_n}, DataType::DOUBLE);
+    TensorShape input_shape = TensorShape{
+      TensorDims{FFOrdered{100_n, 100_n}}, 
+      DataType::FLOAT,
+    };
+    TensorShape output_shape = TensorShape{
+      TensorDims{FFOrdered{100_n, 100_n}}, 
+      DataType::DOUBLE,
+    };
 
     SUBCASE("forward_kernel") {
       GenericTensorAccessorR input_accessor =
@@ -47,10 +51,14 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     Allocator gpu_allocator = create_local_cuda_memory_allocator();
     Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
-    TensorShape input_shape =
-        make_tensor_shape(FFOrdered{10_n, 2_n}, DataType::FLOAT);
-    TensorShape output_shape =
-        make_tensor_shape(FFOrdered{10_n, 2_n}, DataType::DOUBLE);
+    TensorShape input_shape = TensorShape{
+      TensorDims{FFOrdered{10_n, 2_n}}, 
+      DataType::FLOAT,
+    };
+    TensorShape output_shape = TensorShape{
+      TensorDims{FFOrdered{10_n, 2_n}}, 
+      DataType::DOUBLE,
+    };
 
     // Only calling forward kernel as backward kernel is exactly the same
     SUBCASE("forward_kernel") {

@@ -8,8 +8,10 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test Reduction Forward and Backward Kernel") {
     std::size_t num_replicas = 5;
 
-    TensorShape input_shape = make_tensor_shape(
-        FFOrdered{10_n, 10_n, 10_n, 10_n, 10_n}, DataType::FLOAT);
+    TensorShape input_shape = TensorShape{
+      TensorDims{FFOrdered{10_n, 10_n, 10_n, 10_n, 10_n}}, 
+      DataType::FLOAT,
+    };
 
     ManagedPerDeviceFFHandle managed_handle{
         /*workSpaceSize=*/1024 * 1024,
@@ -19,8 +21,10 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     Allocator allocator = create_local_cuda_memory_allocator();
 
     SUBCASE("forward_kernel") {
-      TensorShape output_shape =
-          make_tensor_shape(FFOrdered{10_n}, DataType::FLOAT);
+      TensorShape output_shape = TensorShape{
+        TensorDims{FFOrdered{10_n}}, 
+        DataType::FLOAT,
+      };
 
       GenericTensorAccessorR input_accessor =
           create_random_filled_accessor_r(input_shape, allocator);

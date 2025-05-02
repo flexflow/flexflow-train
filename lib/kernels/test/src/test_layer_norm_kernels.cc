@@ -12,11 +12,15 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     float epsilon = 1e-5f;
     bool elementwise_affine = true;
 
-    TensorShape input_shape =
-        make_tensor_shape(FFOrdered{batch_size, feature_size}, DataType::FLOAT);
+    TensorShape input_shape = TensorShape{
+      TensorDims{FFOrdered{batch_size, feature_size}}, 
+      DataType::FLOAT,
+    };
     TensorShape output_shape = input_shape;
-    TensorShape feature_shape =
-        make_tensor_shape(FFOrdered{feature_size}, DataType::FLOAT);
+    TensorShape feature_shape = TensorShape{
+      TensorDims{FFOrdered{feature_size}}, 
+      DataType::FLOAT,
+    };
 
     ManagedPerDeviceFFHandle managed_handle{
         /*workSpaceSize=*/1024 * 1024,

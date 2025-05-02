@@ -120,72 +120,6 @@ std::ostream &operator<<(std::ostream &s, GenericTensorAccessorW const &a) {
   return (s << fmt::to_string(a));
 }
 
-template <DataType DT>
-struct Print1DCPUAccessorR {
-  void operator()(GenericTensorAccessorR const &accessor,
-                  std::ostream &stream) {
-    ASSERT(accessor.device_type == DeviceType::CPU);
-    nonnegative_int dims = accessor.shape.num_dims();
-    ASSERT(dims == 1_n);
-
-    nonnegative_int ncols = accessor.shape.at(legion_dim_t{0_n});
-
-    stream << "["
-           << join_strings(nonnegative_range(ncols),
-                           " ",
-                           [&](nonnegative_int col_idx) -> std::string {
-                             return fmt::to_string(
-                                 accessor.at<DT>(LegionOrdered{col_idx}));
-                           })
-           << "]";
-  }
-};
-
-std::string
-    format_1d_accessor_contents(GenericTensorAccessorR const &accessor) {
-  ASSERT(accessor.device_type == DeviceType::CPU);
-  ASSERT(accessor.shape.num_dims() == 1_n);
-
-  std::ostringstream oss;
-  DataTypeDispatch1<Print1DCPUAccessorR>{}(accessor.data_type, accessor, oss);
-  return oss.str();
-}
-
-template <DataType DT>
-struct Print2DCPUAccessorR {
-  void operator()(GenericTensorAccessorR const &accessor,
-                  std::ostream &stream) {
-    ASSERT(accessor.device_type == DeviceType::CPU);
-    nonnegative_int dims = accessor.shape.num_dims();
-    ASSERT(dims == 2_n);
-    nonnegative_int ncols = accessor.shape.at(legion_dim_t{0_n});
-    nonnegative_int nrows = accessor.shape.at(legion_dim_t{1_n});
-
-    auto render_row = [&](nonnegative_int row_idx) -> std::string {
-      return "[" +
-             join_strings(nonnegative_range(ncols),
-                          " ",
-                          [&](nonnegative_int col_idx) -> std::string {
-                            return fmt::to_string(accessor.at<DT>(
-                                LegionOrdered{col_idx, row_idx}));
-                          }) +
-             "]";
-    };
-
-    stream << join_strings(nonnegative_range(nrows), "\n", render_row);
-  }
-};
-
-std::string
-    format_2d_accessor_contents(GenericTensorAccessorR const &accessor) {
-  ASSERT(accessor.device_type == DeviceType::CPU);
-  ASSERT(accessor.shape.num_dims() == 2_n);
-
-  std::ostringstream oss;
-  DataTypeDispatch1<Print2DCPUAccessorR>{}(accessor.data_type, accessor, oss);
-  return oss.str();
-}
-
 GenericTensorAccessorR::GenericTensorAccessorR(
     DataType data_type,
     ArrayShape const &shape,
@@ -240,18 +174,6 @@ std::string format_as(GenericTensorAccessorR const &a) {
 
 std::ostream &operator<<(std::ostream &s, GenericTensorAccessorR const &a) {
   return (s << fmt::to_string(a));
-}
-
-std::string
-    format_1d_accessor_contents(GenericTensorAccessorW const &accessor) {
-  return format_1d_accessor_contents(
-      read_only_accessor_from_write_accessor(accessor));
-}
-
-std::string
-    format_2d_accessor_contents(GenericTensorAccessorW const &accessor) {
-  return format_2d_accessor_contents(
-      read_only_accessor_from_write_accessor(accessor));
 }
 
 int32_t const *get_int32_ptr(GenericTensorAccessorR const &a) {

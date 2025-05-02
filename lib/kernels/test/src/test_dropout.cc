@@ -13,8 +13,10 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         std::vector{10_n, 10_n},
     };
 
-    TensorShape input_shape =
-        make_tensor_shape(FFOrdered{10_n, 10_n}, DataType::FLOAT);
+    TensorShape input_shape = TensorShape{
+      TensorDims{FFOrdered{10_n, 10_n}}, 
+      DataType::FLOAT,
+    };
     TensorShape output_shape = input_shape;
 
     ManagedFFStream managed_stream{};

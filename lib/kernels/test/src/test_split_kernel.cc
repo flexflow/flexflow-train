@@ -20,10 +20,14 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    TensorShape input_shape =
-        make_tensor_shape(FFOrdered{100_n}, DataType::FLOAT);
-    TensorShape output_shape =
-        make_tensor_shape(FFOrdered{50_n}, DataType::FLOAT);
+    TensorShape input_shape = TensorShape{
+      TensorDims{FFOrdered{100_n}}, 
+      DataType::FLOAT,
+    };
+    TensorShape output_shape = TensorShape{
+      TensorDims{FFOrdered{50_n}}, 
+      DataType::FLOAT,
+    };
 
     SUBCASE("forward_kernel") {
       GenericTensorAccessorW input_accessor =

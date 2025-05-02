@@ -4,14 +4,19 @@
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
+
 TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Call Replicate Forward and Backward Kernels") {
     nonnegative_int num_replicas = 10_n;
 
-    TensorShape input_shape =
-        make_tensor_shape(FFOrdered{100_n}, DataType::FLOAT);
-    TensorShape output_shape =
-        make_tensor_shape(FFOrdered{100_n}, DataType::FLOAT);
+    TensorShape input_shape = TensorShape{
+      TensorDims{FFOrdered{100_n}}, 
+      DataType::FLOAT,
+    };
+    TensorShape output_shape = TensorShape{
+      TensorDims{FFOrdered{100_n}}, 
+      DataType::FLOAT,
+    };
 
     ManagedPerDeviceFFHandle managed_handle{
         /*workSpaceSize=*/1024 * 1024,
@@ -50,10 +55,14 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Check Replicate Forward and Backward Kernel against CPU Kernel") {
     nonnegative_int num_replicas = 2_n;
 
-    TensorShape input_shape =
-        make_tensor_shape(FFOrdered{5_n}, DataType::FLOAT);
-    TensorShape output_shape =
-        make_tensor_shape(FFOrdered{num_replicas, 5_n}, DataType::FLOAT);
+    TensorShape input_shape = TensorShape{
+      TensorDims{FFOrdered{5_n}}, 
+      DataType::FLOAT,
+    };
+    TensorShape output_shape = TensorShape{
+      TensorDims{FFOrdered{num_replicas, 5_n}}, 
+      DataType::FLOAT,
+    };
 
     ManagedPerDeviceFFHandle managed_handle{
         /*workSpaceSize=*/1024 * 1024,

@@ -36,22 +36,34 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       };
 
       SUBCASE("test gather forward, 2D") {
-        TensorShape input_shape =
-            make_tensor_shape(FFOrdered{2_n, 100_n}, DataType::FLOAT);
-        TensorShape index_shape =
-            make_tensor_shape(FFOrdered{2_n, 20_n}, DataType::INT32);
-        TensorShape output_shape =
-            make_tensor_shape(FFOrdered{2_n, 20_n}, DataType::FLOAT);
+        TensorShape input_shape = TensorShape{
+          TensorDims{FFOrdered{2_n, 100_n}}, 
+          DataType::FLOAT,
+        };
+        TensorShape index_shape = TensorShape{
+          TensorDims{FFOrdered{2_n, 20_n}}, 
+          DataType::INT32,
+        };
+        TensorShape output_shape = TensorShape{
+          TensorDims{FFOrdered{2_n, 20_n}}, 
+          DataType::FLOAT,
+        };
         run_forward_test(input_shape, index_shape, output_shape);
       }
 
       SUBCASE("test gather forward, 1D") {
-        TensorShape input_shape =
-            make_tensor_shape(FFOrdered{100_n}, DataType::FLOAT);
-        TensorShape index_shape =
-            make_tensor_shape(FFOrdered{10_n}, DataType::INT32);
-        TensorShape output_shape =
-            make_tensor_shape(FFOrdered{10_n}, DataType::FLOAT);
+        TensorShape input_shape = TensorShape{
+          TensorDims{FFOrdered{100_n}}, 
+          DataType::FLOAT,
+        };
+        TensorShape index_shape = TensorShape{
+          TensorDims{FFOrdered{10_n}}, 
+          DataType::INT32,
+        };
+        TensorShape output_shape = TensorShape{
+          TensorDims{FFOrdered{10_n}}, 
+          DataType::FLOAT,
+        };
         run_forward_test(input_shape, index_shape, output_shape);
       }
     }
@@ -76,12 +88,18 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       };
 
       SUBCASE("test gather backward, 2D") {
-        TensorShape input_shape =
-            make_tensor_shape(FFOrdered{2_n, 100_n}, DataType::FLOAT);
-        TensorShape index_shape =
-            make_tensor_shape(FFOrdered{2_n, 25_n}, DataType::INT32);
-        TensorShape output_shape =
-            make_tensor_shape(FFOrdered{2_n, 25_n}, DataType::FLOAT);
+        TensorShape input_shape = TensorShape{
+          TensorDims{FFOrdered{2_n, 100_n}}, 
+          DataType::FLOAT,
+        };
+        TensorShape index_shape = TensorShape{
+          TensorDims{FFOrdered{2_n, 25_n}}, 
+          DataType::INT32,
+        };
+        TensorShape output_shape = TensorShape{
+          TensorDims{FFOrdered{2_n, 25_n}}, 
+          DataType::FLOAT,
+        };
         run_backward_test(input_shape, index_shape, output_shape);
       }
     }

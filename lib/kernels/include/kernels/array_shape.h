@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <optional>
 #include <vector>
+#include "kernels/array_coord.dtg.h"
 
 namespace FlexFlow {
 
@@ -55,16 +56,29 @@ public:
 
 private:
   std::tuple<decltype(dims) const &> tie() const;
+
+  friend ::std::hash<ArrayShape>;
 };
+
+std::string format_as(ArrayShape const &);
+std::ostream &operator<<(std::ostream &, ArrayShape const &);
 
 nonnegative_int get_volume(ArrayShape const &);
 
 ArrayShape array_shape_from_tensor_shape(TensorShape const &);
 TensorShape get_tensor_shape(ArrayShape const &, DataType);
 
-std::string format_as(ArrayShape const &);
-std::ostream &operator<<(std::ostream &, ArrayShape const &);
+std::unordered_set<ArrayCoord> get_array_coord_set(ArrayShape const &);
 
 } // namespace FlexFlow
+
+namespace std {
+
+template <>
+struct hash<::FlexFlow::ArrayShape> {
+  size_t operator()(::FlexFlow::ArrayShape const &) const;
+};
+
+} // namespace std
 
 #endif
