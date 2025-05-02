@@ -236,7 +236,7 @@ The bulk of the FlexFlow source code is stored in the following folders:
 
 We currently implement CI testing using Github Workflows. Each workflow is defined by its corresponding YAML file in the [.github/workflows](.github/workflows) folder of the repo. We currently have the following workflows:
 
-1. [`tests`](./.github/workflows/per-lib-check.yml): Builds and runs GPU and non-GPU unit tests for all of the code under `lib` and `bin`. Uploads coverage numbers to [codecov.io](https://app.codecov.io/gh/flexflow/flexflow-train). Also ensures that the source code is properly formatted using `clang-format`. To format your code locally, run `proj format` (see [here](#building-testing-etc) for more information on `proj`).
+1. [`tests.yml`](./.github/workflows/tests.yml): Builds and runs GPU and non-GPU unit tests for all of the code under `lib` and `bin`. Uploads coverage numbers to [codecov.io](https://app.codecov.io/gh/flexflow/flexflow-train). Also ensures that the source code is properly formatted using `clang-format`. To format your code locally, run `proj format` (see [here](#building-testing-etc) for more information on `proj`).
 2. [`shell-check.yml`](./.github/workflows/shell-check.yml): runs shellcheck on all bash scripts in the repo.
 
 GPU machines for CI are managed using [runs-on](https://runs-on.com/).
