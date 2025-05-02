@@ -23,6 +23,10 @@ std::unordered_multiset<Node> get_leaves(BinarySPDecompositionTree const &);
 
 SPDecompositionTreeNodeType get_node_type(BinarySPDecompositionTree const &);
 
+int get_tree_height(BinarySPDecompositionTree const &);
+
+std::unordered_multiset<Node> get_nodes(BinarySPDecompositionTree const &tree);
+
 } // namespace FlexFlow
 
 #endif
