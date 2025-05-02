@@ -39,8 +39,9 @@ GenericTensorAccessorW
         contents.at(col_idx.unwrap_nonnegative());
   }
 
-  GenericTensorAccessorW result = allocator.allocate_tensor(shape); 
-  copy_accessor_data_to_l_from_r(result, read_only_accessor_from_write_accessor(cpu_accessor));
+  GenericTensorAccessorW result = allocator.allocate_tensor(shape);
+  copy_accessor_data_to_l_from_r(
+      result, read_only_accessor_from_write_accessor(cpu_accessor));
 
   return result;
 }
@@ -72,8 +73,9 @@ GenericTensorAccessorW create_2d_accessor_w_with_contents(
     }
   }
 
-  GenericTensorAccessorW result = allocator.allocate_tensor(shape); 
-  copy_accessor_data_to_l_from_r(result, read_only_accessor_from_write_accessor(cpu_accessor));
+  GenericTensorAccessorW result = allocator.allocate_tensor(shape);
+  copy_accessor_data_to_l_from_r(
+      result, read_only_accessor_from_write_accessor(cpu_accessor));
 
   return result;
 }
@@ -110,7 +112,8 @@ GenericTensorAccessorW create_3d_accessor_w_with_contents(
   for (nonnegative_int dim0_idx : nonnegative_range(dim0_size)) {
     for (nonnegative_int dim1_idx : nonnegative_range(dim1_size)) {
       for (nonnegative_int dim2_idx : nonnegative_range(dim2_size)) {
-        cpu_accessor.at<DataType::FLOAT>(FFOrdered{dim0_idx, dim1_idx, dim2_idx}) =
+        cpu_accessor.at<DataType::FLOAT>(
+            FFOrdered{dim0_idx, dim1_idx, dim2_idx}) =
             contents.at(dim0_idx.unwrap_nonnegative())
                 .at(dim1_idx.unwrap_nonnegative())
                 .at(dim2_idx.unwrap_nonnegative());
@@ -118,8 +121,9 @@ GenericTensorAccessorW create_3d_accessor_w_with_contents(
     }
   }
 
-  GenericTensorAccessorW result = allocator.allocate_tensor(shape); 
-  copy_accessor_data_to_l_from_r(result, read_only_accessor_from_write_accessor(cpu_accessor));
+  GenericTensorAccessorW result = allocator.allocate_tensor(shape);
+  copy_accessor_data_to_l_from_r(
+      result, read_only_accessor_from_write_accessor(cpu_accessor));
 
   return result;
 }
@@ -335,7 +339,7 @@ struct AccessorsAreEqual {
 
 bool accessors_are_equal(GenericTensorAccessorR const &accessor_a,
                          GenericTensorAccessorR const &accessor_b) {
-  ASSERT(accessor_a.shape == accessor_b.shape, 
+  ASSERT(accessor_a.shape == accessor_b.shape,
          "accessors_are_equal expects accessors to have the same shape");
 
   return DataTypeDispatch1<AccessorsAreEqual>{}(

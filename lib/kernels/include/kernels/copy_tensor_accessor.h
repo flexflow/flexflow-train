@@ -15,12 +15,12 @@ GenericTensorAccessorW
                            Allocator &allocator);
 
 GenericTensorAccessorR
-    copy_tensor_accessor_r_to_cpu_if_necessary(
-          GenericTensorAccessorR const &, Allocator &cpu_allocator);
+    copy_tensor_accessor_r_to_cpu_if_necessary(GenericTensorAccessorR const &,
+                                               Allocator &cpu_allocator);
 
 GenericTensorAccessorW
-    copy_tensor_accessor_w_to_cpu_if_necessary(
-          GenericTensorAccessorW const &, Allocator &cpu_allocator);
+    copy_tensor_accessor_w_to_cpu_if_necessary(GenericTensorAccessorW const &,
+                                               Allocator &cpu_allocator);
 
 } // namespace FlexFlow
 

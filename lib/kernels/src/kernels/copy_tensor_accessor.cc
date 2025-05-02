@@ -45,9 +45,8 @@ GenericTensorAccessorR
       src_accessor.data_type, src_accessor, allocator);
 }
 
-GenericTensorAccessorR
-    copy_tensor_accessor_r_to_cpu_if_necessary(GenericTensorAccessorR const &accessor,
-                                        Allocator &cpu_allocator) {
+GenericTensorAccessorR copy_tensor_accessor_r_to_cpu_if_necessary(
+    GenericTensorAccessorR const &accessor, Allocator &cpu_allocator) {
   if (accessor.device_type == DeviceType::GPU) {
     return copy_tensor_accessor_r(accessor, cpu_allocator);
   } else {
@@ -55,9 +54,8 @@ GenericTensorAccessorR
   }
 }
 
-GenericTensorAccessorW
-    copy_tensor_accessor_w_to_cpu_if_necessary(GenericTensorAccessorW const &accessor,
-                                        Allocator &cpu_allocator) {
+GenericTensorAccessorW copy_tensor_accessor_w_to_cpu_if_necessary(
+    GenericTensorAccessorW const &accessor, Allocator &cpu_allocator) {
   if (accessor.device_type == DeviceType::GPU) {
     return copy_tensor_accessor_w(accessor, cpu_allocator);
   } else {

@@ -1,9 +1,9 @@
 #include "kernels/format_accessor_contents.h"
-#include "kernels/datatype_dispatch.h"
 #include "kernels/copy_tensor_accessor.h"
+#include "kernels/datatype_dispatch.h"
+#include "kernels/local_cpu_allocator.h"
 #include "utils/indent.h"
 #include <libassert/assert.hpp>
-#include "kernels/local_cpu_allocator.h"
 
 namespace FlexFlow {
 
@@ -147,7 +147,8 @@ static std::string
 
 std::string format_accessor_r_contents(GenericTensorAccessorR const &accessor) {
   Allocator cpu_allocator = create_local_cpu_memory_allocator();
-  GenericTensorAccessorR cpu_accessor = copy_tensor_accessor_r_to_cpu_if_necessary(accessor, cpu_allocator);
+  GenericTensorAccessorR cpu_accessor =
+      copy_tensor_accessor_r_to_cpu_if_necessary(accessor, cpu_allocator);
 
   int num_dims = accessor.shape.num_dims().unwrap_nonnegative();
   switch (num_dims) {
@@ -164,7 +165,8 @@ std::string format_accessor_r_contents(GenericTensorAccessorR const &accessor) {
 
 std::string format_accessor_w_contents(GenericTensorAccessorW const &accessor) {
   Allocator cpu_allocator = create_local_cpu_memory_allocator();
-  GenericTensorAccessorW cpu_accessor = copy_tensor_accessor_w_to_cpu_if_necessary(accessor, cpu_allocator);
+  GenericTensorAccessorW cpu_accessor =
+      copy_tensor_accessor_w_to_cpu_if_necessary(accessor, cpu_allocator);
 
   int num_dims = cpu_accessor.shape.num_dims().unwrap_nonnegative();
   switch (num_dims) {

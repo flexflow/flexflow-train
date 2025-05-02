@@ -29,8 +29,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
     SUBCASE("forward_kernel") {
-      GenericTensorAccessorR input = 
-        create_1d_accessor_r_with_contents({1, 3, 2}, gpu_allocator);
+      GenericTensorAccessorR input =
+          create_1d_accessor_r_with_contents({1, 3, 2}, gpu_allocator);
 
       GenericTensorAccessorW output =
           gpu_allocator.allocate_tensor(output_shape);
@@ -46,15 +46,15 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     SUBCASE("backward_kernel") {
       GenericTensorAccessorR output_grad = create_2d_accessor_r_with_contents(
-        {
-            {1, 2, 3},
-            {4, 3, 3},
-            {1, 3, 5},
-        },
-        gpu_allocator);
-              
-    GenericTensorAccessorR correct = create_1d_accessor_r_with_contents(
-        {1 + 4 + 1, 2 + 3 + 3, 3 + 3 + 5}, cpu_allocator);
+          {
+              {1, 2, 3},
+              {4, 3, 3},
+              {1, 3, 5},
+          },
+          gpu_allocator);
+
+      GenericTensorAccessorR correct = create_1d_accessor_r_with_contents(
+          {1 + 4 + 1, 2 + 3 + 3, 3 + 3 + 5}, cpu_allocator);
 
       GenericTensorAccessorW input_grad =
           gpu_allocator.allocate_tensor(input_shape);
@@ -64,8 +64,9 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                                           input_grad,
                                           num_replicas.unwrap_nonnegative());
 
-      CHECK_MESSAGE(accessors_are_equal(input_grad, correct),
-                    check_kv("input_grad", format_accessor_w_contents(input_grad)));
+      CHECK_MESSAGE(
+          accessors_are_equal(input_grad, correct),
+          check_kv("input_grad", format_accessor_w_contents(input_grad)));
     }
   }
 
