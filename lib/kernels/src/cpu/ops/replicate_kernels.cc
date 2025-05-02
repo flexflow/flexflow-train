@@ -25,7 +25,7 @@ struct CPUBackwardKernel {
     for (nonnegative_int i : nonnegative_range(num_elements)) {
       T cur_sum = 0;
       for (nonnegative_int replica_idx : nonnegative_range(num_replicas)) {
-        cur_sum += output.at<DT>(LegionOrdered{i, replica_idx});
+        cur_sum += output.at<DT>(LegionOrdered{replica_idx, i});
       }
       input.at<DT>(LegionOrdered{i}) = cur_sum;
     }

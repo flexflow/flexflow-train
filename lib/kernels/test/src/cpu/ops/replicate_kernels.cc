@@ -41,7 +41,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         cpu_allocator);
 
     GenericTensorAccessorR correct = create_1d_accessor_r_with_contents(
-        {1 + 4 + 1, 2 + 3 + 3, 3 + 3 + 5}, cpu_allocator);
+        {1 + 2 + 3, 4 + 3 + 3, 1 + 3 + 5}, cpu_allocator);
 
     TensorShape result_shape = TensorShape{
         TensorDims{FFOrdered{3_n}},
