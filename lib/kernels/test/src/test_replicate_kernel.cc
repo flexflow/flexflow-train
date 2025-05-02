@@ -25,32 +25,47 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         /*allowTensorOpMathConversion=*/true};
     ManagedFFStream managed_stream{};
 
-    Allocator allocator = create_local_cuda_memory_allocator();
+    Allocator gpu_allocator = create_local_cuda_memory_allocator();
+    Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
     SUBCASE("forward_kernel") {
-      GenericTensorAccessorR input_accessor =
-          create_random_filled_accessor_r(input_shape, allocator);
-      GenericTensorAccessorW output_accessor =
-          allocator.allocate_tensor(output_shape);
+      GenericTensorAccessorR input = 
+        create_1d_accessor_r_with_contents({1, 3, 2}, gpu_allocator);
+
+      GenericTensorAccessorW output =
+          gpu_allocator.allocate_tensor(output_shape);
 
       Kernels::Replicate::forward_kernel(
-          managed_stream.raw_stream(), input_accessor, output_accessor);
+          managed_stream.raw_stream(), input, output);
 
-      CHECK(contains_non_zero(output_accessor));
+      GenericTensorAccessorR correct = input;
+
+      CHECK_MESSAGE(accessors_are_equal(output, correct),
+                    check_kv("output", format_accessor_w_contents(output)));
     }
 
     SUBCASE("backward_kernel") {
-      GenericTensorAccessorR output_grad_accessor =
-          create_random_filled_accessor_r(output_shape, allocator);
-      GenericTensorAccessorW input_grad_accessor =
-          allocator.allocate_tensor(input_shape);
+      GenericTensorAccessorR output_grad = create_2d_accessor_r_with_contents(
+        {
+            {1, 2, 3},
+            {4, 3, 3},
+            {1, 3, 5},
+        },
+        gpu_allocator);
+              
+    GenericTensorAccessorR correct = create_1d_accessor_r_with_contents(
+        {1 + 4 + 1, 2 + 3 + 3, 3 + 3 + 5}, cpu_allocator);
+
+      GenericTensorAccessorW input_grad =
+          gpu_allocator.allocate_tensor(input_shape);
 
       Kernels::Replicate::backward_kernel(managed_stream.raw_stream(),
-                                          output_grad_accessor,
-                                          input_grad_accessor,
+                                          output_grad,
+                                          input_grad,
                                           num_replicas.unwrap_nonnegative());
 
-      CHECK(contains_non_zero(input_grad_accessor));
+      CHECK_MESSAGE(accessors_are_equal(input_grad, correct),
+                    check_kv("input_grad", format_accessor_w_contents(input_grad)));
     }
   }
 

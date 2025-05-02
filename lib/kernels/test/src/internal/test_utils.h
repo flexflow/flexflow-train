@@ -59,14 +59,6 @@ bool contains_non_zero(GenericTensorAccessorR const &accessor);
 
 void fill_with_zeros(GenericTensorAccessorW const &accessor);
 
-GenericTensorAccessorW
-    copy_accessor_w_to_cpu_if_necessary(GenericTensorAccessorW const &accessor,
-                                        Allocator &allocator);
-
-GenericTensorAccessorR
-    copy_accessor_r_to_cpu_if_necessary(GenericTensorAccessorR const &accessor,
-                                        Allocator &allocator);
-
 void print_2d_tensor_accessor_contents(GenericTensorAccessorR const &accessor,
                                        std::ostream &stream);
 

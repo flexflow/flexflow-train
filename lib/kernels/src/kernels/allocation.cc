@@ -27,4 +27,12 @@ GenericTensorAccessorW
   };
 }
 
+void Allocator::deallocate_tensor(GenericTensorAccessorW const &t) {
+  this->deallocate(t.ptr);
+}
+
+void Allocator::deallocate_tensor(GenericTensorAccessorR const &t) {
+  this->deallocate(const_cast<void *>(t.ptr));
+}
+
 } // namespace FlexFlow

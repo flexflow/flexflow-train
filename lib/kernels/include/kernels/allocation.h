@@ -20,6 +20,8 @@ struct Allocator {
   Allocator() = delete;
 
   GenericTensorAccessorW allocate_tensor(TensorShape const &tensor_shape);
+  void deallocate_tensor(GenericTensorAccessorW const &);
+  void deallocate_tensor(GenericTensorAccessorR const &);
 
   void *allocate(size_t mem_size);
   void deallocate(void *ptr);

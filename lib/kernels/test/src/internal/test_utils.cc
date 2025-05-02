@@ -31,14 +31,18 @@ GenericTensorAccessorW
       DataType::FLOAT,
   };
 
-  GenericTensorAccessorW accessor = allocator.allocate_tensor(shape);
+  Allocator cpu_allocator = create_local_cpu_memory_allocator();
+  GenericTensorAccessorW cpu_accessor = cpu_allocator.allocate_tensor(shape);
 
   for (nonnegative_int col_idx : nonnegative_range(ncols)) {
-    accessor.at<DataType::FLOAT>(FFOrdered{col_idx}) =
+    cpu_accessor.at<DataType::FLOAT>(FFOrdered{col_idx}) =
         contents.at(col_idx.unwrap_nonnegative());
   }
 
-  return accessor;
+  GenericTensorAccessorW result = allocator.allocate_tensor(shape); 
+  copy_accessor_data_to_l_from_r(result, read_only_accessor_from_write_accessor(cpu_accessor));
+
+  return result;
 }
 
 GenericTensorAccessorW create_2d_accessor_w_with_contents(
@@ -57,17 +61,21 @@ GenericTensorAccessorW create_2d_accessor_w_with_contents(
       DataType::FLOAT,
   };
 
-  GenericTensorAccessorW accessor = allocator.allocate_tensor(shape);
+  Allocator cpu_allocator = create_local_cpu_memory_allocator();
+  GenericTensorAccessorW cpu_accessor = cpu_allocator.allocate_tensor(shape);
 
   for (nonnegative_int row_idx : nonnegative_range(nrows)) {
     for (nonnegative_int col_idx : nonnegative_range(ncols)) {
-      accessor.at<DataType::FLOAT>(FFOrdered{row_idx, col_idx}) =
+      cpu_accessor.at<DataType::FLOAT>(FFOrdered{row_idx, col_idx}) =
           contents.at(row_idx.unwrap_nonnegative())
               .at(col_idx.unwrap_nonnegative());
     }
   }
 
-  return accessor;
+  GenericTensorAccessorW result = allocator.allocate_tensor(shape); 
+  copy_accessor_data_to_l_from_r(result, read_only_accessor_from_write_accessor(cpu_accessor));
+
+  return result;
 }
 
 GenericTensorAccessorW create_3d_accessor_w_with_contents(
@@ -96,12 +104,13 @@ GenericTensorAccessorW create_3d_accessor_w_with_contents(
       DataType::FLOAT,
   };
 
-  GenericTensorAccessorW accessor = allocator.allocate_tensor(shape);
+  Allocator cpu_allocator = create_local_cpu_memory_allocator();
+  GenericTensorAccessorW cpu_accessor = cpu_allocator.allocate_tensor(shape);
 
   for (nonnegative_int dim0_idx : nonnegative_range(dim0_size)) {
     for (nonnegative_int dim1_idx : nonnegative_range(dim1_size)) {
       for (nonnegative_int dim2_idx : nonnegative_range(dim2_size)) {
-        accessor.at<DataType::FLOAT>(FFOrdered{dim0_idx, dim1_idx, dim2_idx}) =
+        cpu_accessor.at<DataType::FLOAT>(FFOrdered{dim0_idx, dim1_idx, dim2_idx}) =
             contents.at(dim0_idx.unwrap_nonnegative())
                 .at(dim1_idx.unwrap_nonnegative())
                 .at(dim2_idx.unwrap_nonnegative());
@@ -109,7 +118,10 @@ GenericTensorAccessorW create_3d_accessor_w_with_contents(
     }
   }
 
-  return accessor;
+  GenericTensorAccessorW result = allocator.allocate_tensor(shape); 
+  copy_accessor_data_to_l_from_r(result, read_only_accessor_from_write_accessor(cpu_accessor));
+
+  return result;
 }
 
 GenericTensorAccessorW create_4d_accessor_w_with_contents(
@@ -291,29 +303,9 @@ struct CPUAccessorRContainsNonZero {
 bool contains_non_zero(GenericTensorAccessorR const &accessor) {
   Allocator cpu_allocator = create_local_cpu_memory_allocator();
   GenericTensorAccessorR cpu_accessor =
-      copy_accessor_r_to_cpu_if_necessary(accessor, cpu_allocator);
+      copy_tensor_accessor_r_to_cpu_if_necessary(accessor, cpu_allocator);
   return DataTypeDispatch1<CPUAccessorRContainsNonZero>{}(
       cpu_accessor.data_type, cpu_accessor);
-}
-
-GenericTensorAccessorR
-    copy_accessor_r_to_cpu_if_necessary(GenericTensorAccessorR const &accessor,
-                                        Allocator &cpu_allocator) {
-  GenericTensorAccessorR cpu_accessor = accessor;
-  if (accessor.device_type == DeviceType::GPU) {
-    cpu_accessor = copy_tensor_accessor_r(accessor, cpu_allocator);
-  }
-  return cpu_accessor;
-}
-
-GenericTensorAccessorW
-    copy_accessor_w_to_cpu_if_necessary(GenericTensorAccessorW const &accessor,
-                                        Allocator &cpu_allocator) {
-  GenericTensorAccessorW cpu_accessor = accessor;
-  if (accessor.device_type == DeviceType::GPU) {
-    cpu_accessor = copy_tensor_accessor_w(accessor, cpu_allocator);
-  }
-  return cpu_accessor;
 }
 
 template <DataType DT>
@@ -322,9 +314,9 @@ struct AccessorsAreEqual {
                   GenericTensorAccessorR const &accessor_b) {
     Allocator cpu_allocator = create_local_cpu_memory_allocator();
     GenericTensorAccessorR cpu_accessor_a =
-        copy_accessor_r_to_cpu_if_necessary(accessor_a, cpu_allocator);
+        copy_tensor_accessor_r_to_cpu_if_necessary(accessor_a, cpu_allocator);
     GenericTensorAccessorR cpu_accessor_b =
-        copy_accessor_r_to_cpu_if_necessary(accessor_b, cpu_allocator);
+        copy_tensor_accessor_r_to_cpu_if_necessary(accessor_b, cpu_allocator);
 
     using T = real_type_t<DT>;
     T const *a_data_ptr = cpu_accessor_a.get<DT>();
@@ -343,13 +335,9 @@ struct AccessorsAreEqual {
 
 bool accessors_are_equal(GenericTensorAccessorR const &accessor_a,
                          GenericTensorAccessorR const &accessor_b) {
-  if (accessor_a.shape != accessor_b.shape) {
-    throw mk_runtime_error(
-        fmt::format("accessors_are_equal expected accessors to have the same "
-                    "shape, but received: {} != {}",
-                    accessor_a.shape,
-                    accessor_b.shape));
-  }
+  ASSERT(accessor_a.shape == accessor_b.shape, 
+         "accessors_are_equal expects accessors to have the same shape");
+
   return DataTypeDispatch1<AccessorsAreEqual>{}(
       accessor_a.data_type, accessor_a, accessor_b);
 }
