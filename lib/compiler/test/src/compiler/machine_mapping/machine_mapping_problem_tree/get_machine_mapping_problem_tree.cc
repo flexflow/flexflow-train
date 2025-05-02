@@ -1,8 +1,15 @@
 #include "compiler/machine_mapping/machine_mapping_problem_tree/get_machine_mapping_problem_tree.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
+#include "compiler/series_parallel/pcg/get_pcg_balanced_binary_sp_decomposition.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "pcg/computation_graph_builder.h"
+#include "pcg/operator_task_space.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
+#include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
+#include "pcg/pcg_from_computation_graph.h"
+#include "utils/containers/extend.h"
 #include "utils/containers/get_only.h"
+#include "utils/containers/vector_of.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -90,6 +97,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     PCGOperatorAttrs input_attrs = PCGOperatorAttrs{InputAttrs{input_shape}};
 
+    auto make_operator_task_space = [&](ParallelTensorShape const &shape) {
+      std::vector<nonnegative_int> degrees;
+      extend(degrees, vector_of(ff_ordered_shard_degrees(shape)));
+      degrees.push_back(get_sum_degree(shape));
+      degrees.push_back(get_discard_copy_degree(shape));
+      return OperatorTaskSpace{degrees};
+    };
+
     auto make_input_key =
         [&](ParallelTensorShape const &parallel_tensor_shape) {
           return UnmappedOpCostEstimateKey{
@@ -97,6 +112,7 @@ TEST_SUITE(FF_TEST_SUITE) {
               /*input_shapes=*/{},
               /*weight_shapes=*/{},
               /*output_shapes=*/{parallel_tensor_shape},
+              /*op_task_space=*/make_operator_task_space(parallel_tensor_shape),
           };
         };
 
@@ -143,11 +159,15 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_layer_guid_t relu_layer = relu_added.parallel_layer;
       parallel_tensor_guid_t relu_output = get_only(relu_added.outputs);
 
+      OperatorTaskSpace relu_task_space =
+          get_operator_task_space(pcg, relu_layer);
+
       UnmappedOpCostEstimateKey relu_key = UnmappedOpCostEstimateKey{
           /*op_attrs=*/relu_attrs,
           /*input_shapes=*/{par_input_shape},
           /*weight_shapes=*/{},
           /*output_shapes=*/{relu_output_shape},
+          /*op_task_space=*/relu_task_space,
       };
 
       PCGBinarySPDecomposition sp_decomposition = pcg_make_series(
@@ -228,11 +248,14 @@ TEST_SUITE(FF_TEST_SUITE) {
                              {input1_tensor, input2_tensor},
                              {});
       parallel_layer_guid_t ew_op_layer = ew_op_added.parallel_layer;
+      OperatorTaskSpace ew_op_task_space =
+          get_operator_task_space(pcg, ew_op_layer);
       UnmappedOpCostEstimateKey ew_op_key = UnmappedOpCostEstimateKey{
           /*op_attrs=*/ew_op_attrs,
           /*input_shapes=*/{par_input_shape, par_input_shape},
           /*weight_shapes=*/{},
           /*output_shapes=*/{ew_op_output_shape},
+          /*op_task_space=*/ew_op_task_space,
       };
 
       PCGBinarySPDecomposition sp_decomposition =
@@ -279,5 +302,44 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       CHECK(result == correct);
     }
+  }
+
+  TEST_CASE("from pcg") {
+    ComputationGraph cg = [&] {
+      ComputationGraphBuilder b;
+      TensorShape input_tensor_shape = TensorShape{
+          TensorDims{
+              FFOrdered<nonnegative_int>{nonnegative_int{32},
+                                         nonnegative_int{64}},
+          },
+          DataType::FLOAT,
+      };
+      tensor_guid_t t = b.create_input(input_tensor_shape, CreateGrad::YES);
+      t = b.dense(t,
+                  /*outDim=*/nonnegative_int{16},
+                  /*activation=*/std::nullopt);
+      t = b.gelu(t);
+      t = b.dense(t,
+                  /*outDim=*/nonnegative_int{12},
+                  /*activation=*/std::nullopt,
+                  /*use_bias=*/false,
+                  /*data_type=*/DataType::FLOAT,
+                  /*kernel_initializer=*/std::nullopt,
+                  /*bias_initializer=*/std::nullopt);
+      t = b.relu(t);
+      t = b.dense(t,
+                  /*outDim=*/nonnegative_int{8},
+                  /*activation=*/Activation::RELU);
+      return b.computation_graph;
+    }();
+
+    ParallelComputationGraph pcg = pcg_from_computation_graph(cg);
+
+    PCGBinarySPDecomposition sp_decomp =
+        expect(get_pcg_balanced_binary_sp_decomposition(pcg),
+               "Failed to get SP decomposition of PCG");
+
+    MachineMappingProblemTree problem_tree =
+        get_machine_mapping_problem_tree(pcg, sp_decomp);
   }
 }

@@ -109,11 +109,14 @@ TEST_SUITE(FF_TEST_SUITE) {
         DataType::FLOAT,
     };
 
+    OperatorTaskSpace fake_op_task_space = OperatorTaskSpace{{}};
+
     UnmappedOpCostEstimateKey k1 = UnmappedOpCostEstimateKey{
         /*op_attrs=*/PCGOperatorAttrs{InputAttrs{tensor_shape}},
         /*input_shapes=*/{},
         /*weight_shapes=*/{},
         /*output_shapes=*/{},
+        /*op_task_space=*/fake_op_task_space,
     };
 
     UnmappedOpCostEstimateKey k2 = UnmappedOpCostEstimateKey{
@@ -126,6 +129,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*input_shapes=*/{},
         /*weight_shapes=*/{},
         /*output_shapes=*/{},
+        /*op_task_space=*/fake_op_task_space,
     };
 
     ParallelTensorShape par_tensor_shape = lift_to_parallel(tensor_shape);
