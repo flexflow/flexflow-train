@@ -54,14 +54,14 @@ void ModelTrainingInstance::update() {
       get_optimizer_attrs_for_next_iter(this->optimizer_attrs);
 }
 
-GenericTensorAccessorW ModelTrainingInstance::get_loss_tensor_backing() {
+void ModelTrainingInstance::write_loss_tensor_to_host(float *host_ptr) {
   gradient_tensor_t loss_tensor =
       this->training_backing.local_tensor_backing.tensor_gradient_mapping.at(
           this->logit_tensor);
   GenericTensorAccessorW loss_tensor_backing =
       this->training_backing.local_tensor_backing.tensor_backings.at(
           TensorTypeVariant{loss_tensor});
-  return loss_tensor_backing;
+  write_to_host_float_ptr(loss_tensor_backing, host_ptr);
 }
 
 } // namespace FlexFlow

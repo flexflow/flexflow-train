@@ -1,4 +1,5 @@
 #include "kernels/accessor.h"
+#include "device.h"
 
 namespace FlexFlow {
 
@@ -74,6 +75,15 @@ int64_t *get_int64_ptr(GenericTensorAccessorW const &a) {
 
 float *get_float_ptr(GenericTensorAccessorW const &a) {
   return get<DataType::FLOAT>(a);
+}
+
+void write_to_host_float_ptr(GenericTensorAccessorW const &a, float *host_ptr) {
+  float *device_ptr = get<DataType::FLOAT>(a);
+  int total_elements = get_volume(a.shape).unwrap_nonnegative();
+  checkCUDA(cudaMemcpy(host_ptr,
+                       device_ptr,
+                       total_elements * sizeof(float),
+                       cudaMemcpyDeviceToHost));
 }
 
 double *get_double_ptr(GenericTensorAccessorW const &a) {

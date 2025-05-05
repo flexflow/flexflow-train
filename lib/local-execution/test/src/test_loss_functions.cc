@@ -17,7 +17,7 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("LossFunctions") {
     // initialize runtime
     ManagedFFStream managed_stream{};
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle();
 
     Allocator allocator = create_local_cuda_memory_allocator();
 

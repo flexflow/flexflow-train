@@ -7,7 +7,7 @@ namespace FlexFlow {
 
 struct ManagedPerDeviceFFHandle {
 public:
-  ManagedPerDeviceFFHandle();
+  ManagedPerDeviceFFHandle(int num_ranks, int my_rank);
 
   ManagedPerDeviceFFHandle(ManagedPerDeviceFFHandle const &) = delete;
   ManagedPerDeviceFFHandle &
@@ -24,6 +24,10 @@ public:
 private:
   PerDeviceFFHandle *handle;
 };
+
+ManagedPerDeviceFFHandle initialize_single_gpu_handle();
+ManagedPerDeviceFFHandle initialize_multi_gpu_handle(int num_ranks,
+                                                     int my_rank);
 
 } // namespace FlexFlow
 

@@ -89,7 +89,6 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto weight = acc.get_tensor<Permissions::RO>(WEIGHT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
-  auto bias = acc.get_tensor<Permissions::RO>(BIAS);
 
   auto per_device_state =
       acc.get_argument<LinearPerDeviceState>(PER_DEVICE_STATE);
@@ -102,6 +101,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 
   float const *bias_ptr = NULL;
   if (attrs.use_bias) {
+    auto bias = acc.get_tensor<Permissions::RO>(BIAS);
     bias_ptr = bias.get_float_ptr();
   }
 
@@ -118,14 +118,11 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
                  batch_size.unwrap_nonnegative());
 }
 
-;
-
 static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto weight = acc.get_tensor<Permissions::RO>(WEIGHT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
-  auto bias = acc.get_tensor<Permissions::RO>(BIAS);
 
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(INPUT);
   auto weight_grad = acc.get_tensor_grad<Permissions::RW>(WEIGHT);
@@ -137,6 +134,7 @@ static std::optional<float>
 
   float const *bias_ptr = NULL;
   if (attrs.use_bias) {
+    auto bias = acc.get_tensor<Permissions::RO>(BIAS);
     bias_ptr = bias.get_float_ptr();
   }
 

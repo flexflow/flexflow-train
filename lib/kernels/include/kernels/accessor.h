@@ -75,6 +75,7 @@ std::ostream &operator<<(std::ostream &, GenericTensorAccessorR const &);
 int32_t *get_int32_ptr(GenericTensorAccessorW const &);
 int64_t *get_int64_ptr(GenericTensorAccessorW const &);
 float *get_float_ptr(GenericTensorAccessorW const &);
+void write_to_host_float_ptr(GenericTensorAccessorW const &, float *);
 double *get_double_ptr(GenericTensorAccessorW const &);
 half *get_half_ptr(GenericTensorAccessorW const &);
 std::vector<int32_t *>
