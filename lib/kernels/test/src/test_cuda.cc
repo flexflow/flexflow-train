@@ -1,10 +1,10 @@
-#include "doctest/doctest.h"
-#include "test_utils.h"
+#include "internal/test_utils.h"
+#include <doctest/doctest.h>
 
 #include <random>
 
 namespace FlexFlow {
-TEST_SUITE(FF_TEST_SUITE) {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test CUDA") {
     int deviceCount = 0;
 

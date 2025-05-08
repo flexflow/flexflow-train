@@ -1,9 +1,9 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_REDUCE_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_REDUCE_KERNELS_H
 
-#include "array_shape.h"
-#include "device.h"
-#include "ff_handle.h"
+#include "kernels/array_shape.h"
+#include "kernels/device.h"
+#include "kernels/ff_handle.h"
 #include "op-attrs/operator_type.dtg.h"
 
 namespace FlexFlow {
@@ -25,8 +25,7 @@ FF_VISITABLE_STRUCT(ReducePerDeviceState,
                     op_type,
                     reduction_size);
 
-namespace Kernels {
-namespace Reduce {
+namespace Kernels::Reduce {
 
 ReducePerDeviceState init_kernel(PerDeviceFFHandle const &,
                                  OperatorType const &,
@@ -43,8 +42,7 @@ void backward_kernel(ffStream_t stream,
                      ReducePerDeviceState const &m,
                      float const *output_grad_ptr,
                      float *input_grad_ptr);
-} // namespace Reduce
-} // namespace Kernels
+} // namespace Kernels::Reduce
 } // namespace FlexFlow
 
 #endif // _FLEXFLOW_OPS_KERNELS_REDUCE_KERNELS_H

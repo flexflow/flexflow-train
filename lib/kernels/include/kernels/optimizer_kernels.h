@@ -17,6 +17,7 @@ void sgd_ps_update_task_gpu(ffStream_t,
                             float *weight_ptr,
                             float *sgd_v_ptr);
 
+#ifdef FF_USE_NCCL
 void sgd_nccl_update_task_gpu(ffStream_t,
                               float lr,
                               float momentum,
@@ -27,6 +28,7 @@ void sgd_nccl_update_task_gpu(ffStream_t,
                               size_t size,
                               float *weight_ptr,
                               float *sgd_v_ptr);
+#endif
 
 void adam_ps_update_task_gpu(ffStream_t,
                              float alpha_t,
@@ -37,9 +39,11 @@ void adam_ps_update_task_gpu(ffStream_t,
                              size_t size,
                              int num_replicas,
                              float const *weight_grad_ptr,
-                             float *adam_m_ptr,
+                             size_t size,
+                             int num_replicas,
+                             float *weight_ptr,
                              float *adam_v_ptr,
-                             float *weight_ptr);
+                             float *adam_m_ptr);
 
 void adam_nccl_update_task_gpu(ffStream_t,
                                float alpha_t,
@@ -50,9 +54,10 @@ void adam_nccl_update_task_gpu(ffStream_t,
                                size_t size,
                                PerDeviceFFHandle const &,
                                float const *weight_grad_ptr,
-                               float *adam_m_ptr,
+                               size_t size,
+                               float *weight_ptr,
                                float *adam_v_ptr,
-                               float *weight_ptr);
+                               float *adam_m_ptr);
 
 } // namespace FlexFlow
 

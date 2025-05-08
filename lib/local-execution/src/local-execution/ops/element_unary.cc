@@ -61,8 +61,8 @@ static DeviceSpecificDeviceStates
   ParallelTensorShape output_shape =
       throw_if_unexpected(get_output_shape(attrs, input_shape));
   ElementUnaryPerDeviceState per_device_state =
-      init_kernel(ArrayShape{get_piece_shape(input_shape)},
-                  ArrayShape{get_piece_shape(output_shape)},
+      init_kernel(array_shape_from_tensor_shape(get_piece_shape(input_shape)),
+                  array_shape_from_tensor_shape(get_piece_shape(output_shape)),
                   attrs);
 
   return DeviceSpecificDeviceStates{
@@ -110,10 +110,10 @@ static std::optional<float>
                  per_device_state,
                  attrs,
                  handle,
-                 input,
-                 input_grad,
                  output,
-                 output_grad);
+                 output_grad,
+                 input,
+                 input_grad);
 }
 
 TaskImplFunction get_element_unary_init_task_impl() {

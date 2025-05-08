@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_KERNELS_ARRAY_SHAPE_H
 #define _FLEXFLOW_KERNELS_ARRAY_SHAPE_H
 
+#include "kernels/array_coord.dtg.h"
 #include "kernels/legion_dim.h"
 #include "op-attrs/tensor_shape.dtg.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
@@ -15,10 +16,7 @@ namespace FlexFlow {
 struct ArrayShape {
 public:
   ArrayShape() = delete;
-  explicit ArrayShape(nonnegative_int *dims, nonnegative_int num_dims);
-  explicit ArrayShape(TensorShape const &shape);
-  explicit ArrayShape(std::vector<nonnegative_int> const &);
-  explicit ArrayShape(LegionOrdered<nonnegative_int> const &);
+  explicit ArrayShape(LegionOrdered<nonnegative_int> const &dims);
 
   /**
    * @brief Alias of ArrayShape::num_elements for compatibility with
@@ -47,33 +45,40 @@ public:
   std::optional<nonnegative_int> at_maybe(legion_dim_t) const;
   std::optional<nonnegative_int> at_maybe(ff_dim_t) const;
 
-  ArrayShape sub_shape(std::optional<ff_dim_t> start,
-                       std::optional<ff_dim_t> end) const;
+  ArrayShape sub_shape(ff_dim_t const &start,
+                       std::optional<ff_dim_t> const &end) const;
 
-  ArrayShape sub_shape(std::optional<legion_dim_t> start,
-                       std::optional<legion_dim_t> end) const;
+  ArrayShape sub_shape(legion_dim_t const &start,
+                       std::optional<legion_dim_t> const &end) const;
 
 public:
   LegionOrdered<nonnegative_int> dims;
 
 private:
   std::tuple<decltype(dims) const &> tie() const;
+
+  friend ::std::hash<ArrayShape>;
 };
-
-nonnegative_int get_volume(ArrayShape const &);
-
-TensorShape get_tensor_shape(ArrayShape const &, DataType);
 
 std::string format_as(ArrayShape const &);
 std::ostream &operator<<(std::ostream &, ArrayShape const &);
 
+nonnegative_int get_volume(ArrayShape const &);
+
+ArrayShape array_shape_from_tensor_shape(TensorShape const &);
+TensorShape get_tensor_shape(ArrayShape const &, DataType);
+
+std::unordered_set<ArrayCoord> get_array_coord_set(ArrayShape const &);
+
 } // namespace FlexFlow
 
 namespace std {
+
 template <>
 struct hash<::FlexFlow::ArrayShape> {
   size_t operator()(::FlexFlow::ArrayShape const &) const;
 };
+
 } // namespace std
 
 #endif

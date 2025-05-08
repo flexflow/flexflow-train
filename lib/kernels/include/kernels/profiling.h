@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_KERNELS_PROFILING_H
 #define _FLEXFLOW_KERNELS_PROFILING_H
 
-#include "device.h"
+#include "kernels/device.h"
 #include "kernels/profiling_settings.dtg.h"
 #include "utils/visitable.h"
 

@@ -1,4 +1,4 @@
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/datatype_dispatch.h"
 #include "utils/containers/reversed.h"
 
@@ -49,7 +49,7 @@ __global__ void assign_kernel(DT *ptr, size_t size, DT value) {
 }
 
 template <typename DT>
-__global__ void copy_kernel(DT *dst, const DT *src, coord_t size) {
+__global__ void copy_kernel(DT *dst, const DT *src, size_t size) {
   CUDA_KERNEL_LOOP(i, size) {
     dst[i] = src[i];
   }
@@ -281,11 +281,11 @@ template __global__ void
     add_kernel<bool>(bool *dst, bool const *src, unsigned long size);
 
 template __global__ void
-    copy_kernel<float>(float *dst, float const *src, coord_t size);
+    copy_kernel<float>(float *dst, float const *src, size_t size);
 template __global__ void
-    copy_kernel<int32_t>(int32_t *dst, int32_t const *src, coord_t size);
+    copy_kernel<int32_t>(int32_t *dst, int32_t const *src, size_t size);
 template __global__ void
-    copy_kernel<int64_t>(int64_t *dst, int64_t const *src, coord_t size);
+    copy_kernel<int64_t>(int64_t *dst, int64_t const *src, size_t size);
 
 template __global__ void apply_add_with_scale<float>(float *data_ptr,
                                                      float const *grad_ptr,

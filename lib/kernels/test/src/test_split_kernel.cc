@@ -1,11 +1,12 @@
-#include "doctest/doctest.h"
+#include "internal/test_utils.h"
 #include "kernels/split_kernels.h"
-#include "test_utils.h"
+#include "op-attrs/datatype_value.h"
 #include "utils/containers/repeat.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
-TEST_SUITE(FF_TEST_SUITE) {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test Split Forward and Backward Kernel") {
     nonnegative_int num_outputs = 2_n;
     coord_t out_blk_sizes[] = {50, 50};
@@ -17,8 +18,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    TensorShape input_shape = make_float_tensor_shape_from_legion_dims({100_n});
-    TensorShape output_shape = make_float_tensor_shape_from_legion_dims({50_n});
+    TensorShape input_shape = TensorShape{
+        TensorDims{FFOrdered{100_n}},
+        DataType::FLOAT,
+    };
+    TensorShape output_shape = TensorShape{
+        TensorDims{FFOrdered{50_n}},
+        DataType::FLOAT,
+    };
 
     SUBCASE("forward_kernel") {
       GenericTensorAccessorW input_accessor =
@@ -47,8 +54,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         output_grad_ptrs[i] = output_grad_accessor.get_float_ptr();
       }
 
-      GenericTensorAccessorW input_grad_accessor =
-          create_filled_accessor_w(input_shape, allocator, 0.0f);
+      GenericTensorAccessorW input_grad_accessor = create_filled_accessor_w(
+          input_shape, allocator, make_float_data_type_value(0));
 
       Kernels::Split::backward_kernel(managed_stream.raw_stream(),
                                       input_grad_accessor.get_float_ptr(),

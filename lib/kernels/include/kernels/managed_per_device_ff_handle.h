@@ -7,7 +7,12 @@ namespace FlexFlow {
 
 struct ManagedPerDeviceFFHandle {
 public:
-  ManagedPerDeviceFFHandle(int num_ranks, int my_rank);
+  ManagedPerDeviceFFHandle() = delete;
+
+  explicit ManagedPerDeviceFFHandle(int num_ranks,
+                                    int my_rank,
+                                    size_t workSpaceSize,
+                                    bool allowTensorOpMathConversion);
 
   ManagedPerDeviceFFHandle(ManagedPerDeviceFFHandle const &) = delete;
   ManagedPerDeviceFFHandle &
@@ -20,6 +25,9 @@ public:
   ~ManagedPerDeviceFFHandle();
 
   PerDeviceFFHandle const &raw_handle() const;
+
+private:
+  void cleanup();
 
 private:
   PerDeviceFFHandle *handle;

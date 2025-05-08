@@ -13,9 +13,10 @@
  * limitations under the License.
  */
 
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/nccl.h"
 #include "kernels/optimizer_kernels.h"
+#include "utils/exception.h"
 
 namespace FlexFlow {
 
@@ -42,17 +43,16 @@ __global__ void sgd_update(size_t count,
   }
 }
 
-void sgd_ps_update_task_gpu(cudaStream_t stream,
-                            float lr,
-                            float momentum,
-                            bool nesterov,
-                            float weight_decay,
-                            float const *weight_grad_ptr,
-                            size_t size,
-                            int num_replicas,
-                            float *weight_ptr,
-                            float *sgd_v_ptr) {
-  checkCUDA(get_legion_stream(&stream));
+__host__ void sgd_ps_update_task_gpu(ffStream_t stream,
+                                     float lr,
+                                     float momentum,
+                                     bool nesterov,
+                                     float weight_decay,
+                                     float const *weight_grad_ptr,
+                                     size_t size,
+                                     int num_replicas,
+                                     float *weight_ptr,
+                                     float *sgd_v_ptr) {
   // Step 1: Gather gradients in the first replica
   for (int i = 1; i < num_replicas; i++) {
     float const *src = weight_grad_ptr + i * size;
@@ -60,7 +60,7 @@ void sgd_ps_update_task_gpu(cudaStream_t stream,
         <<<GET_BLOCKS(size), CUDA_NUM_THREADS, 0, stream>>>(
             (float *)weight_grad_ptr, src, size, 1.0f);
   }
-  // checkCUDA(cudaDeviceSynchronize());
+
   //  Step 2: SGD update
   sgd_update<<<GET_BLOCKS(size), CUDA_NUM_THREADS, 0, stream>>>(size,
                                                                 lr,
@@ -70,43 +70,27 @@ void sgd_ps_update_task_gpu(cudaStream_t stream,
                                                                 weight_grad_ptr,
                                                                 sgd_v_ptr,
                                                                 weight_ptr);
-  // checkCUDA(cudaDeviceSynchronize());
 }
 
 #ifdef FF_USE_NCCL
-void sgd_nccl_update_task_gpu(cudaStream_t stream,
-                              float lr,
-                              float momentum,
-                              bool nesterov,
-                              float weight_decay,
-                              PerDeviceFFHandle const &handle,
-                              float const *weight_grad_ptr,
-                              size_t size,
-                              float *weight_ptr,
-                              float *sgd_v_ptr) {
-  // Use NCCL to sync gradients
-  // fprintf(stderr, "weight(%p) Before ncclAllReduce...\n", w_grad_ptr);
-  checkCUDA(get_legion_stream(&stream));
-  checkNCCL(ncclAllReduce(weight_grad_ptr,
-                          (float *)weight_grad_ptr,
-                          size,
-                          ncclDataType_t::ncclFloat,
-                          ncclRedOp_t::ncclSum,
-                          handle.ncclComm,
-                          stream));
-  // fprintf(stderr, "weight(%p) After ncclAllReduce...\n", w_grad_ptr);
-  // print_tensor<float>((float*)w_grad_ptr, 16, "[After ncclAllReduce]");
+__host__ void sgd_nccl_update_task_gpu(ffStream_t stream,
+                                       float lr,
+                                       float momentum,
+                                       bool nesterov,
+                                       float weight_decay,
+                                       PerDeviceFFHandle const &handle,
+                                       float const *w_grad_ptr,
+                                       size_t size,
+                                       float *w_ptr,
+                                       float *v_ptr) {
+  // Step 1: Use NCCL to sync gradients
+  ncclComm_t comm = handle.ncclComm;
+  checkNCCL(ncclAllReduce(
+      w_grad_ptr, (float *)w_grad_ptr, size, ncclFloat, ncclSum, comm, stream));
 
-  // Step 2: SGD update
-  sgd_update<<<GET_BLOCKS(size), CUDA_NUM_THREADS, 0, stream>>>(size,
-                                                                lr,
-                                                                weight_decay,
-                                                                momentum,
-                                                                nesterov,
-                                                                weight_grad_ptr,
-                                                                sgd_v_ptr,
-                                                                weight_ptr);
-  // checkCUDA(cudaDeviceSynchronize());
+  //  Step 2: SGD update
+  sgd_update<<<GET_BLOCKS(size), CUDA_NUM_THREADS, 0, stream>>>(
+      size, lr, weight_decay, momentum, nesterov, w_grad_ptr, v_ptr, w_ptr);
 }
 #endif
 
@@ -150,80 +134,71 @@ __global__ void adam_update(int count,
   }
 }
 
-void adam_ps_update_task_gpu(cudaStream_t stream,
-                             float alpha_t,
-                             float beta1,
-                             float beta2,
-                             float weight_decay,
-                             float epsilon,
-                             size_t size,
-                             int num_replicas,
-                             float const *weight_grad_ptr,
-                             float *adam_m_ptr,
-                             float *adam_v_ptr,
-                             float *weight_ptr) {
-  checkCUDA(get_legion_stream(&stream));
+__host__ void adam_ps_update_task_gpu(ffStream_t stream,
+                                      float alpha_t,
+                                      float beta1,
+                                      float beta2,
+                                      float weight_decay,
+                                      float epsilon,
+                                      float const *w_grad_ptr,
+                                      size_t size,
+                                      int num_replicas,
+                                      float *w_ptr,
+                                      float *v_ptr,
+                                      float *m_ptr) {
   // Step 1: Gather gradients in the first replica
   for (int i = 1; i < num_replicas; i++) {
-    float const *src = weight_grad_ptr + i * size;
+    float const *src = w_grad_ptr + i * size;
     add_kernel<<<GET_BLOCKS(size), CUDA_NUM_THREADS, 0, stream>>>(
-        size, 1.0f, src, (float *)weight_grad_ptr);
+        (float *)w_grad_ptr, src, size);
   }
-  // checkCUDA(cudaDeviceSynchronize());
-  // fprintf(stderr, "alpha = %.8lf alpha_t = %.8lf decay = %.8lf\n",
-  //         op->alpha, op->alpha_t, op->weight_decay);
+
   //  Step 2: Adam update
-  adam_update<<<GET_BLOCKS(size), CUDA_NUM_THREADS, 0, stream>>>(
-      size,
-      alpha_t,
-      beta1,
-      beta2,
-      weight_decay,
-      epsilon,
-      weight_grad_ptr,
-      adam_m_ptr,
-      adam_v_ptr,
-      weight_ptr);
-  // checkCUDA(cudaDeviceSynchronize());
+  adam_update<<<GET_BLOCKS(size), CUDA_NUM_THREADS, 0, stream>>>(size,
+                                                                 alpha_t,
+                                                                 beta1,
+                                                                 beta2,
+                                                                 weight_decay,
+                                                                 epsilon,
+                                                                 w_grad_ptr,
+                                                                 m_ptr,
+                                                                 v_ptr,
+                                                                 w_ptr);
 }
 
 #ifdef FF_USE_NCCL
-void adam_nccl_update_task_gpu(cudaStream_t stream,
-                               float alpha_t,
-                               float beta1,
-                               float beta2,
-                               float weight_decay,
-                               float epsilon,
-                               size_t size,
-                               PerDeviceFFHandle const &handle,
-                               float const *weight_grad_ptr,
-                               float *adam_m_ptr,
-                               float *adam_v_ptr,
-                               float *weight_ptr) {
-  // Use NCCL to sync gradients
-  checkCUDA(get_legion_stream(&stream));
-  checkNCCL(ncclAllReduce(weight_grad_ptr,
-                          (float *)weight_grad_ptr,
+__host__ void nccl_update_task_gpu(ffStream_t stream,
+                                   float alpha_t,
+                                   float beta1,
+                                   float beta2,
+                                   float weight_decay,
+                                   float epsilon,
+                                   PerDeviceFFHandle const &handle,
+                                   float const *w_grad_ptr,
+                                   size_t size,
+                                   float *w_ptr,
+                                   float *v_ptr,
+                                   float *m_ptr) {
+  // Step 1: Use NCCL to sync gradients
+  checkNCCL(ncclAllReduce(w_grad_ptr,
+                          (float *)w_grad_ptr,
                           size,
-                          ncclDataType_t::ncclFloat,
-                          ncclRedOp_t::ncclSum,
+                          ncclFloat,
+                          ncclSum,
                           handle.ncclComm,
                           stream));
-  // fprintf(stderr, "alpha = %.8lf alpha_t = %.8lf decay = %.8lf\n",
-  //         op->alpha, op->alpha_t, op->weight_decay);
+
   //  Step 2: Adam update
-  adam_update<<<GET_BLOCKS(size), CUDA_NUM_THREADS, 0, stream>>>(
-      size,
-      alpha_t,
-      beta1,
-      beta2,
-      weight_decay,
-      epsilon,
-      weight_grad_ptr,
-      adam_m_ptr,
-      adam_v_ptr,
-      weight_ptr);
-  // checkCUDA(cudaDeviceSynchronize());
+  adam_update<<<GET_BLOCKS(size), CUDA_NUM_THREADS, 0, stream>>>(size,
+                                                                 alpha_t,
+                                                                 beta1,
+                                                                 beta2,
+                                                                 weight_decay,
+                                                                 epsilon,
+                                                                 w_grad_ptr,
+                                                                 m_ptr,
+                                                                 v_ptr,
+                                                                 w_ptr);
 }
 #endif
 

@@ -1,8 +1,8 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_LINEAR_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_LINEAR_KERNELS_H
 
-#include "device.h"
 #include "ff_handle.h"
+#include "kernels/device.h"
 #include "op-attrs/datatype.h"
 #include "op-attrs/ops/linear_attrs.dtg.h"
 
@@ -33,8 +33,7 @@ FF_VISITABLE_STRUCT_NONSTANDARD_CONSTRUCTION(LinearPerDeviceState,
                                              weight_type,
                                              output_type);
 
-namespace Kernels {
-namespace Linear {
+namespace Kernels::Linear {
 
 LinearPerDeviceState init_kernel(PerDeviceFFHandle handle,
                                  float *one_ptr,
@@ -51,29 +50,28 @@ bool use_activation(Activation activation);
 
 void forward_kernel(ffStream_t stream,
                     LinearPerDeviceState const &m,
-                    void const *input_ptr,
-                    void *output_ptr,
-                    void const *filter_ptr,
-                    void const *bias_ptr,
+                    float const *input_ptr,
+                    float *output_ptr,
+                    float const *filter_ptr,
+                    float const *bias_ptr,
                     int in_dim,
                     int out_dim,
                     int batch_size);
 
 void backward_kernel(ffStream_t stream,
                      LinearPerDeviceState const &m,
-                     void const *input_ptr,
-                     void *input_grad_ptr,
-                     void const *output_ptr,
-                     void *output_grad_ptr,
-                     void const *kernel_ptr,
-                     void *kernel_grad_ptr,
-                     void *bias_ptr,
+                     float const *output_ptr,
+                     float *output_grad_ptr,
+                     float const *input_ptr,
+                     float *input_grad_ptr,
+                     float const *kernel_ptr,
+                     float *kernel_grad_ptr,
+                     float *bias_grad_ptr,
                      int in_dim,
                      int out_dim,
                      int batch_size);
 
-} // namespace Linear
-} // namespace Kernels
+} // namespace Kernels::Linear
 } // namespace FlexFlow
 
 #endif

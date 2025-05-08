@@ -1,17 +1,18 @@
 #include "kernels/managed_per_device_ff_handle.h"
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/nccl.h"
 
 namespace FlexFlow {
 
-ManagedPerDeviceFFHandle::ManagedPerDeviceFFHandle(int num_ranks, int my_rank) {
-  handle = new PerDeviceFFHandle;
-  handle->workSpaceSize = 1024 * 1024;
-  handle->allowTensorOpMathConversion = true;
+ManagedPerDeviceFFHandle::ManagedPerDeviceFFHandle(
+    int num_ranks, int my_rank, size_t workSpaceSize, bool allowTensorOpMathConversion) {
+  this->handle = new PerDeviceFFHandle{};
+  this->handle->workSpaceSize = workSpaceSize;
+  this->handle->allowTensorOpMathConversion = allowTensorOpMathConversion;
 
-  checkCUDNN(cudnnCreate(&handle->dnn));
-  checkCUBLAS(cublasCreate(&handle->blas));
-  checkCUDA(cudaMalloc(&handle->workSpace, handle->workSpaceSize));
+  checkCUDNN(cudnnCreate(&this->handle->dnn));
+  checkCUBLAS(cublasCreate(&this->handle->blas));
+  checkCUDA(cudaMalloc(&this->handle->workSpace, this->handle->workSpaceSize));
 
 #ifdef FF_USE_NCCL
   ncclUniqueId ncclId;
@@ -32,14 +33,14 @@ ManagedPerDeviceFFHandle &ManagedPerDeviceFFHandle::operator=(
 }
 
 ManagedPerDeviceFFHandle::~ManagedPerDeviceFFHandle() {
-  if (handle != nullptr) {
-    checkCUDNN(cudnnDestroy(handle->dnn));
-    checkCUBLAS(cublasDestroy(handle->blas));
-    checkCUDA(cudaFree(handle->workSpace));
+  if (this->handle != nullptr) {
+    checkCUDNN(cudnnDestroy(this->handle->dnn));
+    checkCUBLAS(cublasDestroy(this->handle->blas));
+    checkCUDA(cudaFree(this->handle->workSpace));
 #ifdef FF_USE_NCCL
-    checkNCCL(ncclCommDestroy(handle->ncclComm));
+    checkNCCL(ncclCommDestroy(this->handle->ncclComm));
 #endif
-    delete handle;
+    delete this->handle;
   }
 }
 

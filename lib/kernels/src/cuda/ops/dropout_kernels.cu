@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/dropout_kernels.h"
 #include "kernels/ff_handle.h"
 

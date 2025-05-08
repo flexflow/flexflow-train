@@ -19,7 +19,7 @@ std::optional<TensorDims>
     get_broadcast_target_dims(std::unordered_set<TensorDims> const &);
 
 TensorDims slice_tensor_dims(TensorDims const &,
-                             std::optional<relative_ff_dim_t> const &start,
+                             relative_ff_dim_t const &start,
                              std::optional<relative_ff_dim_t> const &stop);
 
 } // namespace FlexFlow
