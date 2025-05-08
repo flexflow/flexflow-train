@@ -56,11 +56,18 @@ has-cpu-only-benchmarks = false
 has-cuda-tests = false
 has-cuda-benchmarks = false
 
-[targets.local-execution]
+[targets.task_spec]
 type = "lib"
 has-cpu-only-tests = true
 has-cpu-only-benchmarks = false
 has-cuda-tests = false
+has-cuda-benchmarks = false
+
+[targets.local-execution]
+type = "lib"
+has-cpu-only-tests = true
+has-cpu-only-benchmarks = false
+has-cuda-tests = true
 has-cuda-benchmarks = false
 
 [targets.models]

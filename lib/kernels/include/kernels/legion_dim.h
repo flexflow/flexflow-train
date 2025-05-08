@@ -16,6 +16,8 @@ legion_dim_t add_to_legion_dim(legion_dim_t legion_dim, int value);
 
 legion_dim_t legion_dim_from_ff_dim(ff_dim_t, nonnegative_int num_dimensions);
 
+ff_dim_t ff_dim_from_legion_dim(legion_dim_t, nonnegative_int num_dimensions);
+
 template <typename T>
 std::set<legion_dim_t> key_range(LegionOrdered<T> const &d) {
   return transform(set_of(nonnegative_range(num_elements(d))),
