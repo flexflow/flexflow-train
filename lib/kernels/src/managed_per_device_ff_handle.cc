@@ -48,13 +48,25 @@ PerDeviceFFHandle const &ManagedPerDeviceFFHandle::raw_handle() const {
   return *handle;
 }
 
-ManagedPerDeviceFFHandle initialize_single_gpu_handle() {
-  return ManagedPerDeviceFFHandle(1, 0);
+ManagedPerDeviceFFHandle initialize_single_gpu_handle(size_t workSpaceSize, bool allowTensorOpMathConversion) {
+  return ManagedPerDeviceFFHandle{
+    /*num_ranks=*/1, 
+    /*my_rank=*/0,
+    /*workSpaceSize=*/workSpaceSize,
+    /*allowTensorOpMathConversion=*/allowTensorOpMathConversion,
+  };
 }
 
 ManagedPerDeviceFFHandle initialize_multi_gpu_handle(int num_ranks,
-                                                     int my_rank) {
-  return ManagedPerDeviceFFHandle(num_ranks, my_rank);
+                                                     int my_rank,
+                                                     size_t workSpaceSize,
+                                                     bool allowTensorOpMathConversion) {
+  return ManagedPerDeviceFFHandle{
+    /*num_ranks=*/num_ranks, 
+    /*my_rank=*/my_rank,
+    /*workSpaceSize=*/workSpaceSize,
+    /*allowTensorOpMathConversion=*/allowTensorOpMathConversion,
+  };
 }
 
 } // namespace FlexFlow

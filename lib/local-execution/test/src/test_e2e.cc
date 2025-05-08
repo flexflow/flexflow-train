@@ -23,8 +23,8 @@ bool did_loss_decrease(float *first_epoch, float *last_epoch, int batch_size) {
   return true;
 }
 
-TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("E2ETest") {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
+  TEST_CASE("LocalBackend e2e Training") {
     // initialize runtime
     ManagedFFStream managed_stream{};
     ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle();
@@ -47,7 +47,12 @@ TEST_SUITE(FF_TEST_SUITE) {
     GenericTensorAccessorW label_tensor_backing =
         allocator.allocate_tensor(output_tensor_shape);
     AllocatedTensors allocated_tensors = AllocatedTensors{
-        {{TensorTypeVariant{label_tensor}, label_tensor_backing}}, {}, {}};
+        /*tensor_type_backings=*/{
+          {TensorTypeVariant{label_tensor}, label_tensor_backing},
+        }, 
+        /*gradient_mapping=*/{}, 
+        /*optimizer_mapping*/{},
+    };
 
     // construct computation graph
     ComputationGraph computation_graph = make_empty_computation_graph();

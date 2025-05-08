@@ -16,7 +16,7 @@
 #ifndef _FLEXFLOW_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_LOSS_FUNCTIONS_H_
 #define _FLEXFLOW_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_LOSS_FUNCTIONS_H_
 
-#include "local-execution/task_impl_function.dtg.h"
+#include "task-spec/task_impl_function.dtg.h"
 #include "op-attrs/ops/loss_functions.h"
 #include "pcg/tensor_guid_t.dtg.h"
 #include "task-spec/loss_tensor_t.dtg.h"

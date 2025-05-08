@@ -2,6 +2,7 @@
 #define _FLEXFLOW_LOCAL_EXECUTION_LOSS_TENSOR_SOURCE_H
 
 #include "task-spec/loss_tensor_t.dtg.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 
 namespace FlexFlow {
 
@@ -12,7 +13,7 @@ public:
   loss_tensor_t new_loss_tensor();
 
 private:
-  static size_t next_available_loss_tensor_id;
+  static nonnegative_int next_available_loss_tensor_id;
 };
 
 } // namespace FlexFlow

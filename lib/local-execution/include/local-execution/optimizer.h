@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_OPTIMIZER_H_
 #define _FLEXFLOW_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_OPTIMIZER_H_
 
-#include "local-execution/task_impl_function.dtg.h"
+#include "task-spec/task_impl_function.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
 #include "pcg/optimizers/adam_optimizer_attrs.dtg.h"
 #include "pcg/optimizers/sgd_optimizer_attrs.dtg.h"

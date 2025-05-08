@@ -1,7 +1,7 @@
 #include "local-execution/local_training_backing.h"
 #include "local-execution/loss_functions.h"
 #include "local-execution/optimizer.h"
-#include "local-execution/task_signature_impl.h"
+#include "task-spec/task_signature_impl.h"
 #include "local-execution/unallocated_tensors.h"
 #include "pcg/computation_graph.h"
 #include "pcg/optimizer_attrs.h"

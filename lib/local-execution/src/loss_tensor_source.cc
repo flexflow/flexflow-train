@@ -2,7 +2,7 @@
 
 namespace FlexFlow {
 
-size_t LossTensorSource::next_available_loss_tensor_id = 0;
+nonnegative_int LossTensorSource::next_available_loss_tensor_id = 0_n;
 
 LossTensorSource::LossTensorSource() {}
 
