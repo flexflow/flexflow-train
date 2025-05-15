@@ -13,9 +13,10 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     nonnegative_int output_w = 10_n;
 
     ManagedFFStream managed_stream{};
-    ManagedPerDeviceFFHandle managed_handle{
-        /*workSpaceSize=*/1024 * 1024,
-        /*allowTensorOpMathConversion=*/true};
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
+      /*workSpaceSize=*/1024 * 1024,
+      /*allowTensorOpMathConversion=*/true
+    );
 
     Allocator allocator = create_local_cuda_memory_allocator();
 

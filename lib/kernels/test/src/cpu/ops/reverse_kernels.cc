@@ -1,7 +1,9 @@
 #include "internal/test_utils.h"
 #include "kernels/format_accessor_contents.h"
 #include "kernels/reverse_kernels_cpu.h"
+#include "kernels/create_accessor_with_contents.h"
 #include <doctest/doctest.h>
+#include "test/utils/doctest/check_kv.h"
 
 using namespace ::FlexFlow;
 
@@ -9,7 +11,7 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Reverse::cpu_forward_kernel") {
     Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
-    GenericTensorAccessorR input = create_3d_accessor_r_with_contents(
+    GenericTensorAccessorR input = create_3d_accessor_r_with_contents<int32_t>(
         {
             {
                 {1, 3, 2},
@@ -25,7 +27,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     GenericTensorAccessorW result = create_zero_filled_accessor_w(
         TensorShape{
             TensorDims{FFOrdered{2_n, 2_n, 3_n}},
-            DataType::FLOAT,
+            DataType::INT32,
         },
         cpu_allocator);
 
@@ -34,7 +36,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*axis=*/ff_dim_t{0_n},
       };
 
-      GenericTensorAccessorR correct = create_3d_accessor_r_with_contents(
+      GenericTensorAccessorR correct = create_3d_accessor_r_with_contents<int32_t>(
           {
               {
                   {3, 3, 6},
@@ -50,8 +52,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       Kernels::Reverse::cpu_forward_kernel(input, result, attrs);
 
       CHECK_MESSAGE(accessors_are_equal(result, correct),
-                    "result=",
-                    format_accessor_w_contents(result));
+                    check_kv("result=", format_accessor_w_contents(result)));
     }
 
     SUBCASE("axis = ff_dim_t{1}") {
@@ -59,7 +60,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*axis=*/ff_dim_t{1_n},
       };
 
-      GenericTensorAccessorR correct = create_3d_accessor_r_with_contents(
+      GenericTensorAccessorR correct = create_3d_accessor_r_with_contents<int32_t>(
           {
               {
                   {4, 2, 1},
@@ -75,8 +76,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       Kernels::Reverse::cpu_forward_kernel(input, result, attrs);
 
       CHECK_MESSAGE(accessors_are_equal(result, correct),
-                    "result=",
-                    format_accessor_w_contents(result));
+                    check_kv("result", format_accessor_w_contents(result)));
     }
 
     SUBCASE("axis = ff_dim_t{2}") {
@@ -84,7 +84,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*axis=*/ff_dim_t{2_n},
       };
 
-      GenericTensorAccessorR correct = create_3d_accessor_r_with_contents(
+      GenericTensorAccessorR correct = create_3d_accessor_r_with_contents<int32_t>(
           {
               {
                   {2, 3, 1},
@@ -100,15 +100,14 @@ TEST_SUITE(FF_TEST_SUITE) {
       Kernels::Reverse::cpu_forward_kernel(input, result, attrs);
 
       CHECK_MESSAGE(accessors_are_equal(result, correct),
-                    "result=",
-                    format_accessor_w_contents(result));
+                    check_kv("result", format_accessor_w_contents(result)));
     }
   }
 
   TEST_CASE("Reverse::cpu_backward_kernel") {
     Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
-    GenericTensorAccessorR input = create_3d_accessor_r_with_contents(
+    GenericTensorAccessorR input = create_3d_accessor_r_with_contents<int32_t>(
         {
             {
                 {1, 3, 2},
@@ -124,7 +123,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     GenericTensorAccessorW result = create_zero_filled_accessor_w(
         TensorShape{
             TensorDims{FFOrdered{2_n, 2_n, 3_n}},
-            DataType::FLOAT,
+            DataType::INT32,
         },
         cpu_allocator);
 
@@ -133,7 +132,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*axis=*/ff_dim_t{0_n},
       };
 
-      GenericTensorAccessorR correct = create_3d_accessor_r_with_contents(
+      GenericTensorAccessorR correct = create_3d_accessor_r_with_contents<int32_t>(
           {
               {
                   {3, 3, 6},
@@ -149,8 +148,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       Kernels::Reverse::cpu_forward_kernel(input, result, attrs);
 
       CHECK_MESSAGE(accessors_are_equal(result, correct),
-                    "result=",
-                    format_accessor_w_contents(result));
+                    check_kv("result", format_accessor_w_contents(result)));
     }
 
     SUBCASE("axis = ff_dim_t{1}") {
@@ -158,7 +156,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*axis=*/ff_dim_t{1_n},
       };
 
-      GenericTensorAccessorR correct = create_3d_accessor_r_with_contents(
+      GenericTensorAccessorR correct = create_3d_accessor_r_with_contents<int32_t>(
           {
               {
                   {4, 2, 1},
@@ -174,8 +172,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       Kernels::Reverse::cpu_forward_kernel(input, result, attrs);
 
       CHECK_MESSAGE(accessors_are_equal(result, correct),
-                    "result=",
-                    format_accessor_w_contents(result));
+                    check_kv("result", format_accessor_w_contents(result)));
     }
 
     SUBCASE("axis = ff_dim_t{2}") {
@@ -183,7 +180,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*axis=*/ff_dim_t{2_n},
       };
 
-      GenericTensorAccessorR correct = create_3d_accessor_r_with_contents(
+      GenericTensorAccessorR correct = create_3d_accessor_r_with_contents<int32_t>(
           {
               {
                   {2, 3, 1},
@@ -199,8 +196,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       Kernels::Reverse::cpu_forward_kernel(input, result, attrs);
 
       CHECK_MESSAGE(accessors_are_equal(result, correct),
-                    "result=",
-                    format_accessor_w_contents(result));
+                    check_kv("result", format_accessor_w_contents(result)));
     }
   }
 }

@@ -1,0 +1,13 @@
+namespace = "FlexFlow"
+name = "lowered_tensor_t"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+
+[[fields]]
+name = "raw_index"
+type = "int"
