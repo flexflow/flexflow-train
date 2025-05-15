@@ -8,7 +8,10 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test Flat Kernel") {
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle();
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
+      /*workSpaceSize=*/1024 * 1024,
+      /*allowTensorOpMathConversion=*/true
+    );
     ManagedFFStream managed_stream{};
 
     TensorShape input_shape = TensorShape{

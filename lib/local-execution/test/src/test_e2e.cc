@@ -1,3 +1,5 @@
+#include "kernels/copy_tensor_accessor.h"
+#include "kernels/local_cpu_allocator.h"
 #include "kernels/local_cuda_allocator.h"
 #include "kernels/managed_ff_stream.h"
 #include "kernels/managed_per_device_ff_handle.h"
@@ -14,7 +16,10 @@
 
 using namespace ::FlexFlow;
 
-bool did_loss_decrease(float *first_epoch, float *last_epoch, int batch_size) {
+bool did_loss_decrease(
+  GenericTensorAccessorR const &first_epoch, 
+  GenericTensorAccessorR const &last_epoch
+) {
   for (int i = 0; i < batch_size; i++) {
     if (first_epoch[i] < last_epoch[i]) {
       return false;
@@ -27,7 +32,10 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("LocalBackend e2e Training") {
     // initialize runtime
     ManagedFFStream managed_stream{};
-    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle();
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
+      /*workSpaceSize=*/1024 * 1024,
+      /*allowTensorOpMathConversion=*/true
+    );
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
@@ -146,28 +154,26 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                               loss_attrs,
                               optimizer_attrs};
 
+    Allocator cpu_allocator = create_local_cpu_memory_allocator();
+
     int num_epochs = 5;
-    int num_samples = batch_size.unwrap_nonnegative();
-    std::vector<float *> loss_values(num_epochs);
+    std::vector<GenericTensorAccessorR> loss_values;
 
     for (int i = 0; i < num_epochs; i++) {
       model_training_instance.forward();
       model_training_instance.backward();
       model_training_instance.update();
-      float *host_loss_ptr = new float[num_samples];
-      model_training_instance.write_loss_tensor_to_host(host_loss_ptr);
-      loss_values[i] = host_loss_ptr;
+      loss_values.push_back(
+        copy_tensor_accessor_r(
+          model_training_instance.get_loss_tensor_accessor(),
+          cpu_allocator));
     }
 
     // Assert that each sample in the batch has a lower loss in last epoch than
     // the first epoch
-    float *first_epoch = loss_values[0];
-    float *last_epoch = loss_values[num_epochs - 1];
+    GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
+    GenericTensorAccessorR last_epoch = loss_values.back();
     CHECK(did_loss_decrease(
-        first_epoch, last_epoch, batch_size.unwrap_nonnegative()));
-
-    for (int i = 0; i < num_epochs; i++) {
-      delete[] loss_values[i];
-    }
+        first_epoch_loss, last_epoch, batch_size.unwrap_nonnegative()));
   }
 }

@@ -1,6 +1,7 @@
 #include "kernels/format_accessor_contents.h"
 #include "internal/test_utils.h"
 #include "kernels/local_cpu_allocator.h"
+#include "kernels/create_accessor_with_contents.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -11,7 +12,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("accessor is 1d") {
       GenericTensorAccessorR accessor =
-          create_1d_accessor_r_with_contents({1, 2, 3, 2}, cpu_allocator);
+          create_1d_accessor_r_with_contents<int32_t>({1, 2, 3, 2}, cpu_allocator);
 
       std::string correct = "[1 2 3 2]";
 
@@ -21,7 +22,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("accessor is 2d") {
-      GenericTensorAccessorR accessor = create_2d_accessor_r_with_contents(
+      GenericTensorAccessorR accessor = create_2d_accessor_r_with_contents<int32_t>(
           {
               {1, 2, 3, 5},
               {4, 3, 3, 2},
@@ -41,7 +42,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("accessor is 3d") {
-      GenericTensorAccessorR accessor = create_3d_accessor_r_with_contents(
+      GenericTensorAccessorR accessor = create_3d_accessor_r_with_contents<int32_t>(
           {
               {
                   {1, 2, 3, 6},
@@ -86,7 +87,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("accessor is some other dimension") {
       GenericTensorAccessorR accessor =
-          create_4d_accessor_r_with_contents({{{{5}}}}, cpu_allocator);
+          create_4d_accessor_r_with_contents<int32_t>({{{{5}}}}, cpu_allocator);
 
       CHECK_THROWS(format_accessor_r_contents(accessor));
     }

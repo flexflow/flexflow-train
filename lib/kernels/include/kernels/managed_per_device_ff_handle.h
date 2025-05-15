@@ -33,9 +33,12 @@ private:
   PerDeviceFFHandle *handle;
 };
 
-ManagedPerDeviceFFHandle initialize_single_gpu_handle();
+ManagedPerDeviceFFHandle initialize_single_gpu_handle(size_t workSpaceSize, 
+                                                      bool allowTensorOpMathConversion);
 ManagedPerDeviceFFHandle initialize_multi_gpu_handle(int num_ranks,
-                                                     int my_rank);
+                                                     int my_rank,
+                                                     size_t workSpaceSize,
+                                                     bool allowTensorOpMathConversion);
 
 } // namespace FlexFlow
 
