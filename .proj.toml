@@ -56,7 +56,7 @@ has-cpu-only-benchmarks = false
 has-cuda-tests = false
 has-cuda-benchmarks = false
 
-[targets.task_spec]
+[targets.task-spec]
 type = "lib"
 has-cpu-only-tests = true
 has-cpu-only-benchmarks = false
