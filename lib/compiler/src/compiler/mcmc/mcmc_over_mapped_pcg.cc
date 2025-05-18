@@ -38,7 +38,6 @@ SearchResult mcmc_graph_optimize(ParallelComputationGraph &pcg,
             get_random_pattern_match(random_substitution.value().pcg_pattern,
                                      sub_pcg_from_full_pcg(mapped_pcg.pcg));
         if (pattern_match != std::nullopt) {
-          std::cout << "HELLO" << std::endl;
           return apply_substitution_and_update_machine_mapping(
               mapped_pcg, random_substitution.value(), pattern_match.value());
         }
