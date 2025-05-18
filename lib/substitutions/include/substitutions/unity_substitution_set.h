@@ -6,6 +6,8 @@
 #include "utils/fmt/vector.h"
 
 namespace FlexFlow {
+std::optional<Substitution>
+    get_random_substitution(MachineSpecification const &resources);
 
 std::vector<Substitution>
     get_substitution_set(MachineSpecification const &resources);
