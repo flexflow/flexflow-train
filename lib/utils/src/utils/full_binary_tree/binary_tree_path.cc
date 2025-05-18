@@ -1,5 +1,5 @@
 #include "utils/full_binary_tree/binary_tree_path.h"
-#include "utils/containers/subvec.h"
+#include "utils/containers/slice.h"
 
 namespace FlexFlow {
 
@@ -27,7 +27,7 @@ BinaryTreePathEntry binary_tree_path_get_top_level(BinaryTreePath const &p) {
 
 BinaryTreePath binary_tree_path_get_non_top_level(BinaryTreePath const &p) {
   return BinaryTreePath{
-      subvec(p.entries, 1, std::nullopt),
+      slice(p.entries, 1, std::nullopt),
   };
 }
 

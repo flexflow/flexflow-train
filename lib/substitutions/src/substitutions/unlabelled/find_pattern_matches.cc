@@ -11,6 +11,7 @@
 #include "utils/graph/dataflow_graph/algorithms.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_inputs.h"
+#include "utils/overload.h"
 
 namespace FlexFlow {
 
@@ -67,6 +68,27 @@ static std::optional<UnlabelledDataflowGraphPatternMatch>
   return match;
 }
 
+MatchAdditionalCriterion additional_criterion_for_subpattern(
+    MatchAdditionalCriterion const &full_additional_criterion,
+    bidict<PatternValue, PatternInput> const
+        &full_pattern_values_to_subpattern_inputs) {
+  return MatchAdditionalCriterion{
+      full_additional_criterion.node_criterion,
+      [&](PatternValue const &patternValue, OpenDataflowValue const &pcgValue) {
+        return patternValue.visit<bool>(
+            overload{[&](PatternNodeOutput const &) -> bool {
+                       return full_additional_criterion.value_criterion(
+                           patternValue, pcgValue);
+                     },
+                     [&](PatternInput const &i) -> bool {
+                       PatternValue full_pattern_value =
+                           full_pattern_values_to_subpattern_inputs.at_r(i);
+                       return full_additional_criterion.value_criterion(
+                           full_pattern_value, pcgValue);
+                     }});
+      }};
+}
+
 std::vector<UnlabelledDataflowGraphPatternMatch>
     find_pattern_matches(UnlabelledGraphPattern const &pattern,
                          OpenDataflowGraphView const &graph,
@@ -87,10 +109,18 @@ std::vector<UnlabelledDataflowGraphPatternMatch>
     PatternSplitResult subpatterns = apply_split(pattern, split);
     std::vector<UnlabelledDataflowGraphPatternMatch> prefix_matches =
         find_pattern_matches(
-            subpatterns.subpattern_1, graph, additional_criterion);
+            subpatterns.subpattern_1,
+            graph,
+            additional_criterion_for_subpattern(
+                additional_criterion,
+                subpatterns.full_pattern_values_to_subpattern_1_inputs));
     std::vector<UnlabelledDataflowGraphPatternMatch> postfix_matches =
         find_pattern_matches(
-            subpatterns.subpattern_2, graph, additional_criterion);
+            subpatterns.subpattern_2,
+            graph,
+            additional_criterion_for_subpattern(
+                additional_criterion,
+                subpatterns.full_pattern_values_to_subpattern_2_inputs));
 
     for (UnlabelledDataflowGraphPatternMatch const &prefix_match :
          prefix_matches) {

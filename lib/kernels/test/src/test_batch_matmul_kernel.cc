@@ -1,10 +1,10 @@
-#include "doctest/doctest.h"
+#include "internal/test_utils.h"
 #include "kernels/batch_matmul_kernels.h"
-#include "test_utils.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
-TEST_SUITE(FF_TEST_SUITE) {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test BatchMatmul Kernel") {
     nonnegative_int m = 10_n;
     nonnegative_int n = 10_n;
@@ -15,16 +15,24 @@ TEST_SUITE(FF_TEST_SUITE) {
     int seq_length = -1;
 
     ManagedFFStream managed_stream{};
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle{
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true};
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    TensorShape input_shape_a =
-        make_float_tensor_shape_from_legion_dims({m, k, batch});
-    TensorShape input_shape_b =
-        make_float_tensor_shape_from_legion_dims({k, n, batch});
-    TensorShape output_shape =
-        make_float_tensor_shape_from_legion_dims({m, n, batch});
+    TensorShape input_shape_a = TensorShape{
+        TensorDims{FFOrdered{batch, k, m}},
+        DataType::FLOAT,
+    };
+    TensorShape input_shape_b = TensorShape{
+        TensorDims{FFOrdered{batch, n, k}},
+        DataType::FLOAT,
+    };
+    TensorShape output_shape = TensorShape{
+        TensorDims{FFOrdered{batch, n, m}},
+        DataType::FLOAT,
+    };
 
     GenericTensorAccessorW a_accessor =
         create_random_filled_accessor_w(input_shape_a, allocator);
