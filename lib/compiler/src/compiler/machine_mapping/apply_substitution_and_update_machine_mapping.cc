@@ -2,6 +2,7 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph_edge.h"
 #include "pcg/parallel_computation_graph/parallel_tensor_guid_t.h"
 #include "substitutions/apply_substitution/evaluate_substitution_output.h"
+#include "substitutions/apply_substitution/apply_substitution.h"
 #include "substitutions/apply_substitution/output_expr_to_result_sub_pcg_mapping.h"
 #include "substitutions/open_parallel_tensor_guid_t.h"
 #include "substitutions/pcg_pattern_match.h"
@@ -13,6 +14,7 @@
 #include "utils/containers/restrict_keys.h"
 #include "utils/containers/set_minus.h"
 #include "utils/containers/values.h"
+#include "utils/containers/is_subseteq_of.h"
 
 namespace FlexFlow {
 
@@ -47,6 +49,7 @@ SearchResult apply_substitution_and_update_machine_mapping(
       transform(matched_nodes, [&](parallel_layer_guid_t const &node) {
         return machine_views.at(node);
       });
+  MachineView first_substituted_machine_view = *substituted_machine_views.begin();
 
   std::unordered_map<parallel_layer_guid_t, ParallelLayerAttrs> post_node_data =
       [&] {
@@ -56,10 +59,8 @@ SearchResult apply_substitution_and_update_machine_mapping(
         std::unordered_map<parallel_layer_guid_t, ParallelLayerAttrs>
             post_node_data_from_sub = output_graph_data.node_data;
 
-        // just taking the first substituted machine view, not sure if this
-        // is fine
         for (auto [layer, attrs] : post_node_data_from_sub) {
-          machine_views.try_emplace(layer, *substituted_machine_views.begin());
+          machine_views.insert_or_assign(layer, first_substituted_machine_view);
         }
 
         return merge_disjoint_maps(post_node_data_from_orig,
@@ -174,6 +175,18 @@ SearchResult apply_substitution_and_update_machine_mapping(
       post_inputs,
       post_value_data,
   };
+
+  assert(is_subseteq_of(keys(post_node_data), keys(machine_views)));
+
+  for (auto it = machine_views.begin(); it != machine_views.end(); ) {
+    if (post_node_data.find(it->first) == post_node_data.end()) {
+        it = machine_views.erase(it);
+    } else {
+        ++it;
+    }
+  }
+
+  assert(keys(post_node_data) == keys(machine_views));
 
   return SearchResult{
       pcg_from_sub_pcg_by_dropping_inputs(sub_pcg_from_graph_data(post_data)),

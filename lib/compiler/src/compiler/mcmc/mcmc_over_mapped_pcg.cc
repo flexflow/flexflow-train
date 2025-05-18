@@ -6,6 +6,7 @@
 #include "substitutions/pcg_pattern.h"
 #include "substitutions/pcg_pattern_match.h"
 #include "substitutions/unity_substitution_set.h"
+#include "compiler/search_result.h"
 #include "utils/optional.h"
 
 namespace FlexFlow {

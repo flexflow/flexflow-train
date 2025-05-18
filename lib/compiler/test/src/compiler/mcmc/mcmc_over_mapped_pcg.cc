@@ -65,7 +65,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     MCMCOverMappedPCGConfig search_config =
         MCMCOverMappedPCGConfig{/*temperature=*/1.0,
                                 /*num_iterations=*/100_n,
-                                /*substitution_interval=*/100_n,
+                                /*substitution_interval=*/5_n,
                                 /*device_type=*/DeviceType::GPU};
 
     SearchResult result = mcmc_graph_optimize(
@@ -74,7 +74,6 @@ TEST_SUITE(FF_TEST_SUITE) {
         result.pcg, cost_estimator, result.machine_mapping, full_machine_spec);
     std::cout << runtime << std::endl;
 
-    CHECK(runtime < 16);
-    CHECK(false);
+    CHECK(runtime < 12);
   }
 }

@@ -159,8 +159,6 @@ SubParallelComputationGraph
       post_value_data,
   };
 
-  std::cout << as_dot(sub_pcg_from_graph_data(post_data)) << std::endl;
-
   return sub_pcg_from_graph_data(post_data);
 }
 

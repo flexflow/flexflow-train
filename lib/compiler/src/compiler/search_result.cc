@@ -3,7 +3,7 @@
 namespace FlexFlow {
 
 std::string format_as(SearchResult const &r) {
-  return fmt::format("<GraphOptimizeResult\npcg={}\nmachine_mapping={}>",
+  return fmt::format("<SearchResult\npcg={}\nmachine_mapping={}>",
                      as_dot(r.pcg),
                      r.machine_mapping);
 }

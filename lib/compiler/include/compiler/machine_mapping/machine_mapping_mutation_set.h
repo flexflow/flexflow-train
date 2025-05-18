@@ -9,22 +9,11 @@ std::optional<MachineMapping>
     get_naive_mapping(ParallelComputationGraph &pcg,
                       MachineSpecification const &resources,
                       DeviceType const &device_type);
-std::vector<MachineMapping>
-    get_possible_mutations(SearchResult mapped_pcg,
-                           MachineSpecification const &resource);
+                      
 std::optional<MachineMapping>
     get_random_mutation(SearchResult mapped_pcg,
                         MachineSpecification const &resource,
                         DeviceType const &device_type);
-MachineView increment_stride(MachineView machine_view, nonnegative_int dim);
-MachineView decrement_all_strides(MachineView machine_view);
-MachineView change_stride(nonnegative_int stride,
-                          MachineView machine_view,
-                          nonnegative_int dim);
-MachineView change_node_idx(nonnegative_int node_ix, MachineView machine_view);
-MachineView change_device_idx(nonnegative_int device_idx,
-                              MachineView machine_view);
-MachineView switch_projection(MachineView machine_view, nonnegative_int dim);
 } // namespace FlexFlow
 
 #endif
