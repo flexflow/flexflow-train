@@ -9,7 +9,7 @@ std::optional<MachineMapping>
     get_naive_mapping(ParallelComputationGraph &pcg,
                       MachineSpecification const &resources,
                       DeviceType const &device_type);
-                      
+
 std::optional<MachineMapping>
     get_random_mutation(SearchResult mapped_pcg,
                         MachineSpecification const &resource,

@@ -1,20 +1,20 @@
 #include "compiler/machine_mapping/apply_substitution_and_update_machine_mapping.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_edge.h"
 #include "pcg/parallel_computation_graph/parallel_tensor_guid_t.h"
-#include "substitutions/apply_substitution/evaluate_substitution_output.h"
 #include "substitutions/apply_substitution/apply_substitution.h"
+#include "substitutions/apply_substitution/evaluate_substitution_output.h"
 #include "substitutions/apply_substitution/output_expr_to_result_sub_pcg_mapping.h"
 #include "substitutions/open_parallel_tensor_guid_t.h"
 #include "substitutions/pcg_pattern_match.h"
 #include "substitutions/sub_parallel_computation_graph.h"
 #include "substitutions/sub_parallel_computation_graph_data.dtg.h"
 #include "substitutions/sub_parallel_computation_graph_edge.h"
+#include "utils/containers/is_subseteq_of.h"
 #include "utils/containers/keys.h"
 #include "utils/containers/merge_maps.h"
 #include "utils/containers/restrict_keys.h"
 #include "utils/containers/set_minus.h"
 #include "utils/containers/values.h"
-#include "utils/containers/is_subseteq_of.h"
 
 namespace FlexFlow {
 
@@ -49,7 +49,8 @@ SearchResult apply_substitution_and_update_machine_mapping(
       transform(matched_nodes, [&](parallel_layer_guid_t const &node) {
         return machine_views.at(node);
       });
-  MachineView first_substituted_machine_view = *substituted_machine_views.begin();
+  MachineView first_substituted_machine_view =
+      *substituted_machine_views.begin();
 
   std::unordered_map<parallel_layer_guid_t, ParallelLayerAttrs> post_node_data =
       [&] {
@@ -178,11 +179,11 @@ SearchResult apply_substitution_and_update_machine_mapping(
 
   assert(is_subseteq_of(keys(post_node_data), keys(machine_views)));
 
-  for (auto it = machine_views.begin(); it != machine_views.end(); ) {
+  for (auto it = machine_views.begin(); it != machine_views.end();) {
     if (post_node_data.find(it->first) == post_node_data.end()) {
-        it = machine_views.erase(it);
+      it = machine_views.erase(it);
     } else {
-        ++it;
+      ++it;
     }
   }
 

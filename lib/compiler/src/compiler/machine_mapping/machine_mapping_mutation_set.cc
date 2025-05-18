@@ -29,8 +29,8 @@ std::optional<MachineMapping>
 
 std::optional<MachineMapping>
     get_random_mutation(SearchResult mapped_pcg,
-                             MachineSpecification const &resources,
-                             DeviceType const &device_type) {
+                        MachineSpecification const &resources,
+                        DeviceType const &device_type) {
   ParallelComputationGraph pcg = mapped_pcg.pcg;
   std::vector<parallel_layer_guid_t> layers = topological_ordering(pcg);
   if (layers.size() == 0) {

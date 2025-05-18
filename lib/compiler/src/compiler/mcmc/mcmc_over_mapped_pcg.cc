@@ -2,11 +2,11 @@
 #include "compiler/machine_mapping/apply_substitution_and_update_machine_mapping.h"
 #include "compiler/machine_mapping/machine_mapping_mutation_set.h"
 #include "compiler/mcmc/generic_mcmc_algorithm.h"
+#include "compiler/search_result.h"
 #include "compiler/task_graph_simulator/task_simulator.h"
 #include "substitutions/pcg_pattern.h"
 #include "substitutions/pcg_pattern_match.h"
 #include "substitutions/unity_substitution_set.h"
-#include "compiler/search_result.h"
 #include "utils/optional.h"
 
 namespace FlexFlow {
