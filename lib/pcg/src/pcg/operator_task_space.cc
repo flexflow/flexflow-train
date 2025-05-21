@@ -24,7 +24,8 @@ std::unordered_set<TaskSpaceCoordinate>
 
   std::vector<std::vector<nonnegative_int>> coordinate_ranges =
       transform(task.degrees, [&](positive_int num_points) {
-        return nonnegative_range(num_points.nonnegative_int_from_positive_int());
+        return nonnegative_range(
+            num_points.nonnegative_int_from_positive_int());
       });
 
   std::unordered_set<std::vector<nonnegative_int>> raw_coordinates =

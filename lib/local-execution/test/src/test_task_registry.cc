@@ -1,8 +1,8 @@
 #include "doctest/doctest.h"
 #include "kernels/local_cuda_allocator.h"
 #include "local-execution/local_cost_estimator.h"
-#include "task-spec/task_signature_impl.h"
 #include "pcg/computation_graph_builder.h"
+#include "task-spec/task_signature_impl.h"
 #include "utils/fmt/optional.h"
 #include "utils/fmt/unordered_map.h"
 

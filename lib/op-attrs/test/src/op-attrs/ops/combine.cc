@@ -37,7 +37,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       tl::expected<ParallelTensorShape, std::string> correct = [&] {
         ParallelTensorShape output = input;
         positive_int old_shard_degree = output.dims.shard_dims.at(dim).degree;
-        output.dims.shard_dims.at(dim).degree = positive_int{old_shard_degree / degree};
+        output.dims.shard_dims.at(dim).degree =
+            positive_int{old_shard_degree / degree};
         return output;
       }();
 

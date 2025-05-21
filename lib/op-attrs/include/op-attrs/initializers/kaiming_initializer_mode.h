@@ -14,7 +14,7 @@ namespace FlexFlow {
  * https://github.com/pytorch/pytorch/blob/bd019c0bb485904a99fb38589444b1461ab1e486/torch/nn/init.py#L345-L363
  */
 positive_int calculate_fan_for_mode(TensorDims const &dims,
-                                       KaimingInitializerMode mode);
+                                    KaimingInitializerMode mode);
 
 } // namespace FlexFlow
 

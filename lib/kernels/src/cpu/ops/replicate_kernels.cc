@@ -23,8 +23,8 @@ struct CPUBackwardKernel {
                   nonnegative_int num_replicas) {
     using T = real_type_t<DT>;
 
-    for (nonnegative_int i : 
-           nonnegative_range(num_elements.nonnegative_int_from_positive_int())) {
+    for (nonnegative_int i :
+         nonnegative_range(num_elements.nonnegative_int_from_positive_int())) {
       T cur_sum = 0;
       for (nonnegative_int replica_idx : nonnegative_range(num_replicas)) {
         cur_sum += output.at<DT>(LegionOrdered{replica_idx, i});

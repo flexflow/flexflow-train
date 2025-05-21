@@ -339,12 +339,11 @@ TEST_SUITE(FF_TEST_SUITE) {
       ComputationGraph cg = [&] {
         ComputationGraphBuilder b;
 
-        TensorShape input_shape =
-            TensorShape{TensorDims{FFOrdered{
-                            10_p,
-                            12_p,
-                        }},
-                        DataType::FLOAT};
+        TensorShape input_shape = TensorShape{TensorDims{FFOrdered{
+                                                  10_p,
+                                                  12_p,
+                                              }},
+                                              DataType::FLOAT};
         tensor_guid_t input = b.create_input(input_shape, CreateGrad::YES);
 
         b.dense(input, /*outDim=*/14_p);

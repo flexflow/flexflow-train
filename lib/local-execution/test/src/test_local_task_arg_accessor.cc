@@ -18,8 +18,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     DataType dtype = DataType::FLOAT;
     TensorShape input_tensor_shape = TensorShape{
-        TensorDims{
-            FFOrdered{batch_size, seq_len, feature_size}},
+        TensorDims{FFOrdered{batch_size, seq_len, feature_size}},
         DataType::FLOAT,
     };
 

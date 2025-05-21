@@ -129,7 +129,8 @@ static DeviceSpecificDeviceStates
     num_replicas *= input.shape.at(legion_dim_t{i});
   }
   positive_int effective_num_elements = M;
-  positive_int effective_batch_size = positive_int{input.shape.num_elements() / M};
+  positive_int effective_batch_size =
+      positive_int{input.shape.num_elements() / M};
 
   LayerNormPerDeviceState per_device_state =
       init_kernel(handle,

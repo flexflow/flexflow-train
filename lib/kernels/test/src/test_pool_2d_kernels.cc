@@ -24,31 +24,30 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     PoolOp pool_type = PoolOp::MAX;
 
     ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
-      /*workSpaceSize=*/1024 * 1024,
-      /*allowTensorOpMathConversion=*/true
-    );
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    Pool2DPerDeviceState state =
-        Kernels::Pool2D::init_kernel(/*handle=*/managed_handle.raw_handle(),
-                                     /*activation=*/std::nullopt,
-                                     /*input_w=*/input_w.int_from_positive_int(),
-                                     /*input_h=*/input_h.int_from_positive_int(),
-                                     /*input_c=*/input_c.int_from_positive_int(),
-                                     /*input_n=*/input_n.int_from_positive_int(),
-                                     /*output_w=*/output_w.int_from_positive_int(),
-                                     /*output_h=*/output_h.int_from_positive_int(),
-                                     /*output_c=*/output_c.int_from_positive_int(),
-                                     /*output_n=*/output_n.int_from_positive_int(),
-                                     /*pad_h=*/pad_h.unwrap_nonnegative(),
-                                     /*pad_w=*/pad_w.unwrap_nonnegative(),
-                                     /*kernel_h=*/kernel_h.int_from_positive_int(),
-                                     /*kernel_w=*/kernel_w.int_from_positive_int(),
-                                     /*stride_h=*/stride_h.int_from_positive_int(),
-                                     /*stride_w=*/stride_w.int_from_positive_int(),
-                                     /*pool_type=*/pool_type);
+    Pool2DPerDeviceState state = Kernels::Pool2D::init_kernel(
+        /*handle=*/managed_handle.raw_handle(),
+        /*activation=*/std::nullopt,
+        /*input_w=*/input_w.int_from_positive_int(),
+        /*input_h=*/input_h.int_from_positive_int(),
+        /*input_c=*/input_c.int_from_positive_int(),
+        /*input_n=*/input_n.int_from_positive_int(),
+        /*output_w=*/output_w.int_from_positive_int(),
+        /*output_h=*/output_h.int_from_positive_int(),
+        /*output_c=*/output_c.int_from_positive_int(),
+        /*output_n=*/output_n.int_from_positive_int(),
+        /*pad_h=*/pad_h.unwrap_nonnegative(),
+        /*pad_w=*/pad_w.unwrap_nonnegative(),
+        /*kernel_h=*/kernel_h.int_from_positive_int(),
+        /*kernel_w=*/kernel_w.int_from_positive_int(),
+        /*stride_h=*/stride_h.int_from_positive_int(),
+        /*stride_w=*/stride_w.int_from_positive_int(),
+        /*pool_type=*/pool_type);
 
     TensorShape input_shape = TensorShape{
         TensorDims{FFOrdered{input_n, input_c, input_h, input_w}},

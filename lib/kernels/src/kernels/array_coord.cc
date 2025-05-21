@@ -5,8 +5,9 @@
 
 namespace FlexFlow {
 
-ArrayCoord array_coord_drop_dims(ArrayCoord const &coord,
-                                 std::function<bool(ff_dim_t)> const &should_drop_dim) {
+ArrayCoord array_coord_drop_dims(
+    ArrayCoord const &coord,
+    std::function<bool(ff_dim_t)> const &should_drop_dim) {
   std::vector<nonnegative_int> result;
   for (ff_dim_t idx : get_idxs(coord.ff_ordered)) {
     if (!should_drop_dim(idx)) {

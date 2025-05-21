@@ -52,8 +52,7 @@ ShardParallelDim &shard_dim_at_idx(ParallelTensorShape &s,
   return shard_dim_at_idx(s.dims, d);
 }
 
-FFOrdered<positive_int>
-    ff_ordered_shard_degrees(ParallelTensorShape const &s) {
+FFOrdered<positive_int> ff_ordered_shard_degrees(ParallelTensorShape const &s) {
   return ff_ordered_shard_degrees(s.dims);
 }
 
@@ -133,8 +132,8 @@ ParallelDim get_parallel_dim_at_idx(ParallelTensorShape const &shape,
       [&](ReplicaType replica_type) {
         ReplicaParallelDimSet replicas = shape.dims.replica_dims;
         positive_int degree = (ReplicaType::SUM == replica_type
-                                      ? replicas.sum_degree.value
-                                      : replicas.discard_copy_degree.value);
+                                   ? replicas.sum_degree.value
+                                   : replicas.discard_copy_degree.value);
         return ParallelDim{ReplicaParallelDim{degree, replica_type}};
       }});
 }

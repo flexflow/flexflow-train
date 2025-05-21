@@ -131,10 +131,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                           positive_int o_extra_dim,
                           positive_int o_channel) {
       return lift_to_parallel_with_degrees(
-          input,
-          o_sum,
-          o_eq,
-          FFOrdered{o_batch, o_extra_dim, o_channel});
+          input, o_sum, o_eq, FFOrdered{o_batch, o_extra_dim, o_channel});
     };
 
     auto make_output = [&](SumDegree o_sum,
@@ -143,10 +140,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                            positive_int o_extra_dim,
                            positive_int o_channel) {
       return lift_to_parallel_with_degrees(
-          output,
-          o_sum,
-          o_eq,
-          FFOrdered{o_batch, o_extra_dim, o_channel});
+          output, o_sum, o_eq, FFOrdered{o_batch, o_extra_dim, o_channel});
     };
 
     auto make_projection = [&](SumDegree o_sum,
@@ -154,10 +148,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                                positive_int o_inchannel,
                                positive_int o_outchannel) {
       return lift_to_parallel_with_degrees(
-          projection,
-          o_sum,
-          o_eq,
-          FFOrdered{o_inchannel, o_outchannel});
+          projection, o_sum, o_eq, FFOrdered{o_inchannel, o_outchannel});
     };
 
     auto make_bias = [&](SumDegree o_sum,

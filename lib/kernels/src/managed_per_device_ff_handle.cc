@@ -5,7 +5,10 @@
 namespace FlexFlow {
 
 ManagedPerDeviceFFHandle::ManagedPerDeviceFFHandle(
-    int num_ranks, int my_rank, size_t workSpaceSize, bool allowTensorOpMathConversion) {
+    int num_ranks,
+    int my_rank,
+    size_t workSpaceSize,
+    bool allowTensorOpMathConversion) {
   this->handle = new PerDeviceFFHandle{};
   this->handle->workSpaceSize = workSpaceSize;
   this->handle->allowTensorOpMathConversion = allowTensorOpMathConversion;
@@ -48,24 +51,27 @@ PerDeviceFFHandle const &ManagedPerDeviceFFHandle::raw_handle() const {
   return *handle;
 }
 
-ManagedPerDeviceFFHandle initialize_single_gpu_handle(size_t workSpaceSize, bool allowTensorOpMathConversion) {
+ManagedPerDeviceFFHandle
+    initialize_single_gpu_handle(size_t workSpaceSize,
+                                 bool allowTensorOpMathConversion) {
   return ManagedPerDeviceFFHandle{
-    /*num_ranks=*/1, 
-    /*my_rank=*/0,
-    /*workSpaceSize=*/workSpaceSize,
-    /*allowTensorOpMathConversion=*/allowTensorOpMathConversion,
+      /*num_ranks=*/1,
+      /*my_rank=*/0,
+      /*workSpaceSize=*/workSpaceSize,
+      /*allowTensorOpMathConversion=*/allowTensorOpMathConversion,
   };
 }
 
-ManagedPerDeviceFFHandle initialize_multi_gpu_handle(int num_ranks,
-                                                     int my_rank,
-                                                     size_t workSpaceSize,
-                                                     bool allowTensorOpMathConversion) {
+ManagedPerDeviceFFHandle
+    initialize_multi_gpu_handle(int num_ranks,
+                                int my_rank,
+                                size_t workSpaceSize,
+                                bool allowTensorOpMathConversion) {
   return ManagedPerDeviceFFHandle{
-    /*num_ranks=*/num_ranks, 
-    /*my_rank=*/my_rank,
-    /*workSpaceSize=*/workSpaceSize,
-    /*allowTensorOpMathConversion=*/allowTensorOpMathConversion,
+      /*num_ranks=*/num_ranks,
+      /*my_rank=*/my_rank,
+      /*workSpaceSize=*/workSpaceSize,
+      /*allowTensorOpMathConversion=*/allowTensorOpMathConversion,
   };
 }
 

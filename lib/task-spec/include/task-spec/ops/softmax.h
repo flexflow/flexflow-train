@@ -1,9 +1,9 @@
 #ifndef _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_OPS_SOFTMAX_H
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_OPS_SOFTMAX_H
 
-#include "task-spec/task_impl_function.dtg.h"
 #include "op-attrs/ops/softmax_attrs.dtg.h"
 #include "task-spec/op_task_invocation.h"
+#include "task-spec/task_impl_function.dtg.h"
 
 namespace FlexFlow {
 

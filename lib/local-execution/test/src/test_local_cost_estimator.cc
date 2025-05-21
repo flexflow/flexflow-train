@@ -12,9 +12,8 @@ using namespace ::FlexFlow;
 TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("LocalCostEstimator") {
     ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
-      /*workSpaceSize=*/1024 * 1024,
-      /*allowTensorOpMathConversion=*/true
-    );
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true);
 
     RuntimeArgConfig runtime_arg_config = RuntimeArgConfig{
         DeviceSpecific<PerDeviceFFHandle>::create(managed_handle.raw_handle()),

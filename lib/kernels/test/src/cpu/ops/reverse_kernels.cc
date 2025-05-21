@@ -1,9 +1,9 @@
 #include "internal/test_utils.h"
+#include "kernels/create_accessor_with_contents.h"
 #include "kernels/format_accessor_contents.h"
 #include "kernels/reverse_kernels_cpu.h"
-#include "kernels/create_accessor_with_contents.h"
-#include <doctest/doctest.h>
 #include "test/utils/doctest/check_kv.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
@@ -36,18 +36,19 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*axis=*/ff_dim_t{0_n},
       };
 
-      GenericTensorAccessorR correct = create_3d_accessor_r_with_contents<int32_t>(
-          {
+      GenericTensorAccessorR correct =
+          create_3d_accessor_r_with_contents<int32_t>(
               {
-                  {3, 3, 6},
-                  {2, 1, 5},
+                  {
+                      {3, 3, 6},
+                      {2, 1, 5},
+                  },
+                  {
+                      {1, 3, 2},
+                      {4, 2, 1},
+                  },
               },
-              {
-                  {1, 3, 2},
-                  {4, 2, 1},
-              },
-          },
-          cpu_allocator);
+              cpu_allocator);
 
       Kernels::Reverse::cpu_forward_kernel(input, result, attrs);
 
@@ -60,18 +61,19 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*axis=*/ff_dim_t{1_n},
       };
 
-      GenericTensorAccessorR correct = create_3d_accessor_r_with_contents<int32_t>(
-          {
+      GenericTensorAccessorR correct =
+          create_3d_accessor_r_with_contents<int32_t>(
               {
-                  {4, 2, 1},
-                  {1, 3, 2},
+                  {
+                      {4, 2, 1},
+                      {1, 3, 2},
+                  },
+                  {
+                      {2, 1, 5},
+                      {3, 3, 6},
+                  },
               },
-              {
-                  {2, 1, 5},
-                  {3, 3, 6},
-              },
-          },
-          cpu_allocator);
+              cpu_allocator);
 
       Kernels::Reverse::cpu_forward_kernel(input, result, attrs);
 
@@ -84,18 +86,19 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*axis=*/ff_dim_t{2_n},
       };
 
-      GenericTensorAccessorR correct = create_3d_accessor_r_with_contents<int32_t>(
-          {
+      GenericTensorAccessorR correct =
+          create_3d_accessor_r_with_contents<int32_t>(
               {
-                  {2, 3, 1},
-                  {1, 2, 4},
+                  {
+                      {2, 3, 1},
+                      {1, 2, 4},
+                  },
+                  {
+                      {6, 3, 3},
+                      {5, 1, 2},
+                  },
               },
-              {
-                  {6, 3, 3},
-                  {5, 1, 2},
-              },
-          },
-          cpu_allocator);
+              cpu_allocator);
 
       Kernels::Reverse::cpu_forward_kernel(input, result, attrs);
 
@@ -132,18 +135,19 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*axis=*/ff_dim_t{0_n},
       };
 
-      GenericTensorAccessorR correct = create_3d_accessor_r_with_contents<int32_t>(
-          {
+      GenericTensorAccessorR correct =
+          create_3d_accessor_r_with_contents<int32_t>(
               {
-                  {3, 3, 6},
-                  {2, 1, 5},
+                  {
+                      {3, 3, 6},
+                      {2, 1, 5},
+                  },
+                  {
+                      {1, 3, 2},
+                      {4, 2, 1},
+                  },
               },
-              {
-                  {1, 3, 2},
-                  {4, 2, 1},
-              },
-          },
-          cpu_allocator);
+              cpu_allocator);
 
       Kernels::Reverse::cpu_forward_kernel(input, result, attrs);
 
@@ -156,18 +160,19 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*axis=*/ff_dim_t{1_n},
       };
 
-      GenericTensorAccessorR correct = create_3d_accessor_r_with_contents<int32_t>(
-          {
+      GenericTensorAccessorR correct =
+          create_3d_accessor_r_with_contents<int32_t>(
               {
-                  {4, 2, 1},
-                  {1, 3, 2},
+                  {
+                      {4, 2, 1},
+                      {1, 3, 2},
+                  },
+                  {
+                      {2, 1, 5},
+                      {3, 3, 6},
+                  },
               },
-              {
-                  {2, 1, 5},
-                  {3, 3, 6},
-              },
-          },
-          cpu_allocator);
+              cpu_allocator);
 
       Kernels::Reverse::cpu_forward_kernel(input, result, attrs);
 
@@ -180,18 +185,19 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*axis=*/ff_dim_t{2_n},
       };
 
-      GenericTensorAccessorR correct = create_3d_accessor_r_with_contents<int32_t>(
-          {
+      GenericTensorAccessorR correct =
+          create_3d_accessor_r_with_contents<int32_t>(
               {
-                  {2, 3, 1},
-                  {1, 2, 4},
+                  {
+                      {2, 3, 1},
+                      {1, 2, 4},
+                  },
+                  {
+                      {6, 3, 3},
+                      {5, 1, 2},
+                  },
               },
-              {
-                  {6, 3, 3},
-                  {5, 1, 2},
-              },
-          },
-          cpu_allocator);
+              cpu_allocator);
 
       Kernels::Reverse::cpu_forward_kernel(input, result, attrs);
 

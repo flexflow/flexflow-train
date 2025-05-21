@@ -1,9 +1,9 @@
 #ifndef _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_OPS_ELEMENT_BINARY_H
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_OPS_ELEMENT_BINARY_H
 
+#include "op-attrs/ops/element_binary_attrs.dtg.h"
 #include "task-spec/task_impl_function.dtg.h"
 #include "task-spec/task_signature_impl.h"
-#include "op-attrs/ops/element_binary_attrs.dtg.h"
 
 namespace FlexFlow {
 

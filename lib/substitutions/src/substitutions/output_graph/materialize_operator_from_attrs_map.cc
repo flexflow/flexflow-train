@@ -33,8 +33,7 @@ PCGOperatorAttrs materialize_operator_from_attrs_map(
   switch (op_type) {
     case OperatorType::MULTIHEAD_ATTENTION:
       return PCGOperatorAttrs{MultiHeadAttentionAttrs{
-          /*embed_dim=*/acc.get<positive_int>(
-              OperatorAttributeKey::EMBED_DIM),
+          /*embed_dim=*/acc.get<positive_int>(OperatorAttributeKey::EMBED_DIM),
           /*num_heads=*/
           acc.get<positive_int>(OperatorAttributeKey::NUM_HEADS),
           /*kdim=*/acc.get<positive_int>(OperatorAttributeKey::KDIM),

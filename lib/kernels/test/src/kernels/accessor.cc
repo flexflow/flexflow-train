@@ -1,8 +1,8 @@
 #include "kernels/accessor.h"
 #include "internal/test_utils.h"
+#include "kernels/create_accessor_with_contents.h"
 #include "kernels/local_cpu_allocator.h"
 #include <doctest/doctest.h>
-#include "kernels/create_accessor_with_contents.h"
 
 using namespace ::FlexFlow;
 
@@ -78,25 +78,25 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("returns the value if the accessor only contains one value") {
       GenericTensorAccessorR input = create_3d_accessor_r_with_contents<float>(
           {
-            {
-              {12},
-            },
+              {
+                  {12},
+              },
           },
           cpu_allocator);
 
       float result = accessor_get_only_value<DataType::FLOAT>(input);
-      float correct = 12; 
+      float correct = 12;
 
       CHECK(result == correct);
     }
 
-
-    SUBCASE("throws an error if the requested type does not match the type in the accessor") {
+    SUBCASE("throws an error if the requested type does not match the type in "
+            "the accessor") {
       GenericTensorAccessorR input = create_3d_accessor_r_with_contents<float>(
           {
-            {
-              {12},
-            },
+              {
+                  {12},
+              },
           },
           cpu_allocator);
 
@@ -106,10 +106,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("throws an error if the accessor contains multiple values") {
       GenericTensorAccessorR input = create_3d_accessor_r_with_contents<float>(
           {
-            {
-              {12},
-              {12},
-            },
+              {
+                  {12},
+                  {12},
+              },
           },
           cpu_allocator);
 

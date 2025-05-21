@@ -17,8 +17,7 @@ ShardParallelDim shard_dim_at_idx(ParallelTensorShape const &,
                                   relative_ff_dim_t);
 ShardParallelDim &shard_dim_at_idx(ParallelTensorShape &, relative_ff_dim_t);
 
-FFOrdered<positive_int>
-    ff_ordered_shard_degrees(ParallelTensorShape const &);
+FFOrdered<positive_int> ff_ordered_shard_degrees(ParallelTensorShape const &);
 
 std::optional<ShardParallelDim>
     try_get_shard_dim_at_idx(ParallelTensorShape const &, relative_ff_dim_t);
@@ -26,11 +25,11 @@ std::optional<ShardParallelDim>
 ParallelTensorDimDegrees get_parallel_degrees(ParallelTensorShape const &);
 
 ParallelTensorShape lift_to_parallel(TensorShape const &);
-ParallelTensorShape lift_to_parallel_with_degrees(
-    TensorShape const &,
-    SumDegree const &,
-    DiscardCopyDegree const &,
-    FFOrdered<positive_int> const &shard_degrees);
+ParallelTensorShape
+    lift_to_parallel_with_degrees(TensorShape const &,
+                                  SumDegree const &,
+                                  DiscardCopyDegree const &,
+                                  FFOrdered<positive_int> const &shard_degrees);
 ParallelTensorShape
     lift_to_parallel_with_degrees(TensorShape const &,
                                   ParallelTensorDimDegrees const &);

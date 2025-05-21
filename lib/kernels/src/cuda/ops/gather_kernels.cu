@@ -132,7 +132,8 @@ void forward_kernel(ffStream_t stream,
     stride = 1;
   }
 
-  coord_t output_dim_size = output.shape.at(m.legion_dim).int_from_positive_int();
+  coord_t output_dim_size =
+      output.shape.at(m.legion_dim).int_from_positive_int();
   coord_t input_dim_size = input.shape.at(m.legion_dim).int_from_positive_int();
 
   assert(index.data_type == DataType::INT32 ||

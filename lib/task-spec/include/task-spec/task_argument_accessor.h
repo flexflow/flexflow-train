@@ -1,8 +1,8 @@
 #ifndef _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_TASK_ARGUMENT_ACCESSOR_H
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_TASK_ARGUMENT_ACCESSOR_H
 
-#include "task-spec/itask_argument_accessor.h"
 #include "task-spec/device_specific.h"
+#include "task-spec/itask_argument_accessor.h"
 #include "task-spec/per_device_op_state.dtg.h"
 
 namespace FlexFlow {

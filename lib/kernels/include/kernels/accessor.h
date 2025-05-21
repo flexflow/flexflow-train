@@ -226,7 +226,6 @@ bool is_shape_and_dtype_equal(GenericTensorAccessorR const &acc1,
 bool is_shape_and_dtype_equal(GenericTensorAccessorW const &acc1,
                               GenericTensorAccessorW const &acc2);
 
-
 bool shape_and_dtype_matches(GenericTensorAccessorR const &accessor,
                              ArrayShape const &expected_shape,
                              DataType const &expected_dtype);

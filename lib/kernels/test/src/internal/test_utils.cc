@@ -20,7 +20,6 @@ GenericTensorAccessorR create_zero_filled_accessor_r(TensorShape const &shape,
   return read_only_accessor_from_write_accessor(accessor);
 }
 
-
 template <DataType DT>
 struct CreateRandomFilledAccessorW {
   GenericTensorAccessorW operator()(TensorShape const &shape,
@@ -82,10 +81,10 @@ struct FillWithZeros {
              0,
              accessor.shape.num_elements().int_from_positive_int() * sizeof(T));
     } else {
-      checkCUDA(cudaMemset(accessor.ptr,
-                           0,
-                           accessor.shape.num_elements().int_from_positive_int() *
-                               sizeof(T)));
+      checkCUDA(cudaMemset(
+          accessor.ptr,
+          0,
+          accessor.shape.num_elements().int_from_positive_int() * sizeof(T)));
     }
   }
 };

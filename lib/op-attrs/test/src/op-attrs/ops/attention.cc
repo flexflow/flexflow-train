@@ -188,10 +188,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                         positive_int o_seq_len,
                         positive_int o_q) {
         return lift_to_parallel_with_degrees(
-            input_q,
-            o_sum,
-            o_eq,
-            FFOrdered{o_batch, o_seq_len, o_q});
+            input_q, o_sum, o_eq, FFOrdered{o_batch, o_seq_len, o_q});
       };
 
       auto make_k = [&](SumDegree o_sum,
@@ -200,10 +197,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                         positive_int o_seq_len,
                         positive_int o_k) {
         return lift_to_parallel_with_degrees(
-            input_k,
-            o_sum,
-            o_eq,
-            FFOrdered{o_batch, o_seq_len, o_k});
+            input_k, o_sum, o_eq, FFOrdered{o_batch, o_seq_len, o_k});
       };
 
       auto make_v = [&](SumDegree o_sum,
@@ -212,10 +206,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                         positive_int o_seq_len,
                         positive_int o_v) {
         return lift_to_parallel_with_degrees(
-            input_v,
-            o_sum,
-            o_eq,
-            FFOrdered{o_batch, o_seq_len, o_v});
+            input_v, o_sum, o_eq, FFOrdered{o_batch, o_seq_len, o_v});
       };
 
       auto make_o = [&](SumDegree o_sum,
@@ -224,10 +215,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                         positive_int o_seq_len,
                         positive_int o_o) {
         return lift_to_parallel_with_degrees(
-            output,
-            o_sum,
-            o_eq,
-            FFOrdered{o_batch, o_seq_len, o_o});
+            output, o_sum, o_eq, FFOrdered{o_batch, o_seq_len, o_o});
       };
 
       auto make_w = [&](SumDegree o_sum,
@@ -242,20 +230,14 @@ TEST_SUITE(FF_TEST_SUITE) {
                                  DiscardCopyDegree o_eq,
                                  positive_int o_in_proj_channel) {
         return lift_to_parallel_with_degrees(
-            input_bias,
-            o_sum,
-            o_eq,
-            FFOrdered{o_in_proj_channel});
+            input_bias, o_sum, o_eq, FFOrdered{o_in_proj_channel});
       };
 
       auto make_output_bias = [&](SumDegree o_sum,
                                   DiscardCopyDegree o_eq,
                                   positive_int o_out_proj_channel) {
         return lift_to_parallel_with_degrees(
-            output_bias,
-            o_sum,
-            o_eq,
-            FFOrdered{o_out_proj_channel});
+            output_bias, o_sum, o_eq, FFOrdered{o_out_proj_channel});
       };
 
       SUBCASE("data parallelism") {

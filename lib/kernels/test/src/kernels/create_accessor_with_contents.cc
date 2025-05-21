@@ -1,5 +1,5 @@
-#include <doctest/doctest.h>
 #include "kernels/create_accessor_with_contents.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
@@ -7,8 +7,8 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("create_1d_accessor_w_with_contents") {
     Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
-    GenericTensorAccessorW result 
-      = create_1d_accessor_w_with_contents<float>({1, 4, 1, 2}, cpu_allocator);
+    GenericTensorAccessorW result =
+        create_1d_accessor_w_with_contents<float>({1, 4, 1, 2}, cpu_allocator);
 
     auto at = [&](nonnegative_int c) -> float {
       return result.at<DataType::FLOAT>(FFOrdered<nonnegative_int>{c});
@@ -23,13 +23,12 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("create_2d_accessor_w_with_contents") {
     Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
-    GenericTensorAccessorW result 
-      = create_2d_accessor_w_with_contents<float>(
-          {
-            {1, 4, 2}, 
-            {2, 2, 7}, 
-          },
-          cpu_allocator);
+    GenericTensorAccessorW result = create_2d_accessor_w_with_contents<float>(
+        {
+            {1, 4, 2},
+            {2, 2, 7},
+        },
+        cpu_allocator);
 
     auto at = [&](nonnegative_int r, nonnegative_int c) -> float {
       return result.at<DataType::FLOAT>(FFOrdered{r, c});
@@ -46,23 +45,23 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("create_3d_accessor_w_with_contents") {
     Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
-    GenericTensorAccessorW result 
-      = create_3d_accessor_w_with_contents<float>(
-          {
+    GenericTensorAccessorW result = create_3d_accessor_w_with_contents<float>(
+        {
             {
-              {1, 4}, 
-              {2, 3}, 
-              {7, 2}, 
+                {1, 4},
+                {2, 3},
+                {7, 2},
             },
             {
-              {9, 3}, 
-              {4, 5}, 
-              {0, 2}, 
+                {9, 3},
+                {4, 5},
+                {0, 2},
             },
-          },
-          cpu_allocator);
+        },
+        cpu_allocator);
 
-    auto at = [&](nonnegative_int s, nonnegative_int r, nonnegative_int c) -> float {
+    auto at =
+        [&](nonnegative_int s, nonnegative_int r, nonnegative_int c) -> float {
       return result.at<DataType::FLOAT>(FFOrdered{s, r, c});
     };
 
@@ -83,33 +82,35 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("create_4d_accessor_w_with_contents") {
     Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
-    GenericTensorAccessorW result 
-      = create_4d_accessor_w_with_contents<float>(
-          {
+    GenericTensorAccessorW result = create_4d_accessor_w_with_contents<float>(
+        {
             {
-              {
-                {2, 3}, 
-                {7, 2}, 
-              },
-              {
-                {4, 5}, 
-                {0, 2}, 
-              },
+                {
+                    {2, 3},
+                    {7, 2},
+                },
+                {
+                    {4, 5},
+                    {0, 2},
+                },
             },
             {
-              {
-                {9, 6}, 
-                {1, 2}, 
-              },
-              {
-                {8, 7}, 
-                {3, 8}, 
-              },
+                {
+                    {9, 6},
+                    {1, 2},
+                },
+                {
+                    {8, 7},
+                    {3, 8},
+                },
             },
-          },
-          cpu_allocator);
+        },
+        cpu_allocator);
 
-    auto at = [&](nonnegative_int s1, nonnegative_int s2, nonnegative_int r, nonnegative_int c) -> float {
+    auto at = [&](nonnegative_int s1,
+                  nonnegative_int s2,
+                  nonnegative_int r,
+                  nonnegative_int c) -> float {
       return result.at<DataType::FLOAT>(FFOrdered{s1, s2, r, c});
     };
 

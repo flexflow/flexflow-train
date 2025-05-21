@@ -1,9 +1,9 @@
 #ifndef _FLEXFLOW_PARTITION_H
 #define _FLEXFLOW_PARTITION_H
 
-#include "task-spec/task_impl_function.dtg.h"
 #include "op-attrs/ops/repartition_attrs.dtg.h"
 #include "task-spec/op_task_invocation.h"
+#include "task-spec/task_impl_function.dtg.h"
 
 namespace FlexFlow {
 

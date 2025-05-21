@@ -4,7 +4,7 @@
 namespace FlexFlow {
 
 positive_int calculate_fan_for_mode(TensorDims const &dims,
-                                       KaimingInitializerMode mode) {
+                                    KaimingInitializerMode mode) {
   positive_int num_input_fmaps = dim_at_idx(dims, relative_ff_dim_t{0});
   positive_int num_output_fmaps = dim_at_idx(dims, relative_ff_dim_t{1});
 

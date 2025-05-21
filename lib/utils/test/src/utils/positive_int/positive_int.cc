@@ -1,5 +1,5 @@
-#include <doctest/doctest.h>
 #include "utils/positive_int/positive_int.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 

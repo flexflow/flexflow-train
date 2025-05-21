@@ -48,7 +48,8 @@ static std::pair<positive_int, positive_int>
     calc_block_size(ArrayShape const &array_shape, ff_dim_t axis) {
   positive_int num_blocks = 1_p;
   positive_int block_size = 1_p;
-  for (nonnegative_int d : nonnegative_range(array_shape.num_elements().nonnegative_int_from_positive_int())) {
+  for (nonnegative_int d : nonnegative_range(
+           array_shape.num_elements().nonnegative_int_from_positive_int())) {
     if (d <= axis.value) {
       block_size *= array_shape.at(legion_dim_t{d});
     } else {

@@ -69,8 +69,7 @@ positive_int get_vSize(MultiHeadAttentionInputs const &inputs) {
   return inputs.value_size;
 }
 
-positive_int
-    get_kvSeqLength(MultiHeadAttentionParallelInputs const &inputs) {
+positive_int get_kvSeqLength(MultiHeadAttentionParallelInputs const &inputs) {
   return inputs.sequence_dim.size;
 }
 
@@ -78,8 +77,7 @@ positive_int get_kvSeqLength(MultiHeadAttentionInputs const &inputs) {
   return inputs.sequence_length;
 }
 
-positive_int
-    get_qoSeqLength(MultiHeadAttentionParallelInputs const &inputs) {
+positive_int get_qoSeqLength(MultiHeadAttentionParallelInputs const &inputs) {
   return inputs.sequence_dim.size; // FIXME -- assumes only prefill
 }
 
@@ -87,8 +85,7 @@ positive_int get_qoSeqLength(MultiHeadAttentionInputs const &inputs) {
   return inputs.sequence_length; // FIXME -- assumes only prefil
 }
 
-positive_int
-    get_num_samples(MultiHeadAttentionParallelInputs const &inputs) {
+positive_int get_num_samples(MultiHeadAttentionParallelInputs const &inputs) {
   return inputs.batch_dim.size;
 }
 

@@ -94,12 +94,10 @@ TEST_SUITE(FF_TEST_SUITE) {
           tensor_guid_source.new_mock_tensor_guid();
 
       TensorAttrs allocated_tensor_attrs = TensorAttrs{
-          TensorShape{TensorDims{FFOrdered{16_p, 10_p}},
-                      DataType::FLOAT},
+          TensorShape{TensorDims{FFOrdered{16_p, 10_p}}, DataType::FLOAT},
           CreateGrad::NO};
       TensorAttrs unallocated_tensor_attrs = TensorAttrs{
-          TensorShape{TensorDims{FFOrdered{16_p, 20_p}},
-                      DataType::FLOAT},
+          TensorShape{TensorDims{FFOrdered{16_p, 20_p}}, DataType::FLOAT},
           CreateGrad::YES};
 
       GenericTensorAccessorW allocated_tensor_backing =

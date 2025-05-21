@@ -1,6 +1,7 @@
 #include "kernels/array_shape.h"
 #include "kernels/legion_ordered/slice.h"
 #include "op-attrs/ff_ordered/ff_ordered_of.h"
+#include "op-attrs/ff_ordered/get_idxs.h"
 #include "op-attrs/ff_ordered/slice.h"
 #include "utils/containers/cartesian_product.h"
 #include "utils/containers/product.h"
@@ -10,9 +11,8 @@
 #include "utils/containers/vector_of.h"
 #include "utils/hash/tuple.h"
 #include "utils/hash/vector.h"
-#include "utils/nonnegative_int/num_elements.h"
-#include "op-attrs/ff_ordered/get_idxs.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
+#include "utils/nonnegative_int/num_elements.h"
 
 namespace FlexFlow {
 
@@ -109,11 +109,11 @@ std::unordered_set<ff_dim_t> get_ff_dim_t_set(ArrayShape const &shape) {
 }
 
 std::unordered_set<ArrayCoord> get_array_coord_set(ArrayShape const &shape) {
-  std::vector<std::vector<nonnegative_int>> per_dim_ranges =
-      transform(vector_of(ff_ordered_from_legion_ordered(shape.dims)),
-                [](positive_int dim_size) -> std::vector<nonnegative_int> {
-                  return nonnegative_range(dim_size.nonnegative_int_from_positive_int());
-                });
+  std::vector<std::vector<nonnegative_int>> per_dim_ranges = transform(
+      vector_of(ff_ordered_from_legion_ordered(shape.dims)),
+      [](positive_int dim_size) -> std::vector<nonnegative_int> {
+        return nonnegative_range(dim_size.nonnegative_int_from_positive_int());
+      });
 
   std::unordered_set<std::vector<nonnegative_int>> raw_points =
       unordered_set_of(cartesian_product(per_dim_ranges));
@@ -124,8 +124,9 @@ std::unordered_set<ArrayCoord> get_array_coord_set(ArrayShape const &shape) {
                    });
 }
 
-ArrayShape array_shape_drop_dims(ArrayShape const &shape,
-                                 std::function<bool(ff_dim_t)> const &should_drop_dim) {
+ArrayShape array_shape_drop_dims(
+    ArrayShape const &shape,
+    std::function<bool(ff_dim_t)> const &should_drop_dim) {
   std::vector<positive_int> result;
   for (ff_dim_t idx : get_idxs(ff_ordered_from_legion_ordered(shape.dims))) {
     if (!should_drop_dim(idx)) {

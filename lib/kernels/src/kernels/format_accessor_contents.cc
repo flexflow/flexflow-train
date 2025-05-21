@@ -3,8 +3,8 @@
 #include "kernels/datatype_dispatch.h"
 #include "kernels/local_cpu_allocator.h"
 #include "utils/indent.h"
-#include <libassert/assert.hpp>
 #include "utils/nonnegative_int/nonnegative_range.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
@@ -19,12 +19,12 @@ struct Print1DCPUAccessorR {
     positive_int ncols = accessor.shape.at(ff_dim_t{0_n});
 
     stream << "["
-           << join_strings(nonnegative_range(ncols.nonnegative_int_from_positive_int()),
-                           " ",
-                           [&](nonnegative_int col_idx) -> std::string {
-                             return fmt::to_string(
-                                 accessor.at<DT>(FFOrdered{col_idx}));
-                           })
+           << join_strings(
+                  nonnegative_range(ncols.nonnegative_int_from_positive_int()),
+                  " ",
+                  [&](nonnegative_int col_idx) -> std::string {
+                    return fmt::to_string(accessor.at<DT>(FFOrdered{col_idx}));
+                  })
            << "]";
   }
 };
@@ -51,7 +51,8 @@ struct Print2DCPUAccessorR {
 
     auto render_1d = [&](nonnegative_int dim0_idx) -> std::string {
       return "[" +
-             join_strings(nonnegative_range(dim1_size.nonnegative_int_from_positive_int()),
+             join_strings(nonnegative_range(
+                              dim1_size.nonnegative_int_from_positive_int()),
                           " ",
                           [&](nonnegative_int dim1_idx) -> std::string {
                             return fmt::to_string(
@@ -61,8 +62,11 @@ struct Print2DCPUAccessorR {
     };
 
     stream << "[\n"
-           << indent(
-                  join_strings(nonnegative_range(dim0_size.nonnegative_int_from_positive_int()), "\n", render_1d))
+           << indent(join_strings(
+                  nonnegative_range(
+                      dim0_size.nonnegative_int_from_positive_int()),
+                  "\n",
+                  render_1d))
            << "\n]";
   }
 };
@@ -92,7 +96,8 @@ struct Print3DCPUAccessorR {
     auto render_1d = [&](nonnegative_int dim0_idx,
                          nonnegative_int dim1_idx) -> std::string {
       return "[" +
-             join_strings(nonnegative_range(dim2_size.nonnegative_int_from_positive_int()),
+             join_strings(nonnegative_range(
+                              dim2_size.nonnegative_int_from_positive_int()),
                           " ",
                           [&](nonnegative_int dim2_idx) -> std::string {
                             return fmt::to_string(accessor.at<DT>(
@@ -103,17 +108,22 @@ struct Print3DCPUAccessorR {
 
     auto render_2d = [&](nonnegative_int dim0_idx) -> std::string {
       return "[\n" +
-             indent(join_strings(nonnegative_range(dim1_size.nonnegative_int_from_positive_int()),
-                                 "\n",
-                                 [&](nonnegative_int dim1_idx) -> std::string {
-                                   return render_1d(dim0_idx, dim1_idx);
-                                 })) +
+             indent(join_strings(
+                 nonnegative_range(
+                     dim1_size.nonnegative_int_from_positive_int()),
+                 "\n",
+                 [&](nonnegative_int dim1_idx) -> std::string {
+                   return render_1d(dim0_idx, dim1_idx);
+                 })) +
              "\n]";
     };
 
     stream << "[\n"
-           << indent(
-                  join_strings(nonnegative_range(dim0_size.nonnegative_int_from_positive_int()), "\n", render_2d))
+           << indent(join_strings(
+                  nonnegative_range(
+                      dim0_size.nonnegative_int_from_positive_int()),
+                  "\n",
+                  render_2d))
            << "\n]";
   }
 };

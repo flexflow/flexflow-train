@@ -8,7 +8,7 @@ ReplicaParallelDimSet empty_replica_parallel_dim_set() {
 }
 
 positive_int get_degree_of_replica_type(ReplicaParallelDimSet const &s,
-                                           ReplicaType replica_type) {
+                                        ReplicaType replica_type) {
   switch (replica_type) {
     case ReplicaType::SUM:
       return s.sum_degree.value;

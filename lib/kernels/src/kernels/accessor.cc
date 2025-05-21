@@ -266,14 +266,13 @@ std::vector<half *>
   return get<DataType::HALF>(a);
 }
 
-
 GenericTensorAccessorR read_only_accessor_from_write_accessor(
     GenericTensorAccessorW const &writable) {
   return GenericTensorAccessorR{
-    writable.data_type,
-    writable.shape,
-    writable.ptr,
-    writable.device_type,
+      writable.data_type,
+      writable.shape,
+      writable.ptr,
+      writable.device_type,
   };
 }
 
@@ -311,7 +310,7 @@ std::pair<ArrayShape, DataType>
   return std::make_pair(accessor.shape, accessor.data_type);
 }
 
-template
-  int32_t accessor_get_only_value<DataType::INT32>(GenericTensorAccessorR const &);
+template int32_t
+    accessor_get_only_value<DataType::INT32>(GenericTensorAccessorR const &);
 
 } // namespace FlexFlow

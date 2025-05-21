@@ -168,17 +168,17 @@ __host__ void adam_ps_update_task_gpu(ffStream_t stream,
 
 #ifdef FF_USE_NCCL
 __host__ void adam_nccl_update_task_gpu(ffStream_t stream,
-                                   float alpha_t,
-                                   float beta1,
-                                   float beta2,
-                                   float weight_decay,
-                                   float epsilon,
-                                   PerDeviceFFHandle const &handle,
-                                   float const *w_grad_ptr,
-                                   size_t size,
-                                   float *w_ptr,
-                                   float *v_ptr,
-                                   float *m_ptr) {
+                                        float alpha_t,
+                                        float beta1,
+                                        float beta2,
+                                        float weight_decay,
+                                        float epsilon,
+                                        PerDeviceFFHandle const &handle,
+                                        float const *w_grad_ptr,
+                                        size_t size,
+                                        float *w_ptr,
+                                        float *v_ptr,
+                                        float *m_ptr) {
   // Step 1: Use NCCL to sync gradients
   checkNCCL(ncclAllReduce(w_grad_ptr,
                           (float *)w_grad_ptr,

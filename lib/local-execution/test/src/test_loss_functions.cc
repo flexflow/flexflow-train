@@ -18,9 +18,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     // initialize runtime
     ManagedFFStream managed_stream{};
     ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
-      /*workSpaceSize=*/1024 * 1024,
-      /*allowTensorOpMathConversion=*/true
-    );
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true);
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
@@ -36,11 +35,9 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     positive_int output_dim = 32_p;
 
     TensorShape output_tensor_shape = TensorShape{
-        TensorDims{FFOrdered{batch_size, output_dim}},
-        DataType::FLOAT};
+        TensorDims{FFOrdered{batch_size, output_dim}}, DataType::FLOAT};
     TensorShape reduced_tensor_shape =
-        TensorShape{TensorDims{FFOrdered{batch_size, 1_p}},
-                    DataType::FLOAT};
+        TensorShape{TensorDims{FFOrdered{batch_size, 1_p}}, DataType::FLOAT};
 
     GenericTensorAccessorW label_for_nonconfigurable_loss_attrs_backing =
         allocator.allocate_tensor(output_tensor_shape);
@@ -58,12 +55,10 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     ComputationGraph computation_graph = make_empty_computation_graph();
 
     TensorShape input_tensor_shape = TensorShape{
-        TensorDims{FFOrdered{batch_size, data_dim}},
-        DataType::FLOAT};
+        TensorDims{FFOrdered{batch_size, data_dim}}, DataType::FLOAT};
 
     TensorShape weight_shape = TensorShape{
-        TensorDims{FFOrdered{data_dim, output_dim}},
-        DataType::FLOAT};
+        TensorDims{FFOrdered{data_dim, output_dim}}, DataType::FLOAT};
 
     LayerAddedResult inputs_layer =
         add_input_layer(computation_graph, input_tensor_shape);

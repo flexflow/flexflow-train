@@ -1,6 +1,6 @@
-#include <doctest/doctest.h>
 #include "kernels/map_tensor_accessors.h"
 #include "kernels/create_accessor_with_contents.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
@@ -10,8 +10,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     GenericTensorAccessorW accessor = create_2d_accessor_w_with_contents<float>(
         {
-          {1, 3, 2},
-          {2, 1, 5},
+            {1, 3, 2},
+            {2, 1, 5},
         },
         cpu_allocator);
 
@@ -28,19 +28,20 @@ TEST_SUITE(FF_TEST_SUITE) {
     CHECK(at(1_n, 1_n) == 2);
     CHECK(at(1_n, 2_n) == 6);
   }
-  
+
   TEST_CASE("map_tensor_accessor") {
     Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
     GenericTensorAccessorW input = create_2d_accessor_w_with_contents<float>(
         {
-          {1, 3, 2},
-          {2, 1, 5},
+            {1, 3, 2},
+            {2, 1, 5},
         },
         cpu_allocator);
 
     SUBCASE("function is not type changing") {
-      GenericTensorAccessorW result = map_tensor_accessor(input, [](float x) { return x + 1; }, cpu_allocator);
+      GenericTensorAccessorW result = map_tensor_accessor(
+          input, [](float x) { return x + 1; }, cpu_allocator);
 
       auto at = [&](nonnegative_int r, nonnegative_int c) -> float {
         return result.at<DataType::FLOAT>(FFOrdered{r, c});
@@ -55,7 +56,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("function is type changing") {
-      GenericTensorAccessorW result = map_tensor_accessor(input, [](float x) -> bool { return x > 2; }, cpu_allocator);
+      GenericTensorAccessorW result = map_tensor_accessor(
+          input, [](float x) -> bool { return x > 2; }, cpu_allocator);
 
       auto at = [&](nonnegative_int r, nonnegative_int c) -> bool {
         return result.at<DataType::BOOL>(FFOrdered{r, c});
@@ -75,21 +77,26 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     GenericTensorAccessorW lhs = create_2d_accessor_w_with_contents<float>(
         {
-          {1, 3, 2},
-          {2, 1, 5},
+            {1, 3, 2},
+            {2, 1, 5},
         },
         cpu_allocator);
 
     SUBCASE("argument types are the same") {
       GenericTensorAccessorW rhs = create_2d_accessor_w_with_contents<float>(
           {
-            {0, 2, 5},
-            {3, 3, 8},
+              {0, 2, 5},
+              {3, 3, 8},
           },
           cpu_allocator);
 
       SUBCASE("function is not type changing") {
-        GenericTensorAccessorW result = map_tensor_accessors2(lhs, rhs, DataType::FLOAT, [](float l, float r) { return l + 2 * r; }, cpu_allocator);
+        GenericTensorAccessorW result = map_tensor_accessors2(
+            lhs,
+            rhs,
+            DataType::FLOAT,
+            [](float l, float r) { return l + 2 * r; },
+            cpu_allocator);
 
         auto at = [&](nonnegative_int r, nonnegative_int c) -> float {
           return result.at<DataType::FLOAT>(FFOrdered{r, c});
@@ -104,7 +111,12 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SUBCASE("function is type changing") {
-        GenericTensorAccessorW result = map_tensor_accessors2(lhs, rhs, DataType::BOOL, [](float l, float r) -> bool { return l > r; }, cpu_allocator);
+        GenericTensorAccessorW result = map_tensor_accessors2(
+            lhs,
+            rhs,
+            DataType::BOOL,
+            [](float l, float r) -> bool { return l > r; },
+            cpu_allocator);
 
         auto at = [&](nonnegative_int r, nonnegative_int c) -> bool {
           return result.at<DataType::BOOL>(FFOrdered{r, c});
@@ -122,19 +134,20 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("argument types are not the same") {
       GenericTensorAccessorW rhs = create_2d_accessor_w_with_contents<bool>(
           {
-            {true, false, true},
-            {true, false, false},
+              {true, false, true},
+              {true, false, false},
           },
           cpu_allocator);
 
       auto func = [](float l, bool r) -> double {
         if (r) {
-          return (- l);
+          return (-l);
         } else {
           return l * 2;
         }
       };
-      GenericTensorAccessorW result = map_tensor_accessors2(lhs, rhs, DataType::DOUBLE, func, cpu_allocator);
+      GenericTensorAccessorW result = map_tensor_accessors2(
+          lhs, rhs, DataType::DOUBLE, func, cpu_allocator);
 
       auto at = [&](nonnegative_int r, nonnegative_int c) -> double {
         return result.at<DataType::DOUBLE>(FFOrdered{r, c});

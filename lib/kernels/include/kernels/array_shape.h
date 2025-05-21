@@ -61,8 +61,9 @@ TensorShape get_tensor_shape(ArrayShape const &, DataType);
 std::unordered_set<ff_dim_t> get_ff_dim_t_set(ArrayShape const &);
 std::unordered_set<ArrayCoord> get_array_coord_set(ArrayShape const &);
 
-ArrayShape array_shape_drop_dims(ArrayShape const &shape,
-                                 std::function<bool(ff_dim_t)> const &should_drop_dim);
+ArrayShape
+    array_shape_drop_dims(ArrayShape const &shape,
+                          std::function<bool(ff_dim_t)> const &should_drop_dim);
 
 } // namespace FlexFlow
 

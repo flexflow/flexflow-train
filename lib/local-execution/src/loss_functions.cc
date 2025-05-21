@@ -55,8 +55,7 @@ static void backward_task_impl(TaskArgumentAccessor const &acc) {
   auto logit_grad = acc.get_tensor_grad<Permissions::RW>(LOGIT_GRAD);
   auto logit = acc.get_tensor<Permissions::RO>(LOGIT);
   auto label = acc.get_loss_tensor<Permissions::RO>(LABEL);
-  int batch_size =
-      logit.shape.at(legion_dim_t{1_n}).int_from_positive_int();
+  int batch_size = logit.shape.at(legion_dim_t{1_n}).int_from_positive_int();
   // assuming logit shape is [batch dim, num classes]
 
   LossFunction loss_type = get_loss_function(attrs);
@@ -70,29 +69,26 @@ static void backward_task_impl(TaskArgumentAccessor const &acc) {
     // label shape is [batch dim, 1]
     auto scce_attrs = attrs.get<SparseCategoricalCrossEntropyLossAttrs>();
     size_t ndim = logit.shape.num_dims().unwrap_nonnegative();
-    int num_classes =
-        logit.shape.at(legion_dim_t{0_n}).int_from_positive_int();
+    int num_classes = logit.shape.at(legion_dim_t{0_n}).int_from_positive_int();
     ASSERT(logit_grad.shape == logit.shape);
     int k = 1;
     if (scce_attrs.replace_labels) {
       k = logit.shape.at(legion_dim_t(nonnegative_int{ndim - 1}))
               .int_from_positive_int() /
           label.shape.at(legion_dim_t(nonnegative_int{ndim - 1}))
-              .int_from_positive_int(); // TODO FIXME something seems wrong here,
-                                     // isn't the numerator guaranteed to be 1?
-                                     // <--- this is not the case because of the
-                                     // potential parallel dim
+              .int_from_positive_int(); // TODO FIXME something seems wrong
+                                        // here, isn't the numerator guaranteed
+                                        // to be 1?
+                                        // <--- this is not the case because of
+                                        // the potential parallel dim
     }
-    ASSERT(
-        label.shape.sub_shape(legion_dim_t(1_n), std::nullopt) ==
-        logit.shape.sub_shape(legion_dim_t(1_n), std::nullopt));
+    ASSERT(label.shape.sub_shape(legion_dim_t(1_n), std::nullopt) ==
+           logit.shape.sub_shape(legion_dim_t(1_n), std::nullopt));
     ASSERT(k * label.shape.at(legion_dim_t(nonnegative_int{ndim - 1}))
                    .int_from_positive_int() ==
            logit.shape.at(legion_dim_t(nonnegative_int{ndim - 1}))
                .int_from_positive_int());
-    ASSERT(
-        label.shape.at(legion_dim_t(0_n)).int_from_positive_int() ==
-        1);
+    ASSERT(label.shape.at(legion_dim_t(0_n)).int_from_positive_int() == 1);
 
     profile(sparse_categorical_crossentropy_loss_backward_kernel,
             profiling,

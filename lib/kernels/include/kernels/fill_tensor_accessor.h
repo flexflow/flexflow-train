@@ -9,13 +9,11 @@ namespace FlexFlow {
 
 void fill_tensor_accessor(GenericTensorAccessorW &, DataTypeValue val);
 
-GenericTensorAccessorW create_accessor_w_filled_with(TensorShape const &shape,
-                                                     DataTypeValue val,
-                                                     Allocator const &allocator);
+GenericTensorAccessorW create_accessor_w_filled_with(
+    TensorShape const &shape, DataTypeValue val, Allocator const &allocator);
 
-GenericTensorAccessorR create_accessor_r_filled_with(TensorShape const &shape,
-                                                     DataTypeValue val,
-                                                     Allocator const &allocator);
+GenericTensorAccessorR create_accessor_r_filled_with(
+    TensorShape const &shape, DataTypeValue val, Allocator const &allocator);
 
 } // namespace FlexFlow
 

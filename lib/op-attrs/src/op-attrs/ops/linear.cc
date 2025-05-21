@@ -209,8 +209,8 @@ tl::expected<std::vector<InitializerAttrs>, std::string> get_initializers(
   InitializerAttrs projection_initializer =
       maybe_projection_initializer.value_or(projection_default_initializer);
 
-  positive_int fan_in = calculate_fan_for_mode(
-      projection_shape.dims, KaimingInitializerMode::FAN_IN);
+  positive_int fan_in = calculate_fan_for_mode(projection_shape.dims,
+                                               KaimingInitializerMode::FAN_IN);
 
   float bound = 1 / sqrtf(static_cast<float>(fan_in.int_from_positive_int()));
 

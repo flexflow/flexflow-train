@@ -76,8 +76,8 @@ void forward_kernel(cudaStream_t stream,
       info.in_strides[i] = 1;
       info.out_strides[i] = 1;
     } else {
-      int in_dim_size =
-          input.shape.at(legion_dim_t{nonnegative_int{i}}).int_from_positive_int();
+      int in_dim_size = input.shape.at(legion_dim_t{nonnegative_int{i}})
+                            .int_from_positive_int();
       int out_dim_size = output.shape.at(legion_dim_t{nonnegative_int{i}})
                              .int_from_positive_int();
       info.in_strides[i] = info.in_strides[i - 1] * in_dim_size;

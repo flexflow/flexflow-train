@@ -57,12 +57,13 @@ struct BackwardKernel {
   void operator()(cudaStream_t stream,
                   GenericTensorAccessorR const &output,
                   GenericTensorAccessorW const &input) {
-    checkCUDA(cudaMemcpyAsync(input.get<T>(),
-                              output.get<T>(),
-                              input.shape.num_elements().int_from_positive_int() *
-                                  size_of_datatype(T).int_from_positive_int(),
-                              cudaMemcpyDeviceToDevice,
-                              stream));
+    checkCUDA(
+        cudaMemcpyAsync(input.get<T>(),
+                        output.get<T>(),
+                        input.shape.num_elements().int_from_positive_int() *
+                            size_of_datatype(T).int_from_positive_int(),
+                        cudaMemcpyDeviceToDevice,
+                        stream));
   }
 };
 

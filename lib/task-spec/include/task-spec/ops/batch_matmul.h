@@ -1,10 +1,10 @@
 #ifndef _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_OPS_BATCH_MATMUL_H
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_OPS_BATCH_MATMUL_H
 
-#include "task-spec/task_impl_function.dtg.h"
 #include "op-attrs/ops/batch_matmul_attrs.dtg.h"
 #include "task-spec/op_task_invocation.h"
 #include "task-spec/op_task_signature.h"
+#include "task-spec/task_impl_function.dtg.h"
 
 namespace FlexFlow {
 

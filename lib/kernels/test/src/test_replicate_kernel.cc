@@ -22,9 +22,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     };
 
     ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
-      /*workSpaceSize=*/1024 * 1024,
-      /*allowTensorOpMathConversion=*/true
-    );
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
 
     Allocator gpu_allocator = create_local_cuda_memory_allocator();
@@ -47,16 +46,18 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     }
 
     SUBCASE("backward_kernel") {
-      GenericTensorAccessorR output_grad = create_2d_accessor_r_with_contents<int32_t>(
-          {
-              {1, 2, 3},
-              {4, 3, 3},
-              {1, 3, 5},
-          },
-          gpu_allocator);
+      GenericTensorAccessorR output_grad =
+          create_2d_accessor_r_with_contents<int32_t>(
+              {
+                  {1, 2, 3},
+                  {4, 3, 3},
+                  {1, 3, 5},
+              },
+              gpu_allocator);
 
-      GenericTensorAccessorR correct = create_1d_accessor_r_with_contents<int32_t>(
-          {1 + 2 + 3, 4 + 3 + 3, 1 + 3 + 5}, cpu_allocator);
+      GenericTensorAccessorR correct =
+          create_1d_accessor_r_with_contents<int32_t>(
+              {1 + 2 + 3, 4 + 3 + 3, 1 + 3 + 5}, cpu_allocator);
 
       GenericTensorAccessorW input_grad =
           gpu_allocator.allocate_tensor(input_shape);
@@ -85,9 +86,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     };
 
     ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
-      /*workSpaceSize=*/1024 * 1024,
-      /*allowTensorOpMathConversion=*/true
-    );
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
 
     Allocator gpu_allocator = create_local_cuda_memory_allocator();

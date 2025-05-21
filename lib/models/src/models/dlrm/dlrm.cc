@@ -143,17 +143,17 @@ ComputationGraph get_dlrm_computation_graph(DLRMConfig const &config) {
       /*input=*/dense_input,
       /*mlp_layers=*/config.dense_arch_layer_sizes);
 
-  std::vector<tensor_guid_t> emb_outputs = transform(
-      zip(config.embedding_size, sparse_inputs),
-      [&](std::pair<positive_int, tensor_guid_t> const &combined_pair)
-          -> tensor_guid_t {
-        return create_dlrm_sparse_embedding_network(
-            /*cgb=*/cgb,
-            /*config=*/config,
-            /*input=*/combined_pair.second,
-            /*input_dim=*/combined_pair.first,
-            /*output_dim=*/config.embedding_dim);
-      });
+  std::vector<tensor_guid_t> emb_outputs =
+      transform(zip(config.embedding_size, sparse_inputs),
+                [&](std::pair<positive_int, tensor_guid_t> const &combined_pair)
+                    -> tensor_guid_t {
+                  return create_dlrm_sparse_embedding_network(
+                      /*cgb=*/cgb,
+                      /*config=*/config,
+                      /*input=*/combined_pair.second,
+                      /*input_dim=*/combined_pair.first,
+                      /*output_dim=*/config.embedding_dim);
+                });
 
   tensor_guid_t interacted_features = create_dlrm_interact_features(
       /*cgb=*/cgb,

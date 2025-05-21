@@ -19,8 +19,7 @@ FFOrdered<ShardParallelDim> ff_ordered_shard_dims(ParallelTensorDims const &d) {
   return d.shard_dims;
 }
 
-FFOrdered<positive_int>
-    ff_ordered_shard_degrees(ParallelTensorDims const &d) {
+FFOrdered<positive_int> ff_ordered_shard_degrees(ParallelTensorDims const &d) {
   return transform(d.shard_dims,
                    [](ShardParallelDim const &d) { return d.degree; });
 }

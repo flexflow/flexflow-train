@@ -24,12 +24,12 @@ DataTypeValue make_bool_data_type_value(bool value) {
 }
 
 DataType get_data_type_of_data_type_value(DataTypeValue value) {
-  return value.visit<DataType>(overload {
-    [](float) { return DataType::FLOAT; },
-    [](double) { return DataType::DOUBLE; },
-    [](int32_t) { return DataType::INT32; },
-    [](int64_t) { return DataType::INT64; },
-    [](bool) { return DataType::BOOL; },
+  return value.visit<DataType>(overload{
+      [](float) { return DataType::FLOAT; },
+      [](double) { return DataType::DOUBLE; },
+      [](int32_t) { return DataType::INT32; },
+      [](int64_t) { return DataType::INT64; },
+      [](bool) { return DataType::BOOL; },
   });
 }
 

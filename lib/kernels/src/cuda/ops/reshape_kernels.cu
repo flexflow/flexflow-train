@@ -31,12 +31,13 @@ struct ForwardKernel {
   void operator()(cudaStream_t stream,
                   GenericTensorAccessorR const &input,
                   GenericTensorAccessorW const &output) {
-    checkCUDA(cudaMemcpyAsync(output.get<T>(),
-                              input.get<T>(),
-                              input.shape.num_elements().int_from_positive_int() *
-                                  size_of_datatype(T).int_from_positive_int(),
-                              cudaMemcpyDeviceToDevice,
-                              stream));
+    checkCUDA(
+        cudaMemcpyAsync(output.get<T>(),
+                        input.get<T>(),
+                        input.shape.num_elements().int_from_positive_int() *
+                            size_of_datatype(T).int_from_positive_int(),
+                        cudaMemcpyDeviceToDevice,
+                        stream));
   }
 };
 

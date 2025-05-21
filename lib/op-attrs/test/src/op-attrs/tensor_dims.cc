@@ -7,8 +7,7 @@ using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("tensor_dims_is_broadcastable_to(TensorDims, TensorDims)") {
 
-    TensorDims goal =
-        TensorDims{FFOrdered{1_p, 1_p, 4_p, 3_p}};
+    TensorDims goal = TensorDims{FFOrdered{1_p, 1_p, 4_p, 3_p}};
 
     SUBCASE("dims match") {
       bool result = tensor_dims_is_broadcastable_to(goal, goal);
@@ -27,8 +26,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("curr only needs dim expansion") {
-      TensorDims curr =
-          TensorDims{FFOrdered{1_p, 1_p, 1_p, 3_p}};
+      TensorDims curr = TensorDims{FFOrdered{1_p, 1_p, 1_p, 3_p}};
 
       bool result = tensor_dims_is_broadcastable_to(curr, goal);
       bool correct = true;
@@ -46,8 +44,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("curr needs invalid dim promotion") {
-      TensorDims curr =
-          TensorDims{FFOrdered{1_p, 1_p, 2_p, 3_p}};
+      TensorDims curr = TensorDims{FFOrdered{1_p, 1_p, 2_p, 3_p}};
 
       bool result = tensor_dims_is_broadcastable_to(curr, goal);
       bool correct = false;
@@ -56,8 +53,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("num_dims(goal) < num_dims(curr)") {
-      TensorDims curr =
-          TensorDims{FFOrdered{1_p, 1_p, 10_p, 4_p, 3_p}};
+      TensorDims curr = TensorDims{FFOrdered{1_p, 1_p, 10_p, 4_p, 3_p}};
 
       bool result = tensor_dims_is_broadcastable_to(curr, goal);
       bool correct = false;
@@ -72,8 +68,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     TensorDims d2 = TensorDims{FFOrdered{10_p, 4_p, 1_p}};
 
     SUBCASE("has target in inputs") {
-      TensorDims d3 =
-          TensorDims{FFOrdered{1_p, 1_p, 4_p, 3_p}};
+      TensorDims d3 = TensorDims{FFOrdered{1_p, 1_p, 4_p, 3_p}};
 
       std::optional<TensorDims> result =
           get_broadcast_target_dims({d1, d2, d3});
@@ -83,8 +78,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("has no possible target") {
-      TensorDims d3 =
-          TensorDims{FFOrdered{1_p, 1_p, 1_p, 4_p}};
+      TensorDims d3 = TensorDims{FFOrdered{1_p, 1_p, 1_p, 4_p}};
 
       std::optional<TensorDims> result =
           get_broadcast_target_dims({d1, d2, d3});
@@ -94,8 +88,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("has possible target, but not in inputs") {
-      TensorDims d3 =
-          TensorDims{FFOrdered{1_p, 1_p, 1_p, 4_p, 3_p}};
+      TensorDims d3 = TensorDims{FFOrdered{1_p, 1_p, 1_p, 4_p, 3_p}};
 
       TensorDims possible_target =
           TensorDims{FFOrdered{1_p, 1_p, 10_p, 4_p, 3_p}};

@@ -18,11 +18,11 @@ nonnegative_int num_shard_dims(ParallelTensorDims const &);
 ParallelTensorDimDegrees get_parallel_degrees(ParallelTensorDims const &);
 
 ParallelTensorDims lift_to_parallel(TensorDims const &);
-ParallelTensorDims lift_to_parallel_with_degrees(
-    TensorDims const &,
-    SumDegree const &,
-    DiscardCopyDegree const &,
-    FFOrdered<positive_int> const &shard_degrees);
+ParallelTensorDims
+    lift_to_parallel_with_degrees(TensorDims const &,
+                                  SumDegree const &,
+                                  DiscardCopyDegree const &,
+                                  FFOrdered<positive_int> const &shard_degrees);
 ParallelTensorDims
     lift_to_parallel_with_degrees(TensorDims const &,
                                   ParallelTensorDimDegrees const &);

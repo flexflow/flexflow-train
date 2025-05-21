@@ -145,8 +145,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     TensorShape output_shape = TensorShape{
-        TensorDims{FFOrdered{
-            dim0_size, 14_p + 16_p + 18_p, dim2_size}},
+        TensorDims{FFOrdered{dim0_size, 14_p + 16_p + 18_p, dim2_size}},
         DataType::FLOAT,
     };
 

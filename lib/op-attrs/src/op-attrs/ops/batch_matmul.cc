@@ -152,10 +152,9 @@ tl::expected<ParallelTensorShape, std::string>
   ShardParallelDim output_p = p;
 
   positive_int output_discard_copy_degree = 1_p;
-  positive_int output_sum_degree = positive_int{
-      get_total_parallel_degree(input_lhs) /
-      (output_b.degree * output_n.degree * output_p.degree)
-  };
+  positive_int output_sum_degree =
+      positive_int{get_total_parallel_degree(input_lhs) /
+                   (output_b.degree * output_n.degree * output_p.degree)};
 
   ParallelTensorShape result = ParallelTensorShape{
       ParallelTensorDims{

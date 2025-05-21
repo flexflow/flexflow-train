@@ -105,8 +105,8 @@ std::optional<MachineSpaceCoordinate> get_machine_space_coordinate(
               return mv_strides.at(i.unwrap_nonnegative()).unwrapped;
             });
 
-        std::vector<positive_int> coeffs = scanl(
-            sizes, 1_p, std::multiplies<positive_int>());
+        std::vector<positive_int> coeffs =
+            scanl(sizes, 1_p, std::multiplies<positive_int>());
 
         nonnegative_int index = start_idx;
         for (auto [coeff, coord_point, stride] :

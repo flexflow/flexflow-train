@@ -18,13 +18,12 @@
 
 using namespace ::FlexFlow;
 
-bool did_loss_decrease(
-  GenericTensorAccessorR const &first_epoch, 
-  GenericTensorAccessorR const &last_epoch
-) {
+bool did_loss_decrease(GenericTensorAccessorR const &first_epoch,
+                       GenericTensorAccessorR const &last_epoch) {
   Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
-  return tensor_accessor_all(compare_tensor_accessors_le(last_epoch, first_epoch, cpu_allocator));
+  return tensor_accessor_all(
+      compare_tensor_accessors_le(last_epoch, first_epoch, cpu_allocator));
 }
 
 TEST_SUITE(FF_CUDA_TEST_SUITE) {
@@ -32,9 +31,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     // initialize runtime
     ManagedFFStream managed_stream{};
     ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
-      /*workSpaceSize=*/1024 * 1024,
-      /*allowTensorOpMathConversion=*/true
-    );
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true);
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
@@ -48,32 +46,28 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     positive_int output_dim = 1_p;
 
     TensorShape output_tensor_shape = TensorShape{
-        TensorDims{FFOrdered{batch_size, output_dim}},
-        DataType::FLOAT};
+        TensorDims{FFOrdered{batch_size, output_dim}}, DataType::FLOAT};
 
     GenericTensorAccessorW label_tensor_backing =
         allocator.allocate_tensor(output_tensor_shape);
     AllocatedTensors allocated_tensors = AllocatedTensors{
         /*tensor_type_backings=*/{
-          {TensorTypeVariant{label_tensor}, label_tensor_backing},
-        }, 
-        /*gradient_mapping=*/{}, 
-        /*optimizer_mapping*/{},
+            {TensorTypeVariant{label_tensor}, label_tensor_backing},
+        },
+        /*gradient_mapping=*/{},
+        /*optimizer_mapping*/ {},
     };
 
     // construct computation graph
     ComputationGraph computation_graph = make_empty_computation_graph();
 
     TensorShape input_tensor_shape = TensorShape{
-        TensorDims{FFOrdered{batch_size, data_dim}},
-        DataType::FLOAT};
+        TensorDims{FFOrdered{batch_size, data_dim}}, DataType::FLOAT};
 
     TensorShape weight_shape_1 = TensorShape{
-        TensorDims{FFOrdered{data_dim, hidden_dim}},
-        DataType::FLOAT};
+        TensorDims{FFOrdered{data_dim, hidden_dim}}, DataType::FLOAT};
     TensorShape weight_shape_2 = TensorShape{
-        TensorDims{FFOrdered{hidden_dim, output_dim}},
-        DataType::FLOAT};
+        TensorDims{FFOrdered{hidden_dim, output_dim}}, DataType::FLOAT};
 
     LayerAddedResult inputs_layer =
         add_input_layer_with_grad(computation_graph, input_tensor_shape);
@@ -162,16 +156,14 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       model_training_instance.forward();
       model_training_instance.backward();
       model_training_instance.update();
-      loss_values.push_back(
-        copy_tensor_accessor_r(
-          model_training_instance.get_loss_tensor_accessor(),
-          cpu_allocator));
+      loss_values.push_back(copy_tensor_accessor_r(
+          model_training_instance.get_loss_tensor_accessor(), cpu_allocator));
     }
 
     // Assert that each sample in the batch has a lower loss in last epoch than
     // the first epoch
     GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
     GenericTensorAccessorR last_epoch = loss_values.back();
-    CHECK(did_loss_decrease( first_epoch_loss, last_epoch));
+    CHECK(did_loss_decrease(first_epoch_loss, last_epoch));
   }
 }

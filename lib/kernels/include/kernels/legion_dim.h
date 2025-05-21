@@ -7,9 +7,9 @@
 #include "op-attrs/ff_ordered/ff_ordered.h"
 #include "utils/containers/set_of.h"
 #include "utils/containers/transform.h"
-#include "utils/positive_int/positive_int.h"
-#include "utils/nonnegative_int/num_elements.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
+#include "utils/nonnegative_int/num_elements.h"
+#include "utils/positive_int/positive_int.h"
 
 namespace FlexFlow {
 

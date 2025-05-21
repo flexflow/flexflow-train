@@ -8,9 +8,8 @@ using namespace ::FlexFlow;
 TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test Partition Forward and Backward") {
     ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
-      /*workSpaceSize=*/1024 * 1024,
-      /*allowTensorOpMathConversion=*/true
-    );
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();

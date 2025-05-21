@@ -38,7 +38,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
   TEST_CASE("array_shape_drop_dims") {
     ArrayShape input = ArrayShape{
-      LegionOrdered{2_p, 4_p, 3_p},
+        LegionOrdered{2_p, 4_p, 3_p},
     };
 
     SUBCASE("removes dims specified to be dropped") {
@@ -48,16 +48,15 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       ArrayShape result = array_shape_drop_dims(input, should_drop_dim);
       ArrayShape correct = ArrayShape{
-        LegionOrdered{4_p},
+          LegionOrdered{4_p},
       };
 
       CHECK(result == correct);
     }
 
-    SUBCASE("is identity function if no dimensions are specified to be dropped") {
-      auto should_drop_dim = [](ff_dim_t dim) -> bool {
-        return false;
-      };
+    SUBCASE(
+        "is identity function if no dimensions are specified to be dropped") {
+      auto should_drop_dim = [](ff_dim_t dim) -> bool { return false; };
 
       ArrayShape result = array_shape_drop_dims(input, should_drop_dim);
       ArrayShape correct = input;
@@ -65,10 +64,9 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(result == correct);
     }
 
-    SUBCASE("is identity function if no dimensions are specified to be dropped") {
-      auto should_drop_dim = [](ff_dim_t dim) -> bool {
-        return false;
-      };
+    SUBCASE(
+        "is identity function if no dimensions are specified to be dropped") {
+      auto should_drop_dim = [](ff_dim_t dim) -> bool { return false; };
 
       ArrayShape result = array_shape_drop_dims(input, should_drop_dim);
       ArrayShape correct = input;
@@ -76,10 +74,9 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(result == correct);
     }
 
-    SUBCASE("returns empty shape if all dimensions are specified to be dropped") {
-      auto should_drop_dim = [](ff_dim_t dim) -> bool {
-        return true;
-      };
+    SUBCASE(
+        "returns empty shape if all dimensions are specified to be dropped") {
+      auto should_drop_dim = [](ff_dim_t dim) -> bool { return true; };
 
       ArrayShape result = array_shape_drop_dims(input, should_drop_dim);
       ArrayShape correct = ArrayShape{LegionOrdered<positive_int>{}};

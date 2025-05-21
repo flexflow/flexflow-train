@@ -35,7 +35,8 @@ bool are_allocated_forward_tensors_valid(
       if (!is_allocated_tensor_backing_valid(
               TensorTypeVariant{tensor_guid},
               allocated_tensors.tensor_type_backings,
-              array_shape_from_tensor_shape(tensor_attrs.at(tensor_guid).shape))) {
+              array_shape_from_tensor_shape(
+                  tensor_attrs.at(tensor_guid).shape))) {
         return false;
       }
     } else {
@@ -58,8 +59,8 @@ bool are_allocated_gradient_tensors_valid(
         return false;
       }
 
-      ArrayShape tensor_guid_array_shape =
-          array_shape_from_tensor_shape(tensor_attrs.at(tensor_to_grad.first).shape);
+      ArrayShape tensor_guid_array_shape = array_shape_from_tensor_shape(
+          tensor_attrs.at(tensor_to_grad.first).shape);
       TensorTypeVariant gradient_tensor =
           TensorTypeVariant{tensor_to_grad.second};
       if (is_allocated_tensor_backing_valid(
@@ -100,8 +101,8 @@ bool are_allocated_optimizer_tensors_valid(
         return false;
       }
 
-      ArrayShape tensor_guid_array_shape =
-          array_shape_from_tensor_shape(tensor_attrs.at(tensor_to_optimizers.first).shape);
+      ArrayShape tensor_guid_array_shape = array_shape_from_tensor_shape(
+          tensor_attrs.at(tensor_to_optimizers.first).shape);
       for (optimizer_tensor_t const &optimizer_tensor :
            tensor_to_optimizers.second) {
         if (is_allocated_tensor_backing_valid(

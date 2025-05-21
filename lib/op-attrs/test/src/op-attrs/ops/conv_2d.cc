@@ -165,8 +165,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           kernel,
           o_sum,
           o_eq,
-          FFOrdered{
-              o_outchannels, o_inchannels, o_kernel_h, o_kernel_w});
+          FFOrdered{o_outchannels, o_inchannels, o_kernel_h, o_kernel_w});
     };
 
     auto make_bias = [&](SumDegree o_sum,

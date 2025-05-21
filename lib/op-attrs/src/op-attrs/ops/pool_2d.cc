@@ -105,9 +105,9 @@ tl::expected<Pool2DAttrs, std::string>
 }
 
 static positive_int calculate_output_size(positive_int input_size,
-                                             nonnegative_int padding_size,
-                                             positive_int kernel_size,
-                                             positive_int stride) {
+                                          nonnegative_int padding_size,
+                                          positive_int kernel_size,
+                                          positive_int stride) {
   int input_size_raw = input_size.int_from_positive_int();
   int padding_raw = padding_size.unwrap_nonnegative();
   int kernel_size_raw = kernel_size.int_from_positive_int();

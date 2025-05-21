@@ -1,10 +1,10 @@
 #ifndef _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_TASK_SIGNATURE_IMPL_H
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_TASK_SIGNATURE_IMPL_H
 
-#include "task-spec/task_signature_impl.dtg.h"
 #include "op-attrs/computation_graph_op_attrs.h"
 #include "task-spec/op_task_invocation.h"
 #include "task-spec/task_id_t.dtg.h"
+#include "task-spec/task_signature_impl.dtg.h"
 
 namespace FlexFlow {
 

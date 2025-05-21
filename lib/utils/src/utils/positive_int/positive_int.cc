@@ -3,21 +3,16 @@
 
 namespace FlexFlow {
 
-positive_int::positive_int(int value) 
-  : value_(value)
-{
+positive_int::positive_int(int value) : value_(value) {
   this->check_invariant();
 }
 
-positive_int::positive_int(size_t value)
-  : value_(value)
-{
+positive_int::positive_int(size_t value) : value_(value) {
   this->check_invariant();
 }
 
 positive_int::positive_int(nonnegative_int value)
-  : value_(value.unwrap_nonnegative())
-{
+    : value_(value.unwrap_nonnegative()) {
   this->check_invariant();
 }
 
@@ -196,7 +191,6 @@ nonnegative_int positive_int::operator*(nonnegative_int other) const {
   return other * *this;
 }
 
-
 nonnegative_int operator*(nonnegative_int lhs, positive_int rhs) {
   return lhs * rhs.nonnegative_int_from_positive_int();
 }
@@ -247,10 +241,10 @@ void positive_int::check_invariant() const {
 }
 
 positive_int operator""_p(unsigned long long int x) {
-  ASSERT(x <= static_cast<unsigned long long int>(std::numeric_limits<int>::max()));
+  ASSERT(x <=
+         static_cast<unsigned long long int>(std::numeric_limits<int>::max()));
 
   return positive_int{static_cast<int>(x)};
-
 }
 
 } // namespace FlexFlow
@@ -268,8 +262,7 @@ void adl_serializer<::FlexFlow::positive_int>::to_json(
 } // namespace nlohmann
 
 namespace rc {
-Gen<::FlexFlow::positive_int>
-    Arbitrary<::FlexFlow::positive_int>::arbitrary() {
+Gen<::FlexFlow::positive_int> Arbitrary<::FlexFlow::positive_int>::arbitrary() {
   return gen::construct<::FlexFlow::positive_int>(gen::positive<int>());
 }
 } // namespace rc

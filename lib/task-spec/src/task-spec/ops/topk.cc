@@ -104,7 +104,8 @@ static std::optional<float>
   auto indices = acc.get_tensor<Permissions::RO>(INDICES);
 
   positive_int length = input_grad.shape.at(legion_dim_t{0_n});
-  positive_int batch_size = positive_int{input_grad.shape.num_elements() / length};
+  positive_int batch_size =
+      positive_int{input_grad.shape.num_elements() / length};
 
   return profile(backward_kernel,
                  profiling,
