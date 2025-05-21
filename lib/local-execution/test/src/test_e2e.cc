@@ -1,8 +1,10 @@
+#include "kernels/compare_tensor_accessors.h"
 #include "kernels/copy_tensor_accessor.h"
 #include "kernels/local_cpu_allocator.h"
 #include "kernels/local_cuda_allocator.h"
 #include "kernels/managed_ff_stream.h"
 #include "kernels/managed_per_device_ff_handle.h"
+#include "kernels/tensor_accessor_reductions.h"
 #include "local-execution/allocated_tensors.h"
 #include "local-execution/local_training_backing.h"
 #include "local-execution/model_training_instance.h"
@@ -20,12 +22,9 @@ bool did_loss_decrease(
   GenericTensorAccessorR const &first_epoch, 
   GenericTensorAccessorR const &last_epoch
 ) {
-  for (int i = 0; i < batch_size; i++) {
-    if (first_epoch[i] < last_epoch[i]) {
-      return false;
-    }
-  }
-  return true;
+  Allocator cpu_allocator = create_local_cpu_memory_allocator();
+
+  return tensor_accessor_all(compare_tensor_accessors_le(last_epoch, first_epoch, cpu_allocator));
 }
 
 TEST_SUITE(FF_CUDA_TEST_SUITE) {
@@ -43,13 +42,13 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     LossTensorSource loss_tensor_source;
     loss_tensor_t label_tensor = loss_tensor_source.new_loss_tensor();
 
-    nonnegative_int batch_size = 10_n;
-    nonnegative_int data_dim = 16_n;
-    nonnegative_int hidden_dim = 32_n;
-    nonnegative_int output_dim = 1_n;
+    positive_int batch_size = 10_p;
+    positive_int data_dim = 16_p;
+    positive_int hidden_dim = 32_p;
+    positive_int output_dim = 1_p;
 
     TensorShape output_tensor_shape = TensorShape{
-        TensorDims{FFOrdered<nonnegative_int>{batch_size, output_dim}},
+        TensorDims{FFOrdered{batch_size, output_dim}},
         DataType::FLOAT};
 
     GenericTensorAccessorW label_tensor_backing =
@@ -66,14 +65,14 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     ComputationGraph computation_graph = make_empty_computation_graph();
 
     TensorShape input_tensor_shape = TensorShape{
-        TensorDims{FFOrdered<nonnegative_int>{batch_size, data_dim}},
+        TensorDims{FFOrdered{batch_size, data_dim}},
         DataType::FLOAT};
 
     TensorShape weight_shape_1 = TensorShape{
-        TensorDims{FFOrdered<nonnegative_int>{data_dim, hidden_dim}},
+        TensorDims{FFOrdered{data_dim, hidden_dim}},
         DataType::FLOAT};
     TensorShape weight_shape_2 = TensorShape{
-        TensorDims{FFOrdered<nonnegative_int>{hidden_dim, output_dim}},
+        TensorDims{FFOrdered{hidden_dim, output_dim}},
         DataType::FLOAT};
 
     LayerAddedResult inputs_layer =
@@ -173,7 +172,6 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     // the first epoch
     GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
     GenericTensorAccessorR last_epoch = loss_values.back();
-    CHECK(did_loss_decrease(
-        first_epoch_loss, last_epoch, batch_size.unwrap_nonnegative()));
+    CHECK(did_loss_decrease( first_epoch_loss, last_epoch));
   }
 }

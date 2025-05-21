@@ -8,9 +8,9 @@ using namespace FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("StartInvariantMachineView - utility functions") {
     StartInvariantMachineView simv = StartInvariantMachineView{
-        {MachineViewDimension{stride_t{2_n},
+        {MachineViewDimension{stride_t{2_p},
                               MachineSpecificationDimension::INTER_NODE},
-         MachineViewDimension{stride_t{2_n},
+         MachineViewDimension{stride_t{2_p},
                               MachineSpecificationDimension::INTER_NODE}},
         DeviceType::GPU};
 
@@ -28,7 +28,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("get_strides") {
       std::vector<stride_t> result = get_strides(simv);
-      std::vector<stride_t> correct = {stride_t{2_n}, stride_t{2_n}};
+      std::vector<stride_t> correct = {stride_t{2_p}, stride_t{2_p}};
       CHECK(result == correct);
     }
 
@@ -45,9 +45,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     MachineSpaceCoordinate start =
         MachineSpaceCoordinate{1_n, 2_n, DeviceType::GPU};
     std::vector<MachineViewDimension> dimensions = {
-        MachineViewDimension{stride_t{2_n},
+        MachineViewDimension{stride_t{2_p},
                              MachineSpecificationDimension::INTER_NODE},
-        MachineViewDimension{stride_t{3_n},
+        MachineViewDimension{stride_t{3_p},
                              MachineSpecificationDimension::INTRA_NODE}};
 
     MachineView mv = MachineView{start, dimensions};
@@ -94,15 +94,15 @@ TEST_SUITE(FF_TEST_SUITE) {
        *  | (0,)  |       | (1,)  |       | (2,)  |       |
        *  +-------+-------+-------+-------+-------+-------+
        */
-      OperatorTaskSpace task = OperatorTaskSpace{{3_n}};
+      OperatorTaskSpace task = OperatorTaskSpace{{3_p}};
       StartInvariantMachineView simv = StartInvariantMachineView{
-          {MachineViewDimension{stride_t{2_n},
+          {MachineViewDimension{stride_t{2_p},
                                 MachineSpecificationDimension::INTRA_NODE}},
           DeviceType::GPU};
       MachineSpecification ms =
-          MachineSpecification{/*num_nodes=*/1_n,
-                               /*num_cpus_per_node=*/6_n,
-                               /*num_gpus_per_node=*/6_n,
+          MachineSpecification{/*num_nodes=*/1_p,
+                               /*num_cpus_per_node=*/6_p,
+                               /*num_gpus_per_node=*/6_p,
                                /*inter_node_bandwidth=*/0.0,
                                /*intra_node_bandwidth=*/0.0};
 
@@ -162,17 +162,17 @@ TEST_SUITE(FF_TEST_SUITE) {
        *  +-------+-------+-------+-------+
        */
 
-      OperatorTaskSpace task = OperatorTaskSpace{{2_n, 2_n}};
+      OperatorTaskSpace task = OperatorTaskSpace{{2_p, 2_p}};
       StartInvariantMachineView simv = StartInvariantMachineView{
-          {MachineViewDimension{stride_t{1_n},
+          {MachineViewDimension{stride_t{1_p},
                                 MachineSpecificationDimension::INTER_NODE},
-           MachineViewDimension{stride_t{2_n},
+           MachineViewDimension{stride_t{2_p},
                                 MachineSpecificationDimension::INTRA_NODE}},
           DeviceType::GPU};
       MachineSpecification ms =
-          MachineSpecification{/*num_nodes=*/2_n,
-                               /*num_cpus_per_node=*/4_n,
-                               /*num_gpus_per_node=*/4_n,
+          MachineSpecification{/*num_nodes=*/2_p,
+                               /*num_cpus_per_node=*/4_p,
+                               /*num_gpus_per_node=*/4_p,
                                /*inter_node_bandwidth=*/0,
                                /*intra_node_bandwidth=*/0};
 

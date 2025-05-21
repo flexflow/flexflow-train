@@ -1,4 +1,4 @@
-#include "local-execution/local_cpu_allocator.h"
+#include "kernels/local_cpu_allocator.h"
 #include "local-execution/local_tensor_backing.h"
 #include "test_utils.h"
 #include "utils/containers/keys.h"
@@ -94,11 +94,11 @@ TEST_SUITE(FF_TEST_SUITE) {
           tensor_guid_source.new_mock_tensor_guid();
 
       TensorAttrs allocated_tensor_attrs = TensorAttrs{
-          TensorShape{TensorDims{FFOrdered<nonnegative_int>{16_n, 10_n}},
+          TensorShape{TensorDims{FFOrdered{16_p, 10_p}},
                       DataType::FLOAT},
           CreateGrad::NO};
       TensorAttrs unallocated_tensor_attrs = TensorAttrs{
-          TensorShape{TensorDims{FFOrdered<nonnegative_int>{16_n, 20_n}},
+          TensorShape{TensorDims{FFOrdered{16_p, 20_p}},
                       DataType::FLOAT},
           CreateGrad::YES};
 

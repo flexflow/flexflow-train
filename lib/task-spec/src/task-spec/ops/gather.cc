@@ -68,10 +68,10 @@ static DeviceSpecificDeviceStates
   legion_dim_t legion_dim =
       legion_dim_from_ff_dim(attrs.dim, input.shape.num_dims());
 
-  assert(input.shape.get_dim() == index.shape.get_dim());
-  assert(output.shape.get_dim() == index.shape.get_dim());
+  assert(input.shape.num_dims() == index.shape.num_dims());
+  assert(output.shape.num_dims() == index.shape.num_dims());
 
-  for (nonnegative_int i : nonnegative_range(input.shape.get_dim())) {
+  for (nonnegative_int i : nonnegative_range(input.shape.num_dims())) {
     assert(index.shape.at(legion_dim_t{i}) == output.shape.at(legion_dim_t{i}));
     if (i != legion_dim.value) {
       assert(input.shape.at(legion_dim_t{i}) ==

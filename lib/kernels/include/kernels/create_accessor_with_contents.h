@@ -5,6 +5,7 @@
 #include "kernels/allocation.h"
 #include "kernels/local_cpu_allocator.h"
 #include "utils/containers/require_all_same1.h"
+#include "utils/nonnegative_int/nonnegative_range.h"
 
 namespace FlexFlow {
 
@@ -12,8 +13,7 @@ template <typename T>
 GenericTensorAccessorW
     create_1d_accessor_w_with_contents(std::vector<T> const &contents,
                                        Allocator &allocator) {
-  nonnegative_int ncols = num_elements(contents);
-  ASSERT(ncols > 0);
+  positive_int ncols = positive_int{num_elements(contents)};
 
   TensorShape shape = TensorShape{
       TensorDims{FFOrdered{ncols}},
@@ -23,7 +23,7 @@ GenericTensorAccessorW
   Allocator cpu_allocator = create_local_cpu_memory_allocator();
   GenericTensorAccessorW cpu_accessor = cpu_allocator.allocate_tensor(shape);
 
-  for (nonnegative_int col_idx : nonnegative_range(ncols)) {
+  for (nonnegative_int col_idx : nonnegative_range(ncols.nonnegative_int_from_positive_int())) {
     cpu_accessor.at<type_to_data_type_enum_v<T>>(FFOrdered{col_idx}) =
         contents.at(col_idx.unwrap_nonnegative());
   }
@@ -38,14 +38,12 @@ GenericTensorAccessorW
 template <typename T>
 GenericTensorAccessorW create_2d_accessor_w_with_contents(
     std::vector<std::vector<T>> const &contents, Allocator &allocator) {
-  nonnegative_int nrows = num_elements(contents);
-  ASSERT(nrows > 0);
+  positive_int nrows = positive_int{num_elements(contents)};
 
-  nonnegative_int ncols = throw_if_unexpected(
+  positive_int ncols = throw_if_unexpected(
       require_all_same1(transform(contents, [](std::vector<T> const &row) {
-        return num_elements(row);
+        return positive_int{num_elements(row)};
       })));
-  ASSERT(ncols > 0);
 
   TensorShape shape = TensorShape{
       TensorDims{FFOrdered{nrows, ncols}},
@@ -55,8 +53,8 @@ GenericTensorAccessorW create_2d_accessor_w_with_contents(
   Allocator cpu_allocator = create_local_cpu_memory_allocator();
   GenericTensorAccessorW cpu_accessor = cpu_allocator.allocate_tensor(shape);
 
-  for (nonnegative_int row_idx : nonnegative_range(nrows)) {
-    for (nonnegative_int col_idx : nonnegative_range(ncols)) {
+  for (nonnegative_int row_idx : nonnegative_range(nrows.nonnegative_int_from_positive_int())) {
+    for (nonnegative_int col_idx : nonnegative_range(ncols.nonnegative_int_from_positive_int())) {
       cpu_accessor.at<type_to_data_type_enum_v<T>>(FFOrdered{row_idx, col_idx}) =
           contents.at(row_idx.unwrap_nonnegative())
               .at(col_idx.unwrap_nonnegative());
@@ -74,23 +72,20 @@ template <typename T>
 GenericTensorAccessorW create_3d_accessor_w_with_contents(
     std::vector<std::vector<std::vector<T>>> const &contents,
     Allocator &allocator) {
-  nonnegative_int dim0_size = num_elements(contents);
-  ASSERT(dim0_size > 0);
+  positive_int dim0_size = positive_int{num_elements(contents)};
 
-  nonnegative_int dim1_size = throw_if_unexpected(require_all_same1(
+  positive_int dim1_size = throw_if_unexpected(require_all_same1(
       transform(contents, [](std::vector<std::vector<T>> const &m) {
-        return num_elements(m);
+        return positive_int{num_elements(m)};
       })));
-  ASSERT(dim1_size > 0);
 
-  nonnegative_int dim2_size = throw_if_unexpected(require_all_same1(
+  positive_int dim2_size = throw_if_unexpected(require_all_same1(
       transform(contents, [](std::vector<std::vector<T>> const &m) {
         return throw_if_unexpected(
             require_all_same1(transform(m, [](std::vector<T> const &vec) {
-              return num_elements(vec);
+              return positive_int{num_elements(vec)};
             })));
       })));
-  ASSERT(dim2_size > 0);
 
   TensorShape shape = TensorShape{
       TensorDims{FFOrdered{dim0_size, dim1_size, dim2_size}},
@@ -100,9 +95,9 @@ GenericTensorAccessorW create_3d_accessor_w_with_contents(
   Allocator cpu_allocator = create_local_cpu_memory_allocator();
   GenericTensorAccessorW cpu_accessor = cpu_allocator.allocate_tensor(shape);
 
-  for (nonnegative_int dim0_idx : nonnegative_range(dim0_size)) {
-    for (nonnegative_int dim1_idx : nonnegative_range(dim1_size)) {
-      for (nonnegative_int dim2_idx : nonnegative_range(dim2_size)) {
+  for (nonnegative_int dim0_idx : nonnegative_range(dim0_size.nonnegative_int_from_positive_int())) {
+    for (nonnegative_int dim1_idx : nonnegative_range(dim1_size.nonnegative_int_from_positive_int())) {
+      for (nonnegative_int dim2_idx : nonnegative_range(dim2_size.nonnegative_int_from_positive_int())) {
         cpu_accessor.at<type_to_data_type_enum_v<T>>(
             FFOrdered{dim0_idx, dim1_idx, dim2_idx}) =
             contents.at(dim0_idx.unwrap_nonnegative())
@@ -123,35 +118,31 @@ template <typename T>
 GenericTensorAccessorW create_4d_accessor_w_with_contents(
     std::vector<std::vector<std::vector<std::vector<T>>>> const &contents,
     Allocator &allocator) {
-  nonnegative_int dim0_size = num_elements(contents);
-  ASSERT(dim0_size > 0);
+  positive_int dim0_size = positive_int{num_elements(contents)};
 
-  nonnegative_int dim1_size = throw_if_unexpected(require_all_same1(transform(
+  positive_int dim1_size = throw_if_unexpected(require_all_same1(transform(
       contents, [](std::vector<std::vector<std::vector<T>>> const &t) {
-        return num_elements(t);
+        return positive_int{num_elements(t)};
       })));
-  ASSERT(dim1_size > 0);
 
-  nonnegative_int dim2_size = throw_if_unexpected(require_all_same1(transform(
+  positive_int dim2_size = throw_if_unexpected(require_all_same1(transform(
       contents, [](std::vector<std::vector<std::vector<T>>> const &m) {
         return throw_if_unexpected(require_all_same1(
             transform(m, [](std::vector<std::vector<T>> const &vec) {
-              return num_elements(vec);
+              return positive_int{num_elements(vec)};
             })));
       })));
-  ASSERT(dim2_size > 0);
 
-  nonnegative_int dim3_size = throw_if_unexpected(require_all_same1(transform(
+  positive_int dim3_size = throw_if_unexpected(require_all_same1(transform(
       contents, [](std::vector<std::vector<std::vector<T>>> const &t) {
         return throw_if_unexpected(require_all_same1(
             transform(t, [](std::vector<std::vector<T>> const &mat) {
               return throw_if_unexpected(require_all_same1(
                   transform(mat, [](std::vector<T> const &vec) {
-                    return num_elements(vec);
+                    return positive_int{num_elements(vec)};
                   })));
             })));
       })));
-  ASSERT(dim3_size > 0);
 
   TensorShape shape = TensorShape{
       TensorDims{FFOrdered{dim0_size, dim1_size, dim2_size, dim3_size}},
@@ -160,10 +151,10 @@ GenericTensorAccessorW create_4d_accessor_w_with_contents(
 
   GenericTensorAccessorW accessor = allocator.allocate_tensor(shape);
 
-  for (nonnegative_int dim0_idx : nonnegative_range(dim0_size)) {
-    for (nonnegative_int dim1_idx : nonnegative_range(dim1_size)) {
-      for (nonnegative_int dim2_idx : nonnegative_range(dim2_size)) {
-        for (nonnegative_int dim3_idx : nonnegative_range(dim3_size)) {
+  for (nonnegative_int dim0_idx : nonnegative_range(dim0_size.nonnegative_int_from_positive_int())) {
+    for (nonnegative_int dim1_idx : nonnegative_range(dim1_size.nonnegative_int_from_positive_int())) {
+      for (nonnegative_int dim2_idx : nonnegative_range(dim2_size.nonnegative_int_from_positive_int())) {
+        for (nonnegative_int dim3_idx : nonnegative_range(dim3_size.nonnegative_int_from_positive_int())) {
           accessor.at<type_to_data_type_enum_v<T>>(
               FFOrdered{dim0_idx, dim1_idx, dim2_idx, dim3_idx}) =
               contents.at(dim0_idx.unwrap_nonnegative())

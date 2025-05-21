@@ -40,8 +40,8 @@ struct ForwardKernel {
                   GenericTensorAccessorW const &output) {
     checkCUDA(cudaMemcpyAsync((void *)output.get<T>(),
                               (void *)input.get<T>(),
-                              input.shape.num_elements().unwrap_nonnegative() *
-                                  size_of_datatype(T).unwrap_nonnegative(),
+                              input.shape.num_elements().int_from_positive_int() *
+                                  size_of_datatype(T).int_from_positive_int(),
                               cudaMemcpyDeviceToDevice,
                               stream));
   }
@@ -54,12 +54,12 @@ struct BackwardKernel {
                   GenericTensorAccessorW const &input,
                   size_t num_replicas) {
     size_t total_elements =
-        input.shape.num_elements().unwrap_nonnegative() * num_replicas;
+        input.shape.num_elements().int_from_positive_int() * num_replicas;
     replicate_backward_kernel<real_type_t<T>>
         <<<GET_BLOCKS(total_elements), CUDA_NUM_THREADS, 0, stream>>>(
             output.get<T>(),
             input.get<T>(),
-            input.shape.num_elements().unwrap_nonnegative(),
+            input.shape.num_elements().int_from_positive_int(),
             num_replicas);
   }
 };

@@ -7,10 +7,10 @@ using namespace ::FlexFlow;
 
 TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test BatchNorm Kernel") {
-    nonnegative_int output_n = 1_n;
-    nonnegative_int output_c = 10_n;
-    nonnegative_int output_h = 10_n;
-    nonnegative_int output_w = 10_n;
+    positive_int output_n = 1_p;
+    positive_int output_c = 10_p;
+    positive_int output_h = 10_p;
+    positive_int output_w = 10_p;
 
     ManagedFFStream managed_stream{};
     ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
@@ -24,10 +24,10 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         /*handle=*/managed_handle.raw_handle(),
         /*allocator=*/allocator,
         /*runningMean=*/nullptr,
-        /*output_n=*/output_n.unwrap_nonnegative(),
-        /*output_c=*/output_c.unwrap_nonnegative(),
-        /*output_h=*/output_h.unwrap_nonnegative(),
-        /*output_w=*/output_w.unwrap_nonnegative(),
+        /*output_n=*/output_n.int_from_positive_int(),
+        /*output_c=*/output_c.int_from_positive_int(),
+        /*output_h=*/output_h.int_from_positive_int(),
+        /*output_w=*/output_w.int_from_positive_int(),
         /*relu=*/true);
 
     TensorShape input_shape = TensorShape{
@@ -90,7 +90,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           /*scale_grad_ptr=*/scale_grad_accessor.get_float_ptr(),
           /*bias_grad_ptr=*/bias_grad_accessor.get_float_ptr(),
           /*numElements=*/
-          input_accessor.shape.num_elements().unwrap_nonnegative());
+          input_accessor.shape.num_elements().int_from_positive_int());
 
       CHECK(contains_non_zero(input_grad_accessor));
       CHECK(contains_non_zero(scale_grad_accessor));

@@ -15,7 +15,7 @@ nonnegative_int
          "Number of indices does not match the number of dimensions");
 
   nonnegative_int offset = 0_n;
-  nonnegative_int multiplier = 1_n;
+  positive_int multiplier = 1_p;
 
   for (legion_dim_t dim : reversed(vector_of(key_range(shape.dims)))) {
     ASSERT(indices.at(dim) < shape.at(legion_dim_t{dim}),
@@ -33,8 +33,8 @@ void copy_accessor_data_to_l_from_r(
     GenericTensorAccessorW &dst_accessor,
     GenericTensorAccessorR const &src_accessor) {
   size_t num_bytes =
-      dst_accessor.shape.get_volume().unwrap_nonnegative() *
-      size_of_datatype(dst_accessor.data_type).unwrap_nonnegative();
+      dst_accessor.shape.num_elements().int_from_positive_int() *
+      size_of_datatype(dst_accessor.data_type).int_from_positive_int();
 
   DeviceType dst_device_type = dst_accessor.device_type;
   DeviceType src_device_type = src_accessor.device_type;
@@ -221,12 +221,60 @@ std::vector<half const *>
   return get<DataType::HALF>(a);
 }
 
+int32_t *get_int32_ptr(GenericTensorAccessorW const &a) {
+  return get<DataType::INT32>(a);
+}
+
+int64_t *get_int64_ptr(GenericTensorAccessorW const &a) {
+  return get<DataType::INT64>(a);
+}
+
+float *get_float_ptr(GenericTensorAccessorW const &a) {
+  return get<DataType::FLOAT>(a);
+}
+
+double *get_double_ptr(GenericTensorAccessorW const &a) {
+  return get<DataType::DOUBLE>(a);
+}
+
+half *get_half_ptr(GenericTensorAccessorW const &a) {
+  return get<DataType::HALF>(a);
+}
+
+std::vector<int32_t *>
+    get_int32_ptrs(std::vector<GenericTensorAccessorW> const &a) {
+  return get<DataType::INT32>(a);
+}
+
+std::vector<int64_t *>
+    get_int64_ptrs(std::vector<GenericTensorAccessorW> const &a) {
+  return get<DataType::INT64>(a);
+}
+
+std::vector<float *>
+    get_float_ptrs(std::vector<GenericTensorAccessorW> const &a) {
+  return get<DataType::FLOAT>(a);
+}
+
+std::vector<double *>
+    get_double_ptrs(std::vector<GenericTensorAccessorW> const &a) {
+  return get<DataType::DOUBLE>(a);
+}
+
+std::vector<half *>
+    get_half_ptrs(std::vector<GenericTensorAccessorW> const &a) {
+  return get<DataType::HALF>(a);
+}
+
+
 GenericTensorAccessorR read_only_accessor_from_write_accessor(
     GenericTensorAccessorW const &writable) {
-  return GenericTensorAccessorR{writable.data_type,
-                                writable.shape,
-                                req<void const *>(writable.ptr),
-                                writable.device_type};
+  return GenericTensorAccessorR{
+    writable.data_type,
+    writable.shape,
+    writable.ptr,
+    writable.device_type,
+  };
 }
 
 bool is_shape_and_dtype_equal(GenericTensorAccessorR const &acc1,
@@ -262,5 +310,8 @@ std::pair<ArrayShape, DataType>
     get_shape_and_datatype(GenericTensorAccessorW const &accessor) {
   return std::make_pair(accessor.shape, accessor.data_type);
 }
+
+template
+  int32_t accessor_get_only_value<DataType::INT32>(GenericTensorAccessorR const &);
 
 } // namespace FlexFlow

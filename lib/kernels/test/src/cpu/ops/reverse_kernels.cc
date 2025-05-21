@@ -26,7 +26,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     GenericTensorAccessorW result = create_zero_filled_accessor_w(
         TensorShape{
-            TensorDims{FFOrdered{2_n, 2_n, 3_n}},
+            TensorDims{FFOrdered{2_p, 2_p, 3_p}},
             DataType::INT32,
         },
         cpu_allocator);
@@ -122,7 +122,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     GenericTensorAccessorW result = create_zero_filled_accessor_w(
         TensorShape{
-            TensorDims{FFOrdered{2_n, 2_n, 3_n}},
+            TensorDims{FFOrdered{2_p, 2_p, 3_p}},
             DataType::INT32,
         },
         cpu_allocator);

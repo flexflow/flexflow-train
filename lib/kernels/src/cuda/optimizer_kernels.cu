@@ -167,7 +167,7 @@ __host__ void adam_ps_update_task_gpu(ffStream_t stream,
 }
 
 #ifdef FF_USE_NCCL
-__host__ void nccl_update_task_gpu(ffStream_t stream,
+__host__ void adam_nccl_update_task_gpu(ffStream_t stream,
                                    float alpha_t,
                                    float beta1,
                                    float beta2,

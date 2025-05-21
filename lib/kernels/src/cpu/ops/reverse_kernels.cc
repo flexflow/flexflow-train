@@ -9,7 +9,7 @@ struct CPUReverseForwardKernel {
   void operator()(GenericTensorAccessorR const &input,
                   GenericTensorAccessorW &output,
                   ReverseAttrs const &attrs) {
-    nonnegative_int reverse_axis_size = input.shape.at(attrs.axis);
+    positive_int reverse_axis_size = input.shape.at(attrs.axis);
 
     for (ArrayCoord const &input_coord : get_array_coord_set(input.shape)) {
       nonnegative_int input_reverse_axis_coord =
@@ -17,7 +17,7 @@ struct CPUReverseForwardKernel {
 
       ArrayCoord output_coord = input_coord;
       output_coord.ff_ordered.at(attrs.axis) =
-          nonnegative_int{reverse_axis_size.unwrap_nonnegative() -
+          nonnegative_int{reverse_axis_size.int_from_positive_int() -
                           input_reverse_axis_coord.unwrap_nonnegative() - 1};
 
       output.at<DT>(output_coord.ff_ordered) =

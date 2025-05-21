@@ -40,7 +40,7 @@ static DeviceSpecificDeviceStates
   OperatorType op_type = attrs.op_type;
 
   nonnegative_int reduction_size =
-      input.shape.get_volume() / output.shape.get_volume();
+      input.shape.num_elements() / output.shape.num_elements();
   ReducePerDeviceState per_device_state =
       init_kernel(handle,
                   op_type,

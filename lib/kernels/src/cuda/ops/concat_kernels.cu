@@ -30,10 +30,10 @@ void calc_blk_size(size_t &num_blocks,
   }
   blk_size = shape.sub_shape(legion_dim_t{0_n}, legion_axis)
                  .num_elements()
-                 .unwrap_nonnegative();
+                 .int_from_positive_int();
   num_blocks = shape.sub_shape(legion_axis, std::nullopt)
                    .num_elements()
-                   .unwrap_nonnegative();
+                   .int_from_positive_int();
 }
 
 void forward_kernel(cudaStream_t stream,

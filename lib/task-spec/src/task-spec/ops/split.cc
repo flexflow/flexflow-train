@@ -44,11 +44,11 @@ OpTaskInvocation backward(SplitAttrs const &attrs) {
   return {task_id_t::SPLIT_BWD_TASK_ID, binding};
 }
 
-static std::pair<nonnegative_int, nonnegative_int>
+static std::pair<positive_int, positive_int>
     calc_block_size(ArrayShape const &array_shape, ff_dim_t axis) {
-  nonnegative_int num_blocks = 1_n;
-  nonnegative_int block_size = 1_n;
-  for (nonnegative_int d : nonnegative_range(array_shape.num_elements())) {
+  positive_int num_blocks = 1_p;
+  positive_int block_size = 1_p;
+  for (nonnegative_int d : nonnegative_range(array_shape.num_elements().nonnegative_int_from_positive_int())) {
     if (d <= axis.value) {
       block_size *= array_shape.at(legion_dim_t{d});
     } else {
@@ -69,7 +69,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 
   for (int i = 0; i < attrs.splits.size(); i++) {
     auto [_, out_block_size] = calc_block_size(output.shape, attrs.axis);
-    out_block_sizes[i] = out_block_size.unwrap_nonnegative();
+    out_block_sizes[i] = out_block_size.int_from_positive_int();
   }
   float *output_float_ptr = output.get_float_ptr();
   return profile(forward_kernel,
@@ -78,8 +78,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
                  &output_float_ptr,
                  input.get_float_ptr(),
                  out_block_sizes,
-                 in_block_size.unwrap_nonnegative(),
-                 num_blocks.unwrap_nonnegative(),
+                 in_block_size.int_from_positive_int(),
+                 num_blocks.int_from_positive_int(),
                  attrs.splits.size());
 }
 
@@ -98,7 +98,7 @@ static std::optional<float>
   for (int i = 0; i < attrs.splits.size(); i++) {
     coord_t out_num_blocks;
     auto [_, out_block_size] = calc_block_size(output_grad.shape, attrs.axis);
-    out_block_sizes[i] = out_block_size.unwrap_nonnegative();
+    out_block_sizes[i] = out_block_size.int_from_positive_int();
   }
   float const *output_grad_ptr = output_grad.get_float_ptr();
   return profile(backward_kernel,
@@ -107,8 +107,8 @@ static std::optional<float>
                  input_grad.get_float_ptr(),
                  &output_grad_ptr,
                  out_block_sizes,
-                 in_block_size.unwrap_nonnegative(),
-                 num_blocks.unwrap_nonnegative(),
+                 in_block_size.int_from_positive_int(),
+                 num_blocks.int_from_positive_int(),
                  attrs.splits.size());
 }
 

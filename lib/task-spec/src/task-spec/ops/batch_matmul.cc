@@ -66,21 +66,21 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   FFIterationConfig iter_config =
       acc.get_argument<FFIterationConfig>(ITERATION_CONFIG);
 
-  nonnegative_int m = b_input.shape.at(legion_dim_t{0_n});
-  assert(m == output.shape.at(legion_dim_t{0_n}));
-  nonnegative_int n = a_input.shape.at(legion_dim_t{1_n});
-  assert(n == output.shape.at(legion_dim_t{1_n}));
-  nonnegative_int k = a_input.shape.at(legion_dim_t{0_n});
-  assert(k == b_input.shape.at(legion_dim_t{1_n}));
+  positive_int m = b_input.shape.at(legion_dim_t{0_n});
+  ASSERT(m == output.shape.at(legion_dim_t{0_n}));
+  positive_int n = a_input.shape.at(legion_dim_t{1_n});
+  ASSERT(n == output.shape.at(legion_dim_t{1_n}));
+  positive_int k = a_input.shape.at(legion_dim_t{0_n});
+  ASSERT(k == b_input.shape.at(legion_dim_t{1_n}));
 
-  assert(a_input.shape.get_volume() == b_input.shape.get_volume());
-  assert(a_input.shape.get_volume() == output.shape.get_volume());
+  ASSERT(a_input.shape.num_elements() == b_input.shape.num_elements());
+  ASSERT(a_input.shape.num_elements() == output.shape.num_elements());
 
-  nonnegative_int batch = 1_n;
-  for (nonnegative_int i : nonnegative_range(2_n, a_input.shape.get_dim())) {
-    nonnegative_int dim_size = a_input.shape.at(legion_dim_t{i});
-    assert(dim_size == b_input.shape.at(legion_dim_t{i}));
-    assert(dim_size == output.shape.at(legion_dim_t{i}));
+  positive_int batch = 1_p;
+  for (nonnegative_int i : nonnegative_range(2_n, a_input.shape.num_dims())) {
+    positive_int dim_size = a_input.shape.at(legion_dim_t{i});
+    ASSERT(dim_size == b_input.shape.at(legion_dim_t{i}));
+    ASSERT(dim_size == output.shape.at(legion_dim_t{i}));
     batch *= dim_size;
   }
 
@@ -97,10 +97,10 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
                  output.get_float_ptr(),
                  a_input.get_float_ptr(),
                  b_input.get_float_ptr(),
-                 m.unwrap_nonnegative(),
-                 n.unwrap_nonnegative(),
-                 k.unwrap_nonnegative(),
-                 batch.unwrap_nonnegative(),
+                 m.int_from_positive_int(),
+                 n.int_from_positive_int(),
+                 k.int_from_positive_int(),
+                 batch.int_from_positive_int(),
                  get_raw_seq_len(attrs.a_seq_length_dim),
                  get_raw_seq_len(attrs.b_seq_length_dim),
                  iter_config.seq_length);
@@ -116,31 +116,31 @@ static std::optional<float>
 
   auto output = acc.get_tensor<Permissions::RO>(OUTPUT);
   auto output_grad = acc.get_tensor_grad<Permissions::RW>(OUTPUT);
-  assert(output.shape == output_grad.shape);
+  ASSERT(output.shape == output_grad.shape);
 
   auto a_input = acc.get_tensor<Permissions::RO>(A_INPUT);
   auto a_input_grad = acc.get_tensor_grad<Permissions::RW>(A_INPUT);
-  assert(a_input.shape == a_input_grad.shape);
+  ASSERT(a_input.shape == a_input_grad.shape);
 
   auto b_input = acc.get_tensor<Permissions::RO>(B_INPUT);
   auto b_input_grad = acc.get_tensor_grad<Permissions::RW>(B_INPUT);
-  assert(b_input.shape == b_input_grad.shape);
+  ASSERT(b_input.shape == b_input_grad.shape);
 
   // check dins
-  nonnegative_int m = b_input.shape.at(legion_dim_t{0_n});
-  assert(m == output.shape.at(legion_dim_t{0_n}));
-  nonnegative_int n = a_input.shape.at(legion_dim_t{1_n});
-  assert(n == output.shape.at(legion_dim_t{1_n}));
-  nonnegative_int k = a_input.shape.at(legion_dim_t{0_n});
-  assert(k == b_input.shape.at(legion_dim_t{1_n}));
-  assert(a_input.shape.get_volume() == b_input.shape.get_volume());
-  assert(a_input.shape.get_volume() == output.shape.get_volume());
+  positive_int m = b_input.shape.at(legion_dim_t{0_n});
+  ASSERT(m == output.shape.at(legion_dim_t{0_n}));
+  positive_int n = a_input.shape.at(legion_dim_t{1_n});
+  ASSERT(n == output.shape.at(legion_dim_t{1_n}));
+  positive_int k = a_input.shape.at(legion_dim_t{0_n});
+  ASSERT(k == b_input.shape.at(legion_dim_t{1_n}));
+  ASSERT(a_input.shape.num_elements() == b_input.shape.num_elements());
+  ASSERT(a_input.shape.num_elements() == output.shape.num_elements());
 
-  nonnegative_int batch = 1_n;
-  for (nonnegative_int i : nonnegative_range(2_n, a_input.shape.get_dim())) {
-    nonnegative_int dim_size = a_input.shape.at(legion_dim_t{i});
-    assert(dim_size == b_input.shape.at(legion_dim_t{i}));
-    assert(dim_size == output.shape.at(legion_dim_t{i}));
+  positive_int batch = 1_p;
+  for (nonnegative_int i : nonnegative_range(2_n, a_input.shape.num_dims())) {
+    positive_int dim_size = a_input.shape.at(legion_dim_t{i});
+    ASSERT(dim_size == b_input.shape.at(legion_dim_t{i}));
+    ASSERT(dim_size == output.shape.at(legion_dim_t{i}));
     batch *= dim_size;
   }
 
@@ -154,10 +154,10 @@ static std::optional<float>
                  a_input_grad.get_float_ptr(),
                  b_input.get_float_ptr(),
                  b_input_grad.get_float_ptr(),
-                 m.unwrap_nonnegative(),
-                 n.unwrap_nonnegative(),
-                 k.unwrap_nonnegative(),
-                 batch.unwrap_nonnegative());
+                 m.int_from_positive_int(),
+                 n.int_from_positive_int(),
+                 k.int_from_positive_int(),
+                 batch.int_from_positive_int());
 }
 
 TaskImplFunction get_batch_matmul_fwd_task_impl() {

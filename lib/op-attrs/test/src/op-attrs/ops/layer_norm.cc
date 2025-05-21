@@ -11,7 +11,7 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_layer_norm_incoming_tensor_roles(LayerNormAttrs)") {
     auto make_attrs = [](bool elementwise_affine) {
       return LayerNormAttrs{
-          /*axes=*/{ff_dim_t{nonnegative_int{0}}, ff_dim_t{nonnegative_int{2}}},
+          /*axes=*/{ff_dim_t{0_n}, ff_dim_t{2_n}},
           elementwise_affine,
           /*eps=*/1.0,
       };
@@ -46,7 +46,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
   TEST_CASE("shape inference (LayerNorm)") {
     LayerNormAttrs attrs_affine_true = LayerNormAttrs{
-        /*axes=*/{ff_dim_t{nonnegative_int{1}}, ff_dim_t{nonnegative_int{3}}},
+        /*axes=*/{ff_dim_t{1_n}, ff_dim_t{3_n}},
         /*elementwise_affine=*/true,
         /*eps=*/0.1,
     };
@@ -58,11 +58,11 @@ TEST_SUITE(FF_TEST_SUITE) {
     }();
 
     TensorShape input = TensorShape{
-        TensorDims{FFOrdered<nonnegative_int>{
-            12_n,
-            14_n,
-            16_n,
-            18_n,
+        TensorDims{FFOrdered{
+            12_p,
+            14_p,
+            16_p,
+            18_p,
         }},
         DataType::FLOAT,
     };
@@ -70,9 +70,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     TensorShape output = input;
 
     TensorShape gamma = TensorShape{
-        TensorDims{FFOrdered<nonnegative_int>{
-            12_n,
-            16_n,
+        TensorDims{FFOrdered{
+            12_p,
+            16_p,
         }},
         DataType::FLOAT,
     };
@@ -125,58 +125,58 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     auto make_input = [&](SumDegree o_sum,
                           DiscardCopyDegree o_eq,
-                          nonnegative_int o0,
-                          nonnegative_int o1,
-                          nonnegative_int o2,
-                          nonnegative_int o3) {
+                          positive_int o0,
+                          positive_int o1,
+                          positive_int o2,
+                          positive_int o3) {
       return lift_to_parallel_with_degrees(
-          input, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o1, o2, o3});
+          input, o_sum, o_eq, FFOrdered{o0, o1, o2, o3});
     };
 
     auto make_output = [&](SumDegree o_sum,
                            DiscardCopyDegree o_eq,
-                           nonnegative_int o0,
-                           nonnegative_int o1,
-                           nonnegative_int o2,
-                           nonnegative_int o3) {
+                           positive_int o0,
+                           positive_int o1,
+                           positive_int o2,
+                           positive_int o3) {
       return lift_to_parallel_with_degrees(
-          output, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o1, o2, o3});
+          output, o_sum, o_eq, FFOrdered{o0, o1, o2, o3});
     };
 
     auto make_gamma_weights = [&](SumDegree o_sum,
                                   DiscardCopyDegree o_eq,
-                                  nonnegative_int o0,
-                                  nonnegative_int o2) {
+                                  positive_int o0,
+                                  positive_int o2) {
       return lift_to_parallel_with_degrees(
-          gamma, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o2});
+          gamma, o_sum, o_eq, FFOrdered{o0, o2});
     };
 
     auto make_beta_weights = [&](SumDegree o_sum,
                                  DiscardCopyDegree o_eq,
-                                 nonnegative_int o0,
-                                 nonnegative_int o2) {
+                                 positive_int o0,
+                                 positive_int o2) {
       return lift_to_parallel_with_degrees(
-          beta, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o2});
+          beta, o_sum, o_eq, FFOrdered{o0, o2});
     };
 
     SUBCASE("parallel shape inference (LayerNorm)") {
       SUBCASE("partition parallelism (not in axes)") {
-        nonnegative_int degree0 = 2_n;
-        nonnegative_int degree2 = 3_n;
+        positive_int degree0 = 2_p;
+        positive_int degree2 = 3_p;
 
         ParallelTensorShape par_input = make_input(
-            SumDegree{1_n}, DiscardCopyDegree{1_n}, degree0, 1_n, degree2, 1_n);
+            SumDegree{1_p}, DiscardCopyDegree{1_p}, degree0, 1_p, degree2, 1_p);
 
         SUBCASE("get_output_shape(LayerNormAttrs, ParallelTensorShape)") {
           tl::expected<ParallelTensorShape, std::string> result =
               get_output_shape(attrs_affine_true, par_input);
           tl::expected<ParallelTensorShape, std::string> correct =
-              make_output(SumDegree{1_n},
-                          DiscardCopyDegree{1_n},
+              make_output(SumDegree{1_p},
+                          DiscardCopyDegree{1_p},
                           degree0,
-                          1_n,
+                          1_p,
                           degree2,
-                          1_n);
+                          1_p);
 
           CHECK(result == correct);
         }
@@ -188,7 +188,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                 get_gamma_weights_shape(attrs_affine_true, par_input);
             tl::expected<ParallelTensorShape, std::string> correct =
                 make_gamma_weights(
-                    SumDegree{1_n}, DiscardCopyDegree{1_n}, degree0, degree2);
+                    SumDegree{1_p}, DiscardCopyDegree{1_p}, degree0, degree2);
 
             CHECK(result == correct);
           }
@@ -208,7 +208,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                 get_beta_weights_shape(attrs_affine_true, par_input);
             tl::expected<ParallelTensorShape, std::string> correct =
                 make_beta_weights(
-                    SumDegree{1_n}, DiscardCopyDegree{1_n}, degree0, degree2);
+                    SumDegree{1_p}, DiscardCopyDegree{1_p}, degree0, degree2);
 
             CHECK(result == correct);
           }
@@ -224,11 +224,11 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SUBCASE("partition parallelism (in axes)") {
-        nonnegative_int degree1 = 2_n;
-        nonnegative_int degree2 = 4_n;
+        positive_int degree1 = 2_p;
+        positive_int degree2 = 4_p;
 
         ParallelTensorShape par_input = make_input(
-            SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, degree1, degree2, 1_n);
+            SumDegree{1_p}, DiscardCopyDegree{1_p}, 1_p, degree1, degree2, 1_p);
 
         SUBCASE("get_output_shape(LayerNormAttrs, ParallelTensorShape)") {
           std::optional<ParallelTensorShape> result = optional_from_expected(
@@ -257,10 +257,10 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SUBCASE("sum parallelism") {
-        SumDegree sum_degree = SumDegree{2_n};
+        SumDegree sum_degree = SumDegree{2_p};
 
         ParallelTensorShape par_input =
-            make_input(sum_degree, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n, 1_n);
+            make_input(sum_degree, DiscardCopyDegree{1_p}, 1_p, 1_p, 1_p, 1_p);
 
         SUBCASE("get_output_shape(LayerNormAttrs, ParallelTensorShape)") {
           std::optional<ParallelTensorShape> result = optional_from_expected(
@@ -289,10 +289,10 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SUBCASE("discard copy parallelism") {
-        DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{2_n};
+        DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{2_p};
 
         ParallelTensorShape par_input =
-            make_input(SumDegree{1_n}, discard_copy_degree, 1_n, 1_n, 1_n, 1_n);
+            make_input(SumDegree{1_p}, discard_copy_degree, 1_p, 1_p, 1_p, 1_p);
 
         SUBCASE("get_output_shape(LayerNormAttrs, ParallelTensorShape)") {
           std::optional<ParallelTensorShape> result = optional_from_expected(

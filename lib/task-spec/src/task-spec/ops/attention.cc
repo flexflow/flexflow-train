@@ -85,10 +85,10 @@ static DeviceSpecificDeviceStates
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto const &attrs = acc.get_argument<MultiHeadAttentionAttrs>(ATTRS);
   Allocator allocator = acc.get_allocator();
-  nonnegative_int qProjSize = acc.get_argument<nonnegative_int>(QPROJSIZE);
-  nonnegative_int kProjSize = acc.get_argument<nonnegative_int>(KPROJSIZE);
-  nonnegative_int vProjSize = acc.get_argument<nonnegative_int>(VPROJSIZE);
-  nonnegative_int oProjSize = acc.get_argument<nonnegative_int>(OPROJSIZE);
+  positive_int qProjSize = acc.get_argument<positive_int>(QPROJSIZE);
+  positive_int kProjSize = acc.get_argument<positive_int>(KPROJSIZE);
+  positive_int vProjSize = acc.get_argument<positive_int>(VPROJSIZE);
+  positive_int oProjSize = acc.get_argument<positive_int>(OPROJSIZE);
 
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
   ParallelTensorShape query_parallel_tensor_shape =
@@ -108,29 +108,29 @@ static DeviceSpecificDeviceStates
                                             key_parallel_tensor_shape,
                                             value_parallel_tensor_shape));
 
-  nonnegative_int kvSeqLength = get_kvSeqLength(parsed);
-  nonnegative_int qSize = get_qSize(parsed);
-  nonnegative_int kSize = get_kSize(parsed);
-  nonnegative_int vSize = get_vSize(parsed);
+  positive_int kvSeqLength = get_kvSeqLength(parsed);
+  positive_int qSize = get_qSize(parsed);
+  positive_int kSize = get_kSize(parsed);
+  positive_int vSize = get_vSize(parsed);
 
-  nonnegative_int qoSeqLength = get_qoSeqLength(parsed);
-  nonnegative_int num_samples = get_num_samples(parsed);
-  nonnegative_int num_heads = attrs.num_heads;
+  positive_int qoSeqLength = get_qoSeqLength(parsed);
+  positive_int num_samples = get_num_samples(parsed);
+  positive_int num_heads = attrs.num_heads;
 
   MHAPerDeviceState per_device_state =
       init_kernel(handle,
                   allocator,
-                  num_samples.unwrap_nonnegative(),
-                  num_heads.unwrap_nonnegative(),
-                  qSize.unwrap_nonnegative(),
-                  kSize.unwrap_nonnegative(),
-                  vSize.unwrap_nonnegative(),
-                  qProjSize.unwrap_nonnegative(),
-                  kProjSize.unwrap_nonnegative(),
-                  vProjSize.unwrap_nonnegative(),
-                  oProjSize.unwrap_nonnegative(),
-                  qoSeqLength.unwrap_nonnegative(),
-                  kvSeqLength.unwrap_nonnegative(),
+                  num_samples.int_from_positive_int(),
+                  num_heads.int_from_positive_int(),
+                  qSize.int_from_positive_int(),
+                  kSize.int_from_positive_int(),
+                  vSize.int_from_positive_int(),
+                  qProjSize.int_from_positive_int(),
+                  kProjSize.int_from_positive_int(),
+                  vProjSize.int_from_positive_int(),
+                  oProjSize.int_from_positive_int(),
+                  qoSeqLength.int_from_positive_int(),
+                  kvSeqLength.int_from_positive_int(),
                   attrs.add_bias_kv);
   return DeviceSpecificDeviceStates{
       DeviceSpecific<MHAPerDeviceState>::create(per_device_state)};
@@ -185,7 +185,7 @@ static std::optional<float>
   assert(key_grad.shape == key.shape);
 
   assert(query_grad.shape == query.shape);
-  assert(weight_grad.shape.get_volume() == weight.shape.get_volume());
+  assert(weight_grad.shape.num_elements() == weight.shape.num_elements());
 
   return profile(backward_kernel,
                  profiling,
@@ -217,10 +217,10 @@ OpTaskSignature get_attention_init_signature() {
   init.add_arg_slot<ParallelTensorShape>(QUERY_PARALLEL_TENSOR_SHAPE);
   init.add_arg_slot<ParallelTensorShape>(KEY_PARALLEL_TENSOR_SHAPE);
   init.add_arg_slot<ParallelTensorShape>(VALUE_PARALLEL_TENSOR_SHAPE);
-  init.add_arg_slot<int>(QPROJSIZE);
-  init.add_arg_slot<int>(KPROJSIZE);
-  init.add_arg_slot<int>(VPROJSIZE);
-  init.add_arg_slot<int>(OPROJSIZE);
+  init.add_arg_slot<positive_int>(QPROJSIZE);
+  init.add_arg_slot<positive_int>(KPROJSIZE);
+  init.add_arg_slot<positive_int>(VPROJSIZE);
+  init.add_arg_slot<positive_int>(OPROJSIZE);
   init.add_arg_slot<MultiHeadAttentionAttrs>(ATTRS);
   init.add_unchecked_arg_slot<PerDeviceFFHandle>(HANDLE);
 

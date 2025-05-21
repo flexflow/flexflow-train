@@ -9,7 +9,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     std::size_t num_replicas = 5;
 
     TensorShape input_shape = TensorShape{
-        TensorDims{FFOrdered{10_n, 10_n, 10_n, 10_n, 10_n}},
+        TensorDims{FFOrdered{10_p, 10_p, 10_p, 10_p, 10_p}},
         DataType::FLOAT,
     };
 
@@ -23,7 +23,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     SUBCASE("forward_kernel") {
       TensorShape output_shape = TensorShape{
-          TensorDims{FFOrdered{10_n}},
+          TensorDims{FFOrdered{10_p}},
           DataType::FLOAT,
       };
 

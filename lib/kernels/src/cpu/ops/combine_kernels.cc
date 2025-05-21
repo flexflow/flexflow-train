@@ -9,8 +9,8 @@ struct CPUForwardKernel {
                   GenericTensorAccessorW const &output) {
     memcpy(output.get<DT>(),
            input.get<DT>(),
-           input.shape.get_volume().unwrap_nonnegative() *
-               size_of_datatype(DT).unwrap_nonnegative());
+           input.shape.num_elements().int_from_positive_int() *
+               size_of_datatype(DT).int_from_positive_int());
   }
 };
 
@@ -18,7 +18,7 @@ template <DataType DT>
 struct CPUBackwardKernel {
   void operator()(GenericTensorAccessorR const &output_grad,
                   GenericTensorAccessorW const &input_grad) {
-    size_t num_elements = output_grad.shape.get_volume().unwrap_nonnegative();
+    size_t num_elements = output_grad.shape.num_elements().int_from_positive_int();
     for (int i = 0; i < num_elements; ++i) {
       input_grad.get<DT>()[i] += output_grad.get<DT>()[i];
     }

@@ -41,7 +41,7 @@ struct ForwardKernel {
   void operator()(ffStream_t stream,
                   GenericTensorAccessorR const &input,
                   GenericTensorAccessorW const &output) {
-    size_t volume = input.shape.get_volume().unwrap_nonnegative();
+    size_t volume = input.shape.num_elements().int_from_positive_int();
     cast_forward<<<GET_BLOCKS(volume), CUDA_NUM_THREADS, 0, stream>>>(
         input.get<IDT>(), output.get<ODT>(), volume);
   }
@@ -52,7 +52,7 @@ struct BackwardKernel {
   void operator()(ffStream_t stream,
                   GenericTensorAccessorR const &output,
                   GenericTensorAccessorW const &input) {
-    size_t volume = output.shape.get_volume().unwrap_nonnegative();
+    size_t volume = output.shape.num_elements().int_from_positive_int();
     cast_backward<<<GET_BLOCKS(volume), CUDA_NUM_THREADS, 0, stream>>>(
         output.get<IDT>(), input.get<ODT>(), volume, cast_to<ODT>(1.0f));
   }

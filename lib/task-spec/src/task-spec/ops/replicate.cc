@@ -68,7 +68,7 @@ static std::optional<float>
                  "[replicate] backward_time = {:.2lf}ms\n",
                  output_grad,
                  input_grad,
-                 attrs.replicate_degree.unwrap_nonnegative());
+                 attrs.replicate_degree.int_from_positive_int());
 }
 
 TaskImplFunction get_replicate_fwd_task_impl() {

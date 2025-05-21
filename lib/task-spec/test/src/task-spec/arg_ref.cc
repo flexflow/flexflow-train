@@ -10,8 +10,6 @@ enum class ExampleLabelType {
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("ArgRefSpec::holds") {
-    CHECK_MESSAGE(false, "TODO: ArgRefSpec");
-
     ArgRefSpec<ExampleLabelType> arg_ref_spec = ArgRefSpec<ExampleLabelType>::create(
       ArgRef<ExampleLabelType, std::string>{ExampleLabelType::STRING}
     );

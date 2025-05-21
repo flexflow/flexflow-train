@@ -118,25 +118,25 @@ static DeviceSpecificDeviceStates
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
 
-  nonnegative_int M = 1_n;
+  positive_int M = 1_p;
   for (int i = 0; i < attrs.axes.size(); i++) {
     legion_dim_t legion_dim =
         legion_dim_from_ff_dim(attrs.axes[i], input.shape.num_dims());
     M *= input.shape.at(legion_dim);
   }
-  nonnegative_int num_replicas = 1_n;
+  positive_int num_replicas = 1_p;
   for (nonnegative_int i : nonnegative_range(input.shape.num_dims())) {
     num_replicas *= input.shape.at(legion_dim_t{i});
   }
-  nonnegative_int effective_num_elements = M;
-  nonnegative_int effective_batch_size = input.shape.get_volume() / M;
+  positive_int effective_num_elements = M;
+  positive_int effective_batch_size = positive_int{input.shape.num_elements() / M};
 
   LayerNormPerDeviceState per_device_state =
       init_kernel(handle,
                   allocator,
                   attrs.elementwise_affine,
-                  effective_batch_size.unwrap_nonnegative(),
-                  effective_num_elements.unwrap_nonnegative(),
+                  effective_batch_size.int_from_positive_int(),
+                  effective_num_elements.int_from_positive_int(),
                   attrs.eps);
   return DeviceSpecificDeviceStates{
       DeviceSpecific<LayerNormPerDeviceState>::create(per_device_state)};

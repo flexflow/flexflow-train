@@ -7,7 +7,6 @@
 #include "op-attrs/datatype.h"
 #include "pcg/device_type.dtg.h"
 #include "utils/containers/transform.h"
-#include "utils/required.h"
 #include <libassert/assert.hpp>
 
 namespace FlexFlow {
@@ -154,8 +153,6 @@ private:
 std::string format_as(GenericTensorAccessorW const &);
 std::ostream &operator<<(std::ostream &, GenericTensorAccessorW const &);
 
-static_assert(is_fmtable<req<DataType> const &>::value, "");
-
 template <DataType DT>
 typename data_type_enum_to_class<DT>::type *
     get(GenericTensorAccessorW const &a) {
@@ -244,6 +241,14 @@ std::pair<ArrayShape, DataType>
 
 void copy_accessor_data_to_l_from_r(GenericTensorAccessorW &dst_accessor,
                                     GenericTensorAccessorR const &src_accessor);
+
+template <DataType DT>
+real_type_t<DT> accessor_get_only_value(GenericTensorAccessorR const &acc) {
+  ASSERT(get_num_elements(acc.shape) == 1);
+  ASSERT(acc.data_type == DT);
+
+  return *static_cast<real_type_t<DT> const *>(acc.ptr);
+}
 
 } // namespace FlexFlow
 

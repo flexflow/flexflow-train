@@ -6,17 +6,17 @@ using namespace ::FlexFlow;
 
 TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test multi-head attention kernel") {
-    nonnegative_int num_samples = 10_n;
-    nonnegative_int num_heads = 4_n;
-    nonnegative_int qSize = 64_n;
-    nonnegative_int kSize = 64_n;
-    nonnegative_int vSize = 64_n;
-    nonnegative_int qProjSize = 64_n;
-    nonnegative_int kProjSize = 64_n;
-    nonnegative_int vProjSize = 64_n;
-    nonnegative_int oProjSize = 64_n;
-    nonnegative_int qoSeqLength = 20_n;
-    nonnegative_int kvSeqLength = 20_n;
+    positive_int num_samples = 10_p;
+    positive_int num_heads = 4_p;
+    positive_int qSize = 64_p;
+    positive_int kSize = 64_p;
+    positive_int vSize = 64_p;
+    positive_int qProjSize = 64_p;
+    positive_int kProjSize = 64_p;
+    positive_int vProjSize = 64_p;
+    positive_int oProjSize = 64_p;
+    positive_int qoSeqLength = 20_p;
+    positive_int kvSeqLength = 20_p;
 
     ManagedFFStream managed_stream{};
     ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
@@ -29,17 +29,17 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     MHAPerDeviceState state = Kernels::MultiHeadAttention::init_kernel(
         managed_handle.raw_handle(),
         allocator,
-        /*num_samples=*/num_samples.unwrap_nonnegative(),
-        /*num_heads=*/num_heads.unwrap_nonnegative(),
-        /*qSize=*/qSize.unwrap_nonnegative(),
-        /*kSize=*/kSize.unwrap_nonnegative(),
-        /*vSize=*/vSize.unwrap_nonnegative(),
-        /*qProjSize=*/qProjSize.unwrap_nonnegative(),
-        /*kProjSize=*/kProjSize.unwrap_nonnegative(),
-        /*vProjSize=*/vProjSize.unwrap_nonnegative(),
-        /*oProjSize=*/oProjSize.unwrap_nonnegative(),
-        /*qoSeqLength=*/qoSeqLength.unwrap_nonnegative(),
-        /*kvSeqLength=*/kvSeqLength.unwrap_nonnegative(),
+        /*num_samples=*/num_samples.int_from_positive_int(),
+        /*num_heads=*/num_heads.int_from_positive_int(),
+        /*qSize=*/qSize.int_from_positive_int(),
+        /*kSize=*/kSize.int_from_positive_int(),
+        /*vSize=*/vSize.int_from_positive_int(),
+        /*qProjSize=*/qProjSize.int_from_positive_int(),
+        /*kProjSize=*/kProjSize.int_from_positive_int(),
+        /*vProjSize=*/vProjSize.int_from_positive_int(),
+        /*oProjSize=*/oProjSize.int_from_positive_int(),
+        /*qoSeqLength=*/qoSeqLength.int_from_positive_int(),
+        /*kvSeqLength=*/kvSeqLength.int_from_positive_int(),
         /*add_bias_kv=*/false);
 
     TensorShape query_shape = TensorShape{
@@ -59,7 +59,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         DataType::FLOAT,
     };
     TensorShape weight_shape = TensorShape{
-        TensorDims{FFOrdered{nonnegative_int{state.weightSize}}},
+        TensorDims{FFOrdered{positive_int{state.weightSize}}},
         DataType::FLOAT,
     };
 

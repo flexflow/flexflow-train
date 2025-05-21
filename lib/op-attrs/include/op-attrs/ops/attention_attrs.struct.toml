@@ -11,24 +11,24 @@ features = [
 ]
 
 includes = [
-  "utils/nonnegative_int/nonnegative_int.h",
+  "utils/positive_int/positive_int.h",
 ]
 
 [[fields]]
 name = "embed_dim"
-type = "::FlexFlow::nonnegative_int"
+type = "::FlexFlow::positive_int"
 
 [[fields]]
 name = "num_heads"
-type = "::FlexFlow::nonnegative_int"
+type = "::FlexFlow::positive_int"
 
 [[fields]]
 name = "kdim"
-type = "::FlexFlow::nonnegative_int"
+type = "::FlexFlow::positive_int"
 
 [[fields]]
 name = "vdim"
-type = "::FlexFlow::nonnegative_int"
+type = "::FlexFlow::positive_int"
 
 [[fields]]
 name = "dropout"

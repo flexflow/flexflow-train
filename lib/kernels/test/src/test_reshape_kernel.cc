@@ -14,7 +14,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     Allocator allocator = create_local_cuda_memory_allocator();
 
     TensorShape input_shape = TensorShape{
-        TensorDims{FFOrdered{100_n}},
+        TensorDims{FFOrdered{100_p}},
         DataType::FLOAT,
     };
     TensorShape output_shape = input_shape;

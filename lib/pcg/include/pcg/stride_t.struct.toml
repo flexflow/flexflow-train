@@ -10,9 +10,9 @@ features = [
 ]
 
 includes = [
-  "utils/nonnegative_int/nonnegative_int.h",
+  "utils/positive_int/positive_int.h",
 ]
 
 [[fields]]
 name = "unwrapped"
-type = "::FlexFlow::nonnegative_int"
+type = "::FlexFlow::positive_int"

@@ -10,37 +10,37 @@ namespace FlexFlow {
 
 DLRMConfig get_default_dlrm_config() {
   return DLRMConfig{
-      /*embedding_dim=*/64_n,
-      /*embedding_bag_size=*/1_n,
+      /*embedding_dim=*/64_p,
+      /*embedding_bag_size=*/1_p,
       /*embedding_size=*/
-      std::vector<nonnegative_int>{
-          1000000_n,
-          1000000_n,
-          1000000_n,
-          1000000_n,
+      std::vector<positive_int>{
+          1000000_p,
+          1000000_p,
+          1000000_p,
+          1000000_p,
       },
       /*dense_arch_layer_sizes=*/
-      std::vector<nonnegative_int>{
-          4_n,
-          64_n,
-          64_n,
+      std::vector<positive_int>{
+          4_p,
+          64_p,
+          64_p,
       },
       /*over_arch_layer_sizes=*/
-      std::vector<nonnegative_int>{
-          64_n,
-          64_n,
-          2_n,
+      std::vector<positive_int>{
+          64_p,
+          64_p,
+          2_p,
       },
       /*arch_interaction_op=*/DLRMArchInteractionOp::CAT,
-      /*batch_size=*/64_n,
-      /*seed=*/std::rand(),
+      /*batch_size=*/64_p,
+      /*seed=*/0,
   };
 }
 
 tensor_guid_t create_dlrm_mlp(ComputationGraphBuilder &cgb,
                               DLRMConfig const &config,
                               tensor_guid_t const &input,
-                              std::vector<nonnegative_int> const &mlp_layers) {
+                              std::vector<positive_int> const &mlp_layers) {
   tensor_guid_t t = input;
 
   // Refer to
@@ -76,8 +76,8 @@ tensor_guid_t create_dlrm_mlp(ComputationGraphBuilder &cgb,
 tensor_guid_t create_dlrm_sparse_embedding_network(ComputationGraphBuilder &cgb,
                                                    DLRMConfig const &config,
                                                    tensor_guid_t const &input,
-                                                   nonnegative_int input_dim,
-                                                   nonnegative_int output_dim) {
+                                                   positive_int input_dim,
+                                                   positive_int output_dim) {
   float range = sqrt(1.0f / input_dim);
   InitializerAttrs embed_initializer = InitializerAttrs{UniformInitializerAttrs{
       /*seed=*/config.seed,
@@ -116,7 +116,7 @@ tensor_guid_t create_dlrm_interact_features(
 ComputationGraph get_dlrm_computation_graph(DLRMConfig const &config) {
   ComputationGraphBuilder cgb;
 
-  auto create_input_tensor = [&](FFOrdered<nonnegative_int> const &dims,
+  auto create_input_tensor = [&](FFOrdered<positive_int> const &dims,
                                  DataType const &data_type) -> tensor_guid_t {
     TensorShape input_shape = TensorShape{
         TensorDims{dims},
@@ -145,7 +145,7 @@ ComputationGraph get_dlrm_computation_graph(DLRMConfig const &config) {
 
   std::vector<tensor_guid_t> emb_outputs = transform(
       zip(config.embedding_size, sparse_inputs),
-      [&](std::pair<nonnegative_int, tensor_guid_t> const &combined_pair)
+      [&](std::pair<positive_int, tensor_guid_t> const &combined_pair)
           -> tensor_guid_t {
         return create_dlrm_sparse_embedding_network(
             /*cgb=*/cgb,

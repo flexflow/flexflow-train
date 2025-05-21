@@ -74,8 +74,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
-  nonnegative_int length = input.shape.at(legion_dim_t{0_n});
-  nonnegative_int batch_size = input.shape.get_volume() / length;
+  positive_int length = input.shape.at(legion_dim_t{0_n});
+  positive_int batch_size = positive_int{input.shape.num_elements() / length};
   auto indices = acc.get_tensor<Permissions::WO>(INDICES);
 
   return profile(forward_kernel,
@@ -85,9 +85,9 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
                  input.get_float_ptr(),
                  output.get_float_ptr(),
                  indices.get_int32_ptr(),
-                 batch_size.unwrap_nonnegative(),
-                 length.unwrap_nonnegative(),
-                 attrs.k.unwrap_nonnegative(),
+                 batch_size.int_from_positive_int(),
+                 length.int_from_positive_int(),
+                 attrs.k.int_from_positive_int(),
                  attrs.sorted);
 }
 
@@ -103,8 +103,8 @@ static std::optional<float>
 
   auto indices = acc.get_tensor<Permissions::RO>(INDICES);
 
-  nonnegative_int length = input_grad.shape.at(legion_dim_t{0_n});
-  nonnegative_int batch_size = input_grad.shape.get_volume() / length;
+  positive_int length = input_grad.shape.at(legion_dim_t{0_n});
+  positive_int batch_size = positive_int{input_grad.shape.num_elements() / length};
 
   return profile(backward_kernel,
                  profiling,
@@ -113,9 +113,9 @@ static std::optional<float>
                  output_grad.get_float_ptr(),
                  indices.get_int32_ptr(),
                  input_grad.get_float_ptr(),
-                 batch_size.unwrap_nonnegative(),
-                 length.unwrap_nonnegative(),
-                 attrs.k.unwrap_nonnegative());
+                 batch_size.int_from_positive_int(),
+                 length.int_from_positive_int(),
+                 attrs.k.int_from_positive_int());
 }
 
 TaskImplFunction get_topk_init_task_impl() {

@@ -15,7 +15,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         create_1d_accessor_r_with_contents<int32_t>({1, 3, 2}, cpu_allocator);
 
     TensorShape result_shape = TensorShape{
-        TensorDims{FFOrdered{3_n}},
+        TensorDims{FFOrdered{3_p}},
         DataType::INT32,
     };
     GenericTensorAccessorW result =
@@ -45,7 +45,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         {1 + 2 + 3, 4 + 3 + 3, 1 + 3 + 5}, cpu_allocator);
 
     TensorShape result_shape = TensorShape{
-        TensorDims{FFOrdered{3_n}},
+        TensorDims{FFOrdered{3_p}},
         DataType::INT32,
     };
     GenericTensorAccessorW result =

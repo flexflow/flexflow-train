@@ -65,8 +65,8 @@ static DeviceSpecificDeviceStates
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto weight = acc.get_tensor<Permissions::RO>(WEIGHT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
-  nonnegative_int out_dim = output.shape.at(ff_dim_t{0_n});
-  nonnegative_int batch_size = output.shape.at(ff_dim_t{1_n});
+  positive_int out_dim = output.shape.at(ff_dim_t{0_n});
+  positive_int batch_size = output.shape.at(ff_dim_t{1_n});
 
   float *one_ptr;
 
@@ -79,8 +79,8 @@ static DeviceSpecificDeviceStates
                   input.data_type,
                   weight.data_type,
                   output.data_type,
-                  batch_size.unwrap_nonnegative(),
-                  attrs.out_channels.unwrap_nonnegative());
+                  batch_size.int_from_positive_int(),
+                  attrs.out_channels.int_from_positive_int());
   return DeviceSpecificDeviceStates{
       DeviceSpecific<LinearPerDeviceState>::create(per_device_state)};
 }
@@ -95,9 +95,9 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   auto attrs = acc.get_argument<LinearAttrs>(ATTRS);
 
-  nonnegative_int in_dim = input.shape.at(ff_dim_t{0_n});
-  nonnegative_int out_dim = output.shape.at(ff_dim_t{0_n});
-  nonnegative_int batch_size = output.shape.get_volume() / out_dim;
+  positive_int in_dim = input.shape.at(ff_dim_t{0_n});
+  positive_int out_dim = output.shape.at(ff_dim_t{0_n});
+  positive_int batch_size = positive_int{output.shape.num_elements() / out_dim};
 
   float const *bias_ptr = NULL;
   if (attrs.use_bias) {
@@ -113,9 +113,9 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
                  output.get_float_ptr(),
                  weight.get_float_ptr(),
                  bias_ptr,
-                 in_dim.unwrap_nonnegative(),
-                 out_dim.unwrap_nonnegative(),
-                 batch_size.unwrap_nonnegative());
+                 in_dim.int_from_positive_int(),
+                 out_dim.int_from_positive_int(),
+                 batch_size.int_from_positive_int());
 }
 
 static std::optional<float>
@@ -139,9 +139,9 @@ static std::optional<float>
     bias_grad_ptr = bias_grad.get_float_ptr();
   }
 
-  nonnegative_int in_dim = input.shape.at(ff_dim_t{0_n});
-  nonnegative_int out_dim = output.shape.at(ff_dim_t{0_n});
-  nonnegative_int batch_size = output.shape.get_volume() / out_dim;
+  positive_int in_dim = input.shape.at(ff_dim_t{0_n});
+  positive_int out_dim = output.shape.at(ff_dim_t{0_n});
+  positive_int batch_size = positive_int{output.shape.num_elements() / out_dim};
 
   return profile(backward_kernel,
                  profiling,
@@ -154,9 +154,9 @@ static std::optional<float>
                  weight.get_float_ptr(),
                  weight_grad.get_float_ptr(),
                  bias_grad_ptr,
-                 in_dim.unwrap_nonnegative(),
-                 out_dim.unwrap_nonnegative(),
-                 batch_size.unwrap_nonnegative());
+                 in_dim.int_from_positive_int(),
+                 out_dim.int_from_positive_int(),
+                 batch_size.int_from_positive_int());
 }
 
 TaskImplFunction get_linear_init_task_impl() {

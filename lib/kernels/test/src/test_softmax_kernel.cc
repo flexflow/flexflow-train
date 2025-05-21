@@ -21,7 +21,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     Allocator allocator = create_local_cuda_memory_allocator();
 
     TensorShape input_shape = TensorShape{
-        TensorDims{FFOrdered{100_n}},
+        TensorDims{FFOrdered{100_p}},
         DataType::FLOAT,
     };
     TensorShape output_shape = input_shape;
@@ -59,7 +59,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           managed_stream.raw_stream(),
           output_grad_accessor.get_float_ptr(),
           input_grad_accessor.get_float_ptr(),
-          output_grad_accessor.shape.num_elements().unwrap_nonnegative());
+          output_grad_accessor.shape.num_elements().int_from_positive_int());
 
       CHECK(contains_non_zero(input_grad_accessor));
     }

@@ -75,10 +75,10 @@ static DeviceSpecificDeviceStates
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   auto const &attrs = acc.get_argument<BatchNormAttrs>(ATTRS);
 
-  nonnegative_int output_w = output.shape.at(legion_dim_t{0_n});
-  nonnegative_int output_h = output.shape.at(legion_dim_t{1_n});
-  nonnegative_int output_c = output.shape.at(legion_dim_t{2_n});
-  nonnegative_int output_n = output.shape.at(legion_dim_t{3_n});
+  positive_int output_w = output.shape.at(legion_dim_t{0_n});
+  positive_int output_h = output.shape.at(legion_dim_t{1_n});
+  positive_int output_c = output.shape.at(legion_dim_t{2_n});
+  positive_int output_n = output.shape.at(legion_dim_t{3_n});
 
   float *runningMean;
 
@@ -86,10 +86,10 @@ static DeviceSpecificDeviceStates
       init_kernel(handle,
                   allocator,
                   runningMean,
-                  output_n.unwrap_nonnegative(),
-                  output_c.unwrap_nonnegative(),
-                  output_h.unwrap_nonnegative(),
-                  output_w.unwrap_nonnegative(),
+                  output_n.int_from_positive_int(),
+                  output_c.int_from_positive_int(),
+                  output_h.int_from_positive_int(),
+                  output_w.int_from_positive_int(),
                   attrs.relu);
 
   return DeviceSpecificDeviceStates{
@@ -141,7 +141,7 @@ static std::optional<float>
                  scale.get_float_ptr(),
                  scale_grad.get_float_ptr(),
                  bias_grad.get_float_ptr(),
-                 output.shape.get_volume().unwrap_nonnegative());
+                 output.shape.num_elements().int_from_positive_int());
 }
 
 TaskImplFunction get_batch_norm_init_task_impl() {

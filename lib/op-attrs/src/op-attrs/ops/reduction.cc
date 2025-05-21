@@ -29,7 +29,10 @@ tl::expected<ParallelTensorShape, std::string>
   }
 
   ParallelTensorShape output_shape = input_shape;
-  output_shape.dims.replica_dims.sum_degree.value /= attrs.reduction_degree;
+  
+  output_shape.dims.replica_dims.sum_degree.value = positive_int{
+    output_shape.dims.replica_dims.sum_degree.value / attrs.reduction_degree
+  };
   return output_shape;
 }
 

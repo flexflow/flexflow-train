@@ -42,32 +42,32 @@ static DeviceSpecificDeviceStates
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
-  nonnegative_int input_w = input.shape.at(ff_dim_t{0_n});
-  nonnegative_int input_h = input.shape.at(ff_dim_t{1_n});
-  nonnegative_int input_c = input.shape.at(ff_dim_t{2_n});
-  nonnegative_int input_n = input.shape.at(ff_dim_t{3_n});
-  nonnegative_int output_w = output.shape.at(ff_dim_t{0_n});
-  nonnegative_int output_h = output.shape.at(ff_dim_t{1_n});
-  nonnegative_int output_c = output.shape.at(ff_dim_t{2_n});
-  nonnegative_int output_n = output.shape.at(ff_dim_t{3_n});
+  positive_int input_w = input.shape.at(ff_dim_t{0_n});
+  positive_int input_h = input.shape.at(ff_dim_t{1_n});
+  positive_int input_c = input.shape.at(ff_dim_t{2_n});
+  positive_int input_n = input.shape.at(ff_dim_t{3_n});
+  positive_int output_w = output.shape.at(ff_dim_t{0_n});
+  positive_int output_h = output.shape.at(ff_dim_t{1_n});
+  positive_int output_c = output.shape.at(ff_dim_t{2_n});
+  positive_int output_n = output.shape.at(ff_dim_t{3_n});
 
   Pool2DPerDeviceState per_device_state =
       init_kernel(handle,
                   attrs.activation,
-                  input_w.unwrap_nonnegative(),
-                  input_h.unwrap_nonnegative(),
-                  input_c.unwrap_nonnegative(),
-                  input_n.unwrap_nonnegative(),
-                  output_w.unwrap_nonnegative(),
-                  output_h.unwrap_nonnegative(),
-                  output_c.unwrap_nonnegative(),
-                  output_n.unwrap_nonnegative(),
+                  input_w.int_from_positive_int(),
+                  input_h.int_from_positive_int(),
+                  input_c.int_from_positive_int(),
+                  input_n.int_from_positive_int(),
+                  output_w.int_from_positive_int(),
+                  output_h.int_from_positive_int(),
+                  output_c.int_from_positive_int(),
+                  output_n.int_from_positive_int(),
                   attrs.padding_h.unwrap_nonnegative(),
                   attrs.padding_w.unwrap_nonnegative(),
-                  attrs.kernel_h.unwrap_nonnegative(),
-                  attrs.kernel_w.unwrap_nonnegative(),
-                  attrs.stride_h.unwrap_nonnegative(),
-                  attrs.stride_w.unwrap_nonnegative(),
+                  attrs.kernel_h.int_from_positive_int(),
+                  attrs.kernel_w.int_from_positive_int(),
+                  attrs.stride_h.int_from_positive_int(),
+                  attrs.stride_w.int_from_positive_int(),
                   attrs.pool_type);
 
   return DeviceSpecificDeviceStates{

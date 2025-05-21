@@ -9,25 +9,25 @@ using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("make_adaptive_pool2d") {
-    nonnegative_int input_n = 10_n;
-    nonnegative_int input_c = 11_n;
-    nonnegative_int input_h = 15_n;
-    nonnegative_int input_w = 20_n;
+    positive_int input_n = 10_p;
+    positive_int input_c = 11_p;
+    positive_int input_h = 15_p;
+    positive_int input_w = 20_p;
     Activation activation = Activation::RELU;
     PoolOp op = PoolOp::AVG;
 
     TensorDims input_dims = TensorDims{
-        FFOrdered<nonnegative_int>{input_n, input_c, input_h, input_w}};
+        FFOrdered{input_n, input_c, input_h, input_w}};
 
     SUBCASE("input_h divisible by output_h && input_w divisible by output_w") {
-      nonnegative_int output_h = 5_n;
-      nonnegative_int output_w = 2_n;
+      positive_int output_h = 5_p;
+      positive_int output_w = 2_p;
 
       Pool2DAttrs correct_attrs = Pool2DAttrs{
-          /*kernel_h=*/3_n,
-          /*kernel_w=*/10_n,
-          /*stride_h=*/3_n,
-          /*stride_w=*/10_n,
+          /*kernel_h=*/3_p,
+          /*kernel_w=*/10_p,
+          /*stride_h=*/3_p,
+          /*stride_w=*/10_p,
           /*padding_h=*/0_n,
           /*padding_w=*/0_n,
           /*pool_type=*/op,
@@ -50,7 +50,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         tl::expected<TensorShape, std::string> result =
             get_output_shape(correct_attrs, input_shape);
         tl::expected<TensorShape, std::string> correct = TensorShape{
-            TensorDims{FFOrdered<nonnegative_int>{
+            TensorDims{FFOrdered{
                 input_n,
                 input_c,
                 output_h,
@@ -64,8 +64,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("input_h not divisible by output_h") {
-      nonnegative_int output_h = 6_n;
-      nonnegative_int output_w = 2_n;
+      positive_int output_h = 6_p;
+      positive_int output_w = 2_p;
 
       std::optional<Pool2DAttrs> result =
           optional_from_expected(make_adaptive_pool2d_attrs(
@@ -76,8 +76,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("input_w not divisible by output_w") {
-      nonnegative_int output_h = 5_n;
-      nonnegative_int output_w = 3_n;
+      positive_int output_h = 5_p;
+      positive_int output_w = 3_p;
 
       std::optional<Pool2DAttrs> result =
           optional_from_expected(make_adaptive_pool2d_attrs(
@@ -88,14 +88,14 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("input_h == output_h and input_w == output_w") {
-      nonnegative_int output_h = input_h;
-      nonnegative_int output_w = input_w;
+      positive_int output_h = input_h;
+      positive_int output_w = input_w;
 
       Pool2DAttrs correct_attrs = Pool2DAttrs{
-          /*kernel_h=*/1_n,
-          /*kernel_w=*/1_n,
-          /*stride_h=*/1_n,
-          /*stride_w=*/1_n,
+          /*kernel_h=*/1_p,
+          /*kernel_w=*/1_p,
+          /*stride_h=*/1_p,
+          /*stride_w=*/1_p,
           /*padding_h=*/0_n,
           /*padding_w=*/0_n,
           /*pool_type=*/op,
@@ -126,10 +126,10 @@ TEST_SUITE(FF_TEST_SUITE) {
 
   TEST_CASE("get_output_shape(Pool2DAttrs, TensorShape)") {
     Pool2DAttrs attrs = Pool2DAttrs{
-        /*kernel_h=*/3_n,
-        /*kernel_w=*/2_n,
-        /*stride_h=*/2_n,
-        /*stride_w=*/2_n,
+        /*kernel_h=*/3_p,
+        /*kernel_w=*/2_p,
+        /*stride_h=*/2_p,
+        /*stride_w=*/2_p,
         /*padding_h=*/1_n,
         /*padding_w=*/1_n,
         /*pool_type=*/PoolOp::MAX,
@@ -138,10 +138,10 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("fails on non-4d inputs") {
       TensorShape input = TensorShape{
-          TensorDims{FFOrdered<nonnegative_int>{
-              10_n,
-              12_n,
-              14_n,
+          TensorDims{FFOrdered{
+              10_p,
+              12_p,
+              14_p,
           }},
           DataType::FLOAT,
       };
@@ -155,14 +155,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("4d input") {
       TensorShape input = TensorShape{
-          TensorDims{FFOrdered<nonnegative_int>{11_n, 13_n, 12_n, 6_n}},
+          TensorDims{FFOrdered{11_p, 13_p, 12_p, 6_p}},
           DataType::FLOAT,
       };
 
       tl::expected<TensorShape, std::string> result =
           get_output_shape(attrs, input);
       tl::expected<TensorShape, std::string> correct = TensorShape{
-          TensorDims{FFOrdered<nonnegative_int>{11_n, 13_n, 6_n, 4_n}},
+          TensorDims{FFOrdered{11_p, 13_p, 6_p, 4_p}},
           DataType::FLOAT,
       };
 
@@ -175,10 +175,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     auto make_attrs = [](PoolOp pool_type,
                          std::optional<Activation> const &activation) {
       return Pool2DAttrs{
-          /*kernel_h=*/3_n,
-          /*kernel_w=*/2_n,
-          /*stride_h=*/2_n,
-          /*stride_w=*/2_n,
+          /*kernel_h=*/3_p,
+          /*kernel_w=*/2_p,
+          /*stride_h=*/2_p,
+          /*stride_w=*/2_p,
           /*padding_h=*/1_n,
           /*padding_w=*/1_n,
           /*pool_type=*/pool_type,
@@ -190,13 +190,13 @@ TEST_SUITE(FF_TEST_SUITE) {
       Pool2DAttrs attrs = make_attrs(PoolOp::MAX, /*activation=*/std::nullopt);
 
       ParallelTensorDimDegrees input = ParallelTensorDimDegrees{
-          SumDegree{1_n},
-          DiscardCopyDegree{1_n},
-          FFOrdered<nonnegative_int>{
-              4_n,
-              1_n,
-              1_n,
-              1_n,
+          SumDegree{1_p},
+          DiscardCopyDegree{1_p},
+          FFOrdered{
+              4_p,
+              1_p,
+              1_p,
+              1_p,
           },
       };
 
@@ -211,13 +211,13 @@ TEST_SUITE(FF_TEST_SUITE) {
       Pool2DAttrs attrs = make_attrs(PoolOp::MAX, /*activation=*/std::nullopt);
 
       ParallelTensorDimDegrees input = ParallelTensorDimDegrees{
-          SumDegree{1_n},
-          DiscardCopyDegree{1_n},
-          FFOrdered<nonnegative_int>{
-              4_n,
-              2_n,
-              5_n,
-              6_n,
+          SumDegree{1_p},
+          DiscardCopyDegree{1_p},
+          FFOrdered{
+              4_p,
+              2_p,
+              5_p,
+              6_p,
           },
       };
 
@@ -232,13 +232,13 @@ TEST_SUITE(FF_TEST_SUITE) {
       Pool2DAttrs attrs = make_attrs(PoolOp::MAX, /*activation=*/std::nullopt);
 
       ParallelTensorDimDegrees input = ParallelTensorDimDegrees{
-          SumDegree{1_n},
-          DiscardCopyDegree{3_n},
-          FFOrdered<nonnegative_int>{
-              1_n,
-              1_n,
-              1_n,
-              1_n,
+          SumDegree{1_p},
+          DiscardCopyDegree{3_p},
+          FFOrdered{
+              1_p,
+              1_p,
+              1_p,
+              1_p,
           },
       };
 
@@ -256,13 +256,13 @@ TEST_SUITE(FF_TEST_SUITE) {
               make_attrs(PoolOp::MAX, /*activation=*/std::nullopt);
 
           ParallelTensorDimDegrees input = ParallelTensorDimDegrees{
-              SumDegree{2_n},
-              DiscardCopyDegree{1_n},
-              FFOrdered<nonnegative_int>{
-                  1_n,
-                  1_n,
-                  1_n,
-                  1_n,
+              SumDegree{2_p},
+              DiscardCopyDegree{1_p},
+              FFOrdered{
+                  1_p,
+                  1_p,
+                  1_p,
+                  1_p,
               },
           };
 
@@ -279,13 +279,13 @@ TEST_SUITE(FF_TEST_SUITE) {
               make_attrs(PoolOp::AVG, /*activation=*/std::nullopt);
 
           ParallelTensorDimDegrees input = ParallelTensorDimDegrees{
-              SumDegree{2_n},
-              DiscardCopyDegree{1_n},
-              FFOrdered<nonnegative_int>{
-                  1_n,
-                  1_n,
-                  1_n,
-                  1_n,
+              SumDegree{2_p},
+              DiscardCopyDegree{1_p},
+              FFOrdered{
+                  1_p,
+                  1_p,
+                  1_p,
+                  1_p,
               },
           };
 
@@ -302,13 +302,13 @@ TEST_SUITE(FF_TEST_SUITE) {
             make_attrs(PoolOp::AVG, /*activation=*/Activation::RELU);
 
         ParallelTensorDimDegrees input = ParallelTensorDimDegrees{
-            SumDegree{2_n},
-            DiscardCopyDegree{1_n},
-            FFOrdered<nonnegative_int>{
-                1_n,
-                1_n,
-                1_n,
-                1_n,
+            SumDegree{2_p},
+            DiscardCopyDegree{1_p},
+            FFOrdered{
+                1_p,
+                1_p,
+                1_p,
+                1_p,
             },
         };
 
@@ -326,10 +326,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     // just do a single test to make sure it works/exists
 
     Pool2DAttrs attrs = Pool2DAttrs{
-        /*kernel_h=*/3_n,
-        /*kernel_w=*/2_n,
-        /*stride_h=*/2_n,
-        /*stride_w=*/2_n,
+        /*kernel_h=*/3_p,
+        /*kernel_w=*/2_p,
+        /*stride_h=*/2_p,
+        /*stride_w=*/2_p,
         /*padding_h=*/1_n,
         /*padding_w=*/1_n,
         /*pool_type=*/PoolOp::MAX,
@@ -340,14 +340,14 @@ TEST_SUITE(FF_TEST_SUITE) {
       ParallelTensorShape input = ParallelTensorShape{
           ParallelTensorDims{
               FFOrdered<ShardParallelDim>{
-                  ShardParallelDim{14_n, 7_n},
-                  ShardParallelDim{16_n, 8_n},
-                  ShardParallelDim{12_n, 3_n},
-                  ShardParallelDim{6_n, 2_n},
+                  ShardParallelDim{14_p, 7_p},
+                  ShardParallelDim{16_p, 8_p},
+                  ShardParallelDim{12_p, 3_p},
+                  ShardParallelDim{6_p, 2_p},
               },
               ReplicaParallelDimSet{
-                  SumDegree{1_n},
-                  DiscardCopyDegree{2_n},
+                  SumDegree{1_p},
+                  DiscardCopyDegree{2_p},
               },
           },
           DataType::FLOAT,
@@ -359,14 +359,14 @@ TEST_SUITE(FF_TEST_SUITE) {
           ParallelTensorShape{
               ParallelTensorDims{
                   FFOrdered<ShardParallelDim>{
-                      ShardParallelDim{14_n, 7_n},
-                      ShardParallelDim{16_n, 8_n},
-                      ShardParallelDim{6_n, 3_n},
-                      ShardParallelDim{4_n, 2_n},
+                      ShardParallelDim{14_p, 7_p},
+                      ShardParallelDim{16_p, 8_p},
+                      ShardParallelDim{6_p, 3_p},
+                      ShardParallelDim{4_p, 2_p},
                   },
                   ReplicaParallelDimSet{
-                      SumDegree{1_n},
-                      DiscardCopyDegree{2_n},
+                      SumDegree{1_p},
+                      DiscardCopyDegree{2_p},
                   },
               },
               DataType::FLOAT,
@@ -377,14 +377,14 @@ TEST_SUITE(FF_TEST_SUITE) {
       ParallelTensorShape input = ParallelTensorShape{
           ParallelTensorDims{
               FFOrdered<ShardParallelDim>{
-                  ShardParallelDim{14_n, 1_n},
-                  ShardParallelDim{16_n, 1_n},
-                  ShardParallelDim{12_n, 1_n},
-                  ShardParallelDim{6_n, 1_n},
+                  ShardParallelDim{14_p, 1_p},
+                  ShardParallelDim{16_p, 1_p},
+                  ShardParallelDim{12_p, 1_p},
+                  ShardParallelDim{6_p, 1_p},
               },
               ReplicaParallelDimSet{
-                  SumDegree{2_n},
-                  DiscardCopyDegree{1_n},
+                  SumDegree{2_p},
+                  DiscardCopyDegree{1_p},
               },
           },
           DataType::FLOAT,

@@ -13,11 +13,11 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     nonnegative_int num_replicas = 10_n;
 
     TensorShape input_shape = TensorShape{
-        TensorDims{FFOrdered{3_n}},
+        TensorDims{FFOrdered{3_p}},
         DataType::FLOAT,
     };
     TensorShape output_shape = TensorShape{
-        TensorDims{FFOrdered{3_n}},
+        TensorDims{FFOrdered{3_p}},
         DataType::FLOAT,
     };
 
@@ -73,14 +73,14 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
   }
 
   TEST_CASE("Check Replicate Forward and Backward Kernel against CPU Kernel") {
-    nonnegative_int num_replicas = 2_n;
+    positive_int num_replicas = 2_p;
 
     TensorShape input_shape = TensorShape{
-        TensorDims{FFOrdered{5_n}},
+        TensorDims{FFOrdered{5_p}},
         DataType::FLOAT,
     };
     TensorShape output_shape = TensorShape{
-        TensorDims{FFOrdered{5_n, num_replicas}},
+        TensorDims{FFOrdered{5_p, num_replicas}},
         DataType::FLOAT,
     };
 
@@ -129,7 +129,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       Kernels::Replicate::backward_kernel(managed_stream.raw_stream(),
                                           output_grad_accessor_gpu,
                                           input_grad_accessor_gpu,
-                                          num_replicas.unwrap_nonnegative());
+                                          num_replicas.int_from_positive_int());
 
       // Run CPU Replicate Backward Kernel
       GenericTensorAccessorR output_grad_accessor_cpu =
@@ -140,7 +140,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       Kernels::Replicate::cpu_backward_kernel(
           output_grad_accessor_cpu,
           input_grad_accessor_cpu,
-          num_replicas.unwrap_nonnegative());
+          num_replicas.int_from_positive_int());
 
       CHECK_MESSAGE(
           accessors_are_equal(input_grad_accessor_gpu, input_grad_accessor_cpu),

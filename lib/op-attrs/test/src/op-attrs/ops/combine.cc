@@ -10,14 +10,14 @@ TEST_SUITE(FF_TEST_SUITE) {
     ParallelTensorShape input = ParallelTensorShape{
         ParallelTensorDims{
             FFOrdered<ShardParallelDim>{
-                ShardParallelDim{12_n, 2_n},
-                ShardParallelDim{14_n, 1_n},
-                ShardParallelDim{16_n, 3_n},
-                ShardParallelDim{18_n, 2_n},
+                ShardParallelDim{12_p, 2_p},
+                ShardParallelDim{14_p, 1_p},
+                ShardParallelDim{16_p, 3_p},
+                ShardParallelDim{18_p, 2_p},
             },
             ReplicaParallelDimSet{
-                SumDegree{3_n},
-                DiscardCopyDegree{2_n},
+                SumDegree{3_p},
+                DiscardCopyDegree{2_p},
             },
         },
         DataType::FLOAT,
@@ -25,7 +25,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("valid") {
       ff_dim_t dim = ff_dim_t{2_n};
-      nonnegative_int degree = 3_n;
+      positive_int degree = 3_p;
       CombineAttrs attrs = CombineAttrs{
           /*repartition_dim=*/dim,
           /*repartition_degree=*/degree,
@@ -36,7 +36,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       tl::expected<ParallelTensorShape, std::string> correct = [&] {
         ParallelTensorShape output = input;
-        output.dims.shard_dims.at(dim).degree /= degree;
+        positive_int old_shard_degree = output.dims.shard_dims.at(dim).degree;
+        output.dims.shard_dims.at(dim).degree = positive_int{old_shard_degree / degree};
         return output;
       }();
 
@@ -45,7 +46,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("invalid") {
       ff_dim_t dim = ff_dim_t{2_n};
-      nonnegative_int degree = 4_n;
+      positive_int degree = 4_p;
       CombineAttrs attrs = CombineAttrs{
           /*repartition_dim=*/dim,
           /*repartition_degree=*/degree,

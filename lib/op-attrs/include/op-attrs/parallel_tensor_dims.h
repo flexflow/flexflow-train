@@ -9,7 +9,7 @@
 namespace FlexFlow {
 
 FFOrdered<ShardParallelDim> ff_ordered_shard_dims(ParallelTensorDims const &);
-FFOrdered<nonnegative_int> ff_ordered_shard_degrees(ParallelTensorDims const &);
+FFOrdered<positive_int> ff_ordered_shard_degrees(ParallelTensorDims const &);
 std::unordered_set<ReplicaParallelDim> replica_dims(ParallelTensorDims const &);
 
 /* size_t get_volume(ParallelTensorDims const &); */
@@ -22,14 +22,14 @@ ParallelTensorDims lift_to_parallel_with_degrees(
     TensorDims const &,
     SumDegree const &,
     DiscardCopyDegree const &,
-    FFOrdered<nonnegative_int> const &shard_degrees);
+    FFOrdered<positive_int> const &shard_degrees);
 ParallelTensorDims
     lift_to_parallel_with_degrees(TensorDims const &,
                                   ParallelTensorDimDegrees const &);
 
-nonnegative_int total_replica_degree(ParallelTensorDims const &);
-nonnegative_int total_shard_degree(ParallelTensorDims const &);
-nonnegative_int total_parallel_degree(ParallelTensorDims const &);
+positive_int total_replica_degree(ParallelTensorDims const &);
+positive_int total_shard_degree(ParallelTensorDims const &);
+positive_int total_parallel_degree(ParallelTensorDims const &);
 
 ShardParallelDim shard_dim_at_idx(ParallelTensorDims const &,
                                   relative_ff_dim_t);

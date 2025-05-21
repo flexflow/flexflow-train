@@ -4,7 +4,7 @@
 #include "op-attrs/datatype.dtg.h"
 #include "utils/fmt.h"
 #include "utils/fp16.h"
-#include "utils/nonnegative_int/nonnegative_int.h"
+#include "utils/positive_int/positive_int.h"
 #include <variant>
 
 namespace FlexFlow {
@@ -40,7 +40,7 @@ template <typename T>
 struct type_to_data_type_enum;
 
 template <>
-struct type_to_data_type_enum<DataType>
+struct type_to_data_type_enum<double>
   : std::integral_constant<DataType, DataType::DOUBLE> {};
 
 template <>
@@ -74,7 +74,7 @@ typename data_type_enum_to_class<DT>::type cast_to(T t) {
 template <DataType DT>
 using real_type_t = typename data_type_enum_to_class<DT>::type;
 
-nonnegative_int size_of_datatype(DataType);
+positive_int size_of_datatype(DataType);
 
 /**
  * @brief Maximally semantics-preserving casts, not including identity

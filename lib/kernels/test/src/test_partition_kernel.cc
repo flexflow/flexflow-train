@@ -19,7 +19,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         managed_handle.raw_handle(), DataType::FLOAT);
 
     TensorShape input_shape = TensorShape{
-        TensorDims{FFOrdered{10_n, 10_n}},
+        TensorDims{FFOrdered{10_p, 10_p}},
         DataType::FLOAT,
     };
     TensorShape output_shape = input_shape;

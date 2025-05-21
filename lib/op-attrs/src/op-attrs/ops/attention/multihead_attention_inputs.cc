@@ -31,9 +31,9 @@ tl::expected<MultiHeadAttentionInputs, std::string>
                     3));
   }
 
-  nonnegative_int seq_len_q = dim_at_idx(input_q, relative_ff_dim_t{-2});
-  nonnegative_int seq_len_k = dim_at_idx(input_k, relative_ff_dim_t{-2});
-  nonnegative_int seq_len_v = dim_at_idx(input_v, relative_ff_dim_t{-2});
+  positive_int seq_len_q = dim_at_idx(input_q, relative_ff_dim_t{-2});
+  positive_int seq_len_k = dim_at_idx(input_k, relative_ff_dim_t{-2});
+  positive_int seq_len_v = dim_at_idx(input_v, relative_ff_dim_t{-2});
 
   if (!all_same(seq_len_q, seq_len_k, seq_len_v)) {
     return tl::unexpected(fmt::format(
@@ -43,9 +43,9 @@ tl::expected<MultiHeadAttentionInputs, std::string>
         seq_len_v));
   }
 
-  nonnegative_int batch_size_q = dim_at_idx(input_q, relative_ff_dim_t{-3});
-  nonnegative_int batch_size_k = dim_at_idx(input_k, relative_ff_dim_t{-3});
-  nonnegative_int batch_size_v = dim_at_idx(input_v, relative_ff_dim_t{-3});
+  positive_int batch_size_q = dim_at_idx(input_q, relative_ff_dim_t{-3});
+  positive_int batch_size_k = dim_at_idx(input_k, relative_ff_dim_t{-3});
+  positive_int batch_size_v = dim_at_idx(input_v, relative_ff_dim_t{-3});
 
   if (!all_same(batch_size_q, batch_size_k, batch_size_v)) {
     return tl::unexpected(fmt::format(
@@ -63,9 +63,9 @@ tl::expected<MultiHeadAttentionInputs, std::string>
         input_v.data_type));
   }
 
-  nonnegative_int q_size = dim_at_idx(input_q, relative_ff_dim_t{-1});
-  nonnegative_int k_size = dim_at_idx(input_k, relative_ff_dim_t{-1});
-  nonnegative_int v_size = dim_at_idx(input_v, relative_ff_dim_t{-1});
+  positive_int q_size = dim_at_idx(input_q, relative_ff_dim_t{-1});
+  positive_int k_size = dim_at_idx(input_k, relative_ff_dim_t{-1});
+  positive_int v_size = dim_at_idx(input_v, relative_ff_dim_t{-1});
 
   return MultiHeadAttentionInputs{
       batch_size_q,

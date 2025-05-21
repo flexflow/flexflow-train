@@ -7,8 +7,8 @@ using namespace ::FlexFlow;
 
 TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test LayerNorm Forward and Backward Kernel") {
-    nonnegative_int batch_size = 10_n;
-    nonnegative_int feature_size = 10_n;
+    positive_int batch_size = 10_p;
+    positive_int feature_size = 10_p;
     float epsilon = 1e-5f;
     bool elementwise_affine = true;
 
@@ -34,8 +34,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         Kernels::LayerNorm::init_kernel(managed_handle.raw_handle(),
                                         allocator,
                                         elementwise_affine,
-                                        batch_size.unwrap_nonnegative(),
-                                        feature_size.unwrap_nonnegative(),
+                                        batch_size.int_from_positive_int(),
+                                        feature_size.int_from_positive_int(),
                                         epsilon);
 
     GenericTensorAccessorR input_accessor =

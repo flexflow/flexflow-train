@@ -128,15 +128,15 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::cast(
 
 parallel_tensor_guid_t ParallelComputationGraphBuilder::conv2d(
     parallel_tensor_guid_t const &raw_input,
-    nonnegative_int outChannels,
-    nonnegative_int kernelH,
-    nonnegative_int kernelW,
-    nonnegative_int strideH,
-    nonnegative_int strideW,
+    positive_int outChannels,
+    positive_int kernelH,
+    positive_int kernelW,
+    positive_int strideH,
+    positive_int strideW,
     nonnegative_int paddingH,
     nonnegative_int paddingW,
     std::optional<Activation> const &activation,
-    nonnegative_int groups,
+    positive_int groups,
     bool use_bias,
     std::optional<InitializerAttrs> const &maybe_kernel_initializer,
     std::optional<InitializerAttrs> const &maybe_bias_initializer,
@@ -176,7 +176,7 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::conv2d(
 
 parallel_tensor_guid_t ParallelComputationGraphBuilder::dense(
     parallel_tensor_guid_t const &input,
-    nonnegative_int outDim,
+    positive_int outDim,
     std::optional<Activation> activation,
     bool use_bias,
     DataType data_type,
@@ -209,8 +209,8 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::dense(
 
 parallel_tensor_guid_t ParallelComputationGraphBuilder::embedding(
     parallel_tensor_guid_t const &input,
-    nonnegative_int num_entries,
-    nonnegative_int outDim,
+    positive_int num_entries,
+    positive_int outDim,
     AggregateOp aggr,
     DataType dtype,
     std::optional<InitializerAttrs> const &maybe_kernel_initializer,
@@ -238,10 +238,10 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::multihead_attention(
     parallel_tensor_guid_t const &query,
     parallel_tensor_guid_t const &key,
     parallel_tensor_guid_t const &value,
-    nonnegative_int embed_dim,
-    nonnegative_int num_heads,
-    std::optional<nonnegative_int> maybe_kdim,
-    std::optional<nonnegative_int> maybe_vdim,
+    positive_int embed_dim,
+    positive_int num_heads,
+    std::optional<positive_int> maybe_kdim,
+    std::optional<positive_int> maybe_vdim,
     float dropout,
     bool bias,
     bool add_bias_kv,
@@ -251,8 +251,8 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::multihead_attention(
     std::optional<InitializerAttrs> maybe_output_bias_initializer,
     std::optional<std::string> const &maybe_name) {
 
-  nonnegative_int kdim = maybe_kdim.value_or(embed_dim);
-  nonnegative_int vdim = maybe_vdim.value_or(embed_dim);
+  positive_int kdim = maybe_kdim.value_or(embed_dim);
+  positive_int vdim = maybe_vdim.value_or(embed_dim);
 
   MultiHeadAttentionAttrs attrs = MultiHeadAttentionAttrs{
       /*embed_dim=*/embed_dim,
@@ -409,7 +409,7 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::elu(
 parallel_tensor_guid_t ParallelComputationGraphBuilder::parallel_partition(
     parallel_tensor_guid_t const &input,
     ff_dim_t dim,
-    nonnegative_int degree,
+    positive_int degree,
     std::optional<std::string> const &maybe_name) {
 
   RepartitionAttrs attrs = RepartitionAttrs{
@@ -428,7 +428,7 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::parallel_partition(
 parallel_tensor_guid_t ParallelComputationGraphBuilder::parallel_combine(
     parallel_tensor_guid_t const &input,
     ff_dim_t dim,
-    nonnegative_int degree,
+    positive_int degree,
     std::optional<std::string> const &maybe_name) {
 
   CombineAttrs attrs = CombineAttrs{
@@ -446,7 +446,7 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::parallel_combine(
 
 parallel_tensor_guid_t ParallelComputationGraphBuilder::parallel_replicate(
     parallel_tensor_guid_t const &input,
-    nonnegative_int degree,
+    positive_int degree,
     std::optional<std::string> const &maybe_name) {
 
   ReplicateAttrs attrs = ReplicateAttrs{degree};
@@ -461,7 +461,7 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::parallel_replicate(
 
 parallel_tensor_guid_t ParallelComputationGraphBuilder::parallel_reduce(
     parallel_tensor_guid_t const &input,
-    nonnegative_int degree,
+    positive_int degree,
     std::optional<std::string> const &maybe_name) {
 
   ReductionAttrs attrs = ReductionAttrs{degree};

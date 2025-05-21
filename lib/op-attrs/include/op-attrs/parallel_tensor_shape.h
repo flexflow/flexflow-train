@@ -17,7 +17,7 @@ ShardParallelDim shard_dim_at_idx(ParallelTensorShape const &,
                                   relative_ff_dim_t);
 ShardParallelDim &shard_dim_at_idx(ParallelTensorShape &, relative_ff_dim_t);
 
-FFOrdered<nonnegative_int>
+FFOrdered<positive_int>
     ff_ordered_shard_degrees(ParallelTensorShape const &);
 
 std::optional<ShardParallelDim>
@@ -30,7 +30,7 @@ ParallelTensorShape lift_to_parallel_with_degrees(
     TensorShape const &,
     SumDegree const &,
     DiscardCopyDegree const &,
-    FFOrdered<nonnegative_int> const &shard_degrees);
+    FFOrdered<positive_int> const &shard_degrees);
 ParallelTensorShape
     lift_to_parallel_with_degrees(TensorShape const &,
                                   ParallelTensorDimDegrees const &);
@@ -38,13 +38,13 @@ ParallelTensorShape
 std::unordered_set<ReplicaParallelDim>
     replica_dims(ParallelTensorShape const &);
 TensorShape get_piece_shape(ParallelTensorShape const &);
-nonnegative_int get_num_replica_dims(ParallelTensorShape const &);
-nonnegative_int get_num_replicas(ParallelTensorShape const &);
+positive_int get_num_replica_dims(ParallelTensorShape const &);
+positive_int get_num_replicas(ParallelTensorShape const &);
 
-nonnegative_int get_sum_degree(ParallelTensorShape const &);
-nonnegative_int get_discard_copy_degree(ParallelTensorShape const &);
+positive_int get_sum_degree(ParallelTensorShape const &);
+positive_int get_discard_copy_degree(ParallelTensorShape const &);
 
-nonnegative_int get_total_parallel_degree(ParallelTensorShape const &);
+positive_int get_total_parallel_degree(ParallelTensorShape const &);
 
 bool is_valid(ParallelTensorShape const &);
 

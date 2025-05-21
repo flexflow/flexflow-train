@@ -37,9 +37,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     InitializerAttrs zero_init = InitializerAttrs{ZeroInitializerAttrs{}};
 
     TensorShape input_shape = TensorShape{TensorDims{
-                                              FFOrdered<nonnegative_int>{
-                                                  10_n,
-                                                  12_n,
+                                              FFOrdered{
+                                                  10_p,
+                                                  12_p,
                                               },
                                           },
                                           DataType::FLOAT};
@@ -62,7 +62,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("single operator plus inputs and weights") {
       LinearAttrs linear_attrs = LinearAttrs{
-          /*out_channels=*/14_n,
+          /*out_channels=*/14_p,
           /*use_bias=*/true,
           /*data_type=*/DataType::FLOAT,
           /*activation=*/std::nullopt,
@@ -126,7 +126,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       //   op1     op2
 
       LinearAttrs linear_attrs = LinearAttrs{
-          /*out_channels=*/14_n,
+          /*out_channels=*/14_p,
           /*use_bias=*/false,
           /*data_type=*/DataType::FLOAT,
           /*activation=*/std::nullopt,
@@ -267,7 +267,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("real models") {
       SUBCASE("split_test") {
         ComputationGraph cg =
-            get_split_test_computation_graph(/*batch_size=*/8_n);
+            get_split_test_computation_graph(/*batch_size=*/8_p);
 
         std::optional<SeriesParallelDecomposition> sp_decomposition =
             get_computation_graph_series_parallel_decomposition(cg);
@@ -340,14 +340,14 @@ TEST_SUITE(FF_TEST_SUITE) {
         ComputationGraphBuilder b;
 
         TensorShape input_shape =
-            TensorShape{TensorDims{FFOrdered<nonnegative_int>{
-                            10_n,
-                            12_n,
+            TensorShape{TensorDims{FFOrdered{
+                            10_p,
+                            12_p,
                         }},
                         DataType::FLOAT};
         tensor_guid_t input = b.create_input(input_shape, CreateGrad::YES);
 
-        b.dense(input, /*outDim=*/14_n);
+        b.dense(input, /*outDim=*/14_p);
 
         return b.computation_graph;
       }();
@@ -358,7 +358,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("split_test") {
       ComputationGraph cg =
-          get_split_test_computation_graph(/*batch_size=*/8_n);
+          get_split_test_computation_graph(/*batch_size=*/8_p);
 
       std::string result =
           render_preprocessed_computation_graph_for_sp_decomposition(cg);
