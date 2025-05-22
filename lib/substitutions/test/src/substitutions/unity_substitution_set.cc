@@ -251,7 +251,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_tensor_guid_t t_projection_weight =
           get_only(projection_weight_added.outputs);
 
-          ParallelLayerAddedResult bias_added =
+      ParallelLayerAddedResult bias_added =
           add_parallel_layer(pcg, make_layer_attrs(bias_attrs), {}, {});
       parallel_tensor_guid_t t_bias = get_only(bias_added.outputs);
 
@@ -265,39 +265,39 @@ TEST_SUITE(FF_TEST_SUITE) {
     }();
 
     PCGPatternMatch match = [&] {
-        parallel_layer_guid_t match_layer =
-            get_parallel_layer_by_name(original_pcg, linear_match);
-        open_parallel_tensor_guid_t match_layer_input_activations =
-            get_layer_inputs(original_pcg, match_layer).at(0);
-        open_parallel_tensor_guid_t match_layer_input_weights =
-            get_layer_inputs(original_pcg, match_layer).at(1);
-            open_parallel_tensor_guid_t match_layer_input_bias =
-            get_layer_inputs(original_pcg, match_layer).at(2);
-  
-        return PCGPatternMatch{
-            bidict<PatternNode, parallel_layer_guid_t>{
-                {PatternNode{Node{0}}, match_layer},
-            },
-            std::unordered_map<PatternInput, open_parallel_tensor_guid_t>{
-                {
-                    PatternInput{DataflowGraphInput{0}},
-                    match_layer_input_activations,
-                },
-                {
-                    PatternInput{DataflowGraphInput{2}},
-                    match_layer_input_weights,
-                },
-                {
+      parallel_layer_guid_t match_layer =
+          get_parallel_layer_by_name(original_pcg, linear_match);
+      open_parallel_tensor_guid_t match_layer_input_activations =
+          get_layer_inputs(original_pcg, match_layer).at(0);
+      open_parallel_tensor_guid_t match_layer_input_weights =
+          get_layer_inputs(original_pcg, match_layer).at(1);
+      open_parallel_tensor_guid_t match_layer_input_bias =
+          get_layer_inputs(original_pcg, match_layer).at(2);
+
+      return PCGPatternMatch{
+          bidict<PatternNode, parallel_layer_guid_t>{
+              {PatternNode{Node{0}}, match_layer},
+          },
+          std::unordered_map<PatternInput, open_parallel_tensor_guid_t>{
+              {
+                  PatternInput{DataflowGraphInput{0}},
+                  match_layer_input_activations,
+              },
+              {
+                  PatternInput{DataflowGraphInput{2}},
+                  match_layer_input_weights,
+              },
+              {
                   PatternInput{DataflowGraphInput{4}},
                   match_layer_input_bias,
               }},
-        };
-      }();
+      };
+    }();
 
     SubParallelComputationGraph result =
         apply_substitution(original_pcg, sub, match);
 
-    /*SubParallelComputationGraph correct = [&] {
+    SubParallelComputationGraph correct = [&] {
       ParallelComputationGraph pcg = empty_parallel_computation_graph();
 
       ParallelLayerAddedResult input_added =
@@ -323,24 +323,20 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_tensor_guid_t t_partitioned_projection_weight =
           get_only(partition_projection_added.outputs);
 
-          ParallelLayerAddedResult bias_added = add_parallel_layer(
-            pcg, make_layer_attrs(bias_attrs), {}, {});
-        parallel_tensor_guid_t t_bias =
-            get_only(bias_added.outputs);
-  
-        ParallelLayerAddedResult partition_bias_added =
-            add_parallel_layer(pcg,
-                               make_layer_attrs(partition_projection_attrs),
-                               {t_bias},
-                               {});
-        parallel_tensor_guid_t t_partitioned_bias =
-            get_only(partition_bias_added.outputs);
+      ParallelLayerAddedResult bias_added =
+          add_parallel_layer(pcg, make_layer_attrs(bias_attrs), {}, {});
+      parallel_tensor_guid_t t_bias = get_only(bias_added.outputs);
 
-      ParallelLayerAddedResult replicate_linear_added =
-          add_parallel_layer(pcg,
-                             make_layer_attrs(linear_attrs),
-                             {t_replicated_input},
-                             {t_partitioned_projection_weight, t_partitioned_bias});
+      ParallelLayerAddedResult partition_bias_added = add_parallel_layer(
+          pcg, make_layer_attrs(partition_projection_attrs), {t_bias}, {});
+      parallel_tensor_guid_t t_partitioned_bias =
+          get_only(partition_bias_added.outputs);
+
+      ParallelLayerAddedResult replicate_linear_added = add_parallel_layer(
+          pcg,
+          make_layer_attrs(linear_attrs),
+          {t_replicated_input},
+          {t_partitioned_projection_weight, t_partitioned_bias});
       parallel_tensor_guid_t t_replicated_linear =
           get_only(replicate_linear_added.outputs);
 
@@ -351,7 +347,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       return sub_pcg_from_full_pcg(pcg);
     }();
 
-    CHECK(sub_pcgs_are_isomorphic(result, correct));*/
+    CHECK(sub_pcgs_are_isomorphic(result, correct));
   }
 
   TEST_CASE("create_partition_linear_combine, use_bias = false") {
