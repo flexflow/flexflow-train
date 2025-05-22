@@ -1,9 +1,9 @@
 #ifndef _FLEXFLOW_LOCAL_EXECUTION_TASK_ARGUMENT_ACCESSOR_H
 #define _FLEXFLOW_LOCAL_EXECUTION_TASK_ARGUMENT_ACCESSOR_H
 
+#include "kernels/per_device_op_state.dtg.h"
 #include "local-execution/device_specific.h"
 #include "local-execution/itask_argument_accessor.h"
-#include "local-execution/per_device_op_state.dtg.h"
 
 namespace FlexFlow {
 

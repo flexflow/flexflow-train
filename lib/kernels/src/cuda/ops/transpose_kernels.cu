@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/accessor.h"
+#include "kernels/legion_ordered/transform.h"
 #include "kernels/transpose_kernels.h"
-#include "op-attrs/dim_ordered/transform.h"
 #include "utils/exception.h"
 #include "utils/nonnegative_int/num_elements.h"
 
@@ -100,8 +100,8 @@ void forward_kernel(cudaStream_t stream,
 
 void backward_kernel(cudaStream_t stream,
                      TransposeAttrs const &m,
-                     GenericTensorAccessorW const &in_grad,
-                     GenericTensorAccessorR const &out_grad) {
+                     GenericTensorAccessorR const &out_grad,
+                     GenericTensorAccessorW const &in_grad) {
 
   TransposeStrides info;
   info.num_dim = in_grad.shape.num_dims().unwrap_nonnegative();
