@@ -69,7 +69,7 @@ struct positive_int {
   friend float &operator/=(float &lhs, positive_int rhs);
 
   nonnegative_int operator%(positive_int other) const;
-  nonnegative_int operator%(nonnegative_int other) const;
+  friend nonnegative_int operator%(nonnegative_int lhs, positive_int rhs);
 
   int int_from_positive_int() const;
   nonnegative_int nonnegative_int_from_positive_int() const;

@@ -215,8 +215,8 @@ nonnegative_int positive_int::operator%(positive_int other) const {
   return nonnegative_int{this->value_ % other.value_};
 }
 
-nonnegative_int positive_int::operator%(nonnegative_int other) const {
-  return nonnegative_int{this->value_ % other.unwrap_nonnegative()};
+nonnegative_int operator%(nonnegative_int lhs, positive_int rhs) {
+  return nonnegative_int{lhs.unwrap_nonnegative() % rhs.value_};
 }
 
 int positive_int::int_from_positive_int() const {
