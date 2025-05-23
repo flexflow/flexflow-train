@@ -12,15 +12,15 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         },
     };
 
-    ManagedPerDeviceFFHandle managed_handle{
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
         /*workSpaceSize=*/1024 * 1024,
-        /*allowTensorOpMathConversion=*/true};
+        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
     TensorShape input_shape = TensorShape{
-        TensorDims{FFOrdered{10_n, 10_n}},
+        TensorDims{FFOrdered{10_p, 10_p}},
         DataType::FLOAT,
     };
     TensorShape output_shape = input_shape;

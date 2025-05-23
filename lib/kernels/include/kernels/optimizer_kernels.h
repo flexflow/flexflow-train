@@ -43,6 +43,7 @@ void adam_ps_update_task_gpu(ffStream_t,
                              float *adam_v_ptr,
                              float *adam_m_ptr);
 
+#ifdef FF_USE_NCCL
 void adam_nccl_update_task_gpu(ffStream_t,
                                float alpha_t,
                                float beta1,
@@ -55,6 +56,7 @@ void adam_nccl_update_task_gpu(ffStream_t,
                                float *weight_ptr,
                                float *adam_v_ptr,
                                float *adam_m_ptr);
+#endif
 
 } // namespace FlexFlow
 

@@ -10,19 +10,19 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     float dropout_rate = 0.1;
 
     ArrayShape shape = ArrayShape{
-        std::vector{10_n, 10_n},
+        std::vector{10_p, 10_p},
     };
 
     TensorShape input_shape = TensorShape{
-        TensorDims{FFOrdered{10_n, 10_n}},
+        TensorDims{FFOrdered{10_p, 10_p}},
         DataType::FLOAT,
     };
     TensorShape output_shape = input_shape;
 
     ManagedFFStream managed_stream{};
-    ManagedPerDeviceFFHandle managed_handle{
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
         /*workSpaceSize=*/1024 * 1024,
-        /*allowTensorOpMathConversion=*/true};
+        /*allowTensorOpMathConversion=*/true);
 
     Allocator allocator = create_local_cuda_memory_allocator();
 

@@ -14,7 +14,7 @@ includes = [
   "op-attrs/activation.dtg.h",
   "op-attrs/regularizer_attrs.dtg.h",
   "<optional>",
-  "utils/nonnegative_int/nonnegative_int.h",
+  "utils/positive_int/positive_int.h",
 ]
 
 src_includes = [
@@ -25,7 +25,7 @@ src_includes = [
 
 [[fields]]
 name = "out_channels"
-type = "::FlexFlow::nonnegative_int"
+type = "::FlexFlow::positive_int"
 
 [[fields]]
 name = "use_bias"

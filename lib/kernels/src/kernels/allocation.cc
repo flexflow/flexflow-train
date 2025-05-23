@@ -18,7 +18,7 @@ DeviceType Allocator::get_allocation_device_type() const {
 GenericTensorAccessorW
     Allocator::allocate_tensor(TensorShape const &tensor_shape) {
   void *ptr =
-      this->allocate(get_size_in_bytes(tensor_shape).unwrap_nonnegative());
+      this->allocate(get_size_in_bytes(tensor_shape).int_from_positive_int());
   return GenericTensorAccessorW{
       tensor_shape.data_type,
       array_shape_from_tensor_shape(tensor_shape),

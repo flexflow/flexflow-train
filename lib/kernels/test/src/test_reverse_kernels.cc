@@ -8,14 +8,14 @@ using namespace ::FlexFlow;
 TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Call Reverse Forward and Backward Kernels") {
     TensorShape input_shape = TensorShape{
-        TensorDims{FFOrdered{1_n, 10_n, 10_n}},
+        TensorDims{FFOrdered{1_p, 10_p, 10_p}},
         DataType::FLOAT,
     };
     TensorShape output_shape = input_shape;
 
-    ManagedPerDeviceFFHandle managed_handle{
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
         /*workSpaceSize=*/1024 * 1024,
-        /*allowTensorOpMathConversion=*/true};
+        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
@@ -54,14 +54,14 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
   TEST_CASE("Check Reverse Forward and Backward Kernels against CPU Kernels") {
     TensorShape input_shape = TensorShape{
-        TensorDims{FFOrdered{1_n, 4_n, 3_n}},
+        TensorDims{FFOrdered{1_p, 4_p, 3_p}},
         DataType::FLOAT,
     };
     TensorShape output_shape = input_shape;
 
-    ManagedPerDeviceFFHandle managed_handle{
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
         /*workSpaceSize=*/1024 * 1024,
-        /*allowTensorOpMathConversion=*/true};
+        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
 
     Allocator gpu_allocator = create_local_cuda_memory_allocator();

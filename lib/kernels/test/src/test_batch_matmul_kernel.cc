@@ -6,18 +6,18 @@ using namespace ::FlexFlow;
 
 TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test BatchMatmul Kernel") {
-    nonnegative_int m = 10_n;
-    nonnegative_int n = 10_n;
-    nonnegative_int k = 10_n;
-    nonnegative_int batch = 5_n;
+    positive_int m = 10_p;
+    positive_int n = 10_p;
+    positive_int k = 10_p;
+    positive_int batch = 5_p;
     int a_seq_length_dim = -1;
     int b_seq_length_dim = -1;
     int seq_length = -1;
 
     ManagedFFStream managed_stream{};
-    ManagedPerDeviceFFHandle managed_handle{
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
         /*workSpaceSize=*/1024 * 1024,
-        /*allowTensorOpMathConversion=*/true};
+        /*allowTensorOpMathConversion=*/true);
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
@@ -47,10 +47,10 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                                            output_accessor.get_float_ptr(),
                                            a_accessor.get_float_ptr(),
                                            b_accessor.get_float_ptr(),
-                                           m.unwrap_nonnegative(),
-                                           n.unwrap_nonnegative(),
-                                           k.unwrap_nonnegative(),
-                                           batch.unwrap_nonnegative(),
+                                           m.int_from_positive_int(),
+                                           n.int_from_positive_int(),
+                                           k.int_from_positive_int(),
+                                           batch.int_from_positive_int(),
                                            a_seq_length_dim,
                                            b_seq_length_dim,
                                            seq_length);
@@ -72,10 +72,10 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                                             a_grad_accessor.get_float_ptr(),
                                             b_accessor.get_float_ptr(),
                                             b_grad_accessor.get_float_ptr(),
-                                            m.unwrap_nonnegative(),
-                                            n.unwrap_nonnegative(),
-                                            k.unwrap_nonnegative(),
-                                            batch.unwrap_nonnegative());
+                                            m.int_from_positive_int(),
+                                            n.int_from_positive_int(),
+                                            k.int_from_positive_int(),
+                                            batch.int_from_positive_int());
     }
   }
 }

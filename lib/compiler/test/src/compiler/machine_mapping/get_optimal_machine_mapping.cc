@@ -53,7 +53,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{1_n},
+                stride_t{1_p},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -68,24 +68,24 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{2_n},
+                stride_t{2_p},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
     };
 
     MachineSpecification full_machine_spec = MachineSpecification{
-        /*num_nodes=*/2_n,
-        /*num_cpus_per_node=*/1_n,
-        /*num_gpus_per_node=*/1_n,
+        /*num_nodes=*/2_p,
+        /*num_cpus_per_node=*/1_p,
+        /*num_gpus_per_node=*/1_p,
         /*inter_node_bandwidth=*/1,
         /*intra_node_bandwidth=*/1,
     };
 
     MachineSpecification split_machine_spec = MachineSpecification{
-        /*num_nodes=*/1_n,
-        /*num_cpus_per_node=*/1_n,
-        /*num_gpus_per_node=*/1_n,
+        /*num_nodes=*/1_p,
+        /*num_cpus_per_node=*/1_p,
+        /*num_gpus_per_node=*/1_p,
         /*inter_node_bandwidth=*/1,
         /*intra_node_bandwidth=*/1,
     };
@@ -101,9 +101,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TensorShape tensor_shape = TensorShape{
         TensorDims{
-            FFOrdered<nonnegative_int>{
-                10_n,
-                8_n,
+            FFOrdered{
+                10_p,
+                8_p,
             },
         },
         DataType::FLOAT,

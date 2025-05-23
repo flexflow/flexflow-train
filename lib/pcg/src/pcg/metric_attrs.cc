@@ -1,4 +1,5 @@
 #include "pcg/metric_attrs.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 MetricsAttrs::MetricsAttrs(LossFunction _loss_type,
@@ -29,8 +30,7 @@ MetricsAttrs::MetricsAttrs(LossFunction _loss_type,
         measure_mean_absolute_error = true;
         continue;
       default:
-        throw mk_runtime_error(fmt::format(
-            "Initializing MetricsAttrs with unrecogonized metrics type {}", m));
+        PANIC("Initializing MetricsAttrs with unrecognized metrics type {}", m);
     }
   }
 }

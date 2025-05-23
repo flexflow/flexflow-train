@@ -6,9 +6,9 @@ using namespace ::FlexFlow;
 
 TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test ManagedFFStream") {
-    ManagedPerDeviceFFHandle managed_handle{
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
         /*workSpaceSize=*/1024 * 1024,
-        /*allowTensorOpMathConversion=*/true};
+        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
     Allocator allocator = create_local_cuda_memory_allocator();
 
@@ -37,15 +37,15 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
       SUBCASE("test gather forward, 2D") {
         TensorShape input_shape = TensorShape{
-            TensorDims{FFOrdered{2_n, 100_n}},
+            TensorDims{FFOrdered{2_p, 100_p}},
             DataType::FLOAT,
         };
         TensorShape index_shape = TensorShape{
-            TensorDims{FFOrdered{2_n, 20_n}},
+            TensorDims{FFOrdered{2_p, 20_p}},
             DataType::INT32,
         };
         TensorShape output_shape = TensorShape{
-            TensorDims{FFOrdered{2_n, 20_n}},
+            TensorDims{FFOrdered{2_p, 20_p}},
             DataType::FLOAT,
         };
         run_forward_test(input_shape, index_shape, output_shape);
@@ -53,15 +53,15 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
       SUBCASE("test gather forward, 1D") {
         TensorShape input_shape = TensorShape{
-            TensorDims{FFOrdered{100_n}},
+            TensorDims{FFOrdered{100_p}},
             DataType::FLOAT,
         };
         TensorShape index_shape = TensorShape{
-            TensorDims{FFOrdered{10_n}},
+            TensorDims{FFOrdered{10_p}},
             DataType::INT32,
         };
         TensorShape output_shape = TensorShape{
-            TensorDims{FFOrdered{10_n}},
+            TensorDims{FFOrdered{10_p}},
             DataType::FLOAT,
         };
         run_forward_test(input_shape, index_shape, output_shape);
@@ -89,15 +89,15 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
       SUBCASE("test gather backward, 2D") {
         TensorShape input_shape = TensorShape{
-            TensorDims{FFOrdered{2_n, 100_n}},
+            TensorDims{FFOrdered{2_p, 100_p}},
             DataType::FLOAT,
         };
         TensorShape index_shape = TensorShape{
-            TensorDims{FFOrdered{2_n, 25_n}},
+            TensorDims{FFOrdered{2_p, 25_p}},
             DataType::INT32,
         };
         TensorShape output_shape = TensorShape{
-            TensorDims{FFOrdered{2_n, 25_n}},
+            TensorDims{FFOrdered{2_p, 25_p}},
             DataType::FLOAT,
         };
         run_backward_test(input_shape, index_shape, output_shape);

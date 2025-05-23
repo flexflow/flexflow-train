@@ -38,9 +38,9 @@ namespace FlexFlow {
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("task_simulator_estimate_forward_pass_time") {
     MachineSpecification machine_spec =
-        MachineSpecification{/*num_nodes=*/3_n,
-                             /*num_cpus_per_node=*/3_n,
-                             /*num_gpus_per_node=*/3_n,
+        MachineSpecification{/*num_nodes=*/3_p,
+                             /*num_cpus_per_node=*/3_p,
+                             /*num_gpus_per_node=*/3_p,
                              /*inter_node_bandwidth=*/1.0f,
                              /*intra_node_bandwidth=*/1.0f};
 
@@ -48,9 +48,9 @@ TEST_SUITE(FF_TEST_SUITE) {
       ParallelComputationGraphBuilder b;
       TensorShape input_shape = TensorShape{
           TensorDims{
-              FFOrdered<nonnegative_int>{
-                  10_n,
-                  7_n,
+              FFOrdered{
+                  10_p,
+                  7_p,
               },
           },
           DataType::FLOAT,
@@ -62,13 +62,13 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_layer_guid_t layer1 = get_source_layer(tensor1);
 
       std::vector<MachineViewDimension> dims = {
-          MachineViewDimension{stride_t{1_n},
+          MachineViewDimension{stride_t{1_p},
                                MachineSpecificationDimension::INTER_NODE},
-          MachineViewDimension{stride_t{1_n},
+          MachineViewDimension{stride_t{1_p},
                                MachineSpecificationDimension::INTER_NODE},
-          MachineViewDimension{stride_t{1_n},
+          MachineViewDimension{stride_t{1_p},
                                MachineSpecificationDimension::INTER_NODE},
-          MachineViewDimension{stride_t{1_n},
+          MachineViewDimension{stride_t{1_p},
                                MachineSpecificationDimension::INTER_NODE},
       };
       ParallelComputationGraph pcg = b.pcg;
@@ -127,9 +127,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       TensorShape input_shape = TensorShape{
           TensorDims{
-              FFOrdered<nonnegative_int>{
-                  10_n,
-                  1_n,
+              FFOrdered{
+                  10_p,
+                  1_p,
               },
           },
           DataType::FLOAT,
@@ -147,13 +147,13 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       ParallelComputationGraph pcg = b.pcg;
       std::vector<MachineViewDimension> dims = {
-          MachineViewDimension{stride_t{1_n},
+          MachineViewDimension{stride_t{1_p},
                                MachineSpecificationDimension::INTER_NODE},
-          MachineViewDimension{stride_t{1_n},
+          MachineViewDimension{stride_t{1_p},
                                MachineSpecificationDimension::INTER_NODE},
-          MachineViewDimension{stride_t{1_n},
+          MachineViewDimension{stride_t{1_p},
                                MachineSpecificationDimension::INTER_NODE},
-          MachineViewDimension{stride_t{1_n},
+          MachineViewDimension{stride_t{1_p},
                                MachineSpecificationDimension::INTER_NODE},
       };
 
