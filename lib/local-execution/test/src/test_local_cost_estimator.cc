@@ -9,8 +9,8 @@
 
 using namespace ::FlexFlow;
 
-TEST_SUITE(FF_CUDA_TEST_SUITE) {
-  TEST_CASE("Local Cost Estimator") {
+TEST_SUITE(FF_TEST_SUITE) {
+  TEST_CASE("LocalCostEstimator") {
     // local backing initialization
     ManagedPerDeviceFFHandle managed_handle{};
 

@@ -28,6 +28,7 @@ public:
   PerLayerElapsedTime forward();
   PerLayerElapsedTime backward();
   void update();
+  GenericTensorAccessorW get_loss_tensor_backing();
 };
 
 } // namespace FlexFlow

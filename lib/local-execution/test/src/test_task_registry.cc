@@ -9,7 +9,7 @@
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("Task Registry") {
+  TEST_CASE("TaskRegistry") {
 
     layer_guid_t layer_guid = layer_guid_t{Node{0}};
     nonnegative_int embed_dim = 32_n;

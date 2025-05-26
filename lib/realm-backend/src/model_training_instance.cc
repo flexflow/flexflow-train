@@ -73,4 +73,14 @@ void ModelTrainingInstance::update() {
     this->optimizer_attrs);
 }
 
+GenericTensorAccessorW ModelTrainingInstance::get_loss_tensor_backing() {
+  gradient_tensor_t loss_tensor =
+      this->training_backing.realm_tensor_backing
+          .tensor_gradient_mapping.at(this->logit_tensor);
+  GenericTensorAccessorW loss_tensor_backing =
+      this->training_backing.realm_tensor_backing.tensor_backings.at(
+          TensorTypeVariant{loss_tensor});
+  return loss_tensor_backing;
+}
+
 } // namespace FlexFlow

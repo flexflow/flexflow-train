@@ -1,4 +1,3 @@
-#include "doctest/doctest.h"
 #include "kernels/local_cuda_allocator.h"
 #include "kernels/managed_ff_stream.h"
 #include "kernels/managed_per_device_ff_handle.h"
@@ -10,11 +9,28 @@
 #include "pcg/optimizer_attrs.dtg.h"
 #include "test_utils.h"
 #include "utils/containers/get_only.h"
+#include "local-execution/model_training_instance.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
+bool did_loss_decrease(GenericTensorAccessorW const &first_epoch, GenericTensorAccessorW const & last_epoch) {
+  float* first_epoch_ptr = first_epoch.get_float_ptr();
+  float* last_epoch_ptr = last_epoch.get_float_ptr();
+  
+  int batch_size = first_epoch.shape.at(ff_dim_t{nonnegative_int{0}}).unwrap_nonnegative();
+  for (int i = 0; i < batch_size; i++) {
+    if (first_epoch_ptr[i] < last_epoch_ptr[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("LossFunctions") {
+  TEST_CASE("E2ETest") {
     // initialize runtime
     ManagedFFStream managed_stream{};
     ManagedPerDeviceFFHandle managed_handle{};
@@ -23,9 +39,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     // allocate label tensors
     LossTensorSource loss_tensor_source;
-    loss_tensor_t label_for_nonconfigurable_loss_attrs =
-        loss_tensor_source.new_loss_tensor();
-    loss_tensor_t label_for_sparse_cce_loss_attrs =
+    loss_tensor_t label_tensor =
         loss_tensor_source.new_loss_tensor();
 
     nonnegative_int batch_size = 10_n;
@@ -35,19 +49,13 @@ TEST_SUITE(FF_TEST_SUITE) {
     TensorShape output_tensor_shape = TensorShape{
         TensorDims{FFOrdered<nonnegative_int>{batch_size, output_dim}},
         DataType::FLOAT};
-    TensorShape reduced_tensor_shape =
-        TensorShape{TensorDims{FFOrdered<nonnegative_int>{batch_size, 1_n}},
-                    DataType::FLOAT};
 
-    GenericTensorAccessorW label_for_nonconfigurable_loss_attrs_backing =
+    GenericTensorAccessorW label_tensor_backing =
         allocator.allocate_tensor(output_tensor_shape);
-    GenericTensorAccessorW label_for_sparse_cce_loss_attrs_backing =
-        allocator.allocate_tensor(reduced_tensor_shape);
     AllocatedTensors allocated_tensors = AllocatedTensors{
-        {{TensorTypeVariant{label_for_nonconfigurable_loss_attrs},
-          label_for_nonconfigurable_loss_attrs_backing},
-         {TensorTypeVariant{label_for_sparse_cce_loss_attrs},
-          label_for_sparse_cce_loss_attrs_backing}},
+        {
+         {TensorTypeVariant{label_tensor},
+         label_tensor_backing}},
         {},
         {}};
 
@@ -68,7 +76,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     LayerAddedResult weights_layer = add_layer(
         computation_graph,
         LayerAttrs{ComputationGraphOpAttrs{WeightAttrs{
-                       weight_shape, InitializerAttrs{ZeroInitializerAttrs{}}}},
+                       weight_shape, InitializerAttrs{GlorotNormalAttrs{0}}}},
                    std::nullopt},
         {},
         {});
@@ -91,55 +99,42 @@ TEST_SUITE(FF_TEST_SUITE) {
         ProfilingSettings{/*warmup_iters=*/0, /*measure_iters=*/1}};
 
     // initialize training backing
+    LossAttrs loss_attrs = LossAttrs{NonconfigurableLossAttrs{LossFunction::CATEGORICAL_CROSSENTROPY}};
+    OptimizerAttrs optimizer_attrs =
+        OptimizerAttrs{SGDOptimizerAttrs{/*lr=*/0.001,
+                                         /*momentum=*/0.9,
+                                         /*nesterov=*/false,
+                                         /*weight_decay=*/0.001}};
+
+
     GradientTensorSource gradient_tensor_source;
+    OptimizerTensorSource optimizer_tensor_source;
+
     LocalTrainingBacking local_training_backing =
         LocalTrainingBacking{allocator,
-                             allocated_tensors,
-                             gradient_tensor_source,
-                             computation_graph,
-                             runtime_arg_config};
+                            allocated_tensors,
+                            gradient_tensor_source,
+                            optimizer_tensor_source,
+                            computation_graph,
+                            runtime_arg_config,
+                          optimizer_attrs};
 
-    SUBCASE("SparseCategoricalCrossEntropyLossAttrs") {
-      LossAttrs loss_attrs = LossAttrs{
-          SparseCategoricalCrossEntropyLossAttrs{/*replace_labels=*/false}};
+    // begin training loop                      
+    ModelTrainingInstance model_training_instance = ModelTrainingInstance{
+      allocator, local_training_backing, logit_tensor, label_tensor, loss_attrs, optimizer_attrs
+    };
 
-      compute_loss(local_training_backing,
-                   loss_attrs,
-                   logit_tensor,
-                   label_for_sparse_cce_loss_attrs,
-                   allocator);
+    int num_epochs = 10;
+    std::vector<GenericTensorAccessorW> loss_values (num_epochs);
+
+    for (int i = 0; i < num_epochs; i++) {
+      model_training_instance.forward();
+      model_training_instance.backward();
+      model_training_instance.update();
+      loss_values[i] = model_training_instance.get_loss_tensor_backing();
     }
-
-    SUBCASE("NonconfigurableLossAttrs") {
-      SUBCASE("LossFunction::CATEGORICAL_CROSSENTROPY") {
-        LossAttrs loss_attrs = LossAttrs{
-            NonconfigurableLossAttrs{LossFunction::CATEGORICAL_CROSSENTROPY}};
-        compute_loss(local_training_backing,
-                     loss_attrs,
-                     logit_tensor,
-                     label_for_nonconfigurable_loss_attrs,
-                     allocator);
-      }
-
-      SUBCASE("LossFunction::MEAN_SQUARED_ERROR_AVG_REDUCE") {
-        LossAttrs loss_attrs = LossAttrs{NonconfigurableLossAttrs{
-            LossFunction::MEAN_SQUARED_ERROR_AVG_REDUCE}};
-        compute_loss(local_training_backing,
-                     loss_attrs,
-                     logit_tensor,
-                     label_for_nonconfigurable_loss_attrs,
-                     allocator);
-      }
-
-      SUBCASE("LossFunction::IDENTITY") {
-        LossAttrs loss_attrs =
-            LossAttrs{NonconfigurableLossAttrs{LossFunction::IDENTITY}};
-        compute_loss(local_training_backing,
-                     loss_attrs,
-                     logit_tensor,
-                     label_for_nonconfigurable_loss_attrs,
-                     allocator);
-      }
-    }
+    
+    // Assert that each sample in the batch has a lower loss in last epoch than the first epoch
+    CHECK(did_loss_decrease(loss_values[0], loss_values[num_epochs - 1]));
   }
 }
