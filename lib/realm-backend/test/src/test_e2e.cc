@@ -1,4 +1,3 @@
-#include "kernels/local_cuda_allocator.h"
 #include "kernels/managed_ff_stream.h"
 #include "kernels/managed_per_device_ff_handle.h"
 #include "local-execution/allocated_tensors.h"
@@ -14,6 +13,7 @@
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
+using namespace Realm;
 
 bool did_loss_decrease(GenericTensorAccessorW const &first_epoch, GenericTensorAccessorW const & last_epoch) {
   float* first_epoch_ptr = first_epoch.get_float_ptr();
@@ -58,7 +58,7 @@ void top_level_task(const void *args, size_t arglen, const void *userdata,
         DataType::FLOAT};
 
     GenericTensorAccessorW label_tensor_backing =
-        allocator.allocate_tensor(output_tensor_shape);
+        allocators[0].allocate_tensor(output_tensor_shape);
     AllocatedTensors allocated_tensors = AllocatedTensors{
         {
          {TensorTypeVariant{label_tensor},
@@ -125,7 +125,7 @@ void top_level_task(const void *args, size_t arglen, const void *userdata,
           optimizer_attrs);
       // begin training loop                      
       ModelTrainingInstance model_training_instance = ModelTrainingInstance{
-        allocator, realm_training_backing, logit_tensor, label_tensor, loss_attrs, optimizer_attrs
+        realm_training_backing, logit_tensor, label_tensor, loss_attrs, optimizer_attrs
       };
 
       int num_epochs = 10;
