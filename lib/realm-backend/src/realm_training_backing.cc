@@ -276,7 +276,7 @@ Future<void> execute_update(RealmTrainingBacking &realm_training_backing,
         realm_training_backing.realm_args_backing, invocation,
         realm_training_backing.allocators[0]);
     task_id_t task_id = invocation.task_id;
-    register_wrapper_tasks_generic(realm_training_backing.worker_procs[0],
+    register_wrapper_tasks_generic(0, realm_training_backing.worker_procs[0],
                                    task_id);
     TaskImplFunction update_impl_fn = get_update_task_impl(optimizer_attrs);
     // TODO: multi gpu launching
@@ -311,7 +311,7 @@ Future<void> compute_loss(RealmTrainingBacking &realm_training_backing,
       realm_training_backing.realm_args_backing, loss_invocation,
         realm_training_backing.allocators[0]);
   task_id_t task_id = loss_invocation.task_id;
-  register_wrapper_tasks_generic(realm_training_backing.worker_procs[0],
+  register_wrapper_tasks_generic(0, realm_training_backing.worker_procs[0],
                                  task_id);
   TaskImplFunction loss_impl_fn = get_loss_bwd_task_impl();
   // TODO: multi gpu launching

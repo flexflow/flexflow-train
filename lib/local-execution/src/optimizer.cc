@@ -70,7 +70,7 @@ static void sgd_update_task_impl(TaskArgumentAccessor const &acc) {
   int size = weight_grad.shape.get_volume().unwrap_nonnegative();
 
   assert(weight_grad.shape.get_volume().unwrap_nonnegative() &
-         weight.shape.get_volume().unwrap_nonnegative() == 0);
+         weight.shape.get_volume().unwrap_nonnegative());
   int num_replicas = weight_grad.shape.get_volume().unwrap_nonnegative() /
                      weight.shape.get_volume().unwrap_nonnegative();
 

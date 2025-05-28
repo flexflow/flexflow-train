@@ -25,11 +25,11 @@ void fwdbwd_wrapper_task(const void *args, size_t arglen, const void *userdata,
 void generic_wrapper_task(const void *args, size_t arglen, const void *userdata,
                           size_t userlen, Realm::Processor p);
 
-void register_wrapper_tasks_init(Realm::Processor p, task_id_t task_id);
+void register_wrapper_tasks_init(int p_id, Realm::Processor p, task_id_t task_id);
 
-void register_wrapper_tasks_fwdbwd(Realm::Processor p, task_id_t task_id);
+void register_wrapper_tasks_fwdbwd(int p_id, Realm::Processor p, task_id_t task_id);
 
-void register_wrapper_tasks_generic(Realm::Processor p, task_id_t task_id);
+void register_wrapper_tasks_generic(int p_id, Realm::Processor p, task_id_t task_id);
 
 void register_wrapper_tasks(int pid, Realm::Processor p, task_id_t task_id,
                             TaskSignatureAndImpl task_sig_impl);

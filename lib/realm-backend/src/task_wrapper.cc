@@ -38,21 +38,36 @@ void generic_wrapper_task(const void *args, size_t arglen, const void *userdata,
   fn(task_args.accessor);
 }
 
-void register_wrapper_tasks_init(Processor p, task_id_t task_id) {
+void register_wrapper_tasks_init(int p_id, Processor p, task_id_t task_id) {
+  std::pair<int, task_id_t> key = {p_id, task_id};
+  if (registered_tasks.find(key) != registered_tasks.end()) {
+    return;
+  }
+  registered_tasks.insert(key);
   Processor::register_task_by_kind(
       p.kind(), false /*!global*/, get_realm_task_id(task_id),
       CodeDescriptor(init_wrapper_task), ProfilingRequestSet())
       .external_wait();
 }
 
-void register_wrapper_tasks_fwdbwd(Realm::Processor p, task_id_t task_id) {
+void register_wrapper_tasks_fwdbwd(int p_id, Realm::Processor p, task_id_t task_id) {
+  std::pair<int, task_id_t> key = {p_id, task_id};
+  if (registered_tasks.find(key) != registered_tasks.end()) {
+    return;
+  }
+  registered_tasks.insert(key);
   Processor::register_task_by_kind(
       p.kind(), false /*!global*/, get_realm_task_id(task_id),
       CodeDescriptor(fwdbwd_wrapper_task), ProfilingRequestSet())
       .external_wait();
 }
 
-void register_wrapper_tasks_generic(Realm::Processor p, task_id_t task_id) {
+void register_wrapper_tasks_generic(int p_id, Realm::Processor p, task_id_t task_id) {
+  std::pair<int, task_id_t> key = {p_id, task_id};
+  if (registered_tasks.find(key) != registered_tasks.end()) {
+    return;
+  }
+  registered_tasks.insert(key);
   Processor::register_task_by_kind(
       p.kind(), false /*!global*/, get_realm_task_id(task_id),
       CodeDescriptor(generic_wrapper_task), ProfilingRequestSet())
@@ -61,21 +76,16 @@ void register_wrapper_tasks_generic(Realm::Processor p, task_id_t task_id) {
 
 void register_wrapper_tasks(int p_id, Processor p, task_id_t task_id,
                             TaskSignatureAndImpl task_sig_impl) {
-  std::pair<int, task_id_t> key = {p_id, task_id};
-  if (registered_tasks.find(key) != registered_tasks.end()) {
-    return;
-  }
-  registered_tasks.insert(key);
   switch (task_sig_impl.task_signature.type) {
   case OpTaskType::INIT:
-    register_wrapper_tasks_init(p, task_id);
+    register_wrapper_tasks_init(p_id, p, task_id);
     break;
   case OpTaskType::FWD:
   case OpTaskType::BWD:
-    register_wrapper_tasks_fwdbwd(p, task_id);
+    register_wrapper_tasks_fwdbwd(p_id, p, task_id);
     break;
   default:
-    register_wrapper_tasks_generic(p, task_id);
+    register_wrapper_tasks_generic(p_id, p, task_id);
     break;
   }
 }

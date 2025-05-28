@@ -16,7 +16,7 @@ void top_level_task(const void *args, size_t arglen, const void *userdata,
                     size_t userlen, Realm::Processor p) {
   // initialize runtime configs
   ManagedFFStream managed_stream{};
-  ManagedPerDeviceFFHandle managed_handle{};
+  ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle();
   std::vector<Processor> worker_procs;
   std::vector<Allocator> allocators;
   Machine::ProcessorQuery pq = Machine::ProcessorQuery(Machine::get_machine())

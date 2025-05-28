@@ -10,7 +10,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     TensorShape input_shape = make_float_tensor_shape_from_legion_dims(
         {10_n, 10_n, 10_n, 10_n, 10_n});
 
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle();
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();

@@ -17,9 +17,9 @@ struct TaskArgumentAccessor {
       if (device_states.has<T>()) {
         return device_states.get<T>();
       } else {
-        throw mk_runtime_error(
-            fmt::format("Invalid access to PerDeviceOpState attempted, instead it holds: ",
-                        device_states.index()));
+        throw mk_runtime_error(fmt::format(
+            "Invalid access to PerDeviceOpState attempted, instead it holds: ",
+            device_states.index()));
       }
     } else {
       return this->ptr->get_concrete_arg(slot).get<T>();

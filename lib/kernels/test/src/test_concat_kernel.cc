@@ -10,7 +10,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     nonnegative_int size_per_input = 100_n;
     ff_dim_t concat_axis = ff_dim_t{0_n};
 
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle();
     ManagedFFStream managed_stream{};
 
     TensorShape input_shape =

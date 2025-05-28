@@ -12,7 +12,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     nonnegative_int input_w = 100_n;
     nonnegative_int channels = 100_n;
 
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle();
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();

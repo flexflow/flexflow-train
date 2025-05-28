@@ -7,7 +7,7 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Test Flat Kernel") {
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle();
     ManagedFFStream managed_stream{};
 
     TensorShape input_shape = make_float_tensor_shape_from_legion_dims({100_n});
