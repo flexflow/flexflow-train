@@ -11,31 +11,40 @@ std::unordered_set<std::pair<int, task_id_t>> registered_tasks;
 
 void init_wrapper_task(const void *args, size_t arglen, const void *userdata,
                        size_t userlen, Processor p) {
-  RealmTaskArgs<DeviceSpecificDeviceStates> const &task_args =
-      *reinterpret_cast<const RealmTaskArgs<DeviceSpecificDeviceStates> *>(args);
+  assert(arglen == sizeof(uintptr_t));
+  uintptr_t task_arg_ptr = *reinterpret_cast<const uintptr_t *>(args);
+  RealmTaskArgs<DeviceSpecificDeviceStates> *task_args =
+      reinterpret_cast<RealmTaskArgs<DeviceSpecificDeviceStates> *>(task_arg_ptr);
   auto fn =
-      task_args.impl_function.get<InitOpTaskImplFunction>().function_ptr;
-  DeviceSpecificDeviceStates result = fn(task_args.accessor);
-  task_args.promise.set_value(result);
+      task_args->impl_function.get<InitOpTaskImplFunction>().function_ptr;
+  DeviceSpecificDeviceStates result = fn(task_args->accessor);
+  task_args->promise.set_value(result);
+  delete task_args;
 }
 
 void fwdbwd_wrapper_task(const void *args, size_t arglen, const void *userdata,
                          size_t userlen, Processor p) {
-  RealmTaskArgs<float> const &task_args =
-      *reinterpret_cast<const RealmTaskArgs<float> *>(args);
+  assert(arglen == sizeof(uintptr_t));
+  uintptr_t task_arg_ptr = *reinterpret_cast<const uintptr_t *>(args);
+  RealmTaskArgs<float> *task_args =
+      reinterpret_cast<RealmTaskArgs<float> *>(task_arg_ptr);
   auto fn =
-      task_args.impl_function.get<FwdBwdOpTaskImplFunction>().function_ptr;
-  std::optional<float> result = fn(task_args.accessor);
-  task_args.promise.set_value(result.has_value() ? result.value() : 0.0f);
+      task_args->impl_function.get<FwdBwdOpTaskImplFunction>().function_ptr;
+  std::optional<float> result = fn(task_args->accessor);
+  task_args->promise.set_value(result.has_value() ? result.value() : 0.0f);
+  delete task_args;
 }
 
 void generic_wrapper_task(const void *args, size_t arglen, const void *userdata,
                           size_t userlen, Processor p) {
-  RealmTaskArgs<void> const &task_args =
-      *reinterpret_cast<const RealmTaskArgs<void> *>(args);
+  assert(arglen == sizeof(uintptr_t));
+  uintptr_t task_arg_ptr = *reinterpret_cast<const uintptr_t *>(args);
+  RealmTaskArgs<void> *task_args =
+      reinterpret_cast<RealmTaskArgs<void> *>(task_arg_ptr);
   auto fn =
-      task_args.impl_function.get<GenericTaskImplFunction>().function_ptr;
-  fn(task_args.accessor);
+      task_args->impl_function.get<GenericTaskImplFunction>().function_ptr;
+  fn(task_args->accessor);
+  delete task_args;
 }
 
 void register_wrapper_tasks_init(int p_id, Processor p, task_id_t task_id) {

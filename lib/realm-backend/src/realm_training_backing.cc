@@ -137,11 +137,12 @@ initialize_args_backing(RealmTrainingBacking *backing,
       // TODO: multi gpu launching
       Promise<DeviceSpecificDeviceStates> promise = Promise<DeviceSpecificDeviceStates>();
       Future<DeviceSpecificDeviceStates> future = promise.get_future();
-      RealmTaskArgs<DeviceSpecificDeviceStates> args{
+      RealmTaskArgs<DeviceSpecificDeviceStates>* task_arg = new RealmTaskArgs<DeviceSpecificDeviceStates>{
           task_id, impl_function, accessor, std::move(promise)};
+      uintptr_t args[1] = {reinterpret_cast<uintptr_t>(task_arg)};
       Event e =
           worker_procs[0].spawn(get_realm_task_id(task_id),
-                                &args, sizeof(args), worker_events[0]);
+                                args, sizeof(uintptr_t), worker_events[0]);
       worker_events[0] = e;
       future.set_event(e);
       per_device_op_states.insert({node, future.get().value()});
@@ -185,10 +186,11 @@ execute_forward(RealmTrainingBacking &realm_training_backing,
     // TODO: multi gpu launching
     Promise<float> promise(realm_training_backing.master_mem);
     Future<float> future = promise.get_future();
-    RealmTaskArgs<float> args{task_id, impl_function, accessor,
-                                std::move(promise)};
+    RealmTaskArgs<float>* task_arg = new RealmTaskArgs<float>{task_id, impl_function, accessor,
+                                        std::move(promise)};
+    uintptr_t args[1] = {reinterpret_cast<uintptr_t>(task_arg)};
     Event e = realm_training_backing.worker_procs[0].spawn(
-        get_realm_task_id(task_id), &args, sizeof(args),
+        get_realm_task_id(task_id), args, sizeof(uintptr_t),
         realm_training_backing.worker_events[0]);
     realm_training_backing.worker_events[0] = e;
     future.set_event(e);
@@ -232,10 +234,11 @@ execute_backward(RealmTrainingBacking &realm_training_backing,
     // TODO: multi gpu launching
     Promise<float> promise(realm_training_backing.master_mem);
     Future<float> future = promise.get_future();
-    RealmTaskArgs<float> args{task_id, impl_function, accessor,
-                                std::move(promise)};
+    RealmTaskArgs<float>* task_arg = new RealmTaskArgs<float>{task_id, impl_function, accessor,
+                                        std::move(promise)};
+    uintptr_t args[1] = {reinterpret_cast<uintptr_t>(task_arg)};
     Event e = realm_training_backing.worker_procs[0].spawn(
-        get_realm_task_id(task_id), &args, sizeof(args),
+        get_realm_task_id(task_id), args, sizeof(uintptr_t),
         realm_training_backing.worker_events[0]);
     realm_training_backing.worker_events[0] = e;
     future.set_event(e);
@@ -282,10 +285,11 @@ Future<void> execute_update(RealmTrainingBacking &realm_training_backing,
     // TODO: multi gpu launching
     Promise<void> promise;
     Future<void> future = promise.get_future();
-    RealmTaskArgs<void> args{task_id, update_impl_fn, accessor,
-                             std::move(promise)};
+    RealmTaskArgs<void>* task_arg = new RealmTaskArgs<void>{task_id, update_impl_fn, accessor,
+                                        std::move(promise)};
+    uintptr_t args[1] = {reinterpret_cast<uintptr_t>(task_arg)};
     Event e = realm_training_backing.worker_procs[0].spawn(
-        get_realm_task_id(task_id), &args, sizeof(args),
+        get_realm_task_id(task_id), args, sizeof(uintptr_t),
         realm_training_backing.worker_events[0]);
     realm_training_backing.worker_events[0] = e;
     future.set_event(e);
@@ -317,10 +321,11 @@ Future<void> compute_loss(RealmTrainingBacking &realm_training_backing,
   // TODO: multi gpu launching
   Promise<void> promise;
   Future<void> future = promise.get_future();
-  RealmTaskArgs<void> args{task_id, loss_impl_fn, loss_accessor,
-                           std::move(promise)};
+  RealmTaskArgs<void>* task_arg = new RealmTaskArgs<void>{task_id, loss_impl_fn, loss_accessor,
+                                        std::move(promise)};
+  uintptr_t args[1] = {reinterpret_cast<uintptr_t>(task_arg)};
   Event e = realm_training_backing.worker_procs[0].spawn(
-      get_realm_task_id(task_id), &args, sizeof(args),
+      get_realm_task_id(task_id), args, sizeof(uintptr_t),
       realm_training_backing.worker_events[0]);
   realm_training_backing.worker_events[0] = e;
   future.set_event(e);
