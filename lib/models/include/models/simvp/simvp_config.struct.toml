@@ -1,0 +1,74 @@
+namespace = "FlexFlow"
+name = "SimVPConfig"
+
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = [
+  "<vector>",
+  "<map>",
+  "<string>",
+  "models/simvp/simvp_model_type.dtg.h",
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
+src_includes = [
+  "utils/fmt/vector.h",
+  "utils/fmt/map.h",
+  "utils/hash/vector.h",
+  "utils/hash/map.h",
+]
+
+[[fields]]
+name = "batch_size"
+type = "::FlexFlow::nonnegative_int"
+
+[[fields]]
+name = "hid_S"
+type = "::FlexFlow::nonnegative_int"
+
+[[fields]]
+name = "hid_T"
+type = "::FlexFlow::nonnegative_int"
+
+[[fields]]
+name = "N_S"
+type = "::FlexFlow::nonnegative_int"
+
+[[fields]]
+name = "N_T"
+type = "::FlexFlow::nonnegative_int"
+
+[[fields]]
+name = "model_type"
+type = "FlexFlow::SimVPModelType"
+
+[[fields]]
+name = "mlp_ratio"
+type = "float"
+
+[[fields]]
+name = "drop"
+type = "float"
+
+[[fields]]
+name = "drop_path"
+type = "float"
+
+[[fields]]
+name = "spatio_kernel_enc"
+type = "::FlexFlow::nonnegative_int"
+
+[[fields]]
+name = "spatio_kernel_dec"
+type = "::FlexFlow::nonnegative_int"
+
+[[fields]]
+name = "in_shape"
+type = "std::vector<::FlexFlow::nonnegative_int>"
