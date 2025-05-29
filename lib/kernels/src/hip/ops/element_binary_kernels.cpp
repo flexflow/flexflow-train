@@ -14,7 +14,7 @@
  */
 
 #include "kernels/element_binary_kernels.h"
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/ff_handle.h"
 #include "op-attrs/datatype.h"
 #include "op-attrs/operator_type.dtg.h"

@@ -106,8 +106,8 @@ static std::optional<float>
   return profile(backward_kernel,
                  profiling,
                  "[SoftMax] backward_time = {:.2lf}ms\n",
-                 input_grad.get_float_ptr(),
                  output_grad.get_float_ptr(),
+                 input_grad.get_float_ptr(),
                  output_grad.shape.get_volume().unwrap_nonnegative());
 }
 

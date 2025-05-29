@@ -1,9 +1,9 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_DROPOUT_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_DROPOUT_KERNELS_H
 
-#include "device.h"
 #include "kernels/allocation.h"
 #include "kernels/array_shape.h"
+#include "kernels/device.h"
 #include "kernels/ff_handle.h"
 #include <cstddef>
 
@@ -31,8 +31,7 @@ FF_VISITABLE_STRUCT_NONSTANDARD_CONSTRUCTION(DropoutPerDeviceState,
                                              reserveSpaceSize,
                                              dropoutStateSize);
 
-namespace Kernels {
-namespace Dropout {
+namespace Kernels::Dropout {
 
 DropoutPerDeviceState init_kernel(PerDeviceFFHandle handle,
                                   float rate,
@@ -56,8 +55,7 @@ void cleanup_kernel(Allocator allocator,
                     ffDropoutDescriptor_t dropoutDesc,
                     void *dropoutStates);
 
-} // namespace Dropout
-} // namespace Kernels
+} // namespace Kernels::Dropout
 } // namespace FlexFlow
 
 #endif // _FLEXFLOW_OPS_KERNELS_DROPOUT_KERNELS_H

@@ -1,11 +1,12 @@
 #include "op-attrs/ops/linear.h"
-#include "op-attrs/dim_ordered/slice.h"
-#include "op-attrs/dim_ordered/transform.h"
+#include "op-attrs/ff_ordered/slice.h"
+#include "op-attrs/ff_ordered/transform.h"
 #include "op-attrs/initializers/kaiming_initializer_mode.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/tensor_shape.h"
 #include "utils/containers/product.h"
 #include "utils/expected.h"
+#include "utils/fmt/optional.h"
 #include "utils/integer_conversions.h"
 
 namespace FlexFlow {
@@ -101,7 +102,7 @@ tl::expected<ParallelTensorShape, std::string>
   SumDegree sum_degree = SumDegree{1_n};
   DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{
       get_sum_degree(input) * product(slice(ff_ordered_shard_degrees(input),
-                                            std::nullopt,
+                                            relative_ff_dim_t{0},
                                             relative_ff_dim_t{-1}))};
   FFOrdered<nonnegative_int> shard_degrees = FFOrdered<nonnegative_int>{
       shard_dim_at_idx(input, relative_ff_dim_t{-1}).degree,
@@ -126,8 +127,10 @@ tl::expected<ParallelTensorShape, std::string>
   SumDegree sum_degree =
       SumDegree{get_sum_degree(input) *
                 shard_dim_at_idx(input, relative_ff_dim_t{-1}).degree};
-  DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{product(slice(
-      ff_ordered_shard_degrees(input), std::nullopt, relative_ff_dim_t{-1}))};
+  DiscardCopyDegree discard_copy_degree =
+      DiscardCopyDegree{product(slice(ff_ordered_shard_degrees(input),
+                                      relative_ff_dim_t{0},
+                                      relative_ff_dim_t{-1}))};
   FFOrdered<nonnegative_int> shard_degrees =
       FFOrdered<nonnegative_int>{get_discard_copy_degree(input)};
 

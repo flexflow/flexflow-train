@@ -14,6 +14,7 @@ ff_add_test_executable(
     cudnn
     cudart
     cublas
+    pcg
 )
 
 set(FF_TEST_EXEC_NAME "kernels-tests")

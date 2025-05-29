@@ -1,0 +1,26 @@
+namespace = "FlexFlow"
+name = "Metric"
+features = [
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+[[values]]
+name = "ACCURACY"
+
+[[values]]
+name = "CATEGORICAL_CROSSENTROPY"
+
+[[values]]
+name = "SPARSE_CATEGORICAL_CROSSENTROPY"
+
+[[values]]
+name = "MEAN_SQUARED_ERROR"
+
+[[values]]
+name = "ROOT_MEAN_SQUARED_ERROR"
+
+[[values]]
+name = "MEAN_ABSOLUTE_ERROR"

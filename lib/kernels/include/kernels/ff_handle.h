@@ -5,7 +5,7 @@
 #include <nccl.h>
 #endif
 
-#include "device.h"
+#include "kernels/device.h"
 #include "utils/visitable.h"
 
 namespace FlexFlow {
