@@ -9,12 +9,15 @@
 #include "utils/containers/transform.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include "utils/nonnegative_int/num_elements.h"
+#include "utils/positive_int/positive_int.h"
 
 namespace FlexFlow {
 
 legion_dim_t add_to_legion_dim(legion_dim_t legion_dim, int value);
 
 legion_dim_t legion_dim_from_ff_dim(ff_dim_t, nonnegative_int num_dimensions);
+
+ff_dim_t ff_dim_from_legion_dim(legion_dim_t, nonnegative_int num_dimensions);
 
 template <typename T>
 std::set<legion_dim_t> key_range(LegionOrdered<T> const &d) {

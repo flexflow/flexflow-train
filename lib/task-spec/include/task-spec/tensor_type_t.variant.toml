@@ -1,0 +1,31 @@
+namespace = "FlexFlow"
+name = "TensorTypeVariant"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "pcg/tensor_guid_t.dtg.h",
+  "task-spec/optimizer_tensor_t.dtg.h",
+  "task-spec/gradient_tensor_t.dtg.h",
+  "task-spec/loss_tensor_t.dtg.h"
+]
+
+[[values]]
+type = "::FlexFlow::tensor_guid_t"
+key = "tensor_guid"
+
+[[values]]
+type = "::FlexFlow::gradient_tensor_t"
+key = "gradient_tensor"
+
+[[values]]
+type = "::FlexFlow::optimizer_tensor_t"
+key = "optimizer_tensor"
+
+[[values]]
+type = "::FlexFlow::loss_tensor_t"
+key = "loss_tensor"

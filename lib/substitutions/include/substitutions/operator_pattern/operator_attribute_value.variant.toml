@@ -21,6 +21,7 @@ includes = [
   "op-attrs/datatype.dtg.h",
   "<cstddef>",
   "utils/nonnegative_int/nonnegative_int.h",
+  "utils/positive_int/positive_int.h",
 ]
 
 src_includes = [
@@ -34,6 +35,9 @@ src_includes = [
 type = "::FlexFlow::nonnegative_int"
 
 [[values]]
+type = "::FlexFlow::positive_int"
+
+[[values]]
 type = "bool"
 
 [[values]]
@@ -43,7 +47,7 @@ type = "float"
 type = "std::optional<float>"
 
 [[values]]
-type = "std::vector<::FlexFlow::nonnegative_int>"
+type = "std::vector<::FlexFlow::positive_int>"
 
 [[values]]
 type = "std::vector<::FlexFlow::ff_dim_t>"

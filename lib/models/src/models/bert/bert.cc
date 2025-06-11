@@ -7,11 +7,11 @@ namespace FlexFlow {
 
 BertConfig get_default_bert_config() {
   return BertConfig{
-      /*vocab_size=*/30522_n,
-      /*hidden_size=*/768_n,
-      /*num_encoder_layers=*/12_n,
-      /*num_heads=*/12_n,
-      /*dim_feedforward=*/3072_n,
+      /*vocab_size=*/30522_p,
+      /*hidden_size=*/768_p,
+      /*num_encoder_layers=*/12_p,
+      /*num_heads=*/12_p,
+      /*dim_feedforward=*/3072_p,
       /*hidden_act=*/Activation::GELU,
       /*hidden_dropout_prob=*/0.1,
       /*attention_probs_dropout_prob=*/0.1,
@@ -19,8 +19,8 @@ BertConfig get_default_bert_config() {
       /*layer_norm_eps=*/1e-12,
       /*position_embedding_type=*/"absolute",
       /*classifier_dropout=*/0.1,
-      /*sequence_length=*/512_n,
-      /*batch_size=*/64_n,
+      /*sequence_length=*/512_p,
+      /*batch_size=*/64_p,
   };
 }
 
@@ -60,8 +60,8 @@ tensor_guid_t
   assert(num_dims(cgb.get_shape(input)) == 3);
   std::vector<relative_ff_dim_t> layer_norm_axis = {
       relative_ff_dim_t{-1}}; // Apply layernorm across the last dim
-  nonnegative_int kdim = config.dim_feedforward / config.num_heads;
-  nonnegative_int vdim = config.dim_feedforward / config.num_heads;
+  positive_int kdim = positive_int{config.dim_feedforward / config.num_heads};
+  positive_int vdim = positive_int{config.dim_feedforward / config.num_heads};
   tensor_guid_t self_attention =
       cgb.multihead_attention(input,
                               input,
@@ -130,7 +130,7 @@ ComputationGraph get_bert_computation_graph(BertConfig const &config) {
   InitializerAttrs bias_initializer = InitializerAttrs{ZeroInitializerAttrs{}};
 
   TensorShape input_shape = TensorShape{
-      TensorDims{FFOrdered<nonnegative_int>{
+      TensorDims{FFOrdered<positive_int>{
           config.batch_size, config.sequence_length, config.hidden_size}},
       DataType::FLOAT,
   };
@@ -152,7 +152,7 @@ ComputationGraph get_bert_computation_graph(BertConfig const &config) {
   assert(
       (cgb.get_shape(out_prob) ==
        TensorShape{
-           TensorDims{FFOrdered<nonnegative_int>{
+           TensorDims{FFOrdered<positive_int>{
                config.batch_size, config.sequence_length, config.vocab_size}},
            DataType::FLOAT,
        }));

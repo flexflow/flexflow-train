@@ -1,4 +1,4 @@
-#include "internal/test_utils.h"
+#include "kernels/test_utils.h"
 #include "kernels/cast_kernels.h"
 #include "kernels/cast_kernels_cpu.h"
 #include <doctest/doctest.h>
@@ -11,11 +11,11 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     Allocator allocator = create_local_cuda_memory_allocator();
 
     TensorShape input_shape = TensorShape{
-        TensorDims{FFOrdered{100_n, 100_n}},
+        TensorDims{FFOrdered{100_p, 100_p}},
         DataType::FLOAT,
     };
     TensorShape output_shape = TensorShape{
-        TensorDims{FFOrdered{100_n, 100_n}},
+        TensorDims{FFOrdered{100_p, 100_p}},
         DataType::DOUBLE,
     };
 
@@ -52,11 +52,11 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
     TensorShape input_shape = TensorShape{
-        TensorDims{FFOrdered{10_n, 2_n}},
+        TensorDims{FFOrdered{10_p, 2_p}},
         DataType::FLOAT,
     };
     TensorShape output_shape = TensorShape{
-        TensorDims{FFOrdered{10_n, 2_n}},
+        TensorDims{FFOrdered{10_p, 2_p}},
         DataType::DOUBLE,
     };
 

@@ -1,4 +1,5 @@
-#include "internal/test_utils.h"
+#include "kernels/test_utils.h"
+#include "kernels/create_accessor_with_contents.h"
 #include "kernels/format_accessor_contents.h"
 #include "kernels/replicate_kernels.h"
 #include "kernels/replicate_kernels_cpu.h"
@@ -12,17 +13,17 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     nonnegative_int num_replicas = 10_n;
 
     TensorShape input_shape = TensorShape{
-        TensorDims{FFOrdered{3_n}},
+        TensorDims{FFOrdered{3_p}},
         DataType::FLOAT,
     };
     TensorShape output_shape = TensorShape{
-        TensorDims{FFOrdered{3_n}},
+        TensorDims{FFOrdered{3_p}},
         DataType::FLOAT,
     };
 
-    ManagedPerDeviceFFHandle managed_handle{
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
         /*workSpaceSize=*/1024 * 1024,
-        /*allowTensorOpMathConversion=*/true};
+        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
 
     Allocator gpu_allocator = create_local_cuda_memory_allocator();
@@ -30,7 +31,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     SUBCASE("forward_kernel") {
       GenericTensorAccessorR input =
-          create_1d_accessor_r_with_contents({1, 3, 2}, gpu_allocator);
+          create_1d_accessor_r_with_contents<float>({1, 3, 2}, gpu_allocator);
 
       GenericTensorAccessorW output =
           gpu_allocator.allocate_tensor(output_shape);
@@ -45,16 +46,18 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     }
 
     SUBCASE("backward_kernel") {
-      GenericTensorAccessorR output_grad = create_2d_accessor_r_with_contents(
-          {
-              {1, 2, 3},
-              {4, 3, 3},
-              {1, 3, 5},
-          },
-          gpu_allocator);
+      GenericTensorAccessorR output_grad =
+          create_2d_accessor_r_with_contents<float>(
+              {
+                  {1, 2, 3},
+                  {4, 3, 3},
+                  {1, 3, 5},
+              },
+              gpu_allocator);
 
-      GenericTensorAccessorR correct = create_1d_accessor_r_with_contents(
-          {1 + 2 + 3, 4 + 3 + 3, 1 + 3 + 5}, cpu_allocator);
+      GenericTensorAccessorR correct =
+          create_1d_accessor_r_with_contents<float>(
+              {1 + 2 + 3, 4 + 3 + 3, 1 + 3 + 5}, cpu_allocator);
 
       GenericTensorAccessorW input_grad =
           gpu_allocator.allocate_tensor(input_shape);
@@ -71,20 +74,20 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
   }
 
   TEST_CASE("Check Replicate Forward and Backward Kernel against CPU Kernel") {
-    nonnegative_int num_replicas = 2_n;
+    positive_int num_replicas = 2_p;
 
     TensorShape input_shape = TensorShape{
-        TensorDims{FFOrdered{5_n}},
+        TensorDims{FFOrdered{5_p}},
         DataType::FLOAT,
     };
     TensorShape output_shape = TensorShape{
-        TensorDims{FFOrdered{5_n, num_replicas}},
+        TensorDims{FFOrdered{5_p, num_replicas}},
         DataType::FLOAT,
     };
 
-    ManagedPerDeviceFFHandle managed_handle{
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
         /*workSpaceSize=*/1024 * 1024,
-        /*allowTensorOpMathConversion=*/true};
+        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
 
     Allocator gpu_allocator = create_local_cuda_memory_allocator();
@@ -126,7 +129,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       Kernels::Replicate::backward_kernel(managed_stream.raw_stream(),
                                           output_grad_accessor_gpu,
                                           input_grad_accessor_gpu,
-                                          num_replicas.unwrap_nonnegative());
+                                          num_replicas.int_from_positive_int());
 
       // Run CPU Replicate Backward Kernel
       GenericTensorAccessorR output_grad_accessor_cpu =
@@ -137,7 +140,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       Kernels::Replicate::cpu_backward_kernel(
           output_grad_accessor_cpu,
           input_grad_accessor_cpu,
-          num_replicas.unwrap_nonnegative());
+          num_replicas.int_from_positive_int());
 
       CHECK_MESSAGE(
           accessors_are_equal(input_grad_accessor_gpu, input_grad_accessor_cpu),

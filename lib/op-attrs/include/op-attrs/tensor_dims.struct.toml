@@ -11,9 +11,9 @@ features = [
 
 includes = [
   "op-attrs/ff_ordered/ff_ordered.h",
-  "utils/nonnegative_int/nonnegative_int.h",
+  "utils/positive_int/positive_int.h",
 ]
 
 [[fields]]
 name = "ff_ordered"
-type = "::FlexFlow::FFOrdered<::FlexFlow::nonnegative_int>"
+type = "::FlexFlow::FFOrdered<::FlexFlow::positive_int>"

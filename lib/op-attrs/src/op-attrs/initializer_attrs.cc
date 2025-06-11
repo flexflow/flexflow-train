@@ -10,12 +10,12 @@ InitializerAttrs make_zero_initializer() {
 // fan_in and fan_out calculation from pytorch
 // see
 // https://github.com/pytorch/pytorch/blob/bd019c0bb485904a99fb38589444b1461ab1e486/torch/nn/init.py#L345-L363
-static nonnegative_int calculate_fan_for_mode(TensorDims const &dims,
-                                              KaimingInitializerMode mode) {
-  nonnegative_int num_input_fmaps = dim_at_idx(dims, relative_ff_dim_t{0});
-  nonnegative_int num_output_fmaps = dim_at_idx(dims, relative_ff_dim_t{1});
+static positive_int calculate_fan_for_mode(TensorDims const &dims,
+                                           KaimingInitializerMode mode) {
+  positive_int num_input_fmaps = dim_at_idx(dims, relative_ff_dim_t{0});
+  positive_int num_output_fmaps = dim_at_idx(dims, relative_ff_dim_t{1});
 
-  nonnegative_int receptive_field_size = get_num_elements(
+  positive_int receptive_field_size = get_num_elements(
       slice_tensor_dims(dims, relative_ff_dim_t{2}, std::nullopt));
 
   if (mode == KaimingInitializerMode::FAN_IN) {
@@ -52,9 +52,9 @@ InitializerAttrs kaiming_uniform(TensorDims const &dims,
                                  KaimingInitializerNonlinearity nonlinearity,
                                  int seed) {
 
-  nonnegative_int fan = calculate_fan_for_mode(dims, mode);
+  positive_int fan = calculate_fan_for_mode(dims, mode);
   float gain = gain_for_nonlinearity(nonlinearity, a);
-  float std = gain / sqrtf(static_cast<float>(fan.unwrap_nonnegative()));
+  float std = gain / sqrtf(static_cast<float>(fan.int_from_positive_int()));
   float bound = sqrtf(3.0) * std;
 
   return InitializerAttrs{UniformInitializerAttrs{

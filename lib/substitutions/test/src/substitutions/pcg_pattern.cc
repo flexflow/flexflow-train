@@ -16,13 +16,13 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("simple case") {
       ParallelComputationGraphBuilder builder;
 
-      nonnegative_int batch_size = 16_n;
-      nonnegative_int batch_degree = 2_n;
-      nonnegative_int num_channels = 24_n;
+      positive_int batch_size = 16_p;
+      positive_int batch_degree = 2_p;
+      positive_int num_channels = 24_p;
 
       TensorShape a_shape = TensorShape{
           TensorDims{
-              FFOrdered<nonnegative_int>{
+              FFOrdered{
                   batch_size,
                   num_channels,
               },
@@ -36,7 +36,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       a_tensor =
           builder.parallel_partition(a_tensor, ff_dim_t{0_n}, batch_degree);
 
-      nonnegative_int outDim = 16_n;
+      positive_int outDim = 16_p;
       std::string x_matmul_name = "x_matmul";
       std::string y_matmul_name = "y_matmul";
       parallel_tensor_guid_t t0 =
@@ -159,13 +159,13 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("pcg is a chain") {
       ParallelComputationGraphBuilder builder;
 
-      nonnegative_int batch_size = 16_n;
-      nonnegative_int batch_degree = 2_n;
-      nonnegative_int num_channels = 24_n;
+      positive_int batch_size = 16_p;
+      positive_int batch_degree = 2_p;
+      positive_int num_channels = 24_p;
 
       TensorShape a_shape = TensorShape{
           TensorDims{
-              FFOrdered<nonnegative_int>{
+              FFOrdered{
                   batch_size,
                   num_channels,
               },
@@ -179,7 +179,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       a_tensor =
           builder.parallel_partition(a_tensor, ff_dim_t{0_n}, batch_degree);
 
-      nonnegative_int outDim = 16_n;
+      positive_int outDim = 16_p;
       std::string x_matmul_name = "x_matmul";
       std::string y_matmul_name = "y_matmul";
       parallel_tensor_guid_t t0 =

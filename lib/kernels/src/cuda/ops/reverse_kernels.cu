@@ -63,10 +63,10 @@ void forward_kernel(ffStream_t stream,
       stream,
       input_accessor.get_float_ptr(),
       output_accessor.get_float_ptr(),
-      reverse_kernels_params.num_out_blks.unwrap_nonnegative(),
-      reverse_kernels_params.reverse_dim_size.unwrap_nonnegative(),
-      reverse_kernels_params.in_blk_size.unwrap_nonnegative(),
-      reverse_kernels_params.out_size.unwrap_nonnegative());
+      reverse_kernels_params.num_out_blks.int_from_positive_int(),
+      reverse_kernels_params.reverse_dim_size.int_from_positive_int(),
+      reverse_kernels_params.in_blk_size.int_from_positive_int(),
+      reverse_kernels_params.out_size.int_from_positive_int());
 }
 
 void backward_kernel_internal(cudaStream_t stream,
@@ -95,10 +95,10 @@ void backward_kernel(ffStream_t stream,
       stream,
       output_grad_accessor.get_float_ptr(),
       input_grad_accessor.get_float_ptr(),
-      reverse_kernels_params.num_out_blks.unwrap_nonnegative(),
-      reverse_kernels_params.reverse_dim_size.unwrap_nonnegative(),
-      reverse_kernels_params.in_blk_size.unwrap_nonnegative(),
-      reverse_kernels_params.out_size.unwrap_nonnegative());
+      reverse_kernels_params.num_out_blks.int_from_positive_int(),
+      reverse_kernels_params.reverse_dim_size.int_from_positive_int(),
+      reverse_kernels_params.in_blk_size.int_from_positive_int(),
+      reverse_kernels_params.out_size.int_from_positive_int());
 }
 
 } // namespace FlexFlow::Kernels::Reverse

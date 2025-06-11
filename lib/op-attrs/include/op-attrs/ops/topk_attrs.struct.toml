@@ -10,12 +10,12 @@ features = [
 ]
 
 includes = [
-  "utils/nonnegative_int/nonnegative_int.h",
+  "utils/positive_int/positive_int.h",
 ]
 
 [[fields]]
 name = "k"
-type = "::FlexFlow::nonnegative_int"
+type = "::FlexFlow::positive_int"
 
 [[fields]]
 name = "sorted"
