@@ -1,4 +1,4 @@
-#include "internal/test_utils.h"
+#include "kernels/test_utils.h"
 #include "kernels/create_accessor_with_contents.h"
 #include "kernels/format_accessor_contents.h"
 #include "kernels/replicate_kernels_cpu.h"

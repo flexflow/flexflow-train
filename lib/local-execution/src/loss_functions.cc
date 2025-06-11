@@ -16,6 +16,7 @@
 #include "op-attrs/ops/loss_functions.h"
 #include "kernels/loss_function_kernels.h"
 #include "local-execution/loss_functions.h"
+#include "kernels/format_accessor_contents.h"
 #include "task-spec/profiling.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
 
@@ -55,6 +56,7 @@ static void backward_task_impl(TaskArgumentAccessor const &acc) {
   auto logit_grad = acc.get_tensor_grad<Permissions::RW>(LOGIT_GRAD);
   auto logit = acc.get_tensor<Permissions::RO>(LOGIT);
   auto label = acc.get_loss_tensor<Permissions::RO>(LABEL);
+
   int batch_size = logit.shape.at(legion_dim_t{1_n}).int_from_positive_int();
   // assuming logit shape is [batch dim, num classes]
 
@@ -109,15 +111,23 @@ static void backward_task_impl(TaskArgumentAccessor const &acc) {
         logit.shape.at(legion_dim_t{0_n}).int_from_positive_int();
     switch (loss_type) {
       case LossFunction::CATEGORICAL_CROSSENTROPY: {
+        size_t logit_volume = get_num_elements(logit.shape).int_from_positive_int();
+        size_t logit_grad_volume =
+            get_num_elements(logit_grad.shape).int_from_positive_int();
+
         profile(categorical_crossentropy_loss_backward_kernel,
                 profiling,
                 "[CategoricalCrossEntropyLoss] backward_time = %.2lfms\n",
                 get_float_ptr(logit_grad),
                 get_float_ptr(logit),
                 get_float_ptr(label),
-                get_num_elements(logit.shape).int_from_positive_int(),
-                get_num_elements(logit_grad.shape).int_from_positive_int(),
+                logit_volume,
+                logit_grad_volume,
                 scale_factor);
+
+        
+        std::cout << "Logit grad (loss) tensor after computation" << std::endl;
+        std::cout << format_accessor_w_contents(logit_grad) << std::endl;
         break;
       }
       case LossFunction::MEAN_SQUARED_ERROR_AVG_REDUCE: {

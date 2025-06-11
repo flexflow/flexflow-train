@@ -1,5 +1,6 @@
 #include "task-spec/ops/linear.h"
 #include "kernels/linear_kernels.h"
+#include "kernels/format_accessor_contents.h"
 #include "op-attrs/ff_dim_t.h"
 #include "task-spec/task_argument_accessor.h"
 #include "utils/exception.h"
@@ -90,6 +91,12 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto weight = acc.get_tensor<Permissions::RO>(WEIGHT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
+  std::cout << "Input tensor" << std::endl;
+  std::cout << format_accessor_r_contents(input) << std::endl;
+
+  std::cout << "Weight tensor" << std::endl;
+  std::cout << format_accessor_r_contents(weight) << std::endl;
+
   auto per_device_state =
       acc.get_argument<LinearPerDeviceState>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
@@ -105,7 +112,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
     bias_ptr = bias.get_float_ptr();
   }
 
-  return profile(forward_kernel,
+  auto result = profile(forward_kernel,
                  profiling,
                  "[Linear] forward_time = {:.2lf}ms\n",
                  per_device_state,
@@ -116,6 +123,11 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
                  in_dim.int_from_positive_int(),
                  out_dim.int_from_positive_int(),
                  batch_size.int_from_positive_int());
+  
+  std::cout << "Output tensor" << std::endl;
+  std::cout << format_accessor_w_contents(output) << std::endl;
+
+  return result;
 }
 
 static std::optional<float>
@@ -127,6 +139,12 @@ static std::optional<float>
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(INPUT);
   auto weight_grad = acc.get_tensor_grad<Permissions::RW>(WEIGHT);
   auto output_grad = acc.get_tensor_grad<Permissions::RW>(OUTPUT);
+
+  std::cout << "output grad tensor" << std::endl;
+  std::cout << format_accessor_w_contents(output_grad) << std::endl;
+
+  std::cout << "weight grad tensor" << std::endl;
+  std::cout << format_accessor_w_contents(weight_grad) << std::endl;
 
   auto per_device_state =
       acc.get_argument<LinearPerDeviceState>(PER_DEVICE_STATE);
@@ -143,7 +161,7 @@ static std::optional<float>
   positive_int out_dim = output.shape.at(ff_dim_t{0_n});
   positive_int batch_size = positive_int{output.shape.num_elements() / out_dim};
 
-  return profile(backward_kernel,
+  auto result = profile(backward_kernel,
                  profiling,
                  "[Linear] backward_time = {:.2lf}ms\n",
                  per_device_state,
@@ -157,6 +175,13 @@ static std::optional<float>
                  in_dim.int_from_positive_int(),
                  out_dim.int_from_positive_int(),
                  batch_size.int_from_positive_int());
+  std::cout << "output grad tensor after backward kernel" << std::endl;
+  std::cout << format_accessor_w_contents(output_grad) << std::endl;
+
+  std::cout << "weight grad tensor after backward kernel" << std::endl;
+  std::cout << format_accessor_w_contents(weight_grad) << std::endl;
+
+  return result;
 }
 
 TaskImplFunction get_linear_init_task_impl() {

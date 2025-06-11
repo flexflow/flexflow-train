@@ -1,4 +1,4 @@
-#include "internal/test_utils.h"
+#include "kernels/test_utils.h"
 #include "kernels/concat_kernels.h"
 #include "utils/containers/repeat.h"
 #include <doctest/doctest.h>

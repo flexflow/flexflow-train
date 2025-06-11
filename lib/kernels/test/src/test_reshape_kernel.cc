@@ -1,4 +1,4 @@
-#include "internal/test_utils.h"
+#include "kernels/test_utils.h"
 #include "kernels/reshape_kernels.h"
 #include <doctest/doctest.h>
 

@@ -161,14 +161,14 @@ std::string format_accessor_r_contents(GenericTensorAccessorR const &accessor) {
   GenericTensorAccessorR cpu_accessor =
       copy_tensor_accessor_r_to_cpu_if_necessary(accessor, cpu_allocator);
 
-  int num_dims = accessor.shape.num_dims().unwrap_nonnegative();
+  int num_dims = cpu_accessor.shape.num_dims().unwrap_nonnegative();
   switch (num_dims) {
     case 1:
-      return format_1d_accessor_r_contents(accessor);
+      return format_1d_accessor_r_contents(cpu_accessor);
     case 2:
-      return format_2d_accessor_r_contents(accessor);
+      return format_2d_accessor_r_contents(cpu_accessor);
     case 3:
-      return format_3d_accessor_r_contents(accessor);
+      return format_3d_accessor_r_contents(cpu_accessor);
     default:
       PANIC("Unhandled accessor dimensionality", num_dims);
   }

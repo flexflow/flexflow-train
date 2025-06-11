@@ -1,4 +1,4 @@
-#include "internal/test_utils.h"
+#include "kernels/test_utils.h"
 #include "kernels/create_accessor_with_contents.h"
 #include "kernels/format_accessor_contents.h"
 #include "kernels/replicate_kernels.h"
@@ -31,7 +31,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     SUBCASE("forward_kernel") {
       GenericTensorAccessorR input =
-          create_1d_accessor_r_with_contents<int32_t>({1, 3, 2}, gpu_allocator);
+          create_1d_accessor_r_with_contents<float>({1, 3, 2}, gpu_allocator);
 
       GenericTensorAccessorW output =
           gpu_allocator.allocate_tensor(output_shape);
@@ -47,7 +47,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     SUBCASE("backward_kernel") {
       GenericTensorAccessorR output_grad =
-          create_2d_accessor_r_with_contents<int32_t>(
+          create_2d_accessor_r_with_contents<float>(
               {
                   {1, 2, 3},
                   {4, 3, 3},
@@ -56,7 +56,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
               gpu_allocator);
 
       GenericTensorAccessorR correct =
-          create_1d_accessor_r_with_contents<int32_t>(
+          create_1d_accessor_r_with_contents<float>(
               {1 + 2 + 3, 4 + 3 + 3, 1 + 3 + 5}, cpu_allocator);
 
       GenericTensorAccessorW input_grad =

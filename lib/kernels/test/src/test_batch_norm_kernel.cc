@@ -1,4 +1,4 @@
-#include "internal/test_utils.h"
+#include "kernels/test_utils.h"
 #include "kernels/batch_norm_kernels.h"
 #include "op-attrs/datatype_value.h"
 #include <doctest/doctest.h>

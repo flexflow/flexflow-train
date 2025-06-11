@@ -1,10 +1,7 @@
 #include "kernels/compare_tensor_accessors.h"
-#include "kernels/copy_tensor_accessor.h"
-#include "kernels/local_cpu_allocator.h"
-#include "kernels/local_cuda_allocator.h"
-#include "kernels/managed_ff_stream.h"
-#include "kernels/managed_per_device_ff_handle.h"
+#include "kernels/format_accessor_contents.h"
 #include "kernels/tensor_accessor_reductions.h"
+#include "kernels/test_utils.h"
 #include "local-execution/allocated_tensors.h"
 #include "local-execution/local_training_backing.h"
 #include "local-execution/model_training_instance.h"
@@ -45,32 +42,33 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     positive_int hidden_dim = 32_p;
     positive_int output_dim = 1_p;
 
+    TensorShape input_tensor_shape = TensorShape{
+        TensorDims{FFOrdered{batch_size, data_dim}}, DataType::FLOAT};
     TensorShape output_tensor_shape = TensorShape{
         TensorDims{FFOrdered{batch_size, output_dim}}, DataType::FLOAT};
 
-    GenericTensorAccessorW label_tensor_backing =
-        allocator.allocate_tensor(output_tensor_shape);
-    AllocatedTensors allocated_tensors = AllocatedTensors{
-        /*tensor_type_backings=*/{
-            {TensorTypeVariant{label_tensor}, label_tensor_backing},
-        },
-        /*gradient_mapping=*/{},
-        /*optimizer_mapping*/ {},
-    };
+    GenericTensorAccessorW label_tensor_backing = create_random_filled_accessor_w(
+        output_tensor_shape, allocator);
 
     // construct computation graph
     ComputationGraph computation_graph = make_empty_computation_graph();
 
-    TensorShape input_tensor_shape = TensorShape{
-        TensorDims{FFOrdered{batch_size, data_dim}}, DataType::FLOAT};
 
     TensorShape weight_shape_1 = TensorShape{
         TensorDims{FFOrdered{data_dim, hidden_dim}}, DataType::FLOAT};
     TensorShape weight_shape_2 = TensorShape{
         TensorDims{FFOrdered{hidden_dim, output_dim}}, DataType::FLOAT};
 
+    GenericTensorAccessorW weight_1_backing = create_random_filled_accessor_w(
+        weight_shape_1, allocator);
+    GenericTensorAccessorW weight_2_backing = create_random_filled_accessor_w(
+        weight_shape_2, allocator);
+
     LayerAddedResult inputs_layer =
         add_input_layer_with_grad(computation_graph, input_tensor_shape);
+    tensor_guid_t input_tensor_guid = get_only(inputs_layer.outputs);
+    GenericTensorAccessorW input_tensor_backing = create_random_filled_accessor_w(
+        input_tensor_shape, allocator);
 
     LayerAddedResult weights_layer_1 = add_layer(
         computation_graph,
@@ -79,6 +77,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                    std::nullopt},
         {},
         {});
+    tensor_guid_t weight_1_tensor_guid = get_only(weights_layer_1.outputs);
 
     LayerAddedResult weights_layer_2 = add_layer(
         computation_graph,
@@ -87,13 +86,14 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                    std::nullopt},
         {},
         {});
+    tensor_guid_t weight_2_tensor_guid = get_only(weights_layer_2.outputs);
 
     LayerAddedResult linear_operator_1 = add_layer(
         computation_graph,
         LayerAttrs{ComputationGraphOpAttrs{LinearAttrs{hidden_dim,
                                                        /*use_bias=*/false,
                                                        DataType::FLOAT,
-                                                       Activation::RELU,
+                                                       std::nullopt,
                                                        std::nullopt}},
                    std::nullopt},
         inputs_layer.outputs,
@@ -104,7 +104,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         LayerAttrs{ComputationGraphOpAttrs{LinearAttrs{output_dim,
                                                        /*use_bias=*/false,
                                                        DataType::FLOAT,
-                                                       Activation::RELU,
+                                                       std::nullopt,
                                                        std::nullopt}},
                    std::nullopt},
         linear_operator_1.outputs,
@@ -128,6 +128,17 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     GradientTensorSource gradient_tensor_source;
     OptimizerTensorSource optimizer_tensor_source;
+
+    AllocatedTensors allocated_tensors = AllocatedTensors{
+        /*tensor_type_backings=*/{
+            {TensorTypeVariant{label_tensor}, label_tensor_backing},
+            {TensorTypeVariant{input_tensor_guid}, input_tensor_backing},
+            {TensorTypeVariant{weight_1_tensor_guid}, weight_1_backing},
+            {TensorTypeVariant{weight_2_tensor_guid}, weight_2_backing},
+        },
+        /*gradient_mapping=*/{},
+        /*optimizer_mapping*/ {},
+    };
 
     LocalTrainingBacking local_training_backing =
         LocalTrainingBacking{allocator,
@@ -162,8 +173,13 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     // Assert that each sample in the batch has a lower loss in last epoch than
     // the first epoch
+    std::cout << "Final loss values" << std::endl;
     GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
+    std::cout << format_accessor_r_contents(first_epoch_loss) << std::endl;
+    
     GenericTensorAccessorR last_epoch = loss_values.back();
+    std::cout << format_accessor_r_contents(last_epoch) << std::endl;
+
     CHECK(did_loss_decrease(first_epoch_loss, last_epoch));
   }
 }

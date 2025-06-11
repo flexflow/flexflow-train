@@ -1,4 +1,4 @@
-#include "internal/test_utils.h"
+#include "kernels/test_utils.h"
 #include "kernels/reverse_kernels.h"
 #include "kernels/reverse_kernels_cpu.h"
 #include "op-attrs/datatype_value.h"

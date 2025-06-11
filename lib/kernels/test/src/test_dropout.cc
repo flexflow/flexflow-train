@@ -1,4 +1,4 @@
-#include "internal/test_utils.h"
+#include "kernels/test_utils.h"
 #include "kernels/dropout_kernels.h"
 #include "utils/containers/count.h"
 #include <doctest/doctest.h>

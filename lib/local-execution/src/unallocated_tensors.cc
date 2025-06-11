@@ -70,7 +70,6 @@ UnallocatedTensors generate_unallocated_tensors_with_optimizer(
         num_optimizer_tensors_to_allocate -=
             allocated_tensors.optimizer_mapping.at(tensor_guid).size();
       }
-      std::cout << num_optimizer_tensors_to_allocate;
 
       for (int i = 0; i < num_optimizer_tensors_to_allocate; ++i) {
         optimizer_tensor_t optimizer_tensor =
