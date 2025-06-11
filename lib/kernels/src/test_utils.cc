@@ -1,4 +1,4 @@
-#include "internal/test_utils.h"
+#include "kernels/test_utils.h"
 #include "op-attrs/tensor_shape.h"
 #include "utils/containers/require_all_same1.h"
 #include "utils/join_strings.h"
