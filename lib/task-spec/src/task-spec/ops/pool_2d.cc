@@ -8,7 +8,7 @@ using namespace FlexFlow::Kernels::Pool2D;
 
 namespace FlexFlow {
 
-enum Slots { INPUT, OUTPUT, ATTRS, PROFILING, PER_DEVICE_STATE, HANDLE };
+enum Slots { INPUT, OUTPUT, ATTRS, PROFILING, PER_DEVICE_STATE, HANDLE, KERNEL_DEVICE_TYPE };
 
 OpTaskInvocation init(Pool2DAttrs const &attrs) {
   OpTaskBinding binding;
@@ -16,6 +16,7 @@ OpTaskInvocation init(Pool2DAttrs const &attrs) {
   binding.bind(OUTPUT, output_tensor(0));
   binding.bind_arg(ATTRS, attrs);
   binding.bind_arg(HANDLE, ff_handle());
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
   return OpTaskInvocation{
     task_id_t::POOL2D_INIT_TASK_ID, 
@@ -83,6 +84,7 @@ OpTaskInvocation forward(Pool2DAttrs const &attrs) {
   binding.bind(OUTPUT, output_tensor(0));
 
   binding.bind_arg(PROFILING, profiling_settings());
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
   binding.bind_arg(PER_DEVICE_STATE,
                    per_device_op_state<Pool2DPerDeviceState>());
 
@@ -103,6 +105,7 @@ OpTaskInvocation backward(Pool2DAttrs const &attrs) {
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   Pool2DPerDeviceState state =
       acc.get_argument<Pool2DPerDeviceState>(PER_DEVICE_STATE);
 
@@ -111,6 +114,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 
   return profile(forward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[Pool2D] forward_time = {:.2lf}ms\n",
                  state,
                  input.get_float_ptr(),
@@ -120,6 +124,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   Pool2DPerDeviceState state =
       acc.get_argument<Pool2DPerDeviceState>(PER_DEVICE_STATE);
 
@@ -130,6 +135,7 @@ static std::optional<float>
 
   return profile(backward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[Pool2D] backward_time = {:.2lf}ms\n",
                  state,
                  output.get_float_ptr(),
@@ -155,6 +161,7 @@ OpTaskSignature get_pool_2d_init_signature() {
   init.add_output_slot(OUTPUT);
 
   init.add_arg_slot<Pool2DAttrs>(ATTRS);
+  init.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
   init.add_unchecked_arg_slot<PerDeviceFFHandle>(HANDLE);
 
   init.add_return_value<FlexFlow::Pool2DPerDeviceState>();
@@ -166,6 +173,7 @@ OpTaskSignature get_pool_2d_fwd_signature() {
   fwd.add_input_slot(INPUT);
   fwd.add_output_slot(OUTPUT);
   fwd.add_arg_slot<ProfilingSettings>(PROFILING);
+  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
 
   fwd.add_unchecked_arg_slot<Pool2DPerDeviceState>(PER_DEVICE_STATE);
   return fwd;

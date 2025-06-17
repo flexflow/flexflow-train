@@ -14,13 +14,13 @@
  */
 
 #include "internal/device.h"
-#include "kernels/batch_matmul_kernels.h"
+#include "kernels/batch_matmul_kernels_gpu.h"
 
 namespace FlexFlow {
 namespace Kernels {
 namespace BatchMatmul {
 
-void forward_kernel(cudaStream_t stream,
+void gpu_forward_kernel(cudaStream_t stream,
                     PerDeviceFFHandle const &handle,
                     float *output_ptr,
                     float const *a_input_ptr,
@@ -83,7 +83,7 @@ void forward_kernel(cudaStream_t stream,
                                         batch));
 }
 
-void backward_kernel(cudaStream_t stream,
+void gpu_backward_kernel(cudaStream_t stream,
                      PerDeviceFFHandle const &handle,
                      float const *o_ptr,
                      float const *o_grad_ptr,

@@ -1,17 +1,10 @@
-#ifndef _FLEXFLOW_OPS_KERNELS_CONV_2D_KERNELS_H
-#define _FLEXFLOW_OPS_KERNELS_CONV_2D_KERNELS_H
-
-#include "kernels/accessor.h"
-#include "kernels/ff_handle.h"
-#include "op-attrs/activation.dtg.h"
-#include "kernels/conv_2d_per_device_state.dtg.h"
-#include "kernels/device_stream_t.dtg.h"
+#ifndef _FLEXFLOW_LIB_KERNELS_INCLUDE_KERNELS_CONV_2D_KERNELS_GPU_H
+#define _FLEXFLOW_LIB_KERNELS_INCLUDE_KERNELS_CONV_2D_KERNELS_GPU_H
 
 namespace FlexFlow::Kernels::Conv2D {
 
-std::optional<Conv2DPerDeviceState> init_kernel(DeviceType device_type,
-                                                PerDeviceFFHandle handle,
-                                 std::optional<Activation> activation,
+Conv2DPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
+                                 std::optional<Activation> const &activation,
                                  int kernel_h,
                                  int kernel_w,
                                  int groups,
@@ -24,16 +17,16 @@ std::optional<Conv2DPerDeviceState> init_kernel(DeviceType device_type,
                                  float const *filter_ptr,
                                  float *filter_grad_ptr);
 
-void forward_kernel(device_stream_t const &stream,
-                    Conv2DPerDeviceState const &per_device_state,
+void gpu_forward_kernel(ffStream_t stream,
+                    Conv2DPerDeviceState const &m,
                     float const *input_ptr,
                     float *output_ptr,
                     float const *filter_ptr,
                     float const *bias_ptr,
                     std::optional<Activation> activation);
 
-void backward_kernel(device_stream_t const &stream,
-                     Conv2DPerDeviceState const &per_device_state,
+void gpu_backward_kernel(ffStream_t stream,
+                     Conv2DPerDeviceState const &m,
                      float const *output_ptr,
                      float *output_grad_ptr,
                      float const *input_ptr,
@@ -43,9 +36,8 @@ void backward_kernel(device_stream_t const &stream,
                      float *bias_grad_ptr,
                      std::optional<Activation> activation);
 
-void cleanup_kernel(DeviceType device_type,
-                    std::optional<Conv2DPerDeviceState> &per_device_state);
+void gpu_cleanup_kernel(Conv2DPerDeviceState &per_device_state);
 
 } // namespace FlexFlow
 
-#endif // _FLEXFLOW_OPS_KERNELS_CONV_2D_KERNELS_H
+#endif

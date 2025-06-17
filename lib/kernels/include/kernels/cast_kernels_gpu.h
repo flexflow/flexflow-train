@@ -11,8 +11,8 @@ void gpu_forward_kernel(ffStream_t stream,
                     GenericTensorAccessorW const &output);
 
 void gpu_backward_kernel(ffStream_t stream,
-                     GenericTensorAccessorR const &output,
-                     GenericTensorAccessorW const &input);
+                     GenericTensorAccessorR const &output_grad,
+                     GenericTensorAccessorW const &input_grad);
 
 } // namespace FlexFlow
 

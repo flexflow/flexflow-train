@@ -1,28 +1,26 @@
-#ifndef _FLEXFLOW_OPS_KERNELS_ELEMENT_UNARY_KERNELS_H
-#define _FLEXFLOW_OPS_KERNELS_ELEMENT_UNARY_KERNELS_H
+#ifndef _FLEXFLOW_LIB_KERNELS_INCLUDE_KERNELS_ELEMENT_UNARY_KERNELS_GPU_H
+#define _FLEXFLOW_LIB_KERNELS_INCLUDE_KERNELS_ELEMENT_UNARY_KERNELS_GPU_H
 
 #include "kernels/accessor.h"
 #include "kernels/ff_handle.h"
+#include "kernels/device.h"
 #include "op-attrs/ops/element_unary_attrs.dtg.h"
-#include "kernels/device_stream_t.dtg.h"
-#include "kernels/element_unary_per_device_state.dtg.h"
 
 namespace FlexFlow::Kernels::ElementUnary {
 
-std::optional<ElementUnaryPerDeviceState> init_kernel(DeviceType device_type,
-                                                      ArrayShape const &input_shape,
+ElementUnaryPerDeviceState gpu_init_kernel(ArrayShape const &input_shape,
                                        ArrayShape const &output_shape,
                                        ElementUnaryAttrs const &attrs);
 
-void forward_kernel(device_stream_t const &stream,
-                    std::optional<ElementUnaryPerDeviceState> const &device_state,
+void gpu_forward_kernel(ffStream_t stream,
+                    ElementUnaryPerDeviceState const &per_device_state,
                     ElementUnaryAttrs const &attrs,
                     PerDeviceFFHandle const &handle,
                     GenericTensorAccessorR const &input,
                     GenericTensorAccessorW const &output);
 
-void backward_kernel(device_stream_t const &stream,
-                     std::optional<ElementUnaryPerDeviceState> const &device_state,
+void gpu_backward_kernel(ffStream_t stream,
+                     ElementUnaryPerDeviceState const &per_device_state,
                      ElementUnaryAttrs const &attrs,
                      PerDeviceFFHandle const &handle,
                      GenericTensorAccessorR const &output,
@@ -30,9 +28,8 @@ void backward_kernel(device_stream_t const &stream,
                      GenericTensorAccessorR const &input,
                      GenericTensorAccessorW const &input_grad);
 
-void cleanup_kernel(DeviceType device_type,
-                    std::optional<ElementUnaryPerDeviceState> &per_device_state);
+void gpu_cleanup_kernel(ElementUnaryPerDeviceState &per_device_state);
 
-} // namespace Kernels::ElementUnary
+} // namespace FlexFlow
 
 #endif

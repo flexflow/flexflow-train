@@ -1,13 +1,8 @@
-#ifndef _FLEXFLOW_OPS_KERNELS_BATCH_MATMUL_KERNELS_H
-#define _FLEXFLOW_OPS_KERNELS_BATCH_MATMUL_KERNELS_H
-
-#include "kernels/ff_handle.h"
-#include "kernels/device_stream_t.dtg.h"
+#include "kernels/batch_matmul_kernels_cpu.h"
 
 namespace FlexFlow::Kernels::BatchMatmul {
 
-void forward_kernel(device_stream_t const &stream,
-                    PerDeviceFFHandle const &handle,
+void cpu_forward_kernel(PerDeviceFFHandle const &handle,
                     float *output_ptr,
                     float const *a_input_ptr,
                     float const *b_input_ptr,
@@ -17,10 +12,11 @@ void forward_kernel(device_stream_t const &stream,
                     int batch,
                     int seq_length,
                     int a_seq_length_dim,
-                    int b_seq_length_dim);
+                    int b_seq_length_dim) {
+  NOT_IMPLEMENTED();
+}
 
-void backward_kernel(device_stream_t const &stream,
-                     PerDeviceFFHandle const &handle,
+void cpu_backward_kernel(PerDeviceFFHandle const &handle,
                      float const *o_ptr,
                      float const *o_grad_ptr,
                      float const *a_ptr,
@@ -30,8 +26,9 @@ void backward_kernel(device_stream_t const &stream,
                      int m,
                      int n,
                      int k,
-                     int batch);
+                     int batch) {
+  NOT_IMPLEMENTED();
+}
 
-} // namespace FlexFlow::Kernels::BatchMatmul
 
-#endif
+} // namespace FlexFlow

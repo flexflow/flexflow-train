@@ -73,7 +73,7 @@ static DeviceSpecificDeviceStates
   auto filter = acc.get_tensor<Permissions::RO>(FILTER);
   auto filter_grad = acc.get_tensor_grad<Permissions::RW>(FILTER);
 
-  Conv2DPerDeviceState per_device_state =
+  std::optional<Conv2DPerDeviceState> per_device_state =
       init_kernel(
                   /*device_type=*/kernel_device_type,
                   /*handle=*/handle,

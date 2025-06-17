@@ -15,9 +15,16 @@
 
 #include "internal/device.h"
 #include "kernels/datatype_dispatch.h"
-#include "kernels/embedding_kernels.h"
+#include "kernels/embedding_kernels_gpu.h"
 
 namespace FlexFlow::Kernels::Embedding {
+
+template <typename TD>
+__global__ void rand_generate_int(TD *ptr, size_t size, TD p) {
+  CUDA_KERNEL_LOOP(i, size) {
+    ptr[i] = i % p;
+  }
+}
 
 void rand_generate_int64_wrapper(int64_t *ptr, size_t size, int64_t p) {
   cudaStream_t stream;
@@ -306,13 +313,6 @@ __global__ void embed_backward_with_aggr<half>(int64_t const *input,
       embed[wordIdx * out_dim + off] += gradient;
 #endif
     }
-  }
-}
-
-template <typename TD>
-__global__ void rand_generate_int(TD *ptr, size_t size, TD p) {
-  CUDA_KERNEL_LOOP(i, size) {
-    ptr[i] = i % p;
   }
 }
 
@@ -784,7 +784,7 @@ struct BackwardKernel<DataType::INT64, DataType::HALF> {
   }
 };
 
-void forward_kernel(ffStream_t stream,
+void gpu_forward_kernel(ffStream_t stream,
                     GenericTensorAccessorR const &input,
                     GenericTensorAccessorW const &output,
                     GenericTensorAccessorR const &weight,
@@ -806,7 +806,7 @@ void forward_kernel(ffStream_t stream,
                                      batch_size);
 }
 
-void backward_kernel(cudaStream_t stream,
+void gpu_backward_kernel(cudaStream_t stream,
                      GenericTensorAccessorR const &output,
                      GenericTensorAccessorR const &input,
                      GenericTensorAccessorW const &weight_grad,

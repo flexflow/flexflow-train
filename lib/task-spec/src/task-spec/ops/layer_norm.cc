@@ -34,7 +34,8 @@ enum Slots {
   BETA,
   PER_DEVICE_STATE,
   ATTRS,
-  HANDLE
+  HANDLE,
+  KERNEL_DEVICE_TYPE,
 };
 
 OpTaskInvocation init(LayerNormAttrs const &attrs) {
@@ -43,6 +44,7 @@ OpTaskInvocation init(LayerNormAttrs const &attrs) {
   b.bind(INPUT, input_tensor(0));
 
   b.bind_arg(HANDLE, ff_handle());
+  b.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
   b.bind_arg(ATTRS, attrs);
 
   return OpTaskInvocation{
@@ -59,6 +61,7 @@ OpTaskInvocation forward(LayerNormAttrs const &attrs) {
   b.bind(GAMMA, weight_tensor(0)); // todo, this may have some problem
   b.bind(BETA, weight_tensor(1));  // how to get gmmam and beta
   b.bind_arg(PROFILING, profiling_settings());
+  b.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
   b.bind_arg(PER_DEVICE_STATE, per_device_op_state<LayerNormPerDeviceState>());
 
   return OpTaskInvocation{
@@ -83,10 +86,12 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto beta = acc.get_tensor<Permissions::RW>(BETA);
 
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto &state = acc.get_argument<LayerNormPerDeviceState>(PER_DEVICE_STATE);
 
   return profile(forward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[LayerNorm] forward time = {:.2lf}ms\n",
                  state,
                  input,
@@ -106,10 +111,12 @@ static std::optional<float>
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
 
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto &state = acc.get_argument<LayerNormPerDeviceState>(PER_DEVICE_STATE);
 
   return profile(backward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[LayerNorm] backward time = {:.2lf}ms\n",
                  state,
                  output_grad,
@@ -171,6 +178,7 @@ OpTaskSignature get_layer_norm_fwd_signature() {
   fwd.add_weight_slot(BETA);
 
   fwd.add_arg_slot<ProfilingSettings>(PROFILING);
+  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
   fwd.add_unchecked_arg_slot<LayerNormPerDeviceState>(PER_DEVICE_STATE);
   return fwd;
 }
@@ -185,6 +193,7 @@ OpTaskSignature get_layer_norm_init_signature() {
 
   init.add_input_slot(INPUT);
   init.add_arg_slot<LayerNormAttrs>(ATTRS);
+  init.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
   init.add_unchecked_arg_slot<PerDeviceFFHandle>(HANDLE);
 
   init.add_return_value<LayerNormPerDeviceState>();

@@ -95,17 +95,17 @@ static DeviceSpecificDeviceStates
 
   float *runningMean;
 
-  BatchNormPerDeviceState per_device_state =
+  std::optional<BatchNormPerDeviceState> per_device_state =
       init_kernel(
                   /*device_type=*/kernel_device_type,
-                  handle,
-                  allocator,
-                  runningMean,
-                  output_n.int_from_positive_int(),
-                  output_c.int_from_positive_int(),
-                  output_h.int_from_positive_int(),
-                  output_w.int_from_positive_int(),
-                  attrs.relu);
+                  /*handle=*/handle,
+                  /*allocator=*/allocator,
+                  /*runningMean=*/runningMean,
+                  /*output_n=*/output_n.int_from_positive_int(),
+                  /*output_c=*/output_c.int_from_positive_int(),
+                  /*output_h=*/output_h.int_from_positive_int(),
+                  /*output_w=*/output_w.int_from_positive_int(),
+                  /*relu=*/attrs.relu);
 
   return DeviceSpecificDeviceStates{
       DeviceSpecific<BatchNormPerDeviceState>::create(per_device_state)};

@@ -1,13 +1,12 @@
-#ifndef _FLEXFLOW_OPS_KERNELS_EMBEDDING_KERNELS_H
-#define _FLEXFLOW_OPS_KERNELS_EMBEDDING_KERNELS_H
+#ifndef _FLEXFLOW_LIB_KERNELS_INCLUDE_KERNELS_EMBEDDING_KERNELS_CPU_H
+#define _FLEXFLOW_LIB_KERNELS_INCLUDE_KERNELS_EMBEDDING_KERNELS_CPU_H
 
 #include "kernels/accessor.h"
 #include "op-attrs/ops/embedding_attrs.dtg.h"
-#include "kernels/device_stream_t.dtg.h"
 
 namespace FlexFlow::Kernels::Embedding {
 
-void forward_kernel(device_stream_t const &stream,
+void cpu_forward_kernel(
                     GenericTensorAccessorR const &input,
                     GenericTensorAccessorW const &output,
                     GenericTensorAccessorR const &weight,
@@ -18,7 +17,7 @@ void forward_kernel(device_stream_t const &stream,
                     int out_dim,
                     int batch_size);
 
-void backward_kernel(device_stream_t const &stream,
+void cpu_backward_kernel(
                      GenericTensorAccessorR const &output,
                      GenericTensorAccessorR const &input,
                      GenericTensorAccessorW const &weight_grad,
@@ -29,6 +28,6 @@ void backward_kernel(device_stream_t const &stream,
                      int out_dim,
                      int batch_size);
 
-} // namespace FlexFlow::Kernels::Embedding
+} // namespace FlexFlow
 
-#endif // _FLEXFLOW_OPS_KERNELS_EMBEDDING_KERNELS_H
+#endif

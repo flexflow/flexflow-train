@@ -15,7 +15,7 @@
 
 #include "internal/device.h"
 #include "kernels/datatype_dispatch.h"
-#include "kernels/element_unary_kernels.h"
+#include "kernels/element_unary_kernels_gpu.h"
 #include "op-attrs/get_op_type.h"
 #include <optional>
 
@@ -48,7 +48,7 @@ static bool use_scalar(OperatorType op_type) {
   }
 }
 
-static ElementUnaryPerDeviceState init_kernel(ArrayShape const &input_shape,
+static ElementUnaryPerDeviceState gpu_init_kernel(ArrayShape const &input_shape,
                                               ArrayShape const &output_shape,
                                               OperatorType op_type) {
 
@@ -336,7 +336,7 @@ struct BackwardKernel {
   }
 };
 
-void forward_kernel(ffStream_t stream,
+void gpu_forward_kernel(ffStream_t stream,
                     ElementUnaryPerDeviceState const &device_state,
                     ElementUnaryAttrs const &attrs,
                     PerDeviceFFHandle const &handle,
@@ -352,7 +352,7 @@ void forward_kernel(ffStream_t stream,
                                      output);
 }
 
-void backward_kernel(ffStream_t stream,
+void gpu_backward_kernel(ffStream_t stream,
                      ElementUnaryPerDeviceState const &device_state,
                      ElementUnaryAttrs const &attrs,
                      PerDeviceFFHandle const &handle,
@@ -370,6 +370,10 @@ void backward_kernel(ffStream_t stream,
                                       output_grad,
                                       input,
                                       input_grad);
+}
+
+void gpu_cleanup_kernel(ElementUnaryPerDeviceState &per_device_state) {
+  NOT_IMPLEMENTED();
 }
 
 } // namespace ElementUnary

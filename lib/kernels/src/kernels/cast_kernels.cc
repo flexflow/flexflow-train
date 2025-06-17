@@ -27,8 +27,7 @@ void backward_kernel(device_stream_t const &stream,
     gpu_backward_kernel(
                         /*stream=*/stream.require_gpu(),
                         /*output_grad=*/output_grad,
-                        /*input_grad=*/input_grad,
-                        
+                        /*input_grad=*/input_grad);
   } else {
     ASSERT(stream.is_cpu());
     cpu_backward_kernel(

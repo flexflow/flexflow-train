@@ -17,13 +17,15 @@ enum slots {
   ATTRS,
   PROFILING,
   HANDLE,
-  PER_DEVICE_STATE
+  PER_DEVICE_STATE,
+  KERNEL_DEVICE_TYPE,
 };
 
 OpTaskInvocation init(LinearAttrs const &attrs) {
   OpTaskBinding binding;
 
   binding.bind_arg(HANDLE, ff_handle());
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
   binding.bind_arg(ATTRS, attrs);
 
   binding.bind(INPUT, input_tensor(0));
@@ -47,6 +49,7 @@ OpTaskInvocation forward(LinearAttrs const &attrs) {
   }
 
   binding.bind_arg(PROFILING, profiling_settings());
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
   binding.bind_arg(PER_DEVICE_STATE,
                    per_device_op_state<LinearPerDeviceState>());
   binding.bind_arg(ATTRS, attrs);
@@ -102,6 +105,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto per_device_state =
       acc.get_argument<LinearPerDeviceState>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto attrs = acc.get_argument<LinearAttrs>(ATTRS);
 
   positive_int in_dim = input.shape.at(ff_dim_t{0_n});
@@ -116,6 +120,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 
   return profile(forward_kernel,
                  profiling,
+                 kernel_device_type, 
                  "[Linear] forward_time = {:.2lf}ms\n",
                  per_device_state,
                  input.get_float_ptr(),
@@ -140,6 +145,7 @@ static std::optional<float>
   auto per_device_state =
       acc.get_argument<LinearPerDeviceState>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto attrs = acc.get_argument<LinearAttrs>(ATTRS);
 
   float *bias_grad_ptr = NULL;
@@ -154,6 +160,7 @@ static std::optional<float>
 
   return profile(backward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[Linear] backward_time = {:.2lf}ms\n",
                  per_device_state,
                  output.get_float_ptr(),
@@ -186,6 +193,7 @@ OpTaskSignature get_linear_init_signature() {
   init.add_output_slot(OUTPUT);
 
   init.add_arg_slot<LinearAttrs>(ATTRS);
+  init.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
   init.add_unchecked_arg_slot<PerDeviceFFHandle>(HANDLE);
 
   init.add_return_value<LinearPerDeviceState>();
@@ -201,6 +209,7 @@ OpTaskSignature get_linear_fwd_signature() {
   fwd.add_output_slot(OUTPUT);
 
   fwd.add_arg_slot<ProfilingSettings>(PROFILING);
+  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
   fwd.add_arg_slot<LinearAttrs>(ATTRS);
   fwd.add_unchecked_arg_slot<LinearPerDeviceState>(PER_DEVICE_STATE);
   return fwd;

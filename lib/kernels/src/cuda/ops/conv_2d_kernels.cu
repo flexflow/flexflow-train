@@ -113,8 +113,8 @@ cudnnConvolutionBwdFilterAlgo_t selectConvolutionBackwardFilterAlgorithm(
   return perfResults[0].algo;
 }
 
-Conv2DPerDeviceState init_kernel(PerDeviceFFHandle handle,
-                                 std::optional<Activation> activation,
+Conv2DPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
+                                 std::optional<Activation> const &activation,
                                  int kernel_h,
                                  int kernel_w,
                                  int groups,
@@ -253,20 +253,22 @@ Conv2DPerDeviceState init_kernel(PerDeviceFFHandle handle,
         actiDesc, CUDNN_ACTIVATION_RELU, CUDNN_PROPAGATE_NAN, 0.0));
   }
 
-  Conv2DPerDeviceState per_device_state = {handle,
-                                           inputTensor,
-                                           biasTensor,
-                                           outputTensor,
-                                           filterDesc,
-                                           actiDesc,
-                                           convDesc,
-                                           fwdAlgo,
-                                           bwdFilterAlgo,
-                                           bwdDataAlgo};
+  Conv2DPerDeviceState per_device_state = Conv2DPerDeviceState{
+    handle,
+    inputTensor,
+    biasTensor,
+    outputTensor,
+    filterDesc,
+    actiDesc,
+    convDesc,
+    fwdAlgo,
+    bwdFilterAlgo,
+    bwdDataAlgo,
+  };
   return per_device_state;
 }
 
-void forward_kernel(ffStream_t stream,
+void gpu_forward_kernel(ffStream_t stream,
                     Conv2DPerDeviceState const &m,
                     float const *input_ptr,
                     float *output_ptr,
@@ -311,7 +313,7 @@ void forward_kernel(ffStream_t stream,
   }
 }
 
-void backward_kernel(ffStream_t stream,
+void gpu_backward_kernel(ffStream_t stream,
                      Conv2DPerDeviceState const &m,
                      float const *output_ptr,
                      float *output_grad_ptr,
@@ -384,6 +386,10 @@ void backward_kernel(ffStream_t stream,
                                             m.inputTensor,
                                             input_grad_ptr));
   }
+}
+
+void gpu_cleanup_kernel(Conv2DPerDeviceState &per_device_state) {
+  NOT_IMPLEMENTED();
 }
 
 } // namespace Conv2D
