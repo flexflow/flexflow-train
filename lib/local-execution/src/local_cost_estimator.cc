@@ -95,10 +95,8 @@ CostDetails LocalCostEstimator::estimate_cost(
 
   float fwd =
       execute_forward(local_backing, operator_layer_guid, allocator).value();
-  std::cout << "completed forward" << std::endl;
   float bwd =
       execute_backward(local_backing, operator_layer_guid, allocator).value();
-  std::cout << "completed  backward" << std::endl;
 
   float total_execution_time = fwd + bwd;
 

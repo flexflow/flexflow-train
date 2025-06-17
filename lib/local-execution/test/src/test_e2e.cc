@@ -173,12 +173,9 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     // Assert that each sample in the batch has a lower loss in last epoch than
     // the first epoch
-    std::cout << "Final loss values" << std::endl;
     GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
-    std::cout << format_accessor_r_contents(first_epoch_loss) << std::endl;
     
     GenericTensorAccessorR last_epoch = loss_values.back();
-    std::cout << format_accessor_r_contents(last_epoch) << std::endl;
 
     CHECK(did_loss_decrease(first_epoch_loss, last_epoch));
   }

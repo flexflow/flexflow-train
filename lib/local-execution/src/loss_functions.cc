@@ -126,8 +126,6 @@ static void backward_task_impl(TaskArgumentAccessor const &acc) {
                 scale_factor);
 
         
-        std::cout << "Logit grad (loss) tensor after computation" << std::endl;
-        std::cout << format_accessor_w_contents(logit_grad) << std::endl;
         break;
       }
       case LossFunction::MEAN_SQUARED_ERROR_AVG_REDUCE: {

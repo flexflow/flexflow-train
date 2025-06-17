@@ -91,12 +91,6 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto weight = acc.get_tensor<Permissions::RO>(WEIGHT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
-  std::cout << "Input tensor" << std::endl;
-  std::cout << format_accessor_r_contents(input) << std::endl;
-
-  std::cout << "Weight tensor" << std::endl;
-  std::cout << format_accessor_r_contents(weight) << std::endl;
-
   auto per_device_state =
       acc.get_argument<LinearPerDeviceState>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
@@ -123,9 +117,6 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
                  in_dim.int_from_positive_int(),
                  out_dim.int_from_positive_int(),
                  batch_size.int_from_positive_int());
-  
-  std::cout << "Output tensor" << std::endl;
-  std::cout << format_accessor_w_contents(output) << std::endl;
 
   return result;
 }
@@ -139,12 +130,6 @@ static std::optional<float>
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(INPUT);
   auto weight_grad = acc.get_tensor_grad<Permissions::RW>(WEIGHT);
   auto output_grad = acc.get_tensor_grad<Permissions::RW>(OUTPUT);
-
-  std::cout << "output grad tensor" << std::endl;
-  std::cout << format_accessor_w_contents(output_grad) << std::endl;
-
-  std::cout << "weight grad tensor" << std::endl;
-  std::cout << format_accessor_w_contents(weight_grad) << std::endl;
 
   auto per_device_state =
       acc.get_argument<LinearPerDeviceState>(PER_DEVICE_STATE);
@@ -175,11 +160,6 @@ static std::optional<float>
                  in_dim.int_from_positive_int(),
                  out_dim.int_from_positive_int(),
                  batch_size.int_from_positive_int());
-  std::cout << "output grad tensor after backward kernel" << std::endl;
-  std::cout << format_accessor_w_contents(output_grad) << std::endl;
-
-  std::cout << "weight grad tensor after backward kernel" << std::endl;
-  std::cout << format_accessor_w_contents(weight_grad) << std::endl;
 
   return result;
 }
