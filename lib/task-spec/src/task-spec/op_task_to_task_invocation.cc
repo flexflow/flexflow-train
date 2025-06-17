@@ -1,35 +1,64 @@
 #include "task-spec/op_task_to_task_invocation.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/computation_graph.h"
+#include "task-spec/slot_grad_id.dtg.h"
+#include "task-spec/training_layer_plus_context.h"
 
 namespace FlexFlow {
 
 TaskInvocation lower_to_task_invocation(
     OpTaskInvocation const &op_task_invocation,
+    TrainingLayerPlusContext const &training_layer,
+    std::optional<DeviceSpecificDeviceStates> const &device_specific_device_states) {
+
+  return lower_to_task_invocation(
+    /*op_task_invocation=*/op_task_invocation,
+    /*layer_guid=*/training_layer.layer_guid,
+    /*input_tensors=*/get_input_tensors(training_layer),
+    /*input_gradient_tensors=*/get_input_grad_tensors(training_layer),
+    /*input_tensor_shapes=*/get_input_tensor_shapes(training_layer),
+    /*weight_tensors=*/get_weight_tensors(training_layer),
+    /*weight_grad_tensors=*/get_weight_grad_tensors(training_layer),
+    /*output_tensors=*/get_output_tensors(training_layer),
+    /*output_gradient_tensors=*/get_output_grad_tensors(training_layer),
+    /*device_specific_device_states=*/device_specific_device_states);
+}
+
+TaskInvocation lower_to_task_invocation(
+    OpTaskInvocation const &op_task_invocation,
     layer_guid_t const &layer_guid,
-    std::vector<tensor_guid_t> const &input_tensors,
+    std::vector<forward_tensor_guid_t> const &input_tensors,
+    std::vector<gradient_tensor_guid_t> const &input_gradient_tensors,
     std::vector<TensorShape> const &input_tensor_shapes,
-    std::vector<tensor_guid_t> const &output_tensors,
-    std::vector<tensor_guid_t> const &weight_tensors,
-    std::unordered_map<tensor_guid_t, gradient_tensor_t> const
-        &tensor_gradient_mapping,
+    std::vector<forward_tensor_guid_t> const &output_tensors,
+    std::vector<gradient_tensor_guid_t> const &output_gradient_tensors,
+    std::vector<forward_tensor_guid_t> const &weight_tensors,
+    std::vector<gradient_tensor_guid_t> const &weight_gradient_tensors,
     std::optional<DeviceSpecificDeviceStates> const &device_states) {
   TaskBinding binding;
 
   for (auto const &tensor_binding :
        op_task_invocation.binding.get_tensor_bindings()) {
-    tensor_guid_t tensor_to_bind = [&] {
+    auto [tensor_to_bind, gradient_tensor_guid_to_bind] = [&] {
       OpTensorSpec tensor_binding_spec = tensor_binding.second;
       switch (tensor_binding_spec.role) {
         case TensorRole::INPUT:
-          return input_tensors.at(tensor_binding_spec.idx);
+          return std::pair{
+            input_tensors.at(tensor_binding_spec.idx),
+            input_gradient_tensors.at(tensor_binding_spec.idx),
+          };
         case TensorRole::OUTPUT:
-          return output_tensors.at(tensor_binding_spec.idx);
+          return std::pair{
+            output_tensors.at(tensor_binding_spec.idx),
+            output_gradient_tensors.at(tensor_binding_spec.idx),
+          };
         case TensorRole::WEIGHT:
-          return weight_tensors.at(tensor_binding_spec.idx);
+          return std::pair{
+            weight_tensors.at(tensor_binding_spec.idx),
+            weight_gradient_tensors.at(tensor_binding_spec.idx),
+          };
         default:
-          throw mk_runtime_error(
-              fmt::format("Invalid tensor role {}", tensor_binding_spec.role));
+          PANIC("Invalid tensor role", tensor_binding_spec.role);
       }
     }();
 
@@ -38,11 +67,9 @@ TaskInvocation lower_to_task_invocation(
     if (slot_grad_id.is_grad == IsGrad::NO) {
       binding.bind(slot_grad_id.slot_id, tensor_to_bind);
     } else if (slot_grad_id.is_grad == IsGrad::YES) {
-      binding.bind_grad(slot_grad_id.slot_id,
-                        tensor_gradient_mapping.at(tensor_to_bind));
+      binding.bind_grad(slot_grad_id.slot_id, gradient_tensor_guid_to_bind);
     } else {
-      throw mk_runtime_error(fmt::format("Invalid value for IsGrad {}",
-                                         tensor_binding.first.is_grad));
+      PANIC("Invalid value for IsGrad {}", tensor_binding.first.is_grad);
     }
   }
 

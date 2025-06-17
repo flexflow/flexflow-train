@@ -34,12 +34,18 @@ OpTaskInvocation forward(ReplicateAttrs const &attrs) {
   binding.bind(OUTPUT, output_tensor(0));
   binding.bind_arg(ATTRS, attrs);
 
-  return {task_id_t::REPLICATE_FWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::REPLICATE_FWD_TASK_ID, 
+    binding,
+  };
 }
 OpTaskInvocation backward(ReplicateAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::REPLICATE_BWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::REPLICATE_BWD_TASK_ID, 
+    binding,
+  };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {

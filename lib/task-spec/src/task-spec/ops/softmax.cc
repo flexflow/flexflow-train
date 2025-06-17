@@ -29,7 +29,10 @@ OpTaskInvocation init(SoftmaxAttrs const &attrs) {
 
   binding.bind_arg(HANDLE, ff_handle());
   binding.bind_arg(ATTRS, attrs);
-  return {task_id_t::SOFTMAX_INIT_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::SOFTMAX_INIT_TASK_ID, 
+    binding,
+  };
 }
 
 OpTaskInvocation forward(SoftmaxAttrs const &attrs) {
@@ -42,13 +45,19 @@ OpTaskInvocation forward(SoftmaxAttrs const &attrs) {
   binding.bind(INPUT, input_tensor(0));
   binding.bind(OUTPUT, output_tensor(0));
 
-  return {task_id_t::SOFTMAX_FWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::SOFTMAX_FWD_TASK_ID, 
+    binding,
+  };
 }
 
 OpTaskInvocation backward(SoftmaxAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::SOFTMAX_BWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::SOFTMAX_BWD_TASK_ID,
+    binding,
+  };
 }
 
 static DeviceSpecificDeviceStates

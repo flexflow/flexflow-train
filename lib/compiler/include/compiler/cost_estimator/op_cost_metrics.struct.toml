@@ -7,17 +7,18 @@ features = [
 ]
 
 includes = [
-  "utils/nonnegative_int/nonnegative_int.h"
+  "utils/units/milliseconds_t.dtg.h",
+  "utils/units/num_bytes_t.dtg.h",
 ]
 
 [[fields]]
 name = "forward_runtime"
-type = "float"
+type = "::FlexFlow::milliseconds_t"
 
 [[fields]]
 name = "backward_runtime"
-type = "float"
+type = "::FlexFlow::milliseconds_t"
 
 [[fields]]
-name = "memory"
-type = "::FlexFlow::nonnegative_int"
+name = "memory_usage"
+type = "::FlexFlow::num_bytes_t"

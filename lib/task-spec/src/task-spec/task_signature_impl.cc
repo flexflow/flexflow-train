@@ -70,12 +70,12 @@ TaskSignatureAndImpl get_task_sig_impl(task_id_t const &task_id) {
     case task_id_t::DROPOUT_BWD_TASK_ID:
       return TaskSignatureAndImpl{get_dropout_bwd_task_impl(),
                                   get_dropout_bwd_signature()};
-    // case task_id_t::EMBED_FWD_TASK_ID:
-    //   return TaskSignatureAndImpl{get_embedding_fwd_task_impl(),
-    //   get_embedding_fwd_signature()};
-    // case task_id_t::EMBED_BWD_TASK_ID:
-    //   return TaskSignatureAndImpl{get_embedding_bwd_task_impl(),
-    //   get_embedding_bwd_signature()};
+    case task_id_t::EMBED_FWD_TASK_ID:
+      return TaskSignatureAndImpl{get_embedding_fwd_task_impl(),
+                                  get_embedding_fwd_signature()};
+    case task_id_t::EMBED_BWD_TASK_ID:
+      return TaskSignatureAndImpl{get_embedding_bwd_task_impl(),
+                                  get_embedding_bwd_signature()};
     case task_id_t::GATHER_INIT_TASK_ID:
       return TaskSignatureAndImpl{get_gather_init_task_impl(),
                                   get_gather_init_signature()};
@@ -236,9 +236,7 @@ TaskSignatureAndImpl get_task_sig_impl(task_id_t const &task_id) {
       return TaskSignatureAndImpl{get_replicate_bwd_task_impl(),
                                   get_replicate_bwd_signature()};
     default:
-      throw mk_runtime_error(
-          fmt::format("Invalid task ID")); // inserting task_id yields
-                                           // "type_is_unformattable" error
+      PANIC("Unhandled task ID", task_id);
   }
 }
 
@@ -252,9 +250,7 @@ std::vector<task_id_t> get_task_ids(ComputationGraphOpAttrs const &op) {
       [](DropoutAttrs const &attrs) { return get_task_ids(attrs); },
       [](ElementBinaryAttrs const &attrs) { return get_task_ids(attrs); },
       [](ElementUnaryAttrs const &attrs) { return get_task_ids(attrs); },
-      // [](EmbeddingAttrs const & attrs) {
-      //   return get_task_ids(attrs);
-      // },
+      [](EmbeddingAttrs const & attrs) { return get_task_ids(attrs); },
       [](FlatAttrs const &attrs) { return get_task_ids(attrs); },
       [](GatherAttrs const &attrs) { return get_task_ids(attrs); },
       [](InputAttrs const &attrs) { return get_task_ids(attrs); },
@@ -277,7 +273,7 @@ std::vector<task_id_t> get_task_ids(ComputationGraphOpAttrs const &op) {
   });
 }
 
-OpTaskInvocation init(ComputationGraphOpAttrs const &op) {
+OpTaskInvocation get_init_op_task_invocation(ComputationGraphOpAttrs const &op) {
   return op.visit<OpTaskInvocation>(overload{
       [](BatchNormAttrs const &attrs) { return init(attrs); },
       [](Conv2DAttrs const &attrs) { return init(attrs); },
@@ -294,12 +290,12 @@ OpTaskInvocation init(ComputationGraphOpAttrs const &op) {
       [](SoftmaxAttrs const &attrs) { return init(attrs); },
       [](TopKAttrs const &attrs) { return init(attrs); },
       [](auto const &attrs) -> OpTaskInvocation {
-        throw mk_runtime_error(fmt::format("Unhandled attr type {}", attrs));
+        PANIC("Unhandled attr type", attrs);
       },
   });
 }
 
-OpTaskInvocation forward(ComputationGraphOpAttrs const &op) {
+OpTaskInvocation get_forward_op_task_invocation(ComputationGraphOpAttrs const &op) {
   return op.visit<OpTaskInvocation>(overload{
       [](BatchMatmulAttrs const &attrs) { return forward(attrs); },
       [](BatchNormAttrs const &attrs) { return forward(attrs); },
@@ -309,9 +305,7 @@ OpTaskInvocation forward(ComputationGraphOpAttrs const &op) {
       [](DropoutAttrs const &attrs) { return forward(attrs); },
       [](ElementBinaryAttrs const &attrs) { return forward(attrs); },
       [](ElementUnaryAttrs const &attrs) { return forward(attrs); },
-      // [](EmbeddingAttrs const & attrs) {
-      //   return forward(attrs);
-      // },
+      [](EmbeddingAttrs const & attrs) { return forward(attrs); },
       [](FlatAttrs const &attrs) { return forward(attrs); },
       [](GatherAttrs const &attrs) { return forward(attrs); },
       [](LayerNormAttrs const &attrs) { return forward(attrs); },
@@ -331,7 +325,7 @@ OpTaskInvocation forward(ComputationGraphOpAttrs const &op) {
   });
 }
 
-OpTaskInvocation backward(ComputationGraphOpAttrs const &op) {
+OpTaskInvocation get_backward_op_task_invocation(ComputationGraphOpAttrs const &op) {
   return op.visit<OpTaskInvocation>(overload{
       [](BatchMatmulAttrs const &attrs) { return backward(attrs); },
       [](BatchNormAttrs const &attrs) { return backward(attrs); },
@@ -341,9 +335,7 @@ OpTaskInvocation backward(ComputationGraphOpAttrs const &op) {
       [](DropoutAttrs const &attrs) { return backward(attrs); },
       [](ElementBinaryAttrs const &attrs) { return backward(attrs); },
       [](ElementUnaryAttrs const &attrs) { return backward(attrs); },
-      // [](EmbeddingAttrs const & attrs) {
-      //   return backward(attrs);
-      // },
+      [](EmbeddingAttrs const & attrs) { return backward(attrs); },
       [](FlatAttrs const &attrs) { return backward(attrs); },
       [](GatherAttrs const &attrs) { return backward(attrs); },
       [](LayerNormAttrs const &attrs) { return backward(attrs); },
@@ -358,7 +350,7 @@ OpTaskInvocation backward(ComputationGraphOpAttrs const &op) {
       [](TopKAttrs const &attrs) { return backward(attrs); },
       [](TransposeAttrs const &attrs) { return backward(attrs); },
       [](auto const &attrs) -> OpTaskInvocation {
-        throw mk_runtime_error(fmt::format("Unhandled attr type {}", attrs));
+        PANIC("Unhandled attr type", attrs);
       },
   });
 }

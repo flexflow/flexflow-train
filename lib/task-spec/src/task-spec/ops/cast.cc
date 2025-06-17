@@ -23,28 +23,36 @@ using namespace FlexFlow::Kernels::Cast;
 
 namespace FlexFlow {
 
-enum Slots { INPUT, OUTPUT, ATTRS, PROFILING };
+enum Slots { INPUT, OUTPUT, ATTRS, PROFILING, KERNEL_DEVICE_TYPE };
 
 OpTaskInvocation forward(CastAttrs const &attrs) {
   OpTaskBinding binding;
 
   binding.bind_arg(PROFILING, profiling_settings());
   binding.bind_arg(ATTRS, attrs);
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
   binding.bind(INPUT, input_tensor(0));
   binding.bind(OUTPUT, output_tensor(0));
 
-  return {task_id_t::CAST_FWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::CAST_FWD_TASK_ID,
+    binding,
+  };
 }
 
 OpTaskInvocation backward(CastAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::CAST_BWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::CAST_BWD_TASK_ID,
+    binding,
+  };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto const &attrs = acc.get_argument<CastAttrs>(ATTRS);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
@@ -52,6 +60,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 
   return profile(forward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[Cast] forward_time = {:.2lf}ms\n",
                  input,
                  output);
@@ -60,6 +69,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto const &attrs = acc.get_argument<CastAttrs>(ATTRS);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
@@ -69,6 +79,7 @@ static std::optional<float>
 
   return profile(backward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[Cast] forward_time = {:.2lf}ms\n",
                  input_grad,
                  output_grad);
@@ -86,6 +97,7 @@ OpTaskSignature get_cast_fwd_signature() {
 
   fwd.add_arg_slot<CastAttrs>(ATTRS);
   fwd.add_arg_slot<bool>(PROFILING);
+  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
 
   fwd.add_input_slot(INPUT);
   fwd.add_output_slot(OUTPUT);

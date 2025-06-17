@@ -32,13 +32,19 @@ OpTaskInvocation forward(ReductionAttrs const &attrs) {
   binding.bind(INPUT, input_tensor(0));
   binding.bind(OUTPUT, output_tensor(0));
 
-  return {task_id_t::REDUCTION_FWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::REDUCTION_FWD_TASK_ID, 
+    binding,
+  };
 }
 
 OpTaskInvocation backward(ReductionAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::REDUCTION_BWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::REDUCTION_BWD_TASK_ID, 
+    binding,
+  };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {

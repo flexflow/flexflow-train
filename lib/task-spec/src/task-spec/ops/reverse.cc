@@ -23,33 +23,42 @@ namespace FlexFlow {
 using namespace FlexFlow::Kernels::Reverse;
 using coord_t = long long;
 
-enum Slots { INPUT, OUTPUT, ATTRS, PROFILING };
+enum Slots { INPUT, OUTPUT, ATTRS, PROFILING, KERNEL_DEVICE_TYPE };
 
 OpTaskInvocation forward(ReverseAttrs const &attrs) {
   OpTaskBinding binding;
 
   binding.bind_arg(PROFILING, profiling_settings());
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
   binding.bind_arg(ATTRS, attrs);
 
   binding.bind(INPUT, input_tensor(0));
   binding.bind(OUTPUT, output_tensor(0));
 
-  return {task_id_t::REVERSE_FWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::REVERSE_FWD_TASK_ID, 
+    binding,
+  };
 }
 OpTaskInvocation backward(ReverseAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::REVERSE_BWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::REVERSE_BWD_TASK_ID, 
+    binding,
+  };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   auto attrs = acc.get_argument<ReverseAttrs>(ATTRS);
 
   return profile(forward_kernel,
                  profiling,
+                 device_type,
                  "[reverse] forward_time = {:.2lf}ms\n",
                  input,
                  output,
@@ -59,12 +68,14 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto input_grad = acc.get_tensor_grad<Permissions::WO>(INPUT);
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
   auto attrs = acc.get_argument<ReverseAttrs>(ATTRS);
 
   return profile(backward_kernel,
                  profiling,
+                 device_type,
                  "[reverse] backward_time = {:.2lf}ms\n",
                  output_grad,
                  input_grad,
@@ -82,6 +93,7 @@ OpTaskSignature get_reverse_fwd_signature() {
   OpTaskSignature fwd(OpTaskType::FWD);
 
   fwd.add_arg_slot<ProfilingSettings>(PROFILING);
+  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
   fwd.add_input_slot(INPUT);
   fwd.add_output_slot(OUTPUT);
   return fwd;

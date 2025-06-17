@@ -19,7 +19,7 @@
 
 namespace FlexFlow {
 
-float task_simulator_estimate_forward_pass_time(
+milliseconds_t task_simulator_estimate_forward_pass_time(
     ParallelComputationGraph const &pcg,
     CostEstimator const &estimator,
     MachineMapping const &machine_mapping,
@@ -30,11 +30,16 @@ float task_simulator_estimate_forward_pass_time(
 
   auto cost_function = [&](Node const &node) -> float {
     PCGTask task = task_graph.node_to_task.at_l(node);
-    if (task.is_operator()) {
-      return estimator.estimate_cost(task.require_operator()).forward_runtime;
-    } else {
-      return estimator.estimate_cost(task.require_tensor_movement());
-    }
+
+    milliseconds_t running_time = [&] {
+      if (task.is_operator()) {
+        return estimator.estimate_cost(task.require_operator()).forward_runtime;
+      } else {
+        return estimator.estimate_cost(task.require_tensor_movement());
+      }
+    }();
+
+    return running_time.value;
   };
 
   auto is_allowed_to_run =
@@ -64,8 +69,10 @@ float task_simulator_estimate_forward_pass_time(
   TaskExecutionConstraint constraint =
       TaskExecutionConstraint{is_allowed_to_run};
 
-  return get_total_execution_time(simulate_task_graph_execution(
-      task_graph.graph, cost_function, constraint));
+  return milliseconds_t{
+    get_total_execution_time(simulate_task_graph_execution(
+      task_graph.graph, cost_function, constraint))
+  };
 }
 
 } // namespace FlexFlow

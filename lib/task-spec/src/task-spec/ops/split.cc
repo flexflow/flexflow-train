@@ -35,13 +35,19 @@ OpTaskInvocation forward(SplitAttrs const &attrs) {
   binding.bind(INPUT, input_tensor(0));
   binding.bind(OUTPUT, output_tensor(0));
 
-  return {task_id_t::SPLIT_FWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::SPLIT_FWD_TASK_ID, 
+    binding,
+  };
 }
 
 OpTaskInvocation backward(SplitAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::SPLIT_BWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::SPLIT_BWD_TASK_ID, 
+    binding,
+  };
 }
 
 static std::pair<positive_int, positive_int>

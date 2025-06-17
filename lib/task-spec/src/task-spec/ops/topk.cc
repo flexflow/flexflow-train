@@ -32,7 +32,10 @@ OpTaskInvocation init(TopKAttrs const &attrs) {
 
   binding.bind_arg(ATTRS, attrs);
 
-  return {task_id_t::TOPK_INIT_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::TOPK_INIT_TASK_ID, 
+    binding,
+  };
 }
 
 OpTaskInvocation forward(TopKAttrs const &attrs) {
@@ -46,13 +49,19 @@ OpTaskInvocation forward(TopKAttrs const &attrs) {
   binding.bind(OUTPUT, output_tensor(0));
   binding.bind(INDICES, output_tensor(1));
 
-  return {task_id_t::TOPK_FWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::TOPK_FWD_TASK_ID, 
+    binding,
+  };
 }
 
 OpTaskInvocation backward(TopKAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::TOPK_BWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::TOPK_BWD_TASK_ID, 
+    binding,
+  };
 }
 
 static DeviceSpecificDeviceStates

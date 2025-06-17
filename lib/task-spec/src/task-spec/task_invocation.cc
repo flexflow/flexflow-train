@@ -7,7 +7,6 @@ namespace FlexFlow {
 bool is_invocation_valid(TaskSignature const &sig, TaskInvocation const &inv) {
   TaskBinding binding = inv.binding;
 
-  // args
   for (std::pair<slot_id_t, TaskArgSpec> const &arg_binding :
        binding.get_arg_bindings()) {
     if (sig.task_arg_types.count(arg_binding.first)) {
@@ -20,8 +19,7 @@ bool is_invocation_valid(TaskSignature const &sig, TaskInvocation const &inv) {
     }
   }
 
-  // tensors
-  for (std::pair<SlotTensorTypeId, TensorTypeVariant> const &tensor_binding :
+  for (std::pair<tensor_sub_slot_id_t, training_tensor_guid_t> const &tensor_binding :
        binding.get_tensor_bindings()) {
     slot_id_t tensor_slot_id = tensor_binding.first.slot_id;
     if (sig.tensor_guid_slots.count(tensor_slot_id)) {

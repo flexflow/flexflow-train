@@ -7,7 +7,8 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph.dtg.h"
 
 namespace FlexFlow {
-float task_simulator_estimate_forward_pass_time(
+
+milliseconds_t task_simulator_estimate_forward_pass_time(
     ParallelComputationGraph const &pcg,
     CostEstimator const &estimator,
     MachineMapping const &machine_mapping,

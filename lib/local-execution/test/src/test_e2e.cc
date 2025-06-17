@@ -5,14 +5,18 @@
 #include "kernels/managed_ff_stream.h"
 #include "kernels/managed_per_device_ff_handle.h"
 #include "kernels/tensor_accessor_reductions.h"
-#include "local-execution/allocated_tensors.h"
 #include "local-execution/local_training_backing.h"
 #include "local-execution/model_training_instance.h"
 #include "op-attrs/ops/loss_functions/loss_attrs.dtg.h"
 #include "pcg/computation_graph.h"
 #include "pcg/computation_graph_builder.h"
 #include "pcg/optimizer_attrs.dtg.h"
-#include "test_utils.h"
+#include "internal/test_utils.h"
+#include "task-spec/forward_tensor_source.h"
+#include "task-spec/gradient_tensor_source.h"
+#include "task-spec/loss_tensor_source.h"
+#include "task-spec/optimizer_tensor_source.h"
+#include "task-spec/training_computation_graph.h"
 #include "utils/containers/get_only.h"
 #include <doctest/doctest.h>
 
@@ -38,7 +42,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     // allocate label tensors
     LossTensorSource loss_tensor_source;
-    loss_tensor_t label_tensor = loss_tensor_source.new_loss_tensor();
+    loss_tensor_guid_t label_tensor_guid = loss_tensor_source.new_loss_tensor();
 
     positive_int batch_size = 10_p;
     positive_int data_dim = 16_p;
@@ -50,13 +54,13 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     GenericTensorAccessorW label_tensor_backing =
         allocator.allocate_tensor(output_tensor_shape);
-    AllocatedTensors allocated_tensors = AllocatedTensors{
-        /*tensor_type_backings=*/{
-            {TensorTypeVariant{label_tensor}, label_tensor_backing},
-        },
-        /*gradient_mapping=*/{},
-        /*optimizer_mapping*/ {},
-    };
+    // AllocatedTensors allocated_tensors = AllocatedTensors{
+    //     /*tensor_type_backings=*/{
+    //         {TensorTypeVariant{label_tensor}, label_tensor_backing},
+    //     },
+    //     /*gradient_mapping=*/{},
+    //     /*optimizer_mapping*/ {},
+    // };
 
     // construct computation graph
     ComputationGraph computation_graph = make_empty_computation_graph();
@@ -126,24 +130,36 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                                          /*nesterov=*/false,
                                          /*weight_decay=*/0.001}};
 
+    ForwardTensorSource forward_tensor_source;
     GradientTensorSource gradient_tensor_source;
     OptimizerTensorSource optimizer_tensor_source;
 
+    TrainingComputationGraph training_computation_graph =
+      generate_training_computation_graph(computation_graph,
+                                          optimizer_attrs,
+                                          forward_tensor_source,
+                                          gradient_tensor_source,
+                                          optimizer_tensor_source);
+
     LocalTrainingBacking local_training_backing =
-        LocalTrainingBacking{allocator,
-                             allocated_tensors,
-                             gradient_tensor_source,
-                             optimizer_tensor_source,
-                             computation_graph,
-                             runtime_arg_config,
-                             optimizer_attrs};
+      make_local_training_backing_for_computation_graph(
+        /*allocator=*/allocator,
+        /*preallocated_tensors=*/{
+          {
+            training_tensor_guid_t{label_tensor_guid},
+            label_tensor_backing,
+          },
+        },
+        /*training_computation_graph=*/training_computation_graph,
+        /*runtime_arg_config=*/runtime_arg_config,
+        /*optimizer_attrs=*/optimizer_attrs);
 
     // begin training loop
     ModelTrainingInstance model_training_instance =
         ModelTrainingInstance{allocator,
                               local_training_backing,
                               logit_tensor,
-                              label_tensor,
+                              label_tensor_guid,
                               loss_attrs,
                               optimizer_attrs};
 

@@ -17,7 +17,10 @@ OpTaskInvocation init(Pool2DAttrs const &attrs) {
   binding.bind_arg(ATTRS, attrs);
   binding.bind_arg(HANDLE, ff_handle());
 
-  return {task_id_t::POOL2D_INIT_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::POOL2D_INIT_TASK_ID, 
+    binding,
+  };
 }
 
 static nonnegative_int calculate_padding(nonnegative_int output_size,
@@ -83,13 +86,19 @@ OpTaskInvocation forward(Pool2DAttrs const &attrs) {
   binding.bind_arg(PER_DEVICE_STATE,
                    per_device_op_state<Pool2DPerDeviceState>());
 
-  return {task_id_t::POOL2D_FWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::POOL2D_FWD_TASK_ID, 
+    binding,
+  };
 }
 
 OpTaskInvocation backward(Pool2DAttrs const &attrs) {
   OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::POOL2D_BWD_TASK_ID, b};
+  return OpTaskInvocation{
+    task_id_t::POOL2D_BWD_TASK_ID, 
+    b,
+  };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {

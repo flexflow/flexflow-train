@@ -13,7 +13,8 @@ enum Slots {
   ATTRS,
   PROFILING,
   PER_DEVICE_STATE,
-  HANDLE
+  HANDLE,
+  KERNEL_DEVICE_TYPE,
 };
 
 OpTaskInvocation init(Conv2DAttrs const &attrs) {
@@ -24,8 +25,12 @@ OpTaskInvocation init(Conv2DAttrs const &attrs) {
   binding.bind(FILTER, weight_tensor(0));
   binding.bind_arg(ATTRS, attrs);
   binding.bind_arg(HANDLE, ff_handle());
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
-  return {task_id_t::CONV2D_INIT_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::CONV2D_INIT_TASK_ID,
+    binding,
+  };
 }
 
 OpTaskInvocation forward(Conv2DAttrs const &attrs) {
@@ -33,6 +38,7 @@ OpTaskInvocation forward(Conv2DAttrs const &attrs) {
 
   binding.bind_arg(ATTRS, attrs);
   binding.bind_arg(PROFILING, profiling_settings());
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
   binding.bind_arg(PER_DEVICE_STATE,
                    per_device_op_state<Conv2DPerDeviceState>());
 
@@ -41,19 +47,26 @@ OpTaskInvocation forward(Conv2DAttrs const &attrs) {
   binding.bind(FILTER, weight_tensor(0));
   binding.bind(BIAS, weight_tensor(1));
 
-  return {task_id_t::CONV2D_FWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::CONV2D_FWD_TASK_ID,
+    binding,
+  };
 }
 
 OpTaskInvocation backward(Conv2DAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::CONV2D_BWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::CONV2D_BWD_TASK_ID,
+    binding,
+  };
 }
 
 static DeviceSpecificDeviceStates
     init_task_impl(TaskArgumentAccessor const &acc) {
 
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto attrs = acc.get_argument<Conv2DAttrs>(ATTRS);
   auto input = acc.get_tensor<Permissions::WO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
@@ -61,7 +74,9 @@ static DeviceSpecificDeviceStates
   auto filter_grad = acc.get_tensor_grad<Permissions::RW>(FILTER);
 
   Conv2DPerDeviceState per_device_state =
-      init_kernel(/*handle=*/handle,
+      init_kernel(
+                  /*device_type=*/kernel_device_type,
+                  /*handle=*/handle,
                   /*activation=*/attrs.activation,
                   /*kernel_h=*/attrs.kernel_h.int_from_positive_int(),
                   /*kernel_w=*/attrs.kernel_w.int_from_positive_int(),
@@ -80,6 +95,7 @@ static DeviceSpecificDeviceStates
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto per_device_state =
       acc.get_argument<Conv2DPerDeviceState>(PER_DEVICE_STATE);
   auto attrs = acc.get_argument<Conv2DAttrs>(ATTRS);
@@ -91,6 +107,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 
   return profile(forward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[Conv2d] forward_time = {:.2lf}ms\n",
                  per_device_state,
                  input.get_float_ptr(),
@@ -103,6 +120,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto per_device_state =
       acc.get_argument<Conv2DPerDeviceState>(PER_DEVICE_STATE);
   auto attrs = acc.get_argument<Conv2DAttrs>(ATTRS);
@@ -118,6 +136,7 @@ static std::optional<float>
 
   return profile(backward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[Conv2d] backward_time = {:.2lf}ms\n",
                  per_device_state,
                  output.get_float_ptr(),
@@ -147,6 +166,7 @@ OpTaskSignature get_conv_2d_init_signature() {
   init.add_output_slot(OUTPUT);
   init.add_weight_slot(FILTER);
   init.add_arg_slot<Conv2DAttrs>(ATTRS);
+  init.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
   init.add_unchecked_arg_slot<PerDeviceFFHandle>(HANDLE);
 
   init.add_return_value<Conv2DPerDeviceState>();
@@ -159,6 +179,7 @@ OpTaskSignature get_conv_2d_fwd_signature() {
 
   fwd.add_arg_slot<bool>(PROFILING);
   fwd.add_unchecked_arg_slot<Conv2DPerDeviceState>(PER_DEVICE_STATE);
+  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
   fwd.add_arg_slot<Conv2DAttrs>(ATTRS);
 
   fwd.add_input_slot(INPUT);

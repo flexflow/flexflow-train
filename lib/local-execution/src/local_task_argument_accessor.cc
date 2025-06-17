@@ -8,8 +8,8 @@ namespace FlexFlow {
 
 LocalTaskArgumentAccessor::LocalTaskArgumentAccessor(
     Allocator const &allocator,
-    TensorSlotsBacking const &tensor_slots_backing,
-    ArgSlotsBacking const &arg_slots_backing)
+    std::unordered_map<tensor_sub_slot_id_t, TensorSlotBacking> const &tensor_slots_backing,
+    std::unordered_map<slot_id_t, ConcreteArgSpec> const &arg_slots_backing)
     : allocator(allocator), tensor_slots_backing(tensor_slots_backing),
       arg_slots_backing(arg_slots_backing){};
 
@@ -20,9 +20,8 @@ ConcreteArgSpec const &
 
 GenericTensorAccessor LocalTaskArgumentAccessor::get_tensor(
     slot_id_t slot, Permissions priv, TensorType tensor_type) const {
-  SlotTensorTypeId slot_tensor_type = SlotTensorTypeId{slot, tensor_type};
-  auto tensor_backing = std::get<GenericTensorAccessorW>(
-      this->tensor_slots_backing.at(slot_tensor_type));
+  tensor_sub_slot_id_t slot_tensor_type = tensor_sub_slot_id_t{slot, tensor_type};
+  GenericTensorAccessorW tensor_backing = this->tensor_slots_backing.at(slot_tensor_type).require_single();
   if (priv == Permissions::RO) {
     GenericTensorAccessorR readonly_tensor_backing =
         read_only_accessor_from_write_accessor(tensor_backing);
@@ -30,15 +29,14 @@ GenericTensorAccessor LocalTaskArgumentAccessor::get_tensor(
   } else if (priv == Permissions::RW || priv == Permissions::WO) {
     return tensor_backing;
   } else {
-    throw mk_runtime_error(fmt::format("Unhandled privilege mode {}", priv));
+    PANIC(fmt::format("Unhandled privilege mode {}", priv));
   }
 }
 
 VariadicGenericTensorAccessor LocalTaskArgumentAccessor::get_variadic_tensor(
     slot_id_t slot, Permissions priv, TensorType tensor_type) const {
-  SlotTensorTypeId slot_tensor_type = SlotTensorTypeId{slot, tensor_type};
-  auto variadic_tensor_backing = std::get<std::vector<GenericTensorAccessorW>>(
-      this->tensor_slots_backing.at(slot_tensor_type));
+  tensor_sub_slot_id_t slot_tensor_type = tensor_sub_slot_id_t{slot, tensor_type};
+  std::vector<GenericTensorAccessorW> variadic_tensor_backing = this->tensor_slots_backing.at(slot_tensor_type).require_variadic();
   if (priv == Permissions::RO) {
     std::vector<GenericTensorAccessorR> readonly_variadic_tensor_backing = {};
     for (GenericTensorAccessorW const &tensor_backing :
@@ -50,7 +48,7 @@ VariadicGenericTensorAccessor LocalTaskArgumentAccessor::get_variadic_tensor(
   } else if (priv == Permissions::RW || priv == Permissions::WO) {
     return variadic_tensor_backing;
   } else {
-    throw mk_runtime_error(fmt::format("Unhandled privilege mode {}", priv));
+    PANIC(fmt::format("Unhandled privilege mode {}", priv));
   }
 }
 

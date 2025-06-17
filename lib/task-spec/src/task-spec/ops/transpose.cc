@@ -37,7 +37,10 @@ OpTaskInvocation forward(TransposeAttrs const &attrs) {
   binding.bind(INPUT, input_tensor(0));
   binding.bind(OUTPUT, output_tensor(0));
 
-  return {task_id_t::TRANSPOSE_FWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::TRANSPOSE_FWD_TASK_ID, 
+    binding,
+  };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
@@ -74,7 +77,10 @@ static std::optional<float>
 OpTaskInvocation backward(TransposeAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::TRANSPOSE_BWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::TRANSPOSE_BWD_TASK_ID, 
+    binding,
+  };
 }
 
 TaskImplFunction get_transpose_fwd_task_impl() {

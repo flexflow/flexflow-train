@@ -33,7 +33,10 @@ OpTaskInvocation init(GatherAttrs const &attrs) {
   binding.bind_arg(ATTRS, attrs);
   binding.bind_arg(HANDLE, ff_handle());
 
-  return {task_id_t::GATHER_INIT_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::GATHER_INIT_TASK_ID, 
+    binding,
+  };
 }
 
 OpTaskInvocation forward(GatherAttrs const &attrs) {
@@ -48,13 +51,19 @@ OpTaskInvocation forward(GatherAttrs const &attrs) {
   binding.bind(OUTPUT, output_tensor(0));
   binding.bind(INDEX, weight_tensor(0));
 
-  return {task_id_t::GATHER_FWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::GATHER_FWD_TASK_ID, 
+    binding,
+  };
 }
 
 OpTaskInvocation backward(GatherAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::GATHER_BWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::GATHER_BWD_TASK_ID, 
+    binding,
+  };
 }
 
 static DeviceSpecificDeviceStates

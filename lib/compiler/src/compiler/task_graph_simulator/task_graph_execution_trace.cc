@@ -8,10 +8,8 @@
 namespace FlexFlow {
 
 float get_total_execution_time(TaskGraphExecutionTrace const &trace) {
-  if (trace.task_profiles.empty()) {
-    throw mk_runtime_error(
-        fmt::format("TaskGraphExecutionTrace {} is empty", trace));
-  }
+  ASSERT(!trace.task_profiles.empty());
+
   float end_time =
       maximum(transform(trace.task_profiles, [](TaskProfile const &profile) {
         return profile.end_time;

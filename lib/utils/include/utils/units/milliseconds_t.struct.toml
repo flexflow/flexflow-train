@@ -1,0 +1,16 @@
+namespace = "FlexFlow"
+name = "milliseconds_t"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = []
+
+[[fields]]
+name = "value"
+type = "float"

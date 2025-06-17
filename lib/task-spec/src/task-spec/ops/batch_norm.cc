@@ -29,7 +29,8 @@ enum Slots {
   PROFILING,
   PER_DEVICE_STATE,
   RELU,
-  HANDLE
+  HANDLE,
+  KERNEL_DEVICE_TYPE,
 };
 
 OpTaskInvocation init(BatchNormAttrs const &attrs) {
@@ -42,13 +43,18 @@ OpTaskInvocation init(BatchNormAttrs const &attrs) {
   binding.bind_arg(ATTRS, attrs);
   binding.bind_arg(PROFILING, profiling_settings());
   binding.bind_arg(HANDLE, ff_handle());
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
-  return {task_id_t::BATCHNORM_INIT_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::BATCHNORM_INIT_TASK_ID,
+    binding,
+  };
 }
 
 OpTaskInvocation forward(BatchNormAttrs const &attrs) {
   OpTaskBinding binding;
   binding.bind_arg(PROFILING, profiling_settings());
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
   binding.bind_arg(PER_DEVICE_STATE,
                    per_device_op_state<BatchNormPerDeviceState>());
 
@@ -57,13 +63,19 @@ OpTaskInvocation forward(BatchNormAttrs const &attrs) {
   binding.bind(BIAS, input_tensor(2));
   binding.bind(OUTPUT, output_tensor(0));
 
-  return {task_id_t::BATCHNORM_FWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::BATCHNORM_FWD_TASK_ID,
+    binding,
+  };
 }
 
 OpTaskInvocation backward(BatchNormAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::BATCHNORM_BWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::BATCHNORM_BWD_TASK_ID,
+    binding,
+  };
 }
 
 static DeviceSpecificDeviceStates
@@ -71,6 +83,7 @@ static DeviceSpecificDeviceStates
   Allocator allocator = acc.get_allocator();
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   auto const &attrs = acc.get_argument<BatchNormAttrs>(ATTRS);
@@ -83,7 +96,9 @@ static DeviceSpecificDeviceStates
   float *runningMean;
 
   BatchNormPerDeviceState per_device_state =
-      init_kernel(handle,
+      init_kernel(
+                  /*device_type=*/kernel_device_type,
+                  handle,
                   allocator,
                   runningMean,
                   output_n.int_from_positive_int(),
@@ -100,6 +115,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto per_device_state =
       acc.get_argument<BatchNormPerDeviceState>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
@@ -108,6 +124,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 
   return profile(forward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[BatchNorm] forward_time = {:.2lf}ms\n",
                  per_device_state,
                  input.get_float_ptr(),
@@ -121,6 +138,7 @@ static std::optional<float>
   auto per_device_state =
       acc.get_argument<BatchNormPerDeviceState>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(INPUT);
@@ -132,6 +150,7 @@ static std::optional<float>
 
   return profile(backward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[BatchNorm] backward_time = {:.2lf}ms\n",
                  per_device_state,
                  output.get_float_ptr(),
@@ -175,6 +194,7 @@ OpTaskSignature get_batch_norm_fwd_signature() {
   fwd.add_input_slot(BIAS);
   fwd.add_output_slot(OUTPUT);
   fwd.add_arg_slot<bool>(PROFILING);
+  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
   fwd.add_unchecked_arg_slot<BatchNormPerDeviceState>(PER_DEVICE_STATE);
 
   return fwd;

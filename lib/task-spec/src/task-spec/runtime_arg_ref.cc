@@ -28,4 +28,8 @@ RuntimeArgRef<FFIterationConfig> iteration_config() {
   return {RuntimeArgRefType::FF_ITERATION_CONFIG};
 }
 
+RuntimeArgRef<DeviceType> kernel_device_type() {
+  return {RuntimeArgRefType::KERNEL_DEVICE_TYPE};
+}
+
 } // namespace FlexFlow

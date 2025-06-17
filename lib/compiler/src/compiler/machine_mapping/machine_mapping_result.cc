@@ -32,7 +32,7 @@ FeasibleMachineMappingResult
 }
 
 MachineMappingResult
-    series_combine(float comm_cost,
+    series_combine(milliseconds_t comm_cost,
                    MachineMappingResult const &maybe_pre_result,
                    MachineMappingResult const &maybe_post_result,
                    std::optional<ParallelSplitTransformation> const
@@ -65,7 +65,9 @@ MachineMappingResult
 
   return MachineMappingResult{
       FeasibleMachineMappingResult{
-          /*runtime=*/pre_result.runtime + comm_cost + post_result.runtime,
+          /*runtime=*/milliseconds_t{
+            pre_result.runtime.value + comm_cost.value + post_result.runtime.value,
+          },
           /*machine_mapping=*/mapping,
       },
   };
@@ -122,7 +124,7 @@ MachineMappingResult minimize_runtime(MachineMappingResult const &maybe_m1,
 }
 
 MachineMappingResult
-    make_singleton_machine_mapping_result(float runtime,
+    make_singleton_machine_mapping_result(milliseconds_t runtime,
                                           MachineView const &machine_view) {
   return MachineMappingResult{
       FeasibleMachineMappingResult{

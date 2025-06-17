@@ -27,7 +27,10 @@ OpTaskInvocation init(ReduceAttrs const &attrs) {
   binding.bind(INPUT, input_tensor(0));
   binding.bind(OUTPUT, output_tensor(0));
 
-  return {task_id_t::REDUCE_INIT_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::REDUCE_INIT_TASK_ID, 
+    binding,
+  };
 }
 
 static DeviceSpecificDeviceStates
@@ -62,7 +65,10 @@ OpTaskInvocation forward(ReduceAttrs const &attrs) {
   binding.bind(INPUT, input_tensor(0));
   binding.bind(OUTPUT, output_tensor(0));
 
-  return {task_id_t::REDUCE_FWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::REDUCE_FWD_TASK_ID, 
+    binding,
+  };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
@@ -84,7 +90,10 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 OpTaskInvocation backward(ReduceAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::REDUCE_BWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::REDUCE_BWD_TASK_ID, 
+    binding,
+  };
 }
 
 static std::optional<float>

@@ -45,7 +45,10 @@ OpTaskInvocation init(LayerNormAttrs const &attrs) {
   b.bind_arg(HANDLE, ff_handle());
   b.bind_arg(ATTRS, attrs);
 
-  return {task_id_t::LAYERNORM_INIT_TASK_ID, b};
+  return OpTaskInvocation{
+    task_id_t::LAYERNORM_INIT_TASK_ID, 
+    b,
+  };
 }
 
 OpTaskInvocation forward(LayerNormAttrs const &attrs) {
@@ -58,13 +61,19 @@ OpTaskInvocation forward(LayerNormAttrs const &attrs) {
   b.bind_arg(PROFILING, profiling_settings());
   b.bind_arg(PER_DEVICE_STATE, per_device_op_state<LayerNormPerDeviceState>());
 
-  return {task_id_t::LAYERNORM_FWD_TASK_ID, b};
+  return OpTaskInvocation{
+    task_id_t::LAYERNORM_FWD_TASK_ID, 
+    b,
+  };
 }
 
 OpTaskInvocation backward(LayerNormAttrs const &attrs) {
   OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::LAYERNORM_BWD_TASK_ID, b};
+  return OpTaskInvocation{
+    task_id_t::LAYERNORM_BWD_TASK_ID, 
+    b,
+  };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {

@@ -30,7 +30,10 @@ OpTaskInvocation init(RepartitionAttrs const &attrs) {
   binding.bind_arg(HANDLE, ff_handle());
   binding.bind(INPUT, input_tensor(0));
 
-  return {task_id_t::REPARTITION_INIT_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::REPARTITION_INIT_TASK_ID, 
+    binding,
+  };
 }
 
 OpTaskInvocation forward(RepartitionAttrs const &attrs) {
@@ -43,13 +46,19 @@ OpTaskInvocation forward(RepartitionAttrs const &attrs) {
   binding.bind(INPUT, input_tensor(0));
   binding.bind(OUTPUT, output_tensor(0));
 
-  return {task_id_t::REPARTITION_FWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::REPARTITION_FWD_TASK_ID, 
+    binding,
+  };
 }
 
 OpTaskInvocation backward(RepartitionAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::REPARTITION_BWD_TASK_ID, binding};
+  return OpTaskInvocation{
+    task_id_t::REPARTITION_BWD_TASK_ID, 
+    binding,
+  };
 }
 
 static DeviceSpecificDeviceStates
