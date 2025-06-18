@@ -1,6 +1,6 @@
 #include "local-execution/task_registry.h"
-#include "local-execution/task_signature_impl.h"
 #include "pcg/computation_graph.h"
+#include "task-spec/task_signature_impl.h"
 
 namespace FlexFlow {
 

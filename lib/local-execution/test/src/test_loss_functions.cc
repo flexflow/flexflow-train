@@ -13,11 +13,13 @@
 
 using namespace ::FlexFlow;
 
-TEST_SUITE(FF_TEST_SUITE) {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("LossFunctions") {
     // initialize runtime
     ManagedFFStream managed_stream{};
-    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle();
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true);
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
@@ -28,16 +30,14 @@ TEST_SUITE(FF_TEST_SUITE) {
     loss_tensor_t label_for_sparse_cce_loss_attrs =
         loss_tensor_source.new_loss_tensor();
 
-    nonnegative_int batch_size = 10_n;
-    nonnegative_int data_dim = 16_n;
-    nonnegative_int output_dim = 32_n;
+    positive_int batch_size = 10_p;
+    positive_int data_dim = 16_p;
+    positive_int output_dim = 32_p;
 
     TensorShape output_tensor_shape = TensorShape{
-        TensorDims{FFOrdered<nonnegative_int>{batch_size, output_dim}},
-        DataType::FLOAT};
+        TensorDims{FFOrdered{batch_size, output_dim}}, DataType::FLOAT};
     TensorShape reduced_tensor_shape =
-        TensorShape{TensorDims{FFOrdered<nonnegative_int>{batch_size, 1_n}},
-                    DataType::FLOAT};
+        TensorShape{TensorDims{FFOrdered{batch_size, 1_p}}, DataType::FLOAT};
 
     GenericTensorAccessorW label_for_nonconfigurable_loss_attrs_backing =
         allocator.allocate_tensor(output_tensor_shape);
@@ -55,12 +55,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     ComputationGraph computation_graph = make_empty_computation_graph();
 
     TensorShape input_tensor_shape = TensorShape{
-        TensorDims{FFOrdered<nonnegative_int>{batch_size, data_dim}},
-        DataType::FLOAT};
+        TensorDims{FFOrdered{batch_size, data_dim}}, DataType::FLOAT};
 
     TensorShape weight_shape = TensorShape{
-        TensorDims{FFOrdered<nonnegative_int>{data_dim, output_dim}},
-        DataType::FLOAT};
+        TensorDims{FFOrdered{data_dim, output_dim}}, DataType::FLOAT};
 
     LayerAddedResult inputs_layer =
         add_input_layer(computation_graph, input_tensor_shape);

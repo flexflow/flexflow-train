@@ -66,18 +66,18 @@ static void sgd_update_task_impl(TaskArgumentAccessor const &acc) {
   auto weight = acc.get_tensor<Permissions::RW>(WEIGHT);
   auto profiling = acc.get_argument<ProfilingSettings>(PROFILING);
 
-  assert(weight.shape == weight_grad.shape);
-  int size = weight_grad.shape.get_volume().unwrap_nonnegative();
+  ASSERT(weight.shape == weight_grad.shape);
+  int size = weight_grad.shape.num_elements().int_from_positive_int();
 
-  assert(weight_grad.shape.get_volume().unwrap_nonnegative() &
-         weight.shape.get_volume().unwrap_nonnegative());
-  int num_replicas = weight_grad.shape.get_volume().unwrap_nonnegative() /
-                     weight.shape.get_volume().unwrap_nonnegative();
+  ASSERT(weight_grad.shape.num_elements().int_from_positive_int() &
+         weight.shape.num_elements().int_from_positive_int());
+  int num_replicas = weight_grad.shape.num_elements().int_from_positive_int() /
+                     weight.shape.num_elements().int_from_positive_int();
 
   float *sgd_v_ptr;
   if (attrs.momentum > 0.0f) {
     auto sgd_v = acc.get_optimizer_tensor<Permissions::RW>(SGD_V);
-    assert(sgd_v.shape == weight.shape);
+    ASSERT(sgd_v.shape == weight.shape);
     sgd_v_ptr = sgd_v.get_float_ptr();
   }
 
@@ -180,14 +180,10 @@ static void adam_update_task_impl(TaskArgumentAccessor const &acc) {
 
   auto profiling = acc.get_argument<ProfilingSettings>(PROFILING);
 
-  assert(weight.shape == weight_grad.shape);
-  int size = weight_grad.shape.get_volume().unwrap_nonnegative();
+  ASSERT(weight.shape == weight_grad.shape);
+  int size = weight_grad.shape.num_elements().int_from_positive_int();
 
-  assert(weight_grad.shape.get_volume().unwrap_nonnegative() %
-             weight.shape.get_volume().unwrap_nonnegative() ==
-         0);
-  int num_replicas = weight_grad.shape.get_volume().unwrap_nonnegative() /
-                     weight.shape.get_volume().unwrap_nonnegative();
+  ASSERT(weight_grad.shape.num_elements() % weight.shape.num_elements() == 0);
 
   auto handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
   profile(adam_nccl_update_task_gpu,
@@ -198,9 +194,9 @@ static void adam_update_task_impl(TaskArgumentAccessor const &acc) {
           attrs.beta2,
           attrs.weight_decay,
           attrs.epsilon,
-          size,
           handle,
           weight_grad.get_float_ptr(),
+          size,
           m_tensor.get_float_ptr(),
           v_tensor.get_float_ptr(),
           weight.get_float_ptr()); // how to deal with removal of ParamSync?

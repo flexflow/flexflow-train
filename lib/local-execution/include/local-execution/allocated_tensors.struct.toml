@@ -3,7 +3,6 @@ name = "AllocatedTensors"
 features = [
   "eq",
   "fmt",
-  "hash",
 ]
 
 includes = [

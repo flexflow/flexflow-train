@@ -9,10 +9,11 @@
 
 using namespace ::FlexFlow;
 
-TEST_SUITE(FF_TEST_SUITE) {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("LocalCostEstimator") {
-    // local backing initialization
-    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle();
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true);
 
     RuntimeArgConfig runtime_arg_config = RuntimeArgConfig{
         DeviceSpecific<PerDeviceFFHandle>::create(managed_handle.raw_handle()),
@@ -23,8 +24,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     LocalCostEstimator cost_estimator = LocalCostEstimator{runtime_arg_config};
 
     SUBCASE("Estimate cost -- Attention Op") {
-      nonnegative_int embed_dim = 32_n;
-      nonnegative_int num_heads = 10_n;
+      positive_int embed_dim = 32_p;
+      positive_int num_heads = 10_p;
       MultiHeadAttentionAttrs attrs = MultiHeadAttentionAttrs{
           /*embed_dim=*/embed_dim,
           /*num_heads=*/num_heads,
@@ -36,14 +37,14 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*add_zero_attn=*/false,
       };
 
-      nonnegative_int batch_size = 40_n;
-      nonnegative_int seq_len = 48_n;
-      nonnegative_int feature_size = 36_n;
+      positive_int batch_size = 40_p;
+      positive_int seq_len = 48_p;
+      positive_int feature_size = 36_p;
 
       DataType dtype = DataType::FLOAT;
       ParallelTensorShape inputs_shape = lift_to_parallel(TensorShape{
           TensorDims{
-              FFOrdered<nonnegative_int>{batch_size, seq_len, feature_size}},
+              FFOrdered<positive_int>{batch_size, seq_len, feature_size}},
           DataType::FLOAT,
       });
 
@@ -66,7 +67,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           make_1d_machine_view(
               MachineSpaceCoordinate{0_n, 0_n, DeviceType::GPU},
               MachineSpecificationDimension::INTRA_NODE,
-              stride_t{0_n}));
+              stride_t{1_p}));
 
       CHECK(result.total_elapsed_time > 0);
       CHECK(result.total_mem_usage > 0);

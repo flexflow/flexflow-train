@@ -1,6 +1,6 @@
+#include "kernels/local_cpu_allocator.h"
 #include "local-execution/allocated_tensors.h"
 #include "local-execution/gradient_tensor_source.h"
-#include "local-execution/local_cpu_allocator.h"
 #include "local-execution/loss_tensor_source.h"
 #include "local-execution/optimizer_tensor_source.h"
 #include "pcg/computation_graph.dtg.h"
@@ -29,16 +29,13 @@ TEST_SUITE(FF_TEST_SUITE) {
     tensor_guid_t dangling_tensor = tensor_guid_source.new_mock_tensor_guid();
 
     TensorAttrs tensor_attrs_1_no_grad = TensorAttrs{
-        TensorShape{TensorDims{FFOrdered<nonnegative_int>{16_n, 10_n}},
-                    DataType::FLOAT},
+        TensorShape{TensorDims{FFOrdered{16_p, 10_p}}, DataType::FLOAT},
         CreateGrad::NO};
     TensorAttrs tensor_attrs_2_no_grad = TensorAttrs{
-        TensorShape{TensorDims{FFOrdered<nonnegative_int>{16_n, 20_n}},
-                    DataType::FLOAT},
+        TensorShape{TensorDims{FFOrdered{16_p, 20_p}}, DataType::FLOAT},
         CreateGrad::NO};
     TensorAttrs tensor_attrs_3_with_grad = TensorAttrs{
-        TensorShape{TensorDims{FFOrdered<nonnegative_int>{16_n, 30_n}},
-                    DataType::FLOAT},
+        TensorShape{TensorDims{FFOrdered{16_p, 30_p}}, DataType::FLOAT},
         CreateGrad::YES};
 
     GenericTensorAccessorW tensor_backing_1 =

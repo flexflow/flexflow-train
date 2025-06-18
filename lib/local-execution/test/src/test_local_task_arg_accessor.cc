@@ -1,7 +1,7 @@
 #include "doctest/doctest.h"
-#include "local-execution/local_cpu_allocator.h"
+#include "kernels/local_cpu_allocator.h"
 #include "local-execution/local_task_argument_accessor.h"
-#include "local-execution/task_signature_impl.h"
+#include "task-spec/task_signature_impl.h"
 #include "utils/fmt/variant.h"
 
 using namespace ::FlexFlow;
@@ -9,17 +9,16 @@ using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("LocalTaskArgumentAccessor") {
     Allocator allocator = create_local_cpu_memory_allocator();
-    nonnegative_int embed_dim = 32_n;
-    nonnegative_int num_heads = 10_n;
+    positive_int embed_dim = 32_p;
+    positive_int num_heads = 10_p;
 
-    nonnegative_int batch_size = 40_n;
-    nonnegative_int seq_len = 48_n;
-    nonnegative_int feature_size = 36_n;
+    positive_int batch_size = 40_p;
+    positive_int seq_len = 48_p;
+    positive_int feature_size = 36_p;
 
     DataType dtype = DataType::FLOAT;
     TensorShape input_tensor_shape = TensorShape{
-        TensorDims{
-            FFOrdered<nonnegative_int>{batch_size, seq_len, feature_size}},
+        TensorDims{FFOrdered{batch_size, seq_len, feature_size}},
         DataType::FLOAT,
     };
 

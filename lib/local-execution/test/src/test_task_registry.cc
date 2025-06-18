@@ -1,8 +1,8 @@
 #include "doctest/doctest.h"
 #include "kernels/local_cuda_allocator.h"
 #include "local-execution/local_cost_estimator.h"
-#include "local-execution/task_signature_impl.h"
 #include "pcg/computation_graph_builder.h"
+#include "task-spec/task_signature_impl.h"
 #include "utils/fmt/optional.h"
 #include "utils/fmt/unordered_map.h"
 
@@ -12,8 +12,8 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("TaskRegistry") {
 
     layer_guid_t layer_guid = layer_guid_t{Node{0}};
-    nonnegative_int embed_dim = 32_n;
-    nonnegative_int num_heads = 10_n;
+    positive_int embed_dim = 32_p;
+    positive_int num_heads = 10_p;
     ComputationGraphOpAttrs attrs =
         ComputationGraphOpAttrs{MultiHeadAttentionAttrs{
             /*embed_dim=*/embed_dim,
@@ -80,7 +80,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
     SUBCASE("different attrs, still same task fn mapping") {
       layer_guid_t layer_1 = layer_guid_t{Node{1}};
-      nonnegative_int embed_dim = 100_n;
+      positive_int embed_dim = 100_p;
       layer_guid_t layer_2 = layer_guid_t{Node{2}};
       ComputationGraphOpAttrs other_attrs =
           ComputationGraphOpAttrs{MultiHeadAttentionAttrs{
@@ -112,7 +112,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("equality") {
       SUBCASE("different attrs is still equal") {
-        nonnegative_int embed_dim = 100_n;
+        positive_int embed_dim = 100_p;
         ComputationGraphOpAttrs other_attrs =
             ComputationGraphOpAttrs{MultiHeadAttentionAttrs{
                 /*embed_dim=*/embed_dim,

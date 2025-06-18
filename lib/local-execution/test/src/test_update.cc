@@ -11,11 +11,13 @@
 
 using namespace ::FlexFlow;
 
-TEST_SUITE(FF_TEST_SUITE) {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("ExecuteUpdate") {
     // initialize runtime configs
     ManagedFFStream managed_stream{};
-    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle();
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true);
 
     Allocator allocator = create_local_cuda_memory_allocator();
     AllocatedTensors allocated_tensors = make_empty_allocated_tensors();
@@ -23,17 +25,15 @@ TEST_SUITE(FF_TEST_SUITE) {
     // construct computation graph
     ComputationGraph computation_graph = make_empty_computation_graph();
 
-    nonnegative_int batch_size = 10_n;
-    nonnegative_int data_dim = 16_n;
-    nonnegative_int output_dim = 32_n;
+    positive_int batch_size = 10_p;
+    positive_int data_dim = 16_p;
+    positive_int output_dim = 32_p;
 
     TensorShape input_tensor_shape = TensorShape{
-        TensorDims{FFOrdered<nonnegative_int>{batch_size, data_dim}},
-        DataType::FLOAT};
+        TensorDims{FFOrdered{batch_size, data_dim}}, DataType::FLOAT};
 
     TensorShape weight_shape = TensorShape{
-        TensorDims{FFOrdered<nonnegative_int>{data_dim, output_dim}},
-        DataType::FLOAT};
+        TensorDims{FFOrdered{data_dim, output_dim}}, DataType::FLOAT};
 
     LayerAddedResult inputs_layer =
         add_input_layer(computation_graph, input_tensor_shape);
