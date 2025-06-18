@@ -1,23 +1,30 @@
-#include "doctest/doctest.h"
+#include "kernels/test_utils.h"
 #include "kernels/layer_norm_kernels.h"
-#include "test_utils.h"
+#include "op-attrs/datatype_value.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
-TEST_SUITE(FF_TEST_SUITE) {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test LayerNorm Forward and Backward Kernel") {
-    nonnegative_int batch_size = 10_n;
-    nonnegative_int feature_size = 10_n;
+    positive_int batch_size = 10_p;
+    positive_int feature_size = 10_p;
     float epsilon = 1e-5f;
     bool elementwise_affine = true;
 
-    TensorShape input_shape =
-        make_float_tensor_shape_from_legion_dims({batch_size, feature_size});
+    TensorShape input_shape = TensorShape{
+        TensorDims{FFOrdered{batch_size, feature_size}},
+        DataType::FLOAT,
+    };
     TensorShape output_shape = input_shape;
-    TensorShape feature_shape =
-        make_float_tensor_shape_from_legion_dims({feature_size});
+    TensorShape feature_shape = TensorShape{
+        TensorDims{FFOrdered{feature_size}},
+        DataType::FLOAT,
+    };
 
-    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle();
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
@@ -26,21 +33,20 @@ TEST_SUITE(FF_TEST_SUITE) {
         Kernels::LayerNorm::init_kernel(managed_handle.raw_handle(),
                                         allocator,
                                         elementwise_affine,
-                                        batch_size.unwrap_nonnegative(),
-                                        feature_size.unwrap_nonnegative(),
+                                        batch_size.int_from_positive_int(),
+                                        feature_size.int_from_positive_int(),
                                         epsilon);
 
     GenericTensorAccessorR input_accessor =
-        read_only_accessor_from_write_accessor(
-            create_random_filled_accessor_w(input_shape, allocator));
-    GenericTensorAccessorW gamma_accessor =
-        create_filled_accessor_w(feature_shape, allocator, 1.0f);
+        create_random_filled_accessor_r(input_shape, allocator);
+    GenericTensorAccessorW gamma_accessor = create_filled_accessor_w(
+        feature_shape, allocator, make_float_data_type_value(1));
 
     SUBCASE("forward_kernel") {
       GenericTensorAccessorW output_accessor =
           allocator.allocate_tensor(output_shape);
-      GenericTensorAccessorW beta_accessor =
-          create_filled_accessor_w(feature_shape, allocator, 0.0f);
+      GenericTensorAccessorW beta_accessor = create_filled_accessor_w(
+          feature_shape, allocator, make_float_data_type_value(0));
 
       Kernels::LayerNorm::forward_kernel(managed_stream.raw_stream(),
                                          state,
@@ -52,8 +58,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("backward_kernel") {
       GenericTensorAccessorR output_grad_accessor =
-          read_only_accessor_from_write_accessor(
-              create_random_filled_accessor_w(output_shape, allocator));
+          create_random_filled_accessor_r(output_shape, allocator);
       GenericTensorAccessorW input_grad_accessor =
           create_random_filled_accessor_w(input_shape, allocator);
       GenericTensorAccessorW gamma_grad_accessor =

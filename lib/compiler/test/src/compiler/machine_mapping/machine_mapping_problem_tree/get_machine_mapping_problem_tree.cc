@@ -65,9 +65,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TensorShape input_shape = TensorShape{
         TensorDims{
-            FFOrdered<nonnegative_int>{
-                10_n,
-                1_n,
+            FFOrdered{
+                10_p,
+                1_p,
             },
         },
         DataType::FLOAT,

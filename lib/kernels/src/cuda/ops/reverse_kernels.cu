@@ -13,13 +13,11 @@
  * limitations under the License.
  */
 
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/reverse_kernels.h"
+#include "kernels/reverse_kernels_params.h"
 
-namespace FlexFlow {
-
-namespace Kernels {
-namespace Reverse {
+namespace FlexFlow::Kernels::Reverse {
 
 __global__ void reverse_forward_kernel(float const *in_ptr,
                                        float *out_ptr,
@@ -27,23 +25,24 @@ __global__ void reverse_forward_kernel(float const *in_ptr,
                                        coord_t reverse_dim_size,
                                        coord_t in_blk_size) {
   CUDA_KERNEL_LOOP(i, num_out_blks * reverse_dim_size * in_blk_size) {
+    coord_t out_idx = i;
     coord_t blk_idx = i / (reverse_dim_size * in_blk_size);
     i = i - blk_idx * (reverse_dim_size * in_blk_size);
     coord_t reverse_dim_idx = i / in_blk_size;
     i = i - reverse_dim_idx * in_blk_size;
     coord_t in_idx = blk_idx * (reverse_dim_size * in_blk_size) +
                      (reverse_dim_size - 1 - reverse_dim_idx) * in_blk_size + i;
-    out_ptr[i] = in_ptr[in_idx];
+    out_ptr[out_idx] = in_ptr[in_idx];
   }
 }
 
-void forward_kernel(cudaStream_t stream,
-                    float const *in_ptr,
-                    float *out_ptr,
-                    coord_t num_out_blks,
-                    coord_t reverse_dim_size,
-                    coord_t in_blk_size,
-                    coord_t output_size) {
+static void forward_kernel_internal(cudaStream_t stream,
+                                    float const *in_ptr,
+                                    float *out_ptr,
+                                    coord_t num_out_blks,
+                                    coord_t reverse_dim_size,
+                                    coord_t in_blk_size,
+                                    coord_t output_size) {
 
   reverse_forward_kernel<<<GET_BLOCKS(output_size),
                            CUDA_NUM_THREADS,
@@ -52,13 +51,31 @@ void forward_kernel(cudaStream_t stream,
       in_ptr, out_ptr, num_out_blks, reverse_dim_size, in_blk_size);
 }
 
-void backward_kernel(cudaStream_t stream,
-                     float const *out_grad_ptr,
-                     float *in_grad_ptr,
-                     coord_t num_out_blks,
-                     coord_t reverse_dim_size,
-                     coord_t in_blk_size,
-                     coord_t input_size) {
+void forward_kernel(ffStream_t stream,
+                    GenericTensorAccessorR const &input_accessor,
+                    GenericTensorAccessorW &output_accessor,
+                    ReverseAttrs const &attrs) {
+
+  auto reverse_kernels_params =
+      compute_reverse_kernels_params(output_accessor.shape, attrs);
+
+  forward_kernel_internal(
+      stream,
+      input_accessor.get_float_ptr(),
+      output_accessor.get_float_ptr(),
+      reverse_kernels_params.num_out_blks.int_from_positive_int(),
+      reverse_kernels_params.reverse_dim_size.int_from_positive_int(),
+      reverse_kernels_params.in_blk_size.int_from_positive_int(),
+      reverse_kernels_params.out_size.int_from_positive_int());
+}
+
+void backward_kernel_internal(cudaStream_t stream,
+                              float const *out_grad_ptr,
+                              float *in_grad_ptr,
+                              coord_t num_out_blks,
+                              coord_t reverse_dim_size,
+                              coord_t in_blk_size,
+                              coord_t input_size) {
 
   reverse_forward_kernel<<<GET_BLOCKS(input_size),
                            CUDA_NUM_THREADS,
@@ -67,6 +84,21 @@ void backward_kernel(cudaStream_t stream,
       out_grad_ptr, in_grad_ptr, num_out_blks, reverse_dim_size, in_blk_size);
 }
 
-} // namespace Reverse
-} // namespace Kernels
-} // namespace FlexFlow
+void backward_kernel(ffStream_t stream,
+                     GenericTensorAccessorR const &output_grad_accessor,
+                     GenericTensorAccessorW &input_grad_accessor,
+                     ReverseAttrs const &attrs) {
+  auto reverse_kernels_params =
+      compute_reverse_kernels_params(input_grad_accessor.shape, attrs);
+
+  backward_kernel_internal(
+      stream,
+      output_grad_accessor.get_float_ptr(),
+      input_grad_accessor.get_float_ptr(),
+      reverse_kernels_params.num_out_blks.int_from_positive_int(),
+      reverse_kernels_params.reverse_dim_size.int_from_positive_int(),
+      reverse_kernels_params.in_blk_size.int_from_positive_int(),
+      reverse_kernels_params.out_size.int_from_positive_int());
+}
+
+} // namespace FlexFlow::Kernels::Reverse

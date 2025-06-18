@@ -27,7 +27,7 @@ TensorShape get_kernel_shape(Conv2DAttrs const &attrs,
   Conv2DInputShape input = parse_input_shape(raw_input_shape);
 
   return TensorShape{
-      TensorDims{FFOrdered<nonnegative_int>{
+      TensorDims{FFOrdered<positive_int>{
           attrs.out_channels,
           input.num_channels,
           attrs.kernel_h,
@@ -44,22 +44,22 @@ TensorShape get_bias_shape(Conv2DAttrs const &attrs,
 
   return TensorShape{
       TensorDims{
-          FFOrdered<nonnegative_int>{attrs.out_channels},
+          FFOrdered<positive_int>{attrs.out_channels},
       },
       input.datatype,
   };
 }
 
-static nonnegative_int calculate_output_size(nonnegative_int input_size,
-                                             nonnegative_int padding_size,
-                                             nonnegative_int kernel_size,
-                                             nonnegative_int stride) {
-  int input_size_raw = input_size.unwrap_nonnegative();
+static positive_int calculate_output_size(positive_int input_size,
+                                          nonnegative_int padding_size,
+                                          positive_int kernel_size,
+                                          positive_int stride) {
+  int input_size_raw = input_size.int_from_positive_int();
   int padding_raw = padding_size.unwrap_nonnegative();
-  int kernel_size_raw = kernel_size.unwrap_nonnegative();
-  int stride_raw = stride.unwrap_nonnegative();
+  int kernel_size_raw = kernel_size.int_from_positive_int();
+  int stride_raw = stride.int_from_positive_int();
 
-  return nonnegative_int{
+  return positive_int{
       (input_size_raw + (2 * padding_raw) - kernel_size_raw) / stride_raw + 1};
 }
 
@@ -68,18 +68,18 @@ TensorShape get_output_shape(Conv2DAttrs const &attrs,
   assert(attrs.groups == 1); // TODO(@lockshaw): currently not supported
   Conv2DInputShape input = parse_input_shape(raw_input_shape);
 
-  nonnegative_int out_height =
+  positive_int out_height =
       calculate_output_size(/*input_size=*/input.height,
                             /*padding_size=*/attrs.padding_h,
                             /*kernel_size=*/attrs.kernel_h,
                             /*stride_size=*/attrs.stride_h);
-  nonnegative_int out_width =
+  positive_int out_width =
       calculate_output_size(/*input_size=*/input.width,
                             /*padding_size=*/attrs.padding_w,
                             /*kernel_size=*/attrs.kernel_w,
                             /*stride_size=*/attrs.stride_w);
 
-  return TensorShape{TensorDims{FFOrdered<nonnegative_int>{
+  return TensorShape{TensorDims{FFOrdered<positive_int>{
                          input.num_samples,
                          attrs.out_channels,
                          out_height,
@@ -112,14 +112,14 @@ ParallelTensorShape get_kernel_shape(Conv2DAttrs const &attrs,
   assert(parsed.height_dim.degree == 1);
   assert(parsed.width_dim.degree == 1);
 
-  SumDegree sum_degree = SumDegree{1_n};
+  SumDegree sum_degree = SumDegree{1_p};
   DiscardCopyDegree discard_copy_degree =
       DiscardCopyDegree{parsed.sample_dim.degree * parsed.sum_reduction_degree};
-  FFOrdered<nonnegative_int> shard_degrees = {
+  FFOrdered<positive_int> shard_degrees = {
       parsed.discard_copy_reduction_degree,
       parsed.channel_dim.degree,
-      1_n,
-      1_n,
+      1_p,
+      1_p,
   };
 
   return lift_to_parallel_with_degrees(
@@ -139,7 +139,7 @@ ParallelTensorShape get_bias_shape(Conv2DAttrs const &attrs,
   DiscardCopyDegree discard_copy_degree =
       DiscardCopyDegree{parsed.height_dim.degree * parsed.width_dim.degree *
                         parsed.sample_dim.degree};
-  FFOrdered<nonnegative_int> shard_degrees = {
+  FFOrdered<positive_int> shard_degrees = {
       parsed.discard_copy_reduction_degree,
   };
 
@@ -160,12 +160,12 @@ ParallelTensorShape get_output_shape(Conv2DAttrs const &attrs,
 
   SumDegree sum_degree =
       SumDegree{parsed.sum_reduction_degree * parsed.channel_dim.degree};
-  DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{1_n};
-  FFOrdered<nonnegative_int> shard_degrees = {
+  DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{1_p};
+  FFOrdered<positive_int> shard_degrees = {
       parsed.sample_dim.degree,
       parsed.discard_copy_reduction_degree,
-      1_n,
-      1_n,
+      1_p,
+      1_p,
   };
 
   return lift_to_parallel_with_degrees(
@@ -217,11 +217,10 @@ std::vector<InitializerAttrs>
   InitializerAttrs kernel_initializer =
       maybe_kernel_initializer.value_or(kernel_default_initializer);
 
-  nonnegative_int fan_in =
+  positive_int fan_in =
       calculate_fan_for_mode(kernel_shape.dims, KaimingInitializerMode::FAN_IN);
-  assert(fan_in != 0_n);
 
-  float bound = 1 / sqrtf(static_cast<float>(fan_in.unwrap_nonnegative()));
+  float bound = 1 / sqrtf(static_cast<float>(fan_in.int_from_positive_int()));
 
   InitializerAttrs bias_default_initializer =
       InitializerAttrs{UniformInitializerAttrs{

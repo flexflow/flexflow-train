@@ -12,8 +12,8 @@ features = [
 includes = [
   "op-attrs/parallel_tensor_shape/sum_degree.dtg.h",
   "op-attrs/parallel_tensor_shape/discard_copy_degree.dtg.h",
-  "op-attrs/dim_ordered/dim_ordered.h",
-  "utils/nonnegative_int/nonnegative_int.h",
+  "op-attrs/ff_ordered/ff_ordered.h",
+  "utils/positive_int/positive_int.h",
 ]
 
 [[fields]]
@@ -26,4 +26,4 @@ type = "::FlexFlow::DiscardCopyDegree"
 
 [[fields]]
 name = "shard_degrees"
-type = "::FlexFlow::FFOrdered<::FlexFlow::nonnegative_int>"
+type = "::FlexFlow::FFOrdered<::FlexFlow::positive_int>"

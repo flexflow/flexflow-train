@@ -1,4 +1,4 @@
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/conv_2d_kernels.h"
 
 namespace FlexFlow {
@@ -137,15 +137,15 @@ Conv2DPerDeviceState init_kernel(PerDeviceFFHandle handle,
   ffConvolutionBwdFilterAlgo_t bwdFilterAlgo;
   ffConvolutionBwdDataAlgo_t bwdDataAlgo;
 
-  int input_w = input.shape.at(legion_dim_t(0_n)).unwrap_nonnegative();
-  int input_h = input.shape.at(legion_dim_t(1_n)).unwrap_nonnegative();
-  int input_c = input.shape.at(legion_dim_t(2_n)).unwrap_nonnegative();
-  int input_n = input.shape.at(legion_dim_t(3_n)).unwrap_nonnegative();
+  int input_w = input.shape.at(legion_dim_t(0_n)).int_from_positive_int();
+  int input_h = input.shape.at(legion_dim_t(1_n)).int_from_positive_int();
+  int input_c = input.shape.at(legion_dim_t(2_n)).int_from_positive_int();
+  int input_n = input.shape.at(legion_dim_t(3_n)).int_from_positive_int();
 
-  int output_w = output.shape.at(legion_dim_t(0_n)).unwrap_nonnegative();
-  int output_h = output.shape.at(legion_dim_t(1_n)).unwrap_nonnegative();
-  int output_c = output.shape.at(legion_dim_t(2_n)).unwrap_nonnegative();
-  int output_n = output.shape.at(legion_dim_t(3_n)).unwrap_nonnegative();
+  int output_w = output.shape.at(legion_dim_t(0_n)).int_from_positive_int();
+  int output_h = output.shape.at(legion_dim_t(1_n)).int_from_positive_int();
+  int output_c = output.shape.at(legion_dim_t(2_n)).int_from_positive_int();
+  int output_n = output.shape.at(legion_dim_t(3_n)).int_from_positive_int();
 
   checkCUDNN(cudnnCreateTensorDescriptor(&inputTensor));
   checkCUDNN(cudnnCreateTensorDescriptor(&biasTensor));
@@ -313,10 +313,10 @@ void forward_kernel(ffStream_t stream,
 
 void backward_kernel(ffStream_t stream,
                      Conv2DPerDeviceState const &m,
-                     float const *input_ptr,
-                     float *input_grad_ptr,
                      float const *output_ptr,
                      float *output_grad_ptr,
+                     float const *input_ptr,
+                     float *input_grad_ptr,
                      float const *filter_ptr,
                      float *filter_grad_ptr,
                      float *bias_grad_ptr,

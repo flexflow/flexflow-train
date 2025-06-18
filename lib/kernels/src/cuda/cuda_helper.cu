@@ -1,4 +1,4 @@
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/datatype_dispatch.h"
 #include "utils/containers/reversed.h"
 
@@ -49,7 +49,7 @@ __global__ void assign_kernel(DT *ptr, size_t size, DT value) {
 }
 
 template <typename DT>
-__global__ void copy_kernel(DT *dst, const DT *src, coord_t size) {
+__global__ void copy_kernel(DT *dst, const DT *src, size_t size) {
   CUDA_KERNEL_LOOP(i, size) {
     dst[i] = src[i];
   }
@@ -224,10 +224,10 @@ ffStatus_t
       tensor,
       CUDNN_TENSOR_NCHW,
       CUDNN_DATA_FLOAT,
-      shape.at_maybe(legion_dim_t{0_n}).value_or(1_n).unwrap_nonnegative(),
-      shape.at_maybe(legion_dim_t{1_n}).value_or(1_n).unwrap_nonnegative(),
-      shape.at_maybe(legion_dim_t{2_n}).value_or(1_n).unwrap_nonnegative(),
-      shape.at_maybe(legion_dim_t{3_n}).value_or(1_n).unwrap_nonnegative());
+      shape.at_maybe(legion_dim_t{0_n}).value_or(1_p).int_from_positive_int(),
+      shape.at_maybe(legion_dim_t{1_n}).value_or(1_p).int_from_positive_int(),
+      shape.at_maybe(legion_dim_t{2_n}).value_or(1_p).int_from_positive_int(),
+      shape.at_maybe(legion_dim_t{3_n}).value_or(1_p).int_from_positive_int());
 }
 
 cudnnDataType_t ff_to_cudnn_datatype(DataType type) {
@@ -281,11 +281,11 @@ template __global__ void
     add_kernel<bool>(bool *dst, bool const *src, unsigned long size);
 
 template __global__ void
-    copy_kernel<float>(float *dst, float const *src, coord_t size);
+    copy_kernel<float>(float *dst, float const *src, size_t size);
 template __global__ void
-    copy_kernel<int32_t>(int32_t *dst, int32_t const *src, coord_t size);
+    copy_kernel<int32_t>(int32_t *dst, int32_t const *src, size_t size);
 template __global__ void
-    copy_kernel<int64_t>(int64_t *dst, int64_t const *src, coord_t size);
+    copy_kernel<int64_t>(int64_t *dst, int64_t const *src, size_t size);
 
 template __global__ void apply_add_with_scale<float>(float *data_ptr,
                                                      float const *grad_ptr,

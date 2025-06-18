@@ -1,0 +1,28 @@
+namespace = "FlexFlow"
+name = "ReverseKernelsParams"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "utils/positive_int/positive_int.h",
+]
+
+[[fields]]
+name = "num_out_blks"
+type = "::FlexFlow::positive_int"
+
+[[fields]]
+name = "reverse_dim_size"
+type = "::FlexFlow::positive_int"
+
+[[fields]]
+name = "in_blk_size"
+type = "::FlexFlow::positive_int"
+
+[[fields]]
+name = "out_size"
+type = "::FlexFlow::positive_int"

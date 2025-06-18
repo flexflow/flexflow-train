@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/accessor.h"
 #include "kernels/flat_kernels.h"
 
@@ -27,7 +27,7 @@ void forward_kernel(cudaStream_t stream,
 
   checkCUDA(cudaMemcpyAsync(output_ptr,
                             input.get_float_ptr(),
-                            input.shape.num_elements().unwrap_nonnegative() *
+                            input.shape.num_elements().int_from_positive_int() *
                                 sizeof(float),
                             cudaMemcpyDeviceToDevice,
                             stream));
@@ -35,17 +35,17 @@ void forward_kernel(cudaStream_t stream,
 
 void backward_kernel(cudaStream_t stream,
                      GenericTensorAccessorR input,
-                     float *input_grad_ptr,
-                     float const *output_grad_ptr) {
+                     float const *output_grad_ptr,
+                     float *input_grad_ptr) {
 
   float alpha = 1.0f;
   apply_add_with_scale<float>
-      <<<GET_BLOCKS(input.shape.num_elements().unwrap_nonnegative()),
+      <<<GET_BLOCKS(input.shape.num_elements().int_from_positive_int()),
          CUDA_NUM_THREADS,
          0,
          stream>>>(input_grad_ptr,
                    output_grad_ptr,
-                   input.shape.num_elements().unwrap_nonnegative(),
+                   input.shape.num_elements().int_from_positive_int(),
                    alpha);
 }
 

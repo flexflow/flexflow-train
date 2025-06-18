@@ -1,8 +1,10 @@
 #include "op-attrs/ops/embedding.h"
-#include "op-attrs/dim_ordered/slice.h"
-#include "op-attrs/dim_ordered/transform.h"
+#include "op-attrs/ff_ordered/slice.h"
+#include "op-attrs/ff_ordered/transform.h"
+#include "op-attrs/ops/embedding_attrs.dtg.h"
 #include "op-attrs/parallel_tensor_dims.h"
 #include "utils/containers/product.h"
+#include "utils/fmt/optional.h"
 #include "utils/integer_conversions.h"
 
 namespace FlexFlow {
@@ -66,7 +68,7 @@ tl::expected<TensorShape, std::string>
 
   return TensorShape{
       TensorDims{
-          FFOrdered<nonnegative_int>{
+          FFOrdered<positive_int>{
               attrs.num_entries,
               attrs.out_channels,
           },
@@ -90,8 +92,8 @@ tl::expected<ParallelTensorShape, std::string>
 
   SumDegree sum_degree =
       SumDegree{shard_dim_at_idx(input, relative_ff_dim_t{-1}).degree};
-  DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{1_n};
-  FFOrdered<nonnegative_int> shard_degrees =
+  DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{1_p};
+  FFOrdered<positive_int> shard_degrees =
       transform(input.dims.shard_dims,
                 [](ShardParallelDim const &d) { return d.degree; });
   shard_degrees.at(relative_ff_dim_t{-1}) = get_discard_copy_degree(input);
@@ -112,13 +114,13 @@ tl::expected<ParallelTensorShape, std::string>
     result_unpar.value();
   });
 
-  SumDegree sum_degree = SumDegree{1_n};
+  SumDegree sum_degree = SumDegree{1_p};
   DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{product(transform(
       ff_ordered_shard_dims(input.dims),
-      [](ShardParallelDim const &d) -> nonnegative_int { return d.degree; }))};
-  nonnegative_int entry_dim_degree = 1_n;
-  nonnegative_int out_channel_degree = get_discard_copy_degree(input);
-  FFOrdered<nonnegative_int> shard_degrees = {
+      [](ShardParallelDim const &d) -> positive_int { return d.degree; }))};
+  positive_int entry_dim_degree = 1_p;
+  positive_int out_channel_degree = get_discard_copy_degree(input);
+  FFOrdered<positive_int> shard_degrees = {
       entry_dim_degree,
       out_channel_degree,
   };

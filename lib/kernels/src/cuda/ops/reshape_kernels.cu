@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/datatype_dispatch.h"
 #include "kernels/reshape_kernels.h"
 
@@ -31,28 +31,29 @@ struct ForwardKernel {
   void operator()(cudaStream_t stream,
                   GenericTensorAccessorR const &input,
                   GenericTensorAccessorW const &output) {
-    checkCUDA(cudaMemcpyAsync(output.get<T>(),
-                              input.get<T>(),
-                              input.shape.num_elements().unwrap_nonnegative() *
-                                  size_of_datatype(T).unwrap_nonnegative(),
-                              cudaMemcpyDeviceToDevice,
-                              stream));
+    checkCUDA(
+        cudaMemcpyAsync(output.get<T>(),
+                        input.get<T>(),
+                        input.shape.num_elements().int_from_positive_int() *
+                            size_of_datatype(T).int_from_positive_int(),
+                        cudaMemcpyDeviceToDevice,
+                        stream));
   }
 };
 
 template <DataType T>
 struct BackwardKernel {
   void operator()(cudaStream_t stream,
-                  GenericTensorAccessorW const &input,
-                  GenericTensorAccessorR const &output) {
+                  GenericTensorAccessorR const &output,
+                  GenericTensorAccessorW const &input) {
     float alpha = 1.0f;
     apply_add_with_scale<real_type_t<T>>
-        <<<GET_BLOCKS(input.shape.num_elements().unwrap_nonnegative()),
+        <<<GET_BLOCKS(input.shape.num_elements().int_from_positive_int()),
            CUDA_NUM_THREADS,
            0,
            stream>>>(input.get<T>(),
                      output.get<T>(),
-                     input.shape.num_elements().unwrap_nonnegative(),
+                     input.shape.num_elements().int_from_positive_int(),
                      static_cast<real_type_t<T>>(alpha));
   }
 };
@@ -66,9 +67,9 @@ void forward_kernel(cudaStream_t stream,
 
 void backward_kernel(cudaStream_t stream,
                      ReshapePerDeviceState const &m,
-                     GenericTensorAccessorW const &input,
-                     GenericTensorAccessorR const &output) {
-  DataTypeDispatch1<BackwardKernel>{}(m.data_type, stream, input, output);
+                     GenericTensorAccessorR const &output,
+                     GenericTensorAccessorW const &input) {
+  DataTypeDispatch1<BackwardKernel>{}(m.data_type, stream, output, input);
 }
 
 } // namespace Reshape

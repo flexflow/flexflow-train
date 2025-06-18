@@ -3,7 +3,7 @@
 #include "utils/containers/contains_key.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/require_same.h"
-#include "utils/containers/subvec.h"
+#include "utils/containers/slice.h"
 #include "utils/containers/unordered_set_of.h"
 #include "utils/containers/values.h"
 #include "utils/graph/digraph/algorithms/get_predecessors.h"
@@ -103,7 +103,7 @@ MultiDiEdge
   Node last = g.get_multidiedge_dst(reduction.edges.back());
 
   std::vector<Node> internal_nodes;
-  for (MultiDiEdge const &e : subvec(reduction.edges, std::nullopt, -1)) {
+  for (MultiDiEdge const &e : slice(reduction.edges, 0, -1)) {
     internal_nodes.push_back(g.get_multidiedge_dst(e));
   }
 

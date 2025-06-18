@@ -14,7 +14,7 @@ includes = [
   "<vector>",
   "<string>",
   "models/dlrm/dlrm_arch_interaction_op.dtg.h",
-  "utils/nonnegative_int/nonnegative_int.h",
+  "utils/positive_int/positive_int.h",
 ]
 
 src_includes = [
@@ -24,23 +24,23 @@ src_includes = [
 
 [[fields]]
 name = "embedding_dim"
-type = "::FlexFlow::nonnegative_int"
+type = "::FlexFlow::positive_int"
 
 [[fields]]
 name = "embedding_bag_size"
-type = "::FlexFlow::nonnegative_int"
+type = "::FlexFlow::positive_int"
 
 [[fields]]
 name = "embedding_size"
-type = "std::vector<::FlexFlow::nonnegative_int>"
+type = "std::vector<::FlexFlow::positive_int>"
 
 [[fields]]
 name = "dense_arch_layer_sizes"
-type = "std::vector<::FlexFlow::nonnegative_int>"
+type = "std::vector<::FlexFlow::positive_int>"
 
 [[fields]]
 name = "over_arch_layer_sizes"
-type = "std::vector<::FlexFlow::nonnegative_int>"
+type = "std::vector<::FlexFlow::positive_int>"
 
 [[fields]]
 name = "arch_interaction_op"
@@ -48,7 +48,7 @@ type = "::FlexFlow::DLRMArchInteractionOp"
 
 [[fields]]
 name = "batch_size"
-type = "::FlexFlow::nonnegative_int"
+type = "::FlexFlow::positive_int"
 
 [[fields]]
 name = "seed"

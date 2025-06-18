@@ -111,15 +111,15 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    nonnegative_int in_channels = 24_n;
-    nonnegative_int batch_size = 4_n;
-    nonnegative_int batch_degree = 2_n;
+    positive_int in_channels = 24_p;
+    positive_int batch_size = 4_p;
+    positive_int batch_degree = 2_p;
     std::string mm_match = "mm_match";
     std::string relu_match = "relu_match";
 
     TensorShape input_shape = TensorShape{
         TensorDims{
-            FFOrdered<nonnegative_int>{
+            FFOrdered{
                 batch_size,
                 in_channels,
             },
@@ -133,11 +133,11 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_tensor_guid_t t = b.create_input_tensor(input_shape);
       t = b.parallel_partition(t, ff_dim_t{0_n}, batch_degree);
       t = b.dense(t,
-                  /*outDim=*/16_n,
+                  /*outDim=*/16_p,
                   /*activation=*/std::nullopt);
       t = b.gelu(t);
       t = b.dense(t,
-                  /*outDim=*/12_n,
+                  /*outDim=*/12_p,
                   /*activation=*/std::nullopt,
                   /*use_bias=*/false,
                   /*data_type=*/DataType::FLOAT,
@@ -147,7 +147,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       t = b.relu(t,
                  /*name=*/relu_match);
       t = b.dense(t,
-                  /*outDim=*/8_n,
+                  /*outDim=*/8_p,
                   /*activation=*/Activation::RELU);
 
       return sub_pcg_from_full_pcg(b.pcg);
@@ -189,7 +189,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           result_input_map = result.second.input_mapping;
 
       LinearAttrs correct_result_fused_mm_relu_attrs = LinearAttrs{
-          /*out_channels=*/12_n,
+          /*out_channels=*/12_p,
           /*use_bias=*/false,
           /*data_type=*/DataType::FLOAT,
           /*activation=*/Activation::RELU,

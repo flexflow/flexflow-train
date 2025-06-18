@@ -3,6 +3,7 @@
 
 #include "utils/fmt.h"
 #include <fmt/format.h>
+#include <libassert/assert.hpp>
 #include <stdexcept>
 #include <tl/expected.hpp>
 

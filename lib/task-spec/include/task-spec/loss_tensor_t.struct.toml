@@ -7,7 +7,10 @@ features = [
   "fmt",
 ]
 
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h"
+]
 
 [[fields]]
 name = "raw_index"
-type = "int"
+type = "::FlexFlow::nonnegative_int"

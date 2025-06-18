@@ -59,6 +59,7 @@
         bencher-cli = pkgs.callPackage ./.flake/pkgs/bencher-cli.nix { };
         ffdb = pkgs.callPackage ./.flake/pkgs/ffdb { inherit proj; };
         hpp2plantuml = pkgs.python3Packages.callPackage ./.flake/pkgs/hpp2plantuml.nix { };
+        fccf = pkgs.callPackage ./.flake/pkgs/fccf { };
         rapidcheckFull = pkgs.symlinkJoin {
           name = "rapidcheckFull";
           paths = (with pkgs; [ rapidcheck.out rapidcheck.dev ]);
@@ -162,6 +163,7 @@
               ruff
               jq
               gh
+              expect
             ])
             (with pkgs.python3Packages; [
               gitpython
@@ -179,6 +181,7 @@
             (with self.packages.${system}; [
               ffdb
               hpp2plantuml
+              fccf
             ])
           ];
         };

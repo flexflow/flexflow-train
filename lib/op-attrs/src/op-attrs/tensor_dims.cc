@@ -1,6 +1,6 @@
 #include "op-attrs/tensor_dims.h"
-#include "op-attrs/dim_ordered/slice.h"
-#include "op-attrs/dim_ordered/zip.h"
+#include "op-attrs/ff_ordered/slice.h"
+#include "op-attrs/ff_ordered/zip.h"
 #include "op-attrs/replica_parallel_dim_set.h"
 #include "op-attrs/shard_parallel_dim.dtg.h"
 #include "utils/containers/all_of.h"
@@ -14,7 +14,7 @@
 
 namespace FlexFlow {
 
-FFOrdered<nonnegative_int> const &ff_ordered(TensorDims const &dims) {
+FFOrdered<positive_int> const &ff_ordered(TensorDims const &dims) {
   return dims.ff_ordered;
 }
 
@@ -22,15 +22,15 @@ nonnegative_int num_dims(TensorDims const &dims) {
   return num_elements(dims.ff_ordered);
 }
 
-nonnegative_int dim_at_idx(TensorDims const &dims, relative_ff_dim_t idx) {
+positive_int dim_at_idx(TensorDims const &dims, relative_ff_dim_t idx) {
   return dims.ff_ordered.at(idx);
 }
 
-nonnegative_int &dim_at_idx(TensorDims &dims, relative_ff_dim_t idx) {
+positive_int &dim_at_idx(TensorDims &dims, relative_ff_dim_t idx) {
   return dims.ff_ordered.at(idx);
 }
 
-nonnegative_int get_num_elements(TensorDims const &d) {
+positive_int get_num_elements(TensorDims const &d) {
   return product(d.ff_ordered);
 }
 
@@ -40,8 +40,8 @@ bool tensor_dims_is_broadcastable_to(TensorDims const &curr,
     return false;
   }
 
-  std::vector<nonnegative_int> curr_dims = vector_of(curr.ff_ordered);
-  std::vector<nonnegative_int> goal_dims = vector_of(goal.ff_ordered);
+  std::vector<positive_int> curr_dims = vector_of(curr.ff_ordered);
+  std::vector<positive_int> goal_dims = vector_of(goal.ff_ordered);
 
   for (auto const &[curr_dim, goal_dim] :
        zip(reversed(curr_dims), reversed(goal_dims))) {
@@ -67,7 +67,7 @@ std::optional<TensorDims>
 }
 
 TensorDims slice_tensor_dims(TensorDims const &dims,
-                             std::optional<relative_ff_dim_t> const &start,
+                             relative_ff_dim_t const &start,
                              std::optional<relative_ff_dim_t> const &stop) {
   return TensorDims{
       slice(dims.ff_ordered, start, stop),

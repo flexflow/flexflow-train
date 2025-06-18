@@ -10,7 +10,7 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_linear_incoming_tensor_roles(LinearAttrs)") {
     auto make_attrs = [](bool use_bias) {
       return LinearAttrs{
-          /*out_channels=*/16_n,
+          /*out_channels=*/16_p,
           /*use_bias=*/use_bias,
           /*data_type=*/DataType::FLOAT,
           /*activation=*/Activation::RELU,
@@ -47,7 +47,7 @@ TEST_SUITE(FF_TEST_SUITE) {
   }
 
   TEST_CASE("Linear shape inference") {
-    nonnegative_int out_channels = 16_n;
+    positive_int out_channels = 16_p;
     LinearAttrs attrs = LinearAttrs{
         /*out_channels=*/out_channels,
         /*use_bias=*/true,
@@ -56,13 +56,13 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*regularizer=*/std::nullopt,
     };
 
-    nonnegative_int batch_size = 12_n;
-    nonnegative_int extra_dim = 16_n;
-    nonnegative_int in_channels = 8_n;
+    positive_int batch_size = 12_p;
+    positive_int extra_dim = 16_p;
+    positive_int in_channels = 8_p;
 
     TensorShape input = TensorShape{
         TensorDims{
-            FFOrdered<nonnegative_int>{
+            FFOrdered{
                 batch_size,
                 extra_dim,
                 in_channels,
@@ -73,7 +73,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TensorShape output = TensorShape{
         TensorDims{
-            FFOrdered<nonnegative_int>{
+            FFOrdered{
                 batch_size,
                 extra_dim,
                 out_channels,
@@ -84,7 +84,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TensorShape projection = TensorShape{
         TensorDims{
-            FFOrdered<nonnegative_int>{
+            FFOrdered{
                 in_channels,
                 out_channels,
             },
@@ -94,7 +94,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TensorShape bias = TensorShape{
         TensorDims{
-            FFOrdered<nonnegative_int>{
+            FFOrdered{
                 out_channels,
             },
         },
@@ -127,66 +127,57 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     auto make_input = [&](SumDegree o_sum,
                           DiscardCopyDegree o_eq,
-                          nonnegative_int o_batch,
-                          nonnegative_int o_extra_dim,
-                          nonnegative_int o_channel) {
+                          positive_int o_batch,
+                          positive_int o_extra_dim,
+                          positive_int o_channel) {
       return lift_to_parallel_with_degrees(
-          input,
-          o_sum,
-          o_eq,
-          FFOrdered<nonnegative_int>{o_batch, o_extra_dim, o_channel});
+          input, o_sum, o_eq, FFOrdered{o_batch, o_extra_dim, o_channel});
     };
 
     auto make_output = [&](SumDegree o_sum,
                            DiscardCopyDegree o_eq,
-                           nonnegative_int o_batch,
-                           nonnegative_int o_extra_dim,
-                           nonnegative_int o_channel) {
+                           positive_int o_batch,
+                           positive_int o_extra_dim,
+                           positive_int o_channel) {
       return lift_to_parallel_with_degrees(
-          output,
-          o_sum,
-          o_eq,
-          FFOrdered<nonnegative_int>{o_batch, o_extra_dim, o_channel});
+          output, o_sum, o_eq, FFOrdered{o_batch, o_extra_dim, o_channel});
     };
 
     auto make_projection = [&](SumDegree o_sum,
                                DiscardCopyDegree o_eq,
-                               nonnegative_int o_inchannel,
-                               nonnegative_int o_outchannel) {
+                               positive_int o_inchannel,
+                               positive_int o_outchannel) {
       return lift_to_parallel_with_degrees(
-          projection,
-          o_sum,
-          o_eq,
-          FFOrdered<nonnegative_int>{o_inchannel, o_outchannel});
+          projection, o_sum, o_eq, FFOrdered{o_inchannel, o_outchannel});
     };
 
     auto make_bias = [&](SumDegree o_sum,
                          DiscardCopyDegree o_eq,
-                         nonnegative_int o_outchannel) {
+                         positive_int o_outchannel) {
       return lift_to_parallel_with_degrees(
-          bias, o_sum, o_eq, FFOrdered<nonnegative_int>{o_outchannel});
+          bias, o_sum, o_eq, FFOrdered{o_outchannel});
     };
 
     SUBCASE("data parallelism") {
-      nonnegative_int input_sum_degree = 2_n;
-      nonnegative_int extra_dim_degree = 8_n;
-      nonnegative_int degree = 4_n;
+      positive_int input_sum_degree = 2_p;
+      positive_int extra_dim_degree = 8_p;
+      positive_int degree = 4_p;
 
       ParallelTensorShape par_input = make_input(SumDegree{input_sum_degree},
-                                                 DiscardCopyDegree{1_n},
+                                                 DiscardCopyDegree{1_p},
                                                  degree,
                                                  extra_dim_degree,
-                                                 1_n);
+                                                 1_p);
 
       {
         tl::expected<ParallelTensorShape, std::string> result =
             get_output_shape(attrs, par_input);
         tl::expected<ParallelTensorShape, std::string> correct =
             make_output(SumDegree{input_sum_degree},
-                        DiscardCopyDegree{1_n},
+                        DiscardCopyDegree{1_p},
                         degree,
                         extra_dim_degree,
-                        1_n);
+                        1_p);
         CHECK(result == correct);
       }
 
@@ -195,10 +186,10 @@ TEST_SUITE(FF_TEST_SUITE) {
             get_projection_shape(attrs, par_input);
         tl::expected<ParallelTensorShape, std::string> correct =
             make_projection(
-                SumDegree{1_n},
+                SumDegree{1_p},
                 DiscardCopyDegree{input_sum_degree * degree * extra_dim_degree},
-                1_n,
-                1_n);
+                1_p,
+                1_p);
         CHECK(result == correct);
       }
 
@@ -208,19 +199,19 @@ TEST_SUITE(FF_TEST_SUITE) {
         tl::expected<ParallelTensorShape, std::string> correct =
             make_bias(SumDegree{input_sum_degree},
                       DiscardCopyDegree{degree * extra_dim_degree},
-                      1_n);
+                      1_p);
         CHECK(result == correct);
       }
     }
 
     SUBCASE("reduction parallelism") {
-      nonnegative_int input_sum_degree = 2_n;
-      nonnegative_int degree = 4_n;
+      positive_int input_sum_degree = 2_p;
+      positive_int degree = 4_p;
 
       ParallelTensorShape par_input = make_input(SumDegree{input_sum_degree},
-                                                 DiscardCopyDegree{1_n},
-                                                 1_n,
-                                                 1_n,
+                                                 DiscardCopyDegree{1_p},
+                                                 1_p,
+                                                 1_p,
                                                  degree);
 
       {
@@ -228,10 +219,10 @@ TEST_SUITE(FF_TEST_SUITE) {
             get_output_shape(attrs, par_input);
         tl::expected<ParallelTensorShape, std::string> correct =
             make_output(SumDegree{input_sum_degree * degree},
-                        DiscardCopyDegree{1_n},
-                        1_n,
-                        1_n,
-                        1_n);
+                        DiscardCopyDegree{1_p},
+                        1_p,
+                        1_p,
+                        1_p);
         CHECK(result == correct);
       }
 
@@ -239,10 +230,10 @@ TEST_SUITE(FF_TEST_SUITE) {
         tl::expected<ParallelTensorShape, std::string> result =
             get_projection_shape(attrs, par_input);
         tl::expected<ParallelTensorShape, std::string> correct =
-            make_projection(SumDegree{1_n},
+            make_projection(SumDegree{1_p},
                             DiscardCopyDegree{input_sum_degree},
                             degree,
-                            1_n);
+                            1_p);
         CHECK(result == correct);
       }
 
@@ -250,29 +241,29 @@ TEST_SUITE(FF_TEST_SUITE) {
         tl::expected<ParallelTensorShape, std::string> result =
             get_bias_shape(attrs, par_input);
         tl::expected<ParallelTensorShape, std::string> correct = make_bias(
-            SumDegree{input_sum_degree * degree}, DiscardCopyDegree{1_n}, 1_n);
+            SumDegree{input_sum_degree * degree}, DiscardCopyDegree{1_p}, 1_p);
         CHECK(result == correct);
       }
     }
 
     SUBCASE("output channel parallelism") {
-      nonnegative_int input_sum_degree = 2_n;
-      nonnegative_int degree = 4_n;
+      positive_int input_sum_degree = 2_p;
+      positive_int degree = 4_p;
 
       ParallelTensorShape par_input = make_input(SumDegree{input_sum_degree},
                                                  DiscardCopyDegree{degree},
-                                                 1_n,
-                                                 1_n,
-                                                 1_n);
+                                                 1_p,
+                                                 1_p,
+                                                 1_p);
 
       {
         tl::expected<ParallelTensorShape, std::string> result =
             get_output_shape(attrs, par_input);
         tl::expected<ParallelTensorShape, std::string> correct =
             make_output(SumDegree{input_sum_degree},
-                        DiscardCopyDegree{1_n},
-                        1_n,
-                        1_n,
+                        DiscardCopyDegree{1_p},
+                        1_p,
+                        1_p,
                         degree);
         CHECK(result == correct);
       }
@@ -281,9 +272,9 @@ TEST_SUITE(FF_TEST_SUITE) {
         tl::expected<ParallelTensorShape, std::string> result =
             get_projection_shape(attrs, par_input);
         tl::expected<ParallelTensorShape, std::string> correct =
-            make_projection(SumDegree{1_n},
+            make_projection(SumDegree{1_p},
                             DiscardCopyDegree{input_sum_degree},
-                            1_n,
+                            1_p,
                             degree);
         CHECK(result == correct);
       }
@@ -292,7 +283,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         tl::expected<ParallelTensorShape, std::string> result =
             get_bias_shape(attrs, par_input);
         tl::expected<ParallelTensorShape, std::string> correct = make_bias(
-            SumDegree{input_sum_degree}, DiscardCopyDegree{1_n}, degree);
+            SumDegree{input_sum_degree}, DiscardCopyDegree{1_p}, degree);
         CHECK(result == correct);
       }
     }

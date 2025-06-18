@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/accessor.h"
+#include "kernels/legion_ordered/transform.h"
 #include "kernels/transpose_kernels.h"
-#include "op-attrs/dim_ordered/transform.h"
 #include "utils/exception.h"
 #include "utils/nonnegative_int/num_elements.h"
 
@@ -76,10 +76,10 @@ void forward_kernel(cudaStream_t stream,
       info.in_strides[i] = 1;
       info.out_strides[i] = 1;
     } else {
-      int in_dim_size =
-          input.shape.at(legion_dim_t{nonnegative_int{i}}).unwrap_nonnegative();
+      int in_dim_size = input.shape.at(legion_dim_t{nonnegative_int{i}})
+                            .int_from_positive_int();
       int out_dim_size = output.shape.at(legion_dim_t{nonnegative_int{i}})
-                             .unwrap_nonnegative();
+                             .int_from_positive_int();
       info.in_strides[i] = info.in_strides[i - 1] * in_dim_size;
       info.out_strides[i] = info.out_strides[i - 1] * out_dim_size;
     }
@@ -88,10 +88,10 @@ void forward_kernel(cudaStream_t stream,
                        .value.unwrap_nonnegative();
   }
   transpose_simple_kernel<<<
-      GET_BLOCKS(output.shape.get_volume().unwrap_nonnegative()),
+      GET_BLOCKS(output.shape.num_elements().int_from_positive_int()),
       CUDA_NUM_THREADS,
       0,
-      stream>>>(output.shape.get_volume().unwrap_nonnegative(),
+      stream>>>(output.shape.num_elements().int_from_positive_int(),
                 input.get_float_ptr(),
                 output.get_float_ptr(),
                 info,
@@ -100,8 +100,8 @@ void forward_kernel(cudaStream_t stream,
 
 void backward_kernel(cudaStream_t stream,
                      TransposeAttrs const &m,
-                     GenericTensorAccessorW const &in_grad,
-                     GenericTensorAccessorR const &out_grad) {
+                     GenericTensorAccessorR const &out_grad,
+                     GenericTensorAccessorW const &in_grad) {
 
   TransposeStrides info;
   info.num_dim = in_grad.shape.num_dims().unwrap_nonnegative();
@@ -116,9 +116,9 @@ void backward_kernel(cudaStream_t stream,
       info.out_strides[i] = 1;
     } else {
       int in_dim_size = out_grad.shape.at(legion_dim_t{nonnegative_int{i}})
-                            .unwrap_nonnegative();
+                            .int_from_positive_int();
       int out_dim_size = in_grad.shape.at(legion_dim_t{nonnegative_int{i}})
-                             .unwrap_nonnegative();
+                             .int_from_positive_int();
       info.in_strides[i] = info.in_strides[i - 1] * in_dim_size;
       info.out_strides[i] = info.out_strides[i - 1] * out_dim_size;
     }
@@ -126,10 +126,10 @@ void backward_kernel(cudaStream_t stream,
                   .value.unwrap_nonnegative()] = i;
   }
   transpose_simple_kernel<<<
-      GET_BLOCKS(in_grad.shape.get_volume().unwrap_nonnegative()),
+      GET_BLOCKS(in_grad.shape.num_elements().int_from_positive_int()),
       CUDA_NUM_THREADS,
       0,
-      stream>>>(in_grad.shape.get_volume().unwrap_nonnegative(),
+      stream>>>(in_grad.shape.num_elements().int_from_positive_int(),
                 out_grad.get_float_ptr(),
                 in_grad.get_float_ptr(),
                 info,
