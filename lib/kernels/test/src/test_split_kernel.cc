@@ -1,4 +1,4 @@
-#include "internal/test_utils.h"
+#include "kernels/test_utils.h"
 #include "kernels/split_kernels.h"
 #include "op-attrs/datatype_value.h"
 #include "utils/containers/repeat.h"
@@ -13,19 +13,19 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     coord_t in_blk_size = 100;
     coord_t num_blks = 1;
 
-    ManagedPerDeviceFFHandle managed_handle{
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
         /*workSpaceSize=*/1024 * 1024,
-        /*allowTensorOpMathConversion=*/true};
+        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
     TensorShape input_shape = TensorShape{
-        TensorDims{FFOrdered{100_n}},
+        TensorDims{FFOrdered{100_p}},
         DataType::FLOAT,
     };
     TensorShape output_shape = TensorShape{
-        TensorDims{FFOrdered{50_n}},
+        TensorDims{FFOrdered{50_p}},
         DataType::FLOAT,
     };
 

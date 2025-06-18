@@ -1,4 +1,4 @@
-#include "internal/test_utils.h"
+#include "kernels/test_utils.h"
 #include "kernels/partition_kernels.h"
 #include "op-attrs/datatype_value.h"
 #include <doctest/doctest.h>
@@ -7,9 +7,9 @@ using namespace ::FlexFlow;
 
 TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test Partition Forward and Backward") {
-    ManagedPerDeviceFFHandle managed_handle{
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
         /*workSpaceSize=*/1024 * 1024,
-        /*allowTensorOpMathConversion=*/true};
+        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
@@ -18,7 +18,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         managed_handle.raw_handle(), DataType::FLOAT);
 
     TensorShape input_shape = TensorShape{
-        TensorDims{FFOrdered{10_n, 10_n}},
+        TensorDims{FFOrdered{10_p, 10_p}},
         DataType::FLOAT,
     };
     TensorShape output_shape = input_shape;

@@ -1,7 +1,7 @@
 #ifndef _FF_METRICS_H_
 #define _FF_METRICS_H_
 
-#include "op-attrs/ops/loss_functions/loss_functions.h"
+#include "op-attrs/ops/loss_functions/loss_function.dtg.h"
 #include "pcg/metric.dtg.h"
 #include "utils/fmt.h"
 #include <unordered_set>

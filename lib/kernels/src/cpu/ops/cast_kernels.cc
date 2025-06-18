@@ -21,7 +21,7 @@ template <DataType IDT, DataType ODT>
 struct CPUForwardKernel {
   void operator()(GenericTensorAccessorR const &input,
                   GenericTensorAccessorW const &output) {
-    size_t volume = input.shape.get_volume().unwrap_nonnegative();
+    size_t volume = input.shape.num_elements().int_from_positive_int();
     cpu_cast_forward(input.get<IDT>(), output.get<ODT>(), volume);
   }
 };
@@ -30,7 +30,7 @@ template <DataType IDT, DataType ODT>
 struct CPUBackwardKernel {
   void operator()(GenericTensorAccessorR const &output,
                   GenericTensorAccessorW const &input) {
-    size_t volume = output.shape.get_volume().unwrap_nonnegative();
+    size_t volume = output.shape.num_elements().int_from_positive_int();
     cpu_cast_backward(
         output.get<IDT>(), input.get<ODT>(), volume, cast_to<ODT>(1.0f));
   }
