@@ -1,6 +1,7 @@
 #include "pcg/computation_graph.h"
 #include "pcg/optimizer_attrs.h"
 #include "realm-backend/model_training_instance.h"
+#include "kernels/format_accessor_contents.h"
 #include "utils/containers/reversed.h"
 
 namespace FlexFlow {
@@ -39,6 +40,13 @@ PerLayerElapsedTime ModelTrainingInstance::backward() {
                this->logit_tensor,
                this->label_tensor);
 
+  gradient_tensor_t loss_tensor =
+      this->training_backing.realm_tensor_backing.tensor_gradient_mapping.at(
+          this->logit_tensor);
+  GenericTensorAccessorW loss_tensor_backing =
+      this->training_backing.realm_tensor_backing.tensor_backings.at(
+          TensorTypeVariant{loss_tensor});
+
   PerLayerElapsedTime per_layer_elapsed_time;
   std::unordered_map<layer_guid_t, Future<float>>
       per_layer_elapsed_time_future;
@@ -73,14 +81,19 @@ void ModelTrainingInstance::update() {
     this->optimizer_attrs);
 }
 
-void ModelTrainingInstance::write_loss_tensor_to_host(float *host_ptr) {
+GenericTensorAccessorR ModelTrainingInstance::get_loss_tensor_accessor() const {
+  GenericTensorAccessorW logit_tensor_backing = this->training_backing
+      .realm_tensor_backing.tensor_backings.at(TensorTypeVariant{this->logit_tensor});
+
+
   gradient_tensor_t loss_tensor =
-      this->training_backing.realm_tensor_backing
-          .tensor_gradient_mapping.at(this->logit_tensor);
+      this->training_backing.realm_tensor_backing.tensor_gradient_mapping.at(
+          this->logit_tensor);
   GenericTensorAccessorW loss_tensor_backing =
       this->training_backing.realm_tensor_backing.tensor_backings.at(
           TensorTypeVariant{loss_tensor});
-  write_to_host_float_ptr(loss_tensor_backing, host_ptr);
+  
+  return read_only_accessor_from_write_accessor(loss_tensor_backing);
 }
 
 } // namespace FlexFlow

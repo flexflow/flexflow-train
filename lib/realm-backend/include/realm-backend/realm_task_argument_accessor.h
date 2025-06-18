@@ -1,9 +1,9 @@
 #ifndef _FLEXFLOW_REALM_BACKEND_REALM_TASK_ARGUMENT_ACCESSOR_H
 #define _FLEXFLOW_REALM_BACKEND_REALM_TASK_ARGUMENT_ACCESSOR_H
 
-#include "local-execution/task_argument_accessor.h"
 #include "realm-backend/realm_allocator.h"
 #include "task-spec/slot_tensor_type_id.dtg.h"
+#include "task-spec/task_argument_accessor.h"
 #include <unordered_map>
 #include <variant>
 

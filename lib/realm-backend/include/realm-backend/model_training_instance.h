@@ -28,7 +28,7 @@ public:
   PerLayerElapsedTime forward();
   PerLayerElapsedTime backward();
   void update();
-  void write_loss_tensor_to_host(float *host_ptr);
+  GenericTensorAccessorR get_loss_tensor_accessor() const;
 };
 
 } // namespace FlexFlow

@@ -36,6 +36,10 @@ void RealmAllocatorImpl::deallocate(void *ptr) {
   }
 }
 
+DeviceType RealmAllocatorImpl::get_allocation_device_type() const {
+  return DeviceType::GPU;
+}
+
 Allocator create_realm_memory_allocator(Processor proc) {
   return Allocator::create<RealmAllocatorImpl>(proc);
 }

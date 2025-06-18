@@ -1,5 +1,7 @@
-#include "kernels/managed_ff_stream.h"
-#include "kernels/managed_per_device_ff_handle.h"
+#include "kernels/compare_tensor_accessors.h"
+#include "kernels/format_accessor_contents.h"
+#include "kernels/tensor_accessor_reductions.h"
+#include "kernels/test_utils.h"
 #include "local-execution/allocated_tensors.h"
 #include "realm-backend/realm_allocator.h"
 #include "realm-backend/realm_training_backing.h"
@@ -14,20 +16,21 @@
 using namespace ::FlexFlow;
 using namespace Realm;
 
-bool did_loss_decrease(float *first_epoch, float *last_epoch, int batch_size) {
-  for (int i = 0; i < batch_size; i++) {
-    if (first_epoch[i] < last_epoch[i]) {
-      return false;
-    }
-  }
-  return true;
+bool did_loss_decrease(GenericTensorAccessorR const &first_epoch,
+                       GenericTensorAccessorR const &last_epoch) {
+  Allocator cpu_allocator = create_local_cpu_memory_allocator();
+
+  return tensor_accessor_all(
+      compare_tensor_accessors_le(last_epoch, first_epoch, cpu_allocator));
 }
 
 void top_level_task(const void *args, size_t arglen, const void *userdata,
                     size_t userlen, Realm::Processor p) {
   // initialize runtime
   ManagedFFStream managed_stream{};
-  ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle();
+  ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
+      /*workSpaceSize=*/1024 * 1024,
+      /*allowTensorOpMathConversion=*/true);
   std::vector<Processor> worker_procs;
   std::vector<Allocator> allocators;
   Machine::ProcessorQuery pq = Machine::ProcessorQuery(Machine::get_machine())
@@ -42,36 +45,37 @@ void top_level_task(const void *args, size_t arglen, const void *userdata,
   LossTensorSource loss_tensor_source;
   loss_tensor_t label_tensor = loss_tensor_source.new_loss_tensor();
 
-  nonnegative_int batch_size = 10_n;
-  nonnegative_int data_dim = 16_n;
-  nonnegative_int hidden_dim = 32_n;
-  nonnegative_int output_dim = 1_n;
+  positive_int batch_size = 10_p;
+  positive_int data_dim = 16_p;
+  positive_int hidden_dim = 32_p;
+  positive_int output_dim = 1_p;
 
+  TensorShape input_tensor_shape = TensorShape{
+      TensorDims{FFOrdered{batch_size, data_dim}}, DataType::FLOAT};
   TensorShape output_tensor_shape = TensorShape{
-      TensorDims{FFOrdered<nonnegative_int>{batch_size, output_dim}},
-      DataType::FLOAT};
+      TensorDims{FFOrdered{batch_size, output_dim}}, DataType::FLOAT};
 
-  GenericTensorAccessorW label_tensor_backing =
-      allocators[0].allocate_tensor(output_tensor_shape);
-  AllocatedTensors allocated_tensors = AllocatedTensors{
-      {{TensorTypeVariant{label_tensor}, label_tensor_backing}}, {}, {}};
+  GenericTensorAccessorW label_tensor_backing = create_random_filled_accessor_w(
+      output_tensor_shape, allocators[0]);
 
   // construct computation graph
   ComputationGraph computation_graph = make_empty_computation_graph();
 
-  TensorShape input_tensor_shape = TensorShape{
-      TensorDims{FFOrdered<nonnegative_int>{batch_size, data_dim}},
-      DataType::FLOAT};
-
   TensorShape weight_shape_1 = TensorShape{
-      TensorDims{FFOrdered<nonnegative_int>{data_dim, hidden_dim}},
-      DataType::FLOAT};
+      TensorDims{FFOrdered{data_dim, hidden_dim}}, DataType::FLOAT};
   TensorShape weight_shape_2 = TensorShape{
-      TensorDims{FFOrdered<nonnegative_int>{hidden_dim, output_dim}},
-      DataType::FLOAT};
+      TensorDims{FFOrdered{hidden_dim, output_dim}}, DataType::FLOAT};
+
+  GenericTensorAccessorW weight_1_backing = create_random_filled_accessor_w(
+      weight_shape_1, allocators[0]);
+  GenericTensorAccessorW weight_2_backing = create_random_filled_accessor_w(
+      weight_shape_2, allocators[0]);
 
   LayerAddedResult inputs_layer =
       add_input_layer_with_grad(computation_graph, input_tensor_shape);
+  tensor_guid_t input_tensor_guid = get_only(inputs_layer.outputs);
+  GenericTensorAccessorW input_tensor_backing = create_random_filled_accessor_w(
+      input_tensor_shape, allocators[0]);
 
   LayerAddedResult weights_layer_1 = add_layer(
       computation_graph,
@@ -80,6 +84,7 @@ void top_level_task(const void *args, size_t arglen, const void *userdata,
                   std::nullopt},
       {},
       {});
+  tensor_guid_t weight_1_tensor_guid = get_only(weights_layer_1.outputs);
 
   LayerAddedResult weights_layer_2 = add_layer(
       computation_graph,
@@ -88,13 +93,14 @@ void top_level_task(const void *args, size_t arglen, const void *userdata,
                   std::nullopt},
       {},
       {});
+  tensor_guid_t weight_2_tensor_guid = get_only(weights_layer_2.outputs);
 
   LayerAddedResult linear_operator_1 = add_layer(
       computation_graph,
       LayerAttrs{ComputationGraphOpAttrs{LinearAttrs{hidden_dim,
                                                       /*use_bias=*/false,
                                                       DataType::FLOAT,
-                                                      Activation::RELU,
+                                                      std::nullopt,
                                                       std::nullopt}},
                   std::nullopt},
       inputs_layer.outputs,
@@ -105,7 +111,7 @@ void top_level_task(const void *args, size_t arglen, const void *userdata,
       LayerAttrs{ComputationGraphOpAttrs{LinearAttrs{output_dim,
                                                       /*use_bias=*/false,
                                                       DataType::FLOAT,
-                                                      Activation::RELU,
+                                                      std::nullopt,
                                                       std::nullopt}},
                   std::nullopt},
       linear_operator_1.outputs,
@@ -130,6 +136,17 @@ void top_level_task(const void *args, size_t arglen, const void *userdata,
   GradientTensorSource gradient_tensor_source;
   OptimizerTensorSource optimizer_tensor_source;
 
+  AllocatedTensors allocated_tensors = AllocatedTensors{
+      /*tensor_type_backings=*/{
+          {TensorTypeVariant{label_tensor}, label_tensor_backing},
+          {TensorTypeVariant{input_tensor_guid}, input_tensor_backing},
+          {TensorTypeVariant{weight_1_tensor_guid}, weight_1_backing},
+          {TensorTypeVariant{weight_2_tensor_guid}, weight_2_backing},
+      },
+      /*gradient_mapping=*/{},
+      /*optimizer_mapping*/ {},
+  };
+
   {
     printf("\nRunning test %d: E2ETest...\n", 1);
     RealmTrainingBacking realm_training_backing = RealmTrainingBacking(
@@ -141,32 +158,26 @@ void top_level_task(const void *args, size_t arglen, const void *userdata,
       realm_training_backing, logit_tensor, label_tensor, loss_attrs, optimizer_attrs
     };
 
+    Allocator cpu_allocator = create_local_cpu_memory_allocator();
+
     int num_epochs = 5;
-    int num_samples = batch_size.unwrap_nonnegative();
-    std::vector<float *> loss_values(num_epochs);
+    std::vector<GenericTensorAccessorR> loss_values;
 
     for (int i = 0; i < num_epochs; i++) {
       model_training_instance.forward();
       model_training_instance.backward();
       model_training_instance.update();
-      float *host_loss_ptr = new float[num_samples];
-      model_training_instance.write_loss_tensor_to_host(host_loss_ptr);
-      loss_values[i] = host_loss_ptr;
+      loss_values.push_back(copy_tensor_accessor_r(
+          model_training_instance.get_loss_tensor_accessor(), cpu_allocator));
     }
 
     // Assert that each sample in the batch has a lower loss in last epoch than
     // the first epoch
-    float *first_epoch = loss_values[0];
-    float *last_epoch = loss_values[num_epochs - 1];
-    if(did_loss_decrease(
-        first_epoch, last_epoch, batch_size.unwrap_nonnegative())) {
-      printf("passed\n");
-    } else {
-      printf("failed\n");
-    }
+    GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
+    
+    GenericTensorAccessorR last_epoch = loss_values.back();
 
-    for (int i = 0; i < num_epochs; i++) {
-      delete[] loss_values[i];
-    }
+    assert(did_loss_decrease(first_epoch_loss, last_epoch));
+    printf("passed\n");
   }
 }

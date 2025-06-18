@@ -8,8 +8,6 @@
 
 namespace FlexFlow {
 
-struct RealmAllocatorImpl;
-
 struct RealmAllocatorImpl : public IAllocator {
   RealmAllocatorImpl() = delete;
   RealmAllocatorImpl(RealmAllocatorImpl const &) = delete;
@@ -19,6 +17,8 @@ struct RealmAllocatorImpl : public IAllocator {
 
   void *allocate(size_t) override;
   void deallocate(void *) override;
+
+  DeviceType get_allocation_device_type() const override;
 
 private:
   std::unordered_map<void *, Realm::RegionInstance> ptrs;

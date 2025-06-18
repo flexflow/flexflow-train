@@ -3,7 +3,6 @@ name = "RealmTensorBacking"
 features = [
   "eq",
   "fmt",
-  "hash"
 ]
 
 includes = [
@@ -15,9 +14,7 @@ includes = [
 ]
 
 src_includes = [
-  "utils/hash/unordered_map.h",
   "utils/fmt/unordered_map.h",
-  "utils/hash/vector.h",
   "utils/fmt/vector.h",
 ]
 
