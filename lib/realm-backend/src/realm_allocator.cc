@@ -21,6 +21,11 @@ void *RealmAllocatorImpl::allocate(size_t requested_memory_size) {
   RegionInstance::create_instance(requested_instance, mem, bounds, field_sizes,
                                   /*SOA*/ 1, ProfilingRequestSet())
       .wait();
+  // TODO: looks like no need to do this because the memory is already zeroed out
+  // char *zero_data = new char[requested_memory_size];
+  // memset(zero_data, 0, requested_memory_size);
+  // requested_instance.write_untyped(0, (const void *)zero_data, requested_memory_size);
+  // delete[] zero_data;
   void *ptr = requested_instance.pointer_untyped(0, 0);
   this->ptrs.insert({ptr, requested_instance});
   return ptr;
