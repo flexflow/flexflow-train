@@ -12,6 +12,7 @@
 #include "utils/containers/get_only.h"
 #include "utils/containers/values.h"
 #include "utils/exception.h"
+#include "kernels/format_accessor_contents.h"
 
 namespace FlexFlow {
 
@@ -143,8 +144,25 @@ std::optional<float>
                               local_training_backing.local_args_backing,
                               invocation,
                               allocator);
-    return call_task_impl(
+    std::optional<float> result = call_task_impl(
         local_training_backing.task_registry, invocation.task_id, accessor);
+    std::cout << "====== forward ======" << std::endl;
+    std::cout << "weights" << std::endl;
+    std::vector<tensor_guid_t> weights = get_incoming_weights(local_training_backing.computation_graph, operator_node);
+    for (tensor_guid_t tensor : weights) {
+      std::cout << format_accessor_w_contents(local_training_backing.local_tensor_backing.tensor_backings.at(TensorTypeVariant{tensor})) << std::endl;
+    }
+    std::cout << "inputs" << std::endl;
+    std::vector<tensor_guid_t> inputs = get_incoming_inputs(local_training_backing.computation_graph, operator_node);
+    for (tensor_guid_t tensor : inputs) {
+      std::cout << format_accessor_w_contents(local_training_backing.local_tensor_backing.tensor_backings.at(TensorTypeVariant{tensor})) << std::endl;
+    }
+    std::cout << "output" << std::endl;
+    std::vector<tensor_guid_t> outgoing_tensors = get_outgoing_tensors(local_training_backing.computation_graph, operator_node);
+    for (tensor_guid_t tensor : outgoing_tensors) {
+      std::cout << format_accessor_w_contents(local_training_backing.local_tensor_backing.tensor_backings.at(TensorTypeVariant{tensor})) << std::endl;
+    }
+    return result;
   } else {
     return std::nullopt;
   }

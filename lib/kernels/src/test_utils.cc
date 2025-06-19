@@ -30,8 +30,9 @@ struct CreateRandomFilledAccessorW {
     using T = real_type_t<DT>;
     T *data_ptr = src_accessor.get<DT>();
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
+    // std::random_device rd;
+    // std::mt19937 gen(rd());
+    std::mt19937 gen(42);
     size_t num_elements = get_num_elements(shape).int_from_positive_int();
     if constexpr (std::is_same<T, bool>::value) {
       std::bernoulli_distribution dist(0.5);

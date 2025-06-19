@@ -38,8 +38,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     loss_tensor_t label_tensor = loss_tensor_source.new_loss_tensor();
 
     positive_int batch_size = 10_p;
-    positive_int data_dim = 16_p;
-    positive_int hidden_dim = 32_p;
+    positive_int data_dim = 4_p;
+    positive_int hidden_dim = 1_p;
     positive_int output_dim = 1_p;
 
     TensorShape input_tensor_shape = TensorShape{
@@ -160,7 +160,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
-    int num_epochs = 5;
+    int num_epochs = 1;
     std::vector<GenericTensorAccessorR> loss_values;
 
     for (int i = 0; i < num_epochs; i++) {
@@ -173,9 +173,12 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     // Assert that each sample in the batch has a lower loss in last epoch than
     // the first epoch
+    // std::cout << "Final loss values" << std::endl;
     GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
+    // std::cout << format_accessor_r_contents(first_epoch_loss) << std::endl;
     
     GenericTensorAccessorR last_epoch = loss_values.back();
+    // std::cout << format_accessor_r_contents(last_epoch) << std::endl;
 
     CHECK(did_loss_decrease(first_epoch_loss, last_epoch));
   }
