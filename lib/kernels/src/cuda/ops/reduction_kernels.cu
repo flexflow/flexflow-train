@@ -15,7 +15,7 @@
 
 #include "internal/device.h"
 #include "kernels/datatype_dispatch.h"
-#include "kernels/reduction_kernels.h"
+#include "kernels/reduction_kernels_gpu.h"
 
 namespace FlexFlow {
 namespace Kernels {
@@ -67,7 +67,7 @@ struct BackwardKernel {
   }
 };
 
-void forward_kernel(cudaStream_t stream,
+void gpu_forward_kernel(cudaStream_t stream,
                     GenericTensorAccessorR const &input,
                     GenericTensorAccessorW const &output,
                     size_t num_replicas) {
@@ -75,7 +75,7 @@ void forward_kernel(cudaStream_t stream,
       input.data_type, stream, input, output, num_replicas);
 }
 
-void backward_kernel(cudaStream_t stream,
+void gpu_backward_kernel(cudaStream_t stream,
                      GenericTensorAccessorR const &output,
                      GenericTensorAccessorW const &input) {
   DataTypeDispatch1<BackwardKernel>{}(output.data_type, stream, output, input);

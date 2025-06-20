@@ -92,17 +92,19 @@ LinearPerDeviceState init_kernel(PerDeviceFFHandle handle,
   // todo: how to use allocator to allocate memory for float * one_ptr, how many
   // bytes to allocate?
   checkCUDA(cudaMalloc(&one_ptr, sizeof(float) * batch_size));
-  LinearPerDeviceState per_device_state = {handle,
-                                           outputTensor,
-                                           actiDesc,
-                                           one_ptr,
-                                           mode,
-                                           activation,
-                                           regularizer,
-                                           use_bias,
-                                           input_type,
-                                           weight_type,
-                                           output_type};
+  LinearPerDeviceState per_device_state = LinearPerDeviceState{
+    /*handle=*/handle,
+    /*outputTensor=*/outputTensor,
+    /*actiDesc=*/actiDesc,
+    /*one_ptr=*/one_ptr,
+    /*mode=*/mode,
+    /*activation=*/activation,
+    /*regularizer=*/regularizer,
+    /*use_bias=*/use_bias,
+    /*input_type=*/input_type,
+    /*weight_type=*/weight_type,
+    /*output_type=*/output_type,
+  };
   return per_device_state;
 }
 

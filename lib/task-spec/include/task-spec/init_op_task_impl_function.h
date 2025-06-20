@@ -7,15 +7,16 @@
 namespace FlexFlow {
 
 struct InitOpTaskImplFunction {
-
-  DeviceSpecificDeviceStates (*function_ptr)(TaskArgumentAccessor const &);
-
+public:
   bool operator==(InitOpTaskImplFunction const &) const;
   bool operator!=(InitOpTaskImplFunction const &) const;
   bool operator<(InitOpTaskImplFunction const &) const;
   bool operator>(InitOpTaskImplFunction const &) const;
   bool operator<=(InitOpTaskImplFunction const &) const;
   bool operator>=(InitOpTaskImplFunction const &) const;
+
+public:
+  std::optional<DeviceSpecificDeviceStates> (*function_ptr)(TaskArgumentAccessor const &);
 };
 
 std::string format_as(InitOpTaskImplFunction const &x);

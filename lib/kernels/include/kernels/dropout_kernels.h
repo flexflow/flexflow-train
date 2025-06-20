@@ -3,59 +3,35 @@
 
 #include "kernels/allocation.h"
 #include "kernels/array_shape.h"
-#include "kernels/device.h"
 #include "kernels/ff_handle.h"
+#include "kernels/dropout_per_device_state.dtg.h"
+#include "kernels/device_stream_t.dtg.h"
 #include <cstddef>
 
-namespace FlexFlow {
+namespace FlexFlow::Kernels::Dropout {
 
-struct DropoutPerDeviceState {
-public:
-  PerDeviceFFHandle handle;
-  ffTensorDescriptor_t inputTensor;
-  ffTensorDescriptor_t outputTensor;
-  ffDropoutDescriptor_t dropoutDesc;
-  void *reserveSpace;
-  void *dropoutStates;
-  size_t reserveSpaceSize;
-  req<size_t> dropoutStateSize;
-};
+std::optional<DropoutPerDeviceState> 
+  init_kernel(DeviceType device_type, 
+              PerDeviceFFHandle const &handle,
+                                float rate,
+                                unsigned long long seed,
+                                ArrayShape const &output_domain,
+                                Allocator &allocator);
 
-FF_VISITABLE_STRUCT_NONSTANDARD_CONSTRUCTION(DropoutPerDeviceState,
-                                             handle,
-                                             inputTensor,
-                                             outputTensor,
-                                             dropoutDesc,
-                                             reserveSpace,
-                                             dropoutStates,
-                                             reserveSpaceSize,
-                                             dropoutStateSize);
-
-namespace Kernels::Dropout {
-
-DropoutPerDeviceState init_kernel(PerDeviceFFHandle handle,
-                                  float rate,
-                                  unsigned long long seed,
-                                  ArrayShape const &output_domain,
-                                  Allocator allocator);
-
-void forward_kernel(ffStream_t stream,
-                    DropoutPerDeviceState const &m,
+void forward_kernel(device_stream_t const &stream,
+                    std::optional<DropoutPerDeviceState> const &per_device_state,
                     float const *input_ptr,
                     float *output_ptr);
 
-void backward_kernel(ffStream_t stream,
-                     DropoutPerDeviceState const &m,
+void backward_kernel(device_stream_t const &stream,
+                     std::optional<DropoutPerDeviceState> const &per_device_state,
                      float const *output_grad_ptr,
                      float *input_grad_ptr);
 
-void cleanup_kernel(Allocator allocator,
-                    ffTensorDescriptor_t inputTensor,
-                    ffTensorDescriptor_t outputTensor,
-                    ffDropoutDescriptor_t dropoutDesc,
-                    void *dropoutStates);
+void cleanup_kernel(DeviceType device_type,
+                    Allocator &allocator,
+                    std::optional<DropoutPerDeviceState> &per_device_state);
 
-} // namespace Kernels::Dropout
 } // namespace FlexFlow
 
 #endif // _FLEXFLOW_OPS_KERNELS_DROPOUT_KERNELS_H

@@ -38,9 +38,9 @@ enum Slots {
 OpTaskInvocation forward(BatchMatmulAttrs const &attrs) {
   OpTaskBinding fwd;
 
-  fwd.bind(A_INPUT, input_tensor(0));
-  fwd.bind(B_INPUT, input_tensor(1));
-  fwd.bind(OUTPUT, output_tensor(0));
+  fwd.bind(A_INPUT, input_tensor(0_n));
+  fwd.bind(B_INPUT, input_tensor(1_n));
+  fwd.bind(OUTPUT, output_tensor(0_n));
 
   fwd.bind_arg(ATTRS, attrs);
   fwd.bind_arg(HANDLE, ff_handle());

@@ -23,22 +23,24 @@ namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::Replicate;
 
-enum Slots { INPUT, OUTPUT, ATTRS, PROFILING };
+enum Slots { INPUT, OUTPUT, ATTRS, PROFILING, KERNEL_DEVICE_TYPE };
 
 OpTaskInvocation forward(ReplicateAttrs const &attrs) {
   OpTaskBinding binding;
 
   binding.bind_arg(PROFILING, profiling_settings());
-
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(OUTPUT, output_tensor(0));
   binding.bind_arg(ATTRS, attrs);
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
+
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
 
   return OpTaskInvocation{
     task_id_t::REPLICATE_FWD_TASK_ID, 
     binding,
   };
 }
+
 OpTaskInvocation backward(ReplicateAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
@@ -50,13 +52,15 @@ OpTaskInvocation backward(ReplicateAttrs const &attrs) {
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
   return profile(forward_kernel,
                  profiling,
-                 "[replicate] forward_time = {:.2lf}ms\n",
+                 kernel_device_type,
+                 "[Replicate] forward_time = {:.2lf}ms\n",
                  input,
                  output);
 }
@@ -64,6 +68,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input_grad = acc.get_tensor_grad<Permissions::WO>(INPUT);
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
@@ -71,7 +76,8 @@ static std::optional<float>
 
   return profile(backward_kernel,
                  profiling,
-                 "[replicate] backward_time = {:.2lf}ms\n",
+                 kernel_device_type,
+                 "[Replicate] backward_time = {:.2lf}ms\n",
                  output_grad,
                  input_grad,
                  attrs.replicate_degree.int_from_positive_int());
@@ -88,6 +94,8 @@ OpTaskSignature get_replicate_fwd_signature() {
   OpTaskSignature fwd(OpTaskType::FWD);
 
   fwd.add_arg_slot<bool>(PROFILING);
+  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
+
   fwd.add_input_slot(INPUT);
   fwd.add_output_slot(OUTPUT);
   return fwd;

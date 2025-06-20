@@ -1,34 +1,19 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_ELEMENT_BINARY_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_ELEMENT_BINARY_KERNELS_H
 
-#include "ff_handle.h"
+#include "kernels/ff_handle.h"
 #include "kernels/array_shape.h"
 #include "kernels/device.h"
 #include "op-attrs/datatype.h"
 #include "op-attrs/operator_type.h"
+#include "kernels/element_binary_per_device_state.dtg.h"
+#include "kernels/device_stream_t.dtg.h"
+#include "pcg/device_type.dtg.h"
 
-namespace FlexFlow {
+namespace FlexFlow::Kernels::ElementBinary {
 
-struct ElementBinaryPerDeviceState {
-  PerDeviceFFHandle handle;
-  ffTensorDescriptor_t inputLHSTensor;
-  ffTensorDescriptor_t inputRHSTensor;
-  ffTensorDescriptor_t outputTensor;
-  ffOpTensorDescriptor_t opDesc;
-  ffReduceTensorDescriptor_t reduceAddDesc;
-};
-
-FF_VISITABLE_STRUCT_NONSTANDARD_CONSTRUCTION(ElementBinaryPerDeviceState,
-                                             handle,
-                                             inputLHSTensor,
-                                             inputRHSTensor,
-                                             outputTensor,
-                                             opDesc,
-                                             reduceAddDesc);
-
-namespace Kernels::ElementBinary {
-
-ElementBinaryPerDeviceState init_kernel(PerDeviceFFHandle handle,
+std::optional<ElementBinaryPerDeviceState> init_kernel(DeviceType device_type,
+                                                       PerDeviceFFHandle handle,
                                         OperatorType op_type,
                                         bool should_broadcast_lhs,
                                         bool should_broadcast_rhs,
@@ -36,8 +21,8 @@ ElementBinaryPerDeviceState init_kernel(PerDeviceFFHandle handle,
                                         ArrayShape rhs_shape,
                                         ArrayShape output_shape);
 
-void forward_kernel(ffStream_t stream,
-                    ElementBinaryPerDeviceState const &m,
+void forward_kernel(device_stream_t const &stream,
+                    std::optional<ElementBinaryPerDeviceState> const &per_device_state,
                     float const *lhs_ptr,
                     float const *rhs_ptr,
                     float *out_ptr,
@@ -45,8 +30,8 @@ void forward_kernel(ffStream_t stream,
                     bool broadcast_inputLHS,
                     PerDeviceFFHandle handle);
 
-void backward_kernel(ffStream_t stream,
-                     ElementBinaryPerDeviceState const &m,
+void backward_kernel(device_stream_t const &stream,
+                     std::optional<ElementBinaryPerDeviceState> const &per_device_state,
                      float const *out_grad_ptr,
                      float const *lhs_ptr,
                      float const *rhs_ptr,
@@ -57,7 +42,9 @@ void backward_kernel(ffStream_t stream,
                      bool broadcast_inputRHS,
                      PerDeviceFFHandle handle);
 
+void cleanup_kernel(DeviceType device_type,
+                    std::optional<ElementBinaryPerDeviceState> const &per_device_state);
+
 } // namespace Kernels::ElementBinary
-} // namespace FlexFlow
 
 #endif

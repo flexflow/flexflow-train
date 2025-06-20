@@ -17,6 +17,7 @@
 #include "kernels/attention_kernels.h"
 #include "op-attrs/ops/attention.h"
 #include "op-attrs/ops/attention/multihead_attention_parallel_inputs.h"
+#include "task-spec/device_specific_device_states.h"
 #include "task-spec/op_task_signature.h"
 
 namespace FlexFlow {
@@ -51,9 +52,9 @@ OpTaskInvocation init(MultiHeadAttentionAttrs const &attrs) {
 
   b.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
-  b.bind_arg(QUERY_PARALLEL_TENSOR_SHAPE, input_parallel_tensor_shape(0));
-  b.bind_arg(KEY_PARALLEL_TENSOR_SHAPE, input_parallel_tensor_shape(1));
-  b.bind_arg(VALUE_PARALLEL_TENSOR_SHAPE, input_parallel_tensor_shape(2));
+  b.bind_arg(QUERY_PARALLEL_TENSOR_SHAPE, input_parallel_tensor_shape(0_n));
+  b.bind_arg(KEY_PARALLEL_TENSOR_SHAPE, input_parallel_tensor_shape(1_n));
+  b.bind_arg(VALUE_PARALLEL_TENSOR_SHAPE, input_parallel_tensor_shape(2_n));
 
   b.bind_arg(QPROJSIZE, get_qProjSize(attrs));
   b.bind_arg(KPROJSIZE, get_kProjSize(attrs));
@@ -69,11 +70,11 @@ OpTaskInvocation init(MultiHeadAttentionAttrs const &attrs) {
 OpTaskInvocation forward(MultiHeadAttentionAttrs const &attrs) {
   OpTaskBinding b;
 
-  b.bind(QUERY, input_tensor(0));
-  b.bind(KEY, input_tensor(1));
-  b.bind(VALUE, input_tensor(2));
-  b.bind(WEIGHTS, weight_tensor(0));
-  b.bind(OUTPUT, output_tensor(0));
+  b.bind(QUERY, input_tensor(0_n));
+  b.bind(KEY, input_tensor(1_n));
+  b.bind(VALUE, input_tensor(2_n));
+  b.bind(WEIGHTS, weight_tensor(0_n));
+  b.bind(OUTPUT, output_tensor(0_n));
 
   b.bind_arg(PROFILING, profiling_settings());
   b.bind_arg(PER_DEVICE_STATE, per_device_op_state<MHAPerDeviceState>());
@@ -93,7 +94,7 @@ OpTaskInvocation backward(MultiHeadAttentionAttrs const &attrs) {
   };
 }
 
-static DeviceSpecificDeviceStates
+static std::optional<DeviceSpecificDeviceStates>
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto const &attrs = acc.get_argument<MultiHeadAttentionAttrs>(ATTRS);
   Allocator allocator = acc.get_allocator();
@@ -149,8 +150,8 @@ static DeviceSpecificDeviceStates
                   /*qoSeqLength=*/qoSeqLength.int_from_positive_int(),
                   /*kvSeqLength=*/kvSeqLength.int_from_positive_int(),
                   /*add_bias_kv=*/attrs.add_bias_kv);
-  return DeviceSpecificDeviceStates{
-      DeviceSpecific<MHAPerDeviceState>::create(per_device_state)};
+
+  return make_device_specific_state(per_device_state);
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {

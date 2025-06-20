@@ -25,7 +25,7 @@ std::optional<Conv2DPerDeviceState> init_kernel(DeviceType device_type,
                                  float *filter_grad_ptr);
 
 void forward_kernel(device_stream_t const &stream,
-                    Conv2DPerDeviceState const &per_device_state,
+                    std::optional<Conv2DPerDeviceState> const &per_device_state,
                     float const *input_ptr,
                     float *output_ptr,
                     float const *filter_ptr,
@@ -33,7 +33,7 @@ void forward_kernel(device_stream_t const &stream,
                     std::optional<Activation> activation);
 
 void backward_kernel(device_stream_t const &stream,
-                     Conv2DPerDeviceState const &per_device_state,
+                     std::optional<Conv2DPerDeviceState> const &per_device_state,
                      float const *output_ptr,
                      float *output_grad_ptr,
                      float const *input_ptr,

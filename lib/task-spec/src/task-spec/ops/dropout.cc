@@ -1,5 +1,6 @@
 #include "task-spec/ops/dropout.h"
 #include "kernels/dropout_kernels.h"
+#include "task-spec/device_specific_device_states.h"
 #include "task-spec/op_task_invocation.h"
 #include "task-spec/op_task_signature.h"
 #include "utils/hash-utils.h"
@@ -17,7 +18,7 @@ OpTaskInvocation init(DropoutAttrs const &attrs) {
   binding.bind_arg(FF_HANDLE, ff_handle());
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
-  binding.bind(OUTPUT, output_tensor(0));
+  binding.bind(OUTPUT, output_tensor(0_n));
 
   return OpTaskInvocation{
     task_id_t::DROPOUT_INIT_TASK_ID,
@@ -28,8 +29,8 @@ OpTaskInvocation init(DropoutAttrs const &attrs) {
 OpTaskInvocation forward(DropoutAttrs const &attrs) {
   OpTaskBinding binding;
 
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(OUTPUT, output_tensor(0));
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
 
   binding.bind_arg(PROFILING, profiling_settings());
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
@@ -51,17 +52,18 @@ OpTaskInvocation backward(DropoutAttrs const &attrs) {
   };
 }
 
-static DeviceSpecificDeviceStates
+static std::optional<DeviceSpecificDeviceStates>
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   Allocator allocator = acc.get_allocator();
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(FF_HANDLE);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto const &attrs = acc.get_argument<DropoutAttrs>(ATTRS);
 
-  DropoutPerDeviceState per_device_state =
-      init_kernel(handle, attrs.rate, attrs.seed, output.shape, allocator);
-  return DeviceSpecificDeviceStates{
-      DeviceSpecific<DropoutPerDeviceState>::create(per_device_state)};
+  std::optional<DropoutPerDeviceState> per_device_state =
+      init_kernel(kernel_device_type, handle, attrs.rate, attrs.seed, output.shape, allocator);
+
+  return make_device_specific_state(per_device_state);
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {

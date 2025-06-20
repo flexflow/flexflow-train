@@ -20,12 +20,13 @@ namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::Reshape;
 
-enum slots { INPUT, OUTPUT, ATTRS, PROFILING, PER_DEVICE_STATE };
+enum Slots { INPUT, OUTPUT, ATTRS, PROFILING, PER_DEVICE_STATE, KERNEL_DEVICE_TYPE };
 
 OpTaskInvocation init(ReshapeAttrs const &attrs) {
   OpTaskBinding binding;
 
   binding.bind_arg(ATTRS, attrs);
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
   return OpTaskInvocation{
     task_id_t::RESHAPE_INIT_TASK_ID, 
@@ -39,9 +40,10 @@ OpTaskInvocation forward(ReshapeAttrs const &attrs) {
   binding.bind_arg(PER_DEVICE_STATE,
                    per_device_op_state<ReshapePerDeviceState>());
   binding.bind_arg(PROFILING, profiling_settings());
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(OUTPUT, output_tensor(0));
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
   return OpTaskInvocation{
     task_id_t::RESHAPE_FWD_TASK_ID, 
     binding,
@@ -60,6 +62,7 @@ OpTaskInvocation backward(ReshapeAttrs const &attrs) {
 static DeviceSpecificDeviceStates
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto attrs = acc.get_argument<ReshapeAttrs>(ATTRS);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   ReshapePerDeviceState per_device_state = init_kernel(attrs.shape.data_type);
   return DeviceSpecificDeviceStates{
@@ -76,6 +79,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 
   return profile(forward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[Reshape] forward time = {:.2lf}ms\n",
                  per_device_state,
                  input,
@@ -87,12 +91,14 @@ static std::optional<float>
   auto per_device_state =
       acc.get_argument<ReshapePerDeviceState>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(INPUT);
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
 
   return profile(backward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[Reshape] backward time = {:.2lf}ms\n",
                  per_device_state,
                  output_grad,

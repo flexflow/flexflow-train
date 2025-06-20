@@ -21,11 +21,11 @@ namespace FlexFlow {
 namespace Kernels {
 namespace Dropout {
 
-DropoutPerDeviceState init_kernel(PerDeviceFFHandle handle,
+DropoutPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
                                   float rate,
                                   unsigned long long seed,
                                   ArrayShape const &output_shape,
-                                  Allocator allocator) {
+                                  Allocator &allocator) {
   ffTensorDescriptor_t inputTensor;
   ffTensorDescriptor_t outputTensor;
   ffDropoutDescriptor_t dropoutDesc;
@@ -50,18 +50,20 @@ DropoutPerDeviceState init_kernel(PerDeviceFFHandle handle,
   }
   checkCUDNN(cudnnSetDropoutDescriptor(
       dropoutDesc, handle.dnn, rate, dropoutStates, dropoutStateSize, seed));
-  DropoutPerDeviceState per_device_state = {handle,
-                                            inputTensor,
-                                            outputTensor,
-                                            dropoutDesc,
-                                            reserveSpace,
-                                            dropoutStates,
-                                            reserveSpaceSize,
-                                            dropoutStateSize};
+  DropoutPerDeviceState per_device_state = DropoutPerDeviceState{
+    /*handle=*/handle,
+    /*inputTensor=*/inputTensor,
+    /*outputTensor=*/outputTensor,
+    /*dropoutDesc=*/dropoutDesc,
+    /*reserveSpace=*/reserveSpace,
+    /*dropoutStates=*/dropoutStates,
+    /*reserveSpaceSize=*/reserveSpaceSize,
+    /*dropoutStateSize=*/dropoutStateSize,
+  };
   return per_device_state;
 }
 
-void forward_kernel(cudaStream_t stream,
+void gpu_forward_kernel(cudaStream_t stream,
                     DropoutPerDeviceState const &m,
                     float const *input_ptr,
                     float *output_ptr) {
@@ -77,7 +79,7 @@ void forward_kernel(cudaStream_t stream,
                                  m.reserveSpaceSize));
 }
 
-void backward_kernel(cudaStream_t stream,
+void gpu_backward_kernel(cudaStream_t stream,
                      DropoutPerDeviceState const &m,
                      float const *output_grad_ptr,
                      float *input_grad_ptr) {
@@ -93,15 +95,12 @@ void backward_kernel(cudaStream_t stream,
                                   m.reserveSpaceSize));
 }
 
-void cleanup_kernel(Allocator allocator,
-                    ffTensorDescriptor_t inputTensor,
-                    ffTensorDescriptor_t outputTensor,
-                    ffDropoutDescriptor_t dropoutDesc,
-                    void *dropoutStates) {
-  allocator.deallocate(dropoutStates);
-  checkCUDNN(cudnnDestroyTensorDescriptor(inputTensor));
-  checkCUDNN(cudnnDestroyTensorDescriptor(outputTensor));
-  checkCUDNN(cudnnDestroyDropoutDescriptor(dropoutDesc));
+void gpu_cleanup_kernel(Allocator &allocator,
+                        DropoutPerDeviceState const &per_device_state) {
+  allocator.deallocate(per_device_state.dropoutStates);
+  checkCUDNN(cudnnDestroyTensorDescriptor(per_device_state.inputTensor));
+  checkCUDNN(cudnnDestroyTensorDescriptor(per_device_state.outputTensor));
+  checkCUDNN(cudnnDestroyDropoutDescriptor(per_device_state.dropoutDesc));
 }
 
 } // namespace Dropout

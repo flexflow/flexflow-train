@@ -12,8 +12,8 @@ enum Slots { INPUT, OUTPUT, ATTRS, PROFILING, PER_DEVICE_STATE, HANDLE, KERNEL_D
 
 OpTaskInvocation init(Pool2DAttrs const &attrs) {
   OpTaskBinding binding;
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(OUTPUT, output_tensor(0));
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
   binding.bind_arg(ATTRS, attrs);
   binding.bind_arg(HANDLE, ff_handle());
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
@@ -80,8 +80,8 @@ static DeviceSpecificDeviceStates
 
 OpTaskInvocation forward(Pool2DAttrs const &attrs) {
   OpTaskBinding binding;
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(OUTPUT, output_tensor(0));
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
 
   binding.bind_arg(PROFILING, profiling_settings());
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());

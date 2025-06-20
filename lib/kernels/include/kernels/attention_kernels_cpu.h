@@ -6,7 +6,7 @@
 #include "kernels/device_stream_t.dtg.h"
 #include "kernels/ff_handle.h"
 #include <memory>
-#include "kernels/mha_per_device_state.h"
+#include "kernels/mha_per_device_state.dtg.h"
 
 namespace FlexFlow::Kernels::MultiHeadAttention {
 

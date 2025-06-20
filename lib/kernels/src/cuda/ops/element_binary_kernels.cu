@@ -14,7 +14,7 @@
  */
 
 #include "internal/device.h"
-#include "kernels/element_binary_kernels.h"
+#include "kernels/element_binary_kernels_gpu.h"
 #include "kernels/ff_handle.h"
 #include "op-attrs/datatype.h"
 #include "op-attrs/operator_type.h"
@@ -79,7 +79,7 @@ __global__ void elewise_binary_backward_kernel(size_t volume,
   }
 }
 
-ElementBinaryPerDeviceState init_kernel(PerDeviceFFHandle handle,
+ElementBinaryPerDeviceState gpu_init_kernel(PerDeviceFFHandle handle,
                                         OperatorType op_type,
                                         bool should_broadcast_lhs,
                                         bool should_broadcast_rhs,
@@ -129,16 +129,19 @@ ElementBinaryPerDeviceState init_kernel(PerDeviceFFHandle handle,
   checkCUDNN(
       cudnnSetTensorDescriptorFromArrayShape(outputTensor, output_shape));
 
-  ElementBinaryPerDeviceState per_device_state = {handle,
-                                                  inputLHSTensor,
-                                                  inputRHSTensor,
-                                                  outputTensor,
-                                                  opDesc,
-                                                  reduceAddDesc};
+  ElementBinaryPerDeviceState per_device_state = 
+    ElementBinaryPerDeviceState{
+      /*handle=*/handle,
+      /*inputLHSTensor=*/inputLHSTensor,
+      /*inputRHSTensor=*/inputRHSTensor,
+      /*outputTensor=*/outputTensor,
+      /*opDesc=*/opDesc,
+      /*reduceAddDesc=*/reduceAddDesc,
+    };
   return per_device_state;
 }
 
-void forward_kernel(cudaStream_t stream,
+void gpu_forward_kernel(cudaStream_t stream,
                     ElementBinaryPerDeviceState const &m,
                     float const *lhs_ptr,
                     float const *rhs_ptr,
@@ -242,7 +245,7 @@ void forward_kernel(cudaStream_t stream,
   }
 }
 
-void backward_kernel(cudaStream_t stream,
+void gpu_backward_kernel(cudaStream_t stream,
                      ElementBinaryPerDeviceState const &m,
                      float const *out_grad_ptr,
                      float const *lhs_ptr,
@@ -419,6 +422,10 @@ void backward_kernel(cudaStream_t stream,
   } else {
     assert(false && "Unsupported ElementWise Binary Type");
   }
+}
+
+void gpu_cleanup_kernel(ElementBinaryPerDeviceState const &per_device_state) {
+  NOT_IMPLEMENTED();
 }
 
 } // namespace ElementBinary

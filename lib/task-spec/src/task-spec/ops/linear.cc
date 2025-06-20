@@ -28,9 +28,9 @@ OpTaskInvocation init(LinearAttrs const &attrs) {
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
   binding.bind_arg(ATTRS, attrs);
 
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(WEIGHT, weight_tensor(0));
-  binding.bind(OUTPUT, output_tensor(0));
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(WEIGHT, weight_tensor(0_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
 
   return OpTaskInvocation{
     task_id_t::LINEAR_INIT_TASK_ID, 
@@ -41,11 +41,11 @@ OpTaskInvocation init(LinearAttrs const &attrs) {
 OpTaskInvocation forward(LinearAttrs const &attrs) {
   OpTaskBinding binding;
 
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(WEIGHT, weight_tensor(0));
-  binding.bind(OUTPUT, output_tensor(0));
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(WEIGHT, weight_tensor(0_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
   if (attrs.use_bias) {
-    binding.bind(BIAS, weight_tensor(1));
+    binding.bind(BIAS, weight_tensor(1_n));
   }
 
   binding.bind_arg(PROFILING, profiling_settings());

@@ -14,13 +14,13 @@
  */
 
 #include "internal/device.h"
-#include "kernels/reduce_kernels.h"
+#include "kernels/reduce_kernels_gpu.h"
 
 namespace FlexFlow {
 namespace Kernels {
 namespace Reduce {
 
-ReducePerDeviceState init_kernel(PerDeviceFFHandle const &handle,
+ReducePerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
                                  OperatorType const &op_type,
                                  size_t const &reduction_size,
                                  ArrayShape const &input_shape,
@@ -39,12 +39,18 @@ ReducePerDeviceState init_kernel(PerDeviceFFHandle const &handle,
   checkCUDNN(
       cudnnSetTensorDescriptorFromArrayShape(outputTensor, output_shape));
 
-  ReducePerDeviceState per_device = {
-      handle, inputTensor, outputTensor, reduceDesc, op_type, reduction_size};
+  ReducePerDeviceState per_device = ReducePerDeviceState{
+      /*handle=*/handle, 
+      /*inputTensor=*/inputTensor, 
+      /*outputTensor=*/outputTensor, 
+      /*reduceDesc=*/reduceDesc, 
+      /*op_type=*/op_type, 
+      /*reduction_size=*/reduction_size,
+  };
   return per_device;
 }
 
-void forward_kernel(cudaStream_t stream,
+void gpu_forward_kernel(cudaStream_t stream,
                     ReducePerDeviceState const &m,
                     float const *input_ptr,
                     float *output_ptr) {
@@ -64,7 +70,7 @@ void forward_kernel(cudaStream_t stream,
                                output_ptr));
 };
 
-void backward_kernel(cudaStream_t stream,
+void gpu_backward_kernel(cudaStream_t stream,
                      ReducePerDeviceState const &m,
                      float const *output_grad_ptr,
                      float *input_grad_ptr) {

@@ -8,6 +8,7 @@
 #include "pcg/device_type.dtg.h"
 #include "utils/containers/transform.h"
 #include <libassert/assert.hpp>
+#include <string>
 
 namespace FlexFlow {
 
@@ -120,7 +121,7 @@ public:
   }
 
   template <DataType DT>
-  real_type_t<DT> const &at(FFOrdered<nonnegative_int> const &indices) const {
+  real_type_t<DT> &at(FFOrdered<nonnegative_int> const &indices) const {
     return this->at<DT>(legion_ordered_from_ff_ordered(indices));
   }
 
@@ -131,9 +132,9 @@ public:
     ASSERT(this->data_type == DT, "Invalid datatype requested");
 
     using T = real_type_t<DT>;
-    T const *data_ptr = static_cast<T const *>(this->ptr);
+    T *data_ptr = static_cast<T *>(this->ptr);
     nonnegative_int offset = calculate_accessor_offset(indices, this->shape);
-    return data_ptr[offset];
+    return data_ptr[offset.unwrap_nonnegative()];
   }
 
 public:

@@ -10,9 +10,9 @@ enum Slots { INPUT, WEIGHT, OUTPUT, ATTRS, PROFILING, KERNEL_DEVICE_TYPE };
 OpTaskInvocation forward(EmbeddingAttrs const &attrs) {
   OpTaskBinding b;
 
-  b.bind(INPUT, input_tensor(0));
-  b.bind(WEIGHT, weight_tensor(0));
-  b.bind(OUTPUT, output_tensor(0));
+  b.bind(INPUT, input_tensor(0_n));
+  b.bind(WEIGHT, weight_tensor(0_n));
+  b.bind(OUTPUT, output_tensor(0_n));
 
   b.bind_arg(ATTRS, attrs);
   b.bind_arg(PROFILING, profiling_settings());

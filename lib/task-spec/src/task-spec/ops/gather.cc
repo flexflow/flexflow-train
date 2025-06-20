@@ -15,6 +15,7 @@
 
 #include "task-spec/ops/gather.h"
 #include "kernels/gather_kernels.h"
+#include "task-spec/device_specific_device_states.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include <optional>
 
@@ -27,9 +28,9 @@ enum Slots { INPUT, OUTPUT, INDEX, ATTRS, HANDLE, PROFILING, PER_DEVICE_STATE, K
 OpTaskInvocation init(GatherAttrs const &attrs) {
   OpTaskBinding binding;
 
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(INDEX, input_tensor(1));
-  binding.bind(OUTPUT, output_tensor(0));
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(INDEX, input_tensor(1_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
   binding.bind_arg(ATTRS, attrs);
   binding.bind_arg(HANDLE, ff_handle());
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
@@ -49,9 +50,9 @@ OpTaskInvocation forward(GatherAttrs const &attrs) {
   binding.bind_arg(PER_DEVICE_STATE,
                    per_device_op_state<GatherPerDeviceState>());
 
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(OUTPUT, output_tensor(0));
-  binding.bind(INDEX, weight_tensor(0));
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
+  binding.bind(INDEX, weight_tensor(0_n));
 
   return OpTaskInvocation{
     task_id_t::GATHER_FWD_TASK_ID, 
@@ -68,13 +69,14 @@ OpTaskInvocation backward(GatherAttrs const &attrs) {
   };
 }
 
-static DeviceSpecificDeviceStates
+static std::optional<DeviceSpecificDeviceStates>
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto index = acc.get_tensor<Permissions::RO>(INDEX);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto const &attrs = acc.get_argument<GatherAttrs>(ATTRS);
   legion_dim_t legion_dim =
       legion_dim_from_ff_dim(attrs.dim, input.shape.num_dims());
@@ -90,9 +92,10 @@ static DeviceSpecificDeviceStates
     }
   }
 
-  GatherPerDeviceState per_device_state = GatherPerDeviceState{handle, legion_dim};
-  return DeviceSpecificDeviceStates{
-      DeviceSpecific<GatherPerDeviceState>::create(per_device_state)};
+  std::optional<GatherPerDeviceState> per_device_state = init_kernel(kernel_device_type,
+                                                                     handle,
+                                                                     legion_dim);
+  return make_device_specific_state(per_device_state);
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {

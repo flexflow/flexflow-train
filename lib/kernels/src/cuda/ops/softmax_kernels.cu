@@ -14,15 +14,15 @@
  */
 
 #include "internal/device.h"
-#include "kernels/softmax_kernels.h"
+#include "kernels/softmax_kernels_gpu.h"
 
 namespace FlexFlow {
 
 namespace Kernels {
 namespace Softmax {
 
-SoftmaxPerDeviceState init_kernel(PerDeviceFFHandle const &handle,
-                                  int dim,
+SoftmaxPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
+                                  legion_dim_t dim,
                                   int input_n,
                                   int input_c,
                                   int input_h,
@@ -38,11 +38,15 @@ SoftmaxPerDeviceState init_kernel(PerDeviceFFHandle const &handle,
                                         input_h,
                                         input_w));
 
-  SoftmaxPerDeviceState per_device_state = {handle, inputTensor, dim};
+  SoftmaxPerDeviceState per_device_state = SoftmaxPerDeviceState{
+    /*handle=*/handle, 
+    /*inputTensor=*/inputTensor, 
+    /*dim=*/dim,
+  };
   return per_device_state;
 }
 
-void forward_kernel(cudaStream_t stream,
+void gpu_forward_kernel(cudaStream_t stream,
                     SoftmaxPerDeviceState const &m,
                     float const *input_ptr,
                     float *output_ptr) {
@@ -60,7 +64,7 @@ void forward_kernel(cudaStream_t stream,
                                  output_ptr));
 }
 
-void backward_kernel(cudaStream_t stream,
+void gpu_backward_kernel(cudaStream_t stream,
                      float const *output_grad_ptr,
                      float *input_grad_ptr,
                      size_t num_elements) {
@@ -70,6 +74,10 @@ void backward_kernel(cudaStream_t stream,
                             num_elements * sizeof(float),
                             cudaMemcpyDeviceToDevice,
                             stream));
+}
+
+void gpu_cleanup_kernel(SoftmaxPerDeviceState &) {
+  NOT_IMPLEMENTED();
 }
 
 } // namespace Softmax

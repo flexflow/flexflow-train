@@ -1,6 +1,5 @@
 namespace = "FlexFlow"
 name = "ParallelTensorShapeRefType"
-
 features = [
   "eq",
   "ord",
@@ -9,6 +8,15 @@ features = [
   "fmt",
 ]
 
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h",
+  "task-spec/tensor_role.dtg.h",
+]
+
+[[fields]]
+name = "tensor_role"
+type = "::FlexFlow::TensorRole"
+
 [[fields]]
 name = "idx"
-type = "int"
+type = "::FlexFlow::nonnegative_int"

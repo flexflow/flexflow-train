@@ -15,6 +15,7 @@
 
 #include "task-spec/ops/batch_norm.h"
 #include "kernels/batch_norm_kernels.h"
+#include "task-spec/device_specific_device_states.h"
 
 namespace FlexFlow {
 
@@ -36,9 +37,9 @@ enum Slots {
 OpTaskInvocation init(BatchNormAttrs const &attrs) {
   OpTaskBinding binding;
 
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(BIAS, input_tensor(2));
-  binding.bind(OUTPUT, output_tensor(0));
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(BIAS, weight_tensor(1_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
 
   binding.bind_arg(ATTRS, attrs);
   binding.bind_arg(PROFILING, profiling_settings());
@@ -58,10 +59,10 @@ OpTaskInvocation forward(BatchNormAttrs const &attrs) {
   binding.bind_arg(PER_DEVICE_STATE,
                    per_device_op_state<BatchNormPerDeviceState>());
 
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(SCALE, input_tensor(1));
-  binding.bind(BIAS, input_tensor(2));
-  binding.bind(OUTPUT, output_tensor(0));
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(SCALE, weight_tensor(0_n));
+  binding.bind(BIAS, weight_tensor(1_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
 
   return OpTaskInvocation{
     task_id_t::BATCHNORM_FWD_TASK_ID,
@@ -78,7 +79,7 @@ OpTaskInvocation backward(BatchNormAttrs const &attrs) {
   };
 }
 
-static DeviceSpecificDeviceStates
+static std::optional<DeviceSpecificDeviceStates>
     init_task_impl(TaskArgumentAccessor const &acc) {
   Allocator allocator = acc.get_allocator();
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
@@ -107,8 +108,7 @@ static DeviceSpecificDeviceStates
                   /*output_w=*/output_w.int_from_positive_int(),
                   /*relu=*/attrs.relu);
 
-  return DeviceSpecificDeviceStates{
-      DeviceSpecific<BatchNormPerDeviceState>::create(per_device_state)};
+  return make_device_specific_state(per_device_state);
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {

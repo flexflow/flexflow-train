@@ -86,13 +86,17 @@ static ElementUnaryPerDeviceState gpu_init_kernel(ArrayShape const &input_shape,
         cudnnSetTensorDescriptorFromArrayShape(outputTensor, output_shape));
   }
 
-  return {inputTensor, outputTensor, actiDesc};
+  return ElementUnaryPerDeviceState{
+    /*inputTensor=*/inputTensor, 
+    /*outputTensor=*/outputTensor, 
+    /*actiDesc=*/actiDesc,
+  };
 }
 
-ElementUnaryPerDeviceState init_kernel(ArrayShape const &input_shape,
+ElementUnaryPerDeviceState gpu_init_kernel(ArrayShape const &input_shape,
                                        ArrayShape const &output_shape,
                                        ElementUnaryAttrs const &attrs) {
-  return init_kernel(input_shape, output_shape, get_op_type(attrs));
+  return gpu_init_kernel(input_shape, output_shape, get_op_type(attrs));
 }
 
 template <typename T>

@@ -10,8 +10,8 @@ enum SLOTS { INPUT, OUTPUT, HANDLE, PROFILING, KERNEL_DEVICE_TYPE };
 OpTaskInvocation forward(FlatAttrs const &attrs) {
   OpTaskBinding binding;
 
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(OUTPUT, output_tensor(0));
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
 
   binding.bind_arg(PROFILING, profiling_settings());
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());

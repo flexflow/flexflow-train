@@ -22,7 +22,9 @@ OpArgRef<DeviceSpecificDeviceStates> per_device_op_state() {
   return arg_ref;
 }
 
-OpArgRef<ParallelTensorShape> input_parallel_tensor_shape(int idx);
+OpArgRef<ParallelTensorShape> input_parallel_tensor_shape(nonnegative_int idx);
+OpArgRef<ParallelTensorShape> weight_parallel_tensor_shape(nonnegative_int idx);
+OpArgRef<ParallelTensorShape> output_parallel_tensor_shape(nonnegative_int idx);
 
 } // namespace FlexFlow
 

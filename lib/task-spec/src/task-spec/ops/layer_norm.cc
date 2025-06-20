@@ -17,6 +17,7 @@
 #include "kernels/layer_norm_kernels.h"
 #include "op-attrs/ops/layer_norm.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "task-spec/device_specific_device_states.h"
 #include "utils/exception.h"
 #include "utils/hash-utils.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
@@ -41,7 +42,7 @@ enum Slots {
 OpTaskInvocation init(LayerNormAttrs const &attrs) {
   OpTaskBinding b;
 
-  b.bind(INPUT, input_tensor(0));
+  b.bind(INPUT, input_tensor(0_n));
 
   b.bind_arg(HANDLE, ff_handle());
   b.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
@@ -56,10 +57,10 @@ OpTaskInvocation init(LayerNormAttrs const &attrs) {
 OpTaskInvocation forward(LayerNormAttrs const &attrs) {
   OpTaskBinding b;
 
-  b.bind(INPUT, input_tensor(0));
-  b.bind(OUTPUT, output_tensor(0));
-  b.bind(GAMMA, weight_tensor(0)); // todo, this may have some problem
-  b.bind(BETA, weight_tensor(1));  // how to get gmmam and beta
+  b.bind(INPUT, input_tensor(0_n));
+  b.bind(OUTPUT, output_tensor(0_n));
+  b.bind(GAMMA, weight_tensor(0_n));
+  b.bind(BETA, weight_tensor(1_n));
   b.bind_arg(PROFILING, profiling_settings());
   b.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
   b.bind_arg(PER_DEVICE_STATE, per_device_op_state<LayerNormPerDeviceState>());
@@ -127,9 +128,10 @@ static std::optional<float>
                  beta_grad);
 }
 
-static DeviceSpecificDeviceStates
+static std::optional<DeviceSpecificDeviceStates>
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto const &attrs = acc.get_argument<LayerNormAttrs>(ATTRS);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   Allocator allocator = acc.get_allocator();
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
@@ -148,15 +150,16 @@ static DeviceSpecificDeviceStates
   positive_int effective_batch_size =
       positive_int{input.shape.num_elements() / M};
 
-  LayerNormPerDeviceState per_device_state =
-      init_kernel(handle,
+  std::optional<LayerNormPerDeviceState> per_device_state =
+      init_kernel(kernel_device_type,
+                  handle,
                   allocator,
                   attrs.elementwise_affine,
                   effective_batch_size.int_from_positive_int(),
                   effective_num_elements.int_from_positive_int(),
                   attrs.eps);
-  return DeviceSpecificDeviceStates{
-      DeviceSpecific<LayerNormPerDeviceState>::create(per_device_state)};
+
+  return make_device_specific_state(per_device_state);
 }
 
 TaskImplFunction get_layer_norm_init_task_impl() {

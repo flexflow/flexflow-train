@@ -20,7 +20,7 @@ std::optional<MHAPerDeviceState> init_kernel(DeviceType device_type,
                               int kvSeqLength,
                               bool add_bias_kv) {
   if (device_type == DeviceType::GPU) {
-    gpu_init_kernel(  
+    return gpu_init_kernel(  
       /*per_device_ff_handle=*/per_device_ff_handle,
       /*allocator=*/allocator,
       /*num_samples=*/num_samples,
@@ -36,6 +36,7 @@ std::optional<MHAPerDeviceState> init_kernel(DeviceType device_type,
       /*kvSeqLength=*/kvSeqLength,
       /*add_bias_kv=*/add_bias_kv);
   } else {
+    ASSERT(device_type == DeviceType::CPU);
     return std::nullopt;
   }
 }

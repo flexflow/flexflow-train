@@ -28,7 +28,7 @@ enum Slots { INPUTS, OUTPUT, ATTRS, PROFILING, HANDLE, NUM_INPUTS, KERNEL_DEVICE
 OpTaskInvocation forward(ConcatAttrs const &attrs) {
   OpTaskBinding binding;
   binding.bind(INPUTS, get_input_tensors());
-  binding.bind(OUTPUT, output_tensor(0));
+  binding.bind(OUTPUT, output_tensor(0_n));
   binding.bind_arg(PROFILING, profiling_settings());
   binding.bind_arg(ATTRS, attrs);
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());

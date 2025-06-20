@@ -7,7 +7,7 @@ namespace FlexFlow::Kernels::Replicate {
 template <DataType DT>
 struct CPUForwardKernel {
   void operator()(GenericTensorAccessorR const &input,
-                  GenericTensorAccessorW &output) {
+                  GenericTensorAccessorW const &output) {
     memcpy(output.get<DT>(),
            input.get<DT>(),
            input.shape.num_elements().int_from_positive_int() *
@@ -18,7 +18,7 @@ struct CPUForwardKernel {
 template <DataType DT>
 struct CPUBackwardKernel {
   void operator()(GenericTensorAccessorR const &output,
-                  GenericTensorAccessorW &input,
+                  GenericTensorAccessorW const &input,
                   positive_int num_elements,
                   nonnegative_int num_replicas) {
     using T = real_type_t<DT>;
@@ -35,12 +35,12 @@ struct CPUBackwardKernel {
 };
 
 void cpu_forward_kernel(GenericTensorAccessorR const &input,
-                        GenericTensorAccessorW &output) {
+                        GenericTensorAccessorW const &output) {
   DataTypeDispatch1<CPUForwardKernel>{}(input.data_type, input, output);
 }
 
 void cpu_backward_kernel(GenericTensorAccessorR const &output,
-                         GenericTensorAccessorW &input,
+                         GenericTensorAccessorW const &input,
                          size_t num_replicas) {
   positive_int num_elements = input.shape.num_elements();
   DataTypeDispatch1<CPUBackwardKernel>{}(input.data_type,

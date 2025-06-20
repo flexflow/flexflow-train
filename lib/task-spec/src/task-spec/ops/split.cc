@@ -25,15 +25,17 @@ namespace FlexFlow {
 using namespace FlexFlow::Kernels::Split;
 using coord_t = long long;
 
-enum Slots { INPUT, OUTPUT, ATTRS, PROFILING };
+enum Slots { INPUT, OUTPUT, ATTRS, PROFILING, KERNEL_DEVICE_TYPE };
 
 OpTaskInvocation forward(SplitAttrs const &attrs) {
   OpTaskBinding binding;
 
   binding.bind_arg(PROFILING, profiling_settings());
   binding.bind_arg(ATTRS, attrs);
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(OUTPUT, output_tensor(0));
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
+
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(OUTPUT, output_tensor(0_n)));
 
   return OpTaskInvocation{
     task_id_t::SPLIT_FWD_TASK_ID, 
@@ -67,6 +69,7 @@ static std::pair<positive_int, positive_int>
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   auto attrs = acc.get_argument<SplitAttrs>(ATTRS);
@@ -81,7 +84,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   float *output_float_ptr = output.get_float_ptr();
   return profile(forward_kernel,
                  profiling,
-                 "Split forward_time = {:.2lf}ms\n",
+                 kernel_device_type,
+                 "[Split] forward_time = {:.2lf}ms\n",
                  &output_float_ptr,
                  input.get_float_ptr(),
                  out_block_sizes,
@@ -94,6 +98,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(INPUT);
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
   auto attrs = acc.get_argument<SplitAttrs>(ATTRS);
@@ -110,7 +115,8 @@ static std::optional<float>
   float const *output_grad_ptr = output_grad.get_float_ptr();
   return profile(backward_kernel,
                  profiling,
-                 "Split backward_time = {:.2lf}ms\n",
+                 kernel_device_type,
+                 "[Split] backward_time = {:.2lf}ms\n",
                  input_grad.get_float_ptr(),
                  &output_grad_ptr,
                  out_block_sizes,

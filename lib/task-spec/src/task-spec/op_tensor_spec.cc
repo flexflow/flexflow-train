@@ -2,16 +2,16 @@
 
 namespace FlexFlow {
 
-OpTensorSpec input_tensor(int idx, OpSlotOptions option) {
-  return {TensorRole::INPUT, option, idx};
+OpTensorSpec input_tensor(nonnegative_int idx, OpSlotOptions option) {
+  return OpTensorSpec{TensorRole::INPUT, option, idx};
 }
 
-OpTensorSpec output_tensor(int idx, OpSlotOptions option) {
-  return {TensorRole::OUTPUT, option, idx};
+OpTensorSpec output_tensor(nonnegative_int idx, OpSlotOptions option) {
+  return OpTensorSpec{TensorRole::OUTPUT, option, idx};
 }
 
-OpTensorSpec weight_tensor(int idx, OpSlotOptions option) {
-  return {TensorRole::WEIGHT, option, idx};
+OpTensorSpec weight_tensor(nonnegative_int idx, OpSlotOptions option) {
+  return OpTensorSpec{TensorRole::WEIGHT, option, idx};
 }
 
 } // namespace FlexFlow

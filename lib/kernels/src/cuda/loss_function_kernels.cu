@@ -14,7 +14,7 @@
  */
 
 #include "internal/device.h"
-#include "kernels/loss_function_kernels.h"
+#include "kernels/loss_function_kernels_gpu.h"
 
 namespace FlexFlow {
 
@@ -56,7 +56,7 @@ __global__ void identity_loss_backward(float *loss_grad,
   }
 }
 
-void sparse_categorical_crossentropy_loss_backward_kernel(
+void sparse_categorical_crossentropy_loss_backward_gpu_kernel(
     cudaStream_t stream,
     float *logit_grad_ptr,
     float const *logit_ptr,
@@ -83,7 +83,7 @@ void sparse_categorical_crossentropy_loss_backward_kernel(
       logit_grad_ptr, logit_grad_volume, 0, scale_factor * k);
 }
 
-void categorical_crossentropy_loss_backward_kernel(cudaStream_t stream,
+void categorical_crossentropy_loss_backward_gpu_kernel(cudaStream_t stream,
                                                    float *logit_grad_ptr,
                                                    float const *logit_ptr,
                                                    float const *label_ptr,
@@ -102,7 +102,7 @@ void categorical_crossentropy_loss_backward_kernel(cudaStream_t stream,
       logit_grad_ptr, logit_grad_volume, 0, scale_factor);
 }
 
-void mean_squared_error_avg_loss_backward_kernel(cudaStream_t stream,
+void mean_squared_error_avg_loss_backward_gpu_kernel(cudaStream_t stream,
                                                  float *logit_grad_ptr,
                                                  float const *logit_ptr,
                                                  float const *label_ptr,
@@ -121,7 +121,7 @@ void mean_squared_error_avg_loss_backward_kernel(cudaStream_t stream,
       logit_grad_ptr, logit_grad_volume, 0, scale_factor);
 }
 
-void identity_loss_backward_kernel(cudaStream_t stream,
+void identity_loss_backward_gpu_kernel(cudaStream_t stream,
                                    float *loss_grad_ptr,
                                    float const *loss_ptr,
                                    size_t loss_volume,

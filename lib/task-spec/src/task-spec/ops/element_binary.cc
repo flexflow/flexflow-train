@@ -1,5 +1,6 @@
 #include "task-spec/ops/element_binary.h"
 #include "kernels/element_binary_kernels.h"
+#include "task-spec/device_specific_device_states.h"
 #include "task-spec/task_signature_impl.h"
 #include "utils/hash-utils.h"
 
@@ -21,9 +22,9 @@ enum Slots {
 OpTaskInvocation init(ElementBinaryAttrs const &attrs) {
   OpTaskBinding binding;
 
-  binding.bind(LHS_INPUT, input_tensor(0));
-  binding.bind(RHS_INPUT, input_tensor(1));
-  binding.bind(OUTPUT, output_tensor(0));
+  binding.bind(LHS_INPUT, input_tensor(0_n));
+  binding.bind(RHS_INPUT, input_tensor(1_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
 
   binding.bind_arg(ATTRS, attrs);
   binding.bind_arg(HANDLE, ff_handle());
@@ -38,9 +39,9 @@ OpTaskInvocation init(ElementBinaryAttrs const &attrs) {
 OpTaskInvocation forward(ElementBinaryAttrs const &attrs) {
   OpTaskBinding binding;
 
-  binding.bind(LHS_INPUT, input_tensor(0));
-  binding.bind(RHS_INPUT, input_tensor(1));
-  binding.bind(OUTPUT, output_tensor(0));
+  binding.bind(LHS_INPUT, input_tensor(0_n));
+  binding.bind(RHS_INPUT, input_tensor(1_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
 
   binding.bind_arg(ATTRS, attrs);
   binding.bind_arg(PROFILING, profiling_settings());
@@ -64,7 +65,7 @@ OpTaskInvocation backward(ElementBinaryAttrs const &attrs) {
   };
 }
 
-static DeviceSpecificDeviceStates
+static std::optional<DeviceSpecificDeviceStates>
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto input_lhs = acc.get_tensor<Permissions::RO>(LHS_INPUT);
   auto input_rhs = acc.get_tensor<Permissions::RO>(RHS_INPUT);
@@ -74,7 +75,7 @@ static DeviceSpecificDeviceStates
   DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto const &attrs = acc.get_argument<ElementBinaryAttrs>(ATTRS);
 
-  ElementBinaryPerDeviceState per_device_state =
+  std::optional<ElementBinaryPerDeviceState> per_device_state =
       init_kernel(kernel_device_type,
                   handle,
                   attrs.type,
@@ -83,8 +84,7 @@ static DeviceSpecificDeviceStates
                   input_lhs.shape,
                   input_rhs.shape,
                   output.shape);
-  return DeviceSpecificDeviceStates{
-      DeviceSpecific<ElementBinaryPerDeviceState>::create(per_device_state)};
+  return make_device_specific_state(per_device_state);
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {

@@ -1,5 +1,6 @@
 #include "task-spec/ops/conv_2d.h"
 #include "kernels/conv_2d_kernels.h"
+#include "task-spec/device_specific_device_states.h"
 
 namespace FlexFlow {
 
@@ -20,9 +21,9 @@ enum Slots {
 OpTaskInvocation init(Conv2DAttrs const &attrs) {
   OpTaskBinding binding;
 
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(OUTPUT, output_tensor(0));
-  binding.bind(FILTER, weight_tensor(0));
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
+  binding.bind(FILTER, weight_tensor(0_n));
   binding.bind_arg(ATTRS, attrs);
   binding.bind_arg(HANDLE, ff_handle());
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
@@ -42,10 +43,10 @@ OpTaskInvocation forward(Conv2DAttrs const &attrs) {
   binding.bind_arg(PER_DEVICE_STATE,
                    per_device_op_state<Conv2DPerDeviceState>());
 
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(OUTPUT, output_tensor(0));
-  binding.bind(FILTER, weight_tensor(0));
-  binding.bind(BIAS, weight_tensor(1));
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
+  binding.bind(FILTER, weight_tensor(0_n));
+  binding.bind(BIAS, weight_tensor(1_n));
 
   return OpTaskInvocation{
     task_id_t::CONV2D_FWD_TASK_ID,
@@ -62,7 +63,7 @@ OpTaskInvocation backward(Conv2DAttrs const &attrs) {
   };
 }
 
-static DeviceSpecificDeviceStates
+static std::optional<DeviceSpecificDeviceStates>
     init_task_impl(TaskArgumentAccessor const &acc) {
 
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
@@ -89,8 +90,7 @@ static DeviceSpecificDeviceStates
                   /*output=*/output,
                   /*filter_ptr=*/filter.get_float_ptr(),
                   /*filter_grad_ptr=*/filter_grad.get_float_ptr());
-  return DeviceSpecificDeviceStates{
-      DeviceSpecific<Conv2DPerDeviceState>::create(per_device_state)};
+  return make_device_specific_state(per_device_state);
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {

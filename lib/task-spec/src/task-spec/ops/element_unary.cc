@@ -1,6 +1,7 @@
 #include "task-spec/ops/element_unary.h"
 #include "kernels/element_unary_kernels.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "task-spec/device_specific_device_states.h"
 #include "utils/hash-utils.h"
 
 namespace FlexFlow {
@@ -13,6 +14,7 @@ enum Slots {
   INPUT,
   INPUT_SHAPE,
   OUTPUT,
+  OUTPUT_SHAPE,
   ATTRS,
   HANDLE,
   PROFILING,
@@ -27,7 +29,8 @@ OpTaskInvocation init(ElementUnaryAttrs const &attrs) {
   b.bind_arg(ATTRS, attrs);
   b.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
-  b.bind_arg(INPUT_SHAPE, input_parallel_tensor_shape(0));
+  b.bind_arg(INPUT_SHAPE, input_parallel_tensor_shape(0_n));
+  b.bind_arg(OUTPUT_SHAPE, output_parallel_tensor_shape(0_n));
 
   return OpTaskInvocation{
     task_id_t::ELEMENTUNARY_INIT_TASK_ID,
@@ -38,8 +41,8 @@ OpTaskInvocation init(ElementUnaryAttrs const &attrs) {
 OpTaskInvocation forward(ElementUnaryAttrs const &attrs) {
   OpTaskBinding b;
 
-  b.bind(INPUT, input_tensor(0));
-  b.bind(OUTPUT, output_tensor(0));
+  b.bind(INPUT, input_tensor(0_n));
+  b.bind(OUTPUT, output_tensor(0_n));
   b.bind_arg(ATTRS, attrs);
 
   b.bind_arg(HANDLE, ff_handle());
@@ -63,7 +66,7 @@ OpTaskInvocation backward(ElementUnaryAttrs const &attrs) {
   };
 }
 
-static DeviceSpecificDeviceStates
+static std::optional<DeviceSpecificDeviceStates>
     init_task_impl(TaskArgumentAccessor const &acc) {
 
   auto attrs = acc.get_argument<ElementUnaryAttrs>(ATTRS);
@@ -71,17 +74,16 @@ static DeviceSpecificDeviceStates
 
   ParallelTensorShape input_shape =
       acc.get_argument<ParallelTensorShape>(INPUT_SHAPE);
-
   ParallelTensorShape output_shape =
-      throw_if_unexpected(get_output_shape(attrs, input_shape));
-  ElementUnaryPerDeviceState per_device_state =
+      acc.get_argument<ParallelTensorShape>(OUTPUT_SHAPE);
+
+  std::optional<ElementUnaryPerDeviceState> per_device_state =
       init_kernel(kernel_device_type,
                   array_shape_from_tensor_shape(get_piece_shape(input_shape)),
                   array_shape_from_tensor_shape(get_piece_shape(output_shape)),
                   attrs);
 
-  return DeviceSpecificDeviceStates{
-      DeviceSpecific<ElementUnaryPerDeviceState>::create(per_device_state)};
+  return make_device_specific_state(per_device_state);
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {

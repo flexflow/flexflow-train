@@ -5,27 +5,9 @@
 #include "kernels/ff_handle.h"
 #include "op-attrs/activation.dtg.h"
 #include "op-attrs/ops/pool_2d.h"
-#include "utils/visitable.h"
+#include "kernels/pool_2d_per_device_state.dtg.h"
 
-namespace FlexFlow {
-
-struct Pool2DPerDeviceState {
-  PerDeviceFFHandle handle;
-  ffTensorDescriptor_t inputTensor, outputTensor;
-  ffActivationDescriptor_t actiDesc;
-  ffPoolingDescriptor_t poolDesc;
-  bool relu;
-};
-
-FF_VISITABLE_STRUCT_NONSTANDARD_CONSTRUCTION(Pool2DPerDeviceState,
-                                             handle,
-                                             inputTensor,
-                                             outputTensor,
-                                             actiDesc,
-                                             poolDesc,
-                                             relu);
-
-namespace Kernels::Pool2D {
+namespace FlexFlow::Kernels::Pool2D {
 
 Pool2DPerDeviceState init_kernel(PerDeviceFFHandle handle,
                                  std::optional<Activation> activation,
@@ -75,6 +57,5 @@ void backward_kernel(ffStream_t stream,
                      void *input_grad_ptr);
 
 } // namespace Kernels::Pool2D
-} // namespace FlexFlow
 
 #endif // _FLEXFLOW_OPS_KERNELS_POOL_2D_KERNELS_H

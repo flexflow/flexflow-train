@@ -1,21 +1,14 @@
 #ifndef _FLEXFLOW_LOCAL_EXECUTION_OP_TENSOR_SPEC_REF_H
 #define _FLEXFLOW_LOCAL_EXECUTION_OP_TENSOR_SPEC_REF_H
 
-#include "task-spec/op_task_signature.h"
+#include "task-spec/op_tensor_spec.dtg.h"
 
 namespace FlexFlow {
 
-struct OpTensorSpec {
-  TensorRole role;
-  OpSlotOptions slot_option;
-  req<int> idx;
-};
-FF_VISITABLE_STRUCT(OpTensorSpec, role, slot_option, idx);
-
-OpTensorSpec input_tensor(int, OpSlotOptions option = OpSlotOptions::NECESSARY);
-OpTensorSpec output_tensor(int,
+OpTensorSpec input_tensor(nonnegative_int idx, OpSlotOptions option = OpSlotOptions::NECESSARY);
+OpTensorSpec output_tensor(nonnegative_int idx,
                            OpSlotOptions option = OpSlotOptions::NECESSARY);
-OpTensorSpec weight_tensor(int,
+OpTensorSpec weight_tensor(nonnegative_int idx,
                            OpSlotOptions option = OpSlotOptions::NECESSARY);
 
 } // namespace FlexFlow

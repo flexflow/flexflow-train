@@ -87,8 +87,14 @@ Pool2DPerDeviceState init_kernel(PerDeviceFFHandle handle,
   if (activation == Activation::RELU) {
     relu = true;
   }
-  Pool2DPerDeviceState state = {
-      handle, inputTensor, outputTensor, actiDesc, poolDesc, relu};
+  Pool2DPerDeviceState state = Pool2DPerDeviceState{
+    /*handle=*/handle, 
+    /*inputTensor=*/inputTensor, 
+    /*outputTensor=*/outputTensor, 
+    /*actiDesc=*/actiDesc, 
+    /*poolDesc=*/poolDesc, 
+    /*relu=*/relu,
+  };
   return state;
 }
 

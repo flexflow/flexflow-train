@@ -19,7 +19,7 @@ std::optional<Conv2DPerDeviceState> init_kernel(DeviceType device_type,
                                  float const *filter_ptr,
                                  float *filter_grad_ptr) {
   if (device_type == DeviceType::GPU) {
-    gpu_init_kernel(
+    return gpu_init_kernel(
                     /*handle=*/handle,
                     /*activation=*/activation,
                     /*kernel_h=*/kernel_h,
@@ -37,11 +37,10 @@ std::optional<Conv2DPerDeviceState> init_kernel(DeviceType device_type,
     ASSERT(device_type == DeviceType::CPU); 
     return std::nullopt;
   }
-  
 }
 
 void forward_kernel(device_stream_t const &stream,
-                    Conv2DPerDeviceState const &per_device_state,
+                    std::optional<Conv2DPerDeviceState> const &per_device_state,
                     float const *input_ptr,
                     float *output_ptr,
                     float const *filter_ptr,
@@ -50,7 +49,7 @@ void forward_kernel(device_stream_t const &stream,
   if (stream.is_gpu()) {
     gpu_forward_kernel(
                        /*stream=*/stream.require_gpu(),
-                       /*per_device_state=*/per_device_state,
+                       /*per_device_state=*/per_device_state.value(),
                        /*input_ptr=*/input_ptr,
                        /*output_ptr=*/output_ptr,
                        /*filter_ptr=*/filter_ptr,
@@ -68,7 +67,7 @@ void forward_kernel(device_stream_t const &stream,
 }
 
 void backward_kernel(device_stream_t const &stream,
-                     Conv2DPerDeviceState const &per_device_state,
+                     std::optional<Conv2DPerDeviceState> const &per_device_state,
                      float const *output_ptr,
                      float *output_grad_ptr,
                      float const *input_ptr,
@@ -80,7 +79,7 @@ void backward_kernel(device_stream_t const &stream,
   if (stream.is_gpu()) {
     gpu_backward_kernel(
                         /*stream=*/stream.require_gpu(),
-                        /*per_device_state=*/per_device_state,
+                        /*per_device_state=*/per_device_state.value(),
                         /*output_ptr=*/output_ptr,
                         /*output_grad_ptr=*/output_grad_ptr,
                         /*input_ptr=*/input_ptr,

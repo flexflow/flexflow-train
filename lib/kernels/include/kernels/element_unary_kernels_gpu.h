@@ -5,6 +5,7 @@
 #include "kernels/ff_handle.h"
 #include "kernels/device.h"
 #include "op-attrs/ops/element_unary_attrs.dtg.h"
+#include "kernels/element_unary_per_device_state.dtg.h"
 
 namespace FlexFlow::Kernels::ElementUnary {
 

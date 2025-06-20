@@ -188,20 +188,22 @@ MHAPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
     hiWinIdx[i] = kvSeqLength;
   }
 
-  MHAPerDeviceState per_device_state = {handle,
-                                        weightSize,
-                                        reserveSpaceSize,
-                                        attnDesc,
-                                        qDesc,
-                                        kDesc,
-                                        vDesc,
-                                        oDesc,
-                                        devQoSeqArray,
-                                        devKvSeqArray,
-                                        loWinIdx,
-                                        hiWinIdx,
-                                        reserveSpace,
-                                        allocator};
+  MHAPerDeviceState per_device_state = MHAPerDeviceState{
+    /*handle=*/handle,
+    /*weightSize=*/weightSize,
+    /*reserveSpaceSize=*/reserveSpaceSize,
+    /*attnDesc=*/attnDesc,
+    /*qDesc=*/qDesc,
+    /*kDesc=*/kDesc,
+    /*vDesc=*/vDesc,
+    /*oDesc=*/oDesc,
+    /*devQoSeqArray=*/devQoSeqArray,
+    /*devKvSeqArray=*/devKvSeqArray,
+    /*loWinIdx=*/loWinIdx,
+    /*hiWinIdx=*/hiWinIdx,
+    /*reserveSpace=*/reserveSpace,
+    /*allocator=*/allocator,
+  };
 
   return per_device_state;
 }

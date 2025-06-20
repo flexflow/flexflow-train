@@ -1,0 +1,32 @@
+namespace = "FlexFlow"
+name = "Pool2DPerDeviceState"
+features = []
+
+includes = [
+  "kernels/ff_handle.h",
+  "kernels/device.h",
+]
+
+[[fields]]
+name = "handle"
+type = "::FlexFlow::PerDeviceFFHandle"
+
+[[fields]]
+name = "inputTensor"
+type = "ffTensorDescriptor_t"
+
+[[fields]]
+name = "outputTensor"
+type = "ffTensorDescriptor_t"
+
+[[fields]]
+name = "actiDesc"
+type = "ffActivationDescriptor_t"
+
+[[fields]]
+name = "poolDesc"
+type = "ffPoolingDescriptor_t"
+
+[[fields]]
+name = "relu"
+type = "bool"

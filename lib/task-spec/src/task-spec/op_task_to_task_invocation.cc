@@ -44,18 +44,18 @@ TaskInvocation lower_to_task_invocation(
       switch (tensor_binding_spec.role) {
         case TensorRole::INPUT:
           return std::pair{
-            input_tensors.at(tensor_binding_spec.idx),
-            input_gradient_tensors.at(tensor_binding_spec.idx),
+            input_tensors.at(tensor_binding_spec.idx.unwrap_nonnegative()),
+            input_gradient_tensors.at(tensor_binding_spec.idx.unwrap_nonnegative()),
           };
         case TensorRole::OUTPUT:
           return std::pair{
-            output_tensors.at(tensor_binding_spec.idx),
-            output_gradient_tensors.at(tensor_binding_spec.idx),
+            output_tensors.at(tensor_binding_spec.idx.unwrap_nonnegative()),
+            output_gradient_tensors.at(tensor_binding_spec.idx.unwrap_nonnegative()),
           };
         case TensorRole::WEIGHT:
           return std::pair{
-            weight_tensors.at(tensor_binding_spec.idx),
-            weight_gradient_tensors.at(tensor_binding_spec.idx),
+            weight_tensors.at(tensor_binding_spec.idx.unwrap_nonnegative()),
+            weight_gradient_tensors.at(tensor_binding_spec.idx.unwrap_nonnegative()),
           };
         default:
           PANIC("Invalid tensor role", tensor_binding_spec.role);
@@ -110,7 +110,7 @@ ConcreteArgSpec lower_to_concrete_arg_spec(
     ParallelTensorShapeRefType index_op_arg_ref =
         op_arg_ref_spec.get_ref_type().get<ParallelTensorShapeRefType>();
     TensorShape input_tensor_shape =
-        input_tensor_shapes.at(index_op_arg_ref.idx);
+        input_tensor_shapes.at(index_op_arg_ref.idx.unwrap_nonnegative());
     ParallelTensorShape shape = lift_to_parallel(input_tensor_shape);
     return ConcreteArgSpec::create(shape);
   } else {
