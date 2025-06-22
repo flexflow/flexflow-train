@@ -16,6 +16,7 @@
 #include "task-spec/ops/batch_norm.h"
 #include "kernels/batch_norm_kernels.h"
 #include "task-spec/device_specific_device_states.h"
+#include "task-spec/profiling.h"
 
 namespace FlexFlow {
 

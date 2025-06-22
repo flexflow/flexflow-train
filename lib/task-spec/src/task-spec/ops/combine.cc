@@ -17,6 +17,7 @@
 #include "kernels/combine_kernels.h"
 #include "task-spec/op_task_invocation.h"
 #include "utils/hash-utils.h"
+#include "task-spec/profiling.h"
 
 namespace FlexFlow {
 

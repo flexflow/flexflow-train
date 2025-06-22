@@ -20,7 +20,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         DeviceSpecific<PerDeviceFFHandle>::create(managed_handle.raw_handle()),
         EnableProfiling::YES,
         ProfilingSettings{/*warmup_iters=*/0,
-                          /*measure_iters=*/1}};
+                          /*measure_iters=*/1},
+        DeviceType::GPU};
 
     OptimizerAttrs optimizer_attrs = OptimizerAttrs{
       SGDOptimizerAttrs{

@@ -2,6 +2,7 @@
 #include "kernels/element_unary_kernels.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "task-spec/device_specific_device_states.h"
+#include "task-spec/profiling.h"
 #include "utils/hash-utils.h"
 
 namespace FlexFlow {

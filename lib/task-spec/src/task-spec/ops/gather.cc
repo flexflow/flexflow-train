@@ -16,6 +16,7 @@
 #include "task-spec/ops/gather.h"
 #include "kernels/gather_kernels.h"
 #include "task-spec/device_specific_device_states.h"
+#include "task-spec/profiling.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include <optional>
 

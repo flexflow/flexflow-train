@@ -15,6 +15,7 @@
 
 #include "task-spec/ops/reduction.h"
 #include "kernels/reduction_kernels.h"
+#include "task-spec/profiling.h"
 #include "utils/exception.h"
 #include "utils/hash-utils.h"
 

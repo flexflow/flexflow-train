@@ -14,19 +14,19 @@
  */
 
 #include "internal/device.h"
-#include "kernels/split_kernels.h"
+#include "kernels/split_kernels_gpu.h"
 
 namespace FlexFlow {
 
 namespace Kernels {
 namespace Split {
 
-void forward_kernel(cudaStream_t stream,
+void gpu_forward_kernel(cudaStream_t stream,
                     float **out_ptrs,
                     float const *in_ptr,
-                    coord_t const *out_blk_sizes,
-                    coord_t in_blk_size,
-                    coord_t num_blks,
+                    int const *out_blk_sizes,
+                    int in_blk_size,
+                    int num_blks,
                     int numOutputs) {
 
   for (int i = 0; i < numOutputs; i++) {
@@ -39,12 +39,12 @@ void forward_kernel(cudaStream_t stream,
   }
 }
 
-void backward_kernel(cudaStream_t stream,
+void gpu_backward_kernel(cudaStream_t stream,
                      float *in_grad_ptr,
                      float const **out_grad_ptr,
-                     coord_t const *out_blk_sizes,
-                     coord_t in_blk_size,
-                     coord_t num_blks,
+                     int const *out_blk_sizes,
+                     int in_blk_size,
+                     int num_blks,
                      int numOutputs) {
 
   for (int i = 0; i < numOutputs; i++) {

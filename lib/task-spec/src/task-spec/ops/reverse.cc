@@ -16,6 +16,7 @@
 #include "task-spec/ops/reverse.h"
 #include "kernels/accessor.h"
 #include "kernels/reverse_kernels.h"
+#include "task-spec/profiling.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 
 namespace FlexFlow {

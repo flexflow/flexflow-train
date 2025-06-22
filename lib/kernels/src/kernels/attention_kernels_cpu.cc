@@ -2,8 +2,7 @@
 
 namespace FlexFlow::Kernels::MultiHeadAttention {
 
-void forward_kernel(MHAPerDeviceState const &device_state,
-                    float const *query_ptr,
+void cpu_forward_kernel(float const *query_ptr,
                     float const *key_ptr,
                     float const *value_ptr,
                     float const *weight_ptr,
@@ -11,8 +10,7 @@ void forward_kernel(MHAPerDeviceState const &device_state,
   NOT_IMPLEMENTED();
 }
 
-void backward_kernel(MHAPerDeviceState const &device_state,
-                     float const *query_ptr,
+void cpu_backward_kernel(float const *query_ptr,
                      float *query_grad_ptr,
                      float const *key_ptr,
                      float *key_grad_ptr,

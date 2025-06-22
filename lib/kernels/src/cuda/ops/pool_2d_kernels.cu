@@ -14,14 +14,14 @@
  */
 
 #include "internal/device.h"
-#include "kernels/pool_2d_kernels.h"
+#include "kernels/pool_2d_kernels_gpu.h"
 
 namespace FlexFlow {
 
 namespace Kernels {
 namespace Pool2D {
 
-Pool2DPerDeviceState init_kernel(PerDeviceFFHandle handle,
+Pool2DPerDeviceState gpu_init_kernel(PerDeviceFFHandle handle,
                                  std::optional<Activation> activation,
                                  int input_w,
                                  int input_h,
@@ -98,7 +98,7 @@ Pool2DPerDeviceState init_kernel(PerDeviceFFHandle handle,
   return state;
 }
 
-void forward_kernel(cudaStream_t stream,
+void gpu_forward_kernel(cudaStream_t stream,
                     Pool2DPerDeviceState const &m,
                     void const *input_ptr,
                     void *output_ptr) {
@@ -116,7 +116,7 @@ void forward_kernel(cudaStream_t stream,
                                  output_ptr));
 }
 
-void backward_kernel(cudaStream_t stream,
+void gpu_backward_kernel(cudaStream_t stream,
                      Pool2DPerDeviceState const &m,
                      void const *output_ptr,
                      void const *output_grad_ptr,
@@ -138,6 +138,10 @@ void backward_kernel(cudaStream_t stream,
                                   &alpha,
                                   m.inputTensor,
                                   input_grad_ptr));
+}
+
+void gpu_cleanup_kernel(Pool2DPerDeviceState &per_device_state) {
+  NOT_IMPLEMENTED();
 }
 
 } // namespace Pool2D

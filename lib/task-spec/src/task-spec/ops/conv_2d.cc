@@ -1,6 +1,7 @@
 #include "task-spec/ops/conv_2d.h"
 #include "kernels/conv_2d_kernels.h"
 #include "task-spec/device_specific_device_states.h"
+#include "task-spec/profiling.h"
 
 namespace FlexFlow {
 

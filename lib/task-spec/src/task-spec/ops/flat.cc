@@ -1,5 +1,6 @@
 #include "task-spec/ops/flat.h"
 #include "kernels/flat_kernels.h"
+#include "task-spec/profiling.h"
 
 namespace FlexFlow {
 

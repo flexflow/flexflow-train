@@ -1,5 +1,6 @@
 #include "task-spec/ops/embedding.h"
 #include "kernels/embedding_kernels.h"
+#include "task-spec/profiling.h"
 
 namespace FlexFlow {
 

@@ -22,7 +22,7 @@ namespace Kernels {
 namespace Flat {
 
 void gpu_forward_kernel(cudaStream_t stream,
-                    GenericTensorAccessorR input,
+                    GenericTensorAccessorR const &input,
                     float *output_ptr) {
 
   checkCUDA(cudaMemcpyAsync(output_ptr,
@@ -34,7 +34,7 @@ void gpu_forward_kernel(cudaStream_t stream,
 }
 
 void gpu_backward_kernel(cudaStream_t stream,
-                     GenericTensorAccessorR input,
+                     GenericTensorAccessorR const &input,
                      float const *output_grad_ptr,
                      float *input_grad_ptr) {
 

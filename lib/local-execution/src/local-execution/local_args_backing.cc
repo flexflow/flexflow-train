@@ -60,7 +60,7 @@ std::optional<DeviceSpecificDeviceStates>
       task_registry.task_mapping.at(invocation.task_id);
   auto fn = task_sig_impl.impl_function.get<InitOpTaskImplFunction>()
                 .function_ptr;
-  DeviceSpecificDeviceStates device_state = fn(accessor);
+  std::optional<DeviceSpecificDeviceStates> device_state = fn(accessor);
   return device_state;
 }
 

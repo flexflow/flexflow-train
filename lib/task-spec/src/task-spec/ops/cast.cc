@@ -15,7 +15,7 @@
 
 #include "task-spec/ops/cast.h"
 #include "kernels/cast_kernels.h"
-
+#include "task-spec/profiling.h"
 #include "task-spec/op_task_signature.h"
 #include "utils/hash-utils.h"
 

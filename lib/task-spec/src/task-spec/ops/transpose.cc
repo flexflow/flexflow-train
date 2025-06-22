@@ -16,6 +16,7 @@
 #include "task-spec/ops/transpose.h"
 #include "kernels/transpose_kernels.h"
 #include "op-attrs/ops/transpose.h"
+#include "task-spec/profiling.h"
 #include "utils/integer_conversions.h"
 
 using namespace FlexFlow::Kernels::Transpose;
@@ -23,19 +24,21 @@ using namespace FlexFlow::Kernels::Transpose;
 namespace FlexFlow {
 
 enum Slots {
-  INPUT,  // tensor
-  OUTPUT, // tensor
+  INPUT,
+  OUTPUT,
   ATTRS,
   PROFILING,
+  KERNEL_DEVICE_TYPE,
 };
 
 OpTaskInvocation forward(TransposeAttrs const &attrs) {
   OpTaskBinding binding;
 
   binding.bind_arg(PROFILING, profiling_settings());
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(OUTPUT, output_tensor(0));
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
 
   return OpTaskInvocation{
     task_id_t::TRANSPOSE_FWD_TASK_ID, 
@@ -46,12 +49,14 @@ OpTaskInvocation forward(TransposeAttrs const &attrs) {
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   auto attrs = acc.get_argument<TransposeAttrs>(ATTRS);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
   return profile(forward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[Transpose] Forward_time = {:.2lf} [ms]",
                  attrs,
                  input,
@@ -62,12 +67,14 @@ static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   auto attrs = acc.get_argument<TransposeAttrs>(ATTRS);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input_grad = acc.get_tensor_grad<Permissions::WO>(INPUT);
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
 
   return profile(backward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[Transpose] Backward_time = {:.2lf} [ms]",
                  attrs,
                  output_grad,
@@ -95,6 +102,7 @@ OpTaskSignature get_transpose_fwd_signature() {
   OpTaskSignature fwd(OpTaskType::FWD);
 
   fwd.add_arg_slot<ProfilingSettings>(PROFILING);
+  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
 
   fwd.add_input_slot(INPUT);
   fwd.add_output_slot(OUTPUT);

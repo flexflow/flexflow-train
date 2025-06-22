@@ -6,7 +6,7 @@ namespace FlexFlow::Kernels::Combine {
 
 void forward_kernel(device_stream_t const &stream,
                     GenericTensorAccessorR const &input_accessor,
-                    GenericTensorAccessorW &output_accessor) {
+                    GenericTensorAccessorW const &output_accessor) {
   if (stream.is_gpu()) {
     gpu_forward_kernel(stream.require_gpu(), input_accessor, output_accessor);
   } else {
@@ -17,7 +17,7 @@ void forward_kernel(device_stream_t const &stream,
 
 void backward_kernel(device_stream_t const &stream,
                     GenericTensorAccessorR const &output_grad,
-                    GenericTensorAccessorW &input_grad) {
+                    GenericTensorAccessorW const &input_grad) {
   if (stream.is_gpu()) {
     gpu_backward_kernel(stream.require_gpu(), output_grad, input_grad);
   } else {

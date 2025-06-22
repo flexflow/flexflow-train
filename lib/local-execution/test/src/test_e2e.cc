@@ -119,7 +119,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     RuntimeArgConfig runtime_arg_config = RuntimeArgConfig{
         DeviceSpecific<PerDeviceFFHandle>::create(managed_handle.raw_handle()),
         EnableProfiling::YES,
-        ProfilingSettings{/*warmup_iters=*/0, /*measure_iters=*/1}};
+        ProfilingSettings{/*warmup_iters=*/0, /*measure_iters=*/1},
+        DeviceType::GPU};
 
     // initialize training backing
     LossAttrs loss_attrs = LossAttrs{

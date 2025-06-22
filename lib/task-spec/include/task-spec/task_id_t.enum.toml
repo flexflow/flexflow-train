@@ -179,9 +179,6 @@ name = "REDUCE_FWD_TASK_ID"
 name = "REDUCE_BWD_TASK_ID"
 
 [[values]]
-name = "RESHAPE_INIT_TASK_ID"
-
-[[values]]
 name = "RESHAPE_FWD_TASK_ID"
 
 [[values]]
@@ -195,9 +192,6 @@ name = "REVERSE_FWD_TASK_ID"
 
 [[values]]
 name = "REVERSE_BWD_TASK_ID"
-
-[[values]]
-name = "TOPK_INIT_TASK_ID"
 
 [[values]]
 name = "TOPK_FWD_TASK_ID"

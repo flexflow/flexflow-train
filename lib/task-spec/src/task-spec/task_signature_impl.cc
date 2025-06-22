@@ -169,9 +169,6 @@ TaskSignatureAndImpl get_task_sig_impl(task_id_t const &task_id) {
     case task_id_t::REDUCE_BWD_TASK_ID:
       return TaskSignatureAndImpl{get_reduce_bwd_task_impl(),
                                   get_reduce_bwd_signature()};
-    case task_id_t::RESHAPE_INIT_TASK_ID:
-      return TaskSignatureAndImpl{get_reshape_init_task_impl(),
-                                  get_reshape_init_signature()};
     case task_id_t::RESHAPE_FWD_TASK_ID:
       return TaskSignatureAndImpl{get_reshape_fwd_task_impl(),
                                   get_reshape_fwd_signature()};
@@ -184,9 +181,6 @@ TaskSignatureAndImpl get_task_sig_impl(task_id_t const &task_id) {
     case task_id_t::REVERSE_BWD_TASK_ID:
       return TaskSignatureAndImpl{get_reverse_bwd_task_impl(),
                                   get_reverse_bwd_signature()};
-    case task_id_t::TOPK_INIT_TASK_ID:
-      return TaskSignatureAndImpl{get_topk_init_task_impl(),
-                                  get_topk_init_signature()};
     case task_id_t::TOPK_FWD_TASK_ID:
       return TaskSignatureAndImpl{get_topk_fwd_task_impl(),
                                   get_topk_fwd_signature()};
@@ -286,9 +280,7 @@ OpTaskInvocation get_init_op_task_invocation(ComputationGraphOpAttrs const &op) 
       [](MultiHeadAttentionAttrs const &attrs) { return init(attrs); },
       [](Pool2DAttrs const &attrs) { return init(attrs); },
       [](ReduceAttrs const &attrs) { return init(attrs); },
-      [](ReshapeAttrs const &attrs) { return init(attrs); },
       [](SoftmaxAttrs const &attrs) { return init(attrs); },
-      [](TopKAttrs const &attrs) { return init(attrs); },
       [](auto const &attrs) -> OpTaskInvocation {
         PANIC("Unhandled attr type", attrs);
       },

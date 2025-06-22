@@ -15,7 +15,7 @@
 
 #include "internal/device.h"
 #include "kernels/allocation.h"
-#include "kernels/linear_kernels.h"
+#include "kernels/linear_kernels_gpu.h"
 #include "utils/integer_conversions.h"
 
 namespace FlexFlow {
@@ -23,7 +23,7 @@ namespace FlexFlow {
 namespace Kernels {
 namespace Linear {
 
-bool use_activation(std::optional<Activation> activation) {
+static bool use_activation(std::optional<Activation> activation) {
   if (activation.has_value()) {
     switch (activation.value()) {
       case Activation::RELU:
@@ -41,7 +41,7 @@ bool use_activation(std::optional<Activation> activation) {
 }
 
 // what's the float * one_ptr
-LinearPerDeviceState init_kernel(PerDeviceFFHandle handle,
+LinearPerDeviceState gpu_init_kernel(PerDeviceFFHandle handle,
                                  float *one_ptr,
                                  std::optional<Activation> activation,
                                  std::optional<RegularizerAttrs> regularizer,
@@ -108,7 +108,7 @@ LinearPerDeviceState init_kernel(PerDeviceFFHandle handle,
   return per_device_state;
 }
 
-void forward_kernel(cudaStream_t stream,
+void gpu_forward_kernel(cudaStream_t stream,
                     LinearPerDeviceState const &m,
                     float const *input_ptr,
                     float *output_ptr,
@@ -191,7 +191,7 @@ void forward_kernel(cudaStream_t stream,
   }
 }
 
-void backward_kernel(cudaStream_t stream,
+void gpu_backward_kernel(cudaStream_t stream,
                      LinearPerDeviceState const &m,
                      float const *output_ptr,
                      float *output_grad_ptr,
@@ -328,6 +328,10 @@ void backward_kernel(cudaStream_t stream,
                              compute_type,
                              CUBLAS_GEMM_DEFAULT_TENSOR_OP));
   }
+}
+
+void gpu_cleanup_kernel(LinearPerDeviceState &per_device_state) {
+  NOT_IMPLEMENTED();
 }
 
 } // namespace Linear

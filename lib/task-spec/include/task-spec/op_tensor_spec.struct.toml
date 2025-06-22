@@ -10,7 +10,7 @@ features = [
 ]
 
 includes = [
-  "task-spec/tensor_role.dtg.h",
+  "pcg/tensor_role.dtg.h",
   "task-spec/op_slot_options.dtg.h",
   "utils/nonnegative_int/nonnegative_int.h",
 ]

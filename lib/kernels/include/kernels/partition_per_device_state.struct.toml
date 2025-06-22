@@ -1,0 +1,16 @@
+namespace = "FlexFlow"
+name = "RepartitionPerDeviceState"
+features = []
+
+includes = [
+  "kernels/ff_handle.h",
+  "op-attrs/datatype.dtg.h",
+]
+
+[[fields]]
+name = "handle"
+type = "::FlexFlow::PerDeviceFFHandle"
+
+[[fields]]
+name = "data_type"
+type = "::FlexFlow::DataType"

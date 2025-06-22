@@ -15,16 +15,12 @@
 
 #include "internal/device.h"
 #include "kernels/datatype_dispatch.h"
-#include "kernels/reshape_kernels.h"
+#include "kernels/reshape_kernels_gpu.h"
 
 namespace FlexFlow {
 
 namespace Kernels {
 namespace Reshape {
-
-ReshapePerDeviceState init_kernel(DataType data_type) {
-  return ReshapePerDeviceState{data_type};
-}
 
 template <DataType T>
 struct ForwardKernel {
@@ -58,18 +54,18 @@ struct BackwardKernel {
   }
 };
 
-void forward_kernel(cudaStream_t stream,
-                    ReshapePerDeviceState const &m,
+void gpu_forward_kernel(cudaStream_t stream,
+                    DataType data_type,
                     GenericTensorAccessorR const &input,
                     GenericTensorAccessorW const &output) {
-  DataTypeDispatch1<ForwardKernel>{}(m.data_type, stream, input, output);
+  DataTypeDispatch1<ForwardKernel>{}(data_type, stream, input, output);
 }
 
-void backward_kernel(cudaStream_t stream,
-                     ReshapePerDeviceState const &m,
+void gpu_backward_kernel(cudaStream_t stream,
+                     DataType data_type,
                      GenericTensorAccessorR const &output,
                      GenericTensorAccessorW const &input) {
-  DataTypeDispatch1<BackwardKernel>{}(m.data_type, stream, output, input);
+  DataTypeDispatch1<BackwardKernel>{}(data_type, stream, output, input);
 }
 
 } // namespace Reshape

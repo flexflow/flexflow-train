@@ -8,7 +8,7 @@
 
 namespace FlexFlow::Kernels::BatchNorm {
 
-BatchNormPerDeviceState gpu_init_kernel(PerDeviceFFHandle handle,
+BatchNormPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
                                     Allocator &allocator,
                                     float *runningMean,
                                     int output_n,

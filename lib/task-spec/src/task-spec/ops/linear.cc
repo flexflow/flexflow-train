@@ -1,6 +1,8 @@
 #include "task-spec/ops/linear.h"
 #include "kernels/linear_kernels.h"
 #include "op-attrs/ff_dim_t.h"
+#include "task-spec/device_specific_device_states.h"
+#include "task-spec/profiling.h"
 #include "task-spec/task_argument_accessor.h"
 #include "utils/exception.h"
 #include "utils/hash-utils.h"
@@ -69,10 +71,11 @@ OpTaskInvocation backward(LinearAttrs const &attrs) {
   };
 }
 
-static DeviceSpecificDeviceStates
+static std::optional<DeviceSpecificDeviceStates>
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto const &attrs = acc.get_argument<LinearAttrs>(ATTRS);
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto weight = acc.get_tensor<Permissions::RO>(WEIGHT);
@@ -82,8 +85,9 @@ static DeviceSpecificDeviceStates
 
   float *one_ptr;
 
-  LinearPerDeviceState per_device_state =
-      init_kernel(handle,
+  std::optional<LinearPerDeviceState> per_device_state =
+      init_kernel(kernel_device_type,
+                  handle,
                   one_ptr,
                   attrs.activation,
                   attrs.regularizer,
@@ -93,8 +97,8 @@ static DeviceSpecificDeviceStates
                   output.data_type,
                   batch_size.int_from_positive_int(),
                   attrs.out_channels.int_from_positive_int());
-  return DeviceSpecificDeviceStates{
-      DeviceSpecific<LinearPerDeviceState>::create(per_device_state)};
+
+  return make_device_specific_state(per_device_state);
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
@@ -178,9 +182,11 @@ static std::optional<float>
 TaskImplFunction get_linear_init_task_impl() {
   return TaskImplFunction{InitOpTaskImplFunction{init_task_impl}};
 }
+
 TaskImplFunction get_linear_fwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{forward_task_impl}};
 }
+
 TaskImplFunction get_linear_bwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{backward_task_impl}};
 }

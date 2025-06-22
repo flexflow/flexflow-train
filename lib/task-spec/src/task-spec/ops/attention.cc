@@ -19,6 +19,7 @@
 #include "op-attrs/ops/attention/multihead_attention_parallel_inputs.h"
 #include "task-spec/device_specific_device_states.h"
 #include "task-spec/op_task_signature.h"
+#include "task-spec/profiling.h"
 
 namespace FlexFlow {
 

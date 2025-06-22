@@ -15,4 +15,12 @@ TrainingTensorGroupWithAttrs
   };
 }
 
+TrainingTensorGroup tensor_group_without_attrs(TrainingTensorGroupWithAttrs const &with_attrs) {
+  return TrainingTensorGroup{
+    /*forward_tensor=*/with_attrs.forward_tensor,
+    /*gradient_tensor=*/with_attrs.gradient_tensor,
+    /*optimizer_tensors=*/with_attrs.optimizer_tensors,
+  };
+}
+
 } // namespace FlexFlow

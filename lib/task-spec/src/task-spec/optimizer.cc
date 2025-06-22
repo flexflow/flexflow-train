@@ -14,7 +14,8 @@ enum Slots {
   PROFILING,
   ADAM_M,
   ADAM_V,
-  HANDLE
+  HANDLE,
+  KERNEL_DEVICE_TYPE,
 };
 
 TaskSignature get_sgd_update_signature() {
@@ -25,6 +26,7 @@ TaskSignature get_sgd_update_signature() {
 
   add_arg_slot<SGDOptimizerAttrs>(sig, ATTRS);
   add_arg_slot<ProfilingSettings>(sig, PROFILING);
+  add_arg_slot<DeviceType>(sig, KERNEL_DEVICE_TYPE);
   add_unchecked_arg_slot<PerDeviceFFHandle>(
       sig, HANDLE); // how to deal with removal of ParamSync?
 
@@ -47,6 +49,7 @@ TaskInvocation sgd_update(SGDOptimizerAttrs const &attrs,
   }
   b.bind_arg(ATTRS, attrs);
   b.bind_arg(PROFILING, profiling_settings());
+  b.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
   b.bind_arg(HANDLE, ff_handle());
   return TaskInvocation{task_id_t::SGD_UPD_NCCL_TASK_ID,
@@ -65,12 +68,13 @@ static void sgd_update_task_impl(TaskArgumentAccessor const &acc) {
   auto weight_grad = acc.get_tensor_grad<Permissions::RO>(WEIGHT_GRAD);
   auto weight = acc.get_tensor<Permissions::RW>(WEIGHT);
   auto profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   ASSERT(weight.shape == weight_grad.shape);
   int size = weight_grad.shape.num_elements().int_from_positive_int();
 
-  ASSERT(weight_grad.shape.num_elements().int_from_positive_int() &
-         weight.shape.num_elements().int_from_positive_int());
+  ASSERT(weight_grad.shape.num_elements().int_from_positive_int() % 
+         weight.shape.num_elements().int_from_positive_int() == 0);
   int num_replicas = weight_grad.shape.num_elements().int_from_positive_int() /
                      weight.shape.num_elements().int_from_positive_int();
 
@@ -82,16 +86,18 @@ static void sgd_update_task_impl(TaskArgumentAccessor const &acc) {
   }
 
   auto handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
-  profile(sgd_nccl_update_task_gpu,
+  profile(sgd_update_task,
           profiling,
-          "[SGD NCCL] update_time = %.2lfms\n",
+          kernel_device_type,
+          "[SGD] update_time = %.2lfms\n",
+          handle,
           attrs.lr,
           attrs.momentum,
           attrs.nesterov,
           attrs.weight_decay,
-          handle,
           weight_grad.get_float_ptr(),
           size,
+          num_replicas,
           weight.get_float_ptr(),
           sgd_v_ptr); // how to deal with removal of ParamSync?
 
@@ -139,6 +145,7 @@ TaskSignature get_adam_update_signature() {
 
   add_arg_slot<AdamOptimizerAttrs>(sig, ATTRS);
   add_arg_slot<ProfilingSettings>(sig, PROFILING);
+  add_arg_slot<DeviceType>(sig, KERNEL_DEVICE_TYPE);
   add_unchecked_arg_slot<PerDeviceFFHandle>(
       sig, HANDLE); // how to deal with removal of ParamSync?
   // if (CHOSEN_SYNC_TYPE == ParamSync::NCCL) {
@@ -159,6 +166,7 @@ TaskInvocation adam_update(AdamOptimizerAttrs const &attrs,
   b.bind_optimizer(ADAM_V, adam_v);
   b.bind_arg(ATTRS, attrs);
   b.bind_arg(PROFILING, profiling_settings());
+  b.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
   b.bind_arg(HANDLE, ff_handle());
   return TaskInvocation{task_id_t::ADAM_UPD_NCCL_TASK_ID,
                         b}; // how to deal with removal of ParamSync?
@@ -179,24 +187,30 @@ static void adam_update_task_impl(TaskArgumentAccessor const &acc) {
   auto m_tensor = acc.get_optimizer_tensor<Permissions::RW>(ADAM_M);
 
   auto profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   ASSERT(weight.shape == weight_grad.shape);
   int size = weight_grad.shape.num_elements().int_from_positive_int();
 
-  ASSERT(weight_grad.shape.num_elements() % weight.shape.num_elements() == 0);
+  ASSERT(weight_grad.shape.num_elements().int_from_positive_int() % 
+         weight.shape.num_elements().int_from_positive_int() == 0);
+  int num_replicas = weight_grad.shape.num_elements().int_from_positive_int() /
+                     weight.shape.num_elements().int_from_positive_int();
 
   auto handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
-  profile(adam_nccl_update_task_gpu,
+  profile(adam_update_task,
           profiling,
+          kernel_device_type,
           "[Adam NCCL] update_time = %.2lfms\n",
+          handle,
           attrs.alpha_t,
           attrs.beta1,
           attrs.beta2,
           attrs.weight_decay,
           attrs.epsilon,
-          handle,
           weight_grad.get_float_ptr(),
           size,
+          num_replicas,
           m_tensor.get_float_ptr(),
           v_tensor.get_float_ptr(),
           weight.get_float_ptr()); // how to deal with removal of ParamSync?

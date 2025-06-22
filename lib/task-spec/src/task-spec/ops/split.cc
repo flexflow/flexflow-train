@@ -16,6 +16,7 @@
 #include "task-spec/ops/split.h"
 #include "kernels/array_shape.h"
 #include "kernels/split_kernels.h"
+#include "task-spec/profiling.h"
 #include "utils/exception.h"
 #include "utils/hash-utils.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
@@ -23,7 +24,6 @@
 namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::Split;
-using coord_t = long long;
 
 enum Slots { INPUT, OUTPUT, ATTRS, PROFILING, KERNEL_DEVICE_TYPE };
 
@@ -35,7 +35,7 @@ OpTaskInvocation forward(SplitAttrs const &attrs) {
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
   binding.bind(INPUT, input_tensor(0_n));
-  binding.bind(OUTPUT, output_tensor(0_n)));
+  binding.bind(OUTPUT, output_tensor(0_n));
 
   return OpTaskInvocation{
     task_id_t::SPLIT_FWD_TASK_ID, 
@@ -74,7 +74,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   auto attrs = acc.get_argument<SplitAttrs>(ATTRS);
 
-  coord_t out_block_sizes[MAX_NUM_OUTPUTS];
+  int out_block_sizes[MAX_NUM_OUTPUTS];
   auto [num_blocks, in_block_size] = calc_block_size(input.shape, attrs.axis);
 
   for (int i = 0; i < attrs.splits.size(); i++) {
@@ -103,12 +103,12 @@ static std::optional<float>
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
   auto attrs = acc.get_argument<SplitAttrs>(ATTRS);
 
-  coord_t out_block_sizes[MAX_NUM_OUTPUTS];
+  int out_block_sizes[MAX_NUM_OUTPUTS];
   auto [num_blocks, in_block_size] =
       calc_block_size(input_grad.shape, attrs.axis);
 
   for (int i = 0; i < attrs.splits.size(); i++) {
-    coord_t out_num_blocks;
+    int out_num_blocks;
     auto [_, out_block_size] = calc_block_size(output_grad.shape, attrs.axis);
     out_block_sizes[i] = out_block_size.int_from_positive_int();
   }

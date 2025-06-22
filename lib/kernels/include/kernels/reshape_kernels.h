@@ -2,24 +2,20 @@
 #define _FLEXFLOW_OPS_KERNELS_RESHAPE_KERNELS_H
 
 #include "kernels/accessor.h"
-#include "kernels/device.h"
-#include "utils/required_core.h"
+#include "kernels/device_stream_t.dtg.h"
 
-namespace FlexFlow {
+namespace FlexFlow::Kernels::Reshape {
 
-namespace Kernels::Reshape {
-
-ReshapePerDeviceState init_kernel(DataType data_type);
-
-void forward_kernel(ffStream_t stream,
+void forward_kernel(device_stream_t const &stream,
+                    DataType data_type,
                     GenericTensorAccessorR const &input,
                     GenericTensorAccessorW const &output);
 
-void backward_kernel(ffStream_t stream,
+void backward_kernel(device_stream_t const &stream,
+                     DataType data_type,
                      GenericTensorAccessorR const &output,
                      GenericTensorAccessorW const &input);
 
 } // namespace Kernels::Reshape
-} // namespace FlexFlow
 
 #endif // _FLEXFLOW_OPS_KERNELS_RESHAPE_KERNELS_H

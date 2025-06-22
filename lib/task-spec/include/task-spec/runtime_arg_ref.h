@@ -5,20 +5,10 @@
 #include "task-spec/arg_ref.h"
 #include "task-spec/config.h"
 #include "task-spec/device_specific.h"
-#include "task-spec/profiling.h"
-#include "utils/fmt.h"
-#include "utils/type_index.h"
+#include "kernels/profiling_settings.dtg.h"
+#include "task-spec/runtime_arg_ref_type.dtg.h"
 
 namespace FlexFlow {
-
-enum class RuntimeArgRefType {
-  FF_HANDLE,
-  PROFILING_SETTINGS,
-  FF_ITERATION_CONFIG,
-  KERNEL_DEVICE_TYPE,
-};
-
-std::string to_string(RuntimeArgRefType const &);
 
 template <typename T>
 using RuntimeArgRef = ArgRef<RuntimeArgRefType, T>;

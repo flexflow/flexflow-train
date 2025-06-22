@@ -1,5 +1,7 @@
 #include "task-spec/ops/reduce.h"
 #include "kernels/reduce_kernels.h"
+#include "task-spec/device_specific_device_states.h"
+#include "task-spec/profiling.h"
 #include "utils/exception.h"
 #include "utils/hash-utils.h"
 #include "utils/type_traits_core.h"
@@ -35,9 +37,10 @@ OpTaskInvocation init(ReduceAttrs const &attrs) {
   };
 }
 
-static DeviceSpecificDeviceStates
+static std::optional<DeviceSpecificDeviceStates>
     init_task_impl(TaskArgumentAccessor const &acc) {
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto attrs = acc.get_argument<ReduceAttrs>(ATTRS);
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
@@ -46,14 +49,16 @@ static DeviceSpecificDeviceStates
 
   nonnegative_int reduction_size =
       input.shape.num_elements() / output.shape.num_elements();
-  ReducePerDeviceState per_device_state =
-      init_kernel(handle,
+
+  std::optional<ReducePerDeviceState> per_device_state =
+      init_kernel(kernel_device_type,
+                  handle,
                   op_type,
                   reduction_size.unwrap_nonnegative(),
                   input.shape,
                   output.shape);
-  return DeviceSpecificDeviceStates{
-      DeviceSpecific<ReducePerDeviceState>::create(per_device_state)};
+
+  return make_device_specific_state(per_device_state);
 }
 
 // Note: forward_kernel only needs ReducePerDeviceState, input, output
@@ -123,9 +128,11 @@ static std::optional<float>
 TaskImplFunction get_reduce_init_task_impl() {
   return TaskImplFunction{InitOpTaskImplFunction{init_task_impl}};
 }
+
 TaskImplFunction get_reduce_fwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{forward_task_impl}};
 }
+
 TaskImplFunction get_reduce_bwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{backward_task_impl}};
 }
@@ -140,6 +147,7 @@ OpTaskSignature get_reduce_init_signature() {
   init.add_return_value<ReducePerDeviceState>();
   return init;
 }
+
 OpTaskSignature get_reduce_fwd_signature() {
   OpTaskSignature fwd(OpTaskType::FWD);
 
@@ -151,6 +159,7 @@ OpTaskSignature get_reduce_fwd_signature() {
   fwd.add_output_slot(OUTPUT);
   return fwd;
 }
+
 OpTaskSignature get_reduce_bwd_signature() {
   OpTaskSignature bwd = infer_bwd_signature(get_reduce_fwd_signature());
   return bwd;

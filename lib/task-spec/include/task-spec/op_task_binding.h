@@ -92,7 +92,6 @@ private:
 
 OpTaskBinding infer_bwd_binding(OpTaskBinding const &fwd);
 
-
 } // namespace FlexFlow
 
 #endif

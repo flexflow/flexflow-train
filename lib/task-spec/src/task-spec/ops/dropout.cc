@@ -3,6 +3,7 @@
 #include "task-spec/device_specific_device_states.h"
 #include "task-spec/op_task_invocation.h"
 #include "task-spec/op_task_signature.h"
+#include "task-spec/profiling.h"
 #include "utils/hash-utils.h"
 
 namespace FlexFlow {
