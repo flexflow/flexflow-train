@@ -78,9 +78,9 @@ OpCostMetrics LocalCostEstimator::estimate_cost(
   if (is_parallel_op(op) || op.has<InputAttrs>() || op.has<NoopAttrs>() ||
       op.has<WeightAttrs>()) {
     return OpCostMetrics{
-      /*forward_runtime=*/milliseconds_t{0.0},
-      /*backward_runtime=*/milliseconds_t{0.0},
-      /*memory=*/num_bytes_t{0_n},
+      /*forward_runtime=*/0_ms,
+      /*backward_runtime=*/0_ms,
+      /*memory=*/0_bytes,
     };
   }
 

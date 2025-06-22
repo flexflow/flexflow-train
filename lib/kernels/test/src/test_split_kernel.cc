@@ -1,5 +1,5 @@
 #include "internal/test_utils.h"
-#include "kernels/split_kernels.h"
+#include "kernels/split_kernels_gpu.h"
 #include "op-attrs/datatype_value.h"
 #include "utils/containers/repeat.h"
 #include <doctest/doctest.h>
@@ -9,9 +9,9 @@ using namespace ::FlexFlow;
 TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test Split Forward and Backward Kernel") {
     nonnegative_int num_outputs = 2_n;
-    coord_t out_blk_sizes[] = {50, 50};
-    coord_t in_blk_size = 100;
-    coord_t num_blks = 1;
+    int out_blk_sizes[] = {50, 50};
+    int in_blk_size = 100;
+    int num_blks = 1;
 
     ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
         /*workSpaceSize=*/1024 * 1024,
@@ -29,7 +29,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         DataType::FLOAT,
     };
 
-    SUBCASE("forward_kernel") {
+    SUBCASE("gpu_forward_kernel") {
       GenericTensorAccessorW input_accessor =
           create_random_filled_accessor_w(input_shape, allocator);
 
@@ -39,7 +39,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         return output_accessor.get_float_ptr();
       });
 
-      Kernels::Split::forward_kernel(managed_stream.raw_stream(),
+      Kernels::Split::gpu_forward_kernel(managed_stream.raw_stream(),
                                      output_ptrs.data(),
                                      input_accessor.get_float_ptr(),
                                      out_blk_sizes,
@@ -48,7 +48,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                                      num_outputs.unwrap_nonnegative());
     }
 
-    SUBCASE("backward_kernel") {
+    SUBCASE("gpu_backward_kernel") {
       std::vector<float *> output_grad_ptrs(num_outputs.unwrap_nonnegative());
       for (int i = 0; i < num_outputs; i++) {
         GenericTensorAccessorW output_grad_accessor =
@@ -59,7 +59,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       GenericTensorAccessorW input_grad_accessor = create_filled_accessor_w(
           input_shape, allocator, make_float_data_type_value(0));
 
-      Kernels::Split::backward_kernel(managed_stream.raw_stream(),
+      Kernels::Split::gpu_backward_kernel(managed_stream.raw_stream(),
                                       input_grad_accessor.get_float_ptr(),
                                       (float const **)output_grad_ptrs.data(),
                                       out_blk_sizes,

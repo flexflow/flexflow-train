@@ -3,7 +3,7 @@
 
 #include "compiler/machine_mapping/machine_mapping_result.dtg.h"
 #include "compiler/machine_mapping/parallel_split_transformation.dtg.h"
-#include "utils/units/milliseconds_t.dtg.h"
+#include "utils/units/milliseconds_t.h"
 
 namespace FlexFlow {
 

@@ -1,5 +1,5 @@
 #include "internal/test_utils.h"
-#include "kernels/attention_kernels.h"
+#include "kernels/attention_kernels_gpu.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -25,7 +25,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    MHAPerDeviceState state = Kernels::MultiHeadAttention::init_kernel(
+    MHAPerDeviceState state = Kernels::MultiHeadAttention::gpu_init_kernel(
         managed_handle.raw_handle(),
         allocator,
         /*num_samples=*/num_samples.int_from_positive_int(),
@@ -71,11 +71,11 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     GenericTensorAccessorW weight_accessor =
         create_random_filled_accessor_w(weight_shape, allocator);
 
-    SUBCASE("forward_kernel") {
+    SUBCASE("gpu_forward_kernel") {
       GenericTensorAccessorW output_accessor =
           allocator.allocate_tensor(output_shape);
 
-      Kernels::MultiHeadAttention::forward_kernel(
+      Kernels::MultiHeadAttention::gpu_forward_kernel(
           managed_stream.raw_stream(),
           state,
           query_accessor.get_float_ptr(),
@@ -87,7 +87,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       CHECK(contains_non_zero(output_accessor));
     }
 
-    SUBCASE("backward_kernel") {
+    SUBCASE("gpu_backward_kernel") {
       GenericTensorAccessorW query_grad_accessor =
           create_random_filled_accessor_w(query_shape, allocator);
       GenericTensorAccessorW key_grad_accessor =
@@ -99,7 +99,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       GenericTensorAccessorW output_grad_accessor =
           create_random_filled_accessor_w(output_shape, allocator);
 
-      Kernels::MultiHeadAttention::backward_kernel(
+      Kernels::MultiHeadAttention::gpu_backward_kernel(
           managed_stream.raw_stream(),
           state,
           query_accessor.get_float_ptr(),
@@ -113,6 +113,6 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           output_grad_accessor.get_float_ptr());
     }
 
-    Kernels::MultiHeadAttention::cleanup_kernel(allocator, state);
+    Kernels::MultiHeadAttention::gpu_cleanup_kernel(allocator, state);
   }
 }

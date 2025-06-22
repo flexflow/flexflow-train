@@ -7,8 +7,8 @@ features = [
 ]
 
 includes = [
-  "utils/units/milliseconds_t.dtg.h",
-  "utils/units/num_bytes_t.dtg.h",
+  "utils/units/milliseconds_t.h",
+  "utils/units/num_bytes_t.h",
 ]
 
 [[fields]]

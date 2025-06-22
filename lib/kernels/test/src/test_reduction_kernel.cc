@@ -1,5 +1,5 @@
 #include "internal/test_utils.h"
-#include "kernels/reduction_kernels.h"
+#include "kernels/reduction_kernels_gpu.h"
 #include "op-attrs/datatype_value.h"
 #include <doctest/doctest.h>
 
@@ -20,7 +20,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    SUBCASE("forward_kernel") {
+    SUBCASE("gpu_forward_kernel") {
       TensorShape output_shape = TensorShape{
           TensorDims{FFOrdered{10_p}},
           DataType::FLOAT,
@@ -31,7 +31,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       GenericTensorAccessorW output_accessor =
           allocator.allocate_tensor(output_shape);
 
-      Kernels::Reduction::forward_kernel(managed_stream.raw_stream(),
+      Kernels::Reduction::gpu_forward_kernel(managed_stream.raw_stream(),
                                          input_accessor,
                                          output_accessor,
                                          num_replicas);
@@ -39,7 +39,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       CHECK(contains_non_zero(output_accessor));
     }
 
-    SUBCASE("backward_kernel") {
+    SUBCASE("gpu_backward_kernel") {
       TensorShape output_shape = input_shape;
 
       GenericTensorAccessorR output_grad_accessor = create_filled_accessor_r(
@@ -47,7 +47,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       GenericTensorAccessorW input_grad_accessor =
           allocator.allocate_tensor(input_shape);
 
-      Kernels::Reduction::backward_kernel(managed_stream.raw_stream(),
+      Kernels::Reduction::gpu_backward_kernel(managed_stream.raw_stream(),
                                           output_grad_accessor,
                                           input_grad_accessor);
 

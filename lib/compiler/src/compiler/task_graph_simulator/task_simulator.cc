@@ -39,7 +39,7 @@ milliseconds_t task_simulator_estimate_forward_pass_time(
       }
     }();
 
-    return running_time.value;
+    return running_time.unwrap_milliseconds();
   };
 
   auto is_allowed_to_run =

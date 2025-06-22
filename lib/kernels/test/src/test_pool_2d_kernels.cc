@@ -1,5 +1,5 @@
 #include "internal/test_utils.h"
-#include "kernels/pool_2d_kernels.h"
+#include "kernels/pool_2d_kernels_gpu.h"
 #include "op-attrs/datatype_value.h"
 #include <doctest/doctest.h>
 
@@ -30,7 +30,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    Pool2DPerDeviceState state = Kernels::Pool2D::init_kernel(
+    Pool2DPerDeviceState state = Kernels::Pool2D::gpu_init_kernel(
         /*handle=*/managed_handle.raw_handle(),
         /*activation=*/std::nullopt,
         /*input_w=*/input_w.int_from_positive_int(),
@@ -63,8 +63,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     GenericTensorAccessorW output_accessor =
         create_random_filled_accessor_w(output_shape, allocator);
 
-    SUBCASE("forward_kernel") {
-      Kernels::Pool2D::forward_kernel(managed_stream.raw_stream(),
+    SUBCASE("gpu_forward_kernel") {
+      Kernels::Pool2D::gpu_forward_kernel(managed_stream.raw_stream(),
                                       state,
                                       input_accessor.ptr,
                                       output_accessor.ptr);
@@ -72,13 +72,13 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       CHECK(contains_non_zero(output_accessor));
     }
 
-    SUBCASE("backward_kernel") {
+    SUBCASE("gpu_backward_kernel") {
       GenericTensorAccessorW output_grad_accessor = create_filled_accessor_w(
           output_shape, allocator, make_float_data_type_value(1));
       GenericTensorAccessorW input_grad_accessor =
           allocator.allocate_tensor(input_shape);
 
-      Kernels::Pool2D::backward_kernel(managed_stream.raw_stream(),
+      Kernels::Pool2D::gpu_backward_kernel(managed_stream.raw_stream(),
                                        state,
                                        output_accessor.ptr,
                                        output_grad_accessor.ptr,

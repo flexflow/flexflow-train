@@ -8,7 +8,7 @@ features = [
 
 includes = [
   "compiler/machine_mapping/parallel_layer_guid_oblivious_machine_mapping.dtg.h",
-  "utils/units/milliseconds_t.dtg.h",
+  "utils/units/milliseconds_t.h",
 ]
 
 [[fields]]

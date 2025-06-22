@@ -2,7 +2,7 @@
 #define _FLEXFLOW_LOCAL_EXECUTION_TRACKED_ALLOCATOR_H
 
 #include "kernels/allocation.h"
-#include "utils/units/num_bytes_t.dtg.h"
+#include "utils/units/num_bytes_t.h"
 
 namespace FlexFlow {
 

@@ -13,7 +13,7 @@ namespace FlexFlow {
 
 struct TestCostEstimator : public ICostEstimator {
   std::function<OpCostMetrics(OpCostEstimateKey const &)> get_operator_cost;
-  std::function<float(TensorSetMovement const &)> get_communication_cost;
+  std::function<milliseconds_t(TensorSetMovement const &)> get_communication_cost;
 
   TestCostEstimator() = delete;
   TestCostEstimator(decltype(get_operator_cost) const &get_operator_cost,
@@ -22,23 +22,23 @@ struct TestCostEstimator : public ICostEstimator {
 
   OpCostMetrics estimate_cost(OpCostEstimateKey const &) const override;
 
-  float estimate_cost(TensorSetMovement const &) const override;
+  milliseconds_t estimate_cost(TensorSetMovement const &) const override;
 };
 
 CostEstimator make_fake_cost_estimator(
     std::function<OpCostMetrics(OpCostEstimateKey const &)> const
         &get_operator_cost,
-    std::function<float(TensorSetMovement const &)> const
+    std::function<milliseconds_t(TensorSetMovement const &)> const
         &get_communication_cost);
 
 CostEstimator make_fake_cost_estimator(
     std::unordered_map<OpCostEstimateKey, OpCostMetrics> const &op_cost_map,
-    std::unordered_map<TensorSetMovement, float> const &comm_cost_map);
+    std::unordered_map<TensorSetMovement, milliseconds_t> const &comm_cost_map);
 
-CostEstimator make_fake_constant_cost_estimator(float forward_op_cost,
-                                                float backward_op_cost,
-                                                float comm_cost,
-                                                nonnegative_int memory_cost);
+CostEstimator make_fake_constant_cost_estimator(milliseconds_t forward_op_cost,
+                                                milliseconds_t backward_op_cost,
+                                                milliseconds_t comm_cost,
+                                                num_bytes_t memory_cost);
 
 } // namespace FlexFlow
 

@@ -79,9 +79,9 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
       OpCostMetrics result = cost_estimator.estimate_cost(op_cost_estimate_key);
 
-      CHECK(result.forward_runtime > milliseconds_t{0});
-      CHECK(result.backward_runtime > milliseconds_t{0});
-      CHECK(result.memory_usage > num_bytes_t{0_n});
+      CHECK(result.forward_runtime > 0_ms);
+      CHECK(result.backward_runtime > 0_ms);
+      CHECK(result.memory_usage > 0_bytes);
     }
   }
 }

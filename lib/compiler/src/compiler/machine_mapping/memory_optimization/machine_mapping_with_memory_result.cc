@@ -56,17 +56,11 @@ MachineMappingWithMemoryResult
       [&](MachineMappingForSingleLayer const &pre_mm,
           MachineMappingForSingleLayer const &post_mm) {
         OpCostMetrics cost = OpCostMetrics{
-          /*forward_runtime=*/milliseconds_t{
-            pre_mm.cost.forward_runtime.value + comm_cost.value +
-                post_mm.cost.forward_runtime.value
-          },
-          /*backward_runtime=*/milliseconds_t{
-            pre_mm.cost.backward_runtime.value + comm_cost.value +
-                post_mm.cost.backward_runtime.value,
-          },
-          /*memory_usage=*/num_bytes_t{
-            pre_mm.cost.memory_usage.value + post_mm.cost.memory_usage.value,
-          },
+          /*forward_runtime=*/pre_mm.cost.forward_runtime + comm_cost +
+                post_mm.cost.forward_runtime,
+          /*backward_runtime=*/pre_mm.cost.backward_runtime + comm_cost +
+                post_mm.cost.backward_runtime,
+          /*memory_usage=*/pre_mm.cost.memory_usage + post_mm.cost.memory_usage,
         };
 
         ParallelLayerGuidObliviousMachineMapping mapping = [&] {

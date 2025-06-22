@@ -65,9 +65,7 @@ MachineMappingResult
 
   return MachineMappingResult{
       FeasibleMachineMappingResult{
-          /*runtime=*/milliseconds_t{
-            pre_result.runtime.value + comm_cost.value + post_result.runtime.value,
-          },
+          /*runtime=*/pre_result.runtime + comm_cost + post_result.runtime,
           /*machine_mapping=*/mapping,
       },
   };

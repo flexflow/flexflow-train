@@ -1,5 +1,5 @@
 #include "internal/test_utils.h"
-#include "kernels/batch_matmul_kernels.h"
+#include "kernels/batch_matmul_kernels_gpu.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -41,8 +41,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     GenericTensorAccessorW output_accessor =
         create_random_filled_accessor_w(output_shape, allocator);
 
-    SUBCASE("forward_kernel") {
-      Kernels::BatchMatmul::forward_kernel(managed_stream.raw_stream(),
+    SUBCASE("gpu_forward_kernel") {
+      Kernels::BatchMatmul::gpu_forward_kernel(managed_stream.raw_stream(),
                                            managed_handle.raw_handle(),
                                            output_accessor.get_float_ptr(),
                                            a_accessor.get_float_ptr(),
@@ -56,7 +56,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                                            seq_length);
     }
 
-    SUBCASE("backward_kernel") {
+    SUBCASE("gpu_backward_kernel") {
       GenericTensorAccessorW o_grad_accessor =
           create_random_filled_accessor_w(output_shape, allocator);
       GenericTensorAccessorW a_grad_accessor =
@@ -64,7 +64,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       GenericTensorAccessorW b_grad_accessor =
           allocator.allocate_tensor(input_shape_b);
 
-      Kernels::BatchMatmul::backward_kernel(managed_stream.raw_stream(),
+      Kernels::BatchMatmul::gpu_backward_kernel(managed_stream.raw_stream(),
                                             managed_handle.raw_handle(),
                                             output_accessor.get_float_ptr(),
                                             o_grad_accessor.get_float_ptr(),

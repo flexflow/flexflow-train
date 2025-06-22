@@ -1,5 +1,5 @@
 #include "internal/test_utils.h"
-#include "kernels/flat_kernels.h"
+#include "kernels/flat_kernels_gpu.h"
 #include "op-attrs/datatype_value.h"
 #include <doctest/doctest.h>
 
@@ -23,24 +23,24 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         read_only_accessor_from_write_accessor(create_filled_accessor_w(
             input_shape, allocator, make_float_data_type_value(2)));
 
-    SUBCASE("forward_kernel") {
+    SUBCASE("gpu_forward_kernel") {
       GenericTensorAccessorW output_accessor =
           allocator.allocate_tensor(output_shape);
 
-      Kernels::Flat::forward_kernel(managed_stream.raw_stream(),
+      Kernels::Flat::gpu_forward_kernel(managed_stream.raw_stream(),
                                     input_accessor,
                                     output_accessor.get_float_ptr());
 
       CHECK(contains_non_zero(output_accessor));
     }
 
-    SUBCASE("backward_kernel") {
+    SUBCASE("gpu_backward_kernel") {
       GenericTensorAccessorR output_grad_accessor = create_filled_accessor_r(
           output_shape, allocator, make_float_data_type_value(0));
       GenericTensorAccessorW input_grad_accessor = create_filled_accessor_w(
           input_shape, allocator, make_float_data_type_value(1));
 
-      Kernels::Flat::backward_kernel(managed_stream.raw_stream(),
+      Kernels::Flat::gpu_backward_kernel(managed_stream.raw_stream(),
                                      input_accessor,
                                      output_grad_accessor.get_float_ptr(),
                                      input_grad_accessor.get_float_ptr());

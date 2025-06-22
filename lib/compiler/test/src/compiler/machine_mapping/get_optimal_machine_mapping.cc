@@ -149,35 +149,35 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     auto map1 = std::unordered_map<OpCostEstimateKey, OpCostMetrics>{{
         {map_unmapped_op_cost_estimate_key(k1, mv1),
-         OpCostMetrics{/*forward_runtime=*/0.5,
-                       /*backward_runtime=*/0.5,
-                       /*memory=*/nonnegative_int{0}}},
+         OpCostMetrics{/*forward_runtime=*/0.5_ms,
+                       /*backward_runtime=*/0.5_ms,
+                       /*memory_usage=*/0_bytes}},
         {map_unmapped_op_cost_estimate_key(k2, mv1),
-         OpCostMetrics{/*forward_runtime=*/1.0,
-                       /*backward_runtime=*/1.0,
-                       /*memory=*/nonnegative_int{0}}},
+         OpCostMetrics{/*forward_runtime=*/1.0_ms,
+                       /*backward_runtime=*/1.0_ms,
+                       /*memory_usage=*/0_bytes}},
         {map_unmapped_op_cost_estimate_key(k1, mv2),
-         OpCostMetrics{/*forward_runtime=*/0.75,
-                       /*backward_runtime=*/0.75,
-                       /*memory=*/nonnegative_int{0}}},
+         OpCostMetrics{/*forward_runtime=*/0.75_ms,
+                       /*backward_runtime=*/0.75_ms,
+                       /*memory_usage=*/0_bytes}},
         {map_unmapped_op_cost_estimate_key(k2, mv2),
-         OpCostMetrics{/*forward_runtime=*/1.25,
-                       /*backward_runtime=*/1.25,
-                       /*memory=*/nonnegative_int{0}}},
+         OpCostMetrics{/*forward_runtime=*/1.25_ms,
+                       /*backward_runtime=*/1.25_ms,
+                       /*memory_usage=*/0_bytes}},
     }};
 
     CostEstimator cost_estimator = make_fake_cost_estimator(
         map1,
-        std::unordered_map<TensorSetMovement, float>{{
-            {TensorSetMovement{{}}, 0.0},
+        std::unordered_map<TensorSetMovement, milliseconds_t>{{
+            {TensorSetMovement{{}}, 0.0_ms},
             {concretize_abstracted_tensor_set_movement(movement1, mm1, mm1),
-             0.1},
+             0.1_ms},
             {concretize_abstracted_tensor_set_movement(movement1, mm2, mm2),
-             0.2},
+             0.2_ms},
             {concretize_abstracted_tensor_set_movement(movement1, mm1, mm2),
-             0.3},
+             0.3_ms},
             {concretize_abstracted_tensor_set_movement(movement1, mm2, mm1),
-             0.4},
+             0.4_ms},
         }});
 
     MachineMappingContext context = MachineMappingContext{
@@ -198,7 +198,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           cache, context, problem_tree, full_machine_spec, constraints);
       MachineMappingResult correct = MachineMappingResult{
           FeasibleMachineMappingResult{
-              /*runtime=*/1.0,
+              /*runtime=*/1.0_ms,
               /*machine_mapping=*/
               ParallelLayerGuidObliviousMachineMapping{{
                   {binary_tree_root_path(), mv1},
@@ -221,7 +221,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           cache, context, problem_tree, full_machine_spec, constraints);
       MachineMappingResult correct = MachineMappingResult{
           FeasibleMachineMappingResult{
-              /*runtime=*/1.0 + 2.0 + 0.1,
+              /*runtime=*/1.0_ms + 2.0_ms + 0.1_ms,
               /*machine_mapping=*/
               ParallelLayerGuidObliviousMachineMapping{{
                   {
@@ -255,7 +255,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           cache, context, problem_tree, full_machine_spec, constraints);
       MachineMappingResult correct = MachineMappingResult{
           FeasibleMachineMappingResult{
-              /*runtime=*/2.5,
+              /*runtime=*/2.5_ms,
               /*machine_mapping=*/
               ParallelLayerGuidObliviousMachineMapping{{
                   {

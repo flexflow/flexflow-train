@@ -242,9 +242,7 @@ MachineMappingResult
     OpCostEstimateKey mapped =
         map_unmapped_op_cost_estimate_key(leaf, machine_view);
     OpCostMetrics metrics = context.cost_estimator.estimate_cost(mapped);
-    milliseconds_t cost = milliseconds_t{
-      metrics.forward_runtime.value + metrics.backward_runtime.value,
-    };
+    milliseconds_t cost = metrics.forward_runtime + metrics.backward_runtime;
     return make_singleton_machine_mapping_result(cost, machine_view);
   };
 

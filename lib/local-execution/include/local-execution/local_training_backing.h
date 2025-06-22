@@ -6,7 +6,7 @@
 #include "pcg/optimizer_attrs.dtg.h"
 #include "task-spec/training_computation_graph.dtg.h"
 #include "task-spec/training_tensor_guid_t.dtg.h"
-#include "utils/units/milliseconds_t.dtg.h"
+#include "utils/units/milliseconds_t.h"
 
 namespace FlexFlow {
 

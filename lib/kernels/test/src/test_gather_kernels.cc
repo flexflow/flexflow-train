@@ -1,5 +1,5 @@
 #include "internal/test_utils.h"
-#include "kernels/gather_kernels.h"
+#include "kernels/gather_kernels_gpu.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -13,10 +13,9 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    GatherPerDeviceState state = {managed_handle.raw_handle(),
-                                  legion_dim_t{0_n}};
+    GatherPerDeviceState state = Kernels::Gather::gpu_init_kernel(managed_handle.raw_handle(), legion_dim_t{0_n});
 
-    SUBCASE("forward_kernel") {
+    SUBCASE("gpu_forward_kernel") {
       auto run_forward_test = [&](TensorShape input_shape,
                                   TensorShape index_shape,
                                   TensorShape output_shape) {
@@ -27,7 +26,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         GenericTensorAccessorW output_accessor =
             allocator.allocate_tensor(output_shape);
 
-        Kernels::Gather::forward_kernel(managed_stream.raw_stream(),
+        Kernels::Gather::gpu_forward_kernel(managed_stream.raw_stream(),
                                         state,
                                         input_accessor,
                                         index_accessor,
@@ -69,7 +68,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       }
     }
 
-    SUBCASE("backward_kernel") {
+    SUBCASE("gpu_backward_kernel") {
       auto run_backward_test = [&](TensorShape input_shape,
                                    TensorShape index_shape,
                                    TensorShape output_shape) {
@@ -80,7 +79,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         GenericTensorAccessorW input_grad_accessor =
             allocator.allocate_tensor(input_shape);
 
-        Kernels::Gather::backward_kernel(managed_stream.raw_stream(),
+        Kernels::Gather::gpu_backward_kernel(managed_stream.raw_stream(),
                                          state,
                                          output_grad_accessor,
                                          index_accessor,
