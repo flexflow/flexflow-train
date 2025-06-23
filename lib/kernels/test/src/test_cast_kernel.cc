@@ -1,7 +1,7 @@
-#include "kernels/test_utils.h"
 #include "kernels/cast_kernels.h"
 #include "kernels/cast_kernels_cpu.h"
 #include "kernels/cast_kernels_gpu.h"
+#include "kernels/test_utils.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;

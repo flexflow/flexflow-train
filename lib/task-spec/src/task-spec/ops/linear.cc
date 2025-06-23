@@ -1,6 +1,6 @@
 #include "task-spec/ops/linear.h"
-#include "kernels/linear_kernels.h"
 #include "kernels/format_accessor_contents.h"
+#include "kernels/linear_kernels.h"
 #include "op-attrs/ff_dim_t.h"
 #include "task-spec/device_specific_device_states.h"
 #include "task-spec/profiling.h"
@@ -126,17 +126,17 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   }
 
   auto result = profile(forward_kernel,
-                 profiling,
-                 kernel_device_type,
-                 "[Linear] forward_time = {:.2lf}ms\n",
-                 per_device_state,
-                 input.get_float_ptr(),
-                 output.get_float_ptr(),
-                 weight.get_float_ptr(),
-                 bias_ptr,
-                 in_dim.int_from_positive_int(),
-                 out_dim.int_from_positive_int(),
-                 batch_size.int_from_positive_int());
+                        profiling,
+                        kernel_device_type,
+                        "[Linear] forward_time = {:.2lf}ms\n",
+                        per_device_state,
+                        input.get_float_ptr(),
+                        output.get_float_ptr(),
+                        weight.get_float_ptr(),
+                        bias_ptr,
+                        in_dim.int_from_positive_int(),
+                        out_dim.int_from_positive_int(),
+                        batch_size.int_from_positive_int());
 
   return result;
 }
@@ -169,20 +169,20 @@ static std::optional<float>
   positive_int batch_size = positive_int{output.shape.num_elements() / out_dim};
 
   auto result = profile(backward_kernel,
-                 profiling,
-                 kernel_device_type,
-                 "[Linear] backward_time = {:.2lf}ms\n",
-                 per_device_state,
-                 output.get_float_ptr(),
-                 output_grad.get_float_ptr(),
-                 input.get_float_ptr(),
-                 input_grad.get_float_ptr(),
-                 weight.get_float_ptr(),
-                 weight_grad.get_float_ptr(),
-                 bias_grad_ptr,
-                 in_dim.int_from_positive_int(),
-                 out_dim.int_from_positive_int(),
-                 batch_size.int_from_positive_int());
+                        profiling,
+                        kernel_device_type,
+                        "[Linear] backward_time = {:.2lf}ms\n",
+                        per_device_state,
+                        output.get_float_ptr(),
+                        output_grad.get_float_ptr(),
+                        input.get_float_ptr(),
+                        input_grad.get_float_ptr(),
+                        weight.get_float_ptr(),
+                        weight_grad.get_float_ptr(),
+                        bias_grad_ptr,
+                        in_dim.int_from_positive_int(),
+                        out_dim.int_from_positive_int(),
+                        batch_size.int_from_positive_int());
 
   return result;
 }

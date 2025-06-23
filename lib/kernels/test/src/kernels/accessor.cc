@@ -1,7 +1,7 @@
 #include "kernels/accessor.h"
-#include "kernels/test_utils.h"
 #include "kernels/create_accessor_with_contents.h"
 #include "kernels/local_cpu_allocator.h"
+#include "kernels/test_utils.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
