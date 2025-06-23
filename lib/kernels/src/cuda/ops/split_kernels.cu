@@ -22,12 +22,12 @@ namespace Kernels {
 namespace Split {
 
 void gpu_forward_kernel(cudaStream_t stream,
-                    float **out_ptrs,
-                    float const *in_ptr,
-                    int const *out_blk_sizes,
-                    int in_blk_size,
-                    int num_blks,
-                    int numOutputs) {
+                        float **out_ptrs,
+                        float const *in_ptr,
+                        int const *out_blk_sizes,
+                        int in_blk_size,
+                        int num_blks,
+                        int numOutputs) {
 
   for (int i = 0; i < numOutputs; i++) {
     copy_with_stride<<<GET_BLOCKS(out_blk_sizes[i] * num_blks),
@@ -40,12 +40,12 @@ void gpu_forward_kernel(cudaStream_t stream,
 }
 
 void gpu_backward_kernel(cudaStream_t stream,
-                     float *in_grad_ptr,
-                     float const **out_grad_ptr,
-                     int const *out_blk_sizes,
-                     int in_blk_size,
-                     int num_blks,
-                     int numOutputs) {
+                         float *in_grad_ptr,
+                         float const **out_grad_ptr,
+                         int const *out_blk_sizes,
+                         int in_blk_size,
+                         int num_blks,
+                         int numOutputs) {
 
   for (int i = 0; i < numOutputs; i++) {
     add_with_stride<<<GET_BLOCKS(out_blk_sizes[i] * num_blks),

@@ -17,12 +17,13 @@ void forward_kernel(device_stream_t const &stream,
                     GenericTensorAccessorR const &index,
                     GenericTensorAccessorW const &output);
 
-void backward_kernel(device_stream_t const &stream,
-                     std::optional<GatherPerDeviceState> const &per_device_state,
-                     GenericTensorAccessorR const &output_grad,
-                     GenericTensorAccessorR const &index,
-                     GenericTensorAccessorW const &input_grad);
+void backward_kernel(
+    device_stream_t const &stream,
+    std::optional<GatherPerDeviceState> const &per_device_state,
+    GenericTensorAccessorR const &output_grad,
+    GenericTensorAccessorR const &index,
+    GenericTensorAccessorW const &input_grad);
 
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::Gather
 
 #endif

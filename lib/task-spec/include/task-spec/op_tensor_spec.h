@@ -5,7 +5,8 @@
 
 namespace FlexFlow {
 
-OpTensorSpec input_tensor(nonnegative_int idx, OpSlotOptions option = OpSlotOptions::NECESSARY);
+OpTensorSpec input_tensor(nonnegative_int idx,
+                          OpSlotOptions option = OpSlotOptions::NECESSARY);
 OpTensorSpec output_tensor(nonnegative_int idx,
                            OpSlotOptions option = OpSlotOptions::NECESSARY);
 OpTensorSpec weight_tensor(nonnegative_int idx,

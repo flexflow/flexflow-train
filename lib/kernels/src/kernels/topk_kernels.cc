@@ -15,24 +15,24 @@ void forward_kernel(device_stream_t const &stream,
                     bool sorted) {
   if (stream.is_gpu()) {
     gpu_forward_kernel(
-                       /*stream=*/stream.require_gpu(),
-                       /*input_ptr=*/input_ptr,
-                       /*output_ptr=*/output_ptr,
-                       /*indices_ptr=*/indices_ptr,
-                       /*batch_size=*/batch_size,
-                       /*length=*/length,
-                       /*k=*/k,
-                       /*sorted=*/sorted);
+        /*stream=*/stream.require_gpu(),
+        /*input_ptr=*/input_ptr,
+        /*output_ptr=*/output_ptr,
+        /*indices_ptr=*/indices_ptr,
+        /*batch_size=*/batch_size,
+        /*length=*/length,
+        /*k=*/k,
+        /*sorted=*/sorted);
   } else {
     ASSERT(stream.is_cpu());
     cpu_forward_kernel(
-                       /*input_ptr=*/input_ptr,
-                       /*output_ptr=*/output_ptr,
-                       /*indices_ptr=*/indices_ptr,
-                       /*batch_size=*/batch_size,
-                       /*length=*/length,
-                       /*k=*/k,
-                       /*sorted=*/sorted);
+        /*input_ptr=*/input_ptr,
+        /*output_ptr=*/output_ptr,
+        /*indices_ptr=*/indices_ptr,
+        /*batch_size=*/batch_size,
+        /*length=*/length,
+        /*k=*/k,
+        /*sorted=*/sorted);
   }
 }
 
@@ -45,24 +45,23 @@ void backward_kernel(device_stream_t const &stream,
                      int k) {
   if (stream.is_gpu()) {
     gpu_backward_kernel(
-                        /*stream=*/stream.require_gpu(),
-                        /*out_grad_ptr=*/out_grad_ptr,
-                        /*indices_ptr=*/indices_ptr,
-                        /*in_grad_ptr=*/in_grad_ptr,
-                        /*batch_size=*/batch_size,
-                        /*length=*/length,
-                        /*k=*/k);
+        /*stream=*/stream.require_gpu(),
+        /*out_grad_ptr=*/out_grad_ptr,
+        /*indices_ptr=*/indices_ptr,
+        /*in_grad_ptr=*/in_grad_ptr,
+        /*batch_size=*/batch_size,
+        /*length=*/length,
+        /*k=*/k);
   } else {
-    ASSERT(stream.is_cpu()); 
+    ASSERT(stream.is_cpu());
     cpu_backward_kernel(
-                        /*out_grad_ptr=*/out_grad_ptr,
-                        /*indices_ptr=*/indices_ptr,
-                        /*in_grad_ptr=*/in_grad_ptr,
-                        /*batch_size=*/batch_size,
-                        /*length=*/length,
-                        /*k=*/k);
+        /*out_grad_ptr=*/out_grad_ptr,
+        /*indices_ptr=*/indices_ptr,
+        /*in_grad_ptr=*/in_grad_ptr,
+        /*batch_size=*/batch_size,
+        /*length=*/length,
+        /*k=*/k);
   }
 }
 
-
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::TopK

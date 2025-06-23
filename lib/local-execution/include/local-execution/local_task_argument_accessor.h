@@ -3,8 +3,8 @@
 
 #include "local-execution/tensor_slot_backing.dtg.h"
 #include "task-spec/runtime_arg_config.dtg.h"
-#include "task-spec/tensor_sub_slot_id_t.dtg.h"
 #include "task-spec/task_argument_accessor.h"
+#include "task-spec/tensor_sub_slot_id_t.dtg.h"
 #include <unordered_map>
 #include <variant>
 
@@ -12,9 +12,10 @@ namespace FlexFlow {
 
 struct LocalTaskArgumentAccessor : public ITaskArgumentAccessor {
   explicit LocalTaskArgumentAccessor(
-    Allocator const &allocator,
-    std::unordered_map<tensor_sub_slot_id_t, TensorSlotBacking> const &tensor_slots_backing,
-    std::unordered_map<slot_id_t, ConcreteArgSpec> const &arg_slots_backing);
+      Allocator const &allocator,
+      std::unordered_map<tensor_sub_slot_id_t, TensorSlotBacking> const
+          &tensor_slots_backing,
+      std::unordered_map<slot_id_t, ConcreteArgSpec> const &arg_slots_backing);
 
   LocalTaskArgumentAccessor(LocalTaskArgumentAccessor const &) = delete;
   LocalTaskArgumentAccessor(LocalTaskArgumentAccessor &&) = delete;
@@ -33,7 +34,8 @@ struct LocalTaskArgumentAccessor : public ITaskArgumentAccessor {
 
 private:
   Allocator allocator;
-  std::unordered_map<tensor_sub_slot_id_t, TensorSlotBacking> tensor_slots_backing;
+  std::unordered_map<tensor_sub_slot_id_t, TensorSlotBacking>
+      tensor_slots_backing;
   std::unordered_map<slot_id_t, ConcreteArgSpec> arg_slots_backing;
 };
 

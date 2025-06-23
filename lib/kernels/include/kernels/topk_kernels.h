@@ -22,6 +22,6 @@ void backward_kernel(device_stream_t const &stream,
                      int length,
                      int k);
 
-} // namespace Kernels::TopK
+} // namespace FlexFlow::Kernels::TopK
 
 #endif // _FLEXFLOW_OPS_KERNELS_TOPK_KERNELS_H

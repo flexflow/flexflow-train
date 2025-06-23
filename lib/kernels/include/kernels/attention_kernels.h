@@ -8,22 +8,22 @@
 
 namespace FlexFlow::Kernels::MultiHeadAttention {
 
-std::optional<MHAPerDeviceState> init_kernel(
-                              DeviceType device_type,
-                              PerDeviceFFHandle const &per_device_ff_handle,
-                              Allocator &allocator,
-                              int num_samples,
-                              int num_heads,
-                              int qSize,
-                              int kSize,
-                              int vSize,
-                              int qProjSize,
-                              int kProjSize,
-                              int vProjSize,
-                              int oProjSize,
-                              int qoSeqLength,
-                              int kvSeqLength,
-                              bool add_bias_kv);
+std::optional<MHAPerDeviceState>
+    init_kernel(DeviceType device_type,
+                PerDeviceFFHandle const &per_device_ff_handle,
+                Allocator &allocator,
+                int num_samples,
+                int num_heads,
+                int qSize,
+                int kSize,
+                int vSize,
+                int qProjSize,
+                int kProjSize,
+                int vProjSize,
+                int oProjSize,
+                int qoSeqLength,
+                int kvSeqLength,
+                bool add_bias_kv);
 
 void forward_kernel(device_stream_t const &stream,
                     std::optional<MHAPerDeviceState> const &device_state,
@@ -49,6 +49,6 @@ void cleanup_kernel(DeviceType device_type,
                     Allocator &allocator,
                     std::optional<MHAPerDeviceState> const &device_state);
 
-} // namespace Kernels::MultiHeadAttention
+} // namespace FlexFlow::Kernels::MultiHeadAttention
 
 #endif

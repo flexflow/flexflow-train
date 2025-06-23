@@ -100,20 +100,23 @@ TEST_SUITE(FF_TEST_SUITE) {
         CostEstimator cost_estimator = make_fake_cost_estimator(
             [](OpCostEstimateKey const &op) {
               if (op.op_attrs.has<InputAttrs>()) {
-                return OpCostMetrics{/*forward_runtime=*/10_ms,
-                                     /*backward_runtime=*/10_ms,
-                                     /*memory_usage=*/0_bytes,
-                                     }; // layer0
+                return OpCostMetrics{
+                    /*forward_runtime=*/10_ms,
+                    /*backward_runtime=*/10_ms,
+                    /*memory_usage=*/0_bytes,
+                }; // layer0
               } else if (op.op_attrs.has<ElementUnaryAttrs>()) {
-                return OpCostMetrics{/*forward_runtime=*/1_ms,
-                                     /*backward_runtime=*/1_ms,
-                                     /*memory_usage=*/0_bytes,
-                                     }; // layer1
+                return OpCostMetrics{
+                    /*forward_runtime=*/1_ms,
+                    /*backward_runtime=*/1_ms,
+                    /*memory_usage=*/0_bytes,
+                }; // layer1
               } else {
-                return OpCostMetrics{/*forward_runtime=*/0_ms,
-                                     /*backward_runtime=*/0_ms,
-                                     /*memory_usage=*/0_bytes,
-                                     };
+                return OpCostMetrics{
+                    /*forward_runtime=*/0_ms,
+                    /*backward_runtime=*/0_ms,
+                    /*memory_usage=*/0_bytes,
+                };
               }
             },
             [](TensorSetMovement const &comm) { return 5_ms; });
@@ -192,15 +195,17 @@ TEST_SUITE(FF_TEST_SUITE) {
           CostEstimator cost_estimator = make_fake_cost_estimator(
               [](OpCostEstimateKey const &op) {
                 if (op.op_attrs.has<InputAttrs>()) {
-                  return OpCostMetrics{/*forward_runtime=*/10_ms,
-                                       /*backward_runtime=*/10_ms,
-                                       /*memory_usage=*/0_bytes,
-                                       }; // layer0
+                  return OpCostMetrics{
+                      /*forward_runtime=*/10_ms,
+                      /*backward_runtime=*/10_ms,
+                      /*memory_usage=*/0_bytes,
+                  }; // layer0
                 } else if (op.op_attrs.has<ElementUnaryAttrs>()) {
-                  return OpCostMetrics{/*forward_runtime=*/1_ms,
-                                       /*backward_runtime=*/1_ms,
-                                       /*memory_usage=*/0_bytes,
-                                       }; // layers 1, 2
+                  return OpCostMetrics{
+                      /*forward_runtime=*/1_ms,
+                      /*backward_runtime=*/1_ms,
+                      /*memory_usage=*/0_bytes,
+                  }; // layers 1, 2
                 } else if (op.op_attrs.has<ElementBinaryAttrs>()) {
                   return OpCostMetrics{/*forward_runtime=*/2_ms,
                                        /*backward_runtime=*/2_ms,
@@ -240,24 +245,28 @@ TEST_SUITE(FF_TEST_SUITE) {
           CostEstimator cost_estimator = make_fake_cost_estimator(
               [](OpCostEstimateKey const &op) {
                 if (op.op_attrs.has<InputAttrs>()) {
-                  return OpCostMetrics{/*forward_runtime=*/10_ms,
-                                       /*backward_runtime=*/10_ms,
-                                       /*memory_usage=*/0_bytes,
-                                       }; // layer0
+                  return OpCostMetrics{
+                      /*forward_runtime=*/10_ms,
+                      /*backward_runtime=*/10_ms,
+                      /*memory_usage=*/0_bytes,
+                  }; // layer0
                 } else if (op.op_attrs.has<ElementUnaryAttrs>()) {
-                  return OpCostMetrics{/*forward_runtime=*/1_ms,
-                                       /*backward_runtime=*/1_ms,
-                                       /*memory_usage=*/0_bytes,
-                                       }; // layers 1, 2
+                  return OpCostMetrics{
+                      /*forward_runtime=*/1_ms,
+                      /*backward_runtime=*/1_ms,
+                      /*memory_usage=*/0_bytes,
+                  }; // layers 1, 2
                 } else if (op.op_attrs.has<ElementBinaryAttrs>()) {
-                  return OpCostMetrics{/*forward_runtime=*/2_ms,
-                                       /*backward_runtime=*/2_ms,
-                                       /*memory_usage=*/0_bytes,
-                                       }; // layer3
+                  return OpCostMetrics{
+                      /*forward_runtime=*/2_ms,
+                      /*backward_runtime=*/2_ms,
+                      /*memory_usage=*/0_bytes,
+                  }; // layer3
                 } else {
-                  return OpCostMetrics{/*forward_runtime=*/0_ms,
-                                       /*backward_runtime=*/0_ms,
-                                       /*memory_usage=*/0_bytes,
+                  return OpCostMetrics{
+                      /*forward_runtime=*/0_ms,
+                      /*backward_runtime=*/0_ms,
+                      /*memory_usage=*/0_bytes,
                   };
                 }
               },

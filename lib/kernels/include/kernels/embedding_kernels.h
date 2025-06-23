@@ -2,8 +2,8 @@
 #define _FLEXFLOW_OPS_KERNELS_EMBEDDING_KERNELS_H
 
 #include "kernels/accessor.h"
-#include "op-attrs/ops/embedding_attrs.dtg.h"
 #include "kernels/device_stream_t.dtg.h"
+#include "op-attrs/ops/embedding_attrs.dtg.h"
 
 namespace FlexFlow::Kernels::Embedding {
 

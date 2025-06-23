@@ -11,11 +11,12 @@
 namespace FlexFlow {
 
 LocalTrainingBacking make_local_training_backing_for_computation_graph(
-     Allocator &allocator,
-     std::unordered_map<training_tensor_guid_t, GenericTensorAccessorW> const &preallocated_tensors,
-     TrainingComputationGraph const &training_computation_graph,
-     RuntimeArgConfig const &runtime_arg_config,
-     OptimizerAttrs const &optimizer_attrs);
+    Allocator &allocator,
+    std::unordered_map<training_tensor_guid_t, GenericTensorAccessorW> const
+        &preallocated_tensors,
+    TrainingComputationGraph const &training_computation_graph,
+    RuntimeArgConfig const &runtime_arg_config,
+    OptimizerAttrs const &optimizer_attrs);
 
 std::optional<milliseconds_t> execute_forward(LocalTaskRegistry const &,
                                               LocalTensorBacking const &,

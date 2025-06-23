@@ -6,23 +6,22 @@
 namespace FlexFlow::Kernels::TopK {
 
 void gpu_forward_kernel(ffStream_t stream,
-                    float const *input_ptr,
-                    float *output_ptr,
-                    int *indices_ptr,
-                    size_t batch_size,
-                    int length,
-                    int k,
-                    bool sorted);
+                        float const *input_ptr,
+                        float *output_ptr,
+                        int *indices_ptr,
+                        size_t batch_size,
+                        int length,
+                        int k,
+                        bool sorted);
 
 void gpu_backward_kernel(ffStream_t stream,
-                     float const *out_grad_ptr,
-                     int const *indices_ptr,
-                     float *in_grad_ptr,
-                     size_t batch_size,
-                     int length,
-                     int k);
+                         float const *out_grad_ptr,
+                         int const *indices_ptr,
+                         float *in_grad_ptr,
+                         size_t batch_size,
+                         int length,
+                         int k);
 
-
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::TopK
 
 #endif

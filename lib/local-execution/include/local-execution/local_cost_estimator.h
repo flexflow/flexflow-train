@@ -17,13 +17,15 @@ struct LocalCostEstimator : public ICostEstimator {
   OpCostMetrics estimate_cost(OpCostEstimateKey const &) const override;
 
   milliseconds_t estimate_cost(TensorSetMovement const &) const override;
+
 private:
   RuntimeArgConfig runtime_arg_config;
   OptimizerAttrs optimizer_attrs;
 };
 CHECK_RC_COPY_VIRTUAL_COMPLIANT(LocalCostEstimator);
 
-CostEstimator get_local_cost_estimator(RuntimeArgConfig const &, OptimizerAttrs const &);
+CostEstimator get_local_cost_estimator(RuntimeArgConfig const &,
+                                       OptimizerAttrs const &);
 
 } // namespace FlexFlow
 

@@ -8,13 +8,12 @@
 namespace FlexFlow {
 
 std::vector<TrainingTensorGroup> get_training_tensor_groups_for_role(
-  TrainingLayerTensorGroupSignature const &signature,
-  TensorRole tensor_role);
+    TrainingLayerTensorGroupSignature const &signature, TensorRole tensor_role);
 
 TrainingTensorGroup get_training_tensor_group_for_role_and_index(
-  TrainingLayerTensorGroupSignature const &signature,
-  TensorRole tensor_role,
-  nonnegative_int index);
+    TrainingLayerTensorGroupSignature const &signature,
+    TensorRole tensor_role,
+    nonnegative_int index);
 
 } // namespace FlexFlow
 

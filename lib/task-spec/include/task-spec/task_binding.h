@@ -7,8 +7,8 @@
 #include "task-spec/task_arg_spec.dtg.h"
 #include "task-spec/task_id_t.dtg.h"
 #include "task-spec/task_signature.dtg.h"
-#include "task-spec/training_tensor_guid_t.dtg.h"
 #include "task-spec/tensor_sub_slot_id_t.dtg.h"
+#include "task-spec/training_tensor_guid_t.dtg.h"
 
 namespace FlexFlow {
 
@@ -16,8 +16,9 @@ struct TaskBinding {
   TaskBinding();
 
   explicit TaskBinding(
-    std::unordered_map<tensor_sub_slot_id_t, training_tensor_guid_t> const &tensor_bindings,
-    std::unordered_map<slot_id_t, TaskArgSpec> const &arg_bindings);
+      std::unordered_map<tensor_sub_slot_id_t, training_tensor_guid_t> const
+          &tensor_bindings,
+      std::unordered_map<slot_id_t, TaskArgSpec> const &arg_bindings);
 
   void bind(int, forward_tensor_guid_t const &);
   void bind(slot_id_t, forward_tensor_guid_t const &);
@@ -60,7 +61,8 @@ struct TaskBinding {
   void insert_arg_spec(slot_id_t name, TaskArgSpec const &arg_spec);
 
 private:
-  std::unordered_map<tensor_sub_slot_id_t, training_tensor_guid_t> tensor_bindings;
+  std::unordered_map<tensor_sub_slot_id_t, training_tensor_guid_t>
+      tensor_bindings;
   std::unordered_map<slot_id_t, TaskArgSpec> arg_bindings;
 
 private:

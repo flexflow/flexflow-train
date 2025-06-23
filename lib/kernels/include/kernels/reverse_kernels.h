@@ -13,9 +13,9 @@ void forward_kernel(device_stream_t const &stream,
                     ReverseAttrs const &);
 
 void backward_kernel(device_stream_t const &stream,
-                    GenericTensorAccessorR const &output_accessor,
-                    GenericTensorAccessorW &input_accessor,
-                    ReverseAttrs const &);
+                     GenericTensorAccessorR const &output_accessor,
+                     GenericTensorAccessorW &input_accessor,
+                     ReverseAttrs const &);
 
 } // namespace FlexFlow::Kernels::Reverse
 

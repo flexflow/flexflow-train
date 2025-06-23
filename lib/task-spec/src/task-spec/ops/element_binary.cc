@@ -1,9 +1,9 @@
 #include "task-spec/ops/element_binary.h"
 #include "kernels/element_binary_kernels.h"
 #include "task-spec/device_specific_device_states.h"
+#include "task-spec/profiling.h"
 #include "task-spec/task_signature_impl.h"
 #include "utils/hash-utils.h"
-#include "task-spec/profiling.h"
 
 namespace FlexFlow {
 
@@ -32,8 +32,8 @@ OpTaskInvocation init(ElementBinaryAttrs const &attrs) {
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
   return OpTaskInvocation{
-    task_id_t::ELEMENTBINARY_INIT_TASK_ID,
-    binding,
+      task_id_t::ELEMENTBINARY_INIT_TASK_ID,
+      binding,
   };
 }
 
@@ -52,8 +52,8 @@ OpTaskInvocation forward(ElementBinaryAttrs const &attrs) {
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
   return OpTaskInvocation{
-    task_id_t::ELEMENTBINARY_FWD_TASK_ID,
-    binding,
+      task_id_t::ELEMENTBINARY_FWD_TASK_ID,
+      binding,
   };
 }
 
@@ -61,8 +61,8 @@ OpTaskInvocation backward(ElementBinaryAttrs const &attrs) {
   OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-    task_id_t::ELEMENTBINARY_BWD_TASK_ID,
-    b,
+      task_id_t::ELEMENTBINARY_BWD_TASK_ID,
+      b,
   };
 }
 
@@ -73,7 +73,8 @@ static std::optional<DeviceSpecificDeviceStates>
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto const &attrs = acc.get_argument<ElementBinaryAttrs>(ATTRS);
 
   std::optional<ElementBinaryPerDeviceState> per_device_state =
@@ -90,7 +91,8 @@ static std::optional<DeviceSpecificDeviceStates>
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto per_device_state =
       acc.get_argument<ElementBinaryPerDeviceState>(PER_DEVICE_STATE);
   auto const &attrs = acc.get_argument<ElementBinaryAttrs>(ATTRS);
@@ -118,7 +120,8 @@ static std::optional<float>
   auto per_device_state =
       acc.get_argument<ElementBinaryPerDeviceState>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto const &attrs = acc.get_argument<ElementBinaryAttrs>(ATTRS);
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
 

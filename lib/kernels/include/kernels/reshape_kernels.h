@@ -16,6 +16,6 @@ void backward_kernel(device_stream_t const &stream,
                      GenericTensorAccessorR const &output,
                      GenericTensorAccessorW const &input);
 
-} // namespace Kernels::Reshape
+} // namespace FlexFlow::Kernels::Reshape
 
 #endif // _FLEXFLOW_OPS_KERNELS_RESHAPE_KERNELS_H

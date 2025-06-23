@@ -9,7 +9,8 @@ void forward_kernel(device_stream_t const &stream,
                     GenericTensorAccessorW &output_accessor,
                     ReverseAttrs const &attrs) {
   if (stream.is_gpu()) {
-    gpu_forward_kernel(stream.require_gpu(), input_accessor, output_accessor, attrs);
+    gpu_forward_kernel(
+        stream.require_gpu(), input_accessor, output_accessor, attrs);
   } else {
     ASSERT(stream.is_cpu());
     cpu_forward_kernel(input_accessor, output_accessor, attrs);
@@ -17,16 +18,16 @@ void forward_kernel(device_stream_t const &stream,
 }
 
 void backward_kernel(device_stream_t const &stream,
-                    GenericTensorAccessorR const &output_accessor,
-                    GenericTensorAccessorW &input_accessor,
-                    ReverseAttrs const &attrs) {
+                     GenericTensorAccessorR const &output_accessor,
+                     GenericTensorAccessorW &input_accessor,
+                     ReverseAttrs const &attrs) {
   if (stream.is_gpu()) {
-    gpu_backward_kernel(stream.require_gpu(), output_accessor, input_accessor, attrs);
+    gpu_backward_kernel(
+        stream.require_gpu(), output_accessor, input_accessor, attrs);
   } else {
     ASSERT(stream.is_cpu());
     cpu_backward_kernel(output_accessor, input_accessor, attrs);
   }
 }
 
-
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::Reverse

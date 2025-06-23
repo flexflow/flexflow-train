@@ -4,8 +4,8 @@
 namespace FlexFlow {
 
 std::vector<TrainingTensorGroup> get_training_tensor_groups_for_role(
-  TrainingLayerTensorGroupSignature const &signature,
-  TensorRole tensor_role) {
+    TrainingLayerTensorGroupSignature const &signature,
+    TensorRole tensor_role) {
 
   switch (tensor_role) {
     case TensorRole::INPUT:
@@ -20,11 +20,12 @@ std::vector<TrainingTensorGroup> get_training_tensor_groups_for_role(
 }
 
 TrainingTensorGroup get_training_tensor_group_for_role_and_index(
-  TrainingLayerTensorGroupSignature const &signature,
-  TensorRole tensor_role,
-  nonnegative_int index) {
-  
-  return get_training_tensor_groups_for_role(signature, tensor_role).at(index.unwrap_nonnegative());
+    TrainingLayerTensorGroupSignature const &signature,
+    TensorRole tensor_role,
+    nonnegative_int index) {
+
+  return get_training_tensor_groups_for_role(signature, tensor_role)
+      .at(index.unwrap_nonnegative());
 }
 
 } // namespace FlexFlow

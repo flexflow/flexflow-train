@@ -18,58 +18,58 @@ void sparse_categorical_crossentropy_loss_backward_kernel(
     float scale_factor) {
   if (stream.is_gpu()) {
     sparse_categorical_crossentropy_loss_backward_gpu_kernel(
-      /*stream=*/stream.require_gpu(),
-      /*logit_grad_ptr=*/logit_grad_ptr,
-      /*logit_ptr=*/logit_ptr,
-      /*label_ptr=*/label_ptr,
-      /*logit_volume=*/logit_volume,
-      /*logit_grad_volume=*/logit_grad_volume,
-      /*num_samples=*/num_samples,
-      /*num_classes=*/num_classes,
-      /*k=*/k,
-      /*scale_factor=*/scale_factor);
+        /*stream=*/stream.require_gpu(),
+        /*logit_grad_ptr=*/logit_grad_ptr,
+        /*logit_ptr=*/logit_ptr,
+        /*label_ptr=*/label_ptr,
+        /*logit_volume=*/logit_volume,
+        /*logit_grad_volume=*/logit_grad_volume,
+        /*num_samples=*/num_samples,
+        /*num_classes=*/num_classes,
+        /*k=*/k,
+        /*scale_factor=*/scale_factor);
   } else {
     ASSERT(stream.is_cpu());
     sparse_categorical_crossentropy_loss_backward_cpu_kernel(
-      /*logit_grad_ptr=*/logit_grad_ptr,
-      /*logit_ptr=*/logit_ptr,
-      /*label_ptr=*/label_ptr,
-      /*logit_volume=*/logit_volume,
-      /*logit_grad_volume=*/logit_grad_volume,
-      /*num_samples=*/num_samples,
-      /*num_classes=*/num_classes,
-      /*k=*/k,
-      /*scale_factor=*/scale_factor);
+        /*logit_grad_ptr=*/logit_grad_ptr,
+        /*logit_ptr=*/logit_ptr,
+        /*label_ptr=*/label_ptr,
+        /*logit_volume=*/logit_volume,
+        /*logit_grad_volume=*/logit_grad_volume,
+        /*num_samples=*/num_samples,
+        /*num_classes=*/num_classes,
+        /*k=*/k,
+        /*scale_factor=*/scale_factor);
   }
 }
 
-void categorical_crossentropy_loss_backward_kernel(device_stream_t const &stream,
-                                                   float *logit_grad_ptr,
-                                                   float const *logit_ptr,
-                                                   float const *label_ptr,
-                                                   size_t logit_volume,
-                                                   size_t logit_grad_volume,
-                                                   float scale_factor) {
+void categorical_crossentropy_loss_backward_kernel(
+    device_stream_t const &stream,
+    float *logit_grad_ptr,
+    float const *logit_ptr,
+    float const *label_ptr,
+    size_t logit_volume,
+    size_t logit_grad_volume,
+    float scale_factor) {
   if (stream.is_gpu()) {
     categorical_crossentropy_loss_backward_gpu_kernel(
-      /*stream=*/stream.require_gpu(),
-      /*logit_grad_ptr=*/logit_grad_ptr,
-      /*logit_ptr=*/logit_ptr,
-      /*label_ptr=*/label_ptr,
-      /*logit_volume=*/logit_volume,
-      /*logit_grad_volume=*/logit_grad_volume,
-      /*scale_factor=*/scale_factor);
+        /*stream=*/stream.require_gpu(),
+        /*logit_grad_ptr=*/logit_grad_ptr,
+        /*logit_ptr=*/logit_ptr,
+        /*label_ptr=*/label_ptr,
+        /*logit_volume=*/logit_volume,
+        /*logit_grad_volume=*/logit_grad_volume,
+        /*scale_factor=*/scale_factor);
   } else {
-    ASSERT(stream.is_cpu()); 
+    ASSERT(stream.is_cpu());
     categorical_crossentropy_loss_backward_cpu_kernel(
-      /*logit_grad_ptr=*/logit_grad_ptr,
-      /*logit_ptr=*/logit_ptr,
-      /*label_ptr=*/label_ptr,
-      /*logit_volume=*/logit_volume,
-      /*logit_grad_volume=*/logit_grad_volume,
-      /*scale_factor=*/scale_factor);
+        /*logit_grad_ptr=*/logit_grad_ptr,
+        /*logit_ptr=*/logit_ptr,
+        /*label_ptr=*/label_ptr,
+        /*logit_volume=*/logit_volume,
+        /*logit_grad_volume=*/logit_grad_volume,
+        /*scale_factor=*/scale_factor);
   }
-  
 }
 
 void mean_squared_error_avg_loss_backward_kernel(device_stream_t const &stream,
@@ -81,22 +81,22 @@ void mean_squared_error_avg_loss_backward_kernel(device_stream_t const &stream,
                                                  float scale_factor) {
   if (stream.is_gpu()) {
     mean_squared_error_avg_loss_backward_gpu_kernel(
-      /*stream=*/stream.require_gpu(),
-      /*logit_grad_ptr=*/logit_grad_ptr,
-      /*logit_ptr=*/logit_ptr,
-      /*label_ptr=*/label_ptr,
-      /*logit_volume=*/logit_volume,
-      /*logit_grad_volume=*/logit_grad_volume,
-      /*scale_factor=*/scale_factor);
+        /*stream=*/stream.require_gpu(),
+        /*logit_grad_ptr=*/logit_grad_ptr,
+        /*logit_ptr=*/logit_ptr,
+        /*label_ptr=*/label_ptr,
+        /*logit_volume=*/logit_volume,
+        /*logit_grad_volume=*/logit_grad_volume,
+        /*scale_factor=*/scale_factor);
   } else {
     ASSERT(stream.is_cpu());
     mean_squared_error_avg_loss_backward_cpu_kernel(
-      /*logit_grad_ptr=*/logit_grad_ptr,
-      /*logit_ptr=*/logit_ptr,
-      /*label_ptr=*/label_ptr,
-      /*logit_volume=*/logit_volume,
-      /*logit_grad_volume=*/logit_grad_volume,
-      /*scale_factor=*/scale_factor);
+        /*logit_grad_ptr=*/logit_grad_ptr,
+        /*logit_ptr=*/logit_ptr,
+        /*label_ptr=*/label_ptr,
+        /*logit_volume=*/logit_volume,
+        /*logit_grad_volume=*/logit_grad_volume,
+        /*scale_factor=*/scale_factor);
   }
 }
 
@@ -108,22 +108,21 @@ void identity_loss_backward_kernel(device_stream_t const &stream,
                                    float csale_factor) {
   if (stream.is_gpu()) {
     identity_loss_backward_gpu_kernel(
-      /*stream=*/stream.require_gpu(),
-      /*loss_grad_ptr=*/loss_grad_ptr,
-      /*loss_ptr=*/loss_ptr,
-      /*loss_volume=*/loss_volume,
-      /*loss_grad_volume=*/loss_grad_volume,
-      /*csale_factor=*/csale_factor);
+        /*stream=*/stream.require_gpu(),
+        /*loss_grad_ptr=*/loss_grad_ptr,
+        /*loss_ptr=*/loss_ptr,
+        /*loss_volume=*/loss_volume,
+        /*loss_grad_volume=*/loss_grad_volume,
+        /*csale_factor=*/csale_factor);
   } else {
     ASSERT(stream.is_cpu());
     identity_loss_backward_cpu_kernel(
-      /*loss_grad_ptr=*/loss_grad_ptr,
-      /*loss_ptr=*/loss_ptr,
-      /*loss_volume=*/loss_volume,
-      /*loss_grad_volume=*/loss_grad_volume,
-      /*csale_factor=*/csale_factor);
+        /*loss_grad_ptr=*/loss_grad_ptr,
+        /*loss_ptr=*/loss_ptr,
+        /*loss_volume=*/loss_volume,
+        /*loss_grad_volume=*/loss_grad_volume,
+        /*csale_factor=*/csale_factor);
   }
 }
-
 
 } // namespace FlexFlow

@@ -68,13 +68,15 @@ static void sgd_update_task_impl(TaskArgumentAccessor const &acc) {
   auto weight_grad = acc.get_tensor_grad<Permissions::RO>(WEIGHT_GRAD);
   auto weight = acc.get_tensor<Permissions::RW>(WEIGHT);
   auto profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   ASSERT(weight.shape == weight_grad.shape);
   int size = weight_grad.shape.num_elements().int_from_positive_int();
 
-  ASSERT(weight_grad.shape.num_elements().int_from_positive_int() % 
-         weight.shape.num_elements().int_from_positive_int() == 0);
+  ASSERT(weight_grad.shape.num_elements().int_from_positive_int() %
+             weight.shape.num_elements().int_from_positive_int() ==
+         0);
   int num_replicas = weight_grad.shape.num_elements().int_from_positive_int() /
                      weight.shape.num_elements().int_from_positive_int();
 
@@ -187,13 +189,15 @@ static void adam_update_task_impl(TaskArgumentAccessor const &acc) {
   auto m_tensor = acc.get_optimizer_tensor<Permissions::RW>(ADAM_M);
 
   auto profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   ASSERT(weight.shape == weight_grad.shape);
   int size = weight_grad.shape.num_elements().int_from_positive_int();
 
-  ASSERT(weight_grad.shape.num_elements().int_from_positive_int() % 
-         weight.shape.num_elements().int_from_positive_int() == 0);
+  ASSERT(weight_grad.shape.num_elements().int_from_positive_int() %
+             weight.shape.num_elements().int_from_positive_int() ==
+         0);
   int num_replicas = weight_grad.shape.num_elements().int_from_positive_int() /
                      weight.shape.num_elements().int_from_positive_int();
 

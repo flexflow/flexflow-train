@@ -48,4 +48,4 @@ void cpu_backward_kernel(GenericTensorAccessorR const &output,
       output.data_type, input.data_type, output, input);
 }
 
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::Cast

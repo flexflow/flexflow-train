@@ -44,9 +44,9 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           create_random_filled_accessor_w(input_shape, allocator);
 
       Kernels::Transpose::gpu_backward_kernel(managed_stream.raw_stream(),
-                                          attrs,
-                                          output_grad_accessor,
-                                          input_grad_accessor);
+                                              attrs,
+                                              output_grad_accessor,
+                                              input_grad_accessor);
 
       CHECK(contains_non_zero(input_grad_accessor));
     }

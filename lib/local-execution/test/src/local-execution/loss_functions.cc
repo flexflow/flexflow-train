@@ -1,4 +1,5 @@
 #include "doctest/doctest.h"
+#include "internal/test_utils.h"
 #include "kernels/local_cuda_allocator.h"
 #include "kernels/managed_ff_stream.h"
 #include "kernels/managed_per_device_ff_handle.h"
@@ -7,7 +8,6 @@
 #include "pcg/computation_graph.h"
 #include "pcg/computation_graph_builder.h"
 #include "pcg/optimizer_attrs.dtg.h"
-#include "internal/test_utils.h"
 #include "task-spec/forward_tensor_source.h"
 #include "task-spec/gradient_tensor_source.h"
 #include "task-spec/loss_tensor_source.h"
@@ -29,8 +29,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     // allocate label tensors
     LossTensorSource loss_tensor_source;
-    loss_tensor_guid_t label_tensor_guid =
-        loss_tensor_source.new_loss_tensor();
+    loss_tensor_guid_t label_tensor_guid = loss_tensor_source.new_loss_tensor();
 
     positive_int batch_size = 10_p;
     positive_int data_dim = 16_p;
@@ -79,45 +78,44 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     OptimizerTensorSource optimizer_tensor_source;
 
     OptimizerAttrs optimizer_attrs = OptimizerAttrs{
-      SGDOptimizerAttrs{
-        /*lr=*/0.0,
-        /*momentum=*/0.0,
-        /*nesterov=*/false,
-        /*weight_decay=*/0.0,
-      },
+        SGDOptimizerAttrs{
+            /*lr=*/0.0,
+            /*momentum=*/0.0,
+            /*nesterov=*/false,
+            /*weight_decay=*/0.0,
+        },
     };
     TrainingComputationGraph training_computation_graph =
-      generate_training_computation_graph(
-        computation_graph,
-        optimizer_attrs,
-        forward_tensor_source,
-        gradient_tensor_source,
-        optimizer_tensor_source);
+        generate_training_computation_graph(computation_graph,
+                                            optimizer_attrs,
+                                            forward_tensor_source,
+                                            gradient_tensor_source,
+                                            optimizer_tensor_source);
 
-    auto make_training_backing = [&](TensorShape const &label_tensor_shape) { 
+    auto make_training_backing = [&](TensorShape const &label_tensor_shape) {
       GenericTensorAccessorW label_tensor_accessor =
           allocator.allocate_tensor(label_tensor_shape);
 
       return make_local_training_backing_for_computation_graph(
-        /*allocator=*/allocator,
-        /*preallocated_tensors=*/{
+          /*allocator=*/allocator,
+          /*preallocated_tensors=*/
           {
-            training_tensor_guid_t{label_tensor_guid},
-            label_tensor_accessor,
+              {
+                  training_tensor_guid_t{label_tensor_guid},
+                  label_tensor_accessor,
+              },
           },
-        },
-        /*training_computation_graph=*/training_computation_graph,
-        /*runtime_arg_config=*/runtime_arg_config,
-        /*optimizer_attrs=*/optimizer_attrs);
+          /*training_computation_graph=*/training_computation_graph,
+          /*runtime_arg_config=*/runtime_arg_config,
+          /*optimizer_attrs=*/optimizer_attrs);
     };
 
     SUBCASE("SparseCategoricalCrossEntropyLossAttrs") {
       TensorShape label_tensor_shape =
           TensorShape{TensorDims{FFOrdered{batch_size, 1_p}}, DataType::FLOAT};
 
-      LocalTrainingBacking local_training_backing 
-        = make_training_backing(label_tensor_shape);
-
+      LocalTrainingBacking local_training_backing =
+          make_training_backing(label_tensor_shape);
 
       LossAttrs loss_attrs = LossAttrs{
           SparseCategoricalCrossEntropyLossAttrs{/*replace_labels=*/false}};
@@ -133,8 +131,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       TensorShape label_tensor_shape = TensorShape{
           TensorDims{FFOrdered{batch_size, output_dim}}, DataType::FLOAT};
 
-      LocalTrainingBacking local_training_backing 
-        = make_training_backing(label_tensor_shape);
+      LocalTrainingBacking local_training_backing =
+          make_training_backing(label_tensor_shape);
 
       SUBCASE("LossFunction::CATEGORICAL_CROSSENTROPY") {
         LossAttrs loss_attrs = LossAttrs{

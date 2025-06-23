@@ -13,7 +13,8 @@ namespace FlexFlow {
 
 struct TestCostEstimator : public ICostEstimator {
   std::function<OpCostMetrics(OpCostEstimateKey const &)> get_operator_cost;
-  std::function<milliseconds_t(TensorSetMovement const &)> get_communication_cost;
+  std::function<milliseconds_t(TensorSetMovement const &)>
+      get_communication_cost;
 
   TestCostEstimator() = delete;
   TestCostEstimator(decltype(get_operator_cost) const &get_operator_cost,

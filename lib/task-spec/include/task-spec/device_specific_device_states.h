@@ -6,14 +6,14 @@
 namespace FlexFlow {
 
 template <typename T>
-std::optional<DeviceSpecificDeviceStates> 
-  make_device_specific_state(std::optional<T> const &per_device_state) {
+std::optional<DeviceSpecificDeviceStates>
+    make_device_specific_state(std::optional<T> const &per_device_state) {
   if (!per_device_state.has_value()) {
     return std::nullopt;
   }
 
   return DeviceSpecificDeviceStates{
-    DeviceSpecific<T>::create(per_device_state.value()),
+      DeviceSpecific<T>::create(per_device_state.value()),
   };
 }
 

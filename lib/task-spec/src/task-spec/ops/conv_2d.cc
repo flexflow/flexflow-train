@@ -30,8 +30,8 @@ OpTaskInvocation init(Conv2DAttrs const &attrs) {
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
   return OpTaskInvocation{
-    task_id_t::CONV2D_INIT_TASK_ID,
-    binding,
+      task_id_t::CONV2D_INIT_TASK_ID,
+      binding,
   };
 }
 
@@ -50,8 +50,8 @@ OpTaskInvocation forward(Conv2DAttrs const &attrs) {
   binding.bind(BIAS, weight_tensor(1_n));
 
   return OpTaskInvocation{
-    task_id_t::CONV2D_FWD_TASK_ID,
-    binding,
+      task_id_t::CONV2D_FWD_TASK_ID,
+      binding,
   };
 }
 
@@ -59,8 +59,8 @@ OpTaskInvocation backward(Conv2DAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-    task_id_t::CONV2D_BWD_TASK_ID,
-    binding,
+      task_id_t::CONV2D_BWD_TASK_ID,
+      binding,
   };
 }
 
@@ -68,35 +68,36 @@ static std::optional<DeviceSpecificDeviceStates>
     init_task_impl(TaskArgumentAccessor const &acc) {
 
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto attrs = acc.get_argument<Conv2DAttrs>(ATTRS);
   auto input = acc.get_tensor<Permissions::WO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   auto filter = acc.get_tensor<Permissions::RO>(FILTER);
   auto filter_grad = acc.get_tensor_grad<Permissions::RW>(FILTER);
 
-  std::optional<Conv2DPerDeviceState> per_device_state =
-      init_kernel(
-                  /*device_type=*/kernel_device_type,
-                  /*handle=*/handle,
-                  /*activation=*/attrs.activation,
-                  /*kernel_h=*/attrs.kernel_h.int_from_positive_int(),
-                  /*kernel_w=*/attrs.kernel_w.int_from_positive_int(),
-                  /*groups=*/attrs.groups.int_from_positive_int(),
-                  /*padding_h=*/attrs.padding_h.unwrap_nonnegative(),
-                  /*padding_w=*/attrs.padding_w.unwrap_nonnegative(),
-                  /*stride_h=*/attrs.stride_h.int_from_positive_int(),
-                  /*stride_w=*/attrs.stride_w.int_from_positive_int(),
-                  /*input=*/input,
-                  /*output=*/output,
-                  /*filter_ptr=*/filter.get_float_ptr(),
-                  /*filter_grad_ptr=*/filter_grad.get_float_ptr());
+  std::optional<Conv2DPerDeviceState> per_device_state = init_kernel(
+      /*device_type=*/kernel_device_type,
+      /*handle=*/handle,
+      /*activation=*/attrs.activation,
+      /*kernel_h=*/attrs.kernel_h.int_from_positive_int(),
+      /*kernel_w=*/attrs.kernel_w.int_from_positive_int(),
+      /*groups=*/attrs.groups.int_from_positive_int(),
+      /*padding_h=*/attrs.padding_h.unwrap_nonnegative(),
+      /*padding_w=*/attrs.padding_w.unwrap_nonnegative(),
+      /*stride_h=*/attrs.stride_h.int_from_positive_int(),
+      /*stride_w=*/attrs.stride_w.int_from_positive_int(),
+      /*input=*/input,
+      /*output=*/output,
+      /*filter_ptr=*/filter.get_float_ptr(),
+      /*filter_grad_ptr=*/filter_grad.get_float_ptr());
   return make_device_specific_state(per_device_state);
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto per_device_state =
       acc.get_argument<Conv2DPerDeviceState>(PER_DEVICE_STATE);
   auto attrs = acc.get_argument<Conv2DAttrs>(ATTRS);
@@ -121,7 +122,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto per_device_state =
       acc.get_argument<Conv2DPerDeviceState>(PER_DEVICE_STATE);
   auto attrs = acc.get_argument<Conv2DAttrs>(ATTRS);

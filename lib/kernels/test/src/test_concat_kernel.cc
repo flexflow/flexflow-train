@@ -33,9 +33,9 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
             allocator.allocate_tensor(output_shape);
 
         Kernels::Concat::gpu_forward_kernel(managed_stream.raw_stream(),
-                                        output_accessor,
-                                        input_accessors,
-                                        concat_axis);
+                                            output_accessor,
+                                            input_accessors,
+                                            concat_axis);
 
         CHECK(contains_non_zero(output_accessor));
       };
@@ -80,9 +80,9 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
             });
 
         Kernels::Concat::gpu_backward_kernel(managed_stream.raw_stream(),
-                                         output_grad_accessor,
-                                         input_grad_accessors,
-                                         concat_axis);
+                                             output_grad_accessor,
+                                             input_grad_accessors,
+                                             concat_axis);
 
         for (auto &accessor : input_grad_accessors) {
           CHECK(contains_non_zero(accessor));

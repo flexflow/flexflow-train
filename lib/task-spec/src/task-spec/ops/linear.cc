@@ -35,8 +35,8 @@ OpTaskInvocation init(LinearAttrs const &attrs) {
   binding.bind(OUTPUT, output_tensor(0_n));
 
   return OpTaskInvocation{
-    task_id_t::LINEAR_INIT_TASK_ID, 
-    binding,
+      task_id_t::LINEAR_INIT_TASK_ID,
+      binding,
   };
 }
 
@@ -57,8 +57,8 @@ OpTaskInvocation forward(LinearAttrs const &attrs) {
   binding.bind_arg(ATTRS, attrs);
 
   return OpTaskInvocation{
-    task_id_t::LINEAR_FWD_TASK_ID, 
-    binding,
+      task_id_t::LINEAR_FWD_TASK_ID,
+      binding,
   };
 }
 
@@ -66,8 +66,8 @@ OpTaskInvocation backward(LinearAttrs const &attrs) {
   OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-    task_id_t::LINEAR_BWD_TASK_ID, 
-    b,
+      task_id_t::LINEAR_BWD_TASK_ID,
+      b,
   };
 }
 
@@ -75,7 +75,8 @@ static std::optional<DeviceSpecificDeviceStates>
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto const &attrs = acc.get_argument<LinearAttrs>(ATTRS);
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto weight = acc.get_tensor<Permissions::RO>(WEIGHT);
@@ -109,7 +110,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto per_device_state =
       acc.get_argument<LinearPerDeviceState>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto attrs = acc.get_argument<LinearAttrs>(ATTRS);
 
   positive_int in_dim = input.shape.at(ff_dim_t{0_n});
@@ -124,7 +126,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 
   return profile(forward_kernel,
                  profiling,
-                 kernel_device_type, 
+                 kernel_device_type,
                  "[Linear] forward_time = {:.2lf}ms\n",
                  per_device_state,
                  input.get_float_ptr(),
@@ -149,7 +151,8 @@ static std::optional<float>
   auto per_device_state =
       acc.get_argument<LinearPerDeviceState>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto attrs = acc.get_argument<LinearAttrs>(ATTRS);
 
   float *bias_grad_ptr = NULL;

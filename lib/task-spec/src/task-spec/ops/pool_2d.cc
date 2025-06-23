@@ -2,15 +2,23 @@
 #include "kernels/pool_2d_kernels.h"
 #include "op-attrs/ops/pool_2d.h"
 #include "task-spec/device_specific_device_states.h"
+#include "task-spec/profiling.h"
 #include "utils/exception.h"
 #include "utils/hash-utils.h"
-#include "task-spec/profiling.h"
 
 using namespace FlexFlow::Kernels::Pool2D;
 
 namespace FlexFlow {
 
-enum Slots { INPUT, OUTPUT, ATTRS, PROFILING, PER_DEVICE_STATE, HANDLE, KERNEL_DEVICE_TYPE };
+enum Slots {
+  INPUT,
+  OUTPUT,
+  ATTRS,
+  PROFILING,
+  PER_DEVICE_STATE,
+  HANDLE,
+  KERNEL_DEVICE_TYPE
+};
 
 OpTaskInvocation init(Pool2DAttrs const &attrs) {
   OpTaskBinding binding;
@@ -21,8 +29,8 @@ OpTaskInvocation init(Pool2DAttrs const &attrs) {
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
   return OpTaskInvocation{
-    task_id_t::POOL2D_INIT_TASK_ID, 
-    binding,
+      task_id_t::POOL2D_INIT_TASK_ID,
+      binding,
   };
 }
 
@@ -44,7 +52,8 @@ static std::optional<DeviceSpecificDeviceStates>
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto const &attrs = acc.get_argument<Pool2DAttrs>(ATTRS);
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
@@ -92,8 +101,8 @@ OpTaskInvocation forward(Pool2DAttrs const &attrs) {
                    per_device_op_state<Pool2DPerDeviceState>());
 
   return OpTaskInvocation{
-    task_id_t::POOL2D_FWD_TASK_ID, 
-    binding,
+      task_id_t::POOL2D_FWD_TASK_ID,
+      binding,
   };
 }
 
@@ -101,14 +110,15 @@ OpTaskInvocation backward(Pool2DAttrs const &attrs) {
   OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-    task_id_t::POOL2D_BWD_TASK_ID, 
-    b,
+      task_id_t::POOL2D_BWD_TASK_ID,
+      b,
   };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   Pool2DPerDeviceState state =
       acc.get_argument<Pool2DPerDeviceState>(PER_DEVICE_STATE);
 
@@ -127,7 +137,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   Pool2DPerDeviceState state =
       acc.get_argument<Pool2DPerDeviceState>(PER_DEVICE_STATE);
 

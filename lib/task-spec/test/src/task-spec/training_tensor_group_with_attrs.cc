@@ -1,5 +1,5 @@
-#include <doctest/doctest.h>
 #include "task-spec/training_tensor_group_with_attrs.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 

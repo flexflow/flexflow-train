@@ -6,14 +6,13 @@
 namespace FlexFlow::Kernels::Gather {
 
 void cpu_forward_kernel(GenericTensorAccessorR const &input,
-                    GenericTensorAccessorR const &index,
-                    GenericTensorAccessorW const &output);
+                        GenericTensorAccessorR const &index,
+                        GenericTensorAccessorW const &output);
 
 void cpu_backward_kernel(GenericTensorAccessorR const &output_grad,
-                     GenericTensorAccessorR const &index,
-                     GenericTensorAccessorW const &input_grad);
+                         GenericTensorAccessorR const &index,
+                         GenericTensorAccessorW const &input_grad);
 
-
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::Gather
 
 #endif

@@ -6,13 +6,13 @@
 namespace FlexFlow::Kernels::Reshape {
 
 void cpu_forward_kernel(DataType data_type,
-                    GenericTensorAccessorR const &input,
-                    GenericTensorAccessorW const &output);
+                        GenericTensorAccessorR const &input,
+                        GenericTensorAccessorW const &output);
 
 void cpu_backward_kernel(DataType data_type,
-                     GenericTensorAccessorR const &output,
-                     GenericTensorAccessorW const &input);
+                         GenericTensorAccessorR const &output,
+                         GenericTensorAccessorW const &input);
 
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::Reshape
 
 #endif

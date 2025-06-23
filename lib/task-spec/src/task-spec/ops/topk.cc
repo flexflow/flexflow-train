@@ -40,8 +40,8 @@ OpTaskInvocation forward(TopKAttrs const &attrs) {
   binding.bind(INDICES, output_tensor(1_n));
 
   return OpTaskInvocation{
-    task_id_t::TOPK_FWD_TASK_ID, 
-    binding,
+      task_id_t::TOPK_FWD_TASK_ID,
+      binding,
   };
 }
 
@@ -49,15 +49,16 @@ OpTaskInvocation backward(TopKAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-    task_id_t::TOPK_BWD_TASK_ID, 
-    binding,
+      task_id_t::TOPK_BWD_TASK_ID,
+      binding,
   };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto attrs = acc.get_argument<TopKAttrs>(ATTRS);
   auto profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
@@ -83,7 +84,8 @@ static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   auto attrs = acc.get_argument<TopKAttrs>(ATTRS);
   auto profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(INPUT);
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
@@ -133,8 +135,7 @@ OpTaskSignature get_topk_bwd_signature() {
 }
 
 std::vector<task_id_t> get_task_ids(TopKAttrs const &) {
-  return {task_id_t::TOPK_FWD_TASK_ID,
-          task_id_t::TOPK_BWD_TASK_ID};
+  return {task_id_t::TOPK_FWD_TASK_ID, task_id_t::TOPK_BWD_TASK_ID};
 }
 
 }; // namespace FlexFlow

@@ -2,8 +2,9 @@
 
 namespace FlexFlow {
 
-std::vector<TensorShape> tensor_shapes_for_role(CGOperatorTensorShapeSignature const &signature,
-                                                TensorRole tensor_role) {
+std::vector<TensorShape>
+    tensor_shapes_for_role(CGOperatorTensorShapeSignature const &signature,
+                           TensorRole tensor_role) {
   switch (tensor_role) {
     case TensorRole::INPUT:
       return signature.input_shapes;
@@ -16,11 +17,12 @@ std::vector<TensorShape> tensor_shapes_for_role(CGOperatorTensorShapeSignature c
   };
 }
 
-
-TensorShape tensor_shape_for_role_and_index(CGOperatorTensorShapeSignature const &signature,
-                                            TensorRole tensor_role,
-                                            nonnegative_int index) {
-  return tensor_shapes_for_role(signature, tensor_role).at(index.unwrap_nonnegative());
+TensorShape tensor_shape_for_role_and_index(
+    CGOperatorTensorShapeSignature const &signature,
+    TensorRole tensor_role,
+    nonnegative_int index) {
+  return tensor_shapes_for_role(signature, tensor_role)
+      .at(index.unwrap_nonnegative());
 }
 
 } // namespace FlexFlow

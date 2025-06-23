@@ -120,16 +120,16 @@ struct BackwardKernel {
 GatherPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
                                      legion_dim_t legion_dim) {
   return GatherPerDeviceState{
-    /*handle=*/handle,
-    /*legion_dim=*/legion_dim,
+      /*handle=*/handle,
+      /*legion_dim=*/legion_dim,
   };
 }
 
 void gpu_forward_kernel(ffStream_t stream,
-                    GatherPerDeviceState const &m,
-                    GenericTensorAccessorR const &input,
-                    GenericTensorAccessorR const &index,
-                    GenericTensorAccessorW const &output) {
+                        GatherPerDeviceState const &m,
+                        GenericTensorAccessorR const &input,
+                        GenericTensorAccessorR const &index,
+                        GenericTensorAccessorW const &output) {
   checkCUDA(get_legion_stream(&stream));
   coord_t stride =
       output.shape
@@ -160,10 +160,10 @@ void gpu_forward_kernel(ffStream_t stream,
 }
 
 void gpu_backward_kernel(ffStream_t stream,
-                     GatherPerDeviceState const &m,
-                     GenericTensorAccessorR const &output_grad,
-                     GenericTensorAccessorR const &index,
-                     GenericTensorAccessorW const &input_grad) {
+                         GatherPerDeviceState const &m,
+                         GenericTensorAccessorR const &output_grad,
+                         GenericTensorAccessorR const &index,
+                         GenericTensorAccessorW const &input_grad) {
   checkCUDA(get_legion_stream(&stream));
 
   coord_t stride =

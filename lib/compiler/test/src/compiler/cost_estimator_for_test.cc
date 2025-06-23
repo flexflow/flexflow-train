@@ -19,7 +19,8 @@ OpCostMetrics
   return this->get_operator_cost(k);
 }
 
-milliseconds_t TestCostEstimator::estimate_cost(TensorSetMovement const &m) const {
+milliseconds_t
+    TestCostEstimator::estimate_cost(TensorSetMovement const &m) const {
   return this->get_communication_cost(m);
 }
 
@@ -34,7 +35,8 @@ CostEstimator make_fake_cost_estimator(
 
 CostEstimator make_fake_cost_estimator(
     std::unordered_map<OpCostEstimateKey, OpCostMetrics> const &op_cost_map,
-    std::unordered_map<TensorSetMovement, milliseconds_t> const &comm_cost_map) {
+    std::unordered_map<TensorSetMovement, milliseconds_t> const
+        &comm_cost_map) {
   return make_fake_cost_estimator(
       [op_cost_map](OpCostEstimateKey const &k) { return op_cost_map.at(k); },
       [comm_cost_map](TensorSetMovement const &m) {

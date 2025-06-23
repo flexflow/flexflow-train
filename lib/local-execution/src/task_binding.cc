@@ -1,23 +1,20 @@
 #include "task-spec/task_binding.h"
 #include "pcg/tensor_guid_t.dtg.h"
+#include "task-spec/training_tensor_guid_t.dtg.h"
 #include "utils/containers/contains_key.h"
 #include "utils/fmt/unordered_map.h"
-#include "utils/hash/unordered_map.h"
-#include "task-spec/training_tensor_guid_t.dtg.h"
 #include "utils/hash/tuple.h"
+#include "utils/hash/unordered_map.h"
 
 namespace FlexFlow {
 
-TaskBinding::TaskBinding()
-  : tensor_bindings(), arg_bindings()
-{ }
+TaskBinding::TaskBinding() : tensor_bindings(), arg_bindings() {}
 
 TaskBinding::TaskBinding(
-    std::unordered_map<tensor_sub_slot_id_t, training_tensor_guid_t> const &tensor_bindings,
+    std::unordered_map<tensor_sub_slot_id_t, training_tensor_guid_t> const
+        &tensor_bindings,
     std::unordered_map<slot_id_t, TaskArgSpec> const &arg_bindings)
-  : tensor_bindings(tensor_bindings), arg_bindings(arg_bindings)
-{ }
-
+    : tensor_bindings(tensor_bindings), arg_bindings(arg_bindings) {}
 
 void TaskBinding::bind(int name, forward_tensor_guid_t const &binding) {
   this->bind(slot_id_t{name}, binding);
@@ -32,19 +29,23 @@ void TaskBinding::bind_grad(int name, gradient_tensor_guid_t const &binding) {
   this->bind_grad(slot_id_t{name}, binding);
 }
 
-void TaskBinding::bind_grad(slot_id_t name, gradient_tensor_guid_t const &binding) {
-  this->tensor_bindings.insert({tensor_sub_slot_id_t{name, TensorType::GRADIENT},
-                                training_tensor_guid_t{binding}});
+void TaskBinding::bind_grad(slot_id_t name,
+                            gradient_tensor_guid_t const &binding) {
+  this->tensor_bindings.insert(
+      {tensor_sub_slot_id_t{name, TensorType::GRADIENT},
+       training_tensor_guid_t{binding}});
 }
 
-void TaskBinding::bind_optimizer(int name, optimizer_tensor_guid_t const &binding) {
+void TaskBinding::bind_optimizer(int name,
+                                 optimizer_tensor_guid_t const &binding) {
   this->bind_optimizer(slot_id_t{name}, binding);
 }
 
 void TaskBinding::bind_optimizer(slot_id_t name,
                                  optimizer_tensor_guid_t const &binding) {
-  this->tensor_bindings.insert({tensor_sub_slot_id_t{name, TensorType::OPTIMIZER},
-                                training_tensor_guid_t{binding}});
+  this->tensor_bindings.insert(
+      {tensor_sub_slot_id_t{name, TensorType::OPTIMIZER},
+       training_tensor_guid_t{binding}});
 }
 
 void TaskBinding::bind_loss(int name, loss_tensor_guid_t const &binding) {
@@ -52,8 +53,8 @@ void TaskBinding::bind_loss(int name, loss_tensor_guid_t const &binding) {
 }
 
 void TaskBinding::bind_loss(slot_id_t name, loss_tensor_guid_t const &binding) {
-  this->tensor_bindings.insert(
-      {tensor_sub_slot_id_t{name, TensorType::LOSS}, training_tensor_guid_t{binding}});
+  this->tensor_bindings.insert({tensor_sub_slot_id_t{name, TensorType::LOSS},
+                                training_tensor_guid_t{binding}});
 }
 
 void TaskBinding::insert_arg_spec(slot_id_t name, TaskArgSpec const &arg_spec) {
@@ -69,8 +70,9 @@ bool TaskBinding::operator!=(TaskBinding const &other) const {
   return this->tie() != other.tie();
 }
 
-std::tuple<std::unordered_map<tensor_sub_slot_id_t, training_tensor_guid_t> const &,
-           std::unordered_map<slot_id_t, TaskArgSpec> const &>
+std::tuple<
+    std::unordered_map<tensor_sub_slot_id_t, training_tensor_guid_t> const &,
+    std::unordered_map<slot_id_t, TaskArgSpec> const &>
     TaskBinding::tie() const {
   return std::tie(this->tensor_bindings, this->arg_bindings);
 }

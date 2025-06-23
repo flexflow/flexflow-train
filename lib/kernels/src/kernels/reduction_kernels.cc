@@ -10,16 +10,16 @@ void forward_kernel(device_stream_t const &stream,
                     size_t num_replicas) {
   if (stream.is_gpu()) {
     gpu_forward_kernel(
-                       /*stream=*/stream.require_gpu(),
-                       /*input=*/input,
-                       /*output=*/output,
-                       /*num_replicas=*/num_replicas);
+        /*stream=*/stream.require_gpu(),
+        /*input=*/input,
+        /*output=*/output,
+        /*num_replicas=*/num_replicas);
   } else {
     ASSERT(stream.is_cpu());
     cpu_forward_kernel(
-                       /*input=*/input,
-                       /*output=*/output,
-                       /*num_replicas=*/num_replicas);
+        /*input=*/input,
+        /*output=*/output,
+        /*num_replicas=*/num_replicas);
   }
 }
 
@@ -28,16 +28,15 @@ void backward_kernel(device_stream_t const &stream,
                      GenericTensorAccessorW const &input) {
   if (stream.is_gpu()) {
     gpu_backward_kernel(
-                        /*stream=*/stream.require_gpu(),
-                        /*output=*/output,
-                        /*input=*/input);
+        /*stream=*/stream.require_gpu(),
+        /*output=*/output,
+        /*input=*/input);
   } else {
-    ASSERT(stream.is_cpu()); 
+    ASSERT(stream.is_cpu());
     cpu_backward_kernel(
-                        /*output=*/output,
-                        /*input=*/input);
+        /*output=*/output,
+        /*input=*/input);
   }
 }
 
-
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::Reduction

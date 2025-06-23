@@ -8,16 +8,15 @@
 namespace FlexFlow::Kernels::Transpose {
 
 void gpu_forward_kernel(ffStream_t stream,
-                    TransposeAttrs const &attrs,
-                    GenericTensorAccessorR const &input,
-                    GenericTensorAccessorW const &output);
+                        TransposeAttrs const &attrs,
+                        GenericTensorAccessorR const &input,
+                        GenericTensorAccessorW const &output);
 
 void gpu_backward_kernel(ffStream_t stream,
-                     TransposeAttrs const &attrs,
-                     GenericTensorAccessorR const &out_grad,
-                     GenericTensorAccessorW const &in_grad);
+                         TransposeAttrs const &attrs,
+                         GenericTensorAccessorR const &out_grad,
+                         GenericTensorAccessorW const &in_grad);
 
-
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::Transpose
 
 #endif

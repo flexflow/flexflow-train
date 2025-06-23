@@ -5,8 +5,8 @@
 #include "kernels/device.h"
 #include "kernels/device_stream_t.dtg.h"
 #include "kernels/ff_handle.h"
-#include <memory>
 #include "kernels/mha_per_device_state.dtg.h"
+#include <memory>
 
 namespace FlexFlow::Kernels::MultiHeadAttention {
 
@@ -26,6 +26,6 @@ void cpu_backward_kernel(float const *query_ptr,
                          float *weight_grad_ptr,
                          float const *output_grad_ptr);
 
-} 
+} // namespace FlexFlow::Kernels::MultiHeadAttention
 
 #endif

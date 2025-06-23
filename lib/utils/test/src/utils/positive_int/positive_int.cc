@@ -1,6 +1,6 @@
 #include "utils/positive_int/positive_int.h"
-#include <doctest/doctest.h>
 #include "test/utils/rapidcheck.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
@@ -51,16 +51,16 @@ TEST_SUITE(FF_TEST_SUITE) {
   }
 
   TEST_CASE("_p notation for positive_int") {
-    CHECK(9_p == positive_int{9}); 
+    CHECK(9_p == positive_int{9});
     CHECK_THROWS(0_p);
   }
 
   TEST_CASE("static_cast<int>(positive_int)") {
-    CHECK(static_cast<int>(8_p) == 8);   
+    CHECK(static_cast<int>(8_p) == 8);
   }
 
   TEST_CASE("static_cast<nonnegative_int>(positive_int)") {
-    CHECK(static_cast<nonnegative_int>(6_p) == 6);   
+    CHECK(static_cast<nonnegative_int>(6_p) == 6);
   }
 
   TEST_CASE("positive_int < positive_int") {
@@ -321,7 +321,7 @@ TEST_SUITE(FF_TEST_SUITE) {
   }
 
   TEST_CASE("positive_int * positive_int") {
-    CHECK(3_p * 4_p == 12_p); 
+    CHECK(3_p * 4_p == 12_p);
   }
 
   TEST_CASE("positive_int *= positive_int") {
@@ -339,7 +339,7 @@ TEST_SUITE(FF_TEST_SUITE) {
   }
 
   TEST_CASE("positive_int * nonnegative_int") {
-    CHECK(3_p * 4_n == 12_n); 
+    CHECK(3_p * 4_n == 12_n);
     CHECK(3_p * 0_n == 0_n);
   }
 
@@ -360,10 +360,10 @@ TEST_SUITE(FF_TEST_SUITE) {
   }
 
   TEST_CASE("float / positive_int") {
-    CHECK(4.0f / 2_p == 2.0f);   
-    CHECK(3.0f / 2_p == 1.5f);   
-    CHECK(-3.0f / 4_p == -0.75f);   
-    CHECK(0.0f / 1_p == 0.0f);   
+    CHECK(4.0f / 2_p == 2.0f);
+    CHECK(3.0f / 2_p == 1.5f);
+    CHECK(-3.0f / 4_p == -0.75f);
+    CHECK(0.0f / 1_p == 0.0f);
   }
 
   TEST_CASE("float /= positive_int") {
@@ -411,11 +411,11 @@ TEST_SUITE(FF_TEST_SUITE) {
   }
 
   TEST_CASE("positive_int::int_from_positive_int()") {
-    CHECK((3_p).int_from_positive_int() == 3); 
+    CHECK((3_p).int_from_positive_int() == 3);
   }
 
   TEST_CASE("positive_int::nonnegative_int_from_positive_int()") {
-    CHECK((4_p).nonnegative_int_from_positive_int() == 4); 
+    CHECK((4_p).nonnegative_int_from_positive_int() == 4);
   }
 
   TEST_CASE("positive_int::operator<<(std::ostream &, positive_int)") {
@@ -443,7 +443,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       nlohmann::json correct = 5;
 
       CHECK(result == correct);
-    } 
+    }
 
     SUBCASE("from_json") {
       nlohmann::json input = 5;
@@ -480,6 +480,6 @@ TEST_SUITE(FF_TEST_SUITE) {
   }
 
   TEST_CASE("rc::Arbitrary<positive_int>") {
-    RC_SUBCASE([](positive_int) { });
+    RC_SUBCASE([](positive_int) {});
   }
 }

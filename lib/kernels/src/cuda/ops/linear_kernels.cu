@@ -41,16 +41,17 @@ static bool use_activation(std::optional<Activation> activation) {
 }
 
 // what's the float * one_ptr
-LinearPerDeviceState gpu_init_kernel(PerDeviceFFHandle handle,
-                                 float *one_ptr,
-                                 std::optional<Activation> activation,
-                                 std::optional<RegularizerAttrs> regularizer,
-                                 bool use_bias,
-                                 DataType input_type,
-                                 DataType weight_type,
-                                 DataType output_type,
-                                 int batch_size,
-                                 int channel) {
+LinearPerDeviceState
+    gpu_init_kernel(PerDeviceFFHandle handle,
+                    float *one_ptr,
+                    std::optional<Activation> activation,
+                    std::optional<RegularizerAttrs> regularizer,
+                    bool use_bias,
+                    DataType input_type,
+                    DataType weight_type,
+                    DataType output_type,
+                    int batch_size,
+                    int channel) {
   ffTensorDescriptor_t outputTensor;
   ffActivationDescriptor_t actiDesc;
   checkCUDNN(cudnnCreateTensorDescriptor(&outputTensor));
@@ -93,30 +94,30 @@ LinearPerDeviceState gpu_init_kernel(PerDeviceFFHandle handle,
   // bytes to allocate?
   checkCUDA(cudaMalloc(&one_ptr, sizeof(float) * batch_size));
   LinearPerDeviceState per_device_state = LinearPerDeviceState{
-    /*handle=*/handle,
-    /*outputTensor=*/outputTensor,
-    /*actiDesc=*/actiDesc,
-    /*one_ptr=*/one_ptr,
-    /*mode=*/mode,
-    /*activation=*/activation,
-    /*regularizer=*/regularizer,
-    /*use_bias=*/use_bias,
-    /*input_type=*/input_type,
-    /*weight_type=*/weight_type,
-    /*output_type=*/output_type,
+      /*handle=*/handle,
+      /*outputTensor=*/outputTensor,
+      /*actiDesc=*/actiDesc,
+      /*one_ptr=*/one_ptr,
+      /*mode=*/mode,
+      /*activation=*/activation,
+      /*regularizer=*/regularizer,
+      /*use_bias=*/use_bias,
+      /*input_type=*/input_type,
+      /*weight_type=*/weight_type,
+      /*output_type=*/output_type,
   };
   return per_device_state;
 }
 
 void gpu_forward_kernel(cudaStream_t stream,
-                    LinearPerDeviceState const &m,
-                    float const *input_ptr,
-                    float *output_ptr,
-                    float const *weight_ptr,
-                    float const *bias_ptr,
-                    int in_dim,
-                    int out_dim,
-                    int batch_size) {
+                        LinearPerDeviceState const &m,
+                        float const *input_ptr,
+                        float *output_ptr,
+                        float const *weight_ptr,
+                        float const *bias_ptr,
+                        int in_dim,
+                        int out_dim,
+                        int batch_size) {
 
   checkCUBLAS(cublasSetStream(m.handle.blas, stream));
   checkCUDNN(cudnnSetStream(m.handle.dnn, stream));
@@ -192,17 +193,17 @@ void gpu_forward_kernel(cudaStream_t stream,
 }
 
 void gpu_backward_kernel(cudaStream_t stream,
-                     LinearPerDeviceState const &m,
-                     float const *output_ptr,
-                     float *output_grad_ptr,
-                     float const *input_ptr,
-                     float *input_grad_ptr,
-                     float const *kernel_ptr,
-                     float *kernel_grad_ptr,
-                     float *bias_grad_ptr,
-                     int in_dim,
-                     int out_dim,
-                     int batch_size) {
+                         LinearPerDeviceState const &m,
+                         float const *output_ptr,
+                         float *output_grad_ptr,
+                         float const *input_ptr,
+                         float *input_grad_ptr,
+                         float const *kernel_ptr,
+                         float *kernel_grad_ptr,
+                         float *bias_grad_ptr,
+                         int in_dim,
+                         int out_dim,
+                         int batch_size) {
   checkCUBLAS(cublasSetStream(m.handle.blas, stream));
   checkCUDNN(cudnnSetStream(m.handle.dnn, stream));
   float alpha = 1.0f;

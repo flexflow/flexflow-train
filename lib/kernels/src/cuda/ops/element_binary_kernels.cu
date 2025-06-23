@@ -80,12 +80,12 @@ __global__ void elewise_binary_backward_kernel(size_t volume,
 }
 
 ElementBinaryPerDeviceState gpu_init_kernel(PerDeviceFFHandle handle,
-                                        OperatorType op_type,
-                                        bool should_broadcast_lhs,
-                                        bool should_broadcast_rhs,
-                                        ArrayShape lhs_shape,
-                                        ArrayShape rhs_shape,
-                                        ArrayShape output_shape) {
+                                            OperatorType op_type,
+                                            bool should_broadcast_lhs,
+                                            bool should_broadcast_rhs,
+                                            ArrayShape lhs_shape,
+                                            ArrayShape rhs_shape,
+                                            ArrayShape output_shape) {
   ffTensorDescriptor_t inputLHSTensor;
   ffTensorDescriptor_t inputRHSTensor;
   ffTensorDescriptor_t outputTensor;
@@ -129,26 +129,25 @@ ElementBinaryPerDeviceState gpu_init_kernel(PerDeviceFFHandle handle,
   checkCUDNN(
       cudnnSetTensorDescriptorFromArrayShape(outputTensor, output_shape));
 
-  ElementBinaryPerDeviceState per_device_state = 
-    ElementBinaryPerDeviceState{
+  ElementBinaryPerDeviceState per_device_state = ElementBinaryPerDeviceState{
       /*handle=*/handle,
       /*inputLHSTensor=*/inputLHSTensor,
       /*inputRHSTensor=*/inputRHSTensor,
       /*outputTensor=*/outputTensor,
       /*opDesc=*/opDesc,
       /*reduceAddDesc=*/reduceAddDesc,
-    };
+  };
   return per_device_state;
 }
 
 void gpu_forward_kernel(cudaStream_t stream,
-                    ElementBinaryPerDeviceState const &m,
-                    float const *lhs_ptr,
-                    float const *rhs_ptr,
-                    float *out_ptr,
-                    OperatorType op_type,
-                    bool broadcast_inputLHS,
-                    PerDeviceFFHandle handle) {
+                        ElementBinaryPerDeviceState const &m,
+                        float const *lhs_ptr,
+                        float const *rhs_ptr,
+                        float *out_ptr,
+                        OperatorType op_type,
+                        bool broadcast_inputLHS,
+                        PerDeviceFFHandle handle) {
   checkCUBLAS(cublasSetStream(handle.blas, stream));
   checkCUDNN(cudnnSetStream(handle.dnn, stream));
   float alpha1 = 1.0f, alpha2 = 1.0f, beta = 0.0f;
@@ -246,16 +245,16 @@ void gpu_forward_kernel(cudaStream_t stream,
 }
 
 void gpu_backward_kernel(cudaStream_t stream,
-                     ElementBinaryPerDeviceState const &m,
-                     float const *out_grad_ptr,
-                     float const *lhs_ptr,
-                     float const *rhs_ptr,
-                     float *lhs_grad_ptr,
-                     float *rhs_grad_ptr,
-                     OperatorType op_type,
-                     bool broadcast_inputLHS,
-                     bool broadcast_inputRHS,
-                     PerDeviceFFHandle handle) {
+                         ElementBinaryPerDeviceState const &m,
+                         float const *out_grad_ptr,
+                         float const *lhs_ptr,
+                         float const *rhs_ptr,
+                         float *lhs_grad_ptr,
+                         float *rhs_grad_ptr,
+                         OperatorType op_type,
+                         bool broadcast_inputLHS,
+                         bool broadcast_inputRHS,
+                         PerDeviceFFHandle handle) {
   checkCUBLAS(cublasSetStream(handle.blas, stream));
   checkCUDNN(cudnnSetStream(handle.dnn, stream));
 

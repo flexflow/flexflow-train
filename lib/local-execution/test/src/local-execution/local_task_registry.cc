@@ -1,13 +1,13 @@
-#include <doctest/doctest.h>
+#include "local-execution/local_task_registry.h"
 #include "kernels/local_cuda_allocator.h"
 #include "local-execution/local_cost_estimator.h"
 #include "local-execution/local_task_registry.dtg.h"
-#include "local-execution/local_task_registry.h"
 #include "pcg/computation_graph_builder.h"
 #include "pcg/layer_guid_t.dtg.h"
 #include "task-spec/task_signature_impl.h"
 #include "utils/fmt/optional.h"
 #include "utils/fmt/unordered_map.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
@@ -29,8 +29,9 @@ TEST_SUITE(FF_TEST_SUITE) {
         }};
 
     SUBCASE("register single layer") {
-      LocalTaskRegistry task_registry = construct_local_task_registry_for_layers(
-          {{layer_guid, LayerAttrs{attrs, std::nullopt}}});
+      LocalTaskRegistry task_registry =
+          construct_local_task_registry_for_layers(
+              {{layer_guid, LayerAttrs{attrs, std::nullopt}}});
 
       LocalTaskRegistry correct_task_registry = [&] {
         std::unordered_map<layer_guid_t, std::optional<task_id_t>>
@@ -55,10 +56,11 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("multiple layers same task") {
       layer_guid_t other_layer_guid = layer_guid_t{Node{1}};
-      LocalTaskRegistry task_registry = construct_local_task_registry_for_layers({
-          {layer_guid, LayerAttrs{attrs, std::nullopt}},
-          {other_layer_guid, LayerAttrs{attrs, std::nullopt}},
-      });
+      LocalTaskRegistry task_registry =
+          construct_local_task_registry_for_layers({
+              {layer_guid, LayerAttrs{attrs, std::nullopt}},
+              {other_layer_guid, LayerAttrs{attrs, std::nullopt}},
+          });
 
       SUBCASE("layer to task ids") {
         std::unordered_map<layer_guid_t, std::optional<task_id_t>> correct = {
@@ -96,11 +98,12 @@ TEST_SUITE(FF_TEST_SUITE) {
               /*add_bias_kv=*/false,
               /*add_zero_attn=*/false,
           }};
-      LocalTaskRegistry task_registry = construct_local_task_registry_for_layers({
-          {layer_guid, LayerAttrs{attrs, std::nullopt}},
-          {layer_1, LayerAttrs{attrs, std::nullopt}},
-          {layer_2, LayerAttrs{other_attrs, std::nullopt}},
-      });
+      LocalTaskRegistry task_registry =
+          construct_local_task_registry_for_layers({
+              {layer_guid, LayerAttrs{attrs, std::nullopt}},
+              {layer_1, LayerAttrs{attrs, std::nullopt}},
+              {layer_2, LayerAttrs{other_attrs, std::nullopt}},
+          });
 
       std::unordered_map<task_id_t, TaskSignatureAndImpl> correct_task_mapping =
           {{task_id_t::ATTENTION_INIT_TASK_ID,
@@ -128,20 +131,24 @@ TEST_SUITE(FF_TEST_SUITE) {
                 /*add_zero_attn=*/false,
             }};
 
-        LocalTaskRegistry task_registry = construct_local_task_registry_for_layers(
-            {{layer_guid, LayerAttrs{attrs, std::nullopt}}});
-        LocalTaskRegistry other_task_registry = construct_local_task_registry_for_layers(
-            {{layer_guid, LayerAttrs{other_attrs, std::nullopt}}});
+        LocalTaskRegistry task_registry =
+            construct_local_task_registry_for_layers(
+                {{layer_guid, LayerAttrs{attrs, std::nullopt}}});
+        LocalTaskRegistry other_task_registry =
+            construct_local_task_registry_for_layers(
+                {{layer_guid, LayerAttrs{other_attrs, std::nullopt}}});
 
         CHECK(task_registry == other_task_registry);
       }
 
       SUBCASE("different layer_guid is not equal") {
-        LocalTaskRegistry task_registry = construct_local_task_registry_for_layers(
-            {{layer_guid, LayerAttrs{attrs, std::nullopt}}});
+        LocalTaskRegistry task_registry =
+            construct_local_task_registry_for_layers(
+                {{layer_guid, LayerAttrs{attrs, std::nullopt}}});
         layer_guid_t other_layer_guid = layer_guid_t{Node{1}};
-        LocalTaskRegistry other_task_registry = construct_local_task_registry_for_layers(
-            {{other_layer_guid, LayerAttrs{attrs, std::nullopt}}});
+        LocalTaskRegistry other_task_registry =
+            construct_local_task_registry_for_layers(
+                {{other_layer_guid, LayerAttrs{attrs, std::nullopt}}});
 
         CHECK(task_registry != other_task_registry);
       }
@@ -149,10 +156,11 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("registry_contains_task_for_layer") {
       SUBCASE("Task exists") {
-        LocalTaskRegistry task_registry = construct_local_task_registry_for_layers({
-            {layer_guid, LayerAttrs{attrs, std::nullopt}},
-        });
-        
+        LocalTaskRegistry task_registry =
+            construct_local_task_registry_for_layers({
+                {layer_guid, LayerAttrs{attrs, std::nullopt}},
+            });
+
         SUBCASE("Init") {
           bool result = registry_contains_task_for_layer(
               task_registry, layer_guid, OpTaskType::INIT);
@@ -176,9 +184,10 @@ TEST_SUITE(FF_TEST_SUITE) {
         ComputationGraphOpAttrs bmm_attrs = ComputationGraphOpAttrs{
             BatchMatmulAttrs{/*a_seq_length_dim=*/10_n,
                              /*b_seq_length_dim=*/20_n}};
-        LocalTaskRegistry task_registry = construct_local_task_registry_for_layers({
-            {layer_guid, LayerAttrs{bmm_attrs, std::nullopt}},
-        });
+        LocalTaskRegistry task_registry =
+            construct_local_task_registry_for_layers({
+                {layer_guid, LayerAttrs{bmm_attrs, std::nullopt}},
+            });
 
         SUBCASE("Init") {
           bool result = registry_contains_task_for_layer(
@@ -202,8 +211,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       SUBCASE("Empty tasks") {
         std::unordered_map<layer_guid_t, std::optional<task_id_t>>
             empty_task_ids = {{layer_guid, std::nullopt}};
-        LocalTaskRegistry task_registry =
-            LocalTaskRegistry{empty_task_ids, empty_task_ids, empty_task_ids, {}};
+        LocalTaskRegistry task_registry = LocalTaskRegistry{
+            empty_task_ids, empty_task_ids, empty_task_ids, {}};
 
         SUBCASE("Init") {
           bool result = registry_contains_task_for_layer(

@@ -41,15 +41,16 @@ OpTaskInvocation forward(TransposeAttrs const &attrs) {
   binding.bind(OUTPUT, output_tensor(0_n));
 
   return OpTaskInvocation{
-    task_id_t::TRANSPOSE_FWD_TASK_ID, 
-    binding,
+      task_id_t::TRANSPOSE_FWD_TASK_ID,
+      binding,
   };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   auto attrs = acc.get_argument<TransposeAttrs>(ATTRS);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
@@ -67,7 +68,8 @@ static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   auto attrs = acc.get_argument<TransposeAttrs>(ATTRS);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input_grad = acc.get_tensor_grad<Permissions::WO>(INPUT);
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
@@ -85,8 +87,8 @@ OpTaskInvocation backward(TransposeAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-    task_id_t::TRANSPOSE_BWD_TASK_ID, 
-    binding,
+      task_id_t::TRANSPOSE_BWD_TASK_ID,
+      binding,
   };
 }
 

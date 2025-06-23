@@ -24,11 +24,11 @@ namespace Kernels {
 namespace BatchNorm {
 
 void gpu_forward_kernel(cudaStream_t stream,
-                    BatchNormPerDeviceState const &m,
-                    float const *input_ptr,
-                    float *output_ptr,
-                    float const *scale_ptr,
-                    float const *bias_ptr) {
+                        BatchNormPerDeviceState const &m,
+                        float const *input_ptr,
+                        float *output_ptr,
+                        float const *scale_ptr,
+                        float const *bias_ptr) {
   checkCUDNN(cudnnSetStream(m.handle.dnn, stream));
 
   float alpha = 1.0f, beta = 0.0f;
@@ -52,15 +52,15 @@ void gpu_forward_kernel(cudaStream_t stream,
 }
 
 void gpu_backward_kernel(cudaStream_t stream,
-                     BatchNormPerDeviceState const &m,
-                     float const *output_ptr,
-                     float *output_grad_ptr,
-                     float const *input_ptr,
-                     float *input_grad_ptr,
-                     float const *scale_ptr,
-                     float *scale_grad_ptr,
-                     float *bias_grad_ptr,
-                     size_t numElements) {
+                         BatchNormPerDeviceState const &m,
+                         float const *output_ptr,
+                         float *output_grad_ptr,
+                         float const *input_ptr,
+                         float *input_grad_ptr,
+                         float const *scale_ptr,
+                         float *scale_grad_ptr,
+                         float *bias_grad_ptr,
+                         size_t numElements) {
   checkCUDNN(cudnnSetStream(m.handle.dnn, stream));
 
   float alpha = 1.0f;
@@ -90,13 +90,13 @@ void gpu_backward_kernel(cudaStream_t stream,
 }
 
 BatchNormPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
-                                    Allocator &allocator,
-                                    float *runningMean,
-                                    int output_n,
-                                    int output_c,
-                                    int output_h,
-                                    int output_w,
-                                    bool relu) {
+                                        Allocator &allocator,
+                                        float *runningMean,
+                                        int output_n,
+                                        int output_c,
+                                        int output_h,
+                                        int output_w,
+                                        bool relu) {
   ffTensorDescriptor_t inputTensor;
   ffTensorDescriptor_t outputTensor;
   ffTensorDescriptor_t biasTensor;

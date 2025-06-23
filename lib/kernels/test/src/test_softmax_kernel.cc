@@ -27,11 +27,11 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     SoftmaxPerDeviceState state =
         Kernels::Softmax::gpu_init_kernel(managed_handle.raw_handle(),
-                                      legion_dim_t{0_n},
-                                      input_n.unwrap_nonnegative(),
-                                      channels.unwrap_nonnegative(),
-                                      input_h.unwrap_nonnegative(),
-                                      input_w.unwrap_nonnegative());
+                                          legion_dim_t{0_n},
+                                          input_n.unwrap_nonnegative(),
+                                          channels.unwrap_nonnegative(),
+                                          input_h.unwrap_nonnegative(),
+                                          input_w.unwrap_nonnegative());
 
     GenericTensorAccessorW output_accessor =
         create_random_filled_accessor_w(output_shape, allocator);
@@ -41,9 +41,9 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           create_random_filled_accessor_w(input_shape, allocator);
 
       Kernels::Softmax::gpu_forward_kernel(managed_stream.raw_stream(),
-                                       state,
-                                       input_accessor.get_float_ptr(),
-                                       output_accessor.get_float_ptr());
+                                           state,
+                                           input_accessor.get_float_ptr(),
+                                           output_accessor.get_float_ptr());
 
       CHECK(contains_non_zero(output_accessor));
     }

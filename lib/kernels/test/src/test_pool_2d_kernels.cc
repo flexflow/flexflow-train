@@ -65,9 +65,9 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     SUBCASE("gpu_forward_kernel") {
       Kernels::Pool2D::gpu_forward_kernel(managed_stream.raw_stream(),
-                                      state,
-                                      input_accessor.ptr,
-                                      output_accessor.ptr);
+                                          state,
+                                          input_accessor.ptr,
+                                          output_accessor.ptr);
 
       CHECK(contains_non_zero(output_accessor));
     }
@@ -79,11 +79,11 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           allocator.allocate_tensor(input_shape);
 
       Kernels::Pool2D::gpu_backward_kernel(managed_stream.raw_stream(),
-                                       state,
-                                       output_accessor.ptr,
-                                       output_grad_accessor.ptr,
-                                       input_accessor.ptr,
-                                       input_grad_accessor.ptr);
+                                           state,
+                                           output_accessor.ptr,
+                                           output_grad_accessor.ptr,
+                                           input_accessor.ptr,
+                                           input_grad_accessor.ptr);
 
       CHECK(contains_non_zero(input_grad_accessor));
     }

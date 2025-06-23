@@ -1,3 +1,4 @@
+#include "internal/test_utils.h"
 #include "kernels/compare_tensor_accessors.h"
 #include "kernels/copy_tensor_accessor.h"
 #include "kernels/local_cpu_allocator.h"
@@ -11,7 +12,6 @@
 #include "pcg/computation_graph.h"
 #include "pcg/computation_graph_builder.h"
 #include "pcg/optimizer_attrs.dtg.h"
-#include "internal/test_utils.h"
 #include "task-spec/forward_tensor_source.h"
 #include "task-spec/gradient_tensor_source.h"
 #include "task-spec/loss_tensor_source.h"
@@ -136,24 +136,25 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     OptimizerTensorSource optimizer_tensor_source;
 
     TrainingComputationGraph training_computation_graph =
-      generate_training_computation_graph(computation_graph,
-                                          optimizer_attrs,
-                                          forward_tensor_source,
-                                          gradient_tensor_source,
-                                          optimizer_tensor_source);
+        generate_training_computation_graph(computation_graph,
+                                            optimizer_attrs,
+                                            forward_tensor_source,
+                                            gradient_tensor_source,
+                                            optimizer_tensor_source);
 
     LocalTrainingBacking local_training_backing =
-      make_local_training_backing_for_computation_graph(
-        /*allocator=*/allocator,
-        /*preallocated_tensors=*/{
-          {
-            training_tensor_guid_t{label_tensor_guid},
-            label_tensor_backing,
-          },
-        },
-        /*training_computation_graph=*/training_computation_graph,
-        /*runtime_arg_config=*/runtime_arg_config,
-        /*optimizer_attrs=*/optimizer_attrs);
+        make_local_training_backing_for_computation_graph(
+            /*allocator=*/allocator,
+            /*preallocated_tensors=*/
+            {
+                {
+                    training_tensor_guid_t{label_tensor_guid},
+                    label_tensor_backing,
+                },
+            },
+            /*training_computation_graph=*/training_computation_graph,
+            /*runtime_arg_config=*/runtime_arg_config,
+            /*optimizer_attrs=*/optimizer_attrs);
 
     // begin training loop
     ModelTrainingInstance model_training_instance =

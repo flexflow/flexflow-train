@@ -43,17 +43,17 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     SUBCASE("gpu_forward_kernel") {
       Kernels::BatchMatmul::gpu_forward_kernel(managed_stream.raw_stream(),
-                                           managed_handle.raw_handle(),
-                                           output_accessor.get_float_ptr(),
-                                           a_accessor.get_float_ptr(),
-                                           b_accessor.get_float_ptr(),
-                                           m.int_from_positive_int(),
-                                           n.int_from_positive_int(),
-                                           k.int_from_positive_int(),
-                                           batch.int_from_positive_int(),
-                                           a_seq_length_dim,
-                                           b_seq_length_dim,
-                                           seq_length);
+                                               managed_handle.raw_handle(),
+                                               output_accessor.get_float_ptr(),
+                                               a_accessor.get_float_ptr(),
+                                               b_accessor.get_float_ptr(),
+                                               m.int_from_positive_int(),
+                                               n.int_from_positive_int(),
+                                               k.int_from_positive_int(),
+                                               batch.int_from_positive_int(),
+                                               a_seq_length_dim,
+                                               b_seq_length_dim,
+                                               seq_length);
     }
 
     SUBCASE("gpu_backward_kernel") {
@@ -65,17 +65,17 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           allocator.allocate_tensor(input_shape_b);
 
       Kernels::BatchMatmul::gpu_backward_kernel(managed_stream.raw_stream(),
-                                            managed_handle.raw_handle(),
-                                            output_accessor.get_float_ptr(),
-                                            o_grad_accessor.get_float_ptr(),
-                                            a_accessor.get_float_ptr(),
-                                            a_grad_accessor.get_float_ptr(),
-                                            b_accessor.get_float_ptr(),
-                                            b_grad_accessor.get_float_ptr(),
-                                            m.int_from_positive_int(),
-                                            n.int_from_positive_int(),
-                                            k.int_from_positive_int(),
-                                            batch.int_from_positive_int());
+                                                managed_handle.raw_handle(),
+                                                output_accessor.get_float_ptr(),
+                                                o_grad_accessor.get_float_ptr(),
+                                                a_accessor.get_float_ptr(),
+                                                a_grad_accessor.get_float_ptr(),
+                                                b_accessor.get_float_ptr(),
+                                                b_grad_accessor.get_float_ptr(),
+                                                m.int_from_positive_int(),
+                                                n.int_from_positive_int(),
+                                                k.int_from_positive_int(),
+                                                batch.int_from_positive_int());
     }
   }
 }

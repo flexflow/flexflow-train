@@ -10,7 +10,15 @@ namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::Dropout;
 
-enum Slots { INPUT, OUTPUT, ATTRS, PER_DEVICE_STATE, FF_HANDLE, PROFILING, KERNEL_DEVICE_TYPE };
+enum Slots {
+  INPUT,
+  OUTPUT,
+  ATTRS,
+  PER_DEVICE_STATE,
+  FF_HANDLE,
+  PROFILING,
+  KERNEL_DEVICE_TYPE
+};
 
 OpTaskInvocation init(DropoutAttrs const &attrs) {
   OpTaskBinding binding;
@@ -22,8 +30,8 @@ OpTaskInvocation init(DropoutAttrs const &attrs) {
   binding.bind(OUTPUT, output_tensor(0_n));
 
   return OpTaskInvocation{
-    task_id_t::DROPOUT_INIT_TASK_ID,
-    binding,
+      task_id_t::DROPOUT_INIT_TASK_ID,
+      binding,
   };
 }
 
@@ -39,8 +47,8 @@ OpTaskInvocation forward(DropoutAttrs const &attrs) {
                    per_device_op_state<DropoutPerDeviceState>());
 
   return OpTaskInvocation{
-    task_id_t::DROPOUT_FWD_TASK_ID,
-    binding,
+      task_id_t::DROPOUT_FWD_TASK_ID,
+      binding,
   };
 }
 
@@ -48,8 +56,8 @@ OpTaskInvocation backward(DropoutAttrs const &attrs) {
   OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-    task_id_t::DROPOUT_BWD_TASK_ID,
-    b,
+      task_id_t::DROPOUT_BWD_TASK_ID,
+      b,
   };
 }
 
@@ -58,11 +66,17 @@ static std::optional<DeviceSpecificDeviceStates>
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   Allocator allocator = acc.get_allocator();
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(FF_HANDLE);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto const &attrs = acc.get_argument<DropoutAttrs>(ATTRS);
 
   std::optional<DropoutPerDeviceState> per_device_state =
-      init_kernel(kernel_device_type, handle, attrs.rate, attrs.seed, output.shape, allocator);
+      init_kernel(kernel_device_type,
+                  handle,
+                  attrs.rate,
+                  attrs.seed,
+                  output.shape,
+                  allocator);
 
   return make_device_specific_state(per_device_state);
 }
@@ -71,7 +85,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto per_device_state =
       acc.get_argument<DropoutPerDeviceState>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
@@ -90,7 +105,8 @@ static std::optional<float>
   auto per_device_state =
       acc.get_argument<DropoutPerDeviceState>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(INPUT);
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);

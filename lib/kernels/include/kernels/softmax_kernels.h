@@ -8,18 +8,20 @@
 
 namespace FlexFlow::Kernels::Softmax {
 
-std::optional<SoftmaxPerDeviceState> init_kernel(DeviceType device_type,
-                                  PerDeviceFFHandle const &handle,
-                                  legion_dim_t dim,
-                                  int input_n,
-                                  int input_c,
-                                  int input_h,
-                                  int input_w);
+std::optional<SoftmaxPerDeviceState>
+    init_kernel(DeviceType device_type,
+                PerDeviceFFHandle const &handle,
+                legion_dim_t dim,
+                int input_n,
+                int input_c,
+                int input_h,
+                int input_w);
 
-void forward_kernel(device_stream_t const &stream,
-                    std::optional<SoftmaxPerDeviceState> const &per_device_state,
-                    float const *input_ptr,
-                    float *output_ptr);
+void forward_kernel(
+    device_stream_t const &stream,
+    std::optional<SoftmaxPerDeviceState> const &per_device_state,
+    float const *input_ptr,
+    float *output_ptr);
 
 void backward_kernel(device_stream_t const &stream,
                      float const *output_grad_ptr,
@@ -29,6 +31,6 @@ void backward_kernel(device_stream_t const &stream,
 void cleanup_kernel(DeviceType device_type,
                     std::optional<SoftmaxPerDeviceState> &per_device_state);
 
-} // namespace Kernels::Softmax
+} // namespace FlexFlow::Kernels::Softmax
 
 #endif

@@ -3,20 +3,21 @@
 
 #include "kernels/allocation.h"
 #include "kernels/batch_norm_per_device_state.dtg.h"
-#include "kernels/ff_handle.h"
 #include "kernels/device_stream_t.dtg.h"
+#include "kernels/ff_handle.h"
 
 namespace FlexFlow::Kernels::BatchNorm {
 
-std::optional<BatchNormPerDeviceState> init_kernel(DeviceType device_type,
-                                                   PerDeviceFFHandle const &handle,
-                                    Allocator &allocator,
-                                    float *runningMean,
-                                    int output_n,
-                                    int output_c,
-                                    int output_h,
-                                    int output_w,
-                                    bool relu);
+std::optional<BatchNormPerDeviceState>
+    init_kernel(DeviceType device_type,
+                PerDeviceFFHandle const &handle,
+                Allocator &allocator,
+                float *runningMean,
+                int output_n,
+                int output_c,
+                int output_h,
+                int output_w,
+                bool relu);
 
 void forward_kernel(device_stream_t const &stream,
                     BatchNormPerDeviceState const &per_device_state,
@@ -36,9 +37,10 @@ void backward_kernel(device_stream_t const &stream,
                      float *bias_grad_ptr,
                      size_t numElements);
 
-void cleanup_kernel(DeviceType device_type,
-                    Allocator &allocator,
-                    std::optional<BatchNormPerDeviceState> const &per_device_state);
+void cleanup_kernel(
+    DeviceType device_type,
+    Allocator &allocator,
+    std::optional<BatchNormPerDeviceState> const &per_device_state);
 
 } // namespace FlexFlow::Kernels::BatchNorm
 #endif

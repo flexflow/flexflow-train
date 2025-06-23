@@ -52,9 +52,9 @@ static void forward_kernel_internal(cudaStream_t stream,
 }
 
 void gpu_forward_kernel(ffStream_t stream,
-                    GenericTensorAccessorR const &input_accessor,
-                    GenericTensorAccessorW &output_accessor,
-                    ReverseAttrs const &attrs) {
+                        GenericTensorAccessorR const &input_accessor,
+                        GenericTensorAccessorW &output_accessor,
+                        ReverseAttrs const &attrs) {
 
   auto reverse_kernels_params =
       compute_reverse_kernels_params(output_accessor.shape, attrs);
@@ -85,9 +85,9 @@ void backward_kernel_internal(cudaStream_t stream,
 }
 
 void gpu_backward_kernel(ffStream_t stream,
-                     GenericTensorAccessorR const &output_grad_accessor,
-                     GenericTensorAccessorW &input_grad_accessor,
-                     ReverseAttrs const &attrs) {
+                         GenericTensorAccessorR const &output_grad_accessor,
+                         GenericTensorAccessorW &input_grad_accessor,
+                         ReverseAttrs const &attrs) {
   auto reverse_kernels_params =
       compute_reverse_kernels_params(input_grad_accessor.shape, attrs);
 

@@ -56,11 +56,12 @@ MachineMappingWithMemoryResult
       [&](MachineMappingForSingleLayer const &pre_mm,
           MachineMappingForSingleLayer const &post_mm) {
         OpCostMetrics cost = OpCostMetrics{
-          /*forward_runtime=*/pre_mm.cost.forward_runtime + comm_cost +
+            /*forward_runtime=*/pre_mm.cost.forward_runtime + comm_cost +
                 post_mm.cost.forward_runtime,
-          /*backward_runtime=*/pre_mm.cost.backward_runtime + comm_cost +
+            /*backward_runtime=*/pre_mm.cost.backward_runtime + comm_cost +
                 post_mm.cost.backward_runtime,
-          /*memory_usage=*/pre_mm.cost.memory_usage + post_mm.cost.memory_usage,
+            /*memory_usage=*/pre_mm.cost.memory_usage +
+                post_mm.cost.memory_usage,
         };
 
         ParallelLayerGuidObliviousMachineMapping mapping = [&] {
@@ -98,12 +99,12 @@ MachineMappingWithMemoryResult
       [&](MachineMappingForSingleLayer const &lhs_mm,
           MachineMappingForSingleLayer const &rhs_mm) {
         OpCostMetrics cost = OpCostMetrics{
-          /*forward_runtime=*/
+            /*forward_runtime=*/
             std::max(lhs_mm.cost.forward_runtime, rhs_mm.cost.forward_runtime),
-          /*backward_runtime=*/
+            /*backward_runtime=*/
             std::max(lhs_mm.cost.backward_runtime,
                      rhs_mm.cost.backward_runtime),
-          /*memory_usage=*/
+            /*memory_usage=*/
             std::max(lhs_mm.cost.memory_usage, rhs_mm.cost.memory_usage),
         };
 

@@ -11,17 +11,17 @@ GatherPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
                                      legion_dim_t legion_dim);
 
 void gpu_forward_kernel(ffStream_t stream,
-                    GatherPerDeviceState const &per_device_state,
-                    GenericTensorAccessorR const &input,
-                    GenericTensorAccessorR const &index,
-                    GenericTensorAccessorW const &output);
+                        GatherPerDeviceState const &per_device_state,
+                        GenericTensorAccessorR const &input,
+                        GenericTensorAccessorR const &index,
+                        GenericTensorAccessorW const &output);
 
 void gpu_backward_kernel(ffStream_t stream,
-                     GatherPerDeviceState const &per_device_state,
-                     GenericTensorAccessorR const &output_grad,
-                     GenericTensorAccessorR const &index,
-                     GenericTensorAccessorW const &input_grad);
+                         GatherPerDeviceState const &per_device_state,
+                         GenericTensorAccessorR const &output_grad,
+                         GenericTensorAccessorR const &index,
+                         GenericTensorAccessorW const &input_grad);
 
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::Gather
 
 #endif

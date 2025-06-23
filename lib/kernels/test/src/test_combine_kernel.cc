@@ -38,8 +38,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           allocator.allocate_tensor(input_shape);
 
       Kernels::Combine::gpu_backward_kernel(managed_stream.raw_stream(),
-                                        output_grad_accessor,
-                                        input_grad_accessor);
+                                            output_grad_accessor,
+                                            input_grad_accessor);
 
       CHECK(contains_non_zero(input_grad_accessor));
     }
@@ -87,8 +87,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           create_zero_filled_accessor_w(input_shape, gpu_allocator);
 
       Kernels::Combine::gpu_backward_kernel(managed_stream.raw_stream(),
-                                        output_grad_accessor_gpu,
-                                        input_grad_accessor_gpu);
+                                            output_grad_accessor_gpu,
+                                            input_grad_accessor_gpu);
 
       // Run CPU Combine Backward Kernel
       GenericTensorAccessorR output_grad_accessor_cpu =

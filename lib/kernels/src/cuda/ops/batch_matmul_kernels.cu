@@ -21,17 +21,17 @@ namespace Kernels {
 namespace BatchMatmul {
 
 void gpu_forward_kernel(cudaStream_t stream,
-                    PerDeviceFFHandle const &handle,
-                    float *output_ptr,
-                    float const *a_input_ptr,
-                    float const *b_input_ptr,
-                    int m,
-                    int n,
-                    int k,
-                    int batch,
-                    int a_seq_length_dim,
-                    int b_seq_length_dim,
-                    int seq_length) {
+                        PerDeviceFFHandle const &handle,
+                        float *output_ptr,
+                        float const *a_input_ptr,
+                        float const *b_input_ptr,
+                        int m,
+                        int n,
+                        int k,
+                        int batch,
+                        int a_seq_length_dim,
+                        int b_seq_length_dim,
+                        int seq_length) {
   checkCUBLAS(cublasSetStream(handle.blas, stream));
   checkCUDNN(cudnnSetStream(handle.dnn, stream));
   int lda = k;
@@ -84,17 +84,17 @@ void gpu_forward_kernel(cudaStream_t stream,
 }
 
 void gpu_backward_kernel(cudaStream_t stream,
-                     PerDeviceFFHandle const &handle,
-                     float const *o_ptr,
-                     float const *o_grad_ptr,
-                     float const *a_ptr,
-                     float *a_grad_ptr,
-                     float const *b_ptr,
-                     float *b_grad_ptr,
-                     int m,
-                     int n,
-                     int k,
-                     int batch) {
+                         PerDeviceFFHandle const &handle,
+                         float const *o_ptr,
+                         float const *o_grad_ptr,
+                         float const *a_ptr,
+                         float *a_grad_ptr,
+                         float const *b_ptr,
+                         float *b_grad_ptr,
+                         int m,
+                         int n,
+                         int k,
+                         int batch) {
   checkCUBLAS(cublasSetStream(handle.blas, stream));
   checkCUDNN(cudnnSetStream(handle.dnn, stream));
 

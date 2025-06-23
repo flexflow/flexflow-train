@@ -48,9 +48,10 @@ static bool use_scalar(OperatorType op_type) {
   }
 }
 
-static ElementUnaryPerDeviceState gpu_init_kernel(ArrayShape const &input_shape,
-                                              ArrayShape const &output_shape,
-                                              OperatorType op_type) {
+static ElementUnaryPerDeviceState
+    gpu_init_kernel(ArrayShape const &input_shape,
+                    ArrayShape const &output_shape,
+                    OperatorType op_type) {
 
   ffTensorDescriptor_t inputTensor;
   ffTensorDescriptor_t outputTensor;
@@ -87,15 +88,15 @@ static ElementUnaryPerDeviceState gpu_init_kernel(ArrayShape const &input_shape,
   }
 
   return ElementUnaryPerDeviceState{
-    /*inputTensor=*/inputTensor, 
-    /*outputTensor=*/outputTensor, 
-    /*actiDesc=*/actiDesc,
+      /*inputTensor=*/inputTensor,
+      /*outputTensor=*/outputTensor,
+      /*actiDesc=*/actiDesc,
   };
 }
 
 ElementUnaryPerDeviceState gpu_init_kernel(ArrayShape const &input_shape,
-                                       ArrayShape const &output_shape,
-                                       ElementUnaryAttrs const &attrs) {
+                                           ArrayShape const &output_shape,
+                                           ElementUnaryAttrs const &attrs) {
   return gpu_init_kernel(input_shape, output_shape, get_op_type(attrs));
 }
 
@@ -341,11 +342,11 @@ struct BackwardKernel {
 };
 
 void gpu_forward_kernel(ffStream_t stream,
-                    ElementUnaryPerDeviceState const &device_state,
-                    ElementUnaryAttrs const &attrs,
-                    PerDeviceFFHandle const &handle,
-                    GenericTensorAccessorR const &input,
-                    GenericTensorAccessorW const &output) {
+                        ElementUnaryPerDeviceState const &device_state,
+                        ElementUnaryAttrs const &attrs,
+                        PerDeviceFFHandle const &handle,
+                        GenericTensorAccessorR const &input,
+                        GenericTensorAccessorW const &output) {
   DataTypeDispatch1<ForwardKernel>{}(input.data_type,
                                      stream,
                                      device_state,
@@ -357,13 +358,13 @@ void gpu_forward_kernel(ffStream_t stream,
 }
 
 void gpu_backward_kernel(ffStream_t stream,
-                     ElementUnaryPerDeviceState const &device_state,
-                     ElementUnaryAttrs const &attrs,
-                     PerDeviceFFHandle const &handle,
-                     GenericTensorAccessorR const &output,
-                     GenericTensorAccessorR const &output_grad,
-                     GenericTensorAccessorR const &input,
-                     GenericTensorAccessorW const &input_grad) {
+                         ElementUnaryPerDeviceState const &device_state,
+                         ElementUnaryAttrs const &attrs,
+                         PerDeviceFFHandle const &handle,
+                         GenericTensorAccessorR const &output,
+                         GenericTensorAccessorR const &output_grad,
+                         GenericTensorAccessorR const &input,
+                         GenericTensorAccessorW const &input_grad) {
   DataTypeDispatch1<BackwardKernel>{}(input.data_type,
                                       stream,
                                       device_state,

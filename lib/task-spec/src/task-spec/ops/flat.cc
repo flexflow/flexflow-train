@@ -18,8 +18,8 @@ OpTaskInvocation forward(FlatAttrs const &attrs) {
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
   return OpTaskInvocation{
-    task_id_t::FLAT_FWD_TASK_ID,
-    binding,
+      task_id_t::FLAT_FWD_TASK_ID,
+      binding,
   };
 }
 
@@ -27,14 +27,15 @@ OpTaskInvocation backward(FlatAttrs const &attrs) {
   OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-    task_id_t::FLAT_BWD_TASK_ID,
-    b,
+      task_id_t::FLAT_BWD_TASK_ID,
+      b,
   };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
@@ -49,7 +50,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);

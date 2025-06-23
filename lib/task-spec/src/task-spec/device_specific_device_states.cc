@@ -5,8 +5,7 @@ namespace FlexFlow {
 
 using T = MHAPerDeviceState;
 
-template
-  std::optional<DeviceSpecificDeviceStates> 
+template std::optional<DeviceSpecificDeviceStates>
     make_device_specific_state(std::optional<T> const &);
 
 } // namespace FlexFlow

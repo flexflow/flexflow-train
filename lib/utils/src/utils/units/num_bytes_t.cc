@@ -1,14 +1,12 @@
 #include "utils/units/num_bytes_t.h"
-#include <fmt/format.h>
-#include <limits>
-#include <libassert/assert.hpp>
 #include "utils/hash-utils.h"
+#include <fmt/format.h>
+#include <libassert/assert.hpp>
+#include <limits>
 
 namespace FlexFlow {
 
-num_bytes_t::num_bytes_t(nonnegative_int value)
-  : value(value)
-{ }
+num_bytes_t::num_bytes_t(nonnegative_int value) : value(value) {}
 
 bool num_bytes_t::operator<(num_bytes_t const &other) const {
   return this->value < other.value;
@@ -36,7 +34,7 @@ bool num_bytes_t::operator>=(num_bytes_t const &other) const {
 
 num_bytes_t num_bytes_t::operator+(num_bytes_t const &other) const {
   return num_bytes_t{
-    this->value + other.value,
+      this->value + other.value,
   };
 }
 
@@ -72,17 +70,18 @@ void adl_serializer<::FlexFlow::num_bytes_t>::to_json(
 
 namespace rc {
 
-Gen<::FlexFlow::num_bytes_t>
-    Arbitrary<::FlexFlow::num_bytes_t>::arbitrary() {
-  return gen::construct<::FlexFlow::num_bytes_t>(gen::arbitrary<::FlexFlow::nonnegative_int>());
+Gen<::FlexFlow::num_bytes_t> Arbitrary<::FlexFlow::num_bytes_t>::arbitrary() {
+  return gen::construct<::FlexFlow::num_bytes_t>(
+      gen::arbitrary<::FlexFlow::nonnegative_int>());
 }
 
 } // namespace rc
 
 namespace std {
 
-size_t hash<::FlexFlow::num_bytes_t>::operator()(::FlexFlow::num_bytes_t const &m) const noexcept {
+size_t hash<::FlexFlow::num_bytes_t>::operator()(
+    ::FlexFlow::num_bytes_t const &m) const noexcept {
   return ::FlexFlow::get_std_hash(m.unwrap_num_bytes());
 }
 
-}
+} // namespace std

@@ -7,13 +7,13 @@
 namespace FlexFlow::Kernels::Cast {
 
 void gpu_forward_kernel(ffStream_t stream,
-                    GenericTensorAccessorR const &input,
-                    GenericTensorAccessorW const &output);
+                        GenericTensorAccessorR const &input,
+                        GenericTensorAccessorW const &output);
 
 void gpu_backward_kernel(ffStream_t stream,
-                     GenericTensorAccessorR const &output_grad,
-                     GenericTensorAccessorW const &input_grad);
+                         GenericTensorAccessorR const &output_grad,
+                         GenericTensorAccessorW const &input_grad);
 
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::Cast
 
 #endif

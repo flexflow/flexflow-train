@@ -1,5 +1,5 @@
-#include "kernels/datatype_dispatch.h"
 #include "kernels/replicate_kernels_cpu.h"
+#include "kernels/datatype_dispatch.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 
 namespace FlexFlow::Kernels::Replicate {

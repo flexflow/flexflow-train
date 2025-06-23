@@ -24,7 +24,16 @@ namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::Gather;
 
-enum Slots { INPUT, OUTPUT, INDEX, ATTRS, HANDLE, PROFILING, PER_DEVICE_STATE, KERNEL_DEVICE_TYPE };
+enum Slots {
+  INPUT,
+  OUTPUT,
+  INDEX,
+  ATTRS,
+  HANDLE,
+  PROFILING,
+  PER_DEVICE_STATE,
+  KERNEL_DEVICE_TYPE
+};
 
 OpTaskInvocation init(GatherAttrs const &attrs) {
   OpTaskBinding binding;
@@ -37,8 +46,8 @@ OpTaskInvocation init(GatherAttrs const &attrs) {
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
   return OpTaskInvocation{
-    task_id_t::GATHER_INIT_TASK_ID, 
-    binding,
+      task_id_t::GATHER_INIT_TASK_ID,
+      binding,
   };
 }
 
@@ -56,8 +65,8 @@ OpTaskInvocation forward(GatherAttrs const &attrs) {
   binding.bind(INDEX, weight_tensor(0_n));
 
   return OpTaskInvocation{
-    task_id_t::GATHER_FWD_TASK_ID, 
-    binding,
+      task_id_t::GATHER_FWD_TASK_ID,
+      binding,
   };
 }
 
@@ -65,8 +74,8 @@ OpTaskInvocation backward(GatherAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-    task_id_t::GATHER_BWD_TASK_ID, 
-    binding,
+      task_id_t::GATHER_BWD_TASK_ID,
+      binding,
   };
 }
 
@@ -77,7 +86,8 @@ static std::optional<DeviceSpecificDeviceStates>
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto const &attrs = acc.get_argument<GatherAttrs>(ATTRS);
   legion_dim_t legion_dim =
       legion_dim_from_ff_dim(attrs.dim, input.shape.num_dims());
@@ -93,15 +103,15 @@ static std::optional<DeviceSpecificDeviceStates>
     }
   }
 
-  std::optional<GatherPerDeviceState> per_device_state = init_kernel(kernel_device_type,
-                                                                     handle,
-                                                                     legion_dim);
+  std::optional<GatherPerDeviceState> per_device_state =
+      init_kernel(kernel_device_type, handle, legion_dim);
   return make_device_specific_state(per_device_state);
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto per_device_state =
       acc.get_argument<GatherPerDeviceState>(PER_DEVICE_STATE);
 
@@ -122,7 +132,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto per_device_state =
       acc.get_argument<GatherPerDeviceState>(PER_DEVICE_STATE);
 

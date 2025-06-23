@@ -20,8 +20,8 @@ OpTaskInvocation forward(EmbeddingAttrs const &attrs) {
   b.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
   return OpTaskInvocation{
-    task_id_t::EMBED_FWD_TASK_ID, 
-    b,
+      task_id_t::EMBED_FWD_TASK_ID,
+      b,
   };
 }
 
@@ -29,8 +29,8 @@ OpTaskInvocation backward(EmbeddingAttrs const &attrs) {
   OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-    task_id_t::EMBED_BWD_TASK_ID, 
-    b,
+      task_id_t::EMBED_BWD_TASK_ID,
+      b,
   };
 }
 
@@ -41,7 +41,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   EmbeddingAttrs attrs = acc.get_argument<EmbeddingAttrs>(ATTRS);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   return profile(forward_kernel,
                  profiling,
@@ -66,7 +67,8 @@ static std::optional<float>
 
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   EmbeddingAttrs attrs = acc.get_argument<EmbeddingAttrs>(ATTRS);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   return profile(backward_kernel,
                  profiling,

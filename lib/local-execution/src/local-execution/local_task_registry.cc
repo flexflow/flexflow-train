@@ -50,7 +50,8 @@ LocalTaskRegistry construct_local_task_registry_for_layers(
     }
   }
 
-  return LocalTaskRegistry{init_task_ids, fwd_task_ids, bwd_task_ids, task_mapping};
+  return LocalTaskRegistry{
+      init_task_ids, fwd_task_ids, bwd_task_ids, task_mapping};
 }
 
 bool registry_contains_task_for_layer(LocalTaskRegistry const &task_registry,
@@ -75,15 +76,15 @@ bool registry_contains_task_for_layer(LocalTaskRegistry const &task_registry,
   return task_ids.at(layer_guid).has_value();
 }
 
-std::optional<milliseconds_t> call_task_impl(LocalTaskRegistry const &task_registry,
-                                    task_id_t const &task_id,
-                                    TaskArgumentAccessor const &acc) {
+std::optional<milliseconds_t>
+    call_task_impl(LocalTaskRegistry const &task_registry,
+                   task_id_t const &task_id,
+                   TaskArgumentAccessor const &acc) {
   TaskSignatureAndImpl task_sig_impl = task_registry.task_mapping.at(task_id);
   auto fn =
       task_sig_impl.impl_function.get<FwdBwdOpTaskImplFunction>().function_ptr;
-  return transform(fn(acc),
-                   [](float running_time) { return milliseconds_t{running_time}; });
+  return transform(
+      fn(acc), [](float running_time) { return milliseconds_t{running_time}; });
 }
-
 
 } // namespace FlexFlow

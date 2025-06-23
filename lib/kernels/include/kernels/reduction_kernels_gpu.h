@@ -7,14 +7,14 @@
 namespace FlexFlow::Kernels::Reduction {
 
 void gpu_forward_kernel(ffStream_t stream,
-                    GenericTensorAccessorR const &input,
-                    GenericTensorAccessorW const &output,
-                    size_t num_replicas);
+                        GenericTensorAccessorR const &input,
+                        GenericTensorAccessorW const &output,
+                        size_t num_replicas);
 
 void gpu_backward_kernel(ffStream_t stream,
-                     GenericTensorAccessorR const &output,
-                     GenericTensorAccessorW const &input);
+                         GenericTensorAccessorR const &output,
+                         GenericTensorAccessorW const &input);
 
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::Reduction
 
 #endif

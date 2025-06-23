@@ -2,20 +2,22 @@
 #define _FLEXFLOW_KERNELS_PROFILING_H
 
 #include "kernels/device.h"
+#include "kernels/device_stream_t.h"
 #include "kernels/profiling_settings.dtg.h"
 #include "pcg/device_type.dtg.h"
-#include "kernels/device_stream_t.h"
 #include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
 template <typename F, typename... Ts>
-std::optional<float>
-    profiling_wrapper(F const &f, bool enable_profiling, DeviceType device_type, Ts &&...ts) {
+std::optional<float> profiling_wrapper(F const &f,
+                                       bool enable_profiling,
+                                       DeviceType device_type,
+                                       Ts &&...ts) {
   if (enable_profiling) {
     ProfilingSettings settings = ProfilingSettings{
-      /*warmup_iters=*/0, 
-      /*measure_iters=*/1,
+        /*warmup_iters=*/0,
+        /*measure_iters=*/1,
     };
     return profiling_wrapper<F, Ts...>(f, settings, std::forward<Ts>(ts)...);
   } else {
@@ -29,7 +31,7 @@ std::optional<float> profiling_wrapper(F const &f,
                                        ProfilingSettings const &settings,
                                        DeviceType device_type,
                                        Ts &&...ts) {
-  ASSERT(device_type == DeviceType::GPU, 
+  ASSERT(device_type == DeviceType::GPU,
          "Kernel profiling is currently only supported for GPUs. "
          "If you need this feature, please create an issue.");
 

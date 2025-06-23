@@ -22,10 +22,10 @@ namespace Kernels {
 namespace Dropout {
 
 DropoutPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
-                                  float rate,
-                                  unsigned long long seed,
-                                  ArrayShape const &output_shape,
-                                  Allocator &allocator) {
+                                      float rate,
+                                      unsigned long long seed,
+                                      ArrayShape const &output_shape,
+                                      Allocator &allocator) {
   ffTensorDescriptor_t inputTensor;
   ffTensorDescriptor_t outputTensor;
   ffDropoutDescriptor_t dropoutDesc;
@@ -51,22 +51,22 @@ DropoutPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
   checkCUDNN(cudnnSetDropoutDescriptor(
       dropoutDesc, handle.dnn, rate, dropoutStates, dropoutStateSize, seed));
   DropoutPerDeviceState per_device_state = DropoutPerDeviceState{
-    /*handle=*/handle,
-    /*inputTensor=*/inputTensor,
-    /*outputTensor=*/outputTensor,
-    /*dropoutDesc=*/dropoutDesc,
-    /*reserveSpace=*/reserveSpace,
-    /*dropoutStates=*/dropoutStates,
-    /*reserveSpaceSize=*/reserveSpaceSize,
-    /*dropoutStateSize=*/dropoutStateSize,
+      /*handle=*/handle,
+      /*inputTensor=*/inputTensor,
+      /*outputTensor=*/outputTensor,
+      /*dropoutDesc=*/dropoutDesc,
+      /*reserveSpace=*/reserveSpace,
+      /*dropoutStates=*/dropoutStates,
+      /*reserveSpaceSize=*/reserveSpaceSize,
+      /*dropoutStateSize=*/dropoutStateSize,
   };
   return per_device_state;
 }
 
 void gpu_forward_kernel(cudaStream_t stream,
-                    DropoutPerDeviceState const &m,
-                    float const *input_ptr,
-                    float *output_ptr) {
+                        DropoutPerDeviceState const &m,
+                        float const *input_ptr,
+                        float *output_ptr) {
   checkCUDNN(cudnnSetStream(m.handle.dnn, stream));
 
   checkCUDNN(cudnnDropoutForward(m.handle.dnn,
@@ -80,9 +80,9 @@ void gpu_forward_kernel(cudaStream_t stream,
 }
 
 void gpu_backward_kernel(cudaStream_t stream,
-                     DropoutPerDeviceState const &m,
-                     float const *output_grad_ptr,
-                     float *input_grad_ptr) {
+                         DropoutPerDeviceState const &m,
+                         float const *output_grad_ptr,
+                         float *input_grad_ptr) {
   checkCUDNN(cudnnSetStream(m.handle.dnn, stream));
 
   checkCUDNN(cudnnDropoutBackward(m.handle.dnn,

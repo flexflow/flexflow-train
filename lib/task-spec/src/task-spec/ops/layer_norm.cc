@@ -50,8 +50,8 @@ OpTaskInvocation init(LayerNormAttrs const &attrs) {
   b.bind_arg(ATTRS, attrs);
 
   return OpTaskInvocation{
-    task_id_t::LAYERNORM_INIT_TASK_ID, 
-    b,
+      task_id_t::LAYERNORM_INIT_TASK_ID,
+      b,
   };
 }
 
@@ -67,8 +67,8 @@ OpTaskInvocation forward(LayerNormAttrs const &attrs) {
   b.bind_arg(PER_DEVICE_STATE, per_device_op_state<LayerNormPerDeviceState>());
 
   return OpTaskInvocation{
-    task_id_t::LAYERNORM_FWD_TASK_ID, 
-    b,
+      task_id_t::LAYERNORM_FWD_TASK_ID,
+      b,
   };
 }
 
@@ -76,8 +76,8 @@ OpTaskInvocation backward(LayerNormAttrs const &attrs) {
   OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-    task_id_t::LAYERNORM_BWD_TASK_ID, 
-    b,
+      task_id_t::LAYERNORM_BWD_TASK_ID,
+      b,
   };
 }
 
@@ -88,7 +88,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto beta = acc.get_tensor<Permissions::RW>(BETA);
 
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto &state = acc.get_argument<LayerNormPerDeviceState>(PER_DEVICE_STATE);
 
   return profile(forward_kernel,
@@ -113,7 +114,8 @@ static std::optional<float>
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
 
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto &state = acc.get_argument<LayerNormPerDeviceState>(PER_DEVICE_STATE);
 
   return profile(backward_kernel,
@@ -132,7 +134,8 @@ static std::optional<float>
 static std::optional<DeviceSpecificDeviceStates>
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto const &attrs = acc.get_argument<LayerNormAttrs>(ATTRS);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   Allocator allocator = acc.get_allocator();
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);

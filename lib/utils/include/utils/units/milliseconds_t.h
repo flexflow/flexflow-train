@@ -1,10 +1,10 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_UNITS_MILLISECONDS_T_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_UNITS_MILLISECONDS_T_H
 
-#include <string>
 #include <functional>
 #include <nlohmann/json.hpp>
 #include <rapidcheck.h>
+#include <string>
 
 namespace FlexFlow {
 
@@ -20,9 +20,10 @@ public:
   bool operator!=(milliseconds_t const &other) const;
   bool operator>=(milliseconds_t const &other) const;
 
-  milliseconds_t operator+(milliseconds_t const &other) const; 
+  milliseconds_t operator+(milliseconds_t const &other) const;
 
   float unwrap_milliseconds() const;
+
 private:
   float value;
 };
@@ -43,7 +44,7 @@ struct adl_serializer<::FlexFlow::milliseconds_t> {
   static void to_json(json &j, ::FlexFlow::milliseconds_t t);
 };
 
-}
+} // namespace nlohmann
 
 namespace rc {
 
@@ -52,7 +53,7 @@ struct Arbitrary<::FlexFlow::milliseconds_t> {
   static Gen<::FlexFlow::milliseconds_t> arbitrary();
 };
 
-}
+} // namespace rc
 
 namespace std {
 

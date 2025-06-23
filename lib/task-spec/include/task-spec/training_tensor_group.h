@@ -12,15 +12,16 @@
 
 namespace FlexFlow {
 
-TrainingTensorGroup 
-  make_training_tensor_group_for_tensor_guid_t(tensor_guid_t tensor_guid,
-                                               TensorAttrs const &tensor_attrs,
-                                               OptimizerAttrs const &optimizer_attrs,
-                                               ForwardTensorSource &forward_tensor_source,
-                                               GradientTensorSource &gradient_tensor_source,
-                                               OptimizerTensorSource &optimizer_tensor_source);
+TrainingTensorGroup make_training_tensor_group_for_tensor_guid_t(
+    tensor_guid_t tensor_guid,
+    TensorAttrs const &tensor_attrs,
+    OptimizerAttrs const &optimizer_attrs,
+    ForwardTensorSource &forward_tensor_source,
+    GradientTensorSource &gradient_tensor_source,
+    OptimizerTensorSource &optimizer_tensor_source);
 
-std::unordered_set<training_tensor_guid_t> get_all_training_tensors_in_tensor_group(TrainingTensorGroup const &);
+std::unordered_set<training_tensor_guid_t>
+    get_all_training_tensors_in_tensor_group(TrainingTensorGroup const &);
 
 } // namespace FlexFlow
 

@@ -265,7 +265,8 @@ TEST_SUITE(FF_TEST_SUITE) {
                               comm_cost + post_cost.forward_runtime,
                           /*backward_runtime=*/pre_cost.backward_runtime +
                               comm_cost + post_cost.backward_runtime,
-                          /*memory_usage=*/pre_cost.memory_usage + post_cost.memory_usage,
+                          /*memory_usage=*/pre_cost.memory_usage +
+                              post_cost.memory_usage,
                       },
                       /*machine_mapping=*/
                       ParallelLayerGuidObliviousMachineMapping{{
@@ -321,7 +322,8 @@ TEST_SUITE(FF_TEST_SUITE) {
                             comm_cost + post_cost.forward_runtime,
                         /*backward_runtime=*/pre_cost.backward_runtime +
                             comm_cost + post_cost.backward_runtime,
-                        /*memory_usage=*/pre_cost.memory_usage + post_cost.memory_usage,
+                        /*memory_usage=*/pre_cost.memory_usage +
+                            post_cost.memory_usage,
                     },
                     /*machine_mapping=*/
                     ParallelLayerGuidObliviousMachineMapping{{
@@ -461,7 +463,8 @@ TEST_SUITE(FF_TEST_SUITE) {
                   /*backward_runtime=*/
                   std::max(lhs_cost.backward_runtime,
                            rhs_cost.backward_runtime),
-                  /*memory_usage=*/std::max(lhs_cost.memory_usage, rhs_cost.memory_usage),
+                  /*memory_usage=*/
+                  std::max(lhs_cost.memory_usage, rhs_cost.memory_usage),
               },
               /*machine_mapping=*/
               ParallelLayerGuidObliviousMachineMapping{

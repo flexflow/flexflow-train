@@ -10,13 +10,13 @@ namespace FlexFlow::Kernels::Reverse {
 void gpu_forward_kernel(ffStream_t stream,
                         GenericTensorAccessorR const &input_accessor,
                         GenericTensorAccessorW &output_accessor,
-                        ReverseAttrs const &);                       
+                        ReverseAttrs const &);
 
 void gpu_backward_kernel(ffStream_t stream,
                          GenericTensorAccessorR const &output_accessor,
                          GenericTensorAccessorW &input_accessor,
                          ReverseAttrs const &);
 
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::Reverse
 
 #endif

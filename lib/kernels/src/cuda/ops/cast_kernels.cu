@@ -59,15 +59,15 @@ struct BackwardKernel {
 };
 
 void gpu_forward_kernel(ffStream_t stream,
-                    GenericTensorAccessorR const &input,
-                    GenericTensorAccessorW const &output) {
+                        GenericTensorAccessorR const &input,
+                        GenericTensorAccessorW const &output) {
   DataTypeDispatch2<ForwardKernel>{}(
       input.data_type, output.data_type, stream, input, output);
 }
 
 void gpu_backward_kernel(ffStream_t stream,
-                     GenericTensorAccessorR const &output,
-                     GenericTensorAccessorW const &input) {
+                         GenericTensorAccessorR const &output,
+                         GenericTensorAccessorW const &input) {
   DataTypeDispatch2<BackwardKernel>{}(
       output.data_type, input.data_type, stream, output, input);
 }

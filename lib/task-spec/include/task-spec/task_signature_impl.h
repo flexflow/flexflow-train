@@ -12,8 +12,10 @@ TaskSignatureAndImpl get_task_sig_impl(task_id_t const &);
 std::vector<task_id_t> get_task_ids(ComputationGraphOpAttrs const &);
 
 OpTaskInvocation get_init_op_task_invocation(ComputationGraphOpAttrs const &);
-OpTaskInvocation get_forward_op_task_invocation(ComputationGraphOpAttrs const &);
-OpTaskInvocation get_backward_op_task_invocation(ComputationGraphOpAttrs const &);
+OpTaskInvocation
+    get_forward_op_task_invocation(ComputationGraphOpAttrs const &);
+OpTaskInvocation
+    get_backward_op_task_invocation(ComputationGraphOpAttrs const &);
 
 } // namespace FlexFlow
 

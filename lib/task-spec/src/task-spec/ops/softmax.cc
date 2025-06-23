@@ -24,7 +24,15 @@
 namespace FlexFlow {
 using namespace FlexFlow::Kernels::Softmax;
 
-enum Slots { INPUT, OUTPUT, ATTRS, PROFILING, PER_DEVICE_STATE, HANDLE, KERNEL_DEVICE_TYPE };
+enum Slots {
+  INPUT,
+  OUTPUT,
+  ATTRS,
+  PROFILING,
+  PER_DEVICE_STATE,
+  HANDLE,
+  KERNEL_DEVICE_TYPE
+};
 
 OpTaskInvocation init(SoftmaxAttrs const &attrs) {
   OpTaskBinding binding;
@@ -34,8 +42,8 @@ OpTaskInvocation init(SoftmaxAttrs const &attrs) {
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
   return OpTaskInvocation{
-    task_id_t::SOFTMAX_INIT_TASK_ID, 
-    binding,
+      task_id_t::SOFTMAX_INIT_TASK_ID,
+      binding,
   };
 }
 
@@ -51,8 +59,8 @@ OpTaskInvocation forward(SoftmaxAttrs const &attrs) {
   binding.bind(OUTPUT, output_tensor(0_n));
 
   return OpTaskInvocation{
-    task_id_t::SOFTMAX_FWD_TASK_ID, 
-    binding,
+      task_id_t::SOFTMAX_FWD_TASK_ID,
+      binding,
   };
 }
 
@@ -60,15 +68,16 @@ OpTaskInvocation backward(SoftmaxAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-    task_id_t::SOFTMAX_BWD_TASK_ID,
-    binding,
+      task_id_t::SOFTMAX_BWD_TASK_ID,
+      binding,
   };
 }
 
 static std::optional<DeviceSpecificDeviceStates>
     init_task_impl(TaskArgumentAccessor const &acc) {
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   auto const &attrs = acc.get_argument<SoftmaxAttrs>(ATTRS);
@@ -94,7 +103,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto per_device_state =
       acc.get_argument<SoftmaxPerDeviceState>(PER_DEVICE_STATE);
 
@@ -110,7 +120,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(INPUT);
   auto input = acc.get_tensor<Permissions::RO>(INPUT);

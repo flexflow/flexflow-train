@@ -34,8 +34,8 @@ OpTaskInvocation init(ElementUnaryAttrs const &attrs) {
   b.bind_arg(OUTPUT_SHAPE, output_parallel_tensor_shape(0_n));
 
   return OpTaskInvocation{
-    task_id_t::ELEMENTUNARY_INIT_TASK_ID,
-    b,
+      task_id_t::ELEMENTUNARY_INIT_TASK_ID,
+      b,
   };
 }
 
@@ -53,8 +53,8 @@ OpTaskInvocation forward(ElementUnaryAttrs const &attrs) {
              per_device_op_state<ElementUnaryPerDeviceState>());
 
   return OpTaskInvocation{
-    task_id_t::ELEMENTUNARY_FWD_TASK_ID,
-    b,
+      task_id_t::ELEMENTUNARY_FWD_TASK_ID,
+      b,
   };
 }
 
@@ -62,8 +62,8 @@ OpTaskInvocation backward(ElementUnaryAttrs const &attrs) {
   OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-    task_id_t::ELEMENTUNARY_BWD_TASK_ID,
-    b,
+      task_id_t::ELEMENTUNARY_BWD_TASK_ID,
+      b,
   };
 }
 
@@ -71,7 +71,8 @@ static std::optional<DeviceSpecificDeviceStates>
     init_task_impl(TaskArgumentAccessor const &acc) {
 
   auto attrs = acc.get_argument<ElementUnaryAttrs>(ATTRS);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   ParallelTensorShape input_shape =
       acc.get_argument<ParallelTensorShape>(INPUT_SHAPE);
@@ -95,7 +96,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
 
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto per_device_state =
       acc.get_argument<ElementUnaryPerDeviceState>(PER_DEVICE_STATE);
 
@@ -123,7 +125,8 @@ static std::optional<float>
   auto per_device_state =
       acc.get_argument<ElementUnaryPerDeviceState>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   return profile(backward_kernel,
                  profiling,

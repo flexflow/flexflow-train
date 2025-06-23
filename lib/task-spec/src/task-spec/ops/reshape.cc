@@ -33,8 +33,8 @@ OpTaskInvocation forward(ReshapeAttrs const &attrs) {
   binding.bind(INPUT, input_tensor(0_n));
   binding.bind(OUTPUT, output_tensor(0_n));
   return OpTaskInvocation{
-    task_id_t::RESHAPE_FWD_TASK_ID, 
-    binding,
+      task_id_t::RESHAPE_FWD_TASK_ID,
+      binding,
   };
 }
 
@@ -42,15 +42,16 @@ OpTaskInvocation backward(ReshapeAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-    task_id_t::RESHAPE_BWD_TASK_ID, 
-    binding,
+      task_id_t::RESHAPE_BWD_TASK_ID,
+      binding,
   };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
-  ReshapeAttrs attrs = acc.get_argument<ReshapeAttrs>(ATTRS); 
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  ReshapeAttrs attrs = acc.get_argument<ReshapeAttrs>(ATTRS);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
@@ -67,8 +68,9 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
-  ReshapeAttrs attrs = acc.get_argument<ReshapeAttrs>(ATTRS); 
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  ReshapeAttrs attrs = acc.get_argument<ReshapeAttrs>(ATTRS);
 
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(INPUT);
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
@@ -106,8 +108,7 @@ OpTaskSignature get_reshape_bwd_signature() {
 }
 
 std::vector<task_id_t> get_task_ids(ReshapeAttrs const &) {
-  return {task_id_t::RESHAPE_FWD_TASK_ID,
-          task_id_t::RESHAPE_BWD_TASK_ID};
+  return {task_id_t::RESHAPE_FWD_TASK_ID, task_id_t::RESHAPE_BWD_TASK_ID};
 }
 
 }; // namespace FlexFlow

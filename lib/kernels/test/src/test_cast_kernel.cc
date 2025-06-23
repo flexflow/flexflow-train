@@ -39,8 +39,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           create_zero_filled_accessor_w(input_shape, allocator);
 
       Kernels::Cast::gpu_backward_kernel(managed_stream.raw_stream(),
-                                     grad_output_accessor,
-                                     grad_input_accessor);
+                                         grad_output_accessor,
+                                         grad_input_accessor);
 
       CHECK(contains_non_zero(grad_input_accessor));
     }

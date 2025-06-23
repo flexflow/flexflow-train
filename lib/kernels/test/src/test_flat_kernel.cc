@@ -28,8 +28,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           allocator.allocate_tensor(output_shape);
 
       Kernels::Flat::gpu_forward_kernel(managed_stream.raw_stream(),
-                                    input_accessor,
-                                    output_accessor.get_float_ptr());
+                                        input_accessor,
+                                        output_accessor.get_float_ptr());
 
       CHECK(contains_non_zero(output_accessor));
     }
@@ -41,9 +41,9 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           input_shape, allocator, make_float_data_type_value(1));
 
       Kernels::Flat::gpu_backward_kernel(managed_stream.raw_stream(),
-                                     input_accessor,
-                                     output_grad_accessor.get_float_ptr(),
-                                     input_grad_accessor.get_float_ptr());
+                                         input_accessor,
+                                         output_grad_accessor.get_float_ptr(),
+                                         input_grad_accessor.get_float_ptr());
 
       CHECK(contains_non_zero(input_grad_accessor));
     }

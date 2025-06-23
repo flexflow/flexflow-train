@@ -32,9 +32,9 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           allocator.allocate_tensor(output_shape);
 
       Kernels::Reduction::gpu_forward_kernel(managed_stream.raw_stream(),
-                                         input_accessor,
-                                         output_accessor,
-                                         num_replicas);
+                                             input_accessor,
+                                             output_accessor,
+                                             num_replicas);
 
       CHECK(contains_non_zero(output_accessor));
     }
@@ -48,8 +48,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           allocator.allocate_tensor(input_shape);
 
       Kernels::Reduction::gpu_backward_kernel(managed_stream.raw_stream(),
-                                          output_grad_accessor,
-                                          input_grad_accessor);
+                                              output_grad_accessor,
+                                              input_grad_accessor);
 
       CHECK(contains_non_zero(input_grad_accessor));
     }

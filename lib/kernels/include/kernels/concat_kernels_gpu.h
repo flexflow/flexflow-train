@@ -7,16 +7,15 @@
 namespace FlexFlow::Kernels::Concat {
 
 void gpu_forward_kernel(ffStream_t stream,
-                    GenericTensorAccessorW const &output,
-                    std::vector<GenericTensorAccessorR> const &inputs,
-                    ff_dim_t axis);
+                        GenericTensorAccessorW const &output,
+                        std::vector<GenericTensorAccessorR> const &inputs,
+                        ff_dim_t axis);
 
 void gpu_backward_kernel(ffStream_t stream,
-                     GenericTensorAccessorR const &output_grad,
-                     std::vector<GenericTensorAccessorW> const &input_grads,
-                     ff_dim_t axis);
+                         GenericTensorAccessorR const &output_grad,
+                         std::vector<GenericTensorAccessorW> const &input_grads,
+                         ff_dim_t axis);
 
-
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::Concat
 
 #endif

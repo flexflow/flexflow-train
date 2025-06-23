@@ -15,8 +15,8 @@
 
 #include "task-spec/ops/cast.h"
 #include "kernels/cast_kernels.h"
-#include "task-spec/profiling.h"
 #include "task-spec/op_task_signature.h"
+#include "task-spec/profiling.h"
 #include "utils/hash-utils.h"
 
 using namespace FlexFlow::Kernels::Cast;
@@ -36,8 +36,8 @@ OpTaskInvocation forward(CastAttrs const &attrs) {
   binding.bind(OUTPUT, output_tensor(0_n));
 
   return OpTaskInvocation{
-    task_id_t::CAST_FWD_TASK_ID,
-    binding,
+      task_id_t::CAST_FWD_TASK_ID,
+      binding,
   };
 }
 
@@ -45,14 +45,15 @@ OpTaskInvocation backward(CastAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-    task_id_t::CAST_BWD_TASK_ID,
-    binding,
+      task_id_t::CAST_BWD_TASK_ID,
+      binding,
   };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto const &attrs = acc.get_argument<CastAttrs>(ATTRS);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
@@ -69,7 +70,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto const &attrs = acc.get_argument<CastAttrs>(ATTRS);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);

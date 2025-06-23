@@ -21,10 +21,10 @@ namespace Kernels {
 namespace Reduce {
 
 ReducePerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
-                                 OperatorType const &op_type,
-                                 size_t const &reduction_size,
-                                 ArrayShape const &input_shape,
-                                 ArrayShape const &output_shape) {
+                                     OperatorType const &op_type,
+                                     size_t const &reduction_size,
+                                     ArrayShape const &input_shape,
+                                     ArrayShape const &output_shape) {
 
   ffTensorDescriptor_t inputTensor;
   ffTensorDescriptor_t outputTensor;
@@ -40,20 +40,20 @@ ReducePerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
       cudnnSetTensorDescriptorFromArrayShape(outputTensor, output_shape));
 
   ReducePerDeviceState per_device = ReducePerDeviceState{
-      /*handle=*/handle, 
-      /*inputTensor=*/inputTensor, 
-      /*outputTensor=*/outputTensor, 
-      /*reduceDesc=*/reduceDesc, 
-      /*op_type=*/op_type, 
+      /*handle=*/handle,
+      /*inputTensor=*/inputTensor,
+      /*outputTensor=*/outputTensor,
+      /*reduceDesc=*/reduceDesc,
+      /*op_type=*/op_type,
       /*reduction_size=*/reduction_size,
   };
   return per_device;
 }
 
 void gpu_forward_kernel(cudaStream_t stream,
-                    ReducePerDeviceState const &m,
-                    float const *input_ptr,
-                    float *output_ptr) {
+                        ReducePerDeviceState const &m,
+                        float const *input_ptr,
+                        float *output_ptr) {
   checkCUDNN(cudnnSetStream(m.handle.dnn, stream));
   float alpha = 1.0f, beta = 0.0f;
   checkCUDNN(cudnnReduceTensor(m.handle.dnn,
@@ -71,9 +71,9 @@ void gpu_forward_kernel(cudaStream_t stream,
 };
 
 void gpu_backward_kernel(cudaStream_t stream,
-                     ReducePerDeviceState const &m,
-                     float const *output_grad_ptr,
-                     float *input_grad_ptr) {
+                         ReducePerDeviceState const &m,
+                         float const *output_grad_ptr,
+                         float *input_grad_ptr) {
   checkCUDNN(cudnnSetStream(m.handle.dnn, stream));
   float alpha = 1.0, beta = 1.0f;
   switch (m.op_type) {

@@ -1,8 +1,8 @@
 #include "internal/test_utils.h"
 #include "kernels/create_accessor_with_contents.h"
 #include "kernels/format_accessor_contents.h"
-#include "kernels/replicate_kernels_gpu.h"
 #include "kernels/replicate_kernels_cpu.h"
+#include "kernels/replicate_kernels_gpu.h"
 #include "test/utils/doctest/check_kv.h"
 #include <doctest/doctest.h>
 
@@ -62,10 +62,11 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       GenericTensorAccessorW input_grad =
           gpu_allocator.allocate_tensor(input_shape);
 
-      Kernels::Replicate::gpu_backward_kernel(managed_stream.raw_stream(),
-                                          output_grad,
-                                          input_grad,
-                                          num_replicas.unwrap_nonnegative());
+      Kernels::Replicate::gpu_backward_kernel(
+          managed_stream.raw_stream(),
+          output_grad,
+          input_grad,
+          num_replicas.unwrap_nonnegative());
 
       CHECK_MESSAGE(
           accessors_are_equal(input_grad, correct),
@@ -126,10 +127,11 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       GenericTensorAccessorW input_grad_accessor_gpu =
           create_zero_filled_accessor_w(input_shape, gpu_allocator);
 
-      Kernels::Replicate::gpu_backward_kernel(managed_stream.raw_stream(),
-                                          output_grad_accessor_gpu,
-                                          input_grad_accessor_gpu,
-                                          num_replicas.int_from_positive_int());
+      Kernels::Replicate::gpu_backward_kernel(
+          managed_stream.raw_stream(),
+          output_grad_accessor_gpu,
+          input_grad_accessor_gpu,
+          num_replicas.int_from_positive_int());
 
       // Run CPU Replicate Backward Kernel
       GenericTensorAccessorR output_grad_accessor_cpu =

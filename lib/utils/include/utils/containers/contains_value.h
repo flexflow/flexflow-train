@@ -1,8 +1,8 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_CONTAINS_VALUE_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_CONTAINS_VALUE_H
 
-#include <unordered_map>
 #include <map>
+#include <unordered_map>
 
 namespace FlexFlow {
 
@@ -27,7 +27,6 @@ bool contains_value(std::map<K, V> const &m, V const &v) {
 
   return false;
 }
-
 
 } // namespace FlexFlow
 

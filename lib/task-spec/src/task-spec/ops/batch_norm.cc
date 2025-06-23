@@ -48,8 +48,8 @@ OpTaskInvocation init(BatchNormAttrs const &attrs) {
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
   return OpTaskInvocation{
-    task_id_t::BATCHNORM_INIT_TASK_ID,
-    binding,
+      task_id_t::BATCHNORM_INIT_TASK_ID,
+      binding,
   };
 }
 
@@ -66,8 +66,8 @@ OpTaskInvocation forward(BatchNormAttrs const &attrs) {
   binding.bind(OUTPUT, output_tensor(0_n));
 
   return OpTaskInvocation{
-    task_id_t::BATCHNORM_FWD_TASK_ID,
-    binding,
+      task_id_t::BATCHNORM_FWD_TASK_ID,
+      binding,
   };
 }
 
@@ -75,8 +75,8 @@ OpTaskInvocation backward(BatchNormAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-    task_id_t::BATCHNORM_BWD_TASK_ID,
-    binding,
+      task_id_t::BATCHNORM_BWD_TASK_ID,
+      binding,
   };
 }
 
@@ -85,7 +85,8 @@ static std::optional<DeviceSpecificDeviceStates>
   Allocator allocator = acc.get_allocator();
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   auto const &attrs = acc.get_argument<BatchNormAttrs>(ATTRS);
@@ -97,17 +98,16 @@ static std::optional<DeviceSpecificDeviceStates>
 
   float *runningMean;
 
-  std::optional<BatchNormPerDeviceState> per_device_state =
-      init_kernel(
-                  /*device_type=*/kernel_device_type,
-                  /*handle=*/handle,
-                  /*allocator=*/allocator,
-                  /*runningMean=*/runningMean,
-                  /*output_n=*/output_n.int_from_positive_int(),
-                  /*output_c=*/output_c.int_from_positive_int(),
-                  /*output_h=*/output_h.int_from_positive_int(),
-                  /*output_w=*/output_w.int_from_positive_int(),
-                  /*relu=*/attrs.relu);
+  std::optional<BatchNormPerDeviceState> per_device_state = init_kernel(
+      /*device_type=*/kernel_device_type,
+      /*handle=*/handle,
+      /*allocator=*/allocator,
+      /*runningMean=*/runningMean,
+      /*output_n=*/output_n.int_from_positive_int(),
+      /*output_c=*/output_c.int_from_positive_int(),
+      /*output_h=*/output_h.int_from_positive_int(),
+      /*output_w=*/output_w.int_from_positive_int(),
+      /*relu=*/attrs.relu);
 
   return make_device_specific_state(per_device_state);
 }
@@ -116,7 +116,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto per_device_state =
       acc.get_argument<BatchNormPerDeviceState>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
@@ -139,7 +140,8 @@ static std::optional<float>
   auto per_device_state =
       acc.get_argument<BatchNormPerDeviceState>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(INPUT);

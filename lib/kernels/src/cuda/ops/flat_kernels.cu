@@ -22,8 +22,8 @@ namespace Kernels {
 namespace Flat {
 
 void gpu_forward_kernel(cudaStream_t stream,
-                    GenericTensorAccessorR const &input,
-                    float *output_ptr) {
+                        GenericTensorAccessorR const &input,
+                        float *output_ptr) {
 
   checkCUDA(cudaMemcpyAsync(output_ptr,
                             input.get_float_ptr(),
@@ -34,9 +34,9 @@ void gpu_forward_kernel(cudaStream_t stream,
 }
 
 void gpu_backward_kernel(cudaStream_t stream,
-                     GenericTensorAccessorR const &input,
-                     float const *output_grad_ptr,
-                     float *input_grad_ptr) {
+                         GenericTensorAccessorR const &input,
+                         float const *output_grad_ptr,
+                         float *input_grad_ptr) {
 
   float alpha = 1.0f;
   apply_add_with_scale<float>

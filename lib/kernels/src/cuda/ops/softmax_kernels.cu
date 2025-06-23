@@ -22,11 +22,11 @@ namespace Kernels {
 namespace Softmax {
 
 SoftmaxPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
-                                  legion_dim_t dim,
-                                  int input_n,
-                                  int input_c,
-                                  int input_h,
-                                  int input_w) {
+                                      legion_dim_t dim,
+                                      int input_n,
+                                      int input_c,
+                                      int input_h,
+                                      int input_w) {
   ffTensorDescriptor_t inputTensor;
 
   checkCUDNN(cudnnCreateTensorDescriptor(&inputTensor));
@@ -39,17 +39,17 @@ SoftmaxPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
                                         input_w));
 
   SoftmaxPerDeviceState per_device_state = SoftmaxPerDeviceState{
-    /*handle=*/handle, 
-    /*inputTensor=*/inputTensor, 
-    /*dim=*/dim,
+      /*handle=*/handle,
+      /*inputTensor=*/inputTensor,
+      /*dim=*/dim,
   };
   return per_device_state;
 }
 
 void gpu_forward_kernel(cudaStream_t stream,
-                    SoftmaxPerDeviceState const &m,
-                    float const *input_ptr,
-                    float *output_ptr) {
+                        SoftmaxPerDeviceState const &m,
+                        float const *input_ptr,
+                        float *output_ptr) {
   checkCUDNN(cudnnSetStream(m.handle.dnn, stream));
 
   float alpha = 1.0f, beta = 0.0f;
@@ -65,9 +65,9 @@ void gpu_forward_kernel(cudaStream_t stream,
 }
 
 void gpu_backward_kernel(cudaStream_t stream,
-                     float const *output_grad_ptr,
-                     float *input_grad_ptr,
-                     size_t num_elements) {
+                         float const *output_grad_ptr,
+                         float *input_grad_ptr,
+                         size_t num_elements) {
 
   checkCUDA(cudaMemcpyAsync(input_grad_ptr,
                             output_grad_ptr,

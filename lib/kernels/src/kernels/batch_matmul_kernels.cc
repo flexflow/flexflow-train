@@ -18,34 +18,33 @@ void forward_kernel(device_stream_t const &stream,
                     int b_seq_length_dim) {
   if (stream.is_gpu()) {
     gpu_forward_kernel(
-                       /*stream=*/stream.require_gpu(),
-                       /*handle=*/handle,
-                       /*output_ptr=*/output_ptr,
-                       /*a_input_ptr=*/a_input_ptr,
-                       /*b_input_ptr=*/b_input_ptr,
-                       /*m=*/m,
-                       /*n=*/n,
-                       /*k=*/k,
-                       /*batch=*/batch,
-                       /*seq_length=*/seq_length,
-                       /*a_seq_length_dim=*/a_seq_length_dim,
-                       /*b_seq_length_dim=*/b_seq_length_dim);
+        /*stream=*/stream.require_gpu(),
+        /*handle=*/handle,
+        /*output_ptr=*/output_ptr,
+        /*a_input_ptr=*/a_input_ptr,
+        /*b_input_ptr=*/b_input_ptr,
+        /*m=*/m,
+        /*n=*/n,
+        /*k=*/k,
+        /*batch=*/batch,
+        /*seq_length=*/seq_length,
+        /*a_seq_length_dim=*/a_seq_length_dim,
+        /*b_seq_length_dim=*/b_seq_length_dim);
   } else {
-    ASSERT(stream.is_cpu()); 
+    ASSERT(stream.is_cpu());
     cpu_forward_kernel(
-                       /*handle=*/handle,
-                       /*output_ptr=*/output_ptr,
-                       /*a_input_ptr=*/a_input_ptr,
-                       /*b_input_ptr=*/b_input_ptr,
-                       /*m=*/m,
-                       /*n=*/n,
-                       /*k=*/k,
-                       /*batch=*/batch,
-                       /*seq_length=*/seq_length,
-                       /*a_seq_length_dim=*/a_seq_length_dim,
-                       /*b_seq_length_dim=*/b_seq_length_dim);
+        /*handle=*/handle,
+        /*output_ptr=*/output_ptr,
+        /*a_input_ptr=*/a_input_ptr,
+        /*b_input_ptr=*/b_input_ptr,
+        /*m=*/m,
+        /*n=*/n,
+        /*k=*/k,
+        /*batch=*/batch,
+        /*seq_length=*/seq_length,
+        /*a_seq_length_dim=*/a_seq_length_dim,
+        /*b_seq_length_dim=*/b_seq_length_dim);
   }
-  
 }
 
 void backward_kernel(device_stream_t const &stream,
@@ -62,34 +61,33 @@ void backward_kernel(device_stream_t const &stream,
                      int batch) {
   if (stream.is_gpu()) {
     gpu_backward_kernel(
-                        /*stream=*/stream.require_gpu(),
-                        /*handle=*/handle,
-                        /*o_ptr=*/o_ptr,
-                        /*o_grad_ptr=*/o_grad_ptr,
-                        /*a_ptr=*/a_ptr,
-                        /*a_grad_ptr=*/a_grad_ptr,
-                        /*b_ptr=*/b_ptr,
-                        /*b_grad_ptr=*/b_grad_ptr,
-                        /*m=*/m,
-                        /*n=*/n,
-                        /*k=*/k,
-                        /*batch=*/batch);
+        /*stream=*/stream.require_gpu(),
+        /*handle=*/handle,
+        /*o_ptr=*/o_ptr,
+        /*o_grad_ptr=*/o_grad_ptr,
+        /*a_ptr=*/a_ptr,
+        /*a_grad_ptr=*/a_grad_ptr,
+        /*b_ptr=*/b_ptr,
+        /*b_grad_ptr=*/b_grad_ptr,
+        /*m=*/m,
+        /*n=*/n,
+        /*k=*/k,
+        /*batch=*/batch);
   } else {
     ASSERT(stream.is_cpu());
     cpu_backward_kernel(
-                        /*handle=*/handle,
-                        /*o_ptr=*/o_ptr,
-                        /*o_grad_ptr=*/o_grad_ptr,
-                        /*a_ptr=*/a_ptr,
-                        /*a_grad_ptr=*/a_grad_ptr,
-                        /*b_ptr=*/b_ptr,
-                        /*b_grad_ptr=*/b_grad_ptr,
-                        /*m=*/m,
-                        /*n=*/n,
-                        /*k=*/k,
-                        /*batch=*/batch);
+        /*handle=*/handle,
+        /*o_ptr=*/o_ptr,
+        /*o_grad_ptr=*/o_grad_ptr,
+        /*a_ptr=*/a_ptr,
+        /*a_grad_ptr=*/a_grad_ptr,
+        /*b_ptr=*/b_ptr,
+        /*b_grad_ptr=*/b_grad_ptr,
+        /*m=*/m,
+        /*n=*/n,
+        /*k=*/k,
+        /*batch=*/batch);
   }
 }
 
-
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::BatchMatmul

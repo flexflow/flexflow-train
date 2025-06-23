@@ -1,6 +1,6 @@
+#include "local-execution/local_task_argument_accessor.h"
 #include "doctest/doctest.h"
 #include "kernels/local_cpu_allocator.h"
-#include "local-execution/local_task_argument_accessor.h"
 #include "task-spec/task_signature_impl.h"
 #include "utils/fmt/variant.h"
 
@@ -36,29 +36,32 @@ TEST_SUITE(FF_TEST_SUITE) {
       VARIADIC_TENSORS,
     };
 
-    std::unordered_map<tensor_sub_slot_id_t, TensorSlotBacking> tensor_slots_backing = {
-        {
-          tensor_sub_slot_id_t{slot_id_t{INPUT}, TensorType::FORWARD}, 
-          TensorSlotBacking{input},
-        },
-        {
-          tensor_sub_slot_id_t{slot_id_t{INPUT}, TensorType::GRADIENT}, 
-          TensorSlotBacking{input_grad},
-        },
-        {
-          tensor_sub_slot_id_t{slot_id_t{VARIADIC_TENSORS}, TensorType::FORWARD},
-          TensorSlotBacking{variadic_tensors},
-        },
-        {
-          tensor_sub_slot_id_t{slot_id_t{VARIADIC_TENSORS}, TensorType::GRADIENT},
-          TensorSlotBacking{variadic_tensors_grad},
-        },
-    };
+    std::unordered_map<tensor_sub_slot_id_t, TensorSlotBacking>
+        tensor_slots_backing = {
+            {
+                tensor_sub_slot_id_t{slot_id_t{INPUT}, TensorType::FORWARD},
+                TensorSlotBacking{input},
+            },
+            {
+                tensor_sub_slot_id_t{slot_id_t{INPUT}, TensorType::GRADIENT},
+                TensorSlotBacking{input_grad},
+            },
+            {
+                tensor_sub_slot_id_t{slot_id_t{VARIADIC_TENSORS},
+                                     TensorType::FORWARD},
+                TensorSlotBacking{variadic_tensors},
+            },
+            {
+                tensor_sub_slot_id_t{slot_id_t{VARIADIC_TENSORS},
+                                     TensorType::GRADIENT},
+                TensorSlotBacking{variadic_tensors_grad},
+            },
+        };
 
     LocalTaskArgumentAccessor acc = LocalTaskArgumentAccessor{
-      /*allocator=*/allocator, 
-      /*tensor_slots_backing=*/tensor_slots_backing, 
-      /*arg_slots_backing=*/{},
+        /*allocator=*/allocator,
+        /*tensor_slots_backing=*/tensor_slots_backing,
+        /*arg_slots_backing=*/{},
     };
 
     SUBCASE("get_tensor") {
@@ -69,7 +72,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             slot_id_t{INPUT}, Permissions::RO, TensorType::FORWARD);
         CHECK(correct == result);
       }
-      
+
       SUBCASE("get_tensor(slot_id_t, Permissions::RO, TensorType::GRADIENT)") {
         GenericTensorAccessor correct = GenericTensorAccessor{
             read_only_accessor_from_write_accessor(input_grad)};
@@ -77,28 +80,28 @@ TEST_SUITE(FF_TEST_SUITE) {
             slot_id_t{INPUT}, Permissions::RO, TensorType::GRADIENT);
         CHECK(correct == result);
       }
-      
+
       SUBCASE("get_tensor(slot_id_t, Permissions::WO, TensorType::FORWARD)") {
         GenericTensorAccessor correct = GenericTensorAccessor{input};
         GenericTensorAccessor result = acc.get_tensor(
             slot_id_t{INPUT}, Permissions::WO, TensorType::FORWARD);
         CHECK(correct == result);
       }
-      
+
       SUBCASE("get_tensor(slot_id_t, Permissions::WO, TensorType::GRADIENT)") {
         GenericTensorAccessor correct = GenericTensorAccessor{input_grad};
         GenericTensorAccessor result = acc.get_tensor(
             slot_id_t{INPUT}, Permissions::WO, TensorType::GRADIENT);
         CHECK(correct == result);
       }
-      
+
       SUBCASE("get_tensor(slot_id_t, Permissions::RW, TensorType::FORWARD)") {
         GenericTensorAccessor correct = GenericTensorAccessor{input};
         GenericTensorAccessor result = acc.get_tensor(
             slot_id_t{INPUT}, Permissions::RW, TensorType::FORWARD);
         CHECK(correct == result);
       }
-      
+
       SUBCASE("get_tensor(slot_id_t, Permissions::RW, TensorType::GRADIENT)") {
         GenericTensorAccessor correct = GenericTensorAccessor{input_grad};
         GenericTensorAccessor result = acc.get_tensor(
@@ -119,7 +122,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             slot_id_t{VARIADIC_TENSORS}, Permissions::RO, TensorType::FORWARD);
         CHECK(result == correct);
       }
-      
+
       SUBCASE("get_variadic_tensor(slot_id_t, Permissions::RO, "
               "TensorType::GRADIENT)") {
         VariadicGenericTensorAccessor correct =
@@ -132,7 +135,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             slot_id_t{VARIADIC_TENSORS}, Permissions::RO, TensorType::GRADIENT);
         CHECK(result == correct);
       }
-      
+
       SUBCASE("get_variadic_tensor(slot_id_t, Permissions::WO, "
               "TensorType::FORWARD)") {
         VariadicGenericTensorAccessor correct =
@@ -141,7 +144,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             slot_id_t{VARIADIC_TENSORS}, Permissions::WO, TensorType::FORWARD);
         CHECK(result == correct);
       }
-      
+
       SUBCASE("get_variadic_tensor(slot_id_t, Permissions::WO, "
               "TensorType::GRADIENT)") {
         VariadicGenericTensorAccessor correct =
@@ -150,7 +153,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             slot_id_t{VARIADIC_TENSORS}, Permissions::WO, TensorType::GRADIENT);
         CHECK(result == correct);
       }
-      
+
       SUBCASE("get_variadic_tensor(slot_id_t, Permissions::WO, "
               "TensorType::FORWARD)") {
         VariadicGenericTensorAccessor correct =
@@ -159,7 +162,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             slot_id_t{VARIADIC_TENSORS}, Permissions::RW, TensorType::FORWARD);
         CHECK(result == correct);
       }
-      
+
       SUBCASE("get_variadic_tensor(slot_id_t, Permissions::WO, "
               "TensorType::GRADIENT)") {
         VariadicGenericTensorAccessor correct =

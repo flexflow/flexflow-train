@@ -60,9 +60,9 @@ static LegionOrdered<legion_dim_t>
 }
 
 void gpu_forward_kernel(cudaStream_t stream,
-                    TransposeAttrs const &m,
-                    GenericTensorAccessorR const &input,
-                    GenericTensorAccessorW const &output) {
+                        TransposeAttrs const &m,
+                        GenericTensorAccessorR const &input,
+                        GenericTensorAccessorW const &output) {
 
   TransposeStrides info;
   info.num_dim = input.shape.num_dims().unwrap_nonnegative();
@@ -99,9 +99,9 @@ void gpu_forward_kernel(cudaStream_t stream,
 }
 
 void gpu_backward_kernel(cudaStream_t stream,
-                     TransposeAttrs const &m,
-                     GenericTensorAccessorR const &out_grad,
-                     GenericTensorAccessorW const &in_grad) {
+                         TransposeAttrs const &m,
+                         GenericTensorAccessorR const &out_grad,
+                         GenericTensorAccessorW const &in_grad) {
 
   TransposeStrides info;
   info.num_dim = in_grad.shape.num_dims().unwrap_nonnegative();

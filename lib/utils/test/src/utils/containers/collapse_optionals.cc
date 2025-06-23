@@ -1,6 +1,6 @@
-#include <doctest/doctest.h>
 #include "utils/containers/collapse_optionals.h"
 #include "test/utils/doctest/fmt/optional.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
@@ -16,7 +16,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("returns nullopt if the input is wrapped nullopt") {
-      std::optional<std::optional<int>> input = std::optional<int>{std::nullopt};
+      std::optional<std::optional<int>> input =
+          std::optional<int>{std::nullopt};
 
       std::optional<int> result = collapse_optionals(input);
       std::optional<int> correct = std::nullopt;
@@ -25,7 +26,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("returns nullopt if the input is unwrapped nullopt") {
-      std::optional<std::optional<int>> input = std::optional<std::optional<int>>{std::nullopt};
+      std::optional<std::optional<int>> input =
+          std::optional<std::optional<int>>{std::nullopt};
 
       std::optional<int> result = collapse_optionals(input);
       std::optional<int> correct = std::nullopt;

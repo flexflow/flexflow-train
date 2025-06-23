@@ -7,14 +7,14 @@
 namespace FlexFlow::Kernels::Replicate {
 
 void gpu_forward_kernel(ffStream_t stream,
-                    GenericTensorAccessorR const &input,
-                    GenericTensorAccessorW const &output);
+                        GenericTensorAccessorR const &input,
+                        GenericTensorAccessorW const &output);
 
 void gpu_backward_kernel(ffStream_t stream,
-                     GenericTensorAccessorR const &output,
-                     GenericTensorAccessorW const &input,
-                     size_t num_replicas);
+                         GenericTensorAccessorR const &output,
+                         GenericTensorAccessorW const &input,
+                         size_t num_replicas);
 
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::Replicate
 
 #endif

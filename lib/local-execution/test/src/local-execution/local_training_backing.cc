@@ -1,16 +1,16 @@
-#include <doctest/doctest.h>
 #include "local-execution/local_training_backing.h"
+#include "internal/test_utils.h"
 #include "kernels/local_cuda_allocator.h"
 #include "kernels/managed_ff_stream.h"
 #include "kernels/managed_per_device_ff_handle.h"
 #include "pcg/computation_graph.h"
 #include "pcg/computation_graph_builder.h"
 #include "pcg/optimizer_attrs.dtg.h"
-#include "internal/test_utils.h"
 #include "task-spec/forward_tensor_source.h"
 #include "task-spec/gradient_tensor_source.h"
 #include "task-spec/optimizer_tensor_source.h"
 #include "task-spec/training_computation_graph.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
@@ -71,12 +71,11 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     auto make_training_backing = [&](OptimizerAttrs const &optimizer_attrs) {
       TrainingComputationGraph training_computation_graph =
-          generate_training_computation_graph(
-            computation_graph,
-            optimizer_attrs,
-            forward_tensor_source,
-            gradient_tensor_source,
-            optimizer_tensor_source);
+          generate_training_computation_graph(computation_graph,
+                                              optimizer_attrs,
+                                              forward_tensor_source,
+                                              gradient_tensor_source,
+                                              optimizer_tensor_source);
 
       return make_local_training_backing_for_computation_graph(
           /*allocator=*/allocator,

@@ -1,5 +1,5 @@
-#include <doctest/doctest.h>
 #include "task-spec/training_computation_graph.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 

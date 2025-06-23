@@ -1,6 +1,6 @@
 #include "internal/test_utils.h"
-#include "kernels/reverse_kernels_gpu.h"
 #include "kernels/reverse_kernels_cpu.h"
+#include "kernels/reverse_kernels_gpu.h"
 #include "op-attrs/datatype_value.h"
 #include <doctest/doctest.h>
 
@@ -44,9 +44,9 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           allocator.allocate_tensor(input_shape);
 
       Kernels::Reverse::gpu_backward_kernel(managed_stream.raw_stream(),
-                                        output_grad_accessor,
-                                        input_grad_accessor,
-                                        attrs);
+                                            output_grad_accessor,
+                                            input_grad_accessor,
+                                            attrs);
 
       CHECK(contains_non_zero(input_grad_accessor));
     }
@@ -79,9 +79,9 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           create_zero_filled_accessor_w(output_shape, gpu_allocator);
 
       Kernels::Reverse::gpu_forward_kernel(managed_stream.raw_stream(),
-                                       input_accessor_gpu,
-                                       output_accessor_gpu,
-                                       attrs);
+                                           input_accessor_gpu,
+                                           output_accessor_gpu,
+                                           attrs);
 
       // Run CPU Cast Forward Kernel
       GenericTensorAccessorR input_accessor_cpu =
@@ -104,9 +104,9 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           create_zero_filled_accessor_w(input_shape, gpu_allocator);
 
       Kernels::Reverse::gpu_backward_kernel(managed_stream.raw_stream(),
-                                        output_grad_accessor_gpu,
-                                        input_grad_accessor_gpu,
-                                        attrs);
+                                            output_grad_accessor_gpu,
+                                            input_grad_accessor_gpu,
+                                            attrs);
 
       // Run CPU Cast Backward Kernel
       GenericTensorAccessorR output_grad_accessor_cpu =

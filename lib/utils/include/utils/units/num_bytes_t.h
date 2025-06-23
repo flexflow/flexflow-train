@@ -16,9 +16,10 @@ public:
   bool operator!=(num_bytes_t const &other) const;
   bool operator>=(num_bytes_t const &other) const;
 
-  num_bytes_t operator+(num_bytes_t const &other) const; 
+  num_bytes_t operator+(num_bytes_t const &other) const;
 
   nonnegative_int unwrap_num_bytes() const;
+
 private:
   nonnegative_int value;
 };
@@ -38,7 +39,7 @@ struct adl_serializer<::FlexFlow::num_bytes_t> {
   static void to_json(json &j, ::FlexFlow::num_bytes_t t);
 };
 
-}
+} // namespace nlohmann
 
 namespace rc {
 
@@ -47,7 +48,7 @@ struct Arbitrary<::FlexFlow::num_bytes_t> {
   static Gen<::FlexFlow::num_bytes_t> arbitrary();
 };
 
-}
+} // namespace rc
 
 namespace std {
 

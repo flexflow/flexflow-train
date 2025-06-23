@@ -17,6 +17,6 @@ void backward_kernel(device_stream_t const &stream,
                      GenericTensorAccessorR const &out_grad,
                      GenericTensorAccessorW const &in_grad);
 
-} // namespace Kernels::Transpose
+} // namespace FlexFlow::Kernels::Transpose
 
 #endif // _FLEXFLOW_OPS_KERNELS_TRANSPOSE_KERNELS_H

@@ -244,7 +244,7 @@ std::vector<task_id_t> get_task_ids(ComputationGraphOpAttrs const &op) {
       [](DropoutAttrs const &attrs) { return get_task_ids(attrs); },
       [](ElementBinaryAttrs const &attrs) { return get_task_ids(attrs); },
       [](ElementUnaryAttrs const &attrs) { return get_task_ids(attrs); },
-      [](EmbeddingAttrs const & attrs) { return get_task_ids(attrs); },
+      [](EmbeddingAttrs const &attrs) { return get_task_ids(attrs); },
       [](FlatAttrs const &attrs) { return get_task_ids(attrs); },
       [](GatherAttrs const &attrs) { return get_task_ids(attrs); },
       [](InputAttrs const &attrs) { return get_task_ids(attrs); },
@@ -267,7 +267,8 @@ std::vector<task_id_t> get_task_ids(ComputationGraphOpAttrs const &op) {
   });
 }
 
-OpTaskInvocation get_init_op_task_invocation(ComputationGraphOpAttrs const &op) {
+OpTaskInvocation
+    get_init_op_task_invocation(ComputationGraphOpAttrs const &op) {
   return op.visit<OpTaskInvocation>(overload{
       [](BatchNormAttrs const &attrs) { return init(attrs); },
       [](Conv2DAttrs const &attrs) { return init(attrs); },
@@ -287,7 +288,8 @@ OpTaskInvocation get_init_op_task_invocation(ComputationGraphOpAttrs const &op) 
   });
 }
 
-OpTaskInvocation get_forward_op_task_invocation(ComputationGraphOpAttrs const &op) {
+OpTaskInvocation
+    get_forward_op_task_invocation(ComputationGraphOpAttrs const &op) {
   return op.visit<OpTaskInvocation>(overload{
       [](BatchMatmulAttrs const &attrs) { return forward(attrs); },
       [](BatchNormAttrs const &attrs) { return forward(attrs); },
@@ -297,7 +299,7 @@ OpTaskInvocation get_forward_op_task_invocation(ComputationGraphOpAttrs const &o
       [](DropoutAttrs const &attrs) { return forward(attrs); },
       [](ElementBinaryAttrs const &attrs) { return forward(attrs); },
       [](ElementUnaryAttrs const &attrs) { return forward(attrs); },
-      [](EmbeddingAttrs const & attrs) { return forward(attrs); },
+      [](EmbeddingAttrs const &attrs) { return forward(attrs); },
       [](FlatAttrs const &attrs) { return forward(attrs); },
       [](GatherAttrs const &attrs) { return forward(attrs); },
       [](LayerNormAttrs const &attrs) { return forward(attrs); },
@@ -317,7 +319,8 @@ OpTaskInvocation get_forward_op_task_invocation(ComputationGraphOpAttrs const &o
   });
 }
 
-OpTaskInvocation get_backward_op_task_invocation(ComputationGraphOpAttrs const &op) {
+OpTaskInvocation
+    get_backward_op_task_invocation(ComputationGraphOpAttrs const &op) {
   return op.visit<OpTaskInvocation>(overload{
       [](BatchMatmulAttrs const &attrs) { return backward(attrs); },
       [](BatchNormAttrs const &attrs) { return backward(attrs); },
@@ -327,7 +330,7 @@ OpTaskInvocation get_backward_op_task_invocation(ComputationGraphOpAttrs const &
       [](DropoutAttrs const &attrs) { return backward(attrs); },
       [](ElementBinaryAttrs const &attrs) { return backward(attrs); },
       [](ElementUnaryAttrs const &attrs) { return backward(attrs); },
-      [](EmbeddingAttrs const & attrs) { return backward(attrs); },
+      [](EmbeddingAttrs const &attrs) { return backward(attrs); },
       [](FlatAttrs const &attrs) { return backward(attrs); },
       [](GatherAttrs const &attrs) { return backward(attrs); },
       [](LayerNormAttrs const &attrs) { return backward(attrs); },

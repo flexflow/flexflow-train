@@ -42,9 +42,9 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           input_shape, allocator, make_float_data_type_value(2));
 
       Kernels::Repartition::gpu_backward_kernel(managed_stream.raw_stream(),
-                                            state,
-                                            output_grad_accessor,
-                                            input_grad_accessor);
+                                                state,
+                                                output_grad_accessor,
+                                                input_grad_accessor);
 
       CHECK(contains_non_zero(input_grad_accessor));
     }

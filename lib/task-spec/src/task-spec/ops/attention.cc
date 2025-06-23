@@ -63,8 +63,8 @@ OpTaskInvocation init(MultiHeadAttentionAttrs const &attrs) {
   b.bind_arg(OPROJSIZE, get_oProjSize(attrs));
 
   return OpTaskInvocation{
-    task_id_t::ATTENTION_INIT_TASK_ID,
-    b,
+      task_id_t::ATTENTION_INIT_TASK_ID,
+      b,
   };
 }
 
@@ -81,8 +81,8 @@ OpTaskInvocation forward(MultiHeadAttentionAttrs const &attrs) {
   b.bind_arg(PER_DEVICE_STATE, per_device_op_state<MHAPerDeviceState>());
 
   return OpTaskInvocation{
-    task_id_t::ATTENTION_FWD_TASK_ID,
-    b,
+      task_id_t::ATTENTION_FWD_TASK_ID,
+      b,
   };
 }
 
@@ -90,8 +90,8 @@ OpTaskInvocation backward(MultiHeadAttentionAttrs const &attrs) {
   OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-    task_id_t::ATTENTION_BWD_TASK_ID,
-    b,
+      task_id_t::ATTENTION_BWD_TASK_ID,
+      b,
   };
 }
 
@@ -100,8 +100,9 @@ static std::optional<DeviceSpecificDeviceStates>
   auto const &attrs = acc.get_argument<MultiHeadAttentionAttrs>(ATTRS);
   Allocator allocator = acc.get_allocator();
 
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
-  
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+
   positive_int qProjSize = acc.get_argument<positive_int>(QPROJSIZE);
   positive_int kProjSize = acc.get_argument<positive_int>(KPROJSIZE);
   positive_int vProjSize = acc.get_argument<positive_int>(VPROJSIZE);
@@ -134,23 +135,22 @@ static std::optional<DeviceSpecificDeviceStates>
   positive_int num_samples = get_num_samples(parsed);
   positive_int num_heads = attrs.num_heads;
 
-  std::optional<MHAPerDeviceState> per_device_state =
-      init_kernel(
-                  /*device_type=*/kernel_device_type,
-                  /*per_device_ff_handle=*/handle,
-                  /*allocator=*/allocator,
-                  /*num_samples=*/num_samples.int_from_positive_int(),
-                  /*num_heads=*/num_heads.int_from_positive_int(),
-                  /*qSize=*/qSize.int_from_positive_int(),
-                  /*kSize=*/kSize.int_from_positive_int(),
-                  /*vSize=*/vSize.int_from_positive_int(),
-                  /*qProjSize=*/qProjSize.int_from_positive_int(),
-                  /*kProjSize=*/kProjSize.int_from_positive_int(),
-                  /*vProjSize=*/vProjSize.int_from_positive_int(),
-                  /*oProjSize=*/oProjSize.int_from_positive_int(),
-                  /*qoSeqLength=*/qoSeqLength.int_from_positive_int(),
-                  /*kvSeqLength=*/kvSeqLength.int_from_positive_int(),
-                  /*add_bias_kv=*/attrs.add_bias_kv);
+  std::optional<MHAPerDeviceState> per_device_state = init_kernel(
+      /*device_type=*/kernel_device_type,
+      /*per_device_ff_handle=*/handle,
+      /*allocator=*/allocator,
+      /*num_samples=*/num_samples.int_from_positive_int(),
+      /*num_heads=*/num_heads.int_from_positive_int(),
+      /*qSize=*/qSize.int_from_positive_int(),
+      /*kSize=*/kSize.int_from_positive_int(),
+      /*vSize=*/vSize.int_from_positive_int(),
+      /*qProjSize=*/qProjSize.int_from_positive_int(),
+      /*kProjSize=*/kProjSize.int_from_positive_int(),
+      /*vProjSize=*/vProjSize.int_from_positive_int(),
+      /*oProjSize=*/oProjSize.int_from_positive_int(),
+      /*qoSeqLength=*/qoSeqLength.int_from_positive_int(),
+      /*kvSeqLength=*/kvSeqLength.int_from_positive_int(),
+      /*add_bias_kv=*/attrs.add_bias_kv);
 
   return make_device_specific_state(per_device_state);
 }
@@ -163,7 +163,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   std::optional<MHAPerDeviceState> per_device_state =
       acc.get_argument<std::optional<MHAPerDeviceState>>(PER_DEVICE_STATE);
 
@@ -195,7 +196,8 @@ static std::optional<float>
   std::optional<MHAPerDeviceState> per_device_state =
       acc.get_argument<std::optional<MHAPerDeviceState>>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   float *key_grad_ptr =
       (key_grad == query_grad) ? nullptr : key_grad.get_float_ptr();
@@ -262,7 +264,8 @@ OpTaskSignature get_attention_fwd_signature() {
   fwd.add_output_slot(OUTPUT);
 
   fwd.add_arg_slot<ProfilingSettings>(PROFILING);
-  fwd.add_unchecked_arg_slot<std::optional<MHAPerDeviceState>>(PER_DEVICE_STATE);
+  fwd.add_unchecked_arg_slot<std::optional<MHAPerDeviceState>>(
+      PER_DEVICE_STATE);
 
   return fwd;
 }

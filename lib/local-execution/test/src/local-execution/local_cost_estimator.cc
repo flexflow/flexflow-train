@@ -1,11 +1,11 @@
+#include "local-execution/local_cost_estimator.h"
 #include "doctest/doctest.h"
+#include "internal/test_utils.h"
 #include "kernels/local_cuda_allocator.h"
 #include "kernels/managed_per_device_ff_handle.h"
-#include "local-execution/local_cost_estimator.h"
 #include "op-attrs/ops/attention.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/computation_graph_builder.h"
-#include "internal/test_utils.h"
 #include "pcg/machine_view.h"
 
 using namespace ::FlexFlow;
@@ -24,16 +24,16 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         DeviceType::GPU};
 
     OptimizerAttrs optimizer_attrs = OptimizerAttrs{
-      SGDOptimizerAttrs{
-        /*lr=*/0.1,
-        /*momentum=*/0.1,
-        /*nesterov=*/false,
-        /*weight_decay=*/0.1,
-      },
+        SGDOptimizerAttrs{
+            /*lr=*/0.1,
+            /*momentum=*/0.1,
+            /*nesterov=*/false,
+            /*weight_decay=*/0.1,
+        },
     };
 
-
-    CostEstimator cost_estimator = get_local_cost_estimator(runtime_arg_config, optimizer_attrs);
+    CostEstimator cost_estimator =
+        get_local_cost_estimator(runtime_arg_config, optimizer_attrs);
 
     SUBCASE("estimate operator cost") {
       positive_int embed_dim = 32_p;
@@ -71,7 +71,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           /*input_shapes=*/{inputs_shape, inputs_shape, inputs_shape},
           /*weight_shapes=*/{weights_shape},
           /*output_shapes=*/{output_shape},
-          /*machine_view=*/make_1d_machine_view(
+          /*machine_view=*/
+          make_1d_machine_view(
               MachineSpaceCoordinate{0_n, 0_n, DeviceType::GPU},
               MachineSpecificationDimension::INTRA_NODE,
               stride_t{1_p}),

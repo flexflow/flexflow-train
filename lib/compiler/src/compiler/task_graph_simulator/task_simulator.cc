@@ -69,10 +69,8 @@ milliseconds_t task_simulator_estimate_forward_pass_time(
   TaskExecutionConstraint constraint =
       TaskExecutionConstraint{is_allowed_to_run};
 
-  return milliseconds_t{
-    get_total_execution_time(simulate_task_graph_execution(
-      task_graph.graph, cost_function, constraint))
-  };
+  return milliseconds_t{get_total_execution_time(simulate_task_graph_execution(
+      task_graph.graph, cost_function, constraint))};
 }
 
 } // namespace FlexFlow

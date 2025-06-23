@@ -5,14 +5,12 @@
 
 namespace FlexFlow::Kernels::Flat {
 
-void cpu_forward_kernel(GenericTensorAccessorR const &input,
-                    float *output_ptr);
+void cpu_forward_kernel(GenericTensorAccessorR const &input, float *output_ptr);
 
 void cpu_backward_kernel(GenericTensorAccessorR const &input,
-                     float const *output_grad_ptr,
-                     float *input_grad_ptr);
+                         float const *output_grad_ptr,
+                         float *input_grad_ptr);
 
-
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::Flat
 
 #endif

@@ -10,43 +10,43 @@
 namespace FlexFlow::Kernels::MultiHeadAttention {
 
 MHAPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &,
-                              Allocator &,
-                              int num_samples,
-                              int num_heads,
-                              int qSize,
-                              int kSize,
-                              int vSize,
-                              int qProjSize,
-                              int kProjSize,
-                              int vProjSize,
-                              int oProjSize,
-                              int qoSeqLength,
-                              int kvSeqLength,
-                              bool add_bias_kv);
+                                  Allocator &,
+                                  int num_samples,
+                                  int num_heads,
+                                  int qSize,
+                                  int kSize,
+                                  int vSize,
+                                  int qProjSize,
+                                  int kProjSize,
+                                  int vProjSize,
+                                  int oProjSize,
+                                  int qoSeqLength,
+                                  int kvSeqLength,
+                                  bool add_bias_kv);
 
 void gpu_forward_kernel(ffStream_t stream,
-                    MHAPerDeviceState const &device_state,
-                    float const *query_ptr,
-                    float const *key_ptr,
-                    float const *value_ptr,
-                    float const *weight_ptr,
-                    float *output_ptr);
+                        MHAPerDeviceState const &device_state,
+                        float const *query_ptr,
+                        float const *key_ptr,
+                        float const *value_ptr,
+                        float const *weight_ptr,
+                        float *output_ptr);
 
 void gpu_backward_kernel(ffStream_t stream,
-                     MHAPerDeviceState const &device_state,
-                     float const *query_ptr,
-                     float *query_grad_ptr,
-                     float const *key_ptr,
-                     float *key_grad_ptr,
-                     float const *value_ptr,
-                     float *value_grad_ptr,
-                     float const *weight_ptr,
-                     float *weight_grad_ptr,
-                     float const *output_grad_ptr);
+                         MHAPerDeviceState const &device_state,
+                         float const *query_ptr,
+                         float *query_grad_ptr,
+                         float const *key_ptr,
+                         float *key_grad_ptr,
+                         float const *value_ptr,
+                         float *value_grad_ptr,
+                         float const *weight_ptr,
+                         float *weight_grad_ptr,
+                         float const *output_grad_ptr);
 
 void gpu_cleanup_kernel(Allocator &allocator,
-                    MHAPerDeviceState const &device_state);
+                        MHAPerDeviceState const &device_state);
 
-} // namespace Kernels::MultiHeadAttention
+} // namespace FlexFlow::Kernels::MultiHeadAttention
 
 #endif

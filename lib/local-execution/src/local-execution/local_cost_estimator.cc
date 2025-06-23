@@ -10,6 +10,7 @@
 #include "pcg/machine_view.dtg.h"
 #include "pcg/parallel_tensor_attrs.h"
 #include "task-spec/forward_tensor_source.h"
+#include "task-spec/gradient_tensor_source.h"
 #include "task-spec/optimizer_tensor_source.h"
 #include "task-spec/training_computation_graph.h"
 #include "utils/containers/concat_vectors.h"
@@ -17,13 +18,12 @@
 #include "utils/containers/sum.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/values.h"
-#include "task-spec/gradient_tensor_source.h"
 
 namespace FlexFlow {
 
-LocalCostEstimator::LocalCostEstimator(RuntimeArgConfig const &config, OptimizerAttrs const &optimizer_attrs)
-    : runtime_arg_config(config), 
-      optimizer_attrs(optimizer_attrs) {}
+LocalCostEstimator::LocalCostEstimator(RuntimeArgConfig const &config,
+                                       OptimizerAttrs const &optimizer_attrs)
+    : runtime_arg_config(config), optimizer_attrs(optimizer_attrs) {}
 
 static ComputationGraph create_computation_graph_for_local_cost_estimation(
     PCGOperatorAttrs const &op,
@@ -78,9 +78,9 @@ OpCostMetrics LocalCostEstimator::estimate_cost(
   if (is_parallel_op(op) || op.has<InputAttrs>() || op.has<NoopAttrs>() ||
       op.has<WeightAttrs>()) {
     return OpCostMetrics{
-      /*forward_runtime=*/0_ms,
-      /*backward_runtime=*/0_ms,
-      /*memory=*/0_bytes,
+        /*forward_runtime=*/0_ms,
+        /*backward_runtime=*/0_ms,
+        /*memory=*/0_bytes,
     };
   }
 
@@ -92,53 +92,54 @@ OpCostMetrics LocalCostEstimator::estimate_cost(
   GradientTensorSource gradient_tensor_source;
   OptimizerTensorSource optimizer_tensor_source;
 
-  TrainingComputationGraph training_cg 
-    = generate_training_computation_graph(
-        /*computation_graph=*/computation_graph,
-        /*optimizer_attrs=*/this->optimizer_attrs,
-        /*forward_tensor_source=*/forward_tensor_source,
-        /*gradient_tensor_source=*/gradient_tensor_source,
-        /*optimizer_tensor_source=*/optimizer_tensor_source);
+  TrainingComputationGraph training_cg = generate_training_computation_graph(
+      /*computation_graph=*/computation_graph,
+      /*optimizer_attrs=*/this->optimizer_attrs,
+      /*forward_tensor_source=*/forward_tensor_source,
+      /*gradient_tensor_source=*/gradient_tensor_source,
+      /*optimizer_tensor_source=*/optimizer_tensor_source);
 
   // allocate memory
   std::shared_ptr<TrackedAllocator> tracked_allocator_ptr =
       std::make_shared<TrackedAllocator>(create_local_cuda_memory_allocator());
   Allocator allocator = Allocator(tracked_allocator_ptr);
 
-  LocalTrainingBacking local_backing = make_local_training_backing_for_computation_graph(
-    /*allocator=*/allocator,
-    /*preallocated_tensors=*/{},
-    /*training_computation_graph=*/training_cg,
-    /*runtime_arg_config=*/this->runtime_arg_config,
-    /*optimizer_attrs=*/this->optimizer_attrs);
-  
+  LocalTrainingBacking local_backing =
+      make_local_training_backing_for_computation_graph(
+          /*allocator=*/allocator,
+          /*preallocated_tensors=*/{},
+          /*training_computation_graph=*/training_cg,
+          /*runtime_arg_config=*/this->runtime_arg_config,
+          /*optimizer_attrs=*/this->optimizer_attrs);
+
   // execute layer
   layer_guid_t operator_layer_guid =
       get_layer_by_name(computation_graph, "operator");
 
-  milliseconds_t fwd =
-      execute_forward(
-        local_backing.local_task_registry,
-        local_backing.local_tensor_backing,
-        local_backing.local_args_backing,
-        get_training_layer_plus_context(training_cg, operator_layer_guid),
-        allocator).value();
-  milliseconds_t bwd =
-      execute_backward(
-        local_backing.local_task_registry, 
-        local_backing.local_tensor_backing,
-        local_backing.local_args_backing, 
-        get_training_layer_plus_context(training_cg, operator_layer_guid),
-        allocator).value();
+  milliseconds_t fwd = execute_forward(local_backing.local_task_registry,
+                                       local_backing.local_tensor_backing,
+                                       local_backing.local_args_backing,
+                                       get_training_layer_plus_context(
+                                           training_cg, operator_layer_guid),
+                                       allocator)
+                           .value();
+  milliseconds_t bwd = execute_backward(local_backing.local_task_registry,
+                                        local_backing.local_tensor_backing,
+                                        local_backing.local_args_backing,
+                                        get_training_layer_plus_context(
+                                            training_cg, operator_layer_guid),
+                                        allocator)
+                           .value();
 
   return OpCostMetrics{
-    /*forward_runtime=*/fwd,
-    /*backward_runtime=*/bwd,
-    /*memory=*/tracked_allocator_ptr->get_current_mem_usage(),
+      /*forward_runtime=*/fwd,
+      /*backward_runtime=*/bwd,
+      /*memory=*/tracked_allocator_ptr->get_current_mem_usage(),
   };
 }
 
-milliseconds_t LocalCostEstimator::estimate_cost(TensorSetMovement const &tensor_set_movement) const {
+milliseconds_t LocalCostEstimator::estimate_cost(
+    TensorSetMovement const &tensor_set_movement) const {
   // TODO: model communication cost analytically
   // https://github.com/flexflow/FlexFlow/issues/1414
 
@@ -146,8 +147,10 @@ milliseconds_t LocalCostEstimator::estimate_cost(TensorSetMovement const &tensor
 }
 
 CostEstimator
-    get_local_cost_estimator(RuntimeArgConfig const &runtime_arg_config, OptimizerAttrs const &optimizer_attrs) {
-  return CostEstimator::create<LocalCostEstimator>(runtime_arg_config, optimizer_attrs);
+    get_local_cost_estimator(RuntimeArgConfig const &runtime_arg_config,
+                             OptimizerAttrs const &optimizer_attrs) {
+  return CostEstimator::create<LocalCostEstimator>(runtime_arg_config,
+                                                   optimizer_attrs);
 }
 
 } // namespace FlexFlow

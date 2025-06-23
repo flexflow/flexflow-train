@@ -24,7 +24,15 @@ namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::Repartition;
 
-enum Slots { INPUT, OUTPUT, ATTRS, PROFILING, HANDLE, PER_DEVICE_STATE, KERNEL_DEVICE_TYPE };
+enum Slots {
+  INPUT,
+  OUTPUT,
+  ATTRS,
+  PROFILING,
+  HANDLE,
+  PER_DEVICE_STATE,
+  KERNEL_DEVICE_TYPE
+};
 
 OpTaskInvocation init(RepartitionAttrs const &attrs) {
   OpTaskBinding binding;
@@ -35,8 +43,8 @@ OpTaskInvocation init(RepartitionAttrs const &attrs) {
   binding.bind(INPUT, input_tensor(0_n));
 
   return OpTaskInvocation{
-    task_id_t::REPARTITION_INIT_TASK_ID, 
-    binding,
+      task_id_t::REPARTITION_INIT_TASK_ID,
+      binding,
   };
 }
 
@@ -53,8 +61,8 @@ OpTaskInvocation forward(RepartitionAttrs const &attrs) {
   binding.bind(OUTPUT, output_tensor(0_n));
 
   return OpTaskInvocation{
-    task_id_t::REPARTITION_FWD_TASK_ID, 
-    binding,
+      task_id_t::REPARTITION_FWD_TASK_ID,
+      binding,
   };
 }
 
@@ -62,8 +70,8 @@ OpTaskInvocation backward(RepartitionAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-    task_id_t::REPARTITION_BWD_TASK_ID, 
-    binding,
+      task_id_t::REPARTITION_BWD_TASK_ID,
+      binding,
   };
 }
 
@@ -71,7 +79,8 @@ static std::optional<DeviceSpecificDeviceStates>
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   std::optional<RepartitionPerDeviceState> per_device_state =
       init_kernel(kernel_device_type, handle, input.data_type);
@@ -81,7 +90,8 @@ static std::optional<DeviceSpecificDeviceStates>
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto per_device_state =
       acc.get_argument<RepartitionPerDeviceState>(PER_DEVICE_STATE);
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
@@ -99,7 +109,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto per_device_state =
       acc.get_argument<RepartitionPerDeviceState>(PER_DEVICE_STATE);
 

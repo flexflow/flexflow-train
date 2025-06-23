@@ -16,8 +16,8 @@
 #include "task-spec/ops/combine.h"
 #include "kernels/combine_kernels.h"
 #include "task-spec/op_task_invocation.h"
-#include "utils/hash-utils.h"
 #include "task-spec/profiling.h"
+#include "utils/hash-utils.h"
 
 namespace FlexFlow {
 
@@ -35,8 +35,8 @@ OpTaskInvocation forward(CombineAttrs const &attrs) {
   binding.bind(OUTPUT, output_tensor(0_n));
 
   return OpTaskInvocation{
-    task_id_t::COMBINE_FWD_TASK_ID, 
-    binding,
+      task_id_t::COMBINE_FWD_TASK_ID,
+      binding,
   };
 }
 
@@ -44,8 +44,8 @@ OpTaskInvocation backward(CombineAttrs const &attrs) {
   OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-    task_id_t::COMBINE_BWD_TASK_ID,
-    b,
+      task_id_t::COMBINE_BWD_TASK_ID,
+      b,
   };
 }
 
