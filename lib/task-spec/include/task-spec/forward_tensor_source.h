@@ -14,7 +14,7 @@ public:
   void reset();
 
 private:
-  static size_t next_available_forward_tensor_id;
+  static int next_available_forward_tensor_id;
 };
 
 } // namespace FlexFlow

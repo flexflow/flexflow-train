@@ -2,7 +2,7 @@
 
 namespace FlexFlow {
 
-size_t OptimizerTensorSource::next_available_optimizer_tensor_id = 0;
+int OptimizerTensorSource::next_available_optimizer_tensor_id = 0;
 
 OptimizerTensorSource::OptimizerTensorSource() {}
 

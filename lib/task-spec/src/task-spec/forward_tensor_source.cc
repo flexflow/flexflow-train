@@ -2,7 +2,7 @@
 
 namespace FlexFlow {
 
-size_t ForwardTensorSource::next_available_forward_tensor_id = 0;
+int ForwardTensorSource::next_available_forward_tensor_id = 0;
 
 ForwardTensorSource::ForwardTensorSource() {}
 

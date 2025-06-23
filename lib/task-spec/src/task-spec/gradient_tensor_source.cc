@@ -2,7 +2,7 @@
 
 namespace FlexFlow {
 
-size_t GradientTensorSource::next_available_gradient_tensor_id = 0;
+int GradientTensorSource::next_available_gradient_tensor_id = 0;
 
 GradientTensorSource::GradientTensorSource() {}
 
