@@ -16,7 +16,7 @@
 #include "internal/device.h"
 #include "kernels/accessor.h"
 #include "kernels/legion_ordered/transform.h"
-#include "kernels/transpose_kernels.h"
+#include "kernels/transpose_kernels_gpu.h"
 #include "utils/exception.h"
 #include "utils/nonnegative_int/num_elements.h"
 
@@ -59,10 +59,10 @@ static LegionOrdered<legion_dim_t>
   return legion_ordered_perm;
 }
 
-void forward_kernel(cudaStream_t stream,
-                    TransposeAttrs const &m,
-                    GenericTensorAccessorR const &input,
-                    GenericTensorAccessorW const &output) {
+void gpu_forward_kernel(cudaStream_t stream,
+                        TransposeAttrs const &m,
+                        GenericTensorAccessorR const &input,
+                        GenericTensorAccessorW const &output) {
 
   TransposeStrides info;
   info.num_dim = input.shape.num_dims().unwrap_nonnegative();
@@ -98,10 +98,10 @@ void forward_kernel(cudaStream_t stream,
                 0.0f /*beta*/);
 }
 
-void backward_kernel(cudaStream_t stream,
-                     TransposeAttrs const &m,
-                     GenericTensorAccessorR const &out_grad,
-                     GenericTensorAccessorW const &in_grad) {
+void gpu_backward_kernel(cudaStream_t stream,
+                         TransposeAttrs const &m,
+                         GenericTensorAccessorR const &out_grad,
+                         GenericTensorAccessorW const &in_grad) {
 
   TransposeStrides info;
   info.num_dim = in_grad.shape.num_dims().unwrap_nonnegative();

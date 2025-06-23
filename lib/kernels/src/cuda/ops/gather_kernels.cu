@@ -16,7 +16,7 @@
 #include "internal/device.h"
 #include "kernels/datatype_dispatch.h"
 #include "kernels/device.h"
-#include "kernels/gather_kernels.h"
+#include "kernels/gather_kernels_gpu.h"
 
 namespace FlexFlow::Kernels::Gather {
 
@@ -117,11 +117,19 @@ struct BackwardKernel {
   }
 };
 
-void forward_kernel(ffStream_t stream,
-                    GatherPerDeviceState const &m,
-                    GenericTensorAccessorR const &input,
-                    GenericTensorAccessorR const &index,
-                    GenericTensorAccessorW const &output) {
+GatherPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
+                                     legion_dim_t legion_dim) {
+  return GatherPerDeviceState{
+      /*handle=*/handle,
+      /*legion_dim=*/legion_dim,
+  };
+}
+
+void gpu_forward_kernel(ffStream_t stream,
+                        GatherPerDeviceState const &m,
+                        GenericTensorAccessorR const &input,
+                        GenericTensorAccessorR const &index,
+                        GenericTensorAccessorW const &output) {
   checkCUDA(get_legion_stream(&stream));
   coord_t stride =
       output.shape
@@ -151,11 +159,11 @@ void forward_kernel(ffStream_t stream,
       output_dim_size);
 }
 
-void backward_kernel(ffStream_t stream,
-                     GatherPerDeviceState const &m,
-                     GenericTensorAccessorR const &output_grad,
-                     GenericTensorAccessorR const &index,
-                     GenericTensorAccessorW const &input_grad) {
+void gpu_backward_kernel(ffStream_t stream,
+                         GatherPerDeviceState const &m,
+                         GenericTensorAccessorR const &output_grad,
+                         GenericTensorAccessorR const &index,
+                         GenericTensorAccessorW const &input_grad) {
   checkCUDA(get_legion_stream(&stream));
 
   coord_t stride =

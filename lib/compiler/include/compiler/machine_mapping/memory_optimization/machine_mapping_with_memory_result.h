@@ -19,7 +19,7 @@ namespace FlexFlow {
         MachineMappingWithMemoryResult const &);
 
 [[nodiscard]] MachineMappingWithMemoryResult
-    series_combine(float comm_cost,
+    series_combine(milliseconds_t comm_cost,
                    MachineMappingWithMemoryResult const &pre_result,
                    MachineMappingWithMemoryResult const &post_result,
                    std::optional<ParallelSplitTransformation> const

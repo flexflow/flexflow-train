@@ -17,6 +17,7 @@
 #include "kernels/batch_matmul_kernels.h"
 #include "op-attrs/ops/batch_matmul.h"
 #include "task-spec/op_task_signature.h"
+#include "task-spec/profiling.h"
 #include "utils/containers/transform.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 
@@ -31,28 +32,36 @@ enum Slots {
   OUTPUT, // tensor
   PROFILING,
   HANDLE,
-  ITERATION_CONFIG
+  ITERATION_CONFIG,
+  KERNEL_DEVICE_TYPE,
 };
 
 OpTaskInvocation forward(BatchMatmulAttrs const &attrs) {
   OpTaskBinding fwd;
 
-  fwd.bind(A_INPUT, input_tensor(0));
-  fwd.bind(B_INPUT, input_tensor(1));
-  fwd.bind(OUTPUT, output_tensor(0));
+  fwd.bind(A_INPUT, input_tensor(0_n));
+  fwd.bind(B_INPUT, input_tensor(1_n));
+  fwd.bind(OUTPUT, output_tensor(0_n));
 
   fwd.bind_arg(ATTRS, attrs);
   fwd.bind_arg(HANDLE, ff_handle());
   fwd.bind_arg(PROFILING, profiling_settings());
   fwd.bind_arg(ITERATION_CONFIG, iteration_config());
+  fwd.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
-  return {task_id_t::BATCHMATMUL_FWD_TASK_ID, fwd};
+  return OpTaskInvocation{
+      task_id_t::BATCHMATMUL_FWD_TASK_ID,
+      fwd,
+  };
 }
 
 OpTaskInvocation backward(BatchMatmulAttrs const &attrs) {
   OpTaskBinding bwd = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::BATCHMATMUL_BWD_TASK_ID, bwd};
+  return OpTaskInvocation{
+      task_id_t::BATCHMATMUL_BWD_TASK_ID,
+      bwd,
+  };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
@@ -65,6 +74,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   FFIterationConfig iter_config =
       acc.get_argument<FFIterationConfig>(ITERATION_CONFIG);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   positive_int m = b_input.shape.at(legion_dim_t{0_n});
   ASSERT(m == output.shape.at(legion_dim_t{0_n}));
@@ -92,6 +103,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 
   return profile(forward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[BatchMatmul] forward_time = {:.2lf}ms\n",
                  handle,
                  output.get_float_ptr(),
@@ -113,6 +125,8 @@ static std::optional<float>
       acc.get_argument<FFIterationConfig>(ITERATION_CONFIG);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto output = acc.get_tensor<Permissions::RO>(OUTPUT);
   auto output_grad = acc.get_tensor_grad<Permissions::RW>(OUTPUT);
@@ -146,6 +160,7 @@ static std::optional<float>
 
   return profile(backward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[BatchMatmul] backward_time = {:.2lf}ms\n",
                  handle,
                  output.get_float_ptr(),
@@ -175,6 +190,7 @@ OpTaskSignature get_batch_matmul_fwd_signature() {
   fwd.add_output_slot(OUTPUT);
   fwd.add_arg_slot<BatchMatmulAttrs>(ATTRS);
   fwd.add_arg_slot<ProfilingSettings>(PROFILING);
+  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
   fwd.add_unchecked_arg_slot<PerDeviceFFHandle>(HANDLE);
 
   return fwd;

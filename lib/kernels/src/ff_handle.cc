@@ -1,4 +1,5 @@
 #include "kernels/ff_handle.h"
+#include <fmt/format.h>
 
 namespace FlexFlow {
 

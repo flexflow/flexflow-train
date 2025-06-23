@@ -10,7 +10,7 @@ features = [
 ]
 
 includes = [
-  "task-spec/concrete_arg.h",
+  "task-spec/concrete_arg_spec.h",
   "task-spec/op_arg_ref.h",
   "task-spec/runtime_arg_ref.h",
 ]

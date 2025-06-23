@@ -1,0 +1,18 @@
+namespace = "FlexFlow"
+name = "TrainingComputationGraph"
+features = []
+
+includes = [
+  "pcg/computation_graph.h",
+  "<unordered_map>",
+  "pcg/tensor_guid_t.dtg.h",
+  "task-spec/training_tensor_group.dtg.h",
+]
+
+[[fields]]
+name = "computation_graph"
+type = "::FlexFlow::ComputationGraph"
+
+[[fields]]
+name = "training_tensor_group_for_tensor"
+type = "std::unordered_map<tensor_guid_t, TrainingTensorGroup>"

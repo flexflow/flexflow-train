@@ -1,5 +1,5 @@
-#include "kernels/test_utils.h"
-#include "kernels/dropout_kernels.h"
+#include "internal/test_utils.h"
+#include "kernels/dropout_kernels_gpu.h"
 #include "utils/containers/count.h"
 #include <doctest/doctest.h>
 
@@ -26,7 +26,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    DropoutPerDeviceState state = Kernels::Dropout::init_kernel(
+    DropoutPerDeviceState state = Kernels::Dropout::gpu_init_kernel(
         managed_handle.raw_handle(), dropout_rate, seed, shape, allocator);
 
     SUBCASE("forward_kernel") {
@@ -35,10 +35,10 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       GenericTensorAccessorW output_accessor =
           allocator.allocate_tensor(output_shape);
 
-      Kernels::Dropout::forward_kernel(managed_stream.raw_stream(),
-                                       state,
-                                       input_accessor.get_float_ptr(),
-                                       output_accessor.get_float_ptr());
+      Kernels::Dropout::gpu_forward_kernel(managed_stream.raw_stream(),
+                                           state,
+                                           input_accessor.get_float_ptr(),
+                                           output_accessor.get_float_ptr());
 
       CHECK(contains_non_zero(output_accessor));
     }
@@ -49,16 +49,12 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       GenericTensorAccessorW input_grad_data =
           create_random_filled_accessor_w(input_shape, allocator);
 
-      Kernels::Dropout::backward_kernel(managed_stream.raw_stream(),
-                                        state,
-                                        output_grad_data.get_float_ptr(),
-                                        input_grad_data.get_float_ptr());
+      Kernels::Dropout::gpu_backward_kernel(managed_stream.raw_stream(),
+                                            state,
+                                            output_grad_data.get_float_ptr(),
+                                            input_grad_data.get_float_ptr());
     }
 
-    Kernels::Dropout::cleanup_kernel(allocator,
-                                     state.inputTensor,
-                                     state.outputTensor,
-                                     state.dropoutDesc,
-                                     state.dropoutStates);
+    Kernels::Dropout::gpu_cleanup_kernel(allocator, state);
   }
 }

@@ -16,39 +16,49 @@
 #include "task-spec/ops/combine.h"
 #include "kernels/combine_kernels.h"
 #include "task-spec/op_task_invocation.h"
+#include "task-spec/profiling.h"
 #include "utils/hash-utils.h"
 
 namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::Combine;
 
-enum Slots { INPUT, OUTPUT, PROFILING };
+enum Slots { INPUT, OUTPUT, PROFILING, KERNEL_DEVICE_TYPE };
 
 OpTaskInvocation forward(CombineAttrs const &attrs) {
   OpTaskBinding binding;
 
   binding.bind_arg(PROFILING, profiling_settings());
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(OUTPUT, output_tensor(0));
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
 
-  return {task_id_t::COMBINE_FWD_TASK_ID, binding};
+  return OpTaskInvocation{
+      task_id_t::COMBINE_FWD_TASK_ID,
+      binding,
+  };
 }
 
 OpTaskInvocation backward(CombineAttrs const &attrs) {
   OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::COMBINE_BWD_TASK_ID, b};
+  return OpTaskInvocation{
+      task_id_t::COMBINE_BWD_TASK_ID,
+      b,
+  };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
   return profile(forward_kernel,
                  profiling,
+                 device_type,
                  "[Combine] forward_time = {:.2lf}ms\n",
                  input,
                  output);
@@ -57,12 +67,14 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input_grad = acc.get_tensor_grad<Permissions::RO>(INPUT);
   auto output_grad = acc.get_tensor_grad<Permissions::WO>(OUTPUT);
 
   return profile(backward_kernel,
                  profiling,
+                 device_type,
                  "[Combine] backward_time = {:.2lf}ms\n",
                  input_grad,
                  output_grad);
@@ -72,6 +84,7 @@ OpTaskSignature get_combine_fwd_signature() {
   OpTaskSignature fwd(OpTaskType::FWD);
 
   fwd.add_arg_slot<bool>(PROFILING);
+  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
   fwd.add_input_slot(INPUT);
   fwd.add_output_slot(OUTPUT);
 

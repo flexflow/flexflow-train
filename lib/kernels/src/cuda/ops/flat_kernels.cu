@@ -15,15 +15,15 @@
 
 #include "internal/device.h"
 #include "kernels/accessor.h"
-#include "kernels/flat_kernels.h"
+#include "kernels/flat_kernels_gpu.h"
 
 namespace FlexFlow {
 namespace Kernels {
 namespace Flat {
 
-void forward_kernel(cudaStream_t stream,
-                    GenericTensorAccessorR input,
-                    float *output_ptr) {
+void gpu_forward_kernel(cudaStream_t stream,
+                        GenericTensorAccessorR const &input,
+                        float *output_ptr) {
 
   checkCUDA(cudaMemcpyAsync(output_ptr,
                             input.get_float_ptr(),
@@ -33,10 +33,10 @@ void forward_kernel(cudaStream_t stream,
                             stream));
 }
 
-void backward_kernel(cudaStream_t stream,
-                     GenericTensorAccessorR input,
-                     float const *output_grad_ptr,
-                     float *input_grad_ptr) {
+void gpu_backward_kernel(cudaStream_t stream,
+                         GenericTensorAccessorR const &input,
+                         float const *output_grad_ptr,
+                         float *input_grad_ptr) {
 
   float alpha = 1.0f;
   apply_add_with_scale<float>

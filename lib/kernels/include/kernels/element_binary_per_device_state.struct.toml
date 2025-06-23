@@ -1,0 +1,32 @@
+namespace = "FlexFlow"
+name = "ElementBinaryPerDeviceState"
+features = []
+
+includes = [
+  "kernels/ff_handle.h",
+  "kernels/device.h",
+]
+
+[[fields]]
+name = "handle"
+type = "::FlexFlow::PerDeviceFFHandle"
+
+[[fields]]
+name = "inputLHSTensor"
+type = "ffTensorDescriptor_t"
+
+[[fields]]
+name = "inputRHSTensor"
+type = "ffTensorDescriptor_t"
+
+[[fields]]
+name = "outputTensor"
+type = "ffTensorDescriptor_t"
+
+[[fields]]
+name = "opDesc"
+type = "ffOpTensorDescriptor_t"
+
+[[fields]]
+name = "reduceAddDesc"
+type = "ffReduceTensorDescriptor_t"

@@ -1,105 +1,155 @@
 #include "task-spec/op_task_to_task_invocation.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "pcg/cg_operator_tensor_shape_signature.h"
 #include "pcg/computation_graph.h"
+#include "task-spec/slot_grad_id.dtg.h"
+#include "task-spec/training_layer_plus_context.h"
+#include "task-spec/training_layer_tensor_group_signature.h"
+#include "utils/containers/map_values.h"
+#include "utils/containers/transform.h"
+#include "utils/overload.h"
 
 namespace FlexFlow {
 
-TaskInvocation lower_to_task_invocation(
-    OpTaskInvocation const &op_task_invocation,
+TaskInvocation
+    lower_to_task_invocation(OpTaskInvocation const &op_task_invocation,
+                             TrainingLayerPlusContext const &training_layer,
+                             std::optional<DeviceSpecificDeviceStates> const
+                                 &device_specific_device_states) {
+
+  std::unordered_map<tensor_sub_slot_id_t, training_tensor_guid_t>
+      tensor_bindings =
+          transform(op_task_invocation.binding.get_tensor_bindings(),
+                    [&](SlotGradId const &slot_grad_id,
+                        OpTensorSpec const &op_tensor_spec) {
+                      return lower_tensor_binding(
+                          get_tensor_group_signature(training_layer),
+                          slot_grad_id,
+                          op_tensor_spec);
+                    });
+
+  std::unordered_map<slot_id_t, TaskArgSpec> arg_bindings = map_values(
+      op_task_invocation.binding.get_arg_bindings(),
+      [&](OpArgSpec const &op_arg_spec) {
+        return lower_to_task_arg_spec(op_arg_spec,
+                                      get_cg_op_shape_signature(training_layer),
+                                      training_layer.layer_guid,
+                                      device_specific_device_states);
+      });
+
+  return TaskInvocation{
+      op_task_invocation.task_id,
+      TaskBinding{
+          tensor_bindings,
+          arg_bindings,
+      },
+  };
+}
+
+std::pair<tensor_sub_slot_id_t, training_tensor_guid_t>
+    lower_tensor_binding(TrainingLayerTensorGroupSignature const &signature,
+                         SlotGradId const &slot_grad_id,
+                         OpTensorSpec const &op_tensor_spec) {
+  auto [tensor_to_bind, gradient_tensor_guid_to_bind] = [&] {
+    TrainingTensorGroup group = get_training_tensor_group_for_role_and_index(
+        signature, op_tensor_spec.role, op_tensor_spec.idx);
+
+    return std::pair{
+        group.forward_tensor,
+        group.gradient_tensor,
+    };
+  }();
+
+  if (slot_grad_id.is_grad == IsGrad::NO) {
+    return std::pair{
+        tensor_sub_slot_id_t{
+            slot_grad_id.slot_id,
+            TensorType::FORWARD,
+        },
+        training_tensor_guid_t{
+            tensor_to_bind,
+        },
+    };
+  } else if (slot_grad_id.is_grad == IsGrad::YES) {
+    return std::pair{
+        tensor_sub_slot_id_t{
+            slot_grad_id.slot_id,
+            TensorType::GRADIENT,
+        },
+        training_tensor_guid_t{
+            gradient_tensor_guid_to_bind,
+        },
+    };
+  } else {
+    PANIC("Invalid value for IsGrad {}", slot_grad_id.is_grad);
+  }
+}
+
+TaskArgSpec lower_to_task_arg_spec(
+    OpArgSpec const &op_arg_spec,
+    CGOperatorTensorShapeSignature const &op_shape_signature,
     layer_guid_t const &layer_guid,
-    std::vector<tensor_guid_t> const &input_tensors,
-    std::vector<TensorShape> const &input_tensor_shapes,
-    std::vector<tensor_guid_t> const &output_tensors,
-    std::vector<tensor_guid_t> const &weight_tensors,
-    std::unordered_map<tensor_guid_t, gradient_tensor_t> const
-        &tensor_gradient_mapping,
-    std::optional<DeviceSpecificDeviceStates> const &device_states) {
-  TaskBinding binding;
-
-  for (auto const &tensor_binding :
-       op_task_invocation.binding.get_tensor_bindings()) {
-    tensor_guid_t tensor_to_bind = [&] {
-      OpTensorSpec tensor_binding_spec = tensor_binding.second;
-      switch (tensor_binding_spec.role) {
-        case TensorRole::INPUT:
-          return input_tensors.at(tensor_binding_spec.idx);
-        case TensorRole::OUTPUT:
-          return output_tensors.at(tensor_binding_spec.idx);
-        case TensorRole::WEIGHT:
-          return weight_tensors.at(tensor_binding_spec.idx);
-        default:
-          throw mk_runtime_error(
-              fmt::format("Invalid tensor role {}", tensor_binding_spec.role));
-      }
-    }();
-
-    SlotGradId slot_grad_id = tensor_binding.first;
-
-    if (slot_grad_id.is_grad == IsGrad::NO) {
-      binding.bind(slot_grad_id.slot_id, tensor_to_bind);
-    } else if (slot_grad_id.is_grad == IsGrad::YES) {
-      binding.bind_grad(slot_grad_id.slot_id,
-                        tensor_gradient_mapping.at(tensor_to_bind));
-    } else {
-      throw mk_runtime_error(fmt::format("Invalid value for IsGrad {}",
-                                         tensor_binding.first.is_grad));
-    }
-  }
-
-  // args
-  for (auto const &arg_binding :
-       op_task_invocation.binding.get_arg_bindings()) {
-    if (arg_binding.second.has<OpArgRefSpec>()) {
-      ConcreteArgSpec concrete_arg =
-          lower_to_concrete_arg_spec(arg_binding.second.get<OpArgRefSpec>(),
-                                     input_tensor_shapes,
-                                     layer_guid,
-                                     device_states);
-      binding.insert_arg_spec(arg_binding.first, TaskArgSpec{concrete_arg});
-    } else if (arg_binding.second.has<RuntimeArgRefSpec>()) {
-      binding.insert_arg_spec(
-          arg_binding.first,
-          TaskArgSpec{arg_binding.second.get<RuntimeArgRefSpec>()});
-    } else {
-      binding.insert_arg_spec(
-          arg_binding.first,
-          TaskArgSpec{arg_binding.second.get<ConcreteArgSpec>()});
-    }
-  }
-
-  return TaskInvocation{op_task_invocation.task_id, binding};
+    std::optional<DeviceSpecificDeviceStates> const
+        &device_specific_device_states) {
+  return op_arg_spec.visit<TaskArgSpec>(overload{
+      [](ConcreteArgSpec const &concrete_arg_spec) {
+        return TaskArgSpec{concrete_arg_spec};
+      },
+      [](RuntimeArgRefSpec const &runtime_arg_ref_spec) {
+        return TaskArgSpec{runtime_arg_ref_spec};
+      },
+      [&](OpArgRefSpec const &op_arg_ref_spec) {
+        return TaskArgSpec{
+            lower_to_concrete_arg_spec(op_arg_ref_spec,
+                                       op_shape_signature,
+                                       layer_guid,
+                                       device_specific_device_states),
+        };
+      },
+  });
 }
 
 ConcreteArgSpec lower_to_concrete_arg_spec(
     OpArgRefSpec const &op_arg_ref_spec,
-    std::vector<TensorShape> const &input_tensor_shapes,
+    CGOperatorTensorShapeSignature const &op_signature,
     layer_guid_t const &op_guid,
     std::optional<DeviceSpecificDeviceStates> const &device_states) {
-  if (op_arg_ref_spec.holds<DeviceSpecificDeviceStates>()) {
-    PerDeviceOpState device_state =
-        get_device_state_from_device_specific(device_states.value(), 0);
-    return ConcreteArgSpec::create(device_state);
-  } else if (op_arg_ref_spec.holds<ParallelTensorShape>()) {
-    ParallelTensorShapeRefType index_op_arg_ref =
-        op_arg_ref_spec.get_ref_type().get<ParallelTensorShapeRefType>();
-    TensorShape input_tensor_shape =
-        input_tensor_shapes.at(index_op_arg_ref.idx);
-    ParallelTensorShape shape = lift_to_parallel(input_tensor_shape);
-    return ConcreteArgSpec::create(shape);
-  } else {
-    throw mk_runtime_error("Unhandled op arg ref type");
-  }
+
+  OpArgRefType op_arg_ref_type = op_arg_ref_spec.get_ref_type();
+  return op_arg_ref_type.visit<ConcreteArgSpec>(overload{
+      [&](PerDeviceOpStateRefType const &) {
+        PerDeviceOpState device_state =
+            get_device_state_from_device_specific(device_states.value(), 0);
+        return ConcreteArgSpec::create(device_state);
+      },
+      [&](ParallelTensorShapeRefType const &ref_type) {
+        TensorShape tensor_shape = tensor_shape_for_role_and_index(
+            /*signature=*/op_signature,
+            /*tensor_role=*/ref_type.tensor_role,
+            /*index=*/ref_type.idx);
+        ParallelTensorShape shape = lift_to_parallel(tensor_shape);
+        return ConcreteArgSpec::create(shape);
+      },
+  });
 }
 
 ConcreteArgSpec
     lower_to_concrete_arg_spec(RuntimeArgRefSpec const &runtime_arg_ref_spec,
                                RuntimeArgConfig const &runtime_arg_config) {
-  if (runtime_arg_ref_spec.holds<DeviceSpecific<PerDeviceFFHandle>>()) {
-    return ConcreteArgSpec::create(*(runtime_arg_config.ff_handle.get(0)));
-  } else if (runtime_arg_ref_spec.holds<ProfilingSettings>()) {
-    return ConcreteArgSpec::create(runtime_arg_config.profiling_settings);
-  } else {
-    throw mk_runtime_error("Unhandled runtime arg ref type");
+  switch (runtime_arg_ref_spec.get_ref_type()) {
+    case RuntimeArgRefType::FF_HANDLE:
+      return ConcreteArgSpec::create(*(runtime_arg_config.ff_handle.get(0)));
+    case RuntimeArgRefType::PROFILING_SETTINGS:
+      return ConcreteArgSpec::create(runtime_arg_config.profiling_settings);
+    case RuntimeArgRefType::FF_ITERATION_CONFIG:
+      PANIC("FF_ITERATION_CONFIG is currently not handled. Please create an "
+            "issue or contact the FlexFlow train developers if you need this "
+            "feature.");
+    case RuntimeArgRefType::KERNEL_DEVICE_TYPE:
+      return ConcreteArgSpec::create(runtime_arg_config.kernel_device_type);
+    default:
+      PANIC(fmt::format("Unhandled RuntimeArgRefType {}",
+                        runtime_arg_ref_spec.get_ref_type()));
   }
 }
 

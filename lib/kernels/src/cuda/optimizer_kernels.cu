@@ -15,7 +15,7 @@
 
 #include "internal/device.h"
 #include "kernels/nccl.h"
-#include "kernels/optimizer_kernels.h"
+#include "kernels/optimizer_kernels_gpu.h"
 #include "utils/exception.h"
 
 namespace FlexFlow {
@@ -43,7 +43,7 @@ __global__ void sgd_update(size_t count,
   }
 }
 
-__host__ void sgd_ps_update_task_gpu(ffStream_t stream,
+__host__ void gpu_sgd_ps_update_task(ffStream_t stream,
                                      float lr,
                                      float momentum,
                                      bool nesterov,
@@ -72,8 +72,7 @@ __host__ void sgd_ps_update_task_gpu(ffStream_t stream,
                                                                 weight_ptr);
 }
 
-#ifdef FF_USE_NCCL
-__host__ void sgd_nccl_update_task_gpu(ffStream_t stream,
+__host__ void gpu_sgd_nccl_update_task(ffStream_t stream,
                                        float lr,
                                        float momentum,
                                        bool nesterov,
@@ -92,7 +91,6 @@ __host__ void sgd_nccl_update_task_gpu(ffStream_t stream,
   sgd_update<<<GET_BLOCKS(size), CUDA_NUM_THREADS, 0, stream>>>(
       size, lr, weight_decay, momentum, nesterov, w_grad_ptr, v_ptr, w_ptr);
 }
-#endif
 
 // ==================================================================
 //                        Adam Optimizer
@@ -134,7 +132,7 @@ __global__ void adam_update(int count,
   }
 }
 
-__host__ void adam_ps_update_task_gpu(ffStream_t stream,
+__host__ void gpu_adam_ps_update_task(ffStream_t stream,
                                       float alpha_t,
                                       float beta1,
                                       float beta2,
@@ -166,8 +164,7 @@ __host__ void adam_ps_update_task_gpu(ffStream_t stream,
                                                                  w_ptr);
 }
 
-#ifdef FF_USE_NCCL
-__host__ void adam_nccl_update_task_gpu(ffStream_t stream,
+__host__ void gpu_adam_nccl_update_task(ffStream_t stream,
                                         float alpha_t,
                                         float beta1,
                                         float beta2,
@@ -200,6 +197,5 @@ __host__ void adam_nccl_update_task_gpu(ffStream_t stream,
                                                                  v_ptr,
                                                                  w_ptr);
 }
-#endif
 
 } // namespace FlexFlow

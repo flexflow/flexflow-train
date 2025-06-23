@@ -14,7 +14,7 @@
  */
 
 #include "internal/device.h"
-#include "kernels/reverse_kernels.h"
+#include "kernels/reverse_kernels_gpu.h"
 #include "kernels/reverse_kernels_params.h"
 
 namespace FlexFlow::Kernels::Reverse {
@@ -51,10 +51,10 @@ static void forward_kernel_internal(cudaStream_t stream,
       in_ptr, out_ptr, num_out_blks, reverse_dim_size, in_blk_size);
 }
 
-void forward_kernel(ffStream_t stream,
-                    GenericTensorAccessorR const &input_accessor,
-                    GenericTensorAccessorW &output_accessor,
-                    ReverseAttrs const &attrs) {
+void gpu_forward_kernel(ffStream_t stream,
+                        GenericTensorAccessorR const &input_accessor,
+                        GenericTensorAccessorW &output_accessor,
+                        ReverseAttrs const &attrs) {
 
   auto reverse_kernels_params =
       compute_reverse_kernels_params(output_accessor.shape, attrs);
@@ -84,10 +84,10 @@ void backward_kernel_internal(cudaStream_t stream,
       out_grad_ptr, in_grad_ptr, num_out_blks, reverse_dim_size, in_blk_size);
 }
 
-void backward_kernel(ffStream_t stream,
-                     GenericTensorAccessorR const &output_grad_accessor,
-                     GenericTensorAccessorW &input_grad_accessor,
-                     ReverseAttrs const &attrs) {
+void gpu_backward_kernel(ffStream_t stream,
+                         GenericTensorAccessorR const &output_grad_accessor,
+                         GenericTensorAccessorW &input_grad_accessor,
+                         ReverseAttrs const &attrs) {
   auto reverse_kernels_params =
       compute_reverse_kernels_params(input_grad_accessor.shape, attrs);
 

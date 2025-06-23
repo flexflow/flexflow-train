@@ -15,7 +15,7 @@
 
 #include "internal/device.h"
 #include "kernels/datatype_dispatch.h"
-#include "kernels/partition_kernels.h"
+#include "kernels/partition_kernels_gpu.h"
 
 namespace FlexFlow {
 namespace Kernels {
@@ -53,25 +53,30 @@ struct BackwardKernel {
   }
 };
 
-RepartitionPerDeviceState init_kernel(PerDeviceFFHandle const &handle,
-                                      DataType data_type) {
-  RepartitionPerDeviceState per_device_state = {handle, data_type};
+RepartitionPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
+                                          DataType data_type) {
+  RepartitionPerDeviceState per_device_state =
+      RepartitionPerDeviceState{handle, data_type};
   return per_device_state;
 }
 
-void forward_kernel(cudaStream_t stream,
-                    RepartitionPerDeviceState const &m,
-                    GenericTensorAccessorR const &input,
-                    GenericTensorAccessorW const &output) {
+void gpu_forward_kernel(cudaStream_t stream,
+                        RepartitionPerDeviceState const &m,
+                        GenericTensorAccessorR const &input,
+                        GenericTensorAccessorW const &output) {
   DataTypeDispatch1<ForwardKernel>{}(m.data_type, stream, m, input, output);
 }
 
-void backward_kernel(cudaStream_t stream,
-                     RepartitionPerDeviceState const &m,
-                     GenericTensorAccessorR const &output_grad,
-                     GenericTensorAccessorW const &input_grad) {
+void gpu_backward_kernel(cudaStream_t stream,
+                         RepartitionPerDeviceState const &m,
+                         GenericTensorAccessorR const &output_grad,
+                         GenericTensorAccessorW const &input_grad) {
   DataTypeDispatch1<BackwardKernel>{}(
       m.data_type, stream, m, output_grad, input_grad);
+}
+
+void gpu_cleanup_kernel(RepartitionPerDeviceState &per_device_state) {
+  NOT_IMPLEMENTED();
 }
 
 } // namespace Repartition

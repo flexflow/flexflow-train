@@ -1,0 +1,65 @@
+namespace = "FlexFlow"
+name = "MHAPerDeviceState"
+features = []
+
+includes = [
+  "kernels/device.h",
+  "kernels/ff_handle.h",
+  "kernels/allocation.h",
+]
+
+[[fields]]
+name = "handle"
+type = "::FlexFlow::PerDeviceFFHandle"
+
+[[fields]]
+name = "weightSize"
+type = "size_t"
+
+[[fields]]
+name = "reserveSpaceSize"
+type = "size_t"
+
+[[fields]]
+name = "attnDesc"
+type = "ffAttnDescriptor_t"
+
+[[fields]]
+name = "qDesc"
+type = "ffSeqDataDescriptor_t"
+
+[[fields]]
+name = "kDesc"
+type = "ffSeqDataDescriptor_t"
+
+[[fields]]
+name = "vDesc"
+type = "ffSeqDataDescriptor_t"
+
+[[fields]]
+name = "oDesc"
+type = "ffSeqDataDescriptor_t"
+
+[[fields]]
+name = "devQoSeqArray"
+type = "int *"
+
+[[fields]]
+name = "devKvSeqArray"
+type = "int *"
+
+[[fields]]
+name = "loWinIdx"
+type = "int *"
+
+[[fields]]
+name = "hiWinIdx"
+type = "int *"
+
+[[fields]]
+name = "reserveSpace"
+type = "void *"
+
+[[fields]]
+name = "allocator"
+type = "::FlexFlow::Allocator"

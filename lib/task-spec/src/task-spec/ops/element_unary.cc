@@ -1,6 +1,8 @@
 #include "task-spec/ops/element_unary.h"
 #include "kernels/element_unary_kernels.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "task-spec/device_specific_device_states.h"
+#include "task-spec/profiling.h"
 #include "utils/hash-utils.h"
 
 namespace FlexFlow {
@@ -13,10 +15,12 @@ enum Slots {
   INPUT,
   INPUT_SHAPE,
   OUTPUT,
+  OUTPUT_SHAPE,
   ATTRS,
   HANDLE,
   PROFILING,
-  PER_DEVICE_STATE
+  PER_DEVICE_STATE,
+  KERNEL_DEVICE_TYPE,
 };
 
 /* ElementUnary */
@@ -24,49 +28,64 @@ OpTaskInvocation init(ElementUnaryAttrs const &attrs) {
   OpTaskBinding b;
 
   b.bind_arg(ATTRS, attrs);
-  b.bind_arg(INPUT_SHAPE, input_parallel_tensor_shape(0));
+  b.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
-  return {task_id_t::ELEMENTUNARY_INIT_TASK_ID, b};
+  b.bind_arg(INPUT_SHAPE, input_parallel_tensor_shape(0_n));
+  b.bind_arg(OUTPUT_SHAPE, output_parallel_tensor_shape(0_n));
+
+  return OpTaskInvocation{
+      task_id_t::ELEMENTUNARY_INIT_TASK_ID,
+      b,
+  };
 }
 
 OpTaskInvocation forward(ElementUnaryAttrs const &attrs) {
   OpTaskBinding b;
 
-  b.bind(INPUT, input_tensor(0));
-  b.bind(OUTPUT, output_tensor(0));
+  b.bind(INPUT, input_tensor(0_n));
+  b.bind(OUTPUT, output_tensor(0_n));
   b.bind_arg(ATTRS, attrs);
 
   b.bind_arg(HANDLE, ff_handle());
   b.bind_arg(PROFILING, profiling_settings());
+  b.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
   b.bind_arg(PER_DEVICE_STATE,
              per_device_op_state<ElementUnaryPerDeviceState>());
 
-  return {task_id_t::ELEMENTUNARY_FWD_TASK_ID, b};
+  return OpTaskInvocation{
+      task_id_t::ELEMENTUNARY_FWD_TASK_ID,
+      b,
+  };
 }
 
 OpTaskInvocation backward(ElementUnaryAttrs const &attrs) {
   OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::ELEMENTUNARY_BWD_TASK_ID, b};
+  return OpTaskInvocation{
+      task_id_t::ELEMENTUNARY_BWD_TASK_ID,
+      b,
+  };
 }
 
-static DeviceSpecificDeviceStates
+static std::optional<DeviceSpecificDeviceStates>
     init_task_impl(TaskArgumentAccessor const &acc) {
 
   auto attrs = acc.get_argument<ElementUnaryAttrs>(ATTRS);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   ParallelTensorShape input_shape =
       acc.get_argument<ParallelTensorShape>(INPUT_SHAPE);
-
   ParallelTensorShape output_shape =
-      throw_if_unexpected(get_output_shape(attrs, input_shape));
-  ElementUnaryPerDeviceState per_device_state =
-      init_kernel(array_shape_from_tensor_shape(get_piece_shape(input_shape)),
+      acc.get_argument<ParallelTensorShape>(OUTPUT_SHAPE);
+
+  std::optional<ElementUnaryPerDeviceState> per_device_state =
+      init_kernel(kernel_device_type,
+                  array_shape_from_tensor_shape(get_piece_shape(input_shape)),
                   array_shape_from_tensor_shape(get_piece_shape(output_shape)),
                   attrs);
 
-  return DeviceSpecificDeviceStates{
-      DeviceSpecific<ElementUnaryPerDeviceState>::create(per_device_state)};
+  return make_device_specific_state(per_device_state);
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
@@ -77,11 +96,14 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
 
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto per_device_state =
       acc.get_argument<ElementUnaryPerDeviceState>(PER_DEVICE_STATE);
 
   return profile(forward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[ElementUnary] forward_time = {:.2lf}ms\n",
                  per_device_state,
                  attrs,
@@ -103,9 +125,12 @@ static std::optional<float>
   auto per_device_state =
       acc.get_argument<ElementUnaryPerDeviceState>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   return profile(backward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[ElementUnary] backward_time = {:.2lf}ms\n",
                  per_device_state,
                  attrs,
@@ -131,6 +156,7 @@ OpTaskSignature get_element_unary_init_signature() {
 
   init.add_arg_slot<ParallelTensorShape>(INPUT_SHAPE);
   init.add_arg_slot<ElementUnaryAttrs>(ATTRS);
+  init.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
   init.add_unchecked_arg_slot<PerDeviceFFHandle>(HANDLE);
 
   init.add_return_value<ElementUnaryPerDeviceState>();
@@ -145,6 +171,7 @@ OpTaskSignature get_element_unary_fwd_signature() {
   fwd.add_output_slot(OUTPUT);
 
   fwd.add_arg_slot<ProfilingSettings>(PROFILING);
+  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
   fwd.add_unchecked_arg_slot<ElementUnaryPerDeviceState>(PER_DEVICE_STATE);
 
   return fwd;

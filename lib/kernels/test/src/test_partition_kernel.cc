@@ -1,5 +1,5 @@
-#include "kernels/test_utils.h"
-#include "kernels/partition_kernels.h"
+#include "internal/test_utils.h"
+#include "kernels/partition_kernels_gpu.h"
 #include "op-attrs/datatype_value.h"
 #include <doctest/doctest.h>
 
@@ -14,7 +14,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    RepartitionPerDeviceState state = Kernels::Repartition::init_kernel(
+    RepartitionPerDeviceState state = Kernels::Repartition::gpu_init_kernel(
         managed_handle.raw_handle(), DataType::FLOAT);
 
     TensorShape input_shape = TensorShape{
@@ -23,28 +23,28 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     };
     TensorShape output_shape = input_shape;
 
-    SUBCASE("forward_kernel") {
+    SUBCASE("gpu_forward_kernel") {
       GenericTensorAccessorR input_accessor = create_filled_accessor_r(
           input_shape, allocator, make_float_data_type_value(1));
       GenericTensorAccessorW output_accessor =
           allocator.allocate_tensor(output_shape);
 
-      Kernels::Repartition::forward_kernel(
+      Kernels::Repartition::gpu_forward_kernel(
           managed_stream.raw_stream(), state, input_accessor, output_accessor);
 
       CHECK(contains_non_zero(output_accessor));
     }
 
-    SUBCASE("backward_kernel") {
+    SUBCASE("gpu_backward_kernel") {
       GenericTensorAccessorR output_grad_accessor = create_filled_accessor_r(
           output_shape, allocator, make_float_data_type_value(1));
       GenericTensorAccessorW input_grad_accessor = create_filled_accessor_w(
           input_shape, allocator, make_float_data_type_value(2));
 
-      Kernels::Repartition::backward_kernel(managed_stream.raw_stream(),
-                                            state,
-                                            output_grad_accessor,
-                                            input_grad_accessor);
+      Kernels::Repartition::gpu_backward_kernel(managed_stream.raw_stream(),
+                                                state,
+                                                output_grad_accessor,
+                                                input_grad_accessor);
 
       CHECK(contains_non_zero(input_grad_accessor));
     }

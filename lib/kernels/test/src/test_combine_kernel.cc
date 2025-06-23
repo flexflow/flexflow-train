@@ -1,6 +1,6 @@
-#include "kernels/test_utils.h"
-#include "kernels/combine_kernels.h"
+#include "internal/test_utils.h"
 #include "kernels/combine_kernels_cpu.h"
+#include "kernels/combine_kernels_gpu.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -19,27 +19,27 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     };
     TensorShape output_shape = input_shape;
 
-    SUBCASE("forward_kernel") {
+    SUBCASE("gpu_forward_kernel") {
       GenericTensorAccessorR input_accessor =
           create_random_filled_accessor_r(input_shape, allocator);
       GenericTensorAccessorW output_accessor =
           allocator.allocate_tensor(output_shape);
 
-      Kernels::Combine::forward_kernel(
+      Kernels::Combine::gpu_forward_kernel(
           managed_stream.raw_stream(), input_accessor, output_accessor);
 
       CHECK(contains_non_zero(output_accessor));
     }
 
-    SUBCASE("backward_kernel") {
+    SUBCASE("gpu_backward_kernel") {
       GenericTensorAccessorR output_grad_accessor =
           create_random_filled_accessor_r(output_shape, allocator);
       GenericTensorAccessorW input_grad_accessor =
           allocator.allocate_tensor(input_shape);
 
-      Kernels::Combine::backward_kernel(managed_stream.raw_stream(),
-                                        output_grad_accessor,
-                                        input_grad_accessor);
+      Kernels::Combine::gpu_backward_kernel(managed_stream.raw_stream(),
+                                            output_grad_accessor,
+                                            input_grad_accessor);
 
       CHECK(contains_non_zero(input_grad_accessor));
     }
@@ -64,7 +64,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       GenericTensorAccessorW output_accessor_gpu =
           gpu_allocator.allocate_tensor(output_shape);
 
-      Kernels::Combine::forward_kernel(
+      Kernels::Combine::gpu_forward_kernel(
           managed_stream.raw_stream(), input_accessor_gpu, output_accessor_gpu);
 
       // Run CPU Combine Forward Kernel
@@ -86,9 +86,9 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       GenericTensorAccessorW input_grad_accessor_gpu =
           create_zero_filled_accessor_w(input_shape, gpu_allocator);
 
-      Kernels::Combine::backward_kernel(managed_stream.raw_stream(),
-                                        output_grad_accessor_gpu,
-                                        input_grad_accessor_gpu);
+      Kernels::Combine::gpu_backward_kernel(managed_stream.raw_stream(),
+                                            output_grad_accessor_gpu,
+                                            input_grad_accessor_gpu);
 
       // Run CPU Combine Backward Kernel
       GenericTensorAccessorR output_grad_accessor_cpu =

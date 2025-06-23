@@ -15,7 +15,7 @@
 
 #include "internal/device.h"
 #include "kernels/datatype_dispatch.h"
-#include "kernels/element_unary_kernels.h"
+#include "kernels/element_unary_kernels_gpu.h"
 #include "op-attrs/get_op_type.h"
 #include <optional>
 
@@ -48,9 +48,10 @@ static bool use_scalar(OperatorType op_type) {
   }
 }
 
-static ElementUnaryPerDeviceState init_kernel(ArrayShape const &input_shape,
-                                              ArrayShape const &output_shape,
-                                              OperatorType op_type) {
+static ElementUnaryPerDeviceState
+    gpu_init_kernel(ArrayShape const &input_shape,
+                    ArrayShape const &output_shape,
+                    OperatorType op_type) {
 
   ffTensorDescriptor_t inputTensor;
   ffTensorDescriptor_t outputTensor;
@@ -86,13 +87,17 @@ static ElementUnaryPerDeviceState init_kernel(ArrayShape const &input_shape,
         cudnnSetTensorDescriptorFromArrayShape(outputTensor, output_shape));
   }
 
-  return {inputTensor, outputTensor, actiDesc};
+  return ElementUnaryPerDeviceState{
+      /*inputTensor=*/inputTensor,
+      /*outputTensor=*/outputTensor,
+      /*actiDesc=*/actiDesc,
+  };
 }
 
-ElementUnaryPerDeviceState init_kernel(ArrayShape const &input_shape,
-                                       ArrayShape const &output_shape,
-                                       ElementUnaryAttrs const &attrs) {
-  return init_kernel(input_shape, output_shape, get_op_type(attrs));
+ElementUnaryPerDeviceState gpu_init_kernel(ArrayShape const &input_shape,
+                                           ArrayShape const &output_shape,
+                                           ElementUnaryAttrs const &attrs) {
+  return gpu_init_kernel(input_shape, output_shape, get_op_type(attrs));
 }
 
 template <typename T>
@@ -336,12 +341,12 @@ struct BackwardKernel {
   }
 };
 
-void forward_kernel(ffStream_t stream,
-                    ElementUnaryPerDeviceState const &device_state,
-                    ElementUnaryAttrs const &attrs,
-                    PerDeviceFFHandle const &handle,
-                    GenericTensorAccessorR const &input,
-                    GenericTensorAccessorW const &output) {
+void gpu_forward_kernel(ffStream_t stream,
+                        ElementUnaryPerDeviceState const &device_state,
+                        ElementUnaryAttrs const &attrs,
+                        PerDeviceFFHandle const &handle,
+                        GenericTensorAccessorR const &input,
+                        GenericTensorAccessorW const &output) {
   DataTypeDispatch1<ForwardKernel>{}(input.data_type,
                                      stream,
                                      device_state,
@@ -352,14 +357,14 @@ void forward_kernel(ffStream_t stream,
                                      output);
 }
 
-void backward_kernel(ffStream_t stream,
-                     ElementUnaryPerDeviceState const &device_state,
-                     ElementUnaryAttrs const &attrs,
-                     PerDeviceFFHandle const &handle,
-                     GenericTensorAccessorR const &output,
-                     GenericTensorAccessorR const &output_grad,
-                     GenericTensorAccessorR const &input,
-                     GenericTensorAccessorW const &input_grad) {
+void gpu_backward_kernel(ffStream_t stream,
+                         ElementUnaryPerDeviceState const &device_state,
+                         ElementUnaryAttrs const &attrs,
+                         PerDeviceFFHandle const &handle,
+                         GenericTensorAccessorR const &output,
+                         GenericTensorAccessorR const &output_grad,
+                         GenericTensorAccessorR const &input,
+                         GenericTensorAccessorW const &input_grad) {
   DataTypeDispatch1<BackwardKernel>{}(input.data_type,
                                       stream,
                                       device_state,
@@ -370,6 +375,10 @@ void backward_kernel(ffStream_t stream,
                                       output_grad,
                                       input,
                                       input_grad);
+}
+
+void gpu_cleanup_kernel(ElementUnaryPerDeviceState &per_device_state) {
+  NOT_IMPLEMENTED();
 }
 
 } // namespace ElementUnary

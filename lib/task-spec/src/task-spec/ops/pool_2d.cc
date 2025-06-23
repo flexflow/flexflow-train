@@ -1,6 +1,8 @@
 #include "task-spec/ops/pool_2d.h"
 #include "kernels/pool_2d_kernels.h"
 #include "op-attrs/ops/pool_2d.h"
+#include "task-spec/device_specific_device_states.h"
+#include "task-spec/profiling.h"
 #include "utils/exception.h"
 #include "utils/hash-utils.h"
 
@@ -8,16 +10,28 @@ using namespace FlexFlow::Kernels::Pool2D;
 
 namespace FlexFlow {
 
-enum Slots { INPUT, OUTPUT, ATTRS, PROFILING, PER_DEVICE_STATE, HANDLE };
+enum Slots {
+  INPUT,
+  OUTPUT,
+  ATTRS,
+  PROFILING,
+  PER_DEVICE_STATE,
+  HANDLE,
+  KERNEL_DEVICE_TYPE
+};
 
 OpTaskInvocation init(Pool2DAttrs const &attrs) {
   OpTaskBinding binding;
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(OUTPUT, output_tensor(0));
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
   binding.bind_arg(ATTRS, attrs);
   binding.bind_arg(HANDLE, ff_handle());
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
-  return {task_id_t::POOL2D_INIT_TASK_ID, binding};
+  return OpTaskInvocation{
+      task_id_t::POOL2D_INIT_TASK_ID,
+      binding,
+  };
 }
 
 static nonnegative_int calculate_padding(nonnegative_int output_size,
@@ -34,10 +48,12 @@ static nonnegative_int calculate_padding(nonnegative_int output_size,
   };
 }
 
-static DeviceSpecificDeviceStates
+static std::optional<DeviceSpecificDeviceStates>
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto const &attrs = acc.get_argument<Pool2DAttrs>(ATTRS);
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
@@ -51,8 +67,9 @@ static DeviceSpecificDeviceStates
   positive_int output_c = output.shape.at(ff_dim_t{2_n});
   positive_int output_n = output.shape.at(ff_dim_t{3_n});
 
-  Pool2DPerDeviceState per_device_state =
-      init_kernel(handle,
+  std::optional<Pool2DPerDeviceState> per_device_state =
+      init_kernel(kernel_device_type,
+                  handle,
                   attrs.activation,
                   input_w.int_from_positive_int(),
                   input_h.int_from_positive_int(),
@@ -70,30 +87,38 @@ static DeviceSpecificDeviceStates
                   attrs.stride_w.int_from_positive_int(),
                   attrs.pool_type);
 
-  return DeviceSpecificDeviceStates{
-      DeviceSpecific<Pool2DPerDeviceState>::create(per_device_state)};
+  return make_device_specific_state(per_device_state);
 }
 
 OpTaskInvocation forward(Pool2DAttrs const &attrs) {
   OpTaskBinding binding;
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(OUTPUT, output_tensor(0));
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
 
   binding.bind_arg(PROFILING, profiling_settings());
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
   binding.bind_arg(PER_DEVICE_STATE,
                    per_device_op_state<Pool2DPerDeviceState>());
 
-  return {task_id_t::POOL2D_FWD_TASK_ID, binding};
+  return OpTaskInvocation{
+      task_id_t::POOL2D_FWD_TASK_ID,
+      binding,
+  };
 }
 
 OpTaskInvocation backward(Pool2DAttrs const &attrs) {
   OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::POOL2D_BWD_TASK_ID, b};
+  return OpTaskInvocation{
+      task_id_t::POOL2D_BWD_TASK_ID,
+      b,
+  };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   Pool2DPerDeviceState state =
       acc.get_argument<Pool2DPerDeviceState>(PER_DEVICE_STATE);
 
@@ -102,6 +127,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 
   return profile(forward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[Pool2D] forward_time = {:.2lf}ms\n",
                  state,
                  input.get_float_ptr(),
@@ -111,6 +137,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   Pool2DPerDeviceState state =
       acc.get_argument<Pool2DPerDeviceState>(PER_DEVICE_STATE);
 
@@ -121,6 +149,7 @@ static std::optional<float>
 
   return profile(backward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[Pool2D] backward_time = {:.2lf}ms\n",
                  state,
                  output.get_float_ptr(),
@@ -132,9 +161,11 @@ static std::optional<float>
 TaskImplFunction get_pool_2d_init_task_impl() {
   return TaskImplFunction{InitOpTaskImplFunction{init_task_impl}};
 }
+
 TaskImplFunction get_pool_2d_fwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{forward_task_impl}};
 }
+
 TaskImplFunction get_pool_2d_bwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{backward_task_impl}};
 }
@@ -146,21 +177,25 @@ OpTaskSignature get_pool_2d_init_signature() {
   init.add_output_slot(OUTPUT);
 
   init.add_arg_slot<Pool2DAttrs>(ATTRS);
+  init.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
   init.add_unchecked_arg_slot<PerDeviceFFHandle>(HANDLE);
 
   init.add_return_value<FlexFlow::Pool2DPerDeviceState>();
   return init;
 }
+
 OpTaskSignature get_pool_2d_fwd_signature() {
   OpTaskSignature fwd(OpTaskType::FWD);
 
   fwd.add_input_slot(INPUT);
   fwd.add_output_slot(OUTPUT);
   fwd.add_arg_slot<ProfilingSettings>(PROFILING);
+  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
 
   fwd.add_unchecked_arg_slot<Pool2DPerDeviceState>(PER_DEVICE_STATE);
   return fwd;
 }
+
 OpTaskSignature get_pool_2d_bwd_signature() {
   OpTaskSignature bwd = infer_bwd_signature(get_pool_2d_fwd_signature());
   return bwd;

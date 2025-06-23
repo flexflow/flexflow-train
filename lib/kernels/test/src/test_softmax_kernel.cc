@@ -1,5 +1,5 @@
-#include "kernels/test_utils.h"
-#include "kernels/softmax_kernels.h"
+#include "internal/test_utils.h"
+#include "kernels/softmax_kernels_gpu.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -26,35 +26,35 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     TensorShape output_shape = input_shape;
 
     SoftmaxPerDeviceState state =
-        Kernels::Softmax::init_kernel(managed_handle.raw_handle(),
-                                      0,
-                                      input_n.unwrap_nonnegative(),
-                                      channels.unwrap_nonnegative(),
-                                      input_h.unwrap_nonnegative(),
-                                      input_w.unwrap_nonnegative());
+        Kernels::Softmax::gpu_init_kernel(managed_handle.raw_handle(),
+                                          legion_dim_t{0_n},
+                                          input_n.unwrap_nonnegative(),
+                                          channels.unwrap_nonnegative(),
+                                          input_h.unwrap_nonnegative(),
+                                          input_w.unwrap_nonnegative());
 
     GenericTensorAccessorW output_accessor =
         create_random_filled_accessor_w(output_shape, allocator);
 
-    SUBCASE("forward_kernel") {
+    SUBCASE("gpu_forward_kernel") {
       GenericTensorAccessorW input_accessor =
           create_random_filled_accessor_w(input_shape, allocator);
 
-      Kernels::Softmax::forward_kernel(managed_stream.raw_stream(),
-                                       state,
-                                       input_accessor.get_float_ptr(),
-                                       output_accessor.get_float_ptr());
+      Kernels::Softmax::gpu_forward_kernel(managed_stream.raw_stream(),
+                                           state,
+                                           input_accessor.get_float_ptr(),
+                                           output_accessor.get_float_ptr());
 
       CHECK(contains_non_zero(output_accessor));
     }
 
-    SUBCASE("backward_kernel") {
+    SUBCASE("gpu_backward_kernel") {
       GenericTensorAccessorR output_grad_accessor =
           create_random_filled_accessor_r(output_shape, allocator);
       GenericTensorAccessorW input_grad_accessor =
           allocator.allocate_tensor(input_shape);
 
-      Kernels::Softmax::backward_kernel(
+      Kernels::Softmax::gpu_backward_kernel(
           managed_stream.raw_stream(),
           output_grad_accessor.get_float_ptr(),
           input_grad_accessor.get_float_ptr(),

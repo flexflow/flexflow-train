@@ -2,11 +2,12 @@
 #define _FLEXFLOW_OPS_KERNELS_EMBEDDING_KERNELS_H
 
 #include "kernels/accessor.h"
-#include "kernels/device.h"
-#include "op-attrs/ops/embedding.h"
+#include "kernels/device_stream_t.dtg.h"
+#include "op-attrs/ops/embedding_attrs.dtg.h"
 
 namespace FlexFlow::Kernels::Embedding {
-void forward_kernel(ffStream_t stream,
+
+void forward_kernel(device_stream_t const &stream,
                     GenericTensorAccessorR const &input,
                     GenericTensorAccessorW const &output,
                     GenericTensorAccessorR const &weight,
@@ -16,7 +17,8 @@ void forward_kernel(ffStream_t stream,
                     int in_dim,
                     int out_dim,
                     int batch_size);
-void backward_kernel(ffStream_t stream,
+
+void backward_kernel(device_stream_t const &stream,
                      GenericTensorAccessorR const &output,
                      GenericTensorAccessorR const &input,
                      GenericTensorAccessorW const &weight_grad,
@@ -26,12 +28,6 @@ void backward_kernel(ffStream_t stream,
                      int in_dim,
                      int out_dim,
                      int batch_size);
-
-void rand_generate_int64_wrapper(int64_t *ptr, size_t size, int64_t p);
-void rand_generate_int32_wrapper(int32_t *ptr, size_t size, int32_t p);
-
-template <typename TD>
-__global__ void rand_generate_int(TD *ptr, size_t size, TD p);
 
 } // namespace FlexFlow::Kernels::Embedding
 

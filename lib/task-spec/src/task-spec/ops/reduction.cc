@@ -15,6 +15,7 @@
 
 #include "task-spec/ops/reduction.h"
 #include "kernels/reduction_kernels.h"
+#include "task-spec/profiling.h"
 #include "utils/exception.h"
 #include "utils/hash-utils.h"
 
@@ -22,28 +23,38 @@ namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::Reduction;
 
-enum Slots { INPUT, OUTPUT, ATTRS, PROFILING };
+enum Slots { INPUT, OUTPUT, ATTRS, PROFILING, KERNEL_DEVICE_TYPE };
 
 OpTaskInvocation forward(ReductionAttrs const &attrs) {
   OpTaskBinding binding;
 
   binding.bind_arg(PROFILING, profiling_settings());
   binding.bind_arg(ATTRS, attrs);
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(OUTPUT, output_tensor(0));
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
-  return {task_id_t::REDUCTION_FWD_TASK_ID, binding};
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
+
+  return OpTaskInvocation{
+      task_id_t::REDUCTION_FWD_TASK_ID,
+      binding,
+  };
 }
 
 OpTaskInvocation backward(ReductionAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::REDUCTION_BWD_TASK_ID, binding};
+  return OpTaskInvocation{
+      task_id_t::REDUCTION_BWD_TASK_ID,
+      binding,
+  };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling_settings =
       acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
@@ -53,6 +64,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 
   return profile(forward_kernel,
                  profiling_settings,
+                 kernel_device_type,
                  "[Reduction] forward_time = {:.2lf}ms\n",
                  input,
                  output,
@@ -62,11 +74,14 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
   auto input_grad = acc.get_tensor_grad<Permissions::WO>(INPUT);
   return profile(backward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[Reduction] backward_time = {:.2lf}ms\n",
                  output_grad,
                  input_grad);
@@ -84,6 +99,7 @@ OpTaskSignature get_reduction_fwd_signature() {
 
   fwd.add_arg_slot<ProfilingSettings>(PROFILING);
   fwd.add_arg_slot<ReductionAttrs>(ATTRS);
+  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
 
   fwd.add_input_slot(INPUT);
   fwd.add_output_slot(OUTPUT);

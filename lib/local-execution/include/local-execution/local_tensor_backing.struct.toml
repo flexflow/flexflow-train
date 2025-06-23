@@ -6,26 +6,14 @@ features = [
 ]
 
 includes = [
-  "task-spec/tensor_type_t.dtg.h",
   "kernels/accessor.h",
-  "pcg/tensor_guid_t.dtg.h",
-  "task-spec/gradient_tensor_t.dtg.h",
-  "task-spec/optimizer_tensor_t.dtg.h",
+  "task-spec/training_tensor_guid_t.dtg.h",
 ]
 
 src_includes = [
   "utils/fmt/unordered_map.h",
-  "utils/fmt/vector.h",
 ]
 
 [[fields]]
-name = "tensor_backings"
-type = "std::unordered_map<::FlexFlow::TensorTypeVariant, ::FlexFlow::GenericTensorAccessorW>"
-
-[[fields]]
-name = "tensor_gradient_mapping"
-type = "std::unordered_map<::FlexFlow::tensor_guid_t, ::FlexFlow::gradient_tensor_t>"
-
-[[fields]]
-name = "tensor_optimizer_mapping"
-type = "std::unordered_map<::FlexFlow::tensor_guid_t, std::vector<::FlexFlow::optimizer_tensor_t>>"
+name = "backing_for_training_tensor_map"
+type = "std::unordered_map<::FlexFlow::training_tensor_guid_t, ::FlexFlow::GenericTensorAccessorW>"

@@ -15,118 +15,100 @@
 
 #include "task-spec/ops/reshape.h"
 #include "kernels/reshape_kernels.h"
+#include "task-spec/profiling.h"
 
 namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::Reshape;
 
-enum slots { INPUT, OUTPUT, ATTRS, PROFILING, PER_DEVICE_STATE };
-
-OpTaskInvocation init(ReshapeAttrs const &attrs) {
-  OpTaskBinding binding;
-
-  binding.bind_arg(ATTRS, attrs);
-
-  return {task_id_t::RESHAPE_INIT_TASK_ID, binding};
-}
+enum Slots { INPUT, OUTPUT, ATTRS, PROFILING, KERNEL_DEVICE_TYPE };
 
 OpTaskInvocation forward(ReshapeAttrs const &attrs) {
   OpTaskBinding binding;
 
-  binding.bind_arg(PER_DEVICE_STATE,
-                   per_device_op_state<ReshapePerDeviceState>());
   binding.bind_arg(PROFILING, profiling_settings());
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
+  binding.bind_arg(ATTRS, attrs);
 
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(OUTPUT, output_tensor(0));
-  return {task_id_t::RESHAPE_FWD_TASK_ID, binding};
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
+  return OpTaskInvocation{
+      task_id_t::RESHAPE_FWD_TASK_ID,
+      binding,
+  };
 }
 
 OpTaskInvocation backward(ReshapeAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::RESHAPE_BWD_TASK_ID, binding};
-}
-
-static DeviceSpecificDeviceStates
-    init_task_impl(TaskArgumentAccessor const &acc) {
-  auto attrs = acc.get_argument<ReshapeAttrs>(ATTRS);
-
-  ReshapePerDeviceState per_device_state = init_kernel(attrs.shape.data_type);
-  return DeviceSpecificDeviceStates{
-      DeviceSpecific<ReshapePerDeviceState>::create(per_device_state)};
+  return OpTaskInvocation{
+      task_id_t::RESHAPE_BWD_TASK_ID,
+      binding,
+  };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
-  auto per_device_state =
-      acc.get_argument<ReshapePerDeviceState>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  ReshapeAttrs attrs = acc.get_argument<ReshapeAttrs>(ATTRS);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
   return profile(forward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[Reshape] forward time = {:.2lf}ms\n",
-                 per_device_state,
+                 attrs.shape.data_type,
                  input,
                  output);
 }
 
 static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
-  auto per_device_state =
-      acc.get_argument<ReshapePerDeviceState>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  ReshapeAttrs attrs = acc.get_argument<ReshapeAttrs>(ATTRS);
 
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(INPUT);
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
 
   return profile(backward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[Reshape] backward time = {:.2lf}ms\n",
-                 per_device_state,
+                 attrs.shape.data_type,
                  output_grad,
                  input_grad);
 }
 
-TaskImplFunction get_reshape_init_task_impl() {
-  return TaskImplFunction{InitOpTaskImplFunction{init_task_impl}};
-}
 TaskImplFunction get_reshape_fwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{forward_task_impl}};
 }
+
 TaskImplFunction get_reshape_bwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{backward_task_impl}};
 }
 
-OpTaskSignature get_reshape_init_signature() {
-  OpTaskSignature init(OpTaskType::INIT);
-
-  init.add_arg_slot<ReshapeAttrs>(ATTRS);
-
-  init.add_return_value<ReshapePerDeviceState>();
-  return init;
-}
 OpTaskSignature get_reshape_fwd_signature() {
   OpTaskSignature fwd(OpTaskType::FWD);
 
   fwd.add_arg_slot<ProfilingSettings>(PROFILING);
-  fwd.add_unchecked_arg_slot<ReshapePerDeviceState>(PER_DEVICE_STATE);
 
   fwd.add_input_slot(INPUT);
   fwd.add_output_slot(OUTPUT);
   return fwd;
 }
+
 OpTaskSignature get_reshape_bwd_signature() {
   OpTaskSignature bwd = infer_bwd_signature(get_reshape_fwd_signature());
   return bwd;
 }
 
 std::vector<task_id_t> get_task_ids(ReshapeAttrs const &) {
-  return {task_id_t::RESHAPE_INIT_TASK_ID,
-          task_id_t::RESHAPE_FWD_TASK_ID,
-          task_id_t::RESHAPE_BWD_TASK_ID};
+  return {task_id_t::RESHAPE_FWD_TASK_ID, task_id_t::RESHAPE_BWD_TASK_ID};
 }
 
 }; // namespace FlexFlow

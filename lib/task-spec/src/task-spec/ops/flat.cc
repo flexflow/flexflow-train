@@ -1,35 +1,47 @@
 #include "task-spec/ops/flat.h"
 #include "kernels/flat_kernels.h"
+#include "task-spec/profiling.h"
 
 namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::Flat;
 
-enum SLOTS { INPUT, OUTPUT, HANDLE, PROFILING };
+enum SLOTS { INPUT, OUTPUT, HANDLE, PROFILING, KERNEL_DEVICE_TYPE };
 
 OpTaskInvocation forward(FlatAttrs const &attrs) {
   OpTaskBinding binding;
 
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(OUTPUT, output_tensor(0));
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
 
   binding.bind_arg(PROFILING, profiling_settings());
-  return {task_id_t::FLAT_FWD_TASK_ID, binding};
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
+
+  return OpTaskInvocation{
+      task_id_t::FLAT_FWD_TASK_ID,
+      binding,
+  };
 }
 
 OpTaskInvocation backward(FlatAttrs const &attrs) {
   OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::FLAT_BWD_TASK_ID, b};
+  return OpTaskInvocation{
+      task_id_t::FLAT_BWD_TASK_ID,
+      b,
+  };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
   return profile(forward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[Flat] forward_time = {:.2lf}ms\n",
                  input,
                  output.get_float_ptr());
@@ -38,6 +50,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
@@ -45,6 +59,7 @@ static std::optional<float>
 
   return profile(backward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[Flat] backward_time = {:.2lf}ms\n",
                  input,
                  output_grad.get_float_ptr(),
@@ -62,6 +77,7 @@ OpTaskSignature get_flat_fwd_signature() {
   OpTaskSignature fwd(OpTaskType::FWD);
 
   fwd.add_arg_slot<ProfilingSettings>(PROFILING);
+  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
   fwd.add_input_slot(INPUT);
   fwd.add_output_slot(OUTPUT);
 

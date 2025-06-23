@@ -158,7 +158,7 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
               tensor_movement,
               /*pre_mapping=*/assigned_pre_machine_views,
               /*post_mapping=*/assigned_post_machine_views);
-      float cost_across_split =
+      milliseconds_t cost_across_split =
           context.cost_estimator.estimate_cost(comm_across_split);
 
       result = minimize_runtime(result,

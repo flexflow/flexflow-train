@@ -15,6 +15,8 @@
 
 #include "task-spec/ops/gather.h"
 #include "kernels/gather_kernels.h"
+#include "task-spec/device_specific_device_states.h"
+#include "task-spec/profiling.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include <optional>
 
@@ -22,18 +24,31 @@ namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::Gather;
 
-enum Slots { INPUT, OUTPUT, INDEX, ATTRS, HANDLE, PROFILING, PER_DEVICE_STATE };
+enum Slots {
+  INPUT,
+  OUTPUT,
+  INDEX,
+  ATTRS,
+  HANDLE,
+  PROFILING,
+  PER_DEVICE_STATE,
+  KERNEL_DEVICE_TYPE
+};
 
 OpTaskInvocation init(GatherAttrs const &attrs) {
   OpTaskBinding binding;
 
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(INDEX, input_tensor(1));
-  binding.bind(OUTPUT, output_tensor(0));
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(INDEX, input_tensor(1_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
   binding.bind_arg(ATTRS, attrs);
   binding.bind_arg(HANDLE, ff_handle());
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
-  return {task_id_t::GATHER_INIT_TASK_ID, binding};
+  return OpTaskInvocation{
+      task_id_t::GATHER_INIT_TASK_ID,
+      binding,
+  };
 }
 
 OpTaskInvocation forward(GatherAttrs const &attrs) {
@@ -41,29 +56,38 @@ OpTaskInvocation forward(GatherAttrs const &attrs) {
 
   binding.bind_arg(ATTRS, attrs);
   binding.bind_arg(PROFILING, profiling_settings());
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
   binding.bind_arg(PER_DEVICE_STATE,
                    per_device_op_state<GatherPerDeviceState>());
 
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(OUTPUT, output_tensor(0));
-  binding.bind(INDEX, weight_tensor(0));
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
+  binding.bind(INDEX, weight_tensor(0_n));
 
-  return {task_id_t::GATHER_FWD_TASK_ID, binding};
+  return OpTaskInvocation{
+      task_id_t::GATHER_FWD_TASK_ID,
+      binding,
+  };
 }
 
 OpTaskInvocation backward(GatherAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::GATHER_BWD_TASK_ID, binding};
+  return OpTaskInvocation{
+      task_id_t::GATHER_BWD_TASK_ID,
+      binding,
+  };
 }
 
-static DeviceSpecificDeviceStates
+static std::optional<DeviceSpecificDeviceStates>
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto index = acc.get_tensor<Permissions::RO>(INDEX);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto const &attrs = acc.get_argument<GatherAttrs>(ATTRS);
   legion_dim_t legion_dim =
       legion_dim_from_ff_dim(attrs.dim, input.shape.num_dims());
@@ -79,13 +103,15 @@ static DeviceSpecificDeviceStates
     }
   }
 
-  GatherPerDeviceState per_device_state = {handle, legion_dim};
-  return DeviceSpecificDeviceStates{
-      DeviceSpecific<GatherPerDeviceState>::create(per_device_state)};
+  std::optional<GatherPerDeviceState> per_device_state =
+      init_kernel(kernel_device_type, handle, legion_dim);
+  return make_device_specific_state(per_device_state);
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto per_device_state =
       acc.get_argument<GatherPerDeviceState>(PER_DEVICE_STATE);
 
@@ -95,6 +121,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 
   return profile(forward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[Gather] forward_time = {:.2lf}ms\n",
                  per_device_state,
                  input,
@@ -105,6 +132,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto per_device_state =
       acc.get_argument<GatherPerDeviceState>(PER_DEVICE_STATE);
 
@@ -114,6 +143,7 @@ static std::optional<float>
 
   return profile(backward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[Gather] backward_time = {:.2lf}ms\n",
                  per_device_state,
                  output_grad,
@@ -139,6 +169,7 @@ OpTaskSignature get_gather_init_signature() {
   init.add_output_slot(OUTPUT);
 
   init.add_arg_slot<GatherAttrs>(ATTRS);
+  init.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
   init.add_unchecked_arg_slot<PerDeviceFFHandle>(HANDLE);
 
   init.add_return_value<GatherPerDeviceState>();
@@ -150,6 +181,7 @@ OpTaskSignature get_gather_fwd_signature() {
   OpTaskSignature fwd(OpTaskType::FWD);
 
   fwd.add_arg_slot<bool>(PROFILING);
+  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
   fwd.add_arg_slot<GatherAttrs>(ATTRS);
 
   fwd.add_input_slot(INPUT);

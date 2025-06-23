@@ -15,7 +15,7 @@
 
 #include "internal/device.h"
 #include "kernels/allocation.h"
-#include "kernels/linear_kernels.h"
+#include "kernels/linear_kernels_gpu.h"
 #include "utils/integer_conversions.h"
 
 namespace FlexFlow {
@@ -23,7 +23,7 @@ namespace FlexFlow {
 namespace Kernels {
 namespace Linear {
 
-bool use_activation(std::optional<Activation> activation) {
+static bool use_activation(std::optional<Activation> activation) {
   if (activation.has_value()) {
     switch (activation.value()) {
       case Activation::RELU:
@@ -41,16 +41,17 @@ bool use_activation(std::optional<Activation> activation) {
 }
 
 // what's the float * one_ptr
-LinearPerDeviceState init_kernel(PerDeviceFFHandle handle,
-                                 float *one_ptr,
-                                 std::optional<Activation> activation,
-                                 std::optional<RegularizerAttrs> regularizer,
-                                 bool use_bias,
-                                 DataType input_type,
-                                 DataType weight_type,
-                                 DataType output_type,
-                                 int batch_size,
-                                 int channel) {
+LinearPerDeviceState
+    gpu_init_kernel(PerDeviceFFHandle handle,
+                    float *one_ptr,
+                    std::optional<Activation> activation,
+                    std::optional<RegularizerAttrs> regularizer,
+                    bool use_bias,
+                    DataType input_type,
+                    DataType weight_type,
+                    DataType output_type,
+                    int batch_size,
+                    int channel) {
   ffTensorDescriptor_t outputTensor;
   ffActivationDescriptor_t actiDesc;
   checkCUDNN(cudnnCreateTensorDescriptor(&outputTensor));
@@ -92,29 +93,31 @@ LinearPerDeviceState init_kernel(PerDeviceFFHandle handle,
   // todo: how to use allocator to allocate memory for float * one_ptr, how many
   // bytes to allocate?
   checkCUDA(cudaMalloc(&one_ptr, sizeof(float) * batch_size));
-  LinearPerDeviceState per_device_state = {handle,
-                                           outputTensor,
-                                           actiDesc,
-                                           one_ptr,
-                                           mode,
-                                           activation,
-                                           regularizer,
-                                           use_bias,
-                                           input_type,
-                                           weight_type,
-                                           output_type};
+  LinearPerDeviceState per_device_state = LinearPerDeviceState{
+      /*handle=*/handle,
+      /*outputTensor=*/outputTensor,
+      /*actiDesc=*/actiDesc,
+      /*one_ptr=*/one_ptr,
+      /*mode=*/mode,
+      /*activation=*/activation,
+      /*regularizer=*/regularizer,
+      /*use_bias=*/use_bias,
+      /*input_type=*/input_type,
+      /*weight_type=*/weight_type,
+      /*output_type=*/output_type,
+  };
   return per_device_state;
 }
 
-void forward_kernel(cudaStream_t stream,
-                    LinearPerDeviceState const &m,
-                    float const *input_ptr,
-                    float *output_ptr,
-                    float const *weight_ptr,
-                    float const *bias_ptr,
-                    int in_dim,
-                    int out_dim,
-                    int batch_size) {
+void gpu_forward_kernel(cudaStream_t stream,
+                        LinearPerDeviceState const &m,
+                        float const *input_ptr,
+                        float *output_ptr,
+                        float const *weight_ptr,
+                        float const *bias_ptr,
+                        int in_dim,
+                        int out_dim,
+                        int batch_size) {
 
   checkCUBLAS(cublasSetStream(m.handle.blas, stream));
   checkCUDNN(cudnnSetStream(m.handle.dnn, stream));
@@ -189,18 +192,18 @@ void forward_kernel(cudaStream_t stream,
   }
 }
 
-void backward_kernel(cudaStream_t stream,
-                     LinearPerDeviceState const &m,
-                     float const *output_ptr,
-                     float *output_grad_ptr,
-                     float const *input_ptr,
-                     float *input_grad_ptr,
-                     float const *kernel_ptr,
-                     float *kernel_grad_ptr,
-                     float *bias_grad_ptr,
-                     int in_dim,
-                     int out_dim,
-                     int batch_size) {
+void gpu_backward_kernel(cudaStream_t stream,
+                         LinearPerDeviceState const &m,
+                         float const *output_ptr,
+                         float *output_grad_ptr,
+                         float const *input_ptr,
+                         float *input_grad_ptr,
+                         float const *kernel_ptr,
+                         float *kernel_grad_ptr,
+                         float *bias_grad_ptr,
+                         int in_dim,
+                         int out_dim,
+                         int batch_size) {
   checkCUBLAS(cublasSetStream(m.handle.blas, stream));
   checkCUDNN(cudnnSetStream(m.handle.dnn, stream));
   float alpha = 1.0f;
@@ -326,6 +329,10 @@ void backward_kernel(cudaStream_t stream,
                              compute_type,
                              CUBLAS_GEMM_DEFAULT_TENSOR_OP));
   }
+}
+
+void gpu_cleanup_kernel(LinearPerDeviceState &per_device_state) {
+  NOT_IMPLEMENTED();
 }
 
 } // namespace Linear

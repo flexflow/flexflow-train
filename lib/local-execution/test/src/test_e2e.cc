@@ -1,15 +1,22 @@
+#include "internal/test_utils.h"
 #include "kernels/compare_tensor_accessors.h"
-#include "kernels/format_accessor_contents.h"
+#include "kernels/copy_tensor_accessor.h"
+#include "kernels/local_cpu_allocator.h"
+#include "kernels/local_cuda_allocator.h"
+#include "kernels/managed_ff_stream.h"
+#include "kernels/managed_per_device_ff_handle.h"
 #include "kernels/tensor_accessor_reductions.h"
-#include "kernels/test_utils.h"
-#include "local-execution/allocated_tensors.h"
 #include "local-execution/local_training_backing.h"
 #include "local-execution/model_training_instance.h"
 #include "op-attrs/ops/loss_functions/loss_attrs.dtg.h"
 #include "pcg/computation_graph.h"
 #include "pcg/computation_graph_builder.h"
 #include "pcg/optimizer_attrs.dtg.h"
-#include "test_utils.h"
+#include "task-spec/forward_tensor_source.h"
+#include "task-spec/gradient_tensor_source.h"
+#include "task-spec/loss_tensor_source.h"
+#include "task-spec/optimizer_tensor_source.h"
+#include "task-spec/training_computation_graph.h"
 #include "utils/containers/get_only.h"
 #include <doctest/doctest.h>
 
@@ -35,40 +42,32 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     // allocate label tensors
     LossTensorSource loss_tensor_source;
-    loss_tensor_t label_tensor = loss_tensor_source.new_loss_tensor();
+    loss_tensor_guid_t label_tensor_guid = loss_tensor_source.new_loss_tensor();
 
     positive_int batch_size = 10_p;
     positive_int data_dim = 16_p;
     positive_int hidden_dim = 32_p;
     positive_int output_dim = 1_p;
 
-    TensorShape input_tensor_shape = TensorShape{
-        TensorDims{FFOrdered{batch_size, data_dim}}, DataType::FLOAT};
     TensorShape output_tensor_shape = TensorShape{
         TensorDims{FFOrdered{batch_size, output_dim}}, DataType::FLOAT};
 
-    GenericTensorAccessorW label_tensor_backing = create_random_filled_accessor_w(
-        output_tensor_shape, allocator);
+    GenericTensorAccessorW label_tensor_backing =
+        allocator.allocate_tensor(output_tensor_shape);
 
     // construct computation graph
     ComputationGraph computation_graph = make_empty_computation_graph();
 
+    TensorShape input_tensor_shape = TensorShape{
+        TensorDims{FFOrdered{batch_size, data_dim}}, DataType::FLOAT};
 
     TensorShape weight_shape_1 = TensorShape{
         TensorDims{FFOrdered{data_dim, hidden_dim}}, DataType::FLOAT};
     TensorShape weight_shape_2 = TensorShape{
         TensorDims{FFOrdered{hidden_dim, output_dim}}, DataType::FLOAT};
 
-    GenericTensorAccessorW weight_1_backing = create_random_filled_accessor_w(
-        weight_shape_1, allocator);
-    GenericTensorAccessorW weight_2_backing = create_random_filled_accessor_w(
-        weight_shape_2, allocator);
-
     LayerAddedResult inputs_layer =
         add_input_layer_with_grad(computation_graph, input_tensor_shape);
-    tensor_guid_t input_tensor_guid = get_only(inputs_layer.outputs);
-    GenericTensorAccessorW input_tensor_backing = create_random_filled_accessor_w(
-        input_tensor_shape, allocator);
 
     LayerAddedResult weights_layer_1 = add_layer(
         computation_graph,
@@ -77,7 +76,6 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                    std::nullopt},
         {},
         {});
-    tensor_guid_t weight_1_tensor_guid = get_only(weights_layer_1.outputs);
 
     LayerAddedResult weights_layer_2 = add_layer(
         computation_graph,
@@ -86,7 +84,6 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                    std::nullopt},
         {},
         {});
-    tensor_guid_t weight_2_tensor_guid = get_only(weights_layer_2.outputs);
 
     LayerAddedResult linear_operator_1 = add_layer(
         computation_graph,
@@ -115,7 +112,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     RuntimeArgConfig runtime_arg_config = RuntimeArgConfig{
         DeviceSpecific<PerDeviceFFHandle>::create(managed_handle.raw_handle()),
         EnableProfiling::YES,
-        ProfilingSettings{/*warmup_iters=*/0, /*measure_iters=*/1}};
+        ProfilingSettings{/*warmup_iters=*/0, /*measure_iters=*/1},
+        DeviceType::GPU};
 
     // initialize training backing
     LossAttrs loss_attrs = LossAttrs{
@@ -126,35 +124,37 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                                          /*nesterov=*/false,
                                          /*weight_decay=*/0.001}};
 
+    ForwardTensorSource forward_tensor_source;
     GradientTensorSource gradient_tensor_source;
     OptimizerTensorSource optimizer_tensor_source;
 
-    AllocatedTensors allocated_tensors = AllocatedTensors{
-        /*tensor_type_backings=*/{
-            {TensorTypeVariant{label_tensor}, label_tensor_backing},
-            {TensorTypeVariant{input_tensor_guid}, input_tensor_backing},
-            {TensorTypeVariant{weight_1_tensor_guid}, weight_1_backing},
-            {TensorTypeVariant{weight_2_tensor_guid}, weight_2_backing},
-        },
-        /*gradient_mapping=*/{},
-        /*optimizer_mapping*/ {},
-    };
+    TrainingComputationGraph training_computation_graph =
+        generate_training_computation_graph(computation_graph,
+                                            optimizer_attrs,
+                                            forward_tensor_source,
+                                            gradient_tensor_source,
+                                            optimizer_tensor_source);
 
     LocalTrainingBacking local_training_backing =
-        LocalTrainingBacking{allocator,
-                             allocated_tensors,
-                             gradient_tensor_source,
-                             optimizer_tensor_source,
-                             computation_graph,
-                             runtime_arg_config,
-                             optimizer_attrs};
+        make_local_training_backing_for_computation_graph(
+            /*allocator=*/allocator,
+            /*preallocated_tensors=*/
+            {
+                {
+                    training_tensor_guid_t{label_tensor_guid},
+                    label_tensor_backing,
+                },
+            },
+            /*training_computation_graph=*/training_computation_graph,
+            /*runtime_arg_config=*/runtime_arg_config,
+            /*optimizer_attrs=*/optimizer_attrs);
 
     // begin training loop
     ModelTrainingInstance model_training_instance =
         ModelTrainingInstance{allocator,
                               local_training_backing,
                               logit_tensor,
-                              label_tensor,
+                              label_tensor_guid,
                               loss_attrs,
                               optimizer_attrs};
 
@@ -174,9 +174,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     // Assert that each sample in the batch has a lower loss in last epoch than
     // the first epoch
     GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
-    
     GenericTensorAccessorR last_epoch = loss_values.back();
-
     CHECK(did_loss_decrease(first_epoch_loss, last_epoch));
   }
 }
