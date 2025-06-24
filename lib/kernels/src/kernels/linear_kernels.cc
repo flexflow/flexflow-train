@@ -7,7 +7,7 @@ namespace FlexFlow::Kernels::Linear {
 
 std::optional<LinearPerDeviceState>
     init_kernel(DeviceType device_type,
-                PerDeviceFFHandle handle,
+                device_handle_t const &handle,
                 float *one_ptr,
                 std::optional<Activation> activation,
                 std::optional<RegularizerAttrs> regularizer,
@@ -19,7 +19,7 @@ std::optional<LinearPerDeviceState>
                 int channel) {
   if (device_type == DeviceType::GPU) {
     return gpu_init_kernel(
-        /*handle=*/handle,
+        /*handle=*/handle.require_for_gpu(),
         /*one_ptr=*/one_ptr,
         /*activation=*/activation,
         /*regularizer=*/regularizer,

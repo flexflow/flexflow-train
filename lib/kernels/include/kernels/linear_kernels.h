@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_LINEAR_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_LINEAR_KERNELS_H
 
+#include "kernels/device_handle_t.dtg.h"
 #include "kernels/device_stream_t.dtg.h"
 #include "kernels/ff_handle.h"
 #include "kernels/linear_per_device_state.dtg.h"
@@ -12,7 +13,7 @@ namespace FlexFlow::Kernels::Linear {
 
 std::optional<LinearPerDeviceState>
     init_kernel(DeviceType device_type,
-                PerDeviceFFHandle handle,
+                device_handle_t const &handle,
                 float *one_ptr,
                 std::optional<Activation> activation,
                 std::optional<RegularizerAttrs> regularizer,

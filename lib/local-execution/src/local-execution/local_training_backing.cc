@@ -13,6 +13,8 @@
 #include "utils/containers/get_only.h"
 #include "utils/containers/values.h"
 #include "utils/exception.h"
+#include "utils/containers/keys.h"
+#include "utils/containers/is_subseteq_of.h"
 
 namespace FlexFlow {
 
@@ -23,6 +25,8 @@ LocalTrainingBacking make_local_training_backing_for_computation_graph(
     TrainingComputationGraph const &training_computation_graph,
     RuntimeArgConfig const &runtime_arg_config,
     OptimizerAttrs const &optimizer_attrs) {
+
+  ASSERT(is_subseteq_of(keys(preallocated), keys(get_all_training_tensor_shapes(training_computation_graph))));
 
   LocalTaskRegistry local_task_registry =
       construct_local_task_registry_for_layers(get_layer_attrs_mapping(

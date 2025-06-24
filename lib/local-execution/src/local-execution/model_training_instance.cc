@@ -19,8 +19,10 @@ ModelTrainingInstance::ModelTrainingInstance(
 
 std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
     ModelTrainingInstance::forward() {
+
   std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
       per_layer_elapsed_time;
+
   for (layer_guid_t const &layer_guid :
        topological_ordering(this->training_backing.training_computation_graph
                                 .computation_graph)) {
@@ -31,8 +33,10 @@ std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
         get_training_layer_plus_context(
             this->training_backing.training_computation_graph, layer_guid),
         this->allocator);
+    
     per_layer_elapsed_time.insert({layer_guid, elapsed_time});
   }
+
   return per_layer_elapsed_time;
 }
 

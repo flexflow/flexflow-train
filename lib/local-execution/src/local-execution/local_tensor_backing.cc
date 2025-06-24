@@ -12,6 +12,8 @@
 #include "utils/containers/set_minus.h"
 #include "utils/containers/set_of.h"
 #include "utils/overload.h"
+#include "utils/containers/is_submapeq_of.h"
+#include "utils/containers/is_subseteq_of.h"
 
 namespace FlexFlow {
 
@@ -21,6 +23,8 @@ LocalTensorBacking construct_local_tensor_backing(
     std::unordered_map<training_tensor_guid_t, GenericTensorAccessorW> const
         &preallocated,
     Allocator &allocator) {
+
+  ASSERT(is_subseteq_of(keys(preallocated), keys(training_tensor_shapes)));
 
   std::unordered_set<training_tensor_guid_t> to_allocate =
       set_minus(keys(training_tensor_shapes), keys(preallocated));
@@ -35,7 +39,12 @@ LocalTensorBacking construct_local_tensor_backing(
       backing_for_training_tensor_map =
           merge_disjoint_maps(allocated, preallocated);
 
-  ASSERT(keys(backing_for_training_tensor_map) == keys(training_tensor_shapes));
+  ASSERT(is_submapeq_of(preallocated, backing_for_training_tensor_map));
+
+  ASSERT(keys(backing_for_training_tensor_map) == keys(training_tensor_shapes), 
+         backing_for_training_tensor_map.size(),
+         training_tensor_shapes.size(),
+         keys(preallocated));
 
   return LocalTensorBacking{
       backing_for_training_tensor_map,
