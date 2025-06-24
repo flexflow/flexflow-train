@@ -1,6 +1,5 @@
 #include "task-spec/ops/dropout.h"
 #include "kernels/dropout_kernels.h"
-#include "task-spec/device_specific_device_states.h"
 #include "task-spec/op_task_invocation.h"
 #include "task-spec/op_task_signature.h"
 #include "task-spec/profiling.h"
@@ -44,7 +43,7 @@ OpTaskInvocation forward(DropoutAttrs const &attrs) {
   binding.bind_arg(PROFILING, profiling_settings());
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
   binding.bind_arg(PER_DEVICE_STATE,
-                   per_device_op_state<DropoutPerDeviceState>());
+                   per_device_op_state<std::optional<DropoutPerDeviceState>>());
 
   return OpTaskInvocation{
       task_id_t::DROPOUT_FWD_TASK_ID,
@@ -61,7 +60,7 @@ OpTaskInvocation backward(DropoutAttrs const &attrs) {
   };
 }
 
-static std::optional<DeviceSpecificDeviceStates>
+static DeviceSpecificDeviceStates
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   Allocator allocator = acc.get_allocator();
@@ -78,12 +77,15 @@ static std::optional<DeviceSpecificDeviceStates>
                   output.shape,
                   allocator);
 
-  return make_device_specific_state(per_device_state);
+  return DeviceSpecificDeviceStates{
+      DeviceSpecific<std::optional<DropoutPerDeviceState>>::create(
+          per_device_state),
+  };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto per_device_state =
-      acc.get_argument<DropoutPerDeviceState>(PER_DEVICE_STATE);
+      acc.get_argument<std::optional<DropoutPerDeviceState>>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   DeviceType kernel_device_type =
       acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
@@ -138,7 +140,7 @@ OpTaskSignature get_dropout_init_signature() {
   init.add_unchecked_arg_slot<PerDeviceFFHandle>(FF_HANDLE);
   init.add_output_slot(OUTPUT);
 
-  init.add_return_value<DropoutPerDeviceState>();
+  init.add_return_value<std::optional<DropoutPerDeviceState>>();
 
   return init;
 }
@@ -146,7 +148,8 @@ OpTaskSignature get_dropout_init_signature() {
 OpTaskSignature get_dropout_fwd_signature() {
   OpTaskSignature fwd(OpTaskType::FWD);
 
-  fwd.add_unchecked_arg_slot<DropoutPerDeviceState>(PER_DEVICE_STATE);
+  fwd.add_unchecked_arg_slot<std::optional<DropoutPerDeviceState>>(
+      PER_DEVICE_STATE);
   fwd.add_arg_slot<ProfilingSettings>(PROFILING);
   fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
 

@@ -118,9 +118,15 @@ ConcreteArgSpec lower_to_concrete_arg_spec(
   OpArgRefType op_arg_ref_type = op_arg_ref_spec.get_ref_type();
   return op_arg_ref_type.visit<ConcreteArgSpec>(overload{
       [&](PerDeviceOpStateRefType const &) {
-        PerDeviceOpState device_state =
+        PerDeviceOpState per_device_op_state =
             get_device_state_from_device_specific(device_states.value(), 0);
-        return ConcreteArgSpec::create(device_state);
+
+        return per_device_op_state.visit<ConcreteArgSpec>(overload{
+            [&](auto const &x) {
+              ASSERT(matches<decltype(x)>(op_arg_ref_spec.get_type_index()));
+              return ConcreteArgSpec::create(x);
+            },
+        });
       },
       [&](ParallelTensorShapeRefType const &ref_type) {
         TensorShape tensor_shape = tensor_shape_for_role_and_index(

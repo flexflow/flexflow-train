@@ -60,7 +60,6 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
                  profiling,
                  kernel_device_type,
                  "[Reshape] forward time = {:.2lf}ms\n",
-                 attrs.shape.data_type,
                  input,
                  output);
 }
@@ -79,7 +78,6 @@ static std::optional<float>
                  profiling,
                  kernel_device_type,
                  "[Reshape] backward time = {:.2lf}ms\n",
-                 attrs.shape.data_type,
                  output_grad,
                  input_grad);
 }

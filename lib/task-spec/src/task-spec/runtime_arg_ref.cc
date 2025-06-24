@@ -1,4 +1,5 @@
 #include "task-spec/runtime_arg_ref.h"
+#include "kernels/device_handle_t.dtg.h"
 #include "task-spec/device_specific.h"
 
 namespace FlexFlow {
@@ -7,7 +8,7 @@ RuntimeArgRef<ProfilingSettings> profiling_settings() {
   return {RuntimeArgRefType::PROFILING_SETTINGS};
 }
 
-RuntimeArgRef<DeviceSpecific<PerDeviceFFHandle>> ff_handle() {
+RuntimeArgRef<DeviceSpecific<device_handle_t>> ff_handle() {
   return {RuntimeArgRefType::FF_HANDLE};
 }
 

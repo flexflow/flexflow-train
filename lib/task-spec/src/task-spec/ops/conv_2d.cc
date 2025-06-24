@@ -1,6 +1,5 @@
 #include "task-spec/ops/conv_2d.h"
 #include "kernels/conv_2d_kernels.h"
-#include "task-spec/device_specific_device_states.h"
 #include "task-spec/profiling.h"
 
 namespace FlexFlow {
@@ -42,7 +41,7 @@ OpTaskInvocation forward(Conv2DAttrs const &attrs) {
   binding.bind_arg(PROFILING, profiling_settings());
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
   binding.bind_arg(PER_DEVICE_STATE,
-                   per_device_op_state<Conv2DPerDeviceState>());
+                   per_device_op_state<std::optional<Conv2DPerDeviceState>>());
 
   binding.bind(INPUT, input_tensor(0_n));
   binding.bind(OUTPUT, output_tensor(0_n));
@@ -64,7 +63,7 @@ OpTaskInvocation backward(Conv2DAttrs const &attrs) {
   };
 }
 
-static std::optional<DeviceSpecificDeviceStates>
+static DeviceSpecificDeviceStates
     init_task_impl(TaskArgumentAccessor const &acc) {
 
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
@@ -91,7 +90,11 @@ static std::optional<DeviceSpecificDeviceStates>
       /*output=*/output,
       /*filter_ptr=*/filter.get_float_ptr(),
       /*filter_grad_ptr=*/filter_grad.get_float_ptr());
-  return make_device_specific_state(per_device_state);
+
+  return DeviceSpecificDeviceStates{
+      DeviceSpecific<std::optional<Conv2DPerDeviceState>>::create(
+          per_device_state),
+  };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {

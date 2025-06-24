@@ -1,6 +1,5 @@
 #include "task-spec/ops/reduce.h"
 #include "kernels/reduce_kernels.h"
-#include "task-spec/device_specific_device_states.h"
 #include "task-spec/profiling.h"
 #include "utils/exception.h"
 #include "utils/hash-utils.h"
@@ -37,7 +36,7 @@ OpTaskInvocation init(ReduceAttrs const &attrs) {
   };
 }
 
-static std::optional<DeviceSpecificDeviceStates>
+static DeviceSpecificDeviceStates
     init_task_impl(TaskArgumentAccessor const &acc) {
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
   DeviceType kernel_device_type =
@@ -59,7 +58,10 @@ static std::optional<DeviceSpecificDeviceStates>
                   input.shape,
                   output.shape);
 
-  return make_device_specific_state(per_device_state);
+  return DeviceSpecificDeviceStates{
+      DeviceSpecific<std::optional<ReducePerDeviceState>>::create(
+          per_device_state),
+  };
 }
 
 // Note: forward_kernel only needs ReducePerDeviceState, input, output
@@ -67,7 +69,7 @@ OpTaskInvocation forward(ReduceAttrs const &attrs) {
   OpTaskBinding binding;
 
   binding.bind_arg(PER_DEVICE_STATE,
-                   per_device_op_state<ReducePerDeviceState>());
+                   per_device_op_state<std::optional<ReducePerDeviceState>>());
   binding.bind_arg(PROFILING, profiling_settings());
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 

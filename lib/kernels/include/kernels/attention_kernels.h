@@ -3,6 +3,7 @@
 
 #include "kernels/allocation.h"
 #include "kernels/device.h"
+#include "kernels/device_handle_t.dtg.h"
 #include "kernels/device_stream_t.dtg.h"
 #include "kernels/mha_per_device_state.dtg.h"
 
@@ -10,7 +11,7 @@ namespace FlexFlow::Kernels::MultiHeadAttention {
 
 std::optional<MHAPerDeviceState>
     init_kernel(DeviceType device_type,
-                PerDeviceFFHandle const &per_device_ff_handle,
+                device_handle_t const &per_device_ff_handle,
                 Allocator &allocator,
                 int num_samples,
                 int num_heads,

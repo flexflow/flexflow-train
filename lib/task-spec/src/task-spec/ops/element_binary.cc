@@ -1,6 +1,5 @@
 #include "task-spec/ops/element_binary.h"
 #include "kernels/element_binary_kernels.h"
-#include "task-spec/device_specific_device_states.h"
 #include "task-spec/profiling.h"
 #include "task-spec/task_signature_impl.h"
 #include "utils/hash-utils.h"
@@ -46,8 +45,9 @@ OpTaskInvocation forward(ElementBinaryAttrs const &attrs) {
 
   binding.bind_arg(ATTRS, attrs);
   binding.bind_arg(PROFILING, profiling_settings());
-  binding.bind_arg(PER_DEVICE_STATE,
-                   per_device_op_state<ElementBinaryPerDeviceState>());
+  binding.bind_arg(
+      PER_DEVICE_STATE,
+      per_device_op_state<std::optional<ElementBinaryPerDeviceState>>());
   binding.bind_arg(HANDLE, ff_handle());
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
@@ -66,7 +66,7 @@ OpTaskInvocation backward(ElementBinaryAttrs const &attrs) {
   };
 }
 
-static std::optional<DeviceSpecificDeviceStates>
+static DeviceSpecificDeviceStates
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto input_lhs = acc.get_tensor<Permissions::RO>(LHS_INPUT);
   auto input_rhs = acc.get_tensor<Permissions::RO>(RHS_INPUT);
@@ -86,7 +86,11 @@ static std::optional<DeviceSpecificDeviceStates>
                   input_lhs.shape,
                   input_rhs.shape,
                   output.shape);
-  return make_device_specific_state(per_device_state);
+
+  return DeviceSpecificDeviceStates{
+      DeviceSpecific<std::optional<ElementBinaryPerDeviceState>>::create(
+          per_device_state),
+  };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {

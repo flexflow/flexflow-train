@@ -19,56 +19,57 @@ includes = [
   "kernels/reduce_per_device_state.dtg.h",
   "kernels/softmax_per_device_state.dtg.h",
   "task-spec/device_specific.h",
+  "<optional>",
 ]
 
 [[values]]
-type = "::FlexFlow::DeviceSpecific<::FlexFlow::MHAPerDeviceState>"
+type = "::FlexFlow::DeviceSpecific<std::optional<::FlexFlow::MHAPerDeviceState>>"
 key = "device_specific_mha_per_device_state"
 
 [[values]]
-type = "::FlexFlow::DeviceSpecific<::FlexFlow::BatchNormPerDeviceState>"
+type = "::FlexFlow::DeviceSpecific<std::optional<::FlexFlow::BatchNormPerDeviceState>>"
 key = "device_specific_batch_norm_per_device_state"
 
 [[values]]
-type = "::FlexFlow::DeviceSpecific<::FlexFlow::Conv2DPerDeviceState>"
+type = "::FlexFlow::DeviceSpecific<std::optional<::FlexFlow::Conv2DPerDeviceState>>"
 key = "device_specific_conv2d_per_device_state"
 
 [[values]]
-type = "::FlexFlow::DeviceSpecific<::FlexFlow::DropoutPerDeviceState>"
+type = "::FlexFlow::DeviceSpecific<std::optional<::FlexFlow::DropoutPerDeviceState>>"
 key = "device_specific_dropout_per_device_state"
 
 [[values]]
-type = "::FlexFlow::DeviceSpecific<::FlexFlow::ElementBinaryPerDeviceState>"
+type = "::FlexFlow::DeviceSpecific<std::optional<::FlexFlow::ElementBinaryPerDeviceState>>"
 key = "device_specific_element_binary_per_device_state"
 
 [[values]]
-type = "::FlexFlow::DeviceSpecific<::FlexFlow::ElementUnaryPerDeviceState>"
+type = "::FlexFlow::DeviceSpecific<std::optional<::FlexFlow::ElementUnaryPerDeviceState>>"
 key = "device_specific_element_unary_per_device_state"
 
 [[values]]
-type = "::FlexFlow::DeviceSpecific<::FlexFlow::GatherPerDeviceState>"
+type = "::FlexFlow::DeviceSpecific<std::optional<::FlexFlow::GatherPerDeviceState>>"
 key = "device_specific_gather_per_device_state"
 
 [[values]]
-type = "::FlexFlow::DeviceSpecific<::FlexFlow::LayerNormPerDeviceState>"
+type = "::FlexFlow::DeviceSpecific<std::optional<::FlexFlow::LayerNormPerDeviceState>>"
 key = "device_specific_layer_norm_per_device_state"
 
 [[values]]
-type = "::FlexFlow::DeviceSpecific<::FlexFlow::LinearPerDeviceState>"
+type = "::FlexFlow::DeviceSpecific<std::optional<::FlexFlow::LinearPerDeviceState>>"
 key = "device_specific_linear_per_device_state"
 
 [[values]]
-type = "::FlexFlow::DeviceSpecific<::FlexFlow::Pool2DPerDeviceState>"
+type = "::FlexFlow::DeviceSpecific<std::optional<::FlexFlow::Pool2DPerDeviceState>>"
 key = "device_specific_pool_2d_per_device_state"
 
 [[values]]
-type = "::FlexFlow::DeviceSpecific<::FlexFlow::ReducePerDeviceState>"
+type = "::FlexFlow::DeviceSpecific<std::optional<::FlexFlow::ReducePerDeviceState>>"
 key = "device_specific_reduce_per_device_state"
 
 [[values]]
-type = "::FlexFlow::DeviceSpecific<::FlexFlow::RepartitionPerDeviceState>"
+type = "::FlexFlow::DeviceSpecific<std::optional<::FlexFlow::RepartitionPerDeviceState>>"
 key = "device_specific_repartition_per_device_state"
 
 [[values]]
-type = "::FlexFlow::DeviceSpecific<::FlexFlow::SoftmaxPerDeviceState>"
+type = "::FlexFlow::DeviceSpecific<std::optional<::FlexFlow::SoftmaxPerDeviceState>>"
 key = "device_specific_softmax_per_device_state"

@@ -1,7 +1,6 @@
 #include "task-spec/ops/pool_2d.h"
 #include "kernels/pool_2d_kernels.h"
 #include "op-attrs/ops/pool_2d.h"
-#include "task-spec/device_specific_device_states.h"
 #include "task-spec/profiling.h"
 #include "utils/exception.h"
 #include "utils/hash-utils.h"
@@ -48,7 +47,7 @@ static nonnegative_int calculate_padding(nonnegative_int output_size,
   };
 }
 
-static std::optional<DeviceSpecificDeviceStates>
+static DeviceSpecificDeviceStates
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto const &attrs = acc.get_argument<Pool2DAttrs>(ATTRS);
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
@@ -87,7 +86,10 @@ static std::optional<DeviceSpecificDeviceStates>
                   attrs.stride_w.int_from_positive_int(),
                   attrs.pool_type);
 
-  return make_device_specific_state(per_device_state);
+  return DeviceSpecificDeviceStates{
+      DeviceSpecific<std::optional<Pool2DPerDeviceState>>::create(
+          per_device_state),
+  };
 }
 
 OpTaskInvocation forward(Pool2DAttrs const &attrs) {
@@ -98,7 +100,7 @@ OpTaskInvocation forward(Pool2DAttrs const &attrs) {
   binding.bind_arg(PROFILING, profiling_settings());
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
   binding.bind_arg(PER_DEVICE_STATE,
-                   per_device_op_state<Pool2DPerDeviceState>());
+                   per_device_op_state<std::optional<Pool2DPerDeviceState>>());
 
   return OpTaskInvocation{
       task_id_t::POOL2D_FWD_TASK_ID,

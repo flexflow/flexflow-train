@@ -15,7 +15,6 @@
 
 #include "task-spec/ops/repartition.h"
 #include "kernels/partition_kernels.h"
-#include "task-spec/device_specific_device_states.h"
 #include "task-spec/profiling.h"
 #include "utils/exception.h"
 #include "utils/hash-utils.h"
@@ -54,8 +53,9 @@ OpTaskInvocation forward(RepartitionAttrs const &attrs) {
   binding.bind_arg(PROFILING, profiling_settings());
   binding.bind_arg(ATTRS, attrs);
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
-  binding.bind_arg(PER_DEVICE_STATE,
-                   per_device_op_state<RepartitionPerDeviceState>());
+  binding.bind_arg(
+      PER_DEVICE_STATE,
+      per_device_op_state<std::optional<RepartitionPerDeviceState>>());
 
   binding.bind(INPUT, input_tensor(0_n));
   binding.bind(OUTPUT, output_tensor(0_n));
@@ -75,7 +75,7 @@ OpTaskInvocation backward(RepartitionAttrs const &attrs) {
   };
 }
 
-static std::optional<DeviceSpecificDeviceStates>
+static DeviceSpecificDeviceStates
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
@@ -85,7 +85,10 @@ static std::optional<DeviceSpecificDeviceStates>
   std::optional<RepartitionPerDeviceState> per_device_state =
       init_kernel(kernel_device_type, handle, input.data_type);
 
-  return make_device_specific_state(per_device_state);
+  return DeviceSpecificDeviceStates{
+      DeviceSpecific<std::optional<RepartitionPerDeviceState>>::create(
+          per_device_state),
+  };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {

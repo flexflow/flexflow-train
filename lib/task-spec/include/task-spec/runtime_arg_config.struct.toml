@@ -3,14 +3,14 @@ name = "RuntimeArgConfig"
 features = []
 
 includes = [
-  "kernels/ff_handle.h",
+  "kernels/device_handle_t.dtg.h",
   "task-spec/device_specific.h",
   "task-spec/profiling.h",
 ]
 
 [[fields]]
 name = "ff_handle"
-type = "::FlexFlow::DeviceSpecific<::FlexFlow::PerDeviceFFHandle>"
+type = "::FlexFlow::DeviceSpecific<::FlexFlow::device_handle_t>"
 
 [[fields]]
 name = "enable_profiling"

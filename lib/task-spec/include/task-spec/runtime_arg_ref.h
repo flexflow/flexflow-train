@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_RUNTIME_SRC_TASK_SPEC_RUNTIME_ARG_REF_H
 #define _FLEXFLOW_RUNTIME_SRC_TASK_SPEC_RUNTIME_ARG_REF_H
 
+#include "kernels/device_handle_t.dtg.h"
 #include "kernels/profiling_settings.dtg.h"
 #include "pcg/device_type.dtg.h"
 #include "task-spec/arg_ref.h"
@@ -16,7 +17,7 @@ using RuntimeArgRef = ArgRef<RuntimeArgRefType, T>;
 using RuntimeArgRefSpec = ArgRefSpec<RuntimeArgRefType>;
 
 RuntimeArgRef<ProfilingSettings> profiling_settings();
-RuntimeArgRef<DeviceSpecific<PerDeviceFFHandle>> ff_handle();
+RuntimeArgRef<DeviceSpecific<device_handle_t>> ff_handle();
 RuntimeArgRef<FFIterationConfig> iteration_config();
 RuntimeArgRef<DeviceType> kernel_device_type();
 

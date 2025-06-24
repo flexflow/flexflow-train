@@ -7,12 +7,10 @@
 namespace FlexFlow::Kernels::Reshape {
 
 void gpu_forward_kernel(ffStream_t stream,
-                        DataType data_type,
                         GenericTensorAccessorR const &input,
                         GenericTensorAccessorW const &output);
 
 void gpu_backward_kernel(ffStream_t stream,
-                         DataType data_type,
                          GenericTensorAccessorR const &output,
                          GenericTensorAccessorW const &input);
 

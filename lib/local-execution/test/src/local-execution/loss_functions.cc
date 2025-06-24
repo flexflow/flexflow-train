@@ -12,6 +12,7 @@
 #include "task-spec/gradient_tensor_source.h"
 #include "task-spec/loss_tensor_source.h"
 #include "task-spec/optimizer_tensor_source.h"
+#include "task-spec/runtime_arg_config.h"
 #include "task-spec/training_computation_graph.h"
 #include "utils/containers/get_only.h"
 
@@ -67,11 +68,10 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         weights_layer.outputs);
     tensor_guid_t logit_tensor = get_only(linear_operator.outputs);
 
-    RuntimeArgConfig runtime_arg_config = RuntimeArgConfig{
-        DeviceSpecific<PerDeviceFFHandle>::create(managed_handle.raw_handle()),
+    RuntimeArgConfig runtime_arg_config = gpu_make_runtime_arg_config(
+        managed_handle.raw_handle(),
         EnableProfiling::YES,
-        ProfilingSettings{/*warmup_iters=*/0, /*measure_iters=*/1},
-        DeviceType::GPU};
+        ProfilingSettings{/*warmup_iters=*/0, /*measure_iters=*/1});
 
     ForwardTensorSource forward_tensor_source;
     GradientTensorSource gradient_tensor_source;

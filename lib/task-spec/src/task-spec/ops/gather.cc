@@ -15,7 +15,6 @@
 
 #include "task-spec/ops/gather.h"
 #include "kernels/gather_kernels.h"
-#include "task-spec/device_specific_device_states.h"
 #include "task-spec/profiling.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include <optional>
@@ -58,7 +57,7 @@ OpTaskInvocation forward(GatherAttrs const &attrs) {
   binding.bind_arg(PROFILING, profiling_settings());
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
   binding.bind_arg(PER_DEVICE_STATE,
-                   per_device_op_state<GatherPerDeviceState>());
+                   per_device_op_state<std::optional<GatherPerDeviceState>>());
 
   binding.bind(INPUT, input_tensor(0_n));
   binding.bind(OUTPUT, output_tensor(0_n));
@@ -79,7 +78,7 @@ OpTaskInvocation backward(GatherAttrs const &attrs) {
   };
 }
 
-static std::optional<DeviceSpecificDeviceStates>
+static DeviceSpecificDeviceStates
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto index = acc.get_tensor<Permissions::RO>(INDEX);
@@ -105,7 +104,10 @@ static std::optional<DeviceSpecificDeviceStates>
 
   std::optional<GatherPerDeviceState> per_device_state =
       init_kernel(kernel_device_type, handle, legion_dim);
-  return make_device_specific_state(per_device_state);
+  return DeviceSpecificDeviceStates{
+      DeviceSpecific<std::optional<GatherPerDeviceState>>::create(
+          per_device_state),
+  };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {

@@ -17,7 +17,6 @@
 #include "kernels/layer_norm_kernels.h"
 #include "op-attrs/ops/layer_norm.h"
 #include "op-attrs/parallel_tensor_shape.h"
-#include "task-spec/device_specific_device_states.h"
 #include "task-spec/profiling.h"
 #include "utils/exception.h"
 #include "utils/hash-utils.h"
@@ -64,7 +63,8 @@ OpTaskInvocation forward(LayerNormAttrs const &attrs) {
   b.bind(BETA, weight_tensor(1_n));
   b.bind_arg(PROFILING, profiling_settings());
   b.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
-  b.bind_arg(PER_DEVICE_STATE, per_device_op_state<LayerNormPerDeviceState>());
+  b.bind_arg(PER_DEVICE_STATE,
+             per_device_op_state<std::optional<LayerNormPerDeviceState>>());
 
   return OpTaskInvocation{
       task_id_t::LAYERNORM_FWD_TASK_ID,
@@ -131,7 +131,7 @@ static std::optional<float>
                  beta_grad);
 }
 
-static std::optional<DeviceSpecificDeviceStates>
+static DeviceSpecificDeviceStates
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto const &attrs = acc.get_argument<LayerNormAttrs>(ATTRS);
   DeviceType kernel_device_type =
@@ -163,7 +163,10 @@ static std::optional<DeviceSpecificDeviceStates>
                   effective_num_elements.int_from_positive_int(),
                   attrs.eps);
 
-  return make_device_specific_state(per_device_state);
+  return DeviceSpecificDeviceStates{
+      DeviceSpecific<std::optional<LayerNormPerDeviceState>>::create(
+          per_device_state),
+  };
 }
 
 TaskImplFunction get_layer_norm_init_task_impl() {

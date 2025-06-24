@@ -1,7 +1,6 @@
 #include "task-spec/ops/element_unary.h"
 #include "kernels/element_unary_kernels.h"
 #include "op-attrs/parallel_tensor_shape.h"
-#include "task-spec/device_specific_device_states.h"
 #include "task-spec/profiling.h"
 #include "utils/hash-utils.h"
 
@@ -50,7 +49,7 @@ OpTaskInvocation forward(ElementUnaryAttrs const &attrs) {
   b.bind_arg(PROFILING, profiling_settings());
   b.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
   b.bind_arg(PER_DEVICE_STATE,
-             per_device_op_state<ElementUnaryPerDeviceState>());
+             per_device_op_state<std::optional<ElementUnaryPerDeviceState>>());
 
   return OpTaskInvocation{
       task_id_t::ELEMENTUNARY_FWD_TASK_ID,
@@ -67,7 +66,7 @@ OpTaskInvocation backward(ElementUnaryAttrs const &attrs) {
   };
 }
 
-static std::optional<DeviceSpecificDeviceStates>
+static DeviceSpecificDeviceStates
     init_task_impl(TaskArgumentAccessor const &acc) {
 
   auto attrs = acc.get_argument<ElementUnaryAttrs>(ATTRS);
@@ -85,7 +84,10 @@ static std::optional<DeviceSpecificDeviceStates>
                   array_shape_from_tensor_shape(get_piece_shape(output_shape)),
                   attrs);
 
-  return make_device_specific_state(per_device_state);
+  return DeviceSpecificDeviceStates{
+      DeviceSpecific<std::optional<ElementUnaryPerDeviceState>>::create(
+          per_device_state),
+  };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {

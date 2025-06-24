@@ -15,9 +15,9 @@
 
 #include "task-spec/ops/attention.h"
 #include "kernels/attention_kernels.h"
+#include "kernels/device_handle_t.dtg.h"
 #include "op-attrs/ops/attention.h"
 #include "op-attrs/ops/attention/multihead_attention_parallel_inputs.h"
-#include "task-spec/device_specific_device_states.h"
 #include "task-spec/op_task_signature.h"
 #include "task-spec/profiling.h"
 
@@ -77,8 +77,10 @@ OpTaskInvocation forward(MultiHeadAttentionAttrs const &attrs) {
   b.bind(WEIGHTS, weight_tensor(0_n));
   b.bind(OUTPUT, output_tensor(0_n));
 
+  b.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
   b.bind_arg(PROFILING, profiling_settings());
-  b.bind_arg(PER_DEVICE_STATE, per_device_op_state<MHAPerDeviceState>());
+  b.bind_arg(PER_DEVICE_STATE,
+             per_device_op_state<std::optional<MHAPerDeviceState>>());
 
   return OpTaskInvocation{
       task_id_t::ATTENTION_FWD_TASK_ID,
@@ -95,7 +97,7 @@ OpTaskInvocation backward(MultiHeadAttentionAttrs const &attrs) {
   };
 }
 
-static std::optional<DeviceSpecificDeviceStates>
+static DeviceSpecificDeviceStates
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto const &attrs = acc.get_argument<MultiHeadAttentionAttrs>(ATTRS);
   Allocator allocator = acc.get_allocator();
@@ -108,7 +110,7 @@ static std::optional<DeviceSpecificDeviceStates>
   positive_int vProjSize = acc.get_argument<positive_int>(VPROJSIZE);
   positive_int oProjSize = acc.get_argument<positive_int>(OPROJSIZE);
 
-  PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
   ParallelTensorShape query_parallel_tensor_shape =
       acc.get_argument<ParallelTensorShape>(QUERY_PARALLEL_TENSOR_SHAPE);
   ParallelTensorShape key_parallel_tensor_shape =
@@ -152,7 +154,10 @@ static std::optional<DeviceSpecificDeviceStates>
       /*kvSeqLength=*/kvSeqLength.int_from_positive_int(),
       /*add_bias_kv=*/attrs.add_bias_kv);
 
-  return make_device_specific_state(per_device_state);
+  return DeviceSpecificDeviceStates{
+      DeviceSpecific<std::optional<MHAPerDeviceState>>::create(
+          per_device_state),
+  };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {

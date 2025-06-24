@@ -31,11 +31,52 @@ std::optional<float> profiling_wrapper(F const &f,
                                        ProfilingSettings const &settings,
                                        DeviceType device_type,
                                        Ts &&...ts) {
-  ASSERT(device_type == DeviceType::GPU,
-         "Kernel profiling is currently only supported for GPUs. "
-         "If you need this feature, please create an issue.");
+  if (settings.measure_iters <= 0) {
+    return std::nullopt;
+  }
 
-  device_stream_t stream = get_stream_for_device_type(device_type);
+  if (device_type == DeviceType::GPU) {
+    return gpu_profiling_wrapper(f, settings, std::forward<Ts>(ts)...);
+  } else {
+    ASSERT(device_type == DeviceType::CPU);
+    return cpu_profiling_wrapper(f, settings, std::forward<Ts>(ts)...);
+  }
+}
+
+template <typename F, typename... Ts>
+float cpu_profiling_wrapper(F const &f,
+                            ProfilingSettings const &settings,
+                            Ts &&...ts) {
+  ASSERT(settings.measure_iters > 0);
+
+  device_stream_t stream = get_cpu_device_stream();
+
+  using TimePoint = std::chrono::time_point<std::chrono::steady_clock>;
+
+  std::optional<TimePoint> start = std::nullopt;
+  std::optional<TimePoint> end = std::nullopt;
+
+  for (int i = 0; i < settings.warmup_iters + settings.measure_iters; i++) {
+    if (i == settings.warmup_iters) {
+      start = std::chrono::steady_clock::now();
+    }
+    f(stream, std::forward<Ts>(ts)...);
+  }
+  end = std::chrono::steady_clock::now();
+
+  std::chrono::duration<double, std::milli> avg_duration =
+      (end.value() - start.value()) / settings.measure_iters;
+
+  return avg_duration.count();
+}
+
+template <typename F, typename... Ts>
+float gpu_profiling_wrapper(F const &f,
+                            ProfilingSettings const &settings,
+                            Ts &&...ts) {
+  ASSERT(settings.measure_iters > 0);
+
+  device_stream_t stream = get_gpu_device_stream();
 
   ffEvent_t t_start, t_end;
   checkCUDA(ffEventCreate(&t_start));
@@ -54,7 +95,7 @@ std::optional<float> profiling_wrapper(F const &f,
   checkCUDA(ffEventElapsedTime(&elapsed, t_start, t_end));
   checkCUDA(ffEventDestroy(t_start));
   checkCUDA(ffEventDestroy(t_end));
-  return elapsed;
+  return elapsed / settings.measure_iters;
 }
 
 } // namespace FlexFlow

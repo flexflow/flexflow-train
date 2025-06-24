@@ -22,50 +22,60 @@ namespace FlexFlow {
 namespace Kernels {
 namespace Reshape {
 
-template <DataType T>
+template <DataType InputDT, DataType OutputDT>
 struct ForwardKernel {
   void operator()(cudaStream_t stream,
                   GenericTensorAccessorR const &input,
                   GenericTensorAccessorW const &output) {
     checkCUDA(
-        cudaMemcpyAsync(output.get<T>(),
-                        input.get<T>(),
+        cudaMemcpyAsync(output.get<OutputDT>(),
+                        input.get<InputDT>(),
                         input.shape.num_elements().int_from_positive_int() *
-                            size_of_datatype(T).int_from_positive_int(),
+                            size_of_datatype(OutputDT).int_from_positive_int(),
                         cudaMemcpyDeviceToDevice,
                         stream));
   }
 };
 
-template <DataType T>
+template <typename DT, typename DTGrad>
+__global__ void apply_add_with_scale2(DT *data_ptr,
+                                      DTGrad const *grad_ptr,
+                                      size_t size,
+                                      DT scale) {
+  CUDA_KERNEL_LOOP(i, size) {
+    data_ptr[i] += grad_ptr[i] * scale;
+  }
+}
+
+template <DataType InputDT, DataType OutputDT>
 struct BackwardKernel {
   void operator()(cudaStream_t stream,
                   GenericTensorAccessorR const &output,
                   GenericTensorAccessorW const &input) {
     float alpha = 1.0f;
-    apply_add_with_scale<real_type_t<T>>
+    apply_add_with_scale2<real_type_t<InputDT>, real_type_t<OutputDT>>
         <<<GET_BLOCKS(input.shape.num_elements().int_from_positive_int()),
            CUDA_NUM_THREADS,
            0,
-           stream>>>(input.get<T>(),
-                     output.get<T>(),
+           stream>>>(input.get<InputDT>(),
+                     output.get<OutputDT>(),
                      input.shape.num_elements().int_from_positive_int(),
-                     static_cast<real_type_t<T>>(alpha));
+                     static_cast<real_type_t<InputDT>>(alpha));
   }
 };
 
 void gpu_forward_kernel(cudaStream_t stream,
-                        DataType data_type,
                         GenericTensorAccessorR const &input,
                         GenericTensorAccessorW const &output) {
-  DataTypeDispatch1<ForwardKernel>{}(data_type, stream, input, output);
+  DataTypeDispatch2<ForwardKernel>{}(
+      input.data_type, output.data_type, stream, input, output);
 }
 
 void gpu_backward_kernel(cudaStream_t stream,
-                         DataType data_type,
                          GenericTensorAccessorR const &output,
                          GenericTensorAccessorW const &input) {
-  DataTypeDispatch1<BackwardKernel>{}(data_type, stream, output, input);
+  DataTypeDispatch2<BackwardKernel>{}(
+      input.data_type, output.data_type, stream, output, input);
 }
 
 } // namespace Reshape
