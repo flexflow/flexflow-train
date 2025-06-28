@@ -1,22 +1,22 @@
 #include "internal/test_utils.h"
-#include "kernels/concat_kernels.h"
+#include "kernels/concat_kernels_gpu.h"
 #include "utils/containers/repeat.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test concat kernel forward and backward") {
-    ManagedPerDeviceFFHandle managed_handle{
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
         /*workSpaceSize=*/1024 * 1024,
-        /*allowTensorOpMathConversion=*/true};
+        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    const nonnegative_int num_inputs = 4_n;
+    const positive_int num_inputs = 4_p;
 
-    SUBCASE("forward_kernel") {
-      auto run_forward_test = [&](nonnegative_int input_rows,
-                                  nonnegative_int input_cols,
+    SUBCASE("gpu_forward_kernel") {
+      auto run_forward_test = [&](positive_int input_rows,
+                                  positive_int input_cols,
                                   TensorShape output_shape,
                                   ff_dim_t concat_axis) {
         TensorShape input_shape = TensorShape{
@@ -25,24 +25,24 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         };
 
         std::vector<GenericTensorAccessorR> input_accessors =
-            repeat(num_inputs, [&]() {
+            repeat(num_inputs.nonnegative_int_from_positive_int(), [&]() {
               return create_random_filled_accessor_r(input_shape, allocator);
             });
 
         GenericTensorAccessorW output_accessor =
             allocator.allocate_tensor(output_shape);
 
-        Kernels::Concat::forward_kernel(managed_stream.raw_stream(),
-                                        output_accessor,
-                                        input_accessors,
-                                        concat_axis);
+        Kernels::Concat::gpu_forward_kernel(managed_stream.raw_stream(),
+                                            output_accessor,
+                                            input_accessors,
+                                            concat_axis);
 
         CHECK(contains_non_zero(output_accessor));
       };
 
       SUBCASE("test forward concat, axis = 0") {
-        nonnegative_int input_rows = 2_n;
-        nonnegative_int input_cols = 4_n;
+        positive_int input_rows = 2_p;
+        positive_int input_cols = 4_p;
         TensorShape output_shape = TensorShape{
             TensorDims{FFOrdered{num_inputs * input_rows, input_cols}},
             DataType::FLOAT,
@@ -51,8 +51,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       }
 
       SUBCASE("test forward concat, axis = 1") {
-        nonnegative_int input_rows = 4_n;
-        nonnegative_int input_cols = 2_n;
+        positive_int input_rows = 4_p;
+        positive_int input_cols = 2_p;
         TensorShape output_shape = TensorShape{
             TensorDims{FFOrdered{input_rows, num_inputs * input_cols}},
             DataType::FLOAT,
@@ -61,9 +61,9 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       }
     }
 
-    SUBCASE("backward_kernel") {
-      auto run_backward_test = [&](nonnegative_int input_rows,
-                                   nonnegative_int input_cols,
+    SUBCASE("gpu_backward_kernel") {
+      auto run_backward_test = [&](positive_int input_rows,
+                                   positive_int input_cols,
                                    TensorShape output_shape,
                                    ff_dim_t concat_axis) {
         TensorShape input_shape = TensorShape{
@@ -75,14 +75,14 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
             create_random_filled_accessor_r(output_shape, allocator);
 
         std::vector<GenericTensorAccessorW> input_grad_accessors =
-            repeat(num_inputs, [&]() {
+            repeat(num_inputs.nonnegative_int_from_positive_int(), [&]() {
               return create_zero_filled_accessor_w(input_shape, allocator);
             });
 
-        Kernels::Concat::backward_kernel(managed_stream.raw_stream(),
-                                         output_grad_accessor,
-                                         input_grad_accessors,
-                                         concat_axis);
+        Kernels::Concat::gpu_backward_kernel(managed_stream.raw_stream(),
+                                             output_grad_accessor,
+                                             input_grad_accessors,
+                                             concat_axis);
 
         for (auto &accessor : input_grad_accessors) {
           CHECK(contains_non_zero(accessor));
@@ -90,8 +90,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       };
 
       SUBCASE("test backward concat, axis = 0") {
-        nonnegative_int input_rows = 2_n;
-        nonnegative_int input_cols = 4_n;
+        positive_int input_rows = 2_p;
+        positive_int input_cols = 4_p;
         TensorShape output_shape = TensorShape{
             TensorDims{FFOrdered{num_inputs * input_rows, input_cols}},
             DataType::FLOAT,
@@ -100,8 +100,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       }
 
       SUBCASE("test backward concat, axis = 1") {
-        nonnegative_int input_rows = 4_n;
-        nonnegative_int input_cols = 2_n;
+        positive_int input_rows = 4_p;
+        positive_int input_cols = 2_p;
         TensorShape output_shape = TensorShape{
             TensorDims{FFOrdered{input_rows, num_inputs * input_cols}},
             DataType::FLOAT,

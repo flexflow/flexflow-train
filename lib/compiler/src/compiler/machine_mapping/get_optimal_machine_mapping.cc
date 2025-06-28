@@ -156,7 +156,7 @@ MachineMappingResult
               tensor_movement,
               /*pre_mapping=*/assigned_pre_machine_views,
               /*post_mapping=*/assigned_post_machine_views);
-      float cost_across_split =
+      milliseconds_t cost_across_split =
           context.cost_estimator.estimate_cost(comm_across_split);
 
       result = minimize_runtime(result,
@@ -242,7 +242,7 @@ MachineMappingResult
     OpCostEstimateKey mapped =
         map_unmapped_op_cost_estimate_key(leaf, machine_view);
     OpCostMetrics metrics = context.cost_estimator.estimate_cost(mapped);
-    float cost = metrics.forward_runtime + metrics.backward_runtime;
+    milliseconds_t cost = metrics.forward_runtime + metrics.backward_runtime;
     return make_singleton_machine_mapping_result(cost, machine_view);
   };
 

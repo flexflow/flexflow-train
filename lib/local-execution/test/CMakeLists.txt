@@ -11,4 +11,6 @@ ff_add_test_executable(
     local-execution
     kernels
     op-attrs
+    task-spec
 )
+

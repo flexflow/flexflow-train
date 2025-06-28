@@ -378,15 +378,15 @@ tensor_guid_t
 
 tensor_guid_t ComputationGraphBuilder::conv2d(
     tensor_guid_t const &x,
-    nonnegative_int outChannels,
-    nonnegative_int kernelH,
-    nonnegative_int kernelW,
-    nonnegative_int strideH,
-    nonnegative_int strideW,
+    positive_int outChannels,
+    positive_int kernelH,
+    positive_int kernelW,
+    positive_int strideH,
+    positive_int strideW,
     nonnegative_int paddingH,
     nonnegative_int paddingW,
     std::optional<Activation> const &activation,
-    nonnegative_int groups,
+    positive_int groups,
     bool use_bias,
     std::optional<InitializerAttrs> const &maybe_kernel_initializer,
     std::optional<InitializerAttrs> const &maybe_bias_initializer,
@@ -440,8 +440,8 @@ tensor_guid_t ComputationGraphBuilder::dropout(
 
 tensor_guid_t ComputationGraphBuilder::embedding(
     tensor_guid_t const &input,
-    nonnegative_int num_entries,
-    nonnegative_int outDim,
+    positive_int num_entries,
+    positive_int outDim,
     AggregateOp aggr,
     DataType dtype,
     std::optional<InitializerAttrs> const &initializer,
@@ -491,10 +491,10 @@ tensor_guid_t ComputationGraphBuilder::gather(
 }
 tensor_guid_t ComputationGraphBuilder::pool2d(
     tensor_guid_t const &x,
-    nonnegative_int kernelH,
-    nonnegative_int kernelW,
-    nonnegative_int strideH,
-    nonnegative_int strideW,
+    positive_int kernelH,
+    positive_int kernelW,
+    positive_int strideH,
+    positive_int strideW,
     nonnegative_int paddingH,
     nonnegative_int paddingW,
     PoolOp type,
@@ -525,8 +525,8 @@ tensor_guid_t ComputationGraphBuilder::pool2d(
 
 tensor_guid_t ComputationGraphBuilder::adaptive_pool2d(
     tensor_guid_t const &uncasted_input,
-    nonnegative_int output_h,
-    nonnegative_int output_w,
+    positive_int output_h,
+    positive_int output_w,
     PoolOp type,
     std::optional<Activation> const &activation,
     std::optional<std::string> const &maybe_name) {
@@ -591,10 +591,10 @@ tensor_guid_t ComputationGraphBuilder::multihead_attention(
     tensor_guid_t const &query,
     tensor_guid_t const &key,
     tensor_guid_t const &value,
-    nonnegative_int embed_dim,
-    nonnegative_int num_heads,
-    nonnegative_int kdim,
-    nonnegative_int vdim,
+    positive_int embed_dim,
+    positive_int num_heads,
+    std::optional<positive_int> const &kdim,
+    std::optional<positive_int> const &vdim,
     float dropout,
     bool bias,
     bool add_bias_kv,
@@ -619,8 +619,8 @@ tensor_guid_t ComputationGraphBuilder::multihead_attention(
   MultiHeadAttentionAttrs attrs = MultiHeadAttentionAttrs{
       /*embed_dim=*/embed_dim,
       /*num_heads=*/num_heads,
-      /*kdim=*/kdim,
-      /*vdim=*/vdim,
+      /*kdim=*/kdim.value_or(embed_dim),
+      /*vdim=*/vdim.value_or(embed_dim),
       /*dropout=*/dropout,
       /*bias=*/bias,
       /*add_bias_kv=*/add_bias_kv,
@@ -667,7 +667,7 @@ TensorDims ComputationGraphBuilder::get_broadcast_target_dims(
 
 tensor_guid_t ComputationGraphBuilder::dense(
     tensor_guid_t const &input,
-    nonnegative_int outDim,
+    positive_int outDim,
     std::optional<Activation> activation,
     bool use_bias,
     DataType data_type,

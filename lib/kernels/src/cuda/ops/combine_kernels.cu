@@ -15,7 +15,7 @@
 
 #include "internal/device.h"
 #include "kernels/accessor.h"
-#include "kernels/combine_kernels.h"
+#include "kernels/combine_kernels_gpu.h"
 #include "kernels/datatype_dispatch.h"
 
 namespace FlexFlow {
@@ -27,12 +27,13 @@ struct ForwardKernel {
   void operator()(ffStream_t stream,
                   GenericTensorAccessorR const &input,
                   GenericTensorAccessorW const &output) {
-    checkCUDA(cudaMemcpyAsync(output.get<DT>(),
-                              input.get<DT>(),
-                              input.shape.get_volume().unwrap_nonnegative() *
-                                  size_of_datatype(DT).unwrap_nonnegative(),
-                              cudaMemcpyDeviceToDevice,
-                              stream));
+    checkCUDA(
+        cudaMemcpyAsync(output.get<DT>(),
+                        input.get<DT>(),
+                        input.shape.num_elements().int_from_positive_int() *
+                            size_of_datatype(DT).int_from_positive_int(),
+                        cudaMemcpyDeviceToDevice,
+                        stream));
   }
 };
 
@@ -41,22 +42,23 @@ struct BackwardKernel {
   void operator()(ffStream_t stream,
                   GenericTensorAccessorR const &output_grad,
                   GenericTensorAccessorW const &input_grad) {
-    size_t num_elements = output_grad.shape.get_volume().unwrap_nonnegative();
+    size_t num_elements =
+        output_grad.shape.num_elements().int_from_positive_int();
     add_kernel<real_type_t<DT>>
         <<<GET_BLOCKS(num_elements), CUDA_NUM_THREADS, 0, stream>>>(
             input_grad.get<DT>(), output_grad.get<DT>(), num_elements);
   }
 };
 
-void forward_kernel(ffStream_t stream,
-                    GenericTensorAccessorR const &input,
-                    GenericTensorAccessorW const &output) {
+void gpu_forward_kernel(ffStream_t stream,
+                        GenericTensorAccessorR const &input,
+                        GenericTensorAccessorW const &output) {
   DataTypeDispatch1<ForwardKernel>{}(input.data_type, stream, input, output);
 }
 
-void backward_kernel(ffStream_t stream,
-                     GenericTensorAccessorR const &output_grad,
-                     GenericTensorAccessorW const &input_grad) {
+void gpu_backward_kernel(ffStream_t stream,
+                         GenericTensorAccessorR const &output_grad,
+                         GenericTensorAccessorW const &input_grad) {
   DataTypeDispatch1<BackwardKernel>{}(
       input_grad.data_type, stream, output_grad, input_grad);
 }

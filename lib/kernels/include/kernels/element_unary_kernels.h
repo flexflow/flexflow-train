@@ -2,46 +2,41 @@
 #define _FLEXFLOW_OPS_KERNELS_ELEMENT_UNARY_KERNELS_H
 
 #include "kernels/accessor.h"
-#include "kernels/device.h"
+#include "kernels/device_stream_t.dtg.h"
+#include "kernels/element_unary_per_device_state.dtg.h"
 #include "kernels/ff_handle.h"
-#include "op-attrs/ops/element_unary.h"
-#include <cstddef>
+#include "op-attrs/ops/element_unary_attrs.dtg.h"
 
-namespace FlexFlow {
+namespace FlexFlow::Kernels::ElementUnary {
 
-struct ElementUnaryPerDeviceState {
-  ffTensorDescriptor_t inputTensor, outputTensor;
-  req<ffActivationDescriptor_t> actiDesc;
-};
+std::optional<ElementUnaryPerDeviceState>
+    init_kernel(DeviceType device_type,
+                ArrayShape const &input_shape,
+                ArrayShape const &output_shape,
+                ElementUnaryAttrs const &attrs);
 
-FF_VISITABLE_STRUCT_NO_EQ(ElementUnaryPerDeviceState,
-                          inputTensor,
-                          outputTensor,
-                          actiDesc);
+void forward_kernel(
+    device_stream_t const &stream,
+    std::optional<ElementUnaryPerDeviceState> const &device_state,
+    ElementUnaryAttrs const &attrs,
+    PerDeviceFFHandle const &handle,
+    GenericTensorAccessorR const &input,
+    GenericTensorAccessorW const &output);
 
-namespace Kernels::ElementUnary {
+void backward_kernel(
+    device_stream_t const &stream,
+    std::optional<ElementUnaryPerDeviceState> const &device_state,
+    ElementUnaryAttrs const &attrs,
+    PerDeviceFFHandle const &handle,
+    GenericTensorAccessorR const &output,
+    GenericTensorAccessorR const &output_grad,
+    GenericTensorAccessorR const &input,
+    GenericTensorAccessorW const &input_grad);
 
-ElementUnaryPerDeviceState init_kernel(ArrayShape const &input_shape,
-                                       ArrayShape const &output_shape,
-                                       ElementUnaryAttrs const &attrs);
+void cleanup_kernel(
+    DeviceType device_type,
+    std::optional<ElementUnaryPerDeviceState> &per_device_state);
 
-void forward_kernel(ffStream_t stream,
-                    ElementUnaryPerDeviceState const &device_state,
-                    ElementUnaryAttrs const &attrs,
-                    PerDeviceFFHandle const &handle,
-                    GenericTensorAccessorR const &input,
-                    GenericTensorAccessorW const &output);
-
-void backward_kernel(ffStream_t stream,
-                     ElementUnaryPerDeviceState const &device_state,
-                     ElementUnaryAttrs const &attrs,
-                     PerDeviceFFHandle const &handle,
-                     GenericTensorAccessorR const &output,
-                     GenericTensorAccessorR const &output_grad,
-                     GenericTensorAccessorR const &input,
-                     GenericTensorAccessorW const &input_grad);
-
-} // namespace Kernels::ElementUnary
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::ElementUnary
 
 #endif

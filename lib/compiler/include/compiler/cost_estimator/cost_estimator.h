@@ -13,7 +13,7 @@ namespace FlexFlow {
 
 struct ICostEstimator {
   virtual OpCostMetrics estimate_cost(OpCostEstimateKey const &) const = 0;
-  virtual float estimate_cost(TensorSetMovement const &) const = 0;
+  virtual milliseconds_t estimate_cost(TensorSetMovement const &) const = 0;
 
   ICostEstimator() = default;
   ICostEstimator(ICostEstimator const &) = delete;
@@ -25,7 +25,7 @@ CHECK_RC_COPY_VIRTUAL_COMPLIANT(ICostEstimator);
 
 struct CostEstimator {
   OpCostMetrics estimate_cost(OpCostEstimateKey const &) const;
-  float estimate_cost(TensorSetMovement const &m) const;
+  milliseconds_t estimate_cost(TensorSetMovement const &m) const;
 
   template <typename T, typename... Args>
   static typename std::enable_if<std::is_base_of<ICostEstimator, T>::value,

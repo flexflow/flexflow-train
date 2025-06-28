@@ -7,8 +7,8 @@
 #include "op-attrs/datatype.h"
 #include "pcg/device_type.dtg.h"
 #include "utils/containers/transform.h"
-#include "utils/required.h"
 #include <libassert/assert.hpp>
+#include <string>
 
 namespace FlexFlow {
 
@@ -121,7 +121,7 @@ public:
   }
 
   template <DataType DT>
-  real_type_t<DT> const &at(FFOrdered<nonnegative_int> const &indices) const {
+  real_type_t<DT> &at(FFOrdered<nonnegative_int> const &indices) const {
     return this->at<DT>(legion_ordered_from_ff_ordered(indices));
   }
 
@@ -132,9 +132,9 @@ public:
     ASSERT(this->data_type == DT, "Invalid datatype requested");
 
     using T = real_type_t<DT>;
-    T const *data_ptr = static_cast<T const *>(this->ptr);
+    T *data_ptr = static_cast<T *>(this->ptr);
     nonnegative_int offset = calculate_accessor_offset(indices, this->shape);
-    return data_ptr[offset];
+    return data_ptr[offset.unwrap_nonnegative()];
   }
 
 public:
@@ -153,8 +153,6 @@ private:
 
 std::string format_as(GenericTensorAccessorW const &);
 std::ostream &operator<<(std::ostream &, GenericTensorAccessorW const &);
-
-static_assert(is_fmtable<req<DataType> const &>::value, "");
 
 template <DataType DT>
 typename data_type_enum_to_class<DT>::type *
@@ -226,16 +224,31 @@ GenericTensorAccessorR read_only_accessor_from_write_accessor(
 
 bool is_shape_and_dtype_equal(GenericTensorAccessorR const &acc1,
                               GenericTensorAccessorR const &acc2);
+bool is_shape_and_dtype_equal(GenericTensorAccessorW const &acc1,
+                              GenericTensorAccessorW const &acc2);
 
 bool shape_and_dtype_matches(GenericTensorAccessorR const &accessor,
+                             ArrayShape const &expected_shape,
+                             DataType const &expected_dtype);
+bool shape_and_dtype_matches(GenericTensorAccessorW const &accessor,
                              ArrayShape const &expected_shape,
                              DataType const &expected_dtype);
 
 std::pair<ArrayShape, DataType>
     get_shape_and_datatype(GenericTensorAccessorR const &accessor);
+std::pair<ArrayShape, DataType>
+    get_shape_and_datatype(GenericTensorAccessorW const &accessor);
 
 void copy_accessor_data_to_l_from_r(GenericTensorAccessorW &dst_accessor,
                                     GenericTensorAccessorR const &src_accessor);
+
+template <DataType DT>
+real_type_t<DT> accessor_get_only_value(GenericTensorAccessorR const &acc) {
+  ASSERT(get_num_elements(acc.shape) == 1);
+  ASSERT(acc.data_type == DT);
+
+  return *static_cast<real_type_t<DT> const *>(acc.ptr);
+}
 
 } // namespace FlexFlow
 

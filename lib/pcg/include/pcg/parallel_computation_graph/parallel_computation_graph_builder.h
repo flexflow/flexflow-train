@@ -32,15 +32,15 @@ public:
 
   parallel_tensor_guid_t conv2d(
       parallel_tensor_guid_t const &input,
-      nonnegative_int outChannels,
-      nonnegative_int kernelH,
-      nonnegative_int kernelW,
-      nonnegative_int strideH,
-      nonnegative_int strideW,
+      positive_int outChannels,
+      positive_int kernelH,
+      positive_int kernelW,
+      positive_int strideH,
+      positive_int strideW,
       nonnegative_int paddingH,
       nonnegative_int paddingW,
       std::optional<Activation> const &activation = std::nullopt,
-      nonnegative_int groups = 1_n,
+      positive_int groups = 1_p,
       bool use_bias = true,
       std::optional<InitializerAttrs> const &kernel_initializer = std::nullopt,
       std::optional<InitializerAttrs> const &bias_initializer = std::nullopt,
@@ -49,7 +49,7 @@ public:
 
   parallel_tensor_guid_t dense(
       parallel_tensor_guid_t const &input,
-      nonnegative_int outDim,
+      positive_int outDim,
       std::optional<Activation> activation = std::nullopt,
       bool use_bias = true,
       DataType data_type = DataType::FLOAT,
@@ -60,8 +60,8 @@ public:
 
   parallel_tensor_guid_t embedding(
       parallel_tensor_guid_t const &input,
-      nonnegative_int num_entries,
-      nonnegative_int outDim,
+      positive_int num_entries,
+      positive_int outDim,
       AggregateOp aggr,
       DataType dtype = DataType::FLOAT,
       std::optional<InitializerAttrs> const &kernel_initializer = std::nullopt,
@@ -71,10 +71,10 @@ public:
       parallel_tensor_guid_t const &query,
       parallel_tensor_guid_t const &key,
       parallel_tensor_guid_t const &value,
-      nonnegative_int embed_dim,
-      nonnegative_int num_heads,
-      std::optional<nonnegative_int> kdim = std::nullopt,
-      std::optional<nonnegative_int> vdim = std::nullopt,
+      positive_int embed_dim,
+      positive_int num_heads,
+      std::optional<positive_int> kdim = std::nullopt,
+      std::optional<positive_int> vdim = std::nullopt,
       float dropout = 0.0f,
       bool bias = true,
       bool add_bias_kv = false,
@@ -119,20 +119,20 @@ public:
   parallel_tensor_guid_t
       parallel_partition(parallel_tensor_guid_t const &input,
                          ff_dim_t dim,
-                         nonnegative_int degree,
+                         positive_int degree,
                          std::optional<std::string> const &name = std::nullopt);
   parallel_tensor_guid_t
       parallel_combine(parallel_tensor_guid_t const &x,
                        ff_dim_t dim,
-                       nonnegative_int degree,
+                       positive_int degree,
                        std::optional<std::string> const &name = std::nullopt);
   parallel_tensor_guid_t
       parallel_replicate(parallel_tensor_guid_t const &x,
-                         nonnegative_int degree,
+                         positive_int degree,
                          std::optional<std::string> const &name = std::nullopt);
   parallel_tensor_guid_t
       parallel_reduce(parallel_tensor_guid_t const &x,
-                      nonnegative_int degree,
+                      positive_int degree,
                       std::optional<std::string> const &name = std::nullopt);
 
   ParallelTensorShape get_shape(parallel_tensor_guid_t const &) const;

@@ -20,199 +20,6 @@ GenericTensorAccessorR create_zero_filled_accessor_r(TensorShape const &shape,
   return read_only_accessor_from_write_accessor(accessor);
 }
 
-GenericTensorAccessorW
-    create_1d_accessor_w_with_contents(std::vector<float> const &contents,
-                                       Allocator &allocator) {
-  nonnegative_int ncols = num_elements(contents);
-  ASSERT(ncols > 0);
-
-  TensorShape shape = TensorShape{
-      TensorDims{FFOrdered{ncols}},
-      DataType::FLOAT,
-  };
-
-  Allocator cpu_allocator = create_local_cpu_memory_allocator();
-  GenericTensorAccessorW cpu_accessor = cpu_allocator.allocate_tensor(shape);
-
-  for (nonnegative_int col_idx : nonnegative_range(ncols)) {
-    cpu_accessor.at<DataType::FLOAT>(FFOrdered{col_idx}) =
-        contents.at(col_idx.unwrap_nonnegative());
-  }
-
-  GenericTensorAccessorW result = allocator.allocate_tensor(shape);
-  copy_accessor_data_to_l_from_r(
-      result, read_only_accessor_from_write_accessor(cpu_accessor));
-
-  return result;
-}
-
-GenericTensorAccessorW create_2d_accessor_w_with_contents(
-    std::vector<std::vector<float>> const &contents, Allocator &allocator) {
-  nonnegative_int nrows = num_elements(contents);
-  ASSERT(nrows > 0);
-
-  nonnegative_int ncols = throw_if_unexpected(
-      require_all_same1(transform(contents, [](std::vector<float> const &row) {
-        return num_elements(row);
-      })));
-  ASSERT(ncols > 0);
-
-  TensorShape shape = TensorShape{
-      TensorDims{FFOrdered{nrows, ncols}},
-      DataType::FLOAT,
-  };
-
-  Allocator cpu_allocator = create_local_cpu_memory_allocator();
-  GenericTensorAccessorW cpu_accessor = cpu_allocator.allocate_tensor(shape);
-
-  for (nonnegative_int row_idx : nonnegative_range(nrows)) {
-    for (nonnegative_int col_idx : nonnegative_range(ncols)) {
-      cpu_accessor.at<DataType::FLOAT>(FFOrdered{row_idx, col_idx}) =
-          contents.at(row_idx.unwrap_nonnegative())
-              .at(col_idx.unwrap_nonnegative());
-    }
-  }
-
-  GenericTensorAccessorW result = allocator.allocate_tensor(shape);
-  copy_accessor_data_to_l_from_r(
-      result, read_only_accessor_from_write_accessor(cpu_accessor));
-
-  return result;
-}
-
-GenericTensorAccessorW create_3d_accessor_w_with_contents(
-    std::vector<std::vector<std::vector<float>>> const &contents,
-    Allocator &allocator) {
-  nonnegative_int dim0_size = num_elements(contents);
-  ASSERT(dim0_size > 0);
-
-  nonnegative_int dim1_size = throw_if_unexpected(require_all_same1(
-      transform(contents, [](std::vector<std::vector<float>> const &m) {
-        return num_elements(m);
-      })));
-  ASSERT(dim1_size > 0);
-
-  nonnegative_int dim2_size = throw_if_unexpected(require_all_same1(
-      transform(contents, [](std::vector<std::vector<float>> const &m) {
-        return throw_if_unexpected(
-            require_all_same1(transform(m, [](std::vector<float> const &vec) {
-              return num_elements(vec);
-            })));
-      })));
-  ASSERT(dim2_size > 0);
-
-  TensorShape shape = TensorShape{
-      TensorDims{FFOrdered{dim0_size, dim1_size, dim2_size}},
-      DataType::FLOAT,
-  };
-
-  Allocator cpu_allocator = create_local_cpu_memory_allocator();
-  GenericTensorAccessorW cpu_accessor = cpu_allocator.allocate_tensor(shape);
-
-  for (nonnegative_int dim0_idx : nonnegative_range(dim0_size)) {
-    for (nonnegative_int dim1_idx : nonnegative_range(dim1_size)) {
-      for (nonnegative_int dim2_idx : nonnegative_range(dim2_size)) {
-        cpu_accessor.at<DataType::FLOAT>(
-            FFOrdered{dim0_idx, dim1_idx, dim2_idx}) =
-            contents.at(dim0_idx.unwrap_nonnegative())
-                .at(dim1_idx.unwrap_nonnegative())
-                .at(dim2_idx.unwrap_nonnegative());
-      }
-    }
-  }
-
-  GenericTensorAccessorW result = allocator.allocate_tensor(shape);
-  copy_accessor_data_to_l_from_r(
-      result, read_only_accessor_from_write_accessor(cpu_accessor));
-
-  return result;
-}
-
-GenericTensorAccessorW create_4d_accessor_w_with_contents(
-    std::vector<std::vector<std::vector<std::vector<float>>>> const &contents,
-    Allocator &allocator) {
-  nonnegative_int dim0_size = num_elements(contents);
-  ASSERT(dim0_size > 0);
-
-  nonnegative_int dim1_size = throw_if_unexpected(require_all_same1(transform(
-      contents, [](std::vector<std::vector<std::vector<float>>> const &t) {
-        return num_elements(t);
-      })));
-  ASSERT(dim1_size > 0);
-
-  nonnegative_int dim2_size = throw_if_unexpected(require_all_same1(transform(
-      contents, [](std::vector<std::vector<std::vector<float>>> const &m) {
-        return throw_if_unexpected(require_all_same1(
-            transform(m, [](std::vector<std::vector<float>> const &vec) {
-              return num_elements(vec);
-            })));
-      })));
-  ASSERT(dim2_size > 0);
-
-  nonnegative_int dim3_size = throw_if_unexpected(require_all_same1(transform(
-      contents, [](std::vector<std::vector<std::vector<float>>> const &t) {
-        return throw_if_unexpected(require_all_same1(
-            transform(t, [](std::vector<std::vector<float>> const &mat) {
-              return throw_if_unexpected(require_all_same1(
-                  transform(mat, [](std::vector<float> const &vec) {
-                    return num_elements(vec);
-                  })));
-            })));
-      })));
-  ASSERT(dim3_size > 0);
-
-  TensorShape shape = TensorShape{
-      TensorDims{FFOrdered{dim0_size, dim1_size, dim2_size, dim3_size}},
-      DataType::FLOAT,
-  };
-
-  GenericTensorAccessorW accessor = allocator.allocate_tensor(shape);
-
-  for (nonnegative_int dim0_idx : nonnegative_range(dim0_size)) {
-    for (nonnegative_int dim1_idx : nonnegative_range(dim1_size)) {
-      for (nonnegative_int dim2_idx : nonnegative_range(dim2_size)) {
-        for (nonnegative_int dim3_idx : nonnegative_range(dim3_size)) {
-          accessor.at<DataType::FLOAT>(
-              FFOrdered{dim0_idx, dim1_idx, dim2_idx, dim3_idx}) =
-              contents.at(dim0_idx.unwrap_nonnegative())
-                  .at(dim1_idx.unwrap_nonnegative())
-                  .at(dim2_idx.unwrap_nonnegative())
-                  .at(dim3_idx.unwrap_nonnegative());
-        }
-      }
-    }
-  }
-
-  return accessor;
-}
-
-GenericTensorAccessorR
-    create_1d_accessor_r_with_contents(std::vector<float> const &contents,
-                                       Allocator &allocator) {
-  return read_only_accessor_from_write_accessor(
-      create_1d_accessor_w_with_contents(contents, allocator));
-}
-
-GenericTensorAccessorR create_2d_accessor_r_with_contents(
-    std::vector<std::vector<float>> const &contents, Allocator &allocator) {
-  return read_only_accessor_from_write_accessor(
-      create_2d_accessor_w_with_contents(contents, allocator));
-}
-
-GenericTensorAccessorR create_3d_accessor_r_with_contents(
-    std::vector<std::vector<std::vector<float>>> const &contents,
-    Allocator &allocator) {
-  return read_only_accessor_from_write_accessor(
-      create_3d_accessor_w_with_contents(contents, allocator));
-}
-
-GenericTensorAccessorR create_4d_accessor_r_with_contents(
-    std::vector<std::vector<std::vector<std::vector<float>>>> const &contents,
-    Allocator &allocator) {
-  return read_only_accessor_from_write_accessor(
-      create_4d_accessor_w_with_contents(contents, allocator));
-}
-
 template <DataType DT>
 struct CreateRandomFilledAccessorW {
   GenericTensorAccessorW operator()(TensorShape const &shape,
@@ -225,7 +32,7 @@ struct CreateRandomFilledAccessorW {
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    size_t num_elements = get_num_elements(shape).unwrap_nonnegative();
+    size_t num_elements = get_num_elements(shape).int_from_positive_int();
     if constexpr (std::is_same<T, bool>::value) {
       std::bernoulli_distribution dist(0.5);
       for (size_t i = 0; i < num_elements; i++) {
@@ -272,12 +79,12 @@ struct FillWithZeros {
     if (accessor.device_type == DeviceType::CPU) {
       memset(accessor.ptr,
              0,
-             accessor.shape.get_volume().unwrap_nonnegative() * sizeof(T));
+             accessor.shape.num_elements().int_from_positive_int() * sizeof(T));
     } else {
-      checkCUDA(cudaMemset(accessor.ptr,
-                           0,
-                           accessor.shape.get_volume().unwrap_nonnegative() *
-                               sizeof(T)));
+      checkCUDA(cudaMemset(
+          accessor.ptr,
+          0,
+          accessor.shape.num_elements().int_from_positive_int() * sizeof(T)));
     }
   }
 };
@@ -293,7 +100,7 @@ struct CPUAccessorRContainsNonZero {
 
     T const *data_ptr = accessor.get<DT>();
 
-    int volume = accessor.shape.num_elements().unwrap_nonnegative();
+    int volume = accessor.shape.num_elements().int_from_positive_int();
     for (size_t i = 0; i < volume; i++) {
       if (data_ptr[i] != 0) {
         return true;
@@ -326,7 +133,7 @@ struct AccessorsAreEqual {
     T const *a_data_ptr = cpu_accessor_a.get<DT>();
     T const *b_data_ptr = cpu_accessor_b.get<DT>();
 
-    int volume = accessor_a.shape.num_elements().unwrap_nonnegative();
+    int volume = accessor_a.shape.num_elements().int_from_positive_int();
     for (size_t i = 0; i < volume; i++) {
       if (a_data_ptr[i] != b_data_ptr[i]) {
         return false;
@@ -364,7 +171,7 @@ struct CreateFilledAccessorW {
 
     T *data_ptr = src_accessor.get<DT>();
 
-    int volume = dst_accessor.shape.num_elements().unwrap_nonnegative();
+    int volume = dst_accessor.shape.num_elements().int_from_positive_int();
     for (size_t i = 0; i < volume; i++) {
       data_ptr[i] = unwrapped_value;
     }

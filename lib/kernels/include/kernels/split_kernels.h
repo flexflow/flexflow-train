@@ -1,22 +1,24 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_SPLIT_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_SPLIT_KERNELS_H
 
-#include "kernels/device.h"
+#include "kernels/device_stream_t.dtg.h"
 
 namespace FlexFlow::Kernels::Split {
-void forward_kernel(ffStream_t stream,
+
+void forward_kernel(device_stream_t const &stream,
                     float **out_ptrs,
                     float const *in_ptr,
-                    coord_t const *out_blk_sizes,
-                    coord_t in_blk_size,
-                    coord_t num_blks,
+                    int const *out_blk_sizes,
+                    int in_blk_size,
+                    int num_blks,
                     int numOutputs);
-void backward_kernel(ffStream_t stream,
+
+void backward_kernel(device_stream_t const &stream,
                      float *in_grad_ptr,
                      float const **out_grad_ptr,
-                     coord_t const *out_blk_sizes,
-                     coord_t in_blk_size,
-                     coord_t num_blks,
+                     int const *out_blk_sizes,
+                     int in_blk_size,
+                     int num_blks,
                      int numOutputs);
 
 } // namespace FlexFlow::Kernels::Split

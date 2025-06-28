@@ -2,33 +2,31 @@
 #define _FLEXFLOW_OPS_KERNELS_PARTITION_KERNELS_H
 
 #include "kernels/accessor.h"
-#include "kernels/device.h"
+#include "kernels/device_stream_t.dtg.h"
+#include "kernels/partition_per_device_state.dtg.h"
 
-namespace FlexFlow {
+namespace FlexFlow::Kernels::Repartition {
 
-struct RepartitionPerDeviceState {
-  PerDeviceFFHandle handle;
-  req<DataType> data_type;
-};
+std::optional<RepartitionPerDeviceState>
+    init_kernel(DeviceType device_type,
+                PerDeviceFFHandle const &handle,
+                DataType data_type);
 
-FF_VISITABLE_STRUCT_NO_EQ(RepartitionPerDeviceState, handle, data_type);
+void forward_kernel(
+    device_stream_t const &stream,
+    std::optional<RepartitionPerDeviceState> const &per_device_state,
+    GenericTensorAccessorR const &input,
+    GenericTensorAccessorW const &output);
 
-namespace Kernels::Repartition {
+void backward_kernel(
+    device_stream_t const &stream,
+    std::optional<RepartitionPerDeviceState> const &per_device_state,
+    GenericTensorAccessorR const &output_grad,
+    GenericTensorAccessorW const &input_grad);
 
-RepartitionPerDeviceState init_kernel(PerDeviceFFHandle const &handle,
-                                      DataType data_type);
+void cleanup_kernel(DeviceType device_type,
+                    std::optional<RepartitionPerDeviceState> &per_device_state);
 
-void forward_kernel(ffStream_t stream,
-                    RepartitionPerDeviceState const &m,
-                    GenericTensorAccessorR const &input,
-                    GenericTensorAccessorW const &output);
-
-void backward_kernel(ffStream_t stream,
-                     RepartitionPerDeviceState const &m,
-                     GenericTensorAccessorR const &output_grad,
-                     GenericTensorAccessorW const &input_grad);
-
-} // namespace Kernels::Repartition
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::Repartition
 
 #endif // _FLEXFLOW_OPS_KERNELS_PARTITION_KERNELS_H

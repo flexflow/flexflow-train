@@ -8,25 +8,13 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("GraphOptimizeState::operator==") {
     TensorShape input_shape = TensorShape{
         TensorDims{
-            FFOrdered<nonnegative_int>{
-                32_n,
-                16_n,
+            FFOrdered{
+                32_p,
+                16_p,
             },
         },
         DataType::FLOAT,
     };
-    // ParallelTensorShape input_shape =
-    //     ParallelTensorShape{ParallelTensorDims{
-    //                             FFOrdered<ShardParallelDim>{
-    //                                 ShardParallelDim{32_n, 2_n},
-    //                                 ShardParallelDim{16_n, 1_n},
-    //                             },
-    //                             ReplicaParallelDimSet{
-    //                                 SumDegree{1_n},
-    //                                 DiscardCopyDegree{1_n},
-    //                             },
-    //                         },
-    //                         DataType::FLOAT};
 
     // `machine_mapping` is determined by the PCG and the device mapping
     // algorithm, and `runtime` is determined by the PCG and the device mapping,
@@ -43,7 +31,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           builder.create_input_tensor(input_shape, "input0");
       parallel_tensor_guid_t dense0 =
           builder.dense(/*input=*/input0,
-                        /*outDim=*/8_n,
+                        /*outDim=*/8_p,
                         /*activation=*/Activation::RELU,
                         /*use_bias=*/true,
                         /*data_type=*/DataType::FLOAT,
@@ -53,7 +41,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       parallel_tensor_guid_t dense1 =
           builder.dense(/*input=*/dense0,
-                        /*outDim=*/4_n,
+                        /*outDim=*/4_p,
                         /*activation=*/Activation::RELU,
                         /*use_bias=*/true,
                         /*data_type=*/DataType::FLOAT,
@@ -89,7 +77,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           builder_.create_input_tensor(input_shape, "input0");
       parallel_tensor_guid_t dense0_ =
           builder_.dense(/*input=*/input0_,
-                         /*outDim=*/8_n,
+                         /*outDim=*/8_p,
                          /*activation=*/Activation::RELU,
                          /*use_bias=*/true,
                          /*data_type=*/DataType::FLOAT,
