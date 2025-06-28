@@ -18,6 +18,14 @@ LocalTrainingBacking make_local_training_backing_for_computation_graph(
     RuntimeArgConfig const &runtime_arg_config,
     OptimizerAttrs const &optimizer_attrs);
 
+LocalTrainingBacking make_local_training_backing_for_computation_graph_fragment(
+    Allocator &allocator,
+    std::unordered_map<training_tensor_guid_t, GenericTensorAccessorW> const
+        &preallocated_tensors,
+    TrainingComputationGraphFragment const &training_computation_graph_fragment,
+    RuntimeArgConfig const &runtime_arg_config,
+    OptimizerAttrs const &optimizer_attrs);
+
 std::optional<milliseconds_t> execute_forward(LocalTaskRegistry const &,
                                               LocalTensorBacking const &,
                                               LocalArgsBacking const &,
@@ -32,8 +40,6 @@ std::optional<milliseconds_t> execute_backward(LocalTaskRegistry const &,
 
 void compute_loss(LocalTrainingBacking const &,
                   LossAttrs const &,
-                  tensor_guid_t const &logit_tensor,
-                  loss_tensor_guid_t const &label_tensor,
                   Allocator &);
 
 void execute_update(LocalTrainingBacking const &,

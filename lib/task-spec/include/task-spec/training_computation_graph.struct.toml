@@ -7,6 +7,7 @@ includes = [
   "<unordered_map>",
   "pcg/tensor_guid_t.dtg.h",
   "task-spec/training_tensor_group.dtg.h",
+  "task-spec/loss_tensor_guid_t.dtg.h",
 ]
 
 [[fields]]
@@ -16,3 +17,11 @@ type = "::FlexFlow::ComputationGraph"
 [[fields]]
 name = "training_tensor_group_for_tensor"
 type = "std::unordered_map<tensor_guid_t, TrainingTensorGroup>"
+
+[[fields]]
+name = "logit_tensor"
+type = "::FlexFlow::tensor_guid_t"
+
+[[fields]]
+name = "label_tensor"
+type = "::FlexFlow::loss_tensor_guid_t"

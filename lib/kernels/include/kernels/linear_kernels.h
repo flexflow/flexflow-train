@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_LINEAR_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_LINEAR_KERNELS_H
 
+#include "kernels/accessor.h"
 #include "kernels/device_handle_t.dtg.h"
 #include "kernels/device_stream_t.dtg.h"
 #include "kernels/ff_handle.h"
@@ -26,13 +27,10 @@ std::optional<LinearPerDeviceState>
 
 void forward_kernel(device_stream_t const &stream,
                     std::optional<LinearPerDeviceState> const &per_device_state,
-                    float const *input_ptr,
-                    float *output_ptr,
-                    float const *filter_ptr,
-                    float const *bias_ptr,
-                    int in_dim,
-                    int out_dim,
-                    int batch_size);
+                    GenericTensorAccessorR const &input_accessor,
+                    GenericTensorAccessorW const &output_accessor,
+                    GenericTensorAccessorR const &filter_accessor,
+                    std::optional<GenericTensorAccessorR> const &bias_accessor);
 
 void backward_kernel(
     device_stream_t const &stream,

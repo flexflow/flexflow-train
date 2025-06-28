@@ -1,4 +1,6 @@
 #include "task-spec/training_computation_graph.h"
+#include "task-spec/loss_tensor_source.h"
+#include "task-spec/training_computation_graph_fragment.h"
 #include "task-spec/training_tensor_group.h"
 #include "task-spec/training_tensor_group_with_attrs.h"
 #include "utils/containers/contains.h"
@@ -16,10 +18,14 @@ namespace FlexFlow {
 TrainingComputationGraph generate_training_computation_graph(
     ComputationGraph const &computation_graph,
     OptimizerAttrs const &optimizer_attrs,
+    tensor_guid_t const &logit_tensor,
     ForwardTensorSource &forward_tensor_source,
     GradientTensorSource &gradient_tensor_source,
-    OptimizerTensorSource &optimizer_tensor_source) {
+    OptimizerTensorSource &optimizer_tensor_source,
+    LossTensorSource &loss_tensor_source) {
 
+  loss_tensor_guid_t label_tensor = loss_tensor_source.new_loss_tensor();
+    
   return TrainingComputationGraph{
       /*computation_graph=*/computation_graph,
       /*training_tensor_group_for_tensor=*/transform(
@@ -35,7 +41,10 @@ TrainingComputationGraph generate_training_computation_graph(
                     /*gradient_tensor_source=*/gradient_tensor_source,
                     /*optimizer_tensor_source=*/optimizer_tensor_source),
             };
-          })};
+          }),
+      /*logit_tensor=*/logit_tensor,
+      /*label_tensor=*/label_tensor,
+  };
 }
 
 TrainingTensorGroup get_training_tensor_group_for_tensor_guid(
@@ -116,12 +125,15 @@ tensor_guid_t get_tensor_guid_for_training_tensor_guid(
 std::unordered_set<training_tensor_guid_t>
     get_all_training_tensors_in_training_computation_graph(
         TrainingComputationGraph const &training_cg) {
-  return flatmap(
+  std::unordered_set<training_tensor_guid_t> result = flatmap(
       unordered_set_of(keys(training_cg.training_tensor_group_for_tensor)),
       [&](tensor_guid_t t) {
         return get_all_training_tensors_in_tensor_group(
             training_cg.training_tensor_group_for_tensor.at(t));
       });
+  
+  result.insert(training_tensor_guid_t{training_cg.label_tensor});
+  return result;
 }
 
 TrainingLayerPlusContext
@@ -151,9 +163,15 @@ TrainingLayerPlusContext
 std::unordered_map<training_tensor_guid_t, TensorShape>
     get_all_training_tensor_shapes(
         TrainingComputationGraph const &training_cg) {
-  return generate_map(
+  std::unordered_map<training_tensor_guid_t, TensorShape> result = generate_map(
       get_all_training_tensors_in_training_computation_graph(training_cg),
       [&](training_tensor_guid_t t) {
+        if (t.is_loss_tensor()) {
+          ASSERT(t == training_tensor_guid_t{training_cg.label_tensor});
+          return get_tensor_attrs(training_cg.computation_graph, 
+                                  training_cg.logit_tensor).shape;
+        }
+
         return get_tensor_attrs(
                    training_cg.computation_graph,
                    get_tensor_guid_for_training_tensor_guid(training_cg, t))

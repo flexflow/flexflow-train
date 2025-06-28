@@ -111,20 +111,15 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
   auto per_device_state =
-      acc.get_argument<LinearPerDeviceState>(PER_DEVICE_STATE);
+      acc.get_argument<std::optional<LinearPerDeviceState>>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   DeviceType kernel_device_type =
       acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto attrs = acc.get_argument<LinearAttrs>(ATTRS);
 
-  positive_int in_dim = input.shape.at(ff_dim_t{0_n});
-  positive_int out_dim = output.shape.at(ff_dim_t{0_n});
-  positive_int batch_size = positive_int{output.shape.num_elements() / out_dim};
-
-  float const *bias_ptr = NULL;
+  std::optional<GenericTensorAccessorR> bias = std::nullopt;
   if (attrs.use_bias) {
-    auto bias = acc.get_tensor<Permissions::RO>(BIAS);
-    bias_ptr = bias.get_float_ptr();
+    bias = acc.get_tensor<Permissions::RO>(BIAS);
   }
 
   auto result = profile(forward_kernel,
@@ -132,13 +127,10 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
                         kernel_device_type,
                         "[Linear] forward_time = {:.2lf}ms\n",
                         per_device_state,
-                        input.get_float_ptr(),
-                        output.get_float_ptr(),
-                        weight.get_float_ptr(),
-                        bias_ptr,
-                        in_dim.int_from_positive_int(),
-                        out_dim.int_from_positive_int(),
-                        batch_size.int_from_positive_int());
+                        input,
+                        output,
+                        weight,
+                        bias);
 
   return result;
 }
@@ -154,7 +146,7 @@ static std::optional<float>
   auto output_grad = acc.get_tensor_grad<Permissions::RW>(OUTPUT);
 
   auto per_device_state =
-      acc.get_argument<LinearPerDeviceState>(PER_DEVICE_STATE);
+      acc.get_argument<std::optional<LinearPerDeviceState>>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   DeviceType kernel_device_type =
       acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);

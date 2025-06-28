@@ -4,6 +4,7 @@
 #include "pcg/optimizer_attrs.dtg.h"
 #include "task-spec/forward_tensor_source.h"
 #include "task-spec/gradient_tensor_source.h"
+#include "task-spec/loss_tensor_source.h"
 #include "task-spec/optimizer_tensor_source.h"
 #include "task-spec/training_computation_graph.dtg.h"
 #include "task-spec/training_layer_plus_context.dtg.h"
@@ -13,10 +14,12 @@ namespace FlexFlow {
 
 TrainingComputationGraph generate_training_computation_graph(
     ComputationGraph const &computation_graph,
-    OptimizerAttrs const &optimizer_attrs,
+    std::optional<OptimizerAttrs> const &optimizer_attrs,
+    tensor_guid_t const &logit_tensor,
     ForwardTensorSource &forward_tensor_source,
     GradientTensorSource &gradient_tensor_source,
-    OptimizerTensorSource &optimizer_tensor_source);
+    OptimizerTensorSource &optimizer_tensor_source,
+    LossTensorSource &loss_tensor_source);
 
 TrainingTensorGroup
     get_training_tensor_group_for_tensor_guid(TrainingComputationGraph const &,

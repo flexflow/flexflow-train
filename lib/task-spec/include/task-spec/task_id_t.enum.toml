@@ -107,9 +107,6 @@ name = "BATCHNORM_FWD_TASK_ID"
 name = "BATCHNORM_BWD_TASK_ID"
 
 [[values]]
-name = "BATCHMATMUL_INIT_TASK_ID"
-
-[[values]]
 name = "BATCHMATMUL_FWD_TASK_ID"
 
 [[values]]

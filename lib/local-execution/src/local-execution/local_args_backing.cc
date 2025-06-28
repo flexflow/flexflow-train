@@ -36,15 +36,23 @@ std::unordered_map<slot_id_t, ConcreteArgSpec>
 }
 
 std::optional<DeviceSpecificDeviceStates>
-    create_per_device_op_state(LocalTaskRegistry const &task_registry,
+    create_per_device_op_state(LocalTaskRegistry const &local_task_registry,
                                LocalTensorBacking const &tensor_backing,
                                RuntimeArgConfig const &runtime_arg_config,
                                Allocator &allocator,
                                TrainingLayerPlusContext const &training_layer) {
-  if (!registry_contains_task_for_layer(
-          task_registry, training_layer.layer_guid, OpTaskType::INIT)) {
+  std::optional maybe_registered_task = try_get_registered_task(
+        local_task_registry,
+        training_layer.layer_guid,
+        OpTaskType::INIT);
+
+  ASSERT(maybe_registered_task.has_value());
+
+  registered_task_t registered_task = maybe_registered_task.value();
+  if (registered_task.is_noop_task()) {
     return std::nullopt;
   }
+
   TaskInvocation invocation = lower_to_task_invocation(
       /*op_task_invocation=*/get_init_op_task_invocation(
           training_layer.layer_attrs.op_attrs),
@@ -54,10 +62,10 @@ std::optional<DeviceSpecificDeviceStates>
   TaskArgumentAccessor accessor = get_task_arg_accessor(
       tensor_backing, runtime_arg_config, invocation, allocator);
   TaskSignatureAndImpl task_sig_impl =
-      task_registry.task_mapping.at(invocation.task_id);
+      local_task_registry.task_mapping.at(invocation.task_id);
   auto fn =
       task_sig_impl.impl_function.get<InitOpTaskImplFunction>().function_ptr;
-  std::optional<DeviceSpecificDeviceStates> device_state = fn(accessor);
+  DeviceSpecificDeviceStates device_state = fn(accessor);
   return device_state;
 }
 

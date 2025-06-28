@@ -11,15 +11,11 @@ namespace FlexFlow {
 struct ModelTrainingInstance {
   ModelTrainingInstance(Allocator const &,
                         LocalTrainingBacking const &,
-                        tensor_guid_t const &logit_tensor,
-                        loss_tensor_guid_t const &label_tensor,
                         LossAttrs const &,
                         OptimizerAttrs const &);
 
   Allocator allocator;
   LocalTrainingBacking training_backing;
-  tensor_guid_t logit_tensor;
-  loss_tensor_guid_t label_tensor;
   LossAttrs loss_attrs;
   OptimizerAttrs optimizer_attrs;
 

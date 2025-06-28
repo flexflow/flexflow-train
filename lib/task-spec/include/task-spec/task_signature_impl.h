@@ -8,7 +8,7 @@
 
 namespace FlexFlow {
 
-TaskSignatureAndImpl get_task_sig_impl(task_id_t const &);
+TaskSignatureAndImpl get_task_signature_and_impl_for_task_id(task_id_t const &);
 std::vector<task_id_t> get_task_ids(ComputationGraphOpAttrs const &);
 
 OpTaskInvocation get_init_op_task_invocation(ComputationGraphOpAttrs const &);

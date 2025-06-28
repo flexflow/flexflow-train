@@ -35,10 +35,6 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("LocalBackend e2e Training") {
     Allocator allocator = create_local_cpu_memory_allocator();
 
-    // allocate label tensors
-    LossTensorSource loss_tensor_source;
-    loss_tensor_guid_t label_tensor_guid = loss_tensor_source.new_loss_tensor();
-
     positive_int batch_size = 10_p;
     positive_int data_dim = 16_p;
     positive_int hidden_dim = 32_p;
@@ -120,13 +116,16 @@ TEST_SUITE(FF_TEST_SUITE) {
     ForwardTensorSource forward_tensor_source;
     GradientTensorSource gradient_tensor_source;
     OptimizerTensorSource optimizer_tensor_source;
+    LossTensorSource loss_tensor_source;
 
     TrainingComputationGraph training_computation_graph =
         generate_training_computation_graph(computation_graph,
                                             optimizer_attrs,
+                                            logit_tensor,
                                             forward_tensor_source,
                                             gradient_tensor_source,
-                                            optimizer_tensor_source);
+                                            optimizer_tensor_source,
+                                            loss_tensor_source);
 
     LocalTrainingBacking local_training_backing =
         make_local_training_backing_for_computation_graph(
@@ -140,8 +139,6 @@ TEST_SUITE(FF_TEST_SUITE) {
     ModelTrainingInstance model_training_instance =
         ModelTrainingInstance{allocator,
                               local_training_backing,
-                              logit_tensor,
-                              label_tensor_guid,
                               loss_attrs,
                               optimizer_attrs};
 

@@ -36,7 +36,7 @@ static Allocator
   }
 }
 
-static ComputationGraph create_computation_graph_for_local_cost_estimation(
+static TrainingComputationGraph create_computation_graph_for_local_cost_estimation(
     PCGOperatorAttrs const &op,
     std::vector<ParallelTensorShape> const &inputs,
     std::vector<ParallelTensorShape> const &weights,
@@ -74,7 +74,21 @@ static ComputationGraph create_computation_graph_for_local_cost_estimation(
       input_tensors,
       weight_tensors);
 
-  return computation_graph;
+  ForwardTensorSource forward_tensor_source;
+  GradientTensorSource gradient_tensor_source;
+  OptimizerTensorSource optimizer_tensor_source;
+  LossTensorSource loss_tensor_source;
+
+  TrainingComputationGraph training_cg = generate_training_computation_graph(
+      /*computation_graph=*/computation_graph,
+      /*optimizer_attrs=*/optimizer_attrs,
+      /*logit_tensor=*/operator_layer.outputs.at(0),
+      /*forward_tensor_source=*/forward_tensor_source,
+      /*gradient_tensor_source=*/gradient_tensor_source,
+      /*optimizer_tensor_source=*/optimizer_tensor_source,
+      /*loss_tensor_source=*/loss_tensor_source);
+
+  return training_cg;
 }
 
 OpCostMetrics LocalCostEstimator::estimate_cost(
@@ -95,20 +109,9 @@ OpCostMetrics LocalCostEstimator::estimate_cost(
     };
   }
 
-  ComputationGraph computation_graph =
+  TrainingComputationGraph computation_graph =
       create_computation_graph_for_local_cost_estimation(
-          op, inputs, weights, outputs);
-
-  ForwardTensorSource forward_tensor_source;
-  GradientTensorSource gradient_tensor_source;
-  OptimizerTensorSource optimizer_tensor_source;
-
-  TrainingComputationGraph training_cg = generate_training_computation_graph(
-      /*computation_graph=*/computation_graph,
-      /*optimizer_attrs=*/this->optimizer_attrs,
-      /*forward_tensor_source=*/forward_tensor_source,
-      /*gradient_tensor_source=*/gradient_tensor_source,
-      /*optimizer_tensor_source=*/optimizer_tensor_source);
+          op, inputs, weights, outputs, optimizer_attrs, );
 
   // allocate memory
   std::shared_ptr<TrackedAllocator> tracked_allocator_ptr =

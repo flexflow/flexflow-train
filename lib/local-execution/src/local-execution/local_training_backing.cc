@@ -59,8 +59,17 @@ std::optional<milliseconds_t>
                     TrainingLayerPlusContext const &training_layer,
                     Allocator &allocator) {
 
-  ASSERT(registry_contains_task_for_layer(
-      local_task_registry, training_layer.layer_guid, OpTaskType::FWD));
+  std::optional maybe_registered_task = try_get_registered_task(
+        local_task_registry,
+        training_layer.layer_guid,
+        OpTaskType::BWD);
+
+  ASSERT(maybe_registered_task.has_value());
+
+  registered_task_t registered_task = maybe_registered_task.value();
+  if (registered_task.is_noop_task()) {
+    return std::nullopt;
+  }
 
   std::optional<DeviceSpecificDeviceStates> device_state =
       get_per_device_op_state_if_exists(local_args_backing,
@@ -82,16 +91,16 @@ std::optional<milliseconds_t>
 
 void compute_loss(LocalTrainingBacking const &local_training_backing,
                   LossAttrs const &loss_attrs,
-                  tensor_guid_t const &logit_tensor,
-                  loss_tensor_guid_t const &label_tensor,
                   Allocator &allocator) {
+
+  TrainingComputationGraph training_cg = local_training_backing.training_computation_graph;
+  tensor_guid_t logit_tensor = training_cg.logit_tensor;
+  loss_tensor_guid_t label_tensor = training_cg.label_tensor;
 
   TaskInvocation loss_invocation = backward(
       loss_attrs,
-      get_forward_tensor_guid_for_tensor_guid(
-          local_training_backing.training_computation_graph, logit_tensor),
-      get_gradient_tensor_guid_for_tensor_guid(
-          local_training_backing.training_computation_graph, logit_tensor),
+      get_forward_tensor_guid_for_tensor_guid(training_cg, logit_tensor),
+      get_gradient_tensor_guid_for_tensor_guid(training_cg, logit_tensor),
       label_tensor);
   // TODO: https://github.com/flexflow/flexflow-train/issues/1442
   // assert(is_invocation_valid(get_loss_bwd_signature(), loss_invocation));
@@ -110,8 +119,16 @@ std::optional<milliseconds_t>
                      LocalArgsBacking const &local_args_backing,
                      TrainingLayerPlusContext const &training_layer,
                      Allocator &allocator) {
-  if (!registry_contains_task_for_layer(
-          local_task_registry, training_layer.layer_guid, OpTaskType::BWD)) {
+  
+  std::optional maybe_registered_task = try_get_registered_task(
+        local_task_registry,
+        training_layer.layer_guid,
+        OpTaskType::BWD);
+
+  ASSERT(maybe_registered_task.has_value());
+
+  registered_task_t registered_task = maybe_registered_task.value();
+  if (registered_task.is_noop_task()) {
     return std::nullopt;
   }
 

@@ -9,6 +9,10 @@ std::vector<nonnegative_int> nonnegative_range(nonnegative_int end) {
                    [](int x) { return nonnegative_int{x}; });
 }
 
+std::vector<nonnegative_int> nonnegative_range(positive_int end) {
+  return nonnegative_range(end.nonnegative_int_from_positive_int());
+}
+
 std::vector<nonnegative_int>
     nonnegative_range(nonnegative_int start, nonnegative_int end, int step) {
   return transform(

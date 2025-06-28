@@ -32,7 +32,7 @@
 
 namespace FlexFlow {
 
-TaskSignatureAndImpl get_task_sig_impl(task_id_t const &task_id) {
+TaskSignatureAndImpl get_task_signature_and_impl_for_task_id(task_id_t const &task_id) {
   switch (task_id) {
     case task_id_t::ELEMENTBINARY_INIT_TASK_ID:
       return TaskSignatureAndImpl{get_element_binary_init_task_impl(),

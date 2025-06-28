@@ -9,13 +9,11 @@ namespace FlexFlow {
 ModelTrainingInstance::ModelTrainingInstance(
     Allocator const &allocator,
     LocalTrainingBacking const &local_training_backing,
-    tensor_guid_t const &logit_tensor,
-    loss_tensor_guid_t const &label_tensor,
     LossAttrs const &loss_attrs,
     OptimizerAttrs const &optimizer_attrs)
     : allocator(allocator), training_backing(local_training_backing),
-      loss_attrs(loss_attrs), optimizer_attrs(optimizer_attrs),
-      logit_tensor(logit_tensor), label_tensor(label_tensor){};
+      loss_attrs(loss_attrs), optimizer_attrs(optimizer_attrs)
+{ }
 
 std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
     ModelTrainingInstance::forward() {
@@ -44,8 +42,6 @@ std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
     ModelTrainingInstance::backward() {
   compute_loss(this->training_backing,
                this->loss_attrs,
-               this->logit_tensor,
-               this->label_tensor,
                this->allocator);
 
   std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
@@ -80,7 +76,8 @@ void ModelTrainingInstance::update() {
 
 GenericTensorAccessorR ModelTrainingInstance::get_loss_tensor_accessor() const {
   gradient_tensor_guid_t loss_tensor = get_gradient_tensor_guid_for_tensor_guid(
-      this->training_backing.training_computation_graph, this->logit_tensor);
+      this->training_backing.training_computation_graph, 
+      this->training_backing.training_computation_graph.logit_tensor);
   GenericTensorAccessorW loss_tensor_backing =
       this->training_backing.local_tensor_backing
           .backing_for_training_tensor_map.at(
