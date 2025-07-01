@@ -11,6 +11,7 @@
 #include "task-spec/optimizer_tensor_source.h"
 #include "task-spec/runtime_arg_config.h"
 #include "task-spec/training_computation_graph.h"
+#include "utils/containers/get_only.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -59,6 +60,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                    "linear"},
         inputs_layer.outputs,
         weights_layer.outputs);
+    tensor_guid_t logit_tensor = get_only(linear_operator.outputs);
 
     RuntimeArgConfig runtime_arg_config = gpu_make_runtime_arg_config(
         managed_handle.raw_handle(),
@@ -68,14 +70,17 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     ForwardTensorSource forward_tensor_source;
     GradientTensorSource gradient_tensor_source;
     OptimizerTensorSource optimizer_tensor_source;
+    LossTensorSource loss_tensor_source;
 
     auto make_training_backing = [&](OptimizerAttrs const &optimizer_attrs) {
       TrainingComputationGraph training_computation_graph =
           generate_training_computation_graph(computation_graph,
                                               optimizer_attrs,
+                                              logit_tensor,
                                               forward_tensor_source,
                                               gradient_tensor_source,
-                                              optimizer_tensor_source);
+                                              optimizer_tensor_source,
+                                              loss_tensor_source);
 
       return make_local_training_backing_for_computation_graph(
           /*allocator=*/allocator,

@@ -152,31 +152,23 @@ static std::optional<float>
       acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto attrs = acc.get_argument<LinearAttrs>(ATTRS);
 
-  float *bias_grad_ptr = NULL;
+  std::optional<GenericTensorAccessorW> bias_grad = std::nullopt;
   if (attrs.use_bias) {
-    auto bias_grad = acc.get_tensor_grad<Permissions::RW>(BIAS);
-    bias_grad_ptr = bias_grad.get_float_ptr();
+    bias_grad = acc.get_tensor<Permissions::RW>(BIAS);
   }
-
-  positive_int in_dim = input.shape.at(ff_dim_t{0_n});
-  positive_int out_dim = output.shape.at(ff_dim_t{0_n});
-  positive_int batch_size = positive_int{output.shape.num_elements() / out_dim};
 
   auto result = profile(backward_kernel,
                         profiling,
                         kernel_device_type,
                         "[Linear] backward_time = {:.2lf}ms\n",
                         per_device_state,
-                        output.get_float_ptr(),
-                        output_grad.get_float_ptr(),
-                        input.get_float_ptr(),
-                        input_grad.get_float_ptr(),
-                        weight.get_float_ptr(),
-                        weight_grad.get_float_ptr(),
-                        bias_grad_ptr,
-                        in_dim.int_from_positive_int(),
-                        out_dim.int_from_positive_int(),
-                        batch_size.int_from_positive_int());
+                        output,
+                        output_grad,
+                        input,
+                        input_grad,
+                        weight,
+                        weight_grad,
+                        bias_grad);
 
   return result;
 }

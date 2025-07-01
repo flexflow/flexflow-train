@@ -74,7 +74,7 @@ GenericTensorAccessorW
   ArrayShape reduced_shape =
       array_shape_drop_dims(input.shape, should_drop_dim);
   GenericTensorAccessorW output_cpu = cpu_allocator.allocate_tensor(
-      get_tensor_shape(reduced_shape, input.data_type));
+      tensor_shape_from_array_shape(reduced_shape, input.data_type));
 
   DataTypeDispatch1<CPUReduceTensorAccessorInDims>{}(
       input_cpu.data_type, input_cpu, output_cpu, dims, f);

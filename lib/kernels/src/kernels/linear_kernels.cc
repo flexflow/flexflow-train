@@ -2,6 +2,8 @@
 #include "kernels/linear_kernels_cpu.h"
 #include "kernels/linear_kernels_gpu.h"
 #include <libassert/assert.hpp>
+#include "kernels/copy_tensor_accessor.h"
+#include "kernels/local_cuda_allocator.h"
 
 namespace FlexFlow::Kernels::Linear {
 
@@ -54,15 +56,16 @@ void forward_kernel(device_stream_t const &stream,
     gpu_forward_kernel(
         /*stream=*/stream.require_gpu(),
         /*per_device_state=*/per_device_state.value(),
-        /*input_ptr=*/input_accessor.get<DataType::FLOAT>(),
-        /*output_ptr=*/output_accessor.get<DataType::FLOAT>(),
-        /*filter_ptr=*/filter_accessor.get<DataType::FLOAT>(),
+        /*input_ptr=*/input_accessor.get_float_ptr(),
+        /*output_ptr=*/output_accessor.get_float_ptr(),
+        /*filter_ptr=*/filter_accessor.get_float_ptr(),
         /*bias_ptr=*/bias_ptr,
         /*in_dim=*/in_dim.int_from_positive_int(),
         /*out_dim=*/out_dim.int_from_positive_int(),
         /*batch_size=*/batch_size.int_from_positive_int());
   } else {
     ASSERT(stream.is_cpu());
+    ASSERT(per_device_state == std::nullopt);
     cpu_forward_kernel(
                        /*input_accessor=*/input_accessor,
                        /*output_accessor=*/output_accessor,
@@ -74,43 +77,50 @@ void forward_kernel(device_stream_t const &stream,
 void backward_kernel(
     device_stream_t const &stream,
     std::optional<LinearPerDeviceState> const &per_device_state,
-    float const *output_ptr,
-    float *output_grad_ptr,
-    float const *input_ptr,
-    float *input_grad_ptr,
-    float const *kernel_ptr,
-    float *kernel_grad_ptr,
-    float *bias_grad_ptr,
-    int in_dim,
-    int out_dim,
-    int batch_size) {
+    GenericTensorAccessorR const &output,
+    GenericTensorAccessorR const &output_grad,
+    GenericTensorAccessorR const &input,
+    GenericTensorAccessorW const &input_grad,
+    GenericTensorAccessorR const &kernel,
+    GenericTensorAccessorW const &kernel_grad,
+    std::optional<GenericTensorAccessorW> const &bias_grad) {
   if (stream.is_gpu()) {
+    float *bias_grad_ptr = 
+      transform(bias_grad, 
+                [](GenericTensorAccessorW const &b) { return b.get_float_ptr(); })
+      .value_or(nullptr);
+
+    positive_int in_dim = input.shape.at(ff_dim_t{0_n});
+    positive_int out_dim = output.shape.at(ff_dim_t{0_n});
+    positive_int batch_size = positive_int{output.shape.num_elements() / out_dim};
+
+    Allocator gpu_allocator = create_local_cuda_memory_allocator();
+    GenericTensorAccessorW modifiable_output_grad = copy_tensor_accessor_r(output_grad, gpu_allocator);
+
     gpu_backward_kernel(
         /*stream=*/stream.require_gpu(),
         /*per_device_state=*/per_device_state.value(),
-        /*output_ptr=*/output_ptr,
-        /*output_grad_ptr=*/output_grad_ptr,
-        /*input_ptr=*/input_ptr,
-        /*input_grad_ptr=*/input_grad_ptr,
-        /*kernel_ptr=*/kernel_ptr,
-        /*kernel_grad_ptr=*/kernel_grad_ptr,
+        /*output_ptr=*/output.get_float_ptr(),
+        /*output_grad_ptr=*/modifiable_output_grad.get_float_ptr(),
+        /*input_ptr=*/input.get_float_ptr(),
+        /*input_grad_ptr=*/input_grad.get_float_ptr(),
+        /*kernel_ptr=*/kernel.get_float_ptr(),
+        /*kernel_grad_ptr=*/kernel_grad.get_float_ptr(),
         /*bias_grad_ptr=*/bias_grad_ptr,
-        /*in_dim=*/in_dim,
-        /*out_dim=*/out_dim,
-        /*batch_size=*/batch_size);
+        /*in_dim=*/in_dim.int_from_positive_int(),
+        /*out_dim=*/out_dim.int_from_positive_int(),
+        /*batch_size=*/batch_size.int_from_positive_int());
   } else {
     ASSERT(stream.is_cpu());
+    ASSERT(per_device_state == std::nullopt);
     cpu_backward_kernel(
-        /*output_ptr=*/output_ptr,
-        /*output_grad_ptr=*/output_grad_ptr,
-        /*input_ptr=*/input_ptr,
-        /*input_grad_ptr=*/input_grad_ptr,
-        /*kernel_ptr=*/kernel_ptr,
-        /*kernel_grad_ptr=*/kernel_grad_ptr,
-        /*bias_grad_ptr=*/bias_grad_ptr,
-        /*in_dim=*/in_dim,
-        /*out_dim=*/out_dim,
-        /*batch_size=*/batch_size);
+        /*output=*/output,
+        /*output_grad=*/output_grad,
+        /*input=*/input,
+        /*input_grad=*/input_grad,
+        /*kernel=*/kernel,
+        /*kernel_grad=*/kernel_grad,
+        /*bias_grad=*/bias_grad);
   }
 }
 

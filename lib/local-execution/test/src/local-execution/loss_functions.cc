@@ -28,10 +28,6 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    // allocate label tensors
-    LossTensorSource loss_tensor_source;
-    loss_tensor_guid_t label_tensor_guid = loss_tensor_source.new_loss_tensor();
-
     positive_int batch_size = 10_p;
     positive_int data_dim = 16_p;
     positive_int output_dim = 32_p;
@@ -73,10 +69,6 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         EnableProfiling::YES,
         ProfilingSettings{/*warmup_iters=*/0, /*measure_iters=*/1});
 
-    ForwardTensorSource forward_tensor_source;
-    GradientTensorSource gradient_tensor_source;
-    OptimizerTensorSource optimizer_tensor_source;
-
     OptimizerAttrs optimizer_attrs = OptimizerAttrs{
         SGDOptimizerAttrs{
             /*lr=*/0.0,
@@ -85,12 +77,20 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
             /*weight_decay=*/0.0,
         },
     };
+
+    ForwardTensorSource forward_tensor_source;
+    GradientTensorSource gradient_tensor_source;
+    OptimizerTensorSource optimizer_tensor_source;
+    LossTensorSource loss_tensor_source;
+
     TrainingComputationGraph training_computation_graph =
         generate_training_computation_graph(computation_graph,
                                             optimizer_attrs,
+                                            logit_tensor,
                                             forward_tensor_source,
                                             gradient_tensor_source,
-                                            optimizer_tensor_source);
+                                            optimizer_tensor_source,
+                                            loss_tensor_source);
 
     auto make_training_backing = [&](TensorShape const &label_tensor_shape) {
       GenericTensorAccessorW label_tensor_accessor =
@@ -101,7 +101,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           /*preallocated_tensors=*/
           {
               {
-                  training_tensor_guid_t{label_tensor_guid},
+                  training_tensor_guid_t{training_computation_graph.label_tensor},
                   label_tensor_accessor,
               },
           },
@@ -122,8 +122,6 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
       compute_loss(local_training_backing,
                    loss_attrs,
-                   logit_tensor,
-                   label_tensor_guid,
                    allocator);
     }
 
@@ -140,8 +138,6 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
         compute_loss(local_training_backing,
                      loss_attrs,
-                     logit_tensor,
-                     label_tensor_guid,
                      allocator);
       }
 
@@ -151,8 +147,6 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
         compute_loss(local_training_backing,
                      loss_attrs,
-                     logit_tensor,
-                     label_tensor_guid,
                      allocator);
       }
 
@@ -162,8 +156,6 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
         compute_loss(local_training_backing,
                      loss_attrs,
-                     logit_tensor,
-                     label_tensor_guid,
                      allocator);
       }
     }

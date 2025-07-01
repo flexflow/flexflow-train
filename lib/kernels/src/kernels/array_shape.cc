@@ -99,9 +99,15 @@ ArrayShape array_shape_from_tensor_shape(TensorShape const &tensor_shape) {
       legion_ordered_from_ff_ordered(tensor_shape.dims.ff_ordered)};
 }
 
-TensorShape get_tensor_shape(ArrayShape const &shape, DataType dtype) {
-  return TensorShape{TensorDims{ff_ordered_from_legion_ordered(shape.dims)},
-                     dtype};
+TensorShape tensor_shape_from_array_shape(ArrayShape const &array_shape, DataType dtype) {
+  return TensorShape{
+    TensorDims{ff_ordered_from_legion_ordered(array_shape.dims)},
+    dtype,
+  };
+}
+
+TensorDims tensor_dims_from_array_shape(ArrayShape const &array_shape) {
+  return TensorDims{ff_ordered_from_legion_ordered(array_shape.dims)};
 }
 
 std::unordered_set<ff_dim_t> get_ff_dim_t_set(ArrayShape const &shape) {

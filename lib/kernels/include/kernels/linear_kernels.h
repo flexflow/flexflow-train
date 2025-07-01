@@ -35,16 +35,13 @@ void forward_kernel(device_stream_t const &stream,
 void backward_kernel(
     device_stream_t const &stream,
     std::optional<LinearPerDeviceState> const &per_device_state,
-    float const *output_ptr,
-    float *output_grad_ptr,
-    float const *input_ptr,
-    float *input_grad_ptr,
-    float const *kernel_ptr,
-    float *kernel_grad_ptr,
-    float *bias_grad_ptr,
-    int in_dim,
-    int out_dim,
-    int batch_size);
+    GenericTensorAccessorR const &output,
+    GenericTensorAccessorR const &output_grad,
+    GenericTensorAccessorR const &input,
+    GenericTensorAccessorW const &input_grad,
+    GenericTensorAccessorR const &kernel,
+    GenericTensorAccessorW const &kernel_grad,
+    std::optional<GenericTensorAccessorW> const &bias_grad);
 
 void cleanup_kernel(DeviceType device_type,
                     std::optional<LinearPerDeviceState> &per_device_state);

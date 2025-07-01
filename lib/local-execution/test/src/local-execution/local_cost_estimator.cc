@@ -29,7 +29,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     CostEstimator cost_estimator =
-        get_local_cost_estimator(runtime_arg_config, optimizer_attrs);
+        get_local_cost_estimator(runtime_arg_config);
 
     SUBCASE("estimate operator cost") {
       CastAttrs attrs = CastAttrs{
@@ -49,6 +49,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*input_shapes=*/{input_shape},
           /*weight_shapes=*/{},
           /*output_shapes=*/{output_shape},
+          /*optimizer_attrs=*/optimizer_attrs,
           /*machine_view=*/
           make_1d_machine_view(
               MachineSpaceCoordinate{0_n, 0_n, DeviceType::CPU},
@@ -87,7 +88,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     };
 
     CostEstimator cost_estimator =
-        get_local_cost_estimator(runtime_arg_config, optimizer_attrs);
+        get_local_cost_estimator(runtime_arg_config);
 
     SUBCASE("estimate operator cost") {
       positive_int embed_dim = 32_p;
@@ -125,6 +126,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           /*input_shapes=*/{inputs_shape, inputs_shape, inputs_shape},
           /*weight_shapes=*/{weights_shape},
           /*output_shapes=*/{output_shape},
+          /*optimizer_attrs=*/optimizer_attrs,
           /*machine_view=*/
           make_1d_machine_view(
               MachineSpaceCoordinate{0_n, 0_n, DeviceType::GPU},

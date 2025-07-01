@@ -38,7 +38,7 @@ MachineMappingResult get_optimal_machine_mapping(
 MachineMappingResult
     get_optimal_machine_mapping(MachineMappingCache &result_cache,
                                 MachineMappingContext const &,
-                                UnmappedOpCostEstimateKey const &leaf,
+                                UnmappedRuntimeOnlyOpCostEstimateKey const &leaf,
                                 MachineSpecification const &resources,
                                 MachineMappingConstraints const &constraints);
 

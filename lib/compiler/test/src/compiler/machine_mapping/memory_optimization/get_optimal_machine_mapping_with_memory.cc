@@ -1,5 +1,5 @@
 #include "compiler/machine_mapping/memory_optimization/get_optimal_machine_mapping_with_memory.h"
-#include "../../cost_estimator_for_test.h"
+#include "internal/cost_estimator_for_test.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.h"
 #include "compiler/machine_mapping/machine_mapping_constraints.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
@@ -18,7 +18,7 @@ using namespace FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_optimal_machine_mapping_with_memory") {
     auto make_leaf = [](UnmappedOpCostEstimateKey const &k) {
-      return MachineMappingProblemTree{k};
+      return MachineMappingProblemTree{runtime_only_from_unmapped_op_cost_estimate_key(k)};
     };
 
     auto make_series_split =
@@ -90,7 +90,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*intra_node_bandwidth=*/1,
     };
 
-    auto allowed_machine_views1 = [&](UnmappedOpCostEstimateKey const &,
+    auto allowed_machine_views1 = [&](UnmappedRuntimeOnlyOpCostEstimateKey const &,
                                       MachineSpecification const &resources) {
       if (resources == full_machine_spec) {
         return std::unordered_set<MachineView>{mv1, mv2};
@@ -111,11 +111,21 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     ParallelTensorShape par_tensor_shape = lift_to_parallel(tensor_shape);
 
+    OptimizerAttrs optimizer_attrs = OptimizerAttrs{
+      SGDOptimizerAttrs{
+        /*lr=*/0.1,
+        /*momentum=*/0.1,
+        /*nesterov=*/false,
+        /*weight_decay=*/0.1,
+      },
+    };
+
     UnmappedOpCostEstimateKey k1 = UnmappedOpCostEstimateKey{
         /*op_attrs=*/PCGOperatorAttrs{InputAttrs{tensor_shape}},
         /*input_shapes=*/{},
         /*weight_shapes=*/{},
         /*output_shapes=*/{},
+        /*optimizer_attrs=*/optimizer_attrs,
     };
 
     UnmappedOpCostEstimateKey k2 = UnmappedOpCostEstimateKey{
@@ -128,6 +138,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*input_shapes=*/{},
         /*weight_shapes=*/{},
         /*output_shapes=*/{},
+        /*optimizer_attrs=*/optimizer_attrs,
     };
 
     AbstractedTensorSetMovement movement1 = AbstractedTensorSetMovement{{
@@ -178,8 +189,9 @@ TEST_SUITE(FF_TEST_SUITE) {
              /*cost=*/0.4_ms},
         }});
 
-    MachineMappingContext context = MachineMappingContext{
+    MachineMappingWithMemoryContext context = MachineMappingWithMemoryContext{
         cost_estimator,
+        optimizer_attrs,
         allowed_machine_views1,
     };
 

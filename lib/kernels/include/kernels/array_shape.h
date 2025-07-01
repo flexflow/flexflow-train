@@ -56,7 +56,8 @@ std::ostream &operator<<(std::ostream &, ArrayShape const &);
 positive_int get_num_elements(ArrayShape const &);
 
 ArrayShape array_shape_from_tensor_shape(TensorShape const &);
-TensorShape get_tensor_shape(ArrayShape const &, DataType);
+TensorShape tensor_shape_from_array_shape(ArrayShape const &, DataType);
+TensorDims tensor_dims_from_array_shape(ArrayShape const &);
 
 std::unordered_set<ff_dim_t> get_ff_dim_t_set(ArrayShape const &);
 std::unordered_set<ArrayCoord> get_array_coord_set(ArrayShape const &);

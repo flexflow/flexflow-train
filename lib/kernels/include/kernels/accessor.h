@@ -239,6 +239,9 @@ std::pair<ArrayShape, DataType>
 std::pair<ArrayShape, DataType>
     get_shape_and_datatype(GenericTensorAccessorW const &accessor);
 
+TensorShape get_tensor_shape_for_accessor_r(GenericTensorAccessorR const &);
+TensorShape get_tensor_shape_for_accessor_w(GenericTensorAccessorW const &);
+
 void copy_accessor_data_to_l_from_r(GenericTensorAccessorW &dst_accessor,
                                     GenericTensorAccessorR const &src_accessor);
 

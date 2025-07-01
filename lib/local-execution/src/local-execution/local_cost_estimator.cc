@@ -22,9 +22,8 @@
 
 namespace FlexFlow {
 
-LocalCostEstimator::LocalCostEstimator(RuntimeArgConfig const &config,
-                                       OptimizerAttrs const &optimizer_attrs)
-    : runtime_arg_config(config), optimizer_attrs(optimizer_attrs) {}
+LocalCostEstimator::LocalCostEstimator(RuntimeArgConfig const &config)
+    : runtime_arg_config(config) {}
 
 static Allocator
     create_local_allocator_for_device_type(DeviceType device_type) {
@@ -38,6 +37,7 @@ static Allocator
 
 static TrainingComputationGraph create_computation_graph_for_local_cost_estimation(
     PCGOperatorAttrs const &op,
+    OptimizerAttrs const &optimizer_attrs,
     std::vector<ParallelTensorShape> const &inputs,
     std::vector<ParallelTensorShape> const &weights,
     std::vector<ParallelTensorShape> const &outputs) {
@@ -109,9 +109,13 @@ OpCostMetrics LocalCostEstimator::estimate_cost(
     };
   }
 
-  TrainingComputationGraph computation_graph =
+  TrainingComputationGraph training_cg =
       create_computation_graph_for_local_cost_estimation(
-          op, inputs, weights, outputs, optimizer_attrs, );
+          /*op=*/op, 
+          /*optimizer_attrs=*/op_cost_estimate_key.optimizer_attrs,
+          /*inputs=*/inputs, 
+          /*weights=*/weights, 
+          /*outputs=*/outputs);
 
   // allocate memory
   std::shared_ptr<TrackedAllocator> tracked_allocator_ptr =
@@ -125,11 +129,11 @@ OpCostMetrics LocalCostEstimator::estimate_cost(
           /*preallocated_tensors=*/{},
           /*training_computation_graph=*/training_cg,
           /*runtime_arg_config=*/this->runtime_arg_config,
-          /*optimizer_attrs=*/this->optimizer_attrs);
+          /*optimizer_attrs=*/op_cost_estimate_key.optimizer_attrs);
 
   // execute layer
   layer_guid_t operator_layer_guid =
-      get_layer_by_name(computation_graph, "operator");
+      get_layer_by_name(training_cg.computation_graph, "operator");
 
   milliseconds_t fwd = execute_forward(local_backing.local_task_registry,
                                        local_backing.local_tensor_backing,
@@ -162,10 +166,8 @@ milliseconds_t LocalCostEstimator::estimate_cost(
 }
 
 CostEstimator
-    get_local_cost_estimator(RuntimeArgConfig const &runtime_arg_config,
-                             OptimizerAttrs const &optimizer_attrs) {
-  return CostEstimator::create<LocalCostEstimator>(runtime_arg_config,
-                                                   optimizer_attrs);
+    get_local_cost_estimator(RuntimeArgConfig const &runtime_arg_config) {
+  return CostEstimator::create<LocalCostEstimator>(runtime_arg_config);
 }
 
 } // namespace FlexFlow

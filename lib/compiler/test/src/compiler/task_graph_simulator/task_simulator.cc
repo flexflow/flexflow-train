@@ -1,5 +1,5 @@
 #include "compiler/task_graph_simulator/task_simulator.h"
-#include "../cost_estimator_for_test.h"
+#include "internal/runtime_only_cost_estimator_for_test.h"
 #include "compiler/cost_estimator/cost_estimator.h"
 #include "compiler/cost_estimator/op_cost_metrics.dtg.h"
 #include "compiler/machine_mapping/machine_mapping.dtg.h"
@@ -83,11 +83,10 @@ TEST_SUITE(FF_TEST_SUITE) {
       }};
 
       SUBCASE("constant op, comm cost") {
-        CostEstimator estimator = make_fake_constant_cost_estimator(
+        RuntimeOnlyCostEstimator estimator = make_fake_constant_runtime_only_cost_estimator(
             /*forward_op_cost=*/10_ms,
             /*backward_op_cost=*/10_ms,
-            /*comm_cost=*/1_ms,
-            /*memory_cost=*/0_bytes);
+            /*comm_cost=*/1_ms);
 
         milliseconds_t result = task_simulator_estimate_forward_pass_time(
             pcg, estimator, device_mapping, machine_spec);
@@ -97,25 +96,22 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SUBCASE("variable op, comm cost") {
-        CostEstimator cost_estimator = make_fake_cost_estimator(
-            [](OpCostEstimateKey const &op) {
-              if (op.op_attrs.has<InputAttrs>()) {
-                return OpCostMetrics{
+        RuntimeOnlyCostEstimator cost_estimator = make_fake_runtime_only_cost_estimator(
+            [](RuntimeOnlyOpCostEstimateKey const &key) {
+              if (key.op_attrs.has<InputAttrs>()) {
+                return RuntimeOnlyOpCostMetrics{
                     /*forward_runtime=*/10_ms,
                     /*backward_runtime=*/10_ms,
-                    /*memory_usage=*/0_bytes,
                 }; // layer0
-              } else if (op.op_attrs.has<ElementUnaryAttrs>()) {
-                return OpCostMetrics{
+              } else if (key.op_attrs.has<ElementUnaryAttrs>()) {
+                return RuntimeOnlyOpCostMetrics{
                     /*forward_runtime=*/1_ms,
                     /*backward_runtime=*/1_ms,
-                    /*memory_usage=*/0_bytes,
                 }; // layer1
               } else {
-                return OpCostMetrics{
+                return RuntimeOnlyOpCostMetrics{
                     /*forward_runtime=*/0_ms,
                     /*backward_runtime=*/0_ms,
-                    /*memory_usage=*/0_bytes,
                 };
               }
             },
@@ -179,41 +175,42 @@ TEST_SUITE(FF_TEST_SUITE) {
             {layer2, mv2},
             {layer3, mv3},
         }};
+
         SUBCASE("constant op, comm cost") {
-          CostEstimator estimator = make_fake_constant_cost_estimator(
+          RuntimeOnlyCostEstimator estimator = make_fake_constant_runtime_only_cost_estimator(
               /*forward_op_cost=*/10_ms,
               /*backward_op_cost=*/10_ms,
-              /*comm_cost=*/1_ms,
-              /*memory_cost=*/0_bytes);
+              /*comm_cost=*/1_ms);
 
           milliseconds_t result = task_simulator_estimate_forward_pass_time(
               pcg, estimator, device_mapping, machine_spec);
           milliseconds_t correct = 10_ms + 1_ms + 10_ms + 1_ms + 10_ms;
           CHECK(result == correct);
         }
+
         SUBCASE("variable op, comm cost") {
-          CostEstimator cost_estimator = make_fake_cost_estimator(
-              [](OpCostEstimateKey const &op) {
-                if (op.op_attrs.has<InputAttrs>()) {
-                  return OpCostMetrics{
+          RuntimeOnlyCostEstimator cost_estimator = make_fake_runtime_only_cost_estimator(
+              [](RuntimeOnlyOpCostEstimateKey const &key) {
+                if (key.op_attrs.has<InputAttrs>()) {
+                  return RuntimeOnlyOpCostMetrics{
                       /*forward_runtime=*/10_ms,
                       /*backward_runtime=*/10_ms,
-                      /*memory_usage=*/0_bytes,
                   }; // layer0
-                } else if (op.op_attrs.has<ElementUnaryAttrs>()) {
-                  return OpCostMetrics{
+                } else if (key.op_attrs.has<ElementUnaryAttrs>()) {
+                  return RuntimeOnlyOpCostMetrics{
                       /*forward_runtime=*/1_ms,
                       /*backward_runtime=*/1_ms,
-                      /*memory_usage=*/0_bytes,
                   }; // layers 1, 2
-                } else if (op.op_attrs.has<ElementBinaryAttrs>()) {
-                  return OpCostMetrics{/*forward_runtime=*/2_ms,
-                                       /*backward_runtime=*/2_ms,
-                                       /*memory_usage=*/0_bytes}; // layer3
+                } else if (key.op_attrs.has<ElementBinaryAttrs>()) {
+                  return RuntimeOnlyOpCostMetrics{
+                    /*forward_runtime=*/2_ms,
+                    /*backward_runtime=*/2_ms,
+                  }; // layer3
                 } else {
-                  return OpCostMetrics{/*forward_runtime=*/0_ms,
-                                       /*backward_runtime=*/0_ms,
-                                       /*memory_usage=*/0_bytes};
+                  return RuntimeOnlyOpCostMetrics{
+                    /*forward_runtime=*/0_ms,
+                    /*backward_runtime=*/0_ms,
+                  };
                 }
               },
               [](TensorSetMovement const &comm) { return 5_ms; });
@@ -229,44 +226,41 @@ TEST_SUITE(FF_TEST_SUITE) {
             {layer2, mv},
             {layer3, mv},
         }};
+
         SUBCASE("constant op, cost cost") {
-          CostEstimator cost_estimator = make_fake_constant_cost_estimator(
+          RuntimeOnlyCostEstimator cost_estimator = make_fake_constant_runtime_only_cost_estimator(
               /*forward_op_cost=*/10_ms,
               /*backward_op_cost=*/10_ms,
-              /*comm_cost=*/1_ms,
-              /*memory_cost=*/0_bytes);
+              /*comm_cost=*/1_ms);
 
           milliseconds_t result = task_simulator_estimate_forward_pass_time(
               pcg, cost_estimator, device_mapping, machine_spec);
           milliseconds_t correct = 10_ms + 10_ms + 10_ms + 10_ms + 1_ms + 1_ms;
           CHECK(result == correct);
         }
+
         SUBCASE("variable op, cost cost") {
-          CostEstimator cost_estimator = make_fake_cost_estimator(
-              [](OpCostEstimateKey const &op) {
-                if (op.op_attrs.has<InputAttrs>()) {
-                  return OpCostMetrics{
+          RuntimeOnlyCostEstimator cost_estimator = make_fake_runtime_only_cost_estimator(
+              [](RuntimeOnlyOpCostEstimateKey const &key) {
+                if (key.op_attrs.has<InputAttrs>()) {
+                  return RuntimeOnlyOpCostMetrics{
                       /*forward_runtime=*/10_ms,
                       /*backward_runtime=*/10_ms,
-                      /*memory_usage=*/0_bytes,
                   }; // layer0
-                } else if (op.op_attrs.has<ElementUnaryAttrs>()) {
-                  return OpCostMetrics{
+                } else if (key.op_attrs.has<ElementUnaryAttrs>()) {
+                  return RuntimeOnlyOpCostMetrics{
                       /*forward_runtime=*/1_ms,
                       /*backward_runtime=*/1_ms,
-                      /*memory_usage=*/0_bytes,
                   }; // layers 1, 2
-                } else if (op.op_attrs.has<ElementBinaryAttrs>()) {
-                  return OpCostMetrics{
+                } else if (key.op_attrs.has<ElementBinaryAttrs>()) {
+                  return RuntimeOnlyOpCostMetrics{
                       /*forward_runtime=*/2_ms,
                       /*backward_runtime=*/2_ms,
-                      /*memory_usage=*/0_bytes,
                   }; // layer3
                 } else {
-                  return OpCostMetrics{
+                  return RuntimeOnlyOpCostMetrics{
                       /*forward_runtime=*/0_ms,
                       /*backward_runtime=*/0_ms,
-                      /*memory_usage=*/0_bytes,
                   };
                 }
               },

@@ -1,6 +1,5 @@
 #include "task-spec/training_computation_graph.h"
 #include "task-spec/loss_tensor_source.h"
-#include "task-spec/training_computation_graph_fragment.h"
 #include "task-spec/training_tensor_group.h"
 #include "task-spec/training_tensor_group_with_attrs.h"
 #include "utils/containers/contains.h"
@@ -163,7 +162,7 @@ TrainingLayerPlusContext
 std::unordered_map<training_tensor_guid_t, TensorShape>
     get_all_training_tensor_shapes(
         TrainingComputationGraph const &training_cg) {
-  std::unordered_map<training_tensor_guid_t, TensorShape> result = generate_map(
+  return generate_map(
       get_all_training_tensors_in_training_computation_graph(training_cg),
       [&](training_tensor_guid_t t) {
         if (t.is_loss_tensor()) {

@@ -14,7 +14,7 @@ namespace FlexFlow {
 
 TrainingComputationGraph generate_training_computation_graph(
     ComputationGraph const &computation_graph,
-    std::optional<OptimizerAttrs> const &optimizer_attrs,
+    OptimizerAttrs const &optimizer_attrs,
     tensor_guid_t const &logit_tensor,
     ForwardTensorSource &forward_tensor_source,
     GradientTensorSource &gradient_tensor_source,

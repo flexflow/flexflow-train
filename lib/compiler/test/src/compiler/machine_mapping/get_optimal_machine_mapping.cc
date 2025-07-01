@@ -1,5 +1,8 @@
 #include "compiler/machine_mapping/get_optimal_machine_mapping.h"
-#include "../cost_estimator_for_test.h"
+#include "compiler/cost_estimator/runtime_only_op_cost_estimate_key.dtg.h"
+#include "compiler/cost_estimator/runtime_only_op_cost_metrics.dtg.h"
+#include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_runtime_only_op_cost_estimate_key.h"
+#include "internal/runtime_only_cost_estimator_for_test.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.h"
 #include "compiler/machine_mapping/machine_mapping_cache.h"
 #include "compiler/machine_mapping/machine_mapping_constraints.h"
@@ -17,7 +20,7 @@ using namespace FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_optimal_machine_mapping") {
-    auto make_leaf = [](UnmappedOpCostEstimateKey const &k) {
+    auto make_leaf = [](UnmappedRuntimeOnlyOpCostEstimateKey const &k) {
       return MachineMappingProblemTree{k};
     };
 
@@ -90,7 +93,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*intra_node_bandwidth=*/1,
     };
 
-    auto allowed_machine_views1 = [&](UnmappedOpCostEstimateKey const &,
+    auto allowed_machine_views1 = [&](UnmappedRuntimeOnlyOpCostEstimateKey const &,
                                       MachineSpecification const &resources) {
       if (resources == full_machine_spec) {
         return std::unordered_set<MachineView>{mv1, mv2};
@@ -109,14 +112,14 @@ TEST_SUITE(FF_TEST_SUITE) {
         DataType::FLOAT,
     };
 
-    UnmappedOpCostEstimateKey k1 = UnmappedOpCostEstimateKey{
+    UnmappedRuntimeOnlyOpCostEstimateKey k1 = UnmappedRuntimeOnlyOpCostEstimateKey{
         /*op_attrs=*/PCGOperatorAttrs{InputAttrs{tensor_shape}},
         /*input_shapes=*/{},
         /*weight_shapes=*/{},
         /*output_shapes=*/{},
     };
 
-    UnmappedOpCostEstimateKey k2 = UnmappedOpCostEstimateKey{
+    UnmappedRuntimeOnlyOpCostEstimateKey k2 = UnmappedRuntimeOnlyOpCostEstimateKey{
         /*op_attrs=*/PCGOperatorAttrs{ElementBinaryAttrs{
             /*type=*/OperatorType::EW_ADD,
             /*compute_type=*/DataType::FLOAT,
@@ -147,26 +150,22 @@ TEST_SUITE(FF_TEST_SUITE) {
             {binary_tree_root_path(), mv2},
         }};
 
-    auto map1 = std::unordered_map<OpCostEstimateKey, OpCostMetrics>{{
-        {map_unmapped_op_cost_estimate_key(k1, mv1),
-         OpCostMetrics{/*forward_runtime=*/0.5_ms,
-                       /*backward_runtime=*/0.5_ms,
-                       /*memory_usage=*/0_bytes}},
-        {map_unmapped_op_cost_estimate_key(k2, mv1),
-         OpCostMetrics{/*forward_runtime=*/1.0_ms,
-                       /*backward_runtime=*/1.0_ms,
-                       /*memory_usage=*/0_bytes}},
-        {map_unmapped_op_cost_estimate_key(k1, mv2),
-         OpCostMetrics{/*forward_runtime=*/0.75_ms,
-                       /*backward_runtime=*/0.75_ms,
-                       /*memory_usage=*/0_bytes}},
-        {map_unmapped_op_cost_estimate_key(k2, mv2),
-         OpCostMetrics{/*forward_runtime=*/1.25_ms,
-                       /*backward_runtime=*/1.25_ms,
-                       /*memory_usage=*/0_bytes}},
+    auto map1 = std::unordered_map<RuntimeOnlyOpCostEstimateKey, RuntimeOnlyOpCostMetrics>{{
+        {map_unmapped_runtime_only_op_cost_estimate_key(k1, mv1),
+         RuntimeOnlyOpCostMetrics{/*forward_runtime=*/0.5_ms,
+                       /*backward_runtime=*/0.5_ms}},
+        {map_unmapped_runtime_only_op_cost_estimate_key(k2, mv1),
+         RuntimeOnlyOpCostMetrics{/*forward_runtime=*/1.0_ms,
+                       /*backward_runtime=*/1.0_ms}},
+        {map_unmapped_runtime_only_op_cost_estimate_key(k1, mv2),
+         RuntimeOnlyOpCostMetrics{/*forward_runtime=*/0.75_ms,
+                       /*backward_runtime=*/0.75_ms}},
+        {map_unmapped_runtime_only_op_cost_estimate_key(k2, mv2),
+         RuntimeOnlyOpCostMetrics{/*forward_runtime=*/1.25_ms,
+                       /*backward_runtime=*/1.25_ms}},
     }};
 
-    CostEstimator cost_estimator = make_fake_cost_estimator(
+    RuntimeOnlyCostEstimator runtime_only_cost_estimator = make_fake_runtime_only_cost_estimator(
         map1,
         std::unordered_map<TensorSetMovement, milliseconds_t>{{
             {TensorSetMovement{{}}, 0.0_ms},
@@ -181,7 +180,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         }});
 
     MachineMappingContext context = MachineMappingContext{
-        cost_estimator,
+        runtime_only_cost_estimator,
         allowed_machine_views1,
     };
 

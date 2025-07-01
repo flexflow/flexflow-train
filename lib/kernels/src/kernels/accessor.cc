@@ -29,6 +29,14 @@ nonnegative_int
   return offset;
 }
 
+TensorShape get_tensor_shape_for_accessor_r(GenericTensorAccessorR const &accessor) {
+  return tensor_shape_from_array_shape(accessor.shape, accessor.data_type);
+}
+
+TensorShape get_tensor_shape_for_accessor_w(GenericTensorAccessorW const &accessor) {
+  return tensor_shape_from_array_shape(accessor.shape, accessor.data_type);
+}
+
 void copy_accessor_data_to_l_from_r(
     GenericTensorAccessorW &dst_accessor,
     GenericTensorAccessorR const &src_accessor) {

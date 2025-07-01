@@ -12,16 +12,14 @@ void cpu_forward_kernel(
                     GenericTensorAccessorR const &filter_accessor,
                     std::optional<GenericTensorAccessorR> const &bias_accessor);
 
-void cpu_backward_kernel(float const *output_ptr,
-                         float *output_grad_ptr,
-                         float const *input_ptr,
-                         float *input_grad_ptr,
-                         float const *kernel_ptr,
-                         float *kernel_grad_ptr,
-                         float *bias_grad_ptr,
-                         int in_dim,
-                         int out_dim,
-                         int batch_size);
+void cpu_backward_kernel(
+                         GenericTensorAccessorR const &output,
+                         GenericTensorAccessorR const &output_grad,
+                         GenericTensorAccessorR const &input,
+                         GenericTensorAccessorW const &input_grad,
+                         GenericTensorAccessorR const &kernel,
+                         GenericTensorAccessorW const &kernel_grad,
+                         std::optional<GenericTensorAccessorW> const &bias_grad);
 
 } // namespace FlexFlow::Kernels::Linear
 

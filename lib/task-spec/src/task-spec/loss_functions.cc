@@ -118,11 +118,9 @@ static void backward_task_impl(TaskArgumentAccessor const &acc) {
                 profiling,
                 kernel_device_type,
                 "[CategoricalCrossEntropyLoss] backward_time = %.2lfms\n",
-                get_float_ptr(logit_grad),
-                get_float_ptr(logit),
-                get_float_ptr(label),
-                get_num_elements(logit.shape).int_from_positive_int(),
-                get_num_elements(logit_grad.shape).int_from_positive_int(),
+                logit_grad,
+                logit,
+                label, 
                 scale_factor);
         break;
       }

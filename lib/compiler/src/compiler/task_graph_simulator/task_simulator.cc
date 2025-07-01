@@ -21,7 +21,7 @@ namespace FlexFlow {
 
 milliseconds_t task_simulator_estimate_forward_pass_time(
     ParallelComputationGraph const &pcg,
-    CostEstimator const &estimator,
+    RuntimeOnlyCostEstimator const &estimator,
     MachineMapping const &machine_mapping,
     MachineSpecification const &machine_spec) {
 

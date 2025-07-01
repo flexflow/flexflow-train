@@ -8,7 +8,7 @@
 namespace FlexFlow {
 
 struct LocalCostEstimator : public ICostEstimator {
-  LocalCostEstimator(RuntimeArgConfig const &, OptimizerAttrs const &);
+  LocalCostEstimator(RuntimeArgConfig const &);
 
   LocalCostEstimator(LocalCostEstimator const &) = delete;
   LocalCostEstimator(LocalCostEstimator &&) = delete;
@@ -20,12 +20,10 @@ struct LocalCostEstimator : public ICostEstimator {
 
 private:
   RuntimeArgConfig runtime_arg_config;
-  OptimizerAttrs optimizer_attrs;
 };
 CHECK_RC_COPY_VIRTUAL_COMPLIANT(LocalCostEstimator);
 
-CostEstimator get_local_cost_estimator(RuntimeArgConfig const &,
-                                       OptimizerAttrs const &);
+CostEstimator get_local_cost_estimator(RuntimeArgConfig const &);
 
 } // namespace FlexFlow
 

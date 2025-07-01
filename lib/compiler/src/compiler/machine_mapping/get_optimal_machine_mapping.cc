@@ -6,6 +6,7 @@
 #include "compiler/machine_mapping/machine_mapping_constraints.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
+#include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_runtime_only_op_cost_estimate_key.h"
 #include "compiler/machine_mapping/machine_mapping_result.h"
 #include "compiler/machine_mapping/transitive_reduced_pcg.h"
 #include "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.dtg.h"
@@ -86,11 +87,11 @@ MachineMappingResult
         allowed = generate_map(
             boundary_layers,
             [&](BinaryTreePath const &l) -> std::unordered_set<MachineView> {
-              UnmappedOpCostEstimateKey leaf =
+              UnmappedRuntimeOnlyOpCostEstimateKey leaf =
                   mm_problem_tree_get_subtree_at_path(
                       MachineMappingProblemTree{series_split}, l)
                       .value()
-                      .get<UnmappedOpCostEstimateKey>();
+                      .get<UnmappedRuntimeOnlyOpCostEstimateKey>();
               return context.allowed_machine_views(leaf, resources);
             });
     return transform(
@@ -225,7 +226,7 @@ MachineMappingResult get_optimal_machine_mapping(
 MachineMappingResult
     get_optimal_machine_mapping(MachineMappingCache &result_cache,
                                 MachineMappingContext const &context,
-                                UnmappedOpCostEstimateKey const &leaf,
+                                UnmappedRuntimeOnlyOpCostEstimateKey const &leaf,
                                 MachineSpecification const &resource,
                                 MachineMappingConstraints const &constraints) {
 
@@ -239,9 +240,9 @@ MachineMappingResult
   }();
 
   auto get_mapping_result = [&](MachineView const &machine_view) {
-    OpCostEstimateKey mapped =
-        map_unmapped_op_cost_estimate_key(leaf, machine_view);
-    OpCostMetrics metrics = context.cost_estimator.estimate_cost(mapped);
+    RuntimeOnlyOpCostEstimateKey mapped =
+        map_unmapped_runtime_only_op_cost_estimate_key(leaf, machine_view);
+    RuntimeOnlyOpCostMetrics metrics = context.cost_estimator.estimate_cost(mapped);
     milliseconds_t cost = metrics.forward_runtime + metrics.backward_runtime;
     return make_singleton_machine_mapping_result(cost, machine_view);
   };
