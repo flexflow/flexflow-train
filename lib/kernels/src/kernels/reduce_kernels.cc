@@ -6,19 +6,20 @@ namespace FlexFlow::Kernels::Reduce {
 
 std::optional<ReducePerDeviceState>
     init_kernel(DeviceType device_type,
-                PerDeviceFFHandle const &handle,
+                device_handle_t const &handle,
                 OperatorType const &operator_type,
                 size_t const &reduction_size,
                 ArrayShape const &input_shape,
                 ArrayShape const &output_shape) {
   if (device_type == DeviceType::GPU) {
-    return gpu_init_kernel(/*handle=*/handle,
+    return gpu_init_kernel(/*handle=*/handle.require_for_gpu(),
                            /*operator_type=*/operator_type,
                            /*reduction_size=*/reduction_size,
                            /*input_shape=*/input_shape,
                            /*output_shape=*/output_shape);
   } else {
     ASSERT(device_type == DeviceType::CPU);
+    ASSERT(handle.is_for_cpu());
     return std::nullopt;
   }
 }

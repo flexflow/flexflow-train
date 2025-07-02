@@ -83,7 +83,7 @@ OpTaskInvocation backward(BatchNormAttrs const &attrs) {
 static DeviceSpecificDeviceStates
     init_task_impl(TaskArgumentAccessor const &acc) {
   Allocator allocator = acc.get_allocator();
-  PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   DeviceType kernel_device_type =
       acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
@@ -187,7 +187,7 @@ OpTaskSignature get_batch_norm_init_signature() {
   init.add_output_slot(OUTPUT);
   init.add_arg_slot<BatchNormAttrs>(ATTRS);
   init.add_arg_slot<bool>(PROFILING);
-  init.add_unchecked_arg_slot<PerDeviceFFHandle>(HANDLE);
+  init.add_unchecked_arg_slot<device_handle_t>(HANDLE);
 
   return init;
 }

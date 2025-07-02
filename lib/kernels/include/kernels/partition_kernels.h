@@ -4,12 +4,13 @@
 #include "kernels/accessor.h"
 #include "kernels/device_stream_t.dtg.h"
 #include "kernels/partition_per_device_state.dtg.h"
+#include "kernels/device_handle_t.dtg.h"
 
 namespace FlexFlow::Kernels::Repartition {
 
 std::optional<RepartitionPerDeviceState>
     init_kernel(DeviceType device_type,
-                PerDeviceFFHandle const &handle,
+                device_handle_t const &handle,
                 DataType data_type);
 
 void forward_kernel(

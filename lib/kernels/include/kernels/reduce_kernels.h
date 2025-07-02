@@ -7,12 +7,13 @@
 #include "kernels/reduce_per_device_state.dtg.h"
 #include "op-attrs/operator_type.dtg.h"
 #include "pcg/device_type.dtg.h"
+#include "kernels/device_handle_t.dtg.h"
 
 namespace FlexFlow::Kernels::Reduce {
 
 std::optional<ReducePerDeviceState>
     init_kernel(DeviceType device_type,
-                PerDeviceFFHandle const &handle,
+                device_handle_t const &handle,
                 OperatorType const &operator_type,
                 size_t const &reduction_size,
                 ArrayShape const &input_shape,

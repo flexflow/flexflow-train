@@ -6,7 +6,7 @@
 namespace FlexFlow {
 
 void sgd_update_task(device_stream_t const &stream,
-                     PerDeviceFFHandle const &handle,
+                     device_handle_t const &handle,
                      float lr,
                      float momentum,
                      bool nesterov,
@@ -23,13 +23,14 @@ void sgd_update_task(device_stream_t const &stream,
         /*momentum=*/momentum,
         /*nesterov=*/nesterov,
         /*weight_decay=*/weight_decay,
-        /*handle=*/handle,
+        /*handle=*/handle.require_for_gpu(),
         /*weight_grad_ptr=*/weight_grad_ptr,
         /*size=*/size,
         /*weight_ptr=*/weight_ptr,
         /*sgd_v_ptr=*/sgd_v_ptr);
   } else {
     ASSERT(stream.is_cpu());
+    ASSERT(handle.is_for_cpu());
     cpu_sgd_update_task(
         /*lr=*/lr,
         /*momentum=*/momentum,
@@ -44,7 +45,7 @@ void sgd_update_task(device_stream_t const &stream,
 }
 
 void adam_update_task(device_stream_t const &stream,
-                      PerDeviceFFHandle const &handle,
+                      device_handle_t const &handle,
                       float alpha_t,
                       float beta1,
                       float beta2,
@@ -65,13 +66,15 @@ void adam_update_task(device_stream_t const &stream,
         /*beta2=*/beta2,
         /*weight_decay=*/weight_decay,
         /*epsilon=*/epsilon,
-        /*handle=*/handle,
+        /*handle=*/handle.require_for_gpu(),
         /*weight_grad_ptr=*/weight_grad_ptr,
         /*size=*/size,
         /*weight_ptr=*/weight_ptr,
         /*adam_v_ptr=*/adam_v_ptr,
         /*adam_m_ptr=*/adam_m_ptr);
   } else {
+    ASSERT(stream.is_cpu());
+    ASSERT(handle.is_for_cpu());
     cpu_adam_update_task(
         /*alpha_t=*/alpha_t,
         /*beta1=*/beta1,

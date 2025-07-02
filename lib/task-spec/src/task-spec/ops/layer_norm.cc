@@ -138,7 +138,7 @@ static DeviceSpecificDeviceStates
       acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   Allocator allocator = acc.get_allocator();
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
-  auto handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  auto handle = acc.get_argument<device_handle_t>(HANDLE);
 
   positive_int M = 1_p;
   for (int i = 0; i < attrs.axes.size(); i++) {
@@ -204,7 +204,7 @@ OpTaskSignature get_layer_norm_init_signature() {
   init.add_input_slot(INPUT);
   init.add_arg_slot<LayerNormAttrs>(ATTRS);
   init.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
-  init.add_unchecked_arg_slot<PerDeviceFFHandle>(HANDLE);
+  init.add_unchecked_arg_slot<device_handle_t>(HANDLE);
 
   init.add_return_value<LayerNormPerDeviceState>();
   return init;

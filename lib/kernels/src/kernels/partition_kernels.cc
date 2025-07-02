@@ -6,14 +6,15 @@ namespace FlexFlow::Kernels::Repartition {
 
 std::optional<RepartitionPerDeviceState>
     init_kernel(DeviceType device_type,
-                PerDeviceFFHandle const &handle,
+                device_handle_t const &handle,
                 DataType data_type) {
   if (device_type == DeviceType::GPU) {
     return gpu_init_kernel(
-        /*handle=*/handle,
+        /*handle=*/handle.require_for_gpu(),
         /*data_type=*/data_type);
   } else {
     ASSERT(device_type == DeviceType::CPU);
+    ASSERT(handle.is_for_cpu());
     return std::nullopt;
   }
 }

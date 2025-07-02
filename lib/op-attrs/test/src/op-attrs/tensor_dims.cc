@@ -5,6 +5,58 @@
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
+  TEST_CASE("tensor_dims_has_dim") {
+    SUBCASE("nonempty tensor_dims") {
+      TensorDims tensor_dims = TensorDims{FFOrdered{6_p, 9_p, 8_p}};
+
+      SUBCASE("does have dim") {
+        bool correct = true;
+        SUBCASE("leading dim") {
+          ff_dim_t dim = ff_dim_t{0_n};
+
+          bool result = tensor_dims_has_dim(tensor_dims, dim);
+
+          CHECK(result == correct);
+        }
+
+        SUBCASE("internal dim") {
+          ff_dim_t dim = ff_dim_t{1_n};
+
+          bool result = tensor_dims_has_dim(tensor_dims, dim);
+
+          CHECK(result == correct);
+        }
+
+        SUBCASE("trailing dim") {
+          ff_dim_t dim = ff_dim_t{2_n};
+
+          bool result = tensor_dims_has_dim(tensor_dims, ff_dim_t{1_n});
+
+          CHECK(result == correct);
+        }
+      } 
+
+      SUBCASE("dim is too large") {
+        ff_dim_t dim = ff_dim_t{3_n};
+
+        bool result = tensor_dims_has_dim(tensor_dims, dim);
+        bool correct = false;
+
+        CHECK(result == correct);
+      }
+    }
+
+    SUBCASE("empty tensor_dims") {
+      TensorDims tensor_dims = TensorDims{FFOrdered<positive_int>{}};
+      ff_dim_t dim = ff_dim_t{0_n};
+
+      bool result = tensor_dims_has_dim(tensor_dims, dim);
+      bool correct = false;
+
+      CHECK(result == correct);
+    }
+  }
+
   TEST_CASE("tensor_dims_is_broadcastable_to(TensorDims, TensorDims)") {
 
     TensorDims goal = TensorDims{FFOrdered{1_p, 1_p, 4_p, 3_p}};

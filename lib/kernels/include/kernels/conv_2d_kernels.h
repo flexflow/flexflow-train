@@ -6,12 +6,13 @@
 #include "kernels/device_stream_t.dtg.h"
 #include "kernels/ff_handle.h"
 #include "op-attrs/activation.dtg.h"
+#include "kernels/device_handle_t.dtg.h"
 
 namespace FlexFlow::Kernels::Conv2D {
 
 std::optional<Conv2DPerDeviceState>
     init_kernel(DeviceType device_type,
-                PerDeviceFFHandle handle,
+                device_handle_t const &handle,
                 std::optional<Activation> activation,
                 int kernel_h,
                 int kernel_w,

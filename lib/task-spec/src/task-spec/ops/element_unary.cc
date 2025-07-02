@@ -95,7 +95,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   auto attrs = acc.get_argument<ElementUnaryAttrs>(ATTRS);
 
-  auto handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  auto handle = acc.get_argument<device_handle_t>(HANDLE);
 
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   DeviceType kernel_device_type =
@@ -122,7 +122,7 @@ static std::optional<float>
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
 
   auto const &attrs = acc.get_argument<ElementUnaryAttrs>(ATTRS);
-  auto handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  auto handle = acc.get_argument<device_handle_t>(HANDLE);
 
   auto per_device_state =
       acc.get_argument<ElementUnaryPerDeviceState>(PER_DEVICE_STATE);
@@ -159,7 +159,7 @@ OpTaskSignature get_element_unary_init_signature() {
   init.add_arg_slot<ParallelTensorShape>(INPUT_SHAPE);
   init.add_arg_slot<ElementUnaryAttrs>(ATTRS);
   init.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
-  init.add_unchecked_arg_slot<PerDeviceFFHandle>(HANDLE);
+  init.add_unchecked_arg_slot<device_handle_t>(HANDLE);
 
   init.add_return_value<ElementUnaryPerDeviceState>();
 

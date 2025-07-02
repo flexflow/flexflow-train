@@ -5,14 +5,15 @@
 namespace FlexFlow::Kernels::Gather {
 
 std::optional<GatherPerDeviceState> init_kernel(DeviceType device_type,
-                                                PerDeviceFFHandle const &handle,
+                                                device_handle_t const &handle,
                                                 legion_dim_t legion_dim) {
   if (device_type == DeviceType::GPU) {
     return gpu_init_kernel(
-        /*handle=*/handle,
+        /*handle=*/handle.require_for_gpu(),
         /*legion_dim=*/legion_dim);
   } else {
     ASSERT(device_type == DeviceType::CPU);
+    ASSERT(handle.is_for_cpu());
     return std::nullopt;
   }
 }

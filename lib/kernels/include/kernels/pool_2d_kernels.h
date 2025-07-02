@@ -7,12 +7,13 @@
 #include "op-attrs/activation.dtg.h"
 #include "op-attrs/ops/pool_2d.h"
 #include "pcg/device_type.dtg.h"
+#include "kernels/device_handle_t.dtg.h"
 
 namespace FlexFlow::Kernels::Pool2D {
 
 std::optional<Pool2DPerDeviceState>
     init_kernel(DeviceType device_type,
-                PerDeviceFFHandle handle,
+                device_handle_t const &handle,
                 std::optional<Activation> activation,
                 int input_w,
                 int input_h,

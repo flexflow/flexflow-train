@@ -87,7 +87,7 @@ static void sgd_update_task_impl(TaskArgumentAccessor const &acc) {
     sgd_v_ptr = sgd_v.get_float_ptr();
   }
 
-  auto handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  auto handle = acc.get_argument<device_handle_t>(HANDLE);
   profile(sgd_update_task,
           profiling,
           kernel_device_type,
@@ -201,7 +201,7 @@ static void adam_update_task_impl(TaskArgumentAccessor const &acc) {
   int num_replicas = weight_grad.shape.num_elements().int_from_positive_int() /
                      weight.shape.num_elements().int_from_positive_int();
 
-  auto handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  auto handle = acc.get_argument<device_handle_t>(HANDLE);
   profile(adam_update_task,
           profiling,
           kernel_device_type,

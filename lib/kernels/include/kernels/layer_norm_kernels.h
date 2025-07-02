@@ -5,12 +5,13 @@
 #include "kernels/device_stream_t.dtg.h"
 #include "kernels/ff_handle.h"
 #include "kernels/layer_norm_per_device_state.dtg.h"
+#include "kernels/device_handle_t.dtg.h"
 
 namespace FlexFlow::Kernels::LayerNorm {
 
 std::optional<LayerNormPerDeviceState>
     init_kernel(DeviceType device_type,
-                PerDeviceFFHandle const &handle,
+                device_handle_t const &handle,
                 Allocator &allocator,
                 bool elementwise_affine,
                 int64_t effective_batch_size,

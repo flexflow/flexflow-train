@@ -44,10 +44,21 @@ void cpu_backward_kernel(GenericTensorAccessorR const &output,
                          GenericTensorAccessorR const &output_grad,
                          GenericTensorAccessorR const &input,
                          GenericTensorAccessorW const &input_grad,
-                         GenericTensorAccessorR const &kernel,
-                         GenericTensorAccessorW const &kernel_grad,
+                         GenericTensorAccessorR const &projection,
+                         GenericTensorAccessorW const &projection_grad,
                          std::optional<GenericTensorAccessorW> const &bias_grad) {
-  NOT_IMPLEMENTED();
+  Allocator cpu_allocator = create_local_cpu_memory_allocator();
+
+  tensor_accessor_matmul_to(output_grad, 
+                            read_only_accessor_from_write_accessor(tensor_accessor_transpose(projection, cpu_allocator)),
+                            input_grad);
+  tensor_accessor_matmul_to(read_only_accessor_from_write_accessor(tensor_accessor_transpose(input, cpu_allocator)),
+                            output_grad,
+                            projection_grad);
+
+  if (bias_grad.has_value()) {
+     
+  }
 }
 
 } // namespace FlexFlow::Kernels::Linear

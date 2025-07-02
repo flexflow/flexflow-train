@@ -38,7 +38,7 @@ TensorShape get_tensor_shape_for_accessor_w(GenericTensorAccessorW const &access
 }
 
 void copy_accessor_data_to_l_from_r(
-    GenericTensorAccessorW &dst_accessor,
+    GenericTensorAccessorW const &dst_accessor,
     GenericTensorAccessorR const &src_accessor) {
   size_t num_bytes =
       dst_accessor.shape.num_elements().int_from_positive_int() *

@@ -5,14 +5,14 @@
 #include "kernels/array_shape.h"
 #include "kernels/device_stream_t.dtg.h"
 #include "kernels/dropout_per_device_state.dtg.h"
-#include "kernels/ff_handle.h"
 #include <cstddef>
+#include "kernels/device_handle_t.dtg.h"
 
 namespace FlexFlow::Kernels::Dropout {
 
 std::optional<DropoutPerDeviceState>
     init_kernel(DeviceType device_type,
-                PerDeviceFFHandle const &handle,
+                device_handle_t const &handle,
                 float rate,
                 unsigned long long seed,
                 ArrayShape const &output_domain,

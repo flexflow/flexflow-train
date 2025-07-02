@@ -24,7 +24,7 @@ void forward_kernel(
     device_stream_t const &stream,
     std::optional<ElementUnaryPerDeviceState> const &per_device_state,
     ElementUnaryAttrs const &attrs,
-    PerDeviceFFHandle const &handle,
+    device_handle_t const &handle,
     GenericTensorAccessorR const &input,
     GenericTensorAccessorW const &output) {
   if (stream.is_gpu()) {
@@ -32,15 +32,15 @@ void forward_kernel(
         /*stream=*/stream.require_gpu(),
         /*per_device_state=*/per_device_state.value(),
         /*attrs=*/attrs,
-        /*handle=*/handle,
+        /*handle=*/handle.require_for_gpu(),
         /*input=*/input,
         /*output=*/output);
   } else {
     ASSERT(stream.is_cpu());
     ASSERT(per_device_state == std::nullopt);
+    ASSERT(handle.is_for_cpu());
     cpu_forward_kernel(
         /*attrs=*/attrs,
-        /*handle=*/handle,
         /*input=*/input,
         /*output=*/output);
   }
@@ -50,7 +50,7 @@ void backward_kernel(
     device_stream_t const &stream,
     std::optional<ElementUnaryPerDeviceState> const &per_device_state,
     ElementUnaryAttrs const &attrs,
-    PerDeviceFFHandle const &handle,
+    device_handle_t const &handle,
     GenericTensorAccessorR const &output,
     GenericTensorAccessorR const &output_grad,
     GenericTensorAccessorR const &input,
@@ -60,7 +60,7 @@ void backward_kernel(
         /*stream=*/stream.require_gpu(),
         /*per_device_state=*/per_device_state.value(),
         /*attrs=*/attrs,
-        /*handle=*/handle,
+        /*handle=*/handle.require_for_gpu(),
         /*output=*/output,
         /*output_grad=*/output_grad,
         /*input=*/input,
@@ -68,9 +68,9 @@ void backward_kernel(
   } else {
     ASSERT(stream.is_cpu());
     ASSERT(per_device_state == std::nullopt);
+    ASSERT(handle.is_for_cpu());
     cpu_backward_kernel(
         /*attrs=*/attrs,
-        /*handle=*/handle,
         /*output=*/output,
         /*output_grad=*/output_grad,
         /*input=*/input,

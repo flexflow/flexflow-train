@@ -24,6 +24,22 @@ void tensor_accessor_broadcast_to(GenericTensorAccessorR const &input,
                                   TensorDims const &output_dims,
                                   GenericTensorAccessorW const &output);
 
+GenericTensorAccessorW
+  tensor_accessor_transpose(GenericTensorAccessorR const &input,
+                            Allocator &output_allocator);
+
+void tensor_accessor_transpose_to(GenericTensorAccessorR const &input,
+                                  GenericTensorAccessorW const &output);
+
+GenericTensorAccessorW
+  tensor_accessor_reduce(GenericTensorAccessorR const &input,
+                         ff_dim_t dim,
+                         Allocator &output_allocator);
+
+void tensor_accessor_reduce_to(GenericTensorAccessorR const &input,
+                               ff_dim_t dim,
+                               GenericTensorAccessorW const &output);
+
 } // namespace FlexFlow
 
 #endif

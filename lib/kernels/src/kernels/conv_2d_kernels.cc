@@ -6,7 +6,7 @@ namespace FlexFlow::Kernels::Conv2D {
 
 std::optional<Conv2DPerDeviceState>
     init_kernel(DeviceType device_type,
-                PerDeviceFFHandle handle,
+                device_handle_t const &handle,
                 std::optional<Activation> activation,
                 int kernel_h,
                 int kernel_w,
@@ -21,7 +21,7 @@ std::optional<Conv2DPerDeviceState>
                 float *filter_grad_ptr) {
   if (device_type == DeviceType::GPU) {
     return gpu_init_kernel(
-        /*handle=*/handle,
+        /*handle=*/handle.require_for_gpu(),
         /*activation=*/activation,
         /*kernel_h=*/kernel_h,
         /*kernel_w=*/kernel_w,
@@ -36,6 +36,7 @@ std::optional<Conv2DPerDeviceState>
         /*filter_grad_ptr=*/filter_grad_ptr);
   } else {
     ASSERT(device_type == DeviceType::CPU);
+    ASSERT(handle.is_for_cpu());
     return std::nullopt;
   }
 }

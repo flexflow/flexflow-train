@@ -84,7 +84,7 @@ static DeviceSpecificDeviceStates
   auto index = acc.get_tensor<Permissions::RO>(INDEX);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
-  PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
   DeviceType kernel_device_type =
       acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto const &attrs = acc.get_argument<GatherAttrs>(ATTRS);
@@ -172,7 +172,7 @@ OpTaskSignature get_gather_init_signature() {
 
   init.add_arg_slot<GatherAttrs>(ATTRS);
   init.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
-  init.add_unchecked_arg_slot<PerDeviceFFHandle>(HANDLE);
+  init.add_unchecked_arg_slot<device_handle_t>(HANDLE);
 
   init.add_return_value<GatherPerDeviceState>();
 

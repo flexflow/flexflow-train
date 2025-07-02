@@ -14,12 +14,19 @@
 #include "utils/integer_conversions.h"
 #include "utils/nonnegative_int/num_elements.h"
 #include "op-attrs/ff_ordered/slice.h"
+#include "op-attrs/ff_ordered/get_idxs.h"
+#include "utils/containers/contains.h"
 
 namespace FlexFlow {
 
 FFOrdered<positive_int> const &ff_ordered(TensorDims const &dims) {
   return dims.ff_ordered;
 }
+
+bool tensor_dims_has_dim(TensorDims const &tensor_dims, ff_dim_t dim) {
+  return contains(get_idxs(tensor_dims.ff_ordered), dim);
+}
+
 
 nonnegative_int num_dims(TensorDims const &dims) {
   return num_elements(dims.ff_ordered);
@@ -71,8 +78,10 @@ bool tensor_dims_contains_coord(TensorDims const &tensor_dims, TensorDimsCoord c
 TensorDimsCoord get_broadcast_src_coord(TensorDims const &input_dims,
                                         TensorDims const &output_dims,
                                         TensorDimsCoord const &dst_coord) {
-  ASSERT(tensor_dims_contains_coord(output_dims, dst_coord));   
-  ASSERT(tensor_dims_is_broadcastable_to(input_dims, output_dims));
+  ASSERT(tensor_dims_contains_coord(output_dims, dst_coord),
+         output_dims, dst_coord);   
+  ASSERT(tensor_dims_is_broadcastable_to(input_dims, output_dims),
+         input_dims, output_dims);
 
   relative_ff_dim_t trailing_start_idx = relative_ff_dim_t{-1 * num_dims(input_dims).unwrap_nonnegative()};
 
@@ -84,9 +93,9 @@ TensorDimsCoord get_broadcast_src_coord(TensorDims const &input_dims,
   TensorDimsCoord result = TensorDimsCoord{
     zip_with(
       trailing_entries,
-      trailing_dims,
-      [](nonnegative_int const &coord_entry, positive_int const &dim_size) {
-        if (dim_size == 1) {
+      input_dims.ff_ordered,
+      [](nonnegative_int const &coord_entry, positive_int const &input_dim_size) {
+        if (input_dim_size == 1) {
           return 0_n;
         } else {
           return coord_entry;
@@ -94,7 +103,8 @@ TensorDimsCoord get_broadcast_src_coord(TensorDims const &input_dims,
       }),
   };
 
-  ASSERT(tensor_dims_contains_coord(input_dims, result));
+  ASSERT(tensor_dims_contains_coord(input_dims, result),
+         output_dims, dst_coord, input_dims, result);
 
   return result;
 }

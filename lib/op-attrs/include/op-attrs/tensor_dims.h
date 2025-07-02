@@ -10,6 +10,8 @@ namespace FlexFlow {
 
 FFOrdered<positive_int> const &ff_ordered(TensorDims const &);
 
+bool tensor_dims_has_dim(TensorDims const &, ff_dim_t);
+
 nonnegative_int num_dims(TensorDims const &);
 positive_int dim_at_idx(TensorDims const &, relative_ff_dim_t);
 positive_int &dim_at_idx(TensorDims &, relative_ff_dim_t);

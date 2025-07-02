@@ -7,7 +7,7 @@ namespace FlexFlow::Kernels::Softmax {
 
 std::optional<SoftmaxPerDeviceState>
     init_kernel(DeviceType device_type,
-                PerDeviceFFHandle const &handle,
+                device_handle_t const &handle,
                 legion_dim_t dim,
                 int input_n,
                 int input_c,
@@ -15,7 +15,7 @@ std::optional<SoftmaxPerDeviceState>
                 int input_w) {
   if (device_type == DeviceType::GPU) {
     return gpu_init_kernel(
-        /*handle=*/handle,
+        /*handle=*/handle.require_for_gpu(),
         /*dim=*/dim,
         /*input_n=*/input_n,
         /*input_c=*/input_c,
@@ -23,6 +23,7 @@ std::optional<SoftmaxPerDeviceState>
         /*input_w=*/input_w);
   } else {
     ASSERT(device_type == DeviceType::CPU);
+    ASSERT(handle.is_for_cpu());
     return std::nullopt;
   }
 }

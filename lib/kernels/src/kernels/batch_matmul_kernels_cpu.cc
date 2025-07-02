@@ -2,8 +2,7 @@
 
 namespace FlexFlow::Kernels::BatchMatmul {
 
-void cpu_forward_kernel(PerDeviceFFHandle const &handle,
-                        float *output_ptr,
+void cpu_forward_kernel(float *output_ptr,
                         float const *a_input_ptr,
                         float const *b_input_ptr,
                         int m,
@@ -16,8 +15,7 @@ void cpu_forward_kernel(PerDeviceFFHandle const &handle,
   NOT_IMPLEMENTED();
 }
 
-void cpu_backward_kernel(PerDeviceFFHandle const &handle,
-                         float const *o_ptr,
+void cpu_backward_kernel(float const *o_ptr,
                          float const *o_grad_ptr,
                          float const *a_ptr,
                          float *a_grad_ptr,

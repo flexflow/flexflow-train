@@ -6,7 +6,7 @@ namespace FlexFlow::Kernels::ElementBinary {
 
 std::optional<ElementBinaryPerDeviceState>
     init_kernel(DeviceType device_type,
-                PerDeviceFFHandle handle,
+                device_handle_t const &handle,
                 OperatorType op_type,
                 bool should_broadcast_lhs,
                 bool should_broadcast_rhs,
@@ -15,7 +15,7 @@ std::optional<ElementBinaryPerDeviceState>
                 ArrayShape output_shape) {
   if (device_type == DeviceType::GPU) {
     return gpu_init_kernel(
-        /*handle=*/handle,
+        /*handle=*/handle.require_for_gpu(),
         /*op_type=*/op_type,
         /*should_broadcast_lhs=*/should_broadcast_lhs,
         /*should_broadcast_rhs=*/should_broadcast_rhs,
@@ -24,6 +24,7 @@ std::optional<ElementBinaryPerDeviceState>
         /*output_shape=*/output_shape);
   } else {
     ASSERT(device_type == DeviceType::CPU);
+    ASSERT(handle.is_for_cpu());
     return std::nullopt;
   }
 }
@@ -36,7 +37,7 @@ void forward_kernel(
     float *out_ptr,
     OperatorType op_type,
     bool broadcast_inputLHS,
-    PerDeviceFFHandle handle) {
+    device_handle_t const &handle) {
   if (stream.is_gpu()) {
     gpu_forward_kernel(
         /*stream=*/stream.require_gpu(),
@@ -46,10 +47,11 @@ void forward_kernel(
         /*out_ptr=*/out_ptr,
         /*op_type=*/op_type,
         /*broadcast_inputLHS=*/broadcast_inputLHS,
-        /*handle=*/handle);
+        /*handle=*/handle.require_for_gpu());
   } else {
     ASSERT(stream.is_cpu());
     ASSERT(per_device_state == std::nullopt);
+    ASSERT(handle.is_for_cpu());
     cpu_forward_kernel(
         /*lhs_ptr=*/lhs_ptr,
         /*rhs_ptr=*/rhs_ptr,
@@ -70,7 +72,7 @@ void backward_kernel(
     OperatorType op_type,
     bool broadcast_inputLHS,
     bool broadcast_inputRHS,
-    PerDeviceFFHandle handle) {
+    device_handle_t const &handle) {
   if (stream.is_gpu()) {
     gpu_backward_kernel(
         /*stream=*/stream.require_gpu(),
@@ -83,10 +85,11 @@ void backward_kernel(
         /*op_type=*/op_type,
         /*broadcast_inputLHS=*/broadcast_inputLHS,
         /*broadcast_inputRHS=*/broadcast_inputRHS,
-        /*handle=*/handle);
+        /*handle=*/handle.require_for_gpu());
   } else {
     ASSERT(stream.is_cpu());
     ASSERT(per_device_state == std::nullopt);
+    ASSERT(handle.is_for_cpu());
     cpu_backward_kernel(
         /*out_grad_ptr=*/out_grad_ptr,
         /*lhs_ptr=*/lhs_ptr,

@@ -9,12 +9,13 @@
 #include "op-attrs/datatype.h"
 #include "op-attrs/operator_type.h"
 #include "pcg/device_type.dtg.h"
+#include "kernels/device_handle_t.dtg.h"
 
 namespace FlexFlow::Kernels::ElementBinary {
 
 std::optional<ElementBinaryPerDeviceState>
     init_kernel(DeviceType device_type,
-                PerDeviceFFHandle handle,
+                device_handle_t const &handle,
                 OperatorType op_type,
                 bool should_broadcast_lhs,
                 bool should_broadcast_rhs,
@@ -30,7 +31,7 @@ void forward_kernel(
     float *out_ptr,
     OperatorType op_type,
     bool broadcast_inputLHS,
-    PerDeviceFFHandle handle);
+    device_handle_t const &handle);
 
 void backward_kernel(
     device_stream_t const &stream,
@@ -43,7 +44,7 @@ void backward_kernel(
     OperatorType op_type,
     bool broadcast_inputLHS,
     bool broadcast_inputRHS,
-    PerDeviceFFHandle handle);
+    device_handle_t const &handle);
 
 void cleanup_kernel(
     DeviceType device_type,

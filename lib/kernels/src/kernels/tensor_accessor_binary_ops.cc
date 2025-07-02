@@ -133,7 +133,7 @@ void
     }
   }
 
-  return copy_accessor_data_to_l_from_r(output_cpu, output);
+  return copy_accessor_data_to_l_from_r(output, output_cpu);
 }
 
 

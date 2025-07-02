@@ -6,6 +6,7 @@
 #include "kernels/element_unary_per_device_state.dtg.h"
 #include "kernels/ff_handle.h"
 #include "op-attrs/ops/element_unary_attrs.dtg.h"
+#include "kernels/device_handle_t.dtg.h"
 
 namespace FlexFlow::Kernels::ElementUnary {
 
@@ -19,7 +20,7 @@ void forward_kernel(
     device_stream_t const &stream,
     std::optional<ElementUnaryPerDeviceState> const &device_state,
     ElementUnaryAttrs const &attrs,
-    PerDeviceFFHandle const &handle,
+    device_handle_t const &handle,
     GenericTensorAccessorR const &input,
     GenericTensorAccessorW const &output);
 
@@ -27,7 +28,7 @@ void backward_kernel(
     device_stream_t const &stream,
     std::optional<ElementUnaryPerDeviceState> const &device_state,
     ElementUnaryAttrs const &attrs,
-    PerDeviceFFHandle const &handle,
+    device_handle_t const &handle,
     GenericTensorAccessorR const &output,
     GenericTensorAccessorR const &output_grad,
     GenericTensorAccessorR const &input,

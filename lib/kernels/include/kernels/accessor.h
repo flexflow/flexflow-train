@@ -242,7 +242,7 @@ std::pair<ArrayShape, DataType>
 TensorShape get_tensor_shape_for_accessor_r(GenericTensorAccessorR const &);
 TensorShape get_tensor_shape_for_accessor_w(GenericTensorAccessorW const &);
 
-void copy_accessor_data_to_l_from_r(GenericTensorAccessorW &dst_accessor,
+void copy_accessor_data_to_l_from_r(GenericTensorAccessorW const &dst_accessor,
                                     GenericTensorAccessorR const &src_accessor);
 
 template <DataType DT>

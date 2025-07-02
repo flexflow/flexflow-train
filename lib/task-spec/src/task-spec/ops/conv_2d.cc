@@ -66,7 +66,7 @@ OpTaskInvocation backward(Conv2DAttrs const &attrs) {
 static DeviceSpecificDeviceStates
     init_task_impl(TaskArgumentAccessor const &acc) {
 
-  PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
   DeviceType kernel_device_type =
       acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto attrs = acc.get_argument<Conv2DAttrs>(ATTRS);
@@ -173,7 +173,7 @@ OpTaskSignature get_conv_2d_init_signature() {
   init.add_weight_slot(FILTER);
   init.add_arg_slot<Conv2DAttrs>(ATTRS);
   init.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
-  init.add_unchecked_arg_slot<PerDeviceFFHandle>(HANDLE);
+  init.add_unchecked_arg_slot<device_handle_t>(HANDLE);
 
   init.add_return_value<Conv2DPerDeviceState>();
 

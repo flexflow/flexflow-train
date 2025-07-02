@@ -3,6 +3,7 @@
 
 #include "op-attrs/ff_ordered/ff_ordered.h"
 #include "utils/containers/zip_with.h"
+#include "utils/containers/vector_of.h"
 
 namespace FlexFlow {
 

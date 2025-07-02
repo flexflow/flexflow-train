@@ -6,7 +6,7 @@ namespace FlexFlow::Kernels::BatchNorm {
 
 std::optional<BatchNormPerDeviceState>
     init_kernel(DeviceType device_type,
-                PerDeviceFFHandle const &handle,
+                device_handle_t const &handle,
                 Allocator &allocator,
                 float *runningMean,
                 int output_n,
@@ -16,7 +16,7 @@ std::optional<BatchNormPerDeviceState>
                 bool relu) {
   if (device_type == DeviceType::GPU) {
     return gpu_init_kernel(
-        /*handle=*/handle,
+        /*handle=*/handle.require_for_gpu(),
         /*allocator=*/allocator,
         /*runningMean=*/runningMean,
         /*output_n=*/output_n,
@@ -26,6 +26,7 @@ std::optional<BatchNormPerDeviceState>
         /*relu=*/relu);
   } else {
     ASSERT(device_type == DeviceType::CPU);
+    ASSERT(handle.is_for_cpu());
     return std::nullopt;
   }
 }

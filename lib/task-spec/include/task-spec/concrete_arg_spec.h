@@ -15,7 +15,7 @@ public:
 
   template <typename T>
   T const &get() const {
-    assert(matches<T>(this->type_idx));
+    ASSERT(matches<T>(this->type_idx), this->type_idx.name());
 
     return *(T const *)ptr.get();
   }

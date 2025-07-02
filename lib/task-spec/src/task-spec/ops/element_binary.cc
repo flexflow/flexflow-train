@@ -72,7 +72,7 @@ static DeviceSpecificDeviceStates
   auto input_rhs = acc.get_tensor<Permissions::RO>(RHS_INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
-  PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
   DeviceType kernel_device_type =
       acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto const &attrs = acc.get_argument<ElementBinaryAttrs>(ATTRS);
@@ -104,7 +104,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto input_lhs = acc.get_tensor<Permissions::RO>(LHS_INPUT);
   auto input_rhs = acc.get_tensor<Permissions::RO>(RHS_INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
-  PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
 
   return profile(forward_kernel,
                  profiling,
@@ -127,7 +127,7 @@ static std::optional<float>
   DeviceType kernel_device_type =
       acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto const &attrs = acc.get_argument<ElementBinaryAttrs>(ATTRS);
-  PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
 
   auto input_lhs = acc.get_tensor<Permissions::RO>(LHS_INPUT);
   auto input_rhs = acc.get_tensor<Permissions::RO>(RHS_INPUT);
@@ -173,7 +173,7 @@ OpTaskSignature get_element_binary_init_signature() {
 
   init.add_arg_slot<BatchMatmulAttrs>(ATTRS);
   init.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
-  init.add_unchecked_arg_slot<PerDeviceFFHandle>(HANDLE);
+  init.add_unchecked_arg_slot<device_handle_t>(HANDLE);
 
   init.add_return_value<ElementBinaryPerDeviceState>();
 
@@ -187,7 +187,7 @@ OpTaskSignature get_element_binary_fwd_signature() {
   fwd.add_unchecked_arg_slot<ElementBinaryPerDeviceState>(PER_DEVICE_STATE);
   fwd.add_arg_slot<ElementBinaryAttrs>(ATTRS);
   fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
-  fwd.add_unchecked_arg_slot<PerDeviceFFHandle>(HANDLE);
+  fwd.add_unchecked_arg_slot<device_handle_t>(HANDLE);
 
   fwd.add_input_slot(LHS_INPUT);
   fwd.add_input_slot(RHS_INPUT);

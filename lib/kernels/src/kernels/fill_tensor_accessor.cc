@@ -3,7 +3,7 @@
 
 namespace FlexFlow {
 
-void fill_tensor_accessor(GenericTensorAccessorW &accessor, DataTypeValue val) {
+void fill_tensor_accessor(GenericTensorAccessorW const &accessor, DataTypeValue val) {
   ASSERT(accessor.device_type == DeviceType::CPU);
   ASSERT(accessor.data_type == get_data_type_of_data_type_value(val));
 }

@@ -69,7 +69,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto b_input = acc.get_tensor<Permissions::RO>(B_INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   auto attrs = acc.get_argument<BatchMatmulAttrs>(ATTRS);
-  PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
 
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   FFIterationConfig iter_config =
@@ -124,7 +124,7 @@ static std::optional<float>
   FFIterationConfig iter_config =
       acc.get_argument<FFIterationConfig>(ITERATION_CONFIG);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
   DeviceType kernel_device_type =
       acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
@@ -191,7 +191,7 @@ OpTaskSignature get_batch_matmul_fwd_signature() {
   fwd.add_arg_slot<BatchMatmulAttrs>(ATTRS);
   fwd.add_arg_slot<ProfilingSettings>(PROFILING);
   fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
-  fwd.add_unchecked_arg_slot<PerDeviceFFHandle>(HANDLE);
+  fwd.add_unchecked_arg_slot<device_handle_t>(HANDLE);
 
   return fwd;
 }

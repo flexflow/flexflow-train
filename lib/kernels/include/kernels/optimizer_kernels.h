@@ -3,11 +3,12 @@
 
 #include "kernels/device_stream_t.dtg.h"
 #include "kernels/ff_handle.h"
+#include "kernels/device_handle_t.dtg.h"
 
 namespace FlexFlow {
 
 void sgd_update_task(device_stream_t const &stream,
-                     PerDeviceFFHandle const &handle,
+                     device_handle_t const &handle,
                      float lr,
                      float momentum,
                      bool nesterov,
@@ -19,7 +20,7 @@ void sgd_update_task(device_stream_t const &stream,
                      float *sgd_v_ptr);
 
 void adam_update_task(device_stream_t const &stream,
-                      PerDeviceFFHandle const &handle,
+                      device_handle_t const &handle,
                       float alpha_t,
                       float beta1,
                       float beta2,

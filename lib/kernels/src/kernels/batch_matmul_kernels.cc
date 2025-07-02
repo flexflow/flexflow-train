@@ -5,7 +5,7 @@
 namespace FlexFlow::Kernels::BatchMatmul {
 
 void forward_kernel(device_stream_t const &stream,
-                    PerDeviceFFHandle const &handle,
+                    device_handle_t const &handle,
                     float *output_ptr,
                     float const *a_input_ptr,
                     float const *b_input_ptr,
@@ -19,7 +19,7 @@ void forward_kernel(device_stream_t const &stream,
   if (stream.is_gpu()) {
     gpu_forward_kernel(
         /*stream=*/stream.require_gpu(),
-        /*handle=*/handle,
+        /*handle=*/handle.require_for_gpu(),
         /*output_ptr=*/output_ptr,
         /*a_input_ptr=*/a_input_ptr,
         /*b_input_ptr=*/b_input_ptr,
@@ -32,8 +32,8 @@ void forward_kernel(device_stream_t const &stream,
         /*b_seq_length_dim=*/b_seq_length_dim);
   } else {
     ASSERT(stream.is_cpu());
+    ASSERT(handle.is_for_cpu());
     cpu_forward_kernel(
-        /*handle=*/handle,
         /*output_ptr=*/output_ptr,
         /*a_input_ptr=*/a_input_ptr,
         /*b_input_ptr=*/b_input_ptr,
@@ -48,7 +48,7 @@ void forward_kernel(device_stream_t const &stream,
 }
 
 void backward_kernel(device_stream_t const &stream,
-                     PerDeviceFFHandle const &handle,
+                     device_handle_t const &handle,
                      float const *o_ptr,
                      float const *o_grad_ptr,
                      float const *a_ptr,
@@ -62,7 +62,7 @@ void backward_kernel(device_stream_t const &stream,
   if (stream.is_gpu()) {
     gpu_backward_kernel(
         /*stream=*/stream.require_gpu(),
-        /*handle=*/handle,
+        /*handle=*/handle.require_for_gpu(),
         /*o_ptr=*/o_ptr,
         /*o_grad_ptr=*/o_grad_ptr,
         /*a_ptr=*/a_ptr,
@@ -75,8 +75,8 @@ void backward_kernel(device_stream_t const &stream,
         /*batch=*/batch);
   } else {
     ASSERT(stream.is_cpu());
+    ASSERT(handle.is_for_cpu());
     cpu_backward_kernel(
-        /*handle=*/handle,
         /*o_ptr=*/o_ptr,
         /*o_grad_ptr=*/o_grad_ptr,
         /*a_ptr=*/a_ptr,

@@ -64,7 +64,7 @@ static DeviceSpecificDeviceStates
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   Allocator allocator = acc.get_allocator();
-  PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(FF_HANDLE);
+  device_handle_t handle = acc.get_argument<device_handle_t>(FF_HANDLE);
   DeviceType kernel_device_type =
       acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto const &attrs = acc.get_argument<DropoutAttrs>(ATTRS);
@@ -137,7 +137,7 @@ OpTaskSignature get_dropout_init_signature() {
 
   init.add_arg_slot<DropoutAttrs>(ATTRS);
   init.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
-  init.add_unchecked_arg_slot<PerDeviceFFHandle>(FF_HANDLE);
+  init.add_unchecked_arg_slot<device_handle_t>(FF_HANDLE);
   init.add_output_slot(OUTPUT);
 
   init.add_return_value<std::optional<DropoutPerDeviceState>>();

@@ -6,20 +6,21 @@ namespace FlexFlow::Kernels::Dropout {
 
 std::optional<DropoutPerDeviceState>
     init_kernel(DeviceType device_type,
-                PerDeviceFFHandle const &handle,
+                device_handle_t const &handle,
                 float rate,
                 unsigned long long seed,
                 ArrayShape const &output_domain,
                 Allocator &allocator) {
   if (device_type == DeviceType::GPU) {
     return gpu_init_kernel(
-        /*handle=*/handle,
+        /*handle=*/handle.require_for_gpu(),
         /*rate=*/rate,
         /*seed=*/seed,
         /*output_domain=*/output_domain,
         /*allocator=*/allocator);
   } else {
     ASSERT(device_type == DeviceType::CPU);
+    ASSERT(handle.is_for_cpu());
     return std::nullopt;
   }
 }

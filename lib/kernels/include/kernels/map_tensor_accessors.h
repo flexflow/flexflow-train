@@ -114,7 +114,7 @@ void map_tensor_accessors2_to(GenericTensorAccessorR const &lhs,
   DataTypeDispatch2<CPUMapTensorAccessors2>{}(
       lhs.data_type, rhs.data_type, lhs_cpu, rhs_cpu, output_cpu, f);
 
-  return copy_accessor_data_to_l_from_r(output_cpu, output);
+  return copy_accessor_data_to_l_from_r(output, output_cpu);
 }
 
 template <typename F>

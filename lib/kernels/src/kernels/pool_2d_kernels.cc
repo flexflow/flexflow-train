@@ -6,7 +6,7 @@ namespace FlexFlow::Kernels::Pool2D {
 
 std::optional<Pool2DPerDeviceState>
     init_kernel(DeviceType device_type,
-                PerDeviceFFHandle handle,
+                device_handle_t const &handle,
                 std::optional<Activation> activation,
                 int input_w,
                 int input_h,
@@ -25,7 +25,7 @@ std::optional<Pool2DPerDeviceState>
                 PoolOp pool_type) {
   if (device_type == DeviceType::GPU) {
     return gpu_init_kernel(
-        /*handle=*/handle,
+        /*handle=*/handle.require_for_gpu(),
         /*activation=*/activation,
         /*input_w=*/input_w,
         /*input_h=*/input_h,
@@ -44,6 +44,7 @@ std::optional<Pool2DPerDeviceState>
         /*pool_type=*/pool_type);
   } else {
     ASSERT(device_type == DeviceType::CPU);
+    ASSERT(handle.is_for_cpu());
     return std::nullopt;
   }
 }

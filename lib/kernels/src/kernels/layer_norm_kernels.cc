@@ -6,7 +6,7 @@ namespace FlexFlow::Kernels::LayerNorm {
 
 std::optional<LayerNormPerDeviceState>
     init_kernel(DeviceType device_type,
-                PerDeviceFFHandle const &handle,
+                device_handle_t const &handle,
                 Allocator &allocator,
                 bool elementwise_affine,
                 int64_t effective_batch_size,
@@ -14,7 +14,7 @@ std::optional<LayerNormPerDeviceState>
                 float eps) {
   if (device_type == DeviceType::GPU) {
     return gpu_init_kernel(
-        /*handle=*/handle,
+        /*handle=*/handle.require_for_gpu(),
         /*allocator=*/allocator,
         /*elementwise_affine=*/elementwise_affine,
         /*effective_batch_size=*/effective_batch_size,
@@ -22,6 +22,7 @@ std::optional<LayerNormPerDeviceState>
         /*eps=*/eps);
   } else {
     ASSERT(device_type == DeviceType::CPU);
+    ASSERT(handle.is_for_cpu());
     return std::nullopt;
   }
 }
