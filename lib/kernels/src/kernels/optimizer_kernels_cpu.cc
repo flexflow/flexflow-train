@@ -18,8 +18,8 @@ void cpu_sgd_update_task(float lr,
 
   Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
-  // std::cerr << "weight_grad=" << format_accessor_r_contents(weight_grad) << std::endl
-  //           << "weight=" << format_accessor_w_contents(weight) << std::endl;
+  std::cerr << "weight_grad=" << format_accessor_r_contents(weight_grad) << std::endl
+            << "weight=" << format_accessor_w_contents(weight) << std::endl;
 
   GenericTensorAccessorW gt =
     tensor_accessor_elementwise_add(

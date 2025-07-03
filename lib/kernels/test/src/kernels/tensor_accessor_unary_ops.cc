@@ -32,6 +32,30 @@ TEST_SUITE(FF_TEST_SUITE) {
                   check_kv("result", format_accessor_w_contents(result)));
   }
 
+  TEST_CASE("tensor_accessor_relu") {
+    Allocator cpu_allocator = create_local_cpu_memory_allocator();
+
+    GenericTensorAccessorR input = create_2d_accessor_r_with_contents<float>(
+          {
+              {3, -3, -6},
+              {0, -1, 0.75},
+          },
+        cpu_allocator);
+
+    GenericTensorAccessorW result = tensor_accessor_relu(input, cpu_allocator);
+
+    GenericTensorAccessorR correct = create_2d_accessor_r_with_contents<float>(
+          {
+              {3, 0, 0},
+              {0, 0, 0.75},
+          },
+          cpu_allocator);
+
+    CHECK_MESSAGE(accessors_are_equal(result, correct),
+                  check_kv("result", format_accessor_w_contents(result)));
+  }
+
+
   TEST_CASE("tensor_accessor_scale_by_constant_inplace") {
     Allocator cpu_allocator = create_local_cpu_memory_allocator();
 

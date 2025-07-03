@@ -9,8 +9,6 @@
 
 namespace FlexFlow {
 
-using namespace FlexFlow::Kernels::Linear;
-
 enum slots {
   INPUT,
   OUTPUT,
@@ -84,12 +82,9 @@ static DeviceSpecificDeviceStates
   positive_int out_dim = output.shape.at(ff_dim_t{0_n});
   positive_int batch_size = output.shape.at(ff_dim_t{1_n});
 
-  float *one_ptr;
-
   std::optional<LinearPerDeviceState> per_device_state =
-      init_kernel(kernel_device_type,
+      linear_init_kernel(kernel_device_type,
                   handle,
-                  one_ptr,
                   attrs.activation,
                   attrs.regularizer,
                   attrs.use_bias,
@@ -122,11 +117,12 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
     bias = acc.get_tensor<Permissions::RO>(BIAS);
   }
 
-  auto result = profile(forward_kernel,
+  auto result = profile(linear_forward_kernel,
                         profiling,
                         kernel_device_type,
                         "[Linear] forward_time = {:.2lf}ms\n",
                         per_device_state,
+                        attrs,
                         input,
                         output,
                         weight,
@@ -157,11 +153,12 @@ static std::optional<float>
     bias_grad = acc.get_tensor<Permissions::RW>(BIAS);
   }
 
-  auto result = profile(backward_kernel,
+  auto result = profile(linear_backward_kernel,
                         profiling,
                         kernel_device_type,
                         "[Linear] backward_time = {:.2lf}ms\n",
                         per_device_state,
+                        attrs,
                         output,
                         output_grad,
                         input,

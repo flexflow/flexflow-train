@@ -1,13 +1,16 @@
 #include "kernels/linear_kernels_cpu.h"
 #include "kernels/local_cpu_allocator.h"
+#include "kernels/map_tensor_accessors.h"
 #include "kernels/tensor_accessor_binary_ops.h"
 #include "kernels/tensor_accessor_unary_ops.h"
 #include "utils/exception.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
+#include <libassert/assert.hpp>
 
-namespace FlexFlow::Kernels::Linear {
+namespace FlexFlow {
 
-void cpu_forward_kernel(GenericTensorAccessorR const &input,
+void linear_cpu_forward_kernel(LinearAttrs const &attrs,
+                               GenericTensorAccessorR const &input,
                         GenericTensorAccessorW const &output,
                         GenericTensorAccessorR const &projection,
                         std::optional<GenericTensorAccessorR> const &bias) {
@@ -15,6 +18,7 @@ void cpu_forward_kernel(GenericTensorAccessorR const &input,
 
   tensor_accessor_matmul_to(input, projection, output);
 
+  ASSERT(attrs.use_bias == bias.has_value());
   if (bias.has_value()) {
     GenericTensorAccessorW broadcasted_bias = tensor_accessor_broadcast(
         bias.value(), 
@@ -25,22 +29,29 @@ void cpu_forward_kernel(GenericTensorAccessorR const &input,
       read_only_accessor_from_write_accessor(broadcasted_bias),
       output);
   }
-  
-  // for (nonnegative_int i : nonnegative_range(input.shape.at(ff_dim_t{0_n}))) {
-  //   for (nonnegative_int j : nonnegative_range(projection.shape.at(ff_dim_t{1_n}))) {
-  //     float accum = 0.0f;
-  //     if (bias.has_value()) {
-  //       accum += bias.value().at<DataType::FLOAT>(FFOrdered{j});
-  //     }
-  //     for (nonnegative_int k : nonnegative_range(input.shape.at(ff_dim_t{1_n}))) {
-  //       accum += input.at<DataType::FLOAT>(FFOrdered{i, k}) * projection.at<DataType::FLOAT>(FFOrdered{k, j});
-  //     }
-  //     output.at<DataType::FLOAT>(FFOrdered{i, j}) = accum;
-  //   }
-  // }
+
+  if (attrs.activation.has_value()) {
+    switch (attrs.activation.value()) {
+      case Activation::RELU:
+        tensor_accessor_relu_to(read_only_accessor_from_write_accessor(output), output);
+        break;
+      default:
+        PANIC("Unhandled activation function", attrs.activation.value());
+    }
+  }
 }
 
-void cpu_backward_kernel(GenericTensorAccessorR const &output,
+// template <typename T>
+static float single_element_relu_bwd(float elem) {
+  if (elem > 0) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+void linear_cpu_backward_kernel(LinearAttrs const &attrs,
+                                GenericTensorAccessorR const &output,
                          GenericTensorAccessorR const &output_grad,
                          GenericTensorAccessorR const &input,
                          GenericTensorAccessorW const &input_grad,
@@ -49,16 +60,32 @@ void cpu_backward_kernel(GenericTensorAccessorR const &output,
                          std::optional<GenericTensorAccessorW> const &bias_grad) {
   Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
-  tensor_accessor_matmul_to(output_grad, 
+  std::optional<GenericTensorAccessorR> processed_output_grad = std::nullopt;
+  if (attrs.activation.has_value()) {
+    switch (attrs.activation.value()) {
+      case Activation::RELU:
+        processed_output_grad = read_only_accessor_from_write_accessor(
+                          map_tensor_accessor(output_grad, single_element_relu_bwd, cpu_allocator));
+        break;
+      default:
+        PANIC("Unhandled activation function", attrs.activation.value());
+    }
+  } else {
+    processed_output_grad = output_grad;
+  }
+
+  tensor_accessor_matmul_to(processed_output_grad.value(), 
                             read_only_accessor_from_write_accessor(tensor_accessor_transpose(projection, cpu_allocator)),
                             input_grad);
   tensor_accessor_matmul_to(read_only_accessor_from_write_accessor(tensor_accessor_transpose(input, cpu_allocator)),
-                            output_grad,
+                            processed_output_grad.value(),
                             projection_grad);
 
   if (bias_grad.has_value()) {
-     
+    tensor_accessor_reduce_to(processed_output_grad.value(),
+                              ff_dim_t{0_n},
+                              bias_grad.value());
   }
 }
 
-} // namespace FlexFlow::Kernels::Linear
+} // namespace FlexFlow

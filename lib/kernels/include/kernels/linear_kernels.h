@@ -10,12 +10,11 @@
 #include "op-attrs/ops/linear_attrs.dtg.h"
 #include "pcg/device_type.dtg.h"
 
-namespace FlexFlow::Kernels::Linear {
+namespace FlexFlow {
 
 std::optional<LinearPerDeviceState>
-    init_kernel(DeviceType device_type,
+    linear_init_kernel(DeviceType device_type,
                 device_handle_t const &handle,
-                float *one_ptr,
                 std::optional<Activation> activation,
                 std::optional<RegularizerAttrs> regularizer,
                 bool use_bias,
@@ -23,29 +22,31 @@ std::optional<LinearPerDeviceState>
                 DataType weight_type,
                 DataType output_type,
                 int batch_size,
-                int channel);
+                int output_num_channels);
 
-void forward_kernel(device_stream_t const &stream,
+void linear_forward_kernel(device_stream_t const &stream,
                     std::optional<LinearPerDeviceState> const &per_device_state,
+                    LinearAttrs const &attrs,
                     GenericTensorAccessorR const &input_accessor,
                     GenericTensorAccessorW const &output_accessor,
-                    GenericTensorAccessorR const &filter_accessor,
+                    GenericTensorAccessorR const &projection_accessor,
                     std::optional<GenericTensorAccessorR> const &bias_accessor);
 
-void backward_kernel(
+void linear_backward_kernel(
     device_stream_t const &stream,
     std::optional<LinearPerDeviceState> const &per_device_state,
+    LinearAttrs const &attrs,
     GenericTensorAccessorR const &output,
     GenericTensorAccessorR const &output_grad,
     GenericTensorAccessorR const &input,
     GenericTensorAccessorW const &input_grad,
-    GenericTensorAccessorR const &kernel,
-    GenericTensorAccessorW const &kernel_grad,
+    GenericTensorAccessorR const &projection,
+    GenericTensorAccessorW const &projection_grad,
     std::optional<GenericTensorAccessorW> const &bias_grad);
 
-void cleanup_kernel(DeviceType device_type,
+void linear_cleanup_kernel(DeviceType device_type,
                     std::optional<LinearPerDeviceState> &per_device_state);
 
-} // namespace FlexFlow::Kernels::Linear
+} // namespace FlexFlow
 
 #endif

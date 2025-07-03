@@ -52,9 +52,9 @@ struct CPUMapTensorAccessor {
 };
 
 template <typename F, typename Out = std::invoke_result_t<F, float>>
-GenericTensorAccessorW map_tensor_accessor(GenericTensorAccessorR const &input,
-                                           F &&f,
-                                           Allocator &output_allocator) {
+void map_tensor_accessor_to(GenericTensorAccessorR const &input,
+                                              F &&f,
+                                              GenericTensorAccessorW const &output) {
   Allocator cpu_allocator = create_local_cpu_memory_allocator();
   GenericTensorAccessorR input_cpu =
       copy_tensor_accessor_r_to_cpu_if_necessary(input, cpu_allocator);
@@ -65,7 +65,19 @@ GenericTensorAccessorW map_tensor_accessor(GenericTensorAccessorR const &input,
   DataTypeDispatch1<CPUMapTensorAccessor>{}(
       input.data_type, input_cpu, output_cpu, f);
 
-  return copy_tensor_accessor_w(output_cpu, output_allocator);
+  copy_accessor_data_to_l_from_r(output, read_only_accessor_from_write_accessor(output_cpu));
+}
+
+template <typename F, typename Out = std::invoke_result_t<F, float>>
+GenericTensorAccessorW map_tensor_accessor(GenericTensorAccessorR const &input,
+                                           F &&f,
+                                           Allocator &output_allocator) {
+  GenericTensorAccessorW output = output_allocator.allocate_tensor(
+      tensor_shape_from_array_shape(input.shape, type_to_data_type_enum_v<Out>));
+
+  map_tensor_accessor_to(input, f, output);
+
+  return output;
 }
 
 template <DataType DTL, DataType DTR>

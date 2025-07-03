@@ -5,12 +5,13 @@
 #include "kernels/copy_tensor_accessor.h"
 #include "kernels/local_cuda_allocator.h"
 
-namespace FlexFlow::Kernels::Linear {
+using namespace FlexFlow::Kernels::Linear;
+
+namespace FlexFlow {
 
 std::optional<LinearPerDeviceState>
-    init_kernel(DeviceType device_type,
+    linear_init_kernel(DeviceType device_type,
                 device_handle_t const &handle,
-                float *one_ptr,
                 std::optional<Activation> activation,
                 std::optional<RegularizerAttrs> regularizer,
                 bool use_bias,
@@ -22,7 +23,6 @@ std::optional<LinearPerDeviceState>
   if (device_type == DeviceType::GPU) {
     return gpu_init_kernel(
         /*handle=*/handle.require_for_gpu(),
-        /*one_ptr=*/one_ptr,
         /*activation=*/activation,
         /*regularizer=*/regularizer,
         /*use_bias=*/use_bias,
@@ -37,8 +37,9 @@ std::optional<LinearPerDeviceState>
   }
 }
 
-void forward_kernel(device_stream_t const &stream,
+void linear_forward_kernel(device_stream_t const &stream,
                     std::optional<LinearPerDeviceState> const &per_device_state,
+                    LinearAttrs const &attrs,
                     GenericTensorAccessorR const &input_accessor,
                     GenericTensorAccessorW const &output_accessor,
                     GenericTensorAccessorR const &filter_accessor,
@@ -66,7 +67,8 @@ void forward_kernel(device_stream_t const &stream,
   } else {
     ASSERT(stream.is_cpu());
     ASSERT(per_device_state == std::nullopt);
-    cpu_forward_kernel(
+    linear_cpu_forward_kernel(
+                       /*attrs=*/attrs,
                        /*input_accessor=*/input_accessor,
                        /*output_accessor=*/output_accessor,
                        /*filter_accessor=*/filter_accessor,
@@ -74,9 +76,10 @@ void forward_kernel(device_stream_t const &stream,
   }
 }
 
-void backward_kernel(
+void linear_backward_kernel(
     device_stream_t const &stream,
     std::optional<LinearPerDeviceState> const &per_device_state,
+    LinearAttrs const &attrs,
     GenericTensorAccessorR const &output,
     GenericTensorAccessorR const &output_grad,
     GenericTensorAccessorR const &input,
@@ -113,7 +116,8 @@ void backward_kernel(
   } else {
     ASSERT(stream.is_cpu());
     ASSERT(per_device_state == std::nullopt);
-    cpu_backward_kernel(
+    linear_cpu_backward_kernel(
+        /*attrs=*/attrs,
         /*output=*/output,
         /*output_grad=*/output_grad,
         /*input=*/input,
@@ -124,7 +128,7 @@ void backward_kernel(
   }
 }
 
-void cleanup_kernel(DeviceType device_type,
+void linear_cleanup_kernel(DeviceType device_type,
                     std::optional<LinearPerDeviceState> &per_device_state) {
   if (device_type == DeviceType::GPU) {
     gpu_cleanup_kernel(per_device_state.value());
@@ -134,4 +138,4 @@ void cleanup_kernel(DeviceType device_type,
   }
 }
 
-} // namespace FlexFlow::Kernels::Linear
+} // namespace FlexFlow

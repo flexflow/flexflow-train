@@ -35,6 +35,31 @@ void
                                      });
 }
 
+template <typename T>
+static T single_element_relu(T elem) {
+  if (elem >= 0) {
+    return elem;
+  } else {
+    return 0;
+  }
+}
+
+void
+  tensor_accessor_relu_to(GenericTensorAccessorR const &input, 
+                          GenericTensorAccessorW const &output) {
+  map_tensor_accessor_to(input, 
+                         [](auto elem) {
+                           return single_element_relu(elem);
+                         }, output);
+}
+
+
+GenericTensorAccessorW
+  tensor_accessor_relu(GenericTensorAccessorR const &input,
+                       Allocator &output_allocator) {
+  return map_tensor_accessor(input, [](auto elem) { return single_element_relu(elem); }, output_allocator);
+}
+
 template <DataType DT>
 struct CPUTensorAccessorBroadcast {
   void operator()(GenericTensorAccessorR const &input,
@@ -62,6 +87,7 @@ void tensor_accessor_broadcast_to(GenericTensorAccessorR const &input,
   ASSERT(tensor_dims_is_broadcastable_to(input_dims, output_dims));
 
   TensorShape output_shape = TensorShape{output_dims, input.data_type};
+  ASSERT(get_tensor_shape_for_accessor_w(output) == output_shape);
 
   Allocator cpu_allocator = create_local_cpu_memory_allocator();
   GenericTensorAccessorR input_cpu = copy_tensor_accessor_r_to_cpu_if_necessary(input, cpu_allocator);
@@ -120,6 +146,7 @@ void tensor_accessor_transpose_to(GenericTensorAccessorR const &input,
   ASSERT(input.shape.num_dims() == 2);
 
   TensorShape output_shape = get_transpose_output_shape(get_tensor_shape_for_accessor_r(input));
+  ASSERT(get_tensor_shape_for_accessor_w(output) == output_shape);
 
   Allocator cpu_allocator = create_local_cpu_memory_allocator();
   GenericTensorAccessorR input_cpu = copy_tensor_accessor_r_to_cpu_if_necessary(input, cpu_allocator);
@@ -181,6 +208,7 @@ void tensor_accessor_reduce_to(GenericTensorAccessorR const &input,
                                GenericTensorAccessorW const &output) {
 
   TensorShape output_shape = get_reduce_output_shape(get_tensor_shape_for_accessor_r(input), reduction_dim);
+  ASSERT(get_tensor_shape_for_accessor_r(output) == output_shape);
 
   Allocator cpu_allocator = create_local_cpu_memory_allocator();
   GenericTensorAccessorR input_cpu = copy_tensor_accessor_r_to_cpu_if_necessary(input, cpu_allocator);

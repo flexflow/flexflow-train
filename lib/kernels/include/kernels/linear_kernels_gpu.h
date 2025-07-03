@@ -10,7 +10,6 @@ namespace FlexFlow::Kernels::Linear {
 
 LinearPerDeviceState
     gpu_init_kernel(PerDeviceFFHandle handle,
-                    float *one_ptr,
                     std::optional<Activation> activation,
                     std::optional<RegularizerAttrs> regularizer,
                     bool use_bias,
@@ -18,7 +17,7 @@ LinearPerDeviceState
                     DataType weight_type,
                     DataType output_type,
                     int batch_size,
-                    int channel);
+                    int output_num_channels);
 
 void gpu_forward_kernel(ffStream_t stream,
                         LinearPerDeviceState const &per_device_state,

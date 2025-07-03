@@ -40,10 +40,8 @@ static bool use_activation(std::optional<Activation> activation) {
   return false;
 }
 
-// what's the float * one_ptr
 LinearPerDeviceState
     gpu_init_kernel(PerDeviceFFHandle handle,
-                    float *one_ptr,
                     std::optional<Activation> activation,
                     std::optional<RegularizerAttrs> regularizer,
                     bool use_bias,
@@ -92,6 +90,7 @@ LinearPerDeviceState
 
   // todo: how to use allocator to allocate memory for float * one_ptr, how many
   // bytes to allocate?
+  float *one_ptr;
   checkCUDA(cudaMalloc(&one_ptr, sizeof(float) * batch_size));
   LinearPerDeviceState per_device_state = LinearPerDeviceState{
       /*handle=*/handle,

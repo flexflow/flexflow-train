@@ -17,6 +17,15 @@ void
                                             float constant);
 
 GenericTensorAccessorW
+  tensor_accessor_relu(GenericTensorAccessorR const &input,
+                       Allocator &output_allocator);
+
+
+void
+  tensor_accessor_relu_to(GenericTensorAccessorR const &input, 
+                          GenericTensorAccessorW const &output);
+
+GenericTensorAccessorW
   tensor_accessor_broadcast(GenericTensorAccessorR const &input,
                             TensorDims const &output_dims,
                             Allocator &output_allocator);
