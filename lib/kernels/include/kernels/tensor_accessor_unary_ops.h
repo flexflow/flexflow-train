@@ -11,6 +11,7 @@ GenericTensorAccessorW
                                     float constant,
                                     Allocator &output_allocator);
 
+
 void
   tensor_accessor_scale_by_constant_inplace(GenericTensorAccessorW const &input,
                                             float constant);

@@ -29,7 +29,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           cpu_allocator);
 
     CHECK_MESSAGE(accessors_are_equal(result, correct),
-                  check_kv("result=", format_accessor_w_contents(result)));
+                  check_kv("result", format_accessor_w_contents(result)));
   }
 
   TEST_CASE("tensor_accessor_scale_by_constant_inplace") {
@@ -52,7 +52,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           cpu_allocator);
 
     CHECK_MESSAGE(accessors_are_equal(input, correct),
-                  check_kv("result=", format_accessor_w_contents(input)));
+                  check_kv("result", format_accessor_w_contents(input)));
   }
 
   TEST_CASE("tensor_accessor_broadcast") {
@@ -84,8 +84,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           cpu_allocator);
 
     CHECK_MESSAGE(accessors_are_equal(result, correct),
-                  check_kv("input=", format_accessor_r_contents(input)),
-                  check_kv("result=", format_accessor_w_contents(result)));
+                  check_kv("input", format_accessor_r_contents(input)),
+                  check_kv("result", format_accessor_w_contents(result)));
   }
 
   TEST_CASE("tensor_accessor_transpose") {
@@ -109,7 +109,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           cpu_allocator);
 
     CHECK_MESSAGE(accessors_are_equal(result, correct),
-                  check_kv("result=", format_accessor_w_contents(result)));
+                  check_kv("result", format_accessor_w_contents(result)));
   }
 
   TEST_CASE("tensor_accessor_reduce") {
@@ -133,7 +133,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             cpu_allocator);
 
       CHECK_MESSAGE(accessors_are_equal(result, correct),
-                    check_kv("result=", format_accessor_w_contents(result)));
+                    check_kv("result", format_accessor_w_contents(result)));
     }
 
     SUBCASE("outer_dim") {
@@ -144,7 +144,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             cpu_allocator);
 
       CHECK_MESSAGE(accessors_are_equal(result, correct),
-                    check_kv("result=", format_accessor_w_contents(result)));
+                    check_kv("result", format_accessor_w_contents(result)));
     }
   }
 }

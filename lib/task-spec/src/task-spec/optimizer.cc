@@ -72,7 +72,6 @@ static void sgd_update_task_impl(TaskArgumentAccessor const &acc) {
       acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   ASSERT(weight.shape == weight_grad.shape);
-  int size = weight_grad.shape.num_elements().int_from_positive_int();
 
   ASSERT(weight_grad.shape.num_elements().int_from_positive_int() %
              weight.shape.num_elements().int_from_positive_int() ==
@@ -80,11 +79,10 @@ static void sgd_update_task_impl(TaskArgumentAccessor const &acc) {
   int num_replicas = weight_grad.shape.num_elements().int_from_positive_int() /
                      weight.shape.num_elements().int_from_positive_int();
 
-  float *sgd_v_ptr;
+  std::optional<GenericTensorAccessorW> sgd_v = std::nullopt;
   if (attrs.momentum > 0.0f) {
-    auto sgd_v = acc.get_optimizer_tensor<Permissions::RW>(SGD_V);
-    ASSERT(sgd_v.shape == weight.shape);
-    sgd_v_ptr = sgd_v.get_float_ptr();
+    sgd_v = acc.get_optimizer_tensor<Permissions::RW>(SGD_V);
+    ASSERT(sgd_v.value().shape == weight.shape);
   }
 
   auto handle = acc.get_argument<device_handle_t>(HANDLE);
@@ -97,11 +95,10 @@ static void sgd_update_task_impl(TaskArgumentAccessor const &acc) {
           attrs.momentum,
           attrs.nesterov,
           attrs.weight_decay,
-          weight_grad.get_float_ptr(),
-          size,
+          weight_grad,
           num_replicas,
-          weight.get_float_ptr(),
-          sgd_v_ptr); // how to deal with removal of ParamSync?
+          weight,
+          sgd_v); // how to deal with removal of ParamSync?
 
   // if (CHOSEN_SYNC_TYPE == ParamSync::NCCL) {
   //   auto handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);

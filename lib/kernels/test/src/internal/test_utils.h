@@ -31,8 +31,6 @@ GenericTensorAccessorR create_zero_filled_accessor_r(TensorShape const &shape,
 
 bool contains_non_zero(GenericTensorAccessorR const &accessor);
 
-void fill_with_zeros(GenericTensorAccessorW const &accessor);
-
 void print_2d_tensor_accessor_contents(GenericTensorAccessorR const &accessor,
                                        std::ostream &stream);
 

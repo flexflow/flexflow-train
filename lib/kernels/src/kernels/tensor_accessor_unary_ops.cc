@@ -1,6 +1,5 @@
 #include "kernels/tensor_accessor_unary_ops.h"
 #include "kernels/array_coord.h"
-#include "kernels/format_accessor_contents.h"
 #include "kernels/map_tensor_accessors.h"
 #include "op-attrs/datatype_value.h"
 #include "kernels/datatype_dispatch.h"
@@ -150,7 +149,7 @@ struct CPUTensorAccessorReduce {
   void operator()(GenericTensorAccessorR const &input,
                   ff_dim_t reduction_dim,
                   GenericTensorAccessorW const &output) {
-    fill_tensor_accessor(output, make_zero_data_type_value_of_type(output.data_type));
+    fill_with_zeros(output);
 
     for (ArrayCoord const &input_coord : get_array_coord_set(input.shape)) {
       ArrayCoord output_coord = array_coord_drop_dims(input_coord, 

@@ -7,7 +7,7 @@
 
 namespace FlexFlow {
 
-void fill_tensor_accessor(GenericTensorAccessorW const &, DataTypeValue val);
+void fill_with_zeros(GenericTensorAccessorW const &accessor);
 
 GenericTensorAccessorW create_accessor_w_filled_with(
     TensorShape const &shape, DataTypeValue val, Allocator const &allocator);

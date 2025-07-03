@@ -19,6 +19,8 @@
 #include "task-spec/runtime_arg_config.h"
 #include "task-spec/training_computation_graph.h"
 #include "utils/containers/get_only.h"
+#include "kernels/format_accessor_contents.h"
+#include "test/utils/doctest/check_kv.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -156,8 +158,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     // Assert that each sample in the batch has a lower loss in last epoch than
     // the first epoch
     GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
-    GenericTensorAccessorR last_epoch = loss_values.back();
-    CHECK(did_loss_decrease(first_epoch_loss, last_epoch));
+    GenericTensorAccessorR last_epoch_loss = loss_values.back();
+    CHECK_MESSAGE(did_loss_decrease(first_epoch_loss, last_epoch_loss),
+          check_kv("first_epoch_loss", format_accessor_r_contents(first_epoch_loss)),
+          check_kv("last_epoch_loss", format_accessor_r_contents(last_epoch_loss)));
   }
 }
 

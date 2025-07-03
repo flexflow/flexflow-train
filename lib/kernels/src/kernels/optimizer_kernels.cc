@@ -11,12 +11,18 @@ void sgd_update_task(device_stream_t const &stream,
                      float momentum,
                      bool nesterov,
                      float weight_decay,
-                     float const *weight_grad_ptr,
-                     size_t size,
+                     GenericTensorAccessorR const &weight_grad,
                      int num_replicas,
-                     float *weight_ptr,
-                     float *sgd_v_ptr) {
+                     GenericTensorAccessorW const &weight,
+                     std::optional<GenericTensorAccessorW> const &sgd_v) {
+  ASSERT(sgd_v.has_value() == (momentum > 0.0f));
+
   if (stream.is_gpu()) {
+    float *sgd_v_ptr = nullptr;
+    if (momentum > 0.0f) {
+      sgd_v_ptr = sgd_v.value().get_float_ptr();
+    }
+
     gpu_sgd_nccl_update_task(
         /*stream=*/stream.require_gpu(),
         /*lr=*/lr,
@@ -24,9 +30,9 @@ void sgd_update_task(device_stream_t const &stream,
         /*nesterov=*/nesterov,
         /*weight_decay=*/weight_decay,
         /*handle=*/handle.require_for_gpu(),
-        /*weight_grad_ptr=*/weight_grad_ptr,
-        /*size=*/size,
-        /*weight_ptr=*/weight_ptr,
+        /*weight_grad_ptr=*/weight_grad.get_float_ptr(),
+        /*size=*/weight_grad.shape.num_elements().int_from_positive_int(),
+        /*weight_ptr=*/weight.get_float_ptr(),
         /*sgd_v_ptr=*/sgd_v_ptr);
   } else {
     ASSERT(stream.is_cpu());
@@ -36,11 +42,9 @@ void sgd_update_task(device_stream_t const &stream,
         /*momentum=*/momentum,
         /*nesterov=*/nesterov,
         /*weight_decay=*/weight_decay,
-        /*weight_grad_ptr=*/weight_grad_ptr,
-        /*size=*/size,
-        /*num_replicas=*/num_replicas,
-        /*weight_ptr=*/weight_ptr,
-        /*sgd_v_ptr=*/sgd_v_ptr);
+        /*weight_grad=*/weight_grad,
+        /*weight=*/weight,
+        /*sgd_v=*/sgd_v);
   }
 }
 

@@ -2,6 +2,7 @@
 #include "op-attrs/tensor_shape.h"
 #include "utils/containers/require_all_same1.h"
 #include "utils/join_strings.h"
+#include "kernels/fill_tensor_accessor.h"
 #include <random>
 
 namespace FlexFlow {
@@ -69,28 +70,6 @@ GenericTensorAccessorR create_random_filled_accessor_r(TensorShape const &shape,
       create_random_filled_accessor_w(shape, allocator);
 
   return read_only_accessor_from_write_accessor(accessor);
-}
-
-template <DataType DT>
-struct FillWithZeros {
-  void operator()(GenericTensorAccessorW const &accessor) {
-    using T = real_type_t<DT>;
-
-    if (accessor.device_type == DeviceType::CPU) {
-      memset(accessor.ptr,
-             0,
-             accessor.shape.num_elements().int_from_positive_int() * sizeof(T));
-    } else {
-      checkCUDA(cudaMemset(
-          accessor.ptr,
-          0,
-          accessor.shape.num_elements().int_from_positive_int() * sizeof(T)));
-    }
-  }
-};
-
-void fill_with_zeros(GenericTensorAccessorW const &accessor) {
-  DataTypeDispatch1<FillWithZeros>{}(accessor.data_type, accessor);
 }
 
 template <DataType DT>
