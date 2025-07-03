@@ -26,12 +26,13 @@ namespace FlexFlow {
 LocalCostEstimator::LocalCostEstimator(RuntimeArgConfig const &config)
     : runtime_arg_config(config) {}
 
-static TrainingComputationGraph create_computation_graph_for_local_cost_estimation(
-    PCGOperatorAttrs const &op,
-    OptimizerAttrs const &optimizer_attrs,
-    std::vector<ParallelTensorShape> const &inputs,
-    std::vector<ParallelTensorShape> const &weights,
-    std::vector<ParallelTensorShape> const &outputs) {
+static TrainingComputationGraph
+    create_computation_graph_for_local_cost_estimation(
+        PCGOperatorAttrs const &op,
+        OptimizerAttrs const &optimizer_attrs,
+        std::vector<ParallelTensorShape> const &inputs,
+        std::vector<ParallelTensorShape> const &weights,
+        std::vector<ParallelTensorShape> const &outputs) {
   ComputationGraph computation_graph = make_empty_computation_graph();
 
   std::vector<tensor_guid_t> input_tensors;
@@ -102,10 +103,10 @@ OpCostMetrics LocalCostEstimator::estimate_cost(
 
   TrainingComputationGraph training_cg =
       create_computation_graph_for_local_cost_estimation(
-          /*op=*/op, 
+          /*op=*/op,
           /*optimizer_attrs=*/op_cost_estimate_key.optimizer_attrs,
-          /*inputs=*/inputs, 
-          /*weights=*/weights, 
+          /*inputs=*/inputs,
+          /*weights=*/weights,
           /*outputs=*/outputs);
 
   // allocate memory

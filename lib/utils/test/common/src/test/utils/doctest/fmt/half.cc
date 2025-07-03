@@ -6,4 +6,4 @@ String StringMaker<::half>::convert(::half const &h) {
   return toString(static_cast<float>(h));
 }
 
-}
+} // namespace doctest

@@ -18,11 +18,13 @@ ArrayCoord array_coord_drop_dims(
   return ArrayCoord{ff_ordered_of(result)};
 }
 
-TensorDimsCoord tensor_dims_coord_from_array_coord(ArrayCoord const &array_coord) {
+TensorDimsCoord
+    tensor_dims_coord_from_array_coord(ArrayCoord const &array_coord) {
   return TensorDimsCoord{array_coord.ff_ordered};
 }
 
-ArrayCoord array_coord_from_tensor_dims_coord(TensorDimsCoord const &tensor_dims_coord) {
+ArrayCoord array_coord_from_tensor_dims_coord(
+    TensorDimsCoord const &tensor_dims_coord) {
   return ArrayCoord{tensor_dims_coord.ff_ordered};
 }
 

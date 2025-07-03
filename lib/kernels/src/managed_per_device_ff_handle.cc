@@ -51,20 +51,18 @@ PerDeviceFFHandle const &ManagedPerDeviceFFHandle::raw_handle() const {
   return *handle;
 }
 
-std::optional<ManagedPerDeviceFFHandle> 
-    create_local_handle_for_device_type(
-      DeviceType device_type, 
-      size_t workSpaceSize, 
-      bool allowTensorOpMathConversion) {
+std::optional<ManagedPerDeviceFFHandle>
+    create_local_handle_for_device_type(DeviceType device_type,
+                                        size_t workSpaceSize,
+                                        bool allowTensorOpMathConversion) {
   if (device_type == DeviceType::CPU) {
     return std::nullopt;
   } else {
     return initialize_single_gpu_handle(
-      /*workSpaceSize=*/workSpaceSize,
-      /*allowTensorOpMathConversion=*/allowTensorOpMathConversion);
+        /*workSpaceSize=*/workSpaceSize,
+        /*allowTensorOpMathConversion=*/allowTensorOpMathConversion);
   }
 }
-
 
 ManagedPerDeviceFFHandle
     initialize_single_gpu_handle(size_t workSpaceSize,

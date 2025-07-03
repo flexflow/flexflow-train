@@ -34,7 +34,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
           CHECK(result == correct);
         }
-      } 
+      }
 
       SUBCASE("dim is too large") {
         ff_dim_t dim = ff_dim_t{3_n};

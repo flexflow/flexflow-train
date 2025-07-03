@@ -1,8 +1,8 @@
 #include "kernels/loss_function_kernels_cpu.h"
-#include "op-attrs/datatype_value.h"
-#include "utils/exception.h"
 #include "kernels/tensor_accessor_binary_ops.h"
 #include "kernels/tensor_accessor_unary_ops.h"
+#include "op-attrs/datatype_value.h"
+#include "utils/exception.h"
 
 namespace FlexFlow {
 
@@ -19,15 +19,15 @@ void sparse_categorical_crossentropy_loss_backward_cpu_kernel(
   NOT_IMPLEMENTED();
 }
 
-void categorical_crossentropy_loss_backward_cpu_kernel(GenericTensorAccessorW const &logit_grad,
-                                                       GenericTensorAccessorR const &logit,
-                                                       GenericTensorAccessorR const &label,
-                                                       float scale_factor) {
+void categorical_crossentropy_loss_backward_cpu_kernel(
+    GenericTensorAccessorW const &logit_grad,
+    GenericTensorAccessorR const &logit,
+    GenericTensorAccessorR const &label,
+    float scale_factor) {
   tensor_accessor_elementwise_subtract_to(
-    /*lhs=*/logit,
-    /*rhs=*/label,
-    /*output=*/logit_grad
-  );
+      /*lhs=*/logit,
+      /*rhs=*/label,
+      /*output=*/logit_grad);
   tensor_accessor_scale_by_constant_inplace(logit_grad, scale_factor);
 }
 

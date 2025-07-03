@@ -8,22 +8,22 @@
 namespace FlexFlow {
 
 void linear_cpu_forward_kernel(
-                    LinearAttrs const &attrs,
-                    GenericTensorAccessorR const &input,
-                    GenericTensorAccessorW const &output,
-                    GenericTensorAccessorR const &projection,
-                    std::optional<GenericTensorAccessorR> const &bias);
+    LinearAttrs const &attrs,
+    GenericTensorAccessorR const &input,
+    GenericTensorAccessorW const &output,
+    GenericTensorAccessorR const &projection,
+    std::optional<GenericTensorAccessorR> const &bias);
 
 void linear_cpu_backward_kernel(
-                         LinearAttrs const &attrs,
-                         GenericTensorAccessorR const &output,
-                         GenericTensorAccessorR const &output_grad,
-                         GenericTensorAccessorR const &input,
-                         GenericTensorAccessorW const &input_grad,
-                         GenericTensorAccessorR const &projection,
-                         GenericTensorAccessorW const &projection_grad,
-                         std::optional<GenericTensorAccessorW> const &bias_grad);
+    LinearAttrs const &attrs,
+    GenericTensorAccessorR const &output,
+    GenericTensorAccessorR const &output_grad,
+    GenericTensorAccessorR const &input,
+    GenericTensorAccessorW const &input_grad,
+    GenericTensorAccessorR const &projection,
+    GenericTensorAccessorW const &projection_grad,
+    std::optional<GenericTensorAccessorW> const &bias_grad);
 
-} // namespace FlexFlow::Kernels::Linear
+} // namespace FlexFlow
 
 #endif

@@ -14,23 +14,24 @@ namespace FlexFlow {
 
 std::optional<LinearPerDeviceState>
     linear_init_kernel(DeviceType device_type,
-                device_handle_t const &handle,
-                std::optional<Activation> activation,
-                std::optional<RegularizerAttrs> regularizer,
-                bool use_bias,
-                DataType input_type,
-                DataType weight_type,
-                DataType output_type,
-                int batch_size,
-                int output_num_channels);
+                       device_handle_t const &handle,
+                       std::optional<Activation> activation,
+                       std::optional<RegularizerAttrs> regularizer,
+                       bool use_bias,
+                       DataType input_type,
+                       DataType weight_type,
+                       DataType output_type,
+                       int batch_size,
+                       int output_num_channels);
 
-void linear_forward_kernel(device_stream_t const &stream,
-                    std::optional<LinearPerDeviceState> const &per_device_state,
-                    LinearAttrs const &attrs,
-                    GenericTensorAccessorR const &input_accessor,
-                    GenericTensorAccessorW const &output_accessor,
-                    GenericTensorAccessorR const &projection_accessor,
-                    std::optional<GenericTensorAccessorR> const &bias_accessor);
+void linear_forward_kernel(
+    device_stream_t const &stream,
+    std::optional<LinearPerDeviceState> const &per_device_state,
+    LinearAttrs const &attrs,
+    GenericTensorAccessorR const &input_accessor,
+    GenericTensorAccessorW const &output_accessor,
+    GenericTensorAccessorR const &projection_accessor,
+    std::optional<GenericTensorAccessorR> const &bias_accessor);
 
 void linear_backward_kernel(
     device_stream_t const &stream,
@@ -44,8 +45,9 @@ void linear_backward_kernel(
     GenericTensorAccessorW const &projection_grad,
     std::optional<GenericTensorAccessorW> const &bias_grad);
 
-void linear_cleanup_kernel(DeviceType device_type,
-                    std::optional<LinearPerDeviceState> &per_device_state);
+void linear_cleanup_kernel(
+    DeviceType device_type,
+    std::optional<LinearPerDeviceState> &per_device_state);
 
 } // namespace FlexFlow
 

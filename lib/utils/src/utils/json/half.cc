@@ -10,4 +10,4 @@ void adl_serializer<half>::from_json(json const &j, half &x) {
   x = j.get<float>();
 }
 
-}
+} // namespace nlohmann

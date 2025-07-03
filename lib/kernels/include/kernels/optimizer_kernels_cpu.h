@@ -1,8 +1,8 @@
 #ifndef _FLEXFLOW_LIB_KERNELS_INCLUDE_KERNELS_OPTIMIZER_KERNELS_CPU_H
 #define _FLEXFLOW_LIB_KERNELS_INCLUDE_KERNELS_OPTIMIZER_KERNELS_CPU_H
 
-#include <cstddef>
 #include "kernels/accessor.h"
+#include <cstddef>
 
 namespace FlexFlow {
 

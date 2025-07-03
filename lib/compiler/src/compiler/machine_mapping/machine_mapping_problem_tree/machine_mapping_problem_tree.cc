@@ -5,10 +5,11 @@
 
 namespace FlexFlow {
 
-GenericBinarySPDecompositionTreeImplementation<MachineMappingProblemTree,
-                                               MMProblemTreeSeriesSplit,
-                                               MMProblemTreeParallelSplit,
-                                               UnmappedRuntimeOnlyOpCostEstimateKey>
+GenericBinarySPDecompositionTreeImplementation<
+    MachineMappingProblemTree,
+    MMProblemTreeSeriesSplit,
+    MMProblemTreeParallelSplit,
+    UnmappedRuntimeOnlyOpCostEstimateKey>
     generic_binary_sp_impl_for_mm_problem_tree() {
   return GenericBinarySPDecompositionTreeImplementation<
       MachineMappingProblemTree,

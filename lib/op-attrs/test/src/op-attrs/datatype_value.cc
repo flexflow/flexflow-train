@@ -1,6 +1,6 @@
 #include "op-attrs/datatype_value.h"
-#include <doctest/doctest.h>
 #include "test/utils/doctest/fmt/half.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
@@ -88,16 +88,16 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_data_type_of_data_type_value") {
     SUBCASE("half") {
       DataTypeValue input = make_half_data_type_value(0.0);
-       
+
       DataType result = get_data_type_of_data_type_value(input);
       DataType correct = DataType::HALF;
 
       CHECK(result == correct);
-    } 
+    }
 
     SUBCASE("float") {
       DataTypeValue input = make_float_data_type_value(0.0);
-       
+
       DataType result = get_data_type_of_data_type_value(input);
       DataType correct = DataType::FLOAT;
 
@@ -106,7 +106,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("double") {
       DataTypeValue input = make_double_data_type_value(0.0);
-       
+
       DataType result = get_data_type_of_data_type_value(input);
       DataType correct = DataType::DOUBLE;
 
@@ -115,7 +115,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("int32") {
       DataTypeValue input = make_int32_data_type_value(0);
-       
+
       DataType result = get_data_type_of_data_type_value(input);
       DataType correct = DataType::INT32;
 
@@ -124,7 +124,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("int64") {
       DataTypeValue input = make_int64_data_type_value(0);
-       
+
       DataType result = get_data_type_of_data_type_value(input);
       DataType correct = DataType::INT64;
 
@@ -132,7 +132,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("bool") {
-      DataTypeValue input = make_bool_data_type_value(false); 
+      DataTypeValue input = make_bool_data_type_value(false);
 
       DataType result = get_data_type_of_data_type_value(input);
       DataType correct = DataType::BOOL;

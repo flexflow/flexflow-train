@@ -35,7 +35,7 @@ private:
   PerDeviceFFHandle *handle;
 };
 
-std::optional<ManagedPerDeviceFFHandle> 
+std::optional<ManagedPerDeviceFFHandle>
     create_local_handle_for_device_type(DeviceType device_type,
                                         size_t workSpaceSize,
                                         bool allowTensorOpMathConversion);

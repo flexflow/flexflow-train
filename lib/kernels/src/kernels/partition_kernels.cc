@@ -4,10 +4,8 @@
 
 namespace FlexFlow::Kernels::Repartition {
 
-std::optional<RepartitionPerDeviceState>
-    init_kernel(DeviceType device_type,
-                device_handle_t const &handle,
-                DataType data_type) {
+std::optional<RepartitionPerDeviceState> init_kernel(
+    DeviceType device_type, device_handle_t const &handle, DataType data_type) {
   if (device_type == DeviceType::GPU) {
     return gpu_init_kernel(
         /*handle=*/handle.require_for_gpu(),

@@ -1,10 +1,10 @@
 #include "compiler/task_graph_simulator/task_simulator.h"
-#include "internal/runtime_only_cost_estimator_for_test.h"
 #include "compiler/cost_estimator/cost_estimator.h"
 #include "compiler/cost_estimator/op_cost_metrics.dtg.h"
 #include "compiler/machine_mapping/machine_mapping.dtg.h"
 #include "compiler/machine_mapping/machine_mapping.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
+#include "internal/runtime_only_cost_estimator_for_test.h"
 #include "op-attrs/ops/input_attrs.dtg.h"
 #include "op-attrs/parallel_tensor_dims.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
@@ -83,10 +83,11 @@ TEST_SUITE(FF_TEST_SUITE) {
       }};
 
       SUBCASE("constant op, comm cost") {
-        RuntimeOnlyCostEstimator estimator = make_fake_constant_runtime_only_cost_estimator(
-            /*forward_op_cost=*/10_ms,
-            /*backward_op_cost=*/10_ms,
-            /*comm_cost=*/1_ms);
+        RuntimeOnlyCostEstimator estimator =
+            make_fake_constant_runtime_only_cost_estimator(
+                /*forward_op_cost=*/10_ms,
+                /*backward_op_cost=*/10_ms,
+                /*comm_cost=*/1_ms);
 
         milliseconds_t result = task_simulator_estimate_forward_pass_time(
             pcg, estimator, device_mapping, machine_spec);
@@ -96,26 +97,27 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SUBCASE("variable op, comm cost") {
-        RuntimeOnlyCostEstimator cost_estimator = make_fake_runtime_only_cost_estimator(
-            [](RuntimeOnlyOpCostEstimateKey const &key) {
-              if (key.op_attrs.has<InputAttrs>()) {
-                return RuntimeOnlyOpCostMetrics{
-                    /*forward_runtime=*/10_ms,
-                    /*backward_runtime=*/10_ms,
-                }; // layer0
-              } else if (key.op_attrs.has<ElementUnaryAttrs>()) {
-                return RuntimeOnlyOpCostMetrics{
-                    /*forward_runtime=*/1_ms,
-                    /*backward_runtime=*/1_ms,
-                }; // layer1
-              } else {
-                return RuntimeOnlyOpCostMetrics{
-                    /*forward_runtime=*/0_ms,
-                    /*backward_runtime=*/0_ms,
-                };
-              }
-            },
-            [](TensorSetMovement const &comm) { return 5_ms; });
+        RuntimeOnlyCostEstimator cost_estimator =
+            make_fake_runtime_only_cost_estimator(
+                [](RuntimeOnlyOpCostEstimateKey const &key) {
+                  if (key.op_attrs.has<InputAttrs>()) {
+                    return RuntimeOnlyOpCostMetrics{
+                        /*forward_runtime=*/10_ms,
+                        /*backward_runtime=*/10_ms,
+                    }; // layer0
+                  } else if (key.op_attrs.has<ElementUnaryAttrs>()) {
+                    return RuntimeOnlyOpCostMetrics{
+                        /*forward_runtime=*/1_ms,
+                        /*backward_runtime=*/1_ms,
+                    }; // layer1
+                  } else {
+                    return RuntimeOnlyOpCostMetrics{
+                        /*forward_runtime=*/0_ms,
+                        /*backward_runtime=*/0_ms,
+                    };
+                  }
+                },
+                [](TensorSetMovement const &comm) { return 5_ms; });
 
         milliseconds_t result = task_simulator_estimate_forward_pass_time(
             pcg, cost_estimator, device_mapping, machine_spec);
@@ -177,10 +179,11 @@ TEST_SUITE(FF_TEST_SUITE) {
         }};
 
         SUBCASE("constant op, comm cost") {
-          RuntimeOnlyCostEstimator estimator = make_fake_constant_runtime_only_cost_estimator(
-              /*forward_op_cost=*/10_ms,
-              /*backward_op_cost=*/10_ms,
-              /*comm_cost=*/1_ms);
+          RuntimeOnlyCostEstimator estimator =
+              make_fake_constant_runtime_only_cost_estimator(
+                  /*forward_op_cost=*/10_ms,
+                  /*backward_op_cost=*/10_ms,
+                  /*comm_cost=*/1_ms);
 
           milliseconds_t result = task_simulator_estimate_forward_pass_time(
               pcg, estimator, device_mapping, machine_spec);
@@ -189,31 +192,32 @@ TEST_SUITE(FF_TEST_SUITE) {
         }
 
         SUBCASE("variable op, comm cost") {
-          RuntimeOnlyCostEstimator cost_estimator = make_fake_runtime_only_cost_estimator(
-              [](RuntimeOnlyOpCostEstimateKey const &key) {
-                if (key.op_attrs.has<InputAttrs>()) {
-                  return RuntimeOnlyOpCostMetrics{
-                      /*forward_runtime=*/10_ms,
-                      /*backward_runtime=*/10_ms,
-                  }; // layer0
-                } else if (key.op_attrs.has<ElementUnaryAttrs>()) {
-                  return RuntimeOnlyOpCostMetrics{
-                      /*forward_runtime=*/1_ms,
-                      /*backward_runtime=*/1_ms,
-                  }; // layers 1, 2
-                } else if (key.op_attrs.has<ElementBinaryAttrs>()) {
-                  return RuntimeOnlyOpCostMetrics{
-                    /*forward_runtime=*/2_ms,
-                    /*backward_runtime=*/2_ms,
-                  }; // layer3
-                } else {
-                  return RuntimeOnlyOpCostMetrics{
-                    /*forward_runtime=*/0_ms,
-                    /*backward_runtime=*/0_ms,
-                  };
-                }
-              },
-              [](TensorSetMovement const &comm) { return 5_ms; });
+          RuntimeOnlyCostEstimator cost_estimator =
+              make_fake_runtime_only_cost_estimator(
+                  [](RuntimeOnlyOpCostEstimateKey const &key) {
+                    if (key.op_attrs.has<InputAttrs>()) {
+                      return RuntimeOnlyOpCostMetrics{
+                          /*forward_runtime=*/10_ms,
+                          /*backward_runtime=*/10_ms,
+                      }; // layer0
+                    } else if (key.op_attrs.has<ElementUnaryAttrs>()) {
+                      return RuntimeOnlyOpCostMetrics{
+                          /*forward_runtime=*/1_ms,
+                          /*backward_runtime=*/1_ms,
+                      }; // layers 1, 2
+                    } else if (key.op_attrs.has<ElementBinaryAttrs>()) {
+                      return RuntimeOnlyOpCostMetrics{
+                          /*forward_runtime=*/2_ms,
+                          /*backward_runtime=*/2_ms,
+                      }; // layer3
+                    } else {
+                      return RuntimeOnlyOpCostMetrics{
+                          /*forward_runtime=*/0_ms,
+                          /*backward_runtime=*/0_ms,
+                      };
+                    }
+                  },
+                  [](TensorSetMovement const &comm) { return 5_ms; });
         }
       }
 
@@ -228,10 +232,11 @@ TEST_SUITE(FF_TEST_SUITE) {
         }};
 
         SUBCASE("constant op, cost cost") {
-          RuntimeOnlyCostEstimator cost_estimator = make_fake_constant_runtime_only_cost_estimator(
-              /*forward_op_cost=*/10_ms,
-              /*backward_op_cost=*/10_ms,
-              /*comm_cost=*/1_ms);
+          RuntimeOnlyCostEstimator cost_estimator =
+              make_fake_constant_runtime_only_cost_estimator(
+                  /*forward_op_cost=*/10_ms,
+                  /*backward_op_cost=*/10_ms,
+                  /*comm_cost=*/1_ms);
 
           milliseconds_t result = task_simulator_estimate_forward_pass_time(
               pcg, cost_estimator, device_mapping, machine_spec);
@@ -240,31 +245,32 @@ TEST_SUITE(FF_TEST_SUITE) {
         }
 
         SUBCASE("variable op, cost cost") {
-          RuntimeOnlyCostEstimator cost_estimator = make_fake_runtime_only_cost_estimator(
-              [](RuntimeOnlyOpCostEstimateKey const &key) {
-                if (key.op_attrs.has<InputAttrs>()) {
-                  return RuntimeOnlyOpCostMetrics{
-                      /*forward_runtime=*/10_ms,
-                      /*backward_runtime=*/10_ms,
-                  }; // layer0
-                } else if (key.op_attrs.has<ElementUnaryAttrs>()) {
-                  return RuntimeOnlyOpCostMetrics{
-                      /*forward_runtime=*/1_ms,
-                      /*backward_runtime=*/1_ms,
-                  }; // layers 1, 2
-                } else if (key.op_attrs.has<ElementBinaryAttrs>()) {
-                  return RuntimeOnlyOpCostMetrics{
-                      /*forward_runtime=*/2_ms,
-                      /*backward_runtime=*/2_ms,
-                  }; // layer3
-                } else {
-                  return RuntimeOnlyOpCostMetrics{
-                      /*forward_runtime=*/0_ms,
-                      /*backward_runtime=*/0_ms,
-                  };
-                }
-              },
-              [](TensorSetMovement const &comm) { return 5_ms; });
+          RuntimeOnlyCostEstimator cost_estimator =
+              make_fake_runtime_only_cost_estimator(
+                  [](RuntimeOnlyOpCostEstimateKey const &key) {
+                    if (key.op_attrs.has<InputAttrs>()) {
+                      return RuntimeOnlyOpCostMetrics{
+                          /*forward_runtime=*/10_ms,
+                          /*backward_runtime=*/10_ms,
+                      }; // layer0
+                    } else if (key.op_attrs.has<ElementUnaryAttrs>()) {
+                      return RuntimeOnlyOpCostMetrics{
+                          /*forward_runtime=*/1_ms,
+                          /*backward_runtime=*/1_ms,
+                      }; // layers 1, 2
+                    } else if (key.op_attrs.has<ElementBinaryAttrs>()) {
+                      return RuntimeOnlyOpCostMetrics{
+                          /*forward_runtime=*/2_ms,
+                          /*backward_runtime=*/2_ms,
+                      }; // layer3
+                    } else {
+                      return RuntimeOnlyOpCostMetrics{
+                          /*forward_runtime=*/0_ms,
+                          /*backward_runtime=*/0_ms,
+                      };
+                    }
+                  },
+                  [](TensorSetMovement const &comm) { return 5_ms; });
           milliseconds_t result = task_simulator_estimate_forward_pass_time(
               pcg, cost_estimator, device_mapping, machine_spec);
           milliseconds_t correct = 10_ms + 5_ms + (1_ms + 1_ms) + 5_ms + 2_ms;

@@ -2,9 +2,9 @@
 #define _FLEXFLOW_OPS_KERNELS_GATHER_KERNELS_H
 
 #include "kernels/accessor.h"
+#include "kernels/device_handle_t.dtg.h"
 #include "kernels/device_stream_t.dtg.h"
 #include "kernels/gather_per_device_state.dtg.h"
-#include "kernels/device_handle_t.dtg.h"
 
 namespace FlexFlow::Kernels::Gather {
 

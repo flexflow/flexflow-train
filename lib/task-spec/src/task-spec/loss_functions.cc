@@ -120,7 +120,7 @@ static void backward_task_impl(TaskArgumentAccessor const &acc) {
                 "[CategoricalCrossEntropyLoss] backward_time = %.2lfms\n",
                 logit_grad,
                 logit,
-                label, 
+                label,
                 scale_factor);
         break;
       }

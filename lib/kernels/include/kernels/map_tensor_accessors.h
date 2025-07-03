@@ -25,7 +25,8 @@ struct CPUMapTensorAccessorInPlace {
 };
 
 template <typename F>
-void map_tensor_accessor_inplace(GenericTensorAccessorW const &accessor, F &&f) {
+void map_tensor_accessor_inplace(GenericTensorAccessorW const &accessor,
+                                 F &&f) {
   ASSERT(accessor.device_type == DeviceType::CPU);
 
   DataTypeDispatch1<CPUMapTensorAccessorInPlace>{}(
@@ -53,27 +54,30 @@ struct CPUMapTensorAccessor {
 
 template <typename F, typename Out = std::invoke_result_t<F, float>>
 void map_tensor_accessor_to(GenericTensorAccessorR const &input,
-                                              F &&f,
-                                              GenericTensorAccessorW const &output) {
+                            F &&f,
+                            GenericTensorAccessorW const &output) {
   Allocator cpu_allocator = create_local_cpu_memory_allocator();
   GenericTensorAccessorR input_cpu =
       copy_tensor_accessor_r_to_cpu_if_necessary(input, cpu_allocator);
 
-  GenericTensorAccessorW output_cpu = cpu_allocator.allocate_tensor(
-      tensor_shape_from_array_shape(input.shape, type_to_data_type_enum_v<Out>));
+  GenericTensorAccessorW output_cpu =
+      cpu_allocator.allocate_tensor(tensor_shape_from_array_shape(
+          input.shape, type_to_data_type_enum_v<Out>));
 
   DataTypeDispatch1<CPUMapTensorAccessor>{}(
       input.data_type, input_cpu, output_cpu, f);
 
-  copy_accessor_data_to_l_from_r(output, read_only_accessor_from_write_accessor(output_cpu));
+  copy_accessor_data_to_l_from_r(
+      output, read_only_accessor_from_write_accessor(output_cpu));
 }
 
 template <typename F, typename Out = std::invoke_result_t<F, float>>
 GenericTensorAccessorW map_tensor_accessor(GenericTensorAccessorR const &input,
                                            F &&f,
                                            Allocator &output_allocator) {
-  GenericTensorAccessorW output = output_allocator.allocate_tensor(
-      tensor_shape_from_array_shape(input.shape, type_to_data_type_enum_v<Out>));
+  GenericTensorAccessorW output =
+      output_allocator.allocate_tensor(tensor_shape_from_array_shape(
+          input.shape, type_to_data_type_enum_v<Out>));
 
   map_tensor_accessor_to(input, f, output);
 
@@ -120,8 +124,8 @@ void map_tensor_accessors2_to(GenericTensorAccessorR const &lhs,
       copy_tensor_accessor_r_to_cpu_if_necessary(lhs, cpu_allocator);
   GenericTensorAccessorR rhs_cpu =
       copy_tensor_accessor_r_to_cpu_if_necessary(rhs, cpu_allocator);
-  GenericTensorAccessorW output_cpu =
-      cpu_allocator.allocate_tensor(tensor_shape_from_array_shape(shape, output_data_type));
+  GenericTensorAccessorW output_cpu = cpu_allocator.allocate_tensor(
+      tensor_shape_from_array_shape(shape, output_data_type));
 
   DataTypeDispatch2<CPUMapTensorAccessors2>{}(
       lhs.data_type, rhs.data_type, lhs_cpu, rhs_cpu, output_cpu, f);
@@ -137,13 +141,13 @@ GenericTensorAccessorW map_tensor_accessors2(GenericTensorAccessorR const &lhs,
                                              Allocator &output_allocator) {
   ArrayShape shape = require_same(lhs.shape, rhs.shape);
 
-  GenericTensorAccessorW output = output_allocator.allocate_tensor(tensor_shape_from_array_shape(shape, output_data_type));
+  GenericTensorAccessorW output = output_allocator.allocate_tensor(
+      tensor_shape_from_array_shape(shape, output_data_type));
 
   map_tensor_accessors2_to(lhs, rhs, output_data_type, f, output);
 
   return output;
 }
-
 
 } // namespace FlexFlow
 

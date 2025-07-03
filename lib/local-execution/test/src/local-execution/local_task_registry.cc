@@ -33,20 +33,23 @@ TEST_SUITE(FF_TEST_SUITE) {
     OperatorTaskSet mha_task_set = get_task_set_for_operator(attrs);
     {
       OperatorTaskSet expected_mha_task_set = OperatorTaskSet{
-        /*init_task=*/registered_task_t{task_id_t::ATTENTION_INIT_TASK_ID},
-        /*fwd_task=*/registered_task_t{task_id_t::ATTENTION_FWD_TASK_ID},
-        /*bwd_task=*/registered_task_t{task_id_t::ATTENTION_BWD_TASK_ID},
+          /*init_task=*/registered_task_t{task_id_t::ATTENTION_INIT_TASK_ID},
+          /*fwd_task=*/registered_task_t{task_id_t::ATTENTION_FWD_TASK_ID},
+          /*bwd_task=*/registered_task_t{task_id_t::ATTENTION_BWD_TASK_ID},
       };
       REQUIRE(mha_task_set == expected_mha_task_set);
     }
 
     std::unordered_map<task_id_t, TaskSignatureAndImpl> mha_task_mapping = {
-      {task_id_t::ATTENTION_INIT_TASK_ID,
-       get_task_signature_and_impl_for_task_id(task_id_t::ATTENTION_INIT_TASK_ID)},
-      {task_id_t::ATTENTION_FWD_TASK_ID,
-       get_task_signature_and_impl_for_task_id(task_id_t::ATTENTION_FWD_TASK_ID)},
-      {task_id_t::ATTENTION_BWD_TASK_ID,
-       get_task_signature_and_impl_for_task_id(task_id_t::ATTENTION_BWD_TASK_ID)},
+        {task_id_t::ATTENTION_INIT_TASK_ID,
+         get_task_signature_and_impl_for_task_id(
+             task_id_t::ATTENTION_INIT_TASK_ID)},
+        {task_id_t::ATTENTION_FWD_TASK_ID,
+         get_task_signature_and_impl_for_task_id(
+             task_id_t::ATTENTION_FWD_TASK_ID)},
+        {task_id_t::ATTENTION_BWD_TASK_ID,
+         get_task_signature_and_impl_for_task_id(
+             task_id_t::ATTENTION_BWD_TASK_ID)},
     };
 
     SUBCASE("register single layer") {
@@ -56,17 +59,17 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       LocalTaskRegistry correct_task_registry = [&] {
         std::unordered_map<layer_guid_t, OperatorTaskSet> task_sets = {
-          {
-            layer_guid,
-            mha_task_set,
-          },
+            {
+                layer_guid,
+                mha_task_set,
+            },
         };
 
         return LocalTaskRegistry{
-          /*task_sets=*/{
-            {layer_guid, mha_task_set},
-          },
-          /*task_mapping=*/mha_task_mapping,
+            /*task_sets=*/{
+                {layer_guid, mha_task_set},
+            },
+            /*task_mapping=*/mha_task_mapping,
         };
       }();
 
@@ -90,8 +93,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SUBCASE("task to signature+impl mapping") {
-        std::unordered_map<task_id_t, TaskSignatureAndImpl>
-            correct = mha_task_mapping;
+        std::unordered_map<task_id_t, TaskSignatureAndImpl> correct =
+            mha_task_mapping;
 
         CHECK(task_registry.task_mapping == correct);
       }
@@ -120,7 +123,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           });
 
       std::unordered_map<task_id_t, TaskSignatureAndImpl> correct_task_mapping =
-        mha_task_mapping;
+          mha_task_mapping;
 
       CHECK(task_registry.task_mapping == correct_task_mapping);
     }
@@ -174,7 +177,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           std::optional<registered_task_t> result = try_get_registered_task(
               task_registry, layer_guid, OpTaskType::INIT);
           std::optional<registered_task_t> correct = registered_task_t{
-            task_id_t::ATTENTION_INIT_TASK_ID,
+              task_id_t::ATTENTION_INIT_TASK_ID,
           };
 
           CHECK(result == correct);
@@ -184,7 +187,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           std::optional<registered_task_t> result = try_get_registered_task(
               task_registry, layer_guid, OpTaskType::FWD);
           std::optional<registered_task_t> correct = registered_task_t{
-            task_id_t::ATTENTION_FWD_TASK_ID,
+              task_id_t::ATTENTION_FWD_TASK_ID,
           };
 
           CHECK(result == correct);
@@ -194,7 +197,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           std::optional<registered_task_t> result = try_get_registered_task(
               task_registry, layer_guid, OpTaskType::BWD);
           std::optional<registered_task_t> correct = registered_task_t{
-            task_id_t::ATTENTION_BWD_TASK_ID,
+              task_id_t::ATTENTION_BWD_TASK_ID,
           };
 
           CHECK(result == correct);
@@ -213,7 +216,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         SUBCASE("Init") {
           std::optional<registered_task_t> result = try_get_registered_task(
               task_registry, layer_guid, OpTaskType::INIT);
-          std::optional<registered_task_t> correct = make_noop_registered_task();
+          std::optional<registered_task_t> correct =
+              make_noop_registered_task();
 
           CHECK(result == correct);
         }
@@ -222,7 +226,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           std::optional<registered_task_t> result = try_get_registered_task(
               task_registry, layer_guid, OpTaskType::FWD);
           std::optional<registered_task_t> correct = registered_task_t{
-            task_id_t::BATCHMATMUL_FWD_TASK_ID,
+              task_id_t::BATCHMATMUL_FWD_TASK_ID,
           };
 
           CHECK(result == correct);
@@ -232,7 +236,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           std::optional<registered_task_t> result = try_get_registered_task(
               task_registry, layer_guid, OpTaskType::BWD);
           std::optional<registered_task_t> correct = registered_task_t{
-            task_id_t::BATCHMATMUL_BWD_TASK_ID,
+              task_id_t::BATCHMATMUL_BWD_TASK_ID,
           };
 
           CHECK(result == correct);
@@ -241,8 +245,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("Empty tasks") {
         LocalTaskRegistry task_registry = LocalTaskRegistry{
-          /*task_sets=*/{}, 
-          /*task_mapping=*/{},
+            /*task_sets=*/{},
+            /*task_mapping=*/{},
         };
 
         SUBCASE("Init") {

@@ -6,8 +6,7 @@
 
 namespace FlexFlow {
 
-OpCostMetrics
-  make_op_cost_metrics_from_runtime_only(
+OpCostMetrics make_op_cost_metrics_from_runtime_only(
     RuntimeOnlyOpCostMetrics const &runtime_only,
     num_bytes_t const &memory_usage);
 

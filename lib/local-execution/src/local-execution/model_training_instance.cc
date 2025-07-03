@@ -12,8 +12,7 @@ ModelTrainingInstance::ModelTrainingInstance(
     LossAttrs const &loss_attrs,
     OptimizerAttrs const &optimizer_attrs)
     : allocator(allocator), training_backing(local_training_backing),
-      loss_attrs(loss_attrs), optimizer_attrs(optimizer_attrs)
-{ }
+      loss_attrs(loss_attrs), optimizer_attrs(optimizer_attrs) {}
 
 std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
     ModelTrainingInstance::forward() {
@@ -31,7 +30,7 @@ std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
         get_training_layer_plus_context(
             this->training_backing.training_computation_graph, layer_guid),
         this->allocator);
-    
+
     per_layer_elapsed_time.insert({layer_guid, elapsed_time});
   }
 
@@ -40,9 +39,7 @@ std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
 
 std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
     ModelTrainingInstance::backward() {
-  compute_loss(this->training_backing,
-               this->loss_attrs,
-               this->allocator);
+  compute_loss(this->training_backing, this->loss_attrs, this->allocator);
 
   std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
       per_layer_elapsed_time;
@@ -76,7 +73,7 @@ void ModelTrainingInstance::update() {
 
 GenericTensorAccessorR ModelTrainingInstance::get_loss_tensor_accessor() const {
   gradient_tensor_guid_t loss_tensor = get_gradient_tensor_guid_for_tensor_guid(
-      this->training_backing.training_computation_graph, 
+      this->training_backing.training_computation_graph,
       this->training_backing.training_computation_graph.logit_tensor);
   GenericTensorAccessorW loss_tensor_backing =
       this->training_backing.local_tensor_backing

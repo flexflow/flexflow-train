@@ -1,13 +1,13 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_POOL_2D_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_POOL_2D_KERNELS_H
 
+#include "kernels/device_handle_t.dtg.h"
 #include "kernels/device_stream_t.dtg.h"
 #include "kernels/ff_handle.h"
 #include "kernels/pool_2d_per_device_state.dtg.h"
 #include "op-attrs/activation.dtg.h"
 #include "op-attrs/ops/pool_2d.h"
 #include "pcg/device_type.dtg.h"
-#include "kernels/device_handle_t.dtg.h"
 
 namespace FlexFlow::Kernels::Pool2D {
 

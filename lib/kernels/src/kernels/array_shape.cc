@@ -99,10 +99,11 @@ ArrayShape array_shape_from_tensor_shape(TensorShape const &tensor_shape) {
       legion_ordered_from_ff_ordered(tensor_shape.dims.ff_ordered)};
 }
 
-TensorShape tensor_shape_from_array_shape(ArrayShape const &array_shape, DataType dtype) {
+TensorShape tensor_shape_from_array_shape(ArrayShape const &array_shape,
+                                          DataType dtype) {
   return TensorShape{
-    TensorDims{ff_ordered_from_legion_ordered(array_shape.dims)},
-    dtype,
+      TensorDims{ff_ordered_from_legion_ordered(array_shape.dims)},
+      dtype,
   };
 }
 

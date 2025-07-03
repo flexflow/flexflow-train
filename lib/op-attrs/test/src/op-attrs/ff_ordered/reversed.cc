@@ -1,5 +1,5 @@
-#include <doctest/doctest.h>
 #include "op-attrs/ff_ordered/reversed.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 

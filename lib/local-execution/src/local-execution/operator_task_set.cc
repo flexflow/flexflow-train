@@ -6,15 +6,17 @@
 
 namespace FlexFlow {
 
-bidict<OpTaskType, registered_task_t> get_map_from_task_type_to_task(OperatorTaskSet const &op_task_set) {
+bidict<OpTaskType, registered_task_t>
+    get_map_from_task_type_to_task(OperatorTaskSet const &op_task_set) {
   return {
-    {OpTaskType::INIT, op_task_set.init_task},
-    {OpTaskType::FWD, op_task_set.fwd_task},
-    {OpTaskType::BWD, op_task_set.bwd_task},
+      {OpTaskType::INIT, op_task_set.init_task},
+      {OpTaskType::FWD, op_task_set.fwd_task},
+      {OpTaskType::BWD, op_task_set.bwd_task},
   };
 }
 
-std::unordered_set<registered_task_t> get_all_tasks_in_task_set(OperatorTaskSet const &op_task_set) {
+std::unordered_set<registered_task_t>
+    get_all_tasks_in_task_set(OperatorTaskSet const &op_task_set) {
   return right_entries(get_map_from_task_type_to_task(op_task_set));
 }
 
@@ -23,7 +25,8 @@ registered_task_t get_task_for_task_type(OperatorTaskSet const &op_task_set,
   return get_map_from_task_type_to_task(op_task_set).at_l(task_type);
 }
 
-OperatorTaskSet get_task_set_for_operator(ComputationGraphOpAttrs const &attrs) {
+OperatorTaskSet
+    get_task_set_for_operator(ComputationGraphOpAttrs const &attrs) {
   registered_task_t init_task = make_noop_registered_task();
   registered_task_t fwd_task = make_noop_registered_task();
   registered_task_t bwd_task = make_noop_registered_task();
@@ -31,7 +34,8 @@ OperatorTaskSet get_task_set_for_operator(ComputationGraphOpAttrs const &attrs) 
   std::vector<task_id_t> task_ids = get_task_ids(attrs);
 
   for (task_id_t const &task_id : task_ids) {
-    TaskSignatureAndImpl task_signature_and_impl = get_task_signature_and_impl_for_task_id(task_id);
+    TaskSignatureAndImpl task_signature_and_impl =
+        get_task_signature_and_impl_for_task_id(task_id);
 
     TaskImplFunction task_impl_function = task_signature_and_impl.impl_function;
     OpTaskSignature task_signature = task_signature_and_impl.task_signature;
@@ -58,9 +62,9 @@ OperatorTaskSet get_task_set_for_operator(ComputationGraphOpAttrs const &attrs) 
   }
 
   return OperatorTaskSet{
-    /*init_task=*/init_task,
-    /*fwd_task=*/fwd_task,
-    /*bwd_task=*/bwd_task,
+      /*init_task=*/init_task,
+      /*fwd_task=*/fwd_task,
+      /*bwd_task=*/bwd_task,
   };
 }
 

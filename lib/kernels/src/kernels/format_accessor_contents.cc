@@ -159,13 +159,14 @@ struct Print4DCPUAccessorR {
                               dim3_size.nonnegative_int_from_positive_int()),
                           " ",
                           [&](nonnegative_int dim3_idx) -> std::string {
-                            return fmt::to_string(accessor.at<DT>(
-                                FFOrdered{dim0_idx, dim1_idx, dim2_idx, dim3_idx}));
+                            return fmt::to_string(accessor.at<DT>(FFOrdered{
+                                dim0_idx, dim1_idx, dim2_idx, dim3_idx}));
                           }) +
              "]";
     };
 
-    auto render_2d = [&](nonnegative_int dim0_idx, nonnegative_int dim1_idx) -> std::string {
+    auto render_2d = [&](nonnegative_int dim0_idx,
+                         nonnegative_int dim1_idx) -> std::string {
       return "[\n" +
              indent(join_strings(
                  nonnegative_range(
@@ -232,7 +233,6 @@ static std::string
   return format_4d_accessor_r_contents(
       read_only_accessor_from_write_accessor(accessor));
 }
-
 
 std::string format_accessor_r_contents(GenericTensorAccessorR const &accessor) {
   Allocator cpu_allocator = create_local_cpu_memory_allocator();

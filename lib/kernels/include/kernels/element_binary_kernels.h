@@ -3,13 +3,13 @@
 
 #include "kernels/array_shape.h"
 #include "kernels/device.h"
+#include "kernels/device_handle_t.dtg.h"
 #include "kernels/device_stream_t.dtg.h"
 #include "kernels/element_binary_per_device_state.dtg.h"
 #include "kernels/ff_handle.h"
 #include "op-attrs/datatype.h"
 #include "op-attrs/operator_type.h"
 #include "pcg/device_type.dtg.h"
-#include "kernels/device_handle_t.dtg.h"
 
 namespace FlexFlow::Kernels::ElementBinary {
 

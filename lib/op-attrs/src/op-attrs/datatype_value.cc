@@ -30,7 +30,7 @@ DataTypeValue make_bool_data_type_value(bool value) {
 
 DataType get_data_type_of_data_type_value(DataTypeValue value) {
   return value.visit<DataType>(overload{
-      [](half) { return DataType::HALF; }, 
+      [](half) { return DataType::HALF; },
       [](float) { return DataType::FLOAT; },
       [](double) { return DataType::DOUBLE; },
       [](int32_t) { return DataType::INT32; },

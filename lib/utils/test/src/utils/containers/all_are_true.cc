@@ -1,6 +1,6 @@
+#include "utils/containers/all_are_true.h"
 #include <doctest/doctest.h>
 #include <vector>
-#include "utils/containers/all_are_true.h"
 
 using namespace ::FlexFlow;
 
@@ -16,7 +16,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("not all elements are true") {
-      std::vector<bool> input = {true, false, true, false};      
+      std::vector<bool> input = {true, false, true, false};
 
       bool result = all_are_true(input);
       bool correct = false;

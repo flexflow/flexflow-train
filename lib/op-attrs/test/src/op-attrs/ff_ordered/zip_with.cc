@@ -1,6 +1,6 @@
-#include <doctest/doctest.h>
 #include "op-attrs/ff_ordered/zip_with.h"
 #include "test/utils/doctest/fmt/pair.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 

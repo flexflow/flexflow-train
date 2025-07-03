@@ -18,15 +18,14 @@ void cpu_sgd_update_task(float lr,
 
   Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
-  std::cerr << "weight_grad=" << format_accessor_r_contents(weight_grad) << std::endl
+  std::cerr << "weight_grad=" << format_accessor_r_contents(weight_grad)
+            << std::endl
             << "weight=" << format_accessor_w_contents(weight) << std::endl;
 
-  GenericTensorAccessorW gt =
-    tensor_accessor_elementwise_add(
+  GenericTensorAccessorW gt = tensor_accessor_elementwise_add(
       weight_grad,
-      read_only_accessor_from_write_accessor(
-        tensor_accessor_scale_by_constant(
-          read_only_accessor_from_write_accessor(weight), 
+      read_only_accessor_from_write_accessor(tensor_accessor_scale_by_constant(
+          read_only_accessor_from_write_accessor(weight),
           weight_decay,
           cpu_allocator)),
       cpu_allocator);
@@ -34,33 +33,30 @@ void cpu_sgd_update_task(float lr,
   if (momentum > 0.0f) {
     tensor_accessor_scale_by_constant_inplace(sgd_v.value(), momentum);
     tensor_accessor_elementwise_add_to(
-      read_only_accessor_from_write_accessor(sgd_v.value()),
-      read_only_accessor_from_write_accessor(gt),
-      sgd_v.value());
-    
+        read_only_accessor_from_write_accessor(sgd_v.value()),
+        read_only_accessor_from_write_accessor(gt),
+        sgd_v.value());
+
     if (nesterov) {
       tensor_accessor_elementwise_add_to(
-        read_only_accessor_from_write_accessor(gt),
-        read_only_accessor_from_write_accessor(
-          tensor_accessor_scale_by_constant(
-            read_only_accessor_from_write_accessor(sgd_v.value()),
-            momentum,
-            cpu_allocator)),
+          read_only_accessor_from_write_accessor(gt),
+          read_only_accessor_from_write_accessor(
+              tensor_accessor_scale_by_constant(
+                  read_only_accessor_from_write_accessor(sgd_v.value()),
+                  momentum,
+                  cpu_allocator)),
           gt);
     } else {
       copy_accessor_data_to_l_from_r(
-        gt, read_only_accessor_from_write_accessor(sgd_v.value()));
+          gt, read_only_accessor_from_write_accessor(sgd_v.value()));
     }
   }
 
   tensor_accessor_elementwise_subtract_to(
-    read_only_accessor_from_write_accessor(weight),
-    read_only_accessor_from_write_accessor(
-      tensor_accessor_scale_by_constant(
-        read_only_accessor_from_write_accessor(gt),
-        lr,
-        cpu_allocator)),
-    weight);
+      read_only_accessor_from_write_accessor(weight),
+      read_only_accessor_from_write_accessor(tensor_accessor_scale_by_constant(
+          read_only_accessor_from_write_accessor(gt), lr, cpu_allocator)),
+      weight);
 }
 
 void cpu_adam_update_task(float alpha_t,

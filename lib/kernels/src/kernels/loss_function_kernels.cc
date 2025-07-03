@@ -56,7 +56,9 @@ void categorical_crossentropy_loss_backward_kernel(
         /*logit_ptr=*/logit.get_float_ptr(),
         /*label_ptr=*/label.get_float_ptr(),
         /*logit_volume=*/get_num_elements(logit.shape).int_from_positive_int(),
-        /*logit_grad_volume=*/get_num_elements(logit_grad.shape).int_from_positive_int(),
+        /*logit_grad_volume=*/
+        get_num_elements(logit_grad.shape)
+            .int_from_positive_int(),
         /*scale_factor=*/scale_factor);
   } else {
     ASSERT(stream.is_cpu());

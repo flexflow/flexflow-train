@@ -28,8 +28,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    CostEstimator cost_estimator =
-        get_local_cost_estimator(runtime_arg_config);
+    CostEstimator cost_estimator = get_local_cost_estimator(runtime_arg_config);
 
     SUBCASE("estimate operator cost") {
       CastAttrs attrs = CastAttrs{
@@ -87,8 +86,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         },
     };
 
-    CostEstimator cost_estimator =
-        get_local_cost_estimator(runtime_arg_config);
+    CostEstimator cost_estimator = get_local_cost_estimator(runtime_arg_config);
 
     SUBCASE("estimate operator cost") {
       positive_int embed_dim = 32_p;

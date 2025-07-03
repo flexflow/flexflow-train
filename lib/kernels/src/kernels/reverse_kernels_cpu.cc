@@ -1,5 +1,5 @@
-#include "kernels/datatype_dispatch.h"
 #include "kernels/reverse_kernels_cpu.h"
+#include "kernels/datatype_dispatch.h"
 #include <vector>
 
 namespace FlexFlow::Kernels::Reverse {

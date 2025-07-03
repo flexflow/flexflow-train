@@ -247,12 +247,10 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
   }();
 
   auto get_mapping_result = [&](MachineView const &machine_view) {
-    OpCostEstimateKey mapped =
-        map_unmapped_op_cost_estimate_key(
-            unmapped_op_cost_estimate_key_from_runtime_only(
-              leaf, 
-              context.optimizer_attrs),
-            machine_view);
+    OpCostEstimateKey mapped = map_unmapped_op_cost_estimate_key(
+        unmapped_op_cost_estimate_key_from_runtime_only(
+            leaf, context.optimizer_attrs),
+        machine_view);
     OpCostMetrics cost = context.cost_estimator.estimate_cost(mapped);
 
     return make_singleton_machine_mapping_with_memory_result(cost,

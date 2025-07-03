@@ -2,9 +2,9 @@
 #define _FLEXFLOW_KERNELS_INCLUDE_KERNELS_OPTIMIZER_KERNELS_H
 
 #include "kernels/accessor.h"
+#include "kernels/device_handle_t.dtg.h"
 #include "kernels/device_stream_t.dtg.h"
 #include "kernels/ff_handle.h"
-#include "kernels/device_handle_t.dtg.h"
 
 namespace FlexFlow {
 

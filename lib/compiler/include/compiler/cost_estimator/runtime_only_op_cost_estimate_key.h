@@ -7,10 +7,11 @@
 
 namespace FlexFlow {
 
-RuntimeOnlyOpCostEstimateKey get_mapped_runtime_only_op_cost_estimate_key_for_layer(
-    ParallelComputationGraph const &pcg,
-    parallel_layer_guid_t const &parallel_layer_guid,
-    MachineView const &machine_view);
+RuntimeOnlyOpCostEstimateKey
+    get_mapped_runtime_only_op_cost_estimate_key_for_layer(
+        ParallelComputationGraph const &pcg,
+        parallel_layer_guid_t const &parallel_layer_guid,
+        MachineView const &machine_view);
 
 } // namespace FlexFlow
 

@@ -1,6 +1,7 @@
 #include "internal/test_utils.h"
 #include "kernels/compare_tensor_accessors.h"
 #include "kernels/copy_tensor_accessor.h"
+#include "kernels/format_accessor_contents.h"
 #include "kernels/local_cpu_allocator.h"
 #include "kernels/local_cuda_allocator.h"
 #include "kernels/managed_ff_stream.h"
@@ -18,9 +19,8 @@
 #include "task-spec/optimizer_tensor_source.h"
 #include "task-spec/runtime_arg_config.h"
 #include "task-spec/training_computation_graph.h"
-#include "utils/containers/get_only.h"
-#include "kernels/format_accessor_contents.h"
 #include "test/utils/doctest/check_kv.h"
+#include "utils/containers/get_only.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -138,11 +138,8 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*optimizer_attrs=*/optimizer_attrs);
 
     // begin training loop
-    ModelTrainingInstance model_training_instance =
-        ModelTrainingInstance{allocator,
-                              local_training_backing,
-                              loss_attrs,
-                              optimizer_attrs};
+    ModelTrainingInstance model_training_instance = ModelTrainingInstance{
+        allocator, local_training_backing, loss_attrs, optimizer_attrs};
 
     int num_epochs = 5;
     std::vector<GenericTensorAccessorR> loss_values;
@@ -160,8 +157,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
     GenericTensorAccessorR last_epoch_loss = loss_values.back();
     CHECK_MESSAGE(did_loss_decrease(first_epoch_loss, last_epoch_loss),
-          check_kv("first_epoch_loss", format_accessor_r_contents(first_epoch_loss)),
-          check_kv("last_epoch_loss", format_accessor_r_contents(last_epoch_loss)));
+                  check_kv("first_epoch_loss",
+                           format_accessor_r_contents(first_epoch_loss)),
+                  check_kv("last_epoch_loss",
+                           format_accessor_r_contents(last_epoch_loss)));
   }
 }
 
@@ -248,15 +247,14 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     // initialize training backing
     LossAttrs loss_attrs = LossAttrs{
         NonconfigurableLossAttrs{LossFunction::CATEGORICAL_CROSSENTROPY}};
-    OptimizerAttrs optimizer_attrs =
-        OptimizerAttrs{
-          SGDOptimizerAttrs{
+    OptimizerAttrs optimizer_attrs = OptimizerAttrs{
+        SGDOptimizerAttrs{
             /*lr=*/0.001,
             /*momentum=*/0.9,
             /*nesterov=*/false,
             /*weight_decay=*/0.001,
-          },
-        };
+        },
+    };
 
     ForwardTensorSource forward_tensor_source;
     GradientTensorSource gradient_tensor_source;
@@ -278,7 +276,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
             /*preallocated_tensors=*/
             {
                 {
-                    training_tensor_guid_t{training_computation_graph.label_tensor},
+                    training_tensor_guid_t{
+                        training_computation_graph.label_tensor},
                     label_tensor_backing,
                 },
             },
@@ -287,11 +286,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
             /*optimizer_attrs=*/optimizer_attrs);
 
     // begin training loop
-    ModelTrainingInstance model_training_instance =
-        ModelTrainingInstance{allocator,
-                              local_training_backing,
-                              loss_attrs,
-                              optimizer_attrs};
+    ModelTrainingInstance model_training_instance = ModelTrainingInstance{
+        allocator, local_training_backing, loss_attrs, optimizer_attrs};
 
     Allocator cpu_allocator = create_local_cpu_memory_allocator();
 

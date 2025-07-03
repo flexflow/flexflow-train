@@ -11,10 +11,10 @@
 #include "utils/containers/contains.h"
 #include "utils/containers/contains_key.h"
 #include "utils/containers/get_only.h"
+#include "utils/containers/is_subseteq_of.h"
+#include "utils/containers/keys.h"
 #include "utils/containers/values.h"
 #include "utils/exception.h"
-#include "utils/containers/keys.h"
-#include "utils/containers/is_subseteq_of.h"
 
 namespace FlexFlow {
 
@@ -26,7 +26,9 @@ LocalTrainingBacking make_local_training_backing_for_computation_graph(
     RuntimeArgConfig const &runtime_arg_config,
     OptimizerAttrs const &optimizer_attrs) {
 
-  ASSERT(is_subseteq_of(keys(preallocated), keys(get_all_training_tensor_shapes(training_computation_graph))));
+  ASSERT(is_subseteq_of(
+      keys(preallocated),
+      keys(get_all_training_tensor_shapes(training_computation_graph))));
 
   LocalTaskRegistry local_task_registry =
       construct_local_task_registry_for_layers(get_layer_attrs_mapping(
@@ -60,9 +62,7 @@ std::optional<milliseconds_t>
                     Allocator &allocator) {
 
   std::optional maybe_registered_task = try_get_registered_task(
-        local_task_registry,
-        training_layer.layer_guid,
-        OpTaskType::BWD);
+      local_task_registry, training_layer.layer_guid, OpTaskType::BWD);
 
   ASSERT(maybe_registered_task.has_value());
 
@@ -93,7 +93,8 @@ void compute_loss(LocalTrainingBacking const &local_training_backing,
                   LossAttrs const &loss_attrs,
                   Allocator &allocator) {
 
-  TrainingComputationGraph training_cg = local_training_backing.training_computation_graph;
+  TrainingComputationGraph training_cg =
+      local_training_backing.training_computation_graph;
   tensor_guid_t logit_tensor = training_cg.logit_tensor;
   loss_tensor_guid_t label_tensor = training_cg.label_tensor;
 
@@ -119,11 +120,9 @@ std::optional<milliseconds_t>
                      LocalArgsBacking const &local_args_backing,
                      TrainingLayerPlusContext const &training_layer,
                      Allocator &allocator) {
-  
+
   std::optional maybe_registered_task = try_get_registered_task(
-        local_task_registry,
-        training_layer.layer_guid,
-        OpTaskType::BWD);
+      local_task_registry, training_layer.layer_guid, OpTaskType::BWD);
 
   ASSERT(maybe_registered_task.has_value());
 

@@ -1,38 +1,32 @@
 #include "kernels/tensor_accessor_unary_ops.h"
 #include "kernels/array_coord.h"
+#include "kernels/datatype_dispatch.h"
+#include "kernels/fill_tensor_accessor.h"
 #include "kernels/map_tensor_accessors.h"
 #include "op-attrs/datatype_value.h"
-#include "kernels/datatype_dispatch.h"
+#include "op-attrs/ff_ordered/concat.h"
+#include "op-attrs/ff_ordered/reversed.h"
 #include "op-attrs/ff_ordered/slice.h"
 #include "op-attrs/tensor_dims.h"
-#include "op-attrs/ff_ordered/reversed.h"
-#include "op-attrs/ff_ordered/concat.h"
-#include "kernels/fill_tensor_accessor.h"
 
 namespace FlexFlow {
 
 GenericTensorAccessorW
-  tensor_accessor_scale_by_constant(GenericTensorAccessorR const &t,
-                                    float constant,
-                                    Allocator &output_allocator) {
+    tensor_accessor_scale_by_constant(GenericTensorAccessorR const &t,
+                                      float constant,
+                                      Allocator &output_allocator) {
   ASSERT(t.data_type == DataType::FLOAT);
 
-  return map_tensor_accessor(t,
-                             [&](auto const &elem) {
-                               return elem * constant;
-                             },
-                             output_allocator);
+  return map_tensor_accessor(
+      t, [&](auto const &elem) { return elem * constant; }, output_allocator);
 }
 
-void
-  tensor_accessor_scale_by_constant_inplace(GenericTensorAccessorW const &t,
-                                            float constant) {
+void tensor_accessor_scale_by_constant_inplace(GenericTensorAccessorW const &t,
+                                               float constant) {
   ASSERT(t.data_type == DataType::FLOAT);
 
-  return map_tensor_accessor_inplace(t,
-                                     [&](auto const &elem) {
-                                       return elem * constant;
-                                     });
+  return map_tensor_accessor_inplace(
+      t, [&](auto const &elem) { return elem * constant; });
 }
 
 template <typename T>
@@ -44,20 +38,18 @@ static T single_element_relu(T elem) {
   }
 }
 
-void
-  tensor_accessor_relu_to(GenericTensorAccessorR const &input, 
-                          GenericTensorAccessorW const &output) {
-  map_tensor_accessor_to(input, 
-                         [](auto elem) {
-                           return single_element_relu(elem);
-                         }, output);
+void tensor_accessor_relu_to(GenericTensorAccessorR const &input,
+                             GenericTensorAccessorW const &output) {
+  map_tensor_accessor_to(
+      input, [](auto elem) { return single_element_relu(elem); }, output);
 }
 
-
-GenericTensorAccessorW
-  tensor_accessor_relu(GenericTensorAccessorR const &input,
-                       Allocator &output_allocator) {
-  return map_tensor_accessor(input, [](auto elem) { return single_element_relu(elem); }, output_allocator);
+GenericTensorAccessorW tensor_accessor_relu(GenericTensorAccessorR const &input,
+                                            Allocator &output_allocator) {
+  return map_tensor_accessor(
+      input,
+      [](auto elem) { return single_element_relu(elem); },
+      output_allocator);
 }
 
 template <DataType DT>
@@ -68,14 +60,16 @@ struct CPUTensorAccessorBroadcast {
     TensorDims output_dims = tensor_dims_from_array_shape(output.shape);
 
     for (ArrayCoord const &output_coord : get_array_coord_set(output.shape)) {
-      TensorDimsCoord output_dims_coord = tensor_dims_coord_from_array_coord(output_coord);
+      TensorDimsCoord output_dims_coord =
+          tensor_dims_coord_from_array_coord(output_coord);
 
       TensorDimsCoord input_dims_coord = get_broadcast_src_coord(
-        /*input_dims=*/input_dims,
-        /*output_dims=*/output_dims,
-        /*dst_coord=*/output_dims_coord);
+          /*input_dims=*/input_dims,
+          /*output_dims=*/output_dims,
+          /*dst_coord=*/output_dims_coord);
 
-      output.at<DT>(output_dims_coord.ff_ordered) = input.at<DT>(input_dims_coord.ff_ordered);
+      output.at<DT>(output_dims_coord.ff_ordered) =
+          input.at<DT>(input_dims_coord.ff_ordered);
     }
   }
 };
@@ -90,23 +84,27 @@ void tensor_accessor_broadcast_to(GenericTensorAccessorR const &input,
   ASSERT(get_tensor_shape_for_accessor_w(output) == output_shape);
 
   Allocator cpu_allocator = create_local_cpu_memory_allocator();
-  GenericTensorAccessorR input_cpu = copy_tensor_accessor_r_to_cpu_if_necessary(input, cpu_allocator);
-  
-  GenericTensorAccessorW output_cpu = cpu_allocator.allocate_tensor(output_shape);
+  GenericTensorAccessorR input_cpu =
+      copy_tensor_accessor_r_to_cpu_if_necessary(input, cpu_allocator);
 
-  DataTypeDispatch1<CPUTensorAccessorBroadcast>{}(input.data_type, input_cpu, output_cpu);
+  GenericTensorAccessorW output_cpu =
+      cpu_allocator.allocate_tensor(output_shape);
+
+  DataTypeDispatch1<CPUTensorAccessorBroadcast>{}(
+      input.data_type, input_cpu, output_cpu);
 
   copy_accessor_data_to_l_from_r(output, output_cpu);
 }
 
 GenericTensorAccessorW
-  tensor_accessor_broadcast(GenericTensorAccessorR const &input,
-                            TensorDims const &output_dims,
-                            Allocator &output_allocator) {
+    tensor_accessor_broadcast(GenericTensorAccessorR const &input,
+                              TensorDims const &output_dims,
+                              Allocator &output_allocator) {
 
   TensorShape output_shape = TensorShape{output_dims, input.data_type};
 
-  GenericTensorAccessorW output = output_allocator.allocate_tensor(output_shape);
+  GenericTensorAccessorW output =
+      output_allocator.allocate_tensor(output_shape);
 
   tensor_accessor_broadcast_to(input, output_dims, output);
 
@@ -124,20 +122,21 @@ struct CPUTensorAccessorTranspose {
       ASSERT(input_coord.ff_ordered.size() == 2);
 
       ArrayCoord output_coord = ArrayCoord{
-        reversed(input_coord.ff_ordered),
+          reversed(input_coord.ff_ordered),
       };
 
-      output.at<DT>(output_coord.ff_ordered) = input.at<DT>(input_coord.ff_ordered);
+      output.at<DT>(output_coord.ff_ordered) =
+          input.at<DT>(input_coord.ff_ordered);
     }
   }
 };
 
 static TensorShape get_transpose_output_shape(TensorShape const &input_shape) {
   return TensorShape{
-    TensorDims{
-      reversed(input_shape.dims.ff_ordered),
-    },
-    input_shape.data_type,
+      TensorDims{
+          reversed(input_shape.dims.ff_ordered),
+      },
+      input_shape.data_type,
   };
 }
 
@@ -145,26 +144,32 @@ void tensor_accessor_transpose_to(GenericTensorAccessorR const &input,
                                   GenericTensorAccessorW const &output) {
   ASSERT(input.shape.num_dims() == 2);
 
-  TensorShape output_shape = get_transpose_output_shape(get_tensor_shape_for_accessor_r(input));
+  TensorShape output_shape =
+      get_transpose_output_shape(get_tensor_shape_for_accessor_r(input));
   ASSERT(get_tensor_shape_for_accessor_w(output) == output_shape);
 
   Allocator cpu_allocator = create_local_cpu_memory_allocator();
-  GenericTensorAccessorR input_cpu = copy_tensor_accessor_r_to_cpu_if_necessary(input, cpu_allocator);
-  
-  GenericTensorAccessorW output_cpu = cpu_allocator.allocate_tensor(output_shape);
+  GenericTensorAccessorR input_cpu =
+      copy_tensor_accessor_r_to_cpu_if_necessary(input, cpu_allocator);
 
-  DataTypeDispatch1<CPUTensorAccessorTranspose>{}(input.data_type, input_cpu, output_cpu);
+  GenericTensorAccessorW output_cpu =
+      cpu_allocator.allocate_tensor(output_shape);
+
+  DataTypeDispatch1<CPUTensorAccessorTranspose>{}(
+      input.data_type, input_cpu, output_cpu);
 
   copy_accessor_data_to_l_from_r(output, output_cpu);
-} 
+}
 
 GenericTensorAccessorW
-  tensor_accessor_transpose(GenericTensorAccessorR const &input,
-                            Allocator &output_allocator) {
+    tensor_accessor_transpose(GenericTensorAccessorR const &input,
+                              Allocator &output_allocator) {
 
-  TensorShape output_shape = get_transpose_output_shape(get_tensor_shape_for_accessor_r(input));
+  TensorShape output_shape =
+      get_transpose_output_shape(get_tensor_shape_for_accessor_r(input));
 
-  GenericTensorAccessorW output = output_allocator.allocate_tensor(output_shape);
+  GenericTensorAccessorW output =
+      output_allocator.allocate_tensor(output_shape);
 
   tensor_accessor_transpose_to(input, output);
 
@@ -179,27 +184,32 @@ struct CPUTensorAccessorReduce {
     fill_with_zeros(output);
 
     for (ArrayCoord const &input_coord : get_array_coord_set(input.shape)) {
-      ArrayCoord output_coord = array_coord_drop_dims(input_coord, 
-                                                      [&](ff_dim_t input_coord_dim) {
-                                                        return input_coord_dim == reduction_dim;
-                                                      });
+      ArrayCoord output_coord =
+          array_coord_drop_dims(input_coord, [&](ff_dim_t input_coord_dim) {
+            return input_coord_dim == reduction_dim;
+          });
 
-      output.at<DT>(output_coord.ff_ordered) += input.at<DT>(input_coord.ff_ordered);
+      output.at<DT>(output_coord.ff_ordered) +=
+          input.at<DT>(input_coord.ff_ordered);
     }
   }
 };
 
-static TensorShape get_reduce_output_shape(TensorShape const &input_shape, ff_dim_t reduction_dim) {
-  ASSERT(tensor_dims_has_dim(input_shape.dims, reduction_dim), 
-         input_shape.dims, reduction_dim);
+static TensorShape get_reduce_output_shape(TensorShape const &input_shape,
+                                           ff_dim_t reduction_dim) {
+  ASSERT(tensor_dims_has_dim(input_shape.dims, reduction_dim),
+         input_shape.dims,
+         reduction_dim);
 
   return TensorShape{
-    TensorDims{
-      concat(
-        slice(input_shape.dims.ff_ordered, ff_dim_t{0_n}, reduction_dim),
-        slice(input_shape.dims.ff_ordered, ff_dim_t{reduction_dim.value + 1_n}, std::nullopt)),
-    },
-    input_shape.data_type,
+      TensorDims{
+          concat(
+              slice(input_shape.dims.ff_ordered, ff_dim_t{0_n}, reduction_dim),
+              slice(input_shape.dims.ff_ordered,
+                    ff_dim_t{reduction_dim.value + 1_n},
+                    std::nullopt)),
+      },
+      input_shape.data_type,
   };
 }
 
@@ -207,27 +217,33 @@ void tensor_accessor_reduce_to(GenericTensorAccessorR const &input,
                                ff_dim_t reduction_dim,
                                GenericTensorAccessorW const &output) {
 
-  TensorShape output_shape = get_reduce_output_shape(get_tensor_shape_for_accessor_r(input), reduction_dim);
+  TensorShape output_shape = get_reduce_output_shape(
+      get_tensor_shape_for_accessor_r(input), reduction_dim);
   ASSERT(get_tensor_shape_for_accessor_r(output) == output_shape);
 
   Allocator cpu_allocator = create_local_cpu_memory_allocator();
-  GenericTensorAccessorR input_cpu = copy_tensor_accessor_r_to_cpu_if_necessary(input, cpu_allocator);
-  
-  GenericTensorAccessorW output_cpu = cpu_allocator.allocate_tensor(output_shape);
+  GenericTensorAccessorR input_cpu =
+      copy_tensor_accessor_r_to_cpu_if_necessary(input, cpu_allocator);
 
-  DataTypeDispatch1<CPUTensorAccessorReduce>{}(input.data_type, input_cpu, reduction_dim, output_cpu);
+  GenericTensorAccessorW output_cpu =
+      cpu_allocator.allocate_tensor(output_shape);
+
+  DataTypeDispatch1<CPUTensorAccessorReduce>{}(
+      input.data_type, input_cpu, reduction_dim, output_cpu);
 
   copy_accessor_data_to_l_from_r(output, output_cpu);
 }
 
 GenericTensorAccessorW
-  tensor_accessor_reduce(GenericTensorAccessorR const &input,
-                         ff_dim_t reduction_dim,
-                         Allocator &output_allocator) {
+    tensor_accessor_reduce(GenericTensorAccessorR const &input,
+                           ff_dim_t reduction_dim,
+                           Allocator &output_allocator) {
 
-  TensorShape output_shape = get_reduce_output_shape(get_tensor_shape_for_accessor_r(input), reduction_dim);
+  TensorShape output_shape = get_reduce_output_shape(
+      get_tensor_shape_for_accessor_r(input), reduction_dim);
 
-  GenericTensorAccessorW output = output_allocator.allocate_tensor(output_shape);
+  GenericTensorAccessorW output =
+      output_allocator.allocate_tensor(output_shape);
 
   tensor_accessor_reduce_to(input, reduction_dim, output);
 

@@ -6,14 +6,14 @@
 #include "task-spec/training_computation_graph.h"
 #include "utils/containers/contains_key.h"
 #include "utils/containers/generate_map.h"
+#include "utils/containers/is_submapeq_of.h"
+#include "utils/containers/is_subseteq_of.h"
 #include "utils/containers/keys.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/merge_maps.h"
 #include "utils/containers/set_minus.h"
 #include "utils/containers/set_of.h"
 #include "utils/overload.h"
-#include "utils/containers/is_submapeq_of.h"
-#include "utils/containers/is_subseteq_of.h"
 
 namespace FlexFlow {
 
@@ -41,7 +41,7 @@ LocalTensorBacking construct_local_tensor_backing(
 
   ASSERT(is_submapeq_of(preallocated, backing_for_training_tensor_map));
 
-  ASSERT(keys(backing_for_training_tensor_map) == keys(training_tensor_shapes), 
+  ASSERT(keys(backing_for_training_tensor_map) == keys(training_tensor_shapes),
          backing_for_training_tensor_map.size(),
          training_tensor_shapes.size(),
          keys(preallocated));

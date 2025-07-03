@@ -223,12 +223,12 @@ MachineMappingResult get_optimal_machine_mapping(
                           get_mapping_with_minimal_runtime(parallel_results));
 }
 
-MachineMappingResult
-    get_optimal_machine_mapping(MachineMappingCache &result_cache,
-                                MachineMappingContext const &context,
-                                UnmappedRuntimeOnlyOpCostEstimateKey const &leaf,
-                                MachineSpecification const &resource,
-                                MachineMappingConstraints const &constraints) {
+MachineMappingResult get_optimal_machine_mapping(
+    MachineMappingCache &result_cache,
+    MachineMappingContext const &context,
+    UnmappedRuntimeOnlyOpCostEstimateKey const &leaf,
+    MachineSpecification const &resource,
+    MachineMappingConstraints const &constraints) {
 
   std::unordered_set<MachineView> candidates = [&] {
     std::optional<MachineView> machine_view = require_only_root(constraints);
@@ -242,7 +242,8 @@ MachineMappingResult
   auto get_mapping_result = [&](MachineView const &machine_view) {
     RuntimeOnlyOpCostEstimateKey mapped =
         map_unmapped_runtime_only_op_cost_estimate_key(leaf, machine_view);
-    RuntimeOnlyOpCostMetrics metrics = context.cost_estimator.estimate_cost(mapped);
+    RuntimeOnlyOpCostMetrics metrics =
+        context.cost_estimator.estimate_cost(mapped);
     milliseconds_t cost = metrics.forward_runtime + metrics.backward_runtime;
     return make_singleton_machine_mapping_result(cost, machine_view);
   };

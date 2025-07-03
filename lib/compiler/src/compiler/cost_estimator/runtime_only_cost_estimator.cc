@@ -2,14 +2,17 @@
 
 namespace FlexFlow {
 
-RuntimeOnlyCostEstimator::RuntimeOnlyCostEstimator(std::shared_ptr<IRuntimeOnlyCostEstimator> implementation_ptr)
+RuntimeOnlyCostEstimator::RuntimeOnlyCostEstimator(
+    std::shared_ptr<IRuntimeOnlyCostEstimator> implementation_ptr)
     : implementation_ptr(implementation_ptr) {}
 
-RuntimeOnlyOpCostMetrics RuntimeOnlyCostEstimator::estimate_cost(RuntimeOnlyOpCostEstimateKey const &k) const {
+RuntimeOnlyOpCostMetrics RuntimeOnlyCostEstimator::estimate_cost(
+    RuntimeOnlyOpCostEstimateKey const &k) const {
   return this->implementation_ptr->estimate_cost(k);
 }
 
-milliseconds_t RuntimeOnlyCostEstimator::estimate_cost(TensorSetMovement const &m) const {
+milliseconds_t
+    RuntimeOnlyCostEstimator::estimate_cost(TensorSetMovement const &m) const {
   return this->implementation_ptr->estimate_cost(m);
 }
 

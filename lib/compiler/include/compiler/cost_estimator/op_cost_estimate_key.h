@@ -17,10 +17,9 @@ OpCostEstimateKey get_mapped_op_cost_estimate_key_for_layer(
     MachineView const &machine_view);
 
 RuntimeOnlyOpCostEstimateKey
-  runtime_only_from_op_cost_estimate_key(OpCostEstimateKey const &);
+    runtime_only_from_op_cost_estimate_key(OpCostEstimateKey const &);
 
-OpCostEstimateKey
-  make_op_cost_estimate_key_from_runtime_only(
+OpCostEstimateKey make_op_cost_estimate_key_from_runtime_only(
     RuntimeOnlyOpCostEstimateKey const &runtime_only,
     OptimizerAttrs const &optimizer_attrs);
 

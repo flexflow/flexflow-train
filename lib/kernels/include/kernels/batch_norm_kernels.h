@@ -3,9 +3,9 @@
 
 #include "kernels/allocation.h"
 #include "kernels/batch_norm_per_device_state.dtg.h"
+#include "kernels/device_handle_t.dtg.h"
 #include "kernels/device_stream_t.dtg.h"
 #include "kernels/ff_handle.h"
-#include "kernels/device_handle_t.dtg.h"
 
 namespace FlexFlow::Kernels::BatchNorm {
 

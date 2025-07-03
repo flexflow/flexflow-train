@@ -101,7 +101,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           /*preallocated_tensors=*/
           {
               {
-                  training_tensor_guid_t{training_computation_graph.label_tensor},
+                  training_tensor_guid_t{
+                      training_computation_graph.label_tensor},
                   label_tensor_accessor,
               },
           },
@@ -120,9 +121,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       LossAttrs loss_attrs = LossAttrs{
           SparseCategoricalCrossEntropyLossAttrs{/*replace_labels=*/false}};
 
-      compute_loss(local_training_backing,
-                   loss_attrs,
-                   allocator);
+      compute_loss(local_training_backing, loss_attrs, allocator);
     }
 
     SUBCASE("NonconfigurableLossAttrs") {
@@ -136,27 +135,21 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         LossAttrs loss_attrs = LossAttrs{
             NonconfigurableLossAttrs{LossFunction::CATEGORICAL_CROSSENTROPY}};
 
-        compute_loss(local_training_backing,
-                     loss_attrs,
-                     allocator);
+        compute_loss(local_training_backing, loss_attrs, allocator);
       }
 
       SUBCASE("LossFunction::MEAN_SQUARED_ERROR_AVG_REDUCE") {
         LossAttrs loss_attrs = LossAttrs{NonconfigurableLossAttrs{
             LossFunction::MEAN_SQUARED_ERROR_AVG_REDUCE}};
 
-        compute_loss(local_training_backing,
-                     loss_attrs,
-                     allocator);
+        compute_loss(local_training_backing, loss_attrs, allocator);
       }
 
       SUBCASE("LossFunction::IDENTITY") {
         LossAttrs loss_attrs =
             LossAttrs{NonconfigurableLossAttrs{LossFunction::IDENTITY}};
 
-        compute_loss(local_training_backing,
-                     loss_attrs,
-                     allocator);
+        compute_loss(local_training_backing, loss_attrs, allocator);
       }
     }
   }

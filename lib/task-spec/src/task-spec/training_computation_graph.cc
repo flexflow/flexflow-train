@@ -24,10 +24,11 @@ TrainingComputationGraph generate_training_computation_graph(
     LossTensorSource &loss_tensor_source) {
 
   loss_tensor_guid_t label_tensor = loss_tensor_source.new_loss_tensor();
-    
+
   return TrainingComputationGraph{
       /*computation_graph=*/computation_graph,
-      /*training_tensor_group_for_tensor=*/transform(
+      /*training_tensor_group_for_tensor=*/
+      transform(
           get_all_tensor_attrs(computation_graph),
           [&](tensor_guid_t tensor_guid, TensorAttrs const &tensor_attrs) {
             return std::pair{
@@ -130,7 +131,7 @@ std::unordered_set<training_tensor_guid_t>
         return get_all_training_tensors_in_tensor_group(
             training_cg.training_tensor_group_for_tensor.at(t));
       });
-  
+
   result.insert(training_tensor_guid_t{training_cg.label_tensor});
   return result;
 }
@@ -167,8 +168,9 @@ std::unordered_map<training_tensor_guid_t, TensorShape>
       [&](training_tensor_guid_t t) {
         if (t.is_loss_tensor()) {
           ASSERT(t == training_tensor_guid_t{training_cg.label_tensor});
-          return get_tensor_attrs(training_cg.computation_graph, 
-                                  training_cg.logit_tensor).shape;
+          return get_tensor_attrs(training_cg.computation_graph,
+                                  training_cg.logit_tensor)
+              .shape;
         }
 
         return get_tensor_attrs(

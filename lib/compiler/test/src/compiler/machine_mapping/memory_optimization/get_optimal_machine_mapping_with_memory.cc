@@ -1,10 +1,10 @@
 #include "compiler/machine_mapping/memory_optimization/get_optimal_machine_mapping_with_memory.h"
-#include "internal/cost_estimator_for_test.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.h"
 #include "compiler/machine_mapping/machine_mapping_constraints.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
 #include "compiler/machine_mapping/memory_optimization/machine_mapping_with_memory_cache.h"
+#include "internal/cost_estimator_for_test.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/machine_view.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
@@ -18,7 +18,8 @@ using namespace FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_optimal_machine_mapping_with_memory") {
     auto make_leaf = [](UnmappedOpCostEstimateKey const &k) {
-      return MachineMappingProblemTree{runtime_only_from_unmapped_op_cost_estimate_key(k)};
+      return MachineMappingProblemTree{
+          runtime_only_from_unmapped_op_cost_estimate_key(k)};
     };
 
     auto make_series_split =
@@ -90,14 +91,15 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*intra_node_bandwidth=*/1,
     };
 
-    auto allowed_machine_views1 = [&](UnmappedRuntimeOnlyOpCostEstimateKey const &,
-                                      MachineSpecification const &resources) {
-      if (resources == full_machine_spec) {
-        return std::unordered_set<MachineView>{mv1, mv2};
-      } else {
-        return std::unordered_set<MachineView>{mv2};
-      }
-    };
+    auto allowed_machine_views1 =
+        [&](UnmappedRuntimeOnlyOpCostEstimateKey const &,
+            MachineSpecification const &resources) {
+          if (resources == full_machine_spec) {
+            return std::unordered_set<MachineView>{mv1, mv2};
+          } else {
+            return std::unordered_set<MachineView>{mv2};
+          }
+        };
 
     TensorShape tensor_shape = TensorShape{
         TensorDims{
@@ -112,12 +114,12 @@ TEST_SUITE(FF_TEST_SUITE) {
     ParallelTensorShape par_tensor_shape = lift_to_parallel(tensor_shape);
 
     OptimizerAttrs optimizer_attrs = OptimizerAttrs{
-      SGDOptimizerAttrs{
-        /*lr=*/0.1,
-        /*momentum=*/0.1,
-        /*nesterov=*/false,
-        /*weight_decay=*/0.1,
-      },
+        SGDOptimizerAttrs{
+            /*lr=*/0.1,
+            /*momentum=*/0.1,
+            /*nesterov=*/false,
+            /*weight_decay=*/0.1,
+        },
     };
 
     UnmappedOpCostEstimateKey k1 = UnmappedOpCostEstimateKey{

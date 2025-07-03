@@ -6,4 +6,4 @@ Gen<std::monostate> Arbitrary<std::monostate>::arbitrary() {
   return gen::construct<std::monostate>();
 }
 
-} // namespace FlexFlow
+} // namespace rc

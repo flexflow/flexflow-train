@@ -1,6 +1,6 @@
 #include "kernels/fill_tensor_accessor.h"
-#include "op-attrs/datatype_value.h"
 #include "kernels/datatype_dispatch.h"
+#include "op-attrs/datatype_value.h"
 
 namespace FlexFlow {
 
@@ -25,7 +25,6 @@ struct FillWithZeros {
 void fill_with_zeros(GenericTensorAccessorW const &accessor) {
   DataTypeDispatch1<FillWithZeros>{}(accessor.data_type, accessor);
 }
-
 
 GenericTensorAccessorW create_accessor_w_filled_with(
     TensorShape const &shape, DataTypeValue val, Allocator const &allocator) {

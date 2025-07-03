@@ -1,9 +1,9 @@
 #include "kernels/linear_kernels.h"
+#include "kernels/copy_tensor_accessor.h"
 #include "kernels/linear_kernels_cpu.h"
 #include "kernels/linear_kernels_gpu.h"
-#include <libassert/assert.hpp>
-#include "kernels/copy_tensor_accessor.h"
 #include "kernels/local_cuda_allocator.h"
+#include <libassert/assert.hpp>
 
 using namespace FlexFlow::Kernels::Linear;
 
@@ -11,15 +11,15 @@ namespace FlexFlow {
 
 std::optional<LinearPerDeviceState>
     linear_init_kernel(DeviceType device_type,
-                device_handle_t const &handle,
-                std::optional<Activation> activation,
-                std::optional<RegularizerAttrs> regularizer,
-                bool use_bias,
-                DataType input_type,
-                DataType weight_type,
-                DataType output_type,
-                int batch_size,
-                int channel) {
+                       device_handle_t const &handle,
+                       std::optional<Activation> activation,
+                       std::optional<RegularizerAttrs> regularizer,
+                       bool use_bias,
+                       DataType input_type,
+                       DataType weight_type,
+                       DataType output_type,
+                       int batch_size,
+                       int channel) {
   if (device_type == DeviceType::GPU) {
     return gpu_init_kernel(
         /*handle=*/handle.require_for_gpu(),
@@ -37,23 +37,25 @@ std::optional<LinearPerDeviceState>
   }
 }
 
-void linear_forward_kernel(device_stream_t const &stream,
-                    std::optional<LinearPerDeviceState> const &per_device_state,
-                    LinearAttrs const &attrs,
-                    GenericTensorAccessorR const &input_accessor,
-                    GenericTensorAccessorW const &output_accessor,
-                    GenericTensorAccessorR const &filter_accessor,
-                    std::optional<GenericTensorAccessorR> const &bias_accessor) {
+void linear_forward_kernel(
+    device_stream_t const &stream,
+    std::optional<LinearPerDeviceState> const &per_device_state,
+    LinearAttrs const &attrs,
+    GenericTensorAccessorR const &input_accessor,
+    GenericTensorAccessorW const &output_accessor,
+    GenericTensorAccessorR const &filter_accessor,
+    std::optional<GenericTensorAccessorR> const &bias_accessor) {
   if (stream.is_gpu()) {
     positive_int in_dim = input_accessor.shape.at(ff_dim_t{0_n});
     positive_int out_dim = output_accessor.shape.at(ff_dim_t{0_n});
-    positive_int batch_size = positive_int{output_accessor.shape.num_elements() / out_dim};
-  
+    positive_int batch_size =
+        positive_int{output_accessor.shape.num_elements() / out_dim};
+
     float const *bias_ptr = nullptr;
     if (bias_accessor.has_value()) {
       bias_ptr = bias_accessor.value().get<DataType::FLOAT>();
     }
-    
+
     gpu_forward_kernel(
         /*stream=*/stream.require_gpu(),
         /*per_device_state=*/per_device_state.value(),
@@ -68,11 +70,11 @@ void linear_forward_kernel(device_stream_t const &stream,
     ASSERT(stream.is_cpu());
     ASSERT(per_device_state == std::nullopt);
     linear_cpu_forward_kernel(
-                       /*attrs=*/attrs,
-                       /*input_accessor=*/input_accessor,
-                       /*output_accessor=*/output_accessor,
-                       /*filter_accessor=*/filter_accessor,
-                       /*bias_accessor=*/bias_accessor);
+        /*attrs=*/attrs,
+        /*input_accessor=*/input_accessor,
+        /*output_accessor=*/output_accessor,
+        /*filter_accessor=*/filter_accessor,
+        /*bias_accessor=*/bias_accessor);
   }
 }
 
@@ -88,17 +90,19 @@ void linear_backward_kernel(
     GenericTensorAccessorW const &kernel_grad,
     std::optional<GenericTensorAccessorW> const &bias_grad) {
   if (stream.is_gpu()) {
-    float *bias_grad_ptr = 
-      transform(bias_grad, 
-                [](GenericTensorAccessorW const &b) { return b.get_float_ptr(); })
-      .value_or(nullptr);
+    float *bias_grad_ptr =
+        transform(bias_grad, [](GenericTensorAccessorW const &b) {
+          return b.get_float_ptr();
+        }).value_or(nullptr);
 
     positive_int in_dim = input.shape.at(ff_dim_t{0_n});
     positive_int out_dim = output.shape.at(ff_dim_t{0_n});
-    positive_int batch_size = positive_int{output.shape.num_elements() / out_dim};
+    positive_int batch_size =
+        positive_int{output.shape.num_elements() / out_dim};
 
     Allocator gpu_allocator = create_local_cuda_memory_allocator();
-    GenericTensorAccessorW modifiable_output_grad = copy_tensor_accessor_r(output_grad, gpu_allocator);
+    GenericTensorAccessorW modifiable_output_grad =
+        copy_tensor_accessor_r(output_grad, gpu_allocator);
 
     gpu_backward_kernel(
         /*stream=*/stream.require_gpu(),
@@ -128,8 +132,9 @@ void linear_backward_kernel(
   }
 }
 
-void linear_cleanup_kernel(DeviceType device_type,
-                    std::optional<LinearPerDeviceState> &per_device_state) {
+void linear_cleanup_kernel(
+    DeviceType device_type,
+    std::optional<LinearPerDeviceState> &per_device_state) {
   if (device_type == DeviceType::GPU) {
     gpu_cleanup_kernel(per_device_state.value());
   } else {

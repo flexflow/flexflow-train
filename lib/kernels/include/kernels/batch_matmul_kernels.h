@@ -1,9 +1,9 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_BATCH_MATMUL_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_BATCH_MATMUL_KERNELS_H
 
+#include "kernels/device_handle_t.dtg.h"
 #include "kernels/device_stream_t.dtg.h"
 #include "kernels/ff_handle.h"
-#include "kernels/device_handle_t.dtg.h"
 
 namespace FlexFlow::Kernels::BatchMatmul {
 

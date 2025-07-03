@@ -7,8 +7,8 @@ template <DataType DT>
 struct CopyTensorAccessorW {
   GenericTensorAccessorW operator()(GenericTensorAccessorW const &src_accessor,
                                     Allocator &allocator) {
-    TensorShape shape =
-        tensor_shape_from_array_shape(src_accessor.shape, src_accessor.data_type);
+    TensorShape shape = tensor_shape_from_array_shape(src_accessor.shape,
+                                                      src_accessor.data_type);
     GenericTensorAccessorW dst_accessor = allocator.allocate_tensor(shape);
 
     copy_accessor_data_to_l_from_r(dst_accessor, src_accessor);
@@ -28,8 +28,8 @@ template <DataType DT>
 struct CopyTensorAccessorR {
   GenericTensorAccessorW operator()(GenericTensorAccessorR const &src_accessor,
                                     Allocator &allocator) {
-    TensorShape shape =
-        tensor_shape_from_array_shape(src_accessor.shape, src_accessor.data_type);
+    TensorShape shape = tensor_shape_from_array_shape(src_accessor.shape,
+                                                      src_accessor.data_type);
     GenericTensorAccessorW dst_accessor = allocator.allocate_tensor(shape);
 
     copy_accessor_data_to_l_from_r(dst_accessor, src_accessor);

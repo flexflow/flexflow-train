@@ -4,8 +4,7 @@
 
 namespace FlexFlow {
 
-Allocator
-    create_local_allocator_for_device_type(DeviceType device_type) {
+Allocator create_local_allocator_for_device_type(DeviceType device_type) {
   if (device_type == DeviceType::GPU) {
     return create_local_cuda_memory_allocator();
   } else {
@@ -13,6 +12,5 @@ Allocator
     return create_local_cpu_memory_allocator();
   }
 }
-
 
 } // namespace FlexFlow

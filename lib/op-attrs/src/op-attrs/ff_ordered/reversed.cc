@@ -5,7 +5,6 @@ namespace FlexFlow {
 
 using T = value_type<0>;
 
-template 
-  FFOrdered<T> reversed(FFOrdered<T> const &);
+template FFOrdered<T> reversed(FFOrdered<T> const &);
 
 } // namespace FlexFlow

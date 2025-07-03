@@ -17,10 +17,11 @@ void sparse_categorical_crossentropy_loss_backward_cpu_kernel(
     int k,
     float scale_factor);
 
-void categorical_crossentropy_loss_backward_cpu_kernel(GenericTensorAccessorW const &logit_grad_ptr,
-                                                       GenericTensorAccessorR const &logit_ptr,
-                                                       GenericTensorAccessorR const &label_ptr,
-                                                       float scale_factor);
+void categorical_crossentropy_loss_backward_cpu_kernel(
+    GenericTensorAccessorW const &logit_grad_ptr,
+    GenericTensorAccessorR const &logit_ptr,
+    GenericTensorAccessorR const &label_ptr,
+    float scale_factor);
 
 void mean_squared_error_avg_loss_backward_cpu_kernel(float *logit_grad_ptr,
                                                      float const *logit_ptr,

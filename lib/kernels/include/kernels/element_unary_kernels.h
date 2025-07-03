@@ -2,11 +2,11 @@
 #define _FLEXFLOW_OPS_KERNELS_ELEMENT_UNARY_KERNELS_H
 
 #include "kernels/accessor.h"
+#include "kernels/device_handle_t.dtg.h"
 #include "kernels/device_stream_t.dtg.h"
 #include "kernels/element_unary_per_device_state.dtg.h"
 #include "kernels/ff_handle.h"
 #include "op-attrs/ops/element_unary_attrs.dtg.h"
-#include "kernels/device_handle_t.dtg.h"
 
 namespace FlexFlow::Kernels::ElementUnary {
 

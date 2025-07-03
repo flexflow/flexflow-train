@@ -30,9 +30,7 @@ std::optional<milliseconds_t> execute_backward(LocalTaskRegistry const &,
                                                TrainingLayerPlusContext const &,
                                                Allocator &);
 
-void compute_loss(LocalTrainingBacking const &,
-                  LossAttrs const &,
-                  Allocator &);
+void compute_loss(LocalTrainingBacking const &, LossAttrs const &, Allocator &);
 
 void execute_update(LocalTrainingBacking const &,
                     layer_guid_t const &,

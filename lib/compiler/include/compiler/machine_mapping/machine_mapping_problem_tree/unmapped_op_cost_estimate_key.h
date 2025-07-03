@@ -10,18 +10,17 @@
 namespace FlexFlow {
 
 UnmappedOpCostEstimateKey get_unmapped_op_cost_estimate_key_for_layer(
-    ParallelComputationGraph const &pcg, 
+    ParallelComputationGraph const &pcg,
     OptimizerAttrs const &optimizer_attrs,
     parallel_layer_guid_t const &parallel_layer_guid);
 
-UnmappedOpCostEstimateKey 
-  unmapped_op_cost_estimate_key_from_runtime_only(
+UnmappedOpCostEstimateKey unmapped_op_cost_estimate_key_from_runtime_only(
     UnmappedRuntimeOnlyOpCostEstimateKey const &runtime_only,
-    OptimizerAttrs const &optimizer_attrs); 
+    OptimizerAttrs const &optimizer_attrs);
 
 UnmappedRuntimeOnlyOpCostEstimateKey
-  runtime_only_from_unmapped_op_cost_estimate_key(
-    UnmappedOpCostEstimateKey const &runtime_only);
+    runtime_only_from_unmapped_op_cost_estimate_key(
+        UnmappedOpCostEstimateKey const &runtime_only);
 
 OpCostEstimateKey
     map_unmapped_op_cost_estimate_key(UnmappedOpCostEstimateKey const &unmapped,

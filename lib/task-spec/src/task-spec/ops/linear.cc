@@ -84,15 +84,15 @@ static DeviceSpecificDeviceStates
 
   std::optional<LinearPerDeviceState> per_device_state =
       linear_init_kernel(kernel_device_type,
-                  handle,
-                  attrs.activation,
-                  attrs.regularizer,
-                  attrs.use_bias,
-                  input.data_type,
-                  weight.data_type,
-                  output.data_type,
-                  batch_size.int_from_positive_int(),
-                  attrs.out_channels.int_from_positive_int());
+                         handle,
+                         attrs.activation,
+                         attrs.regularizer,
+                         attrs.use_bias,
+                         input.data_type,
+                         weight.data_type,
+                         output.data_type,
+                         batch_size.int_from_positive_int(),
+                         attrs.out_channels.int_from_positive_int());
 
   return DeviceSpecificDeviceStates{
       DeviceSpecific<std::optional<LinearPerDeviceState>>::create(

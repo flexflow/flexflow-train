@@ -2,12 +2,12 @@
 #define _FLEXFLOW_OPS_KERNELS_REDUCE_KERNELS_H
 
 #include "kernels/array_shape.h"
+#include "kernels/device_handle_t.dtg.h"
 #include "kernels/device_stream_t.dtg.h"
 #include "kernels/ff_handle.h"
 #include "kernels/reduce_per_device_state.dtg.h"
 #include "op-attrs/operator_type.dtg.h"
 #include "pcg/device_type.dtg.h"
-#include "kernels/device_handle_t.dtg.h"
 
 namespace FlexFlow::Kernels::Reduce {
 

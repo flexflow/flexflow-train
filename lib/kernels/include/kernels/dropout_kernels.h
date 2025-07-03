@@ -3,10 +3,10 @@
 
 #include "kernels/allocation.h"
 #include "kernels/array_shape.h"
+#include "kernels/device_handle_t.dtg.h"
 #include "kernels/device_stream_t.dtg.h"
 #include "kernels/dropout_per_device_state.dtg.h"
 #include <cstddef>
-#include "kernels/device_handle_t.dtg.h"
 
 namespace FlexFlow::Kernels::Dropout {
 

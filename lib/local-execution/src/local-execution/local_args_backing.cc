@@ -42,9 +42,7 @@ std::optional<DeviceSpecificDeviceStates>
                                Allocator &allocator,
                                TrainingLayerPlusContext const &training_layer) {
   std::optional maybe_registered_task = try_get_registered_task(
-        local_task_registry,
-        training_layer.layer_guid,
-        OpTaskType::INIT);
+      local_task_registry, training_layer.layer_guid, OpTaskType::INIT);
 
   ASSERT(maybe_registered_task.has_value());
 

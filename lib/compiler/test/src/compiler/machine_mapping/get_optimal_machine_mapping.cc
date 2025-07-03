@@ -1,13 +1,13 @@
 #include "compiler/machine_mapping/get_optimal_machine_mapping.h"
 #include "compiler/cost_estimator/runtime_only_op_cost_estimate_key.dtg.h"
 #include "compiler/cost_estimator/runtime_only_op_cost_metrics.dtg.h"
-#include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_runtime_only_op_cost_estimate_key.h"
-#include "internal/runtime_only_cost_estimator_for_test.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.h"
 #include "compiler/machine_mapping/machine_mapping_cache.h"
 #include "compiler/machine_mapping/machine_mapping_constraints.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
+#include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_runtime_only_op_cost_estimate_key.h"
+#include "internal/runtime_only_cost_estimator_for_test.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/machine_view.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
@@ -93,14 +93,15 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*intra_node_bandwidth=*/1,
     };
 
-    auto allowed_machine_views1 = [&](UnmappedRuntimeOnlyOpCostEstimateKey const &,
-                                      MachineSpecification const &resources) {
-      if (resources == full_machine_spec) {
-        return std::unordered_set<MachineView>{mv1, mv2};
-      } else {
-        return std::unordered_set<MachineView>{mv2};
-      }
-    };
+    auto allowed_machine_views1 =
+        [&](UnmappedRuntimeOnlyOpCostEstimateKey const &,
+            MachineSpecification const &resources) {
+          if (resources == full_machine_spec) {
+            return std::unordered_set<MachineView>{mv1, mv2};
+          } else {
+            return std::unordered_set<MachineView>{mv2};
+          }
+        };
 
     TensorShape tensor_shape = TensorShape{
         TensorDims{
@@ -112,24 +113,26 @@ TEST_SUITE(FF_TEST_SUITE) {
         DataType::FLOAT,
     };
 
-    UnmappedRuntimeOnlyOpCostEstimateKey k1 = UnmappedRuntimeOnlyOpCostEstimateKey{
-        /*op_attrs=*/PCGOperatorAttrs{InputAttrs{tensor_shape}},
-        /*input_shapes=*/{},
-        /*weight_shapes=*/{},
-        /*output_shapes=*/{},
-    };
+    UnmappedRuntimeOnlyOpCostEstimateKey k1 =
+        UnmappedRuntimeOnlyOpCostEstimateKey{
+            /*op_attrs=*/PCGOperatorAttrs{InputAttrs{tensor_shape}},
+            /*input_shapes=*/{},
+            /*weight_shapes=*/{},
+            /*output_shapes=*/{},
+        };
 
-    UnmappedRuntimeOnlyOpCostEstimateKey k2 = UnmappedRuntimeOnlyOpCostEstimateKey{
-        /*op_attrs=*/PCGOperatorAttrs{ElementBinaryAttrs{
-            /*type=*/OperatorType::EW_ADD,
-            /*compute_type=*/DataType::FLOAT,
-            /*should_broadcast_lhs=*/false,
-            /*should_broadcast_rhs=*/false,
-        }},
-        /*input_shapes=*/{},
-        /*weight_shapes=*/{},
-        /*output_shapes=*/{},
-    };
+    UnmappedRuntimeOnlyOpCostEstimateKey k2 =
+        UnmappedRuntimeOnlyOpCostEstimateKey{
+            /*op_attrs=*/PCGOperatorAttrs{ElementBinaryAttrs{
+                /*type=*/OperatorType::EW_ADD,
+                /*compute_type=*/DataType::FLOAT,
+                /*should_broadcast_lhs=*/false,
+                /*should_broadcast_rhs=*/false,
+            }},
+            /*input_shapes=*/{},
+            /*weight_shapes=*/{},
+            /*output_shapes=*/{},
+        };
 
     ParallelTensorShape par_tensor_shape = lift_to_parallel(tensor_shape);
 
@@ -150,34 +153,36 @@ TEST_SUITE(FF_TEST_SUITE) {
             {binary_tree_root_path(), mv2},
         }};
 
-    auto map1 = std::unordered_map<RuntimeOnlyOpCostEstimateKey, RuntimeOnlyOpCostMetrics>{{
+    auto map1 = std::unordered_map<RuntimeOnlyOpCostEstimateKey,
+                                   RuntimeOnlyOpCostMetrics>{{
         {map_unmapped_runtime_only_op_cost_estimate_key(k1, mv1),
          RuntimeOnlyOpCostMetrics{/*forward_runtime=*/0.5_ms,
-                       /*backward_runtime=*/0.5_ms}},
+                                  /*backward_runtime=*/0.5_ms}},
         {map_unmapped_runtime_only_op_cost_estimate_key(k2, mv1),
          RuntimeOnlyOpCostMetrics{/*forward_runtime=*/1.0_ms,
-                       /*backward_runtime=*/1.0_ms}},
+                                  /*backward_runtime=*/1.0_ms}},
         {map_unmapped_runtime_only_op_cost_estimate_key(k1, mv2),
          RuntimeOnlyOpCostMetrics{/*forward_runtime=*/0.75_ms,
-                       /*backward_runtime=*/0.75_ms}},
+                                  /*backward_runtime=*/0.75_ms}},
         {map_unmapped_runtime_only_op_cost_estimate_key(k2, mv2),
          RuntimeOnlyOpCostMetrics{/*forward_runtime=*/1.25_ms,
-                       /*backward_runtime=*/1.25_ms}},
+                                  /*backward_runtime=*/1.25_ms}},
     }};
 
-    RuntimeOnlyCostEstimator runtime_only_cost_estimator = make_fake_runtime_only_cost_estimator(
-        map1,
-        std::unordered_map<TensorSetMovement, milliseconds_t>{{
-            {TensorSetMovement{{}}, 0.0_ms},
-            {concretize_abstracted_tensor_set_movement(movement1, mm1, mm1),
-             0.1_ms},
-            {concretize_abstracted_tensor_set_movement(movement1, mm2, mm2),
-             0.2_ms},
-            {concretize_abstracted_tensor_set_movement(movement1, mm1, mm2),
-             0.3_ms},
-            {concretize_abstracted_tensor_set_movement(movement1, mm2, mm1),
-             0.4_ms},
-        }});
+    RuntimeOnlyCostEstimator runtime_only_cost_estimator =
+        make_fake_runtime_only_cost_estimator(
+            map1,
+            std::unordered_map<TensorSetMovement, milliseconds_t>{{
+                {TensorSetMovement{{}}, 0.0_ms},
+                {concretize_abstracted_tensor_set_movement(movement1, mm1, mm1),
+                 0.1_ms},
+                {concretize_abstracted_tensor_set_movement(movement1, mm2, mm2),
+                 0.2_ms},
+                {concretize_abstracted_tensor_set_movement(movement1, mm1, mm2),
+                 0.3_ms},
+                {concretize_abstracted_tensor_set_movement(movement1, mm2, mm1),
+                 0.4_ms},
+            }});
 
     MachineMappingContext context = MachineMappingContext{
         runtime_only_cost_estimator,

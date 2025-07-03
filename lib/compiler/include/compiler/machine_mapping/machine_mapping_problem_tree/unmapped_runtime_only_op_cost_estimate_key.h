@@ -3,19 +3,19 @@
 
 #include "compiler/cost_estimator/runtime_only_op_cost_estimate_key.dtg.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_runtime_only_op_cost_estimate_key.dtg.h"
-#include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 
 namespace FlexFlow {
 
-UnmappedRuntimeOnlyOpCostEstimateKey get_unmapped_runtime_only_op_cost_estimate_key_for_layer(
-    ParallelComputationGraph const &pcg, 
-    parallel_layer_guid_t const &parallel_layer_guid);
+UnmappedRuntimeOnlyOpCostEstimateKey
+    get_unmapped_runtime_only_op_cost_estimate_key_for_layer(
+        ParallelComputationGraph const &pcg,
+        parallel_layer_guid_t const &parallel_layer_guid);
 
-RuntimeOnlyOpCostEstimateKey
-    map_unmapped_runtime_only_op_cost_estimate_key(UnmappedRuntimeOnlyOpCostEstimateKey const &unmapped,
-                                                   MachineView const &machine_view);
+RuntimeOnlyOpCostEstimateKey map_unmapped_runtime_only_op_cost_estimate_key(
+    UnmappedRuntimeOnlyOpCostEstimateKey const &unmapped,
+    MachineView const &machine_view);
 
 } // namespace FlexFlow
 
