@@ -1,6 +1,7 @@
 #include "internal/test_utils.h"
 #include "kernels/cast_kernels.h"
 #include "kernels/cast_kernels_cpu.h"
+#include "kernels/cast_kernels_gpu.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -11,35 +12,35 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     Allocator allocator = create_local_cuda_memory_allocator();
 
     TensorShape input_shape = TensorShape{
-        TensorDims{FFOrdered{100_n, 100_n}},
+        TensorDims{FFOrdered{100_p, 100_p}},
         DataType::FLOAT,
     };
     TensorShape output_shape = TensorShape{
-        TensorDims{FFOrdered{100_n, 100_n}},
+        TensorDims{FFOrdered{100_p, 100_p}},
         DataType::DOUBLE,
     };
 
-    SUBCASE("forward_kernel") {
+    SUBCASE("gpu_forward_kernel") {
       GenericTensorAccessorR input_accessor =
           create_random_filled_accessor_r(input_shape, allocator);
       GenericTensorAccessorW output_accessor =
           allocator.allocate_tensor(output_shape);
 
-      Kernels::Cast::forward_kernel(
+      Kernels::Cast::gpu_forward_kernel(
           managed_stream.raw_stream(), input_accessor, output_accessor);
 
       CHECK(contains_non_zero(output_accessor));
     }
 
-    SUBCASE("backward_kernel") {
+    SUBCASE("gpu_backward_kernel") {
       GenericTensorAccessorR grad_output_accessor =
           create_random_filled_accessor_r(output_shape, allocator);
       GenericTensorAccessorW grad_input_accessor =
           create_zero_filled_accessor_w(input_shape, allocator);
 
-      Kernels::Cast::backward_kernel(managed_stream.raw_stream(),
-                                     grad_output_accessor,
-                                     grad_input_accessor);
+      Kernels::Cast::gpu_backward_kernel(managed_stream.raw_stream(),
+                                         grad_output_accessor,
+                                         grad_input_accessor);
 
       CHECK(contains_non_zero(grad_input_accessor));
     }
@@ -52,11 +53,11 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
     TensorShape input_shape = TensorShape{
-        TensorDims{FFOrdered{10_n, 2_n}},
+        TensorDims{FFOrdered{10_p, 2_p}},
         DataType::FLOAT,
     };
     TensorShape output_shape = TensorShape{
-        TensorDims{FFOrdered{10_n, 2_n}},
+        TensorDims{FFOrdered{10_p, 2_p}},
         DataType::DOUBLE,
     };
 
@@ -68,7 +69,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       GenericTensorAccessorW output_accessor_gpu =
           create_zero_filled_accessor_w(output_shape, gpu_allocator);
 
-      Kernels::Cast::forward_kernel(
+      Kernels::Cast::gpu_forward_kernel(
           managed_stream.raw_stream(), input_accessor_gpu, output_accessor_gpu);
 
       // Run CPU Forward Kernel

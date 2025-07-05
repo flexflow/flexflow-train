@@ -20,21 +20,21 @@ std::unordered_set<ReplicaParallelDim>
   return replica_dims(s.dims);
 }
 
-nonnegative_int get_num_replicas(ParallelTensorShape const &shape) {
+positive_int get_num_replicas(ParallelTensorShape const &shape) {
   return product(transform(
       replica_dims(shape),
-      [](ReplicaParallelDim const &d) -> nonnegative_int { return d.degree; }));
+      [](ReplicaParallelDim const &d) -> positive_int { return d.degree; }));
 }
 
-nonnegative_int get_sum_degree(ParallelTensorShape const &shape) {
+positive_int get_sum_degree(ParallelTensorShape const &shape) {
   return shape.dims.replica_dims.sum_degree.value;
 }
 
-nonnegative_int get_discard_copy_degree(ParallelTensorShape const &shape) {
+positive_int get_discard_copy_degree(ParallelTensorShape const &shape) {
   return shape.dims.replica_dims.discard_copy_degree.value;
 }
 
-nonnegative_int get_total_parallel_degree(ParallelTensorShape const &s) {
+positive_int get_total_parallel_degree(ParallelTensorShape const &s) {
   return total_parallel_degree(s.dims);
 }
 
@@ -52,8 +52,7 @@ ShardParallelDim &shard_dim_at_idx(ParallelTensorShape &s,
   return shard_dim_at_idx(s.dims, d);
 }
 
-FFOrdered<nonnegative_int>
-    ff_ordered_shard_degrees(ParallelTensorShape const &s) {
+FFOrdered<positive_int> ff_ordered_shard_degrees(ParallelTensorShape const &s) {
   return ff_ordered_shard_degrees(s.dims);
 }
 
@@ -79,7 +78,7 @@ ParallelTensorShape lift_to_parallel_with_degrees(
     TensorShape const &unpar,
     SumDegree const &sum_degree,
     DiscardCopyDegree const &discard_copy_degree,
-    FFOrdered<nonnegative_int> const &shard_degrees) {
+    FFOrdered<positive_int> const &shard_degrees) {
   return ParallelTensorShape{
       lift_to_parallel_with_degrees(
           unpar.dims, sum_degree, discard_copy_degree, shard_degrees),
@@ -97,8 +96,8 @@ ParallelTensorShape
 }
 
 TensorShape require_not_parallel(ParallelTensorShape const &s) {
-  nonnegative_int total_degree = get_total_parallel_degree(s);
-  if (total_degree != 1_n) {
+  positive_int total_degree = get_total_parallel_degree(s);
+  if (total_degree != 1_p) {
     throw mk_runtime_error(
         fmt::format("Error: require_not_parallel received a parallel tensor "
                     "shape with parallel degree {}: {}",
@@ -132,9 +131,9 @@ ParallelDim get_parallel_dim_at_idx(ParallelTensorShape const &shape,
       },
       [&](ReplicaType replica_type) {
         ReplicaParallelDimSet replicas = shape.dims.replica_dims;
-        nonnegative_int degree = (ReplicaType::SUM == replica_type
-                                      ? replicas.sum_degree.value
-                                      : replicas.discard_copy_degree.value);
+        positive_int degree = (ReplicaType::SUM == replica_type
+                                   ? replicas.sum_degree.value
+                                   : replicas.discard_copy_degree.value);
         return ParallelDim{ReplicaParallelDim{degree, replica_type}};
       }});
 }

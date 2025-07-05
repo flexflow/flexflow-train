@@ -15,7 +15,7 @@
 
 #include "internal/device.h"
 #include "kernels/datatype_dispatch.h"
-#include "kernels/reduction_kernels.h"
+#include "kernels/reduction_kernels_gpu.h"
 
 namespace FlexFlow {
 namespace Kernels {
@@ -42,42 +42,28 @@ struct ForwardKernel {
                   size_t num_replicas) {
 
     size_t total_elements =
-        input.shape.num_elements().unwrap_nonnegative() * num_replicas;
+        get_num_elements(input.shape.dims).int_from_positive_int() * num_replicas;
     reduction_forward_kernel<real_type_t<T>>
         <<<GET_BLOCKS(total_elements), CUDA_NUM_THREADS, 0, stream>>>(
             input.get<T>(),
             output.get<T>(),
-            input.shape.num_elements().unwrap_nonnegative(),
+            get_num_elements(input.shape.dims).int_from_positive_int(),
             num_replicas);
   }
 };
 
-template <DataType T>
-struct BackwardKernel {
-  void operator()(cudaStream_t stream,
-                  GenericTensorAccessorR const &output,
-                  GenericTensorAccessorW const &input) {
-    checkCUDA(cudaMemcpyAsync(input.get<T>(),
-                              output.get<T>(),
-                              input.shape.num_elements().unwrap_nonnegative() *
-                                  size_of_datatype(T).unwrap_nonnegative(),
-                              cudaMemcpyDeviceToDevice,
-                              stream));
-  }
-};
-
-void forward_kernel(cudaStream_t stream,
-                    GenericTensorAccessorR const &input,
-                    GenericTensorAccessorW const &output,
-                    size_t num_replicas) {
+void gpu_forward_kernel(cudaStream_t stream,
+                        GenericTensorAccessorR const &input,
+                        GenericTensorAccessorW const &output,
+                        size_t num_replicas) {
   DataTypeDispatch1<ForwardKernel>{}(
-      input.data_type, stream, input, output, num_replicas);
+      input.shape.data_type, stream, input, output, num_replicas);
 }
 
-void backward_kernel(cudaStream_t stream,
-                     GenericTensorAccessorR const &output,
-                     GenericTensorAccessorW const &input) {
-  DataTypeDispatch1<BackwardKernel>{}(output.data_type, stream, output, input);
+void gpu_backward_kernel(cudaStream_t stream,
+                         GenericTensorAccessorR const &output,
+                         GenericTensorAccessorW const &input) {
+  copy_accessor_data_to_l_from_r(input, output);
 }
 
 } // namespace Reduction

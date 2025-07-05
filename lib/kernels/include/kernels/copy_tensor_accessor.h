@@ -6,7 +6,7 @@
 
 namespace FlexFlow {
 
-GenericTensorAccessorR
+GenericTensorAccessorW
     copy_tensor_accessor_r(GenericTensorAccessorR const &src_accessor,
                            Allocator &allocator);
 

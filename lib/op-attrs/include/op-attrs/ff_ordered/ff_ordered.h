@@ -12,16 +12,13 @@ template <typename T>
 struct FFOrdered {
   FFOrdered() {}
 
-  FFOrdered(std::initializer_list<T> const &l) : contents(l.begin(), l.end()) {}
-
-  FFOrdered(std::vector<T> const &contents)
-      : contents(contents.begin(), contents.end()) {}
+  explicit FFOrdered(std::initializer_list<T> const &l) : contents(l.begin(), l.end()) {}
 
   template <typename It>
-  FFOrdered(It begin, It end) : contents(begin, end) {}
+  explicit FFOrdered(It begin, It end) : contents(begin, end) {}
 
   template <size_t MAXSIZE>
-  FFOrdered(stack_vector<T, MAXSIZE> const &contents)
+  explicit FFOrdered(stack_vector<T, MAXSIZE> const &contents)
       : contents(contents.begin(), contents.end()) {}
 
   T const &at(ff_dim_t idx) const {
@@ -190,7 +187,8 @@ namespace nlohmann {
 template <typename T>
 struct adl_serializer<::FlexFlow::FFOrdered<T>> {
   static ::FlexFlow::FFOrdered<T> from_json(nlohmann::json const &j) {
-    return {j.template get<std::vector<T>>()};
+    std::vector<T> v = j.template get<std::vector<T>>();
+    return ::FlexFlow::FFOrdered<T>(v.cbegin(), v.cend());
   }
 
   static void to_json(nlohmann::json &j, ::FlexFlow::FFOrdered<T> const &x) {

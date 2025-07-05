@@ -1,0 +1,57 @@
+namespace = "FlexFlow"
+name = "LayerNormPerDeviceState"
+features = []
+
+includes = [
+  "kernels/ff_handle.h",
+  "op-attrs/datatype.dtg.h",
+]
+
+[[fields]]
+name = "handle"
+type = "::FlexFlow::PerDeviceFFHandle"
+
+[[fields]]
+name = "elementwise_affine"
+type = "bool"
+
+[[fields]]
+name = "effective_num_elements"
+type = "int64_t"
+
+[[fields]]
+name = "effective_batch_size"
+type = "int64_t"
+
+[[fields]]
+name = "eps"
+type = "float"
+
+[[fields]]
+name = "mean"
+type = "float *"
+
+[[fields]]
+name = "rstd"
+type = "float *"
+
+[[fields]]
+name = "ds"
+type = "float *"
+
+[[fields]]
+name = "db"
+type = "float *"
+
+[[fields]]
+name = "scale"
+type = "float *"
+
+[[fields]]
+name = "bias"
+type = "float *"
+
+[[fields]]
+name = "data_type"
+type = "::FlexFlow::DataType"
+

@@ -26,7 +26,7 @@ namespace FlexFlow {
 
 MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
     MachineMappingWithMemoryCache &result_cache,
-    MachineMappingContext const &context,
+    MachineMappingWithMemoryContext const &context,
     MachineMappingProblemTree const &problem_tree,
     MachineSpecification const &resources,
     MachineMappingConstraints const &constraints) {
@@ -71,7 +71,7 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
 
 MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
     MachineMappingWithMemoryCache &result_cache,
-    MachineMappingContext const &context,
+    MachineMappingWithMemoryContext const &context,
     MMProblemTreeSeriesSplit const &series_split,
     MachineSpecification const &resources,
     MachineMappingConstraints const &constraints,
@@ -85,11 +85,11 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
         allowed = generate_map(
             boundary_layers,
             [&](BinaryTreePath const &l) -> std::unordered_set<MachineView> {
-              UnmappedOpCostEstimateKey leaf =
+              UnmappedRuntimeOnlyOpCostEstimateKey leaf =
                   mm_problem_tree_get_subtree_at_path(
                       MachineMappingProblemTree{series_split}, l)
                       .value()
-                      .get<UnmappedOpCostEstimateKey>();
+                      .get<UnmappedRuntimeOnlyOpCostEstimateKey>();
               return context.allowed_machine_views(leaf, resources);
             });
     return transform(
@@ -158,7 +158,7 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
               tensor_movement,
               /*pre_mapping=*/assigned_pre_machine_views,
               /*post_mapping=*/assigned_post_machine_views);
-      float cost_across_split =
+      milliseconds_t cost_across_split =
           context.cost_estimator.estimate_cost(comm_across_split);
 
       result = minimize_runtime(result,
@@ -174,7 +174,7 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
 
 MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
     MachineMappingWithMemoryCache &result_cache,
-    MachineMappingContext const &context,
+    MachineMappingWithMemoryContext const &context,
     MMProblemTreeParallelSplit const &parallel_split,
     MachineSpecification const &resources,
     MachineMappingConstraints const &constraints) {
@@ -232,8 +232,8 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
 
 MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
     MachineMappingWithMemoryCache &result_cache,
-    MachineMappingContext const &context,
-    UnmappedOpCostEstimateKey const &leaf,
+    MachineMappingWithMemoryContext const &context,
+    UnmappedRuntimeOnlyOpCostEstimateKey const &leaf,
     MachineSpecification const &resource,
     MachineMappingConstraints const &constraints) {
 
@@ -247,8 +247,10 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
   }();
 
   auto get_mapping_result = [&](MachineView const &machine_view) {
-    OpCostEstimateKey mapped =
-        map_unmapped_op_cost_estimate_key(leaf, machine_view);
+    OpCostEstimateKey mapped = map_unmapped_op_cost_estimate_key(
+        unmapped_op_cost_estimate_key_from_runtime_only(
+            leaf, context.optimizer_attrs),
+        machine_view);
     OpCostMetrics cost = context.cost_estimator.estimate_cost(mapped);
 
     return make_singleton_machine_mapping_with_memory_result(cost,

@@ -11,17 +11,17 @@ template <typename T>
 struct LegionOrdered {
   LegionOrdered() {}
 
-  LegionOrdered(std::initializer_list<T> const &l)
+  explicit LegionOrdered(std::initializer_list<T> const &l)
       : contents(l.begin(), l.end()) {}
 
-  LegionOrdered(std::vector<T> const &contents)
+  explicit LegionOrdered(std::vector<T> const &contents)
       : contents(contents.begin(), contents.end()) {}
 
   template <typename It>
-  LegionOrdered(It begin, It end) : contents(begin, end) {}
+  explicit LegionOrdered(It begin, It end) : contents(begin, end) {}
 
   template <size_t MAXSIZE>
-  LegionOrdered(stack_vector<T, MAXSIZE> const &contents)
+  explicit LegionOrdered(stack_vector<T, MAXSIZE> const &contents)
       : contents(contents.begin(), contents.end()) {}
 
   T const &at(legion_dim_t idx) const {

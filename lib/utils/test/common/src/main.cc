@@ -3,6 +3,7 @@
 
 #include <libassert/assert.hpp>
 #include <stdexcept>
+#include <cpptrace/cpptrace.hpp>
 
 void libassert_throw_exception_handler(libassert::assertion_info const &info) {
   throw std::runtime_error("Assertion failed:\n" + info.to_string());
@@ -10,6 +11,7 @@ void libassert_throw_exception_handler(libassert::assertion_info const &info) {
 
 int main(int argc, char **argv) {
   libassert::set_failure_handler(libassert_throw_exception_handler);
+  cpptrace::register_terminate_handler();
 
   return doctest::Context(argc, argv).run();
 }

@@ -8,24 +8,16 @@
 
 namespace FlexFlow {
 
-nonnegative_int num_dims(TensorShape const &s) {
-  return num_elements(s.dims.ff_ordered);
+num_bytes_t get_size_in_bytes(TensorShape const &s) {
+  return num_bytes_t{
+    (get_num_elements(s.dims) * size_of_datatype(s.data_type)).nonnegative_int_from_positive_int()
+  }; 
 }
 
-nonnegative_int dim_at_idx(TensorShape const &s, relative_ff_dim_t idx) {
-  return dim_at_idx(s.dims, idx);
-}
-
-nonnegative_int &dim_at_idx(TensorShape &s, relative_ff_dim_t idx) {
-  return dim_at_idx(s.dims, idx);
-}
-
-nonnegative_int get_num_elements(TensorShape const &s) {
-  return get_num_elements(s.dims);
-}
-
-nonnegative_int get_size_in_bytes(TensorShape const &s) {
-  return get_num_elements(s) * size_of_datatype(s.data_type);
+TensorShape tensor_shape_drop_dims(
+    TensorShape const &coord,
+    std::function<bool(ff_dim_t)> const &should_drop_dim) {
+  NOT_IMPLEMENTED();
 }
 
 TensorShape slice_tensor_shape(TensorShape const &shape,

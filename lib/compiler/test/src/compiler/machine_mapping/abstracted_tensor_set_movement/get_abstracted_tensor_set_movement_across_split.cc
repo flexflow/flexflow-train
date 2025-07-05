@@ -28,9 +28,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TensorShape input_shape = TensorShape{
         TensorDims{
-            FFOrdered<nonnegative_int>{
-                10_n,
-                12_n,
+            FFOrdered{
+                10_p,
+                12_p,
             },
         },
         DataType::FLOAT,
@@ -42,7 +42,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*op_attrs=*/PCGOperatorAttrs{
             RepartitionAttrs{
                 /*repartition_dim=*/ff_dim_t{0_n},
-                /*repartition_degree=*/2_n,
+                /*repartition_degree=*/2_p,
             },
         },
         /*name=*/std::nullopt,

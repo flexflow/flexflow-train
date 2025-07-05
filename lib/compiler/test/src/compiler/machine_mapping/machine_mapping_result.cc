@@ -15,7 +15,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{1_n},
+                stride_t{1_p},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -30,13 +30,13 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{2_n},
+                stride_t{2_p},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
     };
 
-    float pre_cost = 2.0;
+    milliseconds_t pre_cost = 2.0_ms;
     MachineMappingResult pre = MachineMappingResult{
         FeasibleMachineMappingResult{
             /*runtime=*/pre_cost,
@@ -58,7 +58,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    float post_cost = 4.0;
+    milliseconds_t post_cost = 4.0_ms;
     MachineMappingResult post = MachineMappingResult{
         FeasibleMachineMappingResult{
             /*runtime=*/post_cost,
@@ -74,7 +74,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineMappingResult infeasible = infeasible_machine_mapping_result();
 
-    float comm_cost = 3.0;
+    milliseconds_t comm_cost = 3.0_ms;
 
     SUBCASE("pre is infeasible") {
       MachineMappingResult result = series_combine(
@@ -196,7 +196,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{1_n},
+                stride_t{1_p},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -211,7 +211,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{2_n},
+                stride_t{2_p},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -219,7 +219,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineMappingResult lhs = MachineMappingResult{
         FeasibleMachineMappingResult{
-            /*runtime=*/2.0,
+            /*runtime=*/2_ms,
             /*machine_mapping=*/
             ParallelLayerGuidObliviousMachineMapping{{
                 {
@@ -240,7 +240,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineMappingResult rhs = MachineMappingResult{
         FeasibleMachineMappingResult{
-            /*runtime=*/4.0,
+            /*runtime=*/4_ms,
             /*machine_mapping=*/
             ParallelLayerGuidObliviousMachineMapping{{
                 {
@@ -278,7 +278,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       MachineMappingResult result = parallel_combine(lhs, rhs);
       MachineMappingResult correct = MachineMappingResult{
           FeasibleMachineMappingResult{
-              /*runtime=*/4.0,
+              /*runtime=*/4_ms,
               /*machine_mapping=*/
               ParallelLayerGuidObliviousMachineMapping{{
                   {
@@ -319,7 +319,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{1_n},
+                stride_t{1_p},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -334,7 +334,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{2_n},
+                stride_t{2_p},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -342,7 +342,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineMappingResult faster = MachineMappingResult{
         FeasibleMachineMappingResult{
-            /*runtime=*/2.0,
+            /*runtime=*/2_ms,
             /*machine_mapping=*/
             ParallelLayerGuidObliviousMachineMapping{{
                 {
@@ -363,7 +363,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineMappingResult slower = MachineMappingResult{
         FeasibleMachineMappingResult{
-            /*runtime=*/4.0,
+            /*runtime=*/4_ms,
             /*machine_mapping=*/
             ParallelLayerGuidObliviousMachineMapping{{
                 {

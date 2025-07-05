@@ -1,5 +1,6 @@
 #include "compiler/machine_mapping/machine_mapping_problem_tree/get_machine_mapping_problem_tree.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
+#include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_runtime_only_op_cost_estimate_key.dtg.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "utils/containers/get_only.h"
@@ -33,9 +34,10 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
     };
 
-    auto mm_problem_tree_make_leaf = [](UnmappedOpCostEstimateKey const &k) {
-      return MachineMappingProblemTree{k};
-    };
+    auto mm_problem_tree_make_leaf =
+        [](UnmappedRuntimeOnlyOpCostEstimateKey const &k) {
+          return MachineMappingProblemTree{k};
+        };
 
     auto mm_problem_tree_make_series =
         [](AbstractedTensorSetMovement const &tensor_set_movement,
@@ -65,9 +67,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TensorShape input_shape = TensorShape{
         TensorDims{
-            FFOrdered<nonnegative_int>{
-                10_n,
-                1_n,
+            FFOrdered{
+                10_p,
+                1_p,
             },
         },
         DataType::FLOAT,
@@ -92,7 +94,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     auto make_input_key =
         [&](ParallelTensorShape const &parallel_tensor_shape) {
-          return UnmappedOpCostEstimateKey{
+          return UnmappedRuntimeOnlyOpCostEstimateKey{
               /*op_attrs=*/input_attrs,
               /*input_shapes=*/{},
               /*weight_shapes=*/{},
@@ -108,7 +110,8 @@ TEST_SUITE(FF_TEST_SUITE) {
                              /*output_labels=*/{});
       parallel_layer_guid_t input_layer = input_added.parallel_layer;
 
-      UnmappedOpCostEstimateKey input_key = make_input_key(par_input_shape);
+      UnmappedRuntimeOnlyOpCostEstimateKey input_key =
+          make_input_key(par_input_shape);
 
       PCGBinarySPDecomposition sp_decomposition =
           PCGBinarySPDecomposition{input_layer};
@@ -129,7 +132,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_layer_guid_t input_layer = input_added.parallel_layer;
       parallel_tensor_guid_t input = get_only(input_added.outputs);
 
-      UnmappedOpCostEstimateKey input_key = make_input_key(par_input_shape);
+      UnmappedRuntimeOnlyOpCostEstimateKey input_key =
+          make_input_key(par_input_shape);
 
       PCGOperatorAttrs relu_attrs = PCGOperatorAttrs{
           ElementUnaryAttrs{
@@ -143,12 +147,13 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_layer_guid_t relu_layer = relu_added.parallel_layer;
       parallel_tensor_guid_t relu_output = get_only(relu_added.outputs);
 
-      UnmappedOpCostEstimateKey relu_key = UnmappedOpCostEstimateKey{
-          /*op_attrs=*/relu_attrs,
-          /*input_shapes=*/{par_input_shape},
-          /*weight_shapes=*/{},
-          /*output_shapes=*/{relu_output_shape},
-      };
+      UnmappedRuntimeOnlyOpCostEstimateKey relu_key =
+          UnmappedRuntimeOnlyOpCostEstimateKey{
+              /*op_attrs=*/relu_attrs,
+              /*input_shapes=*/{par_input_shape},
+              /*weight_shapes=*/{},
+              /*output_shapes=*/{relu_output_shape},
+          };
 
       PCGBinarySPDecomposition sp_decomposition = pcg_make_series(
           pcg_make_leaf(input_layer), pcg_make_leaf(relu_layer));
@@ -180,12 +185,14 @@ TEST_SUITE(FF_TEST_SUITE) {
       ParallelLayerAddedResult input1_added =
           pcg_add_input_layer(pcg, input_shape);
       parallel_layer_guid_t input1_layer = input1_added.parallel_layer;
-      UnmappedOpCostEstimateKey input1_key = make_input_key(par_input_shape);
+      UnmappedRuntimeOnlyOpCostEstimateKey input1_key =
+          make_input_key(par_input_shape);
 
       ParallelLayerAddedResult input2_added =
           pcg_add_input_layer(pcg, input_shape);
       parallel_layer_guid_t input2_layer = input2_added.parallel_layer;
-      UnmappedOpCostEstimateKey input2_key = make_input_key(par_input_shape);
+      UnmappedRuntimeOnlyOpCostEstimateKey input2_key =
+          make_input_key(par_input_shape);
 
       PCGBinarySPDecomposition sp_decomposition = pcg_make_parallel(
           pcg_make_leaf(input1_layer), pcg_make_leaf(input2_layer));
@@ -205,13 +212,15 @@ TEST_SUITE(FF_TEST_SUITE) {
           pcg_add_input_layer(pcg, input_shape);
       parallel_layer_guid_t input1_layer = input1_added.parallel_layer;
       parallel_tensor_guid_t input1_tensor = get_only(input1_added.outputs);
-      UnmappedOpCostEstimateKey input1_key = make_input_key(par_input_shape);
+      UnmappedRuntimeOnlyOpCostEstimateKey input1_key =
+          make_input_key(par_input_shape);
 
       ParallelLayerAddedResult input2_added =
           pcg_add_input_layer(pcg, input_shape);
       parallel_layer_guid_t input2_layer = input2_added.parallel_layer;
       parallel_tensor_guid_t input2_tensor = get_only(input2_added.outputs);
-      UnmappedOpCostEstimateKey input2_key = make_input_key(par_input_shape);
+      UnmappedRuntimeOnlyOpCostEstimateKey input2_key =
+          make_input_key(par_input_shape);
 
       PCGOperatorAttrs ew_op_attrs = PCGOperatorAttrs{
           ElementBinaryAttrs{
@@ -228,12 +237,13 @@ TEST_SUITE(FF_TEST_SUITE) {
                              {input1_tensor, input2_tensor},
                              {});
       parallel_layer_guid_t ew_op_layer = ew_op_added.parallel_layer;
-      UnmappedOpCostEstimateKey ew_op_key = UnmappedOpCostEstimateKey{
-          /*op_attrs=*/ew_op_attrs,
-          /*input_shapes=*/{par_input_shape, par_input_shape},
-          /*weight_shapes=*/{},
-          /*output_shapes=*/{ew_op_output_shape},
-      };
+      UnmappedRuntimeOnlyOpCostEstimateKey ew_op_key =
+          UnmappedRuntimeOnlyOpCostEstimateKey{
+              /*op_attrs=*/ew_op_attrs,
+              /*input_shapes=*/{par_input_shape, par_input_shape},
+              /*weight_shapes=*/{},
+              /*output_shapes=*/{ew_op_output_shape},
+          };
 
       PCGBinarySPDecomposition sp_decomposition =
           pcg_make_series(pcg_make_parallel(pcg_make_leaf(input1_layer),

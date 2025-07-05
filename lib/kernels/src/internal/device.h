@@ -1,10 +1,11 @@
 #ifndef _FLEXFLOW_LIB_KERNELS_INCLUDE_INTERNAL_DEVICE_H
 #define _FLEXFLOW_LIB_KERNELS_INCLUDE_INTERNAL_DEVICE_H
 
-#include "kernels/array_shape.h"
 #include "kernels/device.h"
+#include "op-attrs/activation.dtg.h"
 #include "op-attrs/datatype.h"
 #include "op-attrs/operator_type.h"
+#include "op-attrs/tensor_shape.dtg.h"
 #include <cstddef>
 
 namespace FlexFlow {
@@ -131,8 +132,8 @@ __host__ void updateGAS(float *para_ptr,
 template <typename T>
 void print_tensor(T const *ptr, size_t num_elements, char const *prefix);
 
-ffStatus_t cudnnSetTensorDescriptorFromArrayShape(ffTensorDescriptor_t tensor,
-                                                  ArrayShape const &shape);
+ffStatus_t cudnnSetTensorDescriptorFromTensorShape(ffTensorDescriptor_t tensor,
+                                                   TensorShape const &tensor_shape);
 
 ffDataType_t ff_to_cuda_datatype(DataType type);
 

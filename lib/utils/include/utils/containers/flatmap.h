@@ -42,6 +42,17 @@ std::unordered_set<Out> flatmap_v2(std::unordered_set<In> const &v,
   return result;
 }
 
+template <typename In,
+          typename F,
+          typename Out = get_element_type_t<std::invoke_result_t<F, In>>>
+std::set<Out> flatmap(std::set<In> const &v, F const &f) {
+  std::set<Out> result;
+  for (auto const &elem : v) {
+    extend(result, f(elem));
+  }
+  return result;
+}
+
 template <
     typename InK,
     typename InV,

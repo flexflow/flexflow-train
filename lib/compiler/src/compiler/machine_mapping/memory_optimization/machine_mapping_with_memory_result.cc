@@ -33,7 +33,7 @@ MachineMappingWithMemoryResult remove_non_pareto_optimal_machine_mapping_result(
       if (mapping.cost.forward_runtime >= other_mapping.cost.forward_runtime &&
           mapping.cost.backward_runtime >=
               other_mapping.cost.backward_runtime &&
-          mapping.cost.memory >= other_mapping.cost.memory &&
+          mapping.cost.memory_usage >= other_mapping.cost.memory_usage &&
           mapping != other_mapping) {
         is_pareto_optimal = false;
         break;
@@ -47,7 +47,7 @@ MachineMappingWithMemoryResult remove_non_pareto_optimal_machine_mapping_result(
 }
 
 MachineMappingWithMemoryResult
-    series_combine(float comm_cost,
+    series_combine(milliseconds_t comm_cost,
                    MachineMappingWithMemoryResult const &pre_result,
                    MachineMappingWithMemoryResult const &post_result,
                    std::optional<ParallelSplitTransformation> const
@@ -56,11 +56,12 @@ MachineMappingWithMemoryResult
       [&](MachineMappingForSingleLayer const &pre_mm,
           MachineMappingForSingleLayer const &post_mm) {
         OpCostMetrics cost = OpCostMetrics{
-            pre_mm.cost.forward_runtime + comm_cost +
+            /*forward_runtime=*/pre_mm.cost.forward_runtime + comm_cost +
                 post_mm.cost.forward_runtime,
-            pre_mm.cost.backward_runtime + comm_cost +
+            /*backward_runtime=*/pre_mm.cost.backward_runtime + comm_cost +
                 post_mm.cost.backward_runtime,
-            pre_mm.cost.memory + post_mm.cost.memory,
+            /*memory_usage=*/pre_mm.cost.memory_usage +
+                post_mm.cost.memory_usage,
         };
 
         ParallelLayerGuidObliviousMachineMapping mapping = [&] {
@@ -98,10 +99,13 @@ MachineMappingWithMemoryResult
       [&](MachineMappingForSingleLayer const &lhs_mm,
           MachineMappingForSingleLayer const &rhs_mm) {
         OpCostMetrics cost = OpCostMetrics{
+            /*forward_runtime=*/
             std::max(lhs_mm.cost.forward_runtime, rhs_mm.cost.forward_runtime),
+            /*backward_runtime=*/
             std::max(lhs_mm.cost.backward_runtime,
-                     rhs_mm.cost.backward_runtime), //(@wmdi) is this correct?
-            std::max(lhs_mm.cost.memory, rhs_mm.cost.memory),
+                     rhs_mm.cost.backward_runtime),
+            /*memory_usage=*/
+            std::max(lhs_mm.cost.memory_usage, rhs_mm.cost.memory_usage),
         };
 
         ParallelLayerGuidObliviousMachineMapping mapping =

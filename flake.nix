@@ -177,6 +177,7 @@
               frozendict
               black
               toml
+              numpy
             ])
             (with self.packages.${system}; [
               ffdb

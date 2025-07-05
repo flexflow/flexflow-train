@@ -1,0 +1,40 @@
+namespace = "FlexFlow"
+name = "DropoutPerDeviceState"
+features = []
+
+includes = [
+  "kernels/device.h",
+  "kernels/ff_handle.h",
+]
+
+[[fields]]
+name = "handle"
+type = "PerDeviceFFHandle"
+
+[[fields]]
+name = "inputTensor"
+type = "ffTensorDescriptor_t"
+
+[[fields]]
+name = "outputTensor"
+type = "ffTensorDescriptor_t"
+
+[[fields]]
+name = "dropoutDesc"
+type = "ffDropoutDescriptor_t"
+
+[[fields]]
+name = "reserveSpace"
+type = "void *"
+
+[[fields]]
+name = "dropoutStates"
+type = "void *"
+
+[[fields]]
+name = "reserveSpaceSize"
+type = "size_t"
+
+[[fields]]
+name = "dropoutStateSize"
+type = "size_t"

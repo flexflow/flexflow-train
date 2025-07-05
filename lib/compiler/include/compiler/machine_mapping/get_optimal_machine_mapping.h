@@ -35,12 +35,12 @@ MachineMappingResult get_optimal_machine_mapping(
     MachineSpecification const &resources,
     MachineMappingConstraints const &constraints);
 
-MachineMappingResult
-    get_optimal_machine_mapping(MachineMappingCache &result_cache,
-                                MachineMappingContext const &,
-                                UnmappedOpCostEstimateKey const &leaf,
-                                MachineSpecification const &resources,
-                                MachineMappingConstraints const &constraints);
+MachineMappingResult get_optimal_machine_mapping(
+    MachineMappingCache &result_cache,
+    MachineMappingContext const &,
+    UnmappedRuntimeOnlyOpCostEstimateKey const &leaf,
+    MachineSpecification const &resources,
+    MachineMappingConstraints const &constraints);
 
 } // namespace FlexFlow
 
