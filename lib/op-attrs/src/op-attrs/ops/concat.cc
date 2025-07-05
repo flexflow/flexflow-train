@@ -33,7 +33,7 @@ tl::expected<TensorShape, std::string>
   }
 
   if (!are_all_same(transform(
-          inputs, [](TensorShape const &s) { return num_dims(s); }))) {
+          inputs, [](TensorShape const &s) { return get_num_dims(s.dims); }))) {
     return tl::unexpected(
         fmt::format("get_output_shape for Concat expected all inputs to have "
                     "the same number of dimensions, but receieved {}",
@@ -51,7 +51,7 @@ tl::expected<TensorShape, std::string>
 
   std::vector<positive_int> axis_dim_sizes =
       transform(inputs, [&](TensorShape const &s) {
-        return dim_at_idx(s, relative_ff_dim_t_from_ff_dim_t(attrs.axis));
+        return dim_at_idx(s.dims, relative_ff_dim_t_from_ff_dim_t(attrs.axis));
       });
 
   positive_int output_axis_dim_size = sum(axis_dim_sizes);

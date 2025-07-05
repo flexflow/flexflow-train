@@ -11,7 +11,7 @@ GenericTensorAccessorW
   return map_tensor_accessors2(
       lhs,
       rhs,
-      require_same(lhs.data_type, rhs.data_type),
+      require_same(lhs.shape.data_type, rhs.shape.data_type),
       [](auto const &l, auto const &r) { return l + r; },
       output_allocator);
 }
@@ -22,7 +22,7 @@ void tensor_accessor_elementwise_add_to(GenericTensorAccessorR const &lhs,
   map_tensor_accessors2_to(
       lhs,
       rhs,
-      require_same(lhs.data_type, rhs.data_type),
+      require_same(lhs.shape.data_type, rhs.shape.data_type),
       [](auto const &l, auto const &r) { return l + r; },
       output);
 }
@@ -34,7 +34,7 @@ GenericTensorAccessorW
   return map_tensor_accessors2(
       lhs,
       rhs,
-      require_same(lhs.data_type, rhs.data_type),
+      require_same(lhs.shape.data_type, rhs.shape.data_type),
       [](auto const &l, auto const &r) { return l - r; },
       output_allocator);
 }
@@ -46,7 +46,7 @@ void tensor_accessor_elementwise_subtract_to(
   map_tensor_accessors2_to(
       lhs,
       rhs,
-      require_same(lhs.data_type, rhs.data_type),
+      require_same(lhs.shape.data_type, rhs.shape.data_type),
       [](auto const &l, auto const &r) { return l - r; },
       output);
 }
@@ -58,7 +58,7 @@ GenericTensorAccessorW
   return map_tensor_accessors2(
       lhs,
       rhs,
-      require_same(lhs.data_type, rhs.data_type),
+      require_same(lhs.shape.data_type, rhs.shape.data_type),
       [](auto const &l, auto const &r) { return l * r; },
       output_allocator);
 }
@@ -70,24 +70,24 @@ void tensor_accessor_elementwise_multiply_to(
   map_tensor_accessors2_to(
       lhs,
       rhs,
-      require_same(lhs.data_type, rhs.data_type),
+      require_same(lhs.shape.data_type, rhs.shape.data_type),
       [](auto const &l, auto const &r) { return l * r; },
       output);
 }
 
 static TensorShape get_matmul_output_shape(TensorShape const &lhs,
                                            TensorShape const &rhs) {
-  ASSERT(num_dims(lhs) == 2);
-  ASSERT(num_dims(rhs) == 2);
+  ASSERT(get_num_dims(lhs.dims) == 2);
+  ASSERT(get_num_dims(rhs.dims) == 2);
   ASSERT(lhs.data_type == DataType::FLOAT);
   ASSERT(rhs.data_type == DataType::FLOAT);
-  ASSERT(dim_at_idx(lhs, relative_ff_dim_t{1}) ==
-         dim_at_idx(rhs, relative_ff_dim_t{0}));
+  ASSERT(dim_at_idx(lhs.dims, relative_ff_dim_t{1}) ==
+         dim_at_idx(rhs.dims, relative_ff_dim_t{0}));
 
   return TensorShape{
       TensorDims{FFOrdered{
-          dim_at_idx(lhs, relative_ff_dim_t{0}),
-          dim_at_idx(rhs, relative_ff_dim_t{1}),
+          dim_at_idx(lhs.dims, relative_ff_dim_t{0}),
+          dim_at_idx(rhs.dims, relative_ff_dim_t{1}),
       }},
       DataType::FLOAT,
   };
@@ -123,14 +123,14 @@ void tensor_accessor_matmul_to(GenericTensorAccessorR const &lhs,
   GenericTensorAccessorW output_cpu =
       cpu_allocator.allocate_tensor(output_shape);
 
-  for (nonnegative_int i : nonnegative_range(lhs.shape.at(ff_dim_t{0_n}))) {
-    for (nonnegative_int j : nonnegative_range(rhs.shape.at(ff_dim_t{1_n}))) {
+  for (nonnegative_int i : nonnegative_range(dim_at_idx(lhs.shape.dims, ff_dim_t{0_n}))) {
+    for (nonnegative_int j : nonnegative_range(dim_at_idx(rhs.shape.dims, ff_dim_t{1_n}))) {
       float accum = 0.0f;
-      for (nonnegative_int k : nonnegative_range(lhs.shape.at(ff_dim_t{1_n}))) {
-        accum += lhs_cpu.at<DataType::FLOAT>(FFOrdered{i, k}) *
-                 rhs_cpu.at<DataType::FLOAT>(FFOrdered{k, j});
+      for (nonnegative_int k : nonnegative_range(dim_at_idx(lhs.shape.dims, ff_dim_t{1_n}))) {
+        accum += lhs_cpu.at<DataType::FLOAT>(TensorDimsCoord{FFOrdered{i, k}}) *
+                 rhs_cpu.at<DataType::FLOAT>(TensorDimsCoord{FFOrdered{k, j}});
       }
-      output_cpu.at<DataType::FLOAT>(FFOrdered{i, j}) = accum;
+      output_cpu.at<DataType::FLOAT>(TensorDimsCoord{FFOrdered{i, j}}) = accum;
     }
   }
 

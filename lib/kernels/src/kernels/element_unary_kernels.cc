@@ -6,8 +6,8 @@ namespace FlexFlow::Kernels::ElementUnary {
 
 std::optional<ElementUnaryPerDeviceState>
     init_kernel(DeviceType device_type,
-                ArrayShape const &input_shape,
-                ArrayShape const &output_shape,
+                TensorShape const &input_shape,
+                TensorShape const &output_shape,
                 ElementUnaryAttrs const &attrs) {
   if (device_type == DeviceType::GPU) {
     return gpu_init_kernel(

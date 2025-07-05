@@ -46,10 +46,10 @@ void linear_forward_kernel(
     GenericTensorAccessorR const &filter_accessor,
     std::optional<GenericTensorAccessorR> const &bias_accessor) {
   if (stream.is_gpu()) {
-    positive_int in_dim = input_accessor.shape.at(ff_dim_t{0_n});
-    positive_int out_dim = output_accessor.shape.at(ff_dim_t{0_n});
+    positive_int in_dim = dim_at_idx(input_accessor.shape.dims, ff_dim_t{0_n});
+    positive_int out_dim = dim_at_idx(output_accessor.shape.dims, ff_dim_t{0_n});
     positive_int batch_size =
-        positive_int{output_accessor.shape.num_elements() / out_dim};
+        positive_int{get_num_elements(output_accessor.shape.dims) / out_dim};
 
     float const *bias_ptr = nullptr;
     if (bias_accessor.has_value()) {
@@ -95,10 +95,10 @@ void linear_backward_kernel(
           return b.get_float_ptr();
         }).value_or(nullptr);
 
-    positive_int in_dim = input.shape.at(ff_dim_t{0_n});
-    positive_int out_dim = output.shape.at(ff_dim_t{0_n});
+    positive_int in_dim = dim_at_idx(input.shape.dims, ff_dim_t{0_n});
+    positive_int out_dim = dim_at_idx(output.shape.dims, ff_dim_t{0_n});
     positive_int batch_size =
-        positive_int{output.shape.num_elements() / out_dim};
+        positive_int{get_num_elements(output.shape.dims) / out_dim};
 
     Allocator gpu_allocator = create_local_cuda_memory_allocator();
     GenericTensorAccessorW modifiable_output_grad =

@@ -5,7 +5,7 @@
 namespace FlexFlow {
 
 bool tensor_accessor_all(GenericTensorAccessorR const &t) {
-  ASSERT(t.data_type == DataType::BOOL);
+  ASSERT(t.shape.data_type == DataType::BOOL);
 
   return reduce_tensor_accessor_in_all_dims<DataType::BOOL>(
       t,
@@ -16,7 +16,7 @@ bool tensor_accessor_all(GenericTensorAccessorR const &t) {
 }
 
 bool tensor_accessor_any(GenericTensorAccessorR const &t) {
-  ASSERT(t.data_type == DataType::BOOL);
+  ASSERT(t.shape.data_type == DataType::BOOL);
 
   return reduce_tensor_accessor_in_all_dims<DataType::BOOL>(
       t,

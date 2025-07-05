@@ -1,6 +1,7 @@
 #include "internal/device.h"
 #include "kernels/datatype_dispatch.h"
 #include "utils/containers/reversed.h"
+#include "op-attrs/tensor_dims.h"
 
 namespace FlexFlow {
 
@@ -217,31 +218,36 @@ __host__ void
   checkCUDA(cudaFreeHost(host_ptr));
 }
 
-ffStatus_t
-    cudnnSetTensorDescriptorFromArrayShape(cudnnTensorDescriptor_t tensor,
-                                           ArrayShape const &shape) {
-  return cudnnSetTensor4dDescriptor(
-      tensor,
-      CUDNN_TENSOR_NCHW,
-      CUDNN_DATA_FLOAT,
-      shape.at_maybe(legion_dim_t{0_n}).value_or(1_p).int_from_positive_int(),
-      shape.at_maybe(legion_dim_t{1_n}).value_or(1_p).int_from_positive_int(),
-      shape.at_maybe(legion_dim_t{2_n}).value_or(1_p).int_from_positive_int(),
-      shape.at_maybe(legion_dim_t{3_n}).value_or(1_p).int_from_positive_int());
-}
-
-cudnnDataType_t ff_to_cudnn_datatype(DataType type) {
-  switch (type) {
+ffCudnnDataType_t ff_to_cudnn_datatype(DataType flexflow_data_type) {
+  switch (flexflow_data_type) {
+    case DataType::BOOL:
+      return CUDNN_DATA_BOOLEAN;
+    case DataType::INT32:
+      return CUDNN_DATA_INT32;
+    case DataType::INT64:
+      return CUDNN_DATA_INT64;
+    case DataType::HALF:
+      return CUDNN_DATA_HALF;
     case DataType::FLOAT:
       return CUDNN_DATA_FLOAT;
     case DataType::DOUBLE:
       return CUDNN_DATA_DOUBLE;
-    case DataType::INT32:
-      return CUDNN_DATA_INT32;
     default:
-      assert(false && "Unsupported cudnn data type");
+      PANIC("Unhandled DataType value", flexflow_data_type);
   }
-  return CUDNN_DATA_FLOAT;
+}
+
+ffStatus_t
+    cudnnSetTensorDescriptorFromTensorDims(cudnnTensorDescriptor_t tensor,
+                                           TensorShape const &shape) {
+  return cudnnSetTensor4dDescriptor(
+      tensor,
+      CUDNN_TENSOR_NCHW,
+      ff_to_cudnn_datatype(shape.data_type),
+      try_dim_at_idx(shape.dims, relative_ff_dim_t{3}).value_or(1_p).int_from_positive_int(),
+      try_dim_at_idx(shape.dims, relative_ff_dim_t{3}).value_or(1_p).int_from_positive_int(),
+      try_dim_at_idx(shape.dims, relative_ff_dim_t{3}).value_or(1_p).int_from_positive_int(),
+      try_dim_at_idx(shape.dims, relative_ff_dim_t{3}).value_or(1_p).int_from_positive_int());
 }
 
 cudaDataType_t ff_to_cuda_datatype(DataType type) {

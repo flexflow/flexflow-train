@@ -7,13 +7,16 @@
 #include "op-attrs/shard_parallel_dim.dtg.h"
 #include "utils/containers/all_are_true.h"
 #include "utils/containers/all_of.h"
+#include "utils/containers/cartesian_product.h"
 #include "utils/containers/contains.h"
 #include "utils/containers/product.h"
 #include "utils/containers/reversed.h"
 #include "utils/containers/transform.h"
+#include "utils/containers/unordered_set_of.h"
 #include "utils/containers/vector_of.h"
 #include "utils/containers/zip.h"
 #include "utils/integer_conversions.h"
+#include "utils/nonnegative_int/nonnegative_range.h"
 #include "utils/nonnegative_int/num_elements.h"
 
 namespace FlexFlow {
@@ -26,7 +29,7 @@ bool tensor_dims_has_dim(TensorDims const &tensor_dims, ff_dim_t dim) {
   return contains(get_idxs(tensor_dims.ff_ordered), dim);
 }
 
-nonnegative_int num_dims(TensorDims const &dims) {
+nonnegative_int get_num_dims(TensorDims const &dims) {
   return num_elements(dims.ff_ordered);
 }
 
@@ -38,13 +41,37 @@ positive_int &dim_at_idx(TensorDims &dims, relative_ff_dim_t idx) {
   return dims.ff_ordered.at(idx);
 }
 
+positive_int dim_at_idx(TensorDims const &dims, ff_dim_t ff_dim_idx) {
+  return dims.ff_ordered.at(ff_dim_idx);
+}
+
+positive_int &dim_at_idx(TensorDims &dims, ff_dim_t ff_dim_idx) {
+  return dims.ff_ordered.at(ff_dim_idx);
+}
+
+std::optional<positive_int> try_dim_at_idx(TensorDims const &dims, relative_ff_dim_t idx) {
+  if (dims.ff_ordered.idx_is_valid(idx)) {
+    return dims.ff_ordered.at(idx);
+  } else {
+    return std::nullopt;
+  }
+}
+
+std::optional<positive_int> try_dim_at_idx(TensorDims const &dims, ff_dim_t idx) {
+  if (dims.ff_ordered.idx_is_valid(idx)) {
+    return dims.ff_ordered.at(idx);
+  } else {
+    return std::nullopt;
+  }
+}
+
 positive_int get_num_elements(TensorDims const &d) {
   return product(d.ff_ordered);
 }
 
 bool tensor_dims_is_broadcastable_to(TensorDims const &curr,
                                      TensorDims const &goal) {
-  if (num_dims(curr) > num_dims(goal)) {
+  if (get_num_dims(curr) > get_num_dims(goal)) {
     return false;
   }
 
@@ -63,7 +90,7 @@ bool tensor_dims_is_broadcastable_to(TensorDims const &curr,
 
 bool tensor_dims_contains_coord(TensorDims const &tensor_dims,
                                 TensorDimsCoord const &coord) {
-  ASSERT(coord.ff_ordered.size() == num_dims(tensor_dims));
+  ASSERT(coord.ff_ordered.size() == get_num_dims(tensor_dims));
 
   return all_are_true(zip_with(
       coord.ff_ordered,
@@ -84,7 +111,7 @@ TensorDimsCoord get_broadcast_src_coord(TensorDims const &input_dims,
          output_dims);
 
   relative_ff_dim_t trailing_start_idx =
-      relative_ff_dim_t{-1 * num_dims(input_dims).unwrap_nonnegative()};
+      relative_ff_dim_t{-1 * get_num_dims(input_dims).unwrap_nonnegative()};
 
   FFOrdered<nonnegative_int> trailing_entries =
       slice(dst_coord.ff_ordered, trailing_start_idx);
@@ -112,6 +139,26 @@ TensorDimsCoord get_broadcast_src_coord(TensorDims const &input_dims,
          result);
 
   return result;
+}
+
+std::unordered_set<TensorDimsCoord> get_tensor_dims_coord_set(TensorDims const &tensor_dims) {  
+  std::vector<std::vector<nonnegative_int>> per_dim_ranges = transform(
+      vector_of(tensor_dims.ff_ordered),
+      [](positive_int dim_size) -> std::vector<nonnegative_int> {
+        return nonnegative_range(dim_size.nonnegative_int_from_positive_int());
+      });
+
+  std::unordered_set<std::vector<nonnegative_int>> raw_points =
+      unordered_set_of(cartesian_product(per_dim_ranges));
+
+  return transform(raw_points,
+                   [](std::vector<nonnegative_int> const &raw_point) {
+                     return TensorDimsCoord{ff_ordered_of(raw_point)};
+                   });
+}
+
+std::unordered_set<ff_dim_t> get_ff_dim_t_set(TensorDims const &tensor_dims) {
+  return unordered_set_of(get_idxs(tensor_dims.ff_ordered));
 }
 
 std::optional<TensorDims>

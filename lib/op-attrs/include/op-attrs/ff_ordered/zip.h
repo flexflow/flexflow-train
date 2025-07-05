@@ -4,13 +4,14 @@
 #include "op-attrs/ff_ordered/ff_ordered.h"
 #include "utils/containers/vector_of.h"
 #include "utils/containers/zip.h"
+#include "op-attrs/ff_ordered/ff_ordered_of.h"
 
 namespace FlexFlow {
 
 template <typename T1, typename T2>
 FFOrdered<std::pair<T1, T2>> zip(FFOrdered<T1> const &lhs,
                                  FFOrdered<T2> const &rhs) {
-  return FFOrdered<std::pair<T1, T2>>{zip(vector_of(lhs), vector_of(rhs))};
+  return ff_ordered_of(zip(vector_of(lhs), vector_of(rhs)));
 }
 
 } // namespace FlexFlow

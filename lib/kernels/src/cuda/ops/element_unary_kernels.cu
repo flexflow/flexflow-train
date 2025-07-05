@@ -49,8 +49,8 @@ static bool use_scalar(OperatorType op_type) {
 }
 
 static ElementUnaryPerDeviceState
-    gpu_init_kernel(ArrayShape const &input_shape,
-                    ArrayShape const &output_shape,
+    gpu_init_kernel(TensorShape const &input_shape,
+                    TensorShape const &output_shape,
                     OperatorType op_type) {
 
   ffTensorDescriptor_t inputTensor;
@@ -82,9 +82,9 @@ static ElementUnaryPerDeviceState
     checkCUDNN(
         cudnnSetActivationDescriptor(actiDesc, mode, CUDNN_PROPAGATE_NAN, 0.0));
     checkCUDNN(
-        cudnnSetTensorDescriptorFromArrayShape(inputTensor, input_shape));
+        cudnnSetTensorDescriptorFromTensorShape(inputTensor, input_shape));
     checkCUDNN(
-        cudnnSetTensorDescriptorFromArrayShape(outputTensor, output_shape));
+        cudnnSetTensorDescriptorFromTensorShape(outputTensor, output_shape));
   }
 
   return ElementUnaryPerDeviceState{
@@ -94,8 +94,8 @@ static ElementUnaryPerDeviceState
   };
 }
 
-ElementUnaryPerDeviceState gpu_init_kernel(ArrayShape const &input_shape,
-                                           ArrayShape const &output_shape,
+ElementUnaryPerDeviceState gpu_init_kernel(TensorShape const &input_shape,
+                                           TensorShape const &output_shape,
                                            ElementUnaryAttrs const &attrs) {
   return gpu_init_kernel(input_shape, output_shape, get_op_type(attrs));
 }
@@ -259,6 +259,9 @@ struct ForwardKernel {
                   GenericTensorAccessorR const &input,
                   GenericTensorAccessorW const &output) const {
     checkCUDNN(cudnnSetStream(handle.dnn, stream));
+
+    size_t num_elements = get_num_elements(input.shape.dims).int_from_positive_int();
+
     if (use_cudnn(op_type)) {
       float alpha = 1.0f, beta = 0.0f;
       checkCUDNN(cudnnActivationForward(handle.dnn,
@@ -271,7 +274,6 @@ struct ForwardKernel {
                                         output.get<T>()));
     } else if (use_scalar(op_type)) {
       assert(scalar.has_value());
-      size_t num_elements = input.shape.num_elements().int_from_positive_int();
       elewise_scalar_unary_forward_kernel<real_type_t<T>>
           <<<GET_BLOCKS(num_elements), CUDA_NUM_THREADS, 0, stream>>>(
               num_elements,
@@ -280,7 +282,6 @@ struct ForwardKernel {
               input.get<T>(),
               output.get<T>());
     } else {
-      size_t num_elements = input.shape.num_elements().int_from_positive_int();
       elewise_unary_forward_kernel<real_type_t<T>>
           <<<GET_BLOCKS(num_elements), CUDA_NUM_THREADS, 0, stream>>>(
               num_elements, op_type, input.get<T>(), output.get<T>());
@@ -300,6 +301,7 @@ struct BackwardKernel {
                   GenericTensorAccessorR const &input,
                   GenericTensorAccessorW const &input_grad) {
     checkCUDNN(cudnnSetStream(handle.dnn, stream));
+    size_t num_elements = get_num_elements(input.shape.dims).int_from_positive_int();
 
     if (use_cudnn(op_type)) {
       float alpha = 1.0f;
@@ -317,7 +319,6 @@ struct BackwardKernel {
                                          input_grad.get<T>()));
     } else if (use_scalar(op_type)) {
       assert(scalar.has_value());
-      size_t num_elements = input.shape.num_elements().int_from_positive_int();
       elewise_scalar_unary_backward_kernel<real_type_t<T>>
           <<<GET_BLOCKS(num_elements), CUDA_NUM_THREADS, 0, stream>>>(
               num_elements,
@@ -328,7 +329,6 @@ struct BackwardKernel {
               input.get<T>(),
               input_grad.get<T>());
     } else {
-      size_t num_elements = input.shape.num_elements().int_from_positive_int();
       elewise_unary_backward_kernel<real_type_t<T>>
           <<<GET_BLOCKS(num_elements), CUDA_NUM_THREADS, 0, stream>>>(
               num_elements,
@@ -347,7 +347,7 @@ void gpu_forward_kernel(ffStream_t stream,
                         PerDeviceFFHandle const &handle,
                         GenericTensorAccessorR const &input,
                         GenericTensorAccessorW const &output) {
-  DataTypeDispatch1<ForwardKernel>{}(input.data_type,
+  DataTypeDispatch1<ForwardKernel>{}(input.shape.data_type,
                                      stream,
                                      device_state,
                                      get_op_type(attrs),
@@ -365,7 +365,7 @@ void gpu_backward_kernel(ffStream_t stream,
                          GenericTensorAccessorR const &output_grad,
                          GenericTensorAccessorR const &input,
                          GenericTensorAccessorW const &input_grad) {
-  DataTypeDispatch1<BackwardKernel>{}(input.data_type,
+  DataTypeDispatch1<BackwardKernel>{}(input.shape.data_type,
                                       stream,
                                       device_state,
                                       get_op_type(attrs),

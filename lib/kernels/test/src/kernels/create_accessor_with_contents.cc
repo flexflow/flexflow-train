@@ -11,7 +11,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         create_1d_accessor_w_with_contents<float>({1, 4, 1, 2}, cpu_allocator);
 
     auto at = [&](nonnegative_int c) -> float {
-      return result.at<DataType::FLOAT>(FFOrdered<nonnegative_int>{c});
+      return result.at<DataType::FLOAT>(TensorDimsCoord{FFOrdered{c}});
     };
 
     CHECK(at(0_n) == 1);
@@ -31,7 +31,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         cpu_allocator);
 
     auto at = [&](nonnegative_int r, nonnegative_int c) -> float {
-      return result.at<DataType::FLOAT>(FFOrdered{r, c});
+      return result.at<DataType::FLOAT>(TensorDimsCoord{FFOrdered{r, c}});
     };
 
     CHECK(at(0_n, 0_n) == 1);
@@ -62,7 +62,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     auto at =
         [&](nonnegative_int s, nonnegative_int r, nonnegative_int c) -> float {
-      return result.at<DataType::FLOAT>(FFOrdered{s, r, c});
+      return result.at<DataType::FLOAT>(TensorDimsCoord{FFOrdered{s, r, c}});
     };
 
     CHECK(at(0_n, 0_n, 0_n) == 1);
@@ -111,7 +111,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                   nonnegative_int s2,
                   nonnegative_int r,
                   nonnegative_int c) -> float {
-      return result.at<DataType::FLOAT>(FFOrdered{s1, s2, r, c});
+      return result.at<DataType::FLOAT>(TensorDimsCoord{FFOrdered{s1, s2, r, c}});
     };
 
     CHECK(at(0_n, 0_n, 0_n, 0_n) == 2);

@@ -9,8 +9,8 @@ std::optional<ReducePerDeviceState>
                 device_handle_t const &handle,
                 OperatorType const &operator_type,
                 size_t const &reduction_size,
-                ArrayShape const &input_shape,
-                ArrayShape const &output_shape) {
+                TensorShape const &input_shape,
+                TensorShape const &output_shape) {
   if (device_type == DeviceType::GPU) {
     return gpu_init_kernel(/*handle=*/handle.require_for_gpu(),
                            /*operator_type=*/operator_type,

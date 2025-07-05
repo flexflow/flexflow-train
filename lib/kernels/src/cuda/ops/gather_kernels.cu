@@ -132,28 +132,27 @@ void gpu_forward_kernel(ffStream_t stream,
                         GenericTensorAccessorW const &output) {
   checkCUDA(get_legion_stream(&stream));
   coord_t stride =
-      output.shape
-          .sub_shape(legion_dim_t{0_n}, add_to_legion_dim(m.legion_dim, 1))
-          .num_elements()
-          .int_from_positive_int();
+      get_num_elements(slice_tensor_dims(output.shape.dims, 
+          legion_dim_t{0_n}, add_to_legion_dim(m.legion_dim, 1))).int_from_positive_int();
+
   if (m.legion_dim.value == 0_n) {
     stride = 1;
   }
 
   coord_t output_dim_size =
-      output.shape.at(m.legion_dim).int_from_positive_int();
-  coord_t input_dim_size = input.shape.at(m.legion_dim).int_from_positive_int();
+      dim_at_idx(output.shape.dims, m.legion_dim).int_from_positive_int();
+  coord_t input_dim_size = dim_at_idx(input.shape.dims, m.legion_dim).int_from_positive_int();
 
-  assert(index.data_type == DataType::INT32 ||
-         index.data_type == DataType::INT64);
+  assert(index.shape.data_type == DataType::INT32 ||
+         index.shape.data_type == DataType::INT64);
 
   DataTypeDispatch1<ForwardKernel>{}(
-      index.data_type,
+      index.shape.data_type,
       stream,
       input,
       index,
       output,
-      output.shape.num_elements().int_from_positive_int(),
+      get_num_elements(output.shape.dims).int_from_positive_int(),
       stride,
       input_dim_size,
       output_dim_size);
@@ -167,29 +166,28 @@ void gpu_backward_kernel(ffStream_t stream,
   checkCUDA(get_legion_stream(&stream));
 
   coord_t stride =
-      output_grad.shape
-          .sub_shape(legion_dim_t{0_n}, add_to_legion_dim(m.legion_dim, 1))
-          .num_elements()
+      get_num_elements(slice_tensor_dims(output_grad.shape.dims,
+          legion_dim_t{0_n}, add_to_legion_dim(m.legion_dim, 1)))
           .int_from_positive_int();
   if (m.legion_dim.value == 0_n) {
     stride = 1;
   }
 
   coord_t output_dim_size =
-      output_grad.shape.at(m.legion_dim).int_from_positive_int();
+      dim_at_idx(output_grad.shape.dims, m.legion_dim).int_from_positive_int();
   coord_t input_dim_size =
-      input_grad.shape.at(m.legion_dim).int_from_positive_int();
+      dim_at_idx(input_grad.shape.dims, m.legion_dim).int_from_positive_int();
 
-  assert(index.data_type == DataType::INT32 ||
-         index.data_type == DataType::INT64);
+  assert(index.shape.data_type == DataType::INT32 ||
+         index.shape.data_type == DataType::INT64);
 
   DataTypeDispatch1<BackwardKernel>{}(
-      index.data_type,
+      index.shape.data_type,
       stream,
       output_grad,
       index,
       input_grad,
-      output_grad.shape.num_elements().int_from_positive_int(),
+      get_num_elements(output_grad.shape.dims).int_from_positive_int(),
       stride,
       input_dim_size,
       output_dim_size);

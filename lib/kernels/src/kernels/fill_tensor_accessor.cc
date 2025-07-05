@@ -1,6 +1,7 @@
 #include "kernels/fill_tensor_accessor.h"
 #include "kernels/datatype_dispatch.h"
 #include "op-attrs/datatype_value.h"
+#include "op-attrs/tensor_shape.h"
 
 namespace FlexFlow {
 
@@ -12,18 +13,18 @@ struct FillWithZeros {
     if (accessor.device_type == DeviceType::CPU) {
       memset(accessor.ptr,
              0,
-             accessor.shape.num_elements().int_from_positive_int() * sizeof(T));
+             get_size_in_bytes(accessor.shape).unwrap_num_bytes().unwrap_nonnegative());
     } else {
       checkCUDA(cudaMemset(
           accessor.ptr,
           0,
-          accessor.shape.num_elements().int_from_positive_int() * sizeof(T)));
+          get_size_in_bytes(accessor.shape).unwrap_num_bytes().unwrap_nonnegative()));
     }
   }
 };
 
 void fill_with_zeros(GenericTensorAccessorW const &accessor) {
-  DataTypeDispatch1<FillWithZeros>{}(accessor.data_type, accessor);
+  DataTypeDispatch1<FillWithZeros>{}(accessor.shape.data_type, accessor);
 }
 
 GenericTensorAccessorW create_accessor_w_filled_with(

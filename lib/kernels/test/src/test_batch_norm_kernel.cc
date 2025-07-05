@@ -89,7 +89,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           /*scale_grad_ptr=*/scale_grad_accessor.get_float_ptr(),
           /*bias_grad_ptr=*/bias_grad_accessor.get_float_ptr(),
           /*numElements=*/
-          input_accessor.shape.num_elements().int_from_positive_int());
+          get_num_elements(input_accessor.shape.dims).int_from_positive_int());
 
       CHECK(contains_non_zero(input_grad_accessor));
       CHECK(contains_non_zero(scale_grad_accessor));

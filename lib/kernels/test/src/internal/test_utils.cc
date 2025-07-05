@@ -33,7 +33,7 @@ struct CreateRandomFilledAccessorW {
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    size_t num_elements = get_num_elements(shape).int_from_positive_int();
+    size_t num_elements = get_num_elements(shape.dims).int_from_positive_int();
     if constexpr (std::is_same<T, bool>::value) {
       std::bernoulli_distribution dist(0.5);
       for (size_t i = 0; i < num_elements; i++) {
@@ -79,7 +79,7 @@ struct CPUAccessorRContainsNonZero {
 
     T const *data_ptr = accessor.get<DT>();
 
-    int volume = accessor.shape.num_elements().int_from_positive_int();
+    int volume = get_num_elements(accessor.shape.dims).int_from_positive_int();
     for (size_t i = 0; i < volume; i++) {
       if (data_ptr[i] != 0) {
         return true;
@@ -95,7 +95,7 @@ bool contains_non_zero(GenericTensorAccessorR const &accessor) {
   GenericTensorAccessorR cpu_accessor =
       copy_tensor_accessor_r_to_cpu_if_necessary(accessor, cpu_allocator);
   return DataTypeDispatch1<CPUAccessorRContainsNonZero>{}(
-      cpu_accessor.data_type, cpu_accessor);
+      cpu_accessor.shape.data_type, cpu_accessor);
 }
 
 template <DataType DT>
@@ -112,7 +112,7 @@ struct AccessorsAreEqual {
     T const *a_data_ptr = cpu_accessor_a.get<DT>();
     T const *b_data_ptr = cpu_accessor_b.get<DT>();
 
-    int volume = accessor_a.shape.num_elements().int_from_positive_int();
+    int volume = get_num_elements(accessor_a.shape.dims).int_from_positive_int();
     for (size_t i = 0; i < volume; i++) {
       if (a_data_ptr[i] != b_data_ptr[i]) {
         return false;
@@ -129,7 +129,7 @@ bool accessors_are_equal(GenericTensorAccessorR const &accessor_a,
          "accessors_are_equal expects accessors to have the same shape");
 
   return DataTypeDispatch1<AccessorsAreEqual>{}(
-      accessor_a.data_type, accessor_a, accessor_b);
+      accessor_a.shape.data_type, accessor_a, accessor_b);
 }
 
 template <DataType DT>
@@ -150,7 +150,7 @@ struct CreateFilledAccessorW {
 
     T *data_ptr = src_accessor.get<DT>();
 
-    int volume = dst_accessor.shape.num_elements().int_from_positive_int();
+    int volume = get_num_elements(dst_accessor.shape.dims).int_from_positive_int();
     for (size_t i = 0; i < volume; i++) {
       data_ptr[i] = unwrapped_value;
     }

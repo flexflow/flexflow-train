@@ -1,7 +1,6 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_ELEMENT_BINARY_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_ELEMENT_BINARY_KERNELS_H
 
-#include "kernels/array_shape.h"
 #include "kernels/device.h"
 #include "kernels/device_handle_t.dtg.h"
 #include "kernels/device_stream_t.dtg.h"
@@ -9,6 +8,7 @@
 #include "kernels/ff_handle.h"
 #include "op-attrs/datatype.h"
 #include "op-attrs/operator_type.h"
+#include "op-attrs/tensor_shape.dtg.h"
 #include "pcg/device_type.dtg.h"
 
 namespace FlexFlow::Kernels::ElementBinary {
@@ -19,9 +19,9 @@ std::optional<ElementBinaryPerDeviceState>
                 OperatorType op_type,
                 bool should_broadcast_lhs,
                 bool should_broadcast_rhs,
-                ArrayShape lhs_shape,
-                ArrayShape rhs_shape,
-                ArrayShape output_shape);
+                TensorShape const &lhs_shape,
+                TensorShape const &rhs_shape,
+                TensorShape const &output_shape);
 
 void forward_kernel(
     device_stream_t const &stream,

@@ -114,6 +114,37 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
   }
 
+  TEST_CASE("get_tensor_dims_coord_set") {
+    SUBCASE("TensorDims is not empty") {
+      TensorDims input = TensorDims{
+          FFOrdered{3_p, 1_p, 2_p},
+      };
+
+      std::unordered_set<TensorDimsCoord> result = get_tensor_dims_coord_set(input);
+      std::unordered_set<TensorDimsCoord> correct = {
+          TensorDimsCoord{FFOrdered{0_n, 0_n, 0_n}},
+          TensorDimsCoord{FFOrdered{0_n, 0_n, 1_n}},
+          TensorDimsCoord{FFOrdered{1_n, 0_n, 0_n}},
+          TensorDimsCoord{FFOrdered{1_n, 0_n, 1_n}},
+          TensorDimsCoord{FFOrdered{2_n, 0_n, 0_n}},
+          TensorDimsCoord{FFOrdered{2_n, 0_n, 1_n}},
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("TensorDims is zero-dimensional") {
+      TensorDims input = TensorDims{FFOrdered<positive_int>{}};
+
+      std::unordered_set<TensorDimsCoord> result = get_tensor_dims_coord_set(input);
+      std::unordered_set<TensorDimsCoord> correct = {
+          TensorDimsCoord{FFOrdered<nonnegative_int>{}},
+      };
+
+      CHECK(result == correct);
+    }  
+  }
+
   TEST_CASE("get_broadcast_target_dims(std::unordered_set<TensorDims>)") {
     TensorDims d1 = TensorDims{FFOrdered{1_p, 10_p, 4_p, 3_p}};
 

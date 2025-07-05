@@ -31,7 +31,7 @@ void sgd_update_task(device_stream_t const &stream,
         /*weight_decay=*/weight_decay,
         /*handle=*/handle.require_for_gpu(),
         /*weight_grad_ptr=*/weight_grad.get_float_ptr(),
-        /*size=*/weight_grad.shape.num_elements().int_from_positive_int(),
+        /*size=*/get_num_elements(weight_grad.shape.dims).int_from_positive_int(),
         /*weight_ptr=*/weight.get_float_ptr(),
         /*sgd_v_ptr=*/sgd_v_ptr);
   } else {

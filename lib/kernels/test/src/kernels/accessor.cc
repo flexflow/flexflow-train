@@ -9,9 +9,9 @@ using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("calculate_accessor_offset") {
     SUBCASE("one dimension") {
-      std::vector<nonnegative_int> indices = {4_n};
-      ArrayShape shape = ArrayShape{
-          std::vector{
+      TensorDimsCoord indices = TensorDimsCoord{FFOrdered{4_n}};
+      TensorDims shape = TensorDims{
+          FFOrdered{
               13_p,
           },
       };
@@ -22,12 +22,25 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(result == correct);
     }
 
-    SUBCASE("multiple dimensions") {
-      std::vector<nonnegative_int> indices = {2_n, 4_n};
-      ArrayShape shape = ArrayShape{
-          std::vector{
-              6_p,
+    SUBCASE("2d tensor is column-major") {
+      TensorDims shape = TensorDims{
+          FFOrdered{
               5_p,
+              6_p,
+          },
+      };
+
+      CHECK(calculate_accessor_offset(TensorDimsCoord{FFOrdered{0_n, 0_n}}, shape) == 0_n);
+      CHECK(calculate_accessor_offset(TensorDimsCoord{FFOrdered{1_n, 0_n}}, shape) == 1_n);
+      CHECK(calculate_accessor_offset(TensorDimsCoord{FFOrdered{0_n, 1_n}}, shape) == 5_p);
+    }
+
+    SUBCASE("multiple dimensions") {
+      TensorDimsCoord indices = TensorDimsCoord{FFOrdered{2_n, 4_n}};
+      TensorDims shape = TensorDims{
+          FFOrdered{
+              5_p,
+              6_p,
           },
       };
 
@@ -38,8 +51,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("zero dimensions") {
-      std::vector<nonnegative_int> indices = {};
-      ArrayShape shape = ArrayShape{std::vector<positive_int>{}};
+      TensorDimsCoord indices = TensorDimsCoord{FFOrdered<nonnegative_int>{}};
+      TensorDims shape = TensorDims{FFOrdered<positive_int>{}};
 
       nonnegative_int result = calculate_accessor_offset(indices, shape);
       nonnegative_int correct = 0_n;
@@ -48,11 +61,11 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("index and shape dimensions do not match") {
-      std::vector<nonnegative_int> indices = {1_n, 2_n, 4_n};
-      ArrayShape shape = ArrayShape{
-          std::vector<positive_int>{
-              6_p,
+      TensorDimsCoord indices = TensorDimsCoord{FFOrdered{1_n, 2_n, 4_n}};
+      TensorDims shape = TensorDims{
+          FFOrdered{
               5_p,
+              6_p,
           },
       };
 
@@ -60,11 +73,11 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("out of bounds index") {
-      std::vector<nonnegative_int> indices = {2_n, 5_n};
-      ArrayShape shape = ArrayShape{
-          std::vector<positive_int>{
-              6_p,
+      TensorDimsCoord indices = TensorDimsCoord{FFOrdered{2_n, 5_n}};
+      TensorDims shape = TensorDims{
+          FFOrdered{
               5_p,
+              6_p,
           },
       };
 

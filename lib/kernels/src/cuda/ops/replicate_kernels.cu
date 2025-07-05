@@ -34,33 +34,18 @@ __global__ void replicate_backward_kernel(T const *output_ptr,
 }
 
 template <DataType T>
-struct ForwardKernel {
-  void operator()(cudaStream_t stream,
-                  GenericTensorAccessorR const &input,
-                  GenericTensorAccessorW const &output) {
-    checkCUDA(
-        cudaMemcpyAsync((void *)output.get<T>(),
-                        (void *)input.get<T>(),
-                        input.shape.num_elements().int_from_positive_int() *
-                            size_of_datatype(T).int_from_positive_int(),
-                        cudaMemcpyDeviceToDevice,
-                        stream));
-  }
-};
-
-template <DataType T>
 struct BackwardKernel {
   void operator()(cudaStream_t stream,
                   GenericTensorAccessorR const &output,
                   GenericTensorAccessorW const &input,
                   size_t num_replicas) {
     size_t total_elements =
-        input.shape.num_elements().int_from_positive_int() * num_replicas;
+        get_num_elements(input.shape.dims).int_from_positive_int() * num_replicas;
     replicate_backward_kernel<real_type_t<T>>
         <<<GET_BLOCKS(total_elements), CUDA_NUM_THREADS, 0, stream>>>(
             output.get<T>(),
             input.get<T>(),
-            input.shape.num_elements().int_from_positive_int(),
+            get_num_elements(input.shape.dims).int_from_positive_int(),
             num_replicas);
   }
 };
@@ -68,7 +53,7 @@ struct BackwardKernel {
 void gpu_forward_kernel(cudaStream_t stream,
                         GenericTensorAccessorR const &input,
                         GenericTensorAccessorW const &output) {
-  DataTypeDispatch1<ForwardKernel>{}(input.data_type, stream, input, output);
+  copy_accessor_data_to_l_from_r(output, input);
 }
 
 void gpu_backward_kernel(cudaStream_t stream,
@@ -76,7 +61,7 @@ void gpu_backward_kernel(cudaStream_t stream,
                          GenericTensorAccessorW const &input,
                          size_t num_replicas) {
   DataTypeDispatch1<BackwardKernel>{}(
-      input.data_type, stream, output, input, num_replicas);
+      input.shape.data_type, stream, output, input, num_replicas);
 }
 
 } // namespace Replicate

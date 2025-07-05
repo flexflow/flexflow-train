@@ -2,7 +2,6 @@
 #define _FLEXFLOW_OPS_KERNELS_DROPOUT_KERNELS_H
 
 #include "kernels/allocation.h"
-#include "kernels/array_shape.h"
 #include "kernels/device_handle_t.dtg.h"
 #include "kernels/device_stream_t.dtg.h"
 #include "kernels/dropout_per_device_state.dtg.h"
@@ -15,7 +14,7 @@ std::optional<DropoutPerDeviceState>
                 device_handle_t const &handle,
                 float rate,
                 unsigned long long seed,
-                ArrayShape const &output_domain,
+                TensorShape const &output_shape,
                 Allocator &allocator);
 
 void forward_kernel(

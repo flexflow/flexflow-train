@@ -26,7 +26,7 @@ TensorShape get_output_shape(FlatAttrs const &attrs,
       TensorDims{
           concat(std::vector{
               leading_dims,
-              {product(flattened_dims)},
+              FFOrdered{product(flattened_dims)},
               trailing_dims,
           }),
       },
@@ -59,7 +59,7 @@ tl::expected<ParallelTensorDimDegrees, std::string>
       /*shard_degrees=*/
       concat(std::vector{
           slice(input_degrees.shard_degrees, ff_dim_t{0_n}, attrs.start_dim),
-          {product(flattened_dim_degrees)},
+          FFOrdered{product(flattened_dim_degrees)},
           slice(input_degrees.shard_degrees, attrs.end_dim, std::nullopt),
       }),
   };

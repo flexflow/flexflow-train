@@ -9,8 +9,8 @@
 
 namespace FlexFlow::Kernels::ElementUnary {
 
-ElementUnaryPerDeviceState gpu_init_kernel(ArrayShape const &input_shape,
-                                           ArrayShape const &output_shape,
+ElementUnaryPerDeviceState gpu_init_kernel(TensorShape const &input_shape,
+                                           TensorShape const &output_shape,
                                            ElementUnaryAttrs const &attrs);
 
 void gpu_forward_kernel(ffStream_t stream,

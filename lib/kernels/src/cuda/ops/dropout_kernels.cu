@@ -24,7 +24,7 @@ namespace Dropout {
 DropoutPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
                                       float rate,
                                       unsigned long long seed,
-                                      ArrayShape const &output_shape,
+                                      TensorShape const &output_shape,
                                       Allocator &allocator) {
   ffTensorDescriptor_t inputTensor;
   ffTensorDescriptor_t outputTensor;
@@ -37,9 +37,9 @@ DropoutPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
   checkCUDNN(cudnnCreateTensorDescriptor(&outputTensor));
   checkCUDNN(cudnnCreateDropoutDescriptor(&dropoutDesc));
   checkCUDNN(cudnnDropoutGetStatesSize(handle.dnn, &(dropoutStateSize)));
-  checkCUDNN(cudnnSetTensorDescriptorFromArrayShape(inputTensor, output_shape));
+  checkCUDNN(cudnnSetTensorDescriptorFromTensorShape(inputTensor, output_shape));
   checkCUDNN(
-      cudnnSetTensorDescriptorFromArrayShape(outputTensor, output_shape));
+      cudnnSetTensorDescriptorFromTensorShape(outputTensor, output_shape));
   checkCUDNN(
       cudnnDropoutGetReserveSpaceSize(outputTensor, &(reserveSpaceSize)));
   {

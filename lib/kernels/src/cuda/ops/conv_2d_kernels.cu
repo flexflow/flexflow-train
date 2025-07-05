@@ -138,15 +138,15 @@ Conv2DPerDeviceState
   ffConvolutionBwdFilterAlgo_t bwdFilterAlgo;
   ffConvolutionBwdDataAlgo_t bwdDataAlgo;
 
-  int input_w = input.shape.at(legion_dim_t(0_n)).int_from_positive_int();
-  int input_h = input.shape.at(legion_dim_t(1_n)).int_from_positive_int();
-  int input_c = input.shape.at(legion_dim_t(2_n)).int_from_positive_int();
-  int input_n = input.shape.at(legion_dim_t(3_n)).int_from_positive_int();
+  int input_w = dim_at_idx(input.shape.dims, legion_dim_t{0_n}).int_from_positive_int();
+  int input_h = dim_at_idx(input.shape.dims, legion_dim_t{1_n}).int_from_positive_int();
+  int input_c = dim_at_idx(input.shape.dims, legion_dim_t{2_n}).int_from_positive_int();
+  int input_n = dim_at_idx(input.shape.dims, legion_dim_t{3_n}).int_from_positive_int();
 
-  int output_w = output.shape.at(legion_dim_t(0_n)).int_from_positive_int();
-  int output_h = output.shape.at(legion_dim_t(1_n)).int_from_positive_int();
-  int output_c = output.shape.at(legion_dim_t(2_n)).int_from_positive_int();
-  int output_n = output.shape.at(legion_dim_t(3_n)).int_from_positive_int();
+  int output_w = dim_at_idx(output.shape.dims, legion_dim_t{0_n}).int_from_positive_int();
+  int output_h = dim_at_idx(output.shape.dims, legion_dim_t{1_n}).int_from_positive_int();
+  int output_c = dim_at_idx(output.shape.dims, legion_dim_t{2_n}).int_from_positive_int();
+  int output_n = dim_at_idx(output.shape.dims, legion_dim_t{3_n}).int_from_positive_int();
 
   checkCUDNN(cudnnCreateTensorDescriptor(&inputTensor));
   checkCUDNN(cudnnCreateTensorDescriptor(&biasTensor));
@@ -155,13 +155,7 @@ Conv2DPerDeviceState
   checkCUDNN(cudnnCreateConvolutionDescriptor(&convDesc));
   checkCUDNN(cudnnCreateActivationDescriptor(&actiDesc));
 
-  checkCUDNN(cudnnSetTensor4dDescriptor(inputTensor,
-                                        CUDNN_TENSOR_NCHW,
-                                        CUDNN_DATA_FLOAT,
-                                        input_n,
-                                        input_c,
-                                        input_h,
-                                        input_w));
+  checkCUDNN(cudnnSetTensorDescriptorFromTensorShape(inputTensor, input.shape));
 
   checkCUDNN(cudnnSetTensor4dDescriptor(
       biasTensor, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, 1, output_c, 1, 1));

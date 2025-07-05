@@ -16,26 +16,11 @@
 #include "internal/device.h"
 #include "kernels/datatype_dispatch.h"
 #include "kernels/partition_kernels_gpu.h"
+#include "op-attrs/tensor_shape.h"
 
 namespace FlexFlow {
 namespace Kernels {
 namespace Repartition {
-
-template <DataType T>
-struct ForwardKernel {
-  void operator()(cudaStream_t stream,
-                  RepartitionPerDeviceState const &m,
-                  GenericTensorAccessorR const &input,
-                  GenericTensorAccessorW const &output) {
-    checkCUDA(
-        cudaMemcpyAsync(output.get<T>(),
-                        input.get<T>(),
-                        input.shape.num_elements().int_from_positive_int() *
-                            size_of_datatype(T).int_from_positive_int(),
-                        cudaMemcpyDeviceToDevice,
-                        stream));
-  }
-};
 
 template <DataType T>
 struct BackwardKernel {
@@ -44,12 +29,12 @@ struct BackwardKernel {
                   GenericTensorAccessorR const &output_grad,
                   GenericTensorAccessorW const &input_grad) {
     add_kernel<real_type_t<T>>
-        <<<GET_BLOCKS(input_grad.shape.num_elements().int_from_positive_int()),
+        <<<GET_BLOCKS(get_num_elements(input_grad.shape.dims).int_from_positive_int()),
            CUDA_NUM_THREADS,
            0,
            stream>>>(input_grad.get<T>(),
                      output_grad.get<T>(),
-                     input_grad.shape.num_elements().int_from_positive_int());
+                     get_num_elements(input_grad.shape.dims).int_from_positive_int());
   }
 };
 
@@ -64,7 +49,7 @@ void gpu_forward_kernel(cudaStream_t stream,
                         RepartitionPerDeviceState const &m,
                         GenericTensorAccessorR const &input,
                         GenericTensorAccessorW const &output) {
-  DataTypeDispatch1<ForwardKernel>{}(m.data_type, stream, m, input, output);
+  copy_accessor_data_to_l_from_r(output, input);
 }
 
 void gpu_backward_kernel(cudaStream_t stream,

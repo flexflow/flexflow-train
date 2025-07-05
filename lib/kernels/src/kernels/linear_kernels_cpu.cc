@@ -23,7 +23,7 @@ void linear_cpu_forward_kernel(
   if (bias.has_value()) {
     GenericTensorAccessorW broadcasted_bias =
         tensor_accessor_broadcast(bias.value(),
-                                  tensor_dims_from_array_shape(output.shape),
+                                  output.shape.dims,
                                   cpu_allocator);
     tensor_accessor_elementwise_add_to(
         read_only_accessor_from_write_accessor(output),

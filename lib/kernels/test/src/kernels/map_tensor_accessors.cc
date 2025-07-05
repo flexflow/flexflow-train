@@ -18,7 +18,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     map_tensor_accessor_inplace(accessor, [](float x) { return x + 1; });
 
     auto at = [&](nonnegative_int r, nonnegative_int c) -> float {
-      return accessor.at<DataType::FLOAT>(FFOrdered{r, c});
+      return accessor.at<DataType::FLOAT>(TensorDimsCoord{FFOrdered{r, c}});
     };
 
     CHECK(at(0_n, 0_n) == 2);
@@ -44,7 +44,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           input, [](float x) { return x + 1; }, cpu_allocator);
 
       auto at = [&](nonnegative_int r, nonnegative_int c) -> float {
-        return result.at<DataType::FLOAT>(FFOrdered{r, c});
+        return result.at<DataType::FLOAT>(TensorDimsCoord{FFOrdered{r, c}});
       };
 
       CHECK(at(0_n, 0_n) == 2);
@@ -60,7 +60,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           input, [](float x) -> bool { return x > 2; }, cpu_allocator);
 
       auto at = [&](nonnegative_int r, nonnegative_int c) -> bool {
-        return result.at<DataType::BOOL>(FFOrdered{r, c});
+        return result.at<DataType::BOOL>(TensorDimsCoord{FFOrdered{r, c}});
       };
 
       CHECK(at(0_n, 0_n) == false);
@@ -99,7 +99,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             cpu_allocator);
 
         auto at = [&](nonnegative_int r, nonnegative_int c) -> float {
-          return result.at<DataType::FLOAT>(FFOrdered{r, c});
+          return result.at<DataType::FLOAT>(TensorDimsCoord{FFOrdered{r, c}});
         };
 
         CHECK(at(0_n, 0_n) == 1);
@@ -119,7 +119,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             cpu_allocator);
 
         auto at = [&](nonnegative_int r, nonnegative_int c) -> bool {
-          return result.at<DataType::BOOL>(FFOrdered{r, c});
+          return result.at<DataType::BOOL>(TensorDimsCoord{FFOrdered{r, c}});
         };
 
         CHECK(at(0_n, 0_n) == true);
@@ -150,7 +150,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           lhs, rhs, DataType::DOUBLE, func, cpu_allocator);
 
       auto at = [&](nonnegative_int r, nonnegative_int c) -> double {
-        return result.at<DataType::DOUBLE>(FFOrdered{r, c});
+        return result.at<DataType::DOUBLE>(TensorDimsCoord{FFOrdered{r, c}});
       };
 
       CHECK(at(0_n, 0_n) == -1);

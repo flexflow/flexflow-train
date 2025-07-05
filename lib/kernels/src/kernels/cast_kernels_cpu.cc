@@ -21,7 +21,7 @@ template <DataType IDT, DataType ODT>
 struct CPUForwardKernel {
   void operator()(GenericTensorAccessorR const &input,
                   GenericTensorAccessorW const &output) {
-    size_t volume = input.shape.num_elements().int_from_positive_int();
+    size_t volume = get_num_elements(input.shape.dims).int_from_positive_int();
     cpu_cast_forward(input.get<IDT>(), output.get<ODT>(), volume);
   }
 };
@@ -30,7 +30,7 @@ template <DataType IDT, DataType ODT>
 struct CPUBackwardKernel {
   void operator()(GenericTensorAccessorR const &output,
                   GenericTensorAccessorW const &input) {
-    size_t volume = output.shape.num_elements().int_from_positive_int();
+    size_t volume = get_num_elements(output.shape.dims).int_from_positive_int();
     cpu_cast_backward(
         output.get<IDT>(), input.get<ODT>(), volume, cast_to<ODT>(1.0f));
   }
@@ -39,13 +39,13 @@ struct CPUBackwardKernel {
 void cpu_forward_kernel(GenericTensorAccessorR const &input,
                         GenericTensorAccessorW const &output) {
   DataTypeDispatch2<CPUForwardKernel>{}(
-      input.data_type, output.data_type, input, output);
+      input.shape.data_type, output.shape.data_type, input, output);
 }
 
 void cpu_backward_kernel(GenericTensorAccessorR const &output,
                          GenericTensorAccessorW const &input) {
   DataTypeDispatch2<CPUBackwardKernel>{}(
-      output.data_type, input.data_type, output, input);
+      output.shape.data_type, input.shape.data_type, output, input);
 }
 
 } // namespace FlexFlow::Kernels::Cast

@@ -58,7 +58,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           managed_stream.raw_stream(),
           output_grad_accessor.get_float_ptr(),
           input_grad_accessor.get_float_ptr(),
-          output_grad_accessor.shape.num_elements().int_from_positive_int());
+          get_num_elements(output_grad_accessor.shape.dims).int_from_positive_int());
 
       CHECK(contains_non_zero(input_grad_accessor));
     }

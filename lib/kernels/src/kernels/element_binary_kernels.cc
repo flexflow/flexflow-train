@@ -10,9 +10,9 @@ std::optional<ElementBinaryPerDeviceState>
                 OperatorType op_type,
                 bool should_broadcast_lhs,
                 bool should_broadcast_rhs,
-                ArrayShape lhs_shape,
-                ArrayShape rhs_shape,
-                ArrayShape output_shape) {
+                TensorShape const &lhs_shape,
+                TensorShape const &rhs_shape,
+                TensorShape const &output_shape) {
   if (device_type == DeviceType::GPU) {
     return gpu_init_kernel(
         /*handle=*/handle.require_for_gpu(),

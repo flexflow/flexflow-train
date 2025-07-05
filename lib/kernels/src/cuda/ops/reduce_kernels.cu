@@ -23,8 +23,8 @@ namespace Reduce {
 ReducePerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
                                      OperatorType const &op_type,
                                      size_t const &reduction_size,
-                                     ArrayShape const &input_shape,
-                                     ArrayShape const &output_shape) {
+                                     TensorShape const &input_shape,
+                                     TensorShape const &output_shape) {
 
   ffTensorDescriptor_t inputTensor;
   ffTensorDescriptor_t outputTensor;
@@ -35,9 +35,9 @@ ReducePerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
 
   checkCUDNN(cudnnCreateReduceTensorDescriptor(&reduceDesc));
 
-  checkCUDNN(cudnnSetTensorDescriptorFromArrayShape(inputTensor, input_shape));
+  checkCUDNN(cudnnSetTensorDescriptorFromTensorShape(inputTensor, input_shape));
   checkCUDNN(
-      cudnnSetTensorDescriptorFromArrayShape(outputTensor, output_shape));
+      cudnnSetTensorDescriptorFromTensorShape(outputTensor, output_shape));
 
   ReducePerDeviceState per_device = ReducePerDeviceState{
       /*handle=*/handle,

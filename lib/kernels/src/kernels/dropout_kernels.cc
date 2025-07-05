@@ -9,14 +9,14 @@ std::optional<DropoutPerDeviceState>
                 device_handle_t const &handle,
                 float rate,
                 unsigned long long seed,
-                ArrayShape const &output_domain,
+                TensorShape const &output_shape,
                 Allocator &allocator) {
   if (device_type == DeviceType::GPU) {
     return gpu_init_kernel(
         /*handle=*/handle.require_for_gpu(),
         /*rate=*/rate,
         /*seed=*/seed,
-        /*output_domain=*/output_domain,
+        /*output_shape=*/output_shape,
         /*allocator=*/allocator);
   } else {
     ASSERT(device_type == DeviceType::CPU);

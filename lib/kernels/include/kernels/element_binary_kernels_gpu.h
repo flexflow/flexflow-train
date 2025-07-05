@@ -1,9 +1,9 @@
 #ifndef _FLEXFLOW_LIB_KERNELS_INCLUDE_KERNELS_ELEMENT_BINARY_KERNELS_GPU_H
 #define _FLEXFLOW_LIB_KERNELS_INCLUDE_KERNELS_ELEMENT_BINARY_KERNELS_GPU_H
 
-#include "kernels/array_shape.h"
 #include "kernels/element_binary_per_device_state.dtg.h"
 #include "op-attrs/operator_type.h"
+#include "op-attrs/tensor_shape.dtg.h"
 
 namespace FlexFlow::Kernels::ElementBinary {
 
@@ -11,9 +11,9 @@ ElementBinaryPerDeviceState gpu_init_kernel(PerDeviceFFHandle handle,
                                             OperatorType op_type,
                                             bool should_broadcast_lhs,
                                             bool should_broadcast_rhs,
-                                            ArrayShape lhs_shape,
-                                            ArrayShape rhs_shape,
-                                            ArrayShape output_shape);
+                                            TensorShape const &lhs_shape,
+                                            TensorShape const &rhs_shape,
+                                            TensorShape const &output_shape);
 
 void gpu_forward_kernel(ffStream_t stream,
                         ElementBinaryPerDeviceState const &per_device_state,

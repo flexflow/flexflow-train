@@ -57,7 +57,7 @@ void gpu_forward_kernel(ffStream_t stream,
                         ReverseAttrs const &attrs) {
 
   auto reverse_kernels_params =
-      compute_reverse_kernels_params(output_accessor.shape, attrs);
+      compute_reverse_kernels_params(output_accessor.shape.dims, attrs);
 
   forward_kernel_internal(
       stream,
@@ -89,7 +89,7 @@ void gpu_backward_kernel(ffStream_t stream,
                          GenericTensorAccessorW &input_grad_accessor,
                          ReverseAttrs const &attrs) {
   auto reverse_kernels_params =
-      compute_reverse_kernels_params(input_grad_accessor.shape, attrs);
+      compute_reverse_kernels_params(input_grad_accessor.shape.dims, attrs);
 
   backward_kernel_internal(
       stream,

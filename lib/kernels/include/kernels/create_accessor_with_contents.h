@@ -25,7 +25,7 @@ GenericTensorAccessorW
 
   for (nonnegative_int col_idx :
        nonnegative_range(ncols.nonnegative_int_from_positive_int())) {
-    cpu_accessor.at<type_to_data_type_enum_v<T>>(FFOrdered{col_idx}) =
+    cpu_accessor.at<type_to_data_type_enum_v<T>>(TensorDimsCoord{FFOrdered{col_idx}}) =
         contents.at(col_idx.unwrap_nonnegative());
   }
 
@@ -58,8 +58,8 @@ GenericTensorAccessorW create_2d_accessor_w_with_contents(
        nonnegative_range(nrows.nonnegative_int_from_positive_int())) {
     for (nonnegative_int col_idx :
          nonnegative_range(ncols.nonnegative_int_from_positive_int())) {
-      cpu_accessor.at<type_to_data_type_enum_v<T>>(FFOrdered{
-          row_idx, col_idx}) = contents.at(row_idx.unwrap_nonnegative())
+      cpu_accessor.at<type_to_data_type_enum_v<T>>(TensorDimsCoord{FFOrdered{
+          row_idx, col_idx}}) = contents.at(row_idx.unwrap_nonnegative())
                                    .at(col_idx.unwrap_nonnegative());
     }
   }
@@ -105,7 +105,7 @@ GenericTensorAccessorW create_3d_accessor_w_with_contents(
       for (nonnegative_int dim2_idx :
            nonnegative_range(dim2_size.nonnegative_int_from_positive_int())) {
         cpu_accessor.at<type_to_data_type_enum_v<T>>(
-            FFOrdered{dim0_idx, dim1_idx, dim2_idx}) =
+            TensorDimsCoord{FFOrdered{dim0_idx, dim1_idx, dim2_idx}}) =
             contents.at(dim0_idx.unwrap_nonnegative())
                 .at(dim1_idx.unwrap_nonnegative())
                 .at(dim2_idx.unwrap_nonnegative());
@@ -166,7 +166,7 @@ GenericTensorAccessorW create_4d_accessor_w_with_contents(
         for (nonnegative_int dim3_idx :
              nonnegative_range(dim3_size.nonnegative_int_from_positive_int())) {
           accessor.at<type_to_data_type_enum_v<T>>(
-              FFOrdered{dim0_idx, dim1_idx, dim2_idx, dim3_idx}) =
+              TensorDimsCoord{FFOrdered{dim0_idx, dim1_idx, dim2_idx, dim3_idx}}) =
               contents.at(dim0_idx.unwrap_nonnegative())
                   .at(dim1_idx.unwrap_nonnegative())
                   .at(dim2_idx.unwrap_nonnegative())

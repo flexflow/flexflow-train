@@ -9,10 +9,6 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     unsigned long long seed = 12345;
     float dropout_rate = 0.1;
 
-    ArrayShape shape = ArrayShape{
-        std::vector{10_p, 10_p},
-    };
-
     TensorShape input_shape = TensorShape{
         TensorDims{FFOrdered{10_p, 10_p}},
         DataType::FLOAT,
@@ -27,7 +23,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     Allocator allocator = create_local_cuda_memory_allocator();
 
     DropoutPerDeviceState state = Kernels::Dropout::gpu_init_kernel(
-        managed_handle.raw_handle(), dropout_rate, seed, shape, allocator);
+        managed_handle.raw_handle(), dropout_rate, seed, output_shape, allocator);
 
     SUBCASE("forward_kernel") {
       GenericTensorAccessorR input_accessor =

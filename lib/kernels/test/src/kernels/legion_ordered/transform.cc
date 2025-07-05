@@ -19,7 +19,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     }
 
     SUBCASE("input is not empty") {
-      LegionOrdered<int> input = {2, 1, 2, 5};
+      LegionOrdered<int> input = LegionOrdered{2, 1, 2, 5};
 
       LegionOrdered<std::string> result =
           transform(input, [](int x) { return fmt::to_string(x); });

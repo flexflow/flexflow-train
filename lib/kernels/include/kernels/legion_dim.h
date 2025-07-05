@@ -5,6 +5,7 @@
 #include "kernels/legion_ordered/legion_ordered.h"
 #include "op-attrs/ff_dim_t.dtg.h"
 #include "op-attrs/ff_ordered/ff_ordered.h"
+#include "op-attrs/tensor_dims.dtg.h"
 #include "utils/containers/set_of.h"
 #include "utils/containers/transform.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
@@ -12,6 +13,13 @@
 #include "utils/positive_int/positive_int.h"
 
 namespace FlexFlow {
+
+positive_int dim_at_idx(TensorDims const &, legion_dim_t);
+positive_int &dim_at_idx(TensorDims &, legion_dim_t);
+
+TensorDims slice_tensor_dims(TensorDims const &,
+                             legion_dim_t const &start,
+                             std::optional<legion_dim_t> const &stop);
 
 legion_dim_t add_to_legion_dim(legion_dim_t legion_dim, int value);
 

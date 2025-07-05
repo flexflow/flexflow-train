@@ -41,7 +41,7 @@ struct ForwardKernel {
   void operator()(ffStream_t stream,
                   GenericTensorAccessorR const &input,
                   GenericTensorAccessorW const &output) {
-    size_t volume = input.shape.num_elements().int_from_positive_int();
+    size_t volume = get_num_elements(input.shape.dims).int_from_positive_int();
     cast_forward<<<GET_BLOCKS(volume), CUDA_NUM_THREADS, 0, stream>>>(
         input.get<IDT>(), output.get<ODT>(), volume);
   }
@@ -52,7 +52,7 @@ struct BackwardKernel {
   void operator()(ffStream_t stream,
                   GenericTensorAccessorR const &output,
                   GenericTensorAccessorW const &input) {
-    size_t volume = output.shape.num_elements().int_from_positive_int();
+    size_t volume = get_num_elements(output.shape.dims).int_from_positive_int();
     cast_backward<<<GET_BLOCKS(volume), CUDA_NUM_THREADS, 0, stream>>>(
         output.get<IDT>(), input.get<ODT>(), volume, cast_to<ODT>(1.0f));
   }
@@ -62,14 +62,14 @@ void gpu_forward_kernel(ffStream_t stream,
                         GenericTensorAccessorR const &input,
                         GenericTensorAccessorW const &output) {
   DataTypeDispatch2<ForwardKernel>{}(
-      input.data_type, output.data_type, stream, input, output);
+      input.shape.data_type, output.shape.data_type, stream, input, output);
 }
 
 void gpu_backward_kernel(ffStream_t stream,
                          GenericTensorAccessorR const &output,
                          GenericTensorAccessorW const &input) {
   DataTypeDispatch2<BackwardKernel>{}(
-      output.data_type, input.data_type, stream, output, input);
+      output.shape.data_type, input.shape.data_type, stream, output, input);
 }
 
 } // namespace Cast

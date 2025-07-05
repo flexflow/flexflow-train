@@ -2,6 +2,7 @@
 #include "op-attrs/ops/attention/multihead_attention_inputs.h"
 #include "op-attrs/ops/attention/multihead_attention_parallel_inputs.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "op-attrs/tensor_dims.h"
 #include "op-attrs/tensor_shape.h"
 #include "utils/containers/extend.h"
 #include "utils/expected.h"
@@ -34,15 +35,15 @@ positive_int get_oProjSize(MultiHeadAttentionAttrs const &attrs) {
 }
 
 positive_int get_qSize(TensorShape const &query_shape) {
-  return dim_at_idx(query_shape, relative_ff_dim_t{0});
+  return dim_at_idx(query_shape.dims, relative_ff_dim_t{0});
 }
 
 positive_int get_kSize(TensorShape const &key_shape) {
-  return dim_at_idx(key_shape, relative_ff_dim_t{0});
+  return dim_at_idx(key_shape.dims, relative_ff_dim_t{0});
 }
 
 positive_int get_vSize(TensorShape const &value_shape) {
-  return dim_at_idx(value_shape, relative_ff_dim_t{0});
+  return dim_at_idx(value_shape.dims, relative_ff_dim_t{0});
 }
 
 positive_int get_qSize(MultiHeadAttentionParallelInputs const &inputs) {

@@ -83,9 +83,9 @@ ElementBinaryPerDeviceState gpu_init_kernel(PerDeviceFFHandle handle,
                                             OperatorType op_type,
                                             bool should_broadcast_lhs,
                                             bool should_broadcast_rhs,
-                                            ArrayShape lhs_shape,
-                                            ArrayShape rhs_shape,
-                                            ArrayShape output_shape) {
+                                            TensorShape lhs_shape,
+                                            TensorShape rhs_shape,
+                                            TensorShape output_shape) {
   ffTensorDescriptor_t inputLHSTensor;
   ffTensorDescriptor_t inputRHSTensor;
   ffTensorDescriptor_t outputTensor;
@@ -124,10 +124,10 @@ ElementBinaryPerDeviceState gpu_init_kernel(PerDeviceFFHandle handle,
                                             CUDNN_PROPAGATE_NAN,
                                             CUDNN_REDUCE_TENSOR_NO_INDICES,
                                             CUDNN_32BIT_INDICES));
-  checkCUDNN(cudnnSetTensorDescriptorFromArrayShape(inputLHSTensor, lhs_shape));
-  checkCUDNN(cudnnSetTensorDescriptorFromArrayShape(inputRHSTensor, rhs_shape));
+  checkCUDNN(cudnnSetTensorDescriptorFromTensorShape(inputLHSTensor, lhs_shape));
+  checkCUDNN(cudnnSetTensorDescriptorFromTensorShape(inputRHSTensor, rhs_shape));
   checkCUDNN(
-      cudnnSetTensorDescriptorFromArrayShape(outputTensor, output_shape));
+      cudnnSetTensorDescriptorFromTensorShape(outputTensor, output_shape));
 
   ElementBinaryPerDeviceState per_device_state = ElementBinaryPerDeviceState{
       /*handle=*/handle,
