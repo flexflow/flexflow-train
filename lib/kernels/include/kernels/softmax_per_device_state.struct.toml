@@ -5,7 +5,7 @@ features = []
 includes = [
   "kernels/ff_handle.h",
   "kernels/device.h",
-  "kernels/legion_dim_t.dtg.h",
+  "op-attrs/ff_dim_t.dtg.h",
 ]
 
 [[fields]]
@@ -18,5 +18,4 @@ type = "ffTensorDescriptor_t"
 
 [[fields]]
 name = "dim"
-type = "::FlexFlow::legion_dim_t"
-
+type = "::FlexFlow::ff_dim_t"

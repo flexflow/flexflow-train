@@ -43,6 +43,7 @@
 #include "utils/expected.h"
 #include "utils/stack_vector/stack_vector_of.h"
 #include <fmt/format.h>
+#include "utils/fmt/set.h"
 
 namespace FlexFlow {
 
@@ -743,7 +744,7 @@ tensor_guid_t ComputationGraphBuilder::flat(
 
 tensor_guid_t ComputationGraphBuilder::layer_norm(
     tensor_guid_t const &input,
-    std::vector<relative_ff_dim_t> const &relative_axes,
+    std::set<relative_ff_dim_t> const &relative_axes,
     bool elementwise_affine,
     float eps,
     std::optional<std::string> const &maybe_name) {
@@ -754,8 +755,7 @@ tensor_guid_t ComputationGraphBuilder::layer_norm(
     return ff_dim_t_from_relative_ff_dim_t(dim_idx, get_num_dims(input_shape.dims));
   };
 
-  stack_vector<ff_dim_t, MAX_TENSOR_DIM> axes = stack_vector_of<MAX_TENSOR_DIM>(
-      transform(relative_axes, resolve_dim_idx));
+  std::set<ff_dim_t> axes = transform(relative_axes, resolve_dim_idx);
 
   if (any_of(axes, [&](ff_dim_t axis) {
         return axis.value >= get_num_dims(input_shape.dims);
@@ -768,9 +768,9 @@ tensor_guid_t ComputationGraphBuilder::layer_norm(
   }
 
   LayerNormAttrs attrs = LayerNormAttrs{
-      axes,
-      elementwise_affine,
-      eps,
+    /*axes=*/axes,
+    /*elementwise_affine=*/elementwise_affine,
+    /*eps=*/eps,
   };
 
   std::string name =

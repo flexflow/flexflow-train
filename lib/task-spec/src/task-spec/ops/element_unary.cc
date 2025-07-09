@@ -80,8 +80,8 @@ static DeviceSpecificDeviceStates
 
   std::optional<ElementUnaryPerDeviceState> per_device_state =
       init_kernel(kernel_device_type,
-                  array_shape_from_tensor_shape(get_piece_shape(input_shape)),
-                  array_shape_from_tensor_shape(get_piece_shape(output_shape)),
+                  get_piece_shape(input_shape),
+                  get_piece_shape(output_shape),
                   attrs);
 
   return DeviceSpecificDeviceStates{

@@ -77,21 +77,21 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   DeviceType kernel_device_type =
       acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
-  positive_int m = b_input.shape.at(legion_dim_t{0_n});
-  ASSERT(m == output.shape.at(legion_dim_t{0_n}));
-  positive_int n = a_input.shape.at(legion_dim_t{1_n});
-  ASSERT(n == output.shape.at(legion_dim_t{1_n}));
-  positive_int k = a_input.shape.at(legion_dim_t{0_n});
-  ASSERT(k == b_input.shape.at(legion_dim_t{1_n}));
+  positive_int m = dim_at_idx(b_input.shape.dims, legion_dim_t{0_n});
+  ASSERT(m == dim_at_idx(output.shape.dims, legion_dim_t{0_n}));
+  positive_int n = dim_at_idx(a_input.shape.dims, legion_dim_t{1_n});
+  ASSERT(n == dim_at_idx(output.shape.dims, legion_dim_t{1_n}));
+  positive_int k = dim_at_idx(a_input.shape.dims, legion_dim_t{0_n});
+  ASSERT(k == dim_at_idx(b_input.shape.dims, legion_dim_t{1_n}));
 
-  ASSERT(a_input.shape.num_elements() == b_input.shape.num_elements());
-  ASSERT(a_input.shape.num_elements() == output.shape.num_elements());
+  ASSERT(get_num_elements(a_input.shape.dims) == get_num_elements(b_input.shape.dims));
+  ASSERT(get_num_elements(a_input.shape.dims) == get_num_elements(output.shape.dims));
 
   positive_int batch = 1_p;
-  for (nonnegative_int i : nonnegative_range(2_n, a_input.shape.num_dims())) {
-    positive_int dim_size = a_input.shape.at(legion_dim_t{i});
-    ASSERT(dim_size == b_input.shape.at(legion_dim_t{i}));
-    ASSERT(dim_size == output.shape.at(legion_dim_t{i}));
+  for (nonnegative_int i : nonnegative_range(2_n, get_num_dims(a_input.shape.dims))) {
+    positive_int dim_size = dim_at_idx(a_input.shape.dims, legion_dim_t{i});
+    ASSERT(dim_size == dim_at_idx(b_input.shape.dims, legion_dim_t{i}));
+    ASSERT(dim_size == dim_at_idx(output.shape.dims, legion_dim_t{i}));
     batch *= dim_size;
   }
 
@@ -141,20 +141,20 @@ static std::optional<float>
   ASSERT(b_input.shape == b_input_grad.shape);
 
   // check dins
-  positive_int m = b_input.shape.at(legion_dim_t{0_n});
-  ASSERT(m == output.shape.at(legion_dim_t{0_n}));
-  positive_int n = a_input.shape.at(legion_dim_t{1_n});
-  ASSERT(n == output.shape.at(legion_dim_t{1_n}));
-  positive_int k = a_input.shape.at(legion_dim_t{0_n});
-  ASSERT(k == b_input.shape.at(legion_dim_t{1_n}));
-  ASSERT(a_input.shape.num_elements() == b_input.shape.num_elements());
-  ASSERT(a_input.shape.num_elements() == output.shape.num_elements());
+  positive_int m = dim_at_idx(b_input.shape.dims, legion_dim_t{0_n});
+  ASSERT(m == dim_at_idx(output.shape.dims, legion_dim_t{0_n}));
+  positive_int n = dim_at_idx(a_input.shape.dims, legion_dim_t{1_n});
+  ASSERT(n == dim_at_idx(output.shape.dims, legion_dim_t{1_n}));
+  positive_int k = dim_at_idx(a_input.shape.dims, legion_dim_t{0_n});
+  ASSERT(k == dim_at_idx(b_input.shape.dims, legion_dim_t{1_n}));
+  ASSERT(get_num_elements(a_input.shape.dims) == get_num_elements(b_input.shape.dims));
+  ASSERT(get_num_elements(a_input.shape.dims) == get_num_elements(output.shape.dims));
 
   positive_int batch = 1_p;
-  for (nonnegative_int i : nonnegative_range(2_n, a_input.shape.num_dims())) {
-    positive_int dim_size = a_input.shape.at(legion_dim_t{i});
-    ASSERT(dim_size == b_input.shape.at(legion_dim_t{i}));
-    ASSERT(dim_size == output.shape.at(legion_dim_t{i}));
+  for (nonnegative_int i : nonnegative_range(2_n, get_num_dims(a_input.shape.dims))) {
+    positive_int dim_size = dim_at_idx(a_input.shape.dims, legion_dim_t{i});
+    ASSERT(dim_size == dim_at_idx(b_input.shape.dims, legion_dim_t{i}));
+    ASSERT(dim_size == dim_at_idx(output.shape.dims, legion_dim_t{i}));
     batch *= dim_size;
   }
 

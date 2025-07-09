@@ -238,7 +238,7 @@ ffCudnnDataType_t ff_to_cudnn_datatype(DataType flexflow_data_type) {
 }
 
 ffStatus_t
-    cudnnSetTensorDescriptorFromTensorDims(cudnnTensorDescriptor_t tensor,
+    cudnnSetTensorDescriptorFromTensorShape(cudnnTensorDescriptor_t tensor,
                                            TensorShape const &shape) {
   return cudnnSetTensor4dDescriptor(
       tensor,

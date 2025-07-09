@@ -48,7 +48,7 @@ static DeviceSpecificDeviceStates
   OperatorType op_type = attrs.op_type;
 
   nonnegative_int reduction_size =
-      input.shape.num_elements() / output.shape.num_elements();
+      get_num_elements(input.shape.dims) / get_num_elements(output.shape.dims);
 
   std::optional<ReducePerDeviceState> per_device_state =
       init_kernel(kernel_device_type,

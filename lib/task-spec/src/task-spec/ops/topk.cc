@@ -63,8 +63,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
-  positive_int length = input.shape.at(legion_dim_t{0_n});
-  positive_int batch_size = positive_int{input.shape.num_elements() / length};
+  positive_int length = dim_at_idx(input.shape.dims, legion_dim_t{0_n});
+  positive_int batch_size = positive_int{get_num_elements(input.shape.dims) / length};
   auto indices = acc.get_tensor<Permissions::WO>(INDICES);
 
   return profile(forward_kernel,
@@ -92,9 +92,9 @@ static std::optional<float>
 
   auto indices = acc.get_tensor<Permissions::RO>(INDICES);
 
-  positive_int length = input_grad.shape.at(legion_dim_t{0_n});
+  positive_int length = dim_at_idx(input_grad.shape.dims, legion_dim_t{0_n});
   positive_int batch_size =
-      positive_int{input_grad.shape.num_elements() / length};
+      positive_int{get_num_elements(input_grad.shape.dims) / length};
 
   return profile(backward_kernel,
                  profiling,

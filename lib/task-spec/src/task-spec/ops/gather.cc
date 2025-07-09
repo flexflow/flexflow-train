@@ -15,6 +15,7 @@
 
 #include "task-spec/ops/gather.h"
 #include "kernels/gather_kernels.h"
+#include "op-attrs/ff_ordered/get_idxs.h"
 #include "task-spec/profiling.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include <optional>
@@ -88,22 +89,20 @@ static DeviceSpecificDeviceStates
   DeviceType kernel_device_type =
       acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
   auto const &attrs = acc.get_argument<GatherAttrs>(ATTRS);
-  legion_dim_t legion_dim =
-      legion_dim_from_ff_dim(attrs.dim, input.shape.num_dims());
 
-  assert(input.shape.num_dims() == index.shape.num_dims());
-  assert(output.shape.num_dims() == index.shape.num_dims());
+  ASSERT(get_num_dims(input.shape.dims) == get_num_dims(index.shape.dims));
+  ASSERT(get_num_dims(output.shape.dims) == get_num_dims(index.shape.dims));
 
-  for (nonnegative_int i : nonnegative_range(input.shape.num_dims())) {
-    assert(index.shape.at(legion_dim_t{i}) == output.shape.at(legion_dim_t{i}));
-    if (i != legion_dim.value) {
-      assert(input.shape.at(legion_dim_t{i}) ==
-             index.shape.at(legion_dim_t{i}));
+  for (ff_dim_t i : get_idxs(input.shape.dims.ff_ordered)) {
+    ASSERT(dim_at_idx(index.shape.dims, i) == dim_at_idx(output.shape.dims, i));
+    if (i != attrs.dim) {
+      ASSERT(dim_at_idx(input.shape.dims, i) ==
+             dim_at_idx(index.shape.dims, i));
     }
   }
 
   std::optional<GatherPerDeviceState> per_device_state =
-      init_kernel(kernel_device_type, handle, legion_dim);
+      init_kernel(kernel_device_type, handle, attrs.dim);
   return DeviceSpecificDeviceStates{
       DeviceSpecific<std::optional<GatherPerDeviceState>>::create(
           per_device_state),

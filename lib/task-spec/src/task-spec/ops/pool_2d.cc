@@ -57,14 +57,14 @@ static DeviceSpecificDeviceStates
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
-  positive_int input_w = input.shape.at(ff_dim_t{0_n});
-  positive_int input_h = input.shape.at(ff_dim_t{1_n});
-  positive_int input_c = input.shape.at(ff_dim_t{2_n});
-  positive_int input_n = input.shape.at(ff_dim_t{3_n});
-  positive_int output_w = output.shape.at(ff_dim_t{0_n});
-  positive_int output_h = output.shape.at(ff_dim_t{1_n});
-  positive_int output_c = output.shape.at(ff_dim_t{2_n});
-  positive_int output_n = output.shape.at(ff_dim_t{3_n});
+  positive_int input_w = dim_at_idx(input.shape.dims, ff_dim_t{0_n});
+  positive_int input_h = dim_at_idx(input.shape.dims, ff_dim_t{1_n});
+  positive_int input_c = dim_at_idx(input.shape.dims, ff_dim_t{2_n});
+  positive_int input_n = dim_at_idx(input.shape.dims, ff_dim_t{3_n});
+  positive_int output_w = dim_at_idx(output.shape.dims, ff_dim_t{0_n});
+  positive_int output_h = dim_at_idx(output.shape.dims, ff_dim_t{1_n});
+  positive_int output_c = dim_at_idx(output.shape.dims, ff_dim_t{2_n});
+  positive_int output_n = dim_at_idx(output.shape.dims, ff_dim_t{3_n});
 
   std::optional<Pool2DPerDeviceState> per_device_state =
       init_kernel(kernel_device_type,

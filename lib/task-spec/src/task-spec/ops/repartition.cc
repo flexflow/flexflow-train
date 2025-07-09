@@ -83,7 +83,7 @@ static DeviceSpecificDeviceStates
       acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   std::optional<RepartitionPerDeviceState> per_device_state =
-      init_kernel(kernel_device_type, handle, input.data_type);
+      init_kernel(kernel_device_type, handle, input.shape.data_type);
 
   return DeviceSpecificDeviceStates{
       DeviceSpecific<std::optional<RepartitionPerDeviceState>>::create(

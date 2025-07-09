@@ -6,7 +6,7 @@ using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("enumerate(FFOrdered<T>)") {
-    FFOrdered<std::string> input = {"zero", "one", "two"};
+    FFOrdered<std::string> input = FFOrdered<std::string>{"zero", "one", "two"};
 
     std::map<ff_dim_t, std::string> result = enumerate(input);
     std::map<ff_dim_t, std::string> correct = {

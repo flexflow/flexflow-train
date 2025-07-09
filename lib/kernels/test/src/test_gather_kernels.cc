@@ -14,7 +14,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     Allocator allocator = create_local_cuda_memory_allocator();
 
     GatherPerDeviceState state = Kernels::Gather::gpu_init_kernel(
-        managed_handle.raw_handle(), legion_dim_t{0_n});
+        managed_handle.raw_handle(), ff_dim_t{0_n});
 
     SUBCASE("gpu_forward_kernel") {
       auto run_forward_test = [&](TensorShape input_shape,

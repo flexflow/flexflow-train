@@ -22,7 +22,7 @@ namespace Kernels {
 namespace Softmax {
 
 SoftmaxPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
-                                      legion_dim_t dim,
+                                      ff_dim_t dim,
                                       int input_n,
                                       int input_c,
                                       int input_h,

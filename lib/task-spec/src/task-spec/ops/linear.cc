@@ -79,8 +79,8 @@ static DeviceSpecificDeviceStates
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto weight = acc.get_tensor<Permissions::RO>(WEIGHT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
-  positive_int out_dim = output.shape.at(ff_dim_t{0_n});
-  positive_int batch_size = output.shape.at(ff_dim_t{1_n});
+  positive_int out_dim = dim_at_idx(output.shape.dims, ff_dim_t{0_n});
+  positive_int batch_size = dim_at_idx(output.shape.dims, ff_dim_t{1_n});
 
   std::optional<LinearPerDeviceState> per_device_state =
       linear_init_kernel(kernel_device_type,
@@ -88,9 +88,9 @@ static DeviceSpecificDeviceStates
                          attrs.activation,
                          attrs.regularizer,
                          attrs.use_bias,
-                         input.data_type,
-                         weight.data_type,
-                         output.data_type,
+                         input.shape.data_type,
+                         weight.shape.data_type,
+                         output.shape.data_type,
                          batch_size.int_from_positive_int(),
                          attrs.out_channels.int_from_positive_int());
 

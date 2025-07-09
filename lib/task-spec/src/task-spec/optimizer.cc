@@ -73,11 +73,11 @@ static void sgd_update_task_impl(TaskArgumentAccessor const &acc) {
 
   ASSERT(weight.shape == weight_grad.shape);
 
-  ASSERT(weight_grad.shape.num_elements().int_from_positive_int() %
-             weight.shape.num_elements().int_from_positive_int() ==
+  ASSERT(get_num_elements(weight_grad.shape.dims).int_from_positive_int() %
+             get_num_elements(weight.shape.dims).int_from_positive_int() ==
          0);
-  int num_replicas = weight_grad.shape.num_elements().int_from_positive_int() /
-                     weight.shape.num_elements().int_from_positive_int();
+  int num_replicas = get_num_elements(weight_grad.shape.dims).int_from_positive_int() /
+                     get_num_elements(weight.shape.dims).int_from_positive_int();
 
   std::optional<GenericTensorAccessorW> sgd_v = std::nullopt;
   if (attrs.momentum > 0.0f) {
@@ -190,13 +190,13 @@ static void adam_update_task_impl(TaskArgumentAccessor const &acc) {
       acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   ASSERT(weight.shape == weight_grad.shape);
-  int size = weight_grad.shape.num_elements().int_from_positive_int();
+  int size = get_num_elements(weight_grad.shape.dims).int_from_positive_int();
 
-  ASSERT(weight_grad.shape.num_elements().int_from_positive_int() %
-             weight.shape.num_elements().int_from_positive_int() ==
+  ASSERT(get_num_elements(weight_grad.shape.dims).int_from_positive_int() %
+             get_num_elements(weight.shape.dims).int_from_positive_int() ==
          0);
-  int num_replicas = weight_grad.shape.num_elements().int_from_positive_int() /
-                     weight.shape.num_elements().int_from_positive_int();
+  int num_replicas = get_num_elements(weight_grad.shape.dims).int_from_positive_int() /
+                     get_num_elements(weight.shape.dims).int_from_positive_int();
 
   auto handle = acc.get_argument<device_handle_t>(HANDLE);
   profile(adam_update_task,

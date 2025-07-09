@@ -8,7 +8,7 @@
 namespace FlexFlow::Kernels::Gather {
 
 GatherPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
-                                     legion_dim_t legion_dim);
+                                     ff_dim_t dim);
 
 void gpu_forward_kernel(ffStream_t stream,
                         GatherPerDeviceState const &per_device_state,

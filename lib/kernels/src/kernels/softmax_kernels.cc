@@ -7,7 +7,7 @@ namespace FlexFlow::Kernels::Softmax {
 
 std::optional<SoftmaxPerDeviceState> init_kernel(DeviceType device_type,
                                                  device_handle_t const &handle,
-                                                 legion_dim_t dim,
+                                                 ff_dim_t dim,
                                                  int input_n,
                                                  int input_c,
                                                  int input_h,

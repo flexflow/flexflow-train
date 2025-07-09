@@ -18,10 +18,12 @@
 #include "op-attrs/ops/layer_norm.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "task-spec/profiling.h"
+#include "utils/containers/product.h"
 #include "utils/exception.h"
 #include "utils/hash-utils.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include <type_traits>
+#include "op-attrs/ff_ordered/transform.h"
 
 namespace FlexFlow {
 
@@ -140,19 +142,16 @@ static DeviceSpecificDeviceStates
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto handle = acc.get_argument<device_handle_t>(HANDLE);
 
-  positive_int M = 1_p;
-  for (int i = 0; i < attrs.axes.size(); i++) {
-    legion_dim_t legion_dim =
-        legion_dim_from_ff_dim(attrs.axes[i], input.shape.num_dims());
-    M *= input.shape.at(legion_dim);
-  }
-  positive_int num_replicas = 1_p;
-  for (nonnegative_int i : nonnegative_range(input.shape.num_dims())) {
-    num_replicas *= input.shape.at(legion_dim_t{i});
-  }
+  positive_int M = product(transform(attrs.axes, 
+                                     [&](ff_dim_t dim) {
+                                       return dim_at_idx(input.shape.dims, dim);
+                                     }));
+
+  positive_int num_replicas = get_num_elements(input.shape.dims);
+
   positive_int effective_num_elements = M;
   positive_int effective_batch_size =
-      positive_int{input.shape.num_elements() / M};
+      positive_int{get_num_elements(input.shape.dims) / M};
 
   std::optional<LayerNormPerDeviceState> per_device_state =
       init_kernel(kernel_device_type,

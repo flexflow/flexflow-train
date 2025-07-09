@@ -14,7 +14,6 @@
  */
 
 #include "task-spec/ops/split.h"
-#include "kernels/array_shape.h"
 #include "kernels/split_kernels.h"
 #include "task-spec/profiling.h"
 #include "utils/exception.h"
@@ -53,15 +52,15 @@ OpTaskInvocation backward(SplitAttrs const &attrs) {
 }
 
 static std::pair<positive_int, positive_int>
-    calc_block_size(ArrayShape const &array_shape, ff_dim_t axis) {
+    calc_block_size(TensorShape const &tensor_shape, ff_dim_t axis) {
   positive_int num_blocks = 1_p;
   positive_int block_size = 1_p;
   for (nonnegative_int d : nonnegative_range(
-           array_shape.num_elements().nonnegative_int_from_positive_int())) {
+           get_num_elements(tensor_shape.dims).nonnegative_int_from_positive_int())) {
     if (d <= axis.value) {
-      block_size *= array_shape.at(legion_dim_t{d});
+      block_size *= dim_at_idx(tensor_shape.dims, legion_dim_t{d});
     } else {
-      num_blocks *= array_shape.at(legion_dim_t{d});
+      num_blocks *= dim_at_idx(tensor_shape.dims, legion_dim_t{d});
     }
   }
   return {num_blocks, block_size};

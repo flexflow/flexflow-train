@@ -22,8 +22,8 @@ bool is_shape_and_dtype_equal_for_tensor_backings(
   if (keys(m1) == keys(m2)) {
     for (std::pair<training_tensor_guid_t, GenericTensorAccessorW> const
              &tensor_type_backing : m1) {
-      if (is_shape_and_dtype_equal(tensor_type_backing.second,
-                                   m2.at(tensor_type_backing.first))) {
+      if (tensor_type_backing.second.shape ==
+                                   m2.at(tensor_type_backing.first).shape) {
         continue;
       } else {
         return false;

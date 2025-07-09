@@ -48,7 +48,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
 
       FFOrdered<int> result = ff_ordered_from_map(m);
-      FFOrdered<int> correct = {4, 5, 2, 7};
+      FFOrdered<int> correct = FFOrdered<int>{4, 5, 2, 7};
 
       CHECK(result == correct);
     }

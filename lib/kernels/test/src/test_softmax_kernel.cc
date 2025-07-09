@@ -27,7 +27,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     SoftmaxPerDeviceState state =
         Kernels::Softmax::gpu_init_kernel(managed_handle.raw_handle(),
-                                          legion_dim_t{0_n},
+                                          ff_dim_t{3_n},
                                           input_n.unwrap_nonnegative(),
                                           channels.unwrap_nonnegative(),
                                           input_h.unwrap_nonnegative(),

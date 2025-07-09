@@ -83,9 +83,9 @@ ElementBinaryPerDeviceState gpu_init_kernel(PerDeviceFFHandle handle,
                                             OperatorType op_type,
                                             bool should_broadcast_lhs,
                                             bool should_broadcast_rhs,
-                                            TensorShape lhs_shape,
-                                            TensorShape rhs_shape,
-                                            TensorShape output_shape) {
+                                            TensorShape const &lhs_shape,
+                                            TensorShape const &rhs_shape,
+                                            TensorShape const &output_shape) {
   ffTensorDescriptor_t inputLHSTensor;
   ffTensorDescriptor_t inputRHSTensor;
   ffTensorDescriptor_t outputTensor;

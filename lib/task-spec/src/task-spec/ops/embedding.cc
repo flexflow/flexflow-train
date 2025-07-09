@@ -51,12 +51,12 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
                  input,
                  output,
                  weight,
-                 input.data_type,
-                 output.data_type,
+                 input.shape.data_type,
+                 output.shape.data_type,
                  attrs.aggr,
-                 input.shape.num_dims().unwrap_nonnegative(),
-                 output.shape.num_dims().unwrap_nonnegative(),
-                 input.shape.at(legion_dim_t{1_n}).int_from_positive_int());
+                 get_num_dims(input.shape.dims).unwrap_nonnegative(),
+                 get_num_dims(output.shape.dims).unwrap_nonnegative(),
+                 dim_at_idx(input.shape.dims, legion_dim_t{1_n}).int_from_positive_int());
 }
 
 static std::optional<float>
@@ -77,12 +77,12 @@ static std::optional<float>
                  output,
                  input,
                  weight_grad,
-                 output.data_type,
-                 input.data_type,
+                 output.shape.data_type,
+                 input.shape.data_type,
                  attrs.aggr,
-                 input.shape.num_dims().unwrap_nonnegative(),
-                 output.shape.num_dims().unwrap_nonnegative(),
-                 input.shape.at(ff_dim_t{0_n}).int_from_positive_int());
+                 get_num_dims(input.shape.dims).unwrap_nonnegative(),
+                 get_num_dims(output.shape.dims).unwrap_nonnegative(),
+                 dim_at_idx(input.shape.dims, ff_dim_t{0_n}).int_from_positive_int());
 }
 
 TaskImplFunction get_embedding_fwd_task_impl() {

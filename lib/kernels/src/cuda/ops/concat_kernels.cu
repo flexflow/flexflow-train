@@ -23,13 +23,8 @@ static void calc_blk_size(size_t &num_blocks,
                    size_t &blk_size,
                    TensorShape const &shape,
                    ff_dim_t axis) {
-  legion_dim_t legion_axis = legion_dim_from_ff_dim(axis, get_num_dims(shape.dims));
-  assert(legion_axis.value < get_num_dims(shape.dims));
-  if (legion_axis.value == 0_n) {
-    legion_axis.value = 1_n;
-  }
-  blk_size = get_num_dims(slice_tensor_dims(shape.dims, legion_dim_t{0_n}, legion_axis)).unwrap_nonnegative();
-  num_blocks = get_num_dims(slice_tensor_dims(shape.dims, legion_axis, std::nullopt)).unwrap_nonnegative();
+  blk_size = get_num_dims(slice_tensor_dims(shape.dims, axis, std::nullopt)).unwrap_nonnegative();
+  num_blocks = get_num_dims(slice_tensor_dims(shape.dims, ff_dim_t{0_n}, axis)).unwrap_nonnegative();
 }
 
 void gpu_forward_kernel(cudaStream_t stream,

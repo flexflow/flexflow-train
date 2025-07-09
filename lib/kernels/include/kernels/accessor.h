@@ -205,18 +205,6 @@ std::vector<real_type_t<DT> const *>
 GenericTensorAccessorR read_only_accessor_from_write_accessor(
     GenericTensorAccessorW const &write_accessor);
 
-bool is_shape_and_dtype_equal(GenericTensorAccessorR const &acc1,
-                              GenericTensorAccessorR const &acc2);
-bool is_shape_and_dtype_equal(GenericTensorAccessorW const &acc1,
-                              GenericTensorAccessorW const &acc2);
-
-bool shape_and_dtype_matches(GenericTensorAccessorR const &accessor,
-                             TensorDims const &expected_shape,
-                             DataType const &expected_dtype);
-bool shape_and_dtype_matches(GenericTensorAccessorW const &accessor,
-                             TensorDims const &expected_shape,
-                             DataType const &expected_dtype);
-
 TensorShape get_tensor_shape_for_accessor_r(GenericTensorAccessorR const &);
 TensorShape get_tensor_shape_for_accessor_w(GenericTensorAccessorW const &);
 

@@ -43,6 +43,10 @@ std::optional<TensorDims>
     get_broadcast_target_dims(std::unordered_set<TensorDims> const &);
 
 TensorDims slice_tensor_dims(TensorDims const &,
+                             ff_dim_t const &start,
+                             std::optional<ff_dim_t> const &stop);
+
+TensorDims slice_tensor_dims(TensorDims const &,
                              relative_ff_dim_t const &start,
                              std::optional<relative_ff_dim_t> const &stop);
 

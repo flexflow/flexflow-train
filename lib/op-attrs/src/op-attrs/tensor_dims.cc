@@ -182,4 +182,13 @@ TensorDims slice_tensor_dims(TensorDims const &dims,
   };
 }
 
+TensorDims slice_tensor_dims(TensorDims const &dims,
+                             ff_dim_t const &start,
+                             std::optional<ff_dim_t> const &stop) {
+  return TensorDims{
+      slice(dims.ff_ordered, start, stop),
+  };
+}
+
+
 } // namespace FlexFlow

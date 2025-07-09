@@ -59,7 +59,7 @@ tensor_guid_t
                               InitializerAttrs const &bias_initializer,
                               InitializerAttrs const &projection_initializer) {
   ASSERT(get_num_dims(cgb.get_shape(input).dims) == 3);
-  std::vector<relative_ff_dim_t> layer_norm_axis = {
+  std::set<relative_ff_dim_t> layer_norm_axis = {
       relative_ff_dim_t{-1}}; // Apply layernorm across the last dim
   positive_int kdim = positive_int{config.dim_feedforward / config.num_heads};
   positive_int vdim = positive_int{config.dim_feedforward / config.num_heads};

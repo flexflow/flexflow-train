@@ -3,13 +3,13 @@
 
 #include "kernels/device.h"
 #include "kernels/ff_handle.h"
-#include "kernels/legion_dim_t.dtg.h"
+#include "op-attrs/ff_dim_t.dtg.h"
 #include "kernels/softmax_per_device_state.dtg.h"
 
 namespace FlexFlow::Kernels::Softmax {
 
 SoftmaxPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
-                                      legion_dim_t dim,
+                                      ff_dim_t dim,
                                       int input_n,
                                       int input_c,
                                       int input_h,

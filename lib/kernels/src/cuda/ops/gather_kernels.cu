@@ -17,6 +17,7 @@
 #include "kernels/datatype_dispatch.h"
 #include "kernels/device.h"
 #include "kernels/gather_kernels_gpu.h"
+#include "op-attrs/ff_dim_t.h"
 
 namespace FlexFlow::Kernels::Gather {
 
@@ -118,10 +119,10 @@ struct BackwardKernel {
 };
 
 GatherPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
-                                     legion_dim_t legion_dim) {
+                                     ff_dim_t dim) {
   return GatherPerDeviceState{
       /*handle=*/handle,
-      /*legion_dim=*/legion_dim,
+      /*dim=*/dim,
   };
 }
 
@@ -133,15 +134,15 @@ void gpu_forward_kernel(ffStream_t stream,
   checkCUDA(get_legion_stream(&stream));
   coord_t stride =
       get_num_elements(slice_tensor_dims(output.shape.dims, 
-          legion_dim_t{0_n}, add_to_legion_dim(m.legion_dim, 1))).int_from_positive_int();
+          add_to_ff_dim(m.dim, -1), ff_dim_t{0_n})).int_from_positive_int();
 
-  if (m.legion_dim.value == 0_n) {
+  if (m.dim.value == 0_n) {
     stride = 1;
   }
 
   coord_t output_dim_size =
-      dim_at_idx(output.shape.dims, m.legion_dim).int_from_positive_int();
-  coord_t input_dim_size = dim_at_idx(input.shape.dims, m.legion_dim).int_from_positive_int();
+      dim_at_idx(output.shape.dims, m.dim).int_from_positive_int();
+  coord_t input_dim_size = dim_at_idx(input.shape.dims, m.dim).int_from_positive_int();
 
   assert(index.shape.data_type == DataType::INT32 ||
          index.shape.data_type == DataType::INT64);
@@ -166,17 +167,16 @@ void gpu_backward_kernel(ffStream_t stream,
   checkCUDA(get_legion_stream(&stream));
 
   coord_t stride =
-      get_num_elements(slice_tensor_dims(output_grad.shape.dims,
-          legion_dim_t{0_n}, add_to_legion_dim(m.legion_dim, 1)))
-          .int_from_positive_int();
-  if (m.legion_dim.value == 0_n) {
+      get_num_elements(slice_tensor_dims(output_grad.shape.dims, 
+          add_to_ff_dim(m.dim, -1), ff_dim_t{0_n})).int_from_positive_int();
+  if (m.dim.value == 0_n) {
     stride = 1;
   }
 
   coord_t output_dim_size =
-      dim_at_idx(output_grad.shape.dims, m.legion_dim).int_from_positive_int();
+      dim_at_idx(output_grad.shape.dims, m.dim).int_from_positive_int();
   coord_t input_dim_size =
-      dim_at_idx(input_grad.shape.dims, m.legion_dim).int_from_positive_int();
+      dim_at_idx(input_grad.shape.dims, m.dim).int_from_positive_int();
 
   assert(index.shape.data_type == DataType::INT32 ||
          index.shape.data_type == DataType::INT64);

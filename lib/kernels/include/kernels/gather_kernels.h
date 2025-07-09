@@ -10,7 +10,7 @@ namespace FlexFlow::Kernels::Gather {
 
 std::optional<GatherPerDeviceState> init_kernel(DeviceType device_type,
                                                 device_handle_t const &handle,
-                                                legion_dim_t legion_dim);
+                                                ff_dim_t dim);
 
 void forward_kernel(device_stream_t const &stream,
                     std::optional<GatherPerDeviceState> const &per_device_state,

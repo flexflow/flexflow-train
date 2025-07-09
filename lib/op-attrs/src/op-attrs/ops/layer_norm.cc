@@ -10,6 +10,7 @@
 #include "utils/containers/extend.h"
 #include "utils/containers/filter.h"
 #include "utils/expected.h"
+#include "utils/fmt/set.h"
 
 namespace FlexFlow {
 
