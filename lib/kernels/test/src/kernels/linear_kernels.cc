@@ -13,8 +13,31 @@
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_CUDA_TEST_SUITE) {
-  TEST_CASE("forward_kernel CPU/GPU alignment (Linear)") {
+  TEST_CASE("linear_forward_kernel cpu-gpu alignment") {
     Allocator local_cpu_allocator = create_local_cpu_memory_allocator();
+
+    // GenericTensorAccessorR toy_input = create_2d_accessor_r_with_contents<float>(
+    //     {
+    //         {3, 3, 6},
+    //         {2, 1, 5},
+    //         {1, 2, -2},
+    //         {8, 0.5, -3},
+    //     },
+    //     local_cpu_allocator);
+    // float const *toy_arr = toy_input.get_float_ptr();
+    // std::cout << toy_arr[0] << "  "
+    //           << toy_arr[1] << "  "
+    //           << toy_arr[2] << std::endl;
+    //
+    // Allocator local_cuda_allocator = create_local_cuda_memory_allocator();
+    // GenericTensorAccessorW toy_cuda = local_cuda_allocator.allocate_tensor(toy_input.shape);
+    // copy_accessor_data_to_l_from_r(toy_cuda, toy_input);
+    // GenericTensorAccessorW toy_input2 = local_cpu_allocator.allocate_tensor(toy_input.shape);
+    // copy_accessor_data_to_l_from_r(toy_input2, read_only_accessor_from_write_accessor(toy_cuda));
+    // CHECK_MESSAGE(
+    //     accessors_are_equal(toy_input, toy_input2),
+    //     check_kv("cpu_result", format_accessor_r_contents(toy_input)),
+    //     check_kv("gpu_result", format_accessor_w_contents(toy_input2)));
 
     auto run_forward_kernel = [&](DeviceType device_type) {
       Allocator allocator = create_local_allocator_for_device_type(device_type);
@@ -31,9 +54,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       GenericTensorAccessorR projection =
           create_2d_accessor_r_with_contents<float>(
               {
-                  {1.0f, 0.5f},
-                  {2.0f, 4.0f},
-                  {1.5f, -1.0f},
+                  {1.0f, 2.0f, 1.5f},
+                  {0.5f, 4.0f, -1.0f},
               },
               allocator);
 
@@ -41,7 +63,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           create_1d_accessor_r_with_contents<float>({3.0, -1.0}, allocator);
 
       int batch_size = 4;
-      positive_int output_num_channels = 6_p;
+      positive_int output_num_channels = 2_p;
 
       TensorShape output_shape = TensorShape{
           TensorDims{FFOrdered{positive_int{batch_size}, output_num_channels}},
@@ -120,9 +142,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       GenericTensorAccessorR projection =
           create_2d_accessor_r_with_contents<float>(
               {
-                  {1.0f, 0.5f},
-                  {2.0f, 4.0f},
-                  {1.5f, -1.0f},
+                  {1.0f, 2.0f, 1.5f},
+                  {0.5f, 4.0f, -1.0f},
               },
               allocator);
 
@@ -155,7 +176,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
               allocator);
 
       int batch_size = 4;
-      positive_int output_num_channels = 6_p;
+      positive_int output_num_channels = 2_p;
 
       LinearAttrs attrs = LinearAttrs{
           /*out_channels=*/output_num_channels,

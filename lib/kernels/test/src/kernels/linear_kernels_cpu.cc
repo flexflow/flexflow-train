@@ -31,9 +31,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     GenericTensorAccessorR projection =
         create_2d_accessor_r_with_contents<float>(
             {
-                {1.0f, 0.5f},
-                {2.0f, 4.0f},
-                {1.5f, -1.0f},
+                {1.0f, 2.0f, 1.5f},
+                {0.5f, 4.0f, -1.0f},
             },
             cpu_allocator);
 
@@ -93,9 +92,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     GenericTensorAccessorR projection =
         create_2d_accessor_r_with_contents<float>(
             {
-                {1.0f, 0.5f},
-                {2.0f, 4.0f},
-                {1.5f, -1.0f},
+                {1.0f, 2.0f, 1.5f},
+                {0.5f, 4.0f, -1.0f},
             },
             cpu_allocator);
 
@@ -150,9 +148,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     GenericTensorAccessorR correct_projection_grad =
         create_2d_accessor_r_with_contents<float>(
             {
-                {-20.0f, 11.5f},
-                {5.25f, 15.0f},
-                {24.5f, -34.0f},
+                {-20.0f, 5.25f, 24.5f},
+                {11.5f, 15.0f, -34.0f},
             },
             cpu_allocator);
 

@@ -46,16 +46,18 @@ void linear_forward_kernel(
     GenericTensorAccessorR const &filter_accessor,
     std::optional<GenericTensorAccessorR> const &bias_accessor) {
   if (stream.is_gpu()) {
-    positive_int in_dim = dim_at_idx(input_accessor.shape.dims, ff_dim_t{0_n});
-    positive_int out_dim = dim_at_idx(output_accessor.shape.dims, ff_dim_t{0_n});
-    positive_int batch_size =
-        positive_int{get_num_elements(output_accessor.shape.dims) / out_dim};
+    positive_int in_dim = dim_at_idx(input_accessor.shape.dims, ff_dim_t{1_n});
+    positive_int out_dim = dim_at_idx(output_accessor.shape.dims, ff_dim_t{1_n});
+    positive_int batch_size = dim_at_idx(input_accessor.shape.dims, ff_dim_t{0_n});
 
     float const *bias_ptr = nullptr;
+    ASSERT(bias_accessor.has_value());
     if (bias_accessor.has_value()) {
       bias_ptr = bias_accessor.value().get<DataType::FLOAT>();
     }
+    ASSERT(bias_ptr != nullptr);
 
+    ASSERT(per_device_state.has_value());
     gpu_forward_kernel(
         /*stream=*/stream.require_gpu(),
         /*per_device_state=*/per_device_state.value(),
@@ -104,6 +106,7 @@ void linear_backward_kernel(
     GenericTensorAccessorW modifiable_output_grad =
         copy_tensor_accessor_r(output_grad, gpu_allocator);
 
+    ASSERT(per_device_state.has_value());
     gpu_backward_kernel(
         /*stream=*/stream.require_gpu(),
         /*per_device_state=*/per_device_state.value(),

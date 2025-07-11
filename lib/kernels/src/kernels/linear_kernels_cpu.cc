@@ -17,7 +17,7 @@ void linear_cpu_forward_kernel(
     std::optional<GenericTensorAccessorR> const &bias) {
   Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
-  tensor_accessor_matmul_to(input, projection, output);
+  tensor_accessor_matmul_to(input, tensor_accessor_transpose(projection, cpu_allocator), output);
 
   ASSERT(attrs.use_bias == bias.has_value());
   if (bias.has_value()) {
@@ -80,13 +80,14 @@ void linear_cpu_backward_kernel(
 
   tensor_accessor_matmul_to(
       processed_output_grad.value(),
-      read_only_accessor_from_write_accessor(
-          tensor_accessor_transpose(projection, cpu_allocator)),
+      projection,
       input_grad);
-  tensor_accessor_matmul_to(
-      read_only_accessor_from_write_accessor(
-          tensor_accessor_transpose(input, cpu_allocator)),
-      processed_output_grad.value(),
+  tensor_accessor_transpose_to(
+    tensor_accessor_matmul(
+        read_only_accessor_from_write_accessor(
+            tensor_accessor_transpose(input, cpu_allocator)),
+        processed_output_grad.value(),
+        cpu_allocator),
       projection_grad);
 
   if (bias_grad.has_value()) {

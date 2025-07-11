@@ -81,6 +81,8 @@ LinearPerDeviceState
         // Unsupported activation mode
         assert(false);
     }
+  } else {
+    mode = CUDNN_ACTIVATION_IDENTITY;
   }
   checkCUDNN(
       cudnnSetActivationDescriptor(actiDesc, mode, CUDNN_PROPAGATE_NAN, 0.0));
@@ -92,6 +94,11 @@ LinearPerDeviceState
   // bytes to allocate?
   float *one_ptr;
   checkCUDA(cudaMalloc(&one_ptr, sizeof(float) * batch_size));
+  float one_ptr_cpu[batch_size];
+  for (int i = 0; i < batch_size; i++) {
+    one_ptr_cpu[i] = 1.0;
+  }
+  checkCUDA(cudaMemcpy(one_ptr, one_ptr_cpu, sizeof(float) * batch_size, cudaMemcpyHostToDevice));
   LinearPerDeviceState per_device_state = LinearPerDeviceState{
       /*handle=*/handle,
       /*outputTensor=*/outputTensor,
@@ -149,10 +156,9 @@ void gpu_forward_kernel(cudaStream_t stream,
                            out_dim,
                            compute_type,
                            CUBLAS_GEMM_DEFAULT_TENSOR_OP));
-  // use_bias = True
-  if (bias_ptr != NULL) {
+  if (bias_ptr != nullptr) {
     checkCUBLAS(cublasGemmEx(m.handle.blas,
-                             CUBLAS_OP_T,
+                             CUBLAS_OP_N,
                              CUBLAS_OP_N,
                              out_dim,
                              batch_size,
@@ -160,7 +166,7 @@ void gpu_forward_kernel(cudaStream_t stream,
                              &alpha,
                              static_cast<void const *>(bias_ptr),
                              weight_type,
-                             1,
+                             out_dim,
                              static_cast<void const *>(m.one_ptr),
                              CUDA_R_32F,
                              1,
@@ -171,24 +177,24 @@ void gpu_forward_kernel(cudaStream_t stream,
                              compute_type,
                              CUBLAS_GEMM_DEFAULT_TENSOR_OP));
   }
-  if (use_activation(m.activation)) {
-    checkCUDNN(cudnnActivationForward(m.handle.dnn,
-                                      m.actiDesc,
-                                      &alpha,
-                                      m.outputTensor,
-                                      static_cast<void *>(output_ptr),
-                                      &beta,
-                                      m.outputTensor,
-                                      static_cast<void *>(output_ptr)));
-  } else if (m.activation == Activation::GELU) {
-    size_t elements = size_t_from_int(out_dim) * size_t_from_int(batch_size);
-    constexpr float B = 0.7978845608028654f;   // sqrt(2.0/M_PI)
-    constexpr float C = 0.035677408136300125f; // 0.044715 * sqrt(2.0/M_PI)
-    gelu_forward_kernel<<<GET_BLOCKS(elements), CUDA_NUM_THREADS>>>(
-        elements, B, C, (float *)output_ptr);
-  } else {
-    // Do nothing
-  }
+  // if (use_activation(m.activation)) {
+  //   checkCUDNN(cudnnActivationForward(m.handle.dnn,
+  //                                     m.actiDesc,
+  //                                     &alpha,
+  //                                     m.outputTensor,
+  //                                     static_cast<void *>(output_ptr),
+  //                                     &beta,
+  //                                     m.outputTensor,
+  //                                     static_cast<void *>(output_ptr)));
+  // } else if (m.activation == Activation::GELU) {
+  //   size_t elements = size_t_from_int(out_dim) * size_t_from_int(batch_size);
+  //   constexpr float B = 0.7978845608028654f;   // sqrt(2.0/M_PI)
+  //   constexpr float C = 0.035677408136300125f; // 0.044715 * sqrt(2.0/M_PI)
+  //   gelu_forward_kernel<<<GET_BLOCKS(elements), CUDA_NUM_THREADS>>>(
+  //       elements, B, C, (float *)output_ptr);
+  // } else {
+  //   // Do nothing
+  // }
 }
 
 void gpu_backward_kernel(cudaStream_t stream,
