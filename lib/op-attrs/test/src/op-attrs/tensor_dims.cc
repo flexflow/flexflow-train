@@ -203,4 +203,47 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(result == correct);
     }
   }
+
+  TEST_CASE("tensor_dims_drop_dims") {
+    TensorDims dims = TensorDims{
+        FFOrdered{3_p, 5_p, 1_p, 2_p},
+    };
+
+    SUBCASE("removes dims specified to be dropped") {
+      std::function<bool(ff_dim_t)> should_drop_dim = [](ff_dim_t d) {
+        return d.value % 2_n == 0_n;
+      };
+
+      TensorDims result = tensor_dims_drop_dims(dims, should_drop_dim);
+      TensorDims correct = TensorDims{
+          FFOrdered{5_p, 2_p},
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE(
+        "is identity function if no dimensions are specified to be dropped") {
+      std::function<bool(ff_dim_t)> should_drop_dim = [](ff_dim_t d) {
+        return false;
+      };
+
+      TensorDims result = tensor_dims_drop_dims(dims, should_drop_dim);
+      TensorDims correct = dims;
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE(
+        "returns empty dims if all dimensions are specified to be dropped") {
+      std::function<bool(ff_dim_t)> should_drop_dim = [](ff_dim_t d) {
+        return true;
+      };
+
+      TensorDims result = tensor_dims_drop_dims(dims, should_drop_dim);
+      TensorDims correct = TensorDims{FFOrdered<positive_int>{}};
+
+      CHECK(result == correct);
+    }
+  }
 }

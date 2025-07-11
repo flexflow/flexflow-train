@@ -22,17 +22,20 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(result == correct);
     }
 
-    SUBCASE("2d tensor is column-major") {
+    SUBCASE("2d tensor is row-major") {
+      positive_int num_rows = 5_p;
+      positive_int num_cols = 6_p;
+
       TensorDims shape = TensorDims{
           FFOrdered{
-              5_p,
-              6_p,
+              num_rows,
+              num_cols,
           },
       };
 
       CHECK(calculate_accessor_offset(TensorDimsCoord{FFOrdered{0_n, 0_n}}, shape) == 0_n);
-      CHECK(calculate_accessor_offset(TensorDimsCoord{FFOrdered{1_n, 0_n}}, shape) == 1_n);
-      CHECK(calculate_accessor_offset(TensorDimsCoord{FFOrdered{0_n, 1_n}}, shape) == 5_p);
+      CHECK(calculate_accessor_offset(TensorDimsCoord{FFOrdered{1_n, 0_n}}, shape) == num_cols);
+      CHECK(calculate_accessor_offset(TensorDimsCoord{FFOrdered{0_n, 1_n}}, shape) == 1_p);
     }
 
     SUBCASE("multiple dimensions") {
@@ -45,7 +48,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
 
       nonnegative_int result = calculate_accessor_offset(indices, shape);
-      nonnegative_int correct = 2_n * 5_n + 4_n;
+      nonnegative_int correct = 2_n * 6_n + 4_n;
 
       CHECK(result == correct);
     }
@@ -73,7 +76,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("out of bounds index") {
-      TensorDimsCoord indices = TensorDimsCoord{FFOrdered{2_n, 5_n}};
+      TensorDimsCoord indices = TensorDimsCoord{FFOrdered{2_n, 6_n}};
       TensorDims shape = TensorDims{
           FFOrdered{
               5_p,

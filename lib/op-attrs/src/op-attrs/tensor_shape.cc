@@ -15,9 +15,12 @@ num_bytes_t get_size_in_bytes(TensorShape const &s) {
 }
 
 TensorShape tensor_shape_drop_dims(
-    TensorShape const &coord,
+    TensorShape const &input_shape,
     std::function<bool(ff_dim_t)> const &should_drop_dim) {
-  NOT_IMPLEMENTED();
+  return TensorShape{
+    /*dims=*/tensor_dims_drop_dims(input_shape.dims, should_drop_dim),
+    /*data_type=*/input_shape.data_type,
+  };
 }
 
 TensorShape slice_tensor_shape(TensorShape const &shape,

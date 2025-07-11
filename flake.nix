@@ -121,6 +121,7 @@
               lcov # for code coverage
               compdb
               gbenchmark
+              libtorch-bin
             ])
             (with proj-repo.packages.${system}; [
               proj

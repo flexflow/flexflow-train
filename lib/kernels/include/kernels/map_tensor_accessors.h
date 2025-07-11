@@ -62,7 +62,7 @@ void map_tensor_accessor_to(GenericTensorAccessorR const &input,
 
   GenericTensorAccessorW output_cpu =
       cpu_allocator.allocate_tensor(
-          input.shape);
+          output.shape);
 
   DataTypeDispatch1<CPUMapTensorAccessor>{}(
       input.shape.data_type, input_cpu, output_cpu, f);
@@ -75,9 +75,14 @@ template <typename F, typename Out = std::invoke_result_t<F, float>>
 GenericTensorAccessorW map_tensor_accessor(GenericTensorAccessorR const &input,
                                            F &&f,
                                            Allocator &output_allocator) {
+  TensorShape output_shape = TensorShape{
+    /*dims=*/input.shape.dims, 
+    /*data_type=*/type_to_data_type_enum_v<Out>,
+  };
+
   GenericTensorAccessorW output =
       output_allocator.allocate_tensor(
-          input.shape);
+          output_shape);
 
   map_tensor_accessor_to(input, f, output);
 
@@ -94,17 +99,17 @@ struct CPUMapTensorAccessors2 {
                   GenericTensorAccessorW &output,
                   F &&f) {
 
-    TensorShape shape = throw_if_unexpected(require_all_same1(std::vector{
-        lhs.shape,
-        rhs.shape,
-        output.shape,
+    TensorDims dims = throw_if_unexpected(require_all_same1(std::vector{
+        lhs.shape.dims,
+        rhs.shape.dims,
+        output.shape.dims,
     }));
 
     ASSERT(lhs.device_type == DeviceType::CPU);
     ASSERT(rhs.device_type == DeviceType::CPU);
     ASSERT(output.device_type == DeviceType::CPU);
 
-    for (TensorDimsCoord const &coord : get_tensor_dims_coord_set(shape.dims)) {
+    for (TensorDimsCoord const &coord : get_tensor_dims_coord_set(dims)) {
       output.at<type_to_data_type_enum_v<Out>>(coord) =
           f(lhs.at<DTL>(coord), rhs.at<DTR>(coord));
     }

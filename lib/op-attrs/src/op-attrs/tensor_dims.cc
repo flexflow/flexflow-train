@@ -18,6 +18,8 @@
 #include "utils/integer_conversions.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include "utils/nonnegative_int/num_elements.h"
+#include "op-attrs/ff_ordered/enumerate.h"
+#include "op-attrs/ff_ordered/filtrans.h"
 
 namespace FlexFlow {
 
@@ -172,6 +174,17 @@ std::optional<TensorDims>
   }
 
   return std::nullopt;
+}
+
+TensorDims tensor_dims_drop_dims(TensorDims const &dims, std::function<bool(ff_dim_t)> const &should_drop_dim) {
+  std::vector<positive_int> result;
+  for (ff_dim_t idx : get_idxs(dims.ff_ordered)) {
+    if (!should_drop_dim(idx)) {
+      result.push_back(dims.ff_ordered.at(idx));
+    }
+  }
+
+  return TensorDims{ff_ordered_of(result)};
 }
 
 TensorDims slice_tensor_dims(TensorDims const &dims,
