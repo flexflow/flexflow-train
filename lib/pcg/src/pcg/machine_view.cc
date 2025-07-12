@@ -91,7 +91,7 @@ std::optional<MachineSpaceCoordinate> get_machine_space_coordinate(
           std::vector<nonnegative_int> const &dimension_indices) {
         std::vector<stride_t> mv_strides = get_strides(machine_view);
 
-        std::vector<nonnegative_int> sizes =
+        std::vector<positive_int> sizes =
             transform(dimension_indices, [&](nonnegative_int i) {
               return task.degrees.at(i.unwrap_nonnegative()) *
                      mv_strides.at(i.unwrap_nonnegative()).unwrapped;
@@ -100,13 +100,13 @@ std::optional<MachineSpaceCoordinate> get_machine_space_coordinate(
             transform(dimension_indices, [&](nonnegative_int i) {
               return coord.raw_coord.at(i.unwrap_nonnegative());
             });
-        std::vector<nonnegative_int> strides =
+        std::vector<positive_int> strides =
             transform(dimension_indices, [&](nonnegative_int i) {
               return mv_strides.at(i.unwrap_nonnegative()).unwrapped;
             });
 
-        std::vector<nonnegative_int> coeffs = scanl(
-            sizes, nonnegative_int{1}, std::multiplies<nonnegative_int>());
+        std::vector<positive_int> coeffs =
+            scanl(sizes, 1_p, std::multiplies<positive_int>());
 
         nonnegative_int index = start_idx;
         for (auto [coeff, coord_point, stride] :

@@ -18,21 +18,21 @@ TEST_SUITE(FF_TEST_SUITE) {
             UnorderedSetLabelledOpenDataflowGraph<ParallelLayerAttrs,
                                                   std::monostate>>();
 
-    nonnegative_int in_channels = 24_n;
-    nonnegative_int out_channels = 16_n;
-    nonnegative_int batch_size = 4_n;
-    nonnegative_int batch_degree = 2_n;
+    positive_int in_channels = 24_p;
+    positive_int out_channels = 16_p;
+    positive_int batch_size = 4_p;
+    positive_int batch_degree = 2_p;
 
     DataflowGraphInput i0 = g.add_input({});
     ParallelTensorShape i0_shape = ParallelTensorShape{
         ParallelTensorDims{
             FFOrdered<ShardParallelDim>{
                 ShardParallelDim{batch_size, batch_degree},
-                ShardParallelDim{in_channels, 1_n},
+                ShardParallelDim{in_channels, 1_p},
             },
             ReplicaParallelDimSet{
-                SumDegree{1_n},
-                DiscardCopyDegree{1_n},
+                SumDegree{1_p},
+                DiscardCopyDegree{1_p},
             },
         },
         DataType::FLOAT,

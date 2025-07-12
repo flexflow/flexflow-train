@@ -14,7 +14,7 @@ includes = [
   "<vector>",
   "<map>",
   "<string>",
-  "utils/nonnegative_int/nonnegative_int.h",
+  "utils/positive_int/positive_int.h",
 ]
 
 src_includes = [
@@ -26,19 +26,19 @@ src_includes = [
 
 [[fields]]
 name = "batch_size"
-type = "::FlexFlow::nonnegative_int"
+type = "::FlexFlow::positive_int"
 
 [[fields]]
 name = "dense_layers"
-type = "std::vector<::FlexFlow::nonnegative_int>"
+type = "std::vector<::FlexFlow::positive_int>"
 
 [[fields]]
 name = "dense_feature_layers"
-type = "std::vector<::FlexFlow::nonnegative_int>"
+type = "std::vector<::FlexFlow::positive_int>"
 
 [[fields]]
 name = "feature_shapes"
-type = "std::map<std::string, ::FlexFlow::nonnegative_int>"
+type = "std::map<std::string, ::FlexFlow::positive_int>"
 
 [[fields]]
 name = "input_features"

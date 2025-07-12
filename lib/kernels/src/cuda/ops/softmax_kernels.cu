@@ -14,19 +14,19 @@
  */
 
 #include "internal/device.h"
-#include "kernels/softmax_kernels.h"
+#include "kernels/softmax_kernels_gpu.h"
 
 namespace FlexFlow {
 
 namespace Kernels {
 namespace Softmax {
 
-SoftmaxPerDeviceState init_kernel(PerDeviceFFHandle const &handle,
-                                  int dim,
-                                  int input_n,
-                                  int input_c,
-                                  int input_h,
-                                  int input_w) {
+SoftmaxPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
+                                      ff_dim_t dim,
+                                      int input_n,
+                                      int input_c,
+                                      int input_h,
+                                      int input_w) {
   ffTensorDescriptor_t inputTensor;
 
   checkCUDNN(cudnnCreateTensorDescriptor(&inputTensor));
@@ -38,14 +38,18 @@ SoftmaxPerDeviceState init_kernel(PerDeviceFFHandle const &handle,
                                         input_h,
                                         input_w));
 
-  SoftmaxPerDeviceState per_device_state = {handle, inputTensor, dim};
+  SoftmaxPerDeviceState per_device_state = SoftmaxPerDeviceState{
+      /*handle=*/handle,
+      /*inputTensor=*/inputTensor,
+      /*dim=*/dim,
+  };
   return per_device_state;
 }
 
-void forward_kernel(cudaStream_t stream,
-                    SoftmaxPerDeviceState const &m,
-                    float const *input_ptr,
-                    float *output_ptr) {
+void gpu_forward_kernel(cudaStream_t stream,
+                        SoftmaxPerDeviceState const &m,
+                        float const *input_ptr,
+                        float *output_ptr) {
   checkCUDNN(cudnnSetStream(m.handle.dnn, stream));
 
   float alpha = 1.0f, beta = 0.0f;
@@ -60,16 +64,20 @@ void forward_kernel(cudaStream_t stream,
                                  output_ptr));
 }
 
-void backward_kernel(cudaStream_t stream,
-                     float const *output_grad_ptr,
-                     float *input_grad_ptr,
-                     size_t num_elements) {
+void gpu_backward_kernel(cudaStream_t stream,
+                         float const *output_grad_ptr,
+                         float *input_grad_ptr,
+                         size_t num_elements) {
 
   checkCUDA(cudaMemcpyAsync(input_grad_ptr,
                             output_grad_ptr,
                             num_elements * sizeof(float),
                             cudaMemcpyDeviceToDevice,
                             stream));
+}
+
+void gpu_cleanup_kernel(SoftmaxPerDeviceState &) {
+  NOT_IMPLEMENTED();
 }
 
 } // namespace Softmax

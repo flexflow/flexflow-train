@@ -11,12 +11,12 @@ features = [
 
 includes = [
   "op-attrs/replica_type.dtg.h",
-  "utils/nonnegative_int/nonnegative_int.h",
+  "utils/positive_int/positive_int.h",
 ]
 
 [[fields]]
 name = "degree"
-type = "::FlexFlow::nonnegative_int"
+type = "::FlexFlow::positive_int"
 
 [[fields]]
 name = "replica_type"

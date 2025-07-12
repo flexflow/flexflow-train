@@ -6,16 +6,16 @@ namespace FlexFlow {
 
 CandleUnoConfig get_default_candle_uno_config() {
   return CandleUnoConfig{
-      /*batch_size=*/64_n,
-      /*dense_layers=*/repeat_element(/*num_times=*/4_n, /*element=*/4192_n),
+      /*batch_size=*/64_p,
+      /*dense_layers=*/repeat_element(/*num_times=*/4_n, /*element=*/4192_p),
       /*dense_feature_layers=*/
-      repeat_element(/*num_times=*/8_n, /*element=*/4192_n),
+      repeat_element(/*num_times=*/8_n, /*element=*/4192_p),
       /*feature_shapes=*/
       {
-          {"dose", 1_n},
-          {"cell.rnaseq", 942_n},
-          {"drug.descriptors", 5270_n},
-          {"drug.fingerprints", 2048_n},
+          {"dose", 1_p},
+          {"cell.rnaseq", 942_p},
+          {"drug.descriptors", 5270_p},
+          {"drug.fingerprints", 2048_p},
       },
       /*input_features=*/
       {
@@ -37,7 +37,7 @@ tensor_guid_t create_candle_uno_feature_model(
     tensor_guid_t const &input,
     InitializerAttrs const &kernel_initializer) {
   tensor_guid_t t = input;
-  for (nonnegative_int dense_dim : config.dense_feature_layers) {
+  for (positive_int dense_dim : config.dense_feature_layers) {
     t = cgb.dense(t,
                   dense_dim,
                   Activation::RELU,
@@ -58,7 +58,7 @@ ComputationGraph
       InitializerAttrs{GlorotNormalAttrs{/*seed=*/0}};
 
   auto create_input_tensor =
-      [&](FFOrdered<nonnegative_int> const &dims) -> tensor_guid_t {
+      [&](FFOrdered<positive_int> const &dims) -> tensor_guid_t {
     TensorShape input_shape = TensorShape{
         TensorDims{dims},
         DataType::FLOAT,
@@ -84,8 +84,9 @@ ComputationGraph
 
   for (auto const &input_feature : config.input_features) {
     std::string const &feature_name = input_feature.second;
-    nonnegative_int shape = config.feature_shapes.at(feature_name);
-    tensor_guid_t input = create_input_tensor({config.batch_size, shape});
+    positive_int shape = config.feature_shapes.at(feature_name);
+    tensor_guid_t input =
+        create_input_tensor(FFOrdered{config.batch_size, shape});
     all_inputs.push_back(input);
 
     if (contains(input_models, feature_name)) {
@@ -98,7 +99,7 @@ ComputationGraph
 
   tensor_guid_t output =
       cgb.concat(encoded_inputs, /*axis=*/relative_ff_dim_t{1});
-  for (nonnegative_int dense_layer_dim : config.dense_layers) {
+  for (positive_int dense_layer_dim : config.dense_layers) {
     tensor_guid_t residual_input = output;
     output = cgb.dense(output,
                        dense_layer_dim,
@@ -114,7 +115,7 @@ ComputationGraph
     }
   }
   output = cgb.dense(output,
-                     /*outDim=*/1_n,
+                     /*outDim=*/1_p,
                      /*activation=*/std::nullopt,
                      /*use_bias=*/false,
                      /*data_type=*/DataType::FLOAT,

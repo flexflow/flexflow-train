@@ -1,0 +1,20 @@
+namespace = "FlexFlow"
+name = "TaskSignatureAndImpl"
+features = [
+  "eq",
+  "fmt",
+  "hash"
+]
+
+includes = [
+  "task-spec/task_impl_function.dtg.h",
+  "task-spec/op_task_signature.h",
+]
+
+[[fields]]
+name = "impl_function"
+type = "::FlexFlow::TaskImplFunction"
+
+[[fields]]
+name = "task_signature"
+type = "::FlexFlow::OpTaskSignature"

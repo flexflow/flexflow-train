@@ -2,6 +2,7 @@
 #include "op-attrs/ff_ordered/concat.h"
 #include "op-attrs/ff_ordered/slice.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "op-attrs/tensor_dims.h"
 #include "op-attrs/tensor_shape.h"
 #include "utils/containers/any_of.h"
 #include "utils/containers/extend.h"
@@ -23,7 +24,7 @@ std::vector<IncomingTensorRole>
 
 static std::optional<std::string>
     check_input_shape(BatchNormAttrs const &, TensorShape const &input_shape) {
-  if (num_dims(input_shape) < 2) {
+  if (get_num_dims(input_shape.dims) < 2) {
     return fmt::format(
         "BatchNormAttrs expected input dims >= 2, but received input shape {}",
         input_shape);
@@ -68,10 +69,11 @@ tl::expected<TensorShape, std::string>
     return tl::unexpected("No gamma weights exist for attrs.affine = false");
   }
 
-  nonnegative_int num_channels = dim_at_idx(input_shape, relative_ff_dim_t{1});
+  positive_int num_channels =
+      dim_at_idx(input_shape.dims, relative_ff_dim_t{1});
 
   return TensorShape{
-      TensorDims{FFOrdered<nonnegative_int>{
+      TensorDims{FFOrdered<positive_int>{
           num_channels,
       }},
       DataType::FLOAT,
@@ -113,23 +115,23 @@ static std::optional<std::string>
                        input_degrees);
   }
 
-  if (input_degrees.sum_degree != SumDegree{1_n}) {
+  if (input_degrees.sum_degree != SumDegree{1_p}) {
     return fmt::format("Expected sum degree 1, but receieved sum degree {}",
                        input_degrees.sum_degree);
   }
 
-  if (input_degrees.discard_copy_degree != DiscardCopyDegree{1_n}) {
+  if (input_degrees.discard_copy_degree != DiscardCopyDegree{1_p}) {
     return fmt::format(
         "Expected discard copy degree 1, but receieved discard copy degree {}",
         input_degrees.discard_copy_degree);
   }
 
-  FFOrdered<nonnegative_int> non_channel_degrees =
+  FFOrdered<positive_int> non_channel_degrees =
       concat(slice(input_degrees.shard_degrees, ff_dim_t{0_n}, ff_dim_t{1_n}),
              slice(input_degrees.shard_degrees, ff_dim_t{2_n}, std::nullopt));
 
   if (any_of(non_channel_degrees,
-             [](nonnegative_int degree) { return degree != 1_n; })) {
+             [](positive_int degree) { return degree != 1_p; })) {
     return fmt::format("Expected parallel degree of all non-channel dimensions "
                        "to be 1, but received input with degrees {}",
                        input_degrees);
@@ -172,9 +174,9 @@ tl::expected<ParallelTensorDimDegrees, std::string>
   relative_ff_dim_t channel_dim = relative_ff_dim_t{1};
 
   return ParallelTensorDimDegrees{
-      SumDegree{1_n},
-      DiscardCopyDegree{1_n},
-      FFOrdered<nonnegative_int>{input_degrees.shard_degrees.at(channel_dim)},
+      SumDegree{1_p},
+      DiscardCopyDegree{1_p},
+      FFOrdered<positive_int>{input_degrees.shard_degrees.at(channel_dim)},
   };
 }
 

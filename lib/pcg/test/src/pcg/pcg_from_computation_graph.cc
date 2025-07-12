@@ -14,16 +14,16 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TensorShape input_shape = TensorShape{
         TensorDims{
-            FFOrdered<nonnegative_int>{
-                10_n,
-                12_n,
+            FFOrdered{
+                10_p,
+                12_p,
             },
         },
         DataType::FLOAT,
     };
 
     LinearAttrs linear_attrs = LinearAttrs{
-        /*out_channels=*/8_n,
+        /*out_channels=*/8_p,
         /*use_bias=*/true,
         /*data_type=*/DataType::FLOAT,
         /*activation=*/Activation::RELU,

@@ -23,8 +23,9 @@ std::unordered_set<TaskSpaceCoordinate>
     get_task_space_coordinates(OperatorTaskSpace const &task) {
 
   std::vector<std::vector<nonnegative_int>> coordinate_ranges =
-      transform(task.degrees, [&](nonnegative_int num_points) {
-        return nonnegative_range(num_points);
+      transform(task.degrees, [&](positive_int num_points) {
+        return nonnegative_range(
+            num_points.nonnegative_int_from_positive_int());
       });
 
   std::unordered_set<std::vector<nonnegative_int>> raw_coordinates =
@@ -45,7 +46,7 @@ nonnegative_int num_dims(OperatorTaskSpace const &task) {
   return num_elements(task.degrees);
 }
 
-nonnegative_int num_tasks(OperatorTaskSpace const &task) {
+positive_int num_tasks(OperatorTaskSpace const &task) {
   return product(task.degrees);
 }
 
@@ -54,7 +55,7 @@ OperatorTaskSpace get_operator_task_space(ParallelComputationGraph const &pcg,
   parallel_tensor_guid_t out_tensor = get_layer_outputs(pcg, layer).at(0);
   ParallelTensorShape shape = get_parallel_tensor_shape(pcg, out_tensor);
 
-  std::vector<nonnegative_int> degrees;
+  std::vector<positive_int> degrees;
   extend(degrees, vector_of(ff_ordered_shard_degrees(shape)));
   degrees.push_back(get_sum_degree(shape));
   degrees.push_back(get_discard_copy_degree(shape));

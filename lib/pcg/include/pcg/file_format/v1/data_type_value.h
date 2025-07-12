@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_PCG_INCLUDE_PCG_FILE_FORMAT_V1_DATA_TYPE_H
 #define _FLEXFLOW_PCG_INCLUDE_PCG_FILE_FORMAT_V1_DATA_TYPE_H
 
-#include "utils/fp16.h"
+#include "utils/half.h"
 #include <nlohmann/json.hpp>
 
 namespace FlexFlow {

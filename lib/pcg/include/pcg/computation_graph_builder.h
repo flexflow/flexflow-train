@@ -84,15 +84,15 @@ public:
   // Add a 2D convolutional layer
   tensor_guid_t conv2d(
       tensor_guid_t const &input,
-      nonnegative_int outChannels,
-      nonnegative_int kernelH,
-      nonnegative_int kernelW,
-      nonnegative_int strideH,
-      nonnegative_int strideW,
+      positive_int outChannels,
+      positive_int kernelH,
+      positive_int kernelW,
+      positive_int strideH,
+      positive_int strideW,
       nonnegative_int paddingH,
       nonnegative_int paddingW,
       std::optional<Activation> const &activation = std::nullopt,
-      nonnegative_int groups = 1_n,
+      positive_int groups = 1_p,
       bool use_bias = true,
       std::optional<InitializerAttrs> const &kernel_initializer = std::nullopt,
       std::optional<InitializerAttrs> const &bias_initializer = std::nullopt,
@@ -106,8 +106,8 @@ public:
   // Add an embedding layer
   tensor_guid_t embedding(
       tensor_guid_t const &input,
-      nonnegative_int num_entries,
-      nonnegative_int outDim,
+      positive_int num_entries,
+      positive_int outDim,
       AggregateOp aggr,
       DataType dtype = DataType::FLOAT,
       std::optional<InitializerAttrs> const &initializer = std::nullopt,
@@ -127,10 +127,10 @@ public:
   // Add a 2D pooling layer
   tensor_guid_t
       pool2d(tensor_guid_t const &input,
-             nonnegative_int kernelH,
-             nonnegative_int kernelW,
-             nonnegative_int strideH,
-             nonnegative_int strideW,
+             positive_int kernelH,
+             positive_int kernelW,
+             positive_int strideH,
+             positive_int strideW,
              nonnegative_int paddingH,
              nonnegative_int paddingW,
              PoolOp type = PoolOp::MAX,
@@ -138,14 +138,14 @@ public:
              std::optional<std::string> const &name = std::nullopt);
   tensor_guid_t adaptive_pool2d(
       tensor_guid_t const &input,
-      nonnegative_int output_h,
-      nonnegative_int output_w,
+      positive_int output_h,
+      positive_int output_w,
       PoolOp type = PoolOp::MAX,
       std::optional<Activation> const &activation = std::nullopt,
       std::optional<std::string> const &name = std::nullopt);
   tensor_guid_t
       layer_norm(tensor_guid_t const &input,
-                 std::vector<relative_ff_dim_t> const &axes,
+                 std::set<relative_ff_dim_t> const &axes,
                  bool elementwise_affine,
                  float eps,
                  std::optional<std::string> const &name = std::nullopt);
@@ -164,7 +164,7 @@ public:
       std::optional<std::string> const &name = std::nullopt);
   tensor_guid_t dense(
       tensor_guid_t const &input,
-      nonnegative_int outDim,
+      positive_int outDim,
       std::optional<Activation> activation = std::nullopt,
       bool use_bias = true,
       DataType data_type = DataType::FLOAT,
@@ -226,10 +226,10 @@ public:
       tensor_guid_t const &query,
       tensor_guid_t const &key,
       tensor_guid_t const &value,
-      nonnegative_int embed_dim,
-      nonnegative_int num_heads,
-      nonnegative_int kdim = 0_n,
-      nonnegative_int vdim = 0_n,
+      positive_int embed_dim,
+      positive_int num_heads,
+      std::optional<positive_int> const &kdim = std::nullopt,
+      std::optional<positive_int> const &vdim = std::nullopt,
       float dropout = 0.0f,
       bool bias = true,
       bool add_bias_kv = false,

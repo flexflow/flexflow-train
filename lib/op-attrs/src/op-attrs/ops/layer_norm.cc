@@ -2,6 +2,7 @@
 #include "op-attrs/ff_ordered/ff_ordered_of.h"
 #include "op-attrs/ff_ordered/get_idxs.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "op-attrs/tensor_dims.h"
 #include "op-attrs/tensor_shape.h"
 #include "utils/containers/all_of.h"
 #include "utils/containers/any_of.h"
@@ -9,6 +10,7 @@
 #include "utils/containers/extend.h"
 #include "utils/containers/filter.h"
 #include "utils/expected.h"
+#include "utils/fmt/set.h"
 
 namespace FlexFlow {
 
@@ -28,7 +30,7 @@ static std::optional<std::string>
     check_input_shape(LayerNormAttrs const &attrs,
                       TensorShape const &input_shape) {
   if (any_of(attrs.axes, [&](ff_dim_t axis) {
-        return axis.value >= num_dims(input_shape);
+        return axis.value >= get_num_dims(input_shape.dims);
       })) {
     return fmt::format(
         "LayerNorm axes {} out-of-bounds for input tensor shape {}",
@@ -72,9 +74,9 @@ tl::expected<TensorShape, std::string>
   std::vector<ff_dim_t> non_layer_norm_dim_idxs = filter(
       get_idxs(input_shape.dims.ff_ordered),
       [&](ff_dim_t const &dim_idx) { return !contains(attrs.axes, dim_idx); });
-  std::vector<nonnegative_int> raw_weight_dims =
+  std::vector<positive_int> raw_weight_dims =
       transform(non_layer_norm_dim_idxs, [&](ff_dim_t const &dim_idx) {
-        return dim_at_idx(input_shape,
+        return dim_at_idx(input_shape.dims,
                           relative_ff_dim_t_from_ff_dim_t(dim_idx));
       });
 
@@ -190,8 +192,8 @@ tl::expected<ParallelTensorShape, std::string>
       ParallelTensorDims{
           ff_ordered_of(raw_weight_shard_dims),
           ReplicaParallelDimSet{
-              SumDegree{1_n},
-              DiscardCopyDegree{1_n},
+              SumDegree{1_p},
+              DiscardCopyDegree{1_p},
           },
       },
       DataType::FLOAT,

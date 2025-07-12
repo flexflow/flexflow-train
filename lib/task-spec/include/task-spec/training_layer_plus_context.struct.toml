@@ -1,0 +1,29 @@
+namespace = "FlexFlow"
+name = "TrainingLayerPlusContext"
+features = []
+
+includes = [
+  "pcg/layer_guid_t.dtg.h",
+  "pcg/layer_attrs.dtg.h",
+  "task-spec/training_tensor_group_with_attrs.dtg.h",
+]
+
+[[fields]]
+name = "layer_guid"
+type = "::FlexFlow::layer_guid_t"
+
+[[fields]]
+name = "layer_attrs"
+type = "::FlexFlow::LayerAttrs"
+
+[[fields]]
+name = "input_tensor_groups"
+type = "std::vector<::FlexFlow::TrainingTensorGroupWithAttrs>"
+
+[[fields]]
+name = "weight_tensor_groups"
+type = "std::vector<::FlexFlow::TrainingTensorGroupWithAttrs>"
+
+[[fields]]
+name = "output_tensor_groups"
+type = "std::vector<::FlexFlow::TrainingTensorGroupWithAttrs>"

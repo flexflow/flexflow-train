@@ -1,0 +1,19 @@
+namespace = "FlexFlow"
+name = "RuntimeOnlyOpCostMetrics"
+features = [
+  "eq",
+  "fmt",
+  "hash",
+]
+
+includes = [
+  "utils/units/milliseconds_t.h",
+]
+
+[[fields]]
+name = "forward_runtime"
+type = "::FlexFlow::milliseconds_t"
+
+[[fields]]
+name = "backward_runtime"
+type = "::FlexFlow::milliseconds_t"

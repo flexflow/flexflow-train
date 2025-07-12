@@ -19,8 +19,7 @@ FFOrdered<ShardParallelDim> ff_ordered_shard_dims(ParallelTensorDims const &d) {
   return d.shard_dims;
 }
 
-FFOrdered<nonnegative_int>
-    ff_ordered_shard_degrees(ParallelTensorDims const &d) {
+FFOrdered<positive_int> ff_ordered_shard_degrees(ParallelTensorDims const &d) {
   return transform(d.shard_dims,
                    [](ShardParallelDim const &d) { return d.degree; });
 }
@@ -43,26 +42,28 @@ ParallelTensorDimDegrees get_parallel_degrees(ParallelTensorDims const &d) {
 }
 
 ParallelTensorDims lift_to_parallel(TensorDims const &dims) {
-  std::vector<nonnegative_int> shard_degrees =
-      repeat_element(/*num_times=*/num_dims(dims), /*element=*/1_n);
-  return lift_to_parallel_with_degrees(
-      dims, SumDegree{1_n}, DiscardCopyDegree{1_n}, shard_degrees);
+  std::vector<positive_int> shard_degrees =
+      repeat_element(/*num_times=*/get_num_dims(dims), /*element=*/1_p);
+  return lift_to_parallel_with_degrees(dims,
+                                       SumDegree{1_p},
+                                       DiscardCopyDegree{1_p},
+                                       ff_ordered_of(shard_degrees));
 }
 
 ParallelTensorDims lift_to_parallel_with_degrees(
     TensorDims const &unpar,
     SumDegree const &sum_degree,
     DiscardCopyDegree const &discard_copy_degree,
-    FFOrdered<nonnegative_int> const &shard_degrees) {
+    FFOrdered<positive_int> const &shard_degrees) {
   std::vector<ShardParallelDim> lifted =
       transform(zip(vector_of(unpar.ff_ordered), vector_of(shard_degrees)),
-                [](std::pair<nonnegative_int, nonnegative_int> const &p) {
-                  nonnegative_int size = p.first;
-                  nonnegative_int degree = p.second;
+                [](std::pair<positive_int, positive_int> const &p) {
+                  positive_int size = p.first;
+                  positive_int degree = p.second;
                   return ShardParallelDim{size, degree};
                 });
 
-  return ParallelTensorDims{FFOrdered<ShardParallelDim>{lifted},
+  return ParallelTensorDims{ff_ordered_of(lifted),
                             ReplicaParallelDimSet{
                                 sum_degree,
                                 discard_copy_degree,
@@ -78,17 +79,17 @@ ParallelTensorDims
                                        degrees.shard_degrees);
 }
 
-nonnegative_int total_replica_degree(ParallelTensorDims const &dims) {
+positive_int total_replica_degree(ParallelTensorDims const &dims) {
   return dims.replica_dims.discard_copy_degree.value *
          dims.replica_dims.sum_degree.value;
 }
 
-nonnegative_int total_shard_degree(ParallelTensorDims const &dims) {
+positive_int total_shard_degree(ParallelTensorDims const &dims) {
   return product(transform(vector_of(dims.shard_dims),
                            [](ShardParallelDim const &d) { return d.degree; }));
 }
 
-nonnegative_int total_parallel_degree(ParallelTensorDims const &dims) {
+positive_int total_parallel_degree(ParallelTensorDims const &dims) {
   return total_replica_degree(dims) * total_shard_degree(dims);
 }
 
@@ -118,7 +119,7 @@ TensorDims get_tensor_dims_unsafe(ParallelTensorDims const &) {
 }
 
 TensorDims get_reduced_dims(ParallelTensorDims const &dims) {
-  FFOrdered<nonnegative_int> dim_sizes = transform(
+  FFOrdered<positive_int> dim_sizes = transform(
       dims.shard_dims, [](ShardParallelDim const &d) { return d.size; });
   return TensorDims{dim_sizes};
 }

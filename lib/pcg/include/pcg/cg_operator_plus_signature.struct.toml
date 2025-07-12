@@ -1,0 +1,23 @@
+namespace = "FlexFlow"
+name = "CGOperatorPlusSignature"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+  "json",
+]
+
+includes = [
+  "op-attrs/computation_graph_op_attrs.dtg.h",
+  "pcg/cg_operator_tensor_shape_signature.dtg.h",
+  "<vector>",
+]
+
+[[fields]]
+name = "op_attrs"
+type = "::FlexFlow::ComputationGraphOpAttrs"
+
+[[fields]]
+name = "tensor_shape_signature"
+type = "::FlexFlow::CGOperatorTensorShapeSignature"

@@ -12,7 +12,7 @@ features = [
 includes = [
   "op-attrs/aggregate_op.dtg.h",
   "op-attrs/datatype.dtg.h",
-  "utils/nonnegative_int/nonnegative_int.h",
+  "utils/positive_int/positive_int.h",
   "<optional>",
 ]
 
@@ -24,11 +24,11 @@ src_includes = [
 
 [[fields]]
 name = "num_entries"
-type = "::FlexFlow::nonnegative_int"
+type = "::FlexFlow::positive_int"
 
 [[fields]]
 name = "out_channels"
-type = "::FlexFlow::nonnegative_int"
+type = "::FlexFlow::positive_int"
 
 [[fields]]
 name = "aggr"

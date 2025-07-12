@@ -8,9 +8,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
   TEST_CASE("MachineSpecification") {
     MachineSpecification ms = MachineSpecification{
-        /*num_nodes=*/4_n,
-        /*num_cpus_per_node=*/16_n,
-        /*num_gpus_per_node=*/8_n,
+        /*num_nodes=*/4_p,
+        /*num_cpus_per_node=*/16_p,
+        /*num_gpus_per_node=*/8_p,
         /*inter_node_bandwidth=*/0,
         /*intra_node_bandwidth=*/0,
     };

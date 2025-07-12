@@ -100,6 +100,20 @@ LayerAddedResult add_input_layer(ComputationGraph &cg,
                    /*outputs=*/std::vector{CreateGrad::NO});
 }
 
+LayerAddedResult add_input_layer_with_grad(ComputationGraph &cg,
+                                           TensorShape const &tensor_shape) {
+  LayerAttrs layer_attrs = LayerAttrs{
+      /*op_attrs=*/ComputationGraphOpAttrs{InputAttrs{tensor_shape}},
+      /*name=*/std::nullopt,
+  };
+
+  return add_layer(cg,
+                   layer_attrs,
+                   /*inputs=*/{},
+                   /*weights=*/{},
+                   /*outputs=*/std::vector{CreateGrad::YES});
+}
+
 TensorAttrs get_tensor_attrs(ComputationGraph const &cg,
                              tensor_guid_t const &t) {
   return cg.raw_graph.at(t.raw_graph_output);
@@ -134,6 +148,13 @@ std::vector<tensor_guid_t> get_incoming_tensors(ComputationGraph const &cg,
                                                 layer_guid_t n) {
   return transform(get_input_values(cg.raw_graph, n.raw_node),
                    [](DataflowOutput const &o) { return tensor_guid_t{o}; });
+}
+
+std::vector<TensorShape> get_incoming_input_shapes(ComputationGraph const &cg,
+                                                   layer_guid_t const &n) {
+  return transform(get_incoming_inputs(cg, n), [&](tensor_guid_t const &t) {
+    return get_tensor_attrs(cg, t).shape;
+  });
 }
 
 static std::vector<tensor_guid_t>
@@ -173,6 +194,21 @@ std::vector<tensor_guid_t> get_incoming_inputs(ComputationGraph const &cg,
 std::vector<tensor_guid_t> get_incoming_weights(ComputationGraph const &cg,
                                                 layer_guid_t const &l) {
   return get_incoming_tensors_with_role(cg, l, IncomingTensorRole::WEIGHT);
+}
+
+std::unordered_set<tensor_guid_t> get_all_tensors(ComputationGraph const &cg) {
+  return transform(get_all_dataflow_outputs(cg.raw_graph),
+                   [](DataflowOutput const &t) { return tensor_guid_t(t); });
+}
+
+std::unordered_map<tensor_guid_t, TensorAttrs>
+    get_all_tensor_attrs(ComputationGraph const &cg) {
+  std::unordered_set<tensor_guid_t> all_tensors = get_all_tensors(cg);
+  std::unordered_map<tensor_guid_t, TensorAttrs> all_tensor_attrs;
+  for (tensor_guid_t const &tensor_guid : all_tensors) {
+    all_tensor_attrs.insert({tensor_guid, get_tensor_attrs(cg, tensor_guid)});
+  }
+  return all_tensor_attrs;
 }
 
 std::unordered_set<ComputationGraphEdge> get_subgraph_incoming_edges(
@@ -218,6 +254,15 @@ std::unordered_set<layer_guid_t> get_subgraph_successors(
 
 LayerAttrs get_layer_attrs(ComputationGraph const &cg, layer_guid_t const &n) {
   return cg.raw_graph.at(n.raw_node);
+}
+
+std::unordered_map<layer_guid_t, LayerAttrs>
+    get_layer_attrs_mapping(ComputationGraph const &cg) {
+  std::unordered_map<layer_guid_t, LayerAttrs> layer_attrs_mapping;
+  for (layer_guid_t const &layer_guid : get_layers(cg)) {
+    layer_attrs_mapping.insert({layer_guid, get_layer_attrs(cg, layer_guid)});
+  }
+  return layer_attrs_mapping;
 }
 
 layer_guid_t get_layer_by_name(ComputationGraph const &cg,

@@ -23,11 +23,11 @@ using namespace ::FlexFlow;
 ComputationGraph get_single_operator_computation_graph() {
   ComputationGraphBuilder b;
 
-  nonnegative_int batch_size = 8_n;
-  nonnegative_int in_channels = 16_n;
-  nonnegative_int out_channels = 12_n;
+  positive_int batch_size = 8_p;
+  positive_int in_channels = 16_p;
+  positive_int out_channels = 12_p;
   TensorShape input_shape = TensorShape{
-      TensorDims{FFOrdered<nonnegative_int>{
+      TensorDims{FFOrdered{
           batch_size,
           in_channels,
           out_channels,
@@ -73,7 +73,7 @@ tl::expected<ComputationGraph, std::string>
   } else if (model_name == "dlrm") {
     return get_dlrm_computation_graph(get_default_dlrm_config());
   } else if (model_name == "split_test") {
-    nonnegative_int batch_size = 8_n;
+    positive_int batch_size = 8_p;
     return get_split_test_computation_graph(batch_size);
   } else if (model_name == "single_operator") {
     return get_single_operator_computation_graph();
