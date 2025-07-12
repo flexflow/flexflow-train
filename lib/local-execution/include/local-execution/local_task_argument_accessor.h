@@ -1,22 +1,21 @@
 #ifndef _FLEXFLOW_LOCAL_EXECUTION_LOCAL_TASK_ARGUMENT_ACCESSOR_H
 #define _FLEXFLOW_LOCAL_EXECUTION_LOCAL_TASK_ARGUMENT_ACCESSOR_H
 
-#include "local-execution/slot_grad_id.dtg.h"
-#include "local-execution/task_argument_accessor.h"
+#include "local-execution/tensor_slot_backing.dtg.h"
+#include "task-spec/runtime_arg_config.dtg.h"
+#include "task-spec/task_argument_accessor.h"
+#include "task-spec/tensor_sub_slot_id_t.dtg.h"
 #include <unordered_map>
 #include <variant>
 
 namespace FlexFlow {
 
-using TensorSlotsBacking = std::unordered_map<
-    SlotGradId,
-    std::variant<GenericTensorAccessorW, std::vector<GenericTensorAccessorW>>>;
-using ArgSlotsBacking = std::unordered_map<slot_id_t, ConcreteArgSpec>;
-
 struct LocalTaskArgumentAccessor : public ITaskArgumentAccessor {
-  LocalTaskArgumentAccessor(Allocator const &allocator,
-                            TensorSlotsBacking const &tensor_slots_backing,
-                            ArgSlotsBacking const &arg_slots_backing);
+  explicit LocalTaskArgumentAccessor(
+      Allocator const &allocator,
+      std::unordered_map<tensor_sub_slot_id_t, TensorSlotBacking> const
+          &tensor_slots_backing,
+      std::unordered_map<slot_id_t, ConcreteArgSpec> const &arg_slots_backing);
 
   LocalTaskArgumentAccessor(LocalTaskArgumentAccessor const &) = delete;
   LocalTaskArgumentAccessor(LocalTaskArgumentAccessor &&) = delete;
@@ -25,9 +24,9 @@ struct LocalTaskArgumentAccessor : public ITaskArgumentAccessor {
 
   GenericTensorAccessor get_tensor(slot_id_t slot,
                                    Permissions priv,
-                                   IsGrad is_grad) const override;
+                                   TensorType tensor_type) const override;
   VariadicGenericTensorAccessor get_variadic_tensor(
-      slot_id_t slot, Permissions priv, IsGrad is_grad) const override;
+      slot_id_t slot, Permissions priv, TensorType tensor_type) const override;
 
   Allocator get_allocator() const override;
 
@@ -35,18 +34,10 @@ struct LocalTaskArgumentAccessor : public ITaskArgumentAccessor {
 
 private:
   Allocator allocator;
-  TensorSlotsBacking tensor_slots_backing;
-  ArgSlotsBacking arg_slots_backing;
+  std::unordered_map<tensor_sub_slot_id_t, TensorSlotBacking>
+      tensor_slots_backing;
+  std::unordered_map<slot_id_t, ConcreteArgSpec> arg_slots_backing;
 };
-
-using TensorSlotsBackingWithoutAddresses = std::unordered_map<
-    SlotGradId,
-    std::variant<std::pair<ArrayShape, DataType>,
-                 std::vector<std::pair<ArrayShape, DataType>>>>;
-
-TensorSlotsBackingWithoutAddresses
-    get_slots_backing_without_tensor_allocation_addresses(
-        TensorSlotsBacking const &);
 
 CHECK_RC_COPY_VIRTUAL_COMPLIANT(LocalTaskArgumentAccessor);
 

@@ -22,9 +22,9 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(result == correct);
     }
 
-    TensorShape input_shape = TensorShape{TensorDims{FFOrdered<nonnegative_int>{
-                                              10_n,
-                                              12_n,
+    TensorShape input_shape = TensorShape{TensorDims{FFOrdered{
+                                              10_p,
+                                              12_p,
                                           }},
                                           DataType::FLOAT};
     InitializerAttrs zero_init = InitializerAttrs{ZeroInitializerAttrs{}};
@@ -58,7 +58,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_tensor_guid_t t_input = get_only(input_added.outputs);
 
       LinearAttrs linear_attrs = LinearAttrs{
-          /*out_channels=*/14_n,
+          /*out_channels=*/14_p,
           /*use_bias=*/true,
           /*data_type=*/DataType::FLOAT,
           /*activation=*/Activation::RELU,
@@ -133,7 +133,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
 
       LinearAttrs linear_attrs = LinearAttrs{
-          /*out_channels=*/14_n,
+          /*out_channels=*/14_p,
           /*use_bias=*/false,
           /*data_type=*/DataType::FLOAT,
           /*activation=*/std::nullopt,
@@ -204,9 +204,9 @@ TEST_SUITE(FF_TEST_SUITE) {
       ParallelComputationGraph pcg = empty_parallel_computation_graph();
 
       TensorShape input_shape = TensorShape{
-          TensorDims{FFOrdered<nonnegative_int>{
-              12_n,
-              10_n,
+          TensorDims{FFOrdered{
+              12_p,
+              10_p,
           }},
           DataType::FLOAT,
       };
@@ -218,7 +218,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       RepartitionAttrs p2_attrs = RepartitionAttrs{
           /*repartition_dim=*/ff_dim_t{0_n},
-          /*repartition_degree=*/3_n,
+          /*repartition_degree=*/3_p,
       };
       ParallelLayerAddedResult p2_added =
           add_parallel_layer(pcg, make_layer_attrs(p2_attrs), {t_input}, {});
@@ -227,7 +227,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       ParallelLayerAttrs p3_attrs = ParallelLayerAttrs{
           PCGOperatorAttrs{RepartitionAttrs{
               /*repartition_dim=*/ff_dim_t{1_n},
-              /*repartition_degree=*/2_n,
+              /*repartition_degree=*/2_p,
           }},
           /*name=*/std::nullopt,
       };
@@ -243,8 +243,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_tensor_guid_t t_op0 = get_only(op0_added.outputs);
 
       EmbeddingAttrs op1_attrs = EmbeddingAttrs{
-          /*num_entires=*/100_n,
-          /*out_channels=*/22_n,
+          /*num_entires=*/100_p,
+          /*out_channels=*/22_p,
           /*aggr=*/AggregateOp::SUM,
           /*data_type=*/DataType::FLOAT,
       };
@@ -262,7 +262,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_tensor_guid_t t_w1 = get_only(w1_added.outputs);
 
       ReplicateAttrs p1_attrs = ReplicateAttrs{
-          /*replicate_degree=*/6_n,
+          /*replicate_degree=*/6_p,
       };
       ParallelLayerAddedResult p1_added =
           add_parallel_layer(pcg, make_layer_attrs(p1_attrs), {t_w1}, {});
@@ -272,7 +272,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           add_parallel_layer(pcg, make_layer_attrs(op1_attrs), {t_op0}, {t_p1});
 
       LinearAttrs op2_attrs = LinearAttrs{
-          /*out_channels=*/14_n,
+          /*out_channels=*/14_p,
           /*use_bias=*/false,
           /*data_type=*/DataType::FLOAT,
           /*activation=*/std::nullopt,
@@ -289,15 +289,15 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_tensor_guid_t t_w2 = get_only(w2_added.outputs);
 
       ReplicateAttrs p4_attrs = ReplicateAttrs{
-          /*replicate_degree=*/3_n,
+          /*replicate_degree=*/3_p,
       };
       ParallelLayerAddedResult p4_added =
           add_parallel_layer(pcg, make_layer_attrs(p4_attrs), {t_w2}, {});
       parallel_tensor_guid_t t_p4 = get_only(p4_added.outputs);
 
       RepartitionAttrs p5_attrs = RepartitionAttrs{
-          /*repartition_dim=*/ff_dim_t{0_n},
-          /*repartition_degree=*/2_n,
+          /*repartition_dim=*/ff_dim_t{1_n},
+          /*repartition_degree=*/2_p,
       };
       ParallelLayerAddedResult p5_added =
           add_parallel_layer(pcg, make_layer_attrs(p5_attrs), {t_p4}, {});

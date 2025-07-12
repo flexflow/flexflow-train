@@ -2,6 +2,7 @@
 #define _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_FF_ORDERED_SLICE_H
 
 #include "op-attrs/ff_ordered/ff_ordered.h"
+#include "op-attrs/ff_ordered/ff_ordered_of.h"
 #include "utils/containers/slice.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/vector_of.h"
@@ -15,7 +16,7 @@ FFOrdered<T> ff_dim_t_nonoverloaded_slice(FFOrdered<T> const &d,
   int raw_start = start.value.unwrap_nonnegative();
   std::optional<int> raw_end = transform(
       end, [](ff_dim_t const &i) { return i.value.unwrap_nonnegative(); });
-  return FFOrdered<T>{slice(vector_of(d), raw_start, raw_end)};
+  return ff_ordered_of(slice(vector_of(d), raw_start, raw_end));
 }
 
 template <typename T>
@@ -27,7 +28,7 @@ FFOrdered<T> relative_ff_dim_t_nonoverloaded_slice(
   std::optional<int> raw_end =
       transform(end, [](relative_ff_dim_t const &i) { return i.value; });
 
-  return FFOrdered<T>{slice(vector_of(d), raw_start, raw_end)};
+  return ff_ordered_of(slice(vector_of(d), raw_start, raw_end));
 }
 
 template <typename T>

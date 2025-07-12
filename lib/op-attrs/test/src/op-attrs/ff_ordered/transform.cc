@@ -18,7 +18,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("input is not empty") {
-      FFOrdered<int> input = {2, 1, 2, 5};
+      FFOrdered<int> input = FFOrdered{2, 1, 2, 5};
 
       FFOrdered<std::string> result =
           transform(input, [](int x) { return fmt::to_string(x); });

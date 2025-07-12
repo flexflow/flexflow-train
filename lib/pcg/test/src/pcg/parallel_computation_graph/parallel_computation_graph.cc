@@ -28,9 +28,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TensorShape input_shape = TensorShape{
         TensorDims{
-            FFOrdered<nonnegative_int>{
-                12_n,
-                16_n,
+            FFOrdered{
+                12_p,
+                16_p,
             },
         },
         DataType::FLOAT,
@@ -64,7 +64,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TensorShape input_shape = TensorShape{
         TensorDims{
-            FFOrdered<nonnegative_int>{10_n, 12_n},
+            FFOrdered{10_p, 12_p},
         },
         DataType::FLOAT,
     };
@@ -84,7 +84,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::string my_op_name = "my op";
 
       LinearAttrs linear_attrs = LinearAttrs{
-          /*out_channels=*/14_n,
+          /*out_channels=*/14_p,
           /*use_bias=*/true,
           /*data_type=*/DataType::FLOAT,
           /*activation=*/Activation::RELU,
@@ -134,9 +134,9 @@ TEST_SUITE(FF_TEST_SUITE) {
       "get_source_layer(ParallelComputationGraph, parallel_tensor_guid_t)") {
     TensorShape input_shape = TensorShape{
         TensorDims{
-            FFOrdered<nonnegative_int>{
-                10_n,
-                12_n,
+            FFOrdered{
+                10_p,
+                12_p,
             },
         },
         DataType::FLOAT,
@@ -205,9 +205,9 @@ TEST_SUITE(FF_TEST_SUITE) {
       "get_incoming_weights(ParallelComputationGraph, parallel_layer_guid_t)") {
     TensorShape input_shape = TensorShape{
         TensorDims{
-            FFOrdered<nonnegative_int>{
-                10_n,
-                12_n,
+            FFOrdered{
+                10_p,
+                12_p,
             },
         },
         DataType::FLOAT,
@@ -248,7 +248,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       ParallelComputationGraph pcg = empty_parallel_computation_graph();
 
       LinearAttrs linear_attrs = LinearAttrs{
-          /*out_channels=*/14_n,
+          /*out_channels=*/14_p,
           /*use_bias=*/false,
           /*data_type=*/DataType::FLOAT,
           /*activation=*/Activation::RELU,
@@ -261,7 +261,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       RepartitionAttrs partition_input_attrs = RepartitionAttrs{
           /*repartition_dim=*/ff_dim_t{0_n},
-          /*repartition_degree=*/2_n,
+          /*repartition_degree=*/2_p,
       };
 
       ParallelLayerAddedResult partition_input_added = add_parallel_layer(
@@ -281,7 +281,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           get_only(projection_weight_added.outputs);
 
       ReplicateAttrs replicate_projection_attrs = ReplicateAttrs{
-          /*replicate_degree=*/2_n,
+          /*replicate_degree=*/2_p,
       };
       ParallelLayerAddedResult replicate_projection_added =
           add_parallel_layer(pcg,
@@ -309,9 +309,9 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("pcg_add_input_layer") {
     TensorShape input_shape = TensorShape{
         TensorDims{
-            FFOrdered<nonnegative_int>{
-                12_n,
-                10_n,
+            FFOrdered{
+                12_p,
+                10_p,
             },
         },
         DataType::FLOAT,

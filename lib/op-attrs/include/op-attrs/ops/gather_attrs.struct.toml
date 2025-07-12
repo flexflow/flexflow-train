@@ -10,8 +10,11 @@ features = [
 ]
 
 includes = [
+  "op-attrs/ff_dim_t.dtg.h",
+]
+
+src_includes = [
   "op-attrs/ff_dim_t.h",
-  "op-attrs/ff_dim_t.dtg.h"
 ]
 
 [[fields]]

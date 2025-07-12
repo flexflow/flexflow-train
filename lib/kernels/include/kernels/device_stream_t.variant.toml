@@ -1,0 +1,16 @@
+namespace = "FlexFlow" 
+name = "device_stream_t"
+features = []
+
+includes = [
+  "<utility>",
+  "kernels/device.h",
+]
+
+[[values]]
+type = "ffStream_t"
+key = "gpu"
+
+[[values]]
+type = "std::monostate"
+key = "cpu"

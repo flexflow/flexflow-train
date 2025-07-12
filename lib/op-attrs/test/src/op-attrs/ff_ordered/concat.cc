@@ -10,7 +10,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       FFOrdered<int> r_input = FFOrdered<int>{2, 1};
 
       FFOrdered<int> result = concat(l_input, r_input);
-      FFOrdered<int> correct = {1, 3, 1, 2, 1};
+      FFOrdered<int> correct = FFOrdered{1, 3, 1, 2, 1};
 
       CHECK(result == correct);
     }
@@ -29,13 +29,13 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("concat(std::vector<FFOrdered<T>>)") {
     SUBCASE("inputs have elements") {
       std::vector<FFOrdered<int>> input = {
-          {1},
-          {2, 1},
-          {1},
+          FFOrdered{1},
+          FFOrdered{2, 1},
+          FFOrdered{1},
       };
 
       FFOrdered<int> result = concat(input);
-      FFOrdered<int> correct = {
+      FFOrdered<int> correct = FFOrdered{
           1,
           2,
           1,
@@ -55,10 +55,14 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("inputs are empty") {
-      std::vector<FFOrdered<int>> input = {{}, {}, {}};
+      std::vector<FFOrdered<int>> input = {
+          FFOrdered<int>{},
+          FFOrdered<int>{},
+          FFOrdered<int>{},
+      };
 
       FFOrdered<int> result = concat(input);
-      FFOrdered<int> correct = {};
+      FFOrdered<int> correct = FFOrdered<int>{};
 
       CHECK(result == correct);
     }

@@ -4,16 +4,16 @@
 namespace FlexFlow {
 
 TransformerConfig get_default_transformer_config() {
-  return TransformerConfig{/*num_features=*/512_n,
-                           /*sequence_length=*/512_n,
-                           /*batch_size=*/64_n,
-                           /*dim_feedforward=*/2048_n,
-                           /*num_heads=*/8_n,
-                           /*num_encoder_layers=*/6_n,
-                           /*num_decoder_layers=*/6_n,
+  return TransformerConfig{/*num_features=*/512_p,
+                           /*sequence_length=*/512_p,
+                           /*batch_size=*/64_p,
+                           /*dim_feedforward=*/2048_p,
+                           /*num_heads=*/8_p,
+                           /*num_encoder_layers=*/6_p,
+                           /*num_decoder_layers=*/6_p,
                            /*dropout=*/0.1,
                            /*layer_norm_eps=*/1e-05,
-                           /*vocab_size=*/64_n};
+                           /*vocab_size=*/64_p};
 }
 
 tensor_guid_t create_feedforward_network(ComputationGraphBuilder &cgb,
@@ -32,10 +32,10 @@ tensor_guid_t create_feedforward_network(ComputationGraphBuilder &cgb,
 tensor_guid_t create_transformer_encoder_layer(ComputationGraphBuilder &cgb,
                                                TransformerConfig const &config,
                                                tensor_guid_t const &input) {
-  std::vector<relative_ff_dim_t> layer_norm_axis = {
+  std::set<relative_ff_dim_t> layer_norm_axis = {
       relative_ff_dim_t{-1}}; // Normalize the last dim
-  nonnegative_int kdim = config.dim_feedforward / config.num_heads;
-  nonnegative_int vdim = config.dim_feedforward / config.num_heads;
+  positive_int kdim = positive_int{config.dim_feedforward / config.num_heads};
+  positive_int vdim = positive_int{config.dim_feedforward / config.num_heads};
   tensor_guid_t self_attention =
       cgb.multihead_attention(/*query=*/input,
                               /*key=*/input,
@@ -81,10 +81,10 @@ tensor_guid_t
                                      TransformerConfig const &config,
                                      tensor_guid_t const &input,
                                      tensor_guid_t const &encoder_output) {
-  std::vector<relative_ff_dim_t> layer_norm_axis = {
+  std::set<relative_ff_dim_t> layer_norm_axis = {
       relative_ff_dim_t{-1}}; // Normalize the last dim
-  nonnegative_int kdim = config.dim_feedforward / config.num_heads;
-  nonnegative_int vdim = config.dim_feedforward / config.num_heads;
+  positive_int kdim = positive_int{config.dim_feedforward / config.num_heads};
+  positive_int vdim = positive_int{config.dim_feedforward / config.num_heads};
   tensor_guid_t self_attention =
       cgb.multihead_attention(/*query=*/input,
                               /*key=*/input,
@@ -153,7 +153,7 @@ ComputationGraph
   ComputationGraphBuilder cgb;
 
   TensorShape input_shape = TensorShape{
-      TensorDims{FFOrdered<nonnegative_int>{
+      TensorDims{FFOrdered<positive_int>{
           config.batch_size, config.sequence_length, config.num_features}},
       DataType::FLOAT,
   };

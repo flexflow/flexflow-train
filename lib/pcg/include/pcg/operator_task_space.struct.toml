@@ -5,13 +5,13 @@ features = [
   "ord",
   "hash",
   "json",
-  # "rapidcheck",
+  "rapidcheck",
   "fmt",
 ]
 
 includes = [ 
   "<vector>",
-  "utils/nonnegative_int/nonnegative_int.h",
+  "utils/positive_int/positive_int.h",
 ]
 
 src_includes = [
@@ -21,4 +21,4 @@ src_includes = [
 
 [[fields]]
 name = "degrees"
-type = "std::vector<::FlexFlow::nonnegative_int>"
+type = "std::vector<::FlexFlow::positive_int>"

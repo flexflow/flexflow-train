@@ -9,14 +9,14 @@ template <DataType DT>
 struct ZeroInitKernel {
   void operator()(GenericTensorAccessorW const &tensor) const {
     auto arr = get<DT>(tensor);
-    for (size_t i = 0; i < get_volume(tensor.shape); i++) {
+    for (size_t i = 0; i < get_num_elements(tensor.shape.dims); i++) {
       arr[i] = 0.0f;
     }
   }
 };
 
 void zero_init_kernel_cpu(GenericTensorAccessorW const &tensor) {
-  DataTypeDispatch1<ZeroInitKernel>{}(tensor.data_type, tensor);
+  DataTypeDispatch1<ZeroInitKernel>{}(tensor.shape.data_type, tensor);
 }
 
 template <DataType DT>
@@ -25,7 +25,7 @@ struct ConstantInitKernel {
                   DataTypeValue value) const {
     auto arr = get<DT>(tensor);
     auto unwrapped_value = value.get<real_type_t<DT>>();
-    for (size_t i = 0; i < get_volume(tensor.shape); i++) {
+    for (size_t i = 0; i < get_num_elements(tensor.shape.dims); i++) {
       arr[i] = unwrapped_value;
     }
   }
@@ -33,7 +33,8 @@ struct ConstantInitKernel {
 
 void constant_init_kernel_cpu(GenericTensorAccessorW const &tensor,
                               DataTypeValue value) {
-  DataTypeDispatch1<ConstantInitKernel>{}(tensor.data_type, tensor, value);
+  DataTypeDispatch1<ConstantInitKernel>{}(
+      tensor.shape.data_type, tensor, value);
 }
 
 void zero_init_kernel(TaskLocation const &loc,

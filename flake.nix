@@ -18,7 +18,7 @@
     flake-utils.url = "github:numtide/flake-utils";
 
     proj-repo = {
-      url = "github:lockshaw/proj";
+      url = "git+https://git.sr.ht/~lockshaw/proj";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
@@ -121,6 +121,7 @@
               lcov # for code coverage
               compdb
               gbenchmark
+              libtorch-bin
             ])
             (with proj-repo.packages.${system}; [
               proj
@@ -177,6 +178,7 @@
               frozendict
               black
               toml
+              numpy
             ])
             (with self.packages.${system}; [
               ffdb

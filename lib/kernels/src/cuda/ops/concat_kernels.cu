@@ -14,32 +14,26 @@
  */
 
 #include "internal/device.h"
-#include "kernels/concat_kernels.h"
+#include "kernels/concat_kernels_gpu.h"
 #include <cassert>
 
 namespace FlexFlow::Kernels::Concat {
 
-void calc_blk_size(size_t &num_blocks,
-                   size_t &blk_size,
-                   ArrayShape const &shape,
-                   ff_dim_t axis) {
-  legion_dim_t legion_axis = legion_dim_from_ff_dim(axis, shape.num_dims());
-  assert(legion_axis.value < shape.num_dims());
-  if (legion_axis.value == 0_n) {
-    legion_axis.value = 1_n;
-  }
-  blk_size = shape.sub_shape(legion_dim_t{0_n}, legion_axis)
-                 .num_elements()
-                 .unwrap_nonnegative();
-  num_blocks = shape.sub_shape(legion_axis, std::nullopt)
-                   .num_elements()
-                   .unwrap_nonnegative();
+static void calc_blk_size(size_t &num_blocks,
+                          size_t &blk_size,
+                          TensorShape const &shape,
+                          ff_dim_t axis) {
+  blk_size = get_num_elements(slice_tensor_dims(shape.dims, axis, std::nullopt))
+                 .int_from_positive_int();
+  num_blocks =
+      get_num_elements(slice_tensor_dims(shape.dims, ff_dim_t{0_n}, axis))
+          .int_from_positive_int();
 }
 
-void forward_kernel(cudaStream_t stream,
-                    GenericTensorAccessorW const &output,
-                    std::vector<GenericTensorAccessorR> const &inputs,
-                    ff_dim_t axis) {
+void gpu_forward_kernel(cudaStream_t stream,
+                        GenericTensorAccessorW const &output,
+                        std::vector<GenericTensorAccessorR> const &inputs,
+                        ff_dim_t axis) {
   assert(inputs.size() <= MAX_NUM_INPUTS);
   size_t num_blocks = 1, output_blk_size = 1;
   calc_blk_size(num_blocks, output_blk_size, output.shape, axis);
@@ -68,10 +62,10 @@ void forward_kernel(cudaStream_t stream,
   }
 }
 
-void backward_kernel(cudaStream_t stream,
-                     GenericTensorAccessorR const &output_grad,
-                     std::vector<GenericTensorAccessorW> const &input_grads,
-                     ff_dim_t axis) {
+void gpu_backward_kernel(cudaStream_t stream,
+                         GenericTensorAccessorR const &output_grad,
+                         std::vector<GenericTensorAccessorW> const &input_grads,
+                         ff_dim_t axis) {
   assert(input_grads.size() <= MAX_NUM_INPUTS);
   size_t num_blocks = 1, output_blk_size = 1;
   calc_blk_size(num_blocks, output_blk_size, output_grad.shape, axis);

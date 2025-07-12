@@ -1,6 +1,9 @@
 #include "kernels/accessor.h"
 #include "kernels/allocation.h"
 #include "kernels/datatype_dispatch.h"
+#include "op-attrs/ff_ordered/get_idxs.h"
+#include "op-attrs/tensor_dims_coord.h"
+#include "op-attrs/tensor_shape.h"
 #include "utils/containers/reversed.h"
 #include "utils/containers/vector_of.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
@@ -8,33 +11,42 @@
 
 namespace FlexFlow {
 
-nonnegative_int
-    calculate_accessor_offset(LegionOrdered<nonnegative_int> const &indices,
-                              ArrayShape const &shape) {
-  ASSERT(indices.size() == shape.num_dims(),
+nonnegative_int calculate_accessor_offset(TensorDimsCoord const &coord,
+                                          TensorDims const &tensor_dims) {
+  ASSERT(tensor_dims_coord_get_num_dims(coord) == get_num_dims(tensor_dims),
          "Number of indices does not match the number of dimensions");
 
   nonnegative_int offset = 0_n;
-  nonnegative_int multiplier = 1_n;
+  positive_int multiplier = 1_p;
 
-  for (legion_dim_t dim : reversed(vector_of(key_range(shape.dims)))) {
-    ASSERT(indices.at(dim) < shape.at(legion_dim_t{dim}),
+  for (ff_dim_t dim : reversed(get_idxs(tensor_dims.ff_ordered))) {
+    ASSERT(coord.ff_ordered.at(dim) < dim_at_idx(tensor_dims, dim),
            "Out of bounds access",
            dim);
 
-    offset += indices.at(dim) * multiplier;
-    multiplier *= shape.at(legion_dim_t{dim});
+    offset += coord.ff_ordered.at(dim) * multiplier;
+    multiplier *= tensor_dims.ff_ordered.at(dim);
   }
 
   return offset;
 }
 
+TensorShape
+    get_tensor_shape_for_accessor_r(GenericTensorAccessorR const &accessor) {
+  return accessor.shape;
+}
+
+TensorShape
+    get_tensor_shape_for_accessor_w(GenericTensorAccessorW const &accessor) {
+  return accessor.shape;
+}
+
 void copy_accessor_data_to_l_from_r(
-    GenericTensorAccessorW &dst_accessor,
+    GenericTensorAccessorW const &dst_accessor,
     GenericTensorAccessorR const &src_accessor) {
-  size_t num_bytes =
-      dst_accessor.shape.get_volume().unwrap_nonnegative() *
-      size_of_datatype(dst_accessor.data_type).unwrap_nonnegative();
+  size_t num_bytes = get_size_in_bytes(dst_accessor.shape)
+                         .unwrap_num_bytes()
+                         .unwrap_nonnegative();
 
   DeviceType dst_device_type = dst_accessor.device_type;
   DeviceType src_device_type = src_accessor.device_type;
@@ -65,18 +77,14 @@ GenericTensorAccessorW::operator GenericTensorAccessorR() const {
 }
 
 GenericTensorAccessorW::GenericTensorAccessorW(
-    DataType data_type,
-    ArrayShape const &shape,
+    TensorShape const &shape,
     void *ptr,
     DeviceType device_type = DeviceType::GPU)
-    : data_type(data_type), shape(shape), ptr(ptr), device_type(device_type) {}
+    : shape(shape), ptr(ptr), device_type(device_type) {}
 
-std::tuple<DataType const &,
-           ArrayShape const &,
-           void *const &,
-           DeviceType const &>
+std::tuple<TensorShape const &, void *const &, DeviceType const &>
     GenericTensorAccessorW::tie() const {
-  return std::tie(this->data_type, this->shape, this->ptr, this->device_type);
+  return std::tie(this->shape, this->ptr, this->device_type);
 }
 
 bool GenericTensorAccessorW::operator==(
@@ -110,10 +118,10 @@ half *GenericTensorAccessorW::get_half_ptr() const {
 }
 
 std::string format_as(GenericTensorAccessorW const &a) {
-  return fmt::format("<GenericTensorAccessorW data_type={} shape={} ptr={}>",
-                     a.data_type,
+  return fmt::format("<GenericTensorAccessorW shape={} ptr={} device_type={}>",
                      a.shape,
-                     a.ptr);
+                     a.ptr,
+                     a.device_type);
 }
 
 std::ostream &operator<<(std::ostream &s, GenericTensorAccessorW const &a) {
@@ -121,18 +129,14 @@ std::ostream &operator<<(std::ostream &s, GenericTensorAccessorW const &a) {
 }
 
 GenericTensorAccessorR::GenericTensorAccessorR(
-    DataType data_type,
-    ArrayShape const &shape,
+    TensorShape const &shape,
     void const *ptr,
     DeviceType device_type = DeviceType::GPU)
-    : data_type(data_type), shape(shape), ptr(ptr), device_type(device_type) {}
+    : shape(shape), ptr(ptr), device_type(device_type) {}
 
-std::tuple<DataType const &,
-           ArrayShape const &,
-           void const *const &,
-           DeviceType const &>
+std::tuple<TensorShape const &, void const *const &, DeviceType const &>
     GenericTensorAccessorR::tie() const {
-  return std::tie(this->data_type, this->shape, this->ptr, this->device_type);
+  return std::tie(this->shape, this->ptr, this->device_type);
 }
 
 bool GenericTensorAccessorR::operator==(
@@ -166,10 +170,10 @@ half const *GenericTensorAccessorR::get_half_ptr() const {
 }
 
 std::string format_as(GenericTensorAccessorR const &a) {
-  return fmt::format("<GenericTensorAccessorR data_type={} shape={} ptr={}>",
-                     a.data_type,
+  return fmt::format("<GenericTensorAccessorR shape={} ptr={} device_type={}>",
                      a.shape,
-                     a.ptr);
+                     a.ptr,
+                     a.device_type);
 }
 
 std::ostream &operator<<(std::ostream &s, GenericTensorAccessorR const &a) {
@@ -221,29 +225,71 @@ std::vector<half const *>
   return get<DataType::HALF>(a);
 }
 
+int32_t *get_int32_ptr(GenericTensorAccessorW const &a) {
+  return get<DataType::INT32>(a);
+}
+
+int64_t *get_int64_ptr(GenericTensorAccessorW const &a) {
+  return get<DataType::INT64>(a);
+}
+
+float *get_float_ptr(GenericTensorAccessorW const &a) {
+  return get<DataType::FLOAT>(a);
+}
+
+double *get_double_ptr(GenericTensorAccessorW const &a) {
+  return get<DataType::DOUBLE>(a);
+}
+
+half *get_half_ptr(GenericTensorAccessorW const &a) {
+  return get<DataType::HALF>(a);
+}
+
+std::vector<int32_t *>
+    get_int32_ptrs(std::vector<GenericTensorAccessorW> const &a) {
+  return get<DataType::INT32>(a);
+}
+
+std::vector<int64_t *>
+    get_int64_ptrs(std::vector<GenericTensorAccessorW> const &a) {
+  return get<DataType::INT64>(a);
+}
+
+std::vector<float *>
+    get_float_ptrs(std::vector<GenericTensorAccessorW> const &a) {
+  return get<DataType::FLOAT>(a);
+}
+
+std::vector<double *>
+    get_double_ptrs(std::vector<GenericTensorAccessorW> const &a) {
+  return get<DataType::DOUBLE>(a);
+}
+
+std::vector<half *>
+    get_half_ptrs(std::vector<GenericTensorAccessorW> const &a) {
+  return get<DataType::HALF>(a);
+}
+
 GenericTensorAccessorR read_only_accessor_from_write_accessor(
     GenericTensorAccessorW const &writable) {
-  return GenericTensorAccessorR{writable.data_type,
-                                writable.shape,
-                                req<void const *>(writable.ptr),
-                                writable.device_type};
+  return GenericTensorAccessorR{
+      writable.shape,
+      writable.ptr,
+      writable.device_type,
+  };
 }
 
-bool is_shape_and_dtype_equal(GenericTensorAccessorR const &acc1,
-                              GenericTensorAccessorR const &acc2) {
-  return acc1.shape == acc2.shape && acc1.data_type == acc2.data_type;
+bool accessors_have_same_shape(GenericTensorAccessorR const &acc1,
+                               GenericTensorAccessorR const &acc2) {
+  return acc1.shape == acc2.shape;
 }
 
-bool shape_and_dtype_matches(GenericTensorAccessorR const &accessor,
-                             ArrayShape const &expected_shape,
-                             DataType const &expected_dtype) {
-  return accessor.shape == expected_shape &&
-         accessor.data_type == expected_dtype;
+bool accessors_have_same_shape(GenericTensorAccessorW const &acc1,
+                               GenericTensorAccessorW const &acc2) {
+  return acc1.shape == acc2.shape;
 }
 
-std::pair<ArrayShape, DataType>
-    get_shape_and_datatype(GenericTensorAccessorR const &accessor) {
-  return std::make_pair(accessor.shape, accessor.data_type);
-}
+template int32_t
+    accessor_get_only_value<DataType::INT32>(GenericTensorAccessorR const &);
 
 } // namespace FlexFlow

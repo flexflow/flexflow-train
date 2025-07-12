@@ -3,6 +3,7 @@
 #include "op-attrs/ff_ordered/transform.h"
 #include "op-attrs/initializers/kaiming_initializer_mode.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "op-attrs/tensor_dims.h"
 #include "op-attrs/tensor_shape.h"
 #include "utils/containers/product.h"
 #include "utils/expected.h"
@@ -44,11 +45,12 @@ RecordFormatter as_dot(LinearAttrs const &attrs) {
 tl::expected<TensorShape, std::string>
     get_projection_shape(LinearAttrs const &attrs,
                          TensorShape const &input_shape) {
-  nonnegative_int in_channels = dim_at_idx(input_shape, relative_ff_dim_t{-1});
+  positive_int in_channels =
+      dim_at_idx(input_shape.dims, relative_ff_dim_t{-1});
 
   return TensorShape{
       TensorDims{
-          FFOrdered<nonnegative_int>{in_channels, attrs.out_channels},
+          FFOrdered<positive_int>{attrs.out_channels, in_channels},
       },
       input_shape.data_type,
   };
@@ -58,7 +60,7 @@ tl::expected<TensorShape, std::string>
     get_bias_shape(LinearAttrs const &attrs, TensorShape const &input_shape) {
   return TensorShape{
       TensorDims{
-          FFOrdered<nonnegative_int>{attrs.out_channels},
+          FFOrdered<positive_int>{attrs.out_channels},
       },
       input_shape.data_type,
   };
@@ -99,14 +101,14 @@ tl::expected<ParallelTensorShape, std::string>
     result_unpar.value();
   });
 
-  SumDegree sum_degree = SumDegree{1_n};
+  SumDegree sum_degree = SumDegree{1_p};
   DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{
       get_sum_degree(input) * product(slice(ff_ordered_shard_degrees(input),
                                             relative_ff_dim_t{0},
                                             relative_ff_dim_t{-1}))};
-  FFOrdered<nonnegative_int> shard_degrees = FFOrdered<nonnegative_int>{
-      shard_dim_at_idx(input, relative_ff_dim_t{-1}).degree,
+  FFOrdered<positive_int> shard_degrees = FFOrdered<positive_int>{
       get_discard_copy_degree(input),
+      shard_dim_at_idx(input, relative_ff_dim_t{-1}).degree,
   };
 
   return lift_to_parallel_with_degrees(
@@ -131,8 +133,8 @@ tl::expected<ParallelTensorShape, std::string>
       DiscardCopyDegree{product(slice(ff_ordered_shard_degrees(input),
                                       relative_ff_dim_t{0},
                                       relative_ff_dim_t{-1}))};
-  FFOrdered<nonnegative_int> shard_degrees =
-      FFOrdered<nonnegative_int>{get_discard_copy_degree(input)};
+  FFOrdered<positive_int> shard_degrees =
+      FFOrdered<positive_int>{get_discard_copy_degree(input)};
 
   return lift_to_parallel_with_degrees(
       unpar, sum_degree, discard_copy_degree, shard_degrees);
@@ -153,8 +155,8 @@ tl::expected<ParallelTensorShape, std::string>
   SumDegree sum_degree =
       SumDegree{get_sum_degree(input) *
                 shard_dim_at_idx(input, relative_ff_dim_t{-1}).degree};
-  DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{1_n};
-  FFOrdered<nonnegative_int> shard_degrees = ff_ordered_shard_degrees(input);
+  DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{1_p};
+  FFOrdered<positive_int> shard_degrees = ff_ordered_shard_degrees(input);
   shard_degrees.at(relative_ff_dim_t{-1}) = get_discard_copy_degree(input);
 
   return lift_to_parallel_with_degrees(
@@ -209,10 +211,10 @@ tl::expected<std::vector<InitializerAttrs>, std::string> get_initializers(
   InitializerAttrs projection_initializer =
       maybe_projection_initializer.value_or(projection_default_initializer);
 
-  nonnegative_int fan_in = calculate_fan_for_mode(
-      projection_shape.dims, KaimingInitializerMode::FAN_IN);
+  positive_int fan_in = calculate_fan_for_mode(projection_shape.dims,
+                                               KaimingInitializerMode::FAN_IN);
 
-  float bound = 1 / sqrtf(static_cast<float>(fan_in.unwrap_nonnegative()));
+  float bound = 1 / sqrtf(static_cast<float>(fan_in.int_from_positive_int()));
 
   InitializerAttrs bias_default_initializer =
       InitializerAttrs{UniformInitializerAttrs{

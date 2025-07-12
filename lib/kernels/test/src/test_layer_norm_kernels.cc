@@ -1,5 +1,5 @@
 #include "internal/test_utils.h"
-#include "kernels/layer_norm_kernels.h"
+#include "kernels/layer_norm_kernels_gpu.h"
 #include "op-attrs/datatype_value.h"
 #include <doctest/doctest.h>
 
@@ -7,8 +7,8 @@ using namespace ::FlexFlow;
 
 TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test LayerNorm Forward and Backward Kernel") {
-    nonnegative_int batch_size = 10_n;
-    nonnegative_int feature_size = 10_n;
+    positive_int batch_size = 10_p;
+    positive_int feature_size = 10_p;
     float epsilon = 1e-5f;
     bool elementwise_affine = true;
 
@@ -22,41 +22,41 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         DataType::FLOAT,
     };
 
-    ManagedPerDeviceFFHandle managed_handle{
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
         /*workSpaceSize=*/1024 * 1024,
-        /*allowTensorOpMathConversion=*/true};
+        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    LayerNormPerDeviceState state =
-        Kernels::LayerNorm::init_kernel(managed_handle.raw_handle(),
-                                        allocator,
-                                        elementwise_affine,
-                                        batch_size.unwrap_nonnegative(),
-                                        feature_size.unwrap_nonnegative(),
-                                        epsilon);
+    LayerNormPerDeviceState state = Kernels::LayerNorm::gpu_init_kernel(
+        managed_handle.raw_handle(),
+        allocator,
+        elementwise_affine,
+        batch_size.int_from_positive_int(),
+        feature_size.int_from_positive_int(),
+        epsilon);
 
     GenericTensorAccessorR input_accessor =
         create_random_filled_accessor_r(input_shape, allocator);
     GenericTensorAccessorW gamma_accessor = create_filled_accessor_w(
         feature_shape, allocator, make_float_data_type_value(1));
 
-    SUBCASE("forward_kernel") {
+    SUBCASE("gpu_forward_kernel") {
       GenericTensorAccessorW output_accessor =
           allocator.allocate_tensor(output_shape);
       GenericTensorAccessorW beta_accessor = create_filled_accessor_w(
           feature_shape, allocator, make_float_data_type_value(0));
 
-      Kernels::LayerNorm::forward_kernel(managed_stream.raw_stream(),
-                                         state,
-                                         input_accessor,
-                                         output_accessor,
-                                         gamma_accessor,
-                                         beta_accessor);
+      Kernels::LayerNorm::gpu_forward_kernel(managed_stream.raw_stream(),
+                                             state,
+                                             input_accessor,
+                                             output_accessor,
+                                             gamma_accessor,
+                                             beta_accessor);
     }
 
-    SUBCASE("backward_kernel") {
+    SUBCASE("gpu_backward_kernel") {
       GenericTensorAccessorR output_grad_accessor =
           create_random_filled_accessor_r(output_shape, allocator);
       GenericTensorAccessorW input_grad_accessor =
@@ -66,7 +66,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       GenericTensorAccessorW beta_grad_accessor =
           allocator.allocate_tensor(feature_shape);
 
-      Kernels::LayerNorm::backward_kernel(
+      Kernels::LayerNorm::gpu_backward_kernel(
           managed_stream.raw_stream(),
           state,
           output_grad_accessor,
