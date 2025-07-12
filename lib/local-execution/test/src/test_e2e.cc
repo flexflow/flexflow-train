@@ -55,9 +55,9 @@ TEST_SUITE(FF_TEST_SUITE) {
         TensorDims{FFOrdered{batch_size, data_dim}}, DataType::FLOAT};
 
     TensorShape weight_shape_1 = TensorShape{
-        TensorDims{FFOrdered{data_dim, hidden_dim}}, DataType::FLOAT};
+        TensorDims{FFOrdered{hidden_dim, data_dim}}, DataType::FLOAT};
     TensorShape weight_shape_2 = TensorShape{
-        TensorDims{FFOrdered{hidden_dim, output_dim}}, DataType::FLOAT};
+        TensorDims{FFOrdered{output_dim, hidden_dim}}, DataType::FLOAT};
 
     LayerAddedResult inputs_layer =
         add_input_layer_with_grad(computation_graph, input_tensor_shape);

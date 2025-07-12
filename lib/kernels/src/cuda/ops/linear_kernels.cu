@@ -237,9 +237,10 @@ void gpu_backward_kernel(cudaStream_t stream,
                               stream);
     } else {
       // TODO: only support relu and sigmoid for now
-      assert(false && "Unsupported activation for Linear");
+      PANIC("Unsupported activation for Linear", m.activation.value());
     }
   }
+  
   // Compute weight gradiant
   // NOTE: we use alpha=1 for kernel_grad to accumulate gradients
   checkCUBLAS(cublasGemmEx(m.handle.blas,

@@ -132,12 +132,14 @@ void gpu_forward_kernel(ffStream_t stream,
                         GenericTensorAccessorR const &index,
                         GenericTensorAccessorW const &output) {
   checkCUDA(get_legion_stream(&stream));
-  coord_t stride =
-      get_num_elements(slice_tensor_dims(output.shape.dims, 
-          add_to_ff_dim(m.dim, -1), ff_dim_t{0_n})).int_from_positive_int();
 
+  std::optional<coord_t> stride = std::nullopt;
   if (m.dim.value == 0_n) {
     stride = 1;
+  } else {
+    stride =
+        get_num_elements(slice_tensor_dims(output.shape.dims, 
+            add_to_ff_dim(m.dim, -1), std::nullopt)).int_from_positive_int();
   }
 
   coord_t output_dim_size =
@@ -154,7 +156,7 @@ void gpu_forward_kernel(ffStream_t stream,
       index,
       output,
       get_num_elements(output.shape.dims).int_from_positive_int(),
-      stride,
+      stride.value(),
       input_dim_size,
       output_dim_size);
 }
@@ -166,11 +168,13 @@ void gpu_backward_kernel(ffStream_t stream,
                          GenericTensorAccessorW const &input_grad) {
   checkCUDA(get_legion_stream(&stream));
 
-  coord_t stride =
-      get_num_elements(slice_tensor_dims(output_grad.shape.dims, 
-          add_to_ff_dim(m.dim, -1), ff_dim_t{0_n})).int_from_positive_int();
+  std::optional<coord_t> stride = std::nullopt;
   if (m.dim.value == 0_n) {
     stride = 1;
+  } else {
+    stride =
+        get_num_elements(slice_tensor_dims(output_grad.shape.dims, 
+            add_to_ff_dim(m.dim, -1), std::nullopt)).int_from_positive_int();
   }
 
   coord_t output_dim_size =
@@ -188,7 +192,7 @@ void gpu_backward_kernel(ffStream_t stream,
       index,
       input_grad,
       get_num_elements(output_grad.shape.dims).int_from_positive_int(),
-      stride,
+      stride.value(),
       input_dim_size,
       output_dim_size);
 }

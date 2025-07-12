@@ -3,7 +3,6 @@
 #include "task-spec/ops/batch_matmul.h"
 #include "task-spec/ops/batch_norm.h"
 #include "task-spec/ops/cast.h"
-#include "task-spec/ops/combine.h"
 #include "task-spec/ops/concat.h"
 #include "task-spec/ops/conv_2d.h"
 #include "task-spec/ops/dropout.h"
@@ -18,9 +17,6 @@
 #include "task-spec/ops/noop.h"
 #include "task-spec/ops/pool_2d.h"
 #include "task-spec/ops/reduce.h"
-#include "task-spec/ops/reduction.h"
-#include "task-spec/ops/repartition.h"
-#include "task-spec/ops/replicate.h"
 #include "task-spec/ops/reshape.h"
 #include "task-spec/ops/reverse.h"
 #include "task-spec/ops/softmax.h"
@@ -203,33 +199,6 @@ TaskSignatureAndImpl
     case task_id_t::ATTENTION_BWD_TASK_ID:
       return TaskSignatureAndImpl{get_attention_bwd_task_impl(),
                                   get_attention_bwd_signature()};
-    case task_id_t::COMBINE_FWD_TASK_ID:
-      return TaskSignatureAndImpl{get_combine_fwd_task_impl(),
-                                  get_combine_fwd_signature()};
-    case task_id_t::COMBINE_BWD_TASK_ID:
-      return TaskSignatureAndImpl{get_combine_bwd_task_impl(),
-                                  get_combine_bwd_signature()};
-    case task_id_t::REDUCTION_FWD_TASK_ID:
-      return TaskSignatureAndImpl{get_reduction_fwd_task_impl(),
-                                  get_reduction_fwd_signature()};
-    case task_id_t::REDUCTION_BWD_TASK_ID:
-      return TaskSignatureAndImpl{get_reduction_bwd_task_impl(),
-                                  get_reduction_bwd_signature()};
-    case task_id_t::REPARTITION_INIT_TASK_ID:
-      return TaskSignatureAndImpl{get_repartition_init_task_impl(),
-                                  get_repartition_init_signature()};
-    case task_id_t::REPARTITION_FWD_TASK_ID:
-      return TaskSignatureAndImpl{get_repartition_fwd_task_impl(),
-                                  get_repartition_fwd_signature()};
-    case task_id_t::REPARTITION_BWD_TASK_ID:
-      return TaskSignatureAndImpl{get_repartition_bwd_task_impl(),
-                                  get_repartition_bwd_signature()};
-    case task_id_t::REPLICATE_FWD_TASK_ID:
-      return TaskSignatureAndImpl{get_replicate_fwd_task_impl(),
-                                  get_replicate_fwd_signature()};
-    case task_id_t::REPLICATE_BWD_TASK_ID:
-      return TaskSignatureAndImpl{get_replicate_bwd_task_impl(),
-                                  get_replicate_bwd_signature()};
     default:
       PANIC("Unhandled task ID", task_id);
   }

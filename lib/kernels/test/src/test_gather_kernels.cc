@@ -13,13 +13,16 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    GatherPerDeviceState state = Kernels::Gather::gpu_init_kernel(
-        managed_handle.raw_handle(), ff_dim_t{0_n});
-
     SUBCASE("gpu_forward_kernel") {
       auto run_forward_test = [&](TensorShape input_shape,
                                   TensorShape index_shape,
                                   TensorShape output_shape) {
+        ff_dim_t dim = ff_dim_t{
+          nonnegative_int{get_num_dims(input_shape.dims).unwrap_nonnegative() - 1},
+        };
+        GatherPerDeviceState state = Kernels::Gather::gpu_init_kernel(
+            managed_handle.raw_handle(), dim);
+
         GenericTensorAccessorR input_accessor =
             create_random_filled_accessor_r(input_shape, allocator);
         GenericTensorAccessorR index_accessor =
@@ -73,6 +76,12 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       auto run_backward_test = [&](TensorShape input_shape,
                                    TensorShape index_shape,
                                    TensorShape output_shape) {
+        ff_dim_t dim = ff_dim_t{
+          nonnegative_int{get_num_dims(input_shape.dims).unwrap_nonnegative() - 1},
+        };
+        GatherPerDeviceState state = Kernels::Gather::gpu_init_kernel(
+            managed_handle.raw_handle(), dim);
+
         GenericTensorAccessorR output_grad_accessor =
             create_random_filled_accessor_r(output_shape, allocator);
         GenericTensorAccessorR index_accessor =

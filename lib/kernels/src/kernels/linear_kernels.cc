@@ -51,11 +51,9 @@ void linear_forward_kernel(
     positive_int batch_size = dim_at_idx(input_accessor.shape.dims, ff_dim_t{0_n});
 
     float const *bias_ptr = nullptr;
-    ASSERT(bias_accessor.has_value());
     if (bias_accessor.has_value()) {
       bias_ptr = bias_accessor.value().get<DataType::FLOAT>();
     }
-    ASSERT(bias_ptr != nullptr);
 
     ASSERT(per_device_state.has_value());
     gpu_forward_kernel(
@@ -97,10 +95,9 @@ void linear_backward_kernel(
           return b.get_float_ptr();
         }).value_or(nullptr);
 
-    positive_int in_dim = dim_at_idx(input.shape.dims, ff_dim_t{0_n});
-    positive_int out_dim = dim_at_idx(output.shape.dims, ff_dim_t{0_n});
-    positive_int batch_size =
-        positive_int{get_num_elements(output.shape.dims) / out_dim};
+    positive_int in_dim = dim_at_idx(input.shape.dims, ff_dim_t{1_n});
+    positive_int out_dim = dim_at_idx(output.shape.dims, ff_dim_t{1_n});
+    positive_int batch_size = dim_at_idx(input.shape.dims, ff_dim_t{0_n});
 
     Allocator gpu_allocator = create_local_cuda_memory_allocator();
     GenericTensorAccessorW modifiable_output_grad =

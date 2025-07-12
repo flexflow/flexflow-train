@@ -137,7 +137,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           allocator);
 
       GenericTensorAccessorW input_grad =
-          allocator.allocate_tensor(get_tensor_shape_for_accessor_r(input));
+          create_zero_filled_accessor_w(get_tensor_shape_for_accessor_r(input), allocator);
 
       GenericTensorAccessorR projection =
           create_2d_accessor_r_with_contents<float>(
@@ -147,14 +147,14 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
               },
               allocator);
 
-      GenericTensorAccessorW projection_grad = allocator.allocate_tensor(
-          get_tensor_shape_for_accessor_r(projection));
+      GenericTensorAccessorW projection_grad = create_zero_filled_accessor_w(
+          get_tensor_shape_for_accessor_r(projection), allocator);
 
       GenericTensorAccessorR bias =
           create_1d_accessor_r_with_contents<float>({3.0, -1.0}, allocator);
 
       GenericTensorAccessorW bias_grad =
-          allocator.allocate_tensor(get_tensor_shape_for_accessor_r(bias));
+        create_zero_filled_accessor_w(get_tensor_shape_for_accessor_r(bias), allocator);
 
       GenericTensorAccessorR output = create_2d_accessor_r_with_contents<float>(
           {
