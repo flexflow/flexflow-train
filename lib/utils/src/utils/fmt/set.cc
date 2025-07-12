@@ -5,14 +5,12 @@ using T = ::FlexFlow::ordered_value_type<0>;
 
 namespace fmt {
 
-template 
-  struct formatter<::std::set<T>, char>;
+template struct formatter<::std::set<T>, char>;
 
 }
 
 namespace FlexFlow {
 
-template 
-  std::ostream &operator<<(std::ostream &, std::set<T> const &);
+template std::ostream &operator<<(std::ostream &, std::set<T> const &);
 
 }

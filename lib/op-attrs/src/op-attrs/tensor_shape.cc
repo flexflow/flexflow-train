@@ -9,17 +9,16 @@
 namespace FlexFlow {
 
 num_bytes_t get_size_in_bytes(TensorShape const &s) {
-  return num_bytes_t{
-    (get_num_elements(s.dims) * size_of_datatype(s.data_type)).nonnegative_int_from_positive_int()
-  }; 
+  return num_bytes_t{(get_num_elements(s.dims) * size_of_datatype(s.data_type))
+                         .nonnegative_int_from_positive_int()};
 }
 
 TensorShape tensor_shape_drop_dims(
     TensorShape const &input_shape,
     std::function<bool(ff_dim_t)> const &should_drop_dim) {
   return TensorShape{
-    /*dims=*/tensor_dims_drop_dims(input_shape.dims, should_drop_dim),
-    /*data_type=*/input_shape.data_type,
+      /*dims=*/tensor_dims_drop_dims(input_shape.dims, should_drop_dim),
+      /*data_type=*/input_shape.data_type,
   };
 }
 

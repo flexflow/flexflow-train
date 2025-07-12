@@ -112,7 +112,8 @@ struct AccessorsAreEqual {
     T const *a_data_ptr = cpu_accessor_a.get<DT>();
     T const *b_data_ptr = cpu_accessor_b.get<DT>();
 
-    int volume = get_num_elements(accessor_a.shape.dims).int_from_positive_int();
+    int volume =
+        get_num_elements(accessor_a.shape.dims).int_from_positive_int();
     for (size_t i = 0; i < volume; i++) {
       if (a_data_ptr[i] != b_data_ptr[i]) {
         return false;
@@ -150,7 +151,8 @@ struct CreateFilledAccessorW {
 
     T *data_ptr = src_accessor.get<DT>();
 
-    int volume = get_num_elements(dst_accessor.shape.dims).int_from_positive_int();
+    int volume =
+        get_num_elements(dst_accessor.shape.dims).int_from_positive_int();
     for (size_t i = 0; i < volume; i++) {
       data_ptr[i] = unwrapped_value;
     }

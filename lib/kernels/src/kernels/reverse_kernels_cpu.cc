@@ -11,7 +11,8 @@ struct CPUReverseForwardKernel {
                   ReverseAttrs const &attrs) {
     positive_int reverse_axis_size = dim_at_idx(input.shape.dims, attrs.axis);
 
-    for (TensorDimsCoord const &input_coord : get_tensor_dims_coord_set(input.shape.dims)) {
+    for (TensorDimsCoord const &input_coord :
+         get_tensor_dims_coord_set(input.shape.dims)) {
       nonnegative_int input_reverse_axis_coord =
           input_coord.ff_ordered.at(attrs.axis);
 
@@ -20,8 +21,7 @@ struct CPUReverseForwardKernel {
           nonnegative_int{reverse_axis_size.int_from_positive_int() -
                           input_reverse_axis_coord.unwrap_nonnegative() - 1};
 
-      output.at<DT>(output_coord) =
-          input.at<DT>(input_coord);
+      output.at<DT>(output_coord) = input.at<DT>(input_coord);
     }
   }
 };
@@ -37,10 +37,11 @@ void cpu_forward_kernel(GenericTensorAccessorR const &input_accessor,
 void cpu_backward_kernel(GenericTensorAccessorR const &output_grad_accessor,
                          GenericTensorAccessorW &input_grad_accessor,
                          ReverseAttrs const &attrs) {
-  DataTypeDispatch1<CPUReverseForwardKernel>{}(output_grad_accessor.shape.data_type,
-                                               output_grad_accessor,
-                                               input_grad_accessor,
-                                               attrs);
+  DataTypeDispatch1<CPUReverseForwardKernel>{}(
+      output_grad_accessor.shape.data_type,
+      output_grad_accessor,
+      input_grad_accessor,
+      attrs);
 }
 
 } // namespace FlexFlow::Kernels::Reverse

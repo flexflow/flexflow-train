@@ -45,7 +45,8 @@ RecordFormatter as_dot(LinearAttrs const &attrs) {
 tl::expected<TensorShape, std::string>
     get_projection_shape(LinearAttrs const &attrs,
                          TensorShape const &input_shape) {
-  positive_int in_channels = dim_at_idx(input_shape.dims, relative_ff_dim_t{-1});
+  positive_int in_channels =
+      dim_at_idx(input_shape.dims, relative_ff_dim_t{-1});
 
   return TensorShape{
       TensorDims{

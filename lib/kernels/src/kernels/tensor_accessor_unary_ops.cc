@@ -57,14 +57,14 @@ struct CPUTensorAccessorBroadcast {
   void operator()(GenericTensorAccessorR const &input,
                   GenericTensorAccessorW const &output) {
 
-    for (TensorDimsCoord const &output_coord : get_tensor_dims_coord_set(output.shape.dims)) {
+    for (TensorDimsCoord const &output_coord :
+         get_tensor_dims_coord_set(output.shape.dims)) {
       TensorDimsCoord input_coord = get_broadcast_src_coord(
           /*input_dims=*/input.shape.dims,
           /*output_dims=*/output.shape.dims,
           /*dst_coord=*/output_coord);
 
-      output.at<DT>(output_coord) =
-          input.at<DT>(input_coord);
+      output.at<DT>(output_coord) = input.at<DT>(input_coord);
     }
   }
 };
@@ -112,15 +112,15 @@ struct CPUTensorAccessorTranspose {
     ASSERT(get_num_dims(input.shape.dims) == 2);
     ASSERT(get_num_dims(output.shape.dims) == 2);
 
-    for (TensorDimsCoord const &input_coord : get_tensor_dims_coord_set(input.shape.dims)) {
+    for (TensorDimsCoord const &input_coord :
+         get_tensor_dims_coord_set(input.shape.dims)) {
       ASSERT(input_coord.ff_ordered.size() == 2);
 
       TensorDimsCoord output_coord = TensorDimsCoord{
           reversed(input_coord.ff_ordered),
       };
 
-      output.at<DT>(output_coord) =
-          input.at<DT>(input_coord);
+      output.at<DT>(output_coord) = input.at<DT>(input_coord);
     }
   }
 };
@@ -177,14 +177,14 @@ struct CPUTensorAccessorReduce {
                   GenericTensorAccessorW const &output) {
     fill_with_zeros(output);
 
-    for (TensorDimsCoord const &input_coord : get_tensor_dims_coord_set(input.shape.dims)) {
-      TensorDimsCoord output_coord =
-          tensor_dims_coord_drop_dims(input_coord, [&](ff_dim_t input_coord_dim) {
+    for (TensorDimsCoord const &input_coord :
+         get_tensor_dims_coord_set(input.shape.dims)) {
+      TensorDimsCoord output_coord = tensor_dims_coord_drop_dims(
+          input_coord, [&](ff_dim_t input_coord_dim) {
             return input_coord_dim == reduction_dim;
           });
 
-      output.at<DT>(output_coord) +=
-          input.at<DT>(input_coord);
+      output.at<DT>(output_coord) += input.at<DT>(input_coord);
     }
   }
 };

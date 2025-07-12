@@ -98,7 +98,10 @@ LinearPerDeviceState
   for (int i = 0; i < batch_size; i++) {
     one_ptr_cpu[i] = 1.0;
   }
-  checkCUDA(cudaMemcpy(one_ptr, one_ptr_cpu, sizeof(float) * batch_size, cudaMemcpyHostToDevice));
+  checkCUDA(cudaMemcpy(one_ptr,
+                       one_ptr_cpu,
+                       sizeof(float) * batch_size,
+                       cudaMemcpyHostToDevice));
   LinearPerDeviceState per_device_state = LinearPerDeviceState{
       /*handle=*/handle,
       /*outputTensor=*/outputTensor,
@@ -240,7 +243,7 @@ void gpu_backward_kernel(cudaStream_t stream,
       PANIC("Unsupported activation for Linear", m.activation.value());
     }
   }
-  
+
   // Compute weight gradiant
   // NOTE: we use alpha=1 for kernel_grad to accumulate gradients
   checkCUBLAS(cublasGemmEx(m.handle.blas,

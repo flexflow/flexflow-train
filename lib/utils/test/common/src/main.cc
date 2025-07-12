@@ -1,9 +1,9 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 #include <doctest/doctest.h>
 
+#include <cpptrace/cpptrace.hpp>
 #include <libassert/assert.hpp>
 #include <stdexcept>
-#include <cpptrace/cpptrace.hpp>
 
 void libassert_throw_exception_handler(libassert::assertion_info const &info) {
   throw std::runtime_error("Assertion failed:\n" + info.to_string());

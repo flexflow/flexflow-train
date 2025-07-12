@@ -3,8 +3,8 @@
 
 #include "kernels/device.h"
 #include "kernels/ff_handle.h"
-#include "op-attrs/ff_dim_t.dtg.h"
 #include "kernels/softmax_per_device_state.dtg.h"
+#include "op-attrs/ff_dim_t.dtg.h"
 
 namespace FlexFlow::Kernels::Softmax {
 

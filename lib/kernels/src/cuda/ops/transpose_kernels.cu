@@ -76,10 +76,12 @@ void gpu_forward_kernel(cudaStream_t stream,
       info.in_strides[i] = 1;
       info.out_strides[i] = 1;
     } else {
-      int in_dim_size = dim_at_idx(input.shape.dims, legion_dim_t{nonnegative_int{i}})
-                            .int_from_positive_int();
-      int out_dim_size = dim_at_idx(output.shape.dims, legion_dim_t{nonnegative_int{i}})
-                             .int_from_positive_int();
+      int in_dim_size =
+          dim_at_idx(input.shape.dims, legion_dim_t{nonnegative_int{i}})
+              .int_from_positive_int();
+      int out_dim_size =
+          dim_at_idx(output.shape.dims, legion_dim_t{nonnegative_int{i}})
+              .int_from_positive_int();
       info.in_strides[i] = info.in_strides[i - 1] * in_dim_size;
       info.out_strides[i] = info.out_strides[i - 1] * out_dim_size;
     }
@@ -115,10 +117,12 @@ void gpu_backward_kernel(cudaStream_t stream,
       info.in_strides[i] = 1;
       info.out_strides[i] = 1;
     } else {
-      int in_dim_size = dim_at_idx(out_grad.shape.dims, legion_dim_t{nonnegative_int{i}})
-                            .int_from_positive_int();
-      int out_dim_size = dim_at_idx(in_grad.shape.dims, legion_dim_t{nonnegative_int{i}})
-                             .int_from_positive_int();
+      int in_dim_size =
+          dim_at_idx(out_grad.shape.dims, legion_dim_t{nonnegative_int{i}})
+              .int_from_positive_int();
+      int out_dim_size =
+          dim_at_idx(in_grad.shape.dims, legion_dim_t{nonnegative_int{i}})
+              .int_from_positive_int();
       info.in_strides[i] = info.in_strides[i - 1] * in_dim_size;
       info.out_strides[i] = info.out_strides[i - 1] * out_dim_size;
     }

@@ -2,10 +2,10 @@
 #include "kernels/copy_tensor_accessor.h"
 #include "kernels/datatype_dispatch.h"
 #include "kernels/local_cpu_allocator.h"
+#include "op-attrs/tensor_shape.h"
 #include "utils/indent.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include <libassert/assert.hpp>
-#include "op-attrs/tensor_shape.h"
 
 namespace FlexFlow {
 
@@ -24,7 +24,8 @@ struct Print1DCPUAccessorR {
                   nonnegative_range(ncols.nonnegative_int_from_positive_int()),
                   " ",
                   [&](nonnegative_int col_idx) -> std::string {
-                    return fmt::to_string(accessor.at<DT>(TensorDimsCoord{FFOrdered{col_idx}}));
+                    return fmt::to_string(
+                        accessor.at<DT>(TensorDimsCoord{FFOrdered{col_idx}}));
                   })
            << "]";
   }
@@ -36,7 +37,8 @@ static std::string
   ASSERT(get_num_dims(accessor.shape.dims) == 1_n);
 
   std::ostringstream oss;
-  DataTypeDispatch1<Print1DCPUAccessorR>{}(accessor.shape.data_type, accessor, oss);
+  DataTypeDispatch1<Print1DCPUAccessorR>{}(
+      accessor.shape.data_type, accessor, oss);
   return oss.str();
 }
 
@@ -52,13 +54,14 @@ struct Print2DCPUAccessorR {
 
     auto render_1d = [&](nonnegative_int dim0_idx) -> std::string {
       return "[" +
-             join_strings(nonnegative_range(
-                              dim1_size.nonnegative_int_from_positive_int()),
-                          " ",
-                          [&](nonnegative_int dim1_idx) -> std::string {
-                            return fmt::to_string(
-                                accessor.at<DT>(TensorDimsCoord{FFOrdered{dim0_idx, dim1_idx}}));
-                          }) +
+             join_strings(
+                 nonnegative_range(
+                     dim1_size.nonnegative_int_from_positive_int()),
+                 " ",
+                 [&](nonnegative_int dim1_idx) -> std::string {
+                   return fmt::to_string(accessor.at<DT>(
+                       TensorDimsCoord{FFOrdered{dim0_idx, dim1_idx}}));
+                 }) +
              "]";
     };
 
@@ -78,7 +81,8 @@ static std::string
   ASSERT(get_num_dims(accessor.shape.dims) == 2_n);
 
   std::ostringstream oss;
-  DataTypeDispatch1<Print2DCPUAccessorR>{}(accessor.shape.data_type, accessor, oss);
+  DataTypeDispatch1<Print2DCPUAccessorR>{}(
+      accessor.shape.data_type, accessor, oss);
   return oss.str();
 }
 
@@ -101,8 +105,9 @@ struct Print3DCPUAccessorR {
                               dim2_size.nonnegative_int_from_positive_int()),
                           " ",
                           [&](nonnegative_int dim2_idx) -> std::string {
-                            return fmt::to_string(accessor.at<DT>(
-                                TensorDimsCoord{FFOrdered{dim0_idx, dim1_idx, dim2_idx}}));
+                            return fmt::to_string(
+                                accessor.at<DT>(TensorDimsCoord{
+                                    FFOrdered{dim0_idx, dim1_idx, dim2_idx}}));
                           }) +
              "]";
     };
@@ -135,7 +140,8 @@ static std::string
   ASSERT(get_num_dims(accessor.shape.dims) == 3_n);
 
   std::ostringstream oss;
-  DataTypeDispatch1<Print3DCPUAccessorR>{}(accessor.shape.data_type, accessor, oss);
+  DataTypeDispatch1<Print3DCPUAccessorR>{}(
+      accessor.shape.data_type, accessor, oss);
   return oss.str();
 }
 
@@ -156,13 +162,14 @@ struct Print4DCPUAccessorR {
                          nonnegative_int dim1_idx,
                          nonnegative_int dim2_idx) -> std::string {
       return "[" +
-             join_strings(nonnegative_range(
-                              dim3_size.nonnegative_int_from_positive_int()),
-                          " ",
-                          [&](nonnegative_int dim3_idx) -> std::string {
-                            return fmt::to_string(accessor.at<DT>(TensorDimsCoord{FFOrdered{
-                                dim0_idx, dim1_idx, dim2_idx, dim3_idx}}));
-                          }) +
+             join_strings(
+                 nonnegative_range(
+                     dim3_size.nonnegative_int_from_positive_int()),
+                 " ",
+                 [&](nonnegative_int dim3_idx) -> std::string {
+                   return fmt::to_string(accessor.at<DT>(TensorDimsCoord{
+                       FFOrdered{dim0_idx, dim1_idx, dim2_idx, dim3_idx}}));
+                 }) +
              "]";
     };
 
@@ -207,7 +214,8 @@ static std::string
   ASSERT(get_num_dims(accessor.shape.dims) == 4_n);
 
   std::ostringstream oss;
-  DataTypeDispatch1<Print4DCPUAccessorR>{}(accessor.shape.data_type, accessor, oss);
+  DataTypeDispatch1<Print4DCPUAccessorR>{}(
+      accessor.shape.data_type, accessor, oss);
   return oss.str();
 }
 

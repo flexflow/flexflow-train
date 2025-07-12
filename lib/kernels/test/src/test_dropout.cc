@@ -22,8 +22,12 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    DropoutPerDeviceState state = Kernels::Dropout::gpu_init_kernel(
-        managed_handle.raw_handle(), dropout_rate, seed, output_shape, allocator);
+    DropoutPerDeviceState state =
+        Kernels::Dropout::gpu_init_kernel(managed_handle.raw_handle(),
+                                          dropout_rate,
+                                          seed,
+                                          output_shape,
+                                          allocator);
 
     SUBCASE("forward_kernel") {
       GenericTensorAccessorR input_accessor =

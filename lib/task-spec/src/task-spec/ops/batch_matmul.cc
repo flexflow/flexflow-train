@@ -84,11 +84,14 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   positive_int k = dim_at_idx(a_input.shape.dims, legion_dim_t{0_n});
   ASSERT(k == dim_at_idx(b_input.shape.dims, legion_dim_t{1_n}));
 
-  ASSERT(get_num_elements(a_input.shape.dims) == get_num_elements(b_input.shape.dims));
-  ASSERT(get_num_elements(a_input.shape.dims) == get_num_elements(output.shape.dims));
+  ASSERT(get_num_elements(a_input.shape.dims) ==
+         get_num_elements(b_input.shape.dims));
+  ASSERT(get_num_elements(a_input.shape.dims) ==
+         get_num_elements(output.shape.dims));
 
   positive_int batch = 1_p;
-  for (nonnegative_int i : nonnegative_range(2_n, get_num_dims(a_input.shape.dims))) {
+  for (nonnegative_int i :
+       nonnegative_range(2_n, get_num_dims(a_input.shape.dims))) {
     positive_int dim_size = dim_at_idx(a_input.shape.dims, legion_dim_t{i});
     ASSERT(dim_size == dim_at_idx(b_input.shape.dims, legion_dim_t{i}));
     ASSERT(dim_size == dim_at_idx(output.shape.dims, legion_dim_t{i}));
@@ -147,11 +150,14 @@ static std::optional<float>
   ASSERT(n == dim_at_idx(output.shape.dims, legion_dim_t{1_n}));
   positive_int k = dim_at_idx(a_input.shape.dims, legion_dim_t{0_n});
   ASSERT(k == dim_at_idx(b_input.shape.dims, legion_dim_t{1_n}));
-  ASSERT(get_num_elements(a_input.shape.dims) == get_num_elements(b_input.shape.dims));
-  ASSERT(get_num_elements(a_input.shape.dims) == get_num_elements(output.shape.dims));
+  ASSERT(get_num_elements(a_input.shape.dims) ==
+         get_num_elements(b_input.shape.dims));
+  ASSERT(get_num_elements(a_input.shape.dims) ==
+         get_num_elements(output.shape.dims));
 
   positive_int batch = 1_p;
-  for (nonnegative_int i : nonnegative_range(2_n, get_num_dims(a_input.shape.dims))) {
+  for (nonnegative_int i :
+       nonnegative_range(2_n, get_num_dims(a_input.shape.dims))) {
     positive_int dim_size = dim_at_idx(a_input.shape.dims, legion_dim_t{i});
     ASSERT(dim_size == dim_at_idx(b_input.shape.dims, legion_dim_t{i}));
     ASSERT(dim_size == dim_at_idx(output.shape.dims, legion_dim_t{i}));

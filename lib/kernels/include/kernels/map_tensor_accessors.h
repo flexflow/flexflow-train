@@ -18,7 +18,8 @@ struct CPUMapTensorAccessorInPlace {
   void operator()(GenericTensorAccessorW const &accessor, F &&f) {
     ASSERT(accessor.device_type == DeviceType::CPU);
 
-    for (TensorDimsCoord const &coord : get_tensor_dims_coord_set(accessor.shape.dims)) {
+    for (TensorDimsCoord const &coord :
+         get_tensor_dims_coord_set(accessor.shape.dims)) {
       accessor.at<DT>(coord) = f(accessor.at<DT>(coord));
     }
   }
@@ -44,7 +45,8 @@ struct CPUMapTensorAccessor {
     ASSERT(input.device_type == DeviceType::CPU);
     ASSERT(output.device_type == DeviceType::CPU);
 
-    for (TensorDimsCoord const &coord : get_tensor_dims_coord_set(tensor_dims)) {
+    for (TensorDimsCoord const &coord :
+         get_tensor_dims_coord_set(tensor_dims)) {
       output.at<
           type_to_data_type_enum_v<std::invoke_result_t<F, real_type_t<DT>>>>(
           coord) = f(input.at<DT>(coord));
@@ -61,8 +63,7 @@ void map_tensor_accessor_to(GenericTensorAccessorR const &input,
       copy_tensor_accessor_r_to_cpu_if_necessary(input, cpu_allocator);
 
   GenericTensorAccessorW output_cpu =
-      cpu_allocator.allocate_tensor(
-          output.shape);
+      cpu_allocator.allocate_tensor(output.shape);
 
   DataTypeDispatch1<CPUMapTensorAccessor>{}(
       input.shape.data_type, input_cpu, output_cpu, f);
@@ -76,13 +77,12 @@ GenericTensorAccessorW map_tensor_accessor(GenericTensorAccessorR const &input,
                                            F &&f,
                                            Allocator &output_allocator) {
   TensorShape output_shape = TensorShape{
-    /*dims=*/input.shape.dims, 
-    /*data_type=*/type_to_data_type_enum_v<Out>,
+      /*dims=*/input.shape.dims,
+      /*data_type=*/type_to_data_type_enum_v<Out>,
   };
 
   GenericTensorAccessorW output =
-      output_allocator.allocate_tensor(
-          output_shape);
+      output_allocator.allocate_tensor(output_shape);
 
   map_tensor_accessor_to(input, f, output);
 
@@ -129,11 +129,15 @@ void map_tensor_accessors2_to(GenericTensorAccessorR const &lhs,
       copy_tensor_accessor_r_to_cpu_if_necessary(lhs, cpu_allocator);
   GenericTensorAccessorR rhs_cpu =
       copy_tensor_accessor_r_to_cpu_if_necessary(rhs, cpu_allocator);
-  GenericTensorAccessorW output_cpu = cpu_allocator.allocate_tensor(
-      TensorShape{output_dims, output_data_type});
+  GenericTensorAccessorW output_cpu =
+      cpu_allocator.allocate_tensor(TensorShape{output_dims, output_data_type});
 
-  DataTypeDispatch2<CPUMapTensorAccessors2>{}(
-      lhs.shape.data_type, rhs.shape.data_type, lhs_cpu, rhs_cpu, output_cpu, f);
+  DataTypeDispatch2<CPUMapTensorAccessors2>{}(lhs.shape.data_type,
+                                              rhs.shape.data_type,
+                                              lhs_cpu,
+                                              rhs_cpu,
+                                              output_cpu,
+                                              f);
 
   return copy_accessor_data_to_l_from_r(output, output_cpu);
 }
@@ -146,7 +150,8 @@ GenericTensorAccessorW map_tensor_accessors2(GenericTensorAccessorR const &lhs,
                                              Allocator &output_allocator) {
   TensorDims output_dims = require_same(lhs.shape.dims, rhs.shape.dims);
 
-  GenericTensorAccessorW output = output_allocator.allocate_tensor(TensorShape{output_dims, output_data_type});
+  GenericTensorAccessorW output = output_allocator.allocate_tensor(
+      TensorShape{output_dims, output_data_type});
 
   map_tensor_accessors2_to(lhs, rhs, output_data_type, f, output);
 

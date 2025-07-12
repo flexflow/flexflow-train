@@ -1,19 +1,18 @@
 #include "kernels/accessor.h"
 #include "kernels/allocation.h"
 #include "kernels/datatype_dispatch.h"
+#include "op-attrs/ff_ordered/get_idxs.h"
+#include "op-attrs/tensor_dims_coord.h"
+#include "op-attrs/tensor_shape.h"
 #include "utils/containers/reversed.h"
 #include "utils/containers/vector_of.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
-#include "op-attrs/ff_ordered/get_idxs.h"
 #include <libassert/assert.hpp>
-#include "op-attrs/tensor_dims_coord.h"
-#include "op-attrs/tensor_shape.h"
 
 namespace FlexFlow {
 
-nonnegative_int
-    calculate_accessor_offset(TensorDimsCoord const &coord,
-                              TensorDims const &tensor_dims) {
+nonnegative_int calculate_accessor_offset(TensorDimsCoord const &coord,
+                                          TensorDims const &tensor_dims) {
   ASSERT(tensor_dims_coord_get_num_dims(coord) == get_num_dims(tensor_dims),
          "Number of indices does not match the number of dimensions");
 
@@ -45,7 +44,9 @@ TensorShape
 void copy_accessor_data_to_l_from_r(
     GenericTensorAccessorW const &dst_accessor,
     GenericTensorAccessorR const &src_accessor) {
-  size_t num_bytes = get_size_in_bytes(dst_accessor.shape).unwrap_num_bytes().unwrap_nonnegative();
+  size_t num_bytes = get_size_in_bytes(dst_accessor.shape)
+                         .unwrap_num_bytes()
+                         .unwrap_nonnegative();
 
   DeviceType dst_device_type = dst_accessor.device_type;
   DeviceType src_device_type = src_accessor.device_type;
@@ -81,9 +82,7 @@ GenericTensorAccessorW::GenericTensorAccessorW(
     DeviceType device_type = DeviceType::GPU)
     : shape(shape), ptr(ptr), device_type(device_type) {}
 
-std::tuple<TensorShape const &,
-           void *const &,
-           DeviceType const &>
+std::tuple<TensorShape const &, void *const &, DeviceType const &>
     GenericTensorAccessorW::tie() const {
   return std::tie(this->shape, this->ptr, this->device_type);
 }
@@ -135,9 +134,7 @@ GenericTensorAccessorR::GenericTensorAccessorR(
     DeviceType device_type = DeviceType::GPU)
     : shape(shape), ptr(ptr), device_type(device_type) {}
 
-std::tuple<TensorShape const &,
-           void const *const &,
-           DeviceType const &>
+std::tuple<TensorShape const &, void const *const &, DeviceType const &>
     GenericTensorAccessorR::tie() const {
   return std::tie(this->shape, this->ptr, this->device_type);
 }
@@ -283,12 +280,12 @@ GenericTensorAccessorR read_only_accessor_from_write_accessor(
 }
 
 bool accessors_have_same_shape(GenericTensorAccessorR const &acc1,
-                              GenericTensorAccessorR const &acc2) {
+                               GenericTensorAccessorR const &acc2) {
   return acc1.shape == acc2.shape;
 }
 
 bool accessors_have_same_shape(GenericTensorAccessorW const &acc1,
-                              GenericTensorAccessorW const &acc2) {
+                               GenericTensorAccessorW const &acc2) {
   return acc1.shape == acc2.shape;
 }
 

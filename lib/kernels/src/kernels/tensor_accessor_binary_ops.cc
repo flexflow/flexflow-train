@@ -123,10 +123,13 @@ void tensor_accessor_matmul_to(GenericTensorAccessorR const &lhs,
   GenericTensorAccessorW output_cpu =
       cpu_allocator.allocate_tensor(output_shape);
 
-  for (nonnegative_int i : nonnegative_range(dim_at_idx(lhs.shape.dims, ff_dim_t{0_n}))) {
-    for (nonnegative_int j : nonnegative_range(dim_at_idx(rhs.shape.dims, ff_dim_t{1_n}))) {
+  for (nonnegative_int i :
+       nonnegative_range(dim_at_idx(lhs.shape.dims, ff_dim_t{0_n}))) {
+    for (nonnegative_int j :
+         nonnegative_range(dim_at_idx(rhs.shape.dims, ff_dim_t{1_n}))) {
       float accum = 0.0f;
-      for (nonnegative_int k : nonnegative_range(dim_at_idx(lhs.shape.dims, ff_dim_t{1_n}))) {
+      for (nonnegative_int k :
+           nonnegative_range(dim_at_idx(lhs.shape.dims, ff_dim_t{1_n}))) {
         accum += lhs_cpu.at<DataType::FLOAT>(TensorDimsCoord{FFOrdered{i, k}}) *
                  rhs_cpu.at<DataType::FLOAT>(TensorDimsCoord{FFOrdered{k, j}});
       }

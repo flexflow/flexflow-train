@@ -138,15 +138,23 @@ Conv2DPerDeviceState
   ffConvolutionBwdFilterAlgo_t bwdFilterAlgo;
   ffConvolutionBwdDataAlgo_t bwdDataAlgo;
 
-  int input_w = dim_at_idx(input.shape.dims, legion_dim_t{0_n}).int_from_positive_int();
-  int input_h = dim_at_idx(input.shape.dims, legion_dim_t{1_n}).int_from_positive_int();
-  int input_c = dim_at_idx(input.shape.dims, legion_dim_t{2_n}).int_from_positive_int();
-  int input_n = dim_at_idx(input.shape.dims, legion_dim_t{3_n}).int_from_positive_int();
+  int input_w =
+      dim_at_idx(input.shape.dims, legion_dim_t{0_n}).int_from_positive_int();
+  int input_h =
+      dim_at_idx(input.shape.dims, legion_dim_t{1_n}).int_from_positive_int();
+  int input_c =
+      dim_at_idx(input.shape.dims, legion_dim_t{2_n}).int_from_positive_int();
+  int input_n =
+      dim_at_idx(input.shape.dims, legion_dim_t{3_n}).int_from_positive_int();
 
-  int output_w = dim_at_idx(output.shape.dims, legion_dim_t{0_n}).int_from_positive_int();
-  int output_h = dim_at_idx(output.shape.dims, legion_dim_t{1_n}).int_from_positive_int();
-  int output_c = dim_at_idx(output.shape.dims, legion_dim_t{2_n}).int_from_positive_int();
-  int output_n = dim_at_idx(output.shape.dims, legion_dim_t{3_n}).int_from_positive_int();
+  int output_w =
+      dim_at_idx(output.shape.dims, legion_dim_t{0_n}).int_from_positive_int();
+  int output_h =
+      dim_at_idx(output.shape.dims, legion_dim_t{1_n}).int_from_positive_int();
+  int output_c =
+      dim_at_idx(output.shape.dims, legion_dim_t{2_n}).int_from_positive_int();
+  int output_n =
+      dim_at_idx(output.shape.dims, legion_dim_t{3_n}).int_from_positive_int();
 
   checkCUDNN(cudnnCreateTensorDescriptor(&inputTensor));
   checkCUDNN(cudnnCreateTensorDescriptor(&biasTensor));

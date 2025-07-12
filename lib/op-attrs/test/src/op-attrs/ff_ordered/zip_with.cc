@@ -8,18 +8,20 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("zip_with(FFOrdered<T1>, FFOrdered<T2>, F)") {
     SUBCASE("result types and input types are all different") {
       FFOrdered<int> v1 = FFOrdered<int>{1, 3, 4, 3};
-      FFOrdered<std::string> v2 = FFOrdered<std::string>{"aa", "cc", "bb", "dd"};
+      FFOrdered<std::string> v2 =
+          FFOrdered<std::string>{"aa", "cc", "bb", "dd"};
 
       FFOrdered<std::pair<int, std::string>> result =
           zip_with(v1, v2, [](int x1, std::string const &x2) {
             return std::make_pair(x1, x2);
           });
-      FFOrdered<std::pair<int, std::string>> correct = FFOrdered<std::pair<int, std::string>>{
-          {1, "aa"},
-          {3, "cc"},
-          {4, "bb"},
-          {3, "dd"},
-      };
+      FFOrdered<std::pair<int, std::string>> correct =
+          FFOrdered<std::pair<int, std::string>>{
+              {1, "aa"},
+              {3, "cc"},
+              {4, "bb"},
+              {3, "dd"},
+          };
 
       CHECK(result == correct);
     }

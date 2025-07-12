@@ -64,7 +64,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
   positive_int length = dim_at_idx(input.shape.dims, legion_dim_t{0_n});
-  positive_int batch_size = positive_int{get_num_elements(input.shape.dims) / length};
+  positive_int batch_size =
+      positive_int{get_num_elements(input.shape.dims) / length};
   auto indices = acc.get_tensor<Permissions::WO>(INDICES);
 
   return profile(forward_kernel,

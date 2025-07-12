@@ -7,18 +7,17 @@
 #include "kernels/legion_ordered/legion_ordered.h"
 #include "op-attrs/datatype.h"
 #include "op-attrs/tensor_dims.dtg.h"
+#include "op-attrs/tensor_dims.h"
 #include "op-attrs/tensor_shape.dtg.h"
 #include "pcg/device_type.dtg.h"
 #include "utils/containers/transform.h"
 #include <libassert/assert.hpp>
 #include <string>
-#include "op-attrs/tensor_dims.h"
 
 namespace FlexFlow {
 
-nonnegative_int
-    calculate_accessor_offset(TensorDimsCoord const &,
-                              TensorDims const &);
+nonnegative_int calculate_accessor_offset(TensorDimsCoord const &,
+                                          TensorDims const &);
 
 class GenericTensorAccessorR {
 public:
@@ -45,15 +44,15 @@ public:
   bool operator!=(GenericTensorAccessorR const &) const;
 
   template <DataType DT>
-  real_type_t<DT> const &
-      at(TensorDimsCoord const &indices) const {
+  real_type_t<DT> const &at(TensorDimsCoord const &indices) const {
     ASSERT(this->device_type == DeviceType::CPU,
            "GenericTensorAccessorR::at() requires CPU-allocated tensor");
     ASSERT(this->shape.data_type == DT, "Invalid datatype requested");
 
     using T = real_type_t<DT>;
     T const *data_ptr = static_cast<T const *>(this->ptr);
-    nonnegative_int offset = calculate_accessor_offset(indices, this->shape.dims);
+    nonnegative_int offset =
+        calculate_accessor_offset(indices, this->shape.dims);
     return data_ptr[offset.unwrap_nonnegative()];
   }
 
@@ -106,7 +105,8 @@ public:
 
     using T = real_type_t<DT>;
     T *data_ptr = static_cast<T *>(this->ptr);
-    nonnegative_int offset = calculate_accessor_offset(indices, this->shape.dims);
+    nonnegative_int offset =
+        calculate_accessor_offset(indices, this->shape.dims);
     return data_ptr[offset.unwrap_nonnegative()];
   }
 
@@ -118,7 +118,8 @@ public:
 
     using T = real_type_t<DT>;
     T *data_ptr = static_cast<T *>(this->ptr);
-    nonnegative_int offset = calculate_accessor_offset(indices, this->shape.dims);
+    nonnegative_int offset =
+        calculate_accessor_offset(indices, this->shape.dims);
     return data_ptr[offset.unwrap_nonnegative()];
   }
 

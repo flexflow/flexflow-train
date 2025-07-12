@@ -134,13 +134,14 @@ static std::optional<float>
 
   assert(output_grad.shape == output.shape);
 
-  return profile(backward_kernel,
-                 profiling,
-                 kernel_device_type,
-                 "[Softmax] backward_time = {:.2lf}ms\n",
-                 output_grad.get_float_ptr(),
-                 input_grad.get_float_ptr(),
-                 get_num_elements(output_grad.shape.dims).int_from_positive_int());
+  return profile(
+      backward_kernel,
+      profiling,
+      kernel_device_type,
+      "[Softmax] backward_time = {:.2lf}ms\n",
+      output_grad.get_float_ptr(),
+      input_grad.get_float_ptr(),
+      get_num_elements(output_grad.shape.dims).int_from_positive_int());
 }
 
 TaskImplFunction get_softmax_init_task_impl() {

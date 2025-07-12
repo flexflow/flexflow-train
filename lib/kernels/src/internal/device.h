@@ -132,8 +132,9 @@ __host__ void updateGAS(float *para_ptr,
 template <typename T>
 void print_tensor(T const *ptr, size_t num_elements, char const *prefix);
 
-ffStatus_t cudnnSetTensorDescriptorFromTensorShape(ffTensorDescriptor_t tensor,
-                                                   TensorShape const &tensor_shape);
+ffStatus_t
+    cudnnSetTensorDescriptorFromTensorShape(ffTensorDescriptor_t tensor,
+                                            TensorShape const &tensor_shape);
 
 ffDataType_t ff_to_cuda_datatype(DataType type);
 

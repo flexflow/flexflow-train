@@ -13,12 +13,15 @@ struct FillWithZeros {
     if (accessor.device_type == DeviceType::CPU) {
       memset(accessor.ptr,
              0,
-             get_size_in_bytes(accessor.shape).unwrap_num_bytes().unwrap_nonnegative());
+             get_size_in_bytes(accessor.shape)
+                 .unwrap_num_bytes()
+                 .unwrap_nonnegative());
     } else {
-      checkCUDA(cudaMemset(
-          accessor.ptr,
-          0,
-          get_size_in_bytes(accessor.shape).unwrap_num_bytes().unwrap_nonnegative()));
+      checkCUDA(cudaMemset(accessor.ptr,
+                           0,
+                           get_size_in_bytes(accessor.shape)
+                               .unwrap_num_bytes()
+                               .unwrap_nonnegative()));
     }
   }
 };

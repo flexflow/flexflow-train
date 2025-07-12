@@ -4,7 +4,8 @@
 
 namespace FlexFlow {
 
-nonnegative_int tensor_dims_coord_get_num_dims(TensorDimsCoord const &tensor_dims_coord) {
+nonnegative_int
+    tensor_dims_coord_get_num_dims(TensorDimsCoord const &tensor_dims_coord) {
   return nonnegative_int{tensor_dims_coord.ff_ordered.size()};
 }
 

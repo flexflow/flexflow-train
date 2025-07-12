@@ -111,7 +111,8 @@ TEST_SUITE(FF_TEST_SUITE) {
                   nonnegative_int s2,
                   nonnegative_int r,
                   nonnegative_int c) -> float {
-      return result.at<DataType::FLOAT>(TensorDimsCoord{FFOrdered{s1, s2, r, c}});
+      return result.at<DataType::FLOAT>(
+          TensorDimsCoord{FFOrdered{s1, s2, r, c}});
     };
 
     CHECK(at(0_n, 0_n, 0_n, 0_n) == 2);

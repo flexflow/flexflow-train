@@ -2,10 +2,10 @@
 #define _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_FF_ORDERED_SLICE_H
 
 #include "op-attrs/ff_ordered/ff_ordered.h"
+#include "op-attrs/ff_ordered/ff_ordered_of.h"
 #include "utils/containers/slice.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/vector_of.h"
-#include "op-attrs/ff_ordered/ff_ordered_of.h"
 
 namespace FlexFlow {
 

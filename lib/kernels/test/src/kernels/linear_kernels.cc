@@ -16,7 +16,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("linear_forward_kernel cpu-gpu alignment") {
     Allocator local_cpu_allocator = create_local_cpu_memory_allocator();
 
-    // GenericTensorAccessorR toy_input = create_2d_accessor_r_with_contents<float>(
+    // GenericTensorAccessorR toy_input =
+    // create_2d_accessor_r_with_contents<float>(
     //     {
     //         {3, 3, 6},
     //         {2, 1, 5},
@@ -30,11 +31,13 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     //           << toy_arr[2] << std::endl;
     //
     // Allocator local_cuda_allocator = create_local_cuda_memory_allocator();
-    // GenericTensorAccessorW toy_cuda = local_cuda_allocator.allocate_tensor(toy_input.shape);
+    // GenericTensorAccessorW toy_cuda =
+    // local_cuda_allocator.allocate_tensor(toy_input.shape);
     // copy_accessor_data_to_l_from_r(toy_cuda, toy_input);
-    // GenericTensorAccessorW toy_input2 = local_cpu_allocator.allocate_tensor(toy_input.shape);
-    // copy_accessor_data_to_l_from_r(toy_input2, read_only_accessor_from_write_accessor(toy_cuda));
-    // CHECK_MESSAGE(
+    // GenericTensorAccessorW toy_input2 =
+    // local_cpu_allocator.allocate_tensor(toy_input.shape);
+    // copy_accessor_data_to_l_from_r(toy_input2,
+    // read_only_accessor_from_write_accessor(toy_cuda)); CHECK_MESSAGE(
     //     accessors_are_equal(toy_input, toy_input2),
     //     check_kv("cpu_result", format_accessor_r_contents(toy_input)),
     //     check_kv("gpu_result", format_accessor_w_contents(toy_input2)));
@@ -136,8 +139,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           },
           allocator);
 
-      GenericTensorAccessorW input_grad =
-          create_zero_filled_accessor_w(get_tensor_shape_for_accessor_r(input), allocator);
+      GenericTensorAccessorW input_grad = create_zero_filled_accessor_w(
+          get_tensor_shape_for_accessor_r(input), allocator);
 
       GenericTensorAccessorR projection =
           create_2d_accessor_r_with_contents<float>(
@@ -153,8 +156,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       GenericTensorAccessorR bias =
           create_1d_accessor_r_with_contents<float>({3.0, -1.0}, allocator);
 
-      GenericTensorAccessorW bias_grad =
-        create_zero_filled_accessor_w(get_tensor_shape_for_accessor_r(bias), allocator);
+      GenericTensorAccessorW bias_grad = create_zero_filled_accessor_w(
+          get_tensor_shape_for_accessor_r(bias), allocator);
 
       GenericTensorAccessorR output = create_2d_accessor_r_with_contents<float>(
           {

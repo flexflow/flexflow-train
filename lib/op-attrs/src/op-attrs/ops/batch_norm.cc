@@ -69,7 +69,8 @@ tl::expected<TensorShape, std::string>
     return tl::unexpected("No gamma weights exist for attrs.affine = false");
   }
 
-  positive_int num_channels = dim_at_idx(input_shape.dims, relative_ff_dim_t{1});
+  positive_int num_channels =
+      dim_at_idx(input_shape.dims, relative_ff_dim_t{1});
 
   return TensorShape{
       TensorDims{FFOrdered<positive_int>{

@@ -1,5 +1,5 @@
-#include <doctest/doctest.h>
 #include "op-attrs/tensor_dims_coord.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
@@ -14,7 +14,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         return d.value % 2_n == 0_n;
       };
 
-      TensorDimsCoord result = tensor_dims_coord_drop_dims(coord, should_drop_dim);
+      TensorDimsCoord result =
+          tensor_dims_coord_drop_dims(coord, should_drop_dim);
       TensorDimsCoord correct = TensorDimsCoord{
           FFOrdered{5_n, 1_n},
       };
@@ -28,7 +29,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         return false;
       };
 
-      TensorDimsCoord result = tensor_dims_coord_drop_dims(coord, should_drop_dim);
+      TensorDimsCoord result =
+          tensor_dims_coord_drop_dims(coord, should_drop_dim);
       TensorDimsCoord correct = coord;
 
       CHECK(result == correct);
@@ -40,7 +42,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         return true;
       };
 
-      TensorDimsCoord result = tensor_dims_coord_drop_dims(coord, should_drop_dim);
+      TensorDimsCoord result =
+          tensor_dims_coord_drop_dims(coord, should_drop_dim);
       TensorDimsCoord correct = TensorDimsCoord{FFOrdered<nonnegative_int>{}};
 
       CHECK(result == correct);

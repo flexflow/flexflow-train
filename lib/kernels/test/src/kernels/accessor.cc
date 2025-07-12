@@ -33,9 +33,12 @@ TEST_SUITE(FF_TEST_SUITE) {
           },
       };
 
-      CHECK(calculate_accessor_offset(TensorDimsCoord{FFOrdered{0_n, 0_n}}, shape) == 0_n);
-      CHECK(calculate_accessor_offset(TensorDimsCoord{FFOrdered{1_n, 0_n}}, shape) == num_cols);
-      CHECK(calculate_accessor_offset(TensorDimsCoord{FFOrdered{0_n, 1_n}}, shape) == 1_p);
+      CHECK(calculate_accessor_offset(TensorDimsCoord{FFOrdered{0_n, 0_n}},
+                                      shape) == 0_n);
+      CHECK(calculate_accessor_offset(TensorDimsCoord{FFOrdered{1_n, 0_n}},
+                                      shape) == num_cols);
+      CHECK(calculate_accessor_offset(TensorDimsCoord{FFOrdered{0_n, 1_n}},
+                                      shape) == 1_p);
     }
 
     SUBCASE("multiple dimensions") {

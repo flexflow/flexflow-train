@@ -47,8 +47,10 @@ void linear_forward_kernel(
     std::optional<GenericTensorAccessorR> const &bias_accessor) {
   if (stream.is_gpu()) {
     positive_int in_dim = dim_at_idx(input_accessor.shape.dims, ff_dim_t{1_n});
-    positive_int out_dim = dim_at_idx(output_accessor.shape.dims, ff_dim_t{1_n});
-    positive_int batch_size = dim_at_idx(input_accessor.shape.dims, ff_dim_t{0_n});
+    positive_int out_dim =
+        dim_at_idx(output_accessor.shape.dims, ff_dim_t{1_n});
+    positive_int batch_size =
+        dim_at_idx(input_accessor.shape.dims, ff_dim_t{0_n});
 
     float const *bias_ptr = nullptr;
     if (bias_accessor.has_value()) {

@@ -260,7 +260,8 @@ struct ForwardKernel {
                   GenericTensorAccessorW const &output) const {
     checkCUDNN(cudnnSetStream(handle.dnn, stream));
 
-    size_t num_elements = get_num_elements(input.shape.dims).int_from_positive_int();
+    size_t num_elements =
+        get_num_elements(input.shape.dims).int_from_positive_int();
 
     if (use_cudnn(op_type)) {
       float alpha = 1.0f, beta = 0.0f;
@@ -301,7 +302,8 @@ struct BackwardKernel {
                   GenericTensorAccessorR const &input,
                   GenericTensorAccessorW const &input_grad) {
     checkCUDNN(cudnnSetStream(handle.dnn, stream));
-    size_t num_elements = get_num_elements(input.shape.dims).int_from_positive_int();
+    size_t num_elements =
+        get_num_elements(input.shape.dims).int_from_positive_int();
 
     if (use_cudnn(op_type)) {
       float alpha = 1.0f;

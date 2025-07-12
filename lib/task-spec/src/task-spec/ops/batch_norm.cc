@@ -22,7 +22,7 @@ namespace FlexFlow {
 using namespace FlexFlow::Kernels::BatchNorm;
 
 enum Slots {
-  INPUT, 
+  INPUT,
   SCALE,
   BIAS,
   OUTPUT,

@@ -12,7 +12,8 @@ template <typename T>
 struct FFOrdered {
   FFOrdered() {}
 
-  explicit FFOrdered(std::initializer_list<T> const &l) : contents(l.begin(), l.end()) {}
+  explicit FFOrdered(std::initializer_list<T> const &l)
+      : contents(l.begin(), l.end()) {}
 
   template <typename It>
   explicit FFOrdered(It begin, It end) : contents(begin, end) {}

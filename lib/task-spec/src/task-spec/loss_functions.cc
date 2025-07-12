@@ -59,21 +59,25 @@ static void backward_task_impl(TaskArgumentAccessor const &acc) {
   auto logit = acc.get_tensor<Permissions::RO>(LOGIT);
   auto label = acc.get_loss_tensor<Permissions::RO>(LABEL);
 
-  int batch_size = dim_at_idx(logit.shape.dims, legion_dim_t{1_n}).int_from_positive_int();
+  int batch_size =
+      dim_at_idx(logit.shape.dims, legion_dim_t{1_n}).int_from_positive_int();
   // assuming logit shape is [batch dim, num classes]
 
   LossFunction loss_type = get_loss_function(attrs);
   float scale_factor = 1.0f / batch_size;
   if (loss_type == LossFunction::MEAN_SQUARED_ERROR_AVG_REDUCE) {
-    ASSERT(get_num_elements(logit.shape.dims) == get_num_elements(label.shape.dims));
-    scale_factor = 2.0f / get_num_elements(logit.shape.dims).int_from_positive_int();
+    ASSERT(get_num_elements(logit.shape.dims) ==
+           get_num_elements(label.shape.dims));
+    scale_factor =
+        2.0f / get_num_elements(logit.shape.dims).int_from_positive_int();
   }
 
   if (loss_type == LossFunction::SPARSE_CATEGORICAL_CROSSENTROPY) {
     // label shape is [batch dim, 1]
     auto scce_attrs = attrs.get<SparseCategoricalCrossEntropyLossAttrs>();
     size_t ndim = get_num_dims(logit.shape.dims).unwrap_nonnegative();
-    int num_classes = dim_at_idx(logit.shape.dims, legion_dim_t{0_n}).int_from_positive_int();
+    int num_classes =
+        dim_at_idx(logit.shape.dims, legion_dim_t{0_n}).int_from_positive_int();
     ASSERT(logit_grad.shape == logit.shape);
     int k = 1;
     if (scce_attrs.replace_labels) {
@@ -86,13 +90,17 @@ static void backward_task_impl(TaskArgumentAccessor const &acc) {
                                         // <--- this is not the case because of
                                         // the potential parallel dim
     }
-    ASSERT(slice_tensor_dims(label.shape.dims, relative_ff_dim_t{0}, relative_ff_dim_t{-2}) ==
-           slice_tensor_dims(logit.shape.dims, relative_ff_dim_t{0}, relative_ff_dim_t{-2}));
-    ASSERT(k * dim_at_idx(label.shape.dims, legion_dim_t{nonnegative_int{ndim - 1}})
+    ASSERT(slice_tensor_dims(
+               label.shape.dims, relative_ff_dim_t{0}, relative_ff_dim_t{-2}) ==
+           slice_tensor_dims(
+               logit.shape.dims, relative_ff_dim_t{0}, relative_ff_dim_t{-2}));
+    ASSERT(k * dim_at_idx(label.shape.dims,
+                          legion_dim_t{nonnegative_int{ndim - 1}})
                    .int_from_positive_int() ==
            dim_at_idx(logit.shape.dims, legion_dim_t{nonnegative_int{ndim - 1}})
                .int_from_positive_int());
-    ASSERT(dim_at_idx(label.shape.dims, legion_dim_t(0_n)).int_from_positive_int() == 1);
+    ASSERT(dim_at_idx(label.shape.dims, legion_dim_t(0_n))
+               .int_from_positive_int() == 1);
 
     profile(sparse_categorical_crossentropy_loss_backward_kernel,
             profiling,

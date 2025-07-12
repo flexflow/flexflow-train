@@ -31,7 +31,8 @@ T throw_if_unexpected(tl::expected<T, E> const &r) {
   if (r.has_value()) {
     return r.value();
   } else {
-    PANIC(fmt::to_string(r.error()));;
+    PANIC(fmt::to_string(r.error()));
+    ;
   }
 }
 

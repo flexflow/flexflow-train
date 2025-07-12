@@ -56,9 +56,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("inputs are empty") {
       std::vector<FFOrdered<int>> input = {
-        FFOrdered<int>{}, 
-        FFOrdered<int>{}, 
-        FFOrdered<int>{},
+          FFOrdered<int>{},
+          FFOrdered<int>{},
+          FFOrdered<int>{},
       };
 
       FFOrdered<int> result = concat(input);

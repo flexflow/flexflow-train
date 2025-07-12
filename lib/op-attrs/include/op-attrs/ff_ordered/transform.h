@@ -2,9 +2,9 @@
 #define _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_DIM_ORDERED_TRANSFORM_H
 
 #include "op-attrs/ff_ordered/ff_ordered.h"
+#include "op-attrs/ff_ordered/ff_ordered_of.h"
 #include "utils/containers/vector_of.h"
 #include "utils/containers/vector_transform.h"
-#include "op-attrs/ff_ordered/ff_ordered_of.h"
 
 namespace FlexFlow {
 

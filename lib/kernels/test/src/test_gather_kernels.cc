@@ -18,10 +18,11 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                                   TensorShape index_shape,
                                   TensorShape output_shape) {
         ff_dim_t dim = ff_dim_t{
-          nonnegative_int{get_num_dims(input_shape.dims).unwrap_nonnegative() - 1},
+            nonnegative_int{
+                get_num_dims(input_shape.dims).unwrap_nonnegative() - 1},
         };
-        GatherPerDeviceState state = Kernels::Gather::gpu_init_kernel(
-            managed_handle.raw_handle(), dim);
+        GatherPerDeviceState state =
+            Kernels::Gather::gpu_init_kernel(managed_handle.raw_handle(), dim);
 
         GenericTensorAccessorR input_accessor =
             create_random_filled_accessor_r(input_shape, allocator);
@@ -77,10 +78,11 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                                    TensorShape index_shape,
                                    TensorShape output_shape) {
         ff_dim_t dim = ff_dim_t{
-          nonnegative_int{get_num_dims(input_shape.dims).unwrap_nonnegative() - 1},
+            nonnegative_int{
+                get_num_dims(input_shape.dims).unwrap_nonnegative() - 1},
         };
-        GatherPerDeviceState state = Kernels::Gather::gpu_init_kernel(
-            managed_handle.raw_handle(), dim);
+        GatherPerDeviceState state =
+            Kernels::Gather::gpu_init_kernel(managed_handle.raw_handle(), dim);
 
         GenericTensorAccessorR output_grad_accessor =
             create_random_filled_accessor_r(output_shape, allocator);

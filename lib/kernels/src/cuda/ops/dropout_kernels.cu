@@ -37,7 +37,8 @@ DropoutPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
   checkCUDNN(cudnnCreateTensorDescriptor(&outputTensor));
   checkCUDNN(cudnnCreateDropoutDescriptor(&dropoutDesc));
   checkCUDNN(cudnnDropoutGetStatesSize(handle.dnn, &(dropoutStateSize)));
-  checkCUDNN(cudnnSetTensorDescriptorFromTensorShape(inputTensor, output_shape));
+  checkCUDNN(
+      cudnnSetTensorDescriptorFromTensorShape(inputTensor, output_shape));
   checkCUDNN(
       cudnnSetTensorDescriptorFromTensorShape(outputTensor, output_shape));
   checkCUDNN(

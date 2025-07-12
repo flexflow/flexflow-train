@@ -15,6 +15,7 @@
 
 #include "task-spec/ops/layer_norm.h"
 #include "kernels/layer_norm_kernels.h"
+#include "op-attrs/ff_ordered/transform.h"
 #include "op-attrs/ops/layer_norm.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "task-spec/profiling.h"
@@ -23,7 +24,6 @@
 #include "utils/hash-utils.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include <type_traits>
-#include "op-attrs/ff_ordered/transform.h"
 
 namespace FlexFlow {
 
@@ -142,10 +142,9 @@ static DeviceSpecificDeviceStates
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto handle = acc.get_argument<device_handle_t>(HANDLE);
 
-  positive_int M = product(transform(attrs.axes, 
-                                     [&](ff_dim_t dim) {
-                                       return dim_at_idx(input.shape.dims, dim);
-                                     }));
+  positive_int M = product(transform(attrs.axes, [&](ff_dim_t dim) {
+    return dim_at_idx(input.shape.dims, dim);
+  }));
 
   positive_int num_replicas = get_num_elements(input.shape.dims);
 

@@ -39,7 +39,8 @@ struct BackwardKernel {
                   GenericTensorAccessorW const &input) {
     float alpha = 1.0f;
     apply_add_with_scale2<real_type_t<InputDT>, real_type_t<OutputDT>>
-        <<<GET_BLOCKS(get_num_elements(input.shape.dims).int_from_positive_int()),
+        <<<GET_BLOCKS(
+               get_num_elements(input.shape.dims).int_from_positive_int()),
            CUDA_NUM_THREADS,
            0,
            stream>>>(input.get<InputDT>(),

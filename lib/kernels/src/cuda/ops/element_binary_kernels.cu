@@ -124,8 +124,10 @@ ElementBinaryPerDeviceState gpu_init_kernel(PerDeviceFFHandle handle,
                                             CUDNN_PROPAGATE_NAN,
                                             CUDNN_REDUCE_TENSOR_NO_INDICES,
                                             CUDNN_32BIT_INDICES));
-  checkCUDNN(cudnnSetTensorDescriptorFromTensorShape(inputLHSTensor, lhs_shape));
-  checkCUDNN(cudnnSetTensorDescriptorFromTensorShape(inputRHSTensor, rhs_shape));
+  checkCUDNN(
+      cudnnSetTensorDescriptorFromTensorShape(inputLHSTensor, lhs_shape));
+  checkCUDNN(
+      cudnnSetTensorDescriptorFromTensorShape(inputRHSTensor, rhs_shape));
   checkCUDNN(
       cudnnSetTensorDescriptorFromTensorShape(outputTensor, output_shape));
 

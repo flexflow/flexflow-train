@@ -137,14 +137,16 @@ void gpu_forward_kernel(ffStream_t stream,
   if (m.dim.value == 0_n) {
     stride = 1;
   } else {
-    stride =
-        get_num_elements(slice_tensor_dims(output.shape.dims, 
-            add_to_ff_dim(m.dim, -1), std::nullopt)).int_from_positive_int();
+    stride = get_num_elements(slice_tensor_dims(output.shape.dims,
+                                                add_to_ff_dim(m.dim, -1),
+                                                std::nullopt))
+                 .int_from_positive_int();
   }
 
   coord_t output_dim_size =
       dim_at_idx(output.shape.dims, m.dim).int_from_positive_int();
-  coord_t input_dim_size = dim_at_idx(input.shape.dims, m.dim).int_from_positive_int();
+  coord_t input_dim_size =
+      dim_at_idx(input.shape.dims, m.dim).int_from_positive_int();
 
   assert(index.shape.data_type == DataType::INT32 ||
          index.shape.data_type == DataType::INT64);
@@ -172,9 +174,10 @@ void gpu_backward_kernel(ffStream_t stream,
   if (m.dim.value == 0_n) {
     stride = 1;
   } else {
-    stride =
-        get_num_elements(slice_tensor_dims(output_grad.shape.dims, 
-            add_to_ff_dim(m.dim, -1), std::nullopt)).int_from_positive_int();
+    stride = get_num_elements(slice_tensor_dims(output_grad.shape.dims,
+                                                add_to_ff_dim(m.dim, -1),
+                                                std::nullopt))
+                 .int_from_positive_int();
   }
 
   coord_t output_dim_size =

@@ -20,11 +20,14 @@
 namespace FlexFlow::Kernels::Concat {
 
 static void calc_blk_size(size_t &num_blocks,
-                   size_t &blk_size,
-                   TensorShape const &shape,
-                   ff_dim_t axis) {
-  blk_size = get_num_elements(slice_tensor_dims(shape.dims, axis, std::nullopt)).int_from_positive_int();
-  num_blocks = get_num_elements(slice_tensor_dims(shape.dims, ff_dim_t{0_n}, axis)).int_from_positive_int();
+                          size_t &blk_size,
+                          TensorShape const &shape,
+                          ff_dim_t axis) {
+  blk_size = get_num_elements(slice_tensor_dims(shape.dims, axis, std::nullopt))
+                 .int_from_positive_int();
+  num_blocks =
+      get_num_elements(slice_tensor_dims(shape.dims, ff_dim_t{0_n}, axis))
+          .int_from_positive_int();
 }
 
 void gpu_forward_kernel(cudaStream_t stream,

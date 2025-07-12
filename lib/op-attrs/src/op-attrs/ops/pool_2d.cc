@@ -127,8 +127,10 @@ tl::expected<TensorShape, std::string>
   }
 
   positive_int num_samples = dim_at_idx(input_shape.dims, relative_ff_dim_t{0});
-  positive_int num_channels = dim_at_idx(input_shape.dims, relative_ff_dim_t{1});
-  positive_int input_height = dim_at_idx(input_shape.dims, relative_ff_dim_t{2});
+  positive_int num_channels =
+      dim_at_idx(input_shape.dims, relative_ff_dim_t{1});
+  positive_int input_height =
+      dim_at_idx(input_shape.dims, relative_ff_dim_t{2});
   positive_int input_width = dim_at_idx(input_shape.dims, relative_ff_dim_t{3});
 
   positive_int output_height =

@@ -26,11 +26,12 @@ void gpu_forward_kernel(cudaStream_t stream,
                         GenericTensorAccessorR const &input,
                         float *output_ptr) {
 
-  checkCUDA(cudaMemcpyAsync(output_ptr,
-                            input.get_float_ptr(),
-                            get_size_in_bytes(input.shape).unwrap_num_bytes().unwrap_nonnegative(),
-                            cudaMemcpyDeviceToDevice,
-                            stream));
+  checkCUDA(cudaMemcpyAsync(
+      output_ptr,
+      input.get_float_ptr(),
+      get_size_in_bytes(input.shape).unwrap_num_bytes().unwrap_nonnegative(),
+      cudaMemcpyDeviceToDevice,
+      stream));
 }
 
 void gpu_backward_kernel(cudaStream_t stream,

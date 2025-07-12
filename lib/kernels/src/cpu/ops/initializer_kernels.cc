@@ -33,7 +33,8 @@ struct ConstantInitKernel {
 
 void constant_init_kernel_cpu(GenericTensorAccessorW const &tensor,
                               DataTypeValue value) {
-  DataTypeDispatch1<ConstantInitKernel>{}(tensor.shape.data_type, tensor, value);
+  DataTypeDispatch1<ConstantInitKernel>{}(
+      tensor.shape.data_type, tensor, value);
 }
 
 void zero_init_kernel(TaskLocation const &loc,

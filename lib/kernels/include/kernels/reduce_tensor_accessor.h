@@ -6,14 +6,14 @@
 #include "kernels/copy_tensor_accessor.h"
 #include "kernels/datatype_dispatch.h"
 #include "kernels/local_cpu_allocator.h"
+#include "op-attrs/tensor_dims_coord.h"
+#include "op-attrs/tensor_shape.h"
 #include "utils/containers/contains.h"
 #include "utils/containers/foldl1.h"
 #include "utils/containers/foldr1.h"
 #include "utils/containers/group_by.h"
 #include "utils/containers/sorted.h"
 #include "utils/containers/transform.h"
-#include "op-attrs/tensor_shape.h"
-#include "op-attrs/tensor_dims_coord.h"
 
 namespace FlexFlow {
 
@@ -74,8 +74,8 @@ GenericTensorAccessorW
 
   TensorShape reduced_shape =
       tensor_shape_drop_dims(input.shape, should_drop_dim);
-  GenericTensorAccessorW output_cpu = cpu_allocator.allocate_tensor(
-      reduced_shape);
+  GenericTensorAccessorW output_cpu =
+      cpu_allocator.allocate_tensor(reduced_shape);
 
   DataTypeDispatch1<CPUReduceTensorAccessorInDims>{}(
       input_cpu.shape.data_type, input_cpu, output_cpu, dims, f);

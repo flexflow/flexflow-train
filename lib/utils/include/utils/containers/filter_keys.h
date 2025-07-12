@@ -1,8 +1,8 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_FILTER_KEYS_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_FILTER_KEYS_H
 
-#include <unordered_map>
 #include <map>
+#include <unordered_map>
 
 namespace FlexFlow {
 
@@ -19,8 +19,7 @@ std::unordered_map<K, V> filter_keys(std::unordered_map<K, V> const &m,
 }
 
 template <typename K, typename V, typename F>
-std::map<K, V> filter_keys(std::map<K, V> const &m,
-                           F const &f) {
+std::map<K, V> filter_keys(std::map<K, V> const &m, F const &f) {
   std::map<K, V> result;
   for (std::pair<K, V> const &kv : m) {
     if (f(kv.first)) {
@@ -29,7 +28,6 @@ std::map<K, V> filter_keys(std::map<K, V> const &m,
   }
   return result;
 }
-
 
 } // namespace FlexFlow
 

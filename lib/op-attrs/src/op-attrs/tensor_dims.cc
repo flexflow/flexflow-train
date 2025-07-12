@@ -1,4 +1,6 @@
 #include "op-attrs/tensor_dims.h"
+#include "op-attrs/ff_ordered/enumerate.h"
+#include "op-attrs/ff_ordered/filtrans.h"
 #include "op-attrs/ff_ordered/get_idxs.h"
 #include "op-attrs/ff_ordered/slice.h"
 #include "op-attrs/ff_ordered/zip.h"
@@ -18,8 +20,6 @@
 #include "utils/integer_conversions.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include "utils/nonnegative_int/num_elements.h"
-#include "op-attrs/ff_ordered/enumerate.h"
-#include "op-attrs/ff_ordered/filtrans.h"
 
 namespace FlexFlow {
 
@@ -51,7 +51,8 @@ positive_int &dim_at_idx(TensorDims &dims, ff_dim_t ff_dim_idx) {
   return dims.ff_ordered.at(ff_dim_idx);
 }
 
-std::optional<positive_int> try_dim_at_idx(TensorDims const &dims, relative_ff_dim_t idx) {
+std::optional<positive_int> try_dim_at_idx(TensorDims const &dims,
+                                           relative_ff_dim_t idx) {
   if (dims.ff_ordered.idx_is_valid(idx)) {
     return dims.ff_ordered.at(idx);
   } else {
@@ -59,7 +60,8 @@ std::optional<positive_int> try_dim_at_idx(TensorDims const &dims, relative_ff_d
   }
 }
 
-std::optional<positive_int> try_dim_at_idx(TensorDims const &dims, ff_dim_t idx) {
+std::optional<positive_int> try_dim_at_idx(TensorDims const &dims,
+                                           ff_dim_t idx) {
   if (dims.ff_ordered.idx_is_valid(idx)) {
     return dims.ff_ordered.at(idx);
   } else {
@@ -143,7 +145,8 @@ TensorDimsCoord get_broadcast_src_coord(TensorDims const &input_dims,
   return result;
 }
 
-std::unordered_set<TensorDimsCoord> get_tensor_dims_coord_set(TensorDims const &tensor_dims) {  
+std::unordered_set<TensorDimsCoord>
+    get_tensor_dims_coord_set(TensorDims const &tensor_dims) {
   std::vector<std::vector<nonnegative_int>> per_dim_ranges = transform(
       vector_of(tensor_dims.ff_ordered),
       [](positive_int dim_size) -> std::vector<nonnegative_int> {
@@ -176,7 +179,9 @@ std::optional<TensorDims>
   return std::nullopt;
 }
 
-TensorDims tensor_dims_drop_dims(TensorDims const &dims, std::function<bool(ff_dim_t)> const &should_drop_dim) {
+TensorDims tensor_dims_drop_dims(
+    TensorDims const &dims,
+    std::function<bool(ff_dim_t)> const &should_drop_dim) {
   std::vector<positive_int> result;
   for (ff_dim_t idx : get_idxs(dims.ff_ordered)) {
     if (!should_drop_dim(idx)) {
@@ -202,6 +207,5 @@ TensorDims slice_tensor_dims(TensorDims const &dims,
       slice(dims.ff_ordered, start, stop),
   };
 }
-
 
 } // namespace FlexFlow

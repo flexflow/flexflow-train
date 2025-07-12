@@ -41,9 +41,9 @@
 #include "utils/containers/without_nullopts.h"
 #include "utils/containers/zip_with_strict.h"
 #include "utils/expected.h"
+#include "utils/fmt/set.h"
 #include "utils/stack_vector/stack_vector_of.h"
 #include <fmt/format.h>
-#include "utils/fmt/set.h"
 
 namespace FlexFlow {
 
@@ -481,8 +481,8 @@ tensor_guid_t ComputationGraphBuilder::gather(
                     DataType::INT64));
   }
 
-  GatherAttrs attrs = GatherAttrs{
-      ff_dim_t_from_relative_ff_dim_t(dim, get_num_dims(this->get_shape(input).dims))};
+  GatherAttrs attrs = GatherAttrs{ff_dim_t_from_relative_ff_dim_t(
+      dim, get_num_dims(this->get_shape(input).dims))};
   std::string name =
       maybe_name.value_or(get_default_name(ComputationGraphOpAttrs{attrs}));
 
@@ -752,7 +752,8 @@ tensor_guid_t ComputationGraphBuilder::layer_norm(
   TensorShape input_shape = this->get_shape(input);
 
   auto resolve_dim_idx = [&](relative_ff_dim_t dim_idx) {
-    return ff_dim_t_from_relative_ff_dim_t(dim_idx, get_num_dims(input_shape.dims));
+    return ff_dim_t_from_relative_ff_dim_t(dim_idx,
+                                           get_num_dims(input_shape.dims));
   };
 
   std::set<ff_dim_t> axes = transform(relative_axes, resolve_dim_idx);
@@ -768,9 +769,9 @@ tensor_guid_t ComputationGraphBuilder::layer_norm(
   }
 
   LayerNormAttrs attrs = LayerNormAttrs{
-    /*axes=*/axes,
-    /*elementwise_affine=*/elementwise_affine,
-    /*eps=*/eps,
+      /*axes=*/axes,
+      /*elementwise_affine=*/elementwise_affine,
+      /*eps=*/eps,
   };
 
   std::string name =
@@ -790,11 +791,11 @@ tensor_guid_t ComputationGraphBuilder::softmax(
 
   TensorShape input_shape = this->get_shape(input);
 
-  relative_ff_dim_t dim = maybe_dim.value_or(
-      relative_ff_dim_t{get_num_dims(input_shape.dims).unwrap_nonnegative() - 1});
+  relative_ff_dim_t dim = maybe_dim.value_or(relative_ff_dim_t{
+      get_num_dims(input_shape.dims).unwrap_nonnegative() - 1});
 
-  SoftmaxAttrs attrs =
-      SoftmaxAttrs{ff_dim_t_from_relative_ff_dim_t(dim, get_num_dims(input_shape.dims))};
+  SoftmaxAttrs attrs = SoftmaxAttrs{
+      ff_dim_t_from_relative_ff_dim_t(dim, get_num_dims(input_shape.dims))};
 
   ASSERT(attrs.dim.value < get_num_dims(input_shape.dims),
          "ComputationGraphBuilder::softmax received out_of_bounds dim",
