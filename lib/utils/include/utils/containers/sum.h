@@ -1,6 +1,8 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_SUM_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_SUM_H
 
+#include <optional>
+
 namespace FlexFlow {
 
 /**
@@ -8,11 +10,20 @@ namespace FlexFlow {
  **/
 template <typename Container, typename Element = typename Container::value_type>
 Element sum(Container const &container) {
-  Element result = 0;
+  std::optional<Element> result;
   for (Element const &element : container) {
-    result += element;
+    if (result.has_value()) {
+      result.value() += element;
+    } else {
+      result = element;
+    }
   }
-  return result;
+
+  if (result.has_value()) {
+    return result.value();
+  } else {
+    return Element{0};
+  }
 }
 
 } // namespace FlexFlow

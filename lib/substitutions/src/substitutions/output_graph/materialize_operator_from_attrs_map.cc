@@ -33,10 +33,11 @@ PCGOperatorAttrs materialize_operator_from_attrs_map(
   switch (op_type) {
     case OperatorType::MULTIHEAD_ATTENTION:
       return PCGOperatorAttrs{MultiHeadAttentionAttrs{
-          /*embed_dim=*/acc.get<int>(OperatorAttributeKey::EMBED_DIM),
-          /*num_heads=*/acc.get<int>(OperatorAttributeKey::NUM_HEADS),
-          /*kdim=*/acc.get<int>(OperatorAttributeKey::KDIM),
-          /*vdim=*/acc.get<int>(OperatorAttributeKey::VDIM),
+          /*embed_dim=*/acc.get<positive_int>(OperatorAttributeKey::EMBED_DIM),
+          /*num_heads=*/
+          acc.get<positive_int>(OperatorAttributeKey::NUM_HEADS),
+          /*kdim=*/acc.get<positive_int>(OperatorAttributeKey::KDIM),
+          /*vdim=*/acc.get<positive_int>(OperatorAttributeKey::VDIM),
           /*dropout=*/acc.get<float>(OperatorAttributeKey::DROPOUT),
           /*bias=*/acc.get<bool>(OperatorAttributeKey::BIAS),
           /*add_bias_kv=*/acc.get<bool>(OperatorAttributeKey::ADD_BIAS_KV),
@@ -44,12 +45,14 @@ PCGOperatorAttrs materialize_operator_from_attrs_map(
       }};
     case OperatorType::POOL2D:
       return PCGOperatorAttrs{Pool2DAttrs{
-          /*kernel_h=*/acc.get<int>(OperatorAttributeKey::KERNEL_H),
-          /*kernel_w=*/acc.get<int>(OperatorAttributeKey::KERNEL_W),
-          /*stride_h=*/acc.get<int>(OperatorAttributeKey::STRIDE_H),
-          /*stride_w=*/acc.get<int>(OperatorAttributeKey::STRIDE_W),
-          /*padding_h=*/acc.get<int>(OperatorAttributeKey::PADDING_H),
-          /*padding_w=*/acc.get<int>(OperatorAttributeKey::PADDING_W),
+          /*kernel_h=*/acc.get<positive_int>(OperatorAttributeKey::KERNEL_H),
+          /*kernel_w=*/acc.get<positive_int>(OperatorAttributeKey::KERNEL_W),
+          /*stride_h=*/acc.get<positive_int>(OperatorAttributeKey::STRIDE_H),
+          /*stride_w=*/acc.get<positive_int>(OperatorAttributeKey::STRIDE_W),
+          /*padding_h=*/
+          acc.get<nonnegative_int>(OperatorAttributeKey::PADDING_H),
+          /*padding_w=*/
+          acc.get<nonnegative_int>(OperatorAttributeKey::PADDING_W),
           /*pool_type=*/acc.get<PoolOp>(OperatorAttributeKey::POOL_TYPE),
           /*activation=*/
           acc.get<std::optional<Activation>>(OperatorAttributeKey::ACTIVATION)
@@ -62,7 +65,8 @@ PCGOperatorAttrs materialize_operator_from_attrs_map(
     case OperatorType::DROPOUT:
     case OperatorType::LINEAR:
       return PCGOperatorAttrs{LinearAttrs{
-          /*out_channels=*/acc.get<int>(OperatorAttributeKey::OUT_CHANNELS),
+          /*out_channels=*/acc.get<positive_int>(
+              OperatorAttributeKey::OUT_CHANNELS),
           /*use_bias=*/acc.get<bool>(OperatorAttributeKey::USE_BIAS),
           /*data_type=*/acc.get<DataType>(OperatorAttributeKey::DATA_TYPE),
           /*activation=*/

@@ -1,29 +1,19 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_CAST_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_CAST_KERNELS_H
 
-#include "device.h"
 #include "kernels/accessor.h"
-#include "kernels/ff_handle.h"
-#include "op-attrs/activation.dtg.h"
+#include "kernels/device_stream_t.dtg.h"
 
-namespace FlexFlow {
-namespace Kernels {
-namespace Cast {
+namespace FlexFlow::Kernels::Cast {
 
-void forward_kernel(ffStream_t stream,
+void forward_kernel(device_stream_t const &stream,
                     GenericTensorAccessorR const &input,
-                    GenericTensorAccessorW const &output,
-                    DataType input_type,
-                    DataType output_type);
+                    GenericTensorAccessorW const &output);
 
-void backward_kernel(ffStream_t stream,
-                     GenericTensorAccessorR const &input,
-                     GenericTensorAccessorW const &output,
-                     DataType input_type,
-                     DataType output_type);
+void backward_kernel(device_stream_t const &stream,
+                     GenericTensorAccessorR const &output_grad,
+                     GenericTensorAccessorW const &input_grad);
 
-} // namespace Cast
-} // namespace Kernels
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::Cast
 
 #endif

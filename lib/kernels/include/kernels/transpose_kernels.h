@@ -1,39 +1,22 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_TRANSPOSE_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_TRANSPOSE_KERNELS_H
 
-#include "device.h"
 #include "kernels/accessor.h"
-#include <vector>
+#include "kernels/device_stream_t.dtg.h"
+#include "op-attrs/ops/transpose_attrs.dtg.h"
 
-namespace FlexFlow {
+namespace FlexFlow::Kernels::Transpose {
 
-struct TransposePerDeviceState {
-  int num_dim;
-  req<std::vector<legion_dim_t>> perm;
-};
-
-FF_VISITABLE_STRUCT_NONSTANDARD_CONSTRUCTION(TransposePerDeviceState,
-                                             num_dim,
-                                             perm);
-
-namespace Kernels {
-namespace Transpose {
-
-TransposePerDeviceState init_kernel(int num_dim,
-                                    std::vector<ff_dim_t> const &perm);
-
-void forward_kernel(cudaStream_t stream,
-                    TransposePerDeviceState const &m,
+void forward_kernel(device_stream_t const &stream,
+                    TransposeAttrs const &attrs,
                     GenericTensorAccessorR const &input,
                     GenericTensorAccessorW const &output);
 
-void backward_kernel(cudaStream_t stream,
-                     TransposePerDeviceState const &m,
-                     GenericTensorAccessorW const &in_grad,
-                     GenericTensorAccessorR const &out_grad);
+void backward_kernel(device_stream_t const &stream,
+                     TransposeAttrs const &attrs,
+                     GenericTensorAccessorR const &out_grad,
+                     GenericTensorAccessorW const &in_grad);
 
-} // namespace Transpose
-} // namespace Kernels
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::Transpose
 
 #endif // _FLEXFLOW_OPS_KERNELS_TRANSPOSE_KERNELS_H

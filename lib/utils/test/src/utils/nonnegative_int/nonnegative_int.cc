@@ -198,6 +198,123 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
   }
 
+  TEST_CASE("nonnegative_int::operator+(nonnegative_int)") {
+    nonnegative_int result = nonnegative_int{1} + nonnegative_int{2};
+    nonnegative_int correct = nonnegative_int{3};
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("nonnegative_int::operator++() (pre-increment)") {
+    nonnegative_int input = nonnegative_int{1};
+
+    nonnegative_int result = ++input;
+    nonnegative_int correct = nonnegative_int{2};
+
+    CHECK(result == correct);
+    CHECK(input == correct);
+  }
+
+  TEST_CASE("nonnegative_int::operator++(int) (post-increment)") {
+    nonnegative_int input = nonnegative_int{1};
+
+    nonnegative_int result = input++;
+    nonnegative_int correct_input = nonnegative_int{2};
+    nonnegative_int correct_result = nonnegative_int{1};
+
+    CHECK(result == correct_result);
+    CHECK(input == correct_input);
+  }
+
+  TEST_CASE("nonnegative_int::operator+=(nonnegative_int)") {
+    nonnegative_int result = nonnegative_int{1};
+    result += nonnegative_int{3};
+
+    nonnegative_int correct = nonnegative_int{4};
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("nonnegative_int::operator*(nonnegative_int)") {
+    nonnegative_int result = nonnegative_int{2} * nonnegative_int{3};
+    nonnegative_int correct = nonnegative_int{6};
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("nonnegative_int::operator*=(nonnegative_int)") {
+    nonnegative_int result = nonnegative_int{3};
+    result *= nonnegative_int{6};
+
+    nonnegative_int correct = nonnegative_int{18};
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("nonnegative_int::operator/(nonnegative_int)") {
+    nonnegative_int result = nonnegative_int{5} / nonnegative_int{2};
+    nonnegative_int correct = nonnegative_int{2};
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("nonnegative_int::operator/=(nonnegative_int)") {
+    nonnegative_int result = nonnegative_int{13};
+    result /= nonnegative_int{3};
+
+    nonnegative_int correct = nonnegative_int{4};
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("operator/(float, nonnegative_int)") {
+    float result = 5.0 / nonnegative_int{2};
+    float correct = 5.0 / 2;
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("operator/=(float, nonnegative_int)") {
+    float result = 13.0;
+    result /= nonnegative_int{3};
+
+    float correct = 13.0 / 3;
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("nonnegative_int::operator/(nonnegative_int)") {
+    nonnegative_int result = nonnegative_int{5} / nonnegative_int{2};
+    nonnegative_int correct = nonnegative_int{2};
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("nonnegative_int::operator/=(nonnegative_int)") {
+    nonnegative_int result = nonnegative_int{13};
+    result /= nonnegative_int{3};
+
+    nonnegative_int correct = nonnegative_int{4};
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("nonnegative_int::operator%(nonnegative_int)") {
+    nonnegative_int result = nonnegative_int{5} % nonnegative_int{2};
+    nonnegative_int correct = nonnegative_int{1};
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("nonnegative_int::operator%=(nonnegative_int)") {
+    nonnegative_int result = nonnegative_int{15};
+    result %= nonnegative_int{4};
+
+    nonnegative_int correct = nonnegative_int{3};
+
+    CHECK(result == correct);
+  }
+
   TEST_CASE("adl_serializer<nonnegative_int>") {
     SUBCASE("to_json") {
       nonnegative_int input = nonnegative_int{5};

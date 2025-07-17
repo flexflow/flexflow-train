@@ -26,24 +26,34 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("ParallelComputationGraphBuilder::add") {
     ParallelComputationGraphBuilder b;
 
-    ShardParallelDim d1 = ShardParallelDim{10, 2};
-    ShardParallelDim d2 = ShardParallelDim{15, 3};
+    ShardParallelDim d1 = ShardParallelDim{10_p, 2_p};
+    ShardParallelDim d2 = ShardParallelDim{15_p, 3_p};
 
-    ParallelTensorShape lhs_shape = ParallelTensorShape{
-        ParallelTensorDims{
-            FFOrdered<ShardParallelDim>{
-                ShardParallelDim{10, 2},
-                ShardParallelDim{15, 3},
-            },
-            ReplicaParallelDimSet{
-                SumDegree{2},
-                DiscardCopyDegree{1},
+    TensorShape lhs_shape = TensorShape{
+        TensorDims{
+            FFOrdered{
+                10_p,
+                15_p,
             },
         },
         DataType::FLOAT,
     };
 
-    ParallelTensorShape rhs_shape = lhs_shape;
+    // ParallelTensorShape lhs_shape = ParallelTensorShape{
+    //     ParallelTensorDims{
+    //         FFOrdered<ShardParallelDim>{
+    //             ShardParallelDim{10_p, 2_p},
+    //             ShardParallelDim{15_p, 3_p},
+    //         },
+    //         ReplicaParallelDimSet{
+    //             SumDegree{2_p},
+    //             DiscardCopyDegree{1_p},
+    //         },
+    //     },
+    //     DataType::FLOAT,
+    // };
+
+    TensorShape rhs_shape = lhs_shape;
 
     parallel_tensor_guid_t lhs = b.create_input_tensor(lhs_shape);
     parallel_tensor_guid_t rhs = b.create_input_tensor(rhs_shape);
@@ -76,33 +86,23 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("ParallelComputationGraphBuilder::batch_matmul") {
     ParallelComputationGraphBuilder b;
 
-    ShardParallelDim batch_dim = ShardParallelDim{4, 2};
-
-    ParallelTensorShape a_shape = ParallelTensorShape{
-        ParallelTensorDims{
-            FFOrdered<ShardParallelDim>{
-                batch_dim,
-                ShardParallelDim{10, 1},
-                ShardParallelDim{15, 3},
-            },
-            ReplicaParallelDimSet{
-                SumDegree{1},
-                DiscardCopyDegree{1},
+    TensorShape a_shape = TensorShape{
+        TensorDims{
+            FFOrdered{
+                4_p,
+                10_p,
+                15_p,
             },
         },
         DataType::FLOAT,
     };
 
-    ParallelTensorShape b_shape = ParallelTensorShape{
-        ParallelTensorDims{
-            FFOrdered<ShardParallelDim>{
-                batch_dim,
-                ShardParallelDim{15, 3},
-                ShardParallelDim{12, 1},
-            },
-            ReplicaParallelDimSet{
-                SumDegree{1},
-                DiscardCopyDegree{1},
+    TensorShape b_shape = TensorShape{
+        TensorDims{
+            FFOrdered{
+                4_p,
+                15_p,
+                10_p,
             },
         },
         DataType::FLOAT,
@@ -130,7 +130,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("op attrs") {
       PCGOperatorAttrs result = get_parallel_layer_attrs(b.pcg, layer).op_attrs;
-      PCGOperatorAttrs correct = PCGOperatorAttrs{BatchMatmulAttrs{-1, -1}};
+      PCGOperatorAttrs correct =
+          PCGOperatorAttrs{BatchMatmulAttrs{std::nullopt, std::nullopt}};
       CHECK(result == correct);
     }
   }
@@ -138,15 +139,11 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("ParallelComputationGraphBuilder::cast") {
     ParallelComputationGraphBuilder b;
 
-    ParallelTensorShape input_shape = ParallelTensorShape{
-        ParallelTensorDims{
-            FFOrdered<ShardParallelDim>{
-                ShardParallelDim{10, 2},
-                ShardParallelDim{12, 1},
-            },
-            ReplicaParallelDimSet{
-                SumDegree{3},
-                DiscardCopyDegree{1},
+    TensorShape input_shape = TensorShape{
+        TensorDims{
+            FFOrdered{
+                10_p,
+                12_p,
             },
         },
         DataType::FLOAT,
@@ -179,29 +176,27 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("ParallelComputationGraphBuilder::conv2d") {
     ParallelComputationGraphBuilder b;
 
-    size_t batch_size = 2;
+    positive_int batch_size = 2_p;
 
-    TensorShape unpar_input_shape = TensorShape{
-        TensorDims{FFOrdered<size_t>{batch_size, 3, 10, 10}},
+    TensorShape input_shape = TensorShape{
+        TensorDims{FFOrdered{batch_size, 3_p, 10_p, 10_p}},
         DataType::FLOAT,
     };
 
-    ParallelTensorShape input_shape =
-        lift_to_parallel_with_degrees(unpar_input_shape,
-                                      SumDegree{1},
-                                      DiscardCopyDegree{1},
-                                      FFOrdered<int>{2, 1, 1, 1});
-
     parallel_tensor_guid_t input = b.create_input_tensor(input_shape);
+    parallel_tensor_guid_t par_input =
+        b.parallel_partition(input, ff_dim_t{0_n}, 2_p);
 
-    int outChannels = 6;
-    int kernelH = 5;
-    int kernelW = 4;
-    int strideH = 3;
-    int strideW = 2;
-    int paddingH = 1;
-    int paddingW = 0;
-    parallel_tensor_guid_t output = b.conv2d(input,
+    ParallelTensorShape par_input_shape = b.get_shape(par_input);
+
+    positive_int outChannels = 6_p;
+    positive_int kernelH = 5_p;
+    positive_int kernelW = 4_p;
+    positive_int strideH = 3_p;
+    positive_int strideW = 2_p;
+    nonnegative_int paddingH = 1_n;
+    nonnegative_int paddingW = 0_n;
+    parallel_tensor_guid_t output = b.conv2d(par_input,
                                              /*outChannels=*/outChannels,
                                              /*kernelH=*/kernelH,
                                              /*kernelW=*/kernelW,
@@ -215,7 +210,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                      [&](parallel_layer_guid_t const &l) {
                        return get_parallel_layer_attrs(b.pcg, l);
                      });
-    CHECK_MESSAGE(layers.size() == 6, "Incorrect layers ", layers);
+    CHECK_MESSAGE(layers.size() == 7, "Incorrect layers ", layers);
 
     auto num_attrs_of_type = [&](OperatorType op_type) -> int {
       return count(values(layers), [&](ParallelLayerAttrs const &l) {
@@ -234,6 +229,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     int num_replicate_attrs = num_attrs_of_type(OperatorType::REPLICATE);
     CHECK(num_replicate_attrs == 2);
+
+    int num_partition_attrs = num_attrs_of_type(OperatorType::REPARTITION);
+    CHECK(num_partition_attrs == 1);
 
     parallel_layer_guid_t conv_guid = get_only(without_nullopts(transform(
         vector_of(items(layers)),
@@ -254,18 +252,18 @@ TEST_SUITE(FF_TEST_SUITE) {
         strideW,
         paddingH,
         paddingW,
-        /*groups=*/1,
+        /*groups=*/1_p,
         /*activation=*/std::nullopt,
         /*use_bias=*/true,
     };
     CHECK(conv_attrs == correct_attrs);
 
     ParallelTensorShape correct_output_shape =
-        get_output_shape(correct_attrs, input_shape);
+        get_output_shape(correct_attrs, par_input_shape);
     ParallelTensorShape correct_kernel_shape =
-        get_kernel_shape(correct_attrs, input_shape);
+        get_kernel_shape(correct_attrs, par_input_shape);
     ParallelTensorShape correct_bias_shape =
-        get_bias_shape(correct_attrs, input_shape);
+        get_bias_shape(correct_attrs, par_input_shape);
 
     std::vector<parallel_tensor_guid_t> conv_incoming =
         get_incoming_tensors(b.pcg, conv_guid);
@@ -273,7 +271,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     parallel_tensor_guid_t conv_input = conv_incoming.at(0);
     ParallelTensorShape conv_input_shape =
         get_parallel_tensor_attrs(b.pcg, conv_input).shape;
-    CHECK(conv_input_shape == input_shape);
+    CHECK(conv_input_shape == par_input_shape);
 
     parallel_tensor_guid_t conv_kernel = conv_incoming.at(1);
     ParallelTensorShape conv_kernel_shape =
@@ -298,21 +296,16 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("ParallelComputationGraphBuilder::dense") {
     ParallelComputationGraphBuilder b;
 
-    ParallelTensorShape input_shape = ParallelTensorShape{
-        ParallelTensorDims{
-            FFOrdered<ShardParallelDim>{
-                ShardParallelDim{10, 2},
-                ShardParallelDim{16, 1},
-            },
-            ReplicaParallelDimSet{
-                SumDegree{1},
-                DiscardCopyDegree{1},
+    TensorShape input_shape = TensorShape{
+        TensorDims{
+            FFOrdered{
+                10_p,
+                16_p,
             },
         },
         DataType::FLOAT,
     };
-
-    int outDim = 14;
+    positive_int outDim = 14_p;
 
     parallel_tensor_guid_t input = b.create_input_tensor(input_shape);
     parallel_tensor_guid_t output = b.dense(input,
@@ -341,17 +334,11 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("ParallelComputationGraphBuilder::embedding") {
     ParallelComputationGraphBuilder b;
 
-    ShardParallelDim batch_dim = ShardParallelDim{12, 2};
-    ShardParallelDim feature_dim = ShardParallelDim{10, 1};
-    ParallelTensorShape input_shape = ParallelTensorShape{
-        ParallelTensorDims{
-            FFOrdered<ShardParallelDim>{
-                batch_dim,
-                feature_dim,
-            },
-            ReplicaParallelDimSet{
-                SumDegree{1},
-                DiscardCopyDegree{1},
+    TensorShape input_shape = TensorShape{
+        TensorDims{
+            FFOrdered{
+                12_p,
+                10_p,
             },
         },
         DataType::INT32,
@@ -359,8 +346,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     parallel_tensor_guid_t input = b.create_input_tensor(input_shape);
     parallel_tensor_guid_t output = b.embedding(input,
-                                                /*num_entries=*/32,
-                                                /*outDim=*/8,
+                                                /*num_entries=*/32_p,
+                                                /*outDim=*/8_p,
                                                 AggregateOp::SUM,
                                                 DataType::FLOAT);
     parallel_layer_guid_t layer = get_source_layer(output);
@@ -384,29 +371,22 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("ParallelComputationGraphBuilder::multihead_attention") {
     ParallelComputationGraphBuilder b;
 
-    ShardParallelDim batch_dim = ShardParallelDim{12, 2};
-    ShardParallelDim sequence_dim = ShardParallelDim{16, 1};
-    ShardParallelDim feature_dim = ShardParallelDim{10, 1};
-    ParallelTensorShape query_shape = ParallelTensorShape{
-        ParallelTensorDims{
-            FFOrdered<ShardParallelDim>{
-                batch_dim,
-                sequence_dim,
-                feature_dim,
-            },
-            ReplicaParallelDimSet{
-                SumDegree{1},
-                DiscardCopyDegree{1},
+    TensorShape query_shape = TensorShape{
+        TensorDims{
+            FFOrdered{
+                12_p,
+                16_p,
+                10_p,
             },
         },
         DataType::FLOAT,
     };
 
-    ParallelTensorShape key_shape = query_shape;
-    ParallelTensorShape value_shape = query_shape;
+    TensorShape key_shape = query_shape;
+    TensorShape value_shape = query_shape;
 
-    int embed_dim = 8;
-    int num_heads = 6;
+    positive_int embed_dim = 8_p;
+    positive_int num_heads = 6_p;
 
     parallel_tensor_guid_t query = b.create_input_tensor(query_shape);
     parallel_tensor_guid_t key = b.create_input_tensor(key_shape);
@@ -435,18 +415,11 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("ParallelComputationGraphBuilder::relu") {
     ParallelComputationGraphBuilder b;
 
-    ShardParallelDim batch_dim = ShardParallelDim{18, 3};
-    ShardParallelDim feature_dim = ShardParallelDim{32, 1};
-
-    ParallelTensorShape input_shape = ParallelTensorShape{
-        ParallelTensorDims{
-            FFOrdered<ShardParallelDim>{
-                batch_dim,
-                feature_dim,
-            },
-            ReplicaParallelDimSet{
-                SumDegree{1},
-                DiscardCopyDegree{1},
+    TensorShape input_shape = TensorShape{
+        TensorDims{
+            FFOrdered{
+                18_p,
+                32_p,
             },
         },
         DataType::FLOAT,
@@ -474,18 +447,14 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("ParallelComputationGraphBuilder::parallel_partition") {
     ParallelComputationGraphBuilder b;
 
-    ShardParallelDim batch_dim = ShardParallelDim{18, 2};
-    ShardParallelDim feature_dim = ShardParallelDim{10, 1};
+    ShardParallelDim batch_dim = ShardParallelDim{18_p, 2_p};
+    ShardParallelDim feature_dim = ShardParallelDim{10_p, 1_p};
 
-    ParallelTensorShape input_shape = ParallelTensorShape{
-        ParallelTensorDims{
-            FFOrdered<ShardParallelDim>{
-                batch_dim,
-                feature_dim,
-            },
-            ReplicaParallelDimSet{
-                SumDegree{1},
-                DiscardCopyDegree{1},
+    TensorShape input_shape = TensorShape{
+        TensorDims{
+            FFOrdered{
+                18_p,
+                10_p,
             },
         },
         DataType::FLOAT,
@@ -493,7 +462,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     parallel_tensor_guid_t input = b.create_input_tensor(input_shape);
     parallel_tensor_guid_t output =
-        b.parallel_partition(input, ff_dim_t{nonnegative_int{0}}, 2);
+        b.parallel_partition(input, ff_dim_t{0_n}, 2_p);
     parallel_layer_guid_t layer = get_source_layer(output);
 
     SUBCASE("incoming") {
@@ -514,26 +483,20 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("ParallelComputationGraphBuilder::parallel_combine") {
     ParallelComputationGraphBuilder b;
 
-    ShardParallelDim batch_dim = ShardParallelDim{18, 2};
-    ShardParallelDim feature_dim = ShardParallelDim{10, 1};
-
-    ParallelTensorShape input_shape = ParallelTensorShape{
-        ParallelTensorDims{
-            FFOrdered<ShardParallelDim>{
-                batch_dim,
-                feature_dim,
-            },
-            ReplicaParallelDimSet{
-                SumDegree{1},
-                DiscardCopyDegree{1},
+    TensorShape input_shape = TensorShape{
+        TensorDims{
+            FFOrdered{
+                18_p,
+                10_p,
             },
         },
         DataType::FLOAT,
     };
 
     parallel_tensor_guid_t input = b.create_input_tensor(input_shape);
+    input = b.parallel_partition(input, ff_dim_t{0_n}, 2_p);
     parallel_tensor_guid_t output =
-        b.parallel_combine(input, ff_dim_t{nonnegative_int{0}}, 2);
+        b.parallel_combine(input, ff_dim_t{0_n}, 2_p);
     parallel_layer_guid_t layer = get_source_layer(output);
 
     SUBCASE("incoming") {
@@ -554,25 +517,18 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("ParallelComputationGraphBuilder::parallel_replicate") {
     ParallelComputationGraphBuilder b;
 
-    ShardParallelDim batch_dim = ShardParallelDim{18, 2};
-    ShardParallelDim feature_dim = ShardParallelDim{10, 1};
-
-    ParallelTensorShape input_shape = ParallelTensorShape{
-        ParallelTensorDims{
-            FFOrdered<ShardParallelDim>{
-                batch_dim,
-                feature_dim,
-            },
-            ReplicaParallelDimSet{
-                SumDegree{1},
-                DiscardCopyDegree{1},
+    TensorShape input_shape = TensorShape{
+        TensorDims{
+            FFOrdered{
+                18_p,
+                10_p,
             },
         },
         DataType::FLOAT,
     };
 
     parallel_tensor_guid_t input = b.create_input_tensor(input_shape);
-    parallel_tensor_guid_t output = b.parallel_replicate(input, 2);
+    parallel_tensor_guid_t output = b.parallel_replicate(input, 2_p);
     parallel_layer_guid_t layer = get_source_layer(output);
 
     SUBCASE("incoming") {
@@ -593,25 +549,23 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("ParallelComputationGraphBuilder::parallel_reduce") {
     ParallelComputationGraphBuilder b;
 
-    ShardParallelDim batch_dim = ShardParallelDim{18, 2};
-    ShardParallelDim feature_dim = ShardParallelDim{10, 1};
-
-    ParallelTensorShape input_shape = ParallelTensorShape{
-        ParallelTensorDims{
-            FFOrdered<ShardParallelDim>{
-                batch_dim,
-                feature_dim,
-            },
-            ReplicaParallelDimSet{
-                SumDegree{4},
-                DiscardCopyDegree{1},
+    TensorShape input_shape = TensorShape{
+        TensorDims{
+            FFOrdered{
+                18_p,
+                10_p,
             },
         },
         DataType::FLOAT,
     };
 
     parallel_tensor_guid_t input = b.create_input_tensor(input_shape);
-    parallel_tensor_guid_t output = b.parallel_reduce(input, 2);
+    input = b.parallel_partition(input, ff_dim_t{1_n}, 2_p);
+    input = b.dense(input,
+                    /*out_dim=*/12_p,
+                    /*activation=*/std::nullopt,
+                    /*use_bias=*/false);
+    parallel_tensor_guid_t output = b.parallel_reduce(input, 2_p);
     parallel_layer_guid_t layer = get_source_layer(output);
 
     SUBCASE("incoming") {

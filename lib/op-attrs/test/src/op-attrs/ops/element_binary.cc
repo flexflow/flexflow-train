@@ -1,5 +1,6 @@
 #include "op-attrs/ops/element_binary.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "op-attrs/tensor_dims.h"
 #include "test/utils/doctest/fmt/expected.h"
 #include <doctest/doctest.h>
 
@@ -7,9 +8,9 @@ using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("EWAdd shape inference") {
-    size_t d1 = 16;
-    size_t d2 = 32;
-    size_t d3 = 24;
+    positive_int d1 = 16_p;
+    positive_int d2 = 32_p;
+    positive_int d3 = 24_p;
 
     ElementBinaryAttrs attrs = ElementBinaryAttrs{
         OperatorType::EW_ADD,
@@ -20,7 +21,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TensorShape input_lhs = TensorShape{
         TensorDims{
-            FFOrdered<size_t>{
+            FFOrdered{
                 d1,
                 d2,
                 d3,
@@ -41,7 +42,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("mismatched dim size") {
       TensorShape incorrect_rhs = input_lhs;
-      dim_at_idx(incorrect_rhs, relative_ff_dim_t{0}) += 1;
+      dim_at_idx(incorrect_rhs.dims, relative_ff_dim_t{0}) += 1_p;
 
       tl::expected<TensorShape, std::string> result =
           get_output_shape(attrs, input_lhs, incorrect_rhs);
@@ -53,9 +54,9 @@ TEST_SUITE(FF_TEST_SUITE) {
   }
 
   TEST_CASE("EWAdd parallel shape inference") {
-    size_t d1 = 16;
-    size_t d2 = 32;
-    size_t d3 = 24;
+    positive_int d1 = 16_p;
+    positive_int d2 = 32_p;
+    positive_int d3 = 24_p;
 
     ElementBinaryAttrs attrs = ElementBinaryAttrs{
         OperatorType::EW_ADD,
@@ -66,7 +67,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TensorShape unpar_lhs = TensorShape{
         TensorDims{
-            FFOrdered<size_t>{
+            FFOrdered{
                 d1,
                 d2,
                 d3,
@@ -83,68 +84,68 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     auto make_lhs = [&](SumDegree o_sum,
                         DiscardCopyDegree o_eq,
-                        int o_1,
-                        int o_2,
-                        int o_3) {
+                        positive_int o_1,
+                        positive_int o_2,
+                        positive_int o_3) {
       return lift_to_parallel_with_degrees(
-          unpar_lhs, o_sum, o_eq, FFOrdered<int>{o_1, o_2, o_3});
+          unpar_lhs, o_sum, o_eq, FFOrdered{o_1, o_2, o_3});
     };
 
     auto make_rhs = [&](SumDegree o_sum,
                         DiscardCopyDegree o_eq,
-                        int o_1,
-                        int o_2,
-                        int o_3) {
+                        positive_int o_1,
+                        positive_int o_2,
+                        positive_int o_3) {
       return lift_to_parallel_with_degrees(
-          unpar_rhs, o_sum, o_eq, FFOrdered<int>{o_1, o_2, o_3});
+          unpar_rhs, o_sum, o_eq, FFOrdered{o_1, o_2, o_3});
     };
 
     auto make_output = [&](SumDegree o_sum,
                            DiscardCopyDegree o_eq,
-                           int o_1,
-                           int o_2,
-                           int o_3) {
+                           positive_int o_1,
+                           positive_int o_2,
+                           positive_int o_3) {
       return lift_to_parallel_with_degrees(
-          unpar_output, o_sum, o_eq, FFOrdered<int>{o_1, o_2, o_3});
+          unpar_output, o_sum, o_eq, FFOrdered{o_1, o_2, o_3});
     };
 
     SUBCASE("data parallelism") {
-      int degree = 4;
+      positive_int degree = 4_p;
 
       ParallelTensorShape input_lhs =
-          make_lhs(SumDegree{1}, DiscardCopyDegree{1}, degree, 1, 1);
+          make_lhs(SumDegree{1_p}, DiscardCopyDegree{1_p}, degree, 1_p, 1_p);
       ParallelTensorShape input_rhs =
-          make_rhs(SumDegree{1}, DiscardCopyDegree{1}, degree, 1, 1);
+          make_rhs(SumDegree{1_p}, DiscardCopyDegree{1_p}, degree, 1_p, 1_p);
       tl::expected<ParallelTensorShape, std::string> result =
           get_output_shape(attrs, input_lhs, input_rhs);
       tl::expected<ParallelTensorShape, std::string> correct =
-          make_output(SumDegree{1}, DiscardCopyDegree{1}, degree, 1, 1);
+          make_output(SumDegree{1_p}, DiscardCopyDegree{1_p}, degree, 1_p, 1_p);
 
       CHECK(result == correct);
     }
 
     SUBCASE("reduction parallelism") {
-      int degree = 4;
+      positive_int degree = 4_p;
 
       ParallelTensorShape input_lhs =
-          make_lhs(SumDegree{degree}, DiscardCopyDegree{1}, 1, 1, 1);
+          make_lhs(SumDegree{degree}, DiscardCopyDegree{1_p}, 1_p, 1_p, 1_p);
       ParallelTensorShape input_rhs =
-          make_rhs(SumDegree{degree}, DiscardCopyDegree{1}, 1, 1, 1);
+          make_rhs(SumDegree{degree}, DiscardCopyDegree{1_p}, 1_p, 1_p, 1_p);
       tl::expected<ParallelTensorShape, std::string> result =
           get_output_shape(attrs, input_lhs, input_rhs);
       tl::expected<ParallelTensorShape, std::string> correct =
-          make_output(SumDegree{degree}, DiscardCopyDegree{1}, 1, 1, 1);
+          make_output(SumDegree{degree}, DiscardCopyDegree{1_p}, 1_p, 1_p, 1_p);
 
       CHECK(result == correct);
     }
 
     SUBCASE("invalid discard copy parallelism") {
-      int degree = 4;
+      positive_int degree = 4_p;
 
       ParallelTensorShape input_lhs =
-          make_lhs(SumDegree{1}, DiscardCopyDegree{degree}, 1, 1, 1);
+          make_lhs(SumDegree{1_p}, DiscardCopyDegree{degree}, 1_p, 1_p, 1_p);
       ParallelTensorShape input_rhs =
-          make_rhs(SumDegree{1}, DiscardCopyDegree{degree}, 1, 1, 1);
+          make_rhs(SumDegree{1_p}, DiscardCopyDegree{degree}, 1_p, 1_p, 1_p);
       tl::expected<ParallelTensorShape, std::string> result =
           get_output_shape(attrs, input_lhs, input_rhs);
 
@@ -154,12 +155,12 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("invalid mismatched parallelism degrees") {
-      int degree = 4;
+      positive_int degree = 4_p;
 
       ParallelTensorShape input_lhs =
-          make_lhs(SumDegree{1}, DiscardCopyDegree{1}, 1, degree, 1);
+          make_lhs(SumDegree{1_p}, DiscardCopyDegree{1_p}, 1_p, degree, 1_p);
       ParallelTensorShape input_rhs =
-          make_rhs(SumDegree{1}, DiscardCopyDegree{1}, 1, 1, degree);
+          make_rhs(SumDegree{1_p}, DiscardCopyDegree{1_p}, 1_p, 1_p, degree);
       tl::expected<ParallelTensorShape, std::string> result =
           get_output_shape(attrs, input_lhs, input_rhs);
 

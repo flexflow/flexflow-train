@@ -12,23 +12,24 @@ features = [
 includes = [
   "<cstddef>",
   "op-attrs/datatype.dtg.h",
+  "utils/positive_int/positive_int.h",
 ]
 
 [[fields]]
 name = "num_samples"
-type = "size_t"
+type = "::FlexFlow::positive_int"
 
 [[fields]]
 name = "num_channels"
-type = "size_t"
+type = "::FlexFlow::positive_int"
 
 [[fields]]
 name = "height"
-type = "size_t"
+type = "::FlexFlow::positive_int"
 
 [[fields]]
 name = "width"
-type = "size_t"
+type = "::FlexFlow::positive_int"
 
 [[fields]]
 name = "datatype"

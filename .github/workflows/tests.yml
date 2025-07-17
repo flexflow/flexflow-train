@@ -1,0 +1,101 @@
+name: "tests"
+on: [push, pull_request, workflow_dispatch]
+concurrency:
+  group: build-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  cpu-ci:
+    name: CPU unit tests and build
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout Git Repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Free additional space on runner
+        run: ./.github/workflows/helpers/free_space_on_runner.sh
+
+      - name: Install nix
+        uses: cachix/install-nix-action@v25
+        with:
+          github_access_token: '${{ secrets.GITHUB_TOKEN }}'
+
+      - uses: cachix/cachix-action@v14
+        with:
+          name: ff
+          skipPush: ${{ github.head_ref == 'master' }}
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+
+      - name: setup nix develop shell
+        uses: nicknovitski/nix-develop@v1.1.0
+        env:
+          NIXPKGS_ALLOW_UNFREE: 1
+        with:
+          arguments: ".#ci --accept-flake-config"
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+
+      - name: Run checks
+        run: |
+          proj check cpu-ci
+
+      - name: Upload code coverage
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: main_coverage.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+          verbose: true
+
+  gpu-ci:
+    name: GPU unit tests
+    needs: cpu-ci
+    runs-on:
+      - runs-on=${{ github.run_id }}
+      - family=g4dn.xlarge
+      - image=flexflow-gpu-ci
+
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+
+    steps:
+      - name: checkout git repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: mount ephemeral drive to nix
+        run: |
+          sudo mkdir $HOME/_work/nix && sudo mkdir /nix && sudo mount --bind $HOME/_work/nix /nix
+
+      - name: install nix
+        uses: cachix/install-nix-action@v25
+        with:
+          github_access_token: '${{ secrets.GITHUB_TOKEN }}'
+
+      - uses: cachix/cachix-action@v14
+        with:
+          name: ff
+          skipPush: true
+          # authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+
+      - name: setup nix develop shell
+        uses: nicknovitski/nix-develop@v1.1.0
+        env:
+          NIXPKGS_ALLOW_UNFREE: 1
+        with:
+          arguments: ".#gpu-ci --accept-flake-config --impure"
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+
+      - name: Run checks
+        run: |
+          proj check gpu-ci

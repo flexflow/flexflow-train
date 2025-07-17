@@ -10,7 +10,8 @@ features = [
 ]
 
 includes = [
-  "substitutions/tensor_pattern/tensor_attribute_key.dtg.h"
+  "substitutions/tensor_pattern/tensor_attribute_key.dtg.h",
+  "utils/nonnegative_int/nonnegative_int.h",
 ]
 
 [[fields]]
@@ -19,4 +20,4 @@ type = "::FlexFlow::TensorAttributeKey"
 
 [[fields]]
 name = "index"
-type = "int"
+type = "::FlexFlow::nonnegative_int"

@@ -3,6 +3,7 @@
 
 #include "utils/fmt.h"
 #include <fmt/format.h>
+#include <libassert/assert.hpp>
 #include <stdexcept>
 #include <tl/expected.hpp>
 
@@ -30,7 +31,8 @@ T throw_if_unexpected(tl::expected<T, E> const &r) {
   if (r.has_value()) {
     return r.value();
   } else {
-    throw std::runtime_error(fmt::to_string(r.error()));
+    PANIC(fmt::to_string(r.error()));
+    ;
   }
 }
 

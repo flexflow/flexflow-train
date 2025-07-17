@@ -5,14 +5,20 @@ features = [
   "ord",
   "hash",
   "json",
-  # "rapidcheck",
+  "rapidcheck",
   "fmt",
 ]
 
 includes = [ 
-  "utils/orthotope/orthotope.dtg.h",
+  "<vector>",
+  "utils/positive_int/positive_int.h",
+]
+
+src_includes = [
+  "utils/fmt/vector.h",
+  "utils/hash/vector.h"
 ]
 
 [[fields]]
-name = "raw_orthotope"
-type = "::FlexFlow::Orthotope"
+name = "degrees"
+type = "std::vector<::FlexFlow::positive_int>"

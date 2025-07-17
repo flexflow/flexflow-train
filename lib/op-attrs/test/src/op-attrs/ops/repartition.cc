@@ -6,8 +6,8 @@ using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Repartition shape inference") {
-    ff_dim_t dim = ff_dim_t{nonnegative_int{2}};
-    int degree = 4;
+    ff_dim_t dim = ff_dim_t{2_n};
+    positive_int degree = 4_p;
     RepartitionAttrs attrs = RepartitionAttrs{
         /*repartition_dim=*/dim,
         /*repartition_degree=*/degree,
@@ -16,14 +16,14 @@ TEST_SUITE(FF_TEST_SUITE) {
     ParallelTensorShape input = ParallelTensorShape{
         ParallelTensorDims{
             FFOrdered<ShardParallelDim>{
-                ShardParallelDim{12, 2},
-                ShardParallelDim{14, 1},
-                ShardParallelDim{16, 3},
-                ShardParallelDim{18, 2},
+                ShardParallelDim{12_p, 2_p},
+                ShardParallelDim{14_p, 1_p},
+                ShardParallelDim{16_p, 3_p},
+                ShardParallelDim{18_p, 2_p},
             },
             ReplicaParallelDimSet{
-                SumDegree{3},
-                DiscardCopyDegree{2},
+                SumDegree{3_p},
+                DiscardCopyDegree{2_p},
             },
         },
         DataType::FLOAT,

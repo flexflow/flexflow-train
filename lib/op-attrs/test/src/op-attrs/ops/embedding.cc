@@ -8,8 +8,8 @@ using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Sum embedding shape inference") {
-    int out_channels = 128;
-    int num_entries = 1024;
+    positive_int out_channels = 128_p;
+    positive_int num_entries = 1024_p;
     EmbeddingAttrs attrs = EmbeddingAttrs{
         /*num_entries=*/num_entries,
         /*out_channels=*/out_channels,
@@ -17,11 +17,11 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*data_type=*/DataType::FLOAT,
     };
 
-    size_t batch_size = 48;
-    size_t features_dim = 56;
+    positive_int batch_size = 48_p;
+    positive_int features_dim = 56_p;
 
     TensorShape input = TensorShape{
-        TensorDims{FFOrdered<size_t>{
+        TensorDims{FFOrdered{
             batch_size,
             features_dim,
         }},
@@ -30,9 +30,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TensorShape output = TensorShape{
         TensorDims{
-            FFOrdered<size_t>{
+            FFOrdered{
                 batch_size,
-                size_t_from_int(out_channels),
+                out_channels,
             },
         },
         DataType::FLOAT,
@@ -40,9 +40,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TensorShape weights = TensorShape{
         TensorDims{
-            FFOrdered<size_t>{
-                size_t_from_int(num_entries),
-                size_t_from_int(out_channels),
+            FFOrdered{
+                num_entries,
+                out_channels,
             },
         },
         DataType::FLOAT,
@@ -66,38 +66,38 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     auto make_input = [&](SumDegree o_sum,
                           DiscardCopyDegree o_eq,
-                          int o_batch,
-                          int o_features) {
+                          positive_int o_batch,
+                          positive_int o_features) {
       return lift_to_parallel_with_degrees(
-          input, o_sum, o_eq, FFOrdered<int>{o_batch, o_features});
+          input, o_sum, o_eq, FFOrdered{o_batch, o_features});
     };
 
     auto make_output = [&](SumDegree o_sum,
                            DiscardCopyDegree o_eq,
-                           int o_batch,
-                           int o_outchannels) {
+                           positive_int o_batch,
+                           positive_int o_outchannels) {
       return lift_to_parallel_with_degrees(
-          output, o_sum, o_eq, FFOrdered<int>{o_batch, o_outchannels});
+          output, o_sum, o_eq, FFOrdered{o_batch, o_outchannels});
     };
 
     auto make_weights = [&](SumDegree o_sum,
                             DiscardCopyDegree o_eq,
-                            int o_entries,
-                            int o_outchannels) {
+                            positive_int o_entries,
+                            positive_int o_outchannels) {
       return lift_to_parallel_with_degrees(
-          weights, o_sum, o_eq, FFOrdered<int>{o_entries, o_outchannels});
+          weights, o_sum, o_eq, FFOrdered{o_entries, o_outchannels});
     };
 
     SUBCASE("data parallelism") {
-      int degree = 4;
+      positive_int degree = 4_p;
       ParallelTensorShape par_input =
-          make_input(SumDegree{1}, DiscardCopyDegree{1}, degree, 1);
+          make_input(SumDegree{1_p}, DiscardCopyDegree{1_p}, degree, 1_p);
 
       {
         tl::expected<ParallelTensorShape, std::string> result =
             get_output_shape(attrs, par_input);
         tl::expected<ParallelTensorShape, std::string> correct =
-            make_output(SumDegree{1}, DiscardCopyDegree{1}, degree, 1);
+            make_output(SumDegree{1_p}, DiscardCopyDegree{1_p}, degree, 1_p);
         CHECK(result == correct);
       }
 
@@ -105,21 +105,21 @@ TEST_SUITE(FF_TEST_SUITE) {
         tl::expected<ParallelTensorShape, std::string> result =
             get_weights_shape(attrs, par_input);
         tl::expected<ParallelTensorShape, std::string> correct =
-            make_weights(SumDegree{1}, DiscardCopyDegree{degree}, 1, 1);
+            make_weights(SumDegree{1_p}, DiscardCopyDegree{degree}, 1_p, 1_p);
         CHECK(result == correct);
       }
     }
 
     SUBCASE("input features parallelism") {
-      int degree = 4;
+      positive_int degree = 4_p;
       ParallelTensorShape input =
-          make_input(SumDegree{1}, DiscardCopyDegree{1}, 1, degree);
+          make_input(SumDegree{1_p}, DiscardCopyDegree{1_p}, 1_p, degree);
 
       {
         tl::expected<ParallelTensorShape, std::string> result =
             get_output_shape(attrs, input);
         tl::expected<ParallelTensorShape, std::string> correct =
-            make_output(SumDegree{degree}, DiscardCopyDegree{1}, 1, 1);
+            make_output(SumDegree{degree}, DiscardCopyDegree{1_p}, 1_p, 1_p);
         CHECK(result == correct);
       }
 
@@ -127,7 +127,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         tl::expected<ParallelTensorShape, std::string> result =
             get_weights_shape(attrs, input);
         tl::expected<ParallelTensorShape, std::string> correct =
-            make_weights(SumDegree{1}, DiscardCopyDegree{degree}, 1, 1);
+            make_weights(SumDegree{1_p}, DiscardCopyDegree{degree}, 1_p, 1_p);
         CHECK(result == correct);
       }
     }
@@ -139,15 +139,15 @@ TEST_SUITE(FF_TEST_SUITE) {
       // dimension. For now we choose to represent parallelism in the channel
       // dimension, but partitioning in the entry dimension is also potentially
       // useful as it produces sum parallelism in the output
-      int degree = 4;
+      positive_int degree = 4_p;
       ParallelTensorShape input =
-          make_input(SumDegree{1}, DiscardCopyDegree{degree}, 1, 1);
+          make_input(SumDegree{1_p}, DiscardCopyDegree{degree}, 1_p, 1_p);
 
       {
         tl::expected<ParallelTensorShape, std::string> result =
             get_output_shape(attrs, input);
         tl::expected<ParallelTensorShape, std::string> correct =
-            make_output(SumDegree{1}, DiscardCopyDegree{1}, 1, degree);
+            make_output(SumDegree{1_p}, DiscardCopyDegree{1_p}, 1_p, degree);
         CHECK(result == correct);
       }
 
@@ -155,7 +155,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         tl::expected<ParallelTensorShape, std::string> result =
             get_weights_shape(attrs, input);
         tl::expected<ParallelTensorShape, std::string> correct =
-            make_weights(SumDegree{1}, DiscardCopyDegree{1}, 1, degree);
+            make_weights(SumDegree{1_p}, DiscardCopyDegree{1_p}, 1_p, degree);
         CHECK(result == correct);
       }
     }

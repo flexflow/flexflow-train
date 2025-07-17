@@ -15,10 +15,18 @@ ComputationGraph make_empty_computation_graph();
 
 std::unordered_set<layer_guid_t> get_layers(ComputationGraph const &);
 
-LayerAddedResult add_layer(ComputationGraph &computation_graph,
-                           LayerAttrs const &attrs,
-                           std::vector<tensor_guid_t> const &inputs,
-                           std::vector<TensorAttrs> const &outputs);
+LayerAddedResult add_layer(
+    ComputationGraph &computation_graph,
+    LayerAttrs const &attrs,
+    std::vector<tensor_guid_t> const &inputs,
+    std::vector<tensor_guid_t> const &weights,
+    std::optional<std::vector<CreateGrad>> const &outputs = std::nullopt);
+
+LayerAddedResult add_input_layer(ComputationGraph &computation_graph,
+                                 TensorShape const &tensor_shape);
+LayerAddedResult add_input_layer_with_grad(ComputationGraph &computation_graph,
+                                           TensorShape const &tensor_shape);
+
 TensorAttrs get_tensor_attrs(ComputationGraph const &, tensor_guid_t const &);
 bool are_tensor_guid_shapes_equivalent(ComputationGraph const &cg,
                                        tensor_guid_t const &t1,
@@ -34,8 +42,16 @@ std::vector<tensor_guid_t> get_incoming_tensors(ComputationGraph const &cg,
 
 std::vector<tensor_guid_t> get_incoming_inputs(ComputationGraph const &,
                                                layer_guid_t const &);
+
+std::vector<TensorShape> get_incoming_input_shapes(ComputationGraph const &,
+                                                   layer_guid_t const &);
+
 std::vector<tensor_guid_t> get_incoming_weights(ComputationGraph const &,
                                                 layer_guid_t const &);
+
+std::unordered_set<tensor_guid_t> get_all_tensors(ComputationGraph const &);
+std::unordered_map<tensor_guid_t, TensorAttrs>
+    get_all_tensor_attrs(ComputationGraph const &);
 
 std::unordered_set<ComputationGraphEdge>
     get_subgraph_incoming_edges(ComputationGraph const &,
@@ -48,6 +64,9 @@ std::unordered_set<layer_guid_t>
                             std::unordered_set<layer_guid_t> const &);
 
 LayerAttrs get_layer_attrs(ComputationGraph const &cg, layer_guid_t const &n);
+
+std::unordered_map<layer_guid_t, LayerAttrs>
+    get_layer_attrs_mapping(ComputationGraph const &cg);
 
 layer_guid_t get_layer_by_name(ComputationGraph const &cg,
                                std::string const &name);

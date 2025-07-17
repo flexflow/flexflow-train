@@ -1,0 +1,23 @@
+namespace = "FlexFlow"
+name = "TensorSlotBacking"
+features = [
+  "eq",
+  "fmt",
+]
+
+includes = [
+  "kernels/accessor.h",
+  "<vector>",
+]
+
+src_includes = [
+  "utils/fmt/vector.h",
+]
+
+[[values]]
+type = "::FlexFlow::GenericTensorAccessorW"
+key = "single"
+
+[[values]]
+type = "std::vector<::FlexFlow::GenericTensorAccessorW>"
+key = "variadic"

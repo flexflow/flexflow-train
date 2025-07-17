@@ -20,6 +20,7 @@ function(define_ff_vars target)
     MAX_TENSOR_DIM=${FF_MAX_DIM}
     MAX_NUM_TASK_REGIONS=${FF_MAX_NUM_TASK_REGIONS}
     MAX_NUM_TASK_ARGUMENTS=${FF_MAX_NUM_TASK_ARGUMENTS}
+    # _FORTIFY_SOURCE=0
     )
 
   if (FF_GPU_BACKEND STREQUAL "cuda")
@@ -39,7 +40,18 @@ function(ff_set_cxx_properties target)
       CXX_EXTENSIONS NO
   )
   target_compile_options(${target}
-    PRIVATE $<$<COMPILE_LANGUAGE:CXX>:> "-ffile-prefix-map=${CMAKE_SOURCE_DIR}=." # add C++ compile flags here
+    PUBLIC 
+    $<$<COMPILE_LANGUAGE:CXX>:> 
+    "-ffile-prefix-map=${CMAKE_SOURCE_DIR}=." 
+    "-fsanitize=undefined" 
+    "-fno-sanitize-recover=all"
+    # add C++ compile flags here
+  )
+  target_link_options(${target}
+    PUBLIC 
+    $<$<COMPILE_LANGUAGE:CXX>:> 
+    "-fsanitize=undefined" 
+    "-fno-sanitize-recover=all"
   )
 endfunction()
 
@@ -114,15 +126,59 @@ function(ff_add_test_executable)
     ${FF_TEST_EXEC_NAME}
     ${SRC})
 
+  target_include_directories(
+    ${FF_TEST_EXEC_NAME}
+    PRIVATE
+    ${FF_TEST_EXEC_PRIVATE_INCLUDE})
+
   target_link_libraries(
     ${FF_TEST_EXEC_NAME}
     ${FF_TEST_EXEC_DEPS})
 
-  target_compile_definitions(${FF_TEST_EXEC_NAME} PRIVATE FF_TEST_SUITE="${FF_TEST_EXEC_NAME}" FF_CUDA_TEST_SUITE="cuda-${FF_TEST_EXEC_NAME}")
+  target_compile_definitions(${FF_TEST_EXEC_NAME} PRIVATE FF_TEST_SUITE="cpu-${FF_TEST_EXEC_NAME}" FF_CUDA_TEST_SUITE="cuda-${FF_TEST_EXEC_NAME}")
 
   define_ff_vars(${FF_TEST_EXEC_NAME})
   ff_set_cxx_properties(${FF_TEST_EXEC_NAME})
   doctest_discover_tests(${FF_TEST_EXEC_NAME} ADD_LABELS 1)
+endfunction()
+
+function(ff_add_benchmark_executable)
+  ff_parse_args(
+    PREFIX 
+      FF_BENCHMARK_EXEC
+    ARGS
+      NAME
+    VARIADIC_ARGS
+      SRC_PATTERNS
+      PRIVATE_INCLUDE
+      DEPS
+    PARSE
+      ${ARGN}
+  )
+
+  if(NOT FF_BENCHMARK_EXEC_NAME MATCHES "^(.*)-benchmarks\$")
+    message(FATAL_ERROR "Benchmark name ${FF_BENCHMARK_EXEC_NAME} must end with -benchmarks")
+  endif()
+  set(FF_LIBRARY_NAME ${CMAKE_MATCH_1})
+
+  project(${FF_BENCHMARK_EXEC_NAME})
+  file(GLOB_RECURSE SRC
+       CONFIGURE_DEPENDS
+       LIST_DIRECTORIES False
+       ${FF_BENCHMARK_EXEC_SRC_PATTERNS})
+
+  add_executable(
+    ${FF_BENCHMARK_EXEC_NAME}
+    ${SRC})
+
+  target_link_libraries(
+    ${FF_BENCHMARK_EXEC_NAME}
+    ${FF_BENCHMARK_EXEC_DEPS}
+    gbenchmark
+    gbenchmark-main)
+
+  define_ff_vars(${FF_BENCHMARK_EXEC_NAME})
+  ff_set_cxx_properties(${FF_BENCHMARK_EXEC_NAME})
 endfunction()
 
 function(ff_add_executable)

@@ -10,6 +10,8 @@ OperatorAttributeConstraint op_type_equals_constraint(OperatorType);
 OperatorAttributeConstraint op_attr_key_equals(OperatorAttributeKey,
                                                OperatorAttributeValue const &);
 OperatorAttributeConstraint
+    op_attr_key_divisible_by(OperatorAttributeKey, nonnegative_int denominator);
+OperatorAttributeConstraint
     make_equals_constraint(OperatorAttributeExpr const &,
                            OperatorAttributeValue const &);
 

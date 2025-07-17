@@ -15,7 +15,7 @@
 
 #include "kernels/accessor.h"
 #include "kernels/datatype_dispatch.h"
-#include "kernels/layer_norm_kernels.h"
+#include "kernels/layer_norm_kernels_gpu.h"
 
 namespace FlexFlow {
 
@@ -289,12 +289,12 @@ __global__ void GammaBetaBackwardCUDAKernel(int64_t M,
 }
 
 // TODO: handle any data type for stats
-LayerNormPerDeviceState init_kernel(PerDeviceFFHandle const &handle,
-                                    Allocator &allocator,
-                                    bool elementwise_affine_,
-                                    int64_t effective_batch_size_,
-                                    int64_t effective_num_elements_,
-                                    float eps_) {
+LayerNormPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
+                                        Allocator &allocator,
+                                        bool elementwise_affine_,
+                                        int64_t effective_batch_size_,
+                                        int64_t effective_num_elements_,
+                                        float eps_) {
   float *mean =
       (float *)allocator.allocate(sizeof(float) * effective_batch_size_);
   float *rstd =
@@ -307,18 +307,20 @@ LayerNormPerDeviceState init_kernel(PerDeviceFFHandle const &handle,
       (float *)allocator.allocate(sizeof(float) * effective_batch_size_);
   float *bias =
       (float *)allocator.allocate(sizeof(float) * effective_batch_size_);
-  LayerNormPerDeviceState per_device_state = {handle,
-                                              elementwise_affine_,
-                                              effective_batch_size_,
-                                              effective_num_elements_,
-                                              eps_,
-                                              mean,
-                                              rstd,
-                                              ds,
-                                              db,
-                                              scale,
-                                              bias,
-                                              DataType::FLOAT};
+  LayerNormPerDeviceState per_device_state = LayerNormPerDeviceState{
+      /*handle=*/handle,
+      /*elementwise_affine=*/elementwise_affine_,
+      /*effective_num_elements=*/effective_num_elements_,
+      /*effective_batch_size=*/effective_batch_size_,
+      /*eps=*/eps_,
+      /*mean=*/mean,
+      /*rstd=*/rstd,
+      /*ds=*/ds,
+      /*db=*/db,
+      /*scale=*/scale,
+      /*bias=*/bias,
+      /*data_type=*/DataType::FLOAT,
+  };
   return per_device_state;
 }
 
@@ -407,24 +409,24 @@ struct BackwardKernel {
   }
 };
 
-void forward_kernel(cudaStream_t stream,
-                    LayerNormPerDeviceState const &m,
-                    GenericTensorAccessorR const &input,
-                    GenericTensorAccessorW const &output,
-                    GenericTensorAccessorW const &gamma,
-                    GenericTensorAccessorW const &beta) {
+void gpu_forward_kernel(cudaStream_t stream,
+                        LayerNormPerDeviceState const &m,
+                        GenericTensorAccessorR const &input,
+                        GenericTensorAccessorW const &output,
+                        GenericTensorAccessorW const &gamma,
+                        GenericTensorAccessorW const &beta) {
   DataTypeDispatch1<ForwardKernel>{}(
       m.data_type, stream, m, input, output, gamma, beta);
 }
 
-void backward_kernel(cudaStream_t stream,
-                     LayerNormPerDeviceState const &m,
-                     GenericTensorAccessorR const &output_grad,
-                     GenericTensorAccessorR const &input,
-                     GenericTensorAccessorW const &input_grad,
-                     GenericTensorAccessorR const &gamma,
-                     GenericTensorAccessorW const &gamma_grad,
-                     GenericTensorAccessorW const &beta_grad) {
+void gpu_backward_kernel(cudaStream_t stream,
+                         LayerNormPerDeviceState const &m,
+                         GenericTensorAccessorR const &output_grad,
+                         GenericTensorAccessorR const &input,
+                         GenericTensorAccessorW const &input_grad,
+                         GenericTensorAccessorR const &gamma,
+                         GenericTensorAccessorW const &gamma_grad,
+                         GenericTensorAccessorW const &beta_grad) {
   DataTypeDispatch1<BackwardKernel>{}(m.data_type,
                                       stream,
                                       m,
@@ -434,6 +436,10 @@ void backward_kernel(cudaStream_t stream,
                                       gamma,
                                       gamma_grad,
                                       beta_grad);
+}
+
+void gpu_cleanup_kernel(LayerNormPerDeviceState const &per_device_state) {
+  NOT_IMPLEMENTED();
 }
 
 } // namespace LayerNorm

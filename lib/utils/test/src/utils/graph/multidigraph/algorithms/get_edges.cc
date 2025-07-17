@@ -11,7 +11,7 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_edges(MultiDiGraphView)") {
     MultiDiGraph g = MultiDiGraph::create<AdjacencyMultiDiGraph>();
 
-    std::vector<Node> n = add_nodes(g, 3);
+    std::vector<Node> n = add_nodes(g, 3_n);
     std::vector<MultiDiEdge> e = add_edges(g,
                                            {
                                                {n.at(0), n.at(1)},

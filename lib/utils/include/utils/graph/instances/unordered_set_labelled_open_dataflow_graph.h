@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_LABELLED_DATAFLOW_GRAPH_UNORDERED_SET_LABELLED_DATAFLOW_GRAPH_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_LABELLED_DATAFLOW_GRAPH_UNORDERED_SET_LABELLED_DATAFLOW_GRAPH_H
 
-#include "utils/containers/range.h"
+#include "utils/containers/count.h"
 #include "utils/containers/enumerate_vector.h"
 #include "utils/containers/filter.h"
 #include "utils/containers/generate_map.h"
@@ -57,9 +57,10 @@ public:
     }
 
     std::vector<DataflowOutput> new_outputs =
-        transform(range(output_labels.size()), [&](int output_idx) {
-          return DataflowOutput{new_node, output_idx};
-        });
+        transform(nonnegative_range(num_elements(output_labels)),
+                  [&](nonnegative_int output_idx) {
+                    return DataflowOutput{new_node, output_idx};
+                  });
 
     for (auto const &[output, output_label] : zip(new_outputs, output_labels)) {
       this->values.insert({OpenDataflowValue{output}, output_label});

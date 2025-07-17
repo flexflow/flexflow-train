@@ -19,12 +19,17 @@ void TrackedAllocator::deallocate(void *ptr) {
   this->current_mem_usage -= psize;
 }
 
-size_t TrackedAllocator::get_current_mem_usage() {
-  return this->current_mem_usage;
+num_bytes_t TrackedAllocator::get_current_mem_usage() const {
+  return num_bytes_t{nonnegative_int{this->current_mem_usage}};
+}
+
+DeviceType TrackedAllocator::get_allocation_device_type() const {
+  return this->allocator.get_allocation_device_type();
 }
 
 Allocator get_tracked_memory_allocator(Allocator const &base_allocator) {
-  return Allocator::create<TrackedAllocator>(base_allocator);
+  Allocator allocator = Allocator::create<TrackedAllocator>(base_allocator);
+  return allocator;
 }
 
 } // namespace FlexFlow

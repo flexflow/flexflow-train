@@ -7,12 +7,18 @@ features = [
 ]
 
 includes = [
+  "utils/units/milliseconds_t.h",
+  "utils/units/num_bytes_t.h",
 ]
 
 [[fields]]
-name = "runtime"
-type = "float"
+name = "forward_runtime"
+type = "::FlexFlow::milliseconds_t"
 
 [[fields]]
-name = "memory"
-type = "size_t"
+name = "backward_runtime"
+type = "::FlexFlow::milliseconds_t"
+
+[[fields]]
+name = "memory_usage"
+type = "::FlexFlow::num_bytes_t"

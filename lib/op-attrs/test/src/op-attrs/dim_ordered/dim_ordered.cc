@@ -10,8 +10,4 @@ TEST_SUITE(FF_TEST_SUITE) {
       "Arbitrary<DimOrdered<int, T>> with T=", T, int, double, char) {
     RC_SUBCASE([](DimOrdered<int, T>) {});
   }
-
-  TEST_CASE_TEMPLATE("Arbitrary<FFOrdered<T>> with T=", T, int, double, char) {
-    RC_SUBCASE([](FFOrdered<T>) {});
-  }
 }

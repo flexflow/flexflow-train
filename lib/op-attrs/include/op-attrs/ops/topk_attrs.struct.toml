@@ -9,9 +9,13 @@ features = [
   "fmt",
 ]
 
+includes = [
+  "utils/positive_int/positive_int.h",
+]
+
 [[fields]]
 name = "k"
-type = "int"
+type = "::FlexFlow::positive_int"
 
 [[fields]]
 name = "sorted"

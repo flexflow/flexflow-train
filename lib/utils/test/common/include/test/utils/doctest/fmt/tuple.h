@@ -6,7 +6,7 @@
 
 namespace doctest {
 
-template <typename ...Ts>
+template <typename... Ts>
 struct StringMaker<std::tuple<Ts...>> {
   static String convert(std::tuple<Ts...> const &m) {
     return toString(fmt::to_string(m));

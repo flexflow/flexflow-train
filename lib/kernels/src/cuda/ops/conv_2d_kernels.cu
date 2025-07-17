@@ -1,4 +1,4 @@
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/conv_2d_kernels.h"
 
 namespace FlexFlow {
@@ -113,19 +113,20 @@ cudnnConvolutionBwdFilterAlgo_t selectConvolutionBackwardFilterAlgorithm(
   return perfResults[0].algo;
 }
 
-Conv2DPerDeviceState init_kernel(PerDeviceFFHandle handle,
-                                 std::optional<Activation> activation,
-                                 int kernel_h,
-                                 int kernel_w,
-                                 int groups,
-                                 int pad_h,
-                                 int pad_w,
-                                 int stride_h,
-                                 int stride_w,
-                                 GenericTensorAccessorW const &input,
-                                 GenericTensorAccessorW const &output,
-                                 float const *filter_ptr,
-                                 float *filter_grad_ptr) {
+Conv2DPerDeviceState
+    gpu_init_kernel(PerDeviceFFHandle const &handle,
+                    std::optional<Activation> const &activation,
+                    int kernel_h,
+                    int kernel_w,
+                    int groups,
+                    int pad_h,
+                    int pad_w,
+                    int stride_h,
+                    int stride_w,
+                    GenericTensorAccessorW const &input,
+                    GenericTensorAccessorW const &output,
+                    float const *filter_ptr,
+                    float *filter_grad_ptr) {
 
   ffTensorDescriptor_t inputTensor;
   ffTensorDescriptor_t biasTensor;
@@ -137,15 +138,23 @@ Conv2DPerDeviceState init_kernel(PerDeviceFFHandle handle,
   ffConvolutionBwdFilterAlgo_t bwdFilterAlgo;
   ffConvolutionBwdDataAlgo_t bwdDataAlgo;
 
-  int input_w = input.shape[legion_dim_t(0)];
-  int input_h = input.shape[legion_dim_t(1)];
-  int input_c = input.shape[legion_dim_t(2)];
-  int input_n = input.shape[legion_dim_t(3)];
+  int input_w =
+      dim_at_idx(input.shape.dims, legion_dim_t{0_n}).int_from_positive_int();
+  int input_h =
+      dim_at_idx(input.shape.dims, legion_dim_t{1_n}).int_from_positive_int();
+  int input_c =
+      dim_at_idx(input.shape.dims, legion_dim_t{2_n}).int_from_positive_int();
+  int input_n =
+      dim_at_idx(input.shape.dims, legion_dim_t{3_n}).int_from_positive_int();
 
-  int output_w = output.shape[legion_dim_t(0)];
-  int output_h = output.shape[legion_dim_t(1)];
-  int output_c = output.shape[legion_dim_t(2)];
-  int output_n = output.shape[legion_dim_t(3)];
+  int output_w =
+      dim_at_idx(output.shape.dims, legion_dim_t{0_n}).int_from_positive_int();
+  int output_h =
+      dim_at_idx(output.shape.dims, legion_dim_t{1_n}).int_from_positive_int();
+  int output_c =
+      dim_at_idx(output.shape.dims, legion_dim_t{2_n}).int_from_positive_int();
+  int output_n =
+      dim_at_idx(output.shape.dims, legion_dim_t{3_n}).int_from_positive_int();
 
   checkCUDNN(cudnnCreateTensorDescriptor(&inputTensor));
   checkCUDNN(cudnnCreateTensorDescriptor(&biasTensor));
@@ -154,13 +163,7 @@ Conv2DPerDeviceState init_kernel(PerDeviceFFHandle handle,
   checkCUDNN(cudnnCreateConvolutionDescriptor(&convDesc));
   checkCUDNN(cudnnCreateActivationDescriptor(&actiDesc));
 
-  checkCUDNN(cudnnSetTensor4dDescriptor(inputTensor,
-                                        CUDNN_TENSOR_NCHW,
-                                        CUDNN_DATA_FLOAT,
-                                        input_n,
-                                        input_c,
-                                        input_h,
-                                        input_w));
+  checkCUDNN(cudnnSetTensorDescriptorFromTensorShape(inputTensor, input.shape));
 
   checkCUDNN(cudnnSetTensor4dDescriptor(
       biasTensor, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, 1, output_c, 1, 1));
@@ -253,26 +256,28 @@ Conv2DPerDeviceState init_kernel(PerDeviceFFHandle handle,
         actiDesc, CUDNN_ACTIVATION_RELU, CUDNN_PROPAGATE_NAN, 0.0));
   }
 
-  Conv2DPerDeviceState per_device_state = {handle,
-                                           inputTensor,
-                                           biasTensor,
-                                           outputTensor,
-                                           filterDesc,
-                                           actiDesc,
-                                           convDesc,
-                                           fwdAlgo,
-                                           bwdFilterAlgo,
-                                           bwdDataAlgo};
+  Conv2DPerDeviceState per_device_state = Conv2DPerDeviceState{
+      handle,
+      inputTensor,
+      biasTensor,
+      outputTensor,
+      filterDesc,
+      actiDesc,
+      convDesc,
+      fwdAlgo,
+      bwdFilterAlgo,
+      bwdDataAlgo,
+  };
   return per_device_state;
 }
 
-void forward_kernel(ffStream_t stream,
-                    Conv2DPerDeviceState const &m,
-                    float const *input_ptr,
-                    float *output_ptr,
-                    float const *filter_ptr,
-                    float const *bias_ptr,
-                    std::optional<Activation> activation) {
+void gpu_forward_kernel(ffStream_t stream,
+                        Conv2DPerDeviceState const &m,
+                        float const *input_ptr,
+                        float *output_ptr,
+                        float const *filter_ptr,
+                        float const *bias_ptr,
+                        std::optional<Activation> activation) {
   checkCUDNN(cudnnSetStream(m.handle.dnn, stream));
 
   float alpha = 1.0f, beta = 0.0f;
@@ -311,16 +316,16 @@ void forward_kernel(ffStream_t stream,
   }
 }
 
-void backward_kernel(ffStream_t stream,
-                     Conv2DPerDeviceState const &m,
-                     float const *input_ptr,
-                     float *input_grad_ptr,
-                     float const *output_ptr,
-                     float *output_grad_ptr,
-                     float const *filter_ptr,
-                     float *filter_grad_ptr,
-                     float *bias_grad_ptr,
-                     std::optional<Activation> activation) {
+void gpu_backward_kernel(ffStream_t stream,
+                         Conv2DPerDeviceState const &m,
+                         float const *output_ptr,
+                         float *output_grad_ptr,
+                         float const *input_ptr,
+                         float *input_grad_ptr,
+                         float const *filter_ptr,
+                         float *filter_grad_ptr,
+                         float *bias_grad_ptr,
+                         std::optional<Activation> activation) {
   checkCUDNN(cudnnSetStream(m.handle.dnn, stream));
 
   float alpha = 1.0f;
@@ -384,6 +389,10 @@ void backward_kernel(ffStream_t stream,
                                             m.inputTensor,
                                             input_grad_ptr));
   }
+}
+
+void gpu_cleanup_kernel(Conv2DPerDeviceState &per_device_state) {
+  NOT_IMPLEMENTED();
 }
 
 } // namespace Conv2D

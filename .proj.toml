@@ -2,32 +2,100 @@ project_name = "flexflow"
 testsuite_macro = "FF_TEST_SUITE"
 namespace_name = "FlexFlow"
 header_extension = ".h"
-
-build_targets = [
-  "utils",
-  "op-attrs",
-  # "kernels",
-  # "pcg",
-  # "substitutions",
-  # "compiler",
-  # "substitution-generator",
-  # "local-execution",
-  # "models",
-  # "export-model-arch",
-  # "substitution-to-dot",
+cuda_launch_cmd = [
+  "nixGL",
+  "--",
 ]
 
-test_targets = [
-  # "kernels-tests",
-  "utils-tests",
-  "op-attrs-tests",
-  # "pcg-tests",
-  # "substitutions-tests",
-  # "compiler-tests",
-  # "substitution-generator-tests",
-  # "local-execution-tests",
-  # "models-tests",
-]
+[targets.utils]
+type = "lib"
+has-cpu-only-tests = true
+has-cpu-only-benchmarks = true
+has-cuda-tests = false
+has-cuda-benchmarks = false
+
+[targets.op-attrs]
+type = "lib"
+has-cpu-only-tests = true
+has-cpu-only-benchmarks = false
+has-cuda-tests = false
+has-cuda-benchmarks = false
+
+[targets.kernels]
+type = "lib"
+has-cpu-only-tests = true
+has-cpu-only-benchmarks = false
+has-cuda-tests = true
+has-cuda-benchmarks = false
+
+[targets.pcg]
+type = "lib"
+has-cpu-only-tests = true
+has-cpu-only-benchmarks = false
+has-cuda-tests = false
+has-cuda-benchmarks = false
+
+[targets.substitutions]
+type = "lib"
+has-cpu-only-tests = true
+has-cpu-only-benchmarks = false
+has-cuda-tests = false
+has-cuda-benchmarks = false
+
+[targets.compiler]
+type = "lib"
+has-cpu-only-tests = true
+has-cpu-only-benchmarks = true
+has-cuda-tests = false
+has-cuda-benchmarks = false
+
+[targets.substitution-generator]
+type = "lib"
+has-cpu-only-tests = true
+has-cpu-only-benchmarks = false
+has-cuda-tests = false
+has-cuda-benchmarks = false
+
+[targets.task-spec]
+type = "lib"
+has-cpu-only-tests = true
+has-cpu-only-benchmarks = false
+has-cuda-tests = false
+has-cuda-benchmarks = false
+
+[targets.local-execution]
+type = "lib"
+has-cpu-only-tests = true
+has-cpu-only-benchmarks = false
+has-cuda-tests = true
+has-cuda-benchmarks = false
+
+[targets.models]
+type = "lib"
+has-cpu-only-tests = true
+has-cpu-only-benchmarks = false
+has-cuda-tests = false
+has-cuda-benchmarks = false
+
+[targets.export-model-arch]
+type = "bin"
+cuda = false
+
+[targets.substitution-to-dot]
+type = "bin"
+cuda = false
+
+# default_build_targets = [
+#   "utils",
+# ]
+
+# default_test_targets = [
+#   "utils",
+# ]
+
+# default_benchmark_targets = [
+#   "utils",
+# ]
 
 [cmake_flags_extra]
 FF_CUDA_ARCH = "60"

@@ -15,11 +15,11 @@ std::unordered_set<DirectedEdge> get_edges(DiGraphView const &g) {
   return g.query_edges(directed_edge_query_all());
 }
 
-std::unordered_set<Node> get_sinks(DiGraphView const &g) {
-  return get_sources(flipped(g));
+std::unordered_set<Node> get_terminal_nodes(DiGraphView const &g) {
+  return get_initial_nodes(flipped(g));
 }
 
-std::unordered_set<Node> get_sources(DiGraphView const &g) {
+std::unordered_set<Node> get_initial_nodes(DiGraphView const &g) {
   std::unordered_set<Node> all_nodes = get_nodes(g);
   std::unordered_set<Node> with_incoming_edge =
       transform(get_edges(g), [](DirectedEdge const &e) { return e.dst; });

@@ -4,18 +4,18 @@
 
 namespace FlexFlow {
 
-ComputationGraph get_split_test_computation_graph(int batch_size) {
+ComputationGraph get_split_test_computation_graph(positive_int batch_size) {
   ComputationGraphBuilder cgb;
 
-  int layer_dim1 = 256;
-  int layer_dim2 = 128;
-  int layer_dim3 = 64;
-  int layer_dim4 = 32;
+  positive_int layer_dim1 = 256_p;
+  positive_int layer_dim2 = 128_p;
+  positive_int layer_dim3 = 64_p;
+  positive_int layer_dim4 = 32_p;
 
   TensorShape input_shape = TensorShape{
-      TensorDims{FFOrdered<size_t>{
-          size_t_from_int(batch_size),
-          size_t_from_int(layer_dim1),
+      TensorDims{FFOrdered<positive_int>{
+          batch_size,
+          layer_dim1,
       }},
       DataType::FLOAT,
   };

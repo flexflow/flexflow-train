@@ -10,14 +10,19 @@ features = [
 ]
 
 includes = [
-  "op-attrs/ff_dim_t.h",
   "op-attrs/ff_dim_t.dtg.h",
-  "utils/stack_vector/stack_vector.h",
+  "<set>",
+]
+
+src_includes = [
+  "utils/fmt/set.h",
+  "utils/hash/set.h",
+  "op-attrs/ff_dim_t.h",
 ]
 
 [[fields]]
 name = "axes"
-type = "::FlexFlow::stack_vector<::FlexFlow::ff_dim_t, MAX_TENSOR_DIM>"
+type = "std::set<::FlexFlow::ff_dim_t>"
 
 [[fields]]
 name = "elementwise_affine"

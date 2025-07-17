@@ -4,6 +4,7 @@
 #include "utils/check_fmtable.h"
 #include "utils/containers/sorted.h"
 #include "utils/join_strings.h"
+#include "utils/type_traits_core.h"
 #include <fmt/format.h>
 #include <set>
 #include <vector>
@@ -13,7 +14,7 @@ namespace fmt {
 template <typename T, typename Char>
 struct formatter<::std::set<T>,
                  Char,
-                 std::enable_if_t<!detail::has_format_as<std::set<T>>::value>>
+                 std::enable_if_t<!detail::has_format_as<::std::set<T>>::value>>
     : formatter<::std::string> {
   template <typename FormatContext>
   auto format(::std::set<T> const &m, FormatContext &ctx) const

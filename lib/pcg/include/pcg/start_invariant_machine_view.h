@@ -17,7 +17,7 @@ MachineView
 StartInvariantMachineView
     start_invariant_from_machine_view(MachineView const &mv);
 
-size_t num_dims(StartInvariantMachineView const &mv);
+nonnegative_int num_dims(StartInvariantMachineView const &mv);
 
 DeviceType get_device_type(StartInvariantMachineView const &mv);
 

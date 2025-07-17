@@ -6,7 +6,7 @@ ff_dim_t ff_dim_t_from_relative_ff_dim_t(relative_ff_dim_t ff_dim,
                                          nonnegative_int input_dim) {
   int raw = ff_dim.value;
   if (raw < 0) {
-    raw = input_dim.get_value() + raw;
+    raw = input_dim.unwrap_nonnegative() + raw;
   }
   return ff_dim_t{nonnegative_int{raw}};
 }

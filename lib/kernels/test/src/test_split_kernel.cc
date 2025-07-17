@@ -1,25 +1,35 @@
-#include "doctest/doctest.h"
-#include "kernels/split_kernels.h"
-#include "test_utils.h"
+#include "internal/test_utils.h"
+#include "kernels/split_kernels_gpu.h"
+#include "op-attrs/datatype_value.h"
+#include "utils/containers/repeat.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
-TEST_SUITE(FF_TEST_SUITE) {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test Split Forward and Backward Kernel") {
-    size_t num_outputs = 2;
-    coord_t out_blk_sizes[] = {50, 50};
-    coord_t in_blk_size = 100;
-    coord_t num_blks = 1;
+    nonnegative_int num_outputs = 2_n;
+    int out_blk_sizes[] = {50, 50};
+    int in_blk_size = 100;
+    int num_blks = 1;
 
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    TensorShape input_shape = make_float_tensor_shape_from_legion_dims({100});
-    TensorShape output_shape = make_float_tensor_shape_from_legion_dims({50});
+    TensorShape input_shape = TensorShape{
+        TensorDims{FFOrdered{100_p}},
+        DataType::FLOAT,
+    };
+    TensorShape output_shape = TensorShape{
+        TensorDims{FFOrdered{50_p}},
+        DataType::FLOAT,
+    };
 
-    SUBCASE("forward_kernel") {
+    SUBCASE("gpu_forward_kernel") {
       GenericTensorAccessorW input_accessor =
           create_random_filled_accessor_w(input_shape, allocator);
 
@@ -29,33 +39,34 @@ TEST_SUITE(FF_TEST_SUITE) {
         return output_accessor.get_float_ptr();
       });
 
-      Kernels::Split::forward_kernel(managed_stream.raw_stream(),
-                                     output_ptrs.data(),
-                                     input_accessor.get_float_ptr(),
-                                     out_blk_sizes,
-                                     in_blk_size,
-                                     num_blks,
-                                     num_outputs);
+      Kernels::Split::gpu_forward_kernel(managed_stream.raw_stream(),
+                                         output_ptrs.data(),
+                                         input_accessor.get_float_ptr(),
+                                         out_blk_sizes,
+                                         in_blk_size,
+                                         num_blks,
+                                         num_outputs.unwrap_nonnegative());
     }
 
-    SUBCASE("backward_kernel") {
-      std::vector<float *> output_grad_ptrs(num_outputs);
+    SUBCASE("gpu_backward_kernel") {
+      std::vector<float *> output_grad_ptrs(num_outputs.unwrap_nonnegative());
       for (int i = 0; i < num_outputs; i++) {
         GenericTensorAccessorW output_grad_accessor =
             create_random_filled_accessor_w(output_shape, allocator);
         output_grad_ptrs[i] = output_grad_accessor.get_float_ptr();
       }
 
-      GenericTensorAccessorW input_grad_accessor =
-          create_filled_accessor_w(input_shape, allocator, 0.0f);
+      GenericTensorAccessorW input_grad_accessor = create_filled_accessor_w(
+          input_shape, allocator, make_float_data_type_value(0));
 
-      Kernels::Split::backward_kernel(managed_stream.raw_stream(),
-                                      input_grad_accessor.get_float_ptr(),
-                                      (float const **)output_grad_ptrs.data(),
-                                      out_blk_sizes,
-                                      in_blk_size,
-                                      num_blks,
-                                      num_outputs);
+      Kernels::Split::gpu_backward_kernel(
+          managed_stream.raw_stream(),
+          input_grad_accessor.get_float_ptr(),
+          (float const **)output_grad_ptrs.data(),
+          out_blk_sizes,
+          in_blk_size,
+          num_blks,
+          num_outputs.unwrap_nonnegative());
     }
   }
 }

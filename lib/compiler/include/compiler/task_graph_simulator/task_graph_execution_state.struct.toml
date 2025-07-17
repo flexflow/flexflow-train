@@ -1,0 +1,40 @@
+namespace = "FlexFlow"
+name = "TaskGraphExecutionState"
+
+features = [
+]
+
+includes = [
+  "utils/deduplicated_priority_queue.h",
+  "utils/graph/node/node.dtg.h",
+  "compiler/task_graph_simulator/in_progress_task.dtg.h", 
+  "compiler/task_graph_simulator/in_progress_task_comparator.h",
+  "<unordered_set>",
+  "<set>",
+  "<functional>"
+]
+
+src_includes = [
+  "utils/hash/unordered_set.h", 
+  "utils/fmt/unordered_set.h",
+  "utils/hash/set.h", 
+  "utils/fmt/set.h",
+  "utils/fmt/vector.h", 
+  "utils/hash/vector.h"
+]
+
+[[fields]]
+name = "ready_tasks"
+type = "std::set<::FlexFlow::Node>"
+
+[[fields]]
+name = "in_progress_tasks"
+type = "::FlexFlow::DeduplicatedPriorityQueue<::FlexFlow::InProgressTask, std::vector<::FlexFlow::InProgressTask>, ::FlexFlow::InProgressTaskComparator>"
+
+[[fields]]
+name = "finished_tasks"
+type = "std::unordered_set<::FlexFlow::Node>"
+
+[[fields]]
+name = "current_time"
+type = "float"

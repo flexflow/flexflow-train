@@ -9,10 +9,14 @@ features = [
   "fmt",
 ]
 
+includes = [
+  "utils/positive_int/positive_int.h",
+]
+
 [[fields]]
 name = "size"
-type = "size_t"
+type = "::FlexFlow::positive_int"
 
 [[fields]]
 name = "degree"
-type = "int"
+type = "::FlexFlow::positive_int"

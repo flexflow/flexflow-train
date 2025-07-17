@@ -12,7 +12,7 @@ public:
   UnorderedSetOpenDataflowGraph();
 
   NodeAddedResult add_node(std::vector<OpenDataflowValue> const &inputs,
-                           int num_outputs) override;
+                           nonnegative_int num_outputs) override;
 
   std::unordered_set<Node> query_nodes(NodeQuery const &) const override;
   std::unordered_set<OpenDataflowEdge>

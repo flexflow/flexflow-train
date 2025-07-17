@@ -1,15 +1,14 @@
 #include "op-attrs/ff_dim_t.h"
-#include "utils/nonnegative_int/range.h"
-#include "utils/containers/set_of.h"
-#include "utils/containers/transform.h"
 
 namespace FlexFlow {
+
 relative_ff_dim_t relative_ff_dim_t_from_ff_dim_t(ff_dim_t ff_dim) {
-  return relative_ff_dim_t{ff_dim.value.get_value()};
+
+  return relative_ff_dim_t{ff_dim.value.unwrap_nonnegative()};
 }
 
-std::set<ff_dim_t> ff_dim_range(nonnegative_int end) {
-  return set_of(transform(range(end), [](nonnegative_int i) { return ff_dim_t{i}; }));
+ff_dim_t add_to_ff_dim(ff_dim_t ff_dim, int value) {
+  return ff_dim_t{nonnegative_int{ff_dim.value.unwrap_nonnegative() + value}};
 }
 
 } // namespace FlexFlow

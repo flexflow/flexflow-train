@@ -1,79 +1,91 @@
-#include "doctest/doctest.h"
-#include "kernels/pool_2d_kernels.h"
-#include "test_utils.h"
+#include "internal/test_utils.h"
+#include "kernels/pool_2d_kernels_gpu.h"
+#include "op-attrs/datatype_value.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
-TEST_SUITE(FF_TEST_SUITE) {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test Pool2D Forward and Backward Kernel") {
-    size_t input_w = 10, input_h = 10, input_c = 3, input_n = 1;
-    size_t output_w = 5, output_h = 5, output_c = 3, output_n = 1;
-    size_t pad_h = 0, pad_w = 0, kernel_h = 2, kernel_w = 2, stride_h = 2,
-           stride_w = 2;
+    positive_int input_w = 10_p;
+    positive_int input_h = 10_p;
+    positive_int input_c = 3_p;
+    positive_int input_n = 1_p;
+    positive_int output_w = 5_p;
+    positive_int output_h = 5_p;
+    positive_int output_c = 3_p;
+    positive_int output_n = 1_p;
+    nonnegative_int pad_h = 0_n;
+    nonnegative_int pad_w = 0_n;
+    positive_int kernel_h = 2_p;
+    positive_int kernel_w = 2_p;
+    positive_int stride_h = 2_p;
+    positive_int stride_w = 2_p;
 
     PoolOp pool_type = PoolOp::MAX;
 
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    Pool2DPerDeviceState state =
-        Kernels::Pool2D::init_kernel(managed_handle.raw_handle(),
-                                     std::nullopt,
-                                     input_w,
-                                     input_h,
-                                     input_c,
-                                     input_n,
-                                     output_w,
-                                     output_h,
-                                     output_c,
-                                     output_n,
-                                     pad_h,
-                                     pad_w,
-                                     kernel_h,
-                                     kernel_w,
-                                     stride_h,
-                                     stride_w,
-                                     pool_type);
+    Pool2DPerDeviceState state = Kernels::Pool2D::gpu_init_kernel(
+        /*handle=*/managed_handle.raw_handle(),
+        /*activation=*/std::nullopt,
+        /*input_w=*/input_w.int_from_positive_int(),
+        /*input_h=*/input_h.int_from_positive_int(),
+        /*input_c=*/input_c.int_from_positive_int(),
+        /*input_n=*/input_n.int_from_positive_int(),
+        /*output_w=*/output_w.int_from_positive_int(),
+        /*output_h=*/output_h.int_from_positive_int(),
+        /*output_c=*/output_c.int_from_positive_int(),
+        /*output_n=*/output_n.int_from_positive_int(),
+        /*pad_h=*/pad_h.unwrap_nonnegative(),
+        /*pad_w=*/pad_w.unwrap_nonnegative(),
+        /*kernel_h=*/kernel_h.int_from_positive_int(),
+        /*kernel_w=*/kernel_w.int_from_positive_int(),
+        /*stride_h=*/stride_h.int_from_positive_int(),
+        /*stride_w=*/stride_w.int_from_positive_int(),
+        /*pool_type=*/pool_type);
 
-    TensorShape input_shape = make_float_tensor_shape_from_legion_dims(
-        {input_w, input_h, input_c, input_n});
-    TensorShape output_shape = make_float_tensor_shape_from_legion_dims(
-        {output_w, output_h, output_c, output_n});
+    TensorShape input_shape = TensorShape{
+        TensorDims{FFOrdered{input_n, input_c, input_h, input_w}},
+        DataType::FLOAT,
+    };
+    TensorShape output_shape = TensorShape{
+        TensorDims{FFOrdered{output_n, input_c, output_h, output_w}},
+        DataType::FLOAT,
+    };
 
     GenericTensorAccessorW input_accessor =
         create_random_filled_accessor_w(input_shape, allocator);
     GenericTensorAccessorW output_accessor =
         create_random_filled_accessor_w(output_shape, allocator);
 
-    SUBCASE("forward_kernel") {
-      Kernels::Pool2D::forward_kernel(managed_stream.raw_stream(),
-                                      state,
-                                      input_accessor.ptr,
-                                      output_accessor.ptr);
+    SUBCASE("gpu_forward_kernel") {
+      Kernels::Pool2D::gpu_forward_kernel(managed_stream.raw_stream(),
+                                          state,
+                                          input_accessor.ptr,
+                                          output_accessor.ptr);
 
-      std::vector<float> host_output_data =
-          load_data_to_host_from_device<float>(
-              read_only_accessor_from_write_accessor(output_accessor));
-      CHECK(contains_non_zero(host_output_data));
+      CHECK(contains_non_zero(output_accessor));
     }
 
-    SUBCASE("backward_kernel") {
-      GenericTensorAccessorW output_grad_accessor =
-          create_filled_accessor_w(output_shape, allocator, 1.0f);
+    SUBCASE("gpu_backward_kernel") {
+      GenericTensorAccessorW output_grad_accessor = create_filled_accessor_w(
+          output_shape, allocator, make_float_data_type_value(1));
       GenericTensorAccessorW input_grad_accessor =
           allocator.allocate_tensor(input_shape);
 
-      Kernels::Pool2D::backward_kernel(managed_stream.raw_stream(),
-                                       state,
-                                       input_accessor.ptr,
-                                       input_grad_accessor.ptr,
-                                       output_accessor.ptr,
-                                       output_grad_accessor.ptr);
+      Kernels::Pool2D::gpu_backward_kernel(managed_stream.raw_stream(),
+                                           state,
+                                           output_accessor.ptr,
+                                           output_grad_accessor.ptr,
+                                           input_accessor.ptr,
+                                           input_grad_accessor.ptr);
 
-      std::vector<float> host_input_grad = load_data_to_host_from_device<float>(
-          read_only_accessor_from_write_accessor(input_grad_accessor));
-      CHECK(contains_non_zero(host_input_grad));
+      CHECK(contains_non_zero(input_grad_accessor));
     }
   }
 }

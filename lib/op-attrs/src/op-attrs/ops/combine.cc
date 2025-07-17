@@ -4,6 +4,20 @@
 
 namespace FlexFlow {
 
+RecordFormatter as_dot(CombineAttrs const &attrs) {
+  RecordFormatter r;
+
+  auto kv = [](std::string const &label, auto const &val) {
+    RecordFormatter rr;
+    rr << label << fmt::to_string(val);
+    return rr;
+  };
+
+  r << kv("dim", attrs.combine_dim) << kv("degree", attrs.combine_degree);
+
+  return r;
+}
+
 tl::expected<ParallelTensorShape, std::string>
     get_output_shape(CombineAttrs const &attrs,
                      ParallelTensorShape const &input) {
@@ -30,8 +44,10 @@ tl::expected<ParallelTensorShape, std::string>
   }
 
   ParallelTensorShape output = input;
-  shard_dim_at_idx(output, relative_ff_dim_t_from_ff_dim_t(attrs.combine_dim))
-      .degree /= attrs.combine_degree;
+  relative_ff_dim_t combine_dim =
+      relative_ff_dim_t_from_ff_dim_t(attrs.combine_dim);
+  shard_dim_at_idx(output, combine_dim).degree = positive_int{
+      shard_dim_at_idx(output, combine_dim).degree / attrs.combine_degree};
 
   return output;
 }

@@ -10,8 +10,8 @@ ParallelLayerGuidObliviousMachineMapping binary_combine_mappings(
     ParallelLayerGuidObliviousMachineMapping const &lhs,
     ParallelLayerGuidObliviousMachineMapping const &rhs) {
   return ParallelLayerGuidObliviousMachineMapping{
-      merge_maps(map_keys(lhs.raw_mapping, nest_inside_left_child),
-                 map_keys(rhs.raw_mapping, nest_inside_right_child)),
+      merge_disjoint_maps(map_keys(lhs.raw_mapping, nest_inside_left_child),
+                          map_keys(rhs.raw_mapping, nest_inside_right_child)),
   };
 }
 

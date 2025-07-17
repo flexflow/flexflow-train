@@ -1,0 +1,23 @@
+namespace = "FlexFlow"
+name = "TaskGraphExecutionTrace"
+
+features = [
+  "hash",
+  "fmt",
+  "eq"
+]
+
+includes = [
+  "compiler/task_graph_simulator/task_profile.dtg.h",
+  "<unordered_set>"
+]
+
+src_includes = [
+  "utils/fmt/unordered_set.h",
+  "utils/hash/unordered_set.h"
+]
+
+
+[[fields]]
+name = "task_profiles"
+type = "std::unordered_set<::FlexFlow::TaskProfile>"

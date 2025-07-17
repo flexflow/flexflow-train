@@ -17,8 +17,10 @@ MachineSpaceOffset get_machine_space_offset_from_coordinate(
         fmt::format("{} has different DeviceType from {}", start, coord));
   }
 
-  return MachineSpaceOffset{coord.node_idx - start.node_idx,
-                            coord.device_idx - start.device_idx,
+  return MachineSpaceOffset{coord.node_idx.unwrap_nonnegative() -
+                                start.node_idx.unwrap_nonnegative(),
+                            coord.device_idx.unwrap_nonnegative() -
+                                start.device_idx.unwrap_nonnegative(),
                             coord.device_type};
 }
 

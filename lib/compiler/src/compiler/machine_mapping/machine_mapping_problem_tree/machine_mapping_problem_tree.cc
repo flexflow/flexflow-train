@@ -5,16 +5,17 @@
 
 namespace FlexFlow {
 
-GenericBinarySPDecompositionTreeImplementation<MachineMappingProblemTree,
-                                               MMProblemTreeSeriesSplit,
-                                               MMProblemTreeParallelSplit,
-                                               UnmappedOpCostEstimateKey>
+GenericBinarySPDecompositionTreeImplementation<
+    MachineMappingProblemTree,
+    MMProblemTreeSeriesSplit,
+    MMProblemTreeParallelSplit,
+    UnmappedRuntimeOnlyOpCostEstimateKey>
     generic_binary_sp_impl_for_mm_problem_tree() {
   return GenericBinarySPDecompositionTreeImplementation<
       MachineMappingProblemTree,
       MMProblemTreeSeriesSplit,
       MMProblemTreeParallelSplit,
-      UnmappedOpCostEstimateKey>{
+      UnmappedRuntimeOnlyOpCostEstimateKey>{
       /*series_get_left_child=*/[](MMProblemTreeSeriesSplit const &split)
                                     -> MachineMappingProblemTree const & {
         return split.get_left_child();
@@ -50,8 +51,8 @@ GenericBinarySPDecompositionTreeImplementation<MachineMappingProblemTree,
       },
       /*require_leaf=*/
       [](MachineMappingProblemTree const &tree)
-          -> UnmappedOpCostEstimateKey const & {
-        return tree.get<UnmappedOpCostEstimateKey>();
+          -> UnmappedRuntimeOnlyOpCostEstimateKey const & {
+        return tree.get<UnmappedRuntimeOnlyOpCostEstimateKey>();
       },
   };
 }
@@ -65,13 +66,13 @@ SPDecompositionTreeNodeType
       [](MMProblemTreeParallelSplit const &) {
         return SPDecompositionTreeNodeType::PARALLEL;
       },
-      [](UnmappedOpCostEstimateKey const &) {
+      [](UnmappedRuntimeOnlyOpCostEstimateKey const &) {
         return SPDecompositionTreeNodeType::NODE;
       },
   });
 }
 
-std::unordered_multiset<UnmappedOpCostEstimateKey>
+std::unordered_multiset<UnmappedRuntimeOnlyOpCostEstimateKey>
     get_leaves(MachineMappingProblemTree const &tree) {
   return get_leaves(tree, generic_binary_sp_impl_for_mm_problem_tree());
 }

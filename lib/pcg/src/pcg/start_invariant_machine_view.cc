@@ -7,6 +7,7 @@
 #include "utils/containers/scanl.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/zip.h"
+#include "utils/nonnegative_int/num_elements.h"
 namespace FlexFlow {
 
 MachineView machine_view_from_start_invariant(
@@ -20,8 +21,8 @@ StartInvariantMachineView
   return StartInvariantMachineView{mv.dimensions, get_device_type(mv)};
 }
 
-size_t num_dims(StartInvariantMachineView const &start_inv_mv) {
-  return start_inv_mv.dimensions.size();
+nonnegative_int num_dims(StartInvariantMachineView const &start_inv_mv) {
+  return num_elements(start_inv_mv.dimensions);
 }
 
 DeviceType get_device_type(StartInvariantMachineView const &start_inv_mv) {
@@ -59,7 +60,7 @@ std::optional<MachineSpaceOffset> get_machine_space_offset(
     TaskSpaceCoordinate const &coord,
     MachineSpecification const &machine_specification) {
   MachineSpaceCoordinate dummy_start =
-      MachineSpaceCoordinate{0, 0, get_device_type(start_inv_machine_view)};
+      MachineSpaceCoordinate{0_n, 0_n, get_device_type(start_inv_machine_view)};
   MachineView mv =
       machine_view_from_start_invariant(start_inv_machine_view, dummy_start);
   std::optional<MachineSpaceCoordinate> ms_coord =

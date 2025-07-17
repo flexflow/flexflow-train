@@ -9,7 +9,7 @@
     ];
     extra-trusted-public-keys = [
       "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
-      "ff.cachix.org-1:/kyZ0w35ToSJBjpiNfPLrL3zTjuPkUiqf2WH0GIShXM="
+      "ff.cachix.org-1:IRdsNEnht4YKGUasP6SX5DfpaOTBckhpJDEODz7wMFM="
     ];
   };
 
@@ -18,13 +18,19 @@
     flake-utils.url = "github:numtide/flake-utils";
 
     proj-repo = {
-      url = "github:lockshaw/proj";
+      url = "git+https://git.sr.ht/~lockshaw/proj";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
+
+    nixGL = {
+      url = "github:nix-community/nixGL";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, proj-repo, ... }: flake-utils.lib.eachSystem [ "x86_64-linux" ] (system: 
+  outputs = { self, nixpkgs, flake-utils, proj-repo, nixGL, ... }: flake-utils.lib.eachSystem [ "x86_64-linux" ] (system: 
     let 
       pkgs = import nixpkgs {
         inherit system;
@@ -32,17 +38,28 @@
       };
       lib = pkgs.lib;
 
-      mkShell = pkgs.mkShell.override {
+      mkShell = attrs: pkgs.mkShell.override {
         stdenv = pkgs.cudaPackages.backendStdenv;
-      };
+      } (attrs // {
+        hardeningDisable = ["all"]; # disable nixpkgs default compiler arguments, otherwise ubsan doesn't catch 
+                                    # signed overflows due to the signedoverflow hardening setting. 
+                                    # for more details, see the following (long-running) nixpkgs github issues: 
+                                    # - https://github.com/NixOS/nixpkgs/issues/18995
+                                    # - https://github.com/NixOS/nixpkgs/issues/60919
+      });
 
       proj = proj-repo.packages.${system}.proj;
     in 
     {
-      packages = {
+      packages = rec {
+        libdwarf-lite = pkgs.callPackage ./.flake/pkgs/libdwarf-lite.nix { };
+        cpptrace = pkgs.callPackage ./.flake/pkgs/cpptrace.nix { inherit libdwarf-lite; };
+        libassert = pkgs.callPackage ./.flake/pkgs/libassert.nix { inherit cpptrace; };
         legion = pkgs.callPackage ./.flake/pkgs/legion.nix { };
+        bencher-cli = pkgs.callPackage ./.flake/pkgs/bencher-cli.nix { };
         ffdb = pkgs.callPackage ./.flake/pkgs/ffdb { inherit proj; };
         hpp2plantuml = pkgs.python3Packages.callPackage ./.flake/pkgs/hpp2plantuml.nix { };
+        fccf = pkgs.callPackage ./.flake/pkgs/fccf { };
         rapidcheckFull = pkgs.symlinkJoin {
           name = "rapidcheckFull";
           paths = (with pkgs; [ rapidcheck.out rapidcheck.dev ]);
@@ -65,24 +82,22 @@
         ci = mkShell {
           shellHook = ''
             export PATH="$HOME/ff/.scripts/:$PATH"
+            export RC_PARAMS="max_discard_ratio=100"
+            export CMAKE_FLAGS="-DFF_USE_EXTERNAL_LEGION=ON \
+                                -DFF_USE_EXTERNAL_NCCL=ON \
+                                -DFF_USE_EXTERNAL_JSON=ON \
+                                -DFF_USE_EXTERNAL_FMT=ON \
+                                -DFF_USE_EXTERNAL_SPDLOG=ON \
+                                -DFF_USE_EXTERNAL_DOCTEST=ON \
+                                -DFF_USE_EXTERNAL_RAPIDCHECK=ON \
+                                -DFF_USE_EXTERNAL_EXPECTED=ON \
+                                -DFF_USE_EXTERNAL_GBENCHMARK=ON \
+                                -DFF_USE_EXTERNAL_LIBASSERT=ON \
+                                -DFF_USE_EXTERNAL_RANGEV3=ON \
+                                -DFF_USE_EXTERNAL_BOOST_PREPROCESSOR=ON \
+                                -DFF_USE_EXTERNAL_TYPE_INDEX=ON"
           '';
           
-          CMAKE_FLAGS = lib.strings.concatStringsSep " " [
-            "-DFF_USE_EXTERNAL_LEGION=ON"
-            "-DFF_USE_EXTERNAL_NCCL=ON"
-            "-DFF_USE_EXTERNAL_JSON=ON"
-            "-DFF_USE_EXTERNAL_FMT=ON"
-            "-DFF_USE_EXTERNAL_SPDLOG=ON"
-            "-DFF_USE_EXTERNAL_DOCTEST=ON"
-            "-DFF_USE_EXTERNAL_RAPIDCHECK=ON"
-            "-DFF_USE_EXTERNAL_EXPECTED=ON"
-            "-DFF_USE_EXTERNAL_RANGEV3=ON"
-            "-DFF_USE_EXTERNAL_BOOST_PREPROCESSOR=ON"
-            "-DFF_USE_EXTERNAL_TYPE_INDEX=ON"
-          ];
-
-          RC_PARAMS = "max_discard_ratio=100";
-
           buildInputs = builtins.concatLists [
             (with pkgs; [
               zlib
@@ -104,24 +119,41 @@
               tl-expected
               doxygen
               lcov # for code coverage
+              compdb
+              gbenchmark
+              libtorch-bin
             ])
-            [ proj ]
+            (with proj-repo.packages.${system}; [
+              proj
+            ])
             (with self.packages.${system}; [
+              libassert
               legion
-              hpp2plantuml
               rapidcheckFull
               doctest
             ])
           ];
         };
 
+        gpu-ci = mkShell {
+          inputsFrom = [ ci ];
+          hardeningDisable = [ "all" ];
+
+          buildInputs = builtins.concatLists [
+            (with nixGL.packages.${system}; [
+              nixGLDefault
+            ])
+          ];
+        };
+
         default = mkShell {
           inputsFrom = [ ci ];
-          inherit (ci) CMAKE_FLAGS RC_PARAMS;
 
           VIMPLUGINS = lib.strings.concatStringsSep "," [
             "${proj-repo.packages.${system}.proj-nvim}"
           ];
+
+          hardeningDisable = [ "all" ];
 
           buildInputs = builtins.concatLists [
             (with pkgs; [
@@ -130,10 +162,9 @@
               shellcheck
               plantuml
               ruff
-              compdb
               jq
               gh
-              lcov # for code coverage
+              expect
             ])
             (with pkgs.python3Packages; [
               gitpython
@@ -147,11 +178,18 @@
               frozendict
               black
               toml
+              numpy
             ])
             (with self.packages.${system}; [
               ffdb
+              hpp2plantuml
+              fccf
             ])
           ];
+        };
+
+        gpu = mkShell {
+          inputsFrom = [ gpu-ci default ];
         };
       };
     }

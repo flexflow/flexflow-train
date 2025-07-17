@@ -10,15 +10,15 @@ TensorAttributeValue get_attribute(ParallelTensorAttrs const &attrs,
                                    TensorAttributeKey key) {
   switch (key) {
     case TensorAttributeKey::DIM_SIZES: {
-      std::vector<size_t> sizes =
-          transform(vector_of(ff_ordered_shard_dims(attrs.shape.dims)),
-                    [](ShardParallelDim const &d) { return d.size; });
+      std::vector<nonnegative_int> sizes = transform(
+          vector_of(ff_ordered_shard_dims(attrs.shape.dims)),
+          [](ShardParallelDim const &d) { return nonnegative_int{d.size}; });
       return TensorAttributeValue{sizes};
     }
     case TensorAttributeKey::DIM_DEGREES: {
-      std::vector<size_t> degrees = transform(
+      std::vector<nonnegative_int> degrees = transform(
           vector_of(ff_ordered_shard_dims(attrs.shape.dims)),
-          [](ShardParallelDim const &d) { return size_t_from_int(d.degree); });
+          [](ShardParallelDim const &d) { return nonnegative_int{d.degree}; });
       return TensorAttributeValue{degrees};
     }
     default:

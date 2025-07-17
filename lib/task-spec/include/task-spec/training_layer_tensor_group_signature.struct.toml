@@ -1,0 +1,19 @@
+namespace = "FlexFlow"
+name = "TrainingLayerTensorGroupSignature"
+features = []
+
+includes = [
+  "task-spec/training_tensor_group.dtg.h",
+]
+
+[[fields]]
+name = "input_tensor_groups"
+type = "std::vector<::FlexFlow::TrainingTensorGroup>"
+
+[[fields]]
+name = "weight_tensor_groups"
+type = "std::vector<::FlexFlow::TrainingTensorGroup>"
+
+[[fields]]
+name = "output_tensor_groups"
+type = "std::vector<::FlexFlow::TrainingTensorGroup>"

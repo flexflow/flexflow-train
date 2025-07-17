@@ -1,13 +1,13 @@
 #include "op-attrs/ops/linear.h"
-#include "op-attrs/dim_ordered/slice.h"
-#include "op-attrs/dim_ordered/transform.h"
-#include "op-attrs/ff_dim_t.h"
-#include "op-attrs/operator_space_parallel_tensor_space_mapping.h"
-#include "op-attrs/parallel_tensor_dim_idx_t.h"
+#include "op-attrs/ff_ordered/slice.h"
+#include "op-attrs/ff_ordered/transform.h"
+#include "op-attrs/initializers/kaiming_initializer_mode.h"
 #include "op-attrs/parallel_tensor_shape.h"
-#include "op-attrs/relative_ff_dim_t.h"
+#include "op-attrs/tensor_dims.h"
 #include "op-attrs/tensor_shape.h"
 #include "utils/containers/product.h"
+#include "utils/expected.h"
+#include "utils/fmt/optional.h"
 #include "utils/integer_conversions.h"
 #include "utils/orthotope/down_projection.h"
 #include "utils/orthotope/eq_projection.h"
@@ -48,11 +48,12 @@ RecordFormatter as_dot(LinearAttrs const &attrs) {
 tl::expected<TensorShape, std::string>
     get_projection_shape(LinearAttrs const &attrs,
                          TensorShape const &input_shape) {
-  size_t in_channels = dim_at_idx(input_shape, relative_ff_dim_t{-1});
+  positive_int in_channels =
+      dim_at_idx(input_shape.dims, relative_ff_dim_t{-1});
 
   return TensorShape{
       TensorDims{
-          FFOrdered<size_t>{in_channels, size_t_from_int(attrs.out_channels)},
+          FFOrdered<positive_int>{attrs.out_channels, in_channels},
       },
       input_shape.data_type,
   };
@@ -62,7 +63,7 @@ tl::expected<TensorShape, std::string>
     get_bias_shape(LinearAttrs const &attrs, TensorShape const &input_shape) {
   return TensorShape{
       TensorDims{
-          FFOrdered<size_t>{size_t_from_int(attrs.out_channels)},
+          FFOrdered<positive_int>{attrs.out_channels},
       },
       input_shape.data_type,
   };
@@ -71,10 +72,24 @@ tl::expected<TensorShape, std::string>
 tl::expected<TensorShape, std::string>
     get_output_shape(LinearAttrs const &attrs, TensorShape const &input_shape) {
   TensorShape output_shape = input_shape;
-  output_shape.dims.ff_ordered.at(relative_ff_dim_t{-1}) =
-      size_t_from_int(attrs.out_channels);
+  output_shape.dims.ff_ordered.at(relative_ff_dim_t{-1}) = attrs.out_channels;
 
   return output_shape;
+}
+
+tl::expected<std::vector<TensorShape>, std::string>
+    get_weight_shapes(LinearAttrs const &attrs,
+                      TensorShape const &input_shape) {
+
+  std::vector<TensorShape> weight_shapes = {
+      PROPAGATE_ERR(get_projection_shape(attrs, input_shape)),
+  };
+
+  if (attrs.use_bias) {
+    weight_shapes.push_back(PROPAGATE_ERR(get_bias_shape(attrs, input_shape)));
+  }
+
+  return weight_shapes;
 }
 
 tl::expected<ParallelTensorShape, std::string>
@@ -89,18 +104,18 @@ tl::expected<ParallelTensorShape, std::string>
     result_unpar.value();
   });
 
-  SumDegree sum_degree = SumDegree{1};
+  SumDegree sum_degree = SumDegree{1_p};
   DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{
       get_sum_degree(input) * product(slice(ff_ordered_shard_degrees(input),
-                                            std::nullopt,
+                                            relative_ff_dim_t{0},
                                             relative_ff_dim_t{-1}))};
-  FFOrdered<int> shard_degrees = FFOrdered<int>{
-      shard_dim_at_idx(input, relative_ff_dim_t{-1}).degree,
+  FFOrdered<positive_int> shard_degrees = FFOrdered<positive_int>{
       get_discard_copy_degree(input),
+      shard_dim_at_idx(input, relative_ff_dim_t{-1}).degree,
   };
 
   return lift_to_parallel_with_degrees(
-      unpar, ParallelTensorDimDegrees{sum_degree, discard_copy_degree, shard_degrees});
+      unpar, sum_degree, discard_copy_degree, shard_degrees);
 }
 
 tl::expected<ParallelTensorShape, std::string>
@@ -117,12 +132,15 @@ tl::expected<ParallelTensorShape, std::string>
   SumDegree sum_degree =
       SumDegree{get_sum_degree(input) *
                 shard_dim_at_idx(input, relative_ff_dim_t{-1}).degree};
-  DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{product(slice(
-      ff_ordered_shard_degrees(input), std::nullopt, relative_ff_dim_t{-1}))};
-  FFOrdered<int> shard_degrees = FFOrdered<int>{get_discard_copy_degree(input)};
+  DiscardCopyDegree discard_copy_degree =
+      DiscardCopyDegree{product(slice(ff_ordered_shard_degrees(input),
+                                      relative_ff_dim_t{0},
+                                      relative_ff_dim_t{-1}))};
+  FFOrdered<positive_int> shard_degrees =
+      FFOrdered<positive_int>{get_discard_copy_degree(input)};
 
   return lift_to_parallel_with_degrees(
-      unpar, ParallelTensorDimDegrees{sum_degree, discard_copy_degree, shard_degrees});
+      unpar, sum_degree, discard_copy_degree, shard_degrees);
 }
 
 tl::expected<ParallelTensorShape, std::string>
@@ -140,21 +158,83 @@ tl::expected<ParallelTensorShape, std::string>
   SumDegree sum_degree =
       SumDegree{get_sum_degree(input) *
                 shard_dim_at_idx(input, relative_ff_dim_t{-1}).degree};
-  DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{1};
-  FFOrdered<int> shard_degrees = ff_ordered_shard_degrees(input);
+  DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{1_p};
+  FFOrdered<positive_int> shard_degrees = ff_ordered_shard_degrees(input);
   shard_degrees.at(relative_ff_dim_t{-1}) = get_discard_copy_degree(input);
 
   return lift_to_parallel_with_degrees(
-      unpar, ParallelTensorDimDegrees{sum_degree, discard_copy_degree, shard_degrees});
+      unpar, sum_degree, discard_copy_degree, shard_degrees);
 }
 
-// tl::expected<ParallelTensorSpaceMapping, std::string>
-//     get_input_to_projection_parallel_mapping(LinearAttrs const &attrs, 
-//                                              ParallelTensorDimDegrees const &input) {
-//   return ParallelTensor{
-//
-//   };
-// }
+tl::expected<std::vector<ParallelTensorShape>, std::string>
+    get_weight_shapes(LinearAttrs const &attrs,
+                      ParallelTensorShape const &input_shape) {
+
+  std::vector<ParallelTensorShape> weight_shapes = {
+      PROPAGATE_ERR(get_projection_shape(attrs, input_shape)),
+  };
+
+  if (attrs.use_bias) {
+    weight_shapes.push_back(PROPAGATE_ERR(get_bias_shape(attrs, input_shape)));
+  }
+
+  return weight_shapes;
+}
+
+/**
+ * @brief Chosen to match pytorch implementation
+ *
+ * see
+ * https://github.com/pytorch/pytorch/blob/1eba9b3aa3c43f86f4a2c807ac8e12c4a7767340/torch/nn/modules/linear.py#L114-L122
+ */
+tl::expected<std::vector<InitializerAttrs>, std::string> get_initializers(
+    LinearAttrs const &attrs,
+    TensorShape const &input_shape,
+    std::optional<InitializerAttrs> const &maybe_projection_initializer,
+    std::optional<InitializerAttrs> const &maybe_bias_initializer) {
+
+  if (!attrs.use_bias && maybe_bias_initializer.has_value()) {
+    return tl::unexpected(
+        fmt::format("Expected bias_initializer=std::nullopt since "
+                    "use_bias=false, but received bias_initializer: {}",
+                    maybe_bias_initializer.value()));
+  }
+
+  TensorShape projection_shape =
+      PROPAGATE_ERR(get_projection_shape(attrs, input_shape));
+
+  InitializerAttrs projection_default_initializer =
+      InitializerAttrs{KaimingNormalAttrs{
+          /*a=*/sqrtf(5.0),
+          /*mode=*/KaimingInitializerMode::FAN_IN,
+          /*nonlinearity=*/KaimingInitializerNonlinearity::LEAKY_RELU,
+          /*seed=*/0,
+      }};
+
+  InitializerAttrs projection_initializer =
+      maybe_projection_initializer.value_or(projection_default_initializer);
+
+  positive_int fan_in = calculate_fan_for_mode(projection_shape.dims,
+                                               KaimingInitializerMode::FAN_IN);
+
+  float bound = 1 / sqrtf(static_cast<float>(fan_in.int_from_positive_int()));
+
+  InitializerAttrs bias_default_initializer =
+      InitializerAttrs{UniformInitializerAttrs{
+          /*seed=*/0,
+          /*min_val=*/-bound,
+          /*max_val=*/bound,
+      }};
+
+  InitializerAttrs bias_initializer =
+      maybe_bias_initializer.value_or(bias_default_initializer);
+
+  if (attrs.use_bias) {
+    return std::vector{projection_initializer, bias_initializer};
+  } else {
+    return std::vector{projection_initializer};
+  }
+}
 
 tl::expected<ParallelTensorSpaceMapping, std::string>
     get_input_to_output_projection(LinearAttrs const &attrs, nonnegative_int input_num_dims) {
@@ -211,6 +291,5 @@ tl::expected<OperatorSpaceParallelTensorSpaceMapping, std::string>
 
   return get_identity_mapping(output_num_shard_dims);
 }
-
 
 } // namespace FlexFlow

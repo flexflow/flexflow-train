@@ -10,21 +10,25 @@ features = [
   "fmt",
 ]
 
+includes = [
+  "utils/positive_int/positive_int.h",
+]
+
 [[fields]]
 name = "embed_dim"
-type = "int"
+type = "::FlexFlow::positive_int"
 
 [[fields]]
 name = "num_heads"
-type = "int"
+type = "::FlexFlow::positive_int"
 
 [[fields]]
 name = "kdim"
-type = "int"
+type = "::FlexFlow::positive_int"
 
 [[fields]]
 name = "vdim"
-type = "int"
+type = "::FlexFlow::positive_int"
 
 [[fields]]
 name = "dropout"

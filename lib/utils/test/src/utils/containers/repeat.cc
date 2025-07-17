@@ -7,7 +7,7 @@ using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("repeat") {
     int x = 0;
-    std::vector<int> result = repeat(3, [&]() {
+    std::vector<int> result = repeat(3_n, [&]() {
       int result = x;
       x += 2;
       return result;
