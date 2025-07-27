@@ -4,10 +4,10 @@
 #include "op-attrs/incoming_tensor_role.dtg.h"
 #include "op-attrs/initializer_attrs.dtg.h"
 #include "op-attrs/ops/batch_norm_attrs.dtg.h"
-#include "op-attrs/ops/core.h"
 #include "op-attrs/parallel_tensor_dim_degrees.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "op-attrs/tensor_shape.dtg.h"
+#include <tl/expected.hpp>
 
 namespace FlexFlow {
 
@@ -60,8 +60,6 @@ tl::expected<std::vector<ParallelTensorShape>, std::string>
  */
 tl::expected<std::vector<InitializerAttrs>, std::string>
     get_initializers(BatchNormAttrs const &attrs);
-
-CHECK_VALID_OP_ATTR(BatchNormAttrs);
 
 } // namespace FlexFlow
 

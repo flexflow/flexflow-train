@@ -1,6 +1,7 @@
 #include "pcg/parallel_computation_graph/generate_weight_transform.h"
 #include "op-attrs/ff_ordered/enumerate.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
@@ -10,12 +11,8 @@ std::unordered_set<ParallelOpAttrs>
   std::unordered_set<ParallelOpAttrs> result;
 
   positive_int sum_degree = get_sum_degree(goal);
-  if (sum_degree != 1) {
-    throw mk_runtime_error(
-        fmt::format("generate_weight_transform currently only supports "
-                    "sum_degree = 1, but received {}",
-                    sum_degree));
-  }
+  ASSERT(sum_degree == 1, 
+         "generate_weight_transform currently only supports sum_degree = 1");
 
   positive_int discard_copy_degree = get_discard_copy_degree(goal);
   if (discard_copy_degree != 1) {

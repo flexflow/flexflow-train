@@ -1,11 +1,13 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "op-attrs/get_incoming_tensor_roles.h"
+#include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/pcg_operator_attrs.h"
 #include "op-attrs/shape_inference.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_edge.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 #include "utils/containers/concat_vectors.h"
+#include "utils/containers/extend.h"
 #include "utils/containers/filtrans.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/repeat_element.h"
@@ -115,6 +117,18 @@ ParallelLayerAddedResult pcg_add_input_layer(ParallelComputationGraph &pcg,
                             /*inputs=*/{},
                             /*weights=*/{},
                             /*output_flags=*/std::vector{CreateGrad::NO});
+}
+
+OperatorTaskSpace get_operator_task_space(ParallelComputationGraph const &pcg,
+                                          parallel_layer_guid_t const &layer) {
+  parallel_tensor_guid_t out_tensor = get_layer_outputs(pcg, layer).at(0);
+  ParallelTensorShape shape = get_parallel_tensor_shape(pcg, out_tensor);
+
+  std::vector<positive_int> degrees;
+  extend(degrees, vector_of(ff_ordered_shard_degrees(shape)));
+  degrees.push_back(get_sum_degree(shape));
+  degrees.push_back(get_discard_copy_degree(shape));
+  return OperatorTaskSpace{degrees};
 }
 
 std::unordered_set<ParallelComputationGraphEdge>

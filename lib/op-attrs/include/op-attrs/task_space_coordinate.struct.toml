@@ -10,9 +10,9 @@ features = [
 ]
 
 includes = [ 
-  "utils/orthotope/orthotope_coordinate.dtg.h",
+  "utils/orthotope/orthotope_coord.dtg.h",
 ]
 
 [[fields]]
 name = "orthotope_coord"
-type = "::FlexFlow::OrthotopeCoordinate"
+type = "::FlexFlow::OrthotopeCoord"

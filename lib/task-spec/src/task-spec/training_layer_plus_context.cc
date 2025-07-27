@@ -1,6 +1,7 @@
 #include "task-spec/training_layer_plus_context.h"
 #include "task-spec/training_tensor_group_with_attrs.h"
 #include "utils/containers/transform.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 

@@ -4,6 +4,7 @@
 #include "op-attrs/ops/conv_2d/conv_2d_parallel_input_shape.h"
 #include "utils/fmt/optional.h"
 #include "utils/integer_conversions.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
@@ -198,11 +199,7 @@ std::vector<InitializerAttrs>
                      std::optional<InitializerAttrs> maybe_kernel_initializer,
                      std::optional<InitializerAttrs> maybe_bias_initializer) {
 
-  if (!attrs.use_bias && maybe_bias_initializer.has_value()) {
-    throw mk_runtime_error(fmt::format(
-        "Unexpectedly received bias initializer while use_bias=false: {}",
-        maybe_bias_initializer));
-  }
+  ASSERT(attrs.use_bias == maybe_bias_initializer.has_value());
 
   TensorShape kernel_shape = get_kernel_shape(attrs, input_shape);
 

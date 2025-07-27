@@ -2,6 +2,7 @@
 #include "substitutions/tensor_pattern/get_attribute.h"
 #include "utils/containers/at_idx.h"
 #include "utils/overload.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
@@ -14,8 +15,8 @@ TensorAttributeValue
       [&](std::vector<nonnegative_int> const &v) -> TensorAttributeValue {
         return TensorAttributeValue{at_idx(v, acc.index).value()};
       },
-      [](auto &&) -> TensorAttributeValue {
-        throw mk_runtime_error("Invalid operand");
+      [](auto &&x) -> TensorAttributeValue {
+        PANIC("Invalid operand", x);
       },
   });
 }

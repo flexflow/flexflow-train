@@ -1,4 +1,5 @@
 #include "compiler/cost_estimator/network_cost_model.h"
+#include "utils/exception.h"
 
 namespace FlexFlow {
 

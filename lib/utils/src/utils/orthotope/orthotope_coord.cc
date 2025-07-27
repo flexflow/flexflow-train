@@ -4,7 +4,7 @@
 
 namespace FlexFlow {
 
-OrthotopeCoord restrict_orthotope_coord_dims_to(OrthotopeCoord const &coord, std::set<nonnegative_int> const &allowed_dims) {
+OrthotopeCoord restrict_orthotope_coord_to_dims(OrthotopeCoord const &coord, std::set<nonnegative_int> const &allowed_dims) {
   return OrthotopeCoord{
     filter_idxs(coord.raw, [&](nonnegative_int idx) { return contains(allowed_dims, idx); }),
   };

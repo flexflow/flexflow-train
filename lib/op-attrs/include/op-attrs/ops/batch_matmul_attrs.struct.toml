@@ -11,7 +11,7 @@ features = [
 ]
 
 includes = [
-  "utils/nonnegative_int/nonnegative_int.h",
+  "utils/positive_int/positive_int.h",
   "<optional>",
 ]
 
@@ -23,8 +23,8 @@ src_includes = [
 
 [[fields]]
 name = "a_seq_length_dim"
-type = "std::optional<::FlexFlow::nonnegative_int>"
+type = "std::optional<::FlexFlow::positive_int>"
 
 [[fields]]
 name = "b_seq_length_dim"
-type = "std::optional<::FlexFlow::nonnegative_int>"
+type = "std::optional<::FlexFlow::positive_int>"

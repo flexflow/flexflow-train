@@ -1,4 +1,4 @@
-#include "op-attrs/operator_space_parallel_tensor_space_mapping.h"
+#include "op-attrs/operator_space_to_parallel_tensor_space_mapping.h"
 #include "op-attrs/parallel_tensor_dim_degrees.h"
 #include "op-attrs/parallel_tensor_dim_idx_t.h"
 #include "utils/nonnegative_int/range.h"
@@ -9,7 +9,7 @@
 
 namespace FlexFlow {
 
-OperatorSpaceParallelTensorSpaceMapping
+OperatorSpaceToParallelTensorSpaceMapping
   get_identity_mapping(nonnegative_int num_shard_dims) {
   
   std::set<parallel_tensor_dim_idx_t> parallel_tensor_dim_indices 
@@ -22,7 +22,7 @@ OperatorSpaceParallelTensorSpaceMapping
   bidict<operator_task_space_dim_idx_t, parallel_tensor_dim_idx_t> raw_bidict
     = bidict_from_keys_and_values(vector_of(operator_space_dim_indices), vector_of(parallel_tensor_dim_indices));
  
-  return OperatorSpaceParallelTensorSpaceMapping{DimProjection{EqProjection{raw_bidict}}};
+  return OperatorSpaceToParallelTensorSpaceMapping{DimProjection{EqProjection{raw_bidict}}};
 }
 
 } // namespace FlexFlow

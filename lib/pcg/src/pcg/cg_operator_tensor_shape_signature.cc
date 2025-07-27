@@ -1,4 +1,5 @@
 #include "pcg/cg_operator_tensor_shape_signature.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 

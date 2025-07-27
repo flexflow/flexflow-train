@@ -6,9 +6,9 @@
 
 namespace FlexFlow {
 
-nonnegative_int get_orthotope_num_dims(Orthotope const &);
+nonnegative_int orthotope_get_num_dims(Orthotope const &);
 
-nonnegative_int get_orthotope_volume(Orthotope const &);
+positive_int orthotope_get_volume(Orthotope const &);
 
 std::unordered_set<OrthotopeCoord> get_all_coords_in_orthotope(Orthotope const &);
 

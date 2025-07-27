@@ -1,5 +1,5 @@
 #include "op-attrs/ops/conv_2d.h"
-#include "doctest/doctest.h"
+#include <doctest/doctest.h>
 #include "utils/integer_conversions.h"
 
 using namespace ::FlexFlow;

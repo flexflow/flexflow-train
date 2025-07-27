@@ -5,6 +5,7 @@
 #include "substitutions/tensor_pattern/satisfies_pattern.h"
 #include "substitutions/unlabelled/find_pattern_matches.h"
 #include "substitutions/unlabelled/pattern_value.h"
+#include "utils/bidict/algorithms/transform_values.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/transform.h"
 #include "utils/graph/dataflow_graph/algorithms.h"
@@ -47,8 +48,8 @@ std::vector<PCGPatternMatch>
   auto pcg_match_from_unlabelled_match =
       [](UnlabelledDataflowGraphPatternMatch const &m) {
         return PCGPatternMatch{
-            map_values(m.node_assignment,
-                       [](Node const &n) { return parallel_layer_guid_t{n}; }),
+            transform_values(m.node_assignment,
+                             [](Node const &n) { return parallel_layer_guid_t{n}; }),
             map_values(m.input_assignment,
                        [](OpenDataflowValue const &i) {
                          return open_parallel_tensor_guid_t{i};

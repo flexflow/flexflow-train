@@ -11,7 +11,6 @@
 #include "utils/hash/unordered_map.h"
 #include "utils/hash/unordered_set.h"
 #include "utils/type_index.h"
-#include "utils/visitable.h"
 
 namespace FlexFlow {
 
@@ -89,13 +88,25 @@ struct OpTaskSignature {
   void set_arg_types(std::unordered_map<slot_id_t, std::type_index> const &);
   std::unordered_map<slot_id_t, std::type_index> get_arg_types() const;
 
+  bool operator==(OpTaskSignature const &) const;
+  bool operator!=(OpTaskSignature const &) const;
+
+public:
   OpTaskType type;
   std::optional<std::type_index> return_value;
   std::unordered_map<slot_id_t, std::type_index> task_arg_types;
   std::unordered_set<OpTensorSlotSpec> op_tensor_slots;
+
+private:
+  std::tuple<
+    decltype(type) const &,
+    decltype(return_value) const &,
+    decltype(task_arg_types) const &,
+    decltype(op_tensor_slots) const &
+  > tie() const;
+
+  friend ::std::hash<::FlexFlow::OpTaskSignature>;
 };
-FF_VISITABLE_STRUCT_NONSTANDARD_CONSTRUCTION(
-    OpTaskSignature, type, return_value, task_arg_types, op_tensor_slots);
 
 std::string format_as(OpTaskSignature const &x);
 std::ostream &operator<<(std::ostream &s, OpTaskSignature const &x);
@@ -103,5 +114,14 @@ std::ostream &operator<<(std::ostream &s, OpTaskSignature const &x);
 OpTaskSignature infer_bwd_signature(OpTaskSignature const &fwd);
 
 } // namespace FlexFlow
+
+namespace std {
+
+template<>
+struct hash<::FlexFlow::OpTaskSignature> {
+  size_t operator()(::FlexFlow::OpTaskSignature const &) const;
+};
+
+}
 
 #endif

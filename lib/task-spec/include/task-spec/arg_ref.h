@@ -1,10 +1,9 @@
-#ifndef _FLEXFLOW_LOCAL_EXECUTION_ARG_REF_H
-#define _FLEXFLOW_LOCAL_EXECUTION_ARG_REF_H
+#ifndef _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_ARG_REF_H
+#define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_ARG_REF_H
 
 #include "kernels/ff_handle.h"
-// #include "task-spec/serialization.h
 #include "utils/type_index.h"
-#include "utils/visitable.h"
+#include "utils/hash-utils.h"
 
 namespace FlexFlow {
 

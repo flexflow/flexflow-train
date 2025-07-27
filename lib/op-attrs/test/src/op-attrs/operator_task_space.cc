@@ -1,4 +1,4 @@
-#include "pcg/operator_task_space.h"
+#include "op-attrs/operator_task_space.h"
 #include "utils/fmt/unordered_set.h"
 #include <doctest/doctest.h>
 
@@ -11,7 +11,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       OperatorTaskSpace task = OperatorTaskSpace{{}};
 
       std::unordered_set<TaskSpaceCoordinate> correct = {
-          TaskSpaceCoordinate{{}}};
+          TaskSpaceCoordinate{OrthotopeCoord{{}}}};
       std::unordered_set<TaskSpaceCoordinate> result =
           get_task_space_coordinates(task);
       CHECK(correct == result);
@@ -21,10 +21,10 @@ TEST_SUITE(FF_TEST_SUITE) {
       OperatorTaskSpace task = OperatorTaskSpace{{2_p, 2_p}};
 
       std::unordered_set<TaskSpaceCoordinate> correct = {{
-          TaskSpaceCoordinate{{0_n, 0_n}},
-          TaskSpaceCoordinate{{0_n, 1_n}},
-          TaskSpaceCoordinate{{1_n, 0_n}},
-          TaskSpaceCoordinate{{1_n, 1_n}},
+          TaskSpaceCoordinate{OrthotopeCoord{{0_n, 0_n}}},
+          TaskSpaceCoordinate{OrthotopeCoord{{0_n, 1_n}}},
+          TaskSpaceCoordinate{OrthotopeCoord{{1_n, 0_n}}},
+          TaskSpaceCoordinate{OrthotopeCoord{{1_n, 1_n}}},
       }};
       std::unordered_set<TaskSpaceCoordinate> result =
           get_task_space_coordinates(task);
@@ -35,10 +35,10 @@ TEST_SUITE(FF_TEST_SUITE) {
       OperatorTaskSpace task = OperatorTaskSpace{{1_p, 2_p, 2_p}};
 
       std::unordered_set<TaskSpaceCoordinate> correct = {{
-          TaskSpaceCoordinate{{0_n, 0_n, 0_n}},
-          TaskSpaceCoordinate{{0_n, 0_n, 1_n}},
-          TaskSpaceCoordinate{{0_n, 1_n, 0_n}},
-          TaskSpaceCoordinate{{0_n, 1_n, 1_n}},
+          TaskSpaceCoordinate{OrthotopeCoord{{0_n, 0_n, 0_n}}},
+          TaskSpaceCoordinate{OrthotopeCoord{{0_n, 0_n, 1_n}}},
+          TaskSpaceCoordinate{OrthotopeCoord{{0_n, 1_n, 0_n}}},
+          TaskSpaceCoordinate{OrthotopeCoord{{0_n, 1_n, 1_n}}},
       }};
       std::unordered_set<TaskSpaceCoordinate> result =
           get_task_space_coordinates(task);
@@ -50,7 +50,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       OperatorTaskSpace task = OperatorTaskSpace{{3_p, 2_p}};
 
-      TaskSpaceCoordinate correct = TaskSpaceCoordinate{{2_n, 1_n}};
+      TaskSpaceCoordinate correct = TaskSpaceCoordinate{OrthotopeCoord{{2_n, 1_n}}};
       TaskSpaceCoordinate result = get_task_space_maximum_coordinate(task);
       CHECK(correct == result);
     }
@@ -58,7 +58,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       OperatorTaskSpace task = OperatorTaskSpace{{3_p, 2_p, 4_p}};
 
-      TaskSpaceCoordinate correct = TaskSpaceCoordinate{{2_n, 1_n, 3_n}};
+      TaskSpaceCoordinate correct = TaskSpaceCoordinate{OrthotopeCoord{{2_n, 1_n, 3_n}}};
       TaskSpaceCoordinate result = get_task_space_maximum_coordinate(task);
       CHECK(correct == result);
     }

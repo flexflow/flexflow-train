@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "OperatorSpaceParallelTensorSpaceMapping"
+name = "OperatorSpaceToParallelTensorSpaceMapping"
 features = [
   "eq",
   "hash",

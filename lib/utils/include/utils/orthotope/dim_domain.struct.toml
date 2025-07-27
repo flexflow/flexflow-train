@@ -14,7 +14,7 @@ template_params = [
 
 includes = [
   "<unordered_map>",
-  "utils/nonnegative_int/nonnegative_int.h",
+  "utils/positive_int/positive_int.h",
 ]
 
 src_includes = [
@@ -24,4 +24,4 @@ src_includes = [
 
 [[fields]]
 name = "dims"
-type = "std::unordered_map<T, ::FlexFlow::nonnegative_int>"
+type = "std::unordered_map<T, ::FlexFlow::positive_int>"

@@ -69,7 +69,7 @@ std::vector<TensorShape>
       [&](ElementBinaryAttrs const &attrs) -> std::vector<TensorShape> {
         auto [i1, i2] = require_2(input_shapes);
 
-        return {throw_if_unexpected(get_output_shape(attrs, i1, i2))};
+        return {get_output_shape(attrs, i1, i2)};
       },
       [&](ElementUnaryAttrs const &attrs) -> std::vector<TensorShape> {
         return {throw_if_unexpected(
@@ -203,7 +203,7 @@ std::vector<ParallelTensorShape>
       [&](ElementBinaryAttrs const &attrs) -> std::vector<ParallelTensorShape> {
         auto [i1, i2] = require_2(input_shapes);
 
-        return {throw_if_unexpected(get_output_shape(attrs, i1, i2))};
+        return {get_output_shape(attrs, i1, i2)};
       },
       [&](ElementUnaryAttrs const &attrs) -> std::vector<ParallelTensorShape> {
         return {throw_if_unexpected(
@@ -214,8 +214,7 @@ std::vector<ParallelTensorShape>
             get_output_shape(attrs, get_only(input_shapes)))};
       },
       [&](FlatAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        return {throw_if_unexpected(
-            get_output_shape(attrs, get_only(input_shapes)))};
+        return {get_output_shape(attrs, get_only(input_shapes))};
       },
       [&](GatherAttrs const &attrs) -> std::vector<ParallelTensorShape> {
         return {

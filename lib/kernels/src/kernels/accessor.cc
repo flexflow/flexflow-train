@@ -19,7 +19,7 @@ nonnegative_int calculate_accessor_offset(TensorDimsCoord const &coord,
   nonnegative_int offset = 0_n;
   positive_int multiplier = 1_p;
 
-  for (ff_dim_t dim : reversed(get_idxs(tensor_dims.ff_ordered))) {
+  for (ff_dim_t dim : reversed(vector_of(get_idxs(tensor_dims.ff_ordered)))) {
     ASSERT(coord.ff_ordered.at(dim) < dim_at_idx(tensor_dims, dim),
            "Out of bounds access",
            dim);

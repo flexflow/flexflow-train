@@ -3,11 +3,15 @@
 
 #include "utils/orthotope/dim_domain.dtg.h"
 #include "utils/orthotope/orthotope.dtg.h"
+#include "utils/containers/keys.h"
+#include "utils/containers/restrict_keys.h"
+#include "utils/containers/sorted.h"
+#include "utils/containers/transform.h"
 
 namespace FlexFlow {
 
 template <typename T>
-std::set<T> get_domain_dims(DimDomain<T> const &domain) {
+std::unordered_set<T> get_domain_dims(DimDomain<T> const &domain) {
   return keys(domain.dims);
 }
 

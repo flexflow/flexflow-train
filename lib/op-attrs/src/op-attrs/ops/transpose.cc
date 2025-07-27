@@ -1,4 +1,5 @@
 #include "op-attrs/ops/transpose.h"
+#include "utils/exception.h"
 
 namespace FlexFlow {
 

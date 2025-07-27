@@ -2,7 +2,10 @@
 #include "op-attrs/ff_ordered/slice.h"
 #include "op-attrs/ff_ordered/transform.h"
 #include "op-attrs/initializers/kaiming_initializer_mode.h"
+#include "op-attrs/operator_space_to_parallel_tensor_space_mapping.h"
+#include "op-attrs/parallel_tensor_dim_idx_t.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "op-attrs/relative_ff_dim_t.h"
 #include "op-attrs/tensor_dims.h"
 #include "op-attrs/tensor_shape.h"
 #include "utils/containers/product.h"
@@ -256,7 +259,7 @@ tl::expected<ParallelTensorSpaceMapping, std::string>
                /*from=*/{discard_copy_dim_idx()}, 
                /*onto=*/shard_dim_idx(output_channel_dim));
 
-  for (ff_dim_t const &idx : ff_dim_range(nonnegative_int{input_num_dims.get_value() - 1})) {
+  for (ff_dim_t const &idx : ff_dim_range(nonnegative_int{input_num_dims.unwrap_nonnegative() - 1})) {
     project_dims(inp_to_out, 
                  /*from=*/{shard_dim_idx(idx)}, 
                  /*onto=*/shard_dim_idx(idx));
@@ -265,7 +268,7 @@ tl::expected<ParallelTensorSpaceMapping, std::string>
   return ParallelTensorSpaceMapping{DimProjection{inp_to_out}};
 }
 
-tl::expected<OperatorSpaceParallelTensorSpaceMapping, std::string>
+tl::expected<OperatorSpaceToParallelTensorSpaceMapping, std::string>
   get_operator_to_input_projection(LinearAttrs const &attrs,
                                    nonnegative_int input_num_dims) {
 
@@ -277,14 +280,14 @@ tl::expected<OperatorSpaceParallelTensorSpaceMapping, std::string>
     EqProjection<operator_task_space_dim_idx_t, parallel_tensor_dim_idx_t> 
       op_to_out = throw_if_unexpected(get_operator_to_output_mapping(attrs, input_num_dims)).raw_projection.require_eq_proj();
 
-    return OperatorSpaceParallelTensorSpaceMapping{
+    return OperatorSpaceToParallelTensorSpaceMapping{
       DimProjection{
         compose_up_projections(up_from_eq_proj(op_to_out), out_to_inp),
       },
     };
 }
 
-tl::expected<OperatorSpaceParallelTensorSpaceMapping, std::string>
+tl::expected<OperatorSpaceToParallelTensorSpaceMapping, std::string>
     get_operator_to_output_mapping(LinearAttrs const &attrs,
                                       nonnegative_int input_num_shard_dims) {
   nonnegative_int output_num_shard_dims = input_num_shard_dims;

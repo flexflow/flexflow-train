@@ -15,7 +15,7 @@ std::vector<T> filter_idxs(std::vector<T> const &input, std::function<bool(nonne
 
   for (nonnegative_int idx : range(num_elements(input))) {
     if (f(idx)) {
-      result.push_back(input.at(idx.get_value()));
+      result.push_back(input.at(idx.unwrap_nonnegative()));
     }
   }
   

@@ -3,6 +3,7 @@
 #include "substitutions/sub_parallel_computation_graph.h"
 #include "utils/bidict/algorithms/bidict_from_keys_and_values.h"
 #include "utils/bidict/algorithms/merge_disjoint_bidicts.h"
+#include "utils/bidict/algorithms/transform_values.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/zip.h"
 
@@ -36,7 +37,7 @@ bidict<PatternNodeOutput, parallel_tensor_guid_t>
 UnlabelledDataflowGraphPatternMatch
     get_unlabelled_pattern_match(PCGPatternMatch const &match) {
   return UnlabelledDataflowGraphPatternMatch{
-      map_values(
+      transform_values(
           match.node_assignment,
           [](parallel_layer_guid_t const &l) { return l.raw_graph_node; }),
       map_values(match.input_assignment,

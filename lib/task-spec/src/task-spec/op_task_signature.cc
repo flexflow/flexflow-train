@@ -2,6 +2,9 @@
 #include "utils/fmt/optional.h"
 #include "utils/fmt/unordered_map.h"
 #include "utils/fmt/unordered_set.h"
+#include "utils/hash/unordered_set.h"
+#include "utils/hash/unordered_map.h"
+#include "utils/hash/tuple.h"
 
 namespace FlexFlow {
 
@@ -148,6 +151,27 @@ std::unordered_map<slot_id_t, std::type_index>
   return this->task_arg_types;
 }
 
+bool OpTaskSignature::operator==(OpTaskSignature const &other) const {
+  return this->tie() == other.tie();
+}
+
+bool OpTaskSignature::operator!=(OpTaskSignature const &other) const {
+  return this->tie() != other.tie();
+}
+
+std::tuple<
+  OpTaskType const &,
+  std::optional<std::type_index> const &,
+  std::unordered_map<slot_id_t, std::type_index> const &,
+  std::unordered_set<OpTensorSlotSpec> const &
+> OpTaskSignature::tie() const {
+  return std::tie(
+    this->type,
+    this->return_value,
+    this->task_arg_types,
+    this->op_tensor_slots);
+}
+
 std::string format_as(OpTaskSignature const &x) {
   std::ostringstream oss;
   oss << "<OpTaskSignature";
@@ -163,3 +187,11 @@ std::ostream &operator<<(std::ostream &s, OpTaskSignature const &x) {
 }
 
 } // namespace FlexFlow
+
+namespace std {
+
+size_t hash<::FlexFlow::OpTaskSignature>::operator()(::FlexFlow::OpTaskSignature const &x) const {
+  return get_std_hash(x.tie());
+}
+
+}

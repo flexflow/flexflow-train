@@ -5,8 +5,10 @@
 #include "op-attrs/tensor_dims.h"
 #include "op-attrs/tensor_shape.h"
 #include "utils/containers/extend.h"
+#include "utils/exception.h"
 #include "utils/expected.h"
 #include "utils/integer_conversions.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
@@ -95,10 +97,9 @@ positive_int get_num_samples(MultiHeadAttentionInputs const &inputs) {
 }
 
 static void check_attrs(MultiHeadAttentionAttrs const &attrs) {
-  if (attrs.add_bias_kv) {
-    throw mk_runtime_error("add_bias_kv is not yet supported. If you need this "
+  ASSERT(!attrs.add_bias_kv,
+         "add_bias_kv is not yet supported. If you need this "
                            "functionality, please create an issue.");
-  }
 }
 
 std::vector<IncomingTensorRole>

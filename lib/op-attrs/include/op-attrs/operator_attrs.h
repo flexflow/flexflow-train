@@ -1,5 +1,5 @@
-#ifndef _OPERATOR_PARAMS_H
-#define _OPERATOR_PARAMS_H
+#ifndef _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_OPERATOR_ATTRS_H
+#define _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_OPERATOR_ATTRS_H
 
 #include "op-attrs/ops/attention.h"
 #include "op-attrs/ops/batch_matmul.h"
@@ -9,7 +9,6 @@
 #include "op-attrs/ops/combine.h"
 #include "op-attrs/ops/concat.h"
 #include "op-attrs/ops/conv_2d.h"
-#include "op-attrs/ops/core.h"
 #include "op-attrs/ops/dropout.h"
 #include "op-attrs/ops/element_binary.h"
 #include "op-attrs/ops/element_unary.h"

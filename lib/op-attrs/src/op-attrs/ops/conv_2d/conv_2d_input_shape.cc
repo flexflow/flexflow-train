@@ -1,6 +1,7 @@
 #include "op-attrs/ops/conv_2d/conv_2d_input_shape.h"
 #include "op-attrs/tensor_dims.h"
 #include "op-attrs/tensor_shape.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 

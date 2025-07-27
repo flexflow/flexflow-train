@@ -1,5 +1,6 @@
 #include "op-attrs/ops/broadcast.h"
 #include "op-attrs/tensor_dims.h"
+#include "utils/exception.h"
 #include "utils/record_formatter.h"
 
 namespace FlexFlow {

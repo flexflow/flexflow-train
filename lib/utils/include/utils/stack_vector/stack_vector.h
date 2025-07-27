@@ -12,6 +12,7 @@
 #include <optional>
 #include <rapidcheck.h>
 #include <type_traits>
+#include "utils/check_fmtable.h"
 
 namespace FlexFlow {
 

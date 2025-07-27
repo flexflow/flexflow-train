@@ -48,7 +48,6 @@ positive_int get_total_parallel_degree(ParallelTensorShape const &);
 bool is_valid(ParallelTensorShape const &);
 
 TensorShape require_not_parallel(ParallelTensorShape const &);
-TensorShape get_tensor_shape_unsafe(ParallelTensorShape const &);
 std::vector<TensorShape>
     get_tensor_shapes_unsafe(std::vector<ParallelTensorShape> const &);
 

@@ -1,4 +1,5 @@
 #include "pcg/start_invariant_machine_view.h"
+#include "op-attrs/task_space_coordinate.h"
 #include "utils/fmt/unordered_set.h"
 #include "utils/fmt/vector.h"
 #include <doctest/doctest.h>
@@ -108,7 +109,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("get_machine_space_offset") {
         SUBCASE("Task with TaskSpaceCoordinate = (0,)") {
-          TaskSpaceCoordinate coord = TaskSpaceCoordinate{{0_n}};
+          TaskSpaceCoordinate coord = make_task_space_coordinate({0_n});
           MachineSpaceOffset correct =
               MachineSpaceOffset{0, 0, DeviceType::GPU};
           MachineSpaceOffset result =
@@ -117,7 +118,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         }
 
         SUBCASE("Task with TaskSpaceCoordinate = (1,)") {
-          TaskSpaceCoordinate coord = TaskSpaceCoordinate{{1_n}};
+          TaskSpaceCoordinate coord = make_task_space_coordinate({1_n});
           MachineSpaceOffset correct =
               MachineSpaceOffset{0, 2, DeviceType::GPU};
           MachineSpaceOffset result =
@@ -126,7 +127,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         }
 
         SUBCASE("Task with TaskSpaceCoordinate = (2,)") {
-          TaskSpaceCoordinate coord = TaskSpaceCoordinate{{2_n}};
+          TaskSpaceCoordinate coord = make_task_space_coordinate({2_n});
           MachineSpaceOffset correct =
               MachineSpaceOffset{0, 4, DeviceType::GPU};
           MachineSpaceOffset result =
@@ -178,7 +179,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("get_machine_space_offset") {
         SUBCASE("Task with TaskSpaceCoordinate = (0,0)") {
-          TaskSpaceCoordinate coord = TaskSpaceCoordinate{{0_n, 0_n}};
+          TaskSpaceCoordinate coord = make_task_space_coordinate({0_n, 0_n});
           MachineSpaceOffset correct =
               MachineSpaceOffset{0, 0, DeviceType::GPU};
           MachineSpaceOffset result =
@@ -187,7 +188,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         }
 
         SUBCASE("Task with TaskSpaceCoordinate = (0,1)") {
-          TaskSpaceCoordinate coord = TaskSpaceCoordinate{{0_n, 1_n}};
+          TaskSpaceCoordinate coord = make_task_space_coordinate({0_n, 1_n});
           MachineSpaceOffset correct =
               MachineSpaceOffset{0, 2, DeviceType::GPU};
           MachineSpaceOffset result =
@@ -196,7 +197,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         }
 
         SUBCASE("Task with TaskSpaceCoordinate = (1,0)") {
-          TaskSpaceCoordinate coord = TaskSpaceCoordinate{{1_n, 0_n}};
+          TaskSpaceCoordinate coord = make_task_space_coordinate({1_n, 0_n});
           MachineSpaceOffset correct =
               MachineSpaceOffset{1, 0, DeviceType::GPU};
           MachineSpaceOffset result =
@@ -205,7 +206,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         }
 
         SUBCASE("Task with TaskSpaceCoordinate = (1,1)") {
-          TaskSpaceCoordinate coord = TaskSpaceCoordinate{{1_n, 1_n}};
+          TaskSpaceCoordinate coord = make_task_space_coordinate({1_n, 1_n});
           MachineSpaceOffset correct =
               MachineSpaceOffset{1, 2, DeviceType::GPU};
           MachineSpaceOffset result =

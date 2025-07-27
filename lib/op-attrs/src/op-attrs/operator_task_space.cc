@@ -1,10 +1,7 @@
-#include "pcg/operator_task_space.h"
+#include "op-attrs/operator_task_space.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "op-attrs/parallel_tensor_shape.h"
-#include "pcg/operator_task_space.dtg.h"
-#include "pcg/parallel_computation_graph/parallel_computation_graph.h"
-#include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
-#include "pcg/parallel_computation_graph/parallel_tensor_guid_t.dtg.h"
+#include "op-attrs/operator_task_space.dtg.h"
 #include "utils/containers/cartesian_product.h"
 #include "utils/containers/extend.h"
 #include "utils/containers/maximum.h"
@@ -32,7 +29,7 @@ std::unordered_set<TaskSpaceCoordinate>
       unordered_set_of(cartesian_product(coordinate_ranges));
   std::unordered_set<TaskSpaceCoordinate> task_space_coordinates =
       transform(raw_coordinates, [](std::vector<nonnegative_int> const &point) {
-        return TaskSpaceCoordinate{point};
+        return TaskSpaceCoordinate{OrthotopeCoord{point}};
       });
   return task_space_coordinates;
 }
@@ -49,17 +46,4 @@ nonnegative_int num_dims(OperatorTaskSpace const &task) {
 positive_int num_tasks(OperatorTaskSpace const &task) {
   return product(task.degrees);
 }
-
-OperatorTaskSpace get_operator_task_space(ParallelComputationGraph const &pcg,
-                                          parallel_layer_guid_t const &layer) {
-  parallel_tensor_guid_t out_tensor = get_layer_outputs(pcg, layer).at(0);
-  ParallelTensorShape shape = get_parallel_tensor_shape(pcg, out_tensor);
-
-  std::vector<positive_int> degrees;
-  extend(degrees, vector_of(ff_ordered_shard_degrees(shape)));
-  degrees.push_back(get_sum_degree(shape));
-  degrees.push_back(get_discard_copy_degree(shape));
-  return OperatorTaskSpace{degrees};
-}
-
 } // namespace FlexFlow

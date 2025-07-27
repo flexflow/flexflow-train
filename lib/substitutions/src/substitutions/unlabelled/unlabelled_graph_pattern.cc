@@ -11,6 +11,7 @@
 #include "utils/graph/open_dataflow_graph/algorithms/get_open_dataflow_values.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_subgraph.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_subgraph_inputs.h"
+#include "utils/bidict/algorithms/transform.h"
 
 namespace FlexFlow {
 

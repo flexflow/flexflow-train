@@ -1,5 +1,5 @@
 #include "pcg/computation_graph_builder.h"
-#include "doctest/doctest.h"
+#include <doctest/doctest.h>
 #include "pcg/computation_graph.h"
 
 using namespace ::FlexFlow;

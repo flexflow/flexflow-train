@@ -4,8 +4,8 @@
 #include "pcg/machine_specification.h"
 #include "pcg/machine_specification_dimension.dtg.h"
 #include "pcg/machine_view_dimension.dtg.h"
-#include "pcg/operator_task_space.dtg.h"
-#include "pcg/operator_task_space.h"
+#include "op-attrs/operator_task_space.dtg.h"
+#include "op-attrs/operator_task_space.h"
 #include "pcg/stride_t.dtg.h"
 #include "utils/containers/contains.h"
 #include "utils/containers/count.h"
@@ -98,7 +98,7 @@ std::optional<MachineSpaceCoordinate> get_machine_space_coordinate(
             });
         std::vector<nonnegative_int> coord_points =
             transform(dimension_indices, [&](nonnegative_int i) {
-              return coord.raw_coord.at(i.unwrap_nonnegative());
+              return coord.orthotope_coord.raw.at(i.unwrap_nonnegative());
             });
         std::vector<positive_int> strides =
             transform(dimension_indices, [&](nonnegative_int i) {

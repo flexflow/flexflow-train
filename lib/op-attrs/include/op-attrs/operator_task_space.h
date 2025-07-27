@@ -1,11 +1,8 @@
-#ifndef _FLEXFLOW_PCG_INCLUDE_OPERATOR_TASK_SPACE_H
-#define _FLEXFLOW_PCG_INCLUDE_OPERATOR_TASK_SPACE_H
+#ifndef _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_OPERATOR_TASK_SPACE_H
+#define _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_OPERATOR_TASK_SPACE_H
 
-#include "pcg/operator_task_space.dtg.h"
-#include "pcg/parallel_computation_graph/parallel_computation_graph.dtg.h"
-#include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
-#include "pcg/task_space_coordinate.dtg.h"
-#include <cstddef>
+#include "op-attrs/operator_task_space.dtg.h"
+#include "op-attrs/task_space_coordinate.dtg.h"
 #include <unordered_set>
 
 namespace FlexFlow {
@@ -18,9 +15,6 @@ TaskSpaceCoordinate
 
 nonnegative_int num_dims(OperatorTaskSpace const &task);
 positive_int num_tasks(OperatorTaskSpace const &task);
-
-OperatorTaskSpace get_operator_task_space(ParallelComputationGraph const &pcg,
-                                          parallel_layer_guid_t const &layer);
 
 } // namespace FlexFlow
 

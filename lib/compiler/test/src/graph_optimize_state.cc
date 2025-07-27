@@ -1,5 +1,5 @@
 #include "compiler/graph_optimize_state.h"
-#include "doctest/doctest.h"
+#include <doctest/doctest.h>
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 
 using namespace FlexFlow;

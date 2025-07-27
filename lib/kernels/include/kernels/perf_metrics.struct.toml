@@ -1,0 +1,59 @@
+namespace = "FlexFlow"
+name = "PerfMetrics"
+features = [
+  "eq",
+  "hash",
+  "json",
+]
+
+includes = [
+  "<optional>",
+]
+
+src_includes = [
+  "utils/fmt/optional.h",
+  "utils/json/optional.h",
+]
+
+[[fields]]
+name = "train_all"
+type = "int"
+docstring = "measure_accuracy denominator"
+
+[[fields]]
+name = "train_correct"
+type = "std::optional<int>"
+docstring = "measure_accuracy numerator"
+
+[[fields]]
+name = "cce_loss"
+type = "std::optional<float>"
+docstring = "measure_categorical_crossentropy"
+
+[[fields]]
+name = "sparse_cce_loss"
+type = "std::optional<float>"
+docstring = "measure_sparse_categorical_crossentropy"
+
+[[fields]]
+name = "mse_loss"
+type = "std::optional<float>"
+docstring = "measure_mean_squared_error"
+
+[[fields]]
+name = "rmse_loss"
+type = "std::optional<float>"
+docstring = "measure_root_mean_squared_error"
+
+[[fields]]
+name = "mae_loss"
+type = "std::optional<float>"
+docstring = "measure_mean_absolute_error"
+
+[[fields]]
+name = "start_time"
+type = "double"
+
+[[fields]]
+name = "current_time"
+type = "double"

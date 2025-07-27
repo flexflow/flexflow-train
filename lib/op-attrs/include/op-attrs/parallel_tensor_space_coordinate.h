@@ -7,7 +7,7 @@
 namespace FlexFlow {
 
 ParallelTensorSpaceCoordinate 
-  parallel_tensor_space_coord_from_map(std::unordered_map<parallel_tensor_dim_idx_t, int> const &);
+  parallel_tensor_space_coord_from_map(std::unordered_map<parallel_tensor_dim_idx_t, nonnegative_int> const &);
 
 } // namespace FlexFlow
 

@@ -11,15 +11,19 @@ TEST_SUITE(FF_TEST_SUITE) {
       {1, 1_n},
     }};
 
-    Orthotope<int> domain = Orthotope<int>{{
-      {3, 5_n},
-      {7, 2_n},
-      {1, 3_n},
+    DimDomain<int> domain = DimDomain<int>{{
+      {3, 5_p},
+      {7, 2_p},
+      {1, 3_p},
     }};
 
-    nonnegative_int result = flatten_coord(coord, domain);
+    nonnegative_int result = flatten_dim_coord(coord, domain);
     nonnegative_int correct = nonnegative_int{1 * 2 * 5 + 4 * 2 + 0};
 
     CHECK(result == correct);
+  }
+
+  TEST_CASE("unflatten_dim_coord") {
+    NOT_IMPLEMENTED(); 
   }
 }

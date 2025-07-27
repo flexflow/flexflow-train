@@ -7,6 +7,7 @@
 #include "utils/graph/digraph/algorithms/transitive_closure.h"
 #include "utils/graph/instances/adjacency_digraph.h"
 #include "utils/graph/node/algorithms.h"
+#include "utils/bidict/algorithms/transform_keys.h"
 
 namespace FlexFlow {
 
@@ -38,7 +39,7 @@ DiGraphView transitive_reduction(DiGraphView const &g) {
   // between transitive_closure and transitive_reduction
 
   bidict<int, Node> nodes =
-      map_keys(bidict_from_enumerating(get_nodes(g)),
+      transform_keys(bidict_from_enumerating(get_nodes(g)),
                [](nonnegative_int x) { return x.unwrap_nonnegative(); });
   int num_nodes = nodes.size();
 

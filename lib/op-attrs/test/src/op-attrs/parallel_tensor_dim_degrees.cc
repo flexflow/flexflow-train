@@ -14,22 +14,22 @@ static parallel_tensor_dim_idx_t shard_dim_idx_from_raw(int idx) {
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_parallel_tensor_degree_map") {
     ParallelTensorDimDegrees degrees = ParallelTensorDimDegrees{
-      SumDegree{3},
-      DiscardCopyDegree{1},
-      FFOrdered<int>{
-        1,
-        2,
-        1,
+      SumDegree{3_p},
+      DiscardCopyDegree{1_p},
+      FFOrdered{
+        1_p,
+        2_p,
+        1_p,
       },
     };
 
-    std::unordered_map<parallel_tensor_dim_idx_t, int> result = get_parallel_tensor_degree_map(degrees);
-    std::unordered_map<parallel_tensor_dim_idx_t, int> correct = {
-      {parallel_tensor_dim_idx_t{ReplicaType::SUM}, 3},
-      {parallel_tensor_dim_idx_t{ReplicaType::DISCARD_COPY}, 1},
-      {shard_dim_idx_from_raw(0), 1},
-      {shard_dim_idx_from_raw(1), 2},
-      {shard_dim_idx_from_raw(2), 1},
+    std::unordered_map<parallel_tensor_dim_idx_t, positive_int> result = get_parallel_tensor_degree_map(degrees);
+    std::unordered_map<parallel_tensor_dim_idx_t, positive_int> correct = {
+      {parallel_tensor_dim_idx_t{ReplicaType::SUM}, 3_p},
+      {parallel_tensor_dim_idx_t{ReplicaType::DISCARD_COPY}, 1_p},
+      {shard_dim_idx_from_raw(0), 1_p},
+      {shard_dim_idx_from_raw(1), 2_p},
+      {shard_dim_idx_from_raw(2), 1_p},
     };
 
     CHECK(result == correct);
@@ -37,46 +37,46 @@ TEST_SUITE(FF_TEST_SUITE) {
 
   TEST_CASE("get_parallel_tensor_space_coordinates") {
     ParallelTensorDimDegrees degrees = ParallelTensorDimDegrees{
-      SumDegree{3},
-      DiscardCopyDegree{1},
-      FFOrdered<int>{
-        1,
-        2,
-        1,
+      SumDegree{3_p},
+      DiscardCopyDegree{1_p},
+      FFOrdered{
+        1_p,
+        2_p,
+        1_p,
       },
     };
 
     std::unordered_set<ParallelTensorSpaceCoordinate> result = get_parallel_tensor_space_coordinates(degrees);
     std::unordered_set<ParallelTensorSpaceCoordinate> correct = {
       ParallelTensorSpaceCoordinate{
-        /*sum_idx=*/0,
-        /*discard_copy_idx=*/0,
-        /*shard_idxs=*/FFOrdered<int>{0, 0, 0},
+        /*sum_idx=*/0_n,
+        /*discard_copy_idx=*/0_n,
+        /*shard_idxs=*/FFOrdered{0_n, 0_n, 0_n},
       },
       ParallelTensorSpaceCoordinate{
-        /*sum_idx=*/1,
-        /*discard_copy_idx=*/0,
-        /*shard_idxs=*/FFOrdered<int>{0, 0, 0},
+        /*sum_idx=*/1_n,
+        /*discard_copy_idx=*/0_n,
+        /*shard_idxs=*/FFOrdered{0_n, 0_n, 0_n},
       },
       ParallelTensorSpaceCoordinate{
-        /*sum_idx=*/2,
-        /*discard_copy_idx=*/0,
-        /*shard_idxs=*/FFOrdered<int>{0, 0, 0},
+        /*sum_idx=*/2_n,
+        /*discard_copy_idx=*/0_n,
+        /*shard_idxs=*/FFOrdered{0_n, 0_n, 0_n},
       },
       ParallelTensorSpaceCoordinate{
-        /*sum_idx=*/0,
-        /*discard_copy_idx=*/0,
-        /*shard_idxs=*/FFOrdered<int>{0, 1, 0},
+        /*sum_idx=*/0_n,
+        /*discard_copy_idx=*/0_n,
+        /*shard_idxs=*/FFOrdered{0_n, 1_n, 0_n},
       },
       ParallelTensorSpaceCoordinate{
-        /*sum_idx=*/1,
-        /*discard_copy_idx=*/0,
-        /*shard_idxs=*/FFOrdered<int>{0, 1, 0},
+        /*sum_idx=*/1_n,
+        /*discard_copy_idx=*/0_n,
+        /*shard_idxs=*/FFOrdered{0_n, 1_n, 0_n},
       },
       ParallelTensorSpaceCoordinate{
-        /*sum_idx=*/2,
-        /*discard_copy_idx=*/0,
-        /*shard_idxs=*/FFOrdered<int>{0, 1, 0},
+        /*sum_idx=*/2_n,
+        /*discard_copy_idx=*/0_n,
+        /*shard_idxs=*/FFOrdered{0_n, 1_n, 0_n},
       },
     };
 
@@ -86,9 +86,9 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_nontrivial_parallel_tensor_dim_indices(ParallelTensorDimDegrees)") {
     SUBCASE("a replica dim has degree 1") {
       ParallelTensorDimDegrees degrees = ParallelTensorDimDegrees{
-        SumDegree{3},
-        DiscardCopyDegree{1},
-        FFOrdered<int>{4, 2, 4},
+        SumDegree{3_p},
+        DiscardCopyDegree{1_p},
+        FFOrdered{4_p, 2_p, 4_p},
       };
 
       std::set<parallel_tensor_dim_idx_t> result = get_nontrivial_parallel_tensor_dim_indices(degrees);
@@ -104,9 +104,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("a shard dim has degree 1") {
       ParallelTensorDimDegrees degrees = ParallelTensorDimDegrees{
-        SumDegree{3},
-        DiscardCopyDegree{2},
-        FFOrdered<int>{1, 4, 1},
+        SumDegree{3_p},
+        DiscardCopyDegree{2_p},
+        FFOrdered{1_p, 4_p, 1_p},
       };
 
       std::set<parallel_tensor_dim_idx_t> result = get_nontrivial_parallel_tensor_dim_indices(degrees);
@@ -121,9 +121,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("no dims have degree 1") {
       ParallelTensorDimDegrees degrees = ParallelTensorDimDegrees{
-        SumDegree{3},
-        DiscardCopyDegree{2},
-        FFOrdered<int>{4, 2, 5},
+        SumDegree{3_p},
+        DiscardCopyDegree{2_p},
+        FFOrdered{4_p, 2_p, 5_p},
       };
 
       std::set<parallel_tensor_dim_idx_t> result = get_nontrivial_parallel_tensor_dim_indices(degrees);
@@ -140,9 +140,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("all dims have degree 1") {
       ParallelTensorDimDegrees degrees = ParallelTensorDimDegrees{
-        SumDegree{1},
-        DiscardCopyDegree{1},
-        FFOrdered<int>{1, 1, 1},
+        SumDegree{1_p},
+        DiscardCopyDegree{1_p},
+        FFOrdered{1_p, 1_p, 1_p},
       };
 
       std::set<parallel_tensor_dim_idx_t> result = get_nontrivial_parallel_tensor_dim_indices(degrees);

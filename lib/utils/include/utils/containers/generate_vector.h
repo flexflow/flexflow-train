@@ -7,7 +7,7 @@
 
 namespace FlexFlow {
 
-template <typename F, typename T = std::invoke_result<F, nonnegative_int>>
+template <typename F, typename T = std::invoke_result_t<F, nonnegative_int>>
 std::vector<T> generate_vector(nonnegative_int length, F &&f) {
   std::vector<T> result;
   for (nonnegative_int idx : range(length)) {

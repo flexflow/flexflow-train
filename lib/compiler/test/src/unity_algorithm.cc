@@ -1,5 +1,5 @@
 #include "compiler/unity_algorithm.h"
-#include "doctest/doctest.h"
+#include <doctest/doctest.h>
 
 TEST_SUITE(FF_TEST_SUITE) {
   // Rapidcheck does not work for now

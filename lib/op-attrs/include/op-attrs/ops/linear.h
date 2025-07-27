@@ -1,24 +1,21 @@
-#ifndef _FLEXFLOW_LINEAR_ATTRS_H
-#define _FLEXFLOW_LINEAR_ATTRS_H
+#ifndef _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_OPS_LINEAR_H
+#define _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_OPS_LINEAR_H
 
 #include "op-attrs/incoming_tensor_role.dtg.h"
 #include "op-attrs/initializer_attrs.dtg.h"
-#include "op-attrs/ops/core.h"
 #include "op-attrs/ops/linear_attrs.dtg.h"
 #include "op-attrs/parallel_tensor_dim_degrees.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "op-attrs/tensor_shape.dtg.h"
 #include "utils/record_formatter.h"
 #include <tl/expected.hpp>
-#include "op-attrs/operator_space_parallel_tensor_space_mapping.dtg.h"
+#include "op-attrs/operator_space_to_parallel_tensor_space_mapping.dtg.h"
 #include "op-attrs/parallel_tensor_space_mapping.dtg.h"
 
 namespace FlexFlow {
 
 std::vector<IncomingTensorRole>
     get_linear_incoming_tensor_roles(LinearAttrs const &);
-
-CHECK_VALID_OP_ATTR(LinearAttrs);
 
 RecordFormatter as_dot(LinearAttrs const &);
 
@@ -65,9 +62,9 @@ tl::expected<std::vector<InitializerAttrs>, std::string> get_initializers(
 
 tl::expected<ParallelTensorSpaceMapping, std::string>
     get_input_to_output_mapping(LinearAttrs const &attrs, nonnegative_int input_num_dims);
-tl::expected<OperatorSpaceParallelTensorSpaceMapping, std::string>
+tl::expected<OperatorSpaceToParallelTensorSpaceMapping, std::string>
     get_operator_to_input_mapping(LinearAttrs const &attrs, nonnegative_int input_num_dims);
-tl::expected<OperatorSpaceParallelTensorSpaceMapping, std::string>
+tl::expected<OperatorSpaceToParallelTensorSpaceMapping, std::string>
     get_operator_to_output_mapping(LinearAttrs const &attrs, nonnegative_int input_num_dims);
 
 } // namespace FlexFlow

@@ -9,6 +9,7 @@
 #include "utils/containers/contains.h"
 #include "utils/containers/extend.h"
 #include "utils/containers/filter.h"
+#include "utils/containers/vector_of.h"
 #include "utils/expected.h"
 #include "utils/fmt/set.h"
 
@@ -72,7 +73,7 @@ tl::expected<TensorShape, std::string>
   }
 
   std::vector<ff_dim_t> non_layer_norm_dim_idxs = filter(
-      get_idxs(input_shape.dims.ff_ordered),
+      vector_of(get_idxs(input_shape.dims.ff_ordered)),
       [&](ff_dim_t const &dim_idx) { return !contains(attrs.axes, dim_idx); });
   std::vector<positive_int> raw_weight_dims =
       transform(non_layer_norm_dim_idxs, [&](ff_dim_t const &dim_idx) {
@@ -180,7 +181,7 @@ tl::expected<ParallelTensorShape, std::string>
   }
 
   std::vector<ff_dim_t> non_layer_norm_dim_idxs = filter(
-      get_idxs(input_shape.dims.shard_dims),
+      vector_of(get_idxs(input_shape.dims.shard_dims)),
       [&](ff_dim_t const &dim_idx) { return !contains(attrs.axes, dim_idx); });
   std::vector<ShardParallelDim> raw_weight_shard_dims =
       transform(non_layer_norm_dim_idxs, [&](ff_dim_t const &dim_idx) {

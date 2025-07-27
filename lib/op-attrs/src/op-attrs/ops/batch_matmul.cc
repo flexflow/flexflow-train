@@ -1,6 +1,7 @@
 #include "op-attrs/ops/batch_matmul.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/tensor_dims.h"
+#include "utils/exception.h"
 
 namespace FlexFlow {
 

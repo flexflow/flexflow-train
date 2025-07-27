@@ -77,48 +77,17 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   DeviceType kernel_device_type =
       acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
-  positive_int m = dim_at_idx(b_input.shape.dims, legion_dim_t{0_n});
-  ASSERT(m == dim_at_idx(output.shape.dims, legion_dim_t{0_n}));
-  positive_int n = dim_at_idx(a_input.shape.dims, legion_dim_t{1_n});
-  ASSERT(n == dim_at_idx(output.shape.dims, legion_dim_t{1_n}));
-  positive_int k = dim_at_idx(a_input.shape.dims, legion_dim_t{0_n});
-  ASSERT(k == dim_at_idx(b_input.shape.dims, legion_dim_t{1_n}));
-
-  ASSERT(get_num_elements(a_input.shape.dims) ==
-         get_num_elements(b_input.shape.dims));
-  ASSERT(get_num_elements(a_input.shape.dims) ==
-         get_num_elements(output.shape.dims));
-
-  positive_int batch = 1_p;
-  for (nonnegative_int i :
-       nonnegative_range(2_n, get_num_dims(a_input.shape.dims))) {
-    positive_int dim_size = dim_at_idx(a_input.shape.dims, legion_dim_t{i});
-    ASSERT(dim_size == dim_at_idx(b_input.shape.dims, legion_dim_t{i}));
-    ASSERT(dim_size == dim_at_idx(output.shape.dims, legion_dim_t{i}));
-    batch *= dim_size;
-  }
-
-  auto get_raw_seq_len = [](std::optional<nonnegative_int> seq_len) -> int {
-    return transform(seq_len,
-                     [](nonnegative_int x) { return x.unwrap_nonnegative(); })
-        .value_or(-1);
-  };
-
   return profile(forward_kernel,
                  profiling,
                  kernel_device_type,
                  "[BatchMatmul] forward_time = {:.2lf}ms\n",
                  handle,
-                 output.get_float_ptr(),
-                 a_input.get_float_ptr(),
-                 b_input.get_float_ptr(),
-                 m.int_from_positive_int(),
-                 n.int_from_positive_int(),
-                 k.int_from_positive_int(),
-                 batch.int_from_positive_int(),
-                 get_raw_seq_len(attrs.a_seq_length_dim),
-                 get_raw_seq_len(attrs.b_seq_length_dim),
-                 iter_config.seq_length);
+                 output,
+                 a_input,
+                 b_input,
+                 iter_config.seq_length,
+                 attrs.a_seq_length_dim,
+                 attrs.b_seq_length_dim);
 }
 
 static std::optional<float>
@@ -143,42 +112,17 @@ static std::optional<float>
   auto b_input_grad = acc.get_tensor_grad<Permissions::RW>(B_INPUT);
   ASSERT(b_input.shape == b_input_grad.shape);
 
-  // check dins
-  positive_int m = dim_at_idx(b_input.shape.dims, legion_dim_t{0_n});
-  ASSERT(m == dim_at_idx(output.shape.dims, legion_dim_t{0_n}));
-  positive_int n = dim_at_idx(a_input.shape.dims, legion_dim_t{1_n});
-  ASSERT(n == dim_at_idx(output.shape.dims, legion_dim_t{1_n}));
-  positive_int k = dim_at_idx(a_input.shape.dims, legion_dim_t{0_n});
-  ASSERT(k == dim_at_idx(b_input.shape.dims, legion_dim_t{1_n}));
-  ASSERT(get_num_elements(a_input.shape.dims) ==
-         get_num_elements(b_input.shape.dims));
-  ASSERT(get_num_elements(a_input.shape.dims) ==
-         get_num_elements(output.shape.dims));
-
-  positive_int batch = 1_p;
-  for (nonnegative_int i :
-       nonnegative_range(2_n, get_num_dims(a_input.shape.dims))) {
-    positive_int dim_size = dim_at_idx(a_input.shape.dims, legion_dim_t{i});
-    ASSERT(dim_size == dim_at_idx(b_input.shape.dims, legion_dim_t{i}));
-    ASSERT(dim_size == dim_at_idx(output.shape.dims, legion_dim_t{i}));
-    batch *= dim_size;
-  }
-
   return profile(backward_kernel,
                  profiling,
                  kernel_device_type,
                  "[BatchMatmul] backward_time = {:.2lf}ms\n",
                  handle,
-                 output.get_float_ptr(),
-                 output_grad.get_float_ptr(),
-                 a_input.get_float_ptr(),
-                 a_input_grad.get_float_ptr(),
-                 b_input.get_float_ptr(),
-                 b_input_grad.get_float_ptr(),
-                 m.int_from_positive_int(),
-                 n.int_from_positive_int(),
-                 k.int_from_positive_int(),
-                 batch.int_from_positive_int());
+                 output,
+                 output_grad,
+                 a_input,
+                 a_input_grad,
+                 b_input,
+                 b_input_grad);
 }
 
 TaskImplFunction get_batch_matmul_fwd_task_impl() {

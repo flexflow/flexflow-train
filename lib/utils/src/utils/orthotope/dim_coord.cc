@@ -15,7 +15,11 @@ template
   OrthotopeCoord orthotope_coord_from_dim_coord(DimCoord<T> const &);
 
 template
-  nonnegative_int flatten_coord(DimCoord<T> const &coord, 
-                                DimDomain<T> const &domain);
+  nonnegative_int flatten_dim_coord(DimCoord<T> const &, 
+                                    DimDomain<T> const &);
+
+template
+  DimCoord<T> unflatten_dim_coord(nonnegative_int, 
+                                  DimDomain<T> const &);
 
 } // namespace FlexFlow

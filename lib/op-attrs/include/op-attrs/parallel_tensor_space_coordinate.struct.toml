@@ -9,17 +9,18 @@ features = [
 ]
 
 includes = [
-  "op-attrs/dim_ordered/dim_ordered.h",
+  "op-attrs/ff_ordered/ff_ordered.h",
+  "utils/nonnegative_int/nonnegative_int.h",
 ]
 
 [[fields]]
 name = "sum_idx"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "discard_copy_idx"
-type = "int"
+type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
 name = "shard_idxs"
-type = "::FlexFlow::FFOrdered<int>"
+type = "::FlexFlow::FFOrdered<::FlexFlow::nonnegative_int>"

@@ -1,4 +1,4 @@
-#include "op-attrs/operator_space_parallel_tensor_space_mapping.h"
+#include "op-attrs/operator_space_to_parallel_tensor_space_mapping.h"
 #include "op-attrs/parallel_tensor_dim_idx_t.h"
 #include <doctest/doctest.h>
 
@@ -16,8 +16,9 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_identity_mapping(ParallelTensorDimDegrees)") {
     nonnegative_int num_shard_dims = nonnegative_int{2};
 
-    OperatorSpaceParallelTensorSpaceMapping result = get_identity_mapping(num_shard_dims);
+    OperatorSpaceToParallelTensorSpaceMapping result = get_identity_mapping(num_shard_dims);
 
-    CHECK(result == correct);
+    NOT_IMPLEMENTED();
+    // CHECK(result == correct);
   }
 }

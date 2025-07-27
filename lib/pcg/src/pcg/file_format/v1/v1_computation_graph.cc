@@ -1,5 +1,6 @@
 #include "pcg/file_format/v1/v1_computation_graph.h"
 #include "pcg/file_format/v1/graphs/v1_labelled_dataflow_graph.h"
+#include "utils/bidict/algorithms/transform_values.h"
 
 namespace FlexFlow {
 
@@ -17,7 +18,7 @@ std::pair<V1ComputationGraph, bidict<nonnegative_int, layer_guid_t>>
           to_v1_including_node_numbering<LayerAttrs, TensorAttrs>(cg.raw_graph);
   V1ComputationGraph v1_cg = V1ComputationGraph{raw.first};
   bidict<nonnegative_int, layer_guid_t> v1_node_ids =
-      map_values(raw.second, [](Node const &n) { return layer_guid_t{n}; });
+      transform_values(raw.second, [](Node const &n) { return layer_guid_t{n}; });
 
   return {v1_cg, v1_node_ids};
 }

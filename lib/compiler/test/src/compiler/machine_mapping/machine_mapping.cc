@@ -1,5 +1,5 @@
 #include "compiler/machine_mapping/machine_mapping.h"
-#include "doctest/doctest.h"
+#include <doctest/doctest.h>
 #include "pcg/machine_view.h"
 
 using namespace FlexFlow;

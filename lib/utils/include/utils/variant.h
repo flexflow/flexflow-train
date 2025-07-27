@@ -193,7 +193,7 @@ template <typename TypeOut,
           typename VariantIn = typename Container::value_type,
           typename = std::enable_if_t<is_in_variant<TypeOut, VariantIn>::value>>
 auto narrow(Container const &c) {
-  return transform(c, [](VariantIn const &e) { return get<TypeOut>(e); });
+  return transform(c, [](VariantIn const &e) { return std::get<TypeOut>(e); });
 }
 
 template <

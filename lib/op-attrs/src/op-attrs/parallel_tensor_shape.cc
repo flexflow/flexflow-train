@@ -5,9 +5,11 @@
 #include "utils/containers/product.h"
 #include "utils/containers/range.h"
 #include "utils/containers/transform.h"
+#include "utils/exception.h"
 #include "utils/hash-utils.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include "utils/overload.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
@@ -97,19 +99,11 @@ ParallelTensorShape
 
 TensorShape require_not_parallel(ParallelTensorShape const &s) {
   positive_int total_degree = get_total_parallel_degree(s);
-  if (total_degree != 1_p) {
-    throw mk_runtime_error(
-        fmt::format("Error: require_not_parallel received a parallel tensor "
-                    "shape with parallel degree {}: {}",
-                    total_degree,
-                    s));
-  }
+  ASSERT(total_degree != 1_p,
+         "Error: require_not_parallel received a parallel tensor shape with non-zero parallel degree",
+         s);
 
   return get_reduced_shape(s);
-}
-
-TensorShape get_tensor_shape_unsafe(ParallelTensorShape const &) {
-  NOT_IMPLEMENTED();
 }
 
 TensorShape get_piece_shape(ParallelTensorShape const &s) {

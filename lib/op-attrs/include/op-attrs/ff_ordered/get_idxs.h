@@ -3,14 +3,15 @@
 
 #include "op-attrs/ff_dim_t.h"
 #include "op-attrs/ff_ordered/ff_ordered.h"
-#include "utils/containers/count.h"
+#include "utils/containers/range.h"
 #include "utils/containers/transform.h"
+#include "utils/containers/set_of.h"
 
 namespace FlexFlow {
 
 template <typename T>
-std::vector<ff_dim_t> get_idxs(FFOrdered<T> const &d) {
-  return transform(count(d.size()),
+std::set<ff_dim_t> get_idxs(FFOrdered<T> const &d) {
+  return transform(set_of(range(d.size())),
                    [](int i) { return ff_dim_t{nonnegative_int{i}}; });
 }
 

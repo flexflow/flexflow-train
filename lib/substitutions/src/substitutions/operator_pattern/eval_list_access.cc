@@ -4,6 +4,7 @@
 #include "utils/containers/make.h"
 #include "utils/containers/transform.h"
 #include "utils/overload.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
@@ -28,7 +29,7 @@ std::optional<OperatorAttributeValue>
           return transform(at_idx(v, acc.index),
                            make<OperatorAttributeValue>());
         } else {
-          throw mk_runtime_error("Invalid operand");
+          PANIC("Invalid operand");
         }
       });
 }

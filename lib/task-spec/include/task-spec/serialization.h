@@ -1,25 +1,13 @@
-#ifndef _FLEXFLOW_LOCAL_EXECUTION_SERIALIZATION_H
-#define _FLEXFLOW_LOCAL_EXECUTION_SERIALIZATION_H
+#ifndef _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_SERIALIZATION_H
+#define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_SERIALIZATION_H
 
 #include "kernels/device.h"
 #include "kernels/nccl.h"
-#include "op-attrs/dim_ordered/dim_ordered.h"
+#include "op-attrs/ff_ordered/ff_ordered.h"
 #include "utils/required.h"
-#include "utils/strong_typedef.h"
 #include "utils/type_traits.h"
 #include "utils/variant.h"
-#include "utils/visitable.h"
 
-namespace FlexFlow {
-
-struct InternalTestType {
-  int x;
-  float y;
-};
-
-} // namespace FlexFlow
-
-VISITABLE_STRUCT(::FlexFlow::InternalTestType, x, y);
 
 namespace FlexFlow {
 
@@ -49,22 +37,8 @@ struct visit_trivially_serializable<> : std::true_type {};
 template <typename T>
 struct is_trivially_serializable<
     T,
-    typename std::enable_if<
-        visit_trivially_serializable<visit_as_tuple_t<T>>::value>::type>
-    : std::true_type {};
-
-template <typename T>
-struct is_trivially_serializable<
-    T,
     typename std::enable_if<std::is_integral<T>::value>::type>
     : std::true_type {};
-
-template <typename T>
-struct is_trivially_serializable<T, void_t<underlying_type_t<T>>>
-    : is_trivially_serializable<underlying_type_t<T>> {};
-
-template <typename T>
-struct is_trivially_serializable<req<T>> : is_trivially_serializable<T> {};
 
 template <>
 struct is_trivially_serializable<half> : std::true_type {};
@@ -86,8 +60,8 @@ template <typename T, std::size_t MAXSIZE>
 struct is_trivially_serializable<stack_vector<T, MAXSIZE>>
     : is_trivially_serializable<T> {};
 
-template <typename Idx, typename T>
-struct is_trivially_serializable<DimOrdered<Idx, T>>
+template <typename T>
+struct is_trivially_serializable<FFOrdered<T>>
     : is_trivially_serializable<T> {};
 
 template <typename... Ts>
@@ -134,11 +108,6 @@ static_assert(is_trivially_serializable<half>::value, "");
 static_assert(is_trivially_serializable<bool>::value, "");
 static_assert(is_trivially_serializable<std::variant<float, double>>::value,
               "");
-static_assert(std::is_same<visit_as_tuple_t<InternalTestType>,
-                           std::tuple<int, float>>::value,
-              "");
-static_assert(visit_trivially_serializable<InternalTestType>::value, "");
-static_assert(is_trivially_serializable<InternalTestType>::value, "");
 
 } // namespace FlexFlow
 

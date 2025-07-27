@@ -206,8 +206,12 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("Partial task does not exist") {
         ComputationGraphOpAttrs bmm_attrs = ComputationGraphOpAttrs{
-            BatchMatmulAttrs{/*a_seq_length_dim=*/10_n,
-                             /*b_seq_length_dim=*/20_n}};
+          BatchMatmulAttrs{
+            /*a_seq_length_dim=*/10_p,
+            /*b_seq_length_dim=*/20_p,
+          },
+        };
+
         LocalTaskRegistry task_registry =
             construct_local_task_registry_for_layers({
                 {layer_guid, LayerAttrs{bmm_attrs, std::nullopt}},

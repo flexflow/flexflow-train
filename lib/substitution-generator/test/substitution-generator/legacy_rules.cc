@@ -1,5 +1,5 @@
 #include "substitution-generator/legacy_rules.h"
-#include "doctest/doctest.h"
+#include <doctest/doctest.h>
 
 using namespace FlexFlow;
 using nlohmann::json;
