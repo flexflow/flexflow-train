@@ -149,7 +149,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       nonnegative_int result = flatten_orthotope_coord(coord, orthotope);
       nonnegative_int correct = nonnegative_int{
-        1 * 1 + 2 * 2 + 0 * 6 + 24 * 1
+        1 * 1 + 2 * 2 + 0 * 6 + 1 * 6
       };
 
       CHECK(result == correct);
@@ -203,7 +203,6 @@ TEST_SUITE(FF_TEST_SUITE) {
         4_n,
       }};
 
-
       CHECK(result == correct);
     }
 
@@ -238,7 +237,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SUBCASE("increment in column dimension") {
-        nonnegative_int offset = num_cols.nonnegative_int_from_positive_int();
+        nonnegative_int offset = 1_n;
 
         OrthotopeCoord result = unflatten_orthotope_coord(offset, orthotope);
         OrthotopeCoord correct = OrthotopeCoord{{
@@ -255,7 +254,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       }};
 
       nonnegative_int offset = nonnegative_int{
-        1 * 1 + 2 * 2 + 0 * 6 + 24 * 1
+        1 * 1 + 2 * 2 + 0 * 6 + 1 * 6
       };
 
       OrthotopeCoord result = unflatten_orthotope_coord(offset, orthotope);

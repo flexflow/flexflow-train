@@ -199,8 +199,6 @@ std::vector<InitializerAttrs>
                      std::optional<InitializerAttrs> maybe_kernel_initializer,
                      std::optional<InitializerAttrs> maybe_bias_initializer) {
 
-  ASSERT(attrs.use_bias == maybe_bias_initializer.has_value());
-
   TensorShape kernel_shape = get_kernel_shape(attrs, input_shape);
 
   InitializerAttrs kernel_default_initializer =

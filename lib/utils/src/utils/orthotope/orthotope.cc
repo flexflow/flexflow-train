@@ -4,6 +4,7 @@
 #include "utils/containers/filter_idxs.h"
 #include "utils/containers/product.h"
 #include "utils/containers/scanr.h"
+#include "utils/containers/sum.h"
 #include "utils/containers/unordered_set_of.h"
 #include "utils/containers/zip3_with_strict.h"
 #include "utils/containers/zip_strict.h"
@@ -42,7 +43,10 @@ bool orthotope_contains_coord(Orthotope const &orthotope, OrthotopeCoord const &
          "orthotope_contains_coord expected orthotope and coord to have the same number of dims", 
          orthotope, coord);
 
-  return all_are_true(zip_with_strict(coord.raw, orthotope.dims, [](nonnegative_int c, positive_int o) { return c < o; }));
+  return all_are_true(zip_with(
+                            coord.raw, 
+                            orthotope.dims, 
+                            [](nonnegative_int c, positive_int o) { return c < o; }));
 }
 
 Orthotope restrict_orthotope_to_dims(Orthotope const &orthotope, std::set<nonnegative_int> const &allowed_dims) {
@@ -56,6 +60,7 @@ nonnegative_int flatten_orthotope_coord(OrthotopeCoord const &coord, Orthotope c
          "flatten_orthotope_coord expected orthotope and coord to have the same number of dims", 
          orthotope, 
          coord);
+  ASSERT(orthotope_contains_coord(orthotope, coord));
 
   std::vector<positive_int> steps = scanr(orthotope.dims, 
                                           1_p, 
@@ -63,25 +68,46 @@ nonnegative_int flatten_orthotope_coord(OrthotopeCoord const &coord, Orthotope c
                                             return r * accum;
                                           });
 
-  return product(zip_with_strict(coord.raw, slice(steps, 0, -1), 
-                                 [](nonnegative_int coord_val, positive_int step) { return coord_val * step; }));
+  nonnegative_int result = sum(zip_with_strict(coord.raw, slice(steps, 1, std::nullopt), 
+                             [](nonnegative_int coord_val, positive_int step) { return coord_val * step; }));
 
+  ASSERT(result <= orthotope_get_maximum_offset(orthotope));
+
+  return result;
+}
+
+OrthotopeCoord orthotope_get_maximum_coord(Orthotope const &orthotope) {
+  return OrthotopeCoord{
+    transform(orthotope.dims, [](positive_int d) { return nonnegative_int{d.int_from_positive_int() - 1}; }),
+  };
+}
+
+nonnegative_int orthotope_get_maximum_offset(Orthotope const &orthotope) {
+  return nonnegative_int{
+    product(orthotope.dims).int_from_positive_int() - 1
+  };
 }
 
 OrthotopeCoord unflatten_orthotope_coord(nonnegative_int flattened, Orthotope const &orthotope) {
-  std::vector<positive_int> steps = scanr(orthotope.dims, 1_p, 
-                                             [](positive_int r, positive_int accum) {
-                                               return r * accum;
-                                             });
+  ASSERT(flattened <= orthotope_get_maximum_offset(orthotope));
 
-  return OrthotopeCoord{
+  std::vector<positive_int> steps = scanr(orthotope.dims, 1_p, 
+                                          [](positive_int r, positive_int accum) {
+                                            return r * accum;
+                                          });
+
+  OrthotopeCoord result = OrthotopeCoord{
     zip3_with_strict(orthotope.dims, 
+                     slice(steps, 1, std::nullopt), 
                      slice(steps, 0, -1), 
-                     slice(orthotope.dims, 1, std::nullopt), 
                      [&](positive_int dim, positive_int step, positive_int next_step) { 
                        return (flattened % next_step) / step;
                      }),
   };
+
+  ASSERT(orthotope_contains_coord(orthotope, result));
+
+  return result;
 }
 
 } // namespace FlexFlow

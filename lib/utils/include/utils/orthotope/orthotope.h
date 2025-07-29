@@ -18,6 +18,10 @@ Orthotope restrict_orthotope_to_dims(Orthotope const &, std::set<nonnegative_int
 
 nonnegative_int flatten_orthotope_coord(OrthotopeCoord const &, Orthotope const &);
 
+OrthotopeCoord orthotope_get_maximum_coord(Orthotope const &);
+
+nonnegative_int orthotope_get_maximum_offset(Orthotope const &);
+
 OrthotopeCoord unflatten_orthotope_coord(nonnegative_int, Orthotope const &);
 
 } // namespace FlexFlow
