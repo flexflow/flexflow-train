@@ -12,7 +12,6 @@
 #include "pcg/device_id.h"
 #include "pcg/device_type.dtg.h"
 #include "pcg/machine_space_coordinate.dtg.h"
-#include "pcg/machine_specification.h"
 #include "pcg/machine_specification_dimension.dtg.h"
 #include "pcg/machine_view.dtg.h"
 #include "pcg/machine_view.h"
@@ -38,11 +37,17 @@ namespace FlexFlow {
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("task_simulator_estimate_forward_pass_time") {
     MachineSpecification machine_spec =
-        MachineSpecification{/*num_nodes=*/3_p,
-                             /*num_cpus_per_node=*/3_p,
-                             /*num_gpus_per_node=*/3_p,
-                             /*inter_node_bandwidth=*/1.0f,
-                             /*intra_node_bandwidth=*/1.0f};
+        MachineSpecification{
+          MachineComputeSpecification{
+            /*num_nodes=*/3_p,
+            /*num_cpus_per_node=*/3_p,
+            /*num_gpus_per_node=*/3_p,
+          },
+          MachineInterconnectSpecification{
+            /*inter_node_bandwidth=*/bytes_per_second_t{1.0f},
+            /*intra_node_bandwidth=*/bytes_per_second_t{1.0f},
+          },
+        };
 
     SUBCASE("linear graph") {
       ParallelComputationGraphBuilder b;

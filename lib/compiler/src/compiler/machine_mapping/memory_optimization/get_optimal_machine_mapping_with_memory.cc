@@ -10,7 +10,6 @@
 #include "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.dtg.h"
 #include "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.h"
 #include "pcg/machine_specification.dtg.h"
-#include "pcg/machine_specification.h"
 #include "pcg/machine_view.dtg.h"
 #include "pcg/machine_view.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
@@ -28,7 +27,7 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
     MachineMappingWithMemoryCache &result_cache,
     MachineMappingWithMemoryContext const &context,
     MachineMappingProblemTree const &problem_tree,
-    MachineSpecification const &resources,
+    MachineComputeSpecification const &resources,
     MachineMappingConstraints const &constraints) {
 
   MachineMappingState state = MachineMappingState{
@@ -73,7 +72,7 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
     MachineMappingWithMemoryCache &result_cache,
     MachineMappingWithMemoryContext const &context,
     MMProblemTreeSeriesSplit const &series_split,
-    MachineSpecification const &resources,
+    MachineComputeSpecification const &resources,
     MachineMappingConstraints const &constraints,
     std::optional<ParallelSplitTransformation> const
         &parallel_split_transformation) {
@@ -176,7 +175,7 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
     MachineMappingWithMemoryCache &result_cache,
     MachineMappingWithMemoryContext const &context,
     MMProblemTreeParallelSplit const &parallel_split,
-    MachineSpecification const &resources,
+    MachineComputeSpecification const &resources,
     MachineMappingConstraints const &constraints) {
 
   MachineMappingProblemTree lhs = parallel_split.get_left_child();
@@ -204,7 +203,7 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
       restrict_to_right_child(constraints);
 
   auto evaluate_resource_split =
-      [&](std::pair<MachineSpecification, MachineSpecification> const
+      [&](std::pair<MachineComputeSpecification, MachineComputeSpecification> const
               &resource_split) {
         MachineMappingWithMemoryResult left_result =
             get_optimal_machine_mapping_with_memory(result_cache,
@@ -234,7 +233,7 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
     MachineMappingWithMemoryCache &result_cache,
     MachineMappingWithMemoryContext const &context,
     UnmappedRuntimeOnlyOpCostEstimateKey const &leaf,
-    MachineSpecification const &resource,
+    MachineComputeSpecification const &resource,
     MachineMappingConstraints const &constraints) {
 
   std::unordered_set<MachineView> candidates = [&] {

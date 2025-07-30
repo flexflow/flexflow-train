@@ -20,7 +20,7 @@ namespace FlexFlow {
 
 PCGTaskGraph get_pcg_task_graph(ParallelComputationGraph const &pcg,
                                 MachineMapping const &machine_mapping,
-                                MachineSpecification const &machine_spec) {
+                                MachineComputeSpecification const &machine_spec) {
   DiGraph digraph = DiGraph::create<AdjacencyDiGraph>();
   bidict<Node, PCGTask> node_to_task;
   bidict<Node, parallel_layer_guid_t> node_to_layer;

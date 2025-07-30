@@ -51,12 +51,12 @@ TEST_SUITE(FF_TEST_SUITE) {
               /*node_idx=*/0_n, /*device_idx=*/1_n, DeviceType::GPU},
           {MachineViewDimension{stride_t{2_p},
                                 MachineSpecificationDimension::INTRA_NODE}}};
-      MachineSpecification ms =
-          MachineSpecification{/*num_nodes=*/1_p,
-                               /*num_cpus_per_node=*/6_p,
-                               /*num_gpus_per_node=*/6_p,
-                               /*inter_node_bandwidth=*/0,
-                               /*intra_node_bandwidth=*/0};
+      MachineComputeSpecification ms =
+          MachineComputeSpecification{
+            /*num_nodes=*/1_p,
+            /*num_cpus_per_node=*/6_p,
+            /*num_gpus_per_node=*/6_p, 
+          };
 
       SUBCASE("Task with TaskSpaceCoordinate = (0,)") {
         TaskSpaceCoordinate coord = make_task_space_coordinate({0_n});
@@ -122,12 +122,10 @@ TEST_SUITE(FF_TEST_SUITE) {
                                   MachineSpecificationDimension::INTER_NODE},
              MachineViewDimension{stride_t{2_p},
                                   MachineSpecificationDimension::INTRA_NODE}}};
-        MachineSpecification ms = MachineSpecification{
+        MachineComputeSpecification ms = MachineComputeSpecification{
             /*num_nodes=*/3_p,
             /*num_cpus_per_node=*/5_p,
             /*num_gpus_per_node=*/5_p,
-            /*inter_node_bandwidth=*/0,
-            /*intra_node_bandwidth=*/0,
         };
 
         SUBCASE("Task with TaskSpaceCoordinate = (0,0)") {
@@ -190,12 +188,12 @@ TEST_SUITE(FF_TEST_SUITE) {
                                   MachineSpecificationDimension::INTRA_NODE},
              MachineViewDimension{stride_t{2_p},
                                   MachineSpecificationDimension::INTRA_NODE}}};
-        MachineSpecification ms =
-            MachineSpecification{/*num_nodes=*/2_p,
-                                 /*num_cpus_per_node=*/6_p,
-                                 /*num_gpus_per_node=*/6_p,
-                                 /*inter_node_bandwidth=*/0,
-                                 /*intra_node_bandwidth=*/0};
+        MachineComputeSpecification ms =
+            MachineComputeSpecification{
+              /*num_nodes=*/2_p,
+              /*num_cpus_per_node=*/6_p,
+              /*num_gpus_per_node=*/6_p,
+            };
 
         SUBCASE("Task with TaskSpaceCoordinate = (0,0)") {
           TaskSpaceCoordinate coord = make_task_space_coordinate({0_n, 0_n});
@@ -266,12 +264,12 @@ TEST_SUITE(FF_TEST_SUITE) {
                                   MachineSpecificationDimension::INTRA_NODE},
              MachineViewDimension{stride_t{1_p},
                                   MachineSpecificationDimension::INTRA_NODE}}};
-        MachineSpecification ms =
-            MachineSpecification{/*num_nodes=*/2_p,
-                                 /*num_cpus_per_node=*/8_p,
-                                 /*num_gpus_per_node=*/8_p,
-                                 /*inter_node_bandwidth=*/0,
-                                 /*intra_node_bandwidth=*/0};
+        MachineComputeSpecification ms =
+            MachineComputeSpecification{
+              /*num_nodes=*/2_p,
+              /*num_cpus_per_node=*/8_p,
+              /*num_gpus_per_node=*/8_p,
+            };
 
         SUBCASE("Task with TaskSpaceCoordinate = (0,0,1)") {
           TaskSpaceCoordinate coord =
@@ -324,12 +322,12 @@ TEST_SUITE(FF_TEST_SUITE) {
        * Where the integers are the device ids and ((x)) are the devices we
        * select
        */
-      MachineSpecification ms =
-          MachineSpecification{/*num_nodes=*/1_p,
-                               /*num_cpus_per_node=*/6_p,
-                               /*num_gpus_per_node=*/6_p,
-                               /*inter_node_bandwidth=*/0,
-                               /*intra_node_bandwidth=*/0};
+      MachineComputeSpecification ms =
+          MachineComputeSpecification{
+            /*num_nodes=*/1_p,
+            /*num_cpus_per_node=*/6_p,
+            /*num_gpus_per_node=*/6_p,
+          };
 
       OperatorTaskSpace task = OperatorTaskSpace{{3_p}};
       MachineView mv = MachineView{
@@ -369,12 +367,12 @@ TEST_SUITE(FF_TEST_SUITE) {
        * select
        */
 
-      MachineSpecification ms =
-          MachineSpecification{/*num_nodes=*/3_p,
-                               /*num_cpus_per_node=*/5_p,
-                               /*num_gpus_per_node=*/5_p,
-                               /*inter_node_bandwidth=*/0,
-                               /*intra_node_bandwidth=*/0};
+      MachineComputeSpecification ms =
+          MachineComputeSpecification{
+            /*num_nodes=*/3_p,
+            /*num_cpus_per_node=*/5_p,
+            /*num_gpus_per_node=*/5_p,
+          };
 
       OperatorTaskSpace task = OperatorTaskSpace{{2_p, 2_p}};
       MachineView mv = MachineView{

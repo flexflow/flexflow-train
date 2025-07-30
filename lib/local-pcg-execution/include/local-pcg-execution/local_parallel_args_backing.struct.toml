@@ -1,0 +1,18 @@
+namespace = "FlexFlow"
+name = "LocalParallelArgsBacking"
+features = []
+
+includes = [
+  "task-spec/runtime_arg_config.dtg.h",
+  "task-spec/device_specific_device_states.dtg.h",
+  "local-pcg-execution/parallel_layer_instance_id_t.dtg.h",
+  "<unordered_map>",
+]
+
+[[fields]]
+name = "runtime_arg_config"
+type = "::FlexFlow::RuntimeArgConfig"
+
+[[fields]]
+name = "per_device_op_states"
+type = "std::unordered_map<::FlexFlow::parallel_layer_instance_id_t, std::optional<::FlexFlow::DeviceSpecificDeviceStates>>"

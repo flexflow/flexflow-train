@@ -2,6 +2,7 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_UNITS_NUM_BYTES_T_H
 
 #include "utils/nonnegative_int/nonnegative_int.h"
+
 namespace FlexFlow {
 
 struct num_bytes_t {

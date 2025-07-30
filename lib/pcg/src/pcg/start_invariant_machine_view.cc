@@ -58,13 +58,13 @@ std::optional<MachineSpaceOffset> get_machine_space_offset(
     OperatorTaskSpace const &task,
     StartInvariantMachineView const &start_inv_machine_view,
     TaskSpaceCoordinate const &coord,
-    MachineSpecification const &machine_specification) {
+    MachineComputeSpecification const &machine_compute_specification) {
   MachineSpaceCoordinate dummy_start =
       MachineSpaceCoordinate{0_n, 0_n, get_device_type(start_inv_machine_view)};
   MachineView mv =
       machine_view_from_start_invariant(start_inv_machine_view, dummy_start);
   std::optional<MachineSpaceCoordinate> ms_coord =
-      get_machine_space_coordinate(task, mv, coord, machine_specification);
+      get_machine_space_coordinate(task, mv, coord, machine_compute_specification);
   if (ms_coord == std::nullopt) {
     return std::nullopt;
   }
@@ -75,7 +75,7 @@ std::optional<MachineSpaceOffset> get_machine_space_offset(
 std::unordered_set<MachineSpaceOffset> get_machine_space_offsets(
     OperatorTaskSpace const &task,
     StartInvariantMachineView const &start_inv_machine_view,
-    MachineSpecification const &machine_specification) {
+    MachineComputeSpecification const &machine_specification) {
   return transform(
       get_task_space_coordinates(task), [&](TaskSpaceCoordinate const &coord) {
         return get_machine_space_offset(

@@ -75,25 +75,21 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    MachineSpecification full_machine_spec = MachineSpecification{
+    MachineComputeSpecification full_machine_spec = MachineComputeSpecification{
         /*num_nodes=*/2_p,
         /*num_cpus_per_node=*/1_p,
         /*num_gpus_per_node=*/1_p,
-        /*inter_node_bandwidth=*/1,
-        /*intra_node_bandwidth=*/1,
     };
 
-    MachineSpecification split_machine_spec = MachineSpecification{
+    MachineComputeSpecification split_machine_spec = MachineComputeSpecification{
         /*num_nodes=*/1_p,
         /*num_cpus_per_node=*/1_p,
         /*num_gpus_per_node=*/1_p,
-        /*inter_node_bandwidth=*/1,
-        /*intra_node_bandwidth=*/1,
     };
 
     auto allowed_machine_views1 =
         [&](UnmappedRuntimeOnlyOpCostEstimateKey const &,
-            MachineSpecification const &resources) {
+            MachineComputeSpecification const &resources) {
           if (resources == full_machine_spec) {
             return std::unordered_set<MachineView>{mv1, mv2};
           } else {

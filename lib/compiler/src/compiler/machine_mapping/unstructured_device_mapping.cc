@@ -2,7 +2,6 @@
 #include "compiler/machine_mapping/unstructured_device_mapping.dtg.h"
 #include "op-attrs/operator_task_space.dtg.h"
 #include "op-attrs/operator_task_space.h"
-#include "pcg/machine_specification.h"
 #include "pcg/machine_view.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "utils/containers/keys.h"
@@ -12,7 +11,7 @@ namespace FlexFlow {
 
 UnstructuredDeviceMapping
     get_unstructured_device_mapping(MachineMapping const &machine_mapping,
-                                    MachineSpecification const &machine_spec,
+                                    MachineComputeSpecification const &machine_spec,
                                     ParallelComputationGraph const &pcg) {
   std::unordered_map<parallel_layer_guid_t, std::unordered_set<device_id_t>>
       device_mapping;

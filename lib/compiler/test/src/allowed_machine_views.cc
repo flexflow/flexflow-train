@@ -14,12 +14,10 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_allowed_machine_views") {
 
     SUBCASE("1 degree of parallelism") {
-      MachineSpecification ms = MachineSpecification{
+      MachineComputeSpecification ms = MachineComputeSpecification{
           /*num_nodes=*/1_p,
           /*num_cpus_per_node=*/5_p,
           /*num_gpus_per_node=*/5_p,
-          /*inter_node_bandwidth=*/0,
-          /*intra_node_bandwidth=*/0,
       };
 
       OperatorTaskSpace task = OperatorTaskSpace{{3_p}};
@@ -60,12 +58,10 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("2 degrees of parallelism") {
 
-      MachineSpecification ms = MachineSpecification{
+      MachineComputeSpecification ms = MachineComputeSpecification{
           /*num_nodes=*/3_p,
           /*num_cpus_per_node=*/3_p,
           /*num_gpus_per_node=*/3_p,
-          /*inter_node_bandwidth=*/0,
-          /*intra_node_bandwidth=*/0,
       };
       OperatorTaskSpace task = OperatorTaskSpace{{2_p, 3_p}};
 

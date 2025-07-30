@@ -1,5 +1,5 @@
 #include "substitutions/unity_substitution_set.h"
-#include "pcg/machine_specification.h"
+#include "pcg/machine_compute_specification.h"
 #include "substitutions/operator_pattern/operator_attribute_constraint.h"
 #include "substitutions/output_graph/output_operator_attrs_assignment.h"
 #include "substitutions/substitution_builder.h"
@@ -11,7 +11,7 @@
 namespace FlexFlow {
 
 std::vector<Substitution>
-    get_substitution_set(MachineSpecification const &resources) {
+    get_substitution_set(MachineComputeSpecification const &resources) {
   std::vector<Substitution> substitutions;
   for (nonnegative_int num_dims :
        nonnegative_range(1_n, nonnegative_int{MAX_TENSOR_DIM})) {

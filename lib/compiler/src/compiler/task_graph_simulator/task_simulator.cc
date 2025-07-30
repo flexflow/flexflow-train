@@ -26,7 +26,7 @@ milliseconds_t task_simulator_estimate_forward_pass_time(
     MachineSpecification const &machine_spec) {
 
   PCGTaskGraph task_graph =
-      get_pcg_task_graph(pcg, machine_mapping, machine_spec);
+      get_pcg_task_graph(pcg, machine_mapping, machine_spec.compute_specification);
 
   auto cost_function = [&](Node const &node) -> float {
     PCGTask task = task_graph.node_to_task.at_l(node);
@@ -49,7 +49,7 @@ milliseconds_t task_simulator_estimate_forward_pass_time(
     PCGTask current_task = task_graph.node_to_task.at_l(task);
 
     UnstructuredDeviceMapping device_map =
-        get_unstructured_device_mapping(machine_mapping, machine_spec, pcg);
+        get_unstructured_device_mapping(machine_mapping, machine_spec.compute_specification, pcg);
 
     if (current_task.is_tensor_movement()) {
       return true;

@@ -10,22 +10,20 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_machine_resource_splits") {
     auto make_machine_spec = [](positive_int num_nodes,
                                 positive_int num_gpus_per_node) {
-      return MachineSpecification{
+      return MachineComputeSpecification{
           /*num_nodes=*/num_nodes,
           /*num_cpus_per_node=*/1_p,
           /*num_gpus_per_node=*/num_gpus_per_node,
-          /*inter_node_bandwidth=*/1.0,
-          /*intra_node_bandwidth=*/1.0,
       };
     };
 
     SUBCASE("returns no splits if no splits are possible") {
-      MachineSpecification input = make_machine_spec(/*num_nodes=*/1_p,
+      MachineComputeSpecification input = make_machine_spec(/*num_nodes=*/1_p,
                                                      /*num_gpus_per_node=*/1_p);
 
-      std::unordered_set<std::pair<MachineSpecification, MachineSpecification>>
+      std::unordered_set<std::pair<MachineComputeSpecification, MachineComputeSpecification>>
           result = get_machine_resource_splits(input);
-      std::unordered_set<std::pair<MachineSpecification, MachineSpecification>>
+      std::unordered_set<std::pair<MachineComputeSpecification, MachineComputeSpecification>>
           correct = {};
 
       CHECK(result == correct);
@@ -33,13 +31,13 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE(
         "returns splits in gpu and node dimensions, but not at the same time") {
-      MachineSpecification input = make_machine_spec(/*num_nodes=*/2_p,
+      MachineComputeSpecification input = make_machine_spec(/*num_nodes=*/2_p,
                                                      /*num_gpus_per_node=*/2_p);
 
-      std::unordered_set<std::pair<MachineSpecification, MachineSpecification>>
+      std::unordered_set<std::pair<MachineComputeSpecification, MachineComputeSpecification>>
           result = get_machine_resource_splits(input);
 
-      std::unordered_set<std::pair<MachineSpecification, MachineSpecification>>
+      std::unordered_set<std::pair<MachineComputeSpecification, MachineComputeSpecification>>
           correct = {
               {
                   make_machine_spec(/*num_nodes=*/2_p,
@@ -61,16 +59,16 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("returns splits in node dimension in powers of two") {
       SUBCASE("num_nodes is a power of 2") {
-        MachineSpecification input =
+        MachineComputeSpecification input =
             make_machine_spec(/*num_nodes=*/8_p,
                               /*num_gpus_per_node=*/1_p);
 
         std::unordered_set<
-            std::pair<MachineSpecification, MachineSpecification>>
+            std::pair<MachineComputeSpecification, MachineComputeSpecification>>
             result = get_machine_resource_splits(input);
 
         std::unordered_set<
-            std::pair<MachineSpecification, MachineSpecification>>
+            std::pair<MachineComputeSpecification, MachineComputeSpecification>>
             correct = {
                 {
                     make_machine_spec(/*num_nodes=*/1_p,
@@ -108,16 +106,16 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SUBCASE("num_nodes is not a power of 2") {
-        MachineSpecification input =
+        MachineComputeSpecification input =
             make_machine_spec(/*num_nodes=*/6_p,
                               /*num_gpus_per_node=*/1_p);
 
         std::unordered_set<
-            std::pair<MachineSpecification, MachineSpecification>>
+            std::pair<MachineComputeSpecification, MachineComputeSpecification>>
             result = get_machine_resource_splits(input);
 
         std::unordered_set<
-            std::pair<MachineSpecification, MachineSpecification>>
+            std::pair<MachineComputeSpecification, MachineComputeSpecification>>
             correct = {
                 {
                     make_machine_spec(/*num_nodes=*/1_p,
@@ -151,16 +149,16 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("returns splits in gpu dimension in powers of two") {
       SUBCASE("num_gpus_per_node is a power of 2") {
-        MachineSpecification input =
+        MachineComputeSpecification input =
             make_machine_spec(/*num_nodes=*/1_p,
                               /*num_gpus_per_node=*/8_p);
 
         std::unordered_set<
-            std::pair<MachineSpecification, MachineSpecification>>
+            std::pair<MachineComputeSpecification, MachineComputeSpecification>>
             result = get_machine_resource_splits(input);
 
         std::unordered_set<
-            std::pair<MachineSpecification, MachineSpecification>>
+            std::pair<MachineComputeSpecification, MachineComputeSpecification>>
             correct = {
                 {
                     make_machine_spec(/*num_nodes=*/1_p,
@@ -198,16 +196,16 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SUBCASE("num_gpus_per_node is not a power of 2") {
-        MachineSpecification input =
+        MachineComputeSpecification input =
             make_machine_spec(/*num_nodes=*/1_p,
                               /*num_gpus_per_node=*/6_p);
 
         std::unordered_set<
-            std::pair<MachineSpecification, MachineSpecification>>
+            std::pair<MachineComputeSpecification, MachineComputeSpecification>>
             result = get_machine_resource_splits(input);
 
         std::unordered_set<
-            std::pair<MachineSpecification, MachineSpecification>>
+            std::pair<MachineComputeSpecification, MachineComputeSpecification>>
             correct = {
                 {
                     make_machine_spec(/*num_nodes=*/1_p,

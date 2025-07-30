@@ -1,4 +1,4 @@
-#include "pcg/machine_specification.h"
+#include "pcg/machine_compute_specification.h"
 #include "pcg/device_id.h"
 #include <doctest/doctest.h>
 
@@ -6,13 +6,11 @@ using namespace FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
 
-  TEST_CASE("MachineSpecification") {
-    MachineSpecification ms = MachineSpecification{
+  TEST_CASE("MachineComputeSpecification") {
+    MachineComputeSpecification ms = MachineComputeSpecification{
         /*num_nodes=*/4_p,
         /*num_cpus_per_node=*/16_p,
         /*num_gpus_per_node=*/8_p,
-        /*inter_node_bandwidth=*/0,
-        /*intra_node_bandwidth=*/0,
     };
 
     SUBCASE("get_num_gpus") {

@@ -1,0 +1,14 @@
+namespace = "FlexFlow"
+name = "ParallelTensorAccessorsW"
+features = []
+
+includes = [
+  "<unordered_map>",
+  "pcg/gpu_id_t.dtg.h",
+  "kernels/accessor.h",
+]
+
+[[fields]]
+name = "shard_map"
+type = "std::unordered_map<::FlexFlow::gpu_id_t, ::FlexFlow::GenericTensorAccessorW>"
+

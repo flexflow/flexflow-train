@@ -1,0 +1,22 @@
+namespace = "FlexFlow"
+name = "MachineInterconnectSpecification"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = [
+  "utils/units/bytes_per_second_t.h",
+]
+
+[[fields]]
+name = "inter_node_bandwidth"
+type = "::FlexFlow::bytes_per_second_t"
+
+[[fields]]
+name = "intra_node_bandwidth"
+type = "::FlexFlow::bytes_per_second_t"

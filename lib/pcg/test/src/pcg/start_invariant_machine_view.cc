@@ -100,12 +100,12 @@ TEST_SUITE(FF_TEST_SUITE) {
           {MachineViewDimension{stride_t{2_p},
                                 MachineSpecificationDimension::INTRA_NODE}},
           DeviceType::GPU};
-      MachineSpecification ms =
-          MachineSpecification{/*num_nodes=*/1_p,
-                               /*num_cpus_per_node=*/6_p,
-                               /*num_gpus_per_node=*/6_p,
-                               /*inter_node_bandwidth=*/0.0,
-                               /*intra_node_bandwidth=*/0.0};
+      MachineComputeSpecification ms =
+          MachineComputeSpecification{
+            /*num_nodes=*/1_p,
+            /*num_cpus_per_node=*/6_p,
+            /*num_gpus_per_node=*/6_p,
+          };
 
       SUBCASE("get_machine_space_offset") {
         SUBCASE("Task with TaskSpaceCoordinate = (0,)") {
@@ -170,12 +170,12 @@ TEST_SUITE(FF_TEST_SUITE) {
            MachineViewDimension{stride_t{2_p},
                                 MachineSpecificationDimension::INTRA_NODE}},
           DeviceType::GPU};
-      MachineSpecification ms =
-          MachineSpecification{/*num_nodes=*/2_p,
-                               /*num_cpus_per_node=*/4_p,
-                               /*num_gpus_per_node=*/4_p,
-                               /*inter_node_bandwidth=*/0,
-                               /*intra_node_bandwidth=*/0};
+      MachineComputeSpecification ms =
+          MachineComputeSpecification{
+            /*num_nodes=*/2_p,
+            /*num_cpus_per_node=*/4_p,
+            /*num_gpus_per_node=*/4_p,
+          };
 
       SUBCASE("get_machine_space_offset") {
         SUBCASE("Task with TaskSpaceCoordinate = (0,0)") {

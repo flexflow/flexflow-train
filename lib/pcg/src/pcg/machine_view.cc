@@ -1,9 +1,9 @@
 #include "pcg/machine_view.h"
 #include "op-attrs/operator_task_space.dtg.h"
 #include "op-attrs/operator_task_space.h"
+#include "pcg/machine_compute_specification.h"
 #include "pcg/machine_space_coordinate.dtg.h"
 #include "pcg/machine_specification.dtg.h"
-#include "pcg/machine_specification.h"
 #include "pcg/machine_specification_dimension.dtg.h"
 #include "pcg/machine_view_dimension.dtg.h"
 #include "pcg/stride_t.dtg.h"
@@ -64,7 +64,7 @@ std::optional<MachineSpaceCoordinate> get_machine_space_coordinate(
     OperatorTaskSpace const &task,
     MachineView const &machine_view,
     TaskSpaceCoordinate const &coord,
-    MachineSpecification const &machine_specification) {
+    MachineComputeSpecification const &machine_compute_specification) {
 
   if (num_dims(machine_view) != task.degrees.size()) {
     throw mk_runtime_error(
@@ -130,37 +130,31 @@ std::optional<MachineSpaceCoordinate> get_machine_space_coordinate(
   MachineSpaceCoordinate ms_coord = MachineSpaceCoordinate{
       node_idx, device_idx, get_device_type(machine_view)};
 
-  if (!is_valid_machine_space_coordinate(machine_specification, ms_coord)) {
+  if (!is_valid_machine_space_coordinate(machine_compute_specification, ms_coord)) {
     return std::nullopt;
   }
   return ms_coord;
 }
 
 std::unordered_set<MachineSpaceCoordinate> get_machine_space_coordinates(
-    OperatorTaskSpace const &task,
+    OperatorTaskSpace const &task_space,
     MachineView const &machine_view,
-    MachineSpecification const &machine_specification) {
+    MachineComputeSpecification const &machine_compute_specification) {
   return transform(
-      get_task_space_coordinates(task), [&](TaskSpaceCoordinate const &coord) {
+      get_task_space_coordinates(task_space), [&](TaskSpaceCoordinate const &coord) {
         std::optional<MachineSpaceCoordinate> maybe_coordinate =
             get_machine_space_coordinate(
-                task, machine_view, coord, machine_specification);
-        if (!maybe_coordinate.has_value()) {
-          throw mk_runtime_error(
-              fmt::format("In get_machine_space_coordinates, the given "
-                          "OperatorTaskSpace {} and MachineView {} are not "
-                          "compatible with the given MachineSpecification {}",
-                          task,
-                          machine_view,
-                          machine_specification));
-        }
+                task_space, machine_view, coord, machine_compute_specification);
+        ASSERT(maybe_coordinate.has_value(), 
+               "The given OperatorTaskSpace and MachineView are not compatible with the given MachineComputeSpecification", 
+               task_space, machine_view, machine_compute_specification);
         return maybe_coordinate.value();
       });
 }
 
 std::unordered_set<device_id_t> get_device_ids(OperatorTaskSpace const &task,
                                                MachineView const &mv,
-                                               MachineSpecification const &ms) {
+                                               MachineComputeSpecification const &ms) {
   return transform(get_machine_space_coordinates(task, mv, ms),
                    [&](MachineSpaceCoordinate const &coord) {
                      return get_device_id(ms, coord);

@@ -4,7 +4,7 @@
 #include "op-attrs/operator_task_space.dtg.h"
 #include "op-attrs/task_space_coordinate.dtg.h"
 #include "pcg/device_id_t.dtg.h"
-#include "pcg/machine_specification.dtg.h"
+#include "pcg/machine_compute_specification.dtg.h"
 #include "pcg/machine_view.dtg.h"
 #include <cstddef>
 #include <optional>
@@ -30,16 +30,16 @@ std::optional<MachineSpaceCoordinate>
     get_machine_space_coordinate(OperatorTaskSpace const &task,
                                  MachineView const &mv,
                                  TaskSpaceCoordinate const &coordinates,
-                                 MachineSpecification const &ms);
+                                 MachineComputeSpecification const &ms);
 
 std::unordered_set<MachineSpaceCoordinate>
     get_machine_space_coordinates(OperatorTaskSpace const &task,
                                   MachineView const &mv,
-                                  MachineSpecification const &ms);
+                                  MachineComputeSpecification const &ms);
 
 std::unordered_set<device_id_t> get_device_ids(OperatorTaskSpace const &task,
                                                MachineView const &mv,
-                                               MachineSpecification const &ms);
+                                               MachineComputeSpecification const &ms);
 
 MachineView make_1d_machine_view(MachineSpaceCoordinate const &start,
                                  MachineSpecificationDimension const &dim,

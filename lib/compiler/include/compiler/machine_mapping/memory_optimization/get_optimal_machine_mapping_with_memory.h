@@ -10,7 +10,7 @@
 #include "compiler/machine_mapping/memory_optimization/machine_mapping_with_memory_cache.dtg.h"
 #include "compiler/machine_mapping/memory_optimization/machine_mapping_with_memory_context.dtg.h"
 #include "compiler/machine_mapping/parallel_split_transformation.dtg.h"
-#include "pcg/machine_specification.dtg.h"
+#include "pcg/machine_compute_specification.dtg.h"
 
 namespace FlexFlow {
 
@@ -18,14 +18,14 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
     MachineMappingWithMemoryCache &result_cache,
     MachineMappingWithMemoryContext const &context,
     MachineMappingProblemTree const &problem_tree,
-    MachineSpecification const &resources,
+    MachineComputeSpecification const &resources,
     MachineMappingConstraints const &constraints);
 
 MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
     MachineMappingWithMemoryCache &result_cache,
     MachineMappingWithMemoryContext const &context,
     MMProblemTreeSeriesSplit const &series_split,
-    MachineSpecification const &resources,
+    MachineComputeSpecification const &resources,
     MachineMappingConstraints const &constraints,
     std::optional<ParallelSplitTransformation> const
         &parallel_split_transformation);
@@ -34,14 +34,14 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
     MachineMappingWithMemoryCache &result_cache,
     MachineMappingWithMemoryContext const &context,
     MMProblemTreeParallelSplit const &parallel_split,
-    MachineSpecification const &resources,
+    MachineComputeSpecification const &resources,
     MachineMappingConstraints const &constraints);
 
 MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
     MachineMappingWithMemoryCache &result_cache,
     MachineMappingWithMemoryContext const &context,
     UnmappedRuntimeOnlyOpCostEstimateKey const &leaf,
-    MachineSpecification const &resources,
+    MachineComputeSpecification const &resources,
     MachineMappingConstraints const &constraints);
 
 } // namespace FlexFlow

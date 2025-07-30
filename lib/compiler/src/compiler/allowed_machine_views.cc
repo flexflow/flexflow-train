@@ -1,6 +1,6 @@
 #include "compiler/allowed_machine_views.h"
 #include "op-attrs/operator_task_space.h"
-#include "pcg/machine_specification.h"
+#include "pcg/machine_compute_specification.h"
 #include "pcg/machine_view.h"
 #include "pcg/multi_dimensional_stride.dtg.h"
 #include "utils/containers/all_of.h"
@@ -26,7 +26,7 @@ namespace FlexFlow {
 
 bool is_valid_machine_view(MachineView const &mv,
                            OperatorTaskSpace const &task,
-                           MachineSpecification const &ms) {
+                           MachineComputeSpecification const &ms) {
   if (num_dims(mv) != num_dims(task)) {
     return false;
   }
@@ -46,7 +46,7 @@ bool is_valid_machine_view(MachineView const &mv,
  * the returned `MachineView`s to be invalid)
  */
 static std::unordered_set<MachineView>
-    get_candidate_machine_views(MachineSpecification const &machine_spec,
+    get_candidate_machine_views(MachineComputeSpecification const &machine_spec,
                                 OperatorTaskSpace const &task,
                                 DeviceType const &device_type) {
 
@@ -83,14 +83,13 @@ static std::unordered_set<MachineView>
     return strides;
   };
 
-  auto candidate_starts = [](MachineSpecification const &ms,
+  auto candidate_starts = [](MachineComputeSpecification const &ms,
                              DeviceType const &device_type) {
     std::unordered_set<MachineSpaceCoordinate> result;
     for (nonnegative_int node_idx :
-         nonnegative_range(ms.num_nodes.nonnegative_int_from_positive_int())) {
+         nonnegative_range(ms.num_nodes)) {
       for (nonnegative_int device_idx :
-           nonnegative_range(get_num_devices_per_node(ms, device_type)
-                                 .nonnegative_int_from_positive_int())) {
+           nonnegative_range(get_num_devices_per_node(ms, device_type))) {
         result.insert(
             MachineSpaceCoordinate{node_idx, device_idx, device_type});
       }
@@ -126,7 +125,7 @@ static std::unordered_set<MachineView>
 }
 
 std::unordered_set<MachineView>
-    get_allowed_machine_views(MachineSpecification const &machine_spec,
+    get_allowed_machine_views(MachineComputeSpecification const &machine_spec,
                               OperatorTaskSpace const &task,
                               DeviceType device_type) {
 

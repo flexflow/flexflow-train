@@ -7,8 +7,8 @@
 
 namespace FlexFlow {
 
-std::unordered_set<std::pair<MachineSpecification, MachineSpecification>>
-    get_machine_resource_splits(MachineSpecification const &resource);
+std::unordered_set<std::pair<MachineComputeSpecification, MachineComputeSpecification>>
+    get_machine_resource_splits(MachineComputeSpecification const &resources);
 
 } // namespace FlexFlow
 

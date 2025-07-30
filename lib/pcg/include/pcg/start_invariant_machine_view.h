@@ -4,7 +4,7 @@
 #include "op-attrs/operator_task_space.dtg.h"
 #include "op-attrs/task_space_coordinate.dtg.h"
 #include "pcg/machine_space_offset.h"
-#include "pcg/machine_specification.dtg.h"
+#include "pcg/machine_compute_specification.dtg.h"
 #include "pcg/machine_view.dtg.h"
 #include "pcg/start_invariant_machine_view.dtg.h"
 #include <optional>
@@ -35,12 +35,12 @@ std::optional<MachineSpaceOffset>
     get_machine_space_offset(OperatorTaskSpace const &task,
                              StartInvariantMachineView const &mv,
                              TaskSpaceCoordinate const &coordinates,
-                             MachineSpecification const &ms);
+                             MachineComputeSpecification const &ms);
 
 std::unordered_set<MachineSpaceOffset>
     get_machine_space_offsets(OperatorTaskSpace const &task,
                               StartInvariantMachineView const &mv,
-                              MachineSpecification const &ms);
+                              MachineComputeSpecification const &ms);
 
 } // namespace FlexFlow
 

@@ -1,0 +1,12 @@
+namespace = "FlexFlow"
+name = "LocalParallelTensorBacking"
+features = []
+
+includes = [
+  "task-spec/training_parallel_tensor_guid_t.dtg.h",
+  "local-pcg-execution/parallel_tensor_accessors_w.dtg.h",
+]
+
+[[fields]]
+name = "backing_for_training_ptensor_map"
+type = "std::unordered_map<::FlexFlow::training_parallel_tensor_guid_t, ::FlexFlow::ParallelTensorAccessorsW>"

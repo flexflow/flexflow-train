@@ -5,30 +5,19 @@ features = [
   "ord",
   "hash",
   "json",
-  # "rapidcheck",
+  "rapidcheck",
   "fmt",
 ]
 
 includes = [
-  "utils/positive_int/positive_int.h",
+  "pcg/machine_compute_specification.dtg.h",
+  "pcg/machine_interconnect_specification.dtg.h",
 ]
 
 [[fields]]
-name = "num_nodes"
-type = "::FlexFlow::positive_int"
+name = "compute_specification"
+type = "::FlexFlow::MachineComputeSpecification"
 
 [[fields]]
-name = "num_cpus_per_node"
-type = "::FlexFlow::positive_int"
-
-[[fields]]
-name = "num_gpus_per_node"
-type = "::FlexFlow::positive_int"
-
-[[fields]]
-name = "inter_node_bandwidth"
-type = "float"
-
-[[fields]]
-name = "intra_node_bandwidth"
-type = "float"
+name = "interconnect_specification"
+type = "::FlexFlow::MachineInterconnectSpecification"
