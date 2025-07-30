@@ -117,7 +117,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         {1, 3_p},
     }};
 
-    Orthotope result = orthotope_from_dim_domain(domain, make_default_dim_ordering<int>());
+    Orthotope result =
+        orthotope_from_dim_domain(domain, make_default_dim_ordering<int>());
     Orthotope correct = Orthotope{{
         3_p,
         5_p,

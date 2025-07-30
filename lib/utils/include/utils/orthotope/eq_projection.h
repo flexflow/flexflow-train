@@ -2,10 +2,10 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_ORTHOTOPE_EQ_PROJECTION_H
 
 #include "utils/bidict/algorithms/exhaustive_relational_join.h"
+#include "utils/containers/map_keys.h"
 #include "utils/orthotope/dim_coord.dtg.h"
 #include "utils/orthotope/dim_domain.dtg.h"
 #include "utils/orthotope/eq_projection.dtg.h"
-#include "utils/containers/map_keys.h"
 
 namespace FlexFlow {
 
@@ -39,10 +39,10 @@ template <typename L, typename R>
 DimCoord<R> compute_eq_projection(EqProjection<L, R> const &projection,
                                   DimCoord<L> const &coord) {
   return DimCoord<R>{
-    map_keys(coord.raw,
-             [&](L const &input_dim) -> R {
-               return projection.dim_mapping.at_l(input_dim);
-             }),
+      map_keys(coord.raw,
+               [&](L const &input_dim) -> R {
+                 return projection.dim_mapping.at_l(input_dim);
+               }),
   };
 };
 

@@ -1,6 +1,7 @@
 #include "op-attrs/parallel_tensor_dim_degrees.h"
 #include "op-attrs/ff_ordered/get_idxs.h"
 #include "op-attrs/parallel_tensor_dim_idx_t.dtg.h"
+#include "op-attrs/parallel_tensor_dim_idx_t.h"
 #include "op-attrs/parallel_tensor_space_coordinate.h"
 #include "utils/containers/filtrans.h"
 #include "utils/containers/generate_map.h"
@@ -13,7 +14,6 @@
 #include "utils/containers/transform.h"
 #include "utils/containers/unordered_set_of.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
-#include "op-attrs/parallel_tensor_dim_idx_t.h"
 
 namespace FlexFlow {
 

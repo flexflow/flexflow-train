@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_ORTHOTOPE_UP_PROJECTION_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_ORTHOTOPE_UP_PROJECTION_H
 
+#include "utils/containers/flatmap.h"
 #include "utils/containers/keys.h"
 #include "utils/containers/values.h"
 #include "utils/one_to_many/exhaustive_relational_join.h"
@@ -11,7 +12,6 @@
 #include "utils/orthotope/down_projection.dtg.h"
 #include "utils/orthotope/eq_projection.dtg.h"
 #include "utils/orthotope/up_projection.dtg.h"
-#include "utils/containers/flatmap.h"
 
 namespace FlexFlow {
 
@@ -39,8 +39,9 @@ DimCoord<R> compute_up_projection(UpProjection<L, R> const &projection,
                                   DimOrdering<R> const &output_dim_ordering) {
   std::unordered_set<L> input_dims = input_dims_of_up_projection(projection);
   std::unordered_set<L> coord_dims = get_coord_dims(coord);
-  ASSERT(input_dims == coord_dims, 
-         "compute_up_projection expected coord dimensions to match projection input dimensions");
+  ASSERT(input_dims == coord_dims,
+         "compute_up_projection expected coord dimensions to match projection "
+         "input dimensions");
 
   std::unordered_set<R> output_dims = output_dims_of_up_projection(projection);
   std::unordered_set<R> output_domain_dims = get_domain_dims(output_domain);
@@ -51,13 +52,13 @@ DimCoord<R> compute_up_projection(UpProjection<L, R> const &projection,
               [&](L const &input_dim, nonnegative_int input_dim_val) {
                 std::unordered_set<R> dst_dims =
                     projection.dim_mapping.at_l(input_dim);
- 
+
                 DimDomain<R> dst_domain =
                     restrict_domain_to_dims(output_domain, dst_dims);
- 
-                DimCoord<R> dst_coord = 
-                  unflatten_dim_coord(input_dim_val, dst_domain, output_dim_ordering);
- 
+
+                DimCoord<R> dst_coord = unflatten_dim_coord(
+                    input_dim_val, dst_domain, output_dim_ordering);
+
                 return dst_coord.raw;
               }),
   };

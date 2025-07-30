@@ -21,8 +21,8 @@ template nonnegative_int flatten_dim_coord(DimCoord<T> const &,
                                            DimDomain<T> const &,
                                            DimOrdering<T> const &);
 
-template DimCoord<T> unflatten_dim_coord(nonnegative_int, 
-                                         DimDomain<T> const &, 
+template DimCoord<T> unflatten_dim_coord(nonnegative_int,
+                                         DimDomain<T> const &,
                                          DimOrdering<T> const &);
 
 } // namespace FlexFlow

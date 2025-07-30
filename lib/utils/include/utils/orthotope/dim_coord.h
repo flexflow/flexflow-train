@@ -1,9 +1,11 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_ORTHOTOPE_DIM_COORD_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_ORTHOTOPE_DIM_COORD_H
 
+#include "utils/containers/all_of.h"
 #include "utils/containers/keys.h"
 #include "utils/containers/map_from_keys_and_values.h"
 #include "utils/containers/product.h"
+#include "utils/containers/require_same.h"
 #include "utils/containers/restrict_keys.h"
 #include "utils/containers/scanr.h"
 #include "utils/containers/sorted_by.h"
@@ -14,8 +16,6 @@
 #include "utils/orthotope/dim_domain.dtg.h"
 #include "utils/orthotope/dim_domain.h"
 #include "utils/orthotope/orthotope.h"
-#include "utils/containers/require_same.h"
-#include "utils/containers/all_of.h"
 
 namespace FlexFlow {
 
@@ -33,8 +33,9 @@ DimCoord<T> restrict_coord_to_dims(DimCoord<T> const &coord,
 }
 
 template <typename T>
-OrthotopeCoord orthotope_coord_from_dim_coord(DimCoord<T> const &coord,
-                                              DimOrdering<T> const &dim_ordering) {
+OrthotopeCoord
+    orthotope_coord_from_dim_coord(DimCoord<T> const &coord,
+                                   DimOrdering<T> const &dim_ordering) {
   return OrthotopeCoord{
       transform(sorted_by(get_coord_dims(coord), dim_ordering.lt),
                 [&](T const &t) { return coord.raw.at(t); }),
@@ -46,18 +47,21 @@ DimCoord<T> dim_coord_from_orthotope_coord(OrthotopeCoord const &coord,
                                            DimDomain<T> const &domain,
                                            DimOrdering<T> const &dim_ordering) {
   return DimCoord<T>{
-      map_from_keys_and_values(sorted_by(get_domain_dims(domain), dim_ordering.lt), coord.raw),
+      map_from_keys_and_values(
+          sorted_by(get_domain_dims(domain), dim_ordering.lt), coord.raw),
   };
 }
 
 template <typename T>
-bool dim_domain_contains_coord(DimDomain<T> const &domain, DimCoord<T> const &coord) {
+bool dim_domain_contains_coord(DimDomain<T> const &domain,
+                               DimCoord<T> const &coord) {
   ASSERT(get_domain_dims(domain) == get_coord_dims(coord));
 
-  std::unordered_set<T> dims = require_same(get_domain_dims(domain), get_coord_dims(coord));
+  std::unordered_set<T> dims =
+      require_same(get_domain_dims(domain), get_coord_dims(coord));
   return all_of(dims, [&](T const &dim) {
-                  return coord.raw.at(dim) < domain.dims.at(dim);
-                });
+    return coord.raw.at(dim) < domain.dims.at(dim);
+  });
 }
 
 template <typename T>
@@ -70,7 +74,8 @@ nonnegative_int flatten_dim_coord(DimCoord<T> const &coord,
       coord,
       domain);
 
-  OrthotopeCoord orthotope_coord = orthotope_coord_from_dim_coord(coord, dim_ordering);
+  OrthotopeCoord orthotope_coord =
+      orthotope_coord_from_dim_coord(coord, dim_ordering);
   Orthotope orthotope_domain = orthotope_from_dim_domain(domain, dim_ordering);
 
   return flatten_orthotope_coord(orthotope_coord, orthotope_domain);

@@ -19,7 +19,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     }};
 
     DimOrdering<int> dim_ordering = make_dim_ordering_from_vector<int>({
-      3, 7, 1,
+        3,
+        7,
+        1,
     });
 
     nonnegative_int result = flatten_dim_coord(coord, domain, dim_ordering);
@@ -37,7 +39,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     nonnegative_int flattened = nonnegative_int{4 * 2 * 3 + 0 * 3 + 1};
 
     DimOrdering<int> dim_ordering = make_dim_ordering_from_vector<int>({
-      3, 7, 1,
+        3,
+        7,
+        1,
     });
 
     DimCoord<int> result = unflatten_dim_coord(flattened, domain, dim_ordering);
@@ -46,7 +50,6 @@ TEST_SUITE(FF_TEST_SUITE) {
         {3, 4_n},
         {1, 1_n},
     }};
-
 
     CHECK(result == correct);
   }

@@ -19,7 +19,7 @@ parallel_tensor_dim_idx_t shard_dim_idx(ff_dim_t idx) {
 
 bool operator<(parallel_tensor_dim_idx_t lhs, parallel_tensor_dim_idx_t rhs) {
   if (lhs.is_shard_dim() && rhs.is_shard_dim()) {
-    return lhs.require_shard_dim() < rhs.require_shard_dim(); 
+    return lhs.require_shard_dim() < rhs.require_shard_dim();
   } else if (lhs.is_shard_dim() && !rhs.is_shard_dim()) {
     return true;
   } else if (!lhs.is_shard_dim() && rhs.is_shard_dim()) {

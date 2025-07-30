@@ -1,10 +1,10 @@
-#include <doctest/doctest.h>
 #include "utils/containers/contains_duplicates.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE_TEMPLATE("contains_duplicates(T)", 
+  TEST_CASE_TEMPLATE("contains_duplicates(T)",
                      T,
                      std::vector<int>,
                      std::unordered_multiset<int>,

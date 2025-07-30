@@ -44,25 +44,28 @@ std::unordered_set<R>
 
 template <typename L, typename R>
 DimCoord<R> compute_projection(DimProjection<L, R> const &projection,
-    DimCoord<L> const &input_coord,
-    DimDomain<L> const &input_domain,
-    DimDomain<R> const &output_domain,
-    DimOrdering<L> const &input_dim_ordering,
-    DimOrdering<R> const &output_dim_ordering) {
+                               DimCoord<L> const &input_coord,
+                               DimDomain<L> const &input_domain,
+                               DimDomain<R> const &output_domain,
+                               DimOrdering<L> const &input_dim_ordering,
+                               DimOrdering<R> const &output_dim_ordering) {
   ASSERT(dim_domain_contains_coord(input_domain, input_coord));
   ASSERT(get_domain_dims(input_domain) == input_dims_of_projection(projection));
-  ASSERT(get_domain_dims(output_domain) == output_dims_of_projection(projection));
+  ASSERT(get_domain_dims(output_domain) ==
+         output_dims_of_projection(projection));
 
   DimCoord<R> output_coord = projection.template visit<DimCoord<R>>(overload{
-    [&](UpProjection<L, R> const &p) -> DimCoord<R> {
-      return compute_up_projection(p, input_coord, output_domain, output_dim_ordering);
-    },
-    [&](EqProjection<L, R> const &p) -> DimCoord<R> {
-      return compute_eq_projection(p, input_coord);
-    },
-    [&](DownProjection<L, R> const &p) -> DimCoord<R> {
-      return compute_down_projection(p, input_coord, input_domain, input_dim_ordering);
-    },
+      [&](UpProjection<L, R> const &p) -> DimCoord<R> {
+        return compute_up_projection(
+            p, input_coord, output_domain, output_dim_ordering);
+      },
+      [&](EqProjection<L, R> const &p) -> DimCoord<R> {
+        return compute_eq_projection(p, input_coord);
+      },
+      [&](DownProjection<L, R> const &p) -> DimCoord<R> {
+        return compute_down_projection(
+            p, input_coord, input_domain, input_dim_ordering);
+      },
   });
 
   ASSERT(dim_domain_contains_coord(output_domain, output_coord));

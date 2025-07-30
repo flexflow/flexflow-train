@@ -6,8 +6,8 @@
 #include "utils/containers/sorted_by.h"
 #include "utils/containers/transform.h"
 #include "utils/orthotope/dim_domain.dtg.h"
-#include "utils/orthotope/orthotope.dtg.h"
 #include "utils/orthotope/dim_ordering.dtg.h"
+#include "utils/orthotope/orthotope.dtg.h"
 
 namespace FlexFlow {
 

@@ -1,6 +1,6 @@
 #include "utils/orthotope/up_projection.h"
-#include "utils/archetypes/value_type.h"
 #include "utils/archetypes/ordered_value_type.h"
+#include "utils/archetypes/value_type.h"
 
 namespace FlexFlow {
 
@@ -21,11 +21,11 @@ template std::unordered_set<L>
 template std::unordered_set<R>
     output_dims_of_up_projection(UpProjection<L, R> const &);
 
-template
-  DimCoord<R> compute_up_projection(UpProjection<L, R> const &,
-                                    DimCoord<L> const &,
-                                    DimDomain<R> const &,
-                                    DimOrdering<R> const &output_dim_ordering);
+template DimCoord<R>
+    compute_up_projection(UpProjection<L, R> const &,
+                          DimCoord<L> const &,
+                          DimDomain<R> const &,
+                          DimOrdering<R> const &output_dim_ordering);
 
 template UpProjection<L, R> make_empty_up_projection();
 

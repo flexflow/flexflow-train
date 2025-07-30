@@ -22,7 +22,6 @@ bool contains_duplicates(std::multiset<T> const &s) {
   return unordered_set_of(s).size() != s.size();
 }
 
-
 } // namespace FlexFlow
 
 #endif

@@ -19,31 +19,33 @@ TEST_SUITE(FF_TEST_SUITE) {
     OperatorSpaceToParallelTensorSpaceMapping result =
         get_identity_mapping(num_shard_dims);
 
-    OperatorSpaceToParallelTensorSpaceMapping correct = 
-      OperatorSpaceToParallelTensorSpaceMapping{
-        DimProjection{
-          EqProjection{
-            bidict<operator_task_space_dim_idx_t, parallel_tensor_dim_idx_t>{
-              {
-                op_task_space_dim_from_raw(0),
-                shard_dim_idx_from_raw(0),
-              },
-              {
-                op_task_space_dim_from_raw(1),
-                shard_dim_idx_from_raw(1),
-              },
-              {
-                op_task_space_dim_from_raw(2),
-                parallel_tensor_dim_idx_t{ReplicaType::DISCARD_COPY},
-              },
-              {
-                op_task_space_dim_from_raw(3),
-                parallel_tensor_dim_idx_t{ReplicaType::SUM},
-              },
+    OperatorSpaceToParallelTensorSpaceMapping correct =
+        OperatorSpaceToParallelTensorSpaceMapping{
+            DimProjection{
+                EqProjection{
+                    bidict<operator_task_space_dim_idx_t,
+                           parallel_tensor_dim_idx_t>{
+                        {
+                            op_task_space_dim_from_raw(0),
+                            shard_dim_idx_from_raw(0),
+                        },
+                        {
+                            op_task_space_dim_from_raw(1),
+                            shard_dim_idx_from_raw(1),
+                        },
+                        {
+                            op_task_space_dim_from_raw(2),
+                            parallel_tensor_dim_idx_t{
+                                ReplicaType::DISCARD_COPY},
+                        },
+                        {
+                            op_task_space_dim_from_raw(3),
+                            parallel_tensor_dim_idx_t{ReplicaType::SUM},
+                        },
+                    },
+                },
             },
-          },
-        },
-      };
+        };
 
     CHECK(result == correct);
   }

@@ -22,9 +22,7 @@ template EqProjection<T1, T3>
     compose_eq_projections(EqProjection<T1, T2> const &,
                            EqProjection<T2, T3> const &);
 
-template 
-  DimCoord<R> compute_eq_projection(EqProjection<L, R> const &,
-                                    DimCoord<L> const &);
-
+template DimCoord<R> compute_eq_projection(EqProjection<L, R> const &,
+                                           DimCoord<L> const &);
 
 } // namespace FlexFlow

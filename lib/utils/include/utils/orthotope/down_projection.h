@@ -41,24 +41,25 @@ DimCoord<R> compute_down_projection(DownProjection<L, R> const &projection,
   std::unordered_set<L> input_dims = input_dims_of_down_projection(projection);
   std::unordered_set<L> coord_dims = get_coord_dims(coord);
   ASSERT(input_dims == coord_dims,
-         "compute_down_projection expected coord dimensions to match projection input dimensions");
+         "compute_down_projection expected coord dimensions to match "
+         "projection input dimensions");
 
   std::unordered_set<R> output_dims =
       output_dims_of_down_projection(projection);
 
   return DimCoord<R>{
-      generate_map(output_dims,
-                   [&](R const &output_dim) {
-                     std::unordered_set<L> src_dims =
-                         projection.dim_mapping.at_r(output_dim);
+      generate_map(
+          output_dims,
+          [&](R const &output_dim) {
+            std::unordered_set<L> src_dims =
+                projection.dim_mapping.at_r(output_dim);
 
-                     DimCoord<L> src_coord =
-                         restrict_coord_to_dims(coord, src_dims);
-                     DimDomain<L> src_domain =
-                         restrict_domain_to_dims(input_domain, src_dims);
+            DimCoord<L> src_coord = restrict_coord_to_dims(coord, src_dims);
+            DimDomain<L> src_domain =
+                restrict_domain_to_dims(input_domain, src_dims);
 
-                     return flatten_dim_coord(src_coord, src_domain, input_dim_ordering);
-                   }),
+            return flatten_dim_coord(src_coord, src_domain, input_dim_ordering);
+          }),
   };
 }
 
