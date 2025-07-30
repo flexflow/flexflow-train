@@ -7,7 +7,6 @@ namespace FlexFlow {
 using T = value_type<0>;
 using C = std::vector<T>;
 
-template 
-  reversed_container_t<C> reversed_container(C const &);
+template reversed_container_t<C> reversed_container(C const &);
 
 } // namespace FlexFlow

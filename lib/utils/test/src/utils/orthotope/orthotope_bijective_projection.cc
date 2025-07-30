@@ -6,8 +6,10 @@
 // using namespace ::FlexFlow;
 //
 // TEST_SUITE(FF_TEST_SUITE) {
-//   TEST_CASE("operator==(OrthotopeBijectiveProjection, OrthotopeBijectiveProjection)") {
-//     SUBCASE("if src num dims and dst num dims are the same, projections are equivalent") {
+//   TEST_CASE("operator==(OrthotopeBijectiveProjection,
+//   OrthotopeBijectiveProjection)") {
+//     SUBCASE("if src num dims and dst num dims are the same, projections are
+//     equivalent") {
 //       orthotope_dim_idx_t src0 = orthotope_dim_idx_t{0};
 //       orthotope_dim_idx_t src1 = orthotope_dim_idx_t{1};
 //
@@ -36,7 +38,8 @@
 //       orthotope_dim_idx_t dst1 = orthotope_dim_idx_t{1};
 //       orthotope_dim_idx_t dst2 = orthotope_dim_idx_t{2};
 //
-//       std::unordered_set<OrthotopeBijectiveProjection> result = get_all_bijective_projections_between(src, dst);
+//       std::unordered_set<OrthotopeBijectiveProjection> result =
+//       get_all_bijective_projections_between(src, dst);
 //       std::unordered_set<OrthotopeBijectiveProjection> correct = {
 //         make_orthotope_projection_from_map({
 //           {dst0, src0},
@@ -58,7 +61,8 @@
 //       orthotope_dim_idx_t dst0 = orthotope_dim_idx_t{0};
 //       orthotope_dim_idx_t dst1 = orthotope_dim_idx_t{1};
 //
-//       std::unordered_set<OrthotopeBijectiveProjection> result = get_all_bijective_projections_between(src, dst);
+//       std::unordered_set<OrthotopeBijectiveProjection> result =
+//       get_all_bijective_projections_between(src, dst);
 //       std::unordered_set<OrthotopeBijectiveProjection> correct = {
 //         make_orthotope_projection_from_map({
 //           {src0, dst0},
@@ -79,7 +83,8 @@
 //       orthotope_dim_idx_t dst0 = orthotope_dim_idx_t{0};
 //       orthotope_dim_idx_t dst1 = orthotope_dim_idx_t{1};
 //
-//       std::unordered_set<OrthotopeBijectiveProjection> result = get_all_bijective_projections_between(src, dst);
+//       std::unordered_set<OrthotopeBijectiveProjection> result =
+//       get_all_bijective_projections_between(src, dst);
 //       std::unordered_set<OrthotopeBijectiveProjection> correct = {
 //         make_orthotope_projection_from_map({
 //           {src0, dst0},
@@ -98,7 +103,8 @@
 //       Orthotope src = Orthotope{{4, 3}};
 //       Orthotope dst = Orthotope{{6, 2}};
 //
-//       std::unordered_set<OrthotopeBijectiveProjection> result = get_all_bijective_projections_between(src, dst);
+//       std::unordered_set<OrthotopeBijectiveProjection> result =
+//       get_all_bijective_projections_between(src, dst);
 //       std::unordered_set<OrthotopeBijectiveProjection> correct = {};
 //
 //       CHECK(result == correct);
@@ -227,8 +233,8 @@
 //       SUBCASE("returns 0-d coord if input coord is 0") {
 //         int input_coord = 0;
 //
-//         OrthotopeCoordinate result = project_out_of_1d(input_coord, orthotope);
-//         OrthotopeCoordinate correct = OrthotopeCoordinate{{}};
+//         OrthotopeCoordinate result = project_out_of_1d(input_coord,
+//         orthotope); OrthotopeCoordinate correct = OrthotopeCoordinate{{}};
 //
 //         CHECK(result == correct);
 //       }
@@ -263,8 +269,8 @@
 //     };
 //
 //     SUBCASE("forward") {
-//       OrthotopeCoordinate result = project_coordinate_through(proj, src, src_coord, dst);
-//       OrthotopeCoordinate correct = dst_coord;
+//       OrthotopeCoordinate result = project_coordinate_through(proj, src,
+//       src_coord, dst); OrthotopeCoordinate correct = dst_coord;
 //
 //       CHECK(result == correct);
 //     }
@@ -272,8 +278,8 @@
 //     SUBCASE("backward") {
 //       OrthotopeBijectiveProjection reversed = reverse_projection(proj);
 //
-//       OrthotopeCoordinate result = project_coordinate_through(reversed, dst, dst_coord, src);
-//       OrthotopeCoordinate correct = src_coord;
+//       OrthotopeCoordinate result = project_coordinate_through(reversed, dst,
+//       dst_coord, src); OrthotopeCoordinate correct = src_coord;
 //
 //       CHECK(result == correct);
 //     }

@@ -1,5 +1,6 @@
 #include "utils/graph/digraph/algorithms/transitive_closure.h"
 #include "utils/bidict/algorithms/bidict_from_enumerating.h"
+#include "utils/bidict/algorithms/transform_keys.h"
 #include "utils/containers/vector_of.h"
 #include "utils/graph/digraph/algorithms.h"
 #include "utils/graph/digraph/algorithms/digraph_has_edge.h"
@@ -7,7 +8,6 @@
 #include "utils/graph/instances/adjacency_digraph.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/nonnegative_int/num_elements.h"
-#include "utils/bidict/algorithms/transform_keys.h"
 
 namespace FlexFlow {
 
@@ -18,8 +18,8 @@ DiGraphView transitive_closure(DiGraphView const &g) {
   // (i.e., 200 nodes) without optimization enabled.
 
   bidict<int, Node> nodes =
-    transform_keys(bidict_from_enumerating(get_nodes(g)),
-                   [](nonnegative_int x) { return x.unwrap_nonnegative(); });
+      transform_keys(bidict_from_enumerating(get_nodes(g)),
+                     [](nonnegative_int x) { return x.unwrap_nonnegative(); });
   std::unordered_set<DirectedEdge> edges = get_edges(g);
 
   int num_nodes = nodes.size();

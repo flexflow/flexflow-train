@@ -50,7 +50,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       OperatorTaskSpace task = OperatorTaskSpace{{3_p, 2_p}};
 
-      TaskSpaceCoordinate correct = TaskSpaceCoordinate{OrthotopeCoord{{2_n, 1_n}}};
+      TaskSpaceCoordinate correct =
+          TaskSpaceCoordinate{OrthotopeCoord{{2_n, 1_n}}};
       TaskSpaceCoordinate result = get_task_space_maximum_coordinate(task);
       CHECK(correct == result);
     }
@@ -58,7 +59,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       OperatorTaskSpace task = OperatorTaskSpace{{3_p, 2_p, 4_p}};
 
-      TaskSpaceCoordinate correct = TaskSpaceCoordinate{OrthotopeCoord{{2_n, 1_n, 3_n}}};
+      TaskSpaceCoordinate correct =
+          TaskSpaceCoordinate{OrthotopeCoord{{2_n, 1_n, 3_n}}};
       TaskSpaceCoordinate result = get_task_space_maximum_coordinate(task);
       CHECK(correct == result);
     }

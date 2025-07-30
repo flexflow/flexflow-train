@@ -100,7 +100,8 @@ ParallelTensorShape
 TensorShape require_not_parallel(ParallelTensorShape const &s) {
   positive_int total_degree = get_total_parallel_degree(s);
   ASSERT(total_degree != 1_p,
-         "Error: require_not_parallel received a parallel tensor shape with non-zero parallel degree",
+         "Error: require_not_parallel received a parallel tensor shape with "
+         "non-zero parallel degree",
          s);
 
   return get_reduced_shape(s);

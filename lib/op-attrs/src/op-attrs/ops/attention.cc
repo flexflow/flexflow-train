@@ -99,7 +99,7 @@ positive_int get_num_samples(MultiHeadAttentionInputs const &inputs) {
 static void check_attrs(MultiHeadAttentionAttrs const &attrs) {
   ASSERT(!attrs.add_bias_kv,
          "add_bias_kv is not yet supported. If you need this "
-                           "functionality, please create an issue.");
+         "functionality, please create an issue.");
 }
 
 std::vector<IncomingTensorRole>

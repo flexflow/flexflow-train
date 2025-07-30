@@ -160,12 +160,11 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       ParallelTensorDimDegrees result =
           get_output_parallel_dim_degrees(attrs, input);
-      ParallelTensorDimDegrees correct =
-          ParallelTensorDimDegrees{
-              SumDegree{2_p},
-              DiscardCopyDegree{1_p},
-              FFOrdered{1_p, 1_p, 1_p},
-          };
+      ParallelTensorDimDegrees correct = ParallelTensorDimDegrees{
+          SumDegree{2_p},
+          DiscardCopyDegree{1_p},
+          FFOrdered{1_p, 1_p, 1_p},
+      };
 
       CHECK(result == correct);
     }
@@ -179,12 +178,11 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       ParallelTensorDimDegrees result =
           get_output_parallel_dim_degrees(attrs, input);
-      ParallelTensorDimDegrees correct =
-          ParallelTensorDimDegrees{
-              SumDegree{1_p},
-              DiscardCopyDegree{2_p},
-              FFOrdered{1_p, 1_p, 1_p},
-          };
+      ParallelTensorDimDegrees correct = ParallelTensorDimDegrees{
+          SumDegree{1_p},
+          DiscardCopyDegree{2_p},
+          FFOrdered{1_p, 1_p, 1_p},
+      };
 
       CHECK(result == correct);
     }

@@ -1,12 +1,12 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_BIDICT_BIDICT_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_BIDICT_BIDICT_H
 
+#include "utils/containers/keys.h"
 #include "utils/fmt/unordered_map.h"
 #include "utils/hash/unordered_map.h"
 #include <cassert>
 #include <optional>
 #include <unordered_map>
-#include "utils/containers/keys.h"
 
 namespace FlexFlow {
 

@@ -18,7 +18,6 @@ bidict<K2, V2> transform(bidict<K, V> const &m, F &&f) {
   return result;
 }
 
-
 } // namespace FlexFlow
 
 #endif

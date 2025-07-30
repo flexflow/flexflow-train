@@ -5,9 +5,9 @@
 #include "kernels/profiling_settings.dtg.h"
 #include "pcg/device_type.dtg.h"
 #include "task-spec/arg_ref.h"
+#include "task-spec/device_specific.h"
 #include "task-spec/ff_config.dtg.h"
 #include "task-spec/ff_iteration_config.dtg.h"
-#include "task-spec/device_specific.h"
 #include "task-spec/runtime_arg_ref_type.dtg.h"
 
 namespace FlexFlow {

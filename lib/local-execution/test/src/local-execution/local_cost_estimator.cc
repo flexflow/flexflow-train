@@ -1,5 +1,4 @@
 #include "local-execution/local_cost_estimator.h"
-#include <doctest/doctest.h>
 #include "internal/test_utils.h"
 #include "kernels/device_handle_t.h"
 #include "kernels/managed_per_device_ff_handle.h"
@@ -9,6 +8,7 @@
 #include "pcg/computation_graph_builder.h"
 #include "pcg/machine_view.h"
 #include "task-spec/runtime_arg_config.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 

@@ -1,32 +1,28 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_MANY_TO_ONE_MANY_TO_ONE_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_MANY_TO_ONE_MANY_TO_ONE_H
 
-#include <unordered_set>
-#include <unordered_map>
-#include "utils/containers/try_at.h"
-#include <fmt/format.h>
-#include "utils/hash-utils.h"
-#include "utils/hash/unordered_map.h"
-#include "utils/hash/unordered_set.h"
-#include "utils/hash/tuple.h"
 #include "utils/containers/keys.h"
+#include "utils/containers/try_at.h"
 #include "utils/exception.h"
 #include "utils/fmt/unordered_map.h"
 #include "utils/fmt/unordered_set.h"
+#include "utils/hash-utils.h"
+#include "utils/hash/tuple.h"
+#include "utils/hash/unordered_map.h"
+#include "utils/hash/unordered_set.h"
+#include <fmt/format.h>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace FlexFlow {
 
 template <typename L, typename R>
 struct ManyToOne {
 public:
-  ManyToOne()
-    : l_to_r(), r_to_l()
-  { }
+  ManyToOne() : l_to_r(), r_to_l() {}
 
   template <typename It>
-  ManyToOne(It start, It end) 
-    : ManyToOne()
-  { 
+  ManyToOne(It start, It end) : ManyToOne() {
     for (; start < end; start++) {
       for (L const &l : start->first) {
         this->insert(std::pair<L, R>{l, start->second});
@@ -34,9 +30,9 @@ public:
     }
   }
 
-  ManyToOne(std::initializer_list<std::pair<std::initializer_list<L>, R>> const &l_to_r)
-    : ManyToOne(l_to_r.begin(), l_to_r.end())
-  { }
+  ManyToOne(std::initializer_list<std::pair<std::initializer_list<L>, R>> const
+                &l_to_r)
+      : ManyToOne(l_to_r.begin(), l_to_r.end()) {}
 
   bool operator==(ManyToOne const &other) const {
     return this->tie() == other.tie();
@@ -58,7 +54,12 @@ public:
     } else if (found_r.value() == r) {
       return;
     } else {
-      throw mk_runtime_error(fmt::format("Existing mapping found for left value {}: tried to map to right value {}, but is already bound to right value {}", l, r, found_r.value()));
+      throw mk_runtime_error(fmt::format(
+          "Existing mapping found for left value {}: tried to map to right "
+          "value {}, but is already bound to right value {}",
+          l,
+          r,
+          found_r.value()));
     }
   }
 
@@ -77,19 +78,22 @@ public:
   std::unordered_set<R> right_values() const {
     return keys(this->r_to_l);
   }
-private: 
+
+private:
   std::unordered_map<L, R> l_to_r;
   std::unordered_map<R, std::unordered_set<L>> r_to_l;
+
 private:
   std::tuple<decltype(l_to_r) const &, decltype(r_to_l) const &> tie() const {
-    return std::tie(this->l_to_r, this->r_to_l); 
+    return std::tie(this->l_to_r, this->r_to_l);
   }
 
   friend struct std::hash<ManyToOne<L, R>>;
 };
 
 template <typename L, typename R>
-std::unordered_map<std::unordered_set<L>, R> format_as(ManyToOne<L, R> const &m) {
+std::unordered_map<std::unordered_set<L>, R>
+    format_as(ManyToOne<L, R> const &m) {
   std::unordered_map<std::unordered_set<L>, R> result;
 
   for (R const &r : m.right_values()) {
@@ -115,6 +119,6 @@ struct hash<::FlexFlow::ManyToOne<L, R>> {
   }
 };
 
-}
+} // namespace std
 
 #endif

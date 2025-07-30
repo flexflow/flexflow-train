@@ -5,7 +5,7 @@ namespace FlexFlow {
 
 using T = value_type<0>;
 
-template 
-  std::optional<std::vector<T>> vector_from_idx_map(std::unordered_map<int, T> const &);
+template std::optional<std::vector<T>>
+    vector_from_idx_map(std::unordered_map<int, T> const &);
 
 } // namespace FlexFlow

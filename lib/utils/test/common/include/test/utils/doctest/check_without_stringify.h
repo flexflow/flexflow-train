@@ -1,5 +1,5 @@
-#include <doctest/doctest.h>
 #include "utils/fmt/expected.h"
+#include <doctest/doctest.h>
 #include <fmt/format.h>
 #include <sstream>
 #include <tl/expected.hpp>

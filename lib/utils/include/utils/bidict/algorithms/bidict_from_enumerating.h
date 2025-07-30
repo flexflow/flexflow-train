@@ -3,9 +3,26 @@
 
 #include "utils/bidict/bidict.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
+#include "utils/containers/contains_duplicates.h"
 #include <set>
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
+
+template <typename T>
+bidict<nonnegative_int, T>
+    bidict_from_enumerating(std::vector<T> const &s) {
+  ASSERT(!contains_duplicates(s));
+
+  bidict<nonnegative_int, T> result;
+  nonnegative_int idx = 0_n;
+  for (T const &t : s) {
+    result.equate(idx, t);
+    idx++;
+  }
+
+  return result;
+}
 
 template <typename T>
 bidict<nonnegative_int, T>

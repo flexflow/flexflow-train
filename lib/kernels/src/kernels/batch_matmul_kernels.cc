@@ -5,29 +5,25 @@
 
 namespace FlexFlow::Kernels::BatchMatmul {
 
-static std::tuple<positive_int, positive_int, positive_int, positive_int> 
-  get_params(TensorDims const &input_a_dims,
-             TensorDims const &input_b_dims,
-             TensorDims const &output_dims) {
-  positive_int m = require_same(
-    dim_at_idx(input_b_dims, relative_ff_dim_t{-1}),
-    dim_at_idx(output_dims, relative_ff_dim_t{-1}));
+static std::tuple<positive_int, positive_int, positive_int, positive_int>
+    get_params(TensorDims const &input_a_dims,
+               TensorDims const &input_b_dims,
+               TensorDims const &output_dims) {
+  positive_int m = require_same(dim_at_idx(input_b_dims, relative_ff_dim_t{-1}),
+                                dim_at_idx(output_dims, relative_ff_dim_t{-1}));
 
-  positive_int n = require_same(
-    dim_at_idx(input_a_dims, relative_ff_dim_t{-2}),
-    dim_at_idx(output_dims, relative_ff_dim_t{-2}));
+  positive_int n = require_same(dim_at_idx(input_a_dims, relative_ff_dim_t{-2}),
+                                dim_at_idx(output_dims, relative_ff_dim_t{-2}));
 
-  positive_int k = require_same(
-    dim_at_idx(input_a_dims, relative_ff_dim_t{-1}),
-    dim_at_idx(input_b_dims, relative_ff_dim_t{-2}));
+  positive_int k =
+      require_same(dim_at_idx(input_a_dims, relative_ff_dim_t{-1}),
+                   dim_at_idx(input_b_dims, relative_ff_dim_t{-2}));
 
   TensorDims leading_dims = require_same(
-    slice_tensor_dims(input_a_dims, 
-                      relative_ff_dim_t{0},
-                      relative_ff_dim_t{-2}),
-    slice_tensor_dims(input_b_dims,
-                      relative_ff_dim_t{0},
-                      relative_ff_dim_t{-2}));
+      slice_tensor_dims(
+          input_a_dims, relative_ff_dim_t{0}, relative_ff_dim_t{-2}),
+      slice_tensor_dims(
+          input_b_dims, relative_ff_dim_t{0}, relative_ff_dim_t{-2}));
 
   positive_int batch = get_num_elements(leading_dims);
 
@@ -43,7 +39,8 @@ void forward_kernel(device_stream_t const &stream,
                     std::optional<positive_int> a_seq_length_dim,
                     std::optional<positive_int> b_seq_length_dim) {
 
-  auto [m, n, k, batch] = get_params(input_a.shape.dims, input_b.shape.dims, output.shape.dims);
+  auto [m, n, k, batch] =
+      get_params(input_a.shape.dims, input_b.shape.dims, output.shape.dims);
 
   auto get_raw_seq_len = [](std::optional<positive_int> seq_len) -> int {
     return transform(seq_len,
@@ -90,7 +87,8 @@ void backward_kernel(device_stream_t const &stream,
   TensorShape input_b_shape = require_same(input_b.shape, input_b_grad.shape);
   TensorShape output_shape = require_same(output.shape, output_grad.shape);
 
-  auto [m, n, k, batch] = get_params(input_a_shape.dims, input_b_shape.dims, output_shape.dims);
+  auto [m, n, k, batch] =
+      get_params(input_a_shape.dims, input_b_shape.dims, output_shape.dims);
 
   if (stream.is_gpu()) {
     gpu_backward_kernel(

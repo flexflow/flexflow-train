@@ -240,28 +240,31 @@ tl::expected<std::vector<InitializerAttrs>, std::string> get_initializers(
 }
 
 tl::expected<ParallelTensorSpaceMapping, std::string>
-    get_input_to_output_projection(LinearAttrs const &attrs, nonnegative_int input_num_dims) {
-  
-  DownProjection<
-    parallel_tensor_dim_idx_t, 
-    parallel_tensor_dim_idx_t
-  > inp_to_out = make_empty_down_projection<parallel_tensor_dim_idx_t, parallel_tensor_dim_idx_t>();
+    get_input_to_output_projection(LinearAttrs const &attrs,
+                                   nonnegative_int input_num_dims) {
 
-  ff_dim_t input_channel_dim = ff_dim_t_from_relative_ff_dim_t(relative_ff_dim_t{-1}, input_num_dims);
+  DownProjection<parallel_tensor_dim_idx_t, parallel_tensor_dim_idx_t>
+      inp_to_out = make_empty_down_projection<parallel_tensor_dim_idx_t,
+                                              parallel_tensor_dim_idx_t>();
+
+  ff_dim_t input_channel_dim =
+      ff_dim_t_from_relative_ff_dim_t(relative_ff_dim_t{-1}, input_num_dims);
 
   nonnegative_int output_num_dims = input_num_dims;
-  ff_dim_t output_channel_dim = ff_dim_t_from_relative_ff_dim_t(relative_ff_dim_t{-1}, output_num_dims);
+  ff_dim_t output_channel_dim =
+      ff_dim_t_from_relative_ff_dim_t(relative_ff_dim_t{-1}, output_num_dims);
 
-  project_dims(inp_to_out, 
+  project_dims(inp_to_out,
                /*from=*/{sum_dim_idx(), shard_dim_idx(input_channel_dim)},
                /*onto=*/sum_dim_idx());
-  project_dims(inp_to_out, 
-               /*from=*/{discard_copy_dim_idx()}, 
+  project_dims(inp_to_out,
+               /*from=*/{discard_copy_dim_idx()},
                /*onto=*/shard_dim_idx(output_channel_dim));
 
-  for (ff_dim_t const &idx : ff_dim_range(nonnegative_int{input_num_dims.unwrap_nonnegative() - 1})) {
-    project_dims(inp_to_out, 
-                 /*from=*/{shard_dim_idx(idx)}, 
+  for (ff_dim_t const &idx :
+       ff_dim_range(nonnegative_int{input_num_dims.unwrap_nonnegative() - 1})) {
+    project_dims(inp_to_out,
+                 /*from=*/{shard_dim_idx(idx)},
                  /*onto=*/shard_dim_idx(idx));
   }
 
@@ -269,27 +272,32 @@ tl::expected<ParallelTensorSpaceMapping, std::string>
 }
 
 tl::expected<OperatorSpaceToParallelTensorSpaceMapping, std::string>
-  get_operator_to_input_projection(LinearAttrs const &attrs,
-                                   nonnegative_int input_num_dims) {
+    get_operator_to_input_projection(LinearAttrs const &attrs,
+                                     nonnegative_int input_num_dims) {
 
-    nonnegative_int output_num_dims = input_num_dims;
+  nonnegative_int output_num_dims = input_num_dims;
 
-    UpProjection<parallel_tensor_dim_idx_t, parallel_tensor_dim_idx_t> 
-      out_to_inp = invert_down_projection(throw_if_unexpected(get_input_to_output_projection(attrs, input_num_dims)).raw_projection.require_down_proj());
+  UpProjection<parallel_tensor_dim_idx_t, parallel_tensor_dim_idx_t>
+      out_to_inp = invert_down_projection(
+          throw_if_unexpected(
+              get_input_to_output_projection(attrs, input_num_dims))
+              .raw_projection.require_down_proj());
 
-    EqProjection<operator_task_space_dim_idx_t, parallel_tensor_dim_idx_t> 
-      op_to_out = throw_if_unexpected(get_operator_to_output_mapping(attrs, input_num_dims)).raw_projection.require_eq_proj();
+  EqProjection<operator_task_space_dim_idx_t, parallel_tensor_dim_idx_t>
+      op_to_out = throw_if_unexpected(
+                      get_operator_to_output_mapping(attrs, input_num_dims))
+                      .raw_projection.require_eq_proj();
 
-    return OperatorSpaceToParallelTensorSpaceMapping{
+  return OperatorSpaceToParallelTensorSpaceMapping{
       DimProjection{
-        compose_up_projections(up_from_eq_proj(op_to_out), out_to_inp),
+          compose_up_projections(up_from_eq_proj(op_to_out), out_to_inp),
       },
-    };
+  };
 }
 
 tl::expected<OperatorSpaceToParallelTensorSpaceMapping, std::string>
     get_operator_to_output_mapping(LinearAttrs const &attrs,
-                                      nonnegative_int input_num_shard_dims) {
+                                   nonnegative_int input_num_shard_dims) {
   nonnegative_int output_num_shard_dims = input_num_shard_dims;
 
   return get_identity_mapping(output_num_shard_dims);

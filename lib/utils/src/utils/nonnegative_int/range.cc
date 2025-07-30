@@ -4,12 +4,16 @@
 
 namespace FlexFlow {
 
-std::vector<nonnegative_int> range(nonnegative_int start, nonnegative_int end, int step) {
-  return transform(range(start.unwrap_nonnegative(), end.unwrap_nonnegative(), step), [](int x) { return nonnegative_int{x}; });
+std::vector<nonnegative_int>
+    range(nonnegative_int start, nonnegative_int end, int step) {
+  return transform(
+      range(start.unwrap_nonnegative(), end.unwrap_nonnegative(), step),
+      [](int x) { return nonnegative_int{x}; });
 }
 
 std::vector<nonnegative_int> range(nonnegative_int end) {
-  return transform(range(end.unwrap_nonnegative()), [](int x) { return nonnegative_int{x}; });
+  return transform(range(end.unwrap_nonnegative()),
+                   [](int x) { return nonnegative_int{x}; });
 }
 
 } // namespace FlexFlow

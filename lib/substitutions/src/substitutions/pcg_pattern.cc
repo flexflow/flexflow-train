@@ -48,8 +48,9 @@ std::vector<PCGPatternMatch>
   auto pcg_match_from_unlabelled_match =
       [](UnlabelledDataflowGraphPatternMatch const &m) {
         return PCGPatternMatch{
-            transform_values(m.node_assignment,
-                             [](Node const &n) { return parallel_layer_guid_t{n}; }),
+            transform_values(
+                m.node_assignment,
+                [](Node const &n) { return parallel_layer_guid_t{n}; }),
             map_values(m.input_assignment,
                        [](OpenDataflowValue const &i) {
                          return open_parallel_tensor_guid_t{i};

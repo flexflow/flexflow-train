@@ -98,12 +98,11 @@ public:
   std::unordered_set<OpTensorSlotSpec> op_tensor_slots;
 
 private:
-  std::tuple<
-    decltype(type) const &,
-    decltype(return_value) const &,
-    decltype(task_arg_types) const &,
-    decltype(op_tensor_slots) const &
-  > tie() const;
+  std::tuple<decltype(type) const &,
+             decltype(return_value) const &,
+             decltype(task_arg_types) const &,
+             decltype(op_tensor_slots) const &>
+      tie() const;
 
   friend ::std::hash<::FlexFlow::OpTaskSignature>;
 };
@@ -117,11 +116,11 @@ OpTaskSignature infer_bwd_signature(OpTaskSignature const &fwd);
 
 namespace std {
 
-template<>
+template <>
 struct hash<::FlexFlow::OpTaskSignature> {
   size_t operator()(::FlexFlow::OpTaskSignature const &) const;
 };
 
-}
+} // namespace std
 
 #endif

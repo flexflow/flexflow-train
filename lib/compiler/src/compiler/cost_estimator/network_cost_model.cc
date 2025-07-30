@@ -3,11 +3,13 @@
 
 namespace FlexFlow {
 
-float estimate_communication_cost(MachineSpecification const &machine_spec, 
-                                  TensorSetMovement const &tensor_set_movement) {
+float estimate_communication_cost(
+    MachineSpecification const &machine_spec,
+    TensorSetMovement const &tensor_set_movement) {
   NOT_IMPLEMENTED(); // TODO @lockshaw
-  // for (SingleTensorMovement const &single_tensor_movement : tensor_set_movement.single_tensor_movements) {
-  //   for 
+  // for (SingleTensorMovement const &single_tensor_movement :
+  // tensor_set_movement.single_tensor_movements) {
+  //   for
   // }
 }
 

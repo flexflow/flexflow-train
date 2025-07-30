@@ -2,8 +2,8 @@
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_ARG_REF_H
 
 #include "kernels/ff_handle.h"
-#include "utils/type_index.h"
 #include "utils/hash-utils.h"
+#include "utils/type_index.h"
 
 namespace FlexFlow {
 

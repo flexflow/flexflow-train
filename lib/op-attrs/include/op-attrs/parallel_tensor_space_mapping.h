@@ -1,8 +1,6 @@
 #ifndef _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_PARALLEL_TENSOR_SPACE_MAPPING_H
 #define _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_PARALLEL_TENSOR_SPACE_MAPPING_H
 
-namespace FlexFlow {
-
-} // namespace FlexFlow
+namespace FlexFlow {} // namespace FlexFlow
 
 #endif

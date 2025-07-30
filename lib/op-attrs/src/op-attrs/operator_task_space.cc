@@ -1,7 +1,7 @@
 #include "op-attrs/operator_task_space.h"
+#include "op-attrs/operator_task_space.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "op-attrs/parallel_tensor_shape.h"
-#include "op-attrs/operator_task_space.dtg.h"
 #include "utils/containers/cartesian_product.h"
 #include "utils/containers/extend.h"
 #include "utils/containers/maximum.h"

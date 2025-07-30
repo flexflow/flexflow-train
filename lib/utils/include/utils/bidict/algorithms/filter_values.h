@@ -16,7 +16,6 @@ bidict<K, V> filter_values(bidict<K, V> const &m, F &&f) {
   return result;
 }
 
-
 } // namespace FlexFlow
 
 #endif

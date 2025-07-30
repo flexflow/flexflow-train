@@ -6,11 +6,17 @@
 namespace FlexFlow {
 
 template <typename T1, typename T2, typename T3>
-ManyToOne<T1, T3> exhaustive_relational_join(ManyToOne<T1, T2> const &fst, ManyToOne<T2, T3> const &snd) {
+ManyToOne<T1, T3> exhaustive_relational_join(ManyToOne<T1, T2> const &fst,
+                                             ManyToOne<T2, T3> const &snd) {
   ManyToOne<T1, T3> result;
 
   if (fst.right_values() != snd.left_values()) {
-    throw mk_runtime_error(fmt::format("exhaustive_relational_join for ManyToOne received inputs with non-matching inner dimensions: right dimension of fst is {} while left dimension of snd is {}", fst.right_values(), snd.left_values()));
+    throw mk_runtime_error(
+        fmt::format("exhaustive_relational_join for ManyToOne received inputs "
+                    "with non-matching inner dimensions: right dimension of "
+                    "fst is {} while left dimension of snd is {}",
+                    fst.right_values(),
+                    snd.left_values()));
   }
 
   for (T3 const &t3 : snd.right_values()) {

@@ -7,7 +7,8 @@
 
 namespace FlexFlow {
 
-std::set<operator_task_space_dim_idx_t> operator_task_space_dim_idx_range(nonnegative_int end);
+std::set<operator_task_space_dim_idx_t>
+    operator_task_space_dim_idx_range(nonnegative_int end);
 
 } // namespace FlexFlow
 

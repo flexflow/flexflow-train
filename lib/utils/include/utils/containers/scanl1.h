@@ -43,7 +43,6 @@ std::vector<T> scanl1(C const &c, F &&f) {
   return result;
 }
 
-
 } // namespace FlexFlow
 
 #endif

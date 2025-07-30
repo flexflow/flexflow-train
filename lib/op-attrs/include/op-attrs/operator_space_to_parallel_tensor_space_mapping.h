@@ -7,7 +7,7 @@
 namespace FlexFlow {
 
 OperatorSpaceToParallelTensorSpaceMapping
-  get_identity_mapping(nonnegative_int num_shard_dims);
+    get_identity_mapping(nonnegative_int num_shard_dims);
 
 } // namespace FlexFlow
 

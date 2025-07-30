@@ -1,7 +1,7 @@
-#include <doctest/doctest.h>
 #include "legion/legion_utilities.h"
 #include "op-attrs/ffconst.h"
 #include "serialization.h"
+#include <doctest/doctest.h>
 #include <rapidcheck.h>
 
 using namespace FlexFlow;

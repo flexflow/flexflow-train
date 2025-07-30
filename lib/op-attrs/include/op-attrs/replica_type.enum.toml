@@ -8,7 +8,7 @@ features = [
 ]
 
 [[values]]
-name = "SUM"
+name = "DISCARD_COPY"
 
 [[values]]
-name = "DISCARD_COPY"
+name = "SUM"

@@ -23,7 +23,6 @@ T foldr1(std::vector<T> const &vec, F f) {
   return result;
 }
 
-
 } // namespace FlexFlow
 
 #endif

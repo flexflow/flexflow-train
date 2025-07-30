@@ -50,17 +50,19 @@ std::pair<SubParallelComputationGraph, OutputExprToResultSubPCGMapping>
 
   bidict<input_parallel_tensor_guid_t, OutputGraphExprInput> result_input_map =
       transform_keys(transform_values(new_input_id_permutation,
-                          [](DataflowGraphInput const &i) {
-                            return OutputGraphExprInput{i};
-                          }),
-               [](NewDataflowGraphInput const &i) {
-                 return input_parallel_tensor_guid_t{i.raw_input};
-               });
+                                      [](DataflowGraphInput const &i) {
+                                        return OutputGraphExprInput{i};
+                                      }),
+                     [](NewDataflowGraphInput const &i) {
+                       return input_parallel_tensor_guid_t{i.raw_input};
+                     });
 
-  bidict<parallel_layer_guid_t, OutputGraphExprNode> result_node_map = transform_keys(
-      transform_values(new_node_id_permutation,
-                 [](Node const &n) { return OutputGraphExprNode{n}; }),
-      [](NewNode const &n) { return parallel_layer_guid_t{n.raw_node}; });
+  bidict<parallel_layer_guid_t, OutputGraphExprNode> result_node_map =
+      transform_keys(
+          transform_values(
+              new_node_id_permutation,
+              [](Node const &n) { return OutputGraphExprNode{n}; }),
+          [](NewNode const &n) { return parallel_layer_guid_t{n.raw_node}; });
 
   std::unordered_map<DataflowGraphInput, ParallelTensorShape> input_shapes =
       map_values(map_keys(match.input_assignment,

@@ -21,8 +21,9 @@ void machine_mapping_with_memory_cache_save(
     MachineMappingState const &k,
     MachineMappingWithMemoryResult const &v) {
   ASSERT(!contains_key(cache.raw_map, k),
-        "machine_mapping_with_memory_cache_save expected key to not already exist",
-        k);
+         "machine_mapping_with_memory_cache_save expected key to not already "
+         "exist",
+         k);
 
   cache.raw_map.emplace(k, v);
 }

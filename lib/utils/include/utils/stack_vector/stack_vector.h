@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_UTILS_STACK_VECTOR_H
 #define _FLEXFLOW_UTILS_STACK_VECTOR_H
 
+#include "utils/check_fmtable.h"
 #include "utils/hash-utils.h"
 #include "utils/join_strings.h"
 #include "utils/test_types.h"
@@ -12,7 +13,6 @@
 #include <optional>
 #include <rapidcheck.h>
 #include <type_traits>
-#include "utils/check_fmtable.h"
 
 namespace FlexFlow {
 

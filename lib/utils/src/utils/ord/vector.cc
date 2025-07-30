@@ -5,7 +5,6 @@ namespace FlexFlow {
 
 using T = ordered_value_type<0>;
 
-template
-  bool operator<(std::vector<T> const &, std::vector<T> const &);
+template bool operator<(std::vector<T> const &, std::vector<T> const &);
 
 } // namespace FlexFlow

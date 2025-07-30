@@ -6,11 +6,17 @@
 namespace FlexFlow {
 
 template <typename T1, typename T2, typename T3>
-OneToMany<T1, T3> exhaustive_relational_join(OneToMany<T1, T2> const &fst, OneToMany<T2, T3> const &snd) {
+OneToMany<T1, T3> exhaustive_relational_join(OneToMany<T1, T2> const &fst,
+                                             OneToMany<T2, T3> const &snd) {
   OneToMany<T1, T3> result;
 
   if (fst.right_values() != snd.left_values()) {
-    throw mk_runtime_error(fmt::format("exhaustive_relational_join for OneToMany received inputs with non-matching inner dimensions: right dimension of fst is {} while left dimension of snd is {}", fst.right_values(), snd.left_values()));
+    throw mk_runtime_error(
+        fmt::format("exhaustive_relational_join for OneToMany received inputs "
+                    "with non-matching inner dimensions: right dimension of "
+                    "fst is {} while left dimension of snd is {}",
+                    fst.right_values(),
+                    snd.left_values()));
   }
 
   for (T1 const &t1 : fst.left_values()) {

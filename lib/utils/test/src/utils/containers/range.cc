@@ -55,7 +55,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       SUBCASE("output is nonempty") {
         CHECK_THROWS(range(2, 5, 0));
       }
-      
+
       SUBCASE("output is empty") {
         CHECK_THROWS(range(3, 3, 0));
       }

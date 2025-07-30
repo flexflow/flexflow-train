@@ -8,7 +8,6 @@
 #include "utils/type_traits.h"
 #include "utils/variant.h"
 
-
 namespace FlexFlow {
 
 template <typename T>
@@ -61,8 +60,8 @@ struct is_trivially_serializable<stack_vector<T, MAXSIZE>>
     : is_trivially_serializable<T> {};
 
 template <typename T>
-struct is_trivially_serializable<FFOrdered<T>>
-    : is_trivially_serializable<T> {};
+struct is_trivially_serializable<FFOrdered<T>> : is_trivially_serializable<T> {
+};
 
 template <typename... Ts>
 struct is_trivially_serializable<std::variant<Ts...>>

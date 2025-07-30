@@ -6,7 +6,8 @@
 namespace FlexFlow {
 
 template <typename L, typename R>
-OneToMany<L, R> one_to_many_from_l_to_r_mapping(std::unordered_map<L, std::unordered_set<R>> const &m) {
+OneToMany<L, R> one_to_many_from_l_to_r_mapping(
+    std::unordered_map<L, std::unordered_set<R>> const &m) {
   OneToMany<L, R> result;
 
   for (auto const &[l, rs] : m) {

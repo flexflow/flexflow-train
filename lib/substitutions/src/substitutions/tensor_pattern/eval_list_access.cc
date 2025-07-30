@@ -15,9 +15,7 @@ TensorAttributeValue
       [&](std::vector<nonnegative_int> const &v) -> TensorAttributeValue {
         return TensorAttributeValue{at_idx(v, acc.index).value()};
       },
-      [](auto &&x) -> TensorAttributeValue {
-        PANIC("Invalid operand", x);
-      },
+      [](auto &&x) -> TensorAttributeValue { PANIC("Invalid operand", x); },
   });
 }
 

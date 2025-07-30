@@ -6,7 +6,8 @@
 
 namespace FlexFlow {
 
-std::vector<nonnegative_int> range(nonnegative_int start, nonnegative_int end, int step = 1);
+std::vector<nonnegative_int>
+    range(nonnegative_int start, nonnegative_int end, int step = 1);
 std::vector<nonnegative_int> range(nonnegative_int end);
 
 } // namespace FlexFlow

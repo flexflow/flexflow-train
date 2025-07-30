@@ -1,6 +1,7 @@
 #include "substitutions/unlabelled/unlabelled_graph_pattern.h"
 #include "substitutions/unlabelled/pattern_edge.h"
 #include "substitutions/unlabelled/pattern_value.h"
+#include "utils/bidict/algorithms/transform.h"
 #include "utils/containers/transform.h"
 #include "utils/graph/dataflow_graph/algorithms.h"
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"
@@ -11,7 +12,6 @@
 #include "utils/graph/open_dataflow_graph/algorithms/get_open_dataflow_values.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_subgraph.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_subgraph_inputs.h"
-#include "utils/bidict/algorithms/transform.h"
 
 namespace FlexFlow {
 

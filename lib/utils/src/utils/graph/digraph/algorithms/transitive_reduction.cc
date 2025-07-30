@@ -1,5 +1,6 @@
 #include "utils/graph/digraph/algorithms/transitive_reduction.h"
 #include "utils/bidict/algorithms/bidict_from_enumerating.h"
+#include "utils/bidict/algorithms/transform_keys.h"
 #include "utils/containers/is_subseteq_of.h"
 #include "utils/containers/vector_of.h"
 #include "utils/graph/digraph/algorithms.h"
@@ -7,7 +8,6 @@
 #include "utils/graph/digraph/algorithms/transitive_closure.h"
 #include "utils/graph/instances/adjacency_digraph.h"
 #include "utils/graph/node/algorithms.h"
-#include "utils/bidict/algorithms/transform_keys.h"
 
 namespace FlexFlow {
 
@@ -40,7 +40,7 @@ DiGraphView transitive_reduction(DiGraphView const &g) {
 
   bidict<int, Node> nodes =
       transform_keys(bidict_from_enumerating(get_nodes(g)),
-               [](nonnegative_int x) { return x.unwrap_nonnegative(); });
+                     [](nonnegative_int x) { return x.unwrap_nonnegative(); });
   int num_nodes = nodes.size();
 
   std::vector<bool> edge_matrix(num_nodes * num_nodes, false);

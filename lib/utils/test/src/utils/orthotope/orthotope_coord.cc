@@ -1,5 +1,5 @@
-#include <doctest/doctest.h>
 #include "utils/orthotope/orthotope_coord.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 

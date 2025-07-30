@@ -1,7 +1,7 @@
 #include "utils/containers/scanr.h"
+#include "test/utils/doctest/fmt/vector.h"
 #include <doctest/doctest.h>
 #include <string>
-#include "test/utils/doctest/fmt/vector.h"
 
 using namespace ::FlexFlow;
 
@@ -35,8 +35,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("empty input") {
       std::vector<int> input = {};
-      std::vector<int> result =
-          scanr(input, 2, [](int x, int accum) -> int { throw std::runtime_error("should not be called"); });
+      std::vector<int> result = scanr(input, 2, [](int x, int accum) -> int {
+        throw std::runtime_error("should not be called");
+      });
       std::vector<int> correct = {2};
       CHECK(result == correct);
     }

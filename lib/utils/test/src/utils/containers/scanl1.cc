@@ -26,8 +26,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("empty input") {
       std::vector<int> input = {};
-      std::vector<int> result =
-          scanl1(input, [](int x, int accum) -> int { throw std::runtime_error("should not be called"); });
+      std::vector<int> result = scanl1(input, [](int x, int accum) -> int {
+        throw std::runtime_error("should not be called");
+      });
       std::vector<int> correct = {};
       CHECK(result == correct);
     }

@@ -1,4 +1,3 @@
-#include <doctest/doctest.h>
 #include "internal/test_utils.h"
 #include "kernels/local_cuda_allocator.h"
 #include "kernels/managed_ff_stream.h"
@@ -15,6 +14,7 @@
 #include "task-spec/runtime_arg_config.h"
 #include "task-spec/training_computation_graph.h"
 #include "utils/containers/get_only.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 

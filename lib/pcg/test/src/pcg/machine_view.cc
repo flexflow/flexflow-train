@@ -122,14 +122,13 @@ TEST_SUITE(FF_TEST_SUITE) {
                                   MachineSpecificationDimension::INTER_NODE},
              MachineViewDimension{stride_t{2_p},
                                   MachineSpecificationDimension::INTRA_NODE}}};
-        MachineSpecification ms =
-            MachineSpecification{
-              /*num_nodes=*/3_p,
-              /*num_cpus_per_node=*/5_p,
-              /*num_gpus_per_node=*/5_p,
-              /*inter_node_bandwidth=*/0,
-              /*intra_node_bandwidth=*/0,
-            };
+        MachineSpecification ms = MachineSpecification{
+            /*num_nodes=*/3_p,
+            /*num_cpus_per_node=*/5_p,
+            /*num_gpus_per_node=*/5_p,
+            /*inter_node_bandwidth=*/0,
+            /*intra_node_bandwidth=*/0,
+        };
 
         SUBCASE("Task with TaskSpaceCoordinate = (0,0)") {
           TaskSpaceCoordinate coord = make_task_space_coordinate({0_n, 0_n});
@@ -275,7 +274,8 @@ TEST_SUITE(FF_TEST_SUITE) {
                                  /*intra_node_bandwidth=*/0};
 
         SUBCASE("Task with TaskSpaceCoordinate = (0,0,1)") {
-          TaskSpaceCoordinate coord = make_task_space_coordinate({0_n, 1_n, 0_n});
+          TaskSpaceCoordinate coord =
+              make_task_space_coordinate({0_n, 1_n, 0_n});
           MachineSpaceCoordinate correct = MachineSpaceCoordinate{
               /*node_idx=*/0_n, /*device_idx=*/3_n, DeviceType::GPU};
           MachineSpaceCoordinate result =
@@ -284,7 +284,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         }
 
         SUBCASE("Task with TaskSpaceCoordinate = (1,1,0)") {
-          TaskSpaceCoordinate coord = make_task_space_coordinate({1_n, 0_n, 1_n});
+          TaskSpaceCoordinate coord =
+              make_task_space_coordinate({1_n, 0_n, 1_n});
           MachineSpaceCoordinate correct = MachineSpaceCoordinate{
               /*node_idx=*/1_n, /*device_idx=*/5_n, DeviceType::GPU};
           MachineSpaceCoordinate result =
@@ -293,7 +294,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         }
 
         SUBCASE("Task with TaskSpaceCoordinate = (1,1,1)") {
-          TaskSpaceCoordinate coord = make_task_space_coordinate({1_n, 1_n, 1_n});
+          TaskSpaceCoordinate coord =
+              make_task_space_coordinate({1_n, 1_n, 1_n});
           MachineSpaceCoordinate correct = MachineSpaceCoordinate{
               /*node_idx=*/1_n, /*device_idx=*/7_n, DeviceType::GPU};
           MachineSpaceCoordinate result =

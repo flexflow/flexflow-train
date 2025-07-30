@@ -11,7 +11,7 @@ std::unordered_set<ParallelOpAttrs>
   std::unordered_set<ParallelOpAttrs> result;
 
   positive_int sum_degree = get_sum_degree(goal);
-  ASSERT(sum_degree == 1, 
+  ASSERT(sum_degree == 1,
          "generate_weight_transform currently only supports sum_degree = 1");
 
   positive_int discard_copy_degree = get_discard_copy_degree(goal);

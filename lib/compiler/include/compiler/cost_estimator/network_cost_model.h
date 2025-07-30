@@ -6,7 +6,7 @@
 
 namespace FlexFlow {
 
-float estimate_communication_cost(MachineSpecification const &, 
+float estimate_communication_cost(MachineSpecification const &,
                                   TensorSetMovement const &);
 
 } // namespace FlexFlow

@@ -12,8 +12,8 @@ TensorShape get_output_shape(FlatAttrs const &, TensorShape const &);
 ParallelTensorDimDegrees
     get_output_parallel_dim_degrees(FlatAttrs const &,
                                     ParallelTensorDimDegrees const &);
-ParallelTensorShape
-    get_output_shape(FlatAttrs const &, ParallelTensorShape const &);
+ParallelTensorShape get_output_shape(FlatAttrs const &,
+                                     ParallelTensorShape const &);
 
 } // namespace FlexFlow
 

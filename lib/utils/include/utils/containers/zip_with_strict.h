@@ -3,8 +3,8 @@
 
 #include "utils/containers/zip_with.h"
 #include "utils/fmt/vector.h"
-#include <vector>
 #include <libassert/assert.hpp>
+#include <vector>
 
 namespace FlexFlow {
 

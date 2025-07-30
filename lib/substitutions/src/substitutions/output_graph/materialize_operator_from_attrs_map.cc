@@ -17,9 +17,7 @@ struct Accessor {
     if (contains_key(this->m, k)) {
       return this->m.at(k).get<T>();
     } else {
-      PANIC("Could not find key in attrs map", 
-            k, 
-            this->m);
+      PANIC("Could not find key in attrs map", k, this->m);
     }
   }
 };

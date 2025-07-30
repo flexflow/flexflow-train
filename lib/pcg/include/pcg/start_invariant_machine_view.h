@@ -1,12 +1,12 @@
 #ifndef _FLEXFLOW_PCG_INCLUDE_PCG_START_INVARIANT_MACHINE_VIEW_H
 #define _FLEXFLOW_PCG_INCLUDE_PCG_START_INVARIANT_MACHINE_VIEW_H
 
+#include "op-attrs/operator_task_space.dtg.h"
+#include "op-attrs/task_space_coordinate.dtg.h"
 #include "pcg/machine_space_offset.h"
 #include "pcg/machine_specification.dtg.h"
 #include "pcg/machine_view.dtg.h"
-#include "op-attrs/operator_task_space.dtg.h"
 #include "pcg/start_invariant_machine_view.dtg.h"
-#include "op-attrs/task_space_coordinate.dtg.h"
 #include <optional>
 
 namespace FlexFlow {

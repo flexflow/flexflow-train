@@ -1,5 +1,5 @@
-#ifndef _FLEXFLOW_INCLUDE_OP_ATTRS_SHAPE_INFERENCE_H
-#define _FLEXFLOW_INCLUDE_OP_ATTRS_SHAPE_INFERENCE_H
+#ifndef _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_SHAPE_INFERENCE_H
+#define _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_SHAPE_INFERENCE_H
 
 #include "op-attrs/computation_graph_op_attrs.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"

@@ -10,7 +10,8 @@ namespace FlexFlow {
 
 template struct OneToMany<L, R>;
 
-template std::unordered_map<L, std::unordered_set<R>> format_as(OneToMany<L, R> const &);
+template std::unordered_map<L, std::unordered_set<R>>
+    format_as(OneToMany<L, R> const &);
 
 template std::ostream &operator<<(std::ostream &, OneToMany<L, R> const &);
 
@@ -21,4 +22,3 @@ namespace std {
 template struct hash<OneToMany<L, R>>;
 
 }
-

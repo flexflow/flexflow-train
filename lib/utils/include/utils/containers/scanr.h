@@ -1,8 +1,8 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_SCANR_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_SCANR_H
 
-#include <vector>
 #include "utils/containers/reversed.h"
+#include <vector>
 
 namespace FlexFlow {
 

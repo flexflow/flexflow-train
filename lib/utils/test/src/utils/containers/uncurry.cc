@@ -1,18 +1,17 @@
 #include "utils/containers/uncurry.h"
+#include "test/utils/doctest/fmt/pair.h"
 #include <doctest/doctest.h>
 #include <string>
-#include "test/utils/doctest/fmt/pair.h"
 
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("uncurry") {
-    auto f = [](int x, std::string const &y) {
-      return std::make_pair(y, x);
-    };
+    auto f = [](int x, std::string const &y) { return std::make_pair(y, x); };
 
-    std::function<std::pair<std::string, int>(std::pair<int, std::string> const &)>
-      result_f = uncurry<int, std::string>(f);
+    std::function<std::pair<std::string, int>(
+        std::pair<int, std::string> const &)>
+        result_f = uncurry<int, std::string>(f);
 
     SUBCASE("has same behavior as f") {
       int x = 1;
