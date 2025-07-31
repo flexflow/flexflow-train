@@ -337,7 +337,7 @@ TaskRegistry construct_task_registry_and_register_tasks_for_realm_pcg(
   
   TaskRegistry task_registry = construct_task_registry(layer_attrs_mapping);
 
-  // Register tasks for realm - similar to classic version
+  // Register tasks for realm 
   for (std::pair<layer_guid_t, LayerAttrs> const &layer_attrs : layer_attrs_mapping) {
     ComputationGraphOpAttrs attrs = layer_attrs.second.op_attrs;
     std::vector<task_id_t> task_ids = get_task_ids(attrs);
@@ -992,14 +992,6 @@ Allocator &get_device_allocator(RealmTrainingBackingPCG &backing,
 }
 
 // Helper methods for device-specific tensor access
-RealmTensorBacking const &RealmTrainingBackingPCG::get_device_tensor_backing(device_id_t device) const {
-  auto it = device_tensor_backings.find(device);
-  if (it == device_tensor_backings.end()) {
-    throw std::runtime_error(fmt::format("No tensor backing found for device {}", device.gpu_id.gpu_index.raw_value));
-  }
-  return it->second;
-}
-
 RealmTensorBacking &RealmTrainingBackingPCG::get_device_tensor_backing(device_id_t device) {
   auto it = device_tensor_backings.find(device);
   if (it == device_tensor_backings.end()) {
