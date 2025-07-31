@@ -1194,110 +1194,49 @@ DeviceSpecificDeviceStates combine_device_specific_states(
   return combined_state;
 }
 
-// Helper: Combine two device states with tolerance for differences
+// Helper: Combine two device states with strict equality
 DeviceSpecificDeviceStates combine_device_states_with_tolerance(
     DeviceSpecificDeviceStates const &state1,
     DeviceSpecificDeviceStates const &state2) {
   
-  DeviceSpecificDeviceStates combined_state;
-  
-  // Combine per-layer states
-  for (auto const &layer_pair : state1.per_layer_states) {
-    layer_guid_t layer = layer_pair.first;
-    PerDeviceOpState const &state1_layer = layer_pair.second;
-    
-    auto state2_it = state2.per_layer_states.find(layer);
-    if (state2_it != state2.per_layer_states.end()) {
-      PerDeviceOpState const &state2_layer = state2_it->second;
-      
-      PerDeviceOpState combined_layer_state = combine_layer_states_with_tolerance(
-          state1_layer, state2_layer);
-      
-      combined_state.per_layer_states[layer] = combined_layer_state;
-    } else {
-
-      combined_state.per_layer_states[layer] = state1_layer;
-    }
+  // For now, use strict equality - require states to be identical
+  if (state1 != state2) {
+    throw std::runtime_error("Device states must be identical for combination");
   }
   
-  // Add layers that only exist in state2
-  for (auto const &layer_pair : state2.per_layer_states) {
-    layer_guid_t layer = layer_pair.first;
-    if (combined_state.per_layer_states.find(layer) == combined_state.per_layer_states.end()) {
-      combined_state.per_layer_states[layer] = layer_pair.second;
-    }
-  }
-  
-  return combined_state;
+  return state1;
 }
 
-// Helper: Combine layer states with tolerance for floating-point differences
+// Helper: Combine layer states with strict equality
 PerDeviceOpState combine_layer_states_with_tolerance(
     PerDeviceOpState const &state1,
     PerDeviceOpState const &state2) {
   
-  PerDeviceOpState combined_state;
-  
-  // Combine handles (use first non-null handle)
-  if (state1.handle.blas != nullptr) {
-    combined_state.handle.blas = state1.handle.blas;
-  } else if (state2.handle.blas != nullptr) {
-    combined_state.handle.blas = state2.handle.blas;
+  // For now, use strict equality - require states to be identical
+  if (state1 != state2) {
+    throw std::runtime_error("Layer states must be identical for combination");
   }
   
-  if (state1.handle.dnn != nullptr) {
-    combined_state.handle.dnn = state1.handle.dnn;
-  } else if (state2.handle.dnn != nullptr) {
-    combined_state.handle.dnn = state2.handle.dnn;
-  }
-  
-  // Combine other state fields with tolerance
-  // For numeric fields, use average or first non-zero value
-  // For boolean fields, use logical OR
-  // For pointer fields, use first non-null pointer
-  
-  // Example: combine activation states
-  if (state1.activation != ActivationMode::NONE) {
-    combined_state.activation = state1.activation;
-  } else if (state2.activation != ActivationMode::NONE) {
-    combined_state.activation = state2.activation;
-  }
-  
-  // Example: combine dropout states
-  if (state1.dropout_rate > 0.0f) {
-    combined_state.dropout_rate = state1.dropout_rate;
-  } else if (state2.dropout_rate > 0.0f) {
-    combined_state.dropout_rate = state2.dropout_rate;
-  }
-  
-  // TODO: other fields
-  
-  return combined_state;
+  return state1;
 }
 
-// Helper: Compare floating-point values with tolerance
+// TODO: consider using tolerance for floating-point values
+// Helper: Compare floating-point values with strict equality
 bool float_equal_with_tolerance(float a, float b, float tolerance = 1e-6f) {
-  return std::abs(a - b) <= tolerance;
+  return a == b;
 }
 
-// Helper: Compare double values with tolerance
+// Helper: Compare double values with strict equality
 bool double_equal_with_tolerance(double a, double b, double tolerance = 1e-12) {
-  return std::abs(a - b) <= tolerance;
+  return a == b;
 }
 
-// Helper: Combine numeric values with tolerance
+// Helper: Combine numeric values with strict equality
 float combine_float_values_with_tolerance(float a, float b, float tolerance = 1e-6f) {
-  if (float_equal_with_tolerance(a, b, tolerance)) {
-    return a;  // Values are effectively equal, use either
+  if (a == b) {
+    return a;
   } else {
-    // Values are different, use average or first non-zero
-    if (std::abs(a) > tolerance) {
-      return a;
-    } else if (std::abs(b) > tolerance) {
-      return b;
-    } else {
-      return (a + b) / 2.0f;  
-    }
+    throw std::runtime_error("Float values must be identical for combination");
   }
 }
 
