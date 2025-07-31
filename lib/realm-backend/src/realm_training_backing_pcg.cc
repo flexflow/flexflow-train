@@ -82,7 +82,6 @@ TaskInvocation create_task_invocation_for_device(
     // Use device-specific shape for data parallel
     input_shapes.push_back(device_input_shape.value());
   } else {
-    // Use original shapes from PCG
     for (parallel_tensor_guid_t const &parallel_tensor : parallel_inputs) {
       ParallelTensorShape parallel_shape = get_parallel_tensor_shape(backing.pcg, parallel_tensor);
       input_shapes.push_back(get_piece_shape(parallel_shape));
@@ -1645,6 +1644,7 @@ std::unordered_map<layer_guid_t, LayerAttrs> get_layer_attrs_mapping_from_pcg(Pa
   return layer_attrs_mapping;
 }
 
+// Helper: Get all tensor attributes from PCG
 std::unordered_map<tensor_guid_t, TensorAttrs> get_all_tensor_attrs_from_pcg(ParallelComputationGraph const &pcg) {
   std::unordered_map<tensor_guid_t, TensorAttrs> tensor_attrs_mapping;
   
@@ -1667,6 +1667,7 @@ std::unordered_map<tensor_guid_t, TensorAttrs> get_all_tensor_attrs_from_pcg(Par
   return tensor_attrs_mapping;
 }
 
+// Helper: Get layer attributes from PCG
 LayerAttrs get_layer_attrs_from_pcg(ParallelComputationGraph const &pcg, layer_guid_t const &layer) {
   parallel_layer_guid_t parallel_layer = convert_regular_to_parallel_layer(layer);
   
@@ -1678,6 +1679,7 @@ LayerAttrs get_layer_attrs_from_pcg(ParallelComputationGraph const &pcg, layer_g
   };
 }
 
+// Helper: Get topological ordering from PCG
 std::vector<layer_guid_t> topological_ordering_from_pcg(ParallelComputationGraph const &pcg) {
   std::vector<parallel_layer_guid_t> parallel_ordering = topological_ordering(pcg);
   std::vector<layer_guid_t> regular_ordering;
@@ -1694,6 +1696,7 @@ std::vector<layer_guid_t> topological_ordering_from_pcg(ParallelComputationGraph
   return regular_ordering;
 }
 
+// Helper: Get incoming inputs from PCG
 std::vector<tensor_guid_t> get_incoming_inputs_from_pcg(ParallelComputationGraph const &pcg, layer_guid_t const &layer) {
   parallel_layer_guid_t parallel_layer = convert_regular_to_parallel_layer(layer);
   std::vector<parallel_tensor_guid_t> parallel_inputs = get_incoming_inputs(pcg, parallel_layer);
@@ -1705,6 +1708,7 @@ std::vector<tensor_guid_t> get_incoming_inputs_from_pcg(ParallelComputationGraph
   return regular_inputs;
 }
 
+// Helper: Get incoming input shapes from PCG
 std::vector<TensorShape> get_incoming_input_shapes_from_pcg(ParallelComputationGraph const &pcg, layer_guid_t const &layer) {
   parallel_layer_guid_t parallel_layer = convert_regular_to_parallel_layer(layer);
   std::vector<parallel_tensor_guid_t> parallel_inputs = get_incoming_inputs(pcg, parallel_layer);
@@ -1717,6 +1721,7 @@ std::vector<TensorShape> get_incoming_input_shapes_from_pcg(ParallelComputationG
   return input_shapes;
 }
 
+// Helper: Get outgoing tensors from PCG
 std::vector<tensor_guid_t> get_outgoing_tensors_from_pcg(ParallelComputationGraph const &pcg, layer_guid_t const &layer) {
   parallel_layer_guid_t parallel_layer = convert_regular_to_parallel_layer(layer);
   std::vector<parallel_tensor_guid_t> parallel_outputs = get_layer_outputs(pcg, parallel_layer);
@@ -1728,6 +1733,7 @@ std::vector<tensor_guid_t> get_outgoing_tensors_from_pcg(ParallelComputationGrap
   return regular_outputs;
 }
 
+// Helper: Get incoming weights from PCG
 std::vector<tensor_guid_t> get_incoming_weights_from_pcg(ParallelComputationGraph const &pcg, layer_guid_t const &layer) {
   parallel_layer_guid_t parallel_layer = convert_regular_to_parallel_layer(layer);
   std::vector<parallel_tensor_guid_t> parallel_weights = get_incoming_weights(pcg, parallel_layer);
@@ -1739,6 +1745,7 @@ std::vector<tensor_guid_t> get_incoming_weights_from_pcg(ParallelComputationGrap
   return regular_weights;
 }
 
+// Helper: Get devices for a tensor
 std::vector<device_id_t> get_tensor_devices(RealmTrainingBackingPCG const &backing, parallel_tensor_guid_t const &tensor) {
   parallel_layer_guid_t source_layer = get_source_layer(backing.pcg, tensor);
   return get_layer_devices(backing, source_layer);
@@ -1861,7 +1868,6 @@ void copy_tensor_values(GenericTensorAccessorW const &source_accessor,
   size_t element_size = get_element_size(source_accessor.data_type);
   size_t total_bytes = num_elements * element_size;
   
-  // Copy data from source to destination
   void* source_ptr = source_accessor.ptr;
   void* dest_ptr = dest_accessor.ptr;
   
