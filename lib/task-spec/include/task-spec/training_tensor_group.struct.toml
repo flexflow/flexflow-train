@@ -1,0 +1,31 @@
+namespace = "FlexFlow"
+name = "TrainingTensorGroup"
+features = [
+  "eq",
+  "ord",
+  "fmt",
+  "hash",
+]
+
+includes = [
+  "task-spec/forward_tensor_guid_t.dtg.h",
+  "task-spec/gradient_tensor_guid_t.dtg.h",
+  "task-spec/optimizer_tensor_guid_t.dtg.h",
+]
+
+src_includes = [
+  "utils/hash/vector.h",
+  "utils/fmt/vector.h",
+]
+
+[[fields]]
+name = "forward_tensor"
+type = "::FlexFlow::forward_tensor_guid_t"
+
+[[fields]]
+name = "gradient_tensor"
+type = "::FlexFlow::gradient_tensor_guid_t"
+
+[[fields]]
+name = "optimizer_tensors"
+type = "std::vector<::FlexFlow::optimizer_tensor_guid_t>"

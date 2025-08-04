@@ -1,8 +1,7 @@
 #ifndef _FLEXFLOW_REALM_BACKEND_TASK_WRAPPER_H
 #define _FLEXFLOW_REALM_BACKEND_TASK_WRAPPER_H
 
-#include "local-execution/task_registry.h"
-#include "realm-backend/realm_task_argument_accessor.h"
+#include "local-execution/local_task_registry.h"
 #include "realm-backend/task_result.h"
 
 namespace FlexFlow {

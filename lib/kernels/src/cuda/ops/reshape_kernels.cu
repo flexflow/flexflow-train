@@ -15,61 +15,52 @@
 
 #include "internal/device.h"
 #include "kernels/datatype_dispatch.h"
-#include "kernels/reshape_kernels.h"
+#include "kernels/reshape_kernels_gpu.h"
 
 namespace FlexFlow {
 
 namespace Kernels {
 namespace Reshape {
 
-ReshapePerDeviceState init_kernel(DataType data_type) {
-  return ReshapePerDeviceState{data_type};
+template <typename DT, typename DTGrad>
+__global__ void apply_add_with_scale2(DT *data_ptr,
+                                      DTGrad const *grad_ptr,
+                                      size_t size,
+                                      DT scale) {
+  CUDA_KERNEL_LOOP(i, size) {
+    data_ptr[i] += grad_ptr[i] * scale;
+  }
 }
 
-template <DataType T>
-struct ForwardKernel {
-  void operator()(cudaStream_t stream,
-                  GenericTensorAccessorR const &input,
-                  GenericTensorAccessorW const &output) {
-    checkCUDA(
-        cudaMemcpyAsync(output.get<T>(),
-                        input.get<T>(),
-                        input.shape.num_elements().int_from_positive_int() *
-                            size_of_datatype(T).int_from_positive_int(),
-                        cudaMemcpyDeviceToDevice,
-                        stream));
-  }
-};
-
-template <DataType T>
+template <DataType InputDT, DataType OutputDT>
 struct BackwardKernel {
   void operator()(cudaStream_t stream,
                   GenericTensorAccessorR const &output,
                   GenericTensorAccessorW const &input) {
     float alpha = 1.0f;
-    apply_add_with_scale<real_type_t<T>>
-        <<<GET_BLOCKS(input.shape.num_elements().int_from_positive_int()),
+    apply_add_with_scale2<real_type_t<InputDT>, real_type_t<OutputDT>>
+        <<<GET_BLOCKS(
+               get_num_elements(input.shape.dims).int_from_positive_int()),
            CUDA_NUM_THREADS,
            0,
-           stream>>>(input.get<T>(),
-                     output.get<T>(),
-                     input.shape.num_elements().int_from_positive_int(),
-                     static_cast<real_type_t<T>>(alpha));
+           stream>>>(input.get<InputDT>(),
+                     output.get<OutputDT>(),
+                     get_num_elements(input.shape.dims).int_from_positive_int(),
+                     static_cast<real_type_t<InputDT>>(alpha));
   }
 };
 
-void forward_kernel(cudaStream_t stream,
-                    ReshapePerDeviceState const &m,
-                    GenericTensorAccessorR const &input,
-                    GenericTensorAccessorW const &output) {
-  DataTypeDispatch1<ForwardKernel>{}(m.data_type, stream, input, output);
+void gpu_forward_kernel(cudaStream_t stream,
+                        GenericTensorAccessorR const &input,
+                        GenericTensorAccessorW const &output) {
+  copy_accessor_data_to_l_from_r(output, input);
 }
 
-void backward_kernel(cudaStream_t stream,
-                     ReshapePerDeviceState const &m,
-                     GenericTensorAccessorR const &output,
-                     GenericTensorAccessorW const &input) {
-  DataTypeDispatch1<BackwardKernel>{}(m.data_type, stream, output, input);
+void gpu_backward_kernel(cudaStream_t stream,
+                         GenericTensorAccessorR const &output,
+                         GenericTensorAccessorW const &input) {
+  DataTypeDispatch2<BackwardKernel>{}(
+      input.shape.data_type, output.shape.data_type, stream, output, input);
 }
 
 } // namespace Reshape

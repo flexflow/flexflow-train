@@ -15,37 +15,38 @@
 
 #include "internal/device.h"
 #include "kernels/accessor.h"
-#include "kernels/flat_kernels.h"
+#include "kernels/flat_kernels_gpu.h"
+#include "op-attrs/tensor_shape.h"
 
 namespace FlexFlow {
 namespace Kernels {
 namespace Flat {
 
-void forward_kernel(cudaStream_t stream,
-                    GenericTensorAccessorR input,
-                    float *output_ptr) {
+void gpu_forward_kernel(cudaStream_t stream,
+                        GenericTensorAccessorR const &input,
+                        float *output_ptr) {
 
-  checkCUDA(cudaMemcpyAsync(output_ptr,
-                            input.get_float_ptr(),
-                            input.shape.num_elements().int_from_positive_int() *
-                                sizeof(float),
-                            cudaMemcpyDeviceToDevice,
-                            stream));
+  checkCUDA(cudaMemcpyAsync(
+      output_ptr,
+      input.get_float_ptr(),
+      get_size_in_bytes(input.shape).unwrap_num_bytes().unwrap_nonnegative(),
+      cudaMemcpyDeviceToDevice,
+      stream));
 }
 
-void backward_kernel(cudaStream_t stream,
-                     GenericTensorAccessorR input,
-                     float const *output_grad_ptr,
-                     float *input_grad_ptr) {
+void gpu_backward_kernel(cudaStream_t stream,
+                         GenericTensorAccessorR const &input,
+                         float const *output_grad_ptr,
+                         float *input_grad_ptr) {
 
   float alpha = 1.0f;
   apply_add_with_scale<float>
-      <<<GET_BLOCKS(input.shape.num_elements().int_from_positive_int()),
+      <<<GET_BLOCKS(get_num_elements(input.shape.dims).int_from_positive_int()),
          CUDA_NUM_THREADS,
          0,
          stream>>>(input_grad_ptr,
                    output_grad_ptr,
-                   input.shape.num_elements().int_from_positive_int(),
+                   get_num_elements(input.shape.dims).int_from_positive_int(),
                    alpha);
 }
 

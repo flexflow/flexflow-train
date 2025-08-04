@@ -32,7 +32,7 @@ tensor_guid_t create_feedforward_network(ComputationGraphBuilder &cgb,
 tensor_guid_t create_transformer_encoder_layer(ComputationGraphBuilder &cgb,
                                                TransformerConfig const &config,
                                                tensor_guid_t const &input) {
-  std::vector<relative_ff_dim_t> layer_norm_axis = {
+  std::set<relative_ff_dim_t> layer_norm_axis = {
       relative_ff_dim_t{-1}}; // Normalize the last dim
   positive_int kdim = positive_int{config.dim_feedforward / config.num_heads};
   positive_int vdim = positive_int{config.dim_feedforward / config.num_heads};
@@ -81,7 +81,7 @@ tensor_guid_t
                                      TransformerConfig const &config,
                                      tensor_guid_t const &input,
                                      tensor_guid_t const &encoder_output) {
-  std::vector<relative_ff_dim_t> layer_norm_axis = {
+  std::set<relative_ff_dim_t> layer_norm_axis = {
       relative_ff_dim_t{-1}}; // Normalize the last dim
   positive_int kdim = positive_int{config.dim_feedforward / config.num_heads};
   positive_int vdim = positive_int{config.dim_feedforward / config.num_heads};

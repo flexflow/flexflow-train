@@ -14,62 +14,25 @@
  */
 
 #include "internal/device.h"
-#include "kernels/attention_kernels.h"
+#include "kernels/attention_kernels_gpu.h"
 #include "kernels/device.h"
 
-namespace FlexFlow {
+namespace FlexFlow::Kernels::MultiHeadAttention {
 
-bool MHAPerDeviceState::operator==(MHAPerDeviceState const &other) const {
-  return this->tie() == other.tie();
-}
-
-bool MHAPerDeviceState::operator!=(MHAPerDeviceState const &other) const {
-  return this->tie() != other.tie();
-}
-
-std::
-    tuple<PerDeviceFFHandle const &, size_t const &, size_t const &, ffAttnDescriptor_t const &, ffSeqDataDescriptor_t const &, ffSeqDataDescriptor_t const &, ffSeqDataDescriptor_t const &, ffSeqDataDescriptor_t const &, int *const &, int *const &, int *const &, int *const &, void *const &, >
-    MHAPerDeviceState::tie() const {
-  return std::tie(this->handle,
-                  this->weightSize,
-                  this->reserveSpaceSize,
-                  this->attnDesc,
-                  this->qDesc,
-                  this->kDesc,
-                  this->vDesc,
-                  this->oDesc,
-                  this->devQoSeqArray,
-                  this->devKvSeqArray,
-                  this->loWinIdx,
-                  this->hiWinIdx,
-                  this->reserveSpace);
-}
-
-std::string format_as(MHAPerDeviceState const &x) {
-  return fmt::format("MHAPerDeviceState");
-}
-
-std::ostream &operator<<(std::ostream &s, MHAPerDeviceState const &x) {
-  return (s << fmt::to_string(x));
-}
-
-namespace Kernels {
-namespace MultiHeadAttention {
-
-MHAPerDeviceState init_kernel(PerDeviceFFHandle const &handle,
-                              Allocator &allocator,
-                              int num_samples,
-                              int num_heads,
-                              int qSize,
-                              int kSize,
-                              int vSize,
-                              int qProjSize,
-                              int kProjSize,
-                              int vProjSize,
-                              int oProjSize,
-                              int qoSeqLength,
-                              int kvSeqLength,
-                              bool add_bias_kv) {
+MHAPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
+                                  Allocator &allocator,
+                                  int num_samples,
+                                  int num_heads,
+                                  int qSize,
+                                  int kSize,
+                                  int vSize,
+                                  int qProjSize,
+                                  int kProjSize,
+                                  int vProjSize,
+                                  int oProjSize,
+                                  int qoSeqLength,
+                                  int kvSeqLength,
+                                  bool add_bias_kv) {
   cudaStream_t stream;
   ffAttnDescriptor_t attnDesc;
   ffSeqDataDescriptor_t qDesc;
@@ -225,31 +188,33 @@ MHAPerDeviceState init_kernel(PerDeviceFFHandle const &handle,
     hiWinIdx[i] = kvSeqLength;
   }
 
-  MHAPerDeviceState per_device_state = {handle,
-                                        weightSize,
-                                        reserveSpaceSize,
-                                        attnDesc,
-                                        qDesc,
-                                        kDesc,
-                                        vDesc,
-                                        oDesc,
-                                        devQoSeqArray,
-                                        devKvSeqArray,
-                                        loWinIdx,
-                                        hiWinIdx,
-                                        reserveSpace,
-                                        allocator};
+  MHAPerDeviceState per_device_state = MHAPerDeviceState{
+      /*handle=*/handle,
+      /*weightSize=*/weightSize,
+      /*reserveSpaceSize=*/reserveSpaceSize,
+      /*attnDesc=*/attnDesc,
+      /*qDesc=*/qDesc,
+      /*kDesc=*/kDesc,
+      /*vDesc=*/vDesc,
+      /*oDesc=*/oDesc,
+      /*devQoSeqArray=*/devQoSeqArray,
+      /*devKvSeqArray=*/devKvSeqArray,
+      /*loWinIdx=*/loWinIdx,
+      /*hiWinIdx=*/hiWinIdx,
+      /*reserveSpace=*/reserveSpace,
+      /*allocator=*/allocator,
+  };
 
   return per_device_state;
 }
 
-void forward_kernel(cudaStream_t stream,
-                    MHAPerDeviceState const &device_state,
-                    float const *query_ptr,
-                    float const *key_ptr,
-                    float const *value_ptr,
-                    float const *weight_ptr,
-                    float *output_ptr) {
+void gpu_forward_kernel(cudaStream_t stream,
+                        MHAPerDeviceState const &device_state,
+                        float const *query_ptr,
+                        float const *key_ptr,
+                        float const *value_ptr,
+                        float const *weight_ptr,
+                        float *output_ptr) {
   checkCUDNN(cudnnSetStream(device_state.handle.dnn, stream));
 
   checkCUDNN(cudnnMultiHeadAttnForward(device_state.handle.dnn,
@@ -276,17 +241,17 @@ void forward_kernel(cudaStream_t stream,
                                        device_state.reserveSpace));
 }
 
-void backward_kernel(cudaStream_t stream,
-                     MHAPerDeviceState const &device_state,
-                     float const *query_ptr,
-                     float *query_grad_ptr,
-                     float const *key_ptr,
-                     float *key_grad_ptr,
-                     float const *value_ptr,
-                     float *value_grad_ptr,
-                     float const *weight_ptr,
-                     float *weight_grad_ptr,
-                     float const *output_grad_ptr) {
+void gpu_backward_kernel(cudaStream_t stream,
+                         MHAPerDeviceState const &device_state,
+                         float const *query_ptr,
+                         float *query_grad_ptr,
+                         float const *key_ptr,
+                         float *key_grad_ptr,
+                         float const *value_ptr,
+                         float *value_grad_ptr,
+                         float const *weight_ptr,
+                         float *weight_grad_ptr,
+                         float const *output_grad_ptr) {
   checkCUDNN(cudnnSetStream(device_state.handle.dnn, stream));
 
   checkCUDNN(cudnnMultiHeadAttnBackwardData(device_state.handle.dnn,
@@ -333,8 +298,8 @@ void backward_kernel(cudaStream_t stream,
                                         device_state.reserveSpace));
 }
 
-void cleanup_kernel(Allocator &allocator,
-                    MHAPerDeviceState const &device_state) {
+void gpu_cleanup_kernel(Allocator &allocator,
+                        MHAPerDeviceState const &device_state) {
   free(device_state.loWinIdx);
   free(device_state.hiWinIdx);
   checkCUDNN(cudnnDestroyAttnDescriptor(device_state.attnDesc));
@@ -344,6 +309,4 @@ void cleanup_kernel(Allocator &allocator,
   checkCUDNN(cudnnDestroySeqDataDescriptor(device_state.oDesc));
 }
 
-} // namespace MultiHeadAttention
-} // namespace Kernels
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::MultiHeadAttention

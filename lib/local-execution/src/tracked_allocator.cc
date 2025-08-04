@@ -19,8 +19,8 @@ void TrackedAllocator::deallocate(void *ptr) {
   this->current_mem_usage -= psize;
 }
 
-size_t TrackedAllocator::get_current_mem_usage() {
-  return this->current_mem_usage;
+num_bytes_t TrackedAllocator::get_current_mem_usage() const {
+  return num_bytes_t{nonnegative_int{this->current_mem_usage}};
 }
 
 DeviceType TrackedAllocator::get_allocation_device_type() const {

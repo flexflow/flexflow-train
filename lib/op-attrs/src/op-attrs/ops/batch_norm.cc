@@ -2,6 +2,7 @@
 #include "op-attrs/ff_ordered/concat.h"
 #include "op-attrs/ff_ordered/slice.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "op-attrs/tensor_dims.h"
 #include "op-attrs/tensor_shape.h"
 #include "utils/containers/any_of.h"
 #include "utils/containers/extend.h"
@@ -23,7 +24,7 @@ std::vector<IncomingTensorRole>
 
 static std::optional<std::string>
     check_input_shape(BatchNormAttrs const &, TensorShape const &input_shape) {
-  if (num_dims(input_shape) < 2) {
+  if (get_num_dims(input_shape.dims) < 2) {
     return fmt::format(
         "BatchNormAttrs expected input dims >= 2, but received input shape {}",
         input_shape);
@@ -68,7 +69,8 @@ tl::expected<TensorShape, std::string>
     return tl::unexpected("No gamma weights exist for attrs.affine = false");
   }
 
-  positive_int num_channels = dim_at_idx(input_shape, relative_ff_dim_t{1});
+  positive_int num_channels =
+      dim_at_idx(input_shape.dims, relative_ff_dim_t{1});
 
   return TensorShape{
       TensorDims{FFOrdered<positive_int>{

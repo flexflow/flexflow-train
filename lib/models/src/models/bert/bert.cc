@@ -1,5 +1,6 @@
 #include "models/bert/bert.h"
 #include "op-attrs/initializers/truncated_normal_initializer_attrs.dtg.h"
+#include "op-attrs/tensor_dims.h"
 #include "op-attrs/tensor_shape.h"
 #include "pcg/computation_graph.h"
 
@@ -57,37 +58,37 @@ tensor_guid_t
                               tensor_guid_t const &input,
                               InitializerAttrs const &bias_initializer,
                               InitializerAttrs const &projection_initializer) {
-  assert(num_dims(cgb.get_shape(input)) == 3);
-  std::vector<relative_ff_dim_t> layer_norm_axis = {
+  ASSERT(get_num_dims(cgb.get_shape(input).dims) == 3);
+  std::set<relative_ff_dim_t> layer_norm_axis = {
       relative_ff_dim_t{-1}}; // Apply layernorm across the last dim
   positive_int kdim = positive_int{config.dim_feedforward / config.num_heads};
   positive_int vdim = positive_int{config.dim_feedforward / config.num_heads};
   tensor_guid_t self_attention =
-      cgb.multihead_attention(input,
-                              input,
-                              input,
-                              config.hidden_size,
-                              config.num_heads,
-                              kdim,
-                              vdim,
+      cgb.multihead_attention(/*query=*/input,
+                              /*key=*/input,
+                              /*value=*/input,
+                              /*embed_dim=*/config.hidden_size,
+                              /*num_heads=*/config.num_heads,
+                              /*kdim=*/kdim,
+                              /*vdim=*/vdim,
                               /*dropout=*/config.attention_probs_dropout_prob,
                               /*bias=*/true,
                               /*add_bias_kv=*/false,
                               /*add_zero_attn=*/false,
                               /*initializer=*/projection_initializer);
-  assert(are_tensor_guid_shapes_equivalent(
+  ASSERT(are_tensor_guid_shapes_equivalent(
       cgb.computation_graph, input, self_attention));
 
   tensor_guid_t normalized = cgb.layer_norm(cgb.add(self_attention, input),
                                             layer_norm_axis,
                                             /*elementwise_affine=*/true,
                                             config.layer_norm_eps);
-  assert(are_tensor_guid_shapes_equivalent(
+  ASSERT(are_tensor_guid_shapes_equivalent(
       cgb.computation_graph, input, normalized));
 
   tensor_guid_t feedforward_output = create_feedforward_network(
       cgb, config, normalized, bias_initializer, projection_initializer);
-  assert(are_tensor_guid_shapes_equivalent(
+  ASSERT(are_tensor_guid_shapes_equivalent(
       cgb.computation_graph, input, feedforward_output));
   return cgb.layer_norm(cgb.add(normalized, feedforward_output),
                         layer_norm_axis,
@@ -138,7 +139,7 @@ ComputationGraph get_bert_computation_graph(BertConfig const &config) {
 
   tensor_guid_t encoder_output = create_bert_encoder(
       cgb, config, input, bias_initializer, projection_initializer);
-  assert(are_tensor_guid_shapes_equivalent(
+  ASSERT(are_tensor_guid_shapes_equivalent(
       cgb.computation_graph, input, encoder_output));
 
   tensor_guid_t out_prob =
@@ -149,7 +150,7 @@ ComputationGraph get_bert_computation_graph(BertConfig const &config) {
                             /*data_type=*/DataType::FLOAT,
                             /*projection_initializer=*/projection_initializer,
                             /*bias_initializer=*/bias_initializer));
-  assert(
+  ASSERT(
       (cgb.get_shape(out_prob) ==
        TensorShape{
            TensorDims{FFOrdered<positive_int>{

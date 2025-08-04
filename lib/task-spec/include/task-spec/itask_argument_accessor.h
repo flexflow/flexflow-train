@@ -2,7 +2,7 @@
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_ITASK_ARGUMENT_ACCESSOR_H
 
 #include "kernels/allocation.h"
-#include "task-spec/concrete_arg.h"
+#include "task-spec/concrete_arg_spec.h"
 #include "task-spec/op_task_signature.h"
 #include "task-spec/privilege_tensor_accessor.h"
 #include "task-spec/tensor_type.dtg.h"

@@ -115,7 +115,7 @@ ParallelTensorShape get_kernel_shape(Conv2DAttrs const &attrs,
   SumDegree sum_degree = SumDegree{1_p};
   DiscardCopyDegree discard_copy_degree =
       DiscardCopyDegree{parsed.sample_dim.degree * parsed.sum_reduction_degree};
-  FFOrdered<positive_int> shard_degrees = {
+  FFOrdered<positive_int> shard_degrees = FFOrdered{
       parsed.discard_copy_reduction_degree,
       parsed.channel_dim.degree,
       1_p,
@@ -139,7 +139,7 @@ ParallelTensorShape get_bias_shape(Conv2DAttrs const &attrs,
   DiscardCopyDegree discard_copy_degree =
       DiscardCopyDegree{parsed.height_dim.degree * parsed.width_dim.degree *
                         parsed.sample_dim.degree};
-  FFOrdered<positive_int> shard_degrees = {
+  FFOrdered<positive_int> shard_degrees = FFOrdered{
       parsed.discard_copy_reduction_degree,
   };
 
@@ -161,7 +161,7 @@ ParallelTensorShape get_output_shape(Conv2DAttrs const &attrs,
   SumDegree sum_degree =
       SumDegree{parsed.sum_reduction_degree * parsed.channel_dim.degree};
   DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{1_p};
-  FFOrdered<positive_int> shard_degrees = {
+  FFOrdered<positive_int> shard_degrees = FFOrdered{
       parsed.sample_dim.degree,
       parsed.discard_copy_reduction_degree,
       1_p,

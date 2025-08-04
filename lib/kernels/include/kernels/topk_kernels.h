@@ -1,23 +1,11 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_TOPK_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_TOPK_KERNELS_H
 
-#include "kernels/allocation.h"
-#include "kernels/device.h"
+#include "kernels/device_stream_t.dtg.h"
 
-namespace FlexFlow {
+namespace FlexFlow::Kernels::TopK {
 
-struct TopKPerDeviceState {
-  req<bool> sorted; // Note: Does TopK needs a PerDeviceFFHandle handle?
-};
-
-FF_VISITABLE_STRUCT(TopKPerDeviceState, sorted);
-
-namespace Kernels::TopK {
-
-TopKPerDeviceState init_kernel(bool sorted);
-
-void forward_kernel(ffStream_t stream,
-                    TopKPerDeviceState const &m,
+void forward_kernel(device_stream_t const &stream,
                     float const *input_ptr,
                     float *output_ptr,
                     int *indices_ptr,
@@ -25,8 +13,8 @@ void forward_kernel(ffStream_t stream,
                     int length,
                     int k,
                     bool sorted);
-void backward_kernel(ffStream_t stream,
-                     TopKPerDeviceState const &m,
+
+void backward_kernel(device_stream_t const &stream,
                      float const *out_grad_ptr,
                      int const *indices_ptr,
                      float *in_grad_ptr,
@@ -34,7 +22,6 @@ void backward_kernel(ffStream_t stream,
                      int length,
                      int k);
 
-} // namespace Kernels::TopK
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::TopK
 
 #endif // _FLEXFLOW_OPS_KERNELS_TOPK_KERNELS_H

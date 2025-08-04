@@ -145,7 +145,7 @@ public:
       std::optional<std::string> const &name = std::nullopt);
   tensor_guid_t
       layer_norm(tensor_guid_t const &input,
-                 std::vector<relative_ff_dim_t> const &axes,
+                 std::set<relative_ff_dim_t> const &axes,
                  bool elementwise_affine,
                  float eps,
                  std::optional<std::string> const &name = std::nullopt);

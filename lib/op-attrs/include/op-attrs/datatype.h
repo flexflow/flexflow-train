@@ -3,7 +3,7 @@
 
 #include "op-attrs/datatype.dtg.h"
 #include "utils/fmt.h"
-#include "utils/fp16.h"
+#include "utils/half.h"
 #include "utils/positive_int/positive_int.h"
 #include <variant>
 

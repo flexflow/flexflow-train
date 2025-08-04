@@ -15,91 +15,112 @@
 
 #include "task-spec/ops/batch_norm.h"
 #include "kernels/batch_norm_kernels.h"
+#include "task-spec/profiling.h"
 
 namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::BatchNorm;
 
 enum Slots {
-  INPUT,  // tensor
-  SCALE,  // tensor
-  BIAS,   // tensor
-  OUTPUT, // tensor
+  INPUT,
+  SCALE,
+  BIAS,
+  OUTPUT,
   ATTRS,
   PROFILING,
   PER_DEVICE_STATE,
   RELU,
-  HANDLE
+  HANDLE,
+  KERNEL_DEVICE_TYPE,
 };
 
 OpTaskInvocation init(BatchNormAttrs const &attrs) {
   OpTaskBinding binding;
 
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(BIAS, input_tensor(2));
-  binding.bind(OUTPUT, output_tensor(0));
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(BIAS, weight_tensor(1_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
 
   binding.bind_arg(ATTRS, attrs);
   binding.bind_arg(PROFILING, profiling_settings());
   binding.bind_arg(HANDLE, ff_handle());
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
-  return {task_id_t::BATCHNORM_INIT_TASK_ID, binding};
+  return OpTaskInvocation{
+      task_id_t::BATCHNORM_INIT_TASK_ID,
+      binding,
+  };
 }
 
 OpTaskInvocation forward(BatchNormAttrs const &attrs) {
   OpTaskBinding binding;
   binding.bind_arg(PROFILING, profiling_settings());
-  binding.bind_arg(PER_DEVICE_STATE,
-                   per_device_op_state<BatchNormPerDeviceState>());
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
+  binding.bind_arg(
+      PER_DEVICE_STATE,
+      per_device_op_state<std::optional<BatchNormPerDeviceState>>());
 
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(SCALE, input_tensor(1));
-  binding.bind(BIAS, input_tensor(2));
-  binding.bind(OUTPUT, output_tensor(0));
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(SCALE, weight_tensor(0_n));
+  binding.bind(BIAS, weight_tensor(1_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
 
-  return {task_id_t::BATCHNORM_FWD_TASK_ID, binding};
+  return OpTaskInvocation{
+      task_id_t::BATCHNORM_FWD_TASK_ID,
+      binding,
+  };
 }
 
 OpTaskInvocation backward(BatchNormAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::BATCHNORM_BWD_TASK_ID, binding};
+  return OpTaskInvocation{
+      task_id_t::BATCHNORM_BWD_TASK_ID,
+      binding,
+  };
 }
 
 static DeviceSpecificDeviceStates
     init_task_impl(TaskArgumentAccessor const &acc) {
   Allocator allocator = acc.get_allocator();
-  PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   auto const &attrs = acc.get_argument<BatchNormAttrs>(ATTRS);
 
-  positive_int output_w = output.shape.at(legion_dim_t{0_n});
-  positive_int output_h = output.shape.at(legion_dim_t{1_n});
-  positive_int output_c = output.shape.at(legion_dim_t{2_n});
-  positive_int output_n = output.shape.at(legion_dim_t{3_n});
+  positive_int output_w = dim_at_idx(output.shape.dims, legion_dim_t{0_n});
+  positive_int output_h = dim_at_idx(output.shape.dims, legion_dim_t{1_n});
+  positive_int output_c = dim_at_idx(output.shape.dims, legion_dim_t{2_n});
+  positive_int output_n = dim_at_idx(output.shape.dims, legion_dim_t{3_n});
 
   float *runningMean;
 
-  BatchNormPerDeviceState per_device_state =
-      init_kernel(handle,
-                  allocator,
-                  runningMean,
-                  output_n.int_from_positive_int(),
-                  output_c.int_from_positive_int(),
-                  output_h.int_from_positive_int(),
-                  output_w.int_from_positive_int(),
-                  attrs.relu);
+  std::optional<BatchNormPerDeviceState> per_device_state = init_kernel(
+      /*device_type=*/kernel_device_type,
+      /*handle=*/handle,
+      /*allocator=*/allocator,
+      /*runningMean=*/runningMean,
+      /*output_n=*/output_n.int_from_positive_int(),
+      /*output_c=*/output_c.int_from_positive_int(),
+      /*output_h=*/output_h.int_from_positive_int(),
+      /*output_w=*/output_w.int_from_positive_int(),
+      /*relu=*/attrs.relu);
 
   return DeviceSpecificDeviceStates{
-      DeviceSpecific<BatchNormPerDeviceState>::create(per_device_state)};
+      DeviceSpecific<std::optional<BatchNormPerDeviceState>>::create(
+          per_device_state),
+  };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto per_device_state =
       acc.get_argument<BatchNormPerDeviceState>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
@@ -108,6 +129,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 
   return profile(forward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[BatchNorm] forward_time = {:.2lf}ms\n",
                  per_device_state,
                  input.get_float_ptr(),
@@ -121,6 +143,8 @@ static std::optional<float>
   auto per_device_state =
       acc.get_argument<BatchNormPerDeviceState>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(INPUT);
@@ -132,6 +156,7 @@ static std::optional<float>
 
   return profile(backward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[BatchNorm] backward_time = {:.2lf}ms\n",
                  per_device_state,
                  output.get_float_ptr(),
@@ -141,7 +166,7 @@ static std::optional<float>
                  scale.get_float_ptr(),
                  scale_grad.get_float_ptr(),
                  bias_grad.get_float_ptr(),
-                 output.shape.num_elements().int_from_positive_int());
+                 get_num_elements(output.shape.dims).int_from_positive_int());
 }
 
 TaskImplFunction get_batch_norm_init_task_impl() {
@@ -162,7 +187,7 @@ OpTaskSignature get_batch_norm_init_signature() {
   init.add_output_slot(OUTPUT);
   init.add_arg_slot<BatchNormAttrs>(ATTRS);
   init.add_arg_slot<bool>(PROFILING);
-  init.add_unchecked_arg_slot<PerDeviceFFHandle>(HANDLE);
+  init.add_unchecked_arg_slot<device_handle_t>(HANDLE);
 
   return init;
 }
@@ -175,7 +200,9 @@ OpTaskSignature get_batch_norm_fwd_signature() {
   fwd.add_input_slot(BIAS);
   fwd.add_output_slot(OUTPUT);
   fwd.add_arg_slot<bool>(PROFILING);
-  fwd.add_unchecked_arg_slot<BatchNormPerDeviceState>(PER_DEVICE_STATE);
+  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
+  fwd.add_unchecked_arg_slot<std::optional<BatchNormPerDeviceState>>(
+      PER_DEVICE_STATE);
 
   return fwd;
 }

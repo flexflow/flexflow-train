@@ -15,6 +15,7 @@
 
 #include "task-spec/ops/topk.h"
 #include "kernels/topk_kernels.h"
+#include "task-spec/profiling.h"
 #include "utils/exception.h"
 
 namespace FlexFlow {
@@ -25,63 +26,52 @@ using namespace FlexFlow::Kernels::TopK;
 // (resp. vector along the last dimension). Thus,
 // values.shape = indices.shape = input.shape[:-1] + [k]
 
-enum Slots { INPUT, OUTPUT, INDICES, ATTRS, PROFILING, PER_DEVICE_STATE };
-
-OpTaskInvocation init(TopKAttrs const &attrs) {
-  OpTaskBinding binding;
-
-  binding.bind_arg(ATTRS, attrs);
-
-  return {task_id_t::TOPK_INIT_TASK_ID, binding};
-}
+enum Slots { INPUT, OUTPUT, INDICES, ATTRS, PROFILING, KERNEL_DEVICE_TYPE };
 
 OpTaskInvocation forward(TopKAttrs const &attrs) {
   OpTaskBinding binding;
 
-  binding.bind_arg(PER_DEVICE_STATE, per_device_op_state<TopKPerDeviceState>());
   binding.bind_arg(PROFILING, profiling_settings());
   binding.bind_arg(ATTRS, attrs);
+  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
-  binding.bind(INPUT, input_tensor(0));
-  binding.bind(OUTPUT, output_tensor(0));
-  binding.bind(INDICES, output_tensor(1));
+  binding.bind(INPUT, input_tensor(0_n));
+  binding.bind(OUTPUT, output_tensor(0_n));
+  binding.bind(INDICES, output_tensor(1_n));
 
-  return {task_id_t::TOPK_FWD_TASK_ID, binding};
+  return OpTaskInvocation{
+      task_id_t::TOPK_FWD_TASK_ID,
+      binding,
+  };
 }
 
 OpTaskInvocation backward(TopKAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::TOPK_BWD_TASK_ID, binding};
-}
-
-static DeviceSpecificDeviceStates
-    init_task_impl(TaskArgumentAccessor const &acc) {
-
-  auto attrs = acc.get_argument<TopKAttrs>(ATTRS);
-
-  TopKPerDeviceState per_device_state = init_kernel(attrs.sorted);
-  return DeviceSpecificDeviceStates{
-      DeviceSpecific<TopKPerDeviceState>::create(per_device_state)};
+  return OpTaskInvocation{
+      task_id_t::TOPK_BWD_TASK_ID,
+      binding,
+  };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto attrs = acc.get_argument<TopKAttrs>(ATTRS);
-  auto per_device_state =
-      acc.get_argument<TopKPerDeviceState>(PER_DEVICE_STATE);
   auto profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
 
-  positive_int length = input.shape.at(legion_dim_t{0_n});
-  positive_int batch_size = positive_int{input.shape.num_elements() / length};
+  positive_int length = dim_at_idx(input.shape.dims, legion_dim_t{0_n});
+  positive_int batch_size =
+      positive_int{get_num_elements(input.shape.dims) / length};
   auto indices = acc.get_tensor<Permissions::WO>(INDICES);
 
   return profile(forward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[TopK] forward_time = {:.2lf}ms\n",
-                 per_device_state,
                  input.get_float_ptr(),
                  output.get_float_ptr(),
                  indices.get_int32_ptr(),
@@ -94,23 +84,23 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 static std::optional<float>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   auto attrs = acc.get_argument<TopKAttrs>(ATTRS);
-  auto per_device_state =
-      acc.get_argument<TopKPerDeviceState>(PER_DEVICE_STATE);
   auto profiling = acc.get_argument<ProfilingSettings>(PROFILING);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(INPUT);
   auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
 
   auto indices = acc.get_tensor<Permissions::RO>(INDICES);
 
-  positive_int length = input_grad.shape.at(legion_dim_t{0_n});
+  positive_int length = dim_at_idx(input_grad.shape.dims, legion_dim_t{0_n});
   positive_int batch_size =
-      positive_int{input_grad.shape.num_elements() / length};
+      positive_int{get_num_elements(input_grad.shape.dims) / length};
 
   return profile(backward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[TopK] backward_time = {:.2lf}ms\n",
-                 per_device_state,
                  output_grad.get_float_ptr(),
                  indices.get_int32_ptr(),
                  input_grad.get_float_ptr(),
@@ -119,45 +109,34 @@ static std::optional<float>
                  attrs.k.int_from_positive_int());
 }
 
-TaskImplFunction get_topk_init_task_impl() {
-  return TaskImplFunction{InitOpTaskImplFunction{init_task_impl}};
-}
 TaskImplFunction get_topk_fwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{forward_task_impl}};
 }
+
 TaskImplFunction get_topk_bwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{backward_task_impl}};
 }
 
-OpTaskSignature get_topk_init_signature() {
-  OpTaskSignature init(OpTaskType::INIT);
-
-  init.add_arg_slot<TopKAttrs>(ATTRS);
-  init.add_return_value<TopKPerDeviceState>();
-
-  return init;
-}
 OpTaskSignature get_topk_fwd_signature() {
   OpTaskSignature fwd(OpTaskType::FWD);
 
   fwd.add_arg_slot<ProfilingSettings>(PROFILING);
   fwd.add_arg_slot<TopKAttrs>(ATTRS);
-  fwd.add_unchecked_arg_slot<TopKPerDeviceState>(PER_DEVICE_STATE);
+  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
 
   fwd.add_input_slot(INPUT);
   fwd.add_output_slot(OUTPUT);
   fwd.add_output_slot(INDICES);
   return fwd;
 }
+
 OpTaskSignature get_topk_bwd_signature() {
   OpTaskSignature bwd = infer_bwd_signature(get_topk_fwd_signature());
   return bwd;
 }
 
 std::vector<task_id_t> get_task_ids(TopKAttrs const &) {
-  return {task_id_t::TOPK_INIT_TASK_ID,
-          task_id_t::TOPK_FWD_TASK_ID,
-          task_id_t::TOPK_BWD_TASK_ID};
+  return {task_id_t::TOPK_FWD_TASK_ID, task_id_t::TOPK_BWD_TASK_ID};
 }
 
 }; // namespace FlexFlow

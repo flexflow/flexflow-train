@@ -4,29 +4,24 @@
 #include "realm-backend/realm_training_backing.h"
 #include "op-attrs/ops/loss_functions/loss_attrs.dtg.h"
 #include "pcg/tensor_guid_t.dtg.h"
-#include "task-spec/loss_tensor_t.dtg.h"
+#include "task-spec/loss_tensor_guid_t.dtg.h"
 
 namespace FlexFlow {
 
-using PerLayerElapsedTime =
-    std::unordered_map<layer_guid_t, std::optional<float>>;
-
 struct ModelTrainingInstance {
-  ModelTrainingInstance(RealmTrainingBacking const &,
-                        tensor_guid_t const &logit_tensor,
-                        loss_tensor_t const &label_tensor,
+  ModelTrainingInstance(RealmRuntimeState &,
+                        LocalTrainingBacking const &,
                         LossAttrs const &,
                         OptimizerAttrs const &);
 
-  RealmTrainingBacking training_backing;
-  tensor_guid_t logit_tensor;
-  loss_tensor_t label_tensor;
+  RealmRuntimeState &runtime_state;
+  LocalTrainingBacking training_backing;
   LossAttrs loss_attrs;
   OptimizerAttrs optimizer_attrs;
 
 public:
-  PerLayerElapsedTime forward();
-  PerLayerElapsedTime backward();
+  std::unordered_map<layer_guid_t, std::optional<milliseconds_t>> forward();
+  std::unordered_map<layer_guid_t, std::optional<milliseconds_t>> backward();
   void update();
   GenericTensorAccessorR get_loss_tensor_accessor() const;
 };

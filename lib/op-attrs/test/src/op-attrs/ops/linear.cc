@@ -85,8 +85,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     TensorShape projection = TensorShape{
         TensorDims{
             FFOrdered{
-                in_channels,
                 out_channels,
+                in_channels,
             },
         },
         DataType::FLOAT,
@@ -145,10 +145,10 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     auto make_projection = [&](SumDegree o_sum,
                                DiscardCopyDegree o_eq,
-                               positive_int o_inchannel,
-                               positive_int o_outchannel) {
+                               positive_int o_outchannel,
+                               positive_int o_inchannel) {
       return lift_to_parallel_with_degrees(
-          projection, o_sum, o_eq, FFOrdered{o_inchannel, o_outchannel});
+          projection, o_sum, o_eq, FFOrdered{o_outchannel, o_inchannel});
     };
 
     auto make_bias = [&](SumDegree o_sum,
@@ -232,8 +232,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         tl::expected<ParallelTensorShape, std::string> correct =
             make_projection(SumDegree{1_p},
                             DiscardCopyDegree{input_sum_degree},
-                            degree,
-                            1_p);
+                            1_p,
+                            degree);
         CHECK(result == correct);
       }
 
@@ -274,8 +274,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         tl::expected<ParallelTensorShape, std::string> correct =
             make_projection(SumDegree{1_p},
                             DiscardCopyDegree{input_sum_degree},
-                            1_p,
-                            degree);
+                            degree,
+                            1_p);
         CHECK(result == correct);
       }
 

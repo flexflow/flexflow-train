@@ -17,6 +17,7 @@
 #include "kernels/batch_matmul_kernels.h"
 #include "op-attrs/ops/batch_matmul.h"
 #include "task-spec/op_task_signature.h"
+#include "task-spec/profiling.h"
 #include "utils/containers/transform.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 
@@ -31,28 +32,36 @@ enum Slots {
   OUTPUT, // tensor
   PROFILING,
   HANDLE,
-  ITERATION_CONFIG
+  ITERATION_CONFIG,
+  KERNEL_DEVICE_TYPE,
 };
 
 OpTaskInvocation forward(BatchMatmulAttrs const &attrs) {
   OpTaskBinding fwd;
 
-  fwd.bind(A_INPUT, input_tensor(0));
-  fwd.bind(B_INPUT, input_tensor(1));
-  fwd.bind(OUTPUT, output_tensor(0));
+  fwd.bind(A_INPUT, input_tensor(0_n));
+  fwd.bind(B_INPUT, input_tensor(1_n));
+  fwd.bind(OUTPUT, output_tensor(0_n));
 
   fwd.bind_arg(ATTRS, attrs);
   fwd.bind_arg(HANDLE, ff_handle());
   fwd.bind_arg(PROFILING, profiling_settings());
   fwd.bind_arg(ITERATION_CONFIG, iteration_config());
+  fwd.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
-  return {task_id_t::BATCHMATMUL_FWD_TASK_ID, fwd};
+  return OpTaskInvocation{
+      task_id_t::BATCHMATMUL_FWD_TASK_ID,
+      fwd,
+  };
 }
 
 OpTaskInvocation backward(BatchMatmulAttrs const &attrs) {
   OpTaskBinding bwd = infer_bwd_binding(forward(attrs).binding);
 
-  return {task_id_t::BATCHMATMUL_BWD_TASK_ID, bwd};
+  return OpTaskInvocation{
+      task_id_t::BATCHMATMUL_BWD_TASK_ID,
+      bwd,
+  };
 }
 
 static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
@@ -60,27 +69,32 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto b_input = acc.get_tensor<Permissions::RO>(B_INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   auto attrs = acc.get_argument<BatchMatmulAttrs>(ATTRS);
-  PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
 
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   FFIterationConfig iter_config =
       acc.get_argument<FFIterationConfig>(ITERATION_CONFIG);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
-  positive_int m = b_input.shape.at(legion_dim_t{0_n});
-  ASSERT(m == output.shape.at(legion_dim_t{0_n}));
-  positive_int n = a_input.shape.at(legion_dim_t{1_n});
-  ASSERT(n == output.shape.at(legion_dim_t{1_n}));
-  positive_int k = a_input.shape.at(legion_dim_t{0_n});
-  ASSERT(k == b_input.shape.at(legion_dim_t{1_n}));
+  positive_int m = dim_at_idx(b_input.shape.dims, legion_dim_t{0_n});
+  ASSERT(m == dim_at_idx(output.shape.dims, legion_dim_t{0_n}));
+  positive_int n = dim_at_idx(a_input.shape.dims, legion_dim_t{1_n});
+  ASSERT(n == dim_at_idx(output.shape.dims, legion_dim_t{1_n}));
+  positive_int k = dim_at_idx(a_input.shape.dims, legion_dim_t{0_n});
+  ASSERT(k == dim_at_idx(b_input.shape.dims, legion_dim_t{1_n}));
 
-  ASSERT(a_input.shape.num_elements() == b_input.shape.num_elements());
-  ASSERT(a_input.shape.num_elements() == output.shape.num_elements());
+  ASSERT(get_num_elements(a_input.shape.dims) ==
+         get_num_elements(b_input.shape.dims));
+  ASSERT(get_num_elements(a_input.shape.dims) ==
+         get_num_elements(output.shape.dims));
 
   positive_int batch = 1_p;
-  for (nonnegative_int i : nonnegative_range(2_n, a_input.shape.num_dims())) {
-    positive_int dim_size = a_input.shape.at(legion_dim_t{i});
-    ASSERT(dim_size == b_input.shape.at(legion_dim_t{i}));
-    ASSERT(dim_size == output.shape.at(legion_dim_t{i}));
+  for (nonnegative_int i :
+       nonnegative_range(2_n, get_num_dims(a_input.shape.dims))) {
+    positive_int dim_size = dim_at_idx(a_input.shape.dims, legion_dim_t{i});
+    ASSERT(dim_size == dim_at_idx(b_input.shape.dims, legion_dim_t{i}));
+    ASSERT(dim_size == dim_at_idx(output.shape.dims, legion_dim_t{i}));
     batch *= dim_size;
   }
 
@@ -92,6 +106,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
 
   return profile(forward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[BatchMatmul] forward_time = {:.2lf}ms\n",
                  handle,
                  output.get_float_ptr(),
@@ -112,7 +127,9 @@ static std::optional<float>
   FFIterationConfig iter_config =
       acc.get_argument<FFIterationConfig>(ITERATION_CONFIG);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  PerDeviceFFHandle handle = acc.get_argument<PerDeviceFFHandle>(HANDLE);
+  device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
+  DeviceType kernel_device_type =
+      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
 
   auto output = acc.get_tensor<Permissions::RO>(OUTPUT);
   auto output_grad = acc.get_tensor_grad<Permissions::RW>(OUTPUT);
@@ -127,25 +144,29 @@ static std::optional<float>
   ASSERT(b_input.shape == b_input_grad.shape);
 
   // check dins
-  positive_int m = b_input.shape.at(legion_dim_t{0_n});
-  ASSERT(m == output.shape.at(legion_dim_t{0_n}));
-  positive_int n = a_input.shape.at(legion_dim_t{1_n});
-  ASSERT(n == output.shape.at(legion_dim_t{1_n}));
-  positive_int k = a_input.shape.at(legion_dim_t{0_n});
-  ASSERT(k == b_input.shape.at(legion_dim_t{1_n}));
-  ASSERT(a_input.shape.num_elements() == b_input.shape.num_elements());
-  ASSERT(a_input.shape.num_elements() == output.shape.num_elements());
+  positive_int m = dim_at_idx(b_input.shape.dims, legion_dim_t{0_n});
+  ASSERT(m == dim_at_idx(output.shape.dims, legion_dim_t{0_n}));
+  positive_int n = dim_at_idx(a_input.shape.dims, legion_dim_t{1_n});
+  ASSERT(n == dim_at_idx(output.shape.dims, legion_dim_t{1_n}));
+  positive_int k = dim_at_idx(a_input.shape.dims, legion_dim_t{0_n});
+  ASSERT(k == dim_at_idx(b_input.shape.dims, legion_dim_t{1_n}));
+  ASSERT(get_num_elements(a_input.shape.dims) ==
+         get_num_elements(b_input.shape.dims));
+  ASSERT(get_num_elements(a_input.shape.dims) ==
+         get_num_elements(output.shape.dims));
 
   positive_int batch = 1_p;
-  for (nonnegative_int i : nonnegative_range(2_n, a_input.shape.num_dims())) {
-    positive_int dim_size = a_input.shape.at(legion_dim_t{i});
-    ASSERT(dim_size == b_input.shape.at(legion_dim_t{i}));
-    ASSERT(dim_size == output.shape.at(legion_dim_t{i}));
+  for (nonnegative_int i :
+       nonnegative_range(2_n, get_num_dims(a_input.shape.dims))) {
+    positive_int dim_size = dim_at_idx(a_input.shape.dims, legion_dim_t{i});
+    ASSERT(dim_size == dim_at_idx(b_input.shape.dims, legion_dim_t{i}));
+    ASSERT(dim_size == dim_at_idx(output.shape.dims, legion_dim_t{i}));
     batch *= dim_size;
   }
 
   return profile(backward_kernel,
                  profiling,
+                 kernel_device_type,
                  "[BatchMatmul] backward_time = {:.2lf}ms\n",
                  handle,
                  output.get_float_ptr(),
@@ -175,7 +196,8 @@ OpTaskSignature get_batch_matmul_fwd_signature() {
   fwd.add_output_slot(OUTPUT);
   fwd.add_arg_slot<BatchMatmulAttrs>(ATTRS);
   fwd.add_arg_slot<ProfilingSettings>(PROFILING);
-  fwd.add_unchecked_arg_slot<PerDeviceFFHandle>(HANDLE);
+  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
+  fwd.add_unchecked_arg_slot<device_handle_t>(HANDLE);
 
   return fwd;
 }

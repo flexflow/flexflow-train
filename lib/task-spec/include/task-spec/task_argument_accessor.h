@@ -11,19 +11,7 @@ struct TaskArgumentAccessor {
   // arguments
   template <typename T>
   T const &get_argument(slot_id_t slot) const {
-    if constexpr (PerDeviceOpState::IsPartOfPerDeviceOpState_v<T>) {
-      PerDeviceOpState device_states =
-          this->ptr->get_concrete_arg(slot).get<PerDeviceOpState>();
-      if (device_states.has<T>()) {
-        return device_states.get<T>();
-      } else {
-        throw mk_runtime_error(fmt::format(
-            "Invalid access to PerDeviceOpState attempted, instead it holds: ",
-            device_states.index()));
-      }
-    } else {
-      return this->ptr->get_concrete_arg(slot).get<T>();
-    }
+    return this->ptr->get_concrete_arg(slot).get<T>();
   }
 
   template <typename T>

@@ -85,7 +85,8 @@ ComputationGraph
   for (auto const &input_feature : config.input_features) {
     std::string const &feature_name = input_feature.second;
     positive_int shape = config.feature_shapes.at(feature_name);
-    tensor_guid_t input = create_input_tensor({config.batch_size, shape});
+    tensor_guid_t input =
+        create_input_tensor(FFOrdered{config.batch_size, shape});
     all_inputs.push_back(input);
 
     if (contains(input_models, feature_name)) {

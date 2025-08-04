@@ -3,6 +3,7 @@
 #include "op-attrs/ff_ordered/transform.h"
 #include "op-attrs/initializers/kaiming_initializer_mode.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "op-attrs/tensor_dims.h"
 #include "op-attrs/tensor_shape.h"
 #include "utils/containers/product.h"
 #include "utils/expected.h"
@@ -44,11 +45,12 @@ RecordFormatter as_dot(LinearAttrs const &attrs) {
 tl::expected<TensorShape, std::string>
     get_projection_shape(LinearAttrs const &attrs,
                          TensorShape const &input_shape) {
-  positive_int in_channels = dim_at_idx(input_shape, relative_ff_dim_t{-1});
+  positive_int in_channels =
+      dim_at_idx(input_shape.dims, relative_ff_dim_t{-1});
 
   return TensorShape{
       TensorDims{
-          FFOrdered<positive_int>{in_channels, attrs.out_channels},
+          FFOrdered<positive_int>{attrs.out_channels, in_channels},
       },
       input_shape.data_type,
   };
@@ -105,8 +107,8 @@ tl::expected<ParallelTensorShape, std::string>
                                             relative_ff_dim_t{0},
                                             relative_ff_dim_t{-1}))};
   FFOrdered<positive_int> shard_degrees = FFOrdered<positive_int>{
-      shard_dim_at_idx(input, relative_ff_dim_t{-1}).degree,
       get_discard_copy_degree(input),
+      shard_dim_at_idx(input, relative_ff_dim_t{-1}).degree,
   };
 
   return lift_to_parallel_with_degrees(

@@ -26,12 +26,13 @@ void fwdbwd_wrapper_task(const void *args, size_t arglen, const void *userdata,
                          size_t userlen, Processor p) {
   assert(arglen == sizeof(uintptr_t));
   uintptr_t task_arg_ptr = *reinterpret_cast<const uintptr_t *>(args);
-  RealmTaskArgs<float> *task_args =
-      reinterpret_cast<RealmTaskArgs<float> *>(task_arg_ptr);
+  RealmTaskArgs<std::optional<milliseconds_t>> *task_args =
+      reinterpret_cast<RealmTaskArgs<std::optional<milliseconds_t>> *>(task_arg_ptr);
   auto fn =
       task_args->impl_function.get<FwdBwdOpTaskImplFunction>().function_ptr;
-  std::optional<float> result = fn(task_args->accessor);
-  task_args->promise.set_value(result.has_value() ? result.value() : 0.0f);
+  std::optional<milliseconds_t> result = transform(
+      fn(task_args->accessor), [](float running_time) { return milliseconds_t{running_time}; });
+  task_args->promise.set_value(std::move(result));
   delete task_args;
 }
 

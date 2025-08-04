@@ -64,13 +64,8 @@ ParallelLayerAddedResult add_parallel_layer(
   std::vector<ParallelTensorShape> correct_weight_shapes =
       get_weight_shapes(layer_attrs.op_attrs, input_shapes);
 
-  if (weight_shapes != correct_weight_shapes) {
-    throw mk_runtime_error(
-        fmt::format("add_parallel_layer expected weight shapes {}, but "
-                    "received weights with shapes {}",
-                    correct_weight_shapes,
-                    weight_shapes));
-  }
+  ASSERT(weight_shapes == correct_weight_shapes,
+         "add_parallel_layer received incorrect weight shapes");
 
   std::vector<ParallelTensorShape> output_shapes =
       get_output_shapes(layer_attrs.op_attrs, input_shapes);

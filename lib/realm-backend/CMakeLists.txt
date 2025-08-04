@@ -11,6 +11,7 @@ ff_add_library(
     op-attrs
     utils
     kernels
+    compiler
     local-execution
     pcg
     spdlog

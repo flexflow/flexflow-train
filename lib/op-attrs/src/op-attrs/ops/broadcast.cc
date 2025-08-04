@@ -13,7 +13,7 @@ RecordFormatter as_dot(BroadcastAttrs const &attrs) {
     return rr;
   };
 
-  for (int i = 0; i < num_dims(attrs.target_dims); i++) {
+  for (int i = 0; i < get_num_dims(attrs.target_dims); i++) {
     r << kv(fmt::format("target_dims[{}]", i),
             dim_at_idx(attrs.target_dims, relative_ff_dim_t{i}));
   }
@@ -24,7 +24,7 @@ RecordFormatter as_dot(BroadcastAttrs const &attrs) {
 tl::expected<TensorShape, std::string>
     get_output_shape(BroadcastAttrs const &attrs,
                      TensorShape const &input_shape) {
-  if (num_dims(attrs.target_dims) < num_dims(input_shape.dims)) {
+  if (get_num_dims(attrs.target_dims) < get_num_dims(input_shape.dims)) {
     return tl::unexpected(fmt::format(
         "get_output_shape for Broadcast expected num_dims(input_dims) <= "
         "num_dims(target_dims), but recieved input_shape {} with num dims "

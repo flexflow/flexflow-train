@@ -1,0 +1,27 @@
+namespace = "FlexFlow"
+name = "registered_task_t"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+  "rapidcheck",
+]
+
+includes = [
+  "task-spec/task_id_t.dtg.h",
+  "<utility>",
+]
+
+src_includes = [
+  "utils/rapidcheck/monostate.h",
+  "utils/fmt/monostate.h",
+]
+
+[[values]]
+type = "::FlexFlow::task_id_t"
+key = "real_task"
+
+[[values]]
+type = "std::monostate"
+key = "noop_task"

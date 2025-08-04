@@ -3,7 +3,6 @@
 #include "task-spec/ops/batch_matmul.h"
 #include "task-spec/ops/batch_norm.h"
 #include "task-spec/ops/cast.h"
-#include "task-spec/ops/combine.h"
 #include "task-spec/ops/concat.h"
 #include "task-spec/ops/conv_2d.h"
 #include "task-spec/ops/dropout.h"
@@ -18,9 +17,6 @@
 #include "task-spec/ops/noop.h"
 #include "task-spec/ops/pool_2d.h"
 #include "task-spec/ops/reduce.h"
-#include "task-spec/ops/reduction.h"
-#include "task-spec/ops/repartition.h"
-#include "task-spec/ops/replicate.h"
 #include "task-spec/ops/reshape.h"
 #include "task-spec/ops/reverse.h"
 #include "task-spec/ops/softmax.h"
@@ -32,7 +28,8 @@
 
 namespace FlexFlow {
 
-TaskSignatureAndImpl get_task_sig_impl(task_id_t const &task_id) {
+TaskSignatureAndImpl
+    get_task_signature_and_impl_for_task_id(task_id_t const &task_id) {
   switch (task_id) {
     case task_id_t::ELEMENTBINARY_INIT_TASK_ID:
       return TaskSignatureAndImpl{get_element_binary_init_task_impl(),
@@ -70,12 +67,12 @@ TaskSignatureAndImpl get_task_sig_impl(task_id_t const &task_id) {
     case task_id_t::DROPOUT_BWD_TASK_ID:
       return TaskSignatureAndImpl{get_dropout_bwd_task_impl(),
                                   get_dropout_bwd_signature()};
-    // case task_id_t::EMBED_FWD_TASK_ID:
-    //   return TaskSignatureAndImpl{get_embedding_fwd_task_impl(),
-    //   get_embedding_fwd_signature()};
-    // case task_id_t::EMBED_BWD_TASK_ID:
-    //   return TaskSignatureAndImpl{get_embedding_bwd_task_impl(),
-    //   get_embedding_bwd_signature()};
+    case task_id_t::EMBED_FWD_TASK_ID:
+      return TaskSignatureAndImpl{get_embedding_fwd_task_impl(),
+                                  get_embedding_fwd_signature()};
+    case task_id_t::EMBED_BWD_TASK_ID:
+      return TaskSignatureAndImpl{get_embedding_bwd_task_impl(),
+                                  get_embedding_bwd_signature()};
     case task_id_t::GATHER_INIT_TASK_ID:
       return TaskSignatureAndImpl{get_gather_init_task_impl(),
                                   get_gather_init_signature()};
@@ -169,9 +166,6 @@ TaskSignatureAndImpl get_task_sig_impl(task_id_t const &task_id) {
     case task_id_t::REDUCE_BWD_TASK_ID:
       return TaskSignatureAndImpl{get_reduce_bwd_task_impl(),
                                   get_reduce_bwd_signature()};
-    case task_id_t::RESHAPE_INIT_TASK_ID:
-      return TaskSignatureAndImpl{get_reshape_init_task_impl(),
-                                  get_reshape_init_signature()};
     case task_id_t::RESHAPE_FWD_TASK_ID:
       return TaskSignatureAndImpl{get_reshape_fwd_task_impl(),
                                   get_reshape_fwd_signature()};
@@ -184,9 +178,6 @@ TaskSignatureAndImpl get_task_sig_impl(task_id_t const &task_id) {
     case task_id_t::REVERSE_BWD_TASK_ID:
       return TaskSignatureAndImpl{get_reverse_bwd_task_impl(),
                                   get_reverse_bwd_signature()};
-    case task_id_t::TOPK_INIT_TASK_ID:
-      return TaskSignatureAndImpl{get_topk_init_task_impl(),
-                                  get_topk_init_signature()};
     case task_id_t::TOPK_FWD_TASK_ID:
       return TaskSignatureAndImpl{get_topk_fwd_task_impl(),
                                   get_topk_fwd_signature()};
@@ -208,37 +199,8 @@ TaskSignatureAndImpl get_task_sig_impl(task_id_t const &task_id) {
     case task_id_t::ATTENTION_BWD_TASK_ID:
       return TaskSignatureAndImpl{get_attention_bwd_task_impl(),
                                   get_attention_bwd_signature()};
-    case task_id_t::COMBINE_FWD_TASK_ID:
-      return TaskSignatureAndImpl{get_combine_fwd_task_impl(),
-                                  get_combine_fwd_signature()};
-    case task_id_t::COMBINE_BWD_TASK_ID:
-      return TaskSignatureAndImpl{get_combine_bwd_task_impl(),
-                                  get_combine_bwd_signature()};
-    case task_id_t::REDUCTION_FWD_TASK_ID:
-      return TaskSignatureAndImpl{get_reduction_fwd_task_impl(),
-                                  get_reduction_fwd_signature()};
-    case task_id_t::REDUCTION_BWD_TASK_ID:
-      return TaskSignatureAndImpl{get_reduction_bwd_task_impl(),
-                                  get_reduction_bwd_signature()};
-    case task_id_t::REPARTITION_INIT_TASK_ID:
-      return TaskSignatureAndImpl{get_repartition_init_task_impl(),
-                                  get_repartition_init_signature()};
-    case task_id_t::REPARTITION_FWD_TASK_ID:
-      return TaskSignatureAndImpl{get_repartition_fwd_task_impl(),
-                                  get_repartition_fwd_signature()};
-    case task_id_t::REPARTITION_BWD_TASK_ID:
-      return TaskSignatureAndImpl{get_repartition_bwd_task_impl(),
-                                  get_repartition_bwd_signature()};
-    case task_id_t::REPLICATE_FWD_TASK_ID:
-      return TaskSignatureAndImpl{get_replicate_fwd_task_impl(),
-                                  get_replicate_fwd_signature()};
-    case task_id_t::REPLICATE_BWD_TASK_ID:
-      return TaskSignatureAndImpl{get_replicate_bwd_task_impl(),
-                                  get_replicate_bwd_signature()};
     default:
-      throw mk_runtime_error(
-          fmt::format("Invalid task ID")); // inserting task_id yields
-                                           // "type_is_unformattable" error
+      PANIC("Unhandled task ID", task_id);
   }
 }
 
@@ -252,9 +214,7 @@ std::vector<task_id_t> get_task_ids(ComputationGraphOpAttrs const &op) {
       [](DropoutAttrs const &attrs) { return get_task_ids(attrs); },
       [](ElementBinaryAttrs const &attrs) { return get_task_ids(attrs); },
       [](ElementUnaryAttrs const &attrs) { return get_task_ids(attrs); },
-      // [](EmbeddingAttrs const & attrs) {
-      //   return get_task_ids(attrs);
-      // },
+      [](EmbeddingAttrs const &attrs) { return get_task_ids(attrs); },
       [](FlatAttrs const &attrs) { return get_task_ids(attrs); },
       [](GatherAttrs const &attrs) { return get_task_ids(attrs); },
       [](InputAttrs const &attrs) { return get_task_ids(attrs); },
@@ -277,7 +237,8 @@ std::vector<task_id_t> get_task_ids(ComputationGraphOpAttrs const &op) {
   });
 }
 
-OpTaskInvocation init(ComputationGraphOpAttrs const &op) {
+OpTaskInvocation
+    get_init_op_task_invocation(ComputationGraphOpAttrs const &op) {
   return op.visit<OpTaskInvocation>(overload{
       [](BatchNormAttrs const &attrs) { return init(attrs); },
       [](Conv2DAttrs const &attrs) { return init(attrs); },
@@ -290,16 +251,15 @@ OpTaskInvocation init(ComputationGraphOpAttrs const &op) {
       [](MultiHeadAttentionAttrs const &attrs) { return init(attrs); },
       [](Pool2DAttrs const &attrs) { return init(attrs); },
       [](ReduceAttrs const &attrs) { return init(attrs); },
-      [](ReshapeAttrs const &attrs) { return init(attrs); },
       [](SoftmaxAttrs const &attrs) { return init(attrs); },
-      [](TopKAttrs const &attrs) { return init(attrs); },
       [](auto const &attrs) -> OpTaskInvocation {
-        throw mk_runtime_error(fmt::format("Unhandled attr type {}", attrs));
+        PANIC("Unhandled attr type", attrs);
       },
   });
 }
 
-OpTaskInvocation forward(ComputationGraphOpAttrs const &op) {
+OpTaskInvocation
+    get_forward_op_task_invocation(ComputationGraphOpAttrs const &op) {
   return op.visit<OpTaskInvocation>(overload{
       [](BatchMatmulAttrs const &attrs) { return forward(attrs); },
       [](BatchNormAttrs const &attrs) { return forward(attrs); },
@@ -309,9 +269,7 @@ OpTaskInvocation forward(ComputationGraphOpAttrs const &op) {
       [](DropoutAttrs const &attrs) { return forward(attrs); },
       [](ElementBinaryAttrs const &attrs) { return forward(attrs); },
       [](ElementUnaryAttrs const &attrs) { return forward(attrs); },
-      // [](EmbeddingAttrs const & attrs) {
-      //   return forward(attrs);
-      // },
+      [](EmbeddingAttrs const &attrs) { return forward(attrs); },
       [](FlatAttrs const &attrs) { return forward(attrs); },
       [](GatherAttrs const &attrs) { return forward(attrs); },
       [](LayerNormAttrs const &attrs) { return forward(attrs); },
@@ -331,7 +289,8 @@ OpTaskInvocation forward(ComputationGraphOpAttrs const &op) {
   });
 }
 
-OpTaskInvocation backward(ComputationGraphOpAttrs const &op) {
+OpTaskInvocation
+    get_backward_op_task_invocation(ComputationGraphOpAttrs const &op) {
   return op.visit<OpTaskInvocation>(overload{
       [](BatchMatmulAttrs const &attrs) { return backward(attrs); },
       [](BatchNormAttrs const &attrs) { return backward(attrs); },
@@ -341,9 +300,7 @@ OpTaskInvocation backward(ComputationGraphOpAttrs const &op) {
       [](DropoutAttrs const &attrs) { return backward(attrs); },
       [](ElementBinaryAttrs const &attrs) { return backward(attrs); },
       [](ElementUnaryAttrs const &attrs) { return backward(attrs); },
-      // [](EmbeddingAttrs const & attrs) {
-      //   return backward(attrs);
-      // },
+      [](EmbeddingAttrs const &attrs) { return backward(attrs); },
       [](FlatAttrs const &attrs) { return backward(attrs); },
       [](GatherAttrs const &attrs) { return backward(attrs); },
       [](LayerNormAttrs const &attrs) { return backward(attrs); },
@@ -358,7 +315,7 @@ OpTaskInvocation backward(ComputationGraphOpAttrs const &op) {
       [](TopKAttrs const &attrs) { return backward(attrs); },
       [](TransposeAttrs const &attrs) { return backward(attrs); },
       [](auto const &attrs) -> OpTaskInvocation {
-        throw mk_runtime_error(fmt::format("Unhandled attr type {}", attrs));
+        PANIC("Unhandled attr type", attrs);
       },
   });
 }

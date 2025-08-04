@@ -3,6 +3,7 @@
 #include "op-attrs/ff_ordered/transform.h"
 #include "op-attrs/ops/embedding_attrs.dtg.h"
 #include "op-attrs/parallel_tensor_dims.h"
+#include "op-attrs/tensor_dims.h"
 #include "utils/containers/product.h"
 #include "utils/fmt/optional.h"
 #include "utils/integer_conversions.h"
@@ -52,7 +53,7 @@ tl::expected<TensorShape, std::string>
   }
 
   TensorShape output = input;
-  dim_at_idx(output, relative_ff_dim_t{-1}) = attrs.out_channels;
+  dim_at_idx(output.dims, relative_ff_dim_t{-1}) = attrs.out_channels;
   output.data_type = attrs.data_type;
   return output;
 }
@@ -120,7 +121,7 @@ tl::expected<ParallelTensorShape, std::string>
       [](ShardParallelDim const &d) -> positive_int { return d.degree; }))};
   positive_int entry_dim_degree = 1_p;
   positive_int out_channel_degree = get_discard_copy_degree(input);
-  FFOrdered<positive_int> shard_degrees = {
+  FFOrdered<positive_int> shard_degrees = FFOrdered{
       entry_dim_degree,
       out_channel_degree,
   };

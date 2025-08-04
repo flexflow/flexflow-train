@@ -1,0 +1,19 @@
+namespace = "FlexFlow"
+name = "ElementUnaryPerDeviceState"
+features = []
+
+includes = [
+  "kernels/device.h",
+]
+
+[[fields]]
+name = "inputTensor"
+type = "ffTensorDescriptor_t"
+
+[[fields]]
+name = "outputTensor"
+type = "ffTensorDescriptor_t"
+
+[[fields]]
+name = "actiDesc"
+type = "ffActivationDescriptor_t"

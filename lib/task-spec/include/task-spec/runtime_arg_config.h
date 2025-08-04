@@ -1,18 +1,17 @@
-#ifndef _FLEXFLOW_LOCAL_EXECUTION_RUNTIME_ARG_CONFIG_H
-#define _FLEXFLOW_LOCAL_EXECUTION_RUNTIME_ARG_CONFIG_H
+#ifndef _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_RUNTIME_ARG_CONFIG_H
+#define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_RUNTIME_ARG_CONFIG_H
 
-#include "kernels/ff_handle.h"
-#include "task-spec/device_specific.h"
-#include "task-spec/profiling.h"
+#include "task-spec/runtime_arg_config.dtg.h"
 
 namespace FlexFlow {
 
-struct RuntimeArgConfig {
-public:
-  DeviceSpecific<PerDeviceFFHandle> ff_handle;
-  EnableProfiling enable_profiling;
-  ProfilingSettings profiling_settings;
-};
+RuntimeArgConfig
+    cpu_make_runtime_arg_config(EnableProfiling enable_profiling,
+                                ProfilingSettings profiling_settings);
+RuntimeArgConfig
+    gpu_make_runtime_arg_config(PerDeviceFFHandle const &ff_handle,
+                                EnableProfiling enable_profiling,
+                                ProfilingSettings profiling_settings);
 
 } // namespace FlexFlow
 

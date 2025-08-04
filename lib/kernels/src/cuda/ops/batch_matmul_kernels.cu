@@ -14,24 +14,24 @@
  */
 
 #include "internal/device.h"
-#include "kernels/batch_matmul_kernels.h"
+#include "kernels/batch_matmul_kernels_gpu.h"
 
 namespace FlexFlow {
 namespace Kernels {
 namespace BatchMatmul {
 
-void forward_kernel(cudaStream_t stream,
-                    PerDeviceFFHandle const &handle,
-                    float *output_ptr,
-                    float const *a_input_ptr,
-                    float const *b_input_ptr,
-                    int m,
-                    int n,
-                    int k,
-                    int batch,
-                    int a_seq_length_dim,
-                    int b_seq_length_dim,
-                    int seq_length) {
+void gpu_forward_kernel(cudaStream_t stream,
+                        PerDeviceFFHandle const &handle,
+                        float *output_ptr,
+                        float const *a_input_ptr,
+                        float const *b_input_ptr,
+                        int m,
+                        int n,
+                        int k,
+                        int batch,
+                        int a_seq_length_dim,
+                        int b_seq_length_dim,
+                        int seq_length) {
   checkCUBLAS(cublasSetStream(handle.blas, stream));
   checkCUDNN(cudnnSetStream(handle.dnn, stream));
   int lda = k;
@@ -83,18 +83,18 @@ void forward_kernel(cudaStream_t stream,
                                         batch));
 }
 
-void backward_kernel(cudaStream_t stream,
-                     PerDeviceFFHandle const &handle,
-                     float const *o_ptr,
-                     float const *o_grad_ptr,
-                     float const *a_ptr,
-                     float *a_grad_ptr,
-                     float const *b_ptr,
-                     float *b_grad_ptr,
-                     int m,
-                     int n,
-                     int k,
-                     int batch) {
+void gpu_backward_kernel(cudaStream_t stream,
+                         PerDeviceFFHandle const &handle,
+                         float const *o_ptr,
+                         float const *o_grad_ptr,
+                         float const *a_ptr,
+                         float *a_grad_ptr,
+                         float const *b_ptr,
+                         float *b_grad_ptr,
+                         int m,
+                         int n,
+                         int k,
+                         int batch) {
   checkCUBLAS(cublasSetStream(handle.blas, stream));
   checkCUDNN(cudnnSetStream(handle.dnn, stream));
 

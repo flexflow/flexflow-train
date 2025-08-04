@@ -23,7 +23,7 @@ using unwrap_optional_t = typename unwrap_optional<T>::type;
 template <typename F,
           typename In,
           typename Out = unwrap_optional_t<std::invoke_result_t<F, In>>>
-std::vector<Out> filtrans(std::vector<In> const &v, F f) {
+std::vector<Out> filtrans(std::vector<In> const &v, F &&f) {
   std::vector<Out> result;
 
   for (In const &i : v) {
@@ -39,7 +39,7 @@ std::vector<Out> filtrans(std::vector<In> const &v, F f) {
 template <typename F,
           typename In,
           typename Out = unwrap_optional_t<std::invoke_result_t<F, In>>>
-std::unordered_set<Out> filtrans(std::unordered_set<In> const &s, F f) {
+std::unordered_set<Out> filtrans(std::unordered_set<In> const &s, F &&f) {
   std::unordered_set<Out> result;
 
   for (In const &i : s) {
@@ -55,7 +55,7 @@ std::unordered_set<Out> filtrans(std::unordered_set<In> const &s, F f) {
 template <typename F,
           typename In,
           typename Out = unwrap_optional_t<std::invoke_result_t<F, In>>>
-std::set<Out> filtrans(std::set<In> const &s, F f) {
+std::set<Out> filtrans(std::set<In> const &s, F &&f) {
   std::set<Out> result;
 
   for (In const &i : s) {

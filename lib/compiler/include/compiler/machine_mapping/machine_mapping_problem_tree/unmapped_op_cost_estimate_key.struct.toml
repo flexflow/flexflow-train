@@ -10,7 +10,7 @@ includes = [
   "op-attrs/pcg_operator_attrs.dtg.h",
   "op-attrs/parallel_tensor_shape.dtg.h",
   "<vector>",
-  "pcg/machine_view.dtg.h",
+  "pcg/optimizer_attrs.dtg.h",
 ]
 
 src_includes = [
@@ -34,3 +34,6 @@ type = "std::vector<::FlexFlow::ParallelTensorShape>"
 name = "output_shapes"
 type = "std::vector<::FlexFlow::ParallelTensorShape>"
 
+[[fields]]
+name = "optimizer_attrs"
+type = "::FlexFlow::OptimizerAttrs"

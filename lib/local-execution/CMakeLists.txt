@@ -14,6 +14,7 @@ ff_add_library(
     task-spec
     pcg
     spdlog
+    compiler
 )
 
 add_subdirectory(test)

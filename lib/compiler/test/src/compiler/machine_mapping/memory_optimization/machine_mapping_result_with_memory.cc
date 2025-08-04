@@ -53,21 +53,21 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     OpCostMetrics cost1 = OpCostMetrics{
-        /*forward_runtime=*/2.0,
-        /*backward_runtime=*/2.0,
-        /*memory=*/2_n,
+        /*forward_runtime=*/2_ms,
+        /*backward_runtime=*/2_ms,
+        /*memory_usage=*/2_bytes,
     };
 
     OpCostMetrics cost2 = OpCostMetrics{
-        /*forward_runtime=*/4.0,
-        /*backward_runtime=*/4.0,
-        /*memory=*/1_n,
+        /*forward_runtime=*/4_ms,
+        /*backward_runtime=*/4_ms,
+        /*memory_usage=*/1_bytes,
     };
 
     OpCostMetrics cost3 = OpCostMetrics{
-        /*forward_runtime=*/2.0,
-        /*backward_runtime=*/2.0,
-        /*memory=*/3_n,
+        /*forward_runtime=*/2_ms,
+        /*backward_runtime=*/2_ms,
+        /*memory_usage=*/3_bytes,
     };
 
     MachineMappingForSingleLayer mm1 = MachineMappingForSingleLayer{
@@ -188,9 +188,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     OpCostMetrics pre_cost = OpCostMetrics{
-        /*forward_runtime=*/2.0,
-        /*backward_runtime=*/2.0,
-        /*memory=*/2_n,
+        /*forward_runtime=*/2_ms,
+        /*backward_runtime=*/2_ms,
+        /*memory_usage=*/2_bytes,
     };
     MachineMappingWithMemoryResult pre = MachineMappingWithMemoryResult{{
         MachineMappingForSingleLayer{
@@ -215,9 +215,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     }};
 
     OpCostMetrics post_cost = OpCostMetrics{
-        /*forward_runtime=*/4.0,
-        /*backward_runtime=*/4.0,
-        /*memory=*/1_n,
+        /*forward_runtime=*/4_ms,
+        /*backward_runtime=*/4_ms,
+        /*memory_usage=*/1_bytes,
     };
 
     MachineMappingWithMemoryResult post = MachineMappingWithMemoryResult{{
@@ -237,7 +237,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     MachineMappingWithMemoryResult empty =
         empty_machine_mapping_with_memory_result();
 
-    float comm_cost = 3.0;
+    milliseconds_t comm_cost = 3_ms;
 
     SUBCASE("pre is empty") {
       MachineMappingWithMemoryResult result = series_combine(
@@ -265,7 +265,8 @@ TEST_SUITE(FF_TEST_SUITE) {
                               comm_cost + post_cost.forward_runtime,
                           /*backward_runtime=*/pre_cost.backward_runtime +
                               comm_cost + post_cost.backward_runtime,
-                          /*memory=*/pre_cost.memory + post_cost.memory,
+                          /*memory_usage=*/pre_cost.memory_usage +
+                              post_cost.memory_usage,
                       },
                       /*machine_mapping=*/
                       ParallelLayerGuidObliviousMachineMapping{{
@@ -321,7 +322,8 @@ TEST_SUITE(FF_TEST_SUITE) {
                             comm_cost + post_cost.forward_runtime,
                         /*backward_runtime=*/pre_cost.backward_runtime +
                             comm_cost + post_cost.backward_runtime,
-                        /*memory=*/pre_cost.memory + post_cost.memory,
+                        /*memory_usage=*/pre_cost.memory_usage +
+                            post_cost.memory_usage,
                     },
                     /*machine_mapping=*/
                     ParallelLayerGuidObliviousMachineMapping{{
@@ -389,9 +391,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     OpCostMetrics lhs_cost = OpCostMetrics{
-        /*forward_runtime=*/2.0,
-        /*backward_runtime=*/2.0,
-        /*memory=*/2_n,
+        /*forward_runtime=*/2_ms,
+        /*backward_runtime=*/2_ms,
+        /*memory_usage=*/2_bytes,
     };
     MachineMappingWithMemoryResult lhs = MachineMappingWithMemoryResult{{
         MachineMappingForSingleLayer{
@@ -416,9 +418,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     }};
 
     OpCostMetrics rhs_cost = OpCostMetrics{
-        /*forward_runtime=*/4.0,
-        /*backward_runtime=*/4.0,
-        /*memory=*/1_n,
+        /*forward_runtime=*/4_ms,
+        /*backward_runtime=*/4_ms,
+        /*memory_usage=*/1_bytes,
     };
     MachineMappingWithMemoryResult rhs = MachineMappingWithMemoryResult{{
         MachineMappingForSingleLayer{
@@ -461,7 +463,8 @@ TEST_SUITE(FF_TEST_SUITE) {
                   /*backward_runtime=*/
                   std::max(lhs_cost.backward_runtime,
                            rhs_cost.backward_runtime),
-                  /*memory=*/std::max(lhs_cost.memory, rhs_cost.memory),
+                  /*memory_usage=*/
+                  std::max(lhs_cost.memory_usage, rhs_cost.memory_usage),
               },
               /*machine_mapping=*/
               ParallelLayerGuidObliviousMachineMapping{
@@ -536,19 +539,19 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     OpCostMetrics cost1 = OpCostMetrics{
-        /*forward_runtime=*/2.0,
-        /*backward_runtime=*/2.0,
-        /*memory=*/2_n,
+        /*forward_runtime=*/2_ms,
+        /*backward_runtime=*/2_ms,
+        /*memory_usage=*/2_bytes,
     };
     OpCostMetrics cost2 = OpCostMetrics{
-        /*forward_runtime=*/4.0,
-        /*backward_runtime=*/4.0,
-        /*memory=*/1_n,
+        /*forward_runtime=*/4_ms,
+        /*backward_runtime=*/4_ms,
+        /*memory_usage=*/1_bytes,
     };
     OpCostMetrics cost3 = OpCostMetrics{
-        /*forward_runtime=*/2.0,
-        /*backward_runtime=*/2.0,
-        /*memory=*/3_n,
+        /*forward_runtime=*/2_ms,
+        /*backward_runtime=*/2_ms,
+        /*memory_usage=*/3_bytes,
     };
 
     MachineMappingForSingleLayer mm1 = MachineMappingForSingleLayer{

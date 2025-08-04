@@ -6,7 +6,7 @@
 #include "pcg/optimizer_attrs.dtg.h"
 #include "realm-backend/driver.h"
 #include "realm-backend/realm_allocator.h"
-#include "realm-backend/realm_training_backing.h"
+#include "realm-backend/local_training_backing.h"
 #include "test_utils.h"
 
 using namespace ::FlexFlow;
@@ -80,11 +80,11 @@ void top_level_task(const void *args, size_t arglen, const void *userdata,
                                         /*momentum=*/0.0f,
                                         /*nesterov=*/false,
                                         /*weight_decay=*/0.001}};
-    RealmTrainingBacking realm_training_backing = RealmTrainingBacking(
+    LocalTrainingBacking local_training_backing = LocalTrainingBacking(
         p, worker_procs, allocators, allocated_tensors, gradient_tensor_source,
         optimizer_tensor_source, computation_graph, runtime_arg_config,
         optimizer_attrs);
-    execute_update(realm_training_backing, linear_operator.layer, optimizer_attrs).wait();
+    execute_update(local_training_backing, linear_operator.layer, optimizer_attrs).wait();
     printf("passed\n");
   }
 
@@ -95,11 +95,11 @@ void top_level_task(const void *args, size_t arglen, const void *userdata,
                                         /*momentum=*/0.9,
                                         /*nesterov=*/false,
                                         /*weight_decay=*/0.001}};
-    RealmTrainingBacking realm_training_backing = RealmTrainingBacking(
+    LocalTrainingBacking local_training_backing = LocalTrainingBacking(
         p, worker_procs, allocators, allocated_tensors, gradient_tensor_source,
         optimizer_tensor_source, computation_graph, runtime_arg_config,
         optimizer_attrs);
-    execute_update(realm_training_backing, linear_operator.layer, optimizer_attrs).wait();
+    execute_update(local_training_backing, linear_operator.layer, optimizer_attrs).wait();
     printf("passed\n");
   }
   
@@ -114,11 +114,11 @@ void top_level_task(const void *args, size_t arglen, const void *userdata,
                                         /*beta_t=*/0.9,
                                         /*beta2_t=*/0.999,
                                         /*epsilon=*/1e-8}};
-    RealmTrainingBacking realm_training_backing = RealmTrainingBacking(
+    LocalTrainingBacking local_training_backing = LocalTrainingBacking(
         p, worker_procs, allocators, allocated_tensors, gradient_tensor_source,
         optimizer_tensor_source, computation_graph, runtime_arg_config,
         optimizer_attrs);
-    execute_update(realm_training_backing, linear_operator.layer, optimizer_attrs).wait();
+    execute_update(local_training_backing, linear_operator.layer, optimizer_attrs).wait();
     printf("passed\n");
   }
 }

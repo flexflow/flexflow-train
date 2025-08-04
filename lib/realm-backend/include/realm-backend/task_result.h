@@ -2,7 +2,6 @@
 #define _FLEXFLOW_LOCAL_EXECUTION_TASK_RESULT_H
 
 #include "realm-backend/driver.h"
-#include "realm-backend/realm_task_argument_accessor.h"
 #include <cassert>
 #include <optional>
 

@@ -1,0 +1,23 @@
+namespace = "FlexFlow"
+name = "MachineMappingWithMemoryContext"
+features = []
+
+includes = [
+  "compiler/cost_estimator/cost_estimator.h",
+  "pcg/machine_view.dtg.h",
+  "pcg/machine_specification.dtg.h",
+  "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_runtime_only_op_cost_estimate_key.dtg.h",
+  "pcg/optimizer_attrs.dtg.h",
+]
+
+[[fields]]
+name = "cost_estimator"
+type = "::FlexFlow::CostEstimator"
+
+[[fields]]
+name = "optimizer_attrs"
+type = "::FlexFlow::OptimizerAttrs"
+
+[[fields]]
+name = "allowed_machine_views"
+type = "std::function<std::unordered_set<::FlexFlow::MachineView>(::FlexFlow::UnmappedRuntimeOnlyOpCostEstimateKey const &, ::FlexFlow::MachineSpecification const &)>"

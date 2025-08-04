@@ -2,7 +2,6 @@
 #define _FLEXFLOW_OPS_KERNELS_REVERSE_KERNELS_CPU_H
 
 #include "kernels/accessor.h"
-#include "kernels/device.h"
 #include "op-attrs/ops/reverse_attrs.dtg.h"
 
 namespace FlexFlow::Kernels::Reverse {

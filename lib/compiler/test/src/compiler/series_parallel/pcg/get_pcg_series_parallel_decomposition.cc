@@ -296,7 +296,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_tensor_guid_t t_p4 = get_only(p4_added.outputs);
 
       RepartitionAttrs p5_attrs = RepartitionAttrs{
-          /*repartition_dim=*/ff_dim_t{0_n},
+          /*repartition_dim=*/ff_dim_t{1_n},
           /*repartition_degree=*/2_p,
       };
       ParallelLayerAddedResult p5_added =

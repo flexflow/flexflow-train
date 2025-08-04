@@ -1,5 +1,6 @@
 #include "op-attrs/ops/batch_matmul.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "op-attrs/tensor_dims.h"
 
 namespace FlexFlow {
 
@@ -39,16 +40,16 @@ tl::expected<TensorShape, std::string>
   // out will be a (b×n×p) tensor.
   // https://pytorch.org/docs/stable/generated/torch.bmm.html
 
-  if (num_dims(input_lhs) != 3) {
+  if (get_num_dims(input_lhs.dims) != 3) {
     return tl::unexpected(
         fmt::format("LHS input has incorrect number of shard dims: {} != {}",
-                    num_dims(input_lhs),
+                    get_num_dims(input_lhs.dims),
                     3));
   }
-  if (num_dims(input_rhs) != 3) {
+  if (get_num_dims(input_rhs.dims) != 3) {
     return tl::unexpected(
         fmt::format("RHS input has incorrect number of shard dims: {} != {}",
-                    num_dims(input_rhs),
+                    get_num_dims(input_rhs.dims),
                     3));
   }
   if (input_lhs.data_type != input_rhs.data_type) {
@@ -57,13 +58,13 @@ tl::expected<TensorShape, std::string>
                                       input_rhs.data_type));
   }
 
-  positive_int lhs_b = dim_at_idx(input_lhs, relative_ff_dim_t{0});
-  positive_int n = dim_at_idx(input_lhs, relative_ff_dim_t{1});
-  positive_int lhs_m = dim_at_idx(input_lhs, relative_ff_dim_t{2});
+  positive_int lhs_b = dim_at_idx(input_lhs.dims, relative_ff_dim_t{0});
+  positive_int n = dim_at_idx(input_lhs.dims, relative_ff_dim_t{1});
+  positive_int lhs_m = dim_at_idx(input_lhs.dims, relative_ff_dim_t{2});
 
-  positive_int rhs_b = dim_at_idx(input_rhs, relative_ff_dim_t{0});
-  positive_int rhs_m = dim_at_idx(input_rhs, relative_ff_dim_t{1});
-  positive_int p = dim_at_idx(input_rhs, relative_ff_dim_t{2});
+  positive_int rhs_b = dim_at_idx(input_rhs.dims, relative_ff_dim_t{0});
+  positive_int rhs_m = dim_at_idx(input_rhs.dims, relative_ff_dim_t{1});
+  positive_int p = dim_at_idx(input_rhs.dims, relative_ff_dim_t{2});
 
   if (lhs_b != rhs_b) {
     return tl::unexpected(
