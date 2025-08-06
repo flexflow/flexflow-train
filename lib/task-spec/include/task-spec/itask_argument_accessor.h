@@ -2,6 +2,7 @@
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_ITASK_ARGUMENT_ACCESSOR_H
 
 #include "kernels/allocation.h"
+#include "pcg/device_id_t.dtg.h"
 #include "task-spec/concrete_arg_spec.h"
 #include "task-spec/op_task_signature.h"
 #include "task-spec/privilege_tensor_accessor.h"

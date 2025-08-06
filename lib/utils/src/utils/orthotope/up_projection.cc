@@ -25,7 +25,7 @@ template DimCoord<R>
     compute_up_projection(UpProjection<L, R> const &,
                           DimCoord<L> const &,
                           DimDomain<R> const &,
-                          DimOrdering<R> const &output_dim_ordering);
+                          DimOrdering<R> const &);
 
 template UpProjection<L, R> make_empty_up_projection();
 

@@ -58,12 +58,16 @@ TEST_SUITE(FF_TEST_SUITE) {
       ParallelComputationGraph pcg2 = create_pcg();
 
       GraphOptimizeState state1 = GraphOptimizeState{
-          GraphOptimizeResult{pcg1, empty_machine_mapping},
+          GraphOptimizeResult{
+            MappedParallelComputationGraph{pcg1, empty_machine_mapping},
+          },
           0,
       };
 
       GraphOptimizeState state2 = GraphOptimizeState{
-          GraphOptimizeResult{pcg2, empty_machine_mapping},
+          GraphOptimizeResult{
+            MappedParallelComputationGraph{pcg2, empty_machine_mapping},
+          },
           0,
       };
 
@@ -88,12 +92,16 @@ TEST_SUITE(FF_TEST_SUITE) {
       ParallelComputationGraph pcg_ = builder_.pcg;
 
       GraphOptimizeState state1 = GraphOptimizeState{
-          GraphOptimizeResult{pcg1, empty_machine_mapping},
+          GraphOptimizeResult{
+            MappedParallelComputationGraph{pcg1, empty_machine_mapping},
+          },
           0,
       };
 
       GraphOptimizeState state_ = GraphOptimizeState{
-          GraphOptimizeResult{pcg_, empty_machine_mapping},
+          GraphOptimizeResult{
+            MappedParallelComputationGraph{pcg_, empty_machine_mapping},
+          },
           0,
       };
 

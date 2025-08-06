@@ -29,8 +29,10 @@ std::unordered_set<ReplicaParallelDim>
   return get_replica_dims(d.replica_dims);
 }
 
-nonnegative_int num_shard_dims(ParallelTensorDims const &dims) {
-  return num_elements(dims.shard_dims);
+num_ptensor_shard_dims_t num_shard_dims(ParallelTensorDims const &dims) {
+  return num_ptensor_shard_dims_t{
+    num_elements(dims.shard_dims),
+  };
 }
 
 ParallelTensorDimDegrees get_parallel_degrees(ParallelTensorDims const &d) {

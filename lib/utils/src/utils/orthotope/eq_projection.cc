@@ -6,11 +6,17 @@ namespace FlexFlow {
 using L = value_type<0>;
 using R = value_type<1>;
 
+template
+  EqProjection<L, R> make_empty_eq_projection();
+
 template std::unordered_set<L>
     input_dims_of_eq_projection(EqProjection<L, R> const &);
 
 template std::unordered_set<R>
     output_dims_of_eq_projection(EqProjection<L, R> const &);
+
+template 
+  void project_dims(EqProjection<L, R> &, L const &, R const &);
 
 template EqProjection<R, L> invert_eq_projection(EqProjection<L, R> const &);
 

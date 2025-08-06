@@ -6,7 +6,7 @@ includes = [
   "task-spec/training_parallel_computation_graph.dtg.h",
   "local-execution/local_task_registry.dtg.h",
   "local-pcg-execution/local_parallel_tensor_backing.dtg.h",
-  "local-pcg-execution/local_parallel_args_backing.dtg.h",
+  "local-pcg-execution/local_pcg_args_backing.dtg.h",
   "pcg/machine_compute_specification.dtg.h",
 ]
 
@@ -24,7 +24,7 @@ type = "::FlexFlow::LocalParallelTensorBacking"
 
 [[fields]]
 name = "local_parallel_args_backing"
-type = "::FlexFlow::LocalParallelArgsBacking"
+type = "::FlexFlow::LocalPcgArgsBacking"
 
 [[fields]]
 name = "machine_compute_specification"

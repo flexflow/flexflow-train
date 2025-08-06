@@ -62,7 +62,7 @@ std::optional<milliseconds_t>
                     Allocator &allocator) {
 
   std::optional maybe_registered_task = try_get_registered_task(
-      local_task_registry, training_layer.layer_guid, OpTaskType::BWD);
+      local_task_registry, training_layer.layer_guid, OpTaskType::FWD);
 
   ASSERT(maybe_registered_task.has_value());
 
@@ -86,6 +86,7 @@ std::optional<milliseconds_t>
                             local_args_backing.runtime_arg_config,
                             invocation,
                             allocator);
+
   return call_task_impl(local_task_registry, invocation.task_id, accessor);
 }
 

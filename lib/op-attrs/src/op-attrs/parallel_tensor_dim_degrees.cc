@@ -14,8 +14,20 @@
 #include "utils/containers/transform.h"
 #include "utils/containers/unordered_set_of.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
+#include "utils/nonnegative_int/num_elements.h"
 
 namespace FlexFlow {
+
+std::unordered_set<parallel_tensor_dim_idx_t>
+  get_parallel_tensor_dim_indices(ParallelTensorDimDegrees const &degrees) {
+
+  std::unordered_set<parallel_tensor_dim_idx_t> result = 
+    unordered_set_of(dim_idxs_for_num_shard_dims(num_elements(degrees.shard_degrees)));
+  result.insert(sum_dim_idx());
+  result.insert(discard_copy_dim_idx());
+  return result;
+}
+
 
 std::set<parallel_tensor_dim_idx_t> get_nontrivial_parallel_tensor_dim_indices(
     ParallelTensorDimDegrees const &degrees) {
@@ -41,6 +53,17 @@ std::set<parallel_tensor_dim_idx_t> get_nontrivial_parallel_tensor_dim_indices(
       });
 
   return set_union(nontrivial_replica_dims, nontrivial_shard_dims);
+}
+
+positive_int get_degree_for_parallel_tensor_dim_idx(ParallelTensorDimDegrees const &dim_degrees,
+                                                    parallel_tensor_dim_idx_t const &idx) {
+  if (idx == sum_dim_idx()) {
+    return dim_degrees.sum_degree.value;
+  } else if (idx == discard_copy_dim_idx()) {
+    return dim_degrees.discard_copy_degree.value;
+  } else {
+    return dim_degrees.shard_degrees.at(idx.require_shard_dim());
+  }
 }
 
 std::unordered_map<parallel_tensor_dim_idx_t, positive_int>
@@ -82,6 +105,18 @@ std::unordered_set<ParallelTensorSpaceCoordinate>
       get_all_assignments(possible_per_dim_coords),
       [](std::unordered_map<parallel_tensor_dim_idx_t, nonnegative_int> const
              &m) { return parallel_tensor_space_coord_from_map(m); });
+}
+
+DimDomain<parallel_tensor_dim_idx_t>
+  dim_domain_from_parallel_tensor_dim_degrees(ParallelTensorDimDegrees const &dim_degrees) {
+  
+  return DimDomain<parallel_tensor_dim_idx_t>{
+    generate_map(
+      get_parallel_tensor_dim_indices(dim_degrees),
+      [&](parallel_tensor_dim_idx_t idx) {
+        return get_degree_for_parallel_tensor_dim_idx(dim_degrees, idx);
+      }),
+  };
 }
 
 } // namespace FlexFlow

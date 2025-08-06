@@ -2,6 +2,7 @@
 #define _FLEXFLOW_LOCAL_EXECUTION_LOCAL_TASK_ARGUMENT_ACCESSOR_H
 
 #include "local-execution/tensor_slot_backing.dtg.h"
+#include "pcg/device_id_t.dtg.h"
 #include "task-spec/runtime_arg_config.dtg.h"
 #include "task-spec/task_argument_accessor.h"
 #include "task-spec/tensor_sub_slot_id_t.dtg.h"
@@ -15,7 +16,8 @@ struct LocalTaskArgumentAccessor : public ITaskArgumentAccessor {
       Allocator const &allocator,
       std::unordered_map<tensor_sub_slot_id_t, TensorSlotBacking> const
           &tensor_slots_backing,
-      std::unordered_map<slot_id_t, ConcreteArgSpec> const &arg_slots_backing);
+      std::unordered_map<slot_id_t, ConcreteArgSpec> const &arg_slots_backing,
+      size_t device_idx);
 
   LocalTaskArgumentAccessor(LocalTaskArgumentAccessor const &) = delete;
   LocalTaskArgumentAccessor(LocalTaskArgumentAccessor &&) = delete;
@@ -37,6 +39,7 @@ private:
   std::unordered_map<tensor_sub_slot_id_t, TensorSlotBacking>
       tensor_slots_backing;
   std::unordered_map<slot_id_t, ConcreteArgSpec> arg_slots_backing;
+  size_t device_idx; 
 };
 
 CHECK_RC_COPY_VIRTUAL_COMPLIANT(LocalTaskArgumentAccessor);

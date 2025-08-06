@@ -3,6 +3,7 @@
 
 #include "op-attrs/incoming_tensor_role.dtg.h"
 #include "op-attrs/initializer_attrs.dtg.h"
+#include "op-attrs/num_ptensor_parallel_dims_t.h"
 #include "op-attrs/operator_space_to_parallel_tensor_space_mapping.dtg.h"
 #include "op-attrs/ops/linear_attrs.dtg.h"
 #include "op-attrs/parallel_tensor_dim_degrees.dtg.h"
@@ -63,15 +64,23 @@ tl::expected<std::vector<InitializerAttrs>, std::string> get_initializers(
         std::nullopt,
     std::optional<InitializerAttrs> const &kernel_initializer = std::nullopt);
 
-tl::expected<ParallelTensorSpaceMapping, std::string>
-    get_input_to_output_mapping(LinearAttrs const &attrs,
-                                nonnegative_int input_num_dims);
-tl::expected<OperatorSpaceToParallelTensorSpaceMapping, std::string>
+// ParallelTensorSpaceMapping
+//     get_input_to_output_mapping(LinearAttrs const &attrs,
+//                                 num_ptensor_parallel_dims_t input_num_dims);
+
+OperatorSpaceToParallelTensorSpaceMapping
     get_operator_to_input_mapping(LinearAttrs const &attrs,
-                                  nonnegative_int input_num_dims);
-tl::expected<OperatorSpaceToParallelTensorSpaceMapping, std::string>
+                                  num_ptensor_parallel_dims_t input_num_dims);
+OperatorSpaceToParallelTensorSpaceMapping 
+    get_operator_to_projection_mapping(LinearAttrs const &attrs, 
+                                       num_ptensor_parallel_dims_t input_num_dims);
+OperatorSpaceToParallelTensorSpaceMapping
+    get_operator_to_bias_mapping(LinearAttrs const &attrs, 
+                                 num_ptensor_parallel_dims_t input_num_dims);
+
+OperatorSpaceToParallelTensorSpaceMapping
     get_operator_to_output_mapping(LinearAttrs const &attrs,
-                                   nonnegative_int input_num_dims);
+                                   num_ptensor_parallel_dims_t input_num_dims);
 
 } // namespace FlexFlow
 

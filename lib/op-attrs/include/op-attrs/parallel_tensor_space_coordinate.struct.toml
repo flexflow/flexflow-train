@@ -14,13 +14,13 @@ includes = [
 ]
 
 [[fields]]
-name = "sum_idx"
+name = "sum_component"
 type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
-name = "discard_copy_idx"
+name = "discard_copy_component"
 type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
-name = "shard_idxs"
+name = "shard_components"
 type = "::FlexFlow::FFOrdered<::FlexFlow::nonnegative_int>"

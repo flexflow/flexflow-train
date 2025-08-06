@@ -1,4 +1,5 @@
 #include "op-attrs/ops/element_unary.h"
+#include "op-attrs/operator_space_to_parallel_tensor_space_mapping.h"
 #include "op-attrs/parallel_tensor_shape.h"
 
 namespace FlexFlow {
@@ -32,6 +33,18 @@ tl::expected<ParallelTensorShape, std::string>
   }
 
   return input_shape;
+}
+
+OperatorSpaceToParallelTensorSpaceMapping get_operator_to_input_mapping(
+    ElementUnaryAttrs const &attrs,
+    num_ptensor_parallel_dims_t input_num_dims) {
+  return get_identity_mapping(input_num_dims);
+}
+
+OperatorSpaceToParallelTensorSpaceMapping get_operator_to_output_mapping(
+    ElementUnaryAttrs const &attrs,
+    num_ptensor_parallel_dims_t input_num_dims) {
+  return get_identity_mapping(input_num_dims);
 }
 
 } // namespace FlexFlow

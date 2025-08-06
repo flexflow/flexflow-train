@@ -5,6 +5,7 @@
 #include "utils/units/milliseconds_t.h"
 #include "pcg/optimizer_attrs.dtg.h"
 #include "op-attrs/ops/loss_functions/loss_attrs.dtg.h"
+#include "task-spec/training_parallel_layer_plus_context.dtg.h"
 
 namespace FlexFlow {
 
@@ -20,8 +21,8 @@ LocalPcgTrainingBacking make_local_pcg_training_backing_for_pcg(
 std::optional<std::unordered_map<gpu_id_t, milliseconds_t>>
   execute_forward(LocalTaskRegistry const &,
                   LocalParallelTensorBacking const &,
-                  LocalParallelArgsBacking const &,
-                  // TrainingLayerPlusContext const &,
+                  LocalPcgArgsBacking const &,
+                  TrainingParallelLayerPlusContext const &,
                   Allocator &);
 
 std::optional<std::unordered_map<gpu_id_t, milliseconds_t>>
@@ -33,6 +34,7 @@ void execute_update(LocalPcgTrainingBacking const &,
                     parallel_layer_guid_t const &,
                     OptimizerAttrs const &,
                     Allocator &);
+
 } // namespace FlexFlow
 
 #endif

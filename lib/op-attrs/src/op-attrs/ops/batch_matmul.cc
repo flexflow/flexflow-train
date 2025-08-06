@@ -92,13 +92,13 @@ tl::expected<ParallelTensorShape, std::string>
     get_output_shape(BatchMatmulAttrs const &attrs,
                      ParallelTensorShape const &input_lhs,
                      ParallelTensorShape const &input_rhs) {
-  if (num_shard_dims(input_lhs) != 3) {
+  if (num_shard_dims(input_lhs).value != 3) {
     return tl::unexpected(
         fmt::format("LHS input has incorrect number of shard dims: {} != {}",
                     num_shard_dims(input_lhs),
                     3));
   }
-  if (num_shard_dims(input_rhs) != 3) {
+  if (num_shard_dims(input_rhs).value != 3) {
     return tl::unexpected(
         fmt::format("RHS input has incorrect number of shard dims: {} != {}",
                     num_shard_dims(input_rhs),

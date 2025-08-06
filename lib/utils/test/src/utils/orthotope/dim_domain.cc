@@ -127,4 +127,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     CHECK(result == correct);
   }
+  
+  TEST_CASE("dim_domain_from_orthotope") {
+    NOT_IMPLEMENTED();   
+  }
 }

@@ -66,13 +66,10 @@ std::optional<MachineSpaceCoordinate> get_machine_space_coordinate(
     TaskSpaceCoordinate const &coord,
     MachineComputeSpecification const &machine_compute_specification) {
 
-  if (num_dims(machine_view) != task.degrees.size()) {
-    throw mk_runtime_error(
-        fmt::format("Dimension of machine_view ({}) must match dimension of "
-                    "task ({}) when computing machine space coordinate",
-                    machine_view,
-                    task.degrees));
-  }
+  ASSERT(num_dims(machine_view) == task.degrees.size(),
+         "Dimension of machine view must match dimension of task",
+         machine_view,
+         task.degrees);
 
   auto get_dimension_indices_for_dimension =
       [&](MachineSpecificationDimension dimension)

@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "LocalParallelArgsBacking"
+name = "LocalPcgArgsBacking"
 features = []
 
 includes = [

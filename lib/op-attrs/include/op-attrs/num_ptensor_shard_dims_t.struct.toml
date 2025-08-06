@@ -1,0 +1,25 @@
+namespace = "FlexFlow"
+name = "num_ptensor_shard_dims_t"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+  "json",
+]
+
+doctstring = """\
+A wrapper type describing the number of shard dims (i.e., not including replia dims) in a parallel tensor, 
+to prevent accidentally confusing the number of shard dims and the total number of parallel dims.
+
+The conversion to/from @ref num_ptensor_parallel_dims_t is trivial, and provided by the 
+functions @ref num_ptensor_parallel_dims_from_shard_dims and @ref num_ptensor_shard_dims_from_parallel_dims.
+"""
+
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
+[[fields]]
+name = "value"
+type = "::FlexFlow::nonnegative_int"

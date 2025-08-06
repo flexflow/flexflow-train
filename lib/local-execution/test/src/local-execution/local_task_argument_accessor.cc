@@ -62,6 +62,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*allocator=*/allocator,
         /*tensor_slots_backing=*/tensor_slots_backing,
         /*arg_slots_backing=*/{},
+        /*device_idx=*/0,
     };
 
     SUBCASE("get_tensor") {

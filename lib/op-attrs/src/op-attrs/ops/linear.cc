@@ -2,6 +2,8 @@
 #include "op-attrs/ff_ordered/slice.h"
 #include "op-attrs/ff_ordered/transform.h"
 #include "op-attrs/initializers/kaiming_initializer_mode.h"
+#include "op-attrs/num_ptensor_shard_dims_t.h"
+#include "op-attrs/num_tensor_dims_t.h"
 #include "op-attrs/operator_space_to_parallel_tensor_space_mapping.h"
 #include "op-attrs/parallel_tensor_dim_idx_t.h"
 #include "op-attrs/parallel_tensor_shape.h"
@@ -9,9 +11,11 @@
 #include "op-attrs/tensor_dims.h"
 #include "op-attrs/tensor_shape.h"
 #include "utils/containers/product.h"
+#include "utils/containers/unordered_set_of.h"
 #include "utils/expected.h"
 #include "utils/fmt/optional.h"
 #include "utils/integer_conversions.h"
+#include "utils/orthotope/dim_projection.h"
 #include "utils/orthotope/down_projection.h"
 #include "utils/orthotope/eq_projection.h"
 #include "utils/orthotope/up_projection.h"
@@ -239,9 +243,12 @@ tl::expected<std::vector<InitializerAttrs>, std::string> get_initializers(
   }
 }
 
-tl::expected<ParallelTensorSpaceMapping, std::string>
-    get_input_to_output_projection(LinearAttrs const &attrs,
-                                   nonnegative_int input_num_dims) {
+static ParallelTensorSpaceMapping
+    get_input_to_output_mapping(LinearAttrs const &attrs,
+                                num_ptensor_parallel_dims_t input_num_parallel_dims) {
+
+  num_tensor_dims_t input_num_dims = num_tensor_dims_from_num_ptensor_parallel_dims(input_num_parallel_dims);
+
 
   DownProjection<parallel_tensor_dim_idx_t, parallel_tensor_dim_idx_t>
       inp_to_out = make_empty_down_projection<parallel_tensor_dim_idx_t,
@@ -250,7 +257,7 @@ tl::expected<ParallelTensorSpaceMapping, std::string>
   ff_dim_t input_channel_dim =
       ff_dim_t_from_relative_ff_dim_t(relative_ff_dim_t{-1}, input_num_dims);
 
-  nonnegative_int output_num_dims = input_num_dims;
+  num_tensor_dims_t output_num_dims = input_num_dims;
   ff_dim_t output_channel_dim =
       ff_dim_t_from_relative_ff_dim_t(relative_ff_dim_t{-1}, output_num_dims);
 
@@ -262,7 +269,7 @@ tl::expected<ParallelTensorSpaceMapping, std::string>
                /*onto=*/shard_dim_idx(output_channel_dim));
 
   for (ff_dim_t const &idx :
-       ff_dim_range(nonnegative_int{input_num_dims.unwrap_nonnegative() - 1})) {
+       ff_dim_range(nonnegative_int{input_num_dims.value.unwrap_nonnegative() - 1})) {
     project_dims(inp_to_out,
                  /*from=*/{shard_dim_idx(idx)},
                  /*onto=*/shard_dim_idx(idx));
@@ -271,34 +278,166 @@ tl::expected<ParallelTensorSpaceMapping, std::string>
   return ParallelTensorSpaceMapping{DimProjection{inp_to_out}};
 }
 
-tl::expected<OperatorSpaceToParallelTensorSpaceMapping, std::string>
-    get_operator_to_input_projection(LinearAttrs const &attrs,
-                                     nonnegative_int input_num_dims) {
+static ParallelTensorSpaceMapping
+    get_input_to_projection_mapping(LinearAttrs const &attrs,
+                                    num_ptensor_parallel_dims_t input_num_dims) {
+  
+  num_ptensor_shard_dims_t input_num_shard_dims = 
+    num_ptensor_shard_dims_from_parallel_dims(input_num_dims);
 
-  nonnegative_int output_num_dims = input_num_dims;
+  DownProjection<parallel_tensor_dim_idx_t, parallel_tensor_dim_idx_t>
+      inp_to_proj = make_empty_down_projection<parallel_tensor_dim_idx_t,
+                                               parallel_tensor_dim_idx_t>();
 
-  UpProjection<parallel_tensor_dim_idx_t, parallel_tensor_dim_idx_t>
-      out_to_inp = invert_down_projection(
-          throw_if_unexpected(
-              get_input_to_output_projection(attrs, input_num_dims))
-              .raw_projection.require_down_proj());
-
-  EqProjection<operator_task_space_dim_idx_t, parallel_tensor_dim_idx_t>
-      op_to_out = throw_if_unexpected(
-                      get_operator_to_output_mapping(attrs, input_num_dims))
-                      .raw_projection.require_eq_proj();
-
-  return OperatorSpaceToParallelTensorSpaceMapping{
-      DimProjection{
-          compose_up_projections(up_from_eq_proj(op_to_out), out_to_inp),
+  parallel_tensor_dim_idx_t input_channel_dim = parallel_tensor_dim_idx_t{
+    ff_dim_t{
+      nonnegative_int{
+        input_num_shard_dims.value.unwrap_nonnegative() - 1,
       },
+    },
+  };
+
+  {
+    std::unordered_set<parallel_tensor_dim_idx_t> dims_from = 
+      unordered_set_of(dim_idxs_for_num_shard_dims(
+        input_num_shard_dims.value
+      ));
+    dims_from.insert(sum_dim_idx());
+    dims_from.erase(input_channel_dim);
+
+    project_dims(inp_to_proj, 
+                 /*from=*/dims_from,
+                 /*onto=*/discard_copy_dim_idx());
+  }
+
+  parallel_tensor_dim_idx_t projection_in_channel_dim 
+    = parallel_tensor_dim_idx_t{ff_dim_t{0_n}};
+
+  parallel_tensor_dim_idx_t projection_out_channel_dim
+    = parallel_tensor_dim_idx_t{ff_dim_t{1_n}};
+
+
+  project_dims(inp_to_proj, 
+               /*from=*/{discard_copy_dim_idx()},
+               /*onto=*/projection_out_channel_dim);
+
+  project_dims(inp_to_proj,
+               /*from=*/{input_channel_dim},
+               /*onto=*/projection_in_channel_dim);
+
+  project_dims(inp_to_proj,
+               /*from=*/{},
+               /*onto=*/discard_copy_dim_idx());
+
+  return ParallelTensorSpaceMapping{
+    DimProjection{
+      inp_to_proj,
+    },
   };
 }
 
-tl::expected<OperatorSpaceToParallelTensorSpaceMapping, std::string>
+static ParallelTensorSpaceMapping
+    get_input_to_bias_mapping(LinearAttrs const &attrs,
+                                    num_ptensor_parallel_dims_t input_num_dims) {
+  ASSERT(attrs.use_bias); 
+  
+  num_ptensor_shard_dims_t input_num_shard_dims = 
+    num_ptensor_shard_dims_from_parallel_dims(input_num_dims);
+
+  DownProjection<parallel_tensor_dim_idx_t, parallel_tensor_dim_idx_t>
+      inp_to_bias = make_empty_down_projection<parallel_tensor_dim_idx_t,
+                                               parallel_tensor_dim_idx_t>();
+
+  parallel_tensor_dim_idx_t input_channel_dim = parallel_tensor_dim_idx_t{
+    ff_dim_t{
+      nonnegative_int{
+        input_num_shard_dims.value.unwrap_nonnegative() - 1,
+      },
+    },
+  };
+
+  {
+    std::unordered_set<parallel_tensor_dim_idx_t> dims_from = 
+      unordered_set_of(dim_idxs_for_num_shard_dims(
+        input_num_shard_dims.value
+      ));
+    dims_from.erase(input_channel_dim);
+
+    project_dims(inp_to_bias, 
+                 /*from=*/dims_from,
+                 /*onto=*/discard_copy_dim_idx());
+  }
+
+  parallel_tensor_dim_idx_t bias_out_channel_dim 
+    = parallel_tensor_dim_idx_t{ff_dim_t{0_n}};
+
+  project_dims(inp_to_bias,
+               /*from=*/{
+                 sum_dim_idx(),
+                 input_channel_dim,
+               },
+               /*onto=*/sum_dim_idx());
+
+  project_dims(inp_to_bias,
+               /*from=*/{},
+               /*onto=*/discard_copy_dim_idx());
+
+  return ParallelTensorSpaceMapping{
+    DimProjection{
+      inp_to_bias,
+    },
+  };
+}
+
+
+OperatorSpaceToParallelTensorSpaceMapping 
+    get_operator_to_projection_mapping(LinearAttrs const &attrs, 
+                                       num_ptensor_parallel_dims_t input_num_dims) {
+  
+  return operator_ptensor_space_mapping_from_composition(
+    get_operator_to_input_mapping(attrs, input_num_dims),
+    get_input_to_projection_mapping(attrs, input_num_dims));
+}
+
+OperatorSpaceToParallelTensorSpaceMapping
+    get_operator_to_input_mapping(LinearAttrs const &attrs,
+                                   num_ptensor_parallel_dims_t input_num_dims) {
+
+  num_ptensor_parallel_dims_t output_num_dims = input_num_dims;
+
+  DimProjection<
+    parallel_tensor_dim_idx_t,
+    parallel_tensor_dim_idx_t
+  > inp_to_out = get_input_to_output_mapping(attrs, input_num_dims).raw_projection;
+
+  DimProjection<
+    operator_task_space_dim_idx_t,
+    parallel_tensor_dim_idx_t
+  > op_to_out = get_operator_to_output_mapping(attrs, input_num_dims).raw_projection;
+
+  DimProjection<
+    operator_task_space_dim_idx_t,
+    parallel_tensor_dim_idx_t
+  > op_to_inp = compose_dim_projections(op_to_out, invert_dim_projection(inp_to_out));
+
+  return OperatorSpaceToParallelTensorSpaceMapping{
+    op_to_inp,
+  };
+}
+
+OperatorSpaceToParallelTensorSpaceMapping
+    get_operator_to_bias_mapping(LinearAttrs const &attrs, 
+                                 num_ptensor_parallel_dims_t input_num_dims) {
+  
+  return operator_ptensor_space_mapping_from_composition(
+    get_operator_to_input_mapping(attrs, input_num_dims),
+    get_input_to_bias_mapping(attrs, input_num_dims));
+}
+
+OperatorSpaceToParallelTensorSpaceMapping
     get_operator_to_output_mapping(LinearAttrs const &attrs,
-                                   nonnegative_int input_num_shard_dims) {
-  nonnegative_int output_num_shard_dims = input_num_shard_dims;
+                                   num_ptensor_parallel_dims_t input_num_shard_dims) {
+  num_ptensor_parallel_dims_t output_num_shard_dims = input_num_shard_dims;
 
   return get_identity_mapping(output_num_shard_dims);
 }

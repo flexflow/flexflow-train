@@ -5,6 +5,8 @@
 
 namespace FlexFlow {
 
+nonnegative_int orthotope_coord_num_dims(OrthotopeCoord const &);
+
 OrthotopeCoord restrict_orthotope_coord_to_dims(
     OrthotopeCoord const &coord, std::set<nonnegative_int> const &allowed_dims);
 

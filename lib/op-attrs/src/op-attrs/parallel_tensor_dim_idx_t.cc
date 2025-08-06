@@ -17,18 +17,6 @@ parallel_tensor_dim_idx_t shard_dim_idx(ff_dim_t idx) {
   return parallel_tensor_dim_idx_t{idx};
 }
 
-bool operator<(parallel_tensor_dim_idx_t lhs, parallel_tensor_dim_idx_t rhs) {
-  if (lhs.is_shard_dim() && rhs.is_shard_dim()) {
-    return lhs.require_shard_dim() < rhs.require_shard_dim();
-  } else if (lhs.is_shard_dim() && !rhs.is_shard_dim()) {
-    return true;
-  } else if (!lhs.is_shard_dim() && rhs.is_shard_dim()) {
-    return false;
-  } else {
-    return lhs.require_replica_dim() < rhs.require_replica_dim();
-  }
-}
-
 std::set<parallel_tensor_dim_idx_t>
     dim_idxs_for_num_shard_dims(nonnegative_int num_shard_dims) {
   std::set<parallel_tensor_dim_idx_t> result =
@@ -37,6 +25,24 @@ std::set<parallel_tensor_dim_idx_t>
   result.insert(discard_copy_dim_idx());
 
   return result;
+}
+
+DimOrdering<parallel_tensor_dim_idx_t>
+  get_parallel_tensor_dim_ordering() {
+  
+  return DimOrdering<parallel_tensor_dim_idx_t>{
+      [](parallel_tensor_dim_idx_t lhs, parallel_tensor_dim_idx_t rhs) -> bool { 
+        if (lhs.is_shard_dim() && rhs.is_shard_dim()) {
+          return lhs.require_shard_dim() > rhs.require_shard_dim();
+        } else if (lhs.is_shard_dim() && !rhs.is_shard_dim()) {
+          return false;
+        } else if (!lhs.is_shard_dim() && rhs.is_shard_dim()) {
+          return true ;
+        } else {
+          return lhs.require_replica_dim() > rhs.require_replica_dim();
+        }
+      },
+  };
 }
 
 } // namespace FlexFlow

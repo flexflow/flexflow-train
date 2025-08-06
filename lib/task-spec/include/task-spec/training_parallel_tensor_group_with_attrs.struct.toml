@@ -1,0 +1,38 @@
+namespace = "FlexFlow"
+name = "TrainingParallelTensorGroupWithAttrs"
+features = [
+  "eq",
+  "ord",
+  "fmt",
+  "hash",
+]
+
+includes = [
+  "task-spec/forward_parallel_tensor_guid_t.dtg.h",
+  "task-spec/gradient_parallel_tensor_guid_t.dtg.h",
+  "task-spec/optimizer_parallel_tensor_guid_t.dtg.h",
+  "pcg/parallel_computation_graph/parallel_tensor_attrs.dtg.h",
+]
+
+src_includes = [
+  "utils/hash/vector.h",
+  "utils/fmt/vector.h",
+]
+
+[[fields]]
+name = "parallel_tensor_attrs"
+type = "::FlexFlow::ParallelTensorAttrs"
+
+
+[[fields]]
+name = "forward_ptensor"
+type = "::FlexFlow::forward_parallel_tensor_guid_t"
+
+[[fields]]
+name = "gradient_ptensor"
+type = "::FlexFlow::gradient_parallel_tensor_guid_t"
+
+[[fields]]
+name = "optimizer_ptensors"
+type = "std::vector<::FlexFlow::optimizer_parallel_tensor_guid_t>"
+

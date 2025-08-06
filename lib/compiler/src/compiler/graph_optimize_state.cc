@@ -1,5 +1,4 @@
 #include "compiler/graph_optimize_state.h"
-#include "compiler/graph_optimize_result.h"
 #include "pcg/parallel_computation_graph/parallel_tensor_guid_t.h"
 
 namespace FlexFlow {
@@ -12,20 +11,20 @@ bool GraphOptimizeState::operator==(GraphOptimizeState const &other) const {
   // Note(@wmdi): This is a hack to implement a partially correct homomorphism
   // check. Switch to the homomorphism check used in substitutions right after
   // https://github.com/flexflow/FlexFlow/pull/1471 is merged.
-  auto layers1 = topological_ordering(graph_optimize_result.pcg);
-  auto layers2 = topological_ordering(other.graph_optimize_result.pcg);
+  auto layers1 = topological_ordering(graph_optimize_result.mapped_pcg.pcg);
+  auto layers2 = topological_ordering(other.graph_optimize_result.mapped_pcg.pcg);
   if (layers1.size() != layers2.size()) {
     return false;
   }
   std::unordered_map<parallel_tensor_guid_t, parallel_tensor_guid_t> mapping;
   for (size_t i = 0; i < layers1.size(); ++i) {
-    if (get_parallel_layer_attrs(graph_optimize_result.pcg, layers1[i]) !=
-        get_parallel_layer_attrs(other.graph_optimize_result.pcg, layers2[i])) {
+    if (get_parallel_layer_attrs(graph_optimize_result.mapped_pcg.pcg, layers1[i]) !=
+        get_parallel_layer_attrs(other.graph_optimize_result.mapped_pcg.pcg, layers2[i])) {
       return false;
     }
-    auto inputs1 = get_incoming_tensors(graph_optimize_result.pcg, layers1[i]);
+    auto inputs1 = get_incoming_tensors(graph_optimize_result.mapped_pcg.pcg, layers1[i]);
     auto inputs2 =
-        get_incoming_tensors(other.graph_optimize_result.pcg, layers2[i]);
+        get_incoming_tensors(other.graph_optimize_result.mapped_pcg.pcg, layers2[i]);
     if (inputs1.size() != inputs2.size()) {
       return false;
     }
@@ -34,9 +33,9 @@ bool GraphOptimizeState::operator==(GraphOptimizeState const &other) const {
         return false;
       }
     }
-    auto outputs1 = get_layer_outputs(graph_optimize_result.pcg, layers1[i]);
+    auto outputs1 = get_layer_outputs(graph_optimize_result.mapped_pcg.pcg, layers1[i]);
     auto outputs2 =
-        get_layer_outputs(other.graph_optimize_result.pcg, layers2[i]);
+        get_layer_outputs(other.graph_optimize_result.mapped_pcg.pcg, layers2[i]);
     if (outputs1.size() != outputs2.size()) {
       return false;
     }
@@ -74,12 +73,12 @@ size_t hash<::FlexFlow::GraphOptimizeState>::operator()(
   // TODO(@wmdi): Eventually it might be good to use a proper graph hash like
   // https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.graph_hashing.weisfeiler_lehman_graph_hash.html#networkx.algorithms.graph_hashing.weisfeiler_lehman_graph_hash
   size_t seed = 0;
-  auto layers = topological_ordering(state.graph_optimize_result.pcg);
+  auto layers = topological_ordering(state.graph_optimize_result.mapped_pcg.pcg);
   ::FlexFlow::hash_combine(seed, layers.size());
   for (auto layer : layers) {
     ::FlexFlow::hash_combine(
-        seed, get_parallel_layer_attrs(state.graph_optimize_result.pcg, layer));
-    auto inputs = get_incoming_tensors(state.graph_optimize_result.pcg, layer);
+        seed, get_parallel_layer_attrs(state.graph_optimize_result.mapped_pcg.pcg, layer));
+    auto inputs = get_incoming_tensors(state.graph_optimize_result.mapped_pcg.pcg, layer);
     ::FlexFlow::hash_combine(seed, inputs.size());
     for (auto input : inputs) {
       for (size_t i = 0; i < layers.size(); ++i) {

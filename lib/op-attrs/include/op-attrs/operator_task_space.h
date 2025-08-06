@@ -2,7 +2,10 @@
 #define _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_OPERATOR_TASK_SPACE_H
 
 #include "op-attrs/operator_task_space.dtg.h"
+#include "op-attrs/operator_task_space_dim_idx_t.dtg.h"
 #include "op-attrs/task_space_coordinate.dtg.h"
+#include "utils/orthotope/dim_domain.dtg.h"
+#include "utils/orthotope/dim_ordering.dtg.h"
 #include <unordered_set>
 
 namespace FlexFlow {
@@ -15,6 +18,12 @@ TaskSpaceCoordinate
 
 nonnegative_int num_dims(OperatorTaskSpace const &task);
 positive_int num_tasks(OperatorTaskSpace const &task);
+
+DimDomain<operator_task_space_dim_idx_t>
+  dim_domain_from_operator_task_space(OperatorTaskSpace const &);
+
+DimOrdering<operator_task_space_dim_idx_t>
+  get_operator_task_space_dim_ordering();
 
 } // namespace FlexFlow
 

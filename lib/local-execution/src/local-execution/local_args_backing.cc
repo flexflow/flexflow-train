@@ -78,7 +78,7 @@ TaskArgumentAccessor
   std::unordered_map<slot_id_t, ConcreteArgSpec> arg_slots_backing =
       construct_arg_slots_backing(invocation.binding, runtime_arg_config);
   return TaskArgumentAccessor::create<LocalTaskArgumentAccessor>(
-      allocator, tensor_slots_backing, arg_slots_backing);
+      allocator, tensor_slots_backing, arg_slots_backing, 0);
 }
 
 LocalArgsBacking make_local_args_backing_for_computation_graph(

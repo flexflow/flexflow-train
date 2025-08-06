@@ -14,8 +14,14 @@ template OrthotopeCoord orthotope_coord_from_dim_coord(DimCoord<T> const &,
                                                        DimOrdering<T> const &);
 
 template DimCoord<T> dim_coord_from_orthotope_coord(OrthotopeCoord const &,
-                                                    DimDomain<T> const &,
+                                                    std::unordered_set<T> const &,
                                                     DimOrdering<T> const &);
+
+template DimCoord<T> lift_dim_coord(DimCoord<T> const &, std::unordered_set<T> const &);
+
+template DimCoord<T> get_maximum_coord_in_domain(DimDomain<T> const &);
+
+template DimDomain<T> get_domain_for_maximum_coord(DimCoord<T> const &);
 
 template nonnegative_int flatten_dim_coord(DimCoord<T> const &,
                                            DimDomain<T> const &,

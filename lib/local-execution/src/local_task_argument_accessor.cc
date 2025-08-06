@@ -10,9 +10,11 @@ LocalTaskArgumentAccessor::LocalTaskArgumentAccessor(
     Allocator const &allocator,
     std::unordered_map<tensor_sub_slot_id_t, TensorSlotBacking> const
         &tensor_slots_backing,
-    std::unordered_map<slot_id_t, ConcreteArgSpec> const &arg_slots_backing)
+    std::unordered_map<slot_id_t, ConcreteArgSpec> const &arg_slots_backing,
+    size_t device_idx)
     : allocator(allocator), tensor_slots_backing(tensor_slots_backing),
-      arg_slots_backing(arg_slots_backing){};
+      arg_slots_backing(arg_slots_backing), device_idx(device_idx)
+{ };
 
 ConcreteArgSpec const &
     LocalTaskArgumentAccessor::get_concrete_arg(slot_id_t name) const {
@@ -62,7 +64,7 @@ Allocator LocalTaskArgumentAccessor::get_allocator() const {
 }
 
 size_t LocalTaskArgumentAccessor::get_device_idx() const {
-  return 0;
+  return this->device_idx;
 }
 
 } // namespace FlexFlow

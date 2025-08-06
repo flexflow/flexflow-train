@@ -43,13 +43,36 @@ std::unordered_set<R>
 };
 
 template <typename L, typename R>
+DimProjection<R, L> invert_dim_projection(DimProjection<L, R> const &projection) {
+  return projection.template visit<DimProjection<R, L>>(overload{
+      [](UpProjection<L, R> const &p) {
+        return DimProjection<R, L>{
+          invert_up_projection(p),
+        };
+      },
+      [](EqProjection<L, R> const &p) {
+        return DimProjection<R, L>{
+          invert_eq_projection(p),
+        };
+      },
+      [](DownProjection<L, R> const &p) {
+        return DimProjection<R, L>{
+          invert_down_projection(p),
+        };
+      },
+  });
+}
+
+template <typename L, typename R>
 DimCoord<R> compute_projection(DimProjection<L, R> const &projection,
                                DimCoord<L> const &input_coord,
                                DimDomain<L> const &input_domain,
                                DimDomain<R> const &output_domain,
                                DimOrdering<L> const &input_dim_ordering,
                                DimOrdering<R> const &output_dim_ordering) {
-  ASSERT(dim_domain_contains_coord(input_domain, input_coord));
+  ASSERT(dim_domain_contains_coord(input_domain, input_coord),
+         input_domain,
+         input_coord);
   ASSERT(get_domain_dims(input_domain) == input_dims_of_projection(projection));
   ASSERT(get_domain_dims(output_domain) ==
          output_dims_of_projection(projection));
@@ -68,10 +91,105 @@ DimCoord<R> compute_projection(DimProjection<L, R> const &projection,
       },
   });
 
-  ASSERT(dim_domain_contains_coord(output_domain, output_coord));
+  ASSERT(dim_domain_contains_coord(output_domain, output_coord),
+         output_domain,
+         output_coord);
 
   return output_coord;
 }
+
+
+template <typename T1, typename T2, typename T3>
+DimProjection<T1, T3> right_compose_eq_projection(
+   DimProjection<T1, T2> const &lhs,
+   EqProjection<T2, T3> const &rhs) {
+  return lhs.template visit<DimProjection<T1, T3>>(overload{
+    [&](UpProjection<T1, T2> const &lhs_up_proj) {
+      return DimProjection<T1, T3>{
+        compose_up_projections(
+          lhs_up_proj,
+          up_from_eq_proj(rhs)),
+      };
+    },
+    [&](EqProjection<T1, T2> const &lhs_eq_proj) {
+      return DimProjection<T1, T3>{
+        compose_eq_projections(
+          lhs_eq_proj,
+          rhs),
+      };
+    },
+    [&](DownProjection<T1, T2> const &lhs_down_proj) {
+      return DimProjection<T1, T3>{
+        compose_down_projections(
+          lhs_down_proj,
+          down_from_eq_proj(rhs)),
+      };
+    },
+  });
+}
+
+template <typename T1, typename T2, typename T3>
+DimProjection<T1, T3> left_compose_eq_projection(
+    EqProjection<T1, T2> const &lhs,
+    DimProjection<T2, T3> const &rhs) {
+  return rhs.template visit<DimProjection<T1, T3>>(overload{
+    [&](UpProjection<T2, T3> const &rhs_up_proj) {
+      return DimProjection<T1, T3>{
+        compose_up_projections(
+          up_from_eq_proj(lhs), 
+          rhs_up_proj),
+      };
+    },
+    [&](EqProjection<T2, T3> const &rhs_eq_proj) {
+      return DimProjection<T1, T3>{
+        compose_eq_projections(
+          lhs,
+          rhs_eq_proj),
+      };
+    },
+    [&](DownProjection<T2, T3> const &rhs_down_proj) {
+      return DimProjection{
+        compose_down_projections(
+          down_from_eq_proj(lhs),
+          rhs_down_proj),
+      };
+    },
+  });
+}
+
+template <typename T1, typename T2, typename T3>
+DimProjection<T1, T3> compose_dim_projections(
+  DimProjection<T1, T2> const &lhs,
+  DimProjection<T2, T3> const &rhs) {
+
+  if (lhs.is_eq_proj()) {
+    return DimProjection{
+      left_compose_eq_projection(
+        lhs.require_eq_proj(),
+        rhs),
+    };
+  } else if (rhs.is_eq_proj()) {
+    return DimProjection{
+      right_compose_eq_projection(
+        lhs,
+        rhs.require_eq_proj()),
+    }; 
+  } else if (lhs.is_up_proj() && rhs.is_up_proj()) {
+    return DimProjection{
+      compose_up_projections(
+        lhs.require_up_proj(),
+        rhs.require_up_proj()),
+    }; 
+  } else if (lhs.is_down_proj() && rhs.is_down_proj()) {
+    return DimProjection{
+      compose_down_projections(
+        lhs.require_down_proj(),
+        rhs.require_down_proj()),
+    };    
+  } else {
+    PANIC("Cannot compose projections", lhs, rhs);
+  }
+} 
 
 } // namespace FlexFlow
 

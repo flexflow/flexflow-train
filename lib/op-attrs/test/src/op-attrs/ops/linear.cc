@@ -288,4 +288,21 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
     }
   }
+
+  TEST_CASE("get_operator_to_input_mapping(LinearAttrs, nonnegative_int)") {
+    nonnegative_int input_num_dims = 3_n;  
+
+    LinearAttrs attrs = LinearAttrs{
+          /*out_channels=*/16_p,
+          /*use_bias=*/false,
+          /*data_type=*/DataType::FLOAT,
+          /*activation=*/Activation::RELU,
+          /*regularizer=*/std::nullopt,
+      };
+
+    OperatorSpaceToParallelTensorSpaceMapping result = 
+      throw_if_unexpected(get_operator_to_input_mapping(attrs, input_num_dims));
+
+    // TODO(@lockshaw): implement some actual checks here
+  }
 }

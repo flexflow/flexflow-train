@@ -2,6 +2,7 @@
 #define _OP_META_PARALLEL_TENSOR_SHAPE_H
 
 #include "op-attrs/ff_dim_t.h"
+#include "op-attrs/num_ptensor_shard_dims_t.dtg.h"
 #include "op-attrs/parallel_dim.h"
 #include "op-attrs/parallel_tensor_dim_degrees.dtg.h"
 #include "op-attrs/parallel_tensor_dim_idx_t.dtg.h"
@@ -12,7 +13,7 @@
 
 namespace FlexFlow {
 
-nonnegative_int num_shard_dims(ParallelTensorShape const &);
+num_ptensor_shard_dims_t num_shard_dims(ParallelTensorShape const &);
 ShardParallelDim shard_dim_at_idx(ParallelTensorShape const &,
                                   relative_ff_dim_t);
 ShardParallelDim &shard_dim_at_idx(ParallelTensorShape &, relative_ff_dim_t);

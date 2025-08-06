@@ -16,6 +16,10 @@
 #include "utils/orthotope/dim_domain.dtg.h"
 #include "utils/orthotope/dim_domain.h"
 #include "utils/orthotope/orthotope.h"
+#include "utils/containers/generate_map.h"
+#include "utils/containers/contains_key.h"
+#include "utils/containers/is_subseteq_of.h"
+#include "utils/containers/map_values.h"
 
 namespace FlexFlow {
 
@@ -44,13 +48,60 @@ OrthotopeCoord
 
 template <typename T>
 DimCoord<T> dim_coord_from_orthotope_coord(OrthotopeCoord const &coord,
-                                           DimDomain<T> const &domain,
+                                           std::unordered_set<T> const &dims,
                                            DimOrdering<T> const &dim_ordering) {
   return DimCoord<T>{
       map_from_keys_and_values(
-          sorted_by(get_domain_dims(domain), dim_ordering.lt), coord.raw),
+          sorted_by(dims, dim_ordering.lt), coord.raw),
   };
 }
+
+template <typename T>
+DimCoord<T> lift_dim_coord(DimCoord<T> const &coord,
+                           std::unordered_set<T> const &lifted_dims) {
+  ASSERT(is_subseteq_of(get_coord_dims(coord), lifted_dims));
+
+  return DimCoord<T>{
+    generate_map(
+      lifted_dims,
+      [&](T const &dim) {
+        if (contains_key(coord.raw, dim)) {
+          return coord.raw.at(dim);
+        } else {
+          return 0_n;
+        }
+      }),
+  };
+}
+
+template <typename T>
+std::unordered_set<DimCoord<T>> get_coords_in_dim_domain(DimDomain<T> const &dim_domain) {
+  NOT_IMPLEMENTED(); 
+}
+
+template <typename T>
+DimCoord<T> get_maximum_coord_in_domain(DimDomain<T> const &domain) {
+  return DimCoord<T>{
+    map_values(
+      domain.dims,
+      [](positive_int dim) -> nonnegative_int { 
+        return nonnegative_int{
+          dim.int_from_positive_int() - 1,
+        };
+      }),
+  };
+}
+
+template <typename T>
+DimDomain<T> get_domain_for_maximum_coord(DimCoord<T> const &max_coord) {
+  return DimDomain<T>{
+    map_values(
+      max_coord.raw,
+      [](nonnegative_int dim) -> positive_int { 
+        return dim + 1_p;
+      }),
+  };
+}  
 
 template <typename T>
 bool dim_domain_contains_coord(DimDomain<T> const &domain,
@@ -89,7 +140,7 @@ DimCoord<T> unflatten_dim_coord(nonnegative_int flattened,
   OrthotopeCoord orthotope_coord =
       unflatten_orthotope_coord(flattened, orthotope_domain);
 
-  return dim_coord_from_orthotope_coord(orthotope_coord, domain, dim_ordering);
+  return dim_coord_from_orthotope_coord(orthotope_coord, get_domain_dims(domain), dim_ordering);
 }
 
 } // namespace FlexFlow

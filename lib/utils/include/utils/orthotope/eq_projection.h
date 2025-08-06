@@ -10,6 +10,11 @@
 namespace FlexFlow {
 
 template <typename L, typename R>
+EqProjection<L, R> make_empty_eq_projection() {
+  return EqProjection<L, R>{bidict<L, R>{}};
+}
+
+template <typename L, typename R>
 std::unordered_set<L>
     input_dims_of_eq_projection(EqProjection<L, R> const &projection) {
   return projection.dim_mapping.left_values();
@@ -19,6 +24,13 @@ template <typename L, typename R>
 std::unordered_set<R>
     output_dims_of_eq_projection(EqProjection<L, R> const &projection) {
   return projection.dim_mapping.right_values();
+}
+
+template <typename L, typename R>
+void project_dims(EqProjection<L, R> &proj,
+                  L const &from,
+                  R const &to) {
+  proj.dim_mapping.equate(from, to);
 }
 
 template <typename L, typename R>

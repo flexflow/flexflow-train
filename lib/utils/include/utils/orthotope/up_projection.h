@@ -12,6 +12,7 @@
 #include "utils/orthotope/down_projection.dtg.h"
 #include "utils/orthotope/eq_projection.dtg.h"
 #include "utils/orthotope/up_projection.dtg.h"
+#include "utils/containers/is_subseteq_of.h"
 
 namespace FlexFlow {
 
@@ -45,9 +46,9 @@ DimCoord<R> compute_up_projection(UpProjection<L, R> const &projection,
 
   std::unordered_set<R> output_dims = output_dims_of_up_projection(projection);
   std::unordered_set<R> output_domain_dims = get_domain_dims(output_domain);
-  ASSERT(output_dims == output_domain_dims);
+  ASSERT(is_subseteq_of(output_dims, output_domain_dims));
 
-  return DimCoord<R>{
+  DimCoord<R> unlifted = DimCoord<R>{
       flatmap(coord.raw,
               [&](L const &input_dim, nonnegative_int input_dim_val) {
                 std::unordered_set<R> dst_dims =
@@ -62,6 +63,8 @@ DimCoord<R> compute_up_projection(UpProjection<L, R> const &projection,
                 return dst_coord.raw;
               }),
   };
+
+  return unlifted;
 }
 
 template <typename L, typename R>

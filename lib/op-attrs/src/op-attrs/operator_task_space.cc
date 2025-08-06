@@ -1,5 +1,6 @@
 #include "op-attrs/operator_task_space.h"
 #include "op-attrs/operator_task_space.dtg.h"
+#include "op-attrs/operator_task_space_dim_idx_t.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "utils/containers/cartesian_product.h"
@@ -13,6 +14,10 @@
 #include "utils/fmt/unordered_set.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include "utils/nonnegative_int/num_elements.h"
+#include "utils/orthotope/dim_domain.h"
+#include "utils/orthotope/dim_ordering.h"
+#include "utils/orthotope/orthotope.dtg.h"
+#include "utils/orthotope/orthotope.h"
 
 namespace FlexFlow {
 
@@ -46,4 +51,22 @@ nonnegative_int num_dims(OperatorTaskSpace const &task) {
 positive_int num_tasks(OperatorTaskSpace const &task) {
   return product(task.degrees);
 }
+
+DimDomain<operator_task_space_dim_idx_t>
+  dim_domain_from_operator_task_space(OperatorTaskSpace const &operator_task_space) {
+  
+  Orthotope orthotope = 
+    Orthotope{operator_task_space.degrees};
+
+  return dim_domain_from_orthotope(
+    orthotope,
+    unordered_set_of(operator_task_space_dim_idx_range(orthotope_get_num_dims(orthotope))),
+    get_operator_task_space_dim_ordering());
+}
+
+DimOrdering<operator_task_space_dim_idx_t>
+  get_operator_task_space_dim_ordering() {
+  return make_default_dim_ordering<operator_task_space_dim_idx_t>();
+}
+
 } // namespace FlexFlow

@@ -10,6 +10,7 @@
 #include "task-spec/task_invocation.dtg.h"
 #include "task-spec/training_layer_plus_context.dtg.h"
 #include "task-spec/training_layer_tensor_group_signature.dtg.h"
+#include "task-spec/training_parallel_layer_plus_context.dtg.h"
 
 namespace FlexFlow {
 
@@ -18,6 +19,13 @@ TaskInvocation
                              TrainingLayerPlusContext const &training_layer,
                              std::optional<DeviceSpecificDeviceStates> const
                                  &device_specific_device_states);
+
+TaskInvocation
+    pcg_lower_to_task_invocation(OpTaskInvocation const &op_task_invocation,
+                                 TrainingParallelLayerPlusContext const &training_parallel_layer,
+                                 std::optional<DeviceSpecificDeviceStates> const 
+                                    &device_specific_device_states);
+
 
 std::pair<tensor_sub_slot_id_t, training_tensor_guid_t> lower_tensor_binding(
     TrainingLayerTensorGroupSignature const &training_layer_signature,

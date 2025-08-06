@@ -13,4 +13,8 @@ template DimDomain<T> restrict_domain_to_dims(DimDomain<T> const &,
 template Orthotope orthotope_from_dim_domain(DimDomain<T> const &,
                                              DimOrdering<T> const &);
 
+template DimDomain<T> dim_domain_from_orthotope(Orthotope const &,
+                                                std::unordered_set<T> const &,
+                                                DimOrdering<T> const &);
+
 } // namespace FlexFlow

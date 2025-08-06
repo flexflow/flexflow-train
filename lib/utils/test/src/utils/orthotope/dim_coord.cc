@@ -5,6 +5,49 @@
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
+  TEST_CASE("lift_dim_coord") {
+    DimCoord<int> coord = DimCoord<int>{{
+        {7, 0_n},
+        {3, 4_n},
+        {1, 1_n},
+    }};
+
+    SUBCASE("lifted dims are a superset of coord dims") {
+      std::unordered_set<int> lifted_dims = {1, 3, 6, 7};
+
+      DimCoord<int> result = lift_dim_coord(coord, lifted_dims);
+      DimCoord<int> correct = DimCoord<int>{{
+        {7, 0_n},
+        {3, 4_n},
+        {1, 1_n},
+        {6, 0_n},
+      }};
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("lifted dims are the same as coord dims") {
+      std::unordered_set<int> lifted_dims = {1, 3, 7};
+
+      DimCoord<int> result = lift_dim_coord(coord, lifted_dims);
+      DimCoord<int> correct = coord;
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("lifted dims are a subset of coord dims") {
+      std::unordered_set<int> lifted_dims = {1, 7};
+
+      CHECK_THROWS(lift_dim_coord(coord, lifted_dims));
+    }
+
+    SUBCASE("lifted dims are overlapping with coord dims") {
+      std::unordered_set<int> lifted_dims = {1, 2, 7};
+
+      CHECK_THROWS(lift_dim_coord(coord, lifted_dims));
+    }
+  }
+
   TEST_CASE("flatten_dim_coord") {
     DimCoord<int> coord = DimCoord<int>{{
         {7, 0_n},
