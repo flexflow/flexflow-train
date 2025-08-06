@@ -194,6 +194,6 @@ void top_level_task(const void *args, size_t arglen, const void *userdata,
         GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
         GenericTensorAccessorR last_epoch = loss_values.back();
         assert(did_loss_decrease(first_epoch_loss, last_epoch));
-        printf("passed\n");
+        printf("passed!\n");
     }
 }

@@ -22,7 +22,7 @@ namespace FlexFlow {
 
 using namespace Realm;
 
-LocalTrainingBacking make_local_training_backing_for_computation_graph(
+LocalTrainingBacking make_realm_training_backing_for_computation_graph(
     RealmRuntimeState &runtime_state,
     std::unordered_map<training_tensor_guid_t, GenericTensorAccessorW> const
         &preallocated,
@@ -267,6 +267,8 @@ Future<void> execute_update(LocalTrainingBacking const &local_training_backing,
     runtime_state.worker_events[0] = e;
     future.set_event(e);
     return future;
+  } else {
+    return Future<void>();
   }
 }
 
