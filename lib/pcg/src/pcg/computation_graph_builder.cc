@@ -720,13 +720,13 @@ tensor_guid_t ComputationGraphBuilder::flat(
     relative_ff_dim_t start_dim,
     std::optional<relative_ff_dim_t> const &end_dim,
     std::optional<std::string> const &maybe_name) {
-  nonnegative_int input_num_dims = get_num_dims(this->get_shape(input).dims);
+  num_tensor_dims_t input_num_dims = get_num_dims(this->get_shape(input).dims);
 
   ff_dim_t abs_start_dim =
       ff_dim_t_from_relative_ff_dim_t(start_dim, input_num_dims);
 
   ff_dim_t abs_end_dim = ff_dim_t_from_relative_ff_dim_t(
-      end_dim.value_or(relative_ff_dim_t{input_num_dims.unwrap_nonnegative()}),
+      end_dim.value_or(relative_ff_dim_t{input_num_dims.int_from_num_tensor_dims()}),
       input_num_dims);
 
   FlatAttrs attrs = FlatAttrs{
@@ -792,7 +792,7 @@ tensor_guid_t ComputationGraphBuilder::softmax(
   TensorShape input_shape = this->get_shape(input);
 
   relative_ff_dim_t dim = maybe_dim.value_or(relative_ff_dim_t{
-      get_num_dims(input_shape.dims).unwrap_nonnegative() - 1});
+      get_num_dims(input_shape.dims).int_from_num_tensor_dims() - 1});
 
   SoftmaxAttrs attrs = SoftmaxAttrs{
       ff_dim_t_from_relative_ff_dim_t(dim, get_num_dims(input_shape.dims))};

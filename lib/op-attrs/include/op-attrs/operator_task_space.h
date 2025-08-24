@@ -3,6 +3,7 @@
 
 #include "op-attrs/operator_task_space.dtg.h"
 #include "op-attrs/operator_task_space_dim_idx_t.dtg.h"
+#include "op-attrs/parallel_tensor_dim_degrees.dtg.h"
 #include "op-attrs/task_space_coordinate.dtg.h"
 #include "utils/orthotope/dim_domain.dtg.h"
 #include "utils/orthotope/dim_ordering.dtg.h"
@@ -24,6 +25,10 @@ DimDomain<operator_task_space_dim_idx_t>
 
 DimOrdering<operator_task_space_dim_idx_t>
   get_operator_task_space_dim_ordering();
+
+OperatorTaskSpace 
+  get_operator_task_space_matching_parallel_tensor_dim_degrees(
+    ParallelTensorDimDegrees const &dim_degrees); 
 
 } // namespace FlexFlow
 

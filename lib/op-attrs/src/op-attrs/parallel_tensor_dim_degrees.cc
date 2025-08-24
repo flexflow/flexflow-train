@@ -1,5 +1,6 @@
 #include "op-attrs/parallel_tensor_dim_degrees.h"
 #include "op-attrs/ff_ordered/get_idxs.h"
+#include "op-attrs/num_tensor_dims_t.h"
 #include "op-attrs/parallel_tensor_dim_idx_t.dtg.h"
 #include "op-attrs/parallel_tensor_dim_idx_t.h"
 #include "op-attrs/parallel_tensor_space_coordinate.h"
@@ -15,8 +16,20 @@
 #include "utils/containers/unordered_set_of.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include "utils/nonnegative_int/num_elements.h"
+#include "utils/orthotope/minimal_dim_domain.h"
 
 namespace FlexFlow {
+
+num_ptensor_shard_dims_t get_ptensor_dim_degrees_num_shard_dims(ParallelTensorDimDegrees const &degrees) {
+  return num_ptensor_shard_dims_t{
+    num_elements(degrees.shard_degrees),
+  };
+}
+
+num_tensor_dims_t get_ptensor_dim_degrees_num_tensor_dims(ParallelTensorDimDegrees const &degrees) {
+  return num_tensor_dims_from_num_ptensor_shard_dims(
+    get_ptensor_dim_degrees_num_shard_dims(degrees));
+}
 
 std::unordered_set<parallel_tensor_dim_idx_t>
   get_parallel_tensor_dim_indices(ParallelTensorDimDegrees const &degrees) {
@@ -117,6 +130,14 @@ DimDomain<parallel_tensor_dim_idx_t>
         return get_degree_for_parallel_tensor_dim_idx(dim_degrees, idx);
       }),
   };
+}
+
+MinimalDimDomain<parallel_tensor_dim_idx_t>
+  minimal_dim_domain_from_parallel_tensor_dim_degrees(ParallelTensorDimDegrees const &dim_degrees) {
+
+  return minimal_dim_domain_from_dim_domain(
+    dim_domain_from_parallel_tensor_dim_degrees(
+      dim_degrees));
 }
 
 } // namespace FlexFlow

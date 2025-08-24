@@ -10,8 +10,10 @@
 #include "utils/containers/scanr.h"
 #include "utils/containers/sorted_by.h"
 #include "utils/containers/transform.h"
+#include "utils/containers/unordered_set_of.h"
 #include "utils/containers/zip_with_strict.h"
 #include "utils/exception.h"
+#include "utils/nonnegative_int/nonnegative_range.h"
 #include "utils/orthotope/dim_coord.dtg.h"
 #include "utils/orthotope/dim_domain.dtg.h"
 #include "utils/orthotope/dim_domain.h"
@@ -20,6 +22,7 @@
 #include "utils/containers/contains_key.h"
 #include "utils/containers/is_subseteq_of.h"
 #include "utils/containers/map_values.h"
+#include "utils/containers/get_all_assignments.h"
 
 namespace FlexFlow {
 
@@ -76,7 +79,20 @@ DimCoord<T> lift_dim_coord(DimCoord<T> const &coord,
 
 template <typename T>
 std::unordered_set<DimCoord<T>> get_coords_in_dim_domain(DimDomain<T> const &dim_domain) {
-  NOT_IMPLEMENTED(); 
+  std::unordered_map<T, std::unordered_set<nonnegative_int>> 
+    component_possible_values = map_values(
+      dim_domain.dims,
+      [](positive_int component_size) -> std::unordered_set<nonnegative_int> {
+        return unordered_set_of(nonnegative_range(component_size));
+      });
+
+  return transform(
+    get_all_assignments(component_possible_values),
+    [](std::unordered_map<T, nonnegative_int> const &assignment) {
+      return DimCoord<T>{
+        assignment,
+      };
+    });
 }
 
 template <typename T>

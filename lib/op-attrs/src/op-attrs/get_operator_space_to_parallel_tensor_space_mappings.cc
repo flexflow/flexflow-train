@@ -10,39 +10,39 @@ namespace FlexFlow {
 std::vector<OperatorSpaceToParallelTensorSpaceMapping> 
   get_operator_to_input_mappings(
     ComputationGraphOpAttrs const &comp_graph_op_attrs,
-    std::vector<num_ptensor_parallel_dims_t> const &inputs_num_dims) {
+    std::vector<ParallelTensorDimDegrees> const &inputs_degrees) {
   return comp_graph_op_attrs.visit<
     std::vector<OperatorSpaceToParallelTensorSpaceMapping>
   >(overload {
       [&](ElementBinaryAttrs const &attrs) {
-        ASSERT(inputs_num_dims.size() == 2); 
+        ASSERT(inputs_degrees.size() == 2); 
 
-        num_ptensor_parallel_dims_t lhs_num_dims = inputs_num_dims.at(0);
-        num_ptensor_parallel_dims_t rhs_num_dims = inputs_num_dims.at(1);
+        ParallelTensorDimDegrees lhs_degrees = inputs_degrees.at(0);
+        ParallelTensorDimDegrees rhs_degrees = inputs_degrees.at(1);
 
         return std::vector{
-          get_operator_to_lhs_input_mapping(attrs, lhs_num_dims, rhs_num_dims),
-          get_operator_to_rhs_input_mapping(attrs, lhs_num_dims, rhs_num_dims),
+          get_operator_to_lhs_input_mapping(attrs, lhs_degrees, rhs_degrees),
+          get_operator_to_rhs_input_mapping(attrs, lhs_degrees, rhs_degrees),
         };
       },
       [&](ElementUnaryAttrs const &attrs) {
         return std::vector{
-          get_operator_to_input_mapping(attrs, get_only(inputs_num_dims)),
+          get_operator_to_input_mapping(attrs, get_only(inputs_degrees)),
         };
       },
       [](InputAttrs const &) { 
         return std::vector<OperatorSpaceToParallelTensorSpaceMapping>{};
       },
       [&](LinearAttrs const &attrs) {
-        num_ptensor_parallel_dims_t input_num_dims = get_only(inputs_num_dims);
+        ParallelTensorDimDegrees input_degrees = get_only(inputs_degrees);
 
         std::vector<OperatorSpaceToParallelTensorSpaceMapping> result = {
-          get_operator_to_input_mapping(attrs, input_num_dims),
-          get_operator_to_projection_mapping(attrs, input_num_dims),
+          get_operator_to_input_mapping(attrs, input_degrees),
+          get_operator_to_projection_mapping(attrs, input_degrees),
         };
 
         if (attrs.use_bias) {
-          result.push_back(get_operator_to_bias_mapping(attrs, input_num_dims));
+          result.push_back(get_operator_to_bias_mapping(attrs, input_degrees));
         };
 
         return result;
@@ -59,29 +59,29 @@ std::vector<OperatorSpaceToParallelTensorSpaceMapping>
 std::vector<OperatorSpaceToParallelTensorSpaceMapping>
   get_operator_to_output_mappings(
     ComputationGraphOpAttrs const &comp_graph_op_attrs,
-    std::vector<num_ptensor_parallel_dims_t> const &inputs_num_dims) {
+    std::vector<ParallelTensorDimDegrees> const &inputs_degrees) {
 
   return comp_graph_op_attrs.visit<
     std::vector<OperatorSpaceToParallelTensorSpaceMapping>
   >(overload {
       [&](ElementBinaryAttrs const &attrs) {
-        ASSERT(inputs_num_dims.size() == 2); 
+        ASSERT(inputs_degrees.size() == 2); 
 
-        num_ptensor_parallel_dims_t lhs_num_dims = inputs_num_dims.at(0);
-        num_ptensor_parallel_dims_t rhs_num_dims = inputs_num_dims.at(1);
+        ParallelTensorDimDegrees lhs_degrees = inputs_degrees.at(0);
+        ParallelTensorDimDegrees rhs_degrees = inputs_degrees.at(1);
 
         return std::vector{
-          get_operator_to_output_mapping(attrs, lhs_num_dims, rhs_num_dims),
+          get_operator_to_output_mapping(attrs, lhs_degrees, rhs_degrees),
         };
       },
       [&](ElementUnaryAttrs const &attrs) {
         return std::vector{
-          get_operator_to_output_mapping(attrs, get_only(inputs_num_dims)),
+          get_operator_to_output_mapping(attrs, get_only(inputs_degrees)),
         };
       },
       [&](LinearAttrs const &attrs) {
         return std::vector{
-          get_operator_to_output_mapping(attrs, get_only(inputs_num_dims)),
+          get_operator_to_output_mapping(attrs, get_only(inputs_degrees)),
         };
       },
       [](auto const &attrs) -> std::vector<OperatorSpaceToParallelTensorSpaceMapping> {

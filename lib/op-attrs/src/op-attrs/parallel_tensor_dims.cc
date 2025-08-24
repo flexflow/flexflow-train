@@ -45,7 +45,8 @@ ParallelTensorDimDegrees get_parallel_degrees(ParallelTensorDims const &d) {
 
 ParallelTensorDims lift_to_parallel(TensorDims const &dims) {
   std::vector<positive_int> shard_degrees =
-      repeat_element(/*num_times=*/get_num_dims(dims), /*element=*/1_p);
+      repeat_element(/*num_times=*/get_num_dims(dims).nonnegative_int_from_num_tensor_dims(), 
+                     /*element=*/1_p);
   return lift_to_parallel_with_degrees(dims,
                                        SumDegree{1_p},
                                        DiscardCopyDegree{1_p},

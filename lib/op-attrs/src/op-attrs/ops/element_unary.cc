@@ -1,6 +1,10 @@
 #include "op-attrs/ops/element_unary.h"
 #include "op-attrs/operator_space_to_parallel_tensor_space_mapping.h"
+#include "op-attrs/operator_task_space.h"
+#include "op-attrs/parallel_tensor_dim_degrees.h"
+#include "op-attrs/parallel_tensor_dim_idx_t.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "utils/orthotope/minimal_dim_domain.h"
 
 namespace FlexFlow {
 
@@ -20,31 +24,42 @@ tl::expected<TensorShape, std::string>
 tl::expected<ParallelTensorShape, std::string>
     get_output_shape(ElementUnaryAttrs const &attrs,
                      ParallelTensorShape const &input_shape) {
-  if (get_sum_degree(input_shape) != 1) {
-    return tl::unexpected(
-        fmt::format("Expected sum degree 1, but receieved sum degree {}",
-                    get_sum_degree(input_shape)));
-  }
-
-  if (get_discard_copy_degree(input_shape) != 1) {
-    return tl::unexpected(fmt::format(
-        "Expected discard copy degree 1, but received discartd copy degree {}",
-        get_discard_copy_degree(input_shape)));
-  }
-
   return input_shape;
+}
+
+ParallelTensorDimDegrees get_output_parallel_dim_degrees(
+                                  ElementUnaryAttrs const &attrs,
+                                  ParallelTensorDimDegrees const &input_degrees) {
+  ASSERT(input_degrees.sum_degree.value == 1);
+  ASSERT(input_degrees.discard_copy_degree.value == 1);
+
+  return input_degrees;
+}
+
+OperatorTaskSpace get_operator_task_space(ElementUnaryAttrs const &attrs,
+                                          ParallelTensorDimDegrees const &input_degrees) {
+  ParallelTensorDimDegrees output_degrees = get_output_parallel_dim_degrees(attrs, input_degrees);
+
+  return get_operator_task_space_matching_parallel_tensor_dim_degrees(output_degrees);
 }
 
 OperatorSpaceToParallelTensorSpaceMapping get_operator_to_input_mapping(
     ElementUnaryAttrs const &attrs,
-    num_ptensor_parallel_dims_t input_num_dims) {
-  return get_identity_mapping(input_num_dims);
+    ParallelTensorDimDegrees const &input_degrees) {
+  return get_identity_mapping(
+    get_operator_task_space(attrs, input_degrees),
+    input_degrees);
 }
 
 OperatorSpaceToParallelTensorSpaceMapping get_operator_to_output_mapping(
     ElementUnaryAttrs const &attrs,
-    num_ptensor_parallel_dims_t input_num_dims) {
-  return get_identity_mapping(input_num_dims);
+    ParallelTensorDimDegrees const &input_degrees) {
+
+  ParallelTensorDimDegrees output_degrees = get_output_parallel_dim_degrees(attrs, input_degrees);
+
+  return get_identity_mapping(
+    get_operator_task_space(attrs, input_degrees),
+    output_degrees);
 }
 
 } // namespace FlexFlow

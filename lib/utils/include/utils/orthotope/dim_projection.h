@@ -64,7 +64,7 @@ DimProjection<R, L> invert_dim_projection(DimProjection<L, R> const &projection)
 }
 
 template <typename L, typename R>
-DimCoord<R> compute_projection(DimProjection<L, R> const &projection,
+DimCoord<R> compute_dim_projection(DimProjection<L, R> const &projection,
                                DimCoord<L> const &input_coord,
                                DimDomain<L> const &input_domain,
                                DimDomain<R> const &output_domain,

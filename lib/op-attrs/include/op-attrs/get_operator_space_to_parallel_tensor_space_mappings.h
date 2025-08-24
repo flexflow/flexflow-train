@@ -4,16 +4,18 @@
 #include "op-attrs/computation_graph_op_attrs.dtg.h"
 #include "op-attrs/num_ptensor_parallel_dims_t.h"
 #include "op-attrs/operator_space_to_parallel_tensor_space_mapping.dtg.h"
+#include "op-attrs/parallel_tensor_dim_degrees.dtg.h"
 #include <vector>
+
 namespace FlexFlow {
 
 std::vector<OperatorSpaceToParallelTensorSpaceMapping> 
   get_operator_to_input_mappings(ComputationGraphOpAttrs const &,
-                                 std::vector<num_ptensor_parallel_dims_t> const &inputs_num_dims);
+                                 std::vector<ParallelTensorDimDegrees> const &inputs_degrees);
 
 std::vector<OperatorSpaceToParallelTensorSpaceMapping>
   get_operator_to_output_mappings(ComputationGraphOpAttrs const &,
-                                  std::vector<num_ptensor_parallel_dims_t> const &inputs_num_dims);
+                                  std::vector<ParallelTensorDimDegrees> const &inputs_degrees);
 
 } // namespace FlexFlow
 

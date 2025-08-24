@@ -2,6 +2,7 @@
 #include "op-attrs/tensor_dims.h"
 #include "op-attrs/tensor_shape.h"
 #include <libassert/assert.hpp>
+#include "op-attrs/num_tensor_dims_t.h"
 
 namespace FlexFlow {
 

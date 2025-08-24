@@ -2,7 +2,7 @@
 #define _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_RELATIVE_FF_DIM_T_H
 
 #include "op-attrs/ff_dim_t.dtg.h"
-#include "op-attrs/num_tensor_dims_t.dtg.h"
+#include "op-attrs/num_tensor_dims_t.h"
 #include "op-attrs/relative_ff_dim_t.dtg.h"
 #include <rapidcheck.h>
 

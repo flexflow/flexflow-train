@@ -6,7 +6,7 @@ ff_dim_t ff_dim_t_from_relative_ff_dim_t(relative_ff_dim_t ff_dim,
                                          num_tensor_dims_t input_dim) {
   int raw = ff_dim.value;
   if (raw < 0) {
-    raw = input_dim.value.unwrap_nonnegative() + raw;
+    raw = input_dim.int_from_num_tensor_dims() + raw;
   }
   return ff_dim_t{nonnegative_int{raw}};
 }

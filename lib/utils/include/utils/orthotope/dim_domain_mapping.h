@@ -4,6 +4,14 @@
 #include "utils/bidict/bidict.h"
 #include "utils/orthotope/dim_coord.dtg.h"
 #include "utils/orthotope/dim_domain.dtg.h"
+#include "utils/orthotope/dim_ordering.dtg.h"
+#include "utils/orthotope/dim_projection.h"
+#include "utils/orthotope/dim_coord.h"
+#include "utils/bidict/algorithms/left_entries.h"
+#include "utils/bidict/algorithms/right_entries.h"
+#include "utils/bidict/algorithms/exhaustive_relational_join.h"
+#include "utils/hash/tuple.h"
+#include "utils/bidict/generate_bidict.h"
 
 namespace FlexFlow {
 
@@ -33,11 +41,54 @@ public:
 
     return this->coord_mapping.at_r(r_coord);
   }
+
+  bool operator==(DimDomainMapping<L, R> const &other) const {
+    return this->tie() == other.tie();
+  }
+
+  bool operator!=(DimDomainMapping<L, R> const &other) const {
+    return this->tie() != other.tie();
+  }
+
 public:
   bidict<DimCoord<L>, DimCoord<R>> coord_mapping;
   DimDomain<L> l_domain;
   DimDomain<R> r_domain;
+
+private:
+  std::tuple<
+    decltype(coord_mapping) const &,
+    decltype(l_domain) const &,
+    decltype(r_domain) const &
+  > tie() const {
+    return std::tie(
+      this->coord_mapping,
+      this->l_domain,
+      this->r_domain);
+  }
+
+  friend struct ::std::hash<DimDomainMapping<L, R>>;
 };
+
+template <typename L, typename R>
+std::string format_as(DimDomainMapping<L, R> const &m) {
+  CHECK_FMTABLE(L);
+  CHECK_FMTABLE(R);
+
+  return fmt::format(
+    "<DimDomainMapping l_domain={} r_domain={} coord_mapping={}>",
+    m.l_domain,
+    m.r_domain,
+    m.coord_mapping);
+}
+
+template <typename L, typename R>
+std::ostream &operator<<(std::ostream &s, DimDomainMapping<L, R> const &m) {
+  CHECK_FMTABLE(L);
+  CHECK_FMTABLE(R);
+
+  return (s << fmt::to_string(m));
+}
 
 template <typename L, typename R>
 DimDomainMapping<R, L> invert_dim_domain_mapping(
@@ -66,6 +117,43 @@ DimDomainMapping<T1, T3> compose_dim_domain_mappings(
   };
 }
 
+
+template <typename L, typename R>
+DimDomainMapping<L, R> dim_domain_mapping_from_projection(
+  DimProjection<L, R> const &projection,
+  DimDomain<L> const &l_domain,
+  DimDomain<R> const &r_domain,
+  DimOrdering<L> const &l_dim_ordering,
+  DimOrdering<R> const &r_dim_ordering) {
+  
+  return DimDomainMapping{
+    /*coord_mapping=*/generate_bidict(
+      get_coords_in_dim_domain(l_domain),
+      [&](DimCoord<L> const &l_coord) {
+        return compute_dim_projection(
+          /*projection=*/projection,
+          /*input_coord=*/l_coord,
+          /*input_domain=*/l_domain,
+          /*output_domain=*/r_domain,
+          /*input_dim_ordering=*/l_dim_ordering,
+          /*output_dim_ordering=*/r_dim_ordering);
+      }),
+    /*l_domain=*/l_domain,
+    /*r_domain=*/r_domain,
+  };
+}
+
 } // namespace FlexFlow
+
+namespace std {
+
+template <typename L, typename R>
+struct hash<::FlexFlow::DimDomainMapping<L, R>> {
+  size_t operator()(::FlexFlow::DimDomainMapping<L, R> const &dim_domain_mapping) const {
+    return get_std_hash(dim_domain_mapping.tie()); 
+  }
+};
+
+} // namespace std
 
 #endif

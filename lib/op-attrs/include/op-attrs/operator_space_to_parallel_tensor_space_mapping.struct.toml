@@ -7,11 +7,11 @@ features = [
 ]
 
 includes = [
-  "utils/orthotope/dim_projection.dtg.h",
+  "utils/orthotope/dim_domain_mapping.h",
   "op-attrs/operator_task_space_dim_idx_t.dtg.h",
   "op-attrs/parallel_tensor_dim_idx_t.dtg.h",
 ]
 
 [[fields]]
-name = "raw_projection"
-type = "::FlexFlow::DimProjection<::FlexFlow::operator_task_space_dim_idx_t, ::FlexFlow::parallel_tensor_dim_idx_t>"
+name = "raw_mapping"
+type = "::FlexFlow::DimDomainMapping<::FlexFlow::operator_task_space_dim_idx_t, ::FlexFlow::parallel_tensor_dim_idx_t>"

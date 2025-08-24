@@ -61,43 +61,43 @@ ParallelTensorShape get_output_shape(ElementBinaryAttrs const &attrs,
 
 static void check_mapping_features(
     ElementBinaryAttrs const &attrs,
-    num_ptensor_parallel_dims_t lhs_input_num_dims,
-    num_ptensor_parallel_dims_t rhs_input_num_dims) {
+    ParallelTensorDimDegrees const &lhs_input_degrees,
+    ParallelTensorDimDegrees const &rhs_input_degrees) {
   ASSERT(!attrs.should_broadcast_lhs && !attrs.should_broadcast_rhs,
          "ElementBinary broadcasting is currently not supported. "
          "Contact @lockshaw if you want this feature implemented.");
 
-  ASSERT(lhs_input_num_dims == rhs_input_num_dims);
+  ASSERT(lhs_input_degrees == rhs_input_degrees);
 }
 
 OperatorSpaceToParallelTensorSpaceMapping get_operator_to_lhs_input_mapping(
   ElementBinaryAttrs const &attrs,
-  num_ptensor_parallel_dims_t lhs_input_num_dims,
-  num_ptensor_parallel_dims_t rhs_input_num_dims) {
+  ParallelTensorDimDegrees const &lhs_input_degrees,
+  ParallelTensorDimDegrees const &rhs_input_degrees) {
 
-  check_mapping_features(attrs, lhs_input_num_dims, rhs_input_num_dims);
+  check_mapping_features(attrs, lhs_input_degrees, rhs_input_degrees);
 
-  return get_identity_mapping(lhs_input_num_dims);
+  return get_identity_mapping(lhs_input_degrees);
 }
 
 OperatorSpaceToParallelTensorSpaceMapping get_operator_to_rhs_input_mapping(
   ElementBinaryAttrs const &attrs,
-  num_ptensor_parallel_dims_t lhs_input_num_dims,
-  num_ptensor_parallel_dims_t rhs_input_num_dims) {
+  ParallelTensorDimDegrees const &lhs_input_degrees,
+  ParallelTensorDimDegrees const &rhs_input_degrees) {
 
-  check_mapping_features(attrs, lhs_input_num_dims, rhs_input_num_dims);
+  check_mapping_features(attrs, lhs_input_degrees, rhs_input_degrees);
 
-  return get_identity_mapping(rhs_input_num_dims);
+  return get_identity_mapping(rhs_input_degrees);
 }
 
 OperatorSpaceToParallelTensorSpaceMapping get_operator_to_output_mapping(
   ElementBinaryAttrs const &attrs,
-  num_ptensor_parallel_dims_t lhs_input_num_dims,
-  num_ptensor_parallel_dims_t rhs_input_num_dims) {
+  ParallelTensorDimDegrees const &lhs_input_degrees,
+  ParallelTensorDimDegrees const &rhs_input_degrees) {
 
-  check_mapping_features(attrs, lhs_input_num_dims, rhs_input_num_dims);
+  check_mapping_features(attrs, lhs_input_degrees, rhs_input_degrees);
 
-  return get_identity_mapping(require_same(lhs_input_num_dims, rhs_input_num_dims));
+  return get_identity_mapping(require_same(lhs_input_degrees, rhs_input_degrees));
 }
 
 } // namespace FlexFlow

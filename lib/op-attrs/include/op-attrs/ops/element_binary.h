@@ -17,18 +17,18 @@ ParallelTensorShape get_output_shape(ElementBinaryAttrs const &,
 
 OperatorSpaceToParallelTensorSpaceMapping get_operator_to_lhs_input_mapping(
   ElementBinaryAttrs const &attrs,
-  num_ptensor_parallel_dims_t lhs_input_num_dims,
-  num_ptensor_parallel_dims_t rhs_input_num_dims);
+  ParallelTensorDimDegrees const &lhs_input_degrees,
+  ParallelTensorDimDegrees const &rhs_input_degrees);
 
 OperatorSpaceToParallelTensorSpaceMapping get_operator_to_rhs_input_mapping(
   ElementBinaryAttrs const &attrs,
-  num_ptensor_parallel_dims_t lhs_input_num_dims,
-  num_ptensor_parallel_dims_t rhs_input_num_dims);
+  ParallelTensorDimDegrees const &lhs_input_degrees,
+  ParallelTensorDimDegrees const &rhs_input_degrees);
 
 OperatorSpaceToParallelTensorSpaceMapping get_operator_to_output_mapping(
   ElementBinaryAttrs const &attrs,
-  num_ptensor_parallel_dims_t lhs_input_num_dims,
-  num_ptensor_parallel_dims_t rhs_input_num_dims);
+  ParallelTensorDimDegrees const &lhs_input_degrees,
+  ParallelTensorDimDegrees const &rhs_input_degrees);
 
 
 } // namespace FlexFlow

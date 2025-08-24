@@ -5,8 +5,11 @@
 #include "op-attrs/num_ptensor_shard_dims_t.h"
 #include "op-attrs/num_tensor_dims_t.h"
 #include "op-attrs/operator_space_to_parallel_tensor_space_mapping.h"
+#include "op-attrs/operator_task_space.h"
+#include "op-attrs/parallel_tensor_dim_degrees.h"
 #include "op-attrs/parallel_tensor_dim_idx_t.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "op-attrs/parallel_tensor_space_mapping.h"
 #include "op-attrs/relative_ff_dim_t.h"
 #include "op-attrs/tensor_dims.h"
 #include "op-attrs/tensor_shape.h"
@@ -243,12 +246,22 @@ tl::expected<std::vector<InitializerAttrs>, std::string> get_initializers(
   }
 }
 
+OperatorTaskSpace get_operator_task_space(
+  LinearAttrs const &attrs,
+  ParallelTensorDimDegrees const &input_degrees) {
+  
+  ParallelTensorDimDegrees output_degrees = throw_if_unexpected(get_output_parallel_dim_degrees(
+    attrs, input_degrees));
+
+  return get_operator_task_space_matching_parallel_tensor_dim_degrees(output_degrees);
+}
+
+
 static ParallelTensorSpaceMapping
     get_input_to_output_mapping(LinearAttrs const &attrs,
-                                num_ptensor_parallel_dims_t input_num_parallel_dims) {
+                                ParallelTensorDimDegrees const &input_degrees) {
 
-  num_tensor_dims_t input_num_dims = num_tensor_dims_from_num_ptensor_parallel_dims(input_num_parallel_dims);
-
+  num_tensor_dims_t input_num_dims = get_ptensor_dim_degrees_num_tensor_dims(input_degrees);
 
   DownProjection<parallel_tensor_dim_idx_t, parallel_tensor_dim_idx_t>
       inp_to_out = make_empty_down_projection<parallel_tensor_dim_idx_t,
@@ -269,21 +282,25 @@ static ParallelTensorSpaceMapping
                /*onto=*/shard_dim_idx(output_channel_dim));
 
   for (ff_dim_t const &idx :
-       ff_dim_range(nonnegative_int{input_num_dims.value.unwrap_nonnegative() - 1})) {
+       slice(tensor_dims_range(input_num_dims), 0, -1)) {
     project_dims(inp_to_out,
                  /*from=*/{shard_dim_idx(idx)},
                  /*onto=*/shard_dim_idx(idx));
   }
 
-  return ParallelTensorSpaceMapping{DimProjection{inp_to_out}};
+  ParallelTensorDimDegrees output_degrees = 
+    throw_if_unexpected(get_output_parallel_dim_degrees(attrs, input_degrees));
+
+  return parallel_tensor_space_mapping_from_projection(
+    DimProjection{inp_to_out}, input_degrees, output_degrees);
 }
 
 static ParallelTensorSpaceMapping
     get_input_to_projection_mapping(LinearAttrs const &attrs,
-                                    num_ptensor_parallel_dims_t input_num_dims) {
+                                    ParallelTensorDimDegrees const &input_degrees) {
   
   num_ptensor_shard_dims_t input_num_shard_dims = 
-    num_ptensor_shard_dims_from_parallel_dims(input_num_dims);
+    get_ptensor_dim_degrees_num_shard_dims(input_degrees);
 
   DownProjection<parallel_tensor_dim_idx_t, parallel_tensor_dim_idx_t>
       inp_to_proj = make_empty_down_projection<parallel_tensor_dim_idx_t,
@@ -329,20 +346,21 @@ static ParallelTensorSpaceMapping
                /*from=*/{},
                /*onto=*/discard_copy_dim_idx());
 
-  return ParallelTensorSpaceMapping{
-    DimProjection{
-      inp_to_proj,
-    },
-  };
+  ParallelTensorDimDegrees projection_degrees = 
+    throw_if_unexpected(get_projection_parallel_dim_degrees(attrs, input_degrees));
+
+  return parallel_tensor_space_mapping_from_projection(
+    DimProjection{inp_to_proj}, input_degrees, projection_degrees);
 }
 
 static ParallelTensorSpaceMapping
     get_input_to_bias_mapping(LinearAttrs const &attrs,
-                                    num_ptensor_parallel_dims_t input_num_dims) {
+                              ParallelTensorDimDegrees const &input_degrees) {
   ASSERT(attrs.use_bias); 
   
-  num_ptensor_shard_dims_t input_num_shard_dims = 
-    num_ptensor_shard_dims_from_parallel_dims(input_num_dims);
+  num_ptensor_shard_dims_t input_num_shard_dims = get_ptensor_dim_degrees_num_shard_dims(input_degrees);
+
+  ParallelTensorDimDegrees bias_degrees = throw_if_unexpected(get_bias_parallel_dim_degrees(attrs, input_degrees));
 
   DownProjection<parallel_tensor_dim_idx_t, parallel_tensor_dim_idx_t>
       inp_to_bias = make_empty_down_projection<parallel_tensor_dim_idx_t,
@@ -382,43 +400,45 @@ static ParallelTensorSpaceMapping
                /*from=*/{},
                /*onto=*/discard_copy_dim_idx());
 
-  return ParallelTensorSpaceMapping{
-    DimProjection{
-      inp_to_bias,
-    },
-  };
+  DimDomain<parallel_tensor_dim_idx_t> l_domain = 
+    dim_domain_from_parallel_tensor_dim_degrees(input_degrees);
+  DimDomain<parallel_tensor_dim_idx_t> r_domain =
+    dim_domain_from_parallel_tensor_dim_degrees(bias_degrees);
+
+  return parallel_tensor_space_mapping_from_projection(
+    DimProjection{inp_to_bias},
+    input_degrees,
+    bias_degrees);
 }
 
 
 OperatorSpaceToParallelTensorSpaceMapping 
     get_operator_to_projection_mapping(LinearAttrs const &attrs, 
-                                       num_ptensor_parallel_dims_t input_num_dims) {
+                                       ParallelTensorDimDegrees const &input_degrees) {
   
   return operator_ptensor_space_mapping_from_composition(
-    get_operator_to_input_mapping(attrs, input_num_dims),
-    get_input_to_projection_mapping(attrs, input_num_dims));
+    get_operator_to_input_mapping(attrs, input_degrees),
+    get_input_to_projection_mapping(attrs, input_degrees));
 }
 
 OperatorSpaceToParallelTensorSpaceMapping
     get_operator_to_input_mapping(LinearAttrs const &attrs,
-                                   num_ptensor_parallel_dims_t input_num_dims) {
+                                  ParallelTensorDimDegrees const &input_degrees) {
 
-  num_ptensor_parallel_dims_t output_num_dims = input_num_dims;
-
-  DimProjection<
+  DimDomainMapping<
     parallel_tensor_dim_idx_t,
     parallel_tensor_dim_idx_t
-  > inp_to_out = get_input_to_output_mapping(attrs, input_num_dims).raw_projection;
+  > inp_to_out = get_input_to_output_mapping(attrs, input_degrees).raw_mapping;
 
-  DimProjection<
+  DimDomainMapping<
     operator_task_space_dim_idx_t,
     parallel_tensor_dim_idx_t
-  > op_to_out = get_operator_to_output_mapping(attrs, input_num_dims).raw_projection;
+  > op_to_out = get_operator_to_output_mapping(attrs, input_degrees).raw_mapping;
 
-  DimProjection<
+  DimDomainMapping<
     operator_task_space_dim_idx_t,
     parallel_tensor_dim_idx_t
-  > op_to_inp = compose_dim_projections(op_to_out, invert_dim_projection(inp_to_out));
+  > op_to_inp = compose_dim_domain_mappings(op_to_out, invert_dim_domain_mapping(inp_to_out));
 
   return OperatorSpaceToParallelTensorSpaceMapping{
     op_to_inp,
@@ -427,19 +447,22 @@ OperatorSpaceToParallelTensorSpaceMapping
 
 OperatorSpaceToParallelTensorSpaceMapping
     get_operator_to_bias_mapping(LinearAttrs const &attrs, 
-                                 num_ptensor_parallel_dims_t input_num_dims) {
+                                 ParallelTensorDimDegrees input_degrees) {
   
   return operator_ptensor_space_mapping_from_composition(
-    get_operator_to_input_mapping(attrs, input_num_dims),
-    get_input_to_bias_mapping(attrs, input_num_dims));
+    get_operator_to_input_mapping(attrs, input_degrees),
+    get_input_to_bias_mapping(attrs, input_degrees));
 }
 
 OperatorSpaceToParallelTensorSpaceMapping
     get_operator_to_output_mapping(LinearAttrs const &attrs,
-                                   num_ptensor_parallel_dims_t input_num_shard_dims) {
-  num_ptensor_parallel_dims_t output_num_shard_dims = input_num_shard_dims;
+                                   ParallelTensorDimDegrees input_degrees) {
+      
+  ParallelTensorDimDegrees output_degrees = throw_if_unexpected(get_output_parallel_dim_degrees(attrs, input_degrees));
 
-  return get_identity_mapping(output_num_shard_dims);
+  return get_identity_mapping(
+    get_operator_task_space(attrs, input_degrees),
+    output_degrees);
 }
 
 } // namespace FlexFlow

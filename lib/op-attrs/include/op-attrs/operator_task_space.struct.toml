@@ -11,14 +11,9 @@ features = [
 
 includes = [ 
   "<vector>",
-  "utils/positive_int/positive_int.h",
-]
-
-src_includes = [
-  "utils/fmt/vector.h",
-  "utils/hash/vector.h"
+  "utils/orthotope/minimal_orthotope.dtg.h",
 ]
 
 [[fields]]
 name = "degrees"
-type = "std::vector<::FlexFlow::positive_int>"
+type = "::FlexFlow::MinimalOrthotope"

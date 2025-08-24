@@ -1,0 +1,27 @@
+namespace = "FlexFlow"
+name = "MinimalDimDomain"
+features = [
+  "eq",
+  "ord",
+  "fmt",
+  "hash",
+  "json",
+]
+
+template_params = [
+  "T",
+]
+
+includes = [
+  "<unordered_map>",
+  "utils/int_ge_two/int_ge_two.h",
+]
+
+src_includes = [
+  "utils/fmt/unordered_map.h",
+  "utils/hash/unordered_map.h",
+]
+
+[[fields]]
+name = "dims"
+type = "std::unordered_map<T, ::FlexFlow::int_ge_two>"

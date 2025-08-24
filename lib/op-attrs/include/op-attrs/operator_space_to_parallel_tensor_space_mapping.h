@@ -12,7 +12,15 @@
 namespace FlexFlow {
 
 OperatorSpaceToParallelTensorSpaceMapping
-    get_identity_mapping(num_ptensor_parallel_dims_t num_parallel_dims);
+    get_identity_mapping(
+      OperatorTaskSpace const &operator_task_space,
+      ParallelTensorDimDegrees const &parallel_tensor_dim_degrees);
+
+OperatorSpaceToParallelTensorSpaceMapping
+    operator_ptensor_space_mapping_from_projection(
+      DimProjection<operator_task_space_dim_idx_t, parallel_tensor_dim_idx_t> const &projection,
+      OperatorTaskSpace const &op_task_space,
+      ParallelTensorDimDegrees const &parallel_tensor_dim_degrees);
 
 OperatorSpaceToParallelTensorSpaceMapping
   operator_ptensor_space_mapping_from_composition(
@@ -22,15 +30,11 @@ OperatorSpaceToParallelTensorSpaceMapping
 ParallelTensorSpaceCoordinate
   ptensor_coord_for_task_space_coord(
     OperatorSpaceToParallelTensorSpaceMapping const &mapping,
-    OperatorTaskSpace const &operator_task_space,
-    ParallelTensorDimDegrees const &ptensor_dim_degrees,
     TaskSpaceCoordinate const &task_space_coord);
 
 TaskSpaceCoordinate
   task_space_coord_for_ptensor_coord(
     OperatorSpaceToParallelTensorSpaceMapping const &mapping,
-    ParallelTensorDimDegrees const &ptensor_dim_degrees,
-    OperatorTaskSpace const &operator_task_space,
     ParallelTensorSpaceCoordinate const &tensor_space_coordinate);
 
 } // namespace FlexFlow

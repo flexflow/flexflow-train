@@ -15,12 +15,12 @@ template std::unordered_set<R>
 template 
   DimProjection<R, L> invert_dim_projection(DimProjection<L, R> const &);
 
-template DimCoord<R> compute_projection(DimProjection<L, R> const &,
-                                        DimCoord<L> const &,
-                                        DimDomain<L> const &,
-                                        DimDomain<R> const &,
-                                        DimOrdering<L> const &,
-                                        DimOrdering<R> const &);
+template DimCoord<R> compute_dim_projection(DimProjection<L, R> const &,
+                                            DimCoord<L> const &,
+                                            DimDomain<L> const &,
+                                            DimDomain<R> const &,
+                                            DimOrdering<L> const &,
+                                            DimOrdering<R> const &);
 
 using T1 = value_type<2>;
 using T2 = value_type<3>;

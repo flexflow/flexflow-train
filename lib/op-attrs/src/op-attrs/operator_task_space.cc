@@ -1,6 +1,8 @@
 #include "op-attrs/operator_task_space.h"
 #include "op-attrs/operator_task_space.dtg.h"
 #include "op-attrs/operator_task_space_dim_idx_t.h"
+#include "op-attrs/parallel_tensor_dim_degrees.h"
+#include "op-attrs/parallel_tensor_dim_idx_t.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "utils/containers/cartesian_product.h"
@@ -16,6 +18,7 @@
 #include "utils/nonnegative_int/num_elements.h"
 #include "utils/orthotope/dim_domain.h"
 #include "utils/orthotope/dim_ordering.h"
+#include "utils/orthotope/minimal_dim_domain.h"
 #include "utils/orthotope/orthotope.dtg.h"
 #include "utils/orthotope/orthotope.h"
 
@@ -68,5 +71,16 @@ DimOrdering<operator_task_space_dim_idx_t>
   get_operator_task_space_dim_ordering() {
   return make_default_dim_ordering<operator_task_space_dim_idx_t>();
 }
+
+OperatorTaskSpace 
+  get_operator_task_space_matching_parallel_tensor_dim_degrees(
+    ParallelTensorDimDegrees const &dim_degrees) {
+  return OperatorTaskSpace{
+    minimal_orthotope_from_minimal_dim_domain(
+      minimal_dim_domain_from_parallel_tensor_dim_degrees(dim_degrees),
+      get_parallel_tensor_dim_ordering()),
+  };
+}
+
 
 } // namespace FlexFlow
