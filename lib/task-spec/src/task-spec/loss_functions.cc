@@ -75,7 +75,7 @@ static void backward_task_impl(TaskArgumentAccessor const &acc) {
   if (loss_type == LossFunction::SPARSE_CATEGORICAL_CROSSENTROPY) {
     // label shape is [batch dim, 1]
     auto scce_attrs = attrs.get<SparseCategoricalCrossEntropyLossAttrs>();
-    size_t ndim = get_num_dims(logit.shape.dims).unwrap_nonnegative();
+    size_t ndim = get_num_dims(logit.shape.dims).int_from_num_tensor_dims();
     int num_classes =
         dim_at_idx(logit.shape.dims, legion_dim_t{0_n}).int_from_positive_int();
     ASSERT(logit_grad.shape == logit.shape);

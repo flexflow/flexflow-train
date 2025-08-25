@@ -65,7 +65,7 @@ void gpu_forward_kernel(cudaStream_t stream,
                         GenericTensorAccessorW const &output) {
 
   TransposeStrides info;
-  info.num_dim = get_num_dims(input.shape.dims).unwrap_nonnegative();
+  info.num_dim = get_num_dims(input.shape.dims).int_from_num_tensor_dims();
   assert(info.num_dim == m.perm.size());
 
   LegionOrdered<legion_dim_t> legion_ordered_perm =
@@ -106,7 +106,7 @@ void gpu_backward_kernel(cudaStream_t stream,
                          GenericTensorAccessorW const &in_grad) {
 
   TransposeStrides info;
-  info.num_dim = get_num_dims(in_grad.shape.dims).unwrap_nonnegative();
+  info.num_dim = get_num_dims(in_grad.shape.dims).int_from_num_tensor_dims();
   assert(info.num_dim == m.perm.size());
 
   LegionOrdered<legion_dim_t> legion_ordered_perm =

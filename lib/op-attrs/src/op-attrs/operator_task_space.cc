@@ -19,6 +19,7 @@
 #include "utils/orthotope/dim_domain.h"
 #include "utils/orthotope/dim_ordering.h"
 #include "utils/orthotope/minimal_dim_domain.h"
+#include "utils/orthotope/minimal_orthotope.h"
 #include "utils/orthotope/orthotope.dtg.h"
 #include "utils/orthotope/orthotope.h"
 
@@ -28,10 +29,11 @@ std::unordered_set<TaskSpaceCoordinate>
     get_task_space_coordinates(OperatorTaskSpace const &task) {
 
   std::vector<std::vector<nonnegative_int>> coordinate_ranges =
-      transform(task.degrees, [&](positive_int num_points) {
-        return nonnegative_range(
-            num_points.nonnegative_int_from_positive_int());
-      });
+      transform(task.degrees.dims, 
+                [&](int_ge_two num_points) {
+                  return nonnegative_range(
+                      num_points.nonnegative_int_from_int_ge_two());
+                });
 
   std::unordered_set<std::vector<nonnegative_int>> raw_coordinates =
       unordered_set_of(cartesian_product(coordinate_ranges));
@@ -47,19 +49,19 @@ TaskSpaceCoordinate
   return maximum(get_task_space_coordinates(task));
 }
 
-nonnegative_int num_dims(OperatorTaskSpace const &task) {
-  return num_elements(task.degrees);
+nonnegative_int num_dims(OperatorTaskSpace const &op_task_space) {
+  return minimal_orthotope_get_num_dims(op_task_space.degrees);
 }
 
-positive_int num_tasks(OperatorTaskSpace const &task) {
-  return product(task.degrees);
+positive_int num_tasks(OperatorTaskSpace const &op_task_space) {
+  return minimal_orthotope_get_volume(op_task_space.degrees);
 }
 
 DimDomain<operator_task_space_dim_idx_t>
   dim_domain_from_operator_task_space(OperatorTaskSpace const &operator_task_space) {
   
   Orthotope orthotope = 
-    Orthotope{operator_task_space.degrees};
+    orthotope_from_minimal_orthotope(operator_task_space.degrees);
 
   return dim_domain_from_orthotope(
     orthotope,

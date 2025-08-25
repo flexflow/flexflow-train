@@ -64,7 +64,7 @@ OperatorSpaceToParallelTensorSpaceMapping
 }
 
 OperatorSpaceToParallelTensorSpaceMapping
-  oerator_ptensor_space_mapping_from_composition(
+  operator_ptensor_space_mapping_from_composition(
     OperatorSpaceToParallelTensorSpaceMapping const &op_to_pt1_mapping,
     ParallelTensorSpaceMapping const &pt1_to_pt2_mapping) {
 

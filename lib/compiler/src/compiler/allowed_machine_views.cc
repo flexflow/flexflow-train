@@ -104,7 +104,11 @@ static std::unordered_set<MachineView>
     return get_all_permutations_with_repetition(options, num_dims(task));
   };
 
-  std::vector<positive_int> tensor_dims = task.degrees;
+  std::vector<positive_int> tensor_dims = transform(task.degrees.dims,
+                                                    [](int_ge_two dim) {
+                                                      return dim.positive_int_from_int_ge_two();
+                                                    });
+
   positive_int total_devices = get_num_devices(machine_spec, device_type);
 
   std::unordered_set<MachineView> machine_views;

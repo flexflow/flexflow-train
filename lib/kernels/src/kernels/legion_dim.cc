@@ -26,15 +26,15 @@ legion_dim_t add_to_legion_dim(legion_dim_t legion_dim, int value) {
 }
 
 legion_dim_t legion_dim_from_ff_dim(ff_dim_t ff_dim,
-                                    nonnegative_int num_dimensions) {
-  return legion_dim_t{nonnegative_int{num_dimensions.unwrap_nonnegative() -
+                                    num_tensor_dims_t num_dimensions) {
+  return legion_dim_t{nonnegative_int{num_dimensions.int_from_num_tensor_dims() -
                                       ff_dim.value.unwrap_nonnegative() - 1}};
   ;
 }
 
 ff_dim_t ff_dim_from_legion_dim(legion_dim_t legion_dim,
-                                nonnegative_int num_dimensions) {
-  return ff_dim_t{nonnegative_int{num_dimensions.unwrap_nonnegative() -
+                                num_tensor_dims_t num_dimensions) {
+  return ff_dim_t{nonnegative_int{num_dimensions.int_from_num_tensor_dims() -
                                   legion_dim.value.unwrap_nonnegative() - 1}};
 }
 

@@ -17,6 +17,11 @@ int_ge_two::int_ge_two(nonnegative_int value) : value_(value.unwrap_nonnegative(
   this->check_invariant();
 }
 
+int_ge_two::int_ge_two(positive_int value) : value_(value.int_from_positive_int()) {
+  this->check_invariant();
+}
+
+
 int_ge_two::operator int() const noexcept {
   return this->value_;
 }

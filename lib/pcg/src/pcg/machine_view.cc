@@ -66,10 +66,10 @@ std::optional<MachineSpaceCoordinate> get_machine_space_coordinate(
     TaskSpaceCoordinate const &coord,
     MachineComputeSpecification const &machine_compute_specification) {
 
-  ASSERT(num_dims(machine_view) == task.degrees.size(),
-         "Dimension of machine view must match dimension of task",
+  ASSERT(num_dims(machine_view) == num_dims(task),
+         "Dimension of MachineView must match dimension of OperatorTaskSpace",
          machine_view,
-         task.degrees);
+         task);
 
   auto get_dimension_indices_for_dimension =
       [&](MachineSpecificationDimension dimension)
@@ -90,8 +90,10 @@ std::optional<MachineSpaceCoordinate> get_machine_space_coordinate(
 
         std::vector<positive_int> sizes =
             transform(dimension_indices, [&](nonnegative_int i) {
-              return task.degrees.at(i.unwrap_nonnegative()) *
-                     mv_strides.at(i.unwrap_nonnegative()).unwrapped;
+              return (
+                task.degrees.dims.at(i.unwrap_nonnegative()) *
+                mv_strides.at(i.unwrap_nonnegative()).unwrapped
+              ).positive_int_from_int_ge_two();
             });
         std::vector<nonnegative_int> coord_points =
             transform(dimension_indices, [&](nonnegative_int i) {

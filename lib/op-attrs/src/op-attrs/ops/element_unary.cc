@@ -15,16 +15,20 @@ ElementUnaryAttrs make_relu_attrs() {
   };
 }
 
-tl::expected<TensorShape, std::string>
+TensorShape
     get_output_shape(ElementUnaryAttrs const &attrs,
                      TensorShape const &input_shape) {
   return input_shape;
 }
 
-tl::expected<ParallelTensorShape, std::string>
+ParallelTensorShape
     get_output_shape(ElementUnaryAttrs const &attrs,
                      ParallelTensorShape const &input_shape) {
-  return input_shape;
+  TensorShape output_shape = get_output_shape(attrs, get_reduced_shape(input_shape));
+
+  ParallelTensorDimDegrees output_degrees = get_output_parallel_dim_degrees(attrs, get_parallel_degrees(input_shape));
+
+  return lift_to_parallel_with_degrees(output_shape, output_degrees);
 }
 
 ParallelTensorDimDegrees get_output_parallel_dim_degrees(
@@ -46,6 +50,7 @@ OperatorTaskSpace get_operator_task_space(ElementUnaryAttrs const &attrs,
 OperatorSpaceToParallelTensorSpaceMapping get_operator_to_input_mapping(
     ElementUnaryAttrs const &attrs,
     ParallelTensorDimDegrees const &input_degrees) {
+
   return get_identity_mapping(
     get_operator_task_space(attrs, input_degrees),
     input_degrees);

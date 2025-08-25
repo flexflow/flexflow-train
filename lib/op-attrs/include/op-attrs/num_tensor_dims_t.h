@@ -55,9 +55,7 @@ private:
   nonnegative_int value;
 
 private:
-  std::tuple<
-    decltype(value) const &
-  > tie() const;
+  void check_invariant() const;
 };
 
 nonnegative_int format_as(num_tensor_dims_t);

@@ -12,8 +12,8 @@ void cpu_forward_kernel(GenericTensorAccessorR const &input,
                         DataType input_data_type,
                         DataType output_data_type,
                         std::optional<AggregateOp> aggr,
-                        int in_dim,
-                        int out_dim,
+                        num_tensor_dims_t in_dim,
+                        num_tensor_dims_t out_dim,
                         int batch_size);
 
 void cpu_backward_kernel(GenericTensorAccessorR const &output,
@@ -22,8 +22,8 @@ void cpu_backward_kernel(GenericTensorAccessorR const &output,
                          DataType output_data_type,
                          DataType input_data_type,
                          std::optional<AggregateOp> aggr,
-                         int in_dim,
-                         int out_dim,
+                         num_tensor_dims_t in_dim,
+                         num_tensor_dims_t out_dim,
                          int batch_size);
 
 } // namespace FlexFlow::Kernels::Embedding

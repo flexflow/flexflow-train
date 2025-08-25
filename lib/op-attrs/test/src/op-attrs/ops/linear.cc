@@ -290,8 +290,6 @@ TEST_SUITE(FF_TEST_SUITE) {
   }
 
   TEST_CASE("get_operator_to_input_mapping(LinearAttrs, nonnegative_int)") {
-    nonnegative_int input_num_dims = 3_n;  
-
     LinearAttrs attrs = LinearAttrs{
           /*out_channels=*/16_p,
           /*use_bias=*/false,
@@ -300,9 +298,19 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*regularizer=*/std::nullopt,
       };
 
+    ParallelTensorDimDegrees input_dims = ParallelTensorDimDegrees{
+        /*sum_degree=*/SumDegree{2_p},
+        /*discard_copy_dedgree=*/DiscardCopyDegree{1_p},
+        /*shard_degrees=*/FFOrdered{
+          1_p, 
+          1_p,
+        },
+      };
+
     OperatorSpaceToParallelTensorSpaceMapping result = 
-      throw_if_unexpected(get_operator_to_input_mapping(attrs, input_num_dims));
+      get_operator_to_input_mapping(attrs, input_dims);
 
     // TODO(@lockshaw): implement some actual checks here
+    NOT_IMPLEMENTED();
   }
 }

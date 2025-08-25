@@ -13,9 +13,9 @@ namespace FlexFlow {
 
 ElementUnaryAttrs make_relu_attrs();
 
-tl::expected<TensorShape, std::string>
+TensorShape
     get_output_shape(ElementUnaryAttrs const &, TensorShape const &);
-tl::expected<ParallelTensorShape, std::string>
+ParallelTensorShape
     get_output_shape(ElementUnaryAttrs const &, ParallelTensorShape const &);
 
 ParallelTensorDimDegrees get_output_parallel_dim_degrees(

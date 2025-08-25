@@ -45,7 +45,11 @@ TEST_SUITE(FF_TEST_SUITE) {
        * Where the (x,) are the `TaskSpaceCoordinate`s, and the underlying grid
        * is the machine space.
        */
-      OperatorTaskSpace task = OperatorTaskSpace{{3_p}};
+      OperatorTaskSpace task = OperatorTaskSpace{
+        MinimalOrthotope{{
+          3_ge2,
+        }},
+      };
       MachineView mv = MachineView{
           MachineSpaceCoordinate{
               /*node_idx=*/0_n, /*device_idx=*/1_n, DeviceType::GPU},
@@ -114,7 +118,12 @@ TEST_SUITE(FF_TEST_SUITE) {
          * grid is the machine space.
          */
 
-        OperatorTaskSpace task = OperatorTaskSpace{{2_p, 2_p}};
+        OperatorTaskSpace task = OperatorTaskSpace{
+          MinimalOrthotope{{
+            2_ge2, 
+            2_ge2,
+          }},
+        };
         MachineView mv = MachineView{
             MachineSpaceCoordinate{
                 /*node_idx=*/1_n, /*device_idx=*/2_n, DeviceType::GPU},
@@ -180,7 +189,12 @@ TEST_SUITE(FF_TEST_SUITE) {
          * grid is the machine space.
          */
 
-        OperatorTaskSpace task = OperatorTaskSpace{{2_p, 2_p}};
+        OperatorTaskSpace task = OperatorTaskSpace{
+          MinimalOrthotope{{
+            2_ge2, 
+            2_ge2,
+          }},
+        };
         MachineView mv = MachineView{
             MachineSpaceCoordinate{
                 /*node_idx=*/1_n, /*device_idx=*/0_n, DeviceType::GPU},
@@ -254,7 +268,13 @@ TEST_SUITE(FF_TEST_SUITE) {
          * grid is the machine space.
          */
 
-        OperatorTaskSpace task = OperatorTaskSpace{{2_p, 2_p, 2_p}};
+        OperatorTaskSpace task = OperatorTaskSpace{
+          MinimalOrthotope{{
+            2_ge2, 
+            2_ge2, 
+            2_ge2,
+          }},
+        };
         MachineView mv = MachineView{
             MachineSpaceCoordinate{
                 /*node_idx=*/0_n, /*device_idx=*/1_n, DeviceType::GPU},
@@ -329,7 +349,11 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*num_gpus_per_node=*/6_p,
           };
 
-      OperatorTaskSpace task = OperatorTaskSpace{{3_p}};
+      OperatorTaskSpace task = OperatorTaskSpace{
+        MinimalOrthotope{{
+          3_ge2,
+        }},
+      };
       MachineView mv = MachineView{
           MachineSpaceCoordinate{
               /*node_idx=*/0_n, /*device_idx=*/1_n, DeviceType::GPU},
@@ -374,7 +398,12 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*num_gpus_per_node=*/5_p,
           };
 
-      OperatorTaskSpace task = OperatorTaskSpace{{2_p, 2_p}};
+      OperatorTaskSpace task = OperatorTaskSpace{
+        MinimalOrthotope{{
+          2_ge2, 
+          2_ge2,
+        }},
+      };
       MachineView mv = MachineView{
           MachineSpaceCoordinate{
               /*node_idx=*/1_n, /*device_idx=*/2_n, DeviceType::GPU},

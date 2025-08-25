@@ -114,18 +114,10 @@ tl::expected<ParallelTensorShape, std::string>
     result_unpar.value();
   });
 
-  SumDegree sum_degree = SumDegree{1_p};
-  DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{
-      get_sum_degree(input) * product(slice(ff_ordered_shard_degrees(input),
-                                            relative_ff_dim_t{0},
-                                            relative_ff_dim_t{-1}))};
-  FFOrdered<positive_int> shard_degrees = FFOrdered<positive_int>{
-      get_discard_copy_degree(input),
-      shard_dim_at_idx(input, relative_ff_dim_t{-1}).degree,
-  };
+  ParallelTensorDimDegrees projection_degrees = get_projection_parallel_dim_degrees(attrs, get_parallel_degrees(input));
 
   return lift_to_parallel_with_degrees(
-      unpar, sum_degree, discard_copy_degree, shard_degrees);
+      unpar, projection_degrees);
 }
 
 tl::expected<ParallelTensorShape, std::string>
@@ -139,18 +131,10 @@ tl::expected<ParallelTensorShape, std::string>
     result_unpar.value();
   });
 
-  SumDegree sum_degree =
-      SumDegree{get_sum_degree(input) *
-                shard_dim_at_idx(input, relative_ff_dim_t{-1}).degree};
-  DiscardCopyDegree discard_copy_degree =
-      DiscardCopyDegree{product(slice(ff_ordered_shard_degrees(input),
-                                      relative_ff_dim_t{0},
-                                      relative_ff_dim_t{-1}))};
-  FFOrdered<positive_int> shard_degrees =
-      FFOrdered<positive_int>{get_discard_copy_degree(input)};
+  ParallelTensorDimDegrees bias_degrees = get_bias_parallel_dim_degrees(attrs, get_parallel_degrees(input));
 
   return lift_to_parallel_with_degrees(
-      unpar, sum_degree, discard_copy_degree, shard_degrees);
+      unpar, bias_degrees);
 }
 
 tl::expected<ParallelTensorShape, std::string>
@@ -165,15 +149,73 @@ tl::expected<ParallelTensorShape, std::string>
     result_unpar.value();
   });
 
-  SumDegree sum_degree =
-      SumDegree{get_sum_degree(input) *
-                shard_dim_at_idx(input, relative_ff_dim_t{-1}).degree};
-  DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{1_p};
-  FFOrdered<positive_int> shard_degrees = ff_ordered_shard_degrees(input);
-  shard_degrees.at(relative_ff_dim_t{-1}) = get_discard_copy_degree(input);
+  ParallelTensorDimDegrees output_degrees = 
+    get_output_parallel_dim_degrees(attrs, get_parallel_degrees(input));
 
-  return lift_to_parallel_with_degrees(
-      unpar, sum_degree, discard_copy_degree, shard_degrees);
+  return lift_to_parallel_with_degrees(unpar, output_degrees);
+}
+
+ParallelTensorDimDegrees
+    get_projection_parallel_dim_degrees(LinearAttrs const &attrs,
+                                        ParallelTensorDimDegrees const &input) {
+  SumDegree sum_degree = SumDegree{1_p};
+  DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{
+      input.sum_degree.value * product(slice(input.shard_degrees,
+                                            relative_ff_dim_t{0},
+                                            relative_ff_dim_t{-1}))};
+  FFOrdered<positive_int> shard_degrees = FFOrdered<positive_int>{
+      input.discard_copy_degree.value,
+      input.shard_degrees.at(relative_ff_dim_t{-1}),
+  };
+
+  return ParallelTensorDimDegrees{
+    /*sum_degree=*/sum_degree,
+    /*discard_copy_degree=*/discard_copy_degree,
+    /*shard_degrees=*/shard_degrees,
+  };
+}
+
+ParallelTensorDimDegrees
+    get_bias_parallel_dim_degrees(LinearAttrs const &attrs,
+                                  ParallelTensorDimDegrees const &input) {
+
+  SumDegree sum_degree =
+      SumDegree{
+        input.sum_degree.value *
+          input.shard_degrees.at(relative_ff_dim_t{-1}),
+      };
+  DiscardCopyDegree discard_copy_degree =
+      DiscardCopyDegree{product(slice(input.shard_degrees,
+                                      relative_ff_dim_t{0},
+                                      relative_ff_dim_t{-1}))};
+  FFOrdered<positive_int> shard_degrees =
+      FFOrdered<positive_int>{input.discard_copy_degree.value};
+
+  return ParallelTensorDimDegrees{
+    /*sum_degree=*/sum_degree,
+    /*discard_copy_degree=*/discard_copy_degree,
+    /*shard_degrees=*/shard_degrees,
+  };
+}
+
+ParallelTensorDimDegrees
+    get_output_parallel_dim_degrees(LinearAttrs const &attrs,
+                                    ParallelTensorDimDegrees const &input) {
+  SumDegree sum_degree =
+      SumDegree{
+        input.sum_degree.value *
+          input.shard_degrees.at(relative_ff_dim_t{-1}),
+      };
+
+  DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{1_p};
+  FFOrdered<positive_int> shard_degrees = input.shard_degrees;
+  shard_degrees.at(relative_ff_dim_t{-1}) = input.discard_copy_degree.value;
+
+  return ParallelTensorDimDegrees{
+    /*sum_degree=*/sum_degree,
+    /*discard_copy_degree=*/discard_copy_degree,
+    /*shard_degrees=*/shard_degrees,
+  };
 }
 
 tl::expected<std::vector<ParallelTensorShape>, std::string>
@@ -250,8 +292,8 @@ OperatorTaskSpace get_operator_task_space(
   LinearAttrs const &attrs,
   ParallelTensorDimDegrees const &input_degrees) {
   
-  ParallelTensorDimDegrees output_degrees = throw_if_unexpected(get_output_parallel_dim_degrees(
-    attrs, input_degrees));
+  ParallelTensorDimDegrees output_degrees = get_output_parallel_dim_degrees(
+    attrs, input_degrees);
 
   return get_operator_task_space_matching_parallel_tensor_dim_degrees(output_degrees);
 }
@@ -289,7 +331,7 @@ static ParallelTensorSpaceMapping
   }
 
   ParallelTensorDimDegrees output_degrees = 
-    throw_if_unexpected(get_output_parallel_dim_degrees(attrs, input_degrees));
+    get_output_parallel_dim_degrees(attrs, input_degrees);
 
   return parallel_tensor_space_mapping_from_projection(
     DimProjection{inp_to_out}, input_degrees, output_degrees);
@@ -347,7 +389,7 @@ static ParallelTensorSpaceMapping
                /*onto=*/discard_copy_dim_idx());
 
   ParallelTensorDimDegrees projection_degrees = 
-    throw_if_unexpected(get_projection_parallel_dim_degrees(attrs, input_degrees));
+    get_projection_parallel_dim_degrees(attrs, input_degrees);
 
   return parallel_tensor_space_mapping_from_projection(
     DimProjection{inp_to_proj}, input_degrees, projection_degrees);
@@ -360,7 +402,7 @@ static ParallelTensorSpaceMapping
   
   num_ptensor_shard_dims_t input_num_shard_dims = get_ptensor_dim_degrees_num_shard_dims(input_degrees);
 
-  ParallelTensorDimDegrees bias_degrees = throw_if_unexpected(get_bias_parallel_dim_degrees(attrs, input_degrees));
+  ParallelTensorDimDegrees bias_degrees = get_bias_parallel_dim_degrees(attrs, input_degrees);
 
   DownProjection<parallel_tensor_dim_idx_t, parallel_tensor_dim_idx_t>
       inp_to_bias = make_empty_down_projection<parallel_tensor_dim_idx_t,
@@ -447,7 +489,7 @@ OperatorSpaceToParallelTensorSpaceMapping
 
 OperatorSpaceToParallelTensorSpaceMapping
     get_operator_to_bias_mapping(LinearAttrs const &attrs, 
-                                 ParallelTensorDimDegrees input_degrees) {
+                                 ParallelTensorDimDegrees const &input_degrees) {
   
   return operator_ptensor_space_mapping_from_composition(
     get_operator_to_input_mapping(attrs, input_degrees),
@@ -456,9 +498,9 @@ OperatorSpaceToParallelTensorSpaceMapping
 
 OperatorSpaceToParallelTensorSpaceMapping
     get_operator_to_output_mapping(LinearAttrs const &attrs,
-                                   ParallelTensorDimDegrees input_degrees) {
+                                   ParallelTensorDimDegrees const &input_degrees) {
       
-  ParallelTensorDimDegrees output_degrees = throw_if_unexpected(get_output_parallel_dim_degrees(attrs, input_degrees));
+  ParallelTensorDimDegrees output_degrees = get_output_parallel_dim_degrees(attrs, input_degrees);
 
   return get_identity_mapping(
     get_operator_task_space(attrs, input_degrees),

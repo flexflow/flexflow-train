@@ -52,6 +52,11 @@ positive_int num_ptensor_parallel_dims_t::positive_int_from_num_ptensor_parallel
   return positive_int{this->value};
 }
 
+void num_ptensor_parallel_dims_t::check_invariant() const {
+  ASSERT(this->value >= 2);
+  ASSERT(this->value <= MAX_TENSOR_DIM + 2);
+}
+
 std::ostream &operator<<(std::ostream &s, num_ptensor_parallel_dims_t const &m) {
   return (s << fmt::to_string(m));
 }

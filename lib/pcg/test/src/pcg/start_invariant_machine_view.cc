@@ -95,7 +95,11 @@ TEST_SUITE(FF_TEST_SUITE) {
        *  | (0,)  |       | (1,)  |       | (2,)  |       |
        *  +-------+-------+-------+-------+-------+-------+
        */
-      OperatorTaskSpace task = OperatorTaskSpace{{3_p}};
+      OperatorTaskSpace task = OperatorTaskSpace{
+        MinimalOrthotope{{
+          3_ge2,
+        }},
+      };
       StartInvariantMachineView simv = StartInvariantMachineView{
           {MachineViewDimension{stride_t{2_p},
                                 MachineSpecificationDimension::INTRA_NODE}},
@@ -163,7 +167,12 @@ TEST_SUITE(FF_TEST_SUITE) {
        *  +-------+-------+-------+-------+
        */
 
-      OperatorTaskSpace task = OperatorTaskSpace{{2_p, 2_p}};
+      OperatorTaskSpace task = OperatorTaskSpace{
+        MinimalOrthotope{{
+          2_ge2, 
+          2_ge2,
+        }},
+      };
       StartInvariantMachineView simv = StartInvariantMachineView{
           {MachineViewDimension{stride_t{1_p},
                                 MachineSpecificationDimension::INTER_NODE},

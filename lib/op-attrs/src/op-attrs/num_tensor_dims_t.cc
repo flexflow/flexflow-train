@@ -140,6 +140,19 @@ int num_tensor_dims_t::int_from_num_tensor_dims() const {
   return this->value.unwrap_nonnegative();
 }
 
+void num_tensor_dims_t::check_invariant() const {
+  ASSERT(this->value <= MAX_TENSOR_DIM);
+}
+
+nonnegative_int format_as(num_tensor_dims_t num_tensor_dims) {
+  return num_tensor_dims.nonnegative_int_from_num_tensor_dims();
+}
+
+std::ostream &operator<<(std::ostream &s, num_tensor_dims_t num_tensor_dims) {
+  return (s << fmt::to_string(num_tensor_dims));
+}
+
+
 num_tensor_dims_t num_tensor_dims_from_num_ptensor_shard_dims(num_ptensor_shard_dims_t num_ptensor_shard_dims) {
   return num_tensor_dims_t{num_ptensor_shard_dims.value};
 }

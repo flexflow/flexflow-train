@@ -35,13 +35,13 @@ tl::expected<ParallelTensorSpaceMapping, std::string>
     get_projection_to_output_parallel_dim_mapping(
         LinearAttrs const &attrs, ParallelTensorDimDegrees const &input);
 
-tl::expected<ParallelTensorDimDegrees, std::string>
+ParallelTensorDimDegrees
     get_projection_parallel_dim_degrees(LinearAttrs const &attrs,
                                         ParallelTensorDimDegrees const &input);
-tl::expected<ParallelTensorDimDegrees, std::string>
+ParallelTensorDimDegrees
     get_bias_parallel_dim_degrees(LinearAttrs const &attrs,
                                   ParallelTensorDimDegrees const &input);
-tl::expected<ParallelTensorDimDegrees, std::string>
+ParallelTensorDimDegrees
     get_output_parallel_dim_degrees(LinearAttrs const &attrs,
                                     ParallelTensorDimDegrees const &input);
 

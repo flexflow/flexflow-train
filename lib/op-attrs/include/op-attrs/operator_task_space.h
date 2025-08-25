@@ -12,13 +12,16 @@
 namespace FlexFlow {
 
 std::unordered_set<TaskSpaceCoordinate>
-    get_task_space_coordinates(OperatorTaskSpace const &task);
+    get_task_space_coordinates(OperatorTaskSpace const &operator_task_space);
 
 TaskSpaceCoordinate
-    get_task_space_maximum_coordinate(OperatorTaskSpace const &task);
+    get_task_space_maximum_coordinate(OperatorTaskSpace const &operator_task_space);
 
-nonnegative_int num_dims(OperatorTaskSpace const &task);
-positive_int num_tasks(OperatorTaskSpace const &task);
+nonnegative_int num_dims(OperatorTaskSpace const &operator_task_space);
+positive_int num_tasks(OperatorTaskSpace const &operator_task_space);
+
+positive_int op_task_space_dim_size_for_idx(OperatorTaskSpace const &,
+                                            operator_task_space_dim_idx_t);
 
 DimDomain<operator_task_space_dim_idx_t>
   dim_domain_from_operator_task_space(OperatorTaskSpace const &);

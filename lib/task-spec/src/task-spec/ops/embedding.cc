@@ -55,8 +55,8 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
       input.shape.data_type,
       output.shape.data_type,
       attrs.aggr,
-      get_num_dims(input.shape.dims).unwrap_nonnegative(),
-      get_num_dims(output.shape.dims).unwrap_nonnegative(),
+      get_num_dims(input.shape.dims),
+      get_num_dims(output.shape.dims),
       dim_at_idx(input.shape.dims, legion_dim_t{1_n}).int_from_positive_int());
 }
 
@@ -82,8 +82,8 @@ static std::optional<float>
       output.shape.data_type,
       input.shape.data_type,
       attrs.aggr,
-      get_num_dims(input.shape.dims).unwrap_nonnegative(),
-      get_num_dims(output.shape.dims).unwrap_nonnegative(),
+      get_num_dims(input.shape.dims),
+      get_num_dims(output.shape.dims),
       dim_at_idx(input.shape.dims, ff_dim_t{0_n}).int_from_positive_int());
 }
 

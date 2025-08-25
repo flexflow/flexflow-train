@@ -31,6 +31,7 @@
 #include "utils/graph/node/node.dtg.h"
 #include "utils/record_formatter.h"
 #include <unordered_set>
+#include "op-attrs/get_operator_task_space.h"
 
 namespace FlexFlow {
 
@@ -121,14 +122,23 @@ ParallelLayerAddedResult pcg_add_input_layer(ParallelComputationGraph &pcg,
 
 OperatorTaskSpace get_operator_task_space(ParallelComputationGraph const &pcg,
                                           parallel_layer_guid_t const &layer) {
-  parallel_tensor_guid_t out_tensor = get_layer_outputs(pcg, layer).at(0);
-  ParallelTensorShape shape = get_parallel_tensor_shape(pcg, out_tensor);
+  PCGOperatorAttrs op_attrs = pcg_get_op_attrs(pcg, layer);
 
-  std::vector<positive_int> degrees;
-  extend(degrees, vector_of(ff_ordered_shard_degrees(shape)));
-  degrees.push_back(get_sum_degree(shape));
-  degrees.push_back(get_discard_copy_degree(shape));
-  return OperatorTaskSpace{degrees};
+  ASSERT(!is_parallel_op(op_attrs));
+  
+  std::vector<parallel_tensor_guid_t> inputs = 
+    get_incoming_inputs(pcg, layer);
+
+  std::vector<ParallelTensorDimDegrees> input_degrees = 
+    transform(get_incoming_inputs(pcg, layer),
+              [&](parallel_tensor_guid_t input_guid) {
+                return get_parallel_degrees(get_parallel_tensor_shape(pcg, input_guid));
+              });
+
+
+  return get_operator_task_space(
+    compgraph_op_attrs_from_pcg_op_attrs(op_attrs),
+    input_degrees);
 }
 
 std::unordered_set<ParallelComputationGraphEdge>
