@@ -16,6 +16,16 @@
 namespace FlexFlow {
 
 template <typename T>
+DimDomain<T> lift_minimal_dim_domain(MinimalDimDomain<T> const &minimal_dim_domain) {
+  return DimDomain{
+    map_values(minimal_dim_domain.dims,
+               [](int_ge_two component) {
+                 return component.positive_int_from_int_ge_two();
+               }),
+  };
+}
+
+template <typename T>
 MinimalDimDomain<T> require_dim_domain_is_minimal(DimDomain<T> const &dim_domain) {
   return MinimalDimDomain<T>{
     map_values(dim_domain.dims, 

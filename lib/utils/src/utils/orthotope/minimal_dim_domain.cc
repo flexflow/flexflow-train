@@ -6,6 +6,9 @@ namespace FlexFlow {
 using T = value_type<0>;
 
 template
+  DimDomain<T> lift_minimal_dim_domain(MinimalDimDomain<T> const &);
+
+template
   MinimalDimDomain<T> require_dim_domain_is_minimal(DimDomain<T> const &);
 
 template

@@ -7,6 +7,7 @@
 #include "op-attrs/task_space_coordinate.dtg.h"
 #include "utils/orthotope/dim_domain.dtg.h"
 #include "utils/orthotope/dim_ordering.dtg.h"
+#include "utils/orthotope/minimal_dim_domain.dtg.h"
 #include <unordered_set>
 
 namespace FlexFlow {
@@ -23,8 +24,11 @@ positive_int num_tasks(OperatorTaskSpace const &operator_task_space);
 positive_int op_task_space_dim_size_for_idx(OperatorTaskSpace const &,
                                             operator_task_space_dim_idx_t);
 
-DimDomain<operator_task_space_dim_idx_t>
-  dim_domain_from_operator_task_space(OperatorTaskSpace const &);
+MinimalDimDomain<operator_task_space_dim_idx_t>
+  minimal_dim_domain_from_operator_task_space(OperatorTaskSpace const &);
+
+OperatorTaskSpace
+  operator_task_space_from_minimal_dim_domain(MinimalDimDomain<operator_task_space_dim_idx_t> const &); 
 
 DimOrdering<operator_task_space_dim_idx_t>
   get_operator_task_space_dim_ordering();

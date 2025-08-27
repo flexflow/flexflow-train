@@ -17,6 +17,10 @@ parallel_tensor_dim_idx_t shard_dim_idx(ff_dim_t idx) {
   return parallel_tensor_dim_idx_t{idx};
 }
 
+bool is_dim_idx_for_reduction_dimension(parallel_tensor_dim_idx_t dim_idx) {
+  return (dim_idx == sum_dim_idx()) || (dim_idx == discard_copy_dim_idx());
+}
+
 std::set<parallel_tensor_dim_idx_t>
     dim_idxs_for_num_shard_dims(nonnegative_int num_shard_dims) {
   std::set<parallel_tensor_dim_idx_t> result =

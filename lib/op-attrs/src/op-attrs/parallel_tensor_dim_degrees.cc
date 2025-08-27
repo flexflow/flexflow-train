@@ -1,9 +1,11 @@
 #include "op-attrs/parallel_tensor_dim_degrees.h"
+#include "op-attrs/ff_ordered/ff_ordered_from_map.h"
 #include "op-attrs/ff_ordered/get_idxs.h"
 #include "op-attrs/num_tensor_dims_t.h"
 #include "op-attrs/parallel_tensor_dim_idx_t.dtg.h"
 #include "op-attrs/parallel_tensor_dim_idx_t.h"
 #include "op-attrs/parallel_tensor_space_coordinate.h"
+#include "utils/containers/filtermap_keys.h"
 #include "utils/containers/filtrans.h"
 #include "utils/containers/generate_map.h"
 #include "utils/containers/get_all_assignments.h"
@@ -131,6 +133,28 @@ DimDomain<parallel_tensor_dim_idx_t>
       }),
   };
 }
+
+ParallelTensorDimDegrees
+  parallel_tensor_dim_degrees_from_dim_domain(DimDomain<parallel_tensor_dim_idx_t> const &dim_domain) {
+
+    std::unordered_map<ff_dim_t, positive_int> 
+      shard_dims = 
+          filtermap_keys(dim_domain.dims, 
+                         [](parallel_tensor_dim_idx_t dim_idx) {
+                           return dim_idx.try_require_shard_dim();
+                         });
+
+  return ParallelTensorDimDegrees{
+    /*sum_degree=*/SumDegree{
+      dim_domain.dims.at(sum_dim_idx()),
+    },
+    /*discard_copy_degree=*/DiscardCopyDegree{
+      dim_domain.dims.at(discard_copy_dim_idx()),
+    },
+    /*shard_degres=*/ff_ordered_from_map(shard_dims),
+  };
+}
+
 
 MinimalDimDomain<parallel_tensor_dim_idx_t>
   minimal_dim_domain_from_parallel_tensor_dim_degrees(ParallelTensorDimDegrees const &dim_degrees) {

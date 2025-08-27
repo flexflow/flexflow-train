@@ -9,7 +9,7 @@
 #include "op-attrs/parallel_tensor_dim_degrees.h"
 #include "op-attrs/parallel_tensor_dim_idx_t.h"
 #include "op-attrs/parallel_tensor_shape.h"
-#include "op-attrs/parallel_tensor_space_mapping.h"
+#include "op-attrs/parallel_tensor_space_to_parallel_tensor_space_mapping.h"
 #include "op-attrs/relative_ff_dim_t.h"
 #include "op-attrs/tensor_dims.h"
 #include "op-attrs/tensor_shape.h"
@@ -299,7 +299,7 @@ OperatorTaskSpace get_operator_task_space(
 }
 
 
-static ParallelTensorSpaceMapping
+static ParallelTensorSpaceToParallelTensorSpaceMapping
     get_input_to_output_mapping(LinearAttrs const &attrs,
                                 ParallelTensorDimDegrees const &input_degrees) {
 
@@ -337,7 +337,7 @@ static ParallelTensorSpaceMapping
     DimProjection{inp_to_out}, input_degrees, output_degrees);
 }
 
-static ParallelTensorSpaceMapping
+static ParallelTensorSpaceToParallelTensorSpaceMapping
     get_input_to_projection_mapping(LinearAttrs const &attrs,
                                     ParallelTensorDimDegrees const &input_degrees) {
   
@@ -395,7 +395,7 @@ static ParallelTensorSpaceMapping
     DimProjection{inp_to_proj}, input_degrees, projection_degrees);
 }
 
-static ParallelTensorSpaceMapping
+static ParallelTensorSpaceToParallelTensorSpaceMapping
     get_input_to_bias_mapping(LinearAttrs const &attrs,
                               ParallelTensorDimDegrees const &input_degrees) {
   ASSERT(attrs.use_bias); 

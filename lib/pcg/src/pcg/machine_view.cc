@@ -7,6 +7,7 @@
 #include "pcg/machine_specification_dimension.dtg.h"
 #include "pcg/machine_view_dimension.dtg.h"
 #include "pcg/stride_t.dtg.h"
+#include "utils/bidict/generate_bidict.h"
 #include "utils/containers/contains.h"
 #include "utils/containers/count.h"
 #include "utils/containers/filter.h"
@@ -133,6 +134,27 @@ std::optional<MachineSpaceCoordinate> get_machine_space_coordinate(
     return std::nullopt;
   }
   return ms_coord;
+}
+
+
+OperatorSpaceToMachineSpaceMapping
+  get_coordinate_mapping_for_machine_view(
+    OperatorTaskSpace const &operator_task_space,
+    MachineComputeSpecification const &machine_compute_specification,
+    MachineView const &machine_view) {
+
+  return OperatorSpaceToMachineSpaceMapping{
+    /*raw_mapping=*/generate_bidict(
+      get_task_space_coordinates(operator_task_space),
+      [&](TaskSpaceCoordinate const &task_space_coord) {
+        return get_machine_space_coordinate(
+          /*operator_task_space=*/operator_task_space,
+          /*machine_view=*/machine_view,
+          /*task_space_coordinate=*/task_space_coord,
+          /*machine_compute_specification=*/machine_compute_specification).value();
+      }),
+    /*operator_task_space=*/operator_task_space,
+  };
 }
 
 std::unordered_set<MachineSpaceCoordinate> get_machine_space_coordinates(

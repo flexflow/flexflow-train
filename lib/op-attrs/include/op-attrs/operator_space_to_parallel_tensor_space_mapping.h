@@ -5,11 +5,17 @@
 #include "op-attrs/operator_task_space.dtg.h"
 #include "op-attrs/parallel_tensor_dim_degrees.dtg.h"
 #include "op-attrs/parallel_tensor_space_coordinate.dtg.h"
-#include "op-attrs/parallel_tensor_space_mapping.dtg.h"
+#include "op-attrs/parallel_tensor_space_to_parallel_tensor_space_mapping.dtg.h"
 #include "op-attrs/task_space_coordinate.dtg.h"
 #include "op-attrs/num_ptensor_parallel_dims_t.h"
 
 namespace FlexFlow {
+
+OperatorTaskSpace
+  get_operator_task_space_for_mapping(OperatorSpaceToParallelTensorSpaceMapping const &);
+
+ParallelTensorDimDegrees
+  get_parallel_tensor_space_for_mapping(OperatorSpaceToParallelTensorSpaceMapping const &);
 
 OperatorSpaceToParallelTensorSpaceMapping
     get_identity_mapping(
@@ -25,7 +31,7 @@ OperatorSpaceToParallelTensorSpaceMapping
 OperatorSpaceToParallelTensorSpaceMapping
   operator_ptensor_space_mapping_from_composition(
     OperatorSpaceToParallelTensorSpaceMapping const &op_to_pt1_mapping,
-    ParallelTensorSpaceMapping const &pt1_to_pt2_mapping);
+    ParallelTensorSpaceToParallelTensorSpaceMapping const &pt1_to_pt2_mapping);
 
 ParallelTensorSpaceCoordinate
   ptensor_coord_for_task_space_coord(

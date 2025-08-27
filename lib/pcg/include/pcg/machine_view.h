@@ -6,6 +6,8 @@
 #include "pcg/device_id_t.dtg.h"
 #include "pcg/machine_compute_specification.dtg.h"
 #include "pcg/machine_view.dtg.h"
+#include "pcg/operator_space_to_machine_space_mapping.dtg.h"
+#include "utils/bidict/bidict.h"
 #include <cstddef>
 #include <optional>
 #include <unordered_set>
@@ -27,10 +29,15 @@ MachineView machine_view_from_strides_and_machine_spec_dimensions(
     std::vector<MachineSpecificationDimension> const &dims);
 
 std::optional<MachineSpaceCoordinate>
-    get_machine_space_coordinate(OperatorTaskSpace const &task,
-                                 MachineView const &mv,
-                                 TaskSpaceCoordinate const &coordinates,
-                                 MachineComputeSpecification const &ms);
+    get_machine_space_coordinate(OperatorTaskSpace const &operator_task_space,
+                                 MachineView const &machine_view,
+                                 TaskSpaceCoordinate const &task_space_coordinate,
+                                 MachineComputeSpecification const &machine_compute_specification);
+
+OperatorSpaceToMachineSpaceMapping
+  get_coordinate_mapping_for_machine_view(OperatorTaskSpace const &operator_task_space,
+                                          MachineComputeSpecification const &machine_compute_specification,
+                                          MachineView const &machine_view);
 
 std::unordered_set<MachineSpaceCoordinate>
     get_machine_space_coordinates(OperatorTaskSpace const &task,

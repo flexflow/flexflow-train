@@ -2,6 +2,14 @@
 
 namespace FlexFlow {
 
+bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> 
+  get_tensor_shard_to_device_coord_mapping(ComputationGraphOpAttrs const &,
+                                           MachineView const &) {
+  NOT_IMPLEMENTED(); 
+}
+
+
+
 std::string format_as(MappedParallelComputationGraph const &mapped_pcg) {
   return fmt::format("<GraphOptimizeResult\npcg={}\nmachine_mapping={}>",
                      as_dot(mapped_pcg.pcg),

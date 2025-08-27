@@ -57,17 +57,27 @@ positive_int num_tasks(OperatorTaskSpace const &op_task_space) {
   return minimal_orthotope_get_volume(op_task_space.degrees);
 }
 
-DimDomain<operator_task_space_dim_idx_t>
-  dim_domain_from_operator_task_space(OperatorTaskSpace const &operator_task_space) {
-  
-  Orthotope orthotope = 
-    orthotope_from_minimal_orthotope(operator_task_space.degrees);
+MinimalDimDomain<operator_task_space_dim_idx_t>
+  minimal_dim_domain_from_operator_task_space(OperatorTaskSpace const &operator_task_space) {
 
-  return dim_domain_from_orthotope(
-    orthotope,
-    unordered_set_of(operator_task_space_dim_idx_range(orthotope_get_num_dims(orthotope))),
+  MinimalOrthotope minimal_orthotope = operator_task_space.degrees;
+  
+  return minimal_dim_domain_from_minimal_orthotope(
+    minimal_orthotope,
+    unordered_set_of(operator_task_space_dim_idx_range(minimal_orthotope_get_num_dims(minimal_orthotope))),
     get_operator_task_space_dim_ordering());
 }
+
+OperatorTaskSpace
+  operator_task_space_from_minimal_dim_domain(MinimalDimDomain<operator_task_space_dim_idx_t> const &minimal_dim_domain) {
+
+  return OperatorTaskSpace{
+    minimal_orthotope_from_minimal_dim_domain(
+      minimal_dim_domain,
+      get_operator_task_space_dim_ordering()),
+  };
+}
+
 
 DimOrdering<operator_task_space_dim_idx_t>
   get_operator_task_space_dim_ordering() {

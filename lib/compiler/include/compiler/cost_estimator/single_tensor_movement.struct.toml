@@ -7,24 +7,14 @@ features = [
 ]
 
 includes = [
-  "op-attrs/parallel_tensor_shape.dtg.h",
-  "pcg/machine_view.dtg.h",
-  "<unordered_set>",
-]
-
-src_includes = [
-  "utils/hash/unordered_set.h",
-  "utils/fmt/unordered_set.h",
+  "op-attrs/tensor_shape.dtg.h",
+  "compiler/cost_estimator/unresolved_communication_set.dtg.h",
 ]
 
 [[fields]]
-name = "parallel_tensor_shape"
-type = "::FlexFlow::ParallelTensorShape"
+name = "shard_shape"
+type = "::FlexFlow::TensorShape"
 
 [[fields]]
-name = "src_machine_views"
-type = "std::unordered_set<::FlexFlow::MachineView>"
-
-[[fields]]
-name = "dst_machine_views"
-type = "std::unordered_set<::FlexFlow::MachineView>"
+name = "unresolved_communication_set"
+type = "::FlexFlow::UnresolvedCommunicationSet"

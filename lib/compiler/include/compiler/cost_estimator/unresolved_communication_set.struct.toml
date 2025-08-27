@@ -1,0 +1,16 @@
+namespace = "FlexFlow"
+name = "UnresolvedCommunicationSet"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "pcg/machine_space_coordinate.dtg.h",
+  "utils/many_to_one/many_to_one.h",
+]
+
+[[fields]]
+name = "raw_mapping"
+type = "::FlexFlow::ManyToOne<::FlexFlow::MachineSpaceCoordinate, ::FlexFlow::MachineSpaceCoordinate>"

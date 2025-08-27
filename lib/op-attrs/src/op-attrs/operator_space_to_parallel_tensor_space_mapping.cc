@@ -12,8 +12,23 @@
 #include "utils/nonnegative_int/num_elements.h"
 #include "utils/nonnegative_int/range.h"
 #include "utils/orthotope/dim_projection.h"
+#include "utils/orthotope/minimal_dim_domain.h"
 
 namespace FlexFlow {
+
+OperatorTaskSpace
+  get_operator_task_space_for_mapping(OperatorSpaceToParallelTensorSpaceMapping const &mapping) {
+
+  return operator_task_space_from_minimal_dim_domain(
+    require_dim_domain_is_minimal(mapping.raw_mapping.l_domain));
+}
+
+ParallelTensorDimDegrees
+  get_parallel_tensor_space_for_mapping(OperatorSpaceToParallelTensorSpaceMapping const &mapping) {
+
+  return parallel_tensor_dim_degrees_from_dim_domain(mapping.raw_mapping.r_domain);
+}
+
 
 OperatorSpaceToParallelTensorSpaceMapping
     get_identity_mapping(
@@ -56,7 +71,7 @@ OperatorSpaceToParallelTensorSpaceMapping
   return OperatorSpaceToParallelTensorSpaceMapping{
     dim_domain_mapping_from_projection( 
       /*projection=*/projection,
-      /*l_domain=*/dim_domain_from_operator_task_space(operator_task_space),
+      /*l_domain=*/lift_minimal_dim_domain(minimal_dim_domain_from_operator_task_space(operator_task_space)),
       /*r_domain=*/dim_domain_from_parallel_tensor_dim_degrees(parallel_tensor_dim_degrees),
       /*l_dim_ordering=*/get_operator_task_space_dim_ordering(),
       /*r_dim_ordering=*/get_parallel_tensor_dim_ordering()),
@@ -66,7 +81,7 @@ OperatorSpaceToParallelTensorSpaceMapping
 OperatorSpaceToParallelTensorSpaceMapping
   operator_ptensor_space_mapping_from_composition(
     OperatorSpaceToParallelTensorSpaceMapping const &op_to_pt1_mapping,
-    ParallelTensorSpaceMapping const &pt1_to_pt2_mapping) {
+    ParallelTensorSpaceToParallelTensorSpaceMapping const &pt1_to_pt2_mapping) {
 
   DimDomainMapping<
     operator_task_space_dim_idx_t, 

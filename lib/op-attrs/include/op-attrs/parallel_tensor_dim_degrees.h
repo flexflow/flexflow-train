@@ -32,6 +32,9 @@ std::unordered_set<ParallelTensorSpaceCoordinate>
 DimDomain<parallel_tensor_dim_idx_t>
   dim_domain_from_parallel_tensor_dim_degrees(ParallelTensorDimDegrees const &);
 
+ParallelTensorDimDegrees
+  parallel_tensor_dim_degrees_from_dim_domain(DimDomain<parallel_tensor_dim_idx_t> const &);
+
 MinimalDimDomain<parallel_tensor_dim_idx_t>
   minimal_dim_domain_from_parallel_tensor_dim_degrees(ParallelTensorDimDegrees const &);
 

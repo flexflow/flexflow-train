@@ -9,7 +9,7 @@
 #include "op-attrs/ops/linear_attrs.dtg.h"
 #include "op-attrs/parallel_tensor_dim_degrees.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
-#include "op-attrs/parallel_tensor_space_mapping.dtg.h"
+#include "op-attrs/parallel_tensor_space_to_parallel_tensor_space_mapping.dtg.h"
 #include "op-attrs/tensor_shape.dtg.h"
 #include "utils/record_formatter.h"
 #include <tl/expected.hpp>
@@ -30,10 +30,6 @@ tl::expected<TensorShape, std::string>
 
 tl::expected<std::vector<TensorShape>, std::string>
     get_weight_shapes(LinearAttrs const &attrs, TensorShape const &input_shape);
-
-tl::expected<ParallelTensorSpaceMapping, std::string>
-    get_projection_to_output_parallel_dim_mapping(
-        LinearAttrs const &attrs, ParallelTensorDimDegrees const &input);
 
 ParallelTensorDimDegrees
     get_projection_parallel_dim_degrees(LinearAttrs const &attrs,

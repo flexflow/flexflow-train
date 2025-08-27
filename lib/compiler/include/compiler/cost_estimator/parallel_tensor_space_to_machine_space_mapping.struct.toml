@@ -1,0 +1,22 @@
+namespace = "FlexFlow"
+name = "ParallelTensorSpaceToMachineSpaceMapping"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "op-attrs/parallel_tensor_space_coordinate.dtg.h",
+  "pcg/machine_space_coordinate.dtg.h",
+  "op-attrs/parallel_tensor_dim_degrees.dtg.h",
+  "utils/bidict/bidict.h",
+]
+
+[[fields]]
+name = "raw_mapping"
+type = "::FlexFlow::bidict<::FlexFlow::ParallelTensorSpaceCoordinate, ::FlexFlow::MachineSpaceCoordinate>"
+
+[[fields]]
+name = "parallel_tensor_space"
+type = "::FlexFlow::ParallelTensorDimDegrees"
