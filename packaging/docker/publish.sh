@@ -15,12 +15,12 @@ docker image inspect "${image}":latest > /dev/null
 
 # Log into container registry
 FLEXFLOW_CONTAINER_TOKEN=${FLEXFLOW_CONTAINER_TOKEN:-}
-if [ -z "$FLEXFLOW_CONTAINER_TOKEN" ]; then echo "FLEXFLOW_CONTAINER_TOKEN secret is not available, cannot publish the docker image to ghrc.io"; exit; fi
+if [ -z "$FLEXFLOW_CONTAINER_TOKEN" ]; then echo "FLEXFLOW_CONTAINER_TOKEN secret is not available, cannot publish the docker image to ghcr.io"; exit; fi
 echo "$FLEXFLOW_CONTAINER_TOKEN" | docker login ghcr.io -u flexflow --password-stdin
 
 # Tag image to be uploaded
 git_sha=${GITHUB_SHA:-$(git rev-parse HEAD)}
-if [ -z "$git_sha" ]; then echo "Commit hash cannot be detected, cannot publish the docker image to ghrc.io"; exit; fi
+if [ -z "$git_sha" ]; then echo "Commit hash cannot be detected, cannot publish the docker image to ghcr.io"; exit; fi
 docker tag "$image":latest ghcr.io/flexflow/"$image":latest
 
 # Upload image
