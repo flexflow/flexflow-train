@@ -34,13 +34,11 @@ StartInvariantMachineView
 std::optional<MachineSpaceOffset>
     get_machine_space_offset(OperatorTaskSpace const &task,
                              StartInvariantMachineView const &mv,
-                             TaskSpaceCoordinate const &coordinates,
-                             MachineComputeSpecification const &ms);
+                             TaskSpaceCoordinate const &coordinates);
 
 std::unordered_set<MachineSpaceOffset>
     get_machine_space_offsets(OperatorTaskSpace const &task,
-                              StartInvariantMachineView const &mv,
-                              MachineComputeSpecification const &ms);
+                              StartInvariantMachineView const &mv);
 
 } // namespace FlexFlow
 

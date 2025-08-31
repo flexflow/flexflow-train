@@ -3,8 +3,12 @@
 
 #include "compiler/cost_estimator/tensor_set_movement.dtg.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.dtg.h"
+#include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_single_communication.dtg.h"
 #include "compiler/machine_mapping/machine_mapping.dtg.h"
+#include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.dtg.h"
 #include "compiler/machine_mapping/parallel_layer_guid_oblivious_machine_mapping.dtg.h"
+#include "op-attrs/operator_task_space.dtg.h"
+#include "pcg/machine_compute_specification.dtg.h"
 
 namespace FlexFlow {
 
@@ -15,10 +19,16 @@ std::unordered_set<BinaryTreePath>
 std::unordered_set<BinaryTreePath>
     get_dst_layers(AbstractedTensorSetMovement const &);
 
+AbstractedTensorSetMovement
+  abstracted_tensor_set_movement_from_single_communications(
+    std::unordered_multiset<AbstractedSingleCommunication> const &);
+
 TensorSetMovement concretize_abstracted_tensor_set_movement(
     AbstractedTensorSetMovement const &,
-    ParallelLayerGuidObliviousMachineMapping const &pre,
-    ParallelLayerGuidObliviousMachineMapping const &post);
+    std::unordered_map<BinaryTreePath, OperatorTaskSpace> const &pre_task_spaces,
+    ParallelLayerGuidObliviousMachineMapping const &pre_mapping,
+    std::unordered_map<BinaryTreePath, OperatorTaskSpace> const &post_task_spaces,
+    ParallelLayerGuidObliviousMachineMapping const &post_mapping);
 
 } // namespace FlexFlow
 

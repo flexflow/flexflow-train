@@ -1,10 +1,13 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "op-attrs/get_incoming_tensor_roles.h"
+#include "op-attrs/get_operator_space_to_parallel_tensor_space_mappings.h"
+#include "op-attrs/operator_task_space_to_operator_task_space_mapping.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/pcg_operator_attrs.h"
 #include "op-attrs/shape_inference.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_edge.dtg.h"
+#include "pcg/parallel_computation_graph/parallel_computation_graph_edge.h"
 #include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 #include "utils/containers/concat_vectors.h"
 #include "utils/containers/extend.h"
@@ -137,7 +140,7 @@ OperatorTaskSpace get_operator_task_space(ParallelComputationGraph const &pcg,
 
 
   return get_operator_task_space(
-    compgraph_op_attrs_from_pcg_op_attrs(op_attrs),
+    compgraph_op_attrs_from_pcg_op_attrs(op_attrs).value(),
     input_degrees);
 }
 
@@ -203,6 +206,55 @@ std::vector<parallel_tensor_guid_t>
       [](DataflowOutput const &o) { return parallel_tensor_guid_t{o}; });
 }
 
+std::vector<OperatorSpaceToParallelTensorSpaceMapping>
+  pcg_get_operator_to_incoming_mappings(ParallelComputationGraph const &pcg,
+                                     parallel_layer_guid_t const &l) {
+  ComputationGraphOpAttrs op_attrs = compgraph_op_attrs_from_pcg_op_attrs(pcg_get_op_attrs(pcg, l)).value();
+
+  return get_operator_to_incoming_mappings(
+    /*attrs=*/op_attrs,
+    /*input_degrees=*/get_incoming_input_degrees(pcg, l));
+}
+
+std::vector<OperatorSpaceToParallelTensorSpaceMapping>
+  pcg_get_operator_to_output_mappings(ParallelComputationGraph const &pcg,
+                                      parallel_layer_guid_t const &l) {
+  ComputationGraphOpAttrs op_attrs = compgraph_op_attrs_from_pcg_op_attrs(pcg_get_op_attrs(pcg, l)).value();
+
+  return get_operator_to_output_mappings(
+    /*attrs=*/op_attrs,
+    /*input_degrees=*/get_incoming_input_degrees(pcg, l));
+}
+
+OperatorTaskSpaceToOperatorTaskSpaceMapping
+  pcg_get_mapping_along_edge(ParallelComputationGraph const &pcg,
+                             ParallelComputationGraphEdge const &edge) {
+
+  parallel_layer_guid_t src_layer = get_src_layer(edge);
+  nonnegative_int src_idx = get_src_layer_output_idx(edge);
+  parallel_tensor_guid_t tensor = parallel_tensor_guid_t{edge.raw_edge.src};
+  parallel_layer_guid_t dst_layer = get_dst_layer(edge);
+  nonnegative_int dst_idx = get_dst_layer_input_idx(edge);
+
+  ParallelTensorShape tensor_shape = get_parallel_tensor_shape(pcg, tensor);
+
+  OperatorTaskSpace src_task_space = get_operator_task_space(pcg, src_layer);
+
+  OperatorTaskSpace dst_task_space = get_operator_task_space(pcg, dst_layer);
+
+  OperatorSpaceToParallelTensorSpaceMapping src_to_tensor_mapping = 
+    pcg_get_operator_to_output_mappings(pcg, src_layer).at(src_idx.unwrap_nonnegative());
+
+  OperatorSpaceToParallelTensorSpaceMapping dst_to_tensor_mapping = 
+    pcg_get_operator_to_output_mappings(pcg, dst_layer).at(dst_idx.unwrap_nonnegative());
+
+  return op_to_op_mapping_from_composition_through_tensor(
+        src_to_tensor_mapping,
+        dst_to_tensor_mapping);
+}
+
+
+
 static std::vector<parallel_tensor_guid_t>
     get_incoming_tensors_with_role(ParallelComputationGraph const &pcg,
                                    parallel_layer_guid_t const &l,
@@ -244,6 +296,17 @@ std::vector<parallel_tensor_guid_t>
                          parallel_layer_guid_t const &l) {
   return get_incoming_tensors_with_role(pcg, l, IncomingTensorRole::WEIGHT);
 }
+
+std::vector<ParallelTensorDimDegrees>
+    get_incoming_input_degrees(ParallelComputationGraph const &pcg,
+                               parallel_layer_guid_t const &l) {
+
+  return transform(get_incoming_inputs(pcg, l),
+                   [&](parallel_tensor_guid_t t) {
+                     return get_parallel_degrees(get_parallel_tensor_shape(pcg, t));
+                   });
+}
+
 
 std::unordered_set<parallel_layer_guid_t>
     get_successors(ParallelComputationGraph const &pcg,

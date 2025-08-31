@@ -22,4 +22,7 @@ template std::unordered_map<K, V>
     merge_map_right_dominates(std::unordered_map<K, V> const &,
                               std::unordered_map<K, V> const &);
 
+using C = std::vector<std::unordered_map<K, V>>;
+
+template std::unordered_map<K, V> merge_maps(C const &);
 } // namespace FlexFlow

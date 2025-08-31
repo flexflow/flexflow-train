@@ -7,8 +7,8 @@ features = [
 ]
 
 includes = [
-  "pcg/machine_compute_specification.dtg.h",
   "compiler/machine_mapping/machine_mapping_constraints.dtg.h",
+  "compiler/machine_mapping/machine_compute_resource_slice.dtg.h",
   "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.dtg.h",
 ]
 
@@ -18,7 +18,7 @@ type = "::FlexFlow::MachineMappingProblemTree"
 
 [[fields]]
 name = "resources"
-type = "::FlexFlow::MachineComputeSpecification"
+type = "::FlexFlow::MachineComputeResourceSlice"
 
 [[fields]]
 name = "constraints"

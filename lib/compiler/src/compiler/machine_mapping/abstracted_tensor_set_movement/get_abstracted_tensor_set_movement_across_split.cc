@@ -1,12 +1,21 @@
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/get_abstracted_tensor_set_movement_across_split.h"
+#include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_single_communication.dtg.h"
+#include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.h"
 #include "compiler/machine_mapping/transitive_reduced_pcg.h"
 #include "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.h"
+#include "op-attrs/operator_task_space_to_operator_task_space_mapping.h"
+#include "op-attrs/parallel_tensor_shape.h"
+#include "op-attrs/tensor_shape.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_edge.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_edge.h"
+#include "utils/containers/binary_cartesian_product.h"
 #include "utils/containers/generate_map.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/values.h"
+#include "utils/containers/vector_of.h"
+#include "utils/containers/flatmap.h"
+#include "utils/containers/unordered_multiset_of.h"
 
 namespace FlexFlow {
 
@@ -16,48 +25,44 @@ AbstractedTensorSetMovement get_abstracted_tensor_set_movement_across_split(
   std::unordered_set<ParallelComputationGraphEdge> edges_across_split =
       pcg_get_transitive_reduced_edges_across_split(tr_pcg, split);
 
-  auto get_movement_for_tensor =
-      [&](parallel_tensor_guid_t const &t) -> AbstractedSingleTensorMovement {
-    std::unordered_set<ParallelComputationGraphEdge> tensor_edges =
-        filter(edges_across_split, [&](ParallelComputationGraphEdge const &e) {
-          return get_parallel_tensor(e) == t;
-        });
+  auto to_abstracted_communications = [&](ParallelComputationGraphEdge const &pcg_edge) 
+      -> std::unordered_set<AbstractedSingleCommunication> {
 
-    std::unordered_set<parallel_layer_guid_t> src_layers =
-        transform(tensor_edges, [&](ParallelComputationGraphEdge const &e) {
-          return get_src_layer(e);
-        });
+    parallel_layer_guid_t pcg_src = get_src_layer(pcg_edge);
+    parallel_layer_guid_t pcg_dst = get_dst_layer(pcg_edge);
 
-    std::unordered_set<parallel_layer_guid_t> dst_layers =
-        transform(tensor_edges, [&](ParallelComputationGraphEdge const &e) {
-          return get_dst_layer(e);
-        });
+    parallel_tensor_guid_t parallel_tensor = get_parallel_tensor(pcg_edge);
+    TensorShape tensor_piece = get_piece_shape(get_parallel_tensor_shape(tr_pcg.full_pcg, parallel_tensor));
 
-    return AbstractedSingleTensorMovement{
-        /*parallel_tensor_shape=*/get_parallel_tensor_shape(tr_pcg.full_pcg, t),
-        /*src_machine_views=*/
-        transform(src_layers,
-                  [&](parallel_layer_guid_t const &l) {
-                    return get_only(
-                        find_paths_to_leaf(split.get_left_child(), l));
-                  }),
-        /*dst_machine_views=*/
-        transform(dst_layers,
-                  [&](parallel_layer_guid_t const &l) {
-                    return get_only(
-                        find_paths_to_leaf(split.get_right_child(), l));
-                  }),
-    };
+    OperatorTaskSpaceToOperatorTaskSpaceMapping 
+      mapping = pcg_get_mapping_along_edge(tr_pcg.full_pcg, pcg_edge);
+
+    bidict<TaskSpaceCoordinate, TaskSpaceCoordinate> coord_mapping = op_to_op_get_coord_mapping(mapping);
+
+    BinaryTreePath src_path = get_only(find_paths_to_leaf(split.get_left_child(), pcg_src));
+    BinaryTreePath dst_path = get_only(find_paths_to_leaf(split.get_right_child(), pcg_dst));
+
+    return transform(unordered_set_of(coord_mapping),
+                     [&](std::pair<TaskSpaceCoordinate, TaskSpaceCoordinate> const &src_dst) {
+                       auto [src_task_coord, dst_task_coord] = src_dst;
+
+                       return AbstractedSingleCommunication{
+                         AbstractedCommunicationEdge{
+                           /*src=*/AbstractedDevice{src_path, src_task_coord},
+                           /*dst=*/AbstractedDevice{dst_path, dst_task_coord},
+                         },
+                         get_size_in_bytes(tensor_piece),
+                       };
+                     });
   };
+  
+  std::unordered_multiset<AbstractedSingleCommunication> all_abstracted_communications 
+    = flatmap(unordered_multiset_of(edges_across_split),
+              [&](ParallelComputationGraphEdge const &e) {
+                return unordered_multiset_of(to_abstracted_communications(e));
+              });
 
-  std::unordered_map<parallel_tensor_guid_t, AbstractedSingleTensorMovement>
-      single_tensor_movements = generate_map(
-          pcg_get_transitive_reduced_tensors_across_split(tr_pcg, split),
-          get_movement_for_tensor);
-
-  return AbstractedTensorSetMovement{
-      values(single_tensor_movements),
-  };
+  return abstracted_tensor_set_movement_from_single_communications(all_abstracted_communications);
 }
 
 } // namespace FlexFlow

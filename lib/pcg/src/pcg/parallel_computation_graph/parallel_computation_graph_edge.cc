@@ -16,6 +16,10 @@ parallel_layer_guid_t get_dst_layer(ParallelComputationGraphEdge const &e) {
   return parallel_layer_guid_t{e.raw_edge.dst.node};
 }
 
+nonnegative_int get_src_layer_output_idx(ParallelComputationGraphEdge const &e) {
+  return e.raw_edge.src.idx;
+}
+
 nonnegative_int get_dst_layer_input_idx(ParallelComputationGraphEdge const &e) {
   return e.raw_edge.dst.idx;
 }

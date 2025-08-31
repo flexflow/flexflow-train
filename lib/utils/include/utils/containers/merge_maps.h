@@ -71,7 +71,7 @@ std::unordered_map<K, V> merge_maps(C const &c) {
   std::unordered_map<K, V> result;
 
   for (std::unordered_map<K, V> const &m : c) {
-    result = merge_maps(result, m);
+    merge_in_map(m, result);
   }
 
   return result;

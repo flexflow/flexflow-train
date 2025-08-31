@@ -81,7 +81,10 @@ std::unordered_set<DirectedEdge> to_directed_edges(UndirectedEdge const &e) {
 
 std::unordered_set<DirectedEdge> to_directed_edges(
     std::unordered_set<UndirectedEdge> const &undirected_edges) {
-  return flatmap_v2<DirectedEdge>(undirected_edges, to_directed_edges);
+  return flatmap(undirected_edges, 
+                 [](UndirectedEdge const &e) {
+                   return to_directed_edges(e);
+                 });
 }
 
 ViewDiGraphAsUndirectedGraph::ViewDiGraphAsUndirectedGraph(DiGraphView const &g)

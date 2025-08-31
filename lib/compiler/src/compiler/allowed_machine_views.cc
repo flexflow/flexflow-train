@@ -31,10 +31,11 @@ bool is_valid_machine_view(MachineView const &mv,
     return false;
   }
 
-  std::optional<MachineSpaceCoordinate> maximum_device_coord =
+  MachineSpaceCoordinate maximum_device_coord =
       get_machine_space_coordinate(
-          task, mv, get_task_space_maximum_coordinate(task), ms);
-  return maximum_device_coord.has_value();
+          task, mv, get_task_space_maximum_coordinate(task));
+
+  return is_valid_machine_space_coordinate(ms, maximum_device_coord);
 }
 
 /*

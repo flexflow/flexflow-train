@@ -7,15 +7,16 @@ features = [
 ]
 
 includes = [
-  "compiler/cost_estimator/single_tensor_movement.dtg.h",
-  "<unordered_set>",
+  "compiler/cost_estimator/communication_edge.dtg.h",
+  "utils/units/num_bytes_t.h",
+  "<unordered_map>",
 ]
 
 src_includes = [
-  "utils/fmt/unordered_multiset.h",
-  "utils/hash/unordered_multiset.h",
+  "utils/fmt/unordered_map.h",
+  "utils/hash/unordered_map.h",
 ]
 
 [[fields]]
-name = "single_tensor_movements"
-type = "std::unordered_multiset<::FlexFlow::SingleTensorMovement>"
+name = "edge_to_size"
+type = "std::unordered_map<::FlexFlow::CommunicationEdge, ::FlexFlow::num_bytes_t>"

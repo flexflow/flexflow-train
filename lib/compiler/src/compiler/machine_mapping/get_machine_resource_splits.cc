@@ -3,14 +3,14 @@
 
 namespace FlexFlow {
 
-std::unordered_set<std::pair<MachineComputeSpecification, MachineComputeSpecification>>
-    get_machine_resource_splits(MachineComputeSpecification const &resource) {
-  std::unordered_set<std::pair<MachineComputeSpecification, MachineComputeSpecification>>
+std::unordered_set<std::pair<MachineComputeResourceSlice, MachineComputeResourceSlice>>
+    get_machine_resource_splits(MachineComputeResourceSlice const &resource) {
+  std::unordered_set<std::pair<MachineComputeResourceSlice, MachineComputeResourceSlice>>
       result;
 
   for (int i = 1; i < resource.num_nodes; i *= 2) {
-    MachineComputeSpecification sub_resource1 = resource;
-    MachineComputeSpecification sub_resource2 = resource;
+    MachineComputeResourceSlice sub_resource1 = resource;
+    MachineComputeResourceSlice sub_resource2 = resource;
     sub_resource1.num_nodes = positive_int{i};
     sub_resource2.num_nodes =
         positive_int{resource.num_nodes.int_from_positive_int() - i};
@@ -19,8 +19,8 @@ std::unordered_set<std::pair<MachineComputeSpecification, MachineComputeSpecific
   }
 
   for (int i = 1; i < resource.num_gpus_per_node; i *= 2) {
-    MachineComputeSpecification sub_resource1 = resource;
-    MachineComputeSpecification sub_resource2 = resource;
+    MachineComputeResourceSlice sub_resource1 = resource;
+    MachineComputeResourceSlice sub_resource2 = resource;
     sub_resource1.num_gpus_per_node = positive_int{i};
     sub_resource2.num_gpus_per_node =
         positive_int{resource.num_gpus_per_node.int_from_positive_int() - i};

@@ -29,7 +29,7 @@ MachineMappingResult
     get_optimal_machine_mapping(MachineMappingCache &result_cache,
                                 MachineMappingContext const &context,
                                 MachineMappingProblemTree const &problem_tree,
-                                MachineComputeSpecification const &resources,
+                                MachineComputeResourceSlice const &resources,
                                 MachineMappingConstraints const &constraints) {
 
   MachineMappingState state = MachineMappingState{
@@ -74,7 +74,7 @@ MachineMappingResult
     get_optimal_machine_mapping(MachineMappingCache &result_cache,
                                 MachineMappingContext const &context,
                                 MMProblemTreeSeriesSplit const &series_split,
-                                MachineComputeSpecification const &resources,
+                                MachineComputeResourceSlice const &resources,
                                 MachineMappingConstraints const &constraints,
                                 std::optional<ParallelSplitTransformation> const
                                     &parallel_split_transformation) {
@@ -154,7 +154,9 @@ MachineMappingResult
       TensorSetMovement comm_across_split =
           concretize_abstracted_tensor_set_movement(
               tensor_movement,
+              /*pre_tree=*/series_split.get_left_child(),
               /*pre_mapping=*/assigned_pre_machine_views,
+              /*post_tree=*/series_split.get_right_child(),
               /*post_mapping=*/assigned_post_machine_views);
       milliseconds_t cost_across_split =
           context.cost_estimator.estimate_cost(comm_across_split);
@@ -174,7 +176,7 @@ MachineMappingResult get_optimal_machine_mapping(
     MachineMappingCache &result_cache,
     MachineMappingContext const &context,
     MMProblemTreeParallelSplit const &parallel_split,
-    MachineComputeSpecification const &resources,
+    MachineComputeResourceSlice const &resources,
     MachineMappingConstraints const &constraints) {
 
   MachineMappingProblemTree lhs = parallel_split.get_left_child();
@@ -201,7 +203,7 @@ MachineMappingResult get_optimal_machine_mapping(
       restrict_to_right_child(constraints);
 
   auto evaluate_resource_split =
-      [&](std::pair<MachineComputeSpecification, MachineComputeSpecification> const
+      [&](std::pair<MachineComputeResourceSlice, MachineComputeResourceSlice> const
               &resource_split) {
         MachineMappingResult left_result = get_optimal_machine_mapping(
             result_cache, context, lhs, resource_split.first, left_constraints);

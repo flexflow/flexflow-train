@@ -10,11 +10,11 @@
 namespace FlexFlow {
 
 std::vector<OperatorSpaceToParallelTensorSpaceMapping> 
-  get_operator_to_input_mappings(ComputationGraphOpAttrs const &,
+  get_operator_to_incoming_mappings(ComputationGraphOpAttrs const &attrs,
                                  std::vector<ParallelTensorDimDegrees> const &inputs_degrees);
 
 std::vector<OperatorSpaceToParallelTensorSpaceMapping>
-  get_operator_to_output_mappings(ComputationGraphOpAttrs const &,
+  get_operator_to_output_mappings(ComputationGraphOpAttrs const &attrs,
                                   std::vector<ParallelTensorDimDegrees> const &inputs_degrees);
 
 } // namespace FlexFlow

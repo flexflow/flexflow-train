@@ -8,7 +8,7 @@
 namespace FlexFlow {
 
 std::vector<OperatorSpaceToParallelTensorSpaceMapping> 
-  get_operator_to_input_mappings(
+  get_operator_to_incoming_mappings(
     ComputationGraphOpAttrs const &comp_graph_op_attrs,
     std::vector<ParallelTensorDimDegrees> const &inputs_degrees) {
   return comp_graph_op_attrs.visit<

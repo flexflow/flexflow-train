@@ -14,13 +14,20 @@ namespace FlexFlow {
 
 TensorSetMovement get_tensor_set_movement_across_split(
     TransitiveReducedPCG const &tr_pcg,
+    MachineComputeSpecification const &machine_compute_specification, 
     PCGBinarySeriesSplit const &split,
     ParallelLayerGuidObliviousMachineMapping const &pre_mapping,
     ParallelLayerGuidObliviousMachineMapping const &post_mapping) {
+
   AbstractedTensorSetMovement abstracted =
       get_abstracted_tensor_set_movement_across_split(tr_pcg, split);
+
   return concretize_abstracted_tensor_set_movement(
-      abstracted, pre_mapping, post_mapping);
+      abstracted, 
+      /*pre_tree=*/split.get_left_child(),
+      /*pre_mapping=*/pre_mapping, 
+      /*post_tree=*/split.get_right_child(),
+      /*post=*/post_mapping);
 }
 
 } // namespace FlexFlow

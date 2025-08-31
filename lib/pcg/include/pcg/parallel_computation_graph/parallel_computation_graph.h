@@ -1,13 +1,16 @@
 #ifndef _FLEXFLOW_PCG_INCLUDE_PCG_PARALLEL_COMPUTATION_GRAPH_H
 #define _FLEXFLOW_PCG_INCLUDE_PCG_PARALLEL_COMPUTATION_GRAPH_H
 
+#include "op-attrs/operator_space_to_parallel_tensor_space_mapping.dtg.h"
 #include "op-attrs/operator_task_space.dtg.h"
+#include "op-attrs/parallel_tensor_dim_degrees.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_edge.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_layer_added_result.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_tensor_guid_t.dtg.h"
 #include <unordered_set>
+#include "op-attrs/operator_task_space_to_operator_task_space_mapping.dtg.h"
 
 namespace FlexFlow {
 
@@ -57,12 +60,28 @@ std::vector<parallel_tensor_guid_t>
     get_layer_outputs(ParallelComputationGraph const &,
                       parallel_layer_guid_t const &);
 
+std::vector<OperatorSpaceToParallelTensorSpaceMapping>
+  pcg_get_operator_to_incoming_mappings(ParallelComputationGraph const &,
+                                        parallel_layer_guid_t const &);
+
+std::vector<OperatorSpaceToParallelTensorSpaceMapping>
+  pcg_get_operator_to_output_mappings(ParallelComputationGraph const &,
+                                      parallel_layer_guid_t const &);
+
+OperatorTaskSpaceToOperatorTaskSpaceMapping
+  pcg_get_mapping_along_edge(ParallelComputationGraph const &,
+                                    ParallelComputationGraphEdge const &); 
+
 std::vector<parallel_tensor_guid_t>
     get_incoming_inputs(ParallelComputationGraph const &,
                         parallel_layer_guid_t const &);
 std::vector<parallel_tensor_guid_t>
     get_incoming_weights(ParallelComputationGraph const &,
                          parallel_layer_guid_t const &);
+
+std::vector<ParallelTensorDimDegrees>
+    get_incoming_input_degrees(ParallelComputationGraph const &,
+                               parallel_layer_guid_t const &);
 
 std::unordered_set<parallel_layer_guid_t>
     get_successors(ParallelComputationGraph const &,

@@ -61,11 +61,10 @@ MachineView machine_view_from_strides_and_machine_spec_dimensions(
   return MachineView{start, dimensions};
 }
 
-std::optional<MachineSpaceCoordinate> get_machine_space_coordinate(
+MachineSpaceCoordinate get_machine_space_coordinate(
     OperatorTaskSpace const &task,
     MachineView const &machine_view,
-    TaskSpaceCoordinate const &coord,
-    MachineComputeSpecification const &machine_compute_specification) {
+    TaskSpaceCoordinate const &coord) {
 
   ASSERT(num_dims(machine_view) == num_dims(task),
          "Dimension of MachineView must match dimension of OperatorTaskSpace",
@@ -130,9 +129,6 @@ std::optional<MachineSpaceCoordinate> get_machine_space_coordinate(
   MachineSpaceCoordinate ms_coord = MachineSpaceCoordinate{
       node_idx, device_idx, get_device_type(machine_view)};
 
-  if (!is_valid_machine_space_coordinate(machine_compute_specification, ms_coord)) {
-    return std::nullopt;
-  }
   return ms_coord;
 }
 
@@ -140,7 +136,6 @@ std::optional<MachineSpaceCoordinate> get_machine_space_coordinate(
 OperatorSpaceToMachineSpaceMapping
   get_coordinate_mapping_for_machine_view(
     OperatorTaskSpace const &operator_task_space,
-    MachineComputeSpecification const &machine_compute_specification,
     MachineView const &machine_view) {
 
   return OperatorSpaceToMachineSpaceMapping{
@@ -150,8 +145,7 @@ OperatorSpaceToMachineSpaceMapping
         return get_machine_space_coordinate(
           /*operator_task_space=*/operator_task_space,
           /*machine_view=*/machine_view,
-          /*task_space_coordinate=*/task_space_coord,
-          /*machine_compute_specification=*/machine_compute_specification).value();
+          /*task_space_coordinate=*/task_space_coord);
       }),
     /*operator_task_space=*/operator_task_space,
   };
@@ -159,24 +153,18 @@ OperatorSpaceToMachineSpaceMapping
 
 std::unordered_set<MachineSpaceCoordinate> get_machine_space_coordinates(
     OperatorTaskSpace const &task_space,
-    MachineView const &machine_view,
-    MachineComputeSpecification const &machine_compute_specification) {
+    MachineView const &machine_view) {
   return transform(
       get_task_space_coordinates(task_space), [&](TaskSpaceCoordinate const &coord) {
-        std::optional<MachineSpaceCoordinate> maybe_coordinate =
-            get_machine_space_coordinate(
-                task_space, machine_view, coord, machine_compute_specification);
-        ASSERT(maybe_coordinate.has_value(), 
-               "The given OperatorTaskSpace and MachineView are not compatible with the given MachineComputeSpecification", 
-               task_space, machine_view, machine_compute_specification);
-        return maybe_coordinate.value();
+        return get_machine_space_coordinate(
+                task_space, machine_view, coord);
       });
 }
 
 std::unordered_set<device_id_t> get_device_ids(OperatorTaskSpace const &task,
                                                MachineView const &mv,
                                                MachineComputeSpecification const &ms) {
-  return transform(get_machine_space_coordinates(task, mv, ms),
+  return transform(get_machine_space_coordinates(task, mv),
                    [&](MachineSpaceCoordinate const &coord) {
                      return get_device_id(ms, coord);
                    });

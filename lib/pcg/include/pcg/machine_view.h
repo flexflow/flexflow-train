@@ -28,11 +28,10 @@ MachineView machine_view_from_strides_and_machine_spec_dimensions(
     std::vector<stride_t> const &strides,
     std::vector<MachineSpecificationDimension> const &dims);
 
-std::optional<MachineSpaceCoordinate>
+MachineSpaceCoordinate
     get_machine_space_coordinate(OperatorTaskSpace const &operator_task_space,
                                  MachineView const &machine_view,
-                                 TaskSpaceCoordinate const &task_space_coordinate,
-                                 MachineComputeSpecification const &machine_compute_specification);
+                                 TaskSpaceCoordinate const &task_space_coordinate);
 
 OperatorSpaceToMachineSpaceMapping
   get_coordinate_mapping_for_machine_view(OperatorTaskSpace const &operator_task_space,
@@ -41,8 +40,7 @@ OperatorSpaceToMachineSpaceMapping
 
 std::unordered_set<MachineSpaceCoordinate>
     get_machine_space_coordinates(OperatorTaskSpace const &task,
-                                  MachineView const &mv,
-                                  MachineComputeSpecification const &ms);
+                                  MachineView const &mv);
 
 std::unordered_set<device_id_t> get_device_ids(OperatorTaskSpace const &task,
                                                MachineView const &mv,
