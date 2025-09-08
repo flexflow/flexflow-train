@@ -111,6 +111,10 @@ TensorShape get_piece_shape(ParallelTensorShape const &s) {
   return get_reduced_shape(s);
 }
 
+num_bytes_t get_piece_size_in_bytes(ParallelTensorShape const &s) {
+  return get_size_in_bytes(get_piece_shape(s));
+}
+
 TensorShape get_reduced_shape(ParallelTensorShape const &s) {
   return TensorShape{
       get_reduced_dims(s.dims),

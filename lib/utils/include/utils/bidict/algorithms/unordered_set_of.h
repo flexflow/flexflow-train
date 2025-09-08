@@ -6,9 +6,15 @@
 
 namespace FlexFlow {
 
-template <typename K, typename V>
-std::unordered_set<std::pair<K, V>> unordered_set_of(bidict<K, V> const &c) {
-  return std::unordered_set{c.cbegin(), c.cend()};
+template <typename L, typename R>
+std::unordered_set<std::pair<L, R>> unordered_set_of(bidict<L, R> const &c) {
+  std::unordered_set<std::pair<L, R>> result;
+
+  for (auto const &lr : c) {
+    result.insert(lr);
+  }
+
+  return result;
 }
 
 

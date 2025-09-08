@@ -4,6 +4,7 @@
 #include "compiler/cost_estimator/tensor_set_movement.dtg.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.dtg.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_single_communication.dtg.h"
+#include "compiler/machine_mapping/abstracted_tensor_set_movement/machine_space_stencil.dtg.h"
 #include "compiler/machine_mapping/machine_mapping.dtg.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.dtg.h"
 #include "compiler/machine_mapping/parallel_layer_guid_oblivious_machine_mapping.dtg.h"
@@ -25,10 +26,8 @@ AbstractedTensorSetMovement
 
 TensorSetMovement concretize_abstracted_tensor_set_movement(
     AbstractedTensorSetMovement const &,
-    std::unordered_map<BinaryTreePath, OperatorTaskSpace> const &pre_task_spaces,
-    ParallelLayerGuidObliviousMachineMapping const &pre_mapping,
-    std::unordered_map<BinaryTreePath, OperatorTaskSpace> const &post_task_spaces,
-    ParallelLayerGuidObliviousMachineMapping const &post_mapping);
+    std::unordered_map<BinaryTreePath, MachineSpaceStencil> const &pre_machine_stencils,
+    std::unordered_map<BinaryTreePath, MachineSpaceStencil> const &post_machine_stencils);
 
 } // namespace FlexFlow
 

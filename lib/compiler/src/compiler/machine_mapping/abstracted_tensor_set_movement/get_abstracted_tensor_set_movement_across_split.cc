@@ -16,8 +16,44 @@
 #include "utils/containers/vector_of.h"
 #include "utils/containers/flatmap.h"
 #include "utils/containers/unordered_multiset_of.h"
+#include "utils/bidict/algorithms/unordered_set_of.h"
 
 namespace FlexFlow {
+
+std::unordered_set<AbstractedSingleCommunication> get_abstracted_single_communications_along_edge(
+    ParallelComputationGraph const &pcg,
+    ParallelComputationGraphEdge const &edge,
+    BinaryTreePath const &src_path,
+    BinaryTreePath const &dst_path) {
+
+  parallel_layer_guid_t pcg_src = get_src_layer(edge);
+  parallel_layer_guid_t pcg_dst = get_dst_layer(edge);
+
+  parallel_tensor_guid_t parallel_tensor = get_parallel_tensor(edge);
+  TensorShape tensor_piece = get_piece_shape(get_parallel_tensor_shape(pcg, parallel_tensor));
+
+  OperatorTaskSpaceToOperatorTaskSpaceMapping 
+    mapping = pcg_get_mapping_along_edge(pcg, edge);
+
+  bidict<TaskSpaceCoordinate, TaskSpaceCoordinate> coord_mapping = op_to_op_get_coord_mapping(mapping);
+
+  std::unordered_set<AbstractedSingleCommunication>
+    single_comms = 
+         transform(unordered_set_of(coord_mapping),
+                   [&](std::pair<TaskSpaceCoordinate, TaskSpaceCoordinate> const &src_dst) {
+                     auto [src_task_coord, dst_task_coord] = src_dst;
+
+                     return AbstractedSingleCommunication{
+                       AbstractedCommunicationEdge{
+                         /*src=*/AbstractedDevice{src_path, src_task_coord},
+                         /*dst=*/AbstractedDevice{dst_path, dst_task_coord},
+                       },
+                       get_size_in_bytes(tensor_piece),
+                     };
+                   });
+
+  return single_comms;
+}
 
 AbstractedTensorSetMovement get_abstracted_tensor_set_movement_across_split(
     TransitiveReducedPCG const &tr_pcg, PCGBinarySeriesSplit const &split) {
@@ -31,29 +67,14 @@ AbstractedTensorSetMovement get_abstracted_tensor_set_movement_across_split(
     parallel_layer_guid_t pcg_src = get_src_layer(pcg_edge);
     parallel_layer_guid_t pcg_dst = get_dst_layer(pcg_edge);
 
-    parallel_tensor_guid_t parallel_tensor = get_parallel_tensor(pcg_edge);
-    TensorShape tensor_piece = get_piece_shape(get_parallel_tensor_shape(tr_pcg.full_pcg, parallel_tensor));
-
-    OperatorTaskSpaceToOperatorTaskSpaceMapping 
-      mapping = pcg_get_mapping_along_edge(tr_pcg.full_pcg, pcg_edge);
-
-    bidict<TaskSpaceCoordinate, TaskSpaceCoordinate> coord_mapping = op_to_op_get_coord_mapping(mapping);
-
     BinaryTreePath src_path = get_only(find_paths_to_leaf(split.get_left_child(), pcg_src));
     BinaryTreePath dst_path = get_only(find_paths_to_leaf(split.get_right_child(), pcg_dst));
 
-    return transform(unordered_set_of(coord_mapping),
-                     [&](std::pair<TaskSpaceCoordinate, TaskSpaceCoordinate> const &src_dst) {
-                       auto [src_task_coord, dst_task_coord] = src_dst;
-
-                       return AbstractedSingleCommunication{
-                         AbstractedCommunicationEdge{
-                           /*src=*/AbstractedDevice{src_path, src_task_coord},
-                           /*dst=*/AbstractedDevice{dst_path, dst_task_coord},
-                         },
-                         get_size_in_bytes(tensor_piece),
-                       };
-                     });
+    return get_abstracted_single_communications_along_edge(
+      /*pcg=*/tr_pcg.full_pcg,
+      /*edge=*/pcg_edge,
+      /*src_path=*/src_path,
+      /*dst_path=*/dst_path);
   };
   
   std::unordered_multiset<AbstractedSingleCommunication> all_abstracted_communications 

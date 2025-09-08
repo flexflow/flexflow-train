@@ -70,7 +70,7 @@ std::vector<OperatorSpaceToParallelTensorSpaceMapping>
 
 OperatorTaskSpaceToOperatorTaskSpaceMapping
   pcg_get_mapping_along_edge(ParallelComputationGraph const &,
-                                    ParallelComputationGraphEdge const &); 
+                             ParallelComputationGraphEdge const &); 
 
 std::vector<parallel_tensor_guid_t>
     get_incoming_inputs(ParallelComputationGraph const &,

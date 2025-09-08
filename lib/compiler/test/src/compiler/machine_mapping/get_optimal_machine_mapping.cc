@@ -2,6 +2,7 @@
 #include "compiler/cost_estimator/runtime_only_op_cost_estimate_key.dtg.h"
 #include "compiler/cost_estimator/runtime_only_op_cost_metrics.dtg.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.h"
+#include "compiler/machine_mapping/machine_compute_resource_slice.h"
 #include "compiler/machine_mapping/machine_mapping_cache.h"
 #include "compiler/machine_mapping/machine_mapping_constraints.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
@@ -77,22 +78,20 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    MachineComputeSpecification full_machine_spec = MachineComputeSpecification{
+    MachineComputeResourceSlice full_machine_resources = MachineComputeResourceSlice{
         /*num_nodes=*/2_p,
-        /*num_cpus_per_node=*/1_p,
         /*num_gpus_per_node=*/1_p,
     };
 
-    MachineComputeSpecification split_machine_spec = MachineComputeSpecification{
+    MachineComputeResourceSlice split_machine_resources = MachineComputeResourceSlice{
         /*num_nodes=*/1_p,
-        /*num_cpus_per_node=*/1_p,
         /*num_gpus_per_node=*/1_p,
     };
 
     auto allowed_machine_views1 =
         [&](UnmappedRuntimeOnlyOpCostEstimateKey const &,
-            MachineComputeSpecification const &resources) {
-          if (resources == full_machine_spec) {
+            MachineComputeResourceSlice const &resources) {
+          if (resources == full_machine_resources) {
             return std::unordered_set<MachineView>{mv1, mv2};
           } else {
             return std::unordered_set<MachineView>{mv2};
@@ -132,12 +131,22 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     ParallelTensorShape par_tensor_shape = lift_to_parallel(tensor_shape);
 
+    TaskSpaceCoordinate empty_task_space_coord = TaskSpaceCoordinate{OrthotopeCoord{{}}};
+
+    AbstractedDevice src_device = AbstractedDevice{
+      /*operator_tree_path=*/binary_tree_root_path(),
+      /*task_space_coordinate=*/empty_task_space_coord,
+    };
+    AbstractedDevice dst_device = src_device;
+
     AbstractedTensorSetMovement movement1 = AbstractedTensorSetMovement{{
-        AbstractedSingleTensorMovement{
-            /*parallel_tensor_shape=*/par_tensor_shape,
-            /*src_machine_views=*/{},
-            /*dst_machine_views=*/{},
+      /*edge_to_size=*/{{
+        AbstractedCommunicationEdge{
+          /*src=*/src_device,
+          /*dst=*/dst_device,
         },
+        get_size_in_bytes(tensor_shape),
+      }},
     }};
 
     ParallelLayerGuidObliviousMachineMapping mm1 =
@@ -165,24 +174,46 @@ TEST_SUITE(FF_TEST_SUITE) {
                                   /*backward_runtime=*/1.25_ms}},
     }};
 
+    OperatorTaskSpace trivial_task_space = OperatorTaskSpace{MinimalOrthotope{{}}};
+
+    auto mk_tensor_set_movement = [&](
+      MachineView const &src_mv, 
+      MachineView const &dst_mv) {
+
+      MachineSpaceStencil src_stencil = MachineSpaceStencil{
+        /*operator_task_space=*/trivial_task_space,
+        /*machine_view=*/src_mv,
+      };
+
+      MachineSpaceStencil dst_stencil = MachineSpaceStencil{
+        /*operator_task_space=*/trivial_task_space,
+        /*machine_view=*/dst_mv,
+      };
+
+      return concretize_abstracted_tensor_set_movement(
+        movement1,
+        /*pre_machine_stencils=*/{{binary_tree_root_path(), src_stencil}},
+        /*post_machine_stencils=*/{{binary_tree_root_path(), dst_stencil}});
+    };
+
     RuntimeOnlyCostEstimator runtime_only_cost_estimator =
         make_fake_runtime_only_cost_estimator(
             map1,
             std::unordered_map<TensorSetMovement, milliseconds_t>{{
                 {TensorSetMovement{{}}, 0.0_ms},
-                {concretize_abstracted_tensor_set_movement(movement1, mm1, mm1),
+                {mk_tensor_set_movement(mv1, mv1),
                  0.1_ms},
-                {concretize_abstracted_tensor_set_movement(movement1, mm2, mm2),
+                {mk_tensor_set_movement(mv2, mv2),
                  0.2_ms},
-                {concretize_abstracted_tensor_set_movement(movement1, mm1, mm2),
+                {mk_tensor_set_movement(mv1, mv2),
                  0.3_ms},
-                {concretize_abstracted_tensor_set_movement(movement1, mm2, mm1),
+                {mk_tensor_set_movement(mv2, mv1),
                  0.4_ms},
             }});
 
     MachineMappingContext context = MachineMappingContext{
-        runtime_only_cost_estimator,
-        allowed_machine_views1,
+      /*cost_estimator=*/runtime_only_cost_estimator,
+      /*allowed_machine_views=*/allowed_machine_views1,
     };
 
     MachineMappingCache cache = empty_machine_mapping_cache();
@@ -195,7 +226,7 @@ TEST_SUITE(FF_TEST_SUITE) {
               get_all_leaf_paths(problem_tree));
 
       MachineMappingResult result = get_optimal_machine_mapping(
-          cache, context, problem_tree, full_machine_spec, constraints);
+          cache, context, problem_tree, full_machine_resources, constraints);
       MachineMappingResult correct = MachineMappingResult{
           FeasibleMachineMappingResult{
               /*runtime=*/1.0_ms,
@@ -218,7 +249,7 @@ TEST_SUITE(FF_TEST_SUITE) {
               get_all_leaf_paths(problem_tree));
 
       MachineMappingResult result = get_optimal_machine_mapping(
-          cache, context, problem_tree, full_machine_spec, constraints);
+          cache, context, problem_tree, full_machine_resources, constraints);
       MachineMappingResult correct = MachineMappingResult{
           FeasibleMachineMappingResult{
               /*runtime=*/1.0_ms + 2.0_ms + 0.1_ms,
@@ -252,7 +283,7 @@ TEST_SUITE(FF_TEST_SUITE) {
               get_all_leaf_paths(problem_tree));
 
       MachineMappingResult result = get_optimal_machine_mapping(
-          cache, context, problem_tree, full_machine_spec, constraints);
+          cache, context, problem_tree, full_machine_resources, constraints);
       MachineMappingResult correct = MachineMappingResult{
           FeasibleMachineMappingResult{
               /*runtime=*/2.5_ms,

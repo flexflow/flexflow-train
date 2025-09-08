@@ -52,10 +52,8 @@ AbstractedTensorSetMovement
 
 TensorSetMovement concretize_abstracted_tensor_set_movement(
     AbstractedTensorSetMovement const &abstracted,
-    std::unordered_map<BinaryTreePath, OperatorTaskSpace> const &pre_task_spaces,
-    ParallelLayerGuidObliviousMachineMapping const &pre_mapping,
-    std::unordered_map<BinaryTreePath, OperatorTaskSpace> const &post_task_spaces,
-    ParallelLayerGuidObliviousMachineMapping const &post_mapping) {
+    std::unordered_map<BinaryTreePath, MachineSpaceStencil> const &pre_machine_stencils,
+    std::unordered_map<BinaryTreePath, MachineSpaceStencil> const &post_machine_stencils) {
 
   return TensorSetMovement{
     /*edge_to_size=*/
@@ -63,10 +61,8 @@ TensorSetMovement concretize_abstracted_tensor_set_movement(
                                   /*key_func=*/[&](AbstractedCommunicationEdge const &k) {
                                     return concretize_abstracted_communication_edge(
                                       /*edge=*/k,
-                                      /*src_task_spaces=*/pre_task_spaces,
-                                      /*src_mapping=*/pre_mapping,
-                                      /*dst_task_spaces=*/post_task_spaces,
-                                      /*dst_mapping=*/post_mapping);
+                                      /*src_machine_stencils=*/pre_machine_stencils,
+                                      /*dst_machine_stencils=*/post_machine_stencils);
                                   },
                                   /*merge_values=*/[](num_bytes_t lhs, num_bytes_t rhs) {
                                     return lhs + rhs;

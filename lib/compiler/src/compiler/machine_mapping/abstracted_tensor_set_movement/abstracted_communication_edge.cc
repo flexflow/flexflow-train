@@ -7,14 +7,12 @@ namespace FlexFlow {
 CommunicationEdge
   concretize_abstracted_communication_edge(
     AbstractedCommunicationEdge const &edge,
-    std::unordered_map<BinaryTreePath, OperatorTaskSpace> const &src_task_spaces,
-    ParallelLayerGuidObliviousMachineMapping const &src_mapping,
-    std::unordered_map<BinaryTreePath, OperatorTaskSpace> const &dst_task_spaces,
-    ParallelLayerGuidObliviousMachineMapping const &dst_mapping) {
+    std::unordered_map<BinaryTreePath, MachineSpaceStencil> const &src_machine_stencils,
+    std::unordered_map<BinaryTreePath, MachineSpaceStencil> const &dst_machine_stencils) {
 
   return CommunicationEdge{
-    /*src=*/concretize_abstracted_device(edge.src, src_task_spaces, src_mapping),
-    /*dst=*/concretize_abstracted_device(edge.dst, dst_task_spaces, dst_mapping),
+    /*src=*/concretize_abstracted_device(edge.src, src_machine_stencils),
+    /*dst=*/concretize_abstracted_device(edge.dst, dst_machine_stencils),
   };
 }
 

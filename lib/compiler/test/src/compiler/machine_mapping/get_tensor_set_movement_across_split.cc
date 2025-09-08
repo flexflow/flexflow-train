@@ -1,6 +1,7 @@
 #include "compiler/machine_mapping/get_tensor_set_movement_across_split.h"
 #include "compiler/machine_mapping/transitive_reduced_pcg.h"
 #include "internal/cost_estimator_for_test.h"
+#include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/machine_view.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
@@ -114,14 +115,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineView pre_mv2 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0_n,
+            /*node_idx=*/1_n,
             /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{2_p},
+                stride_t{1_p},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -129,14 +130,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineView post_mv1 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0_n,
+            /*node_idx=*/2_n,
             /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{3_p},
+                stride_t{1_p},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -144,18 +145,42 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineView post_mv2 = MachineView{
         /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0_n,
+            /*node_idx=*/3_n,
             /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{4_p},
+                stride_t{1_p},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
     };
+
+    auto mk_communication_edge = [](MachineView const &src_mv, 
+                                    nonnegative_int src_task_idx,
+                                    MachineView const &dst_mv,
+                                    nonnegative_int dst_task_idx) {
+      
+      ASSERT(src_task_idx < 2);
+      ASSERT(dst_task_idx < 2);
+
+      return CommunicationEdge{
+        /*src=*/MachineSpaceCoordinate{
+          /*node_idx=*/src_mv.start.node_idx,
+          /*device_idx=*/src_task_idx,
+          /*device_type=*/DeviceType::GPU,
+        },
+        /*dst=*/MachineSpaceCoordinate{
+          /*node_idx=*/dst_mv.start.node_idx,
+          /*device_idx=*/dst_task_idx,
+          /*device_type=*/DeviceType::GPU,
+        },
+      };
+    };
+
+    num_bytes_t piece_size = get_piece_size_in_bytes(partitioned_input_shape);
 
     SUBCASE("single edge across split") {
       PCGBinarySeriesSplit split = PCGBinarySeriesSplit{
@@ -183,20 +208,26 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       TensorSetMovement result = get_tensor_set_movement_across_split(
           pcg_get_transitive_reduction(pcg), split, pre_mapping, post_mapping);
+
       TensorSetMovement correct = TensorSetMovement{
-          /*single_tensor_movements=*/{
-              SingleTensorMovement{
-                  /*parallel_tensor_shape=*/partitioned_input_shape,
-                  /*src_machine_views=*/{pre_mv1},
-                  /*dst_machine_views=*/{post_mv1},
-              },
+          /*edge_to_size=*/{
+            {
+              mk_communication_edge(pre_mv1, 0_n,  post_mv1, 0_n),
+              piece_size,
+            },
+            {
+              mk_communication_edge(pre_mv1, 1_n,  post_mv1, 1_n),
+              piece_size,
+            },
           },
       };
 
       CHECK(result == correct);
     }
 
-    SUBCASE("does not include edges removed by transitive reduction") {}
+    SUBCASE("does not include edges removed by transitive reduction") {
+      NOT_IMPLEMENTED();
+    }
 
     SUBCASE("single tensor, multiple consumers across split") {
       ParallelLayerAddedResult relu_3 =
@@ -244,12 +275,15 @@ TEST_SUITE(FF_TEST_SUITE) {
             post_mapping);
 
         TensorSetMovement correct = TensorSetMovement{
-            /*single_tensor_movements=*/{
-                SingleTensorMovement{
-                    /*parallel_tensor_shape=*/partitioned_input_shape,
-                    /*src_machine_views=*/{pre_mv1},
-                    /*dst_machine_views=*/{post_mv1},
-                },
+            /*edge_to_size=*/{
+              {
+                mk_communication_edge(pre_mv1, 0_n, post_mv1, 0_n),
+                piece_size,
+              },
+              {
+                mk_communication_edge(pre_mv1, 1_n, post_mv1, 1_n),
+                piece_size,
+              },
             },
         };
 
@@ -287,13 +321,25 @@ TEST_SUITE(FF_TEST_SUITE) {
             pre_mapping,
             post_mapping);
 
+
         TensorSetMovement correct = TensorSetMovement{
-            /*single_tensor_movements=*/{
-                SingleTensorMovement{
-                    /*parallel_tensor_shape=*/partitioned_input_shape,
-                    /*src_machine_views=*/{pre_mv1},
-                    /*dst_machine_views=*/{post_mv1, post_mv2},
-                },
+            /*edge_to_size=*/{
+              {
+                mk_communication_edge(pre_mv1, 0_n, post_mv1, 0_n),
+                piece_size,
+              },
+              {
+                mk_communication_edge(pre_mv1, 1_n, post_mv1, 1_n),
+                piece_size,
+              },
+              {
+                mk_communication_edge(pre_mv1, 0_n, post_mv2, 0_n),
+                piece_size,
+              },
+              {
+                mk_communication_edge(pre_mv1, 1_n, post_mv2, 1_n),
+                piece_size,
+              },
             },
         };
 
@@ -323,57 +369,200 @@ TEST_SUITE(FF_TEST_SUITE) {
                                   make_pcg_leaf_node(relu_4.parallel_layer)),
       };
 
-      auto pre_mapping = ParallelLayerGuidObliviousMachineMapping{{
+      auto mk_pre_mapping = [](MachineView const &src1_mv, MachineView const &src2_mv) {
+        return ParallelLayerGuidObliviousMachineMapping{{
           {
               BinaryTreePath{{
                   BinaryTreePathEntry::RIGHT_CHILD,
                   BinaryTreePathEntry::LEFT_CHILD,
               }},
-              pre_mv1,
+              src1_mv,
           },
           {
               BinaryTreePath{{
                   BinaryTreePathEntry::RIGHT_CHILD,
                   BinaryTreePathEntry::RIGHT_CHILD,
               }},
-              pre_mv2,
+              src2_mv,
           },
-      }};
-
-      auto post_mapping = ParallelLayerGuidObliviousMachineMapping{{
-          {
-              BinaryTreePath{{
-                  BinaryTreePathEntry::LEFT_CHILD,
-              }},
-              post_mv1,
-          },
-          {
-              BinaryTreePath{{
-                  BinaryTreePathEntry::RIGHT_CHILD,
-              }},
-              post_mv2,
-          },
-      }};
-
-      TensorSetMovement result = get_tensor_set_movement_across_split(
-          pcg_get_transitive_reduction(pcg), split, pre_mapping, post_mapping);
-
-      TensorSetMovement correct = TensorSetMovement{
-          /*single_tensor_movements=*/{
-              SingleTensorMovement{
-                  /*parallel_tensor_shape=*/partitioned_input_shape,
-                  /*src_machine_views=*/{pre_mv1},
-                  /*dst_machine_views=*/{post_mv1, post_mv2},
-              },
-              SingleTensorMovement{
-                  /*parallel_tensor_shape=*/partitioned_input_shape,
-                  /*src_machine_views=*/{pre_mv2},
-                  /*dst_machine_views=*/{post_mv2},
-              },
-          },
+        }};
       };
 
-      CHECK(result == correct);
+      auto mk_post_mapping = [](MachineView const &dst1_mv, MachineView const &dst2_mv) {
+        return ParallelLayerGuidObliviousMachineMapping{{
+          {
+              BinaryTreePath{{
+                  BinaryTreePathEntry::LEFT_CHILD,
+              }},
+              dst1_mv,
+          },
+          {
+              BinaryTreePath{{
+                  BinaryTreePathEntry::RIGHT_CHILD,
+              }},
+              dst2_mv,
+          },
+        }};
+      };
+
+      SUBCASE("producers have different views and consumers have different views") {
+        ParallelLayerGuidObliviousMachineMapping pre_mapping = mk_pre_mapping(pre_mv1, pre_mv2);
+        ParallelLayerGuidObliviousMachineMapping post_mapping = mk_post_mapping(post_mv1, post_mv2);
+
+        TensorSetMovement result = get_tensor_set_movement_across_split(
+            pcg_get_transitive_reduction(pcg), split, pre_mapping, post_mapping);
+
+        TensorSetMovement correct = TensorSetMovement{
+            /*edge_to_size=*/{
+              {
+                mk_communication_edge(pre_mv1, 0_n, post_mv1, 0_n),
+                piece_size,
+              },
+              {
+                mk_communication_edge(pre_mv1, 1_n, post_mv1, 1_n),
+                piece_size,
+              },
+              {
+                mk_communication_edge(pre_mv1, 0_n, post_mv2, 0_n),
+                piece_size,
+              },
+              {
+                mk_communication_edge(pre_mv1, 1_n, post_mv2, 1_n),
+                piece_size,
+              },
+              {
+                mk_communication_edge(pre_mv2, 0_n, post_mv2, 0_n),
+                piece_size,
+              },
+              {
+                mk_communication_edge(pre_mv2, 1_n, post_mv2, 1_n),
+                piece_size,
+              },
+            },
+        };
+
+        CHECK(result == correct);
+      }
+
+      SUBCASE("producers have different views and consumers have the same view") {
+        ParallelLayerGuidObliviousMachineMapping pre_mapping = mk_pre_mapping(pre_mv1, pre_mv2);
+        ParallelLayerGuidObliviousMachineMapping post_mapping = mk_post_mapping(post_mv1, post_mv1);
+
+        TensorSetMovement result = get_tensor_set_movement_across_split(
+            pcg_get_transitive_reduction(pcg), split, pre_mapping, post_mapping);
+
+        TensorSetMovement correct = TensorSetMovement{
+            /*edge_to_size=*/{
+              {
+                mk_communication_edge(pre_mv1, 0_n, post_mv1, 0_n),
+                piece_size,
+              },
+              {
+                mk_communication_edge(pre_mv1, 1_n, post_mv1, 1_n),
+                piece_size,
+              },
+              {
+                mk_communication_edge(pre_mv2, 0_n, post_mv1, 0_n),
+                piece_size,
+              },
+              {
+                mk_communication_edge(pre_mv2, 1_n, post_mv1, 1_n),
+                piece_size,
+              },
+            },
+        };
+
+        CHECK(result == correct);
+      }
+
+      SUBCASE("producers have the same view and consumers have different views") {
+        ParallelLayerGuidObliviousMachineMapping pre_mapping = mk_pre_mapping(pre_mv1, pre_mv1);
+        ParallelLayerGuidObliviousMachineMapping post_mapping = mk_post_mapping(post_mv1, post_mv2);
+
+        TensorSetMovement result = get_tensor_set_movement_across_split(
+            pcg_get_transitive_reduction(pcg), split, pre_mapping, post_mapping);
+
+        TensorSetMovement correct = TensorSetMovement{
+            /*edge_to_size=*/{
+              {
+                mk_communication_edge(pre_mv1, 0_n, post_mv1, 0_n),
+                piece_size,
+              },
+              {
+                mk_communication_edge(pre_mv1, 1_n, post_mv1, 1_n),
+                piece_size,
+              },
+              {
+                mk_communication_edge(pre_mv1, 0_n, post_mv2, 0_n),
+                piece_size + piece_size,
+              },
+              {
+                mk_communication_edge(pre_mv1, 1_n, post_mv2, 1_n),
+                piece_size + piece_size,
+              },
+            },
+        };
+
+        CHECK(result == correct);
+      }
+
+      SUBCASE("producers have the same view and consumers have the same view") {
+        ParallelLayerGuidObliviousMachineMapping pre_mapping = mk_pre_mapping(pre_mv1, pre_mv1);
+        ParallelLayerGuidObliviousMachineMapping post_mapping = mk_post_mapping(post_mv1, post_mv1);
+
+        TensorSetMovement result = get_tensor_set_movement_across_split(
+            pcg_get_transitive_reduction(pcg), split, pre_mapping, post_mapping);
+
+        TensorSetMovement correct = TensorSetMovement{
+            /*edge_to_size=*/{
+              {
+                mk_communication_edge(pre_mv1, 0_n, post_mv1, 0_n),
+                piece_size + piece_size,
+              },
+              {
+                mk_communication_edge(pre_mv1, 1_n, post_mv1, 1_n),
+                piece_size + piece_size,
+              },
+            },
+        };
+
+        CHECK(result == correct);
+      }
+
+      SUBCASE("producers and one consumer share the same view") {
+        ParallelLayerGuidObliviousMachineMapping pre_mapping = mk_pre_mapping(pre_mv1, pre_mv1);
+        ParallelLayerGuidObliviousMachineMapping post_mapping = mk_post_mapping(post_mv1, pre_mv1);
+        
+        TensorSetMovement result = get_tensor_set_movement_across_split(
+            pcg_get_transitive_reduction(pcg), split, pre_mapping, post_mapping);
+
+        TensorSetMovement correct = TensorSetMovement{
+            /*edge_to_size=*/{
+              {
+                mk_communication_edge(pre_mv1, 0_n, post_mv1, 0_n),
+                piece_size,
+              },
+            },
+        };
+
+
+        CHECK(result == correct);
+      }
+
+      SUBCASE("all producers and consumers have the same view") {
+        ParallelLayerGuidObliviousMachineMapping pre_mapping = mk_pre_mapping(pre_mv1, pre_mv1);
+        ParallelLayerGuidObliviousMachineMapping post_mapping = mk_post_mapping(pre_mv1, pre_mv1);
+        
+
+        TensorSetMovement result = get_tensor_set_movement_across_split(
+            pcg_get_transitive_reduction(pcg), split, pre_mapping, post_mapping);
+
+        TensorSetMovement correct = TensorSetMovement{
+            /*edge_to_size=*/{{}},
+        };
+
+        CHECK(result == correct);
+      }
     }
   }
 }

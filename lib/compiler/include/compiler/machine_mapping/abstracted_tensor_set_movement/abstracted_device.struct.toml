@@ -1,4 +1,4 @@
-namespace = "FlexFlow"
+amespace = "FlexFlow"
 name = "AbstractedDevice"
 features = [
   "eq",

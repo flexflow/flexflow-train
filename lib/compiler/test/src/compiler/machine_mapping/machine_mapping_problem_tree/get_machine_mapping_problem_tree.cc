@@ -4,6 +4,7 @@
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "utils/containers/get_only.h"
+#include "utils/full_binary_tree/binary_tree_path.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -102,6 +103,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           };
         };
 
+    TaskSpaceCoordinate empty_task_space_coord = TaskSpaceCoordinate{OrthotopeCoord{{}}};
+
     SUBCASE("single layer") {
       ParallelLayerAddedResult input_added =
           add_parallel_layer(pcg,
@@ -163,17 +166,21 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       MachineMappingProblemTree correct = mm_problem_tree_make_series(
           AbstractedTensorSetMovement{{
-              AbstractedSingleTensorMovement{
-                  /*parallel_tensor_shape=*/par_input_shape,
-                  /*src_machine_views=*/
-                  {
-                      BinaryTreePath{{}},
+            /*edge_to_size=*/{
+              {
+                AbstractedCommunicationEdge{
+                  /*src=*/AbstractedDevice{
+                    /*operator_tree_path=*/binary_tree_root_path(),
+                    /*task_space_coordinate=*/empty_task_space_coord,
                   },
-                  /*dst_machine_views=*/
-                  {
-                      BinaryTreePath{{}},
+                  /*dst=*/AbstractedDevice{
+                    /*operator_tree_path=*/binary_tree_root_path(),
+                    /*task_space_coordinate=*/empty_task_space_coord,
                   },
+                },
+                get_piece_size_in_bytes(par_input_shape),
               },
+            }
           }},
           mm_problem_tree_make_leaf(input_key),
           mm_problem_tree_make_leaf(relu_key));
@@ -253,35 +260,34 @@ TEST_SUITE(FF_TEST_SUITE) {
       MachineMappingProblemTree result =
           get_machine_mapping_problem_tree(pcg, sp_decomposition);
 
+      BinaryTreePath src1_path = BinaryTreePath{{
+        BinaryTreePathEntry::LEFT_CHILD,
+      }};
+
+      BinaryTreePath src2_path = BinaryTreePath{{
+        BinaryTreePathEntry::RIGHT_CHILD,
+      }};
+
+      auto mk_abstracted_edge = [&](BinaryTreePath const &src_path) {
+        return AbstractedCommunicationEdge{
+          /*src=*/AbstractedDevice{
+            /*operator_tree_path=*/src_path,
+            /*task_space_coordinate=*/empty_task_space_coord,
+          },
+          /*dst=*/AbstractedDevice{
+            /*operator_tree_path=*/binary_tree_root_path(),
+            /*task_space_coordinate=*/empty_task_space_coord,
+          },
+        };
+      };
+
       MachineMappingProblemTree correct = mm_problem_tree_make_series(
-          AbstractedTensorSetMovement{{
-              AbstractedSingleTensorMovement{
-                  /*parallel_tensor_shape=*/par_input_shape,
-                  /*src_machine_views=*/
-                  {
-                      BinaryTreePath{{
-                          BinaryTreePathEntry::LEFT_CHILD,
-                      }},
-                  },
-                  /*dst_machine_views=*/
-                  {
-                      BinaryTreePath{{}},
-                  },
-              },
-              AbstractedSingleTensorMovement{
-                  /*parallel_tensor_shape=*/par_input_shape,
-                  /*src_machine_views=*/
-                  {
-                      BinaryTreePath{{
-                          BinaryTreePathEntry::RIGHT_CHILD,
-                      }},
-                  },
-                  /*dst_machine_views=*/
-                  {
-                      BinaryTreePath{{}},
-                  },
-              },
-          }},
+          AbstractedTensorSetMovement{
+            /*edge_to_size=*/{
+              {mk_abstracted_edge(src1_path), get_piece_size_in_bytes(par_input_shape)},
+              {mk_abstracted_edge(src2_path), get_piece_size_in_bytes(par_input_shape)},
+            },
+          },
           /*pre=*/
           mm_problem_tree_make_parallel(mm_problem_tree_make_leaf(input1_key),
                                         mm_problem_tree_make_leaf(input2_key)),

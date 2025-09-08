@@ -1,0 +1,18 @@
+namespace = "FlexFlow"
+name = "ParallelDegreeInferenceInputs"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+
+
+[[fields]]
+name = "op_attrs"
+type = "::FlexFlow::PCGOperatorAttrs"
+
+[[fields]]
+name = "input_degrees"
+type = "::FlexFlow::std::vector<ParallelTensorDimDegrees>"

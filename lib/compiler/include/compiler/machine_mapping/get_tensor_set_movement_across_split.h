@@ -11,7 +11,6 @@ namespace FlexFlow {
 
 TensorSetMovement get_tensor_set_movement_across_split(
     TransitiveReducedPCG const &transitive_reduced_pcg,
-    MachineComputeSpecification const &machine_compute_specification, 
     PCGBinarySeriesSplit const &split,
     ParallelLayerGuidObliviousMachineMapping const &pre_mapping,
     ParallelLayerGuidObliviousMachineMapping const &post_mapping);

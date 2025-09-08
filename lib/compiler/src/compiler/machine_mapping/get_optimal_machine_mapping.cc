@@ -8,9 +8,12 @@
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_runtime_only_op_cost_estimate_key.h"
 #include "compiler/machine_mapping/machine_mapping_result.h"
+#include "compiler/machine_mapping/parallel_layer_guid_oblivious_machine_mapping.h"
 #include "compiler/machine_mapping/transitive_reduced_pcg.h"
 #include "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.dtg.h"
 #include "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.h"
+#include "op-attrs/computation_graph_op_attrs.h"
+#include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/machine_specification.dtg.h"
 #include "pcg/machine_view.dtg.h"
 #include "pcg/machine_view.h"
@@ -22,6 +25,7 @@
 #include "utils/containers/unordered_set_of.h"
 #include "utils/exception.h"
 #include "utils/overload.h"
+#include "op-attrs/get_operator_task_space.h"
 
 namespace FlexFlow {
 
@@ -154,10 +158,9 @@ MachineMappingResult
       TensorSetMovement comm_across_split =
           concretize_abstracted_tensor_set_movement(
               tensor_movement,
-              /*pre_tree=*/series_split.get_left_child(),
-              /*pre_mapping=*/assigned_pre_machine_views,
-              /*post_tree=*/series_split.get_right_child(),
-              /*post_mapping=*/assigned_post_machine_views);
+              /*pre_machine_stencils=*/get_machine_stencils_for_mm_problem_tree(series_split.get_left_child(), assigned_pre_machine_views),
+              /*post_machine_stencils=*/get_machine_stencils_for_mm_problem_tree(series_split.get_right_child(), assigned_post_machine_views));
+
       milliseconds_t cost_across_split =
           context.cost_estimator.estimate_cost(comm_across_split);
 
@@ -228,7 +231,7 @@ MachineMappingResult get_optimal_machine_mapping(
     MachineMappingCache &result_cache,
     MachineMappingContext const &context,
     UnmappedRuntimeOnlyOpCostEstimateKey const &leaf,
-    MachineComputeSpecification const &resource,
+    MachineComputeResourceSlice const &resource,
     MachineMappingConstraints const &constraints) {
 
   std::unordered_set<MachineView> candidates = [&] {

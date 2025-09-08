@@ -5,7 +5,7 @@ features = []
 includes = [
   "compiler/cost_estimator/runtime_only_cost_estimator.h",
   "pcg/machine_view.dtg.h",
-  "pcg/machine_compute_specification.dtg.h",
+  "compiler/machine_mapping/machine_compute_resource_slice.dtg.h",
   "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_runtime_only_op_cost_estimate_key.dtg.h",
 ]
 
@@ -15,4 +15,4 @@ type = "::FlexFlow::RuntimeOnlyCostEstimator"
 
 [[fields]]
 name = "allowed_machine_views"
-type = "std::function<std::unordered_set<::FlexFlow::MachineView>(::FlexFlow::UnmappedRuntimeOnlyOpCostEstimateKey const &, ::FlexFlow::MachineComputeSpecification const &)>"
+type = "std::function<std::unordered_set<::FlexFlow::MachineView>(::FlexFlow::UnmappedRuntimeOnlyOpCostEstimateKey const &, ::FlexFlow::MachineComputeResourceSlice const &)>"

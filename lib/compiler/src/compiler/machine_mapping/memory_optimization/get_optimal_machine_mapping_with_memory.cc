@@ -6,6 +6,7 @@
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
 #include "compiler/machine_mapping/memory_optimization/machine_mapping_with_memory_cache.h"
 #include "compiler/machine_mapping/memory_optimization/machine_mapping_with_memory_result.h"
+#include "compiler/machine_mapping/parallel_layer_guid_oblivious_machine_mapping.h"
 #include "compiler/machine_mapping/transitive_reduced_pcg.h"
 #include "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.dtg.h"
 #include "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.h"
@@ -27,7 +28,7 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
     MachineMappingWithMemoryCache &result_cache,
     MachineMappingWithMemoryContext const &context,
     MachineMappingProblemTree const &problem_tree,
-    MachineComputeSpecification const &resources,
+    MachineComputeResourceSlice const &resources,
     MachineMappingConstraints const &constraints) {
 
   MachineMappingState state = MachineMappingState{
@@ -72,7 +73,7 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
     MachineMappingWithMemoryCache &result_cache,
     MachineMappingWithMemoryContext const &context,
     MMProblemTreeSeriesSplit const &series_split,
-    MachineComputeSpecification const &resources,
+    MachineComputeResourceSlice const &resources,
     MachineMappingConstraints const &constraints,
     std::optional<ParallelSplitTransformation> const
         &parallel_split_transformation) {
@@ -155,8 +156,9 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
       TensorSetMovement comm_across_split =
           concretize_abstracted_tensor_set_movement(
               tensor_movement,
-              /*pre_mapping=*/assigned_pre_machine_views,
-              /*post_mapping=*/assigned_post_machine_views);
+              /*pre_machine_stencils=*/get_machine_stencils_for_mm_problem_tree(series_split.get_left_child(), assigned_pre_machine_views),
+              /*post_machine_stencils=*/get_machine_stencils_for_mm_problem_tree(series_split.get_right_child(), assigned_post_machine_views));
+
       milliseconds_t cost_across_split =
           context.cost_estimator.estimate_cost(comm_across_split);
 
@@ -175,7 +177,7 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
     MachineMappingWithMemoryCache &result_cache,
     MachineMappingWithMemoryContext const &context,
     MMProblemTreeParallelSplit const &parallel_split,
-    MachineComputeSpecification const &resources,
+    MachineComputeResourceSlice const &resources,
     MachineMappingConstraints const &constraints) {
 
   MachineMappingProblemTree lhs = parallel_split.get_left_child();
@@ -203,7 +205,7 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
       restrict_to_right_child(constraints);
 
   auto evaluate_resource_split =
-      [&](std::pair<MachineComputeSpecification, MachineComputeSpecification> const
+      [&](std::pair<MachineComputeResourceSlice, MachineComputeResourceSlice> const
               &resource_split) {
         MachineMappingWithMemoryResult left_result =
             get_optimal_machine_mapping_with_memory(result_cache,
@@ -233,7 +235,7 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
     MachineMappingWithMemoryCache &result_cache,
     MachineMappingWithMemoryContext const &context,
     UnmappedRuntimeOnlyOpCostEstimateKey const &leaf,
-    MachineComputeSpecification const &resource,
+    MachineComputeResourceSlice const &resource,
     MachineMappingConstraints const &constraints) {
 
   std::unordered_set<MachineView> candidates = [&] {

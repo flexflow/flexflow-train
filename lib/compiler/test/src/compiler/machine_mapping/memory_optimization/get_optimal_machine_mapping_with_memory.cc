@@ -75,22 +75,20 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    MachineComputeSpecification full_machine_spec = MachineComputeSpecification{
+    MachineComputeResourceSlice full_machine_resources = MachineComputeResourceSlice{
         /*num_nodes=*/2_p,
-        /*num_cpus_per_node=*/1_p,
         /*num_gpus_per_node=*/1_p,
     };
 
-    MachineComputeSpecification split_machine_spec = MachineComputeSpecification{
+    MachineComputeResourceSlice split_machine_resources = MachineComputeResourceSlice{
         /*num_nodes=*/1_p,
-        /*num_cpus_per_node=*/1_p,
         /*num_gpus_per_node=*/1_p,
     };
 
     auto allowed_machine_views1 =
         [&](UnmappedRuntimeOnlyOpCostEstimateKey const &,
-            MachineComputeSpecification const &resources) {
-          if (resources == full_machine_spec) {
+            MachineComputeResourceSlice const &resources) {
+          if (resources == full_machine_resources) {
             return std::unordered_set<MachineView>{mv1, mv2};
           } else {
             return std::unordered_set<MachineView>{mv2};
@@ -139,12 +137,23 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*optimizer_attrs=*/optimizer_attrs,
     };
 
+
+    TaskSpaceCoordinate empty_task_space_coord = TaskSpaceCoordinate{OrthotopeCoord{{}}};
+
+    AbstractedDevice src_device = AbstractedDevice{
+      /*operator_tree_path=*/binary_tree_root_path(),
+      /*task_space_coordinate=*/empty_task_space_coord,
+    };
+    AbstractedDevice dst_device = src_device;
+
     AbstractedTensorSetMovement movement1 = AbstractedTensorSetMovement{{
-        AbstractedSingleTensorMovement{
-            /*parallel_tensor_shape=*/par_tensor_shape,
-            /*src_machine_views=*/{},
-            /*dst_machine_views=*/{},
+      /*edge_to_size=*/{{
+        AbstractedCommunicationEdge{
+          /*src=*/src_device,
+          /*dst=*/dst_device,
         },
+        get_size_in_bytes(tensor_shape),
+      }},
     }};
 
     ParallelLayerGuidObliviousMachineMapping mm1 =
@@ -155,6 +164,29 @@ TEST_SUITE(FF_TEST_SUITE) {
         ParallelLayerGuidObliviousMachineMapping{{
             {binary_tree_root_path(), mv2},
         }};
+
+    OperatorTaskSpace trivial_task_space = OperatorTaskSpace{MinimalOrthotope{{}}};
+
+    auto mk_tensor_set_movement = [&](
+      MachineView const &src_mv, 
+      MachineView const &dst_mv) {
+
+      MachineSpaceStencil src_stencil = MachineSpaceStencil{
+        /*operator_task_space=*/trivial_task_space,
+        /*machine_view=*/src_mv,
+      };
+
+      MachineSpaceStencil dst_stencil = MachineSpaceStencil{
+        /*operator_task_space=*/trivial_task_space,
+        /*machine_view=*/dst_mv,
+      };
+
+      return concretize_abstracted_tensor_set_movement(
+        movement1,
+        /*pre_machine_stencils=*/{{binary_tree_root_path(), src_stencil}},
+        /*post_machine_stencils=*/{{binary_tree_root_path(), dst_stencil}});
+    };
+
 
     CostEstimator cost_estimator = make_fake_cost_estimator(
         std::unordered_map<OpCostEstimateKey, OpCostMetrics>{{
@@ -177,14 +209,14 @@ TEST_SUITE(FF_TEST_SUITE) {
         }},
         std::unordered_map<TensorSetMovement, milliseconds_t>{{
             {TensorSetMovement{/*movements=*/{}}, /*cost=*/0.0_ms},
-            {concretize_abstracted_tensor_set_movement(movement1, mm1, mm1),
-             /*cost=*/0.1_ms},
-            {concretize_abstracted_tensor_set_movement(movement1, mm2, mm2),
-             /*cost=*/0.2_ms},
-            {concretize_abstracted_tensor_set_movement(movement1, mm1, mm2),
-             /*cost=*/0.3_ms},
-            {concretize_abstracted_tensor_set_movement(movement1, mm2, mm1),
-             /*cost=*/0.4_ms},
+            {mk_tensor_set_movement(mv1, mv1),
+             0.1_ms},
+            {mk_tensor_set_movement(mv2, mv2),
+             0.2_ms},
+            {mk_tensor_set_movement(mv1, mv2),
+             0.3_ms},
+            {mk_tensor_set_movement(mv2, mv1),
+             0.4_ms},
         }});
 
     MachineMappingWithMemoryContext context = MachineMappingWithMemoryContext{
@@ -205,7 +237,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       MachineMappingWithMemoryResult result =
           get_optimal_machine_mapping_with_memory(
-              cache, context, problem_tree, full_machine_spec, constraints);
+              cache, context, problem_tree, full_machine_resources, constraints);
       MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{{
           MachineMappingForSingleLayer{
               OpCostMetrics{/*forward_runtime=*/1_ms,
@@ -238,7 +270,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       MachineMappingWithMemoryResult result =
           get_optimal_machine_mapping_with_memory(
-              cache, context, problem_tree, full_machine_spec, constraints);
+              cache, context, problem_tree, full_machine_resources, constraints);
       MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{{
           MachineMappingForSingleLayer{
               OpCostMetrics{
@@ -295,7 +327,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       MachineMappingWithMemoryResult result =
           get_optimal_machine_mapping_with_memory(
-              cache, context, problem_tree, full_machine_spec, constraints);
+              cache, context, problem_tree, full_machine_resources, constraints);
       MachineMappingWithMemoryResult correct =
           MachineMappingWithMemoryResult{{MachineMappingForSingleLayer{
               OpCostMetrics{/*forward_runtime=*/2.5_ms,

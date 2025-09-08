@@ -35,9 +35,12 @@ ParallelTensorShape
     lift_to_parallel_with_degrees(TensorShape const &,
                                   ParallelTensorDimDegrees const &);
 
+TensorShape get_piece_shape(ParallelTensorShape const &);
+num_bytes_t get_piece_size_in_bytes(ParallelTensorShape const &);
+
 std::unordered_set<ReplicaParallelDim>
     replica_dims(ParallelTensorShape const &);
-TensorShape get_piece_shape(ParallelTensorShape const &);
+
 positive_int get_num_replica_dims(ParallelTensorShape const &);
 positive_int get_num_replicas(ParallelTensorShape const &);
 
