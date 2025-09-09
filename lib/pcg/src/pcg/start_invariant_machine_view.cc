@@ -54,31 +54,30 @@ StartInvariantMachineView
   return StartInvariantMachineView{dimensions, device_type};
 }
 
-std::optional<MachineSpaceOffset> get_machine_space_offset(
+MachineSpaceOffset get_machine_space_offset(
     OperatorTaskSpace const &task,
     StartInvariantMachineView const &start_inv_machine_view,
     TaskSpaceCoordinate const &coord) {
+
   MachineSpaceCoordinate dummy_start =
       MachineSpaceCoordinate{0_n, 0_n, get_device_type(start_inv_machine_view)};
+
   MachineView mv =
       machine_view_from_start_invariant(start_inv_machine_view, dummy_start);
-  std::optional<MachineSpaceCoordinate> ms_coord =
-      get_machine_space_coordinate(task, mv, coord);
-  if (ms_coord == std::nullopt) {
-    return std::nullopt;
-  }
-  return get_machine_space_offset_from_coordinate(dummy_start,
-                                                  ms_coord.value());
+
+  MachineSpaceCoordinate ms_coord = get_machine_space_coordinate(task, mv, coord);
+
+  return get_machine_space_offset_from_coordinate(dummy_start, ms_coord);
 }
 
 std::unordered_set<MachineSpaceOffset> get_machine_space_offsets(
     OperatorTaskSpace const &task,
     StartInvariantMachineView const &start_inv_machine_view) {
   return transform(
-      get_task_space_coordinates(task), [&](TaskSpaceCoordinate const &coord) {
+      get_task_space_coordinates(task), 
+      [&](TaskSpaceCoordinate const &coord) {
         return get_machine_space_offset(
-                   task, start_inv_machine_view, coord)
-            .value();
+                   task, start_inv_machine_view, coord);
       });
 }
 

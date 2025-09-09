@@ -62,7 +62,10 @@ static TrainingComputationGraph
   // create operator layer
   LayerAddedResult operator_layer = add_layer(
       computation_graph,
-      LayerAttrs{compgraph_op_attrs_from_pcg_op_attrs(op), "operator"},
+      LayerAttrs{
+        /*op_attrs=*/compgraph_op_attrs_from_pcg_op_attrs(op).value(), 
+        /*name=*/"operator",
+      },
       input_tensors,
       weight_tensors);
 

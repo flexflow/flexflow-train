@@ -15,7 +15,7 @@ OperatorTaskSpace
   op_mapping_get_dst_space(OperatorTaskSpaceToOperatorTaskSpaceMapping const &);
 
 bidict<TaskSpaceCoordinate, TaskSpaceCoordinate>
-  op_to_op_get_coord_mapping(OperatorTaskSpaceToOperatorTaskSpaceMapping);
+  op_to_op_get_coord_mapping(OperatorTaskSpaceToOperatorTaskSpaceMapping const &);
 
 OperatorTaskSpaceToOperatorTaskSpaceMapping 
   op_to_op_mapping_from_composition_through_tensor(

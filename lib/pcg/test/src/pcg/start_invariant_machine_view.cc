@@ -117,7 +117,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           MachineSpaceOffset correct =
               MachineSpaceOffset{0, 0, DeviceType::GPU};
           MachineSpaceOffset result =
-              get_machine_space_offset(task, simv, coord, ms).value();
+              get_machine_space_offset(task, simv, coord);
           CHECK(correct == result);
         }
 
@@ -126,7 +126,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           MachineSpaceOffset correct =
               MachineSpaceOffset{0, 2, DeviceType::GPU};
           MachineSpaceOffset result =
-              get_machine_space_offset(task, simv, coord, ms).value();
+              get_machine_space_offset(task, simv, coord);
           CHECK(correct == result);
         }
 
@@ -135,7 +135,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           MachineSpaceOffset correct =
               MachineSpaceOffset{0, 4, DeviceType::GPU};
           MachineSpaceOffset result =
-              get_machine_space_offset(task, simv, coord, ms).value();
+              get_machine_space_offset(task, simv, coord);
           CHECK(correct == result);
         }
       }
@@ -146,7 +146,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             MachineSpaceOffset{0, 2, DeviceType::GPU},
             MachineSpaceOffset{0, 4, DeviceType::GPU}};
         std::unordered_set<MachineSpaceOffset> result =
-            get_machine_space_offsets(task, simv, ms);
+            get_machine_space_offsets(task, simv);
         CHECK(correct == result);
       }
     }
@@ -192,7 +192,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           MachineSpaceOffset correct =
               MachineSpaceOffset{0, 0, DeviceType::GPU};
           MachineSpaceOffset result =
-              get_machine_space_offset(task, simv, coord, ms).value();
+              get_machine_space_offset(task, simv, coord);
           CHECK(correct == result);
         }
 
@@ -201,7 +201,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           MachineSpaceOffset correct =
               MachineSpaceOffset{0, 2, DeviceType::GPU};
           MachineSpaceOffset result =
-              get_machine_space_offset(task, simv, coord, ms).value();
+              get_machine_space_offset(task, simv, coord);
           CHECK(correct == result);
         }
 
@@ -210,7 +210,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           MachineSpaceOffset correct =
               MachineSpaceOffset{1, 0, DeviceType::GPU};
           MachineSpaceOffset result =
-              get_machine_space_offset(task, simv, coord, ms).value();
+              get_machine_space_offset(task, simv, coord);
           CHECK(correct == result);
         }
 
@@ -219,7 +219,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           MachineSpaceOffset correct =
               MachineSpaceOffset{1, 2, DeviceType::GPU};
           MachineSpaceOffset result =
-              get_machine_space_offset(task, simv, coord, ms).value();
+              get_machine_space_offset(task, simv, coord);
           CHECK(correct == result);
         }
       }
@@ -231,7 +231,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             MachineSpaceOffset{1, 0, DeviceType::GPU},
             MachineSpaceOffset{1, 2, DeviceType::GPU}};
         std::unordered_set<MachineSpaceOffset> result =
-            get_machine_space_offsets(task, simv, ms);
+            get_machine_space_offsets(task, simv);
         CHECK(correct == result);
       }
     }

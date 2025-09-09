@@ -31,7 +31,7 @@ StartInvariantMachineView
         std::vector<stride_t> const &strides,
         std::vector<MachineSpecificationDimension> const &dims);
 
-std::optional<MachineSpaceOffset>
+MachineSpaceOffset
     get_machine_space_offset(OperatorTaskSpace const &task,
                              StartInvariantMachineView const &mv,
                              TaskSpaceCoordinate const &coordinates);

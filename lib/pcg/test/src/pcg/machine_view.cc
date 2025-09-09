@@ -64,36 +64,61 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("Task with TaskSpaceCoordinate = (0,)") {
         TaskSpaceCoordinate coord = make_task_space_coordinate({0_n});
-        MachineSpaceCoordinate correct = MachineSpaceCoordinate{
-            /*node_idx=*/0_n, /*device_idx=*/1_n, DeviceType::GPU};
+
         MachineSpaceCoordinate result =
-            get_machine_space_coordinate(task, mv, coord, ms).value();
-        CHECK(correct == result);
+            get_machine_space_coordinate(task, mv, coord);
+
+        MachineSpaceCoordinate correct = MachineSpaceCoordinate{
+          /*node_idx=*/0_n,
+          /*device_idx=*/1_n,
+          DeviceType::GPU,
+        };
+
+        CHECK(result == correct);
       }
 
       SUBCASE("Task with TaskSpaceCoordinate = (1,)") {
         TaskSpaceCoordinate coord = make_task_space_coordinate({1_n});
-        MachineSpaceCoordinate correct = MachineSpaceCoordinate{
-            /*node_idx=*/0_n, /*device_idx=*/3_n, DeviceType::GPU};
+
         MachineSpaceCoordinate result =
-            get_machine_space_coordinate(task, mv, coord, ms).value();
-        CHECK(correct == result);
+            get_machine_space_coordinate(task, mv, coord);
+
+        MachineSpaceCoordinate correct = MachineSpaceCoordinate{
+          /*node_idx=*/0_n,
+          /*device_idx=*/3_n,
+          DeviceType::GPU,
+        };
+
+        CHECK(result == correct);
       }
 
       SUBCASE("Task with TaskSpaceCoordinate = (2,)") {
         TaskSpaceCoordinate coord = make_task_space_coordinate({2_n});
-        MachineSpaceCoordinate correct = MachineSpaceCoordinate{
-            /*node_idx=*/0_n, /*device_idx=*/5_n, DeviceType::GPU};
+
         MachineSpaceCoordinate result =
-            get_machine_space_coordinate(task, mv, coord, ms).value();
-        CHECK(correct == result);
+            get_machine_space_coordinate(task, mv, coord);
+
+        MachineSpaceCoordinate correct = MachineSpaceCoordinate{
+          /*node_idx=*/0_n, 
+          /*device_idx=*/5_n, 
+          DeviceType::GPU,
+        };
+
+        CHECK(result == correct);
       }
 
       SUBCASE("TaskSpaceCoordinate is out of bounds") {
         TaskSpaceCoordinate coord = make_task_space_coordinate({4_n});
-        std::optional<MachineSpaceCoordinate> result =
-            get_machine_space_coordinate(task, mv, coord, ms);
-        std::optional<MachineSpaceCoordinate> correct = std::nullopt;
+
+        MachineSpaceCoordinate result =
+            get_machine_space_coordinate(task, mv, coord);
+
+        MachineSpaceCoordinate correct = MachineSpaceCoordinate{
+          /*node_idx=*/0_n, 
+          /*device_idx=*/9_n, 
+          DeviceType::GPU,
+        };
+
         CHECK(result == correct);
       }
 
@@ -142,7 +167,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           MachineSpaceCoordinate correct = MachineSpaceCoordinate{
               /*node_idx=*/1_n, /*device_idx=*/2_n, DeviceType::GPU};
           MachineSpaceCoordinate result =
-              get_machine_space_coordinate(task, mv, coord, ms).value();
+              get_machine_space_coordinate(task, mv, coord);
           CHECK(correct == result);
         }
 
@@ -151,7 +176,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           MachineSpaceCoordinate correct = MachineSpaceCoordinate{
               /*node_idx=*/1_n, /*device_idx=*/4_n, DeviceType::GPU};
           MachineSpaceCoordinate result =
-              get_machine_space_coordinate(task, mv, coord, ms).value();
+              get_machine_space_coordinate(task, mv, coord);
           CHECK(correct == result);
         }
 
@@ -160,7 +185,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           MachineSpaceCoordinate correct = MachineSpaceCoordinate{
               /*node_idx=*/2_n, /*device_idx=*/2_n, DeviceType::GPU};
           MachineSpaceCoordinate result =
-              get_machine_space_coordinate(task, mv, coord, ms).value();
+              get_machine_space_coordinate(task, mv, coord);
           CHECK(correct == result);
         }
 
@@ -169,7 +194,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           MachineSpaceCoordinate correct = MachineSpaceCoordinate{
               /*node_idx=*/2_n, /*device_idx=*/4_n, DeviceType::GPU};
           MachineSpaceCoordinate result =
-              get_machine_space_coordinate(task, mv, coord, ms).value();
+              get_machine_space_coordinate(task, mv, coord);
           CHECK(correct == result);
         }
       }
@@ -214,7 +239,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           MachineSpaceCoordinate correct = MachineSpaceCoordinate{
               /*node_idx=*/1_n, /*device_idx=*/0_n, DeviceType::GPU};
           MachineSpaceCoordinate result =
-              get_machine_space_coordinate(task, mv, coord, ms).value();
+              get_machine_space_coordinate(task, mv, coord);
           CHECK(correct == result);
         }
 
@@ -223,7 +248,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           MachineSpaceCoordinate correct = MachineSpaceCoordinate{
               /*node_idx=*/1_n, /*device_idx=*/4_n, DeviceType::GPU};
           MachineSpaceCoordinate result =
-              get_machine_space_coordinate(task, mv, coord, ms).value();
+              get_machine_space_coordinate(task, mv, coord);
           CHECK(correct == result);
         }
 
@@ -232,7 +257,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           MachineSpaceCoordinate correct = MachineSpaceCoordinate{
               /*node_idx=*/1_n, /*device_idx=*/1_n, DeviceType::GPU};
           MachineSpaceCoordinate result =
-              get_machine_space_coordinate(task, mv, coord, ms).value();
+              get_machine_space_coordinate(task, mv, coord);
           CHECK(correct == result);
         }
 
@@ -241,7 +266,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           MachineSpaceCoordinate correct = MachineSpaceCoordinate{
               /*node_idx=*/1_n, /*device_idx=*/5_n, DeviceType::GPU};
           MachineSpaceCoordinate result =
-              get_machine_space_coordinate(task, mv, coord, ms).value();
+              get_machine_space_coordinate(task, mv, coord);
           CHECK(correct == result);
         }
       }
@@ -297,7 +322,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           MachineSpaceCoordinate correct = MachineSpaceCoordinate{
               /*node_idx=*/0_n, /*device_idx=*/3_n, DeviceType::GPU};
           MachineSpaceCoordinate result =
-              get_machine_space_coordinate(task, mv, coord, ms).value();
+              get_machine_space_coordinate(task, mv, coord);
           CHECK(correct == result);
         }
 
@@ -307,7 +332,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           MachineSpaceCoordinate correct = MachineSpaceCoordinate{
               /*node_idx=*/1_n, /*device_idx=*/5_n, DeviceType::GPU};
           MachineSpaceCoordinate result =
-              get_machine_space_coordinate(task, mv, coord, ms).value();
+              get_machine_space_coordinate(task, mv, coord);
           CHECK(correct == result);
         }
 
@@ -317,7 +342,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           MachineSpaceCoordinate correct = MachineSpaceCoordinate{
               /*node_idx=*/1_n, /*device_idx=*/7_n, DeviceType::GPU};
           MachineSpaceCoordinate result =
-              get_machine_space_coordinate(task, mv, coord, ms).value();
+              get_machine_space_coordinate(task, mv, coord);
           CHECK(correct == result);
         }
       }

@@ -35,7 +35,6 @@ MachineSpaceCoordinate
 
 OperatorSpaceToMachineSpaceMapping
   get_coordinate_mapping_for_machine_view(OperatorTaskSpace const &operator_task_space,
-                                          MachineComputeSpecification const &machine_compute_specification,
                                           MachineView const &machine_view);
 
 std::unordered_set<MachineSpaceCoordinate>

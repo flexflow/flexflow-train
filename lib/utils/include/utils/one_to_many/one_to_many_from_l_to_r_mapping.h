@@ -2,6 +2,7 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_ONE_TO_MANY_FROM_L_TO_R_MAPPING_H
 
 #include "utils/one_to_many/one_to_many.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
@@ -11,6 +12,7 @@ OneToMany<L, R> one_to_many_from_l_to_r_mapping(
   OneToMany<L, R> result;
 
   for (auto const &[l, rs] : m) {
+    ASSERT(rs.size() > 0);
     for (auto const &r : rs) {
       result.insert({l, r});
     }

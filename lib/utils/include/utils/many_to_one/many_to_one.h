@@ -24,6 +24,7 @@ public:
   template <typename It>
   ManyToOne(It start, It end) : ManyToOne() {
     for (; start < end; start++) {
+      ASSERT(start->first.size() > 0);
       for (L const &l : start->first) {
         this->insert(std::pair<L, R>{l, start->second});
       }

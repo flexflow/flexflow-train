@@ -25,6 +25,7 @@ public:
   template <typename It>
   OneToMany(It start, It end) : OneToMany() {
     for (; start < end; start++) {
+      ASSERT(start->second.size() > 0);
       for (R const &r : start->second) {
         this->insert(std::pair<L, R>{start->first, r});
       }

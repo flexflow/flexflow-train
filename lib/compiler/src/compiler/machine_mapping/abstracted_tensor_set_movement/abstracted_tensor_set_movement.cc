@@ -32,7 +32,7 @@ std::unordered_set<BinaryTreePath>
 
 AbstractedTensorSetMovement
   abstracted_tensor_set_movement_from_single_communications(
-    std::vector<AbstractedSingleCommunication> const &single_communications) {
+    std::unordered_multiset<AbstractedSingleCommunication> const &single_communications) {
 
   auto make_singleton_map = [](AbstractedSingleCommunication const &c) {
     return std::unordered_map<AbstractedCommunicationEdge, num_bytes_t>{
@@ -42,7 +42,7 @@ AbstractedTensorSetMovement
 
   return AbstractedTensorSetMovement{
     merge_maps_with(
-      transform(single_communications, make_singleton_map),
+      transform(vector_of(single_communications), make_singleton_map),
       [](num_bytes_t lhs, num_bytes_t rhs) {
         return lhs + rhs;
       }),

@@ -2,6 +2,8 @@
 #include "utils/containers/binary_cartesian_product.h"
 #include <string>
 #include "utils/hash/pair.h"
+#include "test/utils/doctest/fmt/unordered_set.h"
+#include "test/utils/doctest/fmt/pair.h"
 
 using namespace ::FlexFlow;
 
