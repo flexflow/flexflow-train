@@ -17,6 +17,9 @@ template
   std::ostream &operator<<(std::ostream &, DimDomainMapping<L, R> const &);
 
 template
+  DimDomainMapping<L, R> empty_dim_domain_mapping();
+
+template
   DimDomainMapping<R, L> invert_dim_domain_mapping(
     DimDomainMapping<L, R> const &);
 

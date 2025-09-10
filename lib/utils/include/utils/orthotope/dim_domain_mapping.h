@@ -91,6 +91,15 @@ std::ostream &operator<<(std::ostream &s, DimDomainMapping<L, R> const &m) {
 }
 
 template <typename L, typename R>
+DimDomainMapping<L, R> empty_dim_domain_mapping() {
+  return DimDomainMapping{
+    /*coord_mapping=*/{},
+    /*l_domain=*/empty_dim_domain<L>(),
+    /*r_domain=*/empty_dim_domain<R>(),
+  };
+}
+
+template <typename L, typename R>
 DimDomainMapping<R, L> invert_dim_domain_mapping(
   DimDomainMapping<L, R> const &dim_domain_mapping) {
   

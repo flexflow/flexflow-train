@@ -13,6 +13,11 @@
 namespace FlexFlow {
 
 template <typename T>
+DimDomain<T> empty_dim_domain() {
+  return DimDomain<T>{{}};
+};
+
+template <typename T>
 std::unordered_set<T> get_domain_dims(DimDomain<T> const &domain) {
   return keys(domain.dims);
 }

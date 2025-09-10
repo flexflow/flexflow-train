@@ -4,6 +4,8 @@
 #include "utils/overload.h"
 #include "op-attrs/ops/linear.h"
 #include "op-attrs/ops/element_unary.h"
+#include "op-attrs/ops/input.h"
+#include "op-attrs/ops/weight.h"
 
 namespace FlexFlow {
 
@@ -30,7 +32,9 @@ std::vector<OperatorSpaceToParallelTensorSpaceMapping>
           get_operator_to_input_mapping(attrs, get_only(inputs_degrees)),
         };
       },
-      [](InputAttrs const &) { 
+      [&](InputAttrs const &) { 
+        ASSERT(inputs_degrees.size() == 0);
+
         return std::vector<OperatorSpaceToParallelTensorSpaceMapping>{};
       },
       [&](LinearAttrs const &attrs) {
@@ -47,7 +51,9 @@ std::vector<OperatorSpaceToParallelTensorSpaceMapping>
 
         return result;
       },
-      [](WeightAttrs const &) { 
+      [&](WeightAttrs const &) { 
+        ASSERT(inputs_degrees.size() == 0);
+
         return std::vector<OperatorSpaceToParallelTensorSpaceMapping>{};
       },
       [](auto const &attrs) -> std::vector<OperatorSpaceToParallelTensorSpaceMapping> {
@@ -82,6 +88,20 @@ std::vector<OperatorSpaceToParallelTensorSpaceMapping>
       [&](LinearAttrs const &attrs) {
         return std::vector{
           get_operator_to_output_mapping(attrs, get_only(inputs_degrees)),
+        };
+      },
+      [&](InputAttrs const &attrs) {
+        ASSERT(inputs_degrees.size() == 0);
+
+        return std::vector{
+          get_operator_to_output_mapping(attrs),
+        };
+      },
+      [&](WeightAttrs const &attrs) {
+        ASSERT(inputs_degrees.size() == 0);
+
+        return std::vector{
+          get_operator_to_output_mapping(attrs),
         };
       },
       [](auto const &attrs) -> std::vector<OperatorSpaceToParallelTensorSpaceMapping> {

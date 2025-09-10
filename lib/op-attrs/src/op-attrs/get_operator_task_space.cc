@@ -4,6 +4,8 @@
 #include <libassert/assert.hpp>
 #include "op-attrs/ops/element_unary.h"
 #include "op-attrs/ops/linear.h"
+#include "op-attrs/ops/input.h"
+#include "op-attrs/ops/weight.h"
 
 namespace FlexFlow {
 
@@ -22,6 +24,16 @@ OperatorTaskSpace
       ASSERT(inputs_degrees.size() == 1);
 
       return get_operator_task_space(attrs, get_only(inputs_degrees));
+    },
+    [&](InputAttrs const &attrs) {
+      ASSERT(inputs_degrees.size() == 0);
+
+      return get_operator_task_space(attrs);
+    },
+    [&](WeightAttrs const &attrs) {
+      ASSERT(inputs_degrees.size() == 0);
+
+      return get_operator_task_space(attrs);
     },
     [](auto const &attrs) -> OperatorTaskSpace {
       PANIC("Missing implmentation of get_operator_task_space", attrs);

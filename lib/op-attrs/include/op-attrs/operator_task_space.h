@@ -12,6 +12,8 @@
 
 namespace FlexFlow {
 
+OperatorTaskSpace trivial_op_task_space();
+
 std::unordered_set<TaskSpaceCoordinate>
     get_task_space_coordinates(OperatorTaskSpace const &operator_task_space);
 

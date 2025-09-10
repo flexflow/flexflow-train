@@ -25,6 +25,10 @@
 
 namespace FlexFlow {
 
+OperatorTaskSpace trivial_op_task_space() {
+  return OperatorTaskSpace{MinimalOrthotope{{}}};
+}
+
 std::unordered_set<TaskSpaceCoordinate>
     get_task_space_coordinates(OperatorTaskSpace const &task) {
 

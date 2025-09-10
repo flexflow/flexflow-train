@@ -16,6 +16,14 @@
 
 namespace FlexFlow {
 
+OperatorSpaceToParallelTensorSpaceMapping 
+  empty_operator_space_to_ptensor_space_map() {
+
+  return OperatorSpaceToParallelTensorSpaceMapping{
+    empty_dim_domain_mapping<operator_task_space_dim_idx_t, parallel_tensor_dim_idx_t>(),
+  };
+}
+
 OperatorTaskSpace
   get_operator_task_space_for_mapping(OperatorSpaceToParallelTensorSpaceMapping const &mapping) {
 
