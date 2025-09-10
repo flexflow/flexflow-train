@@ -9,6 +9,7 @@
 #include "utils/orthotope/dim_ordering.dtg.h"
 #include "utils/orthotope/orthotope.dtg.h"
 #include "utils/containers/map_from_keys_and_values.h"
+#include "utils/nonnegative_int/num_elements.h"
 
 namespace FlexFlow {
 
@@ -16,6 +17,11 @@ template <typename T>
 DimDomain<T> empty_dim_domain() {
   return DimDomain<T>{{}};
 };
+
+template <typename T>
+nonnegative_int dim_domain_num_dims(DimDomain<T> const &domain) {
+  return num_elements(domain.dims);
+}
 
 template <typename T>
 std::unordered_set<T> get_domain_dims(DimDomain<T> const &domain) {

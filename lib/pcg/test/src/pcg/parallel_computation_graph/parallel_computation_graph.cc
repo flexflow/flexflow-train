@@ -1,4 +1,5 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
+#include "op-attrs/operator_task_space_to_operator_task_space_mapping.h"
 #include "op-attrs/ops/element_unary.h"
 #include "op-attrs/ops/linear.h"
 #include "op-attrs/ops/replicate.h"
@@ -341,5 +342,89 @@ TEST_SUITE(FF_TEST_SUITE) {
     }();
 
     CHECK(pcgs_are_isomorphic(result, correct));
+  }
+  
+  TEST_CASE("pcg_get_mapping_along_edge") {
+    ParallelComputationGraph pcg = empty_parallel_computation_graph();
+
+    TensorShape input_shape = TensorShape{
+        TensorDims{
+            FFOrdered{
+                10_p,
+                12_p,
+            },
+        },
+        DataType::FLOAT,
+    };
+
+    ParallelTensorShape par_input_shape = lift_to_parallel(input_shape);
+
+    ParallelLayerAttrs partition_attrs = ParallelLayerAttrs{
+        /*op_attrs=*/PCGOperatorAttrs{
+            RepartitionAttrs{
+                /*repartition_dim=*/ff_dim_t{0_n},
+                /*repartition_degree=*/2_p,
+            },
+        },
+        /*name=*/std::nullopt,
+    };
+
+    ParallelLayerAttrs relu_attrs = ParallelLayerAttrs{
+        /*op_attrs=*/PCGOperatorAttrs{
+            ElementUnaryAttrs{
+                /*op_type=*/OperatorType::RELU,
+                /*scalar=*/std::nullopt,
+            },
+        },
+        /*name=*/std::nullopt,
+    };
+
+    ParallelLayerAddedResult input = pcg_add_input_layer(pcg, input_shape);
+    parallel_tensor_guid_t t_input = get_only(input.outputs);
+    ParallelLayerAddedResult partition_input =
+        add_parallel_layer(pcg, partition_attrs, {t_input}, {});
+    parallel_tensor_guid_t t_partition_input = get_only(partition_input.outputs);
+
+    ParallelLayerAddedResult layer_1 =
+        add_parallel_layer(pcg, relu_attrs, {t_partition_input}, {});
+    parallel_tensor_guid_t t_layer_1 = get_only(layer_1.outputs);
+    ParallelLayerAddedResult layer_2 =
+        add_parallel_layer(pcg, relu_attrs, {t_layer_1}, {});
+
+    ParallelComputationGraphEdge edge 
+      = get_only(
+          get_pcg_edges_from_layer_to_layer(
+            /*pcg=*/pcg, 
+            /*src=*/layer_1.parallel_layer, 
+            /*dst=*/layer_2.parallel_layer));
+
+    OperatorTaskSpaceToOperatorTaskSpaceMapping result = pcg_get_mapping_along_edge(pcg, edge);
+
+    DimDomain<operator_task_space_dim_idx_t> layer_1_task_space = DimDomain<operator_task_space_dim_idx_t>{{
+      {operator_task_space_dim_idx_t{0_n}, 2_p},
+    }};
+
+    DimDomain<operator_task_space_dim_idx_t> layer_2_task_space = layer_1_task_space;
+
+    auto make_coord = [](nonnegative_int x) {
+      return DimCoord{
+        std::unordered_map<operator_task_space_dim_idx_t, nonnegative_int>{
+          {operator_task_space_dim_idx_t{0_n}, 0_n},
+        },
+      };
+    };
+
+    OperatorTaskSpaceToOperatorTaskSpaceMapping correct = OperatorTaskSpaceToOperatorTaskSpaceMapping{
+      DimDomainMapping<operator_task_space_dim_idx_t, operator_task_space_dim_idx_t>{
+        bidict<DimCoord<operator_task_space_dim_idx_t>, DimCoord<operator_task_space_dim_idx_t>>{
+          {make_coord(0_n), make_coord(0_n)},
+          {make_coord(0_n), make_coord(0_n)},
+        },
+        layer_1_task_space,
+        layer_2_task_space,
+      },
+    };
+
+    CHECK(result == correct); 
   }
 }

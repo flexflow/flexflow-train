@@ -5,6 +5,10 @@ namespace FlexFlow {
 
 using T = value_type<0>;
 
+template MinimalDimDomain<T> empty_minimal_dim_domain();
+
+template nonnegative_int minimal_dim_domain_num_dims(MinimalDimDomain<T> const &);
+
 template
   DimDomain<T> lift_minimal_dim_domain(MinimalDimDomain<T> const &);
 

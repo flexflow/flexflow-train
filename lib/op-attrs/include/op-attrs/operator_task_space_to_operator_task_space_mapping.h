@@ -8,6 +8,9 @@
 
 namespace FlexFlow {
 
+OperatorTaskSpaceToOperatorTaskSpaceMapping op_to_op_identity_mapping(OperatorTaskSpace const &,
+                                                                      OperatorTaskSpace const &);
+
 OperatorTaskSpace
   op_mapping_get_src_space(OperatorTaskSpaceToOperatorTaskSpaceMapping const &);
 

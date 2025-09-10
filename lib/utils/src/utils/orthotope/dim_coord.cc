@@ -21,6 +21,8 @@ template DimCoord<T> lift_dim_coord(DimCoord<T> const &, std::unordered_set<T> c
 
 template std::unordered_set<DimCoord<T>> get_coords_in_dim_domain(DimDomain<T> const &);
 
+template std::unordered_set<DimCoord<T>> get_coords_in_minimal_dim_domain(MinimalDimDomain<T> const &);
+
 template DimCoord<T> get_maximum_coord_in_domain(DimDomain<T> const &);
 
 template DimDomain<T> get_domain_for_maximum_coord(DimCoord<T> const &);

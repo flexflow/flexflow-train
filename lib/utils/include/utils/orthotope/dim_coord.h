@@ -17,6 +17,7 @@
 #include "utils/orthotope/dim_coord.dtg.h"
 #include "utils/orthotope/dim_domain.dtg.h"
 #include "utils/orthotope/dim_domain.h"
+#include "utils/orthotope/minimal_dim_domain.h"
 #include "utils/orthotope/orthotope.h"
 #include "utils/containers/generate_map.h"
 #include "utils/containers/contains_key.h"
@@ -93,6 +94,11 @@ std::unordered_set<DimCoord<T>> get_coords_in_dim_domain(DimDomain<T> const &dim
         assignment,
       };
     });
+}
+
+template <typename T>
+std::unordered_set<DimCoord<T>> get_coords_in_minimal_dim_domain(MinimalDimDomain<T> const &minimal_dim_domain) {
+  return get_coords_in_dim_domain(lift_minimal_dim_domain(minimal_dim_domain));
 }
 
 template <typename T>

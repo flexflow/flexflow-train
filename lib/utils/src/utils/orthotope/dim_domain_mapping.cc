@@ -16,6 +16,12 @@ template
 template
   std::ostream &operator<<(std::ostream &, DimDomainMapping<L, R> const &);
 
+template DimDomainMapping<L, R> dim_domain_mapping_identity_map(
+                                      DimDomain<L> const &, 
+                                      DimDomain<R> const &, 
+                                      DimOrdering<L> const &, 
+                                      DimOrdering<R> const &);
+
 template
   DimDomainMapping<L, R> empty_dim_domain_mapping();
 

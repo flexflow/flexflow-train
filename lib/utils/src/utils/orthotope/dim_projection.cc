@@ -6,6 +6,11 @@ namespace FlexFlow {
 using L = value_type<0>;
 using R = value_type<1>;
 
+template DimProjection<L, R> dim_projection_identity_map(DimDomain<L> const &,
+                                                         DimDomain<R> const &,
+                                                         DimOrdering<L> const &,
+                                                         DimOrdering<R> const &);
+
 template std::unordered_set<L>
     input_dims_of_projection(DimProjection<L, R> const &);
 

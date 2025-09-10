@@ -12,6 +12,8 @@
 #include "utils/bidict/algorithms/exhaustive_relational_join.h"
 #include "utils/hash/tuple.h"
 #include "utils/bidict/generate_bidict.h"
+#include "utils/orthotope/minimal_dim_domain.dtg.h"
+#include "utils/orthotope/minimal_dim_domain.dtg.h"
 
 namespace FlexFlow {
 
@@ -97,6 +99,23 @@ DimDomainMapping<L, R> empty_dim_domain_mapping() {
     /*l_domain=*/empty_dim_domain<L>(),
     /*r_domain=*/empty_dim_domain<R>(),
   };
+}
+
+template <typename L, typename R>
+DimDomainMapping<L, R> dim_domain_mapping_identity_map(
+    DimDomain<L> const &l_domain, 
+    DimDomain<R> const &r_domain, 
+    DimOrdering<L> const &l_dim_ordering, 
+    DimOrdering<R> const &r_dim_ordering) {
+  DimProjection<L, R> projection =
+    dim_projection_identity_map(l_domain, r_domain, l_dim_ordering, r_dim_ordering);
+
+  return dim_domain_mapping_from_projection(
+    /*projection=*/projection,
+    /*l_domain=*/l_domain,
+    /*r_domain=*/r_domain,
+    /*l_dim_ordering=*/l_dim_ordering,
+    /*r_dim_ordering=*/r_dim_ordering);
 }
 
 template <typename L, typename R>

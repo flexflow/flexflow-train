@@ -35,9 +35,9 @@ OperatorTaskSpace get_operator_task_space(ParallelComputationGraph const &pcg,
                                           parallel_layer_guid_t const &layer);
 
 std::unordered_set<ParallelComputationGraphEdge>
-    get_pcg_edges_from_layer_to_layer(ParallelComputationGraph const &,
-                                      parallel_layer_guid_t const &,
-                                      parallel_layer_guid_t const &);
+    get_pcg_edges_from_layer_to_layer(ParallelComputationGraph const &pcg,
+                                      parallel_layer_guid_t const &src,
+                                      parallel_layer_guid_t const &dst);
 
 std::unordered_set<ParallelComputationGraphEdge>
     get_edges(ParallelComputationGraph const &);

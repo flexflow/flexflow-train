@@ -9,6 +9,93 @@
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
+  TEST_CASE("get_abstracted_single_communications_along_edge") {
+    ParallelComputationGraph pcg = empty_parallel_computation_graph();
+
+    TensorShape input_shape = TensorShape{
+        TensorDims{
+            FFOrdered{
+                10_p,
+                12_p,
+            },
+        },
+        DataType::FLOAT,
+    };
+
+    ParallelTensorShape par_input_shape = lift_to_parallel(input_shape);
+
+    ParallelLayerAttrs partition_attrs = ParallelLayerAttrs{
+        /*op_attrs=*/PCGOperatorAttrs{
+            RepartitionAttrs{
+                /*repartition_dim=*/ff_dim_t{0_n},
+                /*repartition_degree=*/2_p,
+            },
+        },
+        /*name=*/std::nullopt,
+    };
+
+    ParallelLayerAttrs relu_attrs = ParallelLayerAttrs{
+        /*op_attrs=*/PCGOperatorAttrs{
+            ElementUnaryAttrs{
+                /*op_type=*/OperatorType::RELU,
+                /*scalar=*/std::nullopt,
+            },
+        },
+        /*name=*/std::nullopt,
+    };
+
+    ParallelLayerAddedResult input = pcg_add_input_layer(pcg, input_shape);
+    parallel_tensor_guid_t t_input = get_only(input.outputs);
+    ParallelLayerAddedResult partition_input =
+        add_parallel_layer(pcg, partition_attrs, {t_input}, {});
+    parallel_tensor_guid_t t_partition_input = get_only(partition_input.outputs);
+
+    ParallelLayerAddedResult layer_1 =
+        add_parallel_layer(pcg, relu_attrs, {t_partition_input}, {});
+    parallel_tensor_guid_t t_layer_1 = get_only(layer_1.outputs);
+    ParallelLayerAddedResult layer_2 =
+        add_parallel_layer(pcg, relu_attrs, {t_layer_1}, {});
+
+    ParallelComputationGraphEdge edge 
+      = get_only(
+          get_pcg_edges_from_layer_to_layer(
+            /*pcg=*/pcg, 
+            /*src=*/layer_1.parallel_layer, 
+            /*dst=*/layer_2.parallel_layer));
+
+    BinaryTreePath src_path = BinaryTreePath{{}};
+    BinaryTreePath dst_path = BinaryTreePath{{}};
+    
+    std::unordered_set<AbstractedSingleCommunication> result
+      = get_abstracted_single_communications_along_edge(pcg, edge, src_path, dst_path);
+
+    num_bytes_t shard_size = get_piece_size_in_bytes(get_parallel_tensor_shape(pcg, t_layer_1));
+
+    auto mk_single_communication = [&](nonnegative_int src_coord, 
+                                       nonnegative_int dst_coord) {
+      return AbstractedSingleCommunication{
+        /*edge=*/AbstractedCommunicationEdge{
+          /*src=*/AbstractedDevice{
+            /*operator_tree_path=*/src_path,
+            /*task_space_coordinate=*/TaskSpaceCoordinate{OrthotopeCoord{{src_coord}}},
+          },
+          /*dst=*/AbstractedDevice{
+            /*operator_tree_path=*/dst_path,
+            /*task_space_coordinate=*/TaskSpaceCoordinate{OrthotopeCoord{{dst_coord}}},
+          },
+        },
+        /*size=*/shard_size,
+      };
+    };
+
+    std::unordered_set<AbstractedSingleCommunication> correct = {
+      mk_single_communication(0_n, 0_n),
+      mk_single_communication(1_n, 1_n),
+    };
+
+    CHECK(result == correct);
+  }
+
   TEST_CASE("get_abstracted_tensor_set_movement_across_split") {
     auto make_series_split = [](PCGBinarySPDecomposition const &lhs,
                                 PCGBinarySPDecomposition const &rhs) {
@@ -115,7 +202,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_tensor_guid_t t_input = get_only(input.outputs);
       ParallelLayerAddedResult partition_input =
           add_parallel_layer(pcg, partition_attrs, {t_input}, {});
-      parallel_tensor_guid_t t_partition_input = get_only(input.outputs);
+      parallel_tensor_guid_t t_partition_input = get_only(partition_input.outputs);
 
       ParallelLayerAddedResult layer_1 =
           add_parallel_layer(pcg, relu_attrs, {t_partition_input}, {});
@@ -136,12 +223,10 @@ TEST_SUITE(FF_TEST_SUITE) {
               pcg_get_transitive_reduction(pcg), split);
 
       BinaryTreePath src_path = BinaryTreePath{{
-        BinaryTreePathEntry::LEFT_CHILD,
-      }};
-
-      BinaryTreePath dst_path = BinaryTreePath{{
         BinaryTreePathEntry::RIGHT_CHILD,
       }};
+
+      BinaryTreePath dst_path = BinaryTreePath{{}};
 
       auto mk_abstracted_edge = [&](nonnegative_int src_coord, nonnegative_int dst_coord) {
         return AbstractedCommunicationEdge{
@@ -167,7 +252,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_tensor_guid_t t_input = get_only(input.outputs);
       ParallelLayerAddedResult partition_input =
           add_parallel_layer(pcg, partition_attrs, {t_input}, {});
-      parallel_tensor_guid_t t_partition_input = get_only(input.outputs);
+      parallel_tensor_guid_t t_partition_input = get_only(partition_input.outputs);
 
       ParallelLayerAddedResult layer_1 =
           add_parallel_layer(pcg, relu_attrs, {t_partition_input}, {});
@@ -226,7 +311,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_tensor_guid_t t_input = get_only(input.outputs);
       ParallelLayerAddedResult partition_input =
           add_parallel_layer(pcg, partition_attrs, {t_input}, {});
-      parallel_tensor_guid_t t_partition_input = get_only(input.outputs);
+      parallel_tensor_guid_t t_partition_input = get_only(partition_input.outputs);
 
       ParallelLayerAddedResult layer_1 =
           add_parallel_layer(pcg, relu_attrs, {t_partition_input}, {});
@@ -292,7 +377,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_tensor_guid_t t_input = get_only(input.outputs);
       ParallelLayerAddedResult partition_input =
           add_parallel_layer(pcg, partition_attrs, {t_input}, {});
-      parallel_tensor_guid_t t_partition_input = get_only(input.outputs);
+      parallel_tensor_guid_t t_partition_input = get_only(partition_input.outputs);
 
       ParallelLayerAddedResult layer_1 =
           add_parallel_layer(pcg, relu_attrs, {t_partition_input}, {});

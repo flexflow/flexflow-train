@@ -7,6 +7,19 @@
 
 namespace FlexFlow {
 
+OperatorTaskSpaceToOperatorTaskSpaceMapping op_to_op_identity_mapping(
+  OperatorTaskSpace const &src_space,
+  OperatorTaskSpace const &dst_space) {
+
+  return OperatorTaskSpaceToOperatorTaskSpaceMapping{
+    dim_domain_mapping_identity_map(
+      /*l_domain=*/lift_minimal_dim_domain(minimal_dim_domain_from_operator_task_space(src_space)),
+      /*r_domain=*/lift_minimal_dim_domain(minimal_dim_domain_from_operator_task_space(dst_space)),
+      /*l_dim_ordering=*/get_operator_task_space_dim_ordering(),
+      /*r_dim_ordering=*/get_operator_task_space_dim_ordering()),
+  };
+}
+
 OperatorTaskSpace
   op_mapping_get_src_space(OperatorTaskSpaceToOperatorTaskSpaceMapping const &mapping) {
   

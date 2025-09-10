@@ -29,6 +29,11 @@ OperatorTaskSpace trivial_op_task_space() {
   return OperatorTaskSpace{MinimalOrthotope{{}}};
 }
 
+std::unordered_set<operator_task_space_dim_idx_t> 
+    operator_task_space_get_dim_idxs(OperatorTaskSpace const &op_task_space) {
+  return get_minimal_domain_dims(minimal_dim_domain_from_operator_task_space(op_task_space));
+}
+
 std::unordered_set<TaskSpaceCoordinate>
     get_task_space_coordinates(OperatorTaskSpace const &task) {
 

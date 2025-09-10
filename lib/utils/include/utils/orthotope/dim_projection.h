@@ -7,8 +7,28 @@
 #include "utils/orthotope/eq_projection.h"
 #include "utils/orthotope/up_projection.h"
 #include "utils/overload.h"
+#include "utils/bidict/algorithms/bidict_from_keys_and_values.h"
 
 namespace FlexFlow {
+
+template <typename L, typename R>
+DimProjection<L, R> dim_projection_identity_map(DimDomain<L> const &input_domain,
+                                                DimDomain<R> const &output_domain,
+                                                DimOrdering<L> const &input_dim_ordering,
+                                                DimOrdering<R> const &output_dim_ordering) {
+  
+  std::vector<L> input_dims = sorted_by(get_domain_dims(input_domain),
+                                        input_dim_ordering.lt);
+
+  std::vector<R> output_dims = sorted_by(get_domain_dims(output_domain),
+                                         output_dim_ordering.lt);
+
+  return DimProjection{
+    EqProjection{
+      bidict_from_keys_and_values(input_dims, output_dims),
+    },
+  };
+}
 
 template <typename L, typename R>
 std::unordered_set<L>
@@ -65,11 +85,11 @@ DimProjection<R, L> invert_dim_projection(DimProjection<L, R> const &projection)
 
 template <typename L, typename R>
 DimCoord<R> compute_dim_projection(DimProjection<L, R> const &projection,
-                               DimCoord<L> const &input_coord,
-                               DimDomain<L> const &input_domain,
-                               DimDomain<R> const &output_domain,
-                               DimOrdering<L> const &input_dim_ordering,
-                               DimOrdering<R> const &output_dim_ordering) {
+                                   DimCoord<L> const &input_coord,
+                                   DimDomain<L> const &input_domain,
+                                   DimDomain<R> const &output_domain,
+                                   DimOrdering<L> const &input_dim_ordering,
+                                   DimOrdering<R> const &output_dim_ordering) {
   ASSERT(dim_domain_contains_coord(input_domain, input_coord),
          input_domain,
          input_coord);

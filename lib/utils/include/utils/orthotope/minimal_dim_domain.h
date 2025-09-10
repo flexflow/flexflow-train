@@ -12,8 +12,19 @@
 #include "utils/containers/sorted_by.h"
 #include "utils/containers/map_from_keys_and_values.h"
 #include "utils/containers/restrict_keys.h"
+#include "utils/nonnegative_int/num_elements.h"
 
 namespace FlexFlow {
+
+template <typename T>
+MinimalDimDomain<T> empty_minimal_dim_domain() {
+  return MinimalDimDomain<T>{{}};
+}
+
+template <typename T>
+nonnegative_int minimal_dim_domain_num_dims(MinimalDimDomain<T> const &domain) {
+  return num_elements(domain.dims);
+}
 
 template <typename T>
 DimDomain<T> lift_minimal_dim_domain(MinimalDimDomain<T> const &minimal_dim_domain) {
