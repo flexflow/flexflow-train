@@ -5,6 +5,7 @@
 #include "op-attrs/ops/linear.h"
 #include "op-attrs/ops/element_unary.h"
 #include "op-attrs/ops/input.h"
+#include "op-attrs/ops/transpose.h"
 #include "op-attrs/ops/weight.h"
 
 namespace FlexFlow {
@@ -51,6 +52,13 @@ std::vector<OperatorSpaceToParallelTensorSpaceMapping>
 
         return result;
       },
+      [&](TransposeAttrs const &attrs) {
+        ASSERT(inputs_degrees.size() == 1);
+
+        return std::vector{
+          get_operator_to_input_mapping(attrs, get_only(inputs_degrees)),
+        };
+      },
       [&](WeightAttrs const &) { 
         ASSERT(inputs_degrees.size() == 0);
 
@@ -95,6 +103,13 @@ std::vector<OperatorSpaceToParallelTensorSpaceMapping>
 
         return std::vector{
           get_operator_to_output_mapping(attrs),
+        };
+      },
+      [&](TransposeAttrs const &attrs) {
+        ASSERT(inputs_degrees.size() == 1);
+
+        return std::vector{
+          get_operator_to_output_mapping(attrs, get_only(inputs_degrees)),
         };
       },
       [&](WeightAttrs const &attrs) {

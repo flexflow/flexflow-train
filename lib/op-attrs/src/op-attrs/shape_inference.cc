@@ -20,6 +20,7 @@
 #include "op-attrs/ops/repartition.h"
 #include "op-attrs/ops/replicate.h"
 #include "op-attrs/ops/softmax.h"
+#include "op-attrs/ops/transpose.h"
 #include "op-attrs/ops/weight.h"
 #include "utils/containers/get_only.h"
 #include "utils/overload.h"
@@ -108,6 +109,12 @@ std::vector<TensorShape>
       [&](SoftmaxAttrs const &attrs) -> std::vector<TensorShape> {
         return {throw_if_unexpected(
             get_output_shape(attrs, get_only(input_shapes)))};
+      },
+      [&](TransposeAttrs const &attrs) -> std::vector<TensorShape> {
+
+        return {
+            get_output_shape(attrs, get_only(input_shapes)),
+        };
       },
       [&](WeightAttrs const &attrs) -> std::vector<TensorShape> {
         return {get_output_shape(attrs)};
@@ -254,6 +261,11 @@ std::vector<ParallelTensorShape>
         return {throw_if_unexpected(
             get_output_shape(attrs, get_only(input_shapes)))};
       },
+      [&](TransposeAttrs const &attrs) -> std::vector<ParallelTensorShape> {
+        return {
+            get_output_shape(attrs, get_only(input_shapes)),
+        };
+      },
       [&](WeightAttrs const &attrs) -> std::vector<ParallelTensorShape> {
         return {get_output_parallel_tensor_shape(attrs)};
       },
@@ -336,6 +348,9 @@ std::vector<ParallelTensorShape>
         return {};
       },
       [&](SoftmaxAttrs const &attrs) -> std::vector<ParallelTensorShape> {
+        return {};
+      },
+      [&](TransposeAttrs const &attrs) -> std::vector<ParallelTensorShape> {
         return {};
       },
       [&](WeightAttrs const &attrs) -> std::vector<ParallelTensorShape> {

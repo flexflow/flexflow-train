@@ -13,6 +13,7 @@
 #include "utils/nonnegative_int/range.h"
 #include "utils/orthotope/dim_projection.h"
 #include "utils/orthotope/minimal_dim_domain.h"
+#include "utils/orthotope/minimal_dim_domain_mapping.h"
 
 namespace FlexFlow {
 
@@ -86,23 +87,32 @@ OperatorSpaceToParallelTensorSpaceMapping
     OperatorSpaceToParallelTensorSpaceMapping const &op_to_pt1_mapping,
     ParallelTensorSpaceToParallelTensorSpaceMapping const &pt1_to_pt2_mapping) {
 
-  DimDomainMapping<
+  MinimalDimDomainMapping<
     operator_task_space_dim_idx_t, 
     parallel_tensor_dim_idx_t
-  > op_to_pt1 = op_to_pt1_mapping.raw_mapping;
+  > op_to_pt1 = minimal_mapping_from_dim_domain_mapping(op_to_pt1_mapping.raw_mapping);
 
-  DimDomainMapping<
+  std::unordered_set<operator_task_space_dim_idx_t> op_trivial_dims 
+    = get_trivial_domain_dims(op_to_pt1_mapping.raw_mapping.l_domain);
+
+  MinimalDimDomainMapping<
     parallel_tensor_dim_idx_t,
     parallel_tensor_dim_idx_t
-  > pt1_to_pt2 = pt1_to_pt2_mapping.raw_mapping;
+  > pt1_to_pt2 = minimal_mapping_from_dim_domain_mapping(pt1_to_pt2_mapping.raw_mapping);
 
-  DimDomainMapping<
+  std::unordered_set<parallel_tensor_dim_idx_t> pt2_trivial_dims 
+    = get_trivial_domain_dims(pt1_to_pt2_mapping.raw_mapping.r_domain);
+
+  MinimalDimDomainMapping<
     operator_task_space_dim_idx_t,
     parallel_tensor_dim_idx_t
-  > op_to_pt2 = compose_dim_domain_mappings(op_to_pt1, pt1_to_pt2);
+  > op_to_pt2 = compose_minimal_dim_domain_mappings(op_to_pt1, pt1_to_pt2);
 
   return OperatorSpaceToParallelTensorSpaceMapping{
-    op_to_pt2,
+    dim_domain_mapping_from_minimal_dim_domain(
+      op_to_pt2,
+      op_trivial_dims,
+      pt2_trivial_dims),
   };
 }
 

@@ -246,7 +246,7 @@ OperatorTaskSpaceToOperatorTaskSpaceMapping
     pcg_get_operator_to_output_mappings(pcg, src_layer).at(src_idx.unwrap_nonnegative());
 
   OperatorSpaceToParallelTensorSpaceMapping dst_to_tensor_mapping = 
-    pcg_get_operator_to_output_mappings(pcg, dst_layer).at(dst_idx.unwrap_nonnegative());
+    pcg_get_operator_to_incoming_mappings(pcg, dst_layer).at(dst_idx.unwrap_nonnegative());
 
   return op_to_op_mapping_from_composition_through_tensor(
         src_to_tensor_mapping,

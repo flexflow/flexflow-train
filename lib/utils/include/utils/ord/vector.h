@@ -10,6 +10,8 @@ namespace FlexFlow {
 template <typename T>
 std::enable_if_t<is_lt_comparable_v<T>, bool>
     operator<(std::vector<T> const &lhs, std::vector<T> const &rhs) {
+  CHECK_LT_COMPARABLE(T);
+
   return std::lexicographical_compare(
       lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());
 }

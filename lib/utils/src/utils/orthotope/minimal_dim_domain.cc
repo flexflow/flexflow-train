@@ -19,6 +19,10 @@ template
   MinimalDimDomain<T> minimal_dim_domain_from_dim_domain(DimDomain<T> const &);
 
 template
+  DimDomain<T> dim_domain_from_minimal_dim_domain(MinimalDimDomain<T> const &,
+                                                  std::unordered_set<T> const &);
+
+template
   std::unordered_set<T> get_minimal_domain_dims(MinimalDimDomain<T> const &);
 
 template

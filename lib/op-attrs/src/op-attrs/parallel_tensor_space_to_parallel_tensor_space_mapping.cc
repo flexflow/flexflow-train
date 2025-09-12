@@ -20,5 +20,14 @@ ParallelTensorSpaceToParallelTensorSpaceMapping
   };
 }
 
+ParallelTensorSpaceToParallelTensorSpaceMapping 
+  invert_parallel_tensor_space_mapping(
+    ParallelTensorSpaceToParallelTensorSpaceMapping const &m) {
+  return ParallelTensorSpaceToParallelTensorSpaceMapping{
+    invert_dim_domain_mapping(m.raw_mapping),
+  };
+}
+
+
 
 } // namespace FlexFlow

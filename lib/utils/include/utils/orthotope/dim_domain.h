@@ -10,6 +10,8 @@
 #include "utils/orthotope/orthotope.dtg.h"
 #include "utils/containers/map_from_keys_and_values.h"
 #include "utils/nonnegative_int/num_elements.h"
+#include "utils/containers/set_minus.h"
+#include "utils/containers/filter.h"
 
 namespace FlexFlow {
 
@@ -26,6 +28,19 @@ nonnegative_int dim_domain_num_dims(DimDomain<T> const &domain) {
 template <typename T>
 std::unordered_set<T> get_domain_dims(DimDomain<T> const &domain) {
   return keys(domain.dims);
+}
+
+template <typename T>
+std::unordered_set<T> get_trivial_domain_dims(DimDomain<T> const &domain) {
+  return filter(get_domain_dims(domain),
+                [&](T const &idx) {
+                  return domain.dims.at(idx) == 1; 
+                });
+}
+
+template <typename T>
+std::unordered_set<T> get_nontrivial_domain_dims(DimDomain<T> const &domain) {
+  return set_minus(get_domain_dims(domain), get_trivial_domain_dims(domain));
 }
 
 template <typename T>

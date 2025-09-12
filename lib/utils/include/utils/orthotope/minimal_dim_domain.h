@@ -13,6 +13,9 @@
 #include "utils/containers/map_from_keys_and_values.h"
 #include "utils/containers/restrict_keys.h"
 #include "utils/nonnegative_int/num_elements.h"
+#include "utils/containers/are_disjoint.h"
+#include "utils/containers/generate_map.h"
+#include "utils/containers/merge_maps.h"
 
 namespace FlexFlow {
 
@@ -50,6 +53,27 @@ template <typename T>
 MinimalDimDomain<T> minimal_dim_domain_from_dim_domain(DimDomain<T> const &dim_domain) {
   return MinimalDimDomain<T>{
     filtermap_values(dim_domain.dims, try_int_ge_two_from_positive_int)
+  };
+}
+
+template <typename T>
+DimDomain<T> dim_domain_from_minimal_dim_domain(MinimalDimDomain<T> const &minimal_dim_domain,
+                                                std::unordered_set<T> const &trivial_dims) {
+  std::unordered_set<T> nontrivial_dims = get_minimal_domain_dims(minimal_dim_domain);
+
+  ASSERT(are_disjoint(nontrivial_dims, trivial_dims));
+
+  return DimDomain{
+    /*dims=*/merge_disjoint_maps(
+      map_values(
+        minimal_dim_domain.dims,
+        [](int_ge_two x) {
+          return x.positive_int_from_int_ge_two();
+        }),
+      generate_map(trivial_dims, 
+                   [](T const &) {
+                     return 1_p;
+                   })),
   };
 }
 

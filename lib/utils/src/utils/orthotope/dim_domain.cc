@@ -11,6 +11,10 @@ template nonnegative_int dim_domain_num_dims(DimDomain<T> const &);
 
 template std::unordered_set<T> get_domain_dims(DimDomain<T> const &);
 
+template std::unordered_set<T> get_trivial_domain_dims(DimDomain<T> const &);
+
+template std::unordered_set<T> get_nontrivial_domain_dims(DimDomain<T> const &);
+
 template DimDomain<T> restrict_domain_to_dims(DimDomain<T> const &,
                                               std::unordered_set<T> const &);
 

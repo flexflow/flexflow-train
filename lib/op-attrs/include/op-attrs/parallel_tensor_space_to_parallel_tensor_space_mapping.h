@@ -14,6 +14,10 @@ ParallelTensorSpaceToParallelTensorSpaceMapping
     ParallelTensorDimDegrees const &l_degrees,
     ParallelTensorDimDegrees const &r_degrees);
 
+ParallelTensorSpaceToParallelTensorSpaceMapping 
+  invert_parallel_tensor_space_mapping(
+    ParallelTensorSpaceToParallelTensorSpaceMapping const &);
+
 
 } // namespace FlexFlow
 

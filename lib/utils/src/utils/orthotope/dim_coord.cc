@@ -27,6 +27,14 @@ template DimCoord<T> get_maximum_coord_in_domain(DimDomain<T> const &);
 
 template DimDomain<T> get_domain_for_maximum_coord(DimCoord<T> const &);
 
+template
+  bool dim_domain_contains_coord(DimDomain<T> const &,
+                                 DimCoord<T> const &);
+
+template
+  bool minimal_dim_domain_contains_coord(MinimalDimDomain<T> const &,
+                                         DimCoord<T> const &);
+
 template nonnegative_int flatten_dim_coord(DimCoord<T> const &,
                                            DimDomain<T> const &,
                                            DimOrdering<T> const &);

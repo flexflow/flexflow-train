@@ -1,6 +1,7 @@
 #include "utils/orthotope/dim_coord.h"
 #include "utils/orthotope/dim_ordering.h"
 #include <doctest/doctest.h>
+#include "test/utils/doctest/fmt/unordered_set.h"
 
 using namespace ::FlexFlow;
 
@@ -95,5 +96,90 @@ TEST_SUITE(FF_TEST_SUITE) {
     }};
 
     CHECK(result == correct);
+  }
+
+  TEST_CASE("get_coords_in_dim_domain") {
+    SUBCASE("one-dimensional dim domain") {
+      DimDomain<int> dim_domain = DimDomain<int>{{
+        {7, 2_p},
+      }};
+
+      std::unordered_set<DimCoord<int>> result = get_coords_in_dim_domain(dim_domain);
+
+      std::unordered_set<DimCoord<int>> correct = {
+        DimCoord<int>{{
+          {7, 0_n},
+        }},
+        DimCoord<int>{{
+          {7, 1_n},
+        }},
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("multi-dimensional dim domain") {
+      DimDomain<int> dim_domain = DimDomain<int>{{
+        {7, 2_p},
+        {2, 3_p},
+      }};
+
+      std::unordered_set<DimCoord<int>> result = get_coords_in_dim_domain(dim_domain);
+
+      auto mk_dim_coord = [](nonnegative_int dim7, nonnegative_int dim2) {
+        return DimCoord<int>{{
+          {7, dim7},
+          {2, dim2},
+        }};
+      };
+
+      std::unordered_set<DimCoord<int>> correct = {
+        mk_dim_coord(0_n, 0_n),
+        mk_dim_coord(0_n, 1_n),
+        mk_dim_coord(0_n, 2_n),
+        mk_dim_coord(1_n, 0_n),
+        mk_dim_coord(1_n, 1_n),
+        mk_dim_coord(1_n, 2_n),
+      };
+
+      CHECK(result == correct);
+    } 
+
+    SUBCASE("includes trivial dimension") {
+      DimDomain<int> dim_domain = DimDomain<int>{{
+        {7, 1_p},
+        {2, 3_p},
+      }};
+
+      std::unordered_set<DimCoord<int>> result = get_coords_in_dim_domain(dim_domain);
+
+      auto mk_dim_coord = [](nonnegative_int dim7, nonnegative_int dim2) {
+        return DimCoord<int>{{
+          {7, dim7},
+          {2, dim2},
+        }};
+      };
+
+      std::unordered_set<DimCoord<int>> correct = {
+        mk_dim_coord(0_n, 0_n),
+        mk_dim_coord(0_n, 1_n),
+        mk_dim_coord(0_n, 2_n),
+      };
+
+      CHECK(result == correct);
+      
+    }
+    
+    SUBCASE("zero-dimensional dim domain") {
+       DimDomain<int> dim_domain = DimDomain<int>{{}};
+
+      std::unordered_set<DimCoord<int>> result = get_coords_in_dim_domain(dim_domain);
+
+      std::unordered_set<DimCoord<int>> correct = {
+        DimCoord<int>{{}},
+      };
+
+      CHECK(result == correct);
+    }
   }
 }

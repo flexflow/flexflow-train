@@ -379,52 +379,116 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*name=*/std::nullopt,
     };
 
-    ParallelLayerAddedResult input = pcg_add_input_layer(pcg, input_shape);
-    parallel_tensor_guid_t t_input = get_only(input.outputs);
-    ParallelLayerAddedResult partition_input =
-        add_parallel_layer(pcg, partition_attrs, {t_input}, {});
-    parallel_tensor_guid_t t_partition_input = get_only(partition_input.outputs);
+    SUBCASE("trivial mapping (relu into relu)") {
+      ParallelLayerAddedResult input = pcg_add_input_layer(pcg, input_shape);
+      parallel_tensor_guid_t t_input = get_only(input.outputs);
+      ParallelLayerAddedResult partition_input =
+          add_parallel_layer(pcg, partition_attrs, {t_input}, {});
+      parallel_tensor_guid_t t_partition_input = get_only(partition_input.outputs);
 
-    ParallelLayerAddedResult layer_1 =
-        add_parallel_layer(pcg, relu_attrs, {t_partition_input}, {});
-    parallel_tensor_guid_t t_layer_1 = get_only(layer_1.outputs);
-    ParallelLayerAddedResult layer_2 =
-        add_parallel_layer(pcg, relu_attrs, {t_layer_1}, {});
+      ParallelLayerAddedResult layer_1 =
+          add_parallel_layer(pcg, relu_attrs, {t_partition_input}, {});
+      parallel_tensor_guid_t t_layer_1 = get_only(layer_1.outputs);
+      ParallelLayerAddedResult layer_2 =
+          add_parallel_layer(pcg, relu_attrs, {t_layer_1}, {});
 
-    ParallelComputationGraphEdge edge 
-      = get_only(
-          get_pcg_edges_from_layer_to_layer(
-            /*pcg=*/pcg, 
-            /*src=*/layer_1.parallel_layer, 
-            /*dst=*/layer_2.parallel_layer));
+      ParallelComputationGraphEdge edge 
+        = get_only(
+            get_pcg_edges_from_layer_to_layer(
+              /*pcg=*/pcg, 
+              /*src=*/layer_1.parallel_layer, 
+              /*dst=*/layer_2.parallel_layer));
 
-    OperatorTaskSpaceToOperatorTaskSpaceMapping result = pcg_get_mapping_along_edge(pcg, edge);
+      OperatorTaskSpaceToOperatorTaskSpaceMapping result = pcg_get_mapping_along_edge(pcg, edge);
 
-    DimDomain<operator_task_space_dim_idx_t> layer_1_task_space = DimDomain<operator_task_space_dim_idx_t>{{
-      {operator_task_space_dim_idx_t{0_n}, 2_p},
-    }};
+      DimDomain<operator_task_space_dim_idx_t> layer_1_task_space = DimDomain<operator_task_space_dim_idx_t>{{
+        {operator_task_space_dim_idx_t{0_n}, 2_p},
+      }};
 
-    DimDomain<operator_task_space_dim_idx_t> layer_2_task_space = layer_1_task_space;
+      DimDomain<operator_task_space_dim_idx_t> layer_2_task_space = layer_1_task_space;
 
-    auto make_coord = [](nonnegative_int x) {
-      return DimCoord{
-        std::unordered_map<operator_task_space_dim_idx_t, nonnegative_int>{
-          {operator_task_space_dim_idx_t{0_n}, 0_n},
+      auto make_coord = [](nonnegative_int x) {
+        return DimCoord{
+          std::unordered_map<operator_task_space_dim_idx_t, nonnegative_int>{
+            {operator_task_space_dim_idx_t{0_n}, x},
+          },
+        };
+      };
+
+      OperatorTaskSpaceToOperatorTaskSpaceMapping correct = OperatorTaskSpaceToOperatorTaskSpaceMapping{
+        DimDomainMapping<operator_task_space_dim_idx_t, operator_task_space_dim_idx_t>{
+          bidict<DimCoord<operator_task_space_dim_idx_t>, DimCoord<operator_task_space_dim_idx_t>>{
+            {make_coord(0_n), make_coord(0_n)},
+            {make_coord(1_n), make_coord(1_n)},
+          },
+          layer_1_task_space,
+          layer_2_task_space,
         },
       };
-    };
 
-    OperatorTaskSpaceToOperatorTaskSpaceMapping correct = OperatorTaskSpaceToOperatorTaskSpaceMapping{
-      DimDomainMapping<operator_task_space_dim_idx_t, operator_task_space_dim_idx_t>{
-        bidict<DimCoord<operator_task_space_dim_idx_t>, DimCoord<operator_task_space_dim_idx_t>>{
-          {make_coord(0_n), make_coord(0_n)},
-          {make_coord(0_n), make_coord(0_n)},
+      CHECK(result == correct); 
+    }
+
+    SUBCASE("nontrivial mapping (linear into linear)") {
+      ParallelLayerAddedResult input = pcg_add_input_layer(pcg, input_shape);
+      parallel_tensor_guid_t t_input = get_only(input.outputs);
+      ParallelLayerAddedResult partition_input =
+          add_parallel_layer(pcg, partition_attrs, {t_input}, {});
+      parallel_tensor_guid_t t_partition_input = get_only(partition_input.outputs);
+
+      ParallelLayerAttrs transpose_attrs = ParallelLayerAttrs{
+        /*op_attrs=*/PCGOperatorAttrs{
+          TransposeAttrs{
+            TensorDimPermutation{
+              bidict<ff_dim_t, ff_dim_t>{
+                {ff_dim_t{0_n}, ff_dim_t{1_n}},
+                {ff_dim_t{1_n}, ff_dim_t{0_n}},
+              },
+            },
+          },
         },
-        layer_1_task_space,
-        layer_2_task_space,
-      },
-    };
+        /*name=*/std::nullopt,
+      };
 
-    CHECK(result == correct); 
+      ParallelLayerAddedResult layer_1 =
+          add_parallel_layer(pcg, relu_attrs, {t_partition_input}, {});
+      parallel_tensor_guid_t t_layer_1 = get_only(layer_1.outputs);
+      ParallelLayerAddedResult layer_2 =
+          add_parallel_layer(pcg, transpose_attrs, {t_layer_1}, {});
+
+      ParallelComputationGraphEdge edge 
+        = get_only(
+            get_pcg_edges_from_layer_to_layer(
+              /*pcg=*/pcg, 
+              /*src=*/layer_1.parallel_layer, 
+              /*dst=*/layer_2.parallel_layer));
+
+      OperatorTaskSpaceToOperatorTaskSpaceMapping result = pcg_get_mapping_along_edge(pcg, edge);
+
+      DimDomain<operator_task_space_dim_idx_t> layer_1_task_space = DimDomain<operator_task_space_dim_idx_t>{{
+        {operator_task_space_dim_idx_t{0_n}, 2_p},
+      }};
+
+      DimDomain<operator_task_space_dim_idx_t> layer_2_task_space = layer_1_task_space;
+
+      auto make_coord = [](nonnegative_int x) {
+        return DimCoord{
+          std::unordered_map<operator_task_space_dim_idx_t, nonnegative_int>{
+            {operator_task_space_dim_idx_t{0_n}, x},
+          },
+        };
+      };
+
+      OperatorTaskSpaceToOperatorTaskSpaceMapping correct = OperatorTaskSpaceToOperatorTaskSpaceMapping{
+        DimDomainMapping<operator_task_space_dim_idx_t, operator_task_space_dim_idx_t>{
+          bidict<DimCoord<operator_task_space_dim_idx_t>, DimCoord<operator_task_space_dim_idx_t>>{
+            {make_coord(0_n), make_coord(1_n)},
+            {make_coord(1_n), make_coord(0_n)},
+          },
+          layer_1_task_space,
+          layer_2_task_space,
+        },
+      };
+    }
   }
 }

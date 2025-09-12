@@ -3,6 +3,7 @@
 #include "test/utils/doctest/fmt/unordered_map.h"
 #include "test/utils/doctest/fmt/vector.h"
 #include <doctest/doctest.h>
+#include "test/utils/rapidcheck.h"
 
 using namespace FlexFlow;
 
@@ -97,5 +98,35 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::string correct = fmt::to_string(dict.as_unordered_map());
       CHECK(result == correct);
     }
+  }
+
+  TEST_CASE("adl_serializer<bidict<L, R>>") {
+    bidict<int, std::string> deserialized = bidict<int, std::string>{
+      {2, "hello"},  
+      {3, "goodbye"},
+    };
+
+    nlohmann::json serialized = std::vector<std::pair<int, std::string>>{
+      {2, "hello"},  
+      {3, "goodbye"},
+    };
+
+    SUBCASE("to_json") {
+      nlohmann::json result = deserialized;
+      nlohmann::json correct = serialized;
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("from_json") {
+      bidict<int, std::string> result = serialized;
+      bidict<int, std::string> correct = deserialized;
+
+      CHECK(result == correct);
+    }
+  }
+
+  TEST_CASE("rc::Arbitrary") {
+    RC_SUBCASE([](bidict<int, std::string>) {}); 
   }
 }

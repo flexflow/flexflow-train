@@ -138,6 +138,11 @@ bool dim_domain_contains_coord(DimDomain<T> const &domain,
 }
 
 template <typename T>
+bool minimal_dim_domain_contains_coord(MinimalDimDomain<T> const &domain, DimCoord<T> const &coord) {
+  return dim_domain_contains_coord(lift_minimal_dim_domain(domain), coord);
+}
+
+template <typename T>
 nonnegative_int flatten_dim_coord(DimCoord<T> const &coord,
                                   DimDomain<T> const &domain,
                                   DimOrdering<T> const &dim_ordering) {

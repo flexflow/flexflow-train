@@ -10,11 +10,9 @@ features = [
 ]
 
 includes = [
-  "op-attrs/ff_dim_t.h",
-  "op-attrs/ff_dim_t.dtg.h",
-  "op-attrs/ff_ordered/ff_ordered.h",
+   "op-attrs/tensor_dim_permutation.h",
 ]
 
 [[fields]]
-name = "perm"
-type = "::FlexFlow::FFOrdered<::FlexFlow::ff_dim_t>"
+name = "permutation"
+type = "::FlexFlow::TensorDimPermutation"

@@ -6,6 +6,7 @@
 #include "op-attrs/ops/element_binary.h"
 #include "op-attrs/ops/linear.h"
 #include "op-attrs/ops/input.h"
+#include "op-attrs/ops/transpose.h"
 #include "op-attrs/ops/weight.h"
 
 namespace FlexFlow {
@@ -38,6 +39,11 @@ OperatorTaskSpace
       ASSERT(inputs_degrees.size() == 0);
 
       return get_operator_task_space(attrs);
+    },
+    [&](TransposeAttrs const &attrs) {
+      ASSERT(inputs_degrees.size() == 1);
+
+      return get_operator_task_space(attrs, get_only(inputs_degrees));
     },
     [&](WeightAttrs const &attrs) {
       ASSERT(inputs_degrees.size() == 0);

@@ -7,6 +7,12 @@
 #include <cassert>
 #include <optional>
 #include <unordered_map>
+#include <nlohmann/json.hpp>
+#include "utils/json/check_is_json_serializable.h"
+#include "utils/json/check_is_json_deserializable.h"
+#include "utils/containers/map_from_keys_and_values.h"
+#include <rapidcheck.h>
+#include "utils/ord/unordered_map.h"
 
 namespace FlexFlow {
 
@@ -205,6 +211,12 @@ private:
 };
 
 template <typename L, typename R>
+std::enable_if_t<is_lt_comparable_v<L> && is_lt_comparable_v<R>, bool> 
+  operator<(bidict<L, R> const &lhs, bidict<L, R> const &rhs) {
+    return lhs.as_unordered_map() < rhs.as_unordered_map();
+}
+
+template <typename L, typename R>
 std::unordered_map<L, R> format_as(bidict<L, R> const &b) {
   return b;
 }
@@ -218,6 +230,55 @@ std::ostream &operator<<(std::ostream &s, bidict<L, R> const &b) {
 }
 
 } // namespace FlexFlow
+
+namespace nlohmann {
+
+template <typename L, typename R>
+struct adl_serializer<::FlexFlow::bidict<L, R>> {
+  static ::FlexFlow::bidict<L, R> from_json(json const &j) {
+    CHECK_IS_JSON_DESERIALIZABLE(L);
+    CHECK_IS_JSON_DESERIALIZABLE(R);
+
+    std::unordered_map<L, R> m = j;
+
+    ::FlexFlow::bidict<L, R> b{m.cbegin(), m.cend()};
+
+    return b;
+  }
+  static void to_json(json &j, ::FlexFlow::bidict<L, R> const &b) {
+    CHECK_IS_JSON_SERIALIZABLE(L);
+    CHECK_IS_JSON_SERIALIZABLE(R);
+
+    j = b.as_unordered_map();
+  }
+};
+
+} // namespace nlohmann
+
+namespace rc {
+
+template <typename L, typename R>
+struct Arbitrary<::FlexFlow::bidict<L, R>> {
+  static Gen<::FlexFlow::bidict<L, R>> arbitrary() {
+    return gen::map(
+      gen::withSize(
+        [](int size) -> Gen<std::unordered_map<L, R>> {
+          return gen::apply(
+            [](std::vector<L> const &keys, std::vector<R> const &values) 
+              -> std::unordered_map<L, R>
+            {
+            return ::FlexFlow::map_from_keys_and_values(keys, values);
+            },
+            gen::unique<std::vector<L>>(size, gen::arbitrary<L>()),
+            gen::unique<std::vector<R>>(size, gen::arbitrary<R>()));
+        }),
+      [](std::unordered_map<L, R> const &m) {
+        return ::FlexFlow::bidict<L, R>{m.cbegin(), m.cend()};
+      });
+  }
+};
+
+}
 
 namespace std {
 
