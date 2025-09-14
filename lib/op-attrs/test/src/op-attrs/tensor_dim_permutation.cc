@@ -81,7 +81,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
   }
 
-  TEST_CASE("gen::Arbitrary<TensorDimPermutation>") {
+  TEST_CASE("Arbitrary<TensorDimPermutation>") {
     RC_SUBCASE([](TensorDimPermutation) {}); 
   }
 }

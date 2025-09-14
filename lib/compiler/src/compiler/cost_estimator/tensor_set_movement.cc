@@ -21,15 +21,15 @@ TensorSetMovement
   BinaryTreePath src_path = BinaryTreePath{{BinaryTreePathEntry::LEFT_CHILD}};
   BinaryTreePath dst_path = BinaryTreePath{{BinaryTreePathEntry::RIGHT_CHILD}};
 
-  std::unordered_set<AbstractedSingleCommunication> abstracted_single_communications = 
-    get_abstracted_single_communications_along_edge(
+  AbstractedSingleTensorMovement abstracted_single_tensor_movement = 
+    get_abstracted_single_tensor_movement_along_edge(
       /*pcg=*/pcg, 
       /*edge=*/edge, 
       /*src_path=*/src_path,
       /*dst_path=*/dst_path);
 
   AbstractedTensorSetMovement abstracted_tensor_set_movement 
-    = abstracted_tensor_set_movement_from_single_communications(unordered_multiset_of(abstracted_single_communications));
+    = abstracted_tensor_set_movement_from_single_tensor_movement(abstracted_single_tensor_movement);
 
   MachineSpaceStencil src_machine_stencil = MachineSpaceStencil{
     /*operator_task_space=*/get_operator_task_space(pcg, src),

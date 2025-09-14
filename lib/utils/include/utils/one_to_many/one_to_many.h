@@ -14,13 +14,19 @@
 #include <fmt/format.h>
 #include <unordered_map>
 #include <unordered_set>
+#include <nlohmann/json.hpp>
+#include "utils/json/check_is_json_serializable.h"
+#include "utils/json/check_is_json_deserializable.h"
+#include <rapidcheck.h>
+#include "utils/containers/values.h"
+#include "utils/containers/unordered_set_of.h"
 
 namespace FlexFlow {
 
 template <typename L, typename R>
 struct OneToMany {
 public:
-  OneToMany() : l_to_r(), r_to_l() {}
+  OneToMany() : m_l_to_r(), m_r_to_l() {}
 
   template <typename It>
   OneToMany(It start, It end) : OneToMany() {
@@ -48,11 +54,11 @@ public:
     L l = p.first;
     R r = p.second;
 
-    std::optional<L> found_l = try_at(this->r_to_l, r);
+    std::optional<L> found_l = try_at(this->m_r_to_l, r);
 
     if (!found_l.has_value()) {
-      this->r_to_l.insert({r, l});
-      this->l_to_r[l].insert(r);
+      this->m_r_to_l.insert({r, l});
+      this->m_l_to_r[l].insert(r);
     } else if (found_l.value() == l) {
       return;
     } else {
@@ -66,28 +72,39 @@ public:
   }
 
   std::unordered_set<R> const &at_l(L const &l) const {
-    return this->l_to_r.at(l);
+    return this->m_l_to_r.at(l);
   }
 
   L const &at_r(R const &r) const {
-    return this->r_to_l.at(r);
+    return this->m_r_to_l.at(r);
   }
 
   std::unordered_set<L> left_values() const {
-    return keys(this->l_to_r);
+    return keys(this->m_l_to_r);
   }
 
   std::unordered_set<R> right_values() const {
-    return keys(this->r_to_l);
+    return keys(this->m_r_to_l);
   }
 
+  std::unordered_set<std::unordered_set<R>> right_groups() const {
+    return unordered_set_of(values(this->m_l_to_r));
+  }
+
+  std::unordered_map<L, std::unordered_set<R>> const &l_to_r() const {
+    return this->m_l_to_r;
+  }
+
+  std::unordered_map<R, L> const &r_to_l() const {
+    return this->m_r_to_l;
+  }
 private:
-  std::unordered_map<L, std::unordered_set<R>> l_to_r;
-  std::unordered_map<R, L> r_to_l;
+  std::unordered_map<L, std::unordered_set<R>> m_l_to_r;
+  std::unordered_map<R, L> m_r_to_l;
 
 private:
-  std::tuple<decltype(l_to_r) const &, decltype(r_to_l) const &> tie() const {
-    return std::tie(this->l_to_r, this->r_to_l);
+  std::tuple<decltype(m_l_to_r) const &, decltype(m_r_to_l) const &> tie() const {
+    return std::tie(this->m_l_to_r, this->m_r_to_l);
   }
 
   friend struct std::hash<OneToMany<L, R>>;
@@ -105,6 +122,38 @@ std::ostream &operator<<(std::ostream &s, OneToMany<L, R> const &m) {
 }
 
 } // namespace FlexFlow
+
+namespace nlohmann {
+
+template <typename L, typename R>
+struct adl_serializer<::FlexFlow::OneToMany<L, R>> {
+  static ::FlexFlow::OneToMany<L, R> from_json(json const &j) {
+    CHECK_IS_JSON_DESERIALIZABLE(L);
+    CHECK_IS_JSON_DESERIALIZABLE(R);
+
+    NOT_IMPLEMENTED();
+  }
+
+  static void to_json(json &j, ::FlexFlow::OneToMany<L, R> const &m) {
+    CHECK_IS_JSON_SERIALIZABLE(L);
+    CHECK_IS_JSON_SERIALIZABLE(R);
+
+    NOT_IMPLEMENTED();
+  }
+};
+  
+}
+
+namespace rc {
+
+template <typename L, typename R>
+struct Arbitrary<::FlexFlow::OneToMany<L, R>> {
+  static Gen<::FlexFlow::OneToMany<L, R>> arbitrary() {
+    NOT_IMPLEMENTED();
+  }
+};
+
+}
 
 namespace std {
 

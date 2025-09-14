@@ -11,7 +11,7 @@ std::unordered_map<Node, std::unordered_set<DirectedEdge>>
                    query_set<Node>{ns},
                    query_set<Node>::matchall(),
                }),
-               [](DirectedEdge const &e) { return e.src; });
+               [](DirectedEdge const &e) { return e.src; }).l_to_r();
 
   for (Node const &n : ns) {
     result[n];

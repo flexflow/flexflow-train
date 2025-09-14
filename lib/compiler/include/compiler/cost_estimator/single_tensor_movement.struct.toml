@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "TensorSetMovement"
+name = "SingleTensorMovement"
 features = [
   "eq",
   "hash",

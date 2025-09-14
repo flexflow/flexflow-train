@@ -17,6 +17,10 @@
 namespace FlexFlow {
 
 static void check_are_contiguous_from_one(std::unordered_set<ff_dim_t> const &idxs) {
+  if (idxs.empty()) {
+    return;
+  }
+
   ASSERT(minimum(idxs) == ff_dim_t{0_n});
   ASSERT(maximum(idxs) == ff_dim_t{nonnegative_int{idxs.size() - 1}});
 }
@@ -41,6 +45,18 @@ bool TensorDimPermutation::operator<(TensorDimPermutation const &other) const {
   return this->tie() < other.tie();
 }
 
+bool TensorDimPermutation::operator>(TensorDimPermutation const &other) const {
+  return this->tie() > other.tie();
+}
+
+bool TensorDimPermutation::operator<=(TensorDimPermutation const &other) const {
+  return this->tie() <= other.tie();
+}
+
+bool TensorDimPermutation::operator>=(TensorDimPermutation const &other) const {
+  return this->tie() >= other.tie();
+}
+
 ff_dim_t TensorDimPermutation::at_l(ff_dim_t l) const {
   return this->raw.at_l(l);
 }
@@ -50,9 +66,9 @@ ff_dim_t TensorDimPermutation::at_r(ff_dim_t r) const {
 }
 
 num_tensor_dims_t TensorDimPermutation::num_tensor_dims() const {
-  ff_dim_t max_dim = maximum(left_entries(this->raw));
-
-  return num_tensor_dims_t{max_dim.value};
+  return num_tensor_dims_t{
+    num_elements(this->raw),
+  };
 }
 
 bidict<ff_dim_t, ff_dim_t> const &TensorDimPermutation::as_bidict() const {

@@ -15,14 +15,14 @@ namespace FlexFlow {
 
 AbstractedTensorSetMovement empty_abstracted_tensor_set_movement();
 
+AbstractedTensorSetMovement 
+  abstracted_tensor_set_movement_from_single_tensor_movement(
+    AbstractedSingleTensorMovement const &);
+
 std::unordered_set<BinaryTreePath>
     get_src_layers(AbstractedTensorSetMovement const &);
 std::unordered_set<BinaryTreePath>
     get_dst_layers(AbstractedTensorSetMovement const &);
-
-AbstractedTensorSetMovement
-  abstracted_tensor_set_movement_from_single_communications(
-    std::unordered_multiset<AbstractedSingleCommunication> const &);
 
 TensorSetMovement concretize_abstracted_tensor_set_movement(
     AbstractedTensorSetMovement const &,

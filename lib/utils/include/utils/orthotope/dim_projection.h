@@ -113,7 +113,9 @@ DimCoord<R> compute_dim_projection(DimProjection<L, R> const &projection,
 
   ASSERT(dim_domain_contains_coord(output_domain, output_coord),
          output_domain,
-         output_coord);
+         output_coord,
+         input_coord,
+         input_domain);
 
   return output_coord;
 }

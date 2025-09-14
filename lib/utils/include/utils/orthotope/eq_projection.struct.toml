@@ -4,6 +4,7 @@ features = [
   "eq",
   "hash",
   "fmt",
+  "rapidcheck",
 ]
 
 template_params = [

@@ -11,9 +11,9 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("group_by(std::unordered_set<V>, F)") {
     std::unordered_set<int> input = {0, 3, 2, 9, 8};
 
-    std::unordered_map<int, std::unordered_set<int>> result =
+    OneToMany<int, int> result =
         group_by(input, [](int x) { return x % 3; });
-    std::unordered_map<int, std::unordered_set<int>> correct = {
+    OneToMany<int, int> correct = {
         {0, {0, 3, 9}},
         {2, {2, 8}},
     };
@@ -37,9 +37,9 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("group_by(std::set<V>, F)") {
     std::set<int> input = {0, 3, 2, 9, 8};
 
-    std::unordered_map<int, std::set<int>> result =
+    OneToMany<int, int> result =
         group_by(input, [](int x) { return x % 3; });
-    std::unordered_map<int, std::set<int>> correct = {
+    OneToMany<int, int> correct = {
         {0, {0, 3, 9}},
         {2, {2, 8}},
     };

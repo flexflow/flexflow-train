@@ -140,21 +140,30 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TaskSpaceCoordinate empty_task_space_coord = TaskSpaceCoordinate{OrthotopeCoord{{}}};
 
-    AbstractedDevice src_device = AbstractedDevice{
+    BinaryTreePath src_path = binary_tree_root_path();
+    TaskSpaceCoordinate src_coord = empty_task_space_coord;
+
+    AbstractedDevice dst_device = AbstractedDevice{
       /*operator_tree_path=*/binary_tree_root_path(),
       /*task_space_coordinate=*/empty_task_space_coord,
     };
-    AbstractedDevice dst_device = src_device;
 
-    AbstractedTensorSetMovement movement1 = AbstractedTensorSetMovement{{
-      /*edge_to_size=*/{{
-        AbstractedCommunicationEdge{
-          /*src=*/src_device,
-          /*dst=*/dst_device,
+    AbstractedTensorSetMovement movement1 = AbstractedTensorSetMovement{
+      /*single_tensor_movements=*/{
+        AbstractedSingleTensorMovement{
+          /*src_op_tree_path=*/src_path,
+          /*edge_to_size=*/{
+            {
+              AbstractedSingleTensorCommunicationEdge{
+                /*src_coord=*/src_coord,
+                /*dst=*/dst_device,
+              },
+              get_size_in_bytes(tensor_shape),
+            },
+          },
         },
-        get_size_in_bytes(tensor_shape),
-      }},
-    }};
+      },
+    };
 
     ParallelLayerGuidObliviousMachineMapping mm1 =
         ParallelLayerGuidObliviousMachineMapping{{

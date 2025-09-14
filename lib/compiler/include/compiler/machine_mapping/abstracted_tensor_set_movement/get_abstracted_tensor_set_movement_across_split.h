@@ -9,7 +9,8 @@
 
 namespace FlexFlow {
 
-std::unordered_set<AbstractedSingleCommunication> get_abstracted_single_communications_along_edge(
+AbstractedSingleTensorMovement
+  get_abstracted_single_tensor_movement_along_edge(
     ParallelComputationGraph const &pcg,
     ParallelComputationGraphEdge const &edge,
     BinaryTreePath const &src_path,

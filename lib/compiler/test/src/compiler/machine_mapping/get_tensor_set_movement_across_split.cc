@@ -184,19 +184,15 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("single edge across split") {
       PCGBinarySeriesSplit split = PCGBinarySeriesSplit{
-          make_pcg_series_split(
-              make_pcg_series_split(
-                  make_pcg_leaf_node(input.parallel_layer),
-                  make_pcg_leaf_node(partition_input.parallel_layer)),
-              make_pcg_leaf_node(relu_1.parallel_layer)),
+          make_pcg_leaf_node(relu_1.parallel_layer),
           make_pcg_leaf_node(relu_2.parallel_layer),
       };
 
       auto pre_mapping = ParallelLayerGuidObliviousMachineMapping{{
-          {BinaryTreePath{{
-               BinaryTreePathEntry::RIGHT_CHILD,
-           }},
-           pre_mv1},
+          {
+            BinaryTreePath{{}},
+             pre_mv1,
+          },
       }};
 
       auto post_mapping = ParallelLayerGuidObliviousMachineMapping{{
@@ -226,7 +222,51 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("does not include edges removed by transitive reduction") {
-      NOT_IMPLEMENTED();
+      ParallelLayerAddedResult ew_add =
+          add_parallel_layer(pcg, ew_add_attrs, {get_only(relu_1.outputs), get_only(relu_2.outputs)}, {});
+
+       PCGBinarySeriesSplit split = PCGBinarySeriesSplit{
+         make_pcg_series_split(
+            make_pcg_leaf_node(relu_1.parallel_layer),
+            make_pcg_leaf_node(relu_2.parallel_layer)),
+         make_pcg_leaf_node(ew_add.parallel_layer),
+       };
+      
+      auto pre_mapping = ParallelLayerGuidObliviousMachineMapping{{
+          {
+            BinaryTreePath{{BinaryTreePathEntry::LEFT_CHILD}},
+            pre_mv2,
+          },
+          {
+            BinaryTreePath{{BinaryTreePathEntry::RIGHT_CHILD}},
+            pre_mv1,
+          },
+      }};
+
+      auto post_mapping = ParallelLayerGuidObliviousMachineMapping{{
+          {
+              BinaryTreePath{{}},
+              post_mv1,
+          },
+      }};
+
+      TensorSetMovement result = get_tensor_set_movement_across_split(
+          pcg_get_transitive_reduction(pcg), split, pre_mapping, post_mapping);
+
+      TensorSetMovement correct = TensorSetMovement{
+          /*edge_to_size=*/{
+            {
+              mk_communication_edge(pre_mv1, 0_n,  post_mv1, 0_n),
+              piece_size,
+            },
+            {
+              mk_communication_edge(pre_mv1, 1_n,  post_mv1, 1_n),
+              piece_size,
+            },
+          },
+      };
+
+      CHECK(result == correct);
     }
 
     SUBCASE("single tensor, multiple consumers across split") {
@@ -234,11 +274,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           add_parallel_layer(pcg, relu_attrs, {get_only(relu_1.outputs)}, {});
 
       PCGBinarySeriesSplit split = PCGBinarySeriesSplit{
-          make_pcg_series_split(
-              make_pcg_series_split(
-                  make_pcg_leaf_node(input.parallel_layer),
-                  make_pcg_leaf_node(partition_input.parallel_layer)),
-              make_pcg_leaf_node(relu_1.parallel_layer)),
+          make_pcg_leaf_node(relu_1.parallel_layer),
           make_pcg_parallel_split(make_pcg_leaf_node(relu_2.parallel_layer),
                                   make_pcg_leaf_node(relu_3.parallel_layer)),
       };
@@ -246,9 +282,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       SUBCASE("consumers have same view") {
         auto pre_mapping = ParallelLayerGuidObliviousMachineMapping{{
             {
-                BinaryTreePath{{
-                    BinaryTreePathEntry::RIGHT_CHILD,
-                }},
+                BinaryTreePath{{}},
                 pre_mv1,
             },
         }};
@@ -293,9 +327,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       SUBCASE("consumers have different views") {
         auto pre_mapping = ParallelLayerGuidObliviousMachineMapping{{
             {
-                BinaryTreePath{{
-                    BinaryTreePathEntry::RIGHT_CHILD,
-                }},
+                BinaryTreePath{{}},
                 pre_mv1,
             },
         }};
@@ -358,29 +390,24 @@ TEST_SUITE(FF_TEST_SUITE) {
           {});
 
       PCGBinarySeriesSplit split = PCGBinarySeriesSplit{
-          make_pcg_series_split(
-              make_pcg_series_split(
-                  make_pcg_leaf_node(input.parallel_layer),
-                  make_pcg_leaf_node(partition_input.parallel_layer)),
-              make_pcg_parallel_split(
-                  make_pcg_leaf_node(relu_1.parallel_layer),
-                  make_pcg_leaf_node(relu_3.parallel_layer))),
-          make_pcg_parallel_split(make_pcg_leaf_node(relu_2.parallel_layer),
-                                  make_pcg_leaf_node(relu_4.parallel_layer)),
+          make_pcg_parallel_split(
+              make_pcg_leaf_node(relu_1.parallel_layer),
+              make_pcg_leaf_node(relu_3.parallel_layer)),
+          make_pcg_parallel_split(
+              make_pcg_leaf_node(relu_2.parallel_layer),
+              make_pcg_leaf_node(relu_4.parallel_layer)),
       };
 
       auto mk_pre_mapping = [](MachineView const &src1_mv, MachineView const &src2_mv) {
         return ParallelLayerGuidObliviousMachineMapping{{
           {
               BinaryTreePath{{
-                  BinaryTreePathEntry::RIGHT_CHILD,
                   BinaryTreePathEntry::LEFT_CHILD,
               }},
               src1_mv,
           },
           {
               BinaryTreePath{{
-                  BinaryTreePathEntry::RIGHT_CHILD,
                   BinaryTreePathEntry::RIGHT_CHILD,
               }},
               src2_mv,
@@ -529,6 +556,21 @@ TEST_SUITE(FF_TEST_SUITE) {
         CHECK(result == correct);
       }
 
+      SUBCASE("all producers and consumers have the same view") {
+        ParallelLayerGuidObliviousMachineMapping pre_mapping = mk_pre_mapping(pre_mv1, pre_mv1);
+        ParallelLayerGuidObliviousMachineMapping post_mapping = mk_post_mapping(pre_mv1, pre_mv1);
+        
+
+        TensorSetMovement result = get_tensor_set_movement_across_split(
+            pcg_get_transitive_reduction(pcg), split, pre_mapping, post_mapping);
+
+        TensorSetMovement correct = TensorSetMovement{
+            /*edge_to_size=*/{{}},
+        };
+
+        CHECK(result == correct);
+      }
+
       SUBCASE("producers and one consumer share the same view") {
         ParallelLayerGuidObliviousMachineMapping pre_mapping = mk_pre_mapping(pre_mv1, pre_mv1);
         ParallelLayerGuidObliviousMachineMapping post_mapping = mk_post_mapping(post_mv1, pre_mv1);
@@ -542,23 +584,11 @@ TEST_SUITE(FF_TEST_SUITE) {
                 mk_communication_edge(pre_mv1, 0_n, post_mv1, 0_n),
                 piece_size,
               },
+              {
+                mk_communication_edge(pre_mv1, 1_n, post_mv1, 1_n),
+                piece_size,
+              },
             },
-        };
-
-
-        CHECK(result == correct);
-      }
-
-      SUBCASE("all producers and consumers have the same view") {
-        ParallelLayerGuidObliviousMachineMapping pre_mapping = mk_pre_mapping(pre_mv1, pre_mv1);
-        ParallelLayerGuidObliviousMachineMapping post_mapping = mk_post_mapping(pre_mv1, pre_mv1);
-        
-
-        TensorSetMovement result = get_tensor_set_movement_across_split(
-            pcg_get_transitive_reduction(pcg), split, pre_mapping, post_mapping);
-
-        TensorSetMovement correct = TensorSetMovement{
-            /*edge_to_size=*/{{}},
         };
 
         CHECK(result == correct);

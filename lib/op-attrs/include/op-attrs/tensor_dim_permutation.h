@@ -21,6 +21,9 @@ struct TensorDimPermutation {
   bool operator!=(TensorDimPermutation const &) const;
 
   bool operator<(TensorDimPermutation const &) const;
+  bool operator>(TensorDimPermutation const &) const;
+  bool operator<=(TensorDimPermutation const &) const;
+  bool operator>=(TensorDimPermutation const &) const;
 
   ff_dim_t at_l(ff_dim_t) const;
   ff_dim_t at_r(ff_dim_t) const;

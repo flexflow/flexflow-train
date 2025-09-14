@@ -207,6 +207,29 @@ MinimalDimDomainMapping<T1, T3> compose_minimal_dim_domain_mappings(
   };
 }
 
+template <typename T1, typename T2, typename T3>
+DimDomainMapping<T1, T3> compose_dim_domain_mappings_through_minimal(
+  DimDomainMapping<T1, T2> const &lhs,
+  DimDomainMapping<T2, T3> const &rhs) {
+
+  MinimalDimDomainMapping<T1, T2> minimal_lhs =  
+    minimal_mapping_from_dim_domain_mapping(lhs);
+
+  std::unordered_set<T1> t1_trivial_dims 
+    = get_trivial_domain_dims(lhs.l_domain);
+
+  MinimalDimDomainMapping<T2, T3> minimal_rhs = 
+    minimal_mapping_from_dim_domain_mapping(rhs);
+
+  std::unordered_set<T3> t3_trivial_dims 
+    = get_trivial_domain_dims(rhs.r_domain);
+
+  return
+    dim_domain_mapping_from_minimal_dim_domain(
+      compose_minimal_dim_domain_mappings(minimal_lhs, minimal_rhs), 
+      t1_trivial_dims, 
+      t3_trivial_dims);
+}
 
 template <typename L, typename R>
 MinimalDimDomainMapping<L, R> minimal_dim_domain_mapping_from_projection(

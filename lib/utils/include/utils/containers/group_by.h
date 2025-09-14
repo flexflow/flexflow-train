@@ -6,15 +6,25 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include "utils/one_to_many/one_to_many.h"
 
 namespace FlexFlow {
 
 template <typename V, typename F, typename K = std::invoke_result_t<F, V>>
-std::unordered_map<K, std::unordered_set<V>>
+OneToMany<K, V>
     group_by(std::unordered_set<V> const &vs, F &&f) {
-  std::unordered_map<K, std::unordered_set<V>> result;
+  OneToMany<K, V> result;
   for (V const &v : vs) {
-    result[f(v)].insert(v);
+    result.insert({f(v), v});
+  }
+  return result;
+}
+
+template <typename V, typename F, typename K = std::invoke_result_t<F, V>>
+OneToMany<K, V> group_by(std::set<V> const &vs, F &&f) {
+  OneToMany<K, V> result;
+  for (V const &v : vs) {
+    result.insert({f(v), v});
   }
   return result;
 }
@@ -25,15 +35,6 @@ std::unordered_map<K, std::vector<V>> group_by(std::vector<V> const &vs,
   std::unordered_map<K, std::vector<V>> result;
   for (V const &v : vs) {
     result[f(v)].push_back(v);
-  }
-  return result;
-}
-
-template <typename V, typename F, typename K = std::invoke_result_t<F, V>>
-std::unordered_map<K, std::set<V>> group_by(std::set<V> const &vs, F &&f) {
-  std::unordered_map<K, std::set<V>> result;
-  for (V const &v : vs) {
-    result[f(v)].insert(v);
   }
   return result;
 }

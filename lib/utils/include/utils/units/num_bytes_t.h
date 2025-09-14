@@ -18,6 +18,9 @@ public:
   bool operator>=(num_bytes_t const &other) const;
 
   num_bytes_t operator+(num_bytes_t const &other) const;
+  num_bytes_t operator*(nonnegative_int) const;
+
+  friend num_bytes_t operator*(nonnegative_int, num_bytes_t);
 
   nonnegative_int unwrap_num_bytes() const;
 

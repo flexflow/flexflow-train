@@ -86,33 +86,11 @@ OperatorSpaceToParallelTensorSpaceMapping
   operator_ptensor_space_mapping_from_composition(
     OperatorSpaceToParallelTensorSpaceMapping const &op_to_pt1_mapping,
     ParallelTensorSpaceToParallelTensorSpaceMapping const &pt1_to_pt2_mapping) {
-
-  MinimalDimDomainMapping<
-    operator_task_space_dim_idx_t, 
-    parallel_tensor_dim_idx_t
-  > op_to_pt1 = minimal_mapping_from_dim_domain_mapping(op_to_pt1_mapping.raw_mapping);
-
-  std::unordered_set<operator_task_space_dim_idx_t> op_trivial_dims 
-    = get_trivial_domain_dims(op_to_pt1_mapping.raw_mapping.l_domain);
-
-  MinimalDimDomainMapping<
-    parallel_tensor_dim_idx_t,
-    parallel_tensor_dim_idx_t
-  > pt1_to_pt2 = minimal_mapping_from_dim_domain_mapping(pt1_to_pt2_mapping.raw_mapping);
-
-  std::unordered_set<parallel_tensor_dim_idx_t> pt2_trivial_dims 
-    = get_trivial_domain_dims(pt1_to_pt2_mapping.raw_mapping.r_domain);
-
-  MinimalDimDomainMapping<
-    operator_task_space_dim_idx_t,
-    parallel_tensor_dim_idx_t
-  > op_to_pt2 = compose_minimal_dim_domain_mappings(op_to_pt1, pt1_to_pt2);
-
+  
   return OperatorSpaceToParallelTensorSpaceMapping{
-    dim_domain_mapping_from_minimal_dim_domain(
-      op_to_pt2,
-      op_trivial_dims,
-      pt2_trivial_dims),
+    compose_dim_domain_mappings_through_minimal(
+      op_to_pt1_mapping.raw_mapping,
+      pt1_to_pt2_mapping.raw_mapping),
   };
 }
 

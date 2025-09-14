@@ -21,6 +21,7 @@
 #include "utils/orthotope/dim_projection.h"
 #include "utils/orthotope/down_projection.h"
 #include "utils/orthotope/eq_projection.h"
+#include "utils/orthotope/minimal_dim_domain_mapping.h"
 #include "utils/orthotope/up_projection.h"
 
 namespace FlexFlow {
@@ -480,7 +481,7 @@ OperatorSpaceToParallelTensorSpaceMapping
   DimDomainMapping<
     operator_task_space_dim_idx_t,
     parallel_tensor_dim_idx_t
-  > op_to_inp = compose_dim_domain_mappings(op_to_out, invert_dim_domain_mapping(inp_to_out));
+  > op_to_inp = compose_dim_domain_mappings_through_minimal(op_to_out, invert_dim_domain_mapping(inp_to_out));
 
   return OperatorSpaceToParallelTensorSpaceMapping{
     op_to_inp,

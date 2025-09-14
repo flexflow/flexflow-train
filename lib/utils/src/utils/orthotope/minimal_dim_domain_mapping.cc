@@ -56,6 +56,11 @@ template
     MinimalDimDomainMapping<T1, T2> const &,
     MinimalDimDomainMapping<T2, T3> const &);
 
+template
+  DimDomainMapping<T1, T3> compose_dim_domain_mappings_through_minimal(
+    DimDomainMapping<T1, T2> const &,
+    DimDomainMapping<T2, T3> const &);
+
 } // namespace FlexFlow
 
 namespace std {

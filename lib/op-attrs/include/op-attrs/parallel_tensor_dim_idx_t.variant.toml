@@ -6,6 +6,7 @@ features = [
   "hash",
   "json",
   "fmt",
+  "rapidcheck",
 ]
 
 docstring = """\
@@ -19,6 +20,10 @@ docstring = """\
 includes = [
   "op-attrs/ff_dim_t.dtg.h",
   "op-attrs/replica_type.dtg.h",
+]
+
+src_includes = [
+  "op-attrs/ff_dim_t.h",
 ]
 
 [[values]]

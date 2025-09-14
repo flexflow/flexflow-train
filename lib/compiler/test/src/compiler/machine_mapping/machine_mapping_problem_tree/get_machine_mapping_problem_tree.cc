@@ -165,20 +165,21 @@ TEST_SUITE(FF_TEST_SUITE) {
           get_machine_mapping_problem_tree(pcg, sp_decomposition);
 
       MachineMappingProblemTree correct = mm_problem_tree_make_series(
-          AbstractedTensorSetMovement{{
-            /*edge_to_size=*/{
-              {
-                AbstractedCommunicationEdge{
-                  /*src=*/AbstractedDevice{
-                    /*operator_tree_path=*/binary_tree_root_path(),
-                    /*task_space_coordinate=*/empty_task_space_coord,
+          AbstractedTensorSetMovement{
+            /*single_tensor_movements=*/{
+              AbstractedSingleTensorMovement{
+                /*src_op_tree_path=*/binary_tree_root_path(),
+                /*edge_to_size=*/{
+                  {
+                    AbstractedSingleTensorCommunicationEdge{
+                      /*src_coord=*/empty_task_space_coord,
+                      /*dst=*/AbstractedDevice{
+                        /*operator_tree_path=*/binary_tree_root_path(),
+                        /*task_space_coordinate=*/empty_task_space_coord,
+                      },
+                    },
+                    get_piece_size_in_bytes(par_input_shape),
                   },
-                  /*dst=*/AbstractedDevice{
-                    /*operator_tree_path=*/binary_tree_root_path(),
-                    /*task_space_coordinate=*/empty_task_space_coord,
-                  },
-                },
-                get_piece_size_in_bytes(par_input_shape),
               },
             }
           }},
@@ -268,24 +269,30 @@ TEST_SUITE(FF_TEST_SUITE) {
         BinaryTreePathEntry::RIGHT_CHILD,
       }};
 
-      auto mk_abstracted_edge = [&](BinaryTreePath const &src_path) {
-        return AbstractedCommunicationEdge{
-          /*src=*/AbstractedDevice{
-            /*operator_tree_path=*/src_path,
-            /*task_space_coordinate=*/empty_task_space_coord,
-          },
+      AbstractedSingleTensorCommunicationEdge edge = 
+        AbstractedSingleTensorCommunicationEdge{
+          /*src_coord=*/empty_task_space_coord,
           /*dst=*/AbstractedDevice{
             /*operator_tree_path=*/binary_tree_root_path(),
             /*task_space_coordinate=*/empty_task_space_coord,
           },
         };
-      };
 
       MachineMappingProblemTree correct = mm_problem_tree_make_series(
           AbstractedTensorSetMovement{
-            /*edge_to_size=*/{
-              {mk_abstracted_edge(src1_path), get_piece_size_in_bytes(par_input_shape)},
-              {mk_abstracted_edge(src2_path), get_piece_size_in_bytes(par_input_shape)},
+            /*single_tensor_movements=*/{
+              AbstractedSingleTensorMovement{
+                /*src_op_tree_path=*/src1_path,
+                /*edge_to_size=*/{
+                  {edge, get_piece_size_in_bytes(par_input_shape)},
+                },
+              },
+              AbstractedSingleTensorMovement{
+                /*src_op_tree_path=*/src2_path,
+                /*edge_to_size=*/{
+                  {edge, get_piece_size_in_bytes(par_input_shape)},
+                },
+              },
             },
           },
           /*pre=*/

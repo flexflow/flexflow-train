@@ -122,8 +122,4 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(result == correct);
     }
   }
-
-  TEST_CASE("operator_ptensor_space_mapping_from_projection") {
-    NOT_IMPLEMENTED(); 
-  }
 }

@@ -1,4 +1,6 @@
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/get_abstracted_tensor_set_movement_across_split.h"
+#include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_single_tensor_communication.dtg.h"
+#include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_single_tensor_movement.h"
 #include "compiler/machine_mapping/transitive_reduced_pcg.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
@@ -9,7 +11,7 @@
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("get_abstracted_single_communications_along_edge") {
+  TEST_CASE("get_abstracted_single_tensor_movement_along_edge") {
     ParallelComputationGraph pcg = empty_parallel_computation_graph();
 
     TensorShape input_shape = TensorShape{
@@ -66,19 +68,18 @@ TEST_SUITE(FF_TEST_SUITE) {
     BinaryTreePath src_path = BinaryTreePath{{}};
     BinaryTreePath dst_path = BinaryTreePath{{}};
     
-    std::unordered_set<AbstractedSingleCommunication> result
-      = get_abstracted_single_communications_along_edge(pcg, edge, src_path, dst_path);
+    AbstractedSingleTensorMovement result
+      = get_abstracted_single_tensor_movement_along_edge(pcg, edge, src_path, dst_path);
 
     num_bytes_t shard_size = get_piece_size_in_bytes(get_parallel_tensor_shape(pcg, t_layer_1));
 
-    auto mk_single_communication = [&](nonnegative_int src_coord, 
-                                       nonnegative_int dst_coord) {
-      return AbstractedSingleCommunication{
-        /*edge=*/AbstractedCommunicationEdge{
-          /*src=*/AbstractedDevice{
-            /*operator_tree_path=*/src_path,
-            /*task_space_coordinate=*/TaskSpaceCoordinate{OrthotopeCoord{{src_coord}}},
-          },
+    auto mk_single_tensor_communication = [&](nonnegative_int src_coord, 
+                                              nonnegative_int dst_coord)
+      -> AbstractedSingleTensorCommunication
+    {
+      return AbstractedSingleTensorCommunication{
+        /*edge=*/AbstractedSingleTensorCommunicationEdge{
+          /*src_coord=*/TaskSpaceCoordinate{OrthotopeCoord{{src_coord}}},
           /*dst=*/AbstractedDevice{
             /*operator_tree_path=*/dst_path,
             /*task_space_coordinate=*/TaskSpaceCoordinate{OrthotopeCoord{{dst_coord}}},
@@ -88,10 +89,13 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
     };
 
-    std::unordered_set<AbstractedSingleCommunication> correct = {
-      mk_single_communication(0_n, 0_n),
-      mk_single_communication(1_n, 1_n),
-    };
+    AbstractedSingleTensorMovement correct = 
+      abstracted_single_tensor_movement_from_communications(
+        /*src_op_tree_path=*/src_path,
+        /*communications=*/{
+          mk_single_tensor_communication(0_n, 0_n),
+          mk_single_tensor_communication(1_n, 1_n),
+        });
 
     CHECK(result == correct);
   }
@@ -157,14 +161,18 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*name=*/std::nullopt,
     };
 
+    auto mk_task_space_coord = [&](nonnegative_int coord) {
+      return TaskSpaceCoordinate{
+        OrthotopeCoord{{
+          coord,
+        }},
+      };
+    };
+
     auto mk_abstracted_device = [&](BinaryTreePath const &path, nonnegative_int coord) {
       return AbstractedDevice{
         /*operator_tree_path=*/path,
-        /*task_space_coordinate=*/TaskSpaceCoordinate{
-          OrthotopeCoord{{
-            coord,
-          }},
-        },
+        /*task_space_coordinate=*/mk_task_space_coord(coord),
       };
     };
 
@@ -229,8 +237,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       BinaryTreePath dst_path = BinaryTreePath{{}};
 
       auto mk_abstracted_edge = [&](nonnegative_int src_coord, nonnegative_int dst_coord) {
-        return AbstractedCommunicationEdge{
-          /*src=*/mk_abstracted_device(src_path, src_coord),
+        return AbstractedSingleTensorCommunicationEdge{
+          /*src=*/mk_task_space_coord(src_coord),
           /*dst=*/mk_abstracted_device(dst_path, dst_coord),
         };
       };
@@ -238,9 +246,14 @@ TEST_SUITE(FF_TEST_SUITE) {
       num_bytes_t shard_size = get_size_in_bytes(get_reduced_shape(get_parallel_tensor_shape(pcg, t_layer_1)));
 
       AbstractedTensorSetMovement correct = AbstractedTensorSetMovement{
-        /*edge_to_size=*/{
-          {mk_abstracted_edge(0_n, 0_n), shard_size},
-          {mk_abstracted_edge(1_n, 1_n), shard_size},
+        /*single_tensor_movements=*/{
+          AbstractedSingleTensorMovement{
+            /*src_op_tree_path=*/src_path,
+            /*edge_to_size=*/{
+              {mk_abstracted_edge(0_n, 0_n), shard_size},
+              {mk_abstracted_edge(1_n, 1_n), shard_size},
+            },
+          },
         },
       };
 
@@ -279,17 +292,15 @@ TEST_SUITE(FF_TEST_SUITE) {
               pcg_get_transitive_reduction(pcg), split);
 
       BinaryTreePath src_path = BinaryTreePath{{
-        BinaryTreePathEntry::LEFT_CHILD,
+        BinaryTreePathEntry::RIGHT_CHILD,
         BinaryTreePathEntry::RIGHT_CHILD,
       }};
 
-      BinaryTreePath dst_path = BinaryTreePath{{
-        BinaryTreePathEntry::RIGHT_CHILD,
-      }};
+      BinaryTreePath dst_path = BinaryTreePath{{}};
 
       auto mk_abstracted_edge = [&](nonnegative_int src_coord, nonnegative_int dst_coord) {
-        return AbstractedCommunicationEdge{
-          /*src=*/mk_abstracted_device(src_path, src_coord),
+        return AbstractedSingleTensorCommunicationEdge{
+          /*src=*/mk_task_space_coord(src_coord),
           /*dst=*/mk_abstracted_device(dst_path, dst_coord),
         };
       };
@@ -297,9 +308,14 @@ TEST_SUITE(FF_TEST_SUITE) {
       num_bytes_t shard_size = get_size_in_bytes(get_reduced_shape(get_parallel_tensor_shape(pcg, t_layer_2)));
 
       AbstractedTensorSetMovement correct = AbstractedTensorSetMovement{
-        /*edge_to_size=*/{
-          {mk_abstracted_edge(0_n, 0_n), shard_size},
-          {mk_abstracted_edge(1_n, 1_n), shard_size},
+        /*single_tensor_movements=*/{
+          AbstractedSingleTensorMovement{
+            /*src_op_tree_path=*/src_path,
+            /*edge_to_size=*/{
+              {mk_abstracted_edge(0_n, 0_n), shard_size},
+              {mk_abstracted_edge(1_n, 1_n), shard_size},
+            },
+          },
         },
       };
 
@@ -337,23 +353,20 @@ TEST_SUITE(FF_TEST_SUITE) {
               pcg_get_transitive_reduction(pcg), split);
 
       BinaryTreePath src_path = BinaryTreePath{{
-        BinaryTreePathEntry::LEFT_CHILD,
         BinaryTreePathEntry::RIGHT_CHILD,
       }};
 
       BinaryTreePath dst1_path = BinaryTreePath{{
-        BinaryTreePathEntry::RIGHT_CHILD,
         BinaryTreePathEntry::LEFT_CHILD,
       }};
 
       BinaryTreePath dst2_path = BinaryTreePath{{
         BinaryTreePathEntry::RIGHT_CHILD,
-        BinaryTreePathEntry::RIGHT_CHILD,
       }};
 
       auto mk_abstracted_edge = [&](nonnegative_int src_coord, BinaryTreePath dst_path, nonnegative_int dst_coord) {
-        return AbstractedCommunicationEdge{
-          /*src=*/mk_abstracted_device(src_path, src_coord),
+        return AbstractedSingleTensorCommunicationEdge{
+          /*src=*/mk_task_space_coord(src_coord),
           /*dst=*/mk_abstracted_device(dst_path, dst_coord),
         };
       };
@@ -361,11 +374,16 @@ TEST_SUITE(FF_TEST_SUITE) {
       num_bytes_t shard_size = get_size_in_bytes(get_reduced_shape(get_parallel_tensor_shape(pcg, t_layer_1)));
 
       AbstractedTensorSetMovement correct = AbstractedTensorSetMovement{
-        /*edge_to_size=*/{
-          {mk_abstracted_edge(0_n, dst1_path, 0_n), shard_size},
-          {mk_abstracted_edge(1_n, dst1_path, 1_n), shard_size},
-          {mk_abstracted_edge(0_n, dst2_path, 0_n), shard_size},
-          {mk_abstracted_edge(1_n, dst2_path, 1_n), shard_size},
+        /*single_tensor_movements=*/{
+          AbstractedSingleTensorMovement{
+            /*src_op_tree_path=*/src_path,
+            /*edge_to_size=*/{
+              {mk_abstracted_edge(0_n, dst1_path, 0_n), shard_size},
+              {mk_abstracted_edge(1_n, dst1_path, 1_n), shard_size},
+              {mk_abstracted_edge(0_n, dst2_path, 0_n), shard_size},
+              {mk_abstracted_edge(1_n, dst2_path, 1_n), shard_size},
+            },
+          },
         },
       };
 
@@ -410,30 +428,26 @@ TEST_SUITE(FF_TEST_SUITE) {
               pcg_get_transitive_reduction(pcg), split);
 
       BinaryTreePath src1_path = BinaryTreePath{{
-        BinaryTreePathEntry::LEFT_CHILD,
         BinaryTreePathEntry::RIGHT_CHILD,
         BinaryTreePathEntry::LEFT_CHILD,
       }};
 
       BinaryTreePath src2_path = BinaryTreePath{{
-        BinaryTreePathEntry::LEFT_CHILD,
         BinaryTreePathEntry::RIGHT_CHILD,
         BinaryTreePathEntry::RIGHT_CHILD,
       }};
 
       BinaryTreePath dst1_path = BinaryTreePath{{
-        BinaryTreePathEntry::RIGHT_CHILD,
         BinaryTreePathEntry::LEFT_CHILD,
       }};
 
       BinaryTreePath dst2_path = BinaryTreePath{{
         BinaryTreePathEntry::RIGHT_CHILD,
-        BinaryTreePathEntry::RIGHT_CHILD,
       }};
 
-      auto mk_abstracted_edge = [&](BinaryTreePath src_path, nonnegative_int src_coord, BinaryTreePath dst_path, nonnegative_int dst_coord) {
-        return AbstractedCommunicationEdge{
-          /*src=*/mk_abstracted_device(src_path, src_coord),
+      auto mk_abstracted_edge = [&](nonnegative_int src_coord, BinaryTreePath dst_path, nonnegative_int dst_coord) {
+        return AbstractedSingleTensorCommunicationEdge{
+          /*src=*/mk_task_space_coord(src_coord),
           /*dst=*/mk_abstracted_device(dst_path, dst_coord),
         };
       };
@@ -442,13 +456,23 @@ TEST_SUITE(FF_TEST_SUITE) {
       num_bytes_t t2_shard_size = get_size_in_bytes(get_reduced_shape(get_parallel_tensor_shape(pcg, t_layer_2)));
 
       AbstractedTensorSetMovement correct = AbstractedTensorSetMovement{
-        /*edge_to_size=*/{
-          {mk_abstracted_edge(src1_path, 0_n, dst1_path, 0_n), t1_shard_size},
-          {mk_abstracted_edge(src1_path, 1_n, dst1_path, 1_n), t1_shard_size},
-          {mk_abstracted_edge(src1_path, 0_n, dst2_path, 0_n), t1_shard_size},
-          {mk_abstracted_edge(src1_path, 1_n, dst2_path, 1_n), t1_shard_size},
-          {mk_abstracted_edge(src2_path, 0_n, dst2_path, 0_n), t2_shard_size},
-          {mk_abstracted_edge(src2_path, 1_n, dst2_path, 1_n), t2_shard_size},
+        /*single_tensor_movements=*/{
+          AbstractedSingleTensorMovement{
+            /*src_op_tree_path=*/src1_path,
+            /*edge_to_size=*/{
+              {mk_abstracted_edge(0_n, dst1_path, 0_n), t1_shard_size},
+              {mk_abstracted_edge(1_n, dst1_path, 1_n), t1_shard_size},
+              {mk_abstracted_edge(0_n, dst2_path, 0_n), t1_shard_size},
+              {mk_abstracted_edge(1_n, dst2_path, 1_n), t1_shard_size},
+            },
+          },
+          AbstractedSingleTensorMovement{
+            /*src_op_tree_path=*/src2_path,
+            /*edge_to_size=*/{
+              {mk_abstracted_edge(0_n, dst2_path, 0_n), t2_shard_size},
+              {mk_abstracted_edge(1_n, dst2_path, 1_n), t2_shard_size},
+            },
+          },
         },
       };
 

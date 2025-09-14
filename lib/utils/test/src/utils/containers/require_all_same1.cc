@@ -25,18 +25,14 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("input is empty") {
       T input = {};
 
-      std::optional<int> result =
-          optional_from_expected(require_all_same1(input));
-      std::optional<int> correct = std::nullopt;
-
-      CHECK(result == correct);
+      CHECK_THROWS(require_all_same1(input));
     }
 
     SUBCASE("input elements are all the same") {
       T input = {1, 1, 1};
 
-      tl::expected<int, std::string> result = require_all_same1(input);
-      tl::expected<int, std::string> correct = 1;
+      int result = require_all_same1(input);
+      int correct = 1;
 
       CHECK(result == correct);
     }
@@ -44,11 +40,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("input elements are not all the same") {
       T input = {1, 1, 2, 1};
 
-      std::optional<int> result =
-          optional_from_expected(require_all_same1(input));
-      std::optional<int> correct = std::nullopt;
-
-      CHECK(result == correct);
+      CHECK_THROWS(require_all_same1(input));
     }
   }
 }
