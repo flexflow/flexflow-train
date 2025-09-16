@@ -9,7 +9,7 @@ features = [
 includes = [
   "<unordered_map>",
   "compiler/machine_mapping/machine_mapping_state.dtg.h",
-  "compiler/machine_mapping/memory_optimization/machine_mapping_with_memory_result.dtg.h",
+  "compiler/machine_mapping/memory_optimization/machine_mapping_with_memory_result.h",
 ]
 
 src_includes = [

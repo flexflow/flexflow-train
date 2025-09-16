@@ -14,7 +14,7 @@
 
 namespace FlexFlow {
 
-size_t num_dims(MachineView const &mv);
+nonnegative_int mv_get_expected_task_space_num_dims(MachineView const &mv);
 
 DeviceType get_device_type(MachineView const &mv);
 

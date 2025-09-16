@@ -12,6 +12,10 @@
 
 namespace FlexFlow {
 
+nonnegative_int task_space_coord_num_dims(TaskSpaceCoordinate const &coord) {
+  return orthotope_coord_num_dims(coord.orthotope_coord);
+}
+
 TaskSpaceCoordinate
     make_task_space_coordinate(std::vector<nonnegative_int> const &elems) {
   return TaskSpaceCoordinate{OrthotopeCoord{elems}};

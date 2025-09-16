@@ -20,10 +20,13 @@ std::unordered_set<operator_task_space_dim_idx_t>
 std::unordered_set<TaskSpaceCoordinate>
     get_task_space_coordinates(OperatorTaskSpace const &operator_task_space);
 
+bool operator_task_space_contains_coord(OperatorTaskSpace const &,
+                                        TaskSpaceCoordinate const &);
+
 TaskSpaceCoordinate
     get_task_space_maximum_coordinate(OperatorTaskSpace const &operator_task_space);
 
-nonnegative_int num_dims(OperatorTaskSpace const &operator_task_space);
+nonnegative_int op_task_space_num_dims(OperatorTaskSpace const &operator_task_space);
 positive_int num_tasks(OperatorTaskSpace const &operator_task_space);
 
 positive_int op_task_space_dim_size_for_idx(OperatorTaskSpace const &,

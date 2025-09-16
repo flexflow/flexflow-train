@@ -53,12 +53,17 @@ std::unordered_set<TaskSpaceCoordinate>
   return task_space_coordinates;
 }
 
+bool operator_task_space_contains_coord(OperatorTaskSpace const &task_space,
+                                        TaskSpaceCoordinate const &coord) {
+  return contains(get_task_space_coordinates(task_space), coord);
+}
+
 TaskSpaceCoordinate
     get_task_space_maximum_coordinate(OperatorTaskSpace const &task) {
   return maximum(get_task_space_coordinates(task));
 }
 
-nonnegative_int num_dims(OperatorTaskSpace const &op_task_space) {
+nonnegative_int op_task_space_num_dims(OperatorTaskSpace const &op_task_space) {
   return minimal_orthotope_get_num_dims(op_task_space.degrees);
 }
 

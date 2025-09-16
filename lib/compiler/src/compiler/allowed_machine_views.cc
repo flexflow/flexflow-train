@@ -25,15 +25,15 @@
 namespace FlexFlow {
 
 bool is_valid_machine_view(MachineView const &mv,
-                           OperatorTaskSpace const &task,
+                           OperatorTaskSpace const &task_space,
                            MachineComputeSpecification const &ms) {
-  if (num_dims(mv) != num_dims(task)) {
+  if (mv_get_expected_task_space_num_dims(mv) != op_task_space_num_dims(task_space)) {
     return false;
   }
 
   MachineSpaceCoordinate maximum_device_coord =
       get_machine_space_coordinate(
-          task, mv, get_task_space_maximum_coordinate(task));
+          task_space, mv, get_task_space_maximum_coordinate(task_space));
 
   return is_valid_machine_space_coordinate(ms, maximum_device_coord);
 }
@@ -48,7 +48,7 @@ bool is_valid_machine_view(MachineView const &mv,
  */
 static std::unordered_set<MachineView>
     get_candidate_machine_views(MachineComputeSpecification const &machine_spec,
-                                OperatorTaskSpace const &task,
+                                OperatorTaskSpace const &task_space,
                                 DeviceType const &device_type) {
 
   auto get_max_stride_upper_bound =
@@ -98,14 +98,14 @@ static std::unordered_set<MachineView>
     return result;
   };
 
-  auto candidate_dimensions = [](OperatorTaskSpace const &task) {
+  auto candidate_dimensions = [](OperatorTaskSpace const &task_space) {
     std::unordered_set<MachineSpecificationDimension> options = {
         MachineSpecificationDimension::INTER_NODE,
         MachineSpecificationDimension::INTRA_NODE};
-    return get_all_permutations_with_repetition(options, num_dims(task));
+    return get_all_permutations_with_repetition(options, op_task_space_num_dims(task_space));
   };
 
-  std::vector<positive_int> tensor_dims = transform(task.degrees.dims,
+  std::vector<positive_int> tensor_dims = transform(task_space.degrees.dims,
                                                     [](int_ge_two dim) {
                                                       return dim.positive_int_from_int_ge_two();
                                                     });
@@ -119,7 +119,7 @@ static std::unordered_set<MachineView>
     for (MachineSpaceCoordinate start :
          candidate_starts(machine_spec, device_type)) {
       for (std::vector<MachineSpecificationDimension> const &dims :
-           candidate_dimensions(task)) {
+           candidate_dimensions(task_space)) {
         machine_views.insert(
             machine_view_from_strides_and_machine_spec_dimensions(
                 start, strides.raw_strides, dims));
@@ -131,13 +131,13 @@ static std::unordered_set<MachineView>
 
 std::unordered_set<MachineView>
     get_allowed_machine_views(MachineComputeSpecification const &machine_spec,
-                              OperatorTaskSpace const &task,
+                              OperatorTaskSpace const &task_space,
                               DeviceType device_type) {
 
   std::unordered_set<MachineView> views =
-      get_candidate_machine_views(machine_spec, task, device_type);
+      get_candidate_machine_views(machine_spec, task_space, device_type);
   return filter(views, [&](MachineView const &mv) {
-    return is_valid_machine_view(mv, task, machine_spec);
+    return is_valid_machine_view(mv, task_space, machine_spec);
   });
 }
 

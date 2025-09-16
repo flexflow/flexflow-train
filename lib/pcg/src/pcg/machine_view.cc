@@ -20,11 +20,12 @@
 #include "utils/exception.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include "utils/nonnegative_int/num_elements.h"
+#include "op-attrs/task_space_coordinate.h"
 
 namespace FlexFlow {
 
-size_t num_dims(MachineView const &mv) {
-  return get_strides(mv).size();
+nonnegative_int mv_get_expected_task_space_num_dims(MachineView const &mv) {
+  return num_elements(get_strides(mv));
 }
 
 DeviceType get_device_type(MachineView const &mv) {
@@ -62,14 +63,16 @@ MachineView machine_view_from_strides_and_machine_spec_dimensions(
 }
 
 MachineSpaceCoordinate get_machine_space_coordinate(
-    OperatorTaskSpace const &task,
+    OperatorTaskSpace const &task_space,
     MachineView const &machine_view,
     TaskSpaceCoordinate const &coord) {
 
-  ASSERT(num_dims(machine_view) == num_dims(task),
+  ASSERT(mv_get_expected_task_space_num_dims(machine_view) == op_task_space_num_dims(task_space),
          "Dimension of MachineView must match dimension of OperatorTaskSpace",
          machine_view,
-         task);
+         task_space);
+  ASSERT(op_task_space_num_dims(task_space) == task_space_coord_num_dims(coord));
+  ASSERT(operator_task_space_contains_coord(task_space, coord));
 
   auto get_dimension_indices_for_dimension =
       [&](MachineSpecificationDimension dimension)
@@ -91,7 +94,7 @@ MachineSpaceCoordinate get_machine_space_coordinate(
         std::vector<positive_int> sizes =
             transform(dimension_indices, [&](nonnegative_int i) {
               return (
-                task.degrees.dims.at(i.unwrap_nonnegative()) *
+                task_space.degrees.dims.at(i.unwrap_nonnegative()) *
                 mv_strides.at(i.unwrap_nonnegative()).unwrapped
               ).positive_int_from_int_ge_two();
             });
@@ -154,6 +157,9 @@ OperatorSpaceToMachineSpaceMapping
 std::unordered_set<MachineSpaceCoordinate> get_machine_space_coordinates(
     OperatorTaskSpace const &task_space,
     MachineView const &machine_view) {
+
+  ASSERT(op_task_space_num_dims(task_space) == mv_get_expected_task_space_num_dims(machine_view));
+
   return transform(
       get_task_space_coordinates(task_space), [&](TaskSpaceCoordinate const &coord) {
         return get_machine_space_coordinate(
@@ -161,10 +167,12 @@ std::unordered_set<MachineSpaceCoordinate> get_machine_space_coordinates(
       });
 }
 
-std::unordered_set<device_id_t> get_device_ids(OperatorTaskSpace const &task,
+std::unordered_set<device_id_t> get_device_ids(OperatorTaskSpace const &task_space,
                                                MachineView const &mv,
                                                MachineComputeSpecification const &ms) {
-  return transform(get_machine_space_coordinates(task, mv),
+  ASSERT(op_task_space_num_dims(task_space) == mv_get_expected_task_space_num_dims(mv));
+
+  return transform(get_machine_space_coordinates(task_space, mv),
                    [&](MachineSpaceCoordinate const &coord) {
                      return get_device_id(ms, coord);
                    });

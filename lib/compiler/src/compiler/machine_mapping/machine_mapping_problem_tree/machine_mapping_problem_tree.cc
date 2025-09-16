@@ -95,5 +95,4 @@ std::unordered_map<BinaryTreePath, UnmappedRuntimeOnlyOpCostEstimateKey>
   return get_path_to_leaf_map(tree, generic_binary_sp_impl_for_mm_problem_tree());
 }
 
-
 } // namespace FlexFlow

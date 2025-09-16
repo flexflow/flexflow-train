@@ -79,19 +79,21 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
         &parallel_split_transformation) {
 
   auto get_boundary_machine_view_assignments =
-      [&](std::unordered_set<BinaryTreePath> const &boundary_layers)
+      [&](MachineMappingProblemTree const &root,
+          std::unordered_set<BinaryTreePath> const &boundary_layers)
       -> std::unordered_set<ParallelLayerGuidObliviousMachineMapping> {
+
     std::unordered_map<BinaryTreePath, std::unordered_set<MachineView>>
         allowed = generate_map(
             boundary_layers,
             [&](BinaryTreePath const &l) -> std::unordered_set<MachineView> {
               UnmappedRuntimeOnlyOpCostEstimateKey leaf =
-                  mm_problem_tree_get_subtree_at_path(
-                      MachineMappingProblemTree{series_split}, l)
+                  mm_problem_tree_get_subtree_at_path(root, l)
                       .value()
                       .get<UnmappedRuntimeOnlyOpCostEstimateKey>();
               return context.allowed_machine_views(leaf, resources);
             });
+
     return transform(
         get_all_assignments(allowed),
         [](std::unordered_map<BinaryTreePath, MachineView> const &m) {
@@ -140,7 +142,9 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
 
   for (ParallelLayerGuidObliviousMachineMapping const
            &assigned_pre_machine_views :
-       get_boundary_machine_view_assignments(get_src_layers(tensor_movement))) {
+       get_boundary_machine_view_assignments(
+          series_split.get_left_child(),
+          get_src_layers(tensor_movement))) {
 
     MachineMappingWithMemoryResult pre_result =
         eval_pre_boundary_mapping(assigned_pre_machine_views);
@@ -148,6 +152,7 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
     for (ParallelLayerGuidObliviousMachineMapping const
              &assigned_post_machine_views :
          get_boundary_machine_view_assignments(
+            series_split.get_right_child(),
              get_dst_layers(tensor_movement))) {
 
       MachineMappingWithMemoryResult post_result =
@@ -156,8 +161,14 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
       TensorSetMovement comm_across_split =
           concretize_abstracted_tensor_set_movement(
               tensor_movement,
-              /*pre_machine_stencils=*/get_machine_stencils_for_mm_problem_tree(series_split.get_left_child(), assigned_pre_machine_views),
-              /*post_machine_stencils=*/get_machine_stencils_for_mm_problem_tree(series_split.get_right_child(), assigned_post_machine_views));
+              /*pre_machine_stencils=*/
+                get_machine_stencils_for_partially_mapped_mm_problem_tree(
+                  series_split.get_left_child(), 
+                  assigned_pre_machine_views),
+              /*post_machine_stencils=*/
+                get_machine_stencils_for_partially_mapped_mm_problem_tree(
+                  series_split.get_right_child(), 
+                  assigned_post_machine_views));
 
       milliseconds_t cost_across_split =
           context.cost_estimator.estimate_cost(comm_across_split);

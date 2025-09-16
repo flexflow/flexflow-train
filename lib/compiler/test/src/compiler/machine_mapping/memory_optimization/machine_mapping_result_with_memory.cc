@@ -2,155 +2,99 @@
 #include "pcg/machine_view.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
 #include <doctest/doctest.h>
+#include "test/utils/rapidcheck/some.h"
+#include "test/utils/doctest/fmt/unordered_set.h"
 
 using namespace FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("remove_non_pareto_optimal_machine_mapping_result") {
-    MachineView machine_view_0 = MachineView{
-        /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0_n,
-            /*device_idx=*/0_n,
-            /*device_type=*/DeviceType::GPU,
-        },
-        /*dimensions=*/
-        {
-            MachineViewDimension{
-                stride_t{1_p},
-                MachineSpecificationDimension::INTRA_NODE,
-            },
-        },
-    };
-
-    MachineView machine_view_1 = MachineView{
-        /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0_n,
-            /*device_idx=*/0_n,
-            /*device_type=*/DeviceType::GPU,
-        },
-        /*dimensions=*/
-        {
-            MachineViewDimension{
-                stride_t{2_p},
-                MachineSpecificationDimension::INTRA_NODE,
-            },
-        },
-    };
-
-    MachineView machine_view_2 = MachineView{
-        /*start=*/MachineSpaceCoordinate{
-            /*node_idx=*/0_n,
-            /*device_idx=*/0_n,
-            /*device_type=*/DeviceType::GPU,
-        },
-        /*dimensions=*/
-        {
-            MachineViewDimension{
-                stride_t{4_p},
-                MachineSpecificationDimension::INTRA_NODE,
-            },
-        },
-    };
-
-    OpCostMetrics cost1 = OpCostMetrics{
-        /*forward_runtime=*/2_ms,
-        /*backward_runtime=*/2_ms,
-        /*memory_usage=*/2_bytes,
-    };
-
-    OpCostMetrics cost2 = OpCostMetrics{
-        /*forward_runtime=*/4_ms,
-        /*backward_runtime=*/4_ms,
-        /*memory_usage=*/1_bytes,
-    };
-
-    OpCostMetrics cost3 = OpCostMetrics{
-        /*forward_runtime=*/2_ms,
-        /*backward_runtime=*/2_ms,
-        /*memory_usage=*/3_bytes,
-    };
-
-    MachineMappingForSingleLayer mm1 = MachineMappingForSingleLayer{
-        cost1,
-        ParallelLayerGuidObliviousMachineMapping{
-            {
-                {
-                    BinaryTreePath{{}},
-                    machine_view_0,
-                },
-            },
-        },
-    };
-
-    MachineMappingForSingleLayer mm2 = MachineMappingForSingleLayer{
-        cost2,
-        ParallelLayerGuidObliviousMachineMapping{
-            {
-                {
-                    BinaryTreePath{{}},
-                    machine_view_1,
-                },
-            },
-        },
-    };
-
-    MachineMappingForSingleLayer mm3 = MachineMappingForSingleLayer{
-        cost3,
-        ParallelLayerGuidObliviousMachineMapping{
-            {
-                {
-                    BinaryTreePath{{}},
-                    machine_view_2,
-                },
-            },
-        },
-    };
-
-    SUBCASE("empty") {
-      MachineMappingWithMemoryResult before_remove =
-          empty_machine_mapping_with_memory_result();
-      MachineMappingWithMemoryResult result =
-          remove_non_pareto_optimal_machine_mapping_result(before_remove);
-      MachineMappingWithMemoryResult correct =
-          empty_machine_mapping_with_memory_result();
-
-      CHECK(result == correct);
-    }
-
-    SUBCASE("all solutions are pareto-optimal") {
-      MachineMappingWithMemoryResult before_remove =
-          MachineMappingWithMemoryResult{
-              {
-                  mm1,
-                  mm2,
+  TEST_CASE("MachineMappingWithMemoryResult") {
+    SUBCASE("initialization") {
+      SUBCASE("throws if initialized with non-pareto-optimal elements") {
+        CHECK_THROWS( 
+          MachineMappingWithMemoryResult{{
+            ParetoOptimalMachineMapping{
+              /*cost=*/OpCostMetrics{
+                /*forward_runtime=*/5_ms,
+                /*backward_runtime=*/5_ms,
+                /*memory_usage=*/6_bytes,
               },
-          };
-      MachineMappingWithMemoryResult result =
-          remove_non_pareto_optimal_machine_mapping_result(before_remove);
-      MachineMappingWithMemoryResult correct = before_remove;
-
-      CHECK(result == correct);
-    }
-
-    SUBCASE("there exists a non-pareto-optimal solution") {
-      MachineMappingWithMemoryResult before_remove =
-          MachineMappingWithMemoryResult{
-              {
-                  mm1,
-                  mm2,
-                  mm3,
+              /*machine_mapping=*/some<ParallelLayerGuidObliviousMachineMapping>(),
+            },
+            ParetoOptimalMachineMapping{
+              /*cost=*/OpCostMetrics{
+                /*forward_runtime=*/2_ms,
+                /*backward_runtime=*/4_ms,
+                /*memory_usage=*/5_bytes,
               },
-          };
-      MachineMappingWithMemoryResult result =
-          remove_non_pareto_optimal_machine_mapping_result(before_remove);
-      MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{
-          {
-              mm1,
-              mm2,
-          },
-      };
+              /*machine_mapping=*/some<ParallelLayerGuidObliviousMachineMapping>(),
+            },
+          }});
+      }
 
-      CHECK(result == correct);
+      SUBCASE("allows elements with identical performance") {
+        ParetoOptimalMachineMapping mapping1 = 
+          ParetoOptimalMachineMapping{
+            /*cost=*/OpCostMetrics{
+              /*forward_runtime=*/5_ms,
+              /*backward_runtime=*/5_ms,
+              /*memory_usage=*/6_bytes,
+            },
+            /*machine_mapping=*/some<ParallelLayerGuidObliviousMachineMapping>(),
+          };
+
+        ParetoOptimalMachineMapping mapping2 = 
+          ParetoOptimalMachineMapping{
+            /*cost=*/OpCostMetrics{
+              /*forward_runtime=*/5_ms,
+              /*backward_runtime=*/5_ms,
+              /*memory_usage=*/5_bytes,
+            },
+            /*machine_mapping=*/some<ParallelLayerGuidObliviousMachineMapping>(),
+          };
+
+        ParetoOptimalMachineMapping mapping3 = 
+          ParetoOptimalMachineMapping{
+            /*cost=*/OpCostMetrics{
+              /*forward_runtime=*/5_ms,
+              /*backward_runtime=*/5_ms,
+              /*memory_usage=*/6_bytes,
+            },
+            /*machine_mapping=*/some<ParallelLayerGuidObliviousMachineMapping>(),
+          };
+
+        
+
+        MachineMappingWithMemoryResult mapping_result 
+          = MachineMappingWithMemoryResult{{
+            mapping1,
+            mapping2,
+            mapping3,
+          }};
+
+        std::unordered_set<ParetoOptimalMachineMapping> 
+          result = mapping_result.get_pareto_frontier();
+
+        std::unordered_set<ParetoOptimalMachineMapping> correct = {
+          mapping1, 
+          mapping2,
+          mapping3,
+        };
+
+        CHECK(result == correct);
+      }
+
+      SUBCASE("allows empty set") {
+        MachineMappingWithMemoryResult mapping_result 
+          = MachineMappingWithMemoryResult{{}};
+
+        std::unordered_set<ParetoOptimalMachineMapping> 
+          result = mapping_result.get_pareto_frontier();
+
+        std::unordered_set<ParetoOptimalMachineMapping> correct = {};
+
+        CHECK(result == correct);
+      }
     }
   }
 
@@ -193,7 +137,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*memory_usage=*/2_bytes,
     };
     MachineMappingWithMemoryResult pre = MachineMappingWithMemoryResult{{
-        MachineMappingForSingleLayer{
+        ParetoOptimalMachineMapping{
             pre_cost,
             ParallelLayerGuidObliviousMachineMapping{
                 {
@@ -221,7 +165,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     MachineMappingWithMemoryResult post = MachineMappingWithMemoryResult{{
-        MachineMappingForSingleLayer{
+        ParetoOptimalMachineMapping{
             post_cost,
             ParallelLayerGuidObliviousMachineMapping{
                 {
@@ -259,7 +203,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       MachineMappingWithMemoryResult no_parallel_split_transform =
           MachineMappingWithMemoryResult{
               {
-                  MachineMappingForSingleLayer{
+                  ParetoOptimalMachineMapping{
                       /*cost=*/OpCostMetrics{
                           /*forward_runtime=*/pre_cost.forward_runtime +
                               comm_cost + post_cost.forward_runtime,
@@ -316,7 +260,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             comm_cost, pre, post, ParallelSplitTransformation::RthenL);
         MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{
             {
-                MachineMappingForSingleLayer{
+                ParetoOptimalMachineMapping{
                     /*cost=*/OpCostMetrics{
                         /*forward_runtime=*/pre_cost.forward_runtime +
                             comm_cost + post_cost.forward_runtime,
@@ -396,7 +340,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*memory_usage=*/2_bytes,
     };
     MachineMappingWithMemoryResult lhs = MachineMappingWithMemoryResult{{
-        MachineMappingForSingleLayer{
+        ParetoOptimalMachineMapping{
             lhs_cost,
             ParallelLayerGuidObliviousMachineMapping{
                 {
@@ -423,7 +367,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*memory_usage=*/1_bytes,
     };
     MachineMappingWithMemoryResult rhs = MachineMappingWithMemoryResult{{
-        MachineMappingForSingleLayer{
+        ParetoOptimalMachineMapping{
             rhs_cost,
             ParallelLayerGuidObliviousMachineMapping{
                 {
@@ -456,7 +400,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("both are nonempty") {
       MachineMappingWithMemoryResult result = parallel_combine(lhs, rhs);
       MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{{
-          MachineMappingForSingleLayer{
+          ParetoOptimalMachineMapping{
               /*cost=*/OpCostMetrics{
                   /*forward_runtime=*/std::max(lhs_cost.forward_runtime,
                                                rhs_cost.forward_runtime),
@@ -554,7 +498,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*memory_usage=*/3_bytes,
     };
 
-    MachineMappingForSingleLayer mm1 = MachineMappingForSingleLayer{
+    ParetoOptimalMachineMapping mm1 = ParetoOptimalMachineMapping{
         cost1,
         ParallelLayerGuidObliviousMachineMapping{
             {
@@ -566,7 +510,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    MachineMappingForSingleLayer mm2 = MachineMappingForSingleLayer{
+    ParetoOptimalMachineMapping mm2 = ParetoOptimalMachineMapping{
         cost2,
         ParallelLayerGuidObliviousMachineMapping{
             {
@@ -578,7 +522,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    MachineMappingForSingleLayer mm3 = MachineMappingForSingleLayer{
+    ParetoOptimalMachineMapping mm3 = ParetoOptimalMachineMapping{
         cost3,
         ParallelLayerGuidObliviousMachineMapping{
             {

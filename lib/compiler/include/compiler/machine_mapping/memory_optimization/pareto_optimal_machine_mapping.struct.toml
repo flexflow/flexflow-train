@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "MachineMappingForSingleLayer"
+name = "ParetoOptimalMachineMapping"
 features = [
   "eq",
   "hash",

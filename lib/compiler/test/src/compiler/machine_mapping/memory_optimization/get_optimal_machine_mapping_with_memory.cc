@@ -1,4 +1,5 @@
 #include "compiler/machine_mapping/memory_optimization/get_optimal_machine_mapping_with_memory.h"
+#include "compiler/cost_estimator/tensor_set_movement.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.h"
 #include "compiler/machine_mapping/machine_mapping_constraints.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
@@ -6,9 +7,11 @@
 #include "compiler/machine_mapping/memory_optimization/machine_mapping_with_memory_cache.h"
 #include "internal/cost_estimator_for_test.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "op-attrs/task_space_coordinate.h"
 #include "pcg/machine_view.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include "utils/containers/get_only.h"
+#include "utils/containers/map_from_pairs.h"
 #include "utils/full_binary_tree/binary_tree_path.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
 #include <doctest/doctest.h>
@@ -51,13 +54,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
-        /*dimensions=*/
-        {
-            MachineViewDimension{
-                stride_t{1_p},
-                MachineSpecificationDimension::INTRA_NODE,
-            },
-        },
+        /*dimensions=*/{},
     };
 
     MachineView mv2 = MachineView{
@@ -66,34 +63,47 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*device_idx=*/0_n,
             /*device_type=*/DeviceType::GPU,
         },
-        /*dimensions=*/
-        {
-            MachineViewDimension{
-                stride_t{2_p},
-                MachineSpecificationDimension::INTRA_NODE,
-            },
+        /*dimensions=*/{
+          MachineViewDimension{
+            /*stride=*/stride_t{1_p},
+            /*projection=*/MachineSpecificationDimension::INTER_NODE,
+          },
+        },
+    };
+
+    MachineView mv3 = MachineView{
+        /*start=*/MachineSpaceCoordinate{
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
+            /*device_type=*/DeviceType::GPU,
+        },
+        /*dimensions=*/{
+          MachineViewDimension{
+            /*stride=*/stride_t{2_p},
+            /*projection=*/MachineSpecificationDimension::INTER_NODE,
+          },
         },
     };
 
     MachineComputeResourceSlice full_machine_resources = MachineComputeResourceSlice{
-        /*num_nodes=*/2_p,
+        /*num_nodes=*/4_p,
         /*num_gpus_per_node=*/1_p,
     };
 
-    MachineComputeResourceSlice split_machine_resources = MachineComputeResourceSlice{
+    MachineComputeResourceSlice three_nodes_resources = MachineComputeResourceSlice{
+      /*num_nodes=*/3_p,
+      /*num_gpus_per_node=*/1_p,
+    };
+
+    MachineComputeResourceSlice two_nodes_resources = MachineComputeResourceSlice{
+      /*num_nodes=*/2_p,
+      /*num_gpus_per_node=*/1_p,
+    };
+
+    MachineComputeResourceSlice one_node_resources = MachineComputeResourceSlice{
         /*num_nodes=*/1_p,
         /*num_gpus_per_node=*/1_p,
     };
-
-    auto allowed_machine_views1 =
-        [&](UnmappedRuntimeOnlyOpCostEstimateKey const &,
-            MachineComputeResourceSlice const &resources) {
-          if (resources == full_machine_resources) {
-            return std::unordered_set<MachineView>{mv1, mv2};
-          } else {
-            return std::unordered_set<MachineView>{mv2};
-          }
-        };
 
     TensorShape tensor_shape = TensorShape{
         TensorDims{
@@ -105,7 +115,18 @@ TEST_SUITE(FF_TEST_SUITE) {
         DataType::FLOAT,
     };
 
-    ParallelTensorShape par_tensor_shape = lift_to_parallel(tensor_shape);
+    ParallelTensorShape pre_partition_par_tensor_shape = lift_to_parallel(tensor_shape);
+    ParallelTensorShape post_partition_par_tensor_shape = 
+      lift_to_parallel_with_degrees(
+        tensor_shape,
+        ParallelTensorDimDegrees{
+          /*sum_degree=*/SumDegree{1_p},
+          /*discard_copy_degree=*/DiscardCopyDegree{1_p},
+          /*shard_degrees=*/FFOrdered<positive_int>{
+            2_p,
+            1_p,
+          },
+        });
 
     OptimizerAttrs optimizer_attrs = OptimizerAttrs{
         SGDOptimizerAttrs{
@@ -116,26 +137,57 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
+
     UnmappedOpCostEstimateKey k1 = UnmappedOpCostEstimateKey{
         /*op_attrs=*/PCGOperatorAttrs{InputAttrs{tensor_shape}},
         /*input_shapes=*/{},
         /*weight_shapes=*/{},
-        /*output_shapes=*/{},
+        /*output_shapes=*/{pre_partition_par_tensor_shape},
         /*optimizer_attrs=*/optimizer_attrs,
     };
 
     UnmappedOpCostEstimateKey k2 = UnmappedOpCostEstimateKey{
-        /*op_attrs=*/PCGOperatorAttrs{ElementBinaryAttrs{
-            /*type=*/OperatorType::EW_ADD,
-            /*compute_type=*/DataType::FLOAT,
-            /*should_broadcast_lhs=*/false,
-            /*should_broadcast_rhs=*/false,
+        /*op_attrs=*/PCGOperatorAttrs{ElementUnaryAttrs{
+            /*type=*/OperatorType::GELU,
+            /*scalar=*/std::nullopt,
         }},
-        /*input_shapes=*/{},
+      /*input_shapes=*/{post_partition_par_tensor_shape},
+      /*weight_shapes=*/{},
+      /*output_shapes=*/{post_partition_par_tensor_shape},
+      /*optimizer_attrs=*/optimizer_attrs,
+    };
+
+    UnmappedOpCostEstimateKey k3 = UnmappedOpCostEstimateKey{
+        /*op_attrs=*/PCGOperatorAttrs{ElementUnaryAttrs{
+            /*type=*/OperatorType::RELU,
+            /*scalar=*/std::nullopt,
+        }},
+        /*input_shapes=*/{post_partition_par_tensor_shape},
         /*weight_shapes=*/{},
-        /*output_shapes=*/{},
+        /*output_shapes=*/{post_partition_par_tensor_shape},
         /*optimizer_attrs=*/optimizer_attrs,
     };
+
+
+    auto allowed_machine_views1 =
+        [&](UnmappedRuntimeOnlyOpCostEstimateKey const &k,
+            MachineComputeResourceSlice const &resources) {
+          if (k == runtime_only_from_unmapped_op_cost_estimate_key(k1)) {
+            return std::unordered_set<MachineView>{
+              mv1,
+            };
+          } else {
+            if (resources == full_machine_resources) {
+              return std::unordered_set<MachineView>{mv2, mv3};
+            } else if (resources == three_nodes_resources) {
+              return std::unordered_set<MachineView>{mv2, mv3};
+            } else if (resources == two_nodes_resources) {
+              return std::unordered_set<MachineView>{mv2};
+            } else {
+              return std::unordered_set<MachineView>{};
+            }
+          };
+        };
 
 
     TaskSpaceCoordinate empty_task_space_coord = TaskSpaceCoordinate{OrthotopeCoord{{}}};
@@ -148,23 +200,6 @@ TEST_SUITE(FF_TEST_SUITE) {
       /*task_space_coordinate=*/empty_task_space_coord,
     };
 
-    AbstractedTensorSetMovement movement1 = AbstractedTensorSetMovement{
-      /*single_tensor_movements=*/{
-        AbstractedSingleTensorMovement{
-          /*src_op_tree_path=*/src_path,
-          /*edge_to_size=*/{
-            {
-              AbstractedSingleTensorCommunicationEdge{
-                /*src_coord=*/src_coord,
-                /*dst=*/dst_device,
-              },
-              get_size_in_bytes(tensor_shape),
-            },
-          },
-        },
-      },
-    };
-
     ParallelLayerGuidObliviousMachineMapping mm1 =
         ParallelLayerGuidObliviousMachineMapping{{
             {binary_tree_root_path(), mv1},
@@ -174,192 +209,679 @@ TEST_SUITE(FF_TEST_SUITE) {
             {binary_tree_root_path(), mv2},
         }};
 
-    OperatorTaskSpace trivial_task_space = OperatorTaskSpace{MinimalOrthotope{{}}};
-
-    auto mk_tensor_set_movement = [&](
-      MachineView const &src_mv, 
-      MachineView const &dst_mv) {
-
-      MachineSpaceStencil src_stencil = MachineSpaceStencil{
-        /*operator_task_space=*/trivial_task_space,
-        /*machine_view=*/src_mv,
-      };
-
-      MachineSpaceStencil dst_stencil = MachineSpaceStencil{
-        /*operator_task_space=*/trivial_task_space,
-        /*machine_view=*/dst_mv,
-      };
-
-      return concretize_abstracted_tensor_set_movement(
-        movement1,
-        /*pre_machine_stencils=*/{{binary_tree_root_path(), src_stencil}},
-        /*post_machine_stencils=*/{{binary_tree_root_path(), dst_stencil}});
+    OperatorTaskSpace unparallel_task_space = OperatorTaskSpace{MinimalOrthotope{{}}};
+    OperatorTaskSpace parallel_task_space = OperatorTaskSpace{
+      MinimalOrthotope{{
+        2_ge2,
+      }},
     };
 
+    auto get_corresponding_task_space = [&](MachineView const &mv) {
+      if (mv == mv1) {
+        return unparallel_task_space;
+      } else {
+        ASSERT(mv == mv2 || mv == mv3);
 
-    CostEstimator cost_estimator = make_fake_cost_estimator(
-        std::unordered_map<OpCostEstimateKey, OpCostMetrics>{{
-            {map_unmapped_op_cost_estimate_key(k1, mv1),
-             OpCostMetrics{/*forward_runtime=*/1_ms,
-                           /*backward_runtime=*/1_ms,
-                           /*memory_usage=*/2_bytes}},
-            {map_unmapped_op_cost_estimate_key(k2, mv1),
-             OpCostMetrics{/*forward_runtime=*/2_ms,
-                           /*backward_runtime=*/2_ms,
-                           /*memory_usage=*/3_bytes}},
-            {map_unmapped_op_cost_estimate_key(k1, mv2),
-             OpCostMetrics{/*forward_runtime=*/1.5_ms,
-                           /*backward_runtime=*/1.5_ms,
-                           /*memory_usage=*/1_bytes}},
-            {map_unmapped_op_cost_estimate_key(k2, mv2),
-             OpCostMetrics{/*forward_runtime=*/2.5_ms,
-                           /*backward_runtime=*/2.5_ms,
-                           /*memory_usage=*/2_bytes}},
-        }},
-        std::unordered_map<TensorSetMovement, milliseconds_t>{{
-            {TensorSetMovement{/*movements=*/{}}, /*cost=*/0.0_ms},
-            {mk_tensor_set_movement(mv1, mv1),
-             0.1_ms},
-            {mk_tensor_set_movement(mv2, mv2),
-             0.2_ms},
-            {mk_tensor_set_movement(mv1, mv2),
-             0.3_ms},
-            {mk_tensor_set_movement(mv2, mv1),
-             0.4_ms},
-        }});
-
-    MachineMappingWithMemoryContext context = MachineMappingWithMemoryContext{
-        cost_estimator,
-        optimizer_attrs,
-        allowed_machine_views1,
+        return parallel_task_space;
+      }
     };
 
-    MachineMappingWithMemoryCache cache =
-        empty_machine_mapping_with_memory_cache();
+    // OpCostMetrics k1_on_mv1_cost = OpCostMetrics{
+    //   /*forward_runtime=*/1_ms,
+    //   /*backward_runtime=*/1_ms,
+    //   /*memory_usage=*/2_bytes,
+    // };
+    //
+    // OpCostMetrics k2_on_mv2_cost = OpCostMetrics{
+    //   /*forward_runtime=*/1_ms,
+    //   /*backward_runtime=*/1_ms,
+    //   /*memory_usage=*/2_bytes,
+    // };
+    //
+    // OpCostMetrics k2_on_mv3_cost = OpCostMetrics{
+    //   /*forward_runtime=*/1_ms,
+    //   /*backward_runtime=*/1_ms,
+    //   /*memory_usage=*/2_bytes,
+    // };
+    //
+    // OpCostMetrics k3_on_mv2_cost = OpCostMetrics{
+    //   /*forward_runtime=*/2.5_ms,
+    //   /*backward_runtime=*/2.5_ms,
+    //   /*memory_usage=*/2_bytes,
+    // };
+    //
+    // OpCostMetrics k3_on_mv3_cost = OpCostMetrics{
+    //   /*forward_runtime=*/2_ms,
+    //   /*backward_runtime=*/2_ms,
+    //   /*memory_usage=*/2_bytes,
+    // };
+    //
+    // CostEstimator cost_estimator = make_fake_cost_estimator(
+    //     std::unordered_map<OpCostEstimateKey, OpCostMetrics>{{
+    //         {
+    //           map_unmapped_op_cost_estimate_key(k1, mv1),
+    //           k1_on_mv1_cost,
+    //         },
+    //         {
+    //           map_unmapped_op_cost_estimate_key(k2, mv2),
+    //           k2_on_mv2_cost,
+    //         },
+    //         {
+    //           map_unmapped_op_cost_estimate_key(k3, mv2),
+    //           k3_on_mv2_cost,
+    //         },
+    //         {
+    //           map_unmapped_op_cost_estimate_key(k2, mv3),
+    //           k2_on_mv3_cost,
+    //         },
+    //         {
+    //           map_unmapped_op_cost_estimate_key(k3, mv3),
+    //           k3_on_mv3_cost,
+    //         },
+    //     }},
+    //     std::unordered_map<TensorSetMovement, milliseconds_t>{{
+    //         {TensorSetMovement{/*movements=*/{}}, /*cost=*/0.0_ms},
+    //         // {
+    //         //   mk_tensor_set_movement(mv1, mv2),
+    //         //   0.3_ms,
+    //         // },
+    //         // {
+    //         //   mk_tensor_set_movement(mv1, mv3),
+    //         //   0.3_ms,
+    //         // },
+    //         // {
+    //         //   mk_tensor_set_movement(mv2, mv2),
+    //         //   0.2_ms,
+    //         // },
+    //         // {
+    //         //   mk_tensor_set_movement(mv2, mv3),
+    //         //   0.4_ms,
+    //         // },
+    //         // {
+    //         //   mk_tensor_set_movement(mv3, mv2),
+    //         //   0.4_ms,
+    //         // },
+    //         // {
+    //         //   mk_tensor_set_movement(mv3, mv3),
+    //         //   0.4_ms,
+    //         // },
+    //     }});
 
-    SUBCASE("single layer") {
+    SUBCASE("single layer with single option") {
+      OpCostMetrics k1_on_mv1_cost = OpCostMetrics{
+        /*forward_runtime=*/1_ms,
+        /*backward_runtime=*/1_ms,
+        /*memory_usage=*/2_bytes,
+      };
+
+      CostEstimator cost_estimator = make_fake_cost_estimator(
+          std::unordered_map<OpCostEstimateKey, OpCostMetrics>{{
+              {
+                map_unmapped_op_cost_estimate_key(k1, mv1),
+                k1_on_mv1_cost,
+              },
+          }},
+          std::unordered_map<TensorSetMovement, milliseconds_t>{
+            {
+              empty_tensor_set_movement(),
+              0_ms,
+            },
+          });
+
       MachineMappingProblemTree problem_tree = make_leaf(k1);
 
       MachineMappingConstraints constraints =
           get_unconstrained_solution_for_layers(
               get_all_leaf_paths(problem_tree));
 
+      MachineMappingWithMemoryContext context = MachineMappingWithMemoryContext{
+          cost_estimator,
+          optimizer_attrs,
+          allowed_machine_views1,
+      };
+
+      MachineMappingWithMemoryCache cache =
+          empty_machine_mapping_with_memory_cache();
+
       MachineMappingWithMemoryResult result =
           get_optimal_machine_mapping_with_memory(
               cache, context, problem_tree, full_machine_resources, constraints);
+
       MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{{
-          MachineMappingForSingleLayer{
-              OpCostMetrics{/*forward_runtime=*/1_ms,
-                            /*backward_runtime=*/1_ms,
-                            /*memory_usage=*/2_bytes},
+          ParetoOptimalMachineMapping{
+              k1_on_mv1_cost,
               ParallelLayerGuidObliviousMachineMapping{{
                   {binary_tree_root_path(), mv1},
               }},
           },
-          MachineMappingForSingleLayer{
-              OpCostMetrics{/*forward_runtime=*/1.5_ms,
-                            /*backward_runtime=*/1.5_ms,
-                            /*memory_usage=*/1_bytes},
-              ParallelLayerGuidObliviousMachineMapping{{
-                  {binary_tree_root_path(), mv2},
-              }},
-          },
       }};
 
       CHECK(result == correct);
     }
 
-    SUBCASE("pair of layers in sequence") {
-      MachineMappingProblemTree problem_tree =
-          make_series_split(movement1, make_leaf(k1), make_leaf(k2));
+    SUBCASE("single layer with multiple options") {
+      OpCostMetrics k3_on_mv2_cost = OpCostMetrics{
+        /*forward_runtime=*/2.5_ms,
+        /*backward_runtime=*/2.5_ms,
+        /*memory_usage=*/2_bytes,
+      };
 
-      MachineMappingConstraints constraints =
-          get_unconstrained_solution_for_layers(
-              get_all_leaf_paths(problem_tree));
+      OpCostMetrics k3_on_mv3_cost = OpCostMetrics{
+        /*forward_runtime=*/2_ms,
+        /*backward_runtime=*/2_ms,
+        /*memory_usage=*/2_bytes,
+      };
 
-      MachineMappingWithMemoryResult result =
-          get_optimal_machine_mapping_with_memory(
-              cache, context, problem_tree, full_machine_resources, constraints);
-      MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{{
-          MachineMappingForSingleLayer{
-              OpCostMetrics{
-                  /*forward_runtime=*/1.0_ms + 2.0_ms + 0.1_ms,
-                  /*backward_runtime=*/1.0_ms + 2.0_ms + 0.1_ms,
-                  /*memory_usage=*/2_bytes + 3_bytes,
+      CostEstimator cost_estimator = make_fake_cost_estimator(
+          std::unordered_map<OpCostEstimateKey, OpCostMetrics>{{
+              {
+                map_unmapped_op_cost_estimate_key(k3, mv2),
+                k3_on_mv2_cost,
               },
-              ParallelLayerGuidObliviousMachineMapping{{
-                  {
-                      BinaryTreePath{{
-                          BinaryTreePathEntry::LEFT_CHILD,
-                      }},
-                      mv1,
-                  },
-                  {
-                      BinaryTreePath{{
-                          BinaryTreePathEntry::RIGHT_CHILD,
-                      }},
-                      mv1,
-                  },
-              }},
-          },
-          MachineMappingForSingleLayer{
-              OpCostMetrics{/*forward_runtime=*/1.5_ms + 2.5_ms + 0.1_ms,
-                            /*backward_runtime=*/1.5_ms + 2.5_ms + 0.1_ms,
-                            /*memory_usage=*/1_bytes + 2_bytes},
-              ParallelLayerGuidObliviousMachineMapping{{
-                  {
-                      BinaryTreePath{{
-                          BinaryTreePathEntry::LEFT_CHILD,
-                      }},
-                      mv2,
-                  },
-                  {
-                      BinaryTreePath{{
-                          BinaryTreePathEntry::RIGHT_CHILD,
-                      }},
-                      mv2,
-                  },
-              }},
+              {
+                map_unmapped_op_cost_estimate_key(k3, mv3),
+                k3_on_mv3_cost,
+              },
+          }},
+          std::unordered_map<TensorSetMovement, milliseconds_t>{
+            {
+              empty_tensor_set_movement(),
+              0_ms,
+            },
+          });
+
+      MachineMappingProblemTree problem_tree = make_leaf(k3);
+
+      MachineMappingConstraints constraints =
+          get_unconstrained_solution_for_layers(
+             get_all_leaf_paths(problem_tree));
+
+      MachineMappingWithMemoryCache cache =
+          empty_machine_mapping_with_memory_cache();
+
+      MachineMappingWithMemoryContext context = MachineMappingWithMemoryContext{
+          cost_estimator,
+          optimizer_attrs,
+          allowed_machine_views1,
+      };
+
+      MachineMappingWithMemoryResult result =
+          get_optimal_machine_mapping_with_memory(
+              cache, context, problem_tree, full_machine_resources, constraints);
+
+      MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{{
+          ParetoOptimalMachineMapping{
+            k3_on_mv3_cost,
+            ParallelLayerGuidObliviousMachineMapping{{
+              {binary_tree_root_path(), mv3},
+            }},
           },
       }};
 
       CHECK(result == correct);
     }
+    
+    SUBCASE("pair of layers in sequence") {
+      AbstractedTensorSetMovement k2_to_k3 = AbstractedTensorSetMovement{
+        /*single_tensor_movements=*/{
+          AbstractedSingleTensorMovement{
+            /*src_op_tree_path=*/binary_tree_root_path(),
+            /*edge_to_size=*/{
+              {
+                AbstractedSingleTensorCommunicationEdge{
+                  /*src_coord=*/make_task_space_coordinate({0_n}),
+                  /*dst=*/AbstractedDevice{
+                    /*operator_tree_path=*/binary_tree_root_path(),
+                    /*task_space_coordinate=*/make_task_space_coordinate({0_n}),
+                  },
+                },
+                get_size_in_bytes(tensor_shape),
+              },
+              {
+                AbstractedSingleTensorCommunicationEdge{
+                  /*src_coord=*/make_task_space_coordinate({1_n}),
+                  /*dst=*/AbstractedDevice{
+                    /*operator_tree_path=*/binary_tree_root_path(),
+                    /*task_space_coordinate=*/make_task_space_coordinate({1_n}),
+                  },
+                },
+                get_size_in_bytes(tensor_shape),
+              },
+            },
+          },
+        },
+      };
 
-    SUBCASE("pair of layers in parallel") {
+      auto mk_tensor_set_movement = [&](
+        MachineView const &src_mv, 
+        MachineView const &dst_mv) {
+
+        MachineSpaceStencil src_stencil = MachineSpaceStencil{
+          /*operator_task_space=*/get_corresponding_task_space(src_mv),
+          /*machine_view=*/src_mv,
+        };
+
+        MachineSpaceStencil dst_stencil = MachineSpaceStencil{
+          /*operator_task_space=*/get_corresponding_task_space(dst_mv),
+          /*machine_view=*/dst_mv,
+        };
+
+        return concretize_abstracted_tensor_set_movement(
+          k2_to_k3,
+          /*pre_machine_stencils=*/{{binary_tree_root_path(), src_stencil}},
+          /*post_machine_stencils=*/{{binary_tree_root_path(), dst_stencil}});
+      };
+
+      auto mk_cost_estimator = [&](
+        milliseconds_t k2_on_mv2_cost,
+        num_bytes_t k2_on_mv2_mem_usage,
+        milliseconds_t k2_on_mv3_cost,
+        num_bytes_t k2_on_mv3_mem_usage,
+        milliseconds_t k3_on_mv2_cost,
+        num_bytes_t k3_on_mv2_mem_usage,
+        milliseconds_t k3_on_mv3_cost,
+        num_bytes_t k3_on_mv3_mem_usage,
+        milliseconds_t mv2_to_mv2_cost,
+        milliseconds_t mv2_to_mv3_cost,
+        milliseconds_t mv3_to_mv2_cost,
+        milliseconds_t mv3_to_mv3_cost) {
+
+        return make_fake_cost_estimator(
+            std::unordered_map<OpCostEstimateKey, OpCostMetrics>{{
+                {
+                  map_unmapped_op_cost_estimate_key(k2, mv2),
+                  OpCostMetrics{
+                    /*forward_runtime=*/k2_on_mv2_cost,
+                    /*backward_runtime=*/k2_on_mv2_cost,
+                    /*memory_usage=*/k2_on_mv2_mem_usage,
+                  },
+                },
+                {
+                  map_unmapped_op_cost_estimate_key(k2, mv3),
+                  OpCostMetrics{
+                    /*forward_runtime=*/k2_on_mv3_cost,
+                    /*backward_runtime=*/k2_on_mv3_cost,
+                    /*memory_usage=*/k2_on_mv3_mem_usage,
+                  },
+                },
+                {
+                  map_unmapped_op_cost_estimate_key(k3, mv2),
+                  OpCostMetrics{
+                    /*forward_runtime=*/k3_on_mv2_cost,
+                    /*backward_runtime=*/k3_on_mv2_cost,
+                    /*memory_usage=*/k3_on_mv2_mem_usage,
+                  },
+                },
+                {
+                  map_unmapped_op_cost_estimate_key(k3, mv3),
+                  OpCostMetrics{
+                    /*forward_runtime=*/k3_on_mv3_cost,
+                    /*backward_runtime=*/k3_on_mv3_cost,
+                    /*memory_usage=*/k3_on_mv3_mem_usage,
+                  },
+                },
+            }},
+            std::unordered_map<TensorSetMovement, milliseconds_t>{{
+              {
+                empty_tensor_set_movement(),
+                0_ms,
+              },
+              {
+                mk_tensor_set_movement(mv2, mv2), 
+                mv2_to_mv2_cost,
+              },
+              {
+                mk_tensor_set_movement(mv2, mv3), 
+                mv2_to_mv3_cost,
+              },
+              {
+                mk_tensor_set_movement(mv3, mv2), 
+                mv3_to_mv2_cost,
+              },
+              {
+                mk_tensor_set_movement(mv3, mv3), 
+                mv3_to_mv3_cost,
+              },
+            }});
+      };
+
       MachineMappingProblemTree problem_tree =
-          make_parallel_split(make_leaf(k1), make_leaf(k2));
+          make_series_split(k2_to_k3, make_leaf(k2), make_leaf(k3));
 
       MachineMappingConstraints constraints =
           get_unconstrained_solution_for_layers(
               get_all_leaf_paths(problem_tree));
 
+      MachineMappingWithMemoryCache cache =
+          empty_machine_mapping_with_memory_cache();
+
+
+      SUBCASE("solution is mv2, mv3 due to runtime") {
+        CostEstimator cost_estimator = mk_cost_estimator(
+          /*k2_on_mv2_cost=*/2_ms,
+          /*k2_on_mv2_mem_usage=*/2_bytes,
+          /*k2_on_mv3_cost=*/2.4_ms,
+          /*k2_on_mv3_mem_usage=*/2_bytes,
+          /*k3_on_mv2_cost=*/3.6_ms,
+          /*k3_on_mv2_mem_usage=*/2_bytes,
+          /*k3_on_mv3_cost=*/3_ms,
+          /*k3_on_mv3_mem_usage=*/2_bytes,
+          /*mv2_to_mv2_cost=*/0.1_ms,
+          /*mv2_to_mv3_cost=*/1.0_ms,
+          /*mv3_to_mv2_cost=*/0.3_ms,
+          /*mv3_to_mv3_cost=*/0.1_ms);
+
+        MachineMappingWithMemoryContext context = MachineMappingWithMemoryContext{
+            cost_estimator,
+            optimizer_attrs,
+            allowed_machine_views1,
+        };
+
+        MachineMappingWithMemoryResult result =
+            get_optimal_machine_mapping_with_memory(
+                cache, context, problem_tree, full_machine_resources, constraints);
+
+        MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{{
+            ParetoOptimalMachineMapping{
+                OpCostMetrics{
+                    /*forward_runtime=*/2_ms + 0.3_ms + 3_ms,
+                    /*backward_runtime=*/2_ms + 0.3_ms + 3_ms,
+                    /*memory_usage=*/4_bytes,
+                },
+                ParallelLayerGuidObliviousMachineMapping{{
+                    {
+                        BinaryTreePath{{
+                            BinaryTreePathEntry::LEFT_CHILD,
+                        }},
+                        mv1,
+                    },
+                    {
+                        BinaryTreePath{{
+                            BinaryTreePathEntry::RIGHT_CHILD,
+                        }},
+                        mv1,
+                    },
+                }},
+            },
+        }};
+      }
+    }
+    
+    SUBCASE("pair of layers in parallel") {
+      auto mk_cost_estimator = [&](
+        milliseconds_t k2_on_mv2_cost,
+        num_bytes_t k2_on_mv2_mem_usage,
+        milliseconds_t k2_on_mv3_cost,
+        num_bytes_t k2_on_mv3_mem_usage,
+        milliseconds_t k3_on_mv2_cost,
+        num_bytes_t k3_on_mv2_mem_usage,
+        milliseconds_t k3_on_mv3_cost,
+        num_bytes_t k3_on_mv3_mem_usage) {
+
+        return make_fake_cost_estimator(
+          std::unordered_map<OpCostEstimateKey, OpCostMetrics>{{
+              {
+                map_unmapped_op_cost_estimate_key(k2, mv2),
+                OpCostMetrics{
+                  /*forward_runtime=*/k2_on_mv2_cost,
+                  /*backward_runtime=*/k2_on_mv2_cost,
+                  /*memory_usage=*/k2_on_mv2_mem_usage,
+                },
+              },
+              {
+                map_unmapped_op_cost_estimate_key(k2, mv3),
+                OpCostMetrics{
+                  /*forward_runtime=*/k2_on_mv3_cost,
+                  /*backward_runtime=*/k2_on_mv3_cost,
+                  /*memory_usage=*/k2_on_mv3_mem_usage,
+                },
+              },
+              {
+                map_unmapped_op_cost_estimate_key(k3, mv2),
+                OpCostMetrics{
+                  /*forward_runtime=*/k3_on_mv2_cost,
+                  /*backward_runtime=*/k3_on_mv2_cost,
+                  /*memory_usage=*/k3_on_mv2_mem_usage,
+                },
+              },
+              {
+                map_unmapped_op_cost_estimate_key(k3, mv3),
+                OpCostMetrics{
+                  /*forward_runtime=*/k3_on_mv3_cost,
+                  /*backward_runtime=*/k3_on_mv3_cost,
+                  /*memory_usage=*/k3_on_mv3_mem_usage,
+                },
+              },
+          }},
+          std::unordered_map<TensorSetMovement, milliseconds_t>{
+            {
+              empty_tensor_set_movement(),
+              0_ms,
+            },
+          });
+      };
+
+      CostEstimator cost_estimator = mk_cost_estimator(
+        /*k2_on_mv2_cost=*/2_ms,
+        /*k2_on_mv2_mem_usage=*/3_bytes,
+        /*k2_on_mv3_cost=*/2.5_ms,
+        /*k2_on_mv3_mem_usage=*/2_bytes,
+        /*k3_on_mv2_cost=*/2.5_ms,
+        /*k3_on_mv2_mem_usage=*/3_bytes,
+        /*k3_on_mv3_cost=*/2_ms,
+        /*k3_on_mv3_mem_usage=*/1_bytes);
+
+      MachineMappingWithMemoryContext context = MachineMappingWithMemoryContext{
+          cost_estimator,
+          optimizer_attrs,
+          allowed_machine_views1,
+      };
+
+      MachineMappingProblemTree problem_tree =
+          make_parallel_split(make_leaf(k2), make_leaf(k3));
+
+      MachineMappingConstraints constraints =
+          get_unconstrained_solution_for_layers(
+              get_all_leaf_paths(problem_tree));
+
+      MachineMappingWithMemoryCache cache =
+          empty_machine_mapping_with_memory_cache();
+
       MachineMappingWithMemoryResult result =
           get_optimal_machine_mapping_with_memory(
               cache, context, problem_tree, full_machine_resources, constraints);
+
       MachineMappingWithMemoryResult correct =
-          MachineMappingWithMemoryResult{{MachineMappingForSingleLayer{
-              OpCostMetrics{/*forward_runtime=*/2.5_ms,
-                            /*backward_runtime=*/2.5_ms,
-                            /*memory_usage=*/2_bytes},
-              ParallelLayerGuidObliviousMachineMapping{{
-                  {
-                      BinaryTreePath{{
-                          BinaryTreePathEntry::LEFT_CHILD,
-                      }},
-                      mv2,
-                  },
-                  {
-                      BinaryTreePath{{
-                          BinaryTreePathEntry::RIGHT_CHILD,
-                      }},
-                      mv2,
-                  },
-              }},
+          MachineMappingWithMemoryResult{
+            /*pareto_frontier=*/{
+              ParetoOptimalMachineMapping{
+                OpCostMetrics{
+                  /*forward_runtime=*/2_ms,
+                  /*backward_runtime=*/2_ms,
+                  /*memory_usage=*/6_bytes,
+                },
+                ParallelLayerGuidObliviousMachineMapping{{
+                    {
+                        BinaryTreePath{{
+                            BinaryTreePathEntry::LEFT_CHILD,
+                        }},
+                        mv2,
+                    },
+                    {
+                        BinaryTreePath{{
+                            BinaryTreePathEntry::RIGHT_CHILD,
+                        }},
+                        mv3,
+                    },
+                }},
+              },
+              ParetoOptimalMachineMapping{
+                OpCostMetrics{
+                  /*forward_runtime=*/2.5_ms,
+                  /*backward_runtime=*/2.5_ms,
+                  /*memory_usage=*/2_bytes,
+                },
+                ParallelLayerGuidObliviousMachineMapping{{
+                    {
+                        BinaryTreePath{{
+                            BinaryTreePathEntry::LEFT_CHILD,
+                        }},
+                        mv3,
+                    },
+                    {
+                        BinaryTreePath{{
+                            BinaryTreePathEntry::RIGHT_CHILD,
+                        }},
+                        mv2,
+                    },
+                }},
+              },
+            },
+          };
 
-          }}};
-
-      CHECK(result == correct);
+      ASSERT(result == correct);
     }
+
+      
+      // auto get_solution_cost = [&](CostEstimator const &cost_estimator,
+      //                              MachineView const &k2_mv,
+      //                              MachineView const &k3_mv) {
+      //   OpCostMetrics k2_cost = cost_estimator.estimate_cost(
+      //     map_unmapped_op_cost_estimate_key(k2, k2_mv)
+      //   );
+      //
+      //   OpCostMetrics k3_cost = cost_estimator.estimate_cost(
+      //     map_unmapped_op_cost_estimate_key(k3, k3_mv)
+      //   );
+      //
+      //   milliseconds_t comm_time = cost_estimator.estimate_cost(
+      //     concretize_abstracted_tensor_set_movement( 
+      //       k2_to_k3,
+      //       std::unordered_map<BinaryTreePath, MachineSpaceStencil>{
+      //         {
+      //           binary_tree_root_path(),
+      //           MachineSpaceStencil{
+      //             /*operator_task_space=*/parallel_task_space,
+      //             /*machine_view=*/k2_mv,
+      //           },
+      //         },
+      //       },
+      //       std::unordered_map<BinaryTreePath, MachineSpaceStencil>{
+      //         {
+      //           binary_tree_root_path(),
+      //           MachineSpaceStencil{
+      //             /*operator_task_space=*/parallel_task_space,
+      //             /*machine_view=*/k3_mv,
+      //           },
+      //         },
+      //       }
+      //     )
+      //   );
+      //
+      //   return ParetoOptimalMachineMapping{
+      //       OpCostMetrics{
+      //           /*forward_runtime=*/k3_cost.forward_runtime + comm_time + k2_cost.forward_runtime,
+      //           /*backward_runtime=*/k3_cost.backward_runtime + comm_time + k2_cost.backward_runtime,
+      //           /*memory_usage=*/k3_cost.memory_usage + k2_cost.memory_usage,
+      //       },
+      //       ParallelLayerGuidObliviousMachineMapping{{
+      //           {
+      //               BinaryTreePath{{
+      //                   BinaryTreePathEntry::LEFT_CHILD,
+      //               }},
+      //               k2_mv,
+      //           },
+      //           {
+      //               BinaryTreePath{{
+      //                   BinaryTreePathEntry::RIGHT_CHILD,
+      //               }},
+      //               k3_mv,
+      //           },
+      //       }},
+      //   };
+      // };
+      //
+      // auto brute_force(
+      //   CostEstimator const &cost_estimator) 
+      //     -> MachineMappingWithMemoryResult
+      // {
+      //   for (MachineView const &k2_mv : std::vector{mv2, mv3}) {
+      //     for (MachineView const &k3_mv : std::vector{mv2, mv3}) {
+      //       MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{{
+      //           ParetoOptimalMachineMapping{
+      //               OpCostMetrics{
+      //                   /*forward_runtime=*/2_ms + 0.3_ms + 3_ms,
+      //                   /*backward_runtime=*/2_ms + 0.3_ms + 3_ms,
+      //                   /*memory_usage=*/4_bytes,
+      //               },
+      //               ParallelLayerGuidObliviousMachineMapping{{
+      //                   {
+      //                       BinaryTreePath{{
+      //                           BinaryTreePathEntry::LEFT_CHILD,
+      //                       }},
+      //                       mv1,
+      //                   },
+      //                   {
+      //                       BinaryTreePath{{
+      //                           BinaryTreePathEntry::RIGHT_CHILD,
+      //                       }},
+      //                       mv1,
+      //                   },
+      //               }},
+      //           },
+      //       }};
+      //     }
+      //   }
+      // };
+
+      // RC_SUBCASE("result always contains solution with minimal runtime",
+      //     [&](milliseconds_t k2_on_mv2_cost,
+      //         num_bytes_t k2_on_mv2_mem_usage,
+      //         milliseconds_t k2_on_mv3_cost,
+      //         num_bytes_t k2_on_mv3_mem_usage,
+      //         milliseconds_t k3_on_mv2_cost,
+      //         num_bytes_t k3_on_mv2_mem_usage,
+      //         milliseconds_t k3_on_mv3_cost,
+      //         num_bytes_t k3_on_mv3_mem_usage,
+      //         milliseconds_t mv2_to_mv2_cost,
+      //         milliseconds_t mv2_to_mv3_cost,
+      //         milliseconds_t mv3_to_mv2_cost,
+      //         milliseconds_t mv3_to_mv3_cost) {
+      //
+      //     CostEstimator cost_estimator = mk_cost_estimator(
+      //       /*k2_on_mv2_cost=*/k2_on_mv2_cost,
+      //       /*k2_on_mv2_mem_usage=*/k2_on_mv2_mem_usage,
+      //       /*k2_on_mv3_cost=*/k2_on_mv3_cost,
+      //       /*k2_on_mv3_mem_usage=*/k2_on_mv3_mem_usage,
+      //       /*k3_on_mv2_cost=*/k3_on_mv2_cost,
+      //       /*k3_on_mv2_mem_usage=*/k3_on_mv2_mem_usage,
+      //       /*k3_on_mv3_cost=*/k3_on_mv3_cost,
+      //       /*k3_on_mv3_mem_usage=*/k3_on_mv3_mem_usage,
+      //       /*mv2_to_mv2_cost=*/mv2_to_mv2_cost,
+      //       /*mv2_to_mv3_cost=*/mv2_to_mv3_cost,
+      //       /*mv3_to_mv2_cost=*/mv3_to_mv2_cost,
+      //       /*mv3_to_mv3_cost=*/mv3_to_mv3_cost);
+      //
+      //     MachineMappingWithMemoryContext context = MachineMappingWithMemoryContext{
+      //         cost_estimator,
+      //         optimizer_attrs,
+      //         allowed_machine_views1,
+      //     };
+      //
+      //     MachineMappingWithMemoryResult result =
+      //         get_optimal_machine_mapping_with_memory(
+      //             cache, context, problem_tree, full_machine_resources, constraints);
+      //
+      //
+      //
+      //     } 
+      // );     
+      //
+      // SUBCASE("result always contains solution with minimal memory cost") {
+      //
+      // }
+
+      // CHECK(result == correct);
+
   }
 }

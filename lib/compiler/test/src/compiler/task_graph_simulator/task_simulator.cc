@@ -66,16 +66,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_layer_guid_t layer0 = get_source_layer(tensor0);
       parallel_layer_guid_t layer1 = get_source_layer(tensor1);
 
-      std::vector<MachineViewDimension> dims = {
-          MachineViewDimension{stride_t{1_p},
-                               MachineSpecificationDimension::INTER_NODE},
-          MachineViewDimension{stride_t{1_p},
-                               MachineSpecificationDimension::INTER_NODE},
-          MachineViewDimension{stride_t{1_p},
-                               MachineSpecificationDimension::INTER_NODE},
-          MachineViewDimension{stride_t{1_p},
-                               MachineSpecificationDimension::INTER_NODE},
-      };
+      std::vector<MachineViewDimension> dims = {};
       ParallelComputationGraph pcg = b.pcg;
       MachineView mv1 =
           MachineView{MachineSpaceCoordinate{0_n, 0_n, DeviceType::GPU}, dims};
@@ -155,16 +146,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_layer_guid_t layer3 = get_source_layer(tensor3);
 
       ParallelComputationGraph pcg = b.pcg;
-      std::vector<MachineViewDimension> dims = {
-          MachineViewDimension{stride_t{1_p},
-                               MachineSpecificationDimension::INTER_NODE},
-          MachineViewDimension{stride_t{1_p},
-                               MachineSpecificationDimension::INTER_NODE},
-          MachineViewDimension{stride_t{1_p},
-                               MachineSpecificationDimension::INTER_NODE},
-          MachineViewDimension{stride_t{1_p},
-                               MachineSpecificationDimension::INTER_NODE},
-      };
+      std::vector<MachineViewDimension> dims = {};
 
       SUBCASE("all different devices") {
         MachineView mv0 = MachineView{

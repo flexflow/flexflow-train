@@ -1,4 +1,5 @@
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.h"
+#include "compiler/cost_estimator/tensor_set_movement.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_single_tensor_movement.dtg.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_single_tensor_movement.h"
 #include "compiler/machine_mapping/parallel_layer_guid_oblivious_machine_mapping.h"
@@ -67,7 +68,7 @@ TensorSetMovement concretize_abstracted_tensor_set_movement(
     };
   };
 
-  return foldl1(single_tensor_movements, merge_tensor_set_movements);
+  return foldl(single_tensor_movements, empty_tensor_set_movement(), merge_tensor_set_movements);
 }
 
 } // namespace FlexFlow

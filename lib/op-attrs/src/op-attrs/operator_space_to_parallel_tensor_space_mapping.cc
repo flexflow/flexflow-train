@@ -47,7 +47,7 @@ OperatorSpaceToParallelTensorSpaceMapping
   MinimalDimDomain<parallel_tensor_dim_idx_t> pt_minimal_dim_domain 
     = minimal_dim_domain_from_parallel_tensor_dim_degrees(parallel_tensor_dim_degrees);
 
-  ASSERT(num_dims(operator_task_space) == minimal_dim_domain_num_dims(pt_minimal_dim_domain));
+  ASSERT(op_task_space_num_dims(operator_task_space) == minimal_dim_domain_num_dims(pt_minimal_dim_domain));
 
   std::vector<operator_task_space_dim_idx_t> op_minimal_domain_dims
     = sorted_by(operator_task_space_get_dim_idxs(operator_task_space),

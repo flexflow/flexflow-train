@@ -91,4 +91,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     CHECK(result == correct);
   }
+
+  TEST_CASE("empty_dim_domain_mapping") {
+    empty_dim_domain_mapping<int, std::string>();
+  }
 }

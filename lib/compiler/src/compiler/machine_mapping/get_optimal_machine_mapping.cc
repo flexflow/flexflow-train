@@ -158,8 +158,14 @@ MachineMappingResult
       TensorSetMovement comm_across_split =
           concretize_abstracted_tensor_set_movement(
               tensor_movement,
-              /*pre_machine_stencils=*/get_machine_stencils_for_mm_problem_tree(series_split.get_left_child(), assigned_pre_machine_views),
-              /*post_machine_stencils=*/get_machine_stencils_for_mm_problem_tree(series_split.get_right_child(), assigned_post_machine_views));
+              /*pre_machine_stencils=*/
+                get_machine_stencils_for_partially_mapped_mm_problem_tree(
+                  series_split.get_left_child(), 
+                  assigned_pre_machine_views),
+              /*post_machine_stencils=*/
+                get_machine_stencils_for_partially_mapped_mm_problem_tree(
+                    series_split.get_right_child(), 
+                    assigned_post_machine_views));
 
       milliseconds_t cost_across_split =
           context.cost_estimator.estimate_cost(comm_across_split);

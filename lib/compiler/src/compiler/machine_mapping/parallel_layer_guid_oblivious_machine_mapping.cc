@@ -62,19 +62,24 @@ std::unordered_map<BinaryTreePath, MachineSpaceStencil>
                       });
 }
 
-std::unordered_map<BinaryTreePath, MachineSpaceStencil>
+std::unordered_map<BinaryTreePath, std::optional<MachineSpaceStencil>>
   get_machine_stencils_for_mm_problem_tree(MachineMappingProblemTree const &tree,
                                            ParallelLayerGuidObliviousMachineMapping const &mapping) {
 
   std::unordered_map<BinaryTreePath, UnmappedRuntimeOnlyOpCostEstimateKey>
     tree_leaf_map = mm_problem_tree_get_path_to_leaf_map(tree);
 
-  std::unordered_set<BinaryTreePath> leaf_paths = require_same(
-    keys(tree_leaf_map),
-    keys(mapping.raw_mapping));
+  std::unordered_set<BinaryTreePath> mapping_paths = keys(mapping.raw_mapping);
+  std::unordered_set<BinaryTreePath> tree_paths = keys(tree_leaf_map);
 
-  return generate_map(leaf_paths,
-                      [&](BinaryTreePath const &p) -> MachineSpaceStencil {
+  ASSERT(is_subseteq_of(mapping_paths, tree_paths));
+
+  return generate_map(tree_paths,
+                      [&](BinaryTreePath const &p) -> std::optional<MachineSpaceStencil> {
+                        if (!contains_key(mapping.raw_mapping, p)) {
+                          return std::nullopt;
+                        }
+
                         UnmappedRuntimeOnlyOpCostEstimateKey leaf = tree_leaf_map.at(p);
                         
                         ComputationGraphOpAttrs leaf_op_attrs =
@@ -91,8 +96,19 @@ std::unordered_map<BinaryTreePath, MachineSpaceStencil>
                           /*machine_view=*/mapping.raw_mapping.at(p),
                         };
                       });
-
 }
+
+std::unordered_map<BinaryTreePath, MachineSpaceStencil>
+  get_machine_stencils_for_partially_mapped_mm_problem_tree(
+    MachineMappingProblemTree const &tree,
+    ParallelLayerGuidObliviousMachineMapping const &mappings) {
+
+  return filtermap_values(get_machine_stencils_for_mm_problem_tree(tree, mappings),
+                          [](std::optional<MachineSpaceStencil> const &s) {
+                            return s;
+                          });
+}
+
 
 
 } // namespace FlexFlow
