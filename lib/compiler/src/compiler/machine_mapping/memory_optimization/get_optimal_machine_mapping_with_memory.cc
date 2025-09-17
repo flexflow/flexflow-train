@@ -1,9 +1,10 @@
 #include "compiler/machine_mapping/memory_optimization/get_optimal_machine_mapping_with_memory.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.h"
-#include "compiler/machine_mapping/get_machine_resource_splits.h"
 #include "compiler/machine_mapping/machine_mapping_constraints.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
+#include "compiler/machine_mapping/machine_resource_split.dtg.h"
+#include "compiler/machine_mapping/machine_resource_split.h"
 #include "compiler/machine_mapping/memory_optimization/machine_mapping_with_memory_cache.h"
 #include "compiler/machine_mapping/memory_optimization/machine_mapping_with_memory_result.h"
 #include "compiler/machine_mapping/parallel_layer_guid_oblivious_machine_mapping.h"
@@ -216,22 +217,23 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
       restrict_to_right_child(constraints);
 
   auto evaluate_resource_split =
-      [&](std::pair<MachineComputeResourceSlice, MachineComputeResourceSlice> const
-              &resource_split) {
+      [&](MachineResourceSplit const &resource_split) {
+        auto [lhs_resources, rhs_resources] = apply_resource_split(resource_split, resources);
+
         MachineMappingWithMemoryResult left_result =
             get_optimal_machine_mapping_with_memory(result_cache,
                                                     context,
                                                     lhs,
-                                                    resource_split.first,
+                                                    lhs_resources,
                                                     left_constraints);
         MachineMappingWithMemoryResult right_result =
             get_optimal_machine_mapping_with_memory(result_cache,
                                                     context,
                                                     rhs,
-                                                    resource_split.second,
+                                                    rhs_resources,
                                                     right_constraints);
 
-        return parallel_combine(left_result, right_result);
+        return parallel_combine(resource_split, left_result, right_result);
       };
 
   std::unordered_set<MachineMappingWithMemoryResult> parallel_results =

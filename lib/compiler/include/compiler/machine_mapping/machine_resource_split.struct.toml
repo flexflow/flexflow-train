@@ -1,0 +1,23 @@
+namespace = "FlexFlow"
+name = "MachineResourceSplit"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+  "rapidcheck",
+  "json",
+]
+
+includes = [
+  "utils/positive_int/positive_int.h",
+  "pcg/machine_specification_dimension.dtg.h",
+]
+
+[[fields]]
+name = "offset"
+type = "::FlexFlow::positive_int"
+
+[[fields]]
+name = "dimension"
+type = "::FlexFlow::MachineSpecificationDimension"

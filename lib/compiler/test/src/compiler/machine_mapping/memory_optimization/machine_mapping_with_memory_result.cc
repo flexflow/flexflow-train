@@ -383,22 +383,43 @@ TEST_SUITE(FF_TEST_SUITE) {
     MachineMappingWithMemoryResult empty =
         empty_machine_mapping_with_memory_result();
 
+    MachineResourceSplit split = MachineResourceSplit{
+      /*offset=*/3_p,
+      /*dimension=*/MachineSpecificationDimension::INTER_NODE,
+    };
+
     SUBCASE("lhs is empty") {
-      MachineMappingWithMemoryResult result = parallel_combine(empty, rhs);
+      MachineMappingWithMemoryResult result = parallel_combine(split, empty, rhs);
       MachineMappingWithMemoryResult correct = empty;
 
       CHECK(result == correct);
     }
 
     SUBCASE("rhs is empty") {
-      MachineMappingWithMemoryResult result = parallel_combine(lhs, empty);
+      MachineMappingWithMemoryResult result = parallel_combine(split, lhs, empty);
       MachineMappingWithMemoryResult correct = empty;
 
       CHECK(result == correct);
     }
 
     SUBCASE("both are nonempty") {
-      MachineMappingWithMemoryResult result = parallel_combine(lhs, rhs);
+      MachineMappingWithMemoryResult result = parallel_combine(split, lhs, rhs);
+
+      MachineView translated_machine_view_1 = MachineView{
+          /*start=*/MachineSpaceCoordinate{
+              /*node_idx=*/3_n,
+              /*device_idx=*/0_n,
+              /*device_type=*/DeviceType::GPU,
+          },
+          /*dimensions=*/
+          {
+              MachineViewDimension{
+                  stride_t{2_p},
+                  MachineSpecificationDimension::INTRA_NODE,
+              },
+          },
+      };
+
       MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{{
           ParetoOptimalMachineMapping{
               /*cost=*/OpCostMetrics{
@@ -425,7 +446,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                       },
                       {
                           BinaryTreePath{{BinaryTreePathEntry::RIGHT_CHILD}},
-                          machine_view_1,
+                          translated_machine_view_1,
                       },
                   },
               },
@@ -436,7 +457,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
   }
 
-  TEST_CASE("minimize_runtime(memory)") {
+  TEST_CASE("minimize_runtime(MachineMappingWithMemoryResult, MachineMappingWithMemoryResult)") {
     MachineView machine_view_0 = MachineView{
         /*start=*/MachineSpaceCoordinate{
             /*node_idx=*/0_n,
@@ -493,8 +514,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*memory_usage=*/1_bytes,
     };
     OpCostMetrics cost3 = OpCostMetrics{
-        /*forward_runtime=*/2_ms,
-        /*backward_runtime=*/2_ms,
+        /*forward_runtime=*/2.5_ms,
+        /*backward_runtime=*/2.5_ms,
         /*memory_usage=*/3_bytes,
     };
 
@@ -534,21 +555,21 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    MachineMappingWithMemoryResult result1 = MachineMappingWithMemoryResult{
+    MachineMappingWithMemoryResult mapping_result1 = MachineMappingWithMemoryResult{
         {
             mm1,
             mm2,
         },
     };
 
-    MachineMappingWithMemoryResult result2 = MachineMappingWithMemoryResult{
+    MachineMappingWithMemoryResult mapping_result2 = MachineMappingWithMemoryResult{
         {
             mm2,
             mm3,
         },
     };
 
-    MachineMappingWithMemoryResult result = minimize_runtime(result1, result2);
+    MachineMappingWithMemoryResult result = minimize_runtime(mapping_result1, mapping_result2);
     MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{
         {
             mm1,

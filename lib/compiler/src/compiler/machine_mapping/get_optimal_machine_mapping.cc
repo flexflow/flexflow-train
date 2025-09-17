@@ -1,13 +1,14 @@
 #include "compiler/machine_mapping/get_optimal_machine_mapping.h"
 #include "compiler/cost_estimator/op_cost_metrics.dtg.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.h"
-#include "compiler/machine_mapping/get_machine_resource_splits.h"
 #include "compiler/machine_mapping/machine_mapping_cache.h"
 #include "compiler/machine_mapping/machine_mapping_constraints.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_runtime_only_op_cost_estimate_key.h"
 #include "compiler/machine_mapping/machine_mapping_result.h"
+#include "compiler/machine_mapping/machine_resource_split.dtg.h"
+#include "compiler/machine_mapping/machine_resource_split.h"
 #include "compiler/machine_mapping/parallel_layer_guid_oblivious_machine_mapping.h"
 #include "compiler/machine_mapping/transitive_reduced_pcg.h"
 #include "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.dtg.h"
@@ -212,18 +213,19 @@ MachineMappingResult get_optimal_machine_mapping(
       restrict_to_right_child(constraints);
 
   auto evaluate_resource_split =
-      [&](std::pair<MachineComputeResourceSlice, MachineComputeResourceSlice> const
-              &resource_split) {
+      [&](MachineResourceSplit const &resource_split) {
+        auto [lhs_resources, rhs_resources] = apply_resource_split(resource_split, resources);
+
         MachineMappingResult left_result = get_optimal_machine_mapping(
-            result_cache, context, lhs, resource_split.first, left_constraints);
+            result_cache, context, lhs, lhs_resources, left_constraints);
         MachineMappingResult right_result =
             get_optimal_machine_mapping(result_cache,
                                         context,
                                         rhs,
-                                        resource_split.second,
+                                        rhs_resources,
                                         right_constraints);
 
-        return parallel_combine(left_result, right_result);
+        return parallel_combine(resource_split, left_result, right_result);
       };
 
   std::unordered_set<MachineMappingResult> parallel_results = transform(

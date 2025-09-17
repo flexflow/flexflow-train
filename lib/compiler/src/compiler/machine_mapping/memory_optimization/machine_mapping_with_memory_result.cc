@@ -1,4 +1,5 @@
 #include "compiler/machine_mapping/memory_optimization/machine_mapping_with_memory_result.h"
+#include "compiler/machine_mapping/machine_resource_split.h"
 #include "compiler/machine_mapping/parallel_layer_guid_oblivious_machine_mapping.h"
 #include "utils/containers/set_union.h"
 #include "utils/full_binary_tree/binary_tree_path.h"
@@ -117,7 +118,8 @@ MachineMappingWithMemoryResult
 }
 
 MachineMappingWithMemoryResult
-    parallel_combine(MachineMappingWithMemoryResult const &lhs_result,
+    parallel_combine(MachineResourceSplit const &split,
+                     MachineMappingWithMemoryResult const &lhs_result,
                      MachineMappingWithMemoryResult const &rhs_result) {
   auto combine_machine_mapping =
       [&](ParetoOptimalMachineMapping const &lhs_mm,
@@ -133,8 +135,9 @@ MachineMappingWithMemoryResult
         };
 
         ParallelLayerGuidObliviousMachineMapping mapping =
-            binary_combine_mappings(lhs_mm.machine_mapping,
-                                    rhs_mm.machine_mapping);
+            binary_combine_mappings(
+              lhs_mm.machine_mapping,
+              offset_layer_oblivious_mapping_by(rhs_mm.machine_mapping, split));
 
         return ParetoOptimalMachineMapping{cost, mapping};
       };

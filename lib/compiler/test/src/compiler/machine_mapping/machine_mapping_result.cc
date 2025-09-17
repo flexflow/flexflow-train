@@ -253,29 +253,49 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineMappingResult infeasible = infeasible_machine_mapping_result();
 
+    MachineResourceSplit split = MachineResourceSplit{
+      /*offset=*/3_p,
+      /*dimension=*/MachineSpecificationDimension::INTER_NODE,
+    };
+
     SUBCASE("lhs is infeasible") {
-      MachineMappingResult result = parallel_combine(infeasible, rhs);
+      MachineMappingResult result = parallel_combine(split, infeasible, rhs);
       MachineMappingResult correct = infeasible;
 
       CHECK(result == correct);
     }
 
     SUBCASE("rhs is infeasible") {
-      MachineMappingResult result = parallel_combine(lhs, infeasible);
+      MachineMappingResult result = parallel_combine(split, lhs, infeasible);
       MachineMappingResult correct = infeasible;
 
       CHECK(result == correct);
     }
 
     SUBCASE("both are infeasible") {
-      MachineMappingResult result = parallel_combine(infeasible, infeasible);
+      MachineMappingResult result = parallel_combine(split, infeasible, infeasible);
       MachineMappingResult correct = infeasible;
 
       CHECK(result == correct);
     }
 
     SUBCASE("both are feasible") {
-      MachineMappingResult result = parallel_combine(lhs, rhs);
+      MachineView translated_machine_view_1 = MachineView{
+          /*start=*/MachineSpaceCoordinate{
+              /*node_idx=*/3_n,
+              /*device_idx=*/0_n,
+              /*device_type=*/DeviceType::GPU,
+          },
+          /*dimensions=*/
+          {
+              MachineViewDimension{
+                  stride_t{2_p},
+                  MachineSpecificationDimension::INTRA_NODE,
+              },
+          },
+      };
+
+      MachineMappingResult result = parallel_combine(split, lhs, rhs);
       MachineMappingResult correct = MachineMappingResult{
           FeasibleMachineMappingResult{
               /*runtime=*/4_ms,
@@ -299,7 +319,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                       BinaryTreePath{{
                           BinaryTreePathEntry::RIGHT_CHILD,
                       }},
-                      machine_view_1,
+                      translated_machine_view_1,
                   },
               }},
           },

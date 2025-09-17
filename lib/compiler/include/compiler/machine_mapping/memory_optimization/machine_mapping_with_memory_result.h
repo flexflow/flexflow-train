@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_COMPILER_MACHINE_MAPPING_MEMORY_OPTIMIZATION_MACHINE_MAPPING_RESULT_WITH_MEMORY_H
 #define _FLEXFLOW_COMPILER_MACHINE_MAPPING_MEMORY_OPTIMIZATION_MACHINE_MAPPING_RESULT_WITH_MEMORY_H
 
+#include "compiler/machine_mapping/machine_resource_split.dtg.h"
 #include "compiler/machine_mapping/parallel_split_transformation.dtg.h"
 #include <optional>
 #include "compiler/machine_mapping/memory_optimization/pareto_optimal_machine_mapping.dtg.h"
@@ -44,7 +45,8 @@ std::ostream &operator<<(std::ostream &, MachineMappingWithMemoryResult const &)
                    std::optional<ParallelSplitTransformation> const
                        &parallel_split_transformation);
 [[nodiscard]] MachineMappingWithMemoryResult
-    parallel_combine(MachineMappingWithMemoryResult const &lhs_result,
+    parallel_combine(MachineResourceSplit const &split,
+                     MachineMappingWithMemoryResult const &lhs_result,
                      MachineMappingWithMemoryResult const &rhs_result);
 
 [[nodiscard]] MachineMappingWithMemoryResult

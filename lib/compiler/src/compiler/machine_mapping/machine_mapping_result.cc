@@ -1,5 +1,6 @@
 #include "compiler/machine_mapping/machine_mapping_result.h"
 #include "compiler/machine_mapping/machine_mapping.h"
+#include "compiler/machine_mapping/machine_resource_split.h"
 #include "compiler/machine_mapping/parallel_layer_guid_oblivious_machine_mapping.h"
 #include "utils/containers/map_keys.h"
 #include "utils/containers/merge_maps.h"
@@ -72,7 +73,8 @@ MachineMappingResult
 }
 
 MachineMappingResult
-    parallel_combine(MachineMappingResult const &maybe_lhs_result,
+    parallel_combine(MachineResourceSplit const &split,
+                     MachineMappingResult const &maybe_lhs_result,
                      MachineMappingResult const &maybe_rhs_result) {
   FeasibleMachineMappingResult lhs_result = ({
     if (is_infeasible(maybe_lhs_result)) {
@@ -92,8 +94,9 @@ MachineMappingResult
       FeasibleMachineMappingResult{
           /*runtime=*/std::max(lhs_result.runtime, rhs_result.runtime),
           /*machine_mapping=*/
-          binary_combine_mappings(/*lhs=*/lhs_result.machine_mapping,
-                                  /*rhs=*/rhs_result.machine_mapping),
+            binary_combine_mappings(
+              /*lhs=*/lhs_result.machine_mapping,
+              /*rhs=*/offset_layer_oblivious_mapping_by(rhs_result.machine_mapping, split)),
       },
   };
 }

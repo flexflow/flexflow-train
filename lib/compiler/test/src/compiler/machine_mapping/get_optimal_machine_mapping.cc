@@ -48,7 +48,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
     };
 
-    MachineView mv1 = MachineView{
+    MachineView mv_stride_1 = MachineView{
         /*start=*/MachineSpaceCoordinate{
             /*node_idx=*/0_n,
             /*device_idx=*/0_n,
@@ -63,7 +63,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    MachineView mv2 = MachineView{
+    MachineView mv_stride_2 = MachineView{
         /*start=*/MachineSpaceCoordinate{
             /*node_idx=*/0_n,
             /*device_idx=*/0_n,
@@ -78,25 +78,25 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    MachineComputeResourceSlice full_machine_resources = MachineComputeResourceSlice{
-        /*num_nodes=*/2_p,
+    MachineComputeResourceSlice four_nodes_resources = MachineComputeResourceSlice{
+        /*num_nodes=*/4_p,
         /*num_gpus_per_node=*/1_p,
     };
 
-    MachineComputeResourceSlice split_machine_resources = MachineComputeResourceSlice{
+    MachineComputeResourceSlice three_nodes_resources = MachineComputeResourceSlice{
+      /*num_nodes=*/3_p,
+      /*num_gpus_per_node=*/1_p,
+    };
+
+    MachineComputeResourceSlice two_nodes_resources = MachineComputeResourceSlice{
+      /*num_nodes=*/2_p,
+      /*num_gpus_per_node=*/1_p,
+    };
+
+    MachineComputeResourceSlice one_node_resources = MachineComputeResourceSlice{
         /*num_nodes=*/1_p,
         /*num_gpus_per_node=*/1_p,
     };
-
-    auto allowed_machine_views1 =
-        [&](UnmappedRuntimeOnlyOpCostEstimateKey const &,
-            MachineComputeResourceSlice const &resources) {
-          if (resources == full_machine_resources) {
-            return std::unordered_set<MachineView>{mv1, mv2};
-          } else {
-            return std::unordered_set<MachineView>{mv2};
-          }
-        };
 
     TensorShape tensor_shape = TensorShape{
         TensorDims{
@@ -107,29 +107,6 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
         DataType::FLOAT,
     };
-
-    UnmappedRuntimeOnlyOpCostEstimateKey k1 =
-        UnmappedRuntimeOnlyOpCostEstimateKey{
-            /*op_attrs=*/PCGOperatorAttrs{InputAttrs{tensor_shape}},
-            /*input_shapes=*/{},
-            /*weight_shapes=*/{},
-            /*output_shapes=*/{},
-        };
-
-    UnmappedRuntimeOnlyOpCostEstimateKey k2 =
-        UnmappedRuntimeOnlyOpCostEstimateKey{
-            /*op_attrs=*/PCGOperatorAttrs{ElementBinaryAttrs{
-                /*type=*/OperatorType::EW_ADD,
-                /*compute_type=*/DataType::FLOAT,
-                /*should_broadcast_lhs=*/false,
-                /*should_broadcast_rhs=*/false,
-            }},
-            /*input_shapes=*/{},
-            /*weight_shapes=*/{},
-            /*output_shapes=*/{},
-        };
-
-    ParallelTensorShape par_tensor_shape = lift_to_parallel(tensor_shape);
 
     TaskSpaceCoordinate empty_task_space_coord = TaskSpaceCoordinate{OrthotopeCoord{{}}};
 
@@ -167,22 +144,6 @@ TEST_SUITE(FF_TEST_SUITE) {
             {binary_tree_root_path(), mv2},
         }};
 
-    auto map1 = std::unordered_map<RuntimeOnlyOpCostEstimateKey,
-                                   RuntimeOnlyOpCostMetrics>{{
-        {map_unmapped_runtime_only_op_cost_estimate_key(k1, mv1),
-         RuntimeOnlyOpCostMetrics{/*forward_runtime=*/0.5_ms,
-                                  /*backward_runtime=*/0.5_ms}},
-        {map_unmapped_runtime_only_op_cost_estimate_key(k2, mv1),
-         RuntimeOnlyOpCostMetrics{/*forward_runtime=*/1.0_ms,
-                                  /*backward_runtime=*/1.0_ms}},
-        {map_unmapped_runtime_only_op_cost_estimate_key(k1, mv2),
-         RuntimeOnlyOpCostMetrics{/*forward_runtime=*/0.75_ms,
-                                  /*backward_runtime=*/0.75_ms}},
-        {map_unmapped_runtime_only_op_cost_estimate_key(k2, mv2),
-         RuntimeOnlyOpCostMetrics{/*forward_runtime=*/1.25_ms,
-                                  /*backward_runtime=*/1.25_ms}},
-    }};
-
     OperatorTaskSpace trivial_task_space = OperatorTaskSpace{MinimalOrthotope{{}}};
 
     auto mk_tensor_set_movement = [&](
@@ -205,27 +166,47 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*post_machine_stencils=*/{{binary_tree_root_path(), dst_stencil}});
     };
 
-    RuntimeOnlyCostEstimator runtime_only_cost_estimator =
-        make_fake_runtime_only_cost_estimator(
-            map1,
-            std::unordered_map<TensorSetMovement, milliseconds_t>{{
-                {TensorSetMovement{{}}, 0.0_ms},
-                {mk_tensor_set_movement(mv1, mv1),
-                 0.1_ms},
-                {mk_tensor_set_movement(mv2, mv2),
-                 0.2_ms},
-                {mk_tensor_set_movement(mv1, mv2),
-                 0.3_ms},
-                {mk_tensor_set_movement(mv2, mv1),
-                 0.4_ms},
-            }});
+    MachineMappingCache cache = empty_machine_mapping_cache();
 
-    MachineMappingContext context = MachineMappingContext{
-      /*cost_estimator=*/runtime_only_cost_estimator,
-      /*allowed_machine_views=*/allowed_machine_views1,
+    ParallelTensorShape par_tensor_shape =
+      lift_to_parallel_with_degrees(
+        tensor_shape,
+        ParallelTensorDimDegrees{
+          /*sum_degree=*/SumDegree{1_p},
+          /*discard_copy_degree=*/DiscardCopyDegree{1_p},
+          /*shard_degrees=*/FFOrdered<positive_int>{
+            2_p,
+            1_p,
+          },
+        });
+
+    UnmappedRuntimeOnlyOpCostEstimateKey k1 = UnmappedRuntimeOnlyOpCostEstimateKey{
+        /*op_attrs=*/PCGOperatorAttrs{ElementUnaryAttrs{
+            /*type=*/OperatorType::GELU,
+            /*scalar=*/std::nullopt,
+        }},
+      /*input_shapes=*/{par_tensor_shape},
+      /*weight_shapes=*/{},
+      /*output_shapes=*/{par_tensor_shape},
     };
 
-    MachineMappingCache cache = empty_machine_mapping_cache();
+    UnmappedRuntimeOnlyOpCostEstimateKey k2 = UnmappedRuntimeOnlyOpCostEstimateKey{
+        /*op_attrs=*/PCGOperatorAttrs{ElementUnaryAttrs{
+            /*type=*/OperatorType::RELU,
+            /*scalar=*/std::nullopt,
+        }},
+        /*input_shapes=*/{par_tensor_shape},
+        /*weight_shapes=*/{},
+        /*output_shapes=*/{par_tensor_shape},
+    };
+
+
+    auto mk_cost_metrics = [&](float cost) {
+      return  RuntimeOnlyOpCostMetrics{
+        /*forward_runtime=*/milliseconds_t{cost},
+        /*backward_runtime=*/milliseconds_t{cost},
+      };
+    };
 
     SUBCASE("single layer") {
       MachineMappingProblemTree problem_tree = make_leaf(k1);
@@ -234,14 +215,45 @@ TEST_SUITE(FF_TEST_SUITE) {
           get_unconstrained_solution_for_layers(
               get_all_leaf_paths(problem_tree));
 
+      auto allowed_machine_views =
+          [&](UnmappedRuntimeOnlyOpCostEstimateKey const &k,
+              MachineComputeResourceSlice const &resources) {
+            ASSERT(k == k1);
+            ASSERT(resources == four_nodes_resources);
+            return std::unordered_set<MachineView>{
+              mv_stride_1,
+              mv_stride_2,
+            };
+          };
+
+      RuntimeOnlyCostEstimator runtime_only_cost_estimator =
+          make_fake_runtime_only_cost_estimator(
+              {
+                {
+                  map_unmapped_runtime_only_op_cost_estimate_key(k2, mv_stride_1),
+                  mk_cost_metrics(0.5),
+                },
+                {
+                  map_unmapped_runtime_only_op_cost_estimate_key(k2, mv_stride_2),
+                  mk_cost_metrics(1),
+                },
+              },
+              std::unordered_map<TensorSetMovement, milliseconds_t>{{}});
+
+      MachineMappingContext context = MachineMappingContext{
+        /*cost_estimator=*/runtime_only_cost_estimator,
+        /*allowed_machine_views=*/allowed_machine_views,
+      };
+
       MachineMappingResult result = get_optimal_machine_mapping(
-          cache, context, problem_tree, full_machine_resources, constraints);
+          cache, context, problem_tree, four_nodes_resources, constraints);
+
       MachineMappingResult correct = MachineMappingResult{
           FeasibleMachineMappingResult{
-              /*runtime=*/1.0_ms,
+              /*runtime=*/2_ms,
               /*machine_mapping=*/
               ParallelLayerGuidObliviousMachineMapping{{
-                  {binary_tree_root_path(), mv1},
+                  {binary_tree_root_path(), mv_stride_1},
               }},
           },
       };
@@ -253,12 +265,75 @@ TEST_SUITE(FF_TEST_SUITE) {
       MachineMappingProblemTree problem_tree =
           make_series_split(movement1, make_leaf(k1), make_leaf(k2));
 
+      RuntimeOnlyCostEstimator runtime_only_cost_estimator =
+          make_fake_runtime_only_cost_estimator(
+              std::unordered_map<RuntimeOnlyOpCostEstimateKey, RuntimeOnlyOpCostMetrics>{{
+                {
+                  map_unmapped_runtime_only_op_cost_estimate_key(k2, mv_stride_1),
+                  mk_cost_metrics(0.5),
+                },
+                {
+                  map_unmapped_runtime_only_op_cost_estimate_key(k2, mv_stride_2),
+                  mk_cost_metrics(0.5),
+                },
+                {
+                  map_unmapped_runtime_only_op_cost_estimate_key(k3, mv_stride_1),
+                  mk_cost_metrics(0.5),
+                },
+                {
+                  map_unmapped_runtime_only_op_cost_estimate_key(k3, mv_stride_2),
+                  mk_cost_metrics(0.5),
+                },
+              }},
+              std::unordered_map<TensorSetMovement, milliseconds_t>{{
+                  {
+                    TensorSetMovement{{}}, 
+                    0.0_ms,
+                  },
+                  {
+                    mk_tensor_set_movement(mv_stride_1, mv_stride_2),
+                    0.1_ms,
+                  },
+                  {
+                    mk_tensor_set_movement(mv2, mv2),
+                    0.2_ms,
+                  },
+                  {
+                    mk_tensor_set_movement(mv1, mv2),
+                    0.3_ms,
+                  },
+                  {
+                    mk_tensor_set_movement(mv2, mv1),
+                    0.4_ms,
+                  },
+              }});
+
+      auto allowed_machine_views =
+        [&](UnmappedRuntimeOnlyOpCostEstimateKey const &k,
+            MachineComputeResourceSlice const &resources) {
+          if (resources == four_nodes_resources) {
+            return std::unordered_set<MachineView>{mv2, mv3};
+          } else if (resources == three_nodes_resources) {
+            return std::unordered_set<MachineView>{mv2, mv3};
+          } else if (resources == two_nodes_resources) {
+            return std::unordered_set<MachineView>{mv2};
+          } else {
+            return std::unordered_set<MachineView>{};
+          }
+        };
+
       MachineMappingConstraints constraints =
           get_unconstrained_solution_for_layers(
               get_all_leaf_paths(problem_tree));
 
+      MachineMappingContext context = MachineMappingContext{
+        /*cost_estimator=*/runtime_only_cost_estimator,
+        /*allowed_machine_views=*/allowed_machine_views,
+      };
+
       MachineMappingResult result = get_optimal_machine_mapping(
-          cache, context, problem_tree, full_machine_resources, constraints);
+          cache, context, problem_tree, four_nodes_resources, constraints);
+
       MachineMappingResult correct = MachineMappingResult{
           FeasibleMachineMappingResult{
               /*runtime=*/1.0_ms + 2.0_ms + 0.1_ms,
