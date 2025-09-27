@@ -11,7 +11,7 @@ namespace FlexFlow {
 struct num_tensor_dims_t {
 public:
   num_tensor_dims_t() = delete;
-  num_tensor_dims_t(nonnegative_int);
+  explicit num_tensor_dims_t(nonnegative_int);
 
   bool operator<(num_tensor_dims_t other) const;
   bool operator==(num_tensor_dims_t other) const;

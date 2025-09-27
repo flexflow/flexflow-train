@@ -48,47 +48,45 @@ __global__ void transpose_simple_kernel(std::size_t volume,
   }
 }
 
-static LegionOrdered<legion_dim_t>
-    legion_ordered_perm_from_ff_ordered(FFOrdered<ff_dim_t> const &perm) {
-  nonnegative_int perm_size = num_elements(perm);
-  LegionOrdered<legion_dim_t> legion_ordered_perm =
-      transform(legion_ordered_from_ff_ordered(perm), [&](ff_dim_t d) {
-        return legion_dim_from_ff_dim(d, perm_size);
-      });
+static TransposeStrides make_strides(TransposeAttrs const &m,
+                                     TensorDims const &input_dims,
+                                     TensorDims const &output_dims) {
+  ASSERT(get_num_dims(input_dims) == m.permutation.num_tensor_dims());
 
-  return legion_ordered_perm;
+  TransposeStrides info;
+  num_tensor_dims_t num_dims = m.permutation.num_tensor_dims();
+  info.num_dim = num_dims.int_from_num_tensor_dims();
+
+  for (int i = 0; i < info.num_dim; i++) {
+    legion_dim_t legion_dim = legion_dim_t{nonnegative_int{i}};
+    ff_dim_t ff_dim = ff_dim_from_legion_dim(legion_dim, num_dims);
+
+    if (i == 0) {
+      info.in_strides[i] = 1;
+      info.out_strides[i] = 1;
+    } else {
+      int in_dim_size =
+          dim_at_idx(input_dims, legion_dim)
+              .int_from_positive_int();
+      int out_dim_size =
+          dim_at_idx(output_dims, legion_dim)
+              .int_from_positive_int();
+      info.in_strides[i] = info.in_strides[i - 1] * in_dim_size;
+      info.out_strides[i] = info.out_strides[i - 1] * out_dim_size;
+    }
+
+    ff_dim_t ff_permuted_dim = m.permutation.at_l(ff_dim);
+    legion_dim_t legion_permuted_dim = legion_dim_from_ff_dim(ff_permuted_dim, num_dims);
+    info.perm[i] = legion_permuted_dim.value.unwrap_nonnegative();
+  }
+
+  return info;
 }
 
 void gpu_forward_kernel(cudaStream_t stream,
                         TransposeAttrs const &m,
                         GenericTensorAccessorR const &input,
                         GenericTensorAccessorW const &output) {
-
-  TransposeStrides info;
-  info.num_dim = get_num_dims(input.shape.dims).int_from_num_tensor_dims();
-  assert(info.num_dim == m.perm.size());
-
-  LegionOrdered<legion_dim_t> legion_ordered_perm =
-      legion_ordered_perm_from_ff_ordered(m.perm);
-
-  for (int i = 0; i < info.num_dim; i++) {
-    if (i == 0) {
-      info.in_strides[i] = 1;
-      info.out_strides[i] = 1;
-    } else {
-      int in_dim_size =
-          dim_at_idx(input.shape.dims, legion_dim_t{nonnegative_int{i}})
-              .int_from_positive_int();
-      int out_dim_size =
-          dim_at_idx(output.shape.dims, legion_dim_t{nonnegative_int{i}})
-              .int_from_positive_int();
-      info.in_strides[i] = info.in_strides[i - 1] * in_dim_size;
-      info.out_strides[i] = info.out_strides[i - 1] * out_dim_size;
-    }
-
-    info.perm[i] = legion_ordered_perm.at(legion_dim_t{nonnegative_int{i}})
-                       .value.unwrap_nonnegative();
-  }
   transpose_simple_kernel<<<
       GET_BLOCKS(get_num_elements(output.shape.dims).int_from_positive_int()),
       CUDA_NUM_THREADS,
@@ -96,7 +94,7 @@ void gpu_forward_kernel(cudaStream_t stream,
       stream>>>(get_num_elements(output.shape.dims).int_from_positive_int(),
                 input.get_float_ptr(),
                 output.get_float_ptr(),
-                info,
+                make_strides(m, input.shape.dims, output.shape.dims),
                 /*beta=*/0.0f);
 }
 
@@ -104,31 +102,8 @@ void gpu_backward_kernel(cudaStream_t stream,
                          TransposeAttrs const &m,
                          GenericTensorAccessorR const &out_grad,
                          GenericTensorAccessorW const &in_grad) {
+  ASSERT(get_num_dims(in_grad.shape.dims) == m.permutation.num_tensor_dims());
 
-  TransposeStrides info;
-  info.num_dim = get_num_dims(in_grad.shape.dims).int_from_num_tensor_dims();
-  assert(info.num_dim == m.perm.size());
-
-  LegionOrdered<legion_dim_t> legion_ordered_perm =
-      legion_ordered_perm_from_ff_ordered(m.perm);
-
-  for (int i = 0; i < info.num_dim; i++) {
-    if (i == 0) {
-      info.in_strides[i] = 1;
-      info.out_strides[i] = 1;
-    } else {
-      int in_dim_size =
-          dim_at_idx(out_grad.shape.dims, legion_dim_t{nonnegative_int{i}})
-              .int_from_positive_int();
-      int out_dim_size =
-          dim_at_idx(in_grad.shape.dims, legion_dim_t{nonnegative_int{i}})
-              .int_from_positive_int();
-      info.in_strides[i] = info.in_strides[i - 1] * in_dim_size;
-      info.out_strides[i] = info.out_strides[i - 1] * out_dim_size;
-    }
-    info.perm[legion_ordered_perm.at(legion_dim_t{nonnegative_int{i}})
-                  .value.unwrap_nonnegative()] = i;
-  }
   transpose_simple_kernel<<<
       GET_BLOCKS(get_num_elements(in_grad.shape.dims).int_from_positive_int()),
       CUDA_NUM_THREADS,
@@ -136,7 +111,7 @@ void gpu_backward_kernel(cudaStream_t stream,
       stream>>>(get_num_elements(in_grad.shape.dims).int_from_positive_int(),
                 out_grad.get_float_ptr(),
                 in_grad.get_float_ptr(),
-                info,
+                make_strides(m, out_grad.shape.dims, in_grad.shape.dims),
                 /*beta=*/1.0f);
 }
 

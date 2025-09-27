@@ -6,9 +6,11 @@ using namespace ::FlexFlow;
 TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test Transpose Kernel Operations") {
     TransposeAttrs attrs = TransposeAttrs{
-        FFOrdered{
-            ff_dim_t{1_n},
-            ff_dim_t{0_n},
+        TensorDimPermutation{
+          bidict<ff_dim_t, ff_dim_t>{
+            {ff_dim_t{1_n}, ff_dim_t{0_n}},
+            {ff_dim_t{0_n}, ff_dim_t{1_n}},
+          },
         },
     };
 

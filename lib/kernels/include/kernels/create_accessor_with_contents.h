@@ -41,10 +41,10 @@ GenericTensorAccessorW create_2d_accessor_w_with_contents(
     std::vector<std::vector<T>> const &contents, Allocator &allocator) {
   positive_int nrows = positive_int{num_elements(contents)};
 
-  positive_int ncols = throw_if_unexpected(
+  positive_int ncols = 
       require_all_same1(transform(contents, [](std::vector<T> const &row) {
         return positive_int{num_elements(row)};
-      })));
+      }));
 
   TensorShape shape = TensorShape{
       TensorDims{FFOrdered{nrows, ncols}},
@@ -78,18 +78,18 @@ GenericTensorAccessorW create_3d_accessor_w_with_contents(
     Allocator &allocator) {
   positive_int dim0_size = positive_int{num_elements(contents)};
 
-  positive_int dim1_size = throw_if_unexpected(require_all_same1(
+  positive_int dim1_size = require_all_same1(
       transform(contents, [](std::vector<std::vector<T>> const &m) {
         return positive_int{num_elements(m)};
-      })));
+      }));
 
-  positive_int dim2_size = throw_if_unexpected(require_all_same1(
+  positive_int dim2_size = require_all_same1(
       transform(contents, [](std::vector<std::vector<T>> const &m) {
-        return throw_if_unexpected(
+        return 
             require_all_same1(transform(m, [](std::vector<T> const &vec) {
               return positive_int{num_elements(vec)};
-            })));
-      })));
+            }));
+      }));
 
   TensorShape shape = TensorShape{
       TensorDims{FFOrdered{dim0_size, dim1_size, dim2_size}},
@@ -127,29 +127,29 @@ GenericTensorAccessorW create_4d_accessor_w_with_contents(
     Allocator &allocator) {
   positive_int dim0_size = positive_int{num_elements(contents)};
 
-  positive_int dim1_size = throw_if_unexpected(require_all_same1(transform(
+  positive_int dim1_size = require_all_same1(transform(
       contents, [](std::vector<std::vector<std::vector<T>>> const &t) {
         return positive_int{num_elements(t)};
-      })));
+      }));
 
-  positive_int dim2_size = throw_if_unexpected(require_all_same1(transform(
+  positive_int dim2_size = require_all_same1(transform(
       contents, [](std::vector<std::vector<std::vector<T>>> const &m) {
-        return throw_if_unexpected(require_all_same1(
+        return require_all_same1(
             transform(m, [](std::vector<std::vector<T>> const &vec) {
               return positive_int{num_elements(vec)};
-            })));
-      })));
+            }));
+      }));
 
-  positive_int dim3_size = throw_if_unexpected(require_all_same1(transform(
+  positive_int dim3_size = require_all_same1(transform(
       contents, [](std::vector<std::vector<std::vector<T>>> const &t) {
-        return throw_if_unexpected(require_all_same1(
+        return require_all_same1(
             transform(t, [](std::vector<std::vector<T>> const &mat) {
-              return throw_if_unexpected(require_all_same1(
+              return require_all_same1(
                   transform(mat, [](std::vector<T> const &vec) {
                     return positive_int{num_elements(vec)};
-                  })));
-            })));
-      })));
+                  }));
+            }));
+      }));
 
   TensorShape shape = TensorShape{
       TensorDims{FFOrdered{dim0_size, dim1_size, dim2_size, dim3_size}},

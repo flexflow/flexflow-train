@@ -2,6 +2,7 @@
 #include <string>
 #include "utils/containers/map_from_pairs.h"
 #include "utils/hash/pair.h"
+#include "test/utils/doctest/fmt/unordered_map.h"
 
 using namespace ::FlexFlow;
 

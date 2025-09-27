@@ -48,13 +48,7 @@ MachineView machine_view_from_strides_and_machine_spec_dimensions(
     MachineSpaceCoordinate const &start,
     std::vector<stride_t> const &strides,
     std::vector<MachineSpecificationDimension> const &dims) {
-  if (strides.size() != dims.size()) {
-    throw mk_runtime_error(fmt::format(
-        "Length of strides ({}) and dims ({}) must match when calling "
-        "machine_view_from_strides_and_machine_spec_dimensions",
-        start,
-        strides));
-  }
+  ASSERT(strides.size() == dims.size());
   std::vector<MachineViewDimension> dimensions = zip_with_strict(
       strides, dims, [](stride_t s, MachineSpecificationDimension d) {
         return MachineViewDimension{s, d};
