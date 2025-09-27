@@ -10,6 +10,7 @@
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_runtime_only_op_cost_estimate_key.h"
 #include "internal/runtime_only_cost_estimator_for_test.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "op-attrs/task_space_coordinate.h"
 #include "pcg/machine_view.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include "utils/containers/get_only.h"
@@ -58,7 +59,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         {
             MachineViewDimension{
                 stride_t{1_p},
-                MachineSpecificationDimension::INTRA_NODE,
+                MachineSpecificationDimension::INTER_NODE,
             },
         },
     };
@@ -73,7 +74,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         {
             MachineViewDimension{
                 stride_t{2_p},
-                MachineSpecificationDimension::INTRA_NODE,
+                MachineSpecificationDimension::INTER_NODE,
             },
         },
     };
@@ -108,62 +109,21 @@ TEST_SUITE(FF_TEST_SUITE) {
         DataType::FLOAT,
     };
 
-    TaskSpaceCoordinate empty_task_space_coord = TaskSpaceCoordinate{OrthotopeCoord{{}}};
-
     BinaryTreePath src_path = binary_tree_root_path();
-    TaskSpaceCoordinate src_coord = empty_task_space_coord;
-
-    AbstractedDevice dst_device = AbstractedDevice{
-      /*operator_tree_path=*/binary_tree_root_path(),
-      /*task_space_coordinate=*/empty_task_space_coord,
-    };
-
-    AbstractedTensorSetMovement movement1 = AbstractedTensorSetMovement{
-      /*single_tensor_movements=*/{
-        AbstractedSingleTensorMovement{
-          /*src_op_tree_path=*/src_path,
-          /*edge_to_size=*/{
-            {
-              AbstractedSingleTensorCommunicationEdge{
-                /*src_coord=*/src_coord,
-                /*dst=*/dst_device,
-              },
-              get_size_in_bytes(tensor_shape),
-            },
-          },
-        },
-      },
-    };
 
     ParallelLayerGuidObliviousMachineMapping mm1 =
         ParallelLayerGuidObliviousMachineMapping{{
-            {binary_tree_root_path(), mv1},
+            {binary_tree_root_path(), mv_stride_1},
         }};
     ParallelLayerGuidObliviousMachineMapping mm2 =
         ParallelLayerGuidObliviousMachineMapping{{
-            {binary_tree_root_path(), mv2},
+            {binary_tree_root_path(), mv_stride_2},
         }};
 
-    OperatorTaskSpace trivial_task_space = OperatorTaskSpace{MinimalOrthotope{{}}};
-
-    auto mk_tensor_set_movement = [&](
-      MachineView const &src_mv, 
-      MachineView const &dst_mv) {
-
-      MachineSpaceStencil src_stencil = MachineSpaceStencil{
-        /*operator_task_space=*/trivial_task_space,
-        /*machine_view=*/src_mv,
-      };
-
-      MachineSpaceStencil dst_stencil = MachineSpaceStencil{
-        /*operator_task_space=*/trivial_task_space,
-        /*machine_view=*/dst_mv,
-      };
-
-      return concretize_abstracted_tensor_set_movement(
-        movement1,
-        /*pre_machine_stencils=*/{{binary_tree_root_path(), src_stencil}},
-        /*post_machine_stencils=*/{{binary_tree_root_path(), dst_stencil}});
+    OperatorTaskSpace task_space = OperatorTaskSpace{
+      MinimalOrthotope{{
+        2_ge2,
+      }},
     };
 
     MachineMappingCache cache = empty_machine_mapping_cache();
@@ -200,14 +160,22 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*output_shapes=*/{par_tensor_shape},
     };
 
-
-    auto mk_cost_metrics = [&](float cost) {
+    auto mk_cost_metrics = [&](float total_cost) {
       return  RuntimeOnlyOpCostMetrics{
-        /*forward_runtime=*/milliseconds_t{cost},
-        /*backward_runtime=*/milliseconds_t{cost},
+        /*forward_runtime=*/milliseconds_t{total_cost / 2},
+        /*backward_runtime=*/milliseconds_t{total_cost / 2},
       };
     };
 
+    auto mk_cost_entry = [&](UnmappedRuntimeOnlyOpCostEstimateKey const &key,
+                             MachineView const &mv,
+                             float total_cost) {
+      return std::pair{
+        map_unmapped_runtime_only_op_cost_estimate_key(key, mv),
+        mk_cost_metrics(total_cost),
+      };
+    };
+ 
     SUBCASE("single layer") {
       MachineMappingProblemTree problem_tree = make_leaf(k1);
 
@@ -220,6 +188,7 @@ TEST_SUITE(FF_TEST_SUITE) {
               MachineComputeResourceSlice const &resources) {
             ASSERT(k == k1);
             ASSERT(resources == four_nodes_resources);
+
             return std::unordered_set<MachineView>{
               mv_stride_1,
               mv_stride_2,
@@ -229,14 +198,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       RuntimeOnlyCostEstimator runtime_only_cost_estimator =
           make_fake_runtime_only_cost_estimator(
               {
-                {
-                  map_unmapped_runtime_only_op_cost_estimate_key(k2, mv_stride_1),
-                  mk_cost_metrics(0.5),
-                },
-                {
-                  map_unmapped_runtime_only_op_cost_estimate_key(k2, mv_stride_2),
-                  mk_cost_metrics(1),
-                },
+                mk_cost_entry(k1, mv_stride_1, 1),
+                mk_cost_entry(k1, mv_stride_2, 2),
               },
               std::unordered_map<TensorSetMovement, milliseconds_t>{{}});
 
@@ -250,7 +213,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       MachineMappingResult correct = MachineMappingResult{
           FeasibleMachineMappingResult{
-              /*runtime=*/2_ms,
+              /*runtime=*/1_ms,
               /*machine_mapping=*/
               ParallelLayerGuidObliviousMachineMapping{{
                   {binary_tree_root_path(), mv_stride_1},
@@ -262,61 +225,68 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("pair of layers in sequence") {
-      MachineMappingProblemTree problem_tree =
-          make_series_split(movement1, make_leaf(k1), make_leaf(k2));
+      AbstractedTensorSetMovement k1_to_k2 = AbstractedTensorSetMovement{
+        /*single_tensor_movements=*/{
+          AbstractedSingleTensorMovement{
+            /*src_op_tree_path=*/binary_tree_root_path(),
+            /*edge_to_size=*/{
+              {
+                AbstractedSingleTensorCommunicationEdge{
+                  /*src_coord=*/make_task_space_coordinate({0_n}),
+                  /*dst=*/AbstractedDevice{
+                    /*operator_tree_path=*/binary_tree_root_path(),
+                    /*task_space_coordinate=*/make_task_space_coordinate({0_n}),
+                  },
+                },
+                get_size_in_bytes(tensor_shape),
+              },
+              {
+                AbstractedSingleTensorCommunicationEdge{
+                  /*src_coord=*/make_task_space_coordinate({1_n}),
+                  /*dst=*/AbstractedDevice{
+                    /*operator_tree_path=*/binary_tree_root_path(),
+                    /*task_space_coordinate=*/make_task_space_coordinate({1_n}),
+                  },
+                },
+                get_size_in_bytes(tensor_shape),
+              },
+            },
+          },
+        },
+      };
 
-      RuntimeOnlyCostEstimator runtime_only_cost_estimator =
-          make_fake_runtime_only_cost_estimator(
-              std::unordered_map<RuntimeOnlyOpCostEstimateKey, RuntimeOnlyOpCostMetrics>{{
-                {
-                  map_unmapped_runtime_only_op_cost_estimate_key(k2, mv_stride_1),
-                  mk_cost_metrics(0.5),
-                },
-                {
-                  map_unmapped_runtime_only_op_cost_estimate_key(k2, mv_stride_2),
-                  mk_cost_metrics(0.5),
-                },
-                {
-                  map_unmapped_runtime_only_op_cost_estimate_key(k3, mv_stride_1),
-                  mk_cost_metrics(0.5),
-                },
-                {
-                  map_unmapped_runtime_only_op_cost_estimate_key(k3, mv_stride_2),
-                  mk_cost_metrics(0.5),
-                },
-              }},
-              std::unordered_map<TensorSetMovement, milliseconds_t>{{
-                  {
-                    TensorSetMovement{{}}, 
-                    0.0_ms,
-                  },
-                  {
-                    mk_tensor_set_movement(mv_stride_1, mv_stride_2),
-                    0.1_ms,
-                  },
-                  {
-                    mk_tensor_set_movement(mv2, mv2),
-                    0.2_ms,
-                  },
-                  {
-                    mk_tensor_set_movement(mv1, mv2),
-                    0.3_ms,
-                  },
-                  {
-                    mk_tensor_set_movement(mv2, mv1),
-                    0.4_ms,
-                  },
-              }});
+      MachineMappingProblemTree problem_tree =
+          make_series_split(k1_to_k2, make_leaf(k1), make_leaf(k2));
+
+      auto mk_tensor_set_movement = [&](
+        MachineView const &src_mv, 
+        MachineView const &dst_mv) {
+
+        MachineSpaceStencil src_stencil = MachineSpaceStencil{
+          /*operator_task_space=*/task_space,
+          /*machine_view=*/src_mv,
+        };
+
+        MachineSpaceStencil dst_stencil = MachineSpaceStencil{
+          /*operator_task_space=*/task_space,
+          /*machine_view=*/dst_mv,
+        };
+
+        return concretize_abstracted_tensor_set_movement(
+          k1_to_k2,
+          /*pre_machine_stencils=*/{{binary_tree_root_path(), src_stencil}},
+          /*post_machine_stencils=*/{{binary_tree_root_path(), dst_stencil}});
+      };
 
       auto allowed_machine_views =
         [&](UnmappedRuntimeOnlyOpCostEstimateKey const &k,
             MachineComputeResourceSlice const &resources) {
           if (resources == four_nodes_resources) {
-            return std::unordered_set<MachineView>{mv2, mv3};
+            return std::unordered_set<MachineView>{mv_stride_1, mv_stride_2};
           } else if (resources == three_nodes_resources) {
-            return std::unordered_set<MachineView>{mv2, mv3};
+            return std::unordered_set<MachineView>{mv_stride_1, mv_stride_2};
           } else if (resources == two_nodes_resources) {
-            return std::unordered_set<MachineView>{mv2};
+            return std::unordered_set<MachineView>{mv_stride_1};
           } else {
             return std::unordered_set<MachineView>{};
           }
@@ -326,36 +296,117 @@ TEST_SUITE(FF_TEST_SUITE) {
           get_unconstrained_solution_for_layers(
               get_all_leaf_paths(problem_tree));
 
-      MachineMappingContext context = MachineMappingContext{
-        /*cost_estimator=*/runtime_only_cost_estimator,
-        /*allowed_machine_views=*/allowed_machine_views,
-      };
+      SUBCASE("solution requires taking comm cost into account") {
+        RuntimeOnlyCostEstimator runtime_only_cost_estimator =
+            make_fake_runtime_only_cost_estimator(
+                std::unordered_map<RuntimeOnlyOpCostEstimateKey, RuntimeOnlyOpCostMetrics>{{
+                  mk_cost_entry(k1, mv_stride_1, 1),
+                  mk_cost_entry(k1, mv_stride_2, 3),
+                  mk_cost_entry(k2, mv_stride_1, 4),
+                  mk_cost_entry(k2, mv_stride_2, 1),
+                }},
+                std::unordered_map<TensorSetMovement, milliseconds_t>{{
+                    {
+                      TensorSetMovement{{}}, 
+                      0.0_ms,
+                    },
+                    {
+                      mk_tensor_set_movement(mv_stride_1, mv_stride_2),
+                      5_ms,
+                    },
+                    {
+                      mk_tensor_set_movement(mv_stride_2, mv_stride_1),
+                      5_ms,
+                    },
+                }});
+         
+        MachineMappingContext context = MachineMappingContext{
+          /*cost_estimator=*/runtime_only_cost_estimator,
+          /*allowed_machine_views=*/allowed_machine_views,
+        };
 
-      MachineMappingResult result = get_optimal_machine_mapping(
-          cache, context, problem_tree, four_nodes_resources, constraints);
+        MachineMappingResult result = get_optimal_machine_mapping(
+            cache, context, problem_tree, four_nodes_resources, constraints);
 
-      MachineMappingResult correct = MachineMappingResult{
-          FeasibleMachineMappingResult{
-              /*runtime=*/1.0_ms + 2.0_ms + 0.1_ms,
-              /*machine_mapping=*/
-              ParallelLayerGuidObliviousMachineMapping{{
-                  {
-                      BinaryTreePath{{
-                          BinaryTreePathEntry::LEFT_CHILD,
-                      }},
-                      mv1,
-                  },
-                  {
-                      BinaryTreePath{{
-                          BinaryTreePathEntry::RIGHT_CHILD,
-                      }},
-                      mv1,
-                  },
-              }},
-          },
-      };
+        MachineMappingResult correct = MachineMappingResult{
+            FeasibleMachineMappingResult{
+                /*runtime=*/1.0_ms + 3.0_ms,
+                /*machine_mapping=*/
+                ParallelLayerGuidObliviousMachineMapping{{
+                    {
+                        BinaryTreePath{{
+                            BinaryTreePathEntry::LEFT_CHILD,
+                        }},
+                        mv_stride_2,
+                    },
+                    {
+                        BinaryTreePath{{
+                            BinaryTreePathEntry::RIGHT_CHILD,
+                        }},
+                        mv_stride_2,
+                    },
+                }},
+            },
+        };
 
-      CHECK(result == correct);
+        CHECK(result == correct);
+      }
+
+      SUBCASE("solution places operators on different machine views") {
+        RuntimeOnlyCostEstimator runtime_only_cost_estimator =
+            make_fake_runtime_only_cost_estimator(
+                std::unordered_map<RuntimeOnlyOpCostEstimateKey, RuntimeOnlyOpCostMetrics>{{
+                  mk_cost_entry(k1, mv_stride_1, 1),
+                  mk_cost_entry(k1, mv_stride_2, 3),
+                  mk_cost_entry(k2, mv_stride_1, 4),
+                  mk_cost_entry(k2, mv_stride_2, 1),
+                }},
+                std::unordered_map<TensorSetMovement, milliseconds_t>{{
+                    {
+                      TensorSetMovement{{}}, 
+                      0.0_ms,
+                    },
+                    {
+                      mk_tensor_set_movement(mv_stride_1, mv_stride_2),
+                      1_ms,
+                    },
+                    {
+                      mk_tensor_set_movement(mv_stride_2, mv_stride_1),
+                      1_ms,
+                    },
+                }});
+         
+        MachineMappingContext context = MachineMappingContext{
+          /*cost_estimator=*/runtime_only_cost_estimator,
+          /*allowed_machine_views=*/allowed_machine_views,
+        };
+
+        MachineMappingResult result = get_optimal_machine_mapping(
+            cache, context, problem_tree, four_nodes_resources, constraints);
+
+        MachineMappingResult correct = MachineMappingResult{
+            FeasibleMachineMappingResult{
+                /*runtime=*/1.0_ms + 1.0_ms + 1.0_ms,
+                /*machine_mapping=*/
+                ParallelLayerGuidObliviousMachineMapping{{
+                    {
+                        BinaryTreePath{{
+                            BinaryTreePathEntry::LEFT_CHILD,
+                        }},
+                        mv_stride_1,
+                    },
+                    {
+                        BinaryTreePath{{
+                            BinaryTreePathEntry::RIGHT_CHILD,
+                        }},
+                        mv_stride_2,
+                    },
+                }},
+            },
+        };
+
+        CHECK(result == correct);
+      }
     }
 
     SUBCASE("pair of layers in parallel") {
@@ -366,30 +417,177 @@ TEST_SUITE(FF_TEST_SUITE) {
           get_unconstrained_solution_for_layers(
               get_all_leaf_paths(problem_tree));
 
-      MachineMappingResult result = get_optimal_machine_mapping(
-          cache, context, problem_tree, full_machine_resources, constraints);
-      MachineMappingResult correct = MachineMappingResult{
-          FeasibleMachineMappingResult{
-              /*runtime=*/2.5_ms,
-              /*machine_mapping=*/
-              ParallelLayerGuidObliviousMachineMapping{{
-                  {
-                      BinaryTreePath{{
-                          BinaryTreePathEntry::LEFT_CHILD,
-                      }},
-                      mv2,
-                  },
-                  {
-                      BinaryTreePath{{
-                          BinaryTreePathEntry::RIGHT_CHILD,
-                      }},
-                      mv2,
-                  },
-              }},
-          },
-      };
+      auto allowed_machine_views =
+        [&](UnmappedRuntimeOnlyOpCostEstimateKey const &k,
+            MachineComputeResourceSlice const &resources) {
+          if (resources == four_nodes_resources) {
+            return std::unordered_set<MachineView>{mv_stride_1, mv_stride_2};
+          } else if (resources == three_nodes_resources) {
+            return std::unordered_set<MachineView>{mv_stride_1, mv_stride_2};
+          } else if (resources == two_nodes_resources) {
+            return std::unordered_set<MachineView>{mv_stride_1};
+          } else {
+            return std::unordered_set<MachineView>{};
+          }
+        };
 
-      CHECK(result == correct);
+      SUBCASE("cannot use overlapping machine views in parallel") {
+        RuntimeOnlyCostEstimator runtime_only_cost_estimator =
+            make_fake_runtime_only_cost_estimator(
+                std::unordered_map<RuntimeOnlyOpCostEstimateKey, RuntimeOnlyOpCostMetrics>{{
+                  mk_cost_entry(k1, mv_stride_1, 1),
+                  mk_cost_entry(k1, mv_stride_2, 3),
+                  mk_cost_entry(k2, mv_stride_1, 4),
+                  mk_cost_entry(k2, mv_stride_2, 1),
+                }},
+                std::unordered_map<TensorSetMovement, milliseconds_t>{{
+                    {
+                      TensorSetMovement{{}}, 
+                      0.0_ms,
+                    },
+                }});
+
+        MachineMappingContext context = MachineMappingContext{
+          /*cost_estimator=*/runtime_only_cost_estimator,
+          /*allowed_machine_views=*/allowed_machine_views,
+        };
+
+        MachineMappingResult result = get_optimal_machine_mapping(
+            cache, context, problem_tree, four_nodes_resources, constraints);
+
+        MachineMappingResult correct = MachineMappingResult{
+            FeasibleMachineMappingResult{
+                /*runtime=*/2_ms,
+                /*machine_mapping=*/
+                ParallelLayerGuidObliviousMachineMapping{{
+                    {
+                        BinaryTreePath{{
+                            BinaryTreePathEntry::LEFT_CHILD,
+                        }},
+                        mv_stride_1,
+                    },
+                    {
+                        BinaryTreePath{{
+                            BinaryTreePathEntry::RIGHT_CHILD,
+                        }},
+                        mv_stride_2,
+                    },
+                }},
+            },
+        };
+
+        CHECK(result == correct);
+      }
+
+      SUBCASE("solution is running operators in parallel") {
+        RuntimeOnlyCostEstimator runtime_only_cost_estimator =
+            make_fake_runtime_only_cost_estimator(
+                std::unordered_map<RuntimeOnlyOpCostEstimateKey, RuntimeOnlyOpCostMetrics>{{
+                  mk_cost_entry(k1, mv_stride_1, 1),
+                  mk_cost_entry(k1, mv_stride_2, 3),
+                  mk_cost_entry(k2, mv_stride_1, 3),
+                  mk_cost_entry(k2, mv_stride_2, 4),
+                }},
+                std::unordered_map<TensorSetMovement, milliseconds_t>{{
+                    {
+                      TensorSetMovement{{}}, 
+                      0.0_ms,
+                    },
+                }});
+
+        MachineMappingContext context = MachineMappingContext{
+          /*cost_estimator=*/runtime_only_cost_estimator,
+          /*allowed_machine_views=*/allowed_machine_views,
+        };
+
+        MachineMappingResult result = get_optimal_machine_mapping(
+            cache, context, problem_tree, four_nodes_resources, constraints);
+
+        MachineView translated_mv_stride_1 = MachineView{
+            /*start=*/MachineSpaceCoordinate{
+                /*node_idx=*/2_n,
+                /*device_idx=*/0_n,
+                /*device_type=*/DeviceType::GPU,
+            },
+            /*dimensions=*/{
+              MachineViewDimension{
+                /*stride=*/stride_t{1_p},
+                /*projection=*/MachineSpecificationDimension::INTER_NODE,
+              },
+            },
+        };
+
+        MachineMappingResult correct = MachineMappingResult{
+            FeasibleMachineMappingResult{
+                /*runtime=*/3_ms,
+                /*machine_mapping=*/
+                ParallelLayerGuidObliviousMachineMapping{{
+                    {
+                        BinaryTreePath{{
+                            BinaryTreePathEntry::LEFT_CHILD,
+                        }},
+                        mv_stride_1,
+                    },
+                    {
+                        BinaryTreePath{{
+                            BinaryTreePathEntry::RIGHT_CHILD,
+                        }},
+                        translated_mv_stride_1,
+                    },
+                }},
+            },
+        };
+
+        CHECK(result == correct);
+      }
+
+      SUBCASE("solution is running operators in series") {
+        RuntimeOnlyCostEstimator runtime_only_cost_estimator =
+            make_fake_runtime_only_cost_estimator(
+                std::unordered_map<RuntimeOnlyOpCostEstimateKey, RuntimeOnlyOpCostMetrics>{{
+                  mk_cost_entry(k1, mv_stride_1, 3),
+                  mk_cost_entry(k1, mv_stride_2, 1),
+                  mk_cost_entry(k2, mv_stride_1, 4),
+                  mk_cost_entry(k2, mv_stride_2, 1),
+                }},
+                std::unordered_map<TensorSetMovement, milliseconds_t>{{
+                    {
+                      TensorSetMovement{{}}, 
+                      0.0_ms,
+                    },
+                }});
+
+        MachineMappingContext context = MachineMappingContext{
+          /*cost_estimator=*/runtime_only_cost_estimator,
+          /*allowed_machine_views=*/allowed_machine_views,
+        };
+
+        MachineMappingResult result = get_optimal_machine_mapping(
+            cache, context, problem_tree, four_nodes_resources, constraints);
+
+        MachineMappingResult correct = MachineMappingResult{
+            FeasibleMachineMappingResult{
+                /*runtime=*/2_ms,
+                /*machine_mapping=*/
+                ParallelLayerGuidObliviousMachineMapping{{
+                    {
+                        BinaryTreePath{{
+                            BinaryTreePathEntry::LEFT_CHILD,
+                        }},
+                        mv_stride_2,
+                    },
+                    {
+                        BinaryTreePath{{
+                            BinaryTreePathEntry::RIGHT_CHILD,
+                        }},
+                        mv_stride_2,
+                    },
+                }},
+            },
+        };
+
+        CHECK(result == correct);
+      }
     }
   }
 }

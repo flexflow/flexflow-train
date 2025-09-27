@@ -5,6 +5,7 @@
 #include "compiler/cost_estimator/op_cost_metrics.h"
 #include "compiler/cost_estimator/runtime_only_cost_estimator_from_cost_estimator.h"
 #include "internal/cost_estimator_for_test.h"
+#include "utils/containers/contains_key.h"
 
 namespace FlexFlow {
 
@@ -31,9 +32,13 @@ RuntimeOnlyCostEstimator make_fake_runtime_only_cost_estimator(
         &comm_cost_map) {
   return make_fake_runtime_only_cost_estimator(
       [op_cost_map](RuntimeOnlyOpCostEstimateKey const &k) {
+        ASSERT(contains_key(op_cost_map, k), k);
+
         return op_cost_map.at(k);
       },
       [comm_cost_map](TensorSetMovement const &m) {
+        ASSERT(contains_key(comm_cost_map, m), m);
+
         return comm_cost_map.at(m);
       });
 }
