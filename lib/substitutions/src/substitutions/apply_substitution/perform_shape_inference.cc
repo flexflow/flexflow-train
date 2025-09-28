@@ -9,6 +9,7 @@
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"
 #include "utils/graph/labelled_open_dataflow_graph/algorithms/rewrite_value_labels.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_inputs.h"
+#include "utils/nonnegative_int/num_elements.h"
 
 namespace FlexFlow {
 
@@ -32,7 +33,7 @@ LabelledOpenDataflowGraphView<ParallelLayerAttrs, ParallelTensorShape>
     ParallelLayerAttrs n_attrs = g.at(n);
 
     std::vector<IncomingTensorRole> incoming_tensor_roles =
-        get_incoming_tensor_roles(n_attrs.op_attrs, incoming_shapes.size());
+        get_incoming_tensor_roles(n_attrs.op_attrs, num_elements(incoming_shapes));
 
     auto incoming_shapes_with_role =
         [&](IncomingTensorRole role) -> std::vector<ParallelTensorShape> {

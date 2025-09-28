@@ -265,7 +265,7 @@ static std::vector<parallel_tensor_guid_t>
       get_incoming_tensors(pcg, l);
 
   std::vector<IncomingTensorRole> incoming_tensor_roles =
-      get_incoming_tensor_roles(attrs, incoming_tensors.size());
+      get_incoming_tensor_roles(attrs, num_elements(incoming_tensors));
 
   assert(incoming_tensors.size() == incoming_tensor_roles.size());
 

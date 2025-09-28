@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_TRAINING_LAYER_TENSOR_GROUP_SIGNATURE_H
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_TRAINING_LAYER_TENSOR_GROUP_SIGNATURE_H
 
-#include "pcg/tensor_role.dtg.h"
+#include "op-attrs/tensor_role.dtg.h"
 #include "task-spec/training_layer_tensor_group_signature.dtg.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
 

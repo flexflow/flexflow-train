@@ -166,7 +166,7 @@ static std::vector<tensor_guid_t>
   std::vector<tensor_guid_t> incoming_tensors = get_incoming_tensors(cg, l);
 
   std::vector<IncomingTensorRole> incoming_tensor_roles =
-      get_incoming_tensor_roles(attrs, incoming_tensors.size());
+      get_incoming_tensor_roles(attrs, num_elements(incoming_tensors));
 
   assert(incoming_tensors.size() == incoming_tensor_roles.size());
 

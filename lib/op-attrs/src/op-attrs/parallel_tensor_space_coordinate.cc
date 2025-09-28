@@ -8,6 +8,12 @@
 
 namespace FlexFlow {
 
+num_ptensor_parallel_dims_t ptensor_coord_num_dims(ParallelTensorSpaceCoordinate const &c) {
+  return num_ptensor_parallel_dims_t{
+    2_n + num_elements(c.shard_components),
+  };
+}
+
 std::unordered_set<parallel_tensor_dim_idx_t>
   get_dim_idxs_in_ptensor_space_coord(ParallelTensorSpaceCoordinate const &coord) {
   

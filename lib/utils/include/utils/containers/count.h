@@ -3,12 +3,13 @@
 
 #include <cstddef>
 #include <vector>
+#include "utils/nonnegative_int/nonnegative_int.h"
 
 namespace FlexFlow {
 
 template <typename C, typename F>
-int count(C const &c, F const &f) {
-  int result = 0;
+nonnegative_int count(C const &c, F const &f) {
+  nonnegative_int result = 0_n;
   for (auto const &v : c) {
     if (f(v)) {
       result++;

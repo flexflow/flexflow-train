@@ -1,0 +1,14 @@
+namespace = "FlexFlow"
+name = "TensorDirection"
+features = [
+  "hash",
+  "fmt",
+  "rapidcheck",
+  "json",
+]
+
+[[values]]
+name = "INCOMING"
+
+[[values]]
+name = "OUTPUT"

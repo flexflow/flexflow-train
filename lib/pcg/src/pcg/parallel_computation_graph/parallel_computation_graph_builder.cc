@@ -29,6 +29,7 @@
 #include "utils/containers/count.h"
 #include "utils/containers/enumerate_vector.h"
 #include "utils/containers/get_only.h"
+#include "utils/containers/repeat_element.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/zip_with.h"
 
@@ -531,13 +532,13 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::add_weight(
 }
 
 static void check_incoming_tensor_roles(ParallelLayerAttrs const &layer,
-                                        int num_inputs,
-                                        int num_weights) {
+                                        nonnegative_int num_inputs,
+                                        nonnegative_int num_weights) {
   std::vector<IncomingTensorRole> correct =
       get_incoming_tensor_roles(layer.op_attrs, num_inputs + num_weights);
   std::vector<IncomingTensorRole> current = concat_vectors(
-      std::vector<IncomingTensorRole>(num_inputs, IncomingTensorRole::INPUT),
-      std::vector<IncomingTensorRole>(num_weights, IncomingTensorRole::WEIGHT));
+      repeat_element(num_inputs, IncomingTensorRole::INPUT),
+      repeat_element(num_weights, IncomingTensorRole::WEIGHT));
 
   if (correct != current) {
     throw mk_runtime_error(
@@ -553,12 +554,12 @@ std::vector<parallel_tensor_guid_t> ParallelComputationGraphBuilder::add_layer(
     std::vector<parallel_tensor_guid_t> const &inputs,
     std::vector<InitializerAttrs> const &weight_initializers) {
 
-  int num_weights_provided =
+  nonnegative_int num_weights_provided =
       count(weight_initializers, [](std::optional<InitializerAttrs> const &i) {
         return i.has_value();
       });
 
-  check_incoming_tensor_roles(layer, inputs.size(), num_weights_provided);
+  check_incoming_tensor_roles(layer, num_elements(inputs), num_weights_provided);
 
   std::vector<ParallelTensorShape> input_shapes =
       transform(inputs, [&](parallel_tensor_guid_t const &i) {

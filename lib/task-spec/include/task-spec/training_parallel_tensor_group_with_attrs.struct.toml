@@ -23,7 +23,6 @@ src_includes = [
 name = "parallel_tensor_attrs"
 type = "::FlexFlow::ParallelTensorAttrs"
 
-
 [[fields]]
 name = "forward_ptensor"
 type = "::FlexFlow::forward_parallel_tensor_guid_t"
@@ -35,4 +34,3 @@ type = "::FlexFlow::gradient_parallel_tensor_guid_t"
 [[fields]]
 name = "optimizer_ptensors"
 type = "std::vector<::FlexFlow::optimizer_parallel_tensor_guid_t>"
-

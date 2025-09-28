@@ -35,6 +35,7 @@
 #include "utils/containers/concat_vectors.h"
 #include "utils/containers/enumerate_vector.h"
 #include "utils/containers/get_only.h"
+#include "utils/containers/repeat_element.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/transform_until.h"
 #include "utils/containers/vector_of.h"
@@ -92,13 +93,13 @@ tensor_guid_t ComputationGraphBuilder::create_weight(
 }
 
 static void check_incoming_tensor_roles(LayerAttrs const &layer,
-                                        int num_inputs,
-                                        int num_weights) {
+                                        nonnegative_int num_inputs,
+                                        nonnegative_int num_weights) {
   std::vector<IncomingTensorRole> correct =
       get_incoming_tensor_roles(layer.op_attrs, num_inputs + num_weights);
   std::vector<IncomingTensorRole> current = concat_vectors(
-      std::vector<IncomingTensorRole>(num_inputs, IncomingTensorRole::INPUT),
-      std::vector<IncomingTensorRole>(num_weights, IncomingTensorRole::WEIGHT));
+      repeat_element(num_inputs, IncomingTensorRole::INPUT),
+      repeat_element(num_weights, IncomingTensorRole::WEIGHT));
 
   if (correct != current) {
     throw mk_runtime_error(
@@ -114,7 +115,7 @@ std::vector<tensor_guid_t> ComputationGraphBuilder::add_layer(
     std::vector<tensor_guid_t> const &inputs,
     std::vector<InitializerAttrs> const &weight_initializers,
     std::optional<std::vector<CreateGrad>> const &outputs) {
-  check_incoming_tensor_roles(layer, inputs.size(), weight_initializers.size());
+  check_incoming_tensor_roles(layer, num_elements(inputs), num_elements(weight_initializers));
 
   std::vector<TensorShape> input_shapes = transform(
       inputs, [&](tensor_guid_t const &t) { return this->get_shape(t); });
@@ -159,12 +160,10 @@ tensor_guid_t ComputationGraphBuilder::broadcast(tensor_guid_t const &input,
     return input;
   }
 
-  if (!tensor_dims_is_broadcastable_to(input_shape.dims, target_dims)) {
-    throw mk_runtime_error(fmt::format(
-        "Cannot broadcast input tensor of dims {} to target dims {}",
-        input_shape.dims,
-        target_dims));
-  }
+  ASSERT(tensor_dims_is_broadcastable_to(input_shape.dims, target_dims),
+         "Cannot broadcast input tensor to target dims",
+         input_shape.dims,
+         target_dims);
 
   BroadcastAttrs attrs = BroadcastAttrs{target_dims};
 

@@ -11,4 +11,3 @@ includes = [
 [[fields]]
 name = "shard_map"
 type = "std::unordered_map<::FlexFlow::gpu_id_t, ::FlexFlow::GenericTensorAccessorW>"
-

@@ -1,0 +1,32 @@
+namespace = "FlexFlow"
+name = "OperatorTaskSignature"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+  "rapidcheck",
+]
+
+includes = [
+  "op-attrs/parallel_tensor_space_coordinate.dtg.h",
+]
+
+src_includes = [
+  "utils/hash/vector.h",
+  "utils/fmt/vector.h",
+  "utils/ord/vector.h",
+]
+
+[[fields]]
+name = "inputs"
+type = "std::vector<::FlexFlow::ParallelTensorSpaceCoordinate>"
+
+[[fields]]
+name = "weights"
+type = "std::vector<::FlexFlow::ParallelTensorSpaceCoordinate>"
+
+[[fields]]
+name = "outputs"
+type = "std::vector<::FlexFlow::ParallelTensorSpaceCoordinate>"

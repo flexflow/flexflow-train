@@ -2,7 +2,7 @@
 #define _FLEXFLOW_LIB_PCG_INCLUDE_PCG_CG_OPERATOR_TENSOR_SHAPE_SIGNATURE_H
 
 #include "pcg/cg_operator_tensor_shape_signature.dtg.h"
-#include "pcg/tensor_role.dtg.h"
+#include "op-attrs/tensor_role.dtg.h"
 
 namespace FlexFlow {
 

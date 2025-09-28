@@ -1,6 +1,6 @@
 #include "substitutions/operator_pattern/eval_list_access.h"
 #include "substitutions/operator_pattern/get_attribute.h"
-#include "utils/containers/at_idx.h"
+#include "utils/containers/try_at_idx.h"
 #include "utils/containers/make.h"
 #include "utils/containers/transform.h"
 #include "utils/overload.h"
@@ -23,10 +23,10 @@ std::optional<OperatorAttributeValue>
         using T = std::decay_t<decltype(v)>;
 
         if constexpr (std::is_same_v<T, std::vector<nonnegative_int>>) {
-          return transform(at_idx(v, acc.index),
+          return transform(try_at_idx(v, acc.index),
                            make<OperatorAttributeValue>());
         } else if constexpr (std::is_same_v<T, std::vector<ff_dim_t>>) {
-          return transform(at_idx(v, acc.index),
+          return transform(try_at_idx(v, acc.index),
                            make<OperatorAttributeValue>());
         } else {
           PANIC("Invalid operand");

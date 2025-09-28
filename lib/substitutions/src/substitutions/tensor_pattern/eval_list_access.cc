@@ -13,7 +13,7 @@ TensorAttributeValue
 
   return from_attr.visit<TensorAttributeValue>(overload{
       [&](std::vector<nonnegative_int> const &v) -> TensorAttributeValue {
-        return TensorAttributeValue{at_idx(v, acc.index).value()};
+        return TensorAttributeValue{at_idx(v, acc.index)};
       },
       [](auto &&x) -> TensorAttributeValue { PANIC("Invalid operand", x); },
   });

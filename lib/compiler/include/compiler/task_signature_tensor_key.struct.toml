@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "ParallelTensorShapeRefType"
+name = "TaskSignatureTensorKey"
 features = [
   "eq",
   "ord",

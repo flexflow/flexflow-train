@@ -4,16 +4,15 @@
 #include "utils/nonnegative_int/nonnegative_int.h"
 #include <optional>
 #include <vector>
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
 template <typename E>
-std::optional<E> at_idx(std::vector<E> const &v, nonnegative_int idx) {
-  if (idx >= v.size()) {
-    return std::nullopt;
-  } else {
-    return v.at(idx.unwrap_nonnegative());
-  }
+E at_idx(std::vector<E> const &v, nonnegative_int idx) {
+  ASSERT(idx < v.size());
+
+  return v.at(idx.unwrap_nonnegative());
 }
 
 } // namespace FlexFlow

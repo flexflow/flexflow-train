@@ -1,4 +1,7 @@
 #include "compiler/graph_optimize_state.h"
+#include "compiler/machine_mapping/machine_mapping.dtg.h"
+#include "compiler/mapped_parallel_computation_graph.h"
+#include "pcg/machine_view.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include <doctest/doctest.h>
 
@@ -19,8 +22,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     // `machine_mapping` is determined by the PCG and the device mapping
     // algorithm, and `runtime` is determined by the PCG and the device mapping,
     // so their values here do not matter.
-    std::unordered_map<parallel_layer_guid_t, MachineView> empty_machine_views;
-    MachineMapping empty_machine_mapping(empty_machine_views);
+    MachineMapping empty_machine_mapping = MachineMapping{
+      std::unordered_map<parallel_layer_guid_t, MachineView>{},
+    };
 
     InitializerAttrs zero_init = InitializerAttrs{ZeroInitializerAttrs{}};
 
@@ -59,14 +63,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       GraphOptimizeState state1 = GraphOptimizeState{
           GraphOptimizeResult{
-            MappedParallelComputationGraph{pcg1, empty_machine_mapping},
+            mapped_pcg_from_pcg_and_mapping(pcg1, empty_machine_mapping),
           },
           0,
       };
 
       GraphOptimizeState state2 = GraphOptimizeState{
           GraphOptimizeResult{
-            MappedParallelComputationGraph{pcg2, empty_machine_mapping},
+            mapped_pcg_from_pcg_and_mapping(pcg2, empty_machine_mapping),
           },
           0,
       };
@@ -93,14 +97,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       GraphOptimizeState state1 = GraphOptimizeState{
           GraphOptimizeResult{
-            MappedParallelComputationGraph{pcg1, empty_machine_mapping},
+            mapped_pcg_from_pcg_and_mapping(pcg1, empty_machine_mapping),
           },
           0,
       };
 
       GraphOptimizeState state_ = GraphOptimizeState{
           GraphOptimizeResult{
-            MappedParallelComputationGraph{pcg_, empty_machine_mapping},
+            mapped_pcg_from_pcg_and_mapping(pcg_, empty_machine_mapping),
           },
           0,
       };

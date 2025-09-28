@@ -10,14 +10,14 @@
 namespace FlexFlow {
 
 std::vector<IncomingTensorRole> get_incoming_tensor_roles(
-    ComputationGraphOpAttrs const &comp_graph_op_attrs, int num_incoming) {
+    ComputationGraphOpAttrs const &comp_graph_op_attrs, nonnegative_int num_incoming) {
   return get_incoming_tensor_roles(
       pcg_op_attrs_from_compgraph_op_attrs(comp_graph_op_attrs), num_incoming);
 }
 
 std::vector<IncomingTensorRole>
     get_incoming_tensor_roles(PCGOperatorAttrs const &pcg_op_attrs,
-                              int num_incoming) {
+                              nonnegative_int num_incoming) {
   return pcg_op_attrs.visit<std::vector<IncomingTensorRole>>(overload{
       [](BatchMatmulAttrs const &) {
         return std::vector{IncomingTensorRole::INPUT,
@@ -34,7 +34,7 @@ std::vector<IncomingTensorRole>
         return std::vector{IncomingTensorRole::INPUT};
       },
       [&](ConcatAttrs const &) {
-        return std::vector(num_incoming, IncomingTensorRole::INPUT);
+        return std::vector(num_incoming.unwrap_nonnegative(), IncomingTensorRole::INPUT);
       },
       [](Conv2DAttrs const &attrs) {
         return get_conv2d_incoming_tensor_roles(attrs);

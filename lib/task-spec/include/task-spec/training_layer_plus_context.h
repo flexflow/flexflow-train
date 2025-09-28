@@ -2,7 +2,7 @@
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_TRAINING_LAYER_PLUS_CONTEXT_H
 
 #include "pcg/cg_operator_tensor_shape_signature.dtg.h"
-#include "pcg/tensor_role.dtg.h"
+#include "op-attrs/tensor_role.dtg.h"
 #include "task-spec/training_layer_plus_context.dtg.h"
 #include "task-spec/training_layer_tensor_group_signature.dtg.h"
 

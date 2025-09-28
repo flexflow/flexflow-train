@@ -33,6 +33,12 @@ MachineSpaceCoordinate
                                  MachineView const &machine_view,
                                  TaskSpaceCoordinate const &task_space_coordinate);
 
+TaskSpaceCoordinate
+    mv_task_space_coord_for_machine_space_coord(
+      MachineView const &,
+      OperatorTaskSpace const &,
+      MachineSpaceCoordinate const &);
+
 OperatorSpaceToMachineSpaceMapping
   get_coordinate_mapping_for_machine_view(OperatorTaskSpace const &operator_task_space,
                                           MachineView const &machine_view);

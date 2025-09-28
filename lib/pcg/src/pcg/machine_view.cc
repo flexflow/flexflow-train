@@ -129,6 +129,15 @@ MachineSpaceCoordinate get_machine_space_coordinate(
   return ms_coord;
 }
 
+TaskSpaceCoordinate
+    mv_task_space_coord_for_machine_space_coord(
+      MachineView const &machine_view,
+      OperatorTaskSpace const &operator_task_space,
+      MachineSpaceCoordinate const &machine_space_coord) {
+  OperatorSpaceToMachineSpaceMapping mapping = get_coordinate_mapping_for_machine_view(operator_task_space, machine_view);
+
+  return mapping.raw_mapping.at_r(machine_space_coord);
+}
 
 OperatorSpaceToMachineSpaceMapping
   get_coordinate_mapping_for_machine_view(

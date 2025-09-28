@@ -1,5 +1,7 @@
 #include "op-attrs/get_operator_space_to_parallel_tensor_space_mappings.h"
+#include "op-attrs/get_incoming_tensor_roles.h"
 #include "op-attrs/ops/element_binary.h"
+#include "utils/containers/filtrans.h"
 #include "utils/containers/get_only.h"
 #include "utils/overload.h"
 #include "op-attrs/ops/linear.h"
@@ -70,6 +72,46 @@ std::vector<OperatorSpaceToParallelTensorSpaceMapping>
   });
 }
 
+std::vector<OperatorSpaceToParallelTensorSpaceMapping> 
+  get_operator_to_incoming_mappings_for_role(ComputationGraphOpAttrs const &attrs,
+                                             std::vector<ParallelTensorDimDegrees> const &inputs_degrees,
+                                             IncomingTensorRole incoming_tensor_role) {
+
+  std::vector<OperatorSpaceToParallelTensorSpaceMapping>
+    incoming_mappings = get_operator_to_incoming_mappings(attrs, inputs_degrees);
+
+
+  std::vector<IncomingTensorRole> 
+    incoming_tensor_roles = get_incoming_tensor_roles(attrs, num_elements(inputs_degrees));
+
+  return filtrans(zip(incoming_mappings, incoming_tensor_roles),
+                  [&](std::pair<OperatorSpaceToParallelTensorSpaceMapping, IncomingTensorRole> const &p) 
+                    -> std::optional<OperatorSpaceToParallelTensorSpaceMapping>
+                  {
+                    auto const &[mapping, role] = p;
+
+                    if (role == incoming_tensor_role) {
+                      return mapping;
+                    } else {
+                      return std::nullopt;
+                    }
+                  });
+}
+
+std::vector<OperatorSpaceToParallelTensorSpaceMapping>
+  get_operator_to_input_mappings(ComputationGraphOpAttrs const &attrs,
+                                 std::vector<ParallelTensorDimDegrees> const &inputs_degrees) {
+  return get_operator_to_incoming_mappings_for_role(attrs, inputs_degrees, IncomingTensorRole::INPUT);
+}
+
+std::vector<OperatorSpaceToParallelTensorSpaceMapping>
+  get_operator_to_weight_mappings(ComputationGraphOpAttrs const &attrs,
+                                 std::vector<ParallelTensorDimDegrees> const &inputs_degrees) {
+
+  return get_operator_to_incoming_mappings_for_role(attrs, inputs_degrees, IncomingTensorRole::WEIGHT);
+}
+
+
 std::vector<OperatorSpaceToParallelTensorSpaceMapping>
   get_operator_to_output_mappings(
     ComputationGraphOpAttrs const &comp_graph_op_attrs,
@@ -125,6 +167,22 @@ std::vector<OperatorSpaceToParallelTensorSpaceMapping>
   });
 }
 
+
+std::vector<OperatorSpaceToParallelTensorSpaceMapping> 
+  get_operator_to_ptensor_mappings_for_role(ComputationGraphOpAttrs const &attrs,
+                                            std::vector<ParallelTensorDimDegrees> const &inputs_degrees,
+                                            TensorRole role) {
+  switch (role) {
+    case TensorRole::INPUT:
+      return get_operator_to_input_mappings(attrs, inputs_degrees);
+    case TensorRole::WEIGHT:
+      return get_operator_to_weight_mappings(attrs, inputs_degrees);
+    case TensorRole::OUTPUT:
+      return get_operator_to_weight_mappings(attrs, inputs_degrees);
+    default:
+      PANIC("Unhandled TensorRole", role);
+  }
+}
 
 
 } // namespace FlexFlow

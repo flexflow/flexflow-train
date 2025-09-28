@@ -8,9 +8,9 @@
 namespace FlexFlow {
 
 std::vector<IncomingTensorRole>
-    get_incoming_tensor_roles(ComputationGraphOpAttrs const &, int num_inputs);
+    get_incoming_tensor_roles(ComputationGraphOpAttrs const &, nonnegative_int num_inputs);
 std::vector<IncomingTensorRole>
-    get_incoming_tensor_roles(PCGOperatorAttrs const &, int num_inputs);
+    get_incoming_tensor_roles(PCGOperatorAttrs const &, nonnegative_int num_inputs);
 
 } // namespace FlexFlow
 

@@ -212,25 +212,25 @@ TEST_SUITE(FF_TEST_SUITE) {
                      });
     CHECK_MESSAGE(layers.size() == 7, "Incorrect layers ", layers);
 
-    auto num_attrs_of_type = [&](OperatorType op_type) -> int {
+    auto num_attrs_of_type = [&](OperatorType op_type) -> nonnegative_int {
       return count(values(layers), [&](ParallelLayerAttrs const &l) {
         return get_op_type(l) == op_type;
       });
     };
 
-    int num_weight_attrs = num_attrs_of_type(OperatorType::WEIGHT);
+    nonnegative_int num_weight_attrs = num_attrs_of_type(OperatorType::WEIGHT);
     CHECK(num_weight_attrs == 2);
 
-    int num_input_attrs = num_attrs_of_type(OperatorType::INPUT);
+    nonnegative_int num_input_attrs = num_attrs_of_type(OperatorType::INPUT);
     CHECK(num_input_attrs == 1);
 
-    int num_conv_attrs = num_attrs_of_type(OperatorType::CONV2D);
+    nonnegative_int num_conv_attrs = num_attrs_of_type(OperatorType::CONV2D);
     CHECK(num_conv_attrs == 1);
 
-    int num_replicate_attrs = num_attrs_of_type(OperatorType::REPLICATE);
+    nonnegative_int num_replicate_attrs = num_attrs_of_type(OperatorType::REPLICATE);
     CHECK(num_replicate_attrs == 2);
 
-    int num_partition_attrs = num_attrs_of_type(OperatorType::REPARTITION);
+    nonnegative_int num_partition_attrs = num_attrs_of_type(OperatorType::REPARTITION);
     CHECK(num_partition_attrs == 1);
 
     parallel_layer_guid_t conv_guid = get_only(without_nullopts(transform(
