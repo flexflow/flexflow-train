@@ -33,7 +33,7 @@ git clone --recursive "$SSH_URL" "$HOME/ff"
 [^1]: aka "dev shell"
 
 ```bash
-cd "$FF_DIR"
+cd "$HOME/ff"
 nix develop --accept-flake-config
 ```
 
@@ -72,8 +72,9 @@ exit
 7. Allocate and ssh into a GPU node.
 
 8. Enter the gpu-enabled dev shell.
-```
-$ NIXPKGS_ALLOW_UNFREE=1 nix develop .#gpu --accept-flake-config --impure
+```bash
+cd "$HOME/ff"
+NIXPKGS_ALLOW_UNFREE=1 nix develop .#gpu --accept-flake-config --impure
 ```
 
 9. Run the gpu tests
