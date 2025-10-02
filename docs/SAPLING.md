@@ -1,8 +1,8 @@
 # Setup Guide for sapling
 
-0. ssh into the sapling head node.
+1. ssh into the sapling head node.
 
-1. Install [DavHau/nix-portable](https://github.com/DavHau/nix-portable).
+2. Install [DavHau/nix-portable](https://github.com/DavHau/nix-portable).
 
 ```bash
 USERBIN="${XDG_BIN_HOME:-$HOME/.local/bin}"
@@ -12,7 +12,7 @@ chmod u+x "$USERBIN/nix-portable"
 ln -sf "$USERBIN/nix-portable" "$USERBIN/nix"
 ```
 
-2. Configure the nix-portable store.
+3. Configure the nix-portable store.
 
 ```bash
 cat >>"$HOME/.bashrc" <<EOF
@@ -21,14 +21,14 @@ export NP_LOCATION="/tmp/\$USER/"
 EOF
 ```
 
-3. Clone the repo.
+4. Clone the repo.
 
 ```bash
 SSH_URL="git@github.com:lockshaw/ff-dev.git"
 git clone --recursive "$SSH_URL" "$HOME/ff"
 ```
 
-4. Enter the nix-provided `default` development environment[^1]
+5. Enter the nix-provided `default` development environment[^1]
 
 [^1]: aka "dev shell"
 
@@ -37,7 +37,7 @@ cd "$HOME/ff"
 nix develop --accept-flake-config
 ```
 
-5. Build and run the non-GPU-required tests.
+6. Build and run the non-GPU-required tests.
 
 ```
 (ff) $ proj cmake
@@ -64,20 +64,20 @@ utils-tests                     =   1.20 sec*proc (293 tests)
 Total Test time (real) =   8.64 sec
 ```
 
-6. Exit the `default` dev shell
+7. Exit the `default` dev shell
 ```
 exit
 ```
 
-7. Allocate and ssh into a GPU node.
+8. Allocate and ssh into a GPU node.
 
-8. Enter the gpu-enabled dev shell.
+9. Enter the gpu-enabled dev shell.
 ```bash
 cd "$HOME/ff"
 NIXPKGS_ALLOW_UNFREE=1 nix develop .#gpu --accept-flake-config --impure
 ```
 
-9. Run the gpu tests
+10. Run the gpu tests
 ```
 (ff) $ proj test
 ...
