@@ -24,7 +24,7 @@ EOF
 4. Clone the repo.
 
 ```bash
-SSH_URL="git@github.com:lockshaw/ff-dev.git"
+SSH_URL="git@github.com:flexflow/flexflow-train.git"
 git clone --recursive "$SSH_URL" "$HOME/ff"
 ```
 
