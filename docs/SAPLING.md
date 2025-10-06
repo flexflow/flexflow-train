@@ -72,7 +72,7 @@ exit
 8. Allocate and ssh into a GPU node.
 
 9. Enter the gpu-enabled dev shell.
-```bash
+```
 cd "$HOME/ff"
 NIXPKGS_ALLOW_UNFREE=1 nix develop .#gpu --accept-flake-config --impure
 ```
