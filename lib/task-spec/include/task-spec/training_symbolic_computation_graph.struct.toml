@@ -1,0 +1,28 @@
+namespace = "FlexFlow"
+name = "TrainingSymbolicComputationGraph"
+features = []
+
+includes = [
+  "utils/graph/labelled_dataflow_graph/labelled_dataflow_graph.h",
+  "pcg/parallel_computation_graph/parallel_layer_attrs.dtg.h",
+  "<unordered_map>",
+  "task-spec/symbolic_tensor_guid_t.dtg.h",
+  "task-spec/symbolic_training_tensor_group.dtg.h",
+  "task-spec/symbolic_loss_tensor_guid_t.dtg.h",
+]
+
+[[fields]]
+name = "symbolic_computation_graph"
+type = "::FlexFlow::LabelledDataflowGraphView<::FlexFlow::ParallelLayerAttrs, ::FlexFlow::TensorShape>"
+
+[[fields]]
+name = "symbolic_training_tensor_group_for_tensor"
+type = "std::unordered_map<::FlexFlow::symbolic_tensor_guid_t, ::FlexFlow::SymbolicTrainingTensorGroup>"
+
+[[fields]]
+name = "logit_tensor"
+type = "::FlexFlow::symbolic_tensor_guid_t"
+
+[[fields]]
+name = "label_tensor"
+type = "::FlexFlow::symbolic_loss_tensor_guid_t"

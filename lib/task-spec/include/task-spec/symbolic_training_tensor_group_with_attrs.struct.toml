@@ -1,0 +1,36 @@
+namespace = "FlexFlow"
+name = "SymbolicTrainingTensorGroupWithAttrs"
+features = [
+  "eq",
+  "ord",
+  "fmt",
+  "hash",
+]
+
+includes = [
+  "op-attrs/tensor_shape.dtg.h",
+  "task-spec/symbolic_forward_tensor_guid_t.dtg.h",
+  "task-spec/symbolic_gradient_tensor_guid_t.dtg.h",
+  "task-spec/symbolic_optimizer_tensor_guid_t.dtg.h",
+]
+
+src_includes = [
+  "utils/hash/vector.h",
+  "utils/fmt/vector.h",
+]
+
+[[fields]]
+name = "tensor_shape"
+type = "::FlexFlow::TensorShape"
+
+[[fields]]
+name = "forward_tensor"
+type = "::FlexFlow::symbolic_forward_tensor_guid_t"
+
+[[fields]]
+name = "gradient_tensor"
+type = "::FlexFlow::symbolic_gradient_tensor_guid_t"
+
+[[fields]]
+name = "optimizer_tensors"
+type = "std::vector<::FlexFlow::symbolic_optimizer_tensor_guid_t>"

@@ -1,0 +1,31 @@
+namespace = "FlexFlow"
+name = "symbolic_training_tensor_guid_t"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "task-spec/symbolic_forward_tensor_guid_t.dtg.h",
+  "task-spec/symbolic_optimizer_tensor_guid_t.dtg.h",
+  "task-spec/symbolic_gradient_tensor_guid_t.dtg.h",
+  "task-spec/symbolic_loss_tensor_guid_t.dtg.h"
+]
+
+[[values]]
+type = "::FlexFlow::symbolic_forward_tensor_guid_t"
+key = "forward_tensor"
+
+[[values]]
+type = "::FlexFlow::symbolic_gradient_tensor_guid_t"
+key = "gradient_tensor"
+
+[[values]]
+type = "::FlexFlow::symbolic_optimizer_tensor_guid_t"
+key = "optimizer_tensor"
+
+[[values]]
+type = "::FlexFlow::symbolic_loss_tensor_guid_t"
+key = "loss_tensor"

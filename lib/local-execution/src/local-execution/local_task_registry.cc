@@ -50,8 +50,30 @@ std::optional<registered_task_t>
                                 op_task_type);
 }
 
+std::optional<DeviceSpecificPerDeviceOpState> call_init_task_impl(
+  LocalTaskRegistry const &local_task_registry,
+  registered_task_t registered_task,
+  TaskArgumentAccessor const &arg_accessor) {
+
+  if (registered_task.is_noop_task()) {
+    return std::nullopt;
+  }
+
+  task_id_t task_id = registered_task.require_real_task();
+
+  TaskSignatureAndImpl task_sig_impl =
+      local_task_registry.task_mapping.at(task_id);
+
+  auto fn =
+      task_sig_impl.impl_function.get<InitOpTaskImplFunction>().function_ptr;
+
+  std::optional<DeviceSpecificPerDeviceOpState> device_state = fn(arg_accessor);
+
+  return device_state;
+}
+
 std::optional<milliseconds_t>
-    call_task_impl(LocalTaskRegistry const &task_registry,
+    call_fwb_task_impl(LocalTaskRegistry const &task_registry,
                    task_id_t const &task_id,
                    TaskArgumentAccessor const &acc) {
   TaskSignatureAndImpl task_sig_impl = task_registry.task_mapping.at(task_id);

@@ -15,4 +15,4 @@ type = "::FlexFlow::RuntimeArgConfig"
 
 [[fields]]
 name = "per_device_op_states"
-type = "std::unordered_map<::FlexFlow::parallel_layer_instance_id_t, std::optional<::FlexFlow::DeviceSpecificDeviceStates>>"
+type = "std::unordered_map<::FlexFlow::parallel_layer_instance_id_t, std::optional<::FlexFlow::DeviceSpecificPerDeviceOpState>>"

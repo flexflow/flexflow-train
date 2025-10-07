@@ -60,7 +60,7 @@ OpTaskInvocation backward(DropoutAttrs const &attrs) {
   };
 }
 
-static DeviceSpecificDeviceStates
+static DeviceSpecificPerDeviceOpState
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   Allocator allocator = acc.get_allocator();
@@ -77,7 +77,7 @@ static DeviceSpecificDeviceStates
                   output.shape,
                   allocator);
 
-  return DeviceSpecificDeviceStates{
+  return DeviceSpecificPerDeviceOpState{
       DeviceSpecific<std::optional<DropoutPerDeviceState>>::create(
           per_device_state),
   };

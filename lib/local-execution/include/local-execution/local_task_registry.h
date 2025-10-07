@@ -6,6 +6,7 @@
 #include "pcg/layer_attrs.dtg.h"
 #include "task-spec/op_task_type.dtg.h"
 #include "utils/units/milliseconds_t.h"
+#include "task-spec/device_specific_per_device_op_state.dtg.h"
 
 namespace FlexFlow {
 
@@ -15,9 +16,15 @@ LocalTaskRegistry construct_local_task_registry_for_layers(
 std::optional<registered_task_t> try_get_registered_task(
     LocalTaskRegistry const &, layer_guid_t const &, OpTaskType const &);
 
-std::optional<milliseconds_t> call_task_impl(LocalTaskRegistry const &,
-                                             task_id_t const &task_id,
-                                             TaskArgumentAccessor const &acc);
+std::optional<DeviceSpecificPerDeviceOpState> call_init_task_impl(
+  LocalTaskRegistry const &local_task_registry,
+  registered_task_t task_id,
+  TaskArgumentAccessor const &arg_accessor);
+
+std::optional<milliseconds_t> call_fwb_task_impl(
+  LocalTaskRegistry const &local_task_registry,
+  task_id_t task_id,
+  TaskArgumentAccessor const &arg_accessor);
 
 } // namespace FlexFlow
 

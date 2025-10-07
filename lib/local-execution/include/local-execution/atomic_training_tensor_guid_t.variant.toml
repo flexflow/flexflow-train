@@ -1,0 +1,43 @@
+namespace = "FlexFlow"
+name = "atomic_training_tensor_guid_t"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+docstring = """\
+@brief An id denoting an atomic tensor shard at train time.
+
+@note @ref training_tensor_guid_t does not strictly correspond to @ref tensor_guid_t.
+There can be values of @ref training_tensor_guid_t that have no corresponding @ref tensor_guid_t 
+(e.g., in the case of running training using a ParallelComputationGraph, 
+where not every @ref parallel_tensor_guid_t has a corresponding @ref tensor_guid_t),
+and similarly in reverse.
+
+TODO(@lockshaw)(#pr) update
+"""
+
+includes = [
+  "local-execution/atomic_forward_tensor_guid_t.dtg.h",
+  "local-execution/atomic_optimizer_tensor_guid_t.dtg.h",
+  "local-execution/atomic_gradient_tensor_guid_t.dtg.h",
+  "local-execution/atomic_loss_tensor_guid_t.dtg.h"
+]
+
+[[values]]
+type = "::FlexFlow::atomic_forward_tensor_guid_t"
+key = "forward_tensor"
+
+[[values]]
+type = "::FlexFlow::atomic_gradient_tensor_guid_t"
+key = "gradient_tensor"
+
+[[values]]
+type = "::FlexFlow::atomic_optimizer_tensor_guid_t"
+key = "optimizer_tensor"
+
+[[values]]
+type = "::FlexFlow::atomic_loss_tensor_guid_t"
+key = "loss_tensor"

@@ -7,7 +7,7 @@ features = [
 
 includes = [
   "kernels/accessor.h",
-  "task-spec/training_tensor_guid_t.dtg.h",
+  "task-spec/symbolic_training_tensor_guid_t.dtg.h",
 ]
 
 src_includes = [
@@ -16,4 +16,4 @@ src_includes = [
 
 [[fields]]
 name = "backing_for_training_tensor_map"
-type = "std::unordered_map<::FlexFlow::training_tensor_guid_t, ::FlexFlow::GenericTensorAccessorW>"
+type = "std::unordered_map<::FlexFlow::symbolic_training_tensor_guid_t, ::FlexFlow::GenericTensorAccessorW>"

@@ -63,7 +63,7 @@ OpTaskInvocation backward(Conv2DAttrs const &attrs) {
   };
 }
 
-static DeviceSpecificDeviceStates
+static DeviceSpecificPerDeviceOpState
     init_task_impl(TaskArgumentAccessor const &acc) {
 
   device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
@@ -91,7 +91,7 @@ static DeviceSpecificDeviceStates
       /*filter_ptr=*/filter.get_float_ptr(),
       /*filter_grad_ptr=*/filter_grad.get_float_ptr());
 
-  return DeviceSpecificDeviceStates{
+  return DeviceSpecificPerDeviceOpState{
       DeviceSpecific<std::optional<Conv2DPerDeviceState>>::create(
           per_device_state),
   };

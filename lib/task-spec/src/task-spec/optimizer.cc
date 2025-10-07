@@ -37,9 +37,9 @@ TaskSignature get_sgd_update_signature() {
 }
 
 TaskInvocation sgd_update(SGDOptimizerAttrs const &attrs,
-                          forward_tensor_guid_t const &weight,
-                          gradient_tensor_guid_t const &weight_grad,
-                          optimizer_tensor_guid_t const &sgd_v) {
+                          symbolic_forward_tensor_guid_t const &weight,
+                          symbolic_gradient_tensor_guid_t const &weight_grad,
+                          symbolic_optimizer_tensor_guid_t const &sgd_v) {
   TaskBinding b;
   b.bind(WEIGHT, weight);
   b.bind_grad(WEIGHT_GRAD, weight_grad);
@@ -155,10 +155,10 @@ TaskSignature get_adam_update_signature() {
 }
 
 TaskInvocation adam_update(AdamOptimizerAttrs const &attrs,
-                           forward_tensor_guid_t const &weight,
-                           gradient_tensor_guid_t const &weight_grad,
-                           optimizer_tensor_guid_t const &adam_v,
-                           optimizer_tensor_guid_t const &adam_m) {
+                           symbolic_forward_tensor_guid_t const &weight,
+                           symbolic_gradient_tensor_guid_t const &weight_grad,
+                           symbolic_optimizer_tensor_guid_t const &adam_v,
+                           symbolic_optimizer_tensor_guid_t const &adam_m) {
   TaskBinding b;
   b.bind(WEIGHT, weight);
   b.bind_grad(WEIGHT_GRAD, weight_grad);
@@ -264,9 +264,9 @@ TaskSignature get_update_signature(OptimizerAttrs const &attrs) {
 
 TaskInvocation get_update_invocation(
     OptimizerAttrs const &attrs,
-    forward_tensor_guid_t const &weight,
-    gradient_tensor_guid_t const &weight_grad,
-    std::vector<optimizer_tensor_guid_t> const &grad_buffer_tensors) {
+    symbolic_forward_tensor_guid_t const &weight,
+    symbolic_gradient_tensor_guid_t const &weight_grad,
+    std::vector<symbolic_optimizer_tensor_guid_t> const &grad_buffer_tensors) {
   return attrs.visit<TaskInvocation>(
       overload{[&](SGDOptimizerAttrs const &s) {
                  return sgd_update(

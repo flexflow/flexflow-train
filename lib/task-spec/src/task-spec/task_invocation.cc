@@ -19,7 +19,7 @@ bool is_invocation_valid(TaskSignature const &sig, TaskInvocation const &inv) {
     }
   }
 
-  for (std::pair<tensor_sub_slot_id_t, training_tensor_guid_t> const
+  for (std::pair<training_tensor_slot_id_t, symbolic_training_tensor_guid_t> const
            &tensor_binding : binding.get_tensor_bindings()) {
     slot_id_t tensor_slot_id = tensor_binding.first.slot_id;
     if (sig.tensor_guid_slots.count(tensor_slot_id)) {

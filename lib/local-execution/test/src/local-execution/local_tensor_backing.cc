@@ -200,19 +200,19 @@ TEST_SUITE(FF_TEST_SUITE) {
     GenericTensorAccessorW t4_accessor =
         allocator.allocate_tensor(tensor_shape);
 
-    tensor_sub_slot_id_t tensor_slot_1_forward = tensor_sub_slot_id_t{
+    training_tensor_slot_id_t tensor_slot_1_forward = training_tensor_slot_id_t{
         slot_id_t{TENSOR_SLOT_1},
         TensorType::FORWARD,
     };
-    tensor_sub_slot_id_t tensor_slot_1_gradient = tensor_sub_slot_id_t{
+    training_tensor_slot_id_t tensor_slot_1_gradient = training_tensor_slot_id_t{
         slot_id_t{TENSOR_SLOT_1},
         TensorType::GRADIENT,
     };
-    tensor_sub_slot_id_t tensor_slot_2_forward = tensor_sub_slot_id_t{
+    training_tensor_slot_id_t tensor_slot_2_forward = training_tensor_slot_id_t{
         slot_id_t{TENSOR_SLOT_2},
         TensorType::FORWARD,
     };
-    tensor_sub_slot_id_t tensor_slot_3_forward = tensor_sub_slot_id_t{
+    training_tensor_slot_id_t tensor_slot_3_forward = training_tensor_slot_id_t{
         slot_id_t{TENSOR_SLOT_3},
         TensorType::FORWARD,
     };
@@ -262,10 +262,10 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    std::unordered_map<tensor_sub_slot_id_t, TensorSlotBacking> result =
+    std::unordered_map<training_tensor_slot_id_t, TensorSlotBacking> result =
         construct_tensor_slots_backing_for_binding(local_tensor_backing,
                                                    task_binding);
-    std::unordered_map<tensor_sub_slot_id_t, TensorSlotBacking> correct = {
+    std::unordered_map<training_tensor_slot_id_t, TensorSlotBacking> correct = {
         {
             tensor_slot_1_forward,
             TensorSlotBacking{t1_accessor},

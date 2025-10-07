@@ -1,5 +1,8 @@
 #include "task-spec/runtime_arg_config.h"
 #include "kernels/device_handle_t.h"
+#include "task-spec/op_task_to_task_invocation.h"
+#include "utils/containers/map_values.h"
+#include "utils/overload.h"
 
 namespace FlexFlow {
 
@@ -26,5 +29,23 @@ RuntimeArgConfig
       DeviceType::GPU,
   };
 }
+
+std::unordered_map<slot_id_t, ConcreteArgSpec>
+    construct_arg_slots_backing(TaskBinding const &binding,
+                                RuntimeArgConfig const &runtime_arg_config) {
+  return map_values(
+      binding.get_arg_bindings(), 
+      [&](TaskArgSpec const &arg_binding) -> ConcreteArgSpec {
+        return arg_binding.template visit<ConcreteArgSpec>(
+            overload{
+              [&](RuntimeArgRefSpec const &s) {
+                 return lower_runtime_arg_ref_spec_to_concrete_arg_spec(s, runtime_arg_config);
+               },
+               [](ConcreteArgSpec const &s) { return s; },
+             });
+      });
+  ;
+}
+
 
 } // namespace FlexFlow

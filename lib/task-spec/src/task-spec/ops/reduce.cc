@@ -36,7 +36,7 @@ OpTaskInvocation init(ReduceAttrs const &attrs) {
   };
 }
 
-static DeviceSpecificDeviceStates
+static DeviceSpecificPerDeviceOpState
     init_task_impl(TaskArgumentAccessor const &acc) {
   device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
   DeviceType kernel_device_type =
@@ -58,7 +58,7 @@ static DeviceSpecificDeviceStates
                   input.shape,
                   output.shape);
 
-  return DeviceSpecificDeviceStates{
+  return DeviceSpecificPerDeviceOpState{
       DeviceSpecific<std::optional<ReducePerDeviceState>>::create(
           per_device_state),
   };

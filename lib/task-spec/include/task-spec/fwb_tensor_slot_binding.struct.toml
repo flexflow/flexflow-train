@@ -1,0 +1,21 @@
+namespace = "FlexFlow"
+name = "FwbTensorSlotBinding"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "task-spec/fwb_tensor_slot_id_t.dtg.h",
+  "task-spec/op_tensor_spec.dtg.h",
+]
+
+[[fields]]
+name = "slot"
+type = "::FlexFlow::fwb_tensor_slot_id_t"
+
+[[fields]]
+name = "bound"
+type = "::FlexFlow::OpTensorSpec"

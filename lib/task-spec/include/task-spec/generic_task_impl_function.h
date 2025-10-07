@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_GENERIC_TASK_IMPL_FUNCTION_H
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_GENERIC_TASK_IMPL_FUNCTION_H
 
-#include "task-spec/device_specific_device_states.dtg.h"
+#include "task-spec/device_specific_per_device_op_state.dtg.h"
 #include "task-spec/task_argument_accessor.h"
 
 namespace FlexFlow {

@@ -4,10 +4,10 @@ features = []
 
 includes = [
   "<unordered_map>",
-  "pcg/gpu_id_t.dtg.h",
+  "op-attrs/parallel_tensor_space_coordinate.dtg.h",
   "kernels/accessor.h",
 ]
 
 [[fields]]
 name = "shard_map"
-type = "std::unordered_map<::FlexFlow::gpu_id_t, ::FlexFlow::GenericTensorAccessorW>"
+type = "std::unordered_map<::FlexFlow::ParallelTensorSpaceCoordinate, ::FlexFlow::GenericTensorAccessorW>"

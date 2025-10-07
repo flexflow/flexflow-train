@@ -66,7 +66,7 @@ OpTaskInvocation backward(ElementUnaryAttrs const &attrs) {
   };
 }
 
-static DeviceSpecificDeviceStates
+static DeviceSpecificPerDeviceOpState
     init_task_impl(TaskArgumentAccessor const &acc) {
 
   auto attrs = acc.get_argument<ElementUnaryAttrs>(ATTRS);
@@ -84,7 +84,7 @@ static DeviceSpecificDeviceStates
                   get_piece_shape(output_shape),
                   attrs);
 
-  return DeviceSpecificDeviceStates{
+  return DeviceSpecificPerDeviceOpState{
       DeviceSpecific<std::optional<ElementUnaryPerDeviceState>>::create(
           per_device_state),
   };

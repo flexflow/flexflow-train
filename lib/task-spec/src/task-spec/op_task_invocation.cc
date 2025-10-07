@@ -20,7 +20,7 @@ void OpTaskBinding::bind(int slot, OpTensorSpec const &tensor_spec) {
 }
 
 void OpTaskBinding::bind(slot_id_t slot, OpTensorSpec const &tensor_spec) {
-  this->tensor_bindings.insert({SlotGradId{slot, IsGrad::NO}, tensor_spec});
+  this->tensor_bindings.insert({fwb_tensor_slot_id_t{slot, IsGrad::NO}, tensor_spec});
 }
 
 void OpTaskBinding::bind_grad(int slot, OpTensorSpec const &tensor_spec) {
@@ -28,7 +28,7 @@ void OpTaskBinding::bind_grad(int slot, OpTensorSpec const &tensor_spec) {
 }
 
 void OpTaskBinding::bind_grad(slot_id_t slot, OpTensorSpec const &tensor_spec) {
-  this->tensor_bindings.insert({SlotGradId{slot, IsGrad::YES}, tensor_spec});
+  this->tensor_bindings.insert({fwb_tensor_slot_id_t{slot, IsGrad::YES}, tensor_spec});
 }
 
 void OpTaskBinding::insert_arg_spec(slot_id_t name, OpArgSpec const &arg_spec) {
@@ -44,13 +44,13 @@ bool OpTaskBinding::operator!=(OpTaskBinding const &other) const {
   return this->tie() != other.tie();
 }
 
-std::tuple<std::unordered_map<SlotGradId, OpTensorSpec> const &,
+std::tuple<std::unordered_map<fwb_tensor_slot_id_t, OpTensorSpec> const &,
            std::unordered_map<slot_id_t, OpArgSpec> const &>
     OpTaskBinding::tie() const {
   return std::tie(this->tensor_bindings, this->arg_bindings);
 }
 
-std::unordered_map<SlotGradId, OpTensorSpec> const &
+std::unordered_map<fwb_tensor_slot_id_t, OpTensorSpec> const &
     OpTaskBinding::get_tensor_bindings() const {
   return this->tensor_bindings;
 }
@@ -83,7 +83,7 @@ bool is_tensor_invocation_valid(OpTaskSignature const &sig,
                                 OpTaskInvocation const &inv) {
   // TODO: fix for variadic inputs (need to implement .bind() for variadic
   // first)
-  for (std::pair<SlotGradId, OpTensorSpec> const &tensor_binding :
+  for (std::pair<fwb_tensor_slot_id_t, OpTensorSpec> const &tensor_binding :
        inv.binding.get_tensor_bindings()) {
     OpTensorSlotSpec op_tensor_slot_spec =
         OpTensorSlotSpec{tensor_binding.first.slot_id,

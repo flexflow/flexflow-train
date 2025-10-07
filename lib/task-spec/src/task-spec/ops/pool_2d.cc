@@ -47,7 +47,7 @@ static nonnegative_int calculate_padding(nonnegative_int output_size,
   };
 }
 
-static DeviceSpecificDeviceStates
+static DeviceSpecificPerDeviceOpState
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto const &attrs = acc.get_argument<Pool2DAttrs>(ATTRS);
   device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
@@ -86,7 +86,7 @@ static DeviceSpecificDeviceStates
                   attrs.stride_w.int_from_positive_int(),
                   attrs.pool_type);
 
-  return DeviceSpecificDeviceStates{
+  return DeviceSpecificPerDeviceOpState{
       DeviceSpecific<std::optional<Pool2DPerDeviceState>>::create(
           per_device_state),
   };

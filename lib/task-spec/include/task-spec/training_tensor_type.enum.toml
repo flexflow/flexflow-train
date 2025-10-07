@@ -1,0 +1,20 @@
+namespace = "FlexFlow"
+name = "TrainingTensorType"
+features = [
+  "hash",
+  "fmt",
+  "rapidcheck",
+  "json",
+]
+
+[[values]]
+name = "LOSS"
+
+[[values]]
+name = "FORWARD"
+
+[[values]]
+name = "GRADIENT"
+
+[[values]]
+name = "OPTIMIZER"

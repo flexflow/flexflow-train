@@ -9,4 +9,4 @@ includes = [
 
 [[fields]]
 name = "backing_for_training_ptensor_map"
-type = "std::unordered_map<::FlexFlow::training_parallel_tensor_guid_t, ::FlexFlow::ParallelTensorAccessorsW>"
+type = "std::unordered_map<::FlexFlow::training_parallel_tensor_guid_t, ::FlexFlow::TrainingParallelTensorShardGroup>"

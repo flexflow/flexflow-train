@@ -1,0 +1,33 @@
+namespace = "FlexFlow"
+name = "TrainingOperatorTaskSignature"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+  "rapidcheck",
+]
+
+includes = [
+  "task-spec/training_tensor_guid_t.dtg.h",
+  "<vector>",
+]
+
+src_includes = [
+  "utils/hash/vector.h",
+  "utils/fmt/vector.h",
+  "utils/ord/vector.h",
+]
+
+[[fields]]
+name = "inputs"
+type = "std::vector<::FlexFlow::training_tensor_guid_t>"
+
+[[fields]]
+name = "weights"
+type = "std::vector<::FlexFlow::training_tensor_guid_t>"
+
+[[fields]]
+name = "outputs"
+type = "std::vector<::FlexFlow::training_tensor_guid_t>"

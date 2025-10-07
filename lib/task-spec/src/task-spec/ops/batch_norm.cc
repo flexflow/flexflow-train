@@ -80,7 +80,7 @@ OpTaskInvocation backward(BatchNormAttrs const &attrs) {
   };
 }
 
-static DeviceSpecificDeviceStates
+static DeviceSpecificPerDeviceOpState
     init_task_impl(TaskArgumentAccessor const &acc) {
   Allocator allocator = acc.get_allocator();
   device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
@@ -109,7 +109,7 @@ static DeviceSpecificDeviceStates
       /*output_w=*/output_w.int_from_positive_int(),
       /*relu=*/attrs.relu);
 
-  return DeviceSpecificDeviceStates{
+  return DeviceSpecificPerDeviceOpState{
       DeviceSpecific<std::optional<BatchNormPerDeviceState>>::create(
           per_device_state),
   };

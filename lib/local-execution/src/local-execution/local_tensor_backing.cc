@@ -2,7 +2,7 @@
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/computation_graph.h"
 #include "pcg/optimizer_attrs.h"
-#include "task-spec/slot_grad_id.dtg.h"
+#include "task-spec/fwb_tensor_slot_id_t.dtg.h"
 #include "task-spec/training_computation_graph.h"
 #include "utils/containers/contains_key.h"
 #include "utils/containers/generate_map.h"
@@ -18,18 +18,18 @@
 namespace FlexFlow {
 
 LocalTensorBacking construct_local_tensor_backing(
-    std::unordered_map<training_tensor_guid_t, TensorShape> const
+    std::unordered_map<symbolic_training_tensor_guid_t, TensorShape> const
         &training_tensor_shapes,
-    std::unordered_map<training_tensor_guid_t, GenericTensorAccessorW> const
+    std::unordered_map<symbolic_training_tensor_guid_t, GenericTensorAccessorW> const
         &preallocated,
     Allocator &allocator) {
 
   ASSERT(is_subseteq_of(keys(preallocated), keys(training_tensor_shapes)));
 
-  std::unordered_set<training_tensor_guid_t> to_allocate =
+  std::unordered_set<symbolic_training_tensor_guid_t> to_allocate =
       set_minus(keys(training_tensor_shapes), keys(preallocated));
 
-  std::unordered_map<training_tensor_guid_t, GenericTensorAccessorW> allocated =
+  std::unordered_map<symbolic_training_tensor_guid_t, GenericTensorAccessorW> allocated =
       generate_map(to_allocate, [&](training_tensor_guid_t t) {
         TensorShape shape = training_tensor_shapes.at(t);
         return allocator.allocate_tensor(shape);
@@ -51,6 +51,22 @@ LocalTensorBacking construct_local_tensor_backing(
   };
 }
 
+TaskArgumentAccessor
+    get_task_arg_accessor_for_invocation(LocalTensorBacking const &local_tensor_backing,
+                          RuntimeArgConfig const &runtime_arg_config,
+                          TaskInvocation const &invocation,
+                          Allocator &allocator) {
+  std::unordered_map<training_tensor_slot_id_t, TensorSlotBacking>
+      tensor_slots_backing = construct_tensor_slots_backing_for_binding(
+          local_tensor_backing, invocation.binding);
+
+  std::unordered_map<slot_id_t, ConcreteArgSpec> arg_slots_backing =
+      construct_arg_slots_backing(invocation.binding, runtime_arg_config);
+
+  return TaskArgumentAccessor::create<LocalTaskArgumentAccessor>(
+      allocator, tensor_slots_backing, arg_slots_backing, 0);
+}
+
 GenericTensorAccessorW get_accessor_for_training_tensor(
     LocalTensorBacking const &local_tensor_backing,
     training_tensor_guid_t training_tensor) {
@@ -58,7 +74,22 @@ GenericTensorAccessorW get_accessor_for_training_tensor(
       training_tensor);
 }
 
-std::unordered_map<tensor_sub_slot_id_t, TensorSlotBacking>
+std::unordered_map<training_tensor_slot_id_t, atomic_training_tensor_guid_t>
+    construct_tensor_slots_backing_for_binding(
+        LocalTensorBacking const &local_tensor_backing,
+        TaskBinding const &binding) {
+
+  return map_values(
+      binding.get_tensor_bindings(), 
+      [&](symbolic_training_tensor_guid_t t) -> atomic_training_tensor_guid_t {
+        return local_tensor_backing.
+            get_accessor_for_training_tensor(local_tensor_backing, t),
+        };
+      });
+}
+
+
+std::unordered_map<training_tensor_slot_id_t, TensorSlotBacking>
     construct_tensor_slots_backing_for_binding(
         LocalTensorBacking const &local_tensor_backing,
         TaskBinding const &binding) {

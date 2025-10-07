@@ -97,7 +97,7 @@ OpTaskInvocation backward(MultiHeadAttentionAttrs const &attrs) {
   };
 }
 
-static DeviceSpecificDeviceStates
+static DeviceSpecificPerDeviceOpState
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto const &attrs = acc.get_argument<MultiHeadAttentionAttrs>(ATTRS);
   Allocator allocator = acc.get_allocator();
@@ -154,7 +154,7 @@ static DeviceSpecificDeviceStates
       /*kvSeqLength=*/kvSeqLength.int_from_positive_int(),
       /*add_bias_kv=*/attrs.add_bias_kv);
 
-  return DeviceSpecificDeviceStates{
+  return DeviceSpecificPerDeviceOpState{
       DeviceSpecific<std::optional<MHAPerDeviceState>>::create(
           per_device_state),
   };

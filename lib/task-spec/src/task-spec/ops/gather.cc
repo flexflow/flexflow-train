@@ -79,7 +79,7 @@ OpTaskInvocation backward(GatherAttrs const &attrs) {
   };
 }
 
-static DeviceSpecificDeviceStates
+static DeviceSpecificPerDeviceOpState
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto index = acc.get_tensor<Permissions::RO>(INDEX);
@@ -103,7 +103,7 @@ static DeviceSpecificDeviceStates
 
   std::optional<GatherPerDeviceState> per_device_state =
       init_kernel(kernel_device_type, handle, attrs.dim);
-  return DeviceSpecificDeviceStates{
+  return DeviceSpecificPerDeviceOpState{
       DeviceSpecific<std::optional<GatherPerDeviceState>>::create(
           per_device_state),
   };

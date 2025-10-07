@@ -3,15 +3,15 @@ name = "LocalTrainingBacking"
 features = []
 
 includes = [
-  "task-spec/training_computation_graph.dtg.h",
+  "task-spec/training_computation_graph_from_cg_conversion.dtg.h",
   "local-execution/local_task_registry.h",
   "local-execution/local_tensor_backing.h",
-  "local-execution/local_args_backing.h",
+  "local-execution/local_device_states_backing.h",
 ]
 
 [[fields]]
 name = "training_computation_graph"
-type = "::FlexFlow::TrainingComputationGraph"
+type = "::FlexFlow::TrainingSymbolicComputationGraphFromCgConversion"
 
 [[fields]]
 name = "local_task_registry"
@@ -22,5 +22,9 @@ name = "local_tensor_backing"
 type = "::FlexFlow::LocalTensorBacking"
 
 [[fields]]
-name = "local_args_backing"
-type = "::FlexFlow::LocalArgsBacking"
+name = "local_device_states_backing"
+type = "::FlexFlow::LocalDeviceStatesBacking"
+
+[[fields]]
+name = "runtime_arg_config"
+type = "::FlexFlow::RuntimeArgConfig"

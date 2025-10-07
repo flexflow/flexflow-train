@@ -1,0 +1,29 @@
+namespace = "FlexFlow"
+name = "TrainingParallelLayerPlusContext"
+features = []
+
+includes = [
+  "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h",
+  "pcg/parallel_computation_graph/parallel_layer_attrs.dtg.h",
+  "task-spec/training_parallel_tensor_group_with_attrs.dtg.h",
+]
+
+[[fields]]
+name = "parallel_layer_guid"
+type = "::FlexFlow::parallel_layer_guid_t"
+
+[[fields]]
+name = "parallel_layer_attrs"
+type = "::FlexFlow::ParallelLayerAttrs"
+
+[[fields]]
+name = "input_parallel_tensor_groups"
+type = "std::vector<::FlexFlow::TrainingParallelTensorGroupWithAttrs>"
+
+[[fields]]
+name = "weight_tensor_groups"
+type = "std::vector<::FlexFlow::TrainingParallelTensorGroupWithAttrs>"
+
+[[fields]]
+name = "output_tensor_groups"
+type = "std::vector<::FlexFlow::TrainingParallelTensorGroupWithAttrs>"

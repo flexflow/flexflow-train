@@ -4,7 +4,7 @@
 #include "task-spec/op_arg_ref.h"
 #include "task-spec/op_arg_spec.dtg.h"
 #include "task-spec/op_tensor_spec.h"
-#include "task-spec/slot_grad_id.dtg.h"
+#include "task-spec/fwb_tensor_slot_id_t.dtg.h"
 #include "task-spec/slot_id_t.dtg.h"
 #include "task-spec/variadic_tensor_ref.h"
 
@@ -74,14 +74,14 @@ struct OpTaskBinding {
   bool operator==(OpTaskBinding const &other) const;
   bool operator!=(OpTaskBinding const &other) const;
 
-  std::unordered_map<SlotGradId, OpTensorSpec> const &
+  std::unordered_map<fwb_tensor_slot_id_t, OpTensorSpec> const &
       get_tensor_bindings() const;
   std::unordered_map<slot_id_t, OpArgSpec> const &get_arg_bindings() const;
 
   void bind_from_forward(OpTaskBinding const &fwd);
 
 private:
-  std::unordered_map<SlotGradId, OpTensorSpec> tensor_bindings;
+  std::unordered_map<fwb_tensor_slot_id_t, OpTensorSpec> tensor_bindings;
   std::unordered_map<slot_id_t, OpArgSpec> arg_bindings;
 
 private:

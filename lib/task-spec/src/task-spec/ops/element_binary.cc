@@ -66,7 +66,7 @@ OpTaskInvocation backward(ElementBinaryAttrs const &attrs) {
   };
 }
 
-static DeviceSpecificDeviceStates
+static DeviceSpecificPerDeviceOpState
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto input_lhs = acc.get_tensor<Permissions::RO>(LHS_INPUT);
   auto input_rhs = acc.get_tensor<Permissions::RO>(RHS_INPUT);
@@ -87,7 +87,7 @@ static DeviceSpecificDeviceStates
                   input_rhs.shape,
                   output.shape);
 
-  return DeviceSpecificDeviceStates{
+  return DeviceSpecificPerDeviceOpState{
       DeviceSpecific<std::optional<ElementBinaryPerDeviceState>>::create(
           per_device_state),
   };

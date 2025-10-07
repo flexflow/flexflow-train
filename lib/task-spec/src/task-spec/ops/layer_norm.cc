@@ -133,7 +133,7 @@ static std::optional<float>
                  beta_grad);
 }
 
-static DeviceSpecificDeviceStates
+static DeviceSpecificPerDeviceOpState
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto const &attrs = acc.get_argument<LayerNormAttrs>(ATTRS);
   DeviceType kernel_device_type =
@@ -161,7 +161,7 @@ static DeviceSpecificDeviceStates
                   effective_num_elements.int_from_positive_int(),
                   attrs.eps);
 
-  return DeviceSpecificDeviceStates{
+  return DeviceSpecificPerDeviceOpState{
       DeviceSpecific<std::optional<LayerNormPerDeviceState>>::create(
           per_device_state),
   };

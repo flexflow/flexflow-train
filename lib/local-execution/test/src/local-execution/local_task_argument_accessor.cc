@@ -36,23 +36,23 @@ TEST_SUITE(FF_TEST_SUITE) {
       VARIADIC_TENSORS,
     };
 
-    std::unordered_map<tensor_sub_slot_id_t, TensorSlotBacking>
+    std::unordered_map<training_tensor_slot_id_t, TensorSlotBacking>
         tensor_slots_backing = {
             {
-                tensor_sub_slot_id_t{slot_id_t{INPUT}, TensorType::FORWARD},
+                training_tensor_slot_id_t{slot_id_t{INPUT}, TensorType::FORWARD},
                 TensorSlotBacking{input},
             },
             {
-                tensor_sub_slot_id_t{slot_id_t{INPUT}, TensorType::GRADIENT},
+                training_tensor_slot_id_t{slot_id_t{INPUT}, TensorType::GRADIENT},
                 TensorSlotBacking{input_grad},
             },
             {
-                tensor_sub_slot_id_t{slot_id_t{VARIADIC_TENSORS},
+                training_tensor_slot_id_t{slot_id_t{VARIADIC_TENSORS},
                                      TensorType::FORWARD},
                 TensorSlotBacking{variadic_tensors},
             },
             {
-                tensor_sub_slot_id_t{slot_id_t{VARIADIC_TENSORS},
+                training_tensor_slot_id_t{slot_id_t{VARIADIC_TENSORS},
                                      TensorType::GRADIENT},
                 TensorSlotBacking{variadic_tensors_grad},
             },

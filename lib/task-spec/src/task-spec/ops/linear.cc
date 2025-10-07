@@ -69,7 +69,7 @@ OpTaskInvocation backward(LinearAttrs const &attrs) {
   };
 }
 
-static DeviceSpecificDeviceStates
+static DeviceSpecificPerDeviceOpState
     init_task_impl(TaskArgumentAccessor const &acc) {
   auto const &attrs = acc.get_argument<LinearAttrs>(ATTRS);
   device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
@@ -94,7 +94,7 @@ static DeviceSpecificDeviceStates
                          batch_size.int_from_positive_int(),
                          attrs.out_channels.int_from_positive_int());
 
-  return DeviceSpecificDeviceStates{
+  return DeviceSpecificPerDeviceOpState{
       DeviceSpecific<std::optional<LinearPerDeviceState>>::create(
           per_device_state),
   };

@@ -20,7 +20,7 @@ namespace FlexFlow {
 
 LocalTrainingBacking make_local_training_backing_for_computation_graph(
     Allocator &allocator,
-    std::unordered_map<training_tensor_guid_t, GenericTensorAccessorW> const
+    std::unordered_map<symbolic_training_tensor_guid_t, GenericTensorAccessorW> const
         &preallocated,
     TrainingComputationGraph const &training_computation_graph,
     RuntimeArgConfig const &runtime_arg_config,
@@ -54,10 +54,42 @@ LocalTrainingBacking make_local_training_backing_for_computation_graph(
   };
 }
 
+std::optional<DeviceSpecificPerDeviceOpState>
+    create_per_device_op_state(LocalTaskRegistry const &local_task_registry,
+                               LocalTensorBacking const &tensor_backing,
+                               RuntimeArgConfig const &runtime_arg_config,
+                               Allocator &allocator,
+                               layer_guid_t layer_id,
+                               ComputationGraphOpAttrs const &op_attrs,
+                               TrainingLayerSymbolicTensorGroupSignatureWithShapes const &layer_signature) {
+
+  std::optional maybe_registered_task = try_get_registered_task(
+      local_task_registry, layer_id, OpTaskType::INIT);
+
+  ASSERT(maybe_registered_task.has_value());
+  registered_task_t registered_task = maybe_registered_task.value();
+
+  OpTaskInvocation op_init_task_invocation =
+    get_init_op_task_invocation(op_attrs);
+
+  TaskInvocation invocation = lower_op_task_invocation_to_task_invocation(
+      /*op_task_invocation=*/op_init_task_invocation,
+      /*layer_signature=*/layer_signature,
+      /*device_specific_device_states=*/std::nullopt);
+
+  TaskArgumentAccessor accessor = get_task_arg_accessor_for_invocation(
+      tensor_backing, runtime_arg_config, invocation, allocator);
+  
+  return call_init_task_impl(
+    local_task_registry,
+    registered_task,
+    accessor); 
+}
+
+
 std::optional<milliseconds_t>
     execute_forward(LocalTaskRegistry const &local_task_registry,
                     LocalTensorBacking const &local_tensor_backing,
-                    LocalArgsBacking const &local_args_backing,
                     TrainingLayerPlusContext const &training_layer,
                     Allocator &allocator) {
 
@@ -71,11 +103,11 @@ std::optional<milliseconds_t>
     return std::nullopt;
   }
 
-  std::optional<DeviceSpecificDeviceStates> device_state =
+  std::optional<DeviceSpecificPerDeviceOpState> device_state =
       get_per_device_op_state_if_exists(local_args_backing,
                                         training_layer.layer_guid);
 
-  TaskInvocation invocation = lower_to_task_invocation(
+  TaskInvocation invocation = lower_op_task_invocation_to_task_invocation(
       /*op_task_invocation=*/get_forward_op_task_invocation(
           training_layer.layer_attrs.op_attrs),
       /*training_layer=*/training_layer,
@@ -87,7 +119,7 @@ std::optional<milliseconds_t>
                             invocation,
                             allocator);
 
-  return call_task_impl(local_task_registry, invocation.task_id, accessor);
+  return call_fwb_task_impl(local_task_registry, invocation.task_id, accessor);
 }
 
 void compute_loss(LocalTrainingBacking const &local_training_backing,
@@ -97,7 +129,7 @@ void compute_loss(LocalTrainingBacking const &local_training_backing,
   TrainingComputationGraph training_cg =
       local_training_backing.training_computation_graph;
   tensor_guid_t logit_tensor = training_cg.logit_tensor;
-  loss_tensor_guid_t label_tensor = training_cg.label_tensor;
+  symbolic_loss_tensor_guid_t label_tensor = training_cg.label_tensor;
 
   TaskInvocation loss_invocation = backward(
       loss_attrs,
@@ -132,7 +164,7 @@ std::optional<milliseconds_t>
     return std::nullopt;
   }
 
-  std::optional<DeviceSpecificDeviceStates> device_state =
+  std::optional<DeviceSpecificPerDeviceOpState> device_state =
       get_per_device_op_state_if_exists(local_args_backing,
                                         training_layer.layer_guid);
   TaskInvocation invocation = lower_to_task_invocation(
@@ -144,7 +176,7 @@ std::optional<milliseconds_t>
                             local_args_backing.runtime_arg_config,
                             invocation,
                             allocator);
-  return call_task_impl(local_task_registry, invocation.task_id, accessor);
+  return call_fwb_task_impl(local_task_registry, invocation.task_id, accessor);
 }
 
 void execute_update(LocalTrainingBacking const &local_training_backing,
