@@ -4,7 +4,7 @@ features = [
   "eq",
   "ord",
   "hash",
-  "json",
+  "fmt",
 ]
 
 includes = [

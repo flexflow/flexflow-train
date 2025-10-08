@@ -202,19 +202,19 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     training_tensor_slot_id_t tensor_slot_1_forward = training_tensor_slot_id_t{
         slot_id_t{TENSOR_SLOT_1},
-        TensorType::FORWARD,
+        TrainingTensorType::FORWARD,
     };
     training_tensor_slot_id_t tensor_slot_1_gradient = training_tensor_slot_id_t{
         slot_id_t{TENSOR_SLOT_1},
-        TensorType::GRADIENT,
+        TrainingTensorType::GRADIENT,
     };
     training_tensor_slot_id_t tensor_slot_2_forward = training_tensor_slot_id_t{
         slot_id_t{TENSOR_SLOT_2},
-        TensorType::FORWARD,
+        TrainingTensorType::FORWARD,
     };
     training_tensor_slot_id_t tensor_slot_3_forward = training_tensor_slot_id_t{
         slot_id_t{TENSOR_SLOT_3},
-        TensorType::FORWARD,
+        TrainingTensorType::FORWARD,
     };
 
     LocalTensorBacking local_tensor_backing = LocalTensorBacking{

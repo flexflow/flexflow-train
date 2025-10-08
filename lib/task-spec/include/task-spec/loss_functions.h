@@ -21,14 +21,14 @@
 #include "task-spec/symbolic_gradient_tensor_guid_t.dtg.h"
 #include "task-spec/symbolic_loss_tensor_guid_t.dtg.h"
 #include "task-spec/task_impl_function.dtg.h"
-#include "task-spec/task_invocation.dtg.h"
-#include "task-spec/task_signature.h"
+#include "task-spec/runtime_task_invocation.dtg.h"
+#include "task-spec/runtime_task_signature.h"
 
 namespace FlexFlow {
 
 TaskImplFunction get_loss_bwd_task_impl();
-TaskSignature get_loss_bwd_signature();
-TaskInvocation backward(LossAttrs const &,
+RuntimeTaskSignature get_loss_bwd_signature();
+RuntimeTaskInvocation loss_attrs_backward(LossAttrs const &,
                         symbolic_forward_tensor_guid_t logit,
                         symbolic_gradient_tensor_guid_t logit_grad,
                         symbolic_loss_tensor_guid_t label);

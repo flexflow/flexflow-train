@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "RuntimeArgRefType"
+name = "ArgumentlessRuntimeArgRefType"
 features = [
   "fmt",
 ]

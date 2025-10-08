@@ -237,7 +237,7 @@ std::vector<task_id_t> get_task_ids(ComputationGraphOpAttrs const &op) {
   });
 }
 
-OpTaskInvocation
+std::optional<OpTaskInvocation>
     get_init_op_task_invocation(ComputationGraphOpAttrs const &op) {
   return op.visit<OpTaskInvocation>(overload{
       [](BatchNormAttrs const &attrs) { return init(attrs); },
@@ -258,7 +258,7 @@ OpTaskInvocation
   });
 }
 
-OpTaskInvocation
+std::optional<OpTaskInvocation>
     get_forward_op_task_invocation(ComputationGraphOpAttrs const &op) {
   return op.visit<OpTaskInvocation>(overload{
       [](BatchMatmulAttrs const &attrs) { return forward(attrs); },
@@ -289,7 +289,7 @@ OpTaskInvocation
   });
 }
 
-OpTaskInvocation
+std::optional<OpTaskInvocation>
     get_backward_op_task_invocation(ComputationGraphOpAttrs const &op) {
   return op.visit<OpTaskInvocation>(overload{
       [](BatchMatmulAttrs const &attrs) { return backward(attrs); },

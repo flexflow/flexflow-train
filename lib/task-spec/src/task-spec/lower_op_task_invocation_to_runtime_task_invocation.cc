@@ -1,4 +1,4 @@
-#include "task-spec/lower_op_task_invocation_to_task_invocation.h"
+#include "task-spec/lower_op_task_invocation_to_runtime_task_invocation.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/computation_graph.h"
 #include "task-spec/fwb_tensor_slot_id_t.dtg.h"
@@ -13,11 +13,11 @@
 
 namespace FlexFlow {
 
-TaskInvocation
+RuntimeTaskInvocation
   lower_op_task_invocation_to_task_invocation(
     OpTaskInvocation const &op_task_invocation,
-    TrainingLayerSymbolicTensorGroupSignatureWithShapes const &layer_signature,
-    std::optional<DeviceSpecificPerDeviceOpState> const &device_specific_device_states) {
+    symbolic_layer_guid_t symbolic_layer_guid,
+    TrainingLayerSymbolicTensorGroupSignatureWithShapes const &layer_signature) {
 
   std::unordered_map<training_tensor_slot_id_t, symbolic_training_tensor_guid_t>
       tensor_bindings =
@@ -40,17 +40,17 @@ TaskInvocation
                       };
                     });
 
-  std::unordered_map<slot_id_t, TaskArgSpec> arg_bindings = map_values(
+  std::unordered_map<slot_id_t, RuntimeArgSpec> arg_bindings = map_values(
       op_task_invocation.binding.get_arg_bindings(),
-      [&](OpArgSpec const &op_arg_spec) -> TaskArgSpec {
-        return lower_op_arg_spec_to_task_arg_spec(op_arg_spec,
-                                                  get_shape_signature(layer_signature),
-                                                  device_specific_device_states);
+      [&](OpArgSpec const &op_arg_spec) -> RuntimeArgSpec {
+        return lower_op_arg_spec_to_runtime_arg_spec(op_arg_spec,
+                                                     symbolic_layer_guid,
+                                                     get_shape_signature(layer_signature));
       });
 
-  return TaskInvocation{
+  return RuntimeTaskInvocation{
       op_task_invocation.task_id,
-      TaskBinding{
+      RuntimeTaskBinding{
         tensor_bindings,
         arg_bindings,
       },
@@ -91,75 +91,71 @@ TrainingTensorSlotBinding
   };
 }
 
-TaskArgSpec lower_op_arg_spec_to_task_arg_spec(
+RuntimeArgSpec lower_op_arg_spec_to_runtime_arg_spec(
     OpArgSpec const &op_arg_spec,
-    SymbolicLayerTensorShapeSignature const &op_shape_signature,
-    std::optional<DeviceSpecificPerDeviceOpState> const
-        &device_specific_device_states) {
-  return op_arg_spec.visit<TaskArgSpec>(overload{
-      [](ConcreteArgSpec const &concrete_arg_spec) {
-        return TaskArgSpec{concrete_arg_spec};
+    symbolic_layer_guid_t symbolic_layer_guid,
+    SymbolicLayerTensorShapeSignature const &op_shape_signature) {
+  return op_arg_spec.visit<RuntimeArgSpec>(overload{
+      [](ConcreteArgSpec const &concrete_arg_spec) -> RuntimeArgSpec {
+        return RuntimeArgSpec{concrete_arg_spec};
       },
-      [](RuntimeArgRefSpec const &runtime_arg_ref_spec) {
-        return TaskArgSpec{runtime_arg_ref_spec};
+      [](RuntimeArgRefSpec const &runtime_arg_ref_spec) -> RuntimeArgSpec {
+        return RuntimeArgSpec{runtime_arg_ref_spec};
       },
-      [&](OpArgRefSpec const &op_arg_ref_spec) {
-        return TaskArgSpec{
-            lower_op_arg_ref_spec_to_concrete_arg_spec(op_arg_ref_spec,
-                                       op_shape_signature,
-                                       device_specific_device_states),
-        };
+      [&](OpArgRefSpec const &op_arg_ref_spec) -> RuntimeArgSpec {
+        return 
+            lower_op_arg_ref_spec_to_runtime_arg_spec(op_arg_ref_spec,
+                                       symbolic_layer_guid,
+                                       op_shape_signature);
       },
   });
 }
 
-ConcreteArgSpec lower_op_arg_ref_spec_to_concrete_arg_spec(
+RuntimeArgSpec lower_op_arg_ref_spec_to_runtime_arg_spec(
     OpArgRefSpec const &op_arg_ref_spec,
-    SymbolicLayerTensorShapeSignature const &op_signature,
-    std::optional<DeviceSpecificPerDeviceOpState> const &device_states) {
+    symbolic_layer_guid_t symbolic_layer_guid,
+    SymbolicLayerTensorShapeSignature const &op_signature) {
 
   OpArgRefType op_arg_ref_type = op_arg_ref_spec.get_ref_type();
-  return op_arg_ref_type.visit<ConcreteArgSpec>(overload{
-      [&](PerDeviceOpStateRefType const &) {
-        PerDeviceOpState per_device_op_state =
-            get_device_state_from_device_specific(device_states.value(), 0);
-
-        return per_device_op_state.visit<ConcreteArgSpec>(overload{
-            [&](auto const &x) {
-              ASSERT(matches<decltype(x)>(op_arg_ref_spec.get_type_index()));
-              return ConcreteArgSpec::create(x);
-            },
-        });
+  return op_arg_ref_type.visit<RuntimeArgSpec>(overload{
+      [&](PerDeviceOpStateRefType const &) -> RuntimeArgSpec {
+        return RuntimeArgSpec{
+          RuntimeArgRefSpec::create(per_device_op_state_for_layer(symbolic_layer_guid)),
+        };
       },
-      [&](ParallelTensorShapeRefType const &ref_type) {
+      [&](ParallelTensorShapeRefType const &ref_type) -> RuntimeArgSpec {
         TensorShape tensor_shape = tensor_shape_for_role_and_index(
             /*signature=*/op_signature,
             /*tensor_role=*/ref_type.tensor_role,
             /*index=*/ref_type.idx);
         ParallelTensorShape shape = lift_to_parallel(tensor_shape);
-        return ConcreteArgSpec::create(shape);
+        return RuntimeArgSpec{
+          ConcreteArgSpec::create(shape),
+        };
       },
   });
 }
 
 ConcreteArgSpec
-    lower_to_concrete_arg_spec(RuntimeArgRefSpec const &runtime_arg_ref_spec,
+    lower_runtime_arg_ref_spec_to_concrete_arg_spec(RuntimeArgRefSpec const &runtime_arg_ref_spec,
                                RuntimeArgConfig const &runtime_arg_config) {
-  switch (runtime_arg_ref_spec.get_ref_type()) {
-    case RuntimeArgRefType::FF_HANDLE:
-      return ConcreteArgSpec::create(*(runtime_arg_config.ff_handle.get(0)));
-    case RuntimeArgRefType::PROFILING_SETTINGS:
-      return ConcreteArgSpec::create(runtime_arg_config.profiling_settings);
-    case RuntimeArgRefType::FF_ITERATION_CONFIG:
-      PANIC("FF_ITERATION_CONFIG is currently not handled. Please create an "
-            "issue or contact the FlexFlow train developers if you need this "
-            "feature.");
-    case RuntimeArgRefType::KERNEL_DEVICE_TYPE:
-      return ConcreteArgSpec::create(runtime_arg_config.kernel_device_type);
-    default:
-      PANIC(fmt::format("Unhandled RuntimeArgRefType {}",
-                        runtime_arg_ref_spec.get_ref_type()));
-  }
+  NOT_IMPLEMENTED();
+
+  // switch (runtime_arg_ref_spec.get_ref_type()) {
+  //   case RuntimeArgRefType::FF_HANDLE:
+  //     return ConcreteArgSpec::create(*(runtime_arg_config.ff_handle.get(0)));
+  //   case RuntimeArgRefType::PROFILING_SETTINGS:
+  //     return ConcreteArgSpec::create(runtime_arg_config.profiling_settings);
+  //   case RuntimeArgRefType::FF_ITERATION_CONFIG:
+  //     PANIC("FF_ITERATION_CONFIG is currently not handled. Please create an "
+  //           "issue or contact the FlexFlow train developers if you need this "
+  //           "feature.");
+  //   case RuntimeArgRefType::KERNEL_DEVICE_TYPE:
+  //     return ConcreteArgSpec::create(runtime_arg_config.kernel_device_type);
+  //   default:
+  //     PANIC(fmt::format("Unhandled RuntimeArgRefType {}",
+  //                       runtime_arg_ref_spec.get_ref_type()));
+  // }
 }
 
 } // namespace FlexFlow

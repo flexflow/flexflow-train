@@ -12,6 +12,7 @@ namespace FlexFlow {
 
 TrainingSymbolicComputationGraphFromCgConversion generate_training_computation_graph_from_cg(
     ComputationGraph const &computation_graph,
+    LossAttrs const &loss_attrs,
     OptimizerAttrs const &optimizer_attrs,
     tensor_guid_t const &logit_tensor,
     SymbolicForwardTensorSource &forward_tensor_source,
@@ -66,6 +67,8 @@ TrainingSymbolicComputationGraphFromCgConversion generate_training_computation_g
                     /*optimizer_tensor_source=*/optimizer_tensor_source),
             };
           }),
+      /*loss_attrs=*/loss_attrs,
+      /*optimizer_attrs=*/optimizer_attrs,
       /*logit_tensor=*/tensor_mapping.at_l(logit_tensor),
       /*label_tensor=*/label_tensor,
   };

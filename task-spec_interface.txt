@@ -216,12 +216,21 @@ from local-pcg-execution.
   
 Okay, now we just need to tackle an implementation plan for this.
 
-0? Simplify slot_id_t
-1. Move training logic into task-spec
-2. Add atomic task invocation definition
-3. Define atomic task invocation dispatch code in LocalTaskRegistry
-4. Define task invocation to atomic task invocation lowering code in local-execution
-5. Define task invocation to atomic task invocation*s* lowering code in local-pcg-execution
-6. seema goes and implements realm-execution on top of the above
+0? [ ] Simplify slot_id_t
+1. [x] Move training logic into task-spec
+2. [x] Add atomic task invocation definition
+3. [x] Define atomic task invocation dispatch code in LocalTaskRegistry/LocalAtomicTensorBacking
+4. [ ] Define task invocation to atomic task invocation lowering code in local-execution
+5. [ ] Define task invocation to atomic task invocation*s* lowering code in local-pcg-execution
+6. [ ] seema goes and implements realm-execution on top of the above
+
+How do we get form AtomicTaskBinding to TaskArgumentAccessor?
+- currently this is handled by 
+```
+TaskArgumentAccessor get_task_arg_accessor_for_invocation(LocalTensorBacking const &,
+                                                          RuntimeArgConfig const &,
+                                                          TaskInvocation const &,
+                                                          Allocator &);
+```
 
 // vim: set tabstop=2 shiftwidth=2 expandtab:

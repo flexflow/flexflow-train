@@ -1,0 +1,16 @@
+namespace = "FlexFlow"
+name = "PerDeviceOpStateRuntimeArgRefType"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "task-spec/symbolic_layer_guid_t.dtg.h",
+]
+
+[[fields]]
+name = "layer"
+type = "::FlexFlow::symbolic_layer_guid_t"

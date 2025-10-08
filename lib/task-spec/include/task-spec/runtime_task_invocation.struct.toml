@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "TaskInvocation"
+name = "RuntimeTaskInvocation"
 features = [
   "eq",
   "fmt",
@@ -7,7 +7,7 @@ features = [
 ]
 
 includes = [
-  "task-spec/task_binding.h",
+  "task-spec/runtime_task_binding.h",
   "task-spec/task_id_t.dtg.h"
 ]
 
@@ -18,4 +18,4 @@ type = "::FlexFlow::task_id_t"
 
 [[fields]]
 name = "binding"
-type = "::FlexFlow::TaskBinding"
+type = "::FlexFlow::RuntimeTaskBinding"

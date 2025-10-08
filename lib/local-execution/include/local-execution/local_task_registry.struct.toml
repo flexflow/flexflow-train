@@ -8,18 +8,12 @@ features = [
 
 includes = [
   "task-spec/task_signature_impl.dtg.h",
-  "pcg/layer_guid_t.dtg.h",
-  "local-execution/operator_task_set.dtg.h"
 ]
 
 src_includes = [
   "utils/hash/unordered_map.h",
   "utils/fmt/unordered_map.h",
 ]
-
-[[fields]]
-name = "task_sets"
-type = "std::unordered_map<::FlexFlow::layer_guid_t, ::FlexFlow::OperatorTaskSet>"
 
 [[fields]]
 name = "task_mapping"

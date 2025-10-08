@@ -9,6 +9,8 @@ includes = [
   "task-spec/symbolic_tensor_guid_t.dtg.h",
   "task-spec/symbolic_training_tensor_group.dtg.h",
   "task-spec/symbolic_loss_tensor_guid_t.dtg.h",
+  "op-attrs/ops/loss_functions/loss_attrs.dtg.h",
+  "pcg/optimizer_attrs.dtg.h",
 ]
 
 [[fields]]
@@ -18,6 +20,14 @@ type = "::FlexFlow::LabelledDataflowGraphView<::FlexFlow::ParallelLayerAttrs, ::
 [[fields]]
 name = "symbolic_training_tensor_group_for_tensor"
 type = "std::unordered_map<::FlexFlow::symbolic_tensor_guid_t, ::FlexFlow::SymbolicTrainingTensorGroup>"
+
+[[fields]]
+name = "loss_attrs"
+type = "::FlexFlow::LossAttrs"
+
+[[fields]]
+name = "optimizer_attrs"
+type = "::FlexFlow::OptimizerAttrs"
 
 [[fields]]
 name = "logit_tensor"

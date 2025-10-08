@@ -1,13 +1,13 @@
-#include "task-spec/task_invocation.h"
-#include "task-spec/task_arg_spec.h"
+#include "task-spec/runtime_task_invocation.h"
+#include "task-spec/runtime_arg_spec.h"
 #include "utils/containers/keys.h"
 
 namespace FlexFlow {
 
-bool is_invocation_valid(TaskSignature const &sig, TaskInvocation const &inv) {
-  TaskBinding binding = inv.binding;
+bool is_invocation_valid(RuntimeTaskSignature const &sig, RuntimeTaskInvocation const &inv) {
+  RuntimeTaskBinding binding = inv.binding;
 
-  for (std::pair<slot_id_t, TaskArgSpec> const &arg_binding :
+  for (std::pair<slot_id_t, RuntimeArgSpec> const &arg_binding :
        binding.get_arg_bindings()) {
     if (sig.task_arg_types.count(arg_binding.first)) {
       if (get_type_index(arg_binding.second) !=

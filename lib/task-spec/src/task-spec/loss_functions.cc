@@ -23,11 +23,11 @@ namespace FlexFlow {
 
 enum Slots { LOGIT, LABEL, LOGIT_GRAD, ATTRS, PROFILING, KERNEL_DEVICE_TYPE };
 
-TaskSignature get_loss_bwd_signature() {
-  TaskSignature sig = make_empty_task_signature();
-  add_slot(sig, LOGIT, TensorType::FORWARD);
-  add_slot(sig, LABEL, TensorType::LOSS);
-  add_slot(sig, LOGIT_GRAD, TensorType::GRADIENT);
+RuntimeTaskSignature get_loss_bwd_signature() {
+  RuntimeTaskSignature sig = make_empty_runtime_task_signature();
+  add_slot(sig, LOGIT, TrainingTensorType::FORWARD);
+  add_slot(sig, LABEL, TrainingTensorType::LOSS);
+  add_slot(sig, LOGIT_GRAD, TrainingTensorType::GRADIENT);
 
   add_arg_slot<LossAttrs>(sig, ATTRS);
   add_arg_slot<ProfilingSettings>(sig, PROFILING);
@@ -35,11 +35,11 @@ TaskSignature get_loss_bwd_signature() {
   return sig;
 }
 
-TaskInvocation backward(LossAttrs const &attrs,
+RuntimeTaskInvocation loss_attrs_backward(LossAttrs const &attrs,
                         symbolic_forward_tensor_guid_t logit,
                         symbolic_gradient_tensor_guid_t logit_grad,
                         symbolic_loss_tensor_guid_t label) {
-  TaskBinding b;
+  RuntimeTaskBinding b;
   b.bind(LOGIT, logit);
   b.bind_loss(LABEL, label);
   b.bind_grad(LOGIT_GRAD, logit_grad);
@@ -48,7 +48,7 @@ TaskInvocation backward(LossAttrs const &attrs,
   b.bind_arg(PROFILING, profiling_settings());
   b.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
-  return TaskInvocation{task_id_t::LOSS_BWD_TASK_ID, b};
+  return RuntimeTaskInvocation{task_id_t::LOSS_BWD_TASK_ID, b};
 }
 
 static void backward_task_impl(TaskArgumentAccessor const &acc) {

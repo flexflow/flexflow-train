@@ -6,7 +6,7 @@
 #include "task-spec/concrete_arg_spec.h"
 #include "task-spec/op_task_signature.h"
 #include "task-spec/privilege_tensor_accessor.h"
-#include "task-spec/tensor_type.dtg.h"
+#include "task-spec/training_tensor_type.dtg.h"
 
 namespace FlexFlow {
 
@@ -19,9 +19,9 @@ struct ITaskArgumentAccessor {
 
   virtual GenericTensorAccessor get_tensor(slot_id_t slot,
                                            Permissions priv,
-                                           TensorType tensor_type) const = 0;
+                                           TrainingTensorType tensor_type) const = 0;
   virtual VariadicGenericTensorAccessor get_variadic_tensor(
-      slot_id_t slot, Permissions priv, TensorType tensor_type) const = 0;
+      slot_id_t slot, Permissions priv, TrainingTensorType tensor_type) const = 0;
 
   virtual Allocator get_allocator() const = 0;
   virtual size_t get_device_idx() const = 0;

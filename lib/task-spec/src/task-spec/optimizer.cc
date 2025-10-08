@@ -18,11 +18,11 @@ enum Slots {
   KERNEL_DEVICE_TYPE,
 };
 
-TaskSignature get_sgd_update_signature() {
-  TaskSignature sig = make_empty_task_signature();
-  add_slot(sig, WEIGHT, TensorType::FORWARD);
-  add_slot(sig, WEIGHT_GRAD, TensorType::GRADIENT);
-  add_slot(sig, SGD_V, TensorType::OPTIMIZER);
+RuntimeTaskSignature get_sgd_update_signature() {
+  RuntimeTaskSignature sig = make_empty_runtime_task_signature();
+  add_slot(sig, WEIGHT, TrainingTensorType::FORWARD);
+  add_slot(sig, WEIGHT_GRAD, TrainingTensorType::GRADIENT);
+  add_slot(sig, SGD_V, TrainingTensorType::OPTIMIZER);
 
   add_arg_slot<SGDOptimizerAttrs>(sig, ATTRS);
   add_arg_slot<ProfilingSettings>(sig, PROFILING);
@@ -36,11 +36,11 @@ TaskSignature get_sgd_update_signature() {
   return sig;
 }
 
-TaskInvocation sgd_update(SGDOptimizerAttrs const &attrs,
+RuntimeTaskInvocation sgd_update(SGDOptimizerAttrs const &attrs,
                           symbolic_forward_tensor_guid_t const &weight,
                           symbolic_gradient_tensor_guid_t const &weight_grad,
                           symbolic_optimizer_tensor_guid_t const &sgd_v) {
-  TaskBinding b;
+  RuntimeTaskBinding b;
   b.bind(WEIGHT, weight);
   b.bind_grad(WEIGHT_GRAD, weight_grad);
 
@@ -52,7 +52,7 @@ TaskInvocation sgd_update(SGDOptimizerAttrs const &attrs,
   b.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
   b.bind_arg(HANDLE, ff_handle());
-  return TaskInvocation{task_id_t::SGD_UPD_NCCL_TASK_ID,
+  return RuntimeTaskInvocation{task_id_t::SGD_UPD_NCCL_TASK_ID,
                         b}; // how to deal with removal of ParamSync?
 
   // if (CHOSEN_SYNC_TYPE == ParamSync::NCCL) {
@@ -136,12 +136,12 @@ TaskImplFunction get_sgd_update_task_impl() {
   return TaskImplFunction{GenericTaskImplFunction{sgd_update_task_impl}};
 }
 
-TaskSignature get_adam_update_signature() {
-  TaskSignature sig = make_empty_task_signature();
-  add_slot(sig, WEIGHT, TensorType::FORWARD);
-  add_slot(sig, WEIGHT_GRAD, TensorType::GRADIENT);
-  add_slot(sig, ADAM_V, TensorType::OPTIMIZER);
-  add_slot(sig, ADAM_M, TensorType::OPTIMIZER);
+RuntimeTaskSignature get_adam_update_signature() {
+  RuntimeTaskSignature sig = make_empty_runtime_task_signature();
+  add_slot(sig, WEIGHT, TrainingTensorType::FORWARD);
+  add_slot(sig, WEIGHT_GRAD, TrainingTensorType::GRADIENT);
+  add_slot(sig, ADAM_V, TrainingTensorType::OPTIMIZER);
+  add_slot(sig, ADAM_M, TrainingTensorType::OPTIMIZER);
 
   add_arg_slot<AdamOptimizerAttrs>(sig, ATTRS);
   add_arg_slot<ProfilingSettings>(sig, PROFILING);
@@ -154,12 +154,12 @@ TaskSignature get_adam_update_signature() {
   return sig;
 }
 
-TaskInvocation adam_update(AdamOptimizerAttrs const &attrs,
+RuntimeTaskInvocation adam_update(AdamOptimizerAttrs const &attrs,
                            symbolic_forward_tensor_guid_t const &weight,
                            symbolic_gradient_tensor_guid_t const &weight_grad,
                            symbolic_optimizer_tensor_guid_t const &adam_v,
                            symbolic_optimizer_tensor_guid_t const &adam_m) {
-  TaskBinding b;
+  RuntimeTaskBinding b;
   b.bind(WEIGHT, weight);
   b.bind_grad(WEIGHT_GRAD, weight_grad);
   b.bind_optimizer(ADAM_M, adam_m);
@@ -168,7 +168,7 @@ TaskInvocation adam_update(AdamOptimizerAttrs const &attrs,
   b.bind_arg(PROFILING, profiling_settings());
   b.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
   b.bind_arg(HANDLE, ff_handle());
-  return TaskInvocation{task_id_t::ADAM_UPD_NCCL_TASK_ID,
+  return RuntimeTaskInvocation{task_id_t::ADAM_UPD_NCCL_TASK_ID,
                         b}; // how to deal with removal of ParamSync?
 
   // if (CHOSEN_SYNC_TYPE == ParamSync::NCCL) {
@@ -256,18 +256,18 @@ TaskImplFunction get_adam_update_task_impl() {
   return TaskImplFunction{GenericTaskImplFunction{adam_update_task_impl}};
 }
 
-TaskSignature get_update_signature(OptimizerAttrs const &attrs) {
-  return attrs.visit<TaskSignature>(overload{
+RuntimeTaskSignature get_update_signature(OptimizerAttrs const &attrs) {
+  return attrs.visit<RuntimeTaskSignature>(overload{
       [&](SGDOptimizerAttrs const &) { return get_sgd_update_signature(); },
       [&](AdamOptimizerAttrs const &) { return get_adam_update_signature(); }});
 }
 
-TaskInvocation get_update_invocation(
+RuntimeTaskInvocation get_update_invocation(
     OptimizerAttrs const &attrs,
     symbolic_forward_tensor_guid_t const &weight,
     symbolic_gradient_tensor_guid_t const &weight_grad,
     std::vector<symbolic_optimizer_tensor_guid_t> const &grad_buffer_tensors) {
-  return attrs.visit<TaskInvocation>(
+  return attrs.visit<RuntimeTaskInvocation>(
       overload{[&](SGDOptimizerAttrs const &s) {
                  return sgd_update(
                      s, weight, weight_grad, get_only(grad_buffer_tensors));

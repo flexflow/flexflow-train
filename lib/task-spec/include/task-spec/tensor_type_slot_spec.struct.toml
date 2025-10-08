@@ -10,7 +10,7 @@ features = [
 includes = [
   "task-spec/slot_type.dtg.h",
   "task-spec/slot_id_t.dtg.h",
-  "task-spec/tensor_type.dtg.h",
+  "task-spec/training_tensor_type.dtg.h",
 ]
 
 [[fields]]
@@ -19,7 +19,7 @@ type = "::FlexFlow::slot_id_t"
 
 [[fields]]
 name = "tensor_type"
-type = "::FlexFlow::TensorType"
+type = "::FlexFlow::TrainingTensorType"
 
 [[fields]]
 name = "slot_type"

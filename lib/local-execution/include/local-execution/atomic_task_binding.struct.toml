@@ -1,0 +1,29 @@
+namespace = "FlexFlow"
+name = "AtomicTaskBinding"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "<unordered_map>",
+  "task-spec/training_tensor_slot_id_t.dtg.h",
+  "local-execution/atomic_training_tensor_guid_t.dtg.h",
+  "task-spec/slot_id_t.dtg.h",
+  "task-spec/concrete_arg_spec.h",
+]
+
+src_includes = [
+  "utils/ord/unordered_map.h",
+  "utils/hash/unordered_map.h",
+  "utils/fmt/unordered_map.h",
+]
+
+[[fields]]
+name = "tensor_bindings"
+type = "std::unordered_map<::FlexFlow::training_tensor_slot_id_t, ::FlexFlow::atomic_training_tensor_guid_t>"
+
+[[fields]]
+name = "arg_bindings"
+type = "std::unordered_map<::FlexFlow::slot_id_t, ::FlexFlow::ConcreteArgSpec>"

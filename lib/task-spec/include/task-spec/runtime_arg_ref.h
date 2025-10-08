@@ -8,6 +8,7 @@
 #include "task-spec/device_specific.h"
 #include "task-spec/ff_config.dtg.h"
 #include "task-spec/ff_iteration_config.dtg.h"
+#include "task-spec/per_device_op_state.dtg.h"
 #include "task-spec/runtime_arg_ref_type.dtg.h"
 
 namespace FlexFlow {
@@ -15,12 +16,11 @@ namespace FlexFlow {
 template <typename T>
 using RuntimeArgRef = ArgRef<RuntimeArgRefType, T>;
 
-using RuntimeArgRefSpec = ArgRefSpec<RuntimeArgRefType>;
-
 RuntimeArgRef<ProfilingSettings> profiling_settings();
 RuntimeArgRef<DeviceSpecific<device_handle_t>> ff_handle();
 RuntimeArgRef<FFIterationConfig> iteration_config();
 RuntimeArgRef<DeviceType> kernel_device_type();
+RuntimeArgRef<PerDeviceOpState> per_device_op_state_for_layer(symbolic_layer_guid_t);
 
 } // namespace FlexFlow
 

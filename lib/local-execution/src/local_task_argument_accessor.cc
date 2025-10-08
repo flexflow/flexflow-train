@@ -22,7 +22,7 @@ ConcreteArgSpec const &
 }
 
 GenericTensorAccessor LocalTaskArgumentAccessor::get_tensor(
-    slot_id_t slot, Permissions priv, TensorType tensor_type) const {
+    slot_id_t slot, Permissions priv, TrainingTensorType tensor_type) const {
   training_tensor_slot_id_t slot_tensor_type =
       training_tensor_slot_id_t{slot, tensor_type};
   GenericTensorAccessorW tensor_backing =
@@ -39,7 +39,7 @@ GenericTensorAccessor LocalTaskArgumentAccessor::get_tensor(
 }
 
 VariadicGenericTensorAccessor LocalTaskArgumentAccessor::get_variadic_tensor(
-    slot_id_t slot, Permissions priv, TensorType tensor_type) const {
+    slot_id_t slot, Permissions priv, TrainingTensorType tensor_type) const {
   training_tensor_slot_id_t slot_tensor_type =
       training_tensor_slot_id_t{slot, tensor_type};
   std::vector<GenericTensorAccessorW> variadic_tensor_backing =

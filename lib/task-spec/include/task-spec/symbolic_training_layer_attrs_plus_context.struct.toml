@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "SymbolicTrainingLayerPlusContext"
+name = "SymbolicTrainingLayerAttrsPlusContext"
 features = []
 
 includes = [
@@ -7,10 +7,6 @@ includes = [
   "pcg/layer_attrs.dtg.h",
   "task-spec/symbolic_training_tensor_group.dtg.h",
 ]
-
-[[fields]]
-name = "layer_guid"
-type = "::FlexFlow::layer_guid_t"
 
 [[fields]]
 name = "layer_attrs"

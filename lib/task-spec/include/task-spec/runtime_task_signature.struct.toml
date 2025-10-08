@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "TaskSignature"
+name = "RuntimeTaskSignature"
 features = [
   "eq",
   "fmt",

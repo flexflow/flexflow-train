@@ -7,6 +7,7 @@
 #include "task-spec/fwb_tensor_slot_id_t.dtg.h"
 #include "task-spec/slot_id_t.dtg.h"
 #include "task-spec/variadic_tensor_ref.h"
+#include "task-spec/runtime_arg_ref.h"
 
 namespace FlexFlow {
 

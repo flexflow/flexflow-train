@@ -9,12 +9,12 @@ training_tensor_slot_id_t
   if (fwb_slot_id.is_grad == IsGrad::NO) {
     return training_tensor_slot_id_t{
       fwb_slot_id.slot_id,
-      TensorType::FORWARD,
+      TrainingTensorType::FORWARD,
     };
   } else if (fwb_slot_id.is_grad == IsGrad::YES) {
     return training_tensor_slot_id_t{
       fwb_slot_id.slot_id,
-      TensorType::GRADIENT,
+      TrainingTensorType::GRADIENT,
     };
   } else {
     PANIC("Invalid value for IsGrad {}", fwb_slot_id.is_grad);

@@ -1,4 +1,4 @@
-#include "task-spec/arg_ref.h"
+#include "task-spec/arg_ref_spec.h"
 #include <doctest/doctest.h>
 #include <string>
 

@@ -19,34 +19,6 @@ LocalTrainingBacking make_local_training_backing_for_computation_graph(
     RuntimeArgConfig const &runtime_arg_config,
     OptimizerAttrs const &optimizer_attrs);
 
-std::optional<DeviceSpecificPerDeviceOpState>
-    create_per_device_op_state(LocalTaskRegistry const &,
-                               LocalTensorBacking const &,
-                               RuntimeArgConfig const &,
-                               Allocator &,
-                               layer_guid_t,
-                               ComputationGraphOpAttrs const &,
-                               TrainingLayerSymbolicTensorGroupSignatureWithShapes const &);
-
-std::optional<milliseconds_t> execute_forward(LocalTaskRegistry const &,
-                                              LocalTensorBacking const &,
-                                              LocalArgsBacking const &,
-                                              TrainingLayerPlusContext const &,
-                                              Allocator &);
-
-std::optional<milliseconds_t> execute_backward(LocalTaskRegistry const &,
-                                               LocalTensorBacking const &,
-                                               LocalArgsBacking const &,
-                                               TrainingLayerPlusContext const &,
-                                               Allocator &);
-
-void compute_loss(LocalTrainingBacking const &, LossAttrs const &, Allocator &);
-
-void execute_update(LocalTrainingBacking const &,
-                    layer_guid_t const &,
-                    OptimizerAttrs const &,
-                    Allocator &);
-
 } // namespace FlexFlow
 
 #endif

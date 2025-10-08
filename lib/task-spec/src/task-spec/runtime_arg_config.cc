@@ -1,6 +1,6 @@
 #include "task-spec/runtime_arg_config.h"
 #include "kernels/device_handle_t.h"
-#include "task-spec/op_task_to_task_invocation.h"
+#include "task-spec/lower_op_task_invocation_to_runtime_task_invocation.h"
 #include "utils/containers/map_values.h"
 #include "utils/overload.h"
 
@@ -31,11 +31,11 @@ RuntimeArgConfig
 }
 
 std::unordered_map<slot_id_t, ConcreteArgSpec>
-    construct_arg_slots_backing(TaskBinding const &binding,
+    construct_arg_slots_backing(RuntimeTaskBinding const &binding,
                                 RuntimeArgConfig const &runtime_arg_config) {
   return map_values(
       binding.get_arg_bindings(), 
-      [&](TaskArgSpec const &arg_binding) -> ConcreteArgSpec {
+      [&](RuntimeArgSpec const &arg_binding) -> ConcreteArgSpec {
         return arg_binding.template visit<ConcreteArgSpec>(
             overload{
               [&](RuntimeArgRefSpec const &s) {

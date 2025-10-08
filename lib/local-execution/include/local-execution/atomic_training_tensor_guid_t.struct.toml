@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "atomic_loss_tensor_guid_t"
+name = "atomic_training_tensor_guid_t"
 features = [
   "eq",
   "ord",

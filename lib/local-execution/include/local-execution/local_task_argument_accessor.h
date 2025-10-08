@@ -26,9 +26,9 @@ struct LocalTaskArgumentAccessor : public ITaskArgumentAccessor {
 
   GenericTensorAccessor get_tensor(slot_id_t slot,
                                    Permissions priv,
-                                   TensorType tensor_type) const override;
+                                   TrainingTensorType tensor_type) const override;
   VariadicGenericTensorAccessor get_variadic_tensor(
-      slot_id_t slot, Permissions priv, TensorType tensor_type) const override;
+      slot_id_t slot, Permissions priv, TrainingTensorType tensor_type) const override;
 
   Allocator get_allocator() const override;
 

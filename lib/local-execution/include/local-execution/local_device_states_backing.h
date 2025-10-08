@@ -7,8 +7,6 @@
 #include "local-execution/local_tensor_backing.dtg.h"
 #include "pcg/computation_graph.h"
 #include "task-spec/per_device_op_state.h"
-#include "task-spec/task_binding.h"
-#include "task-spec/task_invocation.dtg.h"
 #include "task-spec/training_layer_symbolic_tensor_group_signature_with_shapes.dtg.h"
 
 namespace FlexFlow {
