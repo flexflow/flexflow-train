@@ -4,7 +4,7 @@
 namespace FlexFlow {
 
 PerDeviceOpState get_device_state_from_device_specific(
-    DeviceSpecificPerDeviceOpState const &device_specific, size_t device_idx) {
+    DeviceSpecificPerDeviceOpState const &device_specific, device_id_t device_idx) {
   return device_specific.visit<PerDeviceOpState>(
       [&](auto const &x) { return PerDeviceOpState{*(x.get(device_idx))}; });
 }

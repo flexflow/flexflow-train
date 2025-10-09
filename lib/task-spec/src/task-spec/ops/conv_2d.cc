@@ -92,8 +92,7 @@ static DeviceSpecificPerDeviceOpState
       /*filter_grad_ptr=*/filter_grad.get_float_ptr());
 
   return DeviceSpecificPerDeviceOpState{
-      DeviceSpecific<std::optional<Conv2DPerDeviceState>>::create(
-          per_device_state),
+    acc.make_device_specific(per_device_state),
   };
 }
 

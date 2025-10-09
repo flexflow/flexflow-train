@@ -320,4 +320,19 @@ std::optional<OpTaskInvocation>
   });
 }
 
+std::optional<OpTaskInvocation> get_op_task_invocation(
+   ComputationGraphOpAttrs const &op_attrs, 
+   OpTaskType task_type) {
+  switch (task_type) {
+    case OpTaskType::INIT:
+      return get_init_op_task_invocation(op_attrs);
+    case OpTaskType::FWD:
+      return get_forward_op_task_invocation(op_attrs);
+    case OpTaskType::BWD:
+      return get_backward_op_task_invocation(op_attrs);
+    default:
+      PANIC("Unhandled OpTaskType", op_attrs);
+  };
+}
+
 } // namespace FlexFlow

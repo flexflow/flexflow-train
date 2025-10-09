@@ -36,10 +36,15 @@ using F3 = std::function<std::unordered_map<OutK, OutV>(InK, InV)>;
 template
   std::unordered_map<OutK, OutV> flatmap(std::unordered_map<InK, InV> const &, F3 &&);
 
-using F4 = std::function<std::string(char)>;
+using F4 = std::function<std::optional<Out>(In const &)>;
 
 template
-  std::string flatmap(std::string const &, F4 &&f);
+  std::optional<Out> flatmap(std::optional<In> const &o, F4 &&);
+
+using F5 = std::function<std::string(char)>;
+
+template
+  std::string flatmap(std::string const &, F5 &&f);
 
 
 } // namespace FlexFlow

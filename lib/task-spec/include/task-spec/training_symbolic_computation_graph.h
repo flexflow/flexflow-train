@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_TRAINING_SYMBOLIC_COMPUTATION_GRAPH_H
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_TRAINING_SYMBOLIC_COMPUTATION_GRAPH_H
 
+#include "task-spec/op_task_type.dtg.h"
 #include "task-spec/symbolic_forward_tensor_source.h"
 #include "task-spec/symbolic_gradient_tensor_source.h"
 #include "task-spec/symbolic_loss_tensor_source.h"
@@ -14,6 +15,7 @@
 #include "task-spec/training_symbolic_computation_graph_from_cg_conversion.dtg.h"
 #include "task-spec/training_symbolic_computation_graph_from_pcg_conversion.dtg.h"
 #include "task-spec/symbolic_layer_guid_t.dtg.h"
+#include "task-spec/training_cg_op_attrs_and_signature_with_shapes.dtg.h"
 
 namespace FlexFlow {
 
@@ -59,24 +61,36 @@ SymbolicTrainingLayerAttrsPlusContext
 std::unordered_map<symbolic_training_tensor_guid_t, TensorShape>
     get_all_symbolic_training_tensor_shapes(TrainingSymbolicComputationGraph const &);
 
-std::optional<RuntimeTaskInvocation>
-  get_init_runtime_task_invocation_for_layer(TrainingSymbolicComputationGraph const &,
-                                     symbolic_layer_guid_t);
+TrainingCgOpAttrsAndSignatureWithShapes 
+  get_attrs_and_signature_for_layer(TrainingSymbolicComputationGraph const &,
+                                    symbolic_layer_guid_t);
 
 std::optional<RuntimeTaskInvocation>
-  get_forward_runtime_task_invocation_for_layer(TrainingSymbolicComputationGraph const &,
-                                        symbolic_layer_guid_t);
+  get_init_runtime_task_invocation_for_layer(symbolic_layer_guid_t, 
+                                             TrainingCgOpAttrsAndSignatureWithShapes const &);
 
 std::optional<RuntimeTaskInvocation>
-  get_backward_runtime_task_invocation_for_layer(TrainingSymbolicComputationGraph const &,
-                                         symbolic_layer_guid_t);
+  get_forward_runtime_task_invocation_for_layer(symbolic_layer_guid_t, 
+                                                TrainingCgOpAttrsAndSignatureWithShapes const &);
+
+std::optional<RuntimeTaskInvocation>
+  get_backward_runtime_task_invocation_for_layer(symbolic_layer_guid_t,
+                                                 TrainingCgOpAttrsAndSignatureWithShapes const &);
+
+std::optional<RuntimeTaskInvocation>
+  get_runtime_task_invocation_for_layer_and_type(symbolic_layer_guid_t,
+                                                 TrainingCgOpAttrsAndSignatureWithShapes const &,
+                                                 OpTaskType);
 
 RuntimeTaskInvocation
-  get_compute_loss_runtime_task_invocation(TrainingSymbolicComputationGraph const &);
+  get_compute_loss_runtime_task_invocation(LossAttrs const &,
+                                           symbolic_forward_tensor_guid_t loss_fwd_tensor,
+                                           symbolic_gradient_tensor_guid_t loss_grad_tensor,
+                                           symbolic_loss_tensor_guid_t label_tensor);
 
 std::optional<RuntimeTaskInvocation>
-  get_update_runtime_task_invocation_for_layer(TrainingSymbolicComputationGraph const &,
-                                               symbolic_layer_guid_t);
+  get_update_runtime_task_invocation_for_layer(SymbolicTrainingLayerAttrsPlusContext const &,
+                                               OptimizerAttrs const &);
 
 } // namespace FlexFlow
 

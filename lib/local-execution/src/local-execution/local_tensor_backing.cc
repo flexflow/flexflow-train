@@ -51,55 +51,13 @@ LocalTensorBacking construct_local_tensor_backing(
   };
 }
 
-TaskArgumentAccessor
-    get_task_arg_accessor_for_invocation(LocalTensorBacking const &local_tensor_backing,
-                          RuntimeArgConfig const &runtime_arg_config,
-                          TaskInvocation const &invocation,
-                          Allocator &allocator) {
-  std::unordered_map<training_tensor_slot_id_t, TensorSlotBacking>
-      tensor_slots_backing = construct_tensor_slots_backing_for_binding(
-          local_tensor_backing, invocation.binding);
-
-  std::unordered_map<slot_id_t, ConcreteArgSpec> arg_slots_backing =
-      construct_arg_slots_backing(invocation.binding, runtime_arg_config);
-
-  return TaskArgumentAccessor::create<LocalTaskArgumentAccessor>(
-      allocator, tensor_slots_backing, arg_slots_backing, 0);
+AtomicTaskInvocation 
+  lower_local_runtime_task_invocation_to_atomic_task_invocation(
+    LocalTensorBacking const &,
+    RuntimeTaskInvocation const &,
+    RuntimeArgConfig const &) {
+  NOT_IMPLEMENTED();
 }
 
-GenericTensorAccessorW get_accessor_for_training_tensor(
-    LocalTensorBacking const &local_tensor_backing,
-    training_tensor_guid_t training_tensor) {
-  return local_tensor_backing.backing_for_training_tensor_map.at(
-      training_tensor);
-}
-
-std::unordered_map<training_tensor_slot_id_t, atomic_training_tensor_guid_t>
-    construct_tensor_slots_backing_for_binding(
-        LocalTensorBacking const &local_tensor_backing,
-        TaskBinding const &binding) {
-
-  return map_values(
-      binding.get_tensor_bindings(), 
-      [&](symbolic_training_tensor_guid_t t) -> atomic_training_tensor_guid_t {
-        return local_tensor_backing.
-            get_accessor_for_training_tensor(local_tensor_backing, t),
-        };
-      });
-}
-
-
-std::unordered_map<training_tensor_slot_id_t, TensorSlotBacking>
-    construct_tensor_slots_backing_for_binding(
-        LocalTensorBacking const &local_tensor_backing,
-        TaskBinding const &binding) {
-
-  return map_values(
-      binding.get_tensor_bindings(), [&](training_tensor_guid_t t) {
-        return TensorSlotBacking{
-            get_accessor_for_training_tensor(local_tensor_backing, t),
-        };
-      });
-}
 
 } // namespace FlexFlow

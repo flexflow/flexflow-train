@@ -9,16 +9,14 @@
 namespace FlexFlow {
 
 RuntimeArgConfig
-    cpu_make_runtime_arg_config(EnableProfiling enable_profiling,
-                                ProfilingSettings profiling_settings);
-RuntimeArgConfig
-    gpu_make_runtime_arg_config(PerDeviceFFHandle const &ff_handle,
+    cpu_make_runtime_arg_config(device_id_t device_id,
                                 EnableProfiling enable_profiling,
                                 ProfilingSettings profiling_settings);
-
-std::unordered_map<slot_id_t, ConcreteArgSpec>
-    construct_arg_slots_backing(RuntimeTaskBinding const &, RuntimeArgConfig const &);
-
+RuntimeArgConfig
+    gpu_make_runtime_arg_config(device_id_t device_id,
+                                PerDeviceFFHandle const &ff_handle,
+                                EnableProfiling enable_profiling,
+                                ProfilingSettings profiling_settings);
 
 } // namespace FlexFlow
 

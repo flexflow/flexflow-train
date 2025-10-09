@@ -32,14 +32,14 @@ struct LocalTaskArgumentAccessor : public ITaskArgumentAccessor {
 
   Allocator get_allocator() const override;
 
-  size_t get_device_idx() const override;
+  device_id_t get_device_idx() const override;
 
 private:
   Allocator allocator;
   std::unordered_map<training_tensor_slot_id_t, TensorSlotBacking>
       tensor_slots_backing;
   std::unordered_map<slot_id_t, ConcreteArgSpec> arg_slots_backing;
-  size_t device_idx; 
+  device_id_t device_idx; 
 };
 
 CHECK_RC_COPY_VIRTUAL_COMPLIANT(LocalTaskArgumentAccessor);

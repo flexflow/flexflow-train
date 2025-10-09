@@ -162,8 +162,7 @@ static DeviceSpecificPerDeviceOpState
                   attrs.eps);
 
   return DeviceSpecificPerDeviceOpState{
-      DeviceSpecific<std::optional<LayerNormPerDeviceState>>::create(
-          per_device_state),
+    acc.make_device_specific(per_device_state),
   };
 }
 

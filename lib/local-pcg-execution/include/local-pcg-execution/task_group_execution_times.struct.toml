@@ -1,0 +1,18 @@
+namespace = "FlexFlow"
+name = "TaskGroupExecutionTimes"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+  "rapidcheck",
+]
+
+includes = [
+]
+
+[[fields]]
+name = "name"
+type = "type"
+

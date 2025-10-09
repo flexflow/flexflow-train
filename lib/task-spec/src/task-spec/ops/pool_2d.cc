@@ -87,8 +87,7 @@ static DeviceSpecificPerDeviceOpState
                   attrs.pool_type);
 
   return DeviceSpecificPerDeviceOpState{
-      DeviceSpecific<std::optional<Pool2DPerDeviceState>>::create(
-          per_device_state),
+    acc.make_device_specific(per_device_state),
   };
 }
 

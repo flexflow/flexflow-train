@@ -3,15 +3,19 @@
 
 #include "kernels/allocation.h"
 #include "local-execution/local_atomic_tensor_backing.dtg.h"
+#include "local-execution/tensor_slot_backing.dtg.h"
 #include "task-spec/runtime_arg_config.dtg.h"
 #include "local-execution/atomic_task_invocation.dtg.h"
 #include "task-spec/task_argument_accessor.h"
 
 namespace FlexFlow {
 
+std::unordered_map<training_tensor_slot_id_t, TensorSlotBacking>
+    construct_tensor_slots_backing_for_binding(LocalAtomicTensorBacking const &,
+                                               AtomicTaskBinding const &);
+
 TaskArgumentAccessor get_task_arg_accessor_for_atomic_task_invocation(
   LocalAtomicTensorBacking const &,
-  RuntimeArgConfig const &,
   AtomicTaskInvocation const &,
   Allocator &);
 

@@ -85,8 +85,7 @@ static DeviceSpecificPerDeviceOpState
                   attrs);
 
   return DeviceSpecificPerDeviceOpState{
-      DeviceSpecific<std::optional<ElementUnaryPerDeviceState>>::create(
-          per_device_state),
+    acc.make_device_specific(per_device_state),
   };
 }
 

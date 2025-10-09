@@ -88,8 +88,7 @@ static DeviceSpecificPerDeviceOpState
                   output.shape);
 
   return DeviceSpecificPerDeviceOpState{
-      DeviceSpecific<std::optional<ElementBinaryPerDeviceState>>::create(
-          per_device_state),
+    acc.make_device_specific(per_device_state),
   };
 }
 

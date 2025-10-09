@@ -1,8 +1,13 @@
 #include "local-execution/model_training_instance.h"
+#include "local-execution/execute_task_for_layer.h"
+#include "local-execution/local_atomic_tensor_backing.h"
 #include "pcg/computation_graph.h"
 #include "pcg/optimizer_attrs.h"
 #include "task-spec/training_computation_graph.h"
+#include "task-spec/training_symbolic_computation_graph.h"
+#include "utils/containers/flatmap.h"
 #include "utils/containers/reversed.h"
+#include "local-execution/local_ready_to_launch_task.dtg.h"
 
 namespace FlexFlow {
 
@@ -20,17 +25,19 @@ std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
   std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
       per_layer_elapsed_time;
 
-  for (layer_guid_t const &layer_guid :
-       topological_ordering(this->training_backing.training_computation_graph
-                                .computation_graph)) {
-    std::optional<milliseconds_t> elapsed_time = execute_forward(
-        this->training_backing.local_task_registry,
-        this->training_backing.local_tensor_backing,
-        this->training_backing.local_args_backing,
-        get_training_layer_plus_context(
-            this->training_backing.training_computation_graph, layer_guid),
-        this->allocator);
+  for (symbolic_layer_guid_t const &symbolic_layer_guid :
+       topological_ordering(this->symbolic_cg.training_symbolic_computation_graph)) {
 
+    std::optional<milliseconds_t> elapsed_time = execute_forward_for_layer(
+      symbolic_layer_guid,
+      this->symbolic_cg.training_symbolic_computation_graph,
+      this->local_tensor_backing,
+      this->local_atomic_tensor_backing,
+      this->allocator,
+      this->local_task_registry,
+      this->runtime_arg_config);
+
+    layer_guid_t layer_guid = this->symbolic_cg.layer_mapping.at_r(symbolic_layer_guid);
     per_layer_elapsed_time.insert({layer_guid, elapsed_time});
   }
 
@@ -43,16 +50,19 @@ std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
 
   std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
       per_layer_elapsed_time;
-  for (layer_guid_t const &layer_guid : reversed(topological_ordering(
-           this->training_backing.training_computation_graph
-               .computation_graph))) {
+  for (symbolic_layer_guid_t const &symbolic_layer_guid : reversed(topological_ordering(
+           this->symbolic_cg.training_symbolic_computation_graph))) {
+
     std::optional<milliseconds_t> elapsed_time = execute_backward(
-        this->training_backing.local_task_registry,
-        this->training_backing.local_tensor_backing,
-        this->training_backing.local_args_backing,
-        get_training_layer_plus_context(
-            this->training_backing.training_computation_graph, layer_guid),
-        this->allocator);
+      symbolic_layer_guid,
+      this->symbolic_cg.training_symbolic_computation_graph,
+      this->local_tensor_backing,
+      this->local_atomic_tensor_backing,
+      this->allocator,
+      this->local_task_registry,
+      this->runtime_arg_config);
+
+    layer_guid_t layer_guid = this->symbolic_cg.layer_mapping.at_r(symbolic_layer_guid);
     per_layer_elapsed_time.insert({layer_guid, elapsed_time});
   }
   return per_layer_elapsed_time;

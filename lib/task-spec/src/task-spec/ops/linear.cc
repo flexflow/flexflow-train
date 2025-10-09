@@ -95,8 +95,7 @@ static DeviceSpecificPerDeviceOpState
                          attrs.out_channels.int_from_positive_int());
 
   return DeviceSpecificPerDeviceOpState{
-      DeviceSpecific<std::optional<LinearPerDeviceState>>::create(
-          per_device_state),
+    acc.make_device_specific(per_device_state),
   };
 }
 

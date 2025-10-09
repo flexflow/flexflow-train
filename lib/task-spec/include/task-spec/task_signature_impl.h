@@ -17,6 +17,8 @@ std::optional<OpTaskInvocation>
 std::optional<OpTaskInvocation>
     get_backward_op_task_invocation(ComputationGraphOpAttrs const &);
 
+std::optional<OpTaskInvocation> get_op_task_invocation(ComputationGraphOpAttrs const &, OpTaskType);
+
 } // namespace FlexFlow
 
 #endif

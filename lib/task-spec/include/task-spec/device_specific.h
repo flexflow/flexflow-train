@@ -1,19 +1,17 @@
 #ifndef _FLEXFLOW_LOCAL_EXECUTION_DEVICE_SPECIFIC_H
 #define _FLEXFLOW_LOCAL_EXECUTION_DEVICE_SPECIFIC_H
 
+#include "pcg/device_id_t.dtg.h"
 #include "task-spec/serialization.h"
-#include "utils/exception.h"
 
 namespace FlexFlow {
 
 template <typename T>
 struct DeviceSpecific {
-
   DeviceSpecific() = delete;
 
   template <typename... Args>
-  static DeviceSpecific<T> create(Args &&...args) {
-    size_t device_idx = 0;
+  static DeviceSpecific<T> create(device_id_t device_idx, Args &&...args) {
     return DeviceSpecific<T>(std::make_shared<T>(std::forward<Args>(args)...),
                              device_idx);
   }
@@ -26,26 +24,19 @@ struct DeviceSpecific {
     return this->tie() != other.tie();
   }
 
-  T const *get(size_t curr_device_idx) const {
-    if (curr_device_idx != this->device_idx) {
-      throw mk_runtime_error(
-          fmt::format("Invalid access to DeviceSpecific: attempted "
-                      "device_idx {} != correct device_idx {})",
-                      curr_device_idx,
-                      this->device_idx));
-    }
+  T const *get(device_id_t curr_device_idx) const {
+    ASSERT(curr_device_idx == this->device_idx);
     return (T const *)this->ptr.get();
   }
-
-  // TODO: can modify ptr
-
 private:
-  DeviceSpecific(std::shared_ptr<T> ptr, size_t device_idx)
+  DeviceSpecific(std::shared_ptr<T> ptr, device_id_t device_idx)
       : ptr(ptr), device_idx(device_idx) {}
 
+private:
   std::shared_ptr<T> ptr;
-  size_t device_idx;
+  device_id_t device_idx;
 
+private:
   std::tuple<decltype(ptr) const &, decltype(device_idx) const &> tie() const {
     return std::tie(this->ptr, this->device_idx);
   }

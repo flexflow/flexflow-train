@@ -78,8 +78,7 @@ static DeviceSpecificPerDeviceOpState
                   allocator);
 
   return DeviceSpecificPerDeviceOpState{
-      DeviceSpecific<std::optional<DropoutPerDeviceState>>::create(
-          per_device_state),
+    acc.make_device_specific(per_device_state),
   };
 }
 

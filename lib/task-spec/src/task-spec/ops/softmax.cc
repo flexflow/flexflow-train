@@ -96,8 +96,7 @@ static DeviceSpecificPerDeviceOpState
                   output_w.int_from_positive_int());
 
   return DeviceSpecificPerDeviceOpState{
-      DeviceSpecific<std::optional<SoftmaxPerDeviceState>>::create(
-          per_device_state),
+    acc.make_device_specific(per_device_state),
   };
 }
 

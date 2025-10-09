@@ -121,6 +121,15 @@ struct TaskArgumentAccessor {
     return this->ptr->get_allocator();
   }
 
+  device_id_t get_device_idx() const {
+    return this->ptr->get_device_idx();
+  }
+
+  template <typename T>
+  DeviceSpecific<T> make_device_specific(T const &t) const {
+    return DeviceSpecific<T>::create(this->get_device_idx(), t);
+  }
+
   template <typename T, typename... Args>
   static
       typename std::enable_if<std::is_base_of<ITaskArgumentAccessor, T>::value,

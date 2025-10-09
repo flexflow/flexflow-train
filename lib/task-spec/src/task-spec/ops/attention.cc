@@ -155,8 +155,7 @@ static DeviceSpecificPerDeviceOpState
       /*add_bias_kv=*/attrs.add_bias_kv);
 
   return DeviceSpecificPerDeviceOpState{
-      DeviceSpecific<std::optional<MHAPerDeviceState>>::create(
-          per_device_state),
+    acc.make_device_specific(per_device_state),
   };
 }
 

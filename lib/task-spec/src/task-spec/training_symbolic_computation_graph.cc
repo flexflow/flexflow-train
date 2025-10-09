@@ -5,6 +5,7 @@
 #include "task-spec/symbolic_loss_tensor_source.h"
 #include "task-spec/symbolic_training_tensor_group.h"
 #include "task-spec/task_signature_impl.h"
+#include "task-spec/training_cg_op_attrs_and_signature_with_shapes.h"
 #include "utils/bidict/generate_bidict.h"
 #include "utils/containers/contains.h"
 #include "utils/containers/filter_values.h"
@@ -99,10 +100,26 @@ static ComputationGraphOpAttrs get_cg_op_attrs_for_symbolic_layer_guid(TrainingS
   return cg_op_attrs.value();
 }
 
-std::optional<RuntimeTaskInvocation>
-  get_init_task_invocation_for_layer(TrainingSymbolicComputationGraph const &g,
-                                     symbolic_layer_guid_t l) {
+TrainingCgOpAttrsAndSignatureWithShapes 
+  get_attrs_and_signature_for_layer(TrainingSymbolicComputationGraph const &g,
+                                    symbolic_layer_guid_t l) {
+
   ComputationGraphOpAttrs cg_op_attrs = get_cg_op_attrs_for_symbolic_layer_guid(g, l);
+
+  TrainingLayerSymbolicTensorGroupSignatureWithShapes layer_signature 
+    = get_signature_with_shapes_for_symbolic_layer_guid(g, l);
+
+  return make_training_cg_op_attrs_and_signature(cg_op_attrs, layer_signature);
+}
+
+std::optional<RuntimeTaskInvocation>
+  get_init_task_invocation_for_layer(symbolic_layer_guid_t l,
+                                     TrainingCgOpAttrsAndSignatureWithShapes const &attrs_and_signature) {
+
+  ComputationGraphOpAttrs cg_op_attrs = attrs_and_signature.op_attrs;
+
+  TrainingLayerSymbolicTensorGroupSignatureWithShapes layer_signature
+    = get_signature_with_shapes(attrs_and_signature);
 
   OpTaskInvocation op_task_invocation = ({
     std::optional<OpTaskInvocation> maybe_invocation = get_init_op_task_invocation(cg_op_attrs);
@@ -112,9 +129,6 @@ std::optional<RuntimeTaskInvocation>
     maybe_invocation.value();
   });
 
-  TrainingLayerSymbolicTensorGroupSignatureWithShapes layer_signature 
-    = get_signature_with_shapes_for_symbolic_layer_guid(g, l);
-
   return lower_op_task_invocation_to_runtime_task_invocation(
     /*op_task_invocation=*/op_task_invocation,
     /*symbolic_layer_guid=*/l,
@@ -122,9 +136,13 @@ std::optional<RuntimeTaskInvocation>
 }
 
 std::optional<RuntimeTaskInvocation>
-  get_forward_runtime_task_invocation_for_layer(TrainingSymbolicComputationGraph const &g,
-                                        symbolic_layer_guid_t l) {
-  ComputationGraphOpAttrs cg_op_attrs = get_cg_op_attrs_for_symbolic_layer_guid(g, l);
+  get_forward_runtime_task_invocation_for_layer(symbolic_layer_guid_t l,
+                                                TrainingCgOpAttrsAndSignatureWithShapes const &attrs_and_signature) {
+
+  ComputationGraphOpAttrs cg_op_attrs = attrs_and_signature.op_attrs;
+
+  TrainingLayerSymbolicTensorGroupSignatureWithShapes layer_signature
+    = get_signature_with_shapes(attrs_and_signature);
 
   OpTaskInvocation op_task_invocation = ({
     std::optional<OpTaskInvocation> maybe_invocation = get_forward_op_task_invocation(cg_op_attrs);
@@ -134,9 +152,6 @@ std::optional<RuntimeTaskInvocation>
     maybe_invocation.value();
   });
 
-  TrainingLayerSymbolicTensorGroupSignatureWithShapes layer_signature 
-    = get_signature_with_shapes_for_symbolic_layer_guid(g, l);
-
   return lower_op_task_invocation_to_runtime_task_invocation(
     /*op_task_invocation=*/op_task_invocation,
     /*symbolic_layer_guid=*/l,
@@ -144,9 +159,14 @@ std::optional<RuntimeTaskInvocation>
 }
 
 std::optional<RuntimeTaskInvocation>
-  get_backward_task_invocation_for_layer(TrainingSymbolicComputationGraph const &g,
-                                         symbolic_layer_guid_t l) {
-  ComputationGraphOpAttrs cg_op_attrs = get_cg_op_attrs_for_symbolic_layer_guid(g, l);
+  get_backward_task_invocation_for_layer(symbolic_layer_guid_t l,
+                                         TrainingCgOpAttrsAndSignatureWithShapes const &attrs_and_signature) {
+
+  ComputationGraphOpAttrs cg_op_attrs = attrs_and_signature.op_attrs;
+
+  TrainingLayerSymbolicTensorGroupSignatureWithShapes layer_signature
+    = get_signature_with_shapes(attrs_and_signature);
+
 
   OpTaskInvocation op_task_invocation = ({
     std::optional<OpTaskInvocation> maybe_invocation = get_backward_op_task_invocation(cg_op_attrs);
@@ -156,9 +176,6 @@ std::optional<RuntimeTaskInvocation>
     maybe_invocation.value();
   });
 
-  TrainingLayerSymbolicTensorGroupSignatureWithShapes layer_signature 
-    = get_signature_with_shapes_for_symbolic_layer_guid(g, l);
-
   return lower_op_task_invocation_to_runtime_task_invocation(
     /*op_task_invocation=*/op_task_invocation,
     /*symbolic_layer_guid=*/l,
@@ -166,33 +183,30 @@ std::optional<RuntimeTaskInvocation>
 }
 
 RuntimeTaskInvocation
-  get_compute_loss_runtime_task_invocation(TrainingSymbolicComputationGraph const &g) {
-
-  symbolic_tensor_guid_t logit_tensor = g.logit_tensor;
-  symbolic_loss_tensor_guid_t label_tensor = g.label_tensor;
+  get_compute_loss_runtime_task_invocation(LossAttrs const &loss_attrs,
+                                           symbolic_forward_tensor_guid_t loss_fwd_tensor,
+                                           symbolic_gradient_tensor_guid_t loss_grad_tensor,
+                                           symbolic_loss_tensor_guid_t label_tensor) {
 
   RuntimeTaskInvocation loss_invocation = loss_attrs_backward(
-      g.loss_attrs,
-      get_forward_symbolic_tensor_guid_for_symbolic_tensor_guid(g, logit_tensor),
-      get_gradient_symbolic_tensor_guid_for_symbolic_tensor_guid(g, logit_tensor),
+      loss_attrs,
+      loss_fwd_tensor,
+      loss_grad_tensor,
       label_tensor);
 
   return loss_invocation;
 } 
 
 std::optional<RuntimeTaskInvocation>
-  get_update_runtime_task_invocation_for_layer(TrainingSymbolicComputationGraph const &g,
-                                               symbolic_layer_guid_t l) {
-  SymbolicTrainingLayerAttrsPlusContext training_layer = get_symbolic_training_layer_attrs_plus_context(
-      g, l);
-
+  get_update_runtime_task_invocation_for_layer(SymbolicTrainingLayerAttrsPlusContext const &training_layer,
+                                               OptimizerAttrs const &optimizer_attrs) {
   if (training_layer.layer_attrs.op_attrs.has<WeightAttrs>()) {
     SymbolicTrainingTensorGroup weight_tensor_group =
         get_only(training_layer.output_tensor_groups);
 
     RuntimeTaskInvocation invocation =
         optimizer_attrs_get_update_invocation(
-          g.optimizer_attrs,
+          optimizer_attrs,
           /*weight=*/weight_tensor_group.forward_tensor,
           /*weight_grad=*/weight_tensor_group.gradient_tensor,
           /*grad_buffer_tensors=*/weight_tensor_group.optimizer_tensors);

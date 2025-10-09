@@ -24,7 +24,7 @@ struct ITaskArgumentAccessor {
       slot_id_t slot, Permissions priv, TrainingTensorType tensor_type) const = 0;
 
   virtual Allocator get_allocator() const = 0;
-  virtual size_t get_device_idx() const = 0;
+  virtual device_id_t get_device_idx() const = 0;
 };
 CHECK_RC_COPY_VIRTUAL_COMPLIANT(ITaskArgumentAccessor);
 

@@ -1,0 +1,18 @@
+namespace = "FlexFlow"
+name = "LocalReadyToLaunchTask"
+features = [
+  "eq",
+]
+
+includes = [
+  "task-spec/task_id_t.dtg.h",
+  "task-spec/task_argument_accessor.h",
+]
+
+[[fields]]
+name = "task_id"
+type = "::FlexFlow::task_id_t"
+
+[[fields]]
+name = "task_arg_accessor"
+type = "::FlexFlow::TaskArgumentAccessor"

@@ -7,10 +7,11 @@
 namespace FlexFlow {
 
 RuntimeArgConfig
-    cpu_make_runtime_arg_config(EnableProfiling enable_profiling,
+    cpu_make_runtime_arg_config(device_id_t device_id, 
+                                EnableProfiling enable_profiling,
                                 ProfilingSettings profiling_settings) {
   return RuntimeArgConfig{
-      DeviceSpecific<device_handle_t>::create(cpu_make_device_handle_t()),
+      DeviceSpecific<device_handle_t>::create(device_id, cpu_make_device_handle_t()),
       enable_profiling,
       profiling_settings,
       DeviceType::CPU,
@@ -18,11 +19,13 @@ RuntimeArgConfig
 }
 
 RuntimeArgConfig
-    gpu_make_runtime_arg_config(PerDeviceFFHandle const &ff_handle,
+    gpu_make_runtime_arg_config(device_id_t device_id, 
+                                PerDeviceFFHandle const &ff_handle,
                                 EnableProfiling enable_profiling,
                                 ProfilingSettings profiling_settings) {
   return RuntimeArgConfig{
       DeviceSpecific<device_handle_t>::create(
+          device_id,
           gpu_make_device_handle_t(ff_handle)),
       enable_profiling,
       profiling_settings,

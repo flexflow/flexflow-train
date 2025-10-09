@@ -59,8 +59,7 @@ static DeviceSpecificPerDeviceOpState
                   output.shape);
 
   return DeviceSpecificPerDeviceOpState{
-      DeviceSpecific<std::optional<ReducePerDeviceState>>::create(
-          per_device_state),
+    acc.make_device_specific(per_device_state),
   };
 }
 

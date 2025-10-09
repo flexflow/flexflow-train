@@ -82,6 +82,18 @@ std::unordered_map<OutK, OutV> flatmap(std::unordered_map<InK, InV> const &m,
   return result;
 }
 
+template <typename In, 
+          typename F,
+          typename Out = typename std::invoke_result_t<F, In>::value_type>
+std::optional<Out> flatmap(std::optional<In> const &o, F &&f) {
+  if (o.has_value()) {
+    std::optional<Out> r = f(o.value());
+    return r;
+  } else {
+    return std::nullopt;
+  }
+}
+
 template <typename F>
 std::string flatmap(std::string const &input, F &&f) {
   std::string result = "";

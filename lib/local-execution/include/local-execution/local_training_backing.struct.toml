@@ -3,7 +3,7 @@ name = "LocalTrainingBacking"
 features = []
 
 includes = [
-  "task-spec/training_computation_graph_from_cg_conversion.dtg.h",
+  "task-spec/training_symbolic_computation_graph_from_cg_conversion.dtg.h",
   "local-execution/local_task_registry.h",
   "local-execution/local_tensor_backing.h",
   "local-execution/local_device_states_backing.h",

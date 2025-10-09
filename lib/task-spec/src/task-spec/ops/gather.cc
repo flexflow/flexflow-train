@@ -104,8 +104,7 @@ static DeviceSpecificPerDeviceOpState
   std::optional<GatherPerDeviceState> per_device_state =
       init_kernel(kernel_device_type, handle, attrs.dim);
   return DeviceSpecificPerDeviceOpState{
-      DeviceSpecific<std::optional<GatherPerDeviceState>>::create(
-          per_device_state),
+    acc.make_device_specific(per_device_state),
   };
 }
 

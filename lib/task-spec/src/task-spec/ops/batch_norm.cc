@@ -110,8 +110,7 @@ static DeviceSpecificPerDeviceOpState
       /*relu=*/attrs.relu);
 
   return DeviceSpecificPerDeviceOpState{
-      DeviceSpecific<std::optional<BatchNormPerDeviceState>>::create(
-          per_device_state),
+    acc.make_device_specific(per_device_state),
   };
 }
 
