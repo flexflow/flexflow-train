@@ -5,7 +5,7 @@
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "utils/containers/map_keys.h"
-#include "utils/containers/merge_maps.h"
+#include "utils/containers/binary_merge_disjoint_maps.h"
 #include "utils/containers/require_same.h"
 #include "utils/containers/try_at.h"
 #include "utils/full_binary_tree/binary_tree_path.h"
@@ -17,8 +17,8 @@ ParallelLayerGuidObliviousMachineMapping binary_combine_mappings(
     ParallelLayerGuidObliviousMachineMapping const &lhs,
     ParallelLayerGuidObliviousMachineMapping const &rhs) {
   return ParallelLayerGuidObliviousMachineMapping{
-      merge_disjoint_maps(map_keys(lhs.raw_mapping, nest_inside_left_child),
-                          map_keys(rhs.raw_mapping, nest_inside_right_child)),
+      binary_merge_disjoint_maps(map_keys(lhs.raw_mapping, nest_inside_left_child),
+                                 map_keys(rhs.raw_mapping, nest_inside_right_child)),
   };
 }
 

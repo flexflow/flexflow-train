@@ -4,7 +4,6 @@
 #include "local-execution/local_training_backing.dtg.h"
 #include "op-attrs/ops/loss_functions/loss_attrs.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
-#include "task-spec/training_layer_symbolic_tensor_group_signature_with_shapes.dtg.h"
 #include "utils/units/milliseconds_t.h"
 
 namespace FlexFlow {

@@ -61,7 +61,7 @@ std::optional<DeviceSpecificPerDeviceOpState>
                                Allocator &allocator,
                                layer_guid_t layer_id,
                                ComputationGraphOpAttrs const &op_attrs,
-                               TrainingLayerSymbolicTensorGroupSignatureWithShapes const &layer_signature) {
+                               SymbolicLayerTrainingTensorGroupSignatureWithShapes const &layer_signature) {
 
   std::optional maybe_registered_task = try_get_registered_task(
       local_task_registry, layer_id, OpTaskType::INIT);

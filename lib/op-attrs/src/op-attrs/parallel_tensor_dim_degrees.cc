@@ -11,7 +11,7 @@
 #include "utils/containers/get_all_assignments.h"
 #include "utils/containers/map_keys.h"
 #include "utils/containers/map_values.h"
-#include "utils/containers/merge_maps.h"
+#include "utils/containers/binary_merge_disjoint_maps.h"
 #include "utils/containers/range.h"
 #include "utils/containers/set_union.h"
 #include "utils/containers/transform.h"
@@ -97,8 +97,9 @@ std::unordered_map<parallel_tensor_dim_idx_t, positive_int>
         return degrees.shard_degrees.at(dim);
       });
 
-  return merge_disjoint_maps(
-      replica_dim_degrees, map_keys(shard_dim_degrees, [](ff_dim_t const &dim) {
+  return binary_merge_disjoint_maps(
+      /*lhs=*/replica_dim_degrees, 
+      /*rhs=*/map_keys(shard_dim_degrees, [](ff_dim_t const &dim) {
         return parallel_tensor_dim_idx_t{dim};
       }));
 }

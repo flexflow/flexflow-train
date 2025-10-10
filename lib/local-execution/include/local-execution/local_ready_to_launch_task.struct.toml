@@ -1,8 +1,6 @@
 namespace = "FlexFlow"
 name = "LocalReadyToLaunchTask"
-features = [
-  "eq",
-]
+features = []
 
 includes = [
   "task-spec/task_id_t.dtg.h",

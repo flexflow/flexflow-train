@@ -3,7 +3,7 @@
 
 #include "utils/containers/extend.h"
 #include "utils/containers/get_element_type.h"
-#include "utils/containers/merge_maps.h"
+#include "utils/containers/binary_merge_disjoint_maps.h"
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -76,7 +76,7 @@ std::unordered_map<OutK, OutV> flatmap(std::unordered_map<InK, InV> const &m,
   std::unordered_map<OutK, OutV> result;
 
   for (auto const &[k, v] : m) {
-    result = merge_disjoint_maps(result, f(k, v));
+    result = binary_merge_disjoint_maps(result, f(k, v));
   }
 
   return result;

@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_FULL_BINARY_TREE_GET_PATH_TO_LEAF_MAP_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_FULL_BINARY_TREE_GET_PATH_TO_LEAF_MAP_H
 
-#include "utils/containers/merge_maps.h"
+#include "utils/containers/binary_merge_disjoint_maps.h"
 #include "utils/containers/multiset_union.h"
 #include "utils/containers/map_keys.h"
 #include "utils/full_binary_tree/binary_tree_path.dtg.h"
@@ -33,7 +33,7 @@ std::unordered_map<BinaryTreePath, Leaf>
                            return nest_inside_right_child(p);
                          });
 
-            return merge_disjoint_maps(left_map, right_map);
+            return binary_merge_disjoint_maps(left_map, right_map);
           },
           [](Leaf const &leaf) -> std::unordered_map<BinaryTreePath, Leaf> {
             return std::unordered_map<BinaryTreePath, Leaf>{

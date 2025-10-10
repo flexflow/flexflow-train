@@ -3,7 +3,6 @@
 #include "compiler/machine_mapping/machine_resource_split.h"
 #include "compiler/machine_mapping/parallel_layer_guid_oblivious_machine_mapping.h"
 #include "utils/containers/map_keys.h"
-#include "utils/containers/merge_maps.h"
 #include "utils/full_binary_tree/binary_tree_path.h"
 
 namespace FlexFlow {

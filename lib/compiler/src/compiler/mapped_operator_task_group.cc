@@ -1,5 +1,5 @@
 #include "compiler/mapped_operator_task_group.h"
-#include "compiler/operator_task_signature.h"
+#include "compiler/operator_atomic_task_shard_binding.h"
 #include "compiler/task_signature_tensor_key.h"
 #include "op-attrs/get_operator_task_space.h"
 #include "op-attrs/operator_task_space.h"
@@ -17,13 +17,13 @@
 namespace FlexFlow {
 
 MappedOperatorTaskGroup::MappedOperatorTaskGroup(
-   bidict<MachineSpaceCoordinate, OperatorTaskSignature> const &task_signatures) 
-  : task_signatures(task_signatures)
+   bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding> const &shard_bindings) 
+  : shard_bindings(shard_bindings)
 {
   auto check_arity = [&](TensorRole tensor_role) -> nonnegative_int {
     std::unordered_set<nonnegative_int> arities = 
-      transform(task_signatures.right_values(), 
-                [&](OperatorTaskSignature const &s) -> nonnegative_int {
+      transform(shard_bindings.right_values(), 
+                [&](OperatorAtomicTaskShardBinding const &s) -> nonnegative_int {
                   return num_elements(ptensor_space_coords_for_role(s, tensor_role));
                 });
 
@@ -41,11 +41,11 @@ MappedOperatorTaskGroup::MappedOperatorTaskGroup(
           /*num_outputs=*/num_outputs);
           
   for (TaskSignatureTensorKey const &key : all_keys) {
-    std::vector<OperatorTaskSignature> signatures_for_key = vector_of(task_signatures.right_values());
+    std::vector<OperatorAtomicTaskShardBinding> signatures_for_key = vector_of(shard_bindings.right_values());
 
     std::vector<ParallelTensorSpaceCoordinate> coords_for_key = 
       transform(signatures_for_key,
-                [&](OperatorTaskSignature const &signature) {
+                [&](OperatorAtomicTaskShardBinding const &signature) {
                   return ptensor_space_coord_for_key(signature, key);
                 });
 
@@ -70,18 +70,18 @@ bool MappedOperatorTaskGroup::operator!=(MappedOperatorTaskGroup const &other) c
 }
 
 std::tuple<
-  bidict<MachineSpaceCoordinate, OperatorTaskSignature> const &
+  bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding> const &
 > MappedOperatorTaskGroup::tie() const {
 
-  return std::tie(this->task_signatures);
+  return std::tie(this->shard_bindings);
 }
 
-bidict<MachineSpaceCoordinate, OperatorTaskSignature> const &MappedOperatorTaskGroup::get_task_signatures() const {
-  return this->task_signatures;
+bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding> const &MappedOperatorTaskGroup::get_shard_bindings() const {
+  return this->shard_bindings;
 }
 
 std::string format_as(::FlexFlow::MappedOperatorTaskGroup const &m) {
-  return fmt::format("<MappedOperatorTaskGroup task_signatures={}>", m.get_task_signatures());
+  return fmt::format("<MappedOperatorTaskGroup shard_bindings={}>", m.get_shard_bindings());
 }
 
 std::ostream &operator<<(std::ostream &s, ::FlexFlow::MappedOperatorTaskGroup const &x) {
@@ -99,7 +99,7 @@ MappedOperatorTaskGroup
   return MappedOperatorTaskGroup{
     generate_bidict(get_machine_space_coordinates(op_task_space, machine_view),
                     [&](MachineSpaceCoordinate const &machine_space_coord) {
-                      return operator_task_signature_from_machine_view(
+                      return operator_atomic_task_shard_binding_from_machine_view(
                         op_attrs, 
                         inputs_dim_degrees,
                         machine_view,

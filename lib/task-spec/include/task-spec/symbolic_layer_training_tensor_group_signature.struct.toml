@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "TrainingLayerSymbolicTensorGroupSignature"
+name = "SymbolicLayerTrainingTensorGroupSignature"
 features = [
   "eq",
   "ord",

@@ -72,6 +72,7 @@ struct OpTaskBinding {
   void bind_arg(slot_id_t name, OpArgRef<T> const &ref) {
     this->insert_arg_spec(name, OpArgSpec{OpArgRefSpec::create(ref)});
   }
+
   bool operator==(OpTaskBinding const &other) const;
   bool operator!=(OpTaskBinding const &other) const;
 
@@ -91,7 +92,7 @@ private:
       tie() const;
 };
 
-OpTaskBinding infer_bwd_binding(OpTaskBinding const &fwd);
+OpTaskBinding infer_bwd_binding(OpTaskBinding const &);
 
 } // namespace FlexFlow
 

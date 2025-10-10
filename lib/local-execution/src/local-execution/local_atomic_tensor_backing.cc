@@ -19,8 +19,7 @@ std::unordered_map<training_tensor_slot_id_t, TensorSlotBacking>
 TaskArgumentAccessor get_task_arg_accessor_for_atomic_task_invocation(
   LocalAtomicTensorBacking const &local_tensor_backing,
   AtomicTaskInvocation const &invocation,
-  Allocator &allocator,
-  MachineSpaceCoordinate const &) {
+  Allocator &allocator) {
 
   std::unordered_map<training_tensor_slot_id_t, TensorSlotBacking>
       tensor_slots_backing = construct_tensor_slots_backing_for_binding(

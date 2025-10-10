@@ -7,13 +7,13 @@
 #include "local-execution/local_tensor_backing.dtg.h"
 #include "pcg/computation_graph.h"
 #include "task-spec/per_device_op_state.h"
-#include "task-spec/training_layer_symbolic_tensor_group_signature_with_shapes.dtg.h"
+#include "task-spec/symbolic_layer_training_tensor_group_signature_with_shapes.dtg.h"
 
 namespace FlexFlow {
 
 LocalDeviceStatesBacking make_local_device_states_backing_for_computation_graph(
     LocalTaskRegistry const &,
-    std::unordered_map<layer_guid_t, TrainingLayerSymbolicTensorGroupSignatureWithShapes> const &,
+    std::unordered_map<layer_guid_t, SymbolicLayerTrainingTensorGroupSignatureWithShapes> const &,
     RuntimeArgConfig const &runtime_arg_config,
     LocalTensorBacking const &,
     Allocator &);

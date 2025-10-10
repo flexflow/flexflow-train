@@ -1,4 +1,5 @@
 #include "task-spec/symbolic_training_layer_attrs_plus_context.h"
+#include "task-spec/symbolic_layer_training_tensor_group_signature.dtg.h"
 #include "utils/containers/transform.h"
 #include <libassert/assert.hpp>
 
@@ -74,9 +75,9 @@ std::vector<symbolic_gradient_tensor_guid_t>
       [](SymbolicTrainingTensorGroup const &g) { return g.gradient_tensor; });
 }
 
-TrainingLayerSymbolicTensorGroupSignature
+SymbolicLayerTrainingTensorGroupSignature
     get_tensor_group_signature(SymbolicTrainingLayerAttrsPlusContext const &l) {
-  return TrainingLayerSymbolicTensorGroupSignature{
+  return SymbolicLayerTrainingTensorGroupSignature{
       /*input_tensor_groups=*/l.input_tensor_groups,
       /*weight_tensor_groups=*/l.weight_tensor_groups,
       /*output_tensor_groups=*/l.output_tensor_groups,

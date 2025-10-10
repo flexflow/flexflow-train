@@ -7,7 +7,7 @@
 #include "utils/containers/set_minus.h"
 #include "utils/containers/restrict_keys.h"
 #include "utils/containers/generate_map.h"
-#include "utils/containers/merge_maps.h"
+#include "utils/containers/merge_maps_with_right_dominating.h"
 
 namespace FlexFlow {
 
@@ -33,7 +33,7 @@ std::unordered_map<K, V> binary_merge_maps_with(
                    return f(lhs.at(k), rhs.at(k));
                  });
 
-  return merge_maps(std::vector{
+  return merge_maps_with_right_dominating(std::vector{
     l_only,
     r_only,
     merged,

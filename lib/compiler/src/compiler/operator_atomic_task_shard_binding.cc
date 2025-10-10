@@ -1,4 +1,4 @@
-#include "compiler/operator_task_signature.h"
+#include "compiler/operator_atomic_task_shard_binding.h"
 #include "op-attrs/get_operator_space_to_parallel_tensor_space_mappings.h"
 #include "op-attrs/get_operator_task_space.h"
 #include "op-attrs/operator_space_to_parallel_tensor_space_mapping.h"
@@ -8,11 +8,11 @@
 
 namespace FlexFlow {
 
-OperatorTaskSignature
-  operator_task_signature_from_machine_view(ComputationGraphOpAttrs const &op_attrs,
-                                            std::vector<ParallelTensorDimDegrees> const &inputs_dim_degrees,
-                                            MachineView const &machine_view,
-                                            MachineSpaceCoordinate const &machine_space_coord) {
+OperatorAtomicTaskShardBinding
+  operator_atomic_task_shard_binding_from_machine_view(ComputationGraphOpAttrs const &op_attrs,
+                                                       std::vector<ParallelTensorDimDegrees> const &inputs_dim_degrees,
+                                                       MachineView const &machine_view,
+                                                       MachineSpaceCoordinate const &machine_space_coord) {
   OperatorTaskSpace op_task_space = get_operator_task_space(op_attrs, inputs_dim_degrees);
 
   TaskSpaceCoordinate task_space_coord = mv_task_space_coord_for_machine_space_coord(
@@ -33,7 +33,7 @@ OperatorTaskSignature
     return ptensor_coords;
   };
 
-  return OperatorTaskSignature{
+  return OperatorAtomicTaskShardBinding{
     /*inputs=*/get_ptensor_coords(TensorRole::INPUT),
     /*weights=*/get_ptensor_coords(TensorRole::WEIGHT),
     /*outputs=*/get_ptensor_coords(TensorRole::OUTPUT),
@@ -41,7 +41,7 @@ OperatorTaskSignature
 }
 
 std::vector<ParallelTensorSpaceCoordinate>
-  ptensor_space_coords_for_role(OperatorTaskSignature const &op_task_signature,
+  ptensor_space_coords_for_role(OperatorAtomicTaskShardBinding const &op_task_signature,
                                 TensorRole tensor_role) {
   switch (tensor_role) {
     case TensorRole::INPUT:
@@ -56,7 +56,7 @@ std::vector<ParallelTensorSpaceCoordinate>
 }
 
 ParallelTensorSpaceCoordinate
-  ptensor_space_coord_for_key(OperatorTaskSignature const &op_task_signature,
+  ptensor_space_coord_for_key(OperatorAtomicTaskShardBinding const &op_task_signature,
                               TaskSignatureTensorKey const &tensor_key) {
   return at_idx(
     ptensor_space_coords_for_role(op_task_signature, tensor_key.tensor_role),

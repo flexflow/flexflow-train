@@ -15,7 +15,7 @@
 #include "utils/nonnegative_int/num_elements.h"
 #include "utils/containers/are_disjoint.h"
 #include "utils/containers/generate_map.h"
-#include "utils/containers/merge_maps.h"
+#include "utils/containers/binary_merge_disjoint_maps.h"
 
 namespace FlexFlow {
 
@@ -64,7 +64,7 @@ DimDomain<T> dim_domain_from_minimal_dim_domain(MinimalDimDomain<T> const &minim
   ASSERT(are_disjoint(nontrivial_dims, trivial_dims));
 
   return DimDomain{
-    /*dims=*/merge_disjoint_maps(
+    /*dims=*/binary_merge_disjoint_maps(
       map_values(
         minimal_dim_domain.dims,
         [](int_ge_two x) {

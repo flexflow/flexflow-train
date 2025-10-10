@@ -2,10 +2,11 @@
 #include "pcg/computation_graph.h"
 #include "pcg/parallel_computation_graph/parallel_layer_attrs.h"
 #include "task-spec/lower_op_task_invocation_to_runtime_task_invocation.h"
+#include "task-spec/symbolic_cg_op_attrs_and_training_signature_with_shapes.h"
 #include "task-spec/symbolic_loss_tensor_source.h"
 #include "task-spec/symbolic_training_tensor_group.h"
 #include "task-spec/task_signature_impl.h"
-#include "task-spec/training_cg_op_attrs_and_signature_with_shapes.h"
+#include "task-spec/symbolic_cg_op_attrs_and_training_signature_with_shapes.h"
 #include "utils/bidict/generate_bidict.h"
 #include "utils/containers/contains.h"
 #include "utils/containers/filter_values.h"
@@ -31,7 +32,7 @@ PCGOperatorAttrs get_op_attrs_for_symbolic_layer_guid(TrainingSymbolicComputatio
   NOT_IMPLEMENTED();
 }
 
-TrainingLayerSymbolicTensorGroupSignatureWithShapes
+SymbolicLayerTrainingTensorGroupSignatureWithShapes
   get_signature_with_shapes_for_symbolic_layer_guid(TrainingSymbolicComputationGraph const &,
                                                     symbolic_layer_guid_t) {
   NOT_IMPLEMENTED();
@@ -100,25 +101,25 @@ static ComputationGraphOpAttrs get_cg_op_attrs_for_symbolic_layer_guid(TrainingS
   return cg_op_attrs.value();
 }
 
-TrainingCgOpAttrsAndSignatureWithShapes 
+SymbolicCgOpAttrsAndTrainingSignatureWithShapes 
   get_attrs_and_signature_for_layer(TrainingSymbolicComputationGraph const &g,
                                     symbolic_layer_guid_t l) {
 
   ComputationGraphOpAttrs cg_op_attrs = get_cg_op_attrs_for_symbolic_layer_guid(g, l);
 
-  TrainingLayerSymbolicTensorGroupSignatureWithShapes layer_signature 
+  SymbolicLayerTrainingTensorGroupSignatureWithShapes layer_signature 
     = get_signature_with_shapes_for_symbolic_layer_guid(g, l);
 
-  return make_training_cg_op_attrs_and_signature(cg_op_attrs, layer_signature);
+  return make_symbolic_cg_op_attrs_and_signature_with_shapes(cg_op_attrs, layer_signature);
 }
 
 std::optional<RuntimeTaskInvocation>
-  get_init_task_invocation_for_layer(symbolic_layer_guid_t l,
-                                     TrainingCgOpAttrsAndSignatureWithShapes const &attrs_and_signature) {
+  get_init_runtime_task_invocation_for_layer(symbolic_layer_guid_t l,
+                                             SymbolicCgOpAttrsAndTrainingSignatureWithShapes const &attrs_and_signature) {
 
   ComputationGraphOpAttrs cg_op_attrs = attrs_and_signature.op_attrs;
 
-  TrainingLayerSymbolicTensorGroupSignatureWithShapes layer_signature
+  SymbolicLayerTrainingTensorGroupSignatureWithShapes layer_signature
     = get_signature_with_shapes(attrs_and_signature);
 
   OpTaskInvocation op_task_invocation = ({
@@ -137,11 +138,11 @@ std::optional<RuntimeTaskInvocation>
 
 std::optional<RuntimeTaskInvocation>
   get_forward_runtime_task_invocation_for_layer(symbolic_layer_guid_t l,
-                                                TrainingCgOpAttrsAndSignatureWithShapes const &attrs_and_signature) {
+                                                SymbolicCgOpAttrsAndTrainingSignatureWithShapes const &attrs_and_signature) {
 
   ComputationGraphOpAttrs cg_op_attrs = attrs_and_signature.op_attrs;
 
-  TrainingLayerSymbolicTensorGroupSignatureWithShapes layer_signature
+  SymbolicLayerTrainingTensorGroupSignatureWithShapes layer_signature
     = get_signature_with_shapes(attrs_and_signature);
 
   OpTaskInvocation op_task_invocation = ({
@@ -160,11 +161,11 @@ std::optional<RuntimeTaskInvocation>
 
 std::optional<RuntimeTaskInvocation>
   get_backward_task_invocation_for_layer(symbolic_layer_guid_t l,
-                                         TrainingCgOpAttrsAndSignatureWithShapes const &attrs_and_signature) {
+                                         SymbolicCgOpAttrsAndTrainingSignatureWithShapes const &attrs_and_signature) {
 
   ComputationGraphOpAttrs cg_op_attrs = attrs_and_signature.op_attrs;
 
-  TrainingLayerSymbolicTensorGroupSignatureWithShapes layer_signature
+  SymbolicLayerTrainingTensorGroupSignatureWithShapes layer_signature
     = get_signature_with_shapes(attrs_and_signature);
 
 

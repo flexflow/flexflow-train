@@ -2,6 +2,8 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_MAP_KEYS2_H
 
 #include <unordered_map>
+#include "utils/containers/keys.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 

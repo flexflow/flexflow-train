@@ -1,0 +1,24 @@
+namespace = "FlexFlow"
+name = "RuntimeAtomicTaskShardBinding"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "op-attrs/parallel_tensor_space_coordinate.dtg.h",
+  "<unordered_map>",
+  "task-spec/symbolic_training_tensor_guid_t.dtg.h",
+]
+
+src_includes = [
+  "utils/hash/unordered_map.h",
+  "utils/fmt/unordered_map.h",
+  "utils/ord/unordered_map.h",
+]
+
+[[fields]]
+name = "raw_binding"
+type = "std::unordered_map<::FlexFlow::symbolic_training_tensor_guid_t, ::FlexFlow::ParallelTensorSpaceCoordinate>"

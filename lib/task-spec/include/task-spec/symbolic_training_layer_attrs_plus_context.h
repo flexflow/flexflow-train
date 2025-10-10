@@ -4,7 +4,7 @@
 #include "op-attrs/tensor_role.dtg.h"
 #include "task-spec/symbolic_training_layer_attrs_plus_context.dtg.h"
 #include "task-spec/symbolic_training_tensor_group.dtg.h"
-#include "task-spec/training_layer_symbolic_tensor_group_signature.dtg.h"
+#include "task-spec/symbolic_layer_training_tensor_group_signature.dtg.h"
 
 namespace FlexFlow {
 
@@ -34,7 +34,7 @@ std::vector<symbolic_forward_tensor_guid_t>
 std::vector<symbolic_gradient_tensor_guid_t>
     get_output_grad_tensors(SymbolicTrainingLayerAttrsPlusContext const &);
 
-TrainingLayerSymbolicTensorGroupSignature
+SymbolicLayerTrainingTensorGroupSignature
     get_tensor_group_signature(SymbolicTrainingLayerAttrsPlusContext const &);
 
 } // namespace FlexFlow

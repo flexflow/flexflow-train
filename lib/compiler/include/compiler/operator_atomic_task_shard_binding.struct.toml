@@ -1,12 +1,11 @@
 namespace = "FlexFlow"
-name = "OperatorTaskSignature"
+name = "OperatorAtomicTaskShardBinding"
 features = [
   "eq",
   "ord",
   "hash",
   "json",
   "fmt",
-  "rapidcheck",
 ]
 
 includes = [

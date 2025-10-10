@@ -7,6 +7,8 @@ includes = [
   "task-spec/device_specific_device_states.dtg.h",
   "local-pcg-execution/parallel_layer_instance_id_t.dtg.h",
   "<unordered_map>",
+  "<optional>",
+  "local-pcg-execution/mapped_per_device_op_states_group.h",
 ]
 
 [[fields]]
@@ -15,4 +17,4 @@ type = "::FlexFlow::RuntimeArgConfig"
 
 [[fields]]
 name = "per_device_op_states"
-type = "std::unordered_map<::FlexFlow::parallel_layer_instance_id_t, std::optional<::FlexFlow::DeviceSpecificPerDeviceOpState>>"
+type = "std::unordered_map<::FlexFlow::symbolic_layer_guid_t, std::optional<::FlexFlow::MappedPerDeviceOpStatesGroup>>"

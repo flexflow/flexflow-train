@@ -31,6 +31,18 @@ SymbolicTrainingTensorGroup make_symbolic_training_tensor_group_for_tensor_guid_
   };
 }
 
+symbolic_training_tensor_guid_t
+  get_training_tensor_for_type(SymbolicTrainingTensorGroup const &group, FwbTensorType tensor_type) {
+  switch (tensor_type) {
+    case FwbTensorType::FORWARD:
+      return symbolic_training_tensor_guid_t{group.forward_tensor};
+    case FwbTensorType::GRADIENT:
+      return symbolic_training_tensor_guid_t{group.gradient_tensor};
+    default:
+      PANIC("Unhandled FwbTensorType", tensor_type);
+  }
+}
+
 std::unordered_set<symbolic_training_tensor_guid_t>
     get_all_training_tensors_in_tensor_group(SymbolicTrainingTensorGroup const &group) {
   return set_union(
