@@ -20,8 +20,17 @@ LocalReadyToLaunchTask prepare_runtime_task_invocation(
   Allocator &,
   RuntimeArgConfig const &);
 
+std::optional<DeviceSpecificPerDeviceOpState> execute_init_for_layer(
+  symbolic_layer_guid_t,
+  TrainingSymbolicComputationGraph const &,
+  LocalTensorBacking const &,
+  LocalAtomicTensorBacking const &,
+  Allocator &,
+  LocalTaskRegistry const &,
+  RuntimeArgConfig const &);
+
 std::optional<milliseconds_t> execute_forward_for_layer(
-  layer_guid_t,
+  symbolic_layer_guid_t,
   TrainingSymbolicComputationGraph const &,
   LocalTensorBacking const &,
   LocalAtomicTensorBacking const &,
@@ -30,13 +39,30 @@ std::optional<milliseconds_t> execute_forward_for_layer(
   RuntimeArgConfig const &);
 
 std::optional<milliseconds_t> execute_backward_for_layer(
-  layer_guid_t,
+  symbolic_layer_guid_t,
   TrainingSymbolicComputationGraph const &,
   LocalTensorBacking const &,
   LocalAtomicTensorBacking const &,
   Allocator &,
   LocalTaskRegistry const &,
   RuntimeArgConfig const &);
+
+void execute_compute_loss(
+  TrainingSymbolicComputationGraph const &,
+  LocalTensorBacking const &,
+  LocalAtomicTensorBacking const &,
+  Allocator &,
+  LocalTaskRegistry const &,
+  RuntimeArgConfig const &);
+
+void execute_update_for_layer(
+  symbolic_layer_guid_t,
+  TrainingSymbolicComputationGraph const &,
+  LocalTensorBacking const &,
+  LocalAtomicTensorBacking const &,
+  OptimizerAttrs const &,
+  Allocator &,
+  RuntimeArgConfig const &) {
 
 } // namespace FlexFlow
 

@@ -3,6 +3,7 @@
 #include "task-spec/profiling.h"
 #include "utils/containers/get_only.h"
 #include "utils/overload.h"
+#include "utils/units/milliseconds_t.h"
 
 namespace FlexFlow {
 

@@ -1,15 +1,16 @@
-#ifndef _FLEXFLOW_LOCAL_EXECUTION_PROFILING_H
-#define _FLEXFLOW_LOCAL_EXECUTION_PROFILING_H
+#ifndef _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_PROFILING_H
+#define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_PROFILING_H
 
 #include "kernels/profiling.h"
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
+#include "utils/containers/transform.h"
 
 namespace FlexFlow {
 
 enum class EnableProfiling { YES, NO };
 
 template <typename F, typename... Ts, typename Str>
-std::optional<float> profile(F const &f,
+std::optional<milliseconds_t> profile(F const &f,
                              ProfilingSettings profiling,
                              DeviceType device_type,
                              Str s,
@@ -19,7 +20,10 @@ std::optional<float> profile(F const &f,
   if (elapsed.has_value()) {
     spdlog::debug(s, elapsed.value());
   }
-  return elapsed;
+  return transform(elapsed, 
+                   [](float f) {
+                     return milliseconds_t{f};
+                   });
 }
 
 } // namespace FlexFlow

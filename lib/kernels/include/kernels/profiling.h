@@ -5,12 +5,13 @@
 #include "kernels/device_stream_t.h"
 #include "kernels/profiling_settings.dtg.h"
 #include "pcg/device_type.dtg.h"
+#include "utils/units/milliseconds_t.h"
 #include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
 template <typename F, typename... Ts>
-std::optional<float> profiling_wrapper(F const &f,
+std::optional<milliseconds_t> profiling_wrapper(F const &f,
                                        bool enable_profiling,
                                        DeviceType device_type,
                                        Ts &&...ts) {
@@ -27,7 +28,7 @@ std::optional<float> profiling_wrapper(F const &f,
 }
 
 template <typename F, typename... Ts>
-std::optional<float> profiling_wrapper(F const &f,
+std::optional<milliseconds_t> profiling_wrapper(F const &f,
                                        ProfilingSettings const &settings,
                                        DeviceType device_type,
                                        Ts &&...ts) {

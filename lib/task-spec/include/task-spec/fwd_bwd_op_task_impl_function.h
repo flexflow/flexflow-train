@@ -2,12 +2,13 @@
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_FWD_BWD_OP_TASK_IMPL_FUNCTION_H
 
 #include "task-spec/task_argument_accessor.h"
+#include "utils/units/milliseconds_t.h"
 
 namespace FlexFlow {
 
 struct FwdBwdOpTaskImplFunction {
 
-  std::optional<float> (*function_ptr)(TaskArgumentAccessor const &);
+  std::optional<milliseconds_t> (*function_ptr)(TaskArgumentAccessor const &);
 
   bool operator==(FwdBwdOpTaskImplFunction const &) const;
   bool operator!=(FwdBwdOpTaskImplFunction const &) const;

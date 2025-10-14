@@ -55,6 +55,9 @@ std::unordered_set<symbolic_training_tensor_guid_t>
     get_all_symbolic_training_tensors_in_training_computation_graph(
         TrainingSymbolicComputationGraph const &);
 
+std::vector<symbolic_layer_guid_t>
+  symbolic_cg_topological_ordering(TrainingSymbolicComputationGraph const &);
+
 SymbolicTrainingLayerAttrsPlusContext
     get_symbolic_training_layer_attrs_plus_context(TrainingSymbolicComputationGraph const &,
                                     symbolic_layer_guid_t);

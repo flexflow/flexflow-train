@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_LIB_LOCAL_PCG_EXECUTION_INCLUDE_LOCAL_PCG_EXECUTION_PARALLEL_MODEL_TRAINING_INSTANCE_H
 #define _FLEXFLOW_LIB_LOCAL_PCG_EXECUTION_INCLUDE_LOCAL_PCG_EXECUTION_PARALLEL_MODEL_TRAINING_INSTANCE_H
 
+#include "compiler/mapped_parallel_computation_graph.dtg.h"
 #include "kernels/allocation.h"
 #include "local-execution/local_atomic_tensor_backing.dtg.h"
 #include "local-execution/local_task_registry.dtg.h"
@@ -30,6 +31,7 @@ private:
   LossAttrs loss_attrs;
   OptimizerAttrs optimizer_attrs;
   TrainingSymbolicComputationGraphFromPcgConversion symbolic_cg;
+  MappedParallelComputationGraph mapped_pcg;
   LocalParallelTensorBacking local_tensor_backing;
   LocalAtomicTensorBacking local_atomic_tensor_backing;
   LocalTaskRegistry local_task_registry;

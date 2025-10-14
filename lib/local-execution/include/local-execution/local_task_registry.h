@@ -11,17 +11,19 @@
 namespace FlexFlow {
 
 LocalTaskRegistry construct_local_task_registry_for_layers(
-    std::unordered_map<layer_guid_t, LayerAttrs> const &);
-
-std::optional<registered_task_t> try_get_registered_task(
-    LocalTaskRegistry const &, layer_guid_t const &, OpTaskType const &);
+    std::unordered_set<LayerAttrs> const &);
 
 std::optional<DeviceSpecificPerDeviceOpState> call_init_task_impl(
   LocalTaskRegistry const &local_task_registry,
-  registered_task_t task_id,
+  task_id_t task_id,
   TaskArgumentAccessor const &arg_accessor);
 
 std::optional<milliseconds_t> call_fwb_task_impl(
+  LocalTaskRegistry const &local_task_registry,
+  task_id_t task_id,
+  TaskArgumentAccessor const &arg_accessor);
+
+void call_generic_task_impl(
   LocalTaskRegistry const &local_task_registry,
   task_id_t task_id,
   TaskArgumentAccessor const &arg_accessor);

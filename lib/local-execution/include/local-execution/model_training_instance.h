@@ -5,7 +5,6 @@
 #include "local-execution/local_training_backing.h"
 #include "op-attrs/ops/loss_functions/loss_attrs.dtg.h"
 #include "pcg/tensor_guid_t.dtg.h"
-#include "task-spec/loss_tensor_guid_t.dtg.h"
 #include "task-spec/training_symbolic_computation_graph.dtg.h"
 
 namespace FlexFlow {

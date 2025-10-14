@@ -49,4 +49,5 @@ struct hash<::FlexFlow::MappedRuntimeTaskGroup> {
 };
 
 } // namespace std
+
 #endif

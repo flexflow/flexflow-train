@@ -20,13 +20,13 @@
 namespace FlexFlow {
 
 MappedRuntimeTaskGroup::MappedRuntimeTaskGroup(
-   bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding> const &shard_bindings) 
+   bidict<MachineSpaceCoordinate, RuntimeAtomicTaskShardBinding> const &shard_bindings) 
   : shard_bindings(shard_bindings)
 {
   auto check_arity = [&](TensorRole tensor_role) -> nonnegative_int {
     std::unordered_set<nonnegative_int> arities = 
       transform(shard_bindings.right_values(), 
-                [&](OperatorAtomicTaskShardBinding const &s) -> nonnegative_int {
+                [&](RuntimeAtomicTaskShardBinding const &s) -> nonnegative_int {
                   return num_elements(ptensor_space_coords_for_role(s, tensor_role));
                 });
 
@@ -44,11 +44,11 @@ MappedRuntimeTaskGroup::MappedRuntimeTaskGroup(
           /*num_outputs=*/num_outputs);
           
   for (TaskSignatureTensorKey const &key : all_keys) {
-    std::vector<OperatorAtomicTaskShardBinding> signatures_for_key = vector_of(shard_bindings.right_values());
+    std::vector<RuntimeAtomicTaskShardBinding> signatures_for_key = vector_of(shard_bindings.right_values());
 
     std::vector<ParallelTensorSpaceCoordinate> coords_for_key = 
       transform(signatures_for_key,
-                [&](OperatorAtomicTaskShardBinding const &signature) {
+                [&](RuntimeAtomicTaskShardBinding const &signature) {
                   return ptensor_space_coord_for_key(signature, key);
                 });
 
@@ -73,13 +73,13 @@ bool MappedRuntimeTaskGroup::operator!=(MappedRuntimeTaskGroup const &other) con
 }
 
 std::tuple<
-  bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding> const &
+  bidict<MachineSpaceCoordinate, RuntimeAtomicTaskShardBinding> const &
 > MappedRuntimeTaskGroup::tie() const {
 
   return std::tie(this->shard_bindings);
 }
 
-bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding> const &MappedRuntimeTaskGroup::get_shard_bindings() const {
+bidict<MachineSpaceCoordinate, RuntimeAtomicTaskShardBinding> const &MappedRuntimeTaskGroup::get_shard_bindings() const {
   return this->shard_bindings;
 }
 
@@ -98,7 +98,7 @@ MappedRuntimeTaskGroup
   return MappedRuntimeTaskGroup{
     transform_values(
       op_task_group.get_shard_bindings(),
-      [&](OperatorAtomicTaskShardBinding const &op_shard_binding) 
+      [&](RuntimeAtomicTaskShardBinding const &op_shard_binding) 
         -> RuntimeAtomicTaskShardBinding
       {
         return lower_op_shard_binding_to_runtime_shard_binding(op_shard_binding, symbolic_layer_signature, task_type);

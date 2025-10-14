@@ -13,11 +13,11 @@ namespace FlexFlow {
 
 ModelTrainingInstance::ModelTrainingInstance(
     Allocator const &allocator,
-    LocalTrainingBacking const &local_training_backing,
     LossAttrs const &loss_attrs,
     OptimizerAttrs const &optimizer_attrs)
-    : allocator(allocator), training_backing(local_training_backing),
-      loss_attrs(loss_attrs), optimizer_attrs(optimizer_attrs) {}
+    : allocator(allocator),
+      loss_attrs(loss_attrs), 
+      optimizer_attrs(optimizer_attrs) {}
 
 std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
     ModelTrainingInstance::forward() {
@@ -25,8 +25,8 @@ std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
   std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
       per_layer_elapsed_time;
 
-  for (symbolic_layer_guid_t const &symbolic_layer_guid :
-       topological_ordering(this->symbolic_cg.training_symbolic_computation_graph)) {
+  for (symbolic_layer_guid_t symbolic_layer_guid :
+       symbolic_cg_topological_ordering(this->symbolic_cg.training_symbolic_computation_graph)) {
 
     std::optional<milliseconds_t> elapsed_time = execute_forward_for_layer(
       symbolic_layer_guid,
@@ -46,14 +46,20 @@ std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
 
 std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
     ModelTrainingInstance::backward() {
-  compute_loss(this->training_backing, this->loss_attrs, this->allocator);
+  execute_compute_loss(this->symbolic_cg.training_symbolic_computation_graph,
+                       this->local_tensor_backing,
+                       this->local_atomic_tensor_backing,
+                       this->optimizer_attrs,
+                       this->allocator,
+                       this->runtime_arg_config);
 
   std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
       per_layer_elapsed_time;
-  for (symbolic_layer_guid_t const &symbolic_layer_guid : reversed(topological_ordering(
+
+  for (symbolic_layer_guid_t symbolic_layer_guid : reversed(symbolic_cg_topological_ordering(
            this->symbolic_cg.training_symbolic_computation_graph))) {
 
-    std::optional<milliseconds_t> elapsed_time = execute_backward(
+    std::optional<milliseconds_t> elapsed_time = execute_backward_for_layer(
       symbolic_layer_guid,
       this->symbolic_cg.training_symbolic_computation_graph,
       this->local_tensor_backing,
@@ -69,13 +75,15 @@ std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
 }
 
 void ModelTrainingInstance::update() {
-  for (layer_guid_t const &layer_guid :
-       topological_ordering(this->training_backing.training_computation_graph
-                                .computation_graph)) {
-    execute_update(this->training_backing,
-                   layer_guid,
-                   this->optimizer_attrs,
-                   this->allocator);
+  for (symbolic_layer_guid_t symbolic_layer_guid :
+       symbolic_cg_topological_ordering(this->symbolic_cg.training_symbolic_computation_graph)) {
+    execute_update_for_layer(symbolic_layer_guid,
+                             this->symbolic_cg.training_symbolic_computation_graph,
+                             this->local_tensor_backing,
+                             this->local_atomic_tensor_backing,
+                             this->allocator,
+                             this->local_task_registry,
+                             this->runtime_arg_config);
   }
   this->optimizer_attrs =
       get_optimizer_attrs_for_next_iter(this->optimizer_attrs);

@@ -9,7 +9,7 @@ features = [
 
 includes = [
   "task-spec/symbolic_training_tensor_guid_t.dtg.h",
-  "local-pcg-execution/parallel_tensor_accessors_w.dtg.h",
+  "local-pcg-execution/training_parallel_tensor_shard_group.dtg.h",
 ]
 
 src_includes = [

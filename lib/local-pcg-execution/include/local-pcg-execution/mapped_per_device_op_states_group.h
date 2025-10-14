@@ -12,15 +12,15 @@ namespace FlexFlow {
 struct MappedPerDeviceOpStatesGroup {
   MappedPerDeviceOpStatesGroup() = delete;
 
-  explicit MappedPerDeviceOpStatesGroup(bidict<MachineSpaceCoordinate, DeviceSpecificPerDeviceOpState> const &per_device_op_states);
+  explicit MappedPerDeviceOpStatesGroup(std::unordered_map<MachineSpaceCoordinate, DeviceSpecificPerDeviceOpState> const &per_device_op_states);
 
   [[nodiscard]] bool operator==(MappedPerDeviceOpStatesGroup const &) const;
   [[nodiscard]] bool operator!=(MappedPerDeviceOpStatesGroup const &) const;
 
-  [[nodiscard]] bidict<MachineSpaceCoordinate, DeviceSpecificPerDeviceOpState> const &get_per_device_op_states() const;
+  [[nodiscard]] std::unordered_map<MachineSpaceCoordinate, DeviceSpecificPerDeviceOpState> const &get_per_device_op_states() const;
 
 private:
-  bidict<MachineSpaceCoordinate, DeviceSpecificPerDeviceOpState> shard_bindings;
+  std::unordered_map<MachineSpaceCoordinate, DeviceSpecificPerDeviceOpState> shard_bindings;
 
 private:
   [[nodiscard]] std::tuple<
