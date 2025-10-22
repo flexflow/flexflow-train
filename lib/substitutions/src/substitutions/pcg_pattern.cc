@@ -11,6 +11,7 @@
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_inputs.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_open_dataflow_graph_inputs.h"
+#include "utils/random_utils.h"
 
 namespace FlexFlow {
 
@@ -18,6 +19,17 @@ std::unordered_set<PatternNode> get_nodes(PCGPattern const &p) {
   std::unordered_set<Node> raw_nodes = get_nodes(p.raw_graph);
 
   return transform(raw_nodes, [](Node const &n) { return PatternNode{n}; });
+}
+
+std::optional<PCGPatternMatch>
+    get_random_pattern_match(PCGPattern const &pattern,
+                             SubParallelComputationGraph const &pcg) {
+  std::vector<PCGPatternMatch> pattern_matches =
+      find_pattern_matches(pattern, pcg);
+  if (pattern_matches.empty()) {
+    return std::nullopt;
+  }
+  return select_random(pattern_matches);
 }
 
 static MatchAdditionalCriterion

@@ -1,0 +1,28 @@
+namespace = "FlexFlow"
+name = "MCMCOverMappedPCGConfig"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "pcg/device_type.dtg.h",
+  "utils/nonnegative_int/nonnegative_int.h"
+]
+
+[[fields]]
+name = "temperature"
+type = "float"
+
+[[fields]]
+name = "num_iterations"
+type = "::FlexFlow::nonnegative_int"
+
+[[fields]]
+name = "substitution_interval"
+type = "::FlexFlow::nonnegative_int"
+
+[[fields]]
+name = "device_type"
+type = "::FlexFlow::DeviceType"
