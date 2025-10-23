@@ -92,7 +92,7 @@ static DeviceSpecificPerDeviceOpState
   };
 }
 
-static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
+static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   DeviceType kernel_device_type =
       acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
@@ -118,7 +118,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
                  handle);
 }
 
-static std::optional<float>
+static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   auto per_device_state =
       acc.get_argument<ElementBinaryPerDeviceState>(PER_DEVICE_STATE);
@@ -201,7 +201,7 @@ OpTaskSignature get_element_binary_bwd_signature() {
   return bwd;
 }
 
-std::vector<task_id_t> get_task_ids(ElementBinaryAttrs const &) {
+std::unordered_set<task_id_t> get_task_ids(ElementBinaryAttrs const &) {
   return {task_id_t::ELEMENTBINARY_INIT_TASK_ID,
           task_id_t::ELEMENTBINARY_FWD_TASK_ID,
           task_id_t::ELEMENTBINARY_BWD_TASK_ID};

@@ -159,7 +159,7 @@ static DeviceSpecificPerDeviceOpState
   };
 }
 
-static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
+static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto query = acc.get_tensor<Permissions::RO>(QUERY);
   auto key = acc.get_tensor<Permissions::RO>(KEY);
   auto value = acc.get_tensor<Permissions::RO>(VALUE);
@@ -184,7 +184,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
                  output.get_float_ptr());
 }
 
-static std::optional<float>
+static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   auto query = acc.get_tensor<Permissions::RO>(QUERY);
   auto key = acc.get_tensor<Permissions::RO>(KEY);
@@ -280,7 +280,7 @@ OpTaskSignature get_attention_bwd_signature() {
   return bwd;
 }
 
-std::vector<task_id_t> get_task_ids(MultiHeadAttentionAttrs const &) {
+std::unordered_set<task_id_t> get_task_ids(MultiHeadAttentionAttrs const &) {
   return {task_id_t::ATTENTION_INIT_TASK_ID,
           task_id_t::ATTENTION_FWD_TASK_ID,
           task_id_t::ATTENTION_BWD_TASK_ID};

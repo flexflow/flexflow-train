@@ -15,14 +15,6 @@ OperatorAtomicTaskShardBinding
                                                        MachineView const &,
                                                        MachineSpaceCoordinate const &);
 
-std::vector<ParallelTensorSpaceCoordinate>
-  ptensor_space_coords_for_role(OperatorAtomicTaskShardBinding const &,
-                                TensorRole);
-
-ParallelTensorSpaceCoordinate
-  ptensor_space_coord_for_key(OperatorAtomicTaskShardBinding const &,
-                              TaskSignatureTensorKey const &);
-
 } // namespace FlexFlow
 
 #endif

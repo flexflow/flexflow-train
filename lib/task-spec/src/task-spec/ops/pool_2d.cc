@@ -116,7 +116,7 @@ OpTaskInvocation backward(Pool2DAttrs const &attrs) {
   };
 }
 
-static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
+static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   DeviceType kernel_device_type =
       acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
@@ -135,7 +135,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
                  output.get_float_ptr());
 }
 
-static std::optional<float>
+static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   DeviceType kernel_device_type =
@@ -202,7 +202,7 @@ OpTaskSignature get_pool_2d_bwd_signature() {
   return bwd;
 }
 
-std::vector<task_id_t> get_task_ids(Pool2DAttrs const &) {
+std::unordered_set<task_id_t> get_task_ids(Pool2DAttrs const &) {
   return {task_id_t::POOL2D_INIT_TASK_ID,
           task_id_t::POOL2D_FWD_TASK_ID,
           task_id_t::POOL2D_BWD_TASK_ID};

@@ -1,0 +1,24 @@
+namespace = "FlexFlow"
+name = "DynamicValueAttrs"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+  "rapidcheck",
+]
+
+includes = [
+]
+
+src_includes = [
+]
+
+[[fields]]
+name = "parallel_tensor_shape"
+type = "std::optional<::FlexFlow::ParallelTensorShape>"
+
+[[fields]]
+name = "accessor"
+type = "std::optional<::FlexFlow::GenericTensorAccessorW>"

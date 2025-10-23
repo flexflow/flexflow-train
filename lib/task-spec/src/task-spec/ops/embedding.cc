@@ -34,7 +34,7 @@ OpTaskInvocation backward(EmbeddingAttrs const &attrs) {
   };
 }
 
-static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
+static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto weight = acc.get_tensor<Permissions::RO>(WEIGHT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
@@ -60,7 +60,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
       dim_at_idx(input.shape.dims, legion_dim_t{1_n}).int_from_positive_int());
 }
 
-static std::optional<float>
+static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::RO>(OUTPUT);
@@ -113,7 +113,7 @@ OpTaskSignature get_embedding_bwd_signature() {
   return bwd;
 }
 
-std::vector<task_id_t> get_task_ids(EmbeddingAttrs const &) {
+std::unordered_set<task_id_t> get_task_ids(EmbeddingAttrs const &) {
   return {task_id_t::EMBED_FWD_TASK_ID, task_id_t::EMBED_BWD_TASK_ID};
 }
 

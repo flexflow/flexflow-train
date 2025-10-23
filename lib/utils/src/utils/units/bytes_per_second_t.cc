@@ -41,6 +41,15 @@ bytes_per_second_t bytes_per_second_t::operator+(bytes_per_second_t const &other
   };
 }
 
+milliseconds_t operator/(num_bytes_t num_bytes, bytes_per_second_t bytes_per_second) {
+  int raw_num_bytes = num_bytes.unwrap_num_bytes().unwrap_nonnegative();
+  float raw_bytes_per_millisecond = bytes_per_second.unwrap_bytes_per_second() * 1000;
+
+  return milliseconds_t{
+    raw_num_bytes / raw_bytes_per_millisecond
+  };
+}
+
 float bytes_per_second_t::unwrap_bytes_per_second() const {
   return this->value;
 }

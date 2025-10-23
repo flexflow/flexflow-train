@@ -233,4 +233,34 @@ TaskArgumentAccessor get_task_arg_accessor_for_invocation(LocalTensorBacking con
                                                           Allocator &);
 ```
 
+Next tasks:
+1. implement remaining functions for execute_tasks_for_parallel_layer.h to get it to match the functionality of execute_tasks_for_layer.h
+2. implement parallel_model_training_instance.h
+3. look into/implement initialization/construction logic for the various support datatypes (backings, etc.)
+4. test some components (not sure where to start here)
+
+local-pcg-exection:
+- execute_tasks_for_parallel_layer.h
+- local_parallel_tensor_backing.h
+- local_pcg_args_backing.h
+- local_pcg_training_backing.h
+- mapped_per_device_op_states_group.h
+- mapped_runtime_task_group.h
+- parallel_model_training_instance.h
+- runtime_atomic_task_shard_binding.h
+
+local-execution:
+- execute_task_for_layer.h
+- local_atomic_tensor_backing.h
+- local_cost_estimator.h
+- local_device_states_backing.h
+- local_task_argument_accessor.h
+- local_task_registry.h
+- local_tensor_backing.h
+- local_training_backing.h
+- model_training_instance.h
+- operator_task_set.h
+- registered_task.h
+- tracked_allocator.h
+
 // vim: set tabstop=2 shiftwidth=2 expandtab:

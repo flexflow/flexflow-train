@@ -14,9 +14,9 @@ std::unordered_map<training_tensor_slot_id_t, TensorSlotBacking>
     construct_tensor_slots_backing_for_binding(LocalAtomicTensorBacking const &,
                                                AtomicTaskBinding const &);
 
-TaskArgumentAccessor get_task_arg_accessor_for_atomic_task_invocation(
+TaskArgumentAccessor get_task_arg_accessor_for_atomic_task_binding(
   LocalAtomicTensorBacking const &,
-  AtomicTaskInvocation const &,
+  AtomicTaskBinding const &,
   Allocator &);
 
 } // namespace FlexFlow

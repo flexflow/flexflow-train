@@ -46,7 +46,7 @@ OpTaskInvocation forward(TransposeAttrs const &attrs) {
   };
 }
 
-static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
+static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   auto attrs = acc.get_argument<TransposeAttrs>(ATTRS);
   DeviceType kernel_device_type =
@@ -64,7 +64,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
                  output);
 }
 
-static std::optional<float>
+static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   auto attrs = acc.get_argument<TransposeAttrs>(ATTRS);
@@ -116,7 +116,7 @@ OpTaskSignature get_transpose_bwd_signature() {
   return bwd;
 }
 
-std::vector<task_id_t> get_task_ids(TransposeAttrs const &) {
+std::unordered_set<task_id_t> get_task_ids(TransposeAttrs const &) {
   return {task_id_t::TRANSPOSE_FWD_TASK_ID, task_id_t::TRANSPOSE_BWD_TASK_ID};
 }
 

@@ -47,7 +47,7 @@ OpTaskInvocation init(BatchNormAttrs const &attrs) {
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
   return OpTaskInvocation{
-      task_id_t::BATCHNORM_INIT_TASK_ID,
+      op_task_id_t::INIT,
       binding,
   };
 }
@@ -66,7 +66,7 @@ OpTaskInvocation forward(BatchNormAttrs const &attrs) {
   binding.bind(OUTPUT, output_tensor(0_n));
 
   return OpTaskInvocation{
-      task_id_t::BATCHNORM_FWD_TASK_ID,
+      op_task_id_t::FWD,
       binding,
   };
 }
@@ -75,7 +75,7 @@ OpTaskInvocation backward(BatchNormAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-      task_id_t::BATCHNORM_BWD_TASK_ID,
+      op_task_id_t::BWD,
       binding,
   };
 }
@@ -114,7 +114,7 @@ static DeviceSpecificPerDeviceOpState
   };
 }
 
-static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
+static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto per_device_state =
       acc.get_argument<BatchNormPerDeviceState>(PER_DEVICE_STATE);
   ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
@@ -137,7 +137,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
                  bias.get_float_ptr());
 }
 
-static std::optional<float>
+static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   auto per_device_state =
       acc.get_argument<BatchNormPerDeviceState>(PER_DEVICE_STATE);
@@ -211,7 +211,7 @@ OpTaskSignature get_batch_norm_bwd_signature() {
   return bwd;
 }
 
-std::vector<task_id_t> get_task_ids(BatchNormAttrs const &) {
+std::unordered_set<task_id_t> get_task_ids(BatchNormAttrs const &) {
   return {
       task_id_t::BATCHNORM_INIT_TASK_ID,
       task_id_t::BATCHNORM_FWD_TASK_ID,

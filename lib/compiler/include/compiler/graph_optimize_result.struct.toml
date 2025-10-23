@@ -5,11 +5,7 @@ features = [
 ]
 
 includes = [ 
-  "compiler/mapped_parallel_computation_graph.dtg.h",
-]
-
-src_includes = [
-  "compiler/mapped_parallel_computation_graph.h",
+  "pcg/mapped_parallel_computation_graph.dtg.h",
 ]
 
 [[fields]]

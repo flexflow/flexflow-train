@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include "utils/containers/values.h"
 #include <libassert/assert.hpp>
+#include "utils/containers/all_of.h"
+#include "utils/containers/map_values.h"
 
 namespace FlexFlow {
 
@@ -12,15 +14,15 @@ template <typename K, typename V>
 static std::optional<std::unordered_map<K, V>> lift_optional_through_map(std::unordered_map<K, std::optional<V>> const &m) {
   ASSERT(!m.empty());
 
-  std::unordered_multiset<std::optional<V>> values = values(m);
+  std::unordered_multiset<std::optional<V>> m_values = values(m);
 
   bool has_all_values 
-    = all_of(values, [](std::optional<V> const &t) -> bool {
+    = all_of(m_values, [](std::optional<V> const &t) -> bool {
                        return t.has_value();
                      });
 
   bool has_no_values 
-    = all_of(values, [](std::optional<V> const &t) -> bool {
+    = all_of(m_values, [](std::optional<V> const &t) -> bool {
                        return !t.has_value();
                      });
 
@@ -28,7 +30,7 @@ static std::optional<std::unordered_map<K, V>> lift_optional_through_map(std::un
   if (has_no_values) {
     return std::nullopt;
   } else {
-    return map_values(has_all_values, 
+    return map_values(m, 
                       [](std::optional<V> const &t) -> V {
                         return t.value(); 
                       });

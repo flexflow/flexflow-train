@@ -7,7 +7,7 @@
 
 namespace FlexFlow {
 
-std::vector<task_id_t> get_task_ids(Conv2DAttrs const &);
+std::unordered_set<task_id_t> get_task_ids(Conv2DAttrs const &);
 
 TaskImplFunction get_conv_2d_init_task_impl();
 TaskImplFunction get_conv_2d_fwd_task_impl();

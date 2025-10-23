@@ -69,33 +69,6 @@ SymbolicCgOpAttrsAndTrainingSignatureWithShapes
   get_attrs_and_signature_for_layer(TrainingSymbolicComputationGraph const &,
                                     symbolic_layer_guid_t);
 
-std::optional<RuntimeTaskInvocation>
-  get_init_runtime_task_invocation_for_layer(symbolic_layer_guid_t, 
-                                             SymbolicCgOpAttrsAndTrainingSignatureWithShapes const &);
-
-std::optional<RuntimeTaskInvocation>
-  get_forward_runtime_task_invocation_for_layer(symbolic_layer_guid_t, 
-                                                SymbolicCgOpAttrsAndTrainingSignatureWithShapes const &);
-
-std::optional<RuntimeTaskInvocation>
-  get_backward_runtime_task_invocation_for_layer(symbolic_layer_guid_t,
-                                                 SymbolicCgOpAttrsAndTrainingSignatureWithShapes const &);
-
-std::optional<RuntimeTaskInvocation>
-  get_runtime_task_invocation_for_layer_and_type(symbolic_layer_guid_t,
-                                                 SymbolicCgOpAttrsAndTrainingSignatureWithShapes const &,
-                                                 OpTaskType);
-
-RuntimeTaskInvocation
-  get_compute_loss_runtime_task_invocation(LossAttrs const &,
-                                           symbolic_forward_tensor_guid_t loss_fwd_tensor,
-                                           symbolic_gradient_tensor_guid_t loss_grad_tensor,
-                                           symbolic_loss_tensor_guid_t label_tensor);
-
-std::optional<RuntimeTaskInvocation>
-  get_update_runtime_task_invocation_for_layer(SymbolicTrainingLayerAttrsPlusContext const &,
-                                               OptimizerAttrs const &);
-
 } // namespace FlexFlow
 
 #endif

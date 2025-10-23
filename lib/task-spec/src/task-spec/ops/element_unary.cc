@@ -89,7 +89,7 @@ static DeviceSpecificPerDeviceOpState
   };
 }
 
-static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
+static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   auto attrs = acc.get_argument<ElementUnaryAttrs>(ATTRS);
@@ -113,7 +113,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
                  output);
 }
 
-static std::optional<float>
+static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(INPUT);
@@ -184,7 +184,7 @@ OpTaskSignature get_element_unary_bwd_signature() {
   return bwd;
 }
 
-std::vector<task_id_t> get_task_ids(ElementUnaryAttrs const &) {
+std::unordered_set<task_id_t> get_task_ids(ElementUnaryAttrs const &) {
   return {task_id_t::ELEMENTUNARY_INIT_TASK_ID,
           task_id_t::ELEMENTUNARY_FWD_TASK_ID,
           task_id_t::ELEMENTUNARY_BWD_TASK_ID};

@@ -62,9 +62,6 @@ name = "DROPOUT_FWD_TASK_ID"
 name = "DROPOUT_BWD_TASK_ID"
 
 [[values]]
-name = "EMBED_INIT_TASK_ID"
-
-[[values]]
 name = "EMBED_FWD_TASK_ID"
 
 [[values]]
@@ -78,9 +75,6 @@ name = "GATHER_FWD_TASK_ID"
 
 [[values]]
 name = "GATHER_BWD_TASK_ID"
-
-[[values]]
-name = "CAST_INIT_TASK_ID"
 
 [[values]]
 name = "CAST_FWD_TASK_ID"
@@ -131,9 +125,6 @@ name = "LINEAR_FWD_TASK_ID"
 name = "LINEAR_BWD_TASK_ID"
 
 [[values]]
-name = "FLAT_INIT_TASK_ID"
-
-[[values]]
 name = "FLAT_FWD_TASK_ID"
 
 [[values]]
@@ -147,9 +138,6 @@ name = "SOFTMAX_FWD_TASK_ID"
 
 [[values]]
 name = "SOFTMAX_BWD_TASK_ID"
-
-[[values]]
-name = "CONCAT_INIT_TASK_ID"
 
 [[values]]
 name = "CONCAT_FWD_TASK_ID"

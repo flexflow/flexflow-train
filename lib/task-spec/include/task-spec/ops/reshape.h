@@ -7,7 +7,7 @@
 
 namespace FlexFlow {
 
-std::vector<task_id_t> get_task_ids(ReshapeAttrs const &);
+std::unordered_set<task_id_t> get_task_ids(ReshapeAttrs const &);
 
 TaskImplFunction get_reshape_fwd_task_impl();
 TaskImplFunction get_reshape_bwd_task_impl();

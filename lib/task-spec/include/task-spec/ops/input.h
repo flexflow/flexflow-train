@@ -6,7 +6,7 @@
 
 namespace FlexFlow {
 
-std::vector<task_id_t> get_task_ids(InputAttrs const &);
+std::unordered_set<task_id_t> get_task_ids(InputAttrs const &);
 
 } // namespace FlexFlow
 

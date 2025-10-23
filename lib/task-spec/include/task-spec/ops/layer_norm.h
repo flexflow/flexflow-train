@@ -7,7 +7,7 @@
 
 namespace FlexFlow {
 
-std::vector<task_id_t> get_task_ids(LayerNormAttrs const &);
+std::unordered_set<task_id_t> get_task_ids(LayerNormAttrs const &);
 
 TaskImplFunction get_layer_norm_init_task_impl();
 TaskImplFunction get_layer_norm_fwd_task_impl();

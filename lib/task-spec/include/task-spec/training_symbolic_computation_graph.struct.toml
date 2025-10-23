@@ -16,7 +16,6 @@ includes = [
 [[fields]]
 name = "symbolic_computation_graph"
 type = "::FlexFlow::LabelledDataflowGraphView<::FlexFlow::ParallelLayerAttrs, ::FlexFlow::TensorShape>"
-
 [[fields]]
 name = "symbolic_training_tensor_group_for_tensor"
 type = "std::unordered_map<::FlexFlow::symbolic_tensor_guid_t, ::FlexFlow::SymbolicTrainingTensorGroup>"

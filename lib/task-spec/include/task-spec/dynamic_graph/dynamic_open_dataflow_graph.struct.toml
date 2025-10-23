@@ -1,0 +1,13 @@
+namespace = "FlexFlow"
+name = "DynamicOpenDataflowGraph"
+features = [ ]
+
+includes = [
+  "utils/graph/labelled_open_dataflow_graph/labelled_open_dataflow_graph.h",
+  "task-spec/dynamic_graph/dynamic_node_attrs.dtg.h",
+  "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h",
+]
+
+[[fields]]
+name = "raw"
+type = "::FlexFlow::LabelledOpenDataflowGraph<::FlexFlow::DynamicNodeAttrs>"

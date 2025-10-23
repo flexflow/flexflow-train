@@ -1,0 +1,17 @@
+namespace = "FlexFlow"
+name = "op_task_id_t"
+features = [
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+[[values]]
+name = "INIT"
+
+[[values]]
+name = "FWD"
+
+[[values]]
+name = "BWD"

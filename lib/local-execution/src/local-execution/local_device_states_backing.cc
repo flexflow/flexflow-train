@@ -1,7 +1,6 @@
 #include "local-execution/local_device_states_backing.h"
 #include "local-execution/local_task_registry.h"
 #include "local-execution/local_tensor_backing.h"
-#include "local-execution/local_training_backing.h"
 #include "task-spec/task_signature_impl.h"
 #include "utils/containers/generate_map.h"
 #include "utils/overload.h"

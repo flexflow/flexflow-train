@@ -3,7 +3,6 @@
 
 #include "kernels/profiling.h"
 #include <spdlog/spdlog.h>
-#include "utils/containers/transform.h"
 
 namespace FlexFlow {
 
@@ -15,15 +14,12 @@ std::optional<milliseconds_t> profile(F const &f,
                              DeviceType device_type,
                              Str s,
                              Ts &&...ts) {
-  std::optional<float> elapsed = profiling_wrapper<F, Ts...>(
+  std::optional<milliseconds_t> elapsed = profiling_wrapper<F, Ts...>(
       f, profiling, device_type, std::forward<Ts>(ts)...);
   if (elapsed.has_value()) {
     spdlog::debug(s, elapsed.value());
   }
-  return transform(elapsed, 
-                   [](float f) {
-                     return milliseconds_t{f};
-                   });
+  return elapsed;
 }
 
 } // namespace FlexFlow

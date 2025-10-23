@@ -45,7 +45,7 @@ std::optional<milliseconds_t> profiling_wrapper(F const &f,
 }
 
 template <typename F, typename... Ts>
-float cpu_profiling_wrapper(F const &f,
+milliseconds_t cpu_profiling_wrapper(F const &f,
                             ProfilingSettings const &settings,
                             Ts &&...ts) {
   ASSERT(settings.measure_iters > 0);
@@ -68,11 +68,13 @@ float cpu_profiling_wrapper(F const &f,
   std::chrono::duration<double, std::milli> avg_duration =
       (end.value() - start.value()) / settings.measure_iters;
 
-  return avg_duration.count();
+  return milliseconds_t{
+    static_cast<float>(avg_duration.count()),
+  };
 }
 
 template <typename F, typename... Ts>
-float gpu_profiling_wrapper(F const &f,
+milliseconds_t gpu_profiling_wrapper(F const &f,
                             ProfilingSettings const &settings,
                             Ts &&...ts) {
   ASSERT(settings.measure_iters > 0);
@@ -96,7 +98,9 @@ float gpu_profiling_wrapper(F const &f,
   checkCUDA(ffEventElapsedTime(&elapsed, t_start, t_end));
   checkCUDA(ffEventDestroy(t_start));
   checkCUDA(ffEventDestroy(t_end));
-  return elapsed / settings.measure_iters;
+  return milliseconds_t{
+    elapsed / settings.measure_iters,
+  };
 }
 
 } // namespace FlexFlow

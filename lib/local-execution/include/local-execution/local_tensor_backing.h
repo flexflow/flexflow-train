@@ -3,7 +3,8 @@
 
 #include "kernels/accessor.h"
 #include "kernels/allocation.h"
-#include "local-execution/atomic_task_invocation.dtg.h"
+#include "local-execution/atomic_task_binding.dtg.h"
+#include "local-execution/atomic_task_invocation/atomic_task_invocation.dtg.h"
 #include "local-execution/local_tensor_backing.dtg.h"
 #include "local-execution/tensor_slot_backing.dtg.h"
 #include "task-spec/runtime_arg_config.dtg.h"
@@ -14,18 +15,24 @@
 
 namespace FlexFlow {
 
+LocalTensorBacking local_tensor_backing_for_tensor(
+  symbolic_training_tensor_guid_t);
+
+LocalTensorBacking
+  merge_local_tensor_backings(LocalTensorBacking const &,
+                              LocalTensorBacking const &);
+
+AtomicTaskBinding 
+  lower_local_runtime_task_binding_to_atomic_task_binding(
+    LocalTensorBacking const &,
+    RuntimeTaskBinding const &,
+    RuntimeArgConfig const &);
+
 AtomicTaskInvocation 
   lower_local_runtime_task_invocation_to_atomic_task_invocation(
     LocalTensorBacking const &,
     RuntimeTaskInvocation const &,
     RuntimeArgConfig const &);
-
-LocalTensorBacking construct_local_tensor_backing(
-    std::unordered_map<symbolic_training_tensor_guid_t, TensorShape> const
-        &training_tensor_shapes,
-    // std::unordered_map<symbolic_training_tensor_guid_t, GenericTensorAccessorW> const
-    //     &preallocated_tensors,
-    Allocator &);
 
 } // namespace FlexFlow
 

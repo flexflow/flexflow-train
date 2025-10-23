@@ -204,8 +204,8 @@ TaskSignatureAndImpl
   }
 }
 
-std::vector<task_id_t> get_task_ids(ComputationGraphOpAttrs const &op) {
-  return op.visit<std::vector<task_id_t>>(overload{
+std::unordered_set<task_id_t> get_task_ids(ComputationGraphOpAttrs const &op) {
+  return op.visit<std::unordered_set<task_id_t>>(overload{
       [](BatchMatmulAttrs const &attrs) { return get_task_ids(attrs); },
       [](BatchNormAttrs const &attrs) { return get_task_ids(attrs); },
       [](CastAttrs const &attrs) { return get_task_ids(attrs); },
@@ -231,108 +231,10 @@ std::vector<task_id_t> get_task_ids(ComputationGraphOpAttrs const &op) {
       [](TopKAttrs const &attrs) { return get_task_ids(attrs); },
       [](TransposeAttrs const &attrs) { return get_task_ids(attrs); },
       [](WeightAttrs const &attrs) { return get_task_ids(attrs); },
-      [](auto const &attrs) -> std::vector<task_id_t> {
-        throw mk_runtime_error(fmt::format("Unhandled attr type: {}", attrs));
-      },
-  });
-}
-
-std::optional<OpTaskInvocation>
-    get_init_op_task_invocation(ComputationGraphOpAttrs const &op) {
-  return op.visit<OpTaskInvocation>(overload{
-      [](BatchNormAttrs const &attrs) { return init(attrs); },
-      [](Conv2DAttrs const &attrs) { return init(attrs); },
-      [](DropoutAttrs const &attrs) { return init(attrs); },
-      [](ElementBinaryAttrs const &attrs) { return init(attrs); },
-      [](ElementUnaryAttrs const &attrs) { return init(attrs); },
-      [](GatherAttrs const &attrs) { return init(attrs); },
-      [](LayerNormAttrs const &attrs) { return init(attrs); },
-      [](LinearAttrs const &attrs) { return init(attrs); },
-      [](MultiHeadAttentionAttrs const &attrs) { return init(attrs); },
-      [](Pool2DAttrs const &attrs) { return init(attrs); },
-      [](ReduceAttrs const &attrs) { return init(attrs); },
-      [](SoftmaxAttrs const &attrs) { return init(attrs); },
-      [](auto const &attrs) -> OpTaskInvocation {
+      [](auto const &attrs) -> std::unordered_set<task_id_t> {
         PANIC("Unhandled attr type", attrs);
       },
   });
-}
-
-std::optional<OpTaskInvocation>
-    get_forward_op_task_invocation(ComputationGraphOpAttrs const &op) {
-  return op.visit<OpTaskInvocation>(overload{
-      [](BatchMatmulAttrs const &attrs) { return forward(attrs); },
-      [](BatchNormAttrs const &attrs) { return forward(attrs); },
-      [](CastAttrs const &attrs) { return forward(attrs); },
-      [](ConcatAttrs const &attrs) { return forward(attrs); },
-      [](Conv2DAttrs const &attrs) { return forward(attrs); },
-      [](DropoutAttrs const &attrs) { return forward(attrs); },
-      [](ElementBinaryAttrs const &attrs) { return forward(attrs); },
-      [](ElementUnaryAttrs const &attrs) { return forward(attrs); },
-      [](EmbeddingAttrs const &attrs) { return forward(attrs); },
-      [](FlatAttrs const &attrs) { return forward(attrs); },
-      [](GatherAttrs const &attrs) { return forward(attrs); },
-      [](LayerNormAttrs const &attrs) { return forward(attrs); },
-      [](LinearAttrs const &attrs) { return forward(attrs); },
-      [](MultiHeadAttentionAttrs const &attrs) { return forward(attrs); },
-      [](Pool2DAttrs const &attrs) { return forward(attrs); },
-      [](ReduceAttrs const &attrs) { return forward(attrs); },
-      [](ReverseAttrs const &attrs) { return forward(attrs); },
-      [](ReshapeAttrs const &attrs) { return forward(attrs); },
-      [](SplitAttrs const &attrs) { return forward(attrs); },
-      [](SoftmaxAttrs const &attrs) { return forward(attrs); },
-      [](TopKAttrs const &attrs) { return forward(attrs); },
-      [](TransposeAttrs const &attrs) { return forward(attrs); },
-      [](auto const &attrs) -> OpTaskInvocation {
-        throw mk_runtime_error(fmt::format("Unhandled attr type {}", attrs));
-      },
-  });
-}
-
-std::optional<OpTaskInvocation>
-    get_backward_op_task_invocation(ComputationGraphOpAttrs const &op) {
-  return op.visit<OpTaskInvocation>(overload{
-      [](BatchMatmulAttrs const &attrs) { return backward(attrs); },
-      [](BatchNormAttrs const &attrs) { return backward(attrs); },
-      [](CastAttrs const &attrs) { return backward(attrs); },
-      [](ConcatAttrs const &attrs) { return backward(attrs); },
-      [](Conv2DAttrs const &attrs) { return backward(attrs); },
-      [](DropoutAttrs const &attrs) { return backward(attrs); },
-      [](ElementBinaryAttrs const &attrs) { return backward(attrs); },
-      [](ElementUnaryAttrs const &attrs) { return backward(attrs); },
-      [](EmbeddingAttrs const &attrs) { return backward(attrs); },
-      [](FlatAttrs const &attrs) { return backward(attrs); },
-      [](GatherAttrs const &attrs) { return backward(attrs); },
-      [](LayerNormAttrs const &attrs) { return backward(attrs); },
-      [](LinearAttrs const &attrs) { return backward(attrs); },
-      [](MultiHeadAttentionAttrs const &attrs) { return backward(attrs); },
-      [](Pool2DAttrs const &attrs) { return backward(attrs); },
-      [](ReduceAttrs const &attrs) { return backward(attrs); },
-      [](ReverseAttrs const &attrs) { return backward(attrs); },
-      [](ReshapeAttrs const &attrs) { return backward(attrs); },
-      [](SplitAttrs const &attrs) { return backward(attrs); },
-      [](SoftmaxAttrs const &attrs) { return backward(attrs); },
-      [](TopKAttrs const &attrs) { return backward(attrs); },
-      [](TransposeAttrs const &attrs) { return backward(attrs); },
-      [](auto const &attrs) -> OpTaskInvocation {
-        PANIC("Unhandled attr type", attrs);
-      },
-  });
-}
-
-std::optional<OpTaskInvocation> get_op_task_invocation(
-   ComputationGraphOpAttrs const &op_attrs, 
-   OpTaskType task_type) {
-  switch (task_type) {
-    case OpTaskType::INIT:
-      return get_init_op_task_invocation(op_attrs);
-    case OpTaskType::FWD:
-      return get_forward_op_task_invocation(op_attrs);
-    case OpTaskType::BWD:
-      return get_backward_op_task_invocation(op_attrs);
-    default:
-      PANIC("Unhandled OpTaskType", op_attrs);
-  };
 }
 
 } // namespace FlexFlow

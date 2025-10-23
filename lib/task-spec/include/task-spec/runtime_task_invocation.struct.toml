@@ -8,7 +8,7 @@ features = [
 
 includes = [
   "task-spec/runtime_task_binding.h",
-  "task-spec/task_id_t.dtg.h"
+  "task-spec/task_id_t.dtg.h",
 ]
 
 

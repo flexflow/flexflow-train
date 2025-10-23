@@ -16,26 +16,10 @@
 
 namespace FlexFlow {
 
-RuntimeTaskInvocation
-  lower_op_task_invocation_to_runtime_task_invocation(
-    OpTaskInvocation const &op_task_invocation,
-    symbolic_layer_guid_t symbolic_layer_guid,
-    SymbolicLayerTrainingTensorGroupSignatureWithShapes const &layer_signature);
-
 TrainingTensorSlotBinding
   lower_fwb_tensor_binding_to_training_tensor_binding(
     SymbolicLayerTrainingTensorGroupSignature const &training_layer_signature,
     FwbTensorSlotBinding const &fwb_slot_binding);
-
-RuntimeArgSpec lower_op_arg_spec_to_runtime_arg_spec(
-    OpArgSpec const &op_arg_spec,
-    symbolic_layer_guid_t symbolic_layer_guid,
-    SymbolicLayerTensorShapeSignature const &op_shape_signature);
-
-RuntimeArgSpec lower_op_arg_ref_spec_to_runtime_arg_spec(
-    OpArgRefSpec const &,
-    symbolic_layer_guid_t symbolic_layer_guid,
-    SymbolicLayerTensorShapeSignature const &);
 
 // TODO(@lockshaw)(#pr): this really shouldn't be here
 ConcreteArgSpec

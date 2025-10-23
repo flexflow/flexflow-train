@@ -7,7 +7,7 @@
 
 namespace FlexFlow {
 
-std::vector<task_id_t> get_task_ids(ElementBinaryAttrs const &);
+std::unordered_set<task_id_t> get_task_ids(ElementBinaryAttrs const &);
 
 OpTaskInvocation init(ElementBinaryAttrs const &);
 OpTaskInvocation forward(ElementBinaryAttrs const &);

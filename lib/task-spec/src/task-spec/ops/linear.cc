@@ -216,7 +216,7 @@ OpTaskSignature get_linear_bwd_signature() {
   return bwd;
 }
 
-std::vector<task_id_t> get_task_ids(LinearAttrs const &) {
+std::unordered_set<task_id_t> get_task_ids(LinearAttrs const &) {
   return {task_id_t::LINEAR_INIT_TASK_ID,
           task_id_t::LINEAR_FWD_TASK_ID,
           task_id_t::LINEAR_BWD_TASK_ID};

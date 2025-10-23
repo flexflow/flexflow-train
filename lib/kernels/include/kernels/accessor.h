@@ -222,12 +222,4 @@ real_type_t<DT> accessor_get_only_value(GenericTensorAccessorR const &acc) {
 
 } // namespace FlexFlow
 
-namespace FlexFlow {
-static_assert(is_well_behaved_value_type_no_hash<GenericTensorAccessorR>::value,
-              "");
-static_assert(is_well_behaved_value_type_no_hash<GenericTensorAccessorW>::value,
-              "");
-
-} // namespace FlexFlow
-
 #endif

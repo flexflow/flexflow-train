@@ -7,7 +7,7 @@
 
 namespace FlexFlow {
 
-std::vector<task_id_t> get_task_ids(ElementUnaryAttrs const &);
+std::unordered_set<task_id_t> get_task_ids(ElementUnaryAttrs const &);
 
 TaskImplFunction get_element_unary_init_task_impl();
 TaskImplFunction get_element_unary_fwd_task_impl();

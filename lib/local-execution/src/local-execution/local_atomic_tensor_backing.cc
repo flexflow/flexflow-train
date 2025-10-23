@@ -18,15 +18,15 @@ std::unordered_map<training_tensor_slot_id_t, TensorSlotBacking>
 
 TaskArgumentAccessor get_task_arg_accessor_for_atomic_task_invocation(
   LocalAtomicTensorBacking const &local_tensor_backing,
-  AtomicTaskInvocation const &invocation,
+  AtomicTaskBinding const &atomic_task_binding,
   Allocator &allocator) {
 
   std::unordered_map<training_tensor_slot_id_t, TensorSlotBacking>
       tensor_slots_backing = construct_tensor_slots_backing_for_binding(
-          local_tensor_backing, invocation.binding);
+          local_tensor_backing, atomic_task_binding);
 
   std::unordered_map<slot_id_t, ConcreteArgSpec> arg_slots_backing =
-    invocation.binding.arg_bindings;
+    atomic_task_binding.arg_bindings;
 
   return TaskArgumentAccessor::create<LocalTaskArgumentAccessor>(
       allocator, tensor_slots_backing, arg_slots_backing, 0);

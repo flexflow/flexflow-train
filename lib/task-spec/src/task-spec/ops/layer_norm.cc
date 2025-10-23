@@ -83,7 +83,7 @@ OpTaskInvocation backward(LayerNormAttrs const &attrs) {
   };
 }
 
-static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
+static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
   auto gamma = acc.get_tensor<Permissions::RW>(GAMMA);
@@ -105,7 +105,7 @@ static std::optional<float> forward_task_impl(TaskArgumentAccessor const &acc) {
                  beta);
 }
 
-static std::optional<float>
+static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   auto input = acc.get_tensor<Permissions::RO>(INPUT);
   auto gamma = acc.get_tensor<Permissions::RO>(GAMMA);
@@ -207,7 +207,7 @@ OpTaskSignature get_layer_norm_init_signature() {
   return init;
 }
 
-std::vector<task_id_t> get_task_ids(LayerNormAttrs const &) {
+std::unordered_set<task_id_t> get_task_ids(LayerNormAttrs const &) {
   return {task_id_t::LAYERNORM_INIT_TASK_ID,
           task_id_t::LAYERNORM_FWD_TASK_ID,
           task_id_t::LAYERNORM_BWD_TASK_ID};
