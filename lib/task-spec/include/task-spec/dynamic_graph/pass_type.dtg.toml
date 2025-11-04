@@ -1,0 +1,15 @@
+namespace = "FlexFlow"
+name = "PassType"
+type = "enum"
+features = [
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+[[values]]
+name = "FWD"
+
+[[values]]
+name = "BWD"

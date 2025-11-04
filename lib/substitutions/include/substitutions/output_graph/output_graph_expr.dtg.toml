@@ -1,0 +1,14 @@
+namespace = "FlexFlow"
+name = "OutputGraphExpr"
+type = "struct"
+features = []
+
+includes = [
+  "utils/graph/labelled_open_dataflow_graph/labelled_open_dataflow_graph.h",
+  "substitutions/output_graph/output_operator_attrs_assignment.dtg.h",
+  "<variant>",
+]
+
+[[fields]]
+name = "raw_graph"
+type = "::FlexFlow::LabelledOpenDataflowGraph<::FlexFlow::OutputOperatorAttrsAssignment, std::monostate>"

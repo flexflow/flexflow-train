@@ -1,0 +1,22 @@
+namespace = "FlexFlow"
+name = "AtomicTaskInvocation"
+type = "struct"
+features = [
+  "eq",
+  "fmt",
+  "hash"
+]
+
+includes = [
+  "local-execution/atomic_task_invocation/atomic_task_binding.dtg.h",
+  "task-spec/task_id_t.dtg.h"
+]
+
+
+[[fields]]
+name = "task_id"
+type = "::FlexFlow::task_id_t"
+
+[[fields]]
+name = "binding"
+type = "::FlexFlow::AtomicTaskBinding"

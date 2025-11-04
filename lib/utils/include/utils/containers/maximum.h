@@ -3,6 +3,7 @@
 
 #include <libassert/assert.hpp>
 #include <algorithm>
+#include <fmt/format.h>
 
 namespace FlexFlow {
 

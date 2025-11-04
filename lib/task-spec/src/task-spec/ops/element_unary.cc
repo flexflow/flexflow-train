@@ -33,7 +33,7 @@ OpTaskInvocation init(ElementUnaryAttrs const &attrs) {
   b.bind_arg(OUTPUT_SHAPE, output_parallel_tensor_shape(0_n));
 
   return OpTaskInvocation{
-      task_id_t::ELEMENTUNARY_INIT_TASK_ID,
+      op_task_id_t::INIT,
       b,
   };
 }
@@ -52,7 +52,7 @@ OpTaskInvocation forward(ElementUnaryAttrs const &attrs) {
              per_device_op_state<std::optional<ElementUnaryPerDeviceState>>());
 
   return OpTaskInvocation{
-      task_id_t::ELEMENTUNARY_FWD_TASK_ID,
+      op_task_id_t::FWD,
       b,
   };
 }
@@ -61,7 +61,7 @@ OpTaskInvocation backward(ElementUnaryAttrs const &attrs) {
   OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-      task_id_t::ELEMENTUNARY_BWD_TASK_ID,
+      op_task_id_t::BWD,
       b,
   };
 }
@@ -182,12 +182,6 @@ OpTaskSignature get_element_unary_bwd_signature() {
   OpTaskSignature bwd = infer_bwd_signature(get_element_unary_fwd_signature());
 
   return bwd;
-}
-
-std::unordered_set<task_id_t> get_task_ids(ElementUnaryAttrs const &) {
-  return {task_id_t::ELEMENTUNARY_INIT_TASK_ID,
-          task_id_t::ELEMENTUNARY_FWD_TASK_ID,
-          task_id_t::ELEMENTUNARY_BWD_TASK_ID};
 }
 
 } // namespace FlexFlow

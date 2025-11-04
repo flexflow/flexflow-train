@@ -1,0 +1,30 @@
+namespace = "FlexFlow"
+name = "DynamicValueAttrs"
+type = "struct"
+features = [
+  "eq",
+  "fmt",
+]
+
+includes = [
+  "<optional>",
+  "op-attrs/parallel_tensor_shape.dtg.h",
+  "kernels/accessor.h",
+  "task-spec/fwb_tensor_type.dtg.h",
+]
+
+src_includes = [
+  "utils/fmt/optional.h",
+]
+
+[[fields]]
+name = "parallel_tensor_shape"
+type = "std::optional<::FlexFlow::ParallelTensorShape>"
+
+[[fields]]
+name = "accessor"
+type = "std::optional<::FlexFlow::GenericTensorAccessorW>"
+
+[[fields]]
+name = "tensor_type"
+type = "std::optional<::FlexFlow::FwbTensorType>"

@@ -1,0 +1,30 @@
+namespace = "FlexFlow"
+name = "DynamicNodeInvocation"
+type = "struct"
+features = [
+  "eq",
+  "fmt",
+]
+
+includes = [
+  "<vector>",
+  "task-spec/dynamic_graph/dynamic_node_attrs.dtg.h",
+  "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h",
+]
+
+src_includes = [
+  "utils/hash/vector.h",
+  "utils/fmt/vector.h",
+]
+
+[[fields]]
+name = "inputs"
+type = "std::vector<::FlexFlow::DynamicValueAttrs>"
+
+[[fields]]
+name = "node_attrs"
+type = "::FlexFlow::DynamicNodeAttrs"
+
+[[fields]]
+name = "outputs"
+type = "std::vector<::FlexFlow::DynamicValueAttrs>"

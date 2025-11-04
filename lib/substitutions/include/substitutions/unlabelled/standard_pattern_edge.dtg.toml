@@ -1,0 +1,17 @@
+namespace = "FlexFlow"
+name = "StandardPatternEdge"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "utils/graph/dataflow_graph/dataflow_edge.dtg.h",
+]
+
+[[fields]]
+name = "raw_edge"
+type = "::FlexFlow::DataflowEdge"

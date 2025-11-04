@@ -1,0 +1,24 @@
+namespace = "FlexFlow"
+name = "TensorAttributeListIndexAccess"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "rapidcheck",
+  "json",
+  "fmt",
+]
+
+includes = [
+  "substitutions/tensor_pattern/tensor_attribute_key.dtg.h",
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
+[[fields]]
+name = "attribute_key"
+type = "::FlexFlow::TensorAttributeKey"
+
+[[fields]]
+name = "index"
+type = "::FlexFlow::nonnegative_int"

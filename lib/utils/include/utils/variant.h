@@ -24,13 +24,13 @@ template <typename... Needles, typename... Haystack>
 struct pack_contains_all_of<std::variant<Haystack...>, Needles...>
     : pack_contains_all_of<pack<Haystack...>, Needles...> {};
 
-template <typename T, typename... TRest, typename... Args>
-bool is(std::variant<Args...> const &v) {
-  static_assert(pack_contains_all_of<pack<Args...>, T, TRest...>::value, "");
-
-  return std::holds_alternative<T>(v) || is<TRest...>(v);
-}
-
+// template <typename T, typename... TRest, typename... Args>
+// bool is(std::variant<Args...> const &v) {
+//   static_assert(pack_contains_all_of<pack<Args...>, T, TRest...>::value, "");
+//
+//   return std::holds_alternative<T>(v) || is<TRest...>(v);
+// }
+//
 /* template <typename T> */
 /* using visit = mpark::visit<T>; */
 

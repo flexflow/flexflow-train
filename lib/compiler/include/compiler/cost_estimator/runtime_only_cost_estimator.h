@@ -6,7 +6,7 @@
 #include "compiler/cost_estimator/tensor_set_movement.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "op-attrs/pcg_operator_attrs.dtg.h"
-#include "pcg/machine_view.dtg.h"
+#include "compiler/machine_mapping/machine_view.dtg.h"
 #include <vector>
 
 namespace FlexFlow {

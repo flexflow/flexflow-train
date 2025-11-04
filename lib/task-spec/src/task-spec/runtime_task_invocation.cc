@@ -124,42 +124,44 @@ RuntimeTaskInvocation
     symbolic_layer_guid_t symbolic_layer_guid,
     SymbolicLayerTrainingTensorGroupSignatureWithShapes const &layer_signature) {
 
-  std::unordered_map<training_tensor_slot_id_t, symbolic_training_tensor_guid_t>
-      tensor_bindings =
-          transform(op_task_invocation.binding.get_tensor_bindings(),
-                    [&](fwb_tensor_slot_id_t const &fwb_slot_id,
-                        OpTensorSpec const &op_tensor_spec) {
-                      FwbTensorSlotBinding fwb_binding = FwbTensorSlotBinding{
-                        fwb_slot_id,
-                        op_tensor_spec,
-                      };
-
-                      TrainingTensorSlotBinding training_binding = 
-                        lower_fwb_tensor_binding_to_training_tensor_binding(
-                          drop_shapes_from_signature(layer_signature),
-                          fwb_binding);
-                      
-                      return std::pair{
-                        training_binding.slot,
-                        training_binding.bound,
-                      };
-                    });
-
-  std::unordered_map<slot_id_t, RuntimeArgSpec> arg_bindings = map_values(
-      op_task_invocation.binding.get_arg_bindings(),
-      [&](OpArgSpec const &op_arg_spec) -> RuntimeArgSpec {
-        return lower_op_arg_spec_to_runtime_arg_spec(op_arg_spec,
-                                                     symbolic_layer_guid,
-                                                     get_shape_signature(layer_signature));
-      });
-
-  return RuntimeTaskInvocation{
-      op_task_invocation.task_id,
-      RuntimeTaskBinding{
-        tensor_bindings,
-        arg_bindings,
-      },
-  };
+  // TODO(@lockshaw)(#pr): 
+  NOT_IMPLEMENTED();
+  // std::unordered_map<training_tensor_slot_id_t, symbolic_training_tensor_guid_t>
+  //     tensor_bindings =
+  //         transform(op_task_invocation.binding.get_tensor_bindings(),
+  //                   [&](fwb_tensor_slot_id_t const &fwb_slot_id,
+  //                       OpTensorSpec const &op_tensor_spec) {
+  //                     FwbTensorSlotBinding fwb_binding = FwbTensorSlotBinding{
+  //                       fwb_slot_id,
+  //                       op_tensor_spec,
+  //                     };
+  //
+  //                     TrainingTensorSlotBinding training_binding = 
+  //                       lower_fwb_tensor_binding_to_training_tensor_binding(
+  //                         drop_shapes_from_signature(layer_signature),
+  //                         fwb_binding);
+  //
+  //                     return std::pair{
+  //                       training_binding.slot,
+  //                       training_binding.bound,
+  //                     };
+  //                   });
+  //
+  // std::unordered_map<slot_id_t, RuntimeArgSpec> arg_bindings = map_values(
+  //     op_task_invocation.binding.get_arg_bindings(),
+  //     [&](OpArgSpec const &op_arg_spec) -> RuntimeArgSpec {
+  //       return lower_op_arg_spec_to_runtime_arg_spec(op_arg_spec,
+  //                                                    symbolic_layer_guid,
+  //                                                    get_shape_signature(layer_signature));
+  //     });
+  //
+  // return RuntimeTaskInvocation{
+  //     op_task_invocation.task_id,
+  //     RuntimeTaskBinding{
+  //       tensor_bindings,
+  //       arg_bindings,
+  //     },
+  // };
 }
 
 

@@ -8,7 +8,7 @@ ff_add_test_executable(
   NAME
     substitution-generator-tests
   SRC_PATTERNS
-    substitution-generator/*.cc
+    src/*.cc
   PRIVATE_INCLUDE
     src/
   DEPS

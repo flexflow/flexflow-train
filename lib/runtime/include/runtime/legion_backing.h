@@ -5,7 +5,7 @@
 #include "mapping_id_t.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "parallel_computation_graph.h"
-#include "pcg/machine_view.h"
+#include "compiler/machine_mapping/machine_view.h"
 #include "task_spec/task_return_accessor.h"
 #include "task_spec/tensorless_task_invocation.h"
 #include "utils/visitable.h"

@@ -1,0 +1,17 @@
+namespace = "FlexFlow"
+name = "OpTaskInvocation"
+type = "struct"
+features = []
+
+includes = [
+  "task-spec/op_task_binding.h",
+  "task-spec/op_task_id_t.dtg.h",
+]
+
+[[fields]]
+name = "task_id"
+type = "::FlexFlow::op_task_id_t"
+
+[[fields]]
+name = "binding"
+type = "::FlexFlow::OpTaskBinding"

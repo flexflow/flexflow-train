@@ -37,7 +37,7 @@ OpTaskInvocation forward(SplitAttrs const &attrs) {
   binding.bind(OUTPUT, output_tensor(0_n));
 
   return OpTaskInvocation{
-      task_id_t::SPLIT_FWD_TASK_ID,
+      op_task_id_t::FWD,
       binding,
   };
 }
@@ -46,7 +46,7 @@ OpTaskInvocation backward(SplitAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-      task_id_t::SPLIT_BWD_TASK_ID,
+      op_task_id_t::BWD,
       binding,
   };
 }
@@ -129,6 +129,7 @@ static std::optional<milliseconds_t>
 TaskImplFunction get_split_fwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{forward_task_impl}};
 }
+
 TaskImplFunction get_split_bwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{backward_task_impl}};
 }
@@ -142,13 +143,10 @@ OpTaskSignature get_split_fwd_signature() {
   fwd.add_output_slot(OUTPUT);
   return fwd;
 }
+
 OpTaskSignature get_split_bwd_signature() {
   OpTaskSignature bwd = infer_bwd_signature(get_split_fwd_signature());
   return bwd;
-}
-
-std::unordered_set<task_id_t> get_task_ids(SplitAttrs const &) {
-  return {task_id_t::SPLIT_FWD_TASK_ID, task_id_t::SPLIT_BWD_TASK_ID};
 }
 
 }; // namespace FlexFlow

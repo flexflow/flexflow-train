@@ -29,7 +29,7 @@ OpTaskInvocation init(DropoutAttrs const &attrs) {
   binding.bind(OUTPUT, output_tensor(0_n));
 
   return OpTaskInvocation{
-      task_id_t::DROPOUT_INIT_TASK_ID,
+      op_task_id_t::INIT,
       binding,
   };
 }
@@ -46,7 +46,7 @@ OpTaskInvocation forward(DropoutAttrs const &attrs) {
                    per_device_op_state<std::optional<DropoutPerDeviceState>>());
 
   return OpTaskInvocation{
-      task_id_t::DROPOUT_FWD_TASK_ID,
+      op_task_id_t::FWD,
       binding,
   };
 }
@@ -55,7 +55,7 @@ OpTaskInvocation backward(DropoutAttrs const &attrs) {
   OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-      task_id_t::DROPOUT_BWD_TASK_ID,
+      op_task_id_t::BWD,
       b,
   };
 }
@@ -162,12 +162,6 @@ OpTaskSignature get_dropout_bwd_signature() {
   OpTaskSignature bwd = infer_bwd_signature(get_dropout_fwd_signature());
 
   return bwd;
-}
-
-std::unordered_set<task_id_t> get_task_ids(DropoutAttrs const &) {
-  return {task_id_t::DROPOUT_INIT_TASK_ID,
-          task_id_t::DROPOUT_FWD_TASK_ID,
-          task_id_t::DROPOUT_BWD_TASK_ID};
 }
 
 } // namespace FlexFlow

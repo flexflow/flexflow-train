@@ -11,7 +11,7 @@
 #include "internal/runtime_only_cost_estimator_for_test.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/task_space_coordinate.h"
-#include "pcg/machine_view.h"
+#include "compiler/machine_mapping/machine_view.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include "utils/containers/get_only.h"
 #include "utils/full_binary_tree/binary_tree_path.h"

@@ -1,5 +1,6 @@
 #include "task-spec/op_task_binding.h"
 #include "task-spec/op_arg_spec.h"
+#include "task-spec/op_task_signature.h"
 #include "utils/containers/contains_key.h"
 
 namespace FlexFlow {
@@ -78,51 +79,5 @@ OpTaskBinding infer_bwd_binding(OpTaskBinding const &fwd) {
   }
   return bwd;
 }
-
-bool is_tensor_invocation_valid(OpTaskSignature const &sig,
-                                OpTaskInvocation const &inv) {
-  // TODO: fix for variadic inputs (need to implement .bind() for variadic
-  // first)
-  for (std::pair<fwb_tensor_slot_id_t, OpTensorSpec> const &tensor_binding :
-       inv.binding.get_tensor_bindings()) {
-    OpTensorSlotSpec op_tensor_slot_spec =
-        OpTensorSlotSpec{tensor_binding.first.slot_id,
-                         SlotType::TENSOR,
-                         tensor_binding.second.role,
-                         tensor_binding.first.is_grad,
-                         tensor_binding.second.slot_option};
-
-    if (!sig.get_tensor_slots().count(op_tensor_slot_spec)) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-bool is_arg_invocation_valid(OpTaskSignature const &sig,
-                             OpTaskInvocation const &inv) {
-  // TODO: fix for device specific args
-  // for (std::pair<slot_id_t, OpArgSpec> const & arg_binding :
-  // inv.binding.get_arg_bindings()) {
-  //   if (sig.get_arg_types().count(arg_binding.first)) {
-  //     if (get_op_arg_spec_type_index(arg_binding.second) !=
-  //     sig.get_arg_types().at(arg_binding.first)) {
-  //       return false;
-  //     }
-  //   } else {
-  //     return false;
-  //   }
-  // }
-
-  return true;
-}
-
-bool is_invocation_valid(OpTaskSignature const &sig,
-                         OpTaskInvocation const &inv) {
-  return is_tensor_invocation_valid(sig, inv) &&
-         is_arg_invocation_valid(sig, inv);
-}
-
 
 } // namespace FlexFlow

@@ -1,0 +1,31 @@
+namespace = "FlexFlow"
+name = "SymbolicLayerTrainingTensorGroupSignature"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "task-spec/symbolic_training_tensor_group.dtg.h",
+]
+
+src_includes = [
+  "utils/hash/vector.h",
+  "utils/fmt/vector.h",
+  "utils/ord/vector.h",
+]
+
+[[fields]]
+name = "input_tensor_groups"
+type = "std::vector<::FlexFlow::SymbolicTrainingTensorGroup>"
+
+[[fields]]
+name = "weight_tensor_groups"
+type = "std::vector<::FlexFlow::SymbolicTrainingTensorGroup>"
+
+[[fields]]
+name = "output_tensor_groups"
+type = "std::vector<::FlexFlow::SymbolicTrainingTensorGroup>"

@@ -1,0 +1,24 @@
+namespace = "FlexFlow"
+name = "OpArgSpec"
+type = "variant"
+features = [
+  "eq",
+]
+
+includes = [
+  "task-spec/concrete_arg_spec.h",
+  "task-spec/op_arg_ref_spec.h",
+  "task-spec/runtime_arg_ref_spec.h",
+]
+
+[[values]]
+type = "::FlexFlow::ConcreteArgSpec"
+key = "concrete_arg"
+
+[[values]]
+type = "::FlexFlow::OpArgRefSpec"
+key = "op_arg_ref"
+
+[[values]]
+type = "::FlexFlow::RuntimeArgRefSpec"
+key = "runtime_arg_ref"

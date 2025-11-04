@@ -4,7 +4,7 @@
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.dtg.h"
 #include "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.dtg.h"
 #include "pcg/machine_specification.dtg.h"
-#include "pcg/machine_view.dtg.h"
+#include "compiler/machine_mapping/machine_view.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.dtg.h"
 
 namespace FlexFlow {

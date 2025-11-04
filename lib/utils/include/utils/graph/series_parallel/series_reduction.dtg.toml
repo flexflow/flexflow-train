@@ -1,0 +1,21 @@
+namespace = "FlexFlow"
+name = "SeriesReduction"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "utils/graph/multidigraph/multidiedge.dtg.h",
+]
+
+[[fields]]
+name = "first"
+type = "::FlexFlow::MultiDiEdge"
+
+[[fields]]
+name = "second"
+type = "::FlexFlow::MultiDiEdge"

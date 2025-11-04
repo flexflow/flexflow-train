@@ -6,7 +6,7 @@
 #include "op-attrs/ops/cast.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/computation_graph_builder.h"
-#include "pcg/machine_view.h"
+#include "compiler/machine_mapping/machine_view.h"
 #include "task-spec/runtime_arg_config.h"
 #include <doctest/doctest.h>
 

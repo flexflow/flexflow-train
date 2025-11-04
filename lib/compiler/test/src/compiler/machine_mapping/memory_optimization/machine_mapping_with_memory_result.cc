@@ -1,5 +1,5 @@
 #include "compiler/machine_mapping/memory_optimization/machine_mapping_with_memory_result.h"
-#include "pcg/machine_view.h"
+#include "compiler/machine_mapping/machine_view.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
 #include <doctest/doctest.h>
 #include "test/utils/rapidcheck/some.h"

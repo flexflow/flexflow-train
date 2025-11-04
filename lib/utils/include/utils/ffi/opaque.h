@@ -13,7 +13,7 @@ template <typename ErrorCodeType,
           ErrorCodeType AllocationFailed>
 struct LibraryUtils {
   template <typename T>
-  using err = expected<ErrorCodeType, T>;
+  using err = tl::expected<ErrorCodeType, T>;
 
   template <typename T>
   static err<T *> allocate_opaque(T const &t) {

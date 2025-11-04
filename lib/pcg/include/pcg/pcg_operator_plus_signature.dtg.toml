@@ -1,0 +1,24 @@
+namespace = "FlexFlow"
+name = "PCGOperatorPlusSignature"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+  "json",
+]
+
+includes = [
+  "op-attrs/pcg_operator_attrs.dtg.h",
+  "pcg/pcg_operator_tensor_shape_signature.dtg.h",
+  "<vector>",
+]
+
+[[fields]]
+name = "op_attrs"
+type = "::FlexFlow::PCGOperatorAttrs"
+
+[[fields]]
+name = "tensor_shape_signature"
+type = "::FlexFlow::PCGOperatorTensorShapeSignature"

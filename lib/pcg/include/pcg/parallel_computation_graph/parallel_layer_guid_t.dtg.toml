@@ -1,0 +1,19 @@
+namespace = "FlexFlow"
+name = "parallel_layer_guid_t"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  # "json",
+  # "rapidcheck",
+  "fmt",
+]
+
+includes = [
+  "utils/graph/node/node.dtg.h"
+]
+
+[[fields]]
+name = "raw_graph_node"
+type = "::FlexFlow::Node"

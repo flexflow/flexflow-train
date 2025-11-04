@@ -1,7 +1,7 @@
 #include "compiler/graph_optimize_state.h"
 #include "compiler/machine_mapping/machine_mapping.dtg.h"
 #include "compiler/mapped_parallel_computation_graph.h"
-#include "pcg/machine_view.dtg.h"
+#include "compiler/machine_mapping/machine_view.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include <doctest/doctest.h>
 

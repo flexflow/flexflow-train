@@ -2,8 +2,12 @@
 
 namespace FlexFlow {
 
-std::runtime_error mk_runtime_error(std::string const &s) {
-  return std::runtime_error(s);
-}
+not_implemented::not_implemented(std::string const &function_name,
+                                 std::string const &file_name,
+                                 int line)
+    : std::logic_error(fmt::format("Function '{}' not yet implemented at {}:{}",
+                                   function_name,
+                                   file_name,
+                                   line)){};
 
-} // namespace FlexFlow
+}

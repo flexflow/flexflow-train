@@ -29,7 +29,7 @@ OpTaskInvocation init(Conv2DAttrs const &attrs) {
   binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
   return OpTaskInvocation{
-      task_id_t::CONV2D_INIT_TASK_ID,
+      op_task_id_t::INIT,
       binding,
   };
 }
@@ -49,7 +49,7 @@ OpTaskInvocation forward(Conv2DAttrs const &attrs) {
   binding.bind(BIAS, weight_tensor(1_n));
 
   return OpTaskInvocation{
-      task_id_t::CONV2D_FWD_TASK_ID,
+      op_task_id_t::FWD,
       binding,
   };
 }
@@ -58,7 +58,7 @@ OpTaskInvocation backward(Conv2DAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-      task_id_t::CONV2D_BWD_TASK_ID,
+      op_task_id_t::BWD,
       binding,
   };
 }
@@ -199,12 +199,6 @@ OpTaskSignature get_conv_2d_bwd_signature() {
   OpTaskSignature bwd = infer_bwd_signature(get_conv_2d_fwd_signature());
 
   return bwd;
-}
-
-std::unordered_set<task_id_t> get_task_ids(Conv2DAttrs const &) {
-  return {task_id_t::CONV2D_INIT_TASK_ID,
-          task_id_t::CONV2D_FWD_TASK_ID,
-          task_id_t::CONV2D_BWD_TASK_ID};
 }
 
 } // namespace FlexFlow

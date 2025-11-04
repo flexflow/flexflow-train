@@ -1,0 +1,17 @@
+namespace = "FlexFlow"
+name = "AttrConstant"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "substitutions/operator_pattern/operator_attribute_value.dtg.h",
+]
+
+[[fields]]
+name = "value"
+type = "::FlexFlow::OperatorAttributeValue"

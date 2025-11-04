@@ -33,7 +33,7 @@ OpTaskInvocation forward(ReshapeAttrs const &attrs) {
   binding.bind(INPUT, input_tensor(0_n));
   binding.bind(OUTPUT, output_tensor(0_n));
   return OpTaskInvocation{
-      task_id_t::RESHAPE_FWD_TASK_ID,
+      op_task_id_t::FWD,
       binding,
   };
 }
@@ -42,7 +42,7 @@ OpTaskInvocation backward(ReshapeAttrs const &attrs) {
   OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-      task_id_t::RESHAPE_BWD_TASK_ID,
+      op_task_id_t::BWD,
       binding,
   };
 }
@@ -103,10 +103,6 @@ OpTaskSignature get_reshape_fwd_signature() {
 OpTaskSignature get_reshape_bwd_signature() {
   OpTaskSignature bwd = infer_bwd_signature(get_reshape_fwd_signature());
   return bwd;
-}
-
-std::unordered_set<task_id_t> get_task_ids(ReshapeAttrs const &) {
-  return {task_id_t::RESHAPE_FWD_TASK_ID, task_id_t::RESHAPE_BWD_TASK_ID};
 }
 
 }; // namespace FlexFlow

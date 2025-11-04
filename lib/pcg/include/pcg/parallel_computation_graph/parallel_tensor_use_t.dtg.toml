@@ -1,0 +1,17 @@
+namespace = "FlexFlow"
+name = "parallel_tensor_use_t"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "utils/graph/dataflow_graph/dataflow_input.dtg.h",
+]
+
+[[fields]]
+name = "raw_dataflow_input"
+type = "::FlexFlow::DataflowInput"

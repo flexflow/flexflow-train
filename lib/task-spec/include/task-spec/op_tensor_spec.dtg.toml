@@ -1,0 +1,29 @@
+namespace = "FlexFlow"
+name = "OpTensorSpec"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+  "rapidcheck",
+]
+
+includes = [
+  "op-attrs/tensor_role.dtg.h",
+  "task-spec/op_slot_options.dtg.h",
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
+[[fields]]
+name = "role"
+type = "::FlexFlow::TensorRole"
+
+[[fields]]
+name = "slot_option"
+type = "::FlexFlow::OpSlotOptions"
+
+[[fields]]
+name = "idx"
+type = "::FlexFlow::nonnegative_int"

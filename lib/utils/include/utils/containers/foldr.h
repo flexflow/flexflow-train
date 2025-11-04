@@ -6,20 +6,26 @@
 
 namespace FlexFlow {
 
-template <typename T, typename F>
-T foldr1(std::vector<T> const &vec, F f) {
-  if (vec.empty()) {
-    throw mk_runtime_error(fmt::format(
-        "foldr1 expected non-empty vector, but receieved empty vector"));
+/**
+ * @brief
+ * Iteratively applies `func` to the elements of `c` from right to left.
+ * `init` is used as the starting value.
+ *
+ * @example
+ *   std::vector<int> nums = {1, 2, 3, 4};
+ *   int result = foldl(nums, 0, [](int a, int b) { return a + b; });
+ *   result -> (0+(1+(2+(3+4)))) = 10
+ *
+ * @note
+ * For more information, see
+ * https://hackage.haskell.org/package/base-4.20.0.1/docs/Prelude.html#v:foldr
+ */
+template <typename C, typename T, typename F>
+T foldr(C const &c, T const &init, F func) {
+  T result = init;
+  for (auto const &elem : c) {
+    result = func(result, elem);
   }
-
-  auto it = vec.crbegin();
-  T result = *it;
-  it++;
-  for (; it != vec.crend(); it++) {
-    result = f(result, *it);
-  }
-
   return result;
 }
 

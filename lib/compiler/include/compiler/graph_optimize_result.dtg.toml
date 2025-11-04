@@ -1,0 +1,12 @@
+namespace = "FlexFlow"
+name = "GraphOptimizeResult"
+type = "struct"
+features = []
+
+includes = [ 
+  "pcg/mapped_parallel_computation_graph/mapped_parallel_computation_graph.dtg.h",
+]
+
+[[fields]]
+name = "mapped_pcg"
+type = "::FlexFlow::MappedParallelComputationGraph"

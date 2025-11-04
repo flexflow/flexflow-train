@@ -50,7 +50,7 @@ OpTaskInvocation forward(BatchMatmulAttrs const &attrs) {
   fwd.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
 
   return OpTaskInvocation{
-      task_id_t::BATCHMATMUL_FWD_TASK_ID,
+      op_task_id_t::FWD,
       fwd,
   };
 }
@@ -59,7 +59,7 @@ OpTaskInvocation backward(BatchMatmulAttrs const &attrs) {
   OpTaskBinding bwd = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-      task_id_t::BATCHMATMUL_BWD_TASK_ID,
+      op_task_id_t::BWD,
       bwd,
   };
 }
@@ -150,11 +150,6 @@ OpTaskSignature get_batch_matmul_bwd_signature() {
   OpTaskSignature bwd = infer_bwd_signature(get_batch_matmul_fwd_signature());
 
   return bwd;
-}
-
-std::unordered_set<task_id_t> get_task_ids(BatchMatmulAttrs const &) {
-  return {task_id_t::BATCHMATMUL_FWD_TASK_ID,
-          task_id_t::BATCHMATMUL_BWD_TASK_ID};
 }
 
 }; // namespace FlexFlow

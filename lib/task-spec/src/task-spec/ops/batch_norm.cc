@@ -211,12 +211,4 @@ OpTaskSignature get_batch_norm_bwd_signature() {
   return bwd;
 }
 
-std::unordered_set<task_id_t> get_task_ids(BatchNormAttrs const &) {
-  return {
-      task_id_t::BATCHNORM_INIT_TASK_ID,
-      task_id_t::BATCHNORM_FWD_TASK_ID,
-      task_id_t::BATCHNORM_BWD_TASK_ID,
-  };
-}
-
 }; // namespace FlexFlow

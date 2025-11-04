@@ -8,6 +8,8 @@
 
 namespace FlexFlow {
 
+
+task_id_with_noop_default_t lift_task_id_t(task_id_t);
 task_id_with_noop_default_t default_noop_task();
 
 task_id_with_noop_default_t

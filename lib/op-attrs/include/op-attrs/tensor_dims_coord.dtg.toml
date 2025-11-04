@@ -1,0 +1,19 @@
+namespace = "FlexFlow"
+name = "TensorDimsCoord"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+]
+
+includes = [
+  "op-attrs/ff_ordered/ff_ordered.h",
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
+[[fields]]
+name = "ff_ordered"
+type = "::FlexFlow::FFOrdered<::FlexFlow::nonnegative_int>"

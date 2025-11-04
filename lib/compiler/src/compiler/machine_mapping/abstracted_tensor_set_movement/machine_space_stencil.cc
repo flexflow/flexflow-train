@@ -1,5 +1,5 @@
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/machine_space_stencil.h"
-#include "pcg/machine_view.h"
+#include "compiler/machine_mapping/machine_view.h"
 
 namespace FlexFlow {
 

@@ -20,6 +20,7 @@
 #include "op-attrs/ops/attention/multihead_attention_parallel_inputs.h"
 #include "task-spec/op_task_signature.h"
 #include "task-spec/profiling.h"
+#include "task-spec/op_task_invocation.dtg.h"
 
 namespace FlexFlow {
 
@@ -63,7 +64,7 @@ OpTaskInvocation init(MultiHeadAttentionAttrs const &attrs) {
   b.bind_arg(OPROJSIZE, get_oProjSize(attrs));
 
   return OpTaskInvocation{
-      task_id_t::ATTENTION_INIT_TASK_ID,
+      op_task_id_t::INIT,
       b,
   };
 }
@@ -83,7 +84,7 @@ OpTaskInvocation forward(MultiHeadAttentionAttrs const &attrs) {
              per_device_op_state<std::optional<MHAPerDeviceState>>());
 
   return OpTaskInvocation{
-      task_id_t::ATTENTION_FWD_TASK_ID,
+      op_task_id_t::FWD,
       b,
   };
 }
@@ -92,7 +93,7 @@ OpTaskInvocation backward(MultiHeadAttentionAttrs const &attrs) {
   OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-      task_id_t::ATTENTION_BWD_TASK_ID,
+      op_task_id_t::BWD,
       b,
   };
 }
@@ -278,12 +279,6 @@ OpTaskSignature get_attention_bwd_signature() {
   OpTaskSignature bwd = infer_bwd_signature(get_attention_fwd_signature());
 
   return bwd;
-}
-
-std::unordered_set<task_id_t> get_task_ids(MultiHeadAttentionAttrs const &) {
-  return {task_id_t::ATTENTION_INIT_TASK_ID,
-          task_id_t::ATTENTION_FWD_TASK_ID,
-          task_id_t::ATTENTION_BWD_TASK_ID};
 }
 
 } // namespace FlexFlow

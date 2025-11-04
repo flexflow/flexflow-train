@@ -18,7 +18,7 @@
 #include "cost_metrics.h"
 #include "kernels/ff_handle.h"
 #include "op-attrs/operator_attrs.h"
-#include "pcg/machine_view.h"
+#include "compiler/machine_mapping/machine_view.h"
 #include "pcg/operator_guid_t.h"
 #include "pcg/parallel_tensor.h"
 #include "runtime/config.h"

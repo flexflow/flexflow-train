@@ -1,0 +1,17 @@
+namespace = "FlexFlow"
+name = "tensor_guid_t"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "utils/graph/dataflow_graph/dataflow_output.dtg.h"
+]
+
+[[fields]]
+name = "raw_graph_output"
+type = "::FlexFlow::DataflowOutput"

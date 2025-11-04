@@ -1,0 +1,14 @@
+namespace = "FlexFlow"
+name = "symbolic_gradient_tensor_guid_t"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+
+[[fields]]
+name = "raw_index"
+type = "int"

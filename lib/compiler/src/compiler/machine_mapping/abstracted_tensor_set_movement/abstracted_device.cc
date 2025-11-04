@@ -8,7 +8,7 @@
 #include "op-attrs/get_operator_task_space.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/machine_compute_specification.dtg.h"
-#include "pcg/machine_view.h"
+#include "compiler/machine_mapping/machine_view.h"
 #include "utils/containers/transform.h"
 
 namespace FlexFlow {

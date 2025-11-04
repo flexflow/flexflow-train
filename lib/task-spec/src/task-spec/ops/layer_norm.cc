@@ -51,7 +51,7 @@ OpTaskInvocation init(LayerNormAttrs const &attrs) {
   b.bind_arg(ATTRS, attrs);
 
   return OpTaskInvocation{
-      task_id_t::LAYERNORM_INIT_TASK_ID,
+      op_task_id_t::INIT,
       b,
   };
 }
@@ -69,7 +69,7 @@ OpTaskInvocation forward(LayerNormAttrs const &attrs) {
              per_device_op_state<std::optional<LayerNormPerDeviceState>>());
 
   return OpTaskInvocation{
-      task_id_t::LAYERNORM_FWD_TASK_ID,
+      op_task_id_t::FWD,
       b,
   };
 }
@@ -78,7 +78,7 @@ OpTaskInvocation backward(LayerNormAttrs const &attrs) {
   OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
 
   return OpTaskInvocation{
-      task_id_t::LAYERNORM_BWD_TASK_ID,
+      op_task_id_t::BWD,
       b,
   };
 }
@@ -205,12 +205,6 @@ OpTaskSignature get_layer_norm_init_signature() {
 
   init.add_return_value<LayerNormPerDeviceState>();
   return init;
-}
-
-std::unordered_set<task_id_t> get_task_ids(LayerNormAttrs const &) {
-  return {task_id_t::LAYERNORM_INIT_TASK_ID,
-          task_id_t::LAYERNORM_FWD_TASK_ID,
-          task_id_t::LAYERNORM_BWD_TASK_ID};
 }
 
 } // namespace FlexFlow

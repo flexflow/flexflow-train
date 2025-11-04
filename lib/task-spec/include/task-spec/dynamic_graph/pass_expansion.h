@@ -2,8 +2,23 @@
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_DYNAMIC_GRAPH_PASS_EXPANSION_H
 
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
+#include "task-spec/dynamic_graph/pass_type.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 
 namespace FlexFlow {
+
+bool node_is_pass_expanded(DynamicNodeAttrs const &);
+bool value_is_pass_expanded(DynamicValueAttrs const &);
+
+bool no_part_of_graph_is_pass_expanded(DynamicOpenDataflowGraph const &);
+bool graph_is_fully_pass_expanded(DynamicOpenDataflowGraph const &);
+
+DynamicNodeInvocation 
+  perform_pass_expansion_for_task(DynamicNodeInvocation const &, PassType);
+DynamicNodeInvocation 
+  perform_fwd_pass_expansion_for_task(DynamicNodeInvocation const &);
+DynamicNodeInvocation 
+  perform_bwd_pass_expansion_for_task(DynamicNodeInvocation const &);
 
 DynamicOpenDataflowGraph
   perform_pass_expansion(DynamicOpenDataflowGraph const &);

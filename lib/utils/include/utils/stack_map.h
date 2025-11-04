@@ -2,6 +2,7 @@
 #define _FLEXFLOW_UTILS_STACK_MAP_H
 
 #include "utils/stack_vector/stack_vector.h"
+#include "utils/containers/sorted_by.h"
 
 namespace std {
 

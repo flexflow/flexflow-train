@@ -1,0 +1,19 @@
+namespace = "FlexFlow"
+name = "DynamicOpenDataflowGraph"
+type = "struct"
+features = [ ]
+
+includes = [
+  "utils/graph/labelled_open_dataflow_graph/labelled_open_dataflow_graph.h",
+  "task-spec/dynamic_graph/dynamic_node_attrs.dtg.h",
+  "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h",
+  "task-spec/dynamic_graph/dynamic_loss_config.dtg.h",
+]
+
+[[fields]]
+name = "raw"
+type = "::FlexFlow::LabelledOpenDataflowGraph<::FlexFlow::DynamicNodeAttrs, ::FlexFlow::DynamicValueAttrs>"
+
+[[fields]]
+name = "loss"
+type = "std::optional<::FlexFlow::DynamicLossConfig>"

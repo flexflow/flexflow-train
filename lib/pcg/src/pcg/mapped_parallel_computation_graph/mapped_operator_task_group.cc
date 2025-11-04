@@ -1,13 +1,12 @@
 #include "pcg/mapped_parallel_computation_graph/mapped_operator_task_group.h"
-#include "compiler/operator_atomic_task_shard_binding.h"
-#include "compiler/task_signature_tensor_key.h"
+#include "pcg/mapped_parallel_computation_graph/operator_atomic_task_shard_binding.h"
+#include "pcg/mapped_parallel_computation_graph/task_signature_tensor_key.h"
 #include "op-attrs/get_operator_task_space.h"
 #include "op-attrs/operator_task_space.h"
 #include "op-attrs/parallel_tensor_space_coordinate.h"
-#include "pcg/machine_view.h"
 #include "utils/bidict/generate_bidict.h"
 #include "utils/containers/require_all_same.h"
-#include "compiler/task_signature_tensor_key.dtg.h"
+#include "pcg/mapped_parallel_computation_graph/task_signature_tensor_key.dtg.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/vector_of.h"
 #include "utils/nonnegative_int/num_elements.h"
@@ -86,26 +85,6 @@ std::string format_as(::FlexFlow::MappedOperatorTaskGroup const &m) {
 
 std::ostream &operator<<(std::ostream &s, ::FlexFlow::MappedOperatorTaskGroup const &x) {
   return (s << fmt::to_string(x));
-}
-
-MappedOperatorTaskGroup
-  mapped_operator_task_group_from_machine_view(
-    ComputationGraphOpAttrs const &op_attrs,
-    std::vector<ParallelTensorDimDegrees> const &inputs_dim_degrees,
-    MachineView const &machine_view) {
-
-  OperatorTaskSpace op_task_space = get_operator_task_space(op_attrs, inputs_dim_degrees);  
-
-  return MappedOperatorTaskGroup{
-    generate_bidict(get_machine_space_coordinates(op_task_space, machine_view),
-                    [&](MachineSpaceCoordinate const &machine_space_coord) {
-                      return operator_atomic_task_shard_binding_from_machine_view(
-                        op_attrs, 
-                        inputs_dim_degrees,
-                        machine_view,
-                        machine_space_coord);
-                    }),
-  };
 }
 
 

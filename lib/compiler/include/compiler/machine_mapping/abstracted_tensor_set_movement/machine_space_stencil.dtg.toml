@@ -1,0 +1,23 @@
+namespace = "FlexFlow"
+name = "MachineSpaceStencil"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+  "json",
+]
+
+includes = [
+  "op-attrs/operator_task_space.dtg.h",
+  "compiler/machine_mapping/machine_view.dtg.h",
+]
+
+[[fields]]
+name = "operator_task_space"
+type = "::FlexFlow::OperatorTaskSpace"
+
+[[fields]]
+name = "machine_view"
+type = "::FlexFlow::MachineView"

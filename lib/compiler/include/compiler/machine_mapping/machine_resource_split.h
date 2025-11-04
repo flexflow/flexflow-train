@@ -4,7 +4,7 @@
 #include "compiler/machine_mapping/machine_compute_resource_slice.dtg.h"
 #include "compiler/machine_mapping/machine_resource_split.dtg.h"
 #include "compiler/machine_mapping/parallel_layer_guid_oblivious_machine_mapping.dtg.h"
-#include "pcg/machine_view.dtg.h"
+#include "compiler/machine_mapping/machine_view.dtg.h"
 
 namespace FlexFlow {
 

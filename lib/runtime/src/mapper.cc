@@ -16,7 +16,7 @@
 #include "mapper.h"
 #include "default_mapper.h"
 #include "loggers.h"
-#include "pcg/machine_view.h"
+#include "compiler/machine_mapping/machine_view.h"
 #include "tasks.h"
 #include "utils/exception.h"
 

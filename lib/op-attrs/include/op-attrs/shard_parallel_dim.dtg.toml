@@ -1,0 +1,23 @@
+namespace = "FlexFlow"
+name = "ShardParallelDim"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = [
+  "utils/positive_int/positive_int.h",
+]
+
+[[fields]]
+name = "size"
+type = "::FlexFlow::positive_int"
+
+[[fields]]
+name = "degree"
+type = "::FlexFlow::positive_int"

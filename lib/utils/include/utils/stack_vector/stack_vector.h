@@ -4,7 +4,6 @@
 #include "utils/check_fmtable.h"
 #include "utils/hash-utils.h"
 #include "utils/join_strings.h"
-#include "utils/test_types.h"
 #include "utils/type_traits.h"
 #include <array>
 #include <cassert>

@@ -3,7 +3,7 @@
 
 #include "arg_ref.h"
 #include "parallel_tensor_spec.h"
-#include "pcg/machine_view.h"
+#include "compiler/machine_mapping/machine_view.h"
 #include "pcg/parallel_tensor_guid_t.h"
 #include "runtime/task_spec/concrete_arg.h"
 #include "runtime/task_spec/index_arg.h"

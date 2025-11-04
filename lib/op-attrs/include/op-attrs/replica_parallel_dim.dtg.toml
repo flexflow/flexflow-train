@@ -1,0 +1,24 @@
+namespace = "FlexFlow"
+name = "ReplicaParallelDim"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = [
+  "op-attrs/replica_type.dtg.h",
+  "utils/positive_int/positive_int.h",
+]
+
+[[fields]]
+name = "degree"
+type = "::FlexFlow::positive_int"
+
+[[fields]]
+name = "replica_type"
+type = "::FlexFlow::ReplicaType"

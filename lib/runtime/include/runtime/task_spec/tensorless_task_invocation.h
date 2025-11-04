@@ -3,7 +3,7 @@
 
 #include "concrete_arg.h"
 #include "index_arg.h"
-#include "pcg/machine_view.h"
+#include "compiler/machine_mapping/machine_view.h"
 #include "slot_id.h"
 #include "typed_future.h"
 #include "typed_future_map.h"

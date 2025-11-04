@@ -1,0 +1,35 @@
+namespace = "FlexFlow"
+name = "OpOrderedSlotSignature"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "task-spec/is_grad.dtg.h",
+  "task-spec/fwb_tensor_slot_id_t.dtg.h",
+]
+
+src_includes = [
+  "utils/ord/vector.h",
+  "utils/ord/unordered_set.h",
+  "utils/hash/vector.h",
+  "utils/hash/unordered_set.h",
+  "utils/fmt/vector.h",
+  "utils/fmt/unordered_set.h",
+]
+
+[[fields]]
+name = "input_slots"
+type = "std::vector<std::unordered_set<::FlexFlow::fwb_tensor_slot_id_t>>"
+
+[[fields]]
+name = "weight_slots"
+type = "std::vector<std::unordered_set<::FlexFlow::fwb_tensor_slot_id_t>>"
+
+[[fields]]
+name = "output_slots"
+type = "std::vector<std::unordered_set<::FlexFlow::fwb_tensor_slot_id_t>>"

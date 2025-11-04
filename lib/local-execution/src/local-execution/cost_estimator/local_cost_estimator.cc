@@ -9,7 +9,7 @@
 #include "op-attrs/pcg_operator_attrs.h"
 #include "pcg/computation_graph.h"
 #include "pcg/computation_graph/layer_added_result.dtg.h"
-#include "pcg/machine_view.dtg.h"
+#include "compiler/machine_mapping/machine_view.dtg.h"
 #include "pcg/parallel_tensor_attrs.h"
 #include "utils/containers/concat_vectors.h"
 #include "utils/containers/get_only.h"

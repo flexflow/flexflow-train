@@ -8,6 +8,7 @@
 #include "utils/containers/vector_of.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include <libassert/assert.hpp>
+#include "utils/hash/tuple.h"
 
 namespace FlexFlow {
 
@@ -293,3 +294,20 @@ template int32_t
     accessor_get_only_value<DataType::INT32>(GenericTensorAccessorR const &);
 
 } // namespace FlexFlow
+
+// TODO(@lockshaw)(#pr): delete
+// namespace std {
+//
+// using namespace ::FlexFlow;
+//
+// size_t hash<GenericTensorAccessorR>::operator()(GenericTensorAccessorR const &a) const {
+//   size_t h = 0;
+//   hash_combine();
+//   return get_std_hash(a.tie());
+// }
+//
+// size_t hash<GenericTensorAccessorW>::operator()(GenericTensorAccessorW const &a) const {
+//   return get_std_hash(a.tie());
+// }
+//
+// }
