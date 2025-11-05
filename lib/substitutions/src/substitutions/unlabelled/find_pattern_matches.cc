@@ -1,6 +1,5 @@
 #include "substitutions/unlabelled/find_pattern_matches.h"
 #include "substitutions/unlabelled/match_additional_criterion.h"
-#include "substitutions/unlabelled/multidigraph_pattern_match.h"
 #include "substitutions/unlabelled/pattern_matching.h"
 #include "substitutions/unlabelled/pattern_split.h"
 #include "substitutions/unlabelled/unlabelled_dataflow_graph_pattern_match.h"

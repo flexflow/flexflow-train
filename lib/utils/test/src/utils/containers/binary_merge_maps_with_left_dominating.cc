@@ -1,6 +1,7 @@
 #include <doctest/doctest.h>
 #include <string>
 #include "utils/containers/binary_merge_maps_with_left_dominating.h"
+#include "test/utils/doctest/fmt/unordered_map.h"
 
 using namespace ::FlexFlow;
 

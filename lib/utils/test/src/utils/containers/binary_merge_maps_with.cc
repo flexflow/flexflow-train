@@ -1,6 +1,7 @@
 #include <doctest/doctest.h>
 #include "utils/containers/binary_merge_maps_with.h"
 #include "test/utils/doctest/fmt/unordered_map.h"
+#include <libassert/assert.hpp>
 
 using namespace ::FlexFlow;
 

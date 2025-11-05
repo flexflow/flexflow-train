@@ -1,5 +1,7 @@
 #include <doctest/doctest.h>
 #include "utils/containers/lift_optional_through_map.h"
+#include "test/utils/doctest/fmt/unordered_map.h"
+#include "test/utils/doctest/fmt/optional.h"
 
 using namespace ::FlexFlow;
 
