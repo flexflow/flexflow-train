@@ -1,14 +1,17 @@
 #include "compiler/graph_optimize_state.h"
 #include "compiler/machine_mapping/machine_mapping.dtg.h"
-#include "compiler/mapped_parallel_computation_graph.h"
+#include "compiler/machine_mapping/machine_mapping.h"
+#include "compiler/machine_mapping/machine_view.h"
+#include "pcg/mapped_parallel_computation_graph/mapped_parallel_computation_graph.h"
 #include "compiler/machine_mapping/machine_view.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include <doctest/doctest.h>
+#include "test/utils/doctest/check_without_stringify.h"
 
 using namespace FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("GraphOptimizeState::operator==") {
+  TEST_CASE("GraphOptimizeState operator==") {
     TensorShape input_shape = TensorShape{
         TensorDims{
             FFOrdered{
@@ -17,13 +20,6 @@ TEST_SUITE(FF_TEST_SUITE) {
             },
         },
         DataType::FLOAT,
-    };
-
-    // `machine_mapping` is determined by the PCG and the device mapping
-    // algorithm, and `runtime` is determined by the PCG and the device mapping,
-    // so their values here do not matter.
-    MachineMapping empty_machine_mapping = MachineMapping{
-      std::unordered_map<parallel_layer_guid_t, MachineView>{},
     };
 
     InitializerAttrs zero_init = InitializerAttrs{ZeroInitializerAttrs{}};
@@ -56,26 +52,45 @@ TEST_SUITE(FF_TEST_SUITE) {
       return builder.pcg;
     };
 
+    auto create_machine_mapping_for_pcg = [](ParallelComputationGraph const &pcg) -> MachineMapping {
+      MachineSpaceCoordinate device = MachineSpaceCoordinate{
+        /*node_idx=*/0_n,
+        /*device_idx=*/0_n,
+        /*device_type=*/DeviceType::GPU,
+      };
+
+      MachineView machine_view = make_single_device_machine_view(device);
+
+      return MachineMapping{
+        generate_map(get_parallel_layers(pcg),
+                     [&](parallel_layer_guid_t) {
+                        return machine_view; 
+                     }),
+      };
+    };
+
     ParallelComputationGraph pcg1 = create_pcg();
+    MachineMapping machine_mapping_1 = create_machine_mapping_for_pcg(pcg1);
 
     SUBCASE("returns true if the PCGs are isomorphic") {
       ParallelComputationGraph pcg2 = create_pcg();
+      MachineMapping machine_mapping_2 = create_machine_mapping_for_pcg(pcg2);
 
       GraphOptimizeState state1 = GraphOptimizeState{
           GraphOptimizeResult{
-            mapped_pcg_from_pcg_and_mapping(pcg1, empty_machine_mapping),
+            mapped_pcg_from_pcg_and_mapping(pcg1, machine_mapping_1),
           },
           0,
       };
 
       GraphOptimizeState state2 = GraphOptimizeState{
           GraphOptimizeResult{
-            mapped_pcg_from_pcg_and_mapping(pcg2, empty_machine_mapping),
+            mapped_pcg_from_pcg_and_mapping(pcg2, machine_mapping_2),
           },
           0,
       };
 
-      CHECK(state1 == state2);
+      CHECK_WITHOUT_STRINGIFY(state1 == state2);
     }
 
     SUBCASE("returns false it the PCGs are not isomorphic") {
@@ -93,23 +108,25 @@ TEST_SUITE(FF_TEST_SUITE) {
                          /*bias_initializer=*/zero_init,
                          /*name=*/"dense0");
 
-      ParallelComputationGraph pcg_ = builder_.pcg;
+      ParallelComputationGraph other_pcg = builder_.pcg;
+
+      MachineMapping other_machine_mapping = create_machine_mapping_for_pcg(other_pcg);
 
       GraphOptimizeState state1 = GraphOptimizeState{
           GraphOptimizeResult{
-            mapped_pcg_from_pcg_and_mapping(pcg1, empty_machine_mapping),
+            mapped_pcg_from_pcg_and_mapping(pcg1, machine_mapping_1),
           },
           0,
       };
 
       GraphOptimizeState state_ = GraphOptimizeState{
           GraphOptimizeResult{
-            mapped_pcg_from_pcg_and_mapping(pcg_, empty_machine_mapping),
+            mapped_pcg_from_pcg_and_mapping(other_pcg, other_machine_mapping),
           },
           0,
       };
 
-      CHECK_FALSE(state1 == state_);
+      CHECK_FALSE_WITHOUT_STRINGIFY(state1 == state_);
     }
   }
 }

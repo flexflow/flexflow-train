@@ -193,6 +193,11 @@ MachineView make_1d_machine_view(MachineSpaceCoordinate const &start,
       start, {stride}, {dim});
 }
 
+MachineView make_single_device_machine_view(MachineSpaceCoordinate const &coord) {
+  return machine_view_from_strides_and_machine_spec_dimensions(
+      coord, {}, {});
+}
+
 OperatorAtomicTaskShardBinding
   operator_atomic_task_shard_binding_from_machine_view(ComputationGraphOpAttrs const &op_attrs,
                                                        std::vector<ParallelTensorDimDegrees> const &inputs_dim_degrees,

@@ -67,8 +67,7 @@ private:
              decltype(device_type) const &>
       tie() const;
 
-  // TODO(@lockshaw)(#pr): delete
-  // friend ::std::hash<GenericTensorAccessorR>;
+  friend ::std::hash<GenericTensorAccessorR>;
 };
 
 std::string format_as(GenericTensorAccessorR const &);
@@ -137,8 +136,7 @@ private:
              decltype(device_type) const &>
       tie() const;
 
-  // TODO(@lockshaw)(#pr): delete
-  // friend ::std::hash<GenericTensorAccessorW>;
+  friend ::std::hash<GenericTensorAccessorW>;
 };
 
 std::string format_as(GenericTensorAccessorW const &);
@@ -228,19 +226,18 @@ real_type_t<DT> accessor_get_only_value(GenericTensorAccessorR const &acc) {
 
 } // namespace FlexFlow
 
-// TODO(@lockshaw)(#pr): delete
-// namespace std {
-//
-// template <>
-// struct hash<::FlexFlow::GenericTensorAccessorR> {
-//   size_t operator()(::FlexFlow::GenericTensorAccessorR const &) const;
-// };
-//
-// template <>
-// struct hash<::FlexFlow::GenericTensorAccessorW> {
-//   size_t operator()(::FlexFlow::GenericTensorAccessorW const &) const;
-// };
-//
-// }
-//
+namespace std {
+
+template <>
+struct hash<::FlexFlow::GenericTensorAccessorR> {
+  size_t operator()(::FlexFlow::GenericTensorAccessorR const &) const;
+};
+
+template <>
+struct hash<::FlexFlow::GenericTensorAccessorW> {
+  size_t operator()(::FlexFlow::GenericTensorAccessorW const &) const;
+};
+
+}
+
 #endif

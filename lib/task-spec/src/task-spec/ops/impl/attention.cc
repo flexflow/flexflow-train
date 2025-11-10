@@ -18,9 +18,9 @@
 #include "kernels/device_handle_t.dtg.h"
 #include "op-attrs/ops/attention.h"
 #include "op-attrs/ops/attention/multihead_attention_parallel_inputs.h"
-#include "task-spec/op_task_signature.h"
+#include "task-spec/ops/op_task_signature.h"
 #include "task-spec/profiling.h"
-#include "task-spec/op_task_invocation.dtg.h"
+#include "task-spec/ops/op_task_invocation.dtg.h"
 
 namespace FlexFlow {
 

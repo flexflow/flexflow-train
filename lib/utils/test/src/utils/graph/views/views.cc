@@ -11,6 +11,7 @@
 #include "utils/graph/undirected/undirected_graph.h"
 #include "utils/graph/undirected/undirected_graph_view.h"
 #include <doctest/doctest.h>
+#include "utils/graph/digraph/algorithms.h"
 
 using namespace FlexFlow;
 

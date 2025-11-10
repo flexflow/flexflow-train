@@ -37,31 +37,6 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     SUBCASE("up projection") {
-      DimProjection<int, std::string> projection = [&] {
-        UpProjection<int, std::string> 
-          projection = make_empty_up_projection<int, std::string>();
-
-        project_dims(
-          projection, 
-          /*onto=*/0,
-          /*from=*/std::unordered_set{
-            shard1_idx,
-            discard_copy_idx,
-          });
-        project_dims(
-          projection,
-          /*onto=*/1,
-          /*from=*/std::unordered_set{
-            shard0_idx,
-            sum_idx,
-          });
-
-        
-        return DimProjection{
-          projection,
-        };
-      }();
-
       DimDomain<int> input_domain = 
         DimDomain<int>{{
           {0, 5_p},
@@ -81,15 +56,6 @@ TEST_SUITE(FF_TEST_SUITE) {
         {1, 10_n},
       }};
 
-      DimCoord<std::string> result = 
-        compute_dim_projection(
-          /*projection=*/projection,
-          /*input_coord=*/input_coord,
-          /*input_domain=*/input_domain,
-          /*output_domain=*/output_domain,
-          /*input_dim_ordering=*/input_dim_ordering,
-          /*output_dim_ordering=*/output_dim_ordering);
-
       DimCoord<std::string> correct = DimCoord<std::string>{{
         {sum_idx, 1_n},
         {discard_copy_idx, 0_n},
@@ -97,7 +63,113 @@ TEST_SUITE(FF_TEST_SUITE) {
         {shard1_idx, 3_n},
       }};
 
-      CHECK(result == correct);
+      SUBCASE("all dims are mapped") {
+        DimProjection<int, std::string> projection = [&] {
+          UpProjection<int, std::string> 
+            projection = make_empty_up_projection<int, std::string>();
+
+          project_dims(
+            projection, 
+            /*onto=*/0,
+            /*from=*/std::unordered_set{
+              shard1_idx,
+              discard_copy_idx,
+            });
+          project_dims(
+            projection,
+            /*onto=*/1,
+            /*from=*/std::unordered_set{
+              shard0_idx,
+              sum_idx,
+            });
+          
+          return DimProjection{
+            projection,
+          };
+        }();
+
+        DimCoord<std::string> result = 
+          compute_dim_projection(
+            /*projection=*/projection,
+            /*input_coord=*/input_coord,
+            /*input_domain=*/input_domain,
+            /*output_domain=*/output_domain,
+            /*input_dim_ordering=*/input_dim_ordering,
+            /*output_dim_ordering=*/output_dim_ordering);
+
+        CHECK(result == correct);
+      }
+
+      SUBCASE("all nontrivial dims are mapped") {
+        DimProjection<int, std::string> projection = [&] {
+          UpProjection<int, std::string> 
+            projection = make_empty_up_projection<int, std::string>();
+
+          project_dims(
+            projection, 
+            /*onto=*/0,
+            /*from=*/std::unordered_set{
+              shard1_idx,
+            });
+          project_dims(
+            projection,
+            /*onto=*/1,
+            /*from=*/std::unordered_set{
+              shard0_idx,
+              sum_idx,
+            });
+
+          
+          return DimProjection{
+            projection,
+          };
+        }();
+
+        DimCoord<std::string> result = 
+          compute_dim_projection(
+            /*projection=*/projection,
+            /*input_coord=*/input_coord,
+            /*input_domain=*/input_domain,
+            /*output_domain=*/output_domain,
+            /*input_dim_ordering=*/input_dim_ordering,
+            /*output_dim_ordering=*/output_dim_ordering);
+
+        CHECK(result == correct);
+      }
+
+      SUBCASE("not all nontrivial dims are mapped") {
+        DimProjection<int, std::string> projection = [&] {
+          UpProjection<int, std::string> 
+            projection = make_empty_up_projection<int, std::string>();
+
+          project_dims(
+            projection, 
+            /*onto=*/0,
+            /*from=*/std::unordered_set{
+              shard1_idx,
+              discard_copy_idx,
+            });
+          project_dims(
+            projection,
+            /*onto=*/1,
+            /*from=*/std::unordered_set{
+              sum_idx,
+            });
+
+          
+          return DimProjection{
+            projection,
+          };
+        }();
+
+        CHECK_THROWS(compute_dim_projection(
+            /*projection=*/projection,
+            /*input_coord=*/input_coord,
+            /*input_domain=*/input_domain,
+            /*output_domain=*/output_domain,
+            /*input_dim_ordering=*/input_dim_ordering,
+            /*output_dim_ordering=*/output_dim_ordering));
+      }
     }
   }
 }

@@ -2,7 +2,7 @@
 #include "compiler/operator_atomic_task_shard_binding.h"
 #include "op-attrs/tensor_role.dtg.h"
 #include "task-spec/fwb_tensor_type.dtg.h"
-#include "task-spec/symbolic_layer_training_tensor_group_signature.h"
+#include "task-spec/symbolic/symbolic_layer_training_tensor_group_signature.h"
 #include "utils/containers/map_from_keys_and_values.h"
 #include "utils/containers/merge_disjoint_maps.h"
 #include "utils/containers/transform.h"

@@ -6,6 +6,8 @@
 
 namespace FlexFlow {
 
+DynamicOpenDataflowGraph make_empty_dynamic_open_dataflow_graph();
+
 bool full_dynamic_graph_satisfies(
   DynamicOpenDataflowGraph const &,
   std::function<bool(DynamicNodeAttrs const &)> const &,
@@ -23,6 +25,15 @@ DynamicOpenDataflowGraph
   transform_dynamic_invocation_set(
     DynamicOpenDataflowGraph const &,
     std::function<DynamicNodeInvocation(DynamicNodeInvocation const &)> const &);
+
+DynamicOpenDataflowGraph
+  flatmap_dynamic_invocation_set(
+    DynamicOpenDataflowGraph const &,
+    std::function<std::unordered_set<DynamicNodeInvocation>(DynamicNodeInvocation const &)> const &);
+
+DynamicOpenDataflowGraph 
+  dynamic_open_dataflow_graph_from_invocation_set(std::unordered_set<DynamicNodeInvocation> const &);
+
 
 } // namespace FlexFlow
 

@@ -71,6 +71,8 @@ template <typename L, typename R>
 void project_dims(UpProjection<L, R> &proj,
                   L const &onto,
                   std::unordered_set<R> const &from) {
+  ASSERT(from.size() > 0);
+
   for (R const &r : from) {
     proj.dim_mapping.insert({onto, r});
   }
@@ -79,7 +81,7 @@ void project_dims(UpProjection<L, R> &proj,
 template <typename L, typename R>
 DownProjection<R, L> invert_up_projection(UpProjection<L, R> const &up_proj) {
   return DownProjection<R, L>{
-      invert_one_to_many(up_proj.dim_mapping),
+    /*dim_mapping=*/invert_one_to_many(up_proj.dim_mapping),
   };
 }
 
@@ -87,7 +89,7 @@ template <typename T1, typename T2, typename T3>
 UpProjection<T1, T3> compose_up_projections(UpProjection<T1, T2> const &fst,
                                             UpProjection<T2, T3> const &snd) {
   return UpProjection<T1, T3>{
-      exhaustive_relational_join(fst.dim_mapping, snd.dim_mapping),
+    /*dim_mapping=*/exhaustive_relational_join(fst.dim_mapping, snd.dim_mapping),
   };
 }
 

@@ -2,10 +2,10 @@
 #include "task-spec/loss_functions.h"
 #include "task-spec/optimizer.h"
 #include "task-spec/runtime_arg_spec.h"
-#include "task-spec/symbolic_cg_op_attrs_and_training_signature_with_shapes.h"
+#include "task-spec/symbolic/symbolic_cg_op_attrs_and_training_signature_with_shapes.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/keys.h"
-#include "task-spec/op_task_invocation.h"
+#include "task-spec/ops/op_task_invocation.h"
 #include "utils/containers/transform.h"
 
 namespace FlexFlow {

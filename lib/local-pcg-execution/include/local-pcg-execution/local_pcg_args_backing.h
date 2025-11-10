@@ -4,7 +4,7 @@
 #include "local-pcg-execution/local_pcg_args_backing.dtg.h"
 #include "pcg/machine_space_coordinate.dtg.h"
 #include "task-spec/device_specific_per_device_op_state.dtg.h"
-#include "task-spec/symbolic_layer_guid_t.dtg.h"
+#include "task-spec/symbolic/symbolic_layer_guid_t.dtg.h"
 #include <optional>
 #include <unordered_map>
 

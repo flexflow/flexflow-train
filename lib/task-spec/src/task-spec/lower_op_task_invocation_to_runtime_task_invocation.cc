@@ -2,14 +2,14 @@
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/computation_graph.h"
 #include "task-spec/fwb_tensor_slot_id_t.dtg.h"
-#include "task-spec/symbolic_layer_tensor_shape_signature.h"
-#include "task-spec/symbolic_layer_training_tensor_group_signature_with_shapes.h"
-#include "task-spec/symbolic_layer_training_tensor_group_signature.h"
+#include "task-spec/symbolic/symbolic_layer_tensor_shape_signature.h"
+#include "task-spec/symbolic/symbolic_layer_training_tensor_group_signature_with_shapes.h"
+#include "task-spec/symbolic/symbolic_layer_training_tensor_group_signature.h"
 #include "task-spec/training_tensor_slot_id_t.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/transform.h"
 #include "utils/overload.h"
-#include "task-spec/symbolic_layer_training_tensor_group_signature_with_shapes.h"
+#include "task-spec/symbolic/symbolic_layer_training_tensor_group_signature_with_shapes.h"
 
 namespace FlexFlow {
 

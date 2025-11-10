@@ -12,6 +12,10 @@ MappedParallelComputationGraph
     ParallelComputationGraph const &pcg,
     MachineMapping const &mapping) {
 
+  std::unordered_set<parallel_layer_guid_t> pcg_layers = get_parallel_layers(pcg);
+  std::unordered_set<parallel_layer_guid_t> mapped_layers = keys(mapping.machine_views);
+  ASSERT(pcg_layers == mapped_layers);
+
   return MappedParallelComputationGraph{
     /*pcg=*/pcg,
     /*mapped_tasks=*/
@@ -24,6 +28,7 @@ MappedParallelComputationGraph
           std::vector<ParallelTensorDimDegrees> inputs_dim_degrees = 
             get_incoming_input_degrees(pcg, l);
 
+          ASSERT(contains_key(mapping.machine_views, l));
           MachineView machine_view = mapping.machine_views.at(l);
 
           return mapped_operator_task_group_from_machine_view(

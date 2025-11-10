@@ -3,7 +3,7 @@
 
 #include "local-execution/operator_task_set.dtg.h"
 #include "op-attrs/computation_graph_op_attrs.dtg.h"
-#include "task-spec/op_task_type.dtg.h"
+#include "task-spec/ops/op_task_type.dtg.h"
 #include "utils/bidict/bidict.h"
 
 namespace FlexFlow {

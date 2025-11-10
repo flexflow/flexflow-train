@@ -4,7 +4,7 @@
 #include "local-pcg-execution/local_parallel_tensor_backing.h"
 #include "local-pcg-execution/task_group_execution_times.dtg.h"
 #include "task-spec/fwb_op_task_type.h"
-#include "task-spec/training_symbolic_computation_graph.h"
+#include "task-spec/symbolic/training_symbolic_computation_graph.h"
 #include "utils/containers/flatmap.h"
 #include "utils/containers/lift_optional_through_map.h"
 #include "utils/containers/map_values.h"

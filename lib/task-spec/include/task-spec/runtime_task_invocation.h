@@ -3,12 +3,12 @@
 
 #include "op-attrs/ops/loss_functions/loss_attrs.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
-#include "task-spec/op_task_invocation.dtg.h"
-#include "task-spec/op_task_type.dtg.h"
+#include "task-spec/ops/op_task_invocation.dtg.h"
+#include "task-spec/ops/op_task_type.dtg.h"
 #include "task-spec/runtime_task_invocation.dtg.h"
-#include "task-spec/symbolic_cg_op_attrs_and_training_signature_with_shapes.dtg.h"
-#include "task-spec/symbolic_layer_training_tensor_group_signature_with_shapes.dtg.h"
-#include "task-spec/symbolic_training_layer_attrs_plus_context.dtg.h"
+#include "task-spec/symbolic/symbolic_cg_op_attrs_and_training_signature_with_shapes.dtg.h"
+#include "task-spec/symbolic/symbolic_layer_training_tensor_group_signature_with_shapes.dtg.h"
+#include "task-spec/symbolic/symbolic_training_layer_attrs_plus_context.dtg.h"
 
 namespace FlexFlow {
 

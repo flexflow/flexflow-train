@@ -52,7 +52,7 @@ DynamicNodeAttrs pass_expand_node(DynamicNodeAttrs const &n, PassType pass_type)
 }
 
 DynamicNodeInvocation 
-  perform_fwd_pass_expansion_for_task(DynamicNodeInvocation const &task) {
+  perform_fwd_pass_expansion_for_invocation(DynamicNodeInvocation const &task) {
   
   auto get_fwd_tensor = 
                 [](DynamicValueAttrs const &v) {
@@ -70,7 +70,7 @@ DynamicNodeInvocation
 }
 
 DynamicNodeInvocation 
-  perform_bwd_pass_expansion_for_task(DynamicNodeInvocation const &invocation) {
+  perform_bwd_pass_expansion_for_invocation(DynamicNodeInvocation const &invocation) {
 
   auto get_fwd_tensor = 
                 [](DynamicValueAttrs const &v) {
@@ -94,27 +94,23 @@ DynamicNodeInvocation
   };
 }
 
-
 DynamicOpenDataflowGraph
   perform_pass_expansion(DynamicOpenDataflowGraph const &g) {
 
   ASSERT(no_part_of_graph_is_pass_expanded(g));
 
-  auto pass_expand_node = [](DynamicNodeAttrs const &n, PassType pass_type) -> DynamicNodeAttrs {
-    ASSERT(!node_is_pass_expanded(n));
+  DynamicOpenDataflowGraph result = flatmap_dynamic_invocation_set(
+    g, 
+    [](DynamicNodeInvocation const &invocation) {
+      return std::unordered_set{
+        perform_fwd_pass_expansion_for_invocation(invocation),
+        perform_bwd_pass_expansion_for_invocation(invocation),
+      };
+    });
 
-    DynamicNodeAttrs result = n;
-    result.pass_type = pass_type;
-    return result;
-  };
+  ASSERT(graph_is_fully_pass_expanded(result));
 
-  // return transform_dynamic_task_set(
-  //   g,
-  //   [](
-  //
-  // for (DynamicTask const &t: get_dynamic_task_set(g)) {
-  //
-  // }
+  return result;
 }
 
 

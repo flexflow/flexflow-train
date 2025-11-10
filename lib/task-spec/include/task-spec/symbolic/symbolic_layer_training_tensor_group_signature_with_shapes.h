@@ -1,0 +1,18 @@
+#ifndef _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_SYMBOLIC_SYMBOLIC_LAYER_TRAINING_TENSOR_GROUP_SIGNATURE_WITH_SHAPES_H
+#define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_SYMBOLIC_SYMBOLIC_LAYER_TRAINING_TENSOR_GROUP_SIGNATURE_WITH_SHAPES_H
+
+#include "task-spec/symbolic/symbolic_layer_tensor_shape_signature.dtg.h"
+#include "task-spec/symbolic/symbolic_layer_training_tensor_group_signature_with_shapes.dtg.h"
+#include "task-spec/symbolic/symbolic_layer_training_tensor_group_signature.dtg.h"
+
+namespace FlexFlow {
+
+SymbolicLayerTrainingTensorGroupSignature
+  drop_shapes_from_signature(SymbolicLayerTrainingTensorGroupSignatureWithShapes const &);
+
+SymbolicLayerTensorShapeSignature
+  get_shape_signature(SymbolicLayerTrainingTensorGroupSignatureWithShapes const &);
+
+} // namespace FlexFlow
+
+#endif

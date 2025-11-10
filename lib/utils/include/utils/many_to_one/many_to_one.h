@@ -61,13 +61,21 @@ public:
     } else if (found_r.value() == r) {
       return;
     } else {
-      throw mk_runtime_error(fmt::format(
+      PANIC(fmt::format(
           "Existing mapping found for left value {}: tried to map to right "
           "value {}, but is already bound to right value {}",
           l,
           r,
           found_r.value()));
     }
+  }
+
+  bool contains_l(L const &l) const {
+    return contains_key(this->m_l_to_r, l);
+  }
+
+  bool contains_r(R const &r) const {
+    return contains_key(this->m_r_to_l, r);
   }
 
   R const &at_l(L const &l) const {

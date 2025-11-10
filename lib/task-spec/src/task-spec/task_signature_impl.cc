@@ -24,6 +24,8 @@
 #include "task-spec/ops/impl/topk.h"
 #include "task-spec/ops/impl/transpose.h"
 #include "task-spec/ops/impl/weight.h"
+#include "task-spec/task_id_with_noop_default_t.h"
+#include "utils/containers/filtrans.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {
@@ -205,36 +207,16 @@ TaskSignatureAndImpl
 }
 
 std::unordered_set<task_id_t> get_task_ids(ComputationGraphOpAttrs const &op) {
-  return op.visit<std::unordered_set<task_id_t>>(overload{
-      [](BatchMatmulAttrs const &attrs) { return get_task_ids(attrs); },
-      [](BatchNormAttrs const &attrs) { return get_task_ids(attrs); },
-      [](CastAttrs const &attrs) { return get_task_ids(attrs); },
-      [](ConcatAttrs const &attrs) { return get_task_ids(attrs); },
-      [](Conv2DAttrs const &attrs) { return get_task_ids(attrs); },
-      [](DropoutAttrs const &attrs) { return get_task_ids(attrs); },
-      [](ElementBinaryAttrs const &attrs) { return get_task_ids(attrs); },
-      [](ElementUnaryAttrs const &attrs) { return get_task_ids(attrs); },
-      [](EmbeddingAttrs const &attrs) { return get_task_ids(attrs); },
-      [](FlatAttrs const &attrs) { return get_task_ids(attrs); },
-      [](GatherAttrs const &attrs) { return get_task_ids(attrs); },
-      [](InputAttrs const &attrs) { return get_task_ids(attrs); },
-      [](LayerNormAttrs const &attrs) { return get_task_ids(attrs); },
-      [](LinearAttrs const &attrs) { return get_task_ids(attrs); },
-      [](MultiHeadAttentionAttrs const &attrs) { return get_task_ids(attrs); },
-      [](NoopAttrs const &attrs) { return get_task_ids(attrs); },
-      [](Pool2DAttrs const &attrs) { return get_task_ids(attrs); },
-      [](ReduceAttrs const &attrs) { return get_task_ids(attrs); },
-      [](ReverseAttrs const &attrs) { return get_task_ids(attrs); },
-      [](ReshapeAttrs const &attrs) { return get_task_ids(attrs); },
-      [](SplitAttrs const &attrs) { return get_task_ids(attrs); },
-      [](SoftmaxAttrs const &attrs) { return get_task_ids(attrs); },
-      [](TopKAttrs const &attrs) { return get_task_ids(attrs); },
-      [](TransposeAttrs const &attrs) { return get_task_ids(attrs); },
-      [](WeightAttrs const &attrs) { return get_task_ids(attrs); },
-      [](auto const &attrs) -> std::unordered_set<task_id_t> {
-        PANIC("Unhandled attr type", attrs);
-      },
-  });
+  std::unordered_set<task_id_with_noop_default_t> task_ids = {
+    get_init_task_id_for_op_attrs(op),
+    get_fwd_task_id_for_op_attrs(op),
+    get_bwd_task_id_for_op_attrs(op),
+  };
+
+  return filtrans(task_ids, 
+                  [](task_id_with_noop_default_t t) {
+                    return t.try_require_real_task();
+                  });
 }
 
 } // namespace FlexFlow

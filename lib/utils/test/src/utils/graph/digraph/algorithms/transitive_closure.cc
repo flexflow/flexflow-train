@@ -3,6 +3,7 @@
 #include "utils/graph/instances/adjacency_digraph.h"
 #include "utils/graph/node/algorithms.h"
 #include <doctest/doctest.h>
+#include "utils/graph/digraph/algorithms.h"
 
 using namespace ::FlexFlow;
 

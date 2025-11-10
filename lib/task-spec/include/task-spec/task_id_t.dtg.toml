@@ -147,9 +147,6 @@ name = "CONCAT_FWD_TASK_ID"
 name = "CONCAT_BWD_TASK_ID"
 
 [[values]]
-name = "SPLIT_INIT_TASK_ID"
-
-[[values]]
 name = "SPLIT_FWD_TASK_ID"
 
 [[values]]
@@ -169,9 +166,6 @@ name = "RESHAPE_FWD_TASK_ID"
 
 [[values]]
 name = "RESHAPE_BWD_TASK_ID"
-
-[[values]]
-name = "REVERSE_INIT_TASK_ID"
 
 [[values]]
 name = "REVERSE_FWD_TASK_ID"
@@ -201,6 +195,12 @@ name = "ATTENTION_FWD_TASK_ID"
 name = "ATTENTION_BWD_TASK_ID"
 
 [[values]]
+name = "BROADCAST_FWD_TASK_ID"
+
+[[values]]
+name = "BROADCAST_BWD_TASK_ID"
+
+[[values]]
 name = "MSELOSS_BWD_TASK_ID"
 
 [[values]]
@@ -211,9 +211,6 @@ name = "FUSEDOP_FWD_TASK_ID"
 
 [[values]]
 name = "FUSEDOP_BWD_TASK_ID"
-
-[[values]]
-name = "NOOP_INIT_TASK_ID"
 
 [[values]]
 name = "METRICS_COMP_TASK_ID"

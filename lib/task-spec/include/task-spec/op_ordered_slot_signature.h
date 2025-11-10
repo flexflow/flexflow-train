@@ -2,7 +2,7 @@
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_OP_ORDERED_SLOT_SIGNATURE_H
 
 #include "task-spec/op_ordered_slot_signature.dtg.h"
-#include "task-spec/op_task_binding.h"
+#include "task-spec/ops/op_task_binding.h"
 
 namespace FlexFlow {
 

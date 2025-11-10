@@ -16,7 +16,7 @@
 #include "task-spec/ops/impl/batch_matmul.h"
 #include "kernels/batch_matmul_kernels.h"
 #include "op-attrs/ops/batch_matmul.h"
-#include "task-spec/op_task_signature.h"
+#include "task-spec/ops/op_task_signature.h"
 #include "task-spec/profiling.h"
 #include "utils/containers/transform.h"
 #include "utils/nonnegative_int/nonnegative_range.h"

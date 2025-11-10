@@ -134,10 +134,6 @@ void remove_edges(UndirectedGraph &g,
   }
 }
 
-std::unordered_set<Node> get_endpoints(UndirectedEdge const &e) {
-  return {e.endpoints.min(), e.endpoints.max()};
-}
-
 std::unordered_set<UndirectedEdge> get_node_edges(UndirectedGraphView const &g,
                                                   Node const &n) {
   return g.query_edges(UndirectedEdgeQuery{n});
@@ -161,19 +157,6 @@ std::vector<Node>
                      std::unordered_set<Node> const &starting_points) {
   BFSView bfs_view = bfs(g, starting_points);
   return {bfs_view.begin(), bfs_view.end()};
-}
-
-std::vector<DirectedEdge> get_edge_topological_ordering(DiGraphView const &g) {
-  std::vector<DirectedEdge> result;
-  for (Node const &n : get_topological_ordering(g)) {
-    for (DirectedEdge const &e : get_outgoing_edges(g, n)) {
-      result.push_back(e);
-    }
-  }
-
-  assert(result.size() == get_edges(g).size());
-
-  return result;
 }
 
 std::unordered_set<Node> get_neighbors(DiGraphView const &g, Node const &n) {

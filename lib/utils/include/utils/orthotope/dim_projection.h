@@ -90,34 +90,61 @@ DimCoord<R> compute_dim_projection(DimProjection<L, R> const &projection,
                                    DimDomain<R> const &output_domain,
                                    DimOrdering<L> const &input_dim_ordering,
                                    DimOrdering<R> const &output_dim_ordering) {
+  DimCoord<L> lifted_input_coord = lift_dim_coord(input_coord, get_domain_dims(input_domain));
+
   ASSERT(dim_domain_contains_coord(input_domain, input_coord),
          input_domain,
          input_coord);
-  ASSERT(get_domain_dims(input_domain) == input_dims_of_projection(projection));
-  ASSERT(get_domain_dims(output_domain) ==
-         output_dims_of_projection(projection));
+
+  {
+    std::unordered_set<L> nontrivial_input_domain_dims = get_nontrivial_domain_dims(input_domain);
+    std::unordered_set<L> projection_input_dims = input_dims_of_projection(projection);
+    std::unordered_set<L> all_input_domain_dims = get_domain_dims(input_domain);
+
+    ASSERT(is_subseteq_of(nontrivial_input_domain_dims, projection_input_dims),
+           nontrivial_input_domain_dims,
+           projection_input_dims);
+    ASSERT(is_subseteq_of(projection_input_dims, all_input_domain_dims),
+           projection_input_dims,
+           all_input_domain_dims);
+  }
+
+  {
+    std::unordered_set<R> nontrivial_output_domain_dims = get_nontrivial_domain_dims(output_domain);
+    std::unordered_set<R> projection_output_dims = output_dims_of_projection(projection);
+    std::unordered_set<R> all_output_domain_dims = get_domain_dims(output_domain);
+
+    ASSERT(is_subseteq_of(nontrivial_output_domain_dims, projection_output_dims),
+           nontrivial_output_domain_dims,
+           projection_output_dims);
+    ASSERT(is_subseteq_of(projection_output_dims, all_output_domain_dims),
+           projection_output_dims,
+           all_output_domain_dims);
+  }
 
   DimCoord<R> output_coord = projection.template visit<DimCoord<R>>(overload{
       [&](UpProjection<L, R> const &p) -> DimCoord<R> {
         return compute_up_projection(
-            p, input_coord, output_domain, output_dim_ordering);
+            p, lifted_input_coord, output_domain, output_dim_ordering);
       },
       [&](EqProjection<L, R> const &p) -> DimCoord<R> {
-        return compute_eq_projection(p, input_coord);
+        return compute_eq_projection(p, lifted_input_coord);
       },
       [&](DownProjection<L, R> const &p) -> DimCoord<R> {
         return compute_down_projection(
-            p, input_coord, input_domain, input_dim_ordering);
+            p, lifted_input_coord, input_domain, input_dim_ordering);
       },
   });
 
-  ASSERT(dim_domain_contains_coord(output_domain, output_coord),
-         output_domain,
-         output_coord,
-         input_coord,
-         input_domain);
+  DimCoord<R> lifted_output_coord = lift_dim_coord(output_coord, get_domain_dims(output_domain));
 
-  return output_coord;
+  ASSERT(dim_domain_contains_coord(output_domain, lifted_output_coord),
+         output_domain,
+         lifted_output_coord,
+         input_domain,
+         lifted_input_coord);
+
+  return lifted_output_coord;
 }
 
 

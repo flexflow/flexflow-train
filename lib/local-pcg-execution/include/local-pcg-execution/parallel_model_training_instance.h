@@ -9,7 +9,7 @@
 #include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
 #include "task-spec/runtime_arg_config.dtg.h"
-#include "task-spec/training_symbolic_computation_graph_from_pcg_conversion.dtg.h"
+#include "task-spec/symbolic/training_symbolic_computation_graph_from_pcg_conversion.dtg.h"
 #include "local-pcg-execution/local_parallel_tensor_backing.dtg.h"
 #include "local-pcg-execution/task_group_execution_times.dtg.h"
 

@@ -5,7 +5,7 @@
 #include "local-pcg-execution/runtime_atomic_task_shard_binding.dtg.h"
 #include "pcg/machine_space_coordinate.dtg.h"
 #include "task-spec/fwb_op_task_type.dtg.h"
-#include "task-spec/symbolic_layer_training_tensor_group_signature.dtg.h"
+#include "task-spec/symbolic/symbolic_layer_training_tensor_group_signature.dtg.h"
 #include "utils/bidict/bidict.h"
 
 namespace FlexFlow {

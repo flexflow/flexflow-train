@@ -10,7 +10,7 @@
 #include "task-spec/runtime_arg_config.dtg.h"
 #include "task-spec/runtime_task_invocation.dtg.h"
 #include "task-spec/task_argument_accessor.h"
-#include "task-spec/symbolic_training_tensor_guid_t.dtg.h"
+#include "task-spec/symbolic/symbolic_training_tensor_guid_t.dtg.h"
 #include "local-execution/atomic_training_tensor_guid_t.dtg.h"
 
 namespace FlexFlow {

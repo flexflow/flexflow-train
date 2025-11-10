@@ -5,6 +5,7 @@
 #include "utils/graph/digraph/algorithms/transitive_reduction.h"
 #include "utils/graph/instances/adjacency_digraph.h"
 #include <doctest/doctest.h>
+#include "utils/graph/digraph/algorithms.h"
 
 using namespace ::FlexFlow;
 

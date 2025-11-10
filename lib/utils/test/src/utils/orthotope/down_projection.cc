@@ -55,5 +55,38 @@ TEST_SUITE(FF_TEST_SUITE) {
         CHECK(result == correct);
       }
     }
+
+    // TODO(@lockshaw)(#pr): 
+    // SUBCASE("not all output dims are mapped") {
+    //   DimOrdering<std::string> input_dim_ordering =
+    //       make_dim_ordering_from_vector<std::string>({
+    //           "a",
+    //           "b",
+    //       });
+    //
+    //   DownProjection<std::string, int> projection = make_empty_down_projection<std::string, int>();
+    //   project_dims(projection, {"a", "b"}, 3);
+    //   project_dims(projection, {}, 4);
+    //
+    //   DimCoord<std::string> coord = DimCoord<std::string>{{
+    //       {"a", 1_n},
+    //       {"b", 2_n},
+    //   }};
+    //
+    //   DimDomain<std::string> input_domain = DimDomain<std::string>{{
+    //       {"a", 3_p},
+    //       {"b", 4_p},
+    //   }};
+    //
+    //   DimCoord<int> result = compute_down_projection(
+    //       projection, coord, input_domain, input_dim_ordering);
+    //
+    //   DimCoord<int> correct = DimCoord<int>{{
+    //       {3, 6_n},
+    //       {4, 0_n},
+    //   }};
+    //
+    //   ASSERT(result == correct);
+    // }
   }
 }

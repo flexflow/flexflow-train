@@ -15,7 +15,7 @@
 
 #include "task-spec/ops/impl/concat.h"
 #include "kernels/concat_kernels.h"
-#include "task-spec/op_task_signature.h"
+#include "task-spec/ops/op_task_signature.h"
 #include "task-spec/profiling.h"
 #include "task-spec/variadic_tensor_ref.h"
 #include "utils/hash-utils.h"

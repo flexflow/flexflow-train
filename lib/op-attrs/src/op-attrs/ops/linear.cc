@@ -364,6 +364,7 @@ static ParallelTensorSpaceToParallelTensorSpaceMapping
       ));
     dims_from.insert(sum_dim_idx());
     dims_from.erase(input_channel_dim);
+    dims_from.erase(discard_copy_dim_idx());
 
     project_dims(inp_to_proj, 
                  /*from=*/dims_from,
@@ -384,10 +385,6 @@ static ParallelTensorSpaceToParallelTensorSpaceMapping
   project_dims(inp_to_proj,
                /*from=*/{input_channel_dim},
                /*onto=*/projection_in_channel_dim);
-
-  project_dims(inp_to_proj,
-               /*from=*/{},
-               /*onto=*/discard_copy_dim_idx());
 
   ParallelTensorDimDegrees projection_degrees = 
     get_projection_parallel_dim_degrees(attrs, input_degrees);
@@ -423,6 +420,7 @@ static ParallelTensorSpaceToParallelTensorSpaceMapping
         input_num_shard_dims.value
       ));
     dims_from.erase(input_channel_dim);
+    dims_from.erase(sum_dim_idx());
 
     project_dims(inp_to_bias, 
                  /*from=*/dims_from,
@@ -438,10 +436,6 @@ static ParallelTensorSpaceToParallelTensorSpaceMapping
                  input_channel_dim,
                },
                /*onto=*/sum_dim_idx());
-
-  project_dims(inp_to_bias,
-               /*from=*/{},
-               /*onto=*/discard_copy_dim_idx());
 
   DimDomain<parallel_tensor_dim_idx_t> l_domain = 
     dim_domain_from_parallel_tensor_dim_degrees(input_degrees);

@@ -3,7 +3,7 @@
 
 #include "op-attrs/computation_graph_op_attrs.dtg.h"
 #include "op-attrs/operator_type.dtg.h"
-#include "task-spec/op_task_id_t.dtg.h"
+#include "task-spec/ops/op_task_id_t.dtg.h"
 #include "task-spec/task_id_with_noop_default_t.dtg.h"
 
 namespace FlexFlow {

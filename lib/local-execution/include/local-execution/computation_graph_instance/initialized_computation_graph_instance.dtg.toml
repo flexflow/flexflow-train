@@ -11,24 +11,25 @@ features = [
 ]
 
 includes = [
-  "local-execution/computation_graph_instance.dtg.h",
-  "local-execution/local_device_states_backing.dtg.h",
+  # "local-execution/computation_graph_instance.dtg.h",
+  # "local-execution/local_device_states_backing.dtg.h",
 ]
 
 src_includes = []
 
-[[fields]]
-name = "per_device_op_states"
-type = "::FlexFlow::LocalDeviceStatesBacking"
-
-[[fields]]
-name = "allocator"
-type = "::FlexFlow::Allocator"
-
-[[fields]]
-name = "atomic_tensor_backing"
-type = "::FlexFlow::LocalAtomicTensorBacking"
-
-[[fields]]
-name = "computation_graph_instance"
-type = "::FlexFlow::ComputationGraphInstance"
+fields = []
+# [[fields]]
+# name = "per_device_op_states"
+# type = "::FlexFlow::LocalDeviceStatesBacking"
+#
+# [[fields]]
+# name = "allocator"
+# type = "::FlexFlow::Allocator"
+#
+# [[fields]]
+# name = "atomic_tensor_backing"
+# type = "::FlexFlow::LocalAtomicTensorBacking"
+#
+# [[fields]]
+# name = "computation_graph_instance"
+# type = "::FlexFlow::ComputationGraphInstance"

@@ -3,7 +3,6 @@
 #include "kernels/device.h"
 #include "kernels/local_cpu_allocator.h"
 #include "kernels/local_cuda_allocator.h"
-#include "local-execution/atomic_task_invocation.dtg.h"
 #include "local-execution/cost_estimator/tracked_allocator.h"
 #include "op-attrs/computation_graph_op_attrs.h"
 #include "op-attrs/pcg_operator_attrs.h"

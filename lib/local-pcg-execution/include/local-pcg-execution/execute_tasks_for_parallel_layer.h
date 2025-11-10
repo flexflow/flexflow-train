@@ -11,7 +11,7 @@
 #include "local-pcg-execution/task_group_execution_times.dtg.h"
 #include "task-spec/runtime_arg_config.dtg.h"
 #include "task-spec/runtime_task_invocation.dtg.h"
-#include "task-spec/training_symbolic_computation_graph.dtg.h"
+#include "task-spec/symbolic/training_symbolic_computation_graph.dtg.h"
 
 namespace FlexFlow {
 

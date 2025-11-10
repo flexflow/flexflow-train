@@ -295,19 +295,16 @@ template int32_t
 
 } // namespace FlexFlow
 
-// TODO(@lockshaw)(#pr): delete
-// namespace std {
-//
-// using namespace ::FlexFlow;
-//
-// size_t hash<GenericTensorAccessorR>::operator()(GenericTensorAccessorR const &a) const {
-//   size_t h = 0;
-//   hash_combine();
-//   return get_std_hash(a.tie());
-// }
-//
-// size_t hash<GenericTensorAccessorW>::operator()(GenericTensorAccessorW const &a) const {
-//   return get_std_hash(a.tie());
-// }
-//
-// }
+namespace std {
+
+using namespace ::FlexFlow;
+
+size_t hash<GenericTensorAccessorR>::operator()(GenericTensorAccessorR const &a) const {
+  return get_std_hash(a.tie());
+}
+
+size_t hash<GenericTensorAccessorW>::operator()(GenericTensorAccessorW const &a) const {
+  return get_std_hash(a.tie());
+}
+
+}

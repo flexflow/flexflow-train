@@ -3,7 +3,7 @@
 
 #include "local-execution/local_task_registry.dtg.h"
 #include "pcg/layer_attrs.dtg.h"
-#include "task-spec/op_task_type.dtg.h"
+#include "task-spec/ops/op_task_type.dtg.h"
 #include "utils/units/milliseconds_t.h"
 #include "task-spec/device_specific_per_device_op_state.dtg.h"
 

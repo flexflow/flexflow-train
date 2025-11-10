@@ -8,7 +8,7 @@
 #include "local-execution/local_tensor_backing.dtg.h"
 #include "pcg/computation_graph.dtg.h"
 #include "pcg/layer_guid_t.dtg.h"
-#include "task-spec/training_symbolic_computation_graph_from_cg_conversion.dtg.h"
+#include "task-spec/symbolic/training_symbolic_computation_graph_from_cg_conversion.dtg.h"
 #include "utils/units/milliseconds_t.h"
 
 namespace FlexFlow {

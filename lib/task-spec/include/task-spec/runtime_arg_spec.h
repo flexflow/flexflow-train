@@ -1,9 +1,9 @@
 #ifndef _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_RUNTIME_ARG_SPEC_H
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_RUNTIME_ARG_SPEC_H
 
-#include "task-spec/op_arg_spec.dtg.h"
+#include "task-spec/ops/op_arg_spec.dtg.h"
 #include "task-spec/runtime_arg_spec.dtg.h"
-#include "task-spec/symbolic_layer_tensor_shape_signature.dtg.h"
+#include "task-spec/symbolic/symbolic_layer_tensor_shape_signature.dtg.h"
 
 namespace FlexFlow {
 

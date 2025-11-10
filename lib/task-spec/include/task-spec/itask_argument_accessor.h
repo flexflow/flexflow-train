@@ -4,7 +4,7 @@
 #include "kernels/allocation.h"
 #include "pcg/device_id_t.dtg.h"
 #include "task-spec/concrete_arg_spec.h"
-#include "task-spec/op_task_signature.h"
+#include "task-spec/ops/op_task_signature.h"
 #include "task-spec/privilege_tensor_accessor.h"
 #include "task-spec/training_tensor_type.dtg.h"
 
