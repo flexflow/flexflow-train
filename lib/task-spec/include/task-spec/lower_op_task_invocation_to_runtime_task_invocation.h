@@ -32,7 +32,7 @@ ConcreteArgSpec
 ConcreteArgSpec lower_argumentless_arg_ref_to_concrete_arg_spec(
     ArgumentlessRuntimeArgRefType,
     RuntimeArgConfig const &,
-    DeviceSpecific<device_handle_t>);
+    DeviceSpecific<device_handle_t> const &);
 
 
 } // namespace FlexFlow

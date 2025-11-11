@@ -4,8 +4,8 @@ type = "struct"
 features = []
 
 includes = [
-  "task-spec/op_task_binding.h",
-  "task-spec/op_task_id_t.dtg.h",
+  "task-spec/ops/op_task_binding.h",
+  "task-spec/ops/op_task_id_t.dtg.h",
 ]
 
 [[fields]]

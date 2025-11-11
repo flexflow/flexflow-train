@@ -9,8 +9,8 @@ features = [
 ]
 
 includes = [
-  "task-spec/slot_type.dtg.h",
-  "task-spec/slot_id_t.dtg.h",
+  "task-spec/ops/slot_type.dtg.h",
+  "task-spec/ops/slot_id_t.dtg.h",
   "task-spec/training_tensor_type.dtg.h",
 ]
 

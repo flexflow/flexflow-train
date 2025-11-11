@@ -6,7 +6,7 @@ features = []
 includes = [
   "pcg/layer_guid_t.dtg.h",
   "pcg/layer_attrs.dtg.h",
-  "task-spec/symbolic_training_tensor_group.dtg.h",
+  "task-spec/symbolic/symbolic_training_tensor_group.dtg.h",
 ]
 
 [[fields]]

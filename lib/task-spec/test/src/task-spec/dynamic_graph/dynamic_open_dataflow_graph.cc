@@ -10,7 +10,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       /*pcg_tensor_guid=*/parallel_tensor_guid_t{
         DataflowOutput{
           Node{1},
-          2_n,
+          0_n,
         },
       },
       /*parallel_tensor_shape=*/std::nullopt,
@@ -22,7 +22,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       /*pcg_tensor_guid=*/parallel_tensor_guid_t{
         DataflowOutput{
           Node{2},
-          2_n,
+          0_n,
         },
       },
       /*parallel_tensor_shape=*/std::nullopt,
@@ -33,8 +33,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     DynamicValueAttrs value_3 = DynamicValueAttrs{
       /*pcg_tensor_guid=*/parallel_tensor_guid_t{
         DataflowOutput{
-          Node{2},
-          2_n,
+          Node{3},
+          0_n,
         },
       },
       /*parallel_tensor_shape=*/std::nullopt,

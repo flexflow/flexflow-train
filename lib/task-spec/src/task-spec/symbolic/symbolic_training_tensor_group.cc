@@ -7,7 +7,7 @@
 
 namespace FlexFlow {
 
-SymbolicTrainingTensorGroup make_symbolic_training_tensor_group_for_tensor_guid_t(
+SymbolicTrainingTensorGroup make_symbolic_training_tensor_group(
     CreateGrad create_grad,
     OptimizerAttrs const &optimizer_attrs,
     SymbolicForwardTensorSource &forward_tensor_source,

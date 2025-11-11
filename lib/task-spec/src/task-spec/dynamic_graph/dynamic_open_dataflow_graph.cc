@@ -3,10 +3,12 @@
 #include "utils/containers/zip_strict.h"
 #include "utils/graph/dataflow_graph/algorithms.h"
 #include "utils/graph/instances/unordered_set_labelled_open_dataflow_graph.h"
+#include "utils/graph/labelled_open_dataflow_graph/algorithms/find_isomorphism.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_inputs.h"
 #include "utils/many_to_one/many_to_one.h"
 #include "utils/containers/all_of.h"
+#include "utils/containers/contains_duplicates.h"
 
 namespace FlexFlow {
 
@@ -20,23 +22,41 @@ DynamicOpenDataflowGraph make_empty_dynamic_open_dataflow_graph() {
 }
 
 bool full_dynamic_graph_satisfies(
-  DynamicOpenDataflowGraph const &,
-  std::function<bool(DynamicNodeAttrs const &)> const &,
-  std::function<bool(DynamicValueAttrs const &)> const &) {
+  DynamicOpenDataflowGraph const &g,
+  std::function<bool(DynamicNodeAttrs const &)> const &node_condition,
+  std::function<bool(DynamicValueAttrs const &)> const &value_condition) {
 
-  NOT_IMPLEMENTED();
+  return all_of(get_dynamic_nodes(g), node_condition) 
+    && all_of(get_dynamic_values(g), value_condition);
 }
 
 bool no_part_of_dynamic_graph_satisfies(
-  DynamicOpenDataflowGraph const &,
-  std::function<bool(DynamicNodeAttrs const &)> const &,
-  std::function<bool(DynamicValueAttrs const &)> const &) {
+  DynamicOpenDataflowGraph const &g,
+  std::function<bool(DynamicNodeAttrs const &)> const &node_condition,
+  std::function<bool(DynamicValueAttrs const &)> const &value_condition) {
 
-  NOT_IMPLEMENTED();
+  return full_dynamic_graph_satisfies(
+    g,
+    [&](DynamicNodeAttrs const &n) -> bool {
+      return !node_condition(n); 
+    },
+    [&](DynamicValueAttrs const &v) -> bool {
+      return !value_condition(v); 
+    });
 }
 
-std::unordered_set<DynamicNodeAttrs> get_dynamic_node_set() {
-  NOT_IMPLEMENTED();
+std::unordered_multiset<DynamicNodeAttrs> get_dynamic_nodes(DynamicOpenDataflowGraph const &g) {
+  return transform(unordered_multiset_of(get_nodes(g.raw)), 
+                   [&](Node const &n) -> DynamicNodeAttrs {
+                     return g.raw.at(n);
+                   });
+}
+
+std::unordered_multiset<DynamicValueAttrs> get_dynamic_values(DynamicOpenDataflowGraph const &g) {
+  return transform(unordered_multiset_of(get_open_dataflow_values(g.raw)), 
+                   [&](OpenDataflowValue const &v) -> DynamicValueAttrs {
+                     return g.raw.at(v);
+                   });
 }
 
 std::unordered_set<DynamicNodeInvocation> get_dynamic_invocation_set(DynamicOpenDataflowGraph const &g) {
@@ -68,16 +88,27 @@ std::unordered_set<DynamicNodeInvocation> get_dynamic_invocation_set(DynamicOpen
 
 DynamicOpenDataflowGraph
   transform_dynamic_invocation_set(
-    DynamicOpenDataflowGraph const &,
-    std::function<DynamicNodeInvocation(DynamicNodeInvocation const &)> const &) {
-  NOT_IMPLEMENTED();
+    DynamicOpenDataflowGraph const &g,
+    std::function<DynamicNodeInvocation(DynamicNodeInvocation const &)> const &f) {
+  std::unordered_set<DynamicNodeInvocation> current_invocation_set = get_dynamic_invocation_set(g);
+  std::unordered_set<DynamicNodeInvocation> new_invocation_set = 
+    transform(current_invocation_set, f);
+
+  return dynamic_open_dataflow_graph_from_invocation_set(new_invocation_set);
 }
 
 DynamicOpenDataflowGraph
   flatmap_dynamic_invocation_set(
-    DynamicOpenDataflowGraph const &,
-    std::function<std::unordered_set<DynamicNodeInvocation>(DynamicNodeInvocation const &)> const &) {
-  NOT_IMPLEMENTED();
+    DynamicOpenDataflowGraph const &g,
+    std::function<std::unordered_set<DynamicNodeInvocation>(DynamicNodeInvocation const &)> const &f) {
+
+  std::unordered_set<DynamicNodeInvocation> current_invocation_set = get_dynamic_invocation_set(g);
+  std::vector<DynamicNodeInvocation> new_invocation_set = 
+    flatmap(vector_of(current_invocation_set), f);
+
+  ASSERT(!contains_duplicates(new_invocation_set));
+
+  return dynamic_open_dataflow_graph_from_invocation_set(unordered_set_of(new_invocation_set));
 }
 
 DynamicOpenDataflowGraph 
@@ -141,23 +172,32 @@ DynamicOpenDataflowGraph
     to_add.erase(invocation);
   };
 
-  auto add_next_invocation_to_graph = [&]() -> bool {
+  auto add_next_invocation_to_graph = [&]() {
     for (DynamicNodeInvocation const &invocation : to_add) {
       if (inputs_have_been_added(invocation)) {
         add_invocation_to_graph(invocation);
-        return true;
+        return;
       }
     }
 
-    return false;
+    PANIC("Failed to add any invocations in to_add", to_add);
   };
 
   do {
-    ASSERT(add_next_invocation_to_graph());
+    add_next_invocation_to_graph();
   } while (to_add.size() > 0);
+
+  ASSERT(get_dynamic_invocation_set(result) == invocation_set);
 
   return result;
 }
 
+bool dynamic_open_dataflow_graphs_are_isomorphic(DynamicOpenDataflowGraph const &lhs,
+                                                 DynamicOpenDataflowGraph const &rhs) {
+  if (lhs.loss != rhs.loss) {
+    return false;
+  }
+  return find_isomorphism(lhs.raw, rhs.raw).has_value();
+}
 
 } // namespace FlexFlow

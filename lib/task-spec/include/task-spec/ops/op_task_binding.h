@@ -5,7 +5,7 @@
 #include "task-spec/ops/op_arg_spec.dtg.h"
 #include "task-spec/ops/op_tensor_spec.h"
 #include "task-spec/fwb_tensor_slot_id_t.dtg.h"
-#include "task-spec/slot_id_t.dtg.h"
+#include "task-spec/ops/slot_id_t.dtg.h"
 #include "task-spec/variadic_tensor_ref.h"
 #include "task-spec/runtime_arg_ref.h"
 

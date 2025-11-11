@@ -14,11 +14,11 @@ bool no_part_of_graph_is_pass_expanded(DynamicOpenDataflowGraph const &);
 bool graph_is_fully_pass_expanded(DynamicOpenDataflowGraph const &);
 
 DynamicNodeInvocation 
-  perform_pass_expansion_for_task(DynamicNodeInvocation const &, PassType);
+  perform_pass_expansion_for_invocation(DynamicNodeInvocation const &, PassType);
 DynamicNodeInvocation 
-  perform_fwd_pass_expansion_for_task(DynamicNodeInvocation const &);
+  perform_fwd_pass_expansion_for_invocation(DynamicNodeInvocation const &);
 DynamicNodeInvocation 
-  perform_bwd_pass_expansion_for_task(DynamicNodeInvocation const &);
+  perform_bwd_pass_expansion_for_invocation(DynamicNodeInvocation const &);
 
 DynamicOpenDataflowGraph
   perform_pass_expansion(DynamicOpenDataflowGraph const &);

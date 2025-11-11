@@ -23,13 +23,13 @@ bool graph_is_fully_pass_expanded(DynamicOpenDataflowGraph const &g) {
 }
 
 DynamicNodeInvocation 
-  perform_pass_expansion_for_task(DynamicNodeInvocation const &task, PassType pass) {
+  perform_pass_expansion_for_invocation(DynamicNodeInvocation const &invocation, PassType pass) {
 
   switch (pass) {
     case PassType::FWD:
-      return perform_fwd_pass_expansion_for_task(task);
+      return perform_fwd_pass_expansion_for_invocation(invocation);
     case PassType::BWD:
-      return perform_bwd_pass_expansion_for_task(task);
+      return perform_bwd_pass_expansion_for_invocation(invocation);
     default:
       PANIC("Unhandled Pass", pass);
   }
@@ -65,7 +65,7 @@ DynamicNodeInvocation
     /*node_attrs=*/
       pass_expand_node(task.node_attrs, PassType::FWD),
     /*outputs=*/
-      transform(task.inputs, get_fwd_tensor),
+      transform(task.outputs, get_fwd_tensor),
   };
 }
 
@@ -84,9 +84,11 @@ DynamicNodeInvocation
 
   return DynamicNodeInvocation{
     /*inputs=*/
-      concat_vectors(
+      concat_vectors(std::vector{
         transform(invocation.inputs, get_fwd_tensor),
-        transform(invocation.outputs, get_bwd_tensor)),
+        transform(invocation.outputs, get_fwd_tensor),
+        transform(invocation.outputs, get_bwd_tensor)
+      }),
     /*node_attrs=*/
       pass_expand_node(invocation.node_attrs, PassType::BWD),
     /*outputs=*/
@@ -102,9 +104,15 @@ DynamicOpenDataflowGraph
   DynamicOpenDataflowGraph result = flatmap_dynamic_invocation_set(
     g, 
     [](DynamicNodeInvocation const &invocation) {
-      return std::unordered_set{
-        perform_fwd_pass_expansion_for_invocation(invocation),
-        perform_bwd_pass_expansion_for_invocation(invocation),
+      if (invocation.inputs.empty()) {
+        return std::unordered_set{
+          perform_fwd_pass_expansion_for_invocation(invocation),
+        };
+      } else {
+        return std::unordered_set{
+          perform_fwd_pass_expansion_for_invocation(invocation),
+          perform_bwd_pass_expansion_for_invocation(invocation),
+        };
       };
     });
 

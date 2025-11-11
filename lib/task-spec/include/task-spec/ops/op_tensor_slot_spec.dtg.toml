@@ -9,11 +9,11 @@ features = [
 ]
 
 includes = [
-  "task-spec/slot_id_t.dtg.h",
-  "task-spec/slot_type.dtg.h",
+  "task-spec/ops/slot_id_t.dtg.h",
+  "task-spec/ops/slot_type.dtg.h",
   "op-attrs/tensor_role.dtg.h",
   "task-spec/is_grad.dtg.h",
-  "task-spec/op_slot_options.dtg.h",
+  "task-spec/ops/op_slot_options.dtg.h",
 ]
 
 [[fields]]

@@ -9,7 +9,7 @@ features = [
 ]
 
 includes = [
-  "task-spec/symbolic_layer_guid_t.dtg.h",
+  "task-spec/symbolic/symbolic_layer_guid_t.dtg.h",
 ]
 
 [[fields]]

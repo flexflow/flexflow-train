@@ -119,7 +119,7 @@ std::optional<RuntimeTaskInvocation>
 
 
 RuntimeTaskInvocation
-  lower_op_task_invocation_to_task_invocation(
+  lower_op_task_invocation_to_runtime_task_invocation(
     OpTaskInvocation const &op_task_invocation,
     symbolic_layer_guid_t symbolic_layer_guid,
     SymbolicLayerTrainingTensorGroupSignatureWithShapes const &layer_signature) {

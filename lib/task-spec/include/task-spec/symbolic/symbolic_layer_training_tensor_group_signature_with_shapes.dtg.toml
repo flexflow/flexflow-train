@@ -10,7 +10,7 @@ features = [
 
 includes = [
   "<vector>",
-  "task-spec/symbolic_training_tensor_group_with_shape.dtg.h",
+  "task-spec/symbolic/symbolic_training_tensor_group_with_shape.dtg.h",
 ]
 
 src_includes = [

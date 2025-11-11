@@ -5,7 +5,7 @@
 #include "task-spec/symbolic/symbolic_optimizer_tensor_guid_t.dtg.h"
 #include "task-spec/symbolic/symbolic_forward_tensor_guid_t.dtg.h"
 #include "task-spec/symbolic/symbolic_gradient_tensor_guid_t.dtg.h"
-#include "task-spec/slot_id_t.dtg.h"
+#include "task-spec/ops/slot_id_t.dtg.h"
 #include "task-spec/runtime_arg_spec.dtg.h"
 #include "task-spec/task_id_t.dtg.h"
 #include "task-spec/runtime_task_signature.dtg.h"

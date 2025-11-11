@@ -18,7 +18,8 @@ bool no_part_of_dynamic_graph_satisfies(
   std::function<bool(DynamicNodeAttrs const &)> const &,
   std::function<bool(DynamicValueAttrs const &)> const &);
 
-std::unordered_set<DynamicNodeAttrs> get_dynamic_node_set();
+std::unordered_multiset<DynamicNodeAttrs> get_dynamic_nodes(DynamicOpenDataflowGraph const &);
+std::unordered_multiset<DynamicValueAttrs> get_dynamic_values(DynamicOpenDataflowGraph const &);
 std::unordered_set<DynamicNodeInvocation> get_dynamic_invocation_set(DynamicOpenDataflowGraph const &);
 
 DynamicOpenDataflowGraph
@@ -34,6 +35,8 @@ DynamicOpenDataflowGraph
 DynamicOpenDataflowGraph 
   dynamic_open_dataflow_graph_from_invocation_set(std::unordered_set<DynamicNodeInvocation> const &);
 
+bool dynamic_open_dataflow_graphs_are_isomorphic(DynamicOpenDataflowGraph const &,
+                                                 DynamicOpenDataflowGraph const &);
 
 } // namespace FlexFlow
 

@@ -10,7 +10,7 @@ features = [
 
 includes = [
   "task-spec/fwb_tensor_slot_id_t.dtg.h",
-  "task-spec/op_tensor_spec.dtg.h",
+  "task-spec/ops/op_tensor_spec.dtg.h",
 ]
 
 [[fields]]

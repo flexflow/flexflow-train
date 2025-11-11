@@ -4,12 +4,12 @@ type = "struct"
 features = []
 
 includes = [
-  "task-spec/training_symbolic_computation_graph.dtg.h",
+  "task-spec/symbolic/training_symbolic_computation_graph.dtg.h",
   "utils/bidict/bidict.h",
   "pcg/tensor_guid_t.dtg.h",
-  "task-spec/symbolic_training_tensor_guid_t.dtg.h",
-  "task-spec/symbolic_tensor_guid_t.dtg.h",
-  "task-spec/symbolic_layer_guid_t.dtg.h",
+  "task-spec/symbolic/symbolic_training_tensor_guid_t.dtg.h",
+  "task-spec/symbolic/symbolic_tensor_guid_t.dtg.h",
+  "task-spec/symbolic/symbolic_layer_guid_t.dtg.h",
   "pcg/layer_guid_t.dtg.h",
 ]
 

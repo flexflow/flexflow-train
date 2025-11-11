@@ -66,16 +66,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1762808139,
-        "narHash": "sha256-R1MNLXBIsDP3NakwN4V1Xl4sPGaqSxVDxjwnidqVNjk=",
-        "ref": "emulated-fs",
-        "rev": "5857b19b784798236a176c7e758c657a3962eb4e",
-        "revCount": 133,
+        "lastModified": 1762825815,
+        "narHash": "sha256-6K5gL1sYPZSstOHAHKbrMolT+PMepArURz7I5oPQkro=",
+        "ref": "refs/heads/master",
+        "rev": "ba26df452d58ebaee6e75468e80ebd10bd5623f9",
+        "revCount": 136,
         "type": "git",
         "url": "https://git.sr.ht/~lockshaw/proj"
       },
       "original": {
-        "ref": "emulated-fs",
         "type": "git",
         "url": "https://git.sr.ht/~lockshaw/proj"
       }

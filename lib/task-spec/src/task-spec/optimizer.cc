@@ -19,6 +19,20 @@ enum Slots {
   KERNEL_DEVICE_TYPE,
 };
 
+RuntimeTaskSignature optimizer_attrs_get_update_signature(OptimizerAttrs const &) {
+  // TODO(@lockshaw)(#pr): 
+  NOT_IMPLEMENTED();
+}
+
+RuntimeTaskInvocation optimizer_attrs_get_update_invocation(
+    OptimizerAttrs const &,
+    symbolic_forward_tensor_guid_t const &weight,
+    symbolic_gradient_tensor_guid_t const &weight_grad,
+    std::vector<symbolic_optimizer_tensor_guid_t> const &grad_buffer_tensors) {
+  // TODO(@lockshaw)(#pr): 
+  NOT_IMPLEMENTED();
+}
+
 RuntimeTaskSignature get_sgd_update_signature() {
   RuntimeTaskSignature sig = make_empty_runtime_task_signature();
   add_slot(sig, WEIGHT, TrainingTensorType::FORWARD);

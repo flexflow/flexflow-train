@@ -10,7 +10,7 @@ features = [
 
 includes = [
   "task-spec/training_tensor_slot_id_t.dtg.h",
-  "task-spec/symbolic_training_tensor_guid_t.dtg.h",
+  "task-spec/symbolic/symbolic_training_tensor_guid_t.dtg.h",
 ]
 
 [[fields]]

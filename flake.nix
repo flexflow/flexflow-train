@@ -18,7 +18,7 @@
     flake-utils.url = "github:numtide/flake-utils";
 
     proj-repo = {
-      url = "git+https://git.sr.ht/~lockshaw/proj?ref=emulated-fs";
+      url = "git+https://git.sr.ht/~lockshaw/proj";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
@@ -92,7 +92,7 @@
                                 -DFF_USE_EXTERNAL_RAPIDCHECK=ON \
                                 -DFF_USE_EXTERNAL_EXPECTED=ON \
                                 -DFF_USE_EXTERNAL_GBENCHMARK=ON \
-                                -DFF_USE_EXTERNAL_LIBASSERT=ON \
+                                -DFF_USE_EXTERNAL_LIBASSERT=ON"
           '';
           
           buildInputs = builtins.concatLists [

@@ -13,7 +13,7 @@ SymbolicLayerTrainingTensorGroupSignatureWithShapes
 }
 
 SymbolicCgOpAttrsAndTrainingSignatureWithShapes
-  make_training_cg_op_attrs_and_signature_with_shapes(
+  make_symbolic_cg_op_attrs_and_signature_with_shapes(
     ComputationGraphOpAttrs const &op_attrs,
     SymbolicLayerTrainingTensorGroupSignatureWithShapes const &signature) {
   return SymbolicCgOpAttrsAndTrainingSignatureWithShapes{

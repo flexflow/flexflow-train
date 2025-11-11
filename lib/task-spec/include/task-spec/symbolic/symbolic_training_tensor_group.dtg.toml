@@ -9,9 +9,9 @@ features = [
 ]
 
 includes = [
-  "task-spec/symbolic_forward_tensor_guid_t.dtg.h",
-  "task-spec/symbolic_gradient_tensor_guid_t.dtg.h",
-  "task-spec/symbolic_optimizer_tensor_guid_t.dtg.h",
+  "task-spec/symbolic/symbolic_forward_tensor_guid_t.dtg.h",
+  "task-spec/symbolic/symbolic_gradient_tensor_guid_t.dtg.h",
+  "task-spec/symbolic/symbolic_optimizer_tensor_guid_t.dtg.h",
 ]
 
 src_includes = [
