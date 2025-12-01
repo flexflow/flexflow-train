@@ -19,14 +19,13 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
     auto scoring_func = [](float x) { return (x - 0.5) * (x - 0.5); };
     GenericMCMCConfig config = GenericMCMCConfig{/*temperature=*/1.0,
-                                                 /*num_iterations=*/10_n};
-    Generic_MCMC_state<float, float> result =
+                                                 /*num_iterations=*/50_n};
+    float answer =
         minimize_score(starting_state, generating_func, scoring_func, config);
-    float answer = result.get_state();
-    float error = result.get_score();
-    CHECK(answer > 0.49);
-    CHECK(answer < 0.51);
+    float error = scoring_func(answer);
+    CHECK(answer > 0.47);
+    CHECK(answer < 0.53);
     CHECK(error >= 0);
-    CHECK(error < 0.01);
+    CHECK(error < 0.001);
   }
 }

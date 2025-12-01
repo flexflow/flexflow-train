@@ -67,10 +67,10 @@ SearchResult mcmc_graph_optimize(ParallelComputationGraph &pcg,
       GenericMCMCConfig{/*temperature*/ search_config.temperature,
                         /*num_iterations*/ search_config.num_iterations};
 
-  Generic_MCMC_state<SearchResult, float> result =
+  SearchResult result =
       minimize_score(starting_state, generating_func, scoring_func, config);
 
-  return result.get_state();
+  return result;
 }
 
 } // namespace FlexFlow
