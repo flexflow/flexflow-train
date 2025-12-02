@@ -9,8 +9,8 @@
 #include "local-pcg-execution/mapped_per_device_op_states_group.h"
 #include "local-pcg-execution/mapped_runtime_task_group.h"
 #include "local-pcg-execution/task_group_execution_times.dtg.h"
-#include "task-spec/runtime_arg_config.dtg.h"
-#include "task-spec/runtime_task_invocation.dtg.h"
+#include "task-spec/runtime_task_invocation/runtime_arg_config.dtg.h"
+#include "task-spec/runtime_task_invocation/runtime_task_invocation.dtg.h"
 #include "task-spec/symbolic/training_symbolic_computation_graph.dtg.h"
 
 namespace FlexFlow {

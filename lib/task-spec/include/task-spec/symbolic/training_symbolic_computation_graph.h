@@ -7,7 +7,7 @@
 #include "task-spec/symbolic/symbolic_gradient_tensor_source.h"
 #include "task-spec/symbolic/symbolic_loss_tensor_source.h"
 #include "task-spec/symbolic/symbolic_optimizer_tensor_source.h"
-#include "task-spec/runtime_task_invocation.dtg.h"
+#include "task-spec/runtime_task_invocation/runtime_task_invocation.dtg.h"
 #include "task-spec/symbolic/symbolic_layer_training_tensor_group_signature_with_shapes.dtg.h"
 #include "task-spec/symbolic/training_symbolic_computation_graph.dtg.h"
 #include "task-spec/symbolic/symbolic_training_layer_attrs_plus_context.dtg.h"

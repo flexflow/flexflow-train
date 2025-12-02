@@ -157,48 +157,13 @@ static std::optional<milliseconds_t>
 TaskImplFunction get_conv_2d_init_task_impl() {
   return TaskImplFunction{InitOpTaskImplFunction{init_task_impl}};
 }
+
 TaskImplFunction get_conv_2d_fwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{forward_task_impl}};
 }
+
 TaskImplFunction get_conv_2d_bwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{backward_task_impl}};
-}
-
-OpTaskSignature get_conv_2d_init_signature() {
-  OpTaskSignature init(OpTaskType::INIT);
-
-  init.add_input_slot(INPUT);
-  init.add_output_slot(OUTPUT);
-  init.add_weight_slot(FILTER);
-  init.add_arg_slot<Conv2DAttrs>(ATTRS);
-  init.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
-  init.add_unchecked_arg_slot<device_handle_t>(HANDLE);
-
-  init.add_return_value<Conv2DPerDeviceState>();
-
-  return init;
-}
-
-OpTaskSignature get_conv_2d_fwd_signature() {
-  OpTaskSignature fwd(OpTaskType::FWD);
-
-  fwd.add_arg_slot<bool>(PROFILING);
-  fwd.add_unchecked_arg_slot<Conv2DPerDeviceState>(PER_DEVICE_STATE);
-  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
-  fwd.add_arg_slot<Conv2DAttrs>(ATTRS);
-
-  fwd.add_input_slot(INPUT);
-  fwd.add_output_slot(OUTPUT);
-  fwd.add_weight_slot(FILTER);
-  fwd.add_weight_slot(BIAS);
-
-  return fwd;
-}
-
-OpTaskSignature get_conv_2d_bwd_signature() {
-  OpTaskSignature bwd = infer_bwd_signature(get_conv_2d_fwd_signature());
-
-  return bwd;
 }
 
 } // namespace FlexFlow

@@ -4,7 +4,7 @@ type = "struct"
 features = []
 
 includes = [
-  "task-spec/runtime_arg_config.dtg.h",
+  "task-spec/runtime_task_invocation/runtime_arg_config.dtg.h",
   "task-spec/device_specific_device_states.dtg.h",
   "local-pcg-execution/parallel_layer_instance_id_t.dtg.h",
   "<unordered_map>",

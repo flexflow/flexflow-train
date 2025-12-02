@@ -1,0 +1,22 @@
+namespace = "FlexFlow"
+name = "TaskForwardTensorParameter"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+  "rapidcheck",
+]
+
+includes = [
+  "task-spec/ops/tensor_slot_name.dtg.h",
+]
+src_includes = []
+
+[[fields]]
+name = "name"
+type = "::FlexFlow::TensorSlotName"
+
+

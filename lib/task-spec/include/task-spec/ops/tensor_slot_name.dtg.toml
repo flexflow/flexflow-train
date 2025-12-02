@@ -1,0 +1,54 @@
+namespace = "FlexFlow"
+name = "TensorSlotName"
+type = "enum"
+features = [
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+[[values]]
+name = "INPUT"
+
+[[values]]
+name = "OUTPUT"
+
+[[values]]
+name = "FILTER"
+
+[[values]]
+name = "BIAS"
+
+[[values]]
+name = "LHS_INPUT"
+
+[[values]]
+name = "RHS_INPUT"
+
+[[values]]
+name = "EMBEDDING_TABLE"
+
+[[values]]
+name = "INDEX"
+
+[[values]]
+name = "GAMMA"
+
+[[values]]
+name = "BETA"
+
+[[values]]
+name = "WEIGHT"
+
+[[values]]
+name = "QUERY"
+
+[[values]]
+name = "KEY"
+
+[[values]]
+name = "VALUE"
+
+[[values]]
+name = "LOGIT"

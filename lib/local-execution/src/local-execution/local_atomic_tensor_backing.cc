@@ -25,7 +25,7 @@ TaskArgumentAccessor get_task_arg_accessor_for_atomic_task_invocation(
       tensor_slots_backing = construct_tensor_slots_backing_for_binding(
           local_tensor_backing, atomic_task_binding);
 
-  std::unordered_map<slot_id_t, ConcreteArgSpec> arg_slots_backing =
+  std::unordered_map<arg_slot_id_t, ConcreteArgSpec> arg_slots_backing =
     atomic_task_binding.arg_bindings;
 
   return TaskArgumentAccessor::create<LocalTaskArgumentAccessor>(

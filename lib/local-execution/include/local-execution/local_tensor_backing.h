@@ -7,9 +7,9 @@
 #include "local-execution/atomic_task_invocation/atomic_task_invocation.dtg.h"
 #include "local-execution/local_tensor_backing.dtg.h"
 #include "local-execution/tensor_slot_backing.dtg.h"
-#include "task-spec/runtime_arg_config.dtg.h"
-#include "task-spec/runtime_task_invocation.dtg.h"
-#include "task-spec/task_argument_accessor.h"
+#include "task-spec/runtime_task_invocation/runtime_arg_config.dtg.h"
+#include "task-spec/runtime_task_invocation/runtime_task_invocation.dtg.h"
+#include "task-spec/task_argument_accessor/task_argument_accessor.h"
 #include "task-spec/symbolic/symbolic_training_tensor_guid_t.dtg.h"
 #include "local-execution/atomic_training_tensor_guid_t.dtg.h"
 

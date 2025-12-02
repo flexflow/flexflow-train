@@ -13,9 +13,6 @@ OpTaskInvocation backward(BroadcastAttrs const &);
 TaskImplFunction get_broadcast_fwd_task_impl();
 TaskImplFunction get_broadcast_bwd_task_impl();
 
-OpTaskSignature get_broadcast_fwd_signature();
-OpTaskSignature get_broadcast_bwd_signature();
-
 } // namespace FlexFlow
 
 #endif

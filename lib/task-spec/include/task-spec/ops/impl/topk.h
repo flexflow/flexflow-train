@@ -10,9 +10,6 @@ namespace FlexFlow {
 TaskImplFunction get_topk_fwd_task_impl();
 TaskImplFunction get_topk_bwd_task_impl();
 
-OpTaskSignature get_topk_fwd_signature();
-OpTaskSignature get_topk_bwd_signature();
-
 OpTaskInvocation forward(TopKAttrs const &);
 OpTaskInvocation backward(TopKAttrs const &);
 

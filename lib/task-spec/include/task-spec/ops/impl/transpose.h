@@ -10,9 +10,6 @@ namespace FlexFlow {
 TaskImplFunction get_transpose_fwd_task_impl();
 TaskImplFunction get_transpose_bwd_task_impl();
 
-OpTaskSignature get_transpose_fwd_signature();
-OpTaskSignature get_transpose_bwd_signature();
-
 OpTaskInvocation forward(TransposeAttrs const &);
 OpTaskInvocation backward(TransposeAttrs const &);
 

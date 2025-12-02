@@ -10,9 +10,6 @@ namespace FlexFlow {
 TaskImplFunction get_flat_fwd_task_impl();
 TaskImplFunction get_flat_bwd_task_impl();
 
-OpTaskSignature get_flat_fwd_signature();
-OpTaskSignature get_flat_bwd_signature();
-
 OpTaskInvocation forward(FlatAttrs const &);
 OpTaskInvocation backward(FlatAttrs const &);
 

@@ -10,9 +10,6 @@ namespace FlexFlow {
 TaskImplFunction get_reverse_fwd_task_impl();
 TaskImplFunction get_reverse_bwd_task_impl();
 
-OpTaskSignature get_reverse_fwd_signature();
-OpTaskSignature get_reverse_bwd_signature();
-
 OpTaskInvocation forward(ReverseAttrs const &);
 OpTaskInvocation backward(ReverseAttrs const &);
 

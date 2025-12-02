@@ -9,9 +9,9 @@ features = [
 
 includes = [
   "<unordered_map>",
-  "task-spec/training_tensor_slot_id_t.dtg.h",
+  "task-spec/task_argument_accessor/task_tensor_parameter.dtg.h",
   "local-execution/atomic_training_tensor_guid_t.dtg.h",
-  "task-spec/slot_id_t.dtg.h",
+  "task-spec/ops/arg_slot_id_t.dtg.h",
   "task-spec/concrete_arg_spec.h",
 ]
 
@@ -27,4 +27,4 @@ type = "std::unordered_map<::FlexFlow::training_tensor_slot_id_t, ::FlexFlow::at
 
 [[fields]]
 name = "arg_bindings"
-type = "std::unordered_map<::FlexFlow::slot_id_t, ::FlexFlow::ConcreteArgSpec>"
+type = "std::unordered_map<::FlexFlow::arg_slot_id_t, ::FlexFlow::ConcreteArgSpec>"

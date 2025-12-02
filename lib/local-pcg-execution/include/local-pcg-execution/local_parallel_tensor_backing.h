@@ -9,9 +9,9 @@
 #include "local-pcg-execution/parallel_tensor_accessors_w.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "pcg/machine_space_coordinate.dtg.h"
-#include "task-spec/runtime_arg_config.dtg.h"
-#include "task-spec/runtime_task_invocation.dtg.h"
-#include "task-spec/training_tensor_slot_id_t.dtg.h"
+#include "task-spec/runtime_task_invocation/runtime_arg_config.dtg.h"
+#include "task-spec/runtime_task_invocation/runtime_task_invocation.dtg.h"
+#include "task-spec/task_argument_accessor/task_tensor_parameter.dtg.h"
 
 namespace FlexFlow {
 

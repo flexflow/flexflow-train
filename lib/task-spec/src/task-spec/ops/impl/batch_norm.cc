@@ -171,44 +171,13 @@ static std::optional<milliseconds_t>
 TaskImplFunction get_batch_norm_init_task_impl() {
   return TaskImplFunction{InitOpTaskImplFunction{init_task_impl}};
 }
+
 TaskImplFunction get_batch_norm_fwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{forward_task_impl}};
 }
+
 TaskImplFunction get_batch_norm_bwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{backward_task_impl}};
-}
-
-OpTaskSignature get_batch_norm_init_signature() {
-  OpTaskSignature init(OpTaskType::INIT);
-
-  init.add_input_slot(INPUT);
-  init.add_input_slot(BIAS);
-  init.add_output_slot(OUTPUT);
-  init.add_arg_slot<BatchNormAttrs>(ATTRS);
-  init.add_arg_slot<bool>(PROFILING);
-  init.add_unchecked_arg_slot<device_handle_t>(HANDLE);
-
-  return init;
-}
-
-OpTaskSignature get_batch_norm_fwd_signature() {
-  OpTaskSignature fwd(OpTaskType::FWD);
-
-  fwd.add_input_slot(INPUT);
-  fwd.add_input_slot(SCALE);
-  fwd.add_input_slot(BIAS);
-  fwd.add_output_slot(OUTPUT);
-  fwd.add_arg_slot<bool>(PROFILING);
-  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
-  fwd.add_unchecked_arg_slot<std::optional<BatchNormPerDeviceState>>(
-      PER_DEVICE_STATE);
-
-  return fwd;
-}
-OpTaskSignature get_batch_norm_bwd_signature() {
-  OpTaskSignature bwd = infer_bwd_signature(get_batch_norm_fwd_signature());
-
-  return bwd;
 }
 
 }; // namespace FlexFlow

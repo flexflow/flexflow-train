@@ -3,7 +3,7 @@
 
 #include "op-attrs/computation_graph_op_attrs.dtg.h"
 #include "task-spec/ops/op_task_invocation.dtg.h"
-#include "task-spec/ops/op_task_signature.h"
+#include "task-spec/ops/op_task_type.dtg.h"
 
 namespace FlexFlow {
 
@@ -14,9 +14,6 @@ std::optional<OpTaskInvocation>
     get_backward_op_task_invocation(ComputationGraphOpAttrs const &);
 
 std::optional<OpTaskInvocation> get_op_task_invocation(ComputationGraphOpAttrs const &, OpTaskType);
-
-bool is_invocation_valid(OpTaskSignature const &sig,
-                         OpTaskInvocation const &inv);
 
 } // namespace FlexFlow
 

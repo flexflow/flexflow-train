@@ -15,7 +15,6 @@
 
 #include "task-spec/ops/impl/concat.h"
 #include "kernels/concat_kernels.h"
-#include "task-spec/ops/op_task_signature.h"
 #include "task-spec/profiling.h"
 #include "task-spec/variadic_tensor_ref.h"
 #include "utils/hash-utils.h"
@@ -24,47 +23,13 @@ namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::Concat;
 
-enum Slots {
-  INPUTS,
-  OUTPUT,
-  ATTRS,
-  PROFILING,
-  HANDLE,
-  NUM_INPUTS,
-  KERNEL_DEVICE_TYPE
-};
-
-OpTaskInvocation forward(ConcatAttrs const &attrs) {
-  OpTaskBinding binding;
-  binding.bind(INPUTS, get_input_tensors());
-  binding.bind(OUTPUT, output_tensor(0_n));
-  binding.bind_arg(PROFILING, profiling_settings());
-  binding.bind_arg(ATTRS, attrs);
-  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
-
-  return OpTaskInvocation{
-      op_task_id_t::FWD,
-      binding,
-  };
-}
-
-OpTaskInvocation backward(ConcatAttrs const &attrs) {
-  OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
-
-  return OpTaskInvocation{
-      op_task_id_t::BWD,
-      b,
-  };
-}
-
 static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
-  ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
-  auto const &attrs = acc.get_argument<ConcatAttrs>(ATTRS);
+  ProfilingSettings profiling = acc.get_profiling_settings();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
+  ConcatAttrs attrs = acc.get_op_attrs().require_concat();
 
-  auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
-  auto inputs = acc.get_variadic_tensor<Permissions::RO>(INPUTS);
+  auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
+  auto inputs = acc.get_variadic_tensor<Permissions::RO>(TensorSlotName::INPUT);
 
   assert(inputs.size() <= MAX_NUM_INPUTS);
 
@@ -79,13 +44,12 @@ static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor cons
 
 static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
-  ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
-  auto const &attrs = acc.get_argument<ConcatAttrs>(ATTRS);
+  ProfilingSettings profiling = acc.get_profiling_settings();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
+  ConcatAttrs attrs = acc.get_op_attrs().require_concat();
 
-  auto input_grads = acc.get_variadic_tensor_grad<Permissions::RW>(INPUTS);
-  auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
+  auto input_grads = acc.get_variadic_tensor_grad<Permissions::RW>(TensorSlotName::INPUT);
+  auto output_grad = acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
 
   assert(input_grads.size() <= MAX_NUM_INPUTS);
 
@@ -101,26 +65,9 @@ static std::optional<milliseconds_t>
 TaskImplFunction get_concat_fwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{forward_task_impl}};
 }
+
 TaskImplFunction get_concat_bwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{backward_task_impl}};
-}
-
-OpTaskSignature get_concat_fwd_signature() {
-  OpTaskSignature fwd(OpTaskType::FWD);
-
-  fwd.add_arg_slot<ConcatAttrs>(ATTRS);
-  fwd.add_arg_slot<bool>(PROFILING);
-  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
-  fwd.add_input_slot(INPUTS, SlotType::VARIADIC);
-  fwd.add_output_slot(OUTPUT);
-
-  return fwd;
-}
-
-OpTaskSignature get_concat_bwd_signature() {
-  OpTaskSignature bwd = infer_bwd_signature(get_concat_fwd_signature());
-
-  return bwd;
 }
 
 }; // namespace FlexFlow

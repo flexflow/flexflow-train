@@ -4,7 +4,7 @@
 #include "compiler/cost_estimator/cost_estimator.h"
 #include "pcg/machine_interconnect_specification.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
-#include "task-spec/runtime_arg_config.dtg.h"
+#include "task-spec/runtime_task_invocation/runtime_arg_config.dtg.h"
 
 namespace FlexFlow {
 

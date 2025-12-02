@@ -17,7 +17,7 @@
 #include "task-spec/gradient_tensor_source.h"
 #include "task-spec/loss_tensor_source.h"
 #include "task-spec/optimizer_tensor_source.h"
-#include "task-spec/runtime_arg_config.h"
+#include "task-spec/runtime_task_invocation/runtime_arg_config.h"
 #include "task-spec/training_computation_graph.h"
 #include "test/utils/doctest/check_kv.h"
 #include "utils/containers/get_only.h"

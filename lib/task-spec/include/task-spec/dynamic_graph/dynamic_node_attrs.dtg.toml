@@ -9,9 +9,11 @@ features = [
 
 includes = [
   "<optional>",
-  "task-spec/dynamic_graph/pass_type.dtg.h",
+  "task-spec/dynamic_graph/dynamic_task_type.dtg.h",
   "pcg/machine_space_coordinate.dtg.h",
   "pcg/mapped_parallel_computation_graph/mapped_operator_task_group.h",
+  "op-attrs/pcg_operator_attrs.dtg.h",
+  "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h",
 ]
 
 src_includes = [
@@ -19,8 +21,8 @@ src_includes = [
 ]
 
 [[fields]]
-name = "pass_type"
-type = "std::optional<::FlexFlow::PassType>"
+name = "task_type"
+type = "std::optional<::FlexFlow::DynamicTaskType>"
 
 [[fields]]
 name = "device_coord"
@@ -29,3 +31,11 @@ type = "std::optional<::FlexFlow::MachineSpaceCoordinate>"
 [[fields]]
 name = "mapping"
 type = "std::optional<::FlexFlow::MappedOperatorTaskGroup>"
+
+[[fields]]
+name = "op_attrs"
+type = "std::optional<::FlexFlow::PCGOperatorAttrs>"
+
+[[fields]]
+name = "pcg_layer_guid"
+type = "::FlexFlow::parallel_layer_guid_t"

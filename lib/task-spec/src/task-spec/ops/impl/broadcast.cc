@@ -18,13 +18,4 @@ TaskImplFunction get_broadcast_bwd_task_impl() {
   NOT_IMPLEMENTED();
 }
 
-OpTaskSignature get_broadcast_fwd_signature() {
-  NOT_IMPLEMENTED();
-}
-
-OpTaskSignature get_broadcast_bwd_signature() {
-  NOT_IMPLEMENTED();
-}
-
-
 } // namespace FlexFlow

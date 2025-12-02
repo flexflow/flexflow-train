@@ -6,7 +6,7 @@
 #include "local-execution/local_task_registry.h"
 #include "local-execution/local_tensor_backing.h"
 #include "task-spec/fwb_op_task_type.h"
-#include "task-spec/runtime_task_invocation.dtg.h"
+#include "task-spec/runtime_task_invocation/runtime_task_invocation.dtg.h"
 #include "task-spec/symbolic/training_symbolic_computation_graph.h"
 #include "utils/containers/flatmap.h"
 

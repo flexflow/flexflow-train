@@ -1,81 +1,21 @@
 #include "task-spec/ops/impl/element_binary.h"
 #include "kernels/element_binary_kernels.h"
 #include "task-spec/profiling.h"
-#include "task-spec/task_signature_impl.h"
 #include "utils/hash-utils.h"
 
 namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::ElementBinary;
 
-enum Slots {
-  LHS_INPUT,
-  RHS_INPUT,
-  OUTPUT,
-  PROFILING,
-  PER_DEVICE_STATE,
-  HANDLE,
-  ATTRS,
-  KERNEL_DEVICE_TYPE,
-};
-
-OpTaskInvocation init(ElementBinaryAttrs const &attrs) {
-  OpTaskBinding binding;
-
-  binding.bind(LHS_INPUT, input_tensor(0_n));
-  binding.bind(RHS_INPUT, input_tensor(1_n));
-  binding.bind(OUTPUT, output_tensor(0_n));
-
-  binding.bind_arg(ATTRS, attrs);
-  binding.bind_arg(HANDLE, ff_handle());
-  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
-
-  return OpTaskInvocation{
-      op_task_id_t::INIT,
-      binding,
-  };
-}
-
-OpTaskInvocation forward(ElementBinaryAttrs const &attrs) {
-  OpTaskBinding binding;
-
-  binding.bind(LHS_INPUT, input_tensor(0_n));
-  binding.bind(RHS_INPUT, input_tensor(1_n));
-  binding.bind(OUTPUT, output_tensor(0_n));
-
-  binding.bind_arg(ATTRS, attrs);
-  binding.bind_arg(PROFILING, profiling_settings());
-  binding.bind_arg(
-      PER_DEVICE_STATE,
-      per_device_op_state<std::optional<ElementBinaryPerDeviceState>>());
-  binding.bind_arg(HANDLE, ff_handle());
-  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
-
-  return OpTaskInvocation{
-      op_task_id_t::FWD,
-      binding,
-  };
-}
-
-OpTaskInvocation backward(ElementBinaryAttrs const &attrs) {
-  OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
-
-  return OpTaskInvocation{
-      op_task_id_t::BWD,
-      b,
-  };
-}
-
 static DeviceSpecificPerDeviceOpState
     init_task_impl(TaskArgumentAccessor const &acc) {
-  auto input_lhs = acc.get_tensor<Permissions::RO>(LHS_INPUT);
-  auto input_rhs = acc.get_tensor<Permissions::RO>(RHS_INPUT);
-  auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
+  auto input_lhs = acc.get_tensor<Permissions::RO>(TensorSlotName::LHS_INPUT);
+  auto input_rhs = acc.get_tensor<Permissions::RO>(TensorSlotName::RHS_INPUT);
+  auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
 
-  device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
-  auto const &attrs = acc.get_argument<ElementBinaryAttrs>(ATTRS);
+  device_handle_t handle = acc.get_ff_handle();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
+  ElementBinaryAttrs attrs = acc.get_op_attrs().require_element_binary();
 
   std::optional<ElementBinaryPerDeviceState> per_device_state =
       init_kernel(kernel_device_type,
@@ -93,17 +33,15 @@ static DeviceSpecificPerDeviceOpState
 }
 
 static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
-  ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
-  auto per_device_state =
-      acc.get_argument<ElementBinaryPerDeviceState>(PER_DEVICE_STATE);
-  auto const &attrs = acc.get_argument<ElementBinaryAttrs>(ATTRS);
+  ProfilingSettings profiling = acc.get_profiling_settings();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
+  ElementBinaryPerDeviceState per_device_state = acc.get_per_device_op_state().require_element_binary().value();
+  ElementBinaryAttrs attrs = acc.get_op_attrs().require_element_binary();
+  device_handle_t handle = acc.get_ff_handle();
 
-  auto input_lhs = acc.get_tensor<Permissions::RO>(LHS_INPUT);
-  auto input_rhs = acc.get_tensor<Permissions::RO>(RHS_INPUT);
-  auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
-  device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
+  auto input_lhs = acc.get_tensor<Permissions::RO>(TensorSlotName::LHS_INPUT);
+  auto input_rhs = acc.get_tensor<Permissions::RO>(TensorSlotName::RHS_INPUT);
+  auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
 
   return profile(forward_kernel,
                  profiling,
@@ -120,20 +58,18 @@ static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor cons
 
 static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
-  auto per_device_state =
-      acc.get_argument<ElementBinaryPerDeviceState>(PER_DEVICE_STATE);
-  ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
-  auto const &attrs = acc.get_argument<ElementBinaryAttrs>(ATTRS);
-  device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
+  ProfilingSettings profiling = acc.get_profiling_settings();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
+  ElementBinaryPerDeviceState per_device_state = acc.get_per_device_op_state().require_element_binary().value();
+  ElementBinaryAttrs attrs = acc.get_op_attrs().require_element_binary();
+  device_handle_t handle = acc.get_ff_handle();
 
-  auto input_lhs = acc.get_tensor<Permissions::RO>(LHS_INPUT);
-  auto input_rhs = acc.get_tensor<Permissions::RO>(RHS_INPUT);
+  auto input_lhs = acc.get_tensor<Permissions::RO>(TensorSlotName::LHS_INPUT);
+  auto input_rhs = acc.get_tensor<Permissions::RO>(TensorSlotName::RHS_INPUT);
 
-  auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
-  auto input_lhs_grad = acc.get_tensor_grad<Permissions::RW>(LHS_INPUT);
-  auto input_rhs_grad = acc.get_tensor_grad<Permissions::RW>(RHS_INPUT);
+  auto output_grad = acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
+  auto input_lhs_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::LHS_INPUT);
+  auto input_rhs_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::RHS_INPUT);
 
   return profile(backward_kernel,
                  profiling,
@@ -161,44 +97,6 @@ TaskImplFunction get_element_binary_fwd_task_impl() {
 
 TaskImplFunction get_element_binary_bwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{backward_task_impl}};
-}
-
-OpTaskSignature get_element_binary_init_signature() {
-  OpTaskSignature init(OpTaskType::INIT);
-
-  init.add_input_slot(LHS_INPUT);
-  init.add_input_slot(RHS_INPUT);
-  init.add_output_slot(OUTPUT);
-
-  init.add_arg_slot<BatchMatmulAttrs>(ATTRS);
-  init.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
-  init.add_unchecked_arg_slot<device_handle_t>(HANDLE);
-
-  init.add_return_value<ElementBinaryPerDeviceState>();
-
-  return init;
-}
-
-OpTaskSignature get_element_binary_fwd_signature() {
-  OpTaskSignature fwd(OpTaskType::FWD);
-
-  fwd.add_arg_slot<ProfilingSettings>(PROFILING);
-  fwd.add_unchecked_arg_slot<ElementBinaryPerDeviceState>(PER_DEVICE_STATE);
-  fwd.add_arg_slot<ElementBinaryAttrs>(ATTRS);
-  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
-  fwd.add_unchecked_arg_slot<device_handle_t>(HANDLE);
-
-  fwd.add_input_slot(LHS_INPUT);
-  fwd.add_input_slot(RHS_INPUT);
-  fwd.add_output_slot(OUTPUT);
-
-  return fwd;
-}
-
-OpTaskSignature get_element_binary_bwd_signature() {
-  OpTaskSignature bwd = infer_bwd_signature(get_element_binary_fwd_signature());
-
-  return bwd;
 }
 
 }; // namespace FlexFlow

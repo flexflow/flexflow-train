@@ -15,10 +15,6 @@ TaskImplFunction get_linear_init_task_impl();
 TaskImplFunction get_linear_fwd_task_impl();
 TaskImplFunction get_linear_bwd_task_impl();
 
-OpTaskSignature get_linear_init_signature();
-OpTaskSignature get_linear_fwd_signature();
-OpTaskSignature get_linear_bwd_signature();
-
 } // namespace FlexFlow
 
 #endif

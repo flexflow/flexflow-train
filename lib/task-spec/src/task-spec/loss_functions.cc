@@ -21,28 +21,16 @@
 
 namespace FlexFlow {
 
-enum Slots { LOGIT, LABEL, LOGIT_GRAD, ATTRS, PROFILING, KERNEL_DEVICE_TYPE };
-
-RuntimeTaskSignature get_loss_bwd_signature() {
-  RuntimeTaskSignature sig = make_empty_runtime_task_signature();
-  add_slot(sig, LOGIT, TrainingTensorType::FORWARD);
-  add_slot(sig, LABEL, TrainingTensorType::LOSS);
-  add_slot(sig, LOGIT_GRAD, TrainingTensorType::GRADIENT);
-
-  add_arg_slot<LossAttrs>(sig, ATTRS);
-  add_arg_slot<ProfilingSettings>(sig, PROFILING);
-  add_arg_slot<DeviceType>(sig, KERNEL_DEVICE_TYPE);
-  return sig;
-}
+enum Slots { LABEL, LOGIT_GRAD, ATTRS, PROFILING, KERNEL_DEVICE_TYPE };
 
 RuntimeTaskInvocation loss_attrs_backward(LossAttrs const &attrs,
                         symbolic_forward_tensor_guid_t logit,
                         symbolic_gradient_tensor_guid_t logit_grad,
                         symbolic_loss_tensor_guid_t label) {
   RuntimeTaskBinding b;
-  b.bind(LOGIT, logit);
-  b.bind_loss(LABEL, label);
-  b.bind_grad(LOGIT_GRAD, logit_grad);
+  b.bind(TensorSlotName::LOGIT, logit);
+  b.bind_loss(label);
+  b.bind_grad(TensorSlotName::LOGIT, logit_grad);
 
   b.bind_arg(ATTRS, attrs);
   b.bind_arg(PROFILING, profiling_settings());
@@ -55,9 +43,9 @@ static void backward_task_impl(TaskArgumentAccessor const &acc) {
   auto attrs = acc.get_argument<LossAttrs>(ATTRS);
   auto profiling = acc.get_argument<ProfilingSettings>(PROFILING);
   auto kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
-  auto logit_grad = acc.get_tensor_grad<Permissions::RW>(LOGIT_GRAD);
-  auto logit = acc.get_tensor<Permissions::RO>(LOGIT);
-  auto label = acc.get_loss_tensor<Permissions::RO>(LABEL);
+  auto logit_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::LOGIT);
+  auto logit = acc.get_tensor<Permissions::RO>(TensorSlotName::LOGIT);
+  auto label = acc.get_loss_tensor<Permissions::RO>();
 
   int batch_size =
       dim_at_idx(logit.shape.dims, legion_dim_t{1_n}).int_from_positive_int();

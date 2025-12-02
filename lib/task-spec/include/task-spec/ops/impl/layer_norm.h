@@ -11,10 +11,6 @@ TaskImplFunction get_layer_norm_init_task_impl();
 TaskImplFunction get_layer_norm_fwd_task_impl();
 TaskImplFunction get_layer_norm_bwd_task_impl();
 
-OpTaskSignature get_layer_norm_init_signature();
-OpTaskSignature get_layer_norm_fwd_signature();
-OpTaskSignature get_layer_norm_bwd_signature();
-
 OpTaskInvocation init(LayerNormAttrs const &);
 OpTaskInvocation forward(LayerNormAttrs const &);
 OpTaskInvocation backward(LayerNormAttrs const &);

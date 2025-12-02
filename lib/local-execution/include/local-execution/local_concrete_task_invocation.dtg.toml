@@ -5,7 +5,7 @@ features = []
 
 includes = [
   "task-spec/task_id_t.dtg.h",
-  "task-spec/task_argument_accessor.h",
+  "task-spec/task_argument_accessor/task_argument_accessor.h",
 ]
 
 [[fields]]

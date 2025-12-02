@@ -17,8 +17,8 @@
 #include "kernels/attention_kernels.h"
 #include "kernels/device_handle_t.dtg.h"
 #include "op-attrs/ops/attention.h"
+#include "op-attrs/ops/attention/multihead_attention_inputs.h"
 #include "op-attrs/ops/attention/multihead_attention_parallel_inputs.h"
-#include "task-spec/ops/op_task_signature.h"
 #include "task-spec/profiling.h"
 #include "task-spec/ops/op_task_invocation.dtg.h"
 
@@ -26,108 +26,33 @@ namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::MultiHeadAttention;
 
-enum Slots {
-  QUERY_PARALLEL_TENSOR_SHAPE,
-  KEY_PARALLEL_TENSOR_SHAPE,
-  VALUE_PARALLEL_TENSOR_SHAPE,
-  QPROJSIZE,
-  KPROJSIZE,
-  VPROJSIZE,
-  OPROJSIZE,
-  ATTRS,
-  PROFILING,
-  QUERY,
-  KEY,
-  VALUE,
-  WEIGHTS,
-  OUTPUT,
-  HANDLE,
-  PER_DEVICE_STATE,
-  KERNEL_DEVICE_TYPE,
-};
-
-OpTaskInvocation init(MultiHeadAttentionAttrs const &attrs) {
-  OpTaskBinding b;
-
-  b.bind_arg(HANDLE, ff_handle());
-  b.bind_arg(ATTRS, attrs);
-
-  b.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
-
-  b.bind_arg(QUERY_PARALLEL_TENSOR_SHAPE, input_parallel_tensor_shape(0_n));
-  b.bind_arg(KEY_PARALLEL_TENSOR_SHAPE, input_parallel_tensor_shape(1_n));
-  b.bind_arg(VALUE_PARALLEL_TENSOR_SHAPE, input_parallel_tensor_shape(2_n));
-
-  b.bind_arg(QPROJSIZE, get_qProjSize(attrs));
-  b.bind_arg(KPROJSIZE, get_kProjSize(attrs));
-  b.bind_arg(VPROJSIZE, get_vProjSize(attrs));
-  b.bind_arg(OPROJSIZE, get_oProjSize(attrs));
-
-  return OpTaskInvocation{
-      op_task_id_t::INIT,
-      b,
-  };
-}
-
-OpTaskInvocation forward(MultiHeadAttentionAttrs const &attrs) {
-  OpTaskBinding b;
-
-  b.bind(QUERY, input_tensor(0_n));
-  b.bind(KEY, input_tensor(1_n));
-  b.bind(VALUE, input_tensor(2_n));
-  b.bind(WEIGHTS, weight_tensor(0_n));
-  b.bind(OUTPUT, output_tensor(0_n));
-
-  b.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
-  b.bind_arg(PROFILING, profiling_settings());
-  b.bind_arg(PER_DEVICE_STATE,
-             per_device_op_state<std::optional<MHAPerDeviceState>>());
-
-  return OpTaskInvocation{
-      op_task_id_t::FWD,
-      b,
-  };
-}
-
-OpTaskInvocation backward(MultiHeadAttentionAttrs const &attrs) {
-  OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
-
-  return OpTaskInvocation{
-      op_task_id_t::BWD,
-      b,
-  };
-}
-
 static DeviceSpecificPerDeviceOpState
     init_task_impl(TaskArgumentAccessor const &acc) {
-  auto const &attrs = acc.get_argument<MultiHeadAttentionAttrs>(ATTRS);
+  MultiHeadAttentionAttrs attrs = acc.get_op_attrs().require_multi_head_attention();
   Allocator allocator = acc.get_allocator();
 
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
 
-  positive_int qProjSize = acc.get_argument<positive_int>(QPROJSIZE);
-  positive_int kProjSize = acc.get_argument<positive_int>(KPROJSIZE);
-  positive_int vProjSize = acc.get_argument<positive_int>(VPROJSIZE);
-  positive_int oProjSize = acc.get_argument<positive_int>(OPROJSIZE);
+  positive_int qProjSize = get_qProjSize(attrs);
+  positive_int kProjSize = get_kProjSize(attrs);
+  positive_int vProjSize = get_vProjSize(attrs); 
+  positive_int oProjSize = get_oProjSize(attrs);
 
-  device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
-  ParallelTensorShape query_parallel_tensor_shape =
-      acc.get_argument<ParallelTensorShape>(QUERY_PARALLEL_TENSOR_SHAPE);
-  ParallelTensorShape key_parallel_tensor_shape =
-      acc.get_argument<ParallelTensorShape>(KEY_PARALLEL_TENSOR_SHAPE);
-  ParallelTensorShape value_parallel_tensor_shape =
-      acc.get_argument<ParallelTensorShape>(VALUE_PARALLEL_TENSOR_SHAPE);
+  device_handle_t handle = acc.get_ff_handle();
 
-  MultiHeadAttentionParallelInputs parsed = throw_if_unexpected(
-      parse_attention_parallel_input_shape(query_parallel_tensor_shape,
-                                           key_parallel_tensor_shape,
-                                           value_parallel_tensor_shape));
-  ParallelTensorShape weight_parallel_tensor_shape =
+  TensorShape query_tensor_shape = acc.get_tensor_shape(TensorSlotName::QUERY);
+  TensorShape key_tensor_shape = acc.get_tensor_shape(TensorSlotName::KEY);
+  TensorShape value_tensor_shape = acc.get_tensor_shape(TensorSlotName::VALUE);
+
+  MultiHeadAttentionInputs parsed = throw_if_unexpected(
+      parse_attention_input_shape(query_tensor_shape,
+                                  key_tensor_shape,
+                                  value_tensor_shape));
+  TensorShape weight_tensor_shape =
       throw_if_unexpected(get_weights_shape(attrs,
-                                            query_parallel_tensor_shape,
-                                            key_parallel_tensor_shape,
-                                            value_parallel_tensor_shape));
+                                            query_tensor_shape,
+                                            key_tensor_shape,
+                                            value_tensor_shape));
 
   positive_int kvSeqLength = get_kvSeqLength(parsed);
   positive_int qSize = get_qSize(parsed);
@@ -161,17 +86,15 @@ static DeviceSpecificPerDeviceOpState
 }
 
 static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
-  auto query = acc.get_tensor<Permissions::RO>(QUERY);
-  auto key = acc.get_tensor<Permissions::RO>(KEY);
-  auto value = acc.get_tensor<Permissions::RO>(VALUE);
-  auto weight = acc.get_tensor<Permissions::RO>(WEIGHTS);
-  auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
+  auto query = acc.get_tensor<Permissions::RO>(TensorSlotName::QUERY);
+  auto key = acc.get_tensor<Permissions::RO>(TensorSlotName::KEY);
+  auto value = acc.get_tensor<Permissions::RO>(TensorSlotName::VALUE);
+  auto weight = acc.get_tensor<Permissions::RO>(TensorSlotName::WEIGHT);
+  auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
 
-  ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
-  std::optional<MHAPerDeviceState> per_device_state =
-      acc.get_argument<std::optional<MHAPerDeviceState>>(PER_DEVICE_STATE);
+  ProfilingSettings profiling = acc.get_profiling_settings();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
+  std::optional<MHAPerDeviceState> per_device_state = acc.get_per_device_op_state().require_mha();
 
   return profile(forward_kernel,
                  profiling,
@@ -187,22 +110,20 @@ static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor cons
 
 static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
-  auto query = acc.get_tensor<Permissions::RO>(QUERY);
-  auto key = acc.get_tensor<Permissions::RO>(KEY);
-  auto value = acc.get_tensor<Permissions::RO>(VALUE);
-  auto weight = acc.get_tensor<Permissions::RO>(WEIGHTS);
+  auto query = acc.get_tensor<Permissions::RO>(TensorSlotName::QUERY);
+  auto key = acc.get_tensor<Permissions::RO>(TensorSlotName::KEY);
+  auto value = acc.get_tensor<Permissions::RO>(TensorSlotName::VALUE);
+  auto weight = acc.get_tensor<Permissions::RO>(TensorSlotName::WEIGHT);
 
-  auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
-  auto weight_grad = acc.get_tensor_grad<Permissions::RW>(WEIGHTS);
-  auto query_grad = acc.get_tensor_grad<Permissions::RW>(QUERY);
-  auto key_grad = acc.get_tensor_grad<Permissions::RW>(KEY);
-  auto value_grad = acc.get_tensor_grad<Permissions::RW>(VALUE);
+  auto output_grad = acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
+  auto weight_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::WEIGHT);
+  auto query_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::QUERY);
+  auto key_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::KEY);
+  auto value_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::VALUE);
 
-  std::optional<MHAPerDeviceState> per_device_state =
-      acc.get_argument<std::optional<MHAPerDeviceState>>(PER_DEVICE_STATE);
-  ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  ProfilingSettings profiling = acc.get_profiling_settings();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
+  std::optional<MHAPerDeviceState> per_device_state = acc.get_per_device_op_state().require_mha();
 
   float *key_grad_ptr =
       (key_grad == query_grad) ? nullptr : key_grad.get_float_ptr();
@@ -235,50 +156,13 @@ static std::optional<milliseconds_t>
 TaskImplFunction get_attention_init_task_impl() {
   return TaskImplFunction{InitOpTaskImplFunction{init_task_impl}};
 }
+
 TaskImplFunction get_attention_fwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{forward_task_impl}};
 }
+
 TaskImplFunction get_attention_bwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{backward_task_impl}};
-}
-
-OpTaskSignature get_attention_init_signature() {
-  OpTaskSignature init(OpTaskType::INIT);
-  init.add_arg_slot<ParallelTensorShape>(QUERY_PARALLEL_TENSOR_SHAPE);
-  init.add_arg_slot<ParallelTensorShape>(KEY_PARALLEL_TENSOR_SHAPE);
-  init.add_arg_slot<ParallelTensorShape>(VALUE_PARALLEL_TENSOR_SHAPE);
-  init.add_arg_slot<positive_int>(QPROJSIZE);
-  init.add_arg_slot<positive_int>(KPROJSIZE);
-  init.add_arg_slot<positive_int>(VPROJSIZE);
-  init.add_arg_slot<positive_int>(OPROJSIZE);
-  init.add_arg_slot<MultiHeadAttentionAttrs>(ATTRS);
-  init.add_unchecked_arg_slot<PerDeviceFFHandle>(HANDLE);
-
-  init.add_return_value<std::optional<MHAPerDeviceState>>();
-
-  return init;
-}
-
-OpTaskSignature get_attention_fwd_signature() {
-  OpTaskSignature fwd(OpTaskType::FWD);
-
-  fwd.add_input_slot(QUERY);
-  fwd.add_input_slot(KEY);
-  fwd.add_input_slot(VALUE);
-  fwd.add_weight_slot(WEIGHTS);
-  fwd.add_output_slot(OUTPUT);
-
-  fwd.add_arg_slot<ProfilingSettings>(PROFILING);
-  fwd.add_unchecked_arg_slot<std::optional<MHAPerDeviceState>>(
-      PER_DEVICE_STATE);
-
-  return fwd;
-}
-
-OpTaskSignature get_attention_bwd_signature() {
-  OpTaskSignature bwd = infer_bwd_signature(get_attention_fwd_signature());
-
-  return bwd;
 }
 
 } // namespace FlexFlow

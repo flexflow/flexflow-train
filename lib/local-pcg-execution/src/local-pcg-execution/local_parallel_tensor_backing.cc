@@ -59,7 +59,7 @@ AtomicTaskInvocation
     return per_device_op_states.at(l); 
   };
 
-  std::unordered_map<slot_id_t, ConcreteArgSpec>
+  std::unordered_map<arg_slot_id_t, ConcreteArgSpec>
     arg_bindings = map_values(invocation.binding.get_arg_bindings(),
                               [&](RuntimeArgSpec const &arg_spec) -> ConcreteArgSpec
                               {

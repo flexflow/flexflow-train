@@ -9,30 +9,6 @@ using namespace FlexFlow::Kernels::Pool2D;
 
 namespace FlexFlow {
 
-enum Slots {
-  INPUT,
-  OUTPUT,
-  ATTRS,
-  PROFILING,
-  PER_DEVICE_STATE,
-  HANDLE,
-  KERNEL_DEVICE_TYPE
-};
-
-OpTaskInvocation init(Pool2DAttrs const &attrs) {
-  OpTaskBinding binding;
-  binding.bind(INPUT, input_tensor(0_n));
-  binding.bind(OUTPUT, output_tensor(0_n));
-  binding.bind_arg(ATTRS, attrs);
-  binding.bind_arg(HANDLE, ff_handle());
-  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
-
-  return OpTaskInvocation{
-      op_task_id_t::INIT,
-      binding,
-  };
-}
-
 static nonnegative_int calculate_padding(nonnegative_int output_size,
                                          nonnegative_int stride,
                                          nonnegative_int kernel_size,
@@ -49,13 +25,12 @@ static nonnegative_int calculate_padding(nonnegative_int output_size,
 
 static DeviceSpecificPerDeviceOpState
     init_task_impl(TaskArgumentAccessor const &acc) {
-  auto const &attrs = acc.get_argument<Pool2DAttrs>(ATTRS);
-  device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  Pool2DAttrs attrs = acc.get_op_attrs().require_pool2d();
+  device_handle_t handle = acc.get_ff_handle();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
 
-  auto input = acc.get_tensor<Permissions::RO>(INPUT);
-  auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
+  auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
+  auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
 
   positive_int input_w = dim_at_idx(input.shape.dims, ff_dim_t{0_n});
   positive_int input_h = dim_at_idx(input.shape.dims, ff_dim_t{1_n});
@@ -91,40 +66,13 @@ static DeviceSpecificPerDeviceOpState
   };
 }
 
-OpTaskInvocation forward(Pool2DAttrs const &attrs) {
-  OpTaskBinding binding;
-  binding.bind(INPUT, input_tensor(0_n));
-  binding.bind(OUTPUT, output_tensor(0_n));
-
-  binding.bind_arg(PROFILING, profiling_settings());
-  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
-  binding.bind_arg(PER_DEVICE_STATE,
-                   per_device_op_state<std::optional<Pool2DPerDeviceState>>());
-
-  return OpTaskInvocation{
-      op_task_id_t::FWD,
-      binding,
-  };
-}
-
-OpTaskInvocation backward(Pool2DAttrs const &attrs) {
-  OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
-
-  return OpTaskInvocation{
-      op_task_id_t::BWD,
-      b,
-  };
-}
-
 static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
-  ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
-  Pool2DPerDeviceState state =
-      acc.get_argument<Pool2DPerDeviceState>(PER_DEVICE_STATE);
+  ProfilingSettings profiling = acc.get_profiling_settings();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
+  Pool2DPerDeviceState state = acc.get_per_device_op_state().require_pool_2d().value();
 
-  auto input = acc.get_tensor<Permissions::RO>(INPUT);
-  auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
+  auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
+  auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
 
   return profile(forward_kernel,
                  profiling,
@@ -137,16 +85,14 @@ static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor cons
 
 static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
-  ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
-  Pool2DPerDeviceState state =
-      acc.get_argument<Pool2DPerDeviceState>(PER_DEVICE_STATE);
+  ProfilingSettings profiling = acc.get_profiling_settings();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
+  Pool2DPerDeviceState state = acc.get_per_device_op_state().require_pool_2d().value();
 
-  auto output = acc.get_tensor<Permissions::RO>(OUTPUT);
-  auto output_grad = acc.get_tensor<Permissions::RO>(OUTPUT);
-  auto input = acc.get_tensor<Permissions::RO>(INPUT);
-  auto input_grad = acc.get_tensor<Permissions::RW>(INPUT);
+  auto output = acc.get_tensor<Permissions::RO>(TensorSlotName::OUTPUT);
+  auto output_grad = acc.get_tensor<Permissions::RO>(TensorSlotName::OUTPUT);
+  auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
+  auto input_grad = acc.get_tensor<Permissions::RW>(TensorSlotName::INPUT);
 
   return profile(backward_kernel,
                  profiling,
@@ -169,37 +115,6 @@ TaskImplFunction get_pool_2d_fwd_task_impl() {
 
 TaskImplFunction get_pool_2d_bwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{backward_task_impl}};
-}
-
-OpTaskSignature get_pool_2d_init_signature() {
-  OpTaskSignature init(OpTaskType::INIT);
-
-  init.add_input_slot(INPUT);
-  init.add_output_slot(OUTPUT);
-
-  init.add_arg_slot<Pool2DAttrs>(ATTRS);
-  init.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
-  init.add_unchecked_arg_slot<device_handle_t>(HANDLE);
-
-  init.add_return_value<FlexFlow::Pool2DPerDeviceState>();
-  return init;
-}
-
-OpTaskSignature get_pool_2d_fwd_signature() {
-  OpTaskSignature fwd(OpTaskType::FWD);
-
-  fwd.add_input_slot(INPUT);
-  fwd.add_output_slot(OUTPUT);
-  fwd.add_arg_slot<ProfilingSettings>(PROFILING);
-  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
-
-  fwd.add_unchecked_arg_slot<Pool2DPerDeviceState>(PER_DEVICE_STATE);
-  return fwd;
-}
-
-OpTaskSignature get_pool_2d_bwd_signature() {
-  OpTaskSignature bwd = infer_bwd_signature(get_pool_2d_fwd_signature());
-  return bwd;
 }
 
 }; // namespace FlexFlow

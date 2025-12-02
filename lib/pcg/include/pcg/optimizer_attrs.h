@@ -7,7 +7,6 @@
 namespace FlexFlow {
 
 OptimizerAttrs get_optimizer_attrs_for_next_iter(OptimizerAttrs const &old);
-nonnegative_int get_num_optimizer_tensors(OptimizerAttrs const &);
 
 } // namespace FlexFlow
 

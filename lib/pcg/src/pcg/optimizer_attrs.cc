@@ -23,16 +23,4 @@ OptimizerAttrs
   }
 }
 
-nonnegative_int get_num_optimizer_tensors(OptimizerAttrs const &attrs) {
-  return attrs.visit<nonnegative_int>(
-      overload{[&](SGDOptimizerAttrs const &o) {
-                 if (o.momentum > 0.0f) {
-                   return 1_n;
-                 } else {
-                   return 0_n;
-                 }
-               },
-               [&](AdamOptimizerAttrs const &) { return 2_n; }});
-}
-
 } // namespace FlexFlow

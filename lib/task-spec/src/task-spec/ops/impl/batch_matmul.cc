@@ -16,7 +16,6 @@
 #include "task-spec/ops/impl/batch_matmul.h"
 #include "kernels/batch_matmul_kernels.h"
 #include "op-attrs/ops/batch_matmul.h"
-#include "task-spec/ops/op_task_signature.h"
 #include "task-spec/profiling.h"
 #include "utils/containers/transform.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
@@ -25,57 +24,16 @@ namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::BatchMatmul;
 
-enum Slots {
-  A_INPUT, // tensor
-  B_INPUT, // tensor
-  ATTRS,
-  OUTPUT, // tensor
-  PROFILING,
-  HANDLE,
-  ITERATION_CONFIG,
-  KERNEL_DEVICE_TYPE,
-};
-
-OpTaskInvocation forward(BatchMatmulAttrs const &attrs) {
-  OpTaskBinding fwd;
-
-  fwd.bind(A_INPUT, input_tensor(0_n));
-  fwd.bind(B_INPUT, input_tensor(1_n));
-  fwd.bind(OUTPUT, output_tensor(0_n));
-
-  fwd.bind_arg(ATTRS, attrs);
-  fwd.bind_arg(HANDLE, ff_handle());
-  fwd.bind_arg(PROFILING, profiling_settings());
-  fwd.bind_arg(ITERATION_CONFIG, iteration_config());
-  fwd.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
-
-  return OpTaskInvocation{
-      op_task_id_t::FWD,
-      fwd,
-  };
-}
-
-OpTaskInvocation backward(BatchMatmulAttrs const &attrs) {
-  OpTaskBinding bwd = infer_bwd_binding(forward(attrs).binding);
-
-  return OpTaskInvocation{
-      op_task_id_t::BWD,
-      bwd,
-  };
-}
-
 static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
-  auto a_input = acc.get_tensor<Permissions::RO>(A_INPUT);
-  auto b_input = acc.get_tensor<Permissions::RO>(B_INPUT);
-  auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
-  auto attrs = acc.get_argument<BatchMatmulAttrs>(ATTRS);
-  device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
+  auto a_input = acc.get_tensor<Permissions::RO>(TensorSlotName::LHS_INPUT);
+  auto b_input = acc.get_tensor<Permissions::RO>(TensorSlotName::RHS_INPUT);
+  auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
+  BatchMatmulAttrs attrs = acc.get_op_attrs().require_batch_matmul();
+  device_handle_t handle = acc.get_ff_handle();
 
-  ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  FFIterationConfig iter_config =
-      acc.get_argument<FFIterationConfig>(ITERATION_CONFIG);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  ProfilingSettings profiling = acc.get_profiling_settings();
+  FFIterationConfig iter_config = acc.get_iteration_config();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
 
   return profile(forward_kernel,
                  profiling,
@@ -92,24 +50,21 @@ static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor cons
 
 static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
-  // BatchMatmul* bmm = (BatchMatmul*) task->args;
-  FFIterationConfig iter_config =
-      acc.get_argument<FFIterationConfig>(ITERATION_CONFIG);
-  ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  FFIterationConfig iter_config = acc.get_iteration_config();
+  ProfilingSettings profiling = acc.get_profiling_settings();
+  device_handle_t handle = acc.get_ff_handle();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
 
-  auto output = acc.get_tensor<Permissions::RO>(OUTPUT);
-  auto output_grad = acc.get_tensor_grad<Permissions::RW>(OUTPUT);
+  auto output = acc.get_tensor<Permissions::RO>(TensorSlotName::OUTPUT);
+  auto output_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::OUTPUT);
   ASSERT(output.shape == output_grad.shape);
 
-  auto a_input = acc.get_tensor<Permissions::RO>(A_INPUT);
-  auto a_input_grad = acc.get_tensor_grad<Permissions::RW>(A_INPUT);
+  auto a_input = acc.get_tensor<Permissions::RO>(TensorSlotName::LHS_INPUT);
+  auto a_input_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::LHS_INPUT);
   ASSERT(a_input.shape == a_input_grad.shape);
 
-  auto b_input = acc.get_tensor<Permissions::RO>(B_INPUT);
-  auto b_input_grad = acc.get_tensor_grad<Permissions::RW>(B_INPUT);
+  auto b_input = acc.get_tensor<Permissions::RO>(TensorSlotName::RHS_INPUT);
+  auto b_input_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::RHS_INPUT);
   ASSERT(b_input.shape == b_input_grad.shape);
 
   return profile(backward_kernel,
@@ -128,28 +83,9 @@ static std::optional<milliseconds_t>
 TaskImplFunction get_batch_matmul_fwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{forward_task_impl}};
 }
+
 TaskImplFunction get_batch_matmul_bwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{backward_task_impl}};
-}
-
-OpTaskSignature get_batch_matmul_fwd_signature() {
-  OpTaskSignature fwd(OpTaskType::FWD);
-
-  fwd.add_input_slot(A_INPUT);
-  fwd.add_input_slot(B_INPUT);
-  fwd.add_output_slot(OUTPUT);
-  fwd.add_arg_slot<BatchMatmulAttrs>(ATTRS);
-  fwd.add_arg_slot<ProfilingSettings>(PROFILING);
-  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
-  fwd.add_unchecked_arg_slot<device_handle_t>(HANDLE);
-
-  return fwd;
-}
-
-OpTaskSignature get_batch_matmul_bwd_signature() {
-  OpTaskSignature bwd = infer_bwd_signature(get_batch_matmul_fwd_signature());
-
-  return bwd;
 }
 
 }; // namespace FlexFlow

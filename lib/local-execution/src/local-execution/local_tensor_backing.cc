@@ -2,7 +2,7 @@
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/computation_graph.h"
 #include "pcg/optimizer_attrs.h"
-#include "task-spec/fwb_tensor_slot_id_t.dtg.h"
+#include "task-spec/runtime_task_invocation/fwb_tensor_slot.dtg.h"
 #include "utils/containers/contains_key.h"
 #include "utils/containers/generate_map.h"
 #include "utils/containers/is_submapeq_of.h"

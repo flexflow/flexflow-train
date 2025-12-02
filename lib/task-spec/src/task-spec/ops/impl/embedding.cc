@@ -6,43 +6,14 @@ namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::Embedding;
 
-enum Slots { INPUT, WEIGHT, OUTPUT, ATTRS, PROFILING, KERNEL_DEVICE_TYPE };
-
-OpTaskInvocation forward(EmbeddingAttrs const &attrs) {
-  OpTaskBinding b;
-
-  b.bind(INPUT, input_tensor(0_n));
-  b.bind(WEIGHT, weight_tensor(0_n));
-  b.bind(OUTPUT, output_tensor(0_n));
-
-  b.bind_arg(ATTRS, attrs);
-  b.bind_arg(PROFILING, profiling_settings());
-  b.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
-
-  return OpTaskInvocation{
-      op_task_id_t::FWD,
-      b,
-  };
-}
-
-OpTaskInvocation backward(EmbeddingAttrs const &attrs) {
-  OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
-
-  return OpTaskInvocation{
-      op_task_id_t::BWD,
-      b,
-  };
-}
-
 static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
-  auto input = acc.get_tensor<Permissions::RO>(INPUT);
-  auto weight = acc.get_tensor<Permissions::RO>(WEIGHT);
-  auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
+  auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
+  auto weight = acc.get_tensor<Permissions::RO>(TensorSlotName::WEIGHT);
+  auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
 
-  ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  EmbeddingAttrs attrs = acc.get_argument<EmbeddingAttrs>(ATTRS);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  ProfilingSettings profiling = acc.get_profiling_settings();
+  EmbeddingAttrs attrs = acc.get_op_attrs().require_embedding();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
 
   return profile(
       forward_kernel,
@@ -62,14 +33,13 @@ static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor cons
 
 static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
-  auto input = acc.get_tensor<Permissions::RO>(INPUT);
-  auto output = acc.get_tensor<Permissions::RO>(OUTPUT);
-  auto weight_grad = acc.get_tensor_grad<Permissions::RW>(WEIGHT);
+  auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
+  auto output = acc.get_tensor<Permissions::RO>(TensorSlotName::OUTPUT);
+  auto weight_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::WEIGHT);
 
-  ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  EmbeddingAttrs attrs = acc.get_argument<EmbeddingAttrs>(ATTRS);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  ProfilingSettings profiling = acc.get_profiling_settings();
+  EmbeddingAttrs attrs = acc.get_op_attrs().require_embedding();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
 
   return profile(
       backward_kernel,
@@ -90,27 +60,9 @@ static std::optional<milliseconds_t>
 TaskImplFunction get_embedding_fwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{forward_task_impl}};
 }
+
 TaskImplFunction get_embedding_bwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{backward_task_impl}};
-}
-
-OpTaskSignature get_embedding_fwd_signature() {
-  OpTaskSignature fwd(OpTaskType::FWD);
-
-  fwd.add_input_slot(INPUT);
-  fwd.add_input_slot(OUTPUT);
-  fwd.add_input_slot(WEIGHT);
-
-  fwd.add_arg_slot<EmbeddingAttrs>(ATTRS);
-  fwd.add_arg_slot<ProfilingSettings>(PROFILING);
-  fwd.add_arg_slot<ProfilingSettings>(KERNEL_DEVICE_TYPE);
-
-  return fwd;
-}
-
-OpTaskSignature get_embedding_bwd_signature() {
-  OpTaskSignature bwd = infer_bwd_signature(get_embedding_fwd_signature());
-  return bwd;
 }
 
 } // namespace FlexFlow

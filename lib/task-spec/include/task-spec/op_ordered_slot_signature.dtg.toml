@@ -10,7 +10,7 @@ features = [
 
 includes = [
   "task-spec/is_grad.dtg.h",
-  "task-spec/fwb_tensor_slot_id_t.dtg.h",
+  "task-spec/runtime_task_invocation/fwb_tensor_slot.dtg.h",
 ]
 
 src_includes = [
@@ -24,12 +24,12 @@ src_includes = [
 
 [[fields]]
 name = "input_slots"
-type = "std::vector<std::unordered_set<::FlexFlow::fwb_tensor_slot_id_t>>"
+type = "std::vector<std::unordered_set<::FlexFlow::FwbTensorSlotName>>"
 
 [[fields]]
 name = "weight_slots"
-type = "std::vector<std::unordered_set<::FlexFlow::fwb_tensor_slot_id_t>>"
+type = "std::vector<std::unordered_set<::FlexFlow::FwbTensorSlotName>>"
 
 [[fields]]
 name = "output_slots"
-type = "std::vector<std::unordered_set<::FlexFlow::fwb_tensor_slot_id_t>>"
+type = "std::vector<std::unordered_set<::FlexFlow::FwbTensorSlotName>>"

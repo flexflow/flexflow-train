@@ -5,7 +5,6 @@
 #include "task-spec/symbolic/symbolic_cg_op_attrs_and_training_signature_with_shapes.h"
 #include "task-spec/symbolic/symbolic_loss_tensor_source.h"
 #include "task-spec/symbolic/symbolic_training_tensor_group.h"
-#include "task-spec/task_signature_impl.h"
 #include "task-spec/symbolic/symbolic_cg_op_attrs_and_training_signature_with_shapes.h"
 #include "utils/bidict/generate_bidict.h"
 #include "utils/containers/contains.h"

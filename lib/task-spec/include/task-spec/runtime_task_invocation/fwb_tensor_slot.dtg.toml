@@ -1,0 +1,22 @@
+namespace = "FlexFlow"
+name = "FwbTensorSlot"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "task-spec/is_grad.dtg.h",
+  "task-spec/ops/tensor_slot_name.dtg.h",
+]
+
+[[fields]]
+name = "name"
+type = "::FlexFlow::TensorSlotName"
+
+[[fields]]
+name = "is_grad"
+type = "::FlexFlow::IsGrad"

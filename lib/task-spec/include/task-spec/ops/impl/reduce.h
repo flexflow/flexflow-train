@@ -11,10 +11,6 @@ TaskImplFunction get_reduce_init_task_impl();
 TaskImplFunction get_reduce_fwd_task_impl();
 TaskImplFunction get_reduce_bwd_task_impl();
 
-OpTaskSignature get_reduce_init_signature();
-OpTaskSignature get_reduce_fwd_signature();
-OpTaskSignature get_reduce_bwd_signature();
-
 OpTaskInvocation init(ReduceAttrs const &);
 OpTaskInvocation forward(ReduceAttrs const &);
 OpTaskInvocation backward(ReduceAttrs const &);

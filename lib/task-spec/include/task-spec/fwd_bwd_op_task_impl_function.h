@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_FWD_BWD_OP_TASK_IMPL_FUNCTION_H
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_FWD_BWD_OP_TASK_IMPL_FUNCTION_H
 
-#include "task-spec/task_argument_accessor.h"
+#include "task-spec/task_argument_accessor/task_argument_accessor.h"
 #include "utils/units/milliseconds_t.h"
 
 namespace FlexFlow {

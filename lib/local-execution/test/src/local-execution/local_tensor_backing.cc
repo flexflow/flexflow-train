@@ -201,19 +201,19 @@ TEST_SUITE(FF_TEST_SUITE) {
         allocator.allocate_tensor(tensor_shape);
 
     training_tensor_slot_id_t tensor_slot_1_forward = training_tensor_slot_id_t{
-        slot_id_t{TENSOR_SLOT_1},
+        TensorSlotName::QUERY,
         TrainingTensorType::FORWARD,
     };
     training_tensor_slot_id_t tensor_slot_1_gradient = training_tensor_slot_id_t{
-        slot_id_t{TENSOR_SLOT_1},
+        TensorSlotName::QUERY,
         TrainingTensorType::GRADIENT,
     };
     training_tensor_slot_id_t tensor_slot_2_forward = training_tensor_slot_id_t{
-        slot_id_t{TENSOR_SLOT_2},
+        TensorSlotName::KEY,
         TrainingTensorType::FORWARD,
     };
     training_tensor_slot_id_t tensor_slot_3_forward = training_tensor_slot_id_t{
-        slot_id_t{TENSOR_SLOT_3},
+        TensorSlotName::VALUE,
         TrainingTensorType::FORWARD,
     };
 
@@ -254,7 +254,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*arg_bindings=*/
         {
             {
-                slot_id_t{ARG_SLOT},
+                arg_slot_id_t{ARG_SLOT},
                 TaskArgSpec{
                     ConcreteArgSpec::create<int>(4),
                 },

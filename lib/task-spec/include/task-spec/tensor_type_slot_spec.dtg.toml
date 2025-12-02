@@ -9,19 +9,19 @@ features = [
 ]
 
 includes = [
-  "task-spec/ops/slot_type.dtg.h",
-  "task-spec/ops/slot_id_t.dtg.h",
+  "task-spec/ops/tensor_slot_arity.dtg.h",
+  "task-spec/ops/tensor_slot_name.dtg.h",
   "task-spec/training_tensor_type.dtg.h",
 ]
 
 [[fields]]
-name = "slot_id"
-type = "::FlexFlow::slot_id_t"
+name = "name"
+type = "::FlexFlow::TensorSlotName"
 
 [[fields]]
 name = "tensor_type"
 type = "::FlexFlow::TrainingTensorType"
 
 [[fields]]
-name = "slot_type"
-type = "::FlexFlow::SlotType"
+name = "arity"
+type = "::FlexFlow::TensorSlotArity"

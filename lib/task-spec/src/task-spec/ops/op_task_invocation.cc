@@ -134,7 +134,7 @@ bool is_tensor_invocation_valid(OpTaskSignature const &sig,
        inv.binding.get_tensor_bindings()) {
     OpTensorSlotSpec op_tensor_slot_spec =
         OpTensorSlotSpec{tensor_binding.first.slot_id,
-                         SlotType::TENSOR,
+                         TensorSlotArity::TENSOR,
                          tensor_binding.second.role,
                          tensor_binding.first.is_grad,
                          tensor_binding.second.slot_option};

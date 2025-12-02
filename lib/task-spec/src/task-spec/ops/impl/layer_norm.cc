@@ -29,70 +29,15 @@ namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::LayerNorm;
 
-enum Slots {
-  PROFILING,
-  INPUT,
-  OUTPUT,
-  GAMMA,
-  BETA,
-  PER_DEVICE_STATE,
-  ATTRS,
-  HANDLE,
-  KERNEL_DEVICE_TYPE,
-};
-
-OpTaskInvocation init(LayerNormAttrs const &attrs) {
-  OpTaskBinding b;
-
-  b.bind(INPUT, input_tensor(0_n));
-
-  b.bind_arg(HANDLE, ff_handle());
-  b.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
-  b.bind_arg(ATTRS, attrs);
-
-  return OpTaskInvocation{
-      op_task_id_t::INIT,
-      b,
-  };
-}
-
-OpTaskInvocation forward(LayerNormAttrs const &attrs) {
-  OpTaskBinding b;
-
-  b.bind(INPUT, input_tensor(0_n));
-  b.bind(OUTPUT, output_tensor(0_n));
-  b.bind(GAMMA, weight_tensor(0_n));
-  b.bind(BETA, weight_tensor(1_n));
-  b.bind_arg(PROFILING, profiling_settings());
-  b.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
-  b.bind_arg(PER_DEVICE_STATE,
-             per_device_op_state<std::optional<LayerNormPerDeviceState>>());
-
-  return OpTaskInvocation{
-      op_task_id_t::FWD,
-      b,
-  };
-}
-
-OpTaskInvocation backward(LayerNormAttrs const &attrs) {
-  OpTaskBinding b = infer_bwd_binding(forward(attrs).binding);
-
-  return OpTaskInvocation{
-      op_task_id_t::BWD,
-      b,
-  };
-}
-
 static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
-  auto input = acc.get_tensor<Permissions::RO>(INPUT);
-  auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
-  auto gamma = acc.get_tensor<Permissions::RW>(GAMMA);
-  auto beta = acc.get_tensor<Permissions::RW>(BETA);
+  auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
+  auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
+  auto gamma = acc.get_tensor<Permissions::RW>(TensorSlotName::GAMMA);
+  auto beta = acc.get_tensor<Permissions::RW>(TensorSlotName::BETA);
 
-  ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
-  auto &state = acc.get_argument<LayerNormPerDeviceState>(PER_DEVICE_STATE);
+  ProfilingSettings profiling = acc.get_profiling_settings();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
+  LayerNormPerDeviceState state = acc.get_per_device_op_state().require_layer_norm().value();
 
   return profile(forward_kernel,
                  profiling,
@@ -107,18 +52,18 @@ static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor cons
 
 static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
-  auto input = acc.get_tensor<Permissions::RO>(INPUT);
-  auto gamma = acc.get_tensor<Permissions::RO>(GAMMA);
+  auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
+  auto gamma = acc.get_tensor<Permissions::RO>(TensorSlotName::GAMMA);
 
-  auto input_grad = acc.get_tensor_grad<Permissions::RW>(INPUT);
-  auto gamma_grad = acc.get_tensor_grad<Permissions::RW>(GAMMA);
-  auto beta_grad = acc.get_tensor_grad<Permissions::RW>(BETA);
-  auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
+  auto input_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::INPUT);
+  auto gamma_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::GAMMA);
+  auto beta_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::BETA);
+  auto output_grad = acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
 
-  ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
-  auto &state = acc.get_argument<LayerNormPerDeviceState>(PER_DEVICE_STATE);
+  ProfilingSettings profiling = acc.get_profiling_settings();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
+  LayerNormPerDeviceState state = acc.get_per_device_op_state().require_layer_norm().value();
+
 
   return profile(backward_kernel,
                  profiling,
@@ -135,12 +80,11 @@ static std::optional<milliseconds_t>
 
 static DeviceSpecificPerDeviceOpState
     init_task_impl(TaskArgumentAccessor const &acc) {
-  auto const &attrs = acc.get_argument<LayerNormAttrs>(ATTRS);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  LayerNormAttrs attrs = acc.get_op_attrs().require_layer_norm();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
   Allocator allocator = acc.get_allocator();
-  auto input = acc.get_tensor<Permissions::RO>(INPUT);
-  auto handle = acc.get_argument<device_handle_t>(HANDLE);
+  auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
+  device_handle_t handle = acc.get_ff_handle();
 
   positive_int M = product(transform(attrs.axes, [&](ff_dim_t dim) {
     return dim_at_idx(input.shape.dims, dim);
@@ -169,42 +113,13 @@ static DeviceSpecificPerDeviceOpState
 TaskImplFunction get_layer_norm_init_task_impl() {
   return TaskImplFunction{InitOpTaskImplFunction{init_task_impl}};
 }
+
 TaskImplFunction get_layer_norm_fwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{forward_task_impl}};
 }
+
 TaskImplFunction get_layer_norm_bwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{backward_task_impl}};
-}
-
-OpTaskSignature get_layer_norm_fwd_signature() {
-  OpTaskSignature fwd(OpTaskType::FWD);
-
-  fwd.add_input_slot(INPUT);
-  fwd.add_output_slot(OUTPUT);
-  fwd.add_weight_slot(GAMMA);
-  fwd.add_weight_slot(BETA);
-
-  fwd.add_arg_slot<ProfilingSettings>(PROFILING);
-  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
-  fwd.add_unchecked_arg_slot<LayerNormPerDeviceState>(PER_DEVICE_STATE);
-  return fwd;
-}
-
-OpTaskSignature get_layer_norm_bwd_signature() {
-  OpTaskSignature bwd = infer_bwd_signature(get_layer_norm_fwd_signature());
-  return bwd;
-}
-
-OpTaskSignature get_layer_norm_init_signature() {
-  OpTaskSignature init(OpTaskType::INIT);
-
-  init.add_input_slot(INPUT);
-  init.add_arg_slot<LayerNormAttrs>(ATTRS);
-  init.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
-  init.add_unchecked_arg_slot<device_handle_t>(HANDLE);
-
-  init.add_return_value<LayerNormPerDeviceState>();
-  return init;
 }
 
 } // namespace FlexFlow

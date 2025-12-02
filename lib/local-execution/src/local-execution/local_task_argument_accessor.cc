@@ -8,21 +8,21 @@ namespace FlexFlow {
 
 LocalTaskArgumentAccessor::LocalTaskArgumentAccessor(
     Allocator const &allocator,
-    std::unordered_map<training_tensor_slot_id_t, TensorSlotBacking> const
+    std::unordered_map<TaskTensorParameter, TensorSlotBacking> const
         &tensor_slots_backing,
-    std::unordered_map<slot_id_t, ConcreteArgSpec> const &arg_slots_backing,
+    std::unordered_map<arg_slot_id_t, ConcreteArgSpec> const &arg_slots_backing,
     size_t device_idx)
     : allocator(allocator), tensor_slots_backing(tensor_slots_backing),
       arg_slots_backing(arg_slots_backing), device_idx(device_idx)
 { };
 
 ConcreteArgSpec const &
-    LocalTaskArgumentAccessor::get_concrete_arg(slot_id_t name) const {
+    LocalTaskArgumentAccessor::get_concrete_arg(arg_slot_id_t name) const {
   return this->arg_slots_backing.at(name);
 }
 
 GenericTensorAccessor LocalTaskArgumentAccessor::get_tensor(
-    slot_id_t slot, Permissions priv, TrainingTensorType tensor_type) const {
+    TensorSlotName slot, Permissions priv, TrainingTensorType tensor_type) const {
   training_tensor_slot_id_t slot_tensor_type =
       training_tensor_slot_id_t{slot, tensor_type};
   GenericTensorAccessorW tensor_backing =
@@ -39,7 +39,7 @@ GenericTensorAccessor LocalTaskArgumentAccessor::get_tensor(
 }
 
 VariadicGenericTensorAccessor LocalTaskArgumentAccessor::get_variadic_tensor(
-    slot_id_t slot, Permissions priv, TrainingTensorType tensor_type) const {
+     arg_slot_id_t slot, Permissions priv, TrainingTensorType tensor_type) const {
   training_tensor_slot_id_t slot_tensor_type =
       training_tensor_slot_id_t{slot, tensor_type};
   std::vector<GenericTensorAccessorW> variadic_tensor_backing =

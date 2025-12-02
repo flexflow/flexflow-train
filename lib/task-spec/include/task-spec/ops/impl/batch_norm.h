@@ -11,10 +11,6 @@ TaskImplFunction get_batch_norm_init_task_impl();
 TaskImplFunction get_batch_norm_fwd_task_impl();
 TaskImplFunction get_batch_norm_bwd_task_impl();
 
-OpTaskSignature get_batch_norm_init_signature();
-OpTaskSignature get_batch_norm_fwd_signature();
-OpTaskSignature get_batch_norm_bwd_signature();
-
 OpTaskInvocation init(BatchNormAttrs const &);
 OpTaskInvocation forward(BatchNormAttrs const &);
 OpTaskInvocation backward(BatchNormAttrs const &);

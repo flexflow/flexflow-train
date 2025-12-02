@@ -10,9 +10,6 @@ namespace FlexFlow {
 TaskImplFunction get_split_fwd_task_impl();
 TaskImplFunction get_split_bwd_task_impl();
 
-OpTaskSignature get_split_fwd_signature();
-OpTaskSignature get_split_bwd_signature();
-
 OpTaskInvocation forward(SplitAttrs const &);
 OpTaskInvocation backward(SplitAttrs const &);
 

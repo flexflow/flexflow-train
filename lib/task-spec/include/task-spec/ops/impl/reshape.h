@@ -10,9 +10,6 @@ namespace FlexFlow {
 TaskImplFunction get_reshape_fwd_task_impl();
 TaskImplFunction get_reshape_bwd_task_impl();
 
-OpTaskSignature get_reshape_fwd_signature();
-OpTaskSignature get_reshape_bwd_signature();
-
 OpTaskInvocation forward(ReshapeAttrs const &);
 OpTaskInvocation backward(ReshapeAttrs const &);
 

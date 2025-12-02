@@ -10,9 +10,6 @@ namespace FlexFlow {
 TaskImplFunction get_concat_fwd_task_impl();
 TaskImplFunction get_concat_bwd_task_impl();
 
-OpTaskSignature get_concat_fwd_signature();
-OpTaskSignature get_concat_bwd_signature();
-
 OpTaskInvocation forward(ConcatAttrs const &);
 OpTaskInvocation backward(ConcatAttrs const &);
 

@@ -1,0 +1,34 @@
+namespace = "FlexFlow"
+name = "DynamicTensorSlotArguments"
+type = "struct"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "task-spec/ops/tensor_slot_arity.dtg.h",
+  "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h",
+  "task-spec/dynamic_graph/dynamic_tensor_role.dtg.h",
+  "<optional>",
+  "<vector>"
+]
+
+src_includes = [
+  "utils/hash/vector.h",
+  "utils/fmt/vector.h",
+  "utils/fmt/optional.h",
+]
+
+[[fields]]
+name = "arity"
+type = "::FlexFlow::TensorSlotArity"
+
+[[fields]]
+name = "role"
+type = "std::optional<::FlexFlow::DynamicTensorRole>"
+
+[[fields]]
+name = "values"
+type = "std::optional<std::vector<::FlexFlow::DynamicValueAttrs>>"

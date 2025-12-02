@@ -1,0 +1,19 @@
+namespace = "FlexFlow"
+name = "DynamicOptimizerTensorRole"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+  "rapidcheck",
+]
+
+includes = [
+  "task-spec/optimizer_slot_name.dtg.h",
+]
+
+[[fields]]
+name = "optimizer_slot_name"
+type = "::FlexFlow::OptimizerSlotName"

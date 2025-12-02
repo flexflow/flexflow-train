@@ -23,37 +23,13 @@ using namespace FlexFlow::Kernels::Transpose;
 
 namespace FlexFlow {
 
-enum Slots {
-  INPUT,
-  OUTPUT,
-  ATTRS,
-  PROFILING,
-  KERNEL_DEVICE_TYPE,
-};
-
-OpTaskInvocation forward(TransposeAttrs const &attrs) {
-  OpTaskBinding binding;
-
-  binding.bind_arg(PROFILING, profiling_settings());
-  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
-
-  binding.bind(INPUT, input_tensor(0_n));
-  binding.bind(OUTPUT, output_tensor(0_n));
-
-  return OpTaskInvocation{
-      op_task_id_t::FWD,
-      binding,
-  };
-}
-
 static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
-  ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  auto attrs = acc.get_argument<TransposeAttrs>(ATTRS);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  ProfilingSettings profiling = acc.get_profiling_settings();
+  TransposeAttrs attrs = acc.get_op_attrs().require_transpose();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
 
-  auto input = acc.get_tensor<Permissions::RO>(INPUT);
-  auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
+  auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
+  auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
 
   return profile(forward_kernel,
                  profiling,
@@ -66,13 +42,12 @@ static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor cons
 
 static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
-  ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  auto attrs = acc.get_argument<TransposeAttrs>(ATTRS);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  ProfilingSettings profiling = acc.get_profiling_settings();
+  TransposeAttrs attrs = acc.get_op_attrs().require_transpose();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
 
-  auto input_grad = acc.get_tensor_grad<Permissions::WO>(INPUT);
-  auto output_grad = acc.get_tensor_grad<Permissions::RO>(OUTPUT);
+  auto input_grad = acc.get_tensor_grad<Permissions::WO>(TensorSlotName::INPUT);
+  auto output_grad = acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
 
   return profile(backward_kernel,
                  profiling,
@@ -83,37 +58,12 @@ static std::optional<milliseconds_t>
                  input_grad);
 }
 
-OpTaskInvocation backward(TransposeAttrs const &attrs) {
-  OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
-
-  return OpTaskInvocation{
-      op_task_id_t::BWD,
-      binding,
-  };
-}
-
 TaskImplFunction get_transpose_fwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{forward_task_impl}};
 }
 
 TaskImplFunction get_transpose_bwd_task_impl() {
   return TaskImplFunction{FwdBwdOpTaskImplFunction{backward_task_impl}};
-}
-
-OpTaskSignature get_transpose_fwd_signature() {
-  OpTaskSignature fwd(OpTaskType::FWD);
-
-  fwd.add_arg_slot<ProfilingSettings>(PROFILING);
-  fwd.add_arg_slot<DeviceType>(KERNEL_DEVICE_TYPE);
-
-  fwd.add_input_slot(INPUT);
-  fwd.add_output_slot(OUTPUT);
-  return fwd;
-}
-
-OpTaskSignature get_transpose_bwd_signature() {
-  OpTaskSignature bwd = infer_bwd_signature(get_transpose_fwd_signature());
-  return bwd;
 }
 
 } // namespace FlexFlow
