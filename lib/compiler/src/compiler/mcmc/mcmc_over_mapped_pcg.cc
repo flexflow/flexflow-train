@@ -8,54 +8,46 @@
 #include "substitutions/pcg_pattern_match.h"
 #include "substitutions/unity_substitution_set.h"
 #include "utils/optional.h"
+#include "utils/random_utils.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
-SearchResult mcmc_graph_optimize(ParallelComputationGraph &pcg,
-                                 RuntimeOnlyCostEstimator const &cost_estimator,
-                                 MachineSpecification const &resources,
-                                 MCMCOverMappedPCGConfig const &search_config) {
+SearchResult
+    mcmc_over_mapped_pcg(ParallelComputationGraph &pcg,
+                         RuntimeOnlyCostEstimator const &cost_estimator,
+                         MachineSpecification const &resources,
+                         MCMCOverMappedPCGConfig const &search_config) {
 
   std::vector<Substitution> substitutions = get_substitution_set(resources);
+  MachineMapping random_mapping = assert_unwrap(
+      get_random_mapping(pcg, resources, search_config.device_type));
+  SearchResult starting_state = SearchResult{pcg, random_mapping};
 
-  std::optional<MachineMapping> naive_mapping =
-      get_naive_mapping(pcg, resources, search_config.device_type);
-  if (naive_mapping == std::nullopt) {
-    throw std::runtime_error("Failed to find any solutions");
-  }
-
-  SearchResult starting_state = SearchResult{pcg, naive_mapping.value()};
-
-  auto generating_func = [&](SearchResult mapped_pcg,
-                             nonnegative_int i) -> std::optional<SearchResult> {
-    if (i.unwrap_nonnegative() %
-            search_config.substitution_interval.unwrap_nonnegative() ==
-        0) {
-      // substitutions every (substitution_interval) iterations
-      std::optional<Substitution> random_substitution =
-          get_random_substitution(resources);
-      if (random_substitution != std::nullopt) {
-        std::optional<PCGPatternMatch> pattern_match =
-            get_random_pattern_match(random_substitution.value().pcg_pattern,
-                                     sub_pcg_from_full_pcg(mapped_pcg.pcg));
-        if (pattern_match != std::nullopt) {
-          return apply_substitution_and_update_machine_mapping(
-              mapped_pcg, random_substitution.value(), pattern_match.value());
-        }
-      }
-      return std::nullopt;
+  auto sampler = [&](SearchResult mapped_pcg) -> std::optional<SearchResult> {
+    // applies substitution with substitution_frequency probability
+    // applies machine mapping mutation with (1 - substitution_frequency)
+    // probability
+    ASSERT(search_config.substitution_frequency >= 0 &&
+           search_config.substitution_frequency <= 1);
+    if (randf() < search_config.substitution_frequency) {
+      Substitution random_substitution =
+          assert_unwrap(get_random_substitution(resources));
+      std::optional<PCGPatternMatch> maybe_pattern_match =
+          get_random_pattern_match(random_substitution.pcg_pattern,
+                                   sub_pcg_from_full_pcg(mapped_pcg.pcg));
+      return transform(maybe_pattern_match, [&](PCGPatternMatch match) {
+        return apply_substitution_and_update_machine_mapping(
+            mapped_pcg, random_substitution, match);
+      });
     } else {
-      // machine mapping mutations otherwise
-      std::optional<MachineMapping> new_machine_mapping =
-          get_random_mutation(mapped_pcg, resources, search_config.device_type);
-      if (new_machine_mapping == std::nullopt) {
-        return std::nullopt;
-      }
-      return SearchResult{mapped_pcg.pcg, new_machine_mapping.value()};
+      MachineMapping new_machine_mapping = assert_unwrap(get_random_mutation(
+          mapped_pcg, resources, search_config.device_type));
+      return SearchResult{mapped_pcg.pcg, new_machine_mapping};
     }
   };
 
-  auto scoring_func = [&](SearchResult mapped_pcg) -> float {
+  auto cost = [&](SearchResult mapped_pcg) -> float {
     return task_simulator_estimate_forward_pass_time(mapped_pcg.pcg,
                                                      cost_estimator,
                                                      mapped_pcg.machine_mapping,
@@ -67,8 +59,7 @@ SearchResult mcmc_graph_optimize(ParallelComputationGraph &pcg,
       GenericMCMCConfig{/*temperature*/ search_config.temperature,
                         /*num_iterations*/ search_config.num_iterations};
 
-  SearchResult result =
-      minimize_score(starting_state, generating_func, scoring_func, config);
+  SearchResult result = run_mcmc(starting_state, sampler, cost, config);
 
   return result;
 }

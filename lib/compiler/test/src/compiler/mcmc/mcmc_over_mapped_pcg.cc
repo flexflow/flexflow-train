@@ -14,7 +14,7 @@
 using namespace FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("mcmc_graph_optimize") {
+  TEST_CASE("mcmc_over_mapped_pcg") {
     ComputationGraph cg = [&] {
       ComputationGraphBuilder b;
       TensorShape input_tensor_shape = TensorShape{
@@ -61,11 +61,11 @@ TEST_SUITE(FF_TEST_SUITE) {
     MCMCOverMappedPCGConfig no_search =
         MCMCOverMappedPCGConfig{/*temperature=*/1.0,
                                 /*num_iterations=*/1_n,
-                                /*substitution_interval=*/5_n,
+                                /*substitution_frequency=*/0.2,
                                 /*device_type=*/DeviceType::GPU};
 
     SearchResult base_result =
-        mcmc_graph_optimize(pcg, cost_estimator, full_machine_spec, no_search);
+        mcmc_over_mapped_pcg(pcg, cost_estimator, full_machine_spec, no_search);
     float base_runtime =
         task_simulator_estimate_forward_pass_time(base_result.pcg,
                                                   cost_estimator,
@@ -76,10 +76,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     MCMCOverMappedPCGConfig search_config =
         MCMCOverMappedPCGConfig{/*temperature=*/1.0,
                                 /*num_iterations=*/100_n,
-                                /*substitution_interval=*/5_n,
+                                /*substitution_frequency=*/0.2,
                                 /*device_type=*/DeviceType::GPU};
 
-    SearchResult result = mcmc_graph_optimize(
+    SearchResult result = mcmc_over_mapped_pcg(
         pcg, cost_estimator, full_machine_spec, search_config);
     float runtime =
         task_simulator_estimate_forward_pass_time(result.pcg,

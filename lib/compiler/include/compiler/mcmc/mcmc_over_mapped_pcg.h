@@ -12,10 +12,11 @@
 
 namespace FlexFlow {
 
-SearchResult mcmc_graph_optimize(ParallelComputationGraph &pcg,
-                                 RuntimeOnlyCostEstimator const &cost_estimator,
-                                 MachineSpecification const &resources,
-                                 MCMCOverMappedPCGConfig const &search_config);
+SearchResult
+    mcmc_over_mapped_pcg(ParallelComputationGraph &pcg,
+                         RuntimeOnlyCostEstimator const &cost_estimator,
+                         MachineSpecification const &resources,
+                         MCMCOverMappedPCGConfig const &search_config);
 
 } // namespace FlexFlow
 
