@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_LIB_SUBSTITUTIONS_INCLUDE_SUBSTITUTIONS_APPLY_SUBSTITUTION_APPLY_SUBSTITUTION_H
 #define _FLEXFLOW_LIB_SUBSTITUTIONS_INCLUDE_SUBSTITUTIONS_APPLY_SUBSTITUTION_APPLY_SUBSTITUTION_H
 
+#include "substitutions/apply_substitution/output_expr_to_result_sub_pcg_mapping.h"
 #include "substitutions/pcg_pattern_match.dtg.h"
 #include "substitutions/sub_parallel_computation_graph.dtg.h"
 #include "substitutions/substitution.dtg.h"
@@ -25,6 +26,13 @@ SubParallelComputationGraph
     apply_substitution(SubParallelComputationGraph const &sub_pcg,
                        Substitution const &substitution,
                        PCGPatternMatch const &match);
+
+SubParallelComputationGraph apply_substitution_from_output_result(
+    std::pair<SubParallelComputationGraph, OutputExprToResultSubPCGMapping>
+        substitution_output_result,
+    SubParallelComputationGraph const &spcg,
+    Substitution const &sub,
+    PCGPatternMatch const &match);
 
 } // namespace FlexFlow
 

@@ -20,8 +20,19 @@ SubParallelComputationGraph
     apply_substitution(SubParallelComputationGraph const &spcg,
                        Substitution const &sub,
                        PCGPatternMatch const &match) {
-  auto substitution_output_result =
-      evaluate_substitution_output(spcg, sub, match);
+  std::pair<SubParallelComputationGraph, OutputExprToResultSubPCGMapping>
+      substitution_output_result =
+          evaluate_substitution_output(spcg, sub, match);
+  return apply_substitution_from_output_result(
+      substitution_output_result, spcg, sub, match);
+}
+
+SubParallelComputationGraph apply_substitution_from_output_result(
+    std::pair<SubParallelComputationGraph, OutputExprToResultSubPCGMapping>
+        substitution_output_result,
+    SubParallelComputationGraph const &spcg,
+    Substitution const &sub,
+    PCGPatternMatch const &match) {
   SubParallelComputationGraph substitution_output_graph =
       substitution_output_result.first;
   OutputExprToResultSubPCGMapping output_expr_to_result_sub_pcg_mapping =
