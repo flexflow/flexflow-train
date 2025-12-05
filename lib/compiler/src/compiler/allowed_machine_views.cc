@@ -57,6 +57,8 @@ static std::unordered_set<MachineView>
         product(transform(tensor_dims, [](positive_int num_devices) {
           return nonnegative_int{num_devices.int_from_positive_int() - 1};
         }));
+    min_num_devices_with_full_stride_volume =
+        std::max(min_num_devices_with_full_stride_volume, 1_n);
     return ceildiv(total_devices,
                    positive_int{min_num_devices_with_full_stride_volume});
   };

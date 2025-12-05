@@ -1,0 +1,17 @@
+namespace = "FlexFlow"
+name = "SearchResult"
+features = [
+]
+
+includes = [
+  "pcg/parallel_computation_graph/parallel_computation_graph.h",
+  "compiler/machine_mapping/machine_mapping.h",
+]
+
+[[fields]]
+name = "pcg"
+type = "::FlexFlow::ParallelComputationGraph"
+
+[[fields]]
+name = "machine_mapping"
+type = "::FlexFlow::MachineMapping"
