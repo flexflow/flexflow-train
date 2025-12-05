@@ -10,13 +10,15 @@
 #include "op-attrs/parallel_tensor_dim_degrees.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "op-attrs/parallel_tensor_space_to_parallel_tensor_space_mapping.dtg.h"
+#include "utils/singular_or_variadic.dtg.h"
 #include "op-attrs/tensor_shape.dtg.h"
+#include "op-attrs/tensor_slot_name.dtg.h"
 #include "utils/record_formatter.h"
 #include <tl/expected.hpp>
 
 namespace FlexFlow {
 
-std::vector<IncomingTensorRole>
+std::unordered_map<TensorSlotName, IncomingTensorRole>
     get_linear_incoming_tensor_roles(LinearAttrs const &);
 
 RecordFormatter as_dot(LinearAttrs const &);
@@ -28,7 +30,7 @@ tl::expected<TensorShape, std::string> get_bias_shape(LinearAttrs const &attrs,
 tl::expected<TensorShape, std::string>
     get_output_shape(LinearAttrs const &attrs, TensorShape const &input);
 
-tl::expected<std::vector<TensorShape>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>>, std::string>
     get_weight_shapes(LinearAttrs const &attrs, TensorShape const &input_shape);
 
 ParallelTensorDimDegrees
@@ -50,11 +52,11 @@ tl::expected<ParallelTensorShape, std::string>
     get_output_shape(LinearAttrs const &attrs,
                      ParallelTensorShape const &input);
 
-tl::expected<std::vector<ParallelTensorShape>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>>, std::string>
     get_weight_shapes(LinearAttrs const &attrs,
                       ParallelTensorShape const &input_shape);
 
-tl::expected<std::vector<InitializerAttrs>, std::string> get_initializers(
+tl::expected<std::unordered_map<TensorSlotName, InitializerAttrs>, std::string> get_initializers(
     LinearAttrs const &,
     TensorShape const &input_shape,
     std::optional<InitializerAttrs> const &projection_initializer =

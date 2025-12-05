@@ -24,339 +24,765 @@
 #include "op-attrs/ops/weight.h"
 #include "utils/containers/get_only.h"
 #include "utils/overload.h"
+#include "utils/containers/require_only_key.h"
+#include "utils/containers/require_two_keys.h"
 
 namespace FlexFlow {
 
 template <typename T>
-static std::pair<T, T> require_2(std::vector<T> const &v) {
-  assert(v.size() == 2);
+static std::tuple<T, T, T> require_3(std::unordered_map<TensorSlotName, T> const &v, TensorSlotName k1, TensorSlotName k2, TensorSlotName k3) {
+  ASSERT(v.size() == 3);
 
-  return {v.at(0), v.at(1)};
+  return {v.at(k1), v.at(k2), v.at(k3)};
 }
 
-template <typename T>
-static std::tuple<T, T, T> require_3(std::vector<T> const &v) {
-  assert(v.size() == 3);
-
-  return {v.at(0), v.at(1), v.at(2)};
-}
-
-std::vector<TensorShape>
+std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>>
     get_output_shapes(ComputationGraphOpAttrs const &op_attrs,
-                      std::vector<TensorShape> const &input_shapes) {
-  return op_attrs.visit<std::vector<TensorShape>>(overload{
-      [&](BatchMatmulAttrs const &attrs) -> std::vector<TensorShape> {
-        auto [i1, i2] = require_2(input_shapes);
-
-        return {throw_if_unexpected(get_output_shape(attrs, i1, i2))};
-      },
-      [&](BatchNormAttrs const &attrs) -> std::vector<TensorShape> {
-        return {throw_if_unexpected(
-            get_output_shape(attrs, get_only(input_shapes)))};
-      },
-      [&](CastAttrs const &attrs) -> std::vector<TensorShape> {
-        return {throw_if_unexpected(
-            get_output_shape(attrs, get_only(input_shapes)))};
-      },
-      [&](ConcatAttrs const &attrs) -> std::vector<TensorShape> {
-        return {throw_if_unexpected(get_output_shape(attrs, input_shapes))};
-      },
-      [&](Conv2DAttrs const &attrs) -> std::vector<TensorShape> {
-        return {get_output_shape(attrs, get_only(input_shapes))};
-      },
-      [&](DropoutAttrs const &attrs) -> std::vector<TensorShape> {
-        return {get_output_shape(attrs, get_only(input_shapes))};
-      },
-      [&](ElementBinaryAttrs const &attrs) -> std::vector<TensorShape> {
-        auto [i1, i2] = require_2(input_shapes);
-
-        return {get_output_shape(attrs, i1, i2)};
-      },
-      [&](ElementUnaryAttrs const &attrs) -> std::vector<TensorShape> {
-        return {get_output_shape(attrs, get_only(input_shapes))};
-      },
-      [&](EmbeddingAttrs const &attrs) -> std::vector<TensorShape> {
-        return {throw_if_unexpected(
-            get_output_shape(attrs, get_only(input_shapes)))};
-      },
-      [&](FlatAttrs const &attrs) -> std::vector<TensorShape> {
-        return {get_output_shape(attrs, get_only(input_shapes))};
-      },
-      [&](GatherAttrs const &attrs) -> std::vector<TensorShape> {
-        return {
-            get_output_shape(attrs, input_shapes.at(0), input_shapes.at(1))};
-      },
-      [&](InputAttrs const &attrs) -> std::vector<TensorShape> {
-        return {get_output_shape(attrs)};
-      },
-      [&](LayerNormAttrs const &attrs) -> std::vector<TensorShape> {
-        return {throw_if_unexpected(
-            get_output_shape(attrs, get_only(input_shapes)))};
-      },
-      [&](LinearAttrs const &attrs) -> std::vector<TensorShape> {
-        return {throw_if_unexpected(
-            get_output_shape(attrs, get_only(input_shapes)))};
-      },
-      [&](MultiHeadAttentionAttrs const &attrs) -> std::vector<TensorShape> {
-        auto [i1, i2, i3] = require_3(input_shapes);
-
-        return {throw_if_unexpected(get_output_shape(attrs, i1, i2, i3))};
-      },
-      [&](Pool2DAttrs const &attrs) -> std::vector<TensorShape> {
-        return {throw_if_unexpected(
-            get_output_shape(attrs, get_only(input_shapes)))};
-      },
-      [&](SoftmaxAttrs const &attrs) -> std::vector<TensorShape> {
-        return {throw_if_unexpected(
-            get_output_shape(attrs, get_only(input_shapes)))};
-      },
-      [&](TransposeAttrs const &attrs) -> std::vector<TensorShape> {
+                      std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> const &input_shapes) {
+  return op_attrs.visit<std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>>>(overload{
+      [&](BatchMatmulAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        auto [lhs, rhs] = require_two_keys(input_shapes, TensorSlotName::LHS_INPUT, TensorSlotName::RHS_INPUT);
 
         return {
-            get_output_shape(attrs, get_only(input_shapes)),
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<TensorShape>{
+              throw_if_unexpected(get_output_shape(attrs, lhs.require_singular(), rhs.require_singular())),
+            },
+          },
         };
       },
-      [&](WeightAttrs const &attrs) -> std::vector<TensorShape> {
-        return {get_output_shape(attrs)};
+      [&](BatchNormAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        TensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<TensorShape>{
+              throw_if_unexpected(get_output_shape(attrs, input)),
+            },
+          },
+        };
       },
-      [&](auto const &attrs) -> std::vector<TensorShape> {
+      [&](CastAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        TensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<TensorShape>{
+              throw_if_unexpected(get_output_shape(attrs, input)),
+            },
+          },
+        };
+      },
+      [&](ConcatAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        std::vector<TensorShape> inputs = require_only_key(input_shapes, TensorSlotName::INPUT).require_variadic();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<TensorShape>{
+              throw_if_unexpected(get_output_shape(attrs, inputs)),
+            },
+          },
+        };
+      },
+      [&](Conv2DAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        TensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT, 
+            SingularOrVariadic<TensorShape>{
+              get_output_shape(attrs, input),
+            },
+          },
+        };
+      },
+      [&](DropoutAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        TensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<TensorShape>{
+              get_output_shape(attrs, input),
+            },
+          },
+        };
+      },
+      [&](ElementBinaryAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        auto [lhs, rhs] = require_two_keys(input_shapes, TensorSlotName::LHS_INPUT, TensorSlotName::RHS_INPUT);
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<TensorShape>{
+              get_output_shape(attrs, lhs.require_singular(), rhs.require_singular()),
+            },
+          },
+        };
+      },
+      [&](ElementUnaryAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        TensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<TensorShape>{
+              get_output_shape(attrs, input),
+            },
+          },
+        };
+      },
+      [&](EmbeddingAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        TensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<TensorShape>{
+              throw_if_unexpected(get_output_shape(attrs, input)),
+            },
+          },
+        };
+      },
+      [&](FlatAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        TensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<TensorShape>{
+              get_output_shape(attrs, input),
+            },
+          },
+        };
+      },
+      [&](GatherAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        auto [input, index] = require_two_keys(input_shapes, TensorSlotName::INPUT, TensorSlotName::INDEX);
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<TensorShape>{
+              get_output_shape(attrs, input.require_singular(), index.require_singular()),
+            },
+          },
+        };
+      },
+      [&](InputAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        TensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<TensorShape>{
+              get_output_shape(attrs),
+            },
+          },
+        };
+      },
+      [&](LayerNormAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        TensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<TensorShape>{
+              throw_if_unexpected(get_output_shape(attrs, input)),
+            },
+          },
+        };
+      },
+      [&](LinearAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        TensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<TensorShape>{
+              throw_if_unexpected(get_output_shape(attrs, input)),
+            },
+          },
+        };
+      },
+      [&](MultiHeadAttentionAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        auto [query, key, value] = require_3(input_shapes, TensorSlotName::QUERY, TensorSlotName::KEY, TensorSlotName::VALUE);
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<TensorShape>{
+              throw_if_unexpected(get_output_shape(attrs, query.require_singular(), key.require_singular(), value.require_singular()))
+            },
+          },
+        };
+      },
+      [&](Pool2DAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        TensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+        
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<TensorShape>{
+              throw_if_unexpected(get_output_shape(attrs, input))
+            },
+          },
+        };
+      },
+      [&](SoftmaxAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        TensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<TensorShape>{
+              throw_if_unexpected(get_output_shape(attrs, input))
+            },
+          },
+        };
+      },
+      [&](TransposeAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        TensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<TensorShape>{
+              get_output_shape(attrs, input),
+            },
+          },
+        };
+      },
+      [&](WeightAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        TensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<TensorShape>{
+              get_output_shape(attrs),
+            },
+          },
+        };
+      },
+      [&](auto const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
         NOT_IMPLEMENTED();
       }});
 }
 
-std::vector<TensorShape>
+std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>>
     get_weight_shapes(ComputationGraphOpAttrs const &op_attrs,
-                      std::vector<TensorShape> const &input_shapes) {
-  return op_attrs.visit<std::vector<TensorShape>>(overload{
-      [&](BatchMatmulAttrs const &attrs) -> std::vector<TensorShape> {
-        return {};
-      },
-      [&](BatchNormAttrs const &attrs) -> std::vector<TensorShape> {
-        return throw_if_unexpected(
-            get_weight_shapes(attrs, get_only(input_shapes)));
-      },
-      [&](CastAttrs const &attrs) -> std::vector<TensorShape> { return {}; },
-      [&](ConcatAttrs const &attrs) -> std::vector<TensorShape> { return {}; },
-      [&](Conv2DAttrs const &attrs) -> std::vector<TensorShape> {
-        return get_weight_shapes(attrs, get_only(input_shapes));
-      },
-      [&](DropoutAttrs const &attrs) -> std::vector<TensorShape> { return {}; },
-      [&](ElementBinaryAttrs const &attrs) -> std::vector<TensorShape> {
-        return {};
-      },
-      [&](ElementUnaryAttrs const &attrs) -> std::vector<TensorShape> {
-        return {};
-      },
-      [&](EmbeddingAttrs const &attrs) -> std::vector<TensorShape> {
-        return {throw_if_unexpected(
-            get_weights_shape(attrs, get_only(input_shapes)))};
-      },
-      [&](FlatAttrs const &attrs) -> std::vector<TensorShape> { return {}; },
-      [&](GatherAttrs const &attrs) -> std::vector<TensorShape> { return {}; },
-      [&](InputAttrs const &attrs) -> std::vector<TensorShape> { return {}; },
-      [&](LayerNormAttrs const &attrs) -> std::vector<TensorShape> {
-        return throw_if_unexpected(
-            get_weight_shapes(attrs, get_only(input_shapes)));
-      },
-      [&](LinearAttrs const &attrs) -> std::vector<TensorShape> {
-        return throw_if_unexpected(
-            get_weight_shapes(attrs, get_only(input_shapes)));
-      },
-      [&](MultiHeadAttentionAttrs const &attrs) -> std::vector<TensorShape> {
-        auto [i1, i2, i3] = require_3(input_shapes);
+                      std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> const &input_shapes) {
+  return op_attrs.visit<std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>>>(overload{
+      [&](BatchMatmulAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        require_two_keys(input_shapes, TensorSlotName::LHS_INPUT, TensorSlotName::RHS_INPUT);
 
-        return throw_if_unexpected(get_weight_shapes(attrs, i1, i2, i3));
+        return {};
       },
-      [&](Pool2DAttrs const &attrs) -> std::vector<TensorShape> { return {}; },
-      [&](SoftmaxAttrs const &attrs) -> std::vector<TensorShape> { return {}; },
-      [&](WeightAttrs const &attrs) -> std::vector<TensorShape> { return {}; },
-      [&](auto const &attrs) -> std::vector<TensorShape> {
+      [&](BatchNormAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        TensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return throw_if_unexpected(
+            get_weight_shapes(attrs, input));
+      },
+      [&](CastAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> { 
+        require_only_key(input_shapes, TensorSlotName::INPUT);
+        return {}; 
+      },
+      [&](ConcatAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> { 
+        require_only_key(input_shapes, TensorSlotName::INPUT);
+
+        return {}; 
+      },
+      [&](Conv2DAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        TensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return get_weight_shapes(attrs, input);
+      },
+      [&](DropoutAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> { 
+        return {}; 
+      },
+      [&](ElementBinaryAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        return {};
+      },
+      [&](ElementUnaryAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        return {};
+      },
+      [&](EmbeddingAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        TensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::WEIGHT,
+            SingularOrVariadic<TensorShape>{
+              throw_if_unexpected(get_weights_shape(attrs, input)),
+            },
+          },
+        };
+      },
+      [&](FlatAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> { 
+        require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+        return {}; 
+      },
+      [&](GatherAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        require_two_keys(input_shapes, TensorSlotName::INPUT, TensorSlotName::INDEX);
+        return {}; 
+      },
+      [&](InputAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> { 
+        ASSERT(input_shapes.size() == 0);
+        return {}; 
+      },
+      [&](LayerNormAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        TensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return throw_if_unexpected(get_weight_shapes(attrs, input));
+      },
+      [&](LinearAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        TensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return throw_if_unexpected(get_weight_shapes(attrs, input));
+      },
+      [&](MultiHeadAttentionAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
+        auto [query, key, value] = require_3(input_shapes, TensorSlotName::QUERY, TensorSlotName::KEY, TensorSlotName::VALUE);
+
+        return throw_if_unexpected(get_weight_shapes(attrs, query.require_singular(), key.require_singular(), value.require_singular()));
+      },
+      [&](Pool2DAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> { 
+        require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {}; 
+      },
+      [&](SoftmaxAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> { 
+        require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {}; 
+      },
+      [&](WeightAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> { 
+        ASSERT(input_shapes.size() == 0);
+        return {}; 
+      },
+      [&](auto const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> {
         NOT_IMPLEMENTED();
       }});
 }
 
-std::vector<ParallelTensorShape>
+std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>>
     get_output_shapes(PCGOperatorAttrs const &pcg_op_attrs,
-                      std::vector<ParallelTensorShape> const &input_shapes) {
-  return pcg_op_attrs.visit<std::vector<ParallelTensorShape>>(overload{
-      [&](BatchMatmulAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        auto [i1, i2] = require_2(input_shapes);
+                      std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> const &input_shapes) {
+  return pcg_op_attrs.visit<std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>>>(overload{
+      [&](BatchMatmulAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        auto [lhs, rhs] = require_two_keys(input_shapes, TensorSlotName::LHS_INPUT, TensorSlotName::RHS_INPUT);
 
-        return {throw_if_unexpected(get_output_shape(attrs, i1, i2))};
-      },
-      [&](BatchNormAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        return {throw_if_unexpected(
-            get_output_shape(attrs, get_only(input_shapes)))};
-      },
-      [&](CastAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        return {throw_if_unexpected(
-            get_output_shape(attrs, get_only(input_shapes)))};
-      },
-      [&](CombineAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        return {throw_if_unexpected(
-            get_output_shape(attrs, get_only(input_shapes)))};
-      },
-      [&](ConcatAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        return {throw_if_unexpected(get_output_shape(attrs, input_shapes))};
-      },
-      [&](Conv2DAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        return {get_output_shape(attrs, get_only(input_shapes))};
-      },
-      [&](DropoutAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        return {throw_if_unexpected(
-            get_output_shape(attrs, get_only(input_shapes)))};
-      },
-      [&](ElementBinaryAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        auto [i1, i2] = require_2(input_shapes);
-
-        return {get_output_shape(attrs, i1, i2)};
-      },
-      [&](ElementUnaryAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        return {get_output_shape(attrs, get_only(input_shapes))};
-      },
-      [&](EmbeddingAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        return {throw_if_unexpected(
-            get_output_shape(attrs, get_only(input_shapes)))};
-      },
-      [&](FlatAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        return {get_output_shape(attrs, get_only(input_shapes))};
-      },
-      [&](GatherAttrs const &attrs) -> std::vector<ParallelTensorShape> {
         return {
-            get_output_shape(attrs, input_shapes.at(0), input_shapes.at(1))};
-      },
-      [&](InputAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        return {get_output_parallel_tensor_shape(attrs)};
-      },
-      [&](LayerNormAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        return {throw_if_unexpected(
-            get_output_shape(attrs, get_only(input_shapes)))};
-      },
-      [&](LinearAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        return {throw_if_unexpected(
-            get_output_shape(attrs, get_only(input_shapes)))};
-      },
-      [&](MultiHeadAttentionAttrs const &attrs)
-          -> std::vector<ParallelTensorShape> {
-        auto [i1, i2, i3] = require_3(input_shapes);
-
-        return {throw_if_unexpected(get_output_shape(attrs, i1, i2, i3))};
-      },
-      [&](Pool2DAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        return {throw_if_unexpected(
-            get_output_shape(attrs, get_only(input_shapes)))};
-      },
-      [&](ReductionAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        return {throw_if_unexpected(
-            get_output_shape(attrs, get_only(input_shapes)))};
-      },
-      [&](RepartitionAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        return {throw_if_unexpected(
-            get_output_shape(attrs, get_only(input_shapes)))};
-      },
-      [&](ReplicateAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        return {get_output_shape(attrs, get_only(input_shapes))};
-      },
-      [&](SoftmaxAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        return {throw_if_unexpected(
-            get_output_shape(attrs, get_only(input_shapes)))};
-      },
-      [&](TransposeAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        return {
-            get_output_shape(attrs, get_only(input_shapes)),
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<ParallelTensorShape>{
+              throw_if_unexpected(get_output_shape(attrs, lhs.require_singular(), rhs.require_singular())),
+            },
+          },
         };
       },
-      [&](WeightAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        return {get_output_parallel_tensor_shape(attrs)};
+      [&](BatchNormAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        ParallelTensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<ParallelTensorShape>{
+              throw_if_unexpected(get_output_shape(attrs, input)),
+            },
+          },
+        };
       },
-      [&](auto const &attrs) -> std::vector<ParallelTensorShape> {
+      [&](CastAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        ParallelTensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<ParallelTensorShape>{
+              throw_if_unexpected(get_output_shape(attrs, input))
+            },
+          },
+        };
+      },
+      [&](CombineAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        ParallelTensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<ParallelTensorShape>{
+              throw_if_unexpected(get_output_shape(attrs, input))
+            },
+          },
+        };
+      },
+      [&](ConcatAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        std::vector<ParallelTensorShape> inputs = require_only_key(input_shapes, TensorSlotName::INPUT).require_variadic();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<ParallelTensorShape>{
+              throw_if_unexpected(get_output_shape(attrs, inputs))
+            },
+          },
+        };
+      },
+      [&](Conv2DAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        ParallelTensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<ParallelTensorShape>{
+              get_output_shape(attrs, input)
+            },
+          },
+        };
+      },
+      [&](DropoutAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        ParallelTensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<ParallelTensorShape>{
+              throw_if_unexpected(get_output_shape(attrs, input)),
+            },
+          },
+        };
+      },
+      [&](ElementBinaryAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        auto [lhs, rhs] = require_two_keys(input_shapes, TensorSlotName::LHS_INPUT, TensorSlotName::RHS_INPUT);
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<ParallelTensorShape>{
+              get_output_shape(attrs, lhs.require_singular(), rhs.require_singular()),
+            },
+          },
+        };
+      },
+      [&](ElementUnaryAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        ParallelTensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<ParallelTensorShape>{
+              get_output_shape(attrs, input),
+            },
+          },
+        };
+      },
+      [&](EmbeddingAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        ParallelTensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<ParallelTensorShape>{
+              throw_if_unexpected(get_output_shape(attrs, input)),
+            },
+          },
+        };
+      },
+      [&](FlatAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        ParallelTensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<ParallelTensorShape>{
+              get_output_shape(attrs, input),
+            },
+          },
+        };
+      },
+      [&](GatherAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        auto [input, index] = require_two_keys(input_shapes, TensorSlotName::INPUT, TensorSlotName::INDEX);
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<ParallelTensorShape>{
+              get_output_shape(attrs, input.require_singular(), index.require_singular()),
+            },
+          },
+        };
+      },
+      [&](InputAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        ASSERT(input_shapes.size() == 0);
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<ParallelTensorShape>{
+              get_output_parallel_tensor_shape(attrs),
+            },
+          },
+        };
+      },
+      [&](LayerNormAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        ParallelTensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<ParallelTensorShape>{
+              throw_if_unexpected(get_output_shape(attrs, input)),
+            },
+          },
+        };
+      },
+      [&](LinearAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        ParallelTensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<ParallelTensorShape>{
+              throw_if_unexpected(get_output_shape(attrs, input)),
+            },
+          },
+        };
+      },
+      [&](MultiHeadAttentionAttrs const &attrs)
+          -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        auto [i1, i2, i3] = require_3(input_shapes, TensorSlotName::QUERY, TensorSlotName::KEY, TensorSlotName::VALUE);
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<ParallelTensorShape>{
+              throw_if_unexpected(get_output_shape(attrs, i1.require_singular(), i2.require_singular(), i3.require_singular()))
+            },
+          },
+        };
+      },
+      [&](Pool2DAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        ParallelTensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<ParallelTensorShape>{
+              throw_if_unexpected(get_output_shape(attrs, input)),
+            },
+          },
+        };
+      },
+      [&](ReductionAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        ParallelTensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<ParallelTensorShape>{
+              throw_if_unexpected(get_output_shape(attrs, input)),
+            },
+          },
+        };
+      },
+      [&](RepartitionAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        ParallelTensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<ParallelTensorShape>{
+              throw_if_unexpected(get_output_shape(attrs, input)),
+            },
+          },
+        };
+      },
+      [&](ReplicateAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        ParallelTensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<ParallelTensorShape>{
+              get_output_shape(attrs, input),
+            },
+          },
+        };
+      },
+      [&](SoftmaxAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        ParallelTensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<ParallelTensorShape>{
+              throw_if_unexpected(get_output_shape(attrs, input)),
+            },
+          },
+        };
+      },
+      [&](TransposeAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        ParallelTensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<ParallelTensorShape>{
+              get_output_shape(attrs, input),
+            },
+          },
+        };
+      },
+      [&](WeightAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        ASSERT(input_shapes.size() == 0);
+
+        return {
+          {
+            TensorSlotName::OUTPUT,
+            SingularOrVariadic<ParallelTensorShape>{
+              get_output_parallel_tensor_shape(attrs),
+            },
+          },
+        };
+      },
+      [&](auto const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
         NOT_IMPLEMENTED();
       }});
 }
 
-std::vector<ParallelTensorShape>
+std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>>
     get_weight_shapes(PCGOperatorAttrs const &pcg_op_attrs,
-                      std::vector<ParallelTensorShape> const &input_shapes) {
-  return pcg_op_attrs.visit<std::vector<ParallelTensorShape>>(overload{
-      [&](BatchMatmulAttrs const &attrs) -> std::vector<ParallelTensorShape> {
+                      std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> const &input_shapes) {
+  return pcg_op_attrs.visit<std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>>>(overload{
+      [&](BatchMatmulAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        require_two_keys(input_shapes, TensorSlotName::LHS_INPUT, TensorSlotName::RHS_INPUT);
+
         return {};
       },
-      [&](BatchNormAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        return throw_if_unexpected(
-            get_weight_shapes(attrs, get_only(input_shapes)));
+      [&](BatchNormAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        ParallelTensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+        
+        return throw_if_unexpected(get_weight_shapes(attrs, input));
       },
-      [&](CastAttrs const &attrs) -> std::vector<ParallelTensorShape> {
+      [&](CastAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
         return {};
       },
-      [&](CombineAttrs const &attrs) -> std::vector<ParallelTensorShape> {
+      [&](CombineAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
         return {};
       },
-      [&](ConcatAttrs const &attrs) -> std::vector<ParallelTensorShape> {
+      [&](ConcatAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        require_only_key(input_shapes, TensorSlotName::INPUT).require_variadic();
+
         return {};
       },
-      [&](Conv2DAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        return get_weight_shapes(attrs, get_only(input_shapes));
+      [&](Conv2DAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        ParallelTensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return get_weight_shapes(attrs, input);
       },
-      [&](DropoutAttrs const &attrs) -> std::vector<ParallelTensorShape> {
+      [&](DropoutAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
         return {};
       },
-      [&](ElementBinaryAttrs const &attrs) -> std::vector<ParallelTensorShape> {
+      [&](ElementBinaryAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        require_two_keys(input_shapes, TensorSlotName::LHS_INPUT, TensorSlotName::RHS_INPUT);
+
         return {};
       },
-      [&](ElementUnaryAttrs const &attrs) -> std::vector<ParallelTensorShape> {
+      [&](ElementUnaryAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
         return {};
       },
-      [&](EmbeddingAttrs const &attrs) -> std::vector<ParallelTensorShape> {
+      [&](EmbeddingAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        ParallelTensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
         return {
-            throw_if_unexpected(
-                get_weights_shape(attrs, get_only(input_shapes))),
+          {
+            TensorSlotName::WEIGHT,
+            SingularOrVariadic<ParallelTensorShape>{
+              throw_if_unexpected(get_weights_shape(attrs, input)),
+            },
+          },
         };
       },
-      [&](FlatAttrs const &attrs) -> std::vector<ParallelTensorShape> {
+      [&](FlatAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
         return {};
       },
-      [&](GatherAttrs const &attrs) -> std::vector<ParallelTensorShape> {
+      [&](GatherAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        require_two_keys(input_shapes, TensorSlotName::INPUT, TensorSlotName::INDEX);
+
         return {};
       },
-      [&](InputAttrs const &attrs) -> std::vector<ParallelTensorShape> {
+      [&](InputAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        ASSERT(input_shapes.size() == 0);
+
         return {};
       },
-      [&](LayerNormAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        return throw_if_unexpected(
-            get_weight_shapes(attrs, get_only(input_shapes)));
+      [&](LayerNormAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        ParallelTensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return throw_if_unexpected(get_weight_shapes(attrs, input));
       },
-      [&](LinearAttrs const &attrs) -> std::vector<ParallelTensorShape> {
-        return throw_if_unexpected(
-            get_weight_shapes(attrs, get_only(input_shapes)));
+      [&](LinearAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        ParallelTensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
+        return throw_if_unexpected(get_weight_shapes(attrs, input));
       },
       [&](MultiHeadAttentionAttrs const &attrs)
-          -> std::vector<ParallelTensorShape> {
-        auto [i1, i2, i3] = require_3(input_shapes);
+          -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        auto [query, key, value] = require_3(input_shapes, TensorSlotName::QUERY, TensorSlotName::KEY, TensorSlotName::VALUE);
 
-        return throw_if_unexpected(get_weight_shapes(attrs, i1, i2, i3));
+        return throw_if_unexpected(get_weight_shapes(attrs, query.require_singular(), key.require_singular(), value.require_singular()));
       },
-      [&](Pool2DAttrs const &attrs) -> std::vector<ParallelTensorShape> {
+      [&](Pool2DAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
         return {};
       },
-      [&](RepartitionAttrs const &attrs) -> std::vector<ParallelTensorShape> {
+      [&](RepartitionAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
         return {};
       },
-      [&](ReplicateAttrs const &attrs) -> std::vector<ParallelTensorShape> {
+      [&](ReplicateAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
         return {};
       },
-      [&](ReductionAttrs const &attrs) -> std::vector<ParallelTensorShape> {
+      [&](ReductionAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
         return {};
       },
-      [&](SoftmaxAttrs const &attrs) -> std::vector<ParallelTensorShape> {
+      [&](SoftmaxAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
         return {};
       },
-      [&](TransposeAttrs const &attrs) -> std::vector<ParallelTensorShape> {
+      [&](TransposeAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
         return {};
       },
-      [&](WeightAttrs const &attrs) -> std::vector<ParallelTensorShape> {
+      [&](WeightAttrs const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
+        require_only_key(input_shapes, TensorSlotName::INPUT).require_singular();
+
         return {};
       },
-      [&](auto const &attrs) -> std::vector<ParallelTensorShape> {
+      [&](auto const &attrs) -> std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> {
         NOT_IMPLEMENTED();
       }});
 }

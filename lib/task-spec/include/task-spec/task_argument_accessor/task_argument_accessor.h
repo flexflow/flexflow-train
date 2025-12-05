@@ -8,7 +8,7 @@
 #include "task-spec/ff_iteration_config.dtg.h"
 #include "task-spec/optimizer_slot_name.dtg.h"
 #include "task-spec/task_argument_accessor/itask_argument_accessor.h"
-#include "task-spec/ops/tensor_slot_name.dtg.h"
+#include "op-attrs/tensor_slot_name.dtg.h"
 #include "task-spec/per_device_op_state.dtg.h"
 #include "task-spec/task_argument_accessor/task_tensor_parameter.h"
 
@@ -22,16 +22,6 @@ struct TaskArgumentAccessor {
   PerDeviceOpState get_per_device_op_state() const;
   FFIterationConfig get_iteration_config() const;
 
-  // template <typename T>
-  // T const &get_argument(arg_slot_id_t slot) const {
-  //   return this->ptr->get_concrete_arg(slot).get<T>();
-  // }
-  //
-  // template <typename T>
-  // T const &get_argument(int slot) const {
-  //   return this->get_argument<T>(arg_slot_id_t{slot});
-  // }
-  //
   TensorShape get_tensor_shape(TensorSlotName slot) const {
     NOT_IMPLEMENTED();
   }

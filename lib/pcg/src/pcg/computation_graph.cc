@@ -2,12 +2,17 @@
 #include "op-attrs/computation_graph_op_attrs.h"
 #include "op-attrs/get_incoming_tensor_roles.h"
 #include "op-attrs/shape_inference.h"
+#include "utils/singular_or_variadic.h"
+#include "utils/containers/binary_merge_disjoint_maps.h"
 #include "utils/containers/concat_vectors.h"
 #include "utils/containers/filtrans.h"
 #include "utils/containers/get_only.h"
+#include "utils/containers/map_values.h"
 #include "utils/containers/repeat_element.h"
 #include "utils/containers/reversed.h"
 #include "utils/containers/transform.h"
+#include "utils/containers/zip_values_strict.h"
+#include "utils/containers/zip_values_strict_with.h"
 #include "utils/containers/zip_with_strict.h"
 #include "utils/graph/dataflow_graph/algorithms.h"
 #include "utils/graph/dataflow_graph/algorithms/get_subgraph_incoming_edges.h"
@@ -26,7 +31,7 @@ namespace FlexFlow {
 
 ComputationGraph make_empty_computation_graph() {
   return ComputationGraph{
-      LabelledDataflowGraph<LayerAttrs, TensorAttrs>::create<
+      LabelledKwargDataflowGraph<LayerAttrs, TensorAttrs, TensorSlotName>::create<
           UnorderedSetLabelledOpenDataflowGraph<LayerAttrs, TensorAttrs>>()};
 }
 
@@ -38,46 +43,87 @@ std::unordered_set<layer_guid_t> get_layers(ComputationGraph const &cg) {
 LayerAddedResult add_layer(
     ComputationGraph &computation_graph,
     LayerAttrs const &layer_attrs,
-    std::vector<tensor_guid_t> const &inputs,
-    std::vector<tensor_guid_t> const &weights,
-    std::optional<std::vector<CreateGrad>> const &maybe_output_flags) {
-  std::vector<TensorShape> input_shapes =
-      transform(inputs, [&](tensor_guid_t const &i) {
-        return get_tensor_attrs(computation_graph, i).shape;
-      });
+    std::unordered_map<TensorSlotName, SingularOrVariadic<tensor_guid_t>> const &inputs,
+    std::unordered_map<TensorSlotName, SingularOrVariadic<tensor_guid_t>> const &weights,
+    std::optional<std::unordered_map<TensorSlotName, SingularOrVariadic<CreateGrad>>> const &maybe_output_flags) {
 
-  std::vector<TensorShape> provided_weight_shapes =
-      transform(weights, [&](tensor_guid_t const &w) {
-        return get_tensor_attrs(computation_graph, w).shape;
-      });
+  std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> input_shapes =
+      map_values(
+        inputs, 
+        [&](SingularOrVariadic<tensor_guid_t> const &s_or_v) {
+          return transform_singular_or_variadic(
+            s_or_v,
+            [&](tensor_guid_t const &i) {
+              return get_tensor_attrs(computation_graph, i).shape;
+            });
+        });
 
-  std::vector<TensorShape> expected_weight_shapes =
+  std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> provided_weight_shapes =
+      map_values(
+        weights, 
+        [&](SingularOrVariadic<tensor_guid_t> const &s_or_v) {
+          return transform_singular_or_variadic(
+            s_or_v,
+            [&](tensor_guid_t const &w) {
+              return get_tensor_attrs(computation_graph, w).shape;
+            });
+        });
+
+  std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> expected_weight_shapes =
       get_weight_shapes(layer_attrs.op_attrs, input_shapes);
 
-  std::vector<DataflowOutput> raw_inputs = transform(
-      inputs, [](tensor_guid_t const &t) { return t.raw_graph_output; });
+  std::unordered_map<TensorSlotName, SingularOrVariadic<DataflowOutput>> raw_inputs 
+    = map_values(
+        inputs, 
+        [&](SingularOrVariadic<tensor_guid_t> const &s_or_v) {
+          return transform_singular_or_variadic(
+            s_or_v,
+            [](tensor_guid_t const &t) { return t.raw_graph_output; });
+        });
 
-  std::vector<DataflowOutput> raw_weights = transform(
-      weights, [](tensor_guid_t const &t) { return t.raw_graph_output; });
+  std::unordered_map<TensorSlotName, SingularOrVariadic<DataflowOutput>> raw_weights = map_values(
+      weights, 
+      [&](SingularOrVariadic<tensor_guid_t> const &s_or_v) {
+        return transform_singular_or_variadic(
+          s_or_v,
+          [](tensor_guid_t const &t) { return t.raw_graph_output; });
+      });
 
-  std::vector<TensorShape> output_shapes =
+  std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> output_shapes =
       get_output_shapes(layer_attrs.op_attrs, input_shapes);
 
-  std::vector<CreateGrad> output_flags = maybe_output_flags.value_or(
-      repeat_element(num_elements(output_shapes), CreateGrad::YES));
+  std::unordered_map<TensorSlotName, SingularOrVariadic<CreateGrad>> output_flags 
+    = maybe_output_flags.value_or(
+        map_values(
+          output_shapes,
+          [&](SingularOrVariadic<TensorShape> const &s_or_v) -> SingularOrVariadic<CreateGrad> {
+            return transform_singular_or_variadic(
+              s_or_v,
+              [](TensorShape const &) {
+                return CreateGrad::YES; 
+              });
+          }));
 
-  std::vector<TensorAttrs> output_attrs = zip_with_strict(
+  std::unordered_map<TensorSlotName, SingularOrVariadic<TensorAttrs>> output_attrs = 
+    zip_values_strict_with(
       output_shapes,
       output_flags,
-      [](TensorShape const &shape, CreateGrad const &create_grad) {
-        return TensorAttrs{
-            /*shape=*/shape,
-            /*create_grad=*/create_grad,
-        };
+      [](SingularOrVariadic<TensorShape> const &sv_shape, SingularOrVariadic<CreateGrad> const &sv_create_grad) 
+        -> SingularOrVariadic<TensorAttrs>
+      {
+        return zip_strict_singular_or_variadic_with(
+          sv_shape,
+          sv_create_grad,
+          [&](TensorShape const &shape, CreateGrad create_grad) {
+            return TensorAttrs{
+                /*shape=*/shape,
+                /*create_grad=*/create_grad,
+            };
+          });
       });
 
   NodeAddedResult added = computation_graph.raw_graph.add_node(
-      layer_attrs, concat_vectors(raw_inputs, raw_weights), output_attrs);
+      layer_attrs, binary_merge_disjoint_maps(raw_inputs, raw_weights), output_attrs);
 
   return LayerAddedResult{
       layer_guid_t{added.node},

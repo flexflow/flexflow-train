@@ -26,15 +26,15 @@
 
 namespace FlexFlow {
 
-std::vector<IncomingTensorRole>
+std::unordered_map<TensorSlotName, IncomingTensorRole>
     get_linear_incoming_tensor_roles(LinearAttrs const &attrs) {
-  std::vector<IncomingTensorRole> result = {
-      IncomingTensorRole::INPUT,
-      IncomingTensorRole::WEIGHT,
+  std::unordered_map<TensorSlotName, IncomingTensorRole> result = {
+    {TensorSlotName::INPUT, IncomingTensorRole::INPUT},
+    {TensorSlotName::WEIGHT, IncomingTensorRole::WEIGHT},
   };
 
   if (attrs.use_bias) {
-    result.push_back(IncomingTensorRole::WEIGHT);
+    result[TensorSlotName::BIAS] = IncomingTensorRole::WEIGHT;
   }
 
   return result;
@@ -88,16 +88,26 @@ tl::expected<TensorShape, std::string>
   return output_shape;
 }
 
-tl::expected<std::vector<TensorShape>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>>, std::string>
     get_weight_shapes(LinearAttrs const &attrs,
                       TensorShape const &input_shape) {
 
-  std::vector<TensorShape> weight_shapes = {
-      PROPAGATE_ERR(get_projection_shape(attrs, input_shape)),
+  std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> weight_shapes = {
+    {
+      TensorSlotName::WEIGHT,
+      SingularOrVariadic<TensorShape>{
+        PROPAGATE_ERR(get_projection_shape(attrs, input_shape)),
+      },
+    },
   };
 
   if (attrs.use_bias) {
-    weight_shapes.push_back(PROPAGATE_ERR(get_bias_shape(attrs, input_shape)));
+    weight_shapes.insert({
+      TensorSlotName::BIAS,
+      SingularOrVariadic<TensorShape>{
+        PROPAGATE_ERR(get_bias_shape(attrs, input_shape)),
+      },
+    });
   }
 
   return weight_shapes;
@@ -219,16 +229,26 @@ ParallelTensorDimDegrees
   };
 }
 
-tl::expected<std::vector<ParallelTensorShape>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>>, std::string>
     get_weight_shapes(LinearAttrs const &attrs,
                       ParallelTensorShape const &input_shape) {
 
-  std::vector<ParallelTensorShape> weight_shapes = {
-      PROPAGATE_ERR(get_projection_shape(attrs, input_shape)),
+  std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> weight_shapes = {
+    {
+      TensorSlotName::WEIGHT,
+      SingularOrVariadic<ParallelTensorShape>{
+        PROPAGATE_ERR(get_projection_shape(attrs, input_shape)),
+      },
+    },
   };
 
   if (attrs.use_bias) {
-    weight_shapes.push_back(PROPAGATE_ERR(get_bias_shape(attrs, input_shape)));
+    weight_shapes.insert({
+      TensorSlotName::BIAS,
+      SingularOrVariadic<ParallelTensorShape>{
+        PROPAGATE_ERR(get_bias_shape(attrs, input_shape))
+      },
+    });
   }
 
   return weight_shapes;
@@ -240,7 +260,7 @@ tl::expected<std::vector<ParallelTensorShape>, std::string>
  * see
  * https://github.com/pytorch/pytorch/blob/1eba9b3aa3c43f86f4a2c807ac8e12c4a7767340/torch/nn/modules/linear.py#L114-L122
  */
-tl::expected<std::vector<InitializerAttrs>, std::string> get_initializers(
+tl::expected<std::unordered_map<TensorSlotName, InitializerAttrs>, std::string> get_initializers(
     LinearAttrs const &attrs,
     TensorShape const &input_shape,
     std::optional<InitializerAttrs> const &maybe_projection_initializer,
@@ -283,9 +303,14 @@ tl::expected<std::vector<InitializerAttrs>, std::string> get_initializers(
       maybe_bias_initializer.value_or(bias_default_initializer);
 
   if (attrs.use_bias) {
-    return std::vector{projection_initializer, bias_initializer};
+    return std::unordered_map<TensorSlotName, InitializerAttrs>{
+      {TensorSlotName::WEIGHT, projection_initializer}, 
+      {TensorSlotName::BIAS, bias_initializer},
+    };
   } else {
-    return std::vector{projection_initializer};
+    return std::unordered_map<TensorSlotName, InitializerAttrs>{
+      {TensorSlotName::WEIGHT, projection_initializer},
+    };
   }
 }
 

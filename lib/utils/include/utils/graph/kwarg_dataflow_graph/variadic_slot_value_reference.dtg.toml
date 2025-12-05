@@ -1,0 +1,27 @@
+namespace = "FlexFlow"
+name = "VariadicSlotValueReference"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+  "rapidcheck",
+]
+
+template_params = [
+  "SlotName",
+]
+
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h"
+]
+
+[[fields]]
+name = "slot_name"
+type = "SlotName"
+
+[[fields]]
+name = "idx"
+type = "::FlexFlow::nonnegative_int"

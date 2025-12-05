@@ -11,7 +11,7 @@ features = [
 ]
 
 includes = [
-  "task-spec/ops/tensor_slot_name.dtg.h",
+  "op-attrs/tensor_slot_name.dtg.h",
 ]
 
 src_includes = []

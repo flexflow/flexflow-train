@@ -15,13 +15,15 @@
 
 namespace FlexFlow {
 
-std::vector<IncomingTensorRole>
+std::unordered_map<TensorSlotName, IncomingTensorRole>
     get_layer_norm_incoming_tensor_roles(LayerNormAttrs const &attrs) {
-  std::vector<IncomingTensorRole> result = {IncomingTensorRole::INPUT};
+  std::unordered_map<TensorSlotName, IncomingTensorRole> result = {
+    {TensorSlotName::INPUT, IncomingTensorRole::INPUT},
+  };
 
   if (attrs.elementwise_affine) {
-    extend(result,
-           std::vector{IncomingTensorRole::WEIGHT, IncomingTensorRole::WEIGHT});
+    result[TensorSlotName::GAMMA] = IncomingTensorRole::WEIGHT;
+    result[TensorSlotName::BETA] = IncomingTensorRole::WEIGHT;
   }
 
   return result;
@@ -98,7 +100,7 @@ tl::expected<TensorShape, std::string>
   return get_gamma_weights_shape(attrs, input_shape);
 }
 
-tl::expected<std::vector<TensorShape>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>>, std::string>
     get_weight_shapes(LayerNormAttrs const &attrs,
                       TensorShape const &input_shape) {
 
@@ -107,9 +109,19 @@ tl::expected<std::vector<TensorShape>, std::string>
   TensorShape beta_shape =
       PROPAGATE_ERR(get_beta_weights_shape(attrs, input_shape));
 
-  return std::vector{
-      gamma_shape,
-      beta_shape,
+  return std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>>{
+    {
+      TensorSlotName::GAMMA,
+      SingularOrVariadic<TensorShape>{
+        gamma_shape,
+      },
+    },
+    {
+      TensorSlotName::BETA,
+      SingularOrVariadic<TensorShape>{
+        beta_shape,
+      },
+    },
   };
 }
 
@@ -212,7 +224,7 @@ tl::expected<ParallelTensorShape, std::string>
   return get_gamma_weights_shape(attrs, input_shape);
 }
 
-tl::expected<std::vector<ParallelTensorShape>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>>, std::string>
     get_weight_shapes(LayerNormAttrs const &attrs,
                       ParallelTensorShape const &input_shape) {
 
@@ -221,13 +233,23 @@ tl::expected<std::vector<ParallelTensorShape>, std::string>
   ParallelTensorShape beta_shape =
       PROPAGATE_ERR(get_beta_weights_shape(attrs, input_shape));
 
-  return std::vector{
-      gamma_shape,
-      beta_shape,
+  return std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>>{
+    {
+      TensorSlotName::GAMMA,
+      SingularOrVariadic<ParallelTensorShape>{
+        gamma_shape,
+      },
+    },
+    {
+      TensorSlotName::BETA,
+      SingularOrVariadic<ParallelTensorShape>{
+        beta_shape,
+      },
+    },
   };
 }
 
-std::vector<InitializerAttrs> get_initializers(LayerNormAttrs const &attrs) {
+std::unordered_map<TensorSlotName, InitializerAttrs> get_initializers(LayerNormAttrs const &attrs) {
   if (attrs.elementwise_affine) {
     InitializerAttrs gamma_initializer =
         InitializerAttrs{ConstantInitializerAttrs{DataTypeValue{float{1}}}};
@@ -235,7 +257,10 @@ std::vector<InitializerAttrs> get_initializers(LayerNormAttrs const &attrs) {
     InitializerAttrs beta_initializer =
         InitializerAttrs{ConstantInitializerAttrs{DataTypeValue{float{0}}}};
 
-    return {gamma_initializer, beta_initializer};
+    return {
+      {TensorSlotName::GAMMA, gamma_initializer}, 
+      {TensorSlotName::BETA, beta_initializer},
+    };
   } else {
     return {};
   }

@@ -1,0 +1,26 @@
+namespace = "FlexFlow"
+name = "SingularOrVariadic"
+type = "variant"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+]
+
+template_params = [
+  "T",
+]
+
+includes = [
+  "<vector>",
+]
+
+[[values]]
+type = "T"
+key = "singular"
+
+[[values]]
+type = "std::vector<T>"
+key = "variadic"

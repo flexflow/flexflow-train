@@ -1,0 +1,34 @@
+namespace = "FlexFlow"
+name = "KwargDataflowEdgeQuery"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+template_params = [
+  "SlotName",
+]
+
+includes = [
+  "utils/graph/query_set.h",
+  "utils/graph/node/node.dtg.h",
+]
+
+[[fields]]
+name = "src_nodes"
+type = "::FlexFlow::query_set<::FlexFlow::Node>"
+
+[[fields]]
+name = "src_slots"
+type = "::FlexFlow::query_set<SlotName>"
+
+[[fields]]
+name = "dst_nodes"
+type = "::FlexFlow::query_set<::FlexFlow::Node>"
+
+[[fields]]
+name = "dst_idxs"
+type = "::FlexFlow::query_set<SlotName>"

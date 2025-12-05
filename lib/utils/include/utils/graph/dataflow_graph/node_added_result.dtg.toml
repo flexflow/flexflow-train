@@ -1,7 +1,6 @@
 namespace = "FlexFlow"
 name = "NodeAddedResult"
 type = "struct"
-
 features = [
   "eq",
   "ord",
@@ -11,8 +10,11 @@ features = [
 includes = [
   "<vector>",
   "utils/graph/node/node.dtg.h",
-  "utils/fmt/vector.h",
   "utils/graph/dataflow_graph/dataflow_output.dtg.h",
+]
+
+src_includes = [
+  "utils/fmt/vector.h",
 ]
 
 [[fields]]

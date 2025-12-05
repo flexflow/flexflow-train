@@ -4,25 +4,27 @@
 #include "op-attrs/computation_graph_op_attrs.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "op-attrs/pcg_operator_attrs.dtg.h"
+#include "utils/singular_or_variadic.dtg.h"
+#include "op-attrs/tensor_slot_name.dtg.h"
 #include <vector>
 
 namespace FlexFlow {
 
-std::vector<TensorShape>
+std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>>
     get_output_shapes(ComputationGraphOpAttrs const &,
-                      std::vector<TensorShape> const &input_shapes);
+                      std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> const &input_shapes);
 
-std::vector<TensorShape>
+std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>>
     get_weight_shapes(ComputationGraphOpAttrs const &,
-                      std::vector<TensorShape> const &input_shapes);
+                      std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> const &input_shapes);
 
-std::vector<ParallelTensorShape>
+std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>>
     get_output_shapes(PCGOperatorAttrs const &,
-                      std::vector<ParallelTensorShape> const &input_shapes);
+                      std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> const &input_shapes);
 
-std::vector<ParallelTensorShape>
+std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>>
     get_weight_shapes(PCGOperatorAttrs const &,
-                      std::vector<ParallelTensorShape> const &input_shapes);
+                      std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> const &input_shapes);
 
 } // namespace FlexFlow
 

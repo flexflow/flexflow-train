@@ -6,9 +6,11 @@ features = [ ]
 includes = [
   "pcg/layer_attrs.dtg.h",
   "pcg/tensor_attrs.dtg.h",
-  "utils/graph/labelled_dataflow_graph/labelled_dataflow_graph.h",
+  "utils/graph/labelled_kwarg_dataflow_graph/labelled_kwarg_dataflow_graph.h",
+  "utils/singular_or_variadic.dtg.h",
+  "op-attrs/tensor_slot_name.dtg.h",
 ]
 
 [[fields]]
 name = "raw_graph"
-type = "::FlexFlow::LabelledDataflowGraph<::FlexFlow::LayerAttrs, ::FlexFlow::TensorAttrs>"
+type = "::FlexFlow::LabelledKwargDataflowGraph<::FlexFlow::LayerAttrs, ::FlexFlow::SingularOrVariadic<::FlexFlow::TensorAttrs>, ::FlexFlow::TensorSlotName>"

@@ -21,13 +21,16 @@ name = "FILTER"
 name = "BIAS"
 
 [[values]]
+name = "INPUT_BIAS"
+
+[[values]]
+name = "OUTPUT_BIAS"
+
+[[values]]
 name = "LHS_INPUT"
 
 [[values]]
 name = "RHS_INPUT"
-
-[[values]]
-name = "EMBEDDING_TABLE"
 
 [[values]]
 name = "INDEX"

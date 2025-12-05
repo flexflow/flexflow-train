@@ -4,7 +4,7 @@
 #include "kernels/allocation.h"
 #include "pcg/device_id_t.dtg.h"
 #include "task-spec/concrete_arg_spec.h"
-#include "task-spec/ops/tensor_slot_name.dtg.h"
+#include "op-attrs/tensor_slot_name.dtg.h"
 #include "task-spec/privilege_tensor_accessor.h"
 #include "task-spec/training_tensor_type.dtg.h"
 #include "task-spec/task_argument_accessor/task_tensor_parameter.dtg.h"

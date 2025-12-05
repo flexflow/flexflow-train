@@ -1,0 +1,27 @@
+namespace = "FlexFlow"
+name = "KwargDataflowOutput"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+template_params = [
+  "SlotName",
+]
+
+includes = [
+  "utils/graph/node/node.dtg.h",
+  "utils/nonnegative_int/nonnegative_int.h",
+  "utils/graph/kwarg_dataflow_graph/slot_value_reference.dtg.h",
+]
+
+[[fields]]
+name = "node"
+type = "::FlexFlow::Node"
+
+[[fields]]
+name = "value_ref"
+type = "::FlexFlow::SlotValueReference<SlotName>"

@@ -1,0 +1,31 @@
+namespace = "FlexFlow"
+name = "KwargNodeAddedResult"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "fmt",
+]
+
+template_params = [
+  "SlotName",
+]
+
+includes = [
+  "<unordered_map>",
+  "utils/graph/node/node.dtg.h",
+  "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_output.dtg.h",
+  "utils/singular_or_variadic.dtg.h",
+]
+
+src_includes = [
+  "utils/fmt/unordered_map.h",
+]
+
+[[fields]]
+name = "node"
+type = "::FlexFlow::Node"
+
+[[fields]]
+name = "outputs"
+type = "std::unordered_map<SlotName, ::FlexFlow::SingularOrVariadic<::FlexFlow::KwargDataflowOutput<SlotName>>>"
