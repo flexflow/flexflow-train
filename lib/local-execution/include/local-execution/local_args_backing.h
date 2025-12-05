@@ -24,24 +24,14 @@ std::optional<DeviceSpecificDeviceStates>
 std::unordered_map<slot_id_t, ConcreteArgSpec>
     construct_arg_slots_backing(TaskBinding const &, RuntimeArgConfig const &);
 
-std::optional<DeviceSpecificDeviceStates>
-    create_per_device_op_state(LocalTaskRegistry const &,
-                               LocalTensorBacking const &,
-                               RuntimeArgConfig const &,
-                               Allocator &,
-                               TrainingLayerPlusContext const &);
-
 TaskArgumentAccessor get_task_arg_accessor(LocalTensorBacking const &,
                                            RuntimeArgConfig const &,
                                            TaskInvocation const &,
                                            Allocator &);
 
 LocalArgsBacking make_local_args_backing_for_computation_graph(
-    LocalTaskRegistry const &,
-    TrainingComputationGraph const &,
     RuntimeArgConfig const &,
-    LocalTensorBacking const &,
-    Allocator &);
+    std::unordered_map<layer_guid_t, std::optional<DeviceSpecificDeviceStates>> const &);
 
 } // namespace FlexFlow
 

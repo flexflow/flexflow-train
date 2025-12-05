@@ -1,4 +1,3 @@
-#include "local-execution/local_training_backing.h"
 #include "local-execution/local_args_backing.h"
 #include "pcg/computation_graph.h"
 #include "pcg/optimizer_attrs.h"
@@ -15,18 +14,23 @@
 #include "utils/containers/keys.h"
 #include "utils/containers/values.h"
 #include "utils/exception.h"
+#include "realm-backend/realm_training_backing.h"
+#include "realm-backend/task_result.h"
+#include "realm-backend/task_wrapper.h"
 
 namespace FlexFlow {
 
-LocalTrainingBacking make_local_training_backing_for_computation_graph(
-    Allocator &allocator,
+using namespace Realm;
+
+LocalTrainingBacking make_realm_training_backing_for_computation_graph(
+    RealmRuntimeState &runtime_state,
     std::unordered_map<training_tensor_guid_t, GenericTensorAccessorW> const
         &preallocated,
     TrainingComputationGraph const &training_computation_graph,
     RuntimeArgConfig const &runtime_arg_config,
     OptimizerAttrs const &optimizer_attrs) {
 
-  ASSERT(is_subseteq_of(
+  ASSERT(is_subseteq_of(                           
       keys(preallocated),
       keys(get_all_training_tensor_shapes(training_computation_graph))));
 
@@ -34,10 +38,12 @@ LocalTrainingBacking make_local_training_backing_for_computation_graph(
       construct_local_task_registry_for_layers(get_layer_attrs_mapping(
           training_computation_graph.computation_graph));
 
+  register_tasks_for_realm(local_task_registry, runtime_state);
+
   LocalTensorBacking local_tensor_backing = construct_local_tensor_backing(
       get_all_training_tensor_shapes(training_computation_graph),
       preallocated,
-      allocator);
+      runtime_state.allocators[0]);
 
   std::unordered_map<layer_guid_t, std::optional<DeviceSpecificDeviceStates>>
       per_device_op_states = generate_map(
@@ -47,7 +53,7 @@ LocalTrainingBacking make_local_training_backing_for_computation_graph(
                 local_task_registry,
                 local_tensor_backing,
                 runtime_arg_config,
-                allocator,
+                runtime_state,
                 get_training_layer_plus_context(training_computation_graph,
                                                 layer_guid));
           });
@@ -64,11 +70,21 @@ LocalTrainingBacking make_local_training_backing_for_computation_graph(
   };
 }
 
+// register tasks for realm runtime
+void register_tasks_for_realm(LocalTaskRegistry const &local_task_registry, RealmRuntimeState &runtime_state) {
+    for (std::pair<task_id_t, TaskSignatureAndImpl> const &task : local_task_registry.task_mapping) {
+        task_id_t task_id = task.first;
+        TaskSignatureAndImpl task_signature_impl = task.second;
+        // TODO: multi gpu
+        register_wrapper_tasks(0, runtime_state.worker_procs[0], task_id, task_signature_impl);
+    }
+}
+
 std::optional<DeviceSpecificDeviceStates>
     create_per_device_op_state(LocalTaskRegistry const &local_task_registry,
                                LocalTensorBacking const &tensor_backing,
                                RuntimeArgConfig const &runtime_arg_config,
-                               Allocator &allocator,
+                               RealmRuntimeState &runtime_state,
                                TrainingLayerPlusContext const &training_layer) {
   std::optional maybe_registered_task = try_get_registered_task(
       local_task_registry, training_layer.layer_guid, OpTaskType::INIT);
@@ -87,21 +103,33 @@ std::optional<DeviceSpecificDeviceStates>
       /*device_specific_device_states=*/std::nullopt);
 
   TaskArgumentAccessor accessor = get_task_arg_accessor(
-      tensor_backing, runtime_arg_config, invocation, allocator);
-  TaskSignatureAndImpl task_sig_impl =
-      local_task_registry.task_mapping.at(invocation.task_id);
-  auto fn =
-      task_sig_impl.impl_function.get<InitOpTaskImplFunction>().function_ptr;
-  DeviceSpecificDeviceStates device_state = fn(accessor);
-  return device_state;
+      tensor_backing, runtime_arg_config, invocation, runtime_state.allocators[0]);
+
+  task_id_t task_id = invocation.task_id;
+  TaskImplFunction impl_function =
+      local_task_registry.task_mapping.at(task_id).impl_function;
+  // TODO: multi gpu launching
+  Promise<DeviceSpecificDeviceStates> promise = Promise<DeviceSpecificDeviceStates>();
+  Future<DeviceSpecificDeviceStates> future = promise.get_future();
+  RealmTaskArgs<DeviceSpecificDeviceStates>* task_arg = 
+                        new RealmTaskArgs<DeviceSpecificDeviceStates>{
+                            task_id, impl_function, accessor,
+                            std::move(promise)};
+  uintptr_t args[1] = {reinterpret_cast<uintptr_t>(task_arg)};
+  Event e = runtime_state.worker_procs[0].spawn(
+      get_realm_task_id(task_id), args, sizeof(uintptr_t),
+      runtime_state.worker_events[0]);
+  runtime_state.worker_events[0] = e;
+  future.set_event(e);
+  return future.get().value();
 }
 
-std::optional<milliseconds_t>
+Future<std::optional<milliseconds_t>>
     execute_forward(LocalTaskRegistry const &local_task_registry,
                     LocalTensorBacking const &local_tensor_backing,
                     LocalArgsBacking const &local_args_backing,
                     TrainingLayerPlusContext const &training_layer,
-                    Allocator &allocator) {
+                    RealmRuntimeState &runtime_state) {
 
   std::optional maybe_registered_task = try_get_registered_task(
       local_task_registry, training_layer.layer_guid, OpTaskType::BWD);
@@ -110,7 +138,7 @@ std::optional<milliseconds_t>
 
   registered_task_t registered_task = maybe_registered_task.value();
   if (registered_task.is_noop_task()) {
-    return std::nullopt;
+    return Future<std::optional<milliseconds_t>>(std::nullopt);
   }
 
   std::optional<DeviceSpecificDeviceStates> device_state =
@@ -127,41 +155,33 @@ std::optional<milliseconds_t>
       get_task_arg_accessor(local_tensor_backing,
                             local_args_backing.runtime_arg_config,
                             invocation,
-                            allocator);
-  return call_task_impl(local_task_registry, invocation.task_id, accessor);
+                            runtime_state.allocators[0]);
+
+  task_id_t task_id = invocation.task_id;
+  TaskImplFunction impl_function =
+      local_task_registry.task_mapping.at(task_id).impl_function;
+  // TODO: multi gpu launching
+  Promise<std::optional<milliseconds_t>> promise(runtime_state.master_mem);
+  Future<std::optional<milliseconds_t>> future = promise.get_future();
+  RealmTaskArgs<std::optional<milliseconds_t>>* task_arg = 
+                        new RealmTaskArgs<std::optional<milliseconds_t>>{
+                            task_id, impl_function, accessor,
+                            std::move(promise)};
+  uintptr_t args[1] = {reinterpret_cast<uintptr_t>(task_arg)};
+  Event e = runtime_state.worker_procs[0].spawn(
+      get_realm_task_id(task_id), args, sizeof(uintptr_t),
+      runtime_state.worker_events[0]);
+  runtime_state.worker_events[0] = e;
+  future.set_event(e);
+  return future;
 }
 
-void compute_loss(LocalTrainingBacking const &local_training_backing,
-                  LossAttrs const &loss_attrs,
-                  Allocator &allocator) {
-
-  TrainingComputationGraph training_cg =
-      local_training_backing.training_computation_graph;
-  tensor_guid_t logit_tensor = training_cg.logit_tensor;
-  loss_tensor_guid_t label_tensor = training_cg.label_tensor;
-
-  TaskInvocation loss_invocation = backward(
-      loss_attrs,
-      get_forward_tensor_guid_for_tensor_guid(training_cg, logit_tensor),
-      get_gradient_tensor_guid_for_tensor_guid(training_cg, logit_tensor),
-      label_tensor);
-  // TODO: https://github.com/flexflow/flexflow-train/issues/1442
-  // assert(is_invocation_valid(get_loss_bwd_signature(), loss_invocation));
-  TaskArgumentAccessor loss_accessor = get_task_arg_accessor(
-      local_training_backing.local_tensor_backing,
-      local_training_backing.local_args_backing.runtime_arg_config,
-      loss_invocation,
-      allocator);
-  TaskImplFunction loss_impl_fn = get_loss_bwd_task_impl();
-  loss_impl_fn.get<GenericTaskImplFunction>().function_ptr(loss_accessor);
-}
-
-std::optional<milliseconds_t>
+Future<std::optional<milliseconds_t>>
     execute_backward(LocalTaskRegistry const &local_task_registry,
                      LocalTensorBacking const &local_tensor_backing,
                      LocalArgsBacking const &local_args_backing,
                      TrainingLayerPlusContext const &training_layer,
-                     Allocator &allocator) {
+                     RealmRuntimeState &runtime_state) {
 
   std::optional maybe_registered_task = try_get_registered_task(
       local_task_registry, training_layer.layer_guid, OpTaskType::BWD);
@@ -170,7 +190,7 @@ std::optional<milliseconds_t>
 
   registered_task_t registered_task = maybe_registered_task.value();
   if (registered_task.is_noop_task()) {
-    return std::nullopt;
+    return Future<std::optional<milliseconds_t>>(std::nullopt);
   }
 
   std::optional<DeviceSpecificDeviceStates> device_state =
@@ -184,14 +204,31 @@ std::optional<milliseconds_t>
       get_task_arg_accessor(local_tensor_backing,
                             local_args_backing.runtime_arg_config,
                             invocation,
-                            allocator);
-  return call_task_impl(local_task_registry, invocation.task_id, accessor);
+                            runtime_state.allocators[0]);
+
+  task_id_t task_id = invocation.task_id;
+  TaskImplFunction impl_function =
+      local_task_registry.task_mapping.at(task_id).impl_function;
+  // TODO: multi gpu launching
+  Promise<std::optional<milliseconds_t>> promise(runtime_state.master_mem);
+  Future<std::optional<milliseconds_t>> future = promise.get_future();
+  RealmTaskArgs<std::optional<milliseconds_t>>* task_arg = 
+                                new RealmTaskArgs<std::optional<milliseconds_t>>{
+                                    task_id, impl_function, accessor,
+                                    std::move(promise)};
+  uintptr_t args[1] = {reinterpret_cast<uintptr_t>(task_arg)};
+  Event e = runtime_state.worker_procs[0].spawn(
+      get_realm_task_id(task_id), args, sizeof(uintptr_t),
+      runtime_state.worker_events[0]);
+  runtime_state.worker_events[0] = e;
+  future.set_event(e);
+  return future;
 }
 
-void execute_update(LocalTrainingBacking const &local_training_backing,
+Future<void> execute_update(LocalTrainingBacking const &local_training_backing,
                     layer_guid_t const &layer_guid,
                     OptimizerAttrs const &optimizer_attrs,
-                    Allocator &allocator) {
+                    RealmRuntimeState &runtime_state) {
   TrainingLayerPlusContext training_layer = get_training_layer_plus_context(
       local_training_backing.training_computation_graph, layer_guid);
 
@@ -212,10 +249,67 @@ void execute_update(LocalTrainingBacking const &local_training_backing,
         local_training_backing.local_tensor_backing,
         local_training_backing.local_args_backing.runtime_arg_config,
         invocation,
-        allocator);
+        runtime_state.allocators[0]);
     TaskImplFunction update_impl_fn = get_update_task_impl(optimizer_attrs);
-    update_impl_fn.get<GenericTaskImplFunction>().function_ptr(accessor);
+
+    task_id_t task_id = invocation.task_id;
+    register_wrapper_tasks_generic(0, runtime_state.worker_procs[0],
+                                   task_id);
+    // TODO: multi gpu launching
+    Promise<void> promise;
+    Future<void> future = promise.get_future();
+    RealmTaskArgs<void>* task_arg = new RealmTaskArgs<void>{task_id, update_impl_fn, accessor,
+                                        std::move(promise)};
+    uintptr_t args[1] = {reinterpret_cast<uintptr_t>(task_arg)};
+    Event e = runtime_state.worker_procs[0].spawn(
+        get_realm_task_id(task_id), args, sizeof(uintptr_t),
+        runtime_state.worker_events[0]);
+    runtime_state.worker_events[0] = e;
+    future.set_event(e);
+    return future;
+  } else {
+    return Future<void>();
   }
+}
+
+Future<void> compute_loss(LocalTrainingBacking const &local_training_backing,
+                  LossAttrs const &loss_attrs,
+                  RealmRuntimeState &runtime_state) {
+
+  TrainingComputationGraph training_cg =
+      local_training_backing.training_computation_graph;
+  tensor_guid_t logit_tensor = training_cg.logit_tensor;
+  loss_tensor_guid_t label_tensor = training_cg.label_tensor;
+
+  TaskInvocation loss_invocation = backward(
+      loss_attrs,
+      get_forward_tensor_guid_for_tensor_guid(training_cg, logit_tensor),
+      get_gradient_tensor_guid_for_tensor_guid(training_cg, logit_tensor),
+      label_tensor);
+  // TODO: https://github.com/flexflow/flexflow-train/issues/1442
+  // assert(is_invocation_valid(get_loss_bwd_signature(), loss_invocation));
+  TaskArgumentAccessor loss_accessor = get_task_arg_accessor(
+      local_training_backing.local_tensor_backing,
+      local_training_backing.local_args_backing.runtime_arg_config,
+      loss_invocation,
+      runtime_state.allocators[0]);
+  TaskImplFunction loss_impl_fn = get_loss_bwd_task_impl();
+
+  task_id_t task_id = loss_invocation.task_id;
+  register_wrapper_tasks_generic(0, runtime_state.worker_procs[0],
+                                task_id);
+  // TODO: multi gpu launching
+  Promise<void> promise;
+  Future<void> future = promise.get_future();
+  RealmTaskArgs<void>* task_arg = new RealmTaskArgs<void>{task_id, loss_impl_fn, loss_accessor,
+                                        std::move(promise)};
+  uintptr_t args[1] = {reinterpret_cast<uintptr_t>(task_arg)};
+  Event e = runtime_state.worker_procs[0].spawn(
+      get_realm_task_id(task_id), args, sizeof(uintptr_t),
+      runtime_state.worker_events[0]);
+  runtime_state.worker_events[0] = e;
+  future.set_event(e);
+  return future;
 }
 
 } // namespace FlexFlow
