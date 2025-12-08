@@ -104,7 +104,7 @@ std::unordered_map<TensorSlotName, OperatorSpaceToParallelTensorSpaceMapping>
 
 
   std::unordered_map<TensorSlotName, IncomingTensorRole> 
-    incoming_tensor_roles = get_incoming_tensor_roles(attrs, keys(inputs_degrees));
+    incoming_tensor_roles = get_incoming_tensor_roles(attrs);
 
   return filtermap_values(
     zip_values_strict(incoming_mappings, incoming_tensor_roles),

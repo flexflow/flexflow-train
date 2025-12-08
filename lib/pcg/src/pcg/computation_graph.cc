@@ -33,7 +33,7 @@ namespace FlexFlow {
 ComputationGraph make_empty_computation_graph() {
   return ComputationGraph{
       LabelledKwargDataflowGraph<LayerAttrs, TensorAttrs, TensorSlotName>::create<
-          UnorderedSetLabelledOpenKwargDataflowGraph<LayerAttrs, TensorAttrs>>()};
+          UnorderedSetLabelledOpenKwargDataflowGraph<LayerAttrs, TensorAttrs, int, TensorSlotName>>()};
 }
 
 std::unordered_set<layer_guid_t> get_layers(ComputationGraph const &cg) {

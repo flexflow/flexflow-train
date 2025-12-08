@@ -21,12 +21,21 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("use_bias = true") {
       LinearAttrs attrs = make_attrs(/*use_bias=*/true);
 
-      std::vector<IncomingTensorRole> result =
+      std::unordered_map<TensorSlotName, IncomingTensorRole> result =
           get_linear_incoming_tensor_roles(attrs);
-      std::vector<IncomingTensorRole> correct = {
+      std::unordered_map<TensorSlotName, IncomingTensorRole> correct = {
+        {
+          TensorSlotName::INPUT,
           IncomingTensorRole::INPUT,
+        },
+        {
+          TensorSlotName::WEIGHT,
           IncomingTensorRole::WEIGHT,
+        },
+        {
+          TensorSlotName::BIAS,
           IncomingTensorRole::WEIGHT,
+        },
       };
 
       CHECK(result == correct);
@@ -35,11 +44,17 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("use_bias = false") {
       LinearAttrs attrs = make_attrs(/*use_bias=*/false);
 
-      std::vector<IncomingTensorRole> result =
+      std::unordered_map<TensorSlotName, IncomingTensorRole> result =
           get_linear_incoming_tensor_roles(attrs);
-      std::vector<IncomingTensorRole> correct = {
+      std::unordered_map<TensorSlotName, IncomingTensorRole> correct = {
+        {
+          TensorSlotName::INPUT,
           IncomingTensorRole::INPUT,
+        },
+        {
+          TensorSlotName::WEIGHT,
           IncomingTensorRole::WEIGHT,
+        },
       };
 
       CHECK(result == correct);

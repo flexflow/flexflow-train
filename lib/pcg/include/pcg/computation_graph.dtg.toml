@@ -13,4 +13,4 @@ includes = [
 
 [[fields]]
 name = "raw_graph"
-type = "::FlexFlow::LabelledKwargDataflowGraph<::FlexFlow::LayerAttrs, ::FlexFlow::SingularOrVariadic<::FlexFlow::TensorAttrs>, ::FlexFlow::TensorSlotName>"
+type = "::FlexFlow::LabelledKwargDataflowGraph<::FlexFlow::LayerAttrs, ::FlexFlow::TensorAttrs, ::FlexFlow::TensorSlotName>"

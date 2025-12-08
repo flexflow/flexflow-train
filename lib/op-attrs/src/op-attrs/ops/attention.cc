@@ -116,7 +116,7 @@ std::unordered_map<TensorSlotName, IncomingTensorRole>
 
   if (attrs.bias) {
     roles[TensorSlotName::INPUT_BIAS] = IncomingTensorRole::WEIGHT;
-    roles[TensorSlotName::INPUT_BIAS] = IncomingTensorRole::WEIGHT;
+    roles[TensorSlotName::OUTPUT_BIAS] = IncomingTensorRole::WEIGHT;
   }
 
   return roles;

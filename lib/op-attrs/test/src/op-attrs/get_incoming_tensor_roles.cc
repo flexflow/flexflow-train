@@ -7,17 +7,16 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE(
       "get_incoming_tensor_roles(ComputationGraphOpAttrs, int num_incoming)") {
     SUBCASE("Concat") {
-      nonnegative_int num_incoming = 4_n;
       ComputationGraphOpAttrs attrs =
           ComputationGraphOpAttrs{ConcatAttrs{ff_dim_t{0_n}}};
 
-      std::vector<IncomingTensorRole> result =
-          get_incoming_tensor_roles(attrs, num_incoming);
-      std::vector<IncomingTensorRole> correct = {
+      std::unordered_map<TensorSlotName, IncomingTensorRole> result =
+          get_incoming_tensor_roles(attrs);
+      std::unordered_map<TensorSlotName, IncomingTensorRole> correct = {
+        {
+          TensorSlotName::INPUT,
           IncomingTensorRole::INPUT,
-          IncomingTensorRole::INPUT,
-          IncomingTensorRole::INPUT,
-          IncomingTensorRole::INPUT,
+        },
       };
 
       CHECK(result == correct);

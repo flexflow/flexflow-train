@@ -20,12 +20,21 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("elementwise_affine = true") {
       LayerNormAttrs attrs = make_attrs(/*elementwise_affine=*/true);
 
-      std::vector<IncomingTensorRole> result =
+      std::unordered_map<TensorSlotName, IncomingTensorRole> result =
           get_layer_norm_incoming_tensor_roles(attrs);
-      std::vector<IncomingTensorRole> correct = {
+      std::unordered_map<TensorSlotName, IncomingTensorRole> correct = {
+        {
+          TensorSlotName::INPUT,
           IncomingTensorRole::INPUT,
+        },
+        {
+          TensorSlotName::GAMMA,
           IncomingTensorRole::WEIGHT,
+        },
+        {
+          TensorSlotName::BETA,
           IncomingTensorRole::WEIGHT,
+        },
       };
 
       CHECK(result == correct);
@@ -34,10 +43,13 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("elementwise_affine = false") {
       LayerNormAttrs attrs = make_attrs(/*elementwise_affine=*/false);
 
-      std::vector<IncomingTensorRole> result =
+      std::unordered_map<TensorSlotName, IncomingTensorRole> result =
           get_layer_norm_incoming_tensor_roles(attrs);
-      std::vector<IncomingTensorRole> correct = {
+      std::unordered_map<TensorSlotName, IncomingTensorRole> correct = {
+        {
+          TensorSlotName::INPUT,
           IncomingTensorRole::INPUT,
+        },
       };
 
       CHECK(result == correct);

@@ -20,6 +20,8 @@ includes = [
 
 [[values]]
 type = "::FlexFlow::KwargDataflowOutput<SlotName>"
+key = "internal"
 
 [[values]]
 type = "::FlexFlow::KwargDataflowGraphInput<GraphInputName>"
+key = "external"

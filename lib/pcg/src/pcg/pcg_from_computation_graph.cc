@@ -7,8 +7,9 @@
 #include "pcg/parallel_tensor_attrs.h"
 #include "pcg/tensor_attrs.dtg.h"
 #include "utils/graph/instances/unordered_set_labelled_open_dataflow_graph.h"
-#include "utils/graph/labelled_dataflow_graph/algorithms/rewrite_node_labels.h"
-#include "utils/graph/labelled_dataflow_graph/algorithms/rewrite_value_labels.h"
+#include "utils/graph/instances/unordered_set_labelled_open_kwarg_dataflow_graph.h"
+#include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/rewrite_node_labels.h"
+#include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/rewrite_value_labels.h"
 #include "utils/graph/labelled_dataflow_graph/labelled_dataflow_graph.h"
 #include "utils/graph/labelled_dataflow_graph/labelled_dataflow_graph_view.h"
 #include "utils/graph/open_dataflow_graph/open_dataflow_value.dtg.h"
@@ -17,19 +18,24 @@ namespace FlexFlow {
 
 ParallelComputationGraph
     pcg_from_computation_graph(ComputationGraph const &cg) {
+
   auto layer_map = [&](Node const &_, LayerAttrs const &layer) {
     return parallel_layer_attrs_from_layer_attrs(layer);
   };
-  auto tensor_map = [&](OpenDataflowValue const &_, TensorAttrs const &tensor) {
+
+  auto tensor_map = [&](KwargDataflowOutput<TensorSlotName> const &, TensorAttrs const &tensor) {
     return parallel_tensor_attrs_from_tensor_attrs(tensor);
   };
-  auto graph_view = rewrite_value_labels(
-      rewrite_node_labels(cg.raw_graph, layer_map), tensor_map);
+
+  LabelledKwargDataflowGraphView<ParallelLayerAttrs, ParallelTensorAttrs, TensorSlotName> graph_view 
+    = rewrite_value_labels(rewrite_node_labels(cg.raw_graph, layer_map), tensor_map);
   return ParallelComputationGraph{
-      LabelledDataflowGraph<ParallelLayerAttrs, ParallelTensorAttrs>::
+      LabelledKwargDataflowGraph<ParallelLayerAttrs, ParallelTensorAttrs, TensorSlotName>::
           create_copy_of<
-              UnorderedSetLabelledOpenDataflowGraph<ParallelLayerAttrs,
-                                                    ParallelTensorAttrs>>(
+              UnorderedSetLabelledOpenKwargDataflowGraph<ParallelLayerAttrs,
+                                                         ParallelTensorAttrs,
+                                                         int,
+                                                         TensorSlotName>>(
               graph_view)};
 }
 

@@ -1,0 +1,16 @@
+#include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/rewrite_node_labels.h"
+#include "utils/archetypes/value_type.h"
+#include "utils/archetypes/ordered_value_type.h"
+
+namespace FlexFlow {
+
+using NodeLabel = value_type<0>;
+using ValueLabel = value_type<1>;
+using SlotName = ordered_value_type<2>;
+using NewNodeLabel = value_type<3>;
+using F = std::function<NewNodeLabel(NodeLabel const &)>;
+
+LabelledKwargDataflowGraph<NewNodeLabel, ValueLabel, ValueLabel>
+  rewrite_node_labels(LabelledKwargDataflowGraph<NodeLabel, ValueLabel, SlotName> const &, F);
+
+} // namespace FlexFlow
