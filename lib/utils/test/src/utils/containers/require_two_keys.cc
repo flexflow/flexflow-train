@@ -1,5 +1,6 @@
 #include <doctest/doctest.h>
 #include "utils/containers/require_two_keys.h"
+#include "test/utils/doctest/fmt/pair.h"
 
 using namespace ::FlexFlow;
 
@@ -47,7 +48,10 @@ TEST_SUITE(FF_TEST_SUITE) {
         {4, "c"},
       };
 
-      CHECK_THROWS(require_two_keys(m, 2, 4));
+      std::pair<std::string, std::string> result = require_two_keys(m, 2, 4);
+      std::pair<std::string, std::string> correct = {"a", "c"};
+
+      CHECK(result == correct);
     }
   }
 }

@@ -2,6 +2,7 @@
 #include "op-attrs/computation_graph_op_attrs.h"
 #include "op-attrs/get_incoming_tensor_roles.h"
 #include "op-attrs/shape_inference.h"
+#include "utils/graph/instances/unordered_set_labelled_open_kwarg_dataflow_graph.h"
 #include "utils/singular_or_variadic.h"
 #include "utils/containers/binary_merge_disjoint_maps.h"
 #include "utils/containers/concat_vectors.h"
@@ -32,7 +33,7 @@ namespace FlexFlow {
 ComputationGraph make_empty_computation_graph() {
   return ComputationGraph{
       LabelledKwargDataflowGraph<LayerAttrs, TensorAttrs, TensorSlotName>::create<
-          UnorderedSetLabelledOpenDataflowGraph<LayerAttrs, TensorAttrs>>()};
+          UnorderedSetLabelledOpenKwargDataflowGraph<LayerAttrs, TensorAttrs>>()};
 }
 
 std::unordered_set<layer_guid_t> get_layers(ComputationGraph const &cg) {

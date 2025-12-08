@@ -16,7 +16,7 @@ namespace FlexFlow {
                 ":" __LINE__);
 #else
 #define NOT_IMPLEMENTED()                                                      \
-  throw ::FlexFlow::not_implemented(__PRETTY_FUNCTION__, __FILE__, __LINE__);
+  PANIC("Not implemented");
 #endif
 
 class not_implemented : public std::logic_error {

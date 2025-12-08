@@ -24,8 +24,8 @@ public:
     return this->get_interface().add_node(node_label, inputs, output_labels);
   }
 
-  KwargDataflowGraphInput<GraphInputName> add_input(ValueLabel const &value_label) {
-    return this->get_interface().add_input(value_label);
+  KwargDataflowGraphInput<GraphInputName> add_input(GraphInputName const &name, ValueLabel const &value_label) {
+    return this->get_interface().add_input(name, value_label);
   }
 
   template <typename T>

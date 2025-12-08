@@ -17,6 +17,11 @@ includes = [
   "<vector>",
 ]
 
+src_includes = [
+  "utils/fmt/vector.h",
+  "utils/hash/vector.h",
+]
+
 [[values]]
 type = "T"
 key = "singular"

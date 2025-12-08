@@ -12,12 +12,13 @@ template <typename NodeLabel, typename ValueLabel, typename GraphInputName, type
 struct ILabelledOpenKwargDataflowGraph
     : virtual public ILabelledOpenKwargDataflowGraphView<NodeLabel, ValueLabel, GraphInputName, SlotName>,
       virtual public ILabelledKwargDataflowGraphView<NodeLabel, ValueLabel, SlotName> {
-  virtual KwargNodeAddedResult<SlotName>
-      add_node(NodeLabel const &node_label,
-               std::unordered_map<SlotName, SingularOrVariadic<OpenKwargDataflowValue<GraphInputName, SlotName>>> const &inputs,
-               std::unordered_map<SlotName, SingularOrVariadic<ValueLabel>> const &output_labels) = 0;
+  virtual KwargNodeAddedResult<SlotName> add_node(
+    NodeLabel const &node_label,
+    std::unordered_map<SlotName, SingularOrVariadic<OpenKwargDataflowValue<GraphInputName, SlotName>>> const &inputs,
+    std::unordered_map<SlotName, SingularOrVariadic<ValueLabel>> const &output_labels) = 0;
 
-  virtual KwargDataflowGraphInput<GraphInputName> add_input(ValueLabel const &value_label) = 0;
+  virtual KwargDataflowGraphInput<GraphInputName> add_input(
+              GraphInputName const &name, ValueLabel const &value_label) = 0;
 
   virtual void inplace_materialize_from(
       LabelledOpenKwargDataflowGraphView<NodeLabel, ValueLabel, GraphInputName, SlotName> const &) = 0;

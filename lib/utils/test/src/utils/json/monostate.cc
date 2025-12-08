@@ -1,7 +1,6 @@
 #include <doctest/doctest.h>
 #include "utils/json/monostate.h"
-
-using namespace ::FlexFlow;
+#include "test/utils/doctest/fmt/monostate.h"
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("adl_serializer<std::monostate>") {

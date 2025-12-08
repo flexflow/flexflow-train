@@ -5,6 +5,7 @@
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"
 #include "utils/graph/instances/unordered_set_dataflow_graph.h"
 #include <doctest/doctest.h>
+#include "test/utils/doctest/fmt/vector.h"
 
 using namespace ::FlexFlow;
 

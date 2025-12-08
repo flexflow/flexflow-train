@@ -7,6 +7,9 @@ using T = value_type<0>;
 using Out = value_type<1>;
 
 template
+  std::vector<T> singular_or_variadic_values(SingularOrVariadic<T> const &);
+
+template
   SingularOrVariadic<Out> transform_singular_or_variadic(
     SingularOrVariadic<T> const &, std::function<Out(T const &)> &&);
 

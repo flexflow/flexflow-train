@@ -12,7 +12,7 @@ public:
   OpenKwargDataflowGraphView(OpenKwargDataflowGraphView const &) = default;
   OpenKwargDataflowGraphView &operator=(OpenKwargDataflowGraphView const &) = default;
 
-  std::unordered_set<KwargDataflowGraphInput<SlotName>> get_inputs() const {
+  std::unordered_set<KwargDataflowGraphInput<GraphInputName>> get_inputs() const {
     return this->get_interface().get_inputs();
   }
 

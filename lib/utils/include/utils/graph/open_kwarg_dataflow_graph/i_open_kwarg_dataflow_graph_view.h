@@ -15,8 +15,11 @@ struct IOpenKwargDataflowGraphView : virtual public IKwargDataflowGraphView<Slot
       query_edges(OpenKwargDataflowEdgeQuery<GraphInputName, SlotName> const &) const = 0;
 
   std::unordered_set<KwargDataflowEdge<SlotName>>
-      query_edges(KwargDataflowEdgeQuery<SlotName> const &) const override final;
+      query_edges(KwargDataflowEdgeQuery<SlotName> const &) const override final {
+    NOT_IMPLEMENTED();
+  }
 
+  virtual ~IOpenKwargDataflowGraphView() = default;
 };
 CHECK_RC_COPY_VIRTUAL_COMPLIANT(IOpenKwargDataflowGraphView<std::string, int>);
 

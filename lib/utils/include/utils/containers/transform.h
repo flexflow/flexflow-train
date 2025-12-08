@@ -4,6 +4,7 @@
 #include "utils/containers/vector_transform.h"
 #include "utils/required_core.h"
 #include <algorithm>
+#include <map>
 #include <optional>
 #include <set>
 #include <type_traits>
@@ -79,6 +80,21 @@ std::unordered_map<K2, V2> transform(std::unordered_map<K, V> const &m,
   }
   return result;
 }
+
+template <typename K,
+          typename V,
+          typename F,
+          typename K2 = typename std::invoke_result_t<F, K, V>::first_type,
+          typename V2 = typename std::invoke_result_t<F, K, V>::second_type>
+std::unordered_map<K2, V2> transform(std::map<K, V> const &m,
+                                     F const &f) {
+  std::unordered_map<K2, V2> result;
+  for (auto const &[k, v] : m) {
+    result.insert(f(k, v));
+  }
+  return result;
+}
+
 
 template <typename F, typename T>
 std::optional<std::invoke_result_t<F, T>> transform(std::optional<T> const &o,

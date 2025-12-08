@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_KWARG_DATAFLOW_GRAPH_KWARG_DATAFLOW_GRAPH_VIEW_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_KWARG_DATAFLOW_GRAPH_KWARG_DATAFLOW_GRAPH_VIEW_H
 
+#include "utils/singular_or_variadic.dtg.h"
 #include "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_edge_query.dtg.h"
 #include "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_output_query.dtg.h"
 #include "utils/graph/kwarg_dataflow_graph/i_kwarg_dataflow_graph_view.h"

@@ -8,6 +8,20 @@
 
 namespace FlexFlow {
 
+template <typename T>
+std::vector<T> singular_or_variadic_values(SingularOrVariadic<T> const &sv) {
+  return sv.template visit<
+    std::vector<T>
+  >(overload {
+    [](T const &s) -> std::vector<T> {
+      return {s};
+    },
+    [](std::vector<T> const &v) -> std::vector<T> {
+      return v;
+    }
+  });
+}
+
 template <typename T, typename F, typename Out = std::invoke_result_t<F, T>>
 SingularOrVariadic<Out> transform_singular_or_variadic(SingularOrVariadic<T> const &sv, F &&f) {
   return sv.template visit<

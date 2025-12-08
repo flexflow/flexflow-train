@@ -1,6 +1,7 @@
 #include <doctest/doctest.h>
 #include <string>
 #include "utils/containers/zip_values_strict.h"
+#include "test/utils/doctest/fmt/unordered_map.h"
 
 using namespace ::FlexFlow;
 
