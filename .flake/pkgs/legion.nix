@@ -2,7 +2,6 @@
 , stdenv
 , fetchFromGitLab
 , cmake
-, python3
 , cudaPackages ? { }
 , cudaCapabilities ? [ "60" "70" "80" "86" ]
 , maxDim ? 5
@@ -32,15 +31,12 @@ stdenv.mkDerivation rec {
   ];
 
   cmakeFlags = [
-    "-DLegion_USE_Python=1"
-    "-DLegion_BUILD_BINDINGS=1"
     "-DLegion_USE_CUDA=1"
     "-DLegion_CUDA_ARCH=${lib.concatStringsSep "," cudaCapabilities}"
     "-DLegion_MAX_DIM=${toString maxDim}"
   ];
 
   buildInputs = [ 
-    python3
     cudatoolkit
   ];
 
