@@ -3,7 +3,7 @@
 #include "utils/bidict/algorithms/transform_keys.h"
 #include "utils/containers/is_subseteq_of.h"
 #include "utils/containers/vector_of.h"
-#include "utils/graph/digraph/algorithms.h"
+#include "utils/graph/digraph/algorithms/get_edges.h"
 #include "utils/graph/digraph/algorithms/materialize_digraph_view.h"
 #include "utils/graph/digraph/algorithms/transitive_closure.h"
 #include "utils/graph/instances/adjacency_digraph.h"

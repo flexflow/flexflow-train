@@ -12,4 +12,12 @@ template
       OpenKwargDataflowValue<GraphInputName, SlotName> const &,
       KwargDataflowInput<SlotName> const &);
 
+template
+  OpenKwargDataflowValue<GraphInputName, SlotName>
+    get_src_of_open_kwarg_dataflow_edge(OpenKwargDataflowEdge<GraphInputName, SlotName> const &);
+
+template 
+  KwargDataflowInput<SlotName>
+    get_dst_of_open_kwarg_dataflow_edge(OpenKwargDataflowEdge<GraphInputName, SlotName> const &);
+
 } // namespace FlexFlow

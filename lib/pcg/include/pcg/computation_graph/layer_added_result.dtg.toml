@@ -9,7 +9,8 @@ features = [
 includes = [
   "pcg/layer_guid_t.dtg.h",
   "pcg/tensor_guid_t.dtg.h",
-  "utils/fmt/vector.h"
+  "utils/fmt/vector.h",
+  "op-attrs/tensor_slot_name.dtg.h",
 ]
 
 [[fields]]
@@ -18,4 +19,4 @@ type = "::FlexFlow::layer_guid_t"
 
 [[fields]]
 name = "outputs"
-type = "std::vector<::FlexFlow::tensor_guid_t>"
+type = "std::unordered_map<::FlexFlow::TensorSlotName, ::FlexFlow::tensor_guid_t>"

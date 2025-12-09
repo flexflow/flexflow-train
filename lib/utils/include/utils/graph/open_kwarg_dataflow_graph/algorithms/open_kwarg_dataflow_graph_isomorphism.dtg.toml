@@ -1,0 +1,25 @@
+namespace = "FlexFlow"
+name = "OpenKwargDataflowGraphIsomorphism"
+type = "struct"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+template_params = [
+  "GraphInputName",
+]
+
+includes = [
+  "utils/bidict/bidict.h",
+  "utils/graph/node/node.dtg.h",
+]
+
+[[fields]]
+name = "node_mapping"
+type = "::FlexFlow::bidict<::FlexFlow::Node, ::FlexFlow::Node>"
+
+[[fields]]
+name = "input_mapping"
+type = "::FlexFlow::bidict<GraphInputName, GraphInputName>"

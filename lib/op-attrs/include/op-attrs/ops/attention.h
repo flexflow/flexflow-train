@@ -7,7 +7,6 @@
 #include "op-attrs/ops/attention/multihead_attention_parallel_inputs.dtg.h"
 #include "op-attrs/ops/attention_attrs.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
-#include "utils/singular_or_variadic.dtg.h"
 #include "op-attrs/tensor_shape.dtg.h"
 #include "op-attrs/tensor_slot_name.dtg.h"
 #include <tl/expected.hpp>
@@ -64,7 +63,7 @@ tl::expected<TensorShape, std::string>
                      TensorShape const &input_k,
                      TensorShape const &input_v);
 
-tl::expected<std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, TensorShape>, std::string>
     get_weight_shapes(MultiHeadAttentionAttrs const &,
                       TensorShape const &input_q,
                       TensorShape const &input_k,
@@ -107,7 +106,7 @@ tl::expected<ParallelTensorShape, std::string>
                      ParallelTensorShape const &input_k,
                      ParallelTensorShape const &input_v);
 
-tl::expected<std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, ParallelTensorShape>, std::string>
     get_weight_shapes(MultiHeadAttentionAttrs const &,
                       ParallelTensorShape const &input_q,
                       ParallelTensorShape const &input_k,

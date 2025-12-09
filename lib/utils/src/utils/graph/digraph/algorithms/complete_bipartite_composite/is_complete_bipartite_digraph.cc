@@ -1,6 +1,7 @@
 #include "utils/graph/digraph/algorithms/complete_bipartite_composite/is_complete_bipartite_digraph.h"
 #include "utils/containers/set_minus.h"
-#include "utils/graph/digraph/algorithms.h"
+#include "utils/graph/digraph/algorithms/get_initial_nodes.h"
+#include "utils/graph/digraph/algorithms/get_edges.h"
 #include "utils/graph/node/algorithms.h"
 
 namespace FlexFlow {

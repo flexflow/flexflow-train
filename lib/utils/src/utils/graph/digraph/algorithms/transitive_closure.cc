@@ -2,7 +2,7 @@
 #include "utils/bidict/algorithms/bidict_from_enumerating.h"
 #include "utils/bidict/algorithms/transform_keys.h"
 #include "utils/containers/vector_of.h"
-#include "utils/graph/digraph/algorithms.h"
+#include "utils/graph/digraph/algorithms/get_edges.h"
 #include "utils/graph/digraph/algorithms/digraph_has_edge.h"
 #include "utils/graph/digraph/algorithms/materialize_digraph_view.h"
 #include "utils/graph/instances/adjacency_digraph.h"

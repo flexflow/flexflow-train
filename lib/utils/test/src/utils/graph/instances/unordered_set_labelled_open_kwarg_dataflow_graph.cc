@@ -6,7 +6,6 @@
 #include "utils/graph/node/node_query.h"
 #include "utils/graph/open_kwarg_dataflow_graph/open_kwarg_dataflow_edge_query.h"
 #include "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_output_query.h"
-#include "utils/singular_or_variadic.h"
 
 using namespace ::FlexFlow;
 
@@ -42,21 +41,27 @@ TEST_SUITE(FF_TEST_SUITE) {
       /*output_labels=*/{
         {
           "output_1",
-          SingularOrVariadic{true}
+          true,
         },
         {
           "output_2",
-          SingularOrVariadic{
-            std::vector{true, false, true},
-          },
+          false,
+        },
+        {
+          "output_3",
+          true,
         },
       });
 
     KwargDataflowOutput<std::string> added_output_1 =
-        added.outputs.at("output_1").require_singular();
+        added.outputs.at("output_1");
 
-    std::vector<KwargDataflowOutput<std::string>> added_output_2s = 
-      added.outputs.at("output_2").require_variadic();
+    KwargDataflowOutput<std::string> added_output_2 = 
+      added.outputs.at("output_2");
+
+    KwargDataflowOutput<std::string> added_output_3 = 
+      added.outputs.at("output_3");
+      
       
     {
       std::unordered_set<Node> result = g.query_nodes(node_query_all());
@@ -75,10 +80,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::unordered_set<KwargDataflowOutput<std::string>> result =
           g.query_outputs(kwarg_dataflow_output_query_all<std::string>());
       std::unordered_set<KwargDataflowOutput<std::string>> correct =
-          flatmap(unordered_set_of(values(added.outputs)),
-                  [](SingularOrVariadic<KwargDataflowOutput<std::string>> const &s_or_v) {
-                    return unordered_set_of(singular_or_variadic_values(s_or_v));
-                  });
+          unordered_set_of(values(added.outputs));
       REQUIRE(result == correct);
     }
 
@@ -94,35 +96,23 @@ TEST_SUITE(FF_TEST_SUITE) {
       /*inputs=*/{
         {
           "input_1",
-          SingularOrVariadic{
-            std::vector{
-              mk_open_val(added_output_1),
-              mk_open_val(added_output_2s.at(1)),
-              mk_open_val(input),
-              mk_open_val(added_output_2s.at(1)),
-              mk_open_val(added_output_2s.at(0)),
-            }
-          },
+          mk_open_val(added_output_1),
         },
         {
           "input_2",
-          SingularOrVariadic{
-            mk_open_val(added_output_2s.at(1)),
-          },
+          mk_open_val(added_output_3),
         },
       },
       /*output_labels=*/{
         {
           "output_1",
-          SingularOrVariadic{
-            true,
-          },
+          true,
         }
       });
 
     OpenKwargDataflowValue<std::string, std::string> added2_output_1 =
       OpenKwargDataflowValue<std::string, std::string>{
-        added2.outputs.at("output_1").require_singular(),
+        added2.outputs.at("output_1"),
       };
 
     {
@@ -165,11 +155,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       std::unordered_set<OpenKwargDataflowEdge<std::string, std::string>> correct = {
         internal_edge(added_output_1, added2.node, "input_1"),
-        internal_edge(added_output_2s.at(1), added2.node, "input_1"),
-        external_edge(input, added2.node, "input_1"),
-        internal_edge(added_output_2s.at(1), added2.node, "input_1"),
-        internal_edge(added_output_2s.at(0), added2.node, "input_1"),
-        internal_edge(added_output_2s.at(1), added2.node, "input_2"),
+        internal_edge(added_output_3, added2.node, "input_2"),
       };
 
       REQUIRE(result == correct);
@@ -180,10 +166,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           g.query_outputs(kwarg_dataflow_output_query_all<std::string>());
 
       auto get_output_set = [](KwargNodeAddedResult<std::string> const &r) {
-        return flatmap(unordered_set_of(values(r.outputs)),
-                  [](SingularOrVariadic<KwargDataflowOutput<std::string>> const &s_or_v) {
-                    return unordered_set_of(singular_or_variadic_values(s_or_v));
-                  });
+        return unordered_set_of(values(r.outputs));
       };
 
       std::unordered_set<KwargDataflowOutput<std::string>> correct =

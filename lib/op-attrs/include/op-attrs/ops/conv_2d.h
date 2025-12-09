@@ -5,7 +5,6 @@
 #include "op-attrs/initializer_attrs.dtg.h"
 #include "op-attrs/ops/conv_2d_attrs.dtg.h"
 #include "op-attrs/parallel_tensor_shape.h"
-#include "utils/singular_or_variadic.dtg.h"
 #include "op-attrs/tensor_shape.h"
 #include "op-attrs/tensor_slot_name.dtg.h"
 
@@ -20,7 +19,7 @@ TensorShape get_bias_shape(Conv2DAttrs const &attrs, TensorShape const &input);
 TensorShape get_output_shape(Conv2DAttrs const &attrs,
                              TensorShape const &input);
 
-std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> 
+std::unordered_map<TensorSlotName, TensorShape> 
   get_weight_shapes(Conv2DAttrs const &attrs,
                     TensorShape const &input_shape);
 
@@ -31,7 +30,7 @@ ParallelTensorShape get_bias_shape(Conv2DAttrs const &attrs,
 ParallelTensorShape get_output_shape(Conv2DAttrs const &attrs,
                                      ParallelTensorShape const &input_shape);
 
-std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>>
+std::unordered_map<TensorSlotName, ParallelTensorShape>
     get_weight_shapes(Conv2DAttrs const &attrs,
                       ParallelTensorShape const &input_shape);
 

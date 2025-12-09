@@ -14,8 +14,8 @@ struct ILabelledOpenKwargDataflowGraph
       virtual public ILabelledKwargDataflowGraphView<NodeLabel, ValueLabel, SlotName> {
   virtual KwargNodeAddedResult<SlotName> add_node(
     NodeLabel const &node_label,
-    std::unordered_map<SlotName, SingularOrVariadic<OpenKwargDataflowValue<GraphInputName, SlotName>>> const &inputs,
-    std::unordered_map<SlotName, SingularOrVariadic<ValueLabel>> const &output_labels) = 0;
+    std::unordered_map<SlotName, OpenKwargDataflowValue<GraphInputName, SlotName>> const &inputs,
+    std::unordered_map<SlotName, ValueLabel> const &output_labels) = 0;
 
   virtual KwargDataflowGraphInput<GraphInputName> add_input(
               GraphInputName const &name, ValueLabel const &value_label) = 0;

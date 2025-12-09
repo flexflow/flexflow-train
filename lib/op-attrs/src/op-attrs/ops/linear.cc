@@ -88,25 +88,21 @@ tl::expected<TensorShape, std::string>
   return output_shape;
 }
 
-tl::expected<std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, TensorShape>, std::string>
     get_weight_shapes(LinearAttrs const &attrs,
                       TensorShape const &input_shape) {
 
-  std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> weight_shapes = {
+  std::unordered_map<TensorSlotName, TensorShape> weight_shapes = {
     {
       TensorSlotName::WEIGHT,
-      SingularOrVariadic<TensorShape>{
-        PROPAGATE_ERR(get_projection_shape(attrs, input_shape)),
-      },
+      PROPAGATE_ERR(get_projection_shape(attrs, input_shape)),
     },
   };
 
   if (attrs.use_bias) {
     weight_shapes.insert({
       TensorSlotName::BIAS,
-      SingularOrVariadic<TensorShape>{
-        PROPAGATE_ERR(get_bias_shape(attrs, input_shape)),
-      },
+      PROPAGATE_ERR(get_bias_shape(attrs, input_shape)),
     });
   }
 
@@ -229,25 +225,21 @@ ParallelTensorDimDegrees
   };
 }
 
-tl::expected<std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, ParallelTensorShape>, std::string>
     get_weight_shapes(LinearAttrs const &attrs,
                       ParallelTensorShape const &input_shape) {
 
-  std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> weight_shapes = {
+  std::unordered_map<TensorSlotName, ParallelTensorShape> weight_shapes = {
     {
       TensorSlotName::WEIGHT,
-      SingularOrVariadic<ParallelTensorShape>{
-        PROPAGATE_ERR(get_projection_shape(attrs, input_shape)),
-      },
+      PROPAGATE_ERR(get_projection_shape(attrs, input_shape)),
     },
   };
 
   if (attrs.use_bias) {
     weight_shapes.insert({
       TensorSlotName::BIAS,
-      SingularOrVariadic<ParallelTensorShape>{
-        PROPAGATE_ERR(get_bias_shape(attrs, input_shape))
-      },
+      PROPAGATE_ERR(get_bias_shape(attrs, input_shape))
     });
   }
 

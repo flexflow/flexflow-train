@@ -6,7 +6,6 @@
 #include "op-attrs/ops/batch_norm_attrs.dtg.h"
 #include "op-attrs/parallel_tensor_dim_degrees.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
-#include "utils/singular_or_variadic.dtg.h"
 #include "op-attrs/tensor_shape.dtg.h"
 #include "op-attrs/tensor_slot_name.dtg.h"
 #include <tl/expected.hpp>
@@ -23,7 +22,7 @@ tl::expected<TensorShape, std::string>
 tl::expected<TensorShape, std::string>
     get_beta_weights_shape(BatchNormAttrs const &, TensorShape const &);
 
-tl::expected<std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, TensorShape>, std::string>
     get_weight_shapes(BatchNormAttrs const &attrs,
                       TensorShape const &input_shape);
 
@@ -50,7 +49,7 @@ tl::expected<ParallelTensorShape, std::string>
 tl::expected<ParallelTensorShape, std::string>
     get_beta_weights_shape(BatchNormAttrs const &, ParallelTensorShape const &);
 
-tl::expected<std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, ParallelTensorShape>, std::string>
     get_weight_shapes(BatchNormAttrs const &attrs,
                       ParallelTensorShape const &input_shape);
 

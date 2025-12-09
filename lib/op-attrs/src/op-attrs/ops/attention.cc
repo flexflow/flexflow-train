@@ -233,34 +233,28 @@ tl::expected<TensorShape, std::string>
   };
 }
 
-tl::expected<std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, TensorShape>, std::string>
     get_weight_shapes(MultiHeadAttentionAttrs const &attrs,
                       TensorShape const &input_q,
                       TensorShape const &input_k,
                       TensorShape const &input_v) {
 
-  std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> weight_shapes = {
+  std::unordered_map<TensorSlotName, TensorShape> weight_shapes = {
     {
       TensorSlotName::WEIGHT,
-      SingularOrVariadic<TensorShape>{
-        PROPAGATE_ERR(get_weights_shape(attrs, input_q, input_k, input_v)),
-      },
+      PROPAGATE_ERR(get_weights_shape(attrs, input_q, input_k, input_v)),
     },
   };
 
   if (attrs.bias) {
     weight_shapes.insert({
       TensorSlotName::INPUT_BIAS,
-      SingularOrVariadic<TensorShape>{
-        PROPAGATE_ERR(get_input_bias_shape(attrs, input_q, input_k, input_v)),
-      },
+      PROPAGATE_ERR(get_input_bias_shape(attrs, input_q, input_k, input_v)),
     });
 
     weight_shapes.insert({
       TensorSlotName::OUTPUT_BIAS,
-      SingularOrVariadic<TensorShape>{
-        PROPAGATE_ERR(get_output_bias_shape(attrs, input_q, input_k, input_v)),
-      },
+      PROPAGATE_ERR(get_output_bias_shape(attrs, input_q, input_k, input_v)),
     });
   }
 
@@ -422,34 +416,28 @@ positive_int get_oSize(TensorShape const &) {
   NOT_IMPLEMENTED();
 }
 
-tl::expected<std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, ParallelTensorShape>, std::string>
     get_weight_shapes(MultiHeadAttentionAttrs const &attrs,
                       ParallelTensorShape const &input_q,
                       ParallelTensorShape const &input_k,
                       ParallelTensorShape const &input_v) {
 
-  std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> weight_shapes = {
+  std::unordered_map<TensorSlotName, ParallelTensorShape> weight_shapes = {
     {
       TensorSlotName::WEIGHT,
-      SingularOrVariadic<ParallelTensorShape>{
-        PROPAGATE_ERR(get_weights_shape(attrs, input_q, input_k, input_v)),
-      },
+      PROPAGATE_ERR(get_weights_shape(attrs, input_q, input_k, input_v)),
     },
   };
 
   if (attrs.bias) {
     weight_shapes.insert({
       TensorSlotName::INPUT_BIAS, 
-      SingularOrVariadic<ParallelTensorShape>{
-        PROPAGATE_ERR(get_input_bias_shape(attrs, input_q, input_k, input_v)),
-      },
+      PROPAGATE_ERR(get_input_bias_shape(attrs, input_q, input_k, input_v)),
     });
 
     weight_shapes.insert({
       TensorSlotName::OUTPUT_BIAS,
-      SingularOrVariadic<ParallelTensorShape>{
-        PROPAGATE_ERR(get_output_bias_shape(attrs, input_q, input_k, input_v)),
-      },
+      PROPAGATE_ERR(get_output_bias_shape(attrs, input_q, input_k, input_v)),
     });
   }
 

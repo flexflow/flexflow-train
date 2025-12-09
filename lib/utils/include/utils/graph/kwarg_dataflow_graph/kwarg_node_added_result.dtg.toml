@@ -15,7 +15,6 @@ includes = [
   "<unordered_map>",
   "utils/graph/node/node.dtg.h",
   "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_output.dtg.h",
-  "utils/singular_or_variadic.dtg.h",
 ]
 
 src_includes = [
@@ -28,4 +27,4 @@ type = "::FlexFlow::Node"
 
 [[fields]]
 name = "outputs"
-type = "std::unordered_map<SlotName, ::FlexFlow::SingularOrVariadic<::FlexFlow::KwargDataflowOutput<SlotName>>>"
+type = "std::unordered_map<SlotName, ::FlexFlow::KwargDataflowOutput<SlotName>>"

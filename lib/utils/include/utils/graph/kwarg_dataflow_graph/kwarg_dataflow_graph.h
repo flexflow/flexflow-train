@@ -4,8 +4,6 @@
 #include "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_graph_view.h"
 #include "utils/graph/kwarg_dataflow_graph/i_kwarg_dataflow_graph.h"
 #include "utils/graph/kwarg_dataflow_graph/kwarg_node_added_result.dtg.h"
-#include "utils/singular_or_variadic.dtg.h"
-#include "utils/slot_num_values.dtg.h"
 
 namespace FlexFlow {
 
@@ -13,14 +11,14 @@ template <typename SlotName>
 struct KwargDataflowGraph : virtual public KwargDataflowGraphView<SlotName> {
 public:
   KwargNodeAddedResult<SlotName> 
-    add_node(std::unordered_map<SlotName, SingularOrVariadic<KwargDataflowOutput<SlotName>>> const &inputs,
-             std::unordered_map<SlotName, SlotNumValues> const &outputs) {
+    add_node(std::unordered_map<SlotName, KwargDataflowOutput<SlotName>> const &inputs,
+             std::unordered_set<SlotName> const &outputs) {
     return this->get_interface().add_node(inputs, outputs);
   }
 
   void add_node_unsafe(Node const &node,
-                       std::unordered_map<SlotName, SingularOrVariadic<KwargDataflowOutput<SlotName>>> const &inputs,
-                       std::unordered_map<SlotName, SingularOrVariadic<KwargDataflowOutput<SlotName>>> const &outputs) {
+                       std::unordered_map<SlotName, KwargDataflowOutput<SlotName>> const &inputs,
+                       std::unordered_map<SlotName, KwargDataflowOutput<SlotName>> const &outputs) {
     return this->get_interface().add_node_unsafe(node, inputs, outputs);
   }
 

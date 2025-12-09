@@ -2,8 +2,8 @@
 #include "op-attrs/computation_graph_op_attrs.h"
 #include "op-attrs/get_incoming_tensor_roles.h"
 #include "op-attrs/shape_inference.h"
+#include "utils/containers/filter_values.h"
 #include "utils/graph/instances/unordered_set_labelled_open_kwarg_dataflow_graph.h"
-#include "utils/singular_or_variadic.h"
 #include "utils/containers/binary_merge_disjoint_maps.h"
 #include "utils/containers/concat_vectors.h"
 #include "utils/containers/filtrans.h"
@@ -21,9 +21,14 @@
 #include "utils/graph/digraph/algorithms/get_subgraph_successors.h"
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"
 #include "utils/graph/instances/unordered_set_labelled_open_dataflow_graph.h"
+#include "utils/graph/kwarg_dataflow_graph/algorithms/get_incoming_kwarg_dataflow_outputs_for_node.h"
+#include "utils/graph/kwarg_dataflow_graph/algorithms/get_kwarg_dataflow_subgraph_incoming_edges.h"
+#include "utils/graph/kwarg_dataflow_graph/algorithms/get_kwarg_dataflow_subgraph_outgoing_edges.h"
+#include "utils/graph/kwarg_dataflow_graph/algorithms/get_outgoing_kwarg_dataflow_outputs_for_node.h"
 #include "utils/graph/labelled_dataflow_graph/algorithms/find_isomorphism.h"
 #include "utils/graph/labelled_dataflow_graph/algorithms/rewrite_node_labels.h"
 #include "utils/graph/labelled_dataflow_graph/algorithms/view_as_labelled_open_dataflow_graph.h"
+#include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/rewrite_labelled_kwarg_dataflow_graph_node_labels.h"
 #include "utils/graph/labelled_open_dataflow_graph/algorithms/as_dot.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/record_formatter.h"
@@ -44,92 +49,70 @@ std::unordered_set<layer_guid_t> get_layers(ComputationGraph const &cg) {
 LayerAddedResult add_layer(
     ComputationGraph &computation_graph,
     LayerAttrs const &layer_attrs,
-    std::unordered_map<TensorSlotName, SingularOrVariadic<tensor_guid_t>> const &inputs,
-    std::unordered_map<TensorSlotName, SingularOrVariadic<tensor_guid_t>> const &weights,
-    std::optional<std::unordered_map<TensorSlotName, SingularOrVariadic<CreateGrad>>> const &maybe_output_flags) {
+    std::unordered_map<TensorSlotName, tensor_guid_t> const &inputs,
+    std::unordered_map<TensorSlotName, tensor_guid_t> const &weights,
+    std::optional<std::unordered_map<TensorSlotName, CreateGrad>> const &maybe_output_flags) {
 
-  std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> input_shapes =
+  std::unordered_map<TensorSlotName, TensorShape> input_shapes =
       map_values(
         inputs, 
-        [&](SingularOrVariadic<tensor_guid_t> const &s_or_v) {
-          return transform_singular_or_variadic(
-            s_or_v,
-            [&](tensor_guid_t const &i) {
-              return get_tensor_attrs(computation_graph, i).shape;
-            });
+        [&](tensor_guid_t const &i) {
+          return get_tensor_attrs(computation_graph, i).shape;
         });
 
-  std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> provided_weight_shapes =
+  std::unordered_map<TensorSlotName, TensorShape> provided_weight_shapes =
       map_values(
         weights, 
-        [&](SingularOrVariadic<tensor_guid_t> const &s_or_v) {
-          return transform_singular_or_variadic(
-            s_or_v,
-            [&](tensor_guid_t const &w) {
-              return get_tensor_attrs(computation_graph, w).shape;
-            });
+        [&](tensor_guid_t const &w) {
+          return get_tensor_attrs(computation_graph, w).shape;
         });
 
-  std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> expected_weight_shapes =
+  std::unordered_map<TensorSlotName, TensorShape> expected_weight_shapes =
       get_weight_shapes(layer_attrs.op_attrs, input_shapes);
 
-  std::unordered_map<TensorSlotName, SingularOrVariadic<DataflowOutput>> raw_inputs 
+  std::unordered_map<TensorSlotName, KwargDataflowOutput<TensorSlotName>> raw_inputs 
     = map_values(
         inputs, 
-        [&](SingularOrVariadic<tensor_guid_t> const &s_or_v) {
-          return transform_singular_or_variadic(
-            s_or_v,
-            [](tensor_guid_t const &t) { return t.raw_graph_output; });
+        [&](tensor_guid_t const &t) {
+          return t.raw_graph_output;
         });
 
-  std::unordered_map<TensorSlotName, SingularOrVariadic<DataflowOutput>> raw_weights = map_values(
+  std::unordered_map<TensorSlotName, KwargDataflowOutput<TensorSlotName>> raw_weights = map_values(
       weights, 
-      [&](SingularOrVariadic<tensor_guid_t> const &s_or_v) {
-        return transform_singular_or_variadic(
-          s_or_v,
-          [](tensor_guid_t const &t) { return t.raw_graph_output; });
+      [&](tensor_guid_t const &t) {
+        return t.raw_graph_output;
       });
-
-  std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> output_shapes =
+  std::unordered_map<TensorSlotName, TensorShape> output_shapes =
       get_output_shapes(layer_attrs.op_attrs, input_shapes);
 
-  std::unordered_map<TensorSlotName, SingularOrVariadic<CreateGrad>> output_flags 
+  std::unordered_map<TensorSlotName, CreateGrad> output_flags 
     = maybe_output_flags.value_or(
         map_values(
           output_shapes,
-          [&](SingularOrVariadic<TensorShape> const &s_or_v) -> SingularOrVariadic<CreateGrad> {
-            return transform_singular_or_variadic(
-              s_or_v,
-              [](TensorShape const &) {
-                return CreateGrad::YES; 
-              });
+          [&](TensorShape const &) {
+            return CreateGrad::YES; 
           }));
 
-  std::unordered_map<TensorSlotName, SingularOrVariadic<TensorAttrs>> output_attrs = 
+  std::unordered_map<TensorSlotName, TensorAttrs> output_attrs = 
     zip_values_strict_with(
       output_shapes,
       output_flags,
-      [](SingularOrVariadic<TensorShape> const &sv_shape, SingularOrVariadic<CreateGrad> const &sv_create_grad) 
-        -> SingularOrVariadic<TensorAttrs>
+      [](TensorShape const &shape, CreateGrad const &create_grad) 
+        -> TensorAttrs
       {
-        return zip_strict_singular_or_variadic_with(
-          sv_shape,
-          sv_create_grad,
-          [&](TensorShape const &shape, CreateGrad create_grad) {
-            return TensorAttrs{
-                /*shape=*/shape,
-                /*create_grad=*/create_grad,
-            };
-          });
+        return TensorAttrs{
+            /*shape=*/shape,
+            /*create_grad=*/create_grad,
+        };
       });
 
-  NodeAddedResult added = computation_graph.raw_graph.add_node(
+  KwargNodeAddedResult<TensorSlotName> added = computation_graph.raw_graph.add_node(
       layer_attrs, binary_merge_disjoint_maps(raw_inputs, raw_weights), output_attrs);
 
   return LayerAddedResult{
       layer_guid_t{added.node},
-      transform(added.outputs,
-                [](DataflowOutput const &o) { return tensor_guid_t{o}; }),
+      map_values(added.outputs,
+                [](KwargDataflowOutput<TensorSlotName> const &o) { return tensor_guid_t{o}; }),
   };
 }
 
@@ -144,7 +127,9 @@ LayerAddedResult add_input_layer(ComputationGraph &cg,
                    layer_attrs,
                    /*inputs=*/{},
                    /*weights=*/{},
-                   /*outputs=*/std::vector{CreateGrad::NO});
+                   /*outputs=*/std::unordered_map<TensorSlotName, CreateGrad>{
+                     {TensorSlotName::OUTPUT, CreateGrad::NO},
+                   });
 }
 
 LayerAddedResult add_input_layer_with_grad(ComputationGraph &cg,
@@ -158,7 +143,9 @@ LayerAddedResult add_input_layer_with_grad(ComputationGraph &cg,
                    layer_attrs,
                    /*inputs=*/{},
                    /*weights=*/{},
-                   /*outputs=*/std::vector{CreateGrad::YES});
+                   /*outputs=*/std::unordered_map<TensorSlotName, CreateGrad>{
+                     {TensorSlotName::OUTPUT, CreateGrad::YES},
+                   });
 }
 
 TensorAttrs get_tensor_attrs(ComputationGraph const &cg,
@@ -185,67 +172,60 @@ std::vector<layer_guid_t>
       layers, [&](Node const &e) -> layer_guid_t { return layer_guid_t{e}; });
 }
 
-std::vector<tensor_guid_t> get_outgoing_tensors(ComputationGraph const &cg,
-                                                layer_guid_t n) {
-  return transform(get_outputs(cg.raw_graph, n.raw_node),
-                   [](DataflowOutput const &o) { return tensor_guid_t{o}; });
+std::unordered_map<TensorSlotName, tensor_guid_t> get_outgoing_tensors(ComputationGraph const &cg,
+                                                                       layer_guid_t n) {
+  return map_values(get_outgoing_kwarg_dataflow_outputs_for_node(cg.raw_graph, n.raw_node),
+                    [](KwargDataflowOutput<TensorSlotName> const &o) { return tensor_guid_t{o}; });
 }
 
-std::vector<tensor_guid_t> get_incoming_tensors(ComputationGraph const &cg,
-                                                layer_guid_t n) {
-  return transform(get_input_values(cg.raw_graph, n.raw_node),
-                   [](DataflowOutput const &o) { return tensor_guid_t{o}; });
+std::unordered_map<TensorSlotName, tensor_guid_t> get_incoming_tensors(ComputationGraph const &cg,
+                                                                       layer_guid_t n) {
+  return map_values(get_incoming_kwarg_dataflow_outputs_for_node(cg.raw_graph, n.raw_node),
+                   [](KwargDataflowOutput<TensorSlotName> const &o) { return tensor_guid_t{o}; });
 }
 
-std::vector<TensorShape> get_incoming_input_shapes(ComputationGraph const &cg,
-                                                   layer_guid_t const &n) {
-  return transform(get_incoming_inputs(cg, n), [&](tensor_guid_t const &t) {
+std::unordered_map<TensorSlotName, TensorShape> get_incoming_input_shapes(ComputationGraph const &cg,
+                                                                          layer_guid_t const &n) {
+  return map_values(get_incoming_inputs(cg, n), [&](tensor_guid_t const &t) {
     return get_tensor_attrs(cg, t).shape;
   });
 }
 
-static std::vector<tensor_guid_t>
+static std::unordered_map<TensorSlotName, tensor_guid_t>
     get_incoming_tensors_with_role(ComputationGraph const &cg,
                                    layer_guid_t const &l,
                                    IncomingTensorRole desired_role) {
   ComputationGraphOpAttrs attrs = get_layer_attrs(cg, l).op_attrs;
 
-  std::vector<tensor_guid_t> incoming_tensors = get_incoming_tensors(cg, l);
+  std::unordered_map<TensorSlotName, tensor_guid_t> incoming_tensors = get_incoming_tensors(cg, l);
 
-  std::vector<IncomingTensorRole> incoming_tensor_roles =
-      get_incoming_tensor_roles(attrs, num_elements(incoming_tensors));
+  std::unordered_map<TensorSlotName, IncomingTensorRole> incoming_slot_roles =
+      get_incoming_tensor_roles(attrs);
 
-  assert(incoming_tensors.size() == incoming_tensor_roles.size());
+  assert(incoming_tensors.size() == incoming_slot_roles.size());
 
-  std::vector<tensor_guid_t> result =
-      filtrans(zip(incoming_tensors, incoming_tensor_roles),
-               [&](std::pair<tensor_guid_t, IncomingTensorRole> const &p)
-                   -> std::optional<tensor_guid_t> {
-                 tensor_guid_t tensor = p.first;
-                 IncomingTensorRole role = p.second;
+  std::unordered_set<TensorSlotName> slots_with_desired_role = 
+    keys(filter_values(incoming_slot_roles, 
+                       [&](IncomingTensorRole role) {
+                         return role == desired_role;
+                       }));
 
-                 if (role == desired_role) {
-                   return tensor;
-                 } else {
-                   return std::nullopt;
-                 }
-               });
-  return result;
+  return restrict_keys(incoming_tensors, slots_with_desired_role);
 }
 
-std::vector<tensor_guid_t> get_incoming_inputs(ComputationGraph const &cg,
+std::unordered_map<TensorSlotName, tensor_guid_t> get_incoming_inputs(ComputationGraph const &cg,
                                                layer_guid_t const &l) {
   return get_incoming_tensors_with_role(cg, l, IncomingTensorRole::INPUT);
 }
 
-std::vector<tensor_guid_t> get_incoming_weights(ComputationGraph const &cg,
+std::unordered_map<TensorSlotName, tensor_guid_t> get_incoming_weights(ComputationGraph const &cg,
                                                 layer_guid_t const &l) {
   return get_incoming_tensors_with_role(cg, l, IncomingTensorRole::WEIGHT);
 }
 
 std::unordered_set<tensor_guid_t> get_all_tensors(ComputationGraph const &cg) {
-  return transform(get_all_dataflow_outputs(cg.raw_graph),
-                   [](DataflowOutput const &t) { return tensor_guid_t(t); });
+  return transform(get_all_kwarg_dataflow_outputs(cg.raw_graph),
+                   [](KwargDataflowOutput<TensorSlotName> const &t) { return tensor_guid_t(t); });
 }
 
 std::unordered_map<tensor_guid_t, TensorAttrs>
@@ -264,10 +244,10 @@ std::unordered_set<ComputationGraphEdge> get_subgraph_incoming_edges(
 
   std::unordered_set<Node> raw_subgraph_nodes = transform(
       subgraph_nodes, [](layer_guid_t const &l) { return l.raw_node; });
-  std::unordered_set<DataflowEdge> raw_incoming_edges =
-      get_subgraph_incoming_edges(cg.raw_graph, raw_subgraph_nodes);
+  std::unordered_set<KwargDataflowEdge<TensorSlotName>> raw_incoming_edges =
+      get_kwarg_dataflow_subgraph_incoming_edges(cg.raw_graph, raw_subgraph_nodes);
 
-  return transform(raw_incoming_edges, [](DataflowEdge const &e) {
+  return transform(raw_incoming_edges, [](KwargDataflowEdge<TensorSlotName> const &e) {
     return ComputationGraphEdge{e};
   });
 }
@@ -278,10 +258,10 @@ std::unordered_set<ComputationGraphEdge> get_subgraph_outgoing_edges(
 
   std::unordered_set<Node> raw_subgraph_nodes = transform(
       subgraph_nodes, [](layer_guid_t const &l) { return l.raw_node; });
-  std::unordered_set<DataflowEdge> raw_outgoing_edges =
-      get_subgraph_outgoing_edges(cg.raw_graph, raw_subgraph_nodes);
+  std::unordered_set<KwargDataflowEdge<TensorSlotName>> raw_outgoing_edges =
+      get_kwarg_dataflow_subgraph_outgoing_edges(cg.raw_graph, raw_subgraph_nodes);
 
-  return transform(raw_outgoing_edges, [](DataflowEdge const &e) {
+  return transform(raw_outgoing_edges, [](KwargDataflowEdge<TensorSlotName> const &e) {
     return ComputationGraphEdge{e};
   });
 }
@@ -323,14 +303,14 @@ layer_guid_t get_layer_by_name(ComputationGraph const &cg,
 
 ComputationGraph without_layer_names(ComputationGraph const &cg) {
   return ComputationGraph{
-      LabelledDataflowGraph<LayerAttrs, TensorAttrs>::create_copy_of<
-          UnorderedSetLabelledOpenDataflowGraph<LayerAttrs, TensorAttrs>>(
-          rewrite_node_labels(cg.raw_graph,
-                              [](Node const &n, LayerAttrs const &old_attrs) {
-                                LayerAttrs new_attrs = old_attrs;
-                                new_attrs.name = std::nullopt;
-                                return new_attrs;
-                              })),
+      LabelledKwargDataflowGraph<LayerAttrs, TensorAttrs, TensorSlotName>::create_copy_of<
+          UnorderedSetLabelledOpenKwargDataflowGraph<LayerAttrs, TensorAttrs, int, TensorSlotName>>(
+            rewrite_labelled_kwarg_dataflow_graph_node_labels(cg.raw_graph,
+                                [](Node const &n, LayerAttrs const &old_attrs) {
+                                  LayerAttrs new_attrs = old_attrs;
+                                  new_attrs.name = std::nullopt;
+                                  return new_attrs;
+                                })),
   };
 }
 

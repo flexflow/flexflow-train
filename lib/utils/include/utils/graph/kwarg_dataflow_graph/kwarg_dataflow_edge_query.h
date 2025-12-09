@@ -3,7 +3,6 @@
 
 #include "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_edge.dtg.h"
 #include "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_edge_query.dtg.h"
-#include "utils/graph/kwarg_dataflow_graph/slot_value_reference.h"
 
 namespace FlexFlow {
 
@@ -13,7 +12,17 @@ KwargDataflowEdgeQuery<SlotName> kwarg_dataflow_edge_query_all() {
     /*src_nodes=*/query_set<Node>::matchall(),
     /*src_slots=*/query_set<SlotName>::matchall(),
     /*dst_nodes=*/query_set<Node>::matchall(),
-    /*dst_idxs=*/query_set<SlotName>::matchall(),
+    /*dst_slots=*/query_set<SlotName>::matchall(),
+  };
+}
+
+template <typename SlotName>
+KwargDataflowEdgeQuery<SlotName> kwarg_dataflow_edge_query_none() {
+  return KwargDataflowEdgeQuery<SlotName>{
+    /*src_nodes=*/query_set<Node>::match_none(),
+    /*src_slots=*/query_set<SlotName>::match_none(),
+    /*dst_nodes=*/query_set<Node>::match_none(),
+    /*dst_slots=*/query_set<SlotName>::match_none(),
   };
 }
 
@@ -23,9 +32,9 @@ bool kwarg_dataflow_edge_query_includes(
   KwargDataflowEdge<SlotName> const &edge) 
 {
   return includes(query.src_nodes, edge.src.node)
-    && includes(query.src_slots, get_slot_name_for_slot_value_reference(edge.src.value_ref))
+    && includes(query.src_slots, edge.src.slot_name)
     && includes(query.dst_nodes, edge.dst.node)
-    && includes(query.dst_slots, edge.dst.idx);
+    && includes(query.dst_slots, edge.dst.slot_name);
 }
 
 } // namespace FlexFlow

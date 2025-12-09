@@ -28,5 +28,5 @@ name = "dst_nodes"
 type = "::FlexFlow::query_set<::FlexFlow::Node>"
 
 [[fields]]
-name = "dst_idxs"
+name = "dst_slots"
 type = "::FlexFlow::query_set<SlotName>"

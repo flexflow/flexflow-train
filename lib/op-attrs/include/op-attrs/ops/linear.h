@@ -10,7 +10,6 @@
 #include "op-attrs/parallel_tensor_dim_degrees.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "op-attrs/parallel_tensor_space_to_parallel_tensor_space_mapping.dtg.h"
-#include "utils/singular_or_variadic.dtg.h"
 #include "op-attrs/tensor_shape.dtg.h"
 #include "op-attrs/tensor_slot_name.dtg.h"
 #include "utils/record_formatter.h"
@@ -30,7 +29,7 @@ tl::expected<TensorShape, std::string> get_bias_shape(LinearAttrs const &attrs,
 tl::expected<TensorShape, std::string>
     get_output_shape(LinearAttrs const &attrs, TensorShape const &input);
 
-tl::expected<std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, TensorShape>, std::string>
     get_weight_shapes(LinearAttrs const &attrs, TensorShape const &input_shape);
 
 ParallelTensorDimDegrees
@@ -52,7 +51,7 @@ tl::expected<ParallelTensorShape, std::string>
     get_output_shape(LinearAttrs const &attrs,
                      ParallelTensorShape const &input);
 
-tl::expected<std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, ParallelTensorShape>, std::string>
     get_weight_shapes(LinearAttrs const &attrs,
                       ParallelTensorShape const &input_shape);
 

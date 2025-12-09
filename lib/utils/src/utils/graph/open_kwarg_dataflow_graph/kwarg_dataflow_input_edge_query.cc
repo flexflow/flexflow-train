@@ -11,6 +11,10 @@ template
     kwarg_dataflow_input_edge_query_all();
 
 template
+  KwargDataflowInputEdgeQuery<GraphInputName, SlotName>
+    kwarg_dataflow_input_edge_query_none();
+
+template
   bool kwarg_dataflow_input_edge_query_includes(
     KwargDataflowInputEdgeQuery<GraphInputName, SlotName> const &,
     KwargDataflowInputEdge<GraphInputName, SlotName> const &);

@@ -21,5 +21,5 @@ name = "node"
 type = "::FlexFlow::Node"
 
 [[fields]]
-name = "idx"
+name = "slot_name"
 type = "SlotName"

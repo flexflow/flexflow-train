@@ -3,7 +3,6 @@
 
 #include "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_output.dtg.h"
 #include "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_output_query.dtg.h"
-#include "utils/graph/kwarg_dataflow_graph/slot_value_reference.h"
 
 namespace FlexFlow {
 
@@ -21,7 +20,7 @@ bool kwarg_dataflow_output_query_includes(
   KwargDataflowOutput<SlotName> const &output)
 {
   return includes(query.nodes, output.node)
-    && includes(query.output_idxs, get_slot_name_for_slot_value_reference(output.value_ref));
+    && includes(query.output_idxs, output.slot_name);
 }
 
 } // namespace FlexFlow

@@ -13,7 +13,7 @@ template <typename GraphInputName, typename SlotName>
 struct OpenKwargDataflowGraph : virtual public OpenKwargDataflowGraphView<GraphInputName, SlotName> {
 public:
   KwargNodeAddedResult<SlotName> add_node(
-      std::unordered_map<SlotName, SingularOrVariadic<OpenKwargDataflowValue<GraphInputName, SlotName>>> const &inputs,
+      std::unordered_map<SlotName, OpenKwargDataflowValue<GraphInputName, SlotName>> const &inputs,
       std::unordered_set<SlotName, SlotNumValues> const &outputs) {
     return this->get_interface().add_node(inputs, outputs);
   }

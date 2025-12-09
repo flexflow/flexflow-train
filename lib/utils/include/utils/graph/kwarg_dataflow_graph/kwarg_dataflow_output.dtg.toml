@@ -15,7 +15,6 @@ template_params = [
 includes = [
   "utils/graph/node/node.dtg.h",
   "utils/nonnegative_int/nonnegative_int.h",
-  "utils/graph/kwarg_dataflow_graph/slot_value_reference.dtg.h",
 ]
 
 [[fields]]
@@ -23,5 +22,5 @@ name = "node"
 type = "::FlexFlow::Node"
 
 [[fields]]
-name = "value_ref"
-type = "::FlexFlow::SlotValueReference<SlotName>"
+name = "slot_name"
+type = "SlotName"

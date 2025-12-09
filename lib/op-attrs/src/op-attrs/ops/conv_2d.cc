@@ -89,24 +89,20 @@ TensorShape get_output_shape(Conv2DAttrs const &attrs,
                      input.datatype};
 }
 
-std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> 
+std::unordered_map<TensorSlotName, TensorShape> 
   get_weight_shapes(Conv2DAttrs const &attrs,
                     TensorShape const &input_shape) {
-  std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>> weight_shapes = {
+  std::unordered_map<TensorSlotName, TensorShape> weight_shapes = {
     {
       TensorSlotName::FILTER, 
-      SingularOrVariadic<TensorShape>{
-        get_kernel_shape(attrs, input_shape),
-      },
+      get_kernel_shape(attrs, input_shape),
     },
   };
 
   if (attrs.use_bias) {
     weight_shapes.insert({
       TensorSlotName::BIAS,
-      SingularOrVariadic<TensorShape>{
-        get_bias_shape(attrs, input_shape),
-      },
+      get_bias_shape(attrs, input_shape),
     });
   }
 
@@ -184,24 +180,20 @@ ParallelTensorShape get_output_shape(Conv2DAttrs const &attrs,
       unpar, sum_degree, discard_copy_degree, shard_degrees);
 }
 
-std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>>
+std::unordered_map<TensorSlotName, ParallelTensorShape>
     get_weight_shapes(Conv2DAttrs const &attrs,
                       ParallelTensorShape const &input_shape) {
-  std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>> weight_shapes = {
+  std::unordered_map<TensorSlotName, ParallelTensorShape> weight_shapes = {
     {
       TensorSlotName::FILTER, 
-      SingularOrVariadic<ParallelTensorShape>{
-        get_kernel_shape(attrs, input_shape),
-      },
+      get_kernel_shape(attrs, input_shape),
     },
   };
 
   if (attrs.use_bias) {
     weight_shapes.insert({
       TensorSlotName::BIAS,
-      SingularOrVariadic<ParallelTensorShape>{
-        get_bias_shape(attrs, input_shape),
-      },
+      get_bias_shape(attrs, input_shape),
     });
   }
 

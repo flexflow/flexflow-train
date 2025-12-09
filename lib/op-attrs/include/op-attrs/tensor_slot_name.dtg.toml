@@ -55,3 +55,27 @@ name = "VALUE"
 
 [[values]]
 name = "LOGIT"
+
+[[values]]
+name = "INPUT_0"
+
+[[values]]
+name = "INPUT_1"
+
+[[values]]
+name = "INPUT_2"
+
+[[values]]
+name = "INPUT_3"
+
+[[values]]
+name = "OUTPUT_0"
+
+[[values]]
+name = "OUTPUT_1"
+
+[[values]]
+name = "OUTPUT_2"
+
+[[values]]
+name = "OUTPUT_3"

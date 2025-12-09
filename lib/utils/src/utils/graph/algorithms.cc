@@ -8,8 +8,6 @@
 #include "utils/containers/unordered_set_of.h"
 #include "utils/containers/values.h"
 #include "utils/exception.h"
-#include "utils/graph/digraph/algorithms.h"
-#include "utils/graph/digraph/algorithms/get_dominators.h"
 #include "utils/graph/digraph/algorithms/get_incoming_edges.h"
 #include "utils/graph/digraph/algorithms/get_node_with_greatest_topo_rank.h"
 #include "utils/graph/digraph/algorithms/get_outgoing_edges.h"

@@ -14,7 +14,6 @@
 #include "utils/containers/generate_map.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_all_kwarg_dataflow_graph_inputs.h"
 #include "utils/containers/map_values.h"
-#include "utils/singular_or_variadic.h"
 #include "utils/graph/open_kwarg_dataflow_graph/open_kwarg_dataflow_edge.h"
 #include "utils/containers/extend.h"
 #include "utils/containers/enumerate.h"
@@ -34,25 +33,21 @@ public:
 
   KwargNodeAddedResult<SlotName>
       add_node(NodeLabel const &node_label,
-               std::unordered_map<SlotName, SingularOrVariadic<KwargDataflowOutput<SlotName>>> const &inputs,
-               std::unordered_map<SlotName, SingularOrVariadic<ValueLabel>> const &output_labels) override {
+               std::unordered_map<SlotName, KwargDataflowOutput<SlotName>> const &inputs,
+               std::unordered_map<SlotName, ValueLabel> const &output_labels) override {
     return this->add_node(
       node_label,
       map_values(inputs, 
-                 [](SingularOrVariadic<KwargDataflowOutput<SlotName>> const &input) {
-                   return transform_singular_or_variadic(
-                     input,
-                     [](KwargDataflowOutput<SlotName> const &o) {
-                       return OpenKwargDataflowValue<GraphInputName, SlotName>{o};
-                     });
+                 [](KwargDataflowOutput<SlotName> const &o) {
+                   return OpenKwargDataflowValue<GraphInputName, SlotName>{o};
                  }),
       output_labels);
   };
 
   KwargNodeAddedResult<SlotName> add_node(
     NodeLabel const &node_label,
-    std::unordered_map<SlotName, SingularOrVariadic<OpenKwargDataflowValue<GraphInputName, SlotName>>> const &inputs,
-    std::unordered_map<SlotName, SingularOrVariadic<ValueLabel>> const &output_labels) override
+    std::unordered_map<SlotName, OpenKwargDataflowValue<GraphInputName, SlotName>> const &inputs,
+    std::unordered_map<SlotName, ValueLabel> const &output_labels) override
   {
     Node new_node = this->node_source.new_node();
     this->nodes.insert({new_node, node_label});
@@ -63,97 +58,30 @@ public:
         input_slot_name,
       };
 
-      auto mk_edge_from = [&](OpenKwargDataflowValue<GraphInputName, SlotName> const &src) {
-        return mk_open_kwarg_dataflow_edge_from_src_val_and_dst(src, dst);
-      };
+      OpenKwargDataflowEdge<GraphInputName, SlotName> in_edge = 
+        mk_open_kwarg_dataflow_edge_from_src_val_and_dst(input_val, dst);
 
-      std::vector<OpenKwargDataflowEdge<GraphInputName, SlotName>> in_edges = input_val.template visit<
-        std::vector<OpenKwargDataflowEdge<GraphInputName, SlotName>>
-      >(overload {
-        [&](OpenKwargDataflowValue<GraphInputName, SlotName> const &singular_value) {
-          return std::vector{
-            mk_edge_from(singular_value),
-          };
-        },
-        [&](std::vector<OpenKwargDataflowValue<GraphInputName, SlotName>> const &variadic_values) {
-          return transform(variadic_values, mk_edge_from);
-        }
-      });
-
-      extend(this->edges, in_edges);
+      this->edges.insert(in_edge);
     }
 
-    auto mk_singular_output = [&](SlotName const &slot_name, ValueLabel const &value_label) 
-      -> KwargDataflowOutput<SlotName>
-    {
-      KwargDataflowOutput<SlotName> output = KwargDataflowOutput<SlotName>{
-        /*node=*/new_node,
-        /*value_ref=*/SlotValueReference{slot_name},
-      };
-      
-      this->outputs.insert({
-        output,
-        value_label,
-      });
-
-      return output;
-    };
-
-    auto mk_variadic_output = [&](SlotName const &slot_name, std::vector<ValueLabel> const &value_labels) 
-      -> std::vector<KwargDataflowOutput<SlotName>>
-    {
-      return transform(vector_of(enumerate(value_labels)), 
-                       [&](std::pair<nonnegative_int, ValueLabel> const &entry) -> KwargDataflowOutput<SlotName> {
-                         nonnegative_int entry_idx = entry.first;
-                         ValueLabel entry_value_label = entry.second;
-
-                         KwargDataflowOutput<SlotName> output = KwargDataflowOutput<SlotName>{
-                           /*node=*/new_node,
-                           /*value_ref=*/SlotValueReference<SlotName>{
-                             VariadicSlotValueReference<SlotName>{
-                               slot_name,
-                               entry_idx,
-                             },
-                           },
-                         };
-                         
-                         this->outputs.insert({
-                           output,
-                           entry_value_label,
-                         });
-
-                         return output;
-                       });
-    };
-
-    auto mk_singular_or_variadic_output = [&](
-        SlotName const &slot_name, SingularOrVariadic<ValueLabel> const &value_label) 
-      -> SingularOrVariadic<KwargDataflowOutput<SlotName>>
-    {
-      return value_label.template visit<
-        SingularOrVariadic<KwargDataflowOutput<SlotName>>
-      >(overload {
-        [&](ValueLabel const &singular_value_label) {
-          return SingularOrVariadic{
-            mk_singular_output(slot_name, singular_value_label),
-          };
-        },
-        [&](std::vector<ValueLabel> const &variadic_value_labels) {
-          return SingularOrVariadic{
-            mk_variadic_output(slot_name, variadic_value_labels),
-          };
-        }
-      });
-    };
-
-    std::unordered_map<SlotName, SingularOrVariadic<KwargDataflowOutput<SlotName>>> outputs =
+    std::unordered_map<SlotName, KwargDataflowOutput<SlotName>> outputs =
       generate_map(keys(output_labels),
                    [&](SlotName const &output_slot) 
-                     -> SingularOrVariadic<KwargDataflowOutput<SlotName>>
+                     -> KwargDataflowOutput<SlotName>
                    {
-                     SingularOrVariadic<ValueLabel> value_labels = output_labels.at(output_slot);
+                     ValueLabel value_label = output_labels.at(output_slot);
 
-                     return mk_singular_or_variadic_output(output_slot, value_labels);
+                     KwargDataflowOutput<SlotName> output = KwargDataflowOutput<SlotName>{
+                       /*node=*/new_node,
+                       /*slot_name=*/output_slot,
+                     };
+                     
+                     this->outputs.insert({
+                       output,
+                       value_label,
+                     });
+
+                     return output;
                    });
 
     return KwargNodeAddedResult<SlotName>{

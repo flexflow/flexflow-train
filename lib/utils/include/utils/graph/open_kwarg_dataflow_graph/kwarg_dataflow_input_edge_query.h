@@ -13,7 +13,18 @@ KwargDataflowInputEdgeQuery<GraphInputName, SlotName>
   return KwargDataflowInputEdgeQuery<GraphInputName, SlotName>{
     /*srcs=*/query_set<GraphInputName>::matchall(),
     /*dst_nodes=*/query_set<Node>::matchall(),
-    /*dst_idxs=*/query_set<SlotName>::matchall(),
+    /*dst_slots=*/query_set<SlotName>::matchall(),
+  };
+}
+
+template <typename GraphInputName, typename SlotName>
+KwargDataflowInputEdgeQuery<GraphInputName, SlotName>
+  kwarg_dataflow_input_edge_query_none()
+{
+  return KwargDataflowInputEdgeQuery<GraphInputName, SlotName>{
+    /*srcs=*/query_set<GraphInputName>::match_none(),
+    /*dst_nodes=*/query_set<Node>::match_none(),
+    /*dst_slots=*/query_set<SlotName>::match_none(),
   };
 }
 
@@ -24,7 +35,7 @@ bool kwarg_dataflow_input_edge_query_includes(
 {
   return includes(query.srcs, edge.src.name)
     && includes(query.dst_nodes, edge.dst.node)
-    && includes(query.dst_idxs, edge.dst.idx);
+    && includes(query.dst_slots, edge.dst.slot_name);
 }
 
 } // namespace FlexFlow

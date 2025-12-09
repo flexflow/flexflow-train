@@ -18,8 +18,8 @@ public:
 
   KwargNodeAddedResult<SlotName> add_node(
       NodeLabel const &node_label,
-      std::unordered_map<SlotName, SingularOrVariadic<KwargDataflowOutput<SlotName>>> const &inputs,
-      std::unordered_map<SlotName, SingularOrVariadic<OutputLabel>> const &output_labels) {
+      std::unordered_map<SlotName, KwargDataflowOutput<SlotName>> const &inputs,
+      std::unordered_map<SlotName, OutputLabel> const &output_labels) {
     return this->get_interface().add_node(node_label, inputs, output_labels);
   }
 

@@ -1,7 +1,7 @@
 #include "utils/graph/digraph/algorithms/get_edge_topological_ordering.h"
 #include "utils/graph/digraph/algorithms/get_outgoing_edges.h"
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"
-#include "utils/graph/digraph/algorithms.h"
+#include "utils/graph/digraph/algorithms/get_edges.h"
 
 namespace FlexFlow {
 
@@ -13,7 +13,7 @@ std::vector<DirectedEdge> get_edge_topological_ordering(DiGraphView const &g) {
     }
   }
 
-  assert(result.size() == get_edges(g).size());
+  ASSERT(result.size() == get_edges(g).size());
 
   return result;
 }

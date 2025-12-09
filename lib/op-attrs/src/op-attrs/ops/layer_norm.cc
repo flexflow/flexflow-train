@@ -100,7 +100,7 @@ tl::expected<TensorShape, std::string>
   return get_gamma_weights_shape(attrs, input_shape);
 }
 
-tl::expected<std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, TensorShape>, std::string>
     get_weight_shapes(LayerNormAttrs const &attrs,
                       TensorShape const &input_shape) {
 
@@ -109,18 +109,14 @@ tl::expected<std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>>
   TensorShape beta_shape =
       PROPAGATE_ERR(get_beta_weights_shape(attrs, input_shape));
 
-  return std::unordered_map<TensorSlotName, SingularOrVariadic<TensorShape>>{
+  return std::unordered_map<TensorSlotName, TensorShape>{
     {
       TensorSlotName::GAMMA,
-      SingularOrVariadic<TensorShape>{
-        gamma_shape,
-      },
+      gamma_shape,
     },
     {
       TensorSlotName::BETA,
-      SingularOrVariadic<TensorShape>{
-        beta_shape,
-      },
+      beta_shape,
     },
   };
 }
@@ -224,7 +220,7 @@ tl::expected<ParallelTensorShape, std::string>
   return get_gamma_weights_shape(attrs, input_shape);
 }
 
-tl::expected<std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, ParallelTensorShape>, std::string>
     get_weight_shapes(LayerNormAttrs const &attrs,
                       ParallelTensorShape const &input_shape) {
 
@@ -233,18 +229,14 @@ tl::expected<std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTenso
   ParallelTensorShape beta_shape =
       PROPAGATE_ERR(get_beta_weights_shape(attrs, input_shape));
 
-  return std::unordered_map<TensorSlotName, SingularOrVariadic<ParallelTensorShape>>{
+  return std::unordered_map<TensorSlotName, ParallelTensorShape>{
     {
       TensorSlotName::GAMMA,
-      SingularOrVariadic<ParallelTensorShape>{
-        gamma_shape,
-      },
+      gamma_shape,
     },
     {
       TensorSlotName::BETA,
-      SingularOrVariadic<ParallelTensorShape>{
-        beta_shape,
-      },
+      beta_shape,
     },
   };
 }
