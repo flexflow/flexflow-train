@@ -10,6 +10,10 @@ features = [
   "fmt",
 ]
 
+template_params = [
+  "SlotName",
+]
+
 includes = [
   "utils/nonnegative_int/nonnegative_int.h",
 ]
@@ -19,13 +23,13 @@ name = "srcNode"
 type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
-name = "srcIdx"
-type = "::FlexFlow::nonnegative_int"
+name = "srcSlot"
+type = "SlotName"
 
 [[fields]]
 name = "dstNode"
 type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
-name = "dstIdx"
-type = "::FlexFlow::nonnegative_int"
+name = "dstSlot"
+type = "SlotName"

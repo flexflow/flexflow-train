@@ -24,9 +24,9 @@ std::unordered_set<parallel_tensor_guid_t>
 ParallelLayerAddedResult add_parallel_layer(
     ParallelComputationGraph &pcg,
     ParallelLayerAttrs const &layer_attrs,
-    std::vector<parallel_tensor_guid_t> const &inputs,
-    std::vector<parallel_tensor_guid_t> const &weights,
-    std::optional<std::vector<CreateGrad>> const &outputs = std::nullopt);
+    std::unordered_map<TensorSlotName, parallel_tensor_guid_t> const &inputs,
+    std::unordered_map<TensorSlotName, parallel_tensor_guid_t> const &weights,
+    std::optional<std::unordered_map<TensorSlotName, CreateGrad>> const &outputs = std::nullopt);
 
 ParallelLayerAddedResult pcg_add_input_layer(ParallelComputationGraph &pcg,
                                              TensorShape const &tensor_shape);
@@ -53,18 +53,18 @@ std::unordered_set<ParallelComputationGraphEdge>
 std::unordered_set<parallel_layer_guid_t>
     get_initial_layers(ParallelComputationGraph const &);
 
-std::vector<parallel_tensor_guid_t>
+std::unordered_map<TensorSlotName, parallel_tensor_guid_t>
     get_incoming_tensors(ParallelComputationGraph const &,
                          parallel_layer_guid_t const &);
-std::vector<parallel_tensor_guid_t>
+std::unordered_map<TensorSlotName, parallel_tensor_guid_t>
     get_layer_outputs(ParallelComputationGraph const &,
                       parallel_layer_guid_t const &);
 
-std::vector<OperatorSpaceToParallelTensorSpaceMapping>
+std::unordered_map<TensorSlotName, OperatorSpaceToParallelTensorSpaceMapping>
   pcg_get_operator_to_incoming_mappings(ParallelComputationGraph const &,
                                         parallel_layer_guid_t const &);
 
-std::vector<OperatorSpaceToParallelTensorSpaceMapping>
+std::unordered_map<TensorSlotName, OperatorSpaceToParallelTensorSpaceMapping>
   pcg_get_operator_to_output_mappings(ParallelComputationGraph const &,
                                       parallel_layer_guid_t const &);
 
@@ -72,14 +72,14 @@ OperatorTaskSpaceToOperatorTaskSpaceMapping
   pcg_get_mapping_along_edge(ParallelComputationGraph const &,
                              ParallelComputationGraphEdge const &); 
 
-std::vector<parallel_tensor_guid_t>
+std::unordered_map<TensorSlotName, parallel_tensor_guid_t>
     get_incoming_inputs(ParallelComputationGraph const &,
                         parallel_layer_guid_t const &);
-std::vector<parallel_tensor_guid_t>
+std::unordered_map<TensorSlotName, parallel_tensor_guid_t>
     get_incoming_weights(ParallelComputationGraph const &,
                          parallel_layer_guid_t const &);
 
-std::vector<ParallelTensorDimDegrees>
+std::unordered_map<TensorSlotName, ParallelTensorDimDegrees>
     get_incoming_input_degrees(ParallelComputationGraph const &,
                                parallel_layer_guid_t const &);
 

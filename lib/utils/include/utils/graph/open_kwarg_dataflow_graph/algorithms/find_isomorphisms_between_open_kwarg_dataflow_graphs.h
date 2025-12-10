@@ -11,6 +11,11 @@
 #include "utils/graph/digraph/algorithms/get_terminal_nodes.h"
 #include "utils/containers/vector_of.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_unused_open_kwarg_dataflow_graph_inputs.h"
+#include "utils/graph/open_kwarg_dataflow_graph/algorithms/open_kwarg_dataflow_graphs_are_isomorphic_under.h"
+#include "utils/graph/open_kwarg_dataflow_graph/open_kwarg_dataflow_edge.h"
+#include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_incoming_open_kwarg_dataflow_edges_for_node.h"
+#include "utils/containers/zip_values_strict.h"
+#include "utils/containers/values.h"
 
 namespace FlexFlow {
 
@@ -20,7 +25,7 @@ std::optional<OpenKwargDataflowGraphIsomorphism<GraphInputName>>
         OpenKwargDataflowGraphView<GraphInputName, SlotName> const &src_g,
         OpenKwargDataflowGraphView<GraphInputName, SlotName> const &dst_g,
         bidict<Node, Node> const &sink_node_mapping,
-        bidict<DataflowGraphInput, DataflowGraphInput> const
+        bidict<KwargDataflowGraphInput<GraphInputName>, KwargDataflowGraphInput<GraphInputName>> const
             &unused_graph_inputs_mapping) {
   {
     std::unordered_set<Node> already_mapped_src_nodes =
@@ -37,24 +42,24 @@ std::optional<OpenKwargDataflowGraphIsomorphism<GraphInputName>>
   }
 
   {
-    std::unordered_set<DataflowGraphInput> already_mapped_src_inputs =
+    std::unordered_set<KwargDataflowGraphInput<GraphInputName>> already_mapped_src_inputs =
         right_entries(unused_graph_inputs_mapping);
-    std::unordered_set<DataflowGraphInput> src_g_unused_inputs =
+    std::unordered_set<KwargDataflowGraphInput<GraphInputName>> src_g_unused_inputs =
         get_unused_open_kwarg_dataflow_graph_inputs(src_g);
     ASSERT(already_mapped_src_inputs == src_g_unused_inputs);
   }
 
   {
-    std::unordered_set<DataflowGraphInput> already_mapped_dst_inputs =
+    std::unordered_set<KwargDataflowGraphInput<GraphInputName>> already_mapped_dst_inputs =
         right_entries(unused_graph_inputs_mapping);
-    std::unordered_set<DataflowGraphInput> dst_g_unused_inputs =
+    std::unordered_set<KwargDataflowGraphInput<GraphInputName>> dst_g_unused_inputs =
         get_unused_open_kwarg_dataflow_graph_inputs(dst_g);
     ASSERT(already_mapped_dst_inputs == dst_g_unused_inputs);
   }
 
   std::optional<OpenKwargDataflowGraphIsomorphism<GraphInputName>> result =
       OpenKwargDataflowGraphIsomorphism<GraphInputName>{
-          {},
+          bidict<Node, Node>{},
           unused_graph_inputs_mapping,
       };
 
@@ -78,7 +83,7 @@ std::optional<OpenKwargDataflowGraphIsomorphism<GraphInputName>>
       return;
     }
 
-    if (src_output.idx != dst_output.idx) {
+    if (src_output.slot_name != dst_output.slot_name) {
       result = std::nullopt;
       return;
     }
@@ -132,14 +137,14 @@ std::optional<OpenKwargDataflowGraphIsomorphism<GraphInputName>>
       return;
     }
 
-    ASSERT(get_open_kwarg_dataflow_edge_dst(src_edge).idx ==
-           get_open_kwarg_dataflow_edge_dst(dst_edge).idx);
+    ASSERT(get_dst_of_open_kwarg_dataflow_edge(src_edge).slot_name ==
+           get_dst_of_open_kwarg_dataflow_edge(dst_edge).slot_name);
     ASSERT(
-        get_open_kwarg_dataflow_edge_dst(src_edge).node ==
-        result->node_mapping.at_r(get_open_kwarg_dataflow_edge_dst(dst_edge).node));
+        get_dst_of_open_kwarg_dataflow_edge(src_edge).node ==
+        result->node_mapping.at_r(get_dst_of_open_kwarg_dataflow_edge(dst_edge).node));
 
-    unify_values(get_open_dataflow_edge_src(src_edge),
-                 get_open_dataflow_edge_src(dst_edge));
+    unify_values(get_src_of_open_kwarg_dataflow_edge(src_edge),
+                 get_src_of_open_kwarg_dataflow_edge(dst_edge));
   };
 
   unify_nodes = [&](Node const &src_node, Node const &dst_node) {
@@ -164,10 +169,10 @@ std::optional<OpenKwargDataflowGraphIsomorphism<GraphInputName>>
 
     result->node_mapping.equate(src_node, dst_node);
 
-    std::vector<OpenKwargDataflowEdge<GraphInputName, SlotName>> src_incoming_edges =
-        get_incoming_edges(src_g, src_node);
-    std::vector<OpenKwargDataflowEdge<GraphInputName, SlotName>> dst_incoming_edges =
-        get_incoming_edges(dst_g, dst_node);
+    std::unordered_map<SlotName, OpenKwargDataflowEdge<GraphInputName, SlotName>> src_incoming_edges =
+        get_incoming_open_kwarg_dataflow_edges_for_node(src_g, src_node);
+    std::unordered_map<SlotName, OpenKwargDataflowEdge<GraphInputName, SlotName>> dst_incoming_edges =
+        get_incoming_open_kwarg_dataflow_edges_for_node(dst_g, dst_node);
 
     if (src_incoming_edges.size() != dst_incoming_edges.size()) {
       fail();
@@ -175,7 +180,7 @@ std::optional<OpenKwargDataflowGraphIsomorphism<GraphInputName>>
     }
 
     for (auto const &[src_edge, dst_edge] :
-         zip(src_incoming_edges, dst_incoming_edges)) {
+         values(zip_values_strict(src_incoming_edges, dst_incoming_edges))) {
       unify_edges(src_edge, dst_edge);
     }
   };
@@ -230,7 +235,7 @@ std::unordered_set<OpenKwargDataflowGraphIsomorphism<GraphInputName>>
               src, dst, sink_node_mapping, unused_graph_inputs_mapping);
 
       if (found.has_value()) {
-        ASSERT(is_isomorphic_under(src, dst, found.value()));
+        ASSERT(open_kwarg_dataflow_graphs_are_isomorphic_under(src, dst, found.value()));
 
         result.insert(found.value());
       }

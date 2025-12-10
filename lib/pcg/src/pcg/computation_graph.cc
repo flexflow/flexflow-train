@@ -21,6 +21,7 @@
 #include "utils/graph/digraph/algorithms/get_subgraph_successors.h"
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"
 #include "utils/graph/instances/unordered_set_labelled_open_dataflow_graph.h"
+#include "utils/graph/kwarg_dataflow_graph/algorithms/find_isomorphism_between_kwarg_dataflow_graphs.h"
 #include "utils/graph/kwarg_dataflow_graph/algorithms/get_incoming_kwarg_dataflow_outputs_for_node.h"
 #include "utils/graph/kwarg_dataflow_graph/algorithms/get_kwarg_dataflow_subgraph_incoming_edges.h"
 #include "utils/graph/kwarg_dataflow_graph/algorithms/get_kwarg_dataflow_subgraph_outgoing_edges.h"
@@ -28,7 +29,9 @@
 #include "utils/graph/labelled_dataflow_graph/algorithms/find_isomorphism.h"
 #include "utils/graph/labelled_dataflow_graph/algorithms/rewrite_node_labels.h"
 #include "utils/graph/labelled_dataflow_graph/algorithms/view_as_labelled_open_dataflow_graph.h"
+#include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/labelled_open_kwarg_dataflow_graph_view_as_dot.h"
 #include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/rewrite_labelled_kwarg_dataflow_graph_node_labels.h"
+#include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/view_as_labelled_open_kwarg_dataflow_graph.h"
 #include "utils/graph/labelled_open_dataflow_graph/algorithms/as_dot.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/record_formatter.h"
@@ -302,23 +305,25 @@ layer_guid_t get_layer_by_name(ComputationGraph const &cg,
 }
 
 ComputationGraph without_layer_names(ComputationGraph const &cg) {
-  return ComputationGraph{
-      LabelledKwargDataflowGraph<LayerAttrs, TensorAttrs, TensorSlotName>::create_copy_of<
-          UnorderedSetLabelledOpenKwargDataflowGraph<LayerAttrs, TensorAttrs, int, TensorSlotName>>(
-            rewrite_labelled_kwarg_dataflow_graph_node_labels(cg.raw_graph,
-                                [](Node const &n, LayerAttrs const &old_attrs) {
+  LabelledKwargDataflowGraphView<LayerAttrs, TensorAttrs, TensorSlotName>
+    relabelled = rewrite_labelled_kwarg_dataflow_graph_node_labels(cg.raw_graph,
+                                [](Node const &n, LayerAttrs const &old_attrs) -> LayerAttrs {
                                   LayerAttrs new_attrs = old_attrs;
                                   new_attrs.name = std::nullopt;
                                   return new_attrs;
-                                })),
+                                });
+  return ComputationGraph{
+      LabelledKwargDataflowGraph<LayerAttrs, TensorAttrs, TensorSlotName>::create_copy_of<
+          UnorderedSetLabelledOpenKwargDataflowGraph<LayerAttrs, TensorAttrs, int, TensorSlotName>>(
+    relabelled),
   };
 }
 
 bool computation_graphs_are_isomorphic(ComputationGraph const &lhs,
                                        ComputationGraph const &rhs) {
-  return find_isomorphism(without_layer_names(lhs).raw_graph,
-                          without_layer_names(rhs).raw_graph)
-      .has_value();
+  return find_isomorphism_between_kwarg_dataflow_graphs(
+    without_layer_names(lhs).raw_graph,
+    without_layer_names(rhs).raw_graph).has_value();
 }
 
 std::string as_dot(ComputationGraph const &cg) {
@@ -348,9 +353,10 @@ std::string as_dot(ComputationGraph const &cg) {
     return oss.str();
   };
 
-  return as_dot(view_as_labelled_open_dataflow_graph(cg.raw_graph),
-                get_node_label,
-                get_input_label);
+  return labelled_open_kwarg_dataflow_graph_view_as_dot(
+    view_as_labelled_open_kwarg_dataflow_graph<LayerAttrs, TensorAttrs, int, TensorSlotName>(cg.raw_graph),
+    get_node_label,
+    get_input_label);
 }
 
 void debug_print_dot(ComputationGraph const &cg) {

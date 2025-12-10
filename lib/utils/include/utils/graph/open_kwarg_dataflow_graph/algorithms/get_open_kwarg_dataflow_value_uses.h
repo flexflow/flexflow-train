@@ -6,6 +6,7 @@
 #include "utils/overload.h"
 #include "utils/graph/open_kwarg_dataflow_graph/kwarg_dataflow_input_edge_query.h"
 #include "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_edge_query.h"
+#include "utils/graph/open_kwarg_dataflow_graph/open_kwarg_dataflow_edge.h"
 
 namespace FlexFlow {
 

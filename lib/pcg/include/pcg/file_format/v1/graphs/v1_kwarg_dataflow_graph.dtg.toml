@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "V1DataflowGraph"
+name = "V1KwargDataflowGraph"
 type = "struct"
 features = [
   "eq",
@@ -8,6 +8,10 @@ features = [
   "json",
   # "rapidcheck",
   "fmt",
+]
+
+template_params = [
+  "SlotName",
 ]
 
 includes = [
@@ -30,4 +34,4 @@ type = "std::vector<::FlexFlow::nonnegative_int>"
 
 [[fields]]
 name = "edges"
-type = "std::unordered_set<::FlexFlow::V1GraphEdge>"
+type = "std::unordered_set<::FlexFlow::V1GraphEdge<SlotName>>"

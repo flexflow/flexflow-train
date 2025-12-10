@@ -26,7 +26,7 @@ public:
       typename std::enable_if<std::is_base_of<IOpenKwargDataflowGraphView<GraphInputName, SlotName>, T>::value,
                               OpenKwargDataflowGraphView>::type
       create(Args &&...args) {
-    return OpenDataflowGraphView(make_cow_ptr<T>(std::forward<Args>(args)...));
+    return OpenKwargDataflowGraphView(make_cow_ptr<T>(std::forward<Args>(args)...));
   }
 
 protected:

@@ -10,9 +10,13 @@ features = [
 
 includes = [
   "<vector>",
-  "utils/fmt/vector.h",
   "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h",
   "pcg/parallel_computation_graph/parallel_tensor_guid_t.dtg.h",
+  "op-attrs/tensor_slot_name.dtg.h",
+]
+
+src_includes = [
+  "utils/fmt/unordered_map.h",
 ]
 
 [[fields]]
@@ -21,4 +25,4 @@ type = "::FlexFlow::parallel_layer_guid_t"
 
 [[fields]]
 name = "outputs"
-type = "std::vector<::FlexFlow::parallel_tensor_guid_t>"
+type = "std::unordered_map<::FlexFlow::TensorSlotName, ::FlexFlow::parallel_tensor_guid_t>"

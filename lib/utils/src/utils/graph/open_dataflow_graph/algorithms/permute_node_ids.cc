@@ -47,7 +47,7 @@ OpenDataflowGraphView
           };
         },
         [&](DataflowEdge const &standard_e) {
-          return OpenDataflowEdge{
+         return OpenDataflowEdge{
               DataflowEdge{
                   new_output_from_old(standard_e.src),
                   new_input_from_old(standard_e.dst),

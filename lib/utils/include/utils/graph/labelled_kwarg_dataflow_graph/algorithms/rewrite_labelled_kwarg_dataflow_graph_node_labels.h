@@ -3,6 +3,7 @@
 
 #include "utils/graph/labelled_kwarg_dataflow_graph/labelled_kwarg_dataflow_graph.h"
 #include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/rewrite_node_labels.h"
+#include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/view_as_labelled_open_kwarg_dataflow_graph.h"
 
 namespace FlexFlow {
 
@@ -12,11 +13,11 @@ template <typename NodeLabel,
           typename F,
           typename NewNodeLabel = 
             std::invoke_result_t<F, Node const &, NodeLabel const &>>
-LabelledKwargDataflowGraph<NewNodeLabel, ValueLabel, ValueLabel>
-  rewrite_labelled_kwarg_dataflow_graph_node_labels(LabelledKwargDataflowGraph<NodeLabel, ValueLabel, SlotName> const &g, F f) 
+LabelledKwargDataflowGraphView<NewNodeLabel, ValueLabel, SlotName>
+  rewrite_labelled_kwarg_dataflow_graph_node_labels(LabelledKwargDataflowGraphView<NodeLabel, ValueLabel, SlotName> const &g, F f) 
 {
   return rewrite_node_labels<NodeLabel, ValueLabel, int, SlotName, F, NewNodeLabel>(
-    view_as_labelled_open_kwarg_dataflow_graph(g), f);
+    view_as_labelled_open_kwarg_dataflow_graph<NodeLabel, ValueLabel, int, SlotName>(g), f);
 }
   
 } // namespace FlexFlow

@@ -10,7 +10,7 @@ using SlotName = ordered_value_type<2>;
 using NewNodeLabel = value_type<3>;
 using F = std::function<NewNodeLabel(NodeLabel const &)>;
 
-LabelledKwargDataflowGraph<NewNodeLabel, ValueLabel, ValueLabel>
-  rewrite_labelled_kwarg_dataflow_graph_node_labels(LabelledKwargDataflowGraph<NodeLabel, ValueLabel, SlotName> const &, F);
+LabelledKwargDataflowGraphView<NewNodeLabel, ValueLabel, SlotName>
+  rewrite_labelled_kwarg_dataflow_graph_node_labels(LabelledKwargDataflowGraphView<NodeLabel, ValueLabel, SlotName> const &, F);
 
 } // namespace FlexFlow

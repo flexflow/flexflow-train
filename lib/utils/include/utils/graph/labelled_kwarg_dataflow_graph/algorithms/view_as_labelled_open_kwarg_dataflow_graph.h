@@ -35,7 +35,7 @@ public:
     return this->g.query_outputs(q);
   }
 
-  std::unordered_set<DataflowGraphInput> get_inputs() const override {
+  std::unordered_set<KwargDataflowGraphInput<GraphInputName>> get_inputs() const override {
     return {};
   }
 

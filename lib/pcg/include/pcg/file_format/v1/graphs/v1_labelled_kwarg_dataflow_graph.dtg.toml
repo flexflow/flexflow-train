@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "V1LabelledDataflowGraph"
+name = "V1LabelledKwargDataflowGraph"
 type = "struct"
 features = [
   "eq",
@@ -13,11 +13,12 @@ features = [
 template_params = [
   "NodeLabel",
   "OutputLabel",
+  "SlotName",
 ]
 
 includes = [
   "<unordered_map>",
-  "pcg/file_format/v1/graphs/v1_dataflow_graph.dtg.h",
+  "pcg/file_format/v1/graphs/v1_kwarg_dataflow_graph.dtg.h",
   "pcg/file_format/v1/graphs/v1_graph_output.dtg.h",
   "utils/nonnegative_int/nonnegative_int.h",
 ]
@@ -35,8 +36,8 @@ type = "std::unordered_map<::FlexFlow::nonnegative_int, NodeLabel>"
 
 [[fields]]
 name = "output_labels"
-type = "std::unordered_map<::FlexFlow::nonnegative_int, std::vector<OutputLabel>>"
+type = "std::unordered_map<::FlexFlow::nonnegative_int, std::unordered_map<SlotName, OutputLabel>>"
 
 [[fields]]
 name = "graph"
-type = "::FlexFlow::V1DataflowGraph"
+type = "::FlexFlow::V1KwargDataflowGraph<SlotName>"
