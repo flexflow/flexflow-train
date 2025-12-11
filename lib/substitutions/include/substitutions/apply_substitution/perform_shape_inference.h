@@ -2,8 +2,10 @@
 #define _FLEXFLOW_LIB_SUBSTITUTIONS_INCLUDE_SUBSTITUTIONS_APPLY_SUBSTITUTION_PERFORM_SHAPE_INFERENCE_H
 
 #include "op-attrs/parallel_tensor_shape.dtg.h"
+#include "op-attrs/tensor_slot_name.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_layer_attrs.dtg.h"
-#include "utils/graph/labelled_open_dataflow_graph/labelled_open_dataflow_graph_view.h"
+#include "utils/graph/labelled_open_kwarg_dataflow_graph/labelled_open_kwarg_dataflow_graph_view.h"
+#include "utils/graph/open_kwarg_dataflow_graph/kwarg_dataflow_graph_input.dtg.h"
 
 namespace FlexFlow {
 
@@ -22,11 +24,11 @@ namespace FlexFlow {
  * Exists only to enable apply_substitution(SubParallelComputationGraph const &,
  * Substitution const &, PCGPatternMatch const &)
  */
-LabelledOpenDataflowGraphView<ParallelLayerAttrs, ParallelTensorShape>
+LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs, ParallelTensorShape, int, TensorSlotName>
     perform_shape_inference(
-        LabelledOpenDataflowGraphView<ParallelLayerAttrs, std::monostate> const
+        LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs, std::monostate, int, TensorSlotName> const
             &g,
-        std::unordered_map<DataflowGraphInput, ParallelTensorShape> const
+        std::unordered_map<KwargDataflowGraphInput<int>, ParallelTensorShape> const
             &input_shapes);
 
 } // namespace FlexFlow

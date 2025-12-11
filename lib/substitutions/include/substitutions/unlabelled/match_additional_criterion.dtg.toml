@@ -6,7 +6,7 @@ features = []
 includes = [
   "<functional>",
   "utils/graph/node/node.dtg.h",
-  "utils/graph/open_dataflow_graph/open_dataflow_value.dtg.h",
+  "utils/graph/open_kwarg_dataflow_graph/open_kwarg_dataflow_value.dtg.h",
   "substitutions/unlabelled/pattern_node.dtg.h",
   "substitutions/unlabelled/pattern_value.dtg.h",
 ]
@@ -17,4 +17,4 @@ type = "std::function<bool(::FlexFlow::PatternNode const &, ::FlexFlow::Node con
 
 [[fields]]
 name = "value_criterion"
-type = "std::function<bool(::FlexFlow::PatternValue const &, ::FlexFlow::OpenDataflowValue const &)>"
+type = "std::function<bool(::FlexFlow::PatternValue const &, ::FlexFlow::OpenKwargDataflowValue<int, ::FlexFlow::TensorSlotName> const &)>"

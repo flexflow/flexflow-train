@@ -2,7 +2,7 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_LABELLED_KWARG_DATAFLOW_GRAPH_ALGORITHMS_REWRITE_LABELLED_KWARG_DATAFLOW_GRAPH_VALUE_LABELS_H
 
 #include "utils/graph/labelled_kwarg_dataflow_graph/labelled_kwarg_dataflow_graph.h"
-#include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/rewrite_value_labels.h"
+#include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/rewrite_labelled_open_kwarg_dataflow_graph_value_labels.h"
 #include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/view_as_labelled_open_kwarg_dataflow_graph.h"
 
 namespace FlexFlow {
@@ -29,7 +29,7 @@ LabelledKwargDataflowGraphView<NodeLabel, NewValueLabel, SlotName>
     });
   };
 
-  return rewrite_value_labels(
+  return rewrite_labelled_open_kwarg_dataflow_graph_value_labels(
     view_as_labelled_open_kwarg_dataflow_graph<NodeLabel, ValueLabel, int, SlotName>(g), 
     label_func);
 }

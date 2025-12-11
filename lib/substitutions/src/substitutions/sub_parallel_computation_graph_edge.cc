@@ -6,14 +6,14 @@ namespace FlexFlow {
 SubParallelComputationGraphEdge
     subpcg_edge_from_tensor_and_dst(parallel_tensor_guid_t const &tensor,
                                     parallel_layer_guid_t const &layer,
-                                    nonnegative_int input_idx) {
+                                    TensorSlotName input_slot_name) {
   return SubParallelComputationGraphEdge{
-      OpenDataflowEdge{
-          DataflowEdge{
+      OpenKwargDataflowEdge<int, TensorSlotName>{
+          KwargDataflowEdge<TensorSlotName>{
               tensor.raw_graph_output,
-              DataflowInput{
+              KwargDataflowInput<TensorSlotName>{
                   layer.raw_graph_node,
-                  input_idx,
+                  input_slot_name,
               },
           },
       },

@@ -1,5 +1,5 @@
-#ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_LABELLED_OPEN_KWARG_DATAFLOW_GRAPH_ALGORITHM_WITH_LABELLING_H
-#define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_LABELLED_OPEN_KWARG_DATAFLOW_GRAPH_ALGORITHM_WITH_LABELLING_H
+#ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_LABELLED_OPEN_KWARG_DATAFLOW_GRAPH_ALGORITHMS_OPEN_KWARG_DATAFLOW_GRAPH_VIEW_WITH_LABELLING_H
+#define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_LABELLED_OPEN_KWARG_DATAFLOW_GRAPH_ALGORITHMS_OPEN_KWARG_DATAFLOW_GRAPH_VIEW_WITH_LABELLING_H
 
 #include "utils/graph/labelled_open_kwarg_dataflow_graph/i_labelled_open_kwarg_dataflow_graph_view.h"
 #include "utils/graph/labelled_open_kwarg_dataflow_graph/labelled_open_kwarg_dataflow_graph_view.h"
@@ -63,7 +63,8 @@ template <typename NodeLabel,
           typename ValueLabel,
           typename GraphInputName, 
           typename SlotName>
-LabelledOpenKwargDataflowGraphView<NodeLabel, ValueLabel, GraphInputName, SlotName> with_labelling(
+LabelledOpenKwargDataflowGraphView<NodeLabel, ValueLabel, GraphInputName, SlotName> 
+  open_kwarg_dataflow_graph_view_with_labelling(
     OpenKwargDataflowGraphView<GraphInputName, SlotName> const &g, 
     std::unordered_map<Node, NodeLabel> const &node_labels,
     std::unordered_map<OpenKwargDataflowValue<GraphInputName, SlotName>, ValueLabel> const &value_labels) 

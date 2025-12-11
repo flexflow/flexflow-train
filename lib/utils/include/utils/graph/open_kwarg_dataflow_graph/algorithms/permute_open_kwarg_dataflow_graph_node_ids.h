@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_OPEN_KWARG_DATAFLOW_GRAPH_ALGORITHMS_PERMUTE_OPEN_KWARG_DATAFLOW_GRAPH_NODE_IDS_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_OPEN_KWARG_DATAFLOW_GRAPH_ALGORITHMS_PERMUTE_OPEN_KWARG_DATAFLOW_GRAPH_NODE_IDS_H
 
+#include "utils/graph/node/algorithms/new_node.dtg.h"
 #include "utils/graph/open_kwarg_dataflow_graph/open_kwarg_dataflow_graph_view.h"
 #include "utils/overload.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_open_kwarg_dataflow_graph_data.h"
@@ -12,10 +13,10 @@ template <typename GraphInputName, typename SlotName>
 OpenKwargDataflowGraphView<GraphInputName, SlotName>
   permute_open_kwarg_dataflow_graph_node_ids(
     OpenKwargDataflowGraphView<GraphInputName, SlotName> const &g,
-    bidict<Node, Node> const &new_node_to_old_node)
+    bidict<NewNode, Node> const &new_node_to_old_node)
 {
   auto new_node_from_old = [&](Node const &n) -> Node {
-    return new_node_to_old_node.at_r(n);
+    return new_node_to_old_node.at_r(n).raw_node;
   };
 
   auto new_output_from_old = [&](KwargDataflowOutput<SlotName> const &o) 

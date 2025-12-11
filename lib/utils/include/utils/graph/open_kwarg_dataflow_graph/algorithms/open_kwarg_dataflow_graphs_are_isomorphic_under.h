@@ -7,6 +7,7 @@
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/permute_open_kwarg_dataflow_graph_node_ids.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/permute_open_kwarg_dataflow_graph_input_ids.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_open_kwarg_dataflow_graph_data.h"
+#include "utils/bidict/algorithms/transform_values.h"
 
 namespace FlexFlow {
 
@@ -16,7 +17,12 @@ bool open_kwarg_dataflow_graphs_are_isomorphic_under(
   OpenKwargDataflowGraphView<GraphInputName, SlotName> const &dst,
   OpenKwargDataflowGraphIsomorphism<GraphInputName> const &isomorphism)
 {
-  bidict<Node, Node> new_node_to_old_node = isomorphism.node_mapping.reversed();
+  bidict<NewNode, Node> new_node_to_old_node = 
+    transform_values(isomorphism.node_mapping, 
+                     [](Node const &n) {
+                       return NewNode{n};    
+                     }).reversed();
+
   bidict<KwargDataflowGraphInput<GraphInputName>, KwargDataflowGraphInput<GraphInputName>> 
     new_input_to_old_input = isomorphism.input_mapping.reversed();
 

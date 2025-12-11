@@ -3,9 +3,10 @@ name = "UnlabelledGraphPattern"
 type = "struct"
 features = []
 includes = [
-  "utils/graph/open_dataflow_graph/open_dataflow_graph_view.h"
+  "utils/graph/open_kwarg_dataflow_graph/open_kwarg_dataflow_graph_view.h",
+  "op-attrs/tensor_slot_name.dtg.h",
 ]
 
 [[fields]]
 name = "raw_graph"
-type = "::FlexFlow::OpenDataflowGraphView"
+type = "::FlexFlow::OpenKwargDataflowGraphView<int, ::FlexFlow::TensorSlotName>"

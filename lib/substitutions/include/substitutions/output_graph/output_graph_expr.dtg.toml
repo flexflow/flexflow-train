@@ -4,11 +4,12 @@ type = "struct"
 features = []
 
 includes = [
-  "utils/graph/labelled_open_dataflow_graph/labelled_open_dataflow_graph.h",
+  "utils/graph/labelled_open_kwarg_dataflow_graph/labelled_open_kwarg_dataflow_graph.h",
   "substitutions/output_graph/output_operator_attrs_assignment.dtg.h",
   "<variant>",
+  "op-attrs/tensor_slot_name.dtg.h",
 ]
 
 [[fields]]
 name = "raw_graph"
-type = "::FlexFlow::LabelledOpenDataflowGraph<::FlexFlow::OutputOperatorAttrsAssignment, std::monostate>"
+type = "::FlexFlow::LabelledOpenKwargDataflowGraph<::FlexFlow::OutputOperatorAttrsAssignment, std::monostate, int, ::FlexFlow::TensorSlotName>"

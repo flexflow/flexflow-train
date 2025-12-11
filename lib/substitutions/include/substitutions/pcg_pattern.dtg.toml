@@ -3,11 +3,12 @@ name = "PCGPattern"
 type = "struct"
 features = []
 includes = [
-  "utils/graph/labelled_open_dataflow_graph/labelled_open_dataflow_graph.h",
+  "utils/graph/labelled_open_kwarg_dataflow_graph/labelled_open_kwarg_dataflow_graph.h",
   "substitutions/operator_pattern/operator_attribute_pattern.dtg.h",
   "substitutions/tensor_pattern/tensor_attribute_pattern.dtg.h",
+  "op-attrs/tensor_slot_name.dtg.h",
 ]
 
 [[fields]]
 name = "raw_graph"
-type = "::FlexFlow::LabelledOpenDataflowGraph<::FlexFlow::OperatorAttributePattern, ::FlexFlow::TensorAttributePattern>"
+type = "::FlexFlow::LabelledOpenKwargDataflowGraph<::FlexFlow::OperatorAttributePattern, ::FlexFlow::TensorAttributePattern, int, ::FlexFlow::TensorSlotName>"

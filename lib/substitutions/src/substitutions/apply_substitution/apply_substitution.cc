@@ -53,10 +53,10 @@ SubParallelComputationGraph
   std::unordered_set<SubParallelComputationGraphEdge> post_edges = [&] {
     std::unordered_set<SubParallelComputationGraphEdge> post_edges_from_orig =
         filter(pre_data.edges, [&](SubParallelComputationGraphEdge const &e) {
-          if (e.raw_edge.has<DataflowInputEdge>()) {
+          if (e.raw_edge.is_input_edge()) {
             return true;
           } else {
-            DataflowEdge dfe = e.raw_edge.get<DataflowEdge>();
+            KwargDataflowEdge<TensorSlotName> dfe = e.raw_edge.require_internal_edge();
             parallel_layer_guid_t src = parallel_layer_guid_t{dfe.src.node};
             parallel_layer_guid_t dst = parallel_layer_guid_t{dfe.dst.node};
             return !(contains(matched_nodes, src) ||
@@ -67,7 +67,7 @@ SubParallelComputationGraph
     std::unordered_set<SubParallelComputationGraphEdge> post_edges_from_sub =
         filter(output_graph_data.edges,
                [&](SubParallelComputationGraphEdge const &e) {
-                 return !e.raw_edge.has<DataflowInputEdge>();
+                 return !e.raw_edge.is_internal_edge();
                });
 
     bidict<PatternNodeOutput, parallel_tensor_guid_t>
@@ -113,7 +113,7 @@ SubParallelComputationGraph
           subpcg_edge_from_tensor_and_dst(
               new_tensor,
               get_dst_layer(outgoing_edge),
-              get_dst_layer_input_idx(outgoing_edge));
+              get_dst_layer_input_slot_name(outgoing_edge));
       outgoing_from_sub_edges.insert(new_edge);
     }
 

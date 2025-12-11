@@ -31,10 +31,10 @@ parallel_layer_guid_t
     get_parallel_layer_by_name(SubParallelComputationGraph const &pcg,
                                std::string const &name);
 
-std::vector<open_parallel_tensor_guid_t>
+std::unordered_map<TensorSlotName, open_parallel_tensor_guid_t>
     get_layer_inputs(SubParallelComputationGraph const &,
                      parallel_layer_guid_t const &);
-std::vector<parallel_tensor_guid_t>
+std::unordered_map<TensorSlotName, parallel_tensor_guid_t>
     get_layer_outputs(SubParallelComputationGraph const &,
                       parallel_layer_guid_t const &);
 

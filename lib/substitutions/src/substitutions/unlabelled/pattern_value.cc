@@ -1,13 +1,16 @@
 #include "substitutions/unlabelled/pattern_value.h"
+#include "utils/graph/open_kwarg_dataflow_graph/open_kwarg_dataflow_value.dtg.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {
 
-OpenDataflowValue
+OpenKwargDataflowValue<int, TensorSlotName>
     raw_open_dataflow_value_from_pattern_value(PatternValue const &v) {
-  return v.visit<OpenDataflowValue>(overload{
+  return v.visit<
+    OpenKwargDataflowValue<int, TensorSlotName>
+  >(overload{
       [](PatternNodeOutput const &o) {
-        return OpenDataflowValue{o.raw_dataflow_output};
+        return OpenKwargDataflowValue<int, TensorSlotName>{o.raw_dataflow_output};
       },
       [](PatternInput const &i) {
         return OpenDataflowValue{i.raw_dataflow_graph_input};

@@ -9,9 +9,10 @@ features = [
 ]
 
 includes = [
-  "utils/graph/open_dataflow_graph/dataflow_graph_input.dtg.h",
+  "utils/graph/open_kwarg_dataflow_graph/kwarg_dataflow_graph_input.dtg.h",
+  "op-attrs/tensor_slot_name.dtg.h",
 ]
 
 [[fields]]
 name = "raw_dataflow_graph_input"
-type = "::FlexFlow::DataflowGraphInput"
+type = "::FlexFlow::KwargDataflowGraphInput<int>"
