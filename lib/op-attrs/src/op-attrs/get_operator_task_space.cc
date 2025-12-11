@@ -1,5 +1,7 @@
 #include "op-attrs/get_operator_task_space.h"
 #include "utils/containers/get_only.h"
+#include "utils/containers/require_only_key.h"
+#include "utils/containers/require_two_keys.h"
 #include "utils/overload.h"
 #include <libassert/assert.hpp>
 #include "op-attrs/ops/element_unary.h"
@@ -13,27 +15,27 @@ namespace FlexFlow {
 
 OperatorTaskSpace
   get_operator_task_space(ComputationGraphOpAttrs const &attrs,
-                          std::vector<ParallelTensorDimDegrees> const &inputs_degrees) {
+                          std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> const &inputs_degrees) {
   return attrs.visit<
     OperatorTaskSpace
   >(overload {
     [&](ElementUnaryAttrs const &attrs) {
-      ASSERT(inputs_degrees.size() == 1);
+      ParallelTensorDimDegrees input = require_only_key(inputs_degrees, TensorSlotName::INPUT);
 
-      return get_operator_task_space(attrs, get_only(inputs_degrees));
+      return get_operator_task_space(attrs, input);
     },
     [&](ElementBinaryAttrs const &attrs) {
-      ASSERT(inputs_degrees.size() == 2);
+      auto [lhs, rhs] = require_two_keys(inputs_degrees, TensorSlotName::LHS_INPUT, TensorSlotName::RHS_INPUT); 
 
       return get_operator_task_space(
         /*attrs=*/attrs,
-        /*lhs_input_degrees=*/inputs_degrees.at(0),
-        /*rhs_input_degrees=*/inputs_degrees.at(1));
+        /*lhs_input_degrees=*/lhs,
+        /*rhs_input_degrees=*/rhs);
     },
     [&](LinearAttrs const &attrs) {
-      ASSERT(inputs_degrees.size() == 1);
+      ParallelTensorDimDegrees input = require_only_key(inputs_degrees, TensorSlotName::INPUT);
 
-      return get_operator_task_space(attrs, get_only(inputs_degrees));
+      return get_operator_task_space(attrs, input);
     },
     [&](InputAttrs const &attrs) {
       ASSERT(inputs_degrees.size() == 0);
@@ -41,9 +43,9 @@ OperatorTaskSpace
       return get_operator_task_space(attrs);
     },
     [&](TransposeAttrs const &attrs) {
-      ASSERT(inputs_degrees.size() == 1);
+      ParallelTensorDimDegrees input = require_only_key(inputs_degrees, TensorSlotName::INPUT);
 
-      return get_operator_task_space(attrs, get_only(inputs_degrees));
+      return get_operator_task_space(attrs, input);
     },
     [&](WeightAttrs const &attrs) {
       ASSERT(inputs_degrees.size() == 0);

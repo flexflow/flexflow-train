@@ -4,6 +4,7 @@
 #include "utils/graph/open_kwarg_dataflow_graph/open_kwarg_dataflow_graph_view.h"
 #include "utils/overload.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_open_kwarg_dataflow_graph_data.h"
+#include "utils/graph/open_kwarg_dataflow_graph/algorithms/view_from_open_kwarg_dataflow_graph_data.h"
 
 namespace FlexFlow {
 
@@ -68,7 +69,7 @@ OpenKwargDataflowGraphView<GraphInputName, SlotName>
     /*outputs=*/transform(old_data.outputs, new_output_from_old),
   };
 
-  return view_from_open_dataflow_graph_data(permuted_data);
+  return view_from_open_kwarg_dataflow_graph_data(permuted_data);
 }
  
 } // namespace FlexFlow

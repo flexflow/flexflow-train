@@ -3,6 +3,7 @@
 
 #include "utils/graph/labelled_kwarg_dataflow_graph/labelled_kwarg_dataflow_graph.h"
 #include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/rewrite_value_labels.h"
+#include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/view_as_labelled_open_kwarg_dataflow_graph.h"
 
 namespace FlexFlow {
 
@@ -12,11 +13,25 @@ template <typename NodeLabel,
           typename F,
           typename NewValueLabel = 
             std::invoke_result_t<F, KwargDataflowOutput<SlotName> const &, ValueLabel const &>>
-LabelledKwargDataflowGraph<NodeLabel, NewValueLabel, SlotName>
-  rewrite_labelled_kwarg_dataflow_value_labels(LabelledKwargDataflowGraph<NodeLabel, ValueLabel, SlotName> const &g, F f) 
+LabelledKwargDataflowGraphView<NodeLabel, NewValueLabel, SlotName>
+  rewrite_labelled_kwarg_dataflow_graph_value_labels(LabelledKwargDataflowGraphView<NodeLabel, ValueLabel, SlotName> const &g, F f) 
 {
-  return rewrite_value_labels<NodeLabel, ValueLabel, int, SlotName, F, NewValueLabel>(
-    view_as_labelled_open_kwarg_dataflow_graph(g), f);
+  auto label_func = [&](OpenKwargDataflowValue<int, SlotName> const &v, ValueLabel const &l) 
+    -> NewValueLabel
+  {
+    return v.template visit<NewValueLabel>(overload {
+      [](KwargDataflowGraphInput<int> const &) -> NewValueLabel {
+        PANIC();
+      },
+      [&](KwargDataflowOutput<SlotName> const &o) -> NewValueLabel {
+        return f(o, l);
+      }
+    });
+  };
+
+  return rewrite_value_labels(
+    view_as_labelled_open_kwarg_dataflow_graph<NodeLabel, ValueLabel, int, SlotName>(g), 
+    label_func);
 }
 
 } // namespace FlexFlow

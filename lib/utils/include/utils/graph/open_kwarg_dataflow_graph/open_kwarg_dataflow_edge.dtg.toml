@@ -20,6 +20,8 @@ includes = [
 
 [[values]]
 type = "::FlexFlow::KwargDataflowInputEdge<GraphInputName, SlotName>"
+key = "input_edge"
 
 [[values]]
 type = "::FlexFlow::KwargDataflowEdge<SlotName>"
+key = "internal_edge"

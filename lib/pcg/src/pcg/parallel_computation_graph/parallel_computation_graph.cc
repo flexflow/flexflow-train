@@ -11,6 +11,7 @@
 #include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 #include "utils/containers/concat_vectors.h"
 #include "utils/containers/extend.h"
+#include "utils/containers/filter_values.h"
 #include "utils/containers/filtrans.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/repeat_element.h"
@@ -22,13 +23,19 @@
 #include "utils/graph/digraph/algorithms/get_successors.h"
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"
 #include "utils/graph/instances/unordered_set_labelled_open_kwarg_dataflow_graph.h"
+#include "utils/graph/kwarg_dataflow_graph/algorithms/find_isomorphism_between_kwarg_dataflow_graphs.h"
 #include "utils/graph/kwarg_dataflow_graph/algorithms/get_incoming_kwarg_dataflow_outputs_for_node.h"
+#include "utils/graph/kwarg_dataflow_graph/algorithms/get_kwarg_dataflow_edges_from_node_to_node.h"
 #include "utils/graph/kwarg_dataflow_graph/algorithms/get_outgoing_kwarg_dataflow_outputs_for_node.h"
+#include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/labelled_open_kwarg_dataflow_graph_view_as_dot.h"
+#include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/rewrite_labelled_kwarg_dataflow_graph_node_labels.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/node/node.dtg.h"
 #include "utils/record_formatter.h"
 #include <unordered_set>
 #include "op-attrs/get_operator_task_space.h"
+#include "utils/graph/kwarg_dataflow_graph/algorithms/get_outgoing_kwarg_dataflow_edges_for_node.h"
+#include "utils/graph/digraph/algorithms/get_initial_nodes.h"
 
 namespace FlexFlow {
 
@@ -146,19 +153,20 @@ OperatorTaskSpace get_operator_task_space(ParallelComputationGraph const &pcg,
 
 std::unordered_set<ParallelComputationGraphEdge>
     get_edges(ParallelComputationGraph const &pcg) {
-  return transform(get_edges(pcg.raw_graph), [](DataflowEdge const &e) {
-    return ParallelComputationGraphEdge{e};
-  });
+  return transform(get_all_kwarg_dataflow_edges(pcg.raw_graph), 
+                   [](KwargDataflowEdge<TensorSlotName> const &e) {
+                     return ParallelComputationGraphEdge{e};
+                   });
 }
 
 std::unordered_set<ParallelComputationGraphEdge>
     get_pcg_edges_from_layer_to_layer(ParallelComputationGraph const &pcg,
                                       parallel_layer_guid_t const &src,
                                       parallel_layer_guid_t const &dst) {
-  std::unordered_set<DataflowEdge> raw_edges =
-      get_dataflow_edges_from_node_to_node(
+  std::unordered_set<KwargDataflowEdge<TensorSlotName>> raw_edges =
+      get_kwarg_dataflow_edges_from_node_to_node(
           pcg.raw_graph, src.raw_graph_node, dst.raw_graph_node);
-  return transform(raw_edges, [](DataflowEdge const &e) {
+  return transform(raw_edges, [](KwargDataflowEdge<TensorSlotName> const &e) {
     return ParallelComputationGraphEdge{e};
   });
 }
@@ -166,9 +174,9 @@ std::unordered_set<ParallelComputationGraphEdge>
 std::unordered_set<ParallelComputationGraphEdge>
     get_outgoing_edges(ParallelComputationGraph const &pcg,
                        parallel_layer_guid_t const &l) {
-  std::unordered_set<DataflowEdge> raw_edges =
-      get_outgoing_edges(pcg.raw_graph, l.raw_graph_node);
-  return transform(raw_edges, [](DataflowEdge const &e) {
+  std::unordered_set<KwargDataflowEdge<TensorSlotName>> raw_edges =
+      get_outgoing_kwarg_dataflow_edges_for_node(pcg.raw_graph, l.raw_graph_node).right_values();
+  return transform(raw_edges, [](KwargDataflowEdge<TensorSlotName> const &e) {
     return ParallelComputationGraphEdge{e};
   });
 }
@@ -176,9 +184,9 @@ std::unordered_set<ParallelComputationGraphEdge>
 std::unordered_set<ParallelComputationGraphEdge>
     get_incoming_edges(ParallelComputationGraph const &pcg,
                        parallel_layer_guid_t const &l) {
-  std::unordered_set<DataflowEdge> raw_edges =
-      unordered_set_of(get_incoming_edges(pcg.raw_graph, l.raw_graph_node));
-  return transform(raw_edges, [](DataflowEdge const &e) {
+  std::unordered_set<KwargDataflowEdge<TensorSlotName>> raw_edges =
+      unordered_set_of(values(get_incoming_kwarg_dataflow_edges_for_node(pcg.raw_graph, l.raw_graph_node)));
+  return transform(raw_edges, [](KwargDataflowEdge<TensorSlotName> const &e) {
     return ParallelComputationGraphEdge{e};
   });
 }
@@ -231,10 +239,10 @@ OperatorTaskSpaceToOperatorTaskSpaceMapping
                              ParallelComputationGraphEdge const &edge) {
 
   parallel_layer_guid_t src_layer = get_src_layer(edge);
-  nonnegative_int src_idx = get_src_layer_output_idx(edge);
+  TensorSlotName src_slot_name = get_src_layer_output_slot_name(edge);
   parallel_tensor_guid_t tensor = parallel_tensor_guid_t{edge.raw_edge.src};
   parallel_layer_guid_t dst_layer = get_dst_layer(edge);
-  nonnegative_int dst_idx = get_dst_layer_input_idx(edge);
+  TensorSlotName dst_slot_name = get_dst_layer_input_slot_name(edge);
 
   ParallelTensorShape tensor_shape = get_parallel_tensor_shape(pcg, tensor);
 
@@ -243,10 +251,10 @@ OperatorTaskSpaceToOperatorTaskSpaceMapping
   OperatorTaskSpace dst_task_space = get_operator_task_space(pcg, dst_layer);
 
   OperatorSpaceToParallelTensorSpaceMapping src_to_tensor_mapping = 
-    pcg_get_operator_to_output_mappings(pcg, src_layer).at(src_idx.unwrap_nonnegative());
+    pcg_get_operator_to_output_mappings(pcg, src_layer).at(src_slot_name);
 
   OperatorSpaceToParallelTensorSpaceMapping dst_to_tensor_mapping = 
-    pcg_get_operator_to_incoming_mappings(pcg, dst_layer).at(dst_idx.unwrap_nonnegative());
+    pcg_get_operator_to_incoming_mappings(pcg, dst_layer).at(dst_slot_name);
 
   return op_to_op_mapping_from_composition_through_tensor(
         src_to_tensor_mapping,
@@ -264,25 +272,19 @@ static std::unordered_map<TensorSlotName, parallel_tensor_guid_t>
   std::unordered_map<TensorSlotName, parallel_tensor_guid_t> incoming_tensors =
       get_incoming_tensors(pcg, l);
 
-  std::unordered_map<TensorSlotName, IncomingTensorRole> incoming_tensor_roles =
+  std::unordered_map<TensorSlotName, IncomingTensorRole> incoming_slot_roles =
       get_incoming_tensor_roles(attrs);
 
-  ASSERT(incoming_tensors.size() == incoming_tensor_roles.size());
 
-  std::vector<parallel_tensor_guid_t> result = filtrans(
-      zip(incoming_tensors, incoming_tensor_roles),
-      [&](std::pair<parallel_tensor_guid_t, IncomingTensorRole> const &p)
-          -> std::optional<parallel_tensor_guid_t> {
-        parallel_tensor_guid_t tensor = p.first;
-        IncomingTensorRole role = p.second;
+  ASSERT(incoming_tensors.size() == incoming_slot_roles.size());
 
-        if (role == desired_role) {
-          return tensor;
-        } else {
-          return std::nullopt;
-        }
-      });
-  return result;
+  std::unordered_set<TensorSlotName> slots_with_desired_role = 
+    keys(filter_values(incoming_slot_roles, 
+                       [&](IncomingTensorRole role) {
+                         return role == desired_role;
+                       }));
+
+  return restrict_keys(incoming_tensors, slots_with_desired_role);
 }
 
 std::unordered_map<TensorSlotName, parallel_tensor_guid_t>
@@ -291,20 +293,20 @@ std::unordered_map<TensorSlotName, parallel_tensor_guid_t>
   return get_incoming_tensors_with_role(pcg, l, IncomingTensorRole::INPUT);
 }
 
-std::vector<parallel_tensor_guid_t>
+std::unordered_map<TensorSlotName, parallel_tensor_guid_t>
     get_incoming_weights(ParallelComputationGraph const &pcg,
                          parallel_layer_guid_t const &l) {
   return get_incoming_tensors_with_role(pcg, l, IncomingTensorRole::WEIGHT);
 }
 
-std::vector<ParallelTensorDimDegrees>
+std::unordered_map<TensorSlotName, ParallelTensorDimDegrees>
     get_incoming_input_degrees(ParallelComputationGraph const &pcg,
                                parallel_layer_guid_t const &l) {
 
-  return transform(get_incoming_inputs(pcg, l),
-                   [&](parallel_tensor_guid_t t) {
-                     return get_parallel_degrees(get_parallel_tensor_shape(pcg, t));
-                   });
+  return map_values(get_incoming_inputs(pcg, l),
+                    [&](parallel_tensor_guid_t t) {
+                      return get_parallel_degrees(get_parallel_tensor_shape(pcg, t));
+                    });
 }
 
 
@@ -376,11 +378,11 @@ parallel_layer_guid_t
 ParallelComputationGraph
     without_layer_names(ParallelComputationGraph const &pcg) {
   return ParallelComputationGraph{
-      LabelledDataflowGraph<ParallelLayerAttrs, ParallelTensorAttrs>::
+      LabelledKwargDataflowGraph<ParallelLayerAttrs, ParallelTensorAttrs, TensorSlotName>::
           create_copy_of<
-              UnorderedSetLabelledOpenDataflowGraph<ParallelLayerAttrs,
-                                                    ParallelTensorAttrs>>(
-              rewrite_node_labels(
+              UnorderedSetLabelledOpenKwargDataflowGraph<ParallelLayerAttrs,
+                                                    ParallelTensorAttrs, int, TensorSlotName>>(
+              rewrite_labelled_kwarg_dataflow_graph_node_labels(
                   pcg.raw_graph,
                   [](Node const &n, ParallelLayerAttrs const &old_attrs) {
                     ParallelLayerAttrs new_attrs = old_attrs;
@@ -392,9 +394,9 @@ ParallelComputationGraph
 
 bool pcgs_are_isomorphic(ParallelComputationGraph const &lhs,
                          ParallelComputationGraph const &rhs) {
-  return find_isomorphism(without_layer_names(lhs).raw_graph,
-                          without_layer_names(rhs).raw_graph)
-      .has_value();
+  return find_isomorphism_between_kwarg_dataflow_graphs(
+    without_layer_names(lhs).raw_graph,
+    without_layer_names(rhs).raw_graph).has_value();
 }
 
 std::string as_dot(ParallelComputationGraph const &cg) {
@@ -424,9 +426,10 @@ std::string as_dot(ParallelComputationGraph const &cg) {
     return oss.str();
   };
 
-  return as_dot(view_as_labelled_open_dataflow_graph(cg.raw_graph),
-                get_node_label,
-                get_input_label);
+  return labelled_open_kwarg_dataflow_graph_view_as_dot(
+    view_as_labelled_open_kwarg_dataflow_graph<ParallelLayerAttrs, ParallelTensorAttrs, int, TensorSlotName>(cg.raw_graph),
+    get_node_label,
+    get_input_label);
 }
 
 void debug_print_dot(ParallelComputationGraph const &cg) {

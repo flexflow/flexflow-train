@@ -10,8 +10,6 @@
 #include "utils/graph/instances/unordered_set_labelled_open_kwarg_dataflow_graph.h"
 #include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/rewrite_labelled_kwarg_dataflow_graph_node_labels.h"
 #include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/rewrite_labelled_kwarg_dataflow_graph_value_labels.h"
-#include "utils/graph/labelled_dataflow_graph/labelled_dataflow_graph.h"
-#include "utils/graph/labelled_dataflow_graph/labelled_dataflow_graph_view.h"
 #include "utils/graph/open_dataflow_graph/open_dataflow_value.dtg.h"
 
 namespace FlexFlow {
@@ -28,7 +26,9 @@ ParallelComputationGraph
   };
 
   LabelledKwargDataflowGraphView<ParallelLayerAttrs, ParallelTensorAttrs, TensorSlotName> graph_view 
-    = rewrite_value_labels(rewrite_node_labels(cg.raw_graph, layer_map), tensor_map);
+    = rewrite_labelled_kwarg_dataflow_graph_value_labels(
+        rewrite_labelled_kwarg_dataflow_graph_node_labels(cg.raw_graph, layer_map),
+        tensor_map);
   return ParallelComputationGraph{
       LabelledKwargDataflowGraph<ParallelLayerAttrs, ParallelTensorAttrs, TensorSlotName>::
           create_copy_of<

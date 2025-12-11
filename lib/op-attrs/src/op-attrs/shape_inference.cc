@@ -170,7 +170,7 @@ std::unordered_map<TensorSlotName, TensorShape>
         };
       },
       [&](InputAttrs const &attrs) -> std::unordered_map<TensorSlotName, TensorShape> {
-        TensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT);
+        ASSERT(input_shapes.size() == 0);
 
         return {
           {
@@ -240,7 +240,7 @@ std::unordered_map<TensorSlotName, TensorShape>
         };
       },
       [&](WeightAttrs const &attrs) -> std::unordered_map<TensorSlotName, TensorShape> {
-        TensorShape input = require_only_key(input_shapes, TensorSlotName::INPUT);
+        ASSERT(input_shapes.size() == 0);
 
         return {
           {
@@ -711,7 +711,7 @@ std::unordered_map<TensorSlotName, ParallelTensorShape>
         return {};
       },
       [&](WeightAttrs const &attrs) -> std::unordered_map<TensorSlotName, ParallelTensorShape> {
-        require_only_key(input_shapes, TensorSlotName::INPUT);
+        ASSERT(input_shapes.size() == 0);
 
         return {};
       },
