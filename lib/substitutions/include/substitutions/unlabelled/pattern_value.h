@@ -10,7 +10,7 @@ namespace FlexFlow {
 OpenKwargDataflowValue<int, TensorSlotName>
     raw_open_dataflow_value_from_pattern_value(PatternValue const &);
 PatternValue
-    pattern_value_from_raw_open_dataflow_value(OpenDataflowValue const &);
+    pattern_value_from_raw_open_kwarg_dataflow_value(OpenKwargDataflowValue<int, TensorSlotName> const &);
 
 } // namespace FlexFlow
 

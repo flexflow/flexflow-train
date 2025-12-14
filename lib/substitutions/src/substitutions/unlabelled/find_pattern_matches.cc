@@ -2,12 +2,14 @@
 #include "substitutions/unlabelled/match_additional_criterion.h"
 #include "substitutions/unlabelled/pattern_matching.h"
 #include "substitutions/unlabelled/pattern_split.h"
-#include "substitutions/unlabelled/unlabelled_dataflow_graph_pattern_match.h"
+#include "substitutions/unlabelled/unlabelled_kwarg_dataflow_graph_pattern_match.h"
 #include "substitutions/unlabelled/unlabelled_graph_pattern.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/transform.h"
+#include "utils/containers/values.h"
 #include "utils/containers/zip.h"
 #include "utils/graph/dataflow_graph/algorithms.h"
+#include "utils/graph/kwarg_dataflow_graph/algorithms/get_outgoing_kwarg_dataflow_outputs_for_node.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_inputs.h"
 #include "utils/overload.h"
@@ -16,7 +18,7 @@ namespace FlexFlow {
 
 static std::optional<UnlabelledDataflowGraphPatternMatch>
     get_candidate_singleton_match(UnlabelledGraphPattern const &pattern,
-                                  OpenDataflowGraphView const &graph,
+                                  OpenKwargDataflowGraphView<int, TensorSlotName> const &graph,
                                   Node const &graph_node) {
   assert(is_singleton_pattern(pattern));
 
@@ -27,9 +29,11 @@ static std::optional<UnlabelledDataflowGraphPatternMatch>
 
   std::vector<PatternValue> pattern_outputs =
       get_outputs_from_pattern_node(pattern, pattern_node);
-  std::vector<OpenDataflowValue> graph_outputs =
-      transform(get_outputs(graph, graph_node),
-                [](DataflowOutput const &o) { return OpenDataflowValue{o}; });
+  std::vector<OpenKwargDataflowValue<int, TensorSlotName>> graph_outputs =
+      transform(values(get_outgoing_kwarg_dataflow_outputs_for_node(graph, graph_node)),
+                [](KwargDataflowOutput<TensorSlotName> const &o) { 
+                  return OpenKwargDataflowValue<int, TensorSlotName>{o}; 
+                });
 
   if (pattern_outputs.size() != graph_outputs.size()) {
     return std::nullopt;
@@ -89,9 +93,11 @@ MatchAdditionalCriterion additional_criterion_for_subpattern(
 }
 
 std::vector<UnlabelledDataflowGraphPatternMatch>
-    find_pattern_matches(UnlabelledGraphPattern const &pattern,
-                         OpenDataflowGraphView const &graph,
-                         MatchAdditionalCriterion const &additional_criterion) {
+  find_unlabelled_pattern_matches(
+    UnlabelledGraphPattern const &pattern,
+    OpenKwargDataflowGraphView<int, TensorSlotName> const &graph,
+    MatchAdditionalCriterion const &additional_criterion) 
+{
   std::vector<UnlabelledDataflowGraphPatternMatch> matches;
   if (is_singleton_pattern(pattern)) {
     for (Node const &graph_node : get_nodes(graph)) {

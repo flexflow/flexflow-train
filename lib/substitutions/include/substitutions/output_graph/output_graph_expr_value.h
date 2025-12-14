@@ -6,9 +6,9 @@
 
 namespace FlexFlow {
 
-OpenKwargDataflowValue<int, TensorSlotName> raw_open_dataflow_value_from_output_graph_expr_value(
+OpenKwargDataflowValue<int, TensorSlotName> raw_open_kwarg_dataflow_value_from_output_graph_expr_value(
     OutputGraphExprValue const &);
-OutputGraphExprValue output_graph_expr_value_from_raw_open_dataflow_value(
+OutputGraphExprValue output_graph_expr_value_from_raw_open_kwarg_dataflow_value(
     OpenKwargDataflowValue<int, TensorSlotName> const &);
 
 } // namespace FlexFlow

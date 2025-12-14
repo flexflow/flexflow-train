@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "UnlabelledDataflowGraphPatternMatch"
+name = "UnlabelledKwargDataflowGraphPatternMatch"
 type = "struct"
 features = [
   "eq",
@@ -11,10 +11,11 @@ features = [
 includes = [
   "utils/bidict/bidict.h",
   "utils/graph/node/node.dtg.h",
-  "utils/graph/open_dataflow_graph/open_dataflow_value.dtg.h",
+  "utils/graph/open_kwarg_dataflow_graph/open_kwarg_dataflow_value.dtg.h",
   "substitutions/unlabelled/pattern_input.dtg.h",
   "substitutions/unlabelled/pattern_node.dtg.h",
   "<unordered_map>",
+  "op-attrs/tensor_slot_name.dtg.h",
 ]
 
 src_includes = [
@@ -28,4 +29,4 @@ type = "::FlexFlow::bidict<::FlexFlow::PatternNode, ::FlexFlow::Node>"
 
 [[fields]]
 name = "input_assignment"
-type = "std::unordered_map<::FlexFlow::PatternInput, ::FlexFlow::OpenDataflowValue>"
+type = "std::unordered_map<::FlexFlow::PatternInput, ::FlexFlow::OpenKwargDataflowValue<int, ::FlexFlow::TensorSlotName>>"

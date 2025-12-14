@@ -3,7 +3,7 @@
 
 namespace FlexFlow {
 
-OpenKwargDataflowValue<int, TensorSlotName> raw_open_dataflow_value_from_output_graph_expr_value(
+OpenKwargDataflowValue<int, TensorSlotName> raw_open_kwarg_dataflow_value_from_output_graph_expr_value(
     OutputGraphExprValue const &v) {
   return v.visit<OpenKwargDataflowValue<int, TensorSlotName>>(overload{
       [](OutputGraphExprNodeOutput const &o) {
@@ -15,7 +15,7 @@ OpenKwargDataflowValue<int, TensorSlotName> raw_open_dataflow_value_from_output_
   });
 }
 
-OutputGraphExprValue output_graph_expr_value_from_raw_open_dataflow_value(
+OutputGraphExprValue output_graph_expr_value_from_raw_open_kwarg_dataflow_value(
     OpenKwargDataflowValue<int, TensorSlotName> const &v) {
   return v.visit<OutputGraphExprValue>(overload{
       [](KwargDataflowOutput<TensorSlotName> const &o) {

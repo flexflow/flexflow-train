@@ -13,18 +13,18 @@ OpenKwargDataflowValue<int, TensorSlotName>
         return OpenKwargDataflowValue<int, TensorSlotName>{o.raw_dataflow_output};
       },
       [](PatternInput const &i) {
-        return OpenDataflowValue{i.raw_dataflow_graph_input};
+        return OpenKwargDataflowValue<int, TensorSlotName>{i.raw_dataflow_graph_input};
       },
   });
 }
 
 PatternValue
-    pattern_value_from_raw_open_dataflow_value(OpenDataflowValue const &v) {
+    pattern_value_from_raw_open_kwarg_dataflow_value(OpenKwargDataflowValue<int, TensorSlotName> const &v) {
   return v.visit<PatternValue>(overload{
-      [](DataflowOutput const &o) {
+      [](KwargDataflowOutput<TensorSlotName> const &o) {
         return PatternValue{PatternNodeOutput{o}};
       },
-      [](DataflowGraphInput const &i) { return PatternValue{PatternInput{i}}; },
+      [](KwargDataflowGraphInput<int> const &i) { return PatternValue{PatternInput{i}}; },
   });
 }
 

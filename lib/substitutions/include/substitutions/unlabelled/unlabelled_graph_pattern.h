@@ -20,12 +20,12 @@ std::vector<PatternNode>
 std::unordered_set<PatternInput>
     get_graph_inputs(UnlabelledGraphPattern const &);
 
-std::unordered_set<PatternEdge> get_edges(UnlabelledGraphPattern const &);
+std::unordered_set<PatternEdge> get_pattern_edges(UnlabelledGraphPattern const &);
 
-std::vector<PatternValue>
+std::unordered_map<TensorSlotName, PatternValue>
     get_inputs_to_pattern_node(UnlabelledGraphPattern const &,
                                PatternNode const &);
-std::vector<PatternValue>
+std::unordered_map<TensorSlotName, PatternValue>
     get_outputs_from_pattern_node(UnlabelledGraphPattern const &,
                                   PatternNode const &);
 

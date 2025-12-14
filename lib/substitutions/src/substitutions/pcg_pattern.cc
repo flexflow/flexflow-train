@@ -40,18 +40,20 @@ static MatchAdditionalCriterion
 std::vector<PCGPatternMatch>
     find_pattern_matches(PCGPattern const &pattern,
                          SubParallelComputationGraph const &pcg) {
-  std::vector<UnlabelledDataflowGraphPatternMatch> unlabelled_matches =
-      find_pattern_matches(get_unlabelled_pattern(pattern),
-                           pcg.raw_graph,
-                           pcg_pattern_criteria(pattern, pcg));
+  std::vector<UnlabelledKwargDataflowGraphPatternMatch> unlabelled_matches =
+      find_unlabelled_pattern_matches(
+        get_unlabelled_pattern(pattern),
+        pcg.raw_graph,
+        pcg_pattern_criteria(pattern, pcg));
   auto pcg_match_from_unlabelled_match =
-      [](UnlabelledDataflowGraphPatternMatch const &m) {
+      [](UnlabelledKwargDataflowGraphPatternMatch const &m) {
         return PCGPatternMatch{
             transform_values(
                 m.node_assignment,
                 [](Node const &n) { return parallel_layer_guid_t{n}; }),
             map_values(m.input_assignment,
-                       [](OpenKwargDataflowValue<int, TensorSlotName> const &i) {
+                       [](OpenKwargDataflowValue<int, TensorSlotName> const &i) 
+                       {
                          return open_parallel_tensor_guid_t{i};
                        }),
         };

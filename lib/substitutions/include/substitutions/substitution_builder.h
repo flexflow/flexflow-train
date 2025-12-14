@@ -17,31 +17,34 @@ public:
                 std::optional<std::string> const &name = std::nullopt);
   void equate_outputs(PatternValue const &, OutputGraphExprValue const &);
 
-  std::vector<PatternValue> add_pattern_node(
+  std::unordered_map<TensorSlotName, PatternValue> add_pattern_node(
       OperatorAttributePattern const &node_pattern,
-      std::vector<PatternValue> const &inputs,
-      std::vector<TensorAttributePattern> const &output_patterns,
+      std::unordered_map<TensorSlotName, PatternValue> const &inputs,
+      std::unordered_map<TensorSlotName, TensorAttributePattern> const &output_patterns,
       std::optional<std::string> const &name = std::nullopt);
 
-  std::vector<OutputGraphExprValue>
+  std::unordered_map<TensorSlotName, OutputGraphExprValue>
       add_output_graph_node(OutputOperatorAttrsAssignment const &node_expr,
-                            std::vector<OutputGraphExprValue> const &inputs,
-                            nonnegative_int num_outputs);
+                            std::unordered_map<TensorSlotName, OutputGraphExprValue> const &inputs,
+                            std::unordered_set<TensorSlotName> const &output_slots);
 
   PatternNode pattern_node_named(std::string const &) const;
   PatternInput pattern_input_named(std::string const &) const;
 
   Substitution get_substitution() const;
+private:
+  int get_fresh_graph_input_name();
 
 private:
-  LabelledOpenDataflowGraph<OperatorAttributePattern, TensorAttributePattern>
+  LabelledOpenKwargDataflowGraph<OperatorAttributePattern, TensorAttributePattern, int, TensorSlotName>
       pattern_g;
-  LabelledOpenDataflowGraph<OutputOperatorAttrsAssignment, std::monostate>
+  LabelledOpenKwargDataflowGraph<OutputOperatorAttrsAssignment, std::monostate, int, TensorSlotName>
       output_g;
   bidict<PatternInput, OutputGraphExprInput> input_mapping;
   bidict<PatternNode, std::string> pattern_node_names;
   bidict<PatternInput, std::string> pattern_input_names;
   bidict<PatternNodeOutput, OutputGraphExprNodeOutput> output_mapping;
+  int next_graph_input_id;
 };
 
 } // namespace FlexFlow

@@ -10,8 +10,9 @@ features = [
 
 includes = [
   "utils/graph/open_dataflow_graph/dataflow_input_edge.dtg.h",
+  "op-attrs/tensor_slot_name.dtg.h",
 ]
 
 [[fields]]
 name = "raw_edge"
-type = "::FlexFlow::DataflowInputEdge"
+type = "::FlexFlow::KwargDataflowInputEdge<int, ::FlexFlow::TensorSlotName>"
