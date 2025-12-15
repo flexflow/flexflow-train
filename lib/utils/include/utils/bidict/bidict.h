@@ -72,6 +72,20 @@ struct bidict {
     bwd_map.insert({lr.second, lr.first});
   }
 
+  void equate_strict(L const &l, R const &r) {
+    ASSERT(this->contains_l(l) == this->contains_r(r));
+
+    if (this->contains_l(l)) {
+      ASSERT(this->at_l(l) == r);
+    } else {
+      this->equate(l, r);
+    }
+  }
+
+  void equate_strict(std::pair<L, R> const &lr) {
+    this->equate_strict(lr.first, lr.second);
+  }
+
   bool operator==(bidict<L, R> const &other) const {
     bool result = this->fwd_map == other.fwd_map;
     assert(result == (this->bwd_map == other.bwd_map));

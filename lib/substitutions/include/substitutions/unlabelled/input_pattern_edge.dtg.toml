@@ -9,7 +9,7 @@ features = [
 ]
 
 includes = [
-  "utils/graph/open_dataflow_graph/dataflow_input_edge.dtg.h",
+  "utils/graph/open_kwarg_dataflow_graph/kwarg_dataflow_input_edge.dtg.h",
   "op-attrs/tensor_slot_name.dtg.h",
 ]
 

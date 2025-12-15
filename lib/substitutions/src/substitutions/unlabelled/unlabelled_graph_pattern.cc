@@ -7,8 +7,10 @@
 #include "utils/graph/kwarg_dataflow_graph/algorithms/get_outgoing_kwarg_dataflow_outputs_for_node.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_all_kwarg_dataflow_graph_inputs.h"
+#include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_all_open_kwarg_dataflow_edges.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_all_open_kwarg_dataflow_values.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_incoming_open_kwarg_dataflow_values_for_node.h"
+#include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_open_kwarg_dataflow_graph_subgraph.h"
 
 namespace FlexFlow {
 
@@ -37,7 +39,7 @@ std::unordered_set<PatternInput>
 }
 
 std::unordered_set<PatternEdge> get_edges(UnlabelledGraphPattern const &p) {
-  return transform(get_edges(p.raw_graph),
+  return transform(get_all_open_kwarg_dataflow_edges(p.raw_graph),
                    pattern_edge_from_raw_open_dataflow_edge);
 }
 
@@ -73,14 +75,14 @@ std::unordered_map<TensorSlotName, PatternValue>
 UnlabelledGraphPatternSubgraphResult
     get_subgraph(UnlabelledGraphPattern const &p,
                  std::unordered_set<PatternNode> const &n) {
-  OpenKwargDataflowSubgraphResult raw_result = get_subgraph(
+  OpenKwargDataflowSubgraphResult raw_result = get_open_kwarg_dataflow_graph_subgraph(
       p.raw_graph,
       transform(n, [](PatternNode const &pn) { return pn.raw_node; }));
   bidict<PatternValue, PatternInput> full_pattern_values_to_subpattern_inputs =
       transform(raw_result.full_graph_values_to_subgraph_inputs,
-                [](OpenDataflowValue const &v, DataflowGraphInput const &i) {
+                [](OpenKwargDataflowValue<int, TensorSlotName> const &v, KwargDataflowGraphInput<int> const &i) {
                   return std::make_pair(
-                      pattern_value_from_raw_open_dataflow_value(v),
+                      pattern_value_from_raw_open_kwarg_dataflow_value(v),
                       PatternInput{i});
                 });
   return UnlabelledGraphPatternSubgraphResult{

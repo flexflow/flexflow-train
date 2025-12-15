@@ -88,7 +88,7 @@ struct SubgraphConcreteFromPattern {
 
   OpenKwargDataflowValue<int, TensorSlotName> operator()(PatternValue const &pattern_v) const {
     return pattern_v.visit<OpenKwargDataflowValue<int, TensorSlotName>>(
-        [&](auto const &v) { return OpenKwargDataflowValue{this->operator()(v)}; });
+        [&](auto const &v) { return OpenKwargDataflowValue<int, TensorSlotName>{this->operator()(v)}; });
   }
 
   KwargDataflowOutput<TensorSlotName> operator()(PatternNodeOutput const &o) const {

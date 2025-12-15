@@ -1,6 +1,7 @@
 #include <doctest/doctest.h>
 #include "utils/containers/try_get_one_of.h"
 #include "utils/containers/contains.h"
+#include "test/utils/doctest/fmt/optional.h"
 
 using namespace ::FlexFlow;
 
