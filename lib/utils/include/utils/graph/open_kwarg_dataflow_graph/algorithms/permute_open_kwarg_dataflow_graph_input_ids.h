@@ -5,6 +5,7 @@
 #include "utils/overload.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_open_kwarg_dataflow_graph_data.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/view_from_open_kwarg_dataflow_graph_data.h"
+#include "utils/containers/transform.h"
 
 namespace FlexFlow {
 
@@ -14,6 +15,9 @@ OpenKwargDataflowGraphView<GraphInputName, SlotName>
     OpenKwargDataflowGraphView<GraphInputName, SlotName> const &g,
     bidict<KwargDataflowGraphInput<GraphInputName>, KwargDataflowGraphInput<GraphInputName>> const &new_input_to_old_input)
 {
+  std::unordered_set<KwargDataflowGraphInput<GraphInputName>> g_inputs = get_all_kwarg_dataflow_graph_inputs(g);
+  ASSERT(g_inputs == new_input_to_old_input.right_values());
+
   auto new_input_from_old = [&](KwargDataflowGraphInput<GraphInputName> const &i) 
     -> KwargDataflowGraphInput<GraphInputName> 
   {
@@ -50,7 +54,7 @@ OpenKwargDataflowGraphView<GraphInputName, SlotName>
     OpenKwargDataflowGraphData<GraphInputName, SlotName>{
     /*nodes=*/old_data.nodes,
     /*edges=*/transform(old_data.edges, new_edge_from_old),
-    /*inputs=*/old_data.inputs,
+    /*inputs=*/transform(old_data.inputs, new_input_from_old),
     /*outputs=*/old_data.outputs,
   };
 

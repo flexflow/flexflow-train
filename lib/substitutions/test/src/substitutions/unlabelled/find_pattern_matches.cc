@@ -2,14 +2,17 @@
 #include "substitutions/unlabelled/match_additional_criterion.h"
 #include "substitutions/unlabelled/pattern_matching.h"
 #include "utils/containers/get_only.h"
-#include "utils/graph/instances/unordered_set_dataflow_graph.h"
+#include "utils/containers/make_counter_func.h"
+#include "utils/containers/require_only_key.h"
+#include "utils/graph/instances/unordered_set_open_kwarg_dataflow_graph.h"
+#include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_all_open_kwarg_dataflow_values.h"
+#include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_incoming_open_kwarg_dataflow_edges_for_node.h"
+#include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_open_kwarg_dataflow_graph_subgraph.h"
+#include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_open_kwarg_dataflow_subgraph_inputs.h"
+#include "utils/graph/open_kwarg_dataflow_graph/open_kwarg_dataflow_graph.h"
 #include "utils/graph/node/algorithms.h"
-#include "utils/graph/open_dataflow_graph/algorithms/get_incoming_edges.h"
-#include "utils/graph/open_dataflow_graph/algorithms/get_open_dataflow_values.h"
-#include "utils/graph/open_dataflow_graph/algorithms/get_subgraph.h"
-#include "utils/graph/open_dataflow_graph/algorithms/get_subgraph_inputs.h"
-#include "utils/graph/open_dataflow_graph/open_dataflow_graph.h"
 #include <doctest/doctest.h>
+#include "test/utils/doctest/fmt/vector.h"
 
 using namespace FlexFlow;
 
@@ -72,114 +75,178 @@ namespace rc {
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("find_pattern_matches") {
-    OpenDataflowGraph pattern_graph =
-        OpenDataflowGraph::create<UnorderedSetDataflowGraph>();
+    OpenKwargDataflowGraph<int, TensorSlotName> pattern_graph =
+        OpenKwargDataflowGraph<int, TensorSlotName>::create<
+          UnorderedSetOpenKwargDataflowGraph<int, TensorSlotName>>();
 
-    NodeAddedResult pattern_n0_added = pattern_graph.add_node({}, 1_n);
+    KwargNodeAddedResult pattern_n0_added = pattern_graph.add_node(
+      /*inputs=*/{},
+      /*outputs=*/{
+        TensorSlotName::OUTPUT,
+      });
     Node pattern_n0 = pattern_n0_added.node;
-    OpenDataflowValue pattern_v0 =
-        OpenDataflowValue{get_only(pattern_n0_added.outputs)};
+    OpenKwargDataflowValue<int, TensorSlotName> pattern_v0 =
+        OpenKwargDataflowValue<int, TensorSlotName>{
+          require_only_key(pattern_n0_added.outputs, TensorSlotName::OUTPUT),
+        };
 
-    NodeAddedResult pattern_n1_added =
-        pattern_graph.add_node({pattern_v0}, 1_n);
+    KwargNodeAddedResult pattern_n1_added =
+        pattern_graph.add_node(
+          /*inputs=*/{
+            {
+              TensorSlotName::INPUT,
+              pattern_v0,
+            },
+          },
+          /*outputs=*/{
+            TensorSlotName::OUTPUT
+          });
     Node pattern_n1 = pattern_n1_added.node;
-    OpenDataflowValue pattern_v1 =
-        OpenDataflowValue{get_only(pattern_n1_added.outputs)};
+    OpenKwargDataflowValue<int, TensorSlotName> pattern_v1 =
+        OpenKwargDataflowValue<int, TensorSlotName>{
+          require_only_key(pattern_n1_added.outputs, TensorSlotName::OUTPUT),
+        };
 
     UnlabelledGraphPattern pattern = UnlabelledGraphPattern{pattern_graph};
     PatternNode p0 = PatternNode{pattern_n0};
     PatternNode p1 = PatternNode{pattern_n1};
 
-    OpenDataflowGraph graph =
-        OpenDataflowGraph::create<UnorderedSetDataflowGraph>();
+    OpenKwargDataflowGraph<int, TensorSlotName> graph =
+        OpenKwargDataflowGraph<int, TensorSlotName>::create<
+          UnorderedSetOpenKwargDataflowGraph<int, TensorSlotName>>();
 
-    NodeAddedResult n0_added = graph.add_node({}, 1_n);
+    KwargNodeAddedResult n0_added = graph.add_node(
+      /*inputs=*/{}, 
+      /*outputs=*/{
+        TensorSlotName::OUTPUT,
+      });
     Node n0 = n0_added.node;
-    OpenDataflowValue v0 = OpenDataflowValue{get_only(n0_added.outputs)};
+    OpenKwargDataflowValue<int, TensorSlotName> v0 = OpenKwargDataflowValue<int, TensorSlotName>{
+      require_only_key(n0_added.outputs, TensorSlotName::OUTPUT),
+    };
 
-    NodeAddedResult n1_added = graph.add_node({v0}, 1_n);
+    KwargNodeAddedResult n1_added = graph.add_node(
+      /*inputs=*/{
+        {
+          TensorSlotName::INPUT,
+          v0,
+        },
+      },
+      /*outputs=*/{
+        TensorSlotName::OUTPUT,
+      });
     Node n1 = n1_added.node;
-    OpenDataflowValue v1 = OpenDataflowValue{get_only(n1_added.outputs)};
+    OpenKwargDataflowValue<int, TensorSlotName> v1 = OpenKwargDataflowValue<int, TensorSlotName>{
+      require_only_key(n1_added.outputs, TensorSlotName::OUTPUT),
+    };
 
-    NodeAddedResult n2_added = graph.add_node({v1}, 1_n);
+    KwargNodeAddedResult n2_added = graph.add_node(
+      /*inputs=*/{
+        {
+          TensorSlotName::INPUT,
+          v1,
+        },
+      }, 
+      /*outputs=*/{
+    	  TensorSlotName::OUTPUT,
+      });
     Node n2 = n2_added.node;
-    OpenDataflowValue v2 = OpenDataflowValue{get_only(n2_added.outputs)};
+    OpenKwargDataflowValue<int, TensorSlotName> v2 = OpenKwargDataflowValue<int, TensorSlotName>{
+      require_only_key(n2_added.outputs, TensorSlotName::OUTPUT),
+    };
 
-    NodeAddedResult n3_added = graph.add_node({v2}, 1_n);
+    KwargNodeAddedResult n3_added = graph.add_node(
+      /*inputs=*/{
+        {
+          TensorSlotName::INPUT,
+          v2,
+        },
+      }, 
+      /*outputs=*/{
+        TensorSlotName::OUTPUT,
+      });
     Node n3 = n3_added.node;
-    OpenDataflowValue v3 = OpenDataflowValue{get_only(n3_added.outputs)};
+    OpenKwargDataflowValue<int, TensorSlotName> v3 = OpenKwargDataflowValue<int, TensorSlotName>{
+      require_only_key(n3_added.outputs, TensorSlotName::OUTPUT),
+    };
 
-    UnlabelledDataflowGraphPatternMatch match =
-        UnlabelledDataflowGraphPatternMatch{
+    UnlabelledKwargDataflowGraphPatternMatch match =
+        UnlabelledKwargDataflowGraphPatternMatch{
             bidict<PatternNode, Node>{
                 {p0, n0},
                 {p1, n1},
             },
-            bidict<PatternInput, OpenDataflowValue>{}};
+            bidict<PatternInput, OpenKwargDataflowValue<int, TensorSlotName>>{}};
 
-    UnlabelledDataflowGraphPatternMatch invalid_match =
-        UnlabelledDataflowGraphPatternMatch{
+    UnlabelledKwargDataflowGraphPatternMatch invalid_match =
+        UnlabelledKwargDataflowGraphPatternMatch{
             bidict<PatternNode, Node>{
                 {p0, n1},
                 {p1, n2},
             },
-            bidict<PatternInput, OpenDataflowValue>{}};
+            bidict<PatternInput, OpenKwargDataflowValue<int, TensorSlotName>>{}};
 
-    std::vector<OpenDataflowEdge> n1_incoming = {OpenDataflowEdge{
-        DataflowEdge{
-            DataflowOutput{n0, 0_n},
-            DataflowInput{n1, 0_n},
+    std::unordered_map<TensorSlotName, OpenKwargDataflowEdge<int, TensorSlotName>> n1_incoming = {
+      {
+        TensorSlotName::INPUT,
+        OpenKwargDataflowEdge<int, TensorSlotName>{
+          KwargDataflowEdge<TensorSlotName>{
+            KwargDataflowOutput{n0, TensorSlotName::OUTPUT},
+            KwargDataflowInput{n1, TensorSlotName::INPUT},
+          },
         },
-    }};
+      },
+    };
 
     SUBCASE("get_incoming_edges") {
       SUBCASE("n0") {
-        std::vector<OpenDataflowEdge> result = get_incoming_edges(graph, n0);
-        std::vector<OpenDataflowEdge> correct = {};
+        std::unordered_map<TensorSlotName, OpenKwargDataflowEdge<int, TensorSlotName>> result 
+          = get_incoming_open_kwarg_dataflow_edges_for_node(graph, n0);
+        std::unordered_map<TensorSlotName, OpenKwargDataflowEdge<int, TensorSlotName>> correct = {};
         CHECK(result == correct);
       }
+
       SUBCASE("n1") {
-        std::vector<OpenDataflowEdge> result = get_incoming_edges(graph, n1);
-        std::vector<OpenDataflowEdge> correct = n1_incoming;
-        CHECK(result == correct);
-      }
-      SUBCASE("both") {
-        std::unordered_map<Node, std::vector<OpenDataflowEdge>> result =
-            get_incoming_edges(graph, {n0, n1});
-        std::unordered_map<Node, std::vector<OpenDataflowEdge>> correct = {
-            {n0, {}}, {n1, n1_incoming}};
+        std::unordered_map<TensorSlotName, OpenKwargDataflowEdge<int, TensorSlotName>> result 
+          = get_incoming_open_kwarg_dataflow_edges_for_node(graph, n1);
+        std::unordered_map<TensorSlotName, OpenKwargDataflowEdge<int, TensorSlotName>> correct = n1_incoming;
         CHECK(result == correct);
       }
     }
 
-    SUBCASE("get_subgraph_inputs") {
-      std::unordered_set<OpenDataflowValue> result =
-          get_subgraph_inputs(graph, {n0, n1});
-      std::unordered_set<OpenDataflowValue> correct = {};
+    SUBCASE("get_open_kwarg_dataflow_subgraph_inputs") {
+      std::unordered_set<OpenKwargDataflowValue<int, TensorSlotName>> result =
+          get_open_kwarg_dataflow_subgraph_inputs(graph, {n0, n1});
+      std::unordered_set<OpenKwargDataflowValue<int, TensorSlotName>> correct = {};
       CHECK(result == correct);
     }
 
-    SUBCASE("get_subgraph") {
-      OpenDataflowGraphView g = get_subgraph(graph, {n0, n1}).graph;
+    SUBCASE("get_open_kwarg_dataflow_graph_subgraph") {
+      int graph_input_ctr = 0;
+      OpenKwargDataflowGraphView<int, TensorSlotName> g 
+        = get_open_kwarg_dataflow_graph_subgraph(graph, {n0, n1}, make_counter_func()).graph;
+
       SUBCASE("nodes") {
         std::unordered_set<Node> result = get_nodes(g);
         std::unordered_set<Node> correct = {n0, n1};
         CHECK(result == correct);
       }
+
       SUBCASE("inputs") {
-        std::unordered_set<DataflowGraphInput> result = g.get_inputs();
-        std::unordered_set<DataflowGraphInput> correct = {};
+        std::unordered_set<KwargDataflowGraphInput<int>> result = g.get_inputs();
+        std::unordered_set<KwargDataflowGraphInput<int>> correct = {};
         CHECK(result == correct);
       }
-      SUBCASE("get_open_dataflow_values") {
-        std::unordered_set<OpenDataflowValue> values =
-            get_open_dataflow_values(g);
+
+      SUBCASE("get_all_open_kwarg_dataflow_values") {
+        std::unordered_set<OpenKwargDataflowValue<int, TensorSlotName>> values =
+            get_all_open_kwarg_dataflow_values(g);
         CHECK(values.size() == 2);
       }
     }
 
     SUBCASE("subgraph_matched") {
-      OpenDataflowGraphView result = subgraph_matched(graph, match).graph;
+      OpenKwargDataflowGraphView<int, TensorSlotName> result = subgraph_matched(graph, match).graph;
       std::unordered_set<Node> result_nodes = get_nodes(result);
       std::unordered_set<Node> correct_nodes = {n0, n1};
       CHECK(result_nodes == correct_nodes);
@@ -196,24 +263,36 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("unlabelled_pattern_does_match (open)") {
-      OpenDataflowGraph g =
-          OpenDataflowGraph::create<UnorderedSetDataflowGraph>();
-      DataflowGraphInput i0 = g.add_input();
+      OpenKwargDataflowGraph<int, TensorSlotName> g =
+          OpenKwargDataflowGraph<int, TensorSlotName>::create<
+            UnorderedSetOpenKwargDataflowGraph<int, TensorSlotName>>();
+      KwargDataflowGraphInput<int> i0 = g.add_input(0);
 
-      NodeAddedResult g_n0_added = g.add_node({OpenDataflowValue{i0}}, 1_n);
+      KwargNodeAddedResult g_n0_added = g.add_node(
+        /*inputs=*/{
+          {
+            TensorSlotName::INPUT,
+            OpenKwargDataflowValue<int, TensorSlotName>{i0},
+          },
+        }, 
+        /*outputs=*/{
+          TensorSlotName::OUTPUT,
+        });
       Node g_n0 = g_n0_added.node;
-      OpenDataflowValue g_v0 = OpenDataflowValue{get_only(g_n0_added.outputs)};
+      OpenKwargDataflowValue<int, TensorSlotName> g_v0 = OpenKwargDataflowValue<int, TensorSlotName>{
+        require_only_key(g_n0_added.outputs, TensorSlotName::OUTPUT),
+      };
       PatternNode g_p0 = PatternNode{g_n0};
       PatternInput g_pi0 = PatternInput{i0};
 
       UnlabelledGraphPattern open_pattern = UnlabelledGraphPattern{g};
 
-      UnlabelledDataflowGraphPatternMatch open_match =
-          UnlabelledDataflowGraphPatternMatch{
+      UnlabelledKwargDataflowGraphPatternMatch open_match =
+          UnlabelledKwargDataflowGraphPatternMatch{
               bidict<PatternNode, Node>{
                   {g_p0, n1},
               },
-              bidict<PatternInput, OpenDataflowValue>{
+              bidict<PatternInput, OpenKwargDataflowValue<int, TensorSlotName>>{
                   {g_pi0, v0},
               }};
       CHECK(unlabelled_pattern_does_match(
@@ -224,10 +303,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("find_pattern_matches") {
-      std::vector<UnlabelledDataflowGraphPatternMatch> matches =
-          find_pattern_matches(
+      std::vector<UnlabelledKwargDataflowGraphPatternMatch> matches =
+          find_unlabelled_pattern_matches(
               pattern, graph, match_additional_crition_always_true());
-      std::vector<UnlabelledDataflowGraphPatternMatch> correct = {match};
+      std::vector<UnlabelledKwargDataflowGraphPatternMatch> correct = {match};
 
       CHECK(matches == correct);
     }

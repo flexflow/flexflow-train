@@ -9,6 +9,7 @@
 #include "utils/bidict/algorithms/right_entries.h"
 #include "utils/containers/is_subseteq_of.h"
 #include "utils/containers/keys.h"
+#include "utils/containers/make_counter_func.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/values.h"
 #include "utils/graph/dataflow_graph/algorithms.h"
@@ -26,7 +27,10 @@ OpenKwargDataflowSubgraphResult<int, TensorSlotName>
     subgraph_matched(OpenKwargDataflowGraphView<int, TensorSlotName> const &g,
                      UnlabelledKwargDataflowGraphPatternMatch const &match) {
   std::unordered_set<Node> matched_nodes = right_entries(match.node_assignment);
-  return get_open_kwarg_dataflow_graph_subgraph(g, matched_nodes);
+  return get_open_kwarg_dataflow_graph_subgraph(
+    g, 
+    matched_nodes,
+    make_counter_func());
 }
 
 struct SubgraphConcreteFromPattern {
@@ -111,13 +115,13 @@ bool pattern_matches_subgraph_under(
 
   std::unordered_set<Node> concrete_nodes = get_nodes(subgraph);
   std::unordered_set<Node> concrete_nodes_from_match =
-      transform(get_nodes(pattern), concrete_from_pattern);
+      transform(get_pattern_nodes(pattern), concrete_from_pattern);
 
   if (concrete_nodes != concrete_nodes_from_match) {
     return false;
   }
 
-  for (PatternNode const &pattern_node : get_nodes(pattern)) {
+  for (PatternNode const &pattern_node : get_pattern_nodes(pattern)) {
     if (!additional_criterion.node_criterion(
             pattern_node, concrete_from_pattern(pattern_node))) {
       return false;
@@ -141,7 +145,7 @@ bool pattern_matches_subgraph_under(
   std::unordered_set<OpenKwargDataflowValue<int, TensorSlotName>> concrete_values =
       get_all_open_kwarg_dataflow_values(subgraph);
   std::unordered_set<OpenKwargDataflowValue<int, TensorSlotName>> concrete_values_from_match =
-      transform(get_values(pattern), 
+      transform(get_pattern_values(pattern), 
                 [&](PatternValue const &v) 
                   -> OpenKwargDataflowValue<int, TensorSlotName>
                 {
@@ -152,7 +156,7 @@ bool pattern_matches_subgraph_under(
     return false;
   }
 
-  for (PatternValue const &pattern_value : get_values(pattern)) {
+  for (PatternValue const &pattern_value : get_pattern_values(pattern)) {
     if (!additional_criterion.value_criterion(
             pattern_value, concrete_from_pattern(pattern_value))) {
       return false;
@@ -171,10 +175,10 @@ bool unlabelled_pattern_does_match(
   std::unordered_set<OpenKwargDataflowValue<int, TensorSlotName>> matched_by_pattern_inputs =
       unordered_set_of(values(match.input_assignment));
 
-  ASSERT(left_entries(match.node_assignment) == get_nodes(pattern));
+  ASSERT(left_entries(match.node_assignment) == get_pattern_nodes(pattern));
   ASSERT(
       is_subseteq_of(right_entries(match.node_assignment), get_nodes(graph)));
-  ASSERT(keys(match.input_assignment) == get_graph_inputs(pattern));
+  ASSERT(keys(match.input_assignment) == get_pattern_inputs(pattern));
   ASSERT(is_subseteq_of(matched_by_pattern_inputs,
                         get_all_open_kwarg_dataflow_values(graph)));
 

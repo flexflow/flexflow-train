@@ -7,6 +7,7 @@
 #include "utils/containers/filtrans.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/view_from_open_kwarg_dataflow_graph_data.h"
 #include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/open_kwarg_dataflow_graph_view_with_labelling.h"
+#include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/labelled_open_kwarg_dataflow_graph_data.h"
 
 namespace FlexFlow {
 
@@ -18,16 +19,8 @@ LabelledOpenKwargDataflowGraphView<NodeLabel, ValueLabel, GraphInputName, SlotNa
   view_from_labelled_open_kwarg_dataflow_graph_data(
     LabelledOpenKwargDataflowGraphData<NodeLabel, ValueLabel, GraphInputName, SlotName> const &data)
 {
-  OpenKwargDataflowGraphData<GraphInputName, SlotName> unlabelled_data 
-    = OpenKwargDataflowGraphData<GraphInputName, SlotName>{
-      /*nodes=*/keys(data.node_data),
-      /*edges=*/data.edges,
-      /*inputs=*/data.inputs,
-      /*outputs=*/filtrans(keys(data.value_data),
-                           [](OpenKwargDataflowValue<GraphInputName, SlotName> const &v) {
-                             return v.try_require_internal();
-                           }),
-    };
+  OpenKwargDataflowGraphData<GraphInputName, SlotName> unlabelled_data =
+    labelled_open_kwarg_dataflow_graph_data_without_labels(data);
 
   return open_kwarg_dataflow_graph_view_with_labelling(
     view_from_open_kwarg_dataflow_graph_data(unlabelled_data),

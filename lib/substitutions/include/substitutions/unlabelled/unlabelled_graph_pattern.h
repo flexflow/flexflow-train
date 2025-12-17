@@ -12,13 +12,13 @@ namespace FlexFlow {
 
 size_t num_nodes(UnlabelledGraphPattern const &);
 bool is_singleton_pattern(UnlabelledGraphPattern const &);
-std::unordered_set<PatternNode> get_nodes(UnlabelledGraphPattern const &);
-std::unordered_set<PatternValue> get_values(UnlabelledGraphPattern const &);
+std::unordered_set<PatternNode> get_pattern_nodes(UnlabelledGraphPattern const &);
+std::unordered_set<PatternValue> get_pattern_values(UnlabelledGraphPattern const &);
 std::vector<PatternNode>
     get_topological_ordering(UnlabelledGraphPattern const &);
 
 std::unordered_set<PatternInput>
-    get_graph_inputs(UnlabelledGraphPattern const &);
+    get_pattern_inputs(UnlabelledGraphPattern const &);
 
 std::unordered_set<PatternEdge> get_pattern_edges(UnlabelledGraphPattern const &);
 
@@ -30,8 +30,8 @@ std::unordered_map<TensorSlotName, PatternValue>
                                   PatternNode const &);
 
 UnlabelledGraphPatternSubgraphResult
-    get_subgraph(UnlabelledGraphPattern const &,
-                 std::unordered_set<PatternNode> const &);
+    get_pattern_subgraph(UnlabelledGraphPattern const &,
+                         std::unordered_set<PatternNode> const &);
 
 } // namespace FlexFlow
 

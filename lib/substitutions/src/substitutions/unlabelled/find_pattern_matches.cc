@@ -29,7 +29,7 @@ static std::optional<UnlabelledKwargDataflowGraphPatternMatch>
                                   Node const &graph_node) {
   ASSERT(is_singleton_pattern(pattern));
 
-  PatternNode pattern_node = get_only(get_nodes(pattern));
+  PatternNode pattern_node = get_only(get_pattern_nodes(pattern));
 
   UnlabelledKwargDataflowGraphPatternMatch match = empty_unlabelled_pattern_match();
   match.node_assignment.equate(pattern_node, graph_node);
@@ -49,7 +49,7 @@ static std::optional<UnlabelledKwargDataflowGraphPatternMatch>
   std::unordered_map<TensorSlotName, PatternValue> pattern_node_inputs =
       get_inputs_to_pattern_node(pattern, pattern_node);
   std::unordered_set<PatternInput> pattern_graph_inputs =
-      get_graph_inputs(pattern);
+      get_pattern_inputs(pattern);
 
   ASSERT(unordered_set_of(values(pattern_node_inputs)) ==
          transform(pattern_graph_inputs,

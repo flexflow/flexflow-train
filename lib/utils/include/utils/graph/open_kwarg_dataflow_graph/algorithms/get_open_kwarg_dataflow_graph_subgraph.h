@@ -10,6 +10,7 @@
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_open_kwarg_dataflow_subgraph_incoming_edges.h"
 #include "utils/containers/values.h"
 #include "utils/containers/set_union.h"
+#include "utils/graph/open_kwarg_dataflow_graph/algorithms/view_from_open_kwarg_dataflow_graph_data.h"
 
 namespace FlexFlow {
 
@@ -17,8 +18,18 @@ template <typename GraphInputName, typename SlotName>
 OpenKwargDataflowSubgraphResult<GraphInputName, SlotName> 
   get_open_kwarg_dataflow_graph_subgraph(
     OpenKwargDataflowGraphView<GraphInputName, SlotName> const &g, 
-    std::unordered_set<Node> const &subgraph_nodes) {
-  NOT_IMPLEMENTED();
+    std::unordered_set<Node> const &subgraph_nodes,
+    std::function<GraphInputName()> const &input_source) {
+  bidict<OpenKwargDataflowValue<GraphInputName, SlotName>, KwargDataflowGraphInput<GraphInputName>>
+      full_graph_values_to_subgraph_inputs =
+          get_full_kwarg_dataflow_graph_values_to_subgraph_inputs(g, subgraph_nodes, input_source);
+
+  return OpenKwargDataflowSubgraphResult{
+      view_from_open_kwarg_dataflow_graph_data(
+          get_open_kwarg_dataflow_subgraph_data(
+              g, subgraph_nodes, full_graph_values_to_subgraph_inputs)),
+      full_graph_values_to_subgraph_inputs,
+  };
 }
 
 template <typename GraphInputName, typename SlotName>

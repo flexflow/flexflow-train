@@ -24,7 +24,7 @@ template <typename NodeLabel,
           typename ValueLabel,
           typename GraphInputName,
           typename SlotName>
-struct UnorderedSetLabelledOpenKwargDataflowGraph 
+struct UnorderedSetLabelledOpenKwargDataflowGraph final
   : public ILabelledOpenKwargDataflowGraph<NodeLabel, ValueLabel, GraphInputName, SlotName>
   , public ILabelledKwargDataflowGraph<NodeLabel, ValueLabel, SlotName>
 {

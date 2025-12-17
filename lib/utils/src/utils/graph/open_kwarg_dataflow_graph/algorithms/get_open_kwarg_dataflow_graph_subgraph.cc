@@ -10,7 +10,8 @@ template
   OpenKwargDataflowSubgraphResult<GraphInputName, SlotName> 
     get_open_kwarg_dataflow_graph_subgraph(
       OpenKwargDataflowGraphView<GraphInputName, SlotName> const &, 
-      std::unordered_set<Node> const &);
+      std::unordered_set<Node> const &,
+      std::function<GraphInputName()> const &);
 
 template
   bidict<OpenKwargDataflowValue<GraphInputName, SlotName>, KwargDataflowGraphInput<GraphInputName>>

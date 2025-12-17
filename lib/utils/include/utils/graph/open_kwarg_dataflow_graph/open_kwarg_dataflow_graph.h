@@ -5,7 +5,6 @@
 #include "utils/graph/open_kwarg_dataflow_graph/i_open_kwarg_dataflow_graph.h"
 #include "utils/graph/open_kwarg_dataflow_graph/open_kwarg_dataflow_graph_view.h"
 #include "utils/graph/open_kwarg_dataflow_graph/open_kwarg_dataflow_value.dtg.h"
-#include "utils/slot_num_values.dtg.h"
 
 namespace FlexFlow {
 
@@ -14,7 +13,7 @@ struct OpenKwargDataflowGraph : virtual public OpenKwargDataflowGraphView<GraphI
 public:
   KwargNodeAddedResult<SlotName> add_node(
       std::unordered_map<SlotName, OpenKwargDataflowValue<GraphInputName, SlotName>> const &inputs,
-      std::unordered_set<SlotName, SlotNumValues> const &outputs) {
+      std::unordered_set<SlotName> const &outputs) {
     return this->get_interface().add_node(inputs, outputs);
   }
 

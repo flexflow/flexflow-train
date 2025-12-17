@@ -2,30 +2,36 @@
 #include "substitutions/unlabelled/pattern_value.h"
 #include "substitutions/unlabelled/unlabelled_graph_pattern.h"
 #include "utils/containers/get_only.h"
-#include "utils/graph/instances/unordered_set_dataflow_graph.h"
-#include "utils/graph/open_dataflow_graph/open_dataflow_graph.h"
+#include "utils/containers/require_only_key.h"
+#include "utils/graph/instances/unordered_set_open_kwarg_dataflow_graph.h"
+#include "utils/graph/open_kwarg_dataflow_graph/open_kwarg_dataflow_graph.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("pattern_split (sequential)") {
-    OpenDataflowGraph g =
-        OpenDataflowGraph::create<UnorderedSetDataflowGraph>();
+    OpenKwargDataflowGraph<int, TensorSlotName> g =
+        OpenKwargDataflowGraph<int, TensorSlotName>::create<
+          UnorderedSetOpenKwargDataflowGraph<int, TensorSlotName>>();
 
-    NodeAddedResult n0_added = g.add_node({}, 1_n);
+    KwargNodeAddedResult n0_added = g.add_node({}, {TensorSlotName::OUTPUT});
     Node n0 = n0_added.node;
-    OpenDataflowValue v0 = OpenDataflowValue{get_only(n0_added.outputs)};
+    OpenKwargDataflowValue v0 = OpenKwargDataflowValue<int, TensorSlotName>{
+      require_only_key(n0_added.outputs, TensorSlotName::OUTPUT),
+    };
 
-    NodeAddedResult n1_added = g.add_node({v0}, 1_n);
+    KwargNodeAddedResult n1_added = g.add_node({{TensorSlotName::INPUT, v0}}, {TensorSlotName::OUTPUT});
     Node n1 = n1_added.node;
-    OpenDataflowValue v1 = OpenDataflowValue{get_only(n1_added.outputs)};
+    OpenKwargDataflowValue v1 = OpenKwargDataflowValue<int, TensorSlotName>{
+      require_only_key(n1_added.outputs, TensorSlotName::OUTPUT),
+    };
 
     UnlabelledGraphPattern pattern = UnlabelledGraphPattern{g};
     PatternNode p0 = PatternNode{n0};
     PatternNode p1 = PatternNode{n1};
-    PatternValue pv0 = pattern_value_from_raw_open_dataflow_value(v0);
-    PatternValue pv1 = pattern_value_from_raw_open_dataflow_value(v1);
+    PatternValue pv0 = pattern_value_from_raw_open_kwarg_dataflow_value(v0);
+    PatternValue pv1 = pattern_value_from_raw_open_kwarg_dataflow_value(v1);
 
     PatternSplit even_split = PatternSplit{
         std::unordered_set<PatternNode>{p0},
@@ -42,13 +48,13 @@ TEST_SUITE(FF_TEST_SUITE) {
       PatternSplitResult split_result = apply_split(pattern, even_split);
       SUBCASE("subpattern_1") {
         std::unordered_set<PatternNode> result =
-            get_nodes(split_result.subpattern_1);
+            get_pattern_nodes(split_result.subpattern_1);
         std::unordered_set<PatternNode> correct = even_split.first;
         CHECK(result == correct);
       }
       SUBCASE("subpattern_2") {
         std::unordered_set<PatternNode> result =
-            get_nodes(split_result.subpattern_2);
+            get_pattern_nodes(split_result.subpattern_2);
         std::unordered_set<PatternNode> correct = even_split.second;
         CHECK(result == correct);
       }
@@ -61,7 +67,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       SUBCASE("full_pattern_values_to_subpattern_2_inputs") {
         bidict<PatternValue, PatternInput> result =
             split_result.full_pattern_values_to_subpattern_2_inputs;
-        PatternInput i0 = get_only(get_graph_inputs(split_result.subpattern_2));
+        PatternInput i0 = get_only(get_pattern_inputs(split_result.subpattern_2));
         bidict<PatternValue, PatternInput> correct = {
             {pv0, i0},
         };
@@ -71,27 +77,36 @@ TEST_SUITE(FF_TEST_SUITE) {
   }
 
   TEST_CASE("pattern split (parallel)") {
-    OpenDataflowGraph g =
-        OpenDataflowGraph::create<UnorderedSetDataflowGraph>();
+    OpenKwargDataflowGraph<int, TensorSlotName> g =
+        OpenKwargDataflowGraph<int, TensorSlotName>::create<
+          UnorderedSetOpenKwargDataflowGraph<int, TensorSlotName>>();
 
-    DataflowGraphInput i0 = g.add_input();
-    DataflowGraphInput i1 = g.add_input();
+    KwargDataflowGraphInput<int> i0 = g.add_input(0);
+    KwargDataflowGraphInput<int> i1 = g.add_input(1);
 
-    NodeAddedResult n0_added = g.add_node({OpenDataflowValue{i0}}, 1_n);
+    KwargNodeAddedResult n0_added = g.add_node(
+      {{TensorSlotName::INPUT, OpenKwargDataflowValue<int, TensorSlotName>{i0}}}, 
+      {TensorSlotName::OUTPUT});
     Node n0 = n0_added.node;
-    OpenDataflowValue v0 = OpenDataflowValue{get_only(n0_added.outputs)};
+    OpenKwargDataflowValue v0 = OpenKwargDataflowValue<int, TensorSlotName>{
+      require_only_key(n0_added.outputs, TensorSlotName::OUTPUT),
+    };
 
-    NodeAddedResult n1_added = g.add_node({OpenDataflowValue{i1}}, 1_n);
+    KwargNodeAddedResult n1_added = g.add_node(
+      {{TensorSlotName::INPUT, OpenKwargDataflowValue<int, TensorSlotName>{i1}}}, 
+      {TensorSlotName::OUTPUT});
     Node n1 = n1_added.node;
-    OpenDataflowValue v1 = OpenDataflowValue{get_only(n1_added.outputs)};
+    OpenKwargDataflowValue v1 = OpenKwargDataflowValue<int, TensorSlotName>{
+      require_only_key(n1_added.outputs, TensorSlotName::OUTPUT),
+    };
 
     UnlabelledGraphPattern pattern = UnlabelledGraphPattern{g};
     PatternInput pi0 = PatternInput{i0};
     PatternInput pi1 = PatternInput{i1};
     PatternNode p0 = PatternNode{n0};
     PatternNode p1 = PatternNode{n1};
-    PatternValue pv0 = pattern_value_from_raw_open_dataflow_value(v0);
-    PatternValue pv1 = pattern_value_from_raw_open_dataflow_value(v1);
+    PatternValue pv0 = pattern_value_from_raw_open_kwarg_dataflow_value(v0);
+    PatternValue pv1 = pattern_value_from_raw_open_kwarg_dataflow_value(v1);
 
     PatternSplit even_split = PatternSplit{
         std::unordered_set<PatternNode>{p0},
@@ -102,13 +117,13 @@ TEST_SUITE(FF_TEST_SUITE) {
       PatternSplitResult split_result = apply_split(pattern, even_split);
       SUBCASE("subpattern_1") {
         std::unordered_set<PatternNode> result =
-            get_nodes(split_result.subpattern_1);
+            get_pattern_nodes(split_result.subpattern_1);
         std::unordered_set<PatternNode> correct = even_split.first;
         CHECK(result == correct);
       }
       SUBCASE("subpattern_2") {
         std::unordered_set<PatternNode> result =
-            get_nodes(split_result.subpattern_2);
+            get_pattern_nodes(split_result.subpattern_2);
         std::unordered_set<PatternNode> correct = even_split.second;
         CHECK(result == correct);
       }
@@ -117,7 +132,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             split_result.full_pattern_values_to_subpattern_1_inputs;
         bidict<PatternValue, PatternInput> correct = {
             {PatternValue{pi0},
-             get_only(get_graph_inputs(split_result.subpattern_1))},
+             get_only(get_pattern_inputs(split_result.subpattern_1))},
         };
         CHECK(result == correct);
       }
@@ -126,7 +141,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             split_result.full_pattern_values_to_subpattern_2_inputs;
         bidict<PatternValue, PatternInput> correct = {
             {PatternValue{pi1},
-             get_only(get_graph_inputs(split_result.subpattern_2))},
+             get_only(get_pattern_inputs(split_result.subpattern_2))},
         };
         CHECK(result == correct);
       }
