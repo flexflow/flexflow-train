@@ -43,7 +43,7 @@ static std::vector<T> require_only_slots_sequence(std::unordered_map<TensorSlotN
   nonnegative_int v_num_slots = num_elements(v);
   ASSERT(v_num_slots <= slots.size());
 
-  std::vector<TensorSlotName> expected_slots = slice(slots, v_num_slots.unwrap_nonnegative(), std::nullopt);
+  std::vector<TensorSlotName> expected_slots = slice(slots, 0, v_num_slots.unwrap_nonnegative());
 
   ASSERT(unordered_set_of(expected_slots) == keys(v));
 
@@ -274,7 +274,7 @@ std::unordered_map<TensorSlotName, TensorShape>
         return {}; 
       },
       [&](ConcatAttrs const &attrs) -> std::unordered_map<TensorSlotName, TensorShape> { 
-        require_only_key(input_shapes, TensorSlotName::INPUT);
+        require_only_slots_sequence(input_shapes, get_variadic_inputs_slot_name_sequence());
 
         return {}; 
       },
@@ -284,12 +284,15 @@ std::unordered_map<TensorSlotName, TensorShape>
         return get_weight_shapes(attrs, input);
       },
       [&](DropoutAttrs const &attrs) -> std::unordered_map<TensorSlotName, TensorShape> { 
+        require_only_key(input_shapes, TensorSlotName::INPUT);
         return {}; 
       },
       [&](ElementBinaryAttrs const &attrs) -> std::unordered_map<TensorSlotName, TensorShape> {
+        require_two_keys(input_shapes, TensorSlotName::LHS_INPUT, TensorSlotName::RHS_INPUT);
         return {};
       },
       [&](ElementUnaryAttrs const &attrs) -> std::unordered_map<TensorSlotName, TensorShape> {
+        require_only_key(input_shapes, TensorSlotName::INPUT);
         return {};
       },
       [&](EmbeddingAttrs const &attrs) -> std::unordered_map<TensorSlotName, TensorShape> {

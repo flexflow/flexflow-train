@@ -145,9 +145,19 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*type=*/OperatorType::GELU,
             /*scalar=*/std::nullopt,
         }},
-      /*input_shapes=*/{par_tensor_shape},
+      /*input_shapes=*/{
+        {
+          TensorSlotName::INPUT,
+          par_tensor_shape,
+        },
+      },
       /*weight_shapes=*/{},
-      /*output_shapes=*/{par_tensor_shape},
+      /*output_shapes=*/{
+        {
+          TensorSlotName::OUTPUT,
+          par_tensor_shape,
+        },
+      },
     };
 
     UnmappedRuntimeOnlyOpCostEstimateKey k2 = UnmappedRuntimeOnlyOpCostEstimateKey{
@@ -155,9 +165,19 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*type=*/OperatorType::RELU,
             /*scalar=*/std::nullopt,
         }},
-        /*input_shapes=*/{par_tensor_shape},
+        /*input_shapes=*/{
+          {
+            TensorSlotName::INPUT,
+            par_tensor_shape,
+          },
+        },
         /*weight_shapes=*/{},
-        /*output_shapes=*/{par_tensor_shape},
+        /*output_shapes=*/{
+          {
+            TensorSlotName::OUTPUT,
+            par_tensor_shape,
+          },
+        },
     };
 
     auto mk_cost_metrics = [&](float total_cost) {

@@ -6,27 +6,10 @@
 
 namespace FlexFlow {
 
-std::vector<ParallelTensorSpaceCoordinate>
-  ptensor_space_coords_for_role(OperatorAtomicTaskShardBinding const &op_task_signature,
-                                TensorRole tensor_role) {
-  switch (tensor_role) {
-    case TensorRole::INPUT:
-      return op_task_signature.inputs;
-    case TensorRole::WEIGHT:
-      return op_task_signature.weights;
-    case TensorRole::OUTPUT:
-      return op_task_signature.outputs;
-    default: 
-      PANIC("Unhandled TensorRole", tensor_role); 
-  };
-}
-
 ParallelTensorSpaceCoordinate
-  ptensor_space_coord_for_key(OperatorAtomicTaskShardBinding const &op_task_signature,
-                              TaskSignatureTensorKey const &tensor_key) {
-  return at_idx(
-    ptensor_space_coords_for_role(op_task_signature, tensor_key.tensor_role),
-    tensor_key.idx);
+  ptensor_space_coord_for_slot_name(OperatorAtomicTaskShardBinding const &op_task_signature,
+                                    TensorSlotName const &slot_name) {
+  return op_task_signature.tensor_coords.at(slot_name);
 }
 
 } // namespace FlexFlow

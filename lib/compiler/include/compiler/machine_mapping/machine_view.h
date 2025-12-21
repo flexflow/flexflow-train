@@ -70,7 +70,7 @@ OperatorAtomicTaskShardBinding
 MappedOperatorTaskGroup
   mapped_operator_task_group_from_machine_view(
     ComputationGraphOpAttrs const &,
-    std::vector<ParallelTensorDimDegrees> const &,
+    std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> const &,
     MachineView const &);
 
 bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> 

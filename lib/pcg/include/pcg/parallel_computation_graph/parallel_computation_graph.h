@@ -46,7 +46,7 @@ std::unordered_set<ParallelComputationGraphEdge>
     get_outgoing_edges(ParallelComputationGraph const &,
                        parallel_layer_guid_t const &);
 
-std::unordered_set<ParallelComputationGraphEdge>
+std::unordered_map<TensorSlotName, ParallelComputationGraphEdge>
     get_incoming_edges(ParallelComputationGraph const &,
                        parallel_layer_guid_t const &);
 

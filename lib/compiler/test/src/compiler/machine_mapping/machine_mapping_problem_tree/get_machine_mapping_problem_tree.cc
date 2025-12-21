@@ -4,6 +4,7 @@
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "utils/containers/get_only.h"
+#include "utils/containers/require_only_key.h"
 #include "utils/full_binary_tree/binary_tree_path.h"
 #include <doctest/doctest.h>
 
@@ -99,7 +100,12 @@ TEST_SUITE(FF_TEST_SUITE) {
               /*op_attrs=*/input_attrs,
               /*input_shapes=*/{},
               /*weight_shapes=*/{},
-              /*output_shapes=*/{parallel_tensor_shape},
+              /*output_shapes=*/{
+                {
+                  TensorSlotName::OUTPUT,
+                  parallel_tensor_shape,
+                },
+              },
           };
         };
 
@@ -133,7 +139,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                              /*inputs=*/{},
                              /*output_labels=*/{});
       parallel_layer_guid_t input_layer = input_added.parallel_layer;
-      parallel_tensor_guid_t input = get_only(input_added.outputs);
+      parallel_tensor_guid_t input = require_only_key(input_added.outputs, TensorSlotName::OUTPUT);
 
       UnmappedRuntimeOnlyOpCostEstimateKey input_key =
           make_input_key(par_input_shape);
@@ -146,16 +152,35 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
       ParallelTensorShape relu_output_shape = par_input_shape;
       ParallelLayerAddedResult relu_added =
-          add_parallel_layer(pcg, make_layer_attrs(relu_attrs), {input}, {});
+          add_parallel_layer(
+            /*pcg=*/pcg, 
+            /*layer_attrs=*/make_layer_attrs(relu_attrs), 
+            /*inputs=*/{
+              {
+                TensorSlotName::INPUT,
+                input,
+              },
+            }, 
+            /*weights=*/{});
       parallel_layer_guid_t relu_layer = relu_added.parallel_layer;
-      parallel_tensor_guid_t relu_output = get_only(relu_added.outputs);
+      parallel_tensor_guid_t relu_output = require_only_key(relu_added.outputs, TensorSlotName::OUTPUT);
 
       UnmappedRuntimeOnlyOpCostEstimateKey relu_key =
           UnmappedRuntimeOnlyOpCostEstimateKey{
               /*op_attrs=*/relu_attrs,
-              /*input_shapes=*/{par_input_shape},
+              /*input_shapes=*/{
+                {
+                  TensorSlotName::INPUT,
+                  par_input_shape,
+                },
+              },
               /*weight_shapes=*/{},
-              /*output_shapes=*/{relu_output_shape},
+              /*output_shapes=*/{
+                {
+                  TensorSlotName::OUTPUT,
+                  relu_output_shape,
+                },
+              },
           };
 
       PCGBinarySPDecomposition sp_decomposition = pcg_make_series(
@@ -219,14 +244,14 @@ TEST_SUITE(FF_TEST_SUITE) {
       ParallelLayerAddedResult input1_added =
           pcg_add_input_layer(pcg, input_shape);
       parallel_layer_guid_t input1_layer = input1_added.parallel_layer;
-      parallel_tensor_guid_t input1_tensor = get_only(input1_added.outputs);
+      parallel_tensor_guid_t input1_tensor = require_only_key(input1_added.outputs, TensorSlotName::OUTPUT);
       UnmappedRuntimeOnlyOpCostEstimateKey input1_key =
           make_input_key(par_input_shape);
 
       ParallelLayerAddedResult input2_added =
           pcg_add_input_layer(pcg, input_shape);
       parallel_layer_guid_t input2_layer = input2_added.parallel_layer;
-      parallel_tensor_guid_t input2_tensor = get_only(input2_added.outputs);
+      parallel_tensor_guid_t input2_tensor = require_only_key(input2_added.outputs, TensorSlotName::OUTPUT);
       UnmappedRuntimeOnlyOpCostEstimateKey input2_key =
           make_input_key(par_input_shape);
 
@@ -240,17 +265,42 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
       ParallelTensorShape ew_op_output_shape = par_input_shape;
       ParallelLayerAddedResult ew_op_added =
-          add_parallel_layer(pcg,
-                             make_layer_attrs(ew_op_attrs),
-                             {input1_tensor, input2_tensor},
-                             {});
+          add_parallel_layer(
+            /*pcg=*/pcg,
+            /*layer_attrs=*/make_layer_attrs(ew_op_attrs),
+            /*inputs=*/{
+              {
+                TensorSlotName::LHS_INPUT,
+                input1_tensor, 
+              },
+              {
+                TensorSlotName::RHS_INPUT,
+                input2_tensor,
+              },
+            },
+            /*outputs=*/{});
       parallel_layer_guid_t ew_op_layer = ew_op_added.parallel_layer;
+
       UnmappedRuntimeOnlyOpCostEstimateKey ew_op_key =
           UnmappedRuntimeOnlyOpCostEstimateKey{
               /*op_attrs=*/ew_op_attrs,
-              /*input_shapes=*/{par_input_shape, par_input_shape},
+              /*input_shapes=*/{
+                {
+                  TensorSlotName::LHS_INPUT,
+                  par_input_shape, 
+                },
+                {
+                  TensorSlotName::RHS_INPUT,
+                  par_input_shape,
+                },
+              },
               /*weight_shapes=*/{},
-              /*output_shapes=*/{ew_op_output_shape},
+              /*output_shapes=*/{
+                {
+                  TensorSlotName::OUTPUT,
+                  ew_op_output_shape,
+                },
+              },
           };
 
       PCGBinarySPDecomposition sp_decomposition =

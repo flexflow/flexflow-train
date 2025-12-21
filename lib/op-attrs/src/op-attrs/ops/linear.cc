@@ -377,7 +377,7 @@ static ParallelTensorSpaceToParallelTensorSpaceMapping
   {
     std::unordered_set<parallel_tensor_dim_idx_t> dims_from = 
       unordered_set_of(dim_idxs_for_num_shard_dims(
-        input_num_shard_dims.value
+        input_num_shard_dims
       ));
     dims_from.insert(sum_dim_idx());
     dims_from.erase(input_channel_dim);
@@ -434,7 +434,7 @@ static ParallelTensorSpaceToParallelTensorSpaceMapping
   {
     std::unordered_set<parallel_tensor_dim_idx_t> dims_from = 
       unordered_set_of(dim_idxs_for_num_shard_dims(
-        input_num_shard_dims.value
+        input_num_shard_dims
       ));
     dims_from.erase(input_channel_dim);
     dims_from.erase(sum_dim_idx());

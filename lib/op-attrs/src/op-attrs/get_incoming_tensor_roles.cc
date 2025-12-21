@@ -5,6 +5,7 @@
 #include "op-attrs/ops/layer_norm.h"
 #include "op-attrs/ops/linear.h"
 #include "op-attrs/pcg_operator_attrs.h"
+#include "op-attrs/tensor_slot_name.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {
@@ -43,9 +44,10 @@ std::unordered_map<TensorSlotName, IncomingTensorRole>
         };
       },
       [&](ConcatAttrs const &) {
-        return std::unordered_map<TensorSlotName, IncomingTensorRole>{
-          {TensorSlotName::INPUT, IncomingTensorRole::INPUT},
-        };
+        return generate_map(get_variadic_inputs_slot_name_sequence(),
+                            [](TensorSlotName) -> IncomingTensorRole {
+                              return IncomingTensorRole::INPUT; 
+                            });
       },
       [](Conv2DAttrs const &attrs) {
         return get_conv2d_incoming_tensor_roles(attrs);

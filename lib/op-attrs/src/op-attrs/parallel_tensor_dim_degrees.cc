@@ -37,7 +37,7 @@ std::unordered_set<parallel_tensor_dim_idx_t>
   get_parallel_tensor_dim_indices(ParallelTensorDimDegrees const &degrees) {
 
   std::unordered_set<parallel_tensor_dim_idx_t> result = 
-    unordered_set_of(dim_idxs_for_num_shard_dims(num_elements(degrees.shard_degrees)));
+    unordered_set_of(dim_idxs_for_num_shard_dims(get_ptensor_dim_degrees_num_shard_dims(degrees)));
   result.insert(sum_dim_idx());
   result.insert(discard_copy_dim_idx());
   return result;

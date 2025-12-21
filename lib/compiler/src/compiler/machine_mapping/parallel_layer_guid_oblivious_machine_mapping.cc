@@ -85,8 +85,8 @@ std::unordered_map<BinaryTreePath, std::optional<MachineSpaceStencil>>
                         ComputationGraphOpAttrs leaf_op_attrs =
                           compgraph_op_attrs_from_pcg_op_attrs(leaf.op_attrs).value();
 
-                        std::vector<ParallelTensorDimDegrees> leaf_input_degrees = 
-                          transform(leaf.input_shapes, 
+                        std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> leaf_input_degrees = 
+                          map_values(leaf.input_shapes, 
                                     [](ParallelTensorShape const &s) {
                                       return get_parallel_degrees(s);
                                     });

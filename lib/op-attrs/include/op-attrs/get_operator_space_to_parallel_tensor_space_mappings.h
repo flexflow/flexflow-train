@@ -44,6 +44,10 @@ std::unordered_map<TensorSlotName, OperatorSpaceToParallelTensorSpaceMapping>
     std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> const &inputs_degrees,
     TensorRole role);
 
+std::unordered_map<TensorSlotName, OperatorSpaceToParallelTensorSpaceMapping>
+  get_operator_to_ptensor_mappings(
+    ComputationGraphOpAttrs const &attrs,
+    std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> const &inputs_degrees);
 
 } // namespace FlexFlow
 

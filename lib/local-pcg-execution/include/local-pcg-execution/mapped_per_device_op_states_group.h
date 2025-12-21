@@ -5,7 +5,6 @@
 #include "pcg/machine_space_coordinate.dtg.h"
 #include "task-spec/device_specific_per_device_op_state.dtg.h"
 #include "utils/bidict/bidict.h"
-#include "compiler/mapped_task_signature_tensor_key.dtg.h"
 
 namespace FlexFlow {
 

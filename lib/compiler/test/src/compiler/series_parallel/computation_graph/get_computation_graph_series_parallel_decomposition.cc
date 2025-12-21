@@ -9,6 +9,7 @@
 #include "pcg/computation_graph.h"
 #include "pcg/computation_graph_builder.h"
 #include "utils/containers/get_only.h"
+#include "utils/containers/require_only_key.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -87,20 +88,36 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       LayerAddedResult input_added =
           add_layer(cg, make_layer_attrs(input_attrs), {}, {});
-      tensor_guid_t t_input = get_only(input_added.outputs);
+      tensor_guid_t t_input = require_only_key(input_added.outputs, TensorSlotName::OUTPUT);
 
       LayerAddedResult projection_weight_added =
           add_layer(cg, make_layer_attrs(projection_weight_attrs), {}, {});
-      tensor_guid_t t_projection = get_only(projection_weight_added.outputs);
+      tensor_guid_t t_projection = require_only_key(projection_weight_added.outputs, TensorSlotName::OUTPUT);
 
       LayerAddedResult bias_weight_added =
           add_layer(cg, make_layer_attrs(bias_weight_attrs), {}, {});
-      tensor_guid_t t_bias = get_only(bias_weight_added.outputs);
+      tensor_guid_t t_bias = require_only_key(bias_weight_added.outputs, TensorSlotName::OUTPUT);
 
-      LayerAddedResult linear_added = add_layer(cg,
-                                                make_layer_attrs(linear_attrs),
-                                                {t_input},
-                                                {t_projection, t_bias});
+      LayerAddedResult linear_added = 
+        add_layer(
+          /*computation_graph=*/cg,
+          /*attrs=*/make_layer_attrs(linear_attrs),
+          /*inputs=*/{
+            {
+              TensorSlotName::INPUT,
+              t_input,
+            },
+          },
+          /*weights=*/{
+            {
+              TensorSlotName::WEIGHT,
+              t_projection,
+            },
+            {
+              TensorSlotName::BIAS,
+              t_bias,
+            },
+          });
 
       std::optional<SeriesParallelDecomposition> result =
           get_computation_graph_series_parallel_decomposition(cg);
@@ -143,21 +160,49 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       LayerAddedResult input_added =
           add_layer(cg, make_layer_attrs(input_attrs), {}, {});
-      tensor_guid_t t_input = get_only(input_added.outputs);
+      tensor_guid_t t_input = require_only_key(input_added.outputs, TensorSlotName::OUTPUT);
 
       LayerAddedResult w1_added =
           add_layer(cg, make_layer_attrs(projection_weight_attrs), {}, {});
-      tensor_guid_t t_w1 = get_only(w1_added.outputs);
+      tensor_guid_t t_w1 = require_only_key(w1_added.outputs, TensorSlotName::OUTPUT);
 
       LayerAddedResult w2_added =
           add_layer(cg, make_layer_attrs(projection_weight_attrs), {}, {});
-      tensor_guid_t t_w2 = get_only(w2_added.outputs);
+      tensor_guid_t t_w2 = require_only_key(w2_added.outputs, TensorSlotName::OUTPUT);
 
       LayerAddedResult op1_added =
-          add_layer(cg, make_layer_attrs(linear_attrs), {t_input}, {t_w1});
+          add_layer(
+            /*computation_graph=*/cg, 
+            /*layer_attrs=*/make_layer_attrs(linear_attrs), 
+            /*input=*/{
+              {
+                TensorSlotName::INPUT,
+                t_input,
+              },
+            }, 
+            /*weights=*/{
+              {
+                TensorSlotName::WEIGHT,
+                t_w1,
+              },
+            });
 
       LayerAddedResult op2_added =
-          add_layer(cg, make_layer_attrs(linear_attrs), {t_input}, {t_w2});
+          add_layer(
+            /*computation_graph=*/cg, 
+            /*layer_attrs=*/make_layer_attrs(linear_attrs), 
+            /*inputs=*/{
+              {
+                TensorSlotName::INPUT,
+                t_input,
+              },
+            }, 
+            /*weights=*/{
+              {
+                TensorSlotName::WEIGHT,
+                t_w2,
+              },
+            });
 
       std::optional<SeriesParallelDecomposition> result =
           get_computation_graph_series_parallel_decomposition(cg);
@@ -193,17 +238,35 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       LayerAddedResult input1_added =
           add_layer(cg, make_layer_attrs(input_attrs), {}, {});
-      tensor_guid_t t_input1 = get_only(input1_added.outputs);
+      tensor_guid_t t_input1 = require_only_key(input1_added.outputs, TensorSlotName::OUTPUT);
 
       LayerAddedResult input2_added =
           add_layer(cg, make_layer_attrs(input_attrs), {}, {});
-      tensor_guid_t t_input2 = get_only(input2_added.outputs);
+      tensor_guid_t t_input2 = require_only_key(input2_added.outputs, TensorSlotName::OUTPUT);
 
       LayerAddedResult op1_added =
-          add_layer(cg, make_layer_attrs(relu_attrs), {t_input1}, {});
+          add_layer(
+            /*computation_graph=*/cg, 
+            /*layer_attrs=*/make_layer_attrs(relu_attrs), 
+            /*inputs=*/{
+              {
+                TensorSlotName::INPUT,
+                t_input1,
+              },
+            }, 
+            /*weights=*/{});
 
       LayerAddedResult op2_added =
-          add_layer(cg, make_layer_attrs(relu_attrs), {t_input2}, {});
+          add_layer(
+            /*computation_graph=*/cg, 
+            /*layer_attrs=*/make_layer_attrs(relu_attrs), 
+            /*inputs=*/{
+              {
+                TensorSlotName::INPUT,
+                t_input2,
+              },
+            }, 
+            /*weights=*/{});
 
       std::optional<SeriesParallelDecomposition> result =
           get_computation_graph_series_parallel_decomposition(cg);
@@ -234,7 +297,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       LayerAddedResult input1_added =
           add_layer(cg, make_layer_attrs(input_attrs), {}, {});
-      tensor_guid_t t_input1 = get_only(input1_added.outputs);
+      tensor_guid_t t_input1 = require_only_key(input1_added.outputs, TensorSlotName::OUTPUT);
 
       ElementBinaryAttrs ew_add_attrs = ElementBinaryAttrs{
           /*type=*/OperatorType::EW_ADD,
@@ -244,18 +307,58 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
 
       LayerAddedResult op1_added =
-          add_layer(cg, make_layer_attrs(relu_attrs), {t_input1}, {});
-      tensor_guid_t t_op1 = get_only(op1_added.outputs);
+          add_layer(
+            /*computation_graph=*/cg, 
+            /*layer_attrs=*/make_layer_attrs(relu_attrs), 
+            /*inputs=*/{
+              {
+                TensorSlotName::INPUT,
+                t_input1,
+              },
+            }, 
+            /*weights=*/{});
+      tensor_guid_t t_op1 = require_only_key(op1_added.outputs, TensorSlotName::OUTPUT);
 
       LayerAddedResult op2_added =
-          add_layer(cg, make_layer_attrs(relu_attrs), {t_input1}, {});
-      tensor_guid_t t_op2 = get_only(op2_added.outputs);
+          add_layer(
+            /*computation_graph=*/cg, 
+            /*layer_attrs=*/make_layer_attrs(relu_attrs), 
+            /*inputs=*/{
+              {
+                TensorSlotName::INPUT,
+                t_input1,
+              },
+            }, 
+            /*weights=*/{});
+      tensor_guid_t t_op2 = require_only_key(op2_added.outputs, TensorSlotName::OUTPUT);
 
       LayerAddedResult op3_added =
-          add_layer(cg, make_layer_attrs(relu_attrs), {t_op1}, {});
+          add_layer(
+            /*computation_graph=*/cg, 
+            /*layer_attrs=*/make_layer_attrs(relu_attrs), 
+            /*inputs=*/{
+              {
+                TensorSlotName::INPUT,
+                t_op1,
+              },
+            }, 
+            /*weights=*/{});
 
       LayerAddedResult op4_added =
-          add_layer(cg, make_layer_attrs(ew_add_attrs), {t_op1, t_op2}, {});
+          add_layer(
+            /*computation_graph=*/cg, 
+            /*layer_attrs=*/make_layer_attrs(ew_add_attrs), 
+            /*inputs=*/{
+              {
+                TensorSlotName::LHS_INPUT, 
+                t_op1, 
+              },
+              {
+                TensorSlotName::RHS_INPUT,
+                t_op2,
+              }, 
+            },
+            /*weights=*/{});
 
       std::optional<SeriesParallelDecomposition> result =
           get_computation_graph_series_parallel_decomposition(cg);

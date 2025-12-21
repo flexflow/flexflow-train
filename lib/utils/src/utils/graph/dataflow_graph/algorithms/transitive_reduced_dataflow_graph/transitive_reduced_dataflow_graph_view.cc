@@ -1,4 +1,4 @@
-#include "utils/graph/dataflow_graph/algorithms/transitive_reduced_dataflow_graph/transitive_reduced_dataflow_graph.h"
+#include "utils/graph/dataflow_graph/algorithms/transitive_reduced_dataflow_graph/transitive_reduced_dataflow_graph_view.h"
 #include "utils/graph/digraph/algorithms/transitive_reduction.h"
 
 namespace FlexFlow {

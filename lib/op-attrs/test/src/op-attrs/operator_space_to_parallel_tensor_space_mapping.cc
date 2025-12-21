@@ -108,7 +108,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       ParallelTensorSpaceCoordinate result = 
         ptensor_coord_for_task_space_coord(
           /*mapping=*/mapping,
-          /*task_space_coord=*/task_space_coordinate);
+          /*task_space_coord=*/task_space_coordinate,
+          /*num_dims=*/num_ptensor_shard_dims_t{2_n});
 
       ParallelTensorSpaceCoordinate correct = ParallelTensorSpaceCoordinate{
         /*sum_component=*/3_n,

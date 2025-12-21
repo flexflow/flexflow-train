@@ -88,7 +88,7 @@ std::ostream &operator<<(std::ostream &s, ::FlexFlow::MappedPerDeviceOpStatesGro
 MappedPerDeviceOpStatesGroup
   mapped_operator_task_group_from_machine_view(
     ComputationGraphOpAttrs const &op_attrs,
-    std::vector<ParallelTensorDimDegrees> const &inputs_dim_degrees,
+    std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> const &inputs_dim_degrees,
     MachineView const &machine_view) {
 
   OperatorTaskSpace op_task_space = get_operator_task_space(op_attrs, inputs_dim_degrees);  

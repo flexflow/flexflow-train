@@ -5,22 +5,11 @@
 #include "compiler/machine_mapping/machine_view.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
-#include "utils/containers/get_only.h"
+#include "utils/containers/require_only_key.h"
 #include <doctest/doctest.h>
 #include <fstream>
 
 using namespace ::FlexFlow;
-
-bool isDebuggerActive() {
-  std::ifstream in("/proc/self/status");
-  for (std::string line; std::getline(in, line);) {
-    static int const PREFIX_LEN = 11;
-    if (line.compare(0, PREFIX_LEN, "TracerPid:\t") == 0) {
-      return line.length() > PREFIX_LEN && line[PREFIX_LEN] != '0';
-    }
-  }
-  return false;
-}
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_tensor_set_movement_across_split") {
@@ -51,7 +40,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     ParallelLayerAddedResult input = pcg_add_input_layer(pcg, input_shape);
-    parallel_tensor_guid_t t_input = get_only(input.outputs);
+    parallel_tensor_guid_t t_input = require_only_key(input.outputs, TensorSlotName::OUTPUT);
 
     ParallelLayerAttrs partition_attrs = ParallelLayerAttrs{
         /*op_attrs=*/PCGOperatorAttrs{
@@ -63,9 +52,9 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*name=*/std::nullopt,
     };
     ParallelLayerAddedResult partition_input =
-        add_parallel_layer(pcg, partition_attrs, {t_input}, {});
+        add_parallel_layer(pcg, partition_attrs, {{TensorSlotName::INPUT, t_input}}, {});
     parallel_tensor_guid_t t_partition_input =
-        get_only(partition_input.outputs);
+        require_only_key(partition_input.outputs, TensorSlotName::OUTPUT);
 
     ParallelTensorShape partitioned_input_shape =
         get_parallel_tensor_shape(pcg, t_partition_input);
@@ -93,10 +82,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     ParallelLayerAddedResult relu_1 =
-        add_parallel_layer(pcg, relu_attrs, {t_partition_input}, {});
-    parallel_tensor_guid_t t_relu_1 = get_only(relu_1.outputs);
+        add_parallel_layer(pcg, relu_attrs, {{TensorSlotName::INPUT, t_partition_input}}, {});
+    parallel_tensor_guid_t t_relu_1 = require_only_key(relu_1.outputs, TensorSlotName::OUTPUT);
     ParallelLayerAddedResult relu_2 =
-        add_parallel_layer(pcg, relu_attrs, {t_relu_1}, {});
+        add_parallel_layer(pcg, relu_attrs, {{TensorSlotName::INPUT, t_relu_1}}, {});
 
     MachineView pre_mv1 = MachineView{
         /*start=*/MachineSpaceCoordinate{
@@ -223,7 +212,20 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("does not include edges removed by transitive reduction") {
       ParallelLayerAddedResult ew_add =
-          add_parallel_layer(pcg, ew_add_attrs, {get_only(relu_1.outputs), get_only(relu_2.outputs)}, {});
+          add_parallel_layer(
+            pcg, 
+            ew_add_attrs, 
+            /*inputs=*/{
+              {
+                TensorSlotName::LHS_INPUT,
+                require_only_key(relu_1.outputs, TensorSlotName::OUTPUT), 
+              },
+              {
+                TensorSlotName::RHS_INPUT,
+                require_only_key(relu_2.outputs, TensorSlotName::OUTPUT)
+              },
+            }, 
+            /*weights=*/{});
 
        PCGBinarySeriesSplit split = PCGBinarySeriesSplit{
          make_pcg_series_split(
@@ -271,7 +273,16 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("single tensor, multiple consumers across split") {
       ParallelLayerAddedResult relu_3 =
-          add_parallel_layer(pcg, relu_attrs, {get_only(relu_1.outputs)}, {});
+          add_parallel_layer(
+            pcg, 
+            relu_attrs, 
+            /*inputs=*/{
+              {
+              TensorSlotName::INPUT,
+                require_only_key(relu_1.outputs, TensorSlotName::OUTPUT),
+              },
+            }, 
+            /*weights=*/{});
 
       PCGBinarySeriesSplit split = PCGBinarySeriesSplit{
           make_pcg_leaf_node(relu_1.parallel_layer),
@@ -381,13 +392,30 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("multiple tensors, multiple consumers across split") {
       ParallelLayerAddedResult relu_3 = add_parallel_layer(
-          pcg, relu_attrs, {get_only(partition_input.outputs)}, {});
+          pcg, 
+          relu_attrs, 
+          /*inputs=*/{
+            {
+              TensorSlotName::INPUT,
+              require_only_key(partition_input.outputs, TensorSlotName::OUTPUT),
+            },
+          }, 
+          /*outputs=*/{});
 
       ParallelLayerAddedResult relu_4 = add_parallel_layer(
           pcg,
           ew_add_attrs,
-          {get_only(relu_1.outputs), get_only(relu_3.outputs)},
-          {});
+          /*inputs=*/{
+            {
+              TensorSlotName::LHS_INPUT,
+              require_only_key(relu_1.outputs, TensorSlotName::OUTPUT), 
+            },
+            {
+              TensorSlotName::RHS_INPUT,
+              require_only_key(relu_3.outputs, TensorSlotName::OUTPUT)
+            },
+          },
+          /*weights=*/{});
 
       PCGBinarySeriesSplit split = PCGBinarySeriesSplit{
           make_pcg_parallel_split(

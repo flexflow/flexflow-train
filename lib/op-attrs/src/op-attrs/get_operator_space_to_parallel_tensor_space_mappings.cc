@@ -3,6 +3,7 @@
 #include "op-attrs/ops/element_binary.h"
 #include "utils/containers/filtrans.h"
 #include "utils/containers/get_only.h"
+#include "utils/containers/merge_disjoint_maps.h"
 #include "utils/containers/require_only_key.h"
 #include "utils/overload.h"
 #include "op-attrs/ops/linear.h"
@@ -233,10 +234,23 @@ std::unordered_map<TensorSlotName, OperatorSpaceToParallelTensorSpaceMapping>
     case TensorRole::WEIGHT:
       return get_operator_to_weight_mappings(attrs, inputs_degrees);
     case TensorRole::OUTPUT:
-      return get_operator_to_weight_mappings(attrs, inputs_degrees);
+      return get_operator_to_output_mappings(attrs, inputs_degrees);
     default:
       PANIC("Unhandled TensorRole", role);
   }
 }
+
+std::unordered_map<TensorSlotName, OperatorSpaceToParallelTensorSpaceMapping>
+  get_operator_to_ptensor_mappings(
+    ComputationGraphOpAttrs const &attrs,
+    std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> const &inputs_degrees) 
+{
+  return merge_disjoint_maps(std::vector{
+    get_operator_to_input_mappings(attrs, inputs_degrees),
+    get_operator_to_weight_mappings(attrs, inputs_degrees),
+    get_operator_to_output_mappings(attrs, inputs_degrees),
+  });
+}
+
 
 } // namespace FlexFlow

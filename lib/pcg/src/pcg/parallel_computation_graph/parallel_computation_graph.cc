@@ -181,12 +181,12 @@ std::unordered_set<ParallelComputationGraphEdge>
   });
 }
 
-std::unordered_set<ParallelComputationGraphEdge>
+std::unordered_map<TensorSlotName, ParallelComputationGraphEdge>
     get_incoming_edges(ParallelComputationGraph const &pcg,
                        parallel_layer_guid_t const &l) {
-  std::unordered_set<KwargDataflowEdge<TensorSlotName>> raw_edges =
-      unordered_set_of(values(get_incoming_kwarg_dataflow_edges_for_node(pcg.raw_graph, l.raw_graph_node)));
-  return transform(raw_edges, [](KwargDataflowEdge<TensorSlotName> const &e) {
+  std::unordered_map<TensorSlotName, KwargDataflowEdge<TensorSlotName>> raw_edges =
+      get_incoming_kwarg_dataflow_edges_for_node(pcg.raw_graph, l.raw_graph_node);
+  return map_values(raw_edges, [](KwargDataflowEdge<TensorSlotName> const &e) {
     return ParallelComputationGraphEdge{e};
   });
 }

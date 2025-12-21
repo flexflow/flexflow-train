@@ -1,12 +1,10 @@
 #include "pcg/mapped_parallel_computation_graph/mapped_operator_task_group.h"
 #include "pcg/mapped_parallel_computation_graph/operator_atomic_task_shard_binding.h"
-#include "pcg/mapped_parallel_computation_graph/task_signature_tensor_key.h"
 #include "op-attrs/get_operator_task_space.h"
 #include "op-attrs/operator_task_space.h"
 #include "op-attrs/parallel_tensor_space_coordinate.h"
 #include "utils/bidict/generate_bidict.h"
 #include "utils/containers/require_all_same.h"
-#include "pcg/mapped_parallel_computation_graph/task_signature_tensor_key.dtg.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/vector_of.h"
 #include "utils/nonnegative_int/num_elements.h"
@@ -19,33 +17,22 @@ MappedOperatorTaskGroup::MappedOperatorTaskGroup(
    bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding> const &shard_bindings) 
   : shard_bindings(shard_bindings)
 {
-  auto check_arity = [&](TensorRole tensor_role) -> nonnegative_int {
-    std::unordered_set<nonnegative_int> arities = 
-      transform(shard_bindings.right_values(), 
-                [&](OperatorAtomicTaskShardBinding const &s) -> nonnegative_int {
-                  return num_elements(ptensor_space_coords_for_role(s, tensor_role));
-                });
+  std::vector<std::unordered_set<TensorSlotName>> binding_slot_sets = 
+    transform(vector_of(shard_bindings.right_values()), 
+              [&](OperatorAtomicTaskShardBinding const &s) -> std::unordered_set<TensorSlotName> {
+                return keys(s.tensor_coords);
+              });
 
-    return require_all_same(arities).value_or(0_n);
-  };
+  std::unordered_set<TensorSlotName> slot_names = 
+    require_all_same(binding_slot_sets).value();
 
-  nonnegative_int num_inputs = check_arity(TensorRole::INPUT);
-  nonnegative_int num_weights = check_arity(TensorRole::WEIGHT);
-  nonnegative_int num_outputs = check_arity(TensorRole::OUTPUT);
-
-  std::unordered_set<TaskSignatureTensorKey> all_keys =  
-        all_keys_for_signature_arities(
-          /*num_inputs=*/num_inputs,
-          /*num_weights=*/num_weights,
-          /*num_outputs=*/num_outputs);
-          
-  for (TaskSignatureTensorKey const &key : all_keys) {
+  for (TensorSlotName const &slot_name : slot_names) {
     std::vector<OperatorAtomicTaskShardBinding> signatures_for_key = vector_of(shard_bindings.right_values());
 
     std::vector<ParallelTensorSpaceCoordinate> coords_for_key = 
       transform(signatures_for_key,
                 [&](OperatorAtomicTaskShardBinding const &signature) {
-                  return ptensor_space_coord_for_key(signature, key);
+                  return ptensor_space_coord_for_slot_name(signature, slot_name);
                 });
 
     ASSERT(are_all_distinct(coords_for_key));

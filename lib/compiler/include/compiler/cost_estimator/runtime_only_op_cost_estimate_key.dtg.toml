@@ -13,11 +13,13 @@ includes = [
   "op-attrs/parallel_tensor_shape.dtg.h",
   "<vector>",
   "compiler/machine_mapping/machine_view.dtg.h",
+  "op-attrs/tensor_slot_name.dtg.h",
 ]
 
 src_includes = [
-  "utils/hash/vector.h",
-  "utils/fmt/vector.h",
+  "utils/hash/unordered_map.h",
+  "utils/ord/unordered_map.h",
+  "utils/fmt/unordered_map.h",
 ]
 
 [[fields]]
@@ -26,15 +28,15 @@ type = "::FlexFlow::PCGOperatorAttrs"
 
 [[fields]]
 name = "input_shapes"
-type = "std::vector<::FlexFlow::ParallelTensorShape>"
+type = "std::unordered_map<::FlexFlow::TensorSlotName, ::FlexFlow::ParallelTensorShape>"
 
 [[fields]]
 name = "weight_shapes"
-type = "std::vector<::FlexFlow::ParallelTensorShape>"
+type = "std::unordered_map<::FlexFlow::TensorSlotName, ::FlexFlow::ParallelTensorShape>"
 
 [[fields]]
 name = "output_shapes"
-type = "std::vector<::FlexFlow::ParallelTensorShape>"
+type = "std::unordered_map<::FlexFlow::TensorSlotName, ::FlexFlow::ParallelTensorShape>"
 
 [[fields]]
 name = "machine_view"

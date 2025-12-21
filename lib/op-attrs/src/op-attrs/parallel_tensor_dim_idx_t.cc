@@ -22,9 +22,9 @@ bool is_dim_idx_for_reduction_dimension(parallel_tensor_dim_idx_t dim_idx) {
 }
 
 std::set<parallel_tensor_dim_idx_t>
-    dim_idxs_for_num_shard_dims(nonnegative_int num_shard_dims) {
+    dim_idxs_for_num_shard_dims(num_ptensor_shard_dims_t num_shard_dims) {
   std::set<parallel_tensor_dim_idx_t> result =
-      transform(set_of(ff_dim_range(num_shard_dims)), shard_dim_idx);
+      transform(set_of(ff_dim_range(num_shard_dims.value)), shard_dim_idx);
   result.insert(sum_dim_idx());
   result.insert(discard_copy_dim_idx());
 

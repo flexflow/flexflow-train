@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_OPERATOR_SPACE_TO_PARALLEL_TENSOR_SPACE_MAPPING_H
 #define _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_OPERATOR_SPACE_TO_PARALLEL_TENSOR_SPACE_MAPPING_H
 
+#include "op-attrs/num_ptensor_shard_dims_t.dtg.h"
 #include "op-attrs/operator_space_to_parallel_tensor_space_mapping.dtg.h"
 #include "op-attrs/operator_task_space.dtg.h"
 #include "op-attrs/parallel_tensor_dim_degrees.dtg.h"
@@ -39,7 +40,8 @@ OperatorSpaceToParallelTensorSpaceMapping
 ParallelTensorSpaceCoordinate
   ptensor_coord_for_task_space_coord(
     OperatorSpaceToParallelTensorSpaceMapping const &mapping,
-    TaskSpaceCoordinate const &task_space_coord);
+    TaskSpaceCoordinate const &task_space_coord,
+    num_ptensor_shard_dims_t num_shard_dims);
 
 TaskSpaceCoordinate
   task_space_coord_for_ptensor_coord(

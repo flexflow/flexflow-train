@@ -156,7 +156,12 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*op_attrs=*/PCGOperatorAttrs{InputAttrs{tensor_shape}},
         /*input_shapes=*/{},
         /*weight_shapes=*/{},
-        /*output_shapes=*/{pre_partition_par_tensor_shape},
+        /*output_shapes=*/{
+          {
+            TensorSlotName::OUTPUT,
+            pre_partition_par_tensor_shape,
+          },
+        },
         /*optimizer_attrs=*/optimizer_attrs,
     };
 
@@ -165,9 +170,19 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*type=*/OperatorType::GELU,
             /*scalar=*/std::nullopt,
         }},
-      /*input_shapes=*/{post_partition_par_tensor_shape},
+      /*input_shapes=*/{
+        {
+          TensorSlotName::INPUT,
+          post_partition_par_tensor_shape,
+        },
+      },
       /*weight_shapes=*/{},
-      /*output_shapes=*/{post_partition_par_tensor_shape},
+      /*output_shapes=*/{
+        {
+          TensorSlotName::OUTPUT,
+          post_partition_par_tensor_shape,
+        },
+      },
       /*optimizer_attrs=*/optimizer_attrs,
     };
 
@@ -176,9 +191,19 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*type=*/OperatorType::RELU,
             /*scalar=*/std::nullopt,
         }},
-        /*input_shapes=*/{post_partition_par_tensor_shape},
+        /*input_shapes=*/{
+          {
+            TensorSlotName::INPUT,
+            post_partition_par_tensor_shape,
+          },
+        },
         /*weight_shapes=*/{},
-        /*output_shapes=*/{post_partition_par_tensor_shape},
+        /*output_shapes=*/{
+          {
+            TensorSlotName::OUTPUT,
+            post_partition_par_tensor_shape,
+          },
+        },
         /*optimizer_attrs=*/optimizer_attrs,
     };
 

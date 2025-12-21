@@ -8,6 +8,10 @@ std::vector<TensorSlotName> get_variadic_inputs_slot_name_sequence() {
     TensorSlotName::INPUT_1,
     TensorSlotName::INPUT_2,
     TensorSlotName::INPUT_3,
+    TensorSlotName::INPUT_4,
+    TensorSlotName::INPUT_5,
+    TensorSlotName::INPUT_6,
+    TensorSlotName::INPUT_7,
   };
 };
 
@@ -17,6 +21,8 @@ std::vector<TensorSlotName> get_variadic_outputs_slot_name_sequence() {
     TensorSlotName::OUTPUT_1,
     TensorSlotName::OUTPUT_2,
     TensorSlotName::OUTPUT_3,
+    TensorSlotName::OUTPUT_4,
+    TensorSlotName::OUTPUT_5,
   };
 }
 

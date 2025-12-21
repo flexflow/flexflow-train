@@ -3,6 +3,7 @@
 #include "op-attrs/operator_space_to_parallel_tensor_space_mapping.h"
 #include "op-attrs/operator_task_space.dtg.h"
 #include "op-attrs/operator_task_space.h"
+#include "op-attrs/parallel_tensor_dim_degrees.h"
 #include "pcg/machine_compute_specification.h"
 #include "pcg/machine_space_coordinate.dtg.h"
 #include "pcg/machine_specification.dtg.h"
@@ -198,9 +199,9 @@ MachineView make_single_device_machine_view(MachineSpaceCoordinate const &coord)
       coord, {}, {});
 }
 
-OperatorAtomicTaskShardBinding
+static OperatorAtomicTaskShardBinding
   operator_atomic_task_shard_binding_from_machine_view(ComputationGraphOpAttrs const &op_attrs,
-                                                       std::vector<ParallelTensorDimDegrees> const &inputs_dim_degrees,
+                                                       std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> const &inputs_dim_degrees,
                                                        MachineView const &machine_view,
                                                        MachineSpaceCoordinate const &machine_space_coord) {
   OperatorTaskSpace op_task_space = get_operator_task_space(op_attrs, inputs_dim_degrees);
@@ -210,30 +211,29 @@ OperatorAtomicTaskShardBinding
     op_task_space,
     machine_space_coord);
 
-  auto get_ptensor_coords = [&](TensorRole const &tensor_role) {
-    std::vector<OperatorSpaceToParallelTensorSpaceMapping>
-        mappings = get_operator_to_ptensor_mappings_for_role(op_attrs, inputs_dim_degrees, tensor_role);
+  std::unordered_map<TensorSlotName, OperatorSpaceToParallelTensorSpaceMapping>
+      mappings = get_operator_to_ptensor_mappings(op_attrs, inputs_dim_degrees);
 
-    std::vector<ParallelTensorSpaceCoordinate>
-      ptensor_coords = transform(mappings,
-                               [&](OperatorSpaceToParallelTensorSpaceMapping const &mapping) {
-                                 return ptensor_coord_for_task_space_coord(mapping, task_space_coord);
-                               });
+  std::unordered_map<TensorSlotName, ParallelTensorSpaceCoordinate>
+    ptensor_coords = generate_map(keys(inputs_dim_degrees),
+                                  [&](TensorSlotName const &slot_name)
+                                    -> ParallelTensorSpaceCoordinate
+                                  {
+                                    num_ptensor_shard_dims_t num_shard_dims = 
+                                      get_ptensor_dim_degrees_num_shard_dims(inputs_dim_degrees.at(slot_name));
 
-    return ptensor_coords;
-  };
+                                    return ptensor_coord_for_task_space_coord(mappings.at(slot_name), task_space_coord, num_shard_dims);
+                                  });
 
   return OperatorAtomicTaskShardBinding{
-    /*inputs=*/get_ptensor_coords(TensorRole::INPUT),
-    /*weights=*/get_ptensor_coords(TensorRole::WEIGHT),
-    /*outputs=*/get_ptensor_coords(TensorRole::OUTPUT),
+    /*tensor_coords=*/ptensor_coords,
   };
 }
 
 MappedOperatorTaskGroup
   mapped_operator_task_group_from_machine_view(
     ComputationGraphOpAttrs const &op_attrs,
-    std::vector<ParallelTensorDimDegrees> const &inputs_dim_degrees,
+    std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> const &inputs_dim_degrees,
     MachineView const &machine_view) {
 
   OperatorTaskSpace op_task_space = get_operator_task_space(op_attrs, inputs_dim_degrees);  

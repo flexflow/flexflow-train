@@ -98,13 +98,20 @@ OperatorSpaceToParallelTensorSpaceMapping
 ParallelTensorSpaceCoordinate
   ptensor_coord_for_task_space_coord(
     OperatorSpaceToParallelTensorSpaceMapping const &mapping,
-    TaskSpaceCoordinate const &task_space_coordinate) {
+    TaskSpaceCoordinate const &task_space_coordinate,
+    num_ptensor_shard_dims_t num_dims) {
 
-  DimCoord<parallel_tensor_dim_idx_t> dim_coord = 
+  std::unordered_set<parallel_tensor_dim_idx_t> ptensor_dim_idxs = 
+    unordered_set_of(dim_idxs_for_num_shard_dims(num_dims));
+
+  DimCoord<parallel_tensor_dim_idx_t> mapped_dim_coord = 
     mapping.raw_mapping.at_l(
       dim_coord_from_task_space_coordinate(task_space_coordinate));
 
-  return parallel_tensor_space_coord_from_dim_coord(dim_coord);
+  DimCoord<parallel_tensor_dim_idx_t> lifted_dim_coord = 
+    lift_dim_coord(mapped_dim_coord, ptensor_dim_idxs);
+
+  return parallel_tensor_space_coord_from_dim_coord(lifted_dim_coord);
 }
 
 TaskSpaceCoordinate

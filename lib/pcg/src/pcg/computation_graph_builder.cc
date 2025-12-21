@@ -108,7 +108,8 @@ static void check_incoming_tensor_roles(LayerAttrs const &layer,
                                         std::unordered_set<TensorSlotName> const &input_slots,
                                         std::unordered_set<TensorSlotName> const &weight_slots) {
   std::unordered_map<TensorSlotName, IncomingTensorRole> correct =
-      get_incoming_tensor_roles(layer.op_attrs);
+      restrict_keys(get_incoming_tensor_roles(layer.op_attrs),
+                    set_union(input_slots, weight_slots));
   std::unordered_map<TensorSlotName, IncomingTensorRole> current = binary_merge_disjoint_maps(
       generate_map(input_slots, [](TensorSlotName) { return IncomingTensorRole::INPUT; }),
       generate_map(weight_slots, [](TensorSlotName) { return IncomingTensorRole::WEIGHT; }));

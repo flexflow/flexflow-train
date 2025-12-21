@@ -25,7 +25,7 @@ MappedParallelComputationGraph
           ComputationGraphOpAttrs op_attrs = 
             compgraph_op_attrs_from_pcg_op_attrs(pcg_get_op_attrs(pcg, l)).value();
 
-          std::vector<ParallelTensorDimDegrees> inputs_dim_degrees = 
+          std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> inputs_dim_degrees = 
             get_incoming_input_degrees(pcg, l);
 
           ASSERT(contains_key(mapping.machine_views, l));

@@ -5,6 +5,7 @@
 #include "utils/containers/generate_map.h"
 #include "utils/containers/unordered_set_of.h"
 #include "utils/nonnegative_int/num_elements.h"
+#include "utils/containers/contains_key.h"
 
 namespace FlexFlow {
 
@@ -14,11 +15,17 @@ num_ptensor_parallel_dims_t ptensor_coord_num_dims(ParallelTensorSpaceCoordinate
   };
 }
 
+num_ptensor_shard_dims_t ptensor_coord_num_shard_dims(ParallelTensorSpaceCoordinate const &c) {
+  return num_ptensor_shard_dims_t{
+    num_elements(c.shard_components),
+  };
+}
+
 std::unordered_set<parallel_tensor_dim_idx_t>
   get_dim_idxs_in_ptensor_space_coord(ParallelTensorSpaceCoordinate const &coord) {
   
   std::unordered_set<parallel_tensor_dim_idx_t> result = 
-    unordered_set_of(dim_idxs_for_num_shard_dims(num_elements(coord.shard_components)));
+    unordered_set_of(dim_idxs_for_num_shard_dims(ptensor_coord_num_shard_dims(coord)));
   result.insert(sum_dim_idx());
   result.insert(discard_copy_dim_idx());
   return result;
@@ -39,6 +46,8 @@ nonnegative_int ptensor_coord_component_for_ptensor_dim_idx(
 
 ParallelTensorSpaceCoordinate parallel_tensor_space_coord_from_map(
     std::unordered_map<parallel_tensor_dim_idx_t, nonnegative_int> const &m) {
+  ASSERT(contains_key(m, sum_dim_idx()));
+  ASSERT(contains_key(m, discard_copy_dim_idx()));
 
   std::unordered_map<ff_dim_t, nonnegative_int> shard_map =
       filtermap_keys(m, [](parallel_tensor_dim_idx_t const &d) {
