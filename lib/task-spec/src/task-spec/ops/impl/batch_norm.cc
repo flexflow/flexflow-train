@@ -21,75 +21,15 @@ namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::BatchNorm;
 
-enum Slots {
-  INPUT,
-  SCALE,
-  BIAS,
-  OUTPUT,
-  ATTRS,
-  PROFILING,
-  PER_DEVICE_STATE,
-  RELU,
-  HANDLE,
-  KERNEL_DEVICE_TYPE,
-};
-
-OpTaskInvocation init(BatchNormAttrs const &attrs) {
-  OpTaskBinding binding;
-
-  binding.bind(INPUT, input_tensor(0_n));
-  binding.bind(BIAS, weight_tensor(1_n));
-  binding.bind(OUTPUT, output_tensor(0_n));
-
-  binding.bind_arg(ATTRS, attrs);
-  binding.bind_arg(PROFILING, profiling_settings());
-  binding.bind_arg(HANDLE, ff_handle());
-  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
-
-  return OpTaskInvocation{
-      op_task_id_t::INIT,
-      binding,
-  };
-}
-
-OpTaskInvocation forward(BatchNormAttrs const &attrs) {
-  OpTaskBinding binding;
-  binding.bind_arg(PROFILING, profiling_settings());
-  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
-  binding.bind_arg(
-      PER_DEVICE_STATE,
-      per_device_op_state<std::optional<BatchNormPerDeviceState>>());
-
-  binding.bind(INPUT, input_tensor(0_n));
-  binding.bind(SCALE, weight_tensor(0_n));
-  binding.bind(BIAS, weight_tensor(1_n));
-  binding.bind(OUTPUT, output_tensor(0_n));
-
-  return OpTaskInvocation{
-      op_task_id_t::FWD,
-      binding,
-  };
-}
-
-OpTaskInvocation backward(BatchNormAttrs const &attrs) {
-  OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
-
-  return OpTaskInvocation{
-      op_task_id_t::BWD,
-      binding,
-  };
-}
-
 static DeviceSpecificPerDeviceOpState
     init_task_impl(TaskArgumentAccessor const &acc) {
   Allocator allocator = acc.get_allocator();
-  device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
-  ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  device_handle_t handle = acc.get_ff_handle();
+  ProfilingSettings profiling = acc.get_profiling_settings();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
 
-  auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
-  auto const &attrs = acc.get_argument<BatchNormAttrs>(ATTRS);
+  auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
+  BatchNormAttrs attrs = acc.get_op_attrs().require_batch_norm();
 
   positive_int output_w = dim_at_idx(output.shape.dims, legion_dim_t{0_n});
   positive_int output_h = dim_at_idx(output.shape.dims, legion_dim_t{1_n});
@@ -115,16 +55,14 @@ static DeviceSpecificPerDeviceOpState
 }
 
 static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
-  auto per_device_state =
-      acc.get_argument<BatchNormPerDeviceState>(PER_DEVICE_STATE);
-  ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  auto per_device_state = acc.get_per_device_op_state().require_batch_norm().value();
+  ProfilingSettings profiling = acc.get_profiling_settings();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
 
-  auto input = acc.get_tensor<Permissions::RO>(INPUT);
-  auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
-  auto scale = acc.get_tensor<Permissions::RO>(SCALE);
-  auto bias = acc.get_tensor<Permissions::RO>(SCALE);
+  auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
+  auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
+  auto scale = acc.get_tensor<Permissions::RO>(TensorSlotName::SCALE);
+  auto bias = acc.get_tensor<Permissions::RO>(TensorSlotName::BIAS);
 
   return profile(forward_kernel,
                  profiling,
@@ -139,19 +77,17 @@ static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor cons
 
 static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
-  auto per_device_state =
-      acc.get_argument<BatchNormPerDeviceState>(PER_DEVICE_STATE);
-  ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  BatchNormPerDeviceState per_device_state = acc.get_per_device_op_state().require_batch_norm().value();
+  ProfilingSettings profiling = acc.get_profiling_settings();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
 
-  auto input = acc.get_tensor<Permissions::RO>(INPUT);
-  auto input_grad = acc.get_tensor_grad<Permissions::RW>(INPUT);
-  auto output = acc.get_tensor<Permissions::RO>(OUTPUT);
-  auto output_grad = acc.get_tensor_grad<Permissions::RW>(OUTPUT);
-  auto scale = acc.get_tensor<Permissions::RO>(SCALE);
-  auto scale_grad = acc.get_tensor_grad<Permissions::RW>(SCALE);
-  auto bias_grad = acc.get_tensor_grad<Permissions::RW>(BIAS);
+  auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
+  auto input_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::INPUT);
+  auto output = acc.get_tensor<Permissions::RO>(TensorSlotName::OUTPUT);
+  auto output_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::OUTPUT);
+  auto scale = acc.get_tensor<Permissions::RO>(TensorSlotName::SCALE);
+  auto scale_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::SCALE);
+  auto bias_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::BIAS);
 
   return profile(backward_kernel,
                  profiling,

@@ -5,7 +5,6 @@
 #include "task-spec/ops/op_arg_ref_spec.h"
 #include "task-spec/ops/op_task_invocation.h"
 #include "task-spec/runtime_task_invocation/runtime_arg_config.dtg.h"
-#include "task-spec/runtime_task_invocation/runtime_task_invocation.dtg.h"
 #include "task-spec/symbolic/symbolic_layer_training_tensor_group_signature.dtg.h"
 #include "task-spec/symbolic/symbolic_layer_training_tensor_group_signature_with_shapes.dtg.h"
 #include "task-spec/symbolic/symbolic_training_tensor_guid_t.dtg.h"

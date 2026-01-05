@@ -1,4 +1,5 @@
 #include "task-spec/dynamic_graph/update_insertion.h"
+#include "pcg/optimizer_attrs.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_slot.h"
@@ -15,11 +16,7 @@ static std::pair<DynamicTensorSlot, DynamicValueAttrs>
   ASSERT(i.node_attrs.op_attrs.value().is_weight());
   ASSERT(i.inputs.size() == 0);
 
-  auto [slot, arguments] = get_only(i.outputs);
-
-  ASSERT(arguments.arity == TensorSlotArity::TENSOR);
-  ASSERT(arguments.values.has_value());
-  DynamicValueAttrs value_attrs = get_only(arguments.values.value());
+  auto [slot, value_attrs] = get_only(i.outputs);
 
   return std::pair{
     slot,
@@ -41,20 +38,15 @@ static DynamicNodeInvocation
   update_node_attrs.task_type = DynamicTaskType::UPD;
 
   auto create_binding_for_role = [&](DynamicTensorRole const &role) 
-    -> std::pair<DynamicTensorSlot, DynamicTensorSlotArguments> {
+    -> std::pair<DynamicTensorSlot, DynamicValueAttrs> {
 
     DynamicTensorSlot binding_slot = decide_tensor_slot_role(slot, role);
-    DynamicTensorSlotArguments binding_slot_args = DynamicTensorSlotArguments{
-      /*arity=*/TensorSlotArity::TENSOR,
-      /*role=*/role,
-      /*values=*/std::vector{
-        decide_dynamic_value_attrs_role(value_attrs, mk_dynamic_tensor_role_fwd())
-      },
-    };
+    DynamicValueAttrs value_attrs = 
+        decide_dynamic_value_attrs_role(value_attrs, mk_dynamic_tensor_role_fwd());
 
     return std::pair{
       binding_slot,
-      binding_slot_args,
+      value_attrs,
     };
   };
 
@@ -65,14 +57,14 @@ static DynamicNodeInvocation
         mk_dynamic_tensor_role_bwd(),
       },
       transform(
-        get_optimizer_slot_names(optimizer_attrs),
+        get_slot_names_for_optimizer(optimizer_attrs),
         mk_dynamic_tensor_role_opt)
     );
   
   return DynamicNodeInvocation{
     /*inputs=*/map_from_pairs(transform(tensor_roles, create_binding_for_role)),
     /*node_attrs=*/update_node_attrs,
-    /*outputs=*/std::unordered_map<DynamicTensorSlot, DynamicTensorSlotArguments>{},
+    /*outputs=*/std::unordered_map<DynamicTensorSlot, DynamicValueAttrs>{},
   };
 }
 

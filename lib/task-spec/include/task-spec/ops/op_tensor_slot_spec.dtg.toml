@@ -10,7 +10,6 @@ features = [
 
 includes = [
   "op-attrs/tensor_slot_name.dtg.h",
-  "task-spec/ops/tensor_slot_arity.dtg.h",
   "op-attrs/tensor_role.dtg.h",
   "task-spec/is_grad.dtg.h",
   "task-spec/ops/op_slot_options.dtg.h",
@@ -19,10 +18,6 @@ includes = [
 [[fields]]
 name = "name"
 type = "::FlexFlow::TensorSlotName"
-
-[[fields]]
-name = "arity"
-type = "::FlexFlow::TensorSlotArity"
 
 [[fields]]
 name = "tensor_role"

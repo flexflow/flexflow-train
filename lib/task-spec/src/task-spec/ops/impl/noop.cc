@@ -14,11 +14,3 @@
  */
 
 #include "task-spec/ops/impl/noop.h"
-
-namespace FlexFlow {
-
-std::unordered_set<task_id_t> get_task_ids(NoopAttrs const &attrs) {
-  return {};
-}
-
-}; // namespace FlexFlow

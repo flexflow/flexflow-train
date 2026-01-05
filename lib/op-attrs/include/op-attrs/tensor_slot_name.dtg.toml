@@ -97,3 +97,6 @@ name = "OUTPUT_4"
 
 [[values]]
 name = "OUTPUT_5"
+
+[[values]]
+name = "SCALE"

@@ -11,10 +11,6 @@ TaskImplFunction get_conv_2d_init_task_impl();
 TaskImplFunction get_conv_2d_fwd_task_impl();
 TaskImplFunction get_conv_2d_bwd_task_impl();
 
-OpTaskInvocation init(Conv2DAttrs const &);
-OpTaskInvocation forward(Conv2DAttrs const &);
-OpTaskInvocation backward(Conv2DAttrs const &);
-
 } // namespace FlexFlow
 
 #endif

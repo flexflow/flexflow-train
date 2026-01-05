@@ -26,7 +26,7 @@ key = "mha"
 
 [[values]]
 type = "std::optional<::FlexFlow::BatchNormPerDeviceState>"
-key = "batch"
+key = "batch_norm"
 
 [[values]]
 type = "std::optional<::FlexFlow::Conv2DPerDeviceState>"

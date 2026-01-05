@@ -6,74 +6,16 @@ namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::Conv2D;
 
-enum Slots {
-  INPUT,
-  OUTPUT,
-  FILTER,
-  BIAS,
-  ATTRS,
-  PROFILING,
-  PER_DEVICE_STATE,
-  HANDLE,
-  KERNEL_DEVICE_TYPE,
-};
-
-OpTaskInvocation init(Conv2DAttrs const &attrs) {
-  OpTaskBinding binding;
-
-  binding.bind(INPUT, input_tensor(0_n));
-  binding.bind(OUTPUT, output_tensor(0_n));
-  binding.bind(FILTER, weight_tensor(0_n));
-  binding.bind_arg(ATTRS, attrs);
-  binding.bind_arg(HANDLE, ff_handle());
-  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
-
-  return OpTaskInvocation{
-      op_task_id_t::INIT,
-      binding,
-  };
-}
-
-OpTaskInvocation forward(Conv2DAttrs const &attrs) {
-  OpTaskBinding binding;
-
-  binding.bind_arg(ATTRS, attrs);
-  binding.bind_arg(PROFILING, profiling_settings());
-  binding.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
-  binding.bind_arg(PER_DEVICE_STATE,
-                   per_device_op_state<std::optional<Conv2DPerDeviceState>>());
-
-  binding.bind(INPUT, input_tensor(0_n));
-  binding.bind(OUTPUT, output_tensor(0_n));
-  binding.bind(FILTER, weight_tensor(0_n));
-  binding.bind(BIAS, weight_tensor(1_n));
-
-  return OpTaskInvocation{
-      op_task_id_t::FWD,
-      binding,
-  };
-}
-
-OpTaskInvocation backward(Conv2DAttrs const &attrs) {
-  OpTaskBinding binding = infer_bwd_binding(forward(attrs).binding);
-
-  return OpTaskInvocation{
-      op_task_id_t::BWD,
-      binding,
-  };
-}
-
 static DeviceSpecificPerDeviceOpState
     init_task_impl(TaskArgumentAccessor const &acc) {
 
-  device_handle_t handle = acc.get_argument<device_handle_t>(HANDLE);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
-  auto attrs = acc.get_argument<Conv2DAttrs>(ATTRS);
-  auto input = acc.get_tensor<Permissions::WO>(INPUT);
-  auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
-  auto filter = acc.get_tensor<Permissions::RO>(FILTER);
-  auto filter_grad = acc.get_tensor_grad<Permissions::RW>(FILTER);
+  device_handle_t handle = acc.get_ff_handle();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
+  Conv2DAttrs attrs = acc.get_op_attrs().require_conv2d();
+  auto input = acc.get_tensor<Permissions::WO>(TensorSlotName::INPUT);
+  auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
+  auto filter = acc.get_tensor<Permissions::RO>(TensorSlotName::FILTER);
+  auto filter_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::FILTER);
 
   std::optional<Conv2DPerDeviceState> per_device_state = init_kernel(
       /*device_type=*/kernel_device_type,
@@ -97,17 +39,15 @@ static DeviceSpecificPerDeviceOpState
 }
 
 static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
-  ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
-  auto per_device_state =
-      acc.get_argument<Conv2DPerDeviceState>(PER_DEVICE_STATE);
-  auto attrs = acc.get_argument<Conv2DAttrs>(ATTRS);
+  ProfilingSettings profiling = acc.get_profiling_settings();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
+  Conv2DPerDeviceState per_device_state = acc.get_per_device_op_state().require_conv2d().value();
+  Conv2DAttrs attrs = acc.get_op_attrs().require_conv2d();
 
-  auto input = acc.get_tensor<Permissions::RO>(INPUT);
-  auto filter = acc.get_tensor<Permissions::RO>(FILTER);
-  auto bias = acc.get_tensor<Permissions::RO>(BIAS);
-  auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
+  auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
+  auto filter = acc.get_tensor<Permissions::RO>(TensorSlotName::FILTER);
+  auto bias = acc.get_tensor<Permissions::RO>(TensorSlotName::BIAS);
+  auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
 
   return profile(forward_kernel,
                  profiling,
@@ -123,21 +63,19 @@ static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor cons
 
 static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
-  ProfilingSettings profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  DeviceType kernel_device_type =
-      acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
-  auto per_device_state =
-      acc.get_argument<Conv2DPerDeviceState>(PER_DEVICE_STATE);
-  auto attrs = acc.get_argument<Conv2DAttrs>(ATTRS);
+  ProfilingSettings profiling = acc.get_profiling_settings();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
+  Conv2DPerDeviceState per_device_state = acc.get_per_device_op_state().require_conv2d().value();
+  Conv2DAttrs attrs = acc.get_op_attrs().require_conv2d();
 
-  auto output = acc.get_tensor<Permissions::WO>(OUTPUT);
-  auto input = acc.get_tensor<Permissions::RO>(INPUT);
-  auto filter = acc.get_tensor<Permissions::RO>(FILTER);
+  auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
+  auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
+  auto filter = acc.get_tensor<Permissions::RO>(TensorSlotName::FILTER);
 
-  auto input_grad = acc.get_tensor_grad<Permissions::RW>(INPUT);
-  auto output_grad = acc.get_tensor_grad<Permissions::RW>(OUTPUT);
-  auto filter_grad = acc.get_tensor_grad<Permissions::RW>(FILTER);
-  auto bias_grad = acc.get_tensor_grad<Permissions::RW>(BIAS);
+  auto input_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::INPUT);
+  auto output_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::OUTPUT);
+  auto filter_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::FILTER);
+  auto bias_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::BIAS);
 
   return profile(backward_kernel,
                  profiling,

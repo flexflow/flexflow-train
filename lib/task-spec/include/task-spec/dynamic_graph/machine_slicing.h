@@ -5,7 +5,10 @@
 
 namespace FlexFlow {
 
-std::unordered_set<DynamicOpenDataflowGraph> perform_machine_slicing(DynamicOpenDataflowGraph const &);
+std::unordered_set<DynamicNodeInvocation> 
+  perform_machine_slicing_for_invocation(DynamicNodeInvocation const &, MachineSpaceCoordinate const &);
+
+DynamicOpenDataflowGraph perform_machine_slicing(DynamicOpenDataflowGraph const &);
 
 } // namespace FlexFlow
 

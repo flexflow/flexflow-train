@@ -1,7 +1,6 @@
 #include "task-spec/dynamic_graph/pass_expansion.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
-#include "task-spec/dynamic_graph/dynamic_tensor_slot_arguments.dtg.h"
 #include "utils/containers/merge_disjoint_maps.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/are_all_same.h"
@@ -67,20 +66,6 @@ DynamicValueAttrs pass_expand_value(DynamicValueAttrs const &v, FwbTensorType te
   return result;  
 };
 
-DynamicTensorSlotArguments pass_expand_slot_arguments(DynamicTensorSlotArguments const &a, FwbTensorType tensor_type) {
-  ASSERT(a.role == std::nullopt);
-
-  DynamicTensorSlotArguments result = a;
-  result.role = dynamic_tensor_role_from_fwb_tensor_type(tensor_type);
-  if (result.values.has_value()) {
-    result.values = transform(result.values.value(),
-                              [&](DynamicValueAttrs const &v) -> DynamicValueAttrs {
-                                return pass_expand_value(v, tensor_type);
-                              });
-  }
-  return result;
-}
-
 DynamicNodeAttrs pass_expand_node(DynamicNodeAttrs const &n, DynamicTaskType task_type) {
   ASSERT(!node_is_pass_expanded(n));
   ASSERT(task_type == DynamicTaskType::FWD || task_type == DynamicTaskType::BWD);
@@ -93,10 +78,10 @@ DynamicNodeAttrs pass_expand_node(DynamicNodeAttrs const &n, DynamicTaskType tas
 DynamicNodeInvocation 
   perform_fwd_pass_expansion_for_invocation(DynamicNodeInvocation const &task) {
   
-  auto to_fwd = [](DynamicTensorSlot const &k, DynamicTensorSlotArguments const &v) {
+  auto to_fwd = [](DynamicTensorSlot const &k, DynamicValueAttrs const &v) {
                   return std::pair{
                     pass_expand_slot(k, FwbTensorType::FORWARD),
-                    pass_expand_slot_arguments(v, FwbTensorType::FORWARD),
+                    pass_expand_value(v, FwbTensorType::FORWARD),
                   };
                 };
 
@@ -113,17 +98,17 @@ DynamicNodeInvocation
 DynamicNodeInvocation 
   perform_bwd_pass_expansion_for_invocation(DynamicNodeInvocation const &invocation) {
 
-  auto to_fwd = [](DynamicTensorSlot const &k, DynamicTensorSlotArguments const &v) {
+  auto to_fwd = [](DynamicTensorSlot const &k, DynamicValueAttrs const &v) {
                   return std::pair{
                     pass_expand_slot(k, FwbTensorType::FORWARD),
-                    pass_expand_slot_arguments(v, FwbTensorType::FORWARD),
+                    pass_expand_value(v, FwbTensorType::FORWARD),
                   };
                 };
 
-  auto to_grad = [](DynamicTensorSlot const &k, DynamicTensorSlotArguments const &v) {
+  auto to_grad = [](DynamicTensorSlot const &k, DynamicValueAttrs const &v) {
                    return std::pair{
                      pass_expand_slot(k, FwbTensorType::GRADIENT),
-                     pass_expand_slot_arguments(v, FwbTensorType::GRADIENT),
+                     pass_expand_value(v, FwbTensorType::GRADIENT),
                    };
                  };
 

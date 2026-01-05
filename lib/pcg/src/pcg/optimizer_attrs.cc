@@ -23,4 +23,24 @@ OptimizerAttrs
   }
 }
 
+std::unordered_set<OptimizerSlotName> get_slot_names_for_optimizer(OptimizerAttrs const &attrs) {
+  return attrs.visit<
+    std::unordered_set<OptimizerSlotName>
+  >(overload {
+    [](SGDOptimizerAttrs const &sgd_attrs) -> std::unordered_set<OptimizerSlotName> {
+      if (sgd_attrs.momentum > 0.0f) {
+        return {OptimizerSlotName::SGD_V};;
+      } else {
+        return {};
+      }
+    },
+    [](AdamOptimizerAttrs const &) -> std::unordered_set<OptimizerSlotName> {
+      return {
+        OptimizerSlotName::ADAM_M,
+        OptimizerSlotName::ADAM_V,
+      };
+    },
+  });
+}
+
 } // namespace FlexFlow

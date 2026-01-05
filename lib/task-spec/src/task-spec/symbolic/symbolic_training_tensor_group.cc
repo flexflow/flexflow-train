@@ -4,6 +4,7 @@
 #include "utils/containers/set_union.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/unordered_set_of.h"
+#include "utils/exception.h"
 
 namespace FlexFlow {
 
@@ -14,21 +15,24 @@ SymbolicTrainingTensorGroup make_symbolic_training_tensor_group(
     SymbolicGradientTensorSource &gradient_tensor_source,
     SymbolicOptimizerTensorSource &optimizer_tensor_source) {
 
-  nonnegative_int num_optimizer_tensors = [&]() {
-    if (create_grad == CreateGrad::YES) {
-      return get_num_optimizer_tensors(optimizer_attrs);
-    } else {
-      return 0_n;
-    }
-  }();
+  // TODO(@lockshaw)(#pr): 
+  NOT_IMPLEMENTED();
 
-  return SymbolicTrainingTensorGroup{
-      /*forward_tensor=*/forward_tensor_source.new_symbolic_forward_tensor(),
-      /*gradient_tensor=*/gradient_tensor_source.new_symbolic_gradient_tensor(),
-      /*optimizer_tensors=*/
-      repeat(num_optimizer_tensors,
-             [&]() { return optimizer_tensor_source.new_symbolic_optimizer_tensor(); }),
-  };
+  // nonnegative_int num_optimizer_tensors = [&]() {
+  //   if (create_grad == CreateGrad::YES) {
+  //     return get_num_optimizer_tensors(optimizer_attrs);
+  //   } else {
+  //     return 0_n;
+  //   }
+  // }();
+  //
+  // return SymbolicTrainingTensorGroup{
+  //     /*forward_tensor=*/forward_tensor_source.new_symbolic_forward_tensor(),
+  //     /*gradient_tensor=*/gradient_tensor_source.new_symbolic_gradient_tensor(),
+  //     /*optimizer_tensors=*/
+  //     repeat(num_optimizer_tensors,
+  //            [&]() { return optimizer_tensor_source.new_symbolic_optimizer_tensor(); }),
+  // };
 }
 
 symbolic_training_tensor_guid_t

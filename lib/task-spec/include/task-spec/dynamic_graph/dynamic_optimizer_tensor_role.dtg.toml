@@ -11,7 +11,7 @@ features = [
 ]
 
 includes = [
-  "task-spec/optimizer_slot_name.dtg.h",
+  "pcg/optimizer_slot_name.dtg.h",
 ]
 
 [[fields]]

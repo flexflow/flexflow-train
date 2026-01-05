@@ -6,19 +6,31 @@ using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("perform_fwd_pass_expansion_for_invocation") {
-    auto mk_value_attrs = [](size_t node_id, std::optional<FwbTensorType> const &tensor_type) -> DynamicValueAttrs {
+    auto mk_value_attrs = [](size_t node_id, std::optional<DynamicTensorRole> const &tensor_role) -> DynamicValueAttrs {
      return DynamicValueAttrs{
         /*pcg_tensor_guid=*/parallel_tensor_guid_t{
-          DataflowOutput{
+          KwargDataflowOutput<TensorSlotName>{
             Node{node_id},
-            0_n,
+            TensorSlotName::OUTPUT,
           },
         },
         /*parallel_tensor_shape=*/std::nullopt,
+        /*shard_coord=*/std::nullopt,
         /*accessor=*/std::nullopt,
-        /*tensor_type=*/tensor_type,
+        /*role=*/tensor_role,
       };
     };
+
+    auto mk_slot = [](TensorSlotName const &slot_name, std::optional<DynamicTensorRole> role) 
+      -> DynamicTensorSlot
+    {
+      return DynamicTensorSlot{
+        /*slot_name=*/slot_name,
+        /*slot_tensor_role=*/role,
+      };
+    };
+
+    parallel_layer_guid_t pcg_layer_guid = parallel_layer_guid_t{Node{20}};
 
     DynamicNodeInvocation invocation = [&]() -> DynamicNodeInvocation {
       DynamicValueAttrs v1 = mk_value_attrs(0, std::nullopt);
@@ -26,31 +38,51 @@ TEST_SUITE(FF_TEST_SUITE) {
       DynamicValueAttrs v3 = mk_value_attrs(2, std::nullopt);
 
       return DynamicNodeInvocation{
-        /*inputs=*/{v1, v2, v1, v1},
+        /*inputs=*/{
+          {mk_slot(TensorSlotName::INPUT, std::nullopt), v1},
+          {mk_slot(TensorSlotName::WEIGHT, std::nullopt), v2},
+          {mk_slot(TensorSlotName::BIAS, std::nullopt), v1},
+          {mk_slot(TensorSlotName::SCALE, std::nullopt), v1},
+        },
         /*node_attrs=*/DynamicNodeAttrs{
-          /*pass_type=*/std::nullopt,
+          /*task_type=*/std::nullopt,
           /*device_coord=*/std::nullopt,
           /*mapping=*/std::nullopt,
+          /*op_attrs=*/std::nullopt,
+          /*pcg_layer_guid=*/pcg_layer_guid,
         },
-        /*outputs=*/{v3},
+        /*outputs=*/{
+          {mk_slot(TensorSlotName::OUTPUT, std::nullopt), v3},
+        },
       };
     }();
 
     DynamicNodeInvocation result = perform_fwd_pass_expansion_for_invocation(invocation);
 
     DynamicNodeInvocation correct = [&]() -> DynamicNodeInvocation {
-      DynamicValueAttrs v1_fwd = mk_value_attrs(0, FwbTensorType::FORWARD);
-      DynamicValueAttrs v2_fwd = mk_value_attrs(1, FwbTensorType::FORWARD);
-      DynamicValueAttrs v3_fwd = mk_value_attrs(2, FwbTensorType::FORWARD);
+      DynamicTensorRole fwd_role = DynamicTensorRole{FwbTensorType::FORWARD};
+
+      DynamicValueAttrs v1_fwd = mk_value_attrs(0, fwd_role);
+      DynamicValueAttrs v2_fwd = mk_value_attrs(1, fwd_role);
+      DynamicValueAttrs v3_fwd = mk_value_attrs(2, fwd_role);
 
       return DynamicNodeInvocation{
-        /*inputs=*/{v1_fwd, v2_fwd, v1_fwd, v1_fwd},
+        /*inputs=*/{
+          {mk_slot(TensorSlotName::INPUT, fwd_role), v1_fwd}, 
+          {mk_slot(TensorSlotName::WEIGHT, fwd_role), v2_fwd}, 
+          {mk_slot(TensorSlotName::BIAS, fwd_role), v1_fwd}, 
+          {mk_slot(TensorSlotName::SCALE, fwd_role), v1_fwd},
+        },
         /*node_attrs=*/DynamicNodeAttrs{
-          /*pass_type=*/PassType::FWD,
+          /*task_type=*/DynamicTaskType::FWD,
           /*device_coord=*/std::nullopt,
           /*mapping=*/std::nullopt,
+          /*op_attrs=*/std::nullopt,
+          /*pcg_layer_guid=*/pcg_layer_guid,
         },
-        /*outputs=*/{v3_fwd},
+        /*outputs=*/{
+          {mk_slot(TensorSlotName::OUTPUT, fwd_role), v3_fwd},
+        },
       };
     }();
 
@@ -58,19 +90,31 @@ TEST_SUITE(FF_TEST_SUITE) {
   }
 
   TEST_CASE("perform_bwd_pass_expansion_for_invocation") {
-    auto mk_value_attrs = [](size_t node_id, std::optional<FwbTensorType> const &tensor_type) -> DynamicValueAttrs {
+    auto mk_value_attrs = [](size_t node_id, std::optional<DynamicTensorRole> const &tensor_role) -> DynamicValueAttrs {
      return DynamicValueAttrs{
         /*pcg_tensor_guid=*/parallel_tensor_guid_t{
-          DataflowOutput{
+          KwargDataflowOutput<TensorSlotName>{
             Node{node_id},
-            0_n,
+            TensorSlotName::OUTPUT,
           },
         },
         /*parallel_tensor_shape=*/std::nullopt,
+        /*shard_coord=*/std::nullopt,
         /*accessor=*/std::nullopt,
-        /*tensor_type=*/tensor_type,
+        /*role=*/tensor_role,
       };
     };
+
+    auto mk_slot = [](TensorSlotName const &slot_name, std::optional<DynamicTensorRole> role) 
+      -> DynamicTensorSlot
+    {
+      return DynamicTensorSlot{
+        /*slot_name=*/slot_name,
+        /*slot_tensor_role=*/role,
+      };
+    };
+
+    parallel_layer_guid_t pcg_layer_guid = parallel_layer_guid_t{Node{20}};
 
     DynamicNodeInvocation invocation = [&]() -> DynamicNodeInvocation {
       DynamicValueAttrs v1 = mk_value_attrs(0, std::nullopt);
@@ -78,34 +122,61 @@ TEST_SUITE(FF_TEST_SUITE) {
       DynamicValueAttrs v3 = mk_value_attrs(2, std::nullopt);
 
       return DynamicNodeInvocation{
-        /*inputs=*/{v1, v2, v1, v1},
+        /*inputs=*/{
+          {mk_slot(TensorSlotName::INPUT, std::nullopt), v1},
+          {mk_slot(TensorSlotName::WEIGHT, std::nullopt), v2},
+          {mk_slot(TensorSlotName::BIAS, std::nullopt), v1},
+          {mk_slot(TensorSlotName::SCALE, std::nullopt), v1},
+        },
         /*node_attrs=*/DynamicNodeAttrs{
-          /*pass_type=*/std::nullopt,
+          /*task_type=*/std::nullopt,
           /*device_coord=*/std::nullopt,
           /*mapping=*/std::nullopt,
+          /*op_attrs=*/std::nullopt,
+          /*pcg_layer_guid=*/pcg_layer_guid,
         },
-        /*outputs=*/{v3},
+        /*outputs=*/{
+          {mk_slot(TensorSlotName::OUTPUT, std::nullopt), v3},
+        },
       };
     }();
 
     DynamicNodeInvocation result = perform_bwd_pass_expansion_for_invocation(invocation);
 
     DynamicNodeInvocation correct = [&]() -> DynamicNodeInvocation {
-      DynamicValueAttrs v1_fwd = mk_value_attrs(0, FwbTensorType::FORWARD);
-      DynamicValueAttrs v2_fwd = mk_value_attrs(1, FwbTensorType::FORWARD);
-      DynamicValueAttrs v3_fwd = mk_value_attrs(2, FwbTensorType::FORWARD);
-      DynamicValueAttrs v1_grad = mk_value_attrs(0, FwbTensorType::GRADIENT);
-      DynamicValueAttrs v2_grad = mk_value_attrs(1, FwbTensorType::GRADIENT);
-      DynamicValueAttrs v3_grad = mk_value_attrs(2, FwbTensorType::GRADIENT);
+      DynamicTensorRole fwd_role = DynamicTensorRole{FwbTensorType::FORWARD};
+      DynamicTensorRole grad_role = DynamicTensorRole{FwbTensorType::GRADIENT};
+
+
+      DynamicValueAttrs v1_fwd = mk_value_attrs(0, fwd_role);
+      DynamicValueAttrs v2_fwd = mk_value_attrs(1, fwd_role);
+      DynamicValueAttrs v3_fwd = mk_value_attrs(2, fwd_role);
+      DynamicValueAttrs v1_grad = mk_value_attrs(0, grad_role);
+      DynamicValueAttrs v2_grad = mk_value_attrs(1, grad_role);
+      DynamicValueAttrs v3_grad = mk_value_attrs(2, grad_role);
 
       return DynamicNodeInvocation{
-        /*inputs=*/{v1_fwd, v2_fwd, v1_fwd, v1_fwd, v3_fwd, v3_grad},
+        /*inputs=*/{
+          {mk_slot(TensorSlotName::INPUT, fwd_role), v1_fwd}, 
+          {mk_slot(TensorSlotName::WEIGHT, fwd_role), v2_fwd},
+          {mk_slot(TensorSlotName::BIAS, fwd_role), v1_fwd},
+          {mk_slot(TensorSlotName::SCALE, fwd_role), v1_fwd}, 
+          {mk_slot(TensorSlotName::OUTPUT, fwd_role), v3_fwd}, 
+          {mk_slot(TensorSlotName::OUTPUT, grad_role), v3_grad},
+        },
         /*node_attrs=*/DynamicNodeAttrs{
-          /*pass_type=*/PassType::BWD,
+          /*pass_type=*/DynamicTaskType::BWD,
           /*device_coord=*/std::nullopt,
           /*mapping=*/std::nullopt,
+          /*op_attrs=*/std::nullopt,
+          /*pcg_layer_guid=*/pcg_layer_guid,
         },
-        /*outputs=*/{v1_grad, v2_grad, v1_grad, v1_grad},
+        /*outputs=*/{
+          {mk_slot(TensorSlotName::INPUT, grad_role), v1_grad},
+          {mk_slot(TensorSlotName::WEIGHT, grad_role), v2_grad}, 
+          {mk_slot(TensorSlotName::BIAS, grad_role), v1_grad}, 
+          {mk_slot(TensorSlotName::SCALE, grad_role), v1_grad},
+        },
       };
     }();
 

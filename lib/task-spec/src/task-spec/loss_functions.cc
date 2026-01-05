@@ -21,28 +21,11 @@
 
 namespace FlexFlow {
 
-enum Slots { LABEL, LOGIT_GRAD, ATTRS, PROFILING, KERNEL_DEVICE_TYPE };
-
-RuntimeTaskInvocation loss_attrs_backward(LossAttrs const &attrs,
-                        symbolic_forward_tensor_guid_t logit,
-                        symbolic_gradient_tensor_guid_t logit_grad,
-                        symbolic_loss_tensor_guid_t label) {
-  RuntimeTaskBinding b;
-  b.bind(TensorSlotName::LOGIT, logit);
-  b.bind_loss(label);
-  b.bind_grad(TensorSlotName::LOGIT, logit_grad);
-
-  b.bind_arg(ATTRS, attrs);
-  b.bind_arg(PROFILING, profiling_settings());
-  b.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
-
-  return RuntimeTaskInvocation{task_id_t::LOSS_BWD_TASK_ID, b};
-}
-
 static void backward_task_impl(TaskArgumentAccessor const &acc) {
-  auto attrs = acc.get_argument<LossAttrs>(ATTRS);
-  auto profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  auto kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
+  LossAttrs attrs = acc.get_loss_attrs();
+  ProfilingSettings profiling = acc.get_profiling_settings();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
+
   auto logit_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::LOGIT);
   auto logit = acc.get_tensor<Permissions::RO>(TensorSlotName::LOGIT);
   auto label = acc.get_loss_tensor<Permissions::RO>();

@@ -3,10 +3,12 @@
 
 #include "kernels/device_handle_t.dtg.h"
 #include "kernels/profiling_settings.dtg.h"
+#include "op-attrs/ops/loss_functions/loss_attrs.dtg.h"
 #include "op-attrs/pcg_operator_attrs.dtg.h"
+#include "pcg/optimizer_attrs.dtg.h"
 #include "task-spec/device_specific.h"
 #include "task-spec/ff_iteration_config.dtg.h"
-#include "task-spec/optimizer_slot_name.dtg.h"
+#include "pcg/optimizer_slot_name.dtg.h"
 #include "task-spec/task_argument_accessor/itask_argument_accessor.h"
 #include "op-attrs/tensor_slot_name.dtg.h"
 #include "task-spec/per_device_op_state.dtg.h"
@@ -19,8 +21,10 @@ struct TaskArgumentAccessor {
   device_handle_t get_ff_handle() const;
   DeviceType get_kernel_device_type() const;
   PCGOperatorAttrs get_op_attrs() const;
+  LossAttrs get_loss_attrs() const;
   PerDeviceOpState get_per_device_op_state() const;
   FFIterationConfig get_iteration_config() const;
+  OptimizerAttrs get_optimizer_attrs() const;
 
   TensorShape get_tensor_shape(TensorSlotName slot) const {
     NOT_IMPLEMENTED();
