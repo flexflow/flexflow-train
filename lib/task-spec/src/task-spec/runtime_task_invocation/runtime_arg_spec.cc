@@ -1,6 +1,7 @@
 #include "task-spec/runtime_task_invocation/runtime_arg_spec.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "task-spec/lower_op_task_invocation_to_runtime_task_invocation.h"
+#include "task-spec/runtime_task_invocation/runtime_arg_ref.h"
 #include "task-spec/symbolic/symbolic_layer_tensor_shape_signature.h"
 #include "utils/overload.h"
 

@@ -16,16 +16,12 @@
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_OPS_IMPL_CAST_H
 
 #include "op-attrs/ops/cast_attrs.dtg.h"
-#include "task-spec/ops/op_task_invocation.h"
 #include "task-spec/task_impl_function.dtg.h"
 
 namespace FlexFlow {
 
 TaskImplFunction get_cast_fwd_task_impl();
 TaskImplFunction get_cast_bwd_task_impl();
-
-OpTaskInvocation forward(CastAttrs const &);
-OpTaskInvocation backward(CastAttrs const &);
 
 } // namespace FlexFlow
 

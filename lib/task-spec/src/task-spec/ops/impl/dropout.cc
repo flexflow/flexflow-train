@@ -1,6 +1,5 @@
 #include "task-spec/ops/impl/dropout.h"
 #include "kernels/dropout_kernels.h"
-#include "task-spec/ops/op_task_invocation.h"
 #include "task-spec/profiling.h"
 #include "utils/hash-utils.h"
 
