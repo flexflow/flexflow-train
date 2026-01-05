@@ -8,6 +8,8 @@ namespace FlexFlow {
 
 DynamicOpenDataflowGraph make_empty_dynamic_open_dataflow_graph();
 
+nonnegative_int dynamic_graph_num_nodes(DynamicOpenDataflowGraph const &);
+
 bool full_dynamic_graph_satisfies(
   DynamicOpenDataflowGraph const &,
   std::function<bool(DynamicNodeAttrs const &)> const &,

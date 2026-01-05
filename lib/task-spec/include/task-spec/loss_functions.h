@@ -17,9 +17,6 @@
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_LOSS_FUNCTIONS_H
 
 #include "op-attrs/ops/loss_functions.h"
-#include "task-spec/symbolic/symbolic_forward_tensor_guid_t.dtg.h"
-#include "task-spec/symbolic/symbolic_gradient_tensor_guid_t.dtg.h"
-#include "task-spec/symbolic/symbolic_loss_tensor_guid_t.dtg.h"
 #include "task-spec/task_impl_function.dtg.h"
 
 namespace FlexFlow {

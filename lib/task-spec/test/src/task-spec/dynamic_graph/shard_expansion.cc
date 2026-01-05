@@ -103,7 +103,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
     };
 
-    auto mk_value = [](int src_node_id, 
+    auto mk_value = [](size_t src_node_id, 
                        TensorSlotName src_slot_name, 
                        std::optional<ParallelTensorSpaceCoordinate> const &shard_coord) 
       -> DynamicValueAttrs

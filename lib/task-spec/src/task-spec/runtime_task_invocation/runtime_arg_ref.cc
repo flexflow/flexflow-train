@@ -29,7 +29,7 @@ RuntimeArgRef<DeviceType> kernel_device_type() {
   }};
 }
 
-RuntimeArgRef<PerDeviceOpState> per_device_op_state_for_layer(symbolic_layer_guid_t layer) {
+RuntimeArgRef<PerDeviceOpState> per_device_op_state_for_layer(parallel_layer_guid_t layer) {
   return {RuntimeArgRefType{
     PerDeviceOpStateRuntimeArgRefType{
       layer,

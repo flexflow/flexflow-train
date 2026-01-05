@@ -1,5 +1,6 @@
 #include <doctest/doctest.h>
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
+#include "task-spec/dynamic_graph/dynamic_tensor_role.h"
 #include "task-spec/dynamic_graph/pass_expansion.h"
 
 using namespace ::FlexFlow;
@@ -184,46 +185,73 @@ TEST_SUITE(FF_TEST_SUITE) {
   }
 
   TEST_CASE("perform_pass_expansion(DynamicOpenDataflowGraph)") {
-    auto mk_node_attrs = [](std::optional<PassType> const &pass_type) -> DynamicNodeAttrs {
+    auto mk_node_attrs = [](size_t layer_id, std::optional<DynamicTaskType> const &pass_type) -> DynamicNodeAttrs {
       return DynamicNodeAttrs{
         /*pass_type=*/pass_type,
         /*device_coord=*/std::nullopt,
         /*mapping=*/std::nullopt,
+        /*op_attrs=*/std::nullopt,
+        /*pcg_layer_guid=*/parallel_layer_guid_t{Node{layer_id}},
       };
     };
 
-    auto mk_value_attrs = [](size_t node_id, std::optional<FwbTensorType> const &tensor_type) -> DynamicValueAttrs {
+    auto mk_value_attrs = [](size_t node_id, std::optional<DynamicTensorRole> const &tensor_type) -> DynamicValueAttrs {
      return DynamicValueAttrs{
         /*pcg_tensor_guid=*/parallel_tensor_guid_t{
-          DataflowOutput{
+          KwargDataflowOutput{
             Node{node_id},
-            0_n,
+            TensorSlotName::OUTPUT,
           },
         },
         /*parallel_tensor_shape=*/std::nullopt,
+        /*shard_coord=*/std::nullopt,
         /*accessor=*/std::nullopt,
-        /*tensor_type=*/tensor_type,
+        /*role=*/tensor_type,
       };
     };
 
     DynamicOpenDataflowGraph input = [&]() -> DynamicOpenDataflowGraph {
 
-      DynamicNodeAttrs n1 = mk_node_attrs(std::nullopt);
-      DynamicNodeAttrs n2 = mk_node_attrs(std::nullopt);
+      DynamicNodeAttrs n1 = mk_node_attrs(10, std::nullopt);
+      DynamicNodeAttrs n2 = mk_node_attrs(11, std::nullopt);
 
       DynamicValueAttrs v1 = mk_value_attrs(0, std::nullopt);
       DynamicValueAttrs v2 = mk_value_attrs(1, std::nullopt);
 
       std::unordered_set<DynamicNodeInvocation> invocation_set = {
         DynamicNodeInvocation{
-          /*inputs=*/{},
+          /*inputs=*/std::unordered_map<DynamicTensorSlot, DynamicValueAttrs>{},
           /*node_attrs=*/n1,
-          /*outputs=*/{v1},
+          /*outputs=*/std::unordered_map<DynamicTensorSlot, DynamicValueAttrs>{
+            {
+              DynamicTensorSlot{
+                /*slot_name=*/TensorSlotName::OUTPUT,
+                /*slot_tensor_role=*/std::nullopt,
+              },
+              v1,
+            },
+          },
         },
         DynamicNodeInvocation{
-          /*inputs=*/{v1},
+          /*inputs=*/std::unordered_map<DynamicTensorSlot, DynamicValueAttrs>{
+            {
+              DynamicTensorSlot{
+                /*slot_name=*/TensorSlotName::INPUT,
+                /*slot_tensor_role=*/std::nullopt,
+              },
+              v1
+            },
+          },
           /*node_attrs=*/n2,
-          /*outputs=*/{v2},
+          /*outputs=*/std::unordered_map<DynamicTensorSlot, DynamicValueAttrs>{
+            {
+              DynamicTensorSlot{
+                /*slot_name=*/TensorSlotName::OUTPUT,
+                /*slot_tensor_role=*/std::nullopt,
+              },
+              v2
+            },
+          },
         },
       };
 
@@ -233,31 +261,85 @@ TEST_SUITE(FF_TEST_SUITE) {
     DynamicOpenDataflowGraph result = perform_pass_expansion(input);
 
     DynamicOpenDataflowGraph correct = [&]() -> DynamicOpenDataflowGraph {
-      DynamicNodeAttrs n1_fwd = mk_node_attrs(PassType::FWD);
-      DynamicNodeAttrs n2_fwd = mk_node_attrs(PassType::FWD);
-      DynamicNodeAttrs n1_bwd = mk_node_attrs(PassType::BWD);
-      DynamicNodeAttrs n2_bwd = mk_node_attrs(PassType::BWD);
+      DynamicNodeAttrs n1_fwd = mk_node_attrs(10, DynamicTaskType::FWD);
+      DynamicNodeAttrs n2_fwd = mk_node_attrs(11, DynamicTaskType::FWD);
+      DynamicNodeAttrs n1_bwd = mk_node_attrs(10, DynamicTaskType::BWD);
+      DynamicNodeAttrs n2_bwd = mk_node_attrs(11, DynamicTaskType::BWD);
 
-      DynamicValueAttrs v1_activation = mk_value_attrs(0, FwbTensorType::FORWARD);
-      DynamicValueAttrs v1_gradient = mk_value_attrs(0, FwbTensorType::GRADIENT);
-      DynamicValueAttrs v2_activation = mk_value_attrs(1, FwbTensorType::FORWARD);
-      DynamicValueAttrs v2_gradient = mk_value_attrs(1, FwbTensorType::GRADIENT);
+      DynamicValueAttrs v1_activation = mk_value_attrs(0, mk_dynamic_tensor_role_fwd());
+      DynamicValueAttrs v1_gradient = mk_value_attrs(0, mk_dynamic_tensor_role_bwd());
+      DynamicValueAttrs v2_activation = mk_value_attrs(1, mk_dynamic_tensor_role_fwd());
+      DynamicValueAttrs v2_gradient = mk_value_attrs(1, mk_dynamic_tensor_role_bwd());
 
       std::unordered_set<DynamicNodeInvocation> invocation_set = {
         DynamicNodeInvocation{
-          /*inputs=*/{},
+          /*inputs=*/std::unordered_map<DynamicTensorSlot, DynamicValueAttrs>{},
           /*node_attrs=*/n1_fwd,
-          /*outputs=*/{v1_activation},
+          /*outputs=*/std::unordered_map{
+            std::pair{
+              DynamicTensorSlot{
+                /*slot_name=*/TensorSlotName::OUTPUT,
+                /*slot_tensor_role=*/mk_dynamic_tensor_role_fwd(),
+              },
+              v1_activation,
+            },
+          },
         },
         DynamicNodeInvocation{
-          /*inputs=*/{v1_activation},
+          /*inputs=*/std::unordered_map{
+            std::pair{
+              DynamicTensorSlot{
+                TensorSlotName::INPUT,
+                mk_dynamic_tensor_role_fwd(),
+              },
+              v1_activation,
+            },
+          },
           /*node_attrs=*/n2_fwd,
-          /*outputs=*/{v2_activation},
+          /*outputs=*/std::unordered_map{
+            std::pair{
+              DynamicTensorSlot{
+                TensorSlotName::OUTPUT,
+                mk_dynamic_tensor_role_fwd(),
+              },
+              v2_activation,
+            },
+          },
         },
         DynamicNodeInvocation{
-          /*inputs=*/{v1_activation, v2_activation, v2_gradient},
+          /*inputs=*/std::unordered_map{
+            std::pair{
+              DynamicTensorSlot{
+                TensorSlotName::INPUT,
+                mk_dynamic_tensor_role_fwd(),
+              },
+              v1_activation,
+            },
+            std::pair{
+              DynamicTensorSlot{
+                TensorSlotName::OUTPUT,
+                mk_dynamic_tensor_role_fwd(),
+              },
+              v2_activation,
+            },
+            std::pair{
+              DynamicTensorSlot{
+                TensorSlotName::OUTPUT,
+                mk_dynamic_tensor_role_bwd(),
+              },
+              v2_gradient,
+            },
+          },
           /*node_attrs=*/n2_bwd,
-          /*outputs=*/{v1_gradient},
+          /*outputs=*/std::unordered_map{
+            std::pair{
+              DynamicTensorSlot{
+                TensorSlotName::INPUT,
+                mk_dynamic_tensor_role_bwd(),
+              },
+              v1_gradient,
+            },
+          },
         },
       };
 

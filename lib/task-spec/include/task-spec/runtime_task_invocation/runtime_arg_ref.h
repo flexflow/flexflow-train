@@ -20,7 +20,7 @@ RuntimeArgRef<ProfilingSettings> profiling_settings();
 RuntimeArgRef<DeviceSpecific<device_handle_t>> ff_handle();
 RuntimeArgRef<FFIterationConfig> iteration_config();
 RuntimeArgRef<DeviceType> kernel_device_type();
-RuntimeArgRef<PerDeviceOpState> per_device_op_state_for_layer(symbolic_layer_guid_t);
+RuntimeArgRef<PerDeviceOpState> per_device_op_state_for_layer(parallel_layer_guid_t);
 
 } // namespace FlexFlow
 

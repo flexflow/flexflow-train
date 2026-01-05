@@ -18,6 +18,11 @@ DynamicOpenDataflowGraph make_empty_dynamic_open_dataflow_graph() {
   };
 }
 
+nonnegative_int dynamic_graph_num_nodes(DynamicOpenDataflowGraph const &g) {
+  return num_elements(get_dynamic_nodes(g));
+}
+
+
 bool full_dynamic_graph_satisfies(
   DynamicOpenDataflowGraph const &g,
   std::function<bool(DynamicNodeAttrs const &)> const &node_condition,
