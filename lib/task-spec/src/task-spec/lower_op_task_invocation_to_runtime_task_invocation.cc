@@ -1,7 +1,6 @@
 #include "task-spec/lower_op_task_invocation_to_runtime_task_invocation.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/computation_graph.h"
-#include "task-spec/runtime_task_invocation/fwb_tensor_slot.dtg.h"
 #include "task-spec/task_argument_accessor/task_tensor_parameter.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/transform.h"
@@ -36,25 +35,25 @@ namespace FlexFlow {
 //   });
 // }
 
-ConcreteArgSpec lower_argumentless_arg_ref_to_concrete_arg_spec(
-    ArgumentlessRuntimeArgRefType ref_type,
-    RuntimeArgConfig const &runtime_arg_config,
-    DeviceSpecific<device_handle_t> const &handle) {
-
-  switch (ref_type) {
-    case ArgumentlessRuntimeArgRefType::FF_HANDLE:
-      return ConcreteArgSpec::create(handle);
-    case ArgumentlessRuntimeArgRefType::PROFILING_SETTINGS:
-      return ConcreteArgSpec::create(runtime_arg_config.profiling_settings);
-    case ArgumentlessRuntimeArgRefType::FF_ITERATION_CONFIG:
-      PANIC("FF_ITERATION_CONFIG is currently not handled. Please create an "
-            "issue or contact the FlexFlow train developers if you need this "
-            "feature.");
-    case ArgumentlessRuntimeArgRefType::KERNEL_DEVICE_TYPE:
-      return ConcreteArgSpec::create(runtime_arg_config.kernel_device_type);
-    default:
-      PANIC("Unhandled RuntimeArgRefType", ref_type);
-  }
-}
+// ConcreteArgSpec lower_argumentless_arg_ref_to_concrete_arg_spec(
+//     ArgumentlessRuntimeArgRefType ref_type,
+//     RuntimeArgConfig const &runtime_arg_config,
+//     DeviceSpecific<device_handle_t> const &handle) {
+//
+//   switch (ref_type) {
+//     case ArgumentlessRuntimeArgRefType::FF_HANDLE:
+//       return ConcreteArgSpec::create(handle);
+//     case ArgumentlessRuntimeArgRefType::PROFILING_SETTINGS:
+//       return ConcreteArgSpec::create(runtime_arg_config.profiling_settings);
+//     case ArgumentlessRuntimeArgRefType::FF_ITERATION_CONFIG:
+//       PANIC("FF_ITERATION_CONFIG is currently not handled. Please create an "
+//             "issue or contact the FlexFlow train developers if you need this "
+//             "feature.");
+//     case ArgumentlessRuntimeArgRefType::KERNEL_DEVICE_TYPE:
+//       return ConcreteArgSpec::create(runtime_arg_config.kernel_device_type);
+//     default:
+//       PANIC("Unhandled RuntimeArgRefType", ref_type);
+//   }
+// }
 
 } // namespace FlexFlow

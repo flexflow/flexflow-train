@@ -5,8 +5,6 @@
 #include "task-spec/concrete_arg_spec.h"
 #include "task-spec/device_specific_per_device_op_state.dtg.h"
 #include "task-spec/ops/op_arg_ref_spec.h"
-#include "task-spec/runtime_task_invocation/runtime_arg_ref_spec.h"
-#include "task-spec/runtime_task_invocation/runtime_arg_config.dtg.h"
 
 namespace FlexFlow {
 
@@ -18,10 +16,10 @@ namespace FlexFlow {
 //     DeviceSpecific<device_handle_t> const &,
 //     std::function<std::optional<DeviceSpecificPerDeviceOpState>(symbolic_layer_guid_t)> const &);
 
-ConcreteArgSpec lower_argumentless_arg_ref_to_concrete_arg_spec(
-    ArgumentlessRuntimeArgRefType,
-    RuntimeArgConfig const &,
-    DeviceSpecific<device_handle_t> const &);
+// ConcreteArgSpec lower_argumentless_arg_ref_to_concrete_arg_spec(
+//     ArgumentlessRuntimeArgRefType,
+//     RuntimeArgConfig const &,
+//     DeviceSpecific<device_handle_t> const &);
 
 
 } // namespace FlexFlow

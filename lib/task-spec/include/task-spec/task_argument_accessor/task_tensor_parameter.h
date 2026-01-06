@@ -1,7 +1,6 @@
 #ifndef _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_TASK_ARGUMENT_ACCESSOR_TASK_TENSOR_PARAMETER_H
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_TASK_ARGUMENT_ACCESSOR_TASK_TENSOR_PARAMETER_H
 
-#include "task-spec/runtime_task_invocation/fwb_tensor_slot.dtg.h"
 #include "task-spec/task_argument_accessor/task_tensor_parameter.dtg.h"
 
 namespace FlexFlow {
