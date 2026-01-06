@@ -13,15 +13,18 @@ nonnegative_int dynamic_graph_num_nodes(DynamicOpenDataflowGraph const &);
 bool full_dynamic_graph_satisfies(
   DynamicOpenDataflowGraph const &,
   std::function<bool(DynamicNodeAttrs const &)> const &,
-  std::function<bool(DynamicValueAttrs const &)> const &);
+  std::function<bool(DynamicValueAttrs const &)> const &,
+  std::function<bool(DynamicTensorSlot const &)> const &);
 
 bool no_part_of_dynamic_graph_satisfies(
   DynamicOpenDataflowGraph const &,
   std::function<bool(DynamicNodeAttrs const &)> const &,
-  std::function<bool(DynamicValueAttrs const &)> const &);
+  std::function<bool(DynamicValueAttrs const &)> const &,
+  std::function<bool(DynamicTensorSlot const &)> const &);
 
 std::unordered_multiset<DynamicNodeAttrs> get_dynamic_nodes(DynamicOpenDataflowGraph const &);
 std::unordered_multiset<DynamicValueAttrs> get_dynamic_values(DynamicOpenDataflowGraph const &);
+std::unordered_multiset<DynamicTensorSlot> get_dynamic_tensor_slots(DynamicOpenDataflowGraph const &);
 std::unordered_set<DynamicNodeInvocation> get_dynamic_invocation_set(DynamicOpenDataflowGraph const &);
 
 DynamicOpenDataflowGraph

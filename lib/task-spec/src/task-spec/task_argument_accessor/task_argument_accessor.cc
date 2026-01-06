@@ -3,26 +3,34 @@
 namespace FlexFlow {
 
 ProfilingSettings TaskArgumentAccessor::get_profiling_settings() const { 
-  NOT_IMPLEMENTED();
+  return this->ptr->get_profiling_settings();
 }
 
 device_handle_t TaskArgumentAccessor::get_ff_handle() const { 
-  NOT_IMPLEMENTED();
+  return this->ptr->get_ff_handle();
 }
 DeviceType TaskArgumentAccessor::get_kernel_device_type() const {
-  NOT_IMPLEMENTED();
+  return this->ptr->get_kernel_device_type();
 }
 
 PCGOperatorAttrs TaskArgumentAccessor::get_op_attrs() const {
-  NOT_IMPLEMENTED();
+  return this->ptr->get_op_attrs();
+}
+
+LossAttrs TaskArgumentAccessor::get_loss_attrs() const {
+  return this->ptr->get_loss_attrs();
 }
 
 PerDeviceOpState TaskArgumentAccessor::get_per_device_op_state() const {
-  NOT_IMPLEMENTED();
+  return this->ptr->get_per_device_op_state();
 }
 
 FFIterationConfig TaskArgumentAccessor::get_iteration_config() const {
-  NOT_IMPLEMENTED();
+  return this->ptr->get_iteration_config();
+}
+
+OptimizerAttrs TaskArgumentAccessor::get_optimizer_attrs() const {
+  return this->ptr->get_optimizer_attrs();
 }
 
 } // namespace FlexFlow

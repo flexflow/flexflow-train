@@ -8,6 +8,7 @@ namespace FlexFlow {
 
 bool node_is_pass_expanded(DynamicNodeAttrs const &);
 bool value_is_pass_expanded(DynamicValueAttrs const &);
+bool slot_is_pass_expanded(DynamicTensorSlot const &);
 
 bool no_part_of_graph_is_pass_expanded(DynamicOpenDataflowGraph const &);
 bool graph_is_fully_pass_expanded(DynamicOpenDataflowGraph const &);

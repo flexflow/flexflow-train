@@ -1,5 +1,6 @@
 #include <doctest/doctest.h>
 #include "task-spec/dynamic_graph/shard_expansion.h"
+#include "test/utils/doctest/fmt/unordered_set.h"
 
 using namespace ::FlexFlow;
 
@@ -209,6 +210,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         mc2_output_2_coord),
     };
 
-    ASSERT(result == correct);
+    CHECK(result.size() == correct.size());
+    CHECK(result == correct);
   }
 }
