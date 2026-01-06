@@ -28,8 +28,6 @@ struct ITaskArgumentAccessor {
 
   virtual GenericTensorAccessor get_tensor(TaskTensorParameter,
                                            Permissions priv) const = 0;
-  virtual VariadicGenericTensorAccessor get_variadic_tensor(
-      TaskTensorParameter slot, Permissions priv) const = 0;
 
   virtual ProfilingSettings get_profiling_settings() const = 0;
   virtual device_handle_t get_ff_handle() const = 0;

@@ -51,6 +51,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       /*mapping=*/std::nullopt,
       /*op_attrs=*/std::nullopt,
       /*pcg_layer_guid=*/parallel_layer_guid_t{Node{4}},
+      /*per_device_op_state=*/std::nullopt,
     };
 
 

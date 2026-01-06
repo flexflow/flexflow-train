@@ -1,10 +1,16 @@
 #include "task-spec/device_specific.h"
 #include "utils/archetypes/value_type.h"
 
-namespace FlexFlow {
+using T = ::FlexFlow::value_type<0>;
 
-using T = value_type<0>;
+namespace FlexFlow {
 
 template struct DeviceSpecific<T>;
 
 } // namespace FlexFlow
+
+namespace std {
+
+template struct hash<::FlexFlow::DeviceSpecific<T>>;
+
+}

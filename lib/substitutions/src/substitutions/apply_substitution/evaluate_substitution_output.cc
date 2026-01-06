@@ -7,6 +7,7 @@
 #include "utils/bidict/generate_bidict.h"
 #include "utils/containers/map_keys.h"
 #include "utils/containers/map_values.h"
+#include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/permute_labelled_open_kwarg_dataflow_graph_input_ids.h"
 #include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/permute_labelled_open_kwarg_dataflow_graph_node_ids.h"
 #include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/rewrite_labelled_open_kwarg_dataflow_graph_node_labels.h"
 #include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/rewrite_labelled_open_kwarg_dataflow_graph_value_labels.h"
@@ -14,7 +15,9 @@
 #include "utils/graph/node/algorithms/new_node.dtg.h"
 #include "utils/graph/open_dataflow_graph/algorithms/generate_new_input_id_permutation.h"
 #include "utils/graph/open_dataflow_graph/algorithms/new_dataflow_graph_input.dtg.h"
+#include "utils/graph/open_kwarg_dataflow_graph/algorithms/generate_new_kwarg_dataflow_graph_input_id_permutation.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/new_kwarg_dataflow_graph_input.dtg.h"
+#include "utils/graph/open_kwarg_dataflow_graph/algorithms/generate_new_kwarg_dataflow_graph_input_id_permutation.h"
 
 namespace FlexFlow {
 
@@ -30,23 +33,24 @@ std::pair<SubParallelComputationGraph, OutputExprToResultSubPCGMapping>
 
   bidict<NewNode, Node> new_node_id_permutation =
       generate_new_node_id_permutation(sub.output_graph_expr.raw_graph);
+  
+  int graph_input_ctr = 0;
+  auto graph_input_source = [&]() -> int {
+    int result = graph_input_ctr;
+    graph_input_ctr++;
+    return result;
+  };
+
   bidict<KwargDataflowGraphInput<int>, KwargDataflowGraphInput<int>> new_input_id_permutation =
-       generate_bidict(get_all_kwarg_dataflow_graph_inputs(sub.output_graph_expr.raw_graph),
-                       [](KwargDataflowGraphInput<int> const &i) {
-                         return i;
-                       });
-  // bidict<NewKwargDataflowGraphInput<int>, KwargDataflowGraphInput<int>> new_input_id_permutation =
-  //     generate_new_input_id_permutation(sub.output_graph_expr.raw_graph);
-  // LabelledOpenKwargDataflowGraphView<OutputOperatorAttrsAssignment, std::monostate>
-  //     permuted =
-  //         permute_input_ids(permute_node_ids(sub.output_graph_expr.raw_graph,
-  //                                            new_node_id_permutation),
-  //                           new_input_id_permutation);
-  // TODO(@lockshaw)(#pr): do we need the input id permutation?
+      generate_new_kwarg_dataflow_graph_input_id_permutation(
+        sub.output_graph_expr.raw_graph, std::function{graph_input_source});
+
   LabelledOpenKwargDataflowGraphView<OutputOperatorAttrsAssignment, std::monostate, int, TensorSlotName>
       permuted =
+        permute_labelled_open_kwarg_dataflow_graph_input_ids(
           permute_labelled_open_kwarg_dataflow_graph_node_ids(
-              sub.output_graph_expr.raw_graph, new_node_id_permutation);
+              sub.output_graph_expr.raw_graph, new_node_id_permutation),
+          new_input_id_permutation);
 
   LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs, std::monostate, int, TensorSlotName>
       without_shapes = rewrite_labelled_open_kwarg_dataflow_graph_node_labels(

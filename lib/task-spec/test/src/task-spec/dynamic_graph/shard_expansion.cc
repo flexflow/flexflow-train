@@ -140,6 +140,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*mapping=*/mapped_task_group,
         /*op_attrs=*/std::nullopt,
         /*pcg_layer_guid=*/parallel_layer_guid_t{Node{20}},
+        /*per_device_op_state=*/std::nullopt,
       },
       /*outputs=*/{
         {
@@ -181,6 +182,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*mapping=*/mapped_task_group,
           /*op_attrs=*/std::nullopt,
           /*pcg_layer_guid=*/parallel_layer_guid_t{Node{20}},
+          /*per_device_op_state=*/std::nullopt,
         },
         /*outputs=*/{
           {

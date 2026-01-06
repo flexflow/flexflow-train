@@ -15,23 +15,37 @@
 
 #include "task-spec/ops/impl/concat.h"
 #include "kernels/concat_kernels.h"
+#include "op-attrs/tensor_slot_name.h"
 #include "task-spec/profiling.h"
 #include "task-spec/variadic_tensor_ref.h"
+#include "utils/containers/slice.h"
 #include "utils/hash-utils.h"
 
 namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::Concat;
 
+static std::vector<TensorSlotName> get_input_slots(ConcatAttrs const &attrs) {
+  return
+    slice(get_variadic_inputs_slot_name_sequence(), 0, attrs.num_inputs.int_from_int_ge_two());
+}
+
 static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
   ConcatAttrs attrs = acc.get_op_attrs().require_concat();
 
-  auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
-  auto inputs = acc.get_variadic_tensor<Permissions::RO>(TensorSlotName::INPUT);
+  std::vector<TensorSlotName> input_slots = get_input_slots(attrs);
 
-  assert(inputs.size() <= MAX_NUM_INPUTS);
+  std::vector<GenericTensorAccessorR> inputs 
+    = transform(input_slots,
+                [&](TensorSlotName input_slot_name) -> GenericTensorAccessorR {
+                  return acc.get_tensor<Permissions::RO>(input_slot_name);
+                });
+    
+  ASSERT(inputs.size() <= MAX_NUM_INPUTS);
+
+  auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
 
   return profile(forward_kernel,
                  profiling,
@@ -48,10 +62,17 @@ static std::optional<milliseconds_t>
   DeviceType kernel_device_type = acc.get_kernel_device_type();
   ConcatAttrs attrs = acc.get_op_attrs().require_concat();
 
-  auto input_grads = acc.get_variadic_tensor_grad<Permissions::RW>(TensorSlotName::INPUT);
-  auto output_grad = acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
+  std::vector<TensorSlotName> input_slots = get_input_slots(attrs);
 
-  assert(input_grads.size() <= MAX_NUM_INPUTS);
+  std::vector<GenericTensorAccessorW> input_grads
+    = transform(input_slots,
+                [&](TensorSlotName input_slot_name) -> GenericTensorAccessorW {
+                  return acc.get_tensor_grad<Permissions::RW>(input_slot_name);
+                });
+
+  ASSERT(input_grads.size() <= MAX_NUM_INPUTS);
+    
+  auto output_grad = acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
 
   return profile(backward_kernel,
                  profiling,

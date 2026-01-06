@@ -3,6 +3,7 @@
 
 #include "pcg/device_id_t.dtg.h"
 #include "task-spec/serialization.h"
+#include "utils/hash/tuple.h"
 
 namespace FlexFlow {
 
@@ -40,7 +41,19 @@ private:
   std::tuple<decltype(ptr) const &, decltype(device_idx) const &> tie() const {
     return std::tie(this->ptr, this->device_idx);
   }
+
+  friend struct ::std::hash<DeviceSpecific<T>>;
+
+  friend std::string format_as(DeviceSpecific<T> const &d) {
+    return fmt::format("DeviceSpecific({:p}, {})", static_cast<void*>(d.ptr.get()), d.device_idx);
+  }
+
 };
+
+template <typename T>
+std::ostream &operator<<(std::ostream &s, DeviceSpecific<T> const &d) {
+  return (s << fmt::to_string(d));
+}
 
 // manually force serialization to make DeviceSpecific trivially
 // serializable
@@ -48,5 +61,16 @@ private:
 // struct is_trivially_serializable<DeviceSpecific<T>> : std::true_type {};
 
 } // namespace FlexFlow
+
+namespace std {
+
+template <typename T>
+struct hash<::FlexFlow::DeviceSpecific<T>> {
+  size_t operator()(::FlexFlow::DeviceSpecific<T> const &x) const {
+    return get_std_hash(x.tie());
+  }
+};
+
+}
 
 #endif

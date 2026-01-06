@@ -18,5 +18,3 @@ src_includes = []
 [[fields]]
 name = "name"
 type = "::FlexFlow::TensorSlotName"
-
-

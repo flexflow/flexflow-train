@@ -3,6 +3,8 @@ name = "DeviceSpecificPerDeviceOpState"
 type = "variant"
 features = [
   "eq",
+  "hash",
+  "fmt",
 ]
 
 includes = [
@@ -21,6 +23,10 @@ includes = [
   "kernels/softmax_per_device_state.dtg.h",
   "task-spec/device_specific.h",
   "<optional>",
+]
+
+src_includes = [
+  "utils/fmt/optional.h",
 ]
 
 [[values]]

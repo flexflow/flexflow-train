@@ -25,4 +25,3 @@ type = "::FlexFlow::TensorSlotName"
 [[fields]]
 name = "optimizer_slot"
 type = "::FlexFlow::OptimizerSlotName"
-

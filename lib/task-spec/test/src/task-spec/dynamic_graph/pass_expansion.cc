@@ -51,6 +51,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*mapping=*/std::nullopt,
           /*op_attrs=*/std::nullopt,
           /*pcg_layer_guid=*/pcg_layer_guid,
+          /*per_device_op_state=*/std::nullopt,
         },
         /*outputs=*/{
           {mk_slot(TensorSlotName::OUTPUT, std::nullopt), v3},
@@ -80,6 +81,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*mapping=*/std::nullopt,
           /*op_attrs=*/std::nullopt,
           /*pcg_layer_guid=*/pcg_layer_guid,
+          /*per_device_op_state=*/std::nullopt,
         },
         /*outputs=*/{
           {mk_slot(TensorSlotName::OUTPUT, fwd_role), v3_fwd},
@@ -135,6 +137,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*mapping=*/std::nullopt,
           /*op_attrs=*/std::nullopt,
           /*pcg_layer_guid=*/pcg_layer_guid,
+          /*per_device_op_state=*/std::nullopt,
         },
         /*outputs=*/{
           {mk_slot(TensorSlotName::OUTPUT, std::nullopt), v3},
@@ -171,6 +174,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*mapping=*/std::nullopt,
           /*op_attrs=*/std::nullopt,
           /*pcg_layer_guid=*/pcg_layer_guid,
+          /*per_device_op_state=*/std::nullopt,
         },
         /*outputs=*/{
           {mk_slot(TensorSlotName::INPUT, grad_role), v1_grad},
@@ -192,6 +196,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*mapping=*/std::nullopt,
         /*op_attrs=*/std::nullopt,
         /*pcg_layer_guid=*/parallel_layer_guid_t{Node{layer_id}},
+        /*per_device_op_state=*/std::nullopt,
       };
     };
 

@@ -14,9 +14,16 @@ namespace FlexFlow {
 struct LocalTaskArgumentAccessor : public ITaskArgumentAccessor {
   explicit LocalTaskArgumentAccessor(
       Allocator const &allocator,
-      std::unordered_map<TaskTensorParameter, TensorSlotBacking> const
+      std::unordered_map<TaskTensorParameter, GenericTensorAccessorW> const
           &tensor_slots_backing,
-      std::unordered_map<arg_slot_id_t, ConcreteArgSpec> const &arg_slots_backing,
+      ProfilingSettings const &profiling_settings,
+      device_handle_t const &ff_handle,
+      DeviceType kernel_device_type,
+      PCGOperatorAttrs const &op_attrs,
+      std::optional<LossAttrs> const &loss_attrs,
+      std::optional<PerDeviceOpState> const &per_device_op_state,
+      FFIterationConfig const &iteration_config,
+      std::optional<OptimizerAttrs> const &optimizer_attrs,
       size_t device_idx);
 
   LocalTaskArgumentAccessor(LocalTaskArgumentAccessor const &) = delete;
@@ -26,8 +33,15 @@ struct LocalTaskArgumentAccessor : public ITaskArgumentAccessor {
 
   GenericTensorAccessor get_tensor(TaskTensorParameter slot,
                                    Permissions priv) const override;
-  VariadicGenericTensorAccessor get_variadic_tensor(
-      TaskTensorParameter, Permissions priv) const override;
+
+  ProfilingSettings get_profiling_settings() const override;
+  device_handle_t get_ff_handle() const override;
+  DeviceType get_kernel_device_type() const override;
+  PCGOperatorAttrs get_op_attrs() const override;
+  LossAttrs get_loss_attrs() const override;
+  PerDeviceOpState get_per_device_op_state() const override;
+  FFIterationConfig get_iteration_config() const override;
+  OptimizerAttrs get_optimizer_attrs() const override;
 
   Allocator get_allocator() const override;
 
@@ -35,9 +49,17 @@ struct LocalTaskArgumentAccessor : public ITaskArgumentAccessor {
 
 private:
   Allocator allocator;
-  std::unordered_map<TaskTensorParameter, TensorSlotBacking>
-      tensor_slots_backing;
-  std::unordered_map<arg_slot_id_t, ConcreteArgSpec> arg_slots_backing;
+  std::unordered_map<TaskTensorParameter, GenericTensorAccessorW> tensor_slots_backing;
+
+  ProfilingSettings profiling_settings;
+  device_handle_t ff_handle;
+  DeviceType kernel_device_type;
+  PCGOperatorAttrs op_attrs;
+  std::optional<LossAttrs> loss_attrs;
+  std::optional<PerDeviceOpState> per_device_op_state;
+  FFIterationConfig iteration_config;
+  std::optional<OptimizerAttrs> optimizer_attrs;
+
   device_id_t device_idx; 
 };
 

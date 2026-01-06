@@ -854,7 +854,10 @@ tensor_guid_t ComputationGraphBuilder::concat(
   ff_dim_t abs_axis = ff_dim_t_from_relative_ff_dim_t(
       axis, get_num_dims(this->get_shape(inputs.at(0)).dims));
 
-  ConcatAttrs attrs = ConcatAttrs{abs_axis};
+  ConcatAttrs attrs = ConcatAttrs{
+    /*axis=*/abs_axis,
+    /*num_inputs=*/int_ge_two{inputs.size()},
+  };
 
   std::string name =
       maybe_name.value_or(get_default_name(ComputationGraphOpAttrs{attrs}));

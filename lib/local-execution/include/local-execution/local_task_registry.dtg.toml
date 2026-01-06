@@ -8,7 +8,7 @@ features = [
 ]
 
 includes = [
-  "task-spec/task_signature_impl.dtg.h",
+  "task-spec/task_impl_function.dtg.h",
 ]
 
 src_includes = [
@@ -18,4 +18,4 @@ src_includes = [
 
 [[fields]]
 name = "task_mapping"
-type = "std::unordered_map<::FlexFlow::task_id_t, ::FlexFlow::TaskSignatureAndImpl>"
+type = "std::unordered_map<::FlexFlow::task_id_t, ::FlexFlow::TaskImplFunction>"
