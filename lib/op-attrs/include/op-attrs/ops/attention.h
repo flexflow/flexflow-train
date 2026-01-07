@@ -106,22 +106,25 @@ tl::expected<ParallelTensorShape, std::string>
                      ParallelTensorShape const &input_k,
                      ParallelTensorShape const &input_v);
 
-tl::expected<std::unordered_map<TensorSlotName, ParallelTensorShape>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, ParallelTensorShape>,
+             std::string>
     get_weight_shapes(MultiHeadAttentionAttrs const &,
                       ParallelTensorShape const &input_q,
                       ParallelTensorShape const &input_k,
                       ParallelTensorShape const &input_v);
 
-tl::expected<std::unordered_map<TensorSlotName, InitializerAttrs>, std::string> get_initializers(
-    MultiHeadAttentionAttrs const &,
-    TensorShape const &input_q,
-    TensorShape const &input_k,
-    TensorShape const &input_v,
-    std::optional<InitializerAttrs> const &weights_initializer = std::nullopt,
-    std::optional<InitializerAttrs> const &input_bias_initializer =
-        std::nullopt,
-    std::optional<InitializerAttrs> const &output_bias_initializer =
-        std::nullopt);
+tl::expected<std::unordered_map<TensorSlotName, InitializerAttrs>, std::string>
+    get_initializers(
+        MultiHeadAttentionAttrs const &,
+        TensorShape const &input_q,
+        TensorShape const &input_k,
+        TensorShape const &input_v,
+        std::optional<InitializerAttrs> const &weights_initializer =
+            std::nullopt,
+        std::optional<InitializerAttrs> const &input_bias_initializer =
+            std::nullopt,
+        std::optional<InitializerAttrs> const &output_bias_initializer =
+            std::nullopt);
 
 } // namespace FlexFlow
 

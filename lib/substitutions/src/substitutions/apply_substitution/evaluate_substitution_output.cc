@@ -17,7 +17,6 @@
 #include "utils/graph/open_dataflow_graph/algorithms/new_dataflow_graph_input.dtg.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/generate_new_kwarg_dataflow_graph_input_id_permutation.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/new_kwarg_dataflow_graph_input.dtg.h"
-#include "utils/graph/open_kwarg_dataflow_graph/algorithms/generate_new_kwarg_dataflow_graph_input_id_permutation.h"
 
 namespace FlexFlow {
 
@@ -33,7 +32,7 @@ std::pair<SubParallelComputationGraph, OutputExprToResultSubPCGMapping>
 
   bidict<NewNode, Node> new_node_id_permutation =
       generate_new_node_id_permutation(sub.output_graph_expr.raw_graph);
-  
+
   int graph_input_ctr = 0;
   auto graph_input_source = [&]() -> int {
     int result = graph_input_ctr;
@@ -41,18 +40,25 @@ std::pair<SubParallelComputationGraph, OutputExprToResultSubPCGMapping>
     return result;
   };
 
-  bidict<KwargDataflowGraphInput<int>, KwargDataflowGraphInput<int>> new_input_id_permutation =
-      generate_new_kwarg_dataflow_graph_input_id_permutation(
-        sub.output_graph_expr.raw_graph, std::function{graph_input_source});
+  bidict<KwargDataflowGraphInput<int>, KwargDataflowGraphInput<int>>
+      new_input_id_permutation =
+          generate_new_kwarg_dataflow_graph_input_id_permutation(
+              sub.output_graph_expr.raw_graph,
+              std::function{graph_input_source});
 
-  LabelledOpenKwargDataflowGraphView<OutputOperatorAttrsAssignment, std::monostate, int, TensorSlotName>
-      permuted =
-        permute_labelled_open_kwarg_dataflow_graph_input_ids(
+  LabelledOpenKwargDataflowGraphView<OutputOperatorAttrsAssignment,
+                                     std::monostate,
+                                     int,
+                                     TensorSlotName>
+      permuted = permute_labelled_open_kwarg_dataflow_graph_input_ids(
           permute_labelled_open_kwarg_dataflow_graph_node_ids(
               sub.output_graph_expr.raw_graph, new_node_id_permutation),
           new_input_id_permutation);
 
-  LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs, std::monostate, int, TensorSlotName>
+  LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs,
+                                     std::monostate,
+                                     int,
+                                     TensorSlotName>
       without_shapes = rewrite_labelled_open_kwarg_dataflow_graph_node_labels(
           permuted,
           [&](Node const &n, OutputOperatorAttrsAssignment const &attrs) {
@@ -64,13 +70,14 @@ std::pair<SubParallelComputationGraph, OutputExprToResultSubPCGMapping>
           });
 
   bidict<input_parallel_tensor_guid_t, OutputGraphExprInput> result_input_map =
-      transform_keys(transform_values(new_input_id_permutation,
-                                      [](KwargDataflowGraphInput<int> const &i) {
-                                        return OutputGraphExprInput{i};
-                                      }),
-                     [](KwargDataflowGraphInput<int> const &i) {
-                       return input_parallel_tensor_guid_t{i};
-                     });
+      transform_keys(
+          transform_values(new_input_id_permutation,
+                           [](KwargDataflowGraphInput<int> const &i) {
+                             return OutputGraphExprInput{i};
+                           }),
+          [](KwargDataflowGraphInput<int> const &i) {
+            return input_parallel_tensor_guid_t{i};
+          });
 
   bidict<parallel_layer_guid_t, OutputGraphExprNode> result_node_map =
       transform_keys(
@@ -79,22 +86,29 @@ std::pair<SubParallelComputationGraph, OutputExprToResultSubPCGMapping>
               [](Node const &n) { return OutputGraphExprNode{n}; }),
           [](NewNode const &n) { return parallel_layer_guid_t{n.raw_node}; });
 
-  std::unordered_map<KwargDataflowGraphInput<int>, ParallelTensorShape> input_shapes =
-      map_values(map_keys(match.input_assignment,
-                          [&](PatternInput const &i) {
-                            return result_input_map
-                                .at_r(sub.inputs_mapping.at_l(i))
-                                .raw_dataflow_graph_input;
-                          }),
-                 [&](open_parallel_tensor_guid_t const &v) {
-                   return spcg.raw_graph.at(v.raw_open_dataflow_value).shape;
-                 });
-  LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs, ParallelTensorShape, int, TensorSlotName>
+  std::unordered_map<KwargDataflowGraphInput<int>, ParallelTensorShape>
+      input_shapes = map_values(
+          map_keys(match.input_assignment,
+                   [&](PatternInput const &i) {
+                     return result_input_map.at_r(sub.inputs_mapping.at_l(i))
+                         .raw_dataflow_graph_input;
+                   }),
+          [&](open_parallel_tensor_guid_t const &v) {
+            return spcg.raw_graph.at(v.raw_open_dataflow_value).shape;
+          });
+  LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs,
+                                     ParallelTensorShape,
+                                     int,
+                                     TensorSlotName>
       with_shapes = perform_shape_inference(without_shapes, input_shapes);
-  LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs, ParallelTensorAttrs, int, TensorSlotName>
+  LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs,
+                                     ParallelTensorAttrs,
+                                     int,
+                                     TensorSlotName>
       with_attrs = rewrite_labelled_open_kwarg_dataflow_graph_value_labels(
           with_shapes,
-          [](OpenKwargDataflowValue<int, TensorSlotName> const &, ParallelTensorShape const &s) {
+          [](OpenKwargDataflowValue<int, TensorSlotName> const &,
+             ParallelTensorShape const &s) {
             return ParallelTensorAttrs{
                 s,
                 CreateGrad::YES,

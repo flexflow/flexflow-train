@@ -12,6 +12,6 @@ struct adl_serializer<std::monostate> {
   static void from_json(json const &, std::monostate &);
 };
 
-} // namespace FlexFlow
+} // namespace nlohmann
 
 #endif

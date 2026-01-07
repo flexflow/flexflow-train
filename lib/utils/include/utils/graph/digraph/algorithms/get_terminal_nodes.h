@@ -10,7 +10,6 @@ namespace FlexFlow {
  */
 std::unordered_set<Node> get_terminal_nodes(DiGraphView const &graph);
 
-
 } // namespace FlexFlow
 
 #endif

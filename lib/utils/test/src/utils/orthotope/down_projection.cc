@@ -63,9 +63,10 @@ TEST_SUITE(FF_TEST_SUITE) {
               "b",
           });
 
-      DownProjection<std::string, int> projection = make_empty_down_projection<std::string, int>();
+      DownProjection<std::string, int> projection =
+          make_empty_down_projection<std::string, int>();
       project_dims(projection, {"a", "b"}, 3);
       CHECK_THROWS(project_dims(projection, {}, 4));
-   }
+    }
   }
 }

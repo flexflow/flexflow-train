@@ -26,14 +26,14 @@ SubParallelComputationGraphEdge
                                     parallel_tensor_use_t const &use) {
   return SubParallelComputationGraphEdge{
       mk_open_kwarg_dataflow_edge_from_src_val_and_dst(
-        tensor.raw_open_dataflow_value,
-        use.raw_dataflow_input),
+          tensor.raw_open_dataflow_value, use.raw_dataflow_input),
   };
 }
 
 open_parallel_tensor_guid_t
     get_parallel_tensor(SubParallelComputationGraphEdge const &e) {
-  OpenKwargDataflowValue<int, TensorSlotName> raw_value = get_src_of_open_kwarg_dataflow_edge(e.raw_edge);
+  OpenKwargDataflowValue<int, TensorSlotName> raw_value =
+      get_src_of_open_kwarg_dataflow_edge(e.raw_edge);
   return open_parallel_tensor_guid_t{raw_value};
 }
 

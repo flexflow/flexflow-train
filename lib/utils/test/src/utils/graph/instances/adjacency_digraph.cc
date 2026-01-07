@@ -1,7 +1,7 @@
-#include "utils/graph/digraph/digraph.h"
-#include "utils/containers/repeat.h"
-#include "utils/graph/digraph/directed_edge_query.h"
 #include "utils/graph/instances/adjacency_digraph.h"
+#include "utils/containers/repeat.h"
+#include "utils/graph/digraph/digraph.h"
+#include "utils/graph/digraph/directed_edge_query.h"
 #include "utils/graph/node/node_query.h"
 #include <doctest/doctest.h>
 

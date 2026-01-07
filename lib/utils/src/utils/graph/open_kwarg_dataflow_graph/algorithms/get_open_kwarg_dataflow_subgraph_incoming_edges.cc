@@ -6,11 +6,9 @@ namespace FlexFlow {
 using GraphInputName = ordered_value_type<0>;
 using SlotName = ordered_value_type<1>;
 
-template
-  std::unordered_set<OpenKwargDataflowEdge<GraphInputName, SlotName>> 
+template std::unordered_set<OpenKwargDataflowEdge<GraphInputName, SlotName>>
     get_open_kwarg_dataflow_subgraph_incoming_edges(
-      OpenKwargDataflowGraphView<GraphInputName, SlotName> const &,
-      std::unordered_set<Node> const &);
-
+        OpenKwargDataflowGraphView<GraphInputName, SlotName> const &,
+        std::unordered_set<Node> const &);
 
 } // namespace FlexFlow

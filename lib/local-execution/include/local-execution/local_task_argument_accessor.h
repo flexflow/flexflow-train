@@ -49,7 +49,8 @@ struct LocalTaskArgumentAccessor : public ITaskArgumentAccessor {
 
 private:
   Allocator allocator;
-  std::unordered_map<TaskTensorParameter, GenericTensorAccessorW> tensor_slots_backing;
+  std::unordered_map<TaskTensorParameter, GenericTensorAccessorW>
+      tensor_slots_backing;
 
   ProfilingSettings profiling_settings;
   device_handle_t ff_handle;
@@ -60,7 +61,7 @@ private:
   FFIterationConfig iteration_config;
   std::optional<OptimizerAttrs> optimizer_attrs;
 
-  device_id_t device_idx; 
+  device_id_t device_idx;
 };
 
 CHECK_RC_COPY_VIRTUAL_COMPLIANT(LocalTaskArgumentAccessor);

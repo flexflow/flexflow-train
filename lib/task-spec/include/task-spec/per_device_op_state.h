@@ -8,9 +8,8 @@
 
 namespace FlexFlow {
 
-PerDeviceOpState
-    get_device_state_from_device_specific(DeviceSpecificPerDeviceOpState const &,
-                                          device_id_t device_idx);
+PerDeviceOpState get_device_state_from_device_specific(
+    DeviceSpecificPerDeviceOpState const &, device_id_t device_idx);
 
 }
 

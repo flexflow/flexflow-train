@@ -4,8 +4,7 @@
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
 namespace FlexFlow {
 
-DynamicOpenDataflowGraph
-  perform_per_device_op_state_initialization(
+DynamicOpenDataflowGraph perform_per_device_op_state_initialization(
     DynamicOpenDataflowGraph const &);
 
 } // namespace FlexFlow

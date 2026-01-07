@@ -11,8 +11,8 @@ namespace FlexFlow {
 std::unordered_map<TensorSlotName, IncomingTensorRole>
     get_conv2d_incoming_tensor_roles(Conv2DAttrs const &attrs) {
   std::unordered_map<TensorSlotName, IncomingTensorRole> result = {
-    {TensorSlotName::INPUT, IncomingTensorRole::INPUT},
-    {TensorSlotName::FILTER, IncomingTensorRole::WEIGHT},
+      {TensorSlotName::INPUT, IncomingTensorRole::INPUT},
+      {TensorSlotName::FILTER, IncomingTensorRole::WEIGHT},
   };
 
   if (attrs.use_bias) {
@@ -89,20 +89,20 @@ TensorShape get_output_shape(Conv2DAttrs const &attrs,
                      input.datatype};
 }
 
-std::unordered_map<TensorSlotName, TensorShape> 
-  get_weight_shapes(Conv2DAttrs const &attrs,
-                    TensorShape const &input_shape) {
+std::unordered_map<TensorSlotName, TensorShape>
+    get_weight_shapes(Conv2DAttrs const &attrs,
+                      TensorShape const &input_shape) {
   std::unordered_map<TensorSlotName, TensorShape> weight_shapes = {
-    {
-      TensorSlotName::FILTER, 
-      get_kernel_shape(attrs, input_shape),
-    },
+      {
+          TensorSlotName::FILTER,
+          get_kernel_shape(attrs, input_shape),
+      },
   };
 
   if (attrs.use_bias) {
     weight_shapes.insert({
-      TensorSlotName::BIAS,
-      get_bias_shape(attrs, input_shape),
+        TensorSlotName::BIAS,
+        get_bias_shape(attrs, input_shape),
     });
   }
 
@@ -184,16 +184,16 @@ std::unordered_map<TensorSlotName, ParallelTensorShape>
     get_weight_shapes(Conv2DAttrs const &attrs,
                       ParallelTensorShape const &input_shape) {
   std::unordered_map<TensorSlotName, ParallelTensorShape> weight_shapes = {
-    {
-      TensorSlotName::FILTER, 
-      get_kernel_shape(attrs, input_shape),
-    },
+      {
+          TensorSlotName::FILTER,
+          get_kernel_shape(attrs, input_shape),
+      },
   };
 
   if (attrs.use_bias) {
     weight_shapes.insert({
-      TensorSlotName::BIAS,
-      get_bias_shape(attrs, input_shape),
+        TensorSlotName::BIAS,
+        get_bias_shape(attrs, input_shape),
     });
   }
 
@@ -242,12 +242,12 @@ std::unordered_map<TensorSlotName, InitializerAttrs>
 
   if (attrs.use_bias) {
     return {
-      {TensorSlotName::FILTER, kernel_initializer}, 
-      {TensorSlotName::BIAS, bias_initializer},
+        {TensorSlotName::FILTER, kernel_initializer},
+        {TensorSlotName::BIAS, bias_initializer},
     };
   } else {
     return {
-      {TensorSlotName::FILTER, kernel_initializer},
+        {TensorSlotName::FILTER, kernel_initializer},
     };
   }
 }

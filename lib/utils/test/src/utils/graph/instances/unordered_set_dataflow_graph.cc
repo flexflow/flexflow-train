@@ -1,7 +1,7 @@
+#include "utils/graph/instances/unordered_set_dataflow_graph.h"
 #include "utils/graph/dataflow_graph/dataflow_edge_query.h"
 #include "utils/graph/dataflow_graph/dataflow_graph.h"
 #include "utils/graph/dataflow_graph/dataflow_output_query.h"
-#include "utils/graph/instances/unordered_set_dataflow_graph.h"
 #include "utils/graph/node/node_query.h"
 #include <doctest/doctest.h>
 

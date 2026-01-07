@@ -3,11 +3,11 @@
 namespace FlexFlow {
 
 MachineComputeResourceSlice
-  compute_slice_from_specification(MachineComputeSpecification const &spec) {
-  
+    compute_slice_from_specification(MachineComputeSpecification const &spec) {
+
   return MachineComputeResourceSlice{
-    /*num_nodes=*/spec.num_nodes,
-    /*num_gpus_per_node=*/spec.num_gpus_per_node,
+      /*num_nodes=*/spec.num_nodes,
+      /*num_gpus_per_node=*/spec.num_gpus_per_node,
   };
 }
 

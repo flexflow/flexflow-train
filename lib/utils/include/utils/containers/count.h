@@ -1,9 +1,9 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_COUNT_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_COUNT_H
 
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include <cstddef>
 #include <vector>
-#include "utils/nonnegative_int/nonnegative_int.h"
 
 namespace FlexFlow {
 

@@ -25,13 +25,11 @@ TEST_SUITE(FF_TEST_SUITE) {
     auto make_substitution = [] {
       SubstitutionBuilder b;
 
-      auto pair_input = 
-          b.add_input(tensor_attribute_pattern_match_all());
+      auto pair_input = b.add_input(tensor_attribute_pattern_match_all());
       PatternValue p_input = pair_input.first;
       OutputGraphExprValue o_input = pair_input.second;
 
-      auto pair_weight = 
-          b.add_input(tensor_attribute_pattern_match_all());
+      auto pair_weight = b.add_input(tensor_attribute_pattern_match_all());
       PatternValue p_weight = pair_weight.first;
       OutputGraphExprValue o_weight = pair_weight.second;
 
@@ -45,24 +43,26 @@ TEST_SUITE(FF_TEST_SUITE) {
 
         return require_only_key(
             b.add_pattern_node(
-              /*node_pattern=*/pattern,
-              /*inputs=*/{
+                /*node_pattern=*/pattern,
+                /*inputs=*/
                 {
-                  TensorSlotName::INPUT,
-                  p_input,
+                    {
+                        TensorSlotName::INPUT,
+                        p_input,
+                    },
+                    {
+                        TensorSlotName::WEIGHT,
+                        p_weight,
+                    },
                 },
+                /*output_patterns=*/
                 {
-                  TensorSlotName::WEIGHT,
-                  p_weight,
+                    {
+                        TensorSlotName::OUTPUT,
+                        tensor_attribute_pattern_match_all(),
+                    },
                 },
-              },
-              /*output_patterns=*/{
-                {
-                  TensorSlotName::OUTPUT,
-                  tensor_attribute_pattern_match_all(),
-                },
-              },
-              /*name=*/"mm"),
+                /*name=*/"mm"),
             TensorSlotName::OUTPUT);
       }();
 
@@ -73,20 +73,22 @@ TEST_SUITE(FF_TEST_SUITE) {
 
         return require_only_key(
             b.add_pattern_node(
-              /*node_pattern=*/pattern,
-              /*inputs=*/{
+                /*node_pattern=*/pattern,
+                /*inputs=*/
                 {
-                  TensorSlotName::INPUT,
-                  p_mm_output,
+                    {
+                        TensorSlotName::INPUT,
+                        p_mm_output,
+                    },
                 },
-              },
-              /*output_patterns=*/{
+                /*output_patterns=*/
                 {
-                  TensorSlotName::OUTPUT,
-                  tensor_attribute_pattern_match_all(),
+                    {
+                        TensorSlotName::OUTPUT,
+                        tensor_attribute_pattern_match_all(),
+                    },
                 },
-              },
-              /*name=*/"relu"),
+                /*name=*/"relu"),
             TensorSlotName::OUTPUT);
       }();
 
@@ -98,23 +100,24 @@ TEST_SUITE(FF_TEST_SUITE) {
                                      OperatorAttributeValue{Activation::RELU}),
             }};
 
-        return require_only_key(
-          b.add_output_graph_node(
-            /*node_expr=*/node_expr, 
-            /*input=*/{
-              {
-                TensorSlotName::INPUT,
-                o_input,
-              },
-              {
-                TensorSlotName::WEIGHT,
-                o_weight,
-              }, 
-            },
-            /*output_slots=*/{
-              TensorSlotName::OUTPUT,
-            }),
-          TensorSlotName::OUTPUT);
+        return require_only_key(b.add_output_graph_node(
+                                    /*node_expr=*/node_expr,
+                                    /*input=*/
+                                    {
+                                        {
+                                            TensorSlotName::INPUT,
+                                            o_input,
+                                        },
+                                        {
+                                            TensorSlotName::WEIGHT,
+                                            o_weight,
+                                        },
+                                    },
+                                    /*output_slots=*/
+                                    {
+                                        TensorSlotName::OUTPUT,
+                                    }),
+                                TensorSlotName::OUTPUT);
       }();
 
       b.equate_outputs(p_relu_output, o_fused_output);
@@ -132,16 +135,13 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("is_valid_substitution") {
     SubstitutionBuilder b;
 
-    auto pair_input = 
-        b.add_input(tensor_attribute_pattern_match_all());
+    auto pair_input = b.add_input(tensor_attribute_pattern_match_all());
     PatternValue p_input = pair_input.first;
     OutputGraphExprValue o_input = pair_input.second;
 
-    auto pair_weight = 
-        b.add_input(tensor_attribute_pattern_match_all());
+    auto pair_weight = b.add_input(tensor_attribute_pattern_match_all());
     PatternValue p_weight = pair_weight.first;
     OutputGraphExprValue o_weight = pair_weight.second;
-
 
     PatternValue p_mm_output = [&] {
       auto pattern = OperatorAttributePattern{{
@@ -151,27 +151,28 @@ TEST_SUITE(FF_TEST_SUITE) {
               OperatorAttributeValue{std::optional<Activation>{std::nullopt}}),
       }};
 
-      return require_only_key(
-        b.add_pattern_node(
-          /*node_pattern=*/pattern,
-          /*inputs=*/{
-            {
-              TensorSlotName::INPUT,
-              p_input,
-            },
-            {
-              TensorSlotName::WEIGHT,
-              p_weight,
-            },
-          },
-          /*output_patterns=*/{
-            {
-              TensorSlotName::OUTPUT,
-              tensor_attribute_pattern_match_all(),
-            },
-          },
-          /*name=*/"mm"),
-        TensorSlotName::OUTPUT);
+      return require_only_key(b.add_pattern_node(
+                                  /*node_pattern=*/pattern,
+                                  /*inputs=*/
+                                  {
+                                      {
+                                          TensorSlotName::INPUT,
+                                          p_input,
+                                      },
+                                      {
+                                          TensorSlotName::WEIGHT,
+                                          p_weight,
+                                      },
+                                  },
+                                  /*output_patterns=*/
+                                  {
+                                      {
+                                          TensorSlotName::OUTPUT,
+                                          tensor_attribute_pattern_match_all(),
+                                      },
+                                  },
+                                  /*name=*/"mm"),
+                              TensorSlotName::OUTPUT);
     }();
 
     PatternValue p_relu_output = [&] {
@@ -179,23 +180,24 @@ TEST_SUITE(FF_TEST_SUITE) {
           op_type_equals_constraint(OperatorType::RELU),
       }};
 
-      return require_only_key(
-        b.add_pattern_node(
-          /*node_pattern=*/pattern,
-          /*inputs=*/{
-            {
-              TensorSlotName::INPUT,
-              p_mm_output,
-            },
-          },
-          /*output_patterns=*/{
-            {
-              TensorSlotName::OUTPUT,
-              tensor_attribute_pattern_match_all(),
-            },
-          },
-          /*name=*/"relu"),
-        TensorSlotName::OUTPUT);
+      return require_only_key(b.add_pattern_node(
+                                  /*node_pattern=*/pattern,
+                                  /*inputs=*/
+                                  {
+                                      {
+                                          TensorSlotName::INPUT,
+                                          p_mm_output,
+                                      },
+                                  },
+                                  /*output_patterns=*/
+                                  {
+                                      {
+                                          TensorSlotName::OUTPUT,
+                                          tensor_attribute_pattern_match_all(),
+                                      },
+                                  },
+                                  /*name=*/"relu"),
+                              TensorSlotName::OUTPUT);
     }();
 
     OutputGraphExprValue o_fused_output = [&] {
@@ -206,36 +208,35 @@ TEST_SUITE(FF_TEST_SUITE) {
                                    OperatorAttributeValue{Activation::RELU}),
           }};
 
-      return require_only_key(
-        b.add_output_graph_node(
-          /*node_expr=*/node_expr, 
-          /*inputs=*/{
-            {
-              TensorSlotName::INPUT,
-              o_input,
-            },
-            {
-              TensorSlotName::OUTPUT,
-              o_weight,
-            }, 
-          },
-          /*output_slots=*/{
-            TensorSlotName::OUTPUT
-          }),
-        TensorSlotName::OUTPUT);
+      return require_only_key(b.add_output_graph_node(
+                                  /*node_expr=*/node_expr,
+                                  /*inputs=*/
+                                  {
+                                      {
+                                          TensorSlotName::INPUT,
+                                          o_input,
+                                      },
+                                      {
+                                          TensorSlotName::OUTPUT,
+                                          o_weight,
+                                      },
+                                  },
+                                  /*output_slots=*/{TensorSlotName::OUTPUT}),
+                              TensorSlotName::OUTPUT);
     }();
 
     b.equate_outputs(p_relu_output, o_fused_output);
 
     SUBCASE("pattern inputs != mapped inputs") {
       Substitution sub = b.get_substitution();
-      sub.pcg_pattern.raw_graph.add_input(13, tensor_attribute_pattern_match_all());
+      sub.pcg_pattern.raw_graph.add_input(13,
+                                          tensor_attribute_pattern_match_all());
       CHECK_FALSE(is_valid_substitution(sub));
     }
 
     SUBCASE("output graph inputs != mapped inputs") {
       Substitution sub = b.get_substitution();
-      sub.output_graph_expr.raw_graph.add_input(0,  std::monostate{});
+      sub.output_graph_expr.raw_graph.add_input(0, std::monostate{});
       CHECK_FALSE(is_valid_substitution(sub));
     }
 
@@ -265,12 +266,15 @@ TEST_SUITE(FF_TEST_SUITE) {
       // Could revamp this test to only trigger the
       // get_nodes(sub.output_graph_expr).empty() case
       Substitution sub = b.get_substitution();
-      LabelledOpenKwargDataflowGraph<OutputOperatorAttrsAssignment, std::monostate, int, TensorSlotName>
+      LabelledOpenKwargDataflowGraph<OutputOperatorAttrsAssignment,
+                                     std::monostate,
+                                     int,
+                                     TensorSlotName>
           zero_node_pattern =
               LabelledOpenKwargDataflowGraph<OutputOperatorAttrsAssignment,
-                                        std::monostate,
-                                        int,
-                                        TensorSlotName>::
+                                             std::monostate,
+                                             int,
+                                             TensorSlotName>::
                   create<UnorderedSetLabelledOpenKwargDataflowGraph<
                       OutputOperatorAttrsAssignment,
                       std::monostate,

@@ -33,7 +33,8 @@ tl::expected<ParallelTensorShape, std::string>
 tl::expected<ParallelTensorShape, std::string>
     get_beta_weights_shape(LayerNormAttrs const &, ParallelTensorShape const &);
 
-tl::expected<std::unordered_map<TensorSlotName, ParallelTensorShape>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, ParallelTensorShape>,
+             std::string>
     get_weight_shapes(LayerNormAttrs const &attrs,
                       ParallelTensorShape const &input_shape);
 
@@ -43,7 +44,8 @@ tl::expected<std::unordered_map<TensorSlotName, ParallelTensorShape>, std::strin
  * see
  * https://github.com/pytorch/pytorch/blob/1eba9b3aa3c43f86f4a2c807ac8e12c4a7767340/torch/nn/modules/normalization.py#L210-L214
  */
-std::unordered_map<TensorSlotName, InitializerAttrs> get_initializers(LayerNormAttrs const &attrs);
+std::unordered_map<TensorSlotName, InitializerAttrs>
+    get_initializers(LayerNormAttrs const &attrs);
 
 } // namespace FlexFlow
 

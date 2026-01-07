@@ -9,15 +9,16 @@
 #include "compiler/machine_mapping/machine_mapping_result.h"
 #include "compiler/machine_mapping/machine_resource_split.dtg.h"
 #include "compiler/machine_mapping/machine_resource_split.h"
+#include "compiler/machine_mapping/machine_view.dtg.h"
+#include "compiler/machine_mapping/machine_view.h"
 #include "compiler/machine_mapping/parallel_layer_guid_oblivious_machine_mapping.h"
 #include "compiler/machine_mapping/transitive_reduced_pcg.h"
 #include "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.dtg.h"
 #include "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.h"
 #include "op-attrs/computation_graph_op_attrs.h"
+#include "op-attrs/get_operator_task_space.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/machine_specification.dtg.h"
-#include "compiler/machine_mapping/machine_view.dtg.h"
-#include "compiler/machine_mapping/machine_view.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "utils/containers/contains.h"
 #include "utils/containers/flatmap.h"
@@ -26,7 +27,6 @@
 #include "utils/containers/unordered_set_of.h"
 #include "utils/exception.h"
 #include "utils/overload.h"
-#include "op-attrs/get_operator_task_space.h"
 
 namespace FlexFlow {
 
@@ -143,9 +143,8 @@ MachineMappingResult
 
   for (ParallelLayerGuidObliviousMachineMapping const
            &assigned_pre_machine_views :
-       get_boundary_machine_view_assignments(
-         series_split.get_left_child(),
-         get_src_layers(tensor_movement))) {
+       get_boundary_machine_view_assignments(series_split.get_left_child(),
+                                             get_src_layers(tensor_movement))) {
 
     MachineMappingResult pre_result =
         eval_pre_boundary_mapping(assigned_pre_machine_views);
@@ -153,8 +152,7 @@ MachineMappingResult
     for (ParallelLayerGuidObliviousMachineMapping const
              &assigned_post_machine_views :
          get_boundary_machine_view_assignments(
-             series_split.get_right_child(),
-             get_dst_layers(tensor_movement))) {
+             series_split.get_right_child(), get_dst_layers(tensor_movement))) {
 
       MachineMappingResult post_result =
           eval_post_boundary_mapping(assigned_post_machine_views);
@@ -163,13 +161,11 @@ MachineMappingResult
           concretize_abstracted_tensor_set_movement(
               tensor_movement,
               /*pre_machine_stencils=*/
-                get_machine_stencils_for_partially_mapped_mm_problem_tree(
-                  series_split.get_left_child(), 
-                  assigned_pre_machine_views),
+              get_machine_stencils_for_partially_mapped_mm_problem_tree(
+                  series_split.get_left_child(), assigned_pre_machine_views),
               /*post_machine_stencils=*/
-                get_machine_stencils_for_partially_mapped_mm_problem_tree(
-                    series_split.get_right_child(), 
-                    assigned_post_machine_views));
+              get_machine_stencils_for_partially_mapped_mm_problem_tree(
+                  series_split.get_right_child(), assigned_post_machine_views));
 
       milliseconds_t cost_across_split =
           context.cost_estimator.estimate_cost(comm_across_split);
@@ -217,16 +213,13 @@ MachineMappingResult get_optimal_machine_mapping(
 
   auto evaluate_resource_split =
       [&](MachineResourceSplit const &resource_split) {
-        auto [lhs_resources, rhs_resources] = apply_resource_split(resource_split, resources);
+        auto [lhs_resources, rhs_resources] =
+            apply_resource_split(resource_split, resources);
 
         MachineMappingResult left_result = get_optimal_machine_mapping(
             result_cache, context, lhs, lhs_resources, left_constraints);
-        MachineMappingResult right_result =
-            get_optimal_machine_mapping(result_cache,
-                                        context,
-                                        rhs,
-                                        rhs_resources,
-                                        right_constraints);
+        MachineMappingResult right_result = get_optimal_machine_mapping(
+            result_cache, context, rhs, rhs_resources, right_constraints);
 
         return parallel_combine(resource_split, left_result, right_result);
       };

@@ -8,8 +8,7 @@ using V = value_type<1>;
 using K2 = value_type<2>;
 using F = std::function<K2(K const &, V const &)>;
 
-template
-  std::unordered_map<K2, V> map_keys2(std::unordered_map<K, V> const &,
-                                      F const &);
+template std::unordered_map<K2, V> map_keys2(std::unordered_map<K, V> const &,
+                                             F const &);
 
 } // namespace FlexFlow

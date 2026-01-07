@@ -15,45 +15,44 @@
 
 namespace FlexFlow {
 
-std::unordered_map<MachineSpaceCoordinate, LocalReadyToLaunchTask> prepare_parallel_runtime_task_invocations(
-  RuntimeTaskInvocation const &,
-  LocalParallelTensorBacking const &,
-  LocalAtomicTensorBacking const &,
-  Allocator &,
-  RuntimeArgConfig const &,
-  MappedRuntimeTaskGroup const &);
+std::unordered_map<MachineSpaceCoordinate, LocalReadyToLaunchTask>
+    prepare_parallel_runtime_task_invocations(
+        RuntimeTaskInvocation const &,
+        LocalParallelTensorBacking const &,
+        LocalAtomicTensorBacking const &,
+        Allocator &,
+        RuntimeArgConfig const &,
+        MappedRuntimeTaskGroup const &);
 
-std::optional<MappedPerDeviceOpStatesGroup> execute_init_for_parallel_layer(
-  symbolic_layer_guid_t,
-  TrainingSymbolicComputationGraph const &,
-  LocalParallelTensorBacking const &,
-  LocalAtomicTensorBacking const &,
-  Allocator &,
-  LocalTaskRegistry const &,
-  RuntimeArgConfig const &,
-  MappedRuntimeTaskGroup const &);
+std::optional<MappedPerDeviceOpStatesGroup>
+    execute_init_for_parallel_layer(symbolic_layer_guid_t,
+                                    TrainingSymbolicComputationGraph const &,
+                                    LocalParallelTensorBacking const &,
+                                    LocalAtomicTensorBacking const &,
+                                    Allocator &,
+                                    LocalTaskRegistry const &,
+                                    RuntimeArgConfig const &,
+                                    MappedRuntimeTaskGroup const &);
 
-std::optional<TaskGroupExecutionTimes> execute_forward_for_parallel_layer(
-  symbolic_layer_guid_t,
-  TrainingSymbolicComputationGraph const &,
-  LocalParallelTensorBacking const &,
-  LocalAtomicTensorBacking const &,
-  Allocator &,
-  LocalTaskRegistry const &,
-  RuntimeArgConfig const &,
-  MappedRuntimeTaskGroup const &);
+std::optional<TaskGroupExecutionTimes>
+    execute_forward_for_parallel_layer(symbolic_layer_guid_t,
+                                       TrainingSymbolicComputationGraph const &,
+                                       LocalParallelTensorBacking const &,
+                                       LocalAtomicTensorBacking const &,
+                                       Allocator &,
+                                       LocalTaskRegistry const &,
+                                       RuntimeArgConfig const &,
+                                       MappedRuntimeTaskGroup const &);
 
-std::optional<TaskGroupExecutionTimes> execute_forward_for_parallel_layer(
-  symbolic_layer_guid_t,
-  TrainingSymbolicComputationGraph const &,
-  LocalParallelTensorBacking const &,
-  LocalAtomicTensorBacking const &,
-  Allocator &,
-  LocalTaskRegistry const &,
-  RuntimeArgConfig const &,
-  MappedRuntimeTaskGroup const &);
-
-
+std::optional<TaskGroupExecutionTimes>
+    execute_forward_for_parallel_layer(symbolic_layer_guid_t,
+                                       TrainingSymbolicComputationGraph const &,
+                                       LocalParallelTensorBacking const &,
+                                       LocalAtomicTensorBacking const &,
+                                       Allocator &,
+                                       LocalTaskRegistry const &,
+                                       RuntimeArgConfig const &,
+                                       MappedRuntimeTaskGroup const &);
 
 } // namespace FlexFlow
 

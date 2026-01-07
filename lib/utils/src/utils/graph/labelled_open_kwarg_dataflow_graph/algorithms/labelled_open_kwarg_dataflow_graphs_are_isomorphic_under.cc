@@ -9,10 +9,15 @@ using ValueLabel = value_type<1>;
 using GraphInputName = ordered_value_type<2>;
 using SlotName = ordered_value_type<3>;
 
-template
-  bool labelled_open_kwarg_dataflow_graphs_are_isomorphic_under(
-    LabelledOpenKwargDataflowGraphView<NodeLabel, ValueLabel, GraphInputName, SlotName> const &,
-    LabelledOpenKwargDataflowGraphView<NodeLabel, ValueLabel, GraphInputName, SlotName> const &,
+template bool labelled_open_kwarg_dataflow_graphs_are_isomorphic_under(
+    LabelledOpenKwargDataflowGraphView<NodeLabel,
+                                       ValueLabel,
+                                       GraphInputName,
+                                       SlotName> const &,
+    LabelledOpenKwargDataflowGraphView<NodeLabel,
+                                       ValueLabel,
+                                       GraphInputName,
+                                       SlotName> const &,
     OpenKwargDataflowGraphIsomorphism<GraphInputName> const &);
 
 } // namespace FlexFlow

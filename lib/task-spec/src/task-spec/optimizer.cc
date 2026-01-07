@@ -9,7 +9,8 @@ namespace FlexFlow {
 
 static void sgd_update_task_impl(TaskArgumentAccessor const &acc) {
   SGDOptimizerAttrs attrs = acc.get_optimizer_attrs().require_sgd_optimizer();
-  auto weight_grad = acc.get_tensor_grad<Permissions::RO>(TensorSlotName::WEIGHT);
+  auto weight_grad =
+      acc.get_tensor_grad<Permissions::RO>(TensorSlotName::WEIGHT);
   auto weight = acc.get_tensor<Permissions::RW>(TensorSlotName::WEIGHT);
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
@@ -25,7 +26,8 @@ static void sgd_update_task_impl(TaskArgumentAccessor const &acc) {
 
   std::optional<GenericTensorAccessorW> sgd_v = std::nullopt;
   if (attrs.momentum > 0.0f) {
-    sgd_v = acc.get_optimizer_tensor<Permissions::RW>(TensorSlotName::WEIGHT, OptimizerSlotName::SGD_V);
+    sgd_v = acc.get_optimizer_tensor<Permissions::RW>(TensorSlotName::WEIGHT,
+                                                      OptimizerSlotName::SGD_V);
     ASSERT(sgd_v.value().shape == weight.shape);
   }
 
@@ -51,10 +53,13 @@ TaskImplFunction get_sgd_update_task_impl() {
 
 static void adam_update_task_impl(TaskArgumentAccessor const &acc) {
   AdamOptimizerAttrs attrs = acc.get_optimizer_attrs().require_adam_optimizer();
-  auto weight_grad = acc.get_tensor_grad<Permissions::RO>(TensorSlotName::WEIGHT);
+  auto weight_grad =
+      acc.get_tensor_grad<Permissions::RO>(TensorSlotName::WEIGHT);
   auto weight = acc.get_tensor<Permissions::RW>(TensorSlotName::WEIGHT);
-  auto v_tensor = acc.get_optimizer_tensor<Permissions::RW>(TensorSlotName::WEIGHT, OptimizerSlotName::ADAM_V);
-  auto m_tensor = acc.get_optimizer_tensor<Permissions::RW>(TensorSlotName::WEIGHT, OptimizerSlotName::ADAM_M);
+  auto v_tensor = acc.get_optimizer_tensor<Permissions::RW>(
+      TensorSlotName::WEIGHT, OptimizerSlotName::ADAM_V);
+  auto m_tensor = acc.get_optimizer_tensor<Permissions::RW>(
+      TensorSlotName::WEIGHT, OptimizerSlotName::ADAM_M);
 
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();

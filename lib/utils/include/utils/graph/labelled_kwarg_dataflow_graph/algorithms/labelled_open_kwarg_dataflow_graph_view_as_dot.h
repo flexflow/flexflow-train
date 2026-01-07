@@ -10,10 +10,12 @@ template <typename NodeLabel,
           typename GraphInputName,
           typename SlotName>
 std::string labelled_open_kwarg_dataflow_graph_view_as_dot(
-  LabelledOpenKwargDataflowGraphView<NodeLabel, ValueLabel, GraphInputName, SlotName> const &g,
-  std::function<std::string(NodeLabel const &)> const &,
-  std::function<std::string(ValueLabel const &)> const &)
-{
+    LabelledOpenKwargDataflowGraphView<NodeLabel,
+                                       ValueLabel,
+                                       GraphInputName,
+                                       SlotName> const &g,
+    std::function<std::string(NodeLabel const &)> const &,
+    std::function<std::string(ValueLabel const &)> const &) {
   NOT_IMPLEMENTED();
 }
 

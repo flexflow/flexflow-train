@@ -1,8 +1,8 @@
 #include "substitutions/operator_pattern/eval_list_access.h"
 #include "substitutions/operator_pattern/get_attribute.h"
-#include "utils/containers/try_at_idx.h"
 #include "utils/containers/make.h"
 #include "utils/containers/transform.h"
+#include "utils/containers/try_at_idx.h"
 #include "utils/overload.h"
 #include <libassert/assert.hpp>
 

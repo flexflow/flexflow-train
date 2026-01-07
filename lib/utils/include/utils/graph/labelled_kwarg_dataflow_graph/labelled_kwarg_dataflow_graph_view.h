@@ -7,12 +7,15 @@
 namespace FlexFlow {
 
 template <typename NodeLabel, typename OutputLabel, typename SlotName>
-struct LabelledKwargDataflowGraphView : virtual public KwargDataflowGraphView<SlotName> {
+struct LabelledKwargDataflowGraphView
+    : virtual public KwargDataflowGraphView<SlotName> {
 private:
-  using Interface = ILabelledKwargDataflowGraphView<NodeLabel, OutputLabel, SlotName>;
+  using Interface =
+      ILabelledKwargDataflowGraphView<NodeLabel, OutputLabel, SlotName>;
 
 public:
-  LabelledKwargDataflowGraphView(LabelledKwargDataflowGraphView const &) = default;
+  LabelledKwargDataflowGraphView(LabelledKwargDataflowGraphView const &) =
+      default;
   LabelledKwargDataflowGraphView &
       operator=(LabelledKwargDataflowGraphView const &) = default;
 
@@ -40,7 +43,6 @@ private:
     return *std::dynamic_pointer_cast<Interface const>(GraphView::ptr.get());
   }
 };
-
 
 } // namespace FlexFlow
 

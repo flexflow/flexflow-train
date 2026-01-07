@@ -21,7 +21,8 @@ namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::Reshape;
 
-static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
+static std::optional<milliseconds_t>
+    forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
   ReshapeAttrs attrs = acc.get_op_attrs().require_reshape();
@@ -44,7 +45,8 @@ static std::optional<milliseconds_t>
   ReshapeAttrs attrs = acc.get_op_attrs().require_reshape();
 
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::INPUT);
-  auto output_grad = acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
+  auto output_grad =
+      acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
 
   return profile(backward_kernel,
                  profiling,

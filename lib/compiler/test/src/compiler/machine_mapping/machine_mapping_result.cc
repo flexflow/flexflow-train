@@ -254,8 +254,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     MachineMappingResult infeasible = infeasible_machine_mapping_result();
 
     MachineResourceSplit split = MachineResourceSplit{
-      /*offset=*/3_p,
-      /*dimension=*/MachineSpecificationDimension::INTER_NODE,
+        /*offset=*/3_p,
+        /*dimension=*/MachineSpecificationDimension::INTER_NODE,
     };
 
     SUBCASE("lhs is infeasible") {
@@ -273,7 +273,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("both are infeasible") {
-      MachineMappingResult result = parallel_combine(split, infeasible, infeasible);
+      MachineMappingResult result =
+          parallel_combine(split, infeasible, infeasible);
       MachineMappingResult correct = infeasible;
 
       CHECK(result == correct);

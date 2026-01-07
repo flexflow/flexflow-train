@@ -169,7 +169,6 @@ std::unordered_set<Node> get_neighbors(UndirectedGraphView const &g,
   });
 }
 
-
 UndirectedGraphView get_subgraph(UndirectedGraphView const &g,
                                  std::unordered_set<Node> const &nodes) {
   return UndirectedGraphView::create<UndirectedSubgraphView>(g, nodes);

@@ -9,13 +9,15 @@ namespace FlexFlow {
 
 template <typename GraphInputName, typename SlotName>
 std::unordered_set<OpenKwargDataflowValue<GraphInputName, SlotName>>
-    get_open_kwarg_dataflow_subgraph_inputs(OpenKwargDataflowGraphView<GraphInputName, SlotName> const &g,
-                        std::unordered_set<Node> const &subgraph_nodes) {
+    get_open_kwarg_dataflow_subgraph_inputs(
+        OpenKwargDataflowGraphView<GraphInputName, SlotName> const &g,
+        std::unordered_set<Node> const &subgraph_nodes) {
 
-  return transform(get_open_kwarg_dataflow_subgraph_incoming_edges(g, subgraph_nodes), 
-                   [](OpenKwargDataflowEdge<GraphInputName, SlotName> const &e) {
-                     return get_src_of_open_kwarg_dataflow_edge(e);
-                   });
+  return transform(
+      get_open_kwarg_dataflow_subgraph_incoming_edges(g, subgraph_nodes),
+      [](OpenKwargDataflowEdge<GraphInputName, SlotName> const &e) {
+        return get_src_of_open_kwarg_dataflow_edge(e);
+      });
 }
 
 } // namespace FlexFlow

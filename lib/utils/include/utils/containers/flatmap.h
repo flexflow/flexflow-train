@@ -1,9 +1,9 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_FLATMAP_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_FLATMAP_H
 
+#include "utils/containers/binary_merge_disjoint_maps.h"
 #include "utils/containers/extend.h"
 #include "utils/containers/get_element_type.h"
-#include "utils/containers/binary_merge_disjoint_maps.h"
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -35,7 +35,8 @@ std::unordered_set<Out> flatmap(std::unordered_set<In> const &v, F &&f) {
 template <typename In,
           typename F,
           typename Out = get_element_type_t<std::invoke_result_t<F, In>>>
-std::unordered_multiset<Out> flatmap(std::unordered_multiset<In> const &v, F &&f) {
+std::unordered_multiset<Out> flatmap(std::unordered_multiset<In> const &v,
+                                     F &&f) {
   std::unordered_multiset<Out> result;
   for (auto const &elem : v) {
     extend(result, f(elem));
@@ -82,7 +83,7 @@ std::unordered_map<OutK, OutV> flatmap(std::unordered_map<InK, InV> const &m,
   return result;
 }
 
-template <typename In, 
+template <typename In,
           typename F,
           typename Out = typename std::invoke_result_t<F, In>::value_type>
 std::optional<Out> flatmap(std::optional<In> const &o, F &&f) {

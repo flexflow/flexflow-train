@@ -9,9 +9,14 @@ using ValueLabel = value_type<1>;
 using GraphInputName = ordered_value_type<2>;
 using SlotName = ordered_value_type<3>;
 
-template
-  LabelledOpenKwargDataflowGraphView<NodeLabel, ValueLabel, GraphInputName, SlotName>
+template LabelledOpenKwargDataflowGraphView<NodeLabel,
+                                            ValueLabel,
+                                            GraphInputName,
+                                            SlotName>
     view_from_labelled_open_kwarg_dataflow_graph_data(
-      LabelledOpenKwargDataflowGraphData<NodeLabel, ValueLabel, GraphInputName, SlotName> const &);
+        LabelledOpenKwargDataflowGraphData<NodeLabel,
+                                           ValueLabel,
+                                           GraphInputName,
+                                           SlotName> const &);
 
 } // namespace FlexFlow

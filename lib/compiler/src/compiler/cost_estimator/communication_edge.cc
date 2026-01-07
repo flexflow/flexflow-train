@@ -1,15 +1,13 @@
 #include "compiler/cost_estimator/communication_edge.h"
-#include <libassert/assert.hpp>
 #include "utils/hash-utils.h"
 #include "utils/hash/tuple.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
-CommunicationEdge::CommunicationEdge(
-  MachineSpaceCoordinate const &src,
-  MachineSpaceCoordinate const &dst)
-  : src(src), dst(dst)
-{
+CommunicationEdge::CommunicationEdge(MachineSpaceCoordinate const &src,
+                                     MachineSpaceCoordinate const &dst)
+    : src(src), dst(dst) {
   ASSERT(src != dst);
 }
 
@@ -45,17 +43,14 @@ MachineSpaceCoordinate const &CommunicationEdge::get_dst() const {
   return this->dst;
 }
 
-std::tuple<
-  MachineSpaceCoordinate const &,
-  MachineSpaceCoordinate const &
-> CommunicationEdge::tie() const {
+std::tuple<MachineSpaceCoordinate const &, MachineSpaceCoordinate const &>
+    CommunicationEdge::tie() const {
   return std::tie(this->src, this->dst);
 }
 
 std::string format_as(CommunicationEdge const &e) {
-  return fmt::format("<CommunicationEdge src={} dst={}>", 
-                     e.get_src(),
-                     e.get_dst());
+  return fmt::format(
+      "<CommunicationEdge src={} dst={}>", e.get_src(), e.get_dst());
 }
 
 std::ostream &operator<<(std::ostream &s, CommunicationEdge const &e) {
@@ -66,8 +61,9 @@ std::ostream &operator<<(std::ostream &s, CommunicationEdge const &e) {
 
 namespace std {
 
-size_t hash<::FlexFlow::CommunicationEdge>::operator()(::FlexFlow::CommunicationEdge const &e) const {
+size_t hash<::FlexFlow::CommunicationEdge>::operator()(
+    ::FlexFlow::CommunicationEdge const &e) const {
   return get_std_hash(e.tie());
 }
 
-}
+} // namespace std

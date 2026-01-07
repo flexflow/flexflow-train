@@ -6,25 +6,38 @@
 
 namespace FlexFlow {
 
-template <typename NodeLabel, typename ValueLabel, typename GraphInputName, typename SlotName>
+template <typename NodeLabel,
+          typename ValueLabel,
+          typename GraphInputName,
+          typename SlotName>
 struct LabelledOpenKwargDataflowGraph
-    : virtual public LabelledOpenKwargDataflowGraphView<NodeLabel, ValueLabel, GraphInputName, SlotName> {
+    : virtual public LabelledOpenKwargDataflowGraphView<NodeLabel,
+                                                        ValueLabel,
+                                                        GraphInputName,
+                                                        SlotName> {
 private:
-  using Interface = ILabelledOpenKwargDataflowGraph<NodeLabel, ValueLabel, GraphInputName, SlotName>;
+  using Interface = ILabelledOpenKwargDataflowGraph<NodeLabel,
+                                                    ValueLabel,
+                                                    GraphInputName,
+                                                    SlotName>;
 
 public:
-  LabelledOpenKwargDataflowGraph(LabelledOpenKwargDataflowGraph const &) = default;
+  LabelledOpenKwargDataflowGraph(LabelledOpenKwargDataflowGraph const &) =
+      default;
   LabelledOpenKwargDataflowGraph &
       operator=(LabelledOpenKwargDataflowGraph const &) = default;
 
   KwargNodeAddedResult<SlotName> add_node(
       NodeLabel const &node_label,
-      std::unordered_map<SlotName, OpenKwargDataflowValue<GraphInputName, SlotName>> const &inputs,
+      std::unordered_map<SlotName,
+                         OpenKwargDataflowValue<GraphInputName, SlotName>> const
+          &inputs,
       std::unordered_map<SlotName, ValueLabel> const &output_labels) {
     return this->get_interface().add_node(node_label, inputs, output_labels);
   }
 
-  KwargDataflowGraphInput<GraphInputName> add_input(GraphInputName const &name, ValueLabel const &value_label) {
+  KwargDataflowGraphInput<GraphInputName>
+      add_input(GraphInputName const &name, ValueLabel const &value_label) {
     return this->get_interface().add_input(name, value_label);
   }
 
@@ -38,16 +51,21 @@ public:
   template <typename T>
   static std::enable_if_t<std::is_base_of_v<Interface, T>,
                           LabelledOpenKwargDataflowGraph>
-      create_copy_of(
-          LabelledOpenKwargDataflowGraphView<NodeLabel, ValueLabel, GraphInputName, SlotName> const &view) {
+      create_copy_of(LabelledOpenKwargDataflowGraphView<NodeLabel,
+                                                        ValueLabel,
+                                                        GraphInputName,
+                                                        SlotName> const &view) {
     cow_ptr_t<T> impl = make_cow_ptr<T>();
     impl.get_mutable()->inplace_materialize_from(view);
     return LabelledOpenKwargDataflowGraph(std::move(impl));
   }
 
 protected:
-  using LabelledOpenKwargDataflowGraphView<NodeLabel, ValueLabel, GraphInputName, SlotName>::
-      LabelledOpenKwargDataflowGraphView;
+  using LabelledOpenKwargDataflowGraphView<
+      NodeLabel,
+      ValueLabel,
+      GraphInputName,
+      SlotName>::LabelledOpenKwargDataflowGraphView;
 
 private:
   Interface &get_interface() {

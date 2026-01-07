@@ -27,14 +27,15 @@ using namespace FlexFlow::Kernels::MultiHeadAttention;
 
 static DeviceSpecificPerDeviceOpState
     init_task_impl(TaskArgumentAccessor const &acc) {
-  MultiHeadAttentionAttrs attrs = acc.get_op_attrs().require_multi_head_attention();
+  MultiHeadAttentionAttrs attrs =
+      acc.get_op_attrs().require_multi_head_attention();
   Allocator allocator = acc.get_allocator();
 
   DeviceType kernel_device_type = acc.get_kernel_device_type();
 
   positive_int qProjSize = get_qProjSize(attrs);
   positive_int kProjSize = get_kProjSize(attrs);
-  positive_int vProjSize = get_vProjSize(attrs); 
+  positive_int vProjSize = get_vProjSize(attrs);
   positive_int oProjSize = get_oProjSize(attrs);
 
   device_handle_t handle = acc.get_ff_handle();
@@ -43,15 +44,11 @@ static DeviceSpecificPerDeviceOpState
   TensorShape key_tensor_shape = acc.get_tensor_shape(TensorSlotName::KEY);
   TensorShape value_tensor_shape = acc.get_tensor_shape(TensorSlotName::VALUE);
 
-  MultiHeadAttentionInputs parsed = throw_if_unexpected(
-      parse_attention_input_shape(query_tensor_shape,
-                                  key_tensor_shape,
-                                  value_tensor_shape));
-  TensorShape weight_tensor_shape =
-      throw_if_unexpected(get_weights_shape(attrs,
-                                            query_tensor_shape,
-                                            key_tensor_shape,
-                                            value_tensor_shape));
+  MultiHeadAttentionInputs parsed =
+      throw_if_unexpected(parse_attention_input_shape(
+          query_tensor_shape, key_tensor_shape, value_tensor_shape));
+  TensorShape weight_tensor_shape = throw_if_unexpected(get_weights_shape(
+      attrs, query_tensor_shape, key_tensor_shape, value_tensor_shape));
 
   positive_int kvSeqLength = get_kvSeqLength(parsed);
   positive_int qSize = get_qSize(parsed);
@@ -80,11 +77,12 @@ static DeviceSpecificPerDeviceOpState
       /*add_bias_kv=*/attrs.add_bias_kv);
 
   return DeviceSpecificPerDeviceOpState{
-    acc.make_device_specific(per_device_state),
+      acc.make_device_specific(per_device_state),
   };
 }
 
-static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
+static std::optional<milliseconds_t>
+    forward_task_impl(TaskArgumentAccessor const &acc) {
   auto query = acc.get_tensor<Permissions::RO>(TensorSlotName::QUERY);
   auto key = acc.get_tensor<Permissions::RO>(TensorSlotName::KEY);
   auto value = acc.get_tensor<Permissions::RO>(TensorSlotName::VALUE);
@@ -93,7 +91,8 @@ static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor cons
 
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
-  std::optional<MHAPerDeviceState> per_device_state = acc.get_per_device_op_state().require_mha();
+  std::optional<MHAPerDeviceState> per_device_state =
+      acc.get_per_device_op_state().require_mha();
 
   return profile(forward_kernel,
                  profiling,
@@ -114,15 +113,18 @@ static std::optional<milliseconds_t>
   auto value = acc.get_tensor<Permissions::RO>(TensorSlotName::VALUE);
   auto weight = acc.get_tensor<Permissions::RO>(TensorSlotName::WEIGHT);
 
-  auto output_grad = acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
-  auto weight_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::WEIGHT);
+  auto output_grad =
+      acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
+  auto weight_grad =
+      acc.get_tensor_grad<Permissions::RW>(TensorSlotName::WEIGHT);
   auto query_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::QUERY);
   auto key_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::KEY);
   auto value_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::VALUE);
 
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
-  std::optional<MHAPerDeviceState> per_device_state = acc.get_per_device_op_state().require_mha();
+  std::optional<MHAPerDeviceState> per_device_state =
+      acc.get_per_device_op_state().require_mha();
 
   float *key_grad_ptr =
       (key_grad == query_grad) ? nullptr : key_grad.get_float_ptr();

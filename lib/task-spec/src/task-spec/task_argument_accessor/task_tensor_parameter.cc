@@ -11,7 +11,8 @@ TaskTensorParameter make_task_tensor_parameter_grad(TensorSlotName slot) {
   return TaskTensorParameter{TaskGradientTensorParameter{slot}};
 }
 
-TaskTensorParameter make_task_tensor_parameter_opt(TensorSlotName slot, OptimizerSlotName opt_slot) {
+TaskTensorParameter make_task_tensor_parameter_opt(TensorSlotName slot,
+                                                   OptimizerSlotName opt_slot) {
   return TaskTensorParameter{TaskOptimizerTensorParameter{slot, opt_slot}};
 }
 

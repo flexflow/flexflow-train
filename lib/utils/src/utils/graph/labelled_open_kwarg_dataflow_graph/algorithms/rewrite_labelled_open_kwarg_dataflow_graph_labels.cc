@@ -1,6 +1,6 @@
 #include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/rewrite_labelled_open_kwarg_dataflow_graph_labels.h"
-#include "utils/archetypes/value_type.h"
 #include "utils/archetypes/ordered_value_type.h"
+#include "utils/archetypes/value_type.h"
 
 namespace FlexFlow {
 
@@ -15,13 +15,22 @@ struct F {
   NewNodeLabel operator()(Node const &, NodeLabel const &) {
     NOT_IMPLEMENTED();
   }
-  NewValueLabel operator()(OpenKwargDataflowValue<GraphInputName, SlotName> const &, ValueLabel) {
+  NewValueLabel
+      operator()(OpenKwargDataflowValue<GraphInputName, SlotName> const &,
+                 ValueLabel) {
     NOT_IMPLEMENTED();
   }
 };
 
-template
-  LabelledOpenKwargDataflowGraphView<NewNodeLabel, NewValueLabel, GraphInputName, SlotName> rewrite_labelled_open_kwarg_dataflow_graph_labels(
-      LabelledOpenKwargDataflowGraphView<NodeLabel, ValueLabel, GraphInputName, SlotName> const &, F);
+template LabelledOpenKwargDataflowGraphView<NewNodeLabel,
+                                            NewValueLabel,
+                                            GraphInputName,
+                                            SlotName>
+    rewrite_labelled_open_kwarg_dataflow_graph_labels(
+        LabelledOpenKwargDataflowGraphView<NodeLabel,
+                                           ValueLabel,
+                                           GraphInputName,
+                                           SlotName> const &,
+        F);
 
 } // namespace FlexFlow

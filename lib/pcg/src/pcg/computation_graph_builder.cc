@@ -77,15 +77,16 @@ tensor_guid_t ComputationGraphBuilder::create_input(
   };
 
   return require_only_key(
-      this->add_layer(/*layer=*/layer_attrs, 
-                      /*inputs=*/{}, 
-                      /*weights=*/{}, 
-                      /*outputs=*/std::unordered_map<TensorSlotName, CreateGrad>{
-                        {
-                          TensorSlotName::OUTPUT, 
-                          create_grad,
-                        },
-                      }), 
+      this->add_layer(/*layer=*/layer_attrs,
+                      /*inputs=*/{},
+                      /*weights=*/{},
+                      /*outputs=*/
+                      std::unordered_map<TensorSlotName, CreateGrad>{
+                          {
+                              TensorSlotName::OUTPUT,
+                              create_grad,
+                          },
+                      }),
       TensorSlotName::OUTPUT);
 }
 
@@ -101,27 +102,38 @@ tensor_guid_t ComputationGraphBuilder::create_weight(
       maybe_name,
   };
 
-  return require_only_key(this->add_layer(layer_attrs, {}, {}), TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer_attrs, {}, {}),
+                          TensorSlotName::OUTPUT);
 }
 
-static void check_incoming_tensor_roles(LayerAttrs const &layer,
-                                        std::unordered_set<TensorSlotName> const &input_slots,
-                                        std::unordered_set<TensorSlotName> const &weight_slots) {
+static void check_incoming_tensor_roles(
+    LayerAttrs const &layer,
+    std::unordered_set<TensorSlotName> const &input_slots,
+    std::unordered_set<TensorSlotName> const &weight_slots) {
   std::unordered_map<TensorSlotName, IncomingTensorRole> correct =
       restrict_keys(get_incoming_tensor_roles(layer.op_attrs),
                     set_union(input_slots, weight_slots));
-  std::unordered_map<TensorSlotName, IncomingTensorRole> current = binary_merge_disjoint_maps(
-      generate_map(input_slots, [](TensorSlotName) { return IncomingTensorRole::INPUT; }),
-      generate_map(weight_slots, [](TensorSlotName) { return IncomingTensorRole::WEIGHT; }));
+  std::unordered_map<TensorSlotName, IncomingTensorRole> current =
+      binary_merge_disjoint_maps(
+          generate_map(
+              input_slots,
+              [](TensorSlotName) { return IncomingTensorRole::INPUT; }),
+          generate_map(weight_slots, [](TensorSlotName) {
+            return IncomingTensorRole::WEIGHT;
+          }));
 
-  ASSERT(correct == current, "check_incoming_tensor_roles found deviation in incoming tensors");
+  ASSERT(correct == current,
+         "check_incoming_tensor_roles found deviation in incoming tensors");
 }
 
-std::unordered_map<TensorSlotName, tensor_guid_t> ComputationGraphBuilder::add_layer(
-    LayerAttrs const &layer,
-    std::unordered_map<TensorSlotName, tensor_guid_t> const &inputs,
-    std::unordered_map<TensorSlotName, InitializerAttrs> const &weight_initializers,
-    std::optional<std::unordered_map<TensorSlotName, CreateGrad>> const &outputs) {
+std::unordered_map<TensorSlotName, tensor_guid_t>
+    ComputationGraphBuilder::add_layer(
+        LayerAttrs const &layer,
+        std::unordered_map<TensorSlotName, tensor_guid_t> const &inputs,
+        std::unordered_map<TensorSlotName, InitializerAttrs> const
+            &weight_initializers,
+        std::optional<std::unordered_map<TensorSlotName, CreateGrad>> const
+            &outputs) {
   ASSERT(are_disjoint(keys(inputs), keys(weight_initializers)));
   check_incoming_tensor_roles(layer, keys(inputs), keys(weight_initializers));
 
@@ -131,12 +143,13 @@ std::unordered_map<TensorSlotName, tensor_guid_t> ComputationGraphBuilder::add_l
   std::unordered_map<TensorSlotName, TensorShape> weight_shapes =
       get_weight_shapes(layer.op_attrs, input_shapes);
 
-  std::unordered_map<TensorSlotName, tensor_guid_t> weights = zip_values_strict_with(
-      weight_shapes,
-      weight_initializers,
-      [&](TensorShape const &shape, InitializerAttrs const &initializer) {
-        return this->create_weight(shape, initializer);
-      });
+  std::unordered_map<TensorSlotName, tensor_guid_t> weights =
+      zip_values_strict_with(
+          weight_shapes,
+          weight_initializers,
+          [&](TensorShape const &shape, InitializerAttrs const &initializer) {
+            return this->create_weight(shape, initializer);
+          });
 
   LayerAddedResult added = ::FlexFlow::add_layer(
       this->computation_graph, layer, inputs, weights, outputs);
@@ -177,17 +190,15 @@ tensor_guid_t ComputationGraphBuilder::broadcast(tensor_guid_t const &input,
 
   LayerAttrs layer = LayerAttrs{ComputationGraphOpAttrs{attrs}, name};
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::INPUT,
-          input,
-        },
-      }, 
-      {}), 
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::INPUT,
+                                                  input,
+                                              },
+                                          },
+                                          {}),
+                          TensorSlotName::OUTPUT);
 }
 
 tensor_guid_t ComputationGraphBuilder::cast(
@@ -202,17 +213,15 @@ tensor_guid_t ComputationGraphBuilder::cast(
 
   LayerAttrs layer = LayerAttrs{ComputationGraphOpAttrs{attrs}, name};
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::INPUT,
-          input,
-        },
-      },
-      {}),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::INPUT,
+                                                  input,
+                                              },
+                                          },
+                                          {}),
+                          TensorSlotName::OUTPUT);
 }
 
 tensor_guid_t ComputationGraphBuilder::element_unary(
@@ -231,17 +240,15 @@ tensor_guid_t ComputationGraphBuilder::element_unary(
 
   LayerAttrs layer = LayerAttrs{ComputationGraphOpAttrs{attrs}, name};
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::INPUT,
-          input,
-        },
-      },
-      {}),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::INPUT,
+                                                  input,
+                                              },
+                                          },
+                                          {}),
+                          TensorSlotName::OUTPUT);
 }
 
 tensor_guid_t ComputationGraphBuilder::element_binary(
@@ -272,21 +279,19 @@ tensor_guid_t ComputationGraphBuilder::element_binary(
 
   LayerAttrs layer = LayerAttrs{ComputationGraphOpAttrs{attrs}, name};
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::LHS_INPUT,
-          lhs_input,
-        },
-        {
-          TensorSlotName::RHS_INPUT,
-          rhs_input,
-        },
-      },
-      {}),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::LHS_INPUT,
+                                                  lhs_input,
+                                              },
+                                              {
+                                                  TensorSlotName::RHS_INPUT,
+                                                  rhs_input,
+                                              },
+                                          },
+                                          {}),
+                          TensorSlotName::OUTPUT);
 }
 
 tensor_guid_t
@@ -471,17 +476,15 @@ tensor_guid_t ComputationGraphBuilder::conv2d(
                        maybe_kernel_initializer,
                        maybe_bias_initializer);
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::INPUT,
-          input,
-        }, 
-      },
-      initializers),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::INPUT,
+                                                  input,
+                                              },
+                                          },
+                                          initializers),
+                          TensorSlotName::OUTPUT);
 }
 
 tensor_guid_t ComputationGraphBuilder::dropout(
@@ -497,17 +500,15 @@ tensor_guid_t ComputationGraphBuilder::dropout(
   tensor_guid_t input =
       this->as_type(x, DataType::FLOAT, name + "input_pre_cast");
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::INPUT,
-          input,
-        },
-      }, 
-      {}),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::INPUT,
+                                                  input,
+                                              },
+                                          },
+                                          {}),
+                          TensorSlotName::OUTPUT);
 }
 
 tensor_guid_t ComputationGraphBuilder::embedding(
@@ -534,17 +535,15 @@ tensor_guid_t ComputationGraphBuilder::embedding(
   std::unordered_map<TensorSlotName, InitializerAttrs> initializers =
       get_initializers(attrs, initializer);
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::INPUT,
-          input,
-        }, 
-      },
-      initializers),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::INPUT,
+                                                  input,
+                                              },
+                                          },
+                                          initializers),
+                          TensorSlotName::OUTPUT);
 }
 
 tensor_guid_t ComputationGraphBuilder::gather(
@@ -554,12 +553,11 @@ tensor_guid_t ComputationGraphBuilder::gather(
     std::optional<std::string> const &maybe_name) {
   if (this->get_shape(index).data_type != DataType::INT32 &&
       this->get_shape(index).data_type != DataType::INT64) {
-    PANIC(
-      fmt::format("Invalid data type for input tensor 2 for Gather: "
-                  "{} (should be {} or {})",
-                  this->get_shape(input).data_type,
-                  DataType::INT32,
-                  DataType::INT64));
+    PANIC(fmt::format("Invalid data type for input tensor 2 for Gather: "
+                      "{} (should be {} or {})",
+                      this->get_shape(input).data_type,
+                      DataType::INT32,
+                      DataType::INT64));
   }
 
   GatherAttrs attrs = GatherAttrs{ff_dim_t_from_relative_ff_dim_t(
@@ -569,17 +567,15 @@ tensor_guid_t ComputationGraphBuilder::gather(
 
   LayerAttrs layer = LayerAttrs{ComputationGraphOpAttrs{attrs}, name};
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::INPUT,
-          input,
-        },
-      }, 
-      {}),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::INPUT,
+                                                  input,
+                                              },
+                                          },
+                                          {}),
+                          TensorSlotName::OUTPUT);
 }
 
 tensor_guid_t ComputationGraphBuilder::pool2d(
@@ -613,17 +609,15 @@ tensor_guid_t ComputationGraphBuilder::pool2d(
 
   LayerAttrs layer = LayerAttrs{ComputationGraphOpAttrs{attrs}, name};
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::INPUT,
-          input,
-        },
-      },
-      {}),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::INPUT,
+                                                  input,
+                                              },
+                                          },
+                                          {}),
+                          TensorSlotName::OUTPUT);
 }
 
 tensor_guid_t ComputationGraphBuilder::adaptive_pool2d(
@@ -650,17 +644,15 @@ tensor_guid_t ComputationGraphBuilder::adaptive_pool2d(
   TensorShape output_shape = throw_if_unexpected(
       get_output_shape(attrs, this->get_shape(casted_input)));
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::INPUT,
-          casted_input,
-        },
-      }, 
-      {}),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::INPUT,
+                                                  casted_input,
+                                              },
+                                          },
+                                          {}),
+                          TensorSlotName::OUTPUT);
 }
 
 tensor_guid_t ComputationGraphBuilder::batch_norm(
@@ -697,17 +689,15 @@ tensor_guid_t ComputationGraphBuilder::batch_norm(
   std::unordered_map<TensorSlotName, InitializerAttrs> initializers =
       throw_if_unexpected(get_initializers(attrs));
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::INPUT,
-          input,
-        },
-      }, 
-      initializers),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::INPUT,
+                                                  input,
+                                              },
+                                          },
+                                          initializers),
+                          TensorSlotName::OUTPUT);
 }
 
 tensor_guid_t ComputationGraphBuilder::multihead_attention(
@@ -725,7 +715,7 @@ tensor_guid_t ComputationGraphBuilder::multihead_attention(
     std::optional<InitializerAttrs> initializer,
     std::optional<std::string> const &maybe_name) {
 
-  ASSERT(!add_bias_kv, 
+  ASSERT(!add_bias_kv,
          "ComputationGraphBuilder::multihead_attention received currently "
          "unsupported argument add_bias_kv=true. "
          "If you need this functionality, please create an issue.");
@@ -758,25 +748,23 @@ tensor_guid_t ComputationGraphBuilder::multihead_attention(
                                            this->get_shape(value),
                                            initializer));
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::KEY,
-          query, 
-        },
-        {
-          TensorSlotName::QUERY,
-          key,
-        },
-        {
-          TensorSlotName::VALUE,
-          value,
-        },
-      }, 
-      initializers),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::KEY,
+                                                  query,
+                                              },
+                                              {
+                                                  TensorSlotName::QUERY,
+                                                  key,
+                                              },
+                                              {
+                                                  TensorSlotName::VALUE,
+                                                  value,
+                                              },
+                                          },
+                                          initializers),
+                          TensorSlotName::OUTPUT);
 }
 
 TensorDims ComputationGraphBuilder::get_broadcast_target_dims(
@@ -830,17 +818,15 @@ tensor_guid_t ComputationGraphBuilder::dense(
                                            maybe_projection_initializer,
                                            maybe_bias_initializer));
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::INPUT,
-          input,
-        },
-      }, 
-      initializers),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::INPUT,
+                                                  input,
+                                              },
+                                          },
+                                          initializers),
+                          TensorSlotName::OUTPUT);
 }
 
 tensor_guid_t ComputationGraphBuilder::concat(
@@ -848,15 +834,16 @@ tensor_guid_t ComputationGraphBuilder::concat(
     relative_ff_dim_t axis,
     std::optional<std::string> const &maybe_name) {
 
-  std::vector<TensorSlotName> input_slot_names = get_variadic_inputs_slot_name_sequence();
+  std::vector<TensorSlotName> input_slot_names =
+      get_variadic_inputs_slot_name_sequence();
   ASSERT(inputs.size() <= input_slot_names.size());
 
   ff_dim_t abs_axis = ff_dim_t_from_relative_ff_dim_t(
       axis, get_num_dims(this->get_shape(inputs.at(0)).dims));
 
   ConcatAttrs attrs = ConcatAttrs{
-    /*axis=*/abs_axis,
-    /*num_inputs=*/int_ge_two{inputs.size()},
+      /*axis=*/abs_axis,
+      /*num_inputs=*/int_ge_two{inputs.size()},
   };
 
   std::string name =
@@ -865,11 +852,9 @@ tensor_guid_t ComputationGraphBuilder::concat(
   LayerAttrs layer = LayerAttrs{ComputationGraphOpAttrs{attrs}, name};
 
   return require_only_key(
-    this->add_layer(
-      layer, 
-      unordered_map_from_pairs(zip(input_slot_names, inputs)),
-      {}),
-    TensorSlotName::OUTPUT);
+      this->add_layer(
+          layer, unordered_map_from_pairs(zip(input_slot_names, inputs)), {}),
+      TensorSlotName::OUTPUT);
 }
 
 tensor_guid_t ComputationGraphBuilder::flat(
@@ -883,7 +868,8 @@ tensor_guid_t ComputationGraphBuilder::flat(
       ff_dim_t_from_relative_ff_dim_t(start_dim, input_num_dims);
 
   ff_dim_t abs_end_dim = ff_dim_t_from_relative_ff_dim_t(
-      end_dim.value_or(relative_ff_dim_t{input_num_dims.int_from_num_tensor_dims()}),
+      end_dim.value_or(
+          relative_ff_dim_t{input_num_dims.int_from_num_tensor_dims()}),
       input_num_dims);
 
   FlatAttrs attrs = FlatAttrs{
@@ -896,17 +882,15 @@ tensor_guid_t ComputationGraphBuilder::flat(
 
   LayerAttrs layer = LayerAttrs{ComputationGraphOpAttrs{attrs}, name};
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::INPUT,
-          input,
-        },
-      }, 
-      {}),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::INPUT,
+                                                  input,
+                                              },
+                                          },
+                                          {}),
+                          TensorSlotName::OUTPUT);
 }
 
 tensor_guid_t ComputationGraphBuilder::layer_norm(
@@ -946,19 +930,18 @@ tensor_guid_t ComputationGraphBuilder::layer_norm(
 
   LayerAttrs layer = LayerAttrs{ComputationGraphOpAttrs{attrs}, name};
 
-  std::unordered_map<TensorSlotName, InitializerAttrs> initializers = get_initializers(attrs);
+  std::unordered_map<TensorSlotName, InitializerAttrs> initializers =
+      get_initializers(attrs);
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::INPUT,
-          input,
-        },
-      }, 
-      initializers),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::INPUT,
+                                                  input,
+                                              },
+                                          },
+                                          initializers),
+                          TensorSlotName::OUTPUT);
 }
 
 tensor_guid_t ComputationGraphBuilder::softmax(
@@ -984,17 +967,15 @@ tensor_guid_t ComputationGraphBuilder::softmax(
 
   LayerAttrs layer = LayerAttrs{ComputationGraphOpAttrs{attrs}, name};
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::INPUT,
-          input,
-        },
-      },
-      {}),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::INPUT,
+                                                  input,
+                                              },
+                                          },
+                                          {}),
+                          TensorSlotName::OUTPUT);
 }
 
 } // namespace FlexFlow

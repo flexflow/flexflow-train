@@ -1,7 +1,7 @@
 #include "compiler/machine_mapping/start_invariant_machine_view.h"
+#include "compiler/machine_mapping/machine_view.h"
 #include "op-attrs/operator_task_space.h"
 #include "pcg/machine_space_offset.h"
-#include "compiler/machine_mapping/machine_view.h"
 #include "utils/containers/count.h"
 #include "utils/containers/filter.h"
 #include "utils/containers/scanl.h"
@@ -65,7 +65,8 @@ MachineSpaceOffset get_machine_space_offset(
   MachineView mv =
       machine_view_from_start_invariant(start_inv_machine_view, dummy_start);
 
-  MachineSpaceCoordinate ms_coord = get_machine_space_coordinate(task, mv, coord);
+  MachineSpaceCoordinate ms_coord =
+      get_machine_space_coordinate(task, mv, coord);
 
   return get_machine_space_offset_from_coordinate(dummy_start, ms_coord);
 }
@@ -74,10 +75,8 @@ std::unordered_set<MachineSpaceOffset> get_machine_space_offsets(
     OperatorTaskSpace const &task,
     StartInvariantMachineView const &start_inv_machine_view) {
   return transform(
-      get_task_space_coordinates(task), 
-      [&](TaskSpaceCoordinate const &coord) {
-        return get_machine_space_offset(
-                   task, start_inv_machine_view, coord);
+      get_task_space_coordinates(task), [&](TaskSpaceCoordinate const &coord) {
+        return get_machine_space_offset(task, start_inv_machine_view, coord);
       });
 }
 

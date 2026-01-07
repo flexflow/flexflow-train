@@ -7,18 +7,16 @@ namespace FlexFlow {
 
 template <typename SlotName>
 std::unordered_set<KwargDataflowEdge<SlotName>>
-  get_kwarg_dataflow_edges_from_node_to_node( 
-    KwargDataflowGraphView<SlotName> const &g,
-    Node const &src,
-    Node const &dst)
-{
-  KwargDataflowEdgeQuery<SlotName> query = 
-    KwargDataflowEdgeQuery<SlotName>{
+    get_kwarg_dataflow_edges_from_node_to_node(
+        KwargDataflowGraphView<SlotName> const &g,
+        Node const &src,
+        Node const &dst) {
+  KwargDataflowEdgeQuery<SlotName> query = KwargDataflowEdgeQuery<SlotName>{
       /*src_nodes=*/query_set<Node>{src},
       /*src_slots=*/query_set<SlotName>::matchall(),
       /*dst_nodes=*/query_set<Node>{dst},
       /*dst_slots=*/query_set<SlotName>::matchall(),
-    };
+  };
 
   return g.query_edges(query);
 }

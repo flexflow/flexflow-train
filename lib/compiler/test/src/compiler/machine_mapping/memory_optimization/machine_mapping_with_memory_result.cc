@@ -1,9 +1,9 @@
 #include "compiler/machine_mapping/memory_optimization/machine_mapping_with_memory_result.h"
 #include "compiler/machine_mapping/machine_view.h"
+#include "test/utils/doctest/fmt/unordered_set.h"
+#include "test/utils/rapidcheck/some.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
 #include <doctest/doctest.h>
-#include "test/utils/rapidcheck/some.h"
-#include "test/utils/doctest/fmt/unordered_set.h"
 
 using namespace FlexFlow;
 
@@ -11,85 +11,84 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("MachineMappingWithMemoryResult") {
     SUBCASE("initialization") {
       SUBCASE("throws if initialized with non-pareto-optimal elements") {
-        CHECK_THROWS( 
-          MachineMappingWithMemoryResult{{
+        CHECK_THROWS(MachineMappingWithMemoryResult{{
             ParetoOptimalMachineMapping{
-              /*cost=*/OpCostMetrics{
-                /*forward_runtime=*/5_ms,
-                /*backward_runtime=*/5_ms,
-                /*memory_usage=*/6_bytes,
-              },
-              /*machine_mapping=*/some<ParallelLayerGuidObliviousMachineMapping>(),
+                /*cost=*/OpCostMetrics{
+                    /*forward_runtime=*/5_ms,
+                    /*backward_runtime=*/5_ms,
+                    /*memory_usage=*/6_bytes,
+                },
+                /*machine_mapping=*/
+                some<ParallelLayerGuidObliviousMachineMapping>(),
             },
             ParetoOptimalMachineMapping{
-              /*cost=*/OpCostMetrics{
-                /*forward_runtime=*/2_ms,
-                /*backward_runtime=*/4_ms,
-                /*memory_usage=*/5_bytes,
-              },
-              /*machine_mapping=*/some<ParallelLayerGuidObliviousMachineMapping>(),
+                /*cost=*/OpCostMetrics{
+                    /*forward_runtime=*/2_ms,
+                    /*backward_runtime=*/4_ms,
+                    /*memory_usage=*/5_bytes,
+                },
+                /*machine_mapping=*/
+                some<ParallelLayerGuidObliviousMachineMapping>(),
             },
-          }});
+        }});
       }
 
       SUBCASE("allows elements with identical performance") {
-        ParetoOptimalMachineMapping mapping1 = 
-          ParetoOptimalMachineMapping{
+        ParetoOptimalMachineMapping mapping1 = ParetoOptimalMachineMapping{
             /*cost=*/OpCostMetrics{
-              /*forward_runtime=*/5_ms,
-              /*backward_runtime=*/5_ms,
-              /*memory_usage=*/6_bytes,
+                /*forward_runtime=*/5_ms,
+                /*backward_runtime=*/5_ms,
+                /*memory_usage=*/6_bytes,
             },
-            /*machine_mapping=*/some<ParallelLayerGuidObliviousMachineMapping>(),
-          };
+            /*machine_mapping=*/
+            some<ParallelLayerGuidObliviousMachineMapping>(),
+        };
 
-        ParetoOptimalMachineMapping mapping2 = 
-          ParetoOptimalMachineMapping{
+        ParetoOptimalMachineMapping mapping2 = ParetoOptimalMachineMapping{
             /*cost=*/OpCostMetrics{
-              /*forward_runtime=*/5_ms,
-              /*backward_runtime=*/5_ms,
-              /*memory_usage=*/5_bytes,
+                /*forward_runtime=*/5_ms,
+                /*backward_runtime=*/5_ms,
+                /*memory_usage=*/5_bytes,
             },
-            /*machine_mapping=*/some<ParallelLayerGuidObliviousMachineMapping>(),
-          };
+            /*machine_mapping=*/
+            some<ParallelLayerGuidObliviousMachineMapping>(),
+        };
 
-        ParetoOptimalMachineMapping mapping3 = 
-          ParetoOptimalMachineMapping{
+        ParetoOptimalMachineMapping mapping3 = ParetoOptimalMachineMapping{
             /*cost=*/OpCostMetrics{
-              /*forward_runtime=*/5_ms,
-              /*backward_runtime=*/5_ms,
-              /*memory_usage=*/6_bytes,
+                /*forward_runtime=*/5_ms,
+                /*backward_runtime=*/5_ms,
+                /*memory_usage=*/6_bytes,
             },
-            /*machine_mapping=*/some<ParallelLayerGuidObliviousMachineMapping>(),
-          };
+            /*machine_mapping=*/
+            some<ParallelLayerGuidObliviousMachineMapping>(),
+        };
 
-        
+        MachineMappingWithMemoryResult mapping_result =
+            MachineMappingWithMemoryResult{{
+                mapping1,
+                mapping2,
+                mapping3,
+            }};
 
-        MachineMappingWithMemoryResult mapping_result 
-          = MachineMappingWithMemoryResult{{
+        std::unordered_set<ParetoOptimalMachineMapping> result =
+            mapping_result.get_pareto_frontier();
+
+        std::unordered_set<ParetoOptimalMachineMapping> correct = {
             mapping1,
             mapping2,
             mapping3,
-          }};
-
-        std::unordered_set<ParetoOptimalMachineMapping> 
-          result = mapping_result.get_pareto_frontier();
-
-        std::unordered_set<ParetoOptimalMachineMapping> correct = {
-          mapping1, 
-          mapping2,
-          mapping3,
         };
 
         CHECK(result == correct);
       }
 
       SUBCASE("allows empty set") {
-        MachineMappingWithMemoryResult mapping_result 
-          = MachineMappingWithMemoryResult{{}};
+        MachineMappingWithMemoryResult mapping_result =
+            MachineMappingWithMemoryResult{{}};
 
-        std::unordered_set<ParetoOptimalMachineMapping> 
-          result = mapping_result.get_pareto_frontier();
+        std::unordered_set<ParetoOptimalMachineMapping> result =
+            mapping_result.get_pareto_frontier();
 
         std::unordered_set<ParetoOptimalMachineMapping> correct = {};
 
@@ -384,19 +383,21 @@ TEST_SUITE(FF_TEST_SUITE) {
         empty_machine_mapping_with_memory_result();
 
     MachineResourceSplit split = MachineResourceSplit{
-      /*offset=*/3_p,
-      /*dimension=*/MachineSpecificationDimension::INTER_NODE,
+        /*offset=*/3_p,
+        /*dimension=*/MachineSpecificationDimension::INTER_NODE,
     };
 
     SUBCASE("lhs is empty") {
-      MachineMappingWithMemoryResult result = parallel_combine(split, empty, rhs);
+      MachineMappingWithMemoryResult result =
+          parallel_combine(split, empty, rhs);
       MachineMappingWithMemoryResult correct = empty;
 
       CHECK(result == correct);
     }
 
     SUBCASE("rhs is empty") {
-      MachineMappingWithMemoryResult result = parallel_combine(split, lhs, empty);
+      MachineMappingWithMemoryResult result =
+          parallel_combine(split, lhs, empty);
       MachineMappingWithMemoryResult correct = empty;
 
       CHECK(result == correct);
@@ -457,7 +458,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
   }
 
-  TEST_CASE("minimize_runtime(MachineMappingWithMemoryResult, MachineMappingWithMemoryResult)") {
+  TEST_CASE("minimize_runtime(MachineMappingWithMemoryResult, "
+            "MachineMappingWithMemoryResult)") {
     MachineView machine_view_0 = MachineView{
         /*start=*/MachineSpaceCoordinate{
             /*node_idx=*/0_n,
@@ -555,21 +557,24 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    MachineMappingWithMemoryResult mapping_result1 = MachineMappingWithMemoryResult{
-        {
-            mm1,
-            mm2,
-        },
-    };
+    MachineMappingWithMemoryResult mapping_result1 =
+        MachineMappingWithMemoryResult{
+            {
+                mm1,
+                mm2,
+            },
+        };
 
-    MachineMappingWithMemoryResult mapping_result2 = MachineMappingWithMemoryResult{
-        {
-            mm2,
-            mm3,
-        },
-    };
+    MachineMappingWithMemoryResult mapping_result2 =
+        MachineMappingWithMemoryResult{
+            {
+                mm2,
+                mm3,
+            },
+        };
 
-    MachineMappingWithMemoryResult result = minimize_runtime(mapping_result1, mapping_result2);
+    MachineMappingWithMemoryResult result =
+        minimize_runtime(mapping_result1, mapping_result2);
     MachineMappingWithMemoryResult correct = MachineMappingWithMemoryResult{
         {
             mm1,

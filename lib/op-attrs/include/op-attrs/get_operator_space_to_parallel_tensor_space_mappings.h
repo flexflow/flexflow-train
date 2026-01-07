@@ -12,42 +12,49 @@
 
 namespace FlexFlow {
 
-std::unordered_map<TensorSlotName, OperatorSpaceToParallelTensorSpaceMapping> 
-  get_operator_to_incoming_mappings(
-    ComputationGraphOpAttrs const &attrs,
-    std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> const &inputs_degrees);
-
-std::unordered_map<TensorSlotName, OperatorSpaceToParallelTensorSpaceMapping> 
-  get_operator_to_incoming_mappings_for_role(
-    ComputationGraphOpAttrs const &attrs,
-    std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> const &inputs_degrees,
-    IncomingTensorRole role);
+std::unordered_map<TensorSlotName, OperatorSpaceToParallelTensorSpaceMapping>
+    get_operator_to_incoming_mappings(
+        ComputationGraphOpAttrs const &attrs,
+        std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> const
+            &inputs_degrees);
 
 std::unordered_map<TensorSlotName, OperatorSpaceToParallelTensorSpaceMapping>
-  get_operator_to_input_mappings(
-    ComputationGraphOpAttrs const &attrs,
-    std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> const &inputs_degrees);
+    get_operator_to_incoming_mappings_for_role(
+        ComputationGraphOpAttrs const &attrs,
+        std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> const
+            &inputs_degrees,
+        IncomingTensorRole role);
 
 std::unordered_map<TensorSlotName, OperatorSpaceToParallelTensorSpaceMapping>
-  get_operator_to_weight_mappings(
-    ComputationGraphOpAttrs const &attrs,
-    std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> const &inputs_degrees);
+    get_operator_to_input_mappings(
+        ComputationGraphOpAttrs const &attrs,
+        std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> const
+            &inputs_degrees);
 
 std::unordered_map<TensorSlotName, OperatorSpaceToParallelTensorSpaceMapping>
-  get_operator_to_output_mappings(
-    ComputationGraphOpAttrs const &attrs,
-    std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> const &inputs_degrees);
-
-std::unordered_map<TensorSlotName, OperatorSpaceToParallelTensorSpaceMapping> 
-  get_operator_to_ptensor_mappings_for_role(
-    ComputationGraphOpAttrs const &attrs,
-    std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> const &inputs_degrees,
-    TensorRole role);
+    get_operator_to_weight_mappings(
+        ComputationGraphOpAttrs const &attrs,
+        std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> const
+            &inputs_degrees);
 
 std::unordered_map<TensorSlotName, OperatorSpaceToParallelTensorSpaceMapping>
-  get_operator_to_ptensor_mappings(
-    ComputationGraphOpAttrs const &attrs,
-    std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> const &inputs_degrees);
+    get_operator_to_output_mappings(
+        ComputationGraphOpAttrs const &attrs,
+        std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> const
+            &inputs_degrees);
+
+std::unordered_map<TensorSlotName, OperatorSpaceToParallelTensorSpaceMapping>
+    get_operator_to_ptensor_mappings_for_role(
+        ComputationGraphOpAttrs const &attrs,
+        std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> const
+            &inputs_degrees,
+        TensorRole role);
+
+std::unordered_map<TensorSlotName, OperatorSpaceToParallelTensorSpaceMapping>
+    get_operator_to_ptensor_mappings(
+        ComputationGraphOpAttrs const &attrs,
+        std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> const
+            &inputs_degrees);
 
 } // namespace FlexFlow
 

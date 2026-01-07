@@ -21,11 +21,10 @@ template std::unordered_set<L>
 template std::unordered_set<R>
     output_dims_of_up_projection(UpProjection<L, R> const &);
 
-template DimCoord<R>
-    compute_up_projection(UpProjection<L, R> const &,
-                          DimCoord<L> const &,
-                          DimDomain<R> const &,
-                          DimOrdering<R> const &);
+template DimCoord<R> compute_up_projection(UpProjection<L, R> const &,
+                                           DimCoord<L> const &,
+                                           DimDomain<R> const &,
+                                           DimOrdering<R> const &);
 
 template UpProjection<L, R> make_empty_up_projection();
 

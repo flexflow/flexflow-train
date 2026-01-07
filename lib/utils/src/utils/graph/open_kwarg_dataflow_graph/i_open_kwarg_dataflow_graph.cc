@@ -3,7 +3,9 @@
 
 namespace FlexFlow {
 
-template struct IOpenKwargDataflowGraph<ordered_value_type<0>, ordered_value_type<1>>;
-template struct IOpenKwargDataflowGraph<ordered_value_type<0>, ordered_value_type<0>>;
+template struct IOpenKwargDataflowGraph<ordered_value_type<0>,
+                                        ordered_value_type<1>>;
+template struct IOpenKwargDataflowGraph<ordered_value_type<0>,
+                                        ordered_value_type<0>>;
 
 } // namespace FlexFlow

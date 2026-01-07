@@ -3,9 +3,10 @@
 
 namespace FlexFlow {
 
-std::unordered_set<DynamicNodeInvocation> 
-  perform_machine_slicing_for_invocation(DynamicNodeInvocation const &invocation,
-                                         MachineSpaceCoordinate const &device_coord) {
+std::unordered_set<DynamicNodeInvocation>
+    perform_machine_slicing_for_invocation(
+        DynamicNodeInvocation const &invocation,
+        MachineSpaceCoordinate const &device_coord) {
 
   ASSERT(invocation.node_attrs.device_coord.has_value());
 
@@ -16,15 +17,15 @@ std::unordered_set<DynamicNodeInvocation>
   }
 }
 
-DynamicOpenDataflowGraph perform_machine_slicing(DynamicOpenDataflowGraph const &g,
-                                                 MachineSpaceCoordinate const &device_coord) {
+DynamicOpenDataflowGraph
+    perform_machine_slicing(DynamicOpenDataflowGraph const &g,
+                            MachineSpaceCoordinate const &device_coord) {
   DynamicOpenDataflowGraph result = flatmap_dynamic_invocation_set(
-    g, 
-    [&](DynamicNodeInvocation const &invocation) 
-      -> std::unordered_set<DynamicNodeInvocation>
-    {
-      return perform_machine_slicing_for_invocation(invocation, device_coord);
-    });
+      g,
+      [&](DynamicNodeInvocation const &invocation)
+          -> std::unordered_set<DynamicNodeInvocation> {
+        return perform_machine_slicing_for_invocation(invocation, device_coord);
+      });
 
   return result;
 }

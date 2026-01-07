@@ -6,11 +6,10 @@ namespace FlexFlow {
 using GraphInputName = ordered_value_type<0>;
 using SlotName = ordered_value_type<1>;
 
-template
-  OpenKwargDataflowGraphView<GraphInputName, SlotName>
+template OpenKwargDataflowGraphView<GraphInputName, SlotName>
     permute_open_kwarg_dataflow_graph_input_ids(
-      OpenKwargDataflowGraphView<GraphInputName, SlotName> const &,
-      bidict<KwargDataflowGraphInput<GraphInputName>, KwargDataflowGraphInput<GraphInputName>> const &);
-
+        OpenKwargDataflowGraphView<GraphInputName, SlotName> const &,
+        bidict<KwargDataflowGraphInput<GraphInputName>,
+               KwargDataflowGraphInput<GraphInputName>> const &);
 
 } // namespace FlexFlow

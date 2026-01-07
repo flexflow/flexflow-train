@@ -1,8 +1,8 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_FOLDL1_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_FOLDL1_H
 
-#include <vector>
 #include <libassert/assert.hpp>
+#include <vector>
 
 namespace FlexFlow {
 
@@ -25,7 +25,7 @@ namespace FlexFlow {
 template <typename C, typename F, typename E = typename C::value_type>
 E foldl1(C const &c, F func) {
   ASSERT(!c.empty(),
-        "foldl1 expected non-empty vector, but received empty vector");
+         "foldl1 expected non-empty vector, but received empty vector");
   std::optional<E> result = std::nullopt;
 
   for (E const &e : c) {

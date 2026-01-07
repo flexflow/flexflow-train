@@ -5,8 +5,8 @@
 
 namespace FlexFlow {
 
-#define CHECK_IS_JSON_SERIALIZABLE(...)                                   \
-  static_assert(::FlexFlow::is_json_serializable<__VA_ARGS__>::value,             \
+#define CHECK_IS_JSON_SERIALIZABLE(...)                                        \
+  static_assert(::FlexFlow::is_json_serializable<__VA_ARGS__>::value,          \
                 #__VA_ARGS__ " should be json serializeable")
 
 } // namespace FlexFlow

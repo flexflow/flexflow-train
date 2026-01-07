@@ -11,26 +11,31 @@ namespace FlexFlow {
 struct MappedPerDeviceOpStatesGroup {
   MappedPerDeviceOpStatesGroup() = delete;
 
-  explicit MappedPerDeviceOpStatesGroup(std::unordered_map<MachineSpaceCoordinate, DeviceSpecificPerDeviceOpState> const &per_device_op_states);
+  explicit MappedPerDeviceOpStatesGroup(
+      std::unordered_map<MachineSpaceCoordinate,
+                         DeviceSpecificPerDeviceOpState> const
+          &per_device_op_states);
 
   [[nodiscard]] bool operator==(MappedPerDeviceOpStatesGroup const &) const;
   [[nodiscard]] bool operator!=(MappedPerDeviceOpStatesGroup const &) const;
 
-  [[nodiscard]] std::unordered_map<MachineSpaceCoordinate, DeviceSpecificPerDeviceOpState> const &get_per_device_op_states() const;
+  [[nodiscard]] std::unordered_map<MachineSpaceCoordinate,
+                                   DeviceSpecificPerDeviceOpState> const &
+      get_per_device_op_states() const;
 
 private:
-  std::unordered_map<MachineSpaceCoordinate, DeviceSpecificPerDeviceOpState> shard_bindings;
+  std::unordered_map<MachineSpaceCoordinate, DeviceSpecificPerDeviceOpState>
+      shard_bindings;
 
 private:
-  [[nodiscard]] std::tuple<
-    decltype(shard_bindings) const &
-  > tie() const;
+  [[nodiscard]] std::tuple<decltype(shard_bindings) const &> tie() const;
 
   friend struct ::std::hash<MappedPerDeviceOpStatesGroup>;
 };
 
 std::string format_as(::FlexFlow::MappedPerDeviceOpStatesGroup const &);
-std::ostream &operator<<(std::ostream &, ::FlexFlow::MappedPerDeviceOpStatesGroup const &);
+std::ostream &operator<<(std::ostream &,
+                         ::FlexFlow::MappedPerDeviceOpStatesGroup const &);
 
 } // namespace FlexFlow
 

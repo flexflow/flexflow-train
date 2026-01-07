@@ -1,5 +1,5 @@
-#include <doctest/doctest.h>
 #include "utils/bidict/algorithms/unordered_set_of.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 

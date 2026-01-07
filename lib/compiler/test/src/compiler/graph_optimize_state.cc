@@ -1,12 +1,12 @@
 #include "compiler/graph_optimize_state.h"
 #include "compiler/machine_mapping/machine_mapping.dtg.h"
 #include "compiler/machine_mapping/machine_mapping.h"
+#include "compiler/machine_mapping/machine_view.dtg.h"
 #include "compiler/machine_mapping/machine_view.h"
 #include "pcg/mapped_parallel_computation_graph/mapped_parallel_computation_graph.h"
-#include "compiler/machine_mapping/machine_view.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
-#include <doctest/doctest.h>
 #include "test/utils/doctest/check_without_stringify.h"
+#include <doctest/doctest.h>
 
 using namespace FlexFlow;
 
@@ -52,20 +52,19 @@ TEST_SUITE(FF_TEST_SUITE) {
       return builder.pcg;
     };
 
-    auto create_machine_mapping_for_pcg = [](ParallelComputationGraph const &pcg) -> MachineMapping {
+    auto create_machine_mapping_for_pcg =
+        [](ParallelComputationGraph const &pcg) -> MachineMapping {
       MachineSpaceCoordinate device = MachineSpaceCoordinate{
-        /*node_idx=*/0_n,
-        /*device_idx=*/0_n,
-        /*device_type=*/DeviceType::GPU,
+          /*node_idx=*/0_n,
+          /*device_idx=*/0_n,
+          /*device_type=*/DeviceType::GPU,
       };
 
       MachineView machine_view = make_single_device_machine_view(device);
 
       return MachineMapping{
-        generate_map(get_parallel_layers(pcg),
-                     [&](parallel_layer_guid_t) {
-                        return machine_view; 
-                     }),
+          generate_map(get_parallel_layers(pcg),
+                       [&](parallel_layer_guid_t) { return machine_view; }),
       };
     };
 
@@ -78,14 +77,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       GraphOptimizeState state1 = GraphOptimizeState{
           GraphOptimizeResult{
-            mapped_pcg_from_pcg_and_mapping(pcg1, machine_mapping_1),
+              mapped_pcg_from_pcg_and_mapping(pcg1, machine_mapping_1),
           },
           0,
       };
 
       GraphOptimizeState state2 = GraphOptimizeState{
           GraphOptimizeResult{
-            mapped_pcg_from_pcg_and_mapping(pcg2, machine_mapping_2),
+              mapped_pcg_from_pcg_and_mapping(pcg2, machine_mapping_2),
           },
           0,
       };
@@ -110,18 +109,19 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       ParallelComputationGraph other_pcg = builder_.pcg;
 
-      MachineMapping other_machine_mapping = create_machine_mapping_for_pcg(other_pcg);
+      MachineMapping other_machine_mapping =
+          create_machine_mapping_for_pcg(other_pcg);
 
       GraphOptimizeState state1 = GraphOptimizeState{
           GraphOptimizeResult{
-            mapped_pcg_from_pcg_and_mapping(pcg1, machine_mapping_1),
+              mapped_pcg_from_pcg_and_mapping(pcg1, machine_mapping_1),
           },
           0,
       };
 
       GraphOptimizeState state_ = GraphOptimizeState{
           GraphOptimizeResult{
-            mapped_pcg_from_pcg_and_mapping(other_pcg, other_machine_mapping),
+              mapped_pcg_from_pcg_and_mapping(other_pcg, other_machine_mapping),
           },
           0,
       };

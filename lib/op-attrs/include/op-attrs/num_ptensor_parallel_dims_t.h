@@ -1,12 +1,12 @@
 #ifndef _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_NUM_PTENSOR_PARALLEL_DIMS_T_H
 #define _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_NUM_PTENSOR_PARALLEL_DIMS_T_H
 
+#include "utils/nonnegative_int/nonnegative_int.h"
+#include "utils/positive_int/positive_int.h"
 #include <functional>
 #include <nlohmann/json.hpp>
 #include <rapidcheck.h>
 #include <string>
-#include "utils/nonnegative_int/nonnegative_int.h"
-#include "utils/positive_int/positive_int.h"
 
 namespace FlexFlow {
 
@@ -30,6 +30,7 @@ public:
 
 private:
   int value;
+
 private:
   void check_invariant() const;
 };
@@ -62,7 +63,8 @@ namespace std {
 
 template <>
 struct hash<::FlexFlow::num_ptensor_parallel_dims_t> {
-  size_t operator()(::FlexFlow::num_ptensor_parallel_dims_t const &) const noexcept;
+  size_t operator()(
+      ::FlexFlow::num_ptensor_parallel_dims_t const &) const noexcept;
 };
 
 } // namespace std

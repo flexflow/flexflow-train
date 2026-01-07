@@ -9,10 +9,13 @@
 namespace FlexFlow {
 
 template <typename GraphInputName, typename SlotName>
-struct OpenKwargDataflowGraph : virtual public OpenKwargDataflowGraphView<GraphInputName, SlotName> {
+struct OpenKwargDataflowGraph
+    : virtual public OpenKwargDataflowGraphView<GraphInputName, SlotName> {
 public:
   KwargNodeAddedResult<SlotName> add_node(
-      std::unordered_map<SlotName, OpenKwargDataflowValue<GraphInputName, SlotName>> const &inputs,
+      std::unordered_map<SlotName,
+                         OpenKwargDataflowValue<GraphInputName, SlotName>> const
+          &inputs,
       std::unordered_set<SlotName> const &outputs) {
     return this->get_interface().add_node(inputs, outputs);
   }
@@ -22,27 +25,32 @@ public:
   }
 
   template <typename T, typename... Args>
-  static typename std::enable_if<std::is_base_of<IOpenKwargDataflowGraph<GraphInputName, SlotName>, T>::value,
-                                 OpenKwargDataflowGraph>::type
+  static typename std::enable_if<
+      std::is_base_of<IOpenKwargDataflowGraph<GraphInputName, SlotName>,
+                      T>::value,
+      OpenKwargDataflowGraph>::type
       create(Args &&...args) {
     return OpenKwargDataflowGraph(make_cow_ptr<T>(std::forward<Args>(args)...));
   }
 
 protected:
-  using OpenKwargDataflowGraphView<GraphInputName, SlotName>::OpenKwargDataflowGraphView;
+  using OpenKwargDataflowGraphView<GraphInputName,
+                                   SlotName>::OpenKwargDataflowGraphView;
 
 private:
   IOpenKwargDataflowGraph<GraphInputName, SlotName> &get_interface() {
-    return *std::dynamic_pointer_cast<IOpenKwargDataflowGraph<GraphInputName, SlotName>>(
+    return *std::dynamic_pointer_cast<
+        IOpenKwargDataflowGraph<GraphInputName, SlotName>>(
         GraphView::ptr.get_mutable());
   }
 
-  IOpenKwargDataflowGraph<GraphInputName, SlotName> const &get_interface() const {
-    return *std::dynamic_pointer_cast<IOpenKwargDataflowGraph<GraphInputName, SlotName> const>(GraphView::ptr.get());
+  IOpenKwargDataflowGraph<GraphInputName, SlotName> const &
+      get_interface() const {
+    return *std::dynamic_pointer_cast<
+        IOpenKwargDataflowGraph<GraphInputName, SlotName> const>(
+        GraphView::ptr.get());
   }
 };
-
-
 
 } // namespace FlexFlow
 

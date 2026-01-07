@@ -45,6 +45,6 @@ T select_random(std::vector<T> const &values,
   return select_random_determistic<T>(values, weights, randf());
 }
 
-}
+} // namespace FlexFlow
 
 #endif // _RANDOM_UTILS_H

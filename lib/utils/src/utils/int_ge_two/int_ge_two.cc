@@ -13,14 +13,15 @@ int_ge_two::int_ge_two(size_t value) : value_(value) {
   this->check_invariant();
 }
 
-int_ge_two::int_ge_two(nonnegative_int value) : value_(value.unwrap_nonnegative()) {
+int_ge_two::int_ge_two(nonnegative_int value)
+    : value_(value.unwrap_nonnegative()) {
   this->check_invariant();
 }
 
-int_ge_two::int_ge_two(positive_int value) : value_(value.int_from_positive_int()) {
+int_ge_two::int_ge_two(positive_int value)
+    : value_(value.int_from_positive_int()) {
   this->check_invariant();
 }
-
 
 int_ge_two::operator int() const noexcept {
   return this->value_;
@@ -204,19 +205,19 @@ bool operator>=(int lhs, int_ge_two rhs) {
 
 int_ge_two int_ge_two::operator+(int_ge_two other) const {
   return int_ge_two{
-    this->value_ + other.value_,
+      this->value_ + other.value_,
   };
 }
 
 int_ge_two int_ge_two::operator+(positive_int other) const {
   return int_ge_two{
-    this->value_ + other.int_from_positive_int(),
+      this->value_ + other.int_from_positive_int(),
   };
 }
 
 int_ge_two int_ge_two::operator+(nonnegative_int other) const {
   return int_ge_two{
-    this->value_ + other.unwrap_nonnegative(),
+      this->value_ + other.unwrap_nonnegative(),
   };
 }
 
@@ -261,7 +262,7 @@ int_ge_two operator+(positive_int lhs, int_ge_two rhs) {
 
 int_ge_two int_ge_two::operator*(int_ge_two other) const {
   return int_ge_two{
-    this->value_ * other.value_,
+      this->value_ * other.value_,
   };
 }
 
@@ -273,7 +274,7 @@ int_ge_two &int_ge_two::operator*=(int_ge_two other) {
 
 int_ge_two int_ge_two::operator*(positive_int other) const {
   return int_ge_two{
-    this->value_ * other.int_from_positive_int(),
+      this->value_ * other.int_from_positive_int(),
   };
 }
 
@@ -285,7 +286,7 @@ int_ge_two &int_ge_two::operator*=(positive_int other) {
 
 nonnegative_int int_ge_two::operator*(nonnegative_int other) const {
   return nonnegative_int{
-    this->value_ * other.unwrap_nonnegative(),
+      this->value_ * other.unwrap_nonnegative(),
   };
 }
 
@@ -303,13 +304,13 @@ int int_ge_two::int_from_int_ge_two() const {
 
 nonnegative_int int_ge_two::nonnegative_int_from_int_ge_two() const {
   return nonnegative_int{
-    this->value_,
+      this->value_,
   };
 }
 
 positive_int int_ge_two::positive_int_from_int_ge_two() const {
   return positive_int{
-    this->value_,
+      this->value_,
   };
 }
 
@@ -340,8 +341,8 @@ namespace nlohmann {
   return ::FlexFlow::int_ge_two{j.template get<int>()};
 }
 
-void adl_serializer<::FlexFlow::int_ge_two>::to_json(
-    json &j, ::FlexFlow::int_ge_two t) {
+void adl_serializer<::FlexFlow::int_ge_two>::to_json(json &j,
+                                                     ::FlexFlow::int_ge_two t) {
   j = t.int_from_int_ge_two();
 }
 } // namespace nlohmann

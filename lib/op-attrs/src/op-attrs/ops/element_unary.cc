@@ -15,56 +15,58 @@ ElementUnaryAttrs make_relu_attrs() {
   };
 }
 
-TensorShape
-    get_output_shape(ElementUnaryAttrs const &attrs,
-                     TensorShape const &input_shape) {
+TensorShape get_output_shape(ElementUnaryAttrs const &attrs,
+                             TensorShape const &input_shape) {
   return input_shape;
 }
 
-ParallelTensorShape
-    get_output_shape(ElementUnaryAttrs const &attrs,
-                     ParallelTensorShape const &input_shape) {
-  TensorShape output_shape = get_output_shape(attrs, get_reduced_shape(input_shape));
+ParallelTensorShape get_output_shape(ElementUnaryAttrs const &attrs,
+                                     ParallelTensorShape const &input_shape) {
+  TensorShape output_shape =
+      get_output_shape(attrs, get_reduced_shape(input_shape));
 
-  ParallelTensorDimDegrees output_degrees = get_output_parallel_dim_degrees(attrs, get_parallel_degrees(input_shape));
+  ParallelTensorDimDegrees output_degrees =
+      get_output_parallel_dim_degrees(attrs, get_parallel_degrees(input_shape));
 
   return lift_to_parallel_with_degrees(output_shape, output_degrees);
 }
 
 ParallelTensorDimDegrees get_output_parallel_dim_degrees(
-                                  ElementUnaryAttrs const &attrs,
-                                  ParallelTensorDimDegrees const &input_degrees) {
+    ElementUnaryAttrs const &attrs,
+    ParallelTensorDimDegrees const &input_degrees) {
   ASSERT(input_degrees.sum_degree.value == 1);
   ASSERT(input_degrees.discard_copy_degree.value == 1);
 
   return input_degrees;
 }
 
-OperatorTaskSpace get_operator_task_space(ElementUnaryAttrs const &attrs,
-                                          ParallelTensorDimDegrees const &input_degrees) {
-  ParallelTensorDimDegrees output_degrees = get_output_parallel_dim_degrees(attrs, input_degrees);
+OperatorTaskSpace
+    get_operator_task_space(ElementUnaryAttrs const &attrs,
+                            ParallelTensorDimDegrees const &input_degrees) {
+  ParallelTensorDimDegrees output_degrees =
+      get_output_parallel_dim_degrees(attrs, input_degrees);
 
-  return get_operator_task_space_matching_parallel_tensor_dim_degrees(output_degrees);
+  return get_operator_task_space_matching_parallel_tensor_dim_degrees(
+      output_degrees);
 }
 
 OperatorSpaceToParallelTensorSpaceMapping get_operator_to_input_mapping(
     ElementUnaryAttrs const &attrs,
     ParallelTensorDimDegrees const &input_degrees) {
 
-  return get_identity_mapping(
-    get_operator_task_space(attrs, input_degrees),
-    input_degrees);
+  return get_identity_mapping(get_operator_task_space(attrs, input_degrees),
+                              input_degrees);
 }
 
 OperatorSpaceToParallelTensorSpaceMapping get_operator_to_output_mapping(
     ElementUnaryAttrs const &attrs,
     ParallelTensorDimDegrees const &input_degrees) {
 
-  ParallelTensorDimDegrees output_degrees = get_output_parallel_dim_degrees(attrs, input_degrees);
+  ParallelTensorDimDegrees output_degrees =
+      get_output_parallel_dim_degrees(attrs, input_degrees);
 
-  return get_identity_mapping(
-    get_operator_task_space(attrs, input_degrees),
-    output_degrees);
+  return get_identity_mapping(get_operator_task_space(attrs, input_degrees),
+                              output_degrees);
 }
 
 } // namespace FlexFlow

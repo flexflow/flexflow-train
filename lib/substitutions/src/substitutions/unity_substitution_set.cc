@@ -51,8 +51,8 @@ Substitution create_replicate_linear_combine(nonnegative_int num_dims,
   auto [p_input, o_input] = b.add_input(tensor_attribute_pattern_match_all());
   auto [p_weight, o_weight] = b.add_input(tensor_attribute_pattern_match_all());
   std::unordered_map<TensorSlotName, PatternValue> p_inputs = {
-    {TensorSlotName::INPUT, p_input},
-    {TensorSlotName::WEIGHT, p_weight},
+      {TensorSlotName::INPUT, p_input},
+      {TensorSlotName::WEIGHT, p_weight},
   };
 
   std::optional<OutputGraphExprValue> o_bias = std::nullopt;
@@ -60,8 +60,8 @@ Substitution create_replicate_linear_combine(nonnegative_int num_dims,
     std::pair<PatternValue, OutputGraphExprValue> bias =
         b.add_input(tensor_attribute_pattern_match_all());
     p_inputs.insert({
-      TensorSlotName::BIAS,
-      bias.first,
+        TensorSlotName::BIAS,
+        bias.first,
     });
     o_bias = bias.second;
   }
@@ -75,17 +75,17 @@ Substitution create_replicate_linear_combine(nonnegative_int num_dims,
   }};
 
   PatternValue p_linear_output = require_only_key(
-    b.add_pattern_node(
-      linear_pattern,
-      p_inputs,
-      {
-        {
-          TensorSlotName::OUTPUT, 
-          tensor_attr_pattern_require_num_dims(nonnegative_int{num_dims}),
-        },
-      },
-      "linear"),
-    TensorSlotName::OUTPUT);
+      b.add_pattern_node(linear_pattern,
+                         p_inputs,
+                         {
+                             {
+                                 TensorSlotName::OUTPUT,
+                                 tensor_attr_pattern_require_num_dims(
+                                     nonnegative_int{num_dims}),
+                             },
+                         },
+                         "linear"),
+      TensorSlotName::OUTPUT);
 
   OutputOperatorAttrsAssignment replicate_input_expr =
       OutputOperatorAttrsAssignment{
@@ -96,19 +96,20 @@ Substitution create_replicate_linear_combine(nonnegative_int num_dims,
                                    OperatorAttributeValue{degree}),
           }};
   OutputGraphExprValue o_replicate_input_output =
-      require_only_key(
-        b.add_output_graph_node(
-          /*node_expr=*/replicate_input_expr, 
-          /*inputs=*/{
-            {
-              TensorSlotName::INPUT,
-              o_input,
-            },
-          }, 
-          /*output_slots=*/{
-            TensorSlotName::OUTPUT,
-          }),
-        TensorSlotName::OUTPUT);
+      require_only_key(b.add_output_graph_node(
+                           /*node_expr=*/replicate_input_expr,
+                           /*inputs=*/
+                           {
+                               {
+                                   TensorSlotName::INPUT,
+                                   o_input,
+                               },
+                           },
+                           /*output_slots=*/
+                           {
+                               TensorSlotName::OUTPUT,
+                           }),
+                       TensorSlotName::OUTPUT);
 
   OutputOperatorAttrsAssignment partition_weights_expr =
       OutputOperatorAttrsAssignment{
@@ -120,29 +121,31 @@ Substitution create_replicate_linear_combine(nonnegative_int num_dims,
               set_attr_to_constant(OperatorAttributeKey::PARALLEL_DIM,
                                    OperatorAttributeValue{ff_dim_t{1_n}}),
           }};
-  OutputGraphExprValue o_partition_weights_output = require_only_key(
-      b.add_output_graph_node(
-       /*node_expr=*/partition_weights_expr,
-       /*inputs=*/{
-         {
-           TensorSlotName::INPUT,
-           o_weight,
-         },
-       }, 
-       /*output_slots=*/{
-         TensorSlotName::OUTPUT,
-       }),
-    TensorSlotName::OUTPUT);
+  OutputGraphExprValue o_partition_weights_output =
+      require_only_key(b.add_output_graph_node(
+                           /*node_expr=*/partition_weights_expr,
+                           /*inputs=*/
+                           {
+                               {
+                                   TensorSlotName::INPUT,
+                                   o_weight,
+                               },
+                           },
+                           /*output_slots=*/
+                           {
+                               TensorSlotName::OUTPUT,
+                           }),
+                       TensorSlotName::OUTPUT);
 
   std::unordered_map<TensorSlotName, OutputGraphExprValue> o_linear_inputs = {
-    {
-      TensorSlotName::INPUT,
-      o_replicate_input_output,
-    },
-    {
-      TensorSlotName::WEIGHT,
-      o_partition_weights_output,
-    },
+      {
+          TensorSlotName::INPUT,
+          o_replicate_input_output,
+      },
+      {
+          TensorSlotName::WEIGHT,
+          o_partition_weights_output,
+      },
   };
 
   if (use_bias) {
@@ -156,22 +159,24 @@ Substitution create_replicate_linear_combine(nonnegative_int num_dims,
                 set_attr_to_constant(OperatorAttributeKey::PARALLEL_DIM,
                                      OperatorAttributeValue{ff_dim_t{1_n}}),
             }};
-    OutputGraphExprValue o_partition_bias_output = require_only_key(
-        b.add_output_graph_node(
-          /*node_expr=*/partition_bias_expr, 
-          /*inputs=*/{
-            {
-              TensorSlotName::INPUT,
-              o_bias.value(),
-            },
-          },
-          /*output_slots=*/{
-            TensorSlotName::OUTPUT,
-          }),
-        TensorSlotName::OUTPUT);
+    OutputGraphExprValue o_partition_bias_output =
+        require_only_key(b.add_output_graph_node(
+                             /*node_expr=*/partition_bias_expr,
+                             /*inputs=*/
+                             {
+                                 {
+                                     TensorSlotName::INPUT,
+                                     o_bias.value(),
+                                 },
+                             },
+                             /*output_slots=*/
+                             {
+                                 TensorSlotName::OUTPUT,
+                             }),
+                         TensorSlotName::OUTPUT);
     o_linear_inputs.insert({
-      TensorSlotName::BIAS,
-      o_partition_bias_output,
+        TensorSlotName::BIAS,
+        o_partition_bias_output,
     });
   }
 
@@ -180,14 +185,14 @@ Substitution create_replicate_linear_combine(nonnegative_int num_dims,
       {},
   };
   OutputGraphExprValue o_linear_output =
-      require_only_key(
-        b.add_output_graph_node(
-          /*node_expr=*/linear_expr, 
-          /*inputs=*/o_linear_inputs, 
-          /*output_slots=*/{
-            TensorSlotName::OUTPUT,
-          }),
-        TensorSlotName::OUTPUT);
+      require_only_key(b.add_output_graph_node(
+                           /*node_expr=*/linear_expr,
+                           /*inputs=*/o_linear_inputs,
+                           /*output_slots=*/
+                           {
+                               TensorSlotName::OUTPUT,
+                           }),
+                       TensorSlotName::OUTPUT);
 
   OutputOperatorAttrsAssignment combine_expr = OutputOperatorAttrsAssignment{
       std::nullopt,
@@ -204,19 +209,20 @@ Substitution create_replicate_linear_combine(nonnegative_int num_dims,
   };
 
   OutputGraphExprValue o_combine_output =
-      require_only_key(
-        b.add_output_graph_node(
-          /*node_expr=*/combine_expr, 
-          /*inputs=*/{
-            {
-              TensorSlotName::INPUT,
-              o_linear_output,
-            },
-          }, 
-          /*output_slots=*/{
-            TensorSlotName::OUTPUT,
-          }),
-        TensorSlotName::OUTPUT);
+      require_only_key(b.add_output_graph_node(
+                           /*node_expr=*/combine_expr,
+                           /*inputs=*/
+                           {
+                               {
+                                   TensorSlotName::INPUT,
+                                   o_linear_output,
+                               },
+                           },
+                           /*output_slots=*/
+                           {
+                               TensorSlotName::OUTPUT,
+                           }),
+                       TensorSlotName::OUTPUT);
 
   b.equate_outputs(p_linear_output, o_combine_output);
 
@@ -283,49 +289,51 @@ Substitution create_fuse_linear_activation(Activation activation) {
           OperatorAttributeValue{std::optional<Activation>{std::nullopt}}),
   }};
   PatternValue p_mm_output =
-      require_only_key(
-        b.add_pattern_node(
-          /*node_expr=*/mm_pattern,
-          /*inputs=*/{
-            {
-              TensorSlotName::INPUT,
-              p_input,
-            },
-            {
-              TensorSlotName::WEIGHT,
-              p_weight,
-            },
-          },
-          /*output_patterns=*/{
-            {
-              TensorSlotName::OUTPUT,
-              tensor_attribute_pattern_match_all(),
-            },
-          },
-          /*name=*/"mm"),
-        TensorSlotName::OUTPUT);
+      require_only_key(b.add_pattern_node(
+                           /*node_expr=*/mm_pattern,
+                           /*inputs=*/
+                           {
+                               {
+                                   TensorSlotName::INPUT,
+                                   p_input,
+                               },
+                               {
+                                   TensorSlotName::WEIGHT,
+                                   p_weight,
+                               },
+                           },
+                           /*output_patterns=*/
+                           {
+                               {
+                                   TensorSlotName::OUTPUT,
+                                   tensor_attribute_pattern_match_all(),
+                               },
+                           },
+                           /*name=*/"mm"),
+                       TensorSlotName::OUTPUT);
 
   OperatorAttributePattern relu_pattern = OperatorAttributePattern{{
       op_type_equals_constraint(OperatorType::RELU),
   }};
   PatternValue p_relu_output =
-      require_only_key(
-        b.add_pattern_node(
-          /*node_expr=*/relu_pattern,
-          /*inputs=*/{
-            {
-              TensorSlotName::INPUT,
-              p_mm_output,
-            },
-          },
-          /*output_patterns=*/{
-            {
-              TensorSlotName::OUTPUT,
-              tensor_attribute_pattern_match_all(),
-            },
-          },
-          /*name=*/"relu"),
-        TensorSlotName::OUTPUT);
+      require_only_key(b.add_pattern_node(
+                           /*node_expr=*/relu_pattern,
+                           /*inputs=*/
+                           {
+                               {
+                                   TensorSlotName::INPUT,
+                                   p_mm_output,
+                               },
+                           },
+                           /*output_patterns=*/
+                           {
+                               {
+                                   TensorSlotName::OUTPUT,
+                                   tensor_attribute_pattern_match_all(),
+                               },
+                           },
+                           /*name=*/"relu"),
+                       TensorSlotName::OUTPUT);
 
   OutputOperatorAttrsAssignment fused_node_expr = OutputOperatorAttrsAssignment{
       b.pattern_node_named("mm"),
@@ -333,23 +341,25 @@ Substitution create_fuse_linear_activation(Activation activation) {
           set_attr_to_constant(OperatorAttributeKey::ACTIVATION,
                                OperatorAttributeValue{activation}),
       }};
-  OutputGraphExprValue o_fused_node_output = require_only_key(
-      b.add_output_graph_node(
-        /*node_expr=*/fused_node_expr, 
-        /*inputs=*/{
-          {
-            TensorSlotName::INPUT, 
-            o_input,
-          },
-          {
-            TensorSlotName::WEIGHT,
-            o_weight,
-          },
-        },
-        /*output_slots=*/{
-          TensorSlotName::OUTPUT,
-        }),
-      TensorSlotName::OUTPUT);
+  OutputGraphExprValue o_fused_node_output =
+      require_only_key(b.add_output_graph_node(
+                           /*node_expr=*/fused_node_expr,
+                           /*inputs=*/
+                           {
+                               {
+                                   TensorSlotName::INPUT,
+                                   o_input,
+                               },
+                               {
+                                   TensorSlotName::WEIGHT,
+                                   o_weight,
+                               },
+                           },
+                           /*output_slots=*/
+                           {
+                               TensorSlotName::OUTPUT,
+                           }),
+                       TensorSlotName::OUTPUT);
 
   b.equate_outputs(p_relu_output, o_fused_node_output);
 

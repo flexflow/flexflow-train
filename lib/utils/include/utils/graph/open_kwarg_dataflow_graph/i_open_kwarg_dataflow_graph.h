@@ -8,11 +8,15 @@
 namespace FlexFlow {
 
 template <typename GraphInputName, typename SlotName>
-struct IOpenKwargDataflowGraph : virtual public IOpenKwargDataflowGraphView<GraphInputName, SlotName> {
-  virtual KwargNodeAddedResult<SlotName> 
-    add_node(std::unordered_map<SlotName, OpenKwargDataflowValue<GraphInputName, SlotName>> const &inputs,
-             std::unordered_set<SlotName> const &outputs) = 0;
-  virtual KwargDataflowGraphInput<GraphInputName> add_input(GraphInputName const &name) = 0;
+struct IOpenKwargDataflowGraph
+    : virtual public IOpenKwargDataflowGraphView<GraphInputName, SlotName> {
+  virtual KwargNodeAddedResult<SlotName> add_node(
+      std::unordered_map<SlotName,
+                         OpenKwargDataflowValue<GraphInputName, SlotName>> const
+          &inputs,
+      std::unordered_set<SlotName> const &outputs) = 0;
+  virtual KwargDataflowGraphInput<GraphInputName>
+      add_input(GraphInputName const &name) = 0;
   virtual IOpenKwargDataflowGraph *clone() const = 0;
 
   virtual ~IOpenKwargDataflowGraph() = default;

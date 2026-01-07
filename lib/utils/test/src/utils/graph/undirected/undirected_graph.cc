@@ -1,10 +1,10 @@
+#include "utils/graph/undirected/undirected_graph.h"
 #include "utils/commutative_pair.h"
 #include "utils/containers/repeat.h"
 #include "utils/graph/instances/hashmap_undirected_graph.h"
 #include "utils/graph/node/node_query.h"
 #include "utils/graph/undirected/algorithms/make_undirected_edge.h"
 #include "utils/graph/undirected/undirected_edge_query.h"
-#include "utils/graph/undirected/undirected_graph.h"
 #include <doctest/doctest.h>
 
 using namespace FlexFlow;

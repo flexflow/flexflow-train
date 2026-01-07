@@ -62,14 +62,16 @@ static DeviceSpecificPerDeviceOpState
                   attrs.pool_type);
 
   return DeviceSpecificPerDeviceOpState{
-    acc.make_device_specific(per_device_state),
+      acc.make_device_specific(per_device_state),
   };
 }
 
-static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
+static std::optional<milliseconds_t>
+    forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
-  Pool2DPerDeviceState state = acc.get_per_device_op_state().require_pool_2d().value();
+  Pool2DPerDeviceState state =
+      acc.get_per_device_op_state().require_pool_2d().value();
 
   auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
   auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
@@ -87,7 +89,8 @@ static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
-  Pool2DPerDeviceState state = acc.get_per_device_op_state().require_pool_2d().value();
+  Pool2DPerDeviceState state =
+      acc.get_per_device_op_state().require_pool_2d().value();
 
   auto output = acc.get_tensor<Permissions::RO>(TensorSlotName::OUTPUT);
   auto output_grad = acc.get_tensor<Permissions::RO>(TensorSlotName::OUTPUT);

@@ -1,4 +1,5 @@
 #include "local-execution/local_cost_estimator.h"
+#include "compiler/machine_mapping/machine_view.h"
 #include "internal/test_utils.h"
 #include "kernels/device_handle_t.h"
 #include "kernels/managed_per_device_ff_handle.h"
@@ -6,7 +7,6 @@
 #include "op-attrs/ops/cast.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/computation_graph_builder.h"
-#include "compiler/machine_mapping/machine_view.h"
 #include "task-spec/runtime_task_invocation/runtime_arg_config.h"
 #include <doctest/doctest.h>
 

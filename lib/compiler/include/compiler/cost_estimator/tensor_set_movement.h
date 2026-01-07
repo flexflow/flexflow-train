@@ -8,11 +8,9 @@
 
 namespace FlexFlow {
 
-TensorSetMovement
-  empty_tensor_set_movement();
+TensorSetMovement empty_tensor_set_movement();
 
-TensorSetMovement 
-  get_tensor_set_movement_from_pcg_edge(
+TensorSetMovement get_tensor_set_movement_from_pcg_edge(
     ParallelComputationGraphEdge const &edge,
     ParallelComputationGraph const &pcg,
     MachineView const &src_mv,

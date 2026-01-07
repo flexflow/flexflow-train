@@ -27,19 +27,19 @@ TensorShape get_output_shape(ElementBinaryAttrs const &attrs,
 ParallelTensorShape get_output_shape(ElementBinaryAttrs const &attrs,
                                      ParallelTensorShape const &input_lhs,
                                      ParallelTensorShape const &input_rhs) {
-  TensorShape output_shape = get_output_shape(attrs, get_reduced_shape(input_lhs), get_reduced_shape(input_rhs));
+  TensorShape output_shape = get_output_shape(
+      attrs, get_reduced_shape(input_lhs), get_reduced_shape(input_rhs));
 
-  ParallelTensorDimDegrees output_degrees = get_output_parallel_dim_degrees(attrs, 
-                                                                            get_parallel_degrees(input_lhs), 
-                                                                            get_parallel_degrees(input_rhs));
+  ParallelTensorDimDegrees output_degrees = get_output_parallel_dim_degrees(
+      attrs, get_parallel_degrees(input_lhs), get_parallel_degrees(input_rhs));
 
   return lift_to_parallel_with_degrees(output_shape, output_degrees);
 }
 
-ParallelTensorDimDegrees 
-  get_output_parallel_dim_degrees(ElementBinaryAttrs const &attrs,
-                                  ParallelTensorDimDegrees const &lhs_input_degrees,
-                                  ParallelTensorDimDegrees const &rhs_input_degrees) {
+ParallelTensorDimDegrees get_output_parallel_dim_degrees(
+    ElementBinaryAttrs const &attrs,
+    ParallelTensorDimDegrees const &lhs_input_degrees,
+    ParallelTensorDimDegrees const &rhs_input_degrees) {
   ASSERT(!attrs.should_broadcast_lhs && !attrs.should_broadcast_rhs,
          "ElementBinary broadcasting is currently not supported. "
          "Contact @lockshaw if you want this feature implemented.");
@@ -51,7 +51,8 @@ ParallelTensorDimDegrees
   } else if (attrs.should_broadcast_rhs) {
     NOT_IMPLEMENTED();
   } else {
-    ASSERT(lhs_input_degrees == rhs_input_degrees, "Expected input degrees to match");
+    ASSERT(lhs_input_degrees == rhs_input_degrees,
+           "Expected input degrees to match");
 
     switch (attrs.type) {
       case OperatorType::EW_ADD: {
@@ -79,48 +80,49 @@ ParallelTensorDimDegrees
   }
 }
 
-OperatorTaskSpace 
-  get_operator_task_space(ElementBinaryAttrs const &attrs,
-                          ParallelTensorDimDegrees const &lhs_input_degrees,
-                          ParallelTensorDimDegrees const &rhs_input_degrees) {
+OperatorTaskSpace
+    get_operator_task_space(ElementBinaryAttrs const &attrs,
+                            ParallelTensorDimDegrees const &lhs_input_degrees,
+                            ParallelTensorDimDegrees const &rhs_input_degrees) {
 
-  ParallelTensorDimDegrees output_degrees = get_output_parallel_dim_degrees(attrs, lhs_input_degrees, rhs_input_degrees);
+  ParallelTensorDimDegrees output_degrees = get_output_parallel_dim_degrees(
+      attrs, lhs_input_degrees, rhs_input_degrees);
 
-  return get_operator_task_space_matching_parallel_tensor_dim_degrees(output_degrees);
+  return get_operator_task_space_matching_parallel_tensor_dim_degrees(
+      output_degrees);
 }
 
-
 OperatorSpaceToParallelTensorSpaceMapping get_operator_to_lhs_input_mapping(
-  ElementBinaryAttrs const &attrs,
-  ParallelTensorDimDegrees const &lhs_input_degrees,
-  ParallelTensorDimDegrees const &rhs_input_degrees) {
+    ElementBinaryAttrs const &attrs,
+    ParallelTensorDimDegrees const &lhs_input_degrees,
+    ParallelTensorDimDegrees const &rhs_input_degrees) {
 
   return get_identity_mapping(
-    get_operator_task_space(attrs, lhs_input_degrees, rhs_input_degrees),
-    lhs_input_degrees);
+      get_operator_task_space(attrs, lhs_input_degrees, rhs_input_degrees),
+      lhs_input_degrees);
 }
 
 OperatorSpaceToParallelTensorSpaceMapping get_operator_to_rhs_input_mapping(
-  ElementBinaryAttrs const &attrs,
-  ParallelTensorDimDegrees const &lhs_input_degrees,
-  ParallelTensorDimDegrees const &rhs_input_degrees) {
+    ElementBinaryAttrs const &attrs,
+    ParallelTensorDimDegrees const &lhs_input_degrees,
+    ParallelTensorDimDegrees const &rhs_input_degrees) {
 
   return get_identity_mapping(
-    get_operator_task_space(attrs, lhs_input_degrees, rhs_input_degrees),
-    rhs_input_degrees);
+      get_operator_task_space(attrs, lhs_input_degrees, rhs_input_degrees),
+      rhs_input_degrees);
 }
 
 OperatorSpaceToParallelTensorSpaceMapping get_operator_to_output_mapping(
-  ElementBinaryAttrs const &attrs,
-  ParallelTensorDimDegrees const &lhs_input_degrees,
-  ParallelTensorDimDegrees const &rhs_input_degrees) {
+    ElementBinaryAttrs const &attrs,
+    ParallelTensorDimDegrees const &lhs_input_degrees,
+    ParallelTensorDimDegrees const &rhs_input_degrees) {
 
-  ParallelTensorDimDegrees output_dim_degrees
-    = get_output_parallel_dim_degrees(attrs, lhs_input_degrees, rhs_input_degrees);
+  ParallelTensorDimDegrees output_dim_degrees = get_output_parallel_dim_degrees(
+      attrs, lhs_input_degrees, rhs_input_degrees);
 
   return get_identity_mapping(
-    get_operator_task_space(attrs, lhs_input_degrees, rhs_input_degrees),
-    output_dim_degrees);
+      get_operator_task_space(attrs, lhs_input_degrees, rhs_input_degrees),
+      output_dim_degrees);
 }
 
 } // namespace FlexFlow

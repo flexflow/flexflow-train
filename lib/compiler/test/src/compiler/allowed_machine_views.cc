@@ -63,7 +63,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*num_cpus_per_node=*/3_p,
           /*num_gpus_per_node=*/3_p,
       };
-      OperatorTaskSpace task = OperatorTaskSpace{MinimalOrthotope{{2_ge2, 3_ge2}}};
+      OperatorTaskSpace task =
+          OperatorTaskSpace{MinimalOrthotope{{2_ge2, 3_ge2}}};
 
       auto make_2d_view = [&](nonnegative_int start_node_idx,
                               nonnegative_int start_device_idx,

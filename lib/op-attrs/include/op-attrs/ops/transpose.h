@@ -12,22 +12,22 @@ namespace FlexFlow {
 
 TensorShape get_output_shape(TransposeAttrs const &, TensorShape const &);
 
-ParallelTensorDimDegrees get_output_parallel_dim_degrees(TransposeAttrs const &,
-                                                         ParallelTensorDimDegrees const &);
+ParallelTensorDimDegrees
+    get_output_parallel_dim_degrees(TransposeAttrs const &,
+                                    ParallelTensorDimDegrees const &);
 
 ParallelTensorShape get_output_shape(TransposeAttrs const &,
                                      ParallelTensorShape const &);
 
-OperatorTaskSpace get_operator_task_space(TransposeAttrs const &attrs,
-                                          ParallelTensorDimDegrees const &input_degrees);
+OperatorTaskSpace
+    get_operator_task_space(TransposeAttrs const &attrs,
+                            ParallelTensorDimDegrees const &input_degrees);
 
-OperatorSpaceToParallelTensorSpaceMapping
-  get_operator_to_input_mapping(TransposeAttrs const &attrs,
-                                ParallelTensorDimDegrees const &input_degrees);
+OperatorSpaceToParallelTensorSpaceMapping get_operator_to_input_mapping(
+    TransposeAttrs const &attrs, ParallelTensorDimDegrees const &input_degrees);
 
-OperatorSpaceToParallelTensorSpaceMapping
-  get_operator_to_output_mapping(TransposeAttrs const &attrs,
-                                 ParallelTensorDimDegrees const &input_degrees);
+OperatorSpaceToParallelTensorSpaceMapping get_operator_to_output_mapping(
+    TransposeAttrs const &attrs, ParallelTensorDimDegrees const &input_degrees);
 
 } // namespace FlexFlow
 

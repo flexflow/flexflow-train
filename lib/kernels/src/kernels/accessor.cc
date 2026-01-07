@@ -6,9 +6,9 @@
 #include "op-attrs/tensor_shape.h"
 #include "utils/containers/reversed.h"
 #include "utils/containers/vector_of.h"
+#include "utils/hash/tuple.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include <libassert/assert.hpp>
-#include "utils/hash/tuple.h"
 
 namespace FlexFlow {
 
@@ -299,12 +299,14 @@ namespace std {
 
 using namespace ::FlexFlow;
 
-size_t hash<GenericTensorAccessorR>::operator()(GenericTensorAccessorR const &a) const {
+size_t hash<GenericTensorAccessorR>::operator()(
+    GenericTensorAccessorR const &a) const {
   return get_std_hash(a.tie());
 }
 
-size_t hash<GenericTensorAccessorW>::operator()(GenericTensorAccessorW const &a) const {
+size_t hash<GenericTensorAccessorW>::operator()(
+    GenericTensorAccessorW const &a) const {
   return get_std_hash(a.tie());
 }
 
-}
+} // namespace std

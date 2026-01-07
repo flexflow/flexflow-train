@@ -57,19 +57,18 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::create_input_tensor(
   };
 
   return require_only_key(
-      add_parallel_layer(
-          this->pcg, 
-          layer_attrs, 
-          {}, 
-          {}, 
-          std::unordered_map<TensorSlotName, CreateGrad>{
-            {
-              TensorSlotName::OUTPUT,
-              CreateGrad::NO,
-            },
-          })
+      add_parallel_layer(this->pcg,
+                         layer_attrs,
+                         {},
+                         {},
+                         std::unordered_map<TensorSlotName, CreateGrad>{
+                             {
+                                 TensorSlotName::OUTPUT,
+                                 CreateGrad::NO,
+                             },
+                         })
           .outputs,
-    TensorSlotName::OUTPUT);
+      TensorSlotName::OUTPUT);
 }
 
 parallel_tensor_guid_t ParallelComputationGraphBuilder::add(
@@ -103,21 +102,19 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::add(
 
   ParallelLayerAttrs layer = ParallelLayerAttrs{PCGOperatorAttrs{attrs}, name};
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::LHS_INPUT,
-          lhs,
-        },
-        {
-          TensorSlotName::RHS_INPUT,
-          rhs,
-        },
-      }, 
-      {}),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::LHS_INPUT,
+                                                  lhs,
+                                              },
+                                              {
+                                                  TensorSlotName::RHS_INPUT,
+                                                  rhs,
+                                              },
+                                          },
+                                          {}),
+                          TensorSlotName::OUTPUT);
 }
 
 parallel_tensor_guid_t ParallelComputationGraphBuilder::batch_matmul(
@@ -135,21 +132,17 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::batch_matmul(
 
   ParallelLayerAttrs layer = ParallelLayerAttrs{PCGOperatorAttrs{attrs}, name};
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::LHS_INPUT,
-          a,
-        },
-        {
-          TensorSlotName::RHS_INPUT,
-          b,
-        }
-      }, 
-      {}),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {{
+                                               TensorSlotName::LHS_INPUT,
+                                               a,
+                                           },
+                                           {
+                                               TensorSlotName::RHS_INPUT,
+                                               b,
+                                           }},
+                                          {}),
+                          TensorSlotName::OUTPUT);
 }
 
 parallel_tensor_guid_t ParallelComputationGraphBuilder::cast(
@@ -164,17 +157,15 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::cast(
 
   ParallelLayerAttrs layer = ParallelLayerAttrs{PCGOperatorAttrs{attrs}, name};
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::INPUT,
-          input,
-        },
-      },
-      {}),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::INPUT,
+                                                  input,
+                                              },
+                                          },
+                                          {}),
+                          TensorSlotName::OUTPUT);
 }
 
 parallel_tensor_guid_t ParallelComputationGraphBuilder::conv2d(
@@ -222,17 +213,15 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::conv2d(
                        maybe_kernel_initializer,
                        maybe_bias_initializer);
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::INPUT,
-          input,
-        },
-      }, 
-      initializers),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::INPUT,
+                                                  input,
+                                              },
+                                          },
+                                          initializers),
+                          TensorSlotName::OUTPUT);
 }
 
 parallel_tensor_guid_t ParallelComputationGraphBuilder::dense(
@@ -265,17 +254,15 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::dense(
                                            maybe_projection_initializer,
                                            maybe_bias_initializer));
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::INPUT,
-          input,
-        },
-      }, 
-      initializers),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::INPUT,
+                                                  input,
+                                              },
+                                          },
+                                          initializers),
+                          TensorSlotName::OUTPUT);
 }
 
 parallel_tensor_guid_t ParallelComputationGraphBuilder::embedding(
@@ -302,17 +289,15 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::embedding(
   std::unordered_map<TensorSlotName, InitializerAttrs> initializers =
       get_initializers(attrs, maybe_kernel_initializer);
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::INPUT,
-          input,
-        },
-      }, 
-      initializers),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::INPUT,
+                                                  input,
+                                              },
+                                          },
+                                          initializers),
+                          TensorSlotName::OUTPUT);
 }
 
 parallel_tensor_guid_t ParallelComputationGraphBuilder::multihead_attention(
@@ -351,34 +336,33 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::multihead_attention(
 
   ParallelLayerAttrs layer = ParallelLayerAttrs{PCGOperatorAttrs{attrs}, name};
 
-  std::unordered_map<TensorSlotName, InitializerAttrs> initializers = throw_if_unexpected(
-      get_initializers(attrs,
-                       get_reduced_shape(this->get_shape(query)),
-                       get_reduced_shape(this->get_shape(key)),
-                       get_reduced_shape(this->get_shape(value)),
-                       maybe_weights_initializer,
-                       maybe_input_bias_initializer,
-                       maybe_output_bias_initializer));
+  std::unordered_map<TensorSlotName, InitializerAttrs> initializers =
+      throw_if_unexpected(
+          get_initializers(attrs,
+                           get_reduced_shape(this->get_shape(query)),
+                           get_reduced_shape(this->get_shape(key)),
+                           get_reduced_shape(this->get_shape(value)),
+                           maybe_weights_initializer,
+                           maybe_input_bias_initializer,
+                           maybe_output_bias_initializer));
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::QUERY,
-          query,
-        },
-        {
-          TensorSlotName::KEY,
-          key,
-        },
-        {
-          TensorSlotName::VALUE,
-          value,
-        },
-      }, 
-      initializers),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::QUERY,
+                                                  query,
+                                              },
+                                              {
+                                                  TensorSlotName::KEY,
+                                                  key,
+                                              },
+                                              {
+                                                  TensorSlotName::VALUE,
+                                                  value,
+                                              },
+                                          },
+                                          initializers),
+                          TensorSlotName::OUTPUT);
 }
 
 parallel_tensor_guid_t ParallelComputationGraphBuilder::batch_norm(
@@ -417,17 +401,15 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::batch_norm(
   std::unordered_map<TensorSlotName, InitializerAttrs> initializers =
       throw_if_unexpected(get_initializers(attrs));
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::INPUT,
-          input,
-        },
-      }, 
-      initializers),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::INPUT,
+                                                  input,
+                                              },
+                                          },
+                                          initializers),
+                          TensorSlotName::OUTPUT);
 }
 
 parallel_tensor_guid_t ParallelComputationGraphBuilder::element_unary(
@@ -440,17 +422,15 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::element_unary(
 
   ParallelLayerAttrs layer = ParallelLayerAttrs{PCGOperatorAttrs{attrs}, name};
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::INPUT,
-          input,
-        },
-      }, 
-      {}),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::INPUT,
+                                                  input,
+                                              },
+                                          },
+                                          {}),
+                          TensorSlotName::OUTPUT);
 }
 
 parallel_tensor_guid_t ParallelComputationGraphBuilder::relu(
@@ -541,17 +521,15 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::parallel_partition(
 
   ParallelLayerAttrs layer = ParallelLayerAttrs{PCGOperatorAttrs{attrs}, name};
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::INPUT,
-          input,
-        },
-      }, 
-      {}),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::INPUT,
+                                                  input,
+                                              },
+                                          },
+                                          {}),
+                          TensorSlotName::OUTPUT);
 }
 
 parallel_tensor_guid_t ParallelComputationGraphBuilder::parallel_combine(
@@ -570,17 +548,15 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::parallel_combine(
 
   ParallelLayerAttrs layer = ParallelLayerAttrs{PCGOperatorAttrs{attrs}, name};
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::INPUT,
-          input,
-        },
-      }, 
-      {}),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::INPUT,
+                                                  input,
+                                              },
+                                          },
+                                          {}),
+                          TensorSlotName::OUTPUT);
 }
 
 parallel_tensor_guid_t ParallelComputationGraphBuilder::parallel_replicate(
@@ -595,17 +571,15 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::parallel_replicate(
 
   ParallelLayerAttrs layer = ParallelLayerAttrs{PCGOperatorAttrs{attrs}, name};
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::INPUT,
-          input,
-        },
-      }, 
-      {}),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::INPUT,
+                                                  input,
+                                              },
+                                          },
+                                          {}),
+                          TensorSlotName::OUTPUT);
 }
 
 parallel_tensor_guid_t ParallelComputationGraphBuilder::parallel_reduce(
@@ -620,17 +594,15 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::parallel_reduce(
 
   ParallelLayerAttrs layer = ParallelLayerAttrs{PCGOperatorAttrs{attrs}, name};
 
-  return require_only_key(
-    this->add_layer(
-      layer, 
-      {
-        {
-          TensorSlotName::INPUT,
-          input,
-        },
-      },
-      {}),
-    TensorSlotName::OUTPUT);
+  return require_only_key(this->add_layer(layer,
+                                          {
+                                              {
+                                                  TensorSlotName::INPUT,
+                                                  input,
+                                              },
+                                          },
+                                          {}),
+                          TensorSlotName::OUTPUT);
 }
 
 parallel_tensor_guid_t ParallelComputationGraphBuilder::as_type(
@@ -682,39 +654,49 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::add_weight(
         pcg_op_attrs_from_parallel_op_attrs(parallel_op_attr),
         std::nullopt,
     };
-    current_weight_tensor = require_only_key(
-        add_parallel_layer(
-          this->pcg, 
-          layer_attrs, 
-          {
-            {
-              TensorSlotName::INPUT,
-              current_weight_tensor,
-            },
-          }, 
-          {}).outputs,
-        TensorSlotName::OUTPUT);
+    current_weight_tensor =
+        require_only_key(add_parallel_layer(this->pcg,
+                                            layer_attrs,
+                                            {
+                                                {
+                                                    TensorSlotName::INPUT,
+                                                    current_weight_tensor,
+                                                },
+                                            },
+                                            {})
+                             .outputs,
+                         TensorSlotName::OUTPUT);
   }
 
   return current_weight_tensor;
 }
 
-static void check_incoming_tensor_roles(ParallelLayerAttrs const &layer,
-                                        std::unordered_set<TensorSlotName> const &input_slots,
-                                        std::unordered_set<TensorSlotName> const &weight_slots) {
+static void check_incoming_tensor_roles(
+    ParallelLayerAttrs const &layer,
+    std::unordered_set<TensorSlotName> const &input_slots,
+    std::unordered_set<TensorSlotName> const &weight_slots) {
   std::unordered_map<TensorSlotName, IncomingTensorRole> correct =
       get_incoming_tensor_roles(layer.op_attrs);
-  std::unordered_map<TensorSlotName, IncomingTensorRole> current = binary_merge_disjoint_maps(
-      generate_map(input_slots, [](TensorSlotName) { return IncomingTensorRole::INPUT; }),
-      generate_map(weight_slots, [](TensorSlotName) { return IncomingTensorRole::WEIGHT; }));
+  std::unordered_map<TensorSlotName, IncomingTensorRole> current =
+      binary_merge_disjoint_maps(
+          generate_map(
+              input_slots,
+              [](TensorSlotName) { return IncomingTensorRole::INPUT; }),
+          generate_map(weight_slots, [](TensorSlotName) {
+            return IncomingTensorRole::WEIGHT;
+          }));
 
-  ASSERT(correct == current, "check_incoming_tensor_roles found deviation in incoming tensors");
+  ASSERT(correct == current,
+         "check_incoming_tensor_roles found deviation in incoming tensors");
 }
 
-std::unordered_map<TensorSlotName, parallel_tensor_guid_t> ParallelComputationGraphBuilder::add_layer(
-    ParallelLayerAttrs const &layer,
-    std::unordered_map<TensorSlotName, parallel_tensor_guid_t> const &inputs,
-    std::unordered_map<TensorSlotName, InitializerAttrs> const &weight_initializers) {
+std::unordered_map<TensorSlotName, parallel_tensor_guid_t>
+    ParallelComputationGraphBuilder::add_layer(
+        ParallelLayerAttrs const &layer,
+        std::unordered_map<TensorSlotName, parallel_tensor_guid_t> const
+            &inputs,
+        std::unordered_map<TensorSlotName, InitializerAttrs> const
+            &weight_initializers) {
 
   ASSERT(are_disjoint(keys(inputs), keys(weight_initializers)));
   check_incoming_tensor_roles(layer, keys(inputs), keys(weight_initializers));
@@ -727,12 +709,13 @@ std::unordered_map<TensorSlotName, parallel_tensor_guid_t> ParallelComputationGr
   std::unordered_map<TensorSlotName, ParallelTensorShape> weight_shapes =
       get_weight_shapes(layer.op_attrs, input_shapes);
   std::unordered_map<TensorSlotName, parallel_tensor_guid_t> weight_tensors =
-      zip_values_strict_with(
-          weight_shapes,
-          weight_initializers,
-          [&](ParallelTensorShape const &weight_shape, InitializerAttrs const &initializer) {
-            return this->add_weight(weight_shape, initializer);
-          });
+      zip_values_strict_with(weight_shapes,
+                             weight_initializers,
+                             [&](ParallelTensorShape const &weight_shape,
+                                 InitializerAttrs const &initializer) {
+                               return this->add_weight(weight_shape,
+                                                       initializer);
+                             });
 
   return add_parallel_layer(this->pcg, layer, inputs, weight_tensors, {})
       .outputs;

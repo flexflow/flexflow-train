@@ -1,9 +1,9 @@
 #include "utils/units/bytes_per_second_t.h"
 #include "utils/hash-utils.h"
+#include <cmath>
 #include <fmt/format.h>
 #include <libassert/assert.hpp>
 #include <limits>
-#include <cmath>
 
 namespace FlexFlow {
 
@@ -35,19 +35,20 @@ bool bytes_per_second_t::operator>=(bytes_per_second_t const &other) const {
   return this->value >= other.value;
 }
 
-bytes_per_second_t bytes_per_second_t::operator+(bytes_per_second_t const &other) const {
+bytes_per_second_t
+    bytes_per_second_t::operator+(bytes_per_second_t const &other) const {
   return bytes_per_second_t{
       this->value + other.value,
   };
 }
 
-milliseconds_t operator/(num_bytes_t num_bytes, bytes_per_second_t bytes_per_second) {
+milliseconds_t operator/(num_bytes_t num_bytes,
+                         bytes_per_second_t bytes_per_second) {
   int raw_num_bytes = num_bytes.unwrap_num_bytes().unwrap_nonnegative();
-  float raw_bytes_per_millisecond = bytes_per_second.unwrap_bytes_per_second() * 1000;
+  float raw_bytes_per_millisecond =
+      bytes_per_second.unwrap_bytes_per_second() * 1000;
 
-  return milliseconds_t{
-    raw_num_bytes / raw_bytes_per_millisecond
-  };
+  return milliseconds_t{raw_num_bytes / raw_bytes_per_millisecond};
 }
 
 float bytes_per_second_t::unwrap_bytes_per_second() const {
@@ -80,7 +81,8 @@ namespace rc {
 
 Gen<::FlexFlow::bytes_per_second_t>
     Arbitrary<::FlexFlow::bytes_per_second_t>::arbitrary() {
-  return gen::construct<::FlexFlow::bytes_per_second_t>(gen::arbitrary<float>());
+  return gen::construct<::FlexFlow::bytes_per_second_t>(
+      gen::arbitrary<float>());
 }
 
 } // namespace rc

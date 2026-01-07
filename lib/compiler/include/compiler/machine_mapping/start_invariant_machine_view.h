@@ -1,12 +1,12 @@
 #ifndef _FLEXFLOW_LIB_COMPILER_INCLUDE_COMPILER_MACHINE_MAPPING_START_INVARIANT_MACHINE_VIEW_H
 #define _FLEXFLOW_LIB_COMPILER_INCLUDE_COMPILER_MACHINE_MAPPING_START_INVARIANT_MACHINE_VIEW_H
 
-#include "op-attrs/operator_task_space.dtg.h"
-#include "op-attrs/task_space_coordinate.dtg.h"
-#include "pcg/machine_space_offset.h"
-#include "pcg/machine_compute_specification.dtg.h"
 #include "compiler/machine_mapping/machine_view.dtg.h"
 #include "compiler/machine_mapping/start_invariant_machine_view.dtg.h"
+#include "op-attrs/operator_task_space.dtg.h"
+#include "op-attrs/task_space_coordinate.dtg.h"
+#include "pcg/machine_compute_specification.dtg.h"
+#include "pcg/machine_space_offset.h"
 #include <optional>
 
 namespace FlexFlow {

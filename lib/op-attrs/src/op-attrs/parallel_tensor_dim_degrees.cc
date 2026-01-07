@@ -5,13 +5,13 @@
 #include "op-attrs/parallel_tensor_dim_idx_t.dtg.h"
 #include "op-attrs/parallel_tensor_dim_idx_t.h"
 #include "op-attrs/parallel_tensor_space_coordinate.h"
+#include "utils/containers/binary_merge_disjoint_maps.h"
 #include "utils/containers/filtermap_keys.h"
 #include "utils/containers/filtrans.h"
 #include "utils/containers/generate_map.h"
 #include "utils/containers/get_all_assignments.h"
 #include "utils/containers/map_keys.h"
 #include "utils/containers/map_values.h"
-#include "utils/containers/binary_merge_disjoint_maps.h"
 #include "utils/containers/range.h"
 #include "utils/containers/set_union.h"
 #include "utils/containers/transform.h"
@@ -22,27 +22,29 @@
 
 namespace FlexFlow {
 
-num_ptensor_shard_dims_t get_ptensor_dim_degrees_num_shard_dims(ParallelTensorDimDegrees const &degrees) {
+num_ptensor_shard_dims_t get_ptensor_dim_degrees_num_shard_dims(
+    ParallelTensorDimDegrees const &degrees) {
   return num_ptensor_shard_dims_t{
-    num_elements(degrees.shard_degrees),
+      num_elements(degrees.shard_degrees),
   };
 }
 
-num_tensor_dims_t get_ptensor_dim_degrees_num_tensor_dims(ParallelTensorDimDegrees const &degrees) {
+num_tensor_dims_t get_ptensor_dim_degrees_num_tensor_dims(
+    ParallelTensorDimDegrees const &degrees) {
   return num_tensor_dims_from_num_ptensor_shard_dims(
-    get_ptensor_dim_degrees_num_shard_dims(degrees));
+      get_ptensor_dim_degrees_num_shard_dims(degrees));
 }
 
 std::unordered_set<parallel_tensor_dim_idx_t>
-  get_parallel_tensor_dim_indices(ParallelTensorDimDegrees const &degrees) {
+    get_parallel_tensor_dim_indices(ParallelTensorDimDegrees const &degrees) {
 
-  std::unordered_set<parallel_tensor_dim_idx_t> result = 
-    unordered_set_of(dim_idxs_for_num_shard_dims(get_ptensor_dim_degrees_num_shard_dims(degrees)));
+  std::unordered_set<parallel_tensor_dim_idx_t> result =
+      unordered_set_of(dim_idxs_for_num_shard_dims(
+          get_ptensor_dim_degrees_num_shard_dims(degrees)));
   result.insert(sum_dim_idx());
   result.insert(discard_copy_dim_idx());
   return result;
 }
-
 
 std::set<parallel_tensor_dim_idx_t> get_nontrivial_parallel_tensor_dim_indices(
     ParallelTensorDimDegrees const &degrees) {
@@ -70,8 +72,9 @@ std::set<parallel_tensor_dim_idx_t> get_nontrivial_parallel_tensor_dim_indices(
   return set_union(nontrivial_replica_dims, nontrivial_shard_dims);
 }
 
-positive_int get_degree_for_parallel_tensor_dim_idx(ParallelTensorDimDegrees const &dim_degrees,
-                                                    parallel_tensor_dim_idx_t const &idx) {
+positive_int get_degree_for_parallel_tensor_dim_idx(
+    ParallelTensorDimDegrees const &dim_degrees,
+    parallel_tensor_dim_idx_t const &idx) {
   if (idx == sum_dim_idx()) {
     return dim_degrees.sum_degree.value;
   } else if (idx == discard_copy_dim_idx()) {
@@ -98,7 +101,7 @@ std::unordered_map<parallel_tensor_dim_idx_t, positive_int>
       });
 
   return binary_merge_disjoint_maps(
-      /*lhs=*/replica_dim_degrees, 
+      /*lhs=*/replica_dim_degrees,
       /*rhs=*/map_keys(shard_dim_degrees, [](ff_dim_t const &dim) {
         return parallel_tensor_dim_idx_t{dim};
       }));
@@ -124,45 +127,44 @@ std::unordered_set<ParallelTensorSpaceCoordinate>
 }
 
 DimDomain<parallel_tensor_dim_idx_t>
-  dim_domain_from_parallel_tensor_dim_degrees(ParallelTensorDimDegrees const &dim_degrees) {
-  
+    dim_domain_from_parallel_tensor_dim_degrees(
+        ParallelTensorDimDegrees const &dim_degrees) {
+
   return DimDomain<parallel_tensor_dim_idx_t>{
-    generate_map(
-      get_parallel_tensor_dim_indices(dim_degrees),
-      [&](parallel_tensor_dim_idx_t idx) {
-        return get_degree_for_parallel_tensor_dim_idx(dim_degrees, idx);
-      }),
+      generate_map(get_parallel_tensor_dim_indices(dim_degrees),
+                   [&](parallel_tensor_dim_idx_t idx) {
+                     return get_degree_for_parallel_tensor_dim_idx(dim_degrees,
+                                                                   idx);
+                   }),
   };
 }
 
-ParallelTensorDimDegrees
-  parallel_tensor_dim_degrees_from_dim_domain(DimDomain<parallel_tensor_dim_idx_t> const &dim_domain) {
+ParallelTensorDimDegrees parallel_tensor_dim_degrees_from_dim_domain(
+    DimDomain<parallel_tensor_dim_idx_t> const &dim_domain) {
 
-    std::unordered_map<ff_dim_t, positive_int> 
-      shard_dims = 
-          filtermap_keys(dim_domain.dims, 
-                         [](parallel_tensor_dim_idx_t dim_idx) {
-                           return dim_idx.try_require_shard_dim();
-                         });
+  std::unordered_map<ff_dim_t, positive_int> shard_dims =
+      filtermap_keys(dim_domain.dims, [](parallel_tensor_dim_idx_t dim_idx) {
+        return dim_idx.try_require_shard_dim();
+      });
 
   return ParallelTensorDimDegrees{
-    /*sum_degree=*/SumDegree{
-      dim_domain.dims.at(sum_dim_idx()),
-    },
-    /*discard_copy_degree=*/DiscardCopyDegree{
-      dim_domain.dims.at(discard_copy_dim_idx()),
-    },
-    /*shard_degres=*/ff_ordered_from_map(shard_dims),
+      /*sum_degree=*/SumDegree{
+          dim_domain.dims.at(sum_dim_idx()),
+      },
+      /*discard_copy_degree=*/
+      DiscardCopyDegree{
+          dim_domain.dims.at(discard_copy_dim_idx()),
+      },
+      /*shard_degres=*/ff_ordered_from_map(shard_dims),
   };
 }
 
-
 MinimalDimDomain<parallel_tensor_dim_idx_t>
-  minimal_dim_domain_from_parallel_tensor_dim_degrees(ParallelTensorDimDegrees const &dim_degrees) {
+    minimal_dim_domain_from_parallel_tensor_dim_degrees(
+        ParallelTensorDimDegrees const &dim_degrees) {
 
   return minimal_dim_domain_from_dim_domain(
-    dim_domain_from_parallel_tensor_dim_degrees(
-      dim_degrees));
+      dim_domain_from_parallel_tensor_dim_degrees(dim_degrees));
 }
 
 } // namespace FlexFlow

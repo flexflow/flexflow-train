@@ -5,8 +5,8 @@
 #include <functional>
 #include <libassert/assert.hpp>
 #include <ostream>
-#include <sstream>
 #include <rapidcheck.h>
+#include <sstream>
 
 namespace FlexFlow {
 
@@ -45,7 +45,8 @@ std::string format_as(rapidcheckable_value_type<TAG> const &) {
 }
 
 template <int TAG>
-std::ostream &operator<<(std::ostream &s, rapidcheckable_value_type<TAG> const &x) {
+std::ostream &operator<<(std::ostream &s,
+                         rapidcheckable_value_type<TAG> const &x) {
   PANIC();
 }
 
@@ -60,7 +61,7 @@ struct Arbitrary<::FlexFlow::rapidcheckable_value_type<TAG>> {
   }
 };
 
-} // namespacer rc
+} // namespace rc
 
 namespace std {
 

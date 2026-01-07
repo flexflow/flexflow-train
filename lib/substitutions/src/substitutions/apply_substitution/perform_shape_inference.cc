@@ -12,47 +12,53 @@
 #include "utils/containers/zip_values_strict.h"
 #include "utils/graph/dataflow_graph/algorithms.h"
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"
+#include "utils/graph/kwarg_dataflow_graph/algorithms/get_outgoing_kwarg_dataflow_outputs_for_node.h"
 #include "utils/graph/labelled_open_dataflow_graph/algorithms/rewrite_value_labels.h"
 #include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/rewrite_labelled_open_kwarg_dataflow_graph_value_labels.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_inputs.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_incoming_open_kwarg_dataflow_values_for_node.h"
 #include "utils/nonnegative_int/num_elements.h"
-#include "utils/graph/kwarg_dataflow_graph/algorithms/get_outgoing_kwarg_dataflow_outputs_for_node.h"
 
 namespace FlexFlow {
 
-LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs, ParallelTensorShape, int, TensorSlotName>
+LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs,
+                                   ParallelTensorShape,
+                                   int,
+                                   TensorSlotName>
     perform_shape_inference(
-        LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs, std::monostate, int, TensorSlotName> const
-            &g,
-        std::unordered_map<KwargDataflowGraphInput<int>, ParallelTensorShape> const
-            &input_shapes) {
+        LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs,
+                                           std::monostate,
+                                           int,
+                                           TensorSlotName> const &g,
+        std::unordered_map<KwargDataflowGraphInput<int>,
+                           ParallelTensorShape> const &input_shapes) {
 
-  std::unordered_map<OpenKwargDataflowValue<int, TensorSlotName>, ParallelTensorShape> inferred =
-      map_keys(input_shapes, 
-               [](KwargDataflowGraphInput<int> const &i) 
-                 -> OpenKwargDataflowValue<int, TensorSlotName>
-               {
-                 return OpenKwargDataflowValue<int, TensorSlotName>{i};
-               });
+  std::unordered_map<OpenKwargDataflowValue<int, TensorSlotName>,
+                     ParallelTensorShape>
+      inferred =
+          map_keys(input_shapes,
+                   [](KwargDataflowGraphInput<int> const &i)
+                       -> OpenKwargDataflowValue<int, TensorSlotName> {
+                     return OpenKwargDataflowValue<int, TensorSlotName>{i};
+                   });
 
   for (Node const &n : get_topological_ordering(g)) {
     std::unordered_map<TensorSlotName, ParallelTensorShape> incoming_shapes =
         map_values(get_incoming_open_kwarg_dataflow_values_for_node(g, n),
-                  [&](OpenKwargDataflowValue<int, TensorSlotName> const &v) { return inferred.at(v); });
+                   [&](OpenKwargDataflowValue<int, TensorSlotName> const &v) {
+                     return inferred.at(v);
+                   });
 
     ParallelLayerAttrs n_attrs = g.at(n);
 
-    std::unordered_map<TensorSlotName, IncomingTensorRole> incoming_tensor_roles =
-        get_incoming_tensor_roles(n_attrs.op_attrs);
+    std::unordered_map<TensorSlotName, IncomingTensorRole>
+        incoming_tensor_roles = get_incoming_tensor_roles(n_attrs.op_attrs);
 
-    auto incoming_shapes_with_role =
-        [&](IncomingTensorRole role) -> std::unordered_map<TensorSlotName, ParallelTensorShape> {
-      std::unordered_set<TensorSlotName> slots_with_desired_role = 
-        keys(filter_values(incoming_tensor_roles, 
-                           [&](IncomingTensorRole r) {
-                             return r == role;
-                           }));
+    auto incoming_shapes_with_role = [&](IncomingTensorRole role)
+        -> std::unordered_map<TensorSlotName, ParallelTensorShape> {
+      std::unordered_set<TensorSlotName> slots_with_desired_role =
+          keys(filter_values(incoming_tensor_roles,
+                             [&](IncomingTensorRole r) { return r == role; }));
 
       return restrict_keys(incoming_shapes, slots_with_desired_role);
     };
@@ -62,26 +68,29 @@ LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs, ParallelTensorShape, int,
     std::unordered_map<TensorSlotName, ParallelTensorShape> weight_shapes =
         incoming_shapes_with_role(IncomingTensorRole::WEIGHT);
 
-    std::unordered_map<TensorSlotName, ParallelTensorShape> inferred_weight_shapes =
-        get_weight_shapes(n_attrs.op_attrs, input_shapes);
+    std::unordered_map<TensorSlotName, ParallelTensorShape>
+        inferred_weight_shapes =
+            get_weight_shapes(n_attrs.op_attrs, input_shapes);
 
     ASSERT(weight_shapes == inferred_weight_shapes);
 
     std::unordered_map<TensorSlotName, ParallelTensorShape> output_shapes =
         get_output_shapes(n_attrs.op_attrs, input_shapes);
 
-    std::unordered_map<TensorSlotName, KwargDataflowOutput<TensorSlotName>> outputs 
-      = get_outgoing_kwarg_dataflow_outputs_for_node(g, n);
+    std::unordered_map<TensorSlotName, KwargDataflowOutput<TensorSlotName>>
+        outputs = get_outgoing_kwarg_dataflow_outputs_for_node(g, n);
 
-    for (auto const &[output, shape] : values(zip_values_strict(outputs, output_shapes))) {
-      inferred.insert({OpenKwargDataflowValue<int, TensorSlotName>{output}, shape});
+    for (auto const &[output, shape] :
+         values(zip_values_strict(outputs, output_shapes))) {
+      inferred.insert(
+          {OpenKwargDataflowValue<int, TensorSlotName>{output}, shape});
     }
   }
 
   return rewrite_labelled_open_kwarg_dataflow_graph_value_labels(
-      g, [&](OpenKwargDataflowValue<int, TensorSlotName> const &v, std::monostate const &) {
-        return inferred.at(v);
-      });
+      g,
+      [&](OpenKwargDataflowValue<int, TensorSlotName> const &v,
+          std::monostate const &) { return inferred.at(v); });
 }
 
 } // namespace FlexFlow

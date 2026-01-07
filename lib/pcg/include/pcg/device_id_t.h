@@ -6,9 +6,8 @@
 
 namespace FlexFlow {
 
-device_id_t
-  make_device_id_t_from_idx(nonnegative_int idx, DeviceType device_type);
-
+device_id_t make_device_id_t_from_idx(nonnegative_int idx,
+                                      DeviceType device_type);
 
 } // namespace FlexFlow
 

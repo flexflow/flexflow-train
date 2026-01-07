@@ -78,7 +78,7 @@ template <typename L, typename R>
 UpProjection<R, L>
     invert_down_projection(DownProjection<L, R> const &down_proj) {
   return UpProjection<R, L>{
-    /*dim_mapping=*/invert_many_to_one(down_proj.dim_mapping),
+      /*dim_mapping=*/invert_many_to_one(down_proj.dim_mapping),
   };
 }
 

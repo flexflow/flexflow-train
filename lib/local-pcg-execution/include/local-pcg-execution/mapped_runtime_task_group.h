@@ -13,31 +13,35 @@ namespace FlexFlow {
 struct MappedRuntimeTaskGroup {
   MappedRuntimeTaskGroup() = delete;
 
-  explicit MappedRuntimeTaskGroup(bidict<MachineSpaceCoordinate, RuntimeAtomicTaskShardBinding> const &shard_bindings);
+  explicit MappedRuntimeTaskGroup(
+      bidict<MachineSpaceCoordinate, RuntimeAtomicTaskShardBinding> const
+          &shard_bindings);
 
   [[nodiscard]] bool operator==(MappedRuntimeTaskGroup const &) const;
   [[nodiscard]] bool operator!=(MappedRuntimeTaskGroup const &) const;
 
-  [[nodiscard]] bidict<MachineSpaceCoordinate, RuntimeAtomicTaskShardBinding> const &get_shard_bindings() const;
+  [[nodiscard]] bidict<MachineSpaceCoordinate,
+                       RuntimeAtomicTaskShardBinding> const &
+      get_shard_bindings() const;
 
 private:
   bidict<MachineSpaceCoordinate, RuntimeAtomicTaskShardBinding> shard_bindings;
 
 private:
-  [[nodiscard]] std::tuple<
-    decltype(shard_bindings) const &
-  > tie() const;
+  [[nodiscard]] std::tuple<decltype(shard_bindings) const &> tie() const;
 
   friend struct ::std::hash<MappedRuntimeTaskGroup>;
 };
 
 std::string format_as(::FlexFlow::MappedRuntimeTaskGroup const &);
-std::ostream &operator<<(std::ostream &, ::FlexFlow::MappedRuntimeTaskGroup const &);
+std::ostream &operator<<(std::ostream &,
+                         ::FlexFlow::MappedRuntimeTaskGroup const &);
 
 MappedRuntimeTaskGroup
-  lower_mapped_operator_task_group_to_mapped_runtime_task_group(MappedOperatorTaskGroup const &,
-                                                                SymbolicLayerTrainingTensorGroupSignature const &,
-                                                                FwbOpTaskType);
+    lower_mapped_operator_task_group_to_mapped_runtime_task_group(
+        MappedOperatorTaskGroup const &,
+        SymbolicLayerTrainingTensorGroupSignature const &,
+        FwbOpTaskType);
 
 } // namespace FlexFlow
 

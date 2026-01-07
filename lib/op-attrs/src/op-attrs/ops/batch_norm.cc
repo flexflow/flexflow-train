@@ -13,10 +13,10 @@ namespace FlexFlow {
 std::unordered_map<TensorSlotName, IncomingTensorRole>
     get_batch_norm_incoming_tensor_roles(BatchNormAttrs const &attrs) {
   std::unordered_map<TensorSlotName, IncomingTensorRole> result = {
-    {
-      TensorSlotName::INPUT, 
-      IncomingTensorRole::INPUT,
-    },
+      {
+          TensorSlotName::INPUT,
+          IncomingTensorRole::INPUT,
+      },
   };
 
   if (attrs.affine) {
@@ -106,14 +106,14 @@ tl::expected<std::unordered_map<TensorSlotName, TensorShape>, std::string>
       PROPAGATE_ERR(get_beta_weights_shape(attrs, input_shape));
 
   return std::unordered_map<TensorSlotName, TensorShape>{
-    {
-      TensorSlotName::GAMMA,
-      gamma_shape,
-    },
-    {
-      TensorSlotName::BETA,
-      beta_shape,
-    },
+      {
+          TensorSlotName::GAMMA,
+          gamma_shape,
+      },
+      {
+          TensorSlotName::BETA,
+          beta_shape,
+      },
   };
 }
 
@@ -210,13 +210,9 @@ tl::expected<ParallelTensorDimDegrees, std::string>
   return get_gamma_weights_parallel_dim_degrees(attrs, input_degrees);
 }
 
-tl::expected<
-  std::unordered_map<
-    TensorSlotName, 
-    ParallelTensorDimDegrees
-  >, 
-  std::string
-> get_weight_parallel_dim_degrees(
+tl::expected<std::unordered_map<TensorSlotName, ParallelTensorDimDegrees>,
+             std::string>
+    get_weight_parallel_dim_degrees(
         BatchNormAttrs const &attrs,
         ParallelTensorDimDegrees const &input_degrees) {
 
@@ -226,14 +222,14 @@ tl::expected<
       get_beta_weights_parallel_dim_degrees(attrs, input_degrees));
 
   return std::unordered_map<TensorSlotName, ParallelTensorDimDegrees>{
-    {
-      TensorSlotName::GAMMA,
-      gamma_degrees,
-    },
-    {
-      TensorSlotName::BETA,
-      beta_degrees,
-    },
+      {
+          TensorSlotName::GAMMA,
+          gamma_degrees,
+      },
+      {
+          TensorSlotName::BETA,
+          beta_degrees,
+      },
   };
 }
 
@@ -314,7 +310,8 @@ tl::expected<ParallelTensorShape, std::string>
   return lift_to_parallel_with_degrees(unpar, degrees);
 }
 
-tl::expected<std::unordered_map<TensorSlotName, ParallelTensorShape>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, ParallelTensorShape>,
+             std::string>
     get_weight_shapes(BatchNormAttrs const &attrs,
                       ParallelTensorShape const &input_shape) {
 
@@ -324,14 +321,14 @@ tl::expected<std::unordered_map<TensorSlotName, ParallelTensorShape>, std::strin
       PROPAGATE_ERR(get_beta_weights_shape(attrs, input_shape));
 
   return std::unordered_map<TensorSlotName, ParallelTensorShape>{
-    {
-      TensorSlotName::GAMMA,
-      gamma_shape,
-    },
-    {
-      TensorSlotName::BETA,
-      beta_shape,
-    },
+      {
+          TensorSlotName::GAMMA,
+          gamma_shape,
+      },
+      {
+          TensorSlotName::BETA,
+          beta_shape,
+      },
   };
 }
 
@@ -345,14 +342,14 @@ tl::expected<std::unordered_map<TensorSlotName, InitializerAttrs>, std::string>
         InitializerAttrs{ConstantInitializerAttrs{DataTypeValue{float{0}}}};
 
     return std::unordered_map<TensorSlotName, InitializerAttrs>{
-      {
-        TensorSlotName::GAMMA,
-        gamma_initializer, 
-      },
-      {
-        TensorSlotName::BETA, 
-        beta_initializer,
-      },
+        {
+            TensorSlotName::GAMMA,
+            gamma_initializer,
+        },
+        {
+            TensorSlotName::BETA,
+            beta_initializer,
+        },
     };
   } else {
     return std::unordered_map<TensorSlotName, InitializerAttrs>{};

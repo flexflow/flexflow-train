@@ -24,12 +24,17 @@ namespace FlexFlow {
  * Exists only to enable apply_substitution(SubParallelComputationGraph const &,
  * Substitution const &, PCGPatternMatch const &)
  */
-LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs, ParallelTensorShape, int, TensorSlotName>
+LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs,
+                                   ParallelTensorShape,
+                                   int,
+                                   TensorSlotName>
     perform_shape_inference(
-        LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs, std::monostate, int, TensorSlotName> const
-            &g,
-        std::unordered_map<KwargDataflowGraphInput<int>, ParallelTensorShape> const
-            &input_shapes);
+        LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs,
+                                           std::monostate,
+                                           int,
+                                           TensorSlotName> const &g,
+        std::unordered_map<KwargDataflowGraphInput<int>,
+                           ParallelTensorShape> const &input_shapes);
 
 } // namespace FlexFlow
 

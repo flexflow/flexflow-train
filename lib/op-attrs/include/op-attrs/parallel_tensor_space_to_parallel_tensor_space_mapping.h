@@ -9,15 +9,15 @@
 namespace FlexFlow {
 
 ParallelTensorSpaceToParallelTensorSpaceMapping
-  parallel_tensor_space_mapping_from_projection(
-    DimProjection<parallel_tensor_dim_idx_t, parallel_tensor_dim_idx_t> const &projection, 
-    ParallelTensorDimDegrees const &l_degrees,
-    ParallelTensorDimDegrees const &r_degrees);
+    parallel_tensor_space_mapping_from_projection(
+        DimProjection<parallel_tensor_dim_idx_t,
+                      parallel_tensor_dim_idx_t> const &projection,
+        ParallelTensorDimDegrees const &l_degrees,
+        ParallelTensorDimDegrees const &r_degrees);
 
-ParallelTensorSpaceToParallelTensorSpaceMapping 
-  invert_parallel_tensor_space_mapping(
-    ParallelTensorSpaceToParallelTensorSpaceMapping const &);
-
+ParallelTensorSpaceToParallelTensorSpaceMapping
+    invert_parallel_tensor_space_mapping(
+        ParallelTensorSpaceToParallelTensorSpaceMapping const &);
 
 } // namespace FlexFlow
 

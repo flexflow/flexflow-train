@@ -9,8 +9,7 @@
 
 namespace FlexFlow {
 
-AbstractedSingleTensorMovement
-  get_abstracted_single_tensor_movement_along_edge(
+AbstractedSingleTensorMovement get_abstracted_single_tensor_movement_along_edge(
     ParallelComputationGraph const &pcg,
     ParallelComputationGraphEdge const &edge,
     BinaryTreePath const &src_path,

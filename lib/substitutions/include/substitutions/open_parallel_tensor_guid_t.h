@@ -17,7 +17,9 @@ template <typename F,
           typename Ret = std::invoke_result_t<F, parallel_tensor_guid_t>>
 Ret visit_open_parallel_tensor_guid(open_parallel_tensor_guid_t t, F f) {
   return t.raw_open_dataflow_value.visit<Ret>(overload{
-      [&](KwargDataflowOutput<TensorSlotName> const &o) { return f(parallel_tensor_guid_t{o}); },
+      [&](KwargDataflowOutput<TensorSlotName> const &o) {
+        return f(parallel_tensor_guid_t{o});
+      },
       [&](KwargDataflowGraphInput<int> const &i) {
         return f(input_parallel_tensor_guid_t{i});
       },

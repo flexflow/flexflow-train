@@ -6,13 +6,11 @@
 namespace FlexFlow {
 
 template <typename L, typename R>
-OneToMany<L, R> 
-  one_to_many_from_unstructured_relation(
-    std::unordered_set<std::pair<L, R>> const &rel) 
-{
+OneToMany<L, R> one_to_many_from_unstructured_relation(
+    std::unordered_set<std::pair<L, R>> const &rel) {
   OneToMany<L, R> result;
   for (auto const &lr : rel) {
-    result.insert(lr);  
+    result.insert(lr);
   }
   return result;
 }

@@ -8,14 +8,12 @@
 
 namespace FlexFlow {
 
-TensorSetMovement
-  empty_tensor_set_movement() {
+TensorSetMovement empty_tensor_set_movement() {
 
   return TensorSetMovement{{}};
 }
 
-TensorSetMovement 
-  get_tensor_set_movement_from_pcg_edge(
+TensorSetMovement get_tensor_set_movement_from_pcg_edge(
     ParallelComputationGraphEdge const &edge,
     ParallelComputationGraph const &pcg,
     MachineView const &src_mv,
@@ -27,34 +25,37 @@ TensorSetMovement
   BinaryTreePath src_path = BinaryTreePath{{BinaryTreePathEntry::LEFT_CHILD}};
   BinaryTreePath dst_path = BinaryTreePath{{BinaryTreePathEntry::RIGHT_CHILD}};
 
-  AbstractedSingleTensorMovement abstracted_single_tensor_movement = 
-    get_abstracted_single_tensor_movement_along_edge(
-      /*pcg=*/pcg, 
-      /*edge=*/edge, 
-      /*src_path=*/src_path,
-      /*dst_path=*/dst_path);
+  AbstractedSingleTensorMovement abstracted_single_tensor_movement =
+      get_abstracted_single_tensor_movement_along_edge(
+          /*pcg=*/pcg,
+          /*edge=*/edge,
+          /*src_path=*/src_path,
+          /*dst_path=*/dst_path);
 
-  AbstractedTensorSetMovement abstracted_tensor_set_movement 
-    = abstracted_tensor_set_movement_from_single_tensor_movement(abstracted_single_tensor_movement);
+  AbstractedTensorSetMovement abstracted_tensor_set_movement =
+      abstracted_tensor_set_movement_from_single_tensor_movement(
+          abstracted_single_tensor_movement);
 
   MachineSpaceStencil src_machine_stencil = MachineSpaceStencil{
-    /*operator_task_space=*/get_operator_task_space(pcg, src),
-    /*machine_view=*/src_mv,
+      /*operator_task_space=*/get_operator_task_space(pcg, src),
+      /*machine_view=*/src_mv,
   };
 
   MachineSpaceStencil dst_machine_stencil = MachineSpaceStencil{
-    /*operator_task_space=*/get_operator_task_space(pcg, dst),
-    /*machine_view=*/dst_mv,
+      /*operator_task_space=*/get_operator_task_space(pcg, dst),
+      /*machine_view=*/dst_mv,
   };
 
   return concretize_abstracted_tensor_set_movement(
-    abstracted_tensor_set_movement,
-    /*pre_machine_stencils=*/std::unordered_map<BinaryTreePath, MachineSpaceStencil>{
-      {src_path, src_machine_stencil},
-    },
-    /*post_machine_stencils=*/std::unordered_map<BinaryTreePath, MachineSpaceStencil>{
-      {dst_path, dst_machine_stencil},
-    });
+      abstracted_tensor_set_movement,
+      /*pre_machine_stencils=*/
+      std::unordered_map<BinaryTreePath, MachineSpaceStencil>{
+          {src_path, src_machine_stencil},
+      },
+      /*post_machine_stencils=*/
+      std::unordered_map<BinaryTreePath, MachineSpaceStencil>{
+          {dst_path, dst_machine_stencil},
+      });
 }
 
 } // namespace FlexFlow

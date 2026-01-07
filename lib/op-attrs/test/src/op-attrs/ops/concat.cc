@@ -10,8 +10,8 @@ using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_output_shape(ConcatAttrs, std::vector<TensorShape>)") {
     ConcatAttrs attrs = ConcatAttrs{
-      /*axis=*/ff_dim_t{1_n},
-      /*num_inputs=*/3_ge2,
+        /*axis=*/ff_dim_t{1_n},
+        /*num_inputs=*/3_ge2,
     };
 
     SUBCASE("empty input shapes list passed") {
@@ -82,8 +82,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("concat axis is out of bounds") {
       attrs = ConcatAttrs{
-        /*axis=*/ff_dim_t{3_n},
-        /*num_inputs=*/3_ge2,
+          /*axis=*/ff_dim_t{3_n},
+          /*num_inputs=*/3_ge2,
       };
 
       std::vector<TensorShape> input_shapes = {
@@ -117,8 +117,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
   TEST_CASE("get_output_shape(ConcatAttrs, std::vector<ParallelTensorShape>)") {
     ConcatAttrs attrs = ConcatAttrs{
-      /*axis=*/ff_dim_t{1_n},
-      /*num_inputs=*/3_ge2,
+        /*axis=*/ff_dim_t{1_n},
+        /*num_inputs=*/3_ge2,
     };
 
     positive_int dim0_size = 12_p;

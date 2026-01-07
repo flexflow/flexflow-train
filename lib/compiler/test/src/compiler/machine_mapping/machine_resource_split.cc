@@ -11,74 +11,69 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_machine_resource_splits") {
     SUBCASE("returns no splits if no splits are possible") {
       MachineComputeResourceSlice input = MachineComputeResourceSlice{
-        /*num_nodes=*/1_p,
-        /*num_gpus_per_node=*/1_p,
+          /*num_nodes=*/1_p,
+          /*num_gpus_per_node=*/1_p,
       };
 
-      std::unordered_set<MachineResourceSplit>
-          result = get_machine_resource_splits(input);
-      std::unordered_set<MachineResourceSplit>
-          correct = {};
+      std::unordered_set<MachineResourceSplit> result =
+          get_machine_resource_splits(input);
+      std::unordered_set<MachineResourceSplit> correct = {};
 
       CHECK(result == correct);
     }
 
-    SUBCASE(
-        "returns splits in gpu and node dimensions") {
+    SUBCASE("returns splits in gpu and node dimensions") {
       MachineComputeResourceSlice input = MachineComputeResourceSlice{
-        /*num_nodes=*/2_p,
-        /*num_gpus_per_node=*/2_p,
+          /*num_nodes=*/2_p,
+          /*num_gpus_per_node=*/2_p,
       };
 
-      std::unordered_set<MachineResourceSplit>
-          result = get_machine_resource_splits(input);
-      
-      std::unordered_set<MachineResourceSplit> 
-          correct = {
-        MachineResourceSplit{
-          /*offset=*/1_p,
-          /*dimension=*/MachineSpecificationDimension::INTRA_NODE,
-        },
-        MachineResourceSplit{
-          /*offset=*/1_p,
-          /*dimension=*/MachineSpecificationDimension::INTER_NODE,
-        }
-      };
+      std::unordered_set<MachineResourceSplit> result =
+          get_machine_resource_splits(input);
+
+      std::unordered_set<MachineResourceSplit> correct = {
+          MachineResourceSplit{
+              /*offset=*/1_p,
+              /*dimension=*/MachineSpecificationDimension::INTRA_NODE,
+          },
+          MachineResourceSplit{
+              /*offset=*/1_p,
+              /*dimension=*/MachineSpecificationDimension::INTER_NODE,
+          }};
 
       CHECK(result == correct);
     }
 
     SUBCASE("returns splits in node dimension in powers of two") {
       MachineComputeResourceSlice input = MachineComputeResourceSlice{
-        /*num_nodes=*/8_p,
-        /*num_gpus_per_node=*/1_p,
+          /*num_nodes=*/8_p,
+          /*num_gpus_per_node=*/1_p,
       };
 
-      std::unordered_set<MachineResourceSplit>
-          result = get_machine_resource_splits(input);
+      std::unordered_set<MachineResourceSplit> result =
+          get_machine_resource_splits(input);
 
-      std::unordered_set<MachineResourceSplit>
-          correct = {
-        MachineResourceSplit{
-          /*offset=*/1_p,
-          /*dimension=*/MachineSpecificationDimension::INTER_NODE,
-        },
-        MachineResourceSplit{
-          /*offset=*/2_p,
-          /*dimension=*/MachineSpecificationDimension::INTER_NODE,
-        },
-        MachineResourceSplit{
-          /*offset=*/4_p,
-          /*dimension=*/MachineSpecificationDimension::INTER_NODE,
-        },
-        MachineResourceSplit{
-          /*offset=*/6_p,
-          /*dimension=*/MachineSpecificationDimension::INTER_NODE,
-        },
-        MachineResourceSplit{
-          /*offset=*/7_p,
-          /*dimension=*/MachineSpecificationDimension::INTER_NODE,
-        },
+      std::unordered_set<MachineResourceSplit> correct = {
+          MachineResourceSplit{
+              /*offset=*/1_p,
+              /*dimension=*/MachineSpecificationDimension::INTER_NODE,
+          },
+          MachineResourceSplit{
+              /*offset=*/2_p,
+              /*dimension=*/MachineSpecificationDimension::INTER_NODE,
+          },
+          MachineResourceSplit{
+              /*offset=*/4_p,
+              /*dimension=*/MachineSpecificationDimension::INTER_NODE,
+          },
+          MachineResourceSplit{
+              /*offset=*/6_p,
+              /*dimension=*/MachineSpecificationDimension::INTER_NODE,
+          },
+          MachineResourceSplit{
+              /*offset=*/7_p,
+              /*dimension=*/MachineSpecificationDimension::INTER_NODE,
+          },
       };
 
       CHECK(result == correct);
@@ -86,35 +81,34 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("returns splits in gpu dimension in powers of two") {
       MachineComputeResourceSlice input = MachineComputeResourceSlice{
-        /*num_nodes=*/1_p,
-        /*num_gpus_per_node=*/8_p,
+          /*num_nodes=*/1_p,
+          /*num_gpus_per_node=*/8_p,
       };
 
-      std::unordered_set<MachineResourceSplit>
-          result = get_machine_resource_splits(input);
+      std::unordered_set<MachineResourceSplit> result =
+          get_machine_resource_splits(input);
 
-      std::unordered_set<MachineResourceSplit>
-          correct = {
-        MachineResourceSplit{
-          /*offset=*/1_p,
-          /*dimension=*/MachineSpecificationDimension::INTRA_NODE,
-        },
-        MachineResourceSplit{
-          /*offset=*/2_p,
-          /*dimension=*/MachineSpecificationDimension::INTRA_NODE,
-        },
-        MachineResourceSplit{
-          /*offset=*/4_p,
-          /*dimension=*/MachineSpecificationDimension::INTRA_NODE,
-        },
-        MachineResourceSplit{
-          /*offset=*/6_p,
-          /*dimension=*/MachineSpecificationDimension::INTRA_NODE,
-        },
-        MachineResourceSplit{
-          /*offset=*/7_p,
-          /*dimension=*/MachineSpecificationDimension::INTRA_NODE,
-        },
+      std::unordered_set<MachineResourceSplit> correct = {
+          MachineResourceSplit{
+              /*offset=*/1_p,
+              /*dimension=*/MachineSpecificationDimension::INTRA_NODE,
+          },
+          MachineResourceSplit{
+              /*offset=*/2_p,
+              /*dimension=*/MachineSpecificationDimension::INTRA_NODE,
+          },
+          MachineResourceSplit{
+              /*offset=*/4_p,
+              /*dimension=*/MachineSpecificationDimension::INTRA_NODE,
+          },
+          MachineResourceSplit{
+              /*offset=*/6_p,
+              /*dimension=*/MachineSpecificationDimension::INTRA_NODE,
+          },
+          MachineResourceSplit{
+              /*offset=*/7_p,
+              /*dimension=*/MachineSpecificationDimension::INTRA_NODE,
+          },
       };
 
       CHECK(result == correct);

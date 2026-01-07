@@ -2,8 +2,8 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_EXTEND_H
 
 #include "utils/containers/extend_vector.h"
-#include <unordered_set>
 #include <set>
+#include <unordered_set>
 
 namespace FlexFlow {
 

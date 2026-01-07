@@ -10,8 +10,10 @@
 
 namespace FlexFlow {
 
-std::unordered_map<symbolic_layer_guid_t, std::optional<DeviceSpecificPerDeviceOpState>>
-  get_op_states_for_machine_space_coord(LocalPcgArgsBacking const &, MachineSpaceCoordinate const &);
+std::unordered_map<symbolic_layer_guid_t,
+                   std::optional<DeviceSpecificPerDeviceOpState>>
+    get_op_states_for_machine_space_coord(LocalPcgArgsBacking const &,
+                                          MachineSpaceCoordinate const &);
 
 } // namespace FlexFlow
 

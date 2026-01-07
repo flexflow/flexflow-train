@@ -2,11 +2,10 @@
 
 namespace FlexFlow {
 
-DynamicValueAttrs
-  decide_dynamic_value_attrs_role(DynamicValueAttrs const &, DynamicTensorRole) {
+DynamicValueAttrs decide_dynamic_value_attrs_role(DynamicValueAttrs const &,
+                                                  DynamicTensorRole) {
 
   NOT_IMPLEMENTED();
 }
-
 
 } // namespace FlexFlow

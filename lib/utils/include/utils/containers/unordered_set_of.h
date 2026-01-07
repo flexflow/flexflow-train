@@ -1,9 +1,9 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_UNIQUE_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_UNIQUE_H
 
-#include <unordered_set>
-#include <unordered_map>
 #include "utils/hash/pair.h"
+#include <unordered_map>
+#include <unordered_set>
 
 namespace FlexFlow {
 
@@ -13,7 +13,8 @@ std::unordered_set<T> unordered_set_of(C const &c) {
 }
 
 template <typename K, typename V>
-std::unordered_set<std::pair<K, V>> unordered_set_of(std::unordered_map<K, V> const &m) {
+std::unordered_set<std::pair<K, V>>
+    unordered_set_of(std::unordered_map<K, V> const &m) {
   std::unordered_set<std::pair<K, V>> result;
   for (auto const &[k, v] : m) {
     result.insert({k, v});

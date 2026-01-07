@@ -1,50 +1,51 @@
 #include "compiler/machine_mapping/memory_optimization/machine_mapping_with_memory_result.h"
 #include "compiler/machine_mapping/machine_resource_split.h"
-#include "compiler/machine_mapping/parallel_layer_guid_oblivious_machine_mapping.h"
-#include "utils/containers/set_union.h"
-#include "utils/full_binary_tree/binary_tree_path.h"
-#include "utils/containers/all_of.h"
-#include "utils/containers/transform.h"
 #include "compiler/machine_mapping/memory_optimization/pareto_optimal_machine_mapping.h"
+#include "compiler/machine_mapping/parallel_layer_guid_oblivious_machine_mapping.h"
+#include "utils/containers/all_of.h"
+#include "utils/containers/set_union.h"
+#include "utils/containers/transform.h"
+#include "utils/full_binary_tree/binary_tree_path.h"
 #include "utils/hash/tuple.h"
 #include "utils/hash/unordered_set.h"
 
 namespace FlexFlow {
 
 MachineMappingWithMemoryResult::MachineMappingWithMemoryResult(
-  std::unordered_set<ParetoOptimalMachineMapping> const &pareto_frontier) 
-  : m_pareto_frontier(pareto_frontier)
-{
-  ASSERT(
-    all_of(pareto_frontier,
-           [&](ParetoOptimalMachineMapping const &m) {
-             return is_pareto_optimal_in(m, pareto_frontier);
-           }));
+    std::unordered_set<ParetoOptimalMachineMapping> const &pareto_frontier)
+    : m_pareto_frontier(pareto_frontier) {
+  ASSERT(all_of(pareto_frontier, [&](ParetoOptimalMachineMapping const &m) {
+    return is_pareto_optimal_in(m, pareto_frontier);
+  }));
 }
 
-bool MachineMappingWithMemoryResult::operator==(MachineMappingWithMemoryResult const &other) const {
+bool MachineMappingWithMemoryResult::operator==(
+    MachineMappingWithMemoryResult const &other) const {
   return this->tie() == other.tie();
 }
 
-bool MachineMappingWithMemoryResult::operator!=(MachineMappingWithMemoryResult const &other) const {
+bool MachineMappingWithMemoryResult::operator!=(
+    MachineMappingWithMemoryResult const &other) const {
   return this->tie() != other.tie();
 }
 
-std::unordered_set<ParetoOptimalMachineMapping> const &MachineMappingWithMemoryResult::get_pareto_frontier() const {
+std::unordered_set<ParetoOptimalMachineMapping> const &
+    MachineMappingWithMemoryResult::get_pareto_frontier() const {
   return this->m_pareto_frontier;
 }
 
 std::string format_as(MachineMappingWithMemoryResult const &r) {
-  return fmt::format("<MachineMappingWithMemoryResult pareto_frontier={}>", r.get_pareto_frontier());
+  return fmt::format("<MachineMappingWithMemoryResult pareto_frontier={}>",
+                     r.get_pareto_frontier());
 }
 
-std::ostream &operator<<(std::ostream &s, MachineMappingWithMemoryResult const &r) {
+std::ostream &operator<<(std::ostream &s,
+                         MachineMappingWithMemoryResult const &r) {
   return (s << fmt::to_string(r));
 }
 
-std::tuple<
-  std::unordered_set<ParetoOptimalMachineMapping> const &
-> MachineMappingWithMemoryResult::tie() const {
+std::tuple<std::unordered_set<ParetoOptimalMachineMapping> const &>
+    MachineMappingWithMemoryResult::tie() const {
   return std::tie(this->m_pareto_frontier);
 }
 
@@ -110,11 +111,11 @@ MachineMappingWithMemoryResult
   }
 
   return MachineMappingWithMemoryResult{
-    /*pareto_frontier=*/filter(result,
-           [&](ParetoOptimalMachineMapping const &m) {
-             return is_pareto_optimal_in(m, result);
-           }),
-  }; 
+      /*pareto_frontier=*/filter(result,
+                                 [&](ParetoOptimalMachineMapping const &m) {
+                                   return is_pareto_optimal_in(m, result);
+                                 }),
+  };
 }
 
 MachineMappingWithMemoryResult
@@ -135,9 +136,9 @@ MachineMappingWithMemoryResult
         };
 
         ParallelLayerGuidObliviousMachineMapping mapping =
-            binary_combine_mappings(
-              lhs_mm.machine_mapping,
-              offset_layer_oblivious_mapping_by(rhs_mm.machine_mapping, split));
+            binary_combine_mappings(lhs_mm.machine_mapping,
+                                    offset_layer_oblivious_mapping_by(
+                                        rhs_mm.machine_mapping, split));
 
         return ParetoOptimalMachineMapping{cost, mapping};
       };
@@ -154,25 +155,25 @@ MachineMappingWithMemoryResult
   }
 
   return MachineMappingWithMemoryResult{
-    /*pareto_frontier=*/filter(result,
-           [&](ParetoOptimalMachineMapping const &m) {
-             return is_pareto_optimal_in(m, result);
-           }),
-  }; 
+      /*pareto_frontier=*/filter(result,
+                                 [&](ParetoOptimalMachineMapping const &m) {
+                                   return is_pareto_optimal_in(m, result);
+                                 }),
+  };
 }
 
 MachineMappingWithMemoryResult
     minimize_runtime(MachineMappingWithMemoryResult const &m1,
                      MachineMappingWithMemoryResult const &m2) {
-  std::unordered_set<ParetoOptimalMachineMapping> result = 
+  std::unordered_set<ParetoOptimalMachineMapping> result =
       set_union(m1.get_pareto_frontier(), m2.get_pareto_frontier());
 
   return MachineMappingWithMemoryResult{
-    /*pareto_frontier=*/filter(result,
-           [&](ParetoOptimalMachineMapping const &m) {
-             return is_pareto_optimal_in(m, result);
-           }),
-  }; 
+      /*pareto_frontier=*/filter(result,
+                                 [&](ParetoOptimalMachineMapping const &m) {
+                                   return is_pareto_optimal_in(m, result);
+                                 }),
+  };
 }
 
 MachineMappingWithMemoryResult
@@ -192,8 +193,9 @@ MachineMappingWithMemoryResult
 
 namespace std {
 
-size_t hash<::FlexFlow::MachineMappingWithMemoryResult>::operator()(::FlexFlow::MachineMappingWithMemoryResult const &r) const {
+size_t hash<::FlexFlow::MachineMappingWithMemoryResult>::operator()(
+    ::FlexFlow::MachineMappingWithMemoryResult const &r) const {
   return get_std_hash(r.tie());
 }
 
-}
+} // namespace std

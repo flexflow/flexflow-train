@@ -1,6 +1,6 @@
 #include "utils/graph/digraph/algorithms/get_terminal_nodes.h"
-#include "utils/graph/digraph/algorithms/get_initial_nodes.h"
 #include "utils/graph/digraph/algorithms/flipped.h"
+#include "utils/graph/digraph/algorithms/get_initial_nodes.h"
 
 namespace FlexFlow {
 

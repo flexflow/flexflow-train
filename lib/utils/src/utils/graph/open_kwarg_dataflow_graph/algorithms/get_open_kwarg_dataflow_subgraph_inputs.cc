@@ -8,7 +8,7 @@ using SlotName = ordered_value_type<1>;
 
 std::unordered_set<OpenKwargDataflowValue<GraphInputName, SlotName>>
     get_open_kwarg_dataflow_subgraph_inputs(
-      OpenKwargDataflowGraphView<GraphInputName, SlotName> const &,
-      std::unordered_set<Node> const &);
+        OpenKwargDataflowGraphView<GraphInputName, SlotName> const &,
+        std::unordered_set<Node> const &);
 
 } // namespace FlexFlow

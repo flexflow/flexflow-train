@@ -25,18 +25,18 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::unordered_map<TensorSlotName, IncomingTensorRole> result =
           get_conv2d_incoming_tensor_roles(attrs);
       std::unordered_map<TensorSlotName, IncomingTensorRole> correct = {
-        {
-          TensorSlotName::INPUT,
-          IncomingTensorRole::INPUT,
-        },
-        {
-          TensorSlotName::FILTER,
-          IncomingTensorRole::WEIGHT,
-        },
-        {
-          TensorSlotName::BIAS,
-          IncomingTensorRole::WEIGHT,
-        },
+          {
+              TensorSlotName::INPUT,
+              IncomingTensorRole::INPUT,
+          },
+          {
+              TensorSlotName::FILTER,
+              IncomingTensorRole::WEIGHT,
+          },
+          {
+              TensorSlotName::BIAS,
+              IncomingTensorRole::WEIGHT,
+          },
       };
 
       CHECK(result == correct);
@@ -48,14 +48,14 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::unordered_map<TensorSlotName, IncomingTensorRole> result =
           get_conv2d_incoming_tensor_roles(attrs);
       std::unordered_map<TensorSlotName, IncomingTensorRole> correct = {
-        {
-          TensorSlotName::INPUT,
-          IncomingTensorRole::INPUT,
-        },
-        {
-          TensorSlotName::FILTER,
-          IncomingTensorRole::WEIGHT,
-        },
+          {
+              TensorSlotName::INPUT,
+              IncomingTensorRole::INPUT,
+          },
+          {
+              TensorSlotName::FILTER,
+              IncomingTensorRole::WEIGHT,
+          },
       };
 
       CHECK(result == correct);

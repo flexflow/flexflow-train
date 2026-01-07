@@ -1,18 +1,17 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_GROUP_BY_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_GROUP_BY_H
 
+#include "utils/one_to_many/one_to_many.h"
 #include <set>
 #include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include "utils/one_to_many/one_to_many.h"
 
 namespace FlexFlow {
 
 template <typename V, typename F, typename K = std::invoke_result_t<F, V>>
-OneToMany<K, V>
-    group_by(std::unordered_set<V> const &vs, F &&f) {
+OneToMany<K, V> group_by(std::unordered_set<V> const &vs, F &&f) {
   OneToMany<K, V> result;
   for (V const &v : vs) {
     result.insert({f(v), v});

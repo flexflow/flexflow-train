@@ -5,8 +5,8 @@ namespace FlexFlow {
 
 using SlotName = ordered_value_type<0>;
 
-template
-  TransitiveReducedKwargDataflowGraphView<SlotName>
-    get_kwarg_dataflow_graph_transitive_reduction(KwargDataflowGraphView<SlotName> const &);
+template TransitiveReducedKwargDataflowGraphView<SlotName>
+    get_kwarg_dataflow_graph_transitive_reduction(
+        KwargDataflowGraphView<SlotName> const &);
 
 } // namespace FlexFlow

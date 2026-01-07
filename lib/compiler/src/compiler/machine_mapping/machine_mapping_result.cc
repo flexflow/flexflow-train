@@ -93,9 +93,10 @@ MachineMappingResult
       FeasibleMachineMappingResult{
           /*runtime=*/std::max(lhs_result.runtime, rhs_result.runtime),
           /*machine_mapping=*/
-            binary_combine_mappings(
+          binary_combine_mappings(
               /*lhs=*/lhs_result.machine_mapping,
-              /*rhs=*/offset_layer_oblivious_mapping_by(rhs_result.machine_mapping, split)),
+              /*rhs=*/offset_layer_oblivious_mapping_by(
+                  rhs_result.machine_mapping, split)),
       },
   };
 }

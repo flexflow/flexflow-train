@@ -1,7 +1,7 @@
 #include "utils/many_to_one/many_to_one.h"
-#include "utils/archetypes/value_type.h"
 #include "utils/archetypes/jsonable_value_type.h"
 #include "utils/archetypes/rapidcheckable_value_type.h"
+#include "utils/archetypes/value_type.h"
 
 using namespace ::FlexFlow;
 
@@ -36,7 +36,7 @@ using R = ::FlexFlow::rapidcheckable_value_type<1>;
 template struct Arbitrary<::FlexFlow::ManyToOne<L, R>>;
 template struct Arbitrary<::FlexFlow::ManyToOne<int, std::string>>;
 
-}
+} // namespace rc
 
 namespace std {
 
@@ -45,4 +45,4 @@ using R = ::FlexFlow::value_type<1>;
 
 template struct hash<ManyToOne<L, R>>;
 
-}
+} // namespace std

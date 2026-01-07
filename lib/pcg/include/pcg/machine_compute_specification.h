@@ -1,10 +1,10 @@
 #ifndef _FLEXFLOW_LIB_PCG_INCLUDE_PCG_MACHINE_COMPUTE_SPECIFICATION_H
 #define _FLEXFLOW_LIB_PCG_INCLUDE_PCG_MACHINE_COMPUTE_SPECIFICATION_H
 
-#include "pcg/machine_compute_specification.dtg.h"
-#include "pcg/machine_space_coordinate.dtg.h"
 #include "pcg/device_id_t.dtg.h"
 #include "pcg/device_type.dtg.h"
+#include "pcg/machine_compute_specification.dtg.h"
+#include "pcg/machine_space_coordinate.dtg.h"
 
 namespace FlexFlow {
 

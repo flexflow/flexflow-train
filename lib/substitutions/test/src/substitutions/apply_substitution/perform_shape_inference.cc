@@ -5,22 +5,24 @@
 #include "utils/containers/get_only.h"
 #include "utils/containers/require_only_key.h"
 #include "utils/graph/instances/unordered_set_labelled_open_kwarg_dataflow_graph.h"
+#include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/get_labelled_open_kwarg_dataflow_graph_data.h"
 #include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/labelled_open_kwarg_dataflow_graph_data.dtg.h"
 #include "utils/graph/labelled_open_kwarg_dataflow_graph/labelled_open_kwarg_dataflow_graph.h"
 #include "utils/integer_conversions.h"
 #include <doctest/doctest.h>
-#include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/get_labelled_open_kwarg_dataflow_graph_data.h"
 
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("perform_shape_inference") {
-    auto g =
-        LabelledOpenKwargDataflowGraph<ParallelLayerAttrs, std::monostate, int, TensorSlotName>::create<
-            UnorderedSetLabelledOpenKwargDataflowGraph<ParallelLayerAttrs,
-                                                       std::monostate,
-                                                       int,
-                                                       TensorSlotName>>();
+    auto g = LabelledOpenKwargDataflowGraph<ParallelLayerAttrs,
+                                            std::monostate,
+                                            int,
+                                            TensorSlotName>::
+        create<UnorderedSetLabelledOpenKwargDataflowGraph<ParallelLayerAttrs,
+                                                          std::monostate,
+                                                          int,
+                                                          TensorSlotName>>();
 
     positive_int in_channels = 24_p;
     positive_int out_channels = 16_p;
@@ -92,91 +94,107 @@ TEST_SUITE(FF_TEST_SUITE) {
         std::nullopt,
     };
 
-    KwargNodeAddedResult<TensorSlotName> n1_weight_added_result =
-        g.add_node(
-          /*node_labels=*/n1_weight_attrs, 
-          /*inputs=*/{}, 
-          /*output_labels=*/{
+    KwargNodeAddedResult<TensorSlotName> n1_weight_added_result = g.add_node(
+        /*node_labels=*/n1_weight_attrs,
+        /*inputs=*/{},
+        /*output_labels=*/
+        {
             {
-              TensorSlotName::OUTPUT,
-              {},
+                TensorSlotName::OUTPUT,
+                {},
             },
-          });
-    Node n1_weight_node = n1_weight_added_result.node;
-    KwargDataflowOutput<TensorSlotName> n1_weight = 
-      require_only_key(n1_weight_added_result.outputs, TensorSlotName::OUTPUT);
-
-    KwargNodeAddedResult<TensorSlotName> n1_weight_replicate_added_result = 
-      g.add_node(
-        /*node_label=*/n1_weight_replicate_attrs, 
-        /*inputs=*/{
-          {
-            TensorSlotName::INPUT,
-            OpenKwargDataflowValue<int, TensorSlotName>{n1_weight},
-          },
-        }, 
-        /*outupt_labels=*/{
-          {
-            TensorSlotName::OUTPUT,
-            std::monostate{},
-          },
         });
+    Node n1_weight_node = n1_weight_added_result.node;
+    KwargDataflowOutput<TensorSlotName> n1_weight = require_only_key(
+        n1_weight_added_result.outputs, TensorSlotName::OUTPUT);
+
+    KwargNodeAddedResult<TensorSlotName> n1_weight_replicate_added_result =
+        g.add_node(
+            /*node_label=*/n1_weight_replicate_attrs,
+            /*inputs=*/
+            {
+                {
+                    TensorSlotName::INPUT,
+                    OpenKwargDataflowValue<int, TensorSlotName>{n1_weight},
+                },
+            },
+            /*outupt_labels=*/
+            {
+                {
+                    TensorSlotName::OUTPUT,
+                    std::monostate{},
+                },
+            });
     Node n1_weight_replicate_node = n1_weight_replicate_added_result.node;
-    KwargDataflowOutput<TensorSlotName> n1_weight_replicated =
-        require_only_key(n1_weight_replicate_added_result.outputs, TensorSlotName::OUTPUT);
+    KwargDataflowOutput<TensorSlotName> n1_weight_replicated = require_only_key(
+        n1_weight_replicate_added_result.outputs, TensorSlotName::OUTPUT);
 
     KwargNodeAddedResult<TensorSlotName> n1_added_result = g.add_node(
         /*node_label=*/n1_attrs,
-        /*inputs=*/{
-          {
-            TensorSlotName::INPUT,
-            OpenKwargDataflowValue<int, TensorSlotName>{i0}, 
-          },
-          {
-            TensorSlotName::WEIGHT,
-            OpenKwargDataflowValue<int, TensorSlotName>{n1_weight_replicated},
-          },
+        /*inputs=*/
+        {
+            {
+                TensorSlotName::INPUT,
+                OpenKwargDataflowValue<int, TensorSlotName>{i0},
+            },
+            {
+                TensorSlotName::WEIGHT,
+                OpenKwargDataflowValue<int, TensorSlotName>{
+                    n1_weight_replicated},
+            },
         },
-        /*output_labels=*/{
-          {
-            TensorSlotName::OUTPUT,
-            std::monostate{},
-          },
+        /*output_labels=*/
+        {
+            {
+                TensorSlotName::OUTPUT,
+                std::monostate{},
+            },
         });
     Node n1 = n1_added_result.node;
-    KwargDataflowOutput<TensorSlotName> o1 = 
-      require_only_key(n1_added_result.outputs, TensorSlotName::OUTPUT);
+    KwargDataflowOutput<TensorSlotName> o1 =
+        require_only_key(n1_added_result.outputs, TensorSlotName::OUTPUT);
 
-    KwargNodeAddedResult<TensorSlotName> n2_added_result =
-        g.add_node(
-          /*node_labels=*/n2_attrs, 
-          /*inputs=*/{
+    KwargNodeAddedResult<TensorSlotName> n2_added_result = g.add_node(
+        /*node_labels=*/n2_attrs,
+        /*inputs=*/
+        {
             {
-              TensorSlotName::INPUT,
-              OpenKwargDataflowValue<int, TensorSlotName>{o1},
+                TensorSlotName::INPUT,
+                OpenKwargDataflowValue<int, TensorSlotName>{o1},
             },
-          }, 
-          /*output_labels=*/{
+        },
+        /*output_labels=*/
+        {
             {
-              TensorSlotName::OUTPUT,
-              {},
+                TensorSlotName::OUTPUT,
+                {},
             },
-          });
+        });
     Node n2 = n2_added_result.node;
-    KwargDataflowOutput<TensorSlotName> o2 = 
-      require_only_key(n2_added_result.outputs, TensorSlotName::OUTPUT);
+    KwargDataflowOutput<TensorSlotName> o2 =
+        require_only_key(n2_added_result.outputs, TensorSlotName::OUTPUT);
 
-    std::unordered_map<KwargDataflowGraphInput<int>, ParallelTensorShape> input_shapes = {
-        {i0, i0_shape},
-    };
+    std::unordered_map<KwargDataflowGraphInput<int>, ParallelTensorShape>
+        input_shapes = {
+            {i0, i0_shape},
+        };
 
-    LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs, ParallelTensorShape, int, TensorSlotName>
+    LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs,
+                                       ParallelTensorShape,
+                                       int,
+                                       TensorSlotName>
         result = perform_shape_inference(g, input_shapes);
 
-    LabelledOpenKwargDataflowGraphData<ParallelLayerAttrs, ParallelTensorShape, int, TensorSlotName>
+    LabelledOpenKwargDataflowGraphData<ParallelLayerAttrs,
+                                       ParallelTensorShape,
+                                       int,
+                                       TensorSlotName>
         result_data = get_labelled_open_kwarg_dataflow_graph_data(result);
 
-    LabelledOpenKwargDataflowGraphData<ParallelLayerAttrs, ParallelTensorShape, int, TensorSlotName>
+    LabelledOpenKwargDataflowGraphData<ParallelLayerAttrs,
+                                       ParallelTensorShape,
+                                       int,
+                                       TensorSlotName>
         correct_data = LabelledOpenKwargDataflowGraphData<ParallelLayerAttrs,
                                                           ParallelTensorShape,
                                                           int,
@@ -192,89 +210,89 @@ TEST_SUITE(FF_TEST_SUITE) {
                     KwargDataflowInputEdge<int, TensorSlotName>{
                         i0,
                         KwargDataflowInput{
-                          n1, 
-                          TensorSlotName::INPUT,
+                            n1,
+                            TensorSlotName::INPUT,
                         },
                     },
                 },
                 OpenKwargDataflowEdge<int, TensorSlotName>{
-                  KwargDataflowEdge<TensorSlotName>{
-                    KwargDataflowOutput{
-                      n1_weight_node, 
-                      TensorSlotName::OUTPUT,
+                    KwargDataflowEdge<TensorSlotName>{
+                        KwargDataflowOutput{
+                            n1_weight_node,
+                            TensorSlotName::OUTPUT,
+                        },
+                        KwargDataflowInput{
+                            n1_weight_replicate_node,
+                            TensorSlotName::INPUT,
+                        },
                     },
-                    KwargDataflowInput{
-                      n1_weight_replicate_node, 
-                      TensorSlotName::INPUT,
-                    },
-                  },
                 },
                 OpenKwargDataflowEdge<int, TensorSlotName>{
-                  KwargDataflowEdge<TensorSlotName>{
-                    KwargDataflowOutput{
-                      n1_weight_replicate_node, 
-                      TensorSlotName::OUTPUT,
+                    KwargDataflowEdge<TensorSlotName>{
+                        KwargDataflowOutput{
+                            n1_weight_replicate_node,
+                            TensorSlotName::OUTPUT,
+                        },
+                        KwargDataflowInput{
+                            n1,
+                            TensorSlotName::WEIGHT,
+                        },
                     },
-                    KwargDataflowInput{
-                      n1, 
-                      TensorSlotName::WEIGHT,
-                    },
-                  },
                 },
                 OpenKwargDataflowEdge<int, TensorSlotName>{
-                  KwargDataflowEdge<TensorSlotName>{
-                    KwargDataflowOutput{
-                      n1, 
-                      TensorSlotName::OUTPUT,
+                    KwargDataflowEdge<TensorSlotName>{
+                        KwargDataflowOutput{
+                            n1,
+                            TensorSlotName::OUTPUT,
+                        },
+                        KwargDataflowInput{
+                            n2,
+                            TensorSlotName::INPUT,
+                        },
                     },
-                    KwargDataflowInput{
-                      n2, 
-                      TensorSlotName::INPUT,
-                    },
-                  },
                 },
             },
             {i0},
-            {{
-                 OpenKwargDataflowValue<int, TensorSlotName>{i0},
-                 i0_shape,
-             },
-             {
-                 OpenKwargDataflowValue<int, TensorSlotName>{
-                   KwargDataflowOutput<TensorSlotName>{
-                     n1_weight_node, 
-                     TensorSlotName::OUTPUT,
-                   },
-                 },
-                 lift_to_parallel(get_reduced_shape(n1_weight_shape)),
-             },
-             {
-                 OpenKwargDataflowValue<int, TensorSlotName>{
-                   KwargDataflowOutput<TensorSlotName>{
-                     n1_weight_replicate_node, 
-                     TensorSlotName::OUTPUT,
-                   }
-                 },
-                 n1_weight_shape,
-             },
-             {
-                 OpenKwargDataflowValue<int, TensorSlotName>{
-                   KwargDataflowOutput<TensorSlotName>{
-                     n1,
-                     TensorSlotName::OUTPUT,
-                   },
-                 },
-                 n1_output_shape,
-             },
-             {
-                 OpenKwargDataflowValue<int, TensorSlotName>{
-                   KwargDataflowOutput<TensorSlotName>{
-                     n2, 
-                     TensorSlotName::OUTPUT,
-                   },
-                 },
-                 n2_output_shape,
-              },
+            {
+                {
+                    OpenKwargDataflowValue<int, TensorSlotName>{i0},
+                    i0_shape,
+                },
+                {
+                    OpenKwargDataflowValue<int, TensorSlotName>{
+                        KwargDataflowOutput<TensorSlotName>{
+                            n1_weight_node,
+                            TensorSlotName::OUTPUT,
+                        },
+                    },
+                    lift_to_parallel(get_reduced_shape(n1_weight_shape)),
+                },
+                {
+                    OpenKwargDataflowValue<int, TensorSlotName>{
+                        KwargDataflowOutput<TensorSlotName>{
+                            n1_weight_replicate_node,
+                            TensorSlotName::OUTPUT,
+                        }},
+                    n1_weight_shape,
+                },
+                {
+                    OpenKwargDataflowValue<int, TensorSlotName>{
+                        KwargDataflowOutput<TensorSlotName>{
+                            n1,
+                            TensorSlotName::OUTPUT,
+                        },
+                    },
+                    n1_output_shape,
+                },
+                {
+                    OpenKwargDataflowValue<int, TensorSlotName>{
+                        KwargDataflowOutput<TensorSlotName>{
+                            n2,
+                            TensorSlotName::OUTPUT,
+                        },
+                    },
+                    n2_output_shape,
+                },
             }};
 
     CHECK(result_data == correct_data);

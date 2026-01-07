@@ -1,5 +1,5 @@
-#include <doctest/doctest.h>
 #include "task-spec/op_ordered_slot_signature.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 

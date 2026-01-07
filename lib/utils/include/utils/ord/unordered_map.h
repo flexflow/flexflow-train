@@ -3,14 +3,15 @@
 
 #include "utils/type_traits_core.h"
 #include <algorithm>
-#include <unordered_map>
 #include <map>
+#include <unordered_map>
 
 namespace FlexFlow {
 
 template <typename K, typename V>
 std::enable_if_t<is_lt_comparable_v<std::pair<K, V>>, bool>
-    operator<(std::unordered_map<K, V> const &lhs, std::unordered_map<K, V> const &rhs) {
+    operator<(std::unordered_map<K, V> const &lhs,
+              std::unordered_map<K, V> const &rhs) {
   CHECK_LT_COMPARABLE(K);
   CHECK_LT_COMPARABLE(V);
 
@@ -19,7 +20,6 @@ std::enable_if_t<is_lt_comparable_v<std::pair<K, V>>, bool>
 
   return lhs_ordered < rhs_ordered;
 }
-
 
 } // namespace FlexFlow
 

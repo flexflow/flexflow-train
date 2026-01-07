@@ -252,10 +252,9 @@ struct is_well_behaved_value_type
   CHECK_WELL_BEHAVED_VALUE_TYPE_NO_HASH(__VA_ARGS__);                          \
   CHECK_HASHABLE(__VA_ARGS__)
 
-#define CHECK_LT_COMPARABLE(...) \
-  static_assert(is_lt_comparable<__VA_ARGS__>::value,                               \
+#define CHECK_LT_COMPARABLE(...)                                               \
+  static_assert(is_lt_comparable<__VA_ARGS__>::value,                          \
                 #__VA_ARGS__ " should be comparable by \"<\" (but is not)");
-    
 
 } // namespace FlexFlow
 

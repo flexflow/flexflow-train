@@ -29,20 +29,19 @@ OperatorTaskSpace trivial_op_task_space() {
   return OperatorTaskSpace{MinimalOrthotope{{}}};
 }
 
-std::unordered_set<operator_task_space_dim_idx_t> 
+std::unordered_set<operator_task_space_dim_idx_t>
     operator_task_space_get_dim_idxs(OperatorTaskSpace const &op_task_space) {
-  return get_minimal_domain_dims(minimal_dim_domain_from_operator_task_space(op_task_space));
+  return get_minimal_domain_dims(
+      minimal_dim_domain_from_operator_task_space(op_task_space));
 }
 
 std::unordered_set<TaskSpaceCoordinate>
     get_task_space_coordinates(OperatorTaskSpace const &task) {
 
   std::vector<std::vector<nonnegative_int>> coordinate_ranges =
-      transform(task.degrees.dims, 
-                [&](int_ge_two num_points) {
-                  return nonnegative_range(
-                      num_points.nonnegative_int_from_int_ge_two());
-                });
+      transform(task.degrees.dims, [&](int_ge_two num_points) {
+        return nonnegative_range(num_points.nonnegative_int_from_int_ge_two());
+      });
 
   std::unordered_set<std::vector<nonnegative_int>> raw_coordinates =
       unordered_set_of(cartesian_product(coordinate_ranges));
@@ -72,41 +71,39 @@ positive_int num_tasks(OperatorTaskSpace const &op_task_space) {
 }
 
 MinimalDimDomain<operator_task_space_dim_idx_t>
-  minimal_dim_domain_from_operator_task_space(OperatorTaskSpace const &operator_task_space) {
+    minimal_dim_domain_from_operator_task_space(
+        OperatorTaskSpace const &operator_task_space) {
 
   MinimalOrthotope minimal_orthotope = operator_task_space.degrees;
-  
+
   return minimal_dim_domain_from_minimal_orthotope(
-    minimal_orthotope,
-    unordered_set_of(operator_task_space_dim_idx_range(minimal_orthotope_get_num_dims(minimal_orthotope))),
-    get_operator_task_space_dim_ordering());
+      minimal_orthotope,
+      unordered_set_of(operator_task_space_dim_idx_range(
+          minimal_orthotope_get_num_dims(minimal_orthotope))),
+      get_operator_task_space_dim_ordering());
 }
 
-OperatorTaskSpace
-  operator_task_space_from_minimal_dim_domain(MinimalDimDomain<operator_task_space_dim_idx_t> const &minimal_dim_domain) {
+OperatorTaskSpace operator_task_space_from_minimal_dim_domain(
+    MinimalDimDomain<operator_task_space_dim_idx_t> const &minimal_dim_domain) {
 
   return OperatorTaskSpace{
-    minimal_orthotope_from_minimal_dim_domain(
-      minimal_dim_domain,
-      get_operator_task_space_dim_ordering()),
+      minimal_orthotope_from_minimal_dim_domain(
+          minimal_dim_domain, get_operator_task_space_dim_ordering()),
   };
 }
 
-
 DimOrdering<operator_task_space_dim_idx_t>
-  get_operator_task_space_dim_ordering() {
+    get_operator_task_space_dim_ordering() {
   return make_default_dim_ordering<operator_task_space_dim_idx_t>();
 }
 
-OperatorTaskSpace 
-  get_operator_task_space_matching_parallel_tensor_dim_degrees(
+OperatorTaskSpace get_operator_task_space_matching_parallel_tensor_dim_degrees(
     ParallelTensorDimDegrees const &dim_degrees) {
   return OperatorTaskSpace{
-    minimal_orthotope_from_minimal_dim_domain(
-      minimal_dim_domain_from_parallel_tensor_dim_degrees(dim_degrees),
-      get_parallel_tensor_dim_ordering()),
+      minimal_orthotope_from_minimal_dim_domain(
+          minimal_dim_domain_from_parallel_tensor_dim_degrees(dim_degrees),
+          get_parallel_tensor_dim_ordering()),
   };
 }
-
 
 } // namespace FlexFlow

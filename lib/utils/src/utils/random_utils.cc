@@ -13,7 +13,6 @@ template T select_random(std::vector<T> const &);
 template T select_random_determistic(std::vector<T> const &,
                                      std::vector<float> const &,
                                      float);
-template T select_random(std::vector<T> const &,
-                         std::vector<float> const &);
+template T select_random(std::vector<T> const &, std::vector<float> const &);
 
 } // namespace FlexFlow

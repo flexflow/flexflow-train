@@ -16,7 +16,8 @@ std::unordered_map<Node, std::unordered_set<MultiDiEdge>>
   std::unordered_map<Node, std::unordered_set<MultiDiEdge>> result =
       group_by(g.query_edges(MultiDiEdgeQuery{query_set<Node>{ns},
                                               query_set<Node>::matchall()}),
-               [&](MultiDiEdge const &e) { return g.get_multidiedge_src(e); }).l_to_r();
+               [&](MultiDiEdge const &e) { return g.get_multidiedge_src(e); })
+          .l_to_r();
 
   for (Node const &n : ns) {
     result[n];

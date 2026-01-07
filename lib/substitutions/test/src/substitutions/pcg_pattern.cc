@@ -75,17 +75,15 @@ TEST_SUITE(FF_TEST_SUITE) {
       REQUIRE(y_incoming.size() == 2);
       parallel_tensor_guid_t y_weights = y_incoming.at(TensorSlotName::WEIGHT);
 
-      LabelledOpenKwargDataflowGraph<
-        OperatorAttributePattern,
-        TensorAttributePattern,
-        int,
-        TensorSlotName>
-          g = LabelledOpenKwargDataflowGraph<
-                OperatorAttributePattern,
-                TensorAttributePattern,
-                int,
-                TensorSlotName
-              >::create<UnorderedSetLabelledOpenKwargDataflowGraph<
+      LabelledOpenKwargDataflowGraph<OperatorAttributePattern,
+                                     TensorAttributePattern,
+                                     int,
+                                     TensorSlotName>
+          g = LabelledOpenKwargDataflowGraph<OperatorAttributePattern,
+                                             TensorAttributePattern,
+                                             int,
+                                             TensorSlotName>::
+              create<UnorderedSetLabelledOpenKwargDataflowGraph<
                   OperatorAttributePattern,
                   TensorAttributePattern,
                   int,
@@ -112,54 +110,58 @@ TEST_SUITE(FF_TEST_SUITE) {
       KwargDataflowGraphInput<int> pt_b = g.add_input(1, pattern_tensor_b);
       KwargDataflowGraphInput<int> pt_c = g.add_input(2, pattern_tensor_c);
 
-      KwargNodeAddedResult<TensorSlotName> op_pattern_1_added =
-          g.add_node(
-            /*node_label=*/op_pattern_1,
-            /*inputs=*/{
+      KwargNodeAddedResult<TensorSlotName> op_pattern_1_added = g.add_node(
+          /*node_label=*/op_pattern_1,
+          /*inputs=*/
+          {
               {
-                TensorSlotName::INPUT,
-                OpenKwargDataflowValue<int, TensorSlotName>{pt_a},
+                  TensorSlotName::INPUT,
+                  OpenKwargDataflowValue<int, TensorSlotName>{pt_a},
               },
               {
-                TensorSlotName::WEIGHT,
-                OpenKwargDataflowValue<int, TensorSlotName>{pt_b},
+                  TensorSlotName::WEIGHT,
+                  OpenKwargDataflowValue<int, TensorSlotName>{pt_b},
               },
-            },
-            /*output_labels=*/{
+          },
+          /*output_labels=*/
+          {
               {
-                TensorSlotName::OUTPUT,
-                pattern_tensor_x,
+                  TensorSlotName::OUTPUT,
+                  pattern_tensor_x,
               },
-            });
+          });
       PatternNode op_pattern_1_node = PatternNode{op_pattern_1_added.node};
       OpenKwargDataflowValue<int, TensorSlotName> pt_x =
           OpenKwargDataflowValue<int, TensorSlotName>{
-            require_only_key(op_pattern_1_added.outputs, TensorSlotName::OUTPUT),
+              require_only_key(op_pattern_1_added.outputs,
+                               TensorSlotName::OUTPUT),
           };
 
-      KwargNodeAddedResult<TensorSlotName> op_pattern_2_added =
-          g.add_node(
-            /*node_label=*/op_pattern_2,
-            /*inputs=*/{
+      KwargNodeAddedResult<TensorSlotName> op_pattern_2_added = g.add_node(
+          /*node_label=*/op_pattern_2,
+          /*inputs=*/
+          {
               {
-                TensorSlotName::INPUT,
-                OpenKwargDataflowValue<int, TensorSlotName>{pt_a},
+                  TensorSlotName::INPUT,
+                  OpenKwargDataflowValue<int, TensorSlotName>{pt_a},
               },
               {
-                TensorSlotName::WEIGHT,
-                OpenKwargDataflowValue<int, TensorSlotName>{pt_c},
+                  TensorSlotName::WEIGHT,
+                  OpenKwargDataflowValue<int, TensorSlotName>{pt_c},
               },
-            },
-            /*outputs_labels=*/{
+          },
+          /*outputs_labels=*/
+          {
               {
-                TensorSlotName::OUTPUT,
-                pattern_tensor_y,
+                  TensorSlotName::OUTPUT,
+                  pattern_tensor_y,
               },
-            });
+          });
       PatternNode op_pattern_2_node = PatternNode{op_pattern_2_added.node};
       OpenKwargDataflowValue<int, TensorSlotName> pt_y =
           OpenKwargDataflowValue<int, TensorSlotName>{
-            require_only_key(op_pattern_2_added.outputs, TensorSlotName::OUTPUT),
+              require_only_key(op_pattern_2_added.outputs,
+                               TensorSlotName::OUTPUT),
           };
 
       PCGPattern pattern = PCGPattern{g};
@@ -297,50 +299,53 @@ TEST_SUITE(FF_TEST_SUITE) {
       KwargDataflowGraphInput<int> pt_b = g.add_input(1, pattern_tensor_b);
       KwargDataflowGraphInput<int> pt_c = g.add_input(2, pattern_tensor_c);
 
-      KwargNodeAddedResult<TensorSlotName> op_pattern_1_added =
-          g.add_node(
-            /*node_label=*/op_pattern_1,
-            /*inputs=*/{
+      KwargNodeAddedResult<TensorSlotName> op_pattern_1_added = g.add_node(
+          /*node_label=*/op_pattern_1,
+          /*inputs=*/
+          {
               {
-                TensorSlotName::INPUT,
-                OpenKwargDataflowValue<int, TensorSlotName>{pt_a}, 
+                  TensorSlotName::INPUT,
+                  OpenKwargDataflowValue<int, TensorSlotName>{pt_a},
               },
               {
-                TensorSlotName::WEIGHT,
-                OpenKwargDataflowValue<int, TensorSlotName>{pt_b},
+                  TensorSlotName::WEIGHT,
+                  OpenKwargDataflowValue<int, TensorSlotName>{pt_b},
               },
-            },
-            /*output_labels=*/{
+          },
+          /*output_labels=*/
+          {
               {
-                TensorSlotName::OUTPUT,
-                pattern_tensor_x,
+                  TensorSlotName::OUTPUT,
+                  pattern_tensor_x,
               },
-            });
+          });
       PatternNode op_pattern_1_node = PatternNode{op_pattern_1_added.node};
       OpenKwargDataflowValue<int, TensorSlotName> pt_x =
           OpenKwargDataflowValue<int, TensorSlotName>{
-            require_only_key(op_pattern_1_added.outputs, TensorSlotName::OUTPUT),
+              require_only_key(op_pattern_1_added.outputs,
+                               TensorSlotName::OUTPUT),
           };
 
-      KwargNodeAddedResult<TensorSlotName> op_pattern_2_added =
-          g.add_node(
-            /*node_label=*/op_pattern_2,
-            /*inputs=*/{
+      KwargNodeAddedResult<TensorSlotName> op_pattern_2_added = g.add_node(
+          /*node_label=*/op_pattern_2,
+          /*inputs=*/
+          {
               {
-                TensorSlotName::INPUT,
-                OpenKwargDataflowValue<int, TensorSlotName>{pt_x},
+                  TensorSlotName::INPUT,
+                  OpenKwargDataflowValue<int, TensorSlotName>{pt_x},
               },
               {
-                TensorSlotName::WEIGHT,
-                OpenKwargDataflowValue<int, TensorSlotName>{pt_c},
+                  TensorSlotName::WEIGHT,
+                  OpenKwargDataflowValue<int, TensorSlotName>{pt_c},
               },
-            },
-            /*output_labels=*/{
+          },
+          /*output_labels=*/
+          {
               {
-                TensorSlotName::OUTPUT,
-                pattern_tensor_y,
+                  TensorSlotName::OUTPUT,
+                  pattern_tensor_y,
               },
-            });
+          });
       PatternNode op_pattern_2_node = PatternNode{op_pattern_2_added.node};
 
       PCGPattern pattern = PCGPattern{g};

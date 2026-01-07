@@ -20,8 +20,9 @@ std::unordered_set<task_id_with_noop_default_t>
   return right_entries(get_map_from_task_type_to_task(op_task_set));
 }
 
-task_id_with_noop_default_t get_task_for_task_type(OperatorTaskSet const &op_task_set,
-                                         OpTaskType task_type) {
+task_id_with_noop_default_t
+    get_task_for_task_type(OperatorTaskSet const &op_task_set,
+                           OpTaskType task_type) {
   return get_map_from_task_type_to_task(op_task_set).at_l(task_type);
 }
 

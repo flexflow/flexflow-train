@@ -5,15 +5,17 @@
 namespace FlexFlow {
 
 ParallelTensorSpaceToParallelTensorSpaceMapping
-  parallel_tensor_space_mapping_from_projection(
-    DimProjection<parallel_tensor_dim_idx_t, parallel_tensor_dim_idx_t> const &projection, 
-    ParallelTensorDimDegrees const &l_degrees,
-    ParallelTensorDimDegrees const &r_degrees) {
+    parallel_tensor_space_mapping_from_projection(
+        DimProjection<parallel_tensor_dim_idx_t,
+                      parallel_tensor_dim_idx_t> const &projection,
+        ParallelTensorDimDegrees const &l_degrees,
+        ParallelTensorDimDegrees const &r_degrees) {
 
-  // TODO(@lockshaw)(#pr): 
+  // TODO(@lockshaw)(#pr):
   // {
   //   std::unordered_set<parallel_tensor_dim_idx_t>
-  //     l_dims = unordered_set_of(get_nontrivial_parallel_tensor_dim_indices(l_degrees));
+  //     l_dims =
+  //     unordered_set_of(get_nontrivial_parallel_tensor_dim_indices(l_degrees));
   //   std::unordered_set<parallel_tensor_dim_idx_t>
   //     projection_input_dims = input_dims_of_projection(projection);
   //
@@ -22,7 +24,8 @@ ParallelTensorSpaceToParallelTensorSpaceMapping
   //
   // {
   //   std::unordered_set<parallel_tensor_dim_idx_t>
-  //     r_dims = unordered_set_of(get_nontrivial_parallel_tensor_dim_indices(r_degrees));
+  //     r_dims =
+  //     unordered_set_of(get_nontrivial_parallel_tensor_dim_indices(r_degrees));
   //   std::unordered_set<parallel_tensor_dim_idx_t>
   //     projection_output_dims = output_dims_of_projection(projection);
   //
@@ -30,23 +33,21 @@ ParallelTensorSpaceToParallelTensorSpaceMapping
   // }
 
   return ParallelTensorSpaceToParallelTensorSpaceMapping{
-    dim_domain_mapping_from_projection(
-      /*projection=*/projection,
-      /*l_domain=*/dim_domain_from_parallel_tensor_dim_degrees(l_degrees),
-      /*r_domain=*/dim_domain_from_parallel_tensor_dim_degrees(r_degrees),
-      /*l_dim_ordering=*/get_parallel_tensor_dim_ordering(),
-      /*r_dim_ordering=*/get_parallel_tensor_dim_ordering()),
+      dim_domain_mapping_from_projection(
+          /*projection=*/projection,
+          /*l_domain=*/dim_domain_from_parallel_tensor_dim_degrees(l_degrees),
+          /*r_domain=*/dim_domain_from_parallel_tensor_dim_degrees(r_degrees),
+          /*l_dim_ordering=*/get_parallel_tensor_dim_ordering(),
+          /*r_dim_ordering=*/get_parallel_tensor_dim_ordering()),
   };
 }
 
-ParallelTensorSpaceToParallelTensorSpaceMapping 
-  invert_parallel_tensor_space_mapping(
-    ParallelTensorSpaceToParallelTensorSpaceMapping const &m) {
+ParallelTensorSpaceToParallelTensorSpaceMapping
+    invert_parallel_tensor_space_mapping(
+        ParallelTensorSpaceToParallelTensorSpaceMapping const &m) {
   return ParallelTensorSpaceToParallelTensorSpaceMapping{
-    invert_dim_domain_mapping(m.raw_mapping),
+      invert_dim_domain_mapping(m.raw_mapping),
   };
 }
-
-
 
 } // namespace FlexFlow

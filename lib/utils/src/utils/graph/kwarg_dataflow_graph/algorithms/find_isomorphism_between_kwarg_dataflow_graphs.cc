@@ -5,10 +5,9 @@ namespace FlexFlow {
 
 using SlotName = ordered_value_type<0>;
 
-template
-  std::optional<bidict<Node, Node>>
+template std::optional<bidict<Node, Node>>
     find_isomorphism_between_kwarg_dataflow_graphs(
-      KwargDataflowGraphView<SlotName> const &,
-      KwargDataflowGraphView<SlotName> const &);
+        KwargDataflowGraphView<SlotName> const &,
+        KwargDataflowGraphView<SlotName> const &);
 
 } // namespace FlexFlow

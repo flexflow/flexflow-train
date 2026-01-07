@@ -5,7 +5,8 @@
 
 namespace FlexFlow {
 
-DynamicTensorSlot decide_tensor_slot_role(DynamicTensorSlot const &, DynamicTensorRole);
+DynamicTensorSlot decide_tensor_slot_role(DynamicTensorSlot const &,
+                                          DynamicTensorRole);
 
 } // namespace FlexFlow
 

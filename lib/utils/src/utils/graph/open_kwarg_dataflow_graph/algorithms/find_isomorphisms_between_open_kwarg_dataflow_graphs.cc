@@ -6,10 +6,9 @@ namespace FlexFlow {
 using GraphInputName = ordered_value_type<0>;
 using SlotName = ordered_value_type<1>;
 
-template
-  std::unordered_set<OpenKwargDataflowGraphIsomorphism<GraphInputName>>
-      find_isomorphisms_between_open_kwarg_dataflow_graphs(
-          OpenKwargDataflowGraphView<GraphInputName, SlotName> const &,
-          OpenKwargDataflowGraphView<GraphInputName, SlotName> const &);
+template std::unordered_set<OpenKwargDataflowGraphIsomorphism<GraphInputName>>
+    find_isomorphisms_between_open_kwarg_dataflow_graphs(
+        OpenKwargDataflowGraphView<GraphInputName, SlotName> const &,
+        OpenKwargDataflowGraphView<GraphInputName, SlotName> const &);
 
 } // namespace FlexFlow

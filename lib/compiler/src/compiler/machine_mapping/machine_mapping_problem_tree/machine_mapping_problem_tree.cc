@@ -91,8 +91,10 @@ std::optional<MachineMappingProblemTree>
 }
 
 std::unordered_map<BinaryTreePath, UnmappedRuntimeOnlyOpCostEstimateKey>
-    mm_problem_tree_get_path_to_leaf_map(MachineMappingProblemTree const &tree) {
-  return get_path_to_leaf_map(tree, generic_binary_sp_impl_for_mm_problem_tree());
+    mm_problem_tree_get_path_to_leaf_map(
+        MachineMappingProblemTree const &tree) {
+  return get_path_to_leaf_map(tree,
+                              generic_binary_sp_impl_for_mm_problem_tree());
 }
 
 } // namespace FlexFlow

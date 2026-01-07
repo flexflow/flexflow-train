@@ -17,9 +17,8 @@ ParallelTensorShape get_output_parallel_tensor_shape(WeightAttrs const &);
 
 OperatorTaskSpace get_operator_task_space(WeightAttrs const &);
 
-OperatorSpaceToParallelTensorSpaceMapping 
+OperatorSpaceToParallelTensorSpaceMapping
     get_operator_to_output_mapping(WeightAttrs const &);
-
 
 } // namespace FlexFlow
 

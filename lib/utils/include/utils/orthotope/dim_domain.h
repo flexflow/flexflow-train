@@ -1,17 +1,17 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_ORTHOTOPE_DIM_DOMAIN_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_ORTHOTOPE_DIM_DOMAIN_H
 
+#include "utils/containers/filter.h"
 #include "utils/containers/keys.h"
+#include "utils/containers/map_from_keys_and_values.h"
 #include "utils/containers/restrict_keys.h"
+#include "utils/containers/set_minus.h"
 #include "utils/containers/sorted_by.h"
 #include "utils/containers/transform.h"
+#include "utils/nonnegative_int/num_elements.h"
 #include "utils/orthotope/dim_domain.dtg.h"
 #include "utils/orthotope/dim_ordering.dtg.h"
 #include "utils/orthotope/orthotope.dtg.h"
-#include "utils/containers/map_from_keys_and_values.h"
-#include "utils/nonnegative_int/num_elements.h"
-#include "utils/containers/set_minus.h"
-#include "utils/containers/filter.h"
 
 namespace FlexFlow {
 
@@ -33,9 +33,7 @@ std::unordered_set<T> get_domain_dims(DimDomain<T> const &domain) {
 template <typename T>
 std::unordered_set<T> get_trivial_domain_dims(DimDomain<T> const &domain) {
   return filter(get_domain_dims(domain),
-                [&](T const &idx) {
-                  return domain.dims.at(idx) == 1; 
-                });
+                [&](T const &idx) { return domain.dims.at(idx) == 1; });
 }
 
 template <typename T>
@@ -63,8 +61,8 @@ DimDomain<T> dim_domain_from_orthotope(Orthotope const &orthotope,
                                        std::unordered_set<T> const &dims,
                                        DimOrdering<T> const &dim_ordering) {
   return DimDomain<T>{
-      map_from_keys_and_values(
-          sorted_by(dims, dim_ordering.lt), orthotope.dims),
+      map_from_keys_and_values(sorted_by(dims, dim_ordering.lt),
+                               orthotope.dims),
   };
 }
 

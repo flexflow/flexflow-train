@@ -8,5 +8,4 @@ using V = value_type<1>;
 
 template V require_only_key(std::unordered_map<K, V> const &, K const &);
 
-
 } // namespace FlexFlow

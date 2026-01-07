@@ -9,10 +9,7 @@ using V2 = value_type<2>;
 using Out = value_type<3>;
 using F = std::function<Out(V1 const &, V2 const &)>;
 
-template
-  std::unordered_map<K, Out> zip_values_strict_with(
-    std::unordered_map<K, V1> const &, 
-    std::unordered_map<K, V2> const &,
-    F &&);
+template std::unordered_map<K, Out> zip_values_strict_with(
+    std::unordered_map<K, V1> const &, std::unordered_map<K, V2> const &, F &&);
 
 } // namespace FlexFlow

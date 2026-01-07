@@ -43,35 +43,36 @@ TEST_SUITE(FF_TEST_SUITE) {
     ParallelLayerAddedResult layer1_added =
         pcg_add_input_layer(pcg, input_shape);
     parallel_layer_guid_t layer1 = layer1_added.parallel_layer;
-    parallel_tensor_guid_t tensor1 = require_only_key(layer1_added.outputs, TensorSlotName::OUTPUT);
+    parallel_tensor_guid_t tensor1 =
+        require_only_key(layer1_added.outputs, TensorSlotName::OUTPUT);
 
     ParallelLayerAddedResult layer2_added =
-        add_parallel_layer(
-          pcg, 
-          make_layer_attrs(relu_attrs), 
-          {
-            {
-              TensorSlotName::INPUT,
-              tensor1,
-            },
-          }, 
-          {});
+        add_parallel_layer(pcg,
+                           make_layer_attrs(relu_attrs),
+                           {
+                               {
+                                   TensorSlotName::INPUT,
+                                   tensor1,
+                               },
+                           },
+                           {});
     parallel_layer_guid_t layer2 = layer2_added.parallel_layer;
-    parallel_tensor_guid_t tensor2 = require_only_key(layer2_added.outputs, TensorSlotName::OUTPUT);
+    parallel_tensor_guid_t tensor2 =
+        require_only_key(layer2_added.outputs, TensorSlotName::OUTPUT);
 
     ParallelLayerAddedResult layer3_added =
-        add_parallel_layer(
-          pcg, 
-          make_layer_attrs(relu_attrs), 
-          {
-            {
-              TensorSlotName::INPUT,
-              tensor2,
-            },
-          }, 
-          {});
+        add_parallel_layer(pcg,
+                           make_layer_attrs(relu_attrs),
+                           {
+                               {
+                                   TensorSlotName::INPUT,
+                                   tensor2,
+                               },
+                           },
+                           {});
     parallel_layer_guid_t layer3 = layer3_added.parallel_layer;
-    parallel_tensor_guid_t tensor3 = require_only_key(layer3_added.outputs, TensorSlotName::OUTPUT);
+    parallel_tensor_guid_t tensor3 =
+        require_only_key(layer3_added.outputs, TensorSlotName::OUTPUT);
 
     std::vector<parallel_layer_guid_t> result = topological_ordering(pcg);
     std::vector<parallel_layer_guid_t> correct = {layer1, layer2, layer3};
@@ -125,45 +126,48 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       ParallelLayerAddedResult input_added =
           pcg_add_input_layer(pcg, input_shape);
-      parallel_tensor_guid_t t_input = require_only_key(input_added.outputs, TensorSlotName::OUTPUT);
+      parallel_tensor_guid_t t_input =
+          require_only_key(input_added.outputs, TensorSlotName::OUTPUT);
 
       ParallelLayerAddedResult projection_weight_added = add_parallel_layer(
           pcg, make_layer_attrs(projection_weight_attrs), {}, {});
-      parallel_tensor_guid_t t_projection =
-          require_only_key(projection_weight_added.outputs, TensorSlotName::OUTPUT);
+      parallel_tensor_guid_t t_projection = require_only_key(
+          projection_weight_added.outputs, TensorSlotName::OUTPUT);
 
       ParallelLayerAddedResult bias_weight_added =
           add_parallel_layer(pcg, make_layer_attrs(bias_weight_attrs), {}, {});
-      parallel_tensor_guid_t t_bias = require_only_key(bias_weight_added.outputs, TensorSlotName::OUTPUT);
+      parallel_tensor_guid_t t_bias =
+          require_only_key(bias_weight_added.outputs, TensorSlotName::OUTPUT);
 
-      ParallelLayerAddedResult linear_added =
-          add_parallel_layer(
-            /*pcg=*/pcg,
-            /*layer_attrs=*/make_layer_attrs(linear_attrs),
-            /*inputs=*/{
+      ParallelLayerAddedResult linear_added = add_parallel_layer(
+          /*pcg=*/pcg,
+          /*layer_attrs=*/make_layer_attrs(linear_attrs),
+          /*inputs=*/
+          {
               {
-                TensorSlotName::INPUT,
-                t_input,
+                  TensorSlotName::INPUT,
+                  t_input,
               },
-            },
-            /*weights=*/{
+          },
+          /*weights=*/
+          {
               {
-                TensorSlotName::WEIGHT,
-                t_projection, 
+                  TensorSlotName::WEIGHT,
+                  t_projection,
               },
               {
-                TensorSlotName::BIAS,
-                t_bias,
+                  TensorSlotName::BIAS,
+                  t_bias,
               },
-            });
+          });
 
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> result =
           get_incoming_inputs(pcg, linear_added.parallel_layer);
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> correct = {
-        {
-          TensorSlotName::INPUT,
-          t_input,
-        },
+          {
+              TensorSlotName::INPUT,
+              t_input,
+          },
       };
 
       CHECK(result == correct);
@@ -190,7 +194,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       ParallelLayerAddedResult layer1_added =
           pcg_add_input_layer(pcg, input_shape);
       parallel_layer_guid_t layer1 = layer1_added.parallel_layer;
-      parallel_tensor_guid_t tensor1 = require_only_key(layer1_added.outputs, TensorSlotName::OUTPUT);
+      parallel_tensor_guid_t tensor1 =
+          require_only_key(layer1_added.outputs, TensorSlotName::OUTPUT);
 
       parallel_layer_guid_t result = get_source_layer(pcg, tensor1);
       parallel_layer_guid_t correct = layer1;
@@ -201,19 +206,20 @@ TEST_SUITE(FF_TEST_SUITE) {
       ParallelLayerAddedResult layer1_added =
           pcg_add_input_layer(pcg, input_shape);
       parallel_layer_guid_t layer1 = layer1_added.parallel_layer;
-      parallel_tensor_guid_t tensor1 = require_only_key(layer1_added.outputs, TensorSlotName::OUTPUT);
+      parallel_tensor_guid_t tensor1 =
+          require_only_key(layer1_added.outputs, TensorSlotName::OUTPUT);
 
-      ParallelLayerAddedResult layer2_added =
-          add_parallel_layer(
-            /*pcg=*/pcg, 
-            /*layer_attrs=*/make_layer_attrs(relu_attrs), 
-            /*inputs=*/{
+      ParallelLayerAddedResult layer2_added = add_parallel_layer(
+          /*pcg=*/pcg,
+          /*layer_attrs=*/make_layer_attrs(relu_attrs),
+          /*inputs=*/
+          {
               {
-                TensorSlotName::INPUT,
-                tensor1,
+                  TensorSlotName::INPUT,
+                  tensor1,
               },
-            }, 
-            /*weights=*/{});
+          },
+          /*weights=*/{});
       parallel_layer_guid_t layer2 = layer2_added.parallel_layer;
 
       parallel_layer_guid_t result = get_source_layer(pcg, tensor1);
@@ -225,33 +231,35 @@ TEST_SUITE(FF_TEST_SUITE) {
       ParallelLayerAddedResult layer1_added =
           pcg_add_input_layer(pcg, input_shape);
       parallel_layer_guid_t layer1 = layer1_added.parallel_layer;
-      parallel_tensor_guid_t tensor1 = require_only_key(layer1_added.outputs, TensorSlotName::OUTPUT);
+      parallel_tensor_guid_t tensor1 =
+          require_only_key(layer1_added.outputs, TensorSlotName::OUTPUT);
 
-      ParallelLayerAddedResult layer2_added =
-          add_parallel_layer(
-            /*pcg=*/pcg, 
-            /*layer_attrs=*/make_layer_attrs(relu_attrs), 
-            /*inputs=*/{
+      ParallelLayerAddedResult layer2_added = add_parallel_layer(
+          /*pcg=*/pcg,
+          /*layer_attrs=*/make_layer_attrs(relu_attrs),
+          /*inputs=*/
+          {
               {
-                TensorSlotName::INPUT,
-                tensor1,
-              }, 
-            },
-            /*weights=*/{});
-      parallel_layer_guid_t layer2 = layer2_added.parallel_layer;
-      parallel_tensor_guid_t tensor2 = require_only_key(layer2_added.outputs, TensorSlotName::OUTPUT);
-
-      ParallelLayerAddedResult layer3_added =
-          add_parallel_layer(
-            /*pcg=*/pcg, 
-            /*layer_attrs=*/make_layer_attrs(relu_attrs), 
-            /*inputs=*/{
-              {
-                TensorSlotName::INPUT,
-                tensor1,
+                  TensorSlotName::INPUT,
+                  tensor1,
               },
-            }, 
-            /*weights=*/{});
+          },
+          /*weights=*/{});
+      parallel_layer_guid_t layer2 = layer2_added.parallel_layer;
+      parallel_tensor_guid_t tensor2 =
+          require_only_key(layer2_added.outputs, TensorSlotName::OUTPUT);
+
+      ParallelLayerAddedResult layer3_added = add_parallel_layer(
+          /*pcg=*/pcg,
+          /*layer_attrs=*/make_layer_attrs(relu_attrs),
+          /*inputs=*/
+          {
+              {
+                  TensorSlotName::INPUT,
+                  tensor1,
+              },
+          },
+          /*weights=*/{});
       parallel_layer_guid_t layer3 = layer3_added.parallel_layer;
 
       SUBCASE("tensor 1") {
@@ -296,17 +304,19 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("layer has inputs but no weights") {
       ParallelLayerAddedResult input_added =
           pcg_add_input_layer(pcg, input_shape);
-      parallel_tensor_guid_t t_input = require_only_key(input_added.outputs, TensorSlotName::OUTPUT);
+      parallel_tensor_guid_t t_input =
+          require_only_key(input_added.outputs, TensorSlotName::OUTPUT);
 
       ParallelLayerAddedResult relu_added = add_parallel_layer(
-          /*pcg=*/pcg, 
-          /*layer_attrs=*/make_layer_attrs(make_relu_attrs()), 
-          /*inputs=*/{
-            {
-              TensorSlotName::INPUT,
-              t_input,
-            },
-          }, 
+          /*pcg=*/pcg,
+          /*layer_attrs=*/make_layer_attrs(make_relu_attrs()),
+          /*inputs=*/
+          {
+              {
+                  TensorSlotName::INPUT,
+                  t_input,
+              },
+          },
           /*weights=*/{});
 
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> result =
@@ -332,7 +342,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       ParallelLayerAddedResult input_added =
           pcg_add_input_layer(pcg, input_shape);
-      parallel_tensor_guid_t t_input = require_only_key(input_added.outputs, TensorSlotName::OUTPUT);
+      parallel_tensor_guid_t t_input =
+          require_only_key(input_added.outputs, TensorSlotName::OUTPUT);
 
       RepartitionAttrs partition_input_attrs = RepartitionAttrs{
           /*repartition_dim=*/ff_dim_t{0_n},
@@ -340,17 +351,18 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
 
       ParallelLayerAddedResult partition_input_added = add_parallel_layer(
-          /*pcg=*/pcg, 
-          /*layer_attrs=*/make_layer_attrs(partition_input_attrs), 
-          /*inputs=*/{
-            {
-              TensorSlotName::INPUT,
-              t_input,
-            },
-          }, 
+          /*pcg=*/pcg,
+          /*layer_attrs=*/make_layer_attrs(partition_input_attrs),
+          /*inputs=*/
+          {
+              {
+                  TensorSlotName::INPUT,
+                  t_input,
+              },
+          },
           /*weights=*/{});
-      parallel_tensor_guid_t t_partitioned_input =
-          require_only_key(partition_input_added.outputs, TensorSlotName::OUTPUT);
+      parallel_tensor_guid_t t_partitioned_input = require_only_key(
+          partition_input_added.outputs, TensorSlotName::OUTPUT);
 
       WeightAttrs projection_weight_attrs = WeightAttrs{
           /*tensor_shape=*/throw_if_unexpected(
@@ -359,54 +371,52 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
 
       ParallelLayerAddedResult projection_weight_added = add_parallel_layer(
-          /*pcg=*/pcg, 
-          /*layer_attrs=*/make_layer_attrs(projection_weight_attrs), 
-          /*inputs=*/{}, 
+          /*pcg=*/pcg,
+          /*layer_attrs=*/make_layer_attrs(projection_weight_attrs),
+          /*inputs=*/{},
           /*weights=*/{});
-      parallel_tensor_guid_t t_projection_weight =
-          require_only_key(projection_weight_added.outputs, TensorSlotName::OUTPUT);
+      parallel_tensor_guid_t t_projection_weight = require_only_key(
+          projection_weight_added.outputs, TensorSlotName::OUTPUT);
 
       ReplicateAttrs replicate_projection_attrs = ReplicateAttrs{
           /*replicate_degree=*/2_p,
       };
-      ParallelLayerAddedResult replicate_projection_added =
-          add_parallel_layer(
-            /*pcg=*/pcg,
-            /*layer_attrs=*/make_layer_attrs(replicate_projection_attrs),
-            /*inputs=*/{
+      ParallelLayerAddedResult replicate_projection_added = add_parallel_layer(
+          /*pcg=*/pcg,
+          /*layer_attrs=*/make_layer_attrs(replicate_projection_attrs),
+          /*inputs=*/
+          {
               {
-                TensorSlotName::INPUT,
-                t_projection_weight,
+                  TensorSlotName::INPUT,
+                  t_projection_weight,
               },
-            },
-            /*weights=*/{});
-      parallel_tensor_guid_t t_replicated_projection_weight =
-          require_only_key(replicate_projection_added.outputs, TensorSlotName::OUTPUT);
+          },
+          /*weights=*/{});
+      parallel_tensor_guid_t t_replicated_projection_weight = require_only_key(
+          replicate_projection_added.outputs, TensorSlotName::OUTPUT);
 
-      ParallelLayerAddedResult linear_added =
-          add_parallel_layer(
-            /*pcg=*/pcg,
-            /*layer_attrs=*/make_layer_attrs(linear_attrs),
-            /*inputs=*/{
+      ParallelLayerAddedResult linear_added = add_parallel_layer(
+          /*pcg=*/pcg,
+          /*layer_attrs=*/make_layer_attrs(linear_attrs),
+          /*inputs=*/
+          {
               {
-                TensorSlotName::INPUT,
-                t_partitioned_input,
+                  TensorSlotName::INPUT,
+                  t_partitioned_input,
               },
-            },
-            /*weights=*/{
+          },
+          /*weights=*/
+          {
               {
-                TensorSlotName::WEIGHT,
-                t_replicated_projection_weight,
+                  TensorSlotName::WEIGHT,
+                  t_replicated_projection_weight,
               },
-            });
+          });
 
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> result =
           get_incoming_weights(pcg, linear_added.parallel_layer);
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> correct = {
-        {
-          TensorSlotName::WEIGHT,
-          t_replicated_projection_weight
-        },
+          {TensorSlotName::WEIGHT, t_replicated_projection_weight},
       };
 
       CHECK(result == correct);
@@ -442,11 +452,12 @@ TEST_SUITE(FF_TEST_SUITE) {
                          /*layer_attrs=*/layer_attrs,
                          /*inputs=*/{},
                          /*weights=*/{},
-                         /*output_labels=*/std::unordered_map<TensorSlotName, CreateGrad>{
-                           {
-                             TensorSlotName::OUTPUT,
-                             CreateGrad::NO,
-                           },
+                         /*output_labels=*/
+                         std::unordered_map<TensorSlotName, CreateGrad>{
+                             {
+                                 TensorSlotName::OUTPUT,
+                                 CreateGrad::NO,
+                             },
                          });
 
       return pcg;
@@ -454,7 +465,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     CHECK(pcgs_are_isomorphic(result, correct));
   }
-  
+
   TEST_CASE("pcg_get_mapping_along_edge") {
     ParallelComputationGraph pcg = empty_parallel_computation_graph();
 
@@ -492,170 +503,185 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("trivial mapping (relu into relu)") {
       ParallelLayerAddedResult input = pcg_add_input_layer(pcg, input_shape);
-      parallel_tensor_guid_t t_input = require_only_key(input.outputs, TensorSlotName::OUTPUT);
+      parallel_tensor_guid_t t_input =
+          require_only_key(input.outputs, TensorSlotName::OUTPUT);
 
-      ParallelLayerAddedResult partition_input =
-          add_parallel_layer(
-            /*pcg=*/pcg, 
-            /*layer_attrs=*/partition_attrs, 
-            /*inputs=*/{
+      ParallelLayerAddedResult partition_input = add_parallel_layer(
+          /*pcg=*/pcg,
+          /*layer_attrs=*/partition_attrs,
+          /*inputs=*/
+          {
               {
-                TensorSlotName::INPUT,
-                t_input,
-              }, 
-            },
-            /*weights=*/{});
-      parallel_tensor_guid_t t_partition_input = require_only_key(partition_input.outputs, TensorSlotName::OUTPUT);
-
-      ParallelLayerAddedResult layer_1 =
-          add_parallel_layer(
-            /*pcg=*/pcg, 
-            /*layer_attrs=*/relu_attrs, 
-            /*inputs=*/{
-              {
-                TensorSlotName::INPUT,
-                t_partition_input,
+                  TensorSlotName::INPUT,
+                  t_input,
               },
-            }, 
-            /*weights=*/{});
-      parallel_tensor_guid_t t_layer_1 = require_only_key(layer_1.outputs, TensorSlotName::OUTPUT);
+          },
+          /*weights=*/{});
+      parallel_tensor_guid_t t_partition_input =
+          require_only_key(partition_input.outputs, TensorSlotName::OUTPUT);
 
-      ParallelLayerAddedResult layer_2 =
-          add_parallel_layer(
-            /*pcg=*/pcg, 
-            /*layer_attrs=*/relu_attrs, 
-            {
+      ParallelLayerAddedResult layer_1 = add_parallel_layer(
+          /*pcg=*/pcg,
+          /*layer_attrs=*/relu_attrs,
+          /*inputs=*/
+          {
               {
-                TensorSlotName::INPUT,
-                t_layer_1,
-              }, 
-            },
-            {});
+                  TensorSlotName::INPUT,
+                  t_partition_input,
+              },
+          },
+          /*weights=*/{});
+      parallel_tensor_guid_t t_layer_1 =
+          require_only_key(layer_1.outputs, TensorSlotName::OUTPUT);
 
-      ParallelComputationGraphEdge edge 
-        = get_only(
-            get_pcg_edges_from_layer_to_layer(
-              /*pcg=*/pcg, 
-              /*src=*/layer_1.parallel_layer, 
+      ParallelLayerAddedResult layer_2 = add_parallel_layer(
+          /*pcg=*/pcg,
+          /*layer_attrs=*/relu_attrs,
+          {
+              {
+                  TensorSlotName::INPUT,
+                  t_layer_1,
+              },
+          },
+          {});
+
+      ParallelComputationGraphEdge edge =
+          get_only(get_pcg_edges_from_layer_to_layer(
+              /*pcg=*/pcg,
+              /*src=*/layer_1.parallel_layer,
               /*dst=*/layer_2.parallel_layer));
 
-      OperatorTaskSpaceToOperatorTaskSpaceMapping result = pcg_get_mapping_along_edge(pcg, edge);
+      OperatorTaskSpaceToOperatorTaskSpaceMapping result =
+          pcg_get_mapping_along_edge(pcg, edge);
 
-      DimDomain<operator_task_space_dim_idx_t> layer_1_task_space = DimDomain<operator_task_space_dim_idx_t>{{
-        {operator_task_space_dim_idx_t{0_n}, 2_p},
-      }};
+      DimDomain<operator_task_space_dim_idx_t> layer_1_task_space =
+          DimDomain<operator_task_space_dim_idx_t>{{
+              {operator_task_space_dim_idx_t{0_n}, 2_p},
+          }};
 
-      DimDomain<operator_task_space_dim_idx_t> layer_2_task_space = layer_1_task_space;
+      DimDomain<operator_task_space_dim_idx_t> layer_2_task_space =
+          layer_1_task_space;
 
       auto make_coord = [](nonnegative_int x) {
         return DimCoord{
-          std::unordered_map<operator_task_space_dim_idx_t, nonnegative_int>{
-            {operator_task_space_dim_idx_t{0_n}, x},
-          },
+            std::unordered_map<operator_task_space_dim_idx_t, nonnegative_int>{
+                {operator_task_space_dim_idx_t{0_n}, x},
+            },
         };
       };
 
-      OperatorTaskSpaceToOperatorTaskSpaceMapping correct = OperatorTaskSpaceToOperatorTaskSpaceMapping{
-        DimDomainMapping<operator_task_space_dim_idx_t, operator_task_space_dim_idx_t>{
-          bidict<DimCoord<operator_task_space_dim_idx_t>, DimCoord<operator_task_space_dim_idx_t>>{
-            {make_coord(0_n), make_coord(0_n)},
-            {make_coord(1_n), make_coord(1_n)},
-          },
-          layer_1_task_space,
-          layer_2_task_space,
-        },
-      };
+      OperatorTaskSpaceToOperatorTaskSpaceMapping correct =
+          OperatorTaskSpaceToOperatorTaskSpaceMapping{
+              DimDomainMapping<operator_task_space_dim_idx_t,
+                               operator_task_space_dim_idx_t>{
+                  bidict<DimCoord<operator_task_space_dim_idx_t>,
+                         DimCoord<operator_task_space_dim_idx_t>>{
+                      {make_coord(0_n), make_coord(0_n)},
+                      {make_coord(1_n), make_coord(1_n)},
+                  },
+                  layer_1_task_space,
+                  layer_2_task_space,
+              },
+          };
 
-      CHECK(result == correct); 
+      CHECK(result == correct);
     }
 
     SUBCASE("nontrivial mapping (linear into linear)") {
       ParallelLayerAddedResult input = pcg_add_input_layer(pcg, input_shape);
-      parallel_tensor_guid_t t_input = require_only_key(input.outputs, TensorSlotName::OUTPUT);
-      ParallelLayerAddedResult partition_input =
-          add_parallel_layer(
-            /*pcg=*/pcg, 
-            /*layer_attrs=*/partition_attrs,
-            /*inputs=*/{
+      parallel_tensor_guid_t t_input =
+          require_only_key(input.outputs, TensorSlotName::OUTPUT);
+      ParallelLayerAddedResult partition_input = add_parallel_layer(
+          /*pcg=*/pcg,
+          /*layer_attrs=*/partition_attrs,
+          /*inputs=*/
+          {
               {
-                TensorSlotName::INPUT,
-                t_input,
+                  TensorSlotName::INPUT,
+                  t_input,
               },
-            }, 
-            /*weights=*/{});
-      parallel_tensor_guid_t t_partition_input = require_only_key(partition_input.outputs, TensorSlotName::OUTPUT);
+          },
+          /*weights=*/{});
+      parallel_tensor_guid_t t_partition_input =
+          require_only_key(partition_input.outputs, TensorSlotName::OUTPUT);
 
       ParallelLayerAttrs transpose_attrs = ParallelLayerAttrs{
-        /*op_attrs=*/PCGOperatorAttrs{
-          TransposeAttrs{
-            TensorDimPermutation{
-              bidict<ff_dim_t, ff_dim_t>{
-                {ff_dim_t{0_n}, ff_dim_t{1_n}},
-                {ff_dim_t{1_n}, ff_dim_t{0_n}},
+          /*op_attrs=*/PCGOperatorAttrs{
+              TransposeAttrs{
+                  TensorDimPermutation{
+                      bidict<ff_dim_t, ff_dim_t>{
+                          {ff_dim_t{0_n}, ff_dim_t{1_n}},
+                          {ff_dim_t{1_n}, ff_dim_t{0_n}},
+                      },
+                  },
               },
-            },
           },
-        },
-        /*name=*/std::nullopt,
+          /*name=*/std::nullopt,
       };
 
-      ParallelLayerAddedResult layer_1 =
-          add_parallel_layer(
-            /*pcg=*/pcg, 
-            /*layer_attrs=*/relu_attrs, 
-            /*inputs=*/{
+      ParallelLayerAddedResult layer_1 = add_parallel_layer(
+          /*pcg=*/pcg,
+          /*layer_attrs=*/relu_attrs,
+          /*inputs=*/
+          {
               {
-                TensorSlotName::INPUT,
-                t_partition_input,
+                  TensorSlotName::INPUT,
+                  t_partition_input,
               },
-            }, 
-            /*weights=*/{});
-      parallel_tensor_guid_t t_layer_1 = require_only_key(layer_1.outputs, TensorSlotName::OUTPUT);
-      ParallelLayerAddedResult layer_2 =
-          add_parallel_layer(
-            /*pcg=*/pcg, 
-            /*layer_attrs=*/transpose_attrs, 
-            /*inputs=*/{
+          },
+          /*weights=*/{});
+      parallel_tensor_guid_t t_layer_1 =
+          require_only_key(layer_1.outputs, TensorSlotName::OUTPUT);
+      ParallelLayerAddedResult layer_2 = add_parallel_layer(
+          /*pcg=*/pcg,
+          /*layer_attrs=*/transpose_attrs,
+          /*inputs=*/
+          {
               {
-                TensorSlotName::INPUT,
-                t_layer_1,
+                  TensorSlotName::INPUT,
+                  t_layer_1,
               },
-            }, 
-            /*weights=*/{});
+          },
+          /*weights=*/{});
 
-      ParallelComputationGraphEdge edge 
-        = get_only(
-            get_pcg_edges_from_layer_to_layer(
-              /*pcg=*/pcg, 
-              /*src=*/layer_1.parallel_layer, 
+      ParallelComputationGraphEdge edge =
+          get_only(get_pcg_edges_from_layer_to_layer(
+              /*pcg=*/pcg,
+              /*src=*/layer_1.parallel_layer,
               /*dst=*/layer_2.parallel_layer));
 
-      OperatorTaskSpaceToOperatorTaskSpaceMapping result = pcg_get_mapping_along_edge(pcg, edge);
+      OperatorTaskSpaceToOperatorTaskSpaceMapping result =
+          pcg_get_mapping_along_edge(pcg, edge);
 
-      DimDomain<operator_task_space_dim_idx_t> layer_1_task_space = DimDomain<operator_task_space_dim_idx_t>{{
-        {operator_task_space_dim_idx_t{0_n}, 2_p},
-      }};
+      DimDomain<operator_task_space_dim_idx_t> layer_1_task_space =
+          DimDomain<operator_task_space_dim_idx_t>{{
+              {operator_task_space_dim_idx_t{0_n}, 2_p},
+          }};
 
-      DimDomain<operator_task_space_dim_idx_t> layer_2_task_space = layer_1_task_space;
+      DimDomain<operator_task_space_dim_idx_t> layer_2_task_space =
+          layer_1_task_space;
 
       auto make_coord = [](nonnegative_int x) {
         return DimCoord{
-          std::unordered_map<operator_task_space_dim_idx_t, nonnegative_int>{
-            {operator_task_space_dim_idx_t{0_n}, x},
-          },
+            std::unordered_map<operator_task_space_dim_idx_t, nonnegative_int>{
+                {operator_task_space_dim_idx_t{0_n}, x},
+            },
         };
       };
 
-      OperatorTaskSpaceToOperatorTaskSpaceMapping correct = OperatorTaskSpaceToOperatorTaskSpaceMapping{
-        DimDomainMapping<operator_task_space_dim_idx_t, operator_task_space_dim_idx_t>{
-          bidict<DimCoord<operator_task_space_dim_idx_t>, DimCoord<operator_task_space_dim_idx_t>>{
-            {make_coord(0_n), make_coord(1_n)},
-            {make_coord(1_n), make_coord(0_n)},
-          },
-          layer_1_task_space,
-          layer_2_task_space,
-        },
-      };
+      OperatorTaskSpaceToOperatorTaskSpaceMapping correct =
+          OperatorTaskSpaceToOperatorTaskSpaceMapping{
+              DimDomainMapping<operator_task_space_dim_idx_t,
+                               operator_task_space_dim_idx_t>{
+                  bidict<DimCoord<operator_task_space_dim_idx_t>,
+                         DimCoord<operator_task_space_dim_idx_t>>{
+                      {make_coord(0_n), make_coord(1_n)},
+                      {make_coord(1_n), make_coord(0_n)},
+                  },
+                  layer_1_task_space,
+                  layer_2_task_space,
+              },
+          };
     }
   }
 }

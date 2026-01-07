@@ -39,19 +39,23 @@ TEST_SUITE(FF_TEST_SUITE) {
     std::unordered_map<training_tensor_slot_id_t, TensorSlotBacking>
         tensor_slots_backing = {
             {
-                training_tensor_slot_id_t{TensorSlotName::LHS_INPUT, TrainingTensorType::FORWARD},
+                training_tensor_slot_id_t{TensorSlotName::LHS_INPUT,
+                                          TrainingTensorType::FORWARD},
                 TensorSlotBacking{input},
             },
             {
-                training_tensor_slot_id_t{TensorSlotName::LHS_INPUT, TrainingTensorType::GRADIENT},
+                training_tensor_slot_id_t{TensorSlotName::LHS_INPUT,
+                                          TrainingTensorType::GRADIENT},
                 TensorSlotBacking{input_grad},
             },
             {
-                training_tensor_slot_id_t{TensorSlotName::INPUT, TrainingTensorType::FORWARD},
+                training_tensor_slot_id_t{TensorSlotName::INPUT,
+                                          TrainingTensorType::FORWARD},
                 TensorSlotBacking{variadic_tensors},
             },
             {
-                training_tensor_slot_id_t{TensorSlotName::INPUT, TrainingTensorType::GRADIENT},
+                training_tensor_slot_id_t{TensorSlotName::INPUT,
+                                          TrainingTensorType::GRADIENT},
                 TensorSlotBacking{variadic_tensors_grad},
             },
         };
@@ -64,47 +68,65 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     SUBCASE("get_tensor") {
-      SUBCASE("get_tensor(TensorSlotName, Permissions::RO, TrainingTensorType::FORWARD)") {
+      SUBCASE("get_tensor(TensorSlotName, Permissions::RO, "
+              "TrainingTensorType::FORWARD)") {
         GenericTensorAccessor correct = GenericTensorAccessor{
             read_only_accessor_from_write_accessor(input)};
-        GenericTensorAccessor result = acc.get_tensor(
-            TensorSlotName::LHS_INPUT, Permissions::RO, TrainingTensorType::FORWARD);
+        GenericTensorAccessor result =
+            acc.get_tensor(TensorSlotName::LHS_INPUT,
+                           Permissions::RO,
+                           TrainingTensorType::FORWARD);
         CHECK(correct == result);
       }
 
-      SUBCASE("get_tensor(TensorSlotName, Permissions::RO, TrainingTensorType::GRADIENT)") {
+      SUBCASE("get_tensor(TensorSlotName, Permissions::RO, "
+              "TrainingTensorType::GRADIENT)") {
         GenericTensorAccessor correct = GenericTensorAccessor{
             read_only_accessor_from_write_accessor(input_grad)};
-        GenericTensorAccessor result = acc.get_tensor(
-            TensorSlotName::LHS_INPUT, Permissions::RO, TrainingTensorType::GRADIENT);
+        GenericTensorAccessor result =
+            acc.get_tensor(TensorSlotName::LHS_INPUT,
+                           Permissions::RO,
+                           TrainingTensorType::GRADIENT);
         CHECK(correct == result);
       }
 
-      SUBCASE("get_tensor(TensorSlotName, Permissions::WO, TrainingTensorType::FORWARD)") {
+      SUBCASE("get_tensor(TensorSlotName, Permissions::WO, "
+              "TrainingTensorType::FORWARD)") {
         GenericTensorAccessor correct = GenericTensorAccessor{input};
-        GenericTensorAccessor result = acc.get_tensor(
-            TensorSlotName::LHS_INPUT, Permissions::WO, TrainingTensorType::FORWARD);
+        GenericTensorAccessor result =
+            acc.get_tensor(TensorSlotName::LHS_INPUT,
+                           Permissions::WO,
+                           TrainingTensorType::FORWARD);
         CHECK(correct == result);
       }
 
-      SUBCASE("get_tensor(TensorSlotName, Permissions::WO, TrainingTensorType::GRADIENT)") {
+      SUBCASE("get_tensor(TensorSlotName, Permissions::WO, "
+              "TrainingTensorType::GRADIENT)") {
         GenericTensorAccessor correct = GenericTensorAccessor{input_grad};
-        GenericTensorAccessor result = acc.get_tensor(
-            TensorSlotName::LHS_INPUT, Permissions::WO, TrainingTensorType::GRADIENT);
+        GenericTensorAccessor result =
+            acc.get_tensor(TensorSlotName::LHS_INPUT,
+                           Permissions::WO,
+                           TrainingTensorType::GRADIENT);
         CHECK(correct == result);
       }
 
-      SUBCASE("get_tensor(TensorSlotName, Permissions::RW, TrainingTensorType::FORWARD)") {
+      SUBCASE("get_tensor(TensorSlotName, Permissions::RW, "
+              "TrainingTensorType::FORWARD)") {
         GenericTensorAccessor correct = GenericTensorAccessor{input};
-        GenericTensorAccessor result = acc.get_tensor(
-            TensorSlotName::LHS_INPUT, Permissions::RW, TrainingTensorType::FORWARD);
+        GenericTensorAccessor result =
+            acc.get_tensor(TensorSlotName::LHS_INPUT,
+                           Permissions::RW,
+                           TrainingTensorType::FORWARD);
         CHECK(correct == result);
       }
 
-      SUBCASE("get_tensor(TensorSlotName, Permissions::RW, TrainingTensorType::GRADIENT)") {
+      SUBCASE("get_tensor(TensorSlotName, Permissions::RW, "
+              "TrainingTensorType::GRADIENT)") {
         GenericTensorAccessor correct = GenericTensorAccessor{input_grad};
-        GenericTensorAccessor result = acc.get_tensor(
-            TensorSlotName::LHS_INPUT, Permissions::RW, TrainingTensorType::GRADIENT);
+        GenericTensorAccessor result =
+            acc.get_tensor(TensorSlotName::LHS_INPUT,
+                           Permissions::RW,
+                           TrainingTensorType::GRADIENT);
         CHECK(correct == result);
       }
     }
@@ -117,8 +139,10 @@ TEST_SUITE(FF_TEST_SUITE) {
                 read_only_accessor_from_write_accessor(variadic_tensors.at(0)),
                 read_only_accessor_from_write_accessor(
                     variadic_tensors.at(1))}};
-        VariadicGenericTensorAccessor result = acc.get_variadic_tensor(
-            TensorSlotName::INPUT, Permissions::RO, TrainingTensorType::FORWARD);
+        VariadicGenericTensorAccessor result =
+            acc.get_variadic_tensor(TensorSlotName::INPUT,
+                                    Permissions::RO,
+                                    TrainingTensorType::FORWARD);
         CHECK(result == correct);
       }
 
@@ -130,8 +154,10 @@ TEST_SUITE(FF_TEST_SUITE) {
                     variadic_tensors_grad.at(0)),
                 read_only_accessor_from_write_accessor(
                     variadic_tensors_grad.at(1))}};
-        VariadicGenericTensorAccessor result = acc.get_variadic_tensor(
-            TensorSlotName::INPUT, Permissions::RO, TrainingTensorType::GRADIENT);
+        VariadicGenericTensorAccessor result =
+            acc.get_variadic_tensor(TensorSlotName::INPUT,
+                                    Permissions::RO,
+                                    TrainingTensorType::GRADIENT);
         CHECK(result == correct);
       }
 
@@ -139,8 +165,10 @@ TEST_SUITE(FF_TEST_SUITE) {
               "TrainingTensorType::FORWARD)") {
         VariadicGenericTensorAccessor correct =
             VariadicGenericTensorAccessor{variadic_tensors};
-        VariadicGenericTensorAccessor result = acc.get_variadic_tensor(
-            TensorSlotName::INPUT, Permissions::WO, TrainingTensorType::FORWARD);
+        VariadicGenericTensorAccessor result =
+            acc.get_variadic_tensor(TensorSlotName::INPUT,
+                                    Permissions::WO,
+                                    TrainingTensorType::FORWARD);
         CHECK(result == correct);
       }
 
@@ -148,8 +176,10 @@ TEST_SUITE(FF_TEST_SUITE) {
               "TrainingTensorType::GRADIENT)") {
         VariadicGenericTensorAccessor correct =
             VariadicGenericTensorAccessor{variadic_tensors_grad};
-        VariadicGenericTensorAccessor result = acc.get_variadic_tensor(
-            TensorSlotName::INPUT, Permissions::WO, TrainingTensorType::GRADIENT);
+        VariadicGenericTensorAccessor result =
+            acc.get_variadic_tensor(TensorSlotName::INPUT,
+                                    Permissions::WO,
+                                    TrainingTensorType::GRADIENT);
         CHECK(result == correct);
       }
 
@@ -157,8 +187,10 @@ TEST_SUITE(FF_TEST_SUITE) {
               "TrainingTensorType::FORWARD)") {
         VariadicGenericTensorAccessor correct =
             VariadicGenericTensorAccessor{variadic_tensors};
-        VariadicGenericTensorAccessor result = acc.get_variadic_tensor(
-            TensorSlotName::INPUT, Permissions::RW, TrainingTensorType::FORWARD);
+        VariadicGenericTensorAccessor result =
+            acc.get_variadic_tensor(TensorSlotName::INPUT,
+                                    Permissions::RW,
+                                    TrainingTensorType::FORWARD);
         CHECK(result == correct);
       }
 
@@ -166,8 +198,10 @@ TEST_SUITE(FF_TEST_SUITE) {
               "TrainingTensorType::GRADIENT)") {
         VariadicGenericTensorAccessor correct =
             VariadicGenericTensorAccessor{variadic_tensors_grad};
-        VariadicGenericTensorAccessor result = acc.get_variadic_tensor(
-            TensorSlotName::INPUT, Permissions::RW, TrainingTensorType::GRADIENT);
+        VariadicGenericTensorAccessor result =
+            acc.get_variadic_tensor(TensorSlotName::INPUT,
+                                    Permissions::RW,
+                                    TrainingTensorType::GRADIENT);
         CHECK(result == correct);
       }
     }

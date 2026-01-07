@@ -2,7 +2,8 @@
 
 namespace FlexFlow {
 
-DynamicTensorSlot decide_tensor_slot_role(DynamicTensorSlot const &slot, DynamicTensorRole role) {
+DynamicTensorSlot decide_tensor_slot_role(DynamicTensorSlot const &slot,
+                                          DynamicTensorRole role) {
   ASSERT(slot.slot_tensor_role == std::nullopt);
 
   DynamicTensorSlot result = slot;

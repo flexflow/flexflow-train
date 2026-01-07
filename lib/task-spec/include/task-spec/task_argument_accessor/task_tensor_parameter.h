@@ -7,7 +7,8 @@ namespace FlexFlow {
 
 TaskTensorParameter make_task_tensor_parameter_fwd(TensorSlotName);
 TaskTensorParameter make_task_tensor_parameter_grad(TensorSlotName);
-TaskTensorParameter make_task_tensor_parameter_opt(TensorSlotName, OptimizerSlotName);
+TaskTensorParameter make_task_tensor_parameter_opt(TensorSlotName,
+                                                   OptimizerSlotName);
 TaskTensorParameter make_task_tensor_parameter_loss();
 
 } // namespace FlexFlow

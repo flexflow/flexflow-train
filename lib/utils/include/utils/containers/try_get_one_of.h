@@ -2,8 +2,8 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_TRY_GET_ONE_OF_H
 
 #include <optional>
-#include <unordered_set>
 #include <set>
+#include <unordered_set>
 
 namespace FlexFlow {
 
@@ -24,7 +24,6 @@ std::optional<T> try_get_one_of(std::set<T> const &s) {
     return *s.cbegin();
   }
 }
-
 
 } // namespace FlexFlow
 

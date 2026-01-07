@@ -6,11 +6,13 @@
 
 namespace FlexFlow {
 
-std::unordered_set<DynamicNodeInvocation> 
-  perform_update_insertion_for_invocation(DynamicNodeInvocation const &, OptimizerAttrs const &);
+std::unordered_set<DynamicNodeInvocation>
+    perform_update_insertion_for_invocation(DynamicNodeInvocation const &,
+                                            OptimizerAttrs const &);
 
-DynamicOpenDataflowGraph 
-  perform_update_insertion(DynamicOpenDataflowGraph const &, OptimizerAttrs const &);
+DynamicOpenDataflowGraph
+    perform_update_insertion(DynamicOpenDataflowGraph const &,
+                             OptimizerAttrs const &);
 
 } // namespace FlexFlow
 

@@ -16,24 +16,25 @@
 namespace FlexFlow {
 
 std::unordered_map<MachineSpaceCoordinate, AtomicTaskInvocation>
-  lower_parallel_runtime_task_invocation_to_atomic_task_invocation_group(
-    LocalParallelTensorBacking const &,
-    RuntimeTaskInvocation const &,
-    RuntimeArgConfig const &,
-    MappedRuntimeTaskGroup const &);
+    lower_parallel_runtime_task_invocation_to_atomic_task_invocation_group(
+        LocalParallelTensorBacking const &,
+        RuntimeTaskInvocation const &,
+        RuntimeArgConfig const &,
+        MappedRuntimeTaskGroup const &);
 
-AtomicTaskInvocation 
-  lower_parallel_runtime_task_invocation_to_atomic_task_invocation(
-    LocalParallelTensorBacking const &,
-    RuntimeTaskInvocation const &,
-    RuntimeArgConfig const &,
-    MachineSpaceCoordinate const &,
-    RuntimeAtomicTaskShardBinding const &);
+AtomicTaskInvocation
+    lower_parallel_runtime_task_invocation_to_atomic_task_invocation(
+        LocalParallelTensorBacking const &,
+        RuntimeTaskInvocation const &,
+        RuntimeArgConfig const &,
+        MachineSpaceCoordinate const &,
+        RuntimeAtomicTaskShardBinding const &);
 
 // LocalParallelTensorBacking construct_local_parallel_tensor_backing(
-//     std::unordered_map<training_parallel_tensor_guid_t, ParallelTensorShape> const &training_ptensor_shapes,
-//     std::unordered_map<training_parallel_tensor_guid_t, ParallelTensorAccessorsW> const &preallocated_ptensors,
-//     Allocator &);
+//     std::unordered_map<training_parallel_tensor_guid_t, ParallelTensorShape>
+//     const &training_ptensor_shapes,
+//     std::unordered_map<training_parallel_tensor_guid_t,
+//     ParallelTensorAccessorsW> const &preallocated_ptensors, Allocator &);
 
 } // namespace FlexFlow
 

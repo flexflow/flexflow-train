@@ -5,7 +5,8 @@
 
 namespace FlexFlow {
 
-void require_sub_parallel_computation_graph_data_is_valid(SubParallelComputationGraphData const &);
+void require_sub_parallel_computation_graph_data_is_valid(
+    SubParallelComputationGraphData const &);
 
 } // namespace FlexFlow
 

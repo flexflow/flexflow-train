@@ -3,8 +3,6 @@
 
 #include "op-attrs/ops/noop_attrs.dtg.h"
 
-namespace FlexFlow {
-
-} // namespace FlexFlow
+namespace FlexFlow {} // namespace FlexFlow
 
 #endif

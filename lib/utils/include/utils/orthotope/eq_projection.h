@@ -27,9 +27,7 @@ std::unordered_set<R>
 }
 
 template <typename L, typename R>
-void project_dims(EqProjection<L, R> &proj,
-                  L const &from,
-                  R const &to) {
+void project_dims(EqProjection<L, R> &proj, L const &from, R const &to) {
   proj.dim_mapping.equate(from, to);
 }
 

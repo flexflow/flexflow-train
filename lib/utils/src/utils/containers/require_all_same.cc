@@ -6,10 +6,8 @@ namespace FlexFlow {
 
 using T = value_type<0>;
 
-template
-  std::optional<T> require_all_same(std::vector<T> const &);
+template std::optional<T> require_all_same(std::vector<T> const &);
 
-template
-  std::optional<T> require_all_same(std::unordered_set<T> const &);
+template std::optional<T> require_all_same(std::unordered_set<T> const &);
 
 } // namespace FlexFlow

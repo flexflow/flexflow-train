@@ -142,10 +142,10 @@ std::unordered_map<TensorSlotName, InitializerAttrs> get_initializers(
   };
 
   return {
-    {
-      TensorSlotName::WEIGHT,
-      maybe_initializer_attrs.value_or(default_initializer_attrs),
-    },
+      {
+          TensorSlotName::WEIGHT,
+          maybe_initializer_attrs.value_or(default_initializer_attrs),
+      },
   };
 }
 

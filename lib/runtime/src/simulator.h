@@ -15,10 +15,10 @@
 #ifndef _FLEXFLOW_SIMULATOR_H_
 #define _FLEXFLOW_SIMULATOR_H_
 
+#include "compiler/machine_mapping/machine_view.h"
 #include "cost_metrics.h"
 #include "kernels/ff_handle.h"
 #include "op-attrs/operator_attrs.h"
-#include "compiler/machine_mapping/machine_view.h"
 #include "pcg/operator_guid_t.h"
 #include "pcg/parallel_tensor.h"
 #include "runtime/config.h"

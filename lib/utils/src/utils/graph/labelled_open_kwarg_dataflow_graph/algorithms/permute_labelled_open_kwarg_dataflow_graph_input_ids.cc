@@ -9,10 +9,16 @@ using ValueLabel = value_type<1>;
 using GraphInputName = ordered_value_type<2>;
 using SlotName = ordered_value_type<3>;
 
-template
-  LabelledOpenKwargDataflowGraphView<NodeLabel, ValueLabel, GraphInputName, SlotName> 
+template LabelledOpenKwargDataflowGraphView<NodeLabel,
+                                            ValueLabel,
+                                            GraphInputName,
+                                            SlotName>
     permute_labelled_open_kwarg_dataflow_graph_input_ids(
-      LabelledOpenKwargDataflowGraphView<NodeLabel, ValueLabel, GraphInputName, SlotName> const &,
-      bidict<KwargDataflowGraphInput<GraphInputName>, KwargDataflowGraphInput<GraphInputName>> const &);
+        LabelledOpenKwargDataflowGraphView<NodeLabel,
+                                           ValueLabel,
+                                           GraphInputName,
+                                           SlotName> const &,
+        bidict<KwargDataflowGraphInput<GraphInputName>,
+               KwargDataflowGraphInput<GraphInputName>> const &);
 
 } // namespace FlexFlow

@@ -14,7 +14,8 @@ struct Print1DCPUAccessorR {
   void operator()(GenericTensorAccessorR const &accessor,
                   std::ostream &stream) {
     ASSERT(accessor.device_type == DeviceType::CPU);
-    nonnegative_int dims = get_num_dims(accessor.shape.dims).nonnegative_int_from_num_tensor_dims();
+    nonnegative_int dims = get_num_dims(accessor.shape.dims)
+                               .nonnegative_int_from_num_tensor_dims();
     ASSERT(dims == 1_n);
 
     positive_int ncols = dim_at_idx(accessor.shape.dims, ff_dim_t{0_n});
@@ -47,7 +48,8 @@ struct Print2DCPUAccessorR {
   void operator()(GenericTensorAccessorR const &accessor,
                   std::ostream &stream) {
     ASSERT(accessor.device_type == DeviceType::CPU);
-    nonnegative_int dims = get_num_dims(accessor.shape.dims).nonnegative_int_from_num_tensor_dims();
+    nonnegative_int dims = get_num_dims(accessor.shape.dims)
+                               .nonnegative_int_from_num_tensor_dims();
     ASSERT(dims == 2_n);
     positive_int dim0_size = dim_at_idx(accessor.shape.dims, ff_dim_t{0_n});
     positive_int dim1_size = dim_at_idx(accessor.shape.dims, ff_dim_t{1_n});
@@ -91,7 +93,8 @@ struct Print3DCPUAccessorR {
   void operator()(GenericTensorAccessorR const &accessor,
                   std::ostream &stream) {
     ASSERT(accessor.device_type == DeviceType::CPU);
-    nonnegative_int dims = get_num_dims(accessor.shape.dims).nonnegative_int_from_num_tensor_dims();
+    nonnegative_int dims = get_num_dims(accessor.shape.dims)
+                               .nonnegative_int_from_num_tensor_dims();
     ASSERT(dims == 3_n);
 
     positive_int dim0_size = dim_at_idx(accessor.shape.dims, ff_dim_t{0_n});
@@ -150,7 +153,8 @@ struct Print4DCPUAccessorR {
   void operator()(GenericTensorAccessorR const &accessor,
                   std::ostream &stream) {
     ASSERT(accessor.device_type == DeviceType::CPU);
-    nonnegative_int dims = get_num_dims(accessor.shape.dims).nonnegative_int_from_num_tensor_dims();
+    nonnegative_int dims = get_num_dims(accessor.shape.dims)
+                               .nonnegative_int_from_num_tensor_dims();
     ASSERT(dims == 4_n);
 
     positive_int dim0_size = dim_at_idx(accessor.shape.dims, ff_dim_t{0_n});
@@ -248,7 +252,8 @@ std::string format_accessor_r_contents(GenericTensorAccessorR const &accessor) {
   GenericTensorAccessorR cpu_accessor =
       copy_tensor_accessor_r_to_cpu_if_necessary(accessor, cpu_allocator);
 
-  int num_dims = get_num_dims(cpu_accessor.shape.dims).int_from_num_tensor_dims();
+  int num_dims =
+      get_num_dims(cpu_accessor.shape.dims).int_from_num_tensor_dims();
   switch (num_dims) {
     case 1:
       return format_1d_accessor_r_contents(cpu_accessor);
@@ -268,7 +273,8 @@ std::string format_accessor_w_contents(GenericTensorAccessorW const &accessor) {
   GenericTensorAccessorW cpu_accessor =
       copy_tensor_accessor_w_to_cpu_if_necessary(accessor, cpu_allocator);
 
-  int num_dims = get_num_dims(cpu_accessor.shape.dims).int_from_num_tensor_dims();
+  int num_dims =
+      get_num_dims(cpu_accessor.shape.dims).int_from_num_tensor_dims();
   switch (num_dims) {
     case 1:
       return format_1d_accessor_w_contents(cpu_accessor);

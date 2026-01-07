@@ -4,6 +4,8 @@
 #include "utils/containers/generate_map.h"
 #include "utils/containers/keys.h"
 #include "utils/containers/try_at.h"
+#include "utils/containers/unordered_set_of.h"
+#include "utils/containers/values.h"
 #include "utils/exception.h"
 #include "utils/fmt/unordered_map.h"
 #include "utils/fmt/unordered_set.h"
@@ -11,15 +13,13 @@
 #include "utils/hash/tuple.h"
 #include "utils/hash/unordered_map.h"
 #include "utils/hash/unordered_set.h"
+#include "utils/json/check_is_json_deserializable.h"
+#include "utils/json/check_is_json_serializable.h"
 #include <fmt/format.h>
+#include <nlohmann/json.hpp>
+#include <rapidcheck.h>
 #include <unordered_map>
 #include <unordered_set>
-#include <nlohmann/json.hpp>
-#include "utils/json/check_is_json_serializable.h"
-#include "utils/json/check_is_json_deserializable.h"
-#include <rapidcheck.h>
-#include "utils/containers/values.h"
-#include "utils/containers/unordered_set_of.h"
 
 namespace FlexFlow {
 
@@ -98,12 +98,14 @@ public:
   std::unordered_map<R, L> const &r_to_l() const {
     return this->m_r_to_l;
   }
+
 private:
   std::unordered_map<L, std::unordered_set<R>> m_l_to_r;
   std::unordered_map<R, L> m_r_to_l;
 
 private:
-  std::tuple<decltype(m_l_to_r) const &, decltype(m_r_to_l) const &> tie() const {
+  std::tuple<decltype(m_l_to_r) const &, decltype(m_r_to_l) const &>
+      tie() const {
     return std::tie(this->m_l_to_r, this->m_r_to_l);
   }
 
@@ -141,8 +143,8 @@ struct adl_serializer<::FlexFlow::OneToMany<L, R>> {
     NOT_IMPLEMENTED();
   }
 };
-  
-}
+
+} // namespace nlohmann
 
 namespace rc {
 
@@ -153,7 +155,7 @@ struct Arbitrary<::FlexFlow::OneToMany<L, R>> {
   }
 };
 
-}
+} // namespace rc
 
 namespace std {
 

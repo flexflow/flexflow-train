@@ -23,7 +23,8 @@ InputPatternEdge require_input_edge(PatternEdge const &);
 PatternEdge pattern_edge_from_input_edge(InputPatternEdge const &);
 PatternEdge pattern_edge_from_standard_edge(StandardPatternEdge const &);
 
-PatternEdge pattern_edge_from_raw_open_dataflow_edge(OpenKwargDataflowEdge<int, TensorSlotName> const &);
+PatternEdge pattern_edge_from_raw_open_dataflow_edge(
+    OpenKwargDataflowEdge<int, TensorSlotName> const &);
 
 } // namespace FlexFlow
 

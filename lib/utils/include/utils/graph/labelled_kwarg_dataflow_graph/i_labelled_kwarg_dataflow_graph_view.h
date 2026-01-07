@@ -5,16 +5,16 @@
 
 namespace FlexFlow {
 
-template <typename NodeLabel,
-          typename ValueLabel,
-          typename SlotName>
-struct ILabelledKwargDataflowGraphView : virtual public IKwargDataflowGraphView<SlotName> {
+template <typename NodeLabel, typename ValueLabel, typename SlotName>
+struct ILabelledKwargDataflowGraphView
+    : virtual public IKwargDataflowGraphView<SlotName> {
   virtual NodeLabel at(Node const &) const = 0;
   virtual ValueLabel at(KwargDataflowOutput<SlotName> const &) const = 0;
 
   virtual ~ILabelledKwargDataflowGraphView() = default;
 };
-CHECK_RC_COPY_VIRTUAL_COMPLIANT(ILabelledKwargDataflowGraphView<int, std::string, float>);
+CHECK_RC_COPY_VIRTUAL_COMPLIANT(
+    ILabelledKwargDataflowGraphView<int, std::string, float>);
 
 } // namespace FlexFlow
 

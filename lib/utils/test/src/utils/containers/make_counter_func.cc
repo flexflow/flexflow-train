@@ -1,5 +1,5 @@
-#include <doctest/doctest.h>
 #include "utils/containers/make_counter_func.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 

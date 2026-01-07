@@ -13,18 +13,19 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("pattern_split (sequential)") {
     OpenKwargDataflowGraph<int, TensorSlotName> g =
         OpenKwargDataflowGraph<int, TensorSlotName>::create<
-          UnorderedSetOpenKwargDataflowGraph<int, TensorSlotName>>();
+            UnorderedSetOpenKwargDataflowGraph<int, TensorSlotName>>();
 
     KwargNodeAddedResult n0_added = g.add_node({}, {TensorSlotName::OUTPUT});
     Node n0 = n0_added.node;
     OpenKwargDataflowValue v0 = OpenKwargDataflowValue<int, TensorSlotName>{
-      require_only_key(n0_added.outputs, TensorSlotName::OUTPUT),
+        require_only_key(n0_added.outputs, TensorSlotName::OUTPUT),
     };
 
-    KwargNodeAddedResult n1_added = g.add_node({{TensorSlotName::INPUT, v0}}, {TensorSlotName::OUTPUT});
+    KwargNodeAddedResult n1_added =
+        g.add_node({{TensorSlotName::INPUT, v0}}, {TensorSlotName::OUTPUT});
     Node n1 = n1_added.node;
     OpenKwargDataflowValue v1 = OpenKwargDataflowValue<int, TensorSlotName>{
-      require_only_key(n1_added.outputs, TensorSlotName::OUTPUT),
+        require_only_key(n1_added.outputs, TensorSlotName::OUTPUT),
     };
 
     UnlabelledGraphPattern pattern = UnlabelledGraphPattern{g};
@@ -67,7 +68,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       SUBCASE("full_pattern_values_to_subpattern_2_inputs") {
         bidict<PatternValue, PatternInput> result =
             split_result.full_pattern_values_to_subpattern_2_inputs;
-        PatternInput i0 = get_only(get_pattern_inputs(split_result.subpattern_2));
+        PatternInput i0 =
+            get_only(get_pattern_inputs(split_result.subpattern_2));
         bidict<PatternValue, PatternInput> correct = {
             {pv0, i0},
         };
@@ -79,25 +81,27 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("pattern split (parallel)") {
     OpenKwargDataflowGraph<int, TensorSlotName> g =
         OpenKwargDataflowGraph<int, TensorSlotName>::create<
-          UnorderedSetOpenKwargDataflowGraph<int, TensorSlotName>>();
+            UnorderedSetOpenKwargDataflowGraph<int, TensorSlotName>>();
 
     KwargDataflowGraphInput<int> i0 = g.add_input(0);
     KwargDataflowGraphInput<int> i1 = g.add_input(1);
 
-    KwargNodeAddedResult n0_added = g.add_node(
-      {{TensorSlotName::INPUT, OpenKwargDataflowValue<int, TensorSlotName>{i0}}}, 
-      {TensorSlotName::OUTPUT});
+    KwargNodeAddedResult n0_added =
+        g.add_node({{TensorSlotName::INPUT,
+                     OpenKwargDataflowValue<int, TensorSlotName>{i0}}},
+                   {TensorSlotName::OUTPUT});
     Node n0 = n0_added.node;
     OpenKwargDataflowValue v0 = OpenKwargDataflowValue<int, TensorSlotName>{
-      require_only_key(n0_added.outputs, TensorSlotName::OUTPUT),
+        require_only_key(n0_added.outputs, TensorSlotName::OUTPUT),
     };
 
-    KwargNodeAddedResult n1_added = g.add_node(
-      {{TensorSlotName::INPUT, OpenKwargDataflowValue<int, TensorSlotName>{i1}}}, 
-      {TensorSlotName::OUTPUT});
+    KwargNodeAddedResult n1_added =
+        g.add_node({{TensorSlotName::INPUT,
+                     OpenKwargDataflowValue<int, TensorSlotName>{i1}}},
+                   {TensorSlotName::OUTPUT});
     Node n1 = n1_added.node;
     OpenKwargDataflowValue v1 = OpenKwargDataflowValue<int, TensorSlotName>{
-      require_only_key(n1_added.outputs, TensorSlotName::OUTPUT),
+        require_only_key(n1_added.outputs, TensorSlotName::OUTPUT),
     };
 
     UnlabelledGraphPattern pattern = UnlabelledGraphPattern{g};

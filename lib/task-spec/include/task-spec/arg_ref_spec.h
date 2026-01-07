@@ -1,9 +1,9 @@
 #ifndef _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_ARG_REF_SPEC_H
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_ARG_REF_SPEC_H
 
-#include "utils/type_index.h"
-#include "utils/hash-utils.h"
 #include "task-spec/arg_ref.h"
+#include "utils/hash-utils.h"
+#include "utils/type_index.h"
 
 namespace FlexFlow {
 
@@ -84,6 +84,5 @@ struct hash<::FlexFlow::ArgRefSpec<LABEL_TYPE>> {
 };
 
 } // namespace std
-
 
 #endif

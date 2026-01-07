@@ -8,7 +8,8 @@ namespace FlexFlow {
 
 template <typename SlotName>
 TransitiveReducedKwargDataflowGraphView<SlotName>
-  get_kwarg_dataflow_graph_transitive_reduction(KwargDataflowGraphView<SlotName> const &g) {
+    get_kwarg_dataflow_graph_transitive_reduction(
+        KwargDataflowGraphView<SlotName> const &g) {
 
   DiGraphView as_digraph = g;
   DiGraphView transitive_reduced = transitive_reduction(as_digraph);

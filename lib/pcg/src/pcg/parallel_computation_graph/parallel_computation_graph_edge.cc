@@ -16,11 +16,13 @@ parallel_layer_guid_t get_dst_layer(ParallelComputationGraphEdge const &e) {
   return parallel_layer_guid_t{e.raw_edge.dst.node};
 }
 
-TensorSlotName get_src_layer_output_slot_name(ParallelComputationGraphEdge const &e) {
+TensorSlotName
+    get_src_layer_output_slot_name(ParallelComputationGraphEdge const &e) {
   return e.raw_edge.src.slot_name;
 }
 
-TensorSlotName get_dst_layer_input_slot_name(ParallelComputationGraphEdge const &e) {
+TensorSlotName
+    get_dst_layer_input_slot_name(ParallelComputationGraphEdge const &e) {
   return e.raw_edge.dst.slot_name;
 }
 

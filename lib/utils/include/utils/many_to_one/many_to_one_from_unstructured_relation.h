@@ -7,9 +7,8 @@ namespace FlexFlow {
 
 template <typename L, typename R>
 ManyToOne<L, R> many_to_one_from_unstructured_relation(
-  std::unordered_set<std::pair<L, R>> const &relation)
-{
-  ManyToOne<L, R> result; 
+    std::unordered_set<std::pair<L, R>> const &relation) {
+  ManyToOne<L, R> result;
   for (auto const &lr : relation) {
     result.insert(lr);
   }

@@ -1,6 +1,6 @@
-#include <doctest/doctest.h>
 #include "utils/containers/require_two_keys.h"
 #include "test/utils/doctest/fmt/pair.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
@@ -8,7 +8,7 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("require_two_keys") {
     SUBCASE("input is too small") {
       std::unordered_map<int, std::string> m = {
-        {2, "a"},
+          {2, "a"},
       };
 
       CHECK_THROWS(require_two_keys(m, 2, 3));
@@ -16,9 +16,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("input is too large") {
       std::unordered_map<int, std::string> m = {
-        {2, "a"},
-        {3, "b"},
-        {4, "c"},
+          {2, "a"},
+          {3, "b"},
+          {4, "c"},
       };
 
       CHECK_THROWS(require_two_keys(m, 2, 3));
@@ -26,8 +26,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("input is correct size, but keys don't match") {
       std::unordered_map<int, std::string> m = {
-        {2, "a"},
-        {4, "c"},
+          {2, "a"},
+          {4, "c"},
       };
 
       CHECK_THROWS(require_two_keys(m, 2, 3));
@@ -35,8 +35,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("input is correct size and both keys are the same") {
       std::unordered_map<int, std::string> m = {
-        {2, "a"},
-        {3, "b"},
+          {2, "a"},
+          {3, "b"},
       };
 
       CHECK_THROWS(require_two_keys(m, 2, 2));
@@ -44,8 +44,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("input is correct size and keys match") {
       std::unordered_map<int, std::string> m = {
-        {2, "a"},
-        {4, "c"},
+          {2, "a"},
+          {4, "c"},
       };
 
       std::pair<std::string, std::string> result = require_two_keys(m, 2, 4);

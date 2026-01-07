@@ -16,8 +16,6 @@ T or_else(std::optional<T> const &o, F &&f) {
   }
 }
 
-
-
 template <typename T, typename F>
 T const &unwrap(std::optional<T> const &o, F const &f) {
   if (o.has_value()) {

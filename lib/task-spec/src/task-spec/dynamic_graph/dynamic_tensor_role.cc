@@ -2,7 +2,8 @@
 
 namespace FlexFlow {
 
-DynamicTensorRole dynamic_tensor_role_from_fwb_tensor_type(FwbTensorType tensor_type) {
+DynamicTensorRole
+    dynamic_tensor_role_from_fwb_tensor_type(FwbTensorType tensor_type) {
   return DynamicTensorRole{tensor_type};
 }
 
@@ -15,11 +16,7 @@ DynamicTensorRole mk_dynamic_tensor_role_bwd() {
 }
 
 DynamicTensorRole mk_dynamic_tensor_role_opt(OptimizerSlotName s) {
-  return DynamicTensorRole{
-    DynamicOptimizerTensorRole{
-      s
-    }
-  };
+  return DynamicTensorRole{DynamicOptimizerTensorRole{s}};
 }
 
 } // namespace FlexFlow

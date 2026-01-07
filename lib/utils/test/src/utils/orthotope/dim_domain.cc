@@ -127,7 +127,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     CHECK(result == correct);
   }
-  
+
   TEST_CASE("dim_domain_from_orthotope") {
     Orthotope orthotope = Orthotope{{
         3_p,
@@ -135,18 +135,17 @@ TEST_SUITE(FF_TEST_SUITE) {
         2_p,
     }};
 
-    std::unordered_set<int> dims = {
-      3, 7, 1
-    };
+    std::unordered_set<int> dims = {3, 7, 1};
 
-    DimDomain<int> result = dim_domain_from_orthotope(orthotope, dims, make_default_dim_ordering<int>());
+    DimDomain<int> result = dim_domain_from_orthotope(
+        orthotope, dims, make_default_dim_ordering<int>());
 
     DimDomain<int> correct = DimDomain<int>{{
         {3, 5_p},
         {7, 2_p},
         {1, 3_p},
     }};
-        
+
     CHECK(result == correct);
   }
 }

@@ -8,9 +8,10 @@
 
 namespace FlexFlow {
 
-PCGTaskGraph get_pcg_task_graph(ParallelComputationGraph const &pcg,
-                                MachineMapping const &machine_mapping,
-                                MachineComputeSpecification const &machine_spec);
+PCGTaskGraph
+    get_pcg_task_graph(ParallelComputationGraph const &pcg,
+                       MachineMapping const &machine_mapping,
+                       MachineComputeSpecification const &machine_spec);
 
 } // namespace FlexFlow
 

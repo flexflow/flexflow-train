@@ -48,55 +48,60 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     ParallelLayerAddedResult input = pcg_add_input_layer(pcg, input_shape);
-    parallel_tensor_guid_t t_input = require_only_key(input.outputs, TensorSlotName::OUTPUT);
-    ParallelLayerAddedResult partition_input =
-        add_parallel_layer(pcg, partition_attrs, {{TensorSlotName::INPUT, t_input}}, {});
-    parallel_tensor_guid_t t_partition_input = require_only_key(partition_input.outputs, TensorSlotName::OUTPUT);
+    parallel_tensor_guid_t t_input =
+        require_only_key(input.outputs, TensorSlotName::OUTPUT);
+    ParallelLayerAddedResult partition_input = add_parallel_layer(
+        pcg, partition_attrs, {{TensorSlotName::INPUT, t_input}}, {});
+    parallel_tensor_guid_t t_partition_input =
+        require_only_key(partition_input.outputs, TensorSlotName::OUTPUT);
 
-    ParallelLayerAddedResult layer_1 =
-        add_parallel_layer(pcg, relu_attrs, {{TensorSlotName::INPUT, t_partition_input}}, {});
-    parallel_tensor_guid_t t_layer_1 = require_only_key(layer_1.outputs, TensorSlotName::OUTPUT);
-    ParallelLayerAddedResult layer_2 =
-        add_parallel_layer(pcg, relu_attrs, {{TensorSlotName::INPUT, t_layer_1}}, {});
+    ParallelLayerAddedResult layer_1 = add_parallel_layer(
+        pcg, relu_attrs, {{TensorSlotName::INPUT, t_partition_input}}, {});
+    parallel_tensor_guid_t t_layer_1 =
+        require_only_key(layer_1.outputs, TensorSlotName::OUTPUT);
+    ParallelLayerAddedResult layer_2 = add_parallel_layer(
+        pcg, relu_attrs, {{TensorSlotName::INPUT, t_layer_1}}, {});
 
-    ParallelComputationGraphEdge edge 
-      = get_only(
-          get_pcg_edges_from_layer_to_layer(
-            /*pcg=*/pcg, 
-            /*src=*/layer_1.parallel_layer, 
+    ParallelComputationGraphEdge edge =
+        get_only(get_pcg_edges_from_layer_to_layer(
+            /*pcg=*/pcg,
+            /*src=*/layer_1.parallel_layer,
             /*dst=*/layer_2.parallel_layer));
 
     BinaryTreePath src_path = BinaryTreePath{{}};
     BinaryTreePath dst_path = BinaryTreePath{{}};
-    
-    AbstractedSingleTensorMovement result
-      = get_abstracted_single_tensor_movement_along_edge(pcg, edge, src_path, dst_path);
 
-    num_bytes_t shard_size = get_piece_size_in_bytes(get_parallel_tensor_shape(pcg, t_layer_1));
+    AbstractedSingleTensorMovement result =
+        get_abstracted_single_tensor_movement_along_edge(
+            pcg, edge, src_path, dst_path);
 
-    auto mk_single_tensor_communication = [&](nonnegative_int src_coord, 
-                                              nonnegative_int dst_coord)
-      -> AbstractedSingleTensorCommunication
-    {
+    num_bytes_t shard_size =
+        get_piece_size_in_bytes(get_parallel_tensor_shape(pcg, t_layer_1));
+
+    auto mk_single_tensor_communication =
+        [&](nonnegative_int src_coord,
+            nonnegative_int dst_coord) -> AbstractedSingleTensorCommunication {
       return AbstractedSingleTensorCommunication{
-        /*edge=*/AbstractedSingleTensorCommunicationEdge{
-          /*src_coord=*/TaskSpaceCoordinate{OrthotopeCoord{{src_coord}}},
-          /*dst=*/AbstractedDevice{
-            /*operator_tree_path=*/dst_path,
-            /*task_space_coordinate=*/TaskSpaceCoordinate{OrthotopeCoord{{dst_coord}}},
+          /*edge=*/AbstractedSingleTensorCommunicationEdge{
+              /*src_coord=*/TaskSpaceCoordinate{OrthotopeCoord{{src_coord}}},
+              /*dst=*/
+              AbstractedDevice{
+                  /*operator_tree_path=*/dst_path,
+                  /*task_space_coordinate=*/
+                  TaskSpaceCoordinate{OrthotopeCoord{{dst_coord}}},
+              },
           },
-        },
-        /*size=*/shard_size,
+          /*size=*/shard_size,
       };
     };
 
-    AbstractedSingleTensorMovement correct = 
-      abstracted_single_tensor_movement_from_communications(
-        /*src_op_tree_path=*/src_path,
-        /*communications=*/{
-          mk_single_tensor_communication(0_n, 0_n),
-          mk_single_tensor_communication(1_n, 1_n),
-        });
+    AbstractedSingleTensorMovement correct =
+        abstracted_single_tensor_movement_from_communications(
+            /*src_op_tree_path=*/src_path,
+            /*communications=*/{
+                mk_single_tensor_communication(0_n, 0_n),
+                mk_single_tensor_communication(1_n, 1_n),
+            });
 
     CHECK(result == correct);
   }
@@ -164,29 +169,32 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     auto mk_task_space_coord = [&](nonnegative_int coord) {
       return TaskSpaceCoordinate{
-        OrthotopeCoord{{
-          coord,
-        }},
+          OrthotopeCoord{{
+              coord,
+          }},
       };
     };
 
-    auto mk_abstracted_device = [&](BinaryTreePath const &path, nonnegative_int coord) {
+    auto mk_abstracted_device = [&](BinaryTreePath const &path,
+                                    nonnegative_int coord) {
       return AbstractedDevice{
-        /*operator_tree_path=*/path,
-        /*task_space_coordinate=*/mk_task_space_coord(coord),
+          /*operator_tree_path=*/path,
+          /*task_space_coordinate=*/mk_task_space_coord(coord),
       };
     };
 
     SUBCASE("no edges across split") {
       ParallelLayerAddedResult input1 = pcg_add_input_layer(pcg, input_shape);
-      parallel_tensor_guid_t t_input1 = require_only_key(input1.outputs, TensorSlotName::OUTPUT);
-      ParallelLayerAddedResult partition_input1 =
-          add_parallel_layer(pcg, partition_attrs, {{TensorSlotName::INPUT, t_input1}}, {});
+      parallel_tensor_guid_t t_input1 =
+          require_only_key(input1.outputs, TensorSlotName::OUTPUT);
+      ParallelLayerAddedResult partition_input1 = add_parallel_layer(
+          pcg, partition_attrs, {{TensorSlotName::INPUT, t_input1}}, {});
 
       ParallelLayerAddedResult input2 = pcg_add_input_layer(pcg, input_shape);
-      parallel_tensor_guid_t t_input2 = require_only_key(input2.outputs, TensorSlotName::OUTPUT);
-      ParallelLayerAddedResult partition_input2 =
-          add_parallel_layer(pcg, partition_attrs, {{TensorSlotName::INPUT, t_input2}}, {});
+      parallel_tensor_guid_t t_input2 =
+          require_only_key(input2.outputs, TensorSlotName::OUTPUT);
+      ParallelLayerAddedResult partition_input2 = add_parallel_layer(
+          pcg, partition_attrs, {{TensorSlotName::INPUT, t_input2}}, {});
 
       PCGBinarySeriesSplit split = PCGBinarySeriesSplit{
           make_series_split(make_leaf(input1.parallel_layer),
@@ -208,16 +216,19 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("single edge across split") {
       ParallelLayerAddedResult input = pcg_add_input_layer(pcg, input_shape);
-      parallel_tensor_guid_t t_input = require_only_key(input.outputs, TensorSlotName::OUTPUT);
-      ParallelLayerAddedResult partition_input =
-          add_parallel_layer(pcg, partition_attrs, {{TensorSlotName::INPUT, t_input}}, {});
-      parallel_tensor_guid_t t_partition_input = require_only_key(partition_input.outputs, TensorSlotName::OUTPUT);
+      parallel_tensor_guid_t t_input =
+          require_only_key(input.outputs, TensorSlotName::OUTPUT);
+      ParallelLayerAddedResult partition_input = add_parallel_layer(
+          pcg, partition_attrs, {{TensorSlotName::INPUT, t_input}}, {});
+      parallel_tensor_guid_t t_partition_input =
+          require_only_key(partition_input.outputs, TensorSlotName::OUTPUT);
 
-      ParallelLayerAddedResult layer_1 =
-          add_parallel_layer(pcg, relu_attrs, {{TensorSlotName::INPUT, t_partition_input}}, {});
-      parallel_tensor_guid_t t_layer_1 = require_only_key(layer_1.outputs, TensorSlotName::OUTPUT);
-      ParallelLayerAddedResult layer_2 =
-          add_parallel_layer(pcg, relu_attrs, {{TensorSlotName::INPUT, t_layer_1}}, {});
+      ParallelLayerAddedResult layer_1 = add_parallel_layer(
+          pcg, relu_attrs, {{TensorSlotName::INPUT, t_partition_input}}, {});
+      parallel_tensor_guid_t t_layer_1 =
+          require_only_key(layer_1.outputs, TensorSlotName::OUTPUT);
+      ParallelLayerAddedResult layer_2 = add_parallel_layer(
+          pcg, relu_attrs, {{TensorSlotName::INPUT, t_layer_1}}, {});
 
       PCGBinarySeriesSplit split = PCGBinarySeriesSplit{
           make_series_split(
@@ -232,30 +243,33 @@ TEST_SUITE(FF_TEST_SUITE) {
               pcg_get_transitive_reduction(pcg), split);
 
       BinaryTreePath src_path = BinaryTreePath{{
-        BinaryTreePathEntry::RIGHT_CHILD,
+          BinaryTreePathEntry::RIGHT_CHILD,
       }};
 
       BinaryTreePath dst_path = BinaryTreePath{{}};
 
-      auto mk_abstracted_edge = [&](nonnegative_int src_coord, nonnegative_int dst_coord) {
+      auto mk_abstracted_edge = [&](nonnegative_int src_coord,
+                                    nonnegative_int dst_coord) {
         return AbstractedSingleTensorCommunicationEdge{
-          /*src=*/mk_task_space_coord(src_coord),
-          /*dst=*/mk_abstracted_device(dst_path, dst_coord),
+            /*src=*/mk_task_space_coord(src_coord),
+            /*dst=*/mk_abstracted_device(dst_path, dst_coord),
         };
       };
 
-      num_bytes_t shard_size = get_size_in_bytes(get_reduced_shape(get_parallel_tensor_shape(pcg, t_layer_1)));
+      num_bytes_t shard_size = get_size_in_bytes(
+          get_reduced_shape(get_parallel_tensor_shape(pcg, t_layer_1)));
 
       AbstractedTensorSetMovement correct = AbstractedTensorSetMovement{
-        /*single_tensor_movements=*/{
-          AbstractedSingleTensorMovement{
-            /*src_op_tree_path=*/src_path,
-            /*edge_to_size=*/{
-              {mk_abstracted_edge(0_n, 0_n), shard_size},
-              {mk_abstracted_edge(1_n, 1_n), shard_size},
-            },
+          /*single_tensor_movements=*/{
+              AbstractedSingleTensorMovement{
+                  /*src_op_tree_path=*/src_path,
+                  /*edge_to_size=*/
+                  {
+                      {mk_abstracted_edge(0_n, 0_n), shard_size},
+                      {mk_abstracted_edge(1_n, 1_n), shard_size},
+                  },
+              },
           },
-        },
       };
 
       CHECK(result == correct);
@@ -263,34 +277,38 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("does not include edges removed by transitive reduction") {
       ParallelLayerAddedResult input = pcg_add_input_layer(pcg, input_shape);
-      parallel_tensor_guid_t t_input = require_only_key(input.outputs, TensorSlotName::OUTPUT);
-      ParallelLayerAddedResult partition_input =
-          add_parallel_layer(pcg, partition_attrs, {{TensorSlotName::INPUT, t_input}}, {});
-      parallel_tensor_guid_t t_partition_input = require_only_key(partition_input.outputs, TensorSlotName::OUTPUT);
+      parallel_tensor_guid_t t_input =
+          require_only_key(input.outputs, TensorSlotName::OUTPUT);
+      ParallelLayerAddedResult partition_input = add_parallel_layer(
+          pcg, partition_attrs, {{TensorSlotName::INPUT, t_input}}, {});
+      parallel_tensor_guid_t t_partition_input =
+          require_only_key(partition_input.outputs, TensorSlotName::OUTPUT);
 
-      ParallelLayerAddedResult layer_1 =
-          add_parallel_layer(pcg, relu_attrs, {{TensorSlotName::INPUT, t_partition_input}}, {});
-      parallel_tensor_guid_t t_layer_1 = require_only_key(layer_1.outputs, TensorSlotName::OUTPUT);
+      ParallelLayerAddedResult layer_1 = add_parallel_layer(
+          pcg, relu_attrs, {{TensorSlotName::INPUT, t_partition_input}}, {});
+      parallel_tensor_guid_t t_layer_1 =
+          require_only_key(layer_1.outputs, TensorSlotName::OUTPUT);
 
-      ParallelLayerAddedResult layer_2 =
-          add_parallel_layer(pcg, relu_attrs, {{TensorSlotName::INPUT, t_layer_1}}, {});
-      parallel_tensor_guid_t t_layer_2 = require_only_key(layer_2.outputs, TensorSlotName::OUTPUT);
+      ParallelLayerAddedResult layer_2 = add_parallel_layer(
+          pcg, relu_attrs, {{TensorSlotName::INPUT, t_layer_1}}, {});
+      parallel_tensor_guid_t t_layer_2 =
+          require_only_key(layer_2.outputs, TensorSlotName::OUTPUT);
 
       ParallelLayerAddedResult layer_3 =
-          add_parallel_layer(
-            pcg, 
-            ew_add_attrs, 
-            /*inputs=*/{
-              {
-                TensorSlotName::LHS_INPUT,
-                t_layer_1,
-              },
-              {
-                TensorSlotName::RHS_INPUT,
-                t_layer_2,
-              },
-            }, 
-            /*weights=*/{});
+          add_parallel_layer(pcg,
+                             ew_add_attrs,
+                             /*inputs=*/
+                             {
+                                 {
+                                     TensorSlotName::LHS_INPUT,
+                                     t_layer_1,
+                                 },
+                                 {
+                                     TensorSlotName::RHS_INPUT,
+                                     t_layer_2,
+                                 },
+                             },
+                             /*weights=*/{});
 
       PCGBinarySeriesSplit split = PCGBinarySeriesSplit{
           make_series_split(
@@ -306,31 +324,34 @@ TEST_SUITE(FF_TEST_SUITE) {
               pcg_get_transitive_reduction(pcg), split);
 
       BinaryTreePath src_path = BinaryTreePath{{
-        BinaryTreePathEntry::RIGHT_CHILD,
-        BinaryTreePathEntry::RIGHT_CHILD,
+          BinaryTreePathEntry::RIGHT_CHILD,
+          BinaryTreePathEntry::RIGHT_CHILD,
       }};
 
       BinaryTreePath dst_path = BinaryTreePath{{}};
 
-      auto mk_abstracted_edge = [&](nonnegative_int src_coord, nonnegative_int dst_coord) {
+      auto mk_abstracted_edge = [&](nonnegative_int src_coord,
+                                    nonnegative_int dst_coord) {
         return AbstractedSingleTensorCommunicationEdge{
-          /*src=*/mk_task_space_coord(src_coord),
-          /*dst=*/mk_abstracted_device(dst_path, dst_coord),
+            /*src=*/mk_task_space_coord(src_coord),
+            /*dst=*/mk_abstracted_device(dst_path, dst_coord),
         };
       };
 
-      num_bytes_t shard_size = get_size_in_bytes(get_reduced_shape(get_parallel_tensor_shape(pcg, t_layer_2)));
+      num_bytes_t shard_size = get_size_in_bytes(
+          get_reduced_shape(get_parallel_tensor_shape(pcg, t_layer_2)));
 
       AbstractedTensorSetMovement correct = AbstractedTensorSetMovement{
-        /*single_tensor_movements=*/{
-          AbstractedSingleTensorMovement{
-            /*src_op_tree_path=*/src_path,
-            /*edge_to_size=*/{
-              {mk_abstracted_edge(0_n, 0_n), shard_size},
-              {mk_abstracted_edge(1_n, 1_n), shard_size},
-            },
+          /*single_tensor_movements=*/{
+              AbstractedSingleTensorMovement{
+                  /*src_op_tree_path=*/src_path,
+                  /*edge_to_size=*/
+                  {
+                      {mk_abstracted_edge(0_n, 0_n), shard_size},
+                      {mk_abstracted_edge(1_n, 1_n), shard_size},
+                  },
+              },
           },
-        },
       };
 
       CHECK(result == correct);
@@ -338,20 +359,23 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("single tensor, multiple consumers across split") {
       ParallelLayerAddedResult input = pcg_add_input_layer(pcg, input_shape);
-      parallel_tensor_guid_t t_input = require_only_key(input.outputs, TensorSlotName::OUTPUT);
-      ParallelLayerAddedResult partition_input =
-          add_parallel_layer(pcg, partition_attrs, {{TensorSlotName::INPUT, t_input}}, {});
-      parallel_tensor_guid_t t_partition_input = require_only_key(partition_input.outputs, TensorSlotName::OUTPUT);
+      parallel_tensor_guid_t t_input =
+          require_only_key(input.outputs, TensorSlotName::OUTPUT);
+      ParallelLayerAddedResult partition_input = add_parallel_layer(
+          pcg, partition_attrs, {{TensorSlotName::INPUT, t_input}}, {});
+      parallel_tensor_guid_t t_partition_input =
+          require_only_key(partition_input.outputs, TensorSlotName::OUTPUT);
 
-      ParallelLayerAddedResult layer_1 =
-          add_parallel_layer(pcg, relu_attrs, {{TensorSlotName::INPUT, t_partition_input}}, {});
-      parallel_tensor_guid_t t_layer_1 = require_only_key(layer_1.outputs, TensorSlotName::OUTPUT);
+      ParallelLayerAddedResult layer_1 = add_parallel_layer(
+          pcg, relu_attrs, {{TensorSlotName::INPUT, t_partition_input}}, {});
+      parallel_tensor_guid_t t_layer_1 =
+          require_only_key(layer_1.outputs, TensorSlotName::OUTPUT);
 
-      ParallelLayerAddedResult layer_2 =
-          add_parallel_layer(pcg, relu_attrs, {{TensorSlotName::INPUT, t_layer_1}}, {});
+      ParallelLayerAddedResult layer_2 = add_parallel_layer(
+          pcg, relu_attrs, {{TensorSlotName::INPUT, t_layer_1}}, {});
 
-      ParallelLayerAddedResult layer_3 =
-          add_parallel_layer(pcg, relu_attrs, {{TensorSlotName::INPUT, t_layer_1}}, {});
+      ParallelLayerAddedResult layer_3 = add_parallel_layer(
+          pcg, relu_attrs, {{TensorSlotName::INPUT, t_layer_1}}, {});
 
       PCGBinarySeriesSplit split = PCGBinarySeriesSplit{
           make_series_split(
@@ -367,38 +391,42 @@ TEST_SUITE(FF_TEST_SUITE) {
               pcg_get_transitive_reduction(pcg), split);
 
       BinaryTreePath src_path = BinaryTreePath{{
-        BinaryTreePathEntry::RIGHT_CHILD,
+          BinaryTreePathEntry::RIGHT_CHILD,
       }};
 
       BinaryTreePath dst1_path = BinaryTreePath{{
-        BinaryTreePathEntry::LEFT_CHILD,
+          BinaryTreePathEntry::LEFT_CHILD,
       }};
 
       BinaryTreePath dst2_path = BinaryTreePath{{
-        BinaryTreePathEntry::RIGHT_CHILD,
+          BinaryTreePathEntry::RIGHT_CHILD,
       }};
 
-      auto mk_abstracted_edge = [&](nonnegative_int src_coord, BinaryTreePath dst_path, nonnegative_int dst_coord) {
+      auto mk_abstracted_edge = [&](nonnegative_int src_coord,
+                                    BinaryTreePath dst_path,
+                                    nonnegative_int dst_coord) {
         return AbstractedSingleTensorCommunicationEdge{
-          /*src=*/mk_task_space_coord(src_coord),
-          /*dst=*/mk_abstracted_device(dst_path, dst_coord),
+            /*src=*/mk_task_space_coord(src_coord),
+            /*dst=*/mk_abstracted_device(dst_path, dst_coord),
         };
       };
 
-      num_bytes_t shard_size = get_size_in_bytes(get_reduced_shape(get_parallel_tensor_shape(pcg, t_layer_1)));
+      num_bytes_t shard_size = get_size_in_bytes(
+          get_reduced_shape(get_parallel_tensor_shape(pcg, t_layer_1)));
 
       AbstractedTensorSetMovement correct = AbstractedTensorSetMovement{
-        /*single_tensor_movements=*/{
-          AbstractedSingleTensorMovement{
-            /*src_op_tree_path=*/src_path,
-            /*edge_to_size=*/{
-              {mk_abstracted_edge(0_n, dst1_path, 0_n), shard_size},
-              {mk_abstracted_edge(1_n, dst1_path, 1_n), shard_size},
-              {mk_abstracted_edge(0_n, dst2_path, 0_n), shard_size},
-              {mk_abstracted_edge(1_n, dst2_path, 1_n), shard_size},
-            },
+          /*single_tensor_movements=*/{
+              AbstractedSingleTensorMovement{
+                  /*src_op_tree_path=*/src_path,
+                  /*edge_to_size=*/
+                  {
+                      {mk_abstracted_edge(0_n, dst1_path, 0_n), shard_size},
+                      {mk_abstracted_edge(1_n, dst1_path, 1_n), shard_size},
+                      {mk_abstracted_edge(0_n, dst2_path, 0_n), shard_size},
+                      {mk_abstracted_edge(1_n, dst2_path, 1_n), shard_size},
+                  },
+              },
           },
-        },
       };
 
       CHECK(result == correct);
@@ -406,36 +434,41 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("multiple tensors, multiple consumers across split") {
       ParallelLayerAddedResult input = pcg_add_input_layer(pcg, input_shape);
-      parallel_tensor_guid_t t_input = require_only_key(input.outputs, TensorSlotName::OUTPUT);
-      ParallelLayerAddedResult partition_input =
-          add_parallel_layer(pcg, partition_attrs, {{TensorSlotName::INPUT, t_input}}, {});
-      parallel_tensor_guid_t t_partition_input = require_only_key(partition_input.outputs, TensorSlotName::OUTPUT);
+      parallel_tensor_guid_t t_input =
+          require_only_key(input.outputs, TensorSlotName::OUTPUT);
+      ParallelLayerAddedResult partition_input = add_parallel_layer(
+          pcg, partition_attrs, {{TensorSlotName::INPUT, t_input}}, {});
+      parallel_tensor_guid_t t_partition_input =
+          require_only_key(partition_input.outputs, TensorSlotName::OUTPUT);
 
-      ParallelLayerAddedResult layer_1 =
-          add_parallel_layer(pcg, relu_attrs, {{TensorSlotName::INPUT, t_partition_input}}, {});
-      parallel_tensor_guid_t t_layer_1 = require_only_key(layer_1.outputs, TensorSlotName::OUTPUT);
+      ParallelLayerAddedResult layer_1 = add_parallel_layer(
+          pcg, relu_attrs, {{TensorSlotName::INPUT, t_partition_input}}, {});
+      parallel_tensor_guid_t t_layer_1 =
+          require_only_key(layer_1.outputs, TensorSlotName::OUTPUT);
 
-      ParallelLayerAddedResult layer_2 =
-          add_parallel_layer(pcg, relu_attrs, {{TensorSlotName::INPUT, t_partition_input}}, {});
-      parallel_tensor_guid_t t_layer_2 = require_only_key(layer_2.outputs, TensorSlotName::OUTPUT);
+      ParallelLayerAddedResult layer_2 = add_parallel_layer(
+          pcg, relu_attrs, {{TensorSlotName::INPUT, t_partition_input}}, {});
+      parallel_tensor_guid_t t_layer_2 =
+          require_only_key(layer_2.outputs, TensorSlotName::OUTPUT);
 
-      ParallelLayerAddedResult layer_3 =
-          add_parallel_layer(pcg, relu_attrs, {{TensorSlotName::INPUT, t_layer_1}}, {});
+      ParallelLayerAddedResult layer_3 = add_parallel_layer(
+          pcg, relu_attrs, {{TensorSlotName::INPUT, t_layer_1}}, {});
 
-      ParallelLayerAddedResult layer_4 = add_parallel_layer(
-          pcg,
-          ew_add_attrs,
-          /*inputs=*/{
-            {
-              TensorSlotName::LHS_INPUT,
-              t_layer_1,
-            },
-            {
-              TensorSlotName::RHS_INPUT,
-              t_layer_2,
-            },
-          },
-          /*weights=*/{});
+      ParallelLayerAddedResult layer_4 =
+          add_parallel_layer(pcg,
+                             ew_add_attrs,
+                             /*inputs=*/
+                             {
+                                 {
+                                     TensorSlotName::LHS_INPUT,
+                                     t_layer_1,
+                                 },
+                                 {
+                                     TensorSlotName::RHS_INPUT,
+                                     t_layer_2,
+                                 },
+                             },
+                             /*weights=*/{});
 
       PCGBinarySeriesSplit split = PCGBinarySeriesSplit{
           make_series_split(
@@ -451,52 +484,58 @@ TEST_SUITE(FF_TEST_SUITE) {
               pcg_get_transitive_reduction(pcg), split);
 
       BinaryTreePath src1_path = BinaryTreePath{{
-        BinaryTreePathEntry::RIGHT_CHILD,
-        BinaryTreePathEntry::LEFT_CHILD,
+          BinaryTreePathEntry::RIGHT_CHILD,
+          BinaryTreePathEntry::LEFT_CHILD,
       }};
 
       BinaryTreePath src2_path = BinaryTreePath{{
-        BinaryTreePathEntry::RIGHT_CHILD,
-        BinaryTreePathEntry::RIGHT_CHILD,
+          BinaryTreePathEntry::RIGHT_CHILD,
+          BinaryTreePathEntry::RIGHT_CHILD,
       }};
 
       BinaryTreePath dst1_path = BinaryTreePath{{
-        BinaryTreePathEntry::LEFT_CHILD,
+          BinaryTreePathEntry::LEFT_CHILD,
       }};
 
       BinaryTreePath dst2_path = BinaryTreePath{{
-        BinaryTreePathEntry::RIGHT_CHILD,
+          BinaryTreePathEntry::RIGHT_CHILD,
       }};
 
-      auto mk_abstracted_edge = [&](nonnegative_int src_coord, BinaryTreePath dst_path, nonnegative_int dst_coord) {
+      auto mk_abstracted_edge = [&](nonnegative_int src_coord,
+                                    BinaryTreePath dst_path,
+                                    nonnegative_int dst_coord) {
         return AbstractedSingleTensorCommunicationEdge{
-          /*src=*/mk_task_space_coord(src_coord),
-          /*dst=*/mk_abstracted_device(dst_path, dst_coord),
+            /*src=*/mk_task_space_coord(src_coord),
+            /*dst=*/mk_abstracted_device(dst_path, dst_coord),
         };
       };
 
-      num_bytes_t t1_shard_size = get_size_in_bytes(get_reduced_shape(get_parallel_tensor_shape(pcg, t_layer_1)));
-      num_bytes_t t2_shard_size = get_size_in_bytes(get_reduced_shape(get_parallel_tensor_shape(pcg, t_layer_2)));
+      num_bytes_t t1_shard_size = get_size_in_bytes(
+          get_reduced_shape(get_parallel_tensor_shape(pcg, t_layer_1)));
+      num_bytes_t t2_shard_size = get_size_in_bytes(
+          get_reduced_shape(get_parallel_tensor_shape(pcg, t_layer_2)));
 
       AbstractedTensorSetMovement correct = AbstractedTensorSetMovement{
-        /*single_tensor_movements=*/{
-          AbstractedSingleTensorMovement{
-            /*src_op_tree_path=*/src1_path,
-            /*edge_to_size=*/{
-              {mk_abstracted_edge(0_n, dst1_path, 0_n), t1_shard_size},
-              {mk_abstracted_edge(1_n, dst1_path, 1_n), t1_shard_size},
-              {mk_abstracted_edge(0_n, dst2_path, 0_n), t1_shard_size},
-              {mk_abstracted_edge(1_n, dst2_path, 1_n), t1_shard_size},
-            },
+          /*single_tensor_movements=*/{
+              AbstractedSingleTensorMovement{
+                  /*src_op_tree_path=*/src1_path,
+                  /*edge_to_size=*/
+                  {
+                      {mk_abstracted_edge(0_n, dst1_path, 0_n), t1_shard_size},
+                      {mk_abstracted_edge(1_n, dst1_path, 1_n), t1_shard_size},
+                      {mk_abstracted_edge(0_n, dst2_path, 0_n), t1_shard_size},
+                      {mk_abstracted_edge(1_n, dst2_path, 1_n), t1_shard_size},
+                  },
+              },
+              AbstractedSingleTensorMovement{
+                  /*src_op_tree_path=*/src2_path,
+                  /*edge_to_size=*/
+                  {
+                      {mk_abstracted_edge(0_n, dst2_path, 0_n), t2_shard_size},
+                      {mk_abstracted_edge(1_n, dst2_path, 1_n), t2_shard_size},
+                  },
+              },
           },
-          AbstractedSingleTensorMovement{
-            /*src_op_tree_path=*/src2_path,
-            /*edge_to_size=*/{
-              {mk_abstracted_edge(0_n, dst2_path, 0_n), t2_shard_size},
-              {mk_abstracted_edge(1_n, dst2_path, 1_n), t2_shard_size},
-            },
-          },
-        },
       };
 
       CHECK(result == correct);

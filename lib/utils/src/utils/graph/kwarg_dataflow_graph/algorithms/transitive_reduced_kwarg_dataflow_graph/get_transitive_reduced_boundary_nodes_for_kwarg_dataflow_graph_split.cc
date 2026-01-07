@@ -5,8 +5,9 @@ namespace FlexFlow {
 
 using SlotName = ordered_value_type<0>;
 
-template
-  SplitBoundaryNodes get_transitive_reduced_boundary_nodes_for_kwarg_dataflow_graph_split(
-      TransitiveReducedKwargDataflowGraphView<SlotName> const &, BinarySeriesSplit const &);
+template SplitBoundaryNodes
+    get_transitive_reduced_boundary_nodes_for_kwarg_dataflow_graph_split(
+        TransitiveReducedKwargDataflowGraphView<SlotName> const &,
+        BinarySeriesSplit const &);
 
 } // namespace FlexFlow

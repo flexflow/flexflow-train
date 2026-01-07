@@ -28,14 +28,16 @@ static DeviceSpecificPerDeviceOpState
                   output.shape);
 
   return DeviceSpecificPerDeviceOpState{
-    acc.make_device_specific(per_device_state),
+      acc.make_device_specific(per_device_state),
   };
 }
 
-static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
+static std::optional<milliseconds_t>
+    forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
-  ElementBinaryPerDeviceState per_device_state = acc.get_per_device_op_state().require_element_binary().value();
+  ElementBinaryPerDeviceState per_device_state =
+      acc.get_per_device_op_state().require_element_binary().value();
   ElementBinaryAttrs attrs = acc.get_op_attrs().require_element_binary();
   device_handle_t handle = acc.get_ff_handle();
 
@@ -60,16 +62,20 @@ static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
-  ElementBinaryPerDeviceState per_device_state = acc.get_per_device_op_state().require_element_binary().value();
+  ElementBinaryPerDeviceState per_device_state =
+      acc.get_per_device_op_state().require_element_binary().value();
   ElementBinaryAttrs attrs = acc.get_op_attrs().require_element_binary();
   device_handle_t handle = acc.get_ff_handle();
 
   auto input_lhs = acc.get_tensor<Permissions::RO>(TensorSlotName::LHS_INPUT);
   auto input_rhs = acc.get_tensor<Permissions::RO>(TensorSlotName::RHS_INPUT);
 
-  auto output_grad = acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
-  auto input_lhs_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::LHS_INPUT);
-  auto input_rhs_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::RHS_INPUT);
+  auto output_grad =
+      acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
+  auto input_lhs_grad =
+      acc.get_tensor_grad<Permissions::RW>(TensorSlotName::LHS_INPUT);
+  auto input_rhs_grad =
+      acc.get_tensor_grad<Permissions::RW>(TensorSlotName::RHS_INPUT);
 
   return profile(backward_kernel,
                  profiling,

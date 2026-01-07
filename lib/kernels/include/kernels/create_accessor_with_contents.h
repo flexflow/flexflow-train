@@ -41,7 +41,7 @@ GenericTensorAccessorW create_2d_accessor_w_with_contents(
     std::vector<std::vector<T>> const &contents, Allocator &allocator) {
   positive_int nrows = positive_int{num_elements(contents)};
 
-  positive_int ncols = 
+  positive_int ncols =
       require_all_same1(transform(contents, [](std::vector<T> const &row) {
         return positive_int{num_elements(row)};
       }));
@@ -85,10 +85,9 @@ GenericTensorAccessorW create_3d_accessor_w_with_contents(
 
   positive_int dim2_size = require_all_same1(
       transform(contents, [](std::vector<std::vector<T>> const &m) {
-        return 
-            require_all_same1(transform(m, [](std::vector<T> const &vec) {
-              return positive_int{num_elements(vec)};
-            }));
+        return require_all_same1(transform(m, [](std::vector<T> const &vec) {
+          return positive_int{num_elements(vec)};
+        }));
       }));
 
   TensorShape shape = TensorShape{

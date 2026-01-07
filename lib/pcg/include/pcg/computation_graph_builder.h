@@ -259,7 +259,8 @@ private:
       LayerAttrs const &layer,
       std::unordered_map<TensorSlotName, tensor_guid_t> const &inputs,
       std::unordered_map<TensorSlotName, InitializerAttrs> const &weights,
-      std::optional<std::unordered_map<TensorSlotName, CreateGrad>> const &outputs = std::nullopt);
+      std::optional<std::unordered_map<TensorSlotName, CreateGrad>> const
+          &outputs = std::nullopt);
 
   tensor_guid_t
       broadcast(tensor_guid_t const &, TensorDims const &, std::string const &);

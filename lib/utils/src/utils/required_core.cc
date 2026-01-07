@@ -9,4 +9,3 @@ template struct required<int>;
 template struct required<T>;
 
 } // namespace FlexFlow
-

@@ -26,10 +26,10 @@ PatternSplitResult apply_split(UnlabelledGraphPattern const &p,
       get_pattern_subgraph(p, s.second);
 
   return PatternSplitResult{
-    first_subgraph_result.subpattern,
-    second_subgraph_result.subpattern,
-    first_subgraph_result.full_pattern_values_to_subpattern_inputs,
-    second_subgraph_result.full_pattern_values_to_subpattern_inputs,
+      first_subgraph_result.subpattern,
+      second_subgraph_result.subpattern,
+      first_subgraph_result.full_pattern_values_to_subpattern_inputs,
+      second_subgraph_result.full_pattern_values_to_subpattern_inputs,
   };
 }
 

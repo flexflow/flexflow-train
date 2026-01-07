@@ -18,17 +18,15 @@ static DeviceSpecificPerDeviceOpState
   TensorShape output_shape = acc.get_tensor_shape(TensorSlotName::OUTPUT);
 
   std::optional<ElementUnaryPerDeviceState> per_device_state =
-      init_kernel(kernel_device_type,
-                  input_shape,
-                  output_shape,
-                  attrs);
+      init_kernel(kernel_device_type, input_shape, output_shape, attrs);
 
   return DeviceSpecificPerDeviceOpState{
-    acc.make_device_specific(per_device_state),
+      acc.make_device_specific(per_device_state),
   };
 }
 
-static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
+static std::optional<milliseconds_t>
+    forward_task_impl(TaskArgumentAccessor const &acc) {
   auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
   auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
   ElementUnaryAttrs attrs = acc.get_op_attrs().require_element_unary();
@@ -37,7 +35,8 @@ static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor cons
 
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
-  ElementUnaryPerDeviceState per_device_state = acc.get_per_device_op_state().require_element_unary().value();
+  ElementUnaryPerDeviceState per_device_state =
+      acc.get_per_device_op_state().require_element_unary().value();
 
   return profile(forward_kernel,
                  profiling,
@@ -55,14 +54,16 @@ static std::optional<milliseconds_t>
   auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::INPUT);
   auto output = acc.get_tensor<Permissions::RO>(TensorSlotName::OUTPUT);
-  auto output_grad = acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
+  auto output_grad =
+      acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
 
   ElementUnaryAttrs attrs = acc.get_op_attrs().require_element_unary();
   device_handle_t handle = acc.get_ff_handle();
 
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
-  ElementUnaryPerDeviceState per_device_state = acc.get_per_device_op_state().require_element_unary().value();
+  ElementUnaryPerDeviceState per_device_state =
+      acc.get_per_device_op_state().require_element_unary().value();
 
   return profile(backward_kernel,
                  profiling,

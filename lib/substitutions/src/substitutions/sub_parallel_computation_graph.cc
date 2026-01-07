@@ -9,11 +9,11 @@
 #include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/find_isomorphism_between_labelled_open_kwarg_dataflow_graphs.h"
 #include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/get_labelled_open_kwarg_dataflow_graph_data.h"
 #include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/rewrite_labelled_open_kwarg_dataflow_graph_node_labels.h"
+#include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/view_from_labelled_open_kwarg_dataflow_graph_data.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_incoming_open_kwarg_dataflow_values_for_node.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_open_kwarg_dataflow_subgraph_incoming_edges.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_open_kwarg_dataflow_value_uses.h"
-#include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/view_from_labelled_open_kwarg_dataflow_graph_data.h"
 
 namespace FlexFlow {
 
@@ -26,8 +26,9 @@ std::unordered_set<parallel_layer_guid_t>
 std::unordered_set<open_parallel_tensor_guid_t>
     get_parallel_tensors(SubParallelComputationGraph const &sub_pcg) {
   return transform(get_all_open_kwarg_dataflow_values(sub_pcg.raw_graph),
-                   [](OpenKwargDataflowValue<int, TensorSlotName> const &v) -> open_parallel_tensor_guid_t {
-                      return open_parallel_tensor_guid_t{v}; 
+                   [](OpenKwargDataflowValue<int, TensorSlotName> const &v)
+                       -> open_parallel_tensor_guid_t {
+                     return open_parallel_tensor_guid_t{v};
                    });
 }
 
@@ -51,17 +52,24 @@ ParallelTensorAttrs
 SubParallelComputationGraph
     sub_pcg_from_full_pcg(ParallelComputationGraph const &pcg) {
   return SubParallelComputationGraph{
-      view_as_labelled_open_kwarg_dataflow_graph<ParallelLayerAttrs, ParallelTensorAttrs, int, TensorSlotName>(
-                                                                              pcg.raw_graph)};
+      view_as_labelled_open_kwarg_dataflow_graph<ParallelLayerAttrs,
+                                                 ParallelTensorAttrs,
+                                                 int,
+                                                 TensorSlotName>(
+          pcg.raw_graph)};
 }
 
 ParallelComputationGraph pcg_from_sub_pcg_by_dropping_inputs(
     SubParallelComputationGraph const &sub_pcg) {
   return ParallelComputationGraph{
-      LabelledKwargDataflowGraph<ParallelLayerAttrs, ParallelTensorAttrs, TensorSlotName>::
+      LabelledKwargDataflowGraph<ParallelLayerAttrs,
+                                 ParallelTensorAttrs,
+                                 TensorSlotName>::
           create_copy_of<
               UnorderedSetLabelledOpenKwargDataflowGraph<ParallelLayerAttrs,
-                                                    ParallelTensorAttrs, int, TensorSlotName>>(
+                                                         ParallelTensorAttrs,
+                                                         int,
+                                                         TensorSlotName>>(
               sub_pcg.raw_graph)};
 }
 
@@ -75,7 +83,8 @@ parallel_layer_guid_t
 std::unordered_map<TensorSlotName, open_parallel_tensor_guid_t>
     get_layer_inputs(SubParallelComputationGraph const &pcg,
                      parallel_layer_guid_t const &layer) {
-  return map_values(get_incoming_open_kwarg_dataflow_values_for_node(pcg.raw_graph, layer.raw_graph_node),
+  return map_values(get_incoming_open_kwarg_dataflow_values_for_node(
+                        pcg.raw_graph, layer.raw_graph_node),
                     [](OpenKwargDataflowValue<int, TensorSlotName> const &v) {
                       return open_parallel_tensor_guid_t{v};
                     });
@@ -84,18 +93,21 @@ std::unordered_map<TensorSlotName, open_parallel_tensor_guid_t>
 std::unordered_map<TensorSlotName, parallel_tensor_guid_t>
     get_layer_outputs(SubParallelComputationGraph const &pcg,
                       parallel_layer_guid_t const &layer) {
-  return map_values(
-      get_outgoing_kwarg_dataflow_outputs_for_node(pcg.raw_graph, layer.raw_graph_node),
-      [](KwargDataflowOutput<TensorSlotName> const &o) { return parallel_tensor_guid_t{o}; });
+  return map_values(get_outgoing_kwarg_dataflow_outputs_for_node(
+                        pcg.raw_graph, layer.raw_graph_node),
+                    [](KwargDataflowOutput<TensorSlotName> const &o) {
+                      return parallel_tensor_guid_t{o};
+                    });
 }
 
 std::unordered_set<ParallelComputationGraphEdge> get_subgraph_outgoing_edges(
     SubParallelComputationGraph const &spcg,
     std::unordered_set<parallel_layer_guid_t> const &layers) {
-  std::unordered_set<KwargDataflowEdge<TensorSlotName>> raw_edges = get_kwarg_dataflow_subgraph_outgoing_edges(
-      spcg.raw_graph, transform(layers, [](parallel_layer_guid_t const &l) {
-        return l.raw_graph_node;
-      }));
+  std::unordered_set<KwargDataflowEdge<TensorSlotName>> raw_edges =
+      get_kwarg_dataflow_subgraph_outgoing_edges(
+          spcg.raw_graph, transform(layers, [](parallel_layer_guid_t const &l) {
+            return l.raw_graph_node;
+          }));
   return transform(raw_edges, [](KwargDataflowEdge<TensorSlotName> const &e) {
     return ParallelComputationGraphEdge{e};
   });
@@ -108,19 +120,22 @@ std::unordered_set<SubParallelComputationGraphEdge> get_subgraph_incoming_edges(
       transform(subgraph, [](parallel_layer_guid_t const &l) {
         return l.raw_graph_node;
       });
-  std::unordered_set<OpenKwargDataflowEdge<int, TensorSlotName>> raw_incoming_edges =
-      get_open_kwarg_dataflow_subgraph_incoming_edges(spcg.raw_graph, raw_subgraph);
+  std::unordered_set<OpenKwargDataflowEdge<int, TensorSlotName>>
+      raw_incoming_edges = get_open_kwarg_dataflow_subgraph_incoming_edges(
+          spcg.raw_graph, raw_subgraph);
 
-  return transform(raw_incoming_edges, [](OpenKwargDataflowEdge<int, TensorSlotName> const &e) {
-    return SubParallelComputationGraphEdge{e};
-  });
+  return transform(raw_incoming_edges,
+                   [](OpenKwargDataflowEdge<int, TensorSlotName> const &e) {
+                     return SubParallelComputationGraphEdge{e};
+                   });
 }
 
 std::unordered_set<parallel_tensor_use_t>
     get_parallel_tensor_uses(SubParallelComputationGraph const &spcg,
                              open_parallel_tensor_guid_t const &t) {
   std::unordered_set<KwargDataflowInput<TensorSlotName>> raw_uses =
-      get_open_kwarg_dataflow_value_uses(spcg.raw_graph, t.raw_open_dataflow_value);
+      get_open_kwarg_dataflow_value_uses(spcg.raw_graph,
+                                         t.raw_open_dataflow_value);
   return transform(raw_uses, [](KwargDataflowInput<TensorSlotName> const &i) {
     return parallel_tensor_use_t{i};
   });
@@ -128,7 +143,10 @@ std::unordered_set<parallel_tensor_use_t>
 
 SubParallelComputationGraphData
     get_sub_pcg_data(SubParallelComputationGraph const &pcg) {
-  LabelledOpenKwargDataflowGraphData<ParallelLayerAttrs, ParallelTensorAttrs, int, TensorSlotName>
+  LabelledOpenKwargDataflowGraphData<ParallelLayerAttrs,
+                                     ParallelTensorAttrs,
+                                     int,
+                                     TensorSlotName>
       raw_data = get_labelled_open_kwarg_dataflow_graph_data(pcg.raw_graph);
 
   require_labelled_open_kwarg_dataflow_graph_data_is_valid(raw_data);
@@ -153,9 +171,14 @@ SubParallelComputationGraphData
 
 SubParallelComputationGraph
     sub_pcg_from_graph_data(SubParallelComputationGraphData const &data) {
-  LabelledOpenKwargDataflowGraphData<ParallelLayerAttrs, ParallelTensorAttrs, int, TensorSlotName>
+  LabelledOpenKwargDataflowGraphData<ParallelLayerAttrs,
+                                     ParallelTensorAttrs,
+                                     int,
+                                     TensorSlotName>
       raw_data = LabelledOpenKwargDataflowGraphData<ParallelLayerAttrs,
-                                               ParallelTensorAttrs, int, TensorSlotName>{
+                                                    ParallelTensorAttrs,
+                                                    int,
+                                                    TensorSlotName>{
           map_keys(
               data.node_data,
               [](parallel_layer_guid_t const &l) { return l.raw_graph_node; }),
@@ -176,7 +199,7 @@ SubParallelComputationGraph
   require_labelled_open_kwarg_dataflow_graph_data_is_valid(raw_data);
 
   return SubParallelComputationGraph{
-    view_from_labelled_open_kwarg_dataflow_graph_data(raw_data),
+      view_from_labelled_open_kwarg_dataflow_graph_data(raw_data),
   };
 }
 
@@ -196,8 +219,9 @@ SubParallelComputationGraph
 bool sub_pcgs_are_isomorphic(SubParallelComputationGraph const &lhs,
                              SubParallelComputationGraph const &rhs) {
   return find_isomorphism_between_labelled_open_kwarg_dataflow_graphs(
-    without_layer_names(lhs).raw_graph,
-    without_layer_names(rhs).raw_graph).has_value();
+             without_layer_names(lhs).raw_graph,
+             without_layer_names(rhs).raw_graph)
+      .has_value();
 }
 
 std::string as_dot(SubParallelComputationGraph const &spcg) {

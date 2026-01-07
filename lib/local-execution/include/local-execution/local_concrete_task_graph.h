@@ -6,7 +6,8 @@
 namespace FlexFlow {
 
 std::vector<LocalConcreteTaskInvocation>
-  local_concrete_task_graph_topological_ordering(LocalConcreteTaskGraph const &);
+    local_concrete_task_graph_topological_ordering(
+        LocalConcreteTaskGraph const &);
 
 } // namespace FlexFlow
 

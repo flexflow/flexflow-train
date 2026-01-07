@@ -9,9 +9,11 @@ using ValueLabel = value_type<1>;
 using GraphInputName = ordered_value_type<2>;
 using SlotName = ordered_value_type<3>;
 
-template
-  std::string labelled_open_kwarg_dataflow_graph_view_as_dot(
-    LabelledOpenKwargDataflowGraphView<NodeLabel, ValueLabel, GraphInputName, SlotName> const &g,
+template std::string labelled_open_kwarg_dataflow_graph_view_as_dot(
+    LabelledOpenKwargDataflowGraphView<NodeLabel,
+                                       ValueLabel,
+                                       GraphInputName,
+                                       SlotName> const &g,
     std::function<std::string(NodeLabel const &)> const &,
     std::function<std::string(ValueLabel const &)> const &);
 

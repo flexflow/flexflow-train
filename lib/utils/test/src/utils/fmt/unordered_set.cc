@@ -33,7 +33,7 @@ struct hash<Unsortable> {
   };
 };
 
-}
+} // namespace std
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("fmt::to_string(std::unordered_set<int>)") {
@@ -44,7 +44,8 @@ TEST_SUITE(FF_TEST_SUITE) {
   }
 
   TEST_CASE("fmt::to_string(std::unordered_set<Unsortable>)") {
-    std::unordered_set<Unsortable> input = {Unsortable{0}, Unsortable{1}, Unsortable{3}, Unsortable{2}};
+    std::unordered_set<Unsortable> input = {
+        Unsortable{0}, Unsortable{1}, Unsortable{3}, Unsortable{2}};
     std::string result = fmt::to_string(input);
     std::string correct = "{0, 1, 2, 3}";
     CHECK(result != correct);

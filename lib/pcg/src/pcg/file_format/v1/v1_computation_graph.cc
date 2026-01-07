@@ -12,10 +12,12 @@ V1ComputationGraph to_v1(ComputationGraph const &g) {
 
 std::pair<V1ComputationGraph, bidict<nonnegative_int, layer_guid_t>>
     to_v1_including_node_numbering(ComputationGraph const &cg) {
-  std::pair<V1LabelledKwargDataflowGraph<LayerAttrs, TensorAttrs, TensorSlotName>,
-            bidict<nonnegative_int, Node>>
-      raw =
-          to_v1_including_node_numbering<LayerAttrs, TensorAttrs, TensorSlotName>(cg.raw_graph);
+  std::pair<
+      V1LabelledKwargDataflowGraph<LayerAttrs, TensorAttrs, TensorSlotName>,
+      bidict<nonnegative_int, Node>>
+      raw = to_v1_including_node_numbering<LayerAttrs,
+                                           TensorAttrs,
+                                           TensorSlotName>(cg.raw_graph);
   V1ComputationGraph v1_cg = V1ComputationGraph{raw.first};
   bidict<nonnegative_int, layer_guid_t> v1_node_ids = transform_values(
       raw.second, [](Node const &n) { return layer_guid_t{n}; });

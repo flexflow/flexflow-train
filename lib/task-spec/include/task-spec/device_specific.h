@@ -29,6 +29,7 @@ struct DeviceSpecific {
     ASSERT(curr_device_idx == this->device_idx);
     return (T const *)this->ptr.get();
   }
+
 private:
   DeviceSpecific(std::shared_ptr<T> ptr, device_id_t device_idx)
       : ptr(ptr), device_idx(device_idx) {}
@@ -45,9 +46,10 @@ private:
   friend struct ::std::hash<DeviceSpecific<T>>;
 
   friend std::string format_as(DeviceSpecific<T> const &d) {
-    return fmt::format("DeviceSpecific({:p}, {})", static_cast<void*>(d.ptr.get()), d.device_idx);
+    return fmt::format("DeviceSpecific({:p}, {})",
+                       static_cast<void *>(d.ptr.get()),
+                       d.device_idx);
   }
-
 };
 
 template <typename T>
@@ -71,6 +73,6 @@ struct hash<::FlexFlow::DeviceSpecific<T>> {
   }
 };
 
-}
+} // namespace std
 
 #endif

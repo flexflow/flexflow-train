@@ -13,8 +13,9 @@ bidict<OpTaskType, task_id_with_noop_default_t>
 std::unordered_set<task_id_with_noop_default_t>
     get_all_tasks_in_task_set(OperatorTaskSet const &);
 
-task_id_with_noop_default_t get_task_for_task_type(OperatorTaskSet const &op_task_set,
-                                                   OpTaskType task_type);
+task_id_with_noop_default_t
+    get_task_for_task_type(OperatorTaskSet const &op_task_set,
+                           OpTaskType task_type);
 
 OperatorTaskSet
     get_task_set_for_operator(ComputationGraphOpAttrs const &op_attrs);

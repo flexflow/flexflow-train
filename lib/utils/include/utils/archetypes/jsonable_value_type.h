@@ -4,9 +4,9 @@
 #include <fmt/format.h>
 #include <functional>
 #include <libassert/assert.hpp>
+#include <nlohmann/json.hpp>
 #include <ostream>
 #include <sstream>
-#include <nlohmann/json.hpp>
 
 namespace FlexFlow {
 
@@ -53,7 +53,7 @@ namespace nlohmann {
 template <int TAG>
 struct adl_serializer<::FlexFlow::jsonable_value_type<TAG>> {
   static ::FlexFlow::jsonable_value_type<TAG> from_json(json const &) {
-    PANIC(); 
+    PANIC();
   }
 
   static void to_json(json &, ::FlexFlow::jsonable_value_type<TAG> const &) {
@@ -73,6 +73,5 @@ struct hash<::FlexFlow::jsonable_value_type<TAG>> {
 };
 
 } // namespace std
-
 
 #endif

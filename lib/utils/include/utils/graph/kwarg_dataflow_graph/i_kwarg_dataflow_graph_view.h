@@ -2,11 +2,11 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_KWARG_DATAFLOW_GRAPH_I_KWARG_DATAFLOW_GRAPH_VIEW_H
 
 #include "utils/graph/dataflow_graph/dataflow_edge.dtg.h"
+#include "utils/graph/digraph/i_digraph_view.h"
 #include "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_edge.dtg.h"
 #include "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_edge_query.dtg.h"
 #include "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_output.dtg.h"
 #include "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_output_query.dtg.h"
-#include "utils/graph/digraph/i_digraph_view.h"
 
 namespace FlexFlow {
 
@@ -34,7 +34,6 @@ struct IKwargDataflowGraphView : virtual public IDiGraphView {
   };
 
   virtual ~IKwargDataflowGraphView() = default;
-
 };
 CHECK_RC_COPY_VIRTUAL_COMPLIANT(IKwargDataflowGraphView<std::string>);
 

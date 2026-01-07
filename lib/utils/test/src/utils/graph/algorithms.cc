@@ -1,9 +1,9 @@
 #include "utils/graph/algorithms.h"
-#include "utils/graph/traversal.h"
 #include "utils/containers/contains.h"
 #include "utils/fmt/vector.h"
 #include "utils/graph/digraph/digraph.h"
 #include "utils/graph/instances/adjacency_digraph.h"
+#include "utils/graph/traversal.h"
 #include "utils/hash/vector.h"
 #include <doctest/doctest.h>
 

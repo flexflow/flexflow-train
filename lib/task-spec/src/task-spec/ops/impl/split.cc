@@ -40,7 +40,8 @@ static std::pair<positive_int, positive_int>
   return {num_blocks, block_size};
 }
 
-static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
+static std::optional<milliseconds_t>
+    forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
   SplitAttrs attrs = acc.get_op_attrs().require_split();
@@ -75,7 +76,8 @@ static std::optional<milliseconds_t>
   SplitAttrs attrs = acc.get_op_attrs().require_split();
 
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::INPUT);
-  auto output_grad = acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
+  auto output_grad =
+      acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
 
   int out_block_sizes[MAX_NUM_OUTPUTS];
   auto [num_blocks, in_block_size] =

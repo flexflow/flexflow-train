@@ -3,12 +3,10 @@
 
 namespace FlexFlow {
 
-template struct OpenKwargDataflowGraphView<
-  ordered_value_type<0>,
-  ordered_value_type<1>>;
+template struct OpenKwargDataflowGraphView<ordered_value_type<0>,
+                                           ordered_value_type<1>>;
 
-template struct OpenKwargDataflowGraphView<
-  ordered_value_type<0>,
-  ordered_value_type<0>>;
+template struct OpenKwargDataflowGraphView<ordered_value_type<0>,
+                                           ordered_value_type<0>>;
 
 } // namespace FlexFlow

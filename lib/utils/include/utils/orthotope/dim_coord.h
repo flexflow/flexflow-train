@@ -2,8 +2,13 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_ORTHOTOPE_DIM_COORD_H
 
 #include "utils/containers/all_of.h"
+#include "utils/containers/contains_key.h"
+#include "utils/containers/generate_map.h"
+#include "utils/containers/get_all_assignments.h"
+#include "utils/containers/is_subseteq_of.h"
 #include "utils/containers/keys.h"
 #include "utils/containers/map_from_keys_and_values.h"
+#include "utils/containers/map_values.h"
 #include "utils/containers/product.h"
 #include "utils/containers/require_same.h"
 #include "utils/containers/restrict_keys.h"
@@ -19,11 +24,6 @@
 #include "utils/orthotope/dim_domain.h"
 #include "utils/orthotope/minimal_dim_domain.h"
 #include "utils/orthotope/orthotope.h"
-#include "utils/containers/generate_map.h"
-#include "utils/containers/contains_key.h"
-#include "utils/containers/is_subseteq_of.h"
-#include "utils/containers/map_values.h"
-#include "utils/containers/get_all_assignments.h"
 
 namespace FlexFlow {
 
@@ -55,8 +55,7 @@ DimCoord<T> dim_coord_from_orthotope_coord(OrthotopeCoord const &coord,
                                            std::unordered_set<T> const &dims,
                                            DimOrdering<T> const &dim_ordering) {
   return DimCoord<T>{
-      map_from_keys_and_values(
-          sorted_by(dims, dim_ordering.lt), coord.raw),
+      map_from_keys_and_values(sorted_by(dims, dim_ordering.lt), coord.raw),
   };
 }
 
@@ -66,64 +65,62 @@ DimCoord<T> lift_dim_coord(DimCoord<T> const &coord,
   ASSERT(is_subseteq_of(get_coord_dims(coord), lifted_dims));
 
   return DimCoord<T>{
-    generate_map(
-      lifted_dims,
-      [&](T const &dim) {
-        if (contains_key(coord.raw, dim)) {
-          return coord.raw.at(dim);
-        } else {
-          return 0_n;
-        }
-      }),
+      generate_map(lifted_dims,
+                   [&](T const &dim) {
+                     if (contains_key(coord.raw, dim)) {
+                       return coord.raw.at(dim);
+                     } else {
+                       return 0_n;
+                     }
+                   }),
   };
 }
 
 template <typename T>
-std::unordered_set<DimCoord<T>> get_coords_in_dim_domain(DimDomain<T> const &dim_domain) {
-  std::unordered_map<T, std::unordered_set<nonnegative_int>> 
-    component_possible_values = map_values(
-      dim_domain.dims,
-      [](positive_int component_size) -> std::unordered_set<nonnegative_int> {
-        return unordered_set_of(nonnegative_range(component_size));
-      });
+std::unordered_set<DimCoord<T>>
+    get_coords_in_dim_domain(DimDomain<T> const &dim_domain) {
+  std::unordered_map<T, std::unordered_set<nonnegative_int>>
+      component_possible_values = map_values(
+          dim_domain.dims,
+          [](positive_int component_size)
+              -> std::unordered_set<nonnegative_int> {
+            return unordered_set_of(nonnegative_range(component_size));
+          });
 
   return transform(
-    get_all_assignments(component_possible_values),
-    [](std::unordered_map<T, nonnegative_int> const &assignment) {
-      return DimCoord<T>{
-        assignment,
-      };
-    });
+      get_all_assignments(component_possible_values),
+      [](std::unordered_map<T, nonnegative_int> const &assignment) {
+        return DimCoord<T>{
+            assignment,
+        };
+      });
 }
 
 template <typename T>
-std::unordered_set<DimCoord<T>> get_coords_in_minimal_dim_domain(MinimalDimDomain<T> const &minimal_dim_domain) {
+std::unordered_set<DimCoord<T>> get_coords_in_minimal_dim_domain(
+    MinimalDimDomain<T> const &minimal_dim_domain) {
   return get_coords_in_dim_domain(lift_minimal_dim_domain(minimal_dim_domain));
 }
 
 template <typename T>
 DimCoord<T> get_maximum_coord_in_domain(DimDomain<T> const &domain) {
   return DimCoord<T>{
-    map_values(
-      domain.dims,
-      [](positive_int dim) -> nonnegative_int { 
-        return nonnegative_int{
-          dim.int_from_positive_int() - 1,
-        };
-      }),
+      map_values(domain.dims,
+                 [](positive_int dim) -> nonnegative_int {
+                   return nonnegative_int{
+                       dim.int_from_positive_int() - 1,
+                   };
+                 }),
   };
 }
 
 template <typename T>
 DimDomain<T> get_domain_for_maximum_coord(DimCoord<T> const &max_coord) {
   return DimDomain<T>{
-    map_values(
-      max_coord.raw,
-      [](nonnegative_int dim) -> positive_int { 
-        return dim + 1_p;
-      }),
+      map_values(max_coord.raw,
+                 [](nonnegative_int dim) -> positive_int { return dim + 1_p; }),
   };
-}  
+}
 
 template <typename T>
 bool dim_domain_contains_coord(DimDomain<T> const &domain,
@@ -138,7 +135,8 @@ bool dim_domain_contains_coord(DimDomain<T> const &domain,
 }
 
 template <typename T>
-bool minimal_dim_domain_contains_coord(MinimalDimDomain<T> const &domain, DimCoord<T> const &coord) {
+bool minimal_dim_domain_contains_coord(MinimalDimDomain<T> const &domain,
+                                       DimCoord<T> const &coord) {
   return dim_domain_contains_coord(lift_minimal_dim_domain(domain), coord);
 }
 
@@ -167,7 +165,8 @@ DimCoord<T> unflatten_dim_coord(nonnegative_int flattened,
   OrthotopeCoord orthotope_coord =
       unflatten_orthotope_coord(flattened, orthotope_domain);
 
-  return dim_coord_from_orthotope_coord(orthotope_coord, get_domain_dims(domain), dim_ordering);
+  return dim_coord_from_orthotope_coord(
+      orthotope_coord, get_domain_dims(domain), dim_ordering);
 }
 
 } // namespace FlexFlow

@@ -29,7 +29,8 @@ namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::LayerNorm;
 
-static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
+static std::optional<milliseconds_t>
+    forward_task_impl(TaskArgumentAccessor const &acc) {
   auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
   auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
   auto gamma = acc.get_tensor<Permissions::RW>(TensorSlotName::GAMMA);
@@ -37,7 +38,8 @@ static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor cons
 
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
-  LayerNormPerDeviceState state = acc.get_per_device_op_state().require_layer_norm().value();
+  LayerNormPerDeviceState state =
+      acc.get_per_device_op_state().require_layer_norm().value();
 
   return profile(forward_kernel,
                  profiling,
@@ -58,12 +60,13 @@ static std::optional<milliseconds_t>
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::INPUT);
   auto gamma_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::GAMMA);
   auto beta_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::BETA);
-  auto output_grad = acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
+  auto output_grad =
+      acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
 
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
-  LayerNormPerDeviceState state = acc.get_per_device_op_state().require_layer_norm().value();
-
+  LayerNormPerDeviceState state =
+      acc.get_per_device_op_state().require_layer_norm().value();
 
   return profile(backward_kernel,
                  profiling,
@@ -106,7 +109,7 @@ static DeviceSpecificPerDeviceOpState
                   attrs.eps);
 
   return DeviceSpecificPerDeviceOpState{
-    acc.make_device_specific(per_device_state),
+      acc.make_device_specific(per_device_state),
   };
 }
 

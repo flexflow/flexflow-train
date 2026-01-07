@@ -3,19 +3,19 @@
 
 #include "kernels/allocation.h"
 #include "kernels/device_handle_t.dtg.h"
-#include "op-attrs/ops/loss_functions/loss_attrs.dtg.h"
 #include "kernels/profiling_settings.dtg.h"
+#include "op-attrs/ops/loss_functions/loss_attrs.dtg.h"
 #include "op-attrs/pcg_operator_attrs.dtg.h"
+#include "op-attrs/tensor_slot_name.dtg.h"
 #include "pcg/device_id_t.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
 #include "task-spec/concrete_arg_spec.h"
-#include "op-attrs/tensor_slot_name.dtg.h"
 #include "task-spec/ff_iteration_config.dtg.h"
+#include "task-spec/ops/arg_slot_id_t.dtg.h"
 #include "task-spec/per_device_op_state.dtg.h"
 #include "task-spec/privilege_tensor_accessor.h"
-#include "task-spec/training_tensor_type.dtg.h"
 #include "task-spec/task_argument_accessor/task_tensor_parameter.dtg.h"
-#include "task-spec/ops/arg_slot_id_t.dtg.h"
+#include "task-spec/training_tensor_type.dtg.h"
 
 namespace FlexFlow {
 

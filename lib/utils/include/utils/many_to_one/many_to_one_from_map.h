@@ -6,10 +6,7 @@
 namespace FlexFlow {
 
 template <typename L, typename R>
-ManyToOne<L, R>
-  many_to_one_from_map(
-    std::unordered_map<L, R> const &m)
-{
+ManyToOne<L, R> many_to_one_from_map(std::unordered_map<L, R> const &m) {
   ManyToOne<L, R> result;
 
   for (auto const &[l, r] : m) {
@@ -18,12 +15,9 @@ ManyToOne<L, R>
 
   return result;
 }
-  
+
 template <typename L, typename R>
-ManyToOne<L, R>
-  many_to_one_from_map(
-    std::map<L, R> const &m)
-{
+ManyToOne<L, R> many_to_one_from_map(std::map<L, R> const &m) {
   ManyToOne<L, R> result;
 
   for (auto const &[l, r] : m) {

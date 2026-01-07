@@ -6,9 +6,8 @@ namespace FlexFlow {
 using K = value_type<0>;
 using V = value_type<1>;
 
-template
-  std::unordered_map<K, V>
-      binary_merge_maps_with_left_dominating(std::unordered_map<K, V> const &,
-                                             std::unordered_map<K, V> const &);
+template std::unordered_map<K, V>
+    binary_merge_maps_with_left_dominating(std::unordered_map<K, V> const &,
+                                           std::unordered_map<K, V> const &);
 
 } // namespace FlexFlow

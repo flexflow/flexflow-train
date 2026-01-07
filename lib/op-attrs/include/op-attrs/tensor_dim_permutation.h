@@ -4,11 +4,11 @@
 #include "op-attrs/ff_dim_t.dtg.h"
 #include "op-attrs/ff_ordered/ff_ordered.h"
 #include "op-attrs/num_tensor_dims_t.h"
+#include "op-attrs/parallel_tensor_dim_degrees.dtg.h"
+#include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "op-attrs/tensor_dims.dtg.h"
 #include "op-attrs/tensor_shape.dtg.h"
 #include "utils/bidict/bidict.h"
-#include "op-attrs/parallel_tensor_dim_degrees.dtg.h"
-#include "op-attrs/parallel_tensor_shape.dtg.h"
 
 namespace FlexFlow {
 
@@ -31,12 +31,12 @@ struct TensorDimPermutation {
   num_tensor_dims_t num_tensor_dims() const;
 
   bidict<ff_dim_t, ff_dim_t> const &as_bidict() const;
+
 private:
   bidict<ff_dim_t, ff_dim_t> raw;
+
 private:
-  std::tuple<
-    decltype(raw) const &
-  > tie() const;
+  std::tuple<decltype(raw) const &> tie() const;
 
   friend struct std::hash<TensorDimPermutation>;
 };
@@ -44,32 +44,28 @@ private:
 bidict<ff_dim_t, ff_dim_t> format_as(TensorDimPermutation const &);
 std::ostream &operator<<(std::ostream &, TensorDimPermutation const &);
 
-TensorDimPermutation compose_tensor_dim_permutations(
-  TensorDimPermutation const &,
-  TensorDimPermutation const &);
+TensorDimPermutation
+    compose_tensor_dim_permutations(TensorDimPermutation const &,
+                                    TensorDimPermutation const &);
 
-TensorDimPermutation invert_tensor_dim_permutation(
-  TensorDimPermutation const &);
+TensorDimPermutation
+    invert_tensor_dim_permutation(TensorDimPermutation const &);
 
-TensorDims
-  permute_tensor_dims(TensorDimPermutation const &,
-                      TensorDims const &);
+TensorDims permute_tensor_dims(TensorDimPermutation const &,
+                               TensorDims const &);
 
-TensorShape
-  permute_tensor_shape(TensorDimPermutation const &,
-                       TensorShape const &);
+TensorShape permute_tensor_shape(TensorDimPermutation const &,
+                                 TensorShape const &);
 
-ParallelTensorDimDegrees 
-  permute_parallel_tensor_dim_degrees(TensorDimPermutation const &,
-                                      ParallelTensorDimDegrees const &);
+ParallelTensorDimDegrees
+    permute_parallel_tensor_dim_degrees(TensorDimPermutation const &,
+                                        ParallelTensorDimDegrees const &);
 
-ParallelTensorDims 
-  permute_parallel_tensor_dims(TensorDimPermutation const &,
-                               ParallelTensorDims const &);
+ParallelTensorDims permute_parallel_tensor_dims(TensorDimPermutation const &,
+                                                ParallelTensorDims const &);
 
-ParallelTensorShape
-  permute_parallel_tensor_shape(TensorDimPermutation const &,
-                                ParallelTensorShape const &);
+ParallelTensorShape permute_parallel_tensor_shape(TensorDimPermutation const &,
+                                                  ParallelTensorShape const &);
 
 } // namespace FlexFlow
 
@@ -92,7 +88,6 @@ struct Arbitrary<::FlexFlow::TensorDimPermutation> {
 
 } // namespace rc
 
-
 namespace std {
 
 template <>
@@ -100,6 +95,6 @@ struct hash<::FlexFlow::TensorDimPermutation> {
   size_t operator()(::FlexFlow::TensorDimPermutation const &) const;
 };
 
-}
+} // namespace std
 
 #endif

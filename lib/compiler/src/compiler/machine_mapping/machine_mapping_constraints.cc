@@ -81,14 +81,13 @@ MachineMappingConstraints with_additional_constraints(
       result.machine_views.at(layer) = machine_view;
     } else {
       ASSERT(current_machine_view.value() == machine_view,
-            fmt::format("with_additional_layer_machine_views received machine "
-                        "view assignment for layer {} "
-                        "to machine view {}, but that layer is already "
-                        "assigned to machine view {}.",
-                        layer,
-                        machine_view,
-                        current_machine_view.value())
-             );
+             fmt::format("with_additional_layer_machine_views received machine "
+                         "view assignment for layer {} "
+                         "to machine view {}, but that layer is already "
+                         "assigned to machine view {}.",
+                         layer,
+                         machine_view,
+                         current_machine_view.value()));
     }
   }
 
@@ -98,10 +97,10 @@ MachineMappingConstraints with_additional_constraints(
 std::optional<MachineView>
     require_only_root(MachineMappingConstraints const &constraints) {
   ASSERT(keys(constraints.machine_views) ==
-      std::unordered_set{binary_tree_root_path()},
-      fmt::format("require_only_root expected constraints to have only a "
-                    "single key (the root path), but received {}",
-                    constraints));
+             std::unordered_set{binary_tree_root_path()},
+         fmt::format("require_only_root expected constraints to have only a "
+                     "single key (the root path), but received {}",
+                     constraints));
 
   return constraints.machine_views.at(binary_tree_root_path());
 }

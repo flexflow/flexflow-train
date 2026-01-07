@@ -17,7 +17,7 @@ OperatorTaskSpace get_operator_task_space(InputAttrs const &) {
   return trivial_op_task_space();
 }
 
-OperatorSpaceToParallelTensorSpaceMapping 
+OperatorSpaceToParallelTensorSpaceMapping
     get_operator_to_output_mapping(InputAttrs const &attrs) {
 
   return empty_operator_space_to_ptensor_space_map();

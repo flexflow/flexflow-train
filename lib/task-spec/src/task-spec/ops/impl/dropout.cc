@@ -13,7 +13,7 @@ static DeviceSpecificPerDeviceOpState
   Allocator allocator = acc.get_allocator();
   device_handle_t handle = acc.get_ff_handle();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
-    
+
   DropoutAttrs attrs = acc.get_op_attrs().require_dropout();
 
   std::optional<DropoutPerDeviceState> per_device_state =
@@ -25,12 +25,14 @@ static DeviceSpecificPerDeviceOpState
                   allocator);
 
   return DeviceSpecificPerDeviceOpState{
-    acc.make_device_specific(per_device_state),
+      acc.make_device_specific(per_device_state),
   };
 }
 
-static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
-  DropoutPerDeviceState per_device_state = acc.get_per_device_op_state().require_dropout().value();
+static std::optional<milliseconds_t>
+    forward_task_impl(TaskArgumentAccessor const &acc) {
+  DropoutPerDeviceState per_device_state =
+      acc.get_per_device_op_state().require_dropout().value();
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
 
@@ -49,12 +51,14 @@ static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor cons
 static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
 
-  DropoutPerDeviceState per_device_state = acc.get_per_device_op_state().require_dropout().value();
+  DropoutPerDeviceState per_device_state =
+      acc.get_per_device_op_state().require_dropout().value();
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
 
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::INPUT);
-  auto output_grad = acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
+  auto output_grad =
+      acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
 
   return profile(backward_kernel,
                  profiling,

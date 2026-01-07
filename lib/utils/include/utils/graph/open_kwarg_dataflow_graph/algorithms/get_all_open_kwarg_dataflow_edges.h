@@ -9,9 +9,10 @@ namespace FlexFlow {
 
 template <typename GraphInputName, typename SlotName>
 std::unordered_set<OpenKwargDataflowEdge<GraphInputName, SlotName>>
-  get_all_open_kwarg_dataflow_edges(OpenKwargDataflowGraphView<GraphInputName, SlotName> const &view) 
-{
-  return view.query_edges(open_kwarg_dataflow_edge_query_all<GraphInputName, SlotName>());
+    get_all_open_kwarg_dataflow_edges(
+        OpenKwargDataflowGraphView<GraphInputName, SlotName> const &view) {
+  return view.query_edges(
+      open_kwarg_dataflow_edge_query_all<GraphInputName, SlotName>());
 }
 
 } // namespace FlexFlow

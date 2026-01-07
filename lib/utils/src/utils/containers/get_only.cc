@@ -11,7 +11,7 @@ template T get_only(std::unordered_set<T> const &);
 
 using K = value_type<1>;
 using V = value_type<2>;
- 
+
 template std::pair<K, V> get_only(std::unordered_map<K, V> const &);
 
 } // namespace FlexFlow

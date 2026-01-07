@@ -2,6 +2,7 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_ORTHOTOPE_UP_PROJECTION_H
 
 #include "utils/containers/flatmap.h"
+#include "utils/containers/is_subseteq_of.h"
 #include "utils/containers/keys.h"
 #include "utils/containers/values.h"
 #include "utils/one_to_many/exhaustive_relational_join.h"
@@ -12,7 +13,6 @@
 #include "utils/orthotope/down_projection.dtg.h"
 #include "utils/orthotope/eq_projection.dtg.h"
 #include "utils/orthotope/up_projection.dtg.h"
-#include "utils/containers/is_subseteq_of.h"
 
 namespace FlexFlow {
 
@@ -81,7 +81,7 @@ void project_dims(UpProjection<L, R> &proj,
 template <typename L, typename R>
 DownProjection<R, L> invert_up_projection(UpProjection<L, R> const &up_proj) {
   return DownProjection<R, L>{
-    /*dim_mapping=*/invert_one_to_many(up_proj.dim_mapping),
+      /*dim_mapping=*/invert_one_to_many(up_proj.dim_mapping),
   };
 }
 
@@ -89,7 +89,8 @@ template <typename T1, typename T2, typename T3>
 UpProjection<T1, T3> compose_up_projections(UpProjection<T1, T2> const &fst,
                                             UpProjection<T2, T3> const &snd) {
   return UpProjection<T1, T3>{
-    /*dim_mapping=*/exhaustive_relational_join(fst.dim_mapping, snd.dim_mapping),
+      /*dim_mapping=*/exhaustive_relational_join(fst.dim_mapping,
+                                                 snd.dim_mapping),
   };
 }
 

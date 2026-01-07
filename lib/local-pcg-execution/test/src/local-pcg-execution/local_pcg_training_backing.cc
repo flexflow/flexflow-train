@@ -1,5 +1,5 @@
-#include <doctest/doctest.h>
 #include "local-pcg-execution/local_pcg_training_backing.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 

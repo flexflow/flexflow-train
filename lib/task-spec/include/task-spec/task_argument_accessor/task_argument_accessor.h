@@ -5,13 +5,13 @@
 #include "kernels/profiling_settings.dtg.h"
 #include "op-attrs/ops/loss_functions/loss_attrs.dtg.h"
 #include "op-attrs/pcg_operator_attrs.dtg.h"
+#include "op-attrs/tensor_slot_name.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
+#include "pcg/optimizer_slot_name.dtg.h"
 #include "task-spec/device_specific.h"
 #include "task-spec/ff_iteration_config.dtg.h"
-#include "pcg/optimizer_slot_name.dtg.h"
-#include "task-spec/task_argument_accessor/itask_argument_accessor.h"
-#include "op-attrs/tensor_slot_name.dtg.h"
 #include "task-spec/per_device_op_state.dtg.h"
+#include "task-spec/task_argument_accessor/itask_argument_accessor.h"
 #include "task-spec/task_argument_accessor/task_tensor_parameter.h"
 
 namespace FlexFlow {
@@ -43,9 +43,11 @@ struct TaskArgumentAccessor {
   }
 
   template <Permissions PRIV>
-  privilege_mode_to_accessor<PRIV> get_optimizer_tensor(TensorSlotName slot, OptimizerSlotName opt_slot) const {
-    return std::get<privilege_mode_to_accessor<PRIV>>(
-        this->ptr->get_tensor(make_task_tensor_parameter_opt(slot, opt_slot), PRIV));
+  privilege_mode_to_accessor<PRIV>
+      get_optimizer_tensor(TensorSlotName slot,
+                           OptimizerSlotName opt_slot) const {
+    return std::get<privilege_mode_to_accessor<PRIV>>(this->ptr->get_tensor(
+        make_task_tensor_parameter_opt(slot, opt_slot), PRIV));
   }
 
   template <Permissions PRIV>

@@ -3,6 +3,7 @@
 
 #include "op-attrs/operator_space_to_parallel_tensor_space_mapping.dtg.h"
 #include "op-attrs/operator_task_space.dtg.h"
+#include "op-attrs/operator_task_space_to_operator_task_space_mapping.dtg.h"
 #include "op-attrs/parallel_tensor_dim_degrees.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_edge.dtg.h"
@@ -10,7 +11,6 @@
 #include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_tensor_guid_t.dtg.h"
 #include <unordered_set>
-#include "op-attrs/operator_task_space_to_operator_task_space_mapping.dtg.h"
 
 namespace FlexFlow {
 
@@ -26,7 +26,8 @@ ParallelLayerAddedResult add_parallel_layer(
     ParallelLayerAttrs const &layer_attrs,
     std::unordered_map<TensorSlotName, parallel_tensor_guid_t> const &inputs,
     std::unordered_map<TensorSlotName, parallel_tensor_guid_t> const &weights,
-    std::optional<std::unordered_map<TensorSlotName, CreateGrad>> const &outputs = std::nullopt);
+    std::optional<std::unordered_map<TensorSlotName, CreateGrad>> const
+        &outputs = std::nullopt);
 
 ParallelLayerAddedResult pcg_add_input_layer(ParallelComputationGraph &pcg,
                                              TensorShape const &tensor_shape);
@@ -61,16 +62,16 @@ std::unordered_map<TensorSlotName, parallel_tensor_guid_t>
                       parallel_layer_guid_t const &);
 
 std::unordered_map<TensorSlotName, OperatorSpaceToParallelTensorSpaceMapping>
-  pcg_get_operator_to_incoming_mappings(ParallelComputationGraph const &,
-                                        parallel_layer_guid_t const &);
+    pcg_get_operator_to_incoming_mappings(ParallelComputationGraph const &,
+                                          parallel_layer_guid_t const &);
 
 std::unordered_map<TensorSlotName, OperatorSpaceToParallelTensorSpaceMapping>
-  pcg_get_operator_to_output_mappings(ParallelComputationGraph const &,
-                                      parallel_layer_guid_t const &);
+    pcg_get_operator_to_output_mappings(ParallelComputationGraph const &,
+                                        parallel_layer_guid_t const &);
 
 OperatorTaskSpaceToOperatorTaskSpaceMapping
-  pcg_get_mapping_along_edge(ParallelComputationGraph const &,
-                             ParallelComputationGraphEdge const &); 
+    pcg_get_mapping_along_edge(ParallelComputationGraph const &,
+                               ParallelComputationGraphEdge const &);
 
 std::unordered_map<TensorSlotName, parallel_tensor_guid_t>
     get_incoming_inputs(ParallelComputationGraph const &,

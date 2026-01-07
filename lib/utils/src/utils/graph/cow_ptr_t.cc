@@ -3,7 +3,9 @@
 namespace FlexFlow {
 
 struct MyClonableStruct {
-  MyClonableStruct *clone() const { return nullptr; }
+  MyClonableStruct *clone() const {
+    return nullptr;
+  }
 };
 
 template struct cow_ptr_t<MyClonableStruct>;

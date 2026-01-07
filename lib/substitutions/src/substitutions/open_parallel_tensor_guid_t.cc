@@ -4,7 +4,8 @@ namespace FlexFlow {
 
 open_parallel_tensor_guid_t
     open_parallel_tensor_guid_from_closed(parallel_tensor_guid_t t) {
-  return open_parallel_tensor_guid_t{OpenKwargDataflowValue<int, TensorSlotName>{t.raw_graph_output}};
+  return open_parallel_tensor_guid_t{
+      OpenKwargDataflowValue<int, TensorSlotName>{t.raw_graph_output}};
 }
 
 open_parallel_tensor_guid_t

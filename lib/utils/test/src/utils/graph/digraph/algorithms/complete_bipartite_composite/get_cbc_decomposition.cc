@@ -2,10 +2,10 @@
 #include "utils/containers/reversed.h"
 #include "utils/containers/vector_of.h"
 #include "utils/graph/algorithms.h"
+#include "utils/graph/digraph/algorithms/get_edges.h"
 #include "utils/graph/digraph/algorithms/transitive_reduction.h"
 #include "utils/graph/instances/adjacency_digraph.h"
 #include <doctest/doctest.h>
-#include "utils/graph/digraph/algorithms/get_edges.h"
 
 using namespace ::FlexFlow;
 

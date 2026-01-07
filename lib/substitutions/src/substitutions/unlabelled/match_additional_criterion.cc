@@ -5,7 +5,8 @@ namespace FlexFlow {
 MatchAdditionalCriterion match_additional_crition_always_true() {
   return MatchAdditionalCriterion{
       [](PatternNode const &, Node const &) { return true; },
-      [](PatternValue const &, OpenKwargDataflowValue<int, TensorSlotName> const &) { return true; },
+      [](PatternValue const &,
+         OpenKwargDataflowValue<int, TensorSlotName> const &) { return true; },
   };
 }
 

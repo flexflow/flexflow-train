@@ -1,8 +1,8 @@
 #include "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.h"
 #include "compiler/series_parallel/pcg/pcg_binary_series_split.h"
-#include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/get_path_to_leaf_map.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/find_paths_to_leaf.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/get_leaves.h"
+#include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/get_path_to_leaf_map.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {
@@ -107,7 +107,6 @@ SPDecompositionTreeNodeType
   });
 }
 
-
 std::unordered_set<BinaryTreePath>
     pcg_sp_tree_get_all_leaf_paths(PCGBinarySPDecomposition const &tree) {
   return keys(pcg_sp_tree_get_path_to_leaf_map(tree));
@@ -123,6 +122,5 @@ std::unordered_map<BinaryTreePath, parallel_layer_guid_t>
     pcg_sp_tree_get_path_to_leaf_map(PCGBinarySPDecomposition const &tree) {
   return get_path_to_leaf_map(tree, generic_impl_for_pcg_sp_tree());
 }
-
 
 } // namespace FlexFlow

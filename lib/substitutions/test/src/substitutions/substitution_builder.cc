@@ -32,16 +32,15 @@ TEST_SUITE(FF_TEST_SUITE) {
         };
 
     Substitution correct = [&] {
-      auto pattern_g = LabelledOpenKwargDataflowGraph<
-        OperatorAttributePattern,
-        TensorAttributePattern,
-        int,
-        TensorSlotName
-        >::create<
-              UnorderedSetLabelledOpenKwargDataflowGraph<
-                OperatorAttributePattern,
-                TensorAttributePattern,
-                int, TensorSlotName>>();
+      auto pattern_g = LabelledOpenKwargDataflowGraph<OperatorAttributePattern,
+                                                      TensorAttributePattern,
+                                                      int,
+                                                      TensorSlotName>::
+          create<UnorderedSetLabelledOpenKwargDataflowGraph<
+              OperatorAttributePattern,
+              TensorAttributePattern,
+              int,
+              TensorSlotName>>();
 
       PatternInput pattern_i_activation = PatternInput{
           pattern_g.add_input(0, tensor_attribute_pattern_match_all()),
@@ -52,57 +51,66 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       KwargNodeAddedResult mm_added = pattern_g.add_node(
           /*node_label=*/mm_pattern,
-          /*inputs=*/{
-            {
-              TensorSlotName::INPUT,
-              OpenKwargDataflowValue<int, TensorSlotName>{
-                pattern_i_activation.raw_dataflow_graph_input,
+          /*inputs=*/
+          {
+              {
+                  TensorSlotName::INPUT,
+                  OpenKwargDataflowValue<int, TensorSlotName>{
+                      pattern_i_activation.raw_dataflow_graph_input,
+                  },
               },
-            },
-            {
-              TensorSlotName::WEIGHT,
-              OpenKwargDataflowValue<int, TensorSlotName>{
-                pattern_i_weights.raw_dataflow_graph_input,
+              {
+                  TensorSlotName::WEIGHT,
+                  OpenKwargDataflowValue<int, TensorSlotName>{
+                      pattern_i_weights.raw_dataflow_graph_input,
+                  },
               },
-            },
           },
-          /*output_labels=*/{
-            {
-              TensorSlotName::OUTPUT,
-              tensor_attribute_pattern_match_all(),
-            },
+          /*output_labels=*/
+          {
+              {
+                  TensorSlotName::OUTPUT,
+                  tensor_attribute_pattern_match_all(),
+              },
           });
       PatternNode pattern_mm_node = PatternNode{mm_added.node};
-      KwargDataflowOutput<TensorSlotName> mm_output 
-        = require_only_key(mm_added.outputs, TensorSlotName::OUTPUT);
+      KwargDataflowOutput<TensorSlotName> mm_output =
+          require_only_key(mm_added.outputs, TensorSlotName::OUTPUT);
 
-      KwargNodeAddedResult relu_added =
-          pattern_g.add_node(
-            /*node_label=*/relu_pattern,
-            /*inputs=*/{
+      KwargNodeAddedResult relu_added = pattern_g.add_node(
+          /*node_label=*/relu_pattern,
+          /*inputs=*/
+          {
               {
-                TensorSlotName::INPUT,
-                OpenKwargDataflowValue<int, TensorSlotName>{mm_output},
+                  TensorSlotName::INPUT,
+                  OpenKwargDataflowValue<int, TensorSlotName>{mm_output},
               },
-            },
-            /*output_labels=*/{
+          },
+          /*output_labels=*/
+          {
               {
-                TensorSlotName::OUTPUT,
-                tensor_attribute_pattern_match_all(),
+                  TensorSlotName::OUTPUT,
+                  tensor_attribute_pattern_match_all(),
               },
-            });
+          });
       PatternNode pattern_relu_node = PatternNode{relu_added.node};
-      KwargDataflowOutput<TensorSlotName> relu_output = 
-        require_only_key(relu_added.outputs, TensorSlotName::OUTPUT);
+      KwargDataflowOutput<TensorSlotName> relu_output =
+          require_only_key(relu_added.outputs, TensorSlotName::OUTPUT);
 
-      LabelledOpenKwargDataflowGraph<OutputOperatorAttrsAssignment, std::monostate, int, TensorSlotName>
-          output_g = LabelledOpenKwargDataflowGraph<OutputOperatorAttrsAssignment,
-                                               std::monostate, int, TensorSlotName>::
-              create<UnorderedSetLabelledOpenKwargDataflowGraph<
-                  OutputOperatorAttrsAssignment,
-                  std::monostate,
-                  int,
-                  TensorSlotName>>();
+      LabelledOpenKwargDataflowGraph<OutputOperatorAttrsAssignment,
+                                     std::monostate,
+                                     int,
+                                     TensorSlotName>
+          output_g =
+              LabelledOpenKwargDataflowGraph<OutputOperatorAttrsAssignment,
+                                             std::monostate,
+                                             int,
+                                             TensorSlotName>::
+                  create<UnorderedSetLabelledOpenKwargDataflowGraph<
+                      OutputOperatorAttrsAssignment,
+                      std::monostate,
+                      int,
+                      TensorSlotName>>();
 
       OutputGraphExprInput output_i_activation =
           OutputGraphExprInput{output_g.add_input(0, {})};
@@ -116,26 +124,26 @@ TEST_SUITE(FF_TEST_SUITE) {
           };
       KwargNodeAddedResult fused_mm_relu_added = output_g.add_node(
           /*node_label=*/fused_mm_relu_attrs_assignment,
-          /*inputs=*/{
-            {
-              TensorSlotName::INPUT,
-              OpenKwargDataflowValue<int, TensorSlotName>{
-                output_i_activation.raw_dataflow_graph_input,
+          /*inputs=*/
+          {
+              {
+                  TensorSlotName::INPUT,
+                  OpenKwargDataflowValue<int, TensorSlotName>{
+                      output_i_activation.raw_dataflow_graph_input,
+                  },
               },
-            },
-            {
-              TensorSlotName::WEIGHT,
-              OpenKwargDataflowValue<int, TensorSlotName>{
-                output_i_weights.raw_dataflow_graph_input,
+              {
+                  TensorSlotName::WEIGHT,
+                  OpenKwargDataflowValue<int, TensorSlotName>{
+                      output_i_weights.raw_dataflow_graph_input,
+                  },
               },
-            },
           },
-          /*output_labels=*/{
-            {
+          /*output_labels=*/
+          {{
               TensorSlotName::OUTPUT,
               std::monostate{},
-            }
-          });
+          }});
       OutputGraphExprNode fused_mm_relu_node =
           OutputGraphExprNode{fused_mm_relu_added.node};
       KwargDataflowOutput<TensorSlotName> fused_mm_relu_output =
@@ -172,46 +180,48 @@ TEST_SUITE(FF_TEST_SUITE) {
           b.add_input(tensor_attribute_pattern_match_all());
 
       PatternValue p_mm_output =
-          require_only_key(
-            b.add_pattern_node(
-              /*node_pattern=*/mm_pattern,
-              /*inputs=*/{
-                {
-                  TensorSlotName::INPUT,
-                  p_input, 
-                },
-                {
-                  TensorSlotName::WEIGHT,
-                  p_weight,
-                },
-              },
-              /*output_patterns=*/{
-                {
-                  TensorSlotName::OUTPUT,
-                  tensor_attribute_pattern_match_all(),
-                },
-              },
-              /*name=*/"mm"),
-          TensorSlotName::OUTPUT);
+          require_only_key(b.add_pattern_node(
+                               /*node_pattern=*/mm_pattern,
+                               /*inputs=*/
+                               {
+                                   {
+                                       TensorSlotName::INPUT,
+                                       p_input,
+                                   },
+                                   {
+                                       TensorSlotName::WEIGHT,
+                                       p_weight,
+                                   },
+                               },
+                               /*output_patterns=*/
+                               {
+                                   {
+                                       TensorSlotName::OUTPUT,
+                                       tensor_attribute_pattern_match_all(),
+                                   },
+                               },
+                               /*name=*/"mm"),
+                           TensorSlotName::OUTPUT);
 
       PatternValue p_relu_output =
-          require_only_key(
-            b.add_pattern_node(
-              /*node_pattern=*/relu_pattern,
-              /*inputs=*/{
-                {
-                  TensorSlotName::INPUT,
-                  p_mm_output,
-                },
-              },
-              /*output_patterns=*/{
-                {
-                  TensorSlotName::OUTPUT,
-                  tensor_attribute_pattern_match_all(),
-                },
-              },
-              /*name=*/"relu"),
-            TensorSlotName::OUTPUT);
+          require_only_key(b.add_pattern_node(
+                               /*node_pattern=*/relu_pattern,
+                               /*inputs=*/
+                               {
+                                   {
+                                       TensorSlotName::INPUT,
+                                       p_mm_output,
+                                   },
+                               },
+                               /*output_patterns=*/
+                               {
+                                   {
+                                       TensorSlotName::OUTPUT,
+                                       tensor_attribute_pattern_match_all(),
+                                   },
+                               },
+                               /*name=*/"relu"),
+                           TensorSlotName::OUTPUT);
 
       OutputOperatorAttrsAssignment fused_mm_relu_attrs_assignment =
           OutputOperatorAttrsAssignment{
@@ -219,23 +229,24 @@ TEST_SUITE(FF_TEST_SUITE) {
               fused_mm_relu_attr_assignments,
           };
       OutputGraphExprValue o_fused_output =
-          require_only_key(
-            b.add_output_graph_node(
-              /*node_expr=*/fused_mm_relu_attrs_assignment,
-              /*inputs=*/{
-                {
-                  TensorSlotName::INPUT,
-                  o_input,
-                },
-                {
-                  TensorSlotName::WEIGHT,
-                  o_weight,
-                },
-              },
-              /*output_slots=*/{
-                TensorSlotName::OUTPUT,
-              }),
-            TensorSlotName::OUTPUT);
+          require_only_key(b.add_output_graph_node(
+                               /*node_expr=*/fused_mm_relu_attrs_assignment,
+                               /*inputs=*/
+                               {
+                                   {
+                                       TensorSlotName::INPUT,
+                                       o_input,
+                                   },
+                                   {
+                                       TensorSlotName::WEIGHT,
+                                       o_weight,
+                                   },
+                               },
+                               /*output_slots=*/
+                               {
+                                   TensorSlotName::OUTPUT,
+                               }),
+                           TensorSlotName::OUTPUT);
 
       b.equate_outputs(p_relu_output, o_fused_output);
 

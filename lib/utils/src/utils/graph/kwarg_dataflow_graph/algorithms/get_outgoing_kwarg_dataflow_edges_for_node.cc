@@ -5,10 +5,8 @@ namespace FlexFlow {
 
 using SlotName = ordered_value_type<0>;
 
-template
-  OneToMany<SlotName, KwargDataflowEdge<SlotName>>
+template OneToMany<SlotName, KwargDataflowEdge<SlotName>>
     get_outgoing_kwarg_dataflow_edges_for_node(
-      KwargDataflowGraphView<SlotName> const &,
-      Node const &);
+        KwargDataflowGraphView<SlotName> const &, Node const &);
 
 } // namespace FlexFlow

@@ -2,12 +2,12 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_FMT_UNORDERED_SET_H
 
 #include "utils/check_fmtable.h"
+#include "utils/containers/sorted.h"
 #include "utils/join_strings.h"
 #include "utils/type_traits_core.h"
 #include <fmt/format.h>
 #include <unordered_set>
 #include <vector>
-#include "utils/containers/sorted.h"
 
 namespace fmt {
 
@@ -15,8 +15,8 @@ template <typename T, typename Char>
 struct formatter<
     ::std::unordered_set<T>,
     Char,
-    std::enable_if_t<(!detail::has_format_as<std::unordered_set<T>>::value) && ::FlexFlow::is_lt_comparable_v<T>>
-    >
+    std::enable_if_t<(!detail::has_format_as<std::unordered_set<T>>::value) &&
+                     ::FlexFlow::is_lt_comparable_v<T>>>
     : formatter<::std::string> {
   template <typename FormatContext>
   auto format(::std::unordered_set<T> const &m, FormatContext &ctx) const
@@ -37,8 +37,8 @@ template <typename T, typename Char>
 struct formatter<
     ::std::unordered_set<T>,
     Char,
-    std::enable_if_t<(!detail::has_format_as<std::unordered_set<T>>::value) && (!::FlexFlow::is_lt_comparable_v<T>)>
-    >
+    std::enable_if_t<(!detail::has_format_as<std::unordered_set<T>>::value) &&
+                     (!::FlexFlow::is_lt_comparable_v<T>)>>
     : formatter<::std::string> {
   template <typename FormatContext>
   auto format(::std::unordered_set<T> const &m, FormatContext &ctx) const
@@ -52,7 +52,6 @@ struct formatter<
     return formatter<std::string>::format("{" + result + "}", ctx);
   }
 };
-
 
 } // namespace fmt
 

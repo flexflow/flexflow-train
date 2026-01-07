@@ -31,11 +31,11 @@ std::set<parallel_tensor_dim_idx_t>
   return result;
 }
 
-DimOrdering<parallel_tensor_dim_idx_t>
-  get_parallel_tensor_dim_ordering() {
-  
+DimOrdering<parallel_tensor_dim_idx_t> get_parallel_tensor_dim_ordering() {
+
   return DimOrdering<parallel_tensor_dim_idx_t>{
-      /*lt=*/[](parallel_tensor_dim_idx_t lhs, parallel_tensor_dim_idx_t rhs) -> bool { 
+      /*lt=*/[](parallel_tensor_dim_idx_t lhs,
+                parallel_tensor_dim_idx_t rhs) -> bool {
         if (lhs.is_shard_dim() && rhs.is_shard_dim()) {
           return lhs.require_shard_dim() < rhs.require_shard_dim();
         } else if (lhs.is_shard_dim() && !rhs.is_shard_dim()) {

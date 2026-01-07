@@ -1,7 +1,7 @@
 #include "utils/graph/digraph/algorithms/get_edge_topological_ordering.h"
+#include "utils/graph/digraph/algorithms/get_edges.h"
 #include "utils/graph/digraph/algorithms/get_outgoing_edges.h"
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"
-#include "utils/graph/digraph/algorithms/get_edges.h"
 
 namespace FlexFlow {
 

@@ -6,7 +6,8 @@ namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::Embedding;
 
-static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
+static std::optional<milliseconds_t>
+    forward_task_impl(TaskArgumentAccessor const &acc) {
   auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
   auto weight = acc.get_tensor<Permissions::RO>(TensorSlotName::WEIGHT);
   auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
@@ -35,7 +36,8 @@ static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
   auto output = acc.get_tensor<Permissions::RO>(TensorSlotName::OUTPUT);
-  auto weight_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::WEIGHT);
+  auto weight_grad =
+      acc.get_tensor_grad<Permissions::RW>(TensorSlotName::WEIGHT);
 
   ProfilingSettings profiling = acc.get_profiling_settings();
   EmbeddingAttrs attrs = acc.get_op_attrs().require_embedding();

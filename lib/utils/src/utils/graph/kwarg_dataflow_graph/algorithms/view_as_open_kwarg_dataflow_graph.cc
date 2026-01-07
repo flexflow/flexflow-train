@@ -6,9 +6,7 @@ namespace FlexFlow {
 using GraphInputName = ordered_value_type<0>;
 using SlotName = ordered_value_type<1>;
 
-template
-  OpenKwargDataflowGraphView<GraphInputName, SlotName>
-    view_as_open_kwarg_dataflow_graph(
-      KwargDataflowGraphView<SlotName> const &);
+template OpenKwargDataflowGraphView<GraphInputName, SlotName>
+    view_as_open_kwarg_dataflow_graph(KwargDataflowGraphView<SlotName> const &);
 
 } // namespace FlexFlow

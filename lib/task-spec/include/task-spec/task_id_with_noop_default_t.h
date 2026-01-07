@@ -8,22 +8,20 @@
 
 namespace FlexFlow {
 
-
 task_id_with_noop_default_t lift_task_id_t(task_id_t);
 task_id_with_noop_default_t default_noop_task();
 
-task_id_with_noop_default_t
-  lower_op_task_id_to_task_id_with_noop_default_t(op_task_id_t, 
-                                                  ComputationGraphOpAttrs const &);
+task_id_with_noop_default_t lower_op_task_id_to_task_id_with_noop_default_t(
+    op_task_id_t, ComputationGraphOpAttrs const &);
 
 task_id_with_noop_default_t
-  get_init_task_id_for_op_attrs(ComputationGraphOpAttrs const &);
+    get_init_task_id_for_op_attrs(ComputationGraphOpAttrs const &);
 
 task_id_with_noop_default_t
-  get_fwd_task_id_for_op_attrs(ComputationGraphOpAttrs const &);
+    get_fwd_task_id_for_op_attrs(ComputationGraphOpAttrs const &);
 
 task_id_with_noop_default_t
-  get_bwd_task_id_for_op_attrs(ComputationGraphOpAttrs const &);
+    get_bwd_task_id_for_op_attrs(ComputationGraphOpAttrs const &);
 
 } // namespace FlexFlow
 

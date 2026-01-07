@@ -5,18 +5,19 @@
 #include "utils/bidict/algorithms/right_entries.h"
 #include "utils/bidict/algorithms/transform.h"
 #include "utils/containers/map_values.h"
+#include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/rewrite_labelled_open_kwarg_dataflow_graph_node_labels.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/find_isomorphisms_between_open_kwarg_dataflow_graphs.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/open_kwarg_dataflow_graph_isomorphism.dtg.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/open_kwarg_dataflow_graph_isomorphism.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/try_find_isomorphism_between_open_kwarg_dataflow_graphs.h"
-#include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/rewrite_labelled_open_kwarg_dataflow_graph_node_labels.h"
 
 namespace FlexFlow {
 
 bool is_isomorphic_to(Substitution const &l, Substitution const &r) {
   OpenKwargDataflowGraphIsomorphism<int> pcg_pattern_isomorphism = ({
     std::optional<OpenKwargDataflowGraphIsomorphism<int>> maybe_isomorphism =
-        try_find_isomorphism_between_open_kwarg_dataflow_graphs(l.pcg_pattern.raw_graph, r.pcg_pattern.raw_graph);
+        try_find_isomorphism_between_open_kwarg_dataflow_graphs(
+            l.pcg_pattern.raw_graph, r.pcg_pattern.raw_graph);
 
     if (!maybe_isomorphism.has_value()) {
       return false;
@@ -89,8 +90,7 @@ bool is_isomorphic_to(Substitution const &l, Substitution const &r) {
   auto l_from_r_pattern_output = [&](PatternNodeOutput const &r_output) {
     return PatternNodeOutput{
         isomorphism_map_l_kwarg_dataflow_output_from_r(
-          pcg_pattern_isomorphism,
-          r_output.raw_dataflow_output),
+            pcg_pattern_isomorphism, r_output.raw_dataflow_output),
     };
   };
 

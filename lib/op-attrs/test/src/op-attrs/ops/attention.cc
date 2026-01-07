@@ -28,22 +28,22 @@ TEST_SUITE(FF_TEST_SUITE) {
           get_attention_incoming_tensor_roles(attrs);
       std::unordered_map<TensorSlotName, IncomingTensorRole> correct =
           std::unordered_map<TensorSlotName, IncomingTensorRole>{
-            {
-              TensorSlotName::KEY,
-              IncomingTensorRole::INPUT,
-            },
-            {
-              TensorSlotName::QUERY,
-              IncomingTensorRole::INPUT,
-            },
-            {
-              TensorSlotName::VALUE,
-              IncomingTensorRole::INPUT,
-            },
-            {
-              TensorSlotName::WEIGHT,
-              IncomingTensorRole::WEIGHT,
-            },
+              {
+                  TensorSlotName::KEY,
+                  IncomingTensorRole::INPUT,
+              },
+              {
+                  TensorSlotName::QUERY,
+                  IncomingTensorRole::INPUT,
+              },
+              {
+                  TensorSlotName::VALUE,
+                  IncomingTensorRole::INPUT,
+              },
+              {
+                  TensorSlotName::WEIGHT,
+                  IncomingTensorRole::WEIGHT,
+              },
           };
 
       CHECK(result == correct);
@@ -56,30 +56,30 @@ TEST_SUITE(FF_TEST_SUITE) {
           get_attention_incoming_tensor_roles(attrs);
       std::unordered_map<TensorSlotName, IncomingTensorRole> correct =
           std::unordered_map<TensorSlotName, IncomingTensorRole>{
-            {
-              TensorSlotName::KEY,
-              IncomingTensorRole::INPUT,
-            },
-            {
-              TensorSlotName::QUERY,
-              IncomingTensorRole::INPUT,
-            },
-            {
-              TensorSlotName::VALUE,
-              IncomingTensorRole::INPUT,
-            },
-            {
-              TensorSlotName::WEIGHT,
-              IncomingTensorRole::WEIGHT,
-            },
-            {
-              TensorSlotName::INPUT_BIAS,
-              IncomingTensorRole::WEIGHT,
-            },
-            {
-              TensorSlotName::OUTPUT_BIAS,
-              IncomingTensorRole::WEIGHT,
-            },
+              {
+                  TensorSlotName::KEY,
+                  IncomingTensorRole::INPUT,
+              },
+              {
+                  TensorSlotName::QUERY,
+                  IncomingTensorRole::INPUT,
+              },
+              {
+                  TensorSlotName::VALUE,
+                  IncomingTensorRole::INPUT,
+              },
+              {
+                  TensorSlotName::WEIGHT,
+                  IncomingTensorRole::WEIGHT,
+              },
+              {
+                  TensorSlotName::INPUT_BIAS,
+                  IncomingTensorRole::WEIGHT,
+              },
+              {
+                  TensorSlotName::OUTPUT_BIAS,
+                  IncomingTensorRole::WEIGHT,
+              },
           };
 
       CHECK(result == correct);

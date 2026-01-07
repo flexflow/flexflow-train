@@ -15,11 +15,10 @@ namespace FlexFlow {
 LocalTaskRegistry construct_local_task_registry_for_layers(
     std::unordered_set<ComputationGraphOpAttrs> const &op_attrs) {
 
-  std::unordered_set<task_id_t> task_ids = 
-    flatmap(op_attrs, 
-            [](ComputationGraphOpAttrs const &op_attrs) -> std::unordered_set<task_id_t> {
-              return get_task_ids(op_attrs);
-            });
+  std::unordered_set<task_id_t> task_ids = flatmap(
+      op_attrs,
+      [](ComputationGraphOpAttrs const &op_attrs)
+          -> std::unordered_set<task_id_t> { return get_task_ids(op_attrs); });
 
   std::unordered_map<task_id_t, TaskSignatureAndImpl> task_mapping =
       generate_map(task_ids, get_task_signature_and_impl_for_task_id);
@@ -29,10 +28,10 @@ LocalTaskRegistry construct_local_task_registry_for_layers(
   };
 }
 
-std::optional<DeviceSpecificPerDeviceOpState> call_init_task_impl(
-  LocalTaskRegistry const &local_task_registry,
-  task_id_with_noop_default_t registered_task,
-  TaskArgumentAccessor const &arg_accessor) {
+std::optional<DeviceSpecificPerDeviceOpState>
+    call_init_task_impl(LocalTaskRegistry const &local_task_registry,
+                        task_id_with_noop_default_t registered_task,
+                        TaskArgumentAccessor const &arg_accessor) {
 
   if (registered_task.is_noop_task()) {
     return std::nullopt;
@@ -53,8 +52,8 @@ std::optional<DeviceSpecificPerDeviceOpState> call_init_task_impl(
 
 std::optional<milliseconds_t>
     call_fwb_task_impl(LocalTaskRegistry const &task_registry,
-                   task_id_t const &task_id,
-                   TaskArgumentAccessor const &acc) {
+                       task_id_t const &task_id,
+                       TaskArgumentAccessor const &acc) {
   TaskSignatureAndImpl task_sig_impl = task_registry.task_mapping.at(task_id);
   auto fn =
       task_sig_impl.impl_function.get<FwdBwdOpTaskImplFunction>().function_ptr;

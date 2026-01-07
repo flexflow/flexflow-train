@@ -6,12 +6,11 @@
 namespace FlexFlow {
 
 bool invocation_fully_satisfies_expansion_conditions(
-  std::function<bool(DynamicNodeAttrs const &)> const &node_condition,
-  std::function<bool(DynamicTensorSlot const &)> const &slot_condition,
-  std::function<bool(DynamicTensorSlotArguments const &)> const &) {
+    std::function<bool(DynamicNodeAttrs const &)> const &node_condition,
+    std::function<bool(DynamicTensorSlot const &)> const &slot_condition,
+    std::function<bool(DynamicTensorSlotArguments const &)> const &) {
 
 ]
-
 
 } // namespace FlexFlow
 

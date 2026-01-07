@@ -34,11 +34,12 @@ static DeviceSpecificPerDeviceOpState
                          attrs.out_channels.int_from_positive_int());
 
   return DeviceSpecificPerDeviceOpState{
-    acc.make_device_specific(per_device_state),
+      acc.make_device_specific(per_device_state),
   };
 }
 
-static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
+static std::optional<milliseconds_t>
+    forward_task_impl(TaskArgumentAccessor const &acc) {
   auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
   auto weight = acc.get_tensor<Permissions::RO>(TensorSlotName::WEIGHT);
   auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
@@ -46,7 +47,8 @@ static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor cons
   LinearAttrs attrs = acc.get_op_attrs().require_linear();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
   ProfilingSettings profiling = acc.get_profiling_settings();
-  LinearPerDeviceState per_device_state = acc.get_per_device_op_state().require_linear().value();
+  LinearPerDeviceState per_device_state =
+      acc.get_per_device_op_state().require_linear().value();
 
   std::optional<GenericTensorAccessorR> bias = std::nullopt;
   if (attrs.use_bias) {
@@ -74,13 +76,16 @@ static std::optional<milliseconds_t>
   auto output = acc.get_tensor<Permissions::RO>(TensorSlotName::OUTPUT);
 
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::INPUT);
-  auto weight_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::WEIGHT);
-  auto output_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::OUTPUT);
+  auto weight_grad =
+      acc.get_tensor_grad<Permissions::RW>(TensorSlotName::WEIGHT);
+  auto output_grad =
+      acc.get_tensor_grad<Permissions::RW>(TensorSlotName::OUTPUT);
 
   LinearAttrs attrs = acc.get_op_attrs().require_linear();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
   ProfilingSettings profiling = acc.get_profiling_settings();
-  LinearPerDeviceState per_device_state = acc.get_per_device_op_state().require_linear().value();
+  LinearPerDeviceState per_device_state =
+      acc.get_per_device_op_state().require_linear().value();
 
   std::optional<GenericTensorAccessorW> bias_grad = std::nullopt;
   if (attrs.use_bias) {

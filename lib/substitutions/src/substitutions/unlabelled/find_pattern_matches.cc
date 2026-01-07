@@ -2,8 +2,8 @@
 #include "substitutions/unlabelled/match_additional_criterion.h"
 #include "substitutions/unlabelled/pattern_matching.h"
 #include "substitutions/unlabelled/pattern_split.h"
-#include "substitutions/unlabelled/unlabelled_kwarg_dataflow_graph_pattern_match.h"
 #include "substitutions/unlabelled/unlabelled_graph_pattern.h"
+#include "substitutions/unlabelled/unlabelled_kwarg_dataflow_graph_pattern_match.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/unstructured_exhaustive_relational_join.h"
@@ -13,34 +13,38 @@
 #include "utils/graph/kwarg_dataflow_graph/algorithms/get_outgoing_kwarg_dataflow_outputs_for_node.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_inputs.h"
+#include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_incoming_open_kwarg_dataflow_values_for_node.h"
 #include "utils/many_to_one/invert_many_to_one.h"
 #include "utils/many_to_one/many_to_one_from_map.h"
 #include "utils/many_to_one/many_to_one_from_unstructured_relation.h"
 #include "utils/many_to_one/unstructured_relation_from_many_to_one.h"
 #include "utils/one_to_many/unstructured_relation_from_one_to_many.h"
 #include "utils/overload.h"
-#include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_incoming_open_kwarg_dataflow_values_for_node.h"
 
 namespace FlexFlow {
 
 static std::optional<UnlabelledKwargDataflowGraphPatternMatch>
-    get_candidate_singleton_match(UnlabelledGraphPattern const &pattern,
-                                  OpenKwargDataflowGraphView<int, TensorSlotName> const &graph,
-                                  Node const &graph_node) {
+    get_candidate_singleton_match(
+        UnlabelledGraphPattern const &pattern,
+        OpenKwargDataflowGraphView<int, TensorSlotName> const &graph,
+        Node const &graph_node) {
   ASSERT(is_singleton_pattern(pattern));
 
   PatternNode pattern_node = get_only(get_pattern_nodes(pattern));
 
-  UnlabelledKwargDataflowGraphPatternMatch match = empty_unlabelled_pattern_match();
+  UnlabelledKwargDataflowGraphPatternMatch match =
+      empty_unlabelled_pattern_match();
   match.node_assignment.equate(pattern_node, graph_node);
 
   std::unordered_map<TensorSlotName, PatternValue> pattern_outputs =
       get_outputs_from_pattern_node(pattern, pattern_node);
-  std::unordered_map<TensorSlotName, OpenKwargDataflowValue<int, TensorSlotName>> graph_outputs =
-      map_values(get_outgoing_kwarg_dataflow_outputs_for_node(graph, graph_node),
-                [](KwargDataflowOutput<TensorSlotName> const &o) { 
-                  return OpenKwargDataflowValue<int, TensorSlotName>{o}; 
-                });
+  std::unordered_map<TensorSlotName,
+                     OpenKwargDataflowValue<int, TensorSlotName>>
+      graph_outputs = map_values(
+          get_outgoing_kwarg_dataflow_outputs_for_node(graph, graph_node),
+          [](KwargDataflowOutput<TensorSlotName> const &o) {
+            return OpenKwargDataflowValue<int, TensorSlotName>{o};
+          });
 
   if (keys(pattern_outputs) != keys(graph_outputs)) {
     return std::nullopt;
@@ -55,30 +59,29 @@ static std::optional<UnlabelledKwargDataflowGraphPatternMatch>
          transform(pattern_graph_inputs,
                    [](PatternInput const &i) { return PatternValue{i}; }));
 
-  std::unordered_map<TensorSlotName, OpenKwargDataflowValue<int, TensorSlotName>> graph_node_inputs =
-      get_incoming_open_kwarg_dataflow_values_for_node(graph, graph_node);
+  std::unordered_map<TensorSlotName,
+                     OpenKwargDataflowValue<int, TensorSlotName>>
+      graph_node_inputs =
+          get_incoming_open_kwarg_dataflow_values_for_node(graph, graph_node);
 
   if (graph_node_inputs.size() != pattern_node_inputs.size()) {
     return std::nullopt;
   }
 
-  ManyToOne<TensorSlotName, PatternInput> m_pattern_node_inputs = 
-    many_to_one_from_map(
-      map_values(pattern_node_inputs,
-                 [](PatternValue const &v) -> PatternInput {
-                   return v.require_pattern_input();
-                 }));
-  ManyToOne<TensorSlotName, OpenKwargDataflowValue<int, TensorSlotName>> m_graph_node_inputs = 
-    many_to_one_from_map(graph_node_inputs);
+  ManyToOne<TensorSlotName, PatternInput> m_pattern_node_inputs =
+      many_to_one_from_map(map_values(
+          pattern_node_inputs, [](PatternValue const &v) -> PatternInput {
+            return v.require_pattern_input();
+          }));
+  ManyToOne<TensorSlotName, OpenKwargDataflowValue<int, TensorSlotName>>
+      m_graph_node_inputs = many_to_one_from_map(graph_node_inputs);
 
-
-  ManyToOne<PatternInput, OpenKwargDataflowValue<int, TensorSlotName>> input_assignment = 
-    many_to_one_from_unstructured_relation(
-      unstructured_exhaustive_relational_join(
-        unstructured_relation_from_one_to_many(
-          invert_many_to_one(m_pattern_node_inputs)),
-        unstructured_relation_from_many_to_one(
-          m_graph_node_inputs)));
+  ManyToOne<PatternInput, OpenKwargDataflowValue<int, TensorSlotName>>
+      input_assignment = many_to_one_from_unstructured_relation(
+          unstructured_exhaustive_relational_join(
+              unstructured_relation_from_one_to_many(
+                  invert_many_to_one(m_pattern_node_inputs)),
+              unstructured_relation_from_many_to_one(m_graph_node_inputs)));
 
   match.input_assignment = input_assignment.l_to_r();
 
@@ -94,7 +97,8 @@ MatchAdditionalCriterion additional_criterion_for_subpattern(
         &full_pattern_values_to_subpattern_inputs) {
   return MatchAdditionalCriterion{
       full_additional_criterion.node_criterion,
-      [&](PatternValue const &patternValue, OpenKwargDataflowValue<int, TensorSlotName> const &pcgValue) {
+      [&](PatternValue const &patternValue,
+          OpenKwargDataflowValue<int, TensorSlotName> const &pcgValue) {
         return patternValue.visit<bool>(
             overload{[&](PatternNodeOutput const &) -> bool {
                        return full_additional_criterion.value_criterion(
@@ -110,11 +114,10 @@ MatchAdditionalCriterion additional_criterion_for_subpattern(
 }
 
 std::vector<UnlabelledKwargDataflowGraphPatternMatch>
-  find_unlabelled_pattern_matches(
-    UnlabelledGraphPattern const &pattern,
-    OpenKwargDataflowGraphView<int, TensorSlotName> const &graph,
-    MatchAdditionalCriterion const &additional_criterion) 
-{
+    find_unlabelled_pattern_matches(
+        UnlabelledGraphPattern const &pattern,
+        OpenKwargDataflowGraphView<int, TensorSlotName> const &graph,
+        MatchAdditionalCriterion const &additional_criterion) {
   std::vector<UnlabelledKwargDataflowGraphPatternMatch> matches;
   if (is_singleton_pattern(pattern)) {
     for (Node const &graph_node : get_nodes(graph)) {

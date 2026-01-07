@@ -1,8 +1,8 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_KWARG_DATAFLOW_GRAPH_I_KWARG_DATAFLOW_GRAPH_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_KWARG_DATAFLOW_GRAPH_I_KWARG_DATAFLOW_GRAPH_H
 
-#include "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_graph_view.h"
 #include "utils/graph/kwarg_dataflow_graph/i_kwarg_dataflow_graph_view.h"
+#include "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_graph_view.h"
 #include "utils/graph/kwarg_dataflow_graph/kwarg_node_added_result.dtg.h"
 
 namespace FlexFlow {
@@ -13,11 +13,14 @@ struct IKwargDataflowGraph : virtual public IKwargDataflowGraphView<SlotName> {
       std::unordered_map<SlotName, KwargDataflowOutput<SlotName>> const &inputs,
       std::unordered_set<SlotName> const &outputs) = 0;
 
-  virtual void add_node_unsafe(Node const &node,
-                               std::unordered_map<SlotName, KwargDataflowOutput<SlotName>> const &inputs,
-                               std::unordered_map<SlotName, KwargDataflowOutput<SlotName>> const &outputs) = 0;
+  virtual void add_node_unsafe(
+      Node const &node,
+      std::unordered_map<SlotName, KwargDataflowOutput<SlotName>> const &inputs,
+      std::unordered_map<SlotName, KwargDataflowOutput<SlotName>> const
+          &outputs) = 0;
 
-  virtual void inplace_materialize_from(KwargDataflowGraphView<SlotName> const &) = 0;
+  virtual void
+      inplace_materialize_from(KwargDataflowGraphView<SlotName> const &) = 0;
 
   virtual IKwargDataflowGraph *clone() const = 0;
 };

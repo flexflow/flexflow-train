@@ -6,7 +6,8 @@
 namespace FlexFlow {
 
 std::string format_as(MappedParallelComputationGraph const &);
-std::ostream &operator<<(std::ostream &, MappedParallelComputationGraph const &);
+std::ostream &operator<<(std::ostream &,
+                         MappedParallelComputationGraph const &);
 
 } // namespace FlexFlow
 

@@ -31,8 +31,7 @@ static DeviceSpecificPerDeviceOpState
   auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
 
   device_handle_t handle = acc.get_ff_handle();
-  DeviceType kernel_device_type =
-      acc.get_kernel_device_type();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
   GatherAttrs attrs = acc.get_op_attrs().require_gather();
 
   ASSERT(get_num_dims(input.shape.dims) == get_num_dims(index.shape.dims));
@@ -49,14 +48,16 @@ static DeviceSpecificPerDeviceOpState
   std::optional<GatherPerDeviceState> per_device_state =
       init_kernel(kernel_device_type, handle, attrs.dim);
   return DeviceSpecificPerDeviceOpState{
-    acc.make_device_specific(per_device_state),
+      acc.make_device_specific(per_device_state),
   };
 }
 
-static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
+static std::optional<milliseconds_t>
+    forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
-  GatherPerDeviceState per_device_state = acc.get_per_device_op_state().require_gather().value();
+  GatherPerDeviceState per_device_state =
+      acc.get_per_device_op_state().require_gather().value();
 
   auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
   auto index = acc.get_tensor<Permissions::RO>(TensorSlotName::INDEX);
@@ -75,10 +76,12 @@ static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor cons
 static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_profiling_settings();
-  DeviceType kernel_device_type = acc.get_kernel_device_type(); 
-  GatherPerDeviceState per_device_state = acc.get_per_device_op_state().require_gather().value();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
+  GatherPerDeviceState per_device_state =
+      acc.get_per_device_op_state().require_gather().value();
 
-  auto output_grad = acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
+  auto output_grad =
+      acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
   auto index = acc.get_tensor<Permissions::RO>(TensorSlotName::INDEX);
   auto input_grad = acc.get_tensor_grad<Permissions::WO>(TensorSlotName::INPUT);
 

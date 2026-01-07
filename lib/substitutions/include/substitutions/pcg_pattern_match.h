@@ -20,9 +20,9 @@ UnlabelledKwargDataflowGraphPatternMatch
     get_unlabelled_pattern_match(PCGPatternMatch const &match);
 
 void assert_pcg_pattern_match_is_valid_for_pattern_and_subpcg(
-  PCGPatternMatch const &match,
-  PCGPattern const &pattern,
-  SubParallelComputationGraph const &spcg);
+    PCGPatternMatch const &match,
+    PCGPattern const &pattern,
+    SubParallelComputationGraph const &spcg);
 
 } // namespace FlexFlow
 

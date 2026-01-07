@@ -1,5 +1,5 @@
-#include "utils/graph/algorithms.h"
 #include "utils/graph/digraph/algorithms/complete_bipartite_composite/is_complete_bipartite_digraph.h"
+#include "utils/graph/algorithms.h"
 #include "utils/graph/digraph/digraph.h"
 #include "utils/graph/instances/adjacency_digraph.h"
 #include <doctest/doctest.h>

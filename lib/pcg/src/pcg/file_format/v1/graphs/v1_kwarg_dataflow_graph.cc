@@ -5,11 +5,11 @@ namespace FlexFlow {
 
 using SlotName = ordered_value_type<0>;
 
-template
-  V1KwargDataflowGraph<SlotName> to_v1(KwargDataflowGraphView<SlotName> const &);
+template V1KwargDataflowGraph<SlotName>
+    to_v1(KwargDataflowGraphView<SlotName> const &);
 
-template
-  V1KwargDataflowGraph<SlotName> to_v1(KwargDataflowGraphView<SlotName> const &,
-                                       std::unordered_map<Node, nonnegative_int> const &);
+template V1KwargDataflowGraph<SlotName>
+    to_v1(KwargDataflowGraphView<SlotName> const &,
+          std::unordered_map<Node, nonnegative_int> const &);
 
 } // namespace FlexFlow

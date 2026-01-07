@@ -1,8 +1,8 @@
 #ifndef _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_DYNAMIC_GRAPH_DYNAMIC_TENSOR_ROLE_H
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_DYNAMIC_GRAPH_DYNAMIC_TENSOR_ROLE_H
 
-#include "task-spec/dynamic_graph/dynamic_tensor_role.dtg.h"
 #include "pcg/optimizer_slot_name.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_tensor_role.dtg.h"
 
 namespace FlexFlow {
 

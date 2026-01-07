@@ -1,9 +1,9 @@
 #include "utils/graph/digraph/algorithms/contract_node.h"
 #include "utils/graph/algorithms.h"
+#include "utils/graph/digraph/algorithms/get_edges.h"
 #include "utils/graph/instances/adjacency_digraph.h"
 #include "utils/graph/node/algorithms.h"
 #include <doctest/doctest.h>
-#include "utils/graph/digraph/algorithms/get_edges.h"
 
 using namespace ::FlexFlow;
 

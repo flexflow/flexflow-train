@@ -10,9 +10,7 @@ using K2 = value_type<2>;
 using F = std::function<K2(K const &)>;
 using MergeF = std::function<V(V const &, V const &)>;
 
-template
-  std::unordered_map<K2, V> map_keys_with_value_merging(std::unordered_map<K, V> const &,
-                                                F &&,
-                                                MergeF &&);
+template std::unordered_map<K2, V> map_keys_with_value_merging(
+    std::unordered_map<K, V> const &, F &&, MergeF &&);
 
 } // namespace FlexFlow

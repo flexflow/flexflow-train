@@ -1,11 +1,11 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_GET_ALL_PERMUTATIONS_WITH_REPETITION_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_GET_ALL_PERMUTATIONS_WITH_REPETITION_H
 
+#include "utils/containers/transform.h"
+#include "utils/hash/vector.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
 #include <unordered_set>
 #include <vector>
-#include "utils/hash/vector.h"
-#include "utils/containers/transform.h"
 
 namespace FlexFlow {
 
@@ -33,8 +33,8 @@ std::unordered_multiset<std::vector<T>>
     for (int i = 0; i < n; ++i) {
       perm[i] = elements[indices[i]];
     }
-    std::vector<T> unwrapped_perm = 
-      transform(perm, [](std::optional<T> const &t) { return t.value(); });
+    std::vector<T> unwrapped_perm =
+        transform(perm, [](std::optional<T> const &t) { return t.value(); });
     result.insert(unwrapped_perm);
 
     int i = n.unwrap_nonnegative() - 1;

@@ -5,24 +5,28 @@
 #include "kernels/allocation.h"
 #include "local-execution/local_atomic_tensor_backing.dtg.h"
 #include "local-execution/local_task_registry.dtg.h"
-#include "op-attrs/ops/loss_functions/loss_attrs.dtg.h"
-#include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
-#include "pcg/optimizer_attrs.dtg.h"
-#include "task-spec/runtime_task_invocation/runtime_arg_config.dtg.h"
-#include "task-spec/symbolic/training_symbolic_computation_graph_from_pcg_conversion.dtg.h"
 #include "local-pcg-execution/local_parallel_tensor_backing.dtg.h"
 #include "local-pcg-execution/task_group_execution_times.dtg.h"
+#include "op-attrs/ops/loss_functions/loss_attrs.dtg.h"
+#include "pcg/optimizer_attrs.dtg.h"
+#include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
+#include "task-spec/runtime_task_invocation/runtime_arg_config.dtg.h"
+#include "task-spec/symbolic/training_symbolic_computation_graph_from_pcg_conversion.dtg.h"
 
 namespace FlexFlow {
 
 struct ParallelModelTrainingInstance {
   ParallelModelTrainingInstance(Allocator const &,
-                        LossAttrs const &,
-                        OptimizerAttrs const &);
+                                LossAttrs const &,
+                                OptimizerAttrs const &);
 
 public:
-  std::unordered_map<parallel_layer_guid_t, std::optional<TaskGroupExecutionTimes>> forward();
-  std::unordered_map<parallel_layer_guid_t, std::optional<TaskGroupExecutionTimes>> backward();
+  std::unordered_map<parallel_layer_guid_t,
+                     std::optional<TaskGroupExecutionTimes>>
+      forward();
+  std::unordered_map<parallel_layer_guid_t,
+                     std::optional<TaskGroupExecutionTimes>>
+      backward();
   void update();
   GenericTensorAccessorR get_loss_tensor_accessor() const;
 

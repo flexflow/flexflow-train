@@ -4,6 +4,10 @@
 #include "compiler/machine_mapping/machine_mapping.dtg.h"
 #include "compiler/machine_mapping/machine_mapping.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
+#include "compiler/machine_mapping/machine_view.dtg.h"
+#include "compiler/machine_mapping/machine_view.h"
+#include "compiler/machine_mapping/machine_view_dimension.dtg.h"
+#include "compiler/machine_mapping/stride_t.dtg.h"
 #include "internal/runtime_only_cost_estimator_for_test.h"
 #include "op-attrs/ops/input_attrs.dtg.h"
 #include "op-attrs/parallel_tensor_dims.dtg.h"
@@ -13,14 +17,10 @@
 #include "pcg/device_type.dtg.h"
 #include "pcg/machine_space_coordinate.dtg.h"
 #include "pcg/machine_specification_dimension.dtg.h"
-#include "compiler/machine_mapping/machine_view.dtg.h"
-#include "compiler/machine_mapping/machine_view.h"
-#include "compiler/machine_mapping/machine_view_dimension.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_tensor_guid_t.h"
-#include "compiler/machine_mapping/stride_t.dtg.h"
 #include "substitutions/sub_parallel_computation_graph.dtg.h"
 #include "substitutions/sub_parallel_computation_graph.h"
 #include "utils/containers/get_only.h"
@@ -36,18 +36,17 @@ namespace FlexFlow {
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("task_simulator_estimate_forward_pass_time") {
-    MachineSpecification machine_spec =
-        MachineSpecification{
-          MachineComputeSpecification{
+    MachineSpecification machine_spec = MachineSpecification{
+        MachineComputeSpecification{
             /*num_nodes=*/3_p,
             /*num_cpus_per_node=*/3_p,
             /*num_gpus_per_node=*/3_p,
-          },
-          MachineInterconnectSpecification{
+        },
+        MachineInterconnectSpecification{
             /*inter_node_bandwidth=*/bytes_per_second_t{1.0f},
             /*intra_node_bandwidth=*/bytes_per_second_t{1.0f},
-          },
-        };
+        },
+    };
 
     SUBCASE("linear graph") {
       ParallelComputationGraphBuilder b;

@@ -15,9 +15,8 @@ MachineMapping combine_disjoint_mappings(MachineMapping const &,
 bool nodes_are_disjoint(MachineMapping const &m1, MachineMapping const &m2);
 
 MappedParallelComputationGraph
-  mapped_pcg_from_pcg_and_mapping(
-    ParallelComputationGraph const &,
-    MachineMapping const &);
+    mapped_pcg_from_pcg_and_mapping(ParallelComputationGraph const &,
+                                    MachineMapping const &);
 
 } // namespace FlexFlow
 

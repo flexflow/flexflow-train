@@ -10,11 +10,13 @@ template <typename NodeLabel, typename OutputLabel, typename SlotName>
 struct LabelledKwargDataflowGraph
     : virtual LabelledKwargDataflowGraphView<NodeLabel, OutputLabel, SlotName> {
 private:
-  using Interface = ILabelledKwargDataflowGraph<NodeLabel, OutputLabel, SlotName>;
+  using Interface =
+      ILabelledKwargDataflowGraph<NodeLabel, OutputLabel, SlotName>;
 
 public:
   LabelledKwargDataflowGraph(LabelledKwargDataflowGraph const &) = default;
-  LabelledKwargDataflowGraph &operator=(LabelledKwargDataflowGraph const &) = default;
+  LabelledKwargDataflowGraph &
+      operator=(LabelledKwargDataflowGraph const &) = default;
 
   KwargNodeAddedResult<SlotName> add_node(
       NodeLabel const &node_label,
@@ -27,21 +29,24 @@ public:
   static typename std::enable_if<std::is_base_of<Interface, T>::value,
                                  LabelledKwargDataflowGraph>::type
       create(Args &&...args) {
-    return LabelledKwargDataflowGraph(make_cow_ptr<T>(std::forward<Args>(args)...));
+    return LabelledKwargDataflowGraph(
+        make_cow_ptr<T>(std::forward<Args>(args)...));
   }
 
   template <typename T>
   static typename std::enable_if<std::is_base_of<Interface, T>::value,
                                  LabelledKwargDataflowGraph>::type
       create_copy_of(
-          LabelledKwargDataflowGraphView<NodeLabel, OutputLabel, SlotName> const &view) {
+          LabelledKwargDataflowGraphView<NodeLabel, OutputLabel, SlotName> const
+              &view) {
     cow_ptr_t<T> impl = make_cow_ptr<T>();
     impl.get_mutable()->inplace_materialize_from(view);
     return LabelledKwargDataflowGraph(std::move(impl));
   }
 
 protected:
-  using LabelledKwargDataflowGraphView<NodeLabel, OutputLabel, SlotName>::LabelledKwargDataflowGraphView;
+  using LabelledKwargDataflowGraphView<NodeLabel, OutputLabel, SlotName>::
+      LabelledKwargDataflowGraphView;
 
 private:
   Interface &get_interface() {

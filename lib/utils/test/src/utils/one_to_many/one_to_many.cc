@@ -1,9 +1,9 @@
 #include "utils/one_to_many/one_to_many.h"
 #include "test/utils/doctest/fmt/multiset.h"
+#include "test/utils/doctest/fmt/unordered_set.h"
 #include "utils/containers/multiset_of.h"
 #include "utils/one_to_many/one_to_many_from_l_to_r_mapping.h"
 #include <doctest/doctest.h>
-#include "test/utils/doctest/fmt/unordered_set.h"
 
 using namespace ::FlexFlow;
 
@@ -31,7 +31,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("at_l") {
-      std::unordered_set<std::string> result = m.at_l(1); 
+      std::unordered_set<std::string> result = m.at_l(1);
 
       std::unordered_set<std::string> correct = {"one", "One", "ONE"};
 
@@ -47,7 +47,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("left_values") {
-      std::unordered_set<int> result = m.left_values();  
+      std::unordered_set<int> result = m.left_values();
 
       std::unordered_set<int> correct = {1, 2};
 
@@ -55,7 +55,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("right_values") {
-      std::unordered_set<std::string> result = m.right_values();  
+      std::unordered_set<std::string> result = m.right_values();
 
       std::unordered_set<std::string> correct = {"one", "One", "ONE", "two"};
 
@@ -65,8 +65,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("initialization") {
       SUBCASE("basic usage") {
         OneToMany<int, std::string> result = OneToMany<int, std::string>{
-          {1, {"one", "One", "ONE"}}, 
-          {2, {"two"}},
+            {1, {"one", "One", "ONE"}},
+            {2, {"two"}},
         };
 
         OneToMany<int, std::string> correct = m;
@@ -75,19 +75,17 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SUBCASE("rhs of an initialization pair is empty") {
-        CHECK_THROWS(
-          OneToMany<int, std::string>{
-            {1, {}}, 
+        CHECK_THROWS(OneToMany<int, std::string>{
+            {1, {}},
             {2, {"two"}},
-          });
+        });
       }
 
       SUBCASE("conflicting values") {
-        CHECK_THROWS(
-          OneToMany<int, std::string>{
-            {1, {"two"}}, 
+        CHECK_THROWS(OneToMany<int, std::string>{
+            {1, {"two"}},
             {2, {"two"}},
-          });
+        });
       }
     }
   }

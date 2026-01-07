@@ -31,13 +31,15 @@ static DeviceSpecificPerDeviceOpState
                   output.shape);
 
   return DeviceSpecificPerDeviceOpState{
-    acc.make_device_specific(per_device_state),
+      acc.make_device_specific(per_device_state),
   };
 }
 
-static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
-  ReducePerDeviceState per_device_state = acc.get_per_device_op_state().require_reduce().value();
-  ProfilingSettings profiling = acc.get_profiling_settings(); 
+static std::optional<milliseconds_t>
+    forward_task_impl(TaskArgumentAccessor const &acc) {
+  ReducePerDeviceState per_device_state =
+      acc.get_per_device_op_state().require_reduce().value();
+  ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
 
   auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
@@ -54,12 +56,14 @@ static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor cons
 
 static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
-  ReducePerDeviceState per_device_state = acc.get_per_device_op_state().require_reduce().value();
-  ProfilingSettings profiling = acc.get_profiling_settings(); 
+  ReducePerDeviceState per_device_state =
+      acc.get_per_device_op_state().require_reduce().value();
+  ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
 
   auto input_grad = acc.get_tensor_grad<Permissions::WO>(TensorSlotName::INPUT);
-  auto output_grad = acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
+  auto output_grad =
+      acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
 
   return profile(backward_kernel,
                  profiling,

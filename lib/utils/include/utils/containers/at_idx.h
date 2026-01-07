@@ -2,9 +2,9 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_AT_IDX_H
 
 #include "utils/nonnegative_int/nonnegative_int.h"
+#include <libassert/assert.hpp>
 #include <optional>
 #include <vector>
-#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 

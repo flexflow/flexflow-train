@@ -6,11 +6,10 @@ namespace FlexFlow {
 using SlotName = ordered_value_type<0>;
 using GraphInputName = ordered_value_type<1>;
 
-template
-  std::unordered_map<SlotName, OpenKwargDataflowValue<GraphInputName, SlotName>>
+template std::unordered_map<SlotName,
+                            OpenKwargDataflowValue<GraphInputName, SlotName>>
     get_incoming_open_kwarg_dataflow_values_for_node(
-      OpenKwargDataflowGraphView<GraphInputName, SlotName> const &,
-      Node const &);
-
+        OpenKwargDataflowGraphView<GraphInputName, SlotName> const &,
+        Node const &);
 
 } // namespace FlexFlow

@@ -1,9 +1,9 @@
-#include <doctest/doctest.h>
 #include "utils/graph/digraph/algorithms/get_edges.h"
 #include "utils/containers/unordered_set_of.h"
 #include "utils/graph/algorithms.h"
 #include "utils/graph/digraph/digraph.h"
 #include "utils/graph/instances/adjacency_digraph.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 

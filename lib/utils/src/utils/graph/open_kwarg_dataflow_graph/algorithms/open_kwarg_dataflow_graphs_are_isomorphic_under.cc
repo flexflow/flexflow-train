@@ -7,8 +7,8 @@ using GraphInputName = ordered_value_type<0>;
 using SlotName = ordered_value_type<1>;
 
 bool open_kwarg_dataflow_graphs_are_isomorphic_under(
-  OpenKwargDataflowGraphView<GraphInputName, SlotName> const &,
-  OpenKwargDataflowGraphView<GraphInputName, SlotName> const &,
-  OpenKwargDataflowGraphIsomorphism<GraphInputName> const &);
+    OpenKwargDataflowGraphView<GraphInputName, SlotName> const &,
+    OpenKwargDataflowGraphView<GraphInputName, SlotName> const &,
+    OpenKwargDataflowGraphIsomorphism<GraphInputName> const &);
 
 } // namespace FlexFlow

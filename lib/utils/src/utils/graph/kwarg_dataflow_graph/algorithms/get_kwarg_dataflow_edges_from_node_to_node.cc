@@ -5,11 +5,8 @@ namespace FlexFlow {
 
 using SlotName = ordered_value_type<0>;
 
-template
-  std::unordered_set<KwargDataflowEdge<SlotName>>
-    get_kwarg_dataflow_edges_from_node_to_node( 
-      KwargDataflowGraphView<SlotName> const &,
-      Node const &,
-      Node const &);
+template std::unordered_set<KwargDataflowEdge<SlotName>>
+    get_kwarg_dataflow_edges_from_node_to_node(
+        KwargDataflowGraphView<SlotName> const &, Node const &, Node const &);
 
 } // namespace FlexFlow

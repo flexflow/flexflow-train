@@ -21,7 +21,8 @@ LayerAddedResult add_layer(
     LayerAttrs const &attrs,
     std::unordered_map<TensorSlotName, tensor_guid_t> const &inputs,
     std::unordered_map<TensorSlotName, tensor_guid_t> const &weights,
-    std::optional<std::unordered_map<TensorSlotName, CreateGrad>> const &outputs = std::nullopt);
+    std::optional<std::unordered_map<TensorSlotName, CreateGrad>> const
+        &outputs = std::nullopt);
 
 LayerAddedResult add_input_layer(ComputationGraph &computation_graph,
                                  TensorShape const &tensor_shape);
@@ -35,20 +36,20 @@ bool are_tensor_guid_shapes_equivalent(ComputationGraph const &cg,
 
 std::vector<layer_guid_t> topological_ordering(ComputationGraph const &cg);
 
-std::unordered_map<TensorSlotName, tensor_guid_t> get_outgoing_tensors(ComputationGraph const &cg,
-                                                layer_guid_t n);
+std::unordered_map<TensorSlotName, tensor_guid_t>
+    get_outgoing_tensors(ComputationGraph const &cg, layer_guid_t n);
 
-std::unordered_map<TensorSlotName, tensor_guid_t> get_incoming_tensors(ComputationGraph const &cg,
-                                                layer_guid_t n);
+std::unordered_map<TensorSlotName, tensor_guid_t>
+    get_incoming_tensors(ComputationGraph const &cg, layer_guid_t n);
 
-std::unordered_map<TensorSlotName, tensor_guid_t> get_incoming_inputs(ComputationGraph const &,
-                                               layer_guid_t const &);
+std::unordered_map<TensorSlotName, tensor_guid_t>
+    get_incoming_inputs(ComputationGraph const &, layer_guid_t const &);
 
-std::unordered_map<TensorSlotName, TensorShape> get_incoming_input_shapes(ComputationGraph const &,
-                                                   layer_guid_t const &);
+std::unordered_map<TensorSlotName, TensorShape>
+    get_incoming_input_shapes(ComputationGraph const &, layer_guid_t const &);
 
-std::unordered_map<TensorSlotName, tensor_guid_t> get_incoming_weights(ComputationGraph const &,
-                                                layer_guid_t const &);
+std::unordered_map<TensorSlotName, tensor_guid_t>
+    get_incoming_weights(ComputationGraph const &, layer_guid_t const &);
 
 std::unordered_set<tensor_guid_t> get_all_tensors(ComputationGraph const &);
 std::unordered_map<tensor_guid_t, TensorAttrs>

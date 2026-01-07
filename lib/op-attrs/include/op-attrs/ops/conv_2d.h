@@ -19,9 +19,8 @@ TensorShape get_bias_shape(Conv2DAttrs const &attrs, TensorShape const &input);
 TensorShape get_output_shape(Conv2DAttrs const &attrs,
                              TensorShape const &input);
 
-std::unordered_map<TensorSlotName, TensorShape> 
-  get_weight_shapes(Conv2DAttrs const &attrs,
-                    TensorShape const &input_shape);
+std::unordered_map<TensorSlotName, TensorShape>
+    get_weight_shapes(Conv2DAttrs const &attrs, TensorShape const &input_shape);
 
 ParallelTensorShape get_kernel_shape(Conv2DAttrs const &attrs,
                                      ParallelTensorShape const &input_shape);

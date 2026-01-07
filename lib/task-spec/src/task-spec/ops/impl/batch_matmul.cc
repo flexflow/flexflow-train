@@ -24,7 +24,8 @@ namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::BatchMatmul;
 
-static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
+static std::optional<milliseconds_t>
+    forward_task_impl(TaskArgumentAccessor const &acc) {
   auto a_input = acc.get_tensor<Permissions::RO>(TensorSlotName::LHS_INPUT);
   auto b_input = acc.get_tensor<Permissions::RO>(TensorSlotName::RHS_INPUT);
   auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
@@ -56,15 +57,18 @@ static std::optional<milliseconds_t>
   DeviceType kernel_device_type = acc.get_kernel_device_type();
 
   auto output = acc.get_tensor<Permissions::RO>(TensorSlotName::OUTPUT);
-  auto output_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::OUTPUT);
+  auto output_grad =
+      acc.get_tensor_grad<Permissions::RW>(TensorSlotName::OUTPUT);
   ASSERT(output.shape == output_grad.shape);
 
   auto a_input = acc.get_tensor<Permissions::RO>(TensorSlotName::LHS_INPUT);
-  auto a_input_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::LHS_INPUT);
+  auto a_input_grad =
+      acc.get_tensor_grad<Permissions::RW>(TensorSlotName::LHS_INPUT);
   ASSERT(a_input.shape == a_input_grad.shape);
 
   auto b_input = acc.get_tensor<Permissions::RO>(TensorSlotName::RHS_INPUT);
-  auto b_input_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::RHS_INPUT);
+  auto b_input_grad =
+      acc.get_tensor_grad<Permissions::RW>(TensorSlotName::RHS_INPUT);
   ASSERT(b_input.shape == b_input_grad.shape);
 
   return profile(backward_kernel,

@@ -7,9 +7,7 @@ using Tree = value_type<0>;
 using Parent = value_type<1>;
 using Leaf = value_type<2>;
 
-template
-  std::unordered_map<BinaryTreePath, Leaf>
-      get_path_to_leaf_map(Tree const &,
-                 FullBinaryTreeImplementation<Tree, Parent, Leaf> const &);
+template std::unordered_map<BinaryTreePath, Leaf> get_path_to_leaf_map(
+    Tree const &, FullBinaryTreeImplementation<Tree, Parent, Leaf> const &);
 
 } // namespace FlexFlow

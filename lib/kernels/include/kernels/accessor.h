@@ -238,6 +238,6 @@ struct hash<::FlexFlow::GenericTensorAccessorW> {
   size_t operator()(::FlexFlow::GenericTensorAccessorW const &) const;
 };
 
-}
+} // namespace std
 
 #endif

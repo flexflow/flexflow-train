@@ -66,17 +66,16 @@ static TransposeStrides make_strides(TransposeAttrs const &m,
       info.out_strides[i] = 1;
     } else {
       int in_dim_size =
-          dim_at_idx(input_dims, legion_dim)
-              .int_from_positive_int();
+          dim_at_idx(input_dims, legion_dim).int_from_positive_int();
       int out_dim_size =
-          dim_at_idx(output_dims, legion_dim)
-              .int_from_positive_int();
+          dim_at_idx(output_dims, legion_dim).int_from_positive_int();
       info.in_strides[i] = info.in_strides[i - 1] * in_dim_size;
       info.out_strides[i] = info.out_strides[i - 1] * out_dim_size;
     }
 
     ff_dim_t ff_permuted_dim = m.permutation.at_l(ff_dim);
-    legion_dim_t legion_permuted_dim = legion_dim_from_ff_dim(ff_permuted_dim, num_dims);
+    legion_dim_t legion_permuted_dim =
+        legion_dim_from_ff_dim(ff_permuted_dim, num_dims);
     info.perm[i] = legion_permuted_dim.value.unwrap_nonnegative();
   }
 

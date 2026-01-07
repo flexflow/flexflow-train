@@ -13,12 +13,11 @@ bool value_is_shard_expanded(DynamicValueAttrs const &);
 bool no_part_of_graph_is_shard_expanded(DynamicOpenDataflowGraph const &);
 bool graph_is_fully_shard_expanded(DynamicOpenDataflowGraph const &);
 
-std::unordered_set<DynamicNodeInvocation> 
-  perform_shard_expansion_for_invocation(DynamicNodeInvocation const &);
+std::unordered_set<DynamicNodeInvocation>
+    perform_shard_expansion_for_invocation(DynamicNodeInvocation const &);
 
-DynamicOpenDataflowGraph 
-  perform_shard_expansion(DynamicOpenDataflowGraph const &);
-
+DynamicOpenDataflowGraph
+    perform_shard_expansion(DynamicOpenDataflowGraph const &);
 
 } // namespace FlexFlow
 

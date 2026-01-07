@@ -21,16 +21,22 @@ ParallelComputationGraph
     return parallel_layer_attrs_from_layer_attrs(layer);
   };
 
-  auto tensor_map = [&](KwargDataflowOutput<TensorSlotName> const &, TensorAttrs const &tensor) {
+  auto tensor_map = [&](KwargDataflowOutput<TensorSlotName> const &,
+                        TensorAttrs const &tensor) {
     return parallel_tensor_attrs_from_tensor_attrs(tensor);
   };
 
-  LabelledKwargDataflowGraphView<ParallelLayerAttrs, ParallelTensorAttrs, TensorSlotName> graph_view 
-    = rewrite_labelled_kwarg_dataflow_graph_value_labels(
-        rewrite_labelled_kwarg_dataflow_graph_node_labels(cg.raw_graph, layer_map),
-        tensor_map);
+  LabelledKwargDataflowGraphView<ParallelLayerAttrs,
+                                 ParallelTensorAttrs,
+                                 TensorSlotName>
+      graph_view = rewrite_labelled_kwarg_dataflow_graph_value_labels(
+          rewrite_labelled_kwarg_dataflow_graph_node_labels(cg.raw_graph,
+                                                            layer_map),
+          tensor_map);
   return ParallelComputationGraph{
-      LabelledKwargDataflowGraph<ParallelLayerAttrs, ParallelTensorAttrs, TensorSlotName>::
+      LabelledKwargDataflowGraph<ParallelLayerAttrs,
+                                 ParallelTensorAttrs,
+                                 TensorSlotName>::
           create_copy_of<
               UnorderedSetLabelledOpenKwargDataflowGraph<ParallelLayerAttrs,
                                                          ParallelTensorAttrs,

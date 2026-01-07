@@ -6,9 +6,9 @@
 
 namespace FlexFlow {
 
-ParallelTensorSpaceCoordinate
-  ptensor_space_coord_for_slot_name(OperatorAtomicTaskShardBinding const &op_task_signature,
-                                    TensorSlotName const &slot_name) {
+ParallelTensorSpaceCoordinate ptensor_space_coord_for_slot_name(
+    OperatorAtomicTaskShardBinding const &op_task_signature,
+    TensorSlotName const &slot_name) {
   return op_task_signature.tensor_coords.at(slot_name);
 }
 

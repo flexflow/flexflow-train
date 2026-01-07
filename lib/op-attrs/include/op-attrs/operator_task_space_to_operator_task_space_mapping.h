@@ -8,22 +8,23 @@
 
 namespace FlexFlow {
 
-OperatorTaskSpaceToOperatorTaskSpaceMapping op_to_op_identity_mapping(OperatorTaskSpace const &,
-                                                                      OperatorTaskSpace const &);
+OperatorTaskSpaceToOperatorTaskSpaceMapping
+    op_to_op_identity_mapping(OperatorTaskSpace const &,
+                              OperatorTaskSpace const &);
 
-OperatorTaskSpace
-  op_mapping_get_src_space(OperatorTaskSpaceToOperatorTaskSpaceMapping const &);
+OperatorTaskSpace op_mapping_get_src_space(
+    OperatorTaskSpaceToOperatorTaskSpaceMapping const &);
 
-OperatorTaskSpace
-  op_mapping_get_dst_space(OperatorTaskSpaceToOperatorTaskSpaceMapping const &);
+OperatorTaskSpace op_mapping_get_dst_space(
+    OperatorTaskSpaceToOperatorTaskSpaceMapping const &);
 
-bidict<TaskSpaceCoordinate, TaskSpaceCoordinate>
-  op_to_op_get_coord_mapping(OperatorTaskSpaceToOperatorTaskSpaceMapping const &);
+bidict<TaskSpaceCoordinate, TaskSpaceCoordinate> op_to_op_get_coord_mapping(
+    OperatorTaskSpaceToOperatorTaskSpaceMapping const &);
 
-OperatorTaskSpaceToOperatorTaskSpaceMapping 
-  op_to_op_mapping_from_composition_through_tensor(
-    OperatorSpaceToParallelTensorSpaceMapping const &src_to_tensor_mapping,
-    OperatorSpaceToParallelTensorSpaceMapping const &dst_to_tensor_mapping);
+OperatorTaskSpaceToOperatorTaskSpaceMapping
+    op_to_op_mapping_from_composition_through_tensor(
+        OperatorSpaceToParallelTensorSpaceMapping const &src_to_tensor_mapping,
+        OperatorSpaceToParallelTensorSpaceMapping const &dst_to_tensor_mapping);
 
 } // namespace FlexFlow
 

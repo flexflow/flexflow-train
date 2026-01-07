@@ -4,33 +4,34 @@
 namespace FlexFlow {
 
 LocalPcgTrainingBacking make_local_pcg_training_backing_for_pcg(
-  Allocator &allocator,
-  std::unordered_map<training_parallel_tensor_guid_t, ParallelTensorAccessorsW>
-    const &preallocated_tensors,
-  TrainingParallelComputationGraph const &training_pcg,
-  RuntimeArgConfig const &runtime_arg_config,
-  OptimizerAttrs const &optimizer_attrs,
-  MachineComputeSpecification const &machine_compute_specification) {
+    Allocator &allocator,
+    std::unordered_map<training_parallel_tensor_guid_t,
+                       ParallelTensorAccessorsW> const &preallocated_tensors,
+    TrainingParallelComputationGraph const &training_pcg,
+    RuntimeArgConfig const &runtime_arg_config,
+    OptimizerAttrs const &optimizer_attrs,
+    MachineComputeSpecification const &machine_compute_specification) {
 
   NOT_IMPLEMENTED();
 }
 
-std::optional<std::unordered_map<gpu_id_t, milliseconds_t>>
-  execute_forward(LocalTaskRegistry const &local_task_registry,
-                  LocalParallelTensorBacking const &,
-                  LocalPcgArgsBacking const &,
-                  TrainingParallelLayerPlusContext const &training_parallel_layer,
+std::optional<std::unordered_map<gpu_id_t, milliseconds_t>> execute_forward(
+    LocalTaskRegistry const &local_task_registry,
+    LocalParallelTensorBacking const &,
+    LocalPcgArgsBacking const &,
+    TrainingParallelLayerPlusContext const &training_parallel_layer,
+    Allocator &) {
+
+  NOT_IMPLEMENTED();
+}
+
+std::optional<std::unordered_map<gpu_id_t, milliseconds_t>> execute_backward() {
+  NOT_IMPLEMENTED();
+}
+
+void compute_loss(LocalPcgTrainingBacking const &,
+                  LossAttrs const &,
                   Allocator &) {
-  
-  NOT_IMPLEMENTED();
-}
-
-std::optional<std::unordered_map<gpu_id_t, milliseconds_t>>
-  execute_backward() {
-  NOT_IMPLEMENTED();
-}
-
-void compute_loss(LocalPcgTrainingBacking const &, LossAttrs const &, Allocator &) {
   NOT_IMPLEMENTED();
 }
 

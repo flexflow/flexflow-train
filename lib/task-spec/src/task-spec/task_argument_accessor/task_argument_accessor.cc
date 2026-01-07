@@ -2,11 +2,11 @@
 
 namespace FlexFlow {
 
-ProfilingSettings TaskArgumentAccessor::get_profiling_settings() const { 
+ProfilingSettings TaskArgumentAccessor::get_profiling_settings() const {
   return this->ptr->get_profiling_settings();
 }
 
-device_handle_t TaskArgumentAccessor::get_ff_handle() const { 
+device_handle_t TaskArgumentAccessor::get_ff_handle() const {
   return this->ptr->get_ff_handle();
 }
 DeviceType TaskArgumentAccessor::get_kernel_device_type() const {

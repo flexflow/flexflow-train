@@ -9,8 +9,8 @@
 #include "substitutions/sub_parallel_computation_graph_data.dtg.h"
 #include "substitutions/sub_parallel_computation_graph_data.h"
 #include "substitutions/sub_parallel_computation_graph_edge.h"
-#include "utils/containers/keys.h"
 #include "utils/containers/binary_merge_disjoint_maps.h"
+#include "utils/containers/keys.h"
 #include "utils/containers/restrict_keys.h"
 #include "utils/containers/set_minus.h"
 #include "utils/containers/values.h"
@@ -22,7 +22,7 @@ SubParallelComputationGraph
                        Substitution const &sub,
                        PCGPatternMatch const &match) {
   assert_pcg_pattern_match_is_valid_for_pattern_and_subpcg(
-    match, sub.pcg_pattern, spcg);
+      match, sub.pcg_pattern, spcg);
 
   auto substitution_output_result =
       evaluate_substitution_output(spcg, sub, match);
@@ -31,7 +31,8 @@ SubParallelComputationGraph
   OutputExprToResultSubPCGMapping output_expr_to_result_sub_pcg_mapping =
       substitution_output_result.second;
 
-  SubParallelComputationGraphData output_graph_data = get_sub_pcg_data(substitution_output_graph);
+  SubParallelComputationGraphData output_graph_data =
+      get_sub_pcg_data(substitution_output_graph);
   require_sub_parallel_computation_graph_data_is_valid(output_graph_data);
 
   SubParallelComputationGraphData pre_data = get_sub_pcg_data(spcg);
@@ -65,7 +66,8 @@ SubParallelComputationGraph
           if (e.raw_edge.is_input_edge()) {
             return true;
           } else {
-            KwargDataflowEdge<TensorSlotName> dfe = e.raw_edge.require_internal_edge();
+            KwargDataflowEdge<TensorSlotName> dfe =
+                e.raw_edge.require_internal_edge();
             parallel_layer_guid_t src = parallel_layer_guid_t{dfe.src.node};
             parallel_layer_guid_t dst = parallel_layer_guid_t{dfe.dst.node};
             return !(contains(matched_nodes, src) ||

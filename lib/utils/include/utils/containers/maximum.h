@@ -1,9 +1,9 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_MAXIMUM_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_MAXIMUM_H
 
-#include <libassert/assert.hpp>
 #include <algorithm>
 #include <fmt/format.h>
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 

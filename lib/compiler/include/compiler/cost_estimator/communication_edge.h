@@ -21,14 +21,13 @@ struct CommunicationEdge {
 
   MachineSpaceCoordinate const &get_src() const;
   MachineSpaceCoordinate const &get_dst() const;
+
 private:
   MachineSpaceCoordinate src;
   MachineSpaceCoordinate dst;
+
 private:
-  std::tuple<
-    decltype(src) const &,
-    decltype(dst) const &
-  > tie() const;
+  std::tuple<decltype(src) const &, decltype(dst) const &> tie() const;
 
   friend struct ::std::hash<CommunicationEdge>;
 };
@@ -45,6 +44,6 @@ struct hash<::FlexFlow::CommunicationEdge> {
   size_t operator()(::FlexFlow::CommunicationEdge const &) const;
 };
 
-}
+} // namespace std
 
 #endif

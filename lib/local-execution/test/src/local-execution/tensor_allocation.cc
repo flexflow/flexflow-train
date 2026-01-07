@@ -1,5 +1,5 @@
-#include <doctest/doctest.h>
 #include "local-execution/tensor_allocation.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 

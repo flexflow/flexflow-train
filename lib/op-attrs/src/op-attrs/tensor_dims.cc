@@ -33,7 +33,7 @@ bool tensor_dims_has_dim(TensorDims const &tensor_dims, ff_dim_t dim) {
 
 num_tensor_dims_t get_num_dims(TensorDims const &dims) {
   return num_tensor_dims_t{
-    num_elements(dims.ff_ordered),
+      num_elements(dims.ff_ordered),
   };
 }
 
@@ -116,8 +116,8 @@ TensorDimsCoord get_broadcast_src_coord(TensorDims const &input_dims,
          input_dims,
          output_dims);
 
-  relative_ff_dim_t trailing_start_idx =
-      relative_ff_dim_t{-1 * get_num_dims(input_dims).int_from_num_tensor_dims()};
+  relative_ff_dim_t trailing_start_idx = relative_ff_dim_t{
+      -1 * get_num_dims(input_dims).int_from_num_tensor_dims()};
 
   FFOrdered<nonnegative_int> trailing_entries =
       slice(dst_coord.ff_ordered, trailing_start_idx);

@@ -1,6 +1,6 @@
-#include <doctest/doctest.h>
 #include "utils/containers/require_all_same.h"
 #include "test/utils/doctest/fmt/optional.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
@@ -23,7 +23,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         std::optional<int> correct = 2;
 
         CHECK(result == correct);
-      }      
+      }
 
       SUBCASE("input is not all the same") {
         std::vector<int> input = {2, 2, 3, 2};

@@ -6,7 +6,8 @@ namespace FlexFlow {
 
 using namespace FlexFlow::Kernels::Flat;
 
-static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
+static std::optional<milliseconds_t>
+    forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
   auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
@@ -26,7 +27,8 @@ static std::optional<milliseconds_t>
   DeviceType kernel_device_type = acc.get_kernel_device_type();
 
   auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
-  auto output_grad = acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
+  auto output_grad =
+      acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::INPUT);
 
   return profile(backward_kernel,

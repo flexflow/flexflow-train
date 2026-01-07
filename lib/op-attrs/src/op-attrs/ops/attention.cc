@@ -108,10 +108,10 @@ std::unordered_map<TensorSlotName, IncomingTensorRole>
   check_attrs(attrs);
 
   std::unordered_map<TensorSlotName, IncomingTensorRole> roles = {
-    {TensorSlotName::QUERY, IncomingTensorRole::INPUT},
-    {TensorSlotName::KEY, IncomingTensorRole::INPUT},
-    {TensorSlotName::VALUE, IncomingTensorRole::INPUT},
-    {TensorSlotName::WEIGHT, IncomingTensorRole::WEIGHT},
+      {TensorSlotName::QUERY, IncomingTensorRole::INPUT},
+      {TensorSlotName::KEY, IncomingTensorRole::INPUT},
+      {TensorSlotName::VALUE, IncomingTensorRole::INPUT},
+      {TensorSlotName::WEIGHT, IncomingTensorRole::WEIGHT},
   };
 
   if (attrs.bias) {
@@ -240,21 +240,21 @@ tl::expected<std::unordered_map<TensorSlotName, TensorShape>, std::string>
                       TensorShape const &input_v) {
 
   std::unordered_map<TensorSlotName, TensorShape> weight_shapes = {
-    {
-      TensorSlotName::WEIGHT,
-      PROPAGATE_ERR(get_weights_shape(attrs, input_q, input_k, input_v)),
-    },
+      {
+          TensorSlotName::WEIGHT,
+          PROPAGATE_ERR(get_weights_shape(attrs, input_q, input_k, input_v)),
+      },
   };
 
   if (attrs.bias) {
     weight_shapes.insert({
-      TensorSlotName::INPUT_BIAS,
-      PROPAGATE_ERR(get_input_bias_shape(attrs, input_q, input_k, input_v)),
+        TensorSlotName::INPUT_BIAS,
+        PROPAGATE_ERR(get_input_bias_shape(attrs, input_q, input_k, input_v)),
     });
 
     weight_shapes.insert({
-      TensorSlotName::OUTPUT_BIAS,
-      PROPAGATE_ERR(get_output_bias_shape(attrs, input_q, input_k, input_v)),
+        TensorSlotName::OUTPUT_BIAS,
+        PROPAGATE_ERR(get_output_bias_shape(attrs, input_q, input_k, input_v)),
     });
   }
 
@@ -416,42 +416,44 @@ positive_int get_oSize(TensorShape const &) {
   NOT_IMPLEMENTED();
 }
 
-tl::expected<std::unordered_map<TensorSlotName, ParallelTensorShape>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, ParallelTensorShape>,
+             std::string>
     get_weight_shapes(MultiHeadAttentionAttrs const &attrs,
                       ParallelTensorShape const &input_q,
                       ParallelTensorShape const &input_k,
                       ParallelTensorShape const &input_v) {
 
   std::unordered_map<TensorSlotName, ParallelTensorShape> weight_shapes = {
-    {
-      TensorSlotName::WEIGHT,
-      PROPAGATE_ERR(get_weights_shape(attrs, input_q, input_k, input_v)),
-    },
+      {
+          TensorSlotName::WEIGHT,
+          PROPAGATE_ERR(get_weights_shape(attrs, input_q, input_k, input_v)),
+      },
   };
 
   if (attrs.bias) {
     weight_shapes.insert({
-      TensorSlotName::INPUT_BIAS, 
-      PROPAGATE_ERR(get_input_bias_shape(attrs, input_q, input_k, input_v)),
+        TensorSlotName::INPUT_BIAS,
+        PROPAGATE_ERR(get_input_bias_shape(attrs, input_q, input_k, input_v)),
     });
 
     weight_shapes.insert({
-      TensorSlotName::OUTPUT_BIAS,
-      PROPAGATE_ERR(get_output_bias_shape(attrs, input_q, input_k, input_v)),
+        TensorSlotName::OUTPUT_BIAS,
+        PROPAGATE_ERR(get_output_bias_shape(attrs, input_q, input_k, input_v)),
     });
   }
 
   return weight_shapes;
 }
 
-tl::expected<std::unordered_map<TensorSlotName, InitializerAttrs>, std::string> get_initializers(
-    MultiHeadAttentionAttrs const &attrs,
-    TensorShape const &input_q,
-    TensorShape const &input_k,
-    TensorShape const &input_v,
-    std::optional<InitializerAttrs> const &maybe_weights_initializer,
-    std::optional<InitializerAttrs> const &maybe_input_bias_initializer,
-    std::optional<InitializerAttrs> const &maybe_output_bias_initializer) {
+tl::expected<std::unordered_map<TensorSlotName, InitializerAttrs>, std::string>
+    get_initializers(
+        MultiHeadAttentionAttrs const &attrs,
+        TensorShape const &input_q,
+        TensorShape const &input_k,
+        TensorShape const &input_v,
+        std::optional<InitializerAttrs> const &maybe_weights_initializer,
+        std::optional<InitializerAttrs> const &maybe_input_bias_initializer,
+        std::optional<InitializerAttrs> const &maybe_output_bias_initializer) {
   check_attrs(attrs);
 
   if (!attrs.bias && maybe_input_bias_initializer.has_value()) {
@@ -491,13 +493,13 @@ tl::expected<std::unordered_map<TensorSlotName, InitializerAttrs>, std::string> 
 
   if (attrs.bias) {
     return std::unordered_map<TensorSlotName, InitializerAttrs>{
-      {TensorSlotName::WEIGHT, weights_initializer},
-      {TensorSlotName::INPUT_BIAS, input_bias_initializer},
-      {TensorSlotName::OUTPUT_BIAS ,output_bias_initializer},
+        {TensorSlotName::WEIGHT, weights_initializer},
+        {TensorSlotName::INPUT_BIAS, input_bias_initializer},
+        {TensorSlotName::OUTPUT_BIAS, output_bias_initializer},
     };
   } else {
     return std::unordered_map<TensorSlotName, InitializerAttrs>{
-      {TensorSlotName::WEIGHT, weights_initializer},
+        {TensorSlotName::WEIGHT, weights_initializer},
     };
   }
 }

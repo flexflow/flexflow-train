@@ -8,9 +8,8 @@
 namespace FlexFlow {
 
 ParallelTensorSpaceCoordinate
-  ptensor_space_coord_for_slot_name(OperatorAtomicTaskShardBinding const &,
-                                    TensorSlotName const &);
-
+    ptensor_space_coord_for_slot_name(OperatorAtomicTaskShardBinding const &,
+                                      TensorSlotName const &);
 
 } // namespace FlexFlow
 

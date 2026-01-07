@@ -2,8 +2,8 @@
 #include "test/utils/doctest/check_without_stringify.h"
 #include "test/utils/doctest/fmt/unordered_map.h"
 #include "test/utils/doctest/fmt/vector.h"
-#include <doctest/doctest.h>
 #include "test/utils/rapidcheck.h"
+#include <doctest/doctest.h>
 
 using namespace FlexFlow;
 
@@ -111,13 +111,13 @@ TEST_SUITE(FF_TEST_SUITE) {
 
   TEST_CASE("adl_serializer<bidict<L, R>>") {
     bidict<int, std::string> deserialized = bidict<int, std::string>{
-      {2, "hello"},  
-      {3, "goodbye"},
+        {2, "hello"},
+        {3, "goodbye"},
     };
 
     nlohmann::json serialized = std::vector<std::pair<int, std::string>>{
-      {2, "hello"},  
-      {3, "goodbye"},
+        {2, "hello"},
+        {3, "goodbye"},
     };
 
     SUBCASE("to_json") {
@@ -136,6 +136,6 @@ TEST_SUITE(FF_TEST_SUITE) {
   }
 
   TEST_CASE("rc::Arbitrary") {
-    RC_SUBCASE([](bidict<int, std::string>) {}); 
+    RC_SUBCASE([](bidict<int, std::string>) {});
   }
 }

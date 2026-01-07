@@ -22,7 +22,8 @@ using namespace FlexFlow::Kernels::Cast;
 
 namespace FlexFlow {
 
-static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
+static std::optional<milliseconds_t>
+    forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
   CastAttrs attrs = acc.get_op_attrs().require_cast();
@@ -47,7 +48,8 @@ static std::optional<milliseconds_t>
   auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
 
   auto input_grad = acc.get_tensor_grad<Permissions::RO>(TensorSlotName::INPUT);
-  auto output_grad = acc.get_tensor_grad<Permissions::WO>(TensorSlotName::OUTPUT);
+  auto output_grad =
+      acc.get_tensor_grad<Permissions::WO>(TensorSlotName::OUTPUT);
 
   return profile(backward_kernel,
                  profiling,

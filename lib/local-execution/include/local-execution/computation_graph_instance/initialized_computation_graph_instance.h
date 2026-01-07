@@ -16,10 +16,12 @@ struct InitializedComputationGraphInstance {
 public:
   LocalTensorBacking const &get_tensor_backing() const;
   LocalTaskRegistry const &get_task_registry() const;
-  TrainingSymbolicComputationGraphFromCgConversion const &get_symbolic_training_graph_for_cg() const;
+  TrainingSymbolicComputationGraphFromCgConversion const &
+      get_symbolic_training_graph_for_cg() const;
   LocalAtomicTensorBacking const &get_atomic_tensor_backing() const;
   Allocator &get_allocator() const;
   RuntimeArgConfig const &get_runtime_arg_config() const;
+
 private:
   LocalDeviceStatesBacking per_device_op_states;
   Allocator &allocator;
@@ -27,22 +29,20 @@ private:
   ComputationGraphInstance computation_graph_instance;
 };
 
-InitializedComputationGraphInstance 
-  initialize_computation_graph_instance(ComputationGraphInstance const &,
-                                        Allocator &);
+InitializedComputationGraphInstance
+    initialize_computation_graph_instance(ComputationGraphInstance const &,
+                                          Allocator &);
 
-std::unordered_map<
-  layer_guid_t,
-  std::optional<milliseconds_t>> 
+std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
     perform_forward_pass_for_computation_graph_instance(
-      InitializedComputationGraphInstance const &);
+        InitializedComputationGraphInstance const &);
 
-std::unordered_map<
-  layer_guid_t,
-  std::optional<milliseconds_t>> 
-    perform_backward_pass_for_computation_graph_instance(InitializedComputationGraphInstance const &);
+std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
+    perform_backward_pass_for_computation_graph_instance(
+        InitializedComputationGraphInstance const &);
 
-void perform_update_pass_for_computation_graph_instance(InitializedComputationGraphInstance const &);
+void perform_update_pass_for_computation_graph_instance(
+    InitializedComputationGraphInstance const &);
 
 } // namespace FlexFlow
 

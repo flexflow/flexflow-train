@@ -15,8 +15,7 @@ namespace FlexFlow {
                 "Function " __FUNC__ " not yet implemented " __FILE__          \
                 ":" __LINE__);
 #else
-#define NOT_IMPLEMENTED()                                                      \
-  PANIC("Not implemented");
+#define NOT_IMPLEMENTED() PANIC("Not implemented");
 #endif
 
 class not_implemented : public std::logic_error {

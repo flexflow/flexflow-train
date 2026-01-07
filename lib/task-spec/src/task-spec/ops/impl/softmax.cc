@@ -47,14 +47,16 @@ static DeviceSpecificPerDeviceOpState
                   output_w.int_from_positive_int());
 
   return DeviceSpecificPerDeviceOpState{
-    acc.make_device_specific(per_device_state),
+      acc.make_device_specific(per_device_state),
   };
 }
 
-static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
+static std::optional<milliseconds_t>
+    forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
-  SoftmaxPerDeviceState per_device_state = acc.get_per_device_op_state().require_softmax().value();
+  SoftmaxPerDeviceState per_device_state =
+      acc.get_per_device_op_state().require_softmax().value();
 
   auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
   auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
@@ -72,13 +74,15 @@ static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
-  SoftmaxPerDeviceState per_device_state = acc.get_per_device_op_state().require_softmax().value();
+  SoftmaxPerDeviceState per_device_state =
+      acc.get_per_device_op_state().require_softmax().value();
 
   auto input_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::INPUT);
   auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
   assert(input_grad.shape == input.shape);
 
-  auto output_grad = acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
+  auto output_grad =
+      acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
   auto output = acc.get_tensor<Permissions::RO>(TensorSlotName::OUTPUT);
 
   assert(output_grad.shape == output.shape);

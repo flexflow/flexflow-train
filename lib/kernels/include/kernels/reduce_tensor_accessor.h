@@ -33,12 +33,12 @@ struct CPUReduceTensorAccessorInDims {
       return contains(dims_to_reduce, dim);
     };
 
-    OneToMany<TensorDimsCoord, TensorDimsCoord>
-        output_coord_from_input_coord = group_by(
-            get_tensor_dims_coord_set(input.shape.dims),
-            [&](TensorDimsCoord const &input_coord) {
-              return tensor_dims_coord_drop_dims(input_coord, should_drop_dim);
-            });
+    OneToMany<TensorDimsCoord, TensorDimsCoord> output_coord_from_input_coord =
+        group_by(get_tensor_dims_coord_set(input.shape.dims),
+                 [&](TensorDimsCoord const &input_coord) {
+                   return tensor_dims_coord_drop_dims(input_coord,
+                                                      should_drop_dim);
+                 });
 
     for (auto const &[output_coord, input_coords] :
          output_coord_from_input_coord.l_to_r()) {

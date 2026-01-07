@@ -24,18 +24,20 @@ std::optional<MachineView>
                               BinaryTreePath const &);
 
 std::unordered_map<BinaryTreePath, MachineSpaceStencil>
-  get_machine_stencils_for_decomposition(ParallelComputationGraph const &pcg,
-                                         PCGBinarySPDecomposition const &decomposition,
-                                         ParallelLayerGuidObliviousMachineMapping const &mapping);
+    get_machine_stencils_for_decomposition(
+        ParallelComputationGraph const &pcg,
+        PCGBinarySPDecomposition const &decomposition,
+        ParallelLayerGuidObliviousMachineMapping const &mapping);
 
 std::unordered_map<BinaryTreePath, std::optional<MachineSpaceStencil>>
-  get_machine_stencils_for_mm_problem_tree(MachineMappingProblemTree const &,
-                                           ParallelLayerGuidObliviousMachineMapping const &mapping);
+    get_machine_stencils_for_mm_problem_tree(
+        MachineMappingProblemTree const &,
+        ParallelLayerGuidObliviousMachineMapping const &mapping);
 
 std::unordered_map<BinaryTreePath, MachineSpaceStencil>
-  get_machine_stencils_for_partially_mapped_mm_problem_tree(
-    MachineMappingProblemTree const &,
-    ParallelLayerGuidObliviousMachineMapping const &);
+    get_machine_stencils_for_partially_mapped_mm_problem_tree(
+        MachineMappingProblemTree const &,
+        ParallelLayerGuidObliviousMachineMapping const &);
 
 } // namespace FlexFlow
 

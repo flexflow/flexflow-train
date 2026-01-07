@@ -58,7 +58,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       CHECK_THROWS(get_output_shape(
           attrs,
-          make_input(SumDegree{degree}, DiscardCopyDegree{1_p}, 1_p, 1_p, 1_p)));
+          make_input(
+              SumDegree{degree}, DiscardCopyDegree{1_p}, 1_p, 1_p, 1_p)));
     }
 
     SUBCASE("discard copy degree > 1") {
@@ -66,7 +67,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       CHECK_THROWS(get_output_shape(
           attrs,
-          make_input(SumDegree{1_p}, DiscardCopyDegree{degree}, 1_p, 1_p, 1_p)));
+          make_input(
+              SumDegree{1_p}, DiscardCopyDegree{degree}, 1_p, 1_p, 1_p)));
     }
   }
 }

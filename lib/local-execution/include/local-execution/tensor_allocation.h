@@ -9,14 +9,14 @@ namespace FlexFlow {
 bool no_tensors_are_allocated(DynamicOpenDataflowGraph const &);
 bool all_tensors_are_allocated(DynamicOpenDataflowGraph const &);
 
-DynamicValueAttrs
-  perform_tensor_allocation_for_value(DynamicValueAttrs const &, 
-                                      Allocator &);
+DynamicValueAttrs perform_tensor_allocation_for_value(DynamicValueAttrs const &,
+                                                      Allocator &);
 
-DynamicOpenDataflowGraph
-  perform_tensor_allocation(DynamicOpenDataflowGraph const &, 
-                            std::unordered_map<DynamicValueAttrs, GenericTensorAccessorW> const &preallocated,
-                            Allocator &);
+DynamicOpenDataflowGraph perform_tensor_allocation(
+    DynamicOpenDataflowGraph const &,
+    std::unordered_map<DynamicValueAttrs, GenericTensorAccessorW> const
+        &preallocated,
+    Allocator &);
 
 } // namespace FlexFlow
 

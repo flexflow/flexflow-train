@@ -11,6 +11,6 @@ struct StringMaker<std::monostate> {
   static String convert(std::monostate const &);
 };
 
-} // namespace 
+} // namespace doctest
 
 #endif

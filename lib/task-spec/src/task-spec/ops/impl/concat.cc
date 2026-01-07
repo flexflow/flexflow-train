@@ -26,23 +26,25 @@ namespace FlexFlow {
 using namespace FlexFlow::Kernels::Concat;
 
 static std::vector<TensorSlotName> get_input_slots(ConcatAttrs const &attrs) {
-  return
-    slice(get_variadic_inputs_slot_name_sequence(), 0, attrs.num_inputs.int_from_int_ge_two());
+  return slice(get_variadic_inputs_slot_name_sequence(),
+               0,
+               attrs.num_inputs.int_from_int_ge_two());
 }
 
-static std::optional<milliseconds_t> forward_task_impl(TaskArgumentAccessor const &acc) {
+static std::optional<milliseconds_t>
+    forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
   ConcatAttrs attrs = acc.get_op_attrs().require_concat();
 
   std::vector<TensorSlotName> input_slots = get_input_slots(attrs);
 
-  std::vector<GenericTensorAccessorR> inputs 
-    = transform(input_slots,
+  std::vector<GenericTensorAccessorR> inputs =
+      transform(input_slots,
                 [&](TensorSlotName input_slot_name) -> GenericTensorAccessorR {
                   return acc.get_tensor<Permissions::RO>(input_slot_name);
                 });
-    
+
   ASSERT(inputs.size() <= MAX_NUM_INPUTS);
 
   auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
@@ -64,15 +66,16 @@ static std::optional<milliseconds_t>
 
   std::vector<TensorSlotName> input_slots = get_input_slots(attrs);
 
-  std::vector<GenericTensorAccessorW> input_grads
-    = transform(input_slots,
+  std::vector<GenericTensorAccessorW> input_grads =
+      transform(input_slots,
                 [&](TensorSlotName input_slot_name) -> GenericTensorAccessorW {
                   return acc.get_tensor_grad<Permissions::RW>(input_slot_name);
                 });
 
   ASSERT(input_grads.size() <= MAX_NUM_INPUTS);
-    
-  auto output_grad = acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
+
+  auto output_grad =
+      acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
 
   return profile(backward_kernel,
                  profiling,

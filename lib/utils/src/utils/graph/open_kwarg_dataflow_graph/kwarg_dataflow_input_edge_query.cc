@@ -6,16 +6,13 @@ namespace FlexFlow {
 using GraphInputName = ordered_value_type<0>;
 using SlotName = ordered_value_type<1>;
 
-template
-  KwargDataflowInputEdgeQuery<GraphInputName, SlotName>
+template KwargDataflowInputEdgeQuery<GraphInputName, SlotName>
     kwarg_dataflow_input_edge_query_all();
 
-template
-  KwargDataflowInputEdgeQuery<GraphInputName, SlotName>
+template KwargDataflowInputEdgeQuery<GraphInputName, SlotName>
     kwarg_dataflow_input_edge_query_none();
 
-template
-  bool kwarg_dataflow_input_edge_query_includes(
+template bool kwarg_dataflow_input_edge_query_includes(
     KwargDataflowInputEdgeQuery<GraphInputName, SlotName> const &,
     KwargDataflowInputEdge<GraphInputName, SlotName> const &);
 

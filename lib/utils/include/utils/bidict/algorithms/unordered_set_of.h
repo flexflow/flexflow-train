@@ -1,8 +1,8 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_BIDICT_ALGORITHMS_UNORDERED_SET_OF_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_BIDICT_ALGORITHMS_UNORDERED_SET_OF_H
 
-#include "utils/hash/pair.h"
 #include "utils/bidict/bidict.h"
+#include "utils/hash/pair.h"
 
 namespace FlexFlow {
 
@@ -16,7 +16,6 @@ std::unordered_set<std::pair<L, R>> unordered_set_of(bidict<L, R> const &c) {
 
   return result;
 }
-
 
 } // namespace FlexFlow
 

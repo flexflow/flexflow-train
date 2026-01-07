@@ -13,7 +13,9 @@ namespace FlexFlow {
 
 LocalDeviceStatesBacking make_local_device_states_backing_for_computation_graph(
     LocalTaskRegistry const &,
-    std::unordered_map<layer_guid_t, SymbolicLayerTrainingTensorGroupSignatureWithShapes> const &,
+    std::unordered_map<
+        layer_guid_t,
+        SymbolicLayerTrainingTensorGroupSignatureWithShapes> const &,
     RuntimeArgConfig const &runtime_arg_config,
     LocalTensorBacking const &,
     Allocator &);

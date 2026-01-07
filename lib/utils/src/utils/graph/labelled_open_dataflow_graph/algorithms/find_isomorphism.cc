@@ -6,9 +6,8 @@ namespace FlexFlow {
 using NodeLabel = value_type<0>;
 using ValueLabel = value_type<1>;
 
-template
-  std::optional<OpenDataflowGraphIsomorphism> find_isomorphism(
-      LabelledOpenDataflowGraphView<NodeLabel, ValueLabel> const &,
-      LabelledOpenDataflowGraphView<NodeLabel, ValueLabel> const &);
+template std::optional<OpenDataflowGraphIsomorphism> find_isomorphism(
+    LabelledOpenDataflowGraphView<NodeLabel, ValueLabel> const &,
+    LabelledOpenDataflowGraphView<NodeLabel, ValueLabel> const &);
 
 } // namespace FlexFlow

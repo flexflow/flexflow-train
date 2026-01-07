@@ -7,16 +7,24 @@
 
 namespace FlexFlow {
 
-template <typename NodeLabel, typename ValueLabel, typename GraphInputName, typename SlotName>
+template <typename NodeLabel,
+          typename ValueLabel,
+          typename GraphInputName,
+          typename SlotName>
 struct LabelledOpenKwargDataflowGraphView
-    : virtual public LabelledKwargDataflowGraphView<NodeLabel, ValueLabel, SlotName>,
+    : virtual public LabelledKwargDataflowGraphView<NodeLabel,
+                                                    ValueLabel,
+                                                    SlotName>,
       virtual public OpenKwargDataflowGraphView<GraphInputName, SlotName> {
 private:
-  using Interface = ILabelledOpenKwargDataflowGraphView<NodeLabel, ValueLabel, GraphInputName, SlotName>;
+  using Interface = ILabelledOpenKwargDataflowGraphView<NodeLabel,
+                                                        ValueLabel,
+                                                        GraphInputName,
+                                                        SlotName>;
 
 public:
-  LabelledOpenKwargDataflowGraphView(LabelledOpenKwargDataflowGraphView const &) =
-      default;
+  LabelledOpenKwargDataflowGraphView(
+      LabelledOpenKwargDataflowGraphView const &) = default;
   LabelledOpenKwargDataflowGraphView &
       operator=(LabelledOpenKwargDataflowGraphView const &) = default;
 
@@ -24,28 +32,33 @@ public:
     return this->get_interface().at(n);
   }
 
-  ValueLabel at(OpenKwargDataflowValue<GraphInputName, SlotName> const &v) const {
+  ValueLabel
+      at(OpenKwargDataflowValue<GraphInputName, SlotName> const &v) const {
     return this->get_interface().at(v);
   }
 
   template <typename T, typename... Args>
   static typename std::enable_if<
       std::is_base_of<Interface, T>::value,
-      LabelledOpenKwargDataflowGraphView<NodeLabel, ValueLabel, GraphInputName, SlotName>>::type
+      LabelledOpenKwargDataflowGraphView<NodeLabel,
+                                         ValueLabel,
+                                         GraphInputName,
+                                         SlotName>>::type
       create(Args &&...args) {
-    return LabelledOpenKwargDataflowGraphView(static_cast<cow_ptr_t<IGraphView>>(
-        make_cow_ptr<T>(std::forward<Args>(args)...)));
+    return LabelledOpenKwargDataflowGraphView(
+        static_cast<cow_ptr_t<IGraphView>>(
+            make_cow_ptr<T>(std::forward<Args>(args)...)));
   }
 
 protected:
-  using OpenKwargDataflowGraphView<GraphInputName, SlotName>::OpenKwargDataflowGraphView;
+  using OpenKwargDataflowGraphView<GraphInputName,
+                                   SlotName>::OpenKwargDataflowGraphView;
 
 private:
   Interface const &get_interface() const {
     return *std::dynamic_pointer_cast<Interface const>(GraphView::ptr.get());
   }
 };
-
 
 } // namespace FlexFlow
 

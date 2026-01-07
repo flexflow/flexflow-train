@@ -51,34 +51,33 @@ tl::expected<ParallelTensorShape, std::string>
     get_output_shape(LinearAttrs const &attrs,
                      ParallelTensorShape const &input);
 
-tl::expected<std::unordered_map<TensorSlotName, ParallelTensorShape>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, ParallelTensorShape>,
+             std::string>
     get_weight_shapes(LinearAttrs const &attrs,
                       ParallelTensorShape const &input_shape);
 
-tl::expected<std::unordered_map<TensorSlotName, InitializerAttrs>, std::string> get_initializers(
-    LinearAttrs const &,
-    TensorShape const &input_shape,
-    std::optional<InitializerAttrs> const &projection_initializer =
-        std::nullopt,
-    std::optional<InitializerAttrs> const &kernel_initializer = std::nullopt);
+tl::expected<std::unordered_map<TensorSlotName, InitializerAttrs>, std::string>
+    get_initializers(LinearAttrs const &,
+                     TensorShape const &input_shape,
+                     std::optional<InitializerAttrs> const
+                         &projection_initializer = std::nullopt,
+                     std::optional<InitializerAttrs> const &kernel_initializer =
+                         std::nullopt);
 
-OperatorTaskSpace get_operator_task_space(
-  LinearAttrs const &attrs,
-  ParallelTensorDimDegrees const &input_degrees);
+OperatorTaskSpace
+    get_operator_task_space(LinearAttrs const &attrs,
+                            ParallelTensorDimDegrees const &input_degrees);
 
+OperatorSpaceToParallelTensorSpaceMapping get_operator_to_input_mapping(
+    LinearAttrs const &attrs, ParallelTensorDimDegrees const &input_degrees);
+OperatorSpaceToParallelTensorSpaceMapping get_operator_to_projection_mapping(
+    LinearAttrs const &attrs, ParallelTensorDimDegrees const &input_degrees);
 OperatorSpaceToParallelTensorSpaceMapping
-    get_operator_to_input_mapping(LinearAttrs const &attrs,
-                                  ParallelTensorDimDegrees const &input_degrees);
-OperatorSpaceToParallelTensorSpaceMapping 
-    get_operator_to_projection_mapping(LinearAttrs const &attrs, 
-                                       ParallelTensorDimDegrees const &input_degrees);
-OperatorSpaceToParallelTensorSpaceMapping
-    get_operator_to_bias_mapping(LinearAttrs const &attrs, 
+    get_operator_to_bias_mapping(LinearAttrs const &attrs,
                                  ParallelTensorDimDegrees const &input_degrees);
 
-OperatorSpaceToParallelTensorSpaceMapping
-    get_operator_to_output_mapping(LinearAttrs const &attrs,
-                                   ParallelTensorDimDegrees const &input_degrees);
+OperatorSpaceToParallelTensorSpaceMapping get_operator_to_output_mapping(
+    LinearAttrs const &attrs, ParallelTensorDimDegrees const &input_degrees);
 
 } // namespace FlexFlow
 
