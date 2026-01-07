@@ -132,14 +132,16 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("SP without weight nodes but non-SP with weight nodes (parallel op "
             "chain following is not necessary)") {
-      // A minimal computation graph where without weights (w1 and w2) the
-      // computation graph is series-parallel, but with weight nodes it is not,
-      // but parallel op chain following is not necessary
-      // (in this case because there are no parallel ops involved)
-      //
-      // w1   input   w2
-      //  \   /   \   /
-      //   op1     op2
+      /**
+       * A minimal computation graph where without weights (w1 and w2) the
+       * computation graph is series-parallel, but with weight nodes it is not,
+       * but parallel op chain following is not necessary
+       * (in this case because there are no parallel ops involved)
+       *
+       * w1   input   w2
+       *  \   /   \   /
+       *   op1     op2
+       */
 
       ParallelComputationGraph pcg = empty_parallel_computation_graph();
 
@@ -227,20 +229,23 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("SP without weight nodes but non-SP with weight node (parallel op "
             "chain following necessary)") {
-      // A minimal computation graph where without weights (w1 and w2) the
-      // computation graph is series-parallel, but with weight nodes it is not
-      // and parallel op chain following is necessary
-      //
-      // w1   input   w2
-      //  |    |       |
-      //  |    p2     p4
-      //  |    |       |
-      // p1    p3     p5
-      //  |    |       |
-      //  |    |\     /
-      //  |  op0 \    |
-      //  \   /   |  /
-      //   op1    op2
+      
+      /**
+       * A minimal computation graph where without weights (w1 and w2) the
+       * computation graph is series-parallel, but with weight nodes it is not
+       * and parallel op chain following is necessary
+       *
+       * w1   input   w2
+       *  |    |       |
+       *  |    p2     p4
+       *  |    |       |
+       * p1    p3     p5
+       *  |    |       |
+       *  |    |\     /
+       *  |  op0 \    |
+       *  \   /   |  /
+       *   op1    op2
+       */
 
       ParallelComputationGraph pcg = empty_parallel_computation_graph();
 
@@ -419,11 +424,14 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("SP with or without preprocessing, but preprocessing would change "
             "resulting SP "
             "decomposition") {
-      // parallel computation graph:
-      //
-      //  input1   input2
-      //    |        |
-      //   op1      op2
+
+      /**
+       * parallel computation graph:
+       *
+       *  input1   input2
+       *    |        |
+       *   op1      op2
+       */
 
       ParallelLayerAddedResult input1_added =
           add_parallel_layer(pcg, make_layer_attrs(input_attrs), {}, {});
@@ -457,14 +465,17 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("not SP with or without weight nodes") {
-      // parallel computation graph:
-      //
-      //    input1
-      //     /  \
-      //   op1  op2
-      //    | \  |
-      //    |  \ |
-      //   op3  op4
+
+      /**
+       * parallel computation graph:
+       *
+       *    input1
+       *     /  \
+       *   op1  op2
+       *    | \  |
+       *    |  \ |
+       *   op3  op4
+       */
 
       ParallelLayerAddedResult input1_added =
           add_parallel_layer(pcg, make_layer_attrs(input_attrs), {}, {});

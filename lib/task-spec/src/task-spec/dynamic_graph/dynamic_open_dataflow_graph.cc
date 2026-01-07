@@ -193,9 +193,9 @@ LabelledOpenKwargDataflowGraph<DynamicNodeAttrs, DynamicValueAttrs, int, Dynamic
     PANIC("Failed to add any invocations in to_add", to_add);
   };
 
-  do {
+  while (to_add.size() > 0) {
     add_next_invocation_to_graph();
-  } while (to_add.size() > 0);
+  }
 
   return result;
 }

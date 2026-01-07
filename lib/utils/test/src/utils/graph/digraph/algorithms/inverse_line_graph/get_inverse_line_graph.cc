@@ -19,26 +19,28 @@ TEST_SUITE(FF_TEST_SUITE) {
     DiGraph g = DiGraph::create<AdjacencyDiGraph>();
 
     SUBCASE("diamond-ish") {
-      // Tests that inverse line graph of the diamond graph
-      //   b-d
-      //  /   \
-      // a     e
-      //  \   /
-      //   -c-
-      //
-      // is
-      //     2
-      //    / \
-      // 0-1   3-4
-      //    \ /
-      //     -
-      // which means that the following is the mappings between line edges and
-      // inverse nodes is
-      // (0, 1) -> a
-      // (1, 2) -> b
-      // (1, 3) -> c
-      // (2, 3) -> d
-      // (3, 4) -> e
+      /**
+       * Tests that inverse line graph of the diamond graph
+       *   b-d
+       *  /   \
+       * a     e
+       *  \   /
+       *   -c-
+       *
+       * is
+       *     2
+       *    / \
+       * 0-1   3-4
+       *    \ /
+       *     -
+       * which means that the following is the mappings between line edges and
+       * inverse nodes is
+       * (0, 1) -> a
+       * (1, 2) -> b
+       * (1, 3) -> c
+       * (2, 3) -> d
+       * (3, 4) -> e
+       */
 
       std::vector<Node> n = add_nodes(g, 5);
       std::vector<DirectedEdge> es = {
@@ -92,20 +94,24 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("duplicate edges") {
-      // Tests that inverse line graph of the two-node graph
-      //
-      // a b  (no edges)
-      //
-      // is
-      //
-      //  /\
-      // 0  1
-      //  \/
-      //
-      // which means that the following is the mappings between line edges and
-      // inverse nodes is
-      // (0, 1) -> a
-      // (0, 1) -> b
+
+      /**
+       * Tests that inverse line graph of the two-node graph
+       *
+       * a b  (no edges)
+       *
+       * is
+       *
+       *  /\
+       * 0  1
+       *  \/
+       *
+       * which means that the following is the mappings between line edges and
+       * inverse nodes is
+       * (0, 1) -> a
+       * (0, 1) -> b
+       */
+
       std::vector<Node> n = add_nodes(g, 2);
 
       std::optional<InverseLineGraphResult> maybe_result =
@@ -143,13 +149,17 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("sp n-graph (inverse line graph does not exist)") {
-      // Tests that the inverse line graph of the sp n-graph
-      //
-      // a-b
-      //  \
-      // c-d
-      //
-      // does not exist
+
+      /**
+       * Tests that the inverse line graph of the sp n-graph
+       *
+       * a-b
+       *  \
+       * c-d
+       *
+       * does not exist
+       */
+
       std::vector<Node> n = add_nodes(g, 4);
       add_edges(g,
                 {

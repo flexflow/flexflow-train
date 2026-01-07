@@ -58,14 +58,13 @@ TEST_SUITE(FF_TEST_SUITE) {
 
   TEST_CASE("get_machine_space_coordinate") {
     SUBCASE("1D case") {
-
-      // This operator has shape (3,), and thus 3 tasks.
-      // The (only) dimension is projected on the INTER (device) dimension with
-      // a stride of 2. The start of the projection defined by MachineView
-      // starts at MachineSpaceCoordinate (0,1), and the machine space has 1
-      // node and 6 devices per node.
-
       /**
+       * This operator has shape (3,), and thus 3 tasks.
+       * The (only) dimension is projected on the INTER (device) dimension with
+       * a stride of 2. The start of the projection defined by MachineView
+       * starts at MachineSpaceCoordinate (0,1), and the machine space has 1
+       * node and 6 devices per node.
+       * 
        * The tasks will thus be distributed like this:
        *  +-------+-------+-------+-------+-------+-------+
        *  |       | (0,)  |       | (1,)  |       | (2,)  |
@@ -147,14 +146,14 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("2D case - projection on different dimensions") {
-      // This operator has shape (2, 2), and thus 2 * 2 = 4 tasks.
-      // The first dimension is projected onto the INTER (node) dimension with
-      // stride 1, while the second dimension is projected onto the INTRA
-      // (device) dimension with stride 2. The start of the projection defined
-      // by MachineView is at MachineSpaceCoordinates (1, 2), and the machine
-      // space has 3 nodes and 5 devices per node.
-
       /**
+       * This operator has shape (2, 2), and thus 2 * 2 = 4 tasks.
+       * The first dimension is projected onto the INTER (node) dimension with
+       * stride 1, while the second dimension is projected onto the INTRA
+       * (device) dimension with stride 2. The start of the projection defined
+       * by MachineView is at MachineSpaceCoordinates (1, 2), and the machine
+       * space has 3 nodes and 5 devices per node.
+       * 
        * The tasks will thus be distributed like this:
        *  +-------+-------+-------+-------+-------+
        *  |       |       |       |       |       |
@@ -229,13 +228,13 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("2D case - projection on same dimension") {
-      // This operator has shape (2, 2), and thus 2 * 2 = 4 tasks.
-      // Both dimensions are projected on the INTRA (device) dimension, with
-      // strides 1 and 2 respectively. The start of the projection defined by
-      // MachineView is at MachineSpaceCoordinates (1, 0), and the machine
-      // space has 2 nodes and 6 devices per node.
-
       /**
+       * This operator has shape (2, 2), and thus 2 * 2 = 4 tasks.
+       * Both dimensions are projected on the INTRA (device) dimension, with
+       * strides 1 and 2 respectively. The start of the projection defined by
+       * MachineView is at MachineSpaceCoordinates (1, 0), and the machine
+       * space has 2 nodes and 6 devices per node.
+       * 
        *  +-------+-------+-------+-------+-------+-------+
        *  | (0,0) | (1,0) |       |       | (0,1) | (1,1) |
        *  +-------+-------+-------+-------+-------+-------+
@@ -305,17 +304,17 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("3D case") {
-      // This operator has shape (2, 2, 2), and thus 2 * 2 * 2 = 8 tasks.
-      // - The first dimension is projected onto the INTER (node) dimension
-      // with stride 1,
-      // - The second dimension is projected onto the INTRA (device) dimension
-      // with stride 2,
-      // - The third dimension is projected onto the INTRA (device) dimension
-      // with stride 1. The start of the projection defined by MachineView is
-      // at MachineSpaceCoordinates (0, 1), and the machine space has 2 nodes
-      // and 8 devices per node.
-
       /**
+       * This operator has shape (2, 2, 2), and thus 2 * 2 * 2 = 8 tasks.
+       * - The first dimension is projected onto the INTER (node) dimension
+       * with stride 1,
+       * - The second dimension is projected onto the INTRA (device) dimension
+       * with stride 2,
+       * - The third dimension is projected onto the INTRA (device) dimension
+       * with stride 1. The start of the projection defined by MachineView is
+       * at MachineSpaceCoordinates (0, 1), and the machine space has 2 nodes
+       * and 8 devices per node.
+       *
        * The tasks will thus be distributed like this:
        *  +-------+-------+-------+-------+-------+-------+-------+-------+
        *  |       |(0,0,0)|       |(0,0,1)|       |(0,1,0)|       |(0,1,1)|
@@ -377,14 +376,13 @@ TEST_SUITE(FF_TEST_SUITE) {
 
   TEST_CASE("get_device_ids") {
     SUBCASE("1D machine view") {
-
-      // This operator has shape (3,), and thus 3 tasks.
-      // The (only) dimension is projected onto the INTRA (device) dimension
-      // with a stride of 2. The start of the projection defined by MachineView
-      // is at MachineSpaceCoordinate (0, 1), and the machine space has 1 node
-      // and 6 devices per node.
-
       /**
+       * This operator has shape (3,), and thus 3 tasks.
+       * The (only) dimension is projected onto the INTRA (device) dimension
+       * with a stride of 2. The start of the projection defined by MachineView
+       * is at MachineSpaceCoordinate (0, 1), and the machine space has 1 node
+       * and 6 devices per node.
+       *
        * The tasks will thus be distributed like this:
        *  +-------+-------+-------+-------+-------+-------+
        *  |   0   | ((1)) |   2   | ((3)) |   4   | ((5)) |
@@ -420,15 +418,15 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("2D machine view") {
-      // This operator has shape (2, 2), and thus 2 * 2 = 4 tasks.
-      // - The first dimension is projected onto the INTER (node) dimension with
-      // stride 1,
-      // - The second dimension is projected onto the INTRA (device) dimension
-      // with stride 2. The start of the projection defined by MachineView is at
-      // MachineSpaceCoordinate (1, 2), and the machine space has 3 nodes and 5
-      // devices per node.
-
       /**
+       * This operator has shape (2, 2), and thus 2 * 2 = 4 tasks.
+       * - The first dimension is projected onto the INTER (node) dimension with
+       * stride 1,
+       * - The second dimension is projected onto the INTRA (device) dimension
+       * with stride 2. The start of the projection defined by MachineView is at
+       * MachineSpaceCoordinate (1, 2), and the machine space has 3 nodes and 5
+       * devices per node.
+       *
        * The tasks will thus be distributed like this:
        *  +-------+-------+-------+-------+-------+
        *  |   0   |   1   |   2   |   3   |   4   |

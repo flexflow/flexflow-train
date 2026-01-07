@@ -30,13 +30,15 @@ DirectedEdgeMaskView *DirectedEdgeMaskView::clone() const {
 }
 
 DiGraphView transitive_reduction(DiGraphView const &g) {
-  // Logic dropped down to raw adjacency matrix for performance.
-  // The version going through the full graph abstraction was
-  // incredibly slow (> minutes) for even moderately sized graphs
-  // (i.e., 200 nodes) without optimization enabled.
-  //
-  // transitive_closure inlined to avoid any drifts in node numbering
-  // between transitive_closure and transitive_reduction
+  /**
+   * Logic dropped down to raw adjacency matrix for performance.
+   * The version going through the full graph abstraction was
+   * incredibly slow (> minutes) for even moderately sized graphs
+   * (i.e., 200 nodes) without optimization enabled.
+   *
+   * transitive_closure inlined to avoid any drifts in node numbering
+   * between transitive_closure and transitive_reduction
+   */
 
   bidict<int, Node> nodes =
       transform_keys(bidict_from_enumerating(get_nodes(g)),

@@ -64,39 +64,6 @@ static
 
 bool GraphOptimizeState::operator==(GraphOptimizeState const &other) const {
   return get_layer_signature_set(this->graph_optimize_result.mapped_pcg) == get_layer_signature_set(other.graph_optimize_result.mapped_pcg);
-  // // Note(@wmdi): This is a hack to implement a partially correct homomorphism
-  // // check. Switch to the homomorphism check used in substitutions right after
-  // // https://github.com/flexflow/FlexFlow/pull/1471 is merged.
-  // auto layers1 = topological_ordering(graph_optimize_result.mapped_pcg.pcg);
-  // auto layers2 = topological_ordering(other.graph_optimize_result.mapped_pcg.pcg);
-  // if (layers1.size() != layers2.size()) {
-  //   return false;
-  // }
-  // std::unordered_map<parallel_tensor_guid_t, parallel_tensor_guid_t> mapping;
-  // for (size_t i = 0; i < layers1.size(); ++i) {
-  //   if (get_parallel_layer_attrs(graph_optimize_result.mapped_pcg.pcg, layers1[i]) !=
-  //       get_parallel_layer_attrs(other.graph_optimize_result.mapped_pcg.pcg, layers2[i])) {
-  //     return false;
-  //   }
-  //
-  //   std::unordered_map<TensorSlotName, parallel_tensor_guid_t> inputs1 = get_incoming_tensors(graph_optimize_result.mapped_pcg.pcg, layers1[i]);
-  //   std::unordered_map<TensorSlotName, parallel_tensor_guid_t> inputs2 =
-  //       get_incoming_tensors(other.graph_optimize_result.mapped_pcg.pcg, layers2[i]);
-  //
-  //   for (TensorSlotName slot_name : require_same(keys(inputs1), keys(inputs2))) {
-  //     if (inputs1.at(slot_name) != mapping.at(inputs2.at(slot_name))) {
-  //       return false;
-  //     }
-  //   }
-  //
-  //   std::unordered_map<TensorSlotName, parallel_tensor_guid_t> outputs1 = get_layer_outputs(graph_optimize_result.mapped_pcg.pcg, layers1[i]);
-  //   std::unordered_map<TensorSlotName, parallel_tensor_guid_t> outputs2 =
-  //       get_layer_outputs(other.graph_optimize_result.mapped_pcg.pcg, layers2[i]);
-  //   for (TensorSlotName slot_name : require_same(keys(outputs1), keys(outputs2))) {
-  //     mapping.emplace(outputs2.at(slot_name), outputs1.at(slot_name));
-  //   }
-  // }
-  // return true;
 }
 
 bool GraphOptimizeState::operator!=(GraphOptimizeState const &other) const {

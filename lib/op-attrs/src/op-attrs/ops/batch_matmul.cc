@@ -36,10 +36,12 @@ tl::expected<TensorShape, std::string>
     get_output_shape(BatchMatmulAttrs const &attrs,
                      TensorShape const &input_lhs,
                      TensorShape const &input_rhs) {
-  // If input_lhs is a (b×n×m) tensor,
-  // input_rhs is a (b×m×p) tensor,
-  // out will be a (b×n×p) tensor.
-  // https://pytorch.org/docs/stable/generated/torch.bmm.html
+  /**
+   * If input_lhs is a (b×n×m) tensor,
+   * input_rhs is a (b×m×p) tensor,
+   * out will be a (b×n×p) tensor.
+   * https://pytorch.org/docs/stable/generated/torch.bmm.html
+   */
 
   if (get_num_dims(input_lhs.dims) != 3) {
     return tl::unexpected(

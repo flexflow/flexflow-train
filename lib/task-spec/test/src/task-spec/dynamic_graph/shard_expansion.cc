@@ -40,22 +40,18 @@ TEST_SUITE(FF_TEST_SUITE) {
           {
             TensorSlotName::INPUT,
             c1,
-            // mk_pt_coord(0_n, 0_n, 0_n, 0_n),
           },
           {
             TensorSlotName::WEIGHT,
             c2,
-            // mk_pt_coord(0_n, 1_n, 2_n, 0_n),
           },
           {
             TensorSlotName::OUTPUT_1,
             c3,
-            // mk_pt_coord(1_n, 0_n, 0_n, 1_n),
           },
           {
             TensorSlotName::OUTPUT_2,
             c4,
-            // mk_pt_coord(3_n, 0_n, 0_n, 0_n),
           },
         },
       };

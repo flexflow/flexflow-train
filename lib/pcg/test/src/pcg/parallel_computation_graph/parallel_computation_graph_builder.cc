@@ -17,12 +17,14 @@
 
 using namespace ::FlexFlow;
 
-// Stylistically these tests are not great (they're rather complicated
-// and hard to read) and should not be used as a model for other FlexFlow
-// tests.
-//
-// Improving them is being tracked in
-// https://github.com/flexflow/FlexFlow/issues/1474
+/**
+ * Stylistically these tests are not great (they're rather complicated
+ * and hard to read) and should not be used as a model for other FlexFlow
+ * tests.
+ *
+ * Improving them is being tracked in
+ * https://github.com/flexflow/FlexFlow/issues/1474
+ */
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("ParallelComputationGraphBuilder::add") {
     ParallelComputationGraphBuilder b;
@@ -39,20 +41,6 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
         DataType::FLOAT,
     };
-
-    // ParallelTensorShape lhs_shape = ParallelTensorShape{
-    //     ParallelTensorDims{
-    //         FFOrdered<ShardParallelDim>{
-    //             ShardParallelDim{10_p, 2_p},
-    //             ShardParallelDim{15_p, 3_p},
-    //         },
-    //         ReplicaParallelDimSet{
-    //             SumDegree{2_p},
-    //             DiscardCopyDegree{1_p},
-    //         },
-    //     },
-    //     DataType::FLOAT,
-    // };
 
     TensorShape rhs_shape = lhs_shape;
 

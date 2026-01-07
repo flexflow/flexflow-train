@@ -15,30 +15,9 @@ bool slot_is_pass_expanded(DynamicTensorSlot const &s) {
   return s.slot_tensor_role.has_value();
 }
 
-// bool slot_arguments_is_pass_expanded(DynamicTensorSlotArguments const &a) {
-//   bool from_slot_args = a.role.has_value();
-//   if (a.values.has_value()) {
-//     std::vector<bool> values_are_pass_expanded  
-//       = transform(a.values.value(), 
-//                   [](DynamicValueAttrs const &v) {
-//                     return value_is_pass_expanded(v);
-//                   });
-//
-//     ASSERT(are_all_same(value_is_pass_expanded));
-//     bool from_values = values_are_pass_expanded.at(0);
-//
-//     ASSERT(from_values == from_slot_args);
-//   }
-//   return from_slot_args;
-// }
-
 bool value_is_pass_expanded(DynamicValueAttrs const &v) {
   return v.role.has_value();
 }
-
-// bool invocation_is_pass_expanded(DynamicNodeInvocation const &i) {
-//   bool node_is_pass_expanded = node_is_pass_expanded(i.node_attrs);
-// }
 
 bool no_part_of_graph_is_pass_expanded(DynamicOpenDataflowGraph const &g) {
   return no_part_of_dynamic_graph_satisfies(

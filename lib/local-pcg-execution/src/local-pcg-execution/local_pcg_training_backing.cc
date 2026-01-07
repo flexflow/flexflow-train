@@ -22,16 +22,6 @@ std::optional<std::unordered_map<gpu_id_t, milliseconds_t>>
                   TrainingParallelLayerPlusContext const &training_parallel_layer,
                   Allocator &) {
   
-  // std::optional maybe_registered_task = try_get_registered_task(
-  //     local_task_registry, training_parallel_layer.parallel_layer_guid, OpTaskType::FWD);
-  //
-  // ASSERT(maybe_registered_task.has_value());
-  //
-  // registered_task_t registered_task = maybe_registered_task.value();
-  // if (registered_task.is_noop_task()) {
-  //   return std::nullopt;
-  // }
-
   NOT_IMPLEMENTED();
 }
 
