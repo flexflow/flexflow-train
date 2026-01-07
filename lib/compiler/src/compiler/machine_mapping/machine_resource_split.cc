@@ -96,8 +96,7 @@ MachineSpaceCoordinate
     return MachineSpaceCoordinate{
         /*node_idx=*/coord.node_idx,
         /*device_idx=*/
-        (coord.device_idx + split.offset)
-            .nonnegative_int_from_positive_int(),
+        (coord.device_idx + split.offset).nonnegative_int_from_positive_int(),
         /*device_type=*/coord.device_type,
     };
   }
