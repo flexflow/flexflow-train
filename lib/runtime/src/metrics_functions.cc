@@ -216,8 +216,8 @@ static PerfMetrics
 template <>
 void register_task<METRICS_COMP_TASK_ID>() {
   TaskSignature sig;
-  sig.add_slot(LOGIT, {SlotType::TENSOR, Permissions::RO});
-  sig.add_slot(LABEL, {SlotType::TENSOR, Permissions::RO});
+  sig.add_slot(LOGIT, {TensorSlotArity::TENSOR, Permissions::RO});
+  sig.add_slot(LABEL, {TensorSlotArity::TENSOR, Permissions::RO});
   sig.add_arg_slot<ProfilingSettings>(PROFILING_SETTINGS);
   sig.add_arg_slot<MetricsAttrs>(METRICS_STRUCT);
   sig.add_return_value<PerfMetrics>();

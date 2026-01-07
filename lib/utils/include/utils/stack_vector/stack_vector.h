@@ -1,9 +1,9 @@
 #ifndef _FLEXFLOW_UTILS_STACK_VECTOR_H
 #define _FLEXFLOW_UTILS_STACK_VECTOR_H
 
+#include "utils/check_fmtable.h"
 #include "utils/hash-utils.h"
 #include "utils/join_strings.h"
-#include "utils/test_types.h"
 #include "utils/type_traits.h"
 #include <array>
 #include <cassert>

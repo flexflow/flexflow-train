@@ -1,0 +1,31 @@
+namespace = "FlexFlow"
+name = "BatchMatmulAttrs"
+type = "struct"
+
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = [
+  "utils/positive_int/positive_int.h",
+  "<optional>",
+]
+
+src_includes = [
+  "utils/fmt/optional.h",
+  "utils/json/optional.h",
+  "utils/rapidcheck/optional.h",
+]
+
+[[fields]]
+name = "a_seq_length_dim"
+type = "std::optional<::FlexFlow::positive_int>"
+
+[[fields]]
+name = "b_seq_length_dim"
+type = "std::optional<::FlexFlow::positive_int>"

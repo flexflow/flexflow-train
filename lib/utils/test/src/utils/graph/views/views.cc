@@ -4,6 +4,7 @@
 #include "utils/fmt/unordered_map.h"
 #include "utils/fmt/unordered_set.h"
 #include "utils/graph/algorithms.h"
+#include "utils/graph/digraph/algorithms/get_edges.h"
 #include "utils/graph/instances/adjacency_digraph.h"
 #include "utils/graph/instances/hashmap_undirected_graph.h"
 #include "utils/graph/node/algorithms.h"

@@ -1,0 +1,23 @@
+namespace = "FlexFlow"
+name = "FFInitInfo"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+  "rapidcheck",
+  "json",
+]
+
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
+[[fields]]
+name = "workspace_size"
+type = "::FlexFlow::nonnegative_int"
+
+[[fields]]
+name = "allow_tensor_op_math_conversion"
+type = "bool"

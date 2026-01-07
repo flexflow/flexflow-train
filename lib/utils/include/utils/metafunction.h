@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_UTILS_INCLUDE_UTILS_METAFUNCTION_H
 #define _FLEXFLOW_UTILS_INCLUDE_UTILS_METAFUNCTION_H
 
-#include "type_traits_core.h"
+#include "utils/type_traits_core.h"
 
 namespace FlexFlow {
 

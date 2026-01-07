@@ -1,0 +1,22 @@
+namespace = "FlexFlow"
+name = "ParallelForwardTensorGroup"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+  "rapidcheck",
+]
+
+includes = [
+  "task-spec/forward_tensor_guid_t.dtg.h",
+  "op-attrs/parallel_tensor_space_coordinate.dtg.h",
+  "utils/bidict/bidict.h",
+]
+
+[[fields]]
+name = "forward_training_tensors_by_coord"
+type = "::FlexFlow::bidict<::FlexFlow::ParallelTensorSpaceCoordinate, ::FlexFlow::forward_tensor_guid_t>"
+

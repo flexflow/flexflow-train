@@ -5,6 +5,6 @@ namespace FlexFlow {
 
 using T = value_type<0>;
 
-template std::vector<ff_dim_t> get_idxs(FFOrdered<T> const &);
+template std::set<ff_dim_t> get_idxs(FFOrdered<T> const &);
 
 } // namespace FlexFlow

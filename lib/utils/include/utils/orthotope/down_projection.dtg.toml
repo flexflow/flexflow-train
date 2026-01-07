@@ -1,0 +1,20 @@
+namespace = "FlexFlow"
+name = "DownProjection"
+type = "struct"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+template_params = [
+  "L", "R"
+]
+
+includes = [
+  "utils/many_to_one/many_to_one.h",
+]
+
+[[fields]]
+name = "dim_mapping"
+type = "::FlexFlow::ManyToOne<L, R>"

@@ -3,7 +3,7 @@
 
 #include "op-attrs/ff_ordered/ff_ordered.h"
 #include "utils/bidict/bidict.h"
-#include "utils/containers/count.h"
+#include "utils/containers/range.h"
 
 namespace FlexFlow {
 
@@ -18,7 +18,7 @@ namespace FlexFlow {
 template <typename T>
 std::map<ff_dim_t, T> enumerate(FFOrdered<T> const &ff_ordered) {
   std::map<ff_dim_t, T> result;
-  for (int raw_ff_dim : count(ff_ordered.size())) {
+  for (int raw_ff_dim : range(ff_ordered.size())) {
     ff_dim_t ff_dim = ff_dim_t{nonnegative_int{raw_ff_dim}};
     result.insert({ff_dim, ff_ordered.at(ff_dim)});
   }

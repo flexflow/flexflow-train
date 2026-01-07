@@ -4,20 +4,20 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_edge.h"
 #include "utils/containers/flatmap.h"
-#include "utils/graph/dataflow_graph/algorithms/transitive_reduced_dataflow_graph/get_transitive_reduced_boundary_nodes_for_split.h"
-#include "utils/graph/dataflow_graph/algorithms/transitive_reduced_dataflow_graph/get_transitive_reduced_edges_across_split.h"
-#include "utils/graph/dataflow_graph/algorithms/transitive_reduced_dataflow_graph/get_transitive_reduced_outputs_across_split.h"
 #include "utils/graph/digraph/algorithms/get_edges_from_subgraph_to_subgraph.h"
 #include "utils/graph/digraph/algorithms/get_predecessors.h"
 #include "utils/graph/digraph/algorithms/get_successors.h"
 #include "utils/graph/digraph/algorithms/transitive_reduction.h"
+#include "utils/graph/kwarg_dataflow_graph/algorithms/transitive_reduced_kwarg_dataflow_graph/get_transitive_reduced_boundary_nodes_for_kwarg_dataflow_graph_split.h"
+#include "utils/graph/kwarg_dataflow_graph/algorithms/transitive_reduced_kwarg_dataflow_graph/get_transitive_reduced_kwarg_dataflow_edges_across_split.h"
+#include "utils/graph/kwarg_dataflow_graph/algorithms/transitive_reduced_kwarg_dataflow_graph/get_transitive_reduced_kwarg_dataflow_outputs_across_split.h"
 
 namespace FlexFlow {
 
-TransitiveReducedDataflowGraphView
+TransitiveReducedKwargDataflowGraphView<TensorSlotName>
     get_underlying_transitive_reduced_dataflow_graph(
         TransitiveReducedPCG const &tr_pcg) {
-  return TransitiveReducedDataflowGraphView{
+  return TransitiveReducedKwargDataflowGraphView<TensorSlotName>{
       /*full_dataflow_graph=*/tr_pcg.full_pcg.raw_graph,
       /*transitive_reduction=*/tr_pcg.transitive_reduction,
   };
@@ -38,16 +38,17 @@ std::unordered_set<ParallelComputationGraphEdge>
     pcg_get_transitive_reduced_edges_across_split(
         TransitiveReducedPCG const &tr_pcg, PCGBinarySeriesSplit const &split) {
 
-  TransitiveReducedDataflowGraphView raw_tr_g =
+  TransitiveReducedKwargDataflowGraphView<TensorSlotName> raw_tr_g =
       get_underlying_transitive_reduced_dataflow_graph(tr_pcg);
 
   BinarySeriesSplit raw_split =
       binary_series_split_from_pcg_series_split(split);
 
-  std::unordered_set<DataflowEdge> raw_edges =
-      get_transitive_reduced_edges_across_split(raw_tr_g, raw_split);
+  std::unordered_set<KwargDataflowEdge<TensorSlotName>> raw_edges =
+      get_transitive_reduced_kwarg_dataflow_edges_across_split(raw_tr_g,
+                                                               raw_split);
 
-  return transform(raw_edges, [](DataflowEdge const &e) {
+  return transform(raw_edges, [](KwargDataflowEdge<TensorSlotName> const &e) {
     return ParallelComputationGraphEdge{e};
   });
 }
@@ -55,30 +56,33 @@ std::unordered_set<ParallelComputationGraphEdge>
 std::unordered_set<parallel_tensor_guid_t>
     pcg_get_transitive_reduced_tensors_across_split(
         TransitiveReducedPCG const &tr_pcg, PCGBinarySeriesSplit const &split) {
-  TransitiveReducedDataflowGraphView raw_tr_g =
+  TransitiveReducedKwargDataflowGraphView<TensorSlotName> raw_tr_g =
       get_underlying_transitive_reduced_dataflow_graph(tr_pcg);
 
   BinarySeriesSplit raw_split =
       binary_series_split_from_pcg_series_split(split);
 
-  std::unordered_set<DataflowOutput> raw_outputs =
-      get_transitive_reduced_outputs_across_split(raw_tr_g, raw_split);
+  std::unordered_set<KwargDataflowOutput<TensorSlotName>> raw_outputs =
+      get_transitive_reduced_kwarg_dataflow_outputs_across_split(raw_tr_g,
+                                                                 raw_split);
 
-  return transform(raw_outputs, [](DataflowOutput const &o) {
-    return parallel_tensor_guid_t{o};
-  });
+  return transform(raw_outputs,
+                   [](KwargDataflowOutput<TensorSlotName> const &o) {
+                     return parallel_tensor_guid_t{o};
+                   });
 }
 
 PCGSplitBoundaryLayers pcg_get_transitive_reduced_boundary_layers_for_split(
     TransitiveReducedPCG const &tr_pcg, PCGBinarySeriesSplit const &split) {
-  TransitiveReducedDataflowGraphView raw_tr_g =
+  TransitiveReducedKwargDataflowGraphView<TensorSlotName> raw_tr_g =
       get_underlying_transitive_reduced_dataflow_graph(tr_pcg);
 
   BinarySeriesSplit raw_split =
       binary_series_split_from_pcg_series_split(split);
 
   SplitBoundaryNodes raw_boundary =
-      get_transitive_reduced_boundary_nodes_for_split(raw_tr_g, raw_split);
+      get_transitive_reduced_boundary_nodes_for_kwarg_dataflow_graph_split(
+          raw_tr_g, raw_split);
 
   return PCGSplitBoundaryLayers{
       /*pre_split_boundary=*/transform(

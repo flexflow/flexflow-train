@@ -92,10 +92,7 @@
                                 -DFF_USE_EXTERNAL_RAPIDCHECK=ON \
                                 -DFF_USE_EXTERNAL_EXPECTED=ON \
                                 -DFF_USE_EXTERNAL_GBENCHMARK=ON \
-                                -DFF_USE_EXTERNAL_LIBASSERT=ON \
-                                -DFF_USE_EXTERNAL_RANGEV3=ON \
-                                -DFF_USE_EXTERNAL_BOOST_PREPROCESSOR=ON \
-                                -DFF_USE_EXTERNAL_TYPE_INDEX=ON"
+                                -DFF_USE_EXTERNAL_LIBASSERT=ON"
           '';
           
           buildInputs = builtins.concatLists [

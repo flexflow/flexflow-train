@@ -1,13 +1,10 @@
-#ifndef _FLEXFLOW_RESHAPE_ATTRS_H
-#define _FLEXFLOW_RESHAPE_ATTRS_H
+#ifndef _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_OPS_RESHAPE_H
+#define _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_OPS_RESHAPE_H
 
-#include "op-attrs/ops/core.h"
 #include "op-attrs/ops/reshape_attrs.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
 
 namespace FlexFlow {
-
-CHECK_VALID_OP_ATTR(ReshapeAttrs);
 
 TensorShape get_output_shape(ReshapeAttrs const &attrs,
                              TensorShape const &input_shape);

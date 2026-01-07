@@ -1,0 +1,35 @@
+namespace = "FlexFlow"
+name = "V1GraphEdge"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  # "rapidcheck",
+  "fmt",
+]
+
+template_params = [
+  "SlotName",
+]
+
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
+[[fields]]
+name = "srcNode"
+type = "::FlexFlow::nonnegative_int"
+
+[[fields]]
+name = "srcSlot"
+type = "SlotName"
+
+[[fields]]
+name = "dstNode"
+type = "::FlexFlow::nonnegative_int"
+
+[[fields]]
+name = "dstSlot"
+type = "SlotName"

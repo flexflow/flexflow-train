@@ -23,16 +23,25 @@ OptimizerAttrs
   }
 }
 
-nonnegative_int get_num_optimizer_tensors(OptimizerAttrs const &attrs) {
-  return attrs.visit<nonnegative_int>(
-      overload{[&](SGDOptimizerAttrs const &o) {
-                 if (o.momentum > 0.0f) {
-                   return 1_n;
-                 } else {
-                   return 0_n;
-                 }
-               },
-               [&](AdamOptimizerAttrs const &) { return 2_n; }});
+std::unordered_set<OptimizerSlotName>
+    get_slot_names_for_optimizer(OptimizerAttrs const &attrs) {
+  return attrs.visit<std::unordered_set<OptimizerSlotName>>(overload{
+      [](SGDOptimizerAttrs const &sgd_attrs)
+          -> std::unordered_set<OptimizerSlotName> {
+        if (sgd_attrs.momentum > 0.0f) {
+          return {OptimizerSlotName::SGD_V};
+          ;
+        } else {
+          return {};
+        }
+      },
+      [](AdamOptimizerAttrs const &) -> std::unordered_set<OptimizerSlotName> {
+        return {
+            OptimizerSlotName::ADAM_M,
+            OptimizerSlotName::ADAM_V,
+        };
+      },
+  });
 }
 
 } // namespace FlexFlow

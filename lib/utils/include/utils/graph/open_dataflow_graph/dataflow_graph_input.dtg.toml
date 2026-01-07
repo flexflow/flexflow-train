@@ -1,0 +1,17 @@
+namespace = "FlexFlow"
+name = "DataflowGraphInput"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "<cstddef>",
+]
+
+[[fields]]
+name = "idx"
+type = "size_t"

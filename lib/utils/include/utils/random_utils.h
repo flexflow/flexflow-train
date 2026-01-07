@@ -5,9 +5,9 @@
 #include <stdexcept>
 #include <vector>
 
-float randf() {
-  return static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX);
-}
+namespace FlexFlow {
+
+float randf();
 
 template <typename T>
 T select_random(std::vector<T> const &values) {
@@ -44,5 +44,7 @@ T select_random(std::vector<T> const &values,
                 std::vector<float> const &weights) {
   return select_random_determistic<T>(values, weights, randf());
 }
+
+} // namespace FlexFlow
 
 #endif // _RANDOM_UTILS_H

@@ -5,6 +5,7 @@
 #include "kernels/legion_ordered/legion_ordered.h"
 #include "op-attrs/ff_dim_t.dtg.h"
 #include "op-attrs/ff_ordered/ff_ordered.h"
+#include "op-attrs/num_tensor_dims_t.h"
 #include "op-attrs/tensor_dims.dtg.h"
 #include "utils/containers/set_of.h"
 #include "utils/containers/transform.h"
@@ -19,9 +20,9 @@ positive_int &dim_at_idx(TensorDims &, legion_dim_t);
 
 legion_dim_t add_to_legion_dim(legion_dim_t legion_dim, int value);
 
-legion_dim_t legion_dim_from_ff_dim(ff_dim_t, nonnegative_int num_dimensions);
+legion_dim_t legion_dim_from_ff_dim(ff_dim_t, num_tensor_dims_t num_dimensions);
 
-ff_dim_t ff_dim_from_legion_dim(legion_dim_t, nonnegative_int num_dimensions);
+ff_dim_t ff_dim_from_legion_dim(legion_dim_t, num_tensor_dims_t num_dimensions);
 
 template <typename T>
 std::set<legion_dim_t> key_range(LegionOrdered<T> const &d) {

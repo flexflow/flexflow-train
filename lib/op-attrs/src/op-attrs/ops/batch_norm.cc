@@ -10,13 +10,18 @@
 
 namespace FlexFlow {
 
-std::vector<IncomingTensorRole>
+std::unordered_map<TensorSlotName, IncomingTensorRole>
     get_batch_norm_incoming_tensor_roles(BatchNormAttrs const &attrs) {
-  std::vector<IncomingTensorRole> result = {IncomingTensorRole::INPUT};
+  std::unordered_map<TensorSlotName, IncomingTensorRole> result = {
+      {
+          TensorSlotName::INPUT,
+          IncomingTensorRole::INPUT,
+      },
+  };
 
   if (attrs.affine) {
-    extend(result,
-           std::vector{IncomingTensorRole::WEIGHT, IncomingTensorRole::WEIGHT});
+    result[TensorSlotName::GAMMA] = IncomingTensorRole::WEIGHT;
+    result[TensorSlotName::BETA] = IncomingTensorRole::WEIGHT;
   }
 
   return result;
@@ -91,7 +96,7 @@ tl::expected<TensorShape, std::string>
   return get_gamma_weights_shape(attrs, input_shape);
 }
 
-tl::expected<std::vector<TensorShape>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, TensorShape>, std::string>
     get_weight_shapes(BatchNormAttrs const &attrs,
                       TensorShape const &input_shape) {
 
@@ -100,9 +105,15 @@ tl::expected<std::vector<TensorShape>, std::string>
   TensorShape beta_shape =
       PROPAGATE_ERR(get_beta_weights_shape(attrs, input_shape));
 
-  return std::vector{
-      gamma_shape,
-      beta_shape,
+  return std::unordered_map<TensorSlotName, TensorShape>{
+      {
+          TensorSlotName::GAMMA,
+          gamma_shape,
+      },
+      {
+          TensorSlotName::BETA,
+          beta_shape,
+      },
   };
 }
 
@@ -199,7 +210,8 @@ tl::expected<ParallelTensorDimDegrees, std::string>
   return get_gamma_weights_parallel_dim_degrees(attrs, input_degrees);
 }
 
-tl::expected<std::vector<ParallelTensorDimDegrees>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, ParallelTensorDimDegrees>,
+             std::string>
     get_weight_parallel_dim_degrees(
         BatchNormAttrs const &attrs,
         ParallelTensorDimDegrees const &input_degrees) {
@@ -209,9 +221,15 @@ tl::expected<std::vector<ParallelTensorDimDegrees>, std::string>
   ParallelTensorDimDegrees beta_degrees = PROPAGATE_ERR(
       get_beta_weights_parallel_dim_degrees(attrs, input_degrees));
 
-  return std::vector{
-      gamma_degrees,
-      beta_degrees,
+  return std::unordered_map<TensorSlotName, ParallelTensorDimDegrees>{
+      {
+          TensorSlotName::GAMMA,
+          gamma_degrees,
+      },
+      {
+          TensorSlotName::BETA,
+          beta_degrees,
+      },
   };
 }
 
@@ -292,7 +310,8 @@ tl::expected<ParallelTensorShape, std::string>
   return lift_to_parallel_with_degrees(unpar, degrees);
 }
 
-tl::expected<std::vector<ParallelTensorShape>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, ParallelTensorShape>,
+             std::string>
     get_weight_shapes(BatchNormAttrs const &attrs,
                       ParallelTensorShape const &input_shape) {
 
@@ -301,13 +320,19 @@ tl::expected<std::vector<ParallelTensorShape>, std::string>
   ParallelTensorShape beta_shape =
       PROPAGATE_ERR(get_beta_weights_shape(attrs, input_shape));
 
-  return std::vector{
-      gamma_shape,
-      beta_shape,
+  return std::unordered_map<TensorSlotName, ParallelTensorShape>{
+      {
+          TensorSlotName::GAMMA,
+          gamma_shape,
+      },
+      {
+          TensorSlotName::BETA,
+          beta_shape,
+      },
   };
 }
 
-tl::expected<std::vector<InitializerAttrs>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, InitializerAttrs>, std::string>
     get_initializers(BatchNormAttrs const &attrs) {
   if (attrs.affine) {
     InitializerAttrs gamma_initializer =
@@ -316,9 +341,18 @@ tl::expected<std::vector<InitializerAttrs>, std::string>
     InitializerAttrs beta_initializer =
         InitializerAttrs{ConstantInitializerAttrs{DataTypeValue{float{0}}}};
 
-    return std::vector{gamma_initializer, beta_initializer};
+    return std::unordered_map<TensorSlotName, InitializerAttrs>{
+        {
+            TensorSlotName::GAMMA,
+            gamma_initializer,
+        },
+        {
+            TensorSlotName::BETA,
+            beta_initializer,
+        },
+    };
   } else {
-    return std::vector<InitializerAttrs>{};
+    return std::unordered_map<TensorSlotName, InitializerAttrs>{};
   }
 }
 

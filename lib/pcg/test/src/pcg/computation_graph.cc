@@ -1,7 +1,7 @@
 #include "pcg/computation_graph.h"
 #include "op-attrs/ops/linear.h"
 #include "pcg/computation_graph_builder.h"
-#include "utils/containers/get_only.h"
+#include "utils/containers/require_only_key.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -29,8 +29,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       layer_guid_t input_layer = get_layer_by_name(cg, input_name);
 
-      std::vector<tensor_guid_t> result = get_incoming_inputs(cg, input_layer);
-      std::vector<tensor_guid_t> correct = {};
+      std::unordered_map<TensorSlotName, tensor_guid_t> result =
+          get_incoming_inputs(cg, input_layer);
+      std::unordered_map<TensorSlotName, tensor_guid_t> correct = {};
 
       CHECK(result == correct);
     }
@@ -55,8 +56,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       layer_guid_t layer = get_layer_by_name(cg, layer_name);
 
-      std::vector<tensor_guid_t> result = get_incoming_inputs(cg, layer);
-      std::vector<tensor_guid_t> correct = {input};
+      std::unordered_map<TensorSlotName, tensor_guid_t> result =
+          get_incoming_inputs(cg, layer);
+      std::unordered_map<TensorSlotName, tensor_guid_t> correct = {
+          {
+              TensorSlotName::INPUT,
+              input,
+          },
+      };
 
       CHECK(result == correct);
     }
@@ -88,9 +95,13 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       layer_guid_t dense_layer = get_layer_by_name(cg, layer_name);
 
-      std::vector<tensor_guid_t> result = get_incoming_inputs(cg, dense_layer);
-      std::vector<tensor_guid_t> correct = {
-          input,
+      std::unordered_map<TensorSlotName, tensor_guid_t> result =
+          get_incoming_inputs(cg, dense_layer);
+      std::unordered_map<TensorSlotName, tensor_guid_t> correct = {
+          {
+              TensorSlotName::INPUT,
+              input,
+          },
       };
 
       CHECK(result == correct);
@@ -119,8 +130,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       layer_guid_t input_layer = get_layer_by_name(cg, input_name);
 
-      std::vector<tensor_guid_t> result = get_incoming_weights(cg, input_layer);
-      std::vector<tensor_guid_t> correct = {};
+      std::unordered_map<TensorSlotName, tensor_guid_t> result =
+          get_incoming_weights(cg, input_layer);
+      std::unordered_map<TensorSlotName, tensor_guid_t> correct = {};
 
       CHECK(result == correct);
     }
@@ -147,8 +159,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       layer_guid_t layer = get_layer_by_name(cg, layer_name);
 
-      std::vector<tensor_guid_t> result = get_incoming_weights(cg, layer);
-      std::vector<tensor_guid_t> correct = {};
+      std::unordered_map<TensorSlotName, tensor_guid_t> result =
+          get_incoming_weights(cg, layer);
+      std::unordered_map<TensorSlotName, tensor_guid_t> correct = {};
 
       CHECK(result == correct);
     }
@@ -194,28 +207,49 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
 
       LayerAddedResult input_added = add_input_layer(cg, input_shape);
-      tensor_guid_t t_input = get_only(input_added.outputs);
+      tensor_guid_t t_input =
+          require_only_key(input_added.outputs, TensorSlotName::OUTPUT);
 
       LayerAddedResult projection_weight_added =
           add_layer(cg, make_layer_attrs(projection_weight_attrs), {}, {});
-      tensor_guid_t t_projection_weight =
-          get_only(projection_weight_added.outputs);
+      tensor_guid_t t_projection_weight = require_only_key(
+          projection_weight_added.outputs, TensorSlotName::OUTPUT);
 
       LayerAddedResult bias_weight_added =
           add_layer(cg, make_layer_attrs(bias_weight_attrs), {}, {});
-      tensor_guid_t t_bias_weight = get_only(bias_weight_added.outputs);
+      tensor_guid_t t_bias_weight =
+          require_only_key(bias_weight_added.outputs, TensorSlotName::OUTPUT);
 
-      LayerAddedResult linear_added =
-          add_layer(cg,
-                    make_layer_attrs(linear_attrs),
-                    {t_input},
-                    {t_projection_weight, t_bias_weight});
+      LayerAddedResult linear_added = add_layer(cg,
+                                                make_layer_attrs(linear_attrs),
+                                                {
+                                                    {
+                                                        TensorSlotName::INPUT,
+                                                        t_input,
+                                                    },
+                                                },
+                                                {
+                                                    {
+                                                        TensorSlotName::WEIGHT,
+                                                        t_projection_weight,
+                                                    },
+                                                    {
+                                                        TensorSlotName::BIAS,
+                                                        t_bias_weight,
+                                                    },
+                                                });
 
-      std::vector<tensor_guid_t> result =
+      std::unordered_map<TensorSlotName, tensor_guid_t> result =
           get_incoming_weights(cg, linear_added.layer);
-      std::vector<tensor_guid_t> correct = {
-          t_projection_weight,
-          t_bias_weight,
+      std::unordered_map<TensorSlotName, tensor_guid_t> correct = {
+          {
+              TensorSlotName::WEIGHT,
+              t_projection_weight,
+          },
+          {
+              TensorSlotName::BIAS,
+              t_bias_weight,
+          },
       };
 
       CHECK(result == correct);

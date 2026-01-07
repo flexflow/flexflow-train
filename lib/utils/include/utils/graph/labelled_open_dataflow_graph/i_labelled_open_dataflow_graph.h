@@ -22,14 +22,6 @@ struct ILabelledOpenDataflowGraph
   virtual void inplace_materialize_from(
       LabelledOpenDataflowGraphView<NodeLabel, ValueLabel> const &) = 0;
 
-  // NodeAddedResult add_node(NodeLabel const &node_label,
-  //                          std::vector<DataflowOutput> const &inputs,
-  //                          std::vector<ValueLabel> const &output_labels)
-  //                          override final {
-  //   return this->add_node(node_label, transform(inputs, [](DataflowOutput
-  //   const &o) { return OpenDataflowValue{o}; }), output_labels);
-  // }
-
   virtual ~ILabelledOpenDataflowGraph() = default;
 };
 CHECK_RC_COPY_VIRTUAL_COMPLIANT(ILabelledOpenDataflowGraph<int, int>);
