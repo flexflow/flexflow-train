@@ -1,0 +1,14 @@
+#include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_open_kwarg_dataflow_subgraph_incoming_edges.h"
+#include "utils/archetypes/ordered_value_type.h"
+
+namespace FlexFlow {
+
+using GraphInputName = ordered_value_type<0>;
+using SlotName = ordered_value_type<1>;
+
+template std::unordered_set<OpenKwargDataflowEdge<GraphInputName, SlotName>>
+    get_open_kwarg_dataflow_subgraph_incoming_edges(
+        OpenKwargDataflowGraphView<GraphInputName, SlotName> const &,
+        std::unordered_set<Node> const &);
+
+} // namespace FlexFlow

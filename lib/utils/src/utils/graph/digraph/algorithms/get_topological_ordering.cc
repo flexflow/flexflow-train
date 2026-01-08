@@ -1,5 +1,5 @@
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"
-#include "utils/graph/digraph/algorithms.h"
+#include "utils/graph/digraph/algorithms/get_initial_nodes.h"
 #include "utils/graph/digraph/algorithms/get_predecessors.h"
 #include "utils/graph/digraph/algorithms/is_acyclic.h"
 #include "utils/graph/node/algorithms.h"
@@ -38,7 +38,7 @@ static std::vector<Node>
 }
 
 std::vector<Node> get_topological_ordering(DiGraphView const &g) {
-  assert(is_acyclic(g));
+  ASSERT(is_acyclic(g));
   return get_unchecked_topological_ordering(g);
 }
 

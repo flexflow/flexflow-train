@@ -1,0 +1,18 @@
+namespace = "FlexFlow"
+name = "StandardPatternEdge"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_edge.dtg.h",
+  "op-attrs/tensor_slot_name.dtg.h",
+]
+
+[[fields]]
+name = "raw_edge"
+type = "::FlexFlow::KwargDataflowEdge<::FlexFlow::TensorSlotName>"

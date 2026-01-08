@@ -2,7 +2,9 @@ ff_add_executable(
   NAME
     substitution-to-dot
   SRC_PATTERNS
-    *.cc
+    src/*.cc
+  PRIVATE_INCLUDE
+    include/
   DEPS
     substitution-generator
 )

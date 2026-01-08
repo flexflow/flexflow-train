@@ -2,6 +2,7 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_IS_SUBSETEQ_OF_H
 
 #include "utils/containers/contains.h"
+#include <set>
 #include <unordered_set>
 
 namespace FlexFlow {
@@ -15,6 +16,20 @@ bool is_subseteq_of(std::unordered_set<T> const &sub,
 
   for (auto const &s : sub) {
     if (!contains(super, s)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+template <typename T>
+bool is_subseteq_of(std::set<T> const &l, std::set<T> const &r) {
+  if (l.size() > r.size()) {
+    return false;
+  }
+
+  for (auto const &ll : l) {
+    if (!contains(r, ll)) {
       return false;
     }
   }

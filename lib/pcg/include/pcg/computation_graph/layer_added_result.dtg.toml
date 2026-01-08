@@ -1,0 +1,25 @@
+namespace = "FlexFlow"
+name = "LayerAddedResult"
+type = "struct"
+features = [
+  "eq",
+  "fmt",
+]
+
+includes = [
+  "pcg/layer_guid_t.dtg.h",
+  "pcg/tensor_guid_t.dtg.h",
+  "op-attrs/tensor_slot_name.dtg.h",
+]
+
+src_includes = [
+  "utils/fmt/unordered_map.h",
+]
+
+[[fields]]
+name = "layer"
+type = "::FlexFlow::layer_guid_t"
+
+[[fields]]
+name = "outputs"
+type = "std::unordered_map<::FlexFlow::TensorSlotName, ::FlexFlow::tensor_guid_t>"

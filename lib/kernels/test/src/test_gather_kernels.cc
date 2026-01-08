@@ -19,7 +19,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                                   TensorShape output_shape) {
         ff_dim_t dim = ff_dim_t{
             nonnegative_int{
-                get_num_dims(input_shape.dims).unwrap_nonnegative() - 1},
+                get_num_dims(input_shape.dims).int_from_num_tensor_dims() - 1},
         };
         GatherPerDeviceState state =
             Kernels::Gather::gpu_init_kernel(managed_handle.raw_handle(), dim);
@@ -79,7 +79,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                                    TensorShape output_shape) {
         ff_dim_t dim = ff_dim_t{
             nonnegative_int{
-                get_num_dims(input_shape.dims).unwrap_nonnegative() - 1},
+                get_num_dims(input_shape.dims).int_from_num_tensor_dims() - 1},
         };
         GatherPerDeviceState state =
             Kernels::Gather::gpu_init_kernel(managed_handle.raw_handle(), dim);

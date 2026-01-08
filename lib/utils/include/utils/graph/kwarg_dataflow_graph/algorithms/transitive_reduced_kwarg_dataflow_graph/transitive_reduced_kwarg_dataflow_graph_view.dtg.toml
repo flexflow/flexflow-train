@@ -1,0 +1,21 @@
+namespace = "FlexFlow"
+name = "TransitiveReducedKwargDataflowGraphView"
+type = "struct"
+features = []
+
+template_params = [
+  "SlotName",
+]
+
+includes = [
+  "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_graph_view.h",
+  "utils/graph/digraph/digraph_view.h",
+]
+
+[[fields]]
+name = "full_kwarg_dataflow_graph"
+type = "::FlexFlow::KwargDataflowGraphView<SlotName>"
+
+[[fields]]
+name = "transitive_reduction"
+type = "::FlexFlow::DiGraphView"

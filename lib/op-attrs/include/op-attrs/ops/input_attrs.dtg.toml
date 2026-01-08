@@ -1,0 +1,19 @@
+namespace = "FlexFlow"
+name = "InputAttrs"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = [
+  "op-attrs/tensor_shape.dtg.h",
+]
+
+[[fields]]
+name = "tensor_shape"
+type = "::FlexFlow::TensorShape"

@@ -56,6 +56,8 @@ struct positive_int {
   positive_int &operator+=(positive_int other);
   positive_int &operator+=(nonnegative_int other);
 
+  friend positive_int operator+(nonnegative_int lhs, positive_int rhs);
+
   positive_int operator*(positive_int other) const;
   positive_int &operator*=(positive_int other);
   nonnegative_int operator*(nonnegative_int other) const;

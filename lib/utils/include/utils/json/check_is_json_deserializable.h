@@ -5,9 +5,9 @@
 
 namespace FlexFlow {
 
-#define CHECK_IS_JSON_DESERIALIZABLE(TYPENAME)                                 \
-  static_assert(::FlexFlow::is_json_deserializable<TYPENAME>::value,           \
-                #TYPENAME " should be json deserializeable")
+#define CHECK_IS_JSON_DESERIALIZABLE(...)                                      \
+  static_assert(::FlexFlow::is_json_deserializable<__VA_ARGS__>::value,        \
+                #__VA_ARGS__ " should be json deserializeable")
 
 } // namespace FlexFlow
 

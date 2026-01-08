@@ -1,0 +1,22 @@
+namespace = "FlexFlow"
+name = "DataflowOutput"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "utils/graph/node/node.dtg.h",
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
+[[fields]]
+name = "node"
+type = "::FlexFlow::Node"
+
+[[fields]]
+name = "idx"
+type = "::FlexFlow::nonnegative_int"

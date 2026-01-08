@@ -2,6 +2,7 @@
 #define _OP_META_PARALLEL_TENSOR_SHAPE_H
 
 #include "op-attrs/ff_dim_t.h"
+#include "op-attrs/num_ptensor_shard_dims_t.dtg.h"
 #include "op-attrs/parallel_dim.h"
 #include "op-attrs/parallel_tensor_dim_degrees.dtg.h"
 #include "op-attrs/parallel_tensor_dim_idx_t.dtg.h"
@@ -12,7 +13,7 @@
 
 namespace FlexFlow {
 
-nonnegative_int num_shard_dims(ParallelTensorShape const &);
+num_ptensor_shard_dims_t num_shard_dims(ParallelTensorShape const &);
 ShardParallelDim shard_dim_at_idx(ParallelTensorShape const &,
                                   relative_ff_dim_t);
 ShardParallelDim &shard_dim_at_idx(ParallelTensorShape &, relative_ff_dim_t);
@@ -34,9 +35,12 @@ ParallelTensorShape
     lift_to_parallel_with_degrees(TensorShape const &,
                                   ParallelTensorDimDegrees const &);
 
+TensorShape get_piece_shape(ParallelTensorShape const &);
+num_bytes_t get_piece_size_in_bytes(ParallelTensorShape const &);
+
 std::unordered_set<ReplicaParallelDim>
     replica_dims(ParallelTensorShape const &);
-TensorShape get_piece_shape(ParallelTensorShape const &);
+
 positive_int get_num_replica_dims(ParallelTensorShape const &);
 positive_int get_num_replicas(ParallelTensorShape const &);
 
@@ -48,7 +52,6 @@ positive_int get_total_parallel_degree(ParallelTensorShape const &);
 bool is_valid(ParallelTensorShape const &);
 
 TensorShape require_not_parallel(ParallelTensorShape const &);
-TensorShape get_tensor_shape_unsafe(ParallelTensorShape const &);
 std::vector<TensorShape>
     get_tensor_shapes_unsafe(std::vector<ParallelTensorShape> const &);
 

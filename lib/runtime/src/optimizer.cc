@@ -661,7 +661,7 @@ static void adam_nccl_update_task(Task const *task,
 template <>
 void register_task<PS_PREFETCH_TASK_ID>() {
   TaskSignature sig;
-  sig.add_slot(TENSOR, {SlotType::TENSOR, READ_ONLY});
+  sig.add_slot(TENSOR, {TensorSlotArity::TENSOR, READ_ONLY});
 
   register_task(
       PS_PREFETCH_TASK_ID, "Weights Prefetch", sig, UtilityTasks::dummy_task);
@@ -670,9 +670,9 @@ void register_task<PS_PREFETCH_TASK_ID>() {
 template <>
 void register_task<SGD_UPD_PS_TASK_ID>() {
   TaskSignature sig;
-  sig.add_slot(TENSOR, {SlotType::TENSOR, READ_WRITE});
-  sig.add_slot(GRADIENT, {SlotType::TENSOR, READ_ONLY});
-  sig.add_slot(MOMENTUM_V, {SlotType::TENSOR, READ_WRITE});
+  sig.add_slot(TENSOR, {TensorSlotArity::TENSOR, READ_WRITE});
+  sig.add_slot(GRADIENT, {TensorSlotArity::TENSOR, READ_ONLY});
+  sig.add_slot(MOMENTUM_V, {TensorSlotArity::TENSOR, READ_WRITE});
   sig.add_arg_slot<SGDOptimizer>(OPTIMIZER);
 
   register_task(SGD_UPD_PS_TASK_ID,
@@ -684,9 +684,9 @@ void register_task<SGD_UPD_PS_TASK_ID>() {
 template <>
 void register_task<SGD_UPD_NCCL_TASK_ID>() {
   TaskSignature sig;
-  sig.add_slot(TENSOR, {SlotType::TENSOR, READ_WRITE});
-  sig.add_slot(GRADIENT, {SlotType::TENSOR < READ_ONLY});
-  sig.add_slot(MOMENTUM_V, {SlotType::TENSOR, READ_WRITE});
+  sig.add_slot(TENSOR, {TensorSlotArity::TENSOR, READ_WRITE});
+  sig.add_slot(GRADIENT, {TensorSlotArity::TENSOR < READ_ONLY});
+  sig.add_slot(MOMENTUM_V, {TensorSlotArity::TENSOR, READ_WRITE});
   sig.add_arg_slot<SGDOptimizer>(OPTIMIZER);
   sig.add_arg_slot<PerDeviceFFHandle>(HANDLE);
 
@@ -697,10 +697,10 @@ void register_task<SGD_UPD_NCCL_TASK_ID>() {
 template <>
 void register_task<ADAM_UPD_PS_TASK_ID>() {
   TaskSignature sig;
-  sig.add_slot(TENSOR, {SlotType::TENSOR, READ_WRITE});
-  sig.add_slot(GRADIENT, {SlotType::TENSOR, READ_ONLY});
-  sig.add_slot(ADAM_W, {SlotType::TENSOR, READ_WRITE});
-  sig.add_slot(ADAM_M, {SlotType::TENSOR, READ_WRITE});
+  sig.add_slot(TENSOR, {TensorSlotArity::TENSOR, READ_WRITE});
+  sig.add_slot(GRADIENT, {TensorSlotArity::TENSOR, READ_ONLY});
+  sig.add_slot(ADAM_W, {TensorSlotArity::TENSOR, READ_WRITE});
+  sig.add_slot(ADAM_M, {TensorSlotArity::TENSOR, READ_WRITE});
   sig.add_slot<AdamOptimizer>(OPTIMIZER);
 
   register_task(ADAM_UPD_PS_TASK_ID,
@@ -712,10 +712,10 @@ void register_task<ADAM_UPD_PS_TASK_ID>() {
 template <>
 void register_task<ADAM_UPD_NCCL_TASK_ID>() {
   TaskSignature sig;
-  sig.add_slot(TENSOR, {SlotType::TENSOR, READ_WRITE});
-  sig.add_slot(GRADIENT, {SlotType::TENSOR, READ_ONLY});
-  sig.add_slot(ADAM_W, {SlotType::TENSOR, READ_WRITE});
-  sig.add_slot(ADAM_M, {SlotType::TENSOR, READ_WRITE});
+  sig.add_slot(TENSOR, {TensorSlotArity::TENSOR, READ_WRITE});
+  sig.add_slot(GRADIENT, {TensorSlotArity::TENSOR, READ_ONLY});
+  sig.add_slot(ADAM_W, {TensorSlotArity::TENSOR, READ_WRITE});
+  sig.add_slot(ADAM_M, {TensorSlotArity::TENSOR, READ_WRITE});
   sig.add_slot<AdamOptimizer>(OPTIMIZER);
   sig.add_slot<PerDeviceFFHandle>(HANDLE);
 

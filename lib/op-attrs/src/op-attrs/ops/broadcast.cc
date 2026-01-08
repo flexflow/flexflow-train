@@ -1,5 +1,7 @@
 #include "op-attrs/ops/broadcast.h"
+#include "op-attrs/num_tensor_dims_t.h"
 #include "op-attrs/tensor_dims.h"
+#include "utils/exception.h"
 #include "utils/record_formatter.h"
 
 namespace FlexFlow {
@@ -13,9 +15,9 @@ RecordFormatter as_dot(BroadcastAttrs const &attrs) {
     return rr;
   };
 
-  for (int i = 0; i < get_num_dims(attrs.target_dims); i++) {
-    r << kv(fmt::format("target_dims[{}]", i),
-            dim_at_idx(attrs.target_dims, relative_ff_dim_t{i}));
+  for (ff_dim_t dim_idx : tensor_dims_range(get_num_dims(attrs.target_dims))) {
+    r << kv(fmt::format("target_dims[{}]", dim_idx.value),
+            dim_at_idx(attrs.target_dims, dim_idx));
   }
 
   return r;

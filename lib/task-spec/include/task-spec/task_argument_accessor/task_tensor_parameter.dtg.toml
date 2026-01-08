@@ -1,0 +1,33 @@
+namespace = "FlexFlow"
+name = "TaskTensorParameter"
+type = "variant"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+]
+
+includes = [
+  "task-spec/task_argument_accessor/task_forward_tensor_parameter.dtg.h",
+  "task-spec/task_argument_accessor/task_gradient_tensor_parameter.dtg.h",
+  "task-spec/task_argument_accessor/task_optimizer_tensor_parameter.dtg.h",
+  "task-spec/task_argument_accessor/task_loss_tensor_parameter.dtg.h",
+]
+
+[[values]]
+type = "::FlexFlow::TaskForwardTensorParameter"
+key = "forward"
+
+[[values]]
+type = "::FlexFlow::TaskGradientTensorParameter"
+key = "gradient"
+
+[[values]]
+type = "::FlexFlow::TaskOptimizerTensorParameter"
+key = "optimizer"
+
+[[values]]
+type = "::FlexFlow::TaskLossTensorParameter"
+key = "loss"

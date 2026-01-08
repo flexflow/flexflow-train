@@ -10,7 +10,7 @@ namespace FlexFlow {
 
 template <typename T>
 std::vector<T> slice(std::vector<T> const &v,
-                     int const &maybe_start,
+                     int maybe_start,
                      std::optional<int> const &maybe_end) {
   auto begin_iter = v.cbegin();
   auto end_iter = v.cend();

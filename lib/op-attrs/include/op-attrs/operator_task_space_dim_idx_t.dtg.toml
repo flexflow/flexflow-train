@@ -1,0 +1,18 @@
+namespace = "FlexFlow"
+name = "operator_task_space_dim_idx_t"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+]
+
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
+[[fields]]
+name = "raw_idx"
+type = "::FlexFlow::nonnegative_int"

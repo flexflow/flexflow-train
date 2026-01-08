@@ -17,21 +17,11 @@
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_LOSS_FUNCTIONS_H
 
 #include "op-attrs/ops/loss_functions.h"
-#include "task-spec/forward_tensor_guid_t.dtg.h"
-#include "task-spec/gradient_tensor_guid_t.dtg.h"
-#include "task-spec/loss_tensor_guid_t.dtg.h"
 #include "task-spec/task_impl_function.dtg.h"
-#include "task-spec/task_invocation.dtg.h"
-#include "task-spec/task_signature.h"
 
 namespace FlexFlow {
 
 TaskImplFunction get_loss_bwd_task_impl();
-TaskSignature get_loss_bwd_signature();
-TaskInvocation backward(LossAttrs const &,
-                        forward_tensor_guid_t logit,
-                        gradient_tensor_guid_t logit_grad,
-                        loss_tensor_guid_t label);
 
 } // namespace FlexFlow
 

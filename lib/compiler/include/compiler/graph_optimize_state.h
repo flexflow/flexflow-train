@@ -17,9 +17,6 @@ struct GraphOptimizeState {
   bool operator<(GraphOptimizeState const &other) const;
 };
 
-std::string format_as(GraphOptimizeState const &);
-std::ostream &operator<<(std::ostream &, GraphOptimizeState const &);
-
 } // namespace FlexFlow
 
 namespace std {

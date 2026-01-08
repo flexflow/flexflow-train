@@ -1,8 +1,9 @@
 #include "utils/graph/digraph/algorithms/transitive_reduction.h"
 #include "utils/bidict/algorithms/bidict_from_enumerating.h"
+#include "utils/bidict/algorithms/transform_keys.h"
 #include "utils/containers/is_subseteq_of.h"
 #include "utils/containers/vector_of.h"
-#include "utils/graph/digraph/algorithms.h"
+#include "utils/graph/digraph/algorithms/get_edges.h"
 #include "utils/graph/digraph/algorithms/materialize_digraph_view.h"
 #include "utils/graph/digraph/algorithms/transitive_closure.h"
 #include "utils/graph/instances/adjacency_digraph.h"
@@ -29,17 +30,19 @@ DirectedEdgeMaskView *DirectedEdgeMaskView::clone() const {
 }
 
 DiGraphView transitive_reduction(DiGraphView const &g) {
-  // Logic dropped down to raw adjacency matrix for performance.
-  // The version going through the full graph abstraction was
-  // incredibly slow (> minutes) for even moderately sized graphs
-  // (i.e., 200 nodes) without optimization enabled.
-  //
-  // transitive_closure inlined to avoid any drifts in node numbering
-  // between transitive_closure and transitive_reduction
+  /**
+   * Logic dropped down to raw adjacency matrix for performance.
+   * The version going through the full graph abstraction was
+   * incredibly slow (> minutes) for even moderately sized graphs
+   * (i.e., 200 nodes) without optimization enabled.
+   *
+   * transitive_closure inlined to avoid any drifts in node numbering
+   * between transitive_closure and transitive_reduction
+   */
 
   bidict<int, Node> nodes =
-      map_keys(bidict_from_enumerating(get_nodes(g)),
-               [](nonnegative_int x) { return x.unwrap_nonnegative(); });
+      transform_keys(bidict_from_enumerating(get_nodes(g)),
+                     [](nonnegative_int x) { return x.unwrap_nonnegative(); });
   int num_nodes = nodes.size();
 
   std::vector<bool> edge_matrix(num_nodes * num_nodes, false);

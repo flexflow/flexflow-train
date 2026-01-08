@@ -1,0 +1,15 @@
+namespace = "FlexFlow"
+name = "relative_ff_dim_t"
+type = "struct"
+
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+]
+
+[[fields]]
+name = "value"
+type = "int"

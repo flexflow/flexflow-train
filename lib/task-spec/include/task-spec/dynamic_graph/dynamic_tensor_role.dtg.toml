@@ -1,0 +1,23 @@
+namespace = "FlexFlow"
+name = "DynamicTensorRole"
+type = "variant"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+]
+
+includes = [
+  "task-spec/fwb_tensor_type.dtg.h",
+  "task-spec/dynamic_graph/dynamic_optimizer_tensor_role.dtg.h",
+]
+
+[[values]]
+type = "::FlexFlow::FwbTensorType"
+key = "fwb_tensor"
+
+[[values]]
+type = "::FlexFlow::DynamicOptimizerTensorRole"
+key = "optimizer_tensor"

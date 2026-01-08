@@ -12,9 +12,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     positive_int p = 10_p;
 
     BatchMatmulAttrs attrs = BatchMatmulAttrs{
-        /*a_seq_length_dim=*/0_n, // TODO figure out if these arguments are
+        /*a_seq_length_dim=*/1_p, // TODO figure out if these arguments are
                                   // still relevant
-        /*b_seq_length_dim=*/0_n,
+        /*b_seq_length_dim=*/1_p,
     };
 
     TensorShape input_lhs_shape = TensorShape{
@@ -106,9 +106,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     positive_int o_sum = 11_p;
 
     BatchMatmulAttrs attrs = BatchMatmulAttrs{
-        /*a_seq_length_dim=*/0_n, // TODO figure out if these arguments are
+        /*a_seq_length_dim=*/0_p, // TODO figure out if these arguments are
                                   // still relevant
-        /*b_seq_length_dim=*/0_n,
+        /*b_seq_length_dim=*/0_p,
     };
 
     auto make_lhs = [&](SumDegree o_sum,

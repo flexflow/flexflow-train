@@ -6,6 +6,21 @@ cuda_launch_cmd = [
   "nixGL",
   "--",
 ]
+layout_ignore_paths = [
+  "lib/runtime",
+  "lib/kernels",
+  "lib/utils/test/common",
+  "lib/compiler/ffi",
+  "lib/op-attrs/ffi",
+  "lib/pcg/ffi",
+  "lib/substitutions/ffi",
+  "lib/utils/ffi",
+  "lib/ffi",
+  "lib/utils/include/utils/graph/docs",
+  "lib/compiler/test/src/internal",
+  "lib/local-execution/test/src/internal",
+  "bin/protobuf-to-json",
+]
 
 [targets.utils]
 type = "lib"
@@ -63,12 +78,19 @@ has-cpu-only-benchmarks = false
 has-cuda-tests = false
 has-cuda-benchmarks = false
 
-[targets.local-execution]
-type = "lib"
-has-cpu-only-tests = true
-has-cpu-only-benchmarks = false
-has-cuda-tests = true
-has-cuda-benchmarks = false
+# [targets.local-execution]
+# type = "lib"
+# has-cpu-only-tests = true
+# has-cpu-only-benchmarks = false
+# has-cuda-tests = true
+# has-cuda-benchmarks = false
+
+# [targets.local-pcg-execution]
+# type = "lib"
+# has-cpu-only-tests = true
+# has-cpu-only-benchmarks = false
+# has-cuda-tests = false
+# has-cuda-benchmarks = false
 
 [targets.models]
 type = "lib"

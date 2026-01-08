@@ -1,0 +1,16 @@
+namespace = "FlexFlow"
+name = "SparseCategoricalCrossEntropyLossAttrs"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+  "rapidcheck",
+  "json",
+]
+
+[[fields]]
+# for aggregate_spec: More predictions than labels
+name = "replace_labels"
+type = "bool"
