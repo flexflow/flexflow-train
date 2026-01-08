@@ -1,5 +1,5 @@
-#include <doctest/doctest.h>
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/binary_sp_decomposition_tree.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
@@ -25,20 +25,12 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       CHECK(result == correct);
     }
-    
+
     SUBCASE("series split") {
-      BinarySPDecompositionTree input =
-        make_series_split(
-          make_series_split(
-            make_series_split(
-              make_leaf(0),
-              make_leaf(1)),
-            make_series_split(
-              make_leaf(2),
-              make_leaf(3))),
-          make_series_split(
-            make_leaf(4),
-            make_leaf(5)));
+      BinarySPDecompositionTree input = make_series_split(
+          make_series_split(make_series_split(make_leaf(0), make_leaf(1)),
+                            make_series_split(make_leaf(2), make_leaf(3))),
+          make_series_split(make_leaf(4), make_leaf(5)));
 
       nonnegative_int result = get_tree_height(input);
       nonnegative_int correct = 3_n;
@@ -47,18 +39,13 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("parallel split") {
-      BinarySPDecompositionTree input =
-        make_parallel_split(
+      BinarySPDecompositionTree input = make_parallel_split(
           make_leaf(4),
           make_parallel_split(
-            make_parallel_split(
-              make_leaf(3),
-              make_leaf(1)),
-            make_parallel_split(
+              make_parallel_split(make_leaf(3), make_leaf(1)),
               make_parallel_split(
-                make_leaf(2),
-                make_leaf(3)),
-              make_leaf(3))));
+                  make_parallel_split(make_leaf(2), make_leaf(3)),
+                  make_leaf(3))));
 
       nonnegative_int result = get_tree_height(input);
       nonnegative_int correct = 4_n;
@@ -67,20 +54,15 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("mixed") {
-      BinarySPDecompositionTree input =
-        make_parallel_split(
+      BinarySPDecompositionTree input = make_parallel_split(
           make_leaf(4),
           make_parallel_split(
-            make_series_split(
-              make_leaf(3),
-              make_leaf(1)),
-            make_parallel_split(
-              make_series_split(
-                make_leaf(2),
-                make_series_split(
-                  make_leaf(4),
-                  make_leaf(3))),
-              make_leaf(3))));
+              make_series_split(make_leaf(3), make_leaf(1)),
+              make_parallel_split(
+                  make_series_split(
+                      make_leaf(2),
+                      make_series_split(make_leaf(4), make_leaf(3))),
+                  make_leaf(3))));
 
       nonnegative_int result = get_tree_height(input);
       nonnegative_int correct = 5_n;

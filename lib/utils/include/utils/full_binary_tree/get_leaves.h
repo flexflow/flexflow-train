@@ -21,7 +21,7 @@ std::unordered_multiset<Leaf>
                 get_leaves(impl.get_right_child(parent), impl));
           },
           [](Leaf const &leaf) -> std::unordered_multiset<Leaf> {
-           return {leaf};
+            return {leaf};
           },
       };
 

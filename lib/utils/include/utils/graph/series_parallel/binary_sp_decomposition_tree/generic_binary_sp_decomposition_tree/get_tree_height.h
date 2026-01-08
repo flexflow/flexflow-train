@@ -20,7 +20,6 @@ nonnegative_int get_tree_height(
   return get_tree_height(tree, full_binary_impl);
 }
 
-
 } // namespace FlexFlow
 
 #endif

@@ -14,8 +14,10 @@ nonnegative_int get_tree_height(
 
   auto visitor = FullBinaryTreeVisitor<nonnegative_int, Tree, Parent, Leaf>{
       [&](Parent const &parent) -> nonnegative_int {
-        nonnegative_int left_height = get_tree_height(impl.get_left_child(parent), impl);
-        nonnegative_int right_height = get_tree_height(impl.get_right_child(parent), impl);
+        nonnegative_int left_height =
+            get_tree_height(impl.get_left_child(parent), impl);
+        nonnegative_int right_height =
+            get_tree_height(impl.get_right_child(parent), impl);
         return std::max(left_height, right_height) + 1_n;
       },
       [](Leaf const &) -> nonnegative_int { return 0_n; },

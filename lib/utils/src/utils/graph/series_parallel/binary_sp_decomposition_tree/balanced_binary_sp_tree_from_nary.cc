@@ -34,7 +34,8 @@ BinarySPDecompositionTree
   };
 
   from_parallel = [&](ParallelSplit const &s) -> BinarySPDecompositionTree {
-    std::vector<std::variant<SeriesSplit, Node>> children = vector_of(s.get_children());
+    std::vector<std::variant<SeriesSplit, Node>> children =
+        vector_of(s.get_children());
     if (children.size() == 1) {
       return from_parallel_child(get_only(children));
     } else if (children.size() == 2) {
@@ -42,8 +43,7 @@ BinarySPDecompositionTree
           from_parallel_child(children[0]), from_parallel_child(children[1])}};
     }
 
-    auto s1 = unordered_multiset_of(
-        slice(children, 0, children.size() / 2));
+    auto s1 = unordered_multiset_of(slice(children, 0, children.size() / 2));
     auto s2 = unordered_multiset_of(
         slice(children, children.size() / 2, std::nullopt));
 
@@ -52,7 +52,8 @@ BinarySPDecompositionTree
   };
 
   from_series = [&](SeriesSplit const &s) -> BinarySPDecompositionTree {
-    std::vector<std::variant<ParallelSplit, Node>> children = vector_of(s.children);
+    std::vector<std::variant<ParallelSplit, Node>> children =
+        vector_of(s.children);
     if (children.size() == 1) {
       return from_series_child(get_only(children));
     } else if (children.size() == 2) {
