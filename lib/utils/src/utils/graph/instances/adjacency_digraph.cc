@@ -57,13 +57,4 @@ std::unordered_set<Node>
   return apply_query(query.nodes, keys(this->adjacency));
 }
 
-// bool AdjacencyDiGraph::operator==(AdjacencyDiGraph const &other) const {
-//   bool result = this->adjacency == other.adjacency;
-//   return result;
-// }
-//
-// bool AdjacencyDiGraph::operator!=(AdjacencyDiGraph const &other) const {
-//   return (this->adjacency != other.adjacency);
-// }
-
 } // namespace FlexFlow

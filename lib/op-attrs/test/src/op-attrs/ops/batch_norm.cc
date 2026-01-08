@@ -21,12 +21,21 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("affine = true") {
       BatchNormAttrs attrs = make_attrs(/*affine=*/true);
 
-      std::vector<IncomingTensorRole> result =
+      std::unordered_map<TensorSlotName, IncomingTensorRole> result =
           get_batch_norm_incoming_tensor_roles(attrs);
-      std::vector<IncomingTensorRole> correct = {
-          IncomingTensorRole::INPUT,
-          IncomingTensorRole::WEIGHT,
-          IncomingTensorRole::WEIGHT,
+      std::unordered_map<TensorSlotName, IncomingTensorRole> correct = {
+          {
+              TensorSlotName::INPUT,
+              IncomingTensorRole::INPUT,
+          },
+          {
+              TensorSlotName::GAMMA,
+              IncomingTensorRole::WEIGHT,
+          },
+          {
+              TensorSlotName::BETA,
+              IncomingTensorRole::WEIGHT,
+          },
       };
 
       CHECK(result == correct);
@@ -35,10 +44,13 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("affine = false") {
       BatchNormAttrs attrs = make_attrs(/*affine=*/false);
 
-      std::vector<IncomingTensorRole> result =
+      std::unordered_map<TensorSlotName, IncomingTensorRole> result =
           get_batch_norm_incoming_tensor_roles(attrs);
-      std::vector<IncomingTensorRole> correct = {
-          IncomingTensorRole::INPUT,
+      std::unordered_map<TensorSlotName, IncomingTensorRole> correct = {
+          {
+              TensorSlotName::INPUT,
+              IncomingTensorRole::INPUT,
+          },
       };
 
       CHECK(result == correct);

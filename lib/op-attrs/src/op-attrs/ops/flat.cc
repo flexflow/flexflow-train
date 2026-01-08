@@ -34,9 +34,8 @@ TensorShape get_output_shape(FlatAttrs const &attrs,
   };
 }
 
-tl::expected<ParallelTensorDimDegrees, std::string>
-    get_output_parallel_dim_degrees(
-        FlatAttrs const &attrs, ParallelTensorDimDegrees const &input_degrees) {
+ParallelTensorDimDegrees get_output_parallel_dim_degrees(
+    FlatAttrs const &attrs, ParallelTensorDimDegrees const &input_degrees) {
   FFOrdered<positive_int> flattened_dim_degrees =
       slice(input_degrees.shard_degrees, attrs.start_dim, attrs.end_dim);
 
@@ -44,14 +43,10 @@ tl::expected<ParallelTensorDimDegrees, std::string>
     return input_degrees;
   }
 
-  if (any_of(flattened_dim_degrees,
-             [](positive_int degree) { return degree != 1; })) {
-    return tl::unexpected(
-        fmt::format("get_output_parallel_dim_degrees for {} expected all shard "
-                    "degrees of flattened dimensions to be 1, but received {}",
-                    attrs,
-                    input_degrees));
-  }
+  ASSERT(any_of(flattened_dim_degrees,
+                [](positive_int degree) { return degree != 1; }),
+         "get_output_parallel_dim_degrees for {} expected all shard degrees of "
+         "flattened dimensions to be 1");
 
   return ParallelTensorDimDegrees{
       /*sum_degree=*/input_degrees.sum_degree,
@@ -65,20 +60,12 @@ tl::expected<ParallelTensorDimDegrees, std::string>
   };
 }
 
-tl::expected<ParallelTensorShape, std::string>
-    get_output_shape(FlatAttrs const &attrs,
-                     ParallelTensorShape const &input_shape) {
+ParallelTensorShape get_output_shape(FlatAttrs const &attrs,
+                                     ParallelTensorShape const &input_shape) {
   TensorShape unpar = get_output_shape(attrs, get_reduced_shape(input_shape));
 
-  ParallelTensorDimDegrees degrees = ({
-    tl::expected<ParallelTensorDimDegrees, std::string> returned =
-        get_output_parallel_dim_degrees(attrs,
-                                        get_parallel_degrees(input_shape));
-    if (!returned.has_value()) {
-      return tl::unexpected(returned.error());
-    }
-    returned.value();
-  });
+  ParallelTensorDimDegrees degrees =
+      get_output_parallel_dim_degrees(attrs, get_parallel_degrees(input_shape));
 
   return lift_to_parallel_with_degrees(unpar, degrees);
 }

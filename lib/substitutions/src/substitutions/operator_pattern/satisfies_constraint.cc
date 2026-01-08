@@ -1,5 +1,6 @@
 #include "substitutions/operator_pattern/satisfies_constraint.h"
 #include "substitutions/operator_pattern/operator_attribute_expr.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
@@ -17,9 +18,7 @@ bool operator_satisfies_constraint(
     case ConstraintType::EQUAL:
       return expr_val.value() == constraint.attribute_value;
     default:
-      throw mk_runtime_error(
-          fmt::format("Unknown constraint type {}",
-                      static_cast<int>(constraint.constraint_type)));
+      PANIC("Unknown constraint type", constraint.constraint_type);
   }
 }
 

@@ -14,7 +14,9 @@
 namespace FlexFlow {
 
 std::unordered_set<parallel_layer_guid_t>
-    get_parallel_layers(SubParallelComputationGraph const &sub_pcg);
+    get_parallel_layers(SubParallelComputationGraph const &);
+std::unordered_set<open_parallel_tensor_guid_t>
+    get_parallel_tensors(SubParallelComputationGraph const &);
 ParallelLayerAttrs get_parallel_layer_attrs(SubParallelComputationGraph const &,
                                             parallel_layer_guid_t const &);
 PCGOperatorAttrs get_operator_attrs(SubParallelComputationGraph const &,
@@ -31,10 +33,10 @@ parallel_layer_guid_t
     get_parallel_layer_by_name(SubParallelComputationGraph const &pcg,
                                std::string const &name);
 
-std::vector<open_parallel_tensor_guid_t>
+std::unordered_map<TensorSlotName, open_parallel_tensor_guid_t>
     get_layer_inputs(SubParallelComputationGraph const &,
                      parallel_layer_guid_t const &);
-std::vector<parallel_tensor_guid_t>
+std::unordered_map<TensorSlotName, parallel_tensor_guid_t>
     get_layer_outputs(SubParallelComputationGraph const &,
                       parallel_layer_guid_t const &);
 

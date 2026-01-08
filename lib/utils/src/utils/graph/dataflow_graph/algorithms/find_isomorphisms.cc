@@ -14,7 +14,7 @@ std::unordered_set<DataflowGraphIsomorphism>
 
   return transform(open_isomorphisms,
                    [](OpenDataflowGraphIsomorphism const &open) {
-                     assert(open.input_mapping.empty());
+                     ASSERT(open.input_mapping.empty());
                      return DataflowGraphIsomorphism{open.node_mapping};
                    });
 }

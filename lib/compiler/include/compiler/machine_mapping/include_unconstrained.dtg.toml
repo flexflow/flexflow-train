@@ -1,0 +1,17 @@
+namespace = "FlexFlow"
+name = "IncludeUnconstrained"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+  "rapidcheck",
+  "json",
+]
+
+includes = []
+
+[[fields]]
+name = "raw_bool"
+type = "bool"

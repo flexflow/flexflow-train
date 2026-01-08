@@ -99,11 +99,11 @@ struct CPUMapTensorAccessors2 {
                   GenericTensorAccessorW &output,
                   F &&f) {
 
-    TensorDims dims = throw_if_unexpected(require_all_same1(std::vector{
+    TensorDims dims = require_all_same1(std::vector{
         lhs.shape.dims,
         rhs.shape.dims,
         output.shape.dims,
-    }));
+    });
 
     ASSERT(lhs.device_type == DeviceType::CPU);
     ASSERT(rhs.device_type == DeviceType::CPU);

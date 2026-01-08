@@ -1,0 +1,42 @@
+namespace = "FlexFlow"
+name = "OpenKwargDataflowGraphData"
+type = "struct"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+template_params = [
+  "GraphInputName",
+  "SlotName",
+]
+
+includes = [
+  "utils/graph/node/node.dtg.h",
+  "utils/graph/open_kwarg_dataflow_graph/open_kwarg_dataflow_edge.dtg.h",
+  "utils/graph/open_kwarg_dataflow_graph/kwarg_dataflow_graph_input.dtg.h",
+  "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_output.dtg.h",
+  "<unordered_set>",
+]
+
+src_includes = [
+  "utils/hash/unordered_set.h",
+  "utils/fmt/unordered_set.h",
+]
+
+[[fields]]
+name = "nodes"
+type = "std::unordered_set<::FlexFlow::Node>"
+
+[[fields]]
+name = "edges"
+type = "std::unordered_set<::FlexFlow::OpenKwargDataflowEdge<GraphInputName, SlotName>>"
+
+[[fields]]
+name = "inputs"
+type = "std::unordered_set<::FlexFlow::KwargDataflowGraphInput<GraphInputName>>"
+
+[[fields]]
+name = "outputs"
+type = "std::unordered_set<::FlexFlow::KwargDataflowOutput<SlotName>>"

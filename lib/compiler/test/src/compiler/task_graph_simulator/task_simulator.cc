@@ -4,6 +4,10 @@
 #include "compiler/machine_mapping/machine_mapping.dtg.h"
 #include "compiler/machine_mapping/machine_mapping.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
+#include "compiler/machine_mapping/machine_view.dtg.h"
+#include "compiler/machine_mapping/machine_view.h"
+#include "compiler/machine_mapping/machine_view_dimension.dtg.h"
+#include "compiler/machine_mapping/stride_t.dtg.h"
 #include "internal/runtime_only_cost_estimator_for_test.h"
 #include "op-attrs/ops/input_attrs.dtg.h"
 #include "op-attrs/parallel_tensor_dims.dtg.h"
@@ -12,16 +16,11 @@
 #include "pcg/device_id.h"
 #include "pcg/device_type.dtg.h"
 #include "pcg/machine_space_coordinate.dtg.h"
-#include "pcg/machine_specification.h"
 #include "pcg/machine_specification_dimension.dtg.h"
-#include "pcg/machine_view.dtg.h"
-#include "pcg/machine_view.h"
-#include "pcg/machine_view_dimension.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_tensor_guid_t.h"
-#include "pcg/stride_t.dtg.h"
 #include "substitutions/sub_parallel_computation_graph.dtg.h"
 #include "substitutions/sub_parallel_computation_graph.h"
 #include "utils/containers/get_only.h"
@@ -37,12 +36,17 @@ namespace FlexFlow {
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("task_simulator_estimate_forward_pass_time") {
-    MachineSpecification machine_spec =
-        MachineSpecification{/*num_nodes=*/3_p,
-                             /*num_cpus_per_node=*/3_p,
-                             /*num_gpus_per_node=*/3_p,
-                             /*inter_node_bandwidth=*/1.0f,
-                             /*intra_node_bandwidth=*/1.0f};
+    MachineSpecification machine_spec = MachineSpecification{
+        MachineComputeSpecification{
+            /*num_nodes=*/3_p,
+            /*num_cpus_per_node=*/3_p,
+            /*num_gpus_per_node=*/3_p,
+        },
+        MachineInterconnectSpecification{
+            /*inter_node_bandwidth=*/bytes_per_second_t{1.0f},
+            /*intra_node_bandwidth=*/bytes_per_second_t{1.0f},
+        },
+    };
 
     SUBCASE("linear graph") {
       ParallelComputationGraphBuilder b;
@@ -61,16 +65,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_layer_guid_t layer0 = get_source_layer(tensor0);
       parallel_layer_guid_t layer1 = get_source_layer(tensor1);
 
-      std::vector<MachineViewDimension> dims = {
-          MachineViewDimension{stride_t{1_p},
-                               MachineSpecificationDimension::INTER_NODE},
-          MachineViewDimension{stride_t{1_p},
-                               MachineSpecificationDimension::INTER_NODE},
-          MachineViewDimension{stride_t{1_p},
-                               MachineSpecificationDimension::INTER_NODE},
-          MachineViewDimension{stride_t{1_p},
-                               MachineSpecificationDimension::INTER_NODE},
-      };
+      std::vector<MachineViewDimension> dims = {};
       ParallelComputationGraph pcg = b.pcg;
       MachineView mv1 =
           MachineView{MachineSpaceCoordinate{0_n, 0_n, DeviceType::GPU}, dims};
@@ -150,16 +145,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_layer_guid_t layer3 = get_source_layer(tensor3);
 
       ParallelComputationGraph pcg = b.pcg;
-      std::vector<MachineViewDimension> dims = {
-          MachineViewDimension{stride_t{1_p},
-                               MachineSpecificationDimension::INTER_NODE},
-          MachineViewDimension{stride_t{1_p},
-                               MachineSpecificationDimension::INTER_NODE},
-          MachineViewDimension{stride_t{1_p},
-                               MachineSpecificationDimension::INTER_NODE},
-          MachineViewDimension{stride_t{1_p},
-                               MachineSpecificationDimension::INTER_NODE},
-      };
+      std::vector<MachineViewDimension> dims = {};
 
       SUBCASE("all different devices") {
         MachineView mv0 = MachineView{

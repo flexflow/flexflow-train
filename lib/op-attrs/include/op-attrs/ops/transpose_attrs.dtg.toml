@@ -1,0 +1,19 @@
+namespace = "FlexFlow"
+name = "TransposeAttrs"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = [
+   "op-attrs/tensor_dim_permutation.h",
+]
+
+[[fields]]
+name = "permutation"
+type = "::FlexFlow::TensorDimPermutation"

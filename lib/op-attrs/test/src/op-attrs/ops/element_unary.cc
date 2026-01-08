@@ -56,25 +56,19 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("sum degree > 1") {
       positive_int degree = 2_p;
 
-      tl::expected<ParallelTensorShape, std::string> result = get_output_shape(
+      CHECK_THROWS(get_output_shape(
           attrs,
-          make_input(SumDegree{degree}, DiscardCopyDegree{1_p}, 1_p, 1_p, 1_p));
-
-      CHECK_MESSAGE(!result.has_value(),
-                    "Unexpected successful result: ",
-                    result.error());
+          make_input(
+              SumDegree{degree}, DiscardCopyDegree{1_p}, 1_p, 1_p, 1_p)));
     }
 
     SUBCASE("discard copy degree > 1") {
       positive_int degree = 2_p;
 
-      tl::expected<ParallelTensorShape, std::string> result = get_output_shape(
+      CHECK_THROWS(get_output_shape(
           attrs,
-          make_input(SumDegree{1_p}, DiscardCopyDegree{degree}, 1_p, 1_p, 1_p));
-
-      CHECK_MESSAGE(!result.has_value(),
-                    "Unexpected successful result: ",
-                    result.error());
+          make_input(
+              SumDegree{1_p}, DiscardCopyDegree{degree}, 1_p, 1_p, 1_p)));
     }
   }
 }

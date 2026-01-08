@@ -14,8 +14,8 @@ void forward_kernel(device_stream_t const &stream,
                     DataType input_data_type,
                     DataType output_data_type,
                     std::optional<AggregateOp> aggr,
-                    int in_dim,
-                    int out_dim,
+                    num_tensor_dims_t in_dim,
+                    num_tensor_dims_t out_dim,
                     int batch_size);
 
 void backward_kernel(device_stream_t const &stream,
@@ -25,8 +25,8 @@ void backward_kernel(device_stream_t const &stream,
                      DataType output_data_type,
                      DataType input_data_type,
                      std::optional<AggregateOp> aggr,
-                     int in_dim,
-                     int out_dim,
+                     num_tensor_dims_t in_dim,
+                     num_tensor_dims_t out_dim,
                      int batch_size);
 
 } // namespace FlexFlow::Kernels::Embedding

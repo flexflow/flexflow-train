@@ -1,0 +1,15 @@
+namespace = "FlexFlow"
+name = "SplitType"
+type = "enum"
+features = [
+  "hash",
+  "json",
+  "fmt",
+  "rapidcheck",
+]
+
+[[values]]
+name = "SERIES"
+
+[[values]]
+name = "PARALLEL"

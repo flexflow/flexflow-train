@@ -1,0 +1,21 @@
+namespace = "FlexFlow"
+name = "AbstractedCommunicationEdge"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_device.dtg.h",
+]
+
+[[fields]]
+name = "src"
+type = "::FlexFlow::AbstractedDevice"
+
+[[fields]]
+name = "dst"
+type = "::FlexFlow::AbstractedDevice"

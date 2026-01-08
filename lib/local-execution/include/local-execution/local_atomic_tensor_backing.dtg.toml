@@ -1,0 +1,21 @@
+namespace = "FlexFlow"
+name = "LocalAtomicTensorBacking"
+type = "struct"
+features = [
+  "eq",
+  "fmt",
+]
+
+includes = [
+  "kernels/accessor.h",
+  "local-execution/atomic_training_tensor_guid_t.dtg.h",
+]
+
+src_includes = [
+  "utils/fmt/unordered_map.h",
+]
+
+
+[[fields]]
+name = "accessor_from_atomic_tensor_map"
+type = "std::unordered_map<::FlexFlow::atomic_training_tensor_guid_t, ::FlexFlow::GenericTensorAccessorW>"

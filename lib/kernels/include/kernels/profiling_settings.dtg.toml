@@ -1,0 +1,19 @@
+namespace = "FlexFlow"
+name = "ProfilingSettings"
+type = "struct"
+
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+]
+
+[[fields]]
+name = "warmup_iters"
+type = "int"
+
+[[fields]]
+name = "measure_iters"
+type = "int"

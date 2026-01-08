@@ -255,11 +255,12 @@ public:
   TensorShape get_shape(tensor_guid_t const &) const;
 
 private:
-  std::vector<tensor_guid_t> add_layer(
+  std::unordered_map<TensorSlotName, tensor_guid_t> add_layer(
       LayerAttrs const &layer,
-      std::vector<tensor_guid_t> const &inputs,
-      std::vector<InitializerAttrs> const &weights,
-      std::optional<std::vector<CreateGrad>> const &outputs = std::nullopt);
+      std::unordered_map<TensorSlotName, tensor_guid_t> const &inputs,
+      std::unordered_map<TensorSlotName, InitializerAttrs> const &weights,
+      std::optional<std::unordered_map<TensorSlotName, CreateGrad>> const
+          &outputs = std::nullopt);
 
   tensor_guid_t
       broadcast(tensor_guid_t const &, TensorDims const &, std::string const &);

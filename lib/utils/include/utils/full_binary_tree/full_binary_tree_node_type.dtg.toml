@@ -1,0 +1,17 @@
+namespace = "FlexFlow"
+name = "FullBinaryTreeNodeType"
+type = "enum"
+features = [
+  "hash",
+  "fmt",
+  "json",
+  "rapidcheck",
+]
+
+[[values]]
+name = "PARENT"
+key = "parent"
+
+[[values]]
+name = "LEAF"
+key = "leaf"

@@ -1,0 +1,21 @@
+namespace = "FlexFlow"
+name = "MachineComputeResourceSlice"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "utils/positive_int/positive_int.h",
+]
+
+[[fields]]
+name = "num_nodes"
+type = "::FlexFlow::positive_int"
+
+[[fields]]
+name = "num_gpus_per_node"
+type = "::FlexFlow::positive_int"

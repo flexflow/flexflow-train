@@ -2,6 +2,7 @@
 #include "compiler/cost_estimator/op_cost_metrics.dtg.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
+#include "utils/containers/contains_key.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
 
 namespace FlexFlow {
@@ -38,8 +39,12 @@ CostEstimator make_fake_cost_estimator(
     std::unordered_map<TensorSetMovement, milliseconds_t> const
         &comm_cost_map) {
   return make_fake_cost_estimator(
-      [op_cost_map](OpCostEstimateKey const &k) { return op_cost_map.at(k); },
+      [op_cost_map](OpCostEstimateKey const &k) {
+        ASSERT(contains_key(op_cost_map, k), k);
+        return op_cost_map.at(k);
+      },
       [comm_cost_map](TensorSetMovement const &m) {
+        ASSERT(contains_key(comm_cost_map, m), m);
         return comm_cost_map.at(m);
       });
 }

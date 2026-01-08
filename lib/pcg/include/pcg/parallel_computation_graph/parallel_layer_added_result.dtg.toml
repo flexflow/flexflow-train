@@ -1,0 +1,27 @@
+namespace = "FlexFlow"
+name = "ParallelLayerAddedResult"
+type = "struct"
+
+features = [
+  "eq",
+  "fmt",
+]
+
+includes = [
+  "<vector>",
+  "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h",
+  "pcg/parallel_computation_graph/parallel_tensor_guid_t.dtg.h",
+  "op-attrs/tensor_slot_name.dtg.h",
+]
+
+src_includes = [
+  "utils/fmt/unordered_map.h",
+]
+
+[[fields]]
+name = "parallel_layer"
+type = "::FlexFlow::parallel_layer_guid_t"
+
+[[fields]]
+name = "outputs"
+type = "std::unordered_map<::FlexFlow::TensorSlotName, ::FlexFlow::parallel_tensor_guid_t>"

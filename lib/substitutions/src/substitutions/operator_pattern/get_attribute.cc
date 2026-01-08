@@ -384,7 +384,7 @@ std::optional<OperatorAttributeValue> get_attribute(TransposeAttrs const &p,
     case OperatorAttributeKey::OP_TYPE:
       return OperatorAttributeValue{get_op_type(p)};
     case OperatorAttributeKey::PERMUTATION:
-      return OperatorAttributeValue{vector_of(p.perm)};
+      return OperatorAttributeValue{p.permutation};
     default:
       return std::nullopt;
   }

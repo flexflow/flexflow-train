@@ -1,0 +1,18 @@
+namespace = "FlexFlow"
+name = "DynamicTaskType"
+type = "enum"
+features = [
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+[[values]]
+name = "FWD"
+
+[[values]]
+name = "BWD"
+
+[[values]]
+name = "UPD"

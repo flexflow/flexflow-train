@@ -1,6 +1,7 @@
 #include "substitutions/output_graph/materialize_operator_from_attrs_map.h"
 #include "utils/containers/contains_key.h"
 #include "utils/fmt/unordered_map.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
@@ -16,8 +17,7 @@ struct Accessor {
     if (contains_key(this->m, k)) {
       return this->m.at(k).get<T>();
     } else {
-      throw mk_runtime_error(
-          fmt::format("Could not find key {} in attrs map: {}", k, this->m));
+      PANIC("Could not find key in attrs map", k, this->m);
     }
   }
 };
@@ -151,8 +151,7 @@ PCGOperatorAttrs materialize_operator_from_attrs_map(
     case OperatorType::PIPELINE:
     case OperatorType::FUSED_PARALLEL:
     default:
-      throw mk_runtime_error(
-          fmt::format("Unsupported operator type {}", op_type));
+      PANIC("Unsupported operator type", op_type);
   }
 }
 

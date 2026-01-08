@@ -14,13 +14,13 @@ UnmappedRuntimeOnlyOpCostEstimateKey
   return UnmappedRuntimeOnlyOpCostEstimateKey{
       /*op_attrs=*/pcg_get_op_attrs(pcg, parallel_layer_guid),
       /*input_shapes=*/
-      transform(get_incoming_inputs(pcg, parallel_layer_guid),
-                get_tensor_shape),
+      map_values(get_incoming_inputs(pcg, parallel_layer_guid),
+                 get_tensor_shape),
       /*weight_shapes=*/
-      transform(get_incoming_weights(pcg, parallel_layer_guid),
-                get_tensor_shape),
+      map_values(get_incoming_weights(pcg, parallel_layer_guid),
+                 get_tensor_shape),
       /*output_shapes=*/
-      transform(get_layer_outputs(pcg, parallel_layer_guid), get_tensor_shape),
+      map_values(get_layer_outputs(pcg, parallel_layer_guid), get_tensor_shape),
   };
 }
 

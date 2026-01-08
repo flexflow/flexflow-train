@@ -1,0 +1,24 @@
+namespace = "FlexFlow"
+name = "computation_graph_training_tensor_ref_t"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+  "rapidcheck",
+]
+
+includes = [
+  "pcg/tensor_guid_t.dtg.h" ,
+  "task-spec/op_training_tensor_type.dtg.h",
+]
+
+[[fields]]
+name = "tensor_guid"
+type = "::FlexFlow::tensor_guid_t"
+
+[[fields]]
+name = "tensor_type"
+type = "::FlexFlow::OpTrainingTensorType"

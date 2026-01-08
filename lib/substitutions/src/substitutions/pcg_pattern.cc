@@ -5,12 +5,12 @@
 #include "substitutions/tensor_pattern/satisfies_pattern.h"
 #include "substitutions/unlabelled/find_pattern_matches.h"
 #include "substitutions/unlabelled/pattern_value.h"
+#include "utils/bidict/algorithms/transform_values.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/transform.h"
-#include "utils/graph/dataflow_graph/algorithms.h"
+#include "utils/graph/kwarg_dataflow_graph/algorithms/get_outgoing_kwarg_dataflow_outputs_for_node.h"
 #include "utils/graph/node/algorithms.h"
-#include "utils/graph/open_dataflow_graph/algorithms/get_inputs.h"
-#include "utils/graph/open_dataflow_graph/algorithms/get_open_dataflow_graph_inputs.h"
+#include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_all_kwarg_dataflow_graph_inputs.h"
 
 namespace FlexFlow {
 
@@ -29,7 +29,8 @@ static MatchAdditionalCriterion
             get_operator_attrs(pcg, parallel_layer_guid_t{pcgNode}),
             get_operator_pattern(pattern, patternNode));
       },
-      [&](PatternValue const &patternValue, OpenDataflowValue const &pcgValue) {
+      [&](PatternValue const &patternValue,
+          OpenKwargDataflowValue<int, TensorSlotName> const &pcgValue) {
         return parallel_tensor_satisfies_pattern(
             get_parallel_tensor_attrs(pcg,
                                       open_parallel_tensor_guid_t{pcgValue}),
@@ -40,19 +41,21 @@ static MatchAdditionalCriterion
 std::vector<PCGPatternMatch>
     find_pattern_matches(PCGPattern const &pattern,
                          SubParallelComputationGraph const &pcg) {
-  std::vector<UnlabelledDataflowGraphPatternMatch> unlabelled_matches =
-      find_pattern_matches(get_unlabelled_pattern(pattern),
-                           pcg.raw_graph,
-                           pcg_pattern_criteria(pattern, pcg));
+  std::vector<UnlabelledKwargDataflowGraphPatternMatch> unlabelled_matches =
+      find_unlabelled_pattern_matches(get_unlabelled_pattern(pattern),
+                                      pcg.raw_graph,
+                                      pcg_pattern_criteria(pattern, pcg));
   auto pcg_match_from_unlabelled_match =
-      [](UnlabelledDataflowGraphPatternMatch const &m) {
+      [](UnlabelledKwargDataflowGraphPatternMatch const &m) {
         return PCGPatternMatch{
-            map_values(m.node_assignment,
-                       [](Node const &n) { return parallel_layer_guid_t{n}; }),
-            map_values(m.input_assignment,
-                       [](OpenDataflowValue const &i) {
-                         return open_parallel_tensor_guid_t{i};
-                       }),
+            transform_values(
+                m.node_assignment,
+                [](Node const &n) { return parallel_layer_guid_t{n}; }),
+            map_values(
+                m.input_assignment,
+                [](OpenKwargDataflowValue<int, TensorSlotName> const &i) {
+                  return open_parallel_tensor_guid_t{i};
+                }),
         };
       };
 
@@ -74,22 +77,25 @@ OperatorAttributePattern get_operator_pattern(PCGPattern const &p,
 }
 
 std::unordered_set<PatternInput> get_inputs(PCGPattern const &p) {
-  std::unordered_set<DataflowGraphInput> raw_inputs =
-      get_open_dataflow_graph_inputs(p.raw_graph);
+  std::unordered_set<KwargDataflowGraphInput<int>> raw_inputs =
+      get_all_kwarg_dataflow_graph_inputs(p.raw_graph);
 
-  return transform(raw_inputs,
-                   [](DataflowGraphInput const &i) { return PatternInput{i}; });
+  return transform(raw_inputs, [](KwargDataflowGraphInput<int> const &i) {
+    return PatternInput{i};
+  });
 }
 
-std::vector<PatternNodeOutput>
+std::unordered_map<TensorSlotName, PatternNodeOutput>
     get_pattern_node_outputs(PCGPattern const &pattern,
                              PatternNode const &node) {
-  std::vector<DataflowOutput> raw_outputs =
-      get_outputs(pattern.raw_graph, node.raw_node);
+  std::unordered_map<TensorSlotName, KwargDataflowOutput<TensorSlotName>>
+      raw_outputs = get_outgoing_kwarg_dataflow_outputs_for_node(
+          pattern.raw_graph, node.raw_node);
 
-  return transform(raw_outputs, [](DataflowOutput const &o) {
-    return PatternNodeOutput{o};
-  });
+  return map_values(raw_outputs,
+                    [](KwargDataflowOutput<TensorSlotName> const &o) {
+                      return PatternNodeOutput{o};
+                    });
 }
 
 bool assignment_satisfies(SubParallelComputationGraph const &pcg,

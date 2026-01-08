@@ -1,0 +1,18 @@
+namespace = "FlexFlow"
+name = "legion_dim_t"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+]
+
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
+[[fields]]
+name = "value"
+type = "::FlexFlow::nonnegative_int"
