@@ -6,6 +6,7 @@
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/binary_sp_decomposition_tree.dtg.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree_implementation.dtg.h"
 #include "utils/graph/series_parallel/sp_decomposition_tree_node_type.dtg.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include <unordered_set>
 
 namespace FlexFlow {
@@ -23,9 +24,7 @@ std::unordered_multiset<Node> get_leaves(BinarySPDecompositionTree const &);
 
 SPDecompositionTreeNodeType get_node_type(BinarySPDecompositionTree const &);
 
-int get_tree_height(BinarySPDecompositionTree const &);
-
-std::unordered_multiset<Node> get_nodes(BinarySPDecompositionTree const &tree);
+nonnegative_int get_tree_height(BinarySPDecompositionTree const &);
 
 } // namespace FlexFlow
 

@@ -67,7 +67,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       // left-associative binary SP trees
       CHECK(is_binary_sp_tree_left_associative(result));
 
-      std::unordered_multiset<Node> result_nodes = get_nodes(result);
+      std::unordered_multiset<Node> result_nodes = get_leaves(result);
       std::unordered_multiset<Node> correct_nodes = {n1, n2, n3};
 
       CHECK(result_nodes == correct_nodes);
@@ -96,7 +96,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       CHECK(is_binary_sp_tree_left_associative(result));
 
-      std::unordered_multiset<Node> result_nodes = get_nodes(result);
+      std::unordered_multiset<Node> result_nodes = get_leaves(result);
       std::unordered_multiset<Node> correct_nodes = {
           n1, n2, n3, n3, n5, n6, n4, n5};
 

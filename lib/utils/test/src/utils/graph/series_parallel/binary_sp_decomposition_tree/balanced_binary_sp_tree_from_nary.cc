@@ -61,11 +61,11 @@ TEST_SUITE(FF_TEST_SUITE) {
       BinarySPDecompositionTree result =
           balanced_binary_sp_tree_from_nary(input);
 
-      int result_height = get_tree_height(result);
-      int expected_height = 2;
+      nonnegative_int result_height = get_tree_height(result);
+      nonnegative_int expected_height = 2_n;
       CHECK(result_height == expected_height);
 
-      std::unordered_multiset<Node> result_nodes = get_nodes(result);
+      std::unordered_multiset<Node> result_nodes = get_leaves(result);
       std::unordered_multiset<Node> expected_nodes = {n1, n2, n3, n4};
       CHECK(result_nodes == expected_nodes);
     }
