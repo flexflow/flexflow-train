@@ -1,5 +1,6 @@
 #include "op-attrs/ops/softmax.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "op-attrs/tensor_dims.h"
 #include "op-attrs/tensor_shape.h"
 
 namespace FlexFlow {
@@ -7,7 +8,7 @@ namespace FlexFlow {
 tl::expected<TensorShape, std::string>
     get_output_shape(SoftmaxAttrs const &attrs,
                      TensorShape const &input_shape) {
-  if (attrs.dim.value >= num_dims(input_shape)) {
+  if (attrs.dim.value >= get_num_dims(input_shape.dims)) {
     return tl::unexpected(
         fmt::format("get_output_shape for Softmax received out-of-bounds "
                     "attrs.dim {} for input tensor shape {}",

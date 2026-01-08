@@ -1,9 +1,8 @@
 #ifndef _FLEXFLOW_UTILS_INCLUDE_UTILS_REQUIRED_CORE_H
 #define _FLEXFLOW_UTILS_INCLUDE_UTILS_REQUIRED_CORE_H
 
-#include "hash-utils.h"
-#include "test_types.h"
-#include "type_traits_core.h"
+#include "utils/hash-utils.h"
+#include "utils/type_traits_core.h"
 #include <fmt/format.h>
 #include <vector>
 
@@ -14,12 +13,6 @@ struct enable_if_valid {};
 
 template <typename T, typename... Args>
 struct enable_if_valid<T, void_t<Args...>, Args...> : type_identity<T> {};
-
-/* required_wrapper_impl<decltype(std::declval<T>() + std::declval<T>())>> */
-/* operator+(required_wrapper_impl<T> const &lhs, required_wrapper_impl<T> const
- * &rhs) { */
-/*   /1* return 1; *1/ */
-/* } */
 
 template <typename T>
 struct required_wrapper_impl {
@@ -52,14 +45,6 @@ public:
     return static_cast<T>(r);
   }
 
-  /* T const &operator*() const { */
-  /*   return this->m_value; */
-  /* } */
-
-  /* T const *operator->() const { */
-  /*   return &this->m_value; */
-  /* } */
-
   template <typename TT = T>
   enable_if_t<is_neq_comparable<TT>::value, bool>
       operator==(required_wrapper_impl const &rhs) const {
@@ -72,53 +57,11 @@ public:
     return this->m_value == rhs;
   }
 
-  /* friend enable_if_t<is_equal_comparable<T>::value, bool> */
-  /*   operator==(required_wrapper_impl<T> const &lhs, T const &rhs) { */
-  /*   return lhs.m_value == rhs; */
-  /* } */
-
-  /* friend enable_if_t<is_equal_comparable<T>::value, bool> */
-  /*   operator==(T const &lhs, required_wrapper_impl<T> const &rhs) { */
-  /*   return lhs == rhs.m_value; */
-  /* } */
-
   template <typename TT = T>
   enable_if_t<is_neq_comparable<TT>::value, bool>
       operator!=(required_wrapper_impl const &rhs) const {
     return this->m_value != rhs.m_value;
   }
-
-  /* friend enable_if_t<is_plusable<T>::value,
-   * required_wrapper_impl<decltype(std::declval<T>() + std::declval<T>())>> */
-  /* operator+(required_wrapper_impl<T> const &lhs, required_wrapper_impl<T>
-   * const &rhs) { */
-  /*   /1* return 1; *1/ */
-  /* } */
-  /* required_wrapper_impl<Out> */
-  /* operator+(required_wrapper_impl const &rhs) { */
-  /*   Out o = this->m_value + rhs.m_value; */
-  /*   return required_wrapper_impl<Out>{o}; */
-  /* } */
-
-  /* template <typename TT = T, */
-  /*           enable_if_t<is_minusable<TT>::value> = true> */
-  /* required_wrapper_impl operator-(required_wrapper_impl const &rhs) { */
-  /*   return {this->m_value - rhs.m_value}; */
-  /* } */
-
-  /* template <typename TT = T, */
-  /*           enable_if_t<is_timesable<TT>::value> = true> */
-  /* required_wrapper_impl operator*(required_wrapper_impl const &rhs) { */
-  /*   return {this->m_value * rhs.m_value}; */
-  /* } */
-
-  /* bool operator<(T const &other) const { */
-  /*   return this->m_value < other; */
-  /* } */
-
-  /* bool operator>(T const &other) const { */
-  /*   return this->m_value > other; */
-  /* } */
 
 private:
   T m_value;
@@ -211,10 +154,6 @@ using remove_req_t = typename remove_req<T>::type;
 static_assert(
     is_equal_comparable<required_inheritance_impl<std::vector<int>>>::value,
     "");
-CHECK_WELL_BEHAVED_VALUE_TYPE_NO_HASH(
-    required_inheritance_impl<test_types::well_behaved_value_type>);
-CHECK_WELL_BEHAVED_VALUE_TYPE_NO_HASH(
-    required_wrapper_impl<test_types::well_behaved_value_type>);
 
 /* static_assert(std::is_same<decltype(std::declval<required_wrapper_impl<int>>()
  * + std::declval<required_wrapper_impl<int>>()),
@@ -232,7 +171,7 @@ namespace std {
 template <typename T>
 struct hash<::FlexFlow::req<T>> {
   size_t operator()(::FlexFlow::req<T> const &r) const {
-    return get_std_hash(static_cast<T>(r));
+    return ::FlexFlow::get_std_hash(static_cast<T>(r));
   }
 };
 

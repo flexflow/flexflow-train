@@ -28,7 +28,7 @@ T const &unwrap(std::optional<T> const &o, F const &f) {
 
 template <typename T>
 T const &assert_unwrap(std::optional<T> const &o) {
-  assert(o.has_value());
+  ASSERT(o.has_value());
   return o.value();
 }
 

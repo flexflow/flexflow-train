@@ -1,0 +1,30 @@
+namespace = "FlexFlow"
+name = "DynamicLossConfig"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "op-attrs/ops/loss_functions/loss_attrs.dtg.h",
+  "task-spec/dynamic_graph/dynamic_value_guid_t.dtg.h"
+]
+
+[[fields]]
+name = "loss_attrs"
+type = "::FlexFlow::LossAttrs"
+
+[[fields]]
+name = "logit_tensor"
+type = "::FlexFlow::dynamic_value_guid_t"
+
+[[fields]]
+name = "logit_grad_tensor"
+type = "::FlexFlow::dynamic_value_guid_t"
+
+[[fields]]
+name = "label_tensor"
+type = "::FlexFlow::dynamic_value_guid_t"

@@ -2,8 +2,9 @@
 #include "substitutions/operator_pattern/get_attribute_map.h"
 #include "substitutions/output_graph/materialize_operator_from_attrs_map.h"
 #include "substitutions/output_graph/output_operator_attribute_expr.h"
+#include "utils/containers/binary_merge_maps_with_right_dominating.h"
 #include "utils/containers/map_values.h"
-#include "utils/containers/merge_maps.h"
+#include "utils/exception.h"
 
 namespace FlexFlow {
 
@@ -35,8 +36,8 @@ PCGOperatorAttrs materialize_output_operator_from_attrs_assignment(
           });
 
   std::unordered_map<OperatorAttributeKey, OperatorAttributeValue>
-      joined_attrs_map =
-          merge_map_right_dominates(template_attrs_map, assignments_attrs_map);
+      joined_attrs_map = binary_merge_maps_with_right_dominating(
+          template_attrs_map, assignments_attrs_map);
 
   return materialize_operator_from_attrs_map(joined_attrs_map);
 }

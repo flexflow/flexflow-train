@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/allocation.h"
 #include "kernels/batch_norm_kernels.h"
 #include "kernels/ff_handle.h"
@@ -23,12 +23,12 @@ namespace FlexFlow {
 namespace Kernels {
 namespace BatchNorm {
 
-void forward_kernel(cudaStream_t stream,
-                    BatchNormPerDeviceState const &m,
-                    float const *input_ptr,
-                    float *output_ptr,
-                    float const *scale_ptr,
-                    float const *bias_ptr) {
+void gpu_forward_kernel(cudaStream_t stream,
+                        BatchNormPerDeviceState const &m,
+                        float const *input_ptr,
+                        float *output_ptr,
+                        float const *scale_ptr,
+                        float const *bias_ptr) {
   checkCUDNN(cudnnSetStream(m.handle.dnn, stream));
 
   float alpha = 1.0f, beta = 0.0f;
@@ -51,16 +51,16 @@ void forward_kernel(cudaStream_t stream,
                                                     m.saveVar));
 }
 
-void backward_kernel(cudaStream_t stream,
-                     BatchNormPerDeviceState const &m,
-                     float const *input_ptr,
-                     float *output_grad_ptr,
-                     float const *output_ptr,
-                     float *input_grad_ptr,
-                     float const *scale_ptr,
-                     float *scale_grad_ptr,
-                     float *bias_grad_ptr,
-                     size_t numElements) {
+void gpu_backward_kernel(cudaStream_t stream,
+                         BatchNormPerDeviceState const &m,
+                         float const *output_ptr,
+                         float *output_grad_ptr,
+                         float const *input_ptr,
+                         float *input_grad_ptr,
+                         float const *scale_ptr,
+                         float *scale_grad_ptr,
+                         float *bias_grad_ptr,
+                         size_t numElements) {
   checkCUDNN(cudnnSetStream(m.handle.dnn, stream));
 
   float alpha = 1.0f;
@@ -89,14 +89,14 @@ void backward_kernel(cudaStream_t stream,
                                              m.saveVar));
 }
 
-BatchNormPerDeviceState init_kernel(PerDeviceFFHandle handle,
-                                    Allocator allocator,
-                                    float *runningMean,
-                                    int output_n,
-                                    int output_c,
-                                    int output_h,
-                                    int output_w,
-                                    bool relu) {
+BatchNormPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
+                                        Allocator &allocator,
+                                        float *runningMean,
+                                        int output_n,
+                                        int output_c,
+                                        int output_h,
+                                        int output_w,
+                                        bool relu) {
   ffTensorDescriptor_t inputTensor;
   ffTensorDescriptor_t outputTensor;
   ffTensorDescriptor_t biasTensor;
@@ -167,19 +167,14 @@ BatchNormPerDeviceState init_kernel(PerDeviceFFHandle handle,
   return per_device_state;
 }
 
-void cleanup_kernel(Allocator allocator,
-                    ffTensorDescriptor_t inputTensor,
-                    ffTensorDescriptor_t biasTensor,
-                    ffTensorDescriptor_t outputTensor,
-                    ffActivationDescriptor_t actiDesc,
-                    bool relu,
-                    float *runningMean) {
-  allocator.deallocate(runningMean);
-  checkCUDNN(cudnnDestroyTensorDescriptor(inputTensor));
-  checkCUDNN(cudnnDestroyTensorDescriptor(biasTensor));
-  checkCUDNN(cudnnDestroyTensorDescriptor(outputTensor));
-  if (relu) {
-    checkCUDNN(cudnnDestroyActivationDescriptor(actiDesc));
+void gpu_cleanup_kernel(Allocator &allocator,
+                        BatchNormPerDeviceState &per_device_state) {
+  allocator.deallocate(per_device_state.runningMean);
+  checkCUDNN(cudnnDestroyTensorDescriptor(per_device_state.inputTensor));
+  checkCUDNN(cudnnDestroyTensorDescriptor(per_device_state.biasTensor));
+  checkCUDNN(cudnnDestroyTensorDescriptor(per_device_state.outputTensor));
+  if (per_device_state.relu) {
+    checkCUDNN(cudnnDestroyActivationDescriptor(per_device_state.actiDesc));
   }
 }
 

@@ -1,6 +1,6 @@
 #include "utils/containers/foldl1.h"
 #include "utils/containers/get_only.h"
-#include "utils/containers/subvec.h"
+#include "utils/containers/slice.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/unordered_multiset_of.h"
 #include "utils/containers/vector_of.h"
@@ -34,31 +34,35 @@ BinarySPDecompositionTree
   };
 
   from_parallel = [&](ParallelSplit const &s) -> BinarySPDecompositionTree {
-    auto children = vector_of(s.get_children());
+    std::vector<std::variant<SeriesSplit, Node>> children = vector_of(s.get_children());
     if (children.size() == 1) {
       return from_parallel_child(get_only(children));
     } else if (children.size() == 2) {
       return BinarySPDecompositionTree{BinaryParallelSplit{
           from_parallel_child(children[0]), from_parallel_child(children[1])}};
     }
+
     auto s1 = unordered_multiset_of(
-        subvec(children, std::nullopt, children.size() / 2));
+        slice(children, 0, children.size() / 2));
     auto s2 = unordered_multiset_of(
-        subvec(children, children.size() / 2, std::nullopt));
+        slice(children, children.size() / 2, std::nullopt));
+
     return BinarySPDecompositionTree{BinaryParallelSplit{
         from_parallel(ParallelSplit{s1}), from_parallel(ParallelSplit{s2})}};
   };
 
   from_series = [&](SeriesSplit const &s) -> BinarySPDecompositionTree {
-    auto children = vector_of(s.children);
+    std::vector<std::variant<ParallelSplit, Node>> children = vector_of(s.children);
     if (children.size() == 1) {
       return from_series_child(get_only(children));
     } else if (children.size() == 2) {
       return BinarySPDecompositionTree{BinarySeriesSplit{
           from_series_child(children[0]), from_series_child(children[1])}};
     }
-    auto s1 = subvec(children, std::nullopt, children.size() / 2);
-    auto s2 = subvec(children, children.size() / 2, std::nullopt);
+
+    auto s1 = slice(children, 0, children.size() / 2);
+    auto s2 = slice(children, children.size() / 2, std::nullopt);
+
     return BinarySPDecompositionTree{BinarySeriesSplit{
         from_series(SeriesSplit{s1}), from_series(SeriesSplit{s2})}};
   };

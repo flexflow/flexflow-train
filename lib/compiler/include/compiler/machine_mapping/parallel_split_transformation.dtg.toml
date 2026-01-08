@@ -1,0 +1,15 @@
+namespace = "FlexFlow"
+name = "ParallelSplitTransformation"
+type = "enum"
+features = [
+  "hash",
+  "fmt",
+  "rapidcheck",
+  "json",
+]
+
+[[values]]
+name = "LthenR"
+
+[[values]]
+name = "RthenL"

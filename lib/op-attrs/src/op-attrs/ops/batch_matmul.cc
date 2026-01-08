@@ -1,5 +1,7 @@
 #include "op-attrs/ops/batch_matmul.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "op-attrs/tensor_dims.h"
+#include "utils/exception.h"
 
 namespace FlexFlow {
 
@@ -34,21 +36,23 @@ tl::expected<TensorShape, std::string>
     get_output_shape(BatchMatmulAttrs const &attrs,
                      TensorShape const &input_lhs,
                      TensorShape const &input_rhs) {
-  // If input_lhs is a (b×n×m) tensor,
-  // input_rhs is a (b×m×p) tensor,
-  // out will be a (b×n×p) tensor.
-  // https://pytorch.org/docs/stable/generated/torch.bmm.html
+  /**
+   * If input_lhs is a (b×n×m) tensor,
+   * input_rhs is a (b×m×p) tensor,
+   * out will be a (b×n×p) tensor.
+   * https://pytorch.org/docs/stable/generated/torch.bmm.html
+   */
 
-  if (num_dims(input_lhs) != 3) {
+  if (get_num_dims(input_lhs.dims) != 3) {
     return tl::unexpected(
         fmt::format("LHS input has incorrect number of shard dims: {} != {}",
-                    num_dims(input_lhs),
+                    get_num_dims(input_lhs.dims),
                     3));
   }
-  if (num_dims(input_rhs) != 3) {
+  if (get_num_dims(input_rhs.dims) != 3) {
     return tl::unexpected(
         fmt::format("RHS input has incorrect number of shard dims: {} != {}",
-                    num_dims(input_rhs),
+                    get_num_dims(input_rhs.dims),
                     3));
   }
   if (input_lhs.data_type != input_rhs.data_type) {
@@ -57,13 +61,13 @@ tl::expected<TensorShape, std::string>
                                       input_rhs.data_type));
   }
 
-  nonnegative_int lhs_b = dim_at_idx(input_lhs, relative_ff_dim_t{0});
-  nonnegative_int n = dim_at_idx(input_lhs, relative_ff_dim_t{1});
-  nonnegative_int lhs_m = dim_at_idx(input_lhs, relative_ff_dim_t{2});
+  positive_int lhs_b = dim_at_idx(input_lhs.dims, relative_ff_dim_t{0});
+  positive_int n = dim_at_idx(input_lhs.dims, relative_ff_dim_t{1});
+  positive_int lhs_m = dim_at_idx(input_lhs.dims, relative_ff_dim_t{2});
 
-  nonnegative_int rhs_b = dim_at_idx(input_rhs, relative_ff_dim_t{0});
-  nonnegative_int rhs_m = dim_at_idx(input_rhs, relative_ff_dim_t{1});
-  nonnegative_int p = dim_at_idx(input_rhs, relative_ff_dim_t{2});
+  positive_int rhs_b = dim_at_idx(input_rhs.dims, relative_ff_dim_t{0});
+  positive_int rhs_m = dim_at_idx(input_rhs.dims, relative_ff_dim_t{1});
+  positive_int p = dim_at_idx(input_rhs.dims, relative_ff_dim_t{2});
 
   if (lhs_b != rhs_b) {
     return tl::unexpected(
@@ -76,7 +80,7 @@ tl::expected<TensorShape, std::string>
 
   return TensorShape{
       TensorDims{
-          FFOrdered<nonnegative_int>{
+          FFOrdered<positive_int>{
               lhs_b,
               n,
               p,
@@ -90,13 +94,13 @@ tl::expected<ParallelTensorShape, std::string>
     get_output_shape(BatchMatmulAttrs const &attrs,
                      ParallelTensorShape const &input_lhs,
                      ParallelTensorShape const &input_rhs) {
-  if (num_shard_dims(input_lhs) != 3) {
+  if (num_shard_dims(input_lhs).value != 3) {
     return tl::unexpected(
         fmt::format("LHS input has incorrect number of shard dims: {} != {}",
                     num_shard_dims(input_lhs),
                     3));
   }
-  if (num_shard_dims(input_rhs) != 3) {
+  if (num_shard_dims(input_rhs).value != 3) {
     return tl::unexpected(
         fmt::format("RHS input has incorrect number of shard dims: {} != {}",
                     num_shard_dims(input_rhs),
@@ -151,10 +155,10 @@ tl::expected<ParallelTensorShape, std::string>
   ShardParallelDim output_n = n;
   ShardParallelDim output_p = p;
 
-  nonnegative_int output_discard_copy_degree = 1_n;
-  nonnegative_int output_sum_degree =
-      get_total_parallel_degree(input_lhs) /
-      (output_b.degree * output_n.degree * output_p.degree);
+  positive_int output_discard_copy_degree = 1_p;
+  positive_int output_sum_degree =
+      positive_int{get_total_parallel_degree(input_lhs) /
+                   (output_b.degree * output_n.degree * output_p.degree)};
 
   ParallelTensorShape result = ParallelTensorShape{
       ParallelTensorDims{

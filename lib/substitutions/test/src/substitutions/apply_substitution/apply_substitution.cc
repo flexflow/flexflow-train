@@ -7,6 +7,7 @@
 #include "substitutions/substitution_builder.h"
 #include "substitutions/tensor_pattern/tensor_attribute_pattern.h"
 #include "utils/containers/get_only.h"
+#include "utils/containers/require_only_key.h"
 #include "utils/integer_conversions.h"
 #include <doctest/doctest.h>
 
@@ -16,10 +17,15 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("apply_substitution") {
     SubstitutionBuilder b;
 
-    auto [p_input, o_input] =
+    auto pair_input =
         b.add_input(tensor_attribute_pattern_match_all(), "input");
-    auto [p_weight, o_weight] =
+    PatternValue p_input = pair_input.first;
+    OutputGraphExprValue o_input = pair_input.second;
+
+    auto pair_weight =
         b.add_input(tensor_attribute_pattern_match_all(), "weight");
+    PatternValue p_weight = pair_weight.first;
+    OutputGraphExprValue o_weight = pair_weight.second;
 
     PatternValue p_mm_output = [&] {
       auto pattern = OperatorAttributePattern{{
@@ -29,10 +35,28 @@ TEST_SUITE(FF_TEST_SUITE) {
               OperatorAttributeValue{std::optional<Activation>{std::nullopt}}),
       }};
 
-      return get_only(b.add_pattern_node(pattern,
-                                         {p_input, p_weight},
-                                         {tensor_attribute_pattern_match_all()},
-                                         "mm"));
+      return require_only_key(b.add_pattern_node(
+                                  /*node_pattern=*/pattern,
+                                  /*inputs=*/
+                                  {
+                                      {
+                                          TensorSlotName::INPUT,
+                                          p_input,
+                                      },
+                                      {
+                                          TensorSlotName::WEIGHT,
+                                          p_weight,
+                                      },
+                                  },
+                                  /*output_patterns=*/
+                                  {
+                                      {
+                                          TensorSlotName::OUTPUT,
+                                          tensor_attribute_pattern_match_all(),
+                                      },
+                                  },
+                                  /*name=*/"mm"),
+                              TensorSlotName::OUTPUT);
     }();
 
     PatternValue p_relu_output = [&] {
@@ -40,10 +64,24 @@ TEST_SUITE(FF_TEST_SUITE) {
           op_type_equals_constraint(OperatorType::RELU),
       }};
 
-      return get_only(b.add_pattern_node(pattern,
-                                         {p_mm_output},
-                                         {tensor_attribute_pattern_match_all()},
-                                         "relu"));
+      return require_only_key(b.add_pattern_node(
+                                  /*node_pattern=*/pattern,
+                                  /*inputs=*/
+                                  {
+                                      {
+                                          TensorSlotName::INPUT,
+                                          p_mm_output,
+                                      },
+                                  },
+                                  /*output_patterns=*/
+                                  {
+                                      {
+                                          TensorSlotName::OUTPUT,
+                                          tensor_attribute_pattern_match_all(),
+                                      },
+                                  },
+                                  /*name=*/"relu"),
+                              TensorSlotName::OUTPUT);
     }();
 
     OutputGraphExprValue o_fused_output = [&] {
@@ -54,23 +92,39 @@ TEST_SUITE(FF_TEST_SUITE) {
                                    OperatorAttributeValue{Activation::RELU}),
           }};
 
-      return get_only(
-          b.add_output_graph_node(node_expr, {o_input, o_weight}, 1_n));
+      return require_only_key(b.add_output_graph_node(
+                                  /*node_expr=*/node_expr,
+                                  /*inputs=*/
+                                  {
+                                      {
+                                          TensorSlotName::INPUT,
+                                          o_input,
+                                      },
+                                      {
+                                          TensorSlotName::WEIGHT,
+                                          o_weight,
+                                      },
+                                  },
+                                  /*output_slots=*/
+                                  {
+                                      TensorSlotName::OUTPUT,
+                                  }),
+                              TensorSlotName::OUTPUT);
     }();
 
     b.equate_outputs(p_relu_output, o_fused_output);
 
     Substitution sub = b.get_substitution();
 
-    nonnegative_int in_channels = 24_n;
-    nonnegative_int batch_size = 4_n;
-    nonnegative_int batch_degree = 2_n;
+    positive_int in_channels = 24_p;
+    positive_int batch_size = 4_p;
+    positive_int batch_degree = 2_p;
     std::string mm_match = "mm_match";
     std::string relu_match = "relu_match";
 
     TensorShape input_shape = TensorShape{
         TensorDims{
-            FFOrdered<nonnegative_int>{
+            FFOrdered{
                 batch_size,
                 in_channels,
             },
@@ -84,11 +138,11 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_tensor_guid_t t = b.create_input_tensor(input_shape);
       t = b.parallel_partition(t, ff_dim_t{0_n}, batch_degree);
       t = b.dense(t,
-                  /*outDim=*/16_n,
+                  /*outDim=*/16_p,
                   /*activation=*/std::nullopt);
       t = b.gelu(t);
       t = b.dense(t,
-                  /*outDim=*/12_n,
+                  /*outDim=*/12_p,
                   /*activation=*/std::nullopt,
                   /*use_bias=*/false,
                   /*data_type=*/DataType::FLOAT,
@@ -98,7 +152,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       t = b.relu(t,
                  /*name=*/relu_match);
       t = b.dense(t,
-                  /*outDim=*/8_n,
+                  /*outDim=*/8_p,
                   /*activation=*/Activation::RELU);
 
       return sub_pcg_from_full_pcg(b.pcg);
@@ -110,9 +164,9 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_layer_guid_t relu_match_layer =
           get_parallel_layer_by_name(pcg, relu_match);
       open_parallel_tensor_guid_t mm_match_layer_input_activations =
-          get_layer_inputs(pcg, mm_match_layer).at(0);
+          get_layer_inputs(pcg, mm_match_layer).at(TensorSlotName::INPUT);
       open_parallel_tensor_guid_t mm_match_layer_input_weights =
-          get_layer_inputs(pcg, mm_match_layer).at(1);
+          get_layer_inputs(pcg, mm_match_layer).at(TensorSlotName::WEIGHT);
 
       return PCGPatternMatch{
           bidict<PatternNode, parallel_layer_guid_t>{
@@ -138,11 +192,11 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_tensor_guid_t t = b.create_input_tensor(input_shape);
       t = b.parallel_partition(t, ff_dim_t{0_n}, batch_degree);
       t = b.dense(t,
-                  /*outDim=*/16_n,
+                  /*outDim=*/16_p,
                   /*activation=*/std::nullopt);
       t = b.gelu(t);
       t = b.dense(t,
-                  /*outDim=*/12_n,
+                  /*outDim=*/12_p,
                   /*activation=*/Activation::RELU,
                   /*use_bias=*/false,
                   /*data_type=*/DataType::FLOAT,
@@ -150,7 +204,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                   /*bias_initializer=*/std::nullopt,
                   /*name=*/std::nullopt);
       t = b.dense(t,
-                  /*outDim=*/8_n,
+                  /*outDim=*/8_p,
                   /*activation=*/Activation::RELU);
 
       return sub_pcg_from_full_pcg(b.pcg);

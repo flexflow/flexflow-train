@@ -1,0 +1,27 @@
+namespace = "FlexFlow"
+name = "DimCoord"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "fmt",
+  "hash",
+]
+
+template_params = [
+  "T",
+]
+
+includes = [
+  "<unordered_map>",
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
+src_includes = [
+  "utils/fmt/unordered_map.h",
+  "utils/hash/unordered_map.h",
+]
+
+[[fields]]
+name = "raw"
+type = "std::unordered_map<T, ::FlexFlow::nonnegative_int>"

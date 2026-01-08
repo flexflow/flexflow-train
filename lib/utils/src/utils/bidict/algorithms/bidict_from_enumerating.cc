@@ -6,6 +6,9 @@ namespace FlexFlow {
 using T = value_type<0>;
 
 template bidict<nonnegative_int, T>
+    bidict_from_enumerating(std::vector<T> const &);
+
+template bidict<nonnegative_int, T>
     bidict_from_enumerating(std::unordered_set<T> const &);
 
 template bidict<nonnegative_int, T>

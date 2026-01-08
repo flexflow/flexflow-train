@@ -7,7 +7,7 @@ concurrency:
 jobs:
   cpu-ci:
     name: CPU unit tests and build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout Git Repository
@@ -57,9 +57,9 @@ jobs:
     name: GPU unit tests
     needs: cpu-ci
     runs-on:
-      - runs-on
+      - runs-on=${{ github.run_id }}
       - family=g4dn.xlarge
-      - image=runs-on-gpu-pinned
+      - image=flexflow-gpu-ci
 
     strategy:
       max-parallel: 1

@@ -1,14 +1,14 @@
 #ifndef _FLEXFLOW_LIB_SUBSTITUTIONS_INCLUDE_SUBSTITUTIONS_UNITY_SUBSTITUTION_SET_H
 #define _FLEXFLOW_LIB_SUBSTITUTIONS_INCLUDE_SUBSTITUTIONS_UNITY_SUBSTITUTION_SET_H
 
-#include "pcg/machine_specification.dtg.h"
+#include "pcg/machine_compute_specification.dtg.h"
 #include "substitutions/substitution.dtg.h"
 #include "utils/fmt/vector.h"
 
 namespace FlexFlow {
 
 std::vector<Substitution>
-    get_substitution_set(MachineSpecification const &resources);
+    get_substitution_set(MachineComputeSpecification const &resources);
 
 Substitution create_combine_inception(nonnegative_int num_convs,
                                       nonnegative_int num_dims,

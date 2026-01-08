@@ -1,0 +1,15 @@
+namespace = "FlexFlow"
+name = "KaimingInitializerMode"
+type = "enum"
+features = [
+  "hash",
+  "fmt",
+  "rapidcheck",
+  "json",
+]
+
+[[values]]
+name = "FAN_IN"
+
+[[values]]
+name = "FAN_OUT"

@@ -1,0 +1,21 @@
+namespace = "FlexFlow"
+name = "Activation"
+type = "enum"
+features = [
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+[[values]]
+name = "RELU"
+
+[[values]]
+name = "SIGMOID"
+
+[[values]]
+name = "TANH"
+
+[[values]]
+name = "GELU"

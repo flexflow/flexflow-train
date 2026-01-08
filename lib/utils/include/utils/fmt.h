@@ -2,7 +2,6 @@
 #define _FLEXFLOW_UTILS_INCLUDE_FMT_H
 
 #include "utils/check_fmtable.h"
-#include "utils/test_types.h"
 #include "utils/type_traits_core.h"
 #include <fmt/format.h>
 #include <iomanip>

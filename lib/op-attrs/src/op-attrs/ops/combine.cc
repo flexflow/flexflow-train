@@ -44,8 +44,10 @@ tl::expected<ParallelTensorShape, std::string>
   }
 
   ParallelTensorShape output = input;
-  shard_dim_at_idx(output, relative_ff_dim_t_from_ff_dim_t(attrs.combine_dim))
-      .degree /= attrs.combine_degree;
+  relative_ff_dim_t combine_dim =
+      relative_ff_dim_t_from_ff_dim_t(attrs.combine_dim);
+  shard_dim_at_idx(output, combine_dim).degree = positive_int{
+      shard_dim_at_idx(output, combine_dim).degree / attrs.combine_degree};
 
   return output;
 }

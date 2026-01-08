@@ -10,12 +10,12 @@ PatternNode get_dst_node(StandardPatternEdge const &e) {
   return PatternNode{e.raw_edge.dst.node};
 }
 
-nonnegative_int get_src_idx(StandardPatternEdge const &e) {
-  return e.raw_edge.src.idx;
+TensorSlotName get_src_slot_name(StandardPatternEdge const &e) {
+  return e.raw_edge.src.slot_name;
 }
 
-nonnegative_int get_dst_idx(StandardPatternEdge const &e) {
-  return e.raw_edge.dst.idx;
+TensorSlotName get_dst_slot_name(StandardPatternEdge const &e) {
+  return e.raw_edge.dst.slot_name;
 }
 
 } // namespace FlexFlow

@@ -2,7 +2,6 @@
 #define _FLEXFLOW_UTILS_INCLUDE_UTILS_SEQUENCE_H
 
 #include "utils/tuple.h"
-#include "utils/visitable_core.h"
 #include <optional>
 #include <utility>
 
@@ -78,13 +77,6 @@ using seq_enumerate_t = typename seq_enumerate<T>::type;
 
 template <typename F, typename Seq>
 struct seq_transform_type;
-
-template <typename F, int X, int... S>
-struct seq_transform_type<F, seq<X, S...>>
-    : tuple_prepend_type<
-          visit_struct::traits::clean_t<decltype(std::declval<F>()(
-              std::declval<std::integral_constant<int, X>>()))>,
-          typename seq_transform_type<F, seq<S...>>::type> {};
 
 template <typename F>
 struct seq_transform_type<F, seq<>> {

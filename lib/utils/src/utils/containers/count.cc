@@ -1,13 +1,11 @@
 #include "utils/containers/count.h"
+#include "utils/archetypes/value_type.h"
 
 namespace FlexFlow {
 
-std::vector<size_t> count(size_t n) {
-  std::vector<size_t> v(n);
-  for (size_t i = 0; i < n; i++) {
-    v[i] = i;
-  }
-  return v;
-}
+using T = value_type<0>;
+using F = std::function<bool(T const &)>;
+
+template nonnegative_int count(std::vector<T> const &, F const &);
 
 } // namespace FlexFlow

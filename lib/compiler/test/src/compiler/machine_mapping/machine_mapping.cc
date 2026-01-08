@@ -1,6 +1,6 @@
 #include "compiler/machine_mapping/machine_mapping.h"
-#include "doctest/doctest.h"
-#include "pcg/machine_view.h"
+#include "compiler/machine_mapping/machine_view.h"
+#include <doctest/doctest.h>
 
 using namespace FlexFlow;
 
@@ -16,7 +16,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{1_n},
+                stride_t{1_p},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -31,7 +31,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{2_n},
+                stride_t{2_p},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -62,7 +62,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{1_n},
+                stride_t{1_p},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },
@@ -77,7 +77,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*dimensions=*/
         {
             MachineViewDimension{
-                stride_t{2_n},
+                stride_t{2_p},
                 MachineSpecificationDimension::INTRA_NODE,
             },
         },

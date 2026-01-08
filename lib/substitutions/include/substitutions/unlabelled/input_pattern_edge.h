@@ -9,7 +9,7 @@ namespace FlexFlow {
 
 PatternInput get_src_input(InputPatternEdge const &);
 PatternNode get_dst_node(InputPatternEdge const &);
-nonnegative_int get_dst_idx(InputPatternEdge const &);
+TensorSlotName get_dst_slot_name(InputPatternEdge const &);
 
 } // namespace FlexFlow
 

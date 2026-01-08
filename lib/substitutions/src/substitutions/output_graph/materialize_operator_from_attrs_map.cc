@@ -1,6 +1,7 @@
 #include "substitutions/output_graph/materialize_operator_from_attrs_map.h"
 #include "utils/containers/contains_key.h"
 #include "utils/fmt/unordered_map.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
@@ -16,8 +17,7 @@ struct Accessor {
     if (contains_key(this->m, k)) {
       return this->m.at(k).get<T>();
     } else {
-      throw mk_runtime_error(
-          fmt::format("Could not find key {} in attrs map: {}", k, this->m));
+      PANIC("Could not find key in attrs map", k, this->m);
     }
   }
 };
@@ -33,12 +33,11 @@ PCGOperatorAttrs materialize_operator_from_attrs_map(
   switch (op_type) {
     case OperatorType::MULTIHEAD_ATTENTION:
       return PCGOperatorAttrs{MultiHeadAttentionAttrs{
-          /*embed_dim=*/acc.get<nonnegative_int>(
-              OperatorAttributeKey::EMBED_DIM),
+          /*embed_dim=*/acc.get<positive_int>(OperatorAttributeKey::EMBED_DIM),
           /*num_heads=*/
-          acc.get<nonnegative_int>(OperatorAttributeKey::NUM_HEADS),
-          /*kdim=*/acc.get<nonnegative_int>(OperatorAttributeKey::KDIM),
-          /*vdim=*/acc.get<nonnegative_int>(OperatorAttributeKey::VDIM),
+          acc.get<positive_int>(OperatorAttributeKey::NUM_HEADS),
+          /*kdim=*/acc.get<positive_int>(OperatorAttributeKey::KDIM),
+          /*vdim=*/acc.get<positive_int>(OperatorAttributeKey::VDIM),
           /*dropout=*/acc.get<float>(OperatorAttributeKey::DROPOUT),
           /*bias=*/acc.get<bool>(OperatorAttributeKey::BIAS),
           /*add_bias_kv=*/acc.get<bool>(OperatorAttributeKey::ADD_BIAS_KV),
@@ -46,10 +45,10 @@ PCGOperatorAttrs materialize_operator_from_attrs_map(
       }};
     case OperatorType::POOL2D:
       return PCGOperatorAttrs{Pool2DAttrs{
-          /*kernel_h=*/acc.get<nonnegative_int>(OperatorAttributeKey::KERNEL_H),
-          /*kernel_w=*/acc.get<nonnegative_int>(OperatorAttributeKey::KERNEL_W),
-          /*stride_h=*/acc.get<nonnegative_int>(OperatorAttributeKey::STRIDE_H),
-          /*stride_w=*/acc.get<nonnegative_int>(OperatorAttributeKey::STRIDE_W),
+          /*kernel_h=*/acc.get<positive_int>(OperatorAttributeKey::KERNEL_H),
+          /*kernel_w=*/acc.get<positive_int>(OperatorAttributeKey::KERNEL_W),
+          /*stride_h=*/acc.get<positive_int>(OperatorAttributeKey::STRIDE_H),
+          /*stride_w=*/acc.get<positive_int>(OperatorAttributeKey::STRIDE_W),
           /*padding_h=*/
           acc.get<nonnegative_int>(OperatorAttributeKey::PADDING_H),
           /*padding_w=*/
@@ -66,7 +65,7 @@ PCGOperatorAttrs materialize_operator_from_attrs_map(
     case OperatorType::DROPOUT:
     case OperatorType::LINEAR:
       return PCGOperatorAttrs{LinearAttrs{
-          /*out_channels=*/acc.get<nonnegative_int>(
+          /*out_channels=*/acc.get<positive_int>(
               OperatorAttributeKey::OUT_CHANNELS),
           /*use_bias=*/acc.get<bool>(OperatorAttributeKey::USE_BIAS),
           /*data_type=*/acc.get<DataType>(OperatorAttributeKey::DATA_TYPE),
@@ -152,8 +151,7 @@ PCGOperatorAttrs materialize_operator_from_attrs_map(
     case OperatorType::PIPELINE:
     case OperatorType::FUSED_PARALLEL:
     default:
-      throw mk_runtime_error(
-          fmt::format("Unsupported operator type {}", op_type));
+      PANIC("Unsupported operator type", op_type);
   }
 }
 

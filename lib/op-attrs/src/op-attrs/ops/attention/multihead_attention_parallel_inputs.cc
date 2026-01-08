@@ -23,19 +23,19 @@ tl::expected<MultiHeadAttentionParallelInputs, std::string>
                     unpar_parse_result.error()));
   }
 
-  if (num_shard_dims(input_q) != 3) {
+  if (num_shard_dims(input_q).value != 3) {
     return tl::unexpected(
         fmt::format("Query input has incorrect number of dims: {} != {}",
                     num_shard_dims(input_q),
                     3));
   }
-  if (num_shard_dims(input_k) != 3) {
+  if (num_shard_dims(input_k).value != 3) {
     return tl::unexpected(
         fmt::format("Key input has incorrect number of dims: {} != {}",
                     num_shard_dims(input_k),
                     3));
   }
-  if (num_shard_dims(input_v) != 3) {
+  if (num_shard_dims(input_v).value != 3) {
     return tl::unexpected(
         fmt::format("Value input has incorrect number of dims: {} != {}",
                     num_shard_dims(input_v),
@@ -107,9 +107,9 @@ tl::expected<MultiHeadAttentionParallelInputs, std::string>
                     value_dim.degree));
   }
 
-  nonnegative_int discard_copy_q = get_discard_copy_degree(input_q);
-  nonnegative_int discard_copy_k = get_discard_copy_degree(input_k);
-  nonnegative_int discard_copy_v = get_discard_copy_degree(input_v);
+  positive_int discard_copy_q = get_discard_copy_degree(input_q);
+  positive_int discard_copy_k = get_discard_copy_degree(input_k);
+  positive_int discard_copy_v = get_discard_copy_degree(input_v);
 
   if (!all_same(discard_copy_q, discard_copy_k, discard_copy_v)) {
     return tl::unexpected(fmt::format("Q, K, V disagree on the discard-copy "

@@ -83,6 +83,15 @@ Total Test time (real) =   8.64 sec
 If you don't, or if you see any tests failing, please double check that you have followed the instructions above. 
 If you have and are still encountering an issue, please [contact us](#contact-us) with a detailed description of your platform and the commands you have run.
 
+### EditorConfig
+
+FlexFlow Train uses [EditorConfig](https://editorconfig.org/) to ensure consistent low-level details (indentation settings, character encoding, etc.) across different editors.
+The EditorConfig file for FlexFlow Train can be found in [`.editorconfig`](./.editorconfig).
+If you are using vim, emacs, or another editor with built-in EditorConfig support (a full list of editors with built-in EditorConfig support can be found [here](https://editorconfig.org/#pre-installed))
+the configuration will be detected and applied without you needing to do anything.
+If you are using an editor not on this list, you will need to install a corresponding [EditorConfig plugin](https://editorconfig.org/#editor-plugins).
+**If you are using vscode, you should install [this plugin](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig).**
+
 ### GPU setup
 
 If you are developing on a machine with one or more CUDA GPUs, you can also run the tests that require a GPU by entering the `gpu` devshell instead of the `default` devshell:
@@ -227,9 +236,8 @@ The bulk of the FlexFlow source code is stored in the following folders:
 
 We currently implement CI testing using Github Workflows. Each workflow is defined by its corresponding YAML file in the [.github/workflows](.github/workflows) folder of the repo. We currently have the following workflows:
 
-1. [`tests`](./.github/workflows/per-lib-check.yml): Builds and runs GPU and non-GPU unit tests for all of the code under `lib` and `bin`. Also uploads coverage numbers to [codecov.io](https://app.codecov.io/gh/flexflow/flexflow-train).
-2. [`clang-format-check.yml`](./.github/workflows/clang-format-check.yml): ensures that the source code is properly formatted using `clang-format`. To format your code locally, run `proj format` (see [here](#building-testing-etc) for more information on `proj`).
-4. [`shell-check.yml`](./.github/workflows/shell-check.yml): runs shellcheck on all bash scripts in the repo.
+1. [`tests.yml`](./.github/workflows/tests.yml): Builds and runs GPU and non-GPU unit tests for all of the code under `lib` and `bin`. Uploads coverage numbers to [codecov.io](https://app.codecov.io/gh/flexflow/flexflow-train). Also ensures that the source code is properly formatted using `clang-format`. To format your code locally, run `proj format` (see [here](#building-testing-etc) for more information on `proj`).
+2. [`shell-check.yml`](./.github/workflows/shell-check.yml): runs shellcheck on all bash scripts in the repo.
 
 GPU machines for CI are managed using [runs-on](https://runs-on.com/).
 

@@ -9,7 +9,6 @@ ff_add_library(
     src/
   DEPS
     expected
-    visit_struct
     fmt
     json
     cuda

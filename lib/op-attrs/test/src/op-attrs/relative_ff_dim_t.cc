@@ -5,7 +5,7 @@ using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("ff_dim_t_from_relative_ff_dim_t") {
-    nonnegative_int input_dim = 5_n;
+    num_tensor_dims_t input_dim = num_tensor_dims_t{5_n};
 
     SUBCASE("relative index is zero") {
       relative_ff_dim_t relative_ff_dim = relative_ff_dim_t{0};

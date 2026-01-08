@@ -3,6 +3,7 @@
 #include "op-attrs/ops/reduction.h"
 #include "op-attrs/ops/repartition.h"
 #include "op-attrs/ops/replicate.h"
+#include "utils/exception.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {
