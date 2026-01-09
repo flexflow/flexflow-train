@@ -1,12 +1,7 @@
+#if 0 // FIXME (Elliott): fix execute task
+
 #include "local-execution/execute_task_for_layer.h"
-#include "local-execution/atomic_task_binding.dtg.h"
-#include "local-execution/local_atomic_tensor_backing.h"
-#include "local-execution/local_ready_to_launch_task.dtg.h"
 #include "local-execution/local_task_registry.h"
-#include "local-execution/local_tensor_backing.h"
-#include "task-spec/fwb_op_task_type.h"
-#include "task-spec/runtime_task_invocation/runtime_task_invocation.dtg.h"
-#include "task-spec/symbolic/training_symbolic_computation_graph.h"
 #include "utils/containers/flatmap.h"
 
 namespace FlexFlow {
@@ -272,3 +267,5 @@ std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
 }
 
 } // namespace FlexFlow
+
+#endif

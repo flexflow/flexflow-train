@@ -4,7 +4,11 @@
 namespace FlexFlow {
 
 InitializedComputationGraphInstance initialize_computation_graph_instance(
-    ComputationGraphInstance const &instance, Allocator &allocator) {
+    ComputationGraphInstance const &instance,
+    bidict<tensor_guid_t,
+           std::variant<GenericTensorAccessorW, GenericTensorAccessorR>> const
+        &input_tensors,
+    Allocator &allocator) {
   NOT_IMPLEMENTED();
 }
 
