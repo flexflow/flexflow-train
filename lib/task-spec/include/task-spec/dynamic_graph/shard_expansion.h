@@ -16,6 +16,7 @@ bool graph_is_fully_shard_expanded(DynamicOpenDataflowGraph const &);
 std::unordered_set<DynamicNodeInvocation>
     perform_shard_expansion_for_invocation(DynamicNodeInvocation const &);
 
+// shard expansion here
 DynamicOpenDataflowGraph
     perform_shard_expansion(DynamicOpenDataflowGraph const &);
 

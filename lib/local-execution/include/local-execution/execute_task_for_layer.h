@@ -31,6 +31,7 @@ std::optional<DeviceSpecificPerDeviceOpState> execute_init_for_layer(
     LocalTaskRegistry const &,
     RuntimeArgConfig const &);
 
+// TODO (Elliott): remove
 std::optional<milliseconds_t> execute_forward_for_layer(
     symbolic_layer_guid_t,
     SymbolicCgOpAttrsAndTrainingSignatureWithShapes const &,
@@ -40,6 +41,7 @@ std::optional<milliseconds_t> execute_forward_for_layer(
     LocalTaskRegistry const &,
     RuntimeArgConfig const &);
 
+// TODO (Elliott): remove
 std::optional<milliseconds_t> execute_backward_for_layer(
     symbolic_layer_guid_t,
     SymbolicCgOpAttrsAndTrainingSignatureWithShapes const &,

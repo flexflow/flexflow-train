@@ -2,31 +2,23 @@
 #define _FLEXFLOW_LIB_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_INITIALIZED_COMPUTATION_GRAPH_INSTANCE_H
 
 #include "local-execution/computation_graph_instance/computation_graph_instance.h"
-#include "local-execution/local_atomic_tensor_backing.dtg.h"
-#include "local-execution/local_device_states_backing.dtg.h"
 #include "local-execution/local_task_registry.dtg.h"
-#include "local-execution/local_tensor_backing.dtg.h"
-#include "task-spec/runtime_task_invocation/runtime_arg_config.dtg.h"
-#include "task-spec/symbolic/training_symbolic_computation_graph_from_cg_conversion.dtg.h"
+#include "pcg/layer_guid_t.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
 #include "utils/units/milliseconds_t.h"
 
 namespace FlexFlow {
 
 struct InitializedComputationGraphInstance {
 public:
-  LocalTensorBacking const &get_tensor_backing() const;
   LocalTaskRegistry const &get_task_registry() const;
-  TrainingSymbolicComputationGraphFromCgConversion const &
-      get_symbolic_training_graph_for_cg() const;
-  LocalAtomicTensorBacking const &get_atomic_tensor_backing() const;
+  DynamicOpenDataflowGraph const &get_dynamic_dataflow_graph() const;
   Allocator &get_allocator() const;
-  RuntimeArgConfig const &get_runtime_arg_config() const;
 
 private:
-  LocalDeviceStatesBacking per_device_op_states;
   Allocator &allocator;
-  LocalAtomicTensorBacking atomic_tensor_backing;
   ComputationGraphInstance computation_graph_instance;
+  DynamicOpenDataflowGraph initialized_dataflow_graph;
 };
 
 InitializedComputationGraphInstance
