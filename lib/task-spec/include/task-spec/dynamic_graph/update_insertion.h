@@ -10,6 +10,8 @@ std::unordered_set<DynamicNodeInvocation>
     perform_update_insertion_for_invocation(DynamicNodeInvocation const &,
                                             OptimizerAttrs const &);
 
+// after backwards pass, update tasks apply gradients to the weights (and this
+// inserts the corresponding task)
 DynamicOpenDataflowGraph
     perform_update_insertion(DynamicOpenDataflowGraph const &,
                              OptimizerAttrs const &);

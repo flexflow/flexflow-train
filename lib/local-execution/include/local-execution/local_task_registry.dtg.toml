@@ -9,6 +9,7 @@ features = [
 
 includes = [
   "task-spec/task_impl_function.dtg.h",
+  "task-spec/task_id_t.dtg.h",
 ]
 
 src_includes = [
