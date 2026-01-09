@@ -17,13 +17,16 @@ public:
 
 private:
   Allocator &allocator;
-  ComputationGraphInstance computation_graph_instance;
   DynamicOpenDataflowGraph initialized_dataflow_graph;
 };
 
-InitializedComputationGraphInstance
-    initialize_computation_graph_instance(ComputationGraphInstance const &,
-                                          Allocator &);
+InitializedComputationGraphInstance initialize_computation_graph_instance(
+    ComputationGraphInstance const &,
+    // FIXME (Elliott): figure out the right type to go here
+    bidict<tensor_guid_t,
+           std::variant<GenericTensorAccessorW, GenericTensorAccessorR>> const
+        &,
+    Allocator &);
 
 std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
     perform_forward_pass_for_computation_graph_instance(

@@ -11,16 +11,14 @@ ComputationGraphInstance::ComputationGraphInstance(
     DynamicOpenDataflowGraph const &graph, LocalTaskRegistry const &registry)
     : expanded_dataflow_graph(graph), task_registry(registry) {}
 
-ComputationGraphInstance create_computation_graph_instance(
-    ComputationGraph const &cg,
-    bidict<tensor_guid_t, // FIXME (Elliott): not sure this is correct
-           std::variant<GenericTensorAccessorW, GenericTensorAccessorR>> const
-        &tensors,
-    LocalTaskRegistry registry) {
+ComputationGraphInstance
+    create_computation_graph_instance(ComputationGraph const &cg,
+                                      LocalTaskRegistry registry,
+                                      OptimizerAttrs const &optimizer) {
   DynamicOpenDataflowGraph dg = make_dynamic_open_dataflow_graph_from_cg(cg);
   dg = perform_pass_expansion(dg);
-  dg = perform_shard_expansion(dg);
-  // dg = perform_update_insertion(dg);
+  // dg = perform_shard_expansion(dg);
+  dg = perform_update_insertion(dg, optimizer);
   return ComputationGraphInstance{dg, registry};
 }
 
