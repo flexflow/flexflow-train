@@ -10,36 +10,25 @@ namespace FlexFlow {
 std::vector<Substitution>
     get_substitution_set(MachineComputeSpecification const &resources);
 
-Substitution create_combine_inception(nonnegative_int num_convs,
-                                      nonnegative_int num_dims,
-                                      nonnegative_int degree);
-Substitution create_combine_concat(nonnegative_int num_inputs,
-                                   nonnegative_int num_dims,
-                                   nonnegative_int degree);
-Substitution create_replicate_linear_combine(nonnegative_int num_dims,
-                                             nonnegative_int degree,
+Substitution create_replicate_linear_combine(positive_int num_dims,
+                                             positive_int degree,
                                              bool use_bias);
-Substitution create_partition_linear_combine(nonnegative_int num_dims,
-                                             nonnegative_int degree,
-                                             Activation activation,
+Substitution create_partition_linear_combine(positive_int num_dims,
+                                             positive_int degree,
                                              bool use_bias);
-Substitution create_partition_conv2d_combine(nonnegative_int num_dims,
-                                             nonnegative_int degree);
-Substitution create_partition_attention_combine(nonnegative_int num_heads,
-                                                nonnegative_int degree);
-Substitution create_replicate_attention_reduce(nonnegative_int num_heads,
-                                               nonnegative_int degree);
+Substitution create_partition_conv2d_combine(positive_int num_dims,
+                                             positive_int degree);
+Substitution create_partition_attention_combine(positive_int num_heads,
+                                                positive_int degree);
+Substitution create_replicate_attention_reduce(positive_int num_heads,
+                                               positive_int degree);
 Substitution create_partition_add_combine(ff_dim_t parallel_dim,
-                                          nonnegative_int degree);
+                                          positive_int degree);
 Substitution create_partition_relu_combine(ff_dim_t parallel_dim,
-                                           nonnegative_int degree);
-Substitution create_partition_concat_combine(nonnegative_int num_inputs,
-                                             ff_dim_t concat_dim,
-                                             ff_dim_t parallel_dim,
-                                             nonnegative_int degree);
+                                           positive_int degree);
 Substitution create_partition_softmax_combine(ff_dim_t softmax_dim,
                                               ff_dim_t partition_dim,
-                                              nonnegative_int degree);
+                                              positive_int degree);
 Substitution create_fuse_linear_activation(Activation activation);
 
 } // namespace FlexFlow
