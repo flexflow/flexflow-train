@@ -18,6 +18,8 @@
 #include "utils/graph/open_dataflow_graph/algorithms/get_inputs.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_incoming_open_kwarg_dataflow_values_for_node.h"
 #include "utils/nonnegative_int/num_elements.h"
+#include "utils/containers/binary_merge_disjoint_maps.h"
+#include "utils/containers/is_subseteq_of.h"
 
 namespace FlexFlow {
 
@@ -54,6 +56,8 @@ LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs,
     std::unordered_map<TensorSlotName, IncomingTensorRole>
         incoming_tensor_roles = get_incoming_tensor_roles(n_attrs.op_attrs);
 
+    ASSERT(is_subseteq_of(keys(incoming_shapes), keys(incoming_tensor_roles)));
+
     auto incoming_shapes_with_role = [&](IncomingTensorRole role)
         -> std::unordered_map<TensorSlotName, ParallelTensorShape> {
       std::unordered_set<TensorSlotName> slots_with_desired_role =
@@ -67,6 +71,8 @@ LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs,
         incoming_shapes_with_role(IncomingTensorRole::INPUT);
     std::unordered_map<TensorSlotName, ParallelTensorShape> weight_shapes =
         incoming_shapes_with_role(IncomingTensorRole::WEIGHT);
+
+    ASSERT(binary_merge_disjoint_maps(input_shapes, weight_shapes) == incoming_shapes);
 
     std::unordered_map<TensorSlotName, ParallelTensorShape>
         inferred_weight_shapes =
