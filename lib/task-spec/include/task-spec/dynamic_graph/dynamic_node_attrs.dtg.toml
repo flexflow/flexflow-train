@@ -1,6 +1,6 @@
 namespace = "FlexFlow"
 name = "DynamicNodeAttrs"
-type = "struct" # search for type = variant
+type = "struct"
 features = [
   "eq",
   "hash",
@@ -24,23 +24,18 @@ src_includes = [
 [[fields]]
 name = "task_type"
 type = "std::optional<::FlexFlow::DynamicTaskType>" # Elliott: forward vs backward task etc.
-# leave empty
 
 [[fields]]
 name = "device_coord"
 type = "std::optional<::FlexFlow::MachineSpaceCoordinate>"
-# leave empty
 
 [[fields]]
 name = "mapping"
 type = "std::optional<::FlexFlow::MappedOperatorTaskGroup>"
-# empty
 
 [[fields]]
 name = "op_attrs"
 type = "std::optional<::FlexFlow::PCGOperatorAttrs>"
-# pull over from ComputationGraph
-# you'll have ComputationGraphOpAttrs, a subset of PCGOperatorAttrs, there should be a conversion function
 
 [[fields]]
 name = "layer_guid"
@@ -49,4 +44,3 @@ type = "::FlexFlow::dynamic_layer_guid_t"
 [[fields]]
 name = "per_device_op_state"
 type = "std::optional<::FlexFlow::DeviceSpecificPerDeviceOpState>"
-# leave empty
