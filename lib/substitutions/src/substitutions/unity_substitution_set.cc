@@ -37,13 +37,15 @@ std::vector<Substitution>
     }
   }
 
-  for (positive_int degree = 1_p; degree <= get_num_gpus(resources); degree *= 2_p) {
+  for (positive_int degree = 1_p; degree <= get_num_gpus(resources);
+       degree *= 2_p) {
     substitutions.push_back(create_partition_conv2d_combine(4_p, degree));
   }
 
   for (positive_int partition_dim : positive_range(1_p, max_tensor_dim + 1_p)) {
     for (positive_int softmax_dim : positive_range(1_p, max_tensor_dim + 1_p)) {
-      for (positive_int degree = 1_p; degree <= get_num_gpus(resources); degree *= 2_p) {
+      for (positive_int degree = 1_p; degree <= get_num_gpus(resources);
+           degree *= 2_p) {
         if (partition_dim != softmax_dim) {
           substitutions.push_back(create_partition_softmax_combine(
               ff_dim_t{partition_dim.nonnegative_int_from_positive_int()},
@@ -61,77 +63,76 @@ std::vector<Substitution>
 }
 
 static PatternValue insert_single_output_pattern(
-  SubstitutionBuilder &b, 
-  OperatorAttributePattern const &attribute_pattern,
-  std::unordered_map<TensorSlotName, PatternValue> const &inputs,
-  TensorAttributePattern const &output_pattern,
-  std::string const &name)
-{
-  return require_only_key(
-    b.add_pattern_node(attribute_pattern,
-                       inputs,
-                      /*output_patterns=*/{
-                        {
-                          TensorSlotName::OUTPUT,
-                          output_pattern,
-                        },
-                      },
-                      name),
-    TensorSlotName::OUTPUT);
+    SubstitutionBuilder &b,
+    OperatorAttributePattern const &attribute_pattern,
+    std::unordered_map<TensorSlotName, PatternValue> const &inputs,
+    TensorAttributePattern const &output_pattern,
+    std::string const &name) {
+  return require_only_key(b.add_pattern_node(attribute_pattern,
+                                             inputs,
+                                             /*output_patterns=*/
+                                             {
+                                                 {
+                                                     TensorSlotName::OUTPUT,
+                                                     output_pattern,
+                                                 },
+                                             },
+                                             name),
+                          TensorSlotName::OUTPUT);
 }
-
 
 static OutputGraphExprValue insert_single_output_op(
-  SubstitutionBuilder &b, 
-  OutputOperatorAttrsAssignment const &expr,
-  std::unordered_map<TensorSlotName, OutputGraphExprValue> const &inputs)
-{
+    SubstitutionBuilder &b,
+    OutputOperatorAttrsAssignment const &expr,
+    std::unordered_map<TensorSlotName, OutputGraphExprValue> const &inputs) {
   return require_only_key(
       b.add_output_graph_node(expr, inputs, {TensorSlotName::OUTPUT}),
-    TensorSlotName::OUTPUT);
+      TensorSlotName::OUTPUT);
 }
 
+static OutputGraphExprValue
+    insert_replicate_or_reduce(OperatorType op_type,
+                               SubstitutionBuilder &b,
+                               positive_int degree,
+                               OutputGraphExprValue const &input) {
 
-static OutputGraphExprValue insert_replicate_or_reduce(OperatorType op_type,
-                                                       SubstitutionBuilder &b, 
-                                                       positive_int degree,
-                                                       OutputGraphExprValue const &input) {
+  ASSERT(op_type == OperatorType::REPLICATE ||
+         op_type == OperatorType::REDUCTION);
 
-  ASSERT(op_type == OperatorType::REPLICATE || op_type == OperatorType::REDUCTION);
+  OutputOperatorAttrsAssignment replicate_expr = OutputOperatorAttrsAssignment{
+      std::nullopt,
+      {
+          set_op_type_attr(op_type),
+          set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
+                               OperatorAttributeValue{degree}),
+      }};
 
-  OutputOperatorAttrsAssignment replicate_expr =
-      OutputOperatorAttrsAssignment{
-          std::nullopt,
-          {
-              set_op_type_attr(op_type),
-              set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
-                                   OperatorAttributeValue{degree}),
-          }};
-
-  return insert_single_output_op(b, replicate_expr, {{TensorSlotName::INPUT, input}});
+  return insert_single_output_op(
+      b, replicate_expr, {{TensorSlotName::INPUT, input}});
 }
 
-static OutputGraphExprValue insert_replicate(SubstitutionBuilder &b, 
-                                             positive_int degree,
-                                             OutputGraphExprValue const &input) {
-  return insert_replicate_or_reduce(OperatorType::REPLICATE, b, degree, input); 
+static OutputGraphExprValue
+    insert_replicate(SubstitutionBuilder &b,
+                     positive_int degree,
+                     OutputGraphExprValue const &input) {
+  return insert_replicate_or_reduce(OperatorType::REPLICATE, b, degree, input);
 }
 
-
-static OutputGraphExprValue insert_reduce(SubstitutionBuilder &b, 
-                                             positive_int degree,
-                                             OutputGraphExprValue const &input) {
-  return insert_replicate_or_reduce(OperatorType::REDUCTION, b, degree, input); 
+static OutputGraphExprValue insert_reduce(SubstitutionBuilder &b,
+                                          positive_int degree,
+                                          OutputGraphExprValue const &input) {
+  return insert_replicate_or_reduce(OperatorType::REDUCTION, b, degree, input);
 }
 
-static OutputGraphExprValue insert_partition_or_combine(
-                                             OperatorType op_type,
-                                             SubstitutionBuilder &b, 
-                                             positive_int degree,
-                                             ff_dim_t dim,
-                                             OutputGraphExprValue const &input) {
+static OutputGraphExprValue
+    insert_partition_or_combine(OperatorType op_type,
+                                SubstitutionBuilder &b,
+                                positive_int degree,
+                                ff_dim_t dim,
+                                OutputGraphExprValue const &input) {
 
-  ASSERT(op_type == OperatorType::REPARTITION || op_type == OperatorType::COMBINE);
+  ASSERT(op_type == OperatorType::REPARTITION ||
+         op_type == OperatorType::COMBINE);
 
   OutputOperatorAttrsAssignment partition_input_expr =
       OutputOperatorAttrsAssignment{
@@ -144,29 +145,30 @@ static OutputGraphExprValue insert_partition_or_combine(
                                    OperatorAttributeValue{dim}),
           }};
 
-  OutputGraphExprValue o_partition_output =
-    insert_single_output_op(b, partition_input_expr, {{TensorSlotName::INPUT, input}});
+  OutputGraphExprValue o_partition_output = insert_single_output_op(
+      b, partition_input_expr, {{TensorSlotName::INPUT, input}});
 
   return o_partition_output;
 }
 
-static OutputGraphExprValue insert_partition(SubstitutionBuilder &b, 
-                                             positive_int degree,
-                                             ff_dim_t dim,
-                                             OutputGraphExprValue const &input) {
+static OutputGraphExprValue
+    insert_partition(SubstitutionBuilder &b,
+                     positive_int degree,
+                     ff_dim_t dim,
+                     OutputGraphExprValue const &input) {
 
-  return insert_partition_or_combine(OperatorType::REPARTITION, b, degree, dim, input);
+  return insert_partition_or_combine(
+      OperatorType::REPARTITION, b, degree, dim, input);
 }
 
-static OutputGraphExprValue insert_combine(SubstitutionBuilder &b, 
-                                             positive_int degree,
-                                             ff_dim_t dim,
-                                             OutputGraphExprValue const &input) {
+static OutputGraphExprValue insert_combine(SubstitutionBuilder &b,
+                                           positive_int degree,
+                                           ff_dim_t dim,
+                                           OutputGraphExprValue const &input) {
 
-  return insert_partition_or_combine(OperatorType::COMBINE, b, degree, dim, input);
+  return insert_partition_or_combine(
+      OperatorType::COMBINE, b, degree, dim, input);
 }
-
-
 
 Substitution create_replicate_linear_combine(positive_int num_dims,
                                              positive_int degree,
@@ -200,16 +202,17 @@ Substitution create_replicate_linear_combine(positive_int num_dims,
 
   std::string linear_name = "linear";
   PatternValue p_linear_output = insert_single_output_pattern(
-    b,
-    linear_pattern,
-    p_inputs,
-    /*output_pattern=*/tensor_attr_pattern_require_num_dims(num_dims),
-    linear_name);
+      b,
+      linear_pattern,
+      p_inputs,
+      /*output_pattern=*/tensor_attr_pattern_require_num_dims(num_dims),
+      linear_name);
 
   OutputGraphExprValue o_replicate_input_output =
-    insert_replicate(b, degree, o_input);
+      insert_replicate(b, degree, o_input);
 
-  OutputGraphExprValue o_partition_weights_output = insert_partition(b, degree, ff_dim_t{1_n}, o_weight);
+  OutputGraphExprValue o_partition_weights_output =
+      insert_partition(b, degree, ff_dim_t{1_n}, o_weight);
 
   std::unordered_map<TensorSlotName, OutputGraphExprValue> o_linear_inputs = {
       {
@@ -223,7 +226,8 @@ Substitution create_replicate_linear_combine(positive_int num_dims,
   };
 
   if (use_bias) {
-    OutputGraphExprValue o_partition_bias_output = insert_partition(b, degree, ff_dim_t{1_n}, o_bias.value());
+    OutputGraphExprValue o_partition_bias_output =
+        insert_partition(b, degree, ff_dim_t{1_n}, o_bias.value());
 
     o_linear_inputs.insert({
         TensorSlotName::BIAS,
@@ -235,12 +239,14 @@ Substitution create_replicate_linear_combine(positive_int num_dims,
       b.pattern_node_named(linear_name),
       {},
   };
-  OutputGraphExprValue o_linear_output = insert_single_output_op(b, linear_expr, o_linear_inputs);
+  OutputGraphExprValue o_linear_output =
+      insert_single_output_op(b, linear_expr, o_linear_inputs);
 
   ff_dim_t combine_output_dim = ff_dim_t{
       nonnegative_int{num_dims.int_from_positive_int() - 1},
   };
-  OutputGraphExprValue o_combine_output = insert_combine(b, degree, combine_output_dim, o_linear_output);
+  OutputGraphExprValue o_combine_output =
+      insert_combine(b, degree, combine_output_dim, o_linear_output);
 
   b.equate_outputs(p_linear_output, o_combine_output);
 
@@ -255,14 +261,14 @@ Substitution create_partition_linear_combine(positive_int num_dims,
   auto [p_input, o_input] = b.add_input(tensor_attribute_pattern_match_all());
   auto [p_weight, o_weight] = b.add_input(tensor_attribute_pattern_match_all());
   std::unordered_map<TensorSlotName, PatternValue> p_inputs = {
-    {
-      TensorSlotName::INPUT,
-      p_input,
-    },
-    {
-      TensorSlotName::WEIGHT,
-      p_weight,
-    },
+      {
+          TensorSlotName::INPUT,
+          p_input,
+      },
+      {
+          TensorSlotName::WEIGHT,
+          p_weight,
+      },
   };
 
   std::optional<OutputGraphExprValue> o_bias = std::nullopt;
@@ -270,8 +276,8 @@ Substitution create_partition_linear_combine(positive_int num_dims,
     std::pair<PatternValue, OutputGraphExprValue> bias =
         b.add_input(tensor_attribute_pattern_match_all());
     p_inputs.insert({
-      TensorSlotName::BIAS,
-      bias.first,
+        TensorSlotName::BIAS,
+        bias.first,
     });
     o_bias = bias.second;
   }
@@ -285,33 +291,36 @@ Substitution create_partition_linear_combine(positive_int num_dims,
 
   std::string linear_name = "linear";
   PatternValue p_linear_output = insert_single_output_pattern(
-    b,
-    linear_pattern,
-    p_inputs,
-    /*output_pattern=*/tensor_attr_pattern_require_num_dims(num_dims),
-    linear_name);
+      b,
+      linear_pattern,
+      p_inputs,
+      /*output_pattern=*/tensor_attr_pattern_require_num_dims(num_dims),
+      linear_name);
 
-  OutputGraphExprValue o_partition_input_output = insert_partition(b, degree, ff_dim_t{0_n}, o_input);
+  OutputGraphExprValue o_partition_input_output =
+      insert_partition(b, degree, ff_dim_t{0_n}, o_input);
 
-  OutputGraphExprValue o_replicate_weights_output = insert_replicate(b, degree, o_weight);
+  OutputGraphExprValue o_replicate_weights_output =
+      insert_replicate(b, degree, o_weight);
 
   std::unordered_map<TensorSlotName, OutputGraphExprValue> o_linear_inputs = {
-    {
-      TensorSlotName::INPUT,
-      o_partition_input_output, 
-    },
-    {
-      TensorSlotName::WEIGHT,
-      o_replicate_weights_output,
-    },
+      {
+          TensorSlotName::INPUT,
+          o_partition_input_output,
+      },
+      {
+          TensorSlotName::WEIGHT,
+          o_replicate_weights_output,
+      },
   };
 
   if (use_bias) {
-    OutputGraphExprValue o_replicate_bias_output = insert_replicate(b, degree, o_bias.value());
+    OutputGraphExprValue o_replicate_bias_output =
+        insert_replicate(b, degree, o_bias.value());
 
     o_linear_inputs.insert({
-      TensorSlotName::BIAS,
-      o_replicate_bias_output,
+        TensorSlotName::BIAS,
+        o_replicate_bias_output,
     });
   }
 
@@ -319,12 +328,14 @@ Substitution create_partition_linear_combine(positive_int num_dims,
       b.pattern_node_named(linear_name),
       {},
   };
-  OutputGraphExprValue o_linear_output = insert_single_output_op(b, linear_expr, o_linear_inputs);
+  OutputGraphExprValue o_linear_output =
+      insert_single_output_op(b, linear_expr, o_linear_inputs);
 
   ff_dim_t combine_output_dim = ff_dim_t{
       nonnegative_int{num_dims.int_from_positive_int() - 1},
   };
-  OutputGraphExprValue o_combine_output = insert_combine(b, degree, combine_output_dim, o_linear_output);
+  OutputGraphExprValue o_combine_output =
+      insert_combine(b, degree, combine_output_dim, o_linear_output);
 
   b.equate_outputs(p_linear_output, o_combine_output);
 
@@ -341,14 +352,14 @@ Substitution create_partition_conv2d_combine(positive_int num_dims,
   auto [p_weight, o_weight] = b.add_input(tensor_attribute_pattern_match_all());
 
   std::unordered_map<TensorSlotName, PatternValue> p_inputs = {
-    {
-      TensorSlotName::INPUT, 
-      p_input, 
-    },
-    {
-      TensorSlotName::FILTER,
-      p_weight,
-    },
+      {
+          TensorSlotName::INPUT,
+          p_input,
+      },
+      {
+          TensorSlotName::FILTER,
+          p_weight,
+      },
   };
 
   OperatorAttributePattern conv2d_pattern = OperatorAttributePattern{{
@@ -358,35 +369,35 @@ Substitution create_partition_conv2d_combine(positive_int num_dims,
 
   std::string conv2d_name = "conv2d";
   PatternValue p_conv2d_output = insert_single_output_pattern(
-    b,
-    conv2d_pattern,
-    p_inputs,
-    /*output_pattern=*/tensor_attr_pattern_require_num_dims(num_dims),
-    conv2d_name);
+      b,
+      conv2d_pattern,
+      p_inputs,
+      /*output_pattern=*/tensor_attr_pattern_require_num_dims(num_dims),
+      conv2d_name);
 
+  OutputGraphExprValue o_partition_input_output =
+      insert_partition(b, degree, ff_dim_t{0_n}, o_input);
 
-  OutputGraphExprValue o_partition_input_output = insert_partition(b, degree, ff_dim_t{0_n}, o_input);
-
-  OutputGraphExprValue o_replicate_weights_output = insert_replicate(b, degree, o_weight);
+  OutputGraphExprValue o_replicate_weights_output =
+      insert_replicate(b, degree, o_weight);
 
   std::unordered_map<TensorSlotName, OutputGraphExprValue> o_conv2d_inputs = {
-    {
-      TensorSlotName::INPUT,
-      o_partition_input_output, 
-    },
-    {
-      TensorSlotName::FILTER,
-      o_replicate_weights_output
-    },
+      {
+          TensorSlotName::INPUT,
+          o_partition_input_output,
+      },
+      {TensorSlotName::FILTER, o_replicate_weights_output},
   };
 
   OutputOperatorAttrsAssignment conv2d_expr = OutputOperatorAttrsAssignment{
       b.pattern_node_named(conv2d_name),
       {},
   };
-  OutputGraphExprValue o_conv2d_output = insert_single_output_op(b, conv2d_expr, o_conv2d_inputs);
+  OutputGraphExprValue o_conv2d_output =
+      insert_single_output_op(b, conv2d_expr, o_conv2d_inputs);
 
-  OutputGraphExprValue o_combine_output = insert_combine(b, degree, ff_dim_t{0_n}, o_conv2d_output);
+  OutputGraphExprValue o_combine_output =
+      insert_combine(b, degree, ff_dim_t{0_n}, o_conv2d_output);
 
   b.equate_outputs(p_conv2d_output, o_combine_output);
 
@@ -407,22 +418,22 @@ Substitution create_partition_attention_combine(positive_int num_heads,
   auto [p_weights, o_weights] =
       b.add_input(tensor_attribute_pattern_match_all());
   std::unordered_map<TensorSlotName, PatternValue> p_inputs = {
-    {
-      TensorSlotName::QUERY,
-      p_query_input, 
-    },
-    {
-      TensorSlotName::KEY,
-      p_key_input, 
-    },
-    {
-      TensorSlotName::VALUE,
-      p_value_input, 
-    },
-    {
-      TensorSlotName::WEIGHT,
-      p_weights,
-    },
+      {
+          TensorSlotName::QUERY,
+          p_query_input,
+      },
+      {
+          TensorSlotName::KEY,
+          p_key_input,
+      },
+      {
+          TensorSlotName::VALUE,
+          p_value_input,
+      },
+      {
+          TensorSlotName::WEIGHT,
+          p_weights,
+      },
   };
 
   OperatorAttributePattern attention_pattern = OperatorAttributePattern{{
@@ -433,49 +444,53 @@ Substitution create_partition_attention_combine(positive_int num_heads,
 
   std::string attention_name = "attention";
   PatternValue p_attention_output = insert_single_output_pattern(
-      b, 
-      attention_pattern, 
-      p_inputs, 
-      /*output_pattern=*/tensor_attr_pattern_require_num_dims(3_p), 
+      b,
+      attention_pattern,
+      p_inputs,
+      /*output_pattern=*/tensor_attr_pattern_require_num_dims(3_p),
       attention_name);
 
-  OutputGraphExprValue o_partition_query_input_output = 
-    insert_partition(b, degree, ff_dim_t{0_n}, o_query_input);
-   
-  OutputGraphExprValue o_partition_key_input_output = 
-    insert_partition(b, degree, ff_dim_t{0_n}, o_key_input);
+  OutputGraphExprValue o_partition_query_input_output =
+      insert_partition(b, degree, ff_dim_t{0_n}, o_query_input);
 
-  OutputGraphExprValue o_partition_value_input_output = 
-    insert_partition(b, degree, ff_dim_t{0_n}, o_value_input);
+  OutputGraphExprValue o_partition_key_input_output =
+      insert_partition(b, degree, ff_dim_t{0_n}, o_key_input);
 
-  OutputGraphExprValue o_replicate_weight_output = insert_replicate(b, degree, o_weights);
+  OutputGraphExprValue o_partition_value_input_output =
+      insert_partition(b, degree, ff_dim_t{0_n}, o_value_input);
 
-  std::unordered_map<TensorSlotName, OutputGraphExprValue> o_attention_inputs = {
-    {
-      TensorSlotName::QUERY,
-      o_partition_query_input_output,
-    },
-    {
-      TensorSlotName::KEY,
-      o_partition_key_input_output,
-    },
-    {
-      TensorSlotName::VALUE,
-      o_partition_value_input_output,
-    },
-    {
-      TensorSlotName::WEIGHT,
-      o_replicate_weight_output,
-    },
-  };
+  OutputGraphExprValue o_replicate_weight_output =
+      insert_replicate(b, degree, o_weights);
+
+  std::unordered_map<TensorSlotName, OutputGraphExprValue> o_attention_inputs =
+      {
+          {
+              TensorSlotName::QUERY,
+              o_partition_query_input_output,
+          },
+          {
+              TensorSlotName::KEY,
+              o_partition_key_input_output,
+          },
+          {
+              TensorSlotName::VALUE,
+              o_partition_value_input_output,
+          },
+          {
+              TensorSlotName::WEIGHT,
+              o_replicate_weight_output,
+          },
+      };
 
   OutputOperatorAttrsAssignment attention_expr = OutputOperatorAttrsAssignment{
       b.pattern_node_named(attention_name),
       {},
   };
-  OutputGraphExprValue o_attention_output = insert_single_output_op(b, attention_expr, o_attention_inputs);
+  OutputGraphExprValue o_attention_output =
+      insert_single_output_op(b, attention_expr, o_attention_inputs);
 
-  OutputGraphExprValue o_combine_output = insert_combine(b, degree, ff_dim_t{0_n}, o_attention_output);
+  OutputGraphExprValue o_combine_output =
+      insert_combine(b, degree, ff_dim_t{0_n}, o_attention_output);
 
   b.equate_outputs(p_attention_output, o_combine_output);
 
@@ -497,22 +512,22 @@ Substitution create_replicate_attention_reduce(positive_int num_heads,
       b.add_input(tensor_attribute_pattern_match_all());
 
   std::unordered_map<TensorSlotName, PatternValue> p_inputs = {
-    {
-      TensorSlotName::QUERY,
-      p_query_input, 
-    },
-    {
-      TensorSlotName::KEY,
-      p_key_input, 
-    },
-    {
-      TensorSlotName::VALUE,
-      p_value_input, 
-    },
-    {
-      TensorSlotName::WEIGHT,
-      p_weights,
-    },
+      {
+          TensorSlotName::QUERY,
+          p_query_input,
+      },
+      {
+          TensorSlotName::KEY,
+          p_key_input,
+      },
+      {
+          TensorSlotName::VALUE,
+          p_value_input,
+      },
+      {
+          TensorSlotName::WEIGHT,
+          p_weights,
+      },
   };
 
   OperatorAttributePattern attention_pattern = OperatorAttributePattern{{
@@ -524,48 +539,52 @@ Substitution create_replicate_attention_reduce(positive_int num_heads,
   std::string attention_name = "attention";
   PatternValue p_attention_output = insert_single_output_pattern(
       b,
-      attention_pattern, 
-      p_inputs, 
-      /*output_pattern=*/tensor_attr_pattern_require_num_dims(3_p), 
+      attention_pattern,
+      p_inputs,
+      /*output_pattern=*/tensor_attr_pattern_require_num_dims(3_p),
       attention_name);
 
-  OutputGraphExprValue o_replicate_query_input_output = 
-    insert_replicate(b, degree, o_query_input);
-   
-  OutputGraphExprValue o_replicate_key_input_output = 
-    insert_replicate(b, degree, o_key_input);
+  OutputGraphExprValue o_replicate_query_input_output =
+      insert_replicate(b, degree, o_query_input);
 
-  OutputGraphExprValue o_replicate_value_input_output = 
-    insert_replicate(b, degree, o_value_input);
+  OutputGraphExprValue o_replicate_key_input_output =
+      insert_replicate(b, degree, o_key_input);
 
-  OutputGraphExprValue o_partition_weight_output = insert_partition(b, degree, ff_dim_t{1_n}, o_weights);
+  OutputGraphExprValue o_replicate_value_input_output =
+      insert_replicate(b, degree, o_value_input);
 
-  std::unordered_map<TensorSlotName, OutputGraphExprValue> o_attention_inputs = {
-    {
-      TensorSlotName::QUERY,
-      o_replicate_query_input_output,
-    },
-    {
-      TensorSlotName::KEY,
-      o_replicate_key_input_output,
-    },
-    {
-      TensorSlotName::VALUE,
-      o_replicate_value_input_output,
-    },
-    {
-      TensorSlotName::WEIGHT,
-      o_partition_weight_output,
-    },
-  };
+  OutputGraphExprValue o_partition_weight_output =
+      insert_partition(b, degree, ff_dim_t{1_n}, o_weights);
+
+  std::unordered_map<TensorSlotName, OutputGraphExprValue> o_attention_inputs =
+      {
+          {
+              TensorSlotName::QUERY,
+              o_replicate_query_input_output,
+          },
+          {
+              TensorSlotName::KEY,
+              o_replicate_key_input_output,
+          },
+          {
+              TensorSlotName::VALUE,
+              o_replicate_value_input_output,
+          },
+          {
+              TensorSlotName::WEIGHT,
+              o_partition_weight_output,
+          },
+      };
 
   OutputOperatorAttrsAssignment attention_expr = OutputOperatorAttrsAssignment{
       b.pattern_node_named(attention_name),
       {},
   };
-  OutputGraphExprValue o_attention_output = insert_single_output_op(b, attention_expr, o_attention_inputs);
+  OutputGraphExprValue o_attention_output =
+      insert_single_output_op(b, attention_expr, o_attention_inputs);
 
-  OutputGraphExprValue o_reduce_output = insert_reduce(b, degree, o_attention_output);
+  OutputGraphExprValue o_reduce_output =
+      insert_reduce(b, degree, o_attention_output);
 
   b.equate_outputs(p_attention_output, o_reduce_output);
 
@@ -581,10 +600,10 @@ Substitution create_partition_softmax_combine(ff_dim_t softmax_dim,
 
   auto [p_input, o_input] = b.add_input(tensor_attribute_pattern_match_all());
   std::unordered_map<TensorSlotName, PatternValue> p_inputs = {
-    {
-      TensorSlotName::INPUT,
-      p_input,
-    },
+      {
+          TensorSlotName::INPUT,
+          p_input,
+      },
   };
 
   OperatorAttributePattern softmax_pattern = OperatorAttributePattern{{
@@ -601,23 +620,26 @@ Substitution create_partition_softmax_combine(ff_dim_t softmax_dim,
       p_inputs,
       /*output_pattern=*/tensor_attribute_pattern_match_all(),
       softmax_name);
-      
-  OutputGraphExprValue o_partition_input_output = insert_partition(b, degree, partition_dim, o_input);
+
+  OutputGraphExprValue o_partition_input_output =
+      insert_partition(b, degree, partition_dim, o_input);
 
   std::unordered_map<TensorSlotName, OutputGraphExprValue> o_softmax_inputs = {
-    {
-      TensorSlotName::INPUT,
-      o_partition_input_output,
-    },
+      {
+          TensorSlotName::INPUT,
+          o_partition_input_output,
+      },
   };
 
   OutputOperatorAttrsAssignment softmax_expr = OutputOperatorAttrsAssignment{
       b.pattern_node_named(softmax_name),
       {},
   };
-  OutputGraphExprValue o_softmax_output = insert_single_output_op(b, softmax_expr, o_softmax_inputs);
+  OutputGraphExprValue o_softmax_output =
+      insert_single_output_op(b, softmax_expr, o_softmax_inputs);
 
-  OutputGraphExprValue o_combine_output = insert_combine(b, degree, partition_dim, o_softmax_output);
+  OutputGraphExprValue o_combine_output =
+      insert_combine(b, degree, partition_dim, o_softmax_output);
 
   b.equate_outputs(p_softmax_output, o_combine_output);
 
@@ -632,14 +654,14 @@ Substitution create_partition_add_combine(ff_dim_t parallel_dim,
   auto [p_input2, o_input2] = b.add_input(tensor_attribute_pattern_match_all());
 
   std::unordered_map<TensorSlotName, PatternValue> p_inputs = {
-    {
-      TensorSlotName::LHS_INPUT,
-      p_input1, 
-    },
-    {
-      TensorSlotName::RHS_INPUT,
-      p_input2,
-    },
+      {
+          TensorSlotName::LHS_INPUT,
+          p_input1,
+      },
+      {
+          TensorSlotName::RHS_INPUT,
+          p_input2,
+      },
   };
 
   OperatorAttributePattern add_pattern = OperatorAttributePattern{{
@@ -649,33 +671,37 @@ Substitution create_partition_add_combine(ff_dim_t parallel_dim,
 
   std::string add_name = "add";
   PatternValue p_add_output = insert_single_output_pattern(
-    b,
-    add_pattern,
-    p_inputs,
-    /*output_pattern=*/tensor_attribute_pattern_match_all(),
-    add_name);
+      b,
+      add_pattern,
+      p_inputs,
+      /*output_pattern=*/tensor_attribute_pattern_match_all(),
+      add_name);
 
-  OutputGraphExprValue o_partition_input1_output = insert_partition(b, degree, parallel_dim, o_input1);
-  OutputGraphExprValue o_partition_input2_output = insert_partition(b, degree, parallel_dim, o_input2);
+  OutputGraphExprValue o_partition_input1_output =
+      insert_partition(b, degree, parallel_dim, o_input1);
+  OutputGraphExprValue o_partition_input2_output =
+      insert_partition(b, degree, parallel_dim, o_input2);
 
   std::unordered_map<TensorSlotName, OutputGraphExprValue> o_add_inputs = {
-    {
-      TensorSlotName::LHS_INPUT,
-      o_partition_input1_output,
-    },
-    {
-      TensorSlotName::RHS_INPUT,
-      o_partition_input2_output,
-    },
+      {
+          TensorSlotName::LHS_INPUT,
+          o_partition_input1_output,
+      },
+      {
+          TensorSlotName::RHS_INPUT,
+          o_partition_input2_output,
+      },
   };
 
   OutputOperatorAttrsAssignment add_expr = OutputOperatorAttrsAssignment{
       b.pattern_node_named(add_name),
       {},
   };
-  OutputGraphExprValue o_add_output = insert_single_output_op(b, add_expr, o_add_inputs);
+  OutputGraphExprValue o_add_output =
+      insert_single_output_op(b, add_expr, o_add_inputs);
 
-  OutputGraphExprValue o_combine_output = insert_combine(b, degree, parallel_dim, o_add_output);
+  OutputGraphExprValue o_combine_output =
+      insert_combine(b, degree, parallel_dim, o_add_output);
 
   b.equate_outputs(p_add_output, o_combine_output);
 
@@ -695,22 +721,24 @@ Substitution create_partition_relu_combine(ff_dim_t parallel_dim,
 
   std::string relu_name = "relu";
   PatternValue p_relu_output = insert_single_output_pattern(
-    b,
-    relu_pattern,
-    {{TensorSlotName::INPUT, p_input}},
-    /*output_pattern=*/tensor_attribute_pattern_match_all(),
-    relu_name);
+      b,
+      relu_pattern,
+      {{TensorSlotName::INPUT, p_input}},
+      /*output_pattern=*/tensor_attribute_pattern_match_all(),
+      relu_name);
 
-  OutputGraphExprValue o_partition_input_output = insert_partition(b, degree, parallel_dim, o_input);
+  OutputGraphExprValue o_partition_input_output =
+      insert_partition(b, degree, parallel_dim, o_input);
 
   OutputOperatorAttrsAssignment relu_expr = OutputOperatorAttrsAssignment{
       b.pattern_node_named(relu_name),
       {},
   };
-  OutputGraphExprValue o_relu_output 
-    = insert_single_output_op(b, relu_expr, {{TensorSlotName::INPUT, o_partition_input_output}});
+  OutputGraphExprValue o_relu_output = insert_single_output_op(
+      b, relu_expr, {{TensorSlotName::INPUT, o_partition_input_output}});
 
-  OutputGraphExprValue o_combine_output = insert_combine(b, degree, parallel_dim, o_relu_output);
+  OutputGraphExprValue o_combine_output =
+      insert_combine(b, degree, parallel_dim, o_relu_output);
 
   b.equate_outputs(p_relu_output, o_combine_output);
 
@@ -734,20 +762,21 @@ Substitution create_fuse_linear_activation(Activation activation) {
 
   std::string mm_name = "mm";
   PatternValue p_mm_output = insert_single_output_pattern(
-    b,
-    mm_pattern,
-    /*inputs=*/{
-        {
-            TensorSlotName::INPUT,
-            p_input,
-        },
-        {
-            TensorSlotName::WEIGHT,
-            p_weight,
-        },
-    },
-    /*output_pattern=*/tensor_attribute_pattern_match_all(),
-    mm_name);
+      b,
+      mm_pattern,
+      /*inputs=*/
+      {
+          {
+              TensorSlotName::INPUT,
+              p_input,
+          },
+          {
+              TensorSlotName::WEIGHT,
+              p_weight,
+          },
+      },
+      /*output_pattern=*/tensor_attribute_pattern_match_all(),
+      mm_name);
 
   OperatorAttributePattern relu_pattern = OperatorAttributePattern{{
       op_type_equals_constraint(OperatorType::RELU),
@@ -755,16 +784,17 @@ Substitution create_fuse_linear_activation(Activation activation) {
 
   std::string relu_name = "relu";
   PatternValue p_relu_output = insert_single_output_pattern(
-    b,
-    relu_pattern,
-    /*inputs=*/{
+      b,
+      relu_pattern,
+      /*inputs=*/
       {
-        TensorSlotName::INPUT,
-        p_mm_output,
+          {
+              TensorSlotName::INPUT,
+              p_mm_output,
+          },
       },
-    },
-    /*output_pattern=*/tensor_attribute_pattern_match_all(),
-    relu_name);
+      /*output_pattern=*/tensor_attribute_pattern_match_all(),
+      relu_name);
 
   OutputOperatorAttrsAssignment fused_node_expr = OutputOperatorAttrsAssignment{
       b.pattern_node_named(mm_name),
@@ -774,19 +804,19 @@ Substitution create_fuse_linear_activation(Activation activation) {
       }};
 
   OutputGraphExprValue o_fused_node_output =
-    insert_single_output_op(
-      b,
-      fused_node_expr,
-      /*inputs=*/{
-          {
-              TensorSlotName::INPUT,
-              o_input,
-          },
-          {
-              TensorSlotName::WEIGHT,
-              o_weight,
-          },
-      });
+      insert_single_output_op(b,
+                              fused_node_expr,
+                              /*inputs=*/
+                              {
+                                  {
+                                      TensorSlotName::INPUT,
+                                      o_input,
+                                  },
+                                  {
+                                      TensorSlotName::WEIGHT,
+                                      o_weight,
+                                  },
+                              });
 
   b.equate_outputs(p_relu_output, o_fused_node_output);
 
