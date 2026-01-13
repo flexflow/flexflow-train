@@ -1,0 +1,21 @@
+namespace = "FlexFlow"
+name = "dynamic_layer_guid_t"
+type = "variant"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "pcg/layer_guid_t.dtg.h",
+  "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h",
+]
+
+[[values]]
+name = "layer_guid"
+type = "::FlexFlow::layer_guid_t"
+
+[[values]]
+name = "pcg_layer_guid"
+type = "::FlexFlow::parallel_layer_guid_t"

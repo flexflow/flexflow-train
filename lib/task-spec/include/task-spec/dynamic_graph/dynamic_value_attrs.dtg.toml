@@ -9,6 +9,7 @@ features = [
 
 includes = [
   "<optional>",
+  "task-spec/dynamic_graph/dynamic_tensor_guid_t.dtg.h",
   "op-attrs/parallel_tensor_shape.dtg.h",
   "kernels/accessor.h",
   "pcg/parallel_computation_graph/parallel_tensor_guid_t.dtg.h",
@@ -21,8 +22,8 @@ src_includes = [
 ]
 
 [[fields]]
-name = "pcg_tensor_guid"
-type = "::FlexFlow::parallel_tensor_guid_t"
+name = "tensor_guid"
+type = "::FlexFlow::dynamic_tensor_guid_t"
 
 [[fields]]
 name = "parallel_tensor_shape"
