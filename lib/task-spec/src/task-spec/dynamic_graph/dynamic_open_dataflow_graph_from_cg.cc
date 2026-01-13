@@ -24,31 +24,29 @@ DynamicOpenDataflowGraph
 
     std::unordered_map<DynamicTensorSlot, DynamicValueAttrs> result_inputs;
     for (auto const &[slot_name, tensor] : get_incoming_tensors(cg, layer)) {
-      result_inputs.emplace(
-          std::piecewise_construct,
-          std::forward_as_tuple(
-              /*slot_name=*/slot_name,
-              /*slot_tensor_role=*/mk_dynamic_tensor_role_fwd()),
-          std::forward_as_tuple(
-              /*tensor_guid=*/dynamic_tensor_guid_t{tensor},
-              /*parallel_tensor_shape=*/std::nullopt,
-              /*shard_coord=*/std::nullopt,
-              /*accessor=*/std::nullopt,
-              /*role=*/std::nullopt));
+      result_inputs.emplace(std::piecewise_construct,
+                            std::forward_as_tuple(
+                                /*slot_name=*/slot_name,
+                                /*slot_tensor_role=*/std::nullopt),
+                            std::forward_as_tuple(
+                                /*tensor_guid=*/dynamic_tensor_guid_t{tensor},
+                                /*parallel_tensor_shape=*/std::nullopt,
+                                /*shard_coord=*/std::nullopt,
+                                /*accessor=*/std::nullopt,
+                                /*role=*/std::nullopt));
     }
     std::unordered_map<DynamicTensorSlot, DynamicValueAttrs> result_outputs;
     for (auto const &[slot_name, tensor] : get_outgoing_tensors(cg, layer)) {
-      result_outputs.emplace(
-          std::piecewise_construct,
-          std::forward_as_tuple(
-              /*slot_name=*/slot_name,
-              /*slot_tensor_role=*/mk_dynamic_tensor_role_fwd()),
-          std::forward_as_tuple(
-              /*tensor_guid=*/dynamic_tensor_guid_t{tensor},
-              /*parallel_tensor_shape=*/std::nullopt,
-              /*shard_coord=*/std::nullopt,
-              /*accessor=*/std::nullopt,
-              /*role=*/std::nullopt));
+      result_outputs.emplace(std::piecewise_construct,
+                             std::forward_as_tuple(
+                                 /*slot_name=*/slot_name,
+                                 /*slot_tensor_role=*/std::nullopt),
+                             std::forward_as_tuple(
+                                 /*tensor_guid=*/dynamic_tensor_guid_t{tensor},
+                                 /*parallel_tensor_shape=*/std::nullopt,
+                                 /*shard_coord=*/std::nullopt,
+                                 /*accessor=*/std::nullopt,
+                                 /*role=*/std::nullopt));
     }
 
     result.invocations.emplace(result_inputs, result_attrs, result_outputs);
