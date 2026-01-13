@@ -67,12 +67,12 @@ TEST_SUITE(FF_TEST_SUITE) {
            std::optional<ParallelTensorSpaceCoordinate> const &shard_coord)
         -> DynamicValueAttrs {
       return DynamicValueAttrs{
-          /*pcg_tensor_guid=*/parallel_tensor_guid_t{
+          /*tensor_guid=*/dynamic_tensor_guid_t{parallel_tensor_guid_t{
               KwargDataflowOutput<TensorSlotName>{
                   Node{src_node_id},
                   src_slot_name,
               },
-          },
+          }},
           /*parallel_tensor_shape=*/std::nullopt,
           /*shard_coord=*/shard_coord,
           /*accessor=*/std::nullopt,
@@ -114,7 +114,8 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*device_coord=*/mc2,
             /*mapping=*/std::nullopt,
             /*op_attrs=*/std::nullopt,
-            /*pcg_layer_guid=*/parallel_layer_guid_t{Node{invocation1_id}},
+            /*layer_guid=*/
+            dynamic_layer_guid_t{parallel_layer_guid_t{Node{invocation1_id}}},
             /*per_device_op_state=*/std::nullopt,
         },
         /*outputs=*/
@@ -140,7 +141,8 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*device_coord=*/mc1,
             /*mapping=*/std::nullopt,
             /*op_attrs=*/std::nullopt,
-            /*pcg_layer_guid=*/parallel_layer_guid_t{Node{invocation2_id}},
+            /*layer_guid=*/
+            dynamic_layer_guid_t{parallel_layer_guid_t{Node{invocation2_id}}},
             /*per_device_op_state=*/std::nullopt,
         },
         /*outputs=*/
@@ -173,7 +175,8 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*device_coord=*/mc2,
             /*mapping=*/std::nullopt,
             /*op_attrs=*/std::nullopt,
-            /*pcg_layer_guid=*/parallel_layer_guid_t{Node{invocation3_id}},
+            /*layer_guid=*/
+            dynamic_layer_guid_t{parallel_layer_guid_t{Node{invocation3_id}}},
             /*per_device_op_state=*/std::nullopt,
         },
         /*outputs=*/
