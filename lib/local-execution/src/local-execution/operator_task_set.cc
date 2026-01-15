@@ -1,5 +1,5 @@
 #include "local-execution/operator_task_set.h"
-#include "local-execution/task_id_with_noop_default_t.h"
+#include "task-spec/task_id_with_noop_default_t.h"
 #include "task-spec/task_signature_impl.h"
 #include "utils/bidict/algorithms/right_entries.h"
 #include "utils/containers/values.h"

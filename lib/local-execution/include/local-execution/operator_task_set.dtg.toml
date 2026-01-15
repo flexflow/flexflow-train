@@ -9,7 +9,7 @@ features = [
 ]
 
 includes = [
-  "local-execution/task_id_with_noop_default_t.dtg.h"
+  "task-spec/task_id_with_noop_default_t.dtg.h"
 ]
 
 [[fields]]
