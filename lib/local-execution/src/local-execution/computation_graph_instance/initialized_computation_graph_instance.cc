@@ -1,11 +1,14 @@
 #include "local-execution/computation_graph_instance/initialized_computation_graph_instance.h"
 #include "kernels/allocation.h"
+#include "local-execution/local_task_argument_accessor.h"
 #include "local-execution/local_task_registry.h"
+#include "local-execution/task_execution.h"
 #include "op-attrs/computation_graph_op_attrs.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/tensor_shape.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_accessor.dtg.h"
+#include "task-spec/task_argument_accessor/task_argument_accessor.h"
 #include "task-spec/task_id_with_noop_default_t.dtg.h"
 #include "task-spec/task_id_with_noop_default_t.h"
 #include "utils/containers/transform.h"
@@ -66,17 +69,38 @@ DynamicValueAttrs allocate_value(
   return result;
 };
 
-DynamicNodeInvocation initialize_node(DynamicNodeInvocation const &i,
-                                      LocalTaskRegistry &task_registry) {
+DynamicNodeInvocation
+    initialize_node(DynamicNodeInvocation const &i,
+                    Allocator &allocator,
+                    LocalTaskRegistry &task_registry,
+                    ProfilingSettings const &profiling_settings,
+                    device_handle_t const &device_handle,
+                    DeviceType kernel_device_type,
+                    FFIterationConfig const &iteration_config,
+                    size_t device_idx) {
   ASSERT(!node_is_initialized(i.node_attrs));
 
+  // Get task
   task_id_with_noop_default_t registered_task = get_init_task_id_for_op_attrs(
       assert_unwrap(compgraph_op_attrs_from_pcg_op_attrs(
           assert_unwrap(i.node_attrs.op_attrs))));
-  TaskArgumentAccessor arg_accessor;
-  std::optional<::FlexFlow::DeviceSpecificPerDeviceOpState>
-      per_device_op_state =
-          call_init_task_impl(task_registry, registered_task, arg_accessor);
+
+  // Prepare arguments
+  TaskArgumentAccessor arg_accessor =
+      make_task_argument_accessor_for_invocation(
+          /*invocation=*/i,
+          /*profiling_settings=*/profiling_settings,
+          /*kernel_device_type=*/kernel_device_type,
+          /*op_attrs=*/assert_unwrap(i.node_attrs.op_attrs),
+          /*loss_attrs=*/std::nullopt,
+          /*per_device_op_state=*/std::nullopt,
+          /*iteration_config=*/iteration_config,
+          /*optimizer_attrs=*/std::nullopt);
+
+  // Run task init
+  std::optional<DeviceSpecificPerDeviceOpState> per_device_op_state =
+      call_init_task_impl(task_registry, registered_task, arg_accessor);
+
   DynamicNodeAttrs node_attrs{
       /*task_type=*/i.node_attrs.task_type,
       /*device_coord=*/i.node_attrs.device_coord,
@@ -99,7 +123,12 @@ InitializedComputationGraphInstance initialize_computation_graph_instance(
     ComputationGraphInstance const &instance,
     bidict<dynamic_tensor_guid_t, DynamicTensorAccessor> const &input_tensors,
     Allocator &allocator,
-    LocalTaskRegistry &task_registry) {
+    LocalTaskRegistry &task_registry,
+    ProfilingSettings const &profiling_settings,
+    device_handle_t const &device_handle,
+    DeviceType kernel_device_type,
+    FFIterationConfig const &iteration_config,
+    size_t device_idx) {
   bidict<dynamic_tensor_guid_t, DynamicTensorAccessor> allocated_tensors =
       input_tensors;
 
@@ -130,7 +159,14 @@ InitializedComputationGraphInstance initialize_computation_graph_instance(
   // Initialize all operators and save the per-device op state
   DynamicOpenDataflowGraph initialized_dg = transform_dynamic_invocation_set(
       allocated_dg, [&](DynamicNodeInvocation const &invocation) {
-        return initialize_node(invocation, task_registry);
+        return initialize_node(invocation,
+                               allocator,
+                               task_registry,
+                               profiling_settings,
+                               device_handle,
+                               kernel_device_type,
+                               iteration_config,
+                               device_idx);
       });
 
   ASSERT(graph_is_fully_initialized(initialized_dg));

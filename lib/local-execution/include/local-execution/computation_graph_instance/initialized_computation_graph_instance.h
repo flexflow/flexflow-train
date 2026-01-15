@@ -28,7 +28,12 @@ InitializedComputationGraphInstance initialize_computation_graph_instance(
     ComputationGraphInstance const &,
     bidict<dynamic_tensor_guid_t, DynamicTensorAccessor> const &,
     Allocator &,
-    LocalTaskRegistry &);
+    LocalTaskRegistry &,
+    ProfilingSettings const &,
+    device_handle_t const &,
+    DeviceType,
+    FFIterationConfig const &,
+    size_t);
 
 std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
     perform_forward_pass_for_computation_graph_instance(

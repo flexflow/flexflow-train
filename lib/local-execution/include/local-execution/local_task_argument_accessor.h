@@ -1,20 +1,19 @@
 #ifndef _FLEXFLOW_LOCAL_EXECUTION_LOCAL_TASK_ARGUMENT_ACCESSOR_H
 #define _FLEXFLOW_LOCAL_EXECUTION_LOCAL_TASK_ARGUMENT_ACCESSOR_H
 
-#include "local-execution/tensor_slot_backing.dtg.h"
+#include "kernels/accessor.h"
 #include "pcg/device_id_t.dtg.h"
-#include "task-spec/runtime_task_invocation/runtime_arg_config.dtg.h"
-#include "task-spec/task_argument_accessor/task_argument_accessor.h"
+#include "task-spec/dynamic_graph/dynamic_tensor_accessor.dtg.h"
+#include "task-spec/task_argument_accessor/itask_argument_accessor.h"
 #include "task-spec/task_argument_accessor/task_tensor_parameter.dtg.h"
 #include <unordered_map>
-#include <variant>
 
 namespace FlexFlow {
 
 struct LocalTaskArgumentAccessor : public ITaskArgumentAccessor {
   explicit LocalTaskArgumentAccessor(
       Allocator const &allocator,
-      std::unordered_map<TaskTensorParameter, GenericTensorAccessorW> const
+      std::unordered_map<TaskTensorParameter, DynamicTensorAccessor> const
           &tensor_slots_backing,
       ProfilingSettings const &profiling_settings,
       device_handle_t const &ff_handle,
@@ -49,7 +48,7 @@ struct LocalTaskArgumentAccessor : public ITaskArgumentAccessor {
 
 private:
   Allocator allocator;
-  std::unordered_map<TaskTensorParameter, GenericTensorAccessorW>
+  std::unordered_map<TaskTensorParameter, DynamicTensorAccessor>
       tensor_slots_backing;
 
   ProfilingSettings profiling_settings;
