@@ -22,9 +22,7 @@ private:
 
 InitializedComputationGraphInstance initialize_computation_graph_instance(
     ComputationGraphInstance const &,
-    bidict<dynamic_tensor_guid_t,
-           std::variant<GenericTensorAccessorW, GenericTensorAccessorR>> const
-        &,
+    bidict<dynamic_tensor_guid_t, DynamicTensorAccessor> const &,
     Allocator &);
 
 std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
