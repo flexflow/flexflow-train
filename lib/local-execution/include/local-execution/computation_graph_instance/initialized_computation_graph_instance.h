@@ -11,19 +11,18 @@ namespace FlexFlow {
 
 struct InitializedComputationGraphInstance {
 public:
-  LocalTaskRegistry const &get_task_registry() const;
+  InitializedComputationGraphInstance(DynamicOpenDataflowGraph, Allocator &);
   DynamicOpenDataflowGraph const &get_dynamic_dataflow_graph() const;
   Allocator &get_allocator() const;
 
 private:
-  Allocator &allocator;
   DynamicOpenDataflowGraph initialized_dataflow_graph;
+  Allocator &allocator;
 };
 
 InitializedComputationGraphInstance initialize_computation_graph_instance(
     ComputationGraphInstance const &,
-    // FIXME (Elliott): figure out the right type to go here
-    bidict<tensor_guid_t,
+    bidict<dynamic_tensor_guid_t,
            std::variant<GenericTensorAccessorW, GenericTensorAccessorR>> const
         &,
     Allocator &);
