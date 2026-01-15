@@ -23,7 +23,7 @@ src_includes = [
 
 [[fields]]
 name = "task_type"
-type = "std::optional<::FlexFlow::DynamicTaskType>" # Elliott: forward vs backward task etc.
+type = "std::optional<::FlexFlow::DynamicTaskType>"
 
 [[fields]]
 name = "device_coord"
