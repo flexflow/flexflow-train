@@ -3,6 +3,7 @@
 #include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/tensor_shape.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
+#include "utils/containers/transform.h"
 #include "utils/exception.h"
 #include "utils/optional.h"
 #include <optional>
@@ -10,6 +11,35 @@
 
 namespace FlexFlow {
 
+bool node_true(DynamicNodeAttrs const &n) {
+  return true;
+}
+
+bool node_false(DynamicNodeAttrs const &n) {
+  return true;
+}
+
+bool slot_true(DynamicTensorSlot const &s) {
+  return true;
+}
+
+bool slot_false(DynamicTensorSlot const &s) {
+  return true;
+}
+
+bool value_is_allocated(DynamicValueAttrs const &v) {
+  return v.accessor.has_value();
+}
+
+bool no_part_of_graph_is_allocated(DynamicOpenDataflowGraph const &g) {
+  return no_part_of_dynamic_graph_satisfies(
+      g, node_false, value_is_allocated, slot_false);
+}
+
+bool graph_is_fully_allocated(DynamicOpenDataflowGraph const &g) {
+  return full_dynamic_graph_satisfies(
+      g, node_true, value_is_allocated, slot_true);
+}
 InitializedComputationGraphInstance::InitializedComputationGraphInstance(
     DynamicOpenDataflowGraph dg, Allocator &alloc)
     : initialized_dataflow_graph(dg), allocator(alloc) {}
@@ -41,9 +71,11 @@ InitializedComputationGraphInstance initialize_computation_graph_instance(
   // dynamic_value_attrs to permit R tensors
   bidict<dynamic_tensor_guid_t, GenericTensorAccessorW> allocated_tensors;
 
-  DynamicOpenDataflowGraph dg = transform_dynamic_invocation_set(
-      instance.expanded_dataflow_graph,
-      [&](DynamicNodeInvocation const &invocation) {
+  DynamicOpenDataflowGraph const &g = instance.expanded_dataflow_graph;
+  ASSERT(no_part_of_graph_is_allocated(g));
+
+  DynamicOpenDataflowGraph result = transform_dynamic_invocation_set(
+      g, [&](DynamicNodeInvocation const &invocation) {
         auto allocate = [&](DynamicTensorSlot const &k,
                             DynamicValueAttrs const &v) {
           return std::pair{
@@ -61,7 +93,9 @@ InitializedComputationGraphInstance initialize_computation_graph_instance(
         };
       });
 
-  return InitializedComputationGraphInstance{dg, allocator};
+  ASSERT(graph_is_fully_allocated(result));
+
+  return InitializedComputationGraphInstance{result, allocator};
 }
 
 std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
