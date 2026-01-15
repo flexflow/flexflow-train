@@ -1,7 +1,7 @@
 #include "local-execution/local_task_registry.h"
 #include "local-execution/operator_task_set.h"
 #include "pcg/computation_graph.h"
-#include "task-spec/task_signature_impl.h"
+#include "task-spec/task_impl_function.dtg.h"
 #include "utils/containers/contains_key.h"
 #include "utils/containers/filtrans.h"
 #include "utils/containers/flatmap.h"
@@ -20,7 +20,7 @@ LocalTaskRegistry construct_local_task_registry_for_layers(
       [](ComputationGraphOpAttrs const &op_attrs)
           -> std::unordered_set<task_id_t> { return get_task_ids(op_attrs); });
 
-  std::unordered_map<task_id_t, TaskSignatureAndImpl> task_mapping =
+  std::unordered_map<task_id_t, TaskImplFunction> task_mapping =
       generate_map(task_ids, get_task_signature_and_impl_for_task_id);
 
   return LocalTaskRegistry{
