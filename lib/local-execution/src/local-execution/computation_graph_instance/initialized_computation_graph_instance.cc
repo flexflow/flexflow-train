@@ -3,6 +3,7 @@
 #include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/tensor_shape.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
+#include "task-spec/dynamic_graph/dynamic_tensor_accessor.dtg.h"
 #include "utils/containers/transform.h"
 #include "utils/exception.h"
 #include "utils/optional.h"
@@ -46,7 +47,7 @@ InitializedComputationGraphInstance::InitializedComputationGraphInstance(
 
 DynamicValueAttrs allocate_value(
     DynamicValueAttrs const &v,
-    bidict<dynamic_tensor_guid_t, GenericTensorAccessorW> &allocated_tensors,
+    bidict<dynamic_tensor_guid_t, DynamicTensorAccessor> &allocated_tensors,
     Allocator &allocator) {
   DynamicValueAttrs result = v;
   if (allocated_tensors.contains_l(result.tensor_guid)) {
@@ -54,7 +55,7 @@ DynamicValueAttrs allocate_value(
   } else {
     TensorShape shape =
         get_piece_shape(assert_unwrap(result.parallel_tensor_shape));
-    GenericTensorAccessorW accessor = allocator.allocate_tensor(shape);
+    DynamicTensorAccessor accessor{allocator.allocate_tensor(shape)};
     allocated_tensors.equate(result.tensor_guid, accessor);
     result.accessor = accessor;
   }
@@ -63,13 +64,10 @@ DynamicValueAttrs allocate_value(
 
 InitializedComputationGraphInstance initialize_computation_graph_instance(
     ComputationGraphInstance const &instance,
-    bidict<dynamic_tensor_guid_t,
-           std::variant<GenericTensorAccessorW, GenericTensorAccessorR>> const
-        &input_tensors,
+    bidict<dynamic_tensor_guid_t, DynamicTensorAccessor> const &input_tensors,
     Allocator &allocator) {
-  // FIXME: initialize from input_tensors, may require modifying
-  // dynamic_value_attrs to permit R tensors
-  bidict<dynamic_tensor_guid_t, GenericTensorAccessorW> allocated_tensors;
+  bidict<dynamic_tensor_guid_t, DynamicTensorAccessor> allocated_tensors =
+      input_tensors;
 
   DynamicOpenDataflowGraph const &g = instance.expanded_dataflow_graph;
   ASSERT(no_part_of_graph_is_allocated(g));

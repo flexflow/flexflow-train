@@ -1,0 +1,20 @@
+namespace = "FlexFlow"
+name = "DynamicTensorAccessor"
+type = "variant"
+features = [
+  "eq",
+  "fmt",
+  "hash",
+]
+
+includes = [
+  "kernels/accessor.h",
+]
+
+[[values]]
+name = "accessor_r"
+type = "::FlexFlow::GenericTensorAccessorR"
+
+[[values]]
+name = "accessor_w"
+type = "::FlexFlow::GenericTensorAccessorW"
