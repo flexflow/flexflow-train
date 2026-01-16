@@ -90,12 +90,14 @@ DynamicNodeInvocation
       make_task_argument_accessor_for_invocation(
           /*invocation=*/i,
           /*profiling_settings=*/profiling_settings,
+          /*ff_handle=*/device_handle,
           /*kernel_device_type=*/kernel_device_type,
           /*op_attrs=*/assert_unwrap(i.node_attrs.op_attrs),
           /*loss_attrs=*/std::nullopt,
           /*per_device_op_state=*/std::nullopt,
           /*iteration_config=*/iteration_config,
-          /*optimizer_attrs=*/std::nullopt);
+          /*optimizer_attrs=*/std::nullopt,
+          /*device_idx=*/device_idx);
 
   // Run task init
   std::optional<DeviceSpecificPerDeviceOpState> per_device_op_state =
