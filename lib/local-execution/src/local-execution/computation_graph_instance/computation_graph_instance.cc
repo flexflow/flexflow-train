@@ -7,10 +7,6 @@
 
 namespace FlexFlow {
 
-ComputationGraphInstance::ComputationGraphInstance(
-    DynamicOpenDataflowGraph const &graph, LocalTaskRegistry const &registry)
-    : expanded_dataflow_graph(graph), task_registry(registry) {}
-
 ComputationGraphInstance
     create_computation_graph_instance(ComputationGraph const &cg,
                                       LocalTaskRegistry registry,
