@@ -26,7 +26,7 @@ private:
 
 InitializedComputationGraphInstance initialize_computation_graph_instance(
     ComputationGraphInstance const &,
-    bidict<dynamic_tensor_guid_t, DynamicTensorAccessor> const &,
+    std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const &,
     Allocator &,
     LocalTaskRegistry &,
     ProfilingSettings const &,

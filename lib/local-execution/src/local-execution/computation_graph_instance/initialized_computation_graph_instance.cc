@@ -3,6 +3,7 @@
 #include "local-execution/local_task_argument_accessor.h"
 #include "local-execution/local_task_registry.h"
 #include "local-execution/task_execution.h"
+#include "local-execution/tensor_allocation.h"
 #include "op-attrs/computation_graph_op_attrs.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/tensor_shape.dtg.h"
@@ -11,63 +12,36 @@
 #include "task-spec/task_argument_accessor/task_argument_accessor.h"
 #include "task-spec/task_id_with_noop_default_t.dtg.h"
 #include "task-spec/task_id_with_noop_default_t.h"
+#include "utils/containers/all_are_true.h"
 #include "utils/containers/transform.h"
 #include "utils/exception.h"
 #include "utils/optional.h"
 #include <alloca.h>
 #include <cassert>
+#include <cmath>
 #include <optional>
 #include <vector>
 
 namespace FlexFlow {
 
-bool node_is_initialized(DynamicNodeAttrs const &n) {
-  return n.per_device_op_state.has_value();
+bool no_nodes_are_initialized(DynamicOpenDataflowGraph const &g) {
+  return all_are_true(
+      transform(get_dynamic_nodes(g), [](DynamicNodeAttrs const &n) -> bool {
+        return !n.per_device_op_state.has_value();
+      }));
 }
 
-bool slot_true(DynamicTensorSlot const &s) {
-  return true;
-}
-
-bool slot_false(DynamicTensorSlot const &s) {
-  return true;
-}
-
-bool value_is_allocated(DynamicValueAttrs const &v) {
-  return v.accessor.has_value();
-}
-
-bool no_part_of_graph_is_initialized(DynamicOpenDataflowGraph const &g) {
-  return no_part_of_dynamic_graph_satisfies(
-      g, node_is_initialized, value_is_allocated, slot_false);
-}
-
-bool graph_is_fully_initialized(DynamicOpenDataflowGraph const &g) {
-  return full_dynamic_graph_satisfies(
-      g, node_is_initialized, value_is_allocated, slot_true);
+bool all_nodes_are_initialized(DynamicOpenDataflowGraph const &g) {
+  return all_are_true(
+      transform(get_dynamic_nodes(g), [](DynamicNodeAttrs const &n) -> bool {
+        return n.per_device_op_state.has_value();
+      }));
 }
 
 InitializedComputationGraphInstance::InitializedComputationGraphInstance(
     DynamicOpenDataflowGraph dg, Allocator &alloc, LocalTaskRegistry &registry)
     : initialized_dataflow_graph(dg), allocator(alloc),
       task_registry(registry) {}
-
-DynamicValueAttrs allocate_value(
-    DynamicValueAttrs const &v,
-    bidict<dynamic_tensor_guid_t, DynamicTensorAccessor> &allocated_tensors,
-    Allocator &allocator) {
-  DynamicValueAttrs result = v;
-  if (allocated_tensors.contains_l(result.tensor_guid)) {
-    result.accessor = allocated_tensors.at_l(result.tensor_guid);
-  } else {
-    TensorShape shape =
-        get_piece_shape(assert_unwrap(result.parallel_tensor_shape));
-    DynamicTensorAccessor accessor{allocator.allocate_tensor(shape)};
-    allocated_tensors.equate(result.tensor_guid, accessor);
-    result.accessor = accessor;
-  }
-  return result;
-};
 
 DynamicNodeInvocation
     initialize_node(DynamicNodeInvocation const &i,
@@ -78,8 +52,6 @@ DynamicNodeInvocation
                     DeviceType kernel_device_type,
                     FFIterationConfig const &iteration_config,
                     size_t device_idx) {
-  ASSERT(!node_is_initialized(i.node_attrs));
-
   // Get task
   task_id_with_noop_default_t registered_task = get_init_task_id_for_op_attrs(
       assert_unwrap(compgraph_op_attrs_from_pcg_op_attrs(
@@ -123,7 +95,8 @@ DynamicNodeInvocation
 
 InitializedComputationGraphInstance initialize_computation_graph_instance(
     ComputationGraphInstance const &instance,
-    bidict<dynamic_tensor_guid_t, DynamicTensorAccessor> const &input_tensors,
+    std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
+        &input_tensors,
     Allocator &allocator,
     LocalTaskRegistry &task_registry,
     ProfilingSettings const &profiling_settings,
@@ -131,34 +104,15 @@ InitializedComputationGraphInstance initialize_computation_graph_instance(
     DeviceType kernel_device_type,
     FFIterationConfig const &iteration_config,
     size_t device_idx) {
-  bidict<dynamic_tensor_guid_t, DynamicTensorAccessor> allocated_tensors =
-      input_tensors;
-
   DynamicOpenDataflowGraph const &expanded_dg =
       instance.expanded_dataflow_graph;
-  ASSERT(no_part_of_graph_is_initialized(expanded_dg));
-
-  // Allocate all remaining tensors
-  DynamicOpenDataflowGraph allocated_dg = transform_dynamic_invocation_set(
-      expanded_dg, [&](DynamicNodeInvocation const &invocation) {
-        auto allocate = [&](DynamicTensorSlot const &k,
-                            DynamicValueAttrs const &v) {
-          return std::pair{
-              k,
-              allocate_value(v, allocated_tensors, allocator),
-          };
-        };
-        return DynamicNodeInvocation{
-            /*inputs=*/
-            transform(invocation.inputs, allocate),
-            /*node_attrs=*/
-            invocation.node_attrs,
-            /*outputs=*/
-            transform(invocation.outputs, allocate),
-        };
-      });
+  ASSERT(no_tensors_are_allocated(expanded_dg));
+  DynamicOpenDataflowGraph allocated_dg =
+      perform_tensor_allocation(expanded_dg, input_tensors, allocator);
+  ASSERT(all_tensors_are_allocated(expanded_dg));
 
   // Initialize all operators and save the per-device op state
+  ASSERT(no_nodes_are_initialized(allocated_dg));
   DynamicOpenDataflowGraph initialized_dg = transform_dynamic_invocation_set(
       allocated_dg, [&](DynamicNodeInvocation const &invocation) {
         return initialize_node(invocation,
@@ -171,7 +125,7 @@ InitializedComputationGraphInstance initialize_computation_graph_instance(
                                device_idx);
       });
 
-  ASSERT(graph_is_fully_initialized(initialized_dg));
+  ASSERT(all_nodes_are_initialized(initialized_dg));
 
   return InitializedComputationGraphInstance{
       initialized_dg, allocator, task_registry};
