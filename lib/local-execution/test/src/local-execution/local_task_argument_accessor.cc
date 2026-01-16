@@ -1,6 +1,6 @@
 #include "local-execution/local_task_argument_accessor.h"
 #include "kernels/local_cpu_allocator.h"
-#include "task-spec/task_signature_impl.h"
+#include "task-spec/task_impl_function.dtg.h"
 #include "utils/fmt/variant.h"
 #include <doctest/doctest.h>
 
