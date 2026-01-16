@@ -2,6 +2,7 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_DIGRAPH_ALGORITHMS_GET_LONGEST_PATH_LENGTHS_FROM_ROOT_H
 
 #include "utils/graph/digraph/digraph_view.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include <unordered_map>
 
 namespace FlexFlow {
@@ -15,7 +16,7 @@ namespace FlexFlow {
  *
  * @note The root has a path length of 1. g must be acyclic.
  */
-std::unordered_map<Node, int>
+std::unordered_map<Node, nonnegative_int>
     get_longest_path_lengths_from_root(DiGraphView const &g);
 
 /**

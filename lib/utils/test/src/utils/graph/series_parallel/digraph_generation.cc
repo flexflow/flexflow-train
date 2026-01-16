@@ -37,8 +37,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       DiGraph result = digraph_from_sp_decomposition(input);
       CHECK(num_nodes(result) == 3);
       CHECK(num_edges(result) == 2);
-      CHECK(get_sources(result).size() == 1);
-      CHECK(get_sinks(result).size() == 1);
+      CHECK(get_initial_nodes(result).size() == 1);
+      CHECK(get_terminal_nodes(result).size() == 1);
     }
 
     SUBCASE("Simple ParallelSplit") {
@@ -47,8 +47,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       DiGraph result = digraph_from_sp_decomposition(input);
       CHECK(num_nodes(result) == 3);
       CHECK(num_edges(result) == 0);
-      CHECK(get_sources(result).size() == 3);
-      CHECK(get_sinks(result).size() == 3);
+      CHECK(get_initial_nodes(result).size() == 3);
+      CHECK(get_terminal_nodes(result).size() == 3);
     }
 
     SUBCASE("Mixed Serial-Parallel") {
@@ -58,8 +58,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       DiGraph result = digraph_from_sp_decomposition(input);
       CHECK(num_nodes(result) == 4);
       CHECK(num_edges(result) == 4);
-      CHECK(get_sources(result).size() == 2);
-      CHECK(get_sinks(result).size() == 2);
+      CHECK(get_initial_nodes(result).size() == 2);
+      CHECK(get_terminal_nodes(result).size() == 2);
     }
 
     SUBCASE("Mixed Parallel-Serial") {
@@ -69,8 +69,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       DiGraph result = digraph_from_sp_decomposition(input);
       CHECK(num_nodes(result) == 4);
       CHECK(num_edges(result) == 2);
-      CHECK(get_sources(result).size() == 2);
-      CHECK(get_sinks(result).size() == 2);
+      CHECK(get_initial_nodes(result).size() == 2);
+      CHECK(get_terminal_nodes(result).size() == 2);
     }
 
     SUBCASE("Rhombus") {
@@ -79,8 +79,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       DiGraph result = digraph_from_sp_decomposition(input);
       CHECK(num_nodes(result) == 4);
       CHECK(num_edges(result) == 4);
-      CHECK(get_sources(result).size() == 1);
-      CHECK(get_sinks(result).size() == 1);
+      CHECK(get_initial_nodes(result).size() == 1);
+      CHECK(get_terminal_nodes(result).size() == 1);
     }
 
     SUBCASE("Duplicate Nodes") {
@@ -89,8 +89,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       DiGraph result = digraph_from_sp_decomposition(input);
       CHECK(num_nodes(result) == 4);
       CHECK(num_edges(result) == 4);
-      CHECK(get_sources(result).size() == 1);
-      CHECK(get_sinks(result).size() == 1);
+      CHECK(get_initial_nodes(result).size() == 1);
+      CHECK(get_terminal_nodes(result).size() == 1);
     }
 
     SUBCASE("Complex Graph") {
@@ -105,8 +105,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       DiGraph result = digraph_from_sp_decomposition(input);
       CHECK(num_nodes(result) == 8);
       CHECK(num_edges(result) == 9);
-      CHECK(get_sources(result).size() == 3);
-      CHECK(get_sinks(result).size() == 1);
+      CHECK(get_initial_nodes(result).size() == 3);
+      CHECK(get_terminal_nodes(result).size() == 1);
     }
   }
 }

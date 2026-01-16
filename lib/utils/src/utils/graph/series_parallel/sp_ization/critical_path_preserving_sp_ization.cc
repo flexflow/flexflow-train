@@ -62,7 +62,7 @@ static SeriesParallelDecomposition
         DiGraphView const &g) {
   std::unordered_map<Node, SeriesSplit> node_to_sp;
 
-  Node source = get_only(get_sources(g));
+  Node source = get_only(get_initial_nodes(g));
   node_to_sp.emplace(source, SeriesSplit{{source}});
 
   for (Node const &node : get_topological_ordering(g)) {
@@ -80,7 +80,7 @@ static SeriesParallelDecomposition
     node_to_sp.emplace(node, sp_decomp.get<SeriesSplit>());
   }
 
-  Node sink = get_only(get_sinks(g));
+  Node sink = get_only(get_terminal_nodes(g));
   return normalize_sp_decomposition(
       SeriesParallelDecomposition(node_to_sp.at(sink)));
 }
@@ -109,7 +109,7 @@ static SeriesParallelDecomposition
     node_to_sp.emplace(node, sp_decomp);
   }
 
-  Node sink = get_only(get_sinks(g));
+  Node sink = get_only(get_terminal_nodes(g));
   return node_to_sp.at(sink);
 }
 

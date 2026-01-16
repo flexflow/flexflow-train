@@ -50,8 +50,8 @@ std::tuple<DiGraph, Node, Node> make_normal_taso_nasnet_cell() {
     g.add_edge(DirectedEdge{a, concat.at(0)});
   }
 
-  assert(get_sinks(g).size() == 1);
-  assert(get_sources(g).size() == 2);
+  assert(get_terminal_nodes(g).size() == 1);
+  assert(get_initial_nodes(g).size() == 2);
   assert(is_acyclic(g));
   return {g, inputs.at(0), inputs.at(1)};
 }
@@ -92,8 +92,8 @@ std::tuple<DiGraph, Node, Node> make_reduction_taso_nasnet_cell() {
 
   add_edges(g, edges);
 
-  assert(get_sinks(g).size() == 1);
-  assert(get_sources(g).size() == 2);
+  assert(get_terminal_nodes(g).size() == 1);
+  assert(get_initial_nodes(g).size() == 2);
   assert(is_acyclic(g));
   return {g, inputs.at(0), inputs.at(1)};
 }
@@ -108,7 +108,7 @@ DiGraph make_full_taso_nasnet(size_t num_reduction_cells, size_t N) {
     auto [s, earlier_input, later_input] =
         (i % (N + 1) == N) ? make_reduction_taso_nasnet_cell()
                            : make_normal_taso_nasnet_cell();
-    Node cell_output = get_only(get_sinks(s));
+    Node cell_output = get_only(get_terminal_nodes(s));
     std::unordered_map<Node, Node> node_map = parallel_extend(g, s);
     later_input = node_map.at(later_input);
     earlier_input = node_map.at(earlier_input);
@@ -332,8 +332,8 @@ DiGraph make_2_terminal_random_dag(size_t num_nodes, float p, size_t step) {
       }
     }
   }
-  std::unordered_set<Node> sinks = get_sinks(g);
-  std::unordered_set<Node> sources = get_sources(g);
+  std::unordered_set<Node> sinks = get_terminal_nodes(g);
+  std::unordered_set<Node> sources = get_initial_nodes(g);
   Node sink = g.add_node();
   Node source = g.add_node();
   for (Node s : sources) {

@@ -26,6 +26,7 @@
 #include "utils/graph/series_parallel/sp_ization/dependencies_are_maintained.h"
 #include "utils/hash/unordered_set.h"
 #include "utils/hash/vector.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include <unordered_set>
 #include <vector>
 
@@ -33,12 +34,12 @@ namespace FlexFlow {
 
 std::vector<std::unordered_multiset<Node>>
     stratum_split_assuming_unit_cost(DiGraphView const &g) {
-  std::unordered_map<Node, int> node_to_stratum =
+  std::unordered_map<Node, nonnegative_int> node_to_stratum =
       get_longest_path_lengths_from_root(g);
   std::vector<std::unordered_multiset<Node>> result(
-      maximum(values(node_to_stratum)));
+      maximum(values(node_to_stratum)).unwrap_nonnegative());
   for (auto const &[node, depth] : node_to_stratum) {
-    result[depth - 1].insert(node);
+    result[depth.unwrap_nonnegative() - 1].insert(node);
   }
   return result;
 }
@@ -147,7 +148,7 @@ static std::vector<std::unordered_set<std::unordered_set<Node>>>
     cost_aware_stratum_split(DiGraphView const &g,
                              std::unordered_map<Node, float> const &cost_map) {
   std::vector<std::unordered_set<std::unordered_set<Node>>> strata;
-  Node source = get_only(get_sources(g));
+  Node source = get_only(get_initial_nodes(g));
   std::unordered_set<Node> explored = {source};
   strata.push_back({{source}});
   while (get_nodes(g) != explored) {

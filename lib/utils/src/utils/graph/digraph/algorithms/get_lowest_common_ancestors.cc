@@ -8,6 +8,7 @@
 #include "utils/graph/digraph/algorithms/is_acyclic.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/hash/unordered_set.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include <optional>
 
 namespace FlexFlow {
@@ -28,9 +29,9 @@ std::optional<std::unordered_set<Node>>
   if (common_ancestors.empty()) {
     return common_ancestors;
   }
-  std::unordered_map<Node, int> depth_levels =
+  std::unordered_map<Node, nonnegative_int> depth_levels =
       get_longest_path_lengths_from_root(g);
-  int largest_depth_for_common_ancestors = maximum(transform(
+  nonnegative_int largest_depth_for_common_ancestors = maximum(transform(
       common_ancestors, [&](Node const &n) { return depth_levels.at(n); }));
   return filter(common_ancestors, [&](Node const &n) {
     return depth_levels.at(n) == largest_depth_for_common_ancestors;

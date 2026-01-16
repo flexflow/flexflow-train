@@ -19,12 +19,12 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     add_edges(g, edges);
 
-    std::unordered_map<Node, int> expected_lengths = {
-        {n[0], 1},
-        {n[1], 2},
-        {n[2], 3},
-        {n[3], 4},
-        {n[4], 5},
+    std::unordered_map<Node, nonnegative_int> expected_lengths = {
+        {n[0], 1_n},
+        {n[1], 2_n},
+        {n[2], 3_n},
+        {n[3], 4_n},
+        {n[4], 5_n},
     };
 
     CHECK(get_longest_path_lengths_from_root(g) == expected_lengths);
@@ -45,14 +45,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     add_edges(g, edges);
 
-    std::unordered_map<Node, int> expected_lengths = {
-        {n[0], 1},
-        {n[1], 2},
-        {n[2], 3},
-        {n[3], 4},
-        {n[4], 2},
-        {n[5], 5},
-        {n[6], 6},
+    std::unordered_map<Node, nonnegative_int> expected_lengths = {
+        {n[0], 1_n},
+        {n[1], 2_n},
+        {n[2], 3_n},
+        {n[3], 4_n},
+        {n[4], 2_n},
+        {n[5], 5_n},
+        {n[6], 6_n},
     };
 
     CHECK(get_longest_path_lengths_from_root(g) == expected_lengths);

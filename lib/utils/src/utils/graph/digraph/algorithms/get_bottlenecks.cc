@@ -2,6 +2,7 @@
 #include "utils/containers/get_only.h"
 #include "utils/containers/set_difference.h"
 #include "utils/graph/algorithms.h"
+#include "utils/graph/digraph/algorithms.h"
 #include "utils/graph/digraph/algorithms/get_weakly_connected_components.h"
 #include "utils/graph/digraph/algorithms/is_acyclic.h"
 #include "utils/graph/node/algorithms.h"
@@ -20,12 +21,12 @@ std::unordered_set<Node> get_bottlenecks(DiGraphView const &g) {
     }
   }
 
-  if (get_sources(g).size() == 1) {
-    bottlenecks.insert(get_only(get_sources(g)));
+  if (get_initial_nodes(g).size() == 1) {
+    bottlenecks.insert(get_only(get_initial_nodes(g)));
   }
 
-  if (get_sinks(g).size() == 1) {
-    bottlenecks.insert(get_only(get_sinks(g)));
+  if (get_terminal_nodes(g).size() == 1) {
+    bottlenecks.insert(get_only(get_terminal_nodes(g)));
   }
 
   return bottlenecks;

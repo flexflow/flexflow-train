@@ -8,8 +8,13 @@
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/traversal.h"
 #include "utils/graph/views/views.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 
 namespace FlexFlow {
+
+size_t num_edges(const DiGraphView &g) {
+  return get_edges(g).size();
+}
 
 std::unordered_set<DirectedEdge> get_edges(DiGraphView const &g) {
   return g.query_edges(directed_edge_query_all());

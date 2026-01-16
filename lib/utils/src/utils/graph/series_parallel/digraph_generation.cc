@@ -25,10 +25,10 @@ std::unordered_map<Node, Node> parallel_extend(DiGraph &g,
 
 std::unordered_map<Node, Node> serial_extend(DiGraph &g,
                                              DiGraphView const &ext) {
-  std::unordered_set<Node> original_sinks = get_sinks(g);
+  std::unordered_set<Node> original_sinks = get_terminal_nodes(g);
   std::unordered_map<Node, Node> node_map = parallel_extend(g, ext);
   for (Node const &node1 : original_sinks) {
-    for (Node const &node2 : get_sources(ext)) {
+    for (Node const &node2 : get_initial_nodes(ext)) {
       g.add_edge(DirectedEdge{node1, node_map.at(node2)});
     }
   }

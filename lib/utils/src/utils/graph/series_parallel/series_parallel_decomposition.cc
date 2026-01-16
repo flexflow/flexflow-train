@@ -11,6 +11,7 @@
 #include "utils/graph/series_parallel/intermediate_sp_decomposition_tree.h"
 #include "utils/graph/series_parallel/series_parallel_metrics.h"
 #include "utils/hash/unordered_set.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include "utils/variant.h"
 #include <unordered_set>
 
@@ -100,69 +101,13 @@ bool is_empty(SeriesParallelDecomposition const &sp) {
   return sp.visit<bool>([](auto const &t) { return is_empty(t); });
 }
 
-size_t num_nodes(SeriesParallelDecomposition const &sp) {
+nonnegative_int num_nodes(SeriesParallelDecomposition const &sp) {
   return sum(values(get_node_counter_map(sp)));
 }
 
 bool has_no_duplicate_nodes(SeriesParallelDecomposition const &sp) {
   return all_of(values(get_node_counter_map(sp)),
-                [](int count) { return count == 1; });
-}
-
-SeriesParallelDecomposition series_composition(
-    std::vector<SeriesParallelDecomposition> const &sp_compositions) {
-  std::vector<std::variant<ParallelSplit, Node>> composition{};
-  for (SeriesParallelDecomposition const &sp_comp : sp_compositions) {
-    if (sp_comp.has<SeriesSplit>()) {
-      extend(composition, sp_comp.get<SeriesSplit>().children);
-    } else if (sp_comp.has<ParallelSplit>()) {
-      composition.push_back(sp_comp.get<ParallelSplit>());
-    } else {
-      assert(sp_comp.has<Node>());
-      composition.push_back(sp_comp.get<Node>());
-    }
-  }
-  return SeriesParallelDecomposition{SeriesSplit{composition}};
-}
-
-SeriesParallelDecomposition parallel_composition(
-    std::unordered_multiset<SeriesParallelDecomposition> const
-        &sp_compositions) {
-  std::unordered_multiset<
-      std::variant<::FlexFlow::SeriesSplit, ::FlexFlow::Node>>
-      composition{};
-  for (SeriesParallelDecomposition const &sp_comp : sp_compositions) {
-    if (sp_comp.has<ParallelSplit>()) {
-      composition = multiset_union(composition,
-                                   sp_comp.get<ParallelSplit>().get_children());
-    } else if (sp_comp.has<SeriesSplit>()) {
-      composition.insert(sp_comp.get<SeriesSplit>());
-    } else {
-      assert(sp_comp.has<Node>());
-      composition.insert(sp_comp.get<Node>());
-    }
-  }
-  return SeriesParallelDecomposition(ParallelSplit{composition});
-}
-
-bool is_empty(Node const &node) {
-  return false;
-}
-
-bool is_empty(SeriesSplit const &serial) {
-  return all_of(serial.children, [](auto const &child) {
-    return is_empty(widen<SeriesParallelDecomposition>(child));
-  });
-}
-
-bool is_empty(ParallelSplit const &parallel) {
-  return all_of(parallel.get_children(), [](auto const &child) {
-    return is_empty(widen<SeriesParallelDecomposition>(child));
-  });
-}
-
-bool is_empty(SeriesParallelDecomposition const &sp) {
-  return sp.visit<bool>([](auto const &t) { return is_empty(t); });
+                [](nonnegative_int count) { return count == 1_n; });
 }
 
 SeriesParallelDecomposition series_composition(

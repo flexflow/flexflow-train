@@ -33,6 +33,7 @@
 #include "utils/graph/series_parallel/get_series_parallel_decomposition.h"
 #include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
 #include "utils/graph/series_parallel/sp_ization/node_role.dtg.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 
 #include <iostream>
 #include <unordered_map>
@@ -61,7 +62,7 @@ int get_max_depth(DiGraph const &sp,
 DiGraph add_dummy_nodes(DiGraph g,
                         std::unordered_map<Node, NodeRole> &node_roles) {
   std::unordered_map<Node, int> depth_map =
-      get_longest_path_lengths_from_root(g);
+      map_values(get_longest_path_lengths_from_root(g), [](nonnegative_int const &i) {return i.unwrap_nonnegative();});
   for (DirectedEdge const &e : get_edges(g)) {
     Node src = e.src;
     Node dst = e.dst;
@@ -222,10 +223,10 @@ SeriesParallelDecomposition spanish_strata_sync(DiGraph g) {
 
   g = add_dummy_nodes(g, node_roles);
   std::unordered_map<Node, int> depth_map =
-      get_longest_path_lengths_from_root(g);
-
+      map_values(get_longest_path_lengths_from_root(g), [](nonnegative_int const &i) {return i.unwrap_nonnegative();});
+  
   DiGraph sp = DiGraph::create<AdjacencyDiGraph>();
-  Node root = get_only(get_sources(g));
+  Node root = get_only(get_initial_nodes(g));
   sp.add_node_unsafe(root);
   size_t sync_node_counter = maximum(
       transform(get_nodes(g), [&](Node const &n) { return n.raw_uid; }));

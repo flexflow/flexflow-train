@@ -4,11 +4,6 @@
 #include "utils/graph/digraph/digraph.h"
 #include "utils/graph/node/graph.h"
 #include "utils/graph/undirected/undirected_graph.h"
-// #include "utils/graph/open_multidigraph/open_multidigraph.h"
-// #include
-// "utils/graph/upward_open_multidigraph/upward_open_multidigraph_view.h"
-// #include
-// "utils/graph/downward_open_multidigraph/downward_open_multidigraph_view.h"
 #include "utils/dot_file.h"
 #include "utils/graph/graph_split.dtg.h"
 
@@ -17,10 +12,6 @@ namespace FlexFlow {
 std::vector<Node> add_nodes(Graph &, int);
 std::vector<Node> add_nodes(UndirectedGraph &, int);
 std::vector<Node> add_nodes(DiGraph &, int);
-// std::vector<Node> add_nodes(MultiDiGraph &, int);
-// std::vector<Node> add_nodes(OpenMultiDiGraph &g, int num_nodes);
-
-// std::unordered_set<Node> get_nodes(OpenMultiDiEdge const &);
 
 std::unordered_set<Node> query_nodes(GraphView const &,
                                      std::unordered_set<Node> const &);

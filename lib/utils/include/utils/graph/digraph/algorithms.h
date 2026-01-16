@@ -2,11 +2,13 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_DIGRAPH_ALGORITHMS_H
 
 #include "utils/graph/digraph/digraph.h"
+#include "utils/graph/digraph/digraph_view.h"
 
 namespace FlexFlow {
 
+size_t num_edges(DiGraphView const &);
+
 std::unordered_set<DirectedEdge> get_edges(DiGraphView const &);
-int num_edges(DiGraphView const &);
 
 /**
  * @brief Returns the set of nodes in the graph with no incoming edges.

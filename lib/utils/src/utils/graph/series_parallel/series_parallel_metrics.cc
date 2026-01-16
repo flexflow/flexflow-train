@@ -11,52 +11,45 @@
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/series_parallel/digraph_generation.h"
 #include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include "utils/variant.h"
 #include <unordered_map>
+#include "utils/graph/series_parallel/series_parallel_decomposition.h"
 namespace FlexFlow {
 
-std::unordered_map<Node, size_t> get_node_counter_map(Node const &node) {
-  return {{node, 1}};
+std::unordered_map<Node, nonnegative_int>
+    get_node_counter_map(Node const &node) {
+  return {{node, 1_n}};
 }
 
-std::unordered_map<Node, size_t>
+template <typename T>
+std::unordered_map<Node, nonnegative_int> get_node_counter_map_impl(T const &t) {
+  std::unordered_map<Node, nonnegative_int> counter;
+  for (Node const &node : get_nodes(t)) {
+    counter.emplace(node, 0_n).first->second += 1_n;
+  }
+  return counter;
+}
+
+std::unordered_map<Node, nonnegative_int>
     get_node_counter_map(ParallelSplit const &parallel) {
-  std::unordered_map<Node, size_t> counter;
-  for (std::variant<SeriesSplit, Node> const &child : parallel.get_children()) {
-    for (auto const &[node, count] :
-         get_node_counter_map(widen<SeriesParallelDecomposition>(child))) {
-      counter[node] += count;
-    }
-  }
-  return counter;
+  return get_node_counter_map_impl(parallel);
 }
 
-std::unordered_map<Node, size_t>
+std::unordered_map<Node, nonnegative_int>
     get_node_counter_map(SeriesSplit const &serial) {
-  std::unordered_map<Node, size_t> counter;
-  for (std::variant<ParallelSplit, Node> const &child : serial.children) {
-    for (auto const &[node, count] :
-         get_node_counter_map(widen<SeriesParallelDecomposition>(child))) {
-      counter[node] += count;
-    }
-  }
-  return counter;
+  return get_node_counter_map_impl(serial);
 }
 
-std::unordered_map<Node, size_t>
+std::unordered_map<Node, nonnegative_int>
     get_node_counter_map(SeriesParallelDecomposition const &sp) {
-  return sp.visit<std::unordered_map<Node, size_t>>(
-      [](auto const &t) { return get_node_counter_map(t); });
+  return get_node_counter_map_impl(sp);
 }
 
 float work_cost(SeriesParallelDecomposition const &sp,
                 std::unordered_map<Node, float> cost_map) {
-  auto cost_per_node_group = [&](std::pair<Node, float> const &pair) {
-    return pair.second * cost_map.at(pair.first);
-  };
-  std::unordered_map<Node, size_t> counter = get_node_counter_map(sp);
-  std::vector<std::pair<Node, size_t>> pairs(counter.cbegin(), counter.cend());
-  return sum(transform(pairs, cost_per_node_group));
+  return sum(transform(get_nodes(sp),
+                       [&](Node const &node) { return cost_map.at(node); }));
 }
 
 float work_cost(DiGraphView const &g,

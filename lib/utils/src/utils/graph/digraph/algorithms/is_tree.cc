@@ -9,9 +9,9 @@ namespace FlexFlow {
 bool is_tree(DiGraphView const &g) {
   assert(num_nodes(g) > 0);
 
-  bool has_single_root = get_sources(g).size() == 1;
+  bool has_single_root = get_initial_nodes(g).size() == 1;
   bool is_connected = get_connected_components(as_undirected(g)).size() == 1;
-  bool node_edge_diff_is_1 = (num_nodes(g) - num_edges(g)) == 1;
+  bool node_edge_diff_is_1 = (num_edges(g) == num_nodes(g) - 1);
   return has_single_root && is_connected && node_edge_diff_is_1;
 }
 

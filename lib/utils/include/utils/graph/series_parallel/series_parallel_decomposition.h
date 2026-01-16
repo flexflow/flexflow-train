@@ -3,6 +3,7 @@
 
 #include "utils/graph/series_parallel/intermediate_sp_decomposition_tree.dtg.h"
 #include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include <variant>
 
 namespace FlexFlow {
@@ -29,7 +30,7 @@ bool has_no_duplicate_nodes(SeriesParallelDecomposition const &sp);
  * @note Nodes that appear multiple times in the decomposition are counted
  * multiple times
  */
-size_t num_nodes(SeriesParallelDecomposition const &sp);
+nonnegative_int num_nodes(SeriesParallelDecomposition const &sp);
 
 SeriesParallelDecomposition series_composition(
     std::vector<SeriesParallelDecomposition> const &sp_compositions);

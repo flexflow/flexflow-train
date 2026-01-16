@@ -3,6 +3,7 @@
 
 #include "utils/graph/digraph/digraph_view.h"
 #include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include <unordered_map>
 
 namespace FlexFlow {
@@ -11,12 +12,12 @@ namespace FlexFlow {
  * @brief Maps each node to the number of times it appears in the decomposition.
  *
  */
-std::unordered_map<Node, size_t> get_node_counter_map(Node const &node);
-std::unordered_map<Node, size_t>
+std::unordered_map<Node, nonnegative_int> get_node_counter_map(Node const &node);
+std::unordered_map<Node, nonnegative_int>
     get_node_counter_map(SeriesSplit const &serial);
-std::unordered_map<Node, size_t>
+std::unordered_map<Node, nonnegative_int>
     get_node_counter_map(ParallelSplit const &parallel);
-std::unordered_map<Node, size_t>
+std::unordered_map<Node, nonnegative_int>
     get_node_counter_map(SeriesParallelDecomposition const &sp);
 
 /**

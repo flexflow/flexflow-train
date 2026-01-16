@@ -4,8 +4,8 @@
 namespace FlexFlow {
 
 bool is_2_terminal_dag(DiGraphView const &g) {
-  return (is_acyclic(g) && (get_sources(g).size() == 1) &&
-          get_sinks(g).size() == 1);
+  return (is_acyclic(g) && (get_initial_nodes(g).size() == 1) &&
+          get_terminal_nodes(g).size() == 1);
 }
 
 } // namespace FlexFlow
