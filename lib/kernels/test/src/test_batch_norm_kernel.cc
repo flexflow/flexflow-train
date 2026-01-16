@@ -1,52 +1,63 @@
-#include "doctest/doctest.h"
-#include "kernels/batch_norm_kernels.h"
-#include "test_utils.h"
+#include "internal/test_utils.h"
+#include "kernels/batch_norm_kernels_gpu.h"
+#include "op-attrs/datatype_value.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
-TEST_SUITE(FF_TEST_SUITE) {
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test BatchNorm Kernel") {
-    nonnegative_int output_n = 1_n;
-    nonnegative_int output_c = 10_n;
-    nonnegative_int output_h = 10_n;
-    nonnegative_int output_w = 10_n;
+    positive_int output_n = 1_p;
+    positive_int output_c = 10_p;
+    positive_int output_h = 10_p;
+    positive_int output_w = 10_p;
 
     ManagedFFStream managed_stream{};
-    ManagedPerDeviceFFHandle managed_handle{};
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true);
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    BatchNormPerDeviceState state = Kernels::BatchNorm::init_kernel(
+    BatchNormPerDeviceState state = Kernels::BatchNorm::gpu_init_kernel(
         /*handle=*/managed_handle.raw_handle(),
         /*allocator=*/allocator,
         /*runningMean=*/nullptr,
-        /*output_n=*/output_n.unwrap_nonnegative(),
-        /*output_c=*/output_c.unwrap_nonnegative(),
-        /*output_h=*/output_h.unwrap_nonnegative(),
-        /*output_w=*/output_w.unwrap_nonnegative(),
+        /*output_n=*/output_n.int_from_positive_int(),
+        /*output_c=*/output_c.int_from_positive_int(),
+        /*output_h=*/output_h.int_from_positive_int(),
+        /*output_w=*/output_w.int_from_positive_int(),
         /*relu=*/true);
 
-    TensorShape input_shape = make_float_tensor_shape_from_legion_dims(
-        {output_n, output_c, output_h, output_w});
-    TensorShape output_shape = make_float_tensor_shape_from_legion_dims(
-        {output_n, output_c, output_h, output_w});
-    TensorShape scale_shape = make_float_tensor_shape_from_legion_dims(
-        {output_n, output_c, output_h, output_w});
-    TensorShape bias_shape = make_float_tensor_shape_from_legion_dims(
-        {output_n, output_c, output_h, output_w});
+    TensorShape input_shape = TensorShape{
+        TensorDims{FFOrdered{output_n, output_c, output_h, output_w}},
+        DataType::FLOAT,
+    };
+    TensorShape output_shape = TensorShape{
+        TensorDims{FFOrdered{output_n, output_c, output_h, output_w}},
+        DataType::FLOAT,
+    };
+    TensorShape scale_shape = TensorShape{
+        TensorDims{FFOrdered{output_n, output_c, output_h, output_w}},
+        DataType::FLOAT,
+    };
+    TensorShape bias_shape = TensorShape{
+        TensorDims{FFOrdered{output_n, output_c, output_h, output_w}},
+        DataType::FLOAT,
+    };
 
     GenericTensorAccessorW input_accessor =
         create_random_filled_accessor_w(input_shape, allocator);
     GenericTensorAccessorW output_accessor =
         create_random_filled_accessor_w(output_shape, allocator);
-    GenericTensorAccessorW scale_accessor =
-        create_filled_accessor_w(scale_shape, allocator, 1.0f);
+    GenericTensorAccessorW scale_accessor = create_filled_accessor_w(
+        scale_shape, allocator, make_float_data_type_value(1));
 
-    SUBCASE("forward_kernel") {
-      GenericTensorAccessorW bias_accessor =
-          create_filled_accessor_w(bias_shape, allocator, 0.0f);
+    SUBCASE("gpu_forward_kernel") {
+      GenericTensorAccessorW bias_accessor = create_filled_accessor_w(
+          bias_shape, allocator, make_float_data_type_value(0));
 
-      Kernels::BatchNorm::forward_kernel(
+      Kernels::BatchNorm::gpu_forward_kernel(
           /*stream=*/managed_stream.raw_stream(),
           /*per_device_state=*/state,
           /*input_ptr=*/input_accessor.get_float_ptr(),
@@ -54,13 +65,10 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*scale_ptr=*/scale_accessor.get_float_ptr(),
           /*bias_ptr=*/bias_accessor.get_float_ptr());
 
-      std::vector<float> host_output_data =
-          load_data_to_host_from_device<float>(
-              read_only_accessor_from_write_accessor(output_accessor));
-      CHECK(contains_non_zero(host_output_data));
+      CHECK(contains_non_zero(output_accessor));
     }
 
-    SUBCASE("backward_kernel") {
+    SUBCASE("gpu_backward_kernel") {
       GenericTensorAccessorW output_grad_accessor =
           create_random_filled_accessor_w(output_shape, allocator);
       GenericTensorAccessorW input_grad_accessor =
@@ -70,40 +78,24 @@ TEST_SUITE(FF_TEST_SUITE) {
       GenericTensorAccessorW bias_grad_accessor =
           create_random_filled_accessor_w(bias_shape, allocator);
 
-      Kernels::BatchNorm::backward_kernel(
+      Kernels::BatchNorm::gpu_backward_kernel(
           /*stream=*/managed_stream.raw_stream(),
           /*per_device_state=*/state,
-          /*input_ptr=*/input_accessor.get_float_ptr(),
-          /*output_grad_ptr=*/output_grad_accessor.get_float_ptr(),
           /*output_ptr=*/output_accessor.get_float_ptr(),
+          /*output_grad_ptr=*/output_grad_accessor.get_float_ptr(),
+          /*input_ptr=*/input_accessor.get_float_ptr(),
           /*input_grad_ptr=*/input_grad_accessor.get_float_ptr(),
           /*scale_ptr=*/scale_accessor.get_float_ptr(),
           /*scale_grad_ptr=*/scale_grad_accessor.get_float_ptr(),
           /*bias_grad_ptr=*/bias_grad_accessor.get_float_ptr(),
           /*numElements=*/
-          input_accessor.shape.num_elements().unwrap_nonnegative());
+          get_num_elements(input_accessor.shape.dims).int_from_positive_int());
 
-      std::vector<float> host_input_grad_data =
-          load_data_to_host_from_device<float>(
-              read_only_accessor_from_write_accessor(input_grad_accessor));
-      std::vector<float> host_scale_grad_data =
-          load_data_to_host_from_device<float>(
-              read_only_accessor_from_write_accessor(scale_grad_accessor));
-      std::vector<float> host_bias_grad_data =
-          load_data_to_host_from_device<float>(
-              read_only_accessor_from_write_accessor(bias_grad_accessor));
-
-      CHECK(contains_non_zero(host_input_grad_data));
-      CHECK(contains_non_zero(host_scale_grad_data));
-      CHECK(contains_non_zero(host_bias_grad_data));
+      CHECK(contains_non_zero(input_grad_accessor));
+      CHECK(contains_non_zero(scale_grad_accessor));
+      CHECK(contains_non_zero(bias_grad_accessor));
     }
 
-    Kernels::BatchNorm::cleanup_kernel(allocator,
-                                       state.inputTensor,
-                                       state.biasTensor,
-                                       state.outputTensor,
-                                       state.actiDesc,
-                                       true,
-                                       state.runningMean);
+    Kernels::BatchNorm::gpu_cleanup_kernel(allocator, state);
   }
 }

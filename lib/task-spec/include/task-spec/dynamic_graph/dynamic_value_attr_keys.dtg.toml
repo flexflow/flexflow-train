@@ -1,0 +1,15 @@
+namespace = "FlexFlow"
+name = "DynamicValueAttrKeys"
+type = "enum"
+features = [
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+[[values]]
+name = "PARALLEL_TENSOR_SHAPE"
+
+[[values]]
+name = "ACCESSOR"

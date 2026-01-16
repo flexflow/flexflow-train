@@ -1,0 +1,28 @@
+namespace = "FlexFlow"
+name = "InceptionV3Config"
+type = "struct"
+
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = [
+  "utils/positive_int/positive_int.h",
+]
+
+[[fields]]
+name = "num_classes"
+type = "::FlexFlow::positive_int"
+
+[[fields]]
+name = "batch_size"
+type = "::FlexFlow::positive_int"
+
+[[fields]]
+name = "aux_logits"
+type = "bool"

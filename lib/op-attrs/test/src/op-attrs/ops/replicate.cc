@@ -6,20 +6,20 @@ using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("Replicate shape inference") {
     ReplicateAttrs attrs = ReplicateAttrs{
-        /*replicate_degree=*/4_n,
+        /*replicate_degree=*/4_p,
     };
 
     ParallelTensorShape input = ParallelTensorShape{
         ParallelTensorDims{
             FFOrdered<ShardParallelDim>{
-                ShardParallelDim{10_n, 2_n},
-                ShardParallelDim{12_n, 1_n},
-                ShardParallelDim{14_n, 2_n},
-                ShardParallelDim{16_n, 2_n},
+                ShardParallelDim{10_p, 2_p},
+                ShardParallelDim{12_p, 1_p},
+                ShardParallelDim{14_p, 2_p},
+                ShardParallelDim{16_p, 2_p},
             },
             ReplicaParallelDimSet{
-                SumDegree{3_n},
-                DiscardCopyDegree{2_n},
+                SumDegree{3_p},
+                DiscardCopyDegree{2_p},
             },
         },
         DataType::FLOAT,
@@ -29,7 +29,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     ParallelTensorShape correct_output = input;
     correct_output.dims.replica_dims.discard_copy_degree =
-        DiscardCopyDegree{8_n};
+        DiscardCopyDegree{8_p};
 
     CHECK(result == correct_output);
   }

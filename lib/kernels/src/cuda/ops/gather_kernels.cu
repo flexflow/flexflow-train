@@ -13,14 +13,13 @@
  * limitations under the License.
  */
 
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/datatype_dispatch.h"
 #include "kernels/device.h"
-#include "kernels/gather_kernels.h"
+#include "kernels/gather_kernels_gpu.h"
+#include "op-attrs/ff_dim_t.h"
 
-namespace FlexFlow {
-namespace Kernels {
-namespace Gather {
+namespace FlexFlow::Kernels::Gather {
 
 template <typename IndexType>
 __global__ void gather_forward(float const *input,
@@ -119,67 +118,86 @@ struct BackwardKernel {
   }
 };
 
-void forward_kernel(ffStream_t stream,
-                    GatherPerDeviceState const &m,
-                    GenericTensorAccessorR const &input,
-                    GenericTensorAccessorR const &index,
-                    GenericTensorAccessorW const &output) {
+GatherPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
+                                     ff_dim_t dim) {
+  return GatherPerDeviceState{
+      /*handle=*/handle,
+      /*dim=*/dim,
+  };
+}
+
+void gpu_forward_kernel(ffStream_t stream,
+                        GatherPerDeviceState const &m,
+                        GenericTensorAccessorR const &input,
+                        GenericTensorAccessorR const &index,
+                        GenericTensorAccessorW const &output) {
   checkCUDA(get_legion_stream(&stream));
 
-  coord_t stride =
-      output.shape.sub_shape(std::nullopt, add_to_legion_dim(m.legion_dim, 1))
-          .num_elements()
-          .unwrap_nonnegative();
-  coord_t output_dim_size = output.shape.at(m.legion_dim).unwrap_nonnegative();
-  coord_t input_dim_size = input.shape.at(m.legion_dim).unwrap_nonnegative();
+  std::optional<coord_t> stride = std::nullopt;
+  if (m.dim.value == 0_n) {
+    stride = 1;
+  } else {
+    stride = get_num_elements(slice_tensor_dims(output.shape.dims,
+                                                add_to_ff_dim(m.dim, -1),
+                                                std::nullopt))
+                 .int_from_positive_int();
+  }
 
-  assert(index.data_type == DataType::INT32 ||
-         index.data_type == DataType::INT64);
+  coord_t output_dim_size =
+      dim_at_idx(output.shape.dims, m.dim).int_from_positive_int();
+  coord_t input_dim_size =
+      dim_at_idx(input.shape.dims, m.dim).int_from_positive_int();
+
+  assert(index.shape.data_type == DataType::INT32 ||
+         index.shape.data_type == DataType::INT64);
 
   DataTypeDispatch1<ForwardKernel>{}(
-      index.data_type,
+      index.shape.data_type,
       stream,
       input,
       index,
       output,
-      output.shape.get_volume().unwrap_nonnegative(),
-      stride,
+      get_num_elements(output.shape.dims).int_from_positive_int(),
+      stride.value(),
       input_dim_size,
       output_dim_size);
 }
 
-void backward_kernel(ffStream_t stream,
-                     GatherPerDeviceState const &m,
-                     GenericTensorAccessorR const &output_grad,
-                     GenericTensorAccessorR const &index,
-                     GenericTensorAccessorW const &input_grad) {
+void gpu_backward_kernel(ffStream_t stream,
+                         GatherPerDeviceState const &m,
+                         GenericTensorAccessorR const &output_grad,
+                         GenericTensorAccessorR const &index,
+                         GenericTensorAccessorW const &input_grad) {
   checkCUDA(get_legion_stream(&stream));
 
-  coord_t stride =
-      output_grad.shape
-          .sub_shape(std::nullopt, add_to_legion_dim(m.legion_dim, 1))
-          .get_volume()
-          .unwrap_nonnegative();
-  coord_t output_dim_size =
-      output_grad.shape.at(m.legion_dim).unwrap_nonnegative();
-  coord_t input_dim_size =
-      input_grad.shape.at(m.legion_dim).unwrap_nonnegative();
+  std::optional<coord_t> stride = std::nullopt;
+  if (m.dim.value == 0_n) {
+    stride = 1;
+  } else {
+    stride = get_num_elements(slice_tensor_dims(output_grad.shape.dims,
+                                                add_to_ff_dim(m.dim, -1),
+                                                std::nullopt))
+                 .int_from_positive_int();
+  }
 
-  assert(index.data_type == DataType::INT32 ||
-         index.data_type == DataType::INT64);
+  coord_t output_dim_size =
+      dim_at_idx(output_grad.shape.dims, m.dim).int_from_positive_int();
+  coord_t input_dim_size =
+      dim_at_idx(input_grad.shape.dims, m.dim).int_from_positive_int();
+
+  assert(index.shape.data_type == DataType::INT32 ||
+         index.shape.data_type == DataType::INT64);
 
   DataTypeDispatch1<BackwardKernel>{}(
-      index.data_type,
+      index.shape.data_type,
       stream,
       output_grad,
       index,
       input_grad,
-      output_grad.shape.get_volume().unwrap_nonnegative(),
-      stride,
+      get_num_elements(output_grad.shape.dims).int_from_positive_int(),
+      stride.value(),
       input_dim_size,
       output_dim_size);
 }
 
-} // namespace Gather
-} // namespace Kernels
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::Gather

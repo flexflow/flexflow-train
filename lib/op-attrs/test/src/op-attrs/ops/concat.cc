@@ -10,7 +10,8 @@ using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_output_shape(ConcatAttrs, std::vector<TensorShape>)") {
     ConcatAttrs attrs = ConcatAttrs{
-        ff_dim_t{nonnegative_int{1}},
+        /*axis=*/ff_dim_t{1_n},
+        /*num_inputs=*/3_ge2,
     };
 
     SUBCASE("empty input shapes list passed") {
@@ -23,12 +24,12 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(result == correct);
     }
 
-    nonnegative_int dim0_size = 12_n;
-    nonnegative_int dim2_size = 20_n;
+    positive_int dim0_size = 12_p;
+    positive_int dim2_size = 20_p;
     TensorShape input_shape1 = TensorShape{
-        TensorDims{FFOrdered<nonnegative_int>{
+        TensorDims{FFOrdered{
             dim0_size,
-            14_n,
+            14_p,
             dim2_size,
         }},
         DataType::FLOAT,
@@ -45,26 +46,26 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     TensorShape input_shape2 = TensorShape{
-        TensorDims{FFOrdered<nonnegative_int>{
+        TensorDims{FFOrdered{
             dim0_size,
-            16_n,
+            16_p,
             dim2_size,
         }},
         DataType::FLOAT,
     };
 
     TensorShape input_shape3 = TensorShape{
-        TensorDims{FFOrdered<nonnegative_int>{dim0_size, 18_n, dim2_size}},
+        TensorDims{FFOrdered{dim0_size, 18_p, dim2_size}},
         DataType::FLOAT,
     };
 
     SUBCASE("input shapes do not shared the same num_dims") {
       TensorShape mismatched_num_dims = TensorShape{
-          TensorDims{FFOrdered<nonnegative_int>{
+          TensorDims{FFOrdered{
               dim0_size,
-              20_n,
+              20_p,
               dim2_size,
-              1_n,
+              1_p,
           }},
           DataType::FLOAT,
       };
@@ -81,7 +82,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("concat axis is out of bounds") {
       attrs = ConcatAttrs{
-          ff_dim_t{nonnegative_int{3}},
+          /*axis=*/ff_dim_t{3_n},
+          /*num_inputs=*/3_ge2,
       };
 
       std::vector<TensorShape> input_shapes = {
@@ -101,9 +103,9 @@ TEST_SUITE(FF_TEST_SUITE) {
       tl::expected<TensorShape, std::string> result =
           get_output_shape(attrs, input_shapes);
       tl::expected<TensorShape, std::string> correct = TensorShape{
-          TensorDims{FFOrdered<nonnegative_int>{
+          TensorDims{FFOrdered{
               dim0_size,
-              14_n + 16_n + 18_n,
+              14_p + 16_p + 18_p,
               dim2_size,
           }},
           DataType::FLOAT,
@@ -115,100 +117,100 @@ TEST_SUITE(FF_TEST_SUITE) {
 
   TEST_CASE("get_output_shape(ConcatAttrs, std::vector<ParallelTensorShape>)") {
     ConcatAttrs attrs = ConcatAttrs{
-        ff_dim_t{nonnegative_int{1}},
+        /*axis=*/ff_dim_t{1_n},
+        /*num_inputs=*/3_ge2,
     };
 
-    nonnegative_int dim0_size = 12_n;
-    nonnegative_int dim2_size = 20_n;
+    positive_int dim0_size = 12_p;
+    positive_int dim2_size = 20_p;
 
     TensorShape input_shape1 = TensorShape{
-        TensorDims{FFOrdered<nonnegative_int>{
+        TensorDims{FFOrdered{
             dim0_size,
-            14_n,
+            14_p,
             dim2_size,
         }},
         DataType::FLOAT,
     };
 
     TensorShape input_shape2 = TensorShape{
-        TensorDims{FFOrdered<nonnegative_int>{
+        TensorDims{FFOrdered{
             dim0_size,
-            16_n,
+            16_p,
             dim2_size,
         }},
         DataType::FLOAT,
     };
 
     TensorShape input_shape3 = TensorShape{
-        TensorDims{FFOrdered<nonnegative_int>{dim0_size, 18_n, dim2_size}},
+        TensorDims{FFOrdered{dim0_size, 18_p, dim2_size}},
         DataType::FLOAT,
     };
 
     TensorShape output_shape = TensorShape{
-        TensorDims{FFOrdered<nonnegative_int>{
-            dim0_size, 14_n + 16_n + 18_n, dim2_size}},
+        TensorDims{FFOrdered{dim0_size, 14_p + 16_p + 18_p, dim2_size}},
         DataType::FLOAT,
     };
 
     auto lift_input1 = [&](SumDegree o_sum,
                            DiscardCopyDegree o_eq,
-                           nonnegative_int o0,
-                           nonnegative_int o1,
-                           nonnegative_int o2) {
+                           positive_int o0,
+                           positive_int o1,
+                           positive_int o2) {
       return lift_to_parallel_with_degrees(
-          input_shape1, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o1, o2});
+          input_shape1, o_sum, o_eq, FFOrdered{o0, o1, o2});
     };
 
     auto lift_input2 = [&](SumDegree o_sum,
                            DiscardCopyDegree o_eq,
-                           nonnegative_int o0,
-                           nonnegative_int o1,
-                           nonnegative_int o2) {
+                           positive_int o0,
+                           positive_int o1,
+                           positive_int o2) {
       return lift_to_parallel_with_degrees(
-          input_shape2, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o1, o2});
+          input_shape2, o_sum, o_eq, FFOrdered{o0, o1, o2});
     };
 
     auto lift_input3 = [&](SumDegree o_sum,
                            DiscardCopyDegree o_eq,
-                           nonnegative_int o0,
-                           nonnegative_int o1,
-                           nonnegative_int o2) {
+                           positive_int o0,
+                           positive_int o1,
+                           positive_int o2) {
       return lift_to_parallel_with_degrees(
-          input_shape3, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o1, o2});
+          input_shape3, o_sum, o_eq, FFOrdered{o0, o1, o2});
     };
 
     auto lift_output = [&](SumDegree o_sum,
                            DiscardCopyDegree o_eq,
-                           nonnegative_int o0,
-                           nonnegative_int o1,
-                           nonnegative_int o2) {
+                           positive_int o0,
+                           positive_int o1,
+                           positive_int o2) {
       return lift_to_parallel_with_degrees(
-          output_shape, o_sum, o_eq, FFOrdered<nonnegative_int>{o0, o1, o2});
+          output_shape, o_sum, o_eq, FFOrdered{o0, o1, o2});
     };
 
     SUBCASE("sum reduction parallelism") {
       SUBCASE("matching") {
-        SumDegree sum_degree = SumDegree{2_n};
+        SumDegree sum_degree = SumDegree{2_p};
 
         std::vector<ParallelTensorShape> inputs = {
-            lift_input1(sum_degree, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n),
-            lift_input2(sum_degree, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n),
-            lift_input3(sum_degree, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n),
+            lift_input1(sum_degree, DiscardCopyDegree{1_p}, 1_p, 1_p, 1_p),
+            lift_input2(sum_degree, DiscardCopyDegree{1_p}, 1_p, 1_p, 1_p),
+            lift_input3(sum_degree, DiscardCopyDegree{1_p}, 1_p, 1_p, 1_p),
         };
 
         tl::expected<ParallelTensorShape, std::string> result =
             get_output_shape(attrs, inputs);
         tl::expected<ParallelTensorShape, std::string> correct =
-            lift_output(sum_degree, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n);
+            lift_output(sum_degree, DiscardCopyDegree{1_p}, 1_p, 1_p, 1_p);
 
         CHECK(result == correct);
       }
 
       SUBCASE("not matching") {
         std::vector<ParallelTensorShape> inputs = {
-            lift_input1(SumDegree{2_n}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n),
-            lift_input2(SumDegree{4_n}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n),
-            lift_input3(SumDegree{4_n}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n),
+            lift_input1(SumDegree{2_p}, DiscardCopyDegree{1_p}, 1_p, 1_p, 1_p),
+            lift_input2(SumDegree{4_p}, DiscardCopyDegree{1_p}, 1_p, 1_p, 1_p),
+            lift_input3(SumDegree{4_p}, DiscardCopyDegree{1_p}, 1_p, 1_p, 1_p),
         };
 
         std::optional<ParallelTensorShape> result =
@@ -221,27 +223,27 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("discard copy reduction parallelism") {
       SUBCASE("matching") {
-        DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{2_n};
+        DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{2_p};
 
         std::vector<ParallelTensorShape> inputs = {
-            lift_input1(SumDegree{1_n}, discard_copy_degree, 1_n, 1_n, 1_n),
-            lift_input2(SumDegree{1_n}, discard_copy_degree, 1_n, 1_n, 1_n),
-            lift_input3(SumDegree{1_n}, discard_copy_degree, 1_n, 1_n, 1_n),
+            lift_input1(SumDegree{1_p}, discard_copy_degree, 1_p, 1_p, 1_p),
+            lift_input2(SumDegree{1_p}, discard_copy_degree, 1_p, 1_p, 1_p),
+            lift_input3(SumDegree{1_p}, discard_copy_degree, 1_p, 1_p, 1_p),
         };
 
         tl::expected<ParallelTensorShape, std::string> result =
             get_output_shape(attrs, inputs);
         tl::expected<ParallelTensorShape, std::string> correct =
-            lift_output(SumDegree{1_n}, discard_copy_degree, 1_n, 1_n, 1_n);
+            lift_output(SumDegree{1_p}, discard_copy_degree, 1_p, 1_p, 1_p);
 
         CHECK(result == correct);
       }
 
       SUBCASE("not matching") {
         std::vector<ParallelTensorShape> inputs = {
-            lift_input1(SumDegree{1_n}, DiscardCopyDegree{2_n}, 1_n, 1_n, 1_n),
-            lift_input2(SumDegree{1_n}, DiscardCopyDegree{2_n}, 1_n, 1_n, 1_n),
-            lift_input3(SumDegree{1_n}, DiscardCopyDegree{4_n}, 1_n, 1_n, 1_n),
+            lift_input1(SumDegree{1_p}, DiscardCopyDegree{2_p}, 1_p, 1_p, 1_p),
+            lift_input2(SumDegree{1_p}, DiscardCopyDegree{2_p}, 1_p, 1_p, 1_p),
+            lift_input3(SumDegree{1_p}, DiscardCopyDegree{4_p}, 1_p, 1_p, 1_p),
         };
 
         std::optional<ParallelTensorShape> result =
@@ -254,15 +256,15 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("parallelism in axis dim") {
       SUBCASE("matching") {
-        nonnegative_int degree = 2_n;
+        positive_int degree = 2_p;
 
         std::vector<ParallelTensorShape> inputs = {
             lift_input1(
-                SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, degree, 1_n),
+                SumDegree{1_p}, DiscardCopyDegree{1_p}, 1_p, degree, 1_p),
             lift_input2(
-                SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, degree, 1_n),
+                SumDegree{1_p}, DiscardCopyDegree{1_p}, 1_p, degree, 1_p),
             lift_input3(
-                SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, degree, 1_n),
+                SumDegree{1_p}, DiscardCopyDegree{1_p}, 1_p, degree, 1_p),
         };
 
         std::optional<ParallelTensorShape> result =
@@ -274,9 +276,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("not matching") {
         std::vector<ParallelTensorShape> inputs = {
-            lift_input1(SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n),
-            lift_input2(SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n),
-            lift_input3(SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, 2_n, 1_n),
+            lift_input1(SumDegree{1_p}, DiscardCopyDegree{1_p}, 1_p, 1_p, 1_p),
+            lift_input2(SumDegree{1_p}, DiscardCopyDegree{1_p}, 1_p, 1_p, 1_p),
+            lift_input3(SumDegree{1_p}, DiscardCopyDegree{1_p}, 1_p, 2_p, 1_p),
         };
 
         std::optional<ParallelTensorShape> result =
@@ -289,31 +291,31 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("parallelism in non-axis shard dims") {
       SUBCASE("matching") {
-        nonnegative_int degree0 = 2_n;
-        nonnegative_int degree2 = 4_n;
+        positive_int degree0 = 2_p;
+        positive_int degree2 = 4_p;
 
         std::vector<ParallelTensorShape> inputs = {
             lift_input1(
-                SumDegree{1_n}, DiscardCopyDegree{1_n}, degree0, 1_n, degree2),
+                SumDegree{1_p}, DiscardCopyDegree{1_p}, degree0, 1_p, degree2),
             lift_input2(
-                SumDegree{1_n}, DiscardCopyDegree{1_n}, degree0, 1_n, degree2),
+                SumDegree{1_p}, DiscardCopyDegree{1_p}, degree0, 1_p, degree2),
             lift_input3(
-                SumDegree{1_n}, DiscardCopyDegree{1_n}, degree0, 1_n, degree2),
+                SumDegree{1_p}, DiscardCopyDegree{1_p}, degree0, 1_p, degree2),
         };
 
         tl::expected<ParallelTensorShape, std::string> result =
             get_output_shape(attrs, inputs);
         tl::expected<ParallelTensorShape, std::string> correct = lift_output(
-            SumDegree{1_n}, DiscardCopyDegree{1_n}, degree0, 1_n, degree2);
+            SumDegree{1_p}, DiscardCopyDegree{1_p}, degree0, 1_p, degree2);
 
         CHECK(result == correct);
       }
 
       SUBCASE("not matching") {
         std::vector<ParallelTensorShape> inputs = {
-            lift_input1(SumDegree{1_n}, DiscardCopyDegree{1_n}, 2_n, 1_n, 4_n),
-            lift_input2(SumDegree{1_n}, DiscardCopyDegree{1_n}, 4_n, 1_n, 2_n),
-            lift_input3(SumDegree{1_n}, DiscardCopyDegree{1_n}, 4_n, 1_n, 2_n),
+            lift_input1(SumDegree{1_p}, DiscardCopyDegree{1_p}, 2_p, 1_p, 4_p),
+            lift_input2(SumDegree{1_p}, DiscardCopyDegree{1_p}, 4_p, 1_p, 2_p),
+            lift_input3(SumDegree{1_p}, DiscardCopyDegree{1_p}, 4_p, 1_p, 2_p),
         };
 
         std::optional<ParallelTensorShape> result =
@@ -325,21 +327,21 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("parallelism degrees are not mutually exclusive") {
-      SumDegree sum_degree = SumDegree{3_n};
-      DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{5_n};
-      nonnegative_int degree0 = 2_n;
-      nonnegative_int degree2 = 4_n;
+      SumDegree sum_degree = SumDegree{3_p};
+      DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{5_p};
+      positive_int degree0 = 2_p;
+      positive_int degree2 = 4_p;
 
       std::vector<ParallelTensorShape> inputs = {
-          lift_input1(sum_degree, discard_copy_degree, degree0, 1_n, degree2),
-          lift_input2(sum_degree, discard_copy_degree, degree0, 1_n, degree2),
-          lift_input3(sum_degree, discard_copy_degree, degree0, 1_n, degree2),
+          lift_input1(sum_degree, discard_copy_degree, degree0, 1_p, degree2),
+          lift_input2(sum_degree, discard_copy_degree, degree0, 1_p, degree2),
+          lift_input3(sum_degree, discard_copy_degree, degree0, 1_p, degree2),
       };
 
       tl::expected<ParallelTensorShape, std::string> result =
           get_output_shape(attrs, inputs);
       tl::expected<ParallelTensorShape, std::string> correct =
-          lift_output(sum_degree, discard_copy_degree, degree0, 1_n, degree2);
+          lift_output(sum_degree, discard_copy_degree, degree0, 1_p, degree2);
 
       CHECK(result == correct);
     }

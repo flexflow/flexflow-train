@@ -13,83 +13,85 @@
  * limitations under the License.
  */
 
-#include "device.h"
-#include "kernels/concat_kernels.h"
+#include "internal/device.h"
+#include "kernels/concat_kernels_gpu.h"
 #include <cassert>
 
-namespace FlexFlow {
-namespace Kernels {
-namespace Concat {
+namespace FlexFlow::Kernels::Concat {
 
-void calc_blk_size(size_t &num_blocks,
-                   size_t &blk_size,
-                   ArrayShape const &shape,
-                   ff_dim_t axis) {
-  blk_size = shape.sub_shape(legion_dim_t{0_n}, axis)
-                 .num_elements()
-                 .unwrap_nonnegative();
+static void calc_blk_size(size_t &num_blocks,
+                          size_t &blk_size,
+                          TensorShape const &shape,
+                          ff_dim_t axis) {
+  blk_size = get_num_elements(slice_tensor_dims(shape.dims, axis, std::nullopt))
+                 .int_from_positive_int();
   num_blocks =
-      shape.sub_shape(axis, std::nullopt).num_elements().unwrap_nonnegative();
+      get_num_elements(slice_tensor_dims(shape.dims, ff_dim_t{0_n}, axis))
+          .int_from_positive_int();
 }
 
-void forward_kernel(cudaStream_t stream,
-                    GenericTensorAccessorW const &output,
-                    std::vector<GenericTensorAccessorR> const &inputs,
-                    ff_dim_t axis) {
-  size_t num_blocks = 1, output_blk_size = 1, input_blk_sizes[MAX_NUM_INPUTS];
-  int num_inputs = inputs.size();
-  assert(num_inputs <= MAX_NUM_INPUTS);
+void gpu_forward_kernel(cudaStream_t stream,
+                        GenericTensorAccessorW const &output,
+                        std::vector<GenericTensorAccessorR> const &inputs,
+                        ff_dim_t axis) {
+  assert(inputs.size() <= MAX_NUM_INPUTS);
+  size_t num_blocks = 1, output_blk_size = 1;
   calc_blk_size(num_blocks, output_blk_size, output.shape, axis);
-  for (int i = 0; i < num_inputs; i++) {
-    size_t input_num_blocks = 1;
-    calc_blk_size(input_num_blocks, input_blk_sizes[i], inputs[i].shape, axis);
-    assert(input_num_blocks == num_blocks);
-  }
-
   off_t offset = 0;
-  for (int i = 0; i < num_inputs; i++) {
-    copy_with_stride<<<GET_BLOCKS(input_blk_sizes[i] * num_blocks),
+
+  for (GenericTensorAccessorR const &input : inputs) {
+    size_t input_num_blocks = 1, input_blk_size = 1;
+    calc_blk_size(input_num_blocks, input_blk_size, input.shape, axis);
+    assert(input_num_blocks == num_blocks || output_blk_size == input_blk_size);
+
+    int blocks_to_copy =
+        (output_blk_size == input_blk_size) ? input_num_blocks : num_blocks;
+
+    copy_with_stride<<<GET_BLOCKS(input_blk_size * num_blocks),
                        CUDA_NUM_THREADS,
                        0,
                        stream>>>(output.get_float_ptr() + offset,
-                                 inputs[i].get_float_ptr(),
-                                 num_blocks,
+                                 input.get_float_ptr(),
+                                 blocks_to_copy,
                                  output_blk_size,
-                                 input_blk_sizes[i]);
-    offset += input_blk_sizes[i];
+                                 input_blk_size);
+
+    offset += (output_blk_size == input_blk_size)
+                  ? input_blk_size * input_num_blocks
+                  : input_blk_size;
   }
 }
 
-void backward_kernel(cudaStream_t stream,
-                     GenericTensorAccessorR const &output_grad,
-                     std::vector<GenericTensorAccessorW> const &input_grads,
-                     ff_dim_t axis) {
-  size_t num_blocks = 1, output_blk_size = 1, input_blk_sizes[MAX_NUM_INPUTS];
-  int num_inputs = input_grads.size();
-  assert(num_inputs <= MAX_NUM_INPUTS);
-
+void gpu_backward_kernel(cudaStream_t stream,
+                         GenericTensorAccessorR const &output_grad,
+                         std::vector<GenericTensorAccessorW> const &input_grads,
+                         ff_dim_t axis) {
+  assert(input_grads.size() <= MAX_NUM_INPUTS);
+  size_t num_blocks = 1, output_blk_size = 1;
   calc_blk_size(num_blocks, output_blk_size, output_grad.shape, axis);
-  for (int i = 0; i < num_inputs; i++) {
-    ArrayShape shape = input_grads[i].shape;
-    size_t input_num_blocks = 1;
-    calc_blk_size(input_num_blocks, input_blk_sizes[i], shape, axis);
-    assert(input_num_blocks == num_blocks);
-  }
-
   off_t offset = 0;
-  for (int i = 0; i < num_inputs; i++) {
-    add_with_stride<<<GET_BLOCKS(input_blk_sizes[i] * num_blocks),
+
+  for (auto &input_grad : input_grads) {
+    size_t input_num_blocks = 1, input_blk_size = 1;
+    calc_blk_size(input_num_blocks, input_blk_size, input_grad.shape, axis);
+    assert(input_num_blocks == num_blocks || output_blk_size == input_blk_size);
+
+    int blocks_to_add =
+        (output_blk_size == input_blk_size) ? input_num_blocks : num_blocks;
+
+    add_with_stride<<<GET_BLOCKS(input_blk_size * num_blocks),
                       CUDA_NUM_THREADS,
                       0,
-                      stream>>>(input_grads[i].get_float_ptr(),
+                      stream>>>(input_grad.get_float_ptr(),
                                 output_grad.get_float_ptr() + offset,
-                                num_blocks,
-                                input_blk_sizes[i],
+                                blocks_to_add,
+                                input_blk_size,
                                 output_blk_size);
-    offset += input_blk_sizes[i];
+
+    offset += (output_blk_size == input_blk_size)
+                  ? input_blk_size * input_num_blocks
+                  : input_blk_size;
   }
 }
 
-} // namespace Concat
-} // namespace Kernels
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::Concat

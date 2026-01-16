@@ -1,23 +1,20 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_FLAT_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_FLAT_KERNELS_H
 
-#include "device.h"
 #include "kernels/accessor.h"
+#include "kernels/device_stream_t.dtg.h"
 
-namespace FlexFlow {
-namespace Kernels {
-namespace Flat {
+namespace FlexFlow::Kernels::Flat {
 
-void forward_kernel(ffStream_t stream,
-                    GenericTensorAccessorR input,
+void forward_kernel(device_stream_t const &stream,
+                    GenericTensorAccessorR const &input,
                     float *output_ptr);
-void backward_kernel(ffStream_t stream,
-                     GenericTensorAccessorR input,
-                     float *input_grad_ptr,
-                     float const *output_grad_ptr);
 
-} // namespace Flat
-} // namespace Kernels
-} // namespace FlexFlow
+void backward_kernel(device_stream_t const &stream,
+                     GenericTensorAccessorR const &input,
+                     float const *output_grad_ptr,
+                     float *input_grad_ptr);
+
+} // namespace FlexFlow::Kernels::Flat
 
 #endif // _FLEXFLOW_OPS_KERNELS_FLAT_KERNELS_H

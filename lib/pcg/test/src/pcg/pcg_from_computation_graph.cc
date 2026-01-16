@@ -3,7 +3,7 @@
 #include "op-attrs/ops/linear.h"
 #include "pcg/computation_graph.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
-#include "utils/containers/get_only.h"
+#include "utils/containers/require_only_key.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -14,16 +14,16 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TensorShape input_shape = TensorShape{
         TensorDims{
-            FFOrdered<nonnegative_int>{
-                10_n,
-                12_n,
+            FFOrdered{
+                10_p,
+                12_p,
             },
         },
         DataType::FLOAT,
     };
 
     LinearAttrs linear_attrs = LinearAttrs{
-        /*out_channels=*/8_n,
+        /*out_channels=*/8_p,
         /*use_bias=*/true,
         /*data_type=*/DataType::FLOAT,
         /*activation=*/Activation::RELU,
@@ -53,32 +53,57 @@ TEST_SUITE(FF_TEST_SUITE) {
       ComputationGraph cg = make_empty_computation_graph();
 
       LayerAddedResult input_added = add_input_layer(cg, input_shape);
-      tensor_guid_t t_input = get_only(input_added.outputs);
+      tensor_guid_t t_input =
+          require_only_key(input_added.outputs, TensorSlotName::OUTPUT);
 
       LayerAddedResult projection_weight_added =
           add_layer(cg,
                     make_layer_attrs(projection_weight_attrs),
                     /*inputs=*/{},
                     /*weights=*/{});
-      tensor_guid_t t_projection = get_only(projection_weight_added.outputs);
+      tensor_guid_t t_projection = require_only_key(
+          projection_weight_added.outputs, TensorSlotName::OUTPUT);
 
       LayerAddedResult bias_weight_added =
           add_layer(cg,
                     make_layer_attrs(bias_weight_attrs),
                     /*inputs=*/{},
                     /*weights=*/{});
-      tensor_guid_t t_bias = get_only(bias_weight_added.outputs);
+      tensor_guid_t t_bias =
+          require_only_key(bias_weight_added.outputs, TensorSlotName::OUTPUT);
 
-      LayerAddedResult linear_added =
-          add_layer(cg,
-                    make_layer_attrs(linear_attrs),
-                    /*inputs=*/{t_input},
-                    /*weights=*/{t_projection, t_bias});
-      tensor_guid_t t_linear = get_only(linear_added.outputs);
+      LayerAddedResult linear_added = add_layer(cg,
+                                                make_layer_attrs(linear_attrs),
+                                                /*inputs=*/
+                                                {
+                                                    {
+                                                        TensorSlotName::INPUT,
+                                                        t_input,
+                                                    },
+                                                },
+                                                /*weights=*/
+                                                {
+                                                    {
+                                                        TensorSlotName::WEIGHT,
+                                                        t_projection,
+                                                    },
+                                                    {
+                                                        TensorSlotName::BIAS,
+                                                        t_bias,
+                                                    },
+                                                });
+      tensor_guid_t t_linear =
+          require_only_key(linear_added.outputs, TensorSlotName::OUTPUT);
 
       add_layer(cg,
                 make_layer_attrs(make_relu_attrs()),
-                /*inputs=*/{t_linear},
+                /*inputs=*/
+                {
+                    {
+                        TensorSlotName::INPUT,
+                        t_linear,
+                    },
+                },
                 /*weights=*/{});
 
       return cg;
@@ -96,33 +121,58 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       ParallelLayerAddedResult input_added =
           pcg_add_input_layer(pcg, input_shape);
-      parallel_tensor_guid_t t_input = get_only(input_added.outputs);
+      parallel_tensor_guid_t t_input =
+          require_only_key(input_added.outputs, TensorSlotName::OUTPUT);
 
       ParallelLayerAddedResult projection_weight_added =
           add_parallel_layer(pcg,
                              make_layer_attrs(projection_weight_attrs),
                              /*inputs=*/{},
                              /*weights=*/{});
-      parallel_tensor_guid_t t_projection =
-          get_only(projection_weight_added.outputs);
+      parallel_tensor_guid_t t_projection = require_only_key(
+          projection_weight_added.outputs, TensorSlotName::OUTPUT);
 
       ParallelLayerAddedResult bias_weight_added =
           add_parallel_layer(pcg,
                              make_layer_attrs(bias_weight_attrs),
                              /*inputs=*/{},
                              /*weights=*/{});
-      parallel_tensor_guid_t t_bias = get_only(bias_weight_added.outputs);
+      parallel_tensor_guid_t t_bias =
+          require_only_key(bias_weight_added.outputs, TensorSlotName::OUTPUT);
 
       ParallelLayerAddedResult linear_added =
           add_parallel_layer(pcg,
                              make_layer_attrs(linear_attrs),
-                             /*inputs=*/{t_input},
-                             /*weights=*/{t_projection, t_bias});
-      parallel_tensor_guid_t t_linear = get_only(linear_added.outputs);
+                             /*inputs=*/
+                             {
+                                 {
+                                     TensorSlotName::INPUT,
+                                     t_input,
+                                 },
+                             },
+                             /*weights=*/
+                             {
+                                 {
+                                     TensorSlotName::WEIGHT,
+                                     t_projection,
+                                 },
+                                 {
+                                     TensorSlotName::BIAS,
+                                     t_bias,
+                                 },
+                             });
+      parallel_tensor_guid_t t_linear =
+          require_only_key(linear_added.outputs, TensorSlotName::OUTPUT);
 
       add_parallel_layer(pcg,
                          make_layer_attrs(make_relu_attrs()),
-                         /*inputs=*/{t_linear},
+                         /*inputs=*/
+                         {
+                             {
+                                 TensorSlotName::INPUT,
+                                 t_linear,
+                             },
+                         },
                          /*weights=*/{});
       return pcg;
     }();

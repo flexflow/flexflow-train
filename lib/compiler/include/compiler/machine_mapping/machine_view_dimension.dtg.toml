@@ -1,0 +1,25 @@
+namespace = "FlexFlow"
+name = "MachineViewDimension"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = [
+  "pcg/machine_specification_dimension.dtg.h",
+  "compiler/machine_mapping/stride_t.dtg.h",
+]
+
+
+[[fields]]
+name = "stride"
+type = "::FlexFlow::stride_t"
+
+[[fields]]
+name = "projection"
+type = "::FlexFlow::MachineSpecificationDimension"

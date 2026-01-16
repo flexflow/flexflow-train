@@ -1,5 +1,5 @@
-#ifndef _FLEXFLOW_COMPILER_UNITY_ALGORITHM_H
-#define _FLEXFLOW_COMPILER_UNITY_ALGORITHM_H
+#ifndef _FLEXFLOW_LIB_COMPILER_INCLUDE_COMPILER_UNITY_ALGORITHM_H
+#define _FLEXFLOW_LIB_COMPILER_INCLUDE_COMPILER_UNITY_ALGORITHM_H
 
 #include "compiler/cost_estimator/cost_estimator.h"
 #include "compiler/graph_optimize_result.dtg.h"

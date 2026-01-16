@@ -19,22 +19,27 @@
 
 namespace FlexFlow {
 
-float task_simulator_estimate_forward_pass_time(
+milliseconds_t task_simulator_estimate_forward_pass_time(
     ParallelComputationGraph const &pcg,
-    CostEstimator const &estimator,
+    RuntimeOnlyCostEstimator const &estimator,
     MachineMapping const &machine_mapping,
     MachineSpecification const &machine_spec) {
 
-  PCGTaskGraph task_graph =
-      get_pcg_task_graph(pcg, machine_mapping, machine_spec);
+  PCGTaskGraph task_graph = get_pcg_task_graph(
+      pcg, machine_mapping, machine_spec.compute_specification);
 
   auto cost_function = [&](Node const &node) -> float {
     PCGTask task = task_graph.node_to_task.at_l(node);
-    if (task.is_operator()) {
-      return estimator.estimate_cost(task.require_operator()).forward_runtime;
-    } else {
-      return estimator.estimate_cost(task.require_tensor_movement());
-    }
+
+    milliseconds_t running_time = [&] {
+      if (task.is_operator()) {
+        return estimator.estimate_cost(task.require_operator()).forward_runtime;
+      } else {
+        return estimator.estimate_cost(task.require_tensor_movement());
+      }
+    }();
+
+    return running_time.unwrap_milliseconds();
   };
 
   auto is_allowed_to_run =
@@ -43,8 +48,8 @@ float task_simulator_estimate_forward_pass_time(
           std::unordered_set<Node> const &finished_tasks) -> bool {
     PCGTask current_task = task_graph.node_to_task.at_l(task);
 
-    UnstructuredDeviceMapping device_map =
-        get_unstructured_device_mapping(machine_mapping, machine_spec, pcg);
+    UnstructuredDeviceMapping device_map = get_unstructured_device_mapping(
+        machine_mapping, machine_spec.compute_specification, pcg);
 
     if (current_task.is_tensor_movement()) {
       return true;
@@ -64,8 +69,8 @@ float task_simulator_estimate_forward_pass_time(
   TaskExecutionConstraint constraint =
       TaskExecutionConstraint{is_allowed_to_run};
 
-  return get_total_execution_time(simulate_task_graph_execution(
-      task_graph.graph, cost_function, constraint));
+  return milliseconds_t{get_total_execution_time(simulate_task_graph_execution(
+      task_graph.graph, cost_function, constraint))};
 }
 
 } // namespace FlexFlow

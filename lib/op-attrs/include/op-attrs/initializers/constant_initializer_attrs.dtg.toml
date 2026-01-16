@@ -1,0 +1,19 @@
+namespace = "FlexFlow"
+name = "ConstantInitializerAttrs"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = [
+  "op-attrs/datatype_value.dtg.h",
+]
+
+[[fields]]
+name = "value"
+type = "::FlexFlow::DataTypeValue"

@@ -1,0 +1,32 @@
+namespace = "FlexFlow"
+name = "DynamicNodeInvocation"
+type = "struct"
+features = [
+  "eq",
+  "fmt",
+  "hash",
+]
+
+includes = [
+  "<unordered_map>",
+  "task-spec/dynamic_graph/dynamic_node_attrs.dtg.h",
+  "task-spec/dynamic_graph/dynamic_tensor_slot.dtg.h",
+  "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h",
+]
+
+src_includes = [
+  "utils/hash/unordered_map.h",
+  "utils/fmt/unordered_map.h",
+]
+
+[[fields]]
+name = "inputs"
+type = "std::unordered_map<::FlexFlow::DynamicTensorSlot, ::FlexFlow::DynamicValueAttrs>"
+
+[[fields]]
+name = "node_attrs"
+type = "::FlexFlow::DynamicNodeAttrs"
+
+[[fields]]
+name = "outputs"
+type = "std::unordered_map<::FlexFlow::DynamicTensorSlot, ::FlexFlow::DynamicValueAttrs>"

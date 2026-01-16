@@ -1,6 +1,7 @@
 #include "substitutions/output_graph/materialize_operator_from_attrs_map.h"
 #include "utils/containers/contains_key.h"
 #include "utils/fmt/unordered_map.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
@@ -16,8 +17,7 @@ struct Accessor {
     if (contains_key(this->m, k)) {
       return this->m.at(k).get<T>();
     } else {
-      throw mk_runtime_error(
-          fmt::format("Could not find key {} in attrs map: {}", k, this->m));
+      PANIC("Could not find key in attrs map", k, this->m);
     }
   }
 };
@@ -33,12 +33,11 @@ PCGOperatorAttrs materialize_operator_from_attrs_map(
   switch (op_type) {
     case OperatorType::MULTIHEAD_ATTENTION:
       return PCGOperatorAttrs{MultiHeadAttentionAttrs{
-          /*embed_dim=*/acc.get<nonnegative_int>(
-              OperatorAttributeKey::EMBED_DIM),
+          /*embed_dim=*/acc.get<positive_int>(OperatorAttributeKey::EMBED_DIM),
           /*num_heads=*/
-          acc.get<nonnegative_int>(OperatorAttributeKey::NUM_HEADS),
-          /*kdim=*/acc.get<nonnegative_int>(OperatorAttributeKey::KDIM),
-          /*vdim=*/acc.get<nonnegative_int>(OperatorAttributeKey::VDIM),
+          acc.get<positive_int>(OperatorAttributeKey::NUM_HEADS),
+          /*kdim=*/acc.get<positive_int>(OperatorAttributeKey::KDIM),
+          /*vdim=*/acc.get<positive_int>(OperatorAttributeKey::VDIM),
           /*dropout=*/acc.get<float>(OperatorAttributeKey::DROPOUT),
           /*bias=*/acc.get<bool>(OperatorAttributeKey::BIAS),
           /*add_bias_kv=*/acc.get<bool>(OperatorAttributeKey::ADD_BIAS_KV),
@@ -46,10 +45,10 @@ PCGOperatorAttrs materialize_operator_from_attrs_map(
       }};
     case OperatorType::POOL2D:
       return PCGOperatorAttrs{Pool2DAttrs{
-          /*kernel_h=*/acc.get<nonnegative_int>(OperatorAttributeKey::KERNEL_H),
-          /*kernel_w=*/acc.get<nonnegative_int>(OperatorAttributeKey::KERNEL_W),
-          /*stride_h=*/acc.get<nonnegative_int>(OperatorAttributeKey::STRIDE_H),
-          /*stride_w=*/acc.get<nonnegative_int>(OperatorAttributeKey::STRIDE_W),
+          /*kernel_h=*/acc.get<positive_int>(OperatorAttributeKey::KERNEL_H),
+          /*kernel_w=*/acc.get<positive_int>(OperatorAttributeKey::KERNEL_W),
+          /*stride_h=*/acc.get<positive_int>(OperatorAttributeKey::STRIDE_H),
+          /*stride_w=*/acc.get<positive_int>(OperatorAttributeKey::STRIDE_W),
           /*padding_h=*/
           acc.get<nonnegative_int>(OperatorAttributeKey::PADDING_H),
           /*padding_w=*/
@@ -62,11 +61,10 @@ PCGOperatorAttrs materialize_operator_from_attrs_map(
     case OperatorType::NOOP:
     case OperatorType::INPUT:
     case OperatorType::WEIGHT:
-    case OperatorType::CONV2D:
     case OperatorType::DROPOUT:
     case OperatorType::LINEAR:
       return PCGOperatorAttrs{LinearAttrs{
-          /*out_channels=*/acc.get<nonnegative_int>(
+          /*out_channels=*/acc.get<positive_int>(
               OperatorAttributeKey::OUT_CHANNELS),
           /*use_bias=*/acc.get<bool>(OperatorAttributeKey::USE_BIAS),
           /*data_type=*/acc.get<DataType>(OperatorAttributeKey::DATA_TYPE),
@@ -76,19 +74,72 @@ PCGOperatorAttrs materialize_operator_from_attrs_map(
           acc.get<std::optional<RegularizerAttrs>>(
               OperatorAttributeKey::REGULARIZER),
       }};
+    case OperatorType::CONV2D:
+      return PCGOperatorAttrs{Conv2DAttrs{
+          /*out_channels=*/acc.get<positive_int>(
+              OperatorAttributeKey::OUT_CHANNELS),
+          /*kernel_h=*/acc.get<positive_int>(OperatorAttributeKey::KERNEL_H),
+          /*kernel_w=*/acc.get<positive_int>(OperatorAttributeKey::KERNEL_W),
+          /*stride_h=*/acc.get<positive_int>(OperatorAttributeKey::STRIDE_H),
+          /*stride_w=*/acc.get<positive_int>(OperatorAttributeKey::STRIDE_W),
+          /*padding_h=*/
+          acc.get<nonnegative_int>(OperatorAttributeKey::PADDING_H),
+          /*padding_w=*/
+          acc.get<nonnegative_int>(OperatorAttributeKey::PADDING_W),
+          /*groups=*/acc.get<positive_int>(OperatorAttributeKey::GROUPS),
+          /*activation=*/
+          acc.get<std::optional<Activation>>(OperatorAttributeKey::ACTIVATION),
+          /*use_bias=*/acc.get<bool>(OperatorAttributeKey::USE_BIAS),
+      }};
+    case OperatorType::RELU:
+      return PCGOperatorAttrs{ElementUnaryAttrs{
+          acc.get<OperatorType>(OperatorAttributeKey::OP_TYPE),
+          acc.get<std::optional<float>>(OperatorAttributeKey::SCALAR),
+      }};
+    case OperatorType::SOFTMAX:
+      return PCGOperatorAttrs{SoftmaxAttrs{
+          acc.get<ff_dim_t>(OperatorAttributeKey::AXIS),
+      }};
+    case OperatorType::EW_ADD:
+      return PCGOperatorAttrs{ElementBinaryAttrs{
+          acc.get<OperatorType>(OperatorAttributeKey::OP_TYPE),
+          acc.get<DataType>(OperatorAttributeKey::DATA_TYPE),
+          acc.get<bool>(OperatorAttributeKey::SHOULD_BROADCAST_LHS),
+          acc.get<bool>(OperatorAttributeKey::SHOULD_BROADCAST_LHS),
+      }};
+    case OperatorType::REPLICATE:
+      return PCGOperatorAttrs{ReplicateAttrs{
+          /*replicate_degree=*/acc.get<positive_int>(
+              OperatorAttributeKey::PARALLEL_DEGREE),
+      }};
+    case OperatorType::REPARTITION:
+      return PCGOperatorAttrs{RepartitionAttrs{
+          /*repartition_dim=*/acc.get<ff_dim_t>(
+              OperatorAttributeKey::PARALLEL_DIM),
+          /*repartition_Degree=*/
+          acc.get<positive_int>(OperatorAttributeKey::PARALLEL_DEGREE),
+      }};
+    case OperatorType::COMBINE:
+      return PCGOperatorAttrs{CombineAttrs{
+          /*combine_dim=*/acc.get<ff_dim_t>(OperatorAttributeKey::PARALLEL_DIM),
+          /*combine_degree=*/
+          acc.get<positive_int>(OperatorAttributeKey::PARALLEL_DEGREE),
+      }};
+    case OperatorType::REDUCTION:
+      return PCGOperatorAttrs{ReductionAttrs{
+          acc.get<positive_int>(OperatorAttributeKey::PARALLEL_DEGREE),
+      }};
     case OperatorType::BATCHMATMUL:
     case OperatorType::SCALAR_MULTIPLY:
     case OperatorType::SCALAR_ADD:
     case OperatorType::SCALAR_FLOOR_DIV:
     case OperatorType::SCALAR_TRUE_DIV:
     case OperatorType::SCALAR_SUB:
-    case OperatorType::RELU:
     case OperatorType::IDENTITY:
     case OperatorType::SIGMOID:
     case OperatorType::TANH:
     case OperatorType::ELU:
     case OperatorType::FLAT:
-    case OperatorType::SOFTMAX:
     case OperatorType::BATCHNORM:
     case OperatorType::CONCAT:
     case OperatorType::SPLIT:
@@ -97,7 +148,6 @@ PCGOperatorAttrs materialize_operator_from_attrs_map(
     case OperatorType::RESHAPE:
     case OperatorType::REVERSE:
     case OperatorType::TRANSPOSE:
-    case OperatorType::EW_ADD:
     case OperatorType::EW_MUL:
     case OperatorType::MATMUL:
     case OperatorType::MUL:
@@ -144,16 +194,11 @@ PCGOperatorAttrs materialize_operator_from_attrs_map(
     case OperatorType::LAYERNORM:
     case OperatorType::GATHER:
     case OperatorType::BROADCAST:
-    case OperatorType::REPARTITION:
-    case OperatorType::COMBINE:
-    case OperatorType::REPLICATE:
-    case OperatorType::REDUCTION:
     case OperatorType::BATCH:
     case OperatorType::PIPELINE:
     case OperatorType::FUSED_PARALLEL:
     default:
-      throw mk_runtime_error(
-          fmt::format("Unsupported operator type {}", op_type));
+      PANIC("Unsupported operator type", op_type);
   }
 }
 

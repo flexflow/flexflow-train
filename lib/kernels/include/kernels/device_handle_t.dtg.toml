@@ -1,0 +1,17 @@
+namespace = "FlexFlow"
+name = "device_handle_t"
+type = "variant"
+features = []
+
+includes = [
+  "<utility>",
+  "kernels/ff_handle.h",
+]
+
+[[values]]
+type = "::FlexFlow::PerDeviceFFHandle"
+key = "for_gpu"
+
+[[values]]
+type = "std::monostate"
+key = "for_cpu"

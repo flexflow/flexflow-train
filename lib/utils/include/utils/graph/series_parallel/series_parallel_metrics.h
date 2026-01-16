@@ -12,7 +12,8 @@ namespace FlexFlow {
  * @brief Maps each node to the number of times it appears in the decomposition.
  *
  */
-std::unordered_map<Node, nonnegative_int> get_node_counter_map(Node const &node);
+std::unordered_map<Node, nonnegative_int>
+    get_node_counter_map(Node const &node);
 std::unordered_map<Node, nonnegative_int>
     get_node_counter_map(SeriesSplit const &serial);
 std::unordered_map<Node, nonnegative_int>

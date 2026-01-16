@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#include "device.h"
-#include "kernels/cast_kernels.h"
+#include "internal/device.h"
+#include "kernels/cast_kernels_gpu.h"
 #include "kernels/datatype_dispatch.h"
 
 namespace FlexFlow {
@@ -41,7 +41,7 @@ struct ForwardKernel {
   void operator()(ffStream_t stream,
                   GenericTensorAccessorR const &input,
                   GenericTensorAccessorW const &output) {
-    size_t volume = input.shape.get_volume().unwrap_nonnegative();
+    size_t volume = get_num_elements(input.shape.dims).int_from_positive_int();
     cast_forward<<<GET_BLOCKS(volume), CUDA_NUM_THREADS, 0, stream>>>(
         input.get<IDT>(), output.get<ODT>(), volume);
   }
@@ -50,30 +50,26 @@ struct ForwardKernel {
 template <DataType IDT, DataType ODT>
 struct BackwardKernel {
   void operator()(ffStream_t stream,
-                  GenericTensorAccessorR const &input,
-                  GenericTensorAccessorW const &output) {
-    size_t volume = input.shape.get_volume().unwrap_nonnegative();
+                  GenericTensorAccessorR const &output,
+                  GenericTensorAccessorW const &input) {
+    size_t volume = get_num_elements(output.shape.dims).int_from_positive_int();
     cast_backward<<<GET_BLOCKS(volume), CUDA_NUM_THREADS, 0, stream>>>(
-        input.get<IDT>(), output.get<ODT>(), volume, cast_to<ODT>(1.0f));
+        output.get<IDT>(), input.get<ODT>(), volume, cast_to<ODT>(1.0f));
   }
 };
 
-void forward_kernel(ffStream_t stream,
-                    GenericTensorAccessorR const &input,
-                    GenericTensorAccessorW const &output,
-                    DataType input_type,
-                    DataType output_type) {
+void gpu_forward_kernel(ffStream_t stream,
+                        GenericTensorAccessorR const &input,
+                        GenericTensorAccessorW const &output) {
   DataTypeDispatch2<ForwardKernel>{}(
-      input_type, output_type, stream, input, output);
+      input.shape.data_type, output.shape.data_type, stream, input, output);
 }
 
-void backward_kernel(ffStream_t stream,
-                     GenericTensorAccessorR const &input,
-                     GenericTensorAccessorW const &output,
-                     DataType input_type,
-                     DataType output_type) {
+void gpu_backward_kernel(ffStream_t stream,
+                         GenericTensorAccessorR const &output,
+                         GenericTensorAccessorW const &input) {
   DataTypeDispatch2<BackwardKernel>{}(
-      input_type, output_type, stream, input, output);
+      output.shape.data_type, input.shape.data_type, stream, output, input);
 }
 
 } // namespace Cast

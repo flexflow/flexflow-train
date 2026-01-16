@@ -1,5 +1,7 @@
 #include "utils/graph/series_parallel/digraph_generation.h"
-#include "utils/graph/digraph/algorithms.h"
+#include "utils/graph/digraph/algorithms/get_edges.h"
+#include "utils/graph/digraph/algorithms/get_initial_nodes.h"
+#include "utils/graph/digraph/algorithms/get_terminal_nodes.h"
 #include "utils/graph/instances/adjacency_digraph.h"
 #include "utils/graph/node/algorithms.h"
 #include <doctest/doctest.h>

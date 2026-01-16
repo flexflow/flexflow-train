@@ -1,0 +1,15 @@
+namespace = "FlexFlow"
+name = "DynamicOpenDataflowGraph"
+type = "struct"
+features = [ 
+  "eq",
+]
+
+includes = [
+  "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h",
+  "<unordered_set>",
+]
+
+[[fields]]
+name = "invocations"
+type = "std::unordered_set<::FlexFlow::DynamicNodeInvocation>"

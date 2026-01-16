@@ -1,4 +1,5 @@
 #include "op-attrs/ops/attention/multihead_attention_inputs.h"
+#include "op-attrs/tensor_dims.h"
 #include "op-attrs/tensor_shape.h"
 
 namespace FlexFlow {
@@ -12,28 +13,28 @@ tl::expected<MultiHeadAttentionInputs, std::string>
     parse_attention_input_shape(TensorShape const &input_q,
                                 TensorShape const &input_k,
                                 TensorShape const &input_v) {
-  if (num_dims(input_q) != 3) {
+  if (get_num_dims(input_q.dims) != 3) {
     return tl::unexpected(
         fmt::format("Query input has incorrect number of dims: {} != {}",
-                    num_dims(input_q),
+                    get_num_dims(input_q.dims),
                     3));
   }
-  if (num_dims(input_k) != 3) {
+  if (get_num_dims(input_k.dims) != 3) {
     return tl::unexpected(
         fmt::format("Key input has incorrect number of dims: {} != {}",
-                    num_dims(input_k),
+                    get_num_dims(input_k.dims),
                     3));
   }
-  if (num_dims(input_v) != 3) {
+  if (get_num_dims(input_v.dims) != 3) {
     return tl::unexpected(
         fmt::format("Value input has incorrect number of dims: {} != {}",
-                    num_dims(input_v),
+                    get_num_dims(input_v.dims),
                     3));
   }
 
-  nonnegative_int seq_len_q = dim_at_idx(input_q, relative_ff_dim_t{-2});
-  nonnegative_int seq_len_k = dim_at_idx(input_k, relative_ff_dim_t{-2});
-  nonnegative_int seq_len_v = dim_at_idx(input_v, relative_ff_dim_t{-2});
+  positive_int seq_len_q = dim_at_idx(input_q.dims, relative_ff_dim_t{-2});
+  positive_int seq_len_k = dim_at_idx(input_k.dims, relative_ff_dim_t{-2});
+  positive_int seq_len_v = dim_at_idx(input_v.dims, relative_ff_dim_t{-2});
 
   if (!all_same(seq_len_q, seq_len_k, seq_len_v)) {
     return tl::unexpected(fmt::format(
@@ -43,9 +44,9 @@ tl::expected<MultiHeadAttentionInputs, std::string>
         seq_len_v));
   }
 
-  nonnegative_int batch_size_q = dim_at_idx(input_q, relative_ff_dim_t{-3});
-  nonnegative_int batch_size_k = dim_at_idx(input_k, relative_ff_dim_t{-3});
-  nonnegative_int batch_size_v = dim_at_idx(input_v, relative_ff_dim_t{-3});
+  positive_int batch_size_q = dim_at_idx(input_q.dims, relative_ff_dim_t{-3});
+  positive_int batch_size_k = dim_at_idx(input_k.dims, relative_ff_dim_t{-3});
+  positive_int batch_size_v = dim_at_idx(input_v.dims, relative_ff_dim_t{-3});
 
   if (!all_same(batch_size_q, batch_size_k, batch_size_v)) {
     return tl::unexpected(fmt::format(
@@ -63,9 +64,9 @@ tl::expected<MultiHeadAttentionInputs, std::string>
         input_v.data_type));
   }
 
-  nonnegative_int q_size = dim_at_idx(input_q, relative_ff_dim_t{-1});
-  nonnegative_int k_size = dim_at_idx(input_k, relative_ff_dim_t{-1});
-  nonnegative_int v_size = dim_at_idx(input_v, relative_ff_dim_t{-1});
+  positive_int q_size = dim_at_idx(input_q.dims, relative_ff_dim_t{-1});
+  positive_int k_size = dim_at_idx(input_k.dims, relative_ff_dim_t{-1});
+  positive_int v_size = dim_at_idx(input_v.dims, relative_ff_dim_t{-1});
 
   return MultiHeadAttentionInputs{
       batch_size_q,

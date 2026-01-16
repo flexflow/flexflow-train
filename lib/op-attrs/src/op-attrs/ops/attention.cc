@@ -2,10 +2,13 @@
 #include "op-attrs/ops/attention/multihead_attention_inputs.h"
 #include "op-attrs/ops/attention/multihead_attention_parallel_inputs.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "op-attrs/tensor_dims.h"
 #include "op-attrs/tensor_shape.h"
 #include "utils/containers/extend.h"
+#include "utils/exception.h"
 #include "utils/expected.h"
 #include "utils/integer_conversions.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
@@ -17,107 +20,103 @@ namespace FlexFlow {
 /*   return is_valid; */
 /* } */
 
-nonnegative_int get_qProjSize(MultiHeadAttentionAttrs const &attrs) {
+positive_int get_qProjSize(MultiHeadAttentionAttrs const &attrs) {
   return attrs.kdim;
 }
 
-nonnegative_int get_vProjSize(MultiHeadAttentionAttrs const &attrs) {
+positive_int get_vProjSize(MultiHeadAttentionAttrs const &attrs) {
   return attrs.vdim;
 }
 
-nonnegative_int get_kProjSize(MultiHeadAttentionAttrs const &attrs) {
+positive_int get_kProjSize(MultiHeadAttentionAttrs const &attrs) {
   return attrs.kdim;
 }
 
-nonnegative_int get_oProjSize(MultiHeadAttentionAttrs const &attrs) {
+positive_int get_oProjSize(MultiHeadAttentionAttrs const &attrs) {
   return attrs.embed_dim;
 }
 
-nonnegative_int get_qSize(TensorShape const &query_shape) {
-  return dim_at_idx(query_shape, relative_ff_dim_t{0});
+positive_int get_qSize(TensorShape const &query_shape) {
+  return dim_at_idx(query_shape.dims, relative_ff_dim_t{0});
 }
 
-nonnegative_int get_kSize(TensorShape const &key_shape) {
-  return dim_at_idx(key_shape, relative_ff_dim_t{0});
+positive_int get_kSize(TensorShape const &key_shape) {
+  return dim_at_idx(key_shape.dims, relative_ff_dim_t{0});
 }
 
-nonnegative_int get_vSize(TensorShape const &value_shape) {
-  return dim_at_idx(value_shape, relative_ff_dim_t{0});
+positive_int get_vSize(TensorShape const &value_shape) {
+  return dim_at_idx(value_shape.dims, relative_ff_dim_t{0});
 }
 
-nonnegative_int get_qSize(MultiHeadAttentionParallelInputs const &inputs) {
+positive_int get_qSize(MultiHeadAttentionParallelInputs const &inputs) {
   return inputs.query_dim.size;
 }
 
-nonnegative_int get_qSize(MultiHeadAttentionInputs const &inputs) {
+positive_int get_qSize(MultiHeadAttentionInputs const &inputs) {
   return inputs.query_size;
 }
 
-nonnegative_int get_kSize(MultiHeadAttentionParallelInputs const &inputs) {
+positive_int get_kSize(MultiHeadAttentionParallelInputs const &inputs) {
   return inputs.key_dim.size;
 }
 
-nonnegative_int get_kSize(MultiHeadAttentionInputs const &inputs) {
+positive_int get_kSize(MultiHeadAttentionInputs const &inputs) {
   return inputs.key_size;
 }
 
-nonnegative_int get_vSize(MultiHeadAttentionParallelInputs const &inputs) {
+positive_int get_vSize(MultiHeadAttentionParallelInputs const &inputs) {
   return inputs.value_dim.size;
 }
 
-nonnegative_int get_vSize(MultiHeadAttentionInputs const &inputs) {
+positive_int get_vSize(MultiHeadAttentionInputs const &inputs) {
   return inputs.value_size;
 }
 
-nonnegative_int
-    get_kvSeqLength(MultiHeadAttentionParallelInputs const &inputs) {
+positive_int get_kvSeqLength(MultiHeadAttentionParallelInputs const &inputs) {
   return inputs.sequence_dim.size;
 }
 
-nonnegative_int get_kvSeqLength(MultiHeadAttentionInputs const &inputs) {
+positive_int get_kvSeqLength(MultiHeadAttentionInputs const &inputs) {
   return inputs.sequence_length;
 }
 
-nonnegative_int
-    get_qoSeqLength(MultiHeadAttentionParallelInputs const &inputs) {
+positive_int get_qoSeqLength(MultiHeadAttentionParallelInputs const &inputs) {
   return inputs.sequence_dim.size; // FIXME -- assumes only prefill
 }
 
-nonnegative_int get_qoSeqLength(MultiHeadAttentionInputs const &inputs) {
+positive_int get_qoSeqLength(MultiHeadAttentionInputs const &inputs) {
   return inputs.sequence_length; // FIXME -- assumes only prefil
 }
 
-nonnegative_int
-    get_num_samples(MultiHeadAttentionParallelInputs const &inputs) {
+positive_int get_num_samples(MultiHeadAttentionParallelInputs const &inputs) {
   return inputs.batch_dim.size;
 }
 
-nonnegative_int get_num_samples(MultiHeadAttentionInputs const &inputs) {
+positive_int get_num_samples(MultiHeadAttentionInputs const &inputs) {
   return inputs.batch_size;
 }
 
 static void check_attrs(MultiHeadAttentionAttrs const &attrs) {
-  if (attrs.add_bias_kv) {
-    throw mk_runtime_error("add_bias_kv is not yet supported. If you need this "
-                           "functionality, please create an issue.");
-  }
+  ASSERT(!attrs.add_bias_kv,
+         "add_bias_kv is not yet supported. If you need this "
+         "functionality, please create an issue.");
 }
 
-std::vector<IncomingTensorRole>
+std::unordered_map<TensorSlotName, IncomingTensorRole>
     get_attention_incoming_tensor_roles(MultiHeadAttentionAttrs const &attrs) {
 
   check_attrs(attrs);
 
-  std::vector<IncomingTensorRole> roles = std::vector{
-      IncomingTensorRole::INPUT,
-      IncomingTensorRole::INPUT,
-      IncomingTensorRole::INPUT,
-      IncomingTensorRole::WEIGHT,
+  std::unordered_map<TensorSlotName, IncomingTensorRole> roles = {
+      {TensorSlotName::QUERY, IncomingTensorRole::INPUT},
+      {TensorSlotName::KEY, IncomingTensorRole::INPUT},
+      {TensorSlotName::VALUE, IncomingTensorRole::INPUT},
+      {TensorSlotName::WEIGHT, IncomingTensorRole::WEIGHT},
   };
 
   if (attrs.bias) {
-    extend(roles,
-           std::vector{IncomingTensorRole::WEIGHT, IncomingTensorRole::WEIGHT});
+    roles[TensorSlotName::INPUT_BIAS] = IncomingTensorRole::WEIGHT;
+    roles[TensorSlotName::OUTPUT_BIAS] = IncomingTensorRole::WEIGHT;
   }
 
   return roles;
@@ -139,7 +138,7 @@ tl::expected<TensorShape, std::string>
   MultiHeadAttentionInputs parsed = parse_result.value();
 
   return TensorShape{
-      TensorDims{FFOrdered<nonnegative_int>{
+      TensorDims{FFOrdered<positive_int>{
           parsed.batch_size,
           parsed.sequence_length,
           attrs.embed_dim,
@@ -164,20 +163,20 @@ tl::expected<TensorShape, std::string>
   MultiHeadAttentionInputs parsed = parse_result.value();
 
   // W^Q_i in "Attention Is All You Need" top of page 5
-  nonnegative_int qProjectWeightSize = parsed.query_size * attrs.kdim;
+  positive_int qProjectWeightSize = parsed.query_size * attrs.kdim;
 
   // W^K_i in "Attention Is All You Need" top of page 5 (all i's put together)
-  nonnegative_int kProjectWeightSize = parsed.key_size * attrs.kdim;
+  positive_int kProjectWeightSize = parsed.key_size * attrs.kdim;
 
   // W^V_i in "Attention Is All You Need" top of page 5 (all i's put together)
-  nonnegative_int vProjectWeightSize = parsed.value_size * attrs.vdim;
+  positive_int vProjectWeightSize = parsed.value_size * attrs.vdim;
 
   // W^O in "Attention Is All You Need" top of page 5, with num_heads factored
   // out
-  nonnegative_int outWeightSize = attrs.vdim * attrs.embed_dim;
+  positive_int outWeightSize = attrs.vdim * attrs.embed_dim;
 
   return TensorShape{
-      TensorDims{FFOrdered<nonnegative_int>{
+      TensorDims{FFOrdered<positive_int>{
           (qProjectWeightSize + kProjectWeightSize + vProjectWeightSize +
            outWeightSize),
           attrs.num_heads,
@@ -203,7 +202,7 @@ tl::expected<TensorShape, std::string>
   });
 
   return TensorShape{
-      TensorDims{FFOrdered<nonnegative_int>{
+      TensorDims{FFOrdered<positive_int>{
           attrs.kdim + attrs.kdim + attrs.vdim,
       }},
       parsed.datatype,
@@ -227,28 +226,36 @@ tl::expected<TensorShape, std::string>
   });
 
   return TensorShape{
-      TensorDims{FFOrdered<nonnegative_int>{
+      TensorDims{FFOrdered<positive_int>{
           attrs.embed_dim,
       }},
       parsed.datatype,
   };
 }
 
-tl::expected<std::vector<TensorShape>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, TensorShape>, std::string>
     get_weight_shapes(MultiHeadAttentionAttrs const &attrs,
                       TensorShape const &input_q,
                       TensorShape const &input_k,
                       TensorShape const &input_v) {
 
-  std::vector<TensorShape> weight_shapes = {
-      PROPAGATE_ERR(get_weights_shape(attrs, input_q, input_k, input_v)),
+  std::unordered_map<TensorSlotName, TensorShape> weight_shapes = {
+      {
+          TensorSlotName::WEIGHT,
+          PROPAGATE_ERR(get_weights_shape(attrs, input_q, input_k, input_v)),
+      },
   };
 
   if (attrs.bias) {
-    weight_shapes.push_back(
-        PROPAGATE_ERR(get_input_bias_shape(attrs, input_q, input_k, input_v)));
-    weight_shapes.push_back(
-        PROPAGATE_ERR(get_output_bias_shape(attrs, input_q, input_k, input_v)));
+    weight_shapes.insert({
+        TensorSlotName::INPUT_BIAS,
+        PROPAGATE_ERR(get_input_bias_shape(attrs, input_q, input_k, input_v)),
+    });
+
+    weight_shapes.insert({
+        TensorSlotName::OUTPUT_BIAS,
+        PROPAGATE_ERR(get_output_bias_shape(attrs, input_q, input_k, input_v)),
+    });
   }
 
   return weight_shapes;
@@ -278,14 +285,14 @@ tl::expected<ParallelTensorShape, std::string>
   }
   TensorShape unpar_shape = result_unpar_get_shape.value();
 
-  nonnegative_int joined_dim_degree = 1_n;
-  nonnegative_int head_dim_degree = parsed.discard_copy_degree.value;
+  positive_int joined_dim_degree = 1_p;
+  positive_int head_dim_degree = parsed.discard_copy_degree.value;
 
   return lift_to_parallel_with_degrees(
       unpar_shape,
-      SumDegree{1_n},
+      SumDegree{1_p},
       DiscardCopyDegree{parsed.batch_dim.degree},
-      FFOrdered<nonnegative_int>{joined_dim_degree, head_dim_degree});
+      FFOrdered<positive_int>{joined_dim_degree, head_dim_degree});
 }
 
 tl::expected<ParallelTensorShape, std::string>
@@ -318,10 +325,10 @@ tl::expected<ParallelTensorShape, std::string>
     result_unpar.value();
   });
 
-  SumDegree sum_degree = SumDegree{1_n};
+  SumDegree sum_degree = SumDegree{1_p};
   DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{
       parsed.batch_dim.degree * parsed.discard_copy_degree.value};
-  FFOrdered<nonnegative_int> shard_degrees = FFOrdered<nonnegative_int>{1_n};
+  FFOrdered<positive_int> shard_degrees = FFOrdered<positive_int>{1_p};
   return lift_to_parallel_with_degrees(
       unpar_shape, sum_degree, discard_copy_degree, shard_degrees);
 }
@@ -356,10 +363,10 @@ tl::expected<ParallelTensorShape, std::string>
     result_unpar.value();
   });
 
-  SumDegree sum_degree = SumDegree{1_n};
+  SumDegree sum_degree = SumDegree{1_p};
   DiscardCopyDegree discard_copy_degree = DiscardCopyDegree{
       parsed.batch_dim.degree * parsed.discard_copy_degree.value};
-  FFOrdered<nonnegative_int> shard_degrees = FFOrdered<nonnegative_int>{1_n};
+  FFOrdered<positive_int> shard_degrees = FFOrdered<positive_int>{1_p};
   return lift_to_parallel_with_degrees(
       unpar_shape, sum_degree, discard_copy_degree, shard_degrees);
 }
@@ -388,55 +395,65 @@ tl::expected<ParallelTensorShape, std::string>
   }
   TensorShape unpar_shape = result_unpar_get_shape.value();
 
-  nonnegative_int sum_degree = parsed.discard_copy_degree.value;
-  nonnegative_int discard_copy_degree = 1_n;
-  nonnegative_int batch_degree = parsed.batch_dim.degree;
-  nonnegative_int seq_len_degree = 1_n;
-  nonnegative_int out_dim_degree = 1_n;
+  positive_int sum_degree = parsed.discard_copy_degree.value;
+  positive_int discard_copy_degree = 1_p;
+  positive_int batch_degree = parsed.batch_dim.degree;
+  positive_int seq_len_degree = 1_p;
+  positive_int out_dim_degree = 1_p;
 
   return lift_to_parallel_with_degrees(
       unpar_shape,
       SumDegree{sum_degree},
       DiscardCopyDegree{discard_copy_degree},
-      FFOrdered<nonnegative_int>{batch_degree, seq_len_degree, out_dim_degree});
+      FFOrdered{batch_degree, seq_len_degree, out_dim_degree});
 }
 
-nonnegative_int get_oSize(ParallelTensorShape const &) {
+positive_int get_oSize(ParallelTensorShape const &) {
   NOT_IMPLEMENTED();
 }
 
-nonnegative_int get_oSize(TensorShape const &) {
+positive_int get_oSize(TensorShape const &) {
   NOT_IMPLEMENTED();
 }
 
-tl::expected<std::vector<ParallelTensorShape>, std::string>
+tl::expected<std::unordered_map<TensorSlotName, ParallelTensorShape>,
+             std::string>
     get_weight_shapes(MultiHeadAttentionAttrs const &attrs,
                       ParallelTensorShape const &input_q,
                       ParallelTensorShape const &input_k,
                       ParallelTensorShape const &input_v) {
 
-  std::vector<ParallelTensorShape> weight_shapes = {
-      PROPAGATE_ERR(get_weights_shape(attrs, input_q, input_k, input_v)),
+  std::unordered_map<TensorSlotName, ParallelTensorShape> weight_shapes = {
+      {
+          TensorSlotName::WEIGHT,
+          PROPAGATE_ERR(get_weights_shape(attrs, input_q, input_k, input_v)),
+      },
   };
 
   if (attrs.bias) {
-    weight_shapes.push_back(
-        PROPAGATE_ERR(get_input_bias_shape(attrs, input_q, input_k, input_v)));
-    weight_shapes.push_back(
-        PROPAGATE_ERR(get_output_bias_shape(attrs, input_q, input_k, input_v)));
+    weight_shapes.insert({
+        TensorSlotName::INPUT_BIAS,
+        PROPAGATE_ERR(get_input_bias_shape(attrs, input_q, input_k, input_v)),
+    });
+
+    weight_shapes.insert({
+        TensorSlotName::OUTPUT_BIAS,
+        PROPAGATE_ERR(get_output_bias_shape(attrs, input_q, input_k, input_v)),
+    });
   }
 
   return weight_shapes;
 }
 
-tl::expected<std::vector<InitializerAttrs>, std::string> get_initializers(
-    MultiHeadAttentionAttrs const &attrs,
-    TensorShape const &input_q,
-    TensorShape const &input_k,
-    TensorShape const &input_v,
-    std::optional<InitializerAttrs> const &maybe_weights_initializer,
-    std::optional<InitializerAttrs> const &maybe_input_bias_initializer,
-    std::optional<InitializerAttrs> const &maybe_output_bias_initializer) {
+tl::expected<std::unordered_map<TensorSlotName, InitializerAttrs>, std::string>
+    get_initializers(
+        MultiHeadAttentionAttrs const &attrs,
+        TensorShape const &input_q,
+        TensorShape const &input_k,
+        TensorShape const &input_v,
+        std::optional<InitializerAttrs> const &maybe_weights_initializer,
+        std::optional<InitializerAttrs> const &maybe_input_bias_initializer,
+        std::optional<InitializerAttrs> const &maybe_output_bias_initializer) {
   check_attrs(attrs);
 
   if (!attrs.bias && maybe_input_bias_initializer.has_value()) {
@@ -475,14 +492,14 @@ tl::expected<std::vector<InitializerAttrs>, std::string> get_initializers(
       maybe_output_bias_initializer.value_or(default_output_bias_initializer);
 
   if (attrs.bias) {
-    return std::vector{
-        weights_initializer,
-        input_bias_initializer,
-        output_bias_initializer,
+    return std::unordered_map<TensorSlotName, InitializerAttrs>{
+        {TensorSlotName::WEIGHT, weights_initializer},
+        {TensorSlotName::INPUT_BIAS, input_bias_initializer},
+        {TensorSlotName::OUTPUT_BIAS, output_bias_initializer},
     };
   } else {
-    return std::vector{
-        weights_initializer,
+    return std::unordered_map<TensorSlotName, InitializerAttrs>{
+        {TensorSlotName::WEIGHT, weights_initializer},
     };
   }
 }

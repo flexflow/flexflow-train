@@ -1,5 +1,4 @@
 #include "utils/graph/algorithms.h"
-#include "utils/graph/digraph/algorithms.h"
 #include "utils/graph/digraph/algorithms/get_descendants.h"
 #include "utils/graph/digraph/algorithms/get_predecessors.h"
 #include "utils/graph/digraph/algorithms/get_successors.h"

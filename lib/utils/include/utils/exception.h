@@ -3,6 +3,7 @@
 
 #include "utils/fmt.h"
 #include <fmt/format.h>
+#include <libassert/assert.hpp>
 #include <stdexcept>
 #include <tl/expected.hpp>
 
@@ -14,8 +15,7 @@ namespace FlexFlow {
                 "Function " __FUNC__ " not yet implemented " __FILE__          \
                 ":" __LINE__);
 #else
-#define NOT_IMPLEMENTED()                                                      \
-  throw not_implemented(__PRETTY_FUNCTION__, __FILE__, __LINE__);
+#define NOT_IMPLEMENTED() PANIC("Not implemented");
 #endif
 
 class not_implemented : public std::logic_error {
@@ -30,7 +30,8 @@ T throw_if_unexpected(tl::expected<T, E> const &r) {
   if (r.has_value()) {
     return r.value();
   } else {
-    throw std::runtime_error(fmt::to_string(r.error()));
+    PANIC(fmt::to_string(r.error()));
+    ;
   }
 }
 

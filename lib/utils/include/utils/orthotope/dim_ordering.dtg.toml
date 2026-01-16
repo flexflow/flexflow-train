@@ -1,0 +1,16 @@
+namespace = "FlexFlow"
+name = "DimOrdering"
+type = "struct"
+features = []
+
+template_params = [
+  "T",
+]
+
+includes = [
+  "<functional>",
+]
+
+[[fields]]
+name = "lt"
+type = "std::function<bool(T const &, T const &)>"

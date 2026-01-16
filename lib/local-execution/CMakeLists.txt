@@ -11,8 +11,10 @@ ff_add_library(
     op-attrs
     utils
     kernels
+    task-spec
     pcg
     spdlog
+    compiler
 )
 
 add_subdirectory(test)

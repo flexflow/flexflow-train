@@ -1,11 +1,9 @@
 #include "utils/graph/digraph/algorithms/transitive_reduction.h"
 #include "utils/bidict/algorithms/bidict_from_enumerating.h"
-#include "utils/containers/contains.h"
+#include "utils/bidict/algorithms/transform_keys.h"
 #include "utils/containers/is_subseteq_of.h"
 #include "utils/containers/vector_of.h"
-#include "utils/graph/digraph/algorithms.h"
-#include "utils/graph/digraph/algorithms/get_descendants.h"
-#include "utils/graph/digraph/algorithms/is_acyclic.h"
+#include "utils/graph/digraph/algorithms/get_edges.h"
 #include "utils/graph/digraph/algorithms/materialize_digraph_view.h"
 #include "utils/graph/digraph/algorithms/transitive_closure.h"
 #include "utils/graph/digraph/digraph.h"
@@ -42,8 +40,8 @@ DiGraph transitive_reduction(DiGraphView const &g) {
   // between transitive_closure and transitive_reduction
 
   bidict<int, Node> nodes =
-      map_keys(bidict_from_enumerating(get_nodes(g)),
-               [](nonnegative_int x) { return x.unwrap_nonnegative(); });
+      transform_keys(bidict_from_enumerating(get_nodes(g)),
+                     [](nonnegative_int x) { return x.unwrap_nonnegative(); });
   int num_nodes = nodes.size();
 
   std::vector<bool> edge_matrix(num_nodes * num_nodes, false);

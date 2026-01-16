@@ -13,14 +13,16 @@
 #include "utils/containers/vector_of.h"
 #include "utils/fmt/unordered_multiset.h"
 #include "utils/graph/algorithms.h"
-#include "utils/graph/digraph/algorithms.h"
 #include "utils/graph/digraph/algorithms/get_descendants.h"
+#include "utils/graph/digraph/algorithms/get_edges.h"
 #include "utils/graph/digraph/algorithms/get_incoming_edges.h"
+#include "utils/graph/digraph/algorithms/get_initial_nodes.h"
 #include "utils/graph/digraph/algorithms/get_longest_path_lengths_from_root.h"
 #include "utils/graph/digraph/algorithms/get_lowest_common_ancestors.h"
 #include "utils/graph/digraph/algorithms/get_outgoing_edges.h"
 #include "utils/graph/digraph/algorithms/get_predecessors.h"
 #include "utils/graph/digraph/algorithms/get_successors.h"
+#include "utils/graph/digraph/algorithms/get_terminal_nodes.h"
 #include "utils/graph/digraph/algorithms/get_weakly_connected_components.h"
 #include "utils/graph/digraph/algorithms/is_2_terminal_dag.h"
 #include "utils/graph/digraph/algorithms/is_acyclic.h"
@@ -61,8 +63,9 @@ int get_max_depth(DiGraph const &sp,
 
 DiGraph add_dummy_nodes(DiGraph g,
                         std::unordered_map<Node, NodeRole> &node_roles) {
-  std::unordered_map<Node, int> depth_map =
-      map_values(get_longest_path_lengths_from_root(g), [](nonnegative_int const &i) {return i.unwrap_nonnegative();});
+  std::unordered_map<Node, int> depth_map = map_values(
+      get_longest_path_lengths_from_root(g),
+      [](nonnegative_int const &i) { return i.unwrap_nonnegative(); });
   for (DirectedEdge const &e : get_edges(g)) {
     Node src = e.src;
     Node dst = e.dst;
@@ -177,9 +180,10 @@ std::pair<std::unordered_set<Node>, std::unordered_set<Node>>
                     std::unordered_map<Node, int> const &depth_map) {
 
   int max_depth = get_max_depth(g, depth_map);
-  std::unordered_map<int, std::unordered_set<Node>> grouped_by_depth =
+  auto grouped_by_depth =
       group_by(forest, [&](Node const &n) { return depth_map.at(n); });
-  return {grouped_by_depth.at(max_depth - 1), grouped_by_depth.at(max_depth)};
+  return {grouped_by_depth.at_l(max_depth - 1),
+          grouped_by_depth.at_l(max_depth)};
 }
 
 std::unordered_set<DirectedEdge>
@@ -222,9 +226,10 @@ SeriesParallelDecomposition spanish_strata_sync(DiGraph g) {
   std::unordered_map<Node, NodeRole> node_roles = get_initial_node_role_map(g);
 
   g = add_dummy_nodes(g, node_roles);
-  std::unordered_map<Node, int> depth_map =
-      map_values(get_longest_path_lengths_from_root(g), [](nonnegative_int const &i) {return i.unwrap_nonnegative();});
-  
+  std::unordered_map<Node, int> depth_map = map_values(
+      get_longest_path_lengths_from_root(g),
+      [](nonnegative_int const &i) { return i.unwrap_nonnegative(); });
+
   DiGraph sp = DiGraph::create<AdjacencyDiGraph>();
   Node root = get_only(get_initial_nodes(g));
   sp.add_node_unsafe(root);

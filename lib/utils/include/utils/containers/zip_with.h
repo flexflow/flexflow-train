@@ -13,7 +13,8 @@ std::vector<Result>
     zip_with(std::vector<T1> const &l, std::vector<T2> const &r, F &&f) {
   std::vector<Result> result;
   for (int i = 0; i < l.size() && i < r.size(); i++) {
-    result.push_back(f(l.at(i), r.at(i)));
+    Result elem = f(l.at(i), r.at(i));
+    result.push_back(elem);
   }
 
   return result;

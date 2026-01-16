@@ -5,16 +5,16 @@
 #include "utils/containers/values.h"
 #include "utils/containers/vector_of.h"
 #include "utils/fmt/unordered_multiset.h"
-#include "utils/graph/digraph/algorithms.h"
+#include "utils/graph/digraph/algorithms/get_edges.h"
 #include "utils/graph/digraph/algorithms/get_longest_path_lengths_from_root.h"
 #include "utils/graph/digraph/digraph_view.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/series_parallel/digraph_generation.h"
 #include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
+#include "utils/graph/series_parallel/series_parallel_decomposition.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
 #include "utils/variant.h"
 #include <unordered_map>
-#include "utils/graph/series_parallel/series_parallel_decomposition.h"
 namespace FlexFlow {
 
 std::unordered_map<Node, nonnegative_int>
@@ -23,7 +23,8 @@ std::unordered_map<Node, nonnegative_int>
 }
 
 template <typename T>
-std::unordered_map<Node, nonnegative_int> get_node_counter_map_impl(T const &t) {
+std::unordered_map<Node, nonnegative_int>
+    get_node_counter_map_impl(T const &t) {
   std::unordered_map<Node, nonnegative_int> counter;
   for (Node const &node : get_nodes(t)) {
     counter.emplace(node, 0_n).first->second += 1_n;

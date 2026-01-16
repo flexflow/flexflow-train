@@ -1,28 +1,22 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_TRANSPOSE_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_TRANSPOSE_KERNELS_H
 
-#include "device.h"
 #include "kernels/accessor.h"
+#include "kernels/device_stream_t.dtg.h"
 #include "op-attrs/ops/transpose_attrs.dtg.h"
-#include <vector>
 
-namespace FlexFlow {
+namespace FlexFlow::Kernels::Transpose {
 
-namespace Kernels {
-namespace Transpose {
-
-void forward_kernel(cudaStream_t stream,
+void forward_kernel(device_stream_t const &stream,
                     TransposeAttrs const &attrs,
                     GenericTensorAccessorR const &input,
                     GenericTensorAccessorW const &output);
 
-void backward_kernel(cudaStream_t stream,
+void backward_kernel(device_stream_t const &stream,
                      TransposeAttrs const &attrs,
-                     GenericTensorAccessorW const &in_grad,
-                     GenericTensorAccessorR const &out_grad);
+                     GenericTensorAccessorR const &out_grad,
+                     GenericTensorAccessorW const &in_grad);
 
-} // namespace Transpose
-} // namespace Kernels
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::Transpose
 
 #endif // _FLEXFLOW_OPS_KERNELS_TRANSPOSE_KERNELS_H

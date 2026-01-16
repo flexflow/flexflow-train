@@ -37,7 +37,23 @@ struct ordered_value_type {
   bool operator>(ordered_value_type const &) const {
     PANIC();
   }
+  bool operator<=(ordered_value_type const &) const {
+    PANIC();
+  }
+  bool operator>=(ordered_value_type const &) const {
+    PANIC();
+  }
 };
+
+template <int TAG>
+std::string format_as(ordered_value_type<TAG> const &) {
+  PANIC();
+}
+
+template <int TAG>
+std::ostream &operator<<(std::ostream &s, ordered_value_type<TAG> const &x) {
+  PANIC();
+}
 
 } // namespace FlexFlow
 

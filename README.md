@@ -1,6 +1,5 @@
 # FlexFlow Train
-[![clang-format Check](https://github.com/flexflow/flexflow-train/actions/workflows/clang-format-check.yml/badge.svg?branch=master)](https://github.com/flexflow/flexflow-train/actions/workflows/clang-format-check.yml)
-[![per-lib-checks](https://github.com/flexflow/flexflow-train/actions/workflows/per-lib-check.yml/badge.svg)](https://github.com/flexflow/flexflow-train/actions/workflows/per-lib-check.yml)
+[![tests](https://github.com/flexflow/flexflow-train/actions/workflows/tests.yml/badge.svg)](https://github.com/flexflow/flexflow-train/actions/workflows/tests.yml)
 [![shell-check](https://github.com/flexflow/flexflow-train/actions/workflows/shell-check.yml/badge.svg)](https://github.com/flexflow/flexflow-train/actions/workflows/shell-check.yml)
 [![Documentation Status](https://readthedocs.org/projects/flexflow/badge/?version=latest)](https://flexflow.readthedocs.io/en/latest/?badge=latest)
 

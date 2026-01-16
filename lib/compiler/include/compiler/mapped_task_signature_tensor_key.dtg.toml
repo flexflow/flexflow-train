@@ -1,0 +1,28 @@
+namespace = "FlexFlow"
+name = "MappedTaskSignatureTensorKey"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+]
+
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h",
+  "op-attrs/tensor_role.dtg.h",
+  "pcg/gpu_id_t.dtg.h",
+]
+
+[[fields]]
+name = "gpu_id"
+type = "::FlexFlow::gpu_id_t"
+
+[[fields]]
+name = "tensor_role"
+type = "::FlexFlow::TensorRole"
+
+[[fields]]
+name = "idx"
+type = "::FlexFlow::nonnegative_int"

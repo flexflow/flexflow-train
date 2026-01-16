@@ -1,11 +1,12 @@
 #include "utils/containers/range.h"
 #include <cassert>
 #include <iostream>
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
 std::vector<int> range(int start, int end, int step) {
-  assert(step != 0);
+  ASSERT(step != 0);
 
   std::vector<int> result;
   if (step > 0) {

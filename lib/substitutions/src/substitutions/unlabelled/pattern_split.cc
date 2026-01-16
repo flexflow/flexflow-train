@@ -21,15 +21,16 @@ PatternSplit find_even_split(UnlabelledGraphPattern const &pattern) {
 PatternSplitResult apply_split(UnlabelledGraphPattern const &p,
                                PatternSplit const &s) {
   UnlabelledGraphPatternSubgraphResult first_subgraph_result =
-      get_subgraph(p, s.first);
+      get_pattern_subgraph(p, s.first);
   UnlabelledGraphPatternSubgraphResult second_subgraph_result =
-      get_subgraph(p, s.second);
+      get_pattern_subgraph(p, s.second);
 
   return PatternSplitResult{
       first_subgraph_result.subpattern,
       second_subgraph_result.subpattern,
       first_subgraph_result.full_pattern_values_to_subpattern_inputs,
-      second_subgraph_result.full_pattern_values_to_subpattern_inputs};
+      second_subgraph_result.full_pattern_values_to_subpattern_inputs,
+  };
 }
 
 } // namespace FlexFlow

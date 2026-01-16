@@ -1,0 +1,20 @@
+namespace = "FlexFlow"
+name = "OperatorTaskSpace"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = [ 
+  "<vector>",
+  "utils/orthotope/minimal_orthotope.dtg.h",
+]
+
+[[fields]]
+name = "degrees"
+type = "::FlexFlow::MinimalOrthotope"

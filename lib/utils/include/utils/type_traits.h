@@ -3,7 +3,6 @@
 
 #include "utils/metafunction.h"
 #include "utils/type_traits_core.h"
-#include "utils/visitable_core.h"
 #include <iostream>
 #include <type_traits>
 
@@ -80,13 +79,6 @@ struct elements_satisfy {
                 "Cannot call elements_satisfy with a metafunction with more "
                 "than 1 argument");
 };
-
-template <template <typename...> class Cond, typename T>
-struct elements_satisfy<Cond,
-                        T,
-                        enable_if_t<(is_nary_metafunction<Cond, 1>::value &&
-                                     is_visitable<T>::value)>>
-    : elements_satisfy<Cond, visit_as_tuple_t<T>> {};
 
 template <template <typename...> class Cond, typename... Ts>
 struct elements_satisfy<Cond,

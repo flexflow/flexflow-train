@@ -1,4 +1,5 @@
-#include "utils/graph/digraph/algorithms.h"
+#include "utils/graph/digraph/algorithms/get_initial_nodes.h"
+#include "utils/graph/digraph/algorithms/get_terminal_nodes.h"
 #include "utils/graph/digraph/algorithms/is_acyclic.h"
 
 namespace FlexFlow {

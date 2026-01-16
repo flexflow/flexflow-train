@@ -1,0 +1,14 @@
+namespace = "FlexFlow"
+name = "ParallelTensorAccessorsW"
+type = "struct"
+features = []
+
+includes = [
+  "<unordered_map>",
+  "op-attrs/parallel_tensor_space_coordinate.dtg.h",
+  "kernels/accessor.h",
+]
+
+[[fields]]
+name = "shard_map"
+type = "std::unordered_map<::FlexFlow::ParallelTensorSpaceCoordinate, ::FlexFlow::GenericTensorAccessorW>"

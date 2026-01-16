@@ -6,7 +6,9 @@
 #include "utils/containers/repeat.h"
 #include "utils/containers/transform.h"
 #include "utils/graph/algorithms.h"
-#include "utils/graph/digraph/algorithms.h"
+#include "utils/graph/digraph/algorithms/get_edges.h"
+#include "utils/graph/digraph/algorithms/get_initial_nodes.h"
+#include "utils/graph/digraph/algorithms/get_terminal_nodes.h"
 #include "utils/graph/digraph/algorithms/is_acyclic.h"
 #include "utils/graph/digraph/algorithms/materialize_digraph_view.h"
 #include "utils/graph/digraph/algorithms/transitive_reduction.h"
@@ -56,8 +58,8 @@ bool is_valid_config(NasNetBenchConfig const &config) {
 }
 
 bool is_valid_cell(DiGraphView const &g) {
-  return (is_acyclic(g)) && (get_sources(g).size() == 1) &&
-         (get_sinks(g).size() == 1) && (num_edges(g) <= MAX_EDGES) &&
+  return (is_acyclic(g)) && (get_initial_nodes(g).size() == 1) &&
+         (get_terminal_nodes(g).size() == 1) && (num_edges(g) <= MAX_EDGES) &&
          (num_edges(g) >= MIN_EDGES) && (num_edges(g) <= MAX_NODES) &&
          (num_edges(g) >= MIN_NODES) &&
          (num_edges(g) > num_nodes(g)); // filter linear cell and diamond cell

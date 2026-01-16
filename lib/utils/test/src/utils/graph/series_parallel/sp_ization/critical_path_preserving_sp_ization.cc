@@ -1,11 +1,13 @@
 #include "utils/graph/series_parallel/sp_ization/critical_path_preserving_sp_ization.h"
 #include "utils/graph/algorithms.h"
-#include "utils/graph/digraph/algorithms.h"
+#include "utils/graph/digraph/algorithms/get_initial_nodes.h"
+#include "utils/graph/digraph/algorithms/get_terminal_nodes.h"
 #include "utils/graph/digraph/digraph.h"
 #include "utils/graph/instances/adjacency_digraph.h"
+#include "utils/graph/series_parallel/parallel_split.dtg.h"
 #include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
 #include "utils/graph/series_parallel/series_parallel_metrics.h"
-#include "utils/graph/series_parallel/series_parallel_splits.h"
+#include "utils/graph/series_parallel/series_split.dtg.h"
 #include <doctest/doctest.h>
 
 using namespace FlexFlow;

@@ -11,8 +11,8 @@ PatternNode get_dst_node(InputPatternEdge const &e) {
   return PatternNode{e.raw_edge.dst.node};
 }
 
-nonnegative_int get_dst_idx(InputPatternEdge const &e) {
-  return e.raw_edge.dst.idx;
+TensorSlotName get_dst_slot_name(InputPatternEdge const &e) {
+  return e.raw_edge.dst.slot_name;
 }
 
 } // namespace FlexFlow
