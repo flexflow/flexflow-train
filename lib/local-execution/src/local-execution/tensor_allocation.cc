@@ -1,6 +1,7 @@
 #include "local-execution/tensor_allocation.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
+#include "task-spec/dynamic_graph/dynamic_tensor_accessor.dtg.h"
 #include "utils/bidict/generate_bidict.h"
 #include "utils/containers/all_are_true.h"
 #include "utils/containers/contains_key.h"
@@ -35,14 +36,14 @@ DynamicValueAttrs
   GenericTensorAccessorW accessor = allocator.allocate_tensor(shape);
 
   DynamicValueAttrs result = value;
-  result.accessor = accessor;
+  result.accessor = DynamicTensorAccessor{accessor};
 
   return result;
 }
 
 DynamicOpenDataflowGraph perform_tensor_allocation(
     DynamicOpenDataflowGraph const &g,
-    std::unordered_map<DynamicValueAttrs, GenericTensorAccessorW> const
+    std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &preallocated,
     Allocator &allocator) {
   for (DynamicValueAttrs const &v : keys(preallocated)) {

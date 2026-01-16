@@ -1,5 +1,7 @@
+#if 0 // FIXME (Elliott): figure out whether we need this
 #include "local-execution/operator_task_set.h"
 #include "task-spec/task_id_with_noop_default_t.h"
+#include "task-spec/task_impl_function.dtg.h"
 #include "task-spec/task_signature_impl.h"
 #include "utils/bidict/algorithms/right_entries.h"
 #include "utils/containers/values.h"
@@ -28,9 +30,9 @@ task_id_with_noop_default_t
 
 OperatorTaskSet
     get_task_set_for_operator(ComputationGraphOpAttrs const &attrs) {
-  task_id_with_noop_default_t init_task = make_default_noop_task();
-  task_id_with_noop_default_t fwd_task = make_default_noop_task();
-  task_id_with_noop_default_t bwd_task = make_default_noop_task();
+  task_id_with_noop_default_t init_task = default_noop_task();
+  task_id_with_noop_default_t fwd_task = default_noop_task();
+  task_id_with_noop_default_t bwd_task = default_noop_task();
 
   std::vector<task_id_t> task_ids = get_task_ids(attrs);
 
@@ -69,3 +71,4 @@ OperatorTaskSet
 }
 
 } // namespace FlexFlow
+#endif

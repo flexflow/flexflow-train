@@ -9,12 +9,14 @@
 #include "utils/containers/map_values.h"
 #include "utils/containers/try_at.h"
 #include "utils/containers/values.h"
+#include "utils/exception.h"
 
 namespace FlexFlow {
 
 LocalTaskRegistry construct_local_task_registry_for_layers(
     std::unordered_set<ComputationGraphOpAttrs> const &op_attrs) {
 
+#if 0
   std::unordered_set<task_id_t> task_ids = flatmap(
       op_attrs,
       [](ComputationGraphOpAttrs const &op_attrs)
@@ -26,6 +28,9 @@ LocalTaskRegistry construct_local_task_registry_for_layers(
   return LocalTaskRegistry{
       /*task_mapping=*/task_mapping,
   };
+#else
+  NOT_IMPLEMENTED();
+#endif
 }
 
 std::optional<DeviceSpecificPerDeviceOpState>
@@ -39,11 +44,9 @@ std::optional<DeviceSpecificPerDeviceOpState>
 
   task_id_t task_id = registered_task.require_real_task();
 
-  TaskSignatureAndImpl task_sig_impl =
-      local_task_registry.task_mapping.at(task_id);
+  TaskImplFunction task_impl_fn = local_task_registry.task_mapping.at(task_id);
 
-  auto fn =
-      task_sig_impl.impl_function.get<InitOpTaskImplFunction>().function_ptr;
+  auto fn = task_impl_fn.get<InitOpTaskImplFunction>().function_ptr;
 
   std::optional<DeviceSpecificPerDeviceOpState> device_state = fn(arg_accessor);
 
@@ -54,9 +57,8 @@ std::optional<milliseconds_t>
     call_fwb_task_impl(LocalTaskRegistry const &task_registry,
                        task_id_t const &task_id,
                        TaskArgumentAccessor const &acc) {
-  TaskSignatureAndImpl task_sig_impl = task_registry.task_mapping.at(task_id);
-  auto fn =
-      task_sig_impl.impl_function.get<FwdBwdOpTaskImplFunction>().function_ptr;
+  TaskImplFunction task_impl_fn = task_registry.task_mapping.at(task_id);
+  auto fn = task_impl_fn.get<FwdBwdOpTaskImplFunction>().function_ptr;
 
   return fn(acc);
 }
@@ -64,9 +66,8 @@ std::optional<milliseconds_t>
 void call_generic_task_impl(LocalTaskRegistry const &task_registry,
                             task_id_t const &task_id,
                             TaskArgumentAccessor const &acc) {
-  TaskSignatureAndImpl task_sig_impl = task_registry.task_mapping.at(task_id);
-  auto fn =
-      task_sig_impl.impl_function.get<FwdBwdOpTaskImplFunction>().function_ptr;
+  TaskImplFunction task_impl_fn = task_registry.task_mapping.at(task_id);
+  auto fn = task_impl_fn.get<FwdBwdOpTaskImplFunction>().function_ptr;
 
   fn(acc);
 }
