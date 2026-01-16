@@ -12,8 +12,9 @@ size_t MockTensorGuidSource::next_available_mock_tensor_guid = 0;
 MockTensorGuidSource::MockTensorGuidSource() {}
 
 tensor_guid_t MockTensorGuidSource::new_mock_tensor_guid() {
+  // FIXME (Elliott): where is the guid supposed to go now???
   size_t next_guid = MockTensorGuidSource::next_available_mock_tensor_guid++;
-  return tensor_guid_t{DataflowOutput{Node{0}, nonnegative_int{next_guid}}};
+  return tensor_guid_t{KwargDataflowOutput{Node{0}, TensorSlotName::INPUT}};
 }
 
 } // namespace FlexFlow
