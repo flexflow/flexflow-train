@@ -7,12 +7,12 @@ using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("dynamic_op_dataflow_graph_from_invocation_set") {
     DynamicValueAttrs value_1 = DynamicValueAttrs{
-        /*pcg_tensor_guid=*/parallel_tensor_guid_t{
+        /*tensor_guid=*/dynamic_tensor_guid_t{parallel_tensor_guid_t{
             KwargDataflowOutput{
                 Node{1},
                 TensorSlotName::OUTPUT,
             },
-        },
+        }},
         /*parallel_tensor_shape=*/std::nullopt,
         /*shard_coord=*/std::nullopt,
         /*accessor=*/std::nullopt,
@@ -20,12 +20,12 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     DynamicValueAttrs value_2 = DynamicValueAttrs{
-        /*pcg_tensor_guid=*/parallel_tensor_guid_t{
+        /*tensor_guid=*/dynamic_tensor_guid_t{parallel_tensor_guid_t{
             KwargDataflowOutput{
                 Node{2},
                 TensorSlotName::OUTPUT,
             },
-        },
+        }},
         /*parallel_tensor_shape=*/std::nullopt,
         /*shard_coord=*/std::nullopt,
         /*accessor=*/std::nullopt,
@@ -33,12 +33,12 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     DynamicValueAttrs value_3 = DynamicValueAttrs{
-        /*pcg_tensor_guid=*/parallel_tensor_guid_t{
+        /*tensor_guid=*/dynamic_tensor_guid_t{parallel_tensor_guid_t{
             KwargDataflowOutput{
                 Node{3},
                 TensorSlotName::OUTPUT,
             },
-        },
+        }},
         /*parallel_tensor_shape=*/std::nullopt,
         /*shard_coord=*/std::nullopt,
         /*accessor=*/std::nullopt,
@@ -50,7 +50,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*device_coord=*/std::nullopt,
         /*mapping=*/std::nullopt,
         /*op_attrs=*/std::nullopt,
-        /*pcg_layer_guid=*/parallel_layer_guid_t{Node{4}},
+        /*layer_guid=*/dynamic_layer_guid_t{parallel_layer_guid_t{Node{4}}},
         /*per_device_op_state=*/std::nullopt,
     };
 
