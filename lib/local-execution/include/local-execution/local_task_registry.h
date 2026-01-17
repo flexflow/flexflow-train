@@ -1,30 +1,30 @@
 #ifndef _FLEXFLOW_LOCAL_EXECUTION_TASK_REGISTRY_H
 #define _FLEXFLOW_LOCAL_EXECUTION_TASK_REGISTRY_H
 
-#include "local-execution/local_task_registry.dtg.h"
 #include "pcg/layer_attrs.dtg.h"
 #include "task-spec/device_specific_per_device_op_state.dtg.h"
-#include "task-spec/ops/op_task_type.dtg.h"
-#include "task-spec/task_id_with_noop_default_t.h"
+#include "task-spec/task_impl_function.dtg.h"
 #include "utils/units/milliseconds_t.h"
+#include <optional>
 
 namespace FlexFlow {
 
-LocalTaskRegistry construct_local_task_registry_for_layers(
-    std::unordered_set<ComputationGraphOpAttrs> const &);
+std::optional<TaskImplFunction>
+    get_init_task_impl_for_op_attrs(ComputationGraphOpAttrs const &);
+TaskImplFunction
+    get_fwd_task_impl_for_op_attrs(ComputationGraphOpAttrs const &);
+TaskImplFunction
+    get_bwd_task_impl_for_op_attrs(ComputationGraphOpAttrs const &);
 
 std::optional<DeviceSpecificPerDeviceOpState>
-    call_init_task_impl(LocalTaskRegistry const &local_task_registry,
-                        task_id_with_noop_default_t task_id,
+    call_init_task_impl(ComputationGraphOpAttrs const &,
                         TaskArgumentAccessor const &arg_accessor);
 
 std::optional<milliseconds_t>
-    call_fwb_task_impl(LocalTaskRegistry const &local_task_registry,
-                       task_id_t task_id,
+    call_fwb_task_impl(ComputationGraphOpAttrs const &,
                        TaskArgumentAccessor const &arg_accessor);
 
-void call_generic_task_impl(LocalTaskRegistry const &local_task_registry,
-                            task_id_t task_id,
+void call_generic_task_impl(ComputationGraphOpAttrs const &,
                             TaskArgumentAccessor const &arg_accessor);
 
 } // namespace FlexFlow

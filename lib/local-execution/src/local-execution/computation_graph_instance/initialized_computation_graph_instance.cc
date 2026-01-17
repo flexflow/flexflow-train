@@ -9,6 +9,9 @@
 #include "op-attrs/tensor_shape.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_accessor.dtg.h"
+#include "task-spec/dynamic_graph/make_dynamic_open_dataflow_graph_from_cg.h"
+#include "task-spec/dynamic_graph/pass_expansion.h"
+#include "task-spec/dynamic_graph/update_insertion.h"
 #include "task-spec/task_argument_accessor/task_argument_accessor.h"
 #include "task-spec/task_id_with_noop_default_t.dtg.h"
 #include "task-spec/task_id_with_noop_default_t.h"
@@ -39,23 +42,21 @@ bool all_nodes_are_initialized(DynamicOpenDataflowGraph const &g) {
 }
 
 InitializedComputationGraphInstance::InitializedComputationGraphInstance(
-    DynamicOpenDataflowGraph dg, Allocator &alloc, LocalTaskRegistry &registry)
-    : initialized_dataflow_graph(dg), allocator(alloc),
-      task_registry(registry) {}
+    DynamicOpenDataflowGraph dg, Allocator &alloc)
+    : initialized_dataflow_graph(dg), allocator(alloc) {}
 
 DynamicNodeInvocation
     initialize_node(DynamicNodeInvocation const &i,
                     Allocator &allocator,
-                    LocalTaskRegistry &task_registry,
                     ProfilingSettings const &profiling_settings,
                     device_handle_t const &device_handle,
                     DeviceType kernel_device_type,
                     FFIterationConfig const &iteration_config,
                     size_t device_idx) {
-  // Get task
-  task_id_with_noop_default_t registered_task = get_init_task_id_for_op_attrs(
+  // Get op
+  ComputationGraphOpAttrs op_attrs =
       assert_unwrap(compgraph_op_attrs_from_pcg_op_attrs(
-          assert_unwrap(i.node_attrs.op_attrs))));
+          assert_unwrap(i.node_attrs.op_attrs)));
 
   // Prepare arguments
   TaskArgumentAccessor arg_accessor =
@@ -73,7 +74,7 @@ DynamicNodeInvocation
 
   // Run task init
   std::optional<DeviceSpecificPerDeviceOpState> per_device_op_state =
-      call_init_task_impl(task_registry, registered_task, arg_accessor);
+      call_init_task_impl(op_attrs, arg_accessor);
 
   DynamicNodeAttrs node_attrs{
       /*task_type=*/i.node_attrs.task_type,
@@ -94,41 +95,36 @@ DynamicNodeInvocation
 }
 
 InitializedComputationGraphInstance initialize_computation_graph_instance(
-    ComputationGraphInstance const &instance,
+    ComputationGraph const &cg,
+    OptimizerAttrs const &optimizer,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &input_tensors,
     Allocator &allocator,
-    LocalTaskRegistry &task_registry,
     ProfilingSettings const &profiling_settings,
     device_handle_t const &device_handle,
     DeviceType kernel_device_type,
     FFIterationConfig const &iteration_config,
     size_t device_idx) {
-  DynamicOpenDataflowGraph const &expanded_dg =
-      instance.expanded_dataflow_graph;
-  ASSERT(no_tensors_are_allocated(expanded_dg));
-  DynamicOpenDataflowGraph allocated_dg =
-      perform_tensor_allocation(expanded_dg, input_tensors, allocator);
-  ASSERT(all_tensors_are_allocated(expanded_dg));
+  DynamicOpenDataflowGraph dg = make_dynamic_open_dataflow_graph_from_cg(cg);
+  dg = perform_pass_expansion(dg);
+  dg = perform_update_insertion(dg, optimizer);
+  dg = perform_tensor_allocation(dg, input_tensors, allocator);
 
   // Initialize all operators and save the per-device op state
-  ASSERT(no_nodes_are_initialized(allocated_dg));
-  DynamicOpenDataflowGraph initialized_dg = transform_dynamic_invocation_set(
-      allocated_dg, [&](DynamicNodeInvocation const &invocation) {
+  ASSERT(no_nodes_are_initialized(dg));
+  dg = transform_dynamic_invocation_set(
+      dg, [&](DynamicNodeInvocation const &invocation) {
         return initialize_node(invocation,
                                allocator,
-                               task_registry,
                                profiling_settings,
                                device_handle,
                                kernel_device_type,
                                iteration_config,
                                device_idx);
       });
+  ASSERT(all_nodes_are_initialized(dg));
 
-  ASSERT(all_nodes_are_initialized(initialized_dg));
-
-  return InitializedComputationGraphInstance{
-      initialized_dg, allocator, task_registry};
+  return InitializedComputationGraphInstance{dg, allocator};
 }
 
 std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>

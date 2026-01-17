@@ -1,34 +1,33 @@
 #ifndef _FLEXFLOW_LIB_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_INITIALIZED_COMPUTATION_GRAPH_INSTANCE_H
 #define _FLEXFLOW_LIB_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_INITIALIZED_COMPUTATION_GRAPH_INSTANCE_H
 
-#include "local-execution/computation_graph_instance/computation_graph_instance.h"
-#include "local-execution/local_task_registry.dtg.h"
+#include "kernels/device_handle_t.dtg.h"
+#include "kernels/profiling_settings.dtg.h"
+#include "pcg/computation_graph.dtg.h"
 #include "pcg/layer_guid_t.dtg.h"
+#include "pcg/optimizer_attrs.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
+#include "task-spec/ff_iteration_config.dtg.h"
 #include "utils/units/milliseconds_t.h"
 
 namespace FlexFlow {
 
 struct InitializedComputationGraphInstance {
 public:
-  InitializedComputationGraphInstance(DynamicOpenDataflowGraph,
-                                      Allocator &,
-                                      LocalTaskRegistry &);
+  InitializedComputationGraphInstance(DynamicOpenDataflowGraph, Allocator &);
   DynamicOpenDataflowGraph const &get_dynamic_dataflow_graph() const;
   Allocator &get_allocator() const;
-  LocalTaskRegistry const &get_task_registry() const;
 
 private:
   DynamicOpenDataflowGraph initialized_dataflow_graph;
   Allocator &allocator;
-  LocalTaskRegistry &task_registry;
 };
 
 InitializedComputationGraphInstance initialize_computation_graph_instance(
-    ComputationGraphInstance const &,
+    ComputationGraph const &cg,
+    OptimizerAttrs const &optimizer,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const &,
     Allocator &,
-    LocalTaskRegistry &,
     ProfilingSettings const &,
     device_handle_t const &,
     DeviceType,
