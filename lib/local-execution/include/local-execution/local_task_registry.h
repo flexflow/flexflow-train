@@ -11,9 +11,9 @@ namespace FlexFlow {
 
 std::optional<TaskImplFunction>
     get_init_task_impl_for_op_attrs(ComputationGraphOpAttrs const &);
-TaskImplFunction
+std::optional<TaskImplFunction>
     get_fwd_task_impl_for_op_attrs(ComputationGraphOpAttrs const &);
-TaskImplFunction
+std::optional<TaskImplFunction>
     get_bwd_task_impl_for_op_attrs(ComputationGraphOpAttrs const &);
 
 std::optional<DeviceSpecificPerDeviceOpState>
@@ -21,7 +21,7 @@ std::optional<DeviceSpecificPerDeviceOpState>
                         TaskArgumentAccessor const &arg_accessor);
 
 std::optional<milliseconds_t>
-    call_fwb_task_impl(ComputationGraphOpAttrs const &,
+    call_fwd_task_impl(ComputationGraphOpAttrs const &,
                        TaskArgumentAccessor const &arg_accessor);
 
 void call_generic_task_impl(ComputationGraphOpAttrs const &,
