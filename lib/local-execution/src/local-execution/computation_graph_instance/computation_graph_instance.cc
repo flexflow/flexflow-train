@@ -1,12 +1,9 @@
 #include "local-execution/computation_graph_instance/computation_graph_instance.h"
 #include "kernels/allocation.h"
-#include "local-execution/local_task_argument_accessor.h"
 #include "local-execution/local_task_registry.h"
 #include "local-execution/task_execution.h"
 #include "local-execution/tensor_allocation.h"
 #include "op-attrs/computation_graph_op_attrs.h"
-#include "op-attrs/parallel_tensor_shape.h"
-#include "op-attrs/tensor_shape.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_accessor.dtg.h"
 #include "task-spec/dynamic_graph/make_dynamic_open_dataflow_graph_from_cg.h"
@@ -18,7 +15,6 @@
 #include "utils/exception.h"
 #include "utils/optional.h"
 #include <optional>
-#include <vector>
 
 namespace FlexFlow {
 
