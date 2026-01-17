@@ -46,6 +46,7 @@ DynamicOpenDataflowGraph perform_tensor_allocation(
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &preallocated,
     Allocator &allocator) {
+  ASSERT(no_tensors_are_allocated(g));
   for (DynamicValueAttrs const &v : keys(preallocated)) {
     ASSERT(v.accessor == std::nullopt);
   }
@@ -65,7 +66,7 @@ DynamicOpenDataflowGraph perform_tensor_allocation(
             }
           });
 
-  return transform_dynamic_invocation_set(
+  DynamicOpenDataflowGraph result = transform_dynamic_invocation_set(
       g, [&](DynamicNodeInvocation const &i) -> DynamicNodeInvocation {
         return DynamicNodeInvocation{
             /*inputs=*/map_values(
@@ -81,6 +82,10 @@ DynamicOpenDataflowGraph perform_tensor_allocation(
                        }),
         };
       });
+
+  ASSERT(all_tensors_are_allocated(result));
+
+  return result;
 }
 
 } // namespace FlexFlow
