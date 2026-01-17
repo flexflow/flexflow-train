@@ -1,4 +1,4 @@
-#include "local-execution/computation_graph_instance/initialized_computation_graph_instance.h"
+#include "local-execution/computation_graph_instance/computation_graph_instance.h"
 #include "kernels/allocation.h"
 #include "local-execution/local_task_argument_accessor.h"
 #include "local-execution/local_task_registry.h"
@@ -13,15 +13,10 @@
 #include "task-spec/dynamic_graph/pass_expansion.h"
 #include "task-spec/dynamic_graph/update_insertion.h"
 #include "task-spec/task_argument_accessor/task_argument_accessor.h"
-#include "task-spec/task_id_with_noop_default_t.dtg.h"
-#include "task-spec/task_id_with_noop_default_t.h"
 #include "utils/containers/all_are_true.h"
 #include "utils/containers/transform.h"
 #include "utils/exception.h"
 #include "utils/optional.h"
-#include <alloca.h>
-#include <cassert>
-#include <cmath>
 #include <optional>
 #include <vector>
 
@@ -41,7 +36,7 @@ bool all_nodes_are_initialized(DynamicOpenDataflowGraph const &g) {
       }));
 }
 
-InitializedComputationGraphInstance::InitializedComputationGraphInstance(
+ComputationGraphInstance::ComputationGraphInstance(
     DynamicOpenDataflowGraph dg, Allocator &alloc)
     : initialized_dataflow_graph(dg), allocator(alloc) {}
 
@@ -94,7 +89,7 @@ DynamicNodeInvocation
   };
 }
 
-InitializedComputationGraphInstance initialize_computation_graph_instance(
+ComputationGraphInstance initialize_computation_graph_instance(
     ComputationGraph const &cg,
     OptimizerAttrs const &optimizer,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
@@ -124,19 +119,19 @@ InitializedComputationGraphInstance initialize_computation_graph_instance(
       });
   ASSERT(all_nodes_are_initialized(dg));
 
-  return InitializedComputationGraphInstance{dg, allocator};
+  return ComputationGraphInstance{dg, allocator};
 }
 
 std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
     perform_forward_pass_for_computation_graph_instance(
-        InitializedComputationGraphInstance const &instance) {
+        ComputationGraphInstance const &instance) {
 
   NOT_IMPLEMENTED();
 }
 
 std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
     perform_backward_pass_for_computation_graph_instance(
-        InitializedComputationGraphInstance const &instance) {
+        ComputationGraphInstance const &instance) {
 
   NOT_IMPLEMENTED();
 }
