@@ -1,5 +1,5 @@
-#ifndef _FLEXFLOW_LIB_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_INITIALIZED_COMPUTATION_GRAPH_INSTANCE_H
-#define _FLEXFLOW_LIB_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_INITIALIZED_COMPUTATION_GRAPH_INSTANCE_H
+#ifndef _FLEXFLOW_LIB_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_COMPUTATION_GRAPH_INSTANCE_H
+#define _FLEXFLOW_LIB_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_COMPUTATION_GRAPH_INSTANCE_H
 
 #include "kernels/device_handle_t.dtg.h"
 #include "kernels/profiling_settings.dtg.h"
@@ -12,9 +12,9 @@
 
 namespace FlexFlow {
 
-struct InitializedComputationGraphInstance {
+struct ComputationGraphInstance {
 public:
-  InitializedComputationGraphInstance(DynamicOpenDataflowGraph, Allocator &);
+  ComputationGraphInstance(DynamicOpenDataflowGraph, Allocator &);
   DynamicOpenDataflowGraph const &get_dynamic_dataflow_graph() const;
   Allocator &get_allocator() const;
 
@@ -23,7 +23,7 @@ private:
   Allocator &allocator;
 };
 
-InitializedComputationGraphInstance initialize_computation_graph_instance(
+ComputationGraphInstance initialize_computation_graph_instance(
     ComputationGraph const &cg,
     OptimizerAttrs const &optimizer,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const &,
@@ -36,14 +36,14 @@ InitializedComputationGraphInstance initialize_computation_graph_instance(
 
 std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
     perform_forward_pass_for_computation_graph_instance(
-        InitializedComputationGraphInstance const &);
+        ComputationGraphInstance const &);
 
 std::unordered_map<layer_guid_t, std::optional<milliseconds_t>>
     perform_backward_pass_for_computation_graph_instance(
-        InitializedComputationGraphInstance const &);
+        ComputationGraphInstance const &);
 
 void perform_update_pass_for_computation_graph_instance(
-    InitializedComputationGraphInstance const &);
+    ComputationGraphInstance const &);
 
 } // namespace FlexFlow
 
