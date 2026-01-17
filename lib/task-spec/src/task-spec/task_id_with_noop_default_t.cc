@@ -46,7 +46,7 @@ task_id_with_noop_default_t
         return lift_task_id_t(task_id_t::ELEMENTBINARY_INIT_TASK_ID);
       },
       [](ElementUnaryAttrs const &) {
-        return lift_task_id_t(task_id_t::ELEMENTBINARY_INIT_TASK_ID);
+        return lift_task_id_t(task_id_t::ELEMENTUNARY_INIT_TASK_ID);
       },
       [](EmbeddingAttrs const &) { return default_noop_task(); },
       [](FlatAttrs const &) { return default_noop_task(); },
@@ -111,7 +111,7 @@ task_id_with_noop_default_t
         return lift_task_id_t(task_id_t::ELEMENTBINARY_FWD_TASK_ID);
       },
       [](ElementUnaryAttrs const &) {
-        return lift_task_id_t(task_id_t::ELEMENTBINARY_FWD_TASK_ID);
+        return lift_task_id_t(task_id_t::ELEMENTUNARY_FWD_TASK_ID);
       },
       [](EmbeddingAttrs const &) {
         return lift_task_id_t(task_id_t::EMBED_FWD_TASK_ID);
@@ -190,7 +190,7 @@ task_id_with_noop_default_t
         return lift_task_id_t(task_id_t::ELEMENTBINARY_BWD_TASK_ID);
       },
       [](ElementUnaryAttrs const &) {
-        return lift_task_id_t(task_id_t::ELEMENTBINARY_BWD_TASK_ID);
+        return lift_task_id_t(task_id_t::ELEMENTUNARY_BWD_TASK_ID);
       },
       [](EmbeddingAttrs const &) {
         return lift_task_id_t(task_id_t::EMBED_BWD_TASK_ID);
