@@ -71,7 +71,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*tensor_slots_backing=*/tensor_slots_backing,
         /*profiling_settings=*/ProfilingSettings{0, 0},
         /*ff_handle=*/cpu_make_device_handle_t(),
-        /*kernel_device_type=*/DeviceType{},
+        /*kernel_device_type=*/DeviceType::CPU,
         /*op_attrs=*/PCGOperatorAttrs{InputAttrs{input_tensor_shape}},
         /*loss_attrs=*/std::nullopt,
         /*per_device_op_state=*/std::nullopt,

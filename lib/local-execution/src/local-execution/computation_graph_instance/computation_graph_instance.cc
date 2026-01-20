@@ -34,7 +34,7 @@ bool all_nodes_are_initialized(DynamicOpenDataflowGraph const &g) {
 
 ComputationGraphInstance::ComputationGraphInstance(DynamicOpenDataflowGraph dg,
                                                    Allocator &alloc)
-    : initialized_dataflow_graph(dg), allocator(alloc) {}
+    : dataflow_graph(dg), allocator(alloc) {}
 
 DynamicNodeInvocation
     initialize_node(DynamicNodeInvocation const &i,
@@ -85,7 +85,7 @@ DynamicNodeInvocation
   };
 }
 
-ComputationGraphInstance initialize_computation_graph_instance(
+ComputationGraphInstance create_computation_graph_instance(
     ComputationGraph const &cg,
     OptimizerAttrs const &optimizer,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const

@@ -1,24 +1,18 @@
 #include "internal/test_utils.h"
 #include "kernels/compare_tensor_accessors.h"
 #include "kernels/copy_tensor_accessor.h"
+#include "kernels/device_handle_t.h"
 #include "kernels/format_accessor_contents.h"
 #include "kernels/local_cpu_allocator.h"
 #include "kernels/local_cuda_allocator.h"
 #include "kernels/managed_ff_stream.h"
 #include "kernels/managed_per_device_ff_handle.h"
 #include "kernels/tensor_accessor_reductions.h"
-#include "local-execution/local_training_backing.h"
-#include "local-execution/model_training_instance.h"
+#include "local-execution/computation_graph_instance/computation_graph_instance.h"
 #include "op-attrs/ops/loss_functions/loss_attrs.dtg.h"
 #include "pcg/computation_graph.h"
 #include "pcg/computation_graph_builder.h"
 #include "pcg/optimizer_attrs.dtg.h"
-#include "task-spec/forward_tensor_source.h"
-#include "task-spec/gradient_tensor_source.h"
-#include "task-spec/loss_tensor_source.h"
-#include "task-spec/optimizer_tensor_source.h"
-#include "task-spec/runtime_task_invocation/runtime_arg_config.h"
-#include "task-spec/training_computation_graph.h"
 #include "test/utils/doctest/check_kv.h"
 #include "utils/containers/get_only.h"
 #include <doctest/doctest.h>
@@ -100,13 +94,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         linear_operator_1.outputs,
         weights_layer_2.outputs);
 
-    tensor_guid_t logit_tensor = get_only(linear_operator_2.outputs);
-
-    RuntimeArgConfig runtime_arg_config = cpu_make_runtime_arg_config(
-        EnableProfiling::YES,
-        ProfilingSettings{/*warmup_iters=*/0, /*measure_iters=*/1});
-
-    // initialize training backing
+    // instantiate computation graph
     LossAttrs loss_attrs = LossAttrs{
         NonconfigurableLossAttrs{LossFunction::CATEGORICAL_CROSSENTROPY}};
     OptimizerAttrs optimizer_attrs =
@@ -115,41 +103,33 @@ TEST_SUITE(FF_TEST_SUITE) {
                                          /*nesterov=*/false,
                                          /*weight_decay=*/0.001}};
 
-    ForwardTensorSource forward_tensor_source;
-    GradientTensorSource gradient_tensor_source;
-    OptimizerTensorSource optimizer_tensor_source;
-    LossTensorSource loss_tensor_source;
+    std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> input_tensors;
 
-    TrainingComputationGraph training_computation_graph =
-        generate_training_computation_graph(computation_graph,
-                                            optimizer_attrs,
-                                            logit_tensor,
-                                            forward_tensor_source,
-                                            gradient_tensor_source,
-                                            optimizer_tensor_source,
-                                            loss_tensor_source);
-
-    LocalTrainingBacking local_training_backing =
-        make_local_training_backing_for_computation_graph(
+    ComputationGraphInstance computation_graph_instance =
+        create_computation_graph_instance(
+            /*cg=*/computation_graph,
+            /*optimizer=*/optimizer_attrs,
+            /*input_tensors=*/input_tensors,
             /*allocator=*/allocator,
-            /*preallocated_tensors=*/{},
-            /*training_computation_graph=*/training_computation_graph,
-            /*runtime_arg_config=*/runtime_arg_config,
-            /*optimizer_attrs=*/optimizer_attrs);
+            /*profiling_settings=*/ProfilingSettings{0, 0},
+            /*device_handle=*/cpu_make_device_handle_t(),
+            /*kernel_device_type=*/DeviceType::CPU,
+            /*iteration_config=*/FFIterationConfig{0_p},
+            /*device_idx=*/0);
 
     // begin training loop
-    ModelTrainingInstance model_training_instance = ModelTrainingInstance{
-        allocator, local_training_backing, loss_attrs, optimizer_attrs};
-
     int num_epochs = 5;
     std::vector<GenericTensorAccessorR> loss_values;
 
     for (int i = 0; i < num_epochs; i++) {
-      model_training_instance.forward();
-      model_training_instance.backward();
-      model_training_instance.update();
+      perform_forward_pass_for_computation_graph_instance(
+          computation_graph_instance);
+      perform_backward_pass_for_computation_graph_instance(
+          computation_graph_instance);
+      perform_update_pass_for_computation_graph_instance(
+          computation_graph_instance);
       loss_values.push_back(copy_tensor_accessor_r(
-          model_training_instance.get_loss_tensor_accessor(), allocator));
+          computation_graph_instance.get_loss_tensor_accessor(), allocator));
     }
 
     // Assert that each sample in the batch has a lower loss in last epoch than
@@ -237,14 +217,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         linear_operator_1.outputs,
         weights_layer_2.outputs);
 
-    tensor_guid_t logit_tensor = get_only(linear_operator_2.outputs);
-
-    RuntimeArgConfig runtime_arg_config = gpu_make_runtime_arg_config(
-        managed_handle.raw_handle(),
-        EnableProfiling::YES,
-        ProfilingSettings{/*warmup_iters=*/0, /*measure_iters=*/1});
-
-    // initialize training backing
+    // instantiate computation graph
     LossAttrs loss_attrs = LossAttrs{
         NonconfigurableLossAttrs{LossFunction::CATEGORICAL_CROSSENTROPY}};
     OptimizerAttrs optimizer_attrs = OptimizerAttrs{
@@ -256,50 +229,37 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         },
     };
 
-    ForwardTensorSource forward_tensor_source;
-    GradientTensorSource gradient_tensor_source;
-    OptimizerTensorSource optimizer_tensor_source;
-    LossTensorSource loss_tensor_source;
+    std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> input_tensors;
 
-    TrainingComputationGraph training_computation_graph =
-        generate_training_computation_graph(computation_graph,
-                                            optimizer_attrs,
-                                            logit_tensor,
-                                            forward_tensor_source,
-                                            gradient_tensor_source,
-                                            optimizer_tensor_source,
-                                            loss_tensor_source);
-
-    LocalTrainingBacking local_training_backing =
-        make_local_training_backing_for_computation_graph(
+    ComputationGraphInstance computation_graph_instance =
+        create_computation_graph_instance(
+            /*cg=*/computation_graph,
+            /*optimizer=*/optimizer_attrs,
+            /*input_tensors=*/input_tensors,
             /*allocator=*/allocator,
-            /*preallocated_tensors=*/
-            {
-                {
-                    training_tensor_guid_t{
-                        training_computation_graph.label_tensor},
-                    label_tensor_backing,
-                },
-            },
-            /*training_computation_graph=*/training_computation_graph,
-            /*runtime_arg_config=*/runtime_arg_config,
-            /*optimizer_attrs=*/optimizer_attrs);
+            /*profiling_settings=*/ProfilingSettings{0, 0},
+            /*device_handle=*/
+            device_handle_t_from_managed_handle(std::optional{managed_handle}),
+            /*kernel_device_type=*/DeviceType::GPU,
+            /*iteration_config=*/FFIterationConfig{0_p},
+            /*device_idx=*/0);
 
     // begin training loop
-    ModelTrainingInstance model_training_instance = ModelTrainingInstance{
-        allocator, local_training_backing, loss_attrs, optimizer_attrs};
-
     Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
     int num_epochs = 5;
     std::vector<GenericTensorAccessorR> loss_values;
 
     for (int i = 0; i < num_epochs; i++) {
-      model_training_instance.forward();
-      model_training_instance.backward();
-      model_training_instance.update();
+      perform_forward_pass_for_computation_graph_instance(
+          computation_graph_instance);
+      perform_backward_pass_for_computation_graph_instance(
+          computation_graph_instance);
+      perform_update_pass_for_computation_graph_instance(
+          computation_graph_instance);
       loss_values.push_back(copy_tensor_accessor_r(
-          model_training_instance.get_loss_tensor_accessor(), cpu_allocator));
+          computation_graph_instance.get_loss_tensor_accessor(),
+          cpu_allocator));
     }
 
     // Assert that each sample in the batch has a lower loss in last epoch than

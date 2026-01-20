@@ -19,13 +19,13 @@ public:
   Allocator &get_allocator() const;
 
 private:
-  DynamicOpenDataflowGraph initialized_dataflow_graph;
+  DynamicOpenDataflowGraph dataflow_graph;
   Allocator &allocator;
 };
 
-ComputationGraphInstance initialize_computation_graph_instance(
-    ComputationGraph const &cg,
-    OptimizerAttrs const &optimizer,
+ComputationGraphInstance create_computation_graph_instance(
+    ComputationGraph const &,
+    OptimizerAttrs const &,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const &,
     Allocator &,
     ProfilingSettings const &,
