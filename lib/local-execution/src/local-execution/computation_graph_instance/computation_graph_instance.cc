@@ -32,8 +32,8 @@ bool all_nodes_are_initialized(DynamicOpenDataflowGraph const &g) {
       }));
 }
 
-ComputationGraphInstance::ComputationGraphInstance(
-    DynamicOpenDataflowGraph dg, Allocator &alloc)
+ComputationGraphInstance::ComputationGraphInstance(DynamicOpenDataflowGraph dg,
+                                                   Allocator &alloc)
     : initialized_dataflow_graph(dg), allocator(alloc) {}
 
 DynamicNodeInvocation
