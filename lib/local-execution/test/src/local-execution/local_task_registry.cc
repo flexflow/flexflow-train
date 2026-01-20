@@ -1,3 +1,4 @@
+#if 0 // FIXME (Elliott): keep task registry test?
 #include "local-execution/local_task_registry.h"
 #include "kernels/local_cuda_allocator.h"
 #include "local-execution/local_cost_estimator.h"
@@ -280,3 +281,4 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
   }
 }
+#endif

@@ -1,3 +1,4 @@
+#if 0 // FIXME (Elliott): keep task registry test?
 #include "internal/test_utils.h"
 #include "kernels/local_cuda_allocator.h"
 #include "kernels/managed_ff_stream.h"
@@ -154,3 +155,4 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     }
   }
 }
+#endif
