@@ -1,0 +1,18 @@
+namespace = "FlexFlow"
+name = "NodeRole"
+type = "enum"
+features = [
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+[[values]]
+name = "PURE"
+
+[[values]]
+name = "SYNC"
+
+[[values]]
+name = "DUMMY"

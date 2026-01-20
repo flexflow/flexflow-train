@@ -9,7 +9,9 @@
 #include "utils/containers/values.h"
 #include "utils/containers/vector_of.h"
 #include "utils/graph/series_parallel/intermediate_sp_decomposition_tree.h"
+#include "utils/graph/series_parallel/series_parallel_metrics.h"
 #include "utils/hash/unordered_set.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include "utils/variant.h"
 #include <unordered_set>
 
@@ -97,6 +99,15 @@ bool is_empty(ParallelSplit const &parallel) {
 
 bool is_empty(SeriesParallelDecomposition const &sp) {
   return sp.visit<bool>([](auto const &t) { return is_empty(t); });
+}
+
+nonnegative_int num_nodes(SeriesParallelDecomposition const &sp) {
+  return sum(values(get_node_counter_map(sp)));
+}
+
+bool has_no_duplicate_nodes(SeriesParallelDecomposition const &sp) {
+  return all_of(values(get_node_counter_map(sp)),
+                [](nonnegative_int count) { return count == 1_n; });
 }
 
 SeriesParallelDecomposition series_composition(

@@ -68,6 +68,7 @@ option(FF_BUILD_ALL_EXAMPLES "build all examples. Overrides others" OFF)
 option(FF_BUILD_UNIT_TESTS "build non-operator unit tests" OFF)
 option(FF_BUILD_SUBSTITUTION_TOOL "build substitution conversion tool" OFF)
 option(FF_BUILD_VISUALIZATION_TOOL "build substitution visualization tool" ON)
+option(FF_BUILD_SP_IZATION_BENCHMARKING "build sp-ization benchmarking" ON)
 option(FF_BUILD_ARG_PARSER "build command line argument parser" OFF)
 option(FF_BUILD_BIN_EXPORT_MODEL_ARCH "build export-model-arch utility" ON)
 

@@ -9,6 +9,7 @@
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/hash/unordered_set.h"
+#include <optional>
 #include <queue>
 
 namespace FlexFlow {
