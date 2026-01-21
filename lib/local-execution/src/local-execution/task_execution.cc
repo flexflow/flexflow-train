@@ -2,11 +2,35 @@
 #include "local-execution/local_task_argument_accessor.h"
 #include "local-execution/local_task_registry.h"
 #include "op-attrs/computation_graph_op_attrs.h"
+#include "pcg/optimizer_attrs.h"
+#include "pcg/optimizer_slot_name.dtg.h"
+#include "task-spec/task_argument_accessor/task_tensor_parameter.h"
+#include "utils/containers/transform.h"
 #include "utils/exception.h"
 #include "utils/optional.h"
 #include <optional>
 
 namespace FlexFlow {
+
+std::unordered_set<TaskTensorParameter> make_task_tensor_parameter_dynamic(
+    TensorSlotName slot_name,
+    DynamicTaskType task_type,
+    std::optional<OptimizerAttrs> const &optimizer_attrs) {
+  switch (task_type) {
+    case DynamicTaskType::FWD:
+      return std::unordered_set{make_task_tensor_parameter_fwd(slot_name)};
+    case DynamicTaskType::BWD:
+      return std::unordered_set{make_task_tensor_parameter_grad(slot_name)};
+    case DynamicTaskType::UPD:
+      return transform(
+          get_slot_names_for_optimizer(assert_unwrap(optimizer_attrs)),
+          [&](OptimizerSlotName optimizer_slot) {
+            return make_task_tensor_parameter_opt(slot_name, optimizer_slot);
+          });
+    default:
+      PANIC("Unhandled DynamicTaskType", fmt::to_string(task_type));
+  }
+}
 
 TaskArgumentAccessor make_task_argument_accessor_for_invocation(
     DynamicNodeInvocation const &invocation,
@@ -22,7 +46,28 @@ TaskArgumentAccessor make_task_argument_accessor_for_invocation(
 
   std::unordered_map<TaskTensorParameter, DynamicTensorAccessor>
       tensor_slots_backing;
-  NOT_IMPLEMENTED(); // FIXME (Elliott): fill the map
+  for (auto const &[slot, input] : invocation.inputs) {
+    std::unordered_set<TaskTensorParameter> params =
+        make_task_tensor_parameter_dynamic(
+            slot.slot_name,
+            assert_unwrap(invocation.node_attrs.task_type),
+            optimizer_attrs);
+    DynamicTensorAccessor accessor = assert_unwrap(input.accessor);
+    for (auto const &param : params) {
+      tensor_slots_backing.insert(std::pair{param, accessor});
+    }
+  }
+  for (auto const &[slot, output] : invocation.outputs) {
+    std::unordered_set<TaskTensorParameter> params =
+        make_task_tensor_parameter_dynamic(
+            slot.slot_name,
+            assert_unwrap(invocation.node_attrs.task_type),
+            optimizer_attrs);
+    DynamicTensorAccessor accessor = assert_unwrap(output.accessor);
+    for (auto const &param : params) {
+      tensor_slots_backing.insert(std::pair{param, accessor});
+    }
+  }
 
   return TaskArgumentAccessor::create<LocalTaskArgumentAccessor>(
       /*allocator=*/allocator,
