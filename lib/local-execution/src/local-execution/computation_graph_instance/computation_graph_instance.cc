@@ -25,10 +25,11 @@
 namespace FlexFlow {
 
 ComputationGraphInstance::ComputationGraphInstance(
-    DynamicOpenDataflowGraph dg,
-    Allocator &alloc,
-    std::vector<DynamicNodeInvocation> const &topo_order)
-    : dataflow_graph(dg), allocator(alloc), topological_ordering(topo_order) {}
+    DynamicOpenDataflowGraph dataflow_graph,
+    Allocator &allocator,
+    std::vector<DynamicNodeInvocation> const &topological_ordering)
+    : dataflow_graph(dataflow_graph), allocator(allocator),
+      topological_ordering(topological_ordering) {}
 
 DynamicOpenDataflowGraph const &
     ComputationGraphInstance::get_dynamic_dataflow_graph() const {
@@ -72,6 +73,7 @@ DynamicNodeInvocation
   TaskArgumentAccessor arg_accessor =
       make_task_argument_accessor_for_invocation(
           /*invocation=*/i,
+          /*allocator=*/allocator,
           /*profiling_settings=*/profiling_settings,
           /*ff_handle=*/device_handle,
           /*loss_attrs=*/std::nullopt,
@@ -158,6 +160,7 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
             std::optional<milliseconds_t> timing =
                 execute_dynamic_node_invocation(
                     /*invocation=*/invocation,
+                    /*allocator=*/instance.get_allocator(),
                     /*profiling_settings=*/profiling_settings,
                     /*ff_handle=*/ff_handle,
                     /*loss_attrs=*/loss_attrs,

@@ -2,6 +2,7 @@
 #include "kernels/accessor.h"
 #include "pcg/device_id.h"
 #include "pcg/device_id_t.h"
+#include "utils/exception.h"
 #include "utils/optional.h"
 
 namespace FlexFlow {
@@ -24,6 +25,11 @@ LocalTaskArgumentAccessor::LocalTaskArgumentAccessor(
       per_device_op_state(per_device_op_state),
       iteration_config(iteration_config), optimizer_attrs(optimizer_attrs),
       device_idx(device_idx) {}
+
+ConcreteArgSpec const &
+    LocalTaskArgumentAccessor::get_concrete_arg(arg_slot_id_t) const {
+  NOT_IMPLEMENTED();
+}
 
 GenericTensorAccessor
     LocalTaskArgumentAccessor::get_tensor(TaskTensorParameter slot,
