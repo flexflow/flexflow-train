@@ -165,10 +165,24 @@ std::optional<DeviceSpecificPerDeviceOpState>
 }
 
 std::optional<milliseconds_t>
-    call_fwb_task_impl(ComputationGraphOpAttrs const &op_attrs,
+    call_fwd_task_impl(ComputationGraphOpAttrs const &op_attrs,
                        TaskArgumentAccessor const &acc) {
   std::optional<TaskImplFunction> task_impl_fn =
       get_fwd_task_impl_for_op_attrs(op_attrs);
+  if (!task_impl_fn) {
+    return std::nullopt;
+  }
+  auto fn =
+      assert_unwrap(task_impl_fn).get<FwdBwdOpTaskImplFunction>().function_ptr;
+
+  return fn(acc);
+}
+
+std::optional<milliseconds_t>
+    call_bwd_task_impl(ComputationGraphOpAttrs const &op_attrs,
+                       TaskArgumentAccessor const &acc) {
+  std::optional<TaskImplFunction> task_impl_fn =
+      get_bwd_task_impl_for_op_attrs(op_attrs);
   if (!task_impl_fn) {
     return std::nullopt;
   }
