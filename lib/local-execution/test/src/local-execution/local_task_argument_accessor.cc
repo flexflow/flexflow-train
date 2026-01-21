@@ -48,22 +48,6 @@ TEST_SUITE(FF_TEST_SUITE) {
                 make_task_tensor_parameter_grad(TensorSlotName::LHS_INPUT),
                 DynamicTensorAccessor{input_grad},
             },
-            {
-                make_task_tensor_parameter_fwd(TensorSlotName::INPUT_0),
-                DynamicTensorAccessor{input},
-            },
-            {
-                make_task_tensor_parameter_fwd(TensorSlotName::INPUT_1),
-                DynamicTensorAccessor{input},
-            },
-            {
-                make_task_tensor_parameter_grad(TensorSlotName::INPUT_0),
-                DynamicTensorAccessor{input_grad},
-            },
-            {
-                make_task_tensor_parameter_grad(TensorSlotName::INPUT_1),
-                DynamicTensorAccessor{input_grad},
-            },
         };
 
     LocalTaskArgumentAccessor acc = LocalTaskArgumentAccessor{
@@ -137,76 +121,5 @@ TEST_SUITE(FF_TEST_SUITE) {
         CHECK(correct == result);
       }
     }
-
-#if 0 // FIXME (Elliott): not sure we need this case?
-    SUBCASE("get_variadic_tensor") {
-      SUBCASE("get_variadic_tensor(TensorSlotName, Permissions::RO, "
-              "TrainingTensorType::FORWARD)") {
-        VariadicGenericTensorAccessor correct =
-            VariadicGenericTensorAccessor{std::vector<GenericTensorAccessorR>{
-                read_only_accessor_from_write_accessor(input),
-                read_only_accessor_from_write_accessor(
-                    input)}};
-        VariadicGenericTensorAccessor result =
-            acc.get_variadic_tensor(make_task_tensor_parameter_fwd(TensorSlotName::INPUT),
-                                    Permissions::RO);
-        CHECK(result == correct);
-      }
-
-      SUBCASE("get_variadic_tensor(TensorSlotName, Permissions::RO, "
-              "TrainingTensorType::GRADIENT)") {
-        VariadicGenericTensorAccessor correct =
-            VariadicGenericTensorAccessor{std::vector<GenericTensorAccessorR>{
-                read_only_accessor_from_write_accessor(
-                    input_grad),
-                read_only_accessor_from_write_accessor(
-                    input_grad)}};
-        VariadicGenericTensorAccessor result =
-            acc.get_variadic_tensor(make_task_tensor_parameter_grad(TensorSlotName::INPUT),
-                                    Permissions::RO);
-        CHECK(result == correct);
-      }
-
-      SUBCASE("get_variadic_tensor(TensorSlotName, Permissions::WO, "
-              "TrainingTensorType::FORWARD)") {
-        VariadicGenericTensorAccessor correct =
-            VariadicGenericTensorAccessor{variadic_tensors};
-        VariadicGenericTensorAccessor result =
-            acc.get_variadic_tensor(make_task_tensor_parameter_fwd(TensorSlotName::INPUT),
-                                    Permissions::WO);
-        CHECK(result == correct);
-      }
-
-      SUBCASE("get_variadic_tensor(TensorSlotName, Permissions::WO, "
-              "TrainingTensorType::GRADIENT)") {
-        VariadicGenericTensorAccessor correct =
-            VariadicGenericTensorAccessor{variadic_tensors_grad};
-        VariadicGenericTensorAccessor result =
-            acc.get_variadic_tensor(make_task_tensor_parameter_grad(TensorSlotName::INPUT),
-                                    Permissions::WO);
-        CHECK(result == correct);
-      }
-
-      SUBCASE("get_variadic_tensor(TensorSlotName, Permissions::WO, "
-              "TrainingTensorType::FORWARD)") {
-        VariadicGenericTensorAccessor correct =
-            VariadicGenericTensorAccessor{variadic_tensors};
-        VariadicGenericTensorAccessor result =
-            acc.get_variadic_tensor(make_task_tensor_parameter_fwd(TensorSlotName::INPUT),
-                                    Permissions::RW);
-        CHECK(result == correct);
-      }
-
-      SUBCASE("get_variadic_tensor(TensorSlotName, Permissions::WO, "
-              "TrainingTensorType::GRADIENT)") {
-        VariadicGenericTensorAccessor correct =
-            VariadicGenericTensorAccessor{variadic_tensors_grad};
-        VariadicGenericTensorAccessor result =
-            acc.get_variadic_tensor(make_task_tensor_parameter_grad(TensorSlotName::INPUT),
-                                    Permissions::RW);
-        CHECK(result == correct);
-      }
-    }
-#endif
   }
 }
