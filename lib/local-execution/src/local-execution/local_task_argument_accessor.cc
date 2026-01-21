@@ -1,5 +1,6 @@
 #include "local-execution/local_task_argument_accessor.h"
 #include "kernels/accessor.h"
+#include "pcg/device_id.h"
 #include "pcg/device_id_t.h"
 #include "utils/optional.h"
 
@@ -11,20 +12,18 @@ LocalTaskArgumentAccessor::LocalTaskArgumentAccessor(
         &tensor_slots_backing,
     ProfilingSettings const &profiling_settings,
     device_handle_t const &ff_handle,
-    DeviceType kernel_device_type,
     PCGOperatorAttrs const &op_attrs,
     std::optional<LossAttrs> const &loss_attrs,
     std::optional<PerDeviceOpState> const &per_device_op_state,
     FFIterationConfig const &iteration_config,
     std::optional<OptimizerAttrs> const &optimizer_attrs,
-    size_t device_idx)
+    device_id_t device_idx)
     : allocator(allocator), tensor_slots_backing(tensor_slots_backing),
       profiling_settings(profiling_settings), ff_handle(ff_handle),
-      kernel_device_type(kernel_device_type), op_attrs(op_attrs),
-      loss_attrs(loss_attrs), per_device_op_state(per_device_op_state),
+      op_attrs(op_attrs), loss_attrs(loss_attrs),
+      per_device_op_state(per_device_op_state),
       iteration_config(iteration_config), optimizer_attrs(optimizer_attrs),
-      device_idx(make_device_id_t_from_idx(nonnegative_int{device_idx},
-                                           kernel_device_type)) {}
+      device_idx(device_idx) {}
 
 GenericTensorAccessor
     LocalTaskArgumentAccessor::get_tensor(TaskTensorParameter slot,
@@ -55,7 +54,7 @@ device_handle_t LocalTaskArgumentAccessor::get_ff_handle() const {
 }
 
 DeviceType LocalTaskArgumentAccessor::get_kernel_device_type() const {
-  return this->kernel_device_type;
+  return get_device_type(this->device_idx);
 }
 
 PCGOperatorAttrs LocalTaskArgumentAccessor::get_op_attrs() const {

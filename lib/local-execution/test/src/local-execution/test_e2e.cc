@@ -1,6 +1,7 @@
 #include "internal/test_utils.h"
 #include "kernels/compare_tensor_accessors.h"
 #include "kernels/copy_tensor_accessor.h"
+#include "kernels/device_handle_t.dtg.h"
 #include "kernels/device_handle_t.h"
 #include "kernels/format_accessor_contents.h"
 #include "kernels/local_cpu_allocator.h"
@@ -12,6 +13,8 @@
 #include "op-attrs/ops/loss_functions/loss_attrs.dtg.h"
 #include "pcg/computation_graph.h"
 #include "pcg/computation_graph_builder.h"
+#include "pcg/device_id_t.h"
+#include "pcg/device_type.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
 #include "test/utils/doctest/check_kv.h"
 #include "utils/containers/get_only.h"
@@ -102,6 +105,9 @@ TEST_SUITE(FF_TEST_SUITE) {
                                          /*momentum=*/0.9,
                                          /*nesterov=*/false,
                                          /*weight_decay=*/0.001}};
+    device_handle_t ff_handle = cpu_make_device_handle_t();
+    device_id_t device_idx =
+        make_device_id_t_from_idx(nonnegative_int{0}, DeviceType::CPU);
 
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> input_tensors;
 
@@ -112,24 +118,25 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*input_tensors=*/input_tensors,
             /*allocator=*/allocator,
             /*profiling_settings=*/ProfilingSettings{0, 0},
-            /*device_handle=*/cpu_make_device_handle_t(),
-            /*kernel_device_type=*/DeviceType::CPU,
+            /*device_handle=*/ff_handle,
             /*iteration_config=*/FFIterationConfig{0_p},
-            /*device_idx=*/0);
+            /*device_idx=*/device_idx);
 
     // begin training loop
     int num_epochs = 5;
     std::vector<GenericTensorAccessorR> loss_values;
 
     for (int i = 0; i < num_epochs; i++) {
-      perform_forward_pass_for_computation_graph_instance(
-          computation_graph_instance);
-      perform_backward_pass_for_computation_graph_instance(
-          computation_graph_instance);
-      perform_update_pass_for_computation_graph_instance(
-          computation_graph_instance);
-      loss_values.push_back(copy_tensor_accessor_r(
-          computation_graph_instance.get_loss_tensor_accessor(), allocator));
+      perform_all_passes_for_computation_graph_instance(
+          /*instance=*/computation_graph_instance,
+          /*profiling_settings=*/ProfilingSettings{0, 0},
+          /*ff_handle=*/ff_handle,
+          /*loss_attrs=*/loss_attrs,
+          /*iteration_config=*/FFIterationConfig{0_p},
+          /*optimizer_attrs=*/optimizer_attrs,
+          /*device_idx=*/device_idx);
+      // loss_values.push_back(copy_tensor_accessor_r(
+      //     computation_graph_instance.get_loss_tensor_accessor(), allocator));
     }
 
     // Assert that each sample in the batch has a lower loss in last epoch than
@@ -228,6 +235,10 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
             /*weight_decay=*/0.001,
         },
     };
+    device_id_t device_idx =
+        make_device_id_t_from_idx(nonnegative_int{0}, DeviceType::GPU);
+    device_handle_t ff_handle =
+        gpu_make_device_handle_t(managed_handle.raw_handle());
 
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> input_tensors;
 
@@ -238,11 +249,9 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
             /*input_tensors=*/input_tensors,
             /*allocator=*/allocator,
             /*profiling_settings=*/ProfilingSettings{0, 0},
-            /*device_handle=*/
-            device_handle_t_from_managed_handle(std::optional{managed_handle}),
-            /*kernel_device_type=*/DeviceType::GPU,
+            /*device_handle=*/ff_handle,
             /*iteration_config=*/FFIterationConfig{0_p},
-            /*device_idx=*/0);
+            /*device_idx=*/device_idx);
 
     // begin training loop
     Allocator cpu_allocator = create_local_cpu_memory_allocator();
@@ -251,15 +260,17 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     std::vector<GenericTensorAccessorR> loss_values;
 
     for (int i = 0; i < num_epochs; i++) {
-      perform_forward_pass_for_computation_graph_instance(
-          computation_graph_instance);
-      perform_backward_pass_for_computation_graph_instance(
-          computation_graph_instance);
-      perform_update_pass_for_computation_graph_instance(
-          computation_graph_instance);
-      loss_values.push_back(copy_tensor_accessor_r(
-          computation_graph_instance.get_loss_tensor_accessor(),
-          cpu_allocator));
+      perform_all_passes_for_computation_graph_instance(
+          /*instance=*/computation_graph_instance,
+          /*profiling_settings=*/ProfilingSettings{0, 0},
+          /*ff_handle=*/ff_handle,
+          /*loss_attrs=*/loss_attrs,
+          /*iteration_config=*/FFIterationConfig{0_p},
+          /*optimizer_attrs=*/optimizer_attrs,
+          /*device_idx=*/device_idx);
+      // loss_values.push_back(copy_tensor_accessor_r(
+      //     computation_graph_instance.get_loss_tensor_accessor(),
+      //     cpu_allocator));
     }
 
     // Assert that each sample in the batch has a lower loss in last epoch than

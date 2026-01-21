@@ -3,9 +3,11 @@
 #include "kernels/local_cpu_allocator.h"
 #include "kernels/profiling_settings.dtg.h"
 #include "op-attrs/ops/input_attrs.dtg.h"
+#include "pcg/device_id_t.h"
 #include "task-spec/task_argument_accessor/task_tensor_parameter.h"
 #include "task-spec/task_impl_function.dtg.h"
 #include "utils/fmt/variant.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include "utils/positive_int/positive_int.h"
 #include <doctest/doctest.h>
 #include <optional>
@@ -50,18 +52,20 @@ TEST_SUITE(FF_TEST_SUITE) {
             },
         };
 
+    device_id_t device_idx =
+        make_device_id_t_from_idx(nonnegative_int{0}, DeviceType::CPU);
+
     LocalTaskArgumentAccessor acc = LocalTaskArgumentAccessor{
         /*allocator=*/allocator,
         /*tensor_slots_backing=*/tensor_slots_backing,
         /*profiling_settings=*/ProfilingSettings{0, 0},
         /*ff_handle=*/cpu_make_device_handle_t(),
-        /*kernel_device_type=*/DeviceType::CPU,
         /*op_attrs=*/PCGOperatorAttrs{InputAttrs{input_tensor_shape}},
         /*loss_attrs=*/std::nullopt,
         /*per_device_op_state=*/std::nullopt,
         /*iteration_config=*/FFIterationConfig{0_p},
         /*optimizer_attrs=*/std::nullopt,
-        /*device_idx=*/0,
+        /*device_idx=*/device_idx,
     };
 
     SUBCASE("get_tensor") {
