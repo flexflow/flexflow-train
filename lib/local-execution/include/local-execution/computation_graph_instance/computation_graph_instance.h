@@ -50,12 +50,31 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
         device_id_t);
 std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
     perform_forward_pass_for_computation_graph_instance(
-        ComputationGraphInstance const &);
+        ComputationGraphInstance const &,
+        ProfilingSettings const &profiling_settings,
+        device_handle_t const &ff_handle,
+        std::optional<LossAttrs> const &loss_attrs,
+        FFIterationConfig iteration_config,
+        std::optional<OptimizerAttrs> const &optimizer_attrs,
+        device_id_t device_idx);
 std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
     perform_backward_pass_for_computation_graph_instance(
-        ComputationGraphInstance const &);
-void perform_update_pass_for_computation_graph_instance(
-    ComputationGraphInstance const &);
+        ComputationGraphInstance const &,
+        ProfilingSettings const &profiling_settings,
+        device_handle_t const &ff_handle,
+        std::optional<LossAttrs> const &loss_attrs,
+        FFIterationConfig iteration_config,
+        std::optional<OptimizerAttrs> const &optimizer_attrs,
+        device_id_t device_idx);
+std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
+    perform_update_pass_for_computation_graph_instance(
+        ComputationGraphInstance const &,
+        ProfilingSettings const &profiling_settings,
+        device_handle_t const &ff_handle,
+        std::optional<LossAttrs> const &loss_attrs,
+        FFIterationConfig iteration_config,
+        std::optional<OptimizerAttrs> const &optimizer_attrs,
+        device_id_t device_idx);
 
 } // namespace FlexFlow
 
