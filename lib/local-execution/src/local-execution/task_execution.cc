@@ -63,13 +63,13 @@ std::optional<milliseconds_t> execute_dynamic_node_invocation(
   ComputationGraphOpAttrs op_attrs =
       assert_unwrap(compgraph_op_attrs_from_pcg_op_attrs(
           assert_unwrap(invocation.node_attrs.op_attrs)));
-  std::optional<TaskImplFunction> task_impl;
+  std::optional<milliseconds_t> result;
   switch (task_type) {
     case DynamicTaskType::FWD:
-      task_impl = get_fwd_task_impl_for_op_attrs(op_attrs);
+      result = call_fwd_task_impl(op_attrs, arg_accessor);
       break;
     case DynamicTaskType::BWD:
-      task_impl = get_bwd_task_impl_for_op_attrs(op_attrs);
+      result = call_bwd_task_impl(op_attrs, arg_accessor);
       break;
     case DynamicTaskType::UPD:
       NOT_IMPLEMENTED();
@@ -77,11 +77,7 @@ std::optional<milliseconds_t> execute_dynamic_node_invocation(
     default:
       PANIC("Unhandled DynamicTaskType", fmt::to_string(task_type));
   }
-  if (!task_impl) {
-    return std::nullopt;
-  }
-  NOT_IMPLEMENTED(); // FIXME (Elliott): call the task
-  return std::nullopt;
+  return result;
 }
 
 } // namespace FlexFlow

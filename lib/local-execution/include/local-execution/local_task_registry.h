@@ -24,6 +24,10 @@ std::optional<milliseconds_t>
     call_fwd_task_impl(ComputationGraphOpAttrs const &,
                        TaskArgumentAccessor const &arg_accessor);
 
+std::optional<milliseconds_t>
+    call_bwd_task_impl(ComputationGraphOpAttrs const &,
+                       TaskArgumentAccessor const &arg_accessor);
+
 void call_generic_task_impl(ComputationGraphOpAttrs const &,
                             TaskArgumentAccessor const &arg_accessor);
 
