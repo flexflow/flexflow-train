@@ -16,13 +16,17 @@ namespace FlexFlow {
 
 struct ComputationGraphInstance {
 public:
-  ComputationGraphInstance(DynamicOpenDataflowGraph, Allocator &);
+  ComputationGraphInstance(DynamicOpenDataflowGraph,
+                           Allocator &,
+                           std::vector<DynamicNodeInvocation> const &);
   DynamicOpenDataflowGraph const &get_dynamic_dataflow_graph() const;
   Allocator &get_allocator() const;
+  std::vector<DynamicNodeInvocation> const &get_topological_ordering() const;
 
 private:
   DynamicOpenDataflowGraph dataflow_graph;
   Allocator &allocator;
+  std::vector<DynamicNodeInvocation> topological_ordering;
 };
 
 ComputationGraphInstance create_computation_graph_instance(

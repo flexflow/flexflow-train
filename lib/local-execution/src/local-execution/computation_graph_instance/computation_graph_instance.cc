@@ -31,6 +31,24 @@
 
 namespace FlexFlow {
 
+ComputationGraphInstance::ComputationGraphInstance(
+    DynamicOpenDataflowGraph dg,
+    Allocator &alloc,
+    std::vector<DynamicNodeInvocation> const &topo_order)
+    : dataflow_graph(dg), allocator(alloc), topological_ordering(topo_order) {}
+
+DynamicOpenDataflowGraph const &
+    ComputationGraphInstance::get_dynamic_dataflow_graph() const {
+  return this->dataflow_graph;
+}
+Allocator &ComputationGraphInstance::get_allocator() const {
+  return this->allocator;
+}
+std::vector<DynamicNodeInvocation> const &
+    ComputationGraphInstance::get_topological_ordering() const {
+  return this->topological_ordering;
+}
+
 bool no_nodes_are_initialized(DynamicOpenDataflowGraph const &g) {
   return all_are_true(
       transform(get_dynamic_nodes(g), [](DynamicNodeAttrs const &n) -> bool {
@@ -44,10 +62,6 @@ bool all_nodes_are_initialized(DynamicOpenDataflowGraph const &g) {
         return n.per_device_op_state.has_value();
       }));
 }
-
-ComputationGraphInstance::ComputationGraphInstance(DynamicOpenDataflowGraph dg,
-                                                   Allocator &alloc)
-    : dataflow_graph(dg), allocator(alloc) {}
 
 DynamicNodeInvocation
     initialize_node(DynamicNodeInvocation const &i,
@@ -128,110 +142,14 @@ ComputationGraphInstance create_computation_graph_instance(
       });
   ASSERT(all_nodes_are_initialized(dg));
 
-  return ComputationGraphInstance{dg, allocator};
-}
+  // Compute the topological ordering of the graph
+  auto [kwarg_graph, node_map] =
+      labelled_open_kwarg_dataflow_graph_from_dynamic_open_dataflow_graph(dg);
+  std::vector<Node> node_topo_order = get_topological_ordering(kwarg_graph);
+  std::vector<DynamicNodeInvocation> invocation_topo_order = transform(
+      node_topo_order, [&](Node node) { return node_map.at_l(node); });
 
-std::pair<LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
-                                         DynamicValueAttrs,
-                                         int,
-                                         DynamicTensorSlot>,
-          std::unordered_map<Node, DynamicNodeInvocation>>
-    labelled_open_kwarg_dataflow_graph_from_dynamic_open_dataflow_graph_with_map(
-        DynamicOpenDataflowGraph const &g) {
-
-  std::unordered_set<DynamicValueAttrs> all_values =
-      unordered_set_of(get_dynamic_values(g));
-
-  ManyToOne<DynamicValueAttrs, DynamicNodeInvocation> value_to_producer;
-  for (DynamicNodeInvocation const &invocation :
-       get_dynamic_invocation_set(g)) {
-    for (DynamicValueAttrs const &output : values(invocation.outputs)) {
-      value_to_producer.insert({output, invocation});
-    }
-  }
-
-  std::unordered_set<DynamicValueAttrs> graph_inputs =
-      filter(all_values, [&](DynamicValueAttrs const &v) -> bool {
-        return !value_to_producer.contains_l(v);
-      });
-
-  LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
-                                 DynamicValueAttrs,
-                                 int,
-                                 DynamicTensorSlot>
-      result = LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
-                                              DynamicValueAttrs,
-                                              int,
-                                              DynamicTensorSlot>::
-          create<
-              UnorderedSetLabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
-                                                         DynamicValueAttrs,
-                                                         int,
-                                                         DynamicTensorSlot>>();
-
-  std::unordered_map<Node, DynamicNodeInvocation> node_map;
-  bidict<OpenKwargDataflowValue<int, DynamicTensorSlot>, DynamicValueAttrs>
-      value_map;
-
-  for (auto const &kv : enumerate(graph_inputs)) {
-    int input_idx = kv.first.unwrap_nonnegative();
-    DynamicValueAttrs graph_input = kv.second;
-    KwargDataflowGraphInput<int> added =
-        result.add_input(input_idx, graph_input);
-    value_map.equate(OpenKwargDataflowValue<int, DynamicTensorSlot>{added},
-                     graph_input);
-  }
-
-  auto inputs_have_been_added =
-      [&](DynamicNodeInvocation const &invocation) -> bool {
-    return all_of(values(invocation.inputs),
-                  [&](DynamicValueAttrs const &input) -> bool {
-                    return value_map.contains_r(input);
-                  });
-  };
-
-  std::unordered_set<DynamicNodeInvocation> to_add = g.invocations;
-
-  auto add_invocation_to_graph =
-      [&](DynamicNodeInvocation const &invocation) -> void {
-    KwargNodeAddedResult<DynamicTensorSlot> added = result.add_node(
-        invocation.node_attrs,
-        map_values(invocation.inputs,
-                   [&](DynamicValueAttrs const &input)
-                       -> OpenKwargDataflowValue<int, DynamicTensorSlot> {
-                     return value_map.at_r(input);
-                   }),
-        invocation.outputs);
-    node_map.insert(std::pair{added.node, invocation});
-
-    for (auto const &[k, v] :
-         zip_values_strict(invocation.outputs, added.outputs)) {
-      DynamicValueAttrs invocation_output = v.first;
-      KwargDataflowOutput<DynamicTensorSlot> graph_output = v.second;
-      value_map.equate(
-          OpenKwargDataflowValue<int, DynamicTensorSlot>{graph_output},
-          invocation_output);
-    }
-
-    to_add.erase(invocation);
-  };
-
-  auto add_next_invocation_to_graph = [&]() {
-    for (DynamicNodeInvocation const &invocation : to_add) {
-      if (inputs_have_been_added(invocation)) {
-        add_invocation_to_graph(invocation);
-        return;
-      }
-    }
-
-    PANIC("Failed to add any invocations in to_add", to_add);
-  };
-
-  while (to_add.size() > 0) {
-    add_next_invocation_to_graph();
-  }
-
-  return std::pair{result, node_map};
+  return ComputationGraphInstance{dg, allocator, invocation_topo_order};
 }
 
 std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
@@ -243,40 +161,28 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
         FFIterationConfig iteration_config,
         std::optional<OptimizerAttrs> const &optimizer_attrs,
         device_id_t device_idx) {
-  std::pair<LabelledOpenKwargDataflowGraphView<DynamicNodeAttrs,
-                                               DynamicValueAttrs,
-                                               int,
-                                               DynamicTensorSlot>,
-            std::unordered_map<Node, DynamicNodeInvocation>>
-      dataflow_graph_and_map =
-          labelled_open_kwarg_dataflow_graph_from_dynamic_open_dataflow_graph_with_map(
-              instance.get_dynamic_dataflow_graph());
-  LabelledOpenKwargDataflowGraphView<DynamicNodeAttrs,
-                                     DynamicValueAttrs,
-                                     int,
-                                     DynamicTensorSlot>
-      dataflow_graph = dataflow_graph_and_map.first;
-  std::unordered_map<Node, DynamicNodeInvocation> node_map =
-      dataflow_graph_and_map.second;
-  std::vector<Node> nodes = get_topological_ordering(dataflow_graph);
+  std::vector<DynamicNodeInvocation> const &topo_order =
+      instance.get_topological_ordering();
 
   std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
-      result = unordered_map_from_pairs(transform(nodes, [&](Node const &node) {
-        DynamicNodeInvocation invocation = node_map.at(node);
-        std::optional<milliseconds_t> timing = execute_dynamic_node_invocation(
-            /*invocation=*/invocation,
-            /*profiling_settings=*/profiling_settings,
-            /*kernel_device_type=*/kernel_device_type,
-            /*op_attrs=*/assert_unwrap(invocation.node_attrs.op_attrs),
-            /*loss_attrs=*/loss_attrs,
-            /*per_device_op_state=*/
-            get_device_state_from_device_specific(
-                assert_unwrap(invocation.node_attrs.per_device_op_state),
-                device_idx),
-            /*iteration_config=*/iteration_config,
-            /*optimizer_attrs=*/optimizer_attrs);
-        return std::pair{invocation.node_attrs.layer_guid, timing};
-      }));
+      result = unordered_map_from_pairs(
+          transform(topo_order, [&](DynamicNodeInvocation const &invocation) {
+            std::optional<milliseconds_t> timing =
+                execute_dynamic_node_invocation(
+                    /*invocation=*/invocation,
+                    /*profiling_settings=*/profiling_settings,
+                    /*kernel_device_type=*/kernel_device_type,
+                    /*op_attrs=*/assert_unwrap(invocation.node_attrs.op_attrs),
+                    /*loss_attrs=*/loss_attrs,
+                    /*per_device_op_state=*/
+                    get_device_state_from_device_specific(
+                        assert_unwrap(
+                            invocation.node_attrs.per_device_op_state),
+                        device_idx),
+                    /*iteration_config=*/iteration_config,
+                    /*optimizer_attrs=*/optimizer_attrs);
+            return std::pair{invocation.node_attrs.layer_guid, timing};
+          }));
   return result;
 }
 
