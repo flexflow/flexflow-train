@@ -10,10 +10,12 @@
 #include "task-spec/dynamic_graph/make_dynamic_open_dataflow_graph_from_cg.h"
 #include "task-spec/dynamic_graph/pass_expansion.h"
 #include "task-spec/dynamic_graph/update_insertion.h"
+#include "task-spec/per_device_op_state.h"
 #include "task-spec/task_argument_accessor/task_argument_accessor.h"
 #include "utils/containers/all_are_true.h"
 #include "utils/containers/all_of.h"
 #include "utils/containers/transform.h"
+#include "utils/containers/unordered_map_from_pairs.h"
 #include "utils/containers/zip_values_strict.h"
 #include "utils/exception.h"
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"
@@ -23,6 +25,7 @@
 #include "utils/graph/node/algorithms.h"
 #include "utils/many_to_one/many_to_one.h"
 #include "utils/optional.h"
+#include <cassert>
 #include <optional>
 #include <unordered_map>
 
@@ -233,7 +236,13 @@ std::pair<LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
 
 std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
     perform_all_passes_for_computation_graph_instance(
-        ComputationGraphInstance const &instance) {
+        ComputationGraphInstance const &instance,
+        ProfilingSettings const &profiling_settings,
+        DeviceType kernel_device_type,
+        std::optional<LossAttrs> const &loss_attrs,
+        FFIterationConfig iteration_config,
+        std::optional<OptimizerAttrs> const &optimizer_attrs,
+        device_id_t device_idx) {
   std::pair<LabelledOpenKwargDataflowGraphView<DynamicNodeAttrs,
                                                DynamicValueAttrs,
                                                int,
@@ -250,10 +259,25 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
   std::unordered_map<Node, DynamicNodeInvocation> node_map =
       dataflow_graph_and_map.second;
   std::vector<Node> nodes = get_topological_ordering(dataflow_graph);
-  for (Node const &node : nodes) {
-    DynamicNodeInvocation invocation = node_map.at(node);
-  }
-  NOT_IMPLEMENTED();
+
+  std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
+      result = unordered_map_from_pairs(transform(nodes, [&](Node const &node) {
+        DynamicNodeInvocation invocation = node_map.at(node);
+        std::optional<milliseconds_t> timing = execute_dynamic_node_invocation(
+            /*invocation=*/invocation,
+            /*profiling_settings=*/profiling_settings,
+            /*kernel_device_type=*/kernel_device_type,
+            /*op_attrs=*/assert_unwrap(invocation.node_attrs.op_attrs),
+            /*loss_attrs=*/loss_attrs,
+            /*per_device_op_state=*/
+            get_device_state_from_device_specific(
+                assert_unwrap(invocation.node_attrs.per_device_op_state),
+                device_idx),
+            /*iteration_config=*/iteration_config,
+            /*optimizer_attrs=*/optimizer_attrs);
+        return std::pair{invocation.node_attrs.layer_guid, timing};
+      }));
+  return result;
 }
 
 std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
