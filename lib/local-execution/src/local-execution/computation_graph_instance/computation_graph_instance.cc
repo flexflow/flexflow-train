@@ -13,17 +13,10 @@
 #include "task-spec/per_device_op_state.h"
 #include "task-spec/task_argument_accessor/task_argument_accessor.h"
 #include "utils/containers/all_are_true.h"
-#include "utils/containers/all_of.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/unordered_map_from_pairs.h"
-#include "utils/containers/zip_values_strict.h"
 #include "utils/exception.h"
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"
-#include "utils/graph/instances/unordered_set_labelled_open_dataflow_graph.h"
-#include "utils/graph/instances/unordered_set_labelled_open_kwarg_dataflow_graph.h"
-#include "utils/graph/labelled_open_kwarg_dataflow_graph/labelled_open_kwarg_dataflow_graph.h"
-#include "utils/graph/node/algorithms.h"
-#include "utils/many_to_one/many_to_one.h"
 #include "utils/optional.h"
 #include <cassert>
 #include <optional>
@@ -68,9 +61,8 @@ DynamicNodeInvocation
                     Allocator &allocator,
                     ProfilingSettings const &profiling_settings,
                     device_handle_t const &device_handle,
-                    DeviceType kernel_device_type,
                     FFIterationConfig const &iteration_config,
-                    size_t device_idx) {
+                    device_id_t device_idx) {
   // Get op
   ComputationGraphOpAttrs op_attrs =
       assert_unwrap(compgraph_op_attrs_from_pcg_op_attrs(
@@ -82,8 +74,6 @@ DynamicNodeInvocation
           /*invocation=*/i,
           /*profiling_settings=*/profiling_settings,
           /*ff_handle=*/device_handle,
-          /*kernel_device_type=*/kernel_device_type,
-          /*op_attrs=*/assert_unwrap(i.node_attrs.op_attrs),
           /*loss_attrs=*/std::nullopt,
           /*per_device_op_state=*/std::nullopt,
           /*iteration_config=*/iteration_config,
@@ -120,9 +110,8 @@ ComputationGraphInstance create_computation_graph_instance(
     Allocator &allocator,
     ProfilingSettings const &profiling_settings,
     device_handle_t const &device_handle,
-    DeviceType kernel_device_type,
     FFIterationConfig const &iteration_config,
-    size_t device_idx) {
+    device_id_t device_idx) {
   DynamicOpenDataflowGraph dg = make_dynamic_open_dataflow_graph_from_cg(cg);
   dg = perform_pass_expansion(dg);
   dg = perform_update_insertion(dg, optimizer);
@@ -136,7 +125,6 @@ ComputationGraphInstance create_computation_graph_instance(
                                allocator,
                                profiling_settings,
                                device_handle,
-                               kernel_device_type,
                                iteration_config,
                                device_idx);
       });
@@ -156,7 +144,7 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
     perform_all_passes_for_computation_graph_instance(
         ComputationGraphInstance const &instance,
         ProfilingSettings const &profiling_settings,
-        DeviceType kernel_device_type,
+        device_handle_t const &ff_handle,
         std::optional<LossAttrs> const &loss_attrs,
         FFIterationConfig iteration_config,
         std::optional<OptimizerAttrs> const &optimizer_attrs,
@@ -171,8 +159,7 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
                 execute_dynamic_node_invocation(
                     /*invocation=*/invocation,
                     /*profiling_settings=*/profiling_settings,
-                    /*kernel_device_type=*/kernel_device_type,
-                    /*op_attrs=*/assert_unwrap(invocation.node_attrs.op_attrs),
+                    /*ff_handle=*/ff_handle,
                     /*loss_attrs=*/loss_attrs,
                     /*per_device_op_state=*/
                     get_device_state_from_device_specific(
@@ -180,7 +167,8 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
                             invocation.node_attrs.per_device_op_state),
                         device_idx),
                     /*iteration_config=*/iteration_config,
-                    /*optimizer_attrs=*/optimizer_attrs);
+                    /*optimizer_attrs=*/optimizer_attrs,
+                    /*device_idx=*/device_idx);
             return std::pair{invocation.node_attrs.layer_guid, timing};
           }));
   return result;

@@ -17,13 +17,12 @@ struct LocalTaskArgumentAccessor : public ITaskArgumentAccessor {
           &tensor_slots_backing,
       ProfilingSettings const &profiling_settings,
       device_handle_t const &ff_handle,
-      DeviceType kernel_device_type,
       PCGOperatorAttrs const &op_attrs,
       std::optional<LossAttrs> const &loss_attrs,
       std::optional<PerDeviceOpState> const &per_device_op_state,
       FFIterationConfig const &iteration_config,
       std::optional<OptimizerAttrs> const &optimizer_attrs,
-      size_t device_idx);
+      device_id_t device_idx);
 
   LocalTaskArgumentAccessor(LocalTaskArgumentAccessor const &) = delete;
   LocalTaskArgumentAccessor(LocalTaskArgumentAccessor &&) = delete;

@@ -36,15 +36,14 @@ ComputationGraphInstance create_computation_graph_instance(
     Allocator &,
     ProfilingSettings const &,
     device_handle_t const &,
-    DeviceType,
     FFIterationConfig const &,
-    size_t);
+    device_id_t);
 
 std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
     perform_all_passes_for_computation_graph_instance(
         ComputationGraphInstance const &,
         ProfilingSettings const &,
-        DeviceType,
+        device_handle_t const &,
         std::optional<LossAttrs> const &,
         FFIterationConfig,
         std::optional<OptimizerAttrs> const &,
