@@ -6,6 +6,7 @@
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/per_device_op_state.dtg.h"
 #include "task-spec/task_argument_accessor/task_argument_accessor.h"
+#include "utils/units/milliseconds_t.h"
 
 namespace FlexFlow {
 
@@ -21,7 +22,7 @@ TaskArgumentAccessor make_task_argument_accessor_for_invocation(
     std::optional<OptimizerAttrs> const &optimizer_attrs,
     size_t device_idx);
 
-void execute_dynamic_node_invocation(
+std::optional<milliseconds_t> execute_dynamic_node_invocation(
     DynamicNodeInvocation const &invocation,
     ProfilingSettings const &profiling_settings,
     DeviceType kernel_device_type,

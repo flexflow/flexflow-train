@@ -33,7 +33,7 @@ TaskArgumentAccessor make_task_argument_accessor_for_invocation(
       /*device_idx=*/device_idx);
 }
 
-void execute_dynamic_node_invocation(
+std::optional<milliseconds_t> execute_dynamic_node_invocation(
     DynamicNodeInvocation const &invocation,
     ProfilingSettings const &profiling_settings,
     DeviceType kernel_device_type,

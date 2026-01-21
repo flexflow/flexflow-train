@@ -3,7 +3,9 @@
 
 #include "kernels/device_handle_t.dtg.h"
 #include "kernels/profiling_settings.dtg.h"
+#include "op-attrs/ops/loss_functions/loss_attrs.dtg.h"
 #include "pcg/computation_graph.dtg.h"
+#include "pcg/device_id_t.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_layer_guid_t.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
@@ -36,7 +38,13 @@ ComputationGraphInstance create_computation_graph_instance(
 
 std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
     perform_all_passes_for_computation_graph_instance(
-        ComputationGraphInstance const &);
+        ComputationGraphInstance const &,
+        ProfilingSettings const &,
+        DeviceType,
+        std::optional<LossAttrs> const &,
+        FFIterationConfig,
+        std::optional<OptimizerAttrs> const &,
+        device_id_t);
 std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
     perform_forward_pass_for_computation_graph_instance(
         ComputationGraphInstance const &);
