@@ -179,22 +179,119 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
 
 std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
     perform_forward_pass_for_computation_graph_instance(
-        ComputationGraphInstance const &instance) {
+        ComputationGraphInstance const &instance,
+        ProfilingSettings const &profiling_settings,
+        device_handle_t const &ff_handle,
+        std::optional<LossAttrs> const &loss_attrs,
+        FFIterationConfig iteration_config,
+        std::optional<OptimizerAttrs> const &optimizer_attrs,
+        device_id_t device_idx) {
+  std::vector<DynamicNodeInvocation> const &topo_order =
+      instance.get_topological_ordering();
 
-  NOT_IMPLEMENTED();
+  std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
+      result = unordered_map_from_pairs(
+          transform(topo_order, [&](DynamicNodeInvocation const &invocation) {
+            DynamicTaskType task_type =
+                assert_unwrap(invocation.node_attrs.task_type);
+            std::optional<milliseconds_t> timing;
+            if (task_type != DynamicTaskType::FWD) {
+              return std::pair{invocation.node_attrs.layer_guid, timing};
+            }
+            timing = execute_dynamic_node_invocation(
+                /*invocation=*/invocation,
+                /*allocator=*/instance.get_allocator(),
+                /*profiling_settings=*/profiling_settings,
+                /*ff_handle=*/ff_handle,
+                /*loss_attrs=*/loss_attrs,
+                /*per_device_op_state=*/
+                get_device_state_from_device_specific(
+                    assert_unwrap(invocation.node_attrs.per_device_op_state),
+                    device_idx),
+                /*iteration_config=*/iteration_config,
+                /*optimizer_attrs=*/optimizer_attrs,
+                /*device_idx=*/device_idx);
+            return std::pair{invocation.node_attrs.layer_guid, timing};
+          }));
+  return result;
 }
 
 std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
     perform_backward_pass_for_computation_graph_instance(
-        ComputationGraphInstance const &instance) {
+        ComputationGraphInstance const &instance,
+        ProfilingSettings const &profiling_settings,
+        device_handle_t const &ff_handle,
+        std::optional<LossAttrs> const &loss_attrs,
+        FFIterationConfig iteration_config,
+        std::optional<OptimizerAttrs> const &optimizer_attrs,
+        device_id_t device_idx) {
+  std::vector<DynamicNodeInvocation> const &topo_order =
+      instance.get_topological_ordering();
 
-  NOT_IMPLEMENTED();
+  std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
+      result = unordered_map_from_pairs(
+          transform(topo_order, [&](DynamicNodeInvocation const &invocation) {
+            DynamicTaskType task_type =
+                assert_unwrap(invocation.node_attrs.task_type);
+            std::optional<milliseconds_t> timing;
+            if (task_type != DynamicTaskType::BWD) {
+              return std::pair{invocation.node_attrs.layer_guid, timing};
+            }
+            timing = execute_dynamic_node_invocation(
+                /*invocation=*/invocation,
+                /*allocator=*/instance.get_allocator(),
+                /*profiling_settings=*/profiling_settings,
+                /*ff_handle=*/ff_handle,
+                /*loss_attrs=*/loss_attrs,
+                /*per_device_op_state=*/
+                get_device_state_from_device_specific(
+                    assert_unwrap(invocation.node_attrs.per_device_op_state),
+                    device_idx),
+                /*iteration_config=*/iteration_config,
+                /*optimizer_attrs=*/optimizer_attrs,
+                /*device_idx=*/device_idx);
+            return std::pair{invocation.node_attrs.layer_guid, timing};
+          }));
+  return result;
 }
 
-void perform_update_pass_for_computation_graph_instance(
-    ComputationGraphInstance const &instance) {
+std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
+    perform_update_pass_for_computation_graph_instance(
+        ComputationGraphInstance const &instance,
+        ProfilingSettings const &profiling_settings,
+        device_handle_t const &ff_handle,
+        std::optional<LossAttrs> const &loss_attrs,
+        FFIterationConfig iteration_config,
+        std::optional<OptimizerAttrs> const &optimizer_attrs,
+        device_id_t device_idx) {
+  std::vector<DynamicNodeInvocation> const &topo_order =
+      instance.get_topological_ordering();
 
-  NOT_IMPLEMENTED();
+  std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
+      result = unordered_map_from_pairs(
+          transform(topo_order, [&](DynamicNodeInvocation const &invocation) {
+            DynamicTaskType task_type =
+                assert_unwrap(invocation.node_attrs.task_type);
+            std::optional<milliseconds_t> timing;
+            if (task_type != DynamicTaskType::UPD) {
+              return std::pair{invocation.node_attrs.layer_guid, timing};
+            }
+            timing = execute_dynamic_node_invocation(
+                /*invocation=*/invocation,
+                /*allocator=*/instance.get_allocator(),
+                /*profiling_settings=*/profiling_settings,
+                /*ff_handle=*/ff_handle,
+                /*loss_attrs=*/loss_attrs,
+                /*per_device_op_state=*/
+                get_device_state_from_device_specific(
+                    assert_unwrap(invocation.node_attrs.per_device_op_state),
+                    device_idx),
+                /*iteration_config=*/iteration_config,
+                /*optimizer_attrs=*/optimizer_attrs,
+                /*device_idx=*/device_idx);
+            return std::pair{invocation.node_attrs.layer_guid, timing};
+          }));
+  return result;
 }
 
 } // namespace FlexFlow
