@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_LIB_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_LOCAL_TASK_REGISTRY_H
 #define _FLEXFLOW_LIB_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_LOCAL_TASK_REGISTRY_H
 
-#include "pcg/layer_attrs.dtg.h"
+#include "op-attrs/computation_graph_op_attrs.dtg.h"
 #include "task-spec/device_specific_per_device_op_state.dtg.h"
 #include "task-spec/task_impl_function.dtg.h"
 #include "utils/units/milliseconds_t.h"
@@ -18,18 +18,17 @@ std::optional<TaskImplFunction>
 
 std::optional<DeviceSpecificPerDeviceOpState>
     call_init_task_impl(ComputationGraphOpAttrs const &,
-                        TaskArgumentAccessor const &arg_accessor);
-
+                        TaskArgumentAccessor const &);
 std::optional<milliseconds_t>
     call_fwd_task_impl(ComputationGraphOpAttrs const &,
-                       TaskArgumentAccessor const &arg_accessor);
-
+                       TaskArgumentAccessor const &);
 std::optional<milliseconds_t>
     call_bwd_task_impl(ComputationGraphOpAttrs const &,
-                       TaskArgumentAccessor const &arg_accessor);
-
+                       TaskArgumentAccessor const &);
+void call_update_task_impl(OptimizerAttrs const &,
+                           TaskArgumentAccessor const &);
 void call_generic_task_impl(ComputationGraphOpAttrs const &,
-                            TaskArgumentAccessor const &arg_accessor);
+                            TaskArgumentAccessor const &);
 
 } // namespace FlexFlow
 

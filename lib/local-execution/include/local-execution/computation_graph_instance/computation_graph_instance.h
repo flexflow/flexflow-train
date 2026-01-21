@@ -18,15 +18,18 @@ struct ComputationGraphInstance {
 public:
   ComputationGraphInstance(DynamicOpenDataflowGraph,
                            Allocator &,
-                           std::vector<DynamicNodeInvocation> const &);
+                           std::vector<DynamicNodeInvocation> const &,
+                           OptimizerAttrs const &);
   DynamicOpenDataflowGraph const &get_dynamic_dataflow_graph() const;
   Allocator &get_allocator() const;
   std::vector<DynamicNodeInvocation> const &get_topological_ordering() const;
+  OptimizerAttrs const &get_optimizer_attrs() const;
 
 private:
   DynamicOpenDataflowGraph dataflow_graph;
   Allocator &allocator;
   std::vector<DynamicNodeInvocation> topological_ordering;
+  OptimizerAttrs optimizer_attrs;
 };
 
 ComputationGraphInstance create_computation_graph_instance(
@@ -46,7 +49,6 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
         device_handle_t const &,
         std::optional<LossAttrs> const &,
         FFIterationConfig,
-        std::optional<OptimizerAttrs> const &,
         device_id_t);
 std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
     perform_forward_pass_for_computation_graph_instance(
@@ -55,7 +57,6 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
         device_handle_t const &ff_handle,
         std::optional<LossAttrs> const &loss_attrs,
         FFIterationConfig iteration_config,
-        std::optional<OptimizerAttrs> const &optimizer_attrs,
         device_id_t device_idx);
 std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
     perform_backward_pass_for_computation_graph_instance(
@@ -64,17 +65,14 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
         device_handle_t const &ff_handle,
         std::optional<LossAttrs> const &loss_attrs,
         FFIterationConfig iteration_config,
-        std::optional<OptimizerAttrs> const &optimizer_attrs,
         device_id_t device_idx);
-std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
-    perform_update_pass_for_computation_graph_instance(
-        ComputationGraphInstance const &,
-        ProfilingSettings const &profiling_settings,
-        device_handle_t const &ff_handle,
-        std::optional<LossAttrs> const &loss_attrs,
-        FFIterationConfig iteration_config,
-        std::optional<OptimizerAttrs> const &optimizer_attrs,
-        device_id_t device_idx);
+void perform_update_pass_for_computation_graph_instance(
+    ComputationGraphInstance const &,
+    ProfilingSettings const &profiling_settings,
+    device_handle_t const &ff_handle,
+    std::optional<LossAttrs> const &loss_attrs,
+    FFIterationConfig iteration_config,
+    device_id_t device_idx);
 
 } // namespace FlexFlow
 

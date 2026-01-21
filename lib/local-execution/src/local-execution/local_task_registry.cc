@@ -23,7 +23,9 @@
 #include "task-spec/ops/impl/split.h"
 #include "task-spec/ops/impl/topk.h"
 #include "task-spec/ops/impl/transpose.h"
+#include "task-spec/optimizer.h"
 #include "task-spec/task_impl_function.dtg.h"
+#include "utils/exception.h"
 #include "utils/optional.h"
 #include "utils/overload.h"
 #include <optional>
@@ -188,6 +190,14 @@ std::optional<milliseconds_t>
   }
   auto fn =
       assert_unwrap(task_impl_fn).get<FwdBwdOpTaskImplFunction>().function_ptr;
+
+  return fn(acc);
+}
+
+void call_update_task_impl(OptimizerAttrs const &optimizer_attrs,
+                           TaskArgumentAccessor const &acc) {
+  TaskImplFunction task_impl_fn = get_update_task_impl(optimizer_attrs);
+  auto fn = task_impl_fn.get<GenericTaskImplFunction>().function_ptr;
 
   return fn(acc);
 }
