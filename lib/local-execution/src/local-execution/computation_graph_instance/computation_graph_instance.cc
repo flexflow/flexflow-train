@@ -4,7 +4,7 @@
 #include "local-execution/task_execution.h"
 #include "local-execution/tensor_allocation.h"
 #include "op-attrs/computation_graph_op_attrs.h"
-#include "pcg/optimizer_attrs.dtg.h"
+#include "pcg/optimizer_attrs.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_accessor.dtg.h"
@@ -47,6 +47,10 @@ std::vector<DynamicNodeInvocation> const &
 }
 OptimizerAttrs const &ComputationGraphInstance::get_optimizer_attrs() const {
   return this->optimizer_attrs;
+}
+void ComputationGraphInstance::update_optimizer_attrs_for_next_iter() {
+  this->optimizer_attrs =
+      get_optimizer_attrs_for_next_iter(this->optimizer_attrs);
 }
 
 bool no_nodes_are_initialized(DynamicOpenDataflowGraph const &g) {
@@ -180,7 +184,7 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
 
 std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
     perform_all_passes_for_computation_graph_instance(
-        ComputationGraphInstance const &instance,
+        ComputationGraphInstance &instance,
         ProfilingSettings const &profiling_settings,
         device_handle_t const &ff_handle,
         std::optional<LossAttrs> const &loss_attrs,
@@ -188,15 +192,18 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
         device_id_t device_idx) {
   std::vector<DynamicNodeInvocation> const &topo_order =
       instance.get_topological_ordering();
-  return execute_dynamic_node_invocation_set(
-      /*invocations=*/topo_order,
-      /*allocator=*/instance.get_allocator(),
-      /*optimizer_attrs=*/instance.get_optimizer_attrs(),
-      /*profiling_settings=*/profiling_settings,
-      /*ff_handle=*/ff_handle,
-      /*loss_attrs=*/loss_attrs,
-      /*iteration_config=*/iteration_config,
-      /*device_idx=*/device_idx);
+  std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
+      result = execute_dynamic_node_invocation_set(
+          /*invocations=*/topo_order,
+          /*allocator=*/instance.get_allocator(),
+          /*optimizer_attrs=*/instance.get_optimizer_attrs(),
+          /*profiling_settings=*/profiling_settings,
+          /*ff_handle=*/ff_handle,
+          /*loss_attrs=*/loss_attrs,
+          /*iteration_config=*/iteration_config,
+          /*device_idx=*/device_idx);
+  instance.update_optimizer_attrs_for_next_iter();
+  return result;
 }
 
 std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
@@ -254,7 +261,7 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
 }
 
 void perform_update_pass_for_computation_graph_instance(
-    ComputationGraphInstance const &instance,
+    ComputationGraphInstance &instance,
     ProfilingSettings const &profiling_settings,
     device_handle_t const &ff_handle,
     std::optional<LossAttrs> const &loss_attrs,
@@ -277,6 +284,7 @@ void perform_update_pass_for_computation_graph_instance(
       /*loss_attrs=*/loss_attrs,
       /*iteration_config=*/iteration_config,
       /*device_idx=*/device_idx);
+  instance.update_optimizer_attrs_for_next_iter();
 }
 
 } // namespace FlexFlow

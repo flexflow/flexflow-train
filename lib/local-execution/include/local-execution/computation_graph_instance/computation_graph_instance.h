@@ -24,6 +24,7 @@ public:
   Allocator &get_allocator() const;
   std::vector<DynamicNodeInvocation> const &get_topological_ordering() const;
   OptimizerAttrs const &get_optimizer_attrs() const;
+  void update_optimizer_attrs_for_next_iter();
 
 private:
   DynamicOpenDataflowGraph dataflow_graph;
@@ -44,7 +45,7 @@ ComputationGraphInstance create_computation_graph_instance(
 
 std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
     perform_all_passes_for_computation_graph_instance(
-        ComputationGraphInstance const &,
+        ComputationGraphInstance &,
         ProfilingSettings const &,
         device_handle_t const &,
         std::optional<LossAttrs> const &,
@@ -67,7 +68,7 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
         FFIterationConfig iteration_config,
         device_id_t device_idx);
 void perform_update_pass_for_computation_graph_instance(
-    ComputationGraphInstance const &,
+    ComputationGraphInstance &,
     ProfilingSettings const &profiling_settings,
     device_handle_t const &ff_handle,
     std::optional<LossAttrs> const &loss_attrs,
