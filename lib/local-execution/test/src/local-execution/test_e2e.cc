@@ -18,6 +18,7 @@
 #include "pcg/optimizer_attrs.dtg.h"
 #include "test/utils/doctest/check_kv.h"
 #include "utils/containers/get_only.h"
+#include "utils/containers/require_only_key.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -58,6 +59,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     LayerAddedResult inputs_layer =
         add_input_layer_with_grad(computation_graph, input_tensor_shape);
+    tensor_guid_t t_input =
+        require_only_key(inputs_layer.outputs, TensorSlotName::OUTPUT);
 
     LayerAddedResult weights_layer_1 = add_layer(
         computation_graph,
@@ -66,6 +69,8 @@ TEST_SUITE(FF_TEST_SUITE) {
                    std::nullopt},
         {},
         {});
+    tensor_guid_t t_weights_1 =
+        require_only_key(weights_layer_1.outputs, TensorSlotName::OUTPUT);
 
     LayerAddedResult weights_layer_2 = add_layer(
         computation_graph,
@@ -74,6 +79,8 @@ TEST_SUITE(FF_TEST_SUITE) {
                    std::nullopt},
         {},
         {});
+    tensor_guid_t t_weights_2 =
+        require_only_key(weights_layer_2.outputs, TensorSlotName::OUTPUT);
 
     LayerAddedResult linear_operator_1 = add_layer(
         computation_graph,
@@ -83,8 +90,20 @@ TEST_SUITE(FF_TEST_SUITE) {
                                                        Activation::RELU,
                                                        std::nullopt}},
                    std::nullopt},
-        inputs_layer.outputs,
-        weights_layer_1.outputs);
+        {
+            {
+                TensorSlotName::INPUT,
+                t_input,
+            },
+        },
+        {
+            {
+                TensorSlotName::WEIGHT,
+                t_weights_1,
+            },
+        });
+    tensor_guid_t t_linear_1 =
+        require_only_key(linear_operator_1.outputs, TensorSlotName::OUTPUT);
 
     LayerAddedResult linear_operator_2 = add_layer(
         computation_graph,
@@ -94,8 +113,18 @@ TEST_SUITE(FF_TEST_SUITE) {
                                                        Activation::RELU,
                                                        std::nullopt}},
                    std::nullopt},
-        linear_operator_1.outputs,
-        weights_layer_2.outputs);
+        {
+            {
+                TensorSlotName::INPUT,
+                t_linear_1,
+            },
+        },
+        {
+            {
+                TensorSlotName::WEIGHT,
+                t_weights_2,
+            },
+        });
 
     // instantiate computation graph
     LossAttrs loss_attrs = LossAttrs{
@@ -119,7 +148,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*allocator=*/allocator,
             /*profiling_settings=*/ProfilingSettings{0, 0},
             /*device_handle=*/ff_handle,
-            /*iteration_config=*/FFIterationConfig{0_p},
+            /*iteration_config=*/FFIterationConfig{1_p},
             /*device_idx=*/device_idx);
 
     // begin training loop
@@ -132,7 +161,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*profiling_settings=*/ProfilingSettings{0, 0},
           /*ff_handle=*/ff_handle,
           /*loss_attrs=*/loss_attrs,
-          /*iteration_config=*/FFIterationConfig{0_p},
+          /*iteration_config=*/FFIterationConfig{1_p},
           /*device_idx=*/device_idx);
       // loss_values.push_back(copy_tensor_accessor_r(
       //     computation_graph_instance.get_loss_tensor_accessor(), allocator));
