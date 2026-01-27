@@ -63,7 +63,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*op_attrs=*/PCGOperatorAttrs{InputAttrs{input_tensor_shape}},
         /*loss_attrs=*/std::nullopt,
         /*per_device_op_state=*/std::nullopt,
-        /*iteration_config=*/FFIterationConfig{0_p},
+        /*iteration_config=*/FFIterationConfig{1_p},
         /*optimizer_attrs=*/std::nullopt,
         /*device_idx=*/device_idx,
     };
