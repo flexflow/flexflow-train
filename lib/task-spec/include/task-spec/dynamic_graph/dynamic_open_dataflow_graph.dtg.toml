@@ -1,13 +1,18 @@
 namespace = "FlexFlow"
 name = "DynamicOpenDataflowGraph"
 type = "struct"
-features = [ 
+features = [
   "eq",
+  "fmt",
 ]
 
 includes = [
   "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h",
   "<unordered_set>",
+]
+
+src_includes = [
+  "utils/fmt/unordered_set.h",
 ]
 
 [[fields]]
