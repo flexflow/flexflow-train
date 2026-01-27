@@ -1,5 +1,10 @@
 namespace = "FlexFlow"
+<<<<<<<< HEAD:lib/compiler/include/compiler/unity_algorithm/unity_search_config.struct.toml
 name = "UnitySearchConfig"
+========
+name = "OptimizerConfig"
+type = "struct"
+>>>>>>>> origin/master:lib/compiler/include/compiler/optimizer_config.dtg.toml
 features = [
   "eq",
   "hash",

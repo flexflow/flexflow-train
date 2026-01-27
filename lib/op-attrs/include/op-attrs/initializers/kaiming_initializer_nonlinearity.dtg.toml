@@ -1,0 +1,15 @@
+namespace = "FlexFlow"
+name = "KaimingInitializerNonlinearity"
+type = "enum"
+features = [
+  "hash",
+  "fmt",
+  "rapidcheck",
+  "json",
+]
+
+[[values]]
+name = "RELU"
+
+[[values]]
+name = "LEAKY_RELU"

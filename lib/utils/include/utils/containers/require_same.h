@@ -8,12 +8,19 @@ namespace FlexFlow {
 
 template <typename T>
 T const &require_same(T const &l, T const &r) {
-  if (l != r) {
-    throw mk_runtime_error(
-        fmt::format("require_same received non-equal inputs: {} != {}", l, r));
-  }
+  ASSERT(l == r, "require_same received non-equal inputs");
 
   return l;
+}
+
+template <typename T>
+T const &require_same(T const &t1, T const &t2, T const &t3) {
+  return require_same(require_same(t1, t2), t3);
+}
+
+template <typename T>
+T const &require_same(T const &t1, T const &t2, T const &t3, T const &t4) {
+  return require_same(require_same(require_same(t1, t2), t3), t4);
 }
 
 } // namespace FlexFlow

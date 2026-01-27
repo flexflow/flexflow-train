@@ -1,0 +1,16 @@
+namespace = "FlexFlow"
+name = "DiOutput"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+]
+
+includes = [
+  "utils/graph/node/node.dtg.h",
+]
+
+[[fields]]
+name = "src"
+type = "::FlexFlow::Node"

@@ -1,3 +1,89 @@
 # Setup Guide for sapling
 
-TODO (tracked in [#1572](https://github.com/flexflow/flexflow-train/issues/1572))
+1. ssh into the sapling head node.
+
+2. Install [DavHau/nix-portable](https://github.com/DavHau/nix-portable).
+
+```bash
+USERBIN="${XDG_BIN_HOME:-$HOME/.local/bin}"
+mkdir -p "$USERBIN"
+wget 'https://github.com/DavHau/nix-portable/releases/download/v010/nix-portable' -O "$USERBIN/nix-portable"
+chmod u+x "$USERBIN/nix-portable"
+ln -sf "$USERBIN/nix-portable" "$USERBIN/nix"
+```
+
+3. Configure the nix-portable store.
+
+```bash
+cat >>"$HOME/.bashrc" <<EOF
+mkdir -p "/tmp/\$USER"
+export NP_LOCATION="/tmp/\$USER/"
+EOF
+```
+
+4. Clone the repo.
+
+```bash
+SSH_URL="git@github.com:flexflow/flexflow-train.git"
+git clone --recursive "$SSH_URL" "$HOME/ff"
+```
+
+5. Enter the nix-provided `default` development environment[^1]
+
+[^1]: aka "dev shell"
+
+```bash
+cd "$HOME/ff"
+nix develop --accept-flake-config
+```
+
+6. Build and run the non-GPU-required tests.
+
+```
+(ff) $ proj cmake
+...
+(ff) $ proj test --skip-gpu-tests
+...
+```
+If everything is correctly configured, you should see a bunch of build messages followed by something like
+```
+(ff) $ proj test --skip-gpu-tests
+421/421 Test #441: get_transformer_computation_graph
+100% tests passed, 0 tests failed out of 421
+
+Label Time Summary:
+compiler-tests                  =   6.13 sec*proc (19 tests)
+local-execution-tests           =   0.13 sec*proc (3 tests)
+models-tests                    =   0.05 sec*proc (4 tests)
+op-attrs-tests                  =   0.48 sec*proc (59 tests)
+pcg-tests                       =   0.33 sec*proc (33 tests)
+substitution-generator-tests    =   0.06 sec*proc (2 tests)
+substitutions-tests             =   0.10 sec*proc (9 tests)
+utils-tests                     =   1.20 sec*proc (293 tests)
+
+Total Test time (real) =   8.64 sec
+```
+
+7. Exit the `default` dev shell
+```
+exit
+```
+
+8. Allocate and ssh into a GPU node.
+
+9. Enter the gpu-enabled dev shell.
+```
+cd "$HOME/ff"
+NIXPKGS_ALLOW_UNFREE=1 nix develop .#gpu --accept-flake-config --impure
+```
+
+10. Run the gpu tests
+```
+(ff) $ proj test
+...
+```
+You should see the additional GPU tests run. If you instead see a message like 
+
+> `Error: ... Pass --skip-gpu-tests to skip running tests that require a GPU`
+
+Double check that you are correctly in the `gpu` devshell, not the `default` devshell. 

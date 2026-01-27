@@ -1,0 +1,46 @@
+namespace = "FlexFlow"
+name = "DynamicNodeAttrs"
+type = "struct"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "<optional>",
+  "task-spec/dynamic_graph/dynamic_task_type.dtg.h",
+  "pcg/machine_space_coordinate.dtg.h",
+  "pcg/mapped_parallel_computation_graph/mapped_operator_task_group.h",
+  "op-attrs/pcg_operator_attrs.dtg.h",
+  "task-spec/dynamic_graph/dynamic_layer_guid_t.dtg.h",
+  "task-spec/device_specific_per_device_op_state.dtg.h",
+]
+
+src_includes = [
+  "utils/fmt/optional.h",
+]
+
+[[fields]]
+name = "task_type"
+type = "std::optional<::FlexFlow::DynamicTaskType>"
+
+[[fields]]
+name = "device_coord"
+type = "std::optional<::FlexFlow::MachineSpaceCoordinate>"
+
+[[fields]]
+name = "mapping"
+type = "std::optional<::FlexFlow::MappedOperatorTaskGroup>"
+
+[[fields]]
+name = "op_attrs"
+type = "std::optional<::FlexFlow::PCGOperatorAttrs>"
+
+[[fields]]
+name = "layer_guid"
+type = "::FlexFlow::dynamic_layer_guid_t"
+
+[[fields]]
+name = "per_device_op_state"
+type = "std::optional<::FlexFlow::DeviceSpecificPerDeviceOpState>"

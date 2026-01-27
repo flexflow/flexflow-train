@@ -1,4 +1,5 @@
 #include "op-attrs/ops/reverse.h"
+#include "utils/exception.h"
 
 namespace FlexFlow {
 

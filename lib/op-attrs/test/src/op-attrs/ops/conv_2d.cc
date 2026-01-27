@@ -1,20 +1,20 @@
 #include "op-attrs/ops/conv_2d.h"
-#include "doctest/doctest.h"
 #include "utils/integer_conversions.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_conv2d_incoming_tensor_roles(Conv2DAttrs") {
     auto make_attrs = [](bool use_bias) {
-      return Conv2DAttrs{/*out_channels=*/4_n,
-                         /*kernel_h=*/3_n,
-                         /*kernel_w=*/2_n,
-                         /*stride_h=*/2_n,
-                         /*stride_w=*/2_n,
+      return Conv2DAttrs{/*out_channels=*/4_p,
+                         /*kernel_h=*/3_p,
+                         /*kernel_w=*/2_p,
+                         /*stride_h=*/2_p,
+                         /*stride_w=*/2_p,
                          /*padding_h=*/1_n,
                          /*padding_w=*/1_n,
-                         /*groups=*/1_n,
+                         /*groups=*/1_p,
                          /*activation=*/std::nullopt,
                          /*use_bias=*/use_bias};
     };
@@ -22,12 +22,21 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("with bias") {
       Conv2DAttrs attrs = make_attrs(/*use_bias=*/true);
 
-      std::vector<IncomingTensorRole> result =
+      std::unordered_map<TensorSlotName, IncomingTensorRole> result =
           get_conv2d_incoming_tensor_roles(attrs);
-      std::vector<IncomingTensorRole> correct = {
-          IncomingTensorRole::INPUT,
-          IncomingTensorRole::WEIGHT,
-          IncomingTensorRole::WEIGHT,
+      std::unordered_map<TensorSlotName, IncomingTensorRole> correct = {
+          {
+              TensorSlotName::INPUT,
+              IncomingTensorRole::INPUT,
+          },
+          {
+              TensorSlotName::FILTER,
+              IncomingTensorRole::WEIGHT,
+          },
+          {
+              TensorSlotName::BIAS,
+              IncomingTensorRole::WEIGHT,
+          },
       };
 
       CHECK(result == correct);
@@ -36,11 +45,17 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("without bias") {
       Conv2DAttrs attrs = make_attrs(/*use_bias=*/false);
 
-      std::vector<IncomingTensorRole> result =
+      std::unordered_map<TensorSlotName, IncomingTensorRole> result =
           get_conv2d_incoming_tensor_roles(attrs);
-      std::vector<IncomingTensorRole> correct = {
-          IncomingTensorRole::INPUT,
-          IncomingTensorRole::WEIGHT,
+      std::unordered_map<TensorSlotName, IncomingTensorRole> correct = {
+          {
+              TensorSlotName::INPUT,
+              IncomingTensorRole::INPUT,
+          },
+          {
+              TensorSlotName::FILTER,
+              IncomingTensorRole::WEIGHT,
+          },
       };
 
       CHECK(result == correct);
@@ -48,14 +63,14 @@ TEST_SUITE(FF_TEST_SUITE) {
   }
 
   TEST_CASE("Conv2D shape inference") {
-    nonnegative_int out_channels = 4_n;
-    nonnegative_int kernel_h = 3_n;
-    nonnegative_int kernel_w = 2_n;
-    nonnegative_int stride_h = 2_n;
-    nonnegative_int stride_w = 2_n;
+    positive_int out_channels = 4_p;
+    positive_int kernel_h = 3_p;
+    positive_int kernel_w = 2_p;
+    positive_int stride_h = 2_p;
+    positive_int stride_w = 2_p;
     nonnegative_int padding_h = 1_n;
     nonnegative_int padding_w = 1_n;
-    nonnegative_int groups = 1_n;
+    positive_int groups = 1_p;
     std::optional<Activation> activation = std::nullopt;
     bool use_bias = true;
 
@@ -72,13 +87,13 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*use_bias=*/true,
     };
 
-    nonnegative_int num_samples = 7_n;
-    nonnegative_int input_channels = 4_n;
-    nonnegative_int input_height = 11_n;
-    nonnegative_int input_width = 15_n;
+    positive_int num_samples = 7_p;
+    positive_int input_channels = 4_p;
+    positive_int input_height = 11_p;
+    positive_int input_width = 15_p;
 
     TensorShape input = TensorShape{
-        TensorDims{FFOrdered<nonnegative_int>{
+        TensorDims{FFOrdered{
             num_samples,
             input_channels,
             input_height,
@@ -87,11 +102,11 @@ TEST_SUITE(FF_TEST_SUITE) {
         DataType::FLOAT,
     };
 
-    nonnegative_int output_height = 6_n;
-    nonnegative_int output_width = 8_n;
+    positive_int output_height = 6_p;
+    positive_int output_width = 8_p;
 
     TensorShape output = TensorShape{
-        TensorDims{FFOrdered<nonnegative_int>{
+        TensorDims{FFOrdered{
             num_samples,
             out_channels,
             output_height,
@@ -101,7 +116,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     TensorShape kernel = TensorShape{
-        TensorDims{FFOrdered<nonnegative_int>{
+        TensorDims{FFOrdered{
             out_channels,
             input_channels,
             kernel_h,
@@ -111,7 +126,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     TensorShape bias = TensorShape{
-        TensorDims{FFOrdered<nonnegative_int>{
+        TensorDims{FFOrdered{
             out_channels,
         }},
         DataType::FLOAT,
@@ -137,149 +152,148 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     auto make_input = [&](SumDegree o_sum,
                           DiscardCopyDegree o_eq,
-                          nonnegative_int o_n,
-                          nonnegative_int o_c,
-                          nonnegative_int o_h,
-                          nonnegative_int o_w) {
+                          positive_int o_n,
+                          positive_int o_c,
+                          positive_int o_h,
+                          positive_int o_w) {
       return lift_to_parallel_with_degrees(
-          input, o_sum, o_eq, FFOrdered<nonnegative_int>{o_n, o_c, o_h, o_w});
+          input, o_sum, o_eq, FFOrdered{o_n, o_c, o_h, o_w});
     };
 
     auto make_output = [&](SumDegree o_sum,
                            DiscardCopyDegree o_eq,
-                           nonnegative_int o_n,
-                           nonnegative_int o_c,
-                           nonnegative_int o_h,
-                           nonnegative_int o_w) {
+                           positive_int o_n,
+                           positive_int o_c,
+                           positive_int o_h,
+                           positive_int o_w) {
       return lift_to_parallel_with_degrees(
-          output, o_sum, o_eq, FFOrdered<nonnegative_int>{o_n, o_c, o_h, o_w});
+          output, o_sum, o_eq, FFOrdered{o_n, o_c, o_h, o_w});
     };
 
     auto make_kernel = [&](SumDegree o_sum,
                            DiscardCopyDegree o_eq,
-                           nonnegative_int o_outchannels,
-                           nonnegative_int o_inchannels,
-                           nonnegative_int o_kernel_h,
-                           nonnegative_int o_kernel_w) {
+                           positive_int o_outchannels,
+                           positive_int o_inchannels,
+                           positive_int o_kernel_h,
+                           positive_int o_kernel_w) {
       return lift_to_parallel_with_degrees(
           kernel,
           o_sum,
           o_eq,
-          FFOrdered<nonnegative_int>{
-              o_outchannels, o_inchannels, o_kernel_h, o_kernel_w});
+          FFOrdered{o_outchannels, o_inchannels, o_kernel_h, o_kernel_w});
     };
 
     auto make_bias = [&](SumDegree o_sum,
                          DiscardCopyDegree o_eq,
-                         nonnegative_int o_outchannels) {
+                         positive_int o_outchannels) {
       return lift_to_parallel_with_degrees(
-          bias, o_sum, o_eq, FFOrdered<nonnegative_int>{o_outchannels});
+          bias, o_sum, o_eq, FFOrdered{o_outchannels});
     };
 
     SUBCASE("data parallelism") {
-      nonnegative_int degree = 2_n;
+      positive_int degree = 2_p;
       ParallelTensorShape par_input = make_input(
-          SumDegree{1_n}, DiscardCopyDegree{1_n}, degree, 1_n, 1_n, 1_n);
+          SumDegree{1_p}, DiscardCopyDegree{1_p}, degree, 1_p, 1_p, 1_p);
 
       SUBCASE("get_output_shape") {
         ParallelTensorShape result = get_output_shape(attrs, par_input);
         ParallelTensorShape correct = make_output(
-            SumDegree{1_n}, DiscardCopyDegree{1_n}, degree, 1_n, 1_n, 1_n);
+            SumDegree{1_p}, DiscardCopyDegree{1_p}, degree, 1_p, 1_p, 1_p);
         CHECK(result == correct);
       }
 
       SUBCASE("get_kernel_shape") {
         ParallelTensorShape result = get_kernel_shape(attrs, par_input);
         ParallelTensorShape correct = make_kernel(
-            SumDegree{1_n}, DiscardCopyDegree{degree}, 1_n, 1_n, 1_n, 1_n);
+            SumDegree{1_p}, DiscardCopyDegree{degree}, 1_p, 1_p, 1_p, 1_p);
         CHECK(result == correct);
       }
 
       SUBCASE("get_bias_shape") {
         ParallelTensorShape result = get_bias_shape(attrs, par_input);
         ParallelTensorShape correct =
-            make_bias(SumDegree{1_n}, DiscardCopyDegree{degree}, 1_n);
+            make_bias(SumDegree{1_p}, DiscardCopyDegree{degree}, 1_p);
         CHECK(result == correct);
       }
     }
 
     SUBCASE("input channel parallelism") {
-      nonnegative_int degree = 2_n;
+      positive_int degree = 2_p;
       ParallelTensorShape par_input = make_input(
-          SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, degree, 1_n, 1_n);
+          SumDegree{1_p}, DiscardCopyDegree{1_p}, 1_p, degree, 1_p, 1_p);
 
       SUBCASE("get_output_shape") {
         ParallelTensorShape result = get_output_shape(attrs, par_input);
         ParallelTensorShape correct = make_output(
-            SumDegree{degree}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n, 1_n);
+            SumDegree{degree}, DiscardCopyDegree{1_p}, 1_p, 1_p, 1_p, 1_p);
         CHECK(result == correct);
       }
 
       SUBCASE("get_kernel_shape") {
         ParallelTensorShape result = get_kernel_shape(attrs, par_input);
         ParallelTensorShape correct = make_kernel(
-            SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, degree, 1_n, 1_n);
+            SumDegree{1_p}, DiscardCopyDegree{1_p}, 1_p, degree, 1_p, 1_p);
         CHECK(result == correct);
       }
 
       SUBCASE("get_bias_shape") {
         ParallelTensorShape result = get_bias_shape(attrs, par_input);
         ParallelTensorShape correct =
-            make_bias(SumDegree{degree}, DiscardCopyDegree{1_n}, 1_n);
+            make_bias(SumDegree{degree}, DiscardCopyDegree{1_p}, 1_p);
         CHECK(result == correct);
       }
     }
 
     SUBCASE("output channel parallelism") {
-      nonnegative_int degree = 2_n;
+      positive_int degree = 2_p;
       ParallelTensorShape par_input = make_input(
-          SumDegree{1_n}, DiscardCopyDegree{degree}, 1_n, 1_n, 1_n, 1_n);
+          SumDegree{1_p}, DiscardCopyDegree{degree}, 1_p, 1_p, 1_p, 1_p);
 
       SUBCASE("get_output_shape") {
         ParallelTensorShape result = get_output_shape(attrs, par_input);
         ParallelTensorShape correct = make_output(
-            SumDegree{1_n}, DiscardCopyDegree{1_n}, 1_n, degree, 1_n, 1_n);
+            SumDegree{1_p}, DiscardCopyDegree{1_p}, 1_p, degree, 1_p, 1_p);
         CHECK(result == correct);
       }
 
       SUBCASE("get_kernel_shape") {
         ParallelTensorShape result = get_kernel_shape(attrs, par_input);
         ParallelTensorShape correct = make_kernel(
-            SumDegree{1_n}, DiscardCopyDegree{1_n}, degree, 1_n, 1_n, 1_n);
+            SumDegree{1_p}, DiscardCopyDegree{1_p}, degree, 1_p, 1_p, 1_p);
         CHECK(result == correct);
       }
 
       SUBCASE("get_bias_shape") {
         ParallelTensorShape result = get_bias_shape(attrs, par_input);
         ParallelTensorShape correct =
-            make_bias(SumDegree{1_n}, DiscardCopyDegree{1_n}, degree);
+            make_bias(SumDegree{1_p}, DiscardCopyDegree{1_p}, degree);
         CHECK(result == correct);
       }
     }
 
     SUBCASE("propagating sum degree") {
-      nonnegative_int degree = 2_n;
+      positive_int degree = 2_p;
       ParallelTensorShape par_input = make_input(
-          SumDegree{degree}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n, 1_n);
+          SumDegree{degree}, DiscardCopyDegree{1_p}, 1_p, 1_p, 1_p, 1_p);
 
       SUBCASE("get_output_shape") {
         ParallelTensorShape result = get_output_shape(attrs, par_input);
         ParallelTensorShape correct = make_output(
-            SumDegree{degree}, DiscardCopyDegree{1_n}, 1_n, 1_n, 1_n, 1_n);
+            SumDegree{degree}, DiscardCopyDegree{1_p}, 1_p, 1_p, 1_p, 1_p);
         CHECK(result == correct);
       }
 
       SUBCASE("get_kernel_shape") {
         ParallelTensorShape result = get_kernel_shape(attrs, par_input);
         ParallelTensorShape correct = make_kernel(
-            SumDegree{1_n}, DiscardCopyDegree{degree}, 1_n, 1_n, 1_n, 1_n);
+            SumDegree{1_p}, DiscardCopyDegree{degree}, 1_p, 1_p, 1_p, 1_p);
         CHECK(result == correct);
       }
 
       SUBCASE("get_bias_shape") {
         ParallelTensorShape result = get_bias_shape(attrs, par_input);
         ParallelTensorShape correct =
-            make_bias(SumDegree{degree}, DiscardCopyDegree{1_n}, 1_n);
+            make_bias(SumDegree{degree}, DiscardCopyDegree{1_p}, 1_p);
         CHECK(result == correct);
       }
     }

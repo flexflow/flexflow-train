@@ -1,9 +1,9 @@
 #ifndef _FLEXFLOW_UTILS_STACK_VECTOR_H
 #define _FLEXFLOW_UTILS_STACK_VECTOR_H
 
+#include "utils/check_fmtable.h"
 #include "utils/hash-utils.h"
 #include "utils/join_strings.h"
-#include "utils/test_types.h"
 #include "utils/type_traits.h"
 #include <array>
 #include <cassert>
@@ -272,18 +272,6 @@ public:
     return !(*this == other);
   }
 
-  bool operator<(stack_vector const &other) const {
-    for (std::size_t i = 0; i < std::min(this->m_size, other.m_size); i++) {
-      if (this->at(i) < other.at(i)) {
-        return true;
-      } else if (this->at(i) > other.at(i)) {
-        return false;
-      }
-    }
-
-    return (this->m_size < other.m_size);
-  }
-
   std::size_t size() const {
     return this->m_size;
   }
@@ -305,16 +293,15 @@ public:
 private:
   std::size_t m_size = 0;
   std::array<element_type, MAXSIZE> contents;
-
-  static_assert(
-      implies<is_equal_comparable<T>, is_equal_comparable<stack_vector>>::value,
-      "");
-  static_assert(
-      implies<is_neq_comparable<T>, is_neq_comparable<stack_vector>>::value,
-      "");
-  static_assert(
-      implies<is_lt_comparable<T>, is_lt_comparable<stack_vector>>::value, "");
 };
+
+template <typename T, std::size_t MAXSIZE>
+auto operator<(stack_vector<T, MAXSIZE> const &lhs,
+               stack_vector<T, MAXSIZE> const &rhs)
+    -> std::enable_if_t<is_lt_comparable_v<T>, bool> {
+  return std::lexicographical_compare(
+      lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+}
 
 template <typename T, std::size_t MAXSIZE>
 std::ostream &operator<<(std::ostream &s, stack_vector<T, MAXSIZE> const &v) {

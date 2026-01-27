@@ -7,6 +7,7 @@
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/binary_sp_decomposition_tree.dtg.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree_implementation.dtg.h"
 #include "utils/graph/series_parallel/sp_decomposition_tree_node_type.dtg.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include <optional>
 #include <unordered_set>
 
@@ -24,6 +25,8 @@ bool is_binary_sp_tree_right_associative(BinarySPDecompositionTree const &);
 std::unordered_multiset<Node> get_leaves(BinarySPDecompositionTree const &);
 
 SPDecompositionTreeNodeType get_node_type(BinarySPDecompositionTree const &);
+
+nonnegative_int get_tree_height(BinarySPDecompositionTree const &);
 
 std::optional<BinarySPDecompositionTree>
     binary_sp_decomposition_tree_get_subtree_at_path(

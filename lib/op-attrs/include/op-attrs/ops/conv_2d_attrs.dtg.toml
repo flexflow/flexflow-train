@@ -1,0 +1,37 @@
+namespace = "FlexFlow"
+name = "Conv2DAttrs"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = [
+  "<optional>",
+  "op-attrs/activation.dtg.h",
+  "utils/nonnegative_int/nonnegative_int.h",
+  "utils/positive_int/positive_int.h",
+]
+
+src_includes = [
+  "utils/fmt/optional.h",
+  "utils/json/optional.h",
+  "utils/rapidcheck/optional.h",
+]
+
+fields = [
+  { name = "out_channels", type = "::FlexFlow::positive_int" },
+  { name = "kernel_h", type = "::FlexFlow::positive_int" },
+  { name = "kernel_w", type = "::FlexFlow::positive_int" },
+  { name = "stride_h", type = "::FlexFlow::positive_int" },
+  { name = "stride_w", type = "::FlexFlow::positive_int" },
+  { name = "padding_h", type = "::FlexFlow::nonnegative_int" },
+  { name = "padding_w", type = "::FlexFlow::nonnegative_int" },
+  { name = "groups", type = "::FlexFlow::positive_int" },
+  { name = "activation", type = "std::optional<::FlexFlow::Activation>" },
+  { name = "use_bias", type = "bool" },
+]

@@ -1,64 +1,45 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_LAYER_NORM_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_LAYER_NORM_KERNELS_H
 
-#include "device.h"
 #include "kernels/allocation.h"
+#include "kernels/device_handle_t.dtg.h"
+#include "kernels/device_stream_t.dtg.h"
 #include "kernels/ff_handle.h"
+#include "kernels/layer_norm_per_device_state.dtg.h"
 
-namespace FlexFlow {
+namespace FlexFlow::Kernels::LayerNorm {
 
-struct LayerNormPerDeviceState {
-  PerDeviceFFHandle handle;
-  bool elementwise_affine;
-  int64_t effective_batch_size, effective_num_elements;
-  float eps;
-  float *mean, *rstd, *ds, *db, *scale, *bias;
-  DataType data_type;
-};
+std::optional<LayerNormPerDeviceState>
+    init_kernel(DeviceType device_type,
+                device_handle_t const &handle,
+                Allocator &allocator,
+                bool elementwise_affine,
+                int64_t effective_batch_size,
+                int64_t effective_num_elements,
+                float eps);
 
-FF_VISITABLE_STRUCT_NONSTANDARD_CONSTRUCTION(LayerNormPerDeviceState,
-                                             handle,
-                                             elementwise_affine,
-                                             effective_batch_size,
-                                             effective_num_elements,
-                                             eps,
-                                             mean,
-                                             rstd,
-                                             ds,
-                                             db,
-                                             scale,
-                                             bias,
-                                             data_type);
+void forward_kernel(
+    device_stream_t const &stream,
+    std::optional<LayerNormPerDeviceState> const &per_device_state,
+    GenericTensorAccessorR const &input,
+    GenericTensorAccessorW const &output,
+    GenericTensorAccessorW const &gamma,
+    GenericTensorAccessorW const &beta);
 
-namespace Kernels {
-namespace LayerNorm {
+void backward_kernel(
+    device_stream_t const &stream,
+    std::optional<LayerNormPerDeviceState> const &per_device_state,
+    GenericTensorAccessorR const &output_grad,
+    GenericTensorAccessorR const &input,
+    GenericTensorAccessorW const &input_grad,
+    GenericTensorAccessorR const &gamma,
+    GenericTensorAccessorW const &gamma_grad,
+    GenericTensorAccessorW const &beta_grad);
 
-// todo: this may have some problem.
-LayerNormPerDeviceState init_kernel(PerDeviceFFHandle const &handle,
-                                    Allocator &allocator,
-                                    bool elementwise_affine,
-                                    int64_t effective_batch_size,
-                                    int64_t effective_num_elements,
-                                    float eps);
+void cleanup_kernel(
+    DeviceType device_type,
+    std::optional<LayerNormPerDeviceState> const &per_device_state);
 
-void forward_kernel(ffStream_t stream,
-                    LayerNormPerDeviceState const &m,
-                    GenericTensorAccessorR const &input,
-                    GenericTensorAccessorW const &output,
-                    GenericTensorAccessorW const &gamma,
-                    GenericTensorAccessorW const &beta);
-
-void backward_kernel(ffStream_t stream,
-                     LayerNormPerDeviceState const &m,
-                     GenericTensorAccessorR const &output_grad,
-                     GenericTensorAccessorR const &input,
-                     GenericTensorAccessorW const &input_grad,
-                     GenericTensorAccessorR const &gamma,
-                     GenericTensorAccessorW const &gamma_grad,
-                     GenericTensorAccessorW const &beta_grad);
-
-} // namespace LayerNorm
-} // namespace Kernels
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::LayerNorm
 
 #endif // _FLEXFLOW_OPS_KERNELS_LAYER_NORM_KERNELS_H

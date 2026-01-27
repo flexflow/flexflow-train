@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_LABELLED_OPEN_DATAFLOW_GRAPH_ALGORITHMS_IS_ISOMORPHIC_UNDER_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_LABELLED_OPEN_DATAFLOW_GRAPH_ALGORITHMS_IS_ISOMORPHIC_UNDER_H
 
+#include "utils/bidict/algorithms/transform_values.h"
 #include "utils/graph/labelled_open_dataflow_graph/algorithms/get_graph_data.h"
 #include "utils/graph/labelled_open_dataflow_graph/algorithms/permute_input_ids.h"
 #include "utils/graph/labelled_open_dataflow_graph/algorithms/permute_node_ids.h"
@@ -17,14 +18,14 @@ bool is_isomorphic_under(
     OpenDataflowGraphIsomorphism const &candidate_isomorphism) {
 
   bidict<NewNode, Node> node_permutation =
-      map_values(candidate_isomorphism.node_mapping, [](Node const &dst_node) {
-        return NewNode{dst_node};
-      }).reversed();
+      transform_values(candidate_isomorphism.node_mapping,
+                       [](Node const &dst_node) { return NewNode{dst_node}; })
+          .reversed();
   bidict<NewDataflowGraphInput, DataflowGraphInput> input_permutation =
-      map_values(candidate_isomorphism.input_mapping,
-                 [](DataflowGraphInput const &dst_input) {
-                   return NewDataflowGraphInput{dst_input};
-                 })
+      transform_values(candidate_isomorphism.input_mapping,
+                       [](DataflowGraphInput const &dst_input) {
+                         return NewDataflowGraphInput{dst_input};
+                       })
           .reversed();
   return get_graph_data(permute_input_ids(
              permute_node_ids(src, node_permutation), input_permutation)) ==

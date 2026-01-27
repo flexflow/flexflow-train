@@ -13,18 +13,18 @@
  * limitations under the License.
  */
 
-#include "device.h"
-#include "kernels/reduce_kernels.h"
+#include "internal/device.h"
+#include "kernels/reduce_kernels_gpu.h"
 
 namespace FlexFlow {
 namespace Kernels {
 namespace Reduce {
 
-ReducePerDeviceState init_kernel(PerDeviceFFHandle const &handle,
-                                 OperatorType const &op_type,
-                                 size_t const &reduction_size,
-                                 ArrayShape const &input_shape,
-                                 ArrayShape const &output_shape) {
+ReducePerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
+                                     OperatorType const &op_type,
+                                     size_t const &reduction_size,
+                                     TensorShape const &input_shape,
+                                     TensorShape const &output_shape) {
 
   ffTensorDescriptor_t inputTensor;
   ffTensorDescriptor_t outputTensor;
@@ -35,19 +35,25 @@ ReducePerDeviceState init_kernel(PerDeviceFFHandle const &handle,
 
   checkCUDNN(cudnnCreateReduceTensorDescriptor(&reduceDesc));
 
-  checkCUDNN(cudnnSetTensorDescriptorFromArrayShape(inputTensor, input_shape));
+  checkCUDNN(cudnnSetTensorDescriptorFromTensorShape(inputTensor, input_shape));
   checkCUDNN(
-      cudnnSetTensorDescriptorFromArrayShape(outputTensor, output_shape));
+      cudnnSetTensorDescriptorFromTensorShape(outputTensor, output_shape));
 
-  ReducePerDeviceState per_device = {
-      handle, inputTensor, outputTensor, reduceDesc, op_type, reduction_size};
+  ReducePerDeviceState per_device = ReducePerDeviceState{
+      /*handle=*/handle,
+      /*inputTensor=*/inputTensor,
+      /*outputTensor=*/outputTensor,
+      /*reduceDesc=*/reduceDesc,
+      /*op_type=*/op_type,
+      /*reduction_size=*/reduction_size,
+  };
   return per_device;
 }
 
-void forward_kernel(cudaStream_t stream,
-                    ReducePerDeviceState const &m,
-                    float const *input_ptr,
-                    float *output_ptr) {
+void gpu_forward_kernel(cudaStream_t stream,
+                        ReducePerDeviceState const &m,
+                        float const *input_ptr,
+                        float *output_ptr) {
   checkCUDNN(cudnnSetStream(m.handle.dnn, stream));
   float alpha = 1.0f, beta = 0.0f;
   checkCUDNN(cudnnReduceTensor(m.handle.dnn,
@@ -64,10 +70,10 @@ void forward_kernel(cudaStream_t stream,
                                output_ptr));
 };
 
-void backward_kernel(cudaStream_t stream,
-                     ReducePerDeviceState const &m,
-                     float const *output_grad_ptr,
-                     float *input_grad_ptr) {
+void gpu_backward_kernel(cudaStream_t stream,
+                         ReducePerDeviceState const &m,
+                         float const *output_grad_ptr,
+                         float *input_grad_ptr) {
   checkCUDNN(cudnnSetStream(m.handle.dnn, stream));
   float alpha = 1.0, beta = 1.0f;
   switch (m.op_type) {

@@ -4,22 +4,22 @@
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.dtg.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/mm_problem_tree_parallel_split.dtg.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/mm_problem_tree_series_split.dtg.h"
-#include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.dtg.h"
 #include "utils/full_binary_tree/binary_tree_path.dtg.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree_implementation.dtg.h"
 #include "utils/graph/series_parallel/sp_decomposition_tree_node_type.dtg.h"
 
 namespace FlexFlow {
 
-GenericBinarySPDecompositionTreeImplementation<MachineMappingProblemTree,
-                                               MMProblemTreeSeriesSplit,
-                                               MMProblemTreeParallelSplit,
-                                               UnmappedOpCostEstimateKey>
+GenericBinarySPDecompositionTreeImplementation<
+    MachineMappingProblemTree,
+    MMProblemTreeSeriesSplit,
+    MMProblemTreeParallelSplit,
+    UnmappedRuntimeOnlyOpCostEstimateKey>
     generic_binary_sp_impl_for_mm_problem_tree();
 
 SPDecompositionTreeNodeType get_node_type(MachineMappingProblemTree const &);
 
-std::unordered_multiset<UnmappedOpCostEstimateKey>
+std::unordered_multiset<UnmappedRuntimeOnlyOpCostEstimateKey>
     get_leaves(MachineMappingProblemTree const &);
 std::unordered_set<BinaryTreePath>
     get_all_leaf_paths(MachineMappingProblemTree const &);
@@ -27,6 +27,9 @@ std::unordered_set<BinaryTreePath>
 std::optional<MachineMappingProblemTree>
     mm_problem_tree_get_subtree_at_path(MachineMappingProblemTree const &,
                                         BinaryTreePath const &);
+
+std::unordered_map<BinaryTreePath, UnmappedRuntimeOnlyOpCostEstimateKey>
+    mm_problem_tree_get_path_to_leaf_map(MachineMappingProblemTree const &);
 
 std::string as_dot(MachineMappingProblemTree const &);
 void debug_print_dot(MachineMappingProblemTree const &);

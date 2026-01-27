@@ -18,7 +18,7 @@
     flake-utils.url = "github:numtide/flake-utils";
 
     proj-repo = {
-      url = "github:lockshaw/proj";
+      url = "git+https://git.sr.ht/~lockshaw/proj";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
@@ -59,6 +59,7 @@
         bencher-cli = pkgs.callPackage ./.flake/pkgs/bencher-cli.nix { };
         ffdb = pkgs.callPackage ./.flake/pkgs/ffdb { inherit proj; };
         hpp2plantuml = pkgs.python3Packages.callPackage ./.flake/pkgs/hpp2plantuml.nix { };
+        fccf = pkgs.callPackage ./.flake/pkgs/fccf { };
         rapidcheckFull = pkgs.symlinkJoin {
           name = "rapidcheckFull";
           paths = (with pkgs; [ rapidcheck.out rapidcheck.dev ]);
@@ -91,10 +92,7 @@
                                 -DFF_USE_EXTERNAL_RAPIDCHECK=ON \
                                 -DFF_USE_EXTERNAL_EXPECTED=ON \
                                 -DFF_USE_EXTERNAL_GBENCHMARK=ON \
-                                -DFF_USE_EXTERNAL_LIBASSERT=ON \
-                                -DFF_USE_EXTERNAL_RANGEV3=ON \
-                                -DFF_USE_EXTERNAL_BOOST_PREPROCESSOR=ON \
-                                -DFF_USE_EXTERNAL_TYPE_INDEX=ON"
+                                -DFF_USE_EXTERNAL_LIBASSERT=ON"
           '';
           
           buildInputs = builtins.concatLists [
@@ -120,6 +118,7 @@
               lcov # for code coverage
               compdb
               gbenchmark
+              libtorch-bin
             ])
             (with proj-repo.packages.${system}; [
               proj
@@ -162,6 +161,7 @@
               ruff
               jq
               gh
+              expect
             ])
             (with pkgs.python3Packages; [
               gitpython
@@ -175,10 +175,12 @@
               frozendict
               black
               toml
+              numpy
             ])
             (with self.packages.${system}; [
               ffdb
               hpp2plantuml
+              fccf
             ])
           ];
         };

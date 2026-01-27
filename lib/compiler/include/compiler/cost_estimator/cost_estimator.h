@@ -4,16 +4,16 @@
 #include "compiler/cost_estimator/op_cost_estimate_key.dtg.h"
 #include "compiler/cost_estimator/op_cost_metrics.dtg.h"
 #include "compiler/cost_estimator/tensor_set_movement.dtg.h"
+#include "compiler/machine_mapping/machine_view.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "op-attrs/pcg_operator_attrs.dtg.h"
-#include "pcg/machine_view.dtg.h"
 #include <vector>
 
 namespace FlexFlow {
 
 struct ICostEstimator {
   virtual OpCostMetrics estimate_cost(OpCostEstimateKey const &) const = 0;
-  virtual float estimate_cost(TensorSetMovement const &) const = 0;
+  virtual milliseconds_t estimate_cost(TensorSetMovement const &) const = 0;
 
   ICostEstimator() = default;
   ICostEstimator(ICostEstimator const &) = delete;
@@ -25,7 +25,7 @@ CHECK_RC_COPY_VIRTUAL_COMPLIANT(ICostEstimator);
 
 struct CostEstimator {
   OpCostMetrics estimate_cost(OpCostEstimateKey const &) const;
-  float estimate_cost(TensorSetMovement const &m) const;
+  milliseconds_t estimate_cost(TensorSetMovement const &m) const;
 
   template <typename T, typename... Args>
   static typename std::enable_if<std::is_base_of<ICostEstimator, T>::value,

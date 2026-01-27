@@ -1,5 +1,6 @@
 #include "substitutions/tensor_pattern/satisfies_constraint.h"
 #include "substitutions/tensor_pattern/tensor_attribute_expr.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
@@ -23,9 +24,7 @@ bool parallel_tensor_satisfies_constraint(
           "DIVISIBLE_BY constraint requires nonnegative_int values");
     }
     default:
-      throw mk_runtime_error(
-          fmt::format("Unknown constraint type {}",
-                      static_cast<int>(constraint.constraint_type)));
+      PANIC("Unknown constraint type", constraint.constraint_type);
   }
 }
 

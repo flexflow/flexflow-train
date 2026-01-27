@@ -1,8 +1,8 @@
-#include "compiler/machine_mapping/allowed_machine_views.h"
-#include "pcg/machine_specification.h"
-#include "pcg/machine_view.h"
-#include "pcg/multi_dimensional_stride.dtg.h"
-#include "pcg/operator_task_space.h"
+#include "compiler/allowed_machine_views.h"
+#include "compiler/machine_mapping/machine_view.h"
+#include "compiler/machine_mapping/multi_dimensional_stride.dtg.h"
+#include "op-attrs/operator_task_space.h"
+#include "pcg/machine_compute_specification.h"
 #include "utils/containers/all_of.h"
 #include "utils/containers/cartesian_product.h"
 #include "utils/containers/extend.h"
@@ -17,24 +17,25 @@
 #include "utils/containers/unordered_multiset_of.h"
 #include "utils/containers/unordered_set_of.h"
 #include "utils/containers/zip.h"
-#include "utils/nonnegative_int/ceildiv.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include "utils/nonnegative_int/num_elements.h"
 #include "utils/overload.h"
+#include "utils/positive_int/ceildiv.h"
 
 namespace FlexFlow {
 
 bool is_valid_machine_view(MachineView const &mv,
-                           OperatorTaskSpace const &task,
-                           MachineSpecification const &ms) {
-  if (num_dims(mv) != num_dims(task)) {
+                           OperatorTaskSpace const &task_space,
+                           MachineComputeSpecification const &ms) {
+  if (mv_get_expected_task_space_num_dims(mv) !=
+      op_task_space_num_dims(task_space)) {
     return false;
   }
 
-  std::optional<MachineSpaceCoordinate> maximum_device_coord =
-      get_machine_space_coordinate(
-          task, mv, get_task_space_maximum_coordinate(task), ms);
-  return maximum_device_coord.has_value();
+  MachineSpaceCoordinate maximum_device_coord = get_machine_space_coordinate(
+      task_space, mv, get_task_space_maximum_coordinate(task_space));
+
+  return is_valid_machine_space_coordinate(ms, maximum_device_coord);
 }
 
 /*
@@ -46,41 +47,36 @@ bool is_valid_machine_view(MachineView const &mv,
  * the returned `MachineView`s to be invalid)
  */
 static std::unordered_set<MachineView>
-    get_candidate_machine_views(MachineSpecification const &machine_spec,
-                                OperatorTaskSpace const &task,
+    get_candidate_machine_views(MachineComputeSpecification const &machine_spec,
+                                OperatorTaskSpace const &task_space,
                                 DeviceType const &device_type) {
 
   auto get_max_stride_upper_bound =
-      [](std::vector<nonnegative_int> const &tensor_dims,
-         nonnegative_int total_devices) -> nonnegative_int {
+      [](std::vector<positive_int> const &tensor_dims,
+         positive_int total_devices) -> positive_int {
     nonnegative_int min_num_devices_with_full_stride_volume =
-        product(transform(tensor_dims, [](nonnegative_int num_devices) {
-          return nonnegative_int{num_devices.unwrap_nonnegative() - 1};
+        product(transform(tensor_dims, [](positive_int num_devices) {
+          return nonnegative_int{num_devices.int_from_positive_int() - 1};
         }));
-    min_num_devices_with_full_stride_volume =
-        std::max(min_num_devices_with_full_stride_volume, 1_n);
-    return ceildiv(total_devices, min_num_devices_with_full_stride_volume);
+    return ceildiv(total_devices,
+                   positive_int{min_num_devices_with_full_stride_volume});
   };
 
-  auto candidate_strides = [&](std::vector<nonnegative_int> const &tensor_dims,
-                               nonnegative_int total_devices)
+  auto candidate_strides = [&](std::vector<positive_int> const &tensor_dims,
+                               positive_int total_devices)
       -> std::unordered_multiset<MultiDimensionalStride> {
-    nonnegative_int max_stride_upper_bound =
+    positive_int max_stride_upper_bound =
         get_max_stride_upper_bound(tensor_dims, total_devices);
 
-    std::vector<std::vector<stride_t>> stride_options =
-        transform(tensor_dims, [&](nonnegative_int dim_size) {
-          if (dim_size != 1_n) {
-            return transform(
-                nonnegative_range(1_n, max_stride_upper_bound + 1_n),
-                [](nonnegative_int stride) { return stride_t{stride}; });
-          } else {
-            return std::vector<stride_t>{stride_t{1_n}};
-          }
-        });
-
+    std::vector<stride_t> single_stride_range = transform(
+        nonnegative_range(
+            1_n,
+            max_stride_upper_bound.nonnegative_int_from_positive_int() + 1_n),
+        [](nonnegative_int stride) { return stride_t{positive_int{stride}}; });
     std::unordered_multiset<std::vector<stride_t>> raw_stride_vectors =
-        cartesian_product(stride_options);
+        cartesian_product(
+            repeat_element(/*num_times=*/num_elements(tensor_dims),
+                           /*element=*/single_stride_range));
     std::unordered_multiset<MultiDimensionalStride> strides =
         transform(raw_stride_vectors, [](auto const &stride_vec) {
           return MultiDimensionalStride{stride_vec};
@@ -88,7 +84,7 @@ static std::unordered_set<MachineView>
     return strides;
   };
 
-  auto candidate_starts = [](MachineSpecification const &ms,
+  auto candidate_starts = [](MachineComputeSpecification const &ms,
                              DeviceType const &device_type) {
     std::unordered_set<MachineSpaceCoordinate> result;
     for (nonnegative_int node_idx : nonnegative_range(ms.num_nodes)) {
@@ -101,23 +97,20 @@ static std::unordered_set<MachineView>
     return result;
   };
 
-  auto candidate_dimensions = [](OperatorTaskSpace const &task) {
-    std::vector<std::vector<MachineSpecificationDimension>> dimension_options =
-        transform(task.degrees, [](nonnegative_int dim_size) {
-          if (dim_size == 1_n) {
-            return std::vector<MachineSpecificationDimension>{
-                MachineSpecificationDimension::INTRA_NODE};
-          } else {
-            return std::vector<MachineSpecificationDimension>{
-                MachineSpecificationDimension::INTER_NODE,
-                MachineSpecificationDimension::INTRA_NODE};
-          }
-        });
-    return cartesian_product(dimension_options);
+  auto candidate_dimensions = [](OperatorTaskSpace const &task_space) {
+    std::unordered_set<MachineSpecificationDimension> options = {
+        MachineSpecificationDimension::INTER_NODE,
+        MachineSpecificationDimension::INTRA_NODE};
+    return get_all_permutations_with_repetition(
+        options, op_task_space_num_dims(task_space));
   };
 
-  std::vector<nonnegative_int> tensor_dims = task.degrees;
-  nonnegative_int total_devices = get_num_devices(machine_spec, device_type);
+  std::vector<positive_int> tensor_dims =
+      transform(task_space.degrees.dims, [](int_ge_two dim) {
+        return dim.positive_int_from_int_ge_two();
+      });
+
+  positive_int total_devices = get_num_devices(machine_spec, device_type);
 
   std::unordered_set<MachineView> machine_views;
 
@@ -126,7 +119,7 @@ static std::unordered_set<MachineView>
     for (MachineSpaceCoordinate start :
          candidate_starts(machine_spec, device_type)) {
       for (std::vector<MachineSpecificationDimension> const &dims :
-           candidate_dimensions(task)) {
+           candidate_dimensions(task_space)) {
         machine_views.insert(
             machine_view_from_strides_and_machine_spec_dimensions(
                 start, strides.raw_strides, dims));
@@ -137,14 +130,14 @@ static std::unordered_set<MachineView>
 }
 
 std::unordered_set<MachineView>
-    get_allowed_machine_views(MachineSpecification const &machine_spec,
-                              OperatorTaskSpace const &task,
+    get_allowed_machine_views(MachineComputeSpecification const &machine_spec,
+                              OperatorTaskSpace const &task_space,
                               DeviceType device_type) {
 
   std::unordered_set<MachineView> views =
-      get_candidate_machine_views(machine_spec, task, device_type);
+      get_candidate_machine_views(machine_spec, task_space, device_type);
   return filter(views, [&](MachineView const &mv) {
-    return is_valid_machine_view(mv, task, machine_spec);
+    return is_valid_machine_view(mv, task_space, machine_spec);
   });
 }
 

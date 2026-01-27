@@ -1,0 +1,27 @@
+namespace = "FlexFlow"
+name = "SGDOptimizerAttrs"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+[[fields]]
+name = "lr"
+type = "double"
+
+[[fields]]
+name = "momentum"
+type = "double"
+
+[[fields]]
+name = "nesterov"
+type = "bool"
+
+[[fields]]
+name = "weight_decay"
+type = "double"

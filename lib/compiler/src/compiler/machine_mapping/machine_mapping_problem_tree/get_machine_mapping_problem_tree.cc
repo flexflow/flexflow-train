@@ -2,7 +2,7 @@
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/get_abstracted_tensor_set_movement_across_split.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
-#include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
+#include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_runtime_only_op_cost_estimate_key.h"
 #include "compiler/machine_mapping/transitive_reduced_pcg.h"
 #include "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
@@ -41,7 +41,7 @@ bool is_valid_machine_mapping_problem_tree(
                is_valid_machine_mapping_problem_tree(
                    parallel_split.get_right_child());
       },
-      [&](UnmappedOpCostEstimateKey const &leaf) { return true; },
+      [&](UnmappedRuntimeOnlyOpCostEstimateKey const &leaf) { return true; },
   });
 }
 
@@ -66,7 +66,7 @@ MachineMappingProblemTree get_machine_mapping_problem_tree(
                   /*rhs=*/to_problem_tree(series.get_right_child()),
               },
           };
-          assert(is_valid_machine_mapping_problem_tree(result));
+          ASSERT(is_valid_machine_mapping_problem_tree(result));
           return result;
         },
         [&](PCGBinaryParallelSplit const &parallel) {
@@ -76,14 +76,14 @@ MachineMappingProblemTree get_machine_mapping_problem_tree(
                   to_problem_tree(parallel.get_right_child()),
               },
           };
-          assert(is_valid_machine_mapping_problem_tree(result));
+          ASSERT(is_valid_machine_mapping_problem_tree(result));
           return result;
         },
         [&](parallel_layer_guid_t const &leaf) {
           MachineMappingProblemTree result = MachineMappingProblemTree{
               get_unmapped_op_cost_estimate_key_for_layer(pcg, leaf),
           };
-          assert(is_valid_machine_mapping_problem_tree(result));
+          ASSERT(is_valid_machine_mapping_problem_tree(result));
           return result;
         },
     });
@@ -91,9 +91,7 @@ MachineMappingProblemTree get_machine_mapping_problem_tree(
 
   MachineMappingProblemTree mm_tree = to_problem_tree(sp_decomposition_tree);
 
-  if (!is_valid_machine_mapping_problem_tree(mm_tree)) {
-    throw std::runtime_error("Invalid machine mapping problem tree generated");
-  }
+  ASSERT(is_valid_machine_mapping_problem_tree(mm_tree));
 
   return mm_tree;
 }

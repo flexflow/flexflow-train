@@ -1,4 +1,5 @@
 #include "op-attrs/ops/reshape.h"
+#include "utils/exception.h"
 
 namespace FlexFlow {
 

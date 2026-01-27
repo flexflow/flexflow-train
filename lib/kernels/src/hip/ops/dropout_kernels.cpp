@@ -14,7 +14,7 @@
  */
 
 #include "kernels/dropout_kernels.h"
-#include "device.h"
+#include "internal/device.h"
 #include "kernels/ff_handle.h"
 #include <hip/hip_runtime.h>
 

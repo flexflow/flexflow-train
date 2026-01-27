@@ -1,79 +1,54 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_LINEAR_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_LINEAR_KERNELS_H
 
-#include "device.h"
-#include "ff_handle.h"
+#include "kernels/accessor.h"
+#include "kernels/device_handle_t.dtg.h"
+#include "kernels/device_stream_t.dtg.h"
+#include "kernels/ff_handle.h"
+#include "kernels/linear_per_device_state.dtg.h"
 #include "op-attrs/datatype.h"
 #include "op-attrs/ops/linear_attrs.dtg.h"
+#include "pcg/device_type.dtg.h"
 
 namespace FlexFlow {
 
-struct LinearPerDeviceState {
-  PerDeviceFFHandle handle;
-  ffTensorDescriptor_t outputTensor;
-  ffActivationDescriptor_t actiDesc;
-  float const *one_ptr; // how to handle this?
-  cudnnActivationMode_t activation_mode;
-  std::optional<Activation> activation;
-  std::optional<RegularizerAttrs> regularizer;
-  bool use_bias;
-  DataType input_type, weight_type, output_type;
-};
+std::optional<LinearPerDeviceState>
+    linear_init_kernel(DeviceType device_type,
+                       device_handle_t const &handle,
+                       std::optional<Activation> activation,
+                       std::optional<RegularizerAttrs> regularizer,
+                       bool use_bias,
+                       DataType input_type,
+                       DataType weight_type,
+                       DataType output_type,
+                       int batch_size,
+                       int output_num_channels);
 
-FF_VISITABLE_STRUCT_NONSTANDARD_CONSTRUCTION(LinearPerDeviceState,
-                                             handle,
-                                             outputTensor,
-                                             actiDesc,
-                                             one_ptr,
-                                             activation_mode,
-                                             activation,
-                                             regularizer,
-                                             use_bias,
-                                             input_type,
-                                             weight_type,
-                                             output_type);
+void linear_forward_kernel(
+    device_stream_t const &stream,
+    std::optional<LinearPerDeviceState> const &per_device_state,
+    LinearAttrs const &attrs,
+    GenericTensorAccessorR const &input_accessor,
+    GenericTensorAccessorW const &output_accessor,
+    GenericTensorAccessorR const &projection_accessor,
+    std::optional<GenericTensorAccessorR> const &bias_accessor);
 
-namespace Kernels {
-namespace Linear {
+void linear_backward_kernel(
+    device_stream_t const &stream,
+    std::optional<LinearPerDeviceState> const &per_device_state,
+    LinearAttrs const &attrs,
+    GenericTensorAccessorR const &output,
+    GenericTensorAccessorR const &output_grad,
+    GenericTensorAccessorR const &input,
+    GenericTensorAccessorW const &input_grad,
+    GenericTensorAccessorR const &projection,
+    GenericTensorAccessorW const &projection_grad,
+    std::optional<GenericTensorAccessorW> const &bias_grad);
 
-LinearPerDeviceState init_kernel(PerDeviceFFHandle handle,
-                                 float *one_ptr,
-                                 std::optional<Activation> activation,
-                                 std::optional<RegularizerAttrs> regularizer,
-                                 bool use_bias,
-                                 DataType input_type,
-                                 DataType weight_type,
-                                 DataType output_type,
-                                 int batch_size,
-                                 int channel);
+void linear_cleanup_kernel(
+    DeviceType device_type,
+    std::optional<LinearPerDeviceState> &per_device_state);
 
-bool use_activation(Activation activation);
-
-void forward_kernel(ffStream_t stream,
-                    LinearPerDeviceState const &m,
-                    void const *input_ptr,
-                    void *output_ptr,
-                    void const *filter_ptr,
-                    void const *bias_ptr,
-                    int in_dim,
-                    int out_dim,
-                    int batch_size);
-
-void backward_kernel(ffStream_t stream,
-                     LinearPerDeviceState const &m,
-                     void const *input_ptr,
-                     void *input_grad_ptr,
-                     void const *output_ptr,
-                     void *output_grad_ptr,
-                     void const *kernel_ptr,
-                     void *kernel_grad_ptr,
-                     void *bias_ptr,
-                     int in_dim,
-                     int out_dim,
-                     int batch_size);
-
-} // namespace Linear
-} // namespace Kernels
 } // namespace FlexFlow
 
 #endif

@@ -6,7 +6,8 @@
 #include "substitutions/sub_parallel_computation_graph.h"
 #include "substitutions/tensor_pattern/tensor_attribute_pattern.h"
 #include "utils/containers/get_only.h"
-#include "utils/graph/instances/unordered_set_labelled_open_dataflow_graph.h"
+#include "utils/containers/require_only_key.h"
+#include "utils/graph/instances/unordered_set_labelled_open_kwarg_dataflow_graph.h"
 #include "utils/integer_conversions.h"
 #include <doctest/doctest.h>
 
@@ -17,15 +18,20 @@ TEST_SUITE(FF_TEST_SUITE) {
     // Currently Substitution creation is very verbose.
     // This is being addressed in
     // https://github.com/flexflow/FlexFlow/issues/1473.
-    auto pattern_g = LabelledOpenDataflowGraph<OperatorAttributePattern,
-                                               TensorAttributePattern>::
-        create<UnorderedSetLabelledOpenDataflowGraph<OperatorAttributePattern,
-                                                     TensorAttributePattern>>();
+    auto pattern_g = LabelledOpenKwargDataflowGraph<OperatorAttributePattern,
+                                                    TensorAttributePattern,
+                                                    int,
+                                                    TensorSlotName>::
+        create<
+            UnorderedSetLabelledOpenKwargDataflowGraph<OperatorAttributePattern,
+                                                       TensorAttributePattern,
+                                                       int,
+                                                       TensorSlotName>>();
 
-    PatternInput pattern_i_activation =
-        PatternInput{pattern_g.add_input(tensor_attribute_pattern_match_all())};
-    PatternInput pattern_i_weights =
-        PatternInput{pattern_g.add_input(tensor_attribute_pattern_match_all())};
+    PatternInput pattern_i_activation = PatternInput{
+        pattern_g.add_input(0, tensor_attribute_pattern_match_all())};
+    PatternInput pattern_i_weights = PatternInput{
+        pattern_g.add_input(1, tensor_attribute_pattern_match_all())};
 
     OperatorAttributePattern mm_pattern = OperatorAttributePattern{{
         op_type_equals_constraint(OperatorType::LINEAR),
@@ -33,35 +39,75 @@ TEST_SUITE(FF_TEST_SUITE) {
             OperatorAttributeKey::ACTIVATION,
             OperatorAttributeValue{std::optional<Activation>{std::nullopt}}),
     }};
-    NodeAddedResult mm_added = pattern_g.add_node(
-        mm_pattern,
-        {OpenDataflowValue{pattern_i_activation.raw_dataflow_graph_input},
-         OpenDataflowValue{pattern_i_weights.raw_dataflow_graph_input}},
-        {tensor_attribute_pattern_match_all()});
+    KwargNodeAddedResult mm_added = pattern_g.add_node(
+        /*node_label=*/mm_pattern,
+        /*inputs=*/
+        {
+            {
+                TensorSlotName::INPUT,
+                OpenKwargDataflowValue<int, TensorSlotName>{
+                    pattern_i_activation.raw_dataflow_graph_input,
+                },
+            },
+            {
+                TensorSlotName::WEIGHT,
+                OpenKwargDataflowValue<int, TensorSlotName>{
+                    pattern_i_weights.raw_dataflow_graph_input,
+                },
+            },
+        },
+        /*output_labels=*/
+        {
+            {
+                TensorSlotName::OUTPUT,
+                tensor_attribute_pattern_match_all(),
+            },
+        });
     PatternNode pattern_mm_node = PatternNode{mm_added.node};
-    DataflowOutput mm_output = get_only(mm_added.outputs);
+    KwargDataflowOutput<TensorSlotName> mm_output =
+        require_only_key(mm_added.outputs, TensorSlotName::OUTPUT);
 
     OperatorAttributePattern relu_pattern = OperatorAttributePattern{{
         op_type_equals_constraint(OperatorType::RELU),
     }};
-    NodeAddedResult relu_added =
-        pattern_g.add_node(relu_pattern,
-                           {OpenDataflowValue{mm_output}},
-                           {tensor_attribute_pattern_match_all()});
+    KwargNodeAddedResult relu_added = pattern_g.add_node(
+        /*node_label=*/relu_pattern,
+        /*inputs=*/
+        {
+            {
+                TensorSlotName::INPUT,
+                OpenKwargDataflowValue<int, TensorSlotName>{mm_output},
+            },
+        },
+        /*output_labels=*/
+        {
+            {
+                TensorSlotName::OUTPUT,
+                tensor_attribute_pattern_match_all(),
+            },
+        });
     PatternNode pattern_relu_node = PatternNode{relu_added.node};
-    DataflowOutput relu_output = get_only(relu_added.outputs);
+    KwargDataflowOutput<TensorSlotName> relu_output =
+        require_only_key(relu_added.outputs, TensorSlotName::OUTPUT);
 
-    LabelledOpenDataflowGraph<OutputOperatorAttrsAssignment, std::monostate>
-        output_g = LabelledOpenDataflowGraph<OutputOperatorAttrsAssignment,
-                                             std::monostate>::
-            create<UnorderedSetLabelledOpenDataflowGraph<
+    LabelledOpenKwargDataflowGraph<OutputOperatorAttrsAssignment,
+                                   std::monostate,
+                                   int,
+                                   TensorSlotName>
+        output_g = LabelledOpenKwargDataflowGraph<OutputOperatorAttrsAssignment,
+                                                  std::monostate,
+                                                  int,
+                                                  TensorSlotName>::
+            create<UnorderedSetLabelledOpenKwargDataflowGraph<
                 OutputOperatorAttrsAssignment,
-                std::monostate>>();
+                std::monostate,
+                int,
+                TensorSlotName>>();
 
     OutputGraphExprInput output_i_activation =
-        OutputGraphExprInput{output_g.add_input({})};
+        OutputGraphExprInput{output_g.add_input(0, std::monostate{})};
     OutputGraphExprInput output_i_weights =
-        OutputGraphExprInput{output_g.add_input({})};
+        OutputGraphExprInput{output_g.add_input(1, std::monostate{})};
 
     OutputOperatorAttrsAssignment fused_mm_relu_attrs_assignment =
         OutputOperatorAttrsAssignment{
@@ -81,14 +127,34 @@ TEST_SUITE(FF_TEST_SUITE) {
                 copy_attr_from_pattern_node(OperatorAttributeKey::REGULARIZER,
                                             pattern_mm_node),
             }};
-    NodeAddedResult fused_mm_relu_added = output_g.add_node(
-        fused_mm_relu_attrs_assignment,
-        {OpenDataflowValue{output_i_activation.raw_dataflow_graph_input},
-         OpenDataflowValue{output_i_weights.raw_dataflow_graph_input}},
-        {{}});
+    KwargNodeAddedResult fused_mm_relu_added = output_g.add_node(
+        /*node_label=*/fused_mm_relu_attrs_assignment,
+        /*inputs=*/
+        {
+            {
+                TensorSlotName::INPUT,
+                OpenKwargDataflowValue<int, TensorSlotName>{
+                    output_i_activation.raw_dataflow_graph_input,
+                },
+            },
+            {
+                TensorSlotName::WEIGHT,
+                OpenKwargDataflowValue<int, TensorSlotName>{
+                    output_i_weights.raw_dataflow_graph_input,
+                },
+            },
+        },
+        /*output_labels=*/
+        {
+            {
+                TensorSlotName::OUTPUT,
+                std::monostate{},
+            },
+        });
     OutputGraphExprNode fused_mm_relu_node =
         OutputGraphExprNode{fused_mm_relu_added.node};
-    DataflowOutput fused_mm_relu_output = get_only(fused_mm_relu_added.outputs);
+    KwargDataflowOutput<TensorSlotName> fused_mm_relu_output =
+        require_only_key(fused_mm_relu_added.outputs, TensorSlotName::OUTPUT);
 
     Substitution sub = Substitution{
         PCGPattern{pattern_g},
@@ -111,15 +177,15 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    nonnegative_int in_channels = 24_n;
-    nonnegative_int batch_size = 4_n;
-    nonnegative_int batch_degree = 2_n;
+    positive_int in_channels = 24_p;
+    positive_int batch_size = 4_p;
+    positive_int batch_degree = 2_p;
     std::string mm_match = "mm_match";
     std::string relu_match = "relu_match";
 
     TensorShape input_shape = TensorShape{
         TensorDims{
-            FFOrdered<nonnegative_int>{
+            FFOrdered{
                 batch_size,
                 in_channels,
             },
@@ -133,11 +199,11 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_tensor_guid_t t = b.create_input_tensor(input_shape);
       t = b.parallel_partition(t, ff_dim_t{0_n}, batch_degree);
       t = b.dense(t,
-                  /*outDim=*/16_n,
+                  /*outDim=*/16_p,
                   /*activation=*/std::nullopt);
       t = b.gelu(t);
       t = b.dense(t,
-                  /*outDim=*/12_n,
+                  /*outDim=*/12_p,
                   /*activation=*/std::nullopt,
                   /*use_bias=*/false,
                   /*data_type=*/DataType::FLOAT,
@@ -147,7 +213,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       t = b.relu(t,
                  /*name=*/relu_match);
       t = b.dense(t,
-                  /*outDim=*/8_n,
+                  /*outDim=*/8_p,
                   /*activation=*/Activation::RELU);
 
       return sub_pcg_from_full_pcg(b.pcg);
@@ -158,9 +224,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     parallel_layer_guid_t relu_match_layer =
         get_parallel_layer_by_name(pcg, relu_match);
     open_parallel_tensor_guid_t mm_match_layer_input_activations =
-        get_layer_inputs(pcg, mm_match_layer).at(0);
+        get_layer_inputs(pcg, mm_match_layer).at(TensorSlotName::INPUT);
     open_parallel_tensor_guid_t mm_match_layer_input_weights =
-        get_layer_inputs(pcg, mm_match_layer).at(1);
+        get_layer_inputs(pcg, mm_match_layer).at(TensorSlotName::WEIGHT);
 
     PCGPatternMatch match = PCGPatternMatch{
         bidict<PatternNode, parallel_layer_guid_t>{
@@ -189,7 +255,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           result_input_map = result.second.input_mapping;
 
       LinearAttrs correct_result_fused_mm_relu_attrs = LinearAttrs{
-          /*out_channels=*/12_n,
+          /*out_channels=*/12_p,
           /*use_bias=*/false,
           /*data_type=*/DataType::FLOAT,
           /*activation=*/Activation::RELU,
@@ -204,12 +270,14 @@ TEST_SUITE(FF_TEST_SUITE) {
           get_parallel_tensor_attrs(
               pcg,
               open_parallel_tensor_guid_from_closed(
-                  get_only(get_layer_outputs(pcg, relu_match_layer))));
+                  require_only_key(get_layer_outputs(pcg, relu_match_layer),
+                                   TensorSlotName::OUTPUT)));
 
       parallel_layer_guid_t result_fused_mm_relu_node =
           result_node_map.at_r(fused_mm_relu_node);
-      parallel_tensor_guid_t result_fused_mm_relu_output =
-          get_only(get_layer_outputs(result_graph, result_fused_mm_relu_node));
+      parallel_tensor_guid_t result_fused_mm_relu_output = require_only_key(
+          get_layer_outputs(result_graph, result_fused_mm_relu_node),
+          TensorSlotName::OUTPUT);
       input_parallel_tensor_guid_t result_i_activation =
           result_input_map.at_r(output_i_activation);
       input_parallel_tensor_guid_t result_i_weights =
@@ -226,23 +294,23 @@ TEST_SUITE(FF_TEST_SUITE) {
               }},
               std::unordered_set<SubParallelComputationGraphEdge>{
                   SubParallelComputationGraphEdge{
-                      OpenDataflowEdge{
-                          DataflowInputEdge{
+                      OpenKwargDataflowEdge<int, TensorSlotName>{
+                          KwargDataflowInputEdge{
                               result_i_activation.raw_dataflow_graph_input,
-                              DataflowInput{
+                              KwargDataflowInput<TensorSlotName>{
                                   result_fused_mm_relu_node.raw_graph_node,
-                                  0_n,
+                                  TensorSlotName::INPUT,
                               },
                           },
                       },
                   },
                   SubParallelComputationGraphEdge{
-                      OpenDataflowEdge{
-                          DataflowInputEdge{
+                      OpenKwargDataflowEdge<int, TensorSlotName>{
+                          KwargDataflowInputEdge<int, TensorSlotName>{
                               result_i_weights.raw_dataflow_graph_input,
-                              DataflowInput{
+                              KwargDataflowInput<TensorSlotName>{
                                   result_fused_mm_relu_node.raw_graph_node,
-                                  1_n,
+                                  TensorSlotName::WEIGHT,
                               },
                           },
                       },

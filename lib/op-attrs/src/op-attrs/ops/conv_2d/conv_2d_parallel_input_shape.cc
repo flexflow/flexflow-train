@@ -5,7 +5,7 @@ namespace FlexFlow {
 
 Conv2DParallelInputShape
     parse_parallel_input_shape(ParallelTensorShape const &input) {
-  assert(num_shard_dims(input) == 4);
+  assert(num_shard_dims(input).value == 4);
 
   ShardParallelDim sample_dim = shard_dim_at_idx(input, relative_ff_dim_t{0});
   ShardParallelDim channel_dim = shard_dim_at_idx(input, relative_ff_dim_t{1});

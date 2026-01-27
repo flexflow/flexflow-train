@@ -1,0 +1,266 @@
+# The external interface of task-spec
+
+Outside of datatype definitions, the task-spec interface primarily consists of
+
+TaskInvocation registering/aggregating:
+- get_forward_op_task_invocation (and other functions in task_signature_impl.h)
+    - i.e., mappings from operators to tasks
+- get_update_signature (and other functions in optimizer.cc)
+    - i.e., mappings from optimizers to tasks
+
+TaskInvocation handling/processing:
+- is_invocation_valid (task-spec/task_invocation.h)
+- lower_op_task_invocation_to_task_invocation (op_task_to_task_invocation.h) 
+    - honestly, is there really even a need for OpTaskInvocation's to escape task-spec?
+      it seems like they're all going to be immediately passed back into this function to 
+      get a TaskInvocation
+- construct_arg_slots_backing (runtime_arg_config.h)
+
+functions for constructing and interacting with TrainingSymbolicComputationGraph
+  - TrainingComputationGraph has been replaced by TrainingSymbolicComputationGraph, and/or, more powerfully, TrainingSymbolicComputationGraphFromCgConversion (and the analogous Pcg type)
+
+this seems to be the whole of the interface (which makes sense, as it's designed to be relatively small and operator agnostic).
+
+Okay, so then what is left for the local-execution backend to handle?
+- Actual physical tensor management (coordinating between physical tensors and symbolic_tensor_guid_t's)
+  - handled by LocalTensorBacking
+- DeviceSpecificOpState handling?
+- Task launches
+  - handled by LocalTaskRegistry
+  - actually handled in phases: first by collapsing everything in the TaskInvocation down to a fully concrete argument, and then by creating a TaskArgumentAccessor for all of the concrete arguments
+    - the first phase is done by LocalTensorBacking, though more accurately it's done by a mix of 
+      LocalTensorBacking and task-spec (which handles the runtime args through RuntimeArgConfig and 
+      construct_arg_slots_backing). 
+    - I wonder if it would be possible to move this entirely into task-spec? 
+      Probably not, as with something like realm the pointers for the tensors are probably not present 
+      until after the task launch, which violates this ordering. 
+      That said, it might be possible to handle some of the conversion from symbolic training tensor 
+      guids to atomic training tensor guids, though this is really a pretty trivial piece of 
+      code at least in theory
+
+----
+ - Ironically, it seems that LocalTrainingBacking isn't actually an input to all the many functions, as only subpieces of it really seem necessary. It's just a bundle of datatypes, and in theory all it should really be doing is scoping down arguments for more narrow function calls.
+ - It seems to handle grabbing the data from the symbolic training graph and then feeding that into the corresponding operator functions to construct the task invocations, but honestly I'm not seeing any reason this can't just be done within task-spec.
+ - Getting the tasks for each of the operators -- but if all of this is in task-spec already, why not just export a version with all of the task invocations already filled in? I guess the thing is that this loses the distinction between forward and backward and loss tasks, which may be something that the execution backend needs to actually process/handle. In addition, parallelism operators don't have corresponding tasks, so it's not clear how these would be represented in this hypothetical datatype.
+---- handled by LocalTrainingBacking
+
+and then there's a ModelTrainingInstance on top that surfaces a mutable stateful API over the more stateless/more low-level LocalTrainingBacking api. 
+   - Orchestrating execution order
+
+local-execution also contains the local cost estimator, but in many ways this is more a consumer of the local execution API than it is part of local execution
+
+here's the file list for local-execution:
+
+  local_atomic_tensor_backing.struct.toml
+  atomic_forward_tensor_guid_t.struct.toml
+  atomic_gradient_tensor_guid_t.struct.toml
+  atomic_optimizer_tensor_guid_t.struct.toml
+  atomic_loss_tensor_guid_t.struct.toml
+  atomic_training_tensor_guid_t.variant.toml
+
+  local_task_registry.struct.toml
+  local_task_registry.h
+  registered_task_t.variant.toml
+  registered_task.h
+  operator_task_set.struct.toml
+  operator_task_set.h
+
+  local_tensor_backing.struct.toml
+  local_tensor_backing.h
+  tensor_slot_backing.variant.toml
+  local_device_states_backing.struct.toml
+  local_device_states_backing.h
+
+  local_task_argument_accessor.h
+
+  local_training_backing.struct.toml
+  local_training_backing.h
+
+  training_computation_graph.struct.toml
+
+  -- conceptually separate from local-execution, but currently stored there for convenience
+  model_training_instance.h
+
+  local_cost_estimator.h
+  tracked_allocator.h
+
+It would probably be possible to put training logic into task-spec, and honestly this might even 
+be a good idea to prevent everything from being duplicated. For example, right now this is supposed 
+to be handled by local_training_backing, but there's really no reason for it not to be done by 
+task-spec, or at least a contained subpiece of task-spec. In theory, it should be able to call
+something like get_backward_invocation on an operator and get back a task_invocation that 
+already has the runtime args isolated out, entirely from task-spec. While we might want to keep the 
+runtime args as a separate step for now, this is still entirely doable. 
+Essentially, we'd be boiling out the following sequence of calls:
+
+- try_get_registered_task(layer_guid, BWD) 
+    -> I'm confused why this is here: the task_id is already present in TaskInvocation. 
+       I don't see any need for LocalTaskRegistry to be storing a mapping from layer_guid->task_id.
+       The only thing LocalTaskRegistry needs to be responsible for is storing 
+       task_id_t->task function, and potentially also doing some tracking of task signatures.
+- get_per_device_op_state_if_exists() 
+    -> right now this is necessary as TaskArgSpec is only capable of holding ConcreteArgSpec and RuntimeArgRefSpec, but if we expanded RuntimeArgRefType to include a reference to a particular operator's per device op state, that would work and would actually make a great deal of sense, as it's essentially introducing the concept/context of multiple operators existing.
+  - given this, it might actually make sense to view/model local-pcg-execution as taking task invocations and injecting the concept/context of multiple devices existing. I wonder what modelling this would look like exactly: some type flow like TaskInvocation -> atomic TaskInvocation (->*) TaskArgumentAccessor
+    (*) done by local-execution
+- get_backward_op_task_invocation
+- lower_to_task_invocation
+// - get_task_arg_accessor
+
+Okay, so what's the refinement path? We go from
+
+```
+OperatorTaskBinding {
+  tensor_bindings: fwb_tensor_slot_id_t -> OpTensorSpec  
+  arg_bindings: slot_id_t -> OpArgSpec
+}
+
+OpArgSpec = ConcreteArgSpec | OpArgRefSpec | RuntimeArgRefSpec
+
+OpArgRefSpecType = PerDeviceOpStateRefType | ParallelTensorShapeRefType
+```
+
+to (ideally handled entirely be task spec, as it's really only relevant to operators)
+
+```
+(Symbolic?)TaskBinding {
+  tensor_bindings: training_tensor_slot_id_t -> symbolic_training_tensor_guid_t
+  arg_bindings: slot_id_t -> TaskArgSpec
+}
+
+// tbh I think things are much better if the training_tensor_slot_id_t is discarded and 
+// each slot_id has a single tensor bound and there simply end up being multiple slots needed
+// for gradient, etc. tensors. I should look into the feasibility of this.
+training_tensor_slot_id_t {
+  slot_id_t
+  TensorType (should really be renamed to TrainingTensorType)
+}
+
+TaskArgSpec = ConcreteArgSpec | RuntimeArgRefSpec
+``` 
+to (handled individually by local-execution and local-pcg-execution)
+```
+AtomicTaskBinding {
+  tensor_bindings: training_tensor_slot_id_t -> atomic_training_tensor_guid_t
+  arg_bindings: slot_id_t -> ConcreteArgSpec
+  device? (probably not as it just adds in another concept, but we'll see...)
+}
+```
+and then execution of AtomicTaskBindings is shared between the two.
+
+now the goal for local-pcg-execution is to reuse as much code from local-execution as possible.
+
+The above lets us offload the handling of atomic task bindings to part of local-execution, unifying that piece of the code.
+
+- Ideally the tensor backing and allocation code would all be managed by local_atomic_tensor_backing, 
+  and the handling of the parallelized nature of the tensors would be handled by an additional step 
+  mapping from symbolic_training_tensor_guid_t's to atomic_training_tensor_guid_t's
+- Ideally the high level code driving things (i.e., ModelTrainingInstance) would be shared, though 
+  right now I think it might? need some refactoring out. Obviously this wouldn't be shareable with 
+  realm-execution, which actually needs real parallelism scheduling, but at least it's something.
+- Ideally realm-execution can leverage the code lowering TaskBinding to AtomicTaskBinding as all of 
+  the parallel dependence stuff is the same.
+- 
+
+In this new model, we'd be reducing local-execution down to
+
+  // Honestly unsure why we need all atomic tensors labelled by their types? Couldn't atomic tensors just be a raw guid?
+  local_atomic_tensor_backing.struct.toml
+  atomic_training_tensor_guid_t.struct.toml
+
+  // All of this is still necessary, but is shared between local-execution and local-pcg-execution
+  local_task_registry.struct.toml
+  local_task_registry.h
+  registered_task_t.variant.toml
+  registered_task.h
+  operator_task_set.struct.toml
+  operator_task_set.h
+
+  // Really now just a mapping from symbolic_training_tensor_guid_t -> atomic_training_tensor_guid_t, 
+  // should should be essentially trivial.
+  local_tensor_backing.struct.toml
+  local_tensor_backing.h
+
+  tensor_slot_backing.variant.toml // not sure what to do with this at the moment. Probably needs to be moved into tensor lowering or something somehow
+  
+  // now used in lowering TaskArgSpec to ConcreteArgSpec in local-execution
+  local_device_states_backing.struct.toml
+  local_device_states_backing.h
+
+  // All of this is still necessary, but is shared between local-execution and local-pcg-excecution
+  local_task_argument_accessor.h
+
+  // Ideally removed and mostly moved into task-spec's new training semantics awareness
+  local_training_backing.struct.toml
+  local_training_backing.h
+
+  // honestly probably now useless
+  training_computation_graph.struct.toml
+
+  // still here for convenience I guess for now.
+  -- conceptually separate from local-execution, but currently stored there for convenience
+  model_training_instance.h
+
+  local_cost_estimator.h
+  tracked_allocator.h
+
+And then local-pcg-execution to 
+
+  local_parallel_tensor_backing.struct.toml
+  lower_task_invocation_to_atomic_task_invocations.h
+
+  local_parallel_device_states_backing.h // still seems like this needs some refining so that it can be done as a lowering step--right now it feels like they're entirely separate types
+
+and that's essentially all. And then realm-execution would still be capable ideally of reusing
+local_parallel_tensor_backing.struct.toml and lower_task_invocation_to_atomic_task_invocation.h
+from local-pcg-execution.
+  
+Okay, now we just need to tackle an implementation plan for this.
+
+0? [ ] Simplify slot_id_t
+1. [x] Move training logic into task-spec
+2. [x] Add atomic task invocation definition
+3. [x] Define atomic task invocation dispatch code in LocalTaskRegistry/LocalAtomicTensorBacking
+4. [ ] Define task invocation to atomic task invocation lowering code in local-execution
+5. [ ] Define task invocation to atomic task invocation*s* lowering code in local-pcg-execution
+6. [ ] seema goes and implements realm-execution on top of the above
+
+How do we get form AtomicTaskBinding to TaskArgumentAccessor?
+- currently this is handled by 
+```
+TaskArgumentAccessor get_task_arg_accessor_for_invocation(LocalTensorBacking const &,
+                                                          RuntimeArgConfig const &,
+                                                          TaskInvocation const &,
+                                                          Allocator &);
+```
+
+Next tasks:
+1. implement remaining functions for execute_tasks_for_parallel_layer.h to get it to match the functionality of execute_tasks_for_layer.h
+2. implement parallel_model_training_instance.h
+3. look into/implement initialization/construction logic for the various support datatypes (backings, etc.)
+4. test some components (not sure where to start here)
+
+local-pcg-exection:
+- execute_tasks_for_parallel_layer.h
+- local_parallel_tensor_backing.h
+- local_pcg_args_backing.h
+- local_pcg_training_backing.h
+- mapped_per_device_op_states_group.h
+- mapped_runtime_task_group.h
+- parallel_model_training_instance.h
+- runtime_atomic_task_shard_binding.h
+
+local-execution:
+- execute_task_for_layer.h
+- local_atomic_tensor_backing.h
+- local_cost_estimator.h
+- local_device_states_backing.h
+- local_task_argument_accessor.h
+- local_task_registry.h
+- local_tensor_backing.h
+- local_training_backing.h
+- model_training_instance.h
+- operator_task_set.h
+- registered_task.h
+- tracked_allocator.h
+
+// vim: set tabstop=2 shiftwidth=2 expandtab:

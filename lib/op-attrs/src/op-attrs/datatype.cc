@@ -5,20 +5,20 @@
 
 namespace FlexFlow {
 
-nonnegative_int size_of_datatype(DataType data_type) {
+positive_int size_of_datatype(DataType data_type) {
   switch (data_type) {
     case DataType::BOOL:
-      return nonnegative_int{sizeof(bool)};
+      return positive_int{sizeof(bool)};
     case DataType::INT32:
-      return nonnegative_int{sizeof(int32_t)};
+      return positive_int{sizeof(int32_t)};
     case DataType::INT64:
-      return nonnegative_int{sizeof(int64_t)};
+      return positive_int{sizeof(int64_t)};
     case DataType::HALF:
-      return nonnegative_int{sizeof(float)} / 2_n;
+      return positive_int{sizeof(float) / 2};
     case DataType::FLOAT:
-      return nonnegative_int{sizeof(float)};
+      return positive_int{sizeof(float)};
     case DataType::DOUBLE:
-      return nonnegative_int{sizeof(double)};
+      return positive_int{sizeof(double)};
     default:
       throw mk_runtime_error(fmt::format("Unknown DataType {}", data_type));
   }

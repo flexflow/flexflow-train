@@ -1,42 +1,34 @@
 #ifndef _FLEXFLOW_OPS_KERNELS_EMBEDDING_KERNELS_H
 #define _FLEXFLOW_OPS_KERNELS_EMBEDDING_KERNELS_H
 
-#include "device.h"
 #include "kernels/accessor.h"
-#include "op-attrs/ops/embedding.h"
+#include "kernels/device_stream_t.dtg.h"
+#include "op-attrs/ops/embedding_attrs.dtg.h"
 
-namespace FlexFlow {
-namespace Kernels {
-namespace Embedding {
-void forward_kernel(ffStream_t stream,
+namespace FlexFlow::Kernels::Embedding {
+
+void forward_kernel(device_stream_t const &stream,
                     GenericTensorAccessorR const &input,
                     GenericTensorAccessorW const &output,
                     GenericTensorAccessorR const &weight,
                     DataType input_data_type,
                     DataType output_data_type,
                     std::optional<AggregateOp> aggr,
-                    int in_dim,
-                    int out_dim,
+                    num_tensor_dims_t in_dim,
+                    num_tensor_dims_t out_dim,
                     int batch_size);
-void backward_kernel(ffStream_t stream,
-                     GenericTensorAccessorR const &input,
+
+void backward_kernel(device_stream_t const &stream,
                      GenericTensorAccessorR const &output,
+                     GenericTensorAccessorR const &input,
                      GenericTensorAccessorW const &weight_grad,
-                     DataType input_data_type,
                      DataType output_data_type,
+                     DataType input_data_type,
                      std::optional<AggregateOp> aggr,
-                     int in_dim,
-                     int out_dim,
+                     num_tensor_dims_t in_dim,
+                     num_tensor_dims_t out_dim,
                      int batch_size);
 
-void rand_generate_int64_wrapper(int64_t *ptr, size_t size, int64_t p);
-void rand_generate_int32_wrapper(int32_t *ptr, size_t size, int32_t p);
-
-template <typename TD>
-__global__ void rand_generate_int(TD *ptr, size_t size, TD p);
-
-} // namespace Embedding
-} // namespace Kernels
-} // namespace FlexFlow
+} // namespace FlexFlow::Kernels::Embedding
 
 #endif // _FLEXFLOW_OPS_KERNELS_EMBEDDING_KERNELS_H

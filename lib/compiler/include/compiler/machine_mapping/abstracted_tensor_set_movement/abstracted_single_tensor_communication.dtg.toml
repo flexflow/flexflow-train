@@ -1,0 +1,22 @@
+namespace = "FlexFlow"
+name = "AbstractedSingleTensorCommunication"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_single_tensor_communication_edge.dtg.h",
+  "utils/units/num_bytes_t.h",
+]
+
+[[fields]]
+name = "edge"
+type = "::FlexFlow::AbstractedSingleTensorCommunicationEdge"
+
+[[fields]]
+name = "size"
+type = "::FlexFlow::num_bytes_t"

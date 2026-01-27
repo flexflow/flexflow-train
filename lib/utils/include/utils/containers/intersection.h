@@ -3,6 +3,7 @@
 
 #include "utils/containers/contains.h"
 #include <optional>
+#include <set>
 #include <unordered_set>
 
 namespace FlexFlow {
@@ -11,6 +12,17 @@ template <typename T>
 std::unordered_set<T> intersection(std::unordered_set<T> const &l,
                                    std::unordered_set<T> const &r) {
   std::unordered_set<T> result;
+  for (T const &ll : l) {
+    if (contains(r, ll)) {
+      result.insert(ll);
+    }
+  }
+  return result;
+}
+
+template <typename T>
+std::set<T> intersection(std::set<T> const &l, std::set<T> const &r) {
+  std::set<T> result;
   for (T const &ll : l) {
     if (contains(r, ll)) {
       result.insert(ll);

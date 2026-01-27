@@ -4,20 +4,20 @@
 namespace FlexFlow {
 
 nonnegative_int::nonnegative_int(int value) {
-  if (value < 0) {
-    throw std::invalid_argument(
-        "Value of nonnegative_int type must be nonnegative.");
-  }
+  ASSERT(value >= 0, "Value of nonnegative_int must be nonnegative");
   this->value_ = value;
 }
 
 nonnegative_int::nonnegative_int(size_t value) {
-  if (value > std::numeric_limits<int>::max()) {
-    throw std::invalid_argument(fmt::format(
-        "Input {} to nonnegative_int(size_t) is out-of-bounds for int", value));
-  }
+  ASSERT(value <= std::numeric_limits<int>::max());
   this->value_ = static_cast<int>(value);
-  assert(this->value_ >= 0);
+  ASSERT(this->value_ >= 0, "Value of nonnegative_int must be nonnegative");
+}
+
+nonnegative_int::nonnegative_int(unsigned long long int value) {
+  ASSERT(value <= std::numeric_limits<int>::max());
+  this->value_ = static_cast<int>(value);
+  ASSERT(this->value_ >= 0, "Value of nonnegative_int must be nonnegative");
 }
 
 nonnegative_int::operator int() const noexcept {
@@ -27,18 +27,23 @@ nonnegative_int::operator int() const noexcept {
 bool nonnegative_int::operator<(nonnegative_int const &other) const {
   return this->value_ < other.value_;
 }
+
 bool nonnegative_int::operator==(nonnegative_int const &other) const {
   return this->value_ == other.value_;
 }
+
 bool nonnegative_int::operator>(nonnegative_int const &other) const {
   return this->value_ > other.value_;
 }
+
 bool nonnegative_int::operator<=(nonnegative_int const &other) const {
   return this->value_ <= other.value_;
 }
+
 bool nonnegative_int::operator!=(nonnegative_int const &other) const {
   return this->value_ != other.value_;
 }
+
 bool nonnegative_int::operator>=(nonnegative_int const &other) const {
   return this->value_ >= other.value_;
 }
@@ -46,18 +51,23 @@ bool nonnegative_int::operator>=(nonnegative_int const &other) const {
 bool nonnegative_int::operator<(int const &other) const {
   return this->value_ < other;
 }
+
 bool nonnegative_int::operator==(int const &other) const {
   return this->value_ == other;
 }
+
 bool nonnegative_int::operator>(int const &other) const {
   return this->value_ > other;
 }
+
 bool nonnegative_int::operator<=(int const &other) const {
   return this->value_ <= other;
 }
+
 bool nonnegative_int::operator!=(int const &other) const {
   return this->value_ != other;
 }
+
 bool nonnegative_int::operator>=(int const &other) const {
   return this->value_ >= other;
 }
@@ -65,18 +75,23 @@ bool nonnegative_int::operator>=(int const &other) const {
 bool operator<(int const &lhs, nonnegative_int const &rhs) {
   return lhs < rhs.value_;
 }
+
 bool operator==(int const &lhs, nonnegative_int const &rhs) {
   return lhs == rhs.value_;
 }
+
 bool operator>(int const &lhs, nonnegative_int const &rhs) {
   return lhs > rhs.value_;
 }
+
 bool operator<=(int const &lhs, nonnegative_int const &rhs) {
   return lhs <= rhs.value_;
 }
+
 bool operator!=(int const &lhs, nonnegative_int const &rhs) {
   return lhs != rhs.value_;
 }
+
 bool operator>=(int const &lhs, nonnegative_int const &rhs) {
   return lhs >= rhs.value_;
 }
