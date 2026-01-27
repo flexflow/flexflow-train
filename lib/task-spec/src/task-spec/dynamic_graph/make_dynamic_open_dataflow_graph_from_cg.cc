@@ -62,7 +62,7 @@ DynamicOpenDataflowGraph
               };
             });
 
-    result.invocations.emplace(result_outputs, result_attrs, result_outputs);
+    result.invocations.emplace(result_inputs, result_attrs, result_outputs);
   }
 
   return result;
