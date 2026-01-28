@@ -31,7 +31,7 @@ bool graph_is_fully_pass_expanded(DynamicOpenDataflowGraph const &g) {
 
 DynamicTensorSlot pass_expand_slot(DynamicTensorSlot const &s,
                                    FwbTensorType tensor_type) {
-  ASSERT(s.slot_tensor_role == std::nullopt);
+  ASSERT(!slot_is_pass_expanded(s));
 
   DynamicTensorSlot result = s;
   result.slot_tensor_role =
