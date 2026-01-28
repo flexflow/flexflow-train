@@ -73,6 +73,7 @@ DynamicNodeInvocation
                     ProfilingSettings const &profiling_settings,
                     device_handle_t const &device_handle,
                     FFIterationConfig const &iteration_config,
+                    OptimizerAttrs const &optimizer_attrs,
                     device_id_t device_idx) {
   // Get op
   ComputationGraphOpAttrs op_attrs =
@@ -89,7 +90,7 @@ DynamicNodeInvocation
           /*loss_attrs=*/std::nullopt,
           /*per_device_op_state=*/std::nullopt,
           /*iteration_config=*/iteration_config,
-          /*optimizer_attrs=*/std::nullopt,
+          /*optimizer_attrs=*/optimizer_attrs,
           /*device_idx=*/device_idx);
 
   // Run task init
@@ -138,6 +139,7 @@ ComputationGraphInstance create_computation_graph_instance(
                                profiling_settings,
                                device_handle,
                                iteration_config,
+                               optimizer_attrs,
                                device_idx);
       });
   ASSERT(all_nodes_are_initialized(dg));
