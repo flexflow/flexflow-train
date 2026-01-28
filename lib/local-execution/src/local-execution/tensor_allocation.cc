@@ -25,6 +25,13 @@ bool all_tensors_are_allocated(DynamicOpenDataflowGraph const &g) {
       }));
 }
 
+bool tensors_are_ready_for_allocation(DynamicOpenDataflowGraph const &g) {
+  return all_are_true(
+      transform(get_dynamic_values(g), [](DynamicValueAttrs const &v) -> bool {
+        return v.parallel_tensor_shape.has_value();
+      }));
+}
+
 DynamicValueAttrs
     perform_tensor_allocation_for_value(DynamicValueAttrs const &value,
                                         Allocator &allocator) {
@@ -47,6 +54,7 @@ DynamicOpenDataflowGraph perform_tensor_allocation(
         &preallocated,
     Allocator &allocator) {
   ASSERT(no_tensors_are_allocated(g));
+  ASSERT(tensors_are_ready_for_allocation(g));
   for (DynamicValueAttrs const &v : keys(preallocated)) {
     ASSERT(v.accessor == std::nullopt);
   }
