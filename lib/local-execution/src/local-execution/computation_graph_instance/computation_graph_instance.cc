@@ -142,7 +142,6 @@ ComputationGraphInstance create_computation_graph_instance(
                                optimizer_attrs,
                                device_idx);
       });
-  ASSERT(all_nodes_are_initialized(dg));
 
   // Compute the topological ordering of the graph
   auto [kwarg_graph, node_map] =
@@ -174,9 +173,11 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
             /*ff_handle=*/ff_handle,
             /*loss_attrs=*/loss_attrs,
             /*per_device_op_state=*/
-            get_device_state_from_device_specific(
-                assert_unwrap(invocation.node_attrs.per_device_op_state),
-                device_idx),
+            transform(invocation.node_attrs.per_device_op_state,
+                      [&](DeviceSpecificPerDeviceOpState const &op_state) {
+                        return get_device_state_from_device_specific(
+                            op_state, device_idx);
+                      }),
             /*iteration_config=*/iteration_config,
             /*optimizer_attrs=*/optimizer_attrs,
             /*device_idx=*/device_idx);
