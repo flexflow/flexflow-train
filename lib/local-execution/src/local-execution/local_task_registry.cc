@@ -1,5 +1,5 @@
 #include "local-execution/local_task_registry.h"
-#include "pcg/computation_graph.h"
+#include "op-attrs/computation_graph_op_attrs.dtg.h"
 #include "task-spec/ops/impl/attention.h"
 #include "task-spec/ops/impl/batch_matmul.h"
 #include "task-spec/ops/impl/batch_norm.h"
