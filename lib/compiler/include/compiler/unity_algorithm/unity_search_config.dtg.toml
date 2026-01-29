@@ -1,10 +1,11 @@
 namespace = "FlexFlow"
-name = "OptimizerConfig"
+name = "UnitySearchConfig"
 type = "struct"
 features = [
   "eq",
   "hash",
   "fmt",
+  "json",
 ]
 
 includes = [
@@ -17,10 +18,6 @@ type = "float"
 [[fields]]
 name = "budget"
 type = "int"
-
-[[fields]]
-name = "threshold"
-type = "float"
 
 [[fields]]
 name = "max_num_ops"

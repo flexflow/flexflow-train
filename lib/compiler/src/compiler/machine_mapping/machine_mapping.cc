@@ -1,6 +1,8 @@
 #include "compiler/machine_mapping/machine_mapping.h"
 #include "compiler/machine_mapping/machine_view.h"
+#include "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.h"
 #include "op-attrs/computation_graph_op_attrs.h"
+#include "utils/bidict/algorithms/bidict_from_map.h"
 #include "utils/containers/are_disjoint.h"
 #include "utils/containers/binary_merge_disjoint_maps.h"
 #include "utils/containers/keys.h"
@@ -49,5 +51,27 @@ MachineMapping combine_disjoint_mappings(MachineMapping const &m1,
 bool nodes_are_disjoint(MachineMapping const &m1, MachineMapping const &m2) {
   return are_disjoint(keys(m1.machine_views), keys(m2.machine_views));
 }
+
+std::optional<MachineMapping> get_machine_mapping_from_machine_mapping_result(
+    PCGBinarySPDecomposition const &sp_decomposition,
+    MachineMappingResult const &mm_result) {
+  
+  FeasibleMachineMappingResult feasible_mapping = ({
+    if (is_infeasible(mm_result)) {
+      return std::nullopt;
+    }
+
+    require_feasible(mm_result);
+  });
+  
+  bidict<BinaryTreePath, parallel_layer_guid_t> path_to_leaf_map = 
+    bidict_from_map(pcg_sp_tree_get_path_to_leaf_map(sp_decomposition));
+
+  return MachineMapping{
+    map_keys(feasible_mapping.machine_mapping.raw_mapping,
+             [&](BinaryTreePath const &p) -> parallel_layer_guid_t {
+               return path_to_leaf_map.at_l(p); 
+             }),
+  }; }
 
 } // namespace FlexFlow

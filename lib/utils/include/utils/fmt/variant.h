@@ -7,8 +7,10 @@
 namespace fmt {
 
 template <typename... Ts, typename Char>
-struct formatter<std::variant<Ts...>, Char>
-    /* std::enable_if_t<!detail::has_format_as<::tl::expected<T, E>>::value>> */
+struct formatter<
+    ::std::variant<Ts...>, 
+    Char,
+    std::enable_if_t<!detail::has_format_as<std::variant<Ts...>>::value>>
     : formatter<::std::string> {
   template <typename FormatContext>
   auto format(std::variant<Ts...> const &m, FormatContext &ctx) const
@@ -25,8 +27,8 @@ struct formatter<std::variant<Ts...>, Char>
 
 namespace FlexFlow {
 
-template <typename... Ts>
-std::ostream &operator<<(std::ostream &s, std::variant<Ts...> const &v) {
+template <typename T, typename... Ts>
+std::ostream &operator<<(std::ostream &s, std::variant<T, Ts...> const &v) {
   return s << fmt::to_string(v);
 }
 

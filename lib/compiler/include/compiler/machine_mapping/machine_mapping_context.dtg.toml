@@ -6,7 +6,7 @@ features = []
 includes = [
   "compiler/cost_estimator/runtime_only_cost_estimator.h",
   "compiler/machine_mapping/machine_view.dtg.h",
-  "compiler/machine_mapping/machine_compute_resource_slice.dtg.h",
+  "pcg/machine_compute_resource_slice.dtg.h",
   "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_runtime_only_op_cost_estimate_key.dtg.h",
 ]
 
