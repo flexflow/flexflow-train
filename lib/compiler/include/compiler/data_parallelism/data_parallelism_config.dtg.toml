@@ -1,5 +1,6 @@
 namespace = "FlexFlow"
 name = "DataParallelismConfig"
+type = "struct"
 features = [
   "eq",
   "hash",

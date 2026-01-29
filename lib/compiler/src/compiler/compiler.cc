@@ -1,4 +1,5 @@
 #include "compiler/compiler.h"
+#include "compiler/cost_estimator/runtime_only_cost_estimator_from_cost_estimator.h"
 #include "compiler/unity_algorithm/unity_algorithm.h"
 #include "pcg/pcg_from_computation_graph.h"
 #include "utils/overload.h"
@@ -18,7 +19,7 @@ SearchResult optimize(ComputationGraph const &computation_graph,
         ParallelComputationGraph pcg =
             pcg_from_computation_graph(computation_graph);
         return graph_optimize(
-            pcg, cost_estimator, machine_specification, config);
+            pcg, runtime_only_cost_estimator_from_cost_estimator(cost_estimator), machine_specification.compute_specification, config);
       },
   });
 }

@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_COMPILER_MACHINE_MAPPING_GET_OPTIMAL_MACHINE_MAPPING_H
 #define _FLEXFLOW_COMPILER_MACHINE_MAPPING_GET_OPTIMAL_MACHINE_MAPPING_H
 
-#include "compiler/machine_mapping/machine_compute_resource_slice.dtg.h"
+#include "pcg/machine_compute_resource_slice.dtg.h"
 #include "compiler/machine_mapping/machine_mapping_cache.dtg.h"
 #include "compiler/machine_mapping/machine_mapping_constraints.dtg.h"
 #include "compiler/machine_mapping/machine_mapping_context.dtg.h"

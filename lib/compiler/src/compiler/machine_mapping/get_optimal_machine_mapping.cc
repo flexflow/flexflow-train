@@ -1,7 +1,6 @@
 #include "compiler/machine_mapping/get_optimal_machine_mapping.h"
 #include "compiler/cost_estimator/op_cost_metrics.dtg.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.h"
-#include "compiler/machine_mapping/get_machine_resource_splits.h"
 #include "compiler/machine_mapping/machine_mapping_cache.h"
 #include "compiler/machine_mapping/machine_mapping_constraints.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
@@ -20,9 +19,7 @@
 #include "op-attrs/get_operator_task_space.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/machine_specification.dtg.h"
-#include "pcg/machine_specification.h"
-#include "pcg/machine_view.dtg.h"
-#include "pcg/machine_view.h"
+#include "compiler/machine_mapping/machine_view.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "utils/containers/contains.h"
 #include "utils/containers/contains_key.h"
@@ -30,7 +27,6 @@
 #include "utils/containers/generate_map.h"
 #include "utils/containers/get_all_assignments.h"
 #include "utils/containers/keys.h"
-#include "utils/containers/merge_maps.h"
 #include "utils/containers/set_minus.h"
 #include "utils/containers/unordered_set_of.h"
 #include "utils/exception.h"
@@ -94,12 +90,17 @@ MachineMappingResult
 
   auto get_boundary_machine_view_assignments =
       [&](std::unordered_set<BinaryTreePath> const &boundary_layers,
-          MachineMappingProblemTree const &t,
+          MachineMappingProblemTree const &root,
           BinaryTreePathEntry const &prefix)
       -> std::unordered_set<ParallelLayerGuidObliviousMachineMapping> {
+
+    std::unordered_set<BinaryTreePath> mapped_boundary_layers = 
+      keys(restrict_to_child(constraints, prefix).machine_views);
+
     std::unordered_set<BinaryTreePath> unconstrained_boundary_layers =
-        set_minus(boundary_layers,
-                  keys(restrict_to_child(constraints, prefix).machine_views));
+        set_minus(boundary_layers, mapped_boundary_layers);
+
+    ASSERT(unconstrained_boundary_layers.size() > 0);
 
     std::unordered_map<BinaryTreePath, std::unordered_set<MachineView>>
         allowed = generate_map(
@@ -111,8 +112,12 @@ MachineMappingResult
                       .get<UnmappedRuntimeOnlyOpCostEstimateKey>();
               return context.allowed_machine_views(leaf, resources);
             });
+
+    std::unordered_set<std::unordered_map<BinaryTreePath, MachineView>>
+      assignments = get_all_assignments(allowed);
+
     return transform(
-        get_all_assignments(allowed),
+        assignments,
         [](std::unordered_map<BinaryTreePath, MachineView> const &m) {
           return ParallelLayerGuidObliviousMachineMapping{m};
         });

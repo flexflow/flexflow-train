@@ -3,6 +3,7 @@
 
 #include "compiler/cost_estimator/runtime_only_op_cost_estimate_key.dtg.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_runtime_only_op_cost_estimate_key.dtg.h"
+#include "op-attrs/operator_task_space.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 
@@ -16,6 +17,9 @@ UnmappedRuntimeOnlyOpCostEstimateKey
 RuntimeOnlyOpCostEstimateKey map_unmapped_runtime_only_op_cost_estimate_key(
     UnmappedRuntimeOnlyOpCostEstimateKey const &unmapped,
     MachineView const &machine_view);
+
+OperatorTaskSpace get_operator_task_space_for_runtime_only_op_cost_estimate_key(
+    UnmappedRuntimeOnlyOpCostEstimateKey const &unmapped);
 
 } // namespace FlexFlow
 

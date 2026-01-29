@@ -135,8 +135,8 @@ std::string as_dot(MachineMappingProblemTree const &tree) {
     return "P";
   };
 
-  std::function<std::string(UnmappedOpCostEstimateKey const &)> get_leaf_label =
-      [](UnmappedOpCostEstimateKey const &leaf) -> std::string { return ""; };
+  std::function<std::string(UnmappedRuntimeOnlyOpCostEstimateKey const &)> get_leaf_label =
+      [](UnmappedRuntimeOnlyOpCostEstimateKey const &leaf) -> std::string { return ""; };
 
   return as_dot(tree,
                 generic_binary_sp_impl_for_mm_problem_tree(),

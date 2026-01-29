@@ -1,9 +1,9 @@
 #include "compiler/machine_mapping/machine_mapping_problem_tree/get_machine_mapping_problem_tree.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_runtime_only_op_cost_estimate_key.dtg.h"
+#include "compiler/series_parallel/pcg/get_pcg_balanced_binary_sp_decomposition.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/computation_graph_builder.h"
-#include "pcg/operator_task_space.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include "pcg/pcg_from_computation_graph.h"
@@ -379,18 +379,20 @@ TEST_SUITE(FF_TEST_SUITE) {
       ComputationGraphBuilder b;
       TensorShape input_tensor_shape = TensorShape{
           TensorDims{
-              FFOrdered<nonnegative_int>{nonnegative_int{32},
-                                         nonnegative_int{64}},
+              FFOrdered<positive_int>{
+                32_p,
+                64_p,
+              },
           },
           DataType::FLOAT,
       };
       tensor_guid_t t = b.create_input(input_tensor_shape, CreateGrad::YES);
       t = b.dense(t,
-                  /*outDim=*/nonnegative_int{16},
+                  /*outDim=*/16_p,
                   /*activation=*/std::nullopt);
       t = b.gelu(t);
       t = b.dense(t,
-                  /*outDim=*/nonnegative_int{12},
+                  /*outDim=*/12_p,
                   /*activation=*/std::nullopt,
                   /*use_bias=*/false,
                   /*data_type=*/DataType::FLOAT,
@@ -398,7 +400,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                   /*bias_initializer=*/std::nullopt);
       t = b.relu(t);
       t = b.dense(t,
-                  /*outDim=*/nonnegative_int{8},
+                  /*outDim=*/8_p,
                   /*activation=*/Activation::RELU);
       return b.computation_graph;
     }();

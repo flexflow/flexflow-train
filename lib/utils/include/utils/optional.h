@@ -34,7 +34,8 @@ T const &assert_unwrap(std::optional<T> const &o) {
 
 template <typename T>
 T expect(std::optional<T> const &x, std::string const &err) {
-  return unwrap(x, [&]() { throw mk_runtime_error(err); });
+  ASSERT(x.has_value(), err);
+  return x.value();
 }
 
 } // namespace FlexFlow

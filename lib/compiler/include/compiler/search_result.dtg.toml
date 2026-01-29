@@ -1,5 +1,6 @@
 namespace = "FlexFlow"
 name = "SearchResult"
+type = "struct"
 features = [
 ]
 

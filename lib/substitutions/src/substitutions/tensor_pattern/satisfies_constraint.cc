@@ -14,14 +14,12 @@ bool parallel_tensor_satisfies_constraint(
     case ConstraintType::EQUAL:
       return expr_val == constraint.attribute_value;
     case ConstraintType::DIVISIBLE_BY: {
-      if (expr_val.has<nonnegative_int>() &&
-          constraint.attribute_value.has<nonnegative_int>()) {
-        return expr_val.get<nonnegative_int>() %
-                   constraint.attribute_value.get<nonnegative_int>() ==
-               0;
-      }
-      throw mk_runtime_error(
-          "DIVISIBLE_BY constraint requires nonnegative_int values");
+      ASSERT(expr_val.has<nonnegative_int>() && constraint.attribute_value.has<nonnegative_int>(),
+             "DIVISIBLE_BY constraint requires nonnegative_int values");
+
+      return expr_val.get<nonnegative_int>() %
+                 constraint.attribute_value.get<nonnegative_int>() ==
+             0;
     }
     default:
       PANIC("Unknown constraint type", constraint.constraint_type);

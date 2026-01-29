@@ -7,12 +7,14 @@
 #include "compiler/machine_mapping/machine_mapping_problem_tree/get_machine_mapping_problem_tree.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_op_cost_estimate_key.h"
+#include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_runtime_only_op_cost_estimate_key.h"
 #include "compiler/machine_mapping/machine_mapping_result.h"
 #include "compiler/series_parallel/pcg/get_pcg_balanced_binary_sp_decomposition.h"
 #include "compiler/series_parallel/pcg/get_pcg_series_parallel_decomposition.h"
 #include "compiler/unity_algorithm/graph_optimize_state.h"
+#include "pcg/machine_compute_resource_slice.h"
 #include "pcg/machine_specification.dtg.h"
-#include "pcg/operator_task_space.h"
+#include "op-attrs/operator_task_space.h"
 #include "substitutions/apply_substitution/apply_substitution.h"
 #include "substitutions/pcg_pattern.h"
 #include "substitutions/sub_parallel_computation_graph.h"
@@ -22,6 +24,7 @@
 #include "utils/deduplicated_priority_queue.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/optional.h"
+#include "substitutions/unity_substitution_set.h"
 
 namespace FlexFlow {
 
@@ -47,8 +50,8 @@ std::vector<ParallelComputationGraph>
 }
 
 SearchResult graph_optimize(ParallelComputationGraph &pcg,
-                            CostEstimator const &cost_estimator,
-                            MachineSpecification const &resources,
+                            RuntimeOnlyCostEstimator const &cost_estimator,
+                            MachineComputeSpecification const &resources,
                             UnitySearchConfig const &search_config) {
 
   std::vector<Substitution> substitutions = get_substitution_set(resources);
@@ -59,11 +62,15 @@ SearchResult graph_optimize(ParallelComputationGraph &pcg,
   MachineMappingContext context = MachineMappingContext{
       /*cost_estimator=*/cost_estimator,
       /*allowed_machine_views=*/
-      [&](UnmappedOpCostEstimateKey const &key,
-          MachineSpecification const &resources)
+      [&](UnmappedRuntimeOnlyOpCostEstimateKey const &key,
+          MachineComputeResourceSlice const &resources)
           -> std::unordered_set<MachineView> {
+
+        OperatorTaskSpace op_task_space = 
+          get_operator_task_space_for_runtime_only_op_cost_estimate_key(key);
+
         return get_allowed_machine_views(
-            resources, key.op_task_space, DeviceType::GPU);
+            resources, op_task_space, DeviceType::GPU);
       },
   };
 
@@ -79,12 +86,16 @@ SearchResult graph_optimize(ParallelComputationGraph &pcg,
         get_unconstrained_solution_for_layers(get_all_leaf_paths(problem_tree));
 
     MachineMappingResult mm_result = get_optimal_machine_mapping(
-        cached_subgraph_costs, context, problem_tree, resources, constraints);
+        cached_subgraph_costs, 
+        context, 
+        problem_tree, 
+        compute_slice_from_specification(resources), 
+        constraints);
 
     return {
         GraphOptimizeState{
             /*pcg=*/pcg,
-            /*runtime_with_optimal_mm=*/get_runtime_cost(mm_result),
+            /*runtime=*/get_runtime_cost(mm_result),
         },
         get_machine_mapping_from_machine_mapping_result(sp_decomp, mm_result),
     };
@@ -101,21 +112,22 @@ SearchResult graph_optimize(ParallelComputationGraph &pcg,
 
     if (current_state < best_state) {
       best_state = current_state;
-    } else if (current_state.runtime_with_optimal_mm >
-               best_state.runtime_with_optimal_mm * search_config.alpha) {
+    } else if (current_state.runtime > best_state.runtime * search_config.alpha) {
       continue;
     }
 
     for (ParallelComputationGraph const &new_pcg :
-         all_pcgs_obtained_by_applying_a_substitution(current_state.pcg,
-                                                      substitutions)) {
+         all_pcgs_obtained_by_applying_a_substitution(current_state.pcg, substitutions)) {
+
       std::optional<GraphOptimizeState> new_pcg_optimize_result =
           optimize_pcg(new_pcg).first;
+
       if (new_pcg_optimize_result == std::nullopt) {
         continue;
       }
+
       GraphOptimizeState new_state = new_pcg_optimize_result.value();
-      if (new_state.runtime_with_optimal_mm <= search_config.threshold &&
+      if (new_state.runtime <= best_state.runtime * search_config.alpha &&
           get_nodes(new_pcg.raw_graph).size() <= search_config.max_num_ops) {
         candidates.push(new_state);
       }
@@ -125,9 +137,7 @@ SearchResult graph_optimize(ParallelComputationGraph &pcg,
   std::optional<MachineMapping> best_mapping =
       optimize_pcg(best_state.pcg).second;
 
-  if (best_mapping == std::nullopt) {
-    throw std::runtime_error("Failed to find any solutions");
-  }
+  ASSERT(best_mapping != std::nullopt, "Failed to find any solutions");
 
   return SearchResult{
       /*pcg=*/best_state.pcg,

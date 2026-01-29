@@ -1,5 +1,6 @@
 #include "compiler/unity_algorithm/unity_algorithm.h"
-#include "../cost_estimator_for_test.h"
+#include "compiler/cost_estimator/runtime_only_cost_estimator_from_cost_estimator.h"
+#include "internal/cost_estimator_for_test.h"
 #include "doctest/doctest.h"
 #include "op-attrs/parallel_tensor_dims.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
@@ -18,18 +19,20 @@ TEST_SUITE(FF_TEST_SUITE) {
       ComputationGraphBuilder b;
       TensorShape input_tensor_shape = TensorShape{
           TensorDims{
-              FFOrdered<nonnegative_int>{nonnegative_int{32},
-                                         nonnegative_int{64}},
+              FFOrdered<positive_int>{
+                32_p,
+                64_p,
+              },
           },
           DataType::FLOAT,
       };
       tensor_guid_t t = b.create_input(input_tensor_shape, CreateGrad::YES);
       t = b.dense(t,
-                  /*outDim=*/nonnegative_int{16},
+                  /*outDim=*/16_p,
                   /*activation=*/std::nullopt);
       t = b.gelu(t);
       t = b.dense(t,
-                  /*outDim=*/nonnegative_int{12},
+                  /*outDim=*/12_p,
                   /*activation=*/std::nullopt,
                   /*use_bias=*/false,
                   /*data_type=*/DataType::FLOAT,
@@ -37,36 +40,34 @@ TEST_SUITE(FF_TEST_SUITE) {
                   /*bias_initializer=*/std::nullopt);
       t = b.relu(t);
       t = b.dense(t,
-                  /*outDim=*/nonnegative_int{8},
+                  /*outDim=*/8_p,
                   /*activation=*/Activation::RELU);
       return b.computation_graph;
     }();
 
     ParallelComputationGraph pcg = pcg_from_computation_graph(cg);
 
-    CostEstimator cost_estimator = make_fake_cost_estimator(
-        [](OpCostEstimateKey const &k) {
+    RuntimeOnlyCostEstimator cost_estimator = runtime_only_cost_estimator_from_cost_estimator(
+      make_fake_cost_estimator(
+        [](OpCostEstimateKey const &k) -> OpCostMetrics {
           return OpCostMetrics{
-              /*forward_runtime=*/1.0,
-              /*backward_runtime=*/2.0,
-              /*memory=*/nonnegative_int{1},
+              /*forward_runtime=*/1.0_ms,
+              /*backward_runtime=*/2.0_ms,
+              /*memory=*/1_bytes,
           };
         },
-        [](TensorSetMovement const &) { return 1.0; });
+        [](TensorSetMovement const &) -> milliseconds_t { return 1.0_ms; }));
 
-    MachineSpecification full_machine_spec = MachineSpecification{
-        /*num_nodes=*/nonnegative_int{2},
-        /*num_cpus_per_node=*/nonnegative_int{1},
-        /*num_gpus_per_node=*/nonnegative_int{1},
-        /*inter_node_bandwidth=*/1,
-        /*intra_node_bandwidth=*/1,
+    MachineComputeSpecification full_machine_spec = MachineComputeSpecification{
+        /*num_nodes=*/2_p,
+        /*num_cpus_per_node=*/1_p,
+        /*num_gpus_per_node=*/1_p,
     };
 
     SUBCASE("do not apply substitution") {
       UnitySearchConfig search_config = UnitySearchConfig{
           /*alpha=*/1.0,
           /*budget=*/0,
-          /*threshold=*/1000.0,
           /*max_num_ops=*/100,
       };
       SearchResult result =
@@ -78,7 +79,6 @@ TEST_SUITE(FF_TEST_SUITE) {
       UnitySearchConfig search_config = UnitySearchConfig{
           /*alpha=*/1.0,
           /*budget=*/1,
-          /*threshold=*/1000.0,
           /*max_num_ops=*/100,
       };
       SearchResult result =

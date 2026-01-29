@@ -1,5 +1,6 @@
 namespace = "FlexFlow"
 name = "AlgorithmConfig"
+type = "variant"
 features = [
   "eq",
   "hash",

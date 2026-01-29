@@ -66,6 +66,7 @@ TensorSetMovement concretize_abstracted_single_tensor_movement(
     std::unordered_map<BinaryTreePath, MachineSpaceStencil> const
         &post_machine_stencils) {
 
+  ASSERT(contains_key(pre_machine_stencils, abstracted.src_op_tree_path));
   MachineSpaceStencil pre_machine_stencil =
       pre_machine_stencils.at(abstracted.src_op_tree_path);
 

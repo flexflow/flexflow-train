@@ -1,8 +1,12 @@
 #include "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.h"
+#include "compiler/series_parallel/pcg/get_pcg_series_parallel_decomposition.h"
 #include "compiler/series_parallel/pcg/pcg_binary_series_split.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/find_paths_to_leaf.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/get_leaves.h"
+#include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/get_path_to_leaf_map.h"
+#include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
 #include "utils/overload.h"
+#include "compiler/series_parallel/pcg/pcg_binary_parallel_split.h"
 
 namespace FlexFlow {
 
@@ -76,18 +80,6 @@ BinarySPDecompositionTree
         };
       },
   });
-}
-
-std::optional<PCGBinarySPDecomposition>
-    get_pcg_balanced_binary_sp_decomposition(
-        ParallelComputationGraph const &pcg) {
-  SeriesParallelDecomposition sp_decomp =
-      expect(get_pcg_series_parallel_decomposition(pcg),
-             "Failed to get SP decomposition of PCG");
-  BinarySPDecompositionTree binary_sp_tree =
-      left_associative_binary_sp_tree_from_nary(sp_decomp);
-  return pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
-      binary_sp_tree);
 }
 
 PCGBinarySeriesSplit pcg_binary_series_split_from_binary_series_split(

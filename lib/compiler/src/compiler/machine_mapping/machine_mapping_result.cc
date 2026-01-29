@@ -138,9 +138,11 @@ MachineMappingResult
   };
 }
 
-float get_runtime_cost(MachineMappingResult const &mm_result) {
+milliseconds_t get_runtime_cost(MachineMappingResult const &mm_result) {
   if (mm_result.raw_result == std::nullopt) {
-    return std::numeric_limits<float>::infinity();
+    return milliseconds_t{
+      std::numeric_limits<float>::infinity(),
+    };
   } else {
     return mm_result.raw_result.value().runtime;
   }

@@ -50,6 +50,9 @@ TensorSetMovement concretize_abstracted_tensor_set_movement(
     std::unordered_map<BinaryTreePath, MachineSpaceStencil> const
         &post_machine_stencils) {
 
+  ASSERT(pre_machine_stencils.size() > 0);
+  ASSERT(post_machine_stencils.size() > 0);
+
   std::vector<TensorSetMovement> single_tensor_movements =
       transform(vector_of(abstracted.single_tensor_movements),
                 [&](AbstractedSingleTensorMovement const &m) {
