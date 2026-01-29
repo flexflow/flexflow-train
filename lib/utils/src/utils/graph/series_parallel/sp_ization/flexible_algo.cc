@@ -91,7 +91,8 @@ UpDownPartition
                     std::unordered_map<Node, float> const &cost_map,
                     std::unordered_map<Node, NodeRole> const &node_roles) {
   DiGraph sp_pure_graph = materialize_digraph_view<AdjacencyDiGraph>(sp);
-  sp_pure_graph = delete_nodes_of_given_role(sp_pure_graph, NodeRole::SYNC, node_roles);
+  sp_pure_graph =
+      delete_nodes_of_given_role(sp_pure_graph, NodeRole::SYNC, node_roles);
   DiGraphView sp_pure = sp_pure_graph;
 
   std::unordered_set<Node> base_down = nodes;

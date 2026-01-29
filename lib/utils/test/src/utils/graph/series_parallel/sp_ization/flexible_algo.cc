@@ -30,8 +30,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::unordered_map<Node, float> cost_map = {{n0, 1.0f}};
 
       SeriesParallelDecomposition result = flexible_sync(g, cost_map);
-      SeriesParallelDecomposition correct =
-          SeriesParallelDecomposition{n0};
+      SeriesParallelDecomposition correct = SeriesParallelDecomposition{n0};
 
       CHECK(result == correct);
       CHECK(dependencies_are_maintained(g, result));
@@ -77,8 +76,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
 
       SeriesParallelDecomposition result = flexible_sync(g, cost_map);
-      SeriesParallelDecomposition correct = SeriesParallelDecomposition{
-          SeriesSplit{{n[0], n[1], n[2], n[3]}}};
+      SeriesParallelDecomposition correct =
+          SeriesParallelDecomposition{SeriesSplit{{n[0], n[1], n[2], n[3]}}};
 
       CHECK(result == correct);
       CHECK(dependencies_are_maintained(g, result));
@@ -106,8 +105,11 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
 
       SeriesParallelDecomposition result = flexible_sync(g, cost_map);
-      SeriesParallelDecomposition correct = SeriesParallelDecomposition{
-          SeriesSplit{{n[0], ParallelSplit{{n[1], n[2]}}, ParallelSplit{{n[3], n[4]}}, n[5]}}};
+      SeriesParallelDecomposition correct =
+          SeriesParallelDecomposition{SeriesSplit{{n[0],
+                                                   ParallelSplit{{n[1], n[2]}},
+                                                   ParallelSplit{{n[3], n[4]}},
+                                                   n[5]}}};
 
       CHECK(result == correct);
       CHECK(dependencies_are_maintained(g, result));
@@ -136,7 +138,10 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SeriesParallelDecomposition result = flexible_sync(g, cost_map);
       SeriesParallelDecomposition correct = SeriesParallelDecomposition{
-          SeriesSplit{{n[0], n[1], ParallelSplit{{SeriesSplit{{n[2], n[4]}}, n[3]}}, n[5]}}};
+          SeriesSplit{{n[0],
+                       n[1],
+                       ParallelSplit{{SeriesSplit{{n[2], n[4]}}, n[3]}},
+                       n[5]}}};
 
       CHECK(result == correct);
       CHECK(dependencies_are_maintained(g, result));
@@ -165,7 +170,10 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SeriesParallelDecomposition result = flexible_sync(g, cost_map);
       SeriesParallelDecomposition correct = SeriesParallelDecomposition{
-          SeriesSplit{{n[0], ParallelSplit{{SeriesSplit{{n[1], n[3]}}, n[2]}}, n[4], n[5]}}};
+          SeriesSplit{{n[0],
+                       ParallelSplit{{SeriesSplit{{n[1], n[3]}}, n[2]}},
+                       n[4],
+                       n[5]}}};
 
       CHECK(result == correct);
       CHECK(dependencies_are_maintained(g, result));
@@ -185,8 +193,14 @@ TEST_SUITE(FF_TEST_SUITE) {
                  DirectedEdge{n[6], n[7]}});
 
       std::unordered_map<Node, float> cost_map = {
-          {n[0], 1.0f}, {n[1], 1.0f}, {n[2], 1.0f}, {n[3], 1.0f},
-          {n[4], 1.0f}, {n[5], 1.0f}, {n[6], 1.0f}, {n[7], 1.0f},
+          {n[0], 1.0f},
+          {n[1], 1.0f},
+          {n[2], 1.0f},
+          {n[3], 1.0f},
+          {n[4], 1.0f},
+          {n[5], 1.0f},
+          {n[6], 1.0f},
+          {n[7], 1.0f},
       };
 
       SeriesParallelDecomposition result = flexible_sync(g, cost_map);
@@ -227,9 +241,11 @@ TEST_SUITE(FF_TEST_SUITE) {
       SeriesParallelDecomposition result = flexible_sync(g, cost_map);
       SeriesParallelDecomposition correct = SeriesParallelDecomposition{
           SeriesSplit{{n[0],
-                       ParallelSplit{{SeriesSplit{{ParallelSplit{{SeriesSplit{{n[1], n[3]}}, n[2]}},
-                                                   n[4]}},
-                                      n[5]}},
+                       ParallelSplit{
+                           {SeriesSplit{{ParallelSplit{
+                                             {SeriesSplit{{n[1], n[3]}}, n[2]}},
+                                         n[4]}},
+                            n[5]}},
                        n[6]}}};
 
       CHECK(result == correct);
@@ -253,16 +269,23 @@ TEST_SUITE(FF_TEST_SUITE) {
                  DirectedEdge{n[7], n[5]}});
 
       std::unordered_map<Node, float> cost_map = {
-          {n[0], 1.0f}, {n[1], 1.0f}, {n[2], 1.0f}, {n[3], 1.0f},
-          {n[4], 1.0f}, {n[5], 1.0f}, {n[6], 1.0f}, {n[7], 1.0f},
+          {n[0], 1.0f},
+          {n[1], 1.0f},
+          {n[2], 1.0f},
+          {n[3], 1.0f},
+          {n[4], 1.0f},
+          {n[5], 1.0f},
+          {n[6], 1.0f},
+          {n[7], 1.0f},
       };
 
       SeriesParallelDecomposition result = flexible_sync(g, cost_map);
       SeriesParallelDecomposition correct = SeriesParallelDecomposition{
           SeriesSplit{{n[0],
-                       ParallelSplit{{n[6],
-                                      SeriesSplit{{ParallelSplit{{n[1], n[2]}},
-                                                   ParallelSplit{{n[3], n[4], n[7]}}}}}},
+                       ParallelSplit{
+                           {n[6],
+                            SeriesSplit{{ParallelSplit{{n[1], n[2]}},
+                                         ParallelSplit{{n[3], n[4], n[7]}}}}}},
                        n[5]}}};
 
       CHECK(result == correct);
@@ -297,14 +320,18 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
 
       SeriesParallelDecomposition result = flexible_sync(g, cost_map);
-      SeriesParallelDecomposition correct = SeriesParallelDecomposition{
-          SeriesSplit{{n[0],
-                       ParallelSplit{{n[6],
-                                      SeriesSplit{{n[2],
-                                                   ParallelSplit{{n[7],
-                                                                  SeriesSplit{{n[1],
-                                                                               ParallelSplit{{n[3], n[4]}}}}}}}}}},
-                       n[5]}}};
+      SeriesParallelDecomposition correct =
+          SeriesParallelDecomposition{SeriesSplit{
+              {n[0],
+               ParallelSplit{
+                   {n[6],
+                    SeriesSplit{
+                        {n[2],
+                         ParallelSplit{
+                             {n[7],
+                              SeriesSplit{
+                                  {n[1], ParallelSplit{{n[3], n[4]}}}}}}}}}},
+               n[5]}}};
 
       CHECK(result == correct);
       CHECK(dependencies_are_maintained(g, result));
@@ -347,34 +374,20 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("Graph From Paper - constant cost map") {
       DiGraph g = DiGraph::create<AdjacencyDiGraph>();
       std::vector<Node> n = add_nodes(g, 18);
-      add_edges(g,
-                {DirectedEdge{n[0], n[1]},
-                 DirectedEdge{n[0], n[2]},
-                 DirectedEdge{n[1], n[3]},
-                 DirectedEdge{n[1], n[4]},
-                 DirectedEdge{n[2], n[10]},
-                 DirectedEdge{n[2], n[11]},
-                 DirectedEdge{n[2], n[12]},
-                 DirectedEdge{n[3], n[5]},
-                 DirectedEdge{n[3], n[6]},
-                 DirectedEdge{n[4], n[6]},
-                 DirectedEdge{n[4], n[7]},
-                 DirectedEdge{n[4], n[10]},
-                 DirectedEdge{n[5], n[8]},
-                 DirectedEdge{n[6], n[8]},
-                 DirectedEdge{n[6], n[9]},
-                 DirectedEdge{n[7], n[8]},
-                 DirectedEdge{n[8], n[17]},
-                 DirectedEdge{n[9], n[17]},
-                 DirectedEdge{n[10], n[9]},
-                 DirectedEdge{n[10], n[16]},
-                 DirectedEdge{n[11], n[16]},
-                 DirectedEdge{n[12], n[13]},
-                 DirectedEdge{n[12], n[14]},
-                 DirectedEdge{n[13], n[15]},
-                 DirectedEdge{n[14], n[15]},
-                 DirectedEdge{n[15], n[16]},
-                 DirectedEdge{n[16], n[17]}});
+      add_edges(g, {DirectedEdge{n[0], n[1]},   DirectedEdge{n[0], n[2]},
+                    DirectedEdge{n[1], n[3]},   DirectedEdge{n[1], n[4]},
+                    DirectedEdge{n[2], n[10]},  DirectedEdge{n[2], n[11]},
+                    DirectedEdge{n[2], n[12]},  DirectedEdge{n[3], n[5]},
+                    DirectedEdge{n[3], n[6]},   DirectedEdge{n[4], n[6]},
+                    DirectedEdge{n[4], n[7]},   DirectedEdge{n[4], n[10]},
+                    DirectedEdge{n[5], n[8]},   DirectedEdge{n[6], n[8]},
+                    DirectedEdge{n[6], n[9]},   DirectedEdge{n[7], n[8]},
+                    DirectedEdge{n[8], n[17]},  DirectedEdge{n[9], n[17]},
+                    DirectedEdge{n[10], n[9]},  DirectedEdge{n[10], n[16]},
+                    DirectedEdge{n[11], n[16]}, DirectedEdge{n[12], n[13]},
+                    DirectedEdge{n[12], n[14]}, DirectedEdge{n[13], n[15]},
+                    DirectedEdge{n[14], n[15]}, DirectedEdge{n[15], n[16]},
+                    DirectedEdge{n[16], n[17]}});
 
       std::unordered_map<Node, float> cost_map;
       for (int i = 0; i < 18; i++) {
@@ -382,15 +395,18 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SeriesParallelDecomposition result = flexible_sync(g, cost_map);
-      SeriesParallelDecomposition correct = SeriesParallelDecomposition{
-          SeriesSplit{{n[0],
-                       ParallelSplit{{SeriesSplit{{n[1], ParallelSplit{{n[3], n[4]}}}},
-                                      SeriesSplit{{n[2], ParallelSplit{{n[11], n[12]}}}}}},
-                       ParallelSplit{{SeriesSplit{{ParallelSplit{{n[10], n[5], n[6], n[7]}},
-                                                   ParallelSplit{{n[8], n[9]}}}},
-                                      SeriesSplit{{ParallelSplit{{n[13], n[14]}}, n[15]}}}},
-                       n[16],
-                       n[17]}}};
+      SeriesParallelDecomposition correct =
+          SeriesParallelDecomposition{SeriesSplit{
+              {n[0],
+               ParallelSplit{
+                   {SeriesSplit{{n[1], ParallelSplit{{n[3], n[4]}}}},
+                    SeriesSplit{{n[2], ParallelSplit{{n[11], n[12]}}}}}},
+               ParallelSplit{
+                   {SeriesSplit{{ParallelSplit{{n[10], n[5], n[6], n[7]}},
+                                 ParallelSplit{{n[8], n[9]}}}},
+                    SeriesSplit{{ParallelSplit{{n[13], n[14]}}, n[15]}}}},
+               n[16],
+               n[17]}}};
 
       CHECK(dependencies_are_maintained(g, result));
       CHECK(result == correct);
@@ -399,33 +415,19 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("Graph From Paper - non constant cost map") {
       DiGraph g = DiGraph::create<AdjacencyDiGraph>();
       std::vector<Node> n = add_nodes(g, 18);
-      add_edges(g,
-                {DirectedEdge{n[0], n[1]},
-                 DirectedEdge{n[0], n[2]},
-                 DirectedEdge{n[1], n[3]},
-                 DirectedEdge{n[1], n[4]},
-                 DirectedEdge{n[2], n[10]},
-                 DirectedEdge{n[2], n[11]},
-                 DirectedEdge{n[2], n[12]},
-                 DirectedEdge{n[3], n[5]},
-                 DirectedEdge{n[3], n[6]},
-                 DirectedEdge{n[4], n[6]},
-                 DirectedEdge{n[4], n[7]},
-                 DirectedEdge{n[4], n[10]},
-                 DirectedEdge{n[5], n[8]},
-                 DirectedEdge{n[6], n[8]},
-                 DirectedEdge{n[6], n[9]},
-                 DirectedEdge{n[7], n[8]},
-                 DirectedEdge{n[8], n[17]},
-                 DirectedEdge{n[9], n[17]},
-                 DirectedEdge{n[10], n[16]},
-                 DirectedEdge{n[11], n[16]},
-                 DirectedEdge{n[12], n[13]},
-                 DirectedEdge{n[12], n[14]},
-                 DirectedEdge{n[13], n[15]},
-                 DirectedEdge{n[14], n[15]},
-                 DirectedEdge{n[15], n[16]},
-                 DirectedEdge{n[16], n[17]}});
+      add_edges(g, {DirectedEdge{n[0], n[1]},   DirectedEdge{n[0], n[2]},
+                    DirectedEdge{n[1], n[3]},   DirectedEdge{n[1], n[4]},
+                    DirectedEdge{n[2], n[10]},  DirectedEdge{n[2], n[11]},
+                    DirectedEdge{n[2], n[12]},  DirectedEdge{n[3], n[5]},
+                    DirectedEdge{n[3], n[6]},   DirectedEdge{n[4], n[6]},
+                    DirectedEdge{n[4], n[7]},   DirectedEdge{n[4], n[10]},
+                    DirectedEdge{n[5], n[8]},   DirectedEdge{n[6], n[8]},
+                    DirectedEdge{n[6], n[9]},   DirectedEdge{n[7], n[8]},
+                    DirectedEdge{n[8], n[17]},  DirectedEdge{n[9], n[17]},
+                    DirectedEdge{n[10], n[16]}, DirectedEdge{n[11], n[16]},
+                    DirectedEdge{n[12], n[13]}, DirectedEdge{n[12], n[14]},
+                    DirectedEdge{n[13], n[15]}, DirectedEdge{n[14], n[15]},
+                    DirectedEdge{n[15], n[16]}, DirectedEdge{n[16], n[17]}});
 
       std::unordered_map<Node, float> cost_map;
       for (int i = 0; i < 18; i++) {
@@ -439,33 +441,19 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("Additional Test Case") {
       DiGraph g = DiGraph::create<AdjacencyDiGraph>();
       std::vector<Node> n = add_nodes(g, 18);
-      add_edges(g,
-                {DirectedEdge{n[0], n[1]},
-                 DirectedEdge{n[0], n[2]},
-                 DirectedEdge{n[1], n[3]},
-                 DirectedEdge{n[1], n[4]},
-                 DirectedEdge{n[2], n[10]},
-                 DirectedEdge{n[2], n[11]},
-                 DirectedEdge{n[2], n[12]},
-                 DirectedEdge{n[3], n[5]},
-                 DirectedEdge{n[3], n[6]},
-                 DirectedEdge{n[4], n[6]},
-                 DirectedEdge{n[4], n[7]},
-                 DirectedEdge{n[4], n[10]},
-                 DirectedEdge{n[5], n[8]},
-                 DirectedEdge{n[6], n[8]},
-                 DirectedEdge{n[6], n[9]},
-                 DirectedEdge{n[7], n[8]},
-                 DirectedEdge{n[8], n[17]},
-                 DirectedEdge{n[9], n[17]},
-                 DirectedEdge{n[10], n[16]},
-                 DirectedEdge{n[11], n[16]},
-                 DirectedEdge{n[12], n[13]},
-                 DirectedEdge{n[12], n[14]},
-                 DirectedEdge{n[13], n[15]},
-                 DirectedEdge{n[14], n[15]},
-                 DirectedEdge{n[15], n[16]},
-                 DirectedEdge{n[16], n[17]}});
+      add_edges(g, {DirectedEdge{n[0], n[1]},   DirectedEdge{n[0], n[2]},
+                    DirectedEdge{n[1], n[3]},   DirectedEdge{n[1], n[4]},
+                    DirectedEdge{n[2], n[10]},  DirectedEdge{n[2], n[11]},
+                    DirectedEdge{n[2], n[12]},  DirectedEdge{n[3], n[5]},
+                    DirectedEdge{n[3], n[6]},   DirectedEdge{n[4], n[6]},
+                    DirectedEdge{n[4], n[7]},   DirectedEdge{n[4], n[10]},
+                    DirectedEdge{n[5], n[8]},   DirectedEdge{n[6], n[8]},
+                    DirectedEdge{n[6], n[9]},   DirectedEdge{n[7], n[8]},
+                    DirectedEdge{n[8], n[17]},  DirectedEdge{n[9], n[17]},
+                    DirectedEdge{n[10], n[16]}, DirectedEdge{n[11], n[16]},
+                    DirectedEdge{n[12], n[13]}, DirectedEdge{n[12], n[14]},
+                    DirectedEdge{n[13], n[15]}, DirectedEdge{n[14], n[15]},
+                    DirectedEdge{n[15], n[16]}, DirectedEdge{n[16], n[17]}});
 
       std::unordered_map<Node, float> cost_map = {
           {n[0], 1.0f},
@@ -493,4 +481,3 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
   }
 }
-

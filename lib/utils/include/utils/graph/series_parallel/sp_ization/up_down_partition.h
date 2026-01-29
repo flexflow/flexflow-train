@@ -16,4 +16,3 @@ std::unordered_set<Node> get_down_frontier(DiGraph const &sp,
 } // namespace FlexFlow
 
 #endif
-
