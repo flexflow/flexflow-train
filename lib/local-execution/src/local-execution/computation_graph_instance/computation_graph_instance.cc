@@ -1,4 +1,5 @@
 #include "local-execution/computation_graph_instance/computation_graph_instance.h"
+#include "kernels/accessor.h"
 #include "kernels/allocation.h"
 #include "local-execution/local_task_registry.h"
 #include "local-execution/task_execution.h"
@@ -7,7 +8,8 @@
 #include "pcg/optimizer_attrs.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
-#include "task-spec/dynamic_graph/dynamic_tensor_accessor.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
+#include "task-spec/dynamic_graph/loss_insertion.h"
 #include "task-spec/dynamic_graph/make_dynamic_open_dataflow_graph_from_cg.h"
 #include "task-spec/dynamic_graph/pass_expansion.h"
 #include "task-spec/dynamic_graph/update_insertion.h"
@@ -19,7 +21,6 @@
 #include "utils/exception.h"
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"
 #include "utils/optional.h"
-#include <cassert>
 #include <optional>
 #include <unordered_map>
 
@@ -29,10 +30,13 @@ ComputationGraphInstance::ComputationGraphInstance(
     DynamicOpenDataflowGraph dataflow_graph,
     Allocator &allocator,
     std::vector<DynamicNodeInvocation> const &topological_ordering,
-    OptimizerAttrs const &optimizer_attrs)
+    OptimizerAttrs const &optimizer_attrs,
+    GenericTensorAccessorR label_tensor,
+    GenericTensorAccessorW logit_grad_tensor)
     : dataflow_graph(dataflow_graph), allocator(allocator),
       topological_ordering(topological_ordering),
-      optimizer_attrs(optimizer_attrs) {}
+      optimizer_attrs(optimizer_attrs), label_tensor(label_tensor),
+      logit_grad_tensor(logit_grad_tensor) {}
 
 DynamicOpenDataflowGraph const &
     ComputationGraphInstance::get_dynamic_dataflow_graph() const {
@@ -52,22 +56,30 @@ void ComputationGraphInstance::update_optimizer_attrs_for_next_iter() {
   this->optimizer_attrs =
       get_optimizer_attrs_for_next_iter(this->optimizer_attrs);
 }
+GenericTensorAccessorR
+    ComputationGraphInstance::get_label_tensor_accessor() const {
+  return this->label_tensor;
+}
+GenericTensorAccessorR
+    ComputationGraphInstance::get_loss_tensor_accessor() const {
+  return this->logit_grad_tensor;
+}
 
-bool no_nodes_are_initialized(DynamicOpenDataflowGraph const &g) {
+static bool no_nodes_are_initialized(DynamicOpenDataflowGraph const &g) {
   return all_are_true(
       transform(get_dynamic_nodes(g), [](DynamicNodeAttrs const &n) -> bool {
         return !n.per_device_op_state.has_value();
       }));
 }
 
-bool all_nodes_are_initialized(DynamicOpenDataflowGraph const &g) {
+static bool all_nodes_are_initialized(DynamicOpenDataflowGraph const &g) {
   return all_are_true(
       transform(get_dynamic_nodes(g), [](DynamicNodeAttrs const &n) -> bool {
         return n.per_device_op_state.has_value();
       }));
 }
 
-DynamicNodeInvocation
+static DynamicNodeInvocation
     initialize_node(DynamicNodeInvocation const &i,
                     Allocator &allocator,
                     ProfilingSettings const &profiling_settings,
@@ -115,9 +127,18 @@ DynamicNodeInvocation
   };
 }
 
+static GenericTensorAccessorW
+    get_loss_tensor_accessor(DynamicOpenDataflowGraph const &dg,
+                             DynamicValueAttrs const &logit_grad_value) {
+  NOT_IMPLEMENTED();
+}
+
 ComputationGraphInstance create_computation_graph_instance(
-    ComputationGraph const &cg,
+    ComputationGraph const &compgraph,
     OptimizerAttrs const &optimizer_attrs,
+    LossAttrs const &loss_attrs,
+    GenericTensorAccessorR label_tensor,
+    dynamic_tensor_guid_t logit_tensor,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &input_tensors,
     Allocator &allocator,
@@ -125,10 +146,19 @@ ComputationGraphInstance create_computation_graph_instance(
     device_handle_t const &device_handle,
     FFIterationConfig const &iteration_config,
     device_id_t device_idx) {
-  DynamicOpenDataflowGraph dg = make_dynamic_open_dataflow_graph_from_cg(cg);
+  DynamicOpenDataflowGraph dg =
+      make_dynamic_open_dataflow_graph_from_cg(compgraph);
+
+  auto [dg2, logit_grad_value] =
+      perform_loss_insertion(dg, loss_attrs, logit_tensor);
+  dg = std::move(dg2);
+
   dg = perform_pass_expansion(dg);
   dg = perform_update_insertion(dg, optimizer_attrs);
   dg = perform_tensor_allocation(dg, input_tensors, allocator);
+
+  GenericTensorAccessorW logit_grad_tensor =
+      get_loss_tensor_accessor(dg, logit_grad_value);
 
   // Initialize all operators and save the per-device op state
   ASSERT(no_nodes_are_initialized(dg));
@@ -150,8 +180,12 @@ ComputationGraphInstance create_computation_graph_instance(
   std::vector<DynamicNodeInvocation> invocation_topo_order = transform(
       node_topo_order, [&](Node node) { return node_map.at_l(node); });
 
-  return ComputationGraphInstance{
-      dg, allocator, invocation_topo_order, optimizer_attrs};
+  return ComputationGraphInstance{dg,
+                                  allocator,
+                                  invocation_topo_order,
+                                  optimizer_attrs,
+                                  label_tensor,
+                                  logit_grad_tensor};
 }
 
 std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>

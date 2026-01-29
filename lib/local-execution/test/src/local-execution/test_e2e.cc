@@ -14,6 +14,7 @@
 #include "pcg/device_id_t.h"
 #include "pcg/device_type.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_tensor_guid_t.dtg.h"
 #include "test/utils/doctest/check_kv.h"
 #include "utils/containers/require_only_key.h"
 #include <doctest/doctest.h>
@@ -48,6 +49,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     TensorShape input_tensor_shape = TensorShape{
         TensorDims{FFOrdered{batch_size, data_dim}}, DataType::FLOAT};
+
+    GenericTensorAccessorW label_tensor =
+        allocator.allocate_tensor(input_tensor_shape);
 
     TensorShape weight_shape_1 = TensorShape{
         TensorDims{FFOrdered{hidden_dim, data_dim}}, DataType::FLOAT};
@@ -122,6 +126,8 @@ TEST_SUITE(FF_TEST_SUITE) {
                 t_weights_2,
             },
         });
+    tensor_guid_t t_linear_2 =
+        require_only_key(linear_operator_2.outputs, TensorSlotName::OUTPUT);
 
     // instantiate computation graph
     LossAttrs loss_attrs = LossAttrs{
@@ -141,6 +147,9 @@ TEST_SUITE(FF_TEST_SUITE) {
         create_computation_graph_instance(
             /*cg=*/computation_graph,
             /*optimizer=*/optimizer_attrs,
+            /*loss=*/loss_attrs,
+            /*label_tensor=*/label_tensor,
+            /*logit_tensor=*/dynamic_tensor_guid_t{t_linear_2},
             /*input_tensors=*/input_tensors,
             /*allocator=*/allocator,
             /*profiling_settings=*/ProfilingSettings{0, 0},
@@ -160,19 +169,19 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*loss_attrs=*/loss_attrs,
           /*iteration_config=*/FFIterationConfig{1_p},
           /*device_idx=*/device_idx);
-      // loss_values.push_back(copy_tensor_accessor_r(
-      //     computation_graph_instance.get_loss_tensor_accessor(), allocator));
+      loss_values.push_back(copy_tensor_accessor_r(
+          computation_graph_instance.get_loss_tensor_accessor(), allocator));
     }
 
     // Assert that each sample in the batch has a lower loss in last epoch than
     // the first epoch
-    // GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
-    // GenericTensorAccessorR last_epoch_loss = loss_values.back();
-    // CHECK_MESSAGE(did_loss_decrease(first_epoch_loss, last_epoch_loss),
-    //               check_kv("first_epoch_loss",
-    //                        format_accessor_r_contents(first_epoch_loss)),
-    //               check_kv("last_epoch_loss",
-    //                        format_accessor_r_contents(last_epoch_loss)));
+    GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
+    GenericTensorAccessorR last_epoch_loss = loss_values.back();
+    CHECK_MESSAGE(did_loss_decrease(first_epoch_loss, last_epoch_loss),
+                  check_kv("first_epoch_loss",
+                           format_accessor_r_contents(first_epoch_loss)),
+                  check_kv("last_epoch_loss",
+                           format_accessor_r_contents(last_epoch_loss)));
   }
 }
 
@@ -202,6 +211,9 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     TensorShape input_tensor_shape = TensorShape{
         TensorDims{FFOrdered{batch_size, data_dim}}, DataType::FLOAT};
+
+    GenericTensorAccessorW label_tensor =
+        allocator.allocate_tensor(input_tensor_shape);
 
     TensorShape weight_shape_1 = TensorShape{
         TensorDims{FFOrdered{data_dim, hidden_dim}}, DataType::FLOAT};
@@ -276,6 +288,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                 t_weights_2,
             },
         });
+    tensor_guid_t t_linear_2 =
+        require_only_key(linear_operator_2.outputs, TensorSlotName::OUTPUT);
 
     // instantiate computation graph
     LossAttrs loss_attrs = LossAttrs{
@@ -299,6 +313,9 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         create_computation_graph_instance(
             /*cg=*/computation_graph,
             /*optimizer=*/optimizer_attrs,
+            /*loss=*/loss_attrs,
+            /*label_tensor=*/label_tensor,
+            /*logit_tensor=*/dynamic_tensor_guid_t{t_linear_2},
             /*input_tensors=*/input_tensors,
             /*allocator=*/allocator,
             /*profiling_settings=*/ProfilingSettings{0, 0},
@@ -320,15 +337,15 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           /*loss_attrs=*/loss_attrs,
           /*iteration_config=*/FFIterationConfig{1_p},
           /*device_idx=*/device_idx);
-      // loss_values.push_back(copy_tensor_accessor_r(
-      //     computation_graph_instance.get_loss_tensor_accessor(),
-      //     cpu_allocator));
+      loss_values.push_back(copy_tensor_accessor_r(
+          computation_graph_instance.get_loss_tensor_accessor(),
+          cpu_allocator));
     }
 
     // Assert that each sample in the batch has a lower loss in last epoch than
     // the first epoch
-    // GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
-    // GenericTensorAccessorR last_epoch = loss_values.back();
-    // CHECK(did_loss_decrease(first_epoch_loss, last_epoch));
+    GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
+    GenericTensorAccessorR last_epoch = loss_values.back();
+    CHECK(did_loss_decrease(first_epoch_loss, last_epoch));
   }
 }
