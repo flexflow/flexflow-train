@@ -120,10 +120,11 @@ DynamicOpenDataflowGraph dynamic_open_dataflow_graph_from_invocation_set(
   };
 }
 
-LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
-                               DynamicValueAttrs,
-                               int,
-                               DynamicTensorSlot>
+std::pair<LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
+                                         DynamicValueAttrs,
+                                         int,
+                                         DynamicTensorSlot>,
+          bidict<Node, DynamicNodeInvocation>>
     labelled_open_kwarg_dataflow_graph_from_dynamic_open_dataflow_graph(
         DynamicOpenDataflowGraph const &g) {
 
@@ -177,6 +178,7 @@ LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
                   });
   };
 
+  bidict<Node, DynamicNodeInvocation> node_map;
   std::unordered_set<DynamicNodeInvocation> to_add = g.invocations;
 
   auto add_invocation_to_graph =
@@ -189,6 +191,7 @@ LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
                      return value_map.at_r(input);
                    }),
         invocation.outputs);
+    node_map.equate(added.node, invocation);
 
     for (auto const &[k, v] :
          zip_values_strict(invocation.outputs, added.outputs)) {
@@ -217,7 +220,7 @@ LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
     add_next_invocation_to_graph();
   }
 
-  return result;
+  return std::pair{result, node_map};
 }
 
 bool dynamic_open_dataflow_graphs_are_isomorphic(
@@ -228,7 +231,8 @@ bool dynamic_open_dataflow_graphs_are_isomorphic(
                                      DynamicTensorSlot>
       lhs_dataflow_graph =
           labelled_open_kwarg_dataflow_graph_from_dynamic_open_dataflow_graph(
-              lhs);
+              lhs)
+              .first;
 
   LabelledOpenKwargDataflowGraphView<DynamicNodeAttrs,
                                      DynamicValueAttrs,
@@ -236,7 +240,8 @@ bool dynamic_open_dataflow_graphs_are_isomorphic(
                                      DynamicTensorSlot>
       rhs_dataflow_graph =
           labelled_open_kwarg_dataflow_graph_from_dynamic_open_dataflow_graph(
-              rhs);
+              rhs)
+              .first;
 
   return find_isomorphism_between_labelled_open_kwarg_dataflow_graphs(
              lhs_dataflow_graph, rhs_dataflow_graph)

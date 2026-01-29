@@ -24,6 +24,23 @@ static std::pair<DynamicTensorSlot, DynamicValueAttrs>
   };
 }
 
+static DynamicTensorSlot tensor_slot_with_role(DynamicTensorSlot const &slot,
+                                               DynamicTensorRole role) {
+  DynamicTensorSlot result = slot;
+  result.slot_tensor_role = role;
+
+  return result;
+}
+
+static DynamicValueAttrs
+    dynamic_value_attrs_with_role(DynamicValueAttrs const &attrs,
+                                  DynamicTensorRole role) {
+  DynamicValueAttrs result = attrs;
+  result.role = role;
+
+  return result;
+}
+
 static DynamicNodeInvocation get_update_invocation_for_invocation(
     DynamicNodeInvocation const &i, OptimizerAttrs const &optimizer_attrs) {
 
@@ -38,13 +55,13 @@ static DynamicNodeInvocation get_update_invocation_for_invocation(
 
   auto create_binding_for_role = [&](DynamicTensorRole const &role)
       -> std::pair<DynamicTensorSlot, DynamicValueAttrs> {
-    DynamicTensorSlot binding_slot = decide_tensor_slot_role(slot, role);
-    DynamicValueAttrs value_attrs = decide_dynamic_value_attrs_role(
+    DynamicTensorSlot binding_slot = tensor_slot_with_role(slot, role);
+    DynamicValueAttrs binding_attrs = dynamic_value_attrs_with_role(
         value_attrs, mk_dynamic_tensor_role_fwd());
 
     return std::pair{
         binding_slot,
-        value_attrs,
+        binding_attrs,
     };
   };
 
