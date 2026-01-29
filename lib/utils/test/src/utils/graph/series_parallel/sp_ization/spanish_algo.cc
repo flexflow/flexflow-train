@@ -56,35 +56,6 @@ TEST_SUITE(FF_TEST_SUITE) {
                                               NodeRole::DUMMY});
     }
 
-    SUBCASE("delete_dummy_nodes") {
-      DiGraph g = DiGraph::create<AdjacencyDiGraph>();
-      std::vector<Node> n = add_nodes(g, 5);
-      std::vector<DirectedEdge> edges = {
-          DirectedEdge{n.at(0), n.at(1)},
-          DirectedEdge{n.at(1), n.at(2)},
-          DirectedEdge{n.at(1), n.at(3)},
-          DirectedEdge{n.at(2), n.at(4)},
-          DirectedEdge{n.at(3), n.at(4)},
-      };
-      add_edges(g, edges);
-
-      std::unordered_map<Node, NodeRole> node_roles = {
-          {n.at(0), NodeRole::PURE},
-          {n.at(1), NodeRole::DUMMY},
-          {n.at(2), NodeRole::DUMMY},
-          {n.at(3), NodeRole::PURE},
-          {n.at(4), NodeRole::PURE},
-      };
-
-      DiGraph result = delete_dummy_nodes(g, node_roles);
-
-      CHECK(get_nodes(result) ==
-            std::unordered_set<Node>{n.at(0), n.at(3), n.at(4)});
-      CHECK(get_edges(result) ==
-            std::unordered_set<DirectedEdge>{DirectedEdge{n.at(0), n.at(4)},
-                                             DirectedEdge{n.at(0), n.at(3)},
-                                             DirectedEdge{n.at(3), n.at(4)}});
-    }
     SUBCASE("get_component") {
       SUBCASE("2 layer graph, single simple component") {
         DiGraph g = DiGraph::create<AdjacencyDiGraph>();

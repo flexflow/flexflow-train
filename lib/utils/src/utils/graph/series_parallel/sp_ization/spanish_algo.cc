@@ -35,6 +35,7 @@
 #include "utils/graph/series_parallel/get_series_parallel_decomposition.h"
 #include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
 #include "utils/graph/series_parallel/sp_ization/node_role.dtg.h"
+#include "utils/graph/series_parallel/sp_ization/node_role.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
 
 #include <iostream>
@@ -86,39 +87,6 @@ DiGraph add_dummy_nodes(DiGraph g,
   return g;
 }
 
-DiGraph
-    delete_dummy_nodes(DiGraph g,
-                       std::unordered_map<Node, NodeRole> const &node_roles) {
-  for (Node const &n : get_nodes(g)) {
-    if (node_roles.at(n) == NodeRole::DUMMY) {
-      for (Node const &pred : get_predecessors(g, n)) {
-        for (Node const &succ : get_successors(g, n)) {
-          g.add_edge(DirectedEdge{pred, succ});
-        }
-      }
-      remove_node(g, n);
-    }
-  }
-  return g;
-}
-
-DiGraph delete_nodes_of_given_role(
-    DiGraph g,
-    NodeRole const &role,
-    std::unordered_map<Node, NodeRole> const &node_roles) {
-  for (Node const &n : get_nodes(g)) {
-    if (node_roles.at(n) == role) {
-      for (Node const &pred : get_predecessors(g, n)) {
-        for (Node const &succ : get_successors(g, n)) {
-          g.add_edge(DirectedEdge{pred, succ});
-        }
-      }
-      remove_node(g, n);
-    }
-  }
-  return g;
-}
-
 std::unordered_set<Node>
     get_component(DiGraph const &g,
                   Node const &node,
@@ -156,10 +124,10 @@ std::unordered_set<Node>
 }
 
 std::unordered_set<Node>
-    get_forest(DiGraph const &g,
-               Node const &handle,
-               std::unordered_set<Node> const &component,
-               std::unordered_map<Node, NodeRole> const &node_roles) {
+    get_forest_spanish(DiGraph const &g,
+                       Node const &handle,
+                       std::unordered_set<Node> const &component,
+                       std::unordered_map<Node, NodeRole> const &node_roles) {
   std::unordered_set<std::unordered_set<Node>> subtrees =
       transform(get_successors(g, handle), [&](Node const &n) {
         return set_union(get_descendants(g, n), {n});
@@ -203,9 +171,9 @@ std::unordered_set<DirectedEdge>
 }
 
 std::unordered_set<DirectedEdge>
-    edges_to_add(std::unordered_set<Node> const &up,
-                 std::unordered_set<Node> const &down,
-                 Node const &sync_node) {
+    edges_to_add_spanish(std::unordered_set<Node> const &up,
+                         std::unordered_set<Node> const &down,
+                         Node const &sync_node) {
   std::unordered_set<DirectedEdge> to_add;
 
   for (Node const &u : up) {
@@ -245,7 +213,7 @@ SeriesParallelDecomposition spanish_strata_sync(DiGraph g) {
         get_component(sp, node, depth_map, node_roles);
     Node handle = get_only(get_lowest_common_ancestors(sp, component).value());
     std::unordered_set<Node> forest =
-        get_forest(sp, handle, component, node_roles);
+        get_forest_spanish(sp, handle, component, node_roles);
     auto [up, down] = get_up_and_down(sp, forest, depth_map);
 
     for (DirectedEdge const &e : edges_to_remove(sp, up, down)) {
@@ -255,7 +223,7 @@ SeriesParallelDecomposition spanish_strata_sync(DiGraph g) {
     Node sync_node = Node{++sync_node_counter};
     node_roles[sync_node] = NodeRole::SYNC;
     sp.add_node_unsafe(sync_node);
-    for (DirectedEdge const &e : edges_to_add(up, down, sync_node)) {
+    for (DirectedEdge const &e : edges_to_add_spanish(up, down, sync_node)) {
       sp.add_edge(e);
     }
   }

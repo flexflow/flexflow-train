@@ -192,7 +192,6 @@ SeriesParallelDecomposition cost_aware_stratum_sync_sp_ization_unchecked(
 SeriesParallelDecomposition cost_aware_stratum_sync_sp_ization(
     DiGraphView const &g, std::unordered_map<Node, float> const &cost_map) {
   assert(is_acyclic(g));
-
   SeriesParallelDecomposition sp =
       cost_aware_stratum_sync_sp_ization_unchecked(g, cost_map);
   assert(dependencies_are_maintained(g, sp));

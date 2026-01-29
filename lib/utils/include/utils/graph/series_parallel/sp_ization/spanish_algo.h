@@ -10,10 +10,6 @@ namespace FlexFlow {
 DiGraph add_dummy_nodes(DiGraph g,
                         std::unordered_map<Node, NodeRole> &node_roles);
 
-DiGraph
-    delete_dummy_nodes(DiGraph g,
-                       std::unordered_map<Node, NodeRole> const &node_roles);
-
 std::unordered_set<Node>
     get_component(DiGraph const &g,
                   Node const &node,
