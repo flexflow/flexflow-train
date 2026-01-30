@@ -141,7 +141,7 @@ static GenericTensorAccessorW
 }
 
 ComputationGraphInstance create_computation_graph_instance(
-    ComputationGraph const &compgraph,
+    ComputationGraph const &cg,
     OptimizerAttrs const &optimizer_attrs,
     std::optional<LossAttrs> const &loss_attrs,
     std::optional<GenericTensorAccessorR> label_tensor,
@@ -153,8 +153,7 @@ ComputationGraphInstance create_computation_graph_instance(
     device_handle_t const &device_handle,
     FFIterationConfig const &iteration_config,
     device_id_t device_idx) {
-  DynamicOpenDataflowGraph dg =
-      make_dynamic_open_dataflow_graph_from_cg(compgraph);
+  DynamicOpenDataflowGraph dg = make_dynamic_open_dataflow_graph_from_cg(cg);
   dg = perform_pass_expansion(dg);
 
   std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> inputs =
@@ -169,7 +168,7 @@ ComputationGraphInstance create_computation_graph_instance(
   }
 
   dg = perform_update_insertion(dg, optimizer_attrs);
-  dg = perform_tensor_allocation(dg, input_tensors, allocator);
+  dg = perform_tensor_allocation(dg, inputs, allocator);
 
   std::optional<GenericTensorAccessorW> logit_grad_tensor =
       transform(logit_grad_value, [&](DynamicValueAttrs const &lgv) {
