@@ -49,8 +49,6 @@ TaskArgumentAccessor make_task_argument_accessor_for_invocation(
     FFIterationConfig iteration_config,
     std::optional<OptimizerAttrs> const &optimizer_attrs,
     device_id_t device_idx) {
-  PCGOperatorAttrs op_attrs = assert_unwrap(invocation.node_attrs.op_attrs);
-
   std::unordered_map<TaskTensorParameter, DynamicTensorAccessor>
       tensor_slots_backing;
   for (auto const &[slot, input] : invocation.inputs) {
@@ -73,7 +71,7 @@ TaskArgumentAccessor make_task_argument_accessor_for_invocation(
       /*tensor_slots_backing=*/tensor_slots_backing,
       /*profiling_settings=*/profiling_settings,
       /*ff_handle=*/ff_handle,
-      /*op_attrs=*/op_attrs,
+      /*op_attrs=*/invocation.node_attrs.op_attrs,
       /*loss_attrs=*/loss_attrs,
       /*per_device_op_state=*/per_device_op_state,
       /*iteration_config=*/iteration_config,
@@ -104,17 +102,20 @@ std::optional<milliseconds_t> execute_dynamic_node_invocation(
           /*device_idx=*/device_idx);
 
   DynamicTaskType task_type = assert_unwrap(invocation.node_attrs.task_type);
-  ComputationGraphOpAttrs op_attrs =
-      assert_unwrap(compgraph_op_attrs_from_pcg_op_attrs(
-          assert_unwrap(invocation.node_attrs.op_attrs)));
   std::optional<milliseconds_t> result;
   switch (task_type) {
-    case DynamicTaskType::FWD:
+    case DynamicTaskType::FWD: {
+      ComputationGraphOpAttrs op_attrs =
+          assert_unwrap(compgraph_op_attrs_from_pcg_op_attrs(
+              assert_unwrap(invocation.node_attrs.op_attrs)));
       result = call_fwd_task_impl(op_attrs, arg_accessor);
-      break;
-    case DynamicTaskType::BWD:
+    } break;
+    case DynamicTaskType::BWD: {
+      ComputationGraphOpAttrs op_attrs =
+          assert_unwrap(compgraph_op_attrs_from_pcg_op_attrs(
+              assert_unwrap(invocation.node_attrs.op_attrs)));
       result = call_bwd_task_impl(op_attrs, arg_accessor);
-      break;
+    } break;
     case DynamicTaskType::UPD:
       call_update_task_impl(assert_unwrap(optimizer_attrs), arg_accessor);
       break;

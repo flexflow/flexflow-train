@@ -20,8 +20,8 @@ std::tuple<DynamicOpenDataflowGraph, DynamicValueAttrs, DynamicValueAttrs>
     perform_loss_insertion(DynamicOpenDataflowGraph const &dg,
                            LossAttrs const &loss_attrs,
                            dynamic_tensor_guid_t logit_tensor) {
-  auto [logic_invocation, logit_value] =
-      assert_unwrap(find_output_tensor(dg, logit_tensor, std::nullopt));
+  auto [logic_invocation, logit_value] = assert_unwrap(
+      find_output_tensor(dg, logit_tensor, mk_dynamic_tensor_role_fwd()));
 
   DynamicValueAttrs label_value{
       /*tensor_guid=*/std::nullopt,

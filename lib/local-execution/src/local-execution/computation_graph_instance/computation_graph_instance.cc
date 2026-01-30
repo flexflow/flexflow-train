@@ -87,6 +87,10 @@ static DynamicNodeInvocation
                     FFIterationConfig const &iteration_config,
                     OptimizerAttrs const &optimizer_attrs,
                     device_id_t device_idx) {
+  if (!i.node_attrs.op_attrs) {
+    return i;
+  }
+
   // Get op
   ComputationGraphOpAttrs op_attrs =
       assert_unwrap(compgraph_op_attrs_from_pcg_op_attrs(
@@ -151,6 +155,7 @@ ComputationGraphInstance create_computation_graph_instance(
     device_id_t device_idx) {
   DynamicOpenDataflowGraph dg =
       make_dynamic_open_dataflow_graph_from_cg(compgraph);
+  dg = perform_pass_expansion(dg);
 
   std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> inputs =
       input_tensors;
@@ -163,7 +168,6 @@ ComputationGraphInstance create_computation_graph_instance(
     inputs.insert(std::pair{label_v, assert_unwrap(label_tensor)});
   }
 
-  dg = perform_pass_expansion(dg);
   dg = perform_update_insertion(dg, optimizer_attrs);
   dg = perform_tensor_allocation(dg, input_tensors, allocator);
 

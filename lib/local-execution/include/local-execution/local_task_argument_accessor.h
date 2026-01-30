@@ -17,7 +17,7 @@ struct LocalTaskArgumentAccessor : public ITaskArgumentAccessor {
           &tensor_slots_backing,
       ProfilingSettings const &profiling_settings,
       device_handle_t const &ff_handle,
-      PCGOperatorAttrs const &op_attrs,
+      std::optional<PCGOperatorAttrs> const &op_attrs,
       std::optional<LossAttrs> const &loss_attrs,
       std::optional<PerDeviceOpState> const &per_device_op_state,
       FFIterationConfig const &iteration_config,
@@ -53,7 +53,7 @@ private:
   ProfilingSettings profiling_settings;
   device_handle_t ff_handle;
   DeviceType kernel_device_type;
-  PCGOperatorAttrs op_attrs;
+  std::optional<PCGOperatorAttrs> op_attrs;
   std::optional<LossAttrs> loss_attrs;
   std::optional<PerDeviceOpState> per_device_op_state;
   FFIterationConfig iteration_config;

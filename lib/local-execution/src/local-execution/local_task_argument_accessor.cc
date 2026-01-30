@@ -13,7 +13,7 @@ LocalTaskArgumentAccessor::LocalTaskArgumentAccessor(
         &tensor_slots_backing,
     ProfilingSettings const &profiling_settings,
     device_handle_t const &ff_handle,
-    PCGOperatorAttrs const &op_attrs,
+    std::optional<PCGOperatorAttrs> const &op_attrs,
     std::optional<LossAttrs> const &loss_attrs,
     std::optional<PerDeviceOpState> const &per_device_op_state,
     FFIterationConfig const &iteration_config,
@@ -64,7 +64,7 @@ DeviceType LocalTaskArgumentAccessor::get_kernel_device_type() const {
 }
 
 PCGOperatorAttrs LocalTaskArgumentAccessor::get_op_attrs() const {
-  return this->op_attrs;
+  return assert_unwrap(this->op_attrs);
 }
 
 LossAttrs LocalTaskArgumentAccessor::get_loss_attrs() const {
