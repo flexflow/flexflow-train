@@ -134,8 +134,11 @@ static DynamicNodeInvocation
 
 static GenericTensorAccessorW
     get_loss_tensor_accessor(DynamicOpenDataflowGraph const &dg,
-                             DynamicValueAttrs const &logit_grad_value) {
-  NOT_IMPLEMENTED();
+                             DynamicValueAttrs const &value) {
+  return find_output_tensor(dg, value.tensor_guid, value.role)
+      .value()
+      .second.accessor.value()
+      .get<GenericTensorAccessorW>();
 }
 
 ComputationGraphInstance create_computation_graph_instance(
@@ -154,12 +157,15 @@ ComputationGraphInstance create_computation_graph_instance(
   DynamicOpenDataflowGraph dg =
       make_dynamic_open_dataflow_graph_from_cg(compgraph);
 
+  std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> inputs =
+      input_tensors;
   std::optional<DynamicValueAttrs> logit_grad_value;
   if (loss_attrs) {
-    auto [dg2, lgv] = perform_loss_insertion(
+    auto [dg2, label_v, logit_grad_v] = perform_loss_insertion(
         dg, assert_unwrap(loss_attrs), assert_unwrap(logit_tensor));
     dg = dg2;
-    logit_grad_value = lgv;
+    logit_grad_value = logit_grad_v;
+    inputs.insert(std::pair{label_v, assert_unwrap(label_tensor)});
   }
 
   dg = perform_pass_expansion(dg);

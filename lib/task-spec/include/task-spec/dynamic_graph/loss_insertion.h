@@ -8,7 +8,7 @@
 
 namespace FlexFlow {
 
-std::pair<DynamicOpenDataflowGraph, DynamicValueAttrs>
+std::tuple<DynamicOpenDataflowGraph, DynamicValueAttrs, DynamicValueAttrs>
     perform_loss_insertion(DynamicOpenDataflowGraph const &dg,
                            LossAttrs const &loss_attrs,
                            dynamic_tensor_guid_t logit_tensor);

@@ -32,6 +32,11 @@ std::unordered_multiset<DynamicTensorSlot>
 std::unordered_set<DynamicNodeInvocation>
     get_dynamic_invocation_set(DynamicOpenDataflowGraph const &);
 
+std::optional<std::pair<DynamicNodeInvocation, DynamicValueAttrs>>
+    find_output_tensor(DynamicOpenDataflowGraph const &,
+                       dynamic_tensor_guid_t,
+                       std::optional<DynamicTensorRole> const &);
+
 DynamicOpenDataflowGraph transform_dynamic_invocation_set(
     DynamicOpenDataflowGraph const &,
     std::function<DynamicNodeInvocation(DynamicNodeInvocation const &)> const
