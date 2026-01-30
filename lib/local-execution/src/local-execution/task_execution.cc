@@ -118,6 +118,9 @@ std::optional<milliseconds_t> execute_dynamic_node_invocation(
     case DynamicTaskType::UPD:
       call_update_task_impl(assert_unwrap(optimizer_attrs), arg_accessor);
       break;
+    case DynamicTaskType::LOSS:
+      call_loss_task_impl(arg_accessor);
+      break;
     default:
       PANIC("Unhandled DynamicTaskType", fmt::to_string(task_type));
   }

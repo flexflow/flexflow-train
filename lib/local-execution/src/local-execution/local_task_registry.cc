@@ -1,5 +1,6 @@
 #include "local-execution/local_task_registry.h"
 #include "op-attrs/computation_graph_op_attrs.dtg.h"
+#include "task-spec/loss_functions.h"
 #include "task-spec/ops/impl/attention.h"
 #include "task-spec/ops/impl/batch_matmul.h"
 #include "task-spec/ops/impl/batch_norm.h"
@@ -202,10 +203,11 @@ void call_update_task_impl(OptimizerAttrs const &optimizer_attrs,
   return fn(acc);
 }
 
-void call_generic_task_impl(ComputationGraphOpAttrs const &op_attrs,
-                            TaskArgumentAccessor const &acc) {
+void call_loss_task_impl(TaskArgumentAccessor const &acc) {
+  TaskImplFunction task_impl_fn = get_loss_bwd_task_impl();
+  auto fn = task_impl_fn.get<GenericTaskImplFunction>().function_ptr;
 
-  NOT_IMPLEMENTED();
+  return fn(acc);
 }
 
 } // namespace FlexFlow

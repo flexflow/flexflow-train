@@ -27,8 +27,7 @@ std::optional<milliseconds_t>
                        TaskArgumentAccessor const &);
 void call_update_task_impl(OptimizerAttrs const &,
                            TaskArgumentAccessor const &);
-void call_generic_task_impl(ComputationGraphOpAttrs const &,
-                            TaskArgumentAccessor const &);
+void call_loss_task_impl(TaskArgumentAccessor const &);
 
 } // namespace FlexFlow
 
