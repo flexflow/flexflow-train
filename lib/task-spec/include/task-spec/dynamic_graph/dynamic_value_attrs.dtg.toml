@@ -22,7 +22,7 @@ src_includes = [
 
 [[fields]]
 name = "tensor_guid"
-type = "::FlexFlow::dynamic_tensor_guid_t"
+type = "std::optional<::FlexFlow::dynamic_tensor_guid_t>"
 
 [[fields]]
 name = "parallel_tensor_shape"

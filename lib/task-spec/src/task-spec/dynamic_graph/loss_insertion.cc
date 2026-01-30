@@ -24,7 +24,7 @@ std::tuple<DynamicOpenDataflowGraph, DynamicValueAttrs, DynamicValueAttrs>
       assert_unwrap(find_output_tensor(dg, logit_tensor, std::nullopt));
 
   DynamicValueAttrs label_value{
-      /*tensor_guid=*/logit_value.tensor_guid,
+      /*tensor_guid=*/std::nullopt,
       /*parallel_tensor_shape=*/logit_value.parallel_tensor_shape,
       /*shard_coord=*/logit_value.shard_coord,
       /*accessor=*/std::nullopt,
@@ -52,7 +52,7 @@ std::tuple<DynamicOpenDataflowGraph, DynamicValueAttrs, DynamicValueAttrs>
           /*device_coord=*/std::nullopt,
           /*mapping=*/std::nullopt,
           /*op_attrs=*/std::nullopt,
-          /*layer_guid=*/logic_invocation.node_attrs.layer_guid,
+          /*layer_guid=*/std::nullopt,
           /*per_device_op_state=*/std::nullopt,
       },
       /*outputs=*/

@@ -210,25 +210,32 @@ static std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
         std::optional<LossAttrs> const &loss_attrs,
         FFIterationConfig iteration_config,
         device_id_t device_idx) {
-  return unordered_map_from_pairs(
-      transform(invocations, [&](DynamicNodeInvocation const &invocation) {
-        std::optional<milliseconds_t> timing = execute_dynamic_node_invocation(
-            /*invocation=*/invocation,
-            /*allocator=*/allocator,
-            /*profiling_settings=*/profiling_settings,
-            /*ff_handle=*/ff_handle,
-            /*loss_attrs=*/loss_attrs,
-            /*per_device_op_state=*/
-            transform(invocation.node_attrs.per_device_op_state,
-                      [&](DeviceSpecificPerDeviceOpState const &op_state) {
-                        return get_device_state_from_device_specific(
-                            op_state, device_idx);
-                      }),
-            /*iteration_config=*/iteration_config,
-            /*optimizer_attrs=*/optimizer_attrs,
-            /*device_idx=*/device_idx);
-        return std::pair{invocation.node_attrs.layer_guid, timing};
-      }));
+  std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
+      result;
+  for (DynamicNodeInvocation const &invocation : invocations) {
+    std::optional<milliseconds_t> timing = execute_dynamic_node_invocation(
+        /*invocation=*/invocation,
+        /*allocator=*/allocator,
+        /*profiling_settings=*/profiling_settings,
+        /*ff_handle=*/ff_handle,
+        /*loss_attrs=*/loss_attrs,
+        /*per_device_op_state=*/
+        transform(invocation.node_attrs.per_device_op_state,
+                  [&](DeviceSpecificPerDeviceOpState const &op_state) {
+                    return get_device_state_from_device_specific(op_state,
+                                                                 device_idx);
+                  }),
+        /*iteration_config=*/iteration_config,
+        /*optimizer_attrs=*/optimizer_attrs,
+        /*device_idx=*/device_idx);
+    if (invocation.node_attrs.layer_guid) {
+      result.insert(
+          std::pair{assert_unwrap(invocation.node_attrs.layer_guid), timing});
+    } else {
+      ASSERT(!timing);
+    }
+  }
+  return result;
 }
 
 std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>

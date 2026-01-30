@@ -86,7 +86,7 @@ std::unordered_set<DynamicNodeInvocation>
 
 std::optional<std::pair<DynamicNodeInvocation, DynamicValueAttrs>>
     find_output_tensor(DynamicOpenDataflowGraph const &dg,
-                       dynamic_tensor_guid_t tensor_guid,
+                       std::optional<dynamic_tensor_guid_t> const &tensor_guid,
                        std::optional<DynamicTensorRole> const &role) {
   for (DynamicNodeInvocation const &invocation : dg.invocations) {
     for (auto const &[slot, output] : invocation.outputs) {

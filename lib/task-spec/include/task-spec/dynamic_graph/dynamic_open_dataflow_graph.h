@@ -34,7 +34,7 @@ std::unordered_set<DynamicNodeInvocation>
 
 std::optional<std::pair<DynamicNodeInvocation, DynamicValueAttrs>>
     find_output_tensor(DynamicOpenDataflowGraph const &,
-                       dynamic_tensor_guid_t,
+                       std::optional<dynamic_tensor_guid_t> const &,
                        std::optional<DynamicTensorRole> const &);
 
 DynamicOpenDataflowGraph transform_dynamic_invocation_set(
