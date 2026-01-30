@@ -50,8 +50,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     TensorShape input_tensor_shape = TensorShape{
         TensorDims{FFOrdered{batch_size, data_dim}}, DataType::FLOAT};
 
+    TensorShape label_tensor_shape = TensorShape{
+        TensorDims{FFOrdered{batch_size, output_dim}}, DataType::FLOAT};
     GenericTensorAccessorW label_tensor =
-        allocator.allocate_tensor(input_tensor_shape);
+        allocator.allocate_tensor(label_tensor_shape);
 
     TensorShape weight_shape_1 = TensorShape{
         TensorDims{FFOrdered{hidden_dim, data_dim}}, DataType::FLOAT};
@@ -212,8 +214,10 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     TensorShape input_tensor_shape = TensorShape{
         TensorDims{FFOrdered{batch_size, data_dim}}, DataType::FLOAT};
 
+    TensorShape label_tensor_shape = TensorShape{
+        TensorDims{FFOrdered{batch_size, output_dim}}, DataType::FLOAT};
     GenericTensorAccessorW label_tensor =
-        allocator.allocate_tensor(input_tensor_shape);
+        allocator.allocate_tensor(label_tensor_shape);
 
     TensorShape weight_shape_1 = TensorShape{
         TensorDims{FFOrdered{data_dim, hidden_dim}}, DataType::FLOAT};
