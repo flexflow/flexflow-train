@@ -31,12 +31,13 @@ ComputationGraphInstance::ComputationGraphInstance(
     Allocator &allocator,
     std::vector<DynamicNodeInvocation> const &topological_ordering,
     OptimizerAttrs const &optimizer_attrs,
+    LossAttrs const &loss_attrs,
     GenericTensorAccessorR label_tensor,
     GenericTensorAccessorW logit_grad_tensor)
     : dataflow_graph(dataflow_graph), allocator(allocator),
       topological_ordering(topological_ordering),
-      optimizer_attrs(optimizer_attrs), label_tensor(label_tensor),
-      logit_grad_tensor(logit_grad_tensor) {}
+      optimizer_attrs(optimizer_attrs), loss_attrs(loss_attrs),
+      label_tensor(label_tensor), logit_grad_tensor(logit_grad_tensor) {}
 
 DynamicOpenDataflowGraph const &
     ComputationGraphInstance::get_dynamic_dataflow_graph() const {
@@ -55,6 +56,9 @@ OptimizerAttrs const &ComputationGraphInstance::get_optimizer_attrs() const {
 void ComputationGraphInstance::update_optimizer_attrs_for_next_iter() {
   this->optimizer_attrs =
       get_optimizer_attrs_for_next_iter(this->optimizer_attrs);
+}
+LossAttrs const &ComputationGraphInstance::get_loss_attrs() const {
+  return this->loss_attrs;
 }
 GenericTensorAccessorR
     ComputationGraphInstance::get_label_tensor_accessor() const {
@@ -184,11 +188,12 @@ ComputationGraphInstance create_computation_graph_instance(
                                   allocator,
                                   invocation_topo_order,
                                   optimizer_attrs,
+                                  loss_attrs,
                                   label_tensor,
                                   logit_grad_tensor};
 }
 
-std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
+static std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
     execute_dynamic_node_invocation_set(
         std::vector<DynamicNodeInvocation> const &invocations,
         Allocator &allocator,
@@ -224,7 +229,6 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
         ComputationGraphInstance &instance,
         ProfilingSettings const &profiling_settings,
         device_handle_t const &ff_handle,
-        std::optional<LossAttrs> const &loss_attrs,
         FFIterationConfig iteration_config,
         device_id_t device_idx) {
   std::vector<DynamicNodeInvocation> const &topo_order =
@@ -236,7 +240,7 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
           /*optimizer_attrs=*/instance.get_optimizer_attrs(),
           /*profiling_settings=*/profiling_settings,
           /*ff_handle=*/ff_handle,
-          /*loss_attrs=*/loss_attrs,
+          /*loss_attrs=*/instance.get_loss_attrs(),
           /*iteration_config=*/iteration_config,
           /*device_idx=*/device_idx);
   instance.update_optimizer_attrs_for_next_iter();
@@ -248,7 +252,6 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
         ComputationGraphInstance const &instance,
         ProfilingSettings const &profiling_settings,
         device_handle_t const &ff_handle,
-        std::optional<LossAttrs> const &loss_attrs,
         FFIterationConfig iteration_config,
         device_id_t device_idx) {
   std::vector<DynamicNodeInvocation> const &topo_order =
@@ -265,7 +268,7 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
       /*optimizer_attrs=*/instance.get_optimizer_attrs(),
       /*profiling_settings=*/profiling_settings,
       /*ff_handle=*/ff_handle,
-      /*loss_attrs=*/loss_attrs,
+      /*loss_attrs=*/instance.get_loss_attrs(),
       /*iteration_config=*/iteration_config,
       /*device_idx=*/device_idx);
 }
@@ -275,7 +278,6 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
         ComputationGraphInstance const &instance,
         ProfilingSettings const &profiling_settings,
         device_handle_t const &ff_handle,
-        std::optional<LossAttrs> const &loss_attrs,
         FFIterationConfig iteration_config,
         device_id_t device_idx) {
   std::vector<DynamicNodeInvocation> const &topo_order =
@@ -292,7 +294,7 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
       /*optimizer_attrs=*/instance.get_optimizer_attrs(),
       /*profiling_settings=*/profiling_settings,
       /*ff_handle=*/ff_handle,
-      /*loss_attrs=*/loss_attrs,
+      /*loss_attrs=*/instance.get_loss_attrs(),
       /*iteration_config=*/iteration_config,
       /*device_idx=*/device_idx);
 }
@@ -301,7 +303,6 @@ void perform_update_pass_for_computation_graph_instance(
     ComputationGraphInstance &instance,
     ProfilingSettings const &profiling_settings,
     device_handle_t const &ff_handle,
-    std::optional<LossAttrs> const &loss_attrs,
     FFIterationConfig iteration_config,
     device_id_t device_idx) {
   std::vector<DynamicNodeInvocation> const &topo_order =
@@ -318,7 +319,7 @@ void perform_update_pass_for_computation_graph_instance(
       /*optimizer_attrs=*/instance.get_optimizer_attrs(),
       /*profiling_settings=*/profiling_settings,
       /*ff_handle=*/ff_handle,
-      /*loss_attrs=*/loss_attrs,
+      /*loss_attrs=*/instance.get_loss_attrs(),
       /*iteration_config=*/iteration_config,
       /*device_idx=*/device_idx);
   instance.update_optimizer_attrs_for_next_iter();

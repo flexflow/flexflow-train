@@ -33,6 +33,9 @@ TaskTensorParameter make_task_tensor_parameter_dynamic(
             return make_task_tensor_parameter_opt(
                 slot.slot_name, optimizer_tensor.optimizer_slot_name);
           },
+          [&](DynamicLossTensorRole const &loss_tensor) {
+            return make_task_tensor_parameter_loss();
+          },
       });
 }
 

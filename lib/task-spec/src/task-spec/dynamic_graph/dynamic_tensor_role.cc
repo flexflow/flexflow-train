@@ -19,4 +19,8 @@ DynamicTensorRole mk_dynamic_tensor_role_opt(OptimizerSlotName s) {
   return DynamicTensorRole{DynamicOptimizerTensorRole{s}};
 }
 
+DynamicTensorRole mk_dynamic_tensor_role_loss() {
+  return DynamicTensorRole{DynamicLossTensorRole{}};
+}
+
 } // namespace FlexFlow

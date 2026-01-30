@@ -166,7 +166,6 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*instance=*/computation_graph_instance,
           /*profiling_settings=*/ProfilingSettings{0, 0},
           /*ff_handle=*/ff_handle,
-          /*loss_attrs=*/loss_attrs,
           /*iteration_config=*/FFIterationConfig{1_p},
           /*device_idx=*/device_idx);
       loss_values.push_back(copy_tensor_accessor_r(
@@ -334,7 +333,6 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           /*instance=*/computation_graph_instance,
           /*profiling_settings=*/ProfilingSettings{0, 0},
           /*ff_handle=*/ff_handle,
-          /*loss_attrs=*/loss_attrs,
           /*iteration_config=*/FFIterationConfig{1_p},
           /*device_idx=*/device_idx);
       loss_values.push_back(copy_tensor_accessor_r(
