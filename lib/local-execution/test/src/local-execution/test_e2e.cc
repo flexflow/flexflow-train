@@ -169,7 +169,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*iteration_config=*/FFIterationConfig{1_p},
           /*device_idx=*/device_idx);
       loss_values.push_back(copy_tensor_accessor_r(
-          computation_graph_instance.get_loss_tensor_accessor(), allocator));
+          computation_graph_instance.get_loss_tensor_accessor().value(),
+          allocator));
     }
 
     // Assert that each sample in the batch has a lower loss in last epoch than
@@ -336,7 +337,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           /*iteration_config=*/FFIterationConfig{1_p},
           /*device_idx=*/device_idx);
       loss_values.push_back(copy_tensor_accessor_r(
-          computation_graph_instance.get_loss_tensor_accessor(),
+          computation_graph_instance.get_loss_tensor_accessor().value(),
           cpu_allocator));
     }
 
