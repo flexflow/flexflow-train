@@ -2,7 +2,7 @@
 #include "compiler/cost_estimator/runtime_only_op_cost_estimate_key.dtg.h"
 #include "compiler/cost_estimator/runtime_only_op_cost_metrics.dtg.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.h"
-#include "compiler/machine_mapping/machine_compute_resource_slice.h"
+#include "compiler/machine_mapping/allowed_machine_views.h"
 #include "compiler/machine_mapping/machine_mapping_cache.h"
 #include "compiler/machine_mapping/machine_mapping_constraints.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
@@ -315,17 +315,28 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       auto allowed_machine_views =
           [&](UnmappedRuntimeOnlyOpCostEstimateKey const &k,
-              MachineComputeResourceSlice const &resources) {
-            if (resources == four_nodes_resources) {
-              return std::unordered_set<MachineView>{mv_stride_1, mv_stride_2};
-            } else if (resources == three_nodes_resources) {
-              return std::unordered_set<MachineView>{mv_stride_1, mv_stride_2};
-            } else if (resources == two_nodes_resources) {
-              return std::unordered_set<MachineView>{mv_stride_1};
-            } else {
-              return std::unordered_set<MachineView>{};
-            }
-          };
+              MachineComputeResourceSlice const &resources)
+          -> std::unordered_set<MachineView> {
+        std::unordered_set<MachineView> result;
+
+        if (resources == four_nodes_resources) {
+          result = std::unordered_set<MachineView>{mv_stride_1, mv_stride_2};
+        } else if (resources == three_nodes_resources) {
+          result = std::unordered_set<MachineView>{mv_stride_1, mv_stride_2};
+        } else if (resources == two_nodes_resources) {
+          result = std::unordered_set<MachineView>{mv_stride_1};
+        } else {
+          result = std::unordered_set<MachineView>{};
+        }
+
+        for (MachineView const &mv : result) {
+          OperatorTaskSpace op_task_space =
+              get_operator_task_space_for_runtime_only_op_cost_estimate_key(k);
+          ASSERT(is_valid_machine_view(mv, op_task_space, resources));
+        }
+
+        return result;
+      };
 
       MachineMappingConstraints constraints =
           get_unconstrained_solution_for_layers(

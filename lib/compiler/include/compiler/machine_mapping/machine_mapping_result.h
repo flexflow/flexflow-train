@@ -35,6 +35,9 @@ FeasibleMachineMappingResult require_feasible(MachineMappingResult const &);
     make_singleton_machine_mapping_result(milliseconds_t runtime,
                                           MachineView const &machine_view);
 
+[[nodiscard]] milliseconds_t
+    get_runtime_cost(MachineMappingResult const &mm_result);
+
 } // namespace FlexFlow
 
 #endif

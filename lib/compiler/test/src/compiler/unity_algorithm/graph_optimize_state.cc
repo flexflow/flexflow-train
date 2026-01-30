@@ -1,8 +1,9 @@
-#include "compiler/graph_optimize_state.h"
+#include "compiler/unity_algorithm/graph_optimize_state.h"
 #include "compiler/machine_mapping/machine_mapping.dtg.h"
 #include "compiler/machine_mapping/machine_mapping.h"
 #include "compiler/machine_mapping/machine_view.dtg.h"
 #include "compiler/machine_mapping/machine_view.h"
+#include "doctest/doctest.h"
 #include "pcg/mapped_parallel_computation_graph/mapped_parallel_computation_graph.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include "test/utils/doctest/check_without_stringify.h"
@@ -52,41 +53,18 @@ TEST_SUITE(FF_TEST_SUITE) {
       return builder.pcg;
     };
 
-    auto create_machine_mapping_for_pcg =
-        [](ParallelComputationGraph const &pcg) -> MachineMapping {
-      MachineSpaceCoordinate device = MachineSpaceCoordinate{
-          /*node_idx=*/0_n,
-          /*device_idx=*/0_n,
-          /*device_type=*/DeviceType::GPU,
-      };
-
-      MachineView machine_view = make_single_device_machine_view(device);
-
-      return MachineMapping{
-          generate_map(get_parallel_layers(pcg),
-                       [&](parallel_layer_guid_t) { return machine_view; }),
-      };
-    };
-
     ParallelComputationGraph pcg1 = create_pcg();
-    MachineMapping machine_mapping_1 = create_machine_mapping_for_pcg(pcg1);
 
     SUBCASE("returns true if the PCGs are isomorphic") {
       ParallelComputationGraph pcg2 = create_pcg();
-      MachineMapping machine_mapping_2 = create_machine_mapping_for_pcg(pcg2);
 
       GraphOptimizeState state1 = GraphOptimizeState{
-          GraphOptimizeResult{
-              mapped_pcg_from_pcg_and_mapping(pcg1, machine_mapping_1),
-          },
-          0,
+          pcg1,
+          0_ms,
       };
-
       GraphOptimizeState state2 = GraphOptimizeState{
-          GraphOptimizeResult{
-              mapped_pcg_from_pcg_and_mapping(pcg2, machine_mapping_2),
-          },
-          0,
+          pcg2,
+          0_ms,
       };
 
       CHECK_WITHOUT_STRINGIFY(state1 == state2);
@@ -109,24 +87,31 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       ParallelComputationGraph other_pcg = builder_.pcg;
 
-      MachineMapping other_machine_mapping =
-          create_machine_mapping_for_pcg(other_pcg);
-
       GraphOptimizeState state1 = GraphOptimizeState{
-          GraphOptimizeResult{
-              mapped_pcg_from_pcg_and_mapping(pcg1, machine_mapping_1),
-          },
-          0,
+          pcg1,
+          0_ms,
       };
 
       GraphOptimizeState state_ = GraphOptimizeState{
-          GraphOptimizeResult{
-              mapped_pcg_from_pcg_and_mapping(other_pcg, other_machine_mapping),
-          },
-          0,
+          other_pcg,
+          0_ms,
       };
 
       CHECK_FALSE_WITHOUT_STRINGIFY(state1 == state_);
     }
+  }
+
+  TEST_CASE("GraphOptimizeState::operator<") {
+    ParallelComputationGraph pcg1 = empty_parallel_computation_graph();
+    ParallelComputationGraph pcg2 = empty_parallel_computation_graph();
+    GraphOptimizeState state1 = GraphOptimizeState{
+        pcg1,
+        1.0_ms,
+    };
+    GraphOptimizeState state2 = GraphOptimizeState{
+        pcg2,
+        2.0_ms,
+    };
+    CHECK(state1 < state2);
   }
 }

@@ -37,9 +37,6 @@ src_includes = [
 type = "::FlexFlow::nonnegative_int"
 
 [[values]]
-type = "::FlexFlow::positive_int"
-
-[[values]]
 type = "bool"
 
 [[values]]

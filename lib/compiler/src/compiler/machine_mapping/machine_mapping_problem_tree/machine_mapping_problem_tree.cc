@@ -1,4 +1,6 @@
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.h"
+#include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_tensor_set_movement.h"
+#include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/as_dot.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/get_all_leaf_paths.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/get_leaves.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/get_path_to_leaf_map.h"
@@ -95,6 +97,59 @@ std::unordered_map<BinaryTreePath, UnmappedRuntimeOnlyOpCostEstimateKey>
         MachineMappingProblemTree const &tree) {
   return get_path_to_leaf_map(tree,
                               generic_binary_sp_impl_for_mm_problem_tree());
+}
+
+std::string as_dot(MachineMappingProblemTree const &tree) {
+  std::function<std::string(MMProblemTreeSeriesSplit const &)>
+      get_series_label =
+          [](MMProblemTreeSeriesSplit const &series) -> std::string {
+    auto path_as_dot = [](BinaryTreePath const &path) -> std::string {
+      return "(" +
+             join_strings(path.entries,
+                          ", ",
+                          [](BinaryTreePathEntry const &entry) -> std::string {
+                            if (entry == BinaryTreePathEntry::LEFT_CHILD) {
+                              return "l";
+                            } else {
+                              assert(entry == BinaryTreePathEntry::RIGHT_CHILD);
+                              return "r";
+                            }
+                          }) +
+             ")";
+    };
+
+    auto path_set_as_dot =
+        [&](std::unordered_set<BinaryTreePath> const &path_set) -> std::string {
+      return "(" + join_strings(path_set, ", ", path_as_dot) + ")";
+    };
+
+    return fmt::format(
+        "srcs={} dsts={}",
+        path_set_as_dot(get_src_layers(series.tensor_set_movement)),
+        path_set_as_dot(get_dst_layers(series.tensor_set_movement)));
+  };
+
+  std::function<std::string(MMProblemTreeParallelSplit const &)>
+      get_parallel_label =
+          [](MMProblemTreeParallelSplit const &parallel) -> std::string {
+    return "P";
+  };
+
+  std::function<std::string(UnmappedRuntimeOnlyOpCostEstimateKey const &)>
+      get_leaf_label =
+          [](UnmappedRuntimeOnlyOpCostEstimateKey const &leaf) -> std::string {
+    return "";
+  };
+
+  return as_dot(tree,
+                generic_binary_sp_impl_for_mm_problem_tree(),
+                get_series_label,
+                get_parallel_label,
+                get_leaf_label);
+}
+
+void debug_print_dot(MachineMappingProblemTree const &tree) {
+  std::cout << as_dot(tree) << std::endl;
 }
 
 } // namespace FlexFlow

@@ -32,6 +32,12 @@ T const &assert_unwrap(std::optional<T> const &o) {
   return o.value();
 }
 
+template <typename T>
+T expect(std::optional<T> const &x, std::string const &err) {
+  ASSERT(x.has_value(), err);
+  return x.value();
+}
+
 } // namespace FlexFlow
 
 #endif

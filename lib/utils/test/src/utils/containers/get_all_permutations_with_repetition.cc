@@ -71,5 +71,15 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       CHECK(result == correct);
     }
+
+    SUBCASE("n == 0") {
+      std::vector<int> input = {1, 2, 3};
+
+      std::unordered_multiset<std::vector<int>> result =
+          get_all_permutations_with_repetition(input, 0_n);
+      std::unordered_multiset<std::vector<int>> correct = {{}};
+
+      CHECK(result == correct);
+    }
   }
 }

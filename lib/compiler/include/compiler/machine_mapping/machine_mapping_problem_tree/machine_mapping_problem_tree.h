@@ -1,7 +1,6 @@
 #ifndef _FLEXFLOW_LIB_COMPILER_INCLUDE_COMPILER_MACHINE_MAPPING_MACHINE_MAPPING_PROBLEM_TREE_H
 #define _FLEXFLOW_LIB_COMPILER_INCLUDE_COMPILER_MACHINE_MAPPING_MACHINE_MAPPING_PROBLEM_TREE_H
 
-#include "compiler/machine_mapping/abstracted_tensor_set_movement/machine_space_stencil.dtg.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.dtg.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/mm_problem_tree_parallel_split.dtg.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/mm_problem_tree_series_split.dtg.h"
@@ -31,6 +30,9 @@ std::optional<MachineMappingProblemTree>
 
 std::unordered_map<BinaryTreePath, UnmappedRuntimeOnlyOpCostEstimateKey>
     mm_problem_tree_get_path_to_leaf_map(MachineMappingProblemTree const &);
+
+std::string as_dot(MachineMappingProblemTree const &);
+void debug_print_dot(MachineMappingProblemTree const &);
 
 } // namespace FlexFlow
 

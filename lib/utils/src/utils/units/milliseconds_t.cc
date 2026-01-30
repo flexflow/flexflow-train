@@ -38,6 +38,14 @@ milliseconds_t milliseconds_t::operator+(milliseconds_t const &other) const {
   };
 }
 
+milliseconds_t milliseconds_t::operator*(float rhs) const {
+  return milliseconds_t{this->value * rhs};
+}
+
+milliseconds_t operator*(float lhs, milliseconds_t const &rhs) {
+  return milliseconds_t{lhs * rhs.value};
+}
+
 float milliseconds_t::unwrap_milliseconds() const {
   return this->value;
 }

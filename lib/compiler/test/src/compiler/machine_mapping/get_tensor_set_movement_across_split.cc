@@ -222,8 +222,10 @@ TEST_SUITE(FF_TEST_SUITE) {
                   TensorSlotName::LHS_INPUT,
                   require_only_key(relu_1.outputs, TensorSlotName::OUTPUT),
               },
-              {TensorSlotName::RHS_INPUT,
-               require_only_key(relu_2.outputs, TensorSlotName::OUTPUT)},
+              {
+                  TensorSlotName::RHS_INPUT,
+                  require_only_key(relu_2.outputs, TensorSlotName::OUTPUT),
+              },
           },
           /*weights=*/{});
 

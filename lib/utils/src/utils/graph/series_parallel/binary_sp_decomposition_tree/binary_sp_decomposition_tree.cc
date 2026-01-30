@@ -1,8 +1,10 @@
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/binary_sp_decomposition_tree.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/get_leaves.h"
+#include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/get_subtree_at_path.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/get_tree_height.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/is_binary_sp_tree_left_associative.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/is_binary_sp_tree_right_associative.h"
+
 namespace FlexFlow {
 
 GenericBinarySPDecompositionTreeImplementation<BinarySPDecompositionTree,
@@ -84,6 +86,12 @@ SPDecompositionTreeNodeType
 
 nonnegative_int get_tree_height(BinarySPDecompositionTree const &tree) {
   return get_tree_height(tree, generic_impl_for_binary_sp_tree());
+}
+
+std::optional<BinarySPDecompositionTree>
+    binary_sp_decomposition_tree_get_subtree_at_path(
+        BinarySPDecompositionTree const &tree, BinaryTreePath const &path) {
+  return get_subtree_at_path(tree, generic_impl_for_binary_sp_tree(), path);
 }
 
 } // namespace FlexFlow

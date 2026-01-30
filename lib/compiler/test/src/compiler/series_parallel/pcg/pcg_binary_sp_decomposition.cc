@@ -6,7 +6,7 @@
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("pcg_binary_sp_decomposition_from_binary_sp_tree") {
+  TEST_CASE("pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree") {
     Node n1 = Node{1};
     Node n2 = Node{2};
     Node n3 = Node{3};
@@ -43,7 +43,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       BinarySPDecompositionTree input = make_binary_leaf(n1);
 
       PCGBinarySPDecomposition result =
-          pcg_binary_sp_decomposition_from_binary_sp_tree(input);
+          pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(input);
 
       PCGBinarySPDecomposition expected = make_pcg_leaf(n1);
 
@@ -55,7 +55,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           make_binary_series_split(make_binary_leaf(n1), make_binary_leaf(n2));
 
       PCGBinarySPDecomposition result =
-          pcg_binary_sp_decomposition_from_binary_sp_tree(input);
+          pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(input);
 
       PCGBinarySPDecomposition expected =
           make_pcg_series_split(make_pcg_leaf(n1), make_pcg_leaf(n2));
@@ -68,7 +68,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           make_binary_leaf(n1), make_binary_leaf(n2));
 
       PCGBinarySPDecomposition result =
-          pcg_binary_sp_decomposition_from_binary_sp_tree(input);
+          pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(input);
 
       PCGBinarySPDecomposition expected =
           make_pcg_parallel_split(make_pcg_leaf(n1), make_pcg_leaf(n2));
@@ -82,7 +82,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           make_binary_leaf(n3));
 
       PCGBinarySPDecomposition pcg_tree =
-          pcg_binary_sp_decomposition_from_binary_sp_tree(original);
+          pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
+              original);
       BinarySPDecompositionTree converted =
           binary_sp_tree_from_pcg_sp_tree(pcg_tree);
 
