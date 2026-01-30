@@ -1,11 +1,10 @@
 #include "pcg/optimizer_attrs.h"
+#include "task-spec/dynamic_graph/dynamic_layer_guid_t.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_guid_t.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
-#include "task-spec/dynamic_graph/dynamic_tensor_slot.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
-#include "task-spec/dynamic_graph/dynamic_value_attrs.h"
 #include "task-spec/optimizer.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/map_from_pairs.h"
@@ -52,7 +51,7 @@ std::tuple<DynamicOpenDataflowGraph, DynamicValueAttrs, DynamicValueAttrs>
           /*device_coord=*/std::nullopt,
           /*mapping=*/std::nullopt,
           /*op_attrs=*/std::nullopt,
-          /*layer_guid=*/std::nullopt,
+          /*layer_guid=*/mk_dynamic_layer_guid_loss(),
           /*per_device_op_state=*/std::nullopt,
       },
       /*outputs=*/

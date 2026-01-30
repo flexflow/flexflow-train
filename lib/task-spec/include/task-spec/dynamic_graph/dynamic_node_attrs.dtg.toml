@@ -39,7 +39,7 @@ type = "std::optional<::FlexFlow::PCGOperatorAttrs>"
 
 [[fields]]
 name = "layer_guid"
-type = "std::optional<::FlexFlow::dynamic_layer_guid_t>"
+type = "::FlexFlow::dynamic_layer_guid_t"
 
 [[fields]]
 name = "per_device_op_state"

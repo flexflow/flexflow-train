@@ -10,6 +10,7 @@ features = [
 includes = [
   "pcg/layer_guid_t.dtg.h",
   "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h",
+  "task-spec/dynamic_graph/dynamic_loss_layer_guid_t.dtg.h",
 ]
 
 [[values]]
@@ -19,3 +20,7 @@ type = "::FlexFlow::layer_guid_t"
 [[values]]
 name = "pcg_layer_guid"
 type = "::FlexFlow::parallel_layer_guid_t"
+
+[[values]]
+name = "loss_layer_guid"
+type = "::FlexFlow::dynamic_loss_layer_guid_t"
