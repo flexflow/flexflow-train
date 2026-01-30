@@ -32,12 +32,11 @@ ComputationGraphInstance::ComputationGraphInstance(
     std::vector<DynamicNodeInvocation> const &topological_ordering,
     OptimizerAttrs const &optimizer_attrs,
     std::optional<LossAttrs> const &loss_attrs,
-    std::optional<GenericTensorAccessorR> label_tensor,
     std::optional<GenericTensorAccessorW> logit_grad_tensor)
     : dataflow_graph(dataflow_graph), allocator(allocator),
       topological_ordering(topological_ordering),
       optimizer_attrs(optimizer_attrs), loss_attrs(loss_attrs),
-      label_tensor(label_tensor), logit_grad_tensor(logit_grad_tensor) {}
+      logit_grad_tensor(logit_grad_tensor) {}
 
 DynamicOpenDataflowGraph const &
     ComputationGraphInstance::get_dynamic_dataflow_graph() const {
@@ -60,10 +59,6 @@ void ComputationGraphInstance::update_optimizer_attrs_for_next_iter() {
 std::optional<LossAttrs> const &
     ComputationGraphInstance::get_loss_attrs() const {
   return this->loss_attrs;
-}
-std::optional<GenericTensorAccessorR>
-    ComputationGraphInstance::get_label_tensor_accessor() const {
-  return this->label_tensor;
 }
 std::optional<GenericTensorAccessorR>
     ComputationGraphInstance::get_loss_tensor_accessor() const {
@@ -202,7 +197,6 @@ ComputationGraphInstance create_computation_graph_instance(
                                   invocation_topo_order,
                                   optimizer_attrs,
                                   loss_attrs,
-                                  label_tensor,
                                   logit_grad_tensor};
 }
 

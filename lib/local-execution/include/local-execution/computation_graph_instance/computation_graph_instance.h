@@ -18,21 +18,18 @@ namespace FlexFlow {
 
 struct ComputationGraphInstance {
 public:
-  ComputationGraphInstance(
-      DynamicOpenDataflowGraph,
-      Allocator &,
-      std::vector<DynamicNodeInvocation> const &,
-      OptimizerAttrs const &,
-      std::optional<LossAttrs> const &,
-      std::optional<GenericTensorAccessorR> label_tensor,
-      std::optional<GenericTensorAccessorW> logit_grad_tensor);
+  ComputationGraphInstance(DynamicOpenDataflowGraph,
+                           Allocator &,
+                           std::vector<DynamicNodeInvocation> const &,
+                           OptimizerAttrs const &,
+                           std::optional<LossAttrs> const &,
+                           std::optional<GenericTensorAccessorW>);
   DynamicOpenDataflowGraph const &get_dynamic_dataflow_graph() const;
   Allocator &get_allocator() const;
   std::vector<DynamicNodeInvocation> const &get_topological_ordering() const;
   OptimizerAttrs const &get_optimizer_attrs() const;
   void update_optimizer_attrs_for_next_iter();
   std::optional<LossAttrs> const &get_loss_attrs() const;
-  std::optional<GenericTensorAccessorR> get_label_tensor_accessor() const;
   std::optional<GenericTensorAccessorR> get_loss_tensor_accessor() const;
 
 private:
@@ -41,7 +38,6 @@ private:
   std::vector<DynamicNodeInvocation> topological_ordering;
   OptimizerAttrs optimizer_attrs;
   std::optional<LossAttrs> loss_attrs;
-  std::optional<GenericTensorAccessorR> label_tensor;
   std::optional<GenericTensorAccessorW> logit_grad_tensor;
 };
 
