@@ -81,7 +81,8 @@ MachineMappingProblemTree get_machine_mapping_problem_tree(
         },
         [&](parallel_layer_guid_t const &leaf) {
           MachineMappingProblemTree result = MachineMappingProblemTree{
-              get_unmapped_runtime_only_op_cost_estimate_key_for_layer(pcg, leaf),
+              get_unmapped_runtime_only_op_cost_estimate_key_for_layer(pcg,
+                                                                       leaf),
           };
           ASSERT(is_valid_machine_mapping_problem_tree(result));
           return result;

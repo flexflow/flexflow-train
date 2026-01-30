@@ -21,24 +21,21 @@ MachineMappingConstraints get_unconstrained_solution_for_layers(
   };
 }
 
-std::unordered_set<BinaryTreePath> 
-  get_unconstrained_layers(MachineMappingConstraints const &constraints) {
+std::unordered_set<BinaryTreePath>
+    get_unconstrained_layers(MachineMappingConstraints const &constraints) {
 
-  return keys(filter_values(constraints.machine_views,
-                            [](std::optional<MachineView> const &mv) {
-                              return !mv.has_value(); 
-                            }));
+  return keys(filter_values(
+      constraints.machine_views,
+      [](std::optional<MachineView> const &mv) { return !mv.has_value(); }));
 }
 
 std::unordered_set<BinaryTreePath>
-  get_constrained_layers(MachineMappingConstraints const &constraints) {
+    get_constrained_layers(MachineMappingConstraints const &constraints) {
 
-  return keys(filter_values(constraints.machine_views,
-                            [](std::optional<MachineView> const &mv) {
-                              return mv.has_value(); 
-                            }));
+  return keys(filter_values(
+      constraints.machine_views,
+      [](std::optional<MachineView> const &mv) { return mv.has_value(); }));
 }
-
 
 std::unordered_set<BinaryTreePath>
     get_all_layers(MachineMappingConstraints const &partial_solution) {

@@ -1,7 +1,6 @@
 #ifndef _FLEXFLOW_COMPILER_MACHINE_MAPPING_GET_OPTIMAL_MACHINE_MAPPING_H
 #define _FLEXFLOW_COMPILER_MACHINE_MAPPING_GET_OPTIMAL_MACHINE_MAPPING_H
 
-#include "pcg/machine_compute_resource_slice.dtg.h"
 #include "compiler/machine_mapping/machine_mapping_cache.dtg.h"
 #include "compiler/machine_mapping/machine_mapping_constraints.dtg.h"
 #include "compiler/machine_mapping/machine_mapping_context.dtg.h"
@@ -9,6 +8,7 @@
 #include "compiler/machine_mapping/machine_mapping_problem_tree/mm_problem_tree_parallel_split.dtg.h"
 #include "compiler/machine_mapping/machine_mapping_problem_tree/mm_problem_tree_series_split.dtg.h"
 #include "compiler/machine_mapping/parallel_split_transformation.dtg.h"
+#include "pcg/machine_compute_resource_slice.dtg.h"
 
 namespace FlexFlow {
 

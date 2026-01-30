@@ -8,7 +8,7 @@ namespace fmt {
 
 template <typename... Ts, typename Char>
 struct formatter<
-    ::std::variant<Ts...>, 
+    ::std::variant<Ts...>,
     Char,
     std::enable_if_t<!detail::has_format_as<std::variant<Ts...>>::value>>
     : formatter<::std::string> {

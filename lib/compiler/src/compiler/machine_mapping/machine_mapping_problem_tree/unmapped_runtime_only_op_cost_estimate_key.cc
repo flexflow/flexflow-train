@@ -1,8 +1,8 @@
 #include "compiler/machine_mapping/machine_mapping_problem_tree/unmapped_runtime_only_op_cost_estimate_key.h"
 #include "op-attrs/computation_graph_op_attrs.h"
-#include "pcg/parallel_computation_graph/parallel_computation_graph.h"
-#include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/get_operator_task_space.h"
+#include "op-attrs/parallel_tensor_shape.h"
+#include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "utils/containers/map_values.h"
 
 namespace FlexFlow {
@@ -42,14 +42,14 @@ RuntimeOnlyOpCostEstimateKey map_unmapped_runtime_only_op_cost_estimate_key(
 
 OperatorTaskSpace get_operator_task_space_for_runtime_only_op_cost_estimate_key(
     UnmappedRuntimeOnlyOpCostEstimateKey const &unmapped) {
-  
-  return get_operator_task_space(
-    assert_unwrap(compgraph_op_attrs_from_pcg_op_attrs(unmapped.op_attrs)),
-    map_values(unmapped.input_shapes, 
-               [](ParallelTensorShape const &input_shape) -> ParallelTensorDimDegrees {
-                 return get_parallel_degrees(input_shape);
-               }));
-}
 
+  return get_operator_task_space(
+      assert_unwrap(compgraph_op_attrs_from_pcg_op_attrs(unmapped.op_attrs)),
+      map_values(unmapped.input_shapes,
+                 [](ParallelTensorShape const &input_shape)
+                     -> ParallelTensorDimDegrees {
+                   return get_parallel_degrees(input_shape);
+                 }));
+}
 
 } // namespace FlexFlow

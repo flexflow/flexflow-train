@@ -1,7 +1,7 @@
 #include "compiler/unity_algorithm/unity_algorithm.h"
 #include "compiler/cost_estimator/runtime_only_cost_estimator_from_cost_estimator.h"
-#include "internal/cost_estimator_for_test.h"
 #include "doctest/doctest.h"
+#include "internal/cost_estimator_for_test.h"
 #include "op-attrs/parallel_tensor_dims.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "op-attrs/replica_type.dtg.h"
@@ -20,8 +20,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       TensorShape input_tensor_shape = TensorShape{
           TensorDims{
               FFOrdered<positive_int>{
-                32_p,
-                64_p,
+                  32_p,
+                  64_p,
               },
           },
           DataType::FLOAT,
@@ -47,16 +47,19 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     ParallelComputationGraph pcg = pcg_from_computation_graph(cg);
 
-    RuntimeOnlyCostEstimator cost_estimator = runtime_only_cost_estimator_from_cost_estimator(
-      make_fake_cost_estimator(
-        [](OpCostEstimateKey const &k) -> OpCostMetrics {
-          return OpCostMetrics{
-              /*forward_runtime=*/1.0_ms,
-              /*backward_runtime=*/2.0_ms,
-              /*memory=*/1_bytes,
-          };
-        },
-        [](TensorSetMovement const &) -> milliseconds_t { return 1.0_ms; }));
+    RuntimeOnlyCostEstimator cost_estimator =
+        runtime_only_cost_estimator_from_cost_estimator(
+            make_fake_cost_estimator(
+                [](OpCostEstimateKey const &k) -> OpCostMetrics {
+                  return OpCostMetrics{
+                      /*forward_runtime=*/1.0_ms,
+                      /*backward_runtime=*/2.0_ms,
+                      /*memory=*/1_bytes,
+                  };
+                },
+                [](TensorSetMovement const &) -> milliseconds_t {
+                  return 1.0_ms;
+                }));
 
     MachineComputeSpecification full_machine_spec = MachineComputeSpecification{
         /*num_nodes=*/2_p,

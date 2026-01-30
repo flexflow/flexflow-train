@@ -82,7 +82,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           make_binary_leaf(n3));
 
       PCGBinarySPDecomposition pcg_tree =
-          pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(original);
+          pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
+              original);
       BinarySPDecompositionTree converted =
           binary_sp_tree_from_pcg_sp_tree(pcg_tree);
 

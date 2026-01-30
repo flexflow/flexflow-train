@@ -19,7 +19,6 @@
 #include "op-attrs/get_operator_task_space.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/machine_specification.dtg.h"
-#include "compiler/machine_mapping/machine_view.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "utils/containers/contains.h"
 #include "utils/containers/contains_key.h"
@@ -95,8 +94,8 @@ MachineMappingResult
           MachineMappingProblemTree const &root,
           BinaryTreePathEntry const &prefix)
       -> std::unordered_set<ParallelLayerGuidObliviousMachineMapping> {
-
-    MachineMappingConstraints sub_constraints = restrict_to_child(constraints, prefix);
+    MachineMappingConstraints sub_constraints =
+        restrict_to_child(constraints, prefix);
 
     ASSERT(get_all_layers(sub_constraints) == get_all_leaf_paths(root));
 
@@ -115,7 +114,7 @@ MachineMappingResult
             });
 
     std::unordered_set<std::unordered_map<BinaryTreePath, MachineView>>
-      assignments = get_all_assignments(allowed);
+        assignments = get_all_assignments(allowed);
 
     return transform(
         assignments,
@@ -192,10 +191,12 @@ MachineMappingResult
               tensor_movement,
               /*pre_machine_stencils=*/
               get_machine_stencils_for_partially_mapped_mm_problem_tree(
-                  series_split.get_left_child(), require_feasible(pre_result).machine_mapping),
+                  series_split.get_left_child(),
+                  require_feasible(pre_result).machine_mapping),
               /*post_machine_stencils=*/
               get_machine_stencils_for_partially_mapped_mm_problem_tree(
-                  series_split.get_right_child(), require_feasible(post_result).machine_mapping));
+                  series_split.get_right_child(),
+                  require_feasible(post_result).machine_mapping));
 
       milliseconds_t cost_across_split =
           context.cost_estimator.estimate_cost(comm_across_split);

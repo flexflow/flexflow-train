@@ -12,12 +12,14 @@ MachineComputeResourceSlice
   };
 }
 
-positive_int get_total_num_devices_in_slice(MachineComputeResourceSlice const &slice) {
+positive_int
+    get_total_num_devices_in_slice(MachineComputeResourceSlice const &slice) {
   return slice.num_nodes * slice.num_gpus_per_node;
 }
 
-bool is_valid_machine_space_coordinate_in_slice(MachineComputeResourceSlice const &slice,
-                                                MachineSpaceCoordinate const &coord) {
+bool is_valid_machine_space_coordinate_in_slice(
+    MachineComputeResourceSlice const &slice,
+    MachineSpaceCoordinate const &coord) {
   ASSERT(coord.device_type == DeviceType::GPU);
 
   return (coord.node_idx < slice.num_nodes) &&

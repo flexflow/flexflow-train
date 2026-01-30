@@ -10,8 +10,9 @@ namespace FlexFlow {
 
 struct GraphOptimizeState {
   GraphOptimizeState() = delete;
-  explicit GraphOptimizeState(ParallelComputationGraph const &parallel_computation_graph,
-                              milliseconds_t runtime);
+  explicit GraphOptimizeState(
+      ParallelComputationGraph const &parallel_computation_graph,
+      milliseconds_t runtime);
 
   bool operator==(GraphOptimizeState const &other) const;
   bool operator!=(GraphOptimizeState const &other) const;
@@ -27,9 +28,12 @@ std::ostream &operator<<(std::ostream &, GraphOptimizeState const &);
 
 // TODO(@lockshaw)(#pr): Delete this if still unused
 // std::optional<GraphOptimizeState>
-//   graph_optimize_state_from_machine_mapping_result(ParallelComputationGraph const &, 
-//                                                    PCGBinarySPDecomposition const &,
-//                                                    MachineMappingResult const &);
+//   graph_optimize_state_from_machine_mapping_result(ParallelComputationGraph
+//   const &,
+//                                                    PCGBinarySPDecomposition
+//                                                    const &,
+//                                                    MachineMappingResult const
+//                                                    &);
 
 } // namespace FlexFlow
 

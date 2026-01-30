@@ -10,10 +10,12 @@ namespace FlexFlow {
 MachineComputeResourceSlice
     compute_slice_from_specification(MachineComputeSpecification const &);
 
-positive_int get_total_num_devices_in_slice(MachineComputeResourceSlice const &);
+positive_int
+    get_total_num_devices_in_slice(MachineComputeResourceSlice const &);
 
-bool is_valid_machine_space_coordinate_in_slice(MachineComputeResourceSlice const &slice,
-                                                MachineSpaceCoordinate const &coord);
+bool is_valid_machine_space_coordinate_in_slice(
+    MachineComputeResourceSlice const &slice,
+    MachineSpaceCoordinate const &coord);
 
 } // namespace FlexFlow
 

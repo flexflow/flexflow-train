@@ -12,9 +12,9 @@
 #include "compiler/series_parallel/pcg/get_pcg_balanced_binary_sp_decomposition.h"
 #include "compiler/series_parallel/pcg/get_pcg_series_parallel_decomposition.h"
 #include "compiler/unity_algorithm/graph_optimize_state.h"
+#include "op-attrs/operator_task_space.h"
 #include "pcg/machine_compute_resource_slice.h"
 #include "pcg/machine_specification.dtg.h"
-#include "op-attrs/operator_task_space.h"
 #include "substitutions/apply_substitution/apply_substitution.h"
 #include "substitutions/pcg_pattern.h"
 #include "substitutions/sub_parallel_computation_graph.h"
@@ -24,7 +24,6 @@
 #include "utils/deduplicated_priority_queue.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/optional.h"
-#include "substitutions/unity_substitution_set.h"
 
 namespace FlexFlow {
 
@@ -65,9 +64,8 @@ SearchResult graph_optimize(ParallelComputationGraph &pcg,
       [&](UnmappedRuntimeOnlyOpCostEstimateKey const &key,
           MachineComputeResourceSlice const &resources)
           -> std::unordered_set<MachineView> {
-
-        OperatorTaskSpace op_task_space = 
-          get_operator_task_space_for_runtime_only_op_cost_estimate_key(key);
+        OperatorTaskSpace op_task_space =
+            get_operator_task_space_for_runtime_only_op_cost_estimate_key(key);
 
         return get_allowed_machine_views(
             resources, op_task_space, DeviceType::GPU);
@@ -85,12 +83,12 @@ SearchResult graph_optimize(ParallelComputationGraph &pcg,
     MachineMappingConstraints constraints =
         get_unconstrained_solution_for_layers(get_all_leaf_paths(problem_tree));
 
-    MachineMappingResult mm_result = get_optimal_machine_mapping(
-        cached_subgraph_costs, 
-        context, 
-        problem_tree, 
-        compute_slice_from_specification(resources), 
-        constraints);
+    MachineMappingResult mm_result =
+        get_optimal_machine_mapping(cached_subgraph_costs,
+                                    context,
+                                    problem_tree,
+                                    compute_slice_from_specification(resources),
+                                    constraints);
 
     return {
         GraphOptimizeState{
@@ -112,12 +110,14 @@ SearchResult graph_optimize(ParallelComputationGraph &pcg,
 
     if (current_state < best_state) {
       best_state = current_state;
-    } else if (current_state.runtime > best_state.runtime * search_config.alpha) {
+    } else if (current_state.runtime >
+               best_state.runtime * search_config.alpha) {
       continue;
     }
 
     for (ParallelComputationGraph const &new_pcg :
-         all_pcgs_obtained_by_applying_a_substitution(current_state.pcg, substitutions)) {
+         all_pcgs_obtained_by_applying_a_substitution(current_state.pcg,
+                                                      substitutions)) {
 
       std::optional<GraphOptimizeState> new_pcg_optimize_result =
           optimize_pcg(new_pcg).first;

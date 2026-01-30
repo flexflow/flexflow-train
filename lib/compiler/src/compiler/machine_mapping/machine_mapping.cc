@@ -55,7 +55,7 @@ bool nodes_are_disjoint(MachineMapping const &m1, MachineMapping const &m2) {
 std::optional<MachineMapping> get_machine_mapping_from_machine_mapping_result(
     PCGBinarySPDecomposition const &sp_decomposition,
     MachineMappingResult const &mm_result) {
-  
+
   FeasibleMachineMappingResult feasible_mapping = ({
     if (is_infeasible(mm_result)) {
       return std::nullopt;
@@ -63,15 +63,16 @@ std::optional<MachineMapping> get_machine_mapping_from_machine_mapping_result(
 
     require_feasible(mm_result);
   });
-  
-  bidict<BinaryTreePath, parallel_layer_guid_t> path_to_leaf_map = 
-    bidict_from_map(pcg_sp_tree_get_path_to_leaf_map(sp_decomposition));
+
+  bidict<BinaryTreePath, parallel_layer_guid_t> path_to_leaf_map =
+      bidict_from_map(pcg_sp_tree_get_path_to_leaf_map(sp_decomposition));
 
   return MachineMapping{
-    map_keys(feasible_mapping.machine_mapping.raw_mapping,
-             [&](BinaryTreePath const &p) -> parallel_layer_guid_t {
-               return path_to_leaf_map.at_l(p); 
-             }),
-  }; }
+      map_keys(feasible_mapping.machine_mapping.raw_mapping,
+               [&](BinaryTreePath const &p) -> parallel_layer_guid_t {
+                 return path_to_leaf_map.at_l(p);
+               }),
+  };
+}
 
 } // namespace FlexFlow

@@ -2,6 +2,7 @@
 #include "compiler/machine_mapping/machine_view.h"
 #include "compiler/machine_mapping/multi_dimensional_stride.dtg.h"
 #include "op-attrs/operator_task_space.h"
+#include "pcg/machine_compute_resource_slice.h"
 #include "pcg/machine_compute_specification.h"
 #include "utils/containers/all_of.h"
 #include "utils/containers/cartesian_product.h"
@@ -21,7 +22,6 @@
 #include "utils/nonnegative_int/num_elements.h"
 #include "utils/overload.h"
 #include "utils/positive_int/ceildiv.h"
-#include "pcg/machine_compute_resource_slice.h"
 
 namespace FlexFlow {
 
@@ -64,7 +64,7 @@ static std::unordered_set<MachineView>
   };
 
   auto get_candidate_strides = [&](std::vector<positive_int> const &tensor_dims,
-                               positive_int total_devices)
+                                   positive_int total_devices)
       -> std::unordered_multiset<MultiDimensionalStride> {
     positive_int max_stride_upper_bound =
         get_max_stride_upper_bound(tensor_dims, total_devices);
@@ -89,14 +89,14 @@ static std::unordered_set<MachineView>
   };
 
   auto get_candidate_starts = [](MachineComputeResourceSlice const &slice,
-                             DeviceType const &device_type) 
-    -> std::unordered_set<MachineSpaceCoordinate>
-  {
+                                 DeviceType const &device_type)
+      -> std::unordered_set<MachineSpaceCoordinate> {
     ASSERT(device_type == DeviceType::GPU);
 
     std::unordered_set<MachineSpaceCoordinate> result;
     for (nonnegative_int node_idx : nonnegative_range(slice.num_nodes)) {
-      for (nonnegative_int device_idx : nonnegative_range(slice.num_gpus_per_node)) {
+      for (nonnegative_int device_idx :
+           nonnegative_range(slice.num_gpus_per_node)) {
         result.insert(
             MachineSpaceCoordinate{node_idx, device_idx, device_type});
       }
@@ -104,9 +104,8 @@ static std::unordered_set<MachineView>
     return result;
   };
 
-  auto get_candidate_dimensions = [](OperatorTaskSpace const &task_space) 
-    -> std::unordered_multiset<std::vector<MachineSpecificationDimension>>
-  {
+  auto get_candidate_dimensions = [](OperatorTaskSpace const &task_space)
+      -> std::unordered_multiset<std::vector<MachineSpecificationDimension>> {
     std::unordered_set<MachineSpecificationDimension> options = {
         MachineSpecificationDimension::INTER_NODE,
         MachineSpecificationDimension::INTRA_NODE};
@@ -121,23 +120,24 @@ static std::unordered_set<MachineView>
 
   positive_int total_devices = get_total_num_devices_in_slice(machine_spec);
 
-  std::unordered_multiset<MultiDimensionalStride> candidate_strides 
-    = get_candidate_strides(tensor_dims, total_devices);
+  std::unordered_multiset<MultiDimensionalStride> candidate_strides =
+      get_candidate_strides(tensor_dims, total_devices);
   ASSERT(candidate_strides.size() > 0);
 
-  std::unordered_set<MachineSpaceCoordinate> candidate_starts 
-    = get_candidate_starts(machine_spec, device_type);
+  std::unordered_set<MachineSpaceCoordinate> candidate_starts =
+      get_candidate_starts(machine_spec, device_type);
   ASSERT(candidate_starts.size() > 0);
 
-  std::unordered_multiset<std::vector<MachineSpecificationDimension>> candidate_dimensions
-    = get_candidate_dimensions(task_space);
+  std::unordered_multiset<std::vector<MachineSpecificationDimension>>
+      candidate_dimensions = get_candidate_dimensions(task_space);
   ASSERT(candidate_dimensions.size() > 0);
-    
+
   std::unordered_set<MachineView> machine_views;
 
   for (MultiDimensionalStride const &strides : candidate_strides) {
     for (MachineSpaceCoordinate start : candidate_starts) {
-      for (std::vector<MachineSpecificationDimension> const &dims : candidate_dimensions) {
+      for (std::vector<MachineSpecificationDimension> const &dims :
+           candidate_dimensions) {
         machine_views.insert(
             machine_view_from_strides_and_machine_spec_dimensions(
                 start, strides.raw_strides, dims));

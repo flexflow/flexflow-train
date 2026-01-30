@@ -23,7 +23,7 @@ struct Accessor {
 
   positive_int get_positive_int(OperatorAttributeKey k) const {
     return positive_int{
-      this->get<nonnegative_int>(k),
+        this->get<nonnegative_int>(k),
     };
   }
 };

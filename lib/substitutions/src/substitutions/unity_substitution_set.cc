@@ -104,7 +104,8 @@ static OutputGraphExprValue
       {
           set_op_type_attr(op_type),
           set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
-                               OperatorAttributeValue{degree.nonnegative_int_from_positive_int()}),
+                               OperatorAttributeValue{
+                                   degree.nonnegative_int_from_positive_int()}),
       }};
 
   return insert_single_output_op(
@@ -139,8 +140,10 @@ static OutputGraphExprValue
           std::nullopt,
           {
               set_op_type_attr(op_type),
-              set_attr_to_constant(OperatorAttributeKey::PARALLEL_DEGREE,
-                                   OperatorAttributeValue{degree.nonnegative_int_from_positive_int()}),
+              set_attr_to_constant(
+                  OperatorAttributeKey::PARALLEL_DEGREE,
+                  OperatorAttributeValue{
+                      degree.nonnegative_int_from_positive_int()}),
               set_attr_to_constant(OperatorAttributeKey::PARALLEL_DIM,
                                    OperatorAttributeValue{dim}),
           }};

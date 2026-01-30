@@ -380,8 +380,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       TensorShape input_tensor_shape = TensorShape{
           TensorDims{
               FFOrdered<positive_int>{
-                32_p,
-                64_p,
+                  32_p,
+                  64_p,
               },
           },
           DataType::FLOAT,
