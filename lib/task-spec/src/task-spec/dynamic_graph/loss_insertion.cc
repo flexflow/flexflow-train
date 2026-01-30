@@ -1,7 +1,7 @@
 #include "pcg/optimizer_attrs.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
-#include "task-spec/dynamic_graph/dynamic_tensor_role.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_tensor_guid_t.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_slot.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
@@ -24,7 +24,7 @@ std::tuple<DynamicOpenDataflowGraph, DynamicValueAttrs, DynamicValueAttrs>
       find_output_tensor(dg, logit_tensor, mk_dynamic_tensor_role_fwd()));
 
   DynamicValueAttrs label_value{
-      /*tensor_guid=*/std::nullopt,
+      /*tensor_guid=*/mk_dynamic_tensor_guid_loss(),
       /*parallel_tensor_shape=*/logit_value.parallel_tensor_shape,
       /*shard_coord=*/logit_value.shard_coord,
       /*accessor=*/std::nullopt,
