@@ -62,7 +62,7 @@ std::optional<OperatorAttributeValue> get_attribute(CombineAttrs const &p,
     case OperatorAttributeKey::PARALLEL_OP_DIM:
       return OperatorAttributeValue{p.combine_dim};
     case OperatorAttributeKey::PARALLEL_DIM:
-      return OperatorAttributeValue{p.combine_degree};
+      return OperatorAttributeValue{p.combine_degree.nonnegative_int_from_positive_int()};
     default:
       return std::nullopt;
   }
@@ -84,23 +84,23 @@ std::optional<OperatorAttributeValue> get_attribute(Conv2DAttrs const &p,
                                                     OperatorAttributeKey key) {
   switch (key) {
     case OperatorAttributeKey::OUT_CHANNELS:
-      return OperatorAttributeValue{p.out_channels};
+      return OperatorAttributeValue{p.out_channels.nonnegative_int_from_positive_int()};
     case OperatorAttributeKey::OP_TYPE:
       return OperatorAttributeValue{get_op_type(p)};
     case OperatorAttributeKey::KERNEL_H:
-      return OperatorAttributeValue{p.kernel_h};
+      return OperatorAttributeValue{p.kernel_h.nonnegative_int_from_positive_int()};
     case OperatorAttributeKey::KERNEL_W:
-      return OperatorAttributeValue{p.kernel_w};
+      return OperatorAttributeValue{p.kernel_w.nonnegative_int_from_positive_int()};
     case OperatorAttributeKey::STRIDE_H:
-      return OperatorAttributeValue{p.stride_h};
+      return OperatorAttributeValue{p.stride_h.nonnegative_int_from_positive_int()};
     case OperatorAttributeKey::STRIDE_W:
-      return OperatorAttributeValue{p.stride_w};
+      return OperatorAttributeValue{p.stride_w.nonnegative_int_from_positive_int()};
     case OperatorAttributeKey::PADDING_H:
       return OperatorAttributeValue{p.padding_h};
     case OperatorAttributeKey::PADDING_W:
       return OperatorAttributeValue{p.padding_w};
     case OperatorAttributeKey::GROUPS:
-      return OperatorAttributeValue{p.groups};
+      return OperatorAttributeValue{p.groups.nonnegative_int_from_positive_int()};
     case OperatorAttributeKey::ACTIVATION:
       return OperatorAttributeValue{p.activation};
     case OperatorAttributeKey::USE_BIAS:
@@ -158,9 +158,9 @@ std::optional<OperatorAttributeValue> get_attribute(EmbeddingAttrs const &p,
     case OperatorAttributeKey::AGGR:
       return OperatorAttributeValue{p.aggr};
     case OperatorAttributeKey::NUM_ENTRIES:
-      return OperatorAttributeValue{p.num_entries};
+      return OperatorAttributeValue{p.num_entries.nonnegative_int_from_positive_int()};
     case OperatorAttributeKey::OUT_CHANNELS:
-      return OperatorAttributeValue{p.out_channels};
+      return OperatorAttributeValue{p.out_channels.nonnegative_int_from_positive_int()};
     default:
       return std::nullopt;
   }
@@ -218,7 +218,7 @@ std::optional<OperatorAttributeValue> get_attribute(LinearAttrs const &p,
     case OperatorAttributeKey::OP_TYPE:
       return OperatorAttributeValue{get_op_type(p)};
     case OperatorAttributeKey::OUT_CHANNELS:
-      return OperatorAttributeValue{p.out_channels};
+      return OperatorAttributeValue{p.out_channels.nonnegative_int_from_positive_int()};
     case OperatorAttributeKey::USE_BIAS:
       return OperatorAttributeValue{p.use_bias};
     case OperatorAttributeKey::DATA_TYPE:
@@ -238,13 +238,13 @@ std::optional<OperatorAttributeValue>
     case OperatorAttributeKey::OP_TYPE:
       return OperatorAttributeValue{get_op_type(p)};
     case OperatorAttributeKey::EMBED_DIM:
-      return OperatorAttributeValue{p.embed_dim};
+      return OperatorAttributeValue{p.embed_dim.nonnegative_int_from_positive_int()};
     case OperatorAttributeKey::KDIM:
-      return OperatorAttributeValue{p.kdim};
+      return OperatorAttributeValue{p.kdim.nonnegative_int_from_positive_int()};
     case OperatorAttributeKey::VDIM:
-      return OperatorAttributeValue{p.vdim};
+      return OperatorAttributeValue{p.vdim.nonnegative_int_from_positive_int()};
     case OperatorAttributeKey::NUM_HEADS:
-      return OperatorAttributeValue{p.num_heads};
+      return OperatorAttributeValue{p.num_heads.nonnegative_int_from_positive_int()};
     case OperatorAttributeKey::BIAS:
       return OperatorAttributeValue{p.bias};
     case OperatorAttributeKey::ADD_BIAS_KV:
@@ -274,13 +274,13 @@ std::optional<OperatorAttributeValue> get_attribute(Pool2DAttrs const &p,
     case OperatorAttributeKey::OP_TYPE:
       return OperatorAttributeValue{get_op_type(p)};
     case OperatorAttributeKey::KERNEL_H:
-      return OperatorAttributeValue{p.kernel_h};
+      return OperatorAttributeValue{p.kernel_h.nonnegative_int_from_positive_int()};
     case OperatorAttributeKey::KERNEL_W:
-      return OperatorAttributeValue{p.kernel_w};
+      return OperatorAttributeValue{p.kernel_w.nonnegative_int_from_positive_int()};
     case OperatorAttributeKey::STRIDE_H:
-      return OperatorAttributeValue{p.stride_h};
+      return OperatorAttributeValue{p.stride_h.nonnegative_int_from_positive_int()};
     case OperatorAttributeKey::STRIDE_W:
-      return OperatorAttributeValue{p.stride_w};
+      return OperatorAttributeValue{p.stride_w.nonnegative_int_from_positive_int()};
     case OperatorAttributeKey::PADDING_H:
       return OperatorAttributeValue{p.padding_h};
     case OperatorAttributeKey::PADDING_W:
@@ -310,7 +310,7 @@ std::optional<OperatorAttributeValue> get_attribute(ReductionAttrs const &p,
     case OperatorAttributeKey::OP_TYPE:
       return OperatorAttributeValue{get_op_type(p)};
     case OperatorAttributeKey::PARALLEL_OP_DEGREE:
-      return OperatorAttributeValue{p.reduction_degree};
+      return OperatorAttributeValue{p.reduction_degree.nonnegative_int_from_positive_int()};
     default:
       return std::nullopt;
   }
@@ -324,7 +324,7 @@ std::optional<OperatorAttributeValue> get_attribute(RepartitionAttrs const &p,
     case OperatorAttributeKey::PARALLEL_OP_DIM:
       return OperatorAttributeValue{p.repartition_dim};
     case OperatorAttributeKey::PARALLEL_OP_DEGREE:
-      return OperatorAttributeValue{p.repartition_degree};
+      return OperatorAttributeValue{p.repartition_degree.nonnegative_int_from_positive_int()};
     default:
       return std::nullopt;
   }
@@ -336,7 +336,7 @@ std::optional<OperatorAttributeValue> get_attribute(ReplicateAttrs const &p,
     case OperatorAttributeKey::OP_TYPE:
       return OperatorAttributeValue{get_op_type(p)};
     case OperatorAttributeKey::PARALLEL_OP_DEGREE:
-      return OperatorAttributeValue{p.replicate_degree};
+      return OperatorAttributeValue{p.replicate_degree.nonnegative_int_from_positive_int()};
     default:
       return std::nullopt;
   }

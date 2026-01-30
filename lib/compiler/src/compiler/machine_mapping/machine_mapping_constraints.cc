@@ -1,5 +1,6 @@
 #include "compiler/machine_mapping/machine_mapping_constraints.h"
 #include "utils/containers/filter.h"
+#include "utils/containers/filter_values.h"
 #include "utils/containers/filtermap_keys.h"
 #include "utils/containers/flatmap.h"
 #include "utils/containers/generate_map.h"
@@ -20,19 +21,28 @@ MachineMappingConstraints get_unconstrained_solution_for_layers(
   };
 }
 
-std::unordered_set<BinaryTreePath>
-    get_all_layers(MachineMappingConstraints const &partial_solution,
-                   IncludeUnconstrained const &include_unconstrained) {
-  std::unordered_set<BinaryTreePath> with_unconstrained =
-      keys(partial_solution.machine_views);
+std::unordered_set<BinaryTreePath> 
+  get_unconstrained_layers(MachineMappingConstraints const &constraints) {
 
-  if (include_unconstrained.raw_bool) {
-    return with_unconstrained;
-  } else {
-    return filter(with_unconstrained, [&](BinaryTreePath const &l) {
-      return partial_solution.machine_views.at(l).has_value();
-    });
-  }
+  return keys(filter_values(constraints.machine_views,
+                            [](std::optional<MachineView> const &mv) {
+                              return !mv.has_value(); 
+                            }));
+}
+
+std::unordered_set<BinaryTreePath>
+  get_constrained_layers(MachineMappingConstraints const &constraints) {
+
+  return keys(filter_values(constraints.machine_views,
+                            [](std::optional<MachineView> const &mv) {
+                              return mv.has_value(); 
+                            }));
+}
+
+
+std::unordered_set<BinaryTreePath>
+    get_all_layers(MachineMappingConstraints const &partial_solution) {
+  return keys(partial_solution.machine_views);
 }
 
 std::optional<MachineView> get_machine_view_for_layer(
