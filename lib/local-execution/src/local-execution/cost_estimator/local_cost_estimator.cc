@@ -1,60 +1,75 @@
-#if 0 // FIXME (Elliott): fix cost estimator
-
 #include "local-execution/cost_estimator/local_cost_estimator.h"
 #include "compiler/machine_mapping/machine_view.dtg.h"
 #include "kernels/create_local_allocator_for_device_type.h"
 #include "kernels/device.h"
 #include "kernels/local_cpu_allocator.h"
 #include "kernels/local_cuda_allocator.h"
+#include "local-execution/computation_graph_instance/computation_graph_instance.h"
 #include "local-execution/cost_estimator/tracked_allocator.h"
 #include "op-attrs/computation_graph_op_attrs.h"
 #include "op-attrs/pcg_operator_attrs.h"
+#include "op-attrs/tensor_slot_name.dtg.h"
 #include "pcg/computation_graph.h"
 #include "pcg/computation_graph/layer_added_result.dtg.h"
+#include "pcg/device_id.h"
 #include "pcg/parallel_tensor_attrs.h"
 #include "utils/containers/concat_vectors.h"
-#include "utils/containers/get_only.h"
+#include "utils/containers/map_values.h"
 #include "utils/containers/maximum.h"
+#include "utils/containers/require_only_key.h"
 #include "utils/containers/sum.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/unordered_set_of.h"
 #include "utils/containers/values.h"
+#include "utils/exception.h"
+#include "utils/optional.h"
+#include <optional>
 
 namespace FlexFlow {
 
-LocalCostEstimator::LocalCostEstimator(RuntimeArgConfig const &config)
-    : runtime_arg_config(config) {}
+LocalCostEstimator::LocalCostEstimator(
+    MachineInterconnectSpecification const &interconnect_specification,
+    Allocator &allocator,
+    ProfilingSettings const &profiling_settings,
+    device_handle_t const &device_handle,
+    FFIterationConfig const &iteration_config,
+    device_id_t device_idx)
+    : interconnect_specification(interconnect_specification),
+      allocator(allocator), profiling_settings(profiling_settings),
+      device_handle(device_handle), iteration_config(iteration_config),
+      device_idx(device_idx) {}
 
 static ComputationGraph computation_graph_for_local_cost_estimation(
     ComputationGraphOpAttrs const &op,
-    std::vector<ParallelTensorShape> const &inputs,
-    std::vector<ParallelTensorShape> const &weights,
-    std::vector<ParallelTensorShape> const &outputs) {
+    std::unordered_map<TensorSlotName, ParallelTensorShape> const &inputs,
+    std::unordered_map<TensorSlotName, ParallelTensorShape> const &weights,
+    std::unordered_map<TensorSlotName, ParallelTensorShape> const &outputs) {
   ComputationGraph computation_graph = make_empty_computation_graph();
 
-  std::vector<tensor_guid_t> input_tensors;
-  for (ParallelTensorShape const &input : inputs) {
-    LayerAddedResult inputs_layer = add_layer(
-        computation_graph,
-        LayerAttrs{ComputationGraphOpAttrs{InputAttrs{get_piece_shape(input)}},
-                   std::nullopt},
-        {},
-        {});
-    input_tensors.push_back(get_only(inputs_layer.outputs));
-  }
+  std::unordered_map<TensorSlotName, tensor_guid_t> input_tensors =
+      map_values(inputs, [&](ParallelTensorShape const &shape) {
+        LayerAddedResult inputs_layer =
+            add_layer(computation_graph,
+                      LayerAttrs{ComputationGraphOpAttrs{
+                                     InputAttrs{get_piece_shape(shape)}},
+                                 std::nullopt},
+                      {},
+                      {});
+        return require_only_key(inputs_layer.outputs, TensorSlotName::OUTPUT);
+      });
 
-  std::vector<tensor_guid_t> weight_tensors;
-  for (ParallelTensorShape const &weight : weights) {
-    LayerAddedResult weights_layer =
-        add_layer(computation_graph,
-                  LayerAttrs{ComputationGraphOpAttrs{WeightAttrs{
-                                 get_piece_shape(weight),
-                                 InitializerAttrs{ZeroInitializerAttrs{}}}},
-                             std::nullopt},
-                  {},
-                  {});
-    weight_tensors.push_back(get_only(weights_layer.outputs));
-  }
+  std::unordered_map<TensorSlotName, tensor_guid_t> weight_tensors =
+      map_values(weights, [&](ParallelTensorShape const &shape) {
+        LayerAddedResult weights_layer =
+            add_layer(computation_graph,
+                      LayerAttrs{ComputationGraphOpAttrs{WeightAttrs{
+                                     get_piece_shape(shape),
+                                     InitializerAttrs{ZeroInitializerAttrs{}}}},
+                                 std::nullopt},
+                      {},
+                      {});
+        return require_only_key(weights_layer.outputs, TensorSlotName::OUTPUT);
+      });
 
   // create operator layer
   LayerAddedResult operator_layer = add_layer(computation_graph,
@@ -72,10 +87,13 @@ OpCostMetrics LocalCostEstimator::estimate_cost(
     OpCostEstimateKey const &op_cost_estimate_key) const {
 
   PCGOperatorAttrs op = op_cost_estimate_key.op_attrs;
-  std::vector<ParallelTensorShape> inputs = op_cost_estimate_key.input_shapes;
-  std::vector<ParallelTensorShape> weights = op_cost_estimate_key.weight_shapes;
-  std::vector<ParallelTensorShape> outputs = op_cost_estimate_key.output_shapes;
-  MachineView mv = op_cost_estimate_key.machine_view;
+  std::unordered_map<TensorSlotName, ParallelTensorShape> inputs =
+      op_cost_estimate_key.input_shapes;
+  std::unordered_map<TensorSlotName, ParallelTensorShape> weights =
+      op_cost_estimate_key.weight_shapes;
+  std::unordered_map<TensorSlotName, ParallelTensorShape> outputs =
+      op_cost_estimate_key.output_shapes;
+  OptimizerAttrs optimizer_attrs = op_cost_estimate_key.optimizer_attrs;
 
   if (is_parallel_op(op) || op.has<InputAttrs>() || op.has<NoopAttrs>() ||
       op.has<WeightAttrs>()) {
@@ -89,30 +107,50 @@ OpCostMetrics LocalCostEstimator::estimate_cost(
   // allocate memory
   std::shared_ptr<TrackedAllocator> tracked_allocator_ptr =
       std::make_shared<TrackedAllocator>(create_local_allocator_for_device_type(
-          runtime_arg_config.kernel_device_type));
+          get_device_type(this->device_idx)));
 
   layer_guid_t layer_guid = layer_guid_t{Node{0}};
 
   Allocator allocator = Allocator(tracked_allocator_ptr);
 
-  // execute layer
-  layer_guid_t operator_layer_guid =
-      get_layer_by_name(training_cg.computation_graph, "operator");
+  ComputationGraph cg = computation_graph_for_local_cost_estimation(
+      /*op=*/assert_unwrap(compgraph_op_attrs_from_pcg_op_attrs(op)),
+      /*inputs=*/inputs,
+      /*weights=*/weights,
+      /*outputs=*/outputs);
 
-  milliseconds_t fwd = execute_forward(local_backing.local_task_registry,
-                                       local_backing.local_tensor_backing,
-                                       local_backing.local_args_backing,
-                                       get_training_layer_plus_context(
-                                           training_cg, operator_layer_guid),
-                                       allocator)
-                           .value();
-  milliseconds_t bwd = execute_backward(local_backing.local_task_registry,
-                                        local_backing.local_tensor_backing,
-                                        local_backing.local_args_backing,
-                                        get_training_layer_plus_context(
-                                            training_cg, operator_layer_guid),
-                                        allocator)
-                           .value();
+  ComputationGraphInstance instance = create_computation_graph_instance(
+      /*compgraph=*/cg,
+      /*optimizer_attrs=*/optimizer_attrs,
+      /*loss_attrs=*/std::nullopt,
+      /*label_tensor=*/std::nullopt,
+      /*logit_tensor=*/std::nullopt,
+      /*input_tensors=*/{},
+      /*allocator=*/allocator,
+      /*profiling_settings=*/this->profiling_settings,
+      /*device_handle=*/this->device_handle,
+      /*iteration_config=*/this->iteration_config,
+      /*device_idx=*/this->device_idx);
+
+  // execute layer
+  dynamic_layer_guid_t operator_layer_guid{get_layer_by_name(cg, "operator")};
+
+  std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
+      fwd_timing = perform_forward_pass_for_computation_graph_instance(
+          instance,
+          this->profiling_settings,
+          this->device_handle,
+          this->iteration_config,
+          this->device_idx);
+  milliseconds_t fwd = fwd_timing.at(operator_layer_guid).value();
+  std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
+      bwd_timing = perform_backward_pass_for_computation_graph_instance(
+          instance,
+          this->profiling_settings,
+          this->device_handle,
+          this->iteration_config,
+          this->device_idx);
+  milliseconds_t bwd = bwd_timing.at(operator_layer_guid).value();
 
   return OpCostMetrics{
       /*forward_runtime=*/fwd,
@@ -123,7 +161,6 @@ OpCostMetrics LocalCostEstimator::estimate_cost(
 
 milliseconds_t LocalCostEstimator::estimate_cost(
     TensorSetMovement const &tensor_set_movement) const {
-
   auto estimate_single_comm_cost =
       [&](MachineSpaceCoordinate const &src,
           MachineSpaceCoordinate const &dst,
@@ -147,11 +184,19 @@ milliseconds_t LocalCostEstimator::estimate_cost(
                 }));
 }
 
-CostEstimator
-    get_local_cost_estimator(RuntimeArgConfig const &runtime_arg_config) {
-  return CostEstimator::create<LocalCostEstimator>(runtime_arg_config);
+CostEstimator get_local_cost_estimator(
+    MachineInterconnectSpecification const &interconnect_specification,
+    Allocator &allocator,
+    ProfilingSettings const &profiling_settings,
+    device_handle_t const &device_handle,
+    FFIterationConfig const &iteration_config,
+    device_id_t device_idx) {
+  return CostEstimator::create<LocalCostEstimator>(interconnect_specification,
+                                                   allocator,
+                                                   profiling_settings,
+                                                   device_handle,
+                                                   iteration_config,
+                                                   device_idx);
 }
 
 } // namespace FlexFlow
-
-#endif

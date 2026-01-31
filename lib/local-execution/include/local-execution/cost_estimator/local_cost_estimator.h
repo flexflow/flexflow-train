@@ -1,19 +1,23 @@
-#if 0 // FIXME (Elliott): fix cost estimator
-
 #ifndef _FLEXFLOW_LIB_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_COST_ESTIMATOR_LOCAL_COST_ESTIMATOR_H
 #define _FLEXFLOW_LIB_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_COST_ESTIMATOR_LOCAL_COST_ESTIMATOR_H
 
 #include "compiler/cost_estimator/cost_estimator.h"
+#include "kernels/allocation.h"
+#include "kernels/device_handle_t.dtg.h"
+#include "kernels/profiling_settings.dtg.h"
+#include "pcg/device_id_t.dtg.h"
 #include "pcg/machine_interconnect_specification.dtg.h"
-#include "pcg/optimizer_attrs.dtg.h"
-#include "task-spec/runtime_task_invocation/runtime_arg_config.dtg.h"
+#include "task-spec/ff_iteration_config.dtg.h"
 
 namespace FlexFlow {
 
 struct LocalCostEstimator : public ICostEstimator {
-  explicit LocalCostEstimator(RuntimeArgConfig const &,
-                              MachineInterconnectSpecification const &,
-                              DeviceType);
+  explicit LocalCostEstimator(MachineInterconnectSpecification const &,
+                              Allocator &allocator,
+                              ProfilingSettings const &profiling_settings,
+                              device_handle_t const &device_handle,
+                              FFIterationConfig const &iteration_config,
+                              device_id_t device_idx);
 
   LocalCostEstimator(LocalCostEstimator const &) = delete;
   LocalCostEstimator(LocalCostEstimator &&) = delete;
@@ -24,16 +28,22 @@ struct LocalCostEstimator : public ICostEstimator {
   milliseconds_t estimate_cost(TensorSetMovement const &) const override;
 
 private:
-  RuntimeArgConfig runtime_arg_config;
   MachineInterconnectSpecification interconnect_specification;
-  DeviceType device_type;
+  Allocator allocator;
+  ProfilingSettings profiling_settings;
+  device_handle_t device_handle;
+  FFIterationConfig iteration_config;
+  device_id_t device_idx;
 };
 CHECK_RC_COPY_VIRTUAL_COMPLIANT(LocalCostEstimator);
 
-CostEstimator get_local_cost_estimator(RuntimeArgConfig const &);
+CostEstimator get_local_cost_estimator(MachineInterconnectSpecification const &,
+                                       Allocator &,
+                                       ProfilingSettings const &,
+                                       device_handle_t const &,
+                                       FFIterationConfig const &,
+                                       device_id_t);
 
 } // namespace FlexFlow
-
-#endif
 
 #endif
