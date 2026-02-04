@@ -34,11 +34,6 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     TensorShape input_tensor_shape = TensorShape{
         TensorDims{FFOrdered{batch_size, data_dim}}, DataType::FLOAT};
 
-    TensorShape label_tensor_shape = TensorShape{
-        TensorDims{FFOrdered{batch_size, output_dim}}, DataType::FLOAT};
-    GenericTensorAccessorW label_tensor =
-        allocator.allocate_tensor(label_tensor_shape);
-
     TensorShape weight_shape = TensorShape{
         TensorDims{FFOrdered{data_dim, output_dim}}, DataType::FLOAT};
 
@@ -96,7 +91,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> input_tensors;
 
-    auto compute_loss = [&](LossAttrs const &loss_attrs) {
+    auto compute_loss = [&](LossAttrs const &loss_attrs,
+                            GenericTensorAccessorR label_tensor) {
       ComputationGraphInstance computation_graph_instance =
           create_computation_graph_instance(
               /*cg=*/computation_graph,
@@ -123,36 +119,40 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     SUBCASE("SparseCategoricalCrossEntropyLossAttrs") {
       TensorShape label_tensor_shape =
           TensorShape{TensorDims{FFOrdered{batch_size, 1_p}}, DataType::FLOAT};
+      GenericTensorAccessorW label_tensor =
+          allocator.allocate_tensor(label_tensor_shape);
 
       LossAttrs loss_attrs = LossAttrs{
           SparseCategoricalCrossEntropyLossAttrs{/*replace_labels=*/false}};
 
-      compute_loss(loss_attrs);
+      compute_loss(loss_attrs, label_tensor);
     }
 
     SUBCASE("NonconfigurableLossAttrs") {
       TensorShape label_tensor_shape = TensorShape{
           TensorDims{FFOrdered{batch_size, output_dim}}, DataType::FLOAT};
+      GenericTensorAccessorW label_tensor =
+          allocator.allocate_tensor(label_tensor_shape);
 
       SUBCASE("LossFunction::CATEGORICAL_CROSSENTROPY") {
         LossAttrs loss_attrs = LossAttrs{
             NonconfigurableLossAttrs{LossFunction::CATEGORICAL_CROSSENTROPY}};
 
-        compute_loss(loss_attrs);
+        compute_loss(loss_attrs, label_tensor);
       }
 
       SUBCASE("LossFunction::MEAN_SQUARED_ERROR_AVG_REDUCE") {
         LossAttrs loss_attrs = LossAttrs{NonconfigurableLossAttrs{
             LossFunction::MEAN_SQUARED_ERROR_AVG_REDUCE}};
 
-        compute_loss(loss_attrs);
+        compute_loss(loss_attrs, label_tensor);
       }
 
       SUBCASE("LossFunction::IDENTITY") {
         LossAttrs loss_attrs =
             LossAttrs{NonconfigurableLossAttrs{LossFunction::IDENTITY}};
 
-        compute_loss(loss_attrs);
+        compute_loss(loss_attrs, label_tensor);
       }
     }
   }
