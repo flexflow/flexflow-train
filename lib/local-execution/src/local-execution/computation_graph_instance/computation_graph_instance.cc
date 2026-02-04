@@ -1,6 +1,4 @@
 #include "local-execution/computation_graph_instance/computation_graph_instance.h"
-#include "kernels/accessor.h"
-#include "kernels/allocation.h"
 #include "local-execution/local_task_registry.h"
 #include "local-execution/task_execution.h"
 #include "local-execution/tensor_allocation.h"
