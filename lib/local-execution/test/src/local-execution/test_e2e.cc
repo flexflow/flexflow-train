@@ -1,6 +1,5 @@
 #include "kernels/compare_tensor_accessors.h"
 #include "kernels/copy_tensor_accessor.h"
-#include "kernels/device_handle_t.dtg.h"
 #include "kernels/device_handle_t.h"
 #include "kernels/format_accessor_contents.h"
 #include "kernels/local_cpu_allocator.h"
@@ -16,7 +15,6 @@
 #include "pcg/device_type.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
 #include "test/utils/doctest/check_kv.h"
-#include "utils/containers/get_only.h"
 #include "utils/containers/require_only_key.h"
 #include <doctest/doctest.h>
 
