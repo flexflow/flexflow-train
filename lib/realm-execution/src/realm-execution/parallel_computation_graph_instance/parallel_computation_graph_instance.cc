@@ -1,5 +1,6 @@
 #include "realm-execution/parallel_computation_graph_instance/parallel_computation_graph_instance.h"
 #include "pcg/optimizer_attrs.h"
+#include "utils/exception.h"
 
 namespace FlexFlow {
 
@@ -41,6 +42,22 @@ std::optional<LossAttrs> const &
 std::optional<GenericTensorAccessorR>
     ParallelComputationGraphInstance::get_loss_tensor_accessor() const {
   return this->logit_grad_tensor;
+}
+
+ParallelComputationGraphInstance create_parallel_computation_graph_instance(
+    ParallelComputationGraph const &pcg,
+    OptimizerAttrs const &optimizer_attrs,
+    std::optional<LossAttrs> const &loss_attrs,
+    std::optional<GenericTensorAccessorR> label_tensor,
+    std::optional<dynamic_tensor_guid_t> logit_tensor,
+    std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
+        &input_tensors,
+    Allocator &allocator,
+    ProfilingSettings const &profiling_settings,
+    device_handle_t const &device_handle,
+    FFIterationConfig const &iteration_config,
+    device_id_t device_idx) {
+  NOT_IMPLEMENTED();
 }
 
 } // namespace FlexFlow
