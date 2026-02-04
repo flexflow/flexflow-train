@@ -85,6 +85,13 @@ has-cpu-only-benchmarks = false
 has-cuda-tests = true
 has-cuda-benchmarks = false
 
+[targets.realm-execution]
+type = "lib"
+has-cpu-only-tests = true
+has-cpu-only-benchmarks = false
+has-cuda-tests = true
+has-cuda-benchmarks = false
+
 # [targets.local-pcg-execution]
 # type = "lib"
 # has-cpu-only-tests = true
