@@ -1,5 +1,12 @@
 #include "realm-execution/parallel_computation_graph_instance/parallel_computation_graph_instance.h"
+#include "local-execution/device_state_initialization.h"
+#include "local-execution/tensor_allocation.h"
 #include "pcg/optimizer_attrs.h"
+#include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
+#include "task-spec/dynamic_graph/loss_insertion.h"
+#include "task-spec/dynamic_graph/make_dynamic_open_dataflow_graph_from_pcg.h"
+#include "task-spec/dynamic_graph/pass_expansion.h"
+#include "task-spec/dynamic_graph/update_insertion.h"
 #include "utils/exception.h"
 
 namespace FlexFlow {
@@ -44,6 +51,15 @@ std::optional<GenericTensorAccessorR>
   return this->logit_grad_tensor;
 }
 
+static GenericTensorAccessorW
+    get_loss_tensor_accessor(DynamicOpenDataflowGraph const &dg,
+                             DynamicValueAttrs const &value) {
+  return find_output_tensor(dg, value.tensor_guid, value.role)
+      .value()
+      .second.accessor.value()
+      .get<GenericTensorAccessorW>();
+}
+
 ParallelComputationGraphInstance create_parallel_computation_graph_instance(
     ParallelComputationGraph const &pcg,
     OptimizerAttrs const &optimizer_attrs,
@@ -57,6 +73,36 @@ ParallelComputationGraphInstance create_parallel_computation_graph_instance(
     device_handle_t const &device_handle,
     FFIterationConfig const &iteration_config,
     device_id_t device_idx) {
+
+  DynamicOpenDataflowGraph dg = make_dynamic_open_dataflow_graph_from_pcg(pcg);
+  dg = perform_pass_expansion(dg);
+
+  std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> inputs =
+      input_tensors;
+  std::optional<DynamicValueAttrs> logit_grad_value;
+  if (loss_attrs) {
+    auto [dg2, label_v, logit_grad_v] = perform_loss_insertion(
+        dg, assert_unwrap(loss_attrs), assert_unwrap(logit_tensor));
+    dg = dg2;
+    logit_grad_value = logit_grad_v;
+    inputs.insert(std::pair{label_v, assert_unwrap(label_tensor)});
+  }
+
+  dg = perform_update_insertion(dg, optimizer_attrs);
+  dg = perform_tensor_allocation(dg, inputs, allocator);
+
+  std::optional<GenericTensorAccessorW> logit_grad_tensor =
+      transform(logit_grad_value, [&](DynamicValueAttrs const &lgv) {
+        return get_loss_tensor_accessor(dg, lgv);
+      });
+
+  dg = perform_device_state_initialization(dg,
+                                           allocator,
+                                           profiling_settings,
+                                           device_handle,
+                                           iteration_config,
+                                           optimizer_attrs,
+                                           device_idx);
   NOT_IMPLEMENTED();
 }
 
