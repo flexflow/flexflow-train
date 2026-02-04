@@ -99,18 +99,13 @@ ComputationGraphInstance create_computation_graph_instance(
         return get_loss_tensor_accessor(dg, lgv);
       });
 
-  // Initialize all operators and save the per-device op state
-  ASSERT(no_nodes_are_initialized(dg));
-  dg = transform_dynamic_invocation_set(
-      dg, [&](DynamicNodeInvocation const &invocation) {
-        return initialize_node(invocation,
-                               allocator,
-                               profiling_settings,
-                               device_handle,
-                               iteration_config,
-                               optimizer_attrs,
-                               device_idx);
-      });
+  dg = perform_device_state_initialization(dg,
+                                           allocator,
+                                           profiling_settings,
+                                           device_handle,
+                                           iteration_config,
+                                           optimizer_attrs,
+                                           device_idx);
 
   // Compute the topological ordering of the graph
   auto [kwarg_graph, node_map] =
