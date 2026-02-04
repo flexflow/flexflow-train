@@ -55,6 +55,9 @@ std::unordered_set<parallel_layer_guid_t>
     get_initial_layers(ParallelComputationGraph const &);
 
 std::unordered_map<TensorSlotName, parallel_tensor_guid_t>
+    get_outgoing_tensors(ParallelComputationGraph const &,
+                         parallel_layer_guid_t const &);
+std::unordered_map<TensorSlotName, parallel_tensor_guid_t>
     get_incoming_tensors(ParallelComputationGraph const &,
                          parallel_layer_guid_t const &);
 std::unordered_map<TensorSlotName, parallel_tensor_guid_t>
@@ -106,6 +109,9 @@ ParallelTensorShape get_parallel_tensor_shape(ParallelComputationGraph const &,
 
 std::vector<parallel_layer_guid_t>
     topological_ordering(ParallelComputationGraph const &);
+
+std::unordered_map<parallel_layer_guid_t, ParallelLayerAttrs>
+    get_parallel_layer_attrs_mapping(ParallelComputationGraph const &pcg);
 
 parallel_layer_guid_t
     get_parallel_layer_by_name(ParallelComputationGraph const &pcg,
