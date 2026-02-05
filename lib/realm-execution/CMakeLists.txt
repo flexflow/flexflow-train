@@ -8,14 +8,15 @@ ff_add_library(
   PRIVATE_INCLUDE
     src/
   DEPS
-    op-attrs
-    utils
-    kernels
-    task-spec
-    pcg
-    spdlog
     compiler
+    kernels
     local-execution
+    op-attrs
+    pcg
+    realm
+    spdlog
+    task-spec
+    utils
 )
 
 add_subdirectory(test)
