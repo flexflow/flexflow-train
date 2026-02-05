@@ -13,7 +13,6 @@ public:
   RealmManager(RealmManager const &) = delete;
   RealmManager(RealmManager &&) = delete;
 
-  Realm::Runtime get_runtime();
   void shutdown();
   int wait_for_shutdown();
 
