@@ -9,6 +9,7 @@
 #include "pcg/device_id_t.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.dtg.h"
+#include "realm-execution/realm_manager.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_accessor.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
@@ -20,8 +21,8 @@ namespace FlexFlow {
 
 struct ParallelComputationGraphInstance {
 public:
-  ParallelComputationGraphInstance(DynamicOpenDataflowGraph,
-                                   Allocator &,
+  ParallelComputationGraphInstance(RealmManager &,
+                                   DynamicOpenDataflowGraph,
                                    std::vector<DynamicNodeInvocation> const &,
                                    OptimizerAttrs const &,
                                    std::optional<LossAttrs> const &,
@@ -35,8 +36,8 @@ public:
   std::optional<GenericTensorAccessorR> get_loss_tensor_accessor() const;
 
 private:
+  RealmManager &realm;
   DynamicOpenDataflowGraph dataflow_graph;
-  Allocator &allocator;
   std::vector<DynamicNodeInvocation> topological_ordering;
   OptimizerAttrs optimizer_attrs;
   std::optional<LossAttrs> loss_attrs;
@@ -44,6 +45,7 @@ private:
 };
 
 ParallelComputationGraphInstance create_parallel_computation_graph_instance(
+    RealmManager &realm,
     ParallelComputationGraph const &pcg,
     OptimizerAttrs const &optimizer_attrs,
     std::optional<LossAttrs> const &loss_attrs,
@@ -51,11 +53,8 @@ ParallelComputationGraphInstance create_parallel_computation_graph_instance(
     std::optional<dynamic_tensor_guid_t> logit_tensor,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &input_tensors,
-    Allocator &allocator,
     ProfilingSettings const &profiling_settings,
-    device_handle_t const &device_handle,
-    FFIterationConfig const &iteration_config,
-    device_id_t device_idx);
+    FFIterationConfig const &iteration_config);
 
 } // namespace FlexFlow
 
