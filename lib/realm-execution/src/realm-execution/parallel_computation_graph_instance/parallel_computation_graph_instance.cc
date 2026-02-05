@@ -12,13 +12,13 @@
 namespace FlexFlow {
 
 ParallelComputationGraphInstance::ParallelComputationGraphInstance(
+    RealmManager &realm,
     DynamicOpenDataflowGraph dataflow_graph,
-    Allocator &allocator,
     std::vector<DynamicNodeInvocation> const &topological_ordering,
     OptimizerAttrs const &optimizer_attrs,
     std::optional<LossAttrs> const &loss_attrs,
     std::optional<GenericTensorAccessorW> logit_grad_tensor)
-    : dataflow_graph(dataflow_graph), allocator(allocator),
+    : realm(realm), dataflow_graph(dataflow_graph),
       topological_ordering(topological_ordering),
       optimizer_attrs(optimizer_attrs), loss_attrs(loss_attrs),
       logit_grad_tensor(logit_grad_tensor) {}
@@ -28,7 +28,7 @@ DynamicOpenDataflowGraph const &
   return this->dataflow_graph;
 }
 Allocator &ParallelComputationGraphInstance::get_allocator() const {
-  return this->allocator;
+  return this->realm.get_current_device_allocator();
 }
 std::vector<DynamicNodeInvocation> const &
     ParallelComputationGraphInstance::get_topological_ordering() const {
@@ -61,6 +61,7 @@ static GenericTensorAccessorW
 }
 
 ParallelComputationGraphInstance create_parallel_computation_graph_instance(
+    RealmManager &realm,
     ParallelComputationGraph const &pcg,
     OptimizerAttrs const &optimizer_attrs,
     std::optional<LossAttrs> const &loss_attrs,
@@ -68,11 +69,8 @@ ParallelComputationGraphInstance create_parallel_computation_graph_instance(
     std::optional<dynamic_tensor_guid_t> logit_tensor,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &input_tensors,
-    Allocator &allocator,
     ProfilingSettings const &profiling_settings,
-    device_handle_t const &device_handle,
-    FFIterationConfig const &iteration_config,
-    device_id_t device_idx) {
+    FFIterationConfig const &iteration_config) {
 
   DynamicOpenDataflowGraph dg = make_dynamic_open_dataflow_graph_from_pcg(pcg);
   dg = perform_pass_expansion(dg);
@@ -89,7 +87,8 @@ ParallelComputationGraphInstance create_parallel_computation_graph_instance(
   }
 
   dg = perform_update_insertion(dg, optimizer_attrs);
-  dg = perform_tensor_allocation(dg, inputs, allocator);
+  dg = perform_tensor_allocation(
+      dg, inputs, realm.get_current_device_allocator());
 
   std::optional<GenericTensorAccessorW> logit_grad_tensor =
       transform(logit_grad_value, [&](DynamicValueAttrs const &lgv) {
@@ -97,12 +96,12 @@ ParallelComputationGraphInstance create_parallel_computation_graph_instance(
       });
 
   dg = perform_device_state_initialization(dg,
-                                           allocator,
+                                           realm.get_current_device_allocator(),
                                            profiling_settings,
-                                           device_handle,
+                                           realm.get_current_device_handle(),
                                            iteration_config,
                                            optimizer_attrs,
-                                           device_idx);
+                                           realm.get_current_device_idx());
   NOT_IMPLEMENTED();
 }
 
