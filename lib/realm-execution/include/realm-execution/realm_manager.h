@@ -4,7 +4,7 @@
 #include "kernels/allocation.h"
 #include "kernels/device_handle_t.dtg.h"
 #include "pcg/device_id_t.dtg.h"
-#include "realm.h"
+#include "realm-execution/realm.h"
 
 namespace FlexFlow {
 
