@@ -17,7 +17,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     // Launch a controller
     int some_data = 123;
-    Realm::Event event = manager.start_controller(
+    FlexFlow::Realm::Event event = manager.start_controller(
         [&](RealmManager &manager) { ASSERT(some_data == 123); });
     // Need to block on the completion of the event to ensure we don't race
     event.wait();
