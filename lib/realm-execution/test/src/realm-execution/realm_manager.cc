@@ -15,8 +15,11 @@ TEST_SUITE(FF_TEST_SUITE) {
     // Initialize Realm
     RealmManager manager(&fake_argc, &fake_argv);
 
-    // Launch a controller and wait on it
-    Realm::Event event = manager.start_controller([](RealmManager &manager) {});
+    // Launch a controller
+    int some_data = 123;
+    Realm::Event event = manager.start_controller(
+        [&](RealmManager &manager) { ASSERT(some_data == 123); });
+    // Need to block on the completion of the event to ensure we don't race
     event.wait();
   }
 }

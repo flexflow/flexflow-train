@@ -25,7 +25,8 @@ RealmManager::~RealmManager() {
   }
 }
 
-Realm::Event RealmManager::start_controller(void (*thunk)(RealmManager &)) {
+Realm::Event
+    RealmManager::start_controller(std::function<void(RealmManager &)> thunk) {
   constexpr int CONTROLLER_TASK_ID = Realm::Processor::TASK_ID_FIRST_AVAILABLE;
   Realm::Event task_ready = Realm::Processor::register_task_by_kind(
       Realm::Processor::LOC_PROC,
@@ -69,9 +70,9 @@ void RealmManager::controller_task_wrapper(void const *args,
                                            void const *userdata,
                                            size_t userlen,
                                            Realm::Processor proc) {
-  assert(arglen == sizeof(void (*)(RealmManager &)));
-  void (*thunk)(RealmManager &) =
-      *reinterpret_cast<void (*const *)(RealmManager &)>(args);
+  ASSERT(arglen == sizeof(std::function<void(RealmManager &)>));
+  std::function<void(RealmManager &)> thunk =
+      *reinterpret_cast<std::function<void(RealmManager &)> const *>(args);
 
   RealmManager manager(args, arglen, userdata, userlen, proc);
   thunk(manager);

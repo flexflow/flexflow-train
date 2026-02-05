@@ -11,6 +11,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     int fake_argc = fake_args.size();
     char **fake_argv = fake_args.data();
     RealmManager manager(&fake_argc, &fake_argv);
-    manager.start_controller([](RealmManager &manager) {});
+    Realm::Event event = manager.start_controller([](RealmManager &manager) {});
+    event.wait();
   }
 }
