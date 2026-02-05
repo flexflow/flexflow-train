@@ -8,10 +8,6 @@ RealmManager::RealmManager(int *argc, char ***argv) {
   ASSERT(ok);
 }
 
-Realm::Runtime RealmManager::get_runtime() {
-  return this->runtime;
-}
-
 void RealmManager::shutdown() {
   this->runtime.shutdown(this->last_event);
 }
@@ -19,4 +15,5 @@ void RealmManager::shutdown() {
 int RealmManager::wait_for_shutdown() {
   return this->runtime.wait_for_shutdown();
 }
+
 } // namespace FlexFlow
