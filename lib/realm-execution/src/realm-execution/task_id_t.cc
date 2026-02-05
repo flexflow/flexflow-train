@@ -2,7 +2,6 @@
 #include "pcg/optimizer_attrs.dtg.h"
 #include "pcg/optimizers/adam_optimizer_attrs.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_node_attrs.dtg.h"
-#include "task-spec/dynamic_graph/dynamic_task_type.dtg.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {
