@@ -1,7 +1,5 @@
 #include "utils/graph/series_parallel/sp_ization/spanish_algo.h"
 #include "utils/containers/filter_keys.h"
-#include "utils/containers/filtrans.h"
-#include "utils/containers/generate_map.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/group_by.h"
 #include "utils/containers/intersection.h"
@@ -9,6 +7,7 @@
 #include "utils/containers/maximum.h"
 #include "utils/containers/range.h"
 #include "utils/containers/set_union.h"
+#include "utils/containers/transform.h"
 #include "utils/containers/values.h"
 #include "utils/containers/vector_of.h"
 #include "utils/fmt/unordered_multiset.h"
@@ -20,9 +19,7 @@
 #include "utils/graph/digraph/algorithms/get_longest_path_lengths_from_root.h"
 #include "utils/graph/digraph/algorithms/get_lowest_common_ancestors.h"
 #include "utils/graph/digraph/algorithms/get_outgoing_edges.h"
-#include "utils/graph/digraph/algorithms/get_predecessors.h"
 #include "utils/graph/digraph/algorithms/get_successors.h"
-#include "utils/graph/digraph/algorithms/get_terminal_nodes.h"
 #include "utils/graph/digraph/algorithms/get_weakly_connected_components.h"
 #include "utils/graph/digraph/algorithms/is_2_terminal_dag.h"
 #include "utils/graph/digraph/algorithms/is_acyclic.h"
@@ -38,26 +35,20 @@
 #include "utils/graph/series_parallel/sp_ization/node_role.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
 
-#include <iostream>
 #include <unordered_map>
 #include <unordered_set>
 
 namespace FlexFlow {
 
-std::unordered_map<Node, NodeRole> get_initial_node_role_map(DiGraph g) {
-  return generate_map(get_nodes(g),
-                      [&](Node const &n) { return NodeRole::PURE; });
-}
-
-std::unordered_set<Node>
+static std::unordered_set<Node>
     filter_sync_nodes(std::unordered_set<Node> const &nodes,
                       std::unordered_map<Node, NodeRole> const &node_roles) {
   return filter(
       nodes, [&](Node const &n) { return node_roles.at(n) != NodeRole::SYNC; });
 }
 
-int get_max_depth(DiGraph const &sp,
-                  std::unordered_map<Node, int> const &depth_map) {
+static int get_max_depth(DiGraph const &sp,
+                         std::unordered_map<Node, int> const &depth_map) {
   return maximum(values(filter_keys(
       depth_map, [&](Node const &n) { return contains(get_nodes(sp), n); })));
 }
@@ -123,7 +114,7 @@ std::unordered_set<Node>
   return component_without_sync_nodes;
 }
 
-std::unordered_set<Node>
+static std::unordered_set<Node>
     get_forest_spanish(DiGraph const &g,
                        Node const &handle,
                        std::unordered_set<Node> const &component,
@@ -142,7 +133,7 @@ std::unordered_set<Node>
   return filter_sync_nodes(forest, node_roles);
 }
 
-std::pair<std::unordered_set<Node>, std::unordered_set<Node>>
+static std::pair<std::unordered_set<Node>, std::unordered_set<Node>>
     get_up_and_down(DiGraph const &g,
                     std::unordered_set<Node> const &forest,
                     std::unordered_map<Node, int> const &depth_map) {
@@ -154,7 +145,7 @@ std::pair<std::unordered_set<Node>, std::unordered_set<Node>>
           grouped_by_depth.at_l(max_depth)};
 }
 
-std::unordered_set<DirectedEdge>
+static std::unordered_set<DirectedEdge>
     edges_to_remove(DiGraph const &g,
                     std::unordered_set<Node> const &up,
                     std::unordered_set<Node> const &down) {
@@ -170,21 +161,17 @@ std::unordered_set<DirectedEdge>
   return to_remove;
 }
 
-std::unordered_set<DirectedEdge>
+static std::unordered_set<DirectedEdge>
     edges_to_add_spanish(std::unordered_set<Node> const &up,
                          std::unordered_set<Node> const &down,
                          Node const &sync_node) {
-  std::unordered_set<DirectedEdge> to_add;
-
-  for (Node const &u : up) {
-    to_add.insert(DirectedEdge{u, sync_node});
-  }
-
-  for (Node const &d : down) {
-    to_add.insert(DirectedEdge{sync_node, d});
-  }
-
-  return to_add;
+  return set_union(transform(up,
+                             [&](Node const &u) {
+                               return DirectedEdge{u, sync_node};
+                             }),
+                   transform(down, [&](Node const &d) {
+                     return DirectedEdge{sync_node, d};
+                   }));
 }
 
 SeriesParallelDecomposition spanish_strata_sync(DiGraph g) {
