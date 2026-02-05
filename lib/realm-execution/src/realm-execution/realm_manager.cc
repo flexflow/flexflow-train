@@ -71,7 +71,7 @@ void RealmManager::controller_task_wrapper(void const *args,
                                            Realm::Processor proc) {
   assert(arglen == sizeof(void (*)(RealmManager &)));
   void (*thunk)(RealmManager &) =
-      *reinterpret_cast<void (**)(RealmManager &)>(const_cast<void *>(args));
+      *reinterpret_cast<void (*const *)(RealmManager &)>(args);
 
   RealmManager manager(args, arglen, userdata, userlen, proc);
   thunk(manager);
