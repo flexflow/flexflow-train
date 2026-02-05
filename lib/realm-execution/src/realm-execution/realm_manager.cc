@@ -1,4 +1,6 @@
 #include "realm-execution/realm_manager.h"
+#include "realm-execution/realm_task_id_t.h"
+#include "realm-execution/task_id_t.dtg.h"
 #include "utils/exception.h"
 
 namespace FlexFlow {
@@ -27,7 +29,8 @@ RealmManager::~RealmManager() {
 
 Realm::Event
     RealmManager::start_controller(std::function<void(RealmManager &)> thunk) {
-  constexpr int CONTROLLER_TASK_ID = Realm::Processor::TASK_ID_FIRST_AVAILABLE;
+  Realm::Processor::TaskFuncID CONTROLLER_TASK_ID =
+      get_realm_task_id_for_task_id(task_id_t::CONTROLLER_TASK_ID);
   Realm::Event task_ready = Realm::Processor::register_task_by_kind(
       Realm::Processor::LOC_PROC,
       /*global=*/false,
