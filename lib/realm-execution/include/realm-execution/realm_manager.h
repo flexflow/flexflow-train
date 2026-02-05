@@ -11,22 +11,31 @@ namespace FlexFlow {
 struct RealmManager {
 public:
   RealmManager(int *argc, char ***argv);
+  ~RealmManager();
 
   RealmManager() = delete;
   RealmManager(RealmManager const &) = delete;
   RealmManager(RealmManager &&) = delete;
 
-  void shutdown();
-  int wait_for_shutdown();
+  Realm::Event start_controller(void (*thunk)(RealmManager &));
 
+  // Current device context
   Allocator &get_current_device_allocator() const;
-
   device_handle_t const &get_current_device_handle() const;
   device_id_t const &get_current_device_idx() const;
 
 private:
+  RealmManager(void const *, size_t, void const *, size_t, Realm::Processor);
+
+  [[nodiscard]] Realm::Event merge_outstanding_events();
+
+  static void controller_task_wrapper(
+      void const *, size_t, void const *, size_t, Realm::Processor);
+
+private:
   Realm::Runtime runtime;
-  Realm::Event last_event = Realm::Event::NO_EVENT;
+  std::vector<Realm::Event> outstanding_events;
+  bool is_root_runtime;
 };
 
 } // namespace FlexFlow
