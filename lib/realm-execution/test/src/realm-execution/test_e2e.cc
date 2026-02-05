@@ -12,5 +12,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     char **fake_argv = fake_args.data();
     RealmManager manager(&fake_argc, &fake_argv);
     manager.shutdown();
+    int result = manager.wait_for_shutdown();
+    ASSERT(result == 0);
   }
 }
