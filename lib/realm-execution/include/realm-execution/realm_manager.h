@@ -17,7 +17,8 @@ public:
   RealmManager(RealmManager const &) = delete;
   RealmManager(RealmManager &&) = delete;
 
-  Realm::Event start_controller(void (*thunk)(RealmManager &));
+  [[nodiscard]] Realm::Event
+      start_controller(std::function<void(RealmManager &)>);
 
   // Current device context
   Allocator &get_current_device_allocator() const;
