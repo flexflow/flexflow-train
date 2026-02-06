@@ -16,6 +16,11 @@ public:
   RealmContext(RealmContext const &) = delete;
   RealmContext(RealmContext &&) = delete;
 
+  // Device mapping
+  Realm::Processor
+      map_device_coord_to_processor(MachineSpaceCoordinate const &);
+  Realm::Memory get_nearest_memory(Realm::Processor) const;
+
   // Current device context
   Allocator &get_current_device_allocator() const;
   device_handle_t const &get_current_device_handle() const;
