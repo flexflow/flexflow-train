@@ -45,7 +45,6 @@ DynamicOpenDataflowGraph
                       /*parallel_tensor_shape=*/lift_to_parallel(attrs.shape),
                       /*shard_coord=*/std::nullopt,
                       /*accessor=*/std::nullopt,
-                      /*instance=*/std::nullopt,
                       /*role=*/std::nullopt,
                   },
               };
@@ -65,7 +64,6 @@ DynamicOpenDataflowGraph
                       /*parallel_tensor_shape=*/lift_to_parallel(attrs.shape),
                       /*shard_coord=*/std::nullopt,
                       /*accessor=*/std::nullopt,
-                      /*instance=*/std::nullopt,
                       /*role=*/std::nullopt,
                   },
               };

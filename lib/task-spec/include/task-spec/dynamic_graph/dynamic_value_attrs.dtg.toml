@@ -14,8 +14,6 @@ includes = [
   "op-attrs/parallel_tensor_space_coordinate.dtg.h",
   "task-spec/dynamic_graph/dynamic_tensor_accessor.dtg.h",
   "task-spec/dynamic_graph/dynamic_tensor_role.dtg.h",
-  "task-spec/realm/fmt/instance.h",
-  "task-spec/realm/realm.h",
 ]
 
 src_includes = [
@@ -37,10 +35,6 @@ type = "std::optional<::FlexFlow::ParallelTensorSpaceCoordinate>"
 [[fields]]
 name = "accessor"
 type = "std::optional<::FlexFlow::DynamicTensorAccessor>"
-
-[[fields]]
-name = "instance"
-type = "std::optional<::FlexFlow::Realm::RegionInstance>"
 
 [[fields]]
 name = "role"

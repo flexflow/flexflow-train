@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_FMT_PAIR_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_FMT_PAIR_H
 
-#include "task-spec/realm/realm.h"
+#include "realm-execution/realm.h"
 #include "utils/check_fmtable.h"
 #include <fmt/format.h>
 #include <utility>
@@ -15,8 +15,8 @@ struct formatter<::FlexFlow::Realm::RegionInstance,
                      ::FlexFlow::Realm::RegionInstance>::value>>
     : formatter<::std::string> {
   template <typename FormatContext>
-  auto format(::FlexFlow::Realm::RegionInstance const &m,
-              FormatContext &ctx) const -> decltype(ctx.out()) {
+  auto format(::FlexFlow::Realm::RegionInstance const &m, FormatContext &ctx)
+      -> decltype(ctx.out()) {
     std::string result = fmt::format("<RegionInstance {}>", m.id);
 
     return formatter<std::string>::format(result, ctx);

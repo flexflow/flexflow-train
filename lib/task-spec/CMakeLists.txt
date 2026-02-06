@@ -14,7 +14,6 @@ ff_add_library(
     pcg
     spdlog
     compiler
-    Realm::Realm
 )
 
 add_subdirectory(test)
