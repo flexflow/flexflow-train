@@ -12,7 +12,7 @@
 namespace FlexFlow {
 
 ParallelComputationGraphInstance::ParallelComputationGraphInstance(
-    RealmManager &realm,
+    RealmContext &realm,
     DynamicOpenDataflowGraph dataflow_graph,
     std::vector<DynamicNodeInvocation> const &topological_ordering,
     OptimizerAttrs const &optimizer_attrs,
@@ -61,7 +61,7 @@ static GenericTensorAccessorW
 }
 
 ParallelComputationGraphInstance create_parallel_computation_graph_instance(
-    RealmManager &realm,
+    RealmContext &realm,
     ParallelComputationGraph const &pcg,
     OptimizerAttrs const &optimizer_attrs,
     std::optional<LossAttrs> const &loss_attrs,

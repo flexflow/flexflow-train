@@ -9,7 +9,7 @@
 #include "pcg/device_id_t.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.dtg.h"
-#include "realm-execution/realm_manager.h"
+#include "realm-execution/realm_context.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_accessor.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
@@ -21,7 +21,7 @@ namespace FlexFlow {
 
 struct ParallelComputationGraphInstance {
 public:
-  ParallelComputationGraphInstance(RealmManager &,
+  ParallelComputationGraphInstance(RealmContext &,
                                    DynamicOpenDataflowGraph,
                                    std::vector<DynamicNodeInvocation> const &,
                                    OptimizerAttrs const &,
@@ -36,7 +36,7 @@ public:
   std::optional<GenericTensorAccessorR> get_loss_tensor_accessor() const;
 
 private:
-  RealmManager &realm;
+  RealmContext &realm;
   DynamicOpenDataflowGraph dataflow_graph;
   std::vector<DynamicNodeInvocation> topological_ordering;
   OptimizerAttrs optimizer_attrs;
@@ -45,7 +45,7 @@ private:
 };
 
 ParallelComputationGraphInstance create_parallel_computation_graph_instance(
-    RealmManager &realm,
+    RealmContext &realm,
     ParallelComputationGraph const &pcg,
     OptimizerAttrs const &optimizer_attrs,
     std::optional<LossAttrs> const &loss_attrs,

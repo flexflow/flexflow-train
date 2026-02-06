@@ -5,37 +5,39 @@
 
 namespace FlexFlow {
 
-RealmManager::RealmManager(int *argc, char ***argv) : is_root_runtime(true) {
+RealmManager::RealmManager(int *argc, char ***argv) {
   bool ok = this->runtime.init(argc, argv);
   ASSERT(ok);
 }
 
-RealmManager::RealmManager(void const *args,
-                           size_t arglen,
-                           void const *userdata,
-                           size_t userdatalen,
-                           Realm::Processor proc)
-    : runtime(Realm::Runtime::get_runtime()), is_root_runtime(false) {}
-
 RealmManager::~RealmManager() {
   Realm::Event outstanding = this->merge_outstanding_events();
-  if (is_root_runtime) {
     this->runtime.shutdown(outstanding);
     this->runtime.wait_for_shutdown();
-  } else {
-    outstanding.wait();
-  }
+}
+
+static void controller_task_wrapper(void const *args,
+                                           size_t arglen,
+                                           void const *userdata,
+                                           size_t userlen,
+                                           Realm::Processor proc) {
+  ASSERT(arglen == sizeof(std::function<void(RealmContext &)>));
+  std::function<void(RealmContext &)> thunk =
+      *reinterpret_cast<std::function<void(RealmContext &)> const *>(args);
+
+  RealmContext ctx;
+  thunk(ctx);
 }
 
 Realm::Event
-    RealmManager::start_controller(std::function<void(RealmManager &)> thunk) {
+    RealmManager::start_controller(std::function<void(RealmContext &)> thunk) {
   Realm::Processor::TaskFuncID CONTROLLER_TASK_ID =
       get_realm_task_id_for_task_id(task_id_t::CONTROLLER_TASK_ID);
   Realm::Event task_ready = Realm::Processor::register_task_by_kind(
       Realm::Processor::LOC_PROC,
       /*global=*/false,
       CONTROLLER_TASK_ID,
-      Realm::CodeDescriptor(RealmManager::controller_task_wrapper),
+      Realm::CodeDescriptor(controller_task_wrapper),
       Realm::ProfilingRequestSet(),
       &thunk,
       sizeof(thunk));
@@ -49,36 +51,6 @@ Realm::Event
       target_proc, CONTROLLER_TASK_ID, &thunk, sizeof(thunk), task_ready);
   this->outstanding_events.push_back(task_complete);
   return task_complete;
-}
-
-Allocator &RealmManager::get_current_device_allocator() const {
-  NOT_IMPLEMENTED();
-}
-
-device_handle_t const &RealmManager::get_current_device_handle() const {
-  NOT_IMPLEMENTED();
-}
-device_id_t const &RealmManager::get_current_device_idx() const {
-  NOT_IMPLEMENTED();
-}
-
-Realm::Event RealmManager::merge_outstanding_events() {
-  Realm::Event result = Realm::Event::merge_events(this->outstanding_events);
-  this->outstanding_events.clear();
-  return result;
-}
-
-void RealmManager::controller_task_wrapper(void const *args,
-                                           size_t arglen,
-                                           void const *userdata,
-                                           size_t userlen,
-                                           Realm::Processor proc) {
-  ASSERT(arglen == sizeof(std::function<void(RealmManager &)>));
-  std::function<void(RealmManager &)> thunk =
-      *reinterpret_cast<std::function<void(RealmManager &)> const *>(args);
-
-  RealmManager manager(args, arglen, userdata, userlen, proc);
-  thunk(manager);
 }
 
 } // namespace FlexFlow
