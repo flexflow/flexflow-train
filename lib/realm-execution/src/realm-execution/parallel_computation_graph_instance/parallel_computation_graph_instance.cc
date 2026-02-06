@@ -53,14 +53,6 @@ std::optional<GenericTensorAccessorR>
   return this->logit_grad_tensor;
 }
 
-static Realm::RegionInstance
-    get_loss_tensor_instance(DynamicOpenDataflowGraph const &dg,
-                             DynamicValueAttrs const &value) {
-  return find_output_tensor(dg, value.tensor_guid, value.role)
-      .value()
-      .second.instance.value();
-}
-
 ParallelComputationGraphInstance create_parallel_computation_graph_instance(
     RealmContext &ctx,
     MappedParallelComputationGraph const &mpcg,
@@ -90,16 +82,11 @@ ParallelComputationGraphInstance create_parallel_computation_graph_instance(
 
   dg = perform_update_insertion(dg, optimizer_attrs);
   dg = perform_shard_expansion(dg);
-  Realm::Event instances_ready;
-  {
-    auto [dg2, ready] = perform_instance_allocation(dg, inputs, ctx);
-    dg = dg2;
-    instances_ready = ready;
-  }
+  TensorInstanceBacking backing = perform_instance_allocation(dg, inputs, ctx);
 
   std::optional<Realm::RegionInstance> logit_grad_tensor =
       transform(logit_grad_value, [&](DynamicValueAttrs const &lgv) {
-        return get_loss_tensor_instance(dg, lgv);
+        return backing.backing.at(lgv).first;
       });
 
   dg = perform_device_state_initialization(dg,

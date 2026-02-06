@@ -22,7 +22,7 @@ Realm::Processor RealmContext::map_device_coord_to_processor(
   NOT_IMPLEMENTED();
 }
 
-Realm::Memory get_nearest_memory(Realm::Processor proc) const {
+Realm::Memory RealmContext::get_nearest_memory(Realm::Processor proc) const {
   NOT_IMPLEMENTED();
 }
 
