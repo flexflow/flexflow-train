@@ -81,4 +81,19 @@ std::unordered_set<DynamicNodeInvocation>
       });
 }
 
+DynamicOpenDataflowGraph
+    perform_shard_expansion(DynamicOpenDataflowGraph const &g) {
+
+  ASSERT(no_part_of_graph_is_shard_expanded(g));
+
+  DynamicOpenDataflowGraph result =
+      flatmap_dynamic_invocation_set(g, [&](DynamicNodeInvocation const &i) {
+        return perform_shard_expansion_for_invocation(i);
+      });
+
+  ASSERT(graph_is_fully_shard_expanded(result));
+
+  return result;
+}
+
 } // namespace FlexFlow
