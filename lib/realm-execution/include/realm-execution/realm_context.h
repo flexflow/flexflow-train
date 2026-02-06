@@ -21,9 +21,19 @@ public:
   device_handle_t const &get_current_device_handle() const;
   device_id_t const &get_current_device_idx() const;
 
+  // Instance management
+  std::pair<Realm::RegionInstance, Realm::Event>
+      create_instance(Realm::Memory memory,
+                      TensorShape const &shape,
+                      Realm::ProfilingRequestSet const &prs,
+                      Realm::Event wait_on = Realm::Event::NO_EVENT);
+
+  // Get the current set of outstanding events
   Realm::Event get_outstanding_events();
 
 protected:
+  // Compact AND CLEAR the outstanding event queue
+  // Important: USER MUST BLOCK on event or else use it, or it WILL BE LOST
   [[nodiscard]] Realm::Event merge_outstanding_events();
 
 protected:

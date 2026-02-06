@@ -1,11 +1,13 @@
 #include "realm-execution/instance_allocation.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "op-attrs/tensor_shape.dtg.h"
 #include "realm-execution/realm_context.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_accessor.dtg.h"
 #include "utils/bidict/generate_bidict.h"
 #include "utils/containers/all_are_true.h"
 #include "utils/containers/contains_key.h"
+#include "utils/containers/make.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/unordered_set_of.h"
 #include "utils/exception.h"
@@ -40,19 +42,19 @@ DynamicValueAttrs
   ASSERT(value.accessor == std::nullopt);
   ASSERT(value.instance == std::nullopt);
 
-  TensorShape shape =
-      get_piece_shape(assert_unwrap(value.parallel_tensor_shape));
+  TensorShape shape = get_piece_shape(value.parallel_tensor_shape.value());
 
-  NOT_IMPLEMENTED();
-  // GenericTensorAccessorW accessor = allocator.allocate_tensor(shape);
+  Realm::Memory memory = Realm::Memory::NO_MEMORY; // FIXME
+  auto [instance, ready] =
+      ctx.create_instance(memory, shape, Realm::ProfilingRequestSet());
 
   DynamicValueAttrs result = value;
-  // result.accessor = DynamicTensorAccessor{accessor};
+  result.instance = instance;
 
   return result;
 }
 
-DynamicOpenDataflowGraph perform_instance_allocation(
+std::pair<DynamicOpenDataflowGraph, Realm::Event> perform_instance_allocation(
     DynamicOpenDataflowGraph const &g,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &preallocated,
@@ -98,7 +100,7 @@ DynamicOpenDataflowGraph perform_instance_allocation(
 
   ASSERT(all_instances_are_allocated(result));
 
-  return result;
+  return std::pair{result, ctx.get_outstanding_events()};
 }
 
 } // namespace FlexFlow

@@ -15,7 +15,7 @@ DynamicValueAttrs
     perform_instance_allocation_for_value(DynamicValueAttrs const &,
                                           Allocator &);
 
-DynamicOpenDataflowGraph perform_instance_allocation(
+std::pair<DynamicOpenDataflowGraph, Realm::Event> perform_instance_allocation(
     DynamicOpenDataflowGraph const &,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &preallocated,
