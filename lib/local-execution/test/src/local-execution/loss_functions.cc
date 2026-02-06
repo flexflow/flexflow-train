@@ -99,7 +99,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
               /*optimizer=*/optimizer_attrs,
               /*loss=*/loss_attrs,
               /*label_tensor=*/label_tensor,
-              /*logit_tensor=*/dynamic_tensor_guid_t{logit_tensor},
+              /*logit_tensor=*/logit_tensor,
               /*input_tensors=*/input_tensors,
               /*allocator=*/allocator,
               /*profiling_settings=*/ProfilingSettings{0, 1},

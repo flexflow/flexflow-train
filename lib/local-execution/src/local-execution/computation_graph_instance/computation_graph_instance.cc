@@ -5,6 +5,7 @@
 #include "pcg/optimizer_attrs.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
+#include "task-spec/dynamic_graph/dynamic_tensor_guid_t.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
 #include "task-spec/dynamic_graph/loss_insertion.h"
 #include "task-spec/dynamic_graph/make_dynamic_open_dataflow_graph_from_cg.h"
@@ -16,7 +17,6 @@
 #include "utils/containers/unordered_map_from_pairs.h"
 #include "utils/exception.h"
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"
-#include "utils/optional.h"
 #include <optional>
 #include <unordered_map>
 
@@ -69,7 +69,7 @@ ComputationGraphInstance create_computation_graph_instance(
     OptimizerAttrs const &optimizer_attrs,
     std::optional<LossAttrs> const &loss_attrs,
     std::optional<GenericTensorAccessorR> label_tensor,
-    std::optional<dynamic_tensor_guid_t> logit_tensor,
+    std::optional<tensor_guid_t> logit_tensor,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &input_tensors,
     Allocator &allocator,
@@ -85,10 +85,10 @@ ComputationGraphInstance create_computation_graph_instance(
   std::optional<DynamicValueAttrs> logit_grad_value;
   if (loss_attrs) {
     auto [dg2, label_v, logit_grad_v] = perform_loss_insertion(
-        dg, assert_unwrap(loss_attrs), assert_unwrap(logit_tensor));
+        dg, loss_attrs.value(), dynamic_tensor_guid_t{logit_tensor.value()});
     dg = dg2;
     logit_grad_value = logit_grad_v;
-    inputs.insert(std::pair{label_v, assert_unwrap(label_tensor)});
+    inputs.insert(std::pair{label_v, label_tensor.value()});
   }
 
   dg = perform_update_insertion(dg, optimizer_attrs);
@@ -186,7 +186,7 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
       filter(instance.get_execution_order(),
              [](DynamicNodeInvocation const &invocation) {
                DynamicTaskType task_type =
-                   assert_unwrap(invocation.node_attrs.task_type);
+                   invocation.node_attrs.task_type.value();
                return task_type == DynamicTaskType::FWD;
              });
 
@@ -212,7 +212,7 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
       filter(instance.get_execution_order(),
              [](DynamicNodeInvocation const &invocation) {
                DynamicTaskType task_type =
-                   assert_unwrap(invocation.node_attrs.task_type);
+                   invocation.node_attrs.task_type.value();
                return task_type == DynamicTaskType::BWD;
              });
 
@@ -237,7 +237,7 @@ void perform_update_pass_for_computation_graph_instance(
       filter(instance.get_execution_order(),
              [](DynamicNodeInvocation const &invocation) {
                DynamicTaskType task_type =
-                   assert_unwrap(invocation.node_attrs.task_type);
+                   invocation.node_attrs.task_type.value();
                return task_type == DynamicTaskType::UPD;
              });
 
