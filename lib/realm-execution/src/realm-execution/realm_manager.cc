@@ -12,15 +12,15 @@ RealmManager::RealmManager(int *argc, char ***argv) {
 
 RealmManager::~RealmManager() {
   Realm::Event outstanding = this->merge_outstanding_events();
-    this->runtime.shutdown(outstanding);
-    this->runtime.wait_for_shutdown();
+  this->runtime.shutdown(outstanding);
+  this->runtime.wait_for_shutdown();
 }
 
 static void controller_task_wrapper(void const *args,
-                                           size_t arglen,
-                                           void const *userdata,
-                                           size_t userlen,
-                                           Realm::Processor proc) {
+                                    size_t arglen,
+                                    void const *userdata,
+                                    size_t userlen,
+                                    Realm::Processor proc) {
   ASSERT(arglen == sizeof(std::function<void(RealmContext &)>));
   std::function<void(RealmContext &)> thunk =
       *reinterpret_cast<std::function<void(RealmContext &)> const *>(args);

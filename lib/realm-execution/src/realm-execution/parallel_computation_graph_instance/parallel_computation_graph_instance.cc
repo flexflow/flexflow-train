@@ -4,7 +4,7 @@
 #include "pcg/optimizer_attrs.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/loss_insertion.h"
-#include "task-spec/dynamic_graph/make_dynamic_open_dataflow_graph_from_pcg.h"
+#include "task-spec/dynamic_graph/make_dynamic_open_dataflow_graph_from_mpcg.h"
 #include "task-spec/dynamic_graph/pass_expansion.h"
 #include "task-spec/dynamic_graph/update_insertion.h"
 #include "utils/exception.h"
@@ -62,7 +62,7 @@ static GenericTensorAccessorW
 
 ParallelComputationGraphInstance create_parallel_computation_graph_instance(
     RealmContext &realm,
-    ParallelComputationGraph const &pcg,
+    MappedParallelComputationGraph const &mpcg,
     OptimizerAttrs const &optimizer_attrs,
     std::optional<LossAttrs> const &loss_attrs,
     std::optional<GenericTensorAccessorR> label_tensor,
@@ -72,7 +72,8 @@ ParallelComputationGraphInstance create_parallel_computation_graph_instance(
     ProfilingSettings const &profiling_settings,
     FFIterationConfig const &iteration_config) {
 
-  DynamicOpenDataflowGraph dg = make_dynamic_open_dataflow_graph_from_pcg(pcg);
+  DynamicOpenDataflowGraph dg =
+      make_dynamic_open_dataflow_graph_from_mpcg(mpcg);
   dg = perform_pass_expansion(dg);
 
   std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> inputs =
