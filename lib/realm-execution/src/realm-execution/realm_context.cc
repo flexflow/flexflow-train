@@ -17,6 +17,15 @@ RealmContext::~RealmContext() {
   }
 }
 
+Realm::Processor RealmContext::map_device_coord_to_processor(
+    MachineSpaceCoordinate const &device_coord) {
+  NOT_IMPLEMENTED();
+}
+
+Realm::Memory get_nearest_memory(Realm::Processor proc) const {
+  NOT_IMPLEMENTED();
+}
+
 Allocator &RealmContext::get_current_device_allocator() const {
   NOT_IMPLEMENTED();
 }

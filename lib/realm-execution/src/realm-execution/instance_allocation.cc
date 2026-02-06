@@ -2,8 +2,10 @@
 #include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/tensor_shape.dtg.h"
 #include "realm-execution/realm_context.h"
+#include "task-spec/dynamic_graph/dynamic_node_attrs.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_accessor.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
 #include "utils/bidict/generate_bidict.h"
 #include "utils/containers/all_are_true.h"
 #include "utils/containers/contains_key.h"
@@ -37,14 +39,17 @@ bool instances_are_ready_for_allocation(DynamicOpenDataflowGraph const &g) {
 }
 
 DynamicValueAttrs
-    perform_instance_allocation_for_value(DynamicValueAttrs const &value,
+    perform_instance_allocation_for_value(DynamicNodeAttrs const &node,
+                                          DynamicValueAttrs const &value,
                                           RealmContext &ctx) {
   ASSERT(value.accessor == std::nullopt);
   ASSERT(value.instance == std::nullopt);
 
   TensorShape shape = get_piece_shape(value.parallel_tensor_shape.value());
 
-  Realm::Memory memory = Realm::Memory::NO_MEMORY; // FIXME
+  MachineSpaceCoordinate device_coord = assert_unwrap(node.device_coord);
+  Realm::Processor proc = ctx.map_device_coord_to_processor(device_coord);
+  Realm::Memory memory = ctx.get_nearest_memory(proc);
   auto [instance, ready] =
       ctx.create_instance(memory, shape, Realm::ProfilingRequestSet());
 
@@ -66,20 +71,20 @@ std::pair<DynamicOpenDataflowGraph, Realm::Event> perform_instance_allocation(
     ASSERT(v.instance == std::nullopt);
   }
 
-  std::unordered_set<DynamicValueAttrs> all_values =
-      unordered_set_of(get_dynamic_values(g));
-
-  bidict<DynamicValueAttrs, DynamicValueAttrs> unallocated_to_allocated =
-      generate_bidict(all_values,
-                      [&](DynamicValueAttrs const &v) -> DynamicValueAttrs {
-                        if (contains_key(preallocated, v)) {
-                          // FIXME: Attach external instance to existing
-                          // allocation and use that
-                          NOT_IMPLEMENTED();
-                        } else {
-                          return perform_instance_allocation_for_value(v, ctx);
-                        }
-                      });
+  bidict<DynamicValueAttrs, DynamicValueAttrs> unallocated_to_allocated;
+  auto allocate = [&](DynamicNodeAttrs const &n, DynamicValueAttrs const &v) {
+    if (contains_key(preallocated, v)) {
+      // FIXME: Attach external instance to existing allocation and use that
+      NOT_IMPLEMENTED();
+    } else {
+      if (contains_key(unallocated_to_allocated, v)) {
+        return unallocated_to_allocated.at_l(v);
+      } else {
+        DynamicValueAttrs v2 = perform_instance_allocation_for_value(n, v, ctx);
+        uallocated_to_allocated.equate(v, v2);
+      }
+    }
+  };
 
   DynamicOpenDataflowGraph result = transform_dynamic_invocation_set(
       g, [&](DynamicNodeInvocation const &i) -> DynamicNodeInvocation {
@@ -87,13 +92,13 @@ std::pair<DynamicOpenDataflowGraph, Realm::Event> perform_instance_allocation(
             /*inputs=*/map_values(
                 i.inputs,
                 [&](DynamicValueAttrs const &v) -> DynamicValueAttrs {
-                  return unallocated_to_allocated.at_l(v);
+                  return allocate(i.node_attrs, v);
                 }),
             /*node_attrs=*/i.node_attrs,
             /*outputs=*/
             map_values(i.outputs,
                        [&](DynamicValueAttrs const &v) -> DynamicValueAttrs {
-                         return unallocated_to_allocated.at_l(v);
+                         return allocate(i.node_attrs, v);
                        }),
         };
       });
