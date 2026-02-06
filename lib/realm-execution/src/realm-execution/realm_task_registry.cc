@@ -9,13 +9,13 @@ static void operation_task_wrapper(
   NOT_IMPLEMENTED();
 }
 
-static Realm::Event register_task(Realm::Processor::Kind target_kind,
-                                  task_id_t func_id,
-                                  void (*task_body)(void const *,
-                                                    size_t,
-                                                    void const *,
-                                                    size_t,
-                                                    Realm::Processor)) {
+Realm::Event register_task(Realm::Processor::Kind target_kind,
+                           task_id_t func_id,
+                           void (*task_body)(void const *,
+                                             size_t,
+                                             void const *,
+                                             size_t,
+                                             Realm::Processor)) {
   return Realm::Processor::register_task_by_kind(
       target_kind,
       /*global=*/false,
