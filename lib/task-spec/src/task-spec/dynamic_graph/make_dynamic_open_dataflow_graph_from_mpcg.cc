@@ -44,6 +44,7 @@ DynamicOpenDataflowGraph make_dynamic_open_dataflow_graph_from_mpcg(
                             /*parallel_tensor_shape=*/attrs.shape,
                             /*shard_coord=*/std::nullopt,
                             /*accessor=*/std::nullopt,
+                            /*instance=*/std::nullopt,
                             /*role=*/std::nullopt,
                         },
                     };
@@ -64,6 +65,7 @@ DynamicOpenDataflowGraph make_dynamic_open_dataflow_graph_from_mpcg(
                             /*parallel_tensor_shape=*/attrs.shape,
                             /*shard_coord=*/std::nullopt,
                             /*accessor=*/std::nullopt,
+                            /*instance=*/std::nullopt,
                             /*role=*/std::nullopt,
                         },
                     };
