@@ -23,6 +23,7 @@ LossInsertionResult perform_loss_insertion(DynamicOpenDataflowGraph const &dg,
       /*parallel_tensor_shape=*/logit_value.parallel_tensor_shape,
       /*shard_coord=*/logit_value.shard_coord,
       /*accessor=*/std::nullopt,
+      /*instance=*/std::nullopt,
       /*role=*/mk_dynamic_tensor_role_loss(),
   };
   DynamicValueAttrs logit_grad_value{
@@ -30,6 +31,7 @@ LossInsertionResult perform_loss_insertion(DynamicOpenDataflowGraph const &dg,
       /*parallel_tensor_shape=*/logit_value.parallel_tensor_shape,
       /*shard_coord=*/logit_value.shard_coord,
       /*accessor=*/std::nullopt,
+      /*instance=*/std::nullopt,
       /*role=*/mk_dynamic_tensor_role_bwd(),
   };
   DynamicNodeInvocation loss_invocation{

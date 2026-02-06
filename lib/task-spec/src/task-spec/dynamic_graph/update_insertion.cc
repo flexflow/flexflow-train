@@ -51,6 +51,7 @@ static DynamicNodeInvocation get_update_invocation_for_invocation(
   DynamicValueAttrs value_attrs = output.second;
 
   ASSERT(value_attrs.accessor == std::nullopt);
+  ASSERT(value_attrs.instance == std::nullopt);
 
   DynamicNodeAttrs update_node_attrs = i.node_attrs;
   update_node_attrs.task_type = DynamicTaskType::UPD;
