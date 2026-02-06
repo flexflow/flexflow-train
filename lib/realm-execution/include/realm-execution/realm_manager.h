@@ -5,38 +5,21 @@
 #include "kernels/device_handle_t.dtg.h"
 #include "pcg/device_id_t.dtg.h"
 #include "realm-execution/realm.h"
+#include "realm-execution/realm_context.h"
 
 namespace FlexFlow {
 
-struct RealmManager {
+struct RealmManager : private RealmContext {
 public:
   RealmManager(int *argc, char ***argv);
-  ~RealmManager();
+  virtual ~RealmManager();
 
   RealmManager() = delete;
   RealmManager(RealmManager const &) = delete;
   RealmManager(RealmManager &&) = delete;
 
   [[nodiscard]] Realm::Event
-      start_controller(std::function<void(RealmManager &)>);
-
-  // Current device context
-  Allocator &get_current_device_allocator() const;
-  device_handle_t const &get_current_device_handle() const;
-  device_id_t const &get_current_device_idx() const;
-
-private:
-  RealmManager(void const *, size_t, void const *, size_t, Realm::Processor);
-
-  [[nodiscard]] Realm::Event merge_outstanding_events();
-
-  static void controller_task_wrapper(
-      void const *, size_t, void const *, size_t, Realm::Processor);
-
-private:
-  Realm::Runtime runtime;
-  std::vector<Realm::Event> outstanding_events;
-  bool is_root_runtime;
+      start_controller(std::function<void(RealmContext &)>);
 };
 
 } // namespace FlexFlow
