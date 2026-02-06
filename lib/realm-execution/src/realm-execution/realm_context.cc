@@ -25,6 +25,12 @@ device_id_t const &RealmContext::get_current_device_idx() const {
   NOT_IMPLEMENTED();
 }
 
+Realm::Event RealmContext::get_outstanding_events() {
+  Realm::Event result = this->merge_outstanding_events();
+  this->outstanding_events.push_back(result);
+  return result;
+}
+
 Realm::Event RealmContext::merge_outstanding_events() {
   Realm::Event result = Realm::Event::merge_events(this->outstanding_events);
   this->outstanding_events.clear();

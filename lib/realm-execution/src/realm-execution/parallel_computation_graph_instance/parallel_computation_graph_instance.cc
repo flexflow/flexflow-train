@@ -1,7 +1,7 @@
 #include "realm-execution/parallel_computation_graph_instance/parallel_computation_graph_instance.h"
 #include "local-execution/device_state_initialization.h"
-#include "local-execution/tensor_allocation.h"
 #include "pcg/optimizer_attrs.h"
+#include "realm-execution/instance_allocation.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_guid_t.dtg.h"
 #include "task-spec/dynamic_graph/loss_insertion.h"
@@ -63,7 +63,7 @@ static GenericTensorAccessorW
 }
 
 ParallelComputationGraphInstance create_parallel_computation_graph_instance(
-    RealmContext &realm,
+    RealmContext &ctx,
     MappedParallelComputationGraph const &mpcg,
     OptimizerAttrs const &optimizer_attrs,
     std::optional<LossAttrs> const &loss_attrs,
@@ -91,8 +91,7 @@ ParallelComputationGraphInstance create_parallel_computation_graph_instance(
 
   dg = perform_update_insertion(dg, optimizer_attrs);
   dg = perform_shard_expansion(dg);
-  dg = perform_tensor_allocation(
-      dg, inputs, realm.get_current_device_allocator());
+  dg = perform_instance_allocation(dg, inputs, ctx);
 
   std::optional<GenericTensorAccessorW> logit_grad_tensor =
       transform(logit_grad_value, [&](DynamicValueAttrs const &lgv) {
@@ -100,12 +99,12 @@ ParallelComputationGraphInstance create_parallel_computation_graph_instance(
       });
 
   dg = perform_device_state_initialization(dg,
-                                           realm.get_current_device_allocator(),
+                                           ctx.get_current_device_allocator(),
                                            profiling_settings,
-                                           realm.get_current_device_handle(),
+                                           ctx.get_current_device_handle(),
                                            iteration_config,
                                            optimizer_attrs,
-                                           realm.get_current_device_idx());
+                                           ctx.get_current_device_idx());
   NOT_IMPLEMENTED();
 }
 

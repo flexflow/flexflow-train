@@ -21,6 +21,8 @@ public:
   device_handle_t const &get_current_device_handle() const;
   device_id_t const &get_current_device_idx() const;
 
+  Realm::Event get_outstanding_events();
+
 protected:
   [[nodiscard]] Realm::Event merge_outstanding_events();
 
