@@ -27,7 +27,7 @@ struct TaskArgumentAccessor {
   OptimizerAttrs get_optimizer_attrs() const;
 
   TensorShape get_tensor_shape(TensorSlotName slot) const {
-    NOT_IMPLEMENTED();
+    return this->ptr->get_tensor_shape(slot);
   }
 
   template <Permissions PRIV>
