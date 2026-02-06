@@ -27,27 +27,21 @@
 namespace FlexFlow {
 
 ComputationGraphInstance::ComputationGraphInstance(
-    DynamicOpenDataflowGraph dataflow_graph,
     Allocator &allocator,
-    std::vector<DynamicNodeInvocation> const &topological_ordering,
+    std::vector<DynamicNodeInvocation> const &execution_order,
     OptimizerAttrs const &optimizer_attrs,
     std::optional<LossAttrs> const &loss_attrs,
     std::optional<GenericTensorAccessorW> logit_grad_tensor)
-    : dataflow_graph(dataflow_graph), allocator(allocator),
-      topological_ordering(topological_ordering),
+    : allocator(allocator), execution_order(execution_order),
       optimizer_attrs(optimizer_attrs), loss_attrs(loss_attrs),
       logit_grad_tensor(logit_grad_tensor) {}
 
-DynamicOpenDataflowGraph const &
-    ComputationGraphInstance::get_dynamic_dataflow_graph() const {
-  return this->dataflow_graph;
-}
 Allocator &ComputationGraphInstance::get_allocator() const {
   return this->allocator;
 }
 std::vector<DynamicNodeInvocation> const &
-    ComputationGraphInstance::get_topological_ordering() const {
-  return this->topological_ordering;
+    ComputationGraphInstance::get_execution_order() const {
+  return this->execution_order;
 }
 OptimizerAttrs const &ComputationGraphInstance::get_optimizer_attrs() const {
   return this->optimizer_attrs;
@@ -195,8 +189,7 @@ ComputationGraphInstance create_computation_graph_instance(
   std::vector<DynamicNodeInvocation> invocation_topo_order = transform(
       node_topo_order, [&](Node node) { return node_map.at_l(node); });
 
-  return ComputationGraphInstance{dg,
-                                  allocator,
+  return ComputationGraphInstance{allocator,
                                   invocation_topo_order,
                                   optimizer_attrs,
                                   loss_attrs,
@@ -241,11 +234,11 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
         device_handle_t const &ff_handle,
         FFIterationConfig iteration_config,
         device_id_t device_idx) {
-  std::vector<DynamicNodeInvocation> const &topo_order =
-      instance.get_topological_ordering();
+  std::vector<DynamicNodeInvocation> const &execution_order =
+      instance.get_execution_order();
   std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
       result = execute_dynamic_node_invocation_set(
-          /*invocations=*/topo_order,
+          /*invocations=*/execution_order,
           /*allocator=*/instance.get_allocator(),
           /*optimizer_attrs=*/instance.get_optimizer_attrs(),
           /*profiling_settings=*/profiling_settings,
@@ -264,8 +257,8 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
         device_handle_t const &ff_handle,
         FFIterationConfig iteration_config,
         device_id_t device_idx) {
-  std::vector<DynamicNodeInvocation> const &topo_order =
-      filter(instance.get_topological_ordering(),
+  std::vector<DynamicNodeInvocation> const &execution_order =
+      filter(instance.get_execution_order(),
              [](DynamicNodeInvocation const &invocation) {
                DynamicTaskType task_type =
                    assert_unwrap(invocation.node_attrs.task_type);
@@ -273,7 +266,7 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
              });
 
   return execute_dynamic_node_invocation_set(
-      /*invocations=*/topo_order,
+      /*invocations=*/execution_order,
       /*allocator=*/instance.get_allocator(),
       /*optimizer_attrs=*/instance.get_optimizer_attrs(),
       /*profiling_settings=*/profiling_settings,
@@ -290,8 +283,8 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
         device_handle_t const &ff_handle,
         FFIterationConfig iteration_config,
         device_id_t device_idx) {
-  std::vector<DynamicNodeInvocation> const &topo_order =
-      filter(instance.get_topological_ordering(),
+  std::vector<DynamicNodeInvocation> const &execution_order =
+      filter(instance.get_execution_order(),
              [](DynamicNodeInvocation const &invocation) {
                DynamicTaskType task_type =
                    assert_unwrap(invocation.node_attrs.task_type);
@@ -299,7 +292,7 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
              });
 
   return execute_dynamic_node_invocation_set(
-      /*invocations=*/topo_order,
+      /*invocations=*/execution_order,
       /*allocator=*/instance.get_allocator(),
       /*optimizer_attrs=*/instance.get_optimizer_attrs(),
       /*profiling_settings=*/profiling_settings,
@@ -315,8 +308,8 @@ void perform_update_pass_for_computation_graph_instance(
     device_handle_t const &ff_handle,
     FFIterationConfig iteration_config,
     device_id_t device_idx) {
-  std::vector<DynamicNodeInvocation> const &topo_order =
-      filter(instance.get_topological_ordering(),
+  std::vector<DynamicNodeInvocation> const &execution_order =
+      filter(instance.get_execution_order(),
              [](DynamicNodeInvocation const &invocation) {
                DynamicTaskType task_type =
                    assert_unwrap(invocation.node_attrs.task_type);
@@ -324,7 +317,7 @@ void perform_update_pass_for_computation_graph_instance(
              });
 
   execute_dynamic_node_invocation_set(
-      /*invocations=*/topo_order,
+      /*invocations=*/execution_order,
       /*allocator=*/instance.get_allocator(),
       /*optimizer_attrs=*/instance.get_optimizer_attrs(),
       /*profiling_settings=*/profiling_settings,
