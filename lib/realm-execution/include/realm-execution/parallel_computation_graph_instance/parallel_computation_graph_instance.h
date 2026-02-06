@@ -7,8 +7,8 @@
 #include "kernels/profiling_settings.dtg.h"
 #include "op-attrs/ops/loss_functions/loss_attrs.dtg.h"
 #include "pcg/device_id_t.dtg.h"
+#include "pcg/mapped_parallel_computation_graph/mapped_parallel_computation_graph.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
-#include "pcg/parallel_computation_graph/parallel_computation_graph.dtg.h"
 #include "realm-execution/realm_context.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_accessor.dtg.h"
@@ -46,7 +46,7 @@ private:
 
 ParallelComputationGraphInstance create_parallel_computation_graph_instance(
     RealmContext &realm,
-    ParallelComputationGraph const &pcg,
+    MappedParallelComputationGraph const &mpcg,
     OptimizerAttrs const &optimizer_attrs,
     std::optional<LossAttrs> const &loss_attrs,
     std::optional<GenericTensorAccessorR> label_tensor,
