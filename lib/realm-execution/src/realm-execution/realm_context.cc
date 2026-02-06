@@ -38,15 +38,15 @@ std::pair<Realm::RegionInstance, Realm::Event>
       static_cast<size_t>(int{size_of_datatype(shape.data_type)})};
   Realm::RegionInstance inst;
   Realm::Event ready;
-  switch (shape.dims.ff_ordered.num_dims()) {
+  switch (dims.size()) {
 #if REALM_MAX_DIM >= 1
     case 1:
       ready = Realm::RegionInstance::create_instance(
           inst,
           memory,
-          Realm::Rect<1>(Realm::Point<1>::ZEROES(),
-                         Realm::Point<1>(dims.data()) -
-                             Realm::Point<1>::ONES()),
+          Realm::Rect<1>{Realm::Point<1>::ZEROES(),
+                         Realm::Point<1>{dims.data()} -
+                             Realm::Point<1>::ONES()},
           field_sizes,
           /*block_size=*/0 /*SOA*/,
           prs,
@@ -58,9 +58,9 @@ std::pair<Realm::RegionInstance, Realm::Event>
       ready = Realm::RegionInstance::create_instance(
           inst,
           memory,
-          Realm::Rect<2>(Realm::Point<2>::ZEROES(),
-                         Realm::Point<2>(dims.data()) -
-                             Realm::Point<2>::ONES()),
+          Realm::Rect<2>{Realm::Point<2>::ZEROES(),
+                         Realm::Point<2>{dims.data()} -
+                             Realm::Point<2>::ONES()},
           field_sizes,
           /*block_size=*/0 /*SOA*/,
           prs,
@@ -72,9 +72,9 @@ std::pair<Realm::RegionInstance, Realm::Event>
       ready = Realm::RegionInstance::create_instance(
           inst,
           memory,
-          Realm::Rect<3>(Realm::Point<3>::ZEROES(),
-                         Realm::Point<3>(dims.data()) -
-                             Realm::Point<3>::ONES()),
+          Realm::Rect<3>{Realm::Point<3>::ZEROES(),
+                         Realm::Point<3>{dims.data()} -
+                             Realm::Point<3>::ONES()},
           field_sizes,
           /*block_size=*/0 /*SOA*/,
           prs,
@@ -86,9 +86,9 @@ std::pair<Realm::RegionInstance, Realm::Event>
       ready = Realm::RegionInstance::create_instance(
           inst,
           memory,
-          Realm::Rect<4>(Realm::Point<4>::ZEROES(),
-                         Realm::Point<4>(dims.data()) -
-                             Realm::Point<4>::ONES()),
+          Realm::Rect<4>{Realm::Point<4>::ZEROES(),
+                         Realm::Point<4>{dims.data()} -
+                             Realm::Point<4>::ONES()},
           field_sizes,
           /*block_size=*/0 /*SOA*/,
           prs,
@@ -100,9 +100,9 @@ std::pair<Realm::RegionInstance, Realm::Event>
       ready = Realm::RegionInstance::create_instance(
           inst,
           memory,
-          Realm::Rect<5>(Realm::Point<5>::ZEROES(),
-                         Realm::Point<5>(dims.data()) -
-                             Realm::Point<5>::ONES()),
+          Realm::Rect<5>{Realm::Point<5>::ZEROES(),
+                         Realm::Point<5>{dims.data()} -
+                             Realm::Point<5>::ONES()},
           field_sizes,
           /*block_size=*/0 /*SOA*/,
           prs,
@@ -111,7 +111,7 @@ std::pair<Realm::RegionInstance, Realm::Event>
 #endif
     default:
       PANIC("TensorShape dims greater than REALM_MAX_DIM",
-            fmt::to_string(shape.dims.ff_ordered.num_dims()));
+            fmt::to_string(dims.size()));
       break;
   }
   this->outstanding_events.push_back(ready);
