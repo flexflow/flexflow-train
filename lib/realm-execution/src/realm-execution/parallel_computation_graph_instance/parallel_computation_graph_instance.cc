@@ -3,9 +3,11 @@
 #include "local-execution/tensor_allocation.h"
 #include "pcg/optimizer_attrs.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
+#include "task-spec/dynamic_graph/dynamic_tensor_guid_t.dtg.h"
 #include "task-spec/dynamic_graph/loss_insertion.h"
 #include "task-spec/dynamic_graph/make_dynamic_open_dataflow_graph_from_mpcg.h"
 #include "task-spec/dynamic_graph/pass_expansion.h"
+#include "task-spec/dynamic_graph/shard_expansion.h"
 #include "task-spec/dynamic_graph/update_insertion.h"
 #include "utils/exception.h"
 
@@ -66,7 +68,7 @@ ParallelComputationGraphInstance create_parallel_computation_graph_instance(
     OptimizerAttrs const &optimizer_attrs,
     std::optional<LossAttrs> const &loss_attrs,
     std::optional<GenericTensorAccessorR> label_tensor,
-    std::optional<dynamic_tensor_guid_t> logit_tensor,
+    std::optional<parallel_tensor_guid_t> logit_tensor,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &input_tensors,
     ProfilingSettings const &profiling_settings,
@@ -81,13 +83,14 @@ ParallelComputationGraphInstance create_parallel_computation_graph_instance(
   std::optional<DynamicValueAttrs> logit_grad_value;
   if (loss_attrs) {
     auto [dg2, label_v, logit_grad_v] = perform_loss_insertion(
-        dg, assert_unwrap(loss_attrs), assert_unwrap(logit_tensor));
+        dg, loss_attrs.value(), dynamic_tensor_guid_t{logit_tensor.value()});
     dg = dg2;
     logit_grad_value = logit_grad_v;
-    inputs.insert(std::pair{label_v, assert_unwrap(label_tensor)});
+    inputs.insert(std::pair{label_v, label_tensor.value()});
   }
 
   dg = perform_update_insertion(dg, optimizer_attrs);
+  dg = perform_shard_expansion(dg);
   dg = perform_tensor_allocation(
       dg, inputs, realm.get_current_device_allocator());
 

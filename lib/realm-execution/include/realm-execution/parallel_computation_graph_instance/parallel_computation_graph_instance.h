@@ -9,6 +9,7 @@
 #include "pcg/device_id_t.dtg.h"
 #include "pcg/mapped_parallel_computation_graph/mapped_parallel_computation_graph.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
+#include "pcg/parallel_computation_graph/parallel_tensor_guid_t.dtg.h"
 #include "realm-execution/realm_context.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_accessor.dtg.h"
@@ -50,7 +51,7 @@ ParallelComputationGraphInstance create_parallel_computation_graph_instance(
     OptimizerAttrs const &optimizer_attrs,
     std::optional<LossAttrs> const &loss_attrs,
     std::optional<GenericTensorAccessorR> label_tensor,
-    std::optional<dynamic_tensor_guid_t> logit_tensor,
+    std::optional<parallel_tensor_guid_t> logit_tensor,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &input_tensors,
     ProfilingSettings const &profiling_settings,
