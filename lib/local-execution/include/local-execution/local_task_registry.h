@@ -2,6 +2,7 @@
 #define _FLEXFLOW_LIB_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_LOCAL_TASK_REGISTRY_H
 
 #include "op-attrs/computation_graph_op_attrs.dtg.h"
+#include "pcg/optimizer_attrs.dtg.h"
 #include "task-spec/device_specific_per_device_op_state.dtg.h"
 #include "task-spec/task_impl_function.dtg.h"
 #include "utils/units/milliseconds_t.h"
