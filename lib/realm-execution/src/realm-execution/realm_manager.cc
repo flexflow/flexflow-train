@@ -1,4 +1,5 @@
 #include "realm-execution/realm_manager.h"
+#include "realm-execution/realm_context.h"
 #include "realm-execution/realm_task_id_t.h"
 #include "realm-execution/realm_task_registry.h"
 #include "realm-execution/task_id_t.dtg.h"
@@ -15,11 +16,12 @@ static void controller_task_wrapper(void const *args,
   std::function<void(RealmContext &)> thunk =
       *reinterpret_cast<std::function<void(RealmContext &)> const *>(args);
 
-  RealmContext ctx;
+  RealmContext ctx{proc};
   thunk(ctx);
 }
 
-RealmManager::RealmManager(int *argc, char ***argv) {
+RealmManager::RealmManager(int *argc, char ***argv)
+    : RealmContext(Realm::Processor::NO_PROC) {
   bool ok = this->runtime.init(argc, argv);
   ASSERT(ok);
 

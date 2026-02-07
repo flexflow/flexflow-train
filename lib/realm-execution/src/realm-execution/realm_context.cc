@@ -1,14 +1,19 @@
 #include "realm-execution/realm_context.h"
 #include "op-attrs/datatype.h"
 #include "op-attrs/tensor_dims.dtg.h"
+#include "pcg/device_type.dtg.h"
 #include "realm-execution/realm_task_id_t.h"
 #include "realm-execution/task_id_t.dtg.h"
+#include "utils/containers/contains_key.h"
+#include "utils/containers/transform.h"
 #include "utils/exception.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
+#include "utils/one_to_many/one_to_many.h"
 #include "utils/positive_int/positive_int.h"
 
 namespace FlexFlow {
 
-RealmContext::RealmContext() {}
+RealmContext::RealmContext(Realm::Processor proc) : processor(proc) {}
 
 RealmContext::~RealmContext() {
   if (!this->outstanding_events.empty()) {
@@ -17,13 +22,45 @@ RealmContext::~RealmContext() {
   }
 }
 
+static std::tuple<Realm::AddressSpace, Realm::Processor::Kind, nonnegative_int>
+    convert_machine_space_coordinate(
+        MachineSpaceCoordinate const &device_coord) {
+  Realm::AddressSpace as = int{device_coord.node_idx};
+  Realm::Processor::Kind kind;
+  switch (device_coord.device_type) {
+    case DeviceType::CPU:
+      kind = Realm::Processor::Kind::LOC_PROC;
+      break;
+    case DeviceType::GPU:
+      kind = Realm::Processor::Kind::TOC_PROC;
+      break;
+    default:
+      PANIC("Unhandled DeviceType", fmt::to_string(device_coord.device_type));
+      break;
+  }
+  nonnegative_int proc_in_node = device_coord.device_idx;
+  return std::tuple{as, kind, proc_in_node};
+}
+
 Realm::Processor RealmContext::map_device_coord_to_processor(
     MachineSpaceCoordinate const &device_coord) {
-  NOT_IMPLEMENTED();
+  this->discover_machine_topology();
+  auto [as, kind, proc_in_node] =
+      convert_machine_space_coordinate(device_coord);
+  return this->processors.at(std::pair{as, kind}).at(int{proc_in_node});
 }
 
 Realm::Memory RealmContext::get_nearest_memory(Realm::Processor proc) const {
-  NOT_IMPLEMENTED();
+  // FIMXE: this isn't going to do what you expect until
+  // https://github.com/StanfordLegion/realm/pull/392 merges
+  Realm::Machine::MemoryQuery mq(Realm::Machine::get_machine());
+  mq.best_affinity_to(proc);
+  ASSERT(mq.count() > 0);
+  return mq.first();
+}
+
+Realm::Processor RealmContext::get_current_processor() const {
+  return this->processor;
 }
 
 Allocator &RealmContext::get_current_device_allocator() const {
@@ -134,6 +171,19 @@ Realm::Event RealmContext::merge_outstanding_events() {
   Realm::Event result = Realm::Event::merge_events(this->outstanding_events);
   this->outstanding_events.clear();
   return result;
+}
+
+void RealmContext::discover_machine_topology() {
+  if (!this->processors.empty()) {
+    return;
+  }
+
+  Realm::Machine::ProcessorQuery pq(Realm::Machine::get_machine());
+  for (Realm::Processor proc : pq) {
+    Realm::AddressSpace as = proc.address_space();
+    Realm::Processor::Kind kind = proc.kind();
+    this->processors[std::pair{as, kind}].push_back(proc);
+  }
 }
 
 } // namespace FlexFlow
