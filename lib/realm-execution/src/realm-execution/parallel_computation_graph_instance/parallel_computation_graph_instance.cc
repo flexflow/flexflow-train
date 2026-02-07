@@ -10,6 +10,7 @@
 #include "task-spec/dynamic_graph/shard_expansion.h"
 #include "task-spec/dynamic_graph/update_insertion.h"
 #include "utils/exception.h"
+#include "utils/optional.h"
 
 namespace FlexFlow {
 
@@ -74,10 +75,12 @@ ParallelComputationGraphInstance create_parallel_computation_graph_instance(
   std::optional<DynamicValueAttrs> logit_grad_value;
   if (loss_attrs) {
     auto [dg2, label_v, logit_grad_v] = perform_loss_insertion(
-        dg, loss_attrs.value(), dynamic_tensor_guid_t{logit_tensor.value()});
+        dg,
+        assert_unwrap(loss_attrs),
+        dynamic_tensor_guid_t{assert_unwrap(logit_tensor)});
     dg = dg2;
     logit_grad_value = logit_grad_v;
-    inputs.insert(std::pair{label_v, label_tensor.value()});
+    inputs.insert(std::pair{label_v, assert_unwrap(label_tensor)});
   }
 
   dg = perform_update_insertion(dg, optimizer_attrs);
