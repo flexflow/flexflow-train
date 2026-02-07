@@ -21,21 +21,21 @@
 namespace FlexFlow {
 
 ComputationGraphInstance::ComputationGraphInstance(
-    Allocator &allocator,
     std::vector<DynamicNodeInvocation> const &execution_order,
+    Allocator &allocator,
     OptimizerAttrs const &optimizer_attrs,
     std::optional<LossAttrs> const &loss_attrs,
     std::optional<GenericTensorAccessorW> logit_grad_tensor)
-    : allocator(allocator), execution_order(execution_order),
+    : execution_order(execution_order), allocator(allocator),
       optimizer_attrs(optimizer_attrs), loss_attrs(loss_attrs),
       logit_grad_tensor(logit_grad_tensor) {}
 
-Allocator &ComputationGraphInstance::get_allocator() const {
-  return this->allocator;
-}
 std::vector<DynamicNodeInvocation> const &
     ComputationGraphInstance::get_execution_order() const {
   return this->execution_order;
+}
+Allocator &ComputationGraphInstance::get_allocator() const {
+  return this->allocator;
 }
 OptimizerAttrs const &ComputationGraphInstance::get_optimizer_attrs() const {
   return this->optimizer_attrs;
@@ -114,8 +114,8 @@ ComputationGraphInstance create_computation_graph_instance(
   std::vector<DynamicNodeInvocation> invocation_topo_order = transform(
       node_topo_order, [&](Node node) { return node_map.at_l(node); });
 
-  return ComputationGraphInstance{allocator,
-                                  invocation_topo_order,
+  return ComputationGraphInstance{invocation_topo_order,
+                                  allocator,
                                   optimizer_attrs,
                                   loss_attrs,
                                   logit_grad_tensor};

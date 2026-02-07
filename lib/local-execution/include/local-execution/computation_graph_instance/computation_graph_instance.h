@@ -23,21 +23,21 @@ namespace FlexFlow {
 
 struct ComputationGraphInstance {
 public:
-  ComputationGraphInstance(Allocator &,
-                           std::vector<DynamicNodeInvocation> const &,
+  ComputationGraphInstance(std::vector<DynamicNodeInvocation> const &,
+                           Allocator &,
                            OptimizerAttrs const &,
                            std::optional<LossAttrs> const &,
                            std::optional<GenericTensorAccessorW>);
-  Allocator &get_allocator() const;
   std::vector<DynamicNodeInvocation> const &get_execution_order() const;
+  Allocator &get_allocator() const;
   OptimizerAttrs const &get_optimizer_attrs() const;
   void update_optimizer_attrs_for_next_iter();
   std::optional<LossAttrs> const &get_loss_attrs() const;
   std::optional<GenericTensorAccessorR> get_loss_tensor_accessor() const;
 
 private:
-  Allocator &allocator;
   std::vector<DynamicNodeInvocation> execution_order;
+  Allocator &allocator;
   OptimizerAttrs optimizer_attrs;
   std::optional<LossAttrs> loss_attrs;
   std::optional<GenericTensorAccessorW> logit_grad_tensor;
