@@ -6,14 +6,16 @@
 #include "pcg/device_id_t.dtg.h"
 #include "pcg/machine_space_coordinate.dtg.h"
 #include "realm-execution/realm.h"
+#include <unordered_map>
 
 namespace FlexFlow {
 
 struct RealmContext {
 public:
-  RealmContext();
+  RealmContext(Realm::Processor);
   virtual ~RealmContext();
 
+  RealmContext() = delete;
   RealmContext(RealmContext const &) = delete;
   RealmContext(RealmContext &&) = delete;
 
@@ -23,6 +25,7 @@ public:
   Realm::Memory get_nearest_memory(Realm::Processor) const;
 
   // Current device context
+  Realm::Processor get_current_processor() const;
   Allocator &get_current_device_allocator() const;
   device_handle_t const &get_current_device_handle() const;
   device_id_t const &get_current_device_idx() const;
@@ -42,9 +45,15 @@ protected:
   // Important: USER MUST BLOCK on event or else use it, or it WILL BE LOST
   [[nodiscard]] Realm::Event merge_outstanding_events();
 
+  void discover_machine_topology();
+
 protected:
   Realm::Runtime runtime;
+  Realm::Processor processor;
   std::vector<Realm::Event> outstanding_events;
+  std::unordered_map<std::pair<Realm::AddressSpace, Realm::Processor::Kind>,
+                     std::vector<Realm::Processor>>
+      processors;
 };
 
 } // namespace FlexFlow
