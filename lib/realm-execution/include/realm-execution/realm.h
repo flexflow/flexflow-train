@@ -1,6 +1,8 @@
 #ifndef _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_REALM_H
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_REALM_H
 
+#define FLEXFLOW_USE_PREALM
+
 #ifdef FLEXFLOW_USE_PREALM
 #include <realm/prealm/prealm.h>
 #else

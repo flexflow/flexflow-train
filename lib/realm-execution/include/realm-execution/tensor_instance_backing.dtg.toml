@@ -4,7 +4,7 @@ type = "struct"
 features = [
   "eq",
   #"fmt",
-  "hash",
+  #"hash",
 ]
 
 includes = [
