@@ -14,13 +14,14 @@ namespace FlexFlow {
 void device_init_task_body(
     void const *, size_t, void const *, size_t, Realm::Processor);
 
-Realm::Event spawn_device_init_task(RealmContext &ctx,
-                                    Realm::Processor &target_proc,
-                                    DynamicNodeInvocation const &invocation,
-                                    ProfilingSettings const &profiling_settings,
-                                    FFIterationConfig const &iteration_config,
-                                    OptimizerAttrs const &optimizer_attrs,
-                                    DeviceSpecificPerDeviceOpState *result_ptr);
+std::optional<Realm::Event>
+    spawn_device_init_task(RealmContext &ctx,
+                           Realm::Processor &target_proc,
+                           DynamicNodeInvocation const &invocation,
+                           ProfilingSettings const &profiling_settings,
+                           FFIterationConfig const &iteration_config,
+                           OptimizerAttrs const &optimizer_attrs,
+                           DeviceSpecificPerDeviceOpState *result_ptr);
 
 } // namespace FlexFlow
 

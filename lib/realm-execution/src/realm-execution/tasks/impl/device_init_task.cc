@@ -1,6 +1,7 @@
 #include "realm-execution/tasks/impl/device_init_task.h"
 #include "local-execution/device_state_initialization.h"
 #include "realm-execution/tasks/impl/device_init_return_task.h"
+#include "realm-execution/tasks/task_id_t.dtg.h"
 #include "realm-execution/tasks/task_id_t.h"
 #include "utils/optional.h"
 #include <optional>
@@ -56,15 +57,13 @@ void device_init_task_body(void const *args,
                       ctx.get_current_device_idx());
   std::optional<DeviceSpecificPerDeviceOpState> result_state =
       result_invocation.node_attrs.per_device_op_state;
-  if (result_state) {
-    spawn_device_init_return_task(ctx,
-                                  task_args.origin_proc,
-                                  assert_unwrap(result_state),
-                                  task_args.origin_result_ptr);
-  }
+  spawn_device_init_return_task(ctx,
+                                task_args.origin_proc,
+                                assert_unwrap(result_state),
+                                task_args.origin_result_ptr);
 }
 
-Realm::Event
+std::optional<Realm::Event>
     spawn_device_init_task(RealmContext &ctx,
                            Realm::Processor &target_proc,
                            DynamicNodeInvocation const &invocation,
@@ -81,12 +80,16 @@ Realm::Event
       result_ptr,
   };
 
-  return ctx.spawn_task(target_proc,
-                        assert_unwrap(get_init_task_id_for_op_attrs(
-                            assert_unwrap(invocation.node_attrs.op_attrs))),
-                        &task_args,
-                        sizeof(task_args),
-                        Realm::ProfilingRequestSet{});
+  std::optional<task_id_t> task_id = get_init_task_id_for_op_attrs(
+      assert_unwrap(invocation.node_attrs.op_attrs));
+  if (task_id) {
+    return ctx.spawn_task(target_proc,
+                          assert_unwrap(task_id),
+                          &task_args,
+                          sizeof(task_args),
+                          Realm::ProfilingRequestSet{});
+  }
+  return std::nullopt;
 }
 
 } // namespace FlexFlow
