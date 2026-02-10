@@ -26,7 +26,7 @@ Realm::Event register_task(Realm::Processor::Kind target_kind,
 Realm::Event register_all_tasks() {
   std::vector<Realm::Event> pending_registrations;
 
-  std::vector<task_id_t> task_ids = {
+  std::vector<task_id_t> init_task_ids = {
       // Init tasks
       task_id_t::BATCHNORM_INIT_TASK_ID,
       task_id_t::COMBINE_INIT_TASK_ID,
@@ -44,7 +44,14 @@ Realm::Event register_all_tasks() {
       task_id_t::REPARTITION_INIT_TASK_ID,
       task_id_t::REPLICATE_INIT_TASK_ID,
       task_id_t::SOFTMAX_INIT_TASK_ID,
+  };
 
+  for (task_id_t task_id : init_task_ids) {
+    pending_registrations.push_back(register_task(
+        Realm::Processor::TOC_PROC, task_id, device_init_task_body));
+  }
+
+  std::vector<task_id_t> task_ids = {
       // Forward tasks
       task_id_t::BATCHMATMUL_FWD_TASK_ID,
       task_id_t::BATCHNORM_FWD_TASK_ID,
@@ -118,6 +125,10 @@ Realm::Event register_all_tasks() {
   pending_registrations.push_back(register_task(Realm::Processor::LOC_PROC,
                                                 task_id_t::CONTROLLER_TASK_ID,
                                                 controller_task_body));
+  pending_registrations.push_back(
+      register_task(Realm::Processor::LOC_PROC,
+                    task_id_t::DEVICE_INIT_RETURN_TASK_ID,
+                    device_init_return_task_body));
   return Realm::Event::merge_events(pending_registrations);
 }
 
