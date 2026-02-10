@@ -1,0 +1,24 @@
+#ifndef _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_TASKS_IMPL_DEVICE_INIT_TASK_H
+#define _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_TASKS_IMPL_DEVICE_INIT_TASK_H
+
+#include "pcg/optimizer_attrs.dtg.h"
+#include "realm-execution/realm.h"
+#include "realm-execution/realm_context.h"
+#include "task-spec/device_specific_per_device_op_state.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
+
+namespace FlexFlow {
+
+void device_init_task_body(
+    void const *, size_t, void const *, size_t, Realm::Processor);
+
+Realm::Event
+    spawn_device_init_task(RealmContext &ctx,
+                           Realm::Processor &target_proc,
+                           DynamicNodeInvocation const &invocation,
+                           std::optional<OptimizerAttrs> const &optimizer_attrs,
+                           DeviceSpecificPerDeviceOpState *result_ptr);
+
+} // namespace FlexFlow
+
+#endif

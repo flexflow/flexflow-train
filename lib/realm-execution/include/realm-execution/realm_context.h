@@ -6,6 +6,7 @@
 #include "pcg/device_id_t.dtg.h"
 #include "pcg/machine_space_coordinate.dtg.h"
 #include "realm-execution/realm.h"
+#include "realm-execution/tasks/task_id_t.dtg.h"
 #include <unordered_map>
 
 namespace FlexFlow {
@@ -29,6 +30,23 @@ public:
   Allocator &get_current_device_allocator() const;
   device_handle_t const &get_current_device_handle() const;
   device_id_t const &get_current_device_idx() const;
+
+  // Task creation
+  Realm::Event spawn_task(Realm::Processor proc,
+                          task_id_t task_id,
+                          void const *args,
+                          size_t arglen,
+                          Realm::ProfilingRequestSet const &requests,
+                          Realm::Event wait_on = Realm::Event::NO_EVENT,
+                          int priority = 0);
+
+  Realm::Event
+      collective_spawn_task(Realm::Processor target_proc,
+                            task_id_t task_id,
+                            void const *args,
+                            size_t arglen,
+                            Realm::Event wait_on = Realm::Event::NO_EVENT,
+                            int priority = 0);
 
   // Instance management
   std::pair<Realm::RegionInstance, Realm::Event>

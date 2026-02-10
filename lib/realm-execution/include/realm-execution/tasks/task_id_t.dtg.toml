@@ -12,6 +12,9 @@ features = [
 name = "CONTROLLER_TASK_ID"
 
 [[values]]
+name = "DEVICE_INIT_RETURN_TASK_ID"
+
+[[values]]
 name = "IMAGE_INIT_TASK_ID"
 
 [[values]]
