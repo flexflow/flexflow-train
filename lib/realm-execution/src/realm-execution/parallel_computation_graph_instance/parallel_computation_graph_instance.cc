@@ -1,6 +1,6 @@
 #include "realm-execution/parallel_computation_graph_instance/parallel_computation_graph_instance.h"
-#include "local-execution/device_state_initialization.h"
 #include "pcg/optimizer_attrs.h"
+#include "realm-execution/distributed_device_state_initialization.h"
 #include "realm-execution/instance_allocation.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_guid_t.dtg.h"
@@ -92,14 +92,15 @@ ParallelComputationGraphInstance create_parallel_computation_graph_instance(
         return backing.backing.at(lgv).first;
       });
 
-  dg = perform_device_state_initialization(dg,
-                                           ctx.get_current_device_allocator(),
-                                           profiling_settings,
-                                           ctx.get_current_device_handle(),
-                                           iteration_config,
-                                           optimizer_attrs,
-                                           ctx.get_current_device_idx());
+  dg = perform_distributed_device_state_initialization(
+      dg, ctx, profiling_settings, iteration_config, optimizer_attrs);
   NOT_IMPLEMENTED();
+
+  // TODO list:
+  //  * per-device state initialization (RPC mechanism?)
+  //  * Realm allocator
+  //  * task body
+  //  * external instances
 }
 
 } // namespace FlexFlow

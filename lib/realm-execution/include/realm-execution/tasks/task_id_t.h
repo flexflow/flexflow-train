@@ -3,7 +3,7 @@
 
 #include "op-attrs/pcg_operator_attrs.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
-#include "realm-execution/task_id_t.dtg.h"
+#include "realm-execution/tasks/task_id_t.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_node_attrs.dtg.h"
 #include <optional>
 
