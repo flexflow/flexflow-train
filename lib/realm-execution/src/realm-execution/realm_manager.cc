@@ -1,24 +1,11 @@
 #include "realm-execution/realm_manager.h"
 #include "realm-execution/realm_context.h"
-#include "realm-execution/realm_task_id_t.h"
-#include "realm-execution/realm_task_registry.h"
-#include "realm-execution/task_id_t.dtg.h"
+#include "realm-execution/tasks/realm_task_id_t.h"
+#include "realm-execution/tasks/realm_task_registry.h"
+#include "realm-execution/tasks/task_id_t.dtg.h"
 #include "utils/exception.h"
 
 namespace FlexFlow {
-
-static void controller_task_wrapper(void const *args,
-                                    size_t arglen,
-                                    void const *userdata,
-                                    size_t userlen,
-                                    Realm::Processor proc) {
-  ASSERT(arglen == sizeof(std::function<void(RealmContext &)>));
-  std::function<void(RealmContext &)> thunk =
-      *reinterpret_cast<std::function<void(RealmContext &)> const *>(args);
-
-  RealmContext ctx{proc};
-  thunk(ctx);
-}
 
 RealmManager::RealmManager(int *argc, char ***argv)
     : RealmContext(Realm::Processor::NO_PROC) {
@@ -27,10 +14,6 @@ RealmManager::RealmManager(int *argc, char ***argv)
 
   // Register all tasks at initialization time so we don't need to later
   register_all_tasks().wait();
-  register_task(Realm::Processor::LOC_PROC,
-                task_id_t::CONTROLLER_TASK_ID,
-                controller_task_wrapper)
-      .wait();
 }
 
 RealmManager::~RealmManager() {
