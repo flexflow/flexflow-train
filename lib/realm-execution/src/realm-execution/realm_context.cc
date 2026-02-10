@@ -74,6 +74,41 @@ device_id_t const &RealmContext::get_current_device_idx() const {
   NOT_IMPLEMENTED();
 }
 
+Realm::Event
+    RealmContext::spawn_task(Realm::Processor proc,
+                             task_id_t task_id,
+                             void const *args,
+                             size_t arglen,
+                             Realm::ProfilingRequestSet const &requests,
+                             Realm::Event wait_on,
+                             int priority) {
+  Realm::Event result = proc.spawn(get_realm_task_id_for_task_id(task_id),
+                                   args,
+                                   arglen,
+                                   requests,
+                                   wait_on,
+                                   priority);
+  this->outstanding_events.push_back(result);
+  return result;
+}
+
+Realm::Event RealmContext::collective_spawn_task(Realm::Processor target_proc,
+                                                 task_id_t task_id,
+                                                 void const *args,
+                                                 size_t arglen,
+                                                 Realm::Event wait_on,
+                                                 int priority) {
+  Realm::Event result =
+      this->runtime.collective_spawn(target_proc,
+                                     get_realm_task_id_for_task_id(task_id),
+                                     args,
+                                     arglen,
+                                     wait_on,
+                                     priority);
+  this->outstanding_events.push_back(result);
+  return result;
+}
+
 template <int N>
 static Realm::Rect<N> rect_from_dims(TensorDims const &dims) {
   std::vector<int> values{dims.ff_ordered.begin(), dims.ff_ordered.end()};

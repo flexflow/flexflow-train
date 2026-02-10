@@ -1,6 +1,9 @@
 #include "realm-execution/tasks/realm_task_registry.h"
+#include "realm-execution/tasks/impl/controller_task.h"
+#include "realm-execution/tasks/impl/device_init_return_task.h"
+#include "realm-execution/tasks/impl/device_init_task.h"
+#include "realm-execution/tasks/impl/op_task.h"
 #include "realm-execution/tasks/realm_task_id_t.h"
-#include "realm-execution/tasks/realm_tasks.h"
 #include "utils/exception.h"
 
 namespace FlexFlow {
