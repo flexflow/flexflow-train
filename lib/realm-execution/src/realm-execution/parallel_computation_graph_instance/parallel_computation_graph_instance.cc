@@ -87,6 +87,10 @@ ParallelComputationGraphInstance create_parallel_computation_graph_instance(
   dg = perform_shard_expansion(dg);
   TensorInstanceBacking backing = perform_instance_allocation(dg, inputs, ctx);
 
+  // FIXME: for now we're going to be lazy and block on everything rather than
+  // do fine-grained dependencies
+  ctx.get_outstanding_events().wait();
+
   std::optional<Realm::RegionInstance> logit_grad_tensor =
       transform(logit_grad_value, [&](DynamicValueAttrs const &lgv) {
         return backing.backing.at(lgv).first;
