@@ -2,6 +2,7 @@
 #include "realm-execution/realm_context.h"
 #include "realm-execution/tasks/realm_task_id_t.h"
 #include "realm-execution/tasks/realm_task_registry.h"
+#include "realm-execution/tasks/realm_tasks.h"
 #include "realm-execution/tasks/task_id_t.dtg.h"
 #include "utils/exception.h"
 
@@ -29,11 +30,13 @@ Realm::Event
           .only_kind(Realm::Processor::LOC_PROC)
           .first();
 
+  ControllerTaskArgs task_args;
+  task_args.thunk = thunk;
   Realm::Event task_complete = this->runtime.collective_spawn(
       target_proc,
       get_realm_task_id_for_task_id(task_id_t::CONTROLLER_TASK_ID),
-      &thunk,
-      sizeof(thunk));
+      &task_args,
+      sizeof(task_args));
   this->outstanding_events.push_back(task_complete);
   return task_complete;
 }
