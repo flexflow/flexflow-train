@@ -1,13 +1,9 @@
-#include "realm-execution/realm_task_registry.h"
-#include "realm-execution/realm_task_id_t.h"
+#include "realm-execution/tasks/realm_task_registry.h"
+#include "realm-execution/tasks/realm_task_id_t.h"
+#include "realm-execution/tasks/realm_tasks.h"
 #include "utils/exception.h"
 
 namespace FlexFlow {
-
-static void operation_task_wrapper(
-    void const *, size_t, void const *, size_t, Realm::Processor) {
-  NOT_IMPLEMENTED();
-}
 
 Realm::Event register_task(Realm::Processor::Kind target_kind,
                            task_id_t func_id,
@@ -110,12 +106,15 @@ Realm::Event register_all_tasks() {
   };
 
   for (task_id_t task_id : task_ids) {
-    pending_registrations.push_back(register_task(
-        Realm::Processor::LOC_PROC, task_id, operation_task_wrapper));
-    pending_registrations.push_back(register_task(
-        Realm::Processor::TOC_PROC, task_id, operation_task_wrapper));
+    pending_registrations.push_back(
+        register_task(Realm::Processor::LOC_PROC, task_id, op_task_body));
+    pending_registrations.push_back(
+        register_task(Realm::Processor::TOC_PROC, task_id, op_task_body));
   }
 
+  pending_registrations.push_back(register_task(Realm::Processor::LOC_PROC,
+                                                task_id_t::CONTROLLER_TASK_ID,
+                                                controller_task_body));
   return Realm::Event::merge_events(pending_registrations);
 }
 
