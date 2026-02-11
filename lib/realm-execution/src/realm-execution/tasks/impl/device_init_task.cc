@@ -3,6 +3,7 @@
 #include "realm-execution/tasks/impl/device_init_return_task.h"
 #include "realm-execution/tasks/task_id_t.dtg.h"
 #include "realm-execution/tasks/task_id_t.h"
+#include "task-spec/device_specific_per_device_op_state.dtg.h"
 #include "utils/optional.h"
 #include <optional>
 #include <type_traits>
@@ -43,7 +44,7 @@ void device_init_task_body(void const *args,
   DeviceInitTaskArgs task_args =
       *reinterpret_cast<DeviceInitTaskArgs const *>(args);
 
-  // FIXME: not safe to dereference unless we're on the same address space
+  // FIXME: serialize instead of passing pointers around
   ASSERT(task_args.origin_proc.address_space() == proc.address_space());
 
   RealmContext ctx{proc};
@@ -55,11 +56,15 @@ void device_init_task_body(void const *args,
                       *task_args.iteration_config,
                       *task_args.optimizer_attrs,
                       ctx.get_current_device_idx());
-  std::optional<DeviceSpecificPerDeviceOpState> result_state =
-      result_invocation.node_attrs.per_device_op_state;
+  DeviceSpecificPerDeviceOpState result_state =
+      assert_unwrap(result_invocation.node_attrs.per_device_op_state);
+  // Important: to make sure this doesn't get deallocated, we intentionally leak
+  // the allocation here
+  DeviceSpecificPerDeviceOpState *result_state_ptr =
+      new DeviceSpecificPerDeviceOpState{result_state};
   spawn_device_init_return_task(ctx,
                                 task_args.origin_proc,
-                                assert_unwrap(result_state),
+                                *result_state_ptr,
                                 task_args.origin_result_ptr);
 }
 
