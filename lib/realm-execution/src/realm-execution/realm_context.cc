@@ -1,6 +1,7 @@
 #include "realm-execution/realm_context.h"
 #include "op-attrs/datatype.h"
 #include "op-attrs/tensor_dims.dtg.h"
+#include "pcg/device_id_t.h"
 #include "pcg/device_type.dtg.h"
 #include "realm-execution/tasks/realm_task_id_t.h"
 #include "realm-execution/tasks/task_id_t.dtg.h"
@@ -70,8 +71,29 @@ Allocator &RealmContext::get_current_device_allocator() const {
 device_handle_t const &RealmContext::get_current_device_handle() const {
   NOT_IMPLEMENTED();
 }
-device_id_t const &RealmContext::get_current_device_idx() const {
-  NOT_IMPLEMENTED();
+device_id_t RealmContext::get_current_device_idx() const {
+  Realm::Processor proc = this->get_current_processor();
+
+  // FIXME: find a more efficient way to implement this than scanning the
+  // machine every time
+  Realm::Machine::ProcessorQuery pq(Realm::Machine::get_machine());
+  pq.same_address_space_as(proc);
+  nonnegative_int idx{0};
+  for (Realm::Processor p : pq) {
+    if (p == proc) {
+      break;
+    }
+    idx++;
+  }
+
+  switch (proc.kind()) {
+    case Realm::Processor::LOC_PROC:
+      return make_device_id_t_from_idx(idx, DeviceType::CPU);
+    case Realm::Processor::TOC_PROC:
+      return make_device_id_t_from_idx(idx, DeviceType::GPU);
+    default:
+      PANIC("Unhandled Realm::ProcessorKind", fmt::to_string(int{proc.kind()}));
+  }
 }
 
 Realm::Event
