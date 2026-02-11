@@ -19,11 +19,11 @@ std::tuple<DynamicOpenDataflowGraph, DynamicValueAttrs, DynamicValueAttrs>
     perform_loss_insertion(DynamicOpenDataflowGraph const &dg,
                            LossAttrs const &loss_attrs,
                            dynamic_tensor_guid_t logit_tensor) {
-  auto [logic_invocation, logit_value] = assert_unwrap(
-      find_output_tensor(dg, logit_tensor, mk_dynamic_tensor_role_fwd()));
+  DynamicValueAttrs logit_value = assert_unwrap(
+      find_output_value_attrs(dg, logit_tensor, mk_dynamic_tensor_role_fwd()));
 
   DynamicValueAttrs label_value{
-      /*tensor_guid=*/mk_dynamic_tensor_guid_loss(),
+      /*tensor_guid=*/mk_dynamic_tensor_guid_for_loss(),
       /*parallel_tensor_shape=*/logit_value.parallel_tensor_shape,
       /*shard_coord=*/logit_value.shard_coord,
       /*accessor=*/std::nullopt,
@@ -51,7 +51,7 @@ std::tuple<DynamicOpenDataflowGraph, DynamicValueAttrs, DynamicValueAttrs>
           /*device_coord=*/std::nullopt,
           /*mapping=*/std::nullopt,
           /*op_attrs=*/std::nullopt,
-          /*layer_guid=*/mk_dynamic_layer_guid_loss(),
+          /*layer_guid=*/mk_dynamic_layer_guid_for_loss(),
           /*per_device_op_state=*/std::nullopt,
       },
       /*outputs=*/

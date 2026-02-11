@@ -155,7 +155,7 @@ std::optional<DeviceSpecificPerDeviceOpState>
                         TaskArgumentAccessor const &arg_accessor) {
   std::optional<TaskImplFunction> task_impl_fn =
       get_init_task_impl_for_op_attrs(op_attrs);
-  if (!task_impl_fn) {
+  if (!task_impl_fn.has_value()) {
     return std::nullopt;
   }
 
@@ -172,7 +172,7 @@ std::optional<milliseconds_t>
                        TaskArgumentAccessor const &acc) {
   std::optional<TaskImplFunction> task_impl_fn =
       get_fwd_task_impl_for_op_attrs(op_attrs);
-  if (!task_impl_fn) {
+  if (!task_impl_fn.has_value()) {
     return std::nullopt;
   }
   auto fn =
@@ -186,7 +186,7 @@ std::optional<milliseconds_t>
                        TaskArgumentAccessor const &acc) {
   std::optional<TaskImplFunction> task_impl_fn =
       get_bwd_task_impl_for_op_attrs(op_attrs);
-  if (!task_impl_fn) {
+  if (!task_impl_fn.has_value()) {
     return std::nullopt;
   }
   auto fn =

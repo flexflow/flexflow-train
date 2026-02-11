@@ -14,8 +14,8 @@
 
 namespace FlexFlow {
 
-TaskTensorParameter make_task_tensor_parameter_dynamic(
-    DynamicTensorSlot slot,
+TaskTensorParameter make_task_tensor_parameter_from_dynamic_slot(
+    DynamicTensorSlot const &slot,
     std::optional<OptimizerAttrs> const &optimizer_attrs) {
   return assert_unwrap(slot.slot_tensor_role)
       .visit<TaskTensorParameter>(overload{
@@ -46,21 +46,21 @@ TaskArgumentAccessor make_task_argument_accessor_for_invocation(
     device_handle_t const &ff_handle,
     std::optional<LossAttrs> const &loss_attrs,
     std::optional<PerDeviceOpState> const &per_device_op_state,
-    FFIterationConfig iteration_config,
+    FFIterationConfig const &iteration_config,
     std::optional<OptimizerAttrs> const &optimizer_attrs,
     device_id_t device_idx) {
   std::unordered_map<TaskTensorParameter, DynamicTensorAccessor>
       tensor_slots_backing;
   for (auto const &[slot, input] : invocation.inputs) {
     TaskTensorParameter param =
-        make_task_tensor_parameter_dynamic(slot, optimizer_attrs);
+        make_task_tensor_parameter_from_dynamic_slot(slot, optimizer_attrs);
     DynamicTensorAccessor accessor = assert_unwrap(input.accessor);
     bool ok = tensor_slots_backing.insert(std::pair{param, accessor}).second;
     ASSERT(ok);
   }
   for (auto const &[slot, output] : invocation.outputs) {
     TaskTensorParameter param =
-        make_task_tensor_parameter_dynamic(slot, optimizer_attrs);
+        make_task_tensor_parameter_from_dynamic_slot(slot, optimizer_attrs);
     DynamicTensorAccessor accessor = assert_unwrap(output.accessor);
     bool ok = tensor_slots_backing.insert(std::pair{param, accessor}).second;
     ASSERT(ok);
@@ -86,7 +86,7 @@ std::optional<milliseconds_t> execute_dynamic_node_invocation(
     device_handle_t const &ff_handle,
     std::optional<LossAttrs> const &loss_attrs,
     std::optional<PerDeviceOpState> const &per_device_op_state,
-    FFIterationConfig iteration_config,
+    FFIterationConfig const &iteration_config,
     std::optional<OptimizerAttrs> const &optimizer_attrs,
     device_id_t device_idx) {
   TaskArgumentAccessor arg_accessor =

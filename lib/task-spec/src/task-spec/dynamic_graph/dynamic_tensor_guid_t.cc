@@ -3,14 +3,14 @@
 
 namespace FlexFlow {
 
-dynamic_tensor_guid_t mk_dynamic_tensor_guid(tensor_guid_t t) {
+dynamic_tensor_guid_t mk_dynamic_tensor_guid_for_tensor_guid(tensor_guid_t t) {
   return dynamic_tensor_guid_t{t};
 }
 dynamic_tensor_guid_t
-    mk_dynamic_tensor_guid_parallel(parallel_tensor_guid_t t) {
+    mk_dynamic_tensor_guid_for_parallel_tensor_guid(parallel_tensor_guid_t t) {
   return dynamic_tensor_guid_t{t};
 }
-dynamic_tensor_guid_t mk_dynamic_tensor_guid_loss() {
+dynamic_tensor_guid_t mk_dynamic_tensor_guid_for_loss() {
   return dynamic_tensor_guid_t{dynamic_loss_tensor_guid_t{}};
 }
 

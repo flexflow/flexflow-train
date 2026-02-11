@@ -17,7 +17,7 @@ TaskArgumentAccessor make_task_argument_accessor_for_invocation(
     device_handle_t const &,
     std::optional<LossAttrs> const &,
     std::optional<PerDeviceOpState> const &,
-    FFIterationConfig,
+    FFIterationConfig const &,
     std::optional<OptimizerAttrs> const &,
     device_id_t);
 
@@ -28,7 +28,7 @@ std::optional<milliseconds_t>
                                     device_handle_t const &,
                                     std::optional<LossAttrs> const &,
                                     std::optional<PerDeviceOpState> const &,
-                                    FFIterationConfig,
+                                    FFIterationConfig const &,
                                     std::optional<OptimizerAttrs> const &,
                                     device_id_t);
 

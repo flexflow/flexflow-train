@@ -3,13 +3,14 @@
 
 namespace FlexFlow {
 
-dynamic_layer_guid_t mk_dynamic_layer_guid(layer_guid_t l) {
+dynamic_layer_guid_t mk_dynamic_layer_guid_for_cg_layer(layer_guid_t l) {
   return dynamic_layer_guid_t{l};
 }
-dynamic_layer_guid_t mk_dynamic_layer_guid_parallel(parallel_layer_guid_t l) {
+dynamic_layer_guid_t
+    mk_dynamic_layer_guid_for_parallel_layer(parallel_layer_guid_t l) {
   return dynamic_layer_guid_t{l};
 }
-dynamic_layer_guid_t mk_dynamic_layer_guid_loss() {
+dynamic_layer_guid_t mk_dynamic_layer_guid_for_loss() {
   return dynamic_layer_guid_t{dynamic_loss_layer_guid_t{}};
 }
 
