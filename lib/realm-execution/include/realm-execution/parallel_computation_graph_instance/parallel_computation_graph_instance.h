@@ -23,30 +23,27 @@ namespace FlexFlow {
 struct ParallelComputationGraphInstance {
 public:
   ParallelComputationGraphInstance(RealmContext &,
-                                   DynamicOpenDataflowGraph,
                                    std::vector<DynamicNodeInvocation> const &,
                                    OptimizerAttrs const &,
                                    std::optional<LossAttrs> const &,
-                                   std::optional<GenericTensorAccessorW>);
-  DynamicOpenDataflowGraph const &get_dynamic_dataflow_graph() const;
-  Allocator &get_allocator() const;
-  std::vector<DynamicNodeInvocation> const &get_topological_ordering() const;
+                                   std::optional<Realm::RegionInstance>);
+  RealmContext &get_realm_context();
+  std::vector<DynamicNodeInvocation> const &get_execution_order() const;
   OptimizerAttrs const &get_optimizer_attrs() const;
   void update_optimizer_attrs_for_next_iter();
   std::optional<LossAttrs> const &get_loss_attrs() const;
-  std::optional<GenericTensorAccessorR> get_loss_tensor_accessor() const;
+  std::optional<Realm::RegionInstance> get_loss_tensor_instance() const;
 
 private:
-  RealmContext &realm;
-  DynamicOpenDataflowGraph dataflow_graph;
-  std::vector<DynamicNodeInvocation> topological_ordering;
+  RealmContext &ctx;
+  std::vector<DynamicNodeInvocation> execution_order;
   OptimizerAttrs optimizer_attrs;
   std::optional<LossAttrs> loss_attrs;
-  std::optional<GenericTensorAccessorW> logit_grad_tensor;
+  std::optional<Realm::RegionInstance> logit_grad_tensor;
 };
 
 ParallelComputationGraphInstance create_parallel_computation_graph_instance(
-    RealmContext &realm,
+    RealmContext &ctx,
     MappedParallelComputationGraph const &mpcg,
     OptimizerAttrs const &optimizer_attrs,
     std::optional<LossAttrs> const &loss_attrs,
