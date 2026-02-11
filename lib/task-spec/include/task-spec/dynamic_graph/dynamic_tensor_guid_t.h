@@ -8,7 +8,8 @@
 namespace FlexFlow {
 
 dynamic_tensor_guid_t mk_dynamic_tensor_guid_for_tensor_guid(tensor_guid_t);
-dynamic_tensor_guid_t mk_dynamic_tensor_guid_for_parallel_tensor_guid(parallel_tensor_guid_t);
+dynamic_tensor_guid_t
+    mk_dynamic_tensor_guid_for_parallel_tensor_guid(parallel_tensor_guid_t);
 dynamic_tensor_guid_t mk_dynamic_tensor_guid_for_loss();
 
 } // namespace FlexFlow
