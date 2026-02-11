@@ -29,7 +29,7 @@ public:
   Realm::Processor get_current_processor() const;
   Allocator &get_current_device_allocator() const;
   device_handle_t const &get_current_device_handle() const;
-  device_id_t const &get_current_device_idx() const;
+  device_id_t get_current_device_idx() const;
 
   // Task creation
   Realm::Event spawn_task(Realm::Processor proc,
