@@ -30,7 +30,7 @@ DynamicNodeInvocation
                     FFIterationConfig const &iteration_config,
                     OptimizerAttrs const &optimizer_attrs,
                     device_id_t device_idx) {
-  if (!i.node_attrs.op_attrs) {
+  if (!i.node_attrs.op_attrs.has_value()) {
     return i;
   }
 
@@ -56,22 +56,9 @@ DynamicNodeInvocation
   std::optional<DeviceSpecificPerDeviceOpState> per_device_op_state =
       call_init_task_impl(op_attrs, arg_accessor);
 
-  DynamicNodeAttrs node_attrs{
-      /*task_type=*/i.node_attrs.task_type,
-      /*device_coord=*/i.node_attrs.device_coord,
-      /*mapping=*/i.node_attrs.mapping,
-      /*op_attrs=*/i.node_attrs.op_attrs,
-      /*layer_guid=*/i.node_attrs.layer_guid,
-      /*per_device_op_state=*/per_device_op_state,
-  };
-  return DynamicNodeInvocation{
-      /*inputs=*/
-      i.inputs,
-      /*node_attrs=*/
-      node_attrs,
-      /*outputs=*/
-      i.outputs,
-  };
+  DynamicNodeInvocation result = i;
+  result.node_attrs.per_device_op_state = per_device_op_state;
+  return result;
 }
 
 DynamicOpenDataflowGraph perform_device_state_initialization(
@@ -83,7 +70,6 @@ DynamicOpenDataflowGraph perform_device_state_initialization(
     OptimizerAttrs const &optimizer_attrs,
     device_id_t device_idx) {
 
-  // Initialize all operators and save the per-device op state
   ASSERT(no_nodes_are_initialized(dg));
   DynamicOpenDataflowGraph result = transform_dynamic_invocation_set(
       dg, [&](DynamicNodeInvocation const &invocation) {
@@ -95,6 +81,7 @@ DynamicOpenDataflowGraph perform_device_state_initialization(
                                optimizer_attrs,
                                device_idx);
       });
+  ASSERT(all_nodes_are_initialized(dg));
 
   return result;
 }

@@ -26,11 +26,6 @@ LocalTaskArgumentAccessor::LocalTaskArgumentAccessor(
       iteration_config(iteration_config), optimizer_attrs(optimizer_attrs),
       device_idx(device_idx) {}
 
-ConcreteArgSpec const &
-    LocalTaskArgumentAccessor::get_concrete_arg(arg_slot_id_t) const {
-  NOT_IMPLEMENTED();
-}
-
 GenericTensorAccessor
     LocalTaskArgumentAccessor::get_tensor(TaskTensorParameter slot,
                                           Permissions priv) const {

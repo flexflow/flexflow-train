@@ -123,7 +123,7 @@ std::optional<milliseconds_t> execute_dynamic_node_invocation(
       call_loss_task_impl(arg_accessor);
       break;
     default:
-      PANIC("Unhandled DynamicTaskType", fmt::to_string(task_type));
+      PANIC("Unhandled DynamicTaskType", task_type);
   }
   return result;
 }

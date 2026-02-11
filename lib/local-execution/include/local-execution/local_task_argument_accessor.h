@@ -27,8 +27,6 @@ struct LocalTaskArgumentAccessor : public ITaskArgumentAccessor {
   LocalTaskArgumentAccessor(LocalTaskArgumentAccessor const &) = delete;
   LocalTaskArgumentAccessor(LocalTaskArgumentAccessor &&) = delete;
 
-  ConcreteArgSpec const &get_concrete_arg(arg_slot_id_t) const override;
-
   GenericTensorAccessor get_tensor(TaskTensorParameter slot,
                                    Permissions priv) const override;
 

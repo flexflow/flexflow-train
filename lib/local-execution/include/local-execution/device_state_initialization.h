@@ -23,6 +23,9 @@ DynamicNodeInvocation
                     OptimizerAttrs const &optimizer_attrs,
                     device_id_t device_idx);
 
+/**
+ * @brief Initialize all operators and save the per-device op state
+ */
 DynamicOpenDataflowGraph perform_device_state_initialization(
     DynamicOpenDataflowGraph const &,
     Allocator &allocator,
