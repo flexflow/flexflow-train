@@ -114,6 +114,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*device_coord=*/mc2,
             /*mapping=*/std::nullopt,
             /*op_attrs=*/std::nullopt,
+            /*loss_attrs=*/std::nullopt,
             /*layer_guid=*/
             dynamic_layer_guid_t{parallel_layer_guid_t{Node{invocation1_id}}},
             /*per_device_op_state=*/std::nullopt,
@@ -141,6 +142,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*device_coord=*/mc1,
             /*mapping=*/std::nullopt,
             /*op_attrs=*/std::nullopt,
+            /*loss_attrs=*/std::nullopt,
             /*layer_guid=*/
             dynamic_layer_guid_t{parallel_layer_guid_t{Node{invocation2_id}}},
             /*per_device_op_state=*/std::nullopt,
@@ -175,6 +177,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*device_coord=*/mc2,
             /*mapping=*/std::nullopt,
             /*op_attrs=*/std::nullopt,
+            /*loss_attrs=*/std::nullopt,
             /*layer_guid=*/
             dynamic_layer_guid_t{parallel_layer_guid_t{Node{invocation3_id}}},
             /*per_device_op_state=*/std::nullopt,

@@ -12,6 +12,7 @@ includes = [
   "task-spec/dynamic_graph/dynamic_task_type.dtg.h",
   "pcg/machine_space_coordinate.dtg.h",
   "pcg/mapped_parallel_computation_graph/mapped_operator_task_group.h",
+  "op-attrs/ops/loss_functions/loss_attrs.dtg.h",
   "op-attrs/pcg_operator_attrs.dtg.h",
   "task-spec/dynamic_graph/dynamic_layer_guid_t.dtg.h",
   "task-spec/device_specific_per_device_op_state.dtg.h",
@@ -36,6 +37,10 @@ type = "std::optional<::FlexFlow::MappedOperatorTaskGroup>"
 [[fields]]
 name = "op_attrs"
 type = "std::optional<::FlexFlow::PCGOperatorAttrs>"
+
+[[fields]]
+name = "loss_attrs"
+type = "std::optional<::FlexFlow::LossAttrs>"
 
 [[fields]]
 name = "layer_guid"

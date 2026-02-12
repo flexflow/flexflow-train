@@ -2,7 +2,6 @@
 #define _FLEXFLOW_LIB_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_TASK_EXECUTION_H
 
 #include "kernels/profiling_settings.dtg.h"
-#include "op-attrs/ops/loss_functions/loss_attrs.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/per_device_op_state.dtg.h"
 #include "task-spec/task_argument_accessor/task_argument_accessor.h"
@@ -11,26 +10,24 @@
 namespace FlexFlow {
 
 TaskArgumentAccessor make_task_argument_accessor_for_invocation(
-    DynamicNodeInvocation const &,
-    Allocator &,
-    ProfilingSettings const &,
-    device_handle_t const &,
-    std::optional<LossAttrs> const &,
-    std::optional<PerDeviceOpState> const &,
-    FFIterationConfig const &,
-    std::optional<OptimizerAttrs> const &,
-    device_id_t);
+    DynamicNodeInvocation const &invocation,
+    Allocator &allocator,
+    ProfilingSettings const &profiling_settings,
+    device_handle_t const &ff_handle,
+    std::optional<PerDeviceOpState> const &per_device_op_state,
+    FFIterationConfig const &iteration_config,
+    std::optional<OptimizerAttrs> const &optimizer_attrs,
+    device_id_t device_idx);
 
-std::optional<milliseconds_t>
-    execute_dynamic_node_invocation(DynamicNodeInvocation const &,
-                                    Allocator &,
-                                    ProfilingSettings const &,
-                                    device_handle_t const &,
-                                    std::optional<LossAttrs> const &,
-                                    std::optional<PerDeviceOpState> const &,
-                                    FFIterationConfig const &,
-                                    std::optional<OptimizerAttrs> const &,
-                                    device_id_t);
+std::optional<milliseconds_t> execute_dynamic_node_invocation(
+    DynamicNodeInvocation const &invocation,
+    Allocator &allocator,
+    ProfilingSettings const &profiling_settings,
+    device_handle_t const &ff_handle,
+    std::optional<PerDeviceOpState> const &per_device_op_state,
+    FFIterationConfig const &iteration_config,
+    std::optional<OptimizerAttrs> const &optimizer_attrs,
+    device_id_t device_idx);
 
 } // namespace FlexFlow
 

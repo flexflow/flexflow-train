@@ -5,7 +5,10 @@
 #include "pcg/optimizer_attrs.h"
 #include "pcg/optimizer_slot_name.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_slot.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
 #include "task-spec/task_argument_accessor/task_tensor_parameter.h"
+#include "utils/containers/binary_merge_disjoint_maps.h"
+#include "utils/containers/map_keys_and_values.h"
 #include "utils/containers/transform.h"
 #include "utils/exception.h"
 #include "utils/optional.h"
@@ -44,27 +47,20 @@ TaskArgumentAccessor make_task_argument_accessor_for_invocation(
     Allocator &allocator,
     ProfilingSettings const &profiling_settings,
     device_handle_t const &ff_handle,
-    std::optional<LossAttrs> const &loss_attrs,
     std::optional<PerDeviceOpState> const &per_device_op_state,
     FFIterationConfig const &iteration_config,
     std::optional<OptimizerAttrs> const &optimizer_attrs,
     device_id_t device_idx) {
+  auto make_param = [&](DynamicTensorSlot const &slot) {
+    return make_task_tensor_parameter_from_dynamic_slot(slot, optimizer_attrs);
+  };
+  auto get_accessor = [](DynamicValueAttrs const &value) {
+    return assert_unwrap(value.accessor);
+  };
   std::unordered_map<TaskTensorParameter, DynamicTensorAccessor>
-      tensor_slots_backing;
-  for (auto const &[slot, input] : invocation.inputs) {
-    TaskTensorParameter param =
-        make_task_tensor_parameter_from_dynamic_slot(slot, optimizer_attrs);
-    DynamicTensorAccessor accessor = assert_unwrap(input.accessor);
-    bool ok = tensor_slots_backing.insert(std::pair{param, accessor}).second;
-    ASSERT(ok);
-  }
-  for (auto const &[slot, output] : invocation.outputs) {
-    TaskTensorParameter param =
-        make_task_tensor_parameter_from_dynamic_slot(slot, optimizer_attrs);
-    DynamicTensorAccessor accessor = assert_unwrap(output.accessor);
-    bool ok = tensor_slots_backing.insert(std::pair{param, accessor}).second;
-    ASSERT(ok);
-  }
+      tensor_slots_backing = binary_merge_disjoint_maps(
+          map_keys_and_values(invocation.inputs, make_param, get_accessor),
+          map_keys_and_values(invocation.outputs, make_param, get_accessor));
 
   return TaskArgumentAccessor::create<LocalTaskArgumentAccessor>(
       /*allocator=*/allocator,
@@ -72,7 +68,7 @@ TaskArgumentAccessor make_task_argument_accessor_for_invocation(
       /*profiling_settings=*/profiling_settings,
       /*ff_handle=*/ff_handle,
       /*op_attrs=*/invocation.node_attrs.op_attrs,
-      /*loss_attrs=*/loss_attrs,
+      /*loss_attrs=*/invocation.node_attrs.loss_attrs,
       /*per_device_op_state=*/per_device_op_state,
       /*iteration_config=*/iteration_config,
       /*optimizer_attrs=*/optimizer_attrs,
@@ -84,7 +80,6 @@ std::optional<milliseconds_t> execute_dynamic_node_invocation(
     Allocator &allocator,
     ProfilingSettings const &profiling_settings,
     device_handle_t const &ff_handle,
-    std::optional<LossAttrs> const &loss_attrs,
     std::optional<PerDeviceOpState> const &per_device_op_state,
     FFIterationConfig const &iteration_config,
     std::optional<OptimizerAttrs> const &optimizer_attrs,
@@ -95,7 +90,6 @@ std::optional<milliseconds_t> execute_dynamic_node_invocation(
           /*allocator=*/allocator,
           /*profiling_settings=*/profiling_settings,
           /*ff_handle=*/ff_handle,
-          /*loss_attrs=*/loss_attrs,
           /*per_device_op_state=*/per_device_op_state,
           /*iteration_config=*/iteration_config,
           /*optimizer_attrs=*/optimizer_attrs,

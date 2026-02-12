@@ -1,10 +1,13 @@
 #include "local-execution/device_state_initialization.h"
 #include "local-execution/local_task_registry.h"
 #include "local-execution/task_execution.h"
+#include "op-attrs/computation_graph_op_attrs.dtg.h"
 #include "op-attrs/computation_graph_op_attrs.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "utils/containers/all_are_true.h"
 #include "utils/containers/transform.h"
+#include "utils/optional.h"
+#include <optional>
 
 namespace FlexFlow {
 
@@ -18,7 +21,13 @@ bool no_nodes_are_initialized(DynamicOpenDataflowGraph const &g) {
 bool all_nodes_are_initialized(DynamicOpenDataflowGraph const &g) {
   return all_are_true(
       transform(get_dynamic_nodes(g), [](DynamicNodeAttrs const &n) -> bool {
-        return n.per_device_op_state.has_value();
+        // Note: we expect device state to be initialized IFF the init task is
+        // defined
+        std::optional<ComputationGraphOpAttrs> op_attrs =
+            and_then(n.op_attrs, compgraph_op_attrs_from_pcg_op_attrs);
+        std::optional<TaskImplFunction> init_task_impl =
+            and_then(op_attrs, get_init_task_impl_for_op_attrs);
+        return init_task_impl.has_value() == n.per_device_op_state.has_value();
       }));
 }
 
@@ -46,7 +55,6 @@ DynamicNodeInvocation
           /*allocator=*/allocator,
           /*profiling_settings=*/profiling_settings,
           /*ff_handle=*/device_handle,
-          /*loss_attrs=*/std::nullopt,
           /*per_device_op_state=*/std::nullopt,
           /*iteration_config=*/iteration_config,
           /*optimizer_attrs=*/optimizer_attrs,
@@ -81,8 +89,7 @@ DynamicOpenDataflowGraph perform_device_state_initialization(
                                optimizer_attrs,
                                device_idx);
       });
-  // FIXME: this assert fails because not all kinds of nodes require
-  // initialization ASSERT(all_nodes_are_initialized(dg));
+  ASSERT(all_nodes_are_initialized(dg));
 
   return result;
 }

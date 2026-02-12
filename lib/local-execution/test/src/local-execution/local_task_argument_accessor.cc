@@ -69,8 +69,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     SUBCASE("get_tensor") {
-      SUBCASE("get_tensor(TensorSlotName, Permissions::RO, "
-              "TrainingTensorType::FORWARD)") {
+      SUBCASE("get_tensor for read-only forward tensor") {
         GenericTensorAccessor correct = GenericTensorAccessor{
             read_only_accessor_from_write_accessor(input)};
         GenericTensorAccessor result = acc.get_tensor(
@@ -79,8 +78,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         CHECK(correct == result);
       }
 
-      SUBCASE("get_tensor(TensorSlotName, Permissions::RO, "
-              "TrainingTensorType::GRADIENT)") {
+      SUBCASE("get_tensor for read-only gradient tensor") {
         GenericTensorAccessor correct = GenericTensorAccessor{
             read_only_accessor_from_write_accessor(input_grad)};
         GenericTensorAccessor result = acc.get_tensor(
@@ -89,8 +87,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         CHECK(correct == result);
       }
 
-      SUBCASE("get_tensor(TensorSlotName, Permissions::WO, "
-              "TrainingTensorType::FORWARD)") {
+      SUBCASE("get_tensor for write-only forward tensor") {
         GenericTensorAccessor correct = GenericTensorAccessor{input};
         GenericTensorAccessor result = acc.get_tensor(
             make_task_tensor_parameter_fwd(TensorSlotName::LHS_INPUT),
@@ -98,8 +95,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         CHECK(correct == result);
       }
 
-      SUBCASE("get_tensor(TensorSlotName, Permissions::WO, "
-              "TrainingTensorType::GRADIENT)") {
+      SUBCASE("get_tensor for write-only gradient tensor") {
         GenericTensorAccessor correct = GenericTensorAccessor{input_grad};
         GenericTensorAccessor result = acc.get_tensor(
             make_task_tensor_parameter_grad(TensorSlotName::LHS_INPUT),
@@ -107,8 +103,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         CHECK(correct == result);
       }
 
-      SUBCASE("get_tensor(TensorSlotName, Permissions::RW, "
-              "TrainingTensorType::FORWARD)") {
+      SUBCASE("get_tensor for read-write forward tensor") {
         GenericTensorAccessor correct = GenericTensorAccessor{input};
         GenericTensorAccessor result = acc.get_tensor(
             make_task_tensor_parameter_fwd(TensorSlotName::LHS_INPUT),
@@ -116,8 +111,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         CHECK(correct == result);
       }
 
-      SUBCASE("get_tensor(TensorSlotName, Permissions::RW, "
-              "TrainingTensorType::GRADIENT)") {
+      SUBCASE("get_tensor for read-write gradient tensor") {
         GenericTensorAccessor correct = GenericTensorAccessor{input_grad};
         GenericTensorAccessor result = acc.get_tensor(
             make_task_tensor_parameter_grad(TensorSlotName::LHS_INPUT),

@@ -24,28 +24,26 @@ namespace FlexFlow {
 struct ComputationGraphInstance {
 public:
   ComputationGraphInstance() = delete;
-  explicit ComputationGraphInstance(std::vector<DynamicNodeInvocation> const &,
-                                    Allocator &,
-                                    OptimizerAttrs const &,
-                                    std::optional<LossAttrs> const &,
-                                    std::optional<GenericTensorAccessorW>);
+  explicit ComputationGraphInstance(
+      std::vector<DynamicNodeInvocation> const &execution_order,
+      Allocator &allocator,
+      OptimizerAttrs const &optimizer_attrs,
+      std::optional<GenericTensorAccessorW> logit_grad_tensor);
   std::vector<DynamicNodeInvocation> const &get_execution_order() const;
   Allocator &get_allocator() const;
   OptimizerAttrs const &get_optimizer_attrs() const;
   void update_optimizer_attrs_for_next_iter();
-  std::optional<LossAttrs> const &get_loss_attrs() const;
   std::optional<GenericTensorAccessorR> get_loss_tensor_accessor() const;
 
 private:
   std::vector<DynamicNodeInvocation> execution_order;
   Allocator &allocator;
   OptimizerAttrs optimizer_attrs;
-  std::optional<LossAttrs> loss_attrs;
   std::optional<GenericTensorAccessorW> logit_grad_tensor;
 };
 
 ComputationGraphInstance create_computation_graph_instance(
-    ComputationGraph const &compgraph,
+    ComputationGraph const &cg,
     OptimizerAttrs const &optimizer_attrs,
     std::optional<LossAttrs> const &loss_attrs,
     std::optional<GenericTensorAccessorR> label_tensor,
@@ -60,27 +58,27 @@ ComputationGraphInstance create_computation_graph_instance(
 
 std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
     perform_all_passes_for_computation_graph_instance(
-        ComputationGraphInstance &,
+        ComputationGraphInstance &instance,
         ProfilingSettings const &profiling_settings,
         device_handle_t const &ff_handle,
         FFIterationConfig iteration_config,
         device_id_t device_idx);
 std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
     perform_forward_pass_for_computation_graph_instance(
-        ComputationGraphInstance const &,
+        ComputationGraphInstance const &instance,
         ProfilingSettings const &profiling_settings,
         device_handle_t const &ff_handle,
         FFIterationConfig iteration_config,
         device_id_t device_idx);
 std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
     perform_backward_pass_for_computation_graph_instance(
-        ComputationGraphInstance const &,
+        ComputationGraphInstance const &instance,
         ProfilingSettings const &profiling_settings,
         device_handle_t const &ff_handle,
         FFIterationConfig iteration_config,
         device_id_t device_idx);
 void perform_update_pass_for_computation_graph_instance(
-    ComputationGraphInstance &,
+    ComputationGraphInstance &instance,
     ProfilingSettings const &profiling_settings,
     device_handle_t const &ff_handle,
     FFIterationConfig iteration_config,

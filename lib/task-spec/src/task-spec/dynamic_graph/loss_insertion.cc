@@ -51,6 +51,7 @@ std::tuple<DynamicOpenDataflowGraph, DynamicValueAttrs, DynamicValueAttrs>
           /*device_coord=*/std::nullopt,
           /*mapping=*/std::nullopt,
           /*op_attrs=*/std::nullopt,
+          /*loss_attrs=*/loss_attrs,
           /*layer_guid=*/mk_dynamic_layer_guid_for_loss(),
           /*per_device_op_state=*/std::nullopt,
       },

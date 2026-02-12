@@ -26,11 +26,9 @@ ComputationGraphInstance::ComputationGraphInstance(
     std::vector<DynamicNodeInvocation> const &execution_order,
     Allocator &allocator,
     OptimizerAttrs const &optimizer_attrs,
-    std::optional<LossAttrs> const &loss_attrs,
     std::optional<GenericTensorAccessorW> logit_grad_tensor)
     : execution_order(execution_order), allocator(allocator),
-      optimizer_attrs(optimizer_attrs), loss_attrs(loss_attrs),
-      logit_grad_tensor(logit_grad_tensor) {}
+      optimizer_attrs(optimizer_attrs), logit_grad_tensor(logit_grad_tensor) {}
 
 std::vector<DynamicNodeInvocation> const &
     ComputationGraphInstance::get_execution_order() const {
@@ -45,10 +43,6 @@ OptimizerAttrs const &ComputationGraphInstance::get_optimizer_attrs() const {
 void ComputationGraphInstance::update_optimizer_attrs_for_next_iter() {
   this->optimizer_attrs =
       get_optimizer_attrs_for_next_iter(this->optimizer_attrs);
-}
-std::optional<LossAttrs> const &
-    ComputationGraphInstance::get_loss_attrs() const {
-  return this->loss_attrs;
 }
 std::optional<GenericTensorAccessorR>
     ComputationGraphInstance::get_loss_tensor_accessor() const {
@@ -116,11 +110,8 @@ ComputationGraphInstance create_computation_graph_instance(
   std::vector<DynamicNodeInvocation> invocation_topo_order = transform(
       node_topo_order, [&](Node node) { return node_map.at_l(node); });
 
-  return ComputationGraphInstance{invocation_topo_order,
-                                  allocator,
-                                  optimizer_attrs,
-                                  loss_attrs,
-                                  logit_grad_tensor};
+  return ComputationGraphInstance{
+      invocation_topo_order, allocator, optimizer_attrs, logit_grad_tensor};
 }
 
 static std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
@@ -130,7 +121,6 @@ static std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
         OptimizerAttrs const &optimizer_attrs,
         ProfilingSettings const &profiling_settings,
         device_handle_t const &ff_handle,
-        std::optional<LossAttrs> const &loss_attrs,
         FFIterationConfig iteration_config,
         device_id_t device_idx) {
   return unordered_map_from_pairs(
@@ -140,7 +130,6 @@ static std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
             /*allocator=*/allocator,
             /*profiling_settings=*/profiling_settings,
             /*ff_handle=*/ff_handle,
-            /*loss_attrs=*/loss_attrs,
             /*per_device_op_state=*/
             transform(invocation.node_attrs.per_device_op_state,
                       [&](DeviceSpecificPerDeviceOpState const &op_state) {
@@ -170,7 +159,6 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
           /*optimizer_attrs=*/instance.get_optimizer_attrs(),
           /*profiling_settings=*/profiling_settings,
           /*ff_handle=*/ff_handle,
-          /*loss_attrs=*/instance.get_loss_attrs(),
           /*iteration_config=*/iteration_config,
           /*device_idx=*/device_idx);
   instance.update_optimizer_attrs_for_next_iter();
@@ -198,7 +186,6 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
       /*optimizer_attrs=*/instance.get_optimizer_attrs(),
       /*profiling_settings=*/profiling_settings,
       /*ff_handle=*/ff_handle,
-      /*loss_attrs=*/instance.get_loss_attrs(),
       /*iteration_config=*/iteration_config,
       /*device_idx=*/device_idx);
 }
@@ -224,7 +211,6 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
       /*optimizer_attrs=*/instance.get_optimizer_attrs(),
       /*profiling_settings=*/profiling_settings,
       /*ff_handle=*/ff_handle,
-      /*loss_attrs=*/instance.get_loss_attrs(),
       /*iteration_config=*/iteration_config,
       /*device_idx=*/device_idx);
 }
@@ -249,7 +235,6 @@ void perform_update_pass_for_computation_graph_instance(
       /*optimizer_attrs=*/instance.get_optimizer_attrs(),
       /*profiling_settings=*/profiling_settings,
       /*ff_handle=*/ff_handle,
-      /*loss_attrs=*/instance.get_loss_attrs(),
       /*iteration_config=*/iteration_config,
       /*device_idx=*/device_idx);
   instance.update_optimizer_attrs_for_next_iter();

@@ -12,7 +12,6 @@
 namespace FlexFlow {
 
 bool no_nodes_are_initialized(DynamicOpenDataflowGraph const &g);
-bool all_nodes_are_initialized(DynamicOpenDataflowGraph const &g);
 
 DynamicNodeInvocation
     initialize_node(DynamicNodeInvocation const &i,

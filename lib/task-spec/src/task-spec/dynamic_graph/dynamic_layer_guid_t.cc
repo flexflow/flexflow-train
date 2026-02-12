@@ -7,7 +7,7 @@ dynamic_layer_guid_t mk_dynamic_layer_guid_for_cg_layer(layer_guid_t l) {
   return dynamic_layer_guid_t{l};
 }
 dynamic_layer_guid_t
-    mk_dynamic_layer_guid_for_parallel_layer(parallel_layer_guid_t l) {
+    mk_dynamic_layer_guid_for_pcg_layer(parallel_layer_guid_t l) {
   return dynamic_layer_guid_t{l};
 }
 dynamic_layer_guid_t mk_dynamic_layer_guid_for_loss() {
