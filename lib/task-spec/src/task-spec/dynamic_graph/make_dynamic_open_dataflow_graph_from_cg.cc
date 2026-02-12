@@ -1,9 +1,12 @@
 #include "task-spec/dynamic_graph/make_dynamic_open_dataflow_graph_from_cg.h"
+#include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/pcg_operator_attrs.h"
 #include "pcg/computation_graph.h"
+#include "pcg/tensor_attrs.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_layer_guid_t.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
+#include "task-spec/dynamic_graph/training_operation_attrs.dtg.h"
 #include "utils/containers/generate_map.h"
 #include <optional>
 #include <unordered_map>
@@ -20,7 +23,9 @@ DynamicOpenDataflowGraph
         /*task_type=*/std::nullopt,
         /*device_coord=*/std::nullopt,
         /*mapping=*/std::nullopt,
-        /*op_attrs=*/pcg_op_attrs_from_compgraph_op_attrs(attrs.op_attrs),
+        /*op_attrs=*/
+        TrainingOperationAttrs{
+            pcg_op_attrs_from_compgraph_op_attrs(attrs.op_attrs)},
         /*pcg_layer_guid=*/dynamic_layer_guid_t{layer},
         /*per_device_op_state=*/std::nullopt,
     };
@@ -28,7 +33,8 @@ DynamicOpenDataflowGraph
     std::unordered_map<DynamicTensorSlot, DynamicValueAttrs> result_inputs =
         transform(
             get_incoming_tensors(cg, layer),
-            [](TensorSlotName const &slot_name, tensor_guid_t const &tensor) {
+            [&](TensorSlotName const &slot_name, tensor_guid_t const &tensor) {
+              TensorAttrs attrs = get_tensor_attrs(cg, tensor);
               return std::pair<DynamicTensorSlot, DynamicValueAttrs>{
                   DynamicTensorSlot{
                       /*slot_name=*/slot_name,
@@ -36,7 +42,7 @@ DynamicOpenDataflowGraph
                   },
                   DynamicValueAttrs{
                       /*tensor_guid=*/dynamic_tensor_guid_t{tensor},
-                      /*parallel_tensor_shape=*/std::nullopt,
+                      /*parallel_tensor_shape=*/lift_to_parallel(attrs.shape),
                       /*shard_coord=*/std::nullopt,
                       /*accessor=*/std::nullopt,
                       /*role=*/std::nullopt,
@@ -46,7 +52,8 @@ DynamicOpenDataflowGraph
     std::unordered_map<DynamicTensorSlot, DynamicValueAttrs> result_outputs =
         transform(
             get_outgoing_tensors(cg, layer),
-            [](TensorSlotName const &slot_name, tensor_guid_t const &tensor) {
+            [&](TensorSlotName const &slot_name, tensor_guid_t const &tensor) {
+              TensorAttrs attrs = get_tensor_attrs(cg, tensor);
               return std::pair<DynamicTensorSlot, DynamicValueAttrs>{
                   DynamicTensorSlot{
                       /*slot_name=*/slot_name,
@@ -54,7 +61,7 @@ DynamicOpenDataflowGraph
                   },
                   DynamicValueAttrs{
                       /*tensor_guid=*/dynamic_tensor_guid_t{tensor},
-                      /*parallel_tensor_shape=*/std::nullopt,
+                      /*parallel_tensor_shape=*/lift_to_parallel(attrs.shape),
                       /*shard_coord=*/std::nullopt,
                       /*accessor=*/std::nullopt,
                       /*role=*/std::nullopt,
@@ -62,7 +69,7 @@ DynamicOpenDataflowGraph
               };
             });
 
-    result.invocations.emplace(result_outputs, result_attrs, result_outputs);
+    result.invocations.emplace(result_inputs, result_attrs, result_outputs);
   }
 
   return result;

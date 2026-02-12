@@ -11,6 +11,7 @@ features = [
 
 includes = [
   "task-spec/fwb_tensor_type.dtg.h",
+  "task-spec/dynamic_graph/dynamic_loss_tensor_role.dtg.h",
   "task-spec/dynamic_graph/dynamic_optimizer_tensor_role.dtg.h",
 ]
 
@@ -21,3 +22,7 @@ key = "fwb_tensor"
 [[values]]
 type = "::FlexFlow::DynamicOptimizerTensorRole"
 key = "optimizer_tensor"
+
+[[values]]
+type = "::FlexFlow::DynamicLossTensorRole"
+key = "loss_tensor"

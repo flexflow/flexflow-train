@@ -47,8 +47,8 @@ static std::optional<milliseconds_t>
   LinearAttrs attrs = acc.get_op_attrs().require_linear();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
   ProfilingSettings profiling = acc.get_profiling_settings();
-  LinearPerDeviceState per_device_state =
-      acc.get_per_device_op_state().require_linear().value();
+  std::optional<LinearPerDeviceState> per_device_state =
+      acc.get_per_device_op_state().require_linear();
 
   std::optional<GenericTensorAccessorR> bias = std::nullopt;
   if (attrs.use_bias) {
@@ -84,8 +84,8 @@ static std::optional<milliseconds_t>
   LinearAttrs attrs = acc.get_op_attrs().require_linear();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
   ProfilingSettings profiling = acc.get_profiling_settings();
-  LinearPerDeviceState per_device_state =
-      acc.get_per_device_op_state().require_linear().value();
+  std::optional<LinearPerDeviceState> per_device_state =
+      acc.get_per_device_op_state().require_linear();
 
   std::optional<GenericTensorAccessorW> bias_grad = std::nullopt;
   if (attrs.use_bias) {

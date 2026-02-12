@@ -1,9 +1,10 @@
 #include "task-spec/dynamic_graph/update_insertion.h"
+#include "op-attrs/pcg_operator_attrs.dtg.h"
 #include "pcg/optimizer_attrs.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
-#include "task-spec/dynamic_graph/dynamic_tensor_slot.h"
-#include "task-spec/dynamic_graph/dynamic_value_attrs.h"
+#include "task-spec/dynamic_graph/dynamic_tensor_slot.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
 #include "task-spec/optimizer.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/map_from_pairs.h"
@@ -13,7 +14,8 @@ namespace FlexFlow {
 
 static std::pair<DynamicTensorSlot, DynamicValueAttrs>
     get_weight_output(DynamicNodeInvocation const &i) {
-  ASSERT(i.node_attrs.op_attrs.value().is_weight());
+  ASSERT(i.node_attrs.op_attrs.value().is_pcg_op());
+  ASSERT(i.node_attrs.op_attrs.value().require_pcg_op().is_weight());
   ASSERT(i.inputs.size() == 0);
 
   auto [slot, value_attrs] = get_only(i.outputs);
@@ -22,6 +24,23 @@ static std::pair<DynamicTensorSlot, DynamicValueAttrs>
       slot,
       value_attrs,
   };
+}
+
+static DynamicTensorSlot tensor_slot_with_role(DynamicTensorSlot const &slot,
+                                               DynamicTensorRole role) {
+  DynamicTensorSlot result = slot;
+  result.slot_tensor_role = role;
+
+  return result;
+}
+
+static DynamicValueAttrs
+    dynamic_value_attrs_with_role(DynamicValueAttrs const &attrs,
+                                  DynamicTensorRole role) {
+  DynamicValueAttrs result = attrs;
+  result.role = role;
+
+  return result;
 }
 
 static DynamicNodeInvocation get_update_invocation_for_invocation(
@@ -38,13 +57,13 @@ static DynamicNodeInvocation get_update_invocation_for_invocation(
 
   auto create_binding_for_role = [&](DynamicTensorRole const &role)
       -> std::pair<DynamicTensorSlot, DynamicValueAttrs> {
-    DynamicTensorSlot binding_slot = decide_tensor_slot_role(slot, role);
-    DynamicValueAttrs value_attrs = decide_dynamic_value_attrs_role(
+    DynamicTensorSlot binding_slot = tensor_slot_with_role(slot, role);
+    DynamicValueAttrs binding_attrs = dynamic_value_attrs_with_role(
         value_attrs, mk_dynamic_tensor_role_fwd());
 
     return std::pair{
         binding_slot,
-        value_attrs,
+        binding_attrs,
     };
   };
 
@@ -70,7 +89,8 @@ std::unordered_set<DynamicNodeInvocation>
         OptimizerAttrs const &optimizer_attrs) {
 
   if (invocation.node_attrs.task_type.value() == DynamicTaskType::FWD &&
-      invocation.node_attrs.op_attrs.value().is_weight()) {
+      invocation.node_attrs.op_attrs.value().is_pcg_op() &&
+      invocation.node_attrs.op_attrs.value().require_pcg_op().is_weight()) {
     return std::unordered_set{
         invocation,
         get_update_invocation_for_invocation(invocation, optimizer_attrs),
