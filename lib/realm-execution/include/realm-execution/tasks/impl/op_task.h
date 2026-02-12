@@ -18,7 +18,6 @@ Realm::Event
                   Realm::Processor target_proc,
                   DynamicNodeInvocation const &invocation,
                   ProfilingSettings const &profiling_settings,
-                  std::optional<LossAttrs> const &loss_attrs,
                   FFIterationConfig const &iteration_config,
                   std::optional<OptimizerAttrs> const &optimizer_attrs);
 
