@@ -6,6 +6,7 @@
 #include "task-spec/dynamic_graph/dynamic_layer_guid_t.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
+#include "task-spec/dynamic_graph/training_operation_attrs.dtg.h"
 #include "utils/containers/generate_map.h"
 #include <optional>
 #include <unordered_map>
@@ -22,8 +23,9 @@ DynamicOpenDataflowGraph
         /*task_type=*/std::nullopt,
         /*device_coord=*/std::nullopt,
         /*mapping=*/std::nullopt,
-        /*op_attrs=*/pcg_op_attrs_from_compgraph_op_attrs(attrs.op_attrs),
-        /*loss_attrs=*/std::nullopt,
+        /*op_attrs=*/
+        TrainingOperationAttrs{
+            pcg_op_attrs_from_compgraph_op_attrs(attrs.op_attrs)},
         /*pcg_layer_guid=*/dynamic_layer_guid_t{layer},
         /*per_device_op_state=*/std::nullopt,
     };

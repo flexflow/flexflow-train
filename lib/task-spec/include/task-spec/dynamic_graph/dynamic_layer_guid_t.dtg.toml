@@ -14,13 +14,13 @@ includes = [
 ]
 
 [[values]]
-name = "layer_guid"
 type = "::FlexFlow::layer_guid_t"
+key = "layer_guid"
 
 [[values]]
-name = "pcg_layer_guid"
 type = "::FlexFlow::parallel_layer_guid_t"
+key = "pcg_layer_guid"
 
 [[values]]
-name = "loss_layer_guid"
 type = "::FlexFlow::dynamic_loss_layer_guid_t"
+key = "loss_layer_guid"

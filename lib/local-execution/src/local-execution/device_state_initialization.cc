@@ -26,14 +26,15 @@ DynamicNodeInvocation
                     FFIterationConfig const &iteration_config,
                     OptimizerAttrs const &optimizer_attrs,
                     device_id_t device_idx) {
-  if (!i.node_attrs.op_attrs.has_value()) {
+  if (!i.node_attrs.op_attrs.has_value() ||
+      i.node_attrs.op_attrs.value().is_pcg_op()) {
     return i;
   }
 
   // Get op
   ComputationGraphOpAttrs op_attrs =
       assert_unwrap(compgraph_op_attrs_from_pcg_op_attrs(
-          assert_unwrap(i.node_attrs.op_attrs)));
+          assert_unwrap(i.node_attrs.op_attrs).require_pcg_op()));
 
   // Prepare arguments
   TaskArgumentAccessor arg_accessor =

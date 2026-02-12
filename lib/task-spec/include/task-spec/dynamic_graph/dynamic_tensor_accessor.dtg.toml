@@ -12,9 +12,9 @@ includes = [
 ]
 
 [[values]]
-name = "accessor_r"
 type = "::FlexFlow::GenericTensorAccessorR"
+key = "read"
 
 [[values]]
-name = "accessor_w"
 type = "::FlexFlow::GenericTensorAccessorW"
+key = "write"

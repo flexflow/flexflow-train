@@ -55,7 +55,7 @@ static GenericTensorAccessorW
   std::optional<DynamicTensorAccessor> accessor =
       assert_unwrap(find_output_value_attrs(dg, value.tensor_guid, value.role))
           .accessor;
-  return assert_unwrap(accessor).get<GenericTensorAccessorW>();
+  return assert_unwrap(accessor).require_write();
 }
 
 ComputationGraphInstance create_computation_graph_instance(

@@ -1,0 +1,21 @@
+namespace = "FlexFlow"
+name = "TrainingOperationAttrs"
+type = "variant"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "op-attrs/ops/loss_functions/loss_attrs.dtg.h",
+  "op-attrs/pcg_operator_attrs.dtg.h",
+]
+
+[[values]]
+type = "::FlexFlow::PCGOperatorAttrs"
+key = "pcg_op"
+
+[[values]]
+type = "::FlexFlow::LossAttrs"
+key = "loss"

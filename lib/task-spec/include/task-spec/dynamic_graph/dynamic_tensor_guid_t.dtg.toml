@@ -14,13 +14,13 @@ includes = [
 ]
 
 [[values]]
-name = "tensor_guid"
 type = "::FlexFlow::tensor_guid_t"
+key = "cg_tensor"
 
 [[values]]
-name = "pcg_tensor_guid"
 type = "::FlexFlow::parallel_tensor_guid_t"
+key = "pcg_tensor"
 
 [[values]]
-name = "loss_tensor_guid"
 type = "::FlexFlow::dynamic_loss_tensor_guid_t"
+key = "loss_tensor"

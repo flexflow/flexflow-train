@@ -6,6 +6,7 @@
 #include "task-spec/dynamic_graph/dynamic_tensor_guid_t.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
+#include "task-spec/dynamic_graph/training_operation_attrs.dtg.h"
 #include "utils/optional.h"
 #include <optional>
 
@@ -45,8 +46,7 @@ LossInsertionResult perform_loss_insertion(DynamicOpenDataflowGraph const &dg,
           /*task_type=*/DynamicTaskType::LOSS,
           /*device_coord=*/std::nullopt,
           /*mapping=*/std::nullopt,
-          /*op_attrs=*/std::nullopt,
-          /*loss_attrs=*/loss_attrs,
+          /*op_attrs=*/TrainingOperationAttrs{loss_attrs},
           /*layer_guid=*/mk_dynamic_layer_guid_for_loss(),
           /*per_device_op_state=*/std::nullopt,
       },

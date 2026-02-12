@@ -142,7 +142,6 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*device_coord=*/std::nullopt,
             /*mapping=*/mapped_task_group,
             /*op_attrs=*/std::nullopt,
-            /*loss_attrs=*/std::nullopt,
             /*layer_guid=*/
             dynamic_layer_guid_t{parallel_layer_guid_t{Node{20}}},
             /*per_device_op_state=*/std::nullopt,
@@ -187,7 +186,6 @@ TEST_SUITE(FF_TEST_SUITE) {
               /*device_coord=*/device_coord,
               /*mapping=*/mapped_task_group,
               /*op_attrs=*/std::nullopt,
-              /*loss_attrs=*/std::nullopt,
               /*layer_guid=*/
               dynamic_layer_guid_t{parallel_layer_guid_t{Node{20}}},
               /*per_device_op_state=*/std::nullopt,

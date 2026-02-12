@@ -1,4 +1,5 @@
 #include "task-spec/dynamic_graph/update_insertion.h"
+#include "op-attrs/pcg_operator_attrs.dtg.h"
 #include "pcg/optimizer_attrs.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
@@ -13,7 +14,8 @@ namespace FlexFlow {
 
 static std::pair<DynamicTensorSlot, DynamicValueAttrs>
     get_weight_output(DynamicNodeInvocation const &i) {
-  ASSERT(i.node_attrs.op_attrs.value().is_weight());
+  ASSERT(i.node_attrs.op_attrs.value().is_pcg_op());
+  ASSERT(i.node_attrs.op_attrs.value().require_pcg_op().is_weight());
   ASSERT(i.inputs.size() == 0);
 
   auto [slot, value_attrs] = get_only(i.outputs);
@@ -87,7 +89,8 @@ std::unordered_set<DynamicNodeInvocation>
         OptimizerAttrs const &optimizer_attrs) {
 
   if (invocation.node_attrs.task_type.value() == DynamicTaskType::FWD &&
-      invocation.node_attrs.op_attrs.value().is_weight()) {
+      invocation.node_attrs.op_attrs.value().is_pcg_op() &&
+      invocation.node_attrs.op_attrs.value().require_pcg_op().is_weight()) {
     return std::unordered_set{
         invocation,
         get_update_invocation_for_invocation(invocation, optimizer_attrs),

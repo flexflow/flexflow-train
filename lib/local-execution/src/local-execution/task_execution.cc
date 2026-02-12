@@ -6,10 +6,10 @@
 #include "pcg/optimizer_slot_name.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_slot.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
+#include "task-spec/dynamic_graph/training_operation_attrs.dtg.h"
 #include "task-spec/task_argument_accessor/task_tensor_parameter.h"
 #include "utils/containers/binary_merge_disjoint_maps.h"
 #include "utils/containers/map_keys_and_values.h"
-#include "utils/containers/transform.h"
 #include "utils/exception.h"
 #include "utils/optional.h"
 #include "utils/overload.h"
@@ -67,8 +67,16 @@ TaskArgumentAccessor make_task_argument_accessor_for_invocation(
       /*tensor_slots_backing=*/tensor_slots_backing,
       /*profiling_settings=*/profiling_settings,
       /*ff_handle=*/ff_handle,
-      /*op_attrs=*/invocation.node_attrs.op_attrs,
-      /*loss_attrs=*/invocation.node_attrs.loss_attrs,
+      /*op_attrs=*/
+      and_then(invocation.node_attrs.op_attrs,
+               [](TrainingOperationAttrs const &op_attrs) {
+                 return op_attrs.try_require_pcg_op();
+               }),
+      /*loss_attrs=*/
+      and_then(invocation.node_attrs.op_attrs,
+               [](TrainingOperationAttrs const &op_attrs) {
+                 return op_attrs.try_require_loss();
+               }),
       /*per_device_op_state=*/per_device_op_state,
       /*iteration_config=*/iteration_config,
       /*optimizer_attrs=*/optimizer_attrs,
@@ -101,13 +109,13 @@ std::optional<milliseconds_t> execute_dynamic_node_invocation(
     case DynamicTaskType::FWD: {
       ComputationGraphOpAttrs op_attrs =
           assert_unwrap(compgraph_op_attrs_from_pcg_op_attrs(
-              assert_unwrap(invocation.node_attrs.op_attrs)));
+              assert_unwrap(invocation.node_attrs.op_attrs).require_pcg_op()));
       result = call_fwd_task_impl(op_attrs, arg_accessor);
     } break;
     case DynamicTaskType::BWD: {
       ComputationGraphOpAttrs op_attrs =
           assert_unwrap(compgraph_op_attrs_from_pcg_op_attrs(
-              assert_unwrap(invocation.node_attrs.op_attrs)));
+              assert_unwrap(invocation.node_attrs.op_attrs).require_pcg_op()));
       result = call_bwd_task_impl(op_attrs, arg_accessor);
     } break;
     case DynamicTaskType::UPD:

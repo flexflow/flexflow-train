@@ -31,16 +31,16 @@ GenericTensorAccessor
                                           Permissions priv) const {
   DynamicTensorAccessor tensor_backing = this->tensor_slots_backing.at(slot);
   if (priv == Permissions::RO) {
-    if (tensor_backing.has<GenericTensorAccessorR>()) {
-      return tensor_backing.get<GenericTensorAccessorR>();
+    if (tensor_backing.is_read()) {
+      return tensor_backing.require_read();
     } else {
       GenericTensorAccessorR readonly_tensor_backing =
           read_only_accessor_from_write_accessor(
-              tensor_backing.get<GenericTensorAccessorW>());
+              tensor_backing.require_write());
       return readonly_tensor_backing;
     }
   } else if (priv == Permissions::RW || priv == Permissions::WO) {
-    return tensor_backing.get<GenericTensorAccessorW>();
+    return tensor_backing.require_write();
   } else {
     PANIC(fmt::format("Unhandled privilege mode {}", priv));
   }
