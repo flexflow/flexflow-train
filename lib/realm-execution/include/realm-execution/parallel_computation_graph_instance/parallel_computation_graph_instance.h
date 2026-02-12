@@ -22,10 +22,11 @@ namespace FlexFlow {
 
 struct ParallelComputationGraphInstance {
 public:
-  ParallelComputationGraphInstance(RealmContext &,
-                                   std::vector<DynamicNodeInvocation> const &,
-                                   OptimizerAttrs const &,
-                                   std::optional<Realm::RegionInstance>);
+  ParallelComputationGraphInstance(
+      RealmContext &ctx,
+      std::vector<DynamicNodeInvocation> const &execution_order,
+      OptimizerAttrs const &optimizer_attrs,
+      std::optional<Realm::RegionInstance> logit_grad_tensor);
   RealmContext &get_realm_context();
   std::vector<DynamicNodeInvocation> const &get_execution_order() const;
   OptimizerAttrs const &get_optimizer_attrs() const;
