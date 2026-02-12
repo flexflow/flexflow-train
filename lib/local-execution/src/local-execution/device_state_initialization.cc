@@ -27,7 +27,7 @@ DynamicNodeInvocation
                     OptimizerAttrs const &optimizer_attrs,
                     device_id_t device_idx) {
   if (!i.node_attrs.op_attrs.has_value() ||
-      i.node_attrs.op_attrs.value().is_pcg_op()) {
+      !i.node_attrs.op_attrs.value().is_pcg_op()) {
     return i;
   }
 
