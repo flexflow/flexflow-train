@@ -14,7 +14,9 @@
 
 namespace FlexFlow {
 
-RealmContext::RealmContext(Realm::Processor proc) : processor(proc) {}
+RealmContext::RealmContext(Realm::Processor proc)
+    : processor(proc), allocator(get_realm_allocator(
+                           proc, RealmContext::get_nearest_memory(proc))) {}
 
 RealmContext::~RealmContext() {
   if (!this->outstanding_events.empty()) {
@@ -51,7 +53,7 @@ Realm::Processor RealmContext::map_device_coord_to_processor(
   return this->processors.at(std::pair{as, kind}).at(int{proc_in_node});
 }
 
-Realm::Memory RealmContext::get_nearest_memory(Realm::Processor proc) const {
+Realm::Memory RealmContext::get_nearest_memory(Realm::Processor proc) {
   // FIMXE: this isn't going to do what you expect until
   // https://github.com/StanfordLegion/realm/pull/392 merges
   Realm::Machine::MemoryQuery mq(Realm::Machine::get_machine());
@@ -64,8 +66,8 @@ Realm::Processor RealmContext::get_current_processor() const {
   return this->processor;
 }
 
-Allocator &RealmContext::get_current_device_allocator() const {
-  NOT_IMPLEMENTED();
+Allocator &RealmContext::get_current_device_allocator() {
+  return this->allocator;
 }
 
 device_handle_t const &RealmContext::get_current_device_handle() const {
