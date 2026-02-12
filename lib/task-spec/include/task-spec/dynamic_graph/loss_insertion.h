@@ -5,13 +5,13 @@
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_guid_t.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
+#include "task-spec/dynamic_graph/loss_insertion_result.dtg.h"
 
 namespace FlexFlow {
 
-std::tuple<DynamicOpenDataflowGraph, DynamicValueAttrs, DynamicValueAttrs>
-    perform_loss_insertion(DynamicOpenDataflowGraph const &dg,
-                           LossAttrs const &loss_attrs,
-                           dynamic_tensor_guid_t logit_tensor);
+LossInsertionResult perform_loss_insertion(DynamicOpenDataflowGraph const &dg,
+                                           LossAttrs const &loss_attrs,
+                                           dynamic_tensor_guid_t logit_tensor);
 
 } // namespace FlexFlow
 
