@@ -106,7 +106,6 @@ PCGInstance create_parallel_computation_graph_instance(
       ctx, invocation_topo_order, optimizer_attrs, logit_grad_tensor};
 
   // TODO list:
-  //  * current device handle
   //  * external instances
   //  * task argument serializer
   //  * copies

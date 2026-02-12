@@ -1,22 +1,27 @@
 #include "realm-execution/realm_context.h"
+#include "kernels/device_handle_t.dtg.h"
+#include "kernels/device_handle_t.h"
 #include "op-attrs/datatype.h"
 #include "op-attrs/tensor_dims.dtg.h"
 #include "pcg/device_id_t.h"
 #include "pcg/device_type.dtg.h"
+#include "realm-execution/realm_allocator.h"
 #include "realm-execution/tasks/realm_task_id_t.h"
 #include "realm-execution/tasks/task_id_t.dtg.h"
 #include "utils/containers/contains_key.h"
 #include "utils/containers/transform.h"
-#include "utils/exception.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
 #include "utils/one_to_many/one_to_many.h"
 #include "utils/positive_int/positive_int.h"
 
 namespace FlexFlow {
 
-RealmContext::RealmContext(Realm::Processor proc)
-    : processor(proc), allocator(get_realm_allocator(
-                           proc, RealmContext::get_nearest_memory(proc))) {}
+RealmContext::RealmContext(Realm::Processor processor)
+    : processor(processor),
+      allocator(get_realm_allocator(
+          processor, RealmContext::get_nearest_memory(processor))),
+      managed_handle(RealmContext::make_device_handle_for_processor(processor)),
+      device_handle(device_handle_t_from_managed_handle(managed_handle)) {}
 
 RealmContext::~RealmContext() {
   if (!this->outstanding_events.empty()) {
@@ -54,6 +59,10 @@ Realm::Processor RealmContext::map_device_coord_to_processor(
 }
 
 Realm::Memory RealmContext::get_nearest_memory(Realm::Processor proc) {
+  if (!proc.exists()) {
+    return Realm::Memory::NO_MEMORY;
+  }
+
   // FIMXE: this isn't going to do what you expect until
   // https://github.com/StanfordLegion/realm/pull/392 merges
   Realm::Machine::MemoryQuery mq(Realm::Machine::get_machine());
@@ -71,8 +80,9 @@ Allocator &RealmContext::get_current_device_allocator() {
 }
 
 device_handle_t const &RealmContext::get_current_device_handle() const {
-  NOT_IMPLEMENTED();
+  return this->device_handle;
 }
+
 device_id_t RealmContext::get_current_device_idx() const {
   Realm::Processor proc = this->get_current_processor();
 
@@ -242,6 +252,28 @@ void RealmContext::discover_machine_topology() {
     Realm::AddressSpace as = proc.address_space();
     Realm::Processor::Kind kind = proc.kind();
     this->processors[std::pair{as, kind}].push_back(proc);
+  }
+}
+
+std::optional<ManagedPerDeviceFFHandle>
+    RealmContext::make_device_handle_for_processor(Realm::Processor processor) {
+  if (!processor.exists()) {
+    return std::nullopt;
+  }
+
+  switch (processor.kind()) {
+    case Realm::Processor::LOC_PROC:
+      return std::nullopt;
+    case Realm::Processor::TOC_PROC:
+      // FIXME: not sure what workSpaceSize to choose here
+      return initialize_multi_gpu_handle(
+          /*num_ranks=*/Realm::Machine::get_machine().get_address_space_count(),
+          /*my_rank=*/processor.address_space(),
+          /*workSpaceSize=*/1024 * 1024,
+          /*allowTensorOpMathConversion=*/true);
+    default:
+      PANIC("Unhandled Realm::ProcessorKind",
+            fmt::to_string(int{processor.kind()}));
   }
 }
 
