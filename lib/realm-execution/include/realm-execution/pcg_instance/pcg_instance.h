@@ -1,5 +1,5 @@
-#ifndef _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_PARALLEL_COMPUTATION_GRAPH_INSTANCE_H
-#define _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_PARALLEL_COMPUTATION_GRAPH_INSTANCE_H
+#ifndef _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_PCG_INSTANCE_H
+#define _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_PCG_INSTANCE_H
 
 #include "kernels/accessor.h"
 #include "kernels/allocation.h"
@@ -20,9 +20,12 @@
 
 namespace FlexFlow {
 
-struct ParallelComputationGraphInstance {
+struct PCGInstance {
 public:
-  ParallelComputationGraphInstance(
+  PCGInstance() = delete;
+  PCGInstance(PCGInstance const &) = delete;
+  PCGInstance(PCGInstance &&) = delete;
+  explicit PCGInstance(
       RealmContext &ctx,
       std::vector<DynamicNodeInvocation> const &execution_order,
       OptimizerAttrs const &optimizer_attrs,
@@ -40,7 +43,7 @@ private:
   std::optional<Realm::RegionInstance> logit_grad_tensor;
 };
 
-ParallelComputationGraphInstance create_parallel_computation_graph_instance(
+PCGInstance create_pcg_instance(
     RealmContext &ctx,
     MappedParallelComputationGraph const &mpcg,
     OptimizerAttrs const &optimizer_attrs,

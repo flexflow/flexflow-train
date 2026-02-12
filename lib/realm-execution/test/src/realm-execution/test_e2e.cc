@@ -1,4 +1,4 @@
-#include "realm-execution/parallel_computation_graph_instance/parallel_computation_graph_instance.h"
+#include "realm-execution/pcg_instance/pcg_instance.h"
 #include "realm-execution/realm_manager.h"
 #include <doctest/doctest.h>
 

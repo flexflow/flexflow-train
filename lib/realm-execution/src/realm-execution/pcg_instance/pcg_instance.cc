@@ -1,5 +1,6 @@
-#include "realm-execution/parallel_computation_graph_instance/parallel_computation_graph_instance.h"
+#include "realm-execution/pcg_instance/pcg_instance.h"
 #include "pcg/optimizer_attrs.h"
+#include "realm-execution/dependency_set.h"
 #include "realm-execution/distributed_device_state_initialization.h"
 #include "realm-execution/instance_allocation.h"
 #include "realm-execution/realm_context.h"
@@ -16,7 +17,7 @@
 
 namespace FlexFlow {
 
-ParallelComputationGraphInstance::ParallelComputationGraphInstance(
+PCGInstance::PCGInstance(
     RealmContext &ctx,
     std::vector<DynamicNodeInvocation> const &execution_order,
     OptimizerAttrs const &optimizer_attrs,
@@ -24,27 +25,26 @@ ParallelComputationGraphInstance::ParallelComputationGraphInstance(
     : ctx(ctx), execution_order(execution_order),
       optimizer_attrs(optimizer_attrs), logit_grad_tensor(logit_grad_tensor) {}
 
-RealmContext &ParallelComputationGraphInstance::get_realm_context() {
+RealmContext &PCGInstance::get_realm_context() {
   return this->ctx;
 }
 std::vector<DynamicNodeInvocation> const &
-    ParallelComputationGraphInstance::get_execution_order() const {
+    PCGInstance::get_execution_order() const {
   return this->execution_order;
 }
-OptimizerAttrs const &
-    ParallelComputationGraphInstance::get_optimizer_attrs() const {
+OptimizerAttrs const &PCGInstance::get_optimizer_attrs() const {
   return this->optimizer_attrs;
 }
-void ParallelComputationGraphInstance::update_optimizer_attrs_for_next_iter() {
+void PCGInstance::update_optimizer_attrs_for_next_iter() {
   this->optimizer_attrs =
       get_optimizer_attrs_for_next_iter(this->optimizer_attrs);
 }
 std::optional<Realm::RegionInstance>
-    ParallelComputationGraphInstance::get_loss_tensor_instance() const {
+    PCGInstance::get_loss_tensor_instance() const {
   return this->logit_grad_tensor;
 }
 
-ParallelComputationGraphInstance create_parallel_computation_graph_instance(
+PCGInstance create_parallel_computation_graph_instance(
     RealmContext &ctx,
     MappedParallelComputationGraph const &mpcg,
     OptimizerAttrs const &optimizer_attrs,
@@ -96,7 +96,7 @@ ParallelComputationGraphInstance create_parallel_computation_graph_instance(
   std::vector<DynamicNodeInvocation> invocation_topo_order = transform(
       node_topo_order, [&](Node node) { return node_map.at_l(node); });
 
-  return ParallelComputationGraphInstance{
+  return PCGInstance{
       ctx, invocation_topo_order, optimizer_attrs, logit_grad_tensor};
 
   // TODO list:
@@ -114,6 +114,9 @@ static std::unordered_map<dynamic_layer_guid_t, Realm::Event>
         OptimizerAttrs const &optimizer_attrs,
         ProfilingSettings const &profiling_settings,
         FFIterationConfig iteration_config) {
+  // For simplicity we'll track a dependency on all outstanding operations up to
+  // this point. This will create an effective barrier between phases.
+  DependencySet dependency_set{ctx.get_outstanding_events()};
   return unordered_map_from_pairs(
       transform(invocations, [&](DynamicNodeInvocation const &invocation) {
         Realm::Event result =
@@ -130,7 +133,7 @@ static std::unordered_map<dynamic_layer_guid_t, Realm::Event>
 
 std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_all_passes_for_parallel_computation_graph_instance(
-        ParallelComputationGraphInstance &instance,
+        PCGInstance &instance,
         ProfilingSettings const &profiling_settings,
         FFIterationConfig iteration_config) {
   std::vector<DynamicNodeInvocation> execution_order =
@@ -148,7 +151,7 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
 
 std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_forward_pass_for_parallel_computation_graph_instance(
-        ParallelComputationGraphInstance &instance,
+        PCGInstance &instance,
         ProfilingSettings const &profiling_settings,
         FFIterationConfig iteration_config) {
   std::vector<DynamicNodeInvocation> execution_order =
@@ -169,7 +172,7 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
 
 std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_backward_pass_for_parallel_computation_graph_instance(
-        ParallelComputationGraphInstance &instance,
+        PCGInstance &instance,
         ProfilingSettings const &profiling_settings,
         FFIterationConfig iteration_config) {
   std::vector<DynamicNodeInvocation> execution_order =
@@ -190,7 +193,7 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
 
 std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_update_pass_for_parallel_computation_graph_instance(
-        ParallelComputationGraphInstance &instance,
+        PCGInstance &instance,
         ProfilingSettings const &profiling_settings,
         FFIterationConfig iteration_config) {
   std::vector<DynamicNodeInvocation> execution_order =
