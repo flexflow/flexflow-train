@@ -1,6 +1,4 @@
-#if 0 // FIXME (Elliott): fix cost estimator
-
-#include "local-execution/tracked_allocator.h"
+#include "local-execution/cost_estimator/tracked_allocator.h"
 #include "kernels/device.h"
 
 namespace FlexFlow {
@@ -35,5 +33,3 @@ Allocator get_tracked_memory_allocator(Allocator const &base_allocator) {
 }
 
 } // namespace FlexFlow
-
-#endif

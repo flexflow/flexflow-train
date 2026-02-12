@@ -24,6 +24,8 @@ struct ITaskArgumentAccessor {
 
   virtual ~ITaskArgumentAccessor() = default;
 
+  virtual TensorShape get_tensor_shape(TensorSlotName) const = 0;
+
   virtual GenericTensorAccessor get_tensor(TaskTensorParameter,
                                            Permissions priv) const = 0;
 

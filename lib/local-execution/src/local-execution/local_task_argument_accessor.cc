@@ -4,6 +4,7 @@
 #include "pcg/device_id_t.h"
 #include "utils/exception.h"
 #include "utils/optional.h"
+#include "utils/overload.h"
 
 namespace FlexFlow {
 
@@ -25,6 +26,36 @@ LocalTaskArgumentAccessor::LocalTaskArgumentAccessor(
       per_device_op_state(per_device_op_state),
       iteration_config(iteration_config), optimizer_attrs(optimizer_attrs),
       device_idx(device_idx) {}
+
+TensorShape
+    LocalTaskArgumentAccessor::get_tensor_shape(TensorSlotName slot) const {
+
+  for (auto const &[backing_slot, accessor] : this->tensor_slots_backing) {
+    bool match = backing_slot.visit<bool>(overload{
+        [&](TaskForwardTensorParameter const &param) {
+          return param.name == slot;
+        },
+        [&](TaskGradientTensorParameter const &param) {
+          return param.name == slot;
+        },
+        [&](TaskOptimizerTensorParameter const &param) {
+          return param.name == slot;
+        },
+        [&](TaskLossTensorParameter const &param) { return false; },
+    });
+
+    if (match) {
+      if (accessor.has<GenericTensorAccessorR>()) {
+        return accessor.get<GenericTensorAccessorR>().shape;
+      } else {
+        return accessor.get<GenericTensorAccessorW>().shape;
+      }
+    }
+  }
+
+  PANIC("Unable to find TensorSlotName in tensor_slots_backing",
+        fmt::to_string(slot));
+}
 
 GenericTensorAccessor
     LocalTaskArgumentAccessor::get_tensor(TaskTensorParameter slot,
