@@ -66,7 +66,8 @@ void device_init_task_body(void const *args,
   spawn_device_init_return_task(ctx,
                                 task_args.origin_proc,
                                 *result_state_ptr,
-                                task_args.origin_result_ptr);
+                                task_args.origin_result_ptr,
+                                Realm::Event::NO_EVENT);
 }
 
 std::optional<Realm::Event>
@@ -76,7 +77,8 @@ std::optional<Realm::Event>
                            ProfilingSettings const &profiling_settings,
                            FFIterationConfig const &iteration_config,
                            OptimizerAttrs const &optimizer_attrs,
-                           DeviceSpecificPerDeviceOpState *result_ptr) {
+                           DeviceSpecificPerDeviceOpState *result_ptr,
+                           Realm::Event precondition) {
   DeviceInitTaskArgs task_args{
       &invocation,
       &profiling_settings,
@@ -97,7 +99,8 @@ std::optional<Realm::Event>
                           assert_unwrap(task_id),
                           &task_args,
                           sizeof(task_args),
-                          Realm::ProfilingRequestSet{});
+                          Realm::ProfilingRequestSet{},
+                          precondition);
   }
   return std::nullopt;
 }

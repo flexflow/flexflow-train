@@ -21,10 +21,18 @@ void DependencySet::add_reader(DynamicValueAttrs const &value,
   atomic_dependence_set.add_reader(reader);
 }
 
-Realm::Event DependencySet::get_current_outstanding_events(
+Realm::Event DependencySet::get_dependency_for_writer(
     DynamicValueAttrs const &value) const {
   if (contains_key(this->atomic_dependencies, value)) {
-    return this->atomic_dependencies.at(value).get_current_outstanding_events();
+    return this->atomic_dependencies.at(value).get_dependency_for_writer();
+  }
+  return this->precondition;
+}
+
+Realm::Event DependencySet::get_dependency_for_reader(
+    DynamicValueAttrs const &value) const {
+  if (contains_key(this->atomic_dependencies, value)) {
+    return this->atomic_dependencies.at(value).get_dependency_for_reader();
   }
   return this->precondition;
 }

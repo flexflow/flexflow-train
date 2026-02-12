@@ -58,13 +58,13 @@ void op_task_body(void const *args,
       /*device_idx=*/ctx.get_current_device_idx());
 }
 
-Realm::Event
-    spawn_op_task(RealmContext &ctx,
-                  Realm::Processor target_proc,
-                  DynamicNodeInvocation const &invocation,
-                  ProfilingSettings const &profiling_settings,
-                  FFIterationConfig const &iteration_config,
-                  std::optional<OptimizerAttrs> const &optimizer_attrs) {
+Realm::Event spawn_op_task(RealmContext &ctx,
+                           Realm::Processor target_proc,
+                           DynamicNodeInvocation const &invocation,
+                           ProfilingSettings const &profiling_settings,
+                           FFIterationConfig const &iteration_config,
+                           std::optional<OptimizerAttrs> const &optimizer_attrs,
+                           Realm::Event precondition) {
   OpTaskArgs task_args{&invocation,
                        &profiling_settings,
                        &iteration_config,
@@ -75,7 +75,8 @@ Realm::Event
       assert_unwrap(get_task_id_for_op(invocation.node_attrs, optimizer_attrs)),
       &task_args,
       sizeof(task_args),
-      Realm::ProfilingRequestSet{});
+      Realm::ProfilingRequestSet{},
+      precondition);
 }
 
 } // namespace FlexFlow

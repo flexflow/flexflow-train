@@ -14,7 +14,8 @@ DynamicOpenDataflowGraph perform_distributed_device_state_initialization(
     RealmContext &ctx,
     ProfilingSettings const &profiling_settings,
     FFIterationConfig const &iteration_config,
-    OptimizerAttrs const &optimizer_attrs);
+    OptimizerAttrs const &optimizer_attrs,
+    Realm::Event precondition);
 
 } // namespace FlexFlow
 

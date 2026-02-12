@@ -14,7 +14,8 @@ DynamicOpenDataflowGraph perform_distributed_device_state_initialization(
     RealmContext &ctx,
     ProfilingSettings const &profiling_settings,
     FFIterationConfig const &iteration_config,
-    OptimizerAttrs const &optimizer_attrs) {
+    OptimizerAttrs const &optimizer_attrs,
+    Realm::Event precondition) {
 
   // Initialize all operators and save the per-device op state
   ASSERT(no_nodes_are_initialized(dg));
@@ -38,7 +39,8 @@ DynamicOpenDataflowGraph perform_distributed_device_state_initialization(
                                profiling_settings,
                                iteration_config,
                                optimizer_attrs,
-                               output);
+                               output,
+                               precondition);
     if (result) {
       result_map[invocation] = output;
     } else {

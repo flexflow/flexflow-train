@@ -7,11 +7,14 @@
 #include "realm-execution/tasks/impl/op_task.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_guid_t.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
 #include "task-spec/dynamic_graph/loss_insertion.h"
 #include "task-spec/dynamic_graph/make_dynamic_open_dataflow_graph_from_mpcg.h"
 #include "task-spec/dynamic_graph/pass_expansion.h"
 #include "task-spec/dynamic_graph/shard_expansion.h"
 #include "task-spec/dynamic_graph/update_insertion.h"
+#include "utils/containers/transform.h"
+#include "utils/containers/values.h"
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"
 #include "utils/optional.h"
 
@@ -77,17 +80,20 @@ PCGInstance create_parallel_computation_graph_instance(
   dg = perform_shard_expansion(dg);
   TensorInstanceBacking backing = perform_instance_allocation(dg, inputs, ctx);
 
-  // FIXME: for now we're going to be lazy and block on everything rather than
-  // do fine-grained dependencies on instances
-  ctx.get_outstanding_events().wait();
-
   std::optional<Realm::RegionInstance> logit_grad_tensor =
       transform(logit_grad_value, [&](DynamicValueAttrs const &lgv) {
         return backing.backing.at(lgv).first;
       });
 
+  // FIXME: for now we're going to be lazy and block on everything rather than
+  // do fine-grained dependencies on instances
   dg = perform_distributed_device_state_initialization(
-      dg, ctx, profiling_settings, iteration_config, optimizer_attrs);
+      dg,
+      ctx,
+      profiling_settings,
+      iteration_config,
+      optimizer_attrs,
+      ctx.get_outstanding_events());
 
   // Compute the topological ordering of the graph
   auto [kwarg_graph, node_map] =
@@ -102,7 +108,6 @@ PCGInstance create_parallel_computation_graph_instance(
   // TODO list:
   //  * Realm allocator
   //  * external instances
-  //  * dependencies
   //  * task argument serializer
   //  * copies
 }
@@ -119,6 +124,19 @@ static std::unordered_map<dynamic_layer_guid_t, Realm::Event>
   DependencySet dependency_set{ctx.get_outstanding_events()};
   return unordered_map_from_pairs(
       transform(invocations, [&](DynamicNodeInvocation const &invocation) {
+        std::vector<Realm::Event> input_dependencies =
+            transform(vector_of(values(invocation.inputs)),
+                      [&](DynamicValueAttrs const &value) {
+                        return dependency_set.get_dependency_for_reader(value);
+                      });
+        std::vector<Realm::Event> output_dependencies =
+            transform(vector_of(values(invocation.outputs)),
+                      [&](DynamicValueAttrs const &value) {
+                        return dependency_set.get_dependency_for_writer(value);
+                      });
+        Realm::Event dependencies = Realm::Event::merge_events(
+            Realm::Event::merge_events(input_dependencies),
+            Realm::Event::merge_events(output_dependencies));
         Realm::Event result =
             spawn_op_task(ctx,
                           ctx.map_device_coord_to_processor(assert_unwrap(
@@ -126,7 +144,14 @@ static std::unordered_map<dynamic_layer_guid_t, Realm::Event>
                           invocation,
                           profiling_settings,
                           iteration_config,
-                          optimizer_attrs);
+                          optimizer_attrs,
+                          dependencies);
+        for (DynamicValueAttrs const &value : values(invocation.inputs)) {
+          dependency_set.add_reader(value, result);
+        }
+        for (DynamicValueAttrs const &value : values(invocation.outputs)) {
+          dependency_set.add_writer(value, result);
+        }
         return std::pair{invocation.node_attrs.layer_guid, result};
       }));
 }
