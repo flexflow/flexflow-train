@@ -3,18 +3,19 @@
 
 #include "kernels/allocation.h"
 #include "kernels/device_handle_t.dtg.h"
+#include "kernels/managed_per_device_ff_handle.h"
 #include "pcg/device_id_t.dtg.h"
 #include "pcg/machine_space_coordinate.dtg.h"
 #include "realm-execution/realm.h"
-#include "realm-execution/realm_allocator.h"
 #include "realm-execution/tasks/task_id_t.dtg.h"
+#include <optional>
 #include <unordered_map>
 
 namespace FlexFlow {
 
 struct RealmContext {
 public:
-  RealmContext(Realm::Processor);
+  RealmContext(Realm::Processor processor);
   virtual ~RealmContext();
 
   RealmContext() = delete;
@@ -66,10 +67,15 @@ protected:
 
   void discover_machine_topology();
 
+  static std::optional<ManagedPerDeviceFFHandle>
+      make_device_handle_for_processor(Realm::Processor processor);
+
 protected:
   Realm::Runtime runtime;
   Realm::Processor processor;
   Allocator allocator;
+  std::optional<ManagedPerDeviceFFHandle> managed_handle;
+  device_handle_t device_handle;
   std::vector<Realm::Event> outstanding_events;
   std::unordered_map<std::pair<Realm::AddressSpace, Realm::Processor::Kind>,
                      std::vector<Realm::Processor>>
