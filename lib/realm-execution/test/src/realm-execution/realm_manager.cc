@@ -1,5 +1,4 @@
 #include "realm-execution/realm_manager.h"
-#include "realm-execution/parallel_computation_graph_instance/parallel_computation_graph_instance.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
