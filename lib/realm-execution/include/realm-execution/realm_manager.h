@@ -19,7 +19,8 @@ public:
   RealmManager(RealmManager &&) = delete;
 
   [[nodiscard]] Realm::Event
-      start_controller(std::function<void(RealmContext &)>);
+      start_controller(std::function<void(RealmContext &)>,
+                       Realm::Event wait_on = Realm::Event::NO_EVENT);
 };
 
 } // namespace FlexFlow
