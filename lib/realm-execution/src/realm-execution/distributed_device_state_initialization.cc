@@ -1,6 +1,6 @@
 #include "realm-execution/distributed_device_state_initialization.h"
 #include "local-execution/device_state_initialization.h"
-#include "realm-execution/tasks/impl/device_init_task.h"
+#include "realm-execution/tasks/impl/device_state_init_task.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "utils/optional.h"
@@ -33,14 +33,14 @@ DynamicOpenDataflowGraph perform_distributed_device_state_initialization(
         static_cast<DeviceSpecificPerDeviceOpState *>(
             malloc(sizeof(DeviceSpecificPerDeviceOpState)));
     std::optional<Realm::Event> result =
-        spawn_device_init_task(ctx,
-                               target_proc,
-                               invocation,
-                               profiling_settings,
-                               iteration_config,
-                               optimizer_attrs,
-                               output,
-                               precondition);
+        spawn_device_state_init_task(ctx,
+                                     target_proc,
+                                     invocation,
+                                     profiling_settings,
+                                     iteration_config,
+                                     optimizer_attrs,
+                                     output,
+                                     precondition);
     if (result) {
       result_map[invocation] = output;
     } else {
