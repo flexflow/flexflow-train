@@ -12,12 +12,13 @@
 namespace FlexFlow {
 
 struct LocalCostEstimator : public ICostEstimator {
-  explicit LocalCostEstimator(MachineInterconnectSpecification const &,
-                              Allocator &allocator,
-                              ProfilingSettings const &profiling_settings,
-                              device_handle_t const &device_handle,
-                              FFIterationConfig const &iteration_config,
-                              device_id_t device_idx);
+  explicit LocalCostEstimator(
+      MachineInterconnectSpecification const &interconnect_specification,
+      Allocator &allocator,
+      ProfilingSettings const &profiling_settings,
+      device_handle_t const &device_handle,
+      FFIterationConfig const &iteration_config,
+      device_id_t device_idx);
 
   LocalCostEstimator(LocalCostEstimator const &) = delete;
   LocalCostEstimator(LocalCostEstimator &&) = delete;
@@ -37,12 +38,13 @@ private:
 };
 CHECK_RC_COPY_VIRTUAL_COMPLIANT(LocalCostEstimator);
 
-CostEstimator get_local_cost_estimator(MachineInterconnectSpecification const &,
-                                       Allocator &,
-                                       ProfilingSettings const &,
-                                       device_handle_t const &,
-                                       FFIterationConfig const &,
-                                       device_id_t);
+CostEstimator get_local_cost_estimator(
+    MachineInterconnectSpecification const &interconnect_specification,
+    Allocator &allocator,
+    ProfilingSettings const &profiling_settings,
+    device_handle_t const &device_handle,
+    FFIterationConfig const &iteration_config,
+    device_id_t device_idx);
 
 } // namespace FlexFlow
 
