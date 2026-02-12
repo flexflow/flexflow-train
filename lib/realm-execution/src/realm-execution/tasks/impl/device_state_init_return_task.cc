@@ -1,0 +1,53 @@
+#include "realm-execution/tasks/impl/device_state_init_return_task.h"
+#include "realm-execution/tasks/task_id_t.dtg.h"
+
+namespace FlexFlow {
+
+// FIXME: Can't make this trivially copyable?
+struct DeviceStateInitReturnTaskArgs {
+public:
+  DeviceStateInitReturnTaskArgs() = delete;
+  DeviceStateInitReturnTaskArgs(
+      DeviceSpecificPerDeviceOpState result,
+      Realm::Processor origin_proc,
+      DeviceSpecificPerDeviceOpState *origin_result_ptr)
+      : result(result), origin_proc(origin_proc),
+        origin_result_ptr(origin_result_ptr) {}
+
+public:
+  DeviceSpecificPerDeviceOpState result;
+  Realm::Processor origin_proc;
+  DeviceSpecificPerDeviceOpState *origin_result_ptr;
+};
+
+void device_state_init_return_task_body(void const *args,
+                                        size_t arglen,
+                                        void const *userdata,
+                                        size_t userlen,
+                                        Realm::Processor proc) {
+  ASSERT(arglen == sizeof(DeviceStateInitReturnTaskArgs));
+  DeviceStateInitReturnTaskArgs task_args =
+      *reinterpret_cast<DeviceStateInitReturnTaskArgs const *>(args);
+
+  ASSERT(task_args.origin_proc.address_space() == proc.address_space());
+  *task_args.origin_result_ptr = task_args.result;
+}
+
+Realm::Event spawn_device_state_init_return_task(
+    RealmContext &ctx,
+    Realm::Processor origin_proc,
+    DeviceSpecificPerDeviceOpState const &result,
+    DeviceSpecificPerDeviceOpState *origin_result_ptr,
+    Realm::Event precondition) {
+  DeviceStateInitReturnTaskArgs task_args{
+      result, origin_proc, origin_result_ptr};
+
+  return ctx.spawn_task(origin_proc,
+                        task_id_t::DEVICE_STATE_INIT_RETURN_TASK_ID,
+                        &task_args,
+                        sizeof(task_args),
+                        Realm::ProfilingRequestSet{},
+                        precondition);
+}
+
+} // namespace FlexFlow
