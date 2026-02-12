@@ -21,14 +21,14 @@ RealmManager::~RealmManager() {
 }
 
 Realm::Event
-    RealmManager::start_controller(std::function<void(RealmContext &)> thunk) {
+    RealmManager::start_controller(std::function<void(RealmContext &)> thunk,
+                                   Realm::Event wait_on) {
   Realm::Processor target_proc =
       Realm::Machine::ProcessorQuery(Realm::Machine::get_machine())
           .only_kind(Realm::Processor::LOC_PROC)
           .first();
 
-  return collective_spawn_controller_task(
-      *this, target_proc, thunk, Realm::Event::NO_EVENT);
+  return collective_spawn_controller_task(*this, target_proc, thunk, wait_on);
 }
 
 } // namespace FlexFlow
