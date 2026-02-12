@@ -7,15 +7,16 @@
 
 namespace FlexFlow {
 
-DynamicValueAttrs
-    perform_instance_allocation_for_value(DynamicValueAttrs const &,
-                                          Allocator &);
+std::pair<Realm::RegionInstance, Realm::Event>
+    perform_instance_allocation_for_value(DynamicNodeAttrs const &node,
+                                          DynamicValueAttrs const &value,
+                                          RealmContext &ctx);
 
 TensorInstanceBacking perform_instance_allocation(
-    DynamicOpenDataflowGraph const &,
+    DynamicOpenDataflowGraph const &g,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &preallocated,
-    RealmContext &);
+    RealmContext &ctx);
 
 } // namespace FlexFlow
 
