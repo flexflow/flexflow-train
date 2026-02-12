@@ -14,7 +14,8 @@ Realm::Event spawn_device_init_return_task(
     RealmContext &ctx,
     Realm::Processor origin_proc,
     DeviceSpecificPerDeviceOpState const &result,
-    DeviceSpecificPerDeviceOpState *origin_result_ptr);
+    DeviceSpecificPerDeviceOpState *origin_result_ptr,
+    Realm::Event precondition);
 
 } // namespace FlexFlow
 

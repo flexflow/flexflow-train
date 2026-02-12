@@ -12,7 +12,8 @@ void controller_task_body(
 Realm::Event
     collective_spawn_controller_task(RealmContext &ctx,
                                      Realm::Processor &target_proc,
-                                     std::function<void(RealmContext &)> thunk);
+                                     std::function<void(RealmContext &)> thunk,
+                                     Realm::Event precondition);
 
 } // namespace FlexFlow
 

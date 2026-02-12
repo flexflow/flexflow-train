@@ -13,13 +13,13 @@ namespace FlexFlow {
 
 void op_task_body(void const *, size_t, void const *, size_t, Realm::Processor);
 
-Realm::Event
-    spawn_op_task(RealmContext &ctx,
-                  Realm::Processor target_proc,
-                  DynamicNodeInvocation const &invocation,
-                  ProfilingSettings const &profiling_settings,
-                  FFIterationConfig const &iteration_config,
-                  std::optional<OptimizerAttrs> const &optimizer_attrs);
+Realm::Event spawn_op_task(RealmContext &ctx,
+                           Realm::Processor target_proc,
+                           DynamicNodeInvocation const &invocation,
+                           ProfilingSettings const &profiling_settings,
+                           FFIterationConfig const &iteration_config,
+                           std::optional<OptimizerAttrs> const &optimizer_attrs,
+                           Realm::Event precondition);
 
 } // namespace FlexFlow
 

@@ -14,7 +14,8 @@ public:
   void add_writer(Realm::Event writer);
   void add_reader(Realm::Event reader);
 
-  Realm::Event get_current_outstanding_events() const;
+  Realm::Event get_dependency_for_writer() const;
+  Realm::Event get_dependency_for_reader() const;
 
 private:
   Realm::Event writer;

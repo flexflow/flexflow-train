@@ -21,7 +21,8 @@ std::optional<Realm::Event>
                            ProfilingSettings const &profiling_settings,
                            FFIterationConfig const &iteration_config,
                            OptimizerAttrs const &optimizer_attrs,
-                           DeviceSpecificPerDeviceOpState *result_ptr);
+                           DeviceSpecificPerDeviceOpState *result_ptr,
+                           Realm::Event precondition);
 
 } // namespace FlexFlow
 
