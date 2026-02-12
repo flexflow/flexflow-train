@@ -4,6 +4,7 @@
 #include "realm-execution/tasks/task_id_t.dtg.h"
 #include "realm-execution/tasks/task_id_t.h"
 #include "task-spec/device_specific_per_device_op_state.dtg.h"
+#include "task-spec/dynamic_graph/training_operation_attrs.dtg.h"
 #include "utils/optional.h"
 #include <optional>
 #include <type_traits>
@@ -85,9 +86,13 @@ std::optional<Realm::Event>
       result_ptr,
   };
 
-  std::optional<task_id_t> task_id = get_init_task_id_for_op_attrs(
-      assert_unwrap(invocation.node_attrs.op_attrs));
-  if (task_id) {
+  std::optional<task_id_t> task_id =
+      and_then(and_then(invocation.node_attrs.op_attrs,
+                        [](TrainingOperationAttrs const &op_attrs) {
+                          return op_attrs.try_require_pcg_op();
+                        }),
+               get_init_task_id_for_op_attrs);
+  if (task_id.has_value()) {
     return ctx.spawn_task(target_proc,
                           assert_unwrap(task_id),
                           &task_args,

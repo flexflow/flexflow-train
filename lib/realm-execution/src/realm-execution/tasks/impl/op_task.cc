@@ -15,18 +15,15 @@ public:
   OpTaskArgs() = delete;
   OpTaskArgs(DynamicNodeInvocation const *invocation,
              ProfilingSettings const *profiling_settings,
-             std::optional<LossAttrs> const *loss_attrs,
              FFIterationConfig const *iteration_config,
              std::optional<OptimizerAttrs> const *optimizer_attrs,
              Realm::Processor origin_proc)
       : invocation(invocation), profiling_settings(profiling_settings),
-        loss_attrs(loss_attrs), iteration_config(iteration_config),
-        optimizer_attrs(optimizer_attrs) {}
+        iteration_config(iteration_config), optimizer_attrs(optimizer_attrs) {}
 
 public:
   DynamicNodeInvocation const *invocation;
   ProfilingSettings const *profiling_settings;
-  std::optional<LossAttrs> const *loss_attrs;
   FFIterationConfig const *iteration_config;
   std::optional<OptimizerAttrs> const *optimizer_attrs;
   Realm::Processor origin_proc;
@@ -50,7 +47,6 @@ void op_task_body(void const *args,
       /*allocator=*/ctx.get_current_device_allocator(),
       /*profiling_settings=*/*task_args.profiling_settings,
       /*ff_handle=*/ctx.get_current_device_handle(),
-      /*loss_attrs=*/*task_args.loss_attrs,
       /*per_device_op_state=*/
       transform(task_args.invocation->node_attrs.per_device_op_state,
                 [&](DeviceSpecificPerDeviceOpState const &op_state) {
@@ -67,12 +63,10 @@ Realm::Event
                   Realm::Processor target_proc,
                   DynamicNodeInvocation const &invocation,
                   ProfilingSettings const &profiling_settings,
-                  std::optional<LossAttrs> const &loss_attrs,
                   FFIterationConfig const &iteration_config,
                   std::optional<OptimizerAttrs> const &optimizer_attrs) {
   OpTaskArgs task_args{&invocation,
                        &profiling_settings,
-                       &loss_attrs,
                        &iteration_config,
                        &optimizer_attrs,
                        ctx.get_current_processor()};

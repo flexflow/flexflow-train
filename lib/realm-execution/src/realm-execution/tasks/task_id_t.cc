@@ -2,6 +2,7 @@
 #include "pcg/optimizer_attrs.dtg.h"
 #include "pcg/optimizers/adam_optimizer_attrs.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_node_attrs.dtg.h"
+#include "utils/optional.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {
@@ -9,14 +10,17 @@ namespace FlexFlow {
 std::optional<task_id_t>
     get_task_id_for_op(DynamicNodeAttrs const &node_attrs,
                        std::optional<OptimizerAttrs> const &optimizer_attrs) {
-  DynamicTaskType task_type = node_attrs.task_type.value();
+  DynamicTaskType task_type = assert_unwrap(node_attrs.task_type);
   switch (task_type) {
     case DynamicTaskType::FWD:
-      return get_fwd_task_id_for_op_attrs(node_attrs.op_attrs.value());
+      return get_fwd_task_id_for_op_attrs(
+          assert_unwrap(node_attrs.op_attrs).require_pcg_op());
     case DynamicTaskType::BWD:
-      return get_bwd_task_id_for_op_attrs(node_attrs.op_attrs.value());
+      return get_bwd_task_id_for_op_attrs(
+          assert_unwrap(node_attrs.op_attrs).require_pcg_op());
     case DynamicTaskType::UPD:
-      return get_update_task_id_for_optimizer_attrs(optimizer_attrs.value());
+      return get_update_task_id_for_optimizer_attrs(
+          assert_unwrap(optimizer_attrs));
     case DynamicTaskType::LOSS:
       return task_id_t::LOSS_BWD_TASK_ID;
     default:

@@ -25,20 +25,17 @@ public:
   ParallelComputationGraphInstance(RealmContext &,
                                    std::vector<DynamicNodeInvocation> const &,
                                    OptimizerAttrs const &,
-                                   std::optional<LossAttrs> const &,
                                    std::optional<Realm::RegionInstance>);
   RealmContext &get_realm_context();
   std::vector<DynamicNodeInvocation> const &get_execution_order() const;
   OptimizerAttrs const &get_optimizer_attrs() const;
   void update_optimizer_attrs_for_next_iter();
-  std::optional<LossAttrs> const &get_loss_attrs() const;
   std::optional<Realm::RegionInstance> get_loss_tensor_instance() const;
 
 private:
   RealmContext &ctx;
   std::vector<DynamicNodeInvocation> execution_order;
   OptimizerAttrs optimizer_attrs;
-  std::optional<LossAttrs> loss_attrs;
   std::optional<Realm::RegionInstance> logit_grad_tensor;
 };
 

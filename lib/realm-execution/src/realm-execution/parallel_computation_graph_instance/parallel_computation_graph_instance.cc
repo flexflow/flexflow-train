@@ -20,11 +20,9 @@ ParallelComputationGraphInstance::ParallelComputationGraphInstance(
     RealmContext &ctx,
     std::vector<DynamicNodeInvocation> const &execution_order,
     OptimizerAttrs const &optimizer_attrs,
-    std::optional<LossAttrs> const &loss_attrs,
     std::optional<Realm::RegionInstance> logit_grad_tensor)
     : ctx(ctx), execution_order(execution_order),
-      optimizer_attrs(optimizer_attrs), loss_attrs(loss_attrs),
-      logit_grad_tensor(logit_grad_tensor) {}
+      optimizer_attrs(optimizer_attrs), logit_grad_tensor(logit_grad_tensor) {}
 
 RealmContext &ParallelComputationGraphInstance::get_realm_context() {
   return this->ctx;
@@ -40,10 +38,6 @@ OptimizerAttrs const &
 void ParallelComputationGraphInstance::update_optimizer_attrs_for_next_iter() {
   this->optimizer_attrs =
       get_optimizer_attrs_for_next_iter(this->optimizer_attrs);
-}
-std::optional<LossAttrs> const &
-    ParallelComputationGraphInstance::get_loss_attrs() const {
-  return this->loss_attrs;
 }
 std::optional<Realm::RegionInstance>
     ParallelComputationGraphInstance::get_loss_tensor_instance() const {
@@ -102,15 +96,15 @@ ParallelComputationGraphInstance create_parallel_computation_graph_instance(
   std::vector<DynamicNodeInvocation> invocation_topo_order = transform(
       node_topo_order, [&](Node node) { return node_map.at_l(node); });
 
-  return ParallelComputationGraphInstance{ctx,
-                                          invocation_topo_order,
-                                          optimizer_attrs,
-                                          loss_attrs,
-                                          logit_grad_tensor};
+  return ParallelComputationGraphInstance{
+      ctx, invocation_topo_order, optimizer_attrs, logit_grad_tensor};
 
   // TODO list:
   //  * Realm allocator
   //  * external instances
+  //  * dependencies
+  //  * task argument serializer
+  //  * copies
 }
 
 static std::unordered_map<dynamic_layer_guid_t, Realm::Event>
@@ -119,7 +113,6 @@ static std::unordered_map<dynamic_layer_guid_t, Realm::Event>
         std::vector<DynamicNodeInvocation> const &invocations,
         OptimizerAttrs const &optimizer_attrs,
         ProfilingSettings const &profiling_settings,
-        std::optional<LossAttrs> const &loss_attrs,
         FFIterationConfig iteration_config) {
   return unordered_map_from_pairs(
       transform(invocations, [&](DynamicNodeInvocation const &invocation) {
@@ -129,7 +122,6 @@ static std::unordered_map<dynamic_layer_guid_t, Realm::Event>
                               invocation.node_attrs.device_coord)),
                           invocation,
                           profiling_settings,
-                          loss_attrs,
                           iteration_config,
                           optimizer_attrs);
         return std::pair{invocation.node_attrs.layer_guid, result};
@@ -141,7 +133,7 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
         ParallelComputationGraphInstance &instance,
         ProfilingSettings const &profiling_settings,
         FFIterationConfig iteration_config) {
-  std::vector<DynamicNodeInvocation> const &execution_order =
+  std::vector<DynamicNodeInvocation> execution_order =
       instance.get_execution_order();
   std::unordered_map<dynamic_layer_guid_t, Realm::Event> result =
       execute_distributed_dynamic_node_invocation_set(
@@ -149,7 +141,6 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
           /*invocations=*/execution_order,
           /*optimizer_attrs=*/instance.get_optimizer_attrs(),
           /*profiling_settings=*/profiling_settings,
-          /*loss_attrs=*/instance.get_loss_attrs(),
           /*iteration_config=*/iteration_config);
   instance.update_optimizer_attrs_for_next_iter();
   return result;
@@ -160,7 +151,7 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
         ParallelComputationGraphInstance &instance,
         ProfilingSettings const &profiling_settings,
         FFIterationConfig iteration_config) {
-  std::vector<DynamicNodeInvocation> const &execution_order =
+  std::vector<DynamicNodeInvocation> execution_order =
       filter(instance.get_execution_order(),
              [](DynamicNodeInvocation const &invocation) {
                DynamicTaskType task_type =
@@ -173,7 +164,6 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
       /*invocations=*/execution_order,
       /*optimizer_attrs=*/instance.get_optimizer_attrs(),
       /*profiling_settings=*/profiling_settings,
-      /*loss_attrs=*/instance.get_loss_attrs(),
       /*iteration_config=*/iteration_config);
 }
 
@@ -182,7 +172,7 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
         ParallelComputationGraphInstance &instance,
         ProfilingSettings const &profiling_settings,
         FFIterationConfig iteration_config) {
-  std::vector<DynamicNodeInvocation> const &execution_order =
+  std::vector<DynamicNodeInvocation> execution_order =
       filter(instance.get_execution_order(),
              [](DynamicNodeInvocation const &invocation) {
                DynamicTaskType task_type =
@@ -195,7 +185,6 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
       /*invocations=*/execution_order,
       /*optimizer_attrs=*/instance.get_optimizer_attrs(),
       /*profiling_settings=*/profiling_settings,
-      /*loss_attrs=*/instance.get_loss_attrs(),
       /*iteration_config=*/iteration_config);
 }
 
@@ -204,7 +193,7 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
         ParallelComputationGraphInstance &instance,
         ProfilingSettings const &profiling_settings,
         FFIterationConfig iteration_config) {
-  std::vector<DynamicNodeInvocation> const &execution_order =
+  std::vector<DynamicNodeInvocation> execution_order =
       filter(instance.get_execution_order(),
              [](DynamicNodeInvocation const &invocation) {
                DynamicTaskType task_type =
@@ -218,7 +207,6 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
           /*invocations=*/execution_order,
           /*optimizer_attrs=*/instance.get_optimizer_attrs(),
           /*profiling_settings=*/profiling_settings,
-          /*loss_attrs=*/instance.get_loss_attrs(),
           /*iteration_config=*/iteration_config);
   instance.update_optimizer_attrs_for_next_iter();
   return result;
