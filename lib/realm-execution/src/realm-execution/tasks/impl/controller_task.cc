@@ -21,17 +21,19 @@ void controller_task_body(void const *args,
   task_args.thunk(ctx);
 }
 
-Realm::Event collective_spawn_controller_task(
-    RealmContext &ctx,
-    Realm::Processor &target_proc,
-    std::function<void(RealmContext &)> thunk) {
+Realm::Event
+    collective_spawn_controller_task(RealmContext &ctx,
+                                     Realm::Processor &target_proc,
+                                     std::function<void(RealmContext &)> thunk,
+                                     Realm::Event precondition) {
   ControllerTaskArgs task_args;
   task_args.thunk = thunk;
 
   return ctx.collective_spawn_task(target_proc,
                                    task_id_t::CONTROLLER_TASK_ID,
                                    &task_args,
-                                   sizeof(task_args));
+                                   sizeof(task_args),
+                                   precondition);
 }
 
 } // namespace FlexFlow

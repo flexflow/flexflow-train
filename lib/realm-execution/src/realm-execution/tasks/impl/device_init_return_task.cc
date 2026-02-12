@@ -36,14 +36,16 @@ Realm::Event spawn_device_init_return_task(
     RealmContext &ctx,
     Realm::Processor origin_proc,
     DeviceSpecificPerDeviceOpState const &result,
-    DeviceSpecificPerDeviceOpState *origin_result_ptr) {
+    DeviceSpecificPerDeviceOpState *origin_result_ptr,
+    Realm::Event precondition) {
   DeviceInitReturnTaskArgs task_args{result, origin_proc, origin_result_ptr};
 
   return ctx.spawn_task(origin_proc,
                         task_id_t::DEVICE_INIT_RETURN_TASK_ID,
                         &task_args,
                         sizeof(task_args),
-                        Realm::ProfilingRequestSet{});
+                        Realm::ProfilingRequestSet{},
+                        precondition);
 }
 
 } // namespace FlexFlow

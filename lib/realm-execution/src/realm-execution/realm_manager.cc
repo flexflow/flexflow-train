@@ -27,7 +27,8 @@ Realm::Event
           .only_kind(Realm::Processor::LOC_PROC)
           .first();
 
-  return collective_spawn_controller_task(*this, target_proc, thunk);
+  return collective_spawn_controller_task(
+      *this, target_proc, thunk, Realm::Event::NO_EVENT);
 }
 
 } // namespace FlexFlow

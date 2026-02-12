@@ -16,8 +16,8 @@ public:
   void add_writer(DynamicValueAttrs const &value, Realm::Event writer);
   void add_reader(DynamicValueAttrs const &value, Realm::Event reader);
 
-  Realm::Event
-      get_current_outstanding_events(DynamicValueAttrs const &value) const;
+  Realm::Event get_dependency_for_writer(DynamicValueAttrs const &value) const;
+  Realm::Event get_dependency_for_reader(DynamicValueAttrs const &value) const;
 
 private:
   AtomicDependencySet &
