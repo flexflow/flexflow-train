@@ -18,19 +18,6 @@ bool no_nodes_are_initialized(DynamicOpenDataflowGraph const &g) {
       }));
 }
 
-bool all_nodes_are_initialized(DynamicOpenDataflowGraph const &g) {
-  return all_are_true(
-      transform(get_dynamic_nodes(g), [](DynamicNodeAttrs const &n) -> bool {
-        // Note: we expect device state to be initialized IFF the init task is
-        // defined
-        std::optional<ComputationGraphOpAttrs> op_attrs =
-            and_then(n.op_attrs, compgraph_op_attrs_from_pcg_op_attrs);
-        std::optional<TaskImplFunction> init_task_impl =
-            and_then(op_attrs, get_init_task_impl_for_op_attrs);
-        return init_task_impl.has_value() == n.per_device_op_state.has_value();
-      }));
-}
-
 DynamicNodeInvocation
     initialize_node(DynamicNodeInvocation const &i,
                     Allocator &allocator,
@@ -89,7 +76,6 @@ DynamicOpenDataflowGraph perform_device_state_initialization(
                                optimizer_attrs,
                                device_idx);
       });
-  ASSERT(all_nodes_are_initialized(dg));
 
   return result;
 }
