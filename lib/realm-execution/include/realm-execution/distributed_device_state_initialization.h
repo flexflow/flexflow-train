@@ -10,7 +10,7 @@
 namespace FlexFlow {
 
 DynamicOpenDataflowGraph perform_distributed_device_state_initialization(
-    DynamicOpenDataflowGraph const &,
+    DynamicOpenDataflowGraph const &dg,
     RealmContext &ctx,
     ProfilingSettings const &profiling_settings,
     FFIterationConfig const &iteration_config,
