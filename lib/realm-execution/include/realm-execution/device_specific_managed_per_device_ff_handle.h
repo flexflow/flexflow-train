@@ -4,9 +4,21 @@
 #include "kernels/device_handle_t.dtg.h"
 #include "kernels/managed_per_device_ff_handle.h"
 #include "pcg/device_id_t.dtg.h"
-#include "realm-execution/device_specific_managed_per_device_ff_handle.dtg.h"
 
 namespace FlexFlow {
+
+struct DeviceSpecificManagedPerDeviceFFHandle {
+public:
+  DeviceSpecificManagedPerDeviceFFHandle() = delete;
+  explicit DeviceSpecificManagedPerDeviceFFHandle(
+      device_id_t owner, std::optional<ManagedPerDeviceFFHandle *> handle);
+
+  std::optional<ManagedPerDeviceFFHandle *> get(device_id_t device_idx) const;
+
+private:
+  device_id_t owner;
+  std::optional<ManagedPerDeviceFFHandle *> handle;
+};
 
 DeviceSpecificManagedPerDeviceFFHandle make_device_specific_managed_handle(
     device_id_t const &, std::optional<ManagedPerDeviceFFHandle *> const &);
