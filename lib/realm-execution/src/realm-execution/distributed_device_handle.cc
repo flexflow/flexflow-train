@@ -26,9 +26,12 @@ DistributedDeviceHandle
   // Allocate space for the result before launching any tasks
   Realm::Machine::ProcessorQuery pq(Realm::Machine::get_machine());
   for (Realm::Processor proc : pq) {
-    handles.insert({proc,
-                    make_device_specific_managed_handle(
-                        ctx.get_current_device_idx(), std::nullopt)});
+    if (proc.kind() == Realm::Processor::LOC_PROC ||
+        proc.kind() == Realm::Processor::TOC_PROC) {
+      handles.insert({proc,
+                      make_device_specific_managed_handle(
+                          ctx.get_current_device_idx(), std::nullopt)});
+    }
   }
 
   for (auto &[proc, handle] : handles) {
