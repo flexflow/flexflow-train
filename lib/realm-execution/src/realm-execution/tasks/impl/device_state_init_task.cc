@@ -1,5 +1,7 @@
 #include "realm-execution/tasks/impl/device_state_init_task.h"
+#include "kernels/device_handle_t.dtg.h"
 #include "local-execution/device_state_initialization.h"
+#include "realm-execution/device_specific_managed_per_device_ff_handle.h"
 #include "realm-execution/tasks/impl/device_state_init_return_task.h"
 #include "realm-execution/tasks/task_id_t.dtg.h"
 #include "realm-execution/tasks/task_id_t.h"
@@ -16,26 +18,28 @@ namespace FlexFlow {
 // space
 struct DeviceStateInitTaskArgs {
   DeviceStateInitTaskArgs() = delete;
-  DeviceStateInitTaskArgs(DynamicNodeInvocation const *invocation,
-                          ProfilingSettings const *profiling_settings,
-                          FFIterationConfig const *iteration_config,
-                          OptimizerAttrs const *optimizer_attrs,
-                          Realm::Processor origin_proc,
-                          DeviceSpecificPerDeviceOpState *origin_result_ptr)
+  DeviceStateInitTaskArgs(
+      DynamicNodeInvocation const *invocation,
+      ProfilingSettings const *profiling_settings,
+      DeviceSpecificManagedPerDeviceFFHandle const &device_handle,
+      FFIterationConfig const *iteration_config,
+      OptimizerAttrs const *optimizer_attrs,
+      Realm::Processor origin_proc,
+      DeviceSpecificPerDeviceOpState *origin_result_ptr)
       : invocation(invocation), profiling_settings(profiling_settings),
-        iteration_config(iteration_config), optimizer_attrs(optimizer_attrs),
-        origin_proc(origin_proc), origin_result_ptr(origin_result_ptr) {}
+        device_handle(device_handle), iteration_config(iteration_config),
+        optimizer_attrs(optimizer_attrs), origin_proc(origin_proc),
+        origin_result_ptr(origin_result_ptr) {}
 
 public:
   DynamicNodeInvocation const *invocation;
   ProfilingSettings const *profiling_settings;
+  DeviceSpecificManagedPerDeviceFFHandle device_handle;
   FFIterationConfig const *iteration_config;
   OptimizerAttrs const *optimizer_attrs;
   Realm::Processor origin_proc;
   DeviceSpecificPerDeviceOpState *origin_result_ptr;
 };
-static_assert(
-    std::has_unique_object_representations_v<DeviceStateInitTaskArgs>);
 
 void device_state_init_task_body(void const *args,
                                  size_t arglen,
@@ -50,11 +54,14 @@ void device_state_init_task_body(void const *args,
   ASSERT(task_args.origin_proc.address_space() == proc.address_space());
 
   RealmContext ctx{proc};
+  device_handle_t device_handle =
+      device_handle_t_from_device_specific_managed_handle(
+          task_args.device_handle, ctx.get_current_device_idx());
   DynamicNodeInvocation result_invocation =
       initialize_node(*task_args.invocation,
                       ctx.get_current_device_allocator(),
                       *task_args.profiling_settings,
-                      ctx.get_current_device_handle(),
+                      device_handle,
                       *task_args.iteration_config,
                       *task_args.optimizer_attrs,
                       ctx.get_current_device_idx());
@@ -71,18 +78,20 @@ void device_state_init_task_body(void const *args,
                                       Realm::Event::NO_EVENT);
 }
 
-std::optional<Realm::Event>
-    spawn_device_state_init_task(RealmContext &ctx,
-                                 Realm::Processor target_proc,
-                                 DynamicNodeInvocation const &invocation,
-                                 ProfilingSettings const &profiling_settings,
-                                 FFIterationConfig const &iteration_config,
-                                 OptimizerAttrs const &optimizer_attrs,
-                                 DeviceSpecificPerDeviceOpState *result_ptr,
-                                 Realm::Event precondition) {
+std::optional<Realm::Event> spawn_device_state_init_task(
+    RealmContext &ctx,
+    Realm::Processor target_proc,
+    DynamicNodeInvocation const &invocation,
+    ProfilingSettings const &profiling_settings,
+    DeviceSpecificManagedPerDeviceFFHandle const &device_handle,
+    FFIterationConfig const &iteration_config,
+    OptimizerAttrs const &optimizer_attrs,
+    DeviceSpecificPerDeviceOpState *result_ptr,
+    Realm::Event precondition) {
   DeviceStateInitTaskArgs task_args{
       &invocation,
       &profiling_settings,
+      device_handle,
       &iteration_config,
       &optimizer_attrs,
       ctx.get_current_processor(),

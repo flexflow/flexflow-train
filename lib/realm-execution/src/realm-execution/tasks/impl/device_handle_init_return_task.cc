@@ -3,22 +3,20 @@
 
 namespace FlexFlow {
 
-// FIXME: Can't make this trivially copyable?
 struct DeviceHandleInitReturnTaskArgs {
 public:
   DeviceHandleInitReturnTaskArgs() = delete;
   DeviceHandleInitReturnTaskArgs(
-      DeviceSpecific<std::optional<ManagedPerDeviceFFHandle *>> result,
+      DeviceSpecificManagedPerDeviceFFHandle result,
       Realm::Processor origin_proc,
-      DeviceSpecific<std::optional<ManagedPerDeviceFFHandle *>>
-          *origin_result_ptr)
+      DeviceSpecificManagedPerDeviceFFHandle *origin_result_ptr)
       : result(result), origin_proc(origin_proc),
         origin_result_ptr(origin_result_ptr) {}
 
 public:
-  DeviceSpecific<std::optional<ManagedPerDeviceFFHandle *>> result;
+  DeviceSpecificManagedPerDeviceFFHandle result;
   Realm::Processor origin_proc;
-  DeviceSpecific<std::optional<ManagedPerDeviceFFHandle *>> *origin_result_ptr;
+  DeviceSpecificManagedPerDeviceFFHandle *origin_result_ptr;
 };
 
 void device_handle_init_return_task_body(void const *args,
@@ -37,9 +35,8 @@ void device_handle_init_return_task_body(void const *args,
 Realm::Event spawn_device_handle_init_return_task(
     RealmContext &ctx,
     Realm::Processor origin_proc,
-    DeviceSpecific<std::optional<ManagedPerDeviceFFHandle *>> const &result,
-    DeviceSpecific<std::optional<ManagedPerDeviceFFHandle *>>
-        *origin_result_ptr,
+    DeviceSpecificManagedPerDeviceFFHandle const &result,
+    DeviceSpecificManagedPerDeviceFFHandle *origin_result_ptr,
     Realm::Event precondition) {
   DeviceHandleInitReturnTaskArgs task_args{
       result, origin_proc, origin_result_ptr};

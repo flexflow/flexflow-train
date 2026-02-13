@@ -13,6 +13,7 @@ DynamicOpenDataflowGraph perform_distributed_device_state_initialization(
     DynamicOpenDataflowGraph const &dg,
     RealmContext &ctx,
     ProfilingSettings const &profiling_settings,
+    DistributedDeviceHandle const &device_handle,
     FFIterationConfig const &iteration_config,
     OptimizerAttrs const &optimizer_attrs,
     Realm::Event precondition) {
@@ -37,6 +38,7 @@ DynamicOpenDataflowGraph perform_distributed_device_state_initialization(
                                      target_proc,
                                      invocation,
                                      profiling_settings,
+                                     device_handle.at(target_proc),
                                      iteration_config,
                                      optimizer_attrs,
                                      output,

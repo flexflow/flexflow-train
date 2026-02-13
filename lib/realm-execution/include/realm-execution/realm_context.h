@@ -30,7 +30,6 @@ public:
   // Current device context
   Realm::Processor get_current_processor() const;
   Allocator &get_current_device_allocator();
-  device_handle_t const &get_current_device_handle() const;
   device_id_t get_current_device_idx() const;
 
   // Task creation
@@ -74,8 +73,6 @@ protected:
   Realm::Runtime runtime;
   Realm::Processor processor;
   Allocator allocator;
-  std::optional<ManagedPerDeviceFFHandle> managed_handle;
-  device_handle_t device_handle;
   std::vector<Realm::Event> outstanding_events;
   std::unordered_map<std::pair<Realm::AddressSpace, Realm::Processor::Kind>,
                      std::vector<Realm::Processor>>

@@ -1,5 +1,6 @@
 #include "realm-execution/tasks/impl/op_task.h"
 #include "local-execution/task_execution.h"
+#include "realm-execution/device_specific_managed_per_device_ff_handle.h"
 #include "realm-execution/tasks/task_id_t.h"
 #include "task-spec/per_device_op_state.h"
 #include "utils/optional.h"
@@ -15,20 +16,22 @@ public:
   OpTaskArgs() = delete;
   OpTaskArgs(DynamicNodeInvocation const *invocation,
              ProfilingSettings const *profiling_settings,
+             DeviceSpecificManagedPerDeviceFFHandle const &device_handle,
              FFIterationConfig const *iteration_config,
              std::optional<OptimizerAttrs> const *optimizer_attrs,
              Realm::Processor origin_proc)
       : invocation(invocation), profiling_settings(profiling_settings),
-        iteration_config(iteration_config), optimizer_attrs(optimizer_attrs) {}
+        device_handle(device_handle), iteration_config(iteration_config),
+        optimizer_attrs(optimizer_attrs) {}
 
 public:
   DynamicNodeInvocation const *invocation;
   ProfilingSettings const *profiling_settings;
+  DeviceSpecificManagedPerDeviceFFHandle device_handle;
   FFIterationConfig const *iteration_config;
   std::optional<OptimizerAttrs> const *optimizer_attrs;
   Realm::Processor origin_proc;
 };
-static_assert(std::has_unique_object_representations_v<OpTaskArgs>);
 
 void op_task_body(void const *args,
                   size_t arglen,
@@ -42,11 +45,14 @@ void op_task_body(void const *args,
   ASSERT(task_args.origin_proc.address_space() == proc.address_space());
 
   RealmContext ctx{proc};
+  device_handle_t device_handle =
+      device_handle_t_from_device_specific_managed_handle(
+          task_args.device_handle, ctx.get_current_device_idx());
   execute_dynamic_node_invocation(
       /*invocation=*/*task_args.invocation,
       /*allocator=*/ctx.get_current_device_allocator(),
       /*profiling_settings=*/*task_args.profiling_settings,
-      /*ff_handle=*/ctx.get_current_device_handle(),
+      /*ff_handle=*/device_handle,
       /*per_device_op_state=*/
       transform(task_args.invocation->node_attrs.per_device_op_state,
                 [&](DeviceSpecificPerDeviceOpState const &op_state) {
@@ -58,15 +64,18 @@ void op_task_body(void const *args,
       /*device_idx=*/ctx.get_current_device_idx());
 }
 
-Realm::Event spawn_op_task(RealmContext &ctx,
-                           Realm::Processor target_proc,
-                           DynamicNodeInvocation const &invocation,
-                           ProfilingSettings const &profiling_settings,
-                           FFIterationConfig const &iteration_config,
-                           std::optional<OptimizerAttrs> const &optimizer_attrs,
-                           Realm::Event precondition) {
+Realm::Event
+    spawn_op_task(RealmContext &ctx,
+                  Realm::Processor target_proc,
+                  DynamicNodeInvocation const &invocation,
+                  ProfilingSettings const &profiling_settings,
+                  DeviceSpecificManagedPerDeviceFFHandle const &device_handle,
+                  FFIterationConfig const &iteration_config,
+                  std::optional<OptimizerAttrs> const &optimizer_attrs,
+                  Realm::Event precondition) {
   OpTaskArgs task_args{&invocation,
                        &profiling_settings,
+                       device_handle,
                        &iteration_config,
                        &optimizer_attrs,
                        ctx.get_current_processor()};

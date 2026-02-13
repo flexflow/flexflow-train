@@ -1,12 +1,11 @@
 #ifndef _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_DISTRIBUTED_DEVICE_HANDLE_H
 #define _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_DISTRIBUTED_DEVICE_HANDLE_H
 
-#include "kernels/managed_per_device_ff_handle.h"
+#include "realm-execution/device_specific_managed_per_device_ff_handle.dtg.h"
+#include "realm-execution/hash/processor.h"
 #include "realm-execution/realm.h"
 #include "realm-execution/realm_context.h"
-#include "task-spec/device_specific.h"
-#include <map>
-#include <optional>
+#include <unordered_map>
 
 namespace FlexFlow {
 
@@ -14,17 +13,14 @@ struct DistributedDeviceHandle {
 public:
   DistributedDeviceHandle() = delete;
   explicit DistributedDeviceHandle(
-      std::map<Realm::Processor,
-               DeviceSpecific<std::optional<ManagedPerDeviceFFHandle *>>> const
+      std::unordered_map<Realm::Processor, DeviceSpecificManagedPerDeviceFFHandle> const
           &handles);
 
-  DeviceSpecific<std::optional<ManagedPerDeviceFFHandle *>> const &
+  DeviceSpecificManagedPerDeviceFFHandle const &
       at(Realm::Processor processor) const;
 
 private:
-  std::map<Realm::Processor,
-           DeviceSpecific<std::optional<ManagedPerDeviceFFHandle *>>>
-      handles;
+  std::unordered_map<Realm::Processor, DeviceSpecificManagedPerDeviceFFHandle> handles;
 };
 
 DistributedDeviceHandle create_distributed_device_handle(

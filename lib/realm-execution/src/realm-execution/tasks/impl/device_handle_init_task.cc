@@ -1,4 +1,5 @@
 #include "realm-execution/tasks/impl/device_handle_init_task.h"
+#include "realm-execution/device_specific_managed_per_device_ff_handle.h"
 #include "realm-execution/tasks/impl/device_handle_init_return_task.h"
 #include "realm-execution/tasks/task_id_t.dtg.h"
 #include <type_traits>
@@ -14,8 +15,7 @@ struct DeviceHandleInitTaskArgs {
       size_t workSpaceSize,
       bool allowTensorOpMathConversion,
       Realm::Processor origin_proc,
-      DeviceSpecific<std::optional<ManagedPerDeviceFFHandle *>>
-          *origin_result_ptr)
+      DeviceSpecificManagedPerDeviceFFHandle *origin_result_ptr)
       : workSpaceSize(workSpaceSize),
         allowTensorOpMathConversion(allowTensorOpMathConversion),
         origin_proc(origin_proc), origin_result_ptr(origin_result_ptr) {}
@@ -24,7 +24,7 @@ public:
   size_t workSpaceSize;
   bool allowTensorOpMathConversion;
   Realm::Processor origin_proc;
-  DeviceSpecific<std::optional<ManagedPerDeviceFFHandle *>> *origin_result_ptr;
+  DeviceSpecificManagedPerDeviceFFHandle *origin_result_ptr;
 };
 static_assert(std::is_trivially_copy_constructible_v<DeviceHandleInitTaskArgs>);
 
@@ -60,8 +60,8 @@ void device_handle_init_task_body(void const *args,
   ASSERT(task_args.origin_proc.address_space() == proc.address_space());
 
   RealmContext ctx{proc};
-  DeviceSpecific<std::optional<ManagedPerDeviceFFHandle *>> managed_handle =
-      DeviceSpecific<std::optional<ManagedPerDeviceFFHandle *>>::create(
+  DeviceSpecificManagedPerDeviceFFHandle managed_handle =
+      make_device_specific_managed_handle(
           ctx.get_current_device_idx(),
           make_device_handle_for_processor(
               proc,
@@ -80,7 +80,7 @@ Realm::Event spawn_device_handle_init_task(
     Realm::Processor target_proc,
     size_t workSpaceSize,
     bool allowTensorOpMathConversion,
-    DeviceSpecific<std::optional<ManagedPerDeviceFFHandle *>> *result_ptr,
+    DeviceSpecificManagedPerDeviceFFHandle *result_ptr,
     Realm::Event precondition) {
   DeviceHandleInitTaskArgs task_args{
       workSpaceSize,

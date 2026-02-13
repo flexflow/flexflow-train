@@ -3,7 +3,6 @@
 
 namespace FlexFlow {
 
-// FIXME: Can't make this trivially copyable?
 struct DeviceStateInitReturnTaskArgs {
 public:
   DeviceStateInitReturnTaskArgs() = delete;

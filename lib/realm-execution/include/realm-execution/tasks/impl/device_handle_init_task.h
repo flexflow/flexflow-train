@@ -1,10 +1,9 @@
 #ifndef _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_TASKS_IMPL_DEVICE_HANDLE_INIT_TASK_H
 #define _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_TASKS_IMPL_DEVICE_HANDLE_INIT_TASK_H
 
-#include "kernels/managed_per_device_ff_handle.h"
+#include "realm-execution/device_specific_managed_per_device_ff_handle.dtg.h"
 #include "realm-execution/realm.h"
 #include "realm-execution/realm_context.h"
-#include "task-spec/device_specific_per_device_op_state.dtg.h"
 
 namespace FlexFlow {
 
@@ -16,7 +15,7 @@ Realm::Event spawn_device_handle_init_task(
     Realm::Processor target_proc,
     size_t workSpaceSize,
     bool allowTensorOpMathConversion,
-    DeviceSpecific<std::optional<ManagedPerDeviceFFHandle *>> *result_ptr,
+    DeviceSpecificManagedPerDeviceFFHandle *result_ptr,
     Realm::Event precondition);
 
 } // namespace FlexFlow
