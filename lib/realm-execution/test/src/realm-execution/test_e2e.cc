@@ -2,7 +2,10 @@
 #include "realm-execution/realm_manager.h"
 #include <doctest/doctest.h>
 
+namespace test {
+
 using namespace ::FlexFlow;
+namespace Realm = ::FlexFlow::Realm;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("RealmBackend e2e Training") {
@@ -14,3 +17,5 @@ TEST_SUITE(FF_TEST_SUITE) {
     (void)manager.start_controller([](RealmContext &ctx) {});
   }
 }
+
+} // namespace test
