@@ -3,7 +3,7 @@
 
 #include "kernels/profiling_settings.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
-#include "realm-execution/device_specific_managed_per_device_ff_handle.dtg.h"
+#include "realm-execution/device_specific_managed_per_device_ff_handle.h"
 #include "realm-execution/realm.h"
 #include "realm-execution/realm_context.h"
 #include "task-spec/device_specific_per_device_op_state.dtg.h"
