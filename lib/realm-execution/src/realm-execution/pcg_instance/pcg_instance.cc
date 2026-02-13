@@ -57,6 +57,7 @@ PCGInstance create_parallel_computation_graph_instance(
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &input_tensors,
     ProfilingSettings const &profiling_settings,
+    DistributedDeviceHandle const &device_handle,
     FFIterationConfig const &iteration_config) {
 
   DynamicOpenDataflowGraph dg =
@@ -91,6 +92,7 @@ PCGInstance create_parallel_computation_graph_instance(
       dg,
       ctx,
       profiling_settings,
+      device_handle,
       iteration_config,
       optimizer_attrs,
       ctx.get_outstanding_events());
@@ -117,6 +119,7 @@ static std::unordered_map<dynamic_layer_guid_t, Realm::Event>
         std::vector<DynamicNodeInvocation> const &invocations,
         OptimizerAttrs const &optimizer_attrs,
         ProfilingSettings const &profiling_settings,
+        DistributedDeviceHandle const &device_handle,
         FFIterationConfig iteration_config) {
   // For simplicity we'll track a dependency on all outstanding operations up to
   // this point. This will create an effective barrier between phases.
@@ -136,15 +139,16 @@ static std::unordered_map<dynamic_layer_guid_t, Realm::Event>
         Realm::Event dependencies = Realm::Event::merge_events(
             Realm::Event::merge_events(input_dependencies),
             Realm::Event::merge_events(output_dependencies));
-        Realm::Event result =
-            spawn_op_task(ctx,
-                          ctx.map_device_coord_to_processor(assert_unwrap(
-                              invocation.node_attrs.device_coord)),
-                          invocation,
-                          profiling_settings,
-                          iteration_config,
-                          optimizer_attrs,
-                          dependencies);
+        Realm::Processor target_proc = ctx.map_device_coord_to_processor(
+            assert_unwrap(invocation.node_attrs.device_coord));
+        Realm::Event result = spawn_op_task(ctx,
+                                            target_proc,
+                                            invocation,
+                                            profiling_settings,
+                                            device_handle.at(target_proc),
+                                            iteration_config,
+                                            optimizer_attrs,
+                                            dependencies);
         for (DynamicValueAttrs const &value : values(invocation.inputs)) {
           dependency_set.add_reader(value, result);
         }
@@ -159,6 +163,7 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_all_passes_for_parallel_computation_graph_instance(
         PCGInstance &instance,
         ProfilingSettings const &profiling_settings,
+        DistributedDeviceHandle const &device_handle,
         FFIterationConfig iteration_config) {
   std::vector<DynamicNodeInvocation> execution_order =
       instance.get_execution_order();
@@ -168,6 +173,7 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
           /*invocations=*/execution_order,
           /*optimizer_attrs=*/instance.get_optimizer_attrs(),
           /*profiling_settings=*/profiling_settings,
+          /*device_handle=*/device_handle,
           /*iteration_config=*/iteration_config);
   instance.update_optimizer_attrs_for_next_iter();
   return result;
@@ -177,6 +183,7 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_forward_pass_for_parallel_computation_graph_instance(
         PCGInstance &instance,
         ProfilingSettings const &profiling_settings,
+        DistributedDeviceHandle const &device_handle,
         FFIterationConfig iteration_config) {
   std::vector<DynamicNodeInvocation> execution_order =
       filter(instance.get_execution_order(),
@@ -191,6 +198,7 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
       /*invocations=*/execution_order,
       /*optimizer_attrs=*/instance.get_optimizer_attrs(),
       /*profiling_settings=*/profiling_settings,
+      /*device_handle=*/device_handle,
       /*iteration_config=*/iteration_config);
 }
 
@@ -198,6 +206,7 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_backward_pass_for_parallel_computation_graph_instance(
         PCGInstance &instance,
         ProfilingSettings const &profiling_settings,
+        DistributedDeviceHandle const &device_handle,
         FFIterationConfig iteration_config) {
   std::vector<DynamicNodeInvocation> execution_order =
       filter(instance.get_execution_order(),
@@ -212,6 +221,7 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
       /*invocations=*/execution_order,
       /*optimizer_attrs=*/instance.get_optimizer_attrs(),
       /*profiling_settings=*/profiling_settings,
+      /*device_handle=*/device_handle,
       /*iteration_config=*/iteration_config);
 }
 
@@ -219,6 +229,7 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_update_pass_for_parallel_computation_graph_instance(
         PCGInstance &instance,
         ProfilingSettings const &profiling_settings,
+        DistributedDeviceHandle const &device_handle,
         FFIterationConfig iteration_config) {
   std::vector<DynamicNodeInvocation> execution_order =
       filter(instance.get_execution_order(),
@@ -234,6 +245,7 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
           /*invocations=*/execution_order,
           /*optimizer_attrs=*/instance.get_optimizer_attrs(),
           /*profiling_settings=*/profiling_settings,
+          /*device_handle=*/device_handle,
           /*iteration_config=*/iteration_config);
   instance.update_optimizer_attrs_for_next_iter();
   return result;
