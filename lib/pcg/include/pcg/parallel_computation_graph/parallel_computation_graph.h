@@ -32,6 +32,10 @@ ParallelLayerAddedResult add_parallel_layer(
 ParallelLayerAddedResult pcg_add_input_layer(ParallelComputationGraph &pcg,
                                              TensorShape const &tensor_shape);
 
+ParallelLayerAddedResult
+    pcg_add_input_layer_with_grad(ParallelComputationGraph &pcg,
+                                  TensorShape const &tensor_shape);
+
 OperatorTaskSpace get_operator_task_space(ParallelComputationGraph const &pcg,
                                           parallel_layer_guid_t const &layer);
 

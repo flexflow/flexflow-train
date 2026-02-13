@@ -142,6 +142,27 @@ ParallelLayerAddedResult pcg_add_input_layer(ParallelComputationGraph &pcg,
                             });
 }
 
+ParallelLayerAddedResult
+    pcg_add_input_layer_with_grad(ParallelComputationGraph &pcg,
+                                  TensorShape const &tensor_shape) {
+  ParallelLayerAttrs layer_attrs = ParallelLayerAttrs{
+      /*op_attrs=*/PCGOperatorAttrs{InputAttrs{tensor_shape}},
+      /*name=*/std::nullopt,
+  };
+
+  return add_parallel_layer(/*pcg=*/pcg,
+                            /*layer_attrs=*/layer_attrs,
+                            /*inputs=*/{},
+                            /*weights=*/{},
+                            /*output_flags=*/
+                            std::unordered_map<TensorSlotName, CreateGrad>{
+                                {
+                                    TensorSlotName::OUTPUT,
+                                    CreateGrad::YES,
+                                },
+                            });
+}
+
 OperatorTaskSpace get_operator_task_space(ParallelComputationGraph const &pcg,
                                           parallel_layer_guid_t const &layer) {
   PCGOperatorAttrs op_attrs = pcg_get_op_attrs(pcg, layer);

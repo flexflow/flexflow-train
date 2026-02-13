@@ -1,5 +1,5 @@
-#ifndef _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_PCG_INSTANCE_H
-#define _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_PCG_INSTANCE_H
+#ifndef _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_PCG_INSTANCE_PCG_INSTANCE_H
+#define _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_PCG_INSTANCE_PCG_INSTANCE_H
 
 #include "kernels/accessor.h"
 #include "kernels/allocation.h"
@@ -56,6 +56,34 @@ PCGInstance create_pcg_instance(
     ProfilingSettings const &profiling_settings,
     DistributedDeviceHandle const &device_handle,
     FFIterationConfig const &iteration_config);
+
+std::unordered_map<dynamic_layer_guid_t, Realm::Event>
+    perform_all_passes_for_pcg_instance(
+        PCGInstance &instance,
+        ProfilingSettings const &profiling_settings,
+        DistributedDeviceHandle const &device_handle,
+        FFIterationConfig iteration_config);
+
+std::unordered_map<dynamic_layer_guid_t, Realm::Event>
+    perform_forward_pass_for_pcg_instance(
+        PCGInstance &instance,
+        ProfilingSettings const &profiling_settings,
+        DistributedDeviceHandle const &device_handle,
+        FFIterationConfig iteration_config);
+
+std::unordered_map<dynamic_layer_guid_t, Realm::Event>
+    perform_backward_pass_for_pcg_instance(
+        PCGInstance &instance,
+        ProfilingSettings const &profiling_settings,
+        DistributedDeviceHandle const &device_handle,
+        FFIterationConfig iteration_config);
+
+std::unordered_map<dynamic_layer_guid_t, Realm::Event>
+    perform_update_pass_for_pcg_instance(
+        PCGInstance &instance,
+        ProfilingSettings const &profiling_settings,
+        DistributedDeviceHandle const &device_handle,
+        FFIterationConfig iteration_config);
 
 } // namespace FlexFlow
 
