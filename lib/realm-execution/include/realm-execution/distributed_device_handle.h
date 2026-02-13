@@ -13,14 +13,16 @@ struct DistributedDeviceHandle {
 public:
   DistributedDeviceHandle() = delete;
   explicit DistributedDeviceHandle(
-      std::unordered_map<Realm::Processor, DeviceSpecificManagedPerDeviceFFHandle> const
+      std::unordered_map<Realm::Processor,
+                         DeviceSpecificManagedPerDeviceFFHandle> const
           &handles);
 
   DeviceSpecificManagedPerDeviceFFHandle const &
       at(Realm::Processor processor) const;
 
 private:
-  std::unordered_map<Realm::Processor, DeviceSpecificManagedPerDeviceFFHandle> handles;
+  std::unordered_map<Realm::Processor, DeviceSpecificManagedPerDeviceFFHandle>
+      handles;
 };
 
 DistributedDeviceHandle create_distributed_device_handle(

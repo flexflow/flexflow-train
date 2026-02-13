@@ -1,5 +1,7 @@
 #include "realm-execution/tasks/realm_task_registry.h"
 #include "realm-execution/tasks/impl/controller_task.h"
+#include "realm-execution/tasks/impl/device_handle_init_return_task.h"
+#include "realm-execution/tasks/impl/device_handle_init_task.h"
 #include "realm-execution/tasks/impl/device_state_init_return_task.h"
 #include "realm-execution/tasks/impl/device_state_init_task.h"
 #include "realm-execution/tasks/impl/op_task.h"
@@ -125,6 +127,18 @@ Realm::Event register_all_tasks() {
   pending_registrations.push_back(register_task(Realm::Processor::LOC_PROC,
                                                 task_id_t::CONTROLLER_TASK_ID,
                                                 controller_task_body));
+  pending_registrations.push_back(
+      register_task(Realm::Processor::LOC_PROC,
+                    task_id_t::DEVICE_HANDLE_INIT_TASK_ID,
+                    device_handle_init_task_body));
+  pending_registrations.push_back(
+      register_task(Realm::Processor::TOC_PROC,
+                    task_id_t::DEVICE_HANDLE_INIT_TASK_ID,
+                    device_handle_init_task_body));
+  pending_registrations.push_back(
+      register_task(Realm::Processor::LOC_PROC,
+                    task_id_t::DEVICE_HANDLE_INIT_RETURN_TASK_ID,
+                    device_handle_init_return_task_body));
   pending_registrations.push_back(
       register_task(Realm::Processor::LOC_PROC,
                     task_id_t::DEVICE_STATE_INIT_RETURN_TASK_ID,
