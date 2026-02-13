@@ -1,4 +1,5 @@
 #include "realm-execution/distributed_device_handle.h"
+#include "internal/realm_test_utils.h"
 #include "realm-execution/realm_manager.h"
 #include <doctest/doctest.h>
 
@@ -9,11 +10,8 @@ namespace Realm = ::FlexFlow::Realm;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("DistributedDeviceHandle") {
-    // Construct some fake command line for our test
-    char fake_executable_name[] = "fake_executable_name";
-    char arg0[] = "-ll:cpu";
-    char arg1[] = "2";
-    std::vector<char *> fake_args{fake_executable_name, arg0, arg1};
+    std::vector<char *> fake_args =
+        make_fake_realm_args(/*num_cpus=*/2_p, /*num_gpus=*/0_n);
     int fake_argc = fake_args.size();
     char **fake_argv = fake_args.data();
 

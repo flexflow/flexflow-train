@@ -47,7 +47,7 @@ std::optional<Realm::RegionInstance>
   return this->logit_grad_tensor;
 }
 
-PCGInstance create_parallel_computation_graph_instance(
+PCGInstance create_pcg_instance(
     RealmContext &ctx,
     MappedParallelComputationGraph const &mpcg,
     OptimizerAttrs const &optimizer_attrs,
@@ -160,7 +160,7 @@ static std::unordered_map<dynamic_layer_guid_t, Realm::Event>
 }
 
 std::unordered_map<dynamic_layer_guid_t, Realm::Event>
-    perform_all_passes_for_parallel_computation_graph_instance(
+    perform_all_passes_for_pcg_instance(
         PCGInstance &instance,
         ProfilingSettings const &profiling_settings,
         DistributedDeviceHandle const &device_handle,
@@ -180,7 +180,7 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
 }
 
 std::unordered_map<dynamic_layer_guid_t, Realm::Event>
-    perform_forward_pass_for_parallel_computation_graph_instance(
+    perform_forward_pass_for_pcg_instance(
         PCGInstance &instance,
         ProfilingSettings const &profiling_settings,
         DistributedDeviceHandle const &device_handle,
@@ -203,7 +203,7 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
 }
 
 std::unordered_map<dynamic_layer_guid_t, Realm::Event>
-    perform_backward_pass_for_parallel_computation_graph_instance(
+    perform_backward_pass_for_pcg_instance(
         PCGInstance &instance,
         ProfilingSettings const &profiling_settings,
         DistributedDeviceHandle const &device_handle,
@@ -226,7 +226,7 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
 }
 
 std::unordered_map<dynamic_layer_guid_t, Realm::Event>
-    perform_update_pass_for_parallel_computation_graph_instance(
+    perform_update_pass_for_pcg_instance(
         PCGInstance &instance,
         ProfilingSettings const &profiling_settings,
         DistributedDeviceHandle const &device_handle,
