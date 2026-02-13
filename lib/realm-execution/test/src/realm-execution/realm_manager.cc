@@ -1,4 +1,5 @@
 #include "realm-execution/realm_manager.h"
+#include "realm-execution/distributed_device_handle.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -16,8 +17,17 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     // Launch a controller
     int some_data = 123;
-    FlexFlow::Realm::Event event = manager.start_controller(
-        [&](RealmContext &ctx) { ASSERT(some_data == 123); });
+    FlexFlow::Realm::Event event =
+        manager.start_controller([&](RealmContext &ctx) {
+          // Data is captured and retains value
+          ASSERT(some_data == 123);
+
+          // Launch some basic task to ensure everything works
+          DistributedDeviceHandle handle = create_distributed_device_handle(
+              /*ctx=*/ctx,
+              /*workSpaceSize=*/1024 * 1024,
+              /*allowTensorOpMathConversion=*/true);
+        });
     // Need to block on the completion of the event to ensure we don't race
     event.wait();
   }
