@@ -1,0 +1,26 @@
+namespace = "FlexFlow"
+name = "DeviceHandleInitTaskArgs"
+type = "struct"
+features = []
+
+includes = [
+  "realm-execution/device_specific_managed_per_device_ff_handle.h",
+  "realm-execution/realm.h",
+  "realm-execution/tasks/serializer/serializable_realm_processor.h",
+]
+
+[[fields]]
+name = "workSpaceSize"
+type = "size_t"
+
+[[fields]]
+name = "allowTensorOpMathConversion"
+type = "bool"
+
+[[fields]]
+name = "origin_proc"
+type = "::FlexFlow::Realm::Processor"
+
+[[fields]]
+name = "origin_result_ptr"
+type = "::FlexFlow::DeviceSpecificManagedPerDeviceFFHandle *"

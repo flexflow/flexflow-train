@@ -110,6 +110,7 @@ PCGInstance create_pcg_instance(
   // TODO list:
   //  * external instances
   //  * task argument serializer
+  //  * pass instances to task and convert to tensor accessor
   //  * copies
   //  * parallel operator implementation (partition, reduce, gather, etc.)
   //  * and fused parallel operators (reduce + broadcast = allreduce)
