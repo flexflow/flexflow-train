@@ -1,0 +1,34 @@
+namespace = "FlexFlow"
+name = "SerializableDynamicValueAttrs"
+type = "struct"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+  "json",
+]
+
+includes = [
+  "<optional>",
+  "task-spec/dynamic_graph/dynamic_tensor_guid_t.dtg.h",
+  "op-attrs/parallel_tensor_shape.dtg.h",
+  "op-attrs/parallel_tensor_space_coordinate.dtg.h",
+  "task-spec/dynamic_graph/dynamic_tensor_role.dtg.h",
+]
+
+src_includes = [
+  "utils/fmt/optional.h",
+  "utils/json/optional.h",
+]
+
+[[fields]]
+name = "parallel_tensor_shape"
+type = "std::optional<::FlexFlow::ParallelTensorShape>"
+
+[[fields]]
+name = "shard_coord"
+type = "std::optional<::FlexFlow::ParallelTensorSpaceCoordinate>"
+
+[[fields]]
+name = "role"
+type = "std::optional<::FlexFlow::DynamicTensorRole>"
