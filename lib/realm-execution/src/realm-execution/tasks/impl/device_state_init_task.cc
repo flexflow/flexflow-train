@@ -3,6 +3,7 @@
 #include "local-execution/device_state_initialization.h"
 #include "realm-execution/device_specific_managed_per_device_ff_handle.h"
 #include "realm-execution/tasks/impl/device_state_init_return_task.h"
+#include "realm-execution/tasks/serializer/serializable_realm_processor.dtg.h"
 #include "realm-execution/tasks/serializer/serializable_realm_processor.h"
 #include "realm-execution/tasks/serializer/task_arg_serializer.h"
 #include "realm-execution/tasks/task_id_t.dtg.h"
@@ -10,7 +11,6 @@
 #include "task-spec/device_specific_per_device_op_state.dtg.h"
 #include "task-spec/dynamic_graph/serializable_dynamic_node_invocation.h"
 #include "task-spec/dynamic_graph/training_operation_attrs.dtg.h"
-#include "utils/exception.h"
 #include "utils/optional.h"
 #include <cstdint>
 #include <optional>
@@ -37,10 +37,12 @@ struct DeviceStateInitTaskArgs {
         origin_result_ptr(origin_result_ptr) {}
 
   void serialize(nlohmann::json &j) const {
+    nlohmann::json j_device_handle;
+    device_handle.serialize(j_device_handle);
     j = {
         {"invocation", dynamic_node_invocation_to_serializable(invocation)},
         {"profiling_settings", profiling_settings},
-        // {"device_handle", device_handle},
+        {"device_handle", j_device_handle},
         {"iteration_config", iteration_config},
         {"optimizer_attrs", optimizer_attrs},
         {"origin_proc", realm_processor_to_serializable(origin_proc)},
@@ -49,7 +51,23 @@ struct DeviceStateInitTaskArgs {
   }
 
   static DeviceStateInitTaskArgs deserialize(nlohmann::json const &j) {
-    NOT_IMPLEMENTED();
+    return DeviceStateInitTaskArgs{
+        /*invocation=*/dynamic_node_invocation_from_serializable(
+            j.at("invocation").get<SerializableDynamicNodeInvocation>()),
+        /*profiling_settings=*/
+        j.at("profiling_settings").get<ProfilingSettings>(),
+        /*device_handle=*/
+        DeviceSpecificManagedPerDeviceFFHandle::deserialize(
+            j.at("device_handle")),
+        /*iteration_config=*/j.at("iteration_config").get<FFIterationConfig>(),
+        /*optimizer_attrs=*/j.at("optimizer_attrs").get<OptimizerAttrs>(),
+        /*origin_proc=*/
+        realm_processor_from_serializable(
+            j.at("origin_proc").get<SerializableRealmProcessor>()),
+        /*origin_result_ptr=*/
+        reinterpret_cast<DeviceSpecificPerDeviceOpState *>(
+            j.at("origin_result_ptr").get<uintptr_t>()),
+    };
   }
 
 public:
