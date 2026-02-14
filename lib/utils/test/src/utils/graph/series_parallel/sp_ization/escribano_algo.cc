@@ -70,10 +70,10 @@ TEST_SUITE(FF_TEST_SUITE) {
             {n.at(2), NodeRole::PURE},
             {n.at(3), NodeRole::PURE},
         };
-        std::unordered_map<Node, int> depth_map = {
-            {n.at(0), 0},
-            {n.at(2), 1},
-            {n.at(3), 1},
+        std::unordered_map<Node, nonnegative_int> depth_map = {
+            {n.at(0), 0_n},
+            {n.at(2), 1_n},
+            {n.at(3), 1_n},
         };
         std::unordered_set<Node> correct = {n.at(0), n.at(2), n.at(3)};
         std::unordered_set<Node> result =
@@ -97,11 +97,11 @@ TEST_SUITE(FF_TEST_SUITE) {
             {n.at(4), NodeRole::PURE},
             {n.at(5), NodeRole::PURE},
         };
-        std::unordered_map<Node, int> depth_map = {
-            {n.at(0), 0},
-            {n.at(1), 0},
-            {n.at(4), 1},
-            {n.at(5), 1},
+        std::unordered_map<Node, nonnegative_int> depth_map = {
+            {n.at(0), 0_n},
+            {n.at(1), 0_n},
+            {n.at(4), 1_n},
+            {n.at(5), 1_n},
         };
         SUBCASE("n.at(4)'s component") {
           std::unordered_set<Node> correct = {
@@ -138,11 +138,11 @@ TEST_SUITE(FF_TEST_SUITE) {
             {n.at(5), NodeRole::PURE},
             {n.at(6), NodeRole::PURE}};
 
-        std::unordered_map<Node, int> depth_map = {{n.at(0), 0},
-                                                   {n.at(2), 1},
-                                                   {n.at(3), 1},
-                                                   {n.at(5), 2},
-                                                   {n.at(6), 2}};
+        std::unordered_map<Node, nonnegative_int> depth_map = {{n.at(0), 0_n},
+                                                   {n.at(2), 1_n},
+                                                   {n.at(3), 1_n},
+                                                   {n.at(5), 2_n},
+                                                   {n.at(6), 2_n}};
         SUBCASE("n.at(5)'s component") {
           std::unordered_set<Node> correct = {
               n.at(2), n.at(3), n.at(5), n.at(6)};
@@ -188,13 +188,13 @@ TEST_SUITE(FF_TEST_SUITE) {
             {n.at(9), NodeRole::PURE},
         };
 
-        std::unordered_map<Node, int> depth_map = {{n.at(0), 0},
-                                                   {n.at(2), 1},
-                                                   {n.at(3), 1},
-                                                   {n.at(4), 1},
-                                                   {n.at(7), 2},
-                                                   {n.at(8), 2},
-                                                   {n.at(9), 2}};
+        std::unordered_map<Node, nonnegative_int> depth_map = {{n.at(0), 0_n},
+                                                   {n.at(2), 1_n},
+                                                   {n.at(3), 1_n},
+                                                   {n.at(4), 1_n},
+                                                   {n.at(7), 2_n},
+                                                   {n.at(8), 2_n},
+                                                   {n.at(9), 2_n}};
         SUBCASE("n.at(7)'s component") {
           std::unordered_set<Node> correct = {n.at(2), n.at(7), n.at(8)};
           std::unordered_set<Node> result =
@@ -222,7 +222,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("Single Node") {
       DiGraph g = DiGraph::create<AdjacencyDiGraph>();
       Node n = g.add_node();
-      SeriesParallelDecomposition sp = escribano_strata_sync(g);
+      SeriesParallelDecomposition sp = escribano_sp_ization(g);
       SeriesParallelDecomposition correct =
           SeriesParallelDecomposition{Node{n}};
       CHECK(sp == correct);
@@ -232,7 +232,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       DiGraph g = DiGraph::create<AdjacencyDiGraph>();
       std::vector<Node> n = add_nodes(g, 3);
       add_edges(g, {DirectedEdge{n[0], n[1]}, DirectedEdge{n[1], n[2]}});
-      SeriesParallelDecomposition sp = escribano_strata_sync(g);
+      SeriesParallelDecomposition sp = escribano_sp_ization(g);
       CHECK(dependencies_are_maintained(g, sp));
       SeriesParallelDecomposition correct =
           SeriesParallelDecomposition{SeriesSplit{{n[0], n[1], n[2]}}};
@@ -247,7 +247,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                  DirectedEdge{n[0], n[2]},
                  DirectedEdge{n[1], n[3]},
                  DirectedEdge{n[2], n[3]}});
-      SeriesParallelDecomposition sp = escribano_strata_sync(g);
+      SeriesParallelDecomposition sp = escribano_sp_ization(g);
       SeriesParallelDecomposition correct = SeriesParallelDecomposition{
           SeriesSplit{{n[0], ParallelSplit{{n[1], n[2]}}, n[3]}}};
 
@@ -269,7 +269,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                     DirectedEdge{n[3], n[5]},
                     DirectedEdge{n[4], n[5]},
                 });
-      SeriesParallelDecomposition sp = escribano_strata_sync(g);
+      SeriesParallelDecomposition sp = escribano_sp_ization(g);
       CHECK(dependencies_are_maintained(g, sp));
       SeriesParallelDecomposition correct = SeriesParallelDecomposition{
           SeriesSplit{{n[0], n[1], ParallelSplit{{n[2], n[3]}}, n[4], n[5]}}};
@@ -289,7 +289,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                     DirectedEdge{n[4], n[5]},
                 });
 
-      SeriesParallelDecomposition sp = escribano_strata_sync(g);
+      SeriesParallelDecomposition sp = escribano_sp_ization(g);
       CHECK(dependencies_are_maintained(g, sp));
       SeriesParallelDecomposition correct = SeriesParallelDecomposition{
           SeriesSplit{{n[0],
@@ -312,7 +312,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                     DirectedEdge{n[3], n[5]},
                     DirectedEdge{n[4], n[5]},
                 });
-      SeriesParallelDecomposition sp = escribano_strata_sync(g);
+      SeriesParallelDecomposition sp = escribano_sp_ization(g);
       CHECK(dependencies_are_maintained(g, sp));
       SeriesParallelDecomposition correct =
           SeriesParallelDecomposition{SeriesSplit{{n[0],
@@ -340,7 +340,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                  DirectedEdge{n[7], n[8]},
                  DirectedEdge{n[6], n[9]},
                  DirectedEdge{n[8], n[9]}});
-      SeriesParallelDecomposition sp = escribano_strata_sync(g);
+      SeriesParallelDecomposition sp = escribano_sp_ization(g);
       CHECK(dependencies_are_maintained(g, sp));
 
       SeriesParallelDecomposition correct = SeriesParallelDecomposition{

@@ -14,12 +14,13 @@
 #include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
 #include "utils/graph/series_parallel/series_parallel_decomposition.h"
 #include "utils/variant.h"
+#include <libassert/assert.hpp>
 #include <unordered_set>
 
 namespace FlexFlow {
 
 static NonNormalSeriesSplit cut_off_head(NonNormalSeriesSplit const &s) {
-  assert(s.children.size() > 0);
+  ASSERT(s.children.size() > 0);
   return NonNormalSeriesSplit{
       std::vector<std::variant<NonNormalParallelSplit, Node>>{
           s.children.begin() + 1, s.children.end()}};
@@ -118,13 +119,13 @@ work_duplicating_spization_unchecked(DiGraphView const &g) {
 
 SeriesParallelDecomposition
 naive_work_duplicating_spization(DiGraphView const &g) {
-  assert(is_2_terminal_dag(g));
+  ASSERT(is_2_terminal_dag(g));
   return work_duplicating_spization_unchecked(g);
 }
 
 SeriesParallelDecomposition
 work_duplicating_spization_with_coalescing(DiGraphView const &g) {
-  assert(is_2_terminal_dag(g));
+  ASSERT(is_2_terminal_dag(g));
   return work_duplicating_spization_unchecked_with_coalescing(g);
 }
 

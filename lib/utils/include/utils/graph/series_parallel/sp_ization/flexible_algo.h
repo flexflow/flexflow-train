@@ -12,9 +12,12 @@
 
 namespace FlexFlow {
 
+/**
+ * @brief See @ref lib/utils/include/utils/graph/series_parallel/sp_ization/README.md "README.md" for explanation.
+ */
 SeriesParallelDecomposition
-    flexible_sync(DiGraphView const &g,
-                  std::unordered_map<Node, float> const &cost_map);
+    flexible_sp_ization(DiGraphView const &g,
+                        std::unordered_map<Node, float> const &cost_map);
 
 } // namespace FlexFlow
 

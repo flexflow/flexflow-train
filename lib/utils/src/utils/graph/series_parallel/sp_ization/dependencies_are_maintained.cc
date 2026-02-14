@@ -5,12 +5,13 @@
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/series_parallel/get_ancestors.h"
 #include "utils/graph/series_parallel/series_parallel_decomposition.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
 bool dependencies_are_maintained(DiGraphView const &g,
                                  SeriesParallelDecomposition const &sp) {
-  assert(has_no_duplicate_nodes(sp));
+  ASSERT(has_no_duplicate_nodes(sp));
   if (unordered_set_of(get_nodes(sp)) != get_nodes(g)) {
     return false;
   }

@@ -32,6 +32,7 @@
 #include "utils/graph/series_parallel/get_series_parallel_decomposition.h"
 #include "utils/graph/series_parallel/sp_ization/node_role.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
+#include <libassert/assert.hpp>
 
 #include <unordered_map>
 #include <unordered_set>
@@ -45,26 +46,24 @@ static std::unordered_set<Node>
       nodes, [&](Node const &n) { return node_roles.at(n) != NodeRole::SYNC; });
 }
 
-static int get_max_depth(DiGraph const &sp,
-                         std::unordered_map<Node, int> const &depth_map) {
+static nonnegative_int get_max_depth(DiGraph const &sp,
+                         std::unordered_map<Node, nonnegative_int> const &depth_map) {
   return maximum(values(filter_keys(
       depth_map, [&](Node const &n) { return contains(get_nodes(sp), n); })));
 }
 
 DiGraph add_dummy_nodes(DiGraph g,
                         std::unordered_map<Node, NodeRole> &node_roles) {
-  std::unordered_map<Node, int> depth_map = map_values(
-      get_longest_path_lengths_from_root(g),
-      [](nonnegative_int const &i) { return i.unwrap_nonnegative(); });
+  std::unordered_map<Node, nonnegative_int> depth_map = get_longest_path_lengths_from_root(g);
   for (DirectedEdge const &e : get_edges(g)) {
     Node src = e.src;
     Node dst = e.dst;
-    int depth_diff = depth_map.at(dst) - depth_map.at(src);
+    int depth_diff = depth_map.at(dst).unwrap_nonnegative() - depth_map.at(src).unwrap_nonnegative();
     if (depth_diff > 1) {
       g.remove_edge(e);
       Node prev_node = src;
       Node intermediate_node = Node{0};
-      for (int i : range(1, depth_diff)) {
+      for (int i = 1; i < depth_diff; i++) {
         intermediate_node = g.add_node();
         node_roles[intermediate_node] = NodeRole::DUMMY;
         g.add_edge(DirectedEdge{prev_node, intermediate_node});
@@ -79,22 +78,22 @@ DiGraph add_dummy_nodes(DiGraph g,
 std::unordered_set<Node>
     get_component(DiGraph const &g,
                   Node const &node,
-                  std::unordered_map<Node, int> const &depth_map,
+                  std::unordered_map<Node, nonnegative_int> const &depth_map,
                   std::unordered_map<Node, NodeRole> const &node_roles) {
 
-  int max_depth = get_max_depth(g, depth_map);
+  nonnegative_int max_depth = get_max_depth(g, depth_map);
   auto is_in_last_2_layers = [&](Node const &n) {
     if (node_roles.at(n) == NodeRole::SYNC) {
       if (get_successors(g, n).empty()) {
         return true;
       }
-      int successors_depth =
+      nonnegative_int successors_depth =
           get_only(transform(get_successors(g, n),
                              [&](Node const &n) { return depth_map.at(n); }));
       return successors_depth == max_depth;
     } else {
       return (depth_map.at(n) == max_depth) ||
-             (depth_map.at(n) == max_depth - 1);
+             (depth_map.at(n) + 1_n == max_depth);
     }
   };
   std::unordered_set<Node> last_two_layers_nodes =
@@ -134,12 +133,12 @@ static std::unordered_set<Node>
 static std::pair<std::unordered_set<Node>, std::unordered_set<Node>>
     get_up_and_down(DiGraph const &g,
                     std::unordered_set<Node> const &forest,
-                    std::unordered_map<Node, int> const &depth_map) {
+                    std::unordered_map<Node, nonnegative_int> const &depth_map) {
 
-  int max_depth = get_max_depth(g, depth_map);
+  nonnegative_int max_depth = get_max_depth(g, depth_map);
   auto grouped_by_depth =
       group_by(forest, [&](Node const &n) { return depth_map.at(n); });
-  return {grouped_by_depth.at_l(max_depth - 1),
+  return {grouped_by_depth.at_l(nonnegative_int{max_depth.unwrap_nonnegative() - 1}),
           grouped_by_depth.at_l(max_depth)};
 }
 
@@ -172,16 +171,14 @@ static std::unordered_set<DirectedEdge>
                    }));
 }
 
-SeriesParallelDecomposition escribano_strata_sync(DiGraph g) {
-  assert(is_2_terminal_dag(g));
-  assert(is_acyclic(g));
+SeriesParallelDecomposition escribano_sp_ization(DiGraph g) {
+  ASSERT(is_2_terminal_dag(g));
+  ASSERT(is_acyclic(g));
 
   std::unordered_map<Node, NodeRole> node_roles = get_initial_node_role_map(g);
 
   g = add_dummy_nodes(g, node_roles);
-  std::unordered_map<Node, int> depth_map = map_values(
-      get_longest_path_lengths_from_root(g),
-      [](nonnegative_int const &i) { return i.unwrap_nonnegative(); });
+  std::unordered_map<Node, nonnegative_int> depth_map = get_longest_path_lengths_from_root(g);
 
   DiGraph sp = DiGraph::create<AdjacencyDiGraph>();
   Node root = get_only(get_initial_nodes(g));

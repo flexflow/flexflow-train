@@ -38,6 +38,7 @@
 #include "utils/graph/series_parallel/sp_ization/dependencies_are_maintained.h"
 #include "utils/graph/series_parallel/sp_ization/node_role.h"
 #include "utils/graph/series_parallel/sp_ization/up_down_partition.h"
+#include <libassert/assert.hpp>
 
 #include <unordered_map>
 #include <unordered_set>
@@ -144,7 +145,7 @@ static UpDownPartition
 
   std::unordered_set<UpDownPartition> valid_partitions =
       filter(partitions, is_valid);
-  assert(!valid_partitions.empty());
+  ASSERT(!valid_partitions.empty());
 
   auto partition_cost = [&](UpDownPartition const &p) {
     float up_cost = critical_path_cost(get_subgraph(sp_pure, p.up), cost_map);
@@ -224,7 +225,7 @@ static std::unordered_set<Node>
         return is_subseteq_of(preds, sp_nodes);
       });
 
-  assert(!candidate_nodes.empty());
+  ASSERT(!candidate_nodes.empty());
 
   std::unordered_map<Node, float> critical_path_costs =
       generate_map(candidate_nodes, [&](Node const &node) {
@@ -309,17 +310,17 @@ SeriesParallelDecomposition
 
   SeriesParallelDecomposition decomp =
       get_series_parallel_decomposition(sp).value();
-  assert(dependencies_are_maintained(g, decomp));
+  ASSERT(dependencies_are_maintained(g, decomp));
 
   return decomp;
 }
 
 SeriesParallelDecomposition
-    flexible_sync(DiGraphView const &g,
-                  std::unordered_map<Node, float> const &cost_map) {
-  assert(is_2_terminal_dag(g));
-  assert(is_acyclic(g));
-  assert(cost_map_is_valid(g, cost_map));
+    flexible_sp_ization(DiGraphView const &g,
+                        std::unordered_map<Node, float> const &cost_map) {
+  ASSERT(is_2_terminal_dag(g));
+  ASSERT(is_acyclic(g));
+  ASSERT(cost_map_is_valid(g, cost_map));
 
   return flexible_sync_unchecked(g, cost_map);
 }

@@ -29,7 +29,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       std::unordered_map<Node, float> cost_map = {{n0, 1.0f}};
 
-      SeriesParallelDecomposition result = flexible_sync(g, cost_map);
+      SeriesParallelDecomposition result = flexible_sp_ization(g, cost_map);
       SeriesParallelDecomposition correct = SeriesParallelDecomposition{n0};
 
       CHECK(result == correct);
@@ -52,7 +52,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           {n[3], 1.0f},
       };
 
-      SeriesParallelDecomposition result = flexible_sync(g, cost_map);
+      SeriesParallelDecomposition result = flexible_sp_ization(g, cost_map);
       SeriesParallelDecomposition correct = SeriesParallelDecomposition{
           SeriesSplit{{n[0], ParallelSplit{{n[1], n[2]}}, n[3]}}};
 
@@ -75,7 +75,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           {n[3], 1.0f},
       };
 
-      SeriesParallelDecomposition result = flexible_sync(g, cost_map);
+      SeriesParallelDecomposition result = flexible_sp_ization(g, cost_map);
       SeriesParallelDecomposition correct =
           SeriesParallelDecomposition{SeriesSplit{{n[0], n[1], n[2], n[3]}}};
 
@@ -104,7 +104,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           {n[5], 1.0f},
       };
 
-      SeriesParallelDecomposition result = flexible_sync(g, cost_map);
+      SeriesParallelDecomposition result = flexible_sp_ization(g, cost_map);
       SeriesParallelDecomposition correct =
           SeriesParallelDecomposition{SeriesSplit{{n[0],
                                                    ParallelSplit{{n[1], n[2]}},
@@ -136,7 +136,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           {n[5], 1.0f},
       };
 
-      SeriesParallelDecomposition result = flexible_sync(g, cost_map);
+      SeriesParallelDecomposition result = flexible_sp_ization(g, cost_map);
       SeriesParallelDecomposition correct = SeriesParallelDecomposition{
           SeriesSplit{{n[0],
                        n[1],
@@ -168,7 +168,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           {n[5], 1.0f},
       };
 
-      SeriesParallelDecomposition result = flexible_sync(g, cost_map);
+      SeriesParallelDecomposition result = flexible_sp_ization(g, cost_map);
       SeriesParallelDecomposition correct = SeriesParallelDecomposition{
           SeriesSplit{{n[0],
                        ParallelSplit{{SeriesSplit{{n[1], n[3]}}, n[2]}},
@@ -203,7 +203,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           {n[7], 1.0f},
       };
 
-      SeriesParallelDecomposition result = flexible_sync(g, cost_map);
+      SeriesParallelDecomposition result = flexible_sp_ization(g, cost_map);
       SeriesParallelDecomposition correct = SeriesParallelDecomposition{
           SeriesSplit{{n[0],
                        ParallelSplit{{SeriesSplit{{n[1], n[3], n[5]}},
@@ -238,7 +238,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           {n[6], 1.0f},
       };
 
-      SeriesParallelDecomposition result = flexible_sync(g, cost_map);
+      SeriesParallelDecomposition result = flexible_sp_ization(g, cost_map);
       SeriesParallelDecomposition correct = SeriesParallelDecomposition{
           SeriesSplit{{n[0],
                        ParallelSplit{
@@ -279,7 +279,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           {n[7], 1.0f},
       };
 
-      SeriesParallelDecomposition result = flexible_sync(g, cost_map);
+      SeriesParallelDecomposition result = flexible_sp_ization(g, cost_map);
       SeriesParallelDecomposition correct = SeriesParallelDecomposition{
           SeriesSplit{{n[0],
                        ParallelSplit{
@@ -319,7 +319,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           {n[7], 100.0f},
       };
 
-      SeriesParallelDecomposition result = flexible_sync(g, cost_map);
+      SeriesParallelDecomposition result = flexible_sp_ization(g, cost_map);
       SeriesParallelDecomposition correct =
           SeriesParallelDecomposition{SeriesSplit{
               {n[0],
@@ -360,7 +360,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           {m[6], 1.0f},
       };
 
-      SeriesParallelDecomposition result = flexible_sync(g2, cost_map2);
+      SeriesParallelDecomposition result = flexible_sp_ization(g2, cost_map2);
       SeriesParallelDecomposition correct = SeriesParallelDecomposition{
           SeriesSplit{{m[0],
                        ParallelSplit{{SeriesSplit{{m[1], m[4]}}, m[2]}},
@@ -394,7 +394,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         cost_map[n[i]] = 1.0f;
       }
 
-      SeriesParallelDecomposition result = flexible_sync(g, cost_map);
+      SeriesParallelDecomposition result = flexible_sp_ization(g, cost_map);
       SeriesParallelDecomposition correct =
           SeriesParallelDecomposition{SeriesSplit{
               {n[0],
@@ -434,7 +434,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         cost_map[n[i]] = 1.0f;
       }
 
-      SeriesParallelDecomposition result = flexible_sync(g, cost_map);
+      SeriesParallelDecomposition result = flexible_sp_ization(g, cost_map);
       CHECK(dependencies_are_maintained(g, result));
     }
 
@@ -476,7 +476,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           {n[17], 1.0f},
       };
 
-      SeriesParallelDecomposition result = flexible_sync(g, cost_map);
+      SeriesParallelDecomposition result = flexible_sp_ization(g, cost_map);
       CHECK(dependencies_are_maintained(g, result));
     }
   }

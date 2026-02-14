@@ -6,12 +6,12 @@ data ParallelChild = Node | Series SeriesChild SeriesChild
 data SeriesChild = Node | Parallel ParallelChild ParallelChild
 
 data SPD = Series SeriesChild SeriesChild |
-           Parallel ParallelChild SeriesChild |
+           Parallel ParallelChild ParallelChild |
            Node
 ```
 
-SP-ization is a process of transforming a DAG into a series-parallel decomposition (SPD), such that the dependencies present in the orignal DAG are preserved in the SPD.
-Each node in the SPD may optioanly have an associated cost, which is a positive scalar value.
+SP-ization is the process of transforming a DAG into a series-parallel decomposition (SPD), such that the dependencies present in the original DAG are preserved in the SPD.
+Each node in the SPD may optionally have an associated cost, which is a positive scalar value.
 
 Note that SP-ization is itself trivial (e.g. a topological sort of the nodes is an SPD). But we generally care about preserving as much of the structure / parallelism of the original DAG as possible. So, there are 2 properties that we care about:
 1. **Work**: the sum of cost of nodes in the SPD
@@ -126,14 +126,13 @@ digraph SP {
     n3 -> n5;
     n4 -> n6;
     n5 -> n6;
-    n4 -> n6;
 }
 ```
 
 ### Escribano Algorithm ([escribano_algo.h](escribano_algo.h))
 
 Paper is present here: https://www.infor.uva.es/wp-content/uploads/2016/10/IT-DI-2002-0002.pdf.
-In the naive stratum sync algorithm, we add an all-to-all connection between all nodes in one stratum and the next. The escribano algorithm by contrast, leverages the fact that it might be possible to synchronize consecutive strata by adding smaller, more local connections that still yiled a valid SP-ization graph.
+In the naive stratum sync algorithm, we add an all-to-all connection between all nodes in one stratum and the next. The escribano algorithm by contrast, leverages the fact that it might be possible to synchronize consecutive strata by adding smaller, more local connections that still yield a valid SP-ization graph.
 
 Example:
 ```dot
@@ -163,18 +162,19 @@ While the escribano algorithm is able to identify that strata 1 and 2 can be syn
 S(0, P(S(P(1, 2), P(4, 5)), S(3, 6)), 7)
 ```
 
-Our implementation, rather than building the SPD one staraum at a time, it builds it one node at a time.
+Our implementation, rather than building the SPD one stratum at a time, builds it one node at a time.
 
 ### Flexible Algorithm ([flexible_algo.h](flexible_algo.h))
 
 Consider the following N-graph:
 
-a   b
-|\  |
-| \ |
-|  \|
-c   d
-
+```dot
+digraph N {
+    a -> c;
+    a -> d;
+    b -> d;
+}
+```
 
 Note that there are multiple valid SP-izations for this.
 1) S(P(a, b), P(c, d)) — adds edge (b, c)

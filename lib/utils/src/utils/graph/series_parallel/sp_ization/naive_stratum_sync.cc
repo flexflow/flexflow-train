@@ -9,6 +9,7 @@
 #include "utils/graph/series_parallel/normalize_sp_decomposition.h"
 #include "utils/graph/series_parallel/series_parallel_decomposition.h"
 #include "utils/graph/series_parallel/sp_ization/dependencies_are_maintained.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
@@ -44,9 +45,9 @@ stratum_sync_sp_ization_unchecked(DiGraphView const &g) {
 }
 
 SeriesParallelDecomposition stratum_sync_sp_ization(DiGraphView const &g) {
-  assert(is_acyclic(g));
+  ASSERT(is_acyclic(g));
   SeriesParallelDecomposition sp = stratum_sync_sp_ization_unchecked(g);
-  assert(dependencies_are_maintained(g, sp));
+  ASSERT(dependencies_are_maintained(g, sp));
   return sp;
 }
 
