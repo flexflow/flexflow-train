@@ -1,0 +1,28 @@
+namespace = "FlexFlow"
+name = "SerializableDeviceSpecificPtr"
+type = "struct"
+features = [
+  "eq",
+  "fmt",
+  "hash",
+  "json",
+]
+
+includes = [
+  "pcg/device_id_t.dtg.h",
+  "cstdint",
+  "optional",
+]
+
+src_includes = [
+  "utils/fmt/optional.h",
+  "utils/json/optional.h",
+]
+
+[[fields]]
+name = "device_idx"
+type = "::FlexFlow::device_id_t"
+
+[[fields]]
+name = "ptr"
+type = "std::optional<uintptr_t>"

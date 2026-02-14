@@ -4,6 +4,7 @@
 #include "kernels/device_handle_t.dtg.h"
 #include "kernels/managed_per_device_ff_handle.h"
 #include "pcg/device_id_t.dtg.h"
+#include "realm-execution/tasks/serializer/serializable_device_specific_ptr.dtg.h"
 #include <nlohmann/json.hpp>
 #include <optional>
 
@@ -17,9 +18,9 @@ public:
 
   std::optional<ManagedPerDeviceFFHandle *> get(device_id_t device_idx) const;
 
-  void serialize(nlohmann::json &j) const;
+  SerializableDeviceSpecificPtr serialize() const;
   static DeviceSpecificManagedPerDeviceFFHandle
-      deserialize(nlohmann::json const &j);
+      deserialize(SerializableDeviceSpecificPtr const &j);
 
 private:
   device_id_t owner;

@@ -16,25 +16,25 @@ std::optional<ManagedPerDeviceFFHandle *>
   return this->handle;
 }
 
-void DeviceSpecificManagedPerDeviceFFHandle::serialize(
-    nlohmann::json &j) const {
-  j = {
-      {"owner", owner},
-      {"handle",
-       transform(handle,
-                 [](ManagedPerDeviceFFHandle *ptr) {
-                   return reinterpret_cast<uintptr_t>(ptr);
-                 })},
+SerializableDeviceSpecificPtr
+    DeviceSpecificManagedPerDeviceFFHandle::serialize() const {
+  return SerializableDeviceSpecificPtr{
+      /*device_idx=*/owner,
+      /*ptr=*/
+      transform(handle,
+                [](ManagedPerDeviceFFHandle *ptr) {
+                  return reinterpret_cast<uintptr_t>(ptr);
+                }),
   };
 }
 
 DeviceSpecificManagedPerDeviceFFHandle
     DeviceSpecificManagedPerDeviceFFHandle::deserialize(
-        nlohmann::json const &j) {
+        SerializableDeviceSpecificPtr const &handle) {
   return DeviceSpecificManagedPerDeviceFFHandle{
-      /*owner=*/j.at("owner").get<device_id_t>(),
+      /*owner=*/handle.device_idx,
       /*handle=*/
-      transform(j.at("handle").get<std::optional<uintptr_t>>(),
+      transform(handle.ptr,
                 [](uintptr_t ptrval) {
                   return reinterpret_cast<ManagedPerDeviceFFHandle *>(ptrval);
                 }),

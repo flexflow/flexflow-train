@@ -1,0 +1,30 @@
+namespace = "FlexFlow"
+name = "SerializableDeviceHandleInitTaskArgs"
+type = "struct"
+features = [
+  "eq",
+  "fmt",
+  "hash",
+  "json",
+]
+
+includes = [
+  "realm-execution/realm.h",
+  "realm-execution/tasks/serializer/serializable_realm_processor.dtg.h",
+]
+
+[[fields]]
+name = "workSpaceSize"
+type = "size_t"
+
+[[fields]]
+name = "allowTensorOpMathConversion"
+type = "bool"
+
+[[fields]]
+name = "origin_proc"
+type = "::FlexFlow::SerializableRealmProcessor"
+
+[[fields]]
+name = "origin_result_ptr"
+type = "uintptr_t"

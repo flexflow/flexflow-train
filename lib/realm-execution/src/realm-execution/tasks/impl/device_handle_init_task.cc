@@ -1,32 +1,13 @@
 #include "realm-execution/tasks/impl/device_handle_init_task.h"
 #include "realm-execution/device_specific_managed_per_device_ff_handle.h"
 #include "realm-execution/tasks/impl/device_handle_init_return_task.h"
+#include "realm-execution/tasks/impl/device_handle_init_task_args.dtg.h"
+#include "realm-execution/tasks/impl/serializable_device_handle_init_task_args.h"
+#include "realm-execution/tasks/serializer/task_arg_serializer.h"
 #include "realm-execution/tasks/task_id_t.dtg.h"
 #include <type_traits>
 
 namespace FlexFlow {
-
-// TODO: at some point we're going to have to actually serialize these, but for
-// now just pass the pointer and assume we're running inside a single address
-// space
-struct DeviceHandleInitTaskArgs {
-  DeviceHandleInitTaskArgs() = delete;
-  DeviceHandleInitTaskArgs(
-      size_t workSpaceSize,
-      bool allowTensorOpMathConversion,
-      Realm::Processor origin_proc,
-      DeviceSpecificManagedPerDeviceFFHandle *origin_result_ptr)
-      : workSpaceSize(workSpaceSize),
-        allowTensorOpMathConversion(allowTensorOpMathConversion),
-        origin_proc(origin_proc), origin_result_ptr(origin_result_ptr) {}
-
-public:
-  size_t workSpaceSize;
-  bool allowTensorOpMathConversion;
-  Realm::Processor origin_proc;
-  DeviceSpecificManagedPerDeviceFFHandle *origin_result_ptr;
-};
-static_assert(std::is_trivially_copy_constructible_v<DeviceHandleInitTaskArgs>);
 
 static std::optional<ManagedPerDeviceFFHandle *>
     make_device_handle_for_processor(Realm::Processor processor,
@@ -52,12 +33,10 @@ void device_handle_init_task_body(void const *args,
                                   void const *userdata,
                                   size_t userlen,
                                   Realm::Processor proc) {
-  ASSERT(arglen == sizeof(DeviceHandleInitTaskArgs));
   DeviceHandleInitTaskArgs task_args =
-      *reinterpret_cast<DeviceHandleInitTaskArgs const *>(args);
-
-  // FIXME: serialize instead of passing pointers around
-  ASSERT(task_args.origin_proc.address_space() == proc.address_space());
+      device_handle_init_task_args_from_serializable(
+          deserialize_task_args<SerializableDeviceHandleInitTaskArgs>(args,
+                                                                      arglen));
 
   RealmContext ctx{proc};
   DeviceSpecificManagedPerDeviceFFHandle managed_handle =
@@ -89,6 +68,8 @@ Realm::Event spawn_device_handle_init_task(
       result_ptr,
   };
 
+  std::string args = serialize_task_args(
+      device_handle_init_task_args_to_serializable(task_args));
   return ctx.spawn_task(target_proc,
                         task_id_t::DEVICE_HANDLE_INIT_TASK_ID,
                         &task_args,
