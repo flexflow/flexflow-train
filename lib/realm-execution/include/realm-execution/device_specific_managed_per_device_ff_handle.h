@@ -4,6 +4,8 @@
 #include "kernels/device_handle_t.dtg.h"
 #include "kernels/managed_per_device_ff_handle.h"
 #include "pcg/device_id_t.dtg.h"
+#include <nlohmann/json.hpp>
+#include <optional>
 
 namespace FlexFlow {
 
@@ -14,6 +16,10 @@ public:
       device_id_t owner, std::optional<ManagedPerDeviceFFHandle *> handle);
 
   std::optional<ManagedPerDeviceFFHandle *> get(device_id_t device_idx) const;
+
+  void serialize(nlohmann::json &j) const;
+  static DeviceSpecificManagedPerDeviceFFHandle
+      deserialize(nlohmann::json const &j);
 
 private:
   device_id_t owner;

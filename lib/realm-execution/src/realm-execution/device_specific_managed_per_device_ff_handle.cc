@@ -1,5 +1,8 @@
 #include "realm-execution/device_specific_managed_per_device_ff_handle.h"
 #include "kernels/device_handle_t.h"
+#include "utils/containers/transform.h"
+#include "utils/json/optional.h"
+#include <cstdint>
 
 namespace FlexFlow {
 
@@ -11,6 +14,31 @@ std::optional<ManagedPerDeviceFFHandle *>
     DeviceSpecificManagedPerDeviceFFHandle::get(device_id_t device_idx) const {
   ASSERT(this->owner == device_idx);
   return this->handle;
+}
+
+void DeviceSpecificManagedPerDeviceFFHandle::serialize(
+    nlohmann::json &j) const {
+  j = {
+      {"owner", owner},
+      {"handle",
+       transform(handle,
+                 [](ManagedPerDeviceFFHandle *ptr) {
+                   return reinterpret_cast<uintptr_t>(ptr);
+                 })},
+  };
+}
+
+DeviceSpecificManagedPerDeviceFFHandle
+    DeviceSpecificManagedPerDeviceFFHandle::deserialize(
+        nlohmann::json const &j) {
+  return DeviceSpecificManagedPerDeviceFFHandle{
+      /*owner=*/j.at("owner").get<device_id_t>(),
+      /*handle=*/
+      transform(j.at("handle").get<std::optional<uintptr_t>>(),
+                [](uintptr_t ptrval) {
+                  return reinterpret_cast<ManagedPerDeviceFFHandle *>(ptrval);
+                }),
+  };
 }
 
 DeviceSpecificManagedPerDeviceFFHandle make_device_specific_managed_handle(
