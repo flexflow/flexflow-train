@@ -157,4 +157,5 @@ TEST_SUITE(FF_TEST_SUITE) {
     std::unordered_multiset<Node> correct = {input};
     CHECK(result == correct);
   }
+
 }

@@ -1,30 +1,48 @@
 #include "utils/graph/digraph/algorithms/is_acyclic.h"
-#include "utils/graph/digraph/algorithms/get_initial_nodes.h"
+#include "utils/containers/generate_map.h"
+#include "utils/graph/digraph/algorithms/get_successors.h"
 #include "utils/graph/node/algorithms.h"
-#include "utils/graph/traversal.h"
+#include <unordered_map>
 
 namespace FlexFlow {
 
-std::optional<bool> is_acyclic(DiGraphView const &g) {
-  if (num_nodes(g) == 0) {
-    return std::nullopt;
-  }
-  std::unordered_set<Node> initial_nodes = get_initial_nodes(g);
-  if (initial_nodes.size() == 0) {
-    return false;
-  }
-  auto dfs_view = unchecked_dfs(g, initial_nodes);
-  std::unordered_set<Node> seen;
-  for (unchecked_dfs_iterator it = dfs_view.begin(); it != dfs_view.end();
-       it++) {
-    if (contains(seen, *it)) {
-      return false;
-    } else {
-      seen.insert(*it);
+enum class ExplorationStatus { NOT_EXPLORED, BEING_EXPLORED, FULLY_EXPLORED };
+
+bool is_acyclic(DiGraphView const &g) {
+
+  std::unordered_map<Node, ExplorationStatus> status =
+      generate_map(get_nodes(g), [](Node const &n) {
+        return ExplorationStatus::NOT_EXPLORED;
+      });
+
+  // Recursively explore a given node and all its successors
+  // A node is fully explored once we have fully explored all of its successors
+  // If, while exploring, we find a node that was already being explored, then there is a
+  // cycle
+  std::function<bool(Node)> cycle_downstream_from_node =
+      [&](Node const &n) -> bool {
+    status[n] = ExplorationStatus::BEING_EXPLORED;
+
+    for (Node const &successor : get_successors(g, n)) {
+      if (status.at(successor) == ExplorationStatus::NOT_EXPLORED) {
+        if (cycle_downstream_from_node(
+                successor)) { // one of the descendants is part of a cycle
+          return true;
+        }
+      } else if (status.at(successor) == ExplorationStatus::BEING_EXPLORED) {
+        return true; // we're exploring a node we were already exploring: we
+                     // have hit a cycle
+      }
     }
-  }
-  if (seen != get_nodes(g)) {
+
+    status[n] = ExplorationStatus::FULLY_EXPLORED;
     return false;
+  };
+
+  for (Node const &node : get_nodes(g)) {
+    if ((status.at(node) == ExplorationStatus::NOT_EXPLORED) && cycle_downstream_from_node(node)) {
+      return false;
+    }
   }
   return true;
 }

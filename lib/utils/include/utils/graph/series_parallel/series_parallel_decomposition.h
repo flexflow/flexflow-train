@@ -3,6 +3,7 @@
 
 #include "utils/graph/series_parallel/intermediate_sp_decomposition_tree.dtg.h"
 #include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include <variant>
 
 namespace FlexFlow {
@@ -17,18 +18,14 @@ std::unordered_multiset<Node> get_nodes(SeriesSplit const &);
 std::unordered_multiset<Node> get_nodes(ParallelSplit const &);
 std::unordered_multiset<Node> get_nodes(Node const &);
 
-bool is_empty(Node const &node);
-bool is_empty(SeriesSplit const &serial);
-bool is_empty(ParallelSplit const &parallel);
-bool is_empty(SeriesParallelDecomposition const &sp);
-
 bool has_no_duplicate_nodes(SeriesParallelDecomposition const &sp);
 
-SeriesParallelDecomposition delete_node(SeriesParallelDecomposition sp,
-                                        Node const &node);
-
-// duplicate nodes within `sp` are counted multiple times
-size_t num_nodes(SeriesParallelDecomposition const &sp);
+/**
+ * @brief Counts the total number of nodes in a series-parallel decomposition
+ * @note Nodes that appear multiple times in the decomposition are counted
+ * multiple times
+ */
+nonnegative_int num_nodes(SeriesParallelDecomposition const &sp);
 
 SeriesParallelDecomposition series_composition(
     std::vector<SeriesParallelDecomposition> const &sp_compositions);

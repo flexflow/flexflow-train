@@ -6,6 +6,7 @@
 #include "utils/graph/digraph/algorithms/get_edges.h"
 #include "utils/graph/digraph/algorithms/materialize_digraph_view.h"
 #include "utils/graph/digraph/algorithms/transitive_closure.h"
+#include "utils/graph/digraph/digraph.h"
 #include "utils/graph/instances/adjacency_digraph.h"
 #include "utils/graph/node/algorithms.h"
 
@@ -29,16 +30,14 @@ DirectedEdgeMaskView *DirectedEdgeMaskView::clone() const {
   return new DirectedEdgeMaskView(this->g, this->edge_mask);
 }
 
-DiGraphView transitive_reduction(DiGraphView const &g) {
-  /**
-   * Logic dropped down to raw adjacency matrix for performance.
-   * The version going through the full graph abstraction was
-   * incredibly slow (> minutes) for even moderately sized graphs
-   * (i.e., 200 nodes) without optimization enabled.
-   *
-   * transitive_closure inlined to avoid any drifts in node numbering
-   * between transitive_closure and transitive_reduction
-   */
+DiGraph transitive_reduction(DiGraphView const &g) {
+  // Logic dropped down to raw adjacency matrix for performance.
+  // The version going through the full graph abstraction was
+  // incredibly slow (> minutes) for even moderately sized graphs
+  // (i.e., 200 nodes) without optimization enabled.
+  //
+  // transitive_closure inlined to avoid any drifts in node numbering
+  // between transitive_closure and transitive_reduction
 
   bidict<int, Node> nodes =
       transform_keys(bidict_from_enumerating(get_nodes(g)),

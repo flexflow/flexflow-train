@@ -6,6 +6,10 @@ if(FF_BUILD_VISUALIZATION_TOOL)
   add_subdirectory(substitution-to-dot)
 endif()
 
+if(FF_BUILD_SP_IZATION_BENCHMARKING)
+  add_subdirectory(sp_ization_benchmarking)
+endif()
+
 if(FF_BUILD_ARG_PARSER)
   add_subdirectory(arg_parser)
 endif()
