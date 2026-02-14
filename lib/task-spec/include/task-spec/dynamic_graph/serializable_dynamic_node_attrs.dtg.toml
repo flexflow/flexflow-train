@@ -1,0 +1,43 @@
+namespace = "FlexFlow"
+name = "SerializableDynamicNodeAttrs"
+type = "struct"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+  "json",
+]
+
+includes = [
+  "<optional>",
+  "task-spec/dynamic_graph/dynamic_task_type.dtg.h",
+  "pcg/machine_space_coordinate.dtg.h",
+  "pcg/mapped_parallel_computation_graph/mapped_operator_task_group.h",
+  "task-spec/dynamic_graph/dynamic_layer_guid_t.dtg.h",
+  "task-spec/dynamic_graph/training_operation_attrs.dtg.h",
+]
+
+src_includes = [
+  "utils/fmt/optional.h",
+  "utils/json/optional.h",
+]
+
+[[fields]]
+name = "task_type"
+type = "std::optional<::FlexFlow::DynamicTaskType>"
+
+[[fields]]
+name = "device_coord"
+type = "std::optional<::FlexFlow::MachineSpaceCoordinate>"
+
+[[fields]]
+name = "mapping"
+type = "std::optional<::FlexFlow::MappedOperatorTaskGroup>"
+
+[[fields]]
+name = "op_attrs"
+type = "std::optional<::FlexFlow::TrainingOperationAttrs>"
+
+[[fields]]
+name = "layer_guid"
+type = "::FlexFlow::dynamic_layer_guid_t"
