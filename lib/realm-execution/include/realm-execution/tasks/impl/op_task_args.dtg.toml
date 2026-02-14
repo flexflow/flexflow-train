@@ -1,0 +1,32 @@
+namespace = "FlexFlow"
+name = "OpTaskArgs"
+type = "struct"
+features = []
+
+includes = [
+  "kernels/profiling_settings.dtg.h",
+  "pcg/optimizer_attrs.dtg.h",
+  "realm-execution/device_specific_managed_per_device_ff_handle.h",
+  "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h",
+  "task-spec/ff_iteration_config.dtg.h",
+]
+
+[[fields]]
+name = "invocation"
+type = "::FlexFlow::DynamicNodeInvocation"
+
+[[fields]]
+name = "profiling_settings"
+type = "::FlexFlow::ProfilingSettings"
+
+[[fields]]
+name = "device_handle"
+type = "::FlexFlow::DeviceSpecificManagedPerDeviceFFHandle"
+
+[[fields]]
+name = "iteration_config"
+type = "::FlexFlow::FFIterationConfig"
+
+[[fields]]
+name = "optimizer_attrs"
+type = "std::optional<::FlexFlow::OptimizerAttrs>"

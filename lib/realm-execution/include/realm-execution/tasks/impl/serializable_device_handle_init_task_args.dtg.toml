@@ -9,7 +9,6 @@ features = [
 ]
 
 includes = [
-  "realm-execution/realm.h",
   "realm-execution/tasks/serializer/serializable_realm_processor.dtg.h",
 ]
 

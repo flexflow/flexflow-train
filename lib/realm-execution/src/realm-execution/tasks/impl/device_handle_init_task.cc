@@ -72,8 +72,8 @@ Realm::Event spawn_device_handle_init_task(
       device_handle_init_task_args_to_serializable(task_args));
   return ctx.spawn_task(target_proc,
                         task_id_t::DEVICE_HANDLE_INIT_TASK_ID,
-                        &task_args,
-                        sizeof(task_args),
+                        args.data(),
+                        args.size(),
                         Realm::ProfilingRequestSet{},
                         precondition);
 }
