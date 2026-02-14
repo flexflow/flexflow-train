@@ -17,8 +17,8 @@ namespace FlexFlow {
 std::optional<std::unordered_set<Node>>
     get_lowest_common_ancestors(DiGraphView const &g,
                                 std::unordered_set<Node> const &nodes) {
-  assert(is_acyclic(g));
-  assert(is_subseteq_of(nodes, get_nodes(g)));
+  ASSERT(is_acyclic(g));
+  ASSERT(is_subseteq_of(nodes, get_nodes(g)));
   if (num_nodes(g) == 0 || nodes.size() == 0) {
     return std::nullopt;
   }
@@ -27,13 +27,17 @@ std::optional<std::unordered_set<Node>>
         return set_union(get_ancestors(g, n), {n});
       });
   std::unordered_set<Node> common_ancestors = intersection(ancestors).value();
+
   if (common_ancestors.empty()) {
-    return common_ancestors;
+    return std::unordered_set<Node>{};
   }
+
   std::unordered_map<Node, nonnegative_int> depth_levels =
       get_longest_path_lengths_from_root(g);
+
   nonnegative_int largest_depth_for_common_ancestors = maximum(transform(
       common_ancestors, [&](Node const &n) { return depth_levels.at(n); }));
+
   return filter(common_ancestors, [&](Node const &n) {
     return depth_levels.at(n) == largest_depth_for_common_ancestors;
   });

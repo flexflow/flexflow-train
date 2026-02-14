@@ -1,11 +1,8 @@
 #include "utils/graph/series_parallel/sp_ization/dependencies_are_maintained.h"
 #include "utils/containers/is_subseteq_of.h"
 #include "utils/containers/unordered_set_of.h"
-#include "utils/graph/algorithms.h"
 #include "utils/graph/digraph/algorithms/get_ancestors.h"
-#include "utils/graph/digraph/algorithms/get_descendants.h"
 #include "utils/graph/node/algorithms.h"
-#include "utils/graph/series_parallel/digraph_generation.h"
 #include "utils/graph/series_parallel/get_ancestors.h"
 #include "utils/graph/series_parallel/series_parallel_decomposition.h"
 

@@ -2,77 +2,54 @@
 #include "utils/containers/contains.h"
 #include "utils/containers/filter.h"
 #include "utils/containers/get_only.h"
+#include "utils/containers/set_union.h"
 #include "utils/containers/transform.h"
+#include "utils/containers/unordered_set_of.h"
 #include "utils/graph/series_parallel/series_parallel_decomposition.h"
 #include "utils/variant.h"
 #include <cassert>
 
 namespace FlexFlow {
 
-static bool perform_traversal(SeriesParallelDecomposition const &sp,
-                              Node const &starting_node,
-                              std::unordered_set<Node> &ancestors) {
-  return sp.visit<bool>([&](auto const &sp) {
-    return perform_traversal(sp, starting_node, ancestors);
-  });
+std::unordered_set<Node> get_ancestors(SeriesParallelDecomposition const &sp,
+                                       Node const &node);
+
+static std::unordered_set<Node> get_ancestors(Node const &, Node const &node) {
+  return {};
 }
 
-static bool perform_traversal(SeriesSplit const &serial,
-                              Node const &starting_node,
-                              std::unordered_set<Node> &ancestors) {
-  std::vector<SeriesParallelDecomposition> children =
-      transform(serial.children, [](auto const &child) {
-        return widen<SeriesParallelDecomposition>(child);
-      });
-  for (SeriesParallelDecomposition const &child : children) {
-    bool found_starting_node =
-        perform_traversal(child, starting_node, ancestors);
-    if (found_starting_node) {
-      return true;
+static std::unordered_set<Node> get_ancestors(SeriesSplit const &serial,
+                                              Node const &node) {
+  std::unordered_set<Node> ancestors{};
+  for (std::variant<ParallelSplit, Node> const &child : serial.children) {
+    SeriesParallelDecomposition child_sp =
+        widen<SeriesParallelDecomposition>(child);
+    if (contains(get_nodes(child_sp), node)) {
+      return set_union(ancestors, get_ancestors(child_sp, node));
     }
+    ancestors = set_union(ancestors, unordered_set_of(get_nodes(child_sp)));
   }
-  return false;
+  throw std::runtime_error("node not found in SeriesSplit");
 }
 
-static bool perform_traversal(ParallelSplit const &parallel,
-                              Node const &starting_node,
-                              std::unordered_set<Node> &ancestors) {
-  std::unordered_multiset<SeriesParallelDecomposition> children =
-      transform(parallel.get_children(), [](auto const &child) {
-        return widen<SeriesParallelDecomposition>(child);
-      });
-
-  if (contains(get_nodes(parallel), starting_node)) {
-    SeriesParallelDecomposition branch_with_starting_node = get_only(
-        filter(children, [&](SeriesParallelDecomposition const &child) {
-          return contains(get_nodes(child), starting_node);
-        }));
-    perform_traversal(branch_with_starting_node, starting_node, ancestors);
-    return true;
-  }
-
-  for (SeriesParallelDecomposition const &child : children) {
-    perform_traversal(child, starting_node, ancestors);
-  }
-  return false;
-}
-
-static bool perform_traversal(Node const &node,
-                              Node const &starting_node,
-                              std::unordered_set<Node> &ancestors) {
-  if (starting_node != node) {
-    ancestors.insert(node);
-    return false;
-  }
-  return true;
+static std::unordered_set<Node> get_ancestors(ParallelSplit const &parallel,
+                                              Node const &node) {
+  SeriesParallelDecomposition branch =
+      get_only(filter(transform(parallel.get_children(),
+                                [](std::variant<SeriesSplit, Node> const &c) {
+                                  return widen<SeriesParallelDecomposition>(c);
+                                }),
+                      [&](SeriesParallelDecomposition const &child) {
+                        return contains(get_nodes(child), node);
+                      }));
+  return get_ancestors(branch, node);
 }
 
 std::unordered_set<Node> get_ancestors(SeriesParallelDecomposition const &sp,
-                                       Node const &starting_node) {
-  assert(contains(get_nodes(sp), starting_node));
-  std::unordered_set<Node> ancestors;
-  perform_traversal(sp, starting_node, ancestors);
-  return ancestors;
+                                       Node const &node) {
+  assert(contains(get_nodes(sp), node));
+  return sp.visit<std::unordered_set<Node>>(
+      [&](auto const &t) { return get_ancestors(t, node); });
 }
 
 } // namespace FlexFlow

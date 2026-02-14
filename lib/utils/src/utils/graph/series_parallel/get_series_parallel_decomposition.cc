@@ -13,7 +13,6 @@
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/nary_sp_tree_from_binary.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/right_associative_binary_sp_tree_from_nary.h"
 #include "utils/graph/series_parallel/extended_series_reduction.dtg.h"
-#include "utils/graph/series_parallel/normalize_sp_decomposition.h"
 #include "utils/graph/series_parallel/parallel_reduction.h"
 #include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
 #include "utils/graph/series_parallel/series_parallel_decomposition.h"

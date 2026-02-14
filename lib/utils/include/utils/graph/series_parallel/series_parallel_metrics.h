@@ -13,13 +13,7 @@ namespace FlexFlow {
  *
  */
 std::unordered_map<Node, nonnegative_int>
-    get_node_counter_map(Node const &node);
-std::unordered_map<Node, nonnegative_int>
-    get_node_counter_map(SeriesSplit const &serial);
-std::unordered_map<Node, nonnegative_int>
-    get_node_counter_map(ParallelSplit const &parallel);
-std::unordered_map<Node, nonnegative_int>
-    get_node_counter_map(SeriesParallelDecomposition const &sp);
+    get_num_occurrences_of_nodes(SeriesParallelDecomposition const &sp);
 
 /**
  * @brief Calculates the total cumulative cost of all nodes in the
@@ -37,9 +31,9 @@ float work_cost(DiGraphView const &g,
  * as a DiGraph where Series connections are all to all.
  *
  */
-int num_dependencies(SeriesParallelDecomposition const &sp);
+nonnegative_int num_dependencies(SeriesParallelDecomposition const &sp);
 
-int num_dependencies(DiGraphView const &g);
+nonnegative_int num_dependencies(DiGraphView const &g);
 
 float critical_path_cost(SeriesParallelDecomposition const &sp,
                          std::unordered_map<Node, float> const &cost_map);

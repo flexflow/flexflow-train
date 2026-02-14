@@ -7,54 +7,56 @@
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("get_longest_path_lengths_from_root - linear graph") {
-    DiGraph g = DiGraph::create<AdjacencyDiGraph>();
-    std::vector<Node> n = add_nodes(g, 5);
-    std::vector<DirectedEdge> edges = {
-        DirectedEdge{n[0], n[1]},
-        DirectedEdge{n[1], n[2]},
-        DirectedEdge{n[2], n[3]},
-        DirectedEdge{n[3], n[4]},
-    };
+  TEST_CASE("get_longest_path_lengths_from_root") {
+    SUBCASE("linear graph") {
+      DiGraph g = DiGraph::create<AdjacencyDiGraph>();
+      std::vector<Node> n = add_nodes(g, 5);
+      std::vector<DirectedEdge> edges = {
+          DirectedEdge{n.at(0), n.at(1)},
+          DirectedEdge{n.at(1), n.at(2)},
+          DirectedEdge{n.at(2), n.at(3)},
+          DirectedEdge{n.at(3), n.at(4)},
+      };
 
-    add_edges(g, edges);
+      add_edges(g, edges);
 
-    std::unordered_map<Node, nonnegative_int> expected_lengths = {
-        {n[0], 1_n},
-        {n[1], 2_n},
-        {n[2], 3_n},
-        {n[3], 4_n},
-        {n[4], 5_n},
-    };
+      std::unordered_map<Node, nonnegative_int> expected_lengths = {
+          {n.at(0), 1_n},
+          {n.at(1), 2_n},
+          {n.at(2), 3_n},
+          {n.at(3), 4_n},
+          {n.at(4), 5_n},
+      };
 
-    CHECK(get_longest_path_lengths_from_root(g) == expected_lengths);
-  }
+      CHECK(get_longest_path_lengths_from_root(g) == expected_lengths);
+    }
 
-  TEST_CASE("get_longest_path_lengths_from_root - more complex graph") {
-    DiGraph g = DiGraph::create<AdjacencyDiGraph>();
-    std::vector<Node> n = add_nodes(g, 7);
-    std::vector<DirectedEdge> edges = {DirectedEdge{n[0], n[1]},
-                                       DirectedEdge{n[0], n[3]},
-                                       DirectedEdge{n[0], n[4]},
-                                       DirectedEdge{n[0], n[6]},
-                                       DirectedEdge{n[1], n[2]},
-                                       DirectedEdge{n[2], n[3]},
-                                       DirectedEdge{n[3], n[5]},
-                                       DirectedEdge{n[4], n[5]},
-                                       DirectedEdge{n[5], n[6]}};
+    SUBCASE("more complex graph") {
+      DiGraph g = DiGraph::create<AdjacencyDiGraph>();
+      std::vector<Node> n = add_nodes(g, 7);
+      std::vector<DirectedEdge> edges = {DirectedEdge{n.at(0), n.at(1)},
+                                         DirectedEdge{n.at(0), n.at(3)},
+                                         DirectedEdge{n.at(0), n.at(4)},
+                                         DirectedEdge{n.at(0), n.at(6)},
+                                         DirectedEdge{n.at(1), n.at(2)},
+                                         DirectedEdge{n.at(2), n.at(3)},
+                                         DirectedEdge{n.at(3), n.at(5)},
+                                         DirectedEdge{n.at(4), n.at(5)},
+                                         DirectedEdge{n.at(5), n.at(6)}};
 
-    add_edges(g, edges);
+      add_edges(g, edges);
 
-    std::unordered_map<Node, nonnegative_int> expected_lengths = {
-        {n[0], 1_n},
-        {n[1], 2_n},
-        {n[2], 3_n},
-        {n[3], 4_n},
-        {n[4], 2_n},
-        {n[5], 5_n},
-        {n[6], 6_n},
-    };
+      std::unordered_map<Node, nonnegative_int> expected_lengths = {
+          {n.at(0), 1_n},
+          {n.at(1), 2_n},
+          {n.at(2), 3_n},
+          {n.at(3), 4_n},
+          {n.at(4), 2_n},
+          {n.at(5), 5_n},
+          {n.at(6), 6_n},
+      };
 
-    CHECK(get_longest_path_lengths_from_root(g) == expected_lengths);
+      CHECK(get_longest_path_lengths_from_root(g) == expected_lengths);
+    }
   }
 }

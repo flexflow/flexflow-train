@@ -34,7 +34,6 @@
 #include "utils/graph/instances/adjacency_digraph.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/series_parallel/get_series_parallel_decomposition.h"
-#include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
 #include "utils/graph/series_parallel/series_parallel_metrics.h"
 #include "utils/graph/series_parallel/sp_ization/dependencies_are_maintained.h"
 #include "utils/graph/series_parallel/sp_ization/node_role.h"
@@ -86,9 +85,9 @@ static UpDownPartition
                     std::unordered_map<Node, float> const &cost_map,
                     std::unordered_map<Node, NodeRole> const &node_roles) {
   DiGraph sp_pure =
-      delete_nodes_of_given_role(materialize_digraph_view<AdjacencyDiGraph>(sp),
-                                 NodeRole::SYNC,
-                                 node_roles);
+      contract_out_nodes_of_given_role(materialize_digraph_view<AdjacencyDiGraph>(sp),
+                                       NodeRole::SYNC,
+                                       node_roles);
 
   std::unordered_set<Node> base_down = nodes;
   std::unordered_set<Node> base_up = intersection(
@@ -306,7 +305,7 @@ SeriesParallelDecomposition
   }
 
   sp = transitive_reduction(sp);
-  sp = delete_nodes_of_given_role(sp, NodeRole::SYNC, node_roles);
+  sp = contract_out_nodes_of_given_role(sp, NodeRole::SYNC, node_roles);
 
   SeriesParallelDecomposition decomp =
       get_series_parallel_decomposition(sp).value();

@@ -1,6 +1,7 @@
 #include "utils/graph/digraph/algorithms/get_descendants.h"
 #include "utils/containers/contains.h"
-#include "utils/containers/filter.h"
+#include "utils/containers/unordered_set_of.h"
+#include "utils/graph/algorithms.h"
 #include "utils/graph/digraph/algorithms/get_successors.h"
 #include "utils/graph/digraph/algorithms/is_acyclic.h"
 #include "utils/graph/digraph/digraph_view.h"
@@ -12,24 +13,7 @@ std::unordered_set<Node> get_descendants(DiGraphView const &g,
   assert(is_acyclic(g));
   assert(contains(get_nodes(g), starting_node));
 
-  std::unordered_set<Node> descendants;
-  std::stack<Node> to_visit;
-  for (Node const &successor : get_successors(g, starting_node)) {
-    to_visit.push(successor);
-  }
-  while (!to_visit.empty()) {
-    Node current = to_visit.top();
-    to_visit.pop();
-    descendants.insert(current);
-
-    for (auto const &s : filter(get_successors(g, current), [&](Node const &n) {
-           return !contains(descendants, n);
-         })) {
-      to_visit.push(s);
-    }
-  }
-
-  return descendants;
+  return unordered_set_of(get_bfs_ordering(g, get_successors(g, starting_node)));
 };
 
 } // namespace FlexFlow

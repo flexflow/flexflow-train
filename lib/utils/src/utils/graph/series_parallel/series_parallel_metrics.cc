@@ -17,14 +17,14 @@
 #include <unordered_map>
 namespace FlexFlow {
 
-std::unordered_map<Node, nonnegative_int>
-    get_node_counter_map(Node const &node) {
+static std::unordered_map<Node, nonnegative_int>
+    get_num_occurrences_of_nodes(Node const &node) {
   return {{node, 1_n}};
 }
 
 template <typename T>
-std::unordered_map<Node, nonnegative_int>
-    get_node_counter_map_impl(T const &t) {
+static std::unordered_map<Node, nonnegative_int>
+    get_num_occurrences_of_nodes_impl(T const &t) {
   std::unordered_map<Node, nonnegative_int> counter;
   for (Node const &node : get_nodes(t)) {
     counter.emplace(node, 0_n).first->second += 1_n;
@@ -32,19 +32,19 @@ std::unordered_map<Node, nonnegative_int>
   return counter;
 }
 
-std::unordered_map<Node, nonnegative_int>
-    get_node_counter_map(ParallelSplit const &parallel) {
-  return get_node_counter_map_impl(parallel);
+static std::unordered_map<Node, nonnegative_int>
+    get_num_occurrences_of_nodes(ParallelSplit const &parallel) {
+  return get_num_occurrences_of_nodes_impl(parallel);
+}
+
+static std::unordered_map<Node, nonnegative_int>
+    get_num_occurrences_of_nodes(SeriesSplit const &serial) {
+  return get_num_occurrences_of_nodes_impl(serial);
 }
 
 std::unordered_map<Node, nonnegative_int>
-    get_node_counter_map(SeriesSplit const &serial) {
-  return get_node_counter_map_impl(serial);
-}
-
-std::unordered_map<Node, nonnegative_int>
-    get_node_counter_map(SeriesParallelDecomposition const &sp) {
-  return get_node_counter_map_impl(sp);
+    get_num_occurrences_of_nodes(SeriesParallelDecomposition const &sp) {
+  return get_num_occurrences_of_nodes_impl(sp);
 }
 
 float work_cost(SeriesParallelDecomposition const &sp,
@@ -59,13 +59,13 @@ float work_cost(DiGraphView const &g,
                        [&](Node const &node) { return cost_map.at(node); }));
 }
 
-float critical_path_cost(Node const &node,
-                         std::unordered_map<Node, float> const &cost_map) {
+static float critical_path_cost(Node const &node,
+                                 std::unordered_map<Node, float> const &cost_map) {
   return cost_map.at(node);
 }
 
-float critical_path_cost(SeriesSplit const &serial,
-                         std::unordered_map<Node, float> const &cost_map) {
+static float critical_path_cost(SeriesSplit const &serial,
+                                 std::unordered_map<Node, float> const &cost_map) {
   return sum(transform(
       serial.children, [&](std::variant<ParallelSplit, Node> const &child) {
         return critical_path_cost(widen<SeriesParallelDecomposition>(child),
@@ -73,8 +73,8 @@ float critical_path_cost(SeriesSplit const &serial,
       }));
 }
 
-float critical_path_cost(ParallelSplit const &parallel,
-                         std::unordered_map<Node, float> const &cost_map) {
+static float critical_path_cost(ParallelSplit const &parallel,
+                                 std::unordered_map<Node, float> const &cost_map) {
   return maximum(transform(parallel.get_children(),
                            [&](std::variant<SeriesSplit, Node> const &child) {
                              return critical_path_cost(
@@ -95,12 +95,12 @@ float critical_path_cost(DiGraphView const &g,
       values(get_weighted_longest_path_lengths_from_root(g, cost_map)));
 }
 
-int num_dependencies(SeriesParallelDecomposition const &sp) {
+nonnegative_int num_dependencies(SeriesParallelDecomposition const &sp) {
   return num_dependencies(digraph_from_sp_decomposition(sp));
 }
 
-int num_dependencies(DiGraphView const &g) {
-  return num_edges(g);
+nonnegative_int num_dependencies(DiGraphView const &g) {
+  return nonnegative_int{get_edges(g).size()};
 }
 
 float relative_work_increase(DiGraphView const &g,
@@ -118,7 +118,8 @@ float relative_critical_path_cost_increase(
 
 float relative_num_dependencies_increase(
     DiGraphView const &g, SeriesParallelDecomposition const &sp) {
-  return static_cast<float>(num_dependencies(sp)) / num_dependencies(g);
+  return static_cast<float>(num_dependencies(sp).unwrap_nonnegative()) / 
+         static_cast<float>(num_dependencies(g).unwrap_nonnegative());
 }
 
 } // namespace FlexFlow

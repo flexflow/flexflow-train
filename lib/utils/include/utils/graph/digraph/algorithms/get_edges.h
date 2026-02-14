@@ -5,7 +5,6 @@
 
 namespace FlexFlow {
 
-size_t num_edges(DiGraphView const &);
 std::unordered_set<DirectedEdge> get_edges(DiGraphView const &);
 
 } // namespace FlexFlow

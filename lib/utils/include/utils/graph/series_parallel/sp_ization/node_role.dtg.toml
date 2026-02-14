@@ -1,3 +1,17 @@
+# Enum to categorize the role of each node in the 2 following spization algorithms:
+# - escribano_algo
+# - flexible_sync
+# PURE: Original nodes from the input graph.
+# SYNC: Synchronization nodes added by the algorithm. A sync node s expresses an
+#   all-to-all connection: all "up" nodes have an edge to s, and s has an edge to
+#   all "down" nodes. These nodes are contracted out at the end of the algorithm.
+# DUMMY: Needed for the node-by-node version of the escribano algorithm. These nodes
+#   are added such that, for every edge (n1, n2), the difference in depth between
+#   n1 and n2 is at most 1 (we do this by taking all the edges where the difference
+#   in depth between the 2 nodes is greater than 1, and we "break up" that edge
+#   into a chain of dummy nodes). These nodes are contracted out at the end of the
+#   algorithm.
+
 namespace = "FlexFlow"
 name = "NodeRole"
 type = "enum"

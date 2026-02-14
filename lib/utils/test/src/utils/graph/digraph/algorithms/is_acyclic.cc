@@ -39,6 +39,18 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK_FALSE(is_acyclic(g));
     }
 
+    SUBCASE("diamond graph") {
+      std::vector<Node> n = add_nodes(g, 4);
+      add_edges(g,
+                {
+                    DirectedEdge{n.at(0), n.at(1)},
+                    DirectedEdge{n.at(0), n.at(2)},
+                    DirectedEdge{n.at(1), n.at(3)},
+                    DirectedEdge{n.at(2), n.at(3)},
+                });
+      CHECK(is_acyclic(g));
+    }
+
     SUBCASE("2 parallel chains") {
       std::vector<Node> n = add_nodes(g, 6);
       add_edges(g,
@@ -52,7 +64,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                 });
       CHECK(is_acyclic(g));
     }
-    SUBCASE("traversal with root") {
+    SUBCASE("graph has a root and a cycle") {
       std::vector<Node> n = add_nodes(g, 4);
       add_edges(g,
                 {DirectedEdge{n.at(0), n.at(1)},
@@ -62,7 +74,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK_FALSE(is_acyclic(g));
     }
 
-    SUBCASE("traversal without root") {
+    SUBCASE("graph has no root and a cycle") {
       std::vector<Node> n = add_nodes(g, 4);
       add_edges(g,
                 {DirectedEdge{n.at(0), n.at(1)},
@@ -72,7 +84,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK_FALSE(is_acyclic(g));
     }
 
-    SUBCASE("traversal nonlinear") {
+    SUBCASE("straight line graph with a transitive edge") {
       std::vector<Node> n = add_nodes(g, 4);
       add_edges(g,
                 {DirectedEdge{n.at(0), n.at(1)},

@@ -1,5 +1,11 @@
-// For context, see https://arxiv.org/abs/1902.09635 &&
-// https://github.com/google-research/nasbench/blob/master/nasbench/api.py
+/**
+ * @brief Utilities for generating random DAGs based on the NASNet-A
+ * architecture. NASNet-A is composed of a series of cells, which we randomly generate.
+ *
+ * For context, see:
+ * - Paper: https://arxiv.org/abs/1902.09635
+ * - Reference implementation: https://github.com/google-research/nasbench/blob/master/nasbench/api.py
+ */
 
 #include "utils/containers.h"
 #include "utils/containers/all_of.h"
@@ -58,11 +64,12 @@ bool is_valid_config(NasNetBenchConfig const &config) {
 }
 
 bool is_valid_cell(DiGraphView const &g) {
+  size_t num_edges = get_edges(g).size();
   return (is_acyclic(g)) && (get_initial_nodes(g).size() == 1) &&
-         (get_terminal_nodes(g).size() == 1) && (num_edges(g) <= MAX_EDGES) &&
-         (num_edges(g) >= MIN_EDGES) && (num_edges(g) <= MAX_NODES) &&
-         (num_edges(g) >= MIN_NODES) &&
-         (num_edges(g) > num_nodes(g)); // filter linear cell and diamond cell
+         (get_terminal_nodes(g).size() == 1) && (num_edges <= MAX_EDGES) &&
+         (num_edges >= MIN_EDGES) && (num_edges <= MAX_NODES) &&
+         (num_edges >= MIN_NODES) &&
+         (num_edges > num_nodes(g)); // filter linear cell and diamond cell
 }
 
 NasNetBenchConfig generate_random_config() {

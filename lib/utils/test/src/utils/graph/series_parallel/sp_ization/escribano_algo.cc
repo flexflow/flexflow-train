@@ -1,4 +1,4 @@
-#include "utils/graph/series_parallel/sp_ization/spanish_algo.h"
+#include "utils/graph/series_parallel/sp_ization/escribano_algo.h"
 #include "test/utils/doctest/fmt/unordered_multiset.h"
 #include "utils/containers/values.h"
 #include "utils/graph/algorithms.h"
@@ -22,7 +22,7 @@
 using namespace FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("spanish_algo - subcomponents") {
+  TEST_CASE("escribano_algo - subcomponents") {
     SUBCASE("add_dummy_nodes") {
       DiGraph g = DiGraph::create<AdjacencyDiGraph>();
       std::vector<Node> n = add_nodes(g, 4);
@@ -217,12 +217,12 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
   }
 
-  TEST_CASE("spanish_algorithm") {
+  TEST_CASE("escribano_algorithm") {
 
     SUBCASE("Single Node") {
       DiGraph g = DiGraph::create<AdjacencyDiGraph>();
       Node n = g.add_node();
-      SeriesParallelDecomposition sp = spanish_strata_sync(g);
+      SeriesParallelDecomposition sp = escribano_strata_sync(g);
       SeriesParallelDecomposition correct =
           SeriesParallelDecomposition{Node{n}};
       CHECK(sp == correct);
@@ -232,7 +232,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       DiGraph g = DiGraph::create<AdjacencyDiGraph>();
       std::vector<Node> n = add_nodes(g, 3);
       add_edges(g, {DirectedEdge{n[0], n[1]}, DirectedEdge{n[1], n[2]}});
-      SeriesParallelDecomposition sp = spanish_strata_sync(g);
+      SeriesParallelDecomposition sp = escribano_strata_sync(g);
       CHECK(dependencies_are_maintained(g, sp));
       SeriesParallelDecomposition correct =
           SeriesParallelDecomposition{SeriesSplit{{n[0], n[1], n[2]}}};
@@ -247,7 +247,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                  DirectedEdge{n[0], n[2]},
                  DirectedEdge{n[1], n[3]},
                  DirectedEdge{n[2], n[3]}});
-      SeriesParallelDecomposition sp = spanish_strata_sync(g);
+      SeriesParallelDecomposition sp = escribano_strata_sync(g);
       SeriesParallelDecomposition correct = SeriesParallelDecomposition{
           SeriesSplit{{n[0], ParallelSplit{{n[1], n[2]}}, n[3]}}};
 
@@ -269,7 +269,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                     DirectedEdge{n[3], n[5]},
                     DirectedEdge{n[4], n[5]},
                 });
-      SeriesParallelDecomposition sp = spanish_strata_sync(g);
+      SeriesParallelDecomposition sp = escribano_strata_sync(g);
       CHECK(dependencies_are_maintained(g, sp));
       SeriesParallelDecomposition correct = SeriesParallelDecomposition{
           SeriesSplit{{n[0], n[1], ParallelSplit{{n[2], n[3]}}, n[4], n[5]}}};
@@ -289,7 +289,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                     DirectedEdge{n[4], n[5]},
                 });
 
-      SeriesParallelDecomposition sp = spanish_strata_sync(g);
+      SeriesParallelDecomposition sp = escribano_strata_sync(g);
       CHECK(dependencies_are_maintained(g, sp));
       SeriesParallelDecomposition correct = SeriesParallelDecomposition{
           SeriesSplit{{n[0],
@@ -312,7 +312,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                     DirectedEdge{n[3], n[5]},
                     DirectedEdge{n[4], n[5]},
                 });
-      SeriesParallelDecomposition sp = spanish_strata_sync(g);
+      SeriesParallelDecomposition sp = escribano_strata_sync(g);
       CHECK(dependencies_are_maintained(g, sp));
       SeriesParallelDecomposition correct =
           SeriesParallelDecomposition{SeriesSplit{{n[0],
@@ -340,7 +340,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                  DirectedEdge{n[7], n[8]},
                  DirectedEdge{n[6], n[9]},
                  DirectedEdge{n[8], n[9]}});
-      SeriesParallelDecomposition sp = spanish_strata_sync(g);
+      SeriesParallelDecomposition sp = escribano_strata_sync(g);
       CHECK(dependencies_are_maintained(g, sp));
 
       SeriesParallelDecomposition correct = SeriesParallelDecomposition{
@@ -356,3 +356,4 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
   }
 }
+

@@ -1,5 +1,5 @@
-#ifndef _FLEXFLOW_UTILS_GRAPH_SERIAL_PARALLEL_SP_IZATION_SPANISH_ALGO_H
-#define _FLEXFLOW_UTILS_GRAPH_SERIAL_PARALLEL_SP_IZATION_SPANISH_ALGO_H
+#ifndef _FLEXFLOW_UTILS_GRAPH_SERIES_PARALLEL_SP_IZATION_ESCRIBANO_ALGO_H
+#define _FLEXFLOW_UTILS_GRAPH_SERIES_PARALLEL_SP_IZATION_ESCRIBANO_ALGO_H
 
 #include "utils/graph/digraph/digraph.h"
 #include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
@@ -16,8 +16,9 @@ std::unordered_set<Node>
                   std::unordered_map<Node, int> const &depth_map,
                   std::unordered_map<Node, NodeRole> const &node_roles);
 
-SeriesParallelDecomposition spanish_strata_sync(DiGraph g);
+SeriesParallelDecomposition escribano_strata_sync(DiGraph g);
 
 } // namespace FlexFlow
 
 #endif
+

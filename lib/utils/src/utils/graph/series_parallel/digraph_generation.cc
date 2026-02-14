@@ -68,30 +68,30 @@ DiGraph parallel_composition(std::vector<DiGraphView> const &graphs) {
   return g;
 }
 
-DiGraph digraph_from_sp_decomposition(Node const &node) {
+static DiGraph digraph_from_sp_decomposition(Node const &node) {
   DiGraph g = DiGraph::create<AdjacencyDiGraph>();
   g.add_node();
   return g;
 }
 
-DiGraph digraph_from_sp_decomposition(SeriesSplit const &serial) {
+static DiGraph digraph_from_sp_decomposition(SeriesSplit const &serial) {
   std::vector<SeriesParallelDecomposition> children =
-      transform(serial.children, [](auto const &child) {
+      transform(serial.children, [](std::variant<ParallelSplit, Node> const &child) {
         return widen<SeriesParallelDecomposition>(child);
       });
   return series_composition(
-      transform(children, [](auto const child) -> DiGraphView {
+      transform(children, [](SeriesParallelDecomposition const &child) -> DiGraphView {
         return digraph_from_sp_decomposition(child);
       }));
 }
 
-DiGraph digraph_from_sp_decomposition(ParallelSplit const &parallel) {
+static DiGraph digraph_from_sp_decomposition(ParallelSplit const &parallel) {
   std::vector<SeriesParallelDecomposition> children =
-      transform(vector_of(parallel.get_children()), [](auto const &child) {
+      transform(vector_of(parallel.get_children()), [](std::variant<SeriesSplit, Node> const &child) {
         return widen<SeriesParallelDecomposition>(child);
       });
   return parallel_composition(
-      transform(children, [](auto const child) -> DiGraphView {
+      transform(children, [](SeriesParallelDecomposition const &child) -> DiGraphView {
         return digraph_from_sp_decomposition(child);
       }));
 }

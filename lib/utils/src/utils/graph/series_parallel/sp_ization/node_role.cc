@@ -14,7 +14,7 @@ std::unordered_map<Node, NodeRole>
                       [](Node const &) { return NodeRole::PURE; });
 }
 
-DiGraph delete_nodes_of_given_role(
+DiGraph contract_out_nodes_of_given_role(
     DiGraph g,
     NodeRole const &role,
     std::unordered_map<Node, NodeRole> const &node_roles) {

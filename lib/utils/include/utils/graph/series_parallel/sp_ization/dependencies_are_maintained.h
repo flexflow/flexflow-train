@@ -1,5 +1,5 @@
-#ifndef _FLEXFLOW_UTILS_GRAPH_SERIAL_PARALLEL_IS_VALID_SP_IZATION_H
-#define _FLEXFLOW_UTILS_GRAPH_SERIAL_PARALLEL_IS_VALID_SP_IZATION_H
+#ifndef _FLEXFLOW_UTILS_GRAPH_SERIES_PARALLEL_IS_VALID_SP_IZATION_H
+#define _FLEXFLOW_UTILS_GRAPH_SERIES_PARALLEL_IS_VALID_SP_IZATION_H
 
 #include "utils/graph/digraph/digraph_view.h"
 #include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"

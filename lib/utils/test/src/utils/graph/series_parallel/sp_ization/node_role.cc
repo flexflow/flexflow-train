@@ -12,8 +12,8 @@
 using namespace FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("delete_nodes_of_given_role") {
-    SUBCASE("delete dummy nodes") {
+  TEST_CASE("contract_out_nodes_of_given_role") {
+    SUBCASE("contract out dummy nodes") {
       DiGraph g = DiGraph::create<AdjacencyDiGraph>();
       std::vector<Node> n = add_nodes(g, 5);
       std::vector<DirectedEdge> edges = {
@@ -34,7 +34,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
 
       DiGraph result =
-          delete_nodes_of_given_role(g, NodeRole::DUMMY, node_roles);
+          contract_out_nodes_of_given_role(g, NodeRole::DUMMY, node_roles);
 
       CHECK(get_nodes(result) ==
             std::unordered_set<Node>{n.at(0), n.at(3), n.at(4)});
@@ -44,7 +44,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                                              DirectedEdge{n.at(3), n.at(4)}});
     }
 
-    SUBCASE("delete sync nodes") {
+    SUBCASE("contract out sync nodes") {
       DiGraph g = DiGraph::create<AdjacencyDiGraph>();
       std::vector<Node> n = add_nodes(g, 4);
       add_edges(g,
@@ -60,7 +60,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
 
       DiGraph result =
-          delete_nodes_of_given_role(g, NodeRole::SYNC, node_roles);
+          contract_out_nodes_of_given_role(g, NodeRole::SYNC, node_roles);
 
       CHECK(get_nodes(result) ==
             std::unordered_set<Node>{n.at(0), n.at(2), n.at(3)});

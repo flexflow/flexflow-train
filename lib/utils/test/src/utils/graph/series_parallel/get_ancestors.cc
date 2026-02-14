@@ -8,7 +8,7 @@ using namespace FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_ancestors") {
     std::vector<Node> n = {
-        Node(0), Node(1), Node(2), Node(3), Node(4), Node(5), Node(6), Node(7)};
+        Node{0}, Node{1}, Node{2}, Node{3}, Node{4}, Node{5}, Node{6}, Node{7}};
 
     SUBCASE("Single Node") {
       SeriesParallelDecomposition sp = SeriesParallelDecomposition{n.at(0)};
@@ -17,7 +17,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(correct == result);
     }
 
-    SUBCASE("Simple Serial") {
+    SUBCASE("Simple Series") {
       SeriesParallelDecomposition sp =
           SeriesParallelDecomposition{SeriesSplit{{n.at(0), n.at(1), n.at(2)}}};
       std::unordered_set<Node> correct = {n.at(0), n.at(1)};

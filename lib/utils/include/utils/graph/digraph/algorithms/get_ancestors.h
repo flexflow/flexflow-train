@@ -6,11 +6,11 @@
 namespace FlexFlow {
 /**
  * @brief Computes the set of all ancestors of a given node `n` in a directed
- *graph, which is the set of all nodes `m` for which a directed path from `n` to
- *`m` exists.
+ * graph, which is the set of all nodes `m` for which a directed path from `m` to
+ * `n` exists.
  *
  * @note `n` is not considered to be its own ancestor, and is thus not
- *included in the returned set.
+ * included in the returned set.
  **/
 std::unordered_set<Node> get_ancestors(DiGraphView const &g, Node const &n);
 

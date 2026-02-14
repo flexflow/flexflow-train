@@ -9,17 +9,15 @@ namespace FlexFlow {
 enum class ExplorationStatus { NOT_EXPLORED, BEING_EXPLORED, FULLY_EXPLORED };
 
 bool is_acyclic(DiGraphView const &g) {
-  if (num_nodes(g) == 0) {
-    return true; // vacuously true
-  }
 
   std::unordered_map<Node, ExplorationStatus> status =
       generate_map(get_nodes(g), [](Node const &n) {
         return ExplorationStatus::NOT_EXPLORED;
       });
 
-  // recursively explore a given node and all its successors: if, while
-  // exploring, we find a node that was already being explored, then there is a
+  // Recursively explore a given node and all its successors
+  // A node is fully explored once we have fully explored all of its successors
+  // If, while exploring, we find a node that was already being explored, then there is a
   // cycle
   std::function<bool(Node)> cycle_downstream_from_node =
       [&](Node const &n) -> bool {
@@ -42,10 +40,8 @@ bool is_acyclic(DiGraphView const &g) {
   };
 
   for (Node const &node : get_nodes(g)) {
-    if (status.at(node) == ExplorationStatus::NOT_EXPLORED) {
-      if (cycle_downstream_from_node(node)) {
-        return false;
-      }
+    if ((status.at(node) == ExplorationStatus::NOT_EXPLORED) && cycle_downstream_from_node(node)) {
+      return false;
     }
   }
   return true;

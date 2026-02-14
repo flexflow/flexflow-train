@@ -1,4 +1,4 @@
-#include "utils/graph/series_parallel/sp_ization/spanish_algo.h"
+#include "utils/graph/series_parallel/sp_ization/escribano_algo.h"
 #include "utils/containers/filter_keys.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/group_by.h"
@@ -30,8 +30,6 @@
 #include "utils/graph/instances/adjacency_digraph.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/series_parallel/get_series_parallel_decomposition.h"
-#include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
-#include "utils/graph/series_parallel/sp_ization/node_role.dtg.h"
 #include "utils/graph/series_parallel/sp_ization/node_role.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
 
@@ -115,10 +113,10 @@ std::unordered_set<Node>
 }
 
 static std::unordered_set<Node>
-    get_forest_spanish(DiGraph const &g,
-                       Node const &handle,
-                       std::unordered_set<Node> const &component,
-                       std::unordered_map<Node, NodeRole> const &node_roles) {
+    get_forest_escribano(DiGraph const &g,
+                         Node const &handle,
+                         std::unordered_set<Node> const &component,
+                         std::unordered_map<Node, NodeRole> const &node_roles) {
   std::unordered_set<std::unordered_set<Node>> subtrees =
       transform(get_successors(g, handle), [&](Node const &n) {
         return set_union(get_descendants(g, n), {n});
@@ -162,9 +160,9 @@ static std::unordered_set<DirectedEdge>
 }
 
 static std::unordered_set<DirectedEdge>
-    edges_to_add_spanish(std::unordered_set<Node> const &up,
-                         std::unordered_set<Node> const &down,
-                         Node const &sync_node) {
+    edges_to_add_escribano(std::unordered_set<Node> const &up,
+                           std::unordered_set<Node> const &down,
+                           Node const &sync_node) {
   return set_union(transform(up,
                              [&](Node const &u) {
                                return DirectedEdge{u, sync_node};
@@ -174,7 +172,7 @@ static std::unordered_set<DirectedEdge>
                    }));
 }
 
-SeriesParallelDecomposition spanish_strata_sync(DiGraph g) {
+SeriesParallelDecomposition escribano_strata_sync(DiGraph g) {
   assert(is_2_terminal_dag(g));
   assert(is_acyclic(g));
 
@@ -200,7 +198,7 @@ SeriesParallelDecomposition spanish_strata_sync(DiGraph g) {
         get_component(sp, node, depth_map, node_roles);
     Node handle = get_only(get_lowest_common_ancestors(sp, component).value());
     std::unordered_set<Node> forest =
-        get_forest_spanish(sp, handle, component, node_roles);
+        get_forest_escribano(sp, handle, component, node_roles);
     auto [up, down] = get_up_and_down(sp, forest, depth_map);
 
     for (DirectedEdge const &e : edges_to_remove(sp, up, down)) {
@@ -210,13 +208,14 @@ SeriesParallelDecomposition spanish_strata_sync(DiGraph g) {
     Node sync_node = Node{++sync_node_counter};
     node_roles[sync_node] = NodeRole::SYNC;
     sp.add_node_unsafe(sync_node);
-    for (DirectedEdge const &e : edges_to_add_spanish(up, down, sync_node)) {
+    for (DirectedEdge const &e : edges_to_add_escribano(up, down, sync_node)) {
       sp.add_edge(e);
     }
   }
-  sp = delete_nodes_of_given_role(sp, NodeRole::DUMMY, node_roles);
+  sp = contract_out_nodes_of_given_role(sp, NodeRole::DUMMY, node_roles);
   sp = transitive_reduction(sp);
-  sp = delete_nodes_of_given_role(sp, NodeRole::SYNC, node_roles);
+  sp = contract_out_nodes_of_given_role(sp, NodeRole::SYNC, node_roles);
   return get_series_parallel_decomposition(sp).value();
 }
 } // namespace FlexFlow
+

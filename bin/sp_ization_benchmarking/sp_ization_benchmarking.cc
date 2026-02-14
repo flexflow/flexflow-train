@@ -4,9 +4,8 @@
  *
  * @details
  * Algorithms:
- *  - critical_path_preserving_sp_ization_with_coalescing
+ *  - work_duplicating_spization_with_coalescing
  *  - stratum_sync_sp_ization
- *  - cost_aware_stratum_sync_sp_ization
  * Weight distributions:
  *  - Constant
  *  - Uniform(0, 1)
@@ -31,8 +30,8 @@
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
 #include "utils/graph/series_parallel/series_parallel_metrics.h"
-#include "utils/graph/series_parallel/sp_ization/critical_path_preserving_sp_ization.h"
-#include "utils/graph/series_parallel/sp_ization/work_preserving_sp_ization.h"
+#include "utils/graph/series_parallel/sp_ization/naive_work_duplicating_spization.h"
+#include "utils/graph/series_parallel/sp_ization/naive_stratum_sync.h"
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -42,48 +41,40 @@ constexpr size_t REPEAT = 500;
 
 using namespace FlexFlow;
 using Result = std::tuple<float, float, float>;
-using CombinedResult = std::tuple<Result, Result, Result>;
+using CombinedResult = std::tuple<Result, Result>;
 
 template <typename D, typename N = NoNoise>
 CombinedResult perform_benchmark_given_graph(DiGraphView const &g,
                                              D const &Dist,
                                              N const &Noise = NoNoise(),
                                              size_t repeat = REPEAT) {
-  Result critical_path_preserving = {0, 0, 0};
+  Result work_duplicating = {0, 0, 0};
   Result barrier_sync = {0, 0, 0};
-  Result cost_aware = {0, 0, 0};
 
   for (int i = 0; i < repeat; i++) {
     auto cost_map = make_cost_map(get_nodes(g), Dist);
 
     SeriesParallelDecomposition sp1 =
-        critical_path_preserving_sp_ization_with_coalescing(g);
+        work_duplicating_spization_with_coalescing(g);
     SeriesParallelDecomposition sp2 = stratum_sync_sp_ization(g);
-    SeriesParallelDecomposition sp3 =
-        cost_aware_stratum_sync_sp_ization(g, cost_map);
 
     auto noisy_cost_map = add_noise_to_cost_map(cost_map, Noise);
 
-    std::get<0>(critical_path_preserving) +=
+    std::get<0>(work_duplicating) +=
         relative_work_increase(g, sp1, noisy_cost_map);
-    std::get<1>(critical_path_preserving) +=
+    std::get<1>(work_duplicating) +=
         relative_critical_path_cost_increase(g, sp1, noisy_cost_map);
-    std::get<2>(critical_path_preserving) +=
+    std::get<2>(work_duplicating) +=
         relative_num_dependencies_increase(g, sp1);
 
     std::get<0>(barrier_sync) += relative_work_increase(g, sp2, noisy_cost_map);
     std::get<1>(barrier_sync) +=
         relative_critical_path_cost_increase(g, sp2, noisy_cost_map);
     std::get<2>(barrier_sync) += relative_num_dependencies_increase(g, sp2);
-
-    std::get<0>(cost_aware) += relative_work_increase(g, sp3, noisy_cost_map);
-    std::get<1>(cost_aware) +=
-        relative_critical_path_cost_increase(g, sp3, noisy_cost_map);
-    std::get<2>(cost_aware) += relative_num_dependencies_increase(g, sp3);
   }
 
   std::vector<Result> results = {
-      critical_path_preserving, barrier_sync, cost_aware};
+      work_duplicating, barrier_sync};
 
   for (Result &r : results) {
     std::get<0>(r) /= repeat;
@@ -91,7 +82,7 @@ CombinedResult perform_benchmark_given_graph(DiGraphView const &g,
     std::get<2>(r) /= repeat;
   }
 
-  return {results[0], results[1], results[2]};
+  return {results[0], results[1]};
 }
 
 template <typename G, typename D, typename N = NoNoise>
@@ -100,42 +91,34 @@ CombinedResult
                                             D const &Dist,
                                             N const &Noise = NoNoise(),
                                             size_t repeat = REPEAT) {
-  Result critical_path_preserving = {0, 0, 0};
+  Result work_duplicating = {0, 0, 0};
   Result barrier_sync = {0, 0, 0};
-  Result cost_aware = {0, 0, 0};
 
   for (int i = 0; i < repeat; i++) {
     DiGraphView g = graph_generator();
     auto cost_map = make_cost_map(get_nodes(g), Dist);
 
     SeriesParallelDecomposition sp1 =
-        critical_path_preserving_sp_ization_with_coalescing(g);
+        work_duplicating_spization_with_coalescing(g);
     SeriesParallelDecomposition sp2 = stratum_sync_sp_ization(g);
-    SeriesParallelDecomposition sp3 =
-        cost_aware_stratum_sync_sp_ization(g, cost_map);
 
     auto noisy_cost_map = add_noise_to_cost_map(cost_map, Noise);
 
-    std::get<0>(critical_path_preserving) +=
+    std::get<0>(work_duplicating) +=
         relative_work_increase(g, sp1, noisy_cost_map);
-    std::get<1>(critical_path_preserving) +=
+    std::get<1>(work_duplicating) +=
         relative_critical_path_cost_increase(g, sp1, noisy_cost_map);
-    std::get<2>(critical_path_preserving) +=
+    std::get<2>(work_duplicating) +=
         relative_num_dependencies_increase(g, sp1);
 
     std::get<0>(barrier_sync) += relative_work_increase(g, sp2, noisy_cost_map);
     std::get<1>(barrier_sync) +=
         relative_critical_path_cost_increase(g, sp2, noisy_cost_map);
     std::get<2>(barrier_sync) += relative_num_dependencies_increase(g, sp2);
-
-    std::get<0>(cost_aware) += relative_work_increase(g, sp3, noisy_cost_map);
-    std::get<1>(cost_aware) +=
-        relative_critical_path_cost_increase(g, sp3, noisy_cost_map);
-    std::get<2>(cost_aware) += relative_num_dependencies_increase(g, sp3);
   }
 
   std::vector<Result> results = {
-      critical_path_preserving, barrier_sync, cost_aware};
+      work_duplicating, barrier_sync};
 
   for (Result &r : results) {
     std::get<0>(r) /= repeat;
@@ -143,12 +126,12 @@ CombinedResult
     std::get<2>(r) /= repeat;
   }
 
-  return {results[0], results[1], results[2]};
+  return {results[0], results[1]};
 }
 
 void output_benchmark(CombinedResult const &combined_result,
                       std::string const &title) {
-  auto [path_pres, stratum_sync, cost_aware_stratum_sync] = combined_result;
+  auto [work_dup, stratum_sync] = combined_result;
   std::cout << std::fixed << std::setprecision(3);
   std::cout << "Benchmark for " << title << std::endl;
   std::cout << "Technique | Work-Increase | Critical-Path-Increase | "
@@ -157,11 +140,8 @@ void output_benchmark(CombinedResult const &combined_result,
   std::cout << "Barrier Sync    | " << std::get<0>(stratum_sync) << " | "
             << std::get<1>(stratum_sync) << " | " << std::get<2>(stratum_sync)
             << std::endl;
-  std::cout << "Cost Aware B.S. | " << std::get<0>(cost_aware_stratum_sync)
-            << " | " << std::get<1>(cost_aware_stratum_sync) << " | "
-            << std::get<2>(cost_aware_stratum_sync) << std::endl;
-  std::cout << "Path Preserving | " << std::get<0>(path_pres) << " | "
-            << std::get<1>(path_pres) << " | " << std::get<2>(path_pres)
+  std::cout << "Work Duplication | " << std::get<0>(work_dup) << " | "
+            << std::get<1>(work_dup) << " | " << std::get<2>(work_dup)
             << std::endl;
   std::cout << std::endl;
 }

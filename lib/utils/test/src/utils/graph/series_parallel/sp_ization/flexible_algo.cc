@@ -60,7 +60,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(dependencies_are_maintained(g, result));
     }
 
-    SUBCASE("Serial") {
+    SUBCASE("Series") {
       DiGraph g = DiGraph::create<AdjacencyDiGraph>();
       std::vector<Node> n = add_nodes(g, 4);
       add_edges(g,
