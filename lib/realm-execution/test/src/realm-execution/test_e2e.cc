@@ -1,7 +1,12 @@
 #include "internal/realm_test_utils.h"
 #include "kernels/allocation.h"
 #include "op-attrs/tensor_shape.dtg.h"
+#include "op-attrs/tensor_slot_name.dtg.h"
+#include "pcg/device_type.dtg.h"
+#include "pcg/machine_space_coordinate.dtg.h"
+#include "pcg/mapped_parallel_computation_graph/operator_atomic_task_shard_binding.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
+#include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_tensor_guid_t.dtg.h"
 #include "realm-execution/distributed_device_handle.h"
 #include "realm-execution/pcg_instance/pcg_instance.h"
@@ -126,7 +131,44 @@ TEST_SUITE(FF_TEST_SUITE) {
       parallel_tensor_guid_t t_linear_2 =
           require_only_key(linear_operator_2.outputs, TensorSlotName::OUTPUT);
 
-      MappedParallelComputationGraph mpcg{pcg, {}};
+      MachineSpaceCoordinate cpu0{0_n, 0_n, DeviceType::CPU};
+      ParallelTensorSpaceCoordinate tensor_coord0{0_n, 0_n, FFOrdered{0_n}};
+      MappedParallelComputationGraph mpcg{
+          pcg,
+          {
+              {inputs_layer.parallel_layer,
+               MappedOperatorTaskGroup{
+                   {{cpu0,
+                     OperatorAtomicTaskShardBinding{
+                         {{TensorSlotName::OUTPUT, tensor_coord0}}}}}}},
+              {weights_layer_1.parallel_layer,
+               MappedOperatorTaskGroup{
+                   {{cpu0,
+                     OperatorAtomicTaskShardBinding{
+                         {{TensorSlotName::OUTPUT, tensor_coord0}}}}}}},
+              {weights_layer_2.parallel_layer,
+               MappedOperatorTaskGroup{
+                   {{cpu0,
+                     OperatorAtomicTaskShardBinding{
+                         {{TensorSlotName::OUTPUT, tensor_coord0}}}}}}},
+              {linear_operator_1.parallel_layer,
+               MappedOperatorTaskGroup{
+                   {{cpu0,
+                     OperatorAtomicTaskShardBinding{{
+                         {TensorSlotName::INPUT, tensor_coord0},
+                         {TensorSlotName::WEIGHT, tensor_coord0},
+                         {TensorSlotName::OUTPUT, tensor_coord0},
+                     }}}}}},
+              {linear_operator_2.parallel_layer,
+               MappedOperatorTaskGroup{
+                   {{cpu0,
+                     OperatorAtomicTaskShardBinding{{
+                         {TensorSlotName::INPUT, tensor_coord0},
+                         {TensorSlotName::WEIGHT, tensor_coord0},
+                         {TensorSlotName::OUTPUT, tensor_coord0},
+                     }}}}}},
+          },
+      };
 
       // instantiate computation graph
       LossAttrs loss_attrs = LossAttrs{
