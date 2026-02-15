@@ -30,8 +30,8 @@
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, proj-repo, nixGL, ... }: flake-utils.lib.eachSystem [ "x86_64-linux" ] (system: 
-    let 
+  outputs = { self, nixpkgs, flake-utils, proj-repo, nixGL, ... }: flake-utils.lib.eachSystem [ "x86_64-linux" ] (system:
+    let
       pkgs = import nixpkgs {
         inherit system;
         config.allowUnfree = true;
@@ -41,21 +41,21 @@
       mkShell = attrs: pkgs.mkShell.override {
         stdenv = pkgs.cudaPackages.backendStdenv;
       } (attrs // {
-        hardeningDisable = ["all"]; # disable nixpkgs default compiler arguments, otherwise ubsan doesn't catch 
-                                    # signed overflows due to the signedoverflow hardening setting. 
-                                    # for more details, see the following (long-running) nixpkgs github issues: 
+        hardeningDisable = ["all"]; # disable nixpkgs default compiler arguments, otherwise ubsan doesn't catch
+                                    # signed overflows due to the signedoverflow hardening setting.
+                                    # for more details, see the following (long-running) nixpkgs github issues:
                                     # - https://github.com/NixOS/nixpkgs/issues/18995
                                     # - https://github.com/NixOS/nixpkgs/issues/60919
       });
 
       proj = proj-repo.packages.${system}.proj;
-    in 
+    in
     {
       packages = rec {
         libdwarf-lite = pkgs.callPackage ./.flake/pkgs/libdwarf-lite.nix { };
         cpptrace = pkgs.callPackage ./.flake/pkgs/cpptrace.nix { inherit libdwarf-lite; };
         libassert = pkgs.callPackage ./.flake/pkgs/libassert.nix { inherit cpptrace; };
-        legion = pkgs.callPackage ./.flake/pkgs/legion.nix { };
+        realm = pkgs.callPackage ./.flake/pkgs/realm.nix { };
         bencher-cli = pkgs.callPackage ./.flake/pkgs/bencher-cli.nix { };
         ffdb = pkgs.callPackage ./.flake/pkgs/ffdb { inherit proj; };
         hpp2plantuml = pkgs.python3Packages.callPackage ./.flake/pkgs/hpp2plantuml.nix { };
@@ -83,8 +83,7 @@
           shellHook = ''
             export PATH="$HOME/ff/.scripts/:$PATH"
             export RC_PARAMS="max_discard_ratio=100"
-            export CMAKE_FLAGS="-DFF_USE_EXTERNAL_LEGION=ON \
-                                -DFF_USE_EXTERNAL_NCCL=ON \
+            export CMAKE_FLAGS="-DFF_USE_EXTERNAL_NCCL=ON \
                                 -DFF_USE_EXTERNAL_JSON=ON \
                                 -DFF_USE_EXTERNAL_FMT=ON \
                                 -DFF_USE_EXTERNAL_SPDLOG=ON \
@@ -94,7 +93,7 @@
                                 -DFF_USE_EXTERNAL_GBENCHMARK=ON \
                                 -DFF_USE_EXTERNAL_LIBASSERT=ON"
           '';
-          
+
           buildInputs = builtins.concatLists [
             (with pkgs; [
               zlib
@@ -125,7 +124,7 @@
             ])
             (with self.packages.${system}; [
               libassert
-              legion
+              realm
               rapidcheckFull
               doctest
             ])

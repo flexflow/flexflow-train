@@ -9,10 +9,16 @@ features = [
 ]
 
 [[values]]
-name = "TOP_LEVEL_TASK_ID"
+name = "CONTROLLER_TASK_ID"
 
 [[values]]
-name = "FF_INIT_TASK_ID"
+name = "DEVICE_HANDLE_INIT_TASK_ID"
+
+[[values]]
+name = "DEVICE_HANDLE_INIT_RETURN_TASK_ID"
+
+[[values]]
+name = "DEVICE_STATE_INIT_RETURN_TASK_ID"
 
 [[values]]
 name = "IMAGE_INIT_TASK_ID"

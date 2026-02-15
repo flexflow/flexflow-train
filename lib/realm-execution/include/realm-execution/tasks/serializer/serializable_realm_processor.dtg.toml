@@ -1,0 +1,17 @@
+namespace = "FlexFlow"
+name = "SerializableRealmProcessor"
+type = "struct"
+features = [
+  "eq",
+  "fmt",
+  "hash",
+  "json",
+]
+
+includes = [
+  "realm-execution/realm.h",
+]
+
+[[fields]]
+name = "id"
+type = "::FlexFlow::Realm::Processor::id_t"

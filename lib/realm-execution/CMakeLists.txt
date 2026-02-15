@@ -1,0 +1,22 @@
+ff_add_library(
+  NAME
+    realm-execution
+  SRC_PATTERNS
+    src/*.cc
+  PUBLIC_INCLUDE
+    include/
+  PRIVATE_INCLUDE
+    src/
+  DEPS
+    compiler
+    kernels
+    local-execution
+    op-attrs
+    pcg
+    spdlog
+    task-spec
+    utils
+    Realm::Realm
+)
+
+add_subdirectory(test)

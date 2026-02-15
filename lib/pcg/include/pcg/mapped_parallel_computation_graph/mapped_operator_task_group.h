@@ -5,6 +5,7 @@
 #include "pcg/machine_space_coordinate.dtg.h"
 #include "pcg/mapped_parallel_computation_graph/operator_atomic_task_shard_binding.dtg.h"
 #include "utils/bidict/bidict.h"
+#include <nlohmann/json.hpp>
 
 namespace FlexFlow {
 
@@ -45,4 +46,15 @@ struct hash<::FlexFlow::MappedOperatorTaskGroup> {
 };
 
 } // namespace std
+
+namespace nlohmann {
+
+template <>
+struct adl_serializer<::FlexFlow::MappedOperatorTaskGroup> {
+  static ::FlexFlow::MappedOperatorTaskGroup from_json(json const &j);
+  static void to_json(json &j, ::FlexFlow::MappedOperatorTaskGroup const &t);
+};
+
+} // namespace nlohmann
+
 #endif

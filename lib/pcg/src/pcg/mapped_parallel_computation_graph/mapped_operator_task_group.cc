@@ -90,3 +90,20 @@ size_t hash<::FlexFlow::MappedOperatorTaskGroup>::operator()(
 }
 
 } // namespace std
+
+namespace nlohmann {
+
+::FlexFlow::MappedOperatorTaskGroup
+    adl_serializer<::FlexFlow::MappedOperatorTaskGroup>::from_json(
+        json const &j) {
+  return ::FlexFlow::MappedOperatorTaskGroup{j.template get<
+      ::FlexFlow::bidict<::FlexFlow::MachineSpaceCoordinate,
+                         ::FlexFlow::OperatorAtomicTaskShardBinding>>()};
+}
+
+void adl_serializer<::FlexFlow::MappedOperatorTaskGroup>::to_json(
+    json &j, ::FlexFlow::MappedOperatorTaskGroup const &t) {
+  j = t.get_shard_bindings();
+}
+
+} // namespace nlohmann
