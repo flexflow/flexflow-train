@@ -15,7 +15,7 @@ bool value_is_shard_expanded(DynamicValueAttrs const &n) {
 
 bool no_part_of_graph_is_shard_expanded(DynamicOpenDataflowGraph const &g) {
   auto slot_is_shard_expanded = [](DynamicTensorSlot const &) -> bool {
-    return true;
+    return false;
   };
 
   return no_part_of_dynamic_graph_satisfies(g,
