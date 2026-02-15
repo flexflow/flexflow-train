@@ -5,6 +5,7 @@
 #include "realm-execution/realm_context.h"
 #include "realm-execution/tensor_instance_backing.h"
 #include "task-spec/dynamic_graph/dynamic_node_attrs.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_accessor.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
@@ -14,6 +15,7 @@
 #include "utils/containers/make.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/unordered_set_of.h"
+#include "utils/containers/values.h"
 #include "utils/exception.h"
 #include "utils/optional.h"
 
@@ -58,6 +60,15 @@ TensorInstanceBacking perform_instance_allocation(
       }
     }
   };
+
+  for (DynamicNodeInvocation const &invocation : g.invocations) {
+    for (DynamicValueAttrs const &input : values(invocation.inputs)) {
+      allocate(invocation.node_attrs, input);
+    }
+    for (DynamicValueAttrs const &output : values(invocation.outputs)) {
+      allocate(invocation.node_attrs, output);
+    }
+  }
 
   return result;
 }
