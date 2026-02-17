@@ -50,6 +50,8 @@ Realm::Event register_all_tasks() {
 
   for (task_id_t task_id : init_task_ids) {
     pending_registrations.push_back(register_task(
+        Realm::Processor::LOC_PROC, task_id, device_state_init_task_body));
+    pending_registrations.push_back(register_task(
         Realm::Processor::TOC_PROC, task_id, device_state_init_task_body));
   }
 
