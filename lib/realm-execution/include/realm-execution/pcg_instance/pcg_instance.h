@@ -51,6 +51,7 @@ PCGInstance create_pcg_instance(
     std::optional<LossAttrs> const &loss_attrs,
     std::optional<GenericTensorAccessorR> label_tensor,
     std::optional<parallel_tensor_guid_t> logit_tensor,
+    std::optional<MappedOperatorTaskGroup> const &loss_mapping,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &input_tensors,
     ProfilingSettings const &profiling_settings,

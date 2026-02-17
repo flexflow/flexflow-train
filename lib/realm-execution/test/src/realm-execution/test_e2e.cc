@@ -169,6 +169,12 @@ TEST_SUITE(FF_TEST_SUITE) {
                      }}}}}},
           },
       };
+      MappedOperatorTaskGroup loss_mapping{
+          {{cpu0,
+            OperatorAtomicTaskShardBinding{{
+                {TensorSlotName::INPUT, tensor_coord0},
+                {TensorSlotName::LOGIT, tensor_coord0},
+            }}}}};
 
       // instantiate computation graph
       LossAttrs loss_attrs = LossAttrs{
@@ -194,6 +200,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*loss=*/loss_attrs,
           /*label_tensor=*/label_tensor,
           /*logit_tensor=*/t_linear_2,
+          /*loss_mapping=*/loss_mapping,
           /*input_tensors=*/input_tensors,
           /*profiling_settings=*/ProfilingSettings{0, 0},
           /*device_handle=*/device_handle,
