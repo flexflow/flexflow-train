@@ -6,6 +6,7 @@
 #include "realm-execution/instance_allocation.h"
 #include "realm-execution/realm_context.h"
 #include "realm-execution/tasks/impl/op_task.h"
+#include "realm-execution/tensor_instance_backing.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_task_type.dtg.h"
@@ -16,6 +17,7 @@
 #include "task-spec/dynamic_graph/pass_expansion.h"
 #include "task-spec/dynamic_graph/shard_expansion.h"
 #include "task-spec/dynamic_graph/update_insertion.h"
+#include "utils/containers/map_values.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/values.h"
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"
@@ -26,9 +28,11 @@ namespace FlexFlow {
 PCGInstance::PCGInstance(
     RealmContext &ctx,
     std::vector<DynamicNodeInvocation> const &execution_order,
+    TensorInstanceBacking const &tensor_instance_backing,
     OptimizerAttrs const &optimizer_attrs,
     std::optional<Realm::RegionInstance> logit_grad_tensor)
     : ctx(ctx), execution_order(execution_order),
+      tensor_instance_backing(tensor_instance_backing),
       optimizer_attrs(optimizer_attrs), logit_grad_tensor(logit_grad_tensor) {}
 
 RealmContext &PCGInstance::get_realm_context() {
@@ -37,6 +41,9 @@ RealmContext &PCGInstance::get_realm_context() {
 std::vector<DynamicNodeInvocation> const &
     PCGInstance::get_execution_order() const {
   return this->execution_order;
+}
+TensorInstanceBacking const &PCGInstance::get_tensor_instance_backing() const {
+  return this->tensor_instance_backing;
 }
 OptimizerAttrs const &PCGInstance::get_optimizer_attrs() const {
   return this->optimizer_attrs;
@@ -86,19 +93,23 @@ PCGInstance create_pcg_instance(
   dg = perform_shard_expansion(dg);
   TensorInstanceBacking backing = perform_instance_allocation(dg, inputs, ctx);
 
-  logit_grad_value = transform(logit_grad_value, [&](DynamicValueAttrs const &lgv) {
-    for (DynamicNodeInvocation const &invocation : dg.invocations) {
-      if (invocation.node_attrs.task_type != DynamicTaskType::LOSS) {
-        continue;
-      }
-      for (auto const &[slot, value] : invocation.outputs) {
-        if (slot.slot_name == TensorSlotName::LOGIT && value.tensor_guid == lgv.tensor_guid && value.role == lgv.role) {
-          return value;
+  logit_grad_value =
+      transform(logit_grad_value, [&](DynamicValueAttrs const &lgv) {
+        for (DynamicNodeInvocation const &invocation : dg.invocations) {
+          if (invocation.node_attrs.task_type != DynamicTaskType::LOSS) {
+            continue;
+          }
+          for (auto const &[slot, value] : invocation.outputs) {
+            if (slot.slot_name == TensorSlotName::LOGIT &&
+                value.tensor_guid == lgv.tensor_guid &&
+                value.role == lgv.role) {
+              return value;
+            }
+          }
         }
-      }
-    }
-    PANIC("couldn't find updated logit grad in the shard-expanded dynamic graph");
-  });
+        PANIC("couldn't find updated logit grad in the shard-expanded dynamic "
+              "graph");
+      });
 
   std::optional<Realm::RegionInstance> logit_grad_tensor =
       transform(logit_grad_value, [&](DynamicValueAttrs const &lgv) {
@@ -108,8 +119,9 @@ PCGInstance create_pcg_instance(
   // FIXME: for now we're going to be lazy and block on everything rather than
   // do fine-grained dependencies on instances
   dg = perform_distributed_device_state_initialization(
-      dg,
       ctx,
+      dg,
+      backing,
       profiling_settings,
       device_handle,
       iteration_config,
@@ -123,8 +135,11 @@ PCGInstance create_pcg_instance(
   std::vector<DynamicNodeInvocation> invocation_topo_order = transform(
       node_topo_order, [&](Node node) { return node_map.at_l(node); });
 
-  return PCGInstance{
-      ctx, invocation_topo_order, optimizer_attrs, logit_grad_tensor};
+  return PCGInstance{/*ctx=*/ctx,
+                     /*execution_order=*/invocation_topo_order,
+                     /*tensor_instance_backing=*/backing,
+                     /*optimizer_attrs=*/optimizer_attrs,
+                     /*logit_grad_tensor=*/logit_grad_tensor};
 
   // TODO list:
   //  * external instances
@@ -141,6 +156,7 @@ static std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     execute_distributed_dynamic_node_invocation_set(
         RealmContext &ctx,
         std::vector<DynamicNodeInvocation> const &invocations,
+        TensorInstanceBacking const &tensor_instance_backing,
         OptimizerAttrs const &optimizer_attrs,
         ProfilingSettings const &profiling_settings,
         DistributedDeviceHandle const &device_handle,
@@ -165,9 +181,20 @@ static std::unordered_map<dynamic_layer_guid_t, Realm::Event>
             Realm::Event::merge_events(output_dependencies));
         Realm::Processor target_proc = ctx.map_device_coord_to_processor(
             assert_unwrap(invocation.node_attrs.device_coord));
+
+        std::unordered_map<DynamicValueAttrs, Realm::RegionInstance>
+            tensor_backing = map_values(
+                subset_tensor_instance_backing_for_invocation(
+                    tensor_instance_backing, invocation)
+                    .backing,
+                [](std::pair<Realm::RegionInstance, Realm::Event> const &v) {
+                  return v.first;
+                });
+
         Realm::Event result = spawn_op_task(ctx,
                                             target_proc,
                                             invocation,
+                                            tensor_backing,
                                             profiling_settings,
                                             device_handle.at(target_proc),
                                             iteration_config,
@@ -185,32 +212,34 @@ static std::unordered_map<dynamic_layer_guid_t, Realm::Event>
 
 std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_all_passes_for_pcg_instance(
-        PCGInstance &instance,
+        PCGInstance &pcg_instance,
         ProfilingSettings const &profiling_settings,
         DistributedDeviceHandle const &device_handle,
         FFIterationConfig iteration_config) {
   std::vector<DynamicNodeInvocation> execution_order =
-      instance.get_execution_order();
+      pcg_instance.get_execution_order();
   std::unordered_map<dynamic_layer_guid_t, Realm::Event> result =
       execute_distributed_dynamic_node_invocation_set(
-          /*ctx=*/instance.get_realm_context(),
+          /*ctx=*/pcg_instance.get_realm_context(),
           /*invocations=*/execution_order,
-          /*optimizer_attrs=*/instance.get_optimizer_attrs(),
+          /*tensor_instance_backing=*/
+          pcg_instance.get_tensor_instance_backing(),
+          /*optimizer_attrs=*/pcg_instance.get_optimizer_attrs(),
           /*profiling_settings=*/profiling_settings,
           /*device_handle=*/device_handle,
           /*iteration_config=*/iteration_config);
-  instance.update_optimizer_attrs_for_next_iter();
+  pcg_instance.update_optimizer_attrs_for_next_iter();
   return result;
 }
 
 std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_forward_pass_for_pcg_instance(
-        PCGInstance &instance,
+        PCGInstance &pcg_instance,
         ProfilingSettings const &profiling_settings,
         DistributedDeviceHandle const &device_handle,
         FFIterationConfig iteration_config) {
   std::vector<DynamicNodeInvocation> execution_order =
-      filter(instance.get_execution_order(),
+      filter(pcg_instance.get_execution_order(),
              [](DynamicNodeInvocation const &invocation) {
                DynamicTaskType task_type =
                    assert_unwrap(invocation.node_attrs.task_type);
@@ -218,9 +247,10 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
              });
 
   return execute_distributed_dynamic_node_invocation_set(
-      /*ctx=*/instance.get_realm_context(),
+      /*ctx=*/pcg_instance.get_realm_context(),
       /*invocations=*/execution_order,
-      /*optimizer_attrs=*/instance.get_optimizer_attrs(),
+      /*tensor_instance_backing=*/pcg_instance.get_tensor_instance_backing(),
+      /*optimizer_attrs=*/pcg_instance.get_optimizer_attrs(),
       /*profiling_settings=*/profiling_settings,
       /*device_handle=*/device_handle,
       /*iteration_config=*/iteration_config);
@@ -228,12 +258,12 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
 
 std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_backward_pass_for_pcg_instance(
-        PCGInstance &instance,
+        PCGInstance &pcg_instance,
         ProfilingSettings const &profiling_settings,
         DistributedDeviceHandle const &device_handle,
         FFIterationConfig iteration_config) {
   std::vector<DynamicNodeInvocation> execution_order =
-      filter(instance.get_execution_order(),
+      filter(pcg_instance.get_execution_order(),
              [](DynamicNodeInvocation const &invocation) {
                DynamicTaskType task_type =
                    assert_unwrap(invocation.node_attrs.task_type);
@@ -241,9 +271,10 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
              });
 
   return execute_distributed_dynamic_node_invocation_set(
-      /*ctx=*/instance.get_realm_context(),
+      /*ctx=*/pcg_instance.get_realm_context(),
       /*invocations=*/execution_order,
-      /*optimizer_attrs=*/instance.get_optimizer_attrs(),
+      /*tensor_instance_backing=*/pcg_instance.get_tensor_instance_backing(),
+      /*optimizer_attrs=*/pcg_instance.get_optimizer_attrs(),
       /*profiling_settings=*/profiling_settings,
       /*device_handle=*/device_handle,
       /*iteration_config=*/iteration_config);
@@ -251,12 +282,12 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
 
 std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_update_pass_for_pcg_instance(
-        PCGInstance &instance,
+        PCGInstance &pcg_instance,
         ProfilingSettings const &profiling_settings,
         DistributedDeviceHandle const &device_handle,
         FFIterationConfig iteration_config) {
   std::vector<DynamicNodeInvocation> execution_order =
-      filter(instance.get_execution_order(),
+      filter(pcg_instance.get_execution_order(),
              [](DynamicNodeInvocation const &invocation) {
                DynamicTaskType task_type =
                    assert_unwrap(invocation.node_attrs.task_type);
@@ -265,13 +296,15 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
 
   std::unordered_map<dynamic_layer_guid_t, Realm::Event> result =
       execute_distributed_dynamic_node_invocation_set(
-          /*ctx=*/instance.get_realm_context(),
+          /*ctx=*/pcg_instance.get_realm_context(),
           /*invocations=*/execution_order,
-          /*optimizer_attrs=*/instance.get_optimizer_attrs(),
+          /*tensor_instance_backing=*/
+          pcg_instance.get_tensor_instance_backing(),
+          /*optimizer_attrs=*/pcg_instance.get_optimizer_attrs(),
           /*profiling_settings=*/profiling_settings,
           /*device_handle=*/device_handle,
           /*iteration_config=*/iteration_config);
-  instance.update_optimizer_attrs_for_next_iter();
+  pcg_instance.update_optimizer_attrs_for_next_iter();
   return result;
 }
 

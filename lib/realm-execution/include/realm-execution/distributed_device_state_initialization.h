@@ -5,14 +5,16 @@
 #include "pcg/optimizer_attrs.dtg.h"
 #include "realm-execution/distributed_device_handle.h"
 #include "realm-execution/realm_context.h"
+#include "realm-execution/tensor_instance_backing.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
 #include "task-spec/ff_iteration_config.dtg.h"
 
 namespace FlexFlow {
 
 DynamicOpenDataflowGraph perform_distributed_device_state_initialization(
-    DynamicOpenDataflowGraph const &dg,
     RealmContext &ctx,
+    DynamicOpenDataflowGraph const &dg,
+    TensorInstanceBacking const &tensor_instance_backing,
     ProfilingSettings const &profiling_settings,
     DistributedDeviceHandle const &device_handle,
     FFIterationConfig const &iteration_config,

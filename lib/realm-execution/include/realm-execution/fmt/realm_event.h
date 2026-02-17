@@ -9,10 +9,10 @@
 namespace fmt {
 
 template <typename Char>
-struct formatter<::FlexFlow::Realm::Event,
-                 Char,
-                 std::enable_if_t<!detail::has_format_as<
-                     ::FlexFlow::Realm::Event>::value>>
+struct formatter<
+    ::FlexFlow::Realm::Event,
+    Char,
+    std::enable_if_t<!detail::has_format_as<::FlexFlow::Realm::Event>::value>>
     : formatter<::std::string> {
   template <typename FormatContext>
   auto format(::FlexFlow::Realm::Event const &m, FormatContext &ctx)
@@ -27,8 +27,7 @@ struct formatter<::FlexFlow::Realm::Event,
 
 namespace FlexFlow {
 
-std::ostream &operator<<(std::ostream &s,
-                         ::FlexFlow::Realm::Event const &m);
+std::ostream &operator<<(std::ostream &s, ::FlexFlow::Realm::Event const &m);
 
 } // namespace FlexFlow
 

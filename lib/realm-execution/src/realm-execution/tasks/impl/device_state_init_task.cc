@@ -1,11 +1,15 @@
 #include "realm-execution/tasks/impl/device_state_init_task.h"
 #include "local-execution/device_state_initialization.h"
+#include "realm-execution/dynamic_tensor_accessor_from_instance.h"
 #include "realm-execution/tasks/impl/device_state_init_return_task.h"
 #include "realm-execution/tasks/impl/device_state_init_task_args.dtg.h"
 #include "realm-execution/tasks/impl/serializable_device_state_init_task_args.h"
 #include "realm-execution/tasks/serializer/task_arg_serializer.h"
 #include "realm-execution/tasks/task_id_t.dtg.h"
 #include "realm-execution/tasks/task_id_t.h"
+#include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
+#include "utils/containers/map_values.h"
 #include "utils/optional.h"
 #include <optional>
 #include <type_traits>
@@ -26,8 +30,20 @@ void device_state_init_task_body(void const *args,
   device_handle_t device_handle =
       device_handle_t_from_device_specific_managed_handle(
           task_args.device_handle, ctx.get_current_device_idx());
+
+  // Patch the invocation to include the provided instances
+  auto map_instance_to_accessor = [&](DynamicValueAttrs const &value) {
+    DynamicValueAttrs result = value;
+    result.accessor = dynamic_tensor_accessor_from_instance(
+        task_args.tensor_backing.at(value));
+    return result;
+  };
+  DynamicNodeInvocation invocation = task_args.invocation;
+  invocation.inputs = map_values(invocation.inputs, map_instance_to_accessor);
+  invocation.outputs = map_values(invocation.outputs, map_instance_to_accessor);
+
   DynamicNodeInvocation result_invocation =
-      initialize_node(task_args.invocation,
+      initialize_node(invocation,
                       ctx.get_current_device_allocator(),
                       task_args.profiling_settings,
                       device_handle,
@@ -51,6 +67,8 @@ std::optional<Realm::Event> spawn_device_state_init_task(
     RealmContext &ctx,
     Realm::Processor target_proc,
     DynamicNodeInvocation const &invocation,
+    std::unordered_map<DynamicValueAttrs, Realm::RegionInstance> const
+        &tensor_backing,
     ProfilingSettings const &profiling_settings,
     DeviceSpecificManagedPerDeviceFFHandle const &device_handle,
     FFIterationConfig const &iteration_config,
@@ -59,6 +77,7 @@ std::optional<Realm::Event> spawn_device_state_init_task(
     Realm::Event precondition) {
   DeviceStateInitTaskArgs task_args{
       invocation,
+      tensor_backing,
       profiling_settings,
       device_handle,
       iteration_config,

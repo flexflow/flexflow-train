@@ -4,6 +4,8 @@
 #include "realm-execution/realm.h"
 #include <utility>
 
+#ifdef FLEXFLOW_USE_PREALM
+
 namespace std {
 
 template <>
@@ -12,5 +14,7 @@ struct hash<::FlexFlow::Realm::Processor> {
 };
 
 } // namespace std
+
+#endif
 
 #endif
