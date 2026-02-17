@@ -1,6 +1,8 @@
 #include "realm-execution/hash/processor.h"
 #include <utility>
 
+#ifdef FLEXFLOW_USE_PREALM
+
 namespace std {
 
 size_t hash<::FlexFlow::Realm::Processor>::operator()(
@@ -9,3 +11,5 @@ size_t hash<::FlexFlow::Realm::Processor>::operator()(
 }
 
 } // namespace std
+
+#endif

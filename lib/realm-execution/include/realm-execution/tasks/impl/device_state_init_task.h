@@ -8,7 +8,9 @@
 #include "realm-execution/realm_context.h"
 #include "task-spec/device_specific_per_device_op_state.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
 #include "task-spec/ff_iteration_config.dtg.h"
+#include <unordered_map>
 
 namespace FlexFlow {
 
@@ -19,6 +21,8 @@ std::optional<Realm::Event> spawn_device_state_init_task(
     RealmContext &ctx,
     Realm::Processor target_proc,
     DynamicNodeInvocation const &invocation,
+    std::unordered_map<DynamicValueAttrs, Realm::RegionInstance> const
+        &tensor_backing,
     ProfilingSettings const &profiling_settings,
     DeviceSpecificManagedPerDeviceFFHandle const &device_handle,
     FFIterationConfig const &iteration_config,

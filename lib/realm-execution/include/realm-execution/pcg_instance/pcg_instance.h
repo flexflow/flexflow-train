@@ -12,6 +12,7 @@
 #include "pcg/parallel_computation_graph/parallel_tensor_guid_t.dtg.h"
 #include "realm-execution/distributed_device_handle.h"
 #include "realm-execution/realm_context.h"
+#include "realm-execution/tensor_instance_backing.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_accessor.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
@@ -29,10 +30,12 @@ public:
   explicit PCGInstance(
       RealmContext &ctx,
       std::vector<DynamicNodeInvocation> const &execution_order,
+      TensorInstanceBacking const &tensor_instance_backing,
       OptimizerAttrs const &optimizer_attrs,
       std::optional<Realm::RegionInstance> logit_grad_tensor);
   RealmContext &get_realm_context();
   std::vector<DynamicNodeInvocation> const &get_execution_order() const;
+  TensorInstanceBacking const &get_tensor_instance_backing() const;
   OptimizerAttrs const &get_optimizer_attrs() const;
   void update_optimizer_attrs_for_next_iter();
   std::optional<Realm::RegionInstance> get_loss_tensor_instance() const;
@@ -40,6 +43,7 @@ public:
 private:
   RealmContext &ctx;
   std::vector<DynamicNodeInvocation> execution_order;
+  TensorInstanceBacking tensor_instance_backing;
   OptimizerAttrs optimizer_attrs;
   std::optional<Realm::RegionInstance> logit_grad_tensor;
 };
@@ -60,28 +64,28 @@ PCGInstance create_pcg_instance(
 
 std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_all_passes_for_pcg_instance(
-        PCGInstance &instance,
+        PCGInstance &pcg_instance,
         ProfilingSettings const &profiling_settings,
         DistributedDeviceHandle const &device_handle,
         FFIterationConfig iteration_config);
 
 std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_forward_pass_for_pcg_instance(
-        PCGInstance &instance,
+        PCGInstance &pcg_instance,
         ProfilingSettings const &profiling_settings,
         DistributedDeviceHandle const &device_handle,
         FFIterationConfig iteration_config);
 
 std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_backward_pass_for_pcg_instance(
-        PCGInstance &instance,
+        PCGInstance &pcg_instance,
         ProfilingSettings const &profiling_settings,
         DistributedDeviceHandle const &device_handle,
         FFIterationConfig iteration_config);
 
 std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_update_pass_for_pcg_instance(
-        PCGInstance &instance,
+        PCGInstance &pcg_instance,
         ProfilingSettings const &profiling_settings,
         DistributedDeviceHandle const &device_handle,
         FFIterationConfig iteration_config);
