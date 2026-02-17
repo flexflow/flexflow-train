@@ -1,6 +1,7 @@
 #include "realm-execution/distributed_device_state_initialization.h"
 #include "local-execution/device_state_initialization.h"
 #include "realm-execution/tasks/impl/device_state_init_task.h"
+#include "realm-execution/tensor_instance_backing.dtg.h"
 #include "realm-execution/tensor_instance_backing.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
@@ -31,14 +32,9 @@ DynamicOpenDataflowGraph perform_distributed_device_state_initialization(
     Realm::Processor target_proc = ctx.map_device_coord_to_processor(
         assert_unwrap(invocation.node_attrs.device_coord));
 
-    std::unordered_map<DynamicValueAttrs, Realm::RegionInstance>
-        tensor_backing = map_values(
-            subset_tensor_instance_backing_for_invocation(
-                tensor_instance_backing, invocation)
-                .backing,
-            [](std::pair<Realm::RegionInstance, Realm::Event> const &v) {
-              return v.first;
-            });
+    TensorInstanceBacking tensor_backing =
+        subset_tensor_instance_backing_for_invocation(tensor_instance_backing,
+                                                      invocation);
 
     // FIXME: in the absense of a real serializer we're just tossing around raw
     // bytes, which means we need to bypass the constructor for this type (yes,

@@ -34,8 +34,13 @@ void device_state_init_task_body(void const *args,
   // Patch the invocation to include the provided instances
   auto map_instance_to_accessor = [&](DynamicValueAttrs const &value) {
     DynamicValueAttrs result = value;
+    auto const &[inst, event] = task_args.tensor_backing.backing.at(value);
     result.accessor = dynamic_tensor_accessor_from_instance(
-        task_args.tensor_backing.at(value));
+        inst,
+        event,
+        assert_unwrap(value.parallel_tensor_shape),
+        Permissions::RW, // FIXME: get real permissions?
+        ctx.get_current_processor());
     return result;
   };
   DynamicNodeInvocation invocation = task_args.invocation;
@@ -67,8 +72,7 @@ std::optional<Realm::Event> spawn_device_state_init_task(
     RealmContext &ctx,
     Realm::Processor target_proc,
     DynamicNodeInvocation const &invocation,
-    std::unordered_map<DynamicValueAttrs, Realm::RegionInstance> const
-        &tensor_backing,
+    TensorInstanceBacking const &tensor_backing,
     ProfilingSettings const &profiling_settings,
     DeviceSpecificManagedPerDeviceFFHandle const &device_handle,
     FFIterationConfig const &iteration_config,

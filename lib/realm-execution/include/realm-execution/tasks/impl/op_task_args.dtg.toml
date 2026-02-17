@@ -7,9 +7,8 @@ includes = [
   "kernels/profiling_settings.dtg.h",
   "pcg/optimizer_attrs.dtg.h",
   "realm-execution/device_specific_managed_per_device_ff_handle.h",
-  "realm-execution/realm.h",
+  "realm-execution/tensor_instance_backing.dtg.h",
   "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h",
-  "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h",
   "task-spec/ff_iteration_config.dtg.h",
 ]
 
@@ -19,7 +18,7 @@ type = "::FlexFlow::DynamicNodeInvocation"
 
 [[fields]]
 name = "tensor_backing"
-type = "std::unordered_map<::FlexFlow::DynamicValueAttrs, ::FlexFlow::Realm::RegionInstance>"
+type = "TensorInstanceBacking"
 
 [[fields]]
 name = "profiling_settings"
