@@ -1,11 +1,14 @@
 #include "realm-execution/pcg_instance/pcg_instance.h"
+#include "op-attrs/tensor_slot_name.dtg.h"
 #include "pcg/optimizer_attrs.h"
 #include "realm-execution/dependency_set.h"
 #include "realm-execution/distributed_device_state_initialization.h"
 #include "realm-execution/instance_allocation.h"
 #include "realm-execution/realm_context.h"
 #include "realm-execution/tasks/impl/op_task.h"
+#include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
+#include "task-spec/dynamic_graph/dynamic_task_type.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_guid_t.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
 #include "task-spec/dynamic_graph/loss_insertion.h"
@@ -82,6 +85,20 @@ PCGInstance create_pcg_instance(
   dg = perform_update_insertion(dg, optimizer_attrs);
   dg = perform_shard_expansion(dg);
   TensorInstanceBacking backing = perform_instance_allocation(dg, inputs, ctx);
+
+  logit_grad_value = transform(logit_grad_value, [&](DynamicValueAttrs const &lgv) {
+    for (DynamicNodeInvocation const &invocation : dg.invocations) {
+      if (invocation.node_attrs.task_type != DynamicTaskType::LOSS) {
+        continue;
+      }
+      for (auto const &[slot, value] : invocation.outputs) {
+        if (slot.slot_name == TensorSlotName::LOGIT && value.tensor_guid == lgv.tensor_guid && value.role == lgv.role) {
+          return value;
+        }
+      }
+    }
+    PANIC("couldn't find updated logit grad in the shard-expanded dynamic graph");
+  });
 
   std::optional<Realm::RegionInstance> logit_grad_tensor =
       transform(logit_grad_value, [&](DynamicValueAttrs const &lgv) {

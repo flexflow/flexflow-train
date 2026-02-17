@@ -9,15 +9,15 @@
 namespace fmt {
 
 template <typename Char>
-struct formatter<::FlexFlow::Realm::RegionInstance,
+struct formatter<::FlexFlow::Realm::Event,
                  Char,
                  std::enable_if_t<!detail::has_format_as<
-                     ::FlexFlow::Realm::RegionInstance>::value>>
+                     ::FlexFlow::Realm::Event>::value>>
     : formatter<::std::string> {
   template <typename FormatContext>
-  auto format(::FlexFlow::Realm::RegionInstance const &m, FormatContext &ctx)
+  auto format(::FlexFlow::Realm::Event const &m, FormatContext &ctx)
       -> decltype(ctx.out()) {
-    std::string result = fmt::format("<RegionInstance {}>", m.id);
+    std::string result = fmt::format("<Event {}>", m.id);
 
     return formatter<std::string>::format(result, ctx);
   }
@@ -28,7 +28,7 @@ struct formatter<::FlexFlow::Realm::RegionInstance,
 namespace FlexFlow {
 
 std::ostream &operator<<(std::ostream &s,
-                         ::FlexFlow::Realm::RegionInstance const &m);
+                         ::FlexFlow::Realm::Event const &m);
 
 } // namespace FlexFlow
 
