@@ -54,6 +54,7 @@ PCGInstance create_pcg_instance(
     std::optional<LossAttrs> const &loss_attrs,
     std::optional<GenericTensorAccessorR> label_tensor,
     std::optional<parallel_tensor_guid_t> logit_tensor,
+    std::optional<MappedOperatorTaskGroup> const &loss_mapping,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &input_tensors,
     ProfilingSettings const &profiling_settings,
@@ -71,7 +72,8 @@ PCGInstance create_pcg_instance(
     auto [dg2, label_v, logit_grad_v] = perform_loss_insertion(
         dg,
         assert_unwrap(loss_attrs),
-        dynamic_tensor_guid_t{assert_unwrap(logit_tensor)});
+        dynamic_tensor_guid_t{assert_unwrap(logit_tensor)},
+        loss_mapping);
     dg = dg2;
     logit_grad_value = logit_grad_v;
     inputs.insert(std::pair{label_v, assert_unwrap(label_tensor)});

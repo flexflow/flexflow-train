@@ -81,7 +81,8 @@ ComputationGraphInstance create_computation_graph_instance(
     auto [loss_inserted_dg, label_v, logit_grad_v] = perform_loss_insertion(
         dg,
         assert_unwrap(loss_attrs),
-        dynamic_tensor_guid_t{assert_unwrap(logit_tensor)});
+        dynamic_tensor_guid_t{assert_unwrap(logit_tensor)},
+        std::nullopt);
     dg = loss_inserted_dg;
     logit_grad_value = logit_grad_v;
     inputs.insert(std::pair{label_v, assert_unwrap(label_tensor)});
