@@ -7,6 +7,7 @@
 #include "realm-execution/tasks/serializer/task_arg_serializer.h"
 #include "realm-execution/tasks/task_id_t.h"
 #include "task-spec/per_device_op_state.h"
+#include "task-spec/permissions.h"
 #include "utils/containers/map_values.h"
 #include "utils/optional.h"
 #include <type_traits>
@@ -29,8 +30,13 @@ void op_task_body(void const *args,
   // Patch the invocation to include the provided instances
   auto map_instance_to_accessor = [&](DynamicValueAttrs const &value) {
     DynamicValueAttrs result = value;
+    auto const &[inst, event] = task_args.tensor_backing.backing.at(value);
     result.accessor = dynamic_tensor_accessor_from_instance(
-        task_args.tensor_backing.at(value));
+        inst,
+        event,
+        assert_unwrap(value.parallel_tensor_shape),
+        Permissions::RW, // FIXME: get real permissions?
+        ctx.get_current_processor());
     return result;
   };
   DynamicNodeInvocation invocation = task_args.invocation;
@@ -53,17 +59,16 @@ void op_task_body(void const *args,
       /*device_idx=*/ctx.get_current_device_idx());
 }
 
-Realm::Event spawn_op_task(
-    RealmContext &ctx,
-    Realm::Processor target_proc,
-    DynamicNodeInvocation const &invocation,
-    std::unordered_map<DynamicValueAttrs, Realm::RegionInstance> const
-        &tensor_backing,
-    ProfilingSettings const &profiling_settings,
-    DeviceSpecificManagedPerDeviceFFHandle const &device_handle,
-    FFIterationConfig const &iteration_config,
-    std::optional<OptimizerAttrs> const &optimizer_attrs,
-    Realm::Event precondition) {
+Realm::Event
+    spawn_op_task(RealmContext &ctx,
+                  Realm::Processor target_proc,
+                  DynamicNodeInvocation const &invocation,
+                  TensorInstanceBacking const &tensor_backing,
+                  ProfilingSettings const &profiling_settings,
+                  DeviceSpecificManagedPerDeviceFFHandle const &device_handle,
+                  FFIterationConfig const &iteration_config,
+                  std::optional<OptimizerAttrs> const &optimizer_attrs,
+                  Realm::Event precondition) {
   OpTaskArgs task_args{invocation,
                        tensor_backing,
                        profiling_settings,
