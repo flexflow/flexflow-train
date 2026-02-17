@@ -52,12 +52,11 @@ TensorInstanceBacking perform_instance_allocation(
       // FIXME: Attach external instance to existing allocation and use that
       NOT_IMPLEMENTED();
     } else {
-      if (contains_key(result.backing, v)) {
-        return result.backing.at(v);
-      } else {
+      if (!contains_key(result.backing, v)) {
         result.backing.insert(
             std::pair{v, perform_instance_allocation_for_value(n, v, ctx)});
       }
+      return result.backing.at(v);
     }
   };
 
