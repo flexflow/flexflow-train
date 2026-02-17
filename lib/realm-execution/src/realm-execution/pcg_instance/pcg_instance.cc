@@ -16,6 +16,7 @@
 #include "task-spec/dynamic_graph/make_dynamic_open_dataflow_graph_from_mpcg.h"
 #include "task-spec/dynamic_graph/pass_expansion.h"
 #include "task-spec/dynamic_graph/shard_expansion.h"
+#include "task-spec/dynamic_graph/training_operation_attrs.dtg.h"
 #include "task-spec/dynamic_graph/update_insertion.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/transform.h"
@@ -166,6 +167,14 @@ static std::unordered_map<dynamic_layer_guid_t, Realm::Event>
   DependencySet dependency_set{ctx.get_outstanding_events()};
   return unordered_map_from_pairs(
       transform(invocations, [&](DynamicNodeInvocation const &invocation) {
+        TrainingOperationAttrs op_attrs =
+            assert_unwrap(invocation.node_attrs.op_attrs);
+        if (op_attrs.is_pcg_op() && (op_attrs.require_pcg_op().is_input() ||
+                                     op_attrs.require_pcg_op().is_weight())) {
+          return std::pair{invocation.node_attrs.layer_guid,
+                           Realm::Event::NO_EVENT};
+        }
+
         std::vector<Realm::Event> input_dependencies =
             transform(vector_of(values(invocation.inputs)),
                       [&](DynamicValueAttrs const &value) {
