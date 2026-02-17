@@ -10,12 +10,17 @@ includes = [
   "realm-execution/realm.h",
   "task-spec/device_specific_per_device_op_state.dtg.h",
   "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h",
+  "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h",
   "task-spec/ff_iteration_config.dtg.h",
 ]
 
 [[fields]]
 name = "invocation"
 type = "::FlexFlow::DynamicNodeInvocation"
+
+[[fields]]
+name = "tensor_backing"
+type = "std::unordered_map<::FlexFlow::DynamicValueAttrs, ::FlexFlow::Realm::RegionInstance>"
 
 [[fields]]
 name = "profiling_settings"
