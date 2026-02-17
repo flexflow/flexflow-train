@@ -51,7 +51,7 @@ device_handle_t device_handle_t_from_device_specific_managed_handle(
     DeviceSpecificManagedPerDeviceFFHandle const &device_specific,
     device_id_t device_idx) {
   return device_handle_t_from_managed_handle_ptr(
-      *device_specific.get(device_idx));
+      device_specific.get(device_idx));
 }
 
 } // namespace FlexFlow
