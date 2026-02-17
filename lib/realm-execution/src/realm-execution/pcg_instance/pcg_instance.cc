@@ -182,14 +182,9 @@ static std::unordered_map<dynamic_layer_guid_t, Realm::Event>
         Realm::Processor target_proc = ctx.map_device_coord_to_processor(
             assert_unwrap(invocation.node_attrs.device_coord));
 
-        std::unordered_map<DynamicValueAttrs, Realm::RegionInstance>
-            tensor_backing = map_values(
-                subset_tensor_instance_backing_for_invocation(
-                    tensor_instance_backing, invocation)
-                    .backing,
-                [](std::pair<Realm::RegionInstance, Realm::Event> const &v) {
-                  return v.first;
-                });
+        TensorInstanceBacking tensor_backing =
+            subset_tensor_instance_backing_for_invocation(
+                tensor_instance_backing, invocation);
 
         Realm::Event result = spawn_op_task(ctx,
                                             target_proc,
