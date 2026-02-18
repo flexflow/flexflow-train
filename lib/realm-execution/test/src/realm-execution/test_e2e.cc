@@ -37,9 +37,9 @@ static bool did_loss_decrease(GenericTensorAccessorR const &first_epoch,
 }
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("RealmBackend e2e Training") {
+  TEST_CASE("RealmBackend e2e Training (CPU Model Parallelism)") {
     std::vector<char *> fake_args =
-        make_fake_realm_args(/*num_cpus=*/1_p, /*num_gpus=*/0_n);
+        make_fake_realm_args(/*num_cpus=*/2_p, /*num_gpus=*/0_n);
     int fake_argc = fake_args.size();
     char **fake_argv = fake_args.data();
 
@@ -149,6 +149,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           require_only_key(linear_operator_2.outputs, TensorSlotName::OUTPUT);
 
       MachineSpaceCoordinate cpu0{0_n, 0_n, DeviceType::CPU};
+      MachineSpaceCoordinate cpu1{0_n, 1_n, DeviceType::CPU};
       ParallelTensorSpaceCoordinate tensor_coord0{0_n, 0_n, FFOrdered{0_n}};
       MappedParallelComputationGraph mpcg{
           pcg,
@@ -165,7 +166,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                          {{TensorSlotName::OUTPUT, tensor_coord0}}}}}}},
               {weights_layer_2.parallel_layer,
                MappedOperatorTaskGroup{
-                   {{cpu0,
+                   {{cpu1,
                      OperatorAtomicTaskShardBinding{
                          {{TensorSlotName::OUTPUT, tensor_coord0}}}}}}},
               {linear_operator_1.parallel_layer,
@@ -178,7 +179,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                      }}}}}},
               {linear_operator_2.parallel_layer,
                MappedOperatorTaskGroup{
-                   {{cpu0,
+                   {{cpu1,
                      OperatorAtomicTaskShardBinding{{
                          {TensorSlotName::INPUT, tensor_coord0},
                          {TensorSlotName::WEIGHT, tensor_coord0},
