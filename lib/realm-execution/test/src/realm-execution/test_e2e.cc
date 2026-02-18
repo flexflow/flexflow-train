@@ -3,7 +3,6 @@
 #include "kernels/compare_tensor_accessors.h"
 #include "kernels/copy_tensor_accessor.h"
 #include "kernels/format_accessor_contents.h"
-#include "kernels/local_cpu_allocator.h"
 #include "kernels/tensor_accessor_reductions.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/tensor_shape.dtg.h"
@@ -17,6 +16,7 @@
 #include "realm-execution/distributed_device_handle.h"
 #include "realm-execution/dynamic_tensor_accessor_from_instance.h"
 #include "realm-execution/pcg_instance/pcg_instance.h"
+#include "realm-execution/realm_context.h"
 #include "realm-execution/realm_manager.h"
 #include "task-spec/permissions.h"
 #include "test/utils/doctest/check_kv.h"
@@ -28,12 +28,11 @@ namespace test {
 using namespace ::FlexFlow;
 namespace Realm = ::FlexFlow::Realm;
 
-static bool did_loss_decrease(GenericTensorAccessorR const &first_epoch,
+static bool did_loss_decrease(RealmContext &ctx,
+                              GenericTensorAccessorR const &first_epoch,
                               GenericTensorAccessorR const &last_epoch) {
-  Allocator cpu_allocator = create_local_cpu_memory_allocator();
-
-  return tensor_accessor_all(
-      compare_tensor_accessors_le(last_epoch, first_epoch, cpu_allocator));
+  return tensor_accessor_all(compare_tensor_accessors_le(
+      last_epoch, first_epoch, ctx.get_current_device_allocator()));
 }
 
 TEST_SUITE(FF_TEST_SUITE) {
