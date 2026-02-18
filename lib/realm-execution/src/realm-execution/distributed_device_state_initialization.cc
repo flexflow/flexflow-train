@@ -13,7 +13,7 @@
 
 namespace FlexFlow {
 
-DynamicOpenDataflowGraph perform_distributed_device_state_initialization(
+PerDeviceOpStateBacking perform_distributed_device_state_initialization(
     RealmContext &ctx,
     DynamicOpenDataflowGraph const &dg,
     TensorInstanceBacking const &tensor_instance_backing,
@@ -26,8 +26,16 @@ DynamicOpenDataflowGraph perform_distributed_device_state_initialization(
   // Initialize all operators and save the per-device op state
   ASSERT(no_nodes_are_initialized(dg));
 
-  std::unordered_map<DynamicNodeInvocation, DeviceSpecificPerDeviceOpState *>
-      result_map;
+  std::unordered_map<DynamicNodeInvocation, DeviceSpecificPtr<PerDeviceOpState>>
+      result;
+
+  // Preallocate output before launching tasks
+  for (DynamicNodeInvocation const &invocation : dg.invocations) {
+    result.insert(std::pair{invocation,
+                            DeviceSpecificPtr<PerDeviceOpState>{
+                                ctx.get_current_device_idx(), std::nullopt}});
+  }
+
   for (DynamicNodeInvocation const &invocation : dg.invocations) {
     Realm::Processor target_proc = ctx.map_device_coord_to_processor(
         assert_unwrap(invocation.node_attrs.device_coord));
@@ -36,47 +44,21 @@ DynamicOpenDataflowGraph perform_distributed_device_state_initialization(
         subset_tensor_instance_backing_for_invocation(tensor_instance_backing,
                                                       invocation);
 
-    // FIXME: in the absense of a real serializer we're just tossing around raw
-    // bytes, which means we need to bypass the constructor for this type (yes,
-    // ugh)
-    DeviceSpecificPerDeviceOpState *output =
-        static_cast<DeviceSpecificPerDeviceOpState *>(
-            malloc(sizeof(DeviceSpecificPerDeviceOpState)));
-    std::optional<Realm::Event> result =
-        spawn_device_state_init_task(ctx,
-                                     target_proc,
-                                     invocation,
-                                     tensor_backing,
-                                     profiling_settings,
-                                     device_handle.at(target_proc),
-                                     iteration_config,
-                                     optimizer_attrs,
-                                     output,
-                                     precondition);
-    if (result) {
-      result_map[invocation] = output;
-    } else {
-      free(output);
-    }
+    spawn_device_state_init_task(ctx,
+                                 target_proc,
+                                 invocation,
+                                 tensor_backing,
+                                 profiling_settings,
+                                 device_handle.at(target_proc),
+                                 iteration_config,
+                                 optimizer_attrs,
+                                 &result.at(invocation),
+                                 precondition);
   }
 
   ctx.get_outstanding_events().wait();
 
-  DynamicOpenDataflowGraph result = transform_dynamic_invocation_set(
-      dg, [&](DynamicNodeInvocation const &invocation) {
-        DynamicNodeInvocation result = invocation;
-        auto device_state = result_map.find(invocation);
-        if (device_state != result_map.end()) {
-          result.node_attrs.per_device_op_state = *device_state->second;
-        }
-        return result;
-      });
-
-  for (auto &[invocation, output] : result_map) {
-    free(output);
-  }
-
-  return result;
+  return PerDeviceOpStateBacking{/*backing=*/result};
 }
 
 } // namespace FlexFlow

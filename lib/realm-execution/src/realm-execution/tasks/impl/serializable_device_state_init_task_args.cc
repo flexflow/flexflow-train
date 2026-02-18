@@ -35,7 +35,7 @@ DeviceStateInitTaskArgs device_state_init_task_args_from_serializable(
       /*optimizer_attrs=*/args.optimizer_attrs,
       /*origin_proc=*/realm_processor_from_serializable(args.origin_proc),
       /*origin_result_ptr=*/
-      reinterpret_cast<DeviceSpecificPerDeviceOpState *>(
+      reinterpret_cast<DeviceSpecificPtr<PerDeviceOpState> *>(
           args.origin_result_ptr),
   };
 }

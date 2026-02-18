@@ -4,12 +4,13 @@
 #include "kernels/profiling_settings.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
 #include "realm-execution/device_specific_managed_per_device_ff_handle.h"
+#include "realm-execution/device_specific_ptr.h"
 #include "realm-execution/realm.h"
 #include "realm-execution/realm_context.h"
 #include "realm-execution/tensor_instance_backing.dtg.h"
-#include "task-spec/device_specific_per_device_op_state.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/ff_iteration_config.dtg.h"
+#include "task-spec/per_device_op_state.dtg.h"
 
 namespace FlexFlow {
 
@@ -25,7 +26,7 @@ std::optional<Realm::Event> spawn_device_state_init_task(
     DeviceSpecificManagedPerDeviceFFHandle const &device_handle,
     FFIterationConfig const &iteration_config,
     OptimizerAttrs const &optimizer_attrs,
-    DeviceSpecificPerDeviceOpState *result_ptr,
+    DeviceSpecificPtr<PerDeviceOpState> *result_ptr,
     Realm::Event precondition);
 
 } // namespace FlexFlow

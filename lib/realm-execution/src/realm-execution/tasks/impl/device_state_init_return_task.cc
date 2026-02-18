@@ -7,16 +7,16 @@ struct DeviceStateInitReturnTaskArgs {
 public:
   DeviceStateInitReturnTaskArgs() = delete;
   DeviceStateInitReturnTaskArgs(
-      DeviceSpecificPerDeviceOpState result,
+      DeviceSpecificPtr<PerDeviceOpState> result,
       Realm::Processor origin_proc,
-      DeviceSpecificPerDeviceOpState *origin_result_ptr)
+      DeviceSpecificPtr<PerDeviceOpState> *origin_result_ptr)
       : result(result), origin_proc(origin_proc),
         origin_result_ptr(origin_result_ptr) {}
 
 public:
-  DeviceSpecificPerDeviceOpState result;
+  DeviceSpecificPtr<PerDeviceOpState> result;
   Realm::Processor origin_proc;
-  DeviceSpecificPerDeviceOpState *origin_result_ptr;
+  DeviceSpecificPtr<PerDeviceOpState> *origin_result_ptr;
 };
 
 void device_state_init_return_task_body(void const *args,
@@ -35,8 +35,8 @@ void device_state_init_return_task_body(void const *args,
 Realm::Event spawn_device_state_init_return_task(
     RealmContext &ctx,
     Realm::Processor origin_proc,
-    DeviceSpecificPerDeviceOpState const &result,
-    DeviceSpecificPerDeviceOpState *origin_result_ptr,
+    DeviceSpecificPtr<PerDeviceOpState> const &result,
+    DeviceSpecificPtr<PerDeviceOpState> *origin_result_ptr,
     Realm::Event precondition) {
   DeviceStateInitReturnTaskArgs task_args{
       result, origin_proc, origin_result_ptr};

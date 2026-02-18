@@ -6,9 +6,11 @@
 #include "realm-execution/tasks/impl/serializable_op_task_args.h"
 #include "realm-execution/tasks/serializer/task_arg_serializer.h"
 #include "realm-execution/tasks/task_id_t.h"
+#include "task-spec/per_device_op_state.dtg.h"
 #include "task-spec/per_device_op_state.h"
 #include "task-spec/permissions.h"
 #include "utils/containers/map_values.h"
+#include "utils/containers/transform.h"
 #include "utils/optional.h"
 #include <type_traits>
 
@@ -49,11 +51,8 @@ void op_task_body(void const *args,
       /*profiling_settings=*/task_args.profiling_settings,
       /*ff_handle=*/device_handle,
       /*per_device_op_state=*/
-      transform(task_args.invocation.node_attrs.per_device_op_state,
-                [&](DeviceSpecificPerDeviceOpState const &op_state) {
-                  return get_device_state_from_device_specific(
-                      op_state, ctx.get_current_device_idx());
-                }),
+      transform(task_args.device_state.get(ctx.get_current_device_idx()),
+                [](PerDeviceOpState *ptr) { return *ptr; }),
       /*iteration_config=*/task_args.iteration_config,
       /*optimizer_attrs=*/task_args.optimizer_attrs,
       /*device_idx=*/ctx.get_current_device_idx());
@@ -64,6 +63,7 @@ Realm::Event
                   Realm::Processor target_proc,
                   DynamicNodeInvocation const &invocation,
                   TensorInstanceBacking const &tensor_backing,
+                  DeviceSpecificPtr<PerDeviceOpState> const &device_state,
                   ProfilingSettings const &profiling_settings,
                   DeviceSpecificManagedPerDeviceFFHandle const &device_handle,
                   FFIterationConfig const &iteration_config,
@@ -71,6 +71,7 @@ Realm::Event
                   Realm::Event precondition) {
   OpTaskArgs task_args{invocation,
                        tensor_backing,
+                       device_state,
                        profiling_settings,
                        device_handle,
                        iteration_config,
