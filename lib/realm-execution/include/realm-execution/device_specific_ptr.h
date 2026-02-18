@@ -10,7 +10,7 @@ template <typename T>
 struct DeviceSpecificPtr {
 public:
   DeviceSpecificPtr() = delete;
-  explicit DeviceSpecificPtr(device_id_t device_idx, std::optional<T *> handle)
+  explicit DeviceSpecificPtr(device_id_t device_idx, std::optional<T *> ptr)
       : device_idx(device_idx), ptr(ptr) {}
 
   std::optional<T *> get(device_id_t device_idx) const {

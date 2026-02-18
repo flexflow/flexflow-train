@@ -31,6 +31,10 @@ name = "tensor_backing"
 type = "::FlexFlow::SerializableTensorInstanceBacking"
 
 [[fields]]
+name = "device_state"
+type = "::FlexFlow::SerializableDeviceSpecificPtr"
+
+[[fields]]
 name = "profiling_settings"
 type = "::FlexFlow::ProfilingSettings"
 

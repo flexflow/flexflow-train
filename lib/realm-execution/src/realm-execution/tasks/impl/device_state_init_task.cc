@@ -9,7 +9,9 @@
 #include "realm-execution/tasks/task_id_t.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
+#include "task-spec/per_device_op_state.h"
 #include "utils/containers/map_values.h"
+#include "utils/containers/transform.h"
 #include "utils/optional.h"
 #include <optional>
 #include <type_traits>
@@ -59,11 +61,14 @@ void device_state_init_task_body(void const *args,
       assert_unwrap(result_invocation.node_attrs.per_device_op_state);
   // Important: to make sure this doesn't get deallocated, we intentionally leak
   // the allocation here
-  DeviceSpecificPerDeviceOpState *result_state_ptr =
-      new DeviceSpecificPerDeviceOpState{result_state};
+  PerDeviceOpState *result_state_ptr =
+      new PerDeviceOpState{get_device_state_from_device_specific(
+          result_state, ctx.get_current_device_idx())};
+  DeviceSpecificPtr<PerDeviceOpState> result_device_specific{
+      ctx.get_current_device_idx(), result_state_ptr};
   spawn_device_state_init_return_task(ctx,
                                       task_args.origin_proc,
-                                      *result_state_ptr,
+                                      result_device_specific,
                                       task_args.origin_result_ptr,
                                       Realm::Event::NO_EVENT);
 }
@@ -77,7 +82,7 @@ std::optional<Realm::Event> spawn_device_state_init_task(
     DeviceSpecificManagedPerDeviceFFHandle const &device_handle,
     FFIterationConfig const &iteration_config,
     OptimizerAttrs const &optimizer_attrs,
-    DeviceSpecificPerDeviceOpState *result_ptr,
+    DeviceSpecificPtr<PerDeviceOpState> *result_ptr,
     Realm::Event precondition) {
   DeviceStateInitTaskArgs task_args{
       invocation,
