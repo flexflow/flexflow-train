@@ -250,7 +250,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       // than the first epoch
       GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
       GenericTensorAccessorR last_epoch_loss = loss_values.back();
-      CHECK_MESSAGE(did_loss_decrease(first_epoch_loss, last_epoch_loss),
+      CHECK_MESSAGE(did_loss_decrease(ctx, first_epoch_loss, last_epoch_loss),
                     check_kv("first_epoch_loss",
                              format_accessor_r_contents(first_epoch_loss)),
                     check_kv("last_epoch_loss",
