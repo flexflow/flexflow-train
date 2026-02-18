@@ -1,0 +1,15 @@
+namespace = "FlexFlow"
+name = "PerDeviceOpStateBacking"
+type = "struct"
+features = []
+
+includes = [
+  "<unordered_map>",
+  "realm-execution/device_specific_ptr.h",
+  "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h",
+  "task-spec/per_device_op_state.dtg.h",
+]
+
+[[fields]]
+name = "backing"
+type = "std::unordered_map<::FlexFlow::DynamicNodeInvocation, ::FlexFlow::DeviceSpecificPtr<::FlexFlow::PerDeviceOpState>>"

@@ -5,11 +5,13 @@
 #include "op-attrs/ops/loss_functions/loss_attrs.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
 #include "realm-execution/device_specific_managed_per_device_ff_handle.h"
+#include "realm-execution/device_specific_ptr.h"
 #include "realm-execution/realm.h"
 #include "realm-execution/realm_context.h"
 #include "realm-execution/tensor_instance_backing.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/ff_iteration_config.dtg.h"
+#include "task-spec/per_device_op_state.dtg.h"
 
 namespace FlexFlow {
 
@@ -20,6 +22,7 @@ Realm::Event
                   Realm::Processor target_proc,
                   DynamicNodeInvocation const &invocation,
                   TensorInstanceBacking const &tensor_backing,
+                  DeviceSpecificPtr<PerDeviceOpState> const &device_state,
                   ProfilingSettings const &profiling_settings,
                   DeviceSpecificManagedPerDeviceFFHandle const &device_handle,
                   FFIterationConfig const &iteration_config,
