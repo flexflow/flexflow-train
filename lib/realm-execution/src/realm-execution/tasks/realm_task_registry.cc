@@ -117,6 +117,9 @@ Realm::Event register_all_tasks() {
       // Update tasks
       task_id_t::SGD_UPD_NCCL_TASK_ID,
       task_id_t::ADAM_UPD_NCCL_TASK_ID,
+
+      // Loss task
+      task_id_t::LOSS_BWD_TASK_ID,
   };
 
   for (task_id_t task_id : task_ids) {
