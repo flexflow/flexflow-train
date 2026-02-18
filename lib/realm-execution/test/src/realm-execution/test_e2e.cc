@@ -1,5 +1,11 @@
 #include "internal/realm_test_utils.h"
 #include "kernels/allocation.h"
+#include "kernels/compare_tensor_accessors.h"
+#include "kernels/copy_tensor_accessor.h"
+#include "kernels/format_accessor_contents.h"
+#include "kernels/local_cpu_allocator.h"
+#include "kernels/tensor_accessor_reductions.h"
+#include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/tensor_shape.dtg.h"
 #include "op-attrs/tensor_slot_name.dtg.h"
 #include "pcg/device_type.dtg.h"
@@ -9,8 +15,11 @@
 #include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_tensor_guid_t.dtg.h"
 #include "realm-execution/distributed_device_handle.h"
+#include "realm-execution/dynamic_tensor_accessor_from_instance.h"
 #include "realm-execution/pcg_instance/pcg_instance.h"
 #include "realm-execution/realm_manager.h"
+#include "task-spec/permissions.h"
+#include "test/utils/doctest/check_kv.h"
 #include "utils/containers/require_only_key.h"
 #include <doctest/doctest.h>
 
@@ -18,6 +27,14 @@ namespace test {
 
 using namespace ::FlexFlow;
 namespace Realm = ::FlexFlow::Realm;
+
+static bool did_loss_decrease(GenericTensorAccessorR const &first_epoch,
+                              GenericTensorAccessorR const &last_epoch) {
+  Allocator cpu_allocator = create_local_cpu_memory_allocator();
+
+  return tensor_accessor_all(
+      compare_tensor_accessors_le(last_epoch, first_epoch, cpu_allocator));
+}
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("RealmBackend e2e Training") {
@@ -216,20 +233,28 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*profiling_settings=*/ProfilingSettings{0, 0},
             /*device_handle=*/device_handle,
             /*iteration_config=*/FFIterationConfig{1_p});
-        // loss_values.push_back(copy_tensor_accessor_r(
-        //     pcg_instance.get_loss_tensor_accessor().value(),
-        //     allocator));
+        loss_values.push_back(copy_tensor_accessor_r(
+            dynamic_tensor_accessor_from_instance(
+                pcg_instance.get_loss_tensor_instance().value(),
+                Realm::Event::NO_EVENT,
+                lift_to_parallel(
+                    TensorShape{TensorDims{FFOrdered{output_dim, hidden_dim}},
+                                DataType::FLOAT}),
+                Permissions::RO,
+                ctx.get_current_processor())
+                .require_read(),
+            allocator));
       }
 
-      // // Assert that each sample in the batch has a lower loss in last epoch
-      // // than the first epoch
-      // GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
-      // GenericTensorAccessorR last_epoch_loss = loss_values.back();
-      // CHECK_MESSAGE(did_loss_decrease(first_epoch_loss, last_epoch_loss),
-      //               check_kv("first_epoch_loss",
-      //                        format_accessor_r_contents(first_epoch_loss)),
-      //               check_kv("last_epoch_loss",
-      //                        format_accessor_r_contents(last_epoch_loss)));
+      // Assert that each sample in the batch has a lower loss in last epoch
+      // than the first epoch
+      GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
+      GenericTensorAccessorR last_epoch_loss = loss_values.back();
+      CHECK_MESSAGE(did_loss_decrease(first_epoch_loss, last_epoch_loss),
+                    check_kv("first_epoch_loss",
+                             format_accessor_r_contents(first_epoch_loss)),
+                    check_kv("last_epoch_loss",
+                             format_accessor_r_contents(last_epoch_loss)));
     });
   }
 }

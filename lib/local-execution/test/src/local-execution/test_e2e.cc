@@ -21,8 +21,8 @@
 
 using namespace ::FlexFlow;
 
-bool did_loss_decrease(GenericTensorAccessorR const &first_epoch,
-                       GenericTensorAccessorR const &last_epoch) {
+static bool did_loss_decrease(GenericTensorAccessorR const &first_epoch,
+                              GenericTensorAccessorR const &last_epoch) {
   Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
   return tensor_accessor_all(
