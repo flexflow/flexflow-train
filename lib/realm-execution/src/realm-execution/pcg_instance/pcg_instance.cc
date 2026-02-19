@@ -147,14 +147,6 @@ PCGInstance create_pcg_instance(
                      /*device_state_backing=*/device_state_backing,
                      /*optimizer_attrs=*/optimizer_attrs,
                      /*logit_grad_tensor=*/logit_grad_tensor};
-
-  // TODO list:
-  //  * external instances
-  //  * copies
-  //  * parallel operator implementation (partition, reduce, gather, etc.)
-  //  * and fused parallel operators (reduce + broadcast = allreduce)
-  //  * memory-optimizing compiler integration (tensor creation/destruction,
-  //  tensor reuse)
 }
 
 static std::unordered_map<dynamic_layer_guid_t, Realm::Event>
