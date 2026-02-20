@@ -20,6 +20,7 @@
 #include "task-spec/dynamic_graph/update_insertion.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/transform.h"
+#include "utils/containers/try_at.h"
 #include "utils/containers/values.h"
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"
 #include "utils/optional.h"
@@ -197,7 +198,7 @@ static std::unordered_map<dynamic_layer_guid_t, Realm::Event>
                           target_proc,
                           invocation,
                           tensor_backing,
-                          device_state_backing.backing.at(invocation),
+                          try_at(device_state_backing.backing, invocation),
                           profiling_settings,
                           device_handle.at(target_proc),
                           iteration_config,

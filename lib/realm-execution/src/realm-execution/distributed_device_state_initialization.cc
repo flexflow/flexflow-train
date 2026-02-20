@@ -7,9 +7,12 @@
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
 #include "utils/containers/map_values.h"
+#include "utils/containers/transform.h"
+#include "utils/containers/values.h"
 #include "utils/optional.h"
 #include <optional>
 #include <unordered_map>
+#include <utility>
 
 namespace FlexFlow {
 
@@ -26,16 +29,9 @@ PerDeviceOpStateBacking perform_distributed_device_state_initialization(
   // Initialize all operators and save the per-device op state
   ASSERT(no_nodes_are_initialized(dg));
 
-  std::unordered_map<DynamicNodeInvocation, DeviceSpecificPtr<PerDeviceOpState>>
-      result;
-
-  // Preallocate output before launching tasks
-  for (DynamicNodeInvocation const &invocation : dg.invocations) {
-    result.insert(std::pair{invocation,
-                            DeviceSpecificPtr<PerDeviceOpState>{
-                                ctx.get_current_device_idx(), std::nullopt}});
-  }
-
+  std::unordered_map<DynamicNodeInvocation,
+                     DeviceSpecificPtr<PerDeviceOpState> *>
+      device_state_map;
   for (DynamicNodeInvocation const &invocation : dg.invocations) {
     Realm::Processor target_proc = ctx.map_device_coord_to_processor(
         assert_unwrap(invocation.node_attrs.device_coord));
@@ -44,19 +40,43 @@ PerDeviceOpStateBacking perform_distributed_device_state_initialization(
         subset_tensor_instance_backing_for_invocation(tensor_instance_backing,
                                                       invocation);
 
-    spawn_device_state_init_task(ctx,
-                                 target_proc,
-                                 invocation,
-                                 tensor_backing,
-                                 profiling_settings,
-                                 device_handle.at(target_proc),
-                                 iteration_config,
-                                 optimizer_attrs,
-                                 &result.at(invocation),
-                                 precondition);
+    DeviceSpecificPtr<PerDeviceOpState> *device_state_ptr =
+        new DeviceSpecificPtr<PerDeviceOpState>{ctx.get_current_device_idx(),
+                                                std::nullopt};
+
+    std::optional<Realm::Event> completion_event =
+        spawn_device_state_init_task(ctx,
+                                     target_proc,
+                                     invocation,
+                                     tensor_backing,
+                                     profiling_settings,
+                                     device_handle.at(target_proc),
+                                     iteration_config,
+                                     optimizer_attrs,
+                                     device_state_ptr,
+                                     precondition);
+
+    if (completion_event.has_value()) {
+      device_state_map.insert(std::pair{invocation, device_state_ptr});
+    } else {
+      // Task doesn't require initialization, clean up and don't store result
+      delete device_state_ptr;
+    }
   }
 
   ctx.get_outstanding_events().wait();
+
+  auto deref = [](DynamicNodeInvocation const &i,
+                  DeviceSpecificPtr<PerDeviceOpState> *const &p) {
+    return std::pair{i, *p};
+  };
+  std::unordered_map<DynamicNodeInvocation, DeviceSpecificPtr<PerDeviceOpState>>
+      result = transform(device_state_map, deref);
+
+  for (DeviceSpecificPtr<PerDeviceOpState> *device_state_ptr :
+       values(device_state_map)) {
+    delete device_state_ptr;
+  }
 
   return PerDeviceOpStateBacking{/*backing=*/result};
 }
