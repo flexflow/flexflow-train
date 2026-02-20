@@ -24,7 +24,7 @@ type = "::FlexFlow::TensorInstanceBacking"
 
 [[fields]]
 name = "device_state"
-type = "::FlexFlow::DeviceSpecificPtr<::FlexFlow::PerDeviceOpState>"
+type = "std::optional<::FlexFlow::DeviceSpecificPtr<::FlexFlow::PerDeviceOpState>>"
 
 [[fields]]
 name = "profiling_settings"
