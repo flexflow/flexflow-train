@@ -2,7 +2,6 @@
 #define _FLEXFLOW_RUNTIME_SRC_FUSED_OP_ATTRS_H
 
 #include "op-attrs/get_op_type.h"
-#include "op-attrs/ops/core.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "operator.h"
 #include "utils/visitable.h"

@@ -23,19 +23,19 @@ tl::expected<MultiHeadAttentionParallelInputs, std::string>
                     unpar_parse_result.error()));
   }
 
-  if (num_shard_dims(input_q) != 3) {
+  if (num_shard_dims(input_q).value != 3) {
     return tl::unexpected(
         fmt::format("Query input has incorrect number of dims: {} != {}",
                     num_shard_dims(input_q),
                     3));
   }
-  if (num_shard_dims(input_k) != 3) {
+  if (num_shard_dims(input_k).value != 3) {
     return tl::unexpected(
         fmt::format("Key input has incorrect number of dims: {} != {}",
                     num_shard_dims(input_k),
                     3));
   }
-  if (num_shard_dims(input_v) != 3) {
+  if (num_shard_dims(input_v).value != 3) {
     return tl::unexpected(
         fmt::format("Value input has incorrect number of dims: {} != {}",
                     num_shard_dims(input_v),

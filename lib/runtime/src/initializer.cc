@@ -370,7 +370,7 @@ static void
 template <>
 void register_task<GLOROT_INIT_TASK_ID>() {
   TaskSignature sig;
-  sig.add_slot(TENSOR, {SlotType::TENSOR, Permissions::WO});
+  sig.add_slot(TENSOR, {TensorSlotArity::TENSOR, Permissions::WO});
   sig.add_arg_slot<GlorotUniform>(INITIALIZER);
   sig.add_arg_slot<TensorDims>(TENSOR_DIMS);
 
@@ -380,7 +380,7 @@ void register_task<GLOROT_INIT_TASK_ID>() {
 template <>
 void register_task<ZERO_INIT_TASK_ID>() {
   TaskSignature sig;
-  sig.add_slot(TENSOR, {SlotType::TENSOR, Permissions::WO});
+  sig.add_slot(TENSOR, {TensorSlotArity::TENSOR, Permissions::WO});
 
   register_task(
       ZERO_INIT_TASK_ID, "Zero Init", sig, zero_init_task, zero_init_task_cpu);
@@ -389,7 +389,7 @@ void register_task<ZERO_INIT_TASK_ID>() {
 template <>
 void register_task<UNIFORM_INIT_TASK_ID>() {
   TaskSignature sig;
-  sig.add_slot(TENSOR, {SlotType::TENSOR, Permissions::WO});
+  sig.add_slot(TENSOR, {TensorSlotArity::TENSOR, Permissions::WO});
   sig.add_arg_slot<UniformInitializer>(INITIALIZER);
 
   register_task(UNIFORM_INIT_TASK_ID,
@@ -401,7 +401,7 @@ void register_task<UNIFORM_INIT_TASK_ID>() {
 template <>
 void register_task<NORMAL_INIT_TASK_ID>() {
   TaskSignature sig;
-  sig.add_slot(TENSOR, {SlotType::TENSOR, Permissions::WO});
+  sig.add_slot(TENSOR, {TensorSlotArity::TENSOR, Permissions::WO});
   sig.add_arg_slot<NormInitializer>(INITIALIZER);
 
   register_task(
@@ -411,7 +411,7 @@ void register_task<NORMAL_INIT_TASK_ID>() {
 template <>
 void register_task<CONSTANT_INIT_TASK_ID>() {
   TaskSignature sig;
-  sig.add_slot(TENSOR, {SlotType::TENSOR, Permissions::WO});
+  sig.add_slot(TENSOR, {TensorSlotArity::TENSOR, Permissions::WO});
   sig.add_arg_slot<ConstantInitializer>(INITIALIZER);
 
   register_task(CONSTANT_INIT_TASK_ID,

@@ -1,0 +1,29 @@
+namespace = "FlexFlow"
+name = "DynamicTensorSlot"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+]
+
+includes = [
+  "op-attrs/tensor_slot_name.dtg.h",
+  "task-spec/dynamic_graph/dynamic_tensor_role.dtg.h",
+  "<optional>",
+]
+
+src_includes = [
+  "utils/json/optional.h",
+  "utils/fmt/optional.h",
+]
+
+[[fields]]
+name = "slot_name"
+type = "::FlexFlow::TensorSlotName"
+
+[[fields]]
+name = "slot_tensor_role"
+type = "std::optional<::FlexFlow::DynamicTensorRole>"

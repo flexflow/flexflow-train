@@ -38,6 +38,16 @@ num_bytes_t num_bytes_t::operator+(num_bytes_t const &other) const {
   };
 }
 
+num_bytes_t num_bytes_t::operator*(nonnegative_int other) const {
+  return num_bytes_t{
+      this->value * other,
+  };
+}
+
+num_bytes_t operator*(nonnegative_int lhs, num_bytes_t rhs) {
+  return num_bytes_t{lhs * rhs.value};
+}
+
 nonnegative_int num_bytes_t::unwrap_num_bytes() const {
   return this->value;
 }

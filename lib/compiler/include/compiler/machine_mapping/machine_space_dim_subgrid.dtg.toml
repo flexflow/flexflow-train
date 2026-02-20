@@ -1,0 +1,28 @@
+namespace = "FlexFlow"
+name = "MachineSpaceDimSubgrid"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+]
+
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h",
+  "compiler/machine_mapping/stride_t.dtg.h",
+  "utils/int_ge_two/int_ge_two.h",
+]
+
+[[fields]]
+name = "offset"
+type = "::FlexFlow::nonnegative_int"
+
+[[fields]]
+name = "stride"
+type = "::FlexFlow::stride_t"
+
+[[fields]]
+name = "num_points"
+type = "::FlexFlow::int_ge_two"

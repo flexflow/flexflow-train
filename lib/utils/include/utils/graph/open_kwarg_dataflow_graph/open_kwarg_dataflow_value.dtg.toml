@@ -1,0 +1,27 @@
+namespace = "FlexFlow"
+name = "OpenKwargDataflowValue"
+type = "variant"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+template_params = [
+  "GraphInputName",
+  "SlotName",
+]
+
+includes = [
+  "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_output.dtg.h",
+  "utils/graph/open_kwarg_dataflow_graph/kwarg_dataflow_graph_input.dtg.h",
+]
+
+[[values]]
+type = "::FlexFlow::KwargDataflowOutput<SlotName>"
+key = "internal"
+
+[[values]]
+type = "::FlexFlow::KwargDataflowGraphInput<GraphInputName>"
+key = "external"

@@ -1,6 +1,7 @@
 #include "kernels/pool_2d_kernels.h"
 #include "kernels/pool_2d_kernels_cpu.h"
 #include "kernels/pool_2d_kernels_gpu.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow::Kernels::Pool2D {
 

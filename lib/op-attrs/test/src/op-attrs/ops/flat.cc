@@ -148,11 +148,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           FFOrdered{1_p, 1_p, 2_p, 1_p},
       };
 
-      std::optional<ParallelTensorDimDegrees> result =
-          optional_from_expected(get_output_parallel_dim_degrees(attrs, input));
-      std::optional<ParallelTensorDimDegrees> correct = std::nullopt;
-
-      CHECK(result == correct);
+      CHECK_THROWS(get_output_parallel_dim_degrees(attrs, input));
     }
 
     SUBCASE("allows sum parallelism") {
@@ -162,14 +158,13 @@ TEST_SUITE(FF_TEST_SUITE) {
           FFOrdered{1_p, 1_p, 1_p, 1_p},
       };
 
-      std::optional<ParallelTensorDimDegrees> result =
-          optional_from_expected(get_output_parallel_dim_degrees(attrs, input));
-      std::optional<ParallelTensorDimDegrees> correct =
-          ParallelTensorDimDegrees{
-              SumDegree{2_p},
-              DiscardCopyDegree{1_p},
-              FFOrdered{1_p, 1_p, 1_p},
-          };
+      ParallelTensorDimDegrees result =
+          get_output_parallel_dim_degrees(attrs, input);
+      ParallelTensorDimDegrees correct = ParallelTensorDimDegrees{
+          SumDegree{2_p},
+          DiscardCopyDegree{1_p},
+          FFOrdered{1_p, 1_p, 1_p},
+      };
 
       CHECK(result == correct);
     }
@@ -181,14 +176,13 @@ TEST_SUITE(FF_TEST_SUITE) {
           FFOrdered{1_p, 1_p, 1_p, 1_p},
       };
 
-      std::optional<ParallelTensorDimDegrees> result =
-          optional_from_expected(get_output_parallel_dim_degrees(attrs, input));
-      std::optional<ParallelTensorDimDegrees> correct =
-          ParallelTensorDimDegrees{
-              SumDegree{1_p},
-              DiscardCopyDegree{2_p},
-              FFOrdered{1_p, 1_p, 1_p},
-          };
+      ParallelTensorDimDegrees result =
+          get_output_parallel_dim_degrees(attrs, input);
+      ParallelTensorDimDegrees correct = ParallelTensorDimDegrees{
+          SumDegree{1_p},
+          DiscardCopyDegree{2_p},
+          FFOrdered{1_p, 1_p, 1_p},
+      };
 
       CHECK(result == correct);
     }

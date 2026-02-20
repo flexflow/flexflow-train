@@ -54,7 +54,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     std::optional<std::variant<int>> cast_result =
         cast<std::variant<int>>(narrow_result.value());
     CHECK(cast_result.has_value()); // assert cast has value
-    CHECK(get<int>(cast_result.value()) == 42);
+    CHECK(std::get<int>(cast_result.value()) == 42);
   }
 
   TEST_CASE("casting and widening a variant") {
@@ -71,6 +71,6 @@ TEST_SUITE(FF_TEST_SUITE) {
         widen<std::variant<int, float, double>>(cast_result.value());
 
     // Check the result
-    CHECK(get<int>(wider_variant) == 42);
+    CHECK(std::get<int>(wider_variant) == 42);
   }
 }

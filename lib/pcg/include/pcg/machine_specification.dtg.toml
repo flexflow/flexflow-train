@@ -1,0 +1,24 @@
+namespace = "FlexFlow"
+name = "MachineSpecification"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = [
+  "pcg/machine_compute_specification.dtg.h",
+  "pcg/machine_interconnect_specification.dtg.h",
+]
+
+[[fields]]
+name = "compute_specification"
+type = "::FlexFlow::MachineComputeSpecification"
+
+[[fields]]
+name = "interconnect_specification"
+type = "::FlexFlow::MachineInterconnectSpecification"

@@ -44,12 +44,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       TensorShape incorrect_rhs = input_lhs;
       dim_at_idx(incorrect_rhs.dims, relative_ff_dim_t{0}) += 1_p;
 
-      tl::expected<TensorShape, std::string> result =
-          get_output_shape(attrs, input_lhs, incorrect_rhs);
-
-      CHECK_MESSAGE(!result.has_value(),
-                    "Unexpected successful result: ",
-                    result.error());
+      CHECK_THROWS(get_output_shape(attrs, input_lhs, incorrect_rhs));
     }
   }
 
@@ -146,12 +141,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           make_lhs(SumDegree{1_p}, DiscardCopyDegree{degree}, 1_p, 1_p, 1_p);
       ParallelTensorShape input_rhs =
           make_rhs(SumDegree{1_p}, DiscardCopyDegree{degree}, 1_p, 1_p, 1_p);
-      tl::expected<ParallelTensorShape, std::string> result =
-          get_output_shape(attrs, input_lhs, input_rhs);
 
-      CHECK_MESSAGE(!result.has_value(),
-                    "Unexpected successful result: ",
-                    result.error());
+      CHECK_THROWS(get_output_shape(attrs, input_lhs, input_rhs));
     }
 
     SUBCASE("invalid mismatched parallelism degrees") {
@@ -161,12 +152,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           make_lhs(SumDegree{1_p}, DiscardCopyDegree{1_p}, 1_p, degree, 1_p);
       ParallelTensorShape input_rhs =
           make_rhs(SumDegree{1_p}, DiscardCopyDegree{1_p}, 1_p, 1_p, degree);
-      tl::expected<ParallelTensorShape, std::string> result =
-          get_output_shape(attrs, input_lhs, input_rhs);
 
-      CHECK_MESSAGE(!result.has_value(),
-                    "Unexpected successful result: ",
-                    result.error());
+      CHECK_THROWS(get_output_shape(attrs, input_lhs, input_rhs));
     }
   }
 }

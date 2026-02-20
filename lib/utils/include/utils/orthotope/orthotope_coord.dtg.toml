@@ -1,0 +1,24 @@
+namespace = "FlexFlow"
+name = "OrthotopeCoord"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "fmt",
+  "hash",
+  "json",
+]
+
+includes = [
+  "<vector>",
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
+src_includes = [
+  "utils/fmt/vector.h",
+  "utils/hash/vector.h",
+]
+
+[[fields]]
+name = "raw"
+type = "std::vector<::FlexFlow::nonnegative_int>"

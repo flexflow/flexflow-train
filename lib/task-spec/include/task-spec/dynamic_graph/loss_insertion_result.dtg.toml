@@ -1,0 +1,24 @@
+namespace = "FlexFlow"
+name = "LossInsertionResult"
+type = "struct"
+features = [
+  "eq",
+  "fmt",
+]
+
+includes = [
+  "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h",
+  "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h",
+]
+
+[[fields]]
+name = "dataflow_graph"
+type = "::FlexFlow::DynamicOpenDataflowGraph"
+
+[[fields]]
+name = "label_value"
+type = "::FlexFlow::DynamicValueAttrs"
+
+[[fields]]
+name = "logit_grad_value"
+type = "::FlexFlow::DynamicValueAttrs"

@@ -1,0 +1,24 @@
+namespace = "FlexFlow"
+name = "OpenKwargDataflowSubgraphResult"
+type = "struct"
+features = []
+
+template_params = [
+  "GraphInputName",
+  "SlotName",
+]
+
+includes = [
+  "utils/graph/open_kwarg_dataflow_graph/open_kwarg_dataflow_graph_view.h",
+  "utils/bidict/bidict.h",
+  "utils/graph/open_kwarg_dataflow_graph/open_kwarg_dataflow_value.dtg.h",
+  "utils/graph/open_kwarg_dataflow_graph/kwarg_dataflow_graph_input.dtg.h",
+]
+
+[[fields]]
+name = "graph"
+type = "::FlexFlow::OpenKwargDataflowGraphView<GraphInputName, SlotName>"
+
+[[fields]]
+name = "full_graph_values_to_subgraph_inputs"
+type = "::FlexFlow::bidict<::FlexFlow::OpenKwargDataflowValue<GraphInputName, SlotName>, ::FlexFlow::KwargDataflowGraphInput<GraphInputName>>"

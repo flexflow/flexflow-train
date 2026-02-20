@@ -1,10 +1,17 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_BIDICT_BIDICT_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_BIDICT_BIDICT_H
 
+#include "utils/containers/keys.h"
+#include "utils/containers/map_from_keys_and_values.h"
 #include "utils/fmt/unordered_map.h"
 #include "utils/hash/unordered_map.h"
+#include "utils/json/check_is_json_deserializable.h"
+#include "utils/json/check_is_json_serializable.h"
+#include "utils/ord/unordered_map.h"
 #include <cassert>
+#include <nlohmann/json.hpp>
 #include <optional>
+#include <rapidcheck.h>
 #include <unordered_map>
 
 namespace FlexFlow {
@@ -65,6 +72,20 @@ struct bidict {
     bwd_map.insert({lr.second, lr.first});
   }
 
+  void equate_strict(L const &l, R const &r) {
+    ASSERT(this->contains_l(l) == this->contains_r(r));
+
+    if (this->contains_l(l)) {
+      ASSERT(this->at_l(l) == r);
+    } else {
+      this->equate(l, r);
+    }
+  }
+
+  void equate_strict(std::pair<L, R> const &lr) {
+    this->equate_strict(lr.first, lr.second);
+  }
+
   bool operator==(bidict<L, R> const &other) const {
     bool result = this->fwd_map == other.fwd_map;
     assert(result == (this->bwd_map == other.bwd_map));
@@ -83,6 +104,14 @@ struct bidict {
 
   L const &at_r(R const &r) const {
     return bwd_map.at(r);
+  }
+
+  std::unordered_set<L> left_values() const {
+    return keys(this->fwd_map);
+  }
+
+  std::unordered_set<R> right_values() const {
+    return keys(this->bwd_map);
   }
 
   std::size_t size() const {
@@ -196,6 +225,12 @@ private:
 };
 
 template <typename L, typename R>
+std::enable_if_t<is_lt_comparable_v<L> && is_lt_comparable_v<R>, bool>
+    operator<(bidict<L, R> const &lhs, bidict<L, R> const &rhs) {
+  return lhs.as_unordered_map() < rhs.as_unordered_map();
+}
+
+template <typename L, typename R>
 std::unordered_map<L, R> format_as(bidict<L, R> const &b) {
   return b;
 }
@@ -208,96 +243,54 @@ std::ostream &operator<<(std::ostream &s, bidict<L, R> const &b) {
   return s << fmt::to_string(b);
 }
 
-template <typename K,
-          typename V,
-          typename F,
-          typename K2 = decltype(std::declval<F>()(std::declval<K>()))>
-bidict<K2, V> map_keys(bidict<K, V> const &m, F const &f) {
-  bidict<K2, V> result;
-  for (auto const &kv : m) {
-    result.equate(f(kv.first), kv.second);
-  }
-  return result;
-}
-
-template <typename K,
-          typename V,
-          typename F,
-          typename V2 = decltype(std::declval<F>()(std::declval<V>()))>
-bidict<K, V2> map_values(bidict<K, V> const &m, F const &f) {
-  bidict<K, V2> result;
-  for (auto const &kv : m) {
-    result.equate({kv.first, f(kv.second)});
-  }
-  return result;
-}
-
-template <typename K, typename V, typename F>
-bidict<K, V> filter_keys(bidict<K, V> const &m, F const &f) {
-  bidict<K, V> result;
-  for (auto const &kv : m) {
-    if (f(kv.first)) {
-      result.equate(kv);
-    }
-  }
-  return result;
-}
-
-template <typename K, typename V, typename F>
-bidict<K, V> filter_values(bidict<K, V> const &m, F const &f) {
-  bidict<K, V> result;
-  for (auto const &kv : m) {
-    if (f(kv.second)) {
-      result.equate(kv);
-    }
-  }
-  return result;
-}
-
-template <typename K,
-          typename V,
-          typename F,
-          typename K2 = typename std::invoke_result_t<F, K>::value_type>
-bidict<K2, V> filtermap_keys(bidict<K, V> const &m, F const &f) {
-  bidict<K2, V> result;
-  for (auto const &[k, v] : m) {
-    std::optional<K2> new_k = f(k);
-    if (new_k.has_value()) {
-      result.equate(new_k.value(), v);
-    }
-  }
-  return result;
-}
-
-template <typename K,
-          typename V,
-          typename F,
-          typename V2 = typename std::invoke_result_t<F, V>::value_type>
-bidict<K, V2> filtermap_values(bidict<K, V> const &m, F const &f) {
-  bidict<K, V2> result;
-  for (auto const &[k, v] : m) {
-    std::optional<V2> new_v = f(v);
-    if (new_v.has_value()) {
-      result.equate(k, new_v.value());
-    }
-  }
-  return result;
-}
-
-template <typename K,
-          typename V,
-          typename F,
-          typename K2 = typename std::invoke_result_t<F, K, V>::first_type,
-          typename V2 = typename std::invoke_result_t<F, K, V>::second_type>
-bidict<K2, V2> transform(bidict<K, V> const &m, F const &f) {
-  bidict<K2, V2> result;
-  for (auto const &[k, v] : m) {
-    result.equate(f(k, v));
-  }
-  return result;
-}
-
 } // namespace FlexFlow
+
+namespace nlohmann {
+
+template <typename L, typename R>
+struct adl_serializer<::FlexFlow::bidict<L, R>> {
+  static ::FlexFlow::bidict<L, R> from_json(json const &j) {
+    CHECK_IS_JSON_DESERIALIZABLE(L);
+    CHECK_IS_JSON_DESERIALIZABLE(R);
+
+    std::unordered_map<L, R> m = j;
+
+    ::FlexFlow::bidict<L, R> b{m.cbegin(), m.cend()};
+
+    return b;
+  }
+  static void to_json(json &j, ::FlexFlow::bidict<L, R> const &b) {
+    CHECK_IS_JSON_SERIALIZABLE(L);
+    CHECK_IS_JSON_SERIALIZABLE(R);
+
+    j = b.as_unordered_map();
+  }
+};
+
+} // namespace nlohmann
+
+namespace rc {
+
+template <typename L, typename R>
+struct Arbitrary<::FlexFlow::bidict<L, R>> {
+  static Gen<::FlexFlow::bidict<L, R>> arbitrary() {
+    return gen::map(
+        gen::withSize([](int size) -> Gen<std::unordered_map<L, R>> {
+          return gen::apply(
+              [](std::vector<L> const &keys,
+                 std::vector<R> const &values) -> std::unordered_map<L, R> {
+                return ::FlexFlow::map_from_keys_and_values(keys, values);
+              },
+              gen::unique<std::vector<L>>(size, gen::arbitrary<L>()),
+              gen::unique<std::vector<R>>(size, gen::arbitrary<R>()));
+        }),
+        [](std::unordered_map<L, R> const &m) {
+          return ::FlexFlow::bidict<L, R>{m.cbegin(), m.cend()};
+        });
+  }
+};
+
+} // namespace rc
 
 namespace std {
 

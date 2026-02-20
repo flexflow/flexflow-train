@@ -1,15 +1,16 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_MAXIMUM_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_MAXIMUM_H
 
-#include "utils/exception.h"
 #include <algorithm>
+#include <fmt/format.h>
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
 template <typename C>
 typename C::value_type maximum(C const &c) {
   if (c.empty()) {
-    throw mk_runtime_error(
+    PANIC(
         fmt::format("maximum expected non-empty container but received {}", c));
   }
 

@@ -1,0 +1,24 @@
+namespace = "FlexFlow"
+name = "OperatorAttributeListIndexAccess"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "rapidcheck",
+  "json",
+  "fmt",
+]
+
+includes = [
+  "substitutions/operator_pattern/operator_attribute_key.dtg.h",
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
+[[fields]]
+name = "attribute_key"
+type = "::FlexFlow::OperatorAttributeKey"
+
+[[fields]]
+name = "index"
+type = "::FlexFlow::nonnegative_int"

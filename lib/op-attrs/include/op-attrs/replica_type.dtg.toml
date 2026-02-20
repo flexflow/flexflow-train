@@ -1,0 +1,15 @@
+namespace = "FlexFlow"
+name = "ReplicaType"
+type = "enum"
+features = [
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+[[values]]
+name = "DISCARD_COPY"
+
+[[values]]
+name = "SUM"

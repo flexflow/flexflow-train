@@ -6,6 +6,9 @@
 
 namespace FlexFlow {
 
+bool is_pareto_optimal_in(OpCostMetrics const &,
+                          std::unordered_set<OpCostMetrics> const &);
+
 OpCostMetrics make_op_cost_metrics_from_runtime_only(
     RuntimeOnlyOpCostMetrics const &runtime_only,
     num_bytes_t const &memory_usage);

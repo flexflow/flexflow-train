@@ -15,6 +15,7 @@
 
 #include "internal/device.h"
 #include "kernels/softmax_kernels_gpu.h"
+#include "utils/exception.h"
 
 namespace FlexFlow {
 

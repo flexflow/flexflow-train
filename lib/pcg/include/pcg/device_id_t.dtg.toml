@@ -1,0 +1,23 @@
+namespace = "FlexFlow"
+name = "device_id_t"
+type = "variant"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+]
+
+includes = [
+  "pcg/cpu_id_t.dtg.h",
+  "pcg/gpu_id_t.dtg.h",
+]
+
+[[values]]
+type = "::FlexFlow::gpu_id_t"
+key = "gpu"
+
+[[values]]
+type = "::FlexFlow::cpu_id_t"
+key = "cpu"

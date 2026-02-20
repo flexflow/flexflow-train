@@ -2,6 +2,7 @@
 #include "test/utils/doctest/check_without_stringify.h"
 #include "test/utils/doctest/fmt/unordered_map.h"
 #include "test/utils/doctest/fmt/vector.h"
+#include "test/utils/rapidcheck.h"
 #include <doctest/doctest.h>
 
 using namespace FlexFlow;
@@ -50,6 +51,15 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(dict.at_r("two") == 2);
     }
 
+    SUBCASE("bidict::equate_strict") {
+      CHECK_THROWS(dict.equate_strict(1, "three"));
+      CHECK_THROWS(dict.equate_strict(3, "two"));
+
+      dict.equate_strict(3, "three");
+      CHECK(dict.at_l(3) == "three");
+      CHECK(dict.at_r("three") == 3);
+    }
+
     SUBCASE("bidict::erase_l") {
       dict.erase_l(1);
       CHECK(dict.size() == 1);
@@ -92,95 +102,40 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK_WITHOUT_STRINGIFY(it == dict.end());
     }
 
-    SUBCASE("map_keys(bidict<K, V>, F)") {
-      bidict<std::string, std::string> result = map_keys(dict, [](int k) {
-        std::ostringstream oss;
-        oss << k;
-        return oss.str();
-      });
-      bidict<std::string, std::string> correct = {
-          {"1", "one"},
-          {"2", "two"},
-      };
-      CHECK(result == correct);
-    }
-
-    SUBCASE("map_values(bidict<K, V>, F)") {
-      bidict<int, std::string> result =
-          map_values(dict, [](std::string const &v) { return v + "a"; });
-      bidict<int, std::string> correct = {
-          {1, "onea"},
-          {2, "twoa"},
-      };
-      CHECK(result == correct);
-    }
-
-    SUBCASE("filter_keys(bidict<K, V>, F") {
-      bidict<int, std::string> result =
-          filter_keys(dict, [](int k) { return k == 1; });
-      bidict<int, std::string> correct = {
-          {1, "one"},
-      };
-      CHECK(result == correct);
-    }
-
-    SUBCASE("filter_values(bidict<K, V>, F") {
-      bidict<int, std::string> result =
-          filter_values(dict, [](std::string const &v) { return v == "two"; });
-      bidict<int, std::string> correct = {
-          {2, "two"},
-      };
-      CHECK(result == correct);
-    }
-
-    SUBCASE("filtermap_keys(bidict<K, V>, F)") {
-      bidict<std::string, std::string> result =
-          filtermap_keys(dict, [](int k) -> std::optional<std::string> {
-            if (k == 1) {
-              return std::nullopt;
-            } else {
-              std::ostringstream oss;
-              oss << (k + 1);
-              return oss.str();
-            }
-          });
-      bidict<std::string, std::string> correct = {
-          {"3", "two"},
-      };
-      CHECK(result == correct);
-    }
-
-    SUBCASE("filtermap_values(bidict<K, V>, F)") {
-      bidict<int, int> result = filtermap_values(
-          dict, [](std::string const &v) -> std::optional<int> {
-            if (v == "two") {
-              return std::nullopt;
-            } else {
-              return v.size() + 1;
-            }
-          });
-      bidict<int, int> correct = {
-          {1, 4},
-      };
-      CHECK(result == correct);
-    }
-
-    SUBCASE("transform(bidict<K, V>, F)") {
-      bidict<std::string, int> result =
-          transform(dict, [](int k, std::string const &v) {
-            return std::make_pair(v, k);
-          });
-      bidict<std::string, int> correct = {
-          {"one", 1},
-          {"two", 2},
-      };
-      CHECK(result == correct);
-    }
-
     SUBCASE("fmt::to_string(bidict<int, std::string>)") {
       std::string result = fmt::to_string(dict);
       std::string correct = fmt::to_string(dict.as_unordered_map());
       CHECK(result == correct);
     }
+  }
+
+  TEST_CASE("adl_serializer<bidict<L, R>>") {
+    bidict<int, std::string> deserialized = bidict<int, std::string>{
+        {2, "hello"},
+        {3, "goodbye"},
+    };
+
+    nlohmann::json serialized = std::vector<std::pair<int, std::string>>{
+        {2, "hello"},
+        {3, "goodbye"},
+    };
+
+    SUBCASE("to_json") {
+      nlohmann::json result = deserialized;
+      nlohmann::json correct = serialized;
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("from_json") {
+      bidict<int, std::string> result = serialized;
+      bidict<int, std::string> correct = deserialized;
+
+      CHECK(result == correct);
+    }
+  }
+
+  TEST_CASE("rc::Arbitrary") {
+    RC_SUBCASE([](bidict<int, std::string>) {});
   }
 }

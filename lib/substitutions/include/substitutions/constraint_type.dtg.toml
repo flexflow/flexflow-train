@@ -1,0 +1,15 @@
+namespace = "FlexFlow"
+name = "ConstraintType"
+type = "enum"
+features = [
+  "json",
+  "hash",
+  "rapidcheck",
+  "fmt",
+]
+
+[[values]]
+name = "EQUAL"
+
+[[values]]
+name = "DIVISIBLE_BY"

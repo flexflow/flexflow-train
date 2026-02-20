@@ -1,0 +1,24 @@
+namespace = "FlexFlow"
+name = "ParallelTensorShape"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = [
+  "op-attrs/parallel_tensor_dims.dtg.h",
+  "op-attrs/datatype.dtg.h",
+]
+
+[[fields]]
+name = "dims"
+type = "::FlexFlow::ParallelTensorDims"
+
+[[fields]]
+name = "data_type"
+type = "::FlexFlow::DataType"

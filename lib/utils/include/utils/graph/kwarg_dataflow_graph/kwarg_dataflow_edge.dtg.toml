@@ -1,0 +1,26 @@
+namespace = "FlexFlow"
+name = "KwargDataflowEdge"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+template_params = [
+  "SlotName",
+]
+
+includes = [
+  "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_output.dtg.h",
+  "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_input.dtg.h",
+]
+
+[[fields]]
+name = "src"
+type = "::FlexFlow::KwargDataflowOutput<SlotName>"
+
+[[fields]]
+name = "dst"
+type = "::FlexFlow::KwargDataflowInput<SlotName>"

@@ -6,7 +6,7 @@
 namespace FlexFlow {
 
 PatternNode get_src_node(PatternNodeOutput const &);
-nonnegative_int get_idx(PatternNodeOutput const &);
+TensorSlotName get_slot_name(PatternNodeOutput const &);
 
 } // namespace FlexFlow
 

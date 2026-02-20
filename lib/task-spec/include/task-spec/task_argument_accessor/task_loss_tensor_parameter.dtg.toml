@@ -1,0 +1,16 @@
+namespace = "FlexFlow"
+name = "TaskLossTensorParameter"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+  "rapidcheck",
+]
+
+includes = []
+src_includes = []
+
+fields = []

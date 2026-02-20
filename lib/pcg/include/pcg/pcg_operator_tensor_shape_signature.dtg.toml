@@ -1,0 +1,32 @@
+namespace = "FlexFlow"
+name = "PCGOperatorTensorShapeSignature"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+  "json",
+]
+
+includes = [
+  "op-attrs/parallel_tensor_shape.dtg.h",
+  "<vector>",
+]
+
+src_includes = [
+  "utils/hash/vector.h",
+  "utils/fmt/vector.h",
+]
+
+[[fields]]
+name = "input_shapes"
+type = "std::vector<::FlexFlow::ParallelTensorShape>"
+
+[[fields]]
+name = "weight_shapes"
+type = "std::vector<::FlexFlow::ParallelTensorShape>"
+
+[[fields]]
+name = "output_shapes"
+type = "std::vector<::FlexFlow::ParallelTensorShape>"

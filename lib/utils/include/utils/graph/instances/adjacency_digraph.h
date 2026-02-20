@@ -21,9 +21,6 @@ public:
       query_edges(DirectedEdgeQuery const &) const override;
   std::unordered_set<Node> query_nodes(NodeQuery const &) const override;
 
-  // bool operator==(AdjacencyDiGraph const &) const;
-  // bool operator!=(AdjacencyDiGraph const & const;
-
   AdjacencyDiGraph *clone() const override;
 
 private:

@@ -33,15 +33,15 @@ struct CPUReduceTensorAccessorInDims {
       return contains(dims_to_reduce, dim);
     };
 
-    std::unordered_map<TensorDimsCoord, std::unordered_set<TensorDimsCoord>>
-        output_coord_from_input_coord = group_by(
-            get_tensor_dims_coord_set(input.shape.dims),
-            [&](TensorDimsCoord const &input_coord) {
-              return tensor_dims_coord_drop_dims(input_coord, should_drop_dim);
-            });
+    OneToMany<TensorDimsCoord, TensorDimsCoord> output_coord_from_input_coord =
+        group_by(get_tensor_dims_coord_set(input.shape.dims),
+                 [&](TensorDimsCoord const &input_coord) {
+                   return tensor_dims_coord_drop_dims(input_coord,
+                                                      should_drop_dim);
+                 });
 
     for (auto const &[output_coord, input_coords] :
-         output_coord_from_input_coord) {
+         output_coord_from_input_coord.l_to_r()) {
       std::vector<T> input_values = transform(
           sorted(input_coords), [&](TensorDimsCoord const &input_coord) -> T {
             return input.at<DT>(input_coord);

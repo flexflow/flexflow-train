@@ -21,12 +21,21 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("use_bias = true") {
       LinearAttrs attrs = make_attrs(/*use_bias=*/true);
 
-      std::vector<IncomingTensorRole> result =
+      std::unordered_map<TensorSlotName, IncomingTensorRole> result =
           get_linear_incoming_tensor_roles(attrs);
-      std::vector<IncomingTensorRole> correct = {
-          IncomingTensorRole::INPUT,
-          IncomingTensorRole::WEIGHT,
-          IncomingTensorRole::WEIGHT,
+      std::unordered_map<TensorSlotName, IncomingTensorRole> correct = {
+          {
+              TensorSlotName::INPUT,
+              IncomingTensorRole::INPUT,
+          },
+          {
+              TensorSlotName::WEIGHT,
+              IncomingTensorRole::WEIGHT,
+          },
+          {
+              TensorSlotName::BIAS,
+              IncomingTensorRole::WEIGHT,
+          },
       };
 
       CHECK(result == correct);
@@ -35,11 +44,17 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("use_bias = false") {
       LinearAttrs attrs = make_attrs(/*use_bias=*/false);
 
-      std::vector<IncomingTensorRole> result =
+      std::unordered_map<TensorSlotName, IncomingTensorRole> result =
           get_linear_incoming_tensor_roles(attrs);
-      std::vector<IncomingTensorRole> correct = {
-          IncomingTensorRole::INPUT,
-          IncomingTensorRole::WEIGHT,
+      std::unordered_map<TensorSlotName, IncomingTensorRole> correct = {
+          {
+              TensorSlotName::INPUT,
+              IncomingTensorRole::INPUT,
+          },
+          {
+              TensorSlotName::WEIGHT,
+              IncomingTensorRole::WEIGHT,
+          },
       };
 
       CHECK(result == correct);
@@ -287,5 +302,31 @@ TEST_SUITE(FF_TEST_SUITE) {
         CHECK(result == correct);
       }
     }
+  }
+
+  TEST_CASE("get_operator_to_input_mapping(LinearAttrs, nonnegative_int)") {
+    LinearAttrs attrs = LinearAttrs{
+        /*out_channels=*/16_p,
+        /*use_bias=*/false,
+        /*data_type=*/DataType::FLOAT,
+        /*activation=*/Activation::RELU,
+        /*regularizer=*/std::nullopt,
+    };
+
+    ParallelTensorDimDegrees input_dims = ParallelTensorDimDegrees{
+        /*sum_degree=*/SumDegree{2_p},
+        /*discard_copy_dedgree=*/DiscardCopyDegree{1_p},
+        /*shard_degrees=*/
+        FFOrdered{
+            1_p,
+            1_p,
+        },
+    };
+
+    OperatorSpaceToParallelTensorSpaceMapping result =
+        get_operator_to_input_mapping(attrs, input_dims);
+
+    // TODO(@lockshaw): implement some actual checks here
+    NOT_IMPLEMENTED();
   }
 }

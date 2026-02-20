@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_TENSOR_DIMS_H
 #define _FLEXFLOW_LIB_OP_ATTRS_INCLUDE_OP_ATTRS_TENSOR_DIMS_H
 
+#include "op-attrs/num_tensor_dims_t.h"
 #include "op-attrs/parallel_tensor_dims.dtg.h"
 #include "op-attrs/tensor_dims.dtg.h"
 #include "op-attrs/tensor_dims_coord.dtg.h"
@@ -12,7 +13,7 @@ FFOrdered<positive_int> const &ff_ordered(TensorDims const &);
 
 bool tensor_dims_has_dim(TensorDims const &, ff_dim_t);
 
-nonnegative_int get_num_dims(TensorDims const &);
+num_tensor_dims_t get_num_dims(TensorDims const &);
 
 positive_int dim_at_idx(TensorDims const &, relative_ff_dim_t);
 positive_int &dim_at_idx(TensorDims &, relative_ff_dim_t);

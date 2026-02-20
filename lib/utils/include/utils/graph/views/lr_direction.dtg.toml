@@ -1,0 +1,15 @@
+namespace = "FlexFlow"
+name = "LRDirection"
+type = "enum"
+features = [
+  "hash",
+  "fmt",
+  "rapidcheck",
+  "json",
+]
+
+[[values]]
+name = "LEFT"
+
+[[values]]
+name = "RIGHT"

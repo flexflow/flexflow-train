@@ -21,43 +21,14 @@
 
 namespace FlexFlow {
 
-enum Slots { LOGIT, LABEL, LOGIT_GRAD, ATTRS, PROFILING, KERNEL_DEVICE_TYPE };
-
-TaskSignature get_loss_bwd_signature() {
-  TaskSignature sig = make_empty_task_signature();
-  add_slot(sig, LOGIT, TensorType::FORWARD);
-  add_slot(sig, LABEL, TensorType::LOSS);
-  add_slot(sig, LOGIT_GRAD, TensorType::GRADIENT);
-
-  add_arg_slot<LossAttrs>(sig, ATTRS);
-  add_arg_slot<ProfilingSettings>(sig, PROFILING);
-  add_arg_slot<DeviceType>(sig, KERNEL_DEVICE_TYPE);
-  return sig;
-}
-
-TaskInvocation backward(LossAttrs const &attrs,
-                        forward_tensor_guid_t logit,
-                        gradient_tensor_guid_t logit_grad,
-                        loss_tensor_guid_t label) {
-  TaskBinding b;
-  b.bind(LOGIT, logit);
-  b.bind_loss(LABEL, label);
-  b.bind_grad(LOGIT_GRAD, logit_grad);
-
-  b.bind_arg(ATTRS, attrs);
-  b.bind_arg(PROFILING, profiling_settings());
-  b.bind_arg(KERNEL_DEVICE_TYPE, kernel_device_type());
-
-  return TaskInvocation{task_id_t::LOSS_BWD_TASK_ID, b};
-}
-
 static void backward_task_impl(TaskArgumentAccessor const &acc) {
-  auto attrs = acc.get_argument<LossAttrs>(ATTRS);
-  auto profiling = acc.get_argument<ProfilingSettings>(PROFILING);
-  auto kernel_device_type = acc.get_argument<DeviceType>(KERNEL_DEVICE_TYPE);
-  auto logit_grad = acc.get_tensor_grad<Permissions::RW>(LOGIT_GRAD);
-  auto logit = acc.get_tensor<Permissions::RO>(LOGIT);
-  auto label = acc.get_loss_tensor<Permissions::RO>(LABEL);
+  LossAttrs attrs = acc.get_loss_attrs();
+  ProfilingSettings profiling = acc.get_profiling_settings();
+  DeviceType kernel_device_type = acc.get_kernel_device_type();
+
+  auto logit_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::LOGIT);
+  auto logit = acc.get_tensor<Permissions::RO>(TensorSlotName::LOGIT);
+  auto label = acc.get_loss_tensor<Permissions::RO>();
 
   int batch_size =
       dim_at_idx(logit.shape.dims, legion_dim_t{1_n}).int_from_positive_int();
@@ -75,7 +46,7 @@ static void backward_task_impl(TaskArgumentAccessor const &acc) {
   if (loss_type == LossFunction::SPARSE_CATEGORICAL_CROSSENTROPY) {
     // label shape is [batch dim, 1]
     auto scce_attrs = attrs.get<SparseCategoricalCrossEntropyLossAttrs>();
-    size_t ndim = get_num_dims(logit.shape.dims).unwrap_nonnegative();
+    size_t ndim = get_num_dims(logit.shape.dims).int_from_num_tensor_dims();
     int num_classes =
         dim_at_idx(logit.shape.dims, legion_dim_t{0_n}).int_from_positive_int();
     ASSERT(logit_grad.shape == logit.shape);

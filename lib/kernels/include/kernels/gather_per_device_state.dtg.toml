@@ -1,0 +1,17 @@
+namespace = "FlexFlow"
+name = "GatherPerDeviceState"
+type = "struct"
+features = []
+
+includes = [
+  "kernels/ff_handle.h",
+  "op-attrs/ff_dim_t.dtg.h",
+]
+
+[[fields]]
+name = "handle"
+type = "::FlexFlow::PerDeviceFFHandle"
+
+[[fields]]
+name = "dim"
+type = "::FlexFlow::ff_dim_t"

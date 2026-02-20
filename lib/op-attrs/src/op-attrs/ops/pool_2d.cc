@@ -47,13 +47,15 @@ tl::expected<Pool2DAttrs, std::string>
         input_dims));
   }
 
-  // Note that for some reason the stack overflow post linked above states that
-  // `kernel_size = ind - (outd-1)*stride`, but some simplification yields
-  // `kernel_size` = `ind - (outd - 1)*stride`
-  //               = `ind - (outd - 1) * (ind / outd)`
-  //               = `ind - ind + (ind  /outd)`
-  //               = `ind / outd`
-  //               = `stride`
+  /**
+   * Note that for some reason the stack overflow post linked above states that
+   * `kernel_size = ind - (outd-1)*stride`, but some simplification yields
+   * `kernel_size` = `ind - (outd - 1)*stride`
+   *               = `ind - (outd - 1) * (ind / outd)`
+   *               = `ind - ind + (ind  /outd)`
+   *               = `ind / outd`
+   *               = `stride`
+   */
 
   positive_int kernel_h = positive_int{input_h / output_h};
   positive_int kernel_w = positive_int{input_w / output_w};

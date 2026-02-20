@@ -1,0 +1,36 @@
+namespace = "FlexFlow"
+name = "UnmappedRuntimeOnlyOpCostEstimateKey"
+type = "struct"
+features = [
+  "eq",
+  "fmt",
+  "hash",
+]
+
+includes = [
+  "op-attrs/pcg_operator_attrs.dtg.h",
+  "op-attrs/parallel_tensor_shape.dtg.h",
+  "<vector>",
+  "op-attrs/tensor_slot_name.dtg.h",
+]
+
+src_includes = [
+  "utils/hash/unordered_map.h",
+  "utils/fmt/unordered_map.h",
+]
+
+[[fields]]
+name = "op_attrs"
+type = "::FlexFlow::PCGOperatorAttrs"
+
+[[fields]]
+name = "input_shapes"
+type = "std::unordered_map<::FlexFlow::TensorSlotName, ::FlexFlow::ParallelTensorShape>"
+
+[[fields]]
+name = "weight_shapes"
+type = "std::unordered_map<::FlexFlow::TensorSlotName, ::FlexFlow::ParallelTensorShape>"
+
+[[fields]]
+name = "output_shapes"
+type = "std::unordered_map<::FlexFlow::TensorSlotName, ::FlexFlow::ParallelTensorShape>"

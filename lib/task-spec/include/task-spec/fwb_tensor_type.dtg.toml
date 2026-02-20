@@ -1,0 +1,15 @@
+namespace = "FlexFlow"
+name = "FwbTensorType"
+type = "enum"
+features = [
+  "hash",
+  "fmt",
+  "rapidcheck",
+  "json",
+]
+
+[[values]]
+name = "FORWARD"
+
+[[values]]
+name = "GRADIENT"

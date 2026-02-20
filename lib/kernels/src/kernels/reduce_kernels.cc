@@ -1,6 +1,7 @@
 #include "kernels/reduce_kernels.h"
 #include "kernels/reduce_kernels_cpu.h"
 #include "kernels/reduce_kernels_gpu.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow::Kernels::Reduce {
 

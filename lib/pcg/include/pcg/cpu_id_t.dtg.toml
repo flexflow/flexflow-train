@@ -1,0 +1,19 @@
+namespace = "FlexFlow"
+name = "cpu_id_t"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
+[[fields]]
+name = "cpu_index"
+type = "::FlexFlow::nonnegative_int"

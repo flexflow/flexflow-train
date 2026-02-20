@@ -1,0 +1,12 @@
+namespace = "FlexFlow"
+name = "NoopAttrs"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+fields = []

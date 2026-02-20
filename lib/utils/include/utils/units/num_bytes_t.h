@@ -2,6 +2,7 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_UNITS_NUM_BYTES_T_H
 
 #include "utils/nonnegative_int/nonnegative_int.h"
+
 namespace FlexFlow {
 
 struct num_bytes_t {
@@ -17,6 +18,9 @@ public:
   bool operator>=(num_bytes_t const &other) const;
 
   num_bytes_t operator+(num_bytes_t const &other) const;
+  num_bytes_t operator*(nonnegative_int) const;
+
+  friend num_bytes_t operator*(nonnegative_int, num_bytes_t);
 
   nonnegative_int unwrap_num_bytes() const;
 

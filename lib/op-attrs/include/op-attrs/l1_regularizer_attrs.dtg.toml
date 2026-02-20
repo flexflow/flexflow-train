@@ -1,0 +1,15 @@
+namespace = "FlexFlow"
+name = "L1RegularizerAttrs"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+[[fields]]
+name = "lambda"
+type = "float"

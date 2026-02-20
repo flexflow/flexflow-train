@@ -28,6 +28,12 @@ std::optional<MachineMappingProblemTree>
     mm_problem_tree_get_subtree_at_path(MachineMappingProblemTree const &,
                                         BinaryTreePath const &);
 
+std::unordered_map<BinaryTreePath, UnmappedRuntimeOnlyOpCostEstimateKey>
+    mm_problem_tree_get_path_to_leaf_map(MachineMappingProblemTree const &);
+
+std::string as_dot(MachineMappingProblemTree const &);
+void debug_print_dot(MachineMappingProblemTree const &);
+
 } // namespace FlexFlow
 
 #endif

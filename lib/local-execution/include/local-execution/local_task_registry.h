@@ -1,23 +1,34 @@
-#ifndef _FLEXFLOW_LOCAL_EXECUTION_TASK_REGISTRY_H
-#define _FLEXFLOW_LOCAL_EXECUTION_TASK_REGISTRY_H
+#ifndef _FLEXFLOW_LIB_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_LOCAL_TASK_REGISTRY_H
+#define _FLEXFLOW_LIB_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_LOCAL_TASK_REGISTRY_H
 
-#include "local-execution/local_task_registry.dtg.h"
-#include "local-execution/registered_task_t.dtg.h"
-#include "pcg/layer_attrs.dtg.h"
-#include "task-spec/op_task_type.dtg.h"
+#include "op-attrs/computation_graph_op_attrs.dtg.h"
+#include "pcg/optimizer_attrs.dtg.h"
+#include "task-spec/device_specific_per_device_op_state.dtg.h"
+#include "task-spec/task_impl_function.dtg.h"
 #include "utils/units/milliseconds_t.h"
+#include <optional>
 
 namespace FlexFlow {
 
-LocalTaskRegistry construct_local_task_registry_for_layers(
-    std::unordered_map<layer_guid_t, LayerAttrs> const &);
+std::optional<TaskImplFunction>
+    get_init_task_impl_for_op_attrs(ComputationGraphOpAttrs const &);
+std::optional<TaskImplFunction>
+    get_fwd_task_impl_for_op_attrs(ComputationGraphOpAttrs const &);
+std::optional<TaskImplFunction>
+    get_bwd_task_impl_for_op_attrs(ComputationGraphOpAttrs const &);
 
-std::optional<registered_task_t> try_get_registered_task(
-    LocalTaskRegistry const &, layer_guid_t const &, OpTaskType const &);
-
-std::optional<milliseconds_t> call_task_impl(LocalTaskRegistry const &,
-                                             task_id_t const &task_id,
-                                             TaskArgumentAccessor const &acc);
+std::optional<DeviceSpecificPerDeviceOpState>
+    call_init_task_impl(ComputationGraphOpAttrs const &,
+                        TaskArgumentAccessor const &);
+std::optional<milliseconds_t>
+    call_fwd_task_impl(ComputationGraphOpAttrs const &,
+                       TaskArgumentAccessor const &);
+std::optional<milliseconds_t>
+    call_bwd_task_impl(ComputationGraphOpAttrs const &,
+                       TaskArgumentAccessor const &);
+void call_update_task_impl(OptimizerAttrs const &,
+                           TaskArgumentAccessor const &);
+void call_loss_task_impl(TaskArgumentAccessor const &);
 
 } // namespace FlexFlow
 

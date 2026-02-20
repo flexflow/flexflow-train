@@ -1,0 +1,20 @@
+namespace = "FlexFlow"
+name = "DropoutAttrs"
+type = "struct"
+
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+[[fields]]
+name = "rate"
+type = "float"
+
+[[fields]]
+name = "seed"
+type = "unsigned long long"

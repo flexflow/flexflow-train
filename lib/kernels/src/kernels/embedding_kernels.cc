@@ -11,8 +11,8 @@ void forward_kernel(device_stream_t const &stream,
                     DataType input_data_type,
                     DataType output_data_type,
                     std::optional<AggregateOp> aggr,
-                    int in_dim,
-                    int out_dim,
+                    num_tensor_dims_t in_dim,
+                    num_tensor_dims_t out_dim,
                     int batch_size) {
   if (stream.is_gpu()) {
     gpu_forward_kernel(
@@ -23,8 +23,8 @@ void forward_kernel(device_stream_t const &stream,
         /*input_data_type=*/input_data_type,
         /*output_data_type=*/output_data_type,
         /*aggr=*/aggr,
-        /*in_dim=*/in_dim,
-        /*out_dim=*/out_dim,
+        /*in_dim=*/in_dim.int_from_num_tensor_dims(),
+        /*out_dim=*/out_dim.int_from_num_tensor_dims(),
         /*batch_size=*/batch_size);
   } else {
     ASSERT(stream.is_cpu());
@@ -48,8 +48,8 @@ void backward_kernel(device_stream_t const &stream,
                      DataType output_data_type,
                      DataType input_data_type,
                      std::optional<AggregateOp> aggr,
-                     int in_dim,
-                     int out_dim,
+                     num_tensor_dims_t in_dim,
+                     num_tensor_dims_t out_dim,
                      int batch_size) {
   if (stream.is_gpu()) {
     gpu_backward_kernel(
@@ -60,8 +60,8 @@ void backward_kernel(device_stream_t const &stream,
         /*output_data_type=*/output_data_type,
         /*input_data_type=*/input_data_type,
         /*aggr=*/aggr,
-        /*in_dim=*/in_dim,
-        /*out_dim=*/out_dim,
+        /*in_dim=*/in_dim.int_from_num_tensor_dims(),
+        /*out_dim=*/out_dim.int_from_num_tensor_dims(),
         /*batch_size=*/batch_size);
   } else {
     ASSERT(stream.is_cpu());

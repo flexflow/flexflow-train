@@ -130,7 +130,7 @@ tl::expected<ParallelTensorShape, std::string>
       unpar, sum_degree, discard_copy_degree, shard_degrees);
 }
 
-std::vector<InitializerAttrs> get_initializers(
+std::unordered_map<TensorSlotName, InitializerAttrs> get_initializers(
     EmbeddingAttrs const &,
     std::optional<InitializerAttrs> const &maybe_initializer_attrs) {
   InitializerAttrs default_initializer_attrs = InitializerAttrs{
@@ -141,7 +141,12 @@ std::vector<InitializerAttrs> get_initializers(
       },
   };
 
-  return {maybe_initializer_attrs.value_or(default_initializer_attrs)};
+  return {
+      {
+          TensorSlotName::WEIGHT,
+          maybe_initializer_attrs.value_or(default_initializer_attrs),
+      },
+  };
 }
 
 } // namespace FlexFlow

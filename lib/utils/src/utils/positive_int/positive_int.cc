@@ -177,6 +177,10 @@ positive_int &positive_int::operator+=(nonnegative_int other) {
   return *this;
 }
 
+positive_int operator+(nonnegative_int lhs, positive_int rhs) {
+  return rhs + lhs;
+}
+
 positive_int positive_int::operator*(positive_int other) const {
   return positive_int{this->value_ * other.value_};
 }

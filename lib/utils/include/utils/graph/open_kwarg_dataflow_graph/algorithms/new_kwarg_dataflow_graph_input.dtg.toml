@@ -1,0 +1,21 @@
+namespace = "FlexFlow"
+name = "NewKwargDataflowGraphInput"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+template_params = [
+  "GraphInputName",
+]
+
+includes = [
+  "utils/graph/open_kwarg_dataflow_graph/kwarg_dataflow_graph_input.dtg.h",
+]
+
+[[fields]]
+name = "raw_input"
+type = "::FlexFlow::KwargDataflowGraphInput<GraphInputName>"

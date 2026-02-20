@@ -356,6 +356,13 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
   }
 
+  TEST_CASE("_n suffix") {
+    nonnegative_int result = 5_n;
+    nonnegative_int correct = nonnegative_int{5};
+
+    CHECK(result == correct);
+  }
+
   TEST_CASE("nonnegative int >> operator") {
     nonnegative_int nn_int_1 = nonnegative_int{1};
     std::ostringstream oss;

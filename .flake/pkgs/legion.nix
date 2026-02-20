@@ -2,7 +2,6 @@
 , stdenv
 , fetchFromGitLab
 , cmake
-, python3
 , cudaPackages ? { }
 , cudaCapabilities ? [ "60" "70" "80" "86" ]
 , maxDim ? 5
@@ -17,15 +16,14 @@ let
 in
 
 stdenv.mkDerivation rec {
-  pname = "legion_flexflow";
-  version = "2024-03-13";
+  pname = "legion";
+  version = "2025-01-06";
 
   src = fetchFromGitLab {
     owner = "StanfordLegion";
     repo = "legion";
-    rev = "24e8c452341dea41427e0ce61e154d61715e6835";
-    sha256 = "sha256-NjCSjphOIew/V24i74I6DModSGcWKLeiSIjts3cFtx4=";
-    fetchSubmodules = true;
+    rev = "7be1abd0207eb1126c7629b16d1123fa6f58ce9d";
+    sha256 = "sha256-gTjnGYYTQwTsrV1WcY0qqpTrlwbzAPcndurRy6XnG8A=";
   };
 
   nativeBuildInputs = [
@@ -33,21 +31,18 @@ stdenv.mkDerivation rec {
   ];
 
   cmakeFlags = [
-    "-DLegion_USE_Python=1"
-    "-DLegion_BUILD_BINDINGS=1"
     "-DLegion_USE_CUDA=1"
     "-DLegion_CUDA_ARCH=${lib.concatStringsSep "," cudaCapabilities}"
     "-DLegion_MAX_DIM=${toString maxDim}"
   ];
 
   buildInputs = [ 
-    python3
     cudatoolkit
   ];
 
   meta = with lib; {
     description = "Legion is a parallel programming model for distributed, heterogeneous machines";
-    homepage = "https://github.com/StanfordLegion/legion";
+    homepage = "https://legion.stanford.edu/";
     license = licenses.asl20;
   };
 }

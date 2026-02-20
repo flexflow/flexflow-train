@@ -16,10 +16,10 @@ namespace FlexFlow {
 struct ParallelTensorSlotSpec {
 public:
   ParallelTensorSlotSpec() = delete;
-  ParallelTensorSlotSpec(SlotType, Permissions perm);
+  ParallelTensorSlotSpec(TensorSlotArity, Permissions perm);
 
 public:
-  SlotType slot_type;
+  TensorSlotArity slot_type;
   Permissions perm;
 };
 

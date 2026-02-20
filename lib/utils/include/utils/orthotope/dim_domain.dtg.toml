@@ -1,0 +1,28 @@
+namespace = "FlexFlow"
+name = "DimDomain"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "fmt",
+  "hash",
+  "json",
+]
+
+template_params = [
+  "T",
+]
+
+includes = [
+  "<unordered_map>",
+  "utils/positive_int/positive_int.h",
+]
+
+src_includes = [
+  "utils/fmt/unordered_map.h",
+  "utils/hash/unordered_map.h",
+]
+
+[[fields]]
+name = "dims"
+type = "std::unordered_map<T, ::FlexFlow::positive_int>"

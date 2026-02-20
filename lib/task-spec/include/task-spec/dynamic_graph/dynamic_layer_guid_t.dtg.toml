@@ -1,0 +1,26 @@
+namespace = "FlexFlow"
+name = "dynamic_layer_guid_t"
+type = "variant"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "pcg/layer_guid_t.dtg.h",
+  "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h",
+  "task-spec/dynamic_graph/dynamic_loss_layer_guid_t.dtg.h",
+]
+
+[[values]]
+type = "::FlexFlow::layer_guid_t"
+key = "layer_guid"
+
+[[values]]
+type = "::FlexFlow::parallel_layer_guid_t"
+key = "pcg_layer_guid"
+
+[[values]]
+type = "::FlexFlow::dynamic_loss_layer_guid_t"
+key = "loss_layer_guid"

@@ -66,6 +66,8 @@ private:
              decltype(ptr) const &,
              decltype(device_type) const &>
       tie() const;
+
+  friend ::std::hash<GenericTensorAccessorR>;
 };
 
 std::string format_as(GenericTensorAccessorR const &);
@@ -133,6 +135,8 @@ private:
              decltype(ptr) const &,
              decltype(device_type) const &>
       tie() const;
+
+  friend ::std::hash<GenericTensorAccessorW>;
 };
 
 std::string format_as(GenericTensorAccessorW const &);
@@ -222,12 +226,18 @@ real_type_t<DT> accessor_get_only_value(GenericTensorAccessorR const &acc) {
 
 } // namespace FlexFlow
 
-namespace FlexFlow {
-static_assert(is_well_behaved_value_type_no_hash<GenericTensorAccessorR>::value,
-              "");
-static_assert(is_well_behaved_value_type_no_hash<GenericTensorAccessorW>::value,
-              "");
+namespace std {
 
-} // namespace FlexFlow
+template <>
+struct hash<::FlexFlow::GenericTensorAccessorR> {
+  size_t operator()(::FlexFlow::GenericTensorAccessorR const &) const;
+};
+
+template <>
+struct hash<::FlexFlow::GenericTensorAccessorW> {
+  size_t operator()(::FlexFlow::GenericTensorAccessorW const &) const;
+};
+
+} // namespace std
 
 #endif

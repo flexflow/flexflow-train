@@ -1,7 +1,11 @@
 #include "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.h"
+#include "compiler/series_parallel/pcg/get_pcg_series_parallel_decomposition.h"
+#include "compiler/series_parallel/pcg/pcg_binary_parallel_split.h"
 #include "compiler/series_parallel/pcg/pcg_binary_series_split.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/find_paths_to_leaf.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/get_leaves.h"
+#include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/get_path_to_leaf_map.h"
+#include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {
@@ -67,10 +71,7 @@ BinarySPDecompositionTree
       },
       [](PCGBinaryParallelSplit const &parallel) -> BinarySPDecompositionTree {
         return BinarySPDecompositionTree{
-            BinaryParallelSplit{
-                binary_sp_tree_from_pcg_sp_tree(parallel.get_left_child()),
-                binary_sp_tree_from_pcg_sp_tree(parallel.get_right_child()),
-            },
+            binary_parallel_split_from_pcg_parallel_split(parallel),
         };
       },
       [](parallel_layer_guid_t const &layer) -> BinarySPDecompositionTree {
@@ -81,9 +82,52 @@ BinarySPDecompositionTree
   });
 }
 
-std::optional<PCGBinarySPDecomposition>
-    get_pcg_balanced_binary_sp_decomposition(ParallelComputationGraph const &) {
-  NOT_IMPLEMENTED();
+PCGBinarySeriesSplit pcg_binary_series_split_from_binary_series_split(
+    BinarySeriesSplit const &split) {
+  return PCGBinarySeriesSplit{
+      pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
+          split.get_left_child()),
+      pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
+          split.get_right_child()),
+  };
+}
+
+PCGBinaryParallelSplit pcg_binary_parallel_split_from_binary_parallel_split(
+    BinaryParallelSplit const &split) {
+  return PCGBinaryParallelSplit{
+      pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
+          split.get_left_child()),
+      pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
+          split.get_right_child()),
+  };
+}
+
+PCGBinarySPDecomposition
+    pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
+        BinarySPDecompositionTree const &sp_tree) {
+
+  return sp_tree.visit<PCGBinarySPDecomposition>(overload{
+      [](BinarySeriesSplit const &series) -> PCGBinarySPDecomposition {
+        return PCGBinarySPDecomposition{
+            pcg_binary_series_split_from_binary_series_split(series),
+        };
+      },
+      [](BinaryParallelSplit const &parallel) -> PCGBinarySPDecomposition {
+        return PCGBinarySPDecomposition{
+            PCGBinaryParallelSplit{
+                pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
+                    parallel.get_left_child()),
+                pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
+                    parallel.get_right_child()),
+            },
+        };
+      },
+      [](Node const &node) -> PCGBinarySPDecomposition {
+        return PCGBinarySPDecomposition{
+            parallel_layer_guid_t{node},
+        };
+      },
+  });
 }
 
 std::unordered_multiset<parallel_layer_guid_t>
@@ -107,9 +151,19 @@ SPDecompositionTreeNodeType
 }
 
 std::unordered_set<BinaryTreePath>
+    pcg_sp_tree_get_all_leaf_paths(PCGBinarySPDecomposition const &tree) {
+  return keys(pcg_sp_tree_get_path_to_leaf_map(tree));
+}
+
+std::unordered_set<BinaryTreePath>
     find_paths_to_leaf(PCGBinarySPDecomposition const &tree,
                        parallel_layer_guid_t const &leaf) {
   return find_paths_to_leaf(tree, generic_impl_for_pcg_sp_tree(), leaf);
+}
+
+std::unordered_map<BinaryTreePath, parallel_layer_guid_t>
+    pcg_sp_tree_get_path_to_leaf_map(PCGBinarySPDecomposition const &tree) {
+  return get_path_to_leaf_map(tree, generic_impl_for_pcg_sp_tree());
 }
 
 } // namespace FlexFlow

@@ -1,0 +1,37 @@
+namespace = "FlexFlow"
+name = "Conv2DInputShape"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+  "rapidcheck",
+  "json",
+]
+
+includes = [
+  "<cstddef>",
+  "op-attrs/datatype.dtg.h",
+  "utils/positive_int/positive_int.h",
+]
+
+[[fields]]
+name = "num_samples"
+type = "::FlexFlow::positive_int"
+
+[[fields]]
+name = "num_channels"
+type = "::FlexFlow::positive_int"
+
+[[fields]]
+name = "height"
+type = "::FlexFlow::positive_int"
+
+[[fields]]
+name = "width"
+type = "::FlexFlow::positive_int"
+
+[[fields]]
+name = "datatype"
+type = "::FlexFlow::DataType"

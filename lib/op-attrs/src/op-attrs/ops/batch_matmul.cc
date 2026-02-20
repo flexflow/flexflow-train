@@ -1,6 +1,7 @@
 #include "op-attrs/ops/batch_matmul.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/tensor_dims.h"
+#include "utils/exception.h"
 
 namespace FlexFlow {
 
@@ -35,10 +36,12 @@ tl::expected<TensorShape, std::string>
     get_output_shape(BatchMatmulAttrs const &attrs,
                      TensorShape const &input_lhs,
                      TensorShape const &input_rhs) {
-  // If input_lhs is a (b×n×m) tensor,
-  // input_rhs is a (b×m×p) tensor,
-  // out will be a (b×n×p) tensor.
-  // https://pytorch.org/docs/stable/generated/torch.bmm.html
+  /**
+   * If input_lhs is a (b×n×m) tensor,
+   * input_rhs is a (b×m×p) tensor,
+   * out will be a (b×n×p) tensor.
+   * https://pytorch.org/docs/stable/generated/torch.bmm.html
+   */
 
   if (get_num_dims(input_lhs.dims) != 3) {
     return tl::unexpected(
@@ -91,13 +94,13 @@ tl::expected<ParallelTensorShape, std::string>
     get_output_shape(BatchMatmulAttrs const &attrs,
                      ParallelTensorShape const &input_lhs,
                      ParallelTensorShape const &input_rhs) {
-  if (num_shard_dims(input_lhs) != 3) {
+  if (num_shard_dims(input_lhs).value != 3) {
     return tl::unexpected(
         fmt::format("LHS input has incorrect number of shard dims: {} != {}",
                     num_shard_dims(input_lhs),
                     3));
   }
-  if (num_shard_dims(input_rhs) != 3) {
+  if (num_shard_dims(input_rhs).value != 3) {
     return tl::unexpected(
         fmt::format("RHS input has incorrect number of shard dims: {} != {}",
                     num_shard_dims(input_rhs),

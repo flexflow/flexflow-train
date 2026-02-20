@@ -8,8 +8,8 @@ namespace FlexFlow {
 
 PatternNode get_src_node(StandardPatternEdge const &);
 PatternNode get_dst_node(StandardPatternEdge const &);
-nonnegative_int get_src_idx(StandardPatternEdge const &);
-nonnegative_int get_dst_idx(StandardPatternEdge const &);
+TensorSlotName get_src_slot_name(StandardPatternEdge const &);
+TensorSlotName get_dst_slot_name(StandardPatternEdge const &);
 
 } // namespace FlexFlow
 

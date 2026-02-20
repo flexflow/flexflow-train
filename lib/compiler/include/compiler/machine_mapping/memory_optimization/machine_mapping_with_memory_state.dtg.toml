@@ -1,0 +1,31 @@
+namespace = "FlexFlow"
+name = "MachineMappingWithMemoryState"
+type = "struct"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "pcg/machine_specification.dtg.h",
+  "compiler/machine_mapping/machine_mapping_constraints.dtg.h",
+  "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.dtg.h",
+  "pcg/optimizer_attrs.dtg.h",
+]
+
+[[fields]]
+name = "problem_tree"
+type = "::FlexFlow::MachineMappingProblemTree"
+
+[[fields]]
+name = "resources"
+type = "::FlexFlow::MachineSpecification"
+
+[[fields]]
+name = "constraints"
+type = "::FlexFlow::MachineMappingConstraints"
+
+[[fields]]
+name = "optimizer_attrs"
+type = "::FlexFlow::OptimizerAttrs"

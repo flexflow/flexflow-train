@@ -8,7 +8,7 @@
 #include "utils/containers/set_of.h"
 #include "utils/containers/sorted.h"
 #include "utils/exception.h"
-#include "utils/graph/digraph/algorithms.h"
+#include "utils/graph/digraph/algorithms/get_initial_nodes.h"
 #include "utils/graph/digraph/algorithms/get_predecessors.h"
 #include "utils/graph/digraph/algorithms/get_successors.h"
 #include "utils/graph/digraph/algorithms/is_acyclic.h"

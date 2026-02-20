@@ -6,6 +6,7 @@
 #include "op-attrs/tensor_shape.h"
 #include "utils/containers/reversed.h"
 #include "utils/containers/vector_of.h"
+#include "utils/hash/tuple.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include <libassert/assert.hpp>
 
@@ -19,7 +20,7 @@ nonnegative_int calculate_accessor_offset(TensorDimsCoord const &coord,
   nonnegative_int offset = 0_n;
   positive_int multiplier = 1_p;
 
-  for (ff_dim_t dim : reversed(get_idxs(tensor_dims.ff_ordered))) {
+  for (ff_dim_t dim : reversed(vector_of(get_idxs(tensor_dims.ff_ordered)))) {
     ASSERT(coord.ff_ordered.at(dim) < dim_at_idx(tensor_dims, dim),
            "Out of bounds access",
            dim);
@@ -293,3 +294,19 @@ template int32_t
     accessor_get_only_value<DataType::INT32>(GenericTensorAccessorR const &);
 
 } // namespace FlexFlow
+
+namespace std {
+
+using namespace ::FlexFlow;
+
+size_t hash<GenericTensorAccessorR>::operator()(
+    GenericTensorAccessorR const &a) const {
+  return get_std_hash(a.tie());
+}
+
+size_t hash<GenericTensorAccessorW>::operator()(
+    GenericTensorAccessorW const &a) const {
+  return get_std_hash(a.tie());
+}
+
+} // namespace std

@@ -1,6 +1,6 @@
 #include "op-attrs/ops/conv_2d.h"
-#include "doctest/doctest.h"
 #include "utils/integer_conversions.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
@@ -22,12 +22,21 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("with bias") {
       Conv2DAttrs attrs = make_attrs(/*use_bias=*/true);
 
-      std::vector<IncomingTensorRole> result =
+      std::unordered_map<TensorSlotName, IncomingTensorRole> result =
           get_conv2d_incoming_tensor_roles(attrs);
-      std::vector<IncomingTensorRole> correct = {
-          IncomingTensorRole::INPUT,
-          IncomingTensorRole::WEIGHT,
-          IncomingTensorRole::WEIGHT,
+      std::unordered_map<TensorSlotName, IncomingTensorRole> correct = {
+          {
+              TensorSlotName::INPUT,
+              IncomingTensorRole::INPUT,
+          },
+          {
+              TensorSlotName::FILTER,
+              IncomingTensorRole::WEIGHT,
+          },
+          {
+              TensorSlotName::BIAS,
+              IncomingTensorRole::WEIGHT,
+          },
       };
 
       CHECK(result == correct);
@@ -36,11 +45,17 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("without bias") {
       Conv2DAttrs attrs = make_attrs(/*use_bias=*/false);
 
-      std::vector<IncomingTensorRole> result =
+      std::unordered_map<TensorSlotName, IncomingTensorRole> result =
           get_conv2d_incoming_tensor_roles(attrs);
-      std::vector<IncomingTensorRole> correct = {
-          IncomingTensorRole::INPUT,
-          IncomingTensorRole::WEIGHT,
+      std::unordered_map<TensorSlotName, IncomingTensorRole> correct = {
+          {
+              TensorSlotName::INPUT,
+              IncomingTensorRole::INPUT,
+          },
+          {
+              TensorSlotName::FILTER,
+              IncomingTensorRole::WEIGHT,
+          },
       };
 
       CHECK(result == correct);

@@ -1,0 +1,15 @@
+namespace = "FlexFlow"
+name = "ComputationGraph"
+type = "struct"
+features = [ ]
+
+includes = [
+  "pcg/layer_attrs.dtg.h",
+  "pcg/tensor_attrs.dtg.h",
+  "utils/graph/labelled_kwarg_dataflow_graph/labelled_kwarg_dataflow_graph.h",
+  "op-attrs/tensor_slot_name.dtg.h",
+]
+
+[[fields]]
+name = "raw_graph"
+type = "::FlexFlow::LabelledKwargDataflowGraph<::FlexFlow::LayerAttrs, ::FlexFlow::TensorAttrs, ::FlexFlow::TensorSlotName>"

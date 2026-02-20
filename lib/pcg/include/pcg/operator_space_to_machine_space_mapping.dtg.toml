@@ -1,0 +1,23 @@
+namespace = "FlexFlow"
+name = "OperatorSpaceToMachineSpaceMapping"
+type = "struct"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "op-attrs/operator_task_space.dtg.h",
+  "op-attrs/task_space_coordinate.dtg.h",
+  "pcg/machine_space_coordinate.dtg.h",
+  "utils/bidict/bidict.h",
+]
+
+[[fields]]
+name = "raw_mapping"
+type = "::FlexFlow::bidict<::FlexFlow::TaskSpaceCoordinate, ::FlexFlow::MachineSpaceCoordinate>"
+
+[[fields]]
+name = "operator_task_space"
+type = "::FlexFlow::OperatorTaskSpace"

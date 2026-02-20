@@ -5,13 +5,15 @@
 #include "utils/containers/product.h"
 #include "utils/containers/range.h"
 #include "utils/containers/transform.h"
+#include "utils/exception.h"
 #include "utils/hash-utils.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include "utils/overload.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
-nonnegative_int num_shard_dims(ParallelTensorShape const &s) {
+num_ptensor_shard_dims_t num_shard_dims(ParallelTensorShape const &s) {
   return num_shard_dims(s.dims);
 }
 
@@ -97,23 +99,20 @@ ParallelTensorShape
 
 TensorShape require_not_parallel(ParallelTensorShape const &s) {
   positive_int total_degree = get_total_parallel_degree(s);
-  if (total_degree != 1_p) {
-    throw mk_runtime_error(
-        fmt::format("Error: require_not_parallel received a parallel tensor "
-                    "shape with parallel degree {}: {}",
-                    total_degree,
-                    s));
-  }
+  ASSERT(total_degree != 1_p,
+         "Error: require_not_parallel received a parallel tensor shape with "
+         "non-zero parallel degree",
+         s);
 
   return get_reduced_shape(s);
-}
-
-TensorShape get_tensor_shape_unsafe(ParallelTensorShape const &) {
-  NOT_IMPLEMENTED();
 }
 
 TensorShape get_piece_shape(ParallelTensorShape const &s) {
   return get_reduced_shape(s);
+}
+
+num_bytes_t get_piece_size_in_bytes(ParallelTensorShape const &s) {
+  return get_size_in_bytes(get_piece_shape(s));
 }
 
 TensorShape get_reduced_shape(ParallelTensorShape const &s) {
@@ -142,7 +141,7 @@ std::unordered_set<parallel_tensor_dim_idx_t>
     get_parallel_tensor_dim_indices(ParallelTensorShape const &shape) {
   std::unordered_set<parallel_tensor_dim_idx_t> indices;
   extend(indices,
-         transform(nonnegative_range(num_shard_dims(shape.dims)),
+         transform(nonnegative_range(num_shard_dims(shape.dims).value),
                    [](nonnegative_int idx) {
                      return parallel_tensor_dim_idx_t{ff_dim_t{idx}};
                    }));

@@ -13,11 +13,13 @@ void parallel_extend_unsafe(DataflowGraph &g, DataflowGraphView const &ext) {
 }
 
 void series_extend_unsafe(DataflowGraph &g, DataflowGraphView const &ext) {
-  // TODO(@lockshaw): This function signature is impossible to implement in
-  // general, as there is no guarantee that the graph view ext actually has
-  // source nodes with inputs Either the signature should be changed, or an
-  // implementation should be added that throws an error if this problematic
-  // case is found
+  /**
+   * TODO(@lockshaw): This function signature is impossible to implement in
+   * general, as there is no guarantee that the graph view ext actually has
+   * source nodes with inputs Either the signature should be changed, or an
+   * implementation should be added that throws an error if this problematic
+   * case is found
+   */
 
   NOT_IMPLEMENTED();
 }

@@ -7,11 +7,11 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph_edge.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_tensor_guid_t.dtg.h"
-#include "utils/graph/dataflow_graph/algorithms/transitive_reduced_dataflow_graph/transitive_reduced_dataflow_graph.dtg.h"
+#include "utils/graph/kwarg_dataflow_graph/algorithms/transitive_reduced_kwarg_dataflow_graph/transitive_reduced_kwarg_dataflow_graph_view.dtg.h"
 
 namespace FlexFlow {
 
-TransitiveReducedDataflowGraphView
+TransitiveReducedKwargDataflowGraphView<TensorSlotName>
     get_underlying_transitive_reduced_dataflow_graph(
         TransitiveReducedPCG const &);
 

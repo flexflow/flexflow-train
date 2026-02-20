@@ -2,29 +2,21 @@
 
 namespace FlexFlow::Kernels::BatchMatmul {
 
-void cpu_forward_kernel(float *output_ptr,
-                        float const *a_input_ptr,
-                        float const *b_input_ptr,
-                        int m,
-                        int n,
-                        int k,
-                        int batch,
-                        int seq_length,
-                        int a_seq_length_dim,
-                        int b_seq_length_dim) {
+void cpu_forward_kernel(GenericTensorAccessorW const &output,
+                        GenericTensorAccessorR const &input_a,
+                        GenericTensorAccessorR const &input_b,
+                        positive_int seq_length,
+                        std::optional<positive_int> a_seq_length_dim,
+                        std::optional<positive_int> b_seq_length_dim) {
   NOT_IMPLEMENTED();
 }
 
-void cpu_backward_kernel(float const *o_ptr,
-                         float const *o_grad_ptr,
-                         float const *a_ptr,
-                         float *a_grad_ptr,
-                         float const *b_ptr,
-                         float *b_grad_ptr,
-                         int m,
-                         int n,
-                         int k,
-                         int batch) {
+void cpu_backward_kernel(GenericTensorAccessorR const &output,
+                         GenericTensorAccessorR const &output_grad,
+                         GenericTensorAccessorR const &input_a,
+                         GenericTensorAccessorW const &input_a_grad,
+                         GenericTensorAccessorR const &input_b,
+                         GenericTensorAccessorW const &input_b_grad) {
   NOT_IMPLEMENTED();
 }
 

@@ -1,0 +1,29 @@
+namespace = "FlexFlow"
+name = "MachineSpaceSubgrid"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+]
+
+includes = [
+  "compiler/machine_mapping/machine_space_dim_subgrid.dtg.h",
+  "<vector>",
+]
+
+src_includes = [
+  "utils/hash/vector.h",
+  "utils/fmt/vector.h",
+  "utils/ord/vector.h",
+]
+
+[[fields]]
+name = "inter_node_strides"
+type = "std::vector<::FlexFlow::MachineSpaceDimSubgrid>"
+
+[[fields]]
+name = "intra_node_strides"
+type = "std::vector<::FlexFlow::MachineSpaceDimSubgrid>"

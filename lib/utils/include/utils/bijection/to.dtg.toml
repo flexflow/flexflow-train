@@ -1,0 +1,14 @@
+namespace = "FlexFlow"
+name = "To"
+type = "struct"
+features = []
+
+template_params = [ "L", "R" ]
+
+includes = [
+  "<functional>"
+]
+
+[[fields]]
+name = "func"
+type = "std::function<R(L const &)>"

@@ -1,5 +1,5 @@
 #include "utils/graph/digraph/algorithms/materialize_digraph_view.h"
-#include "utils/graph/digraph/algorithms.h"
+#include "utils/graph/digraph/algorithms/get_edges.h"
 #include "utils/graph/node/algorithms.h"
 
 namespace FlexFlow {

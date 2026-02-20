@@ -1,0 +1,17 @@
+namespace = "FlexFlow"
+name = "dynamic_parameter_guid_t"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+]
+
+includes = [
+  "utils/graph/open_dataflow_graph/dataflow_graph_input.dtg.h",
+]
+
+[[fields]]
+name = "raw_value"
+type = "::FlexFlow::DataflowGraphInput"
+

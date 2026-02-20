@@ -8,7 +8,7 @@ TensorAttributePattern tensor_attribute_pattern_match_all() {
 }
 
 TensorAttributePattern
-    tensor_attr_pattern_require_num_dims(nonnegative_int num_dims) {
+    tensor_attr_pattern_require_num_dims(positive_int num_dims) {
   return TensorAttributePattern{{
       TensorAttributeConstraint{
           ConstraintType::EQUAL,

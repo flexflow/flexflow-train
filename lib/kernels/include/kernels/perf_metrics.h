@@ -1,36 +1,10 @@
 #ifndef _FLEXFLOW_KERNELS_INCLUDE_KERNELS_PERF_METRICS_H
 #define _FLEXFLOW_KERNELS_INCLUDE_KERNELS_PERF_METRICS_H
 
-#include "utils/fmt.h"
-#include "utils/visitable.h"
+#include "kernels/perf_metrics.dtg.h"
+#include <fmt/format.h>
 
 namespace FlexFlow {
-
-struct PerfMetrics : public use_visitable_cmp<PerfMetrics> {
-  PerfMetrics() = delete;
-  PerfMetrics(double start_time);
-  PerfMetrics(int train_all,
-              std::optional<int> train_correct,
-              std::optional<float> cce_loss,
-              std::optional<float> sparse_cce_loss,
-              std::optional<float> mse_loss,
-              std::optional<float> rmse_loss,
-              std::optional<float> mae_loss,
-              double start_time_micro,
-              double current_time_micro);
-
-  int train_all = 0;                    // measure_accuracy_denominator
-  std::optional<int> train_correct = 0; // measure_accuracy numerator
-  std::optional<float> cce_loss =
-      std::nullopt; // measure_categorical_crossentropy
-  std::optional<float> sparse_cce_loss =
-      0.0f; // measure_sparse_categorical_crossentropy
-  std::optional<float> mse_loss = 0.0f;  // measure_mean_squared_error
-  std::optional<float> rmse_loss = 0.0f; // measure_root_mean_squared_error
-  std::optional<float> mae_loss = 0.0f;  // measure_mean_absolute_error
-  double start_time;
-  double current_time;
-};
 
 float get_throughput(PerfMetrics const &);
 float get_accuracy(PerfMetrics const &);
@@ -39,16 +13,6 @@ PerfMetrics update(PerfMetrics const &, PerfMetrics const &);
 PerfMetrics apply_scale(PerfMetrics const &, float scale);
 
 } // namespace FlexFlow
-
-VISITABLE_STRUCT(::FlexFlow::PerfMetrics,
-                 train_all,
-                 train_correct,
-                 cce_loss,
-                 sparse_cce_loss,
-                 mse_loss,
-                 rmse_loss,
-                 mae_loss,
-                 start_time);
 
 namespace fmt {
 

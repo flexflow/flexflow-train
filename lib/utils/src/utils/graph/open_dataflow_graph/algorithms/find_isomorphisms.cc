@@ -9,7 +9,7 @@
 #include "utils/containers/values.h"
 #include "utils/containers/vector_of.h"
 #include "utils/containers/zip.h"
-#include "utils/graph/digraph/algorithms.h"
+#include "utils/graph/digraph/algorithms/get_terminal_nodes.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/node/algorithms/new_node.dtg.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_incoming_edge.h"

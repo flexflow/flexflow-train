@@ -1,0 +1,21 @@
+namespace = "FlexFlow"
+name = "TrainingParallelTensorShardGroup"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+  "rapidcheck",
+]
+
+includes = [
+  "<unordered_map>",
+  "op-attrs/parallel_tensor_space_coordinate.dtg.h",
+  "local-execution/atomic_training_tensor_guid_t.dtg.h",
+]
+
+[[fields]]
+name = "shard_map"
+type = "std::unordered_map<::FlexFlow::ParallelTensorSpaceCoordinate, ::FlexFlow::atomic_training_tensor_guid_t>"

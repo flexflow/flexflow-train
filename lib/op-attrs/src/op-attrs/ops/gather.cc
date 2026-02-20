@@ -1,4 +1,5 @@
 #include "op-attrs/ops/gather.h"
+#include "utils/exception.h"
 
 namespace FlexFlow {
 

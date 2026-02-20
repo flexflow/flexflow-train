@@ -50,5 +50,15 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::vector<int> correct = {};
       CHECK(result == correct);
     }
+
+    SUBCASE("step = 0") {
+      SUBCASE("output is nonempty") {
+        CHECK_THROWS(range(2, 5, 0));
+      }
+
+      SUBCASE("output is empty") {
+        CHECK_THROWS(range(3, 3, 0));
+      }
+    }
   }
 }

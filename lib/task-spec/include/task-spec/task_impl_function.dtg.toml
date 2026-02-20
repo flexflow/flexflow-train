@@ -1,0 +1,27 @@
+namespace = "FlexFlow"
+name = "TaskImplFunction"
+type = "variant"
+features = [
+  "eq",
+  "fmt",
+  "hash",
+  "ord"
+]
+
+includes = [
+  "task-spec/init_op_task_impl_function.h",
+  "task-spec/fwd_bwd_op_task_impl_function.h",
+  "task-spec/generic_task_impl_function.h",
+]
+
+[[values]]
+type = "::FlexFlow::InitOpTaskImplFunction"
+key = "init_op_task_impl_function"
+
+[[values]]
+type = "::FlexFlow::FwdBwdOpTaskImplFunction"
+key = "fwd_bwd_op_task_impl_function"
+
+[[values]]
+type = "::FlexFlow::GenericTaskImplFunction"
+key = "generic_task_impl_function"

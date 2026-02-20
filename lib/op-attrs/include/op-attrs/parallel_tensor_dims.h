@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_OP_ATTRS_INCLUDE_OP_ATTRS_PARALLEL_TENSOR_DIMS_H
 #define _FLEXFLOW_OP_ATTRS_INCLUDE_OP_ATTRS_PARALLEL_TENSOR_DIMS_H
 
+#include "op-attrs/num_ptensor_shard_dims_t.dtg.h"
 #include "op-attrs/parallel_dim.h"
 #include "op-attrs/parallel_tensor_dim_degrees.dtg.h"
 #include "op-attrs/parallel_tensor_dims.dtg.h"
@@ -13,7 +14,7 @@ FFOrdered<positive_int> ff_ordered_shard_degrees(ParallelTensorDims const &);
 std::unordered_set<ReplicaParallelDim> replica_dims(ParallelTensorDims const &);
 
 /* size_t get_volume(ParallelTensorDims const &); */
-nonnegative_int num_shard_dims(ParallelTensorDims const &);
+num_ptensor_shard_dims_t num_shard_dims(ParallelTensorDims const &);
 
 ParallelTensorDimDegrees get_parallel_degrees(ParallelTensorDims const &);
 

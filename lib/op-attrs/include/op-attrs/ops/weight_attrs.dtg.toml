@@ -1,0 +1,24 @@
+namespace = "FlexFlow"
+name = "WeightAttrs"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = [
+  "op-attrs/tensor_shape.dtg.h",
+  "op-attrs/initializer_attrs.dtg.h",
+]
+
+[[fields]]
+name = "tensor_shape"
+type = "::FlexFlow::TensorShape"
+
+[[fields]]
+name = "initializer"
+type = "::FlexFlow::InitializerAttrs"

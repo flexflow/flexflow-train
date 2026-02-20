@@ -1,0 +1,23 @@
+namespace = "FlexFlow"
+name = "TopKAttrs"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = [
+  "utils/positive_int/positive_int.h",
+]
+
+[[fields]]
+name = "k"
+type = "::FlexFlow::positive_int"
+
+[[fields]]
+name = "sorted"
+type = "bool"

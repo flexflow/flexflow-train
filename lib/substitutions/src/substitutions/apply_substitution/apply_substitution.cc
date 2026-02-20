@@ -7,9 +7,10 @@
 #include "substitutions/pcg_pattern_match.h"
 #include "substitutions/sub_parallel_computation_graph.h"
 #include "substitutions/sub_parallel_computation_graph_data.dtg.h"
+#include "substitutions/sub_parallel_computation_graph_data.h"
 #include "substitutions/sub_parallel_computation_graph_edge.h"
+#include "utils/containers/binary_merge_disjoint_maps.h"
 #include "utils/containers/keys.h"
-#include "utils/containers/merge_maps.h"
 #include "utils/containers/restrict_keys.h"
 #include "utils/containers/set_minus.h"
 #include "utils/containers/values.h"
@@ -20,6 +21,7 @@ SubParallelComputationGraph
     apply_substitution(SubParallelComputationGraph const &spcg,
                        Substitution const &sub,
                        PCGPatternMatch const &match) {
+<<<<<<< HEAD
   std::pair<SubParallelComputationGraph, OutputExprToResultSubPCGMapping>
       substitution_output_result =
           evaluate_substitution_output(spcg, sub, match);
@@ -33,6 +35,13 @@ SubParallelComputationGraph apply_substitution_from_output_result(
     SubParallelComputationGraph const &spcg,
     Substitution const &sub,
     PCGPatternMatch const &match) {
+=======
+  assert_pcg_pattern_match_is_valid_for_pattern_and_subpcg(
+      match, sub.pcg_pattern, spcg);
+
+  auto substitution_output_result =
+      evaluate_substitution_output(spcg, sub, match);
+>>>>>>> origin/master
   SubParallelComputationGraph substitution_output_graph =
       substitution_output_result.first;
   OutputExprToResultSubPCGMapping output_expr_to_result_sub_pcg_mapping =
@@ -40,7 +49,10 @@ SubParallelComputationGraph apply_substitution_from_output_result(
 
   SubParallelComputationGraphData output_graph_data =
       get_sub_pcg_data(substitution_output_graph);
+  require_sub_parallel_computation_graph_data_is_valid(output_graph_data);
+
   SubParallelComputationGraphData pre_data = get_sub_pcg_data(spcg);
+  require_sub_parallel_computation_graph_data_is_valid(pre_data);
 
   std::unordered_set<parallel_layer_guid_t> pre_nodes =
       keys(pre_data.node_data);
@@ -57,17 +69,21 @@ SubParallelComputationGraph apply_substitution_from_output_result(
         std::unordered_map<parallel_layer_guid_t, ParallelLayerAttrs>
             post_node_data_from_sub = output_graph_data.node_data;
 
-        return merge_disjoint_maps(post_node_data_from_orig,
-                                   post_node_data_from_sub);
+        return binary_merge_disjoint_maps(post_node_data_from_orig,
+                                          post_node_data_from_sub);
       }();
+
+  std::unordered_set<input_parallel_tensor_guid_t> post_inputs =
+      pre_data.inputs;
 
   std::unordered_set<SubParallelComputationGraphEdge> post_edges = [&] {
     std::unordered_set<SubParallelComputationGraphEdge> post_edges_from_orig =
         filter(pre_data.edges, [&](SubParallelComputationGraphEdge const &e) {
-          if (e.raw_edge.has<DataflowInputEdge>()) {
+          if (e.raw_edge.is_input_edge()) {
             return true;
           } else {
-            DataflowEdge dfe = e.raw_edge.get<DataflowEdge>();
+            KwargDataflowEdge<TensorSlotName> dfe =
+                e.raw_edge.require_internal_edge();
             parallel_layer_guid_t src = parallel_layer_guid_t{dfe.src.node};
             parallel_layer_guid_t dst = parallel_layer_guid_t{dfe.dst.node};
             return !(contains(matched_nodes, src) ||
@@ -78,7 +94,7 @@ SubParallelComputationGraph apply_substitution_from_output_result(
     std::unordered_set<SubParallelComputationGraphEdge> post_edges_from_sub =
         filter(output_graph_data.edges,
                [&](SubParallelComputationGraphEdge const &e) {
-                 return !e.raw_edge.has<DataflowInputEdge>();
+                 return e.raw_edge.is_internal_edge();
                });
 
     bidict<PatternNodeOutput, parallel_tensor_guid_t>
@@ -124,7 +140,7 @@ SubParallelComputationGraph apply_substitution_from_output_result(
           subpcg_edge_from_tensor_and_dst(
               new_tensor,
               get_dst_layer(outgoing_edge),
-              get_dst_layer_input_idx(outgoing_edge));
+              get_dst_layer_input_slot_name(outgoing_edge));
       outgoing_from_sub_edges.insert(new_edge);
     }
 
@@ -135,9 +151,6 @@ SubParallelComputationGraph apply_substitution_from_output_result(
         outgoing_from_sub_edges,
     });
   }();
-
-  std::unordered_set<input_parallel_tensor_guid_t> post_inputs =
-      pre_data.inputs;
 
   std::unordered_map<open_parallel_tensor_guid_t, ParallelTensorAttrs>
       post_value_data = [&] {
@@ -159,8 +172,8 @@ SubParallelComputationGraph apply_substitution_from_output_result(
 
         std::unordered_map<open_parallel_tensor_guid_t, ParallelTensorAttrs>
             post_value_data_from_sub = output_graph_data.value_data;
-        return merge_disjoint_maps(post_value_data_from_orig,
-                                   post_value_data_from_sub);
+        return binary_merge_disjoint_maps(post_value_data_from_orig,
+                                          post_value_data_from_sub);
       }();
 
   SubParallelComputationGraphData post_data = SubParallelComputationGraphData{

@@ -1,0 +1,18 @@
+namespace = "FlexFlow"
+name = "DynamicNodeAttrKeys"
+type = "enum"
+features = [
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+[[values]]
+name = "DEVICE_ID"
+
+[[values]]
+name = "PASS"
+
+[[values]]
+name = "MACHINE_VIEW"

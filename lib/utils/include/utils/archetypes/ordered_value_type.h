@@ -37,6 +37,12 @@ struct ordered_value_type {
   bool operator>(ordered_value_type const &) const {
     PANIC();
   }
+  bool operator<=(ordered_value_type const &) const {
+    PANIC();
+  }
+  bool operator>=(ordered_value_type const &) const {
+    PANIC();
+  }
 };
 
 template <int TAG>

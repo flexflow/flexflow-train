@@ -1,0 +1,102 @@
+namespace = "FlexFlow"
+name = "TensorSlotName"
+type = "enum"
+features = [
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+[[values]]
+name = "INPUT"
+
+[[values]]
+name = "OUTPUT"
+
+[[values]]
+name = "FILTER"
+
+[[values]]
+name = "BIAS"
+
+[[values]]
+name = "INPUT_BIAS"
+
+[[values]]
+name = "OUTPUT_BIAS"
+
+[[values]]
+name = "LHS_INPUT"
+
+[[values]]
+name = "RHS_INPUT"
+
+[[values]]
+name = "INDEX"
+
+[[values]]
+name = "GAMMA"
+
+[[values]]
+name = "BETA"
+
+[[values]]
+name = "WEIGHT"
+
+[[values]]
+name = "QUERY"
+
+[[values]]
+name = "KEY"
+
+[[values]]
+name = "VALUE"
+
+[[values]]
+name = "LOGIT"
+
+[[values]]
+name = "INPUT_0"
+
+[[values]]
+name = "INPUT_1"
+
+[[values]]
+name = "INPUT_2"
+
+[[values]]
+name = "INPUT_3"
+
+[[values]]
+name = "INPUT_4"
+
+[[values]]
+name = "INPUT_5"
+
+[[values]]
+name = "INPUT_6"
+
+[[values]]
+name = "INPUT_7"
+
+[[values]]
+name = "OUTPUT_0"
+
+[[values]]
+name = "OUTPUT_1"
+
+[[values]]
+name = "OUTPUT_2"
+
+[[values]]
+name = "OUTPUT_3"
+
+[[values]]
+name = "OUTPUT_4"
+
+[[values]]
+name = "OUTPUT_5"
+
+[[values]]
+name = "SCALE"

@@ -1,0 +1,34 @@
+namespace = "FlexFlow"
+name = "LayerNormAttrs"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = [
+  "op-attrs/ff_dim_t.dtg.h",
+  "<set>",
+]
+
+src_includes = [
+  "utils/fmt/set.h",
+  "utils/hash/set.h",
+  "op-attrs/ff_dim_t.h",
+]
+
+[[fields]]
+name = "axes"
+type = "std::set<::FlexFlow::ff_dim_t>"
+
+[[fields]]
+name = "elementwise_affine"
+type = "bool"
+
+[[fields]]
+name = "eps"
+type = "float"

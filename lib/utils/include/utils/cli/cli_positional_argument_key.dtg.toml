@@ -1,0 +1,16 @@
+namespace = "FlexFlow"
+name = "CLIPositionalArgumentKey"
+type = "struct"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
+[[fields]]
+name = "raw_idx"
+type = "::FlexFlow::nonnegative_int"

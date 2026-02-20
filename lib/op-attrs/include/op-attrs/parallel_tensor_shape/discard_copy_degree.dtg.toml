@@ -1,0 +1,19 @@
+namespace = "FlexFlow"
+name = "DiscardCopyDegree"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = [
+  "utils/positive_int/positive_int.h",
+]
+
+[[fields]]
+name = "value"
+type = "::FlexFlow::positive_int"

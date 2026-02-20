@@ -10,7 +10,7 @@ namespace FlexFlow {
 
 std::unordered_set<OutputGraphExprNode> get_nodes(OutputGraphExpr const &);
 
-std::vector<OutputGraphExprNodeOutput>
+std::unordered_map<TensorSlotName, OutputGraphExprNodeOutput>
     get_node_outputs(OutputGraphExpr const &, OutputGraphExprNode const &);
 
 std::unordered_set<OutputGraphExprInput> get_inputs(OutputGraphExpr const &);

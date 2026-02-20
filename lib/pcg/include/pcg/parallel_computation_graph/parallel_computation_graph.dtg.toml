@@ -1,0 +1,15 @@
+namespace = "FlexFlow"
+name = "ParallelComputationGraph"
+type = "struct"
+features = [ ]
+
+includes = [
+  "utils/graph/labelled_kwarg_dataflow_graph/labelled_kwarg_dataflow_graph.h",
+  "pcg/parallel_computation_graph/parallel_tensor_attrs.dtg.h",
+  "pcg/parallel_computation_graph/parallel_layer_attrs.dtg.h",
+  "op-attrs/tensor_slot_name.dtg.h",
+]
+
+[[fields]]
+name = "raw_graph"
+type = "::FlexFlow::LabelledKwargDataflowGraph<::FlexFlow::ParallelLayerAttrs, ::FlexFlow::ParallelTensorAttrs, ::FlexFlow::TensorSlotName>"

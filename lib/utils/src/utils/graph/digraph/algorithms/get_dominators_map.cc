@@ -3,7 +3,7 @@
 #include "utils/containers/restrict_keys.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/values.h"
-#include "utils/graph/digraph/algorithms.h"
+#include "utils/graph/digraph/algorithms/get_initial_nodes.h"
 #include "utils/graph/digraph/algorithms/get_predecessors.h"
 #include "utils/graph/digraph/algorithms/get_successors.h"
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"

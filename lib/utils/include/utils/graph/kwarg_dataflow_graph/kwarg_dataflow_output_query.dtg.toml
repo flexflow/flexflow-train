@@ -1,0 +1,31 @@
+namespace = "FlexFlow"
+name = "KwargDataflowOutputQuery"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+template_params = [
+  "SlotName",
+]
+
+includes = [
+  "utils/graph/query_set.h",
+  "utils/graph/node/node.dtg.h",
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
+src_includes = [
+  "utils/fmt/unordered_set.h",
+]
+
+[[fields]]
+name = "nodes"
+type = "::FlexFlow::query_set<::FlexFlow::Node>"
+
+[[fields]]
+name = "output_idxs"
+type = "::FlexFlow::query_set<SlotName>"

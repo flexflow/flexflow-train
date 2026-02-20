@@ -1,4 +1,5 @@
 #include "utils/graph/dataflow_graph/algorithms/get_incoming_edges.h"
+#include "test/utils/doctest/fmt/vector.h"
 #include "utils/containers/get_only.h"
 #include "utils/graph/dataflow_graph/dataflow_graph.h"
 #include "utils/graph/instances/unordered_set_dataflow_graph.h"

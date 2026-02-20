@@ -3,32 +3,43 @@
 #include "substitutions/substitution.h"
 #include "substitutions/unlabelled/pattern_value.h"
 #include "utils/containers/repeat_element.h"
-#include "utils/graph/instances/unordered_set_labelled_open_dataflow_graph.h"
+#include "utils/graph/instances/unordered_set_labelled_open_kwarg_dataflow_graph.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {
 
 SubstitutionBuilder::SubstitutionBuilder()
-    : pattern_g(LabelledOpenDataflowGraph<OperatorAttributePattern,
-                                          TensorAttributePattern>::
-                    create<UnorderedSetLabelledOpenDataflowGraph<
+    : pattern_g(LabelledOpenKwargDataflowGraph<OperatorAttributePattern,
+                                               TensorAttributePattern,
+                                               int,
+                                               TensorSlotName>::
+                    create<UnorderedSetLabelledOpenKwargDataflowGraph<
                         OperatorAttributePattern,
-                        TensorAttributePattern>>()),
-      output_g(LabelledOpenDataflowGraph<OutputOperatorAttrsAssignment,
-                                         std::monostate>::
-                   create<UnorderedSetLabelledOpenDataflowGraph<
+                        TensorAttributePattern,
+                        int,
+                        TensorSlotName>>()),
+      output_g(LabelledOpenKwargDataflowGraph<OutputOperatorAttrsAssignment,
+                                              std::monostate,
+                                              int,
+                                              TensorSlotName>::
+                   create<UnorderedSetLabelledOpenKwargDataflowGraph<
                        OutputOperatorAttrsAssignment,
-                       std::monostate>>()) {}
+                       std::monostate,
+                       int,
+                       TensorSlotName>>()),
+      next_graph_input_id{0} {}
 
 std::pair<PatternValue, OutputGraphExprValue> SubstitutionBuilder::add_input(
     TensorAttributePattern const &input_tensor_pattern,
     std::optional<std::string> const &name) {
   PatternInput pattern_input = PatternInput{
-      this->pattern_g.add_input(input_tensor_pattern),
+      this->pattern_g.add_input(this->get_fresh_graph_input_name(),
+                                input_tensor_pattern),
   };
 
   OutputGraphExprInput output_graph_expr_input = OutputGraphExprInput{
-      this->output_g.add_input(std::monostate{}),
+      this->output_g.add_input(this->get_fresh_graph_input_name(),
+                               std::monostate{}),
   };
 
   this->input_mapping.equate(pattern_input, output_graph_expr_input);
@@ -43,14 +54,16 @@ std::pair<PatternValue, OutputGraphExprValue> SubstitutionBuilder::add_input(
   };
 }
 
-std::vector<PatternValue> SubstitutionBuilder::add_pattern_node(
-    OperatorAttributePattern const &node_pattern,
-    std::vector<PatternValue> const &inputs,
-    std::vector<TensorAttributePattern> const &output_patterns,
-    std::optional<std::string> const &maybe_name) {
-  NodeAddedResult node_added = this->pattern_g.add_node(
+std::unordered_map<TensorSlotName, PatternValue>
+    SubstitutionBuilder::add_pattern_node(
+        OperatorAttributePattern const &node_pattern,
+        std::unordered_map<TensorSlotName, PatternValue> const &inputs,
+        std::unordered_map<TensorSlotName, TensorAttributePattern> const
+            &output_patterns,
+        std::optional<std::string> const &maybe_name) {
+  KwargNodeAddedResult<TensorSlotName> node_added = this->pattern_g.add_node(
       node_pattern,
-      transform(inputs, raw_open_dataflow_value_from_pattern_value),
+      map_values(inputs, raw_open_dataflow_value_from_pattern_value),
       output_patterns);
 
   if (maybe_name.has_value()) {
@@ -65,24 +78,30 @@ std::vector<PatternValue> SubstitutionBuilder::add_pattern_node(
     this->pattern_node_names.equate(PatternNode{node_added.node}, name);
   }
 
-  return transform(node_added.outputs, [](DataflowOutput const &o) {
-    return pattern_value_from_raw_open_dataflow_value(OpenDataflowValue{o});
-  });
+  return map_values(node_added.outputs,
+                    [](KwargDataflowOutput<TensorSlotName> const &o) {
+                      return pattern_value_from_raw_open_kwarg_dataflow_value(
+                          OpenKwargDataflowValue<int, TensorSlotName>{o});
+                    });
 }
 
-std::vector<OutputGraphExprValue> SubstitutionBuilder::add_output_graph_node(
-    OutputOperatorAttrsAssignment const &node_expr,
-    std::vector<OutputGraphExprValue> const &inputs,
-    nonnegative_int num_outputs) {
-  NodeAddedResult node_added = this->output_g.add_node(
+std::unordered_map<TensorSlotName, OutputGraphExprValue>
+    SubstitutionBuilder::add_output_graph_node(
+        OutputOperatorAttrsAssignment const &node_expr,
+        std::unordered_map<TensorSlotName, OutputGraphExprValue> const &inputs,
+        std::unordered_set<TensorSlotName> const &output_slots) {
+  KwargNodeAddedResult<TensorSlotName> node_added = this->output_g.add_node(
       node_expr,
-      transform(inputs, raw_open_dataflow_value_from_output_graph_expr_value),
-      repeat_element(/*num_times=*/num_outputs, /*element=*/std::monostate{}));
+      map_values(inputs,
+                 raw_open_kwarg_dataflow_value_from_output_graph_expr_value),
+      generate_map(output_slots,
+                   [](TensorSlotName) { return std::monostate{}; }));
 
-  return transform(node_added.outputs, [](DataflowOutput const &o) {
-    return output_graph_expr_value_from_raw_open_dataflow_value(
-        OpenDataflowValue{o});
-  });
+  return map_values(
+      node_added.outputs, [](KwargDataflowOutput<TensorSlotName> const &o) {
+        return output_graph_expr_value_from_raw_open_kwarg_dataflow_value(
+            OpenKwargDataflowValue<int, TensorSlotName>{o});
+      });
 }
 
 void SubstitutionBuilder::equate_outputs(
@@ -92,7 +111,7 @@ void SubstitutionBuilder::equate_outputs(
       maybe_pattern_output.visit<PatternNodeOutput>(overload{
           [](PatternNodeOutput const &o) { return o; },
           [&](PatternInput const &) -> PatternNodeOutput {
-            throw mk_runtime_error(fmt::format(
+            PANIC(fmt::format(
                 "SubstitutionBuilder::equate_outputs expected a PatternValue "
                 "holding a PatternNodeOutput, but received {}",
                 maybe_pattern_output));
@@ -103,16 +122,15 @@ void SubstitutionBuilder::equate_outputs(
       maybe_output_graph_expr_output.visit<OutputGraphExprNodeOutput>(overload{
           [](OutputGraphExprNodeOutput const &o) { return o; },
           [&](OutputGraphExprInput const &) -> OutputGraphExprNodeOutput {
-            throw mk_runtime_error(
-                fmt::format("SubstitutionBuilder::equate_outputs expected an "
-                            "OutputGraphExprValue holding a "
-                            "OutputGraphExprNodeOutput, but received {}",
-                            maybe_output_graph_expr_output));
+            PANIC(fmt::format("SubstitutionBuilder::equate_outputs expected an "
+                              "OutputGraphExprValue holding a "
+                              "OutputGraphExprNodeOutput, but received {}",
+                              maybe_output_graph_expr_output));
           },
       });
 
   if (this->output_mapping.contains_l(pattern_output)) {
-    throw mk_runtime_error(
+    PANIC(
         fmt::format("SubstitutionBuilder::equate_outputs expected a "
                     "PatternValue holding a PatternValueOutput"
                     "that is not contained in the output_mapping forward graph,"
@@ -120,7 +138,7 @@ void SubstitutionBuilder::equate_outputs(
                     pattern_output));
   }
   if (this->output_mapping.contains_r(output_graph_expr_output)) {
-    throw mk_runtime_error(fmt::format(
+    PANIC(fmt::format(
         "SubstitutionBuilder::output_graph_expr_output expected a "
         "OutputGraphExprValue holding a OutputGraphExprNodeOutput"
         "that is not contained in the output_mapping backward graph,"
@@ -149,13 +167,18 @@ Substitution SubstitutionBuilder::get_substitution() const {
       this->output_mapping,
   };
 
-  if (!is_valid_substitution(result)) {
-    throw mk_runtime_error(
-        "get_substitution cannot return a Substitution, as the Substitution is "
-        "currently invalid. Ensure you have finished constructing the "
-        "Substitution and have mapped all of the outputs.");
-  }
+  ASSERT(
+      is_valid_substitution(result),
+      "get_substitution cannot return a Substitution, as the Substitution is "
+      "currently invalid. Ensure you have finished constructing the "
+      "Substitution and have mapped all of the outputs.");
 
+  return result;
+}
+
+int SubstitutionBuilder::get_fresh_graph_input_name() {
+  int result = this->next_graph_input_id;
+  this->next_graph_input_id++;
   return result;
 }
 

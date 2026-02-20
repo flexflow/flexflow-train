@@ -1,0 +1,13 @@
+namespace = "FlexFlow"
+name = "arg_slot_id_t"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+[[fields]]
+name = "raw_id"
+type = "int"

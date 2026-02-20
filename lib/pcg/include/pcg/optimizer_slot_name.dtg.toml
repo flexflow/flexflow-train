@@ -1,0 +1,18 @@
+namespace = "FlexFlow"
+name = "OptimizerSlotName"
+type = "enum"
+features = [
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+[[values]]
+name = "SGD_V"
+
+[[values]]
+name = "ADAM_M"
+
+[[values]]
+name = "ADAM_V"

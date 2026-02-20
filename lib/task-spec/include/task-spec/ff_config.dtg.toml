@@ -1,0 +1,116 @@
+namespace = "FlexFlow"
+name = "FFConfig"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+  "rapidcheck",
+  "json",
+]
+
+includes = [
+  "utils/positive_int/positive_int.h",
+  "utils/nonnegative_int/nonnegative_int.h",
+  "<string>",
+  "<optional>",
+]
+
+src_includes = [
+  "utils/rapidcheck/optional.h",
+  "utils/json/optional.h",
+  "utils/fmt/optional.h",
+]
+
+[[fields]]
+name = "epochs"
+type = "::FlexFlow::positive_int"
+
+[[fields]]
+name = "batch_size"
+type = "::FlexFlow::positive_int"
+
+[[fields]]
+name = "num_nodes"
+type = "::FlexFlow::positive_int"
+
+[[fields]]
+name = "cpus_per_node"
+type = "::FlexFlow::positive_int"
+
+[[fields]]
+name = "gpus_per_node"
+type = "::FlexFlow::positive_int"
+
+[[fields]]
+name = "learning_rate"
+type = "float"
+
+[[fields]]
+name = "weight_decay"
+type = "float"
+
+[[fields]]
+name = "workspace_size"
+type = "::FlexFlow::nonnegative_int"
+
+[[fields]]
+name = "enable_profiling"
+type = "bool"
+
+[[fields]]
+name = "perform_fusion"
+type = "bool"
+
+[[fields]]
+name = "simulator_workspace_size"
+type = "::FlexFlow::nonnegative_int"
+
+[[fields]]
+name = "search_budget"
+type = "std::optional<::FlexFlow::positive_int>"
+
+[[fields]]
+name = "search_alpha"
+type = "float"
+
+[[fields]]
+name = "search_overlap_backward_update"
+type = "bool"
+
+[[fields]]
+name = "only_data_parallel"
+type = "bool"
+
+[[fields]]
+name = "enable_parameter_parallel"
+type = "bool"
+
+[[fields]]
+name = "enable_inplace_optimizations"
+type = "bool"
+
+[[fields]]
+name = "allow_tensor_op_math_conversion"
+type = "bool"
+
+[[fields]]
+name = "dataset_path"
+type = "std::optional<std::string>"
+
+[[fields]]
+name = "export_strategy_computation_graph_file"
+type = "std::optional<std::string>"
+
+[[fields]]
+name = "include_costs_dot_graph"
+type = "bool"
+
+[[fields]]
+name = "substitution_json_path"
+type = "std::optional<std::string>"
+
+[[fields]]
+name = "base_optimize_threshold"
+type = "::FlexFlow::positive_int"

@@ -2,7 +2,7 @@
 #define _FLEXFLOW_LOCAL_EXECUTION_VARIADIC_TENSOR_ARG_REF_H
 
 #include "task-spec/arg_ref.h"
-#include "task-spec/op_tensor_spec.h"
+#include "task-spec/ops/op_tensor_spec.h"
 
 namespace FlexFlow {
 

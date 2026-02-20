@@ -1,0 +1,27 @@
+namespace = "FlexFlow"
+name = "OpenKwargDataflowEdgeQuery"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+]
+
+template_params = [
+  "GraphInputName",
+  "SlotName",
+]
+
+includes = [
+  "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_edge_query.dtg.h",
+  "utils/graph/open_kwarg_dataflow_graph/kwarg_dataflow_input_edge_query.dtg.h",
+]
+
+[[fields]]
+name = "input_edge_query"
+type = "::FlexFlow::KwargDataflowInputEdgeQuery<GraphInputName, SlotName>"
+
+[[fields]]
+name = "standard_edge_query"
+type = "::FlexFlow::KwargDataflowEdgeQuery<SlotName>"
