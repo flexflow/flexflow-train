@@ -32,7 +32,7 @@ type = "::FlexFlow::SerializableTensorInstanceBacking"
 
 [[fields]]
 name = "device_state"
-type = "::FlexFlow::SerializableDeviceSpecificPtr"
+type = "std::optional<::FlexFlow::SerializableDeviceSpecificPtr>"
 
 [[fields]]
 name = "profiling_settings"
