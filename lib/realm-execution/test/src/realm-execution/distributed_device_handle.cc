@@ -24,9 +24,43 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*allowTensorOpMathConversion=*/true);
 
       // Make sure we have handles for the processors we're expecting
-      Realm::Machine::ProcessorQuery pq(Realm::Machine::get_machine());
-      pq.only_kind(Realm::Processor::LOC_PROC);
-      for (Realm::Processor proc : pq) {
+      Realm::Machine::ProcessorQuery cpus(Realm::Machine::get_machine());
+      cpus.only_kind(Realm::Processor::LOC_PROC);
+      CHECK(cpus.count() == 2);
+      for (Realm::Processor proc : cpus) {
+        handle.at(proc);
+      }
+    });
+  }
+}
+
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
+  TEST_CASE("DistributedDeviceHandle (GPU)") {
+    std::vector<char *> fake_args =
+        make_fake_realm_args(/*num_cpus=*/2_p, /*num_gpus=*/1_n);
+    int fake_argc = fake_args.size();
+    char **fake_argv = fake_args.data();
+
+    RealmManager manager(&fake_argc, &fake_argv);
+
+    (void)manager.start_controller([](RealmContext &ctx) {
+      DistributedDeviceHandle handle = create_distributed_device_handle(
+          /*ctx=*/ctx,
+          /*workSpaceSize=*/1024 * 1024,
+          /*allowTensorOpMathConversion=*/true);
+
+      // Make sure we have handles for the processors we're expecting
+      Realm::Machine::ProcessorQuery cpus(Realm::Machine::get_machine());
+      cpus.only_kind(Realm::Processor::LOC_PROC);
+      CHECK(cpus.count() == 2);
+      for (Realm::Processor proc : cpus) {
+        handle.at(proc);
+      }
+
+      Realm::Machine::ProcessorQuery gpus(Realm::Machine::get_machine());
+      gpus.only_kind(Realm::Processor::TOC_PROC);
+      CHECK(gpus.count() == 1);
+      for (Realm::Processor proc : gpus) {
         handle.at(proc);
       }
     });
