@@ -1,5 +1,6 @@
 namespace = "FlexFlow"
 name = "MCMCOverMappedPCGConfig"
+type = "struct"
 features = [
   "eq",
   "hash",

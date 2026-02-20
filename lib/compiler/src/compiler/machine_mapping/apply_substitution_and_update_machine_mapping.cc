@@ -12,7 +12,7 @@
 #include "utils/containers/filter.h"
 #include "utils/containers/is_subseteq_of.h"
 #include "utils/containers/keys.h"
-#include "utils/containers/merge_maps.h"
+#include "utils/containers/binary_merge_disjoint_maps.h"
 #include "utils/containers/restrict_keys.h"
 #include "utils/containers/set_minus.h"
 #include "utils/containers/values.h"

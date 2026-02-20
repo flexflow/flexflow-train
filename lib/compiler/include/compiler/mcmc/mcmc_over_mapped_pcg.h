@@ -15,7 +15,7 @@ namespace FlexFlow {
 SearchResult
     mcmc_over_mapped_pcg(ParallelComputationGraph &pcg,
                          RuntimeOnlyCostEstimator const &cost_estimator,
-                         MachineSpecification const &resources,
+                         MachineSpecification const &machine_spec,
                          MCMCOverMappedPCGConfig const &search_config);
 
 } // namespace FlexFlow

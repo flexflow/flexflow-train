@@ -51,11 +51,15 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*comm_cost=*/1_ms);
 
     MachineSpecification full_machine_spec = MachineSpecification{
-        /*num_nodes=*/2_p,
-        /*num_cpus_per_node=*/1_p,
-        /*num_gpus_per_node=*/1_p,
-        /*inter_node_bandwidth=*/1,
-        /*intra_node_bandwidth=*/1,
+        MachineComputeSpecification{
+            /*num_nodes=*/3_p,
+            /*num_cpus_per_node=*/3_p,
+            /*num_gpus_per_node=*/3_p,
+        },
+        MachineInterconnectSpecification{
+            /*inter_node_bandwidth=*/bytes_per_second_t{1.0f},
+            /*intra_node_bandwidth=*/bytes_per_second_t{1.0f},
+        },
     };
 
     MCMCOverMappedPCGConfig no_search =
@@ -88,7 +92,6 @@ TEST_SUITE(FF_TEST_SUITE) {
                                                   full_machine_spec)
             .unwrap_milliseconds();
 
-    CHECK(runtime < base_runtime);
-    CHECK(runtime < 100);
+    CHECK(runtime < base_runtime * 0.8);
   }
 }

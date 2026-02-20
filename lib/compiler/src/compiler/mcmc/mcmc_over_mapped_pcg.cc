@@ -4,6 +4,7 @@
 #include "compiler/mcmc/generic_mcmc_algorithm.h"
 #include "compiler/search_result.h"
 #include "compiler/task_graph_simulator/task_simulator.h"
+#include "pcg/machine_compute_resource_slice.h"
 #include "substitutions/pcg_pattern.h"
 #include "substitutions/pcg_pattern_match.h"
 #include "substitutions/unity_substitution_set.h"
@@ -16,12 +17,12 @@ namespace FlexFlow {
 SearchResult
     mcmc_over_mapped_pcg(ParallelComputationGraph &pcg,
                          RuntimeOnlyCostEstimator const &cost_estimator,
-                         MachineSpecification const &resources,
+                         MachineSpecification const &machine_spec,
                          MCMCOverMappedPCGConfig const &search_config) {
-
-  std::vector<Substitution> substitutions = get_substitution_set(resources);
+  MachineComputeSpecification compute_spec = machine_spec.compute_specification;
+  std::vector<Substitution> substitutions = get_substitution_set(compute_spec);
   MachineMapping random_mapping = assert_unwrap(
-      get_random_mapping(pcg, resources, search_config.device_type));
+      get_random_mapping(pcg, compute_spec, search_config.device_type));
   SearchResult starting_state = SearchResult{pcg, random_mapping};
 
   auto sampler = [&](SearchResult mapped_pcg) -> std::optional<SearchResult> {
@@ -32,7 +33,7 @@ SearchResult
            search_config.substitution_frequency <= 1);
     if (randf() < search_config.substitution_frequency) {
       Substitution random_substitution =
-          assert_unwrap(get_random_substitution(resources));
+          assert_unwrap(get_random_substitution(compute_spec));
       std::optional<PCGPatternMatch> maybe_pattern_match =
           get_random_pattern_match(random_substitution.pcg_pattern,
                                    sub_pcg_from_full_pcg(mapped_pcg.pcg));
@@ -42,7 +43,7 @@ SearchResult
       });
     } else {
       MachineMapping new_machine_mapping = assert_unwrap(get_random_mutation(
-          mapped_pcg, resources, search_config.device_type));
+          mapped_pcg, compute_spec, search_config.device_type));
       return SearchResult{mapped_pcg.pcg, new_machine_mapping};
     }
   };
@@ -51,7 +52,7 @@ SearchResult
     return task_simulator_estimate_forward_pass_time(mapped_pcg.pcg,
                                                      cost_estimator,
                                                      mapped_pcg.machine_mapping,
-                                                     resources)
+                                                     machine_spec)
         .unwrap_milliseconds();
   };
 

@@ -1,7 +1,8 @@
 #include "compiler/machine_mapping/machine_mapping_mutation_set.h"
-#include "compiler/allowed_machine_views.h"
-#include "pcg/machine_view.h"
-#include "pcg/operator_task_space.h"
+#include "compiler/machine_mapping/allowed_machine_views.h"
+#include "compiler/machine_mapping/machine_view.h"
+#include "op-attrs/operator_task_space.h"
+#include "pcg/machine_compute_resource_slice.h"
 #include "utils/containers/vector_of.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include "utils/random_utils.h"
@@ -10,14 +11,14 @@ namespace FlexFlow {
 
 std::optional<MachineMapping>
     get_random_mapping(ParallelComputationGraph &pcg,
-                       MachineSpecification const &resources,
+                       MachineComputeSpecification const &resources,
                        DeviceType const &device_type) {
   std::vector<parallel_layer_guid_t> layers = topological_ordering(pcg);
   std::unordered_map<parallel_layer_guid_t, MachineView> machine_views;
   for (parallel_layer_guid_t layer : layers) {
     OperatorTaskSpace task = get_operator_task_space(pcg, layer);
     std::unordered_set<MachineView> allowed_machine_views =
-        get_allowed_machine_views(resources, task, DeviceType::GPU);
+        get_allowed_machine_views(compute_slice_from_specification(resources), task, DeviceType::GPU);
     if (allowed_machine_views.empty()) {
       return std::nullopt;
     }
@@ -29,7 +30,7 @@ std::optional<MachineMapping>
 
 std::optional<MachineMapping>
     get_random_mutation(SearchResult mapped_pcg,
-                        MachineSpecification const &resources,
+                        MachineComputeSpecification const &resources,
                         DeviceType const &device_type) {
   ParallelComputationGraph pcg = mapped_pcg.pcg;
   std::vector<parallel_layer_guid_t> layers = topological_ordering(pcg);
@@ -43,7 +44,7 @@ std::optional<MachineMapping>
   OperatorTaskSpace task = get_operator_task_space(pcg, random_layer);
 
   std::vector<MachineView> allowed_machine_views =
-      vector_of(get_allowed_machine_views(resources, task, device_type));
+      vector_of(get_allowed_machine_views(compute_slice_from_specification(resources), task, device_type));
   MachineView random_new_machine_view = select_random(allowed_machine_views);
 
   machine_mapping.machine_views.at(random_layer) = random_new_machine_view;

@@ -10,6 +10,7 @@ features = [
 includes = [
   "compiler/data_parallelism/data_parallelism_config.dtg.h",
   "compiler/unity_algorithm/unity_search_config.dtg.h",
+  "compiler/mcmc/mcmc_over_mapped_pcg_config.dtg.h",
 ]
 
 [[values]]
@@ -17,3 +18,6 @@ type = "::FlexFlow::DataParallelismConfig"
 
 [[values]]
 type = "::FlexFlow::UnitySearchConfig"
+
+[[values]]
+type = "::FlexFlow::MCMCOverMappedPCGConfig"

@@ -7,12 +7,12 @@
 namespace FlexFlow {
 std::optional<MachineMapping>
     get_random_mapping(ParallelComputationGraph &pcg,
-                       MachineSpecification const &resources,
+                       MachineComputeSpecification const &resources,
                        DeviceType const &device_type);
 
 std::optional<MachineMapping>
     get_random_mutation(SearchResult mapped_pcg,
-                        MachineSpecification const &resource,
+                        MachineComputeSpecification const &resource,
                         DeviceType const &device_type);
 } // namespace FlexFlow
 

@@ -13,7 +13,7 @@
 namespace FlexFlow {
 
 std::optional<Substitution>
-    get_random_substitution(MachineSpecification const &resources) {
+    get_random_substitution(MachineComputeSpecification const &resources) {
   std::vector<Substitution> substitutions = get_substitution_set(resources);
   if (substitutions.empty()) {
     return std::nullopt;

@@ -1,5 +1,6 @@
 namespace = "FlexFlow"
 name = "GenericMCMCConfig"
+type = "struct"
 features = [
   "eq",
   "hash",
