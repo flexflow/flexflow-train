@@ -456,29 +456,28 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
             /*profiling_settings=*/ProfilingSettings{0, 0},
             /*device_handle=*/device_handle,
             /*iteration_config=*/FFIterationConfig{1_p});
-        // loss_values.push_back(copy_tensor_accessor_r(
-        //     dynamic_tensor_accessor_from_instance(
-        //         pcg_instance.get_loss_tensor_instance().value(),
-        //         Realm::Event::NO_EVENT,
-        //         lift_to_parallel(
-        //             TensorShape{TensorDims{FFOrdered{output_dim,
-        //             hidden_dim}},
-        //                         DataType::FLOAT}),
-        //         Permissions::RO,
-        //         ctx.get_current_processor())
-        //         .require_read(),
-        //     allocator));
+        loss_values.push_back(copy_tensor_accessor_r(
+            dynamic_tensor_accessor_from_instance(
+                pcg_instance.get_loss_tensor_instance().value(),
+                Realm::Event::NO_EVENT,
+                lift_to_parallel(
+                    TensorShape{TensorDims{FFOrdered{output_dim, hidden_dim}},
+                                DataType::FLOAT}),
+                Permissions::RO,
+                ctx.get_current_processor())
+                .require_read(),
+            allocator));
       }
 
-      // // Assert that each sample in the batch has a lower loss in last epoch
-      // // than the first epoch
-      // GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
-      // GenericTensorAccessorR last_epoch_loss = loss_values.back();
-      // CHECK_MESSAGE(did_loss_decrease(first_epoch_loss, last_epoch_loss),
-      //               check_kv("first_epoch_loss",
-      //                        format_accessor_r_contents(first_epoch_loss)),
-      //               check_kv("last_epoch_loss",
-      //                        format_accessor_r_contents(last_epoch_loss)));
+      // Assert that each sample in the batch has a lower loss in last epoch
+      // than the first epoch
+      GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
+      GenericTensorAccessorR last_epoch_loss = loss_values.back();
+      CHECK_MESSAGE(did_loss_decrease(ctx, first_epoch_loss, last_epoch_loss),
+                    check_kv("first_epoch_loss",
+                             format_accessor_r_contents(first_epoch_loss)),
+                    check_kv("last_epoch_loss",
+                             format_accessor_r_contents(last_epoch_loss)));
     });
   }
 }
