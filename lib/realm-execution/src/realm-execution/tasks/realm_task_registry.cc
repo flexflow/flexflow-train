@@ -17,10 +17,15 @@ Realm::Event register_task(Realm::Processor::Kind target_kind,
                                              void const *,
                                              size_t,
                                              Realm::Processor)) {
+  Realm::Processor::TaskFuncID realm_task_id =
+      get_realm_task_id_for_task_id(func_id);
+#ifdef FLEXFLOW_USE_PREALM
+  Realm::prealm_task_name(realm_task_id, fmt::format("{}", func_id));
+#endif
   return Realm::Processor::register_task_by_kind(
       target_kind,
       /*global=*/false,
-      get_realm_task_id_for_task_id(func_id),
+      realm_task_id,
       Realm::CodeDescriptor(task_body),
       Realm::ProfilingRequestSet());
 }
