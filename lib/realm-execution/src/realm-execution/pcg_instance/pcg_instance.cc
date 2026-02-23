@@ -39,6 +39,11 @@ PCGInstance::PCGInstance(
       device_state_backing(device_state_backing),
       optimizer_attrs(optimizer_attrs), logit_grad_tensor(logit_grad_tensor) {}
 
+PCGInstance::~PCGInstance() {
+  destroy_instances(this->tensor_instance_backing,
+                    ctx.get_outstanding_events());
+}
+
 RealmContext &PCGInstance::get_realm_context() {
   return this->ctx;
 }

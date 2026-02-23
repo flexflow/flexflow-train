@@ -18,6 +18,9 @@ TensorInstanceBacking perform_instance_allocation(
         &preallocated,
     RealmContext &ctx);
 
+void destroy_instances(TensorInstanceBacking const &instances,
+                       Realm::Event precondition);
+
 } // namespace FlexFlow
 
 #endif
