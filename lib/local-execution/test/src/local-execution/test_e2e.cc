@@ -25,8 +25,11 @@ bool did_loss_decrease(GenericTensorAccessorR const &first_epoch,
                        GenericTensorAccessorR const &last_epoch) {
   Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
-  return tensor_accessor_all(
-      compare_tensor_accessors_le(last_epoch, first_epoch, cpu_allocator));
+  GenericTensorAccessorW tensor_le =
+      compare_tensor_accessors_le(last_epoch, first_epoch, cpu_allocator);
+  bool result = tensor_accessor_all(tensor_le);
+  cpu_allocator.deallocate_tensor(tensor_le);
+  return result;
 }
 
 TEST_SUITE(FF_TEST_SUITE) {
@@ -184,6 +187,12 @@ TEST_SUITE(FF_TEST_SUITE) {
                            format_accessor_r_contents(first_epoch_loss)),
                   check_kv("last_epoch_loss",
                            format_accessor_r_contents(last_epoch_loss)));
+
+    for (GenericTensorAccessorR const &loss_value : loss_values) {
+      allocator.deallocate_tensor(loss_value);
+    }
+    allocator.deallocate_tensor(label_tensor);
+    allocator.deallocate_tensor(label_tensor_backing);
   }
 }
 
@@ -350,5 +359,11 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
     GenericTensorAccessorR last_epoch = loss_values.back();
     CHECK(did_loss_decrease(first_epoch_loss, last_epoch));
+
+    for (GenericTensorAccessorR const &loss_value : loss_values) {
+      allocator.deallocate_tensor(loss_value);
+    }
+    allocator.deallocate_tensor(label_tensor);
+    allocator.deallocate_tensor(label_tensor_backing);
   }
 }
