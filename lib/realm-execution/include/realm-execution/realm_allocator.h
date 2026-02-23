@@ -8,11 +8,11 @@ namespace FlexFlow {
 
 struct RealmAllocator : public IAllocator {
   RealmAllocator(Realm::Processor processor, Realm::Memory memory);
+  ~RealmAllocator();
 
   RealmAllocator() = delete;
   RealmAllocator(RealmAllocator const &) = delete;
   RealmAllocator(RealmAllocator &&) = delete;
-  ~RealmAllocator() = default;
 
   void *allocate(size_t) override;
   void deallocate(void *) override;
