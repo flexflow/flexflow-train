@@ -35,6 +35,7 @@ public:
       PerDeviceOpStateBacking const &device_state_backing,
       OptimizerAttrs const &optimizer_attrs,
       std::optional<Realm::RegionInstance> logit_grad_tensor);
+  ~PCGInstance();
   RealmContext &get_realm_context();
   std::vector<DynamicNodeInvocation> const &get_execution_order() const;
   TensorInstanceBacking const &get_tensor_instance_backing() const;

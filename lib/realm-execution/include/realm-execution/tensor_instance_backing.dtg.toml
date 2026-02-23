@@ -16,8 +16,8 @@ includes = [
 src_includes = [
   "realm-execution/fmt/realm_event.h",
   "realm-execution/fmt/realm_instance.h",
-  "utils/hash/unordered_map.h",
   "utils/fmt/unordered_map.h",
+  "utils/hash/unordered_map.h",
 ]
 
 [[fields]]

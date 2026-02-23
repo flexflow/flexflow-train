@@ -72,4 +72,11 @@ TensorInstanceBacking perform_instance_allocation(
   return result;
 }
 
+void destroy_instances(TensorInstanceBacking const &instances,
+                       Realm::Event precondition) {
+  for (auto const &[instance, ready] : values(instances.backing)) {
+    instance.destroy(Realm::Event::merge_events(precondition, ready));
+  }
+}
+
 } // namespace FlexFlow
