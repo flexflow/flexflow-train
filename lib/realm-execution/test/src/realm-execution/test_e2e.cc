@@ -28,11 +28,14 @@ namespace test {
 using namespace ::FlexFlow;
 namespace Realm = ::FlexFlow::Realm;
 
-static bool did_loss_decrease(RealmContext &ctx,
-                              GenericTensorAccessorR const &first_epoch,
-                              GenericTensorAccessorR const &last_epoch) {
-  return tensor_accessor_all(compare_tensor_accessors_le(
-      last_epoch, first_epoch, ctx.get_current_device_allocator()));
+static bool did_loss_decrease(GenericTensorAccessorR const &first_epoch,
+                              GenericTensorAccessorR const &last_epoch,
+                              Allocator &allocator) {
+  GenericTensorAccessorW tensor_le =
+      compare_tensor_accessors_le(last_epoch, first_epoch, allocator);
+  bool result = tensor_accessor_all(tensor_le);
+  allocator.deallocate_tensor(tensor_le);
+  return result;
 }
 
 TEST_SUITE(FF_TEST_SUITE) {
@@ -250,11 +253,18 @@ TEST_SUITE(FF_TEST_SUITE) {
       // than the first epoch
       GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
       GenericTensorAccessorR last_epoch_loss = loss_values.back();
-      CHECK_MESSAGE(did_loss_decrease(ctx, first_epoch_loss, last_epoch_loss),
-                    check_kv("first_epoch_loss",
-                             format_accessor_r_contents(first_epoch_loss)),
-                    check_kv("last_epoch_loss",
-                             format_accessor_r_contents(last_epoch_loss)));
+      CHECK_MESSAGE(
+          did_loss_decrease(first_epoch_loss, last_epoch_loss, allocator),
+          check_kv("first_epoch_loss",
+                   format_accessor_r_contents(first_epoch_loss)),
+          check_kv("last_epoch_loss",
+                   format_accessor_r_contents(last_epoch_loss)));
+
+      for (GenericTensorAccessorR const &loss_value : loss_values) {
+        allocator.deallocate_tensor(loss_value);
+      }
+      allocator.deallocate_tensor(label_tensor);
+      allocator.deallocate_tensor(label_tensor_backing);
     });
   }
 }
@@ -473,11 +483,18 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       // than the first epoch
       GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
       GenericTensorAccessorR last_epoch_loss = loss_values.back();
-      CHECK_MESSAGE(did_loss_decrease(ctx, first_epoch_loss, last_epoch_loss),
-                    check_kv("first_epoch_loss",
-                             format_accessor_r_contents(first_epoch_loss)),
-                    check_kv("last_epoch_loss",
-                             format_accessor_r_contents(last_epoch_loss)));
+      CHECK_MESSAGE(
+          did_loss_decrease(first_epoch_loss, last_epoch_loss, allocator),
+          check_kv("first_epoch_loss",
+                   format_accessor_r_contents(first_epoch_loss)),
+          check_kv("last_epoch_loss",
+                   format_accessor_r_contents(last_epoch_loss)));
+
+      for (GenericTensorAccessorR const &loss_value : loss_values) {
+        allocator.deallocate_tensor(loss_value);
+      }
+      allocator.deallocate_tensor(label_tensor);
+      allocator.deallocate_tensor(label_tensor_backing);
     });
   }
 }

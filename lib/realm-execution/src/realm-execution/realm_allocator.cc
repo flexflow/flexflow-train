@@ -7,6 +7,10 @@ namespace FlexFlow {
 RealmAllocator::RealmAllocator(Realm::Processor processor, Realm::Memory memory)
     : processor(processor), memory(memory) {}
 
+RealmAllocator::~RealmAllocator() {
+  ASSERT(this->ptr_instances.empty());
+}
+
 void *RealmAllocator::allocate(size_t requested_memory_size) {
   Realm::Rect<1> bounds{Realm::Point<1>::ZEROES(),
                         Realm::Point<1>{requested_memory_size} -
