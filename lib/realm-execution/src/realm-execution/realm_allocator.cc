@@ -1,6 +1,8 @@
 #include "realm-execution/realm_allocator.h"
 #include "kernels/device.h"
 #include "pcg/device_type.dtg.h"
+#include "utils/containers/contains_key.h"
+#include "utils/containers/values.h"
 
 namespace FlexFlow {
 
@@ -8,7 +10,9 @@ RealmAllocator::RealmAllocator(Realm::Processor processor, Realm::Memory memory)
     : processor(processor), memory(memory) {}
 
 RealmAllocator::~RealmAllocator() {
-  ASSERT(this->ptr_instances.empty());
+  for (Realm::RegionInstance const &instance : values(this->ptr_instances)) {
+    instance.destroy(Realm::Event::NO_EVENT);
+  }
 }
 
 void *RealmAllocator::allocate(size_t requested_memory_size) {
@@ -33,6 +37,9 @@ void *RealmAllocator::allocate(size_t requested_memory_size) {
 }
 
 void RealmAllocator::deallocate(void *ptr) {
+  ASSERT(contains_key(this->ptr_instances, ptr),
+         "Deallocating a pointer that was not allocated by this Allocator");
+
   this->ptr_instances.at(ptr).destroy(Realm::Event::NO_EVENT);
   this->ptr_instances.erase(ptr);
 }
