@@ -33,6 +33,7 @@ set(FF_MAX_NUM_TASK_REGIONS "20" CACHE STRING
 set(FF_MAX_NUM_TASK_ARGUMENTS "5" CACHE STRING
   "Maximum number of arguments that can be declared in a TaskSignature")
 option(FF_USE_NCCL "Run FlexFlow with NCCL" OFF)
+option(FF_USE_PREALM "Build with PRealm profiling interface" ON)
 option(FF_USE_ALL_PREBUILT_LIBRARIES "Enable use of all pre-compiled libraries, if available" OFF)
 option(FF_USE_PYTHON "Enable Python" ON)
 option(FF_BUILD_FROM_PYPI "Build from pypi" OFF)
