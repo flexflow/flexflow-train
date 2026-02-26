@@ -7,6 +7,7 @@
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
 #include "task-spec/dynamic_graph/training_operation_attrs.dtg.h"
+#include "utils/containers/transform.h"
 #include "utils/optional.h"
 #include <optional>
 
@@ -24,6 +25,12 @@ LossInsertionResult perform_loss_insertion(
       /*tensor_guid=*/mk_dynamic_tensor_guid_for_loss(),
       /*parallel_tensor_shape=*/logit_value.parallel_tensor_shape,
       /*shard_coord=*/logit_value.shard_coord,
+      /*mapping=*/
+      transform(loss_mapping,
+                [](MappedOperatorTaskGroup const &node_mapping) {
+                  return get_tensor_bindings_for_slot_name(
+                      node_mapping, TensorSlotName::INPUT);
+                }),
       /*accessor=*/std::nullopt,
       /*role=*/mk_dynamic_tensor_role_loss(),
   };
@@ -31,6 +38,12 @@ LossInsertionResult perform_loss_insertion(
       /*tensor_guid=*/logit_value.tensor_guid,
       /*parallel_tensor_shape=*/logit_value.parallel_tensor_shape,
       /*shard_coord=*/logit_value.shard_coord,
+      /*mapping=*/
+      transform(loss_mapping,
+                [](MappedOperatorTaskGroup const &node_mapping) {
+                  return get_tensor_bindings_for_slot_name(
+                      node_mapping, TensorSlotName::LOGIT);
+                }),
       /*accessor=*/std::nullopt,
       /*role=*/mk_dynamic_tensor_role_bwd(),
   };
