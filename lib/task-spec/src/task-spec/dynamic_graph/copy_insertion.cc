@@ -15,24 +15,26 @@
 
 namespace FlexFlow {
 
+bool node_is_copy(DynamicNodeAttrs const &n) {
+  return n.op_attrs.has_value() && n.op_attrs.value().is_copy();
+}
+
 bool value_is_mapped(DynamicValueAttrs const &n) {
   return n.mapping.has_value();
 }
 
 bool no_part_of_graph_is_copy_inserted(DynamicOpenDataflowGraph const &g) {
-  auto node_is_mapped = [](DynamicNodeAttrs const &) -> bool { return false; };
   auto slot_is_mapped = [](DynamicTensorSlot const &) -> bool { return false; };
 
   return no_part_of_dynamic_graph_satisfies(
-      g, node_is_mapped, value_is_mapped, slot_is_mapped);
+      g, node_is_copy, value_is_mapped, slot_is_mapped);
 }
 
 bool graph_is_fully_copy_inserted(DynamicOpenDataflowGraph const &g) {
-  auto node_is_mapped = [](DynamicNodeAttrs const &) -> bool { return true; };
   auto slot_is_mapped = [](DynamicTensorSlot const &) -> bool { return true; };
 
   return full_dynamic_graph_satisfies(
-      g, node_is_mapped, value_is_mapped, slot_is_mapped);
+      g, node_is_copy, value_is_mapped, slot_is_mapped);
 }
 
 static DynamicValueAttrs map_dynamic_value_attrs_for_task_group(

@@ -7,6 +7,7 @@
 
 namespace FlexFlow {
 
+bool node_is_copy(DynamicNodeAttrs const &n);
 bool value_is_mapped(DynamicValueAttrs const &);
 
 bool no_part_of_graph_is_copy_inserted(DynamicOpenDataflowGraph const &);
