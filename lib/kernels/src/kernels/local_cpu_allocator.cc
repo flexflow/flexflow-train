@@ -16,7 +16,6 @@ void LocalCPUAllocator::deallocate(void *ptr) {
   ASSERT(contains_key(this->ptrs, ptr),
          "Deallocating a pointer that was not allocated by this Allocator");
 
-  free(ptr);
   this->ptrs.erase(ptr);
 }
 
