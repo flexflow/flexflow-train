@@ -1,6 +1,7 @@
 #include "task-spec/dynamic_graph/shard_expansion.h"
 #include "pcg/mapped_parallel_computation_graph/mapped_operator_task_group.h"
 #include "test/utils/doctest/fmt/unordered_set.h"
+#include "utils/bidict/algorithms/filter_keys.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -110,8 +111,18 @@ TEST_SUITE(FF_TEST_SUITE) {
     auto mk_value =
         [&](size_t src_node_id,
             TensorSlotName src_slot_name,
+            TensorSlotName use_slot_name,
             std::optional<ParallelTensorSpaceCoordinate> const &shard_coord)
         -> DynamicValueAttrs {
+      bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
+          tensor_binding = get_tensor_bindings_for_slot_name(mapped_task_group,
+                                                             use_slot_name);
+      if (shard_coord.has_value()) {
+        tensor_binding = filter_keys(
+            tensor_binding, [&](ParallelTensorSpaceCoordinate const &p) {
+              return p == shard_coord.value();
+            });
+      }
       return DynamicValueAttrs{
           /*tensor_guid=*/dynamic_tensor_guid_t{parallel_tensor_guid_t{
               KwargDataflowOutput<TensorSlotName>{
@@ -122,7 +133,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*parallel_tensor_shape=*/std::nullopt,
           /*shard_coord=*/shard_coord,
           /*mapping=*/
-          get_tensor_bindings_for_slot_name(mapped_task_group, src_slot_name),
+          tensor_binding,
           /*accessor=*/std::nullopt,
           /*role=*/std::nullopt,
       };
@@ -132,11 +143,17 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*inputs=*/{
             {
                 mk_slot(TensorSlotName::INPUT),
-                mk_value(0, TensorSlotName::OUTPUT, std::nullopt),
+                mk_value(0,
+                         TensorSlotName::OUTPUT,
+                         TensorSlotName::INPUT,
+                         std::nullopt),
             },
             {
                 mk_slot(TensorSlotName::WEIGHT),
-                mk_value(1, TensorSlotName::OUTPUT, std::nullopt),
+                mk_value(1,
+                         TensorSlotName::OUTPUT,
+                         TensorSlotName::WEIGHT,
+                         std::nullopt),
             },
         },
         /*node_attrs=*/
@@ -153,11 +170,17 @@ TEST_SUITE(FF_TEST_SUITE) {
         {
             {
                 mk_slot(TensorSlotName::OUTPUT_1),
-                mk_value(20, TensorSlotName::OUTPUT_1, std::nullopt),
+                mk_value(20,
+                         TensorSlotName::OUTPUT_1,
+                         TensorSlotName::OUTPUT_1,
+                         std::nullopt),
             },
             {
                 mk_slot(TensorSlotName::OUTPUT_2),
-                mk_value(20, TensorSlotName::OUTPUT_2, std::nullopt),
+                mk_value(20,
+                         TensorSlotName::OUTPUT_2,
+                         TensorSlotName::OUTPUT_2,
+                         std::nullopt),
             },
         },
     };
@@ -176,11 +199,17 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*inputs=*/{
               {
                   mk_slot(TensorSlotName::INPUT),
-                  mk_value(0, TensorSlotName::OUTPUT, input_shard_coord),
+                  mk_value(0,
+                           TensorSlotName::OUTPUT,
+                           TensorSlotName::INPUT,
+                           input_shard_coord),
               },
               {
                   mk_slot(TensorSlotName::WEIGHT),
-                  mk_value(1, TensorSlotName::OUTPUT, weight_shard_coord),
+                  mk_value(1,
+                           TensorSlotName::OUTPUT,
+                           TensorSlotName::WEIGHT,
+                           weight_shard_coord),
               },
           },
           /*node_attrs=*/
@@ -197,11 +226,17 @@ TEST_SUITE(FF_TEST_SUITE) {
           {
               {
                   mk_slot(TensorSlotName::OUTPUT_1),
-                  mk_value(20, TensorSlotName::OUTPUT_1, output_1_shard_coord),
+                  mk_value(20,
+                           TensorSlotName::OUTPUT_1,
+                           TensorSlotName::OUTPUT_1,
+                           output_1_shard_coord),
               },
               {
                   mk_slot(TensorSlotName::OUTPUT_2),
-                  mk_value(20, TensorSlotName::OUTPUT_2, output_2_shard_coord),
+                  mk_value(20,
+                           TensorSlotName::OUTPUT_2,
+                           TensorSlotName::OUTPUT_2,
+                           output_2_shard_coord),
               },
           },
       };

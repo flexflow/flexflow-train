@@ -1,6 +1,8 @@
 #include "task-spec/dynamic_graph/shard_expansion.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
+#include "utils/bidict/algorithms/filter_keys.h"
 #include "utils/containers/map_values2.h"
+#include "utils/containers/transform.h"
 #include "utils/optional.h"
 
 namespace FlexFlow {
@@ -35,6 +37,16 @@ bool graph_is_fully_shard_expanded(DynamicOpenDataflowGraph const &g) {
                                       slot_is_shard_expanded);
 }
 
+static bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
+    subset_tensor_mapping_for_coord(
+        bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> const
+            &mapping,
+        ParallelTensorSpaceCoordinate const &parallel_tensor_coord) {
+  return filter_keys(mapping, [&](ParallelTensorSpaceCoordinate const &p) {
+    return p == parallel_tensor_coord;
+  });
+}
+
 static DynamicNodeInvocation shard_invocation_for_binding(
     DynamicNodeInvocation const &i,
     MachineSpaceCoordinate const &machine_coord,
@@ -47,6 +59,13 @@ static DynamicNodeInvocation shard_invocation_for_binding(
 
     DynamicValueAttrs result = v;
     result.shard_coord = parallel_tensor_coord;
+    result.mapping = transform(
+        v.mapping,
+        [&](bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> const
+                &mapping) {
+          return subset_tensor_mapping_for_coord(mapping,
+                                                 parallel_tensor_coord);
+        });
     return result;
   };
 
