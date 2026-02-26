@@ -1,5 +1,6 @@
 #include "task-spec/dynamic_graph/copy_insertion.h"
 #include "op-attrs/parallel_tensor_space_coordinate.dtg.h"
+#include "op-attrs/tensor_slot_name.dtg.h"
 #include "pcg/machine_space_coordinate.dtg.h"
 #include "pcg/mapped_parallel_computation_graph/mapped_operator_task_group.h"
 #include "task-spec/dynamic_graph/dynamic_node_attrs.dtg.h"
@@ -70,7 +71,13 @@ std::unordered_set<DynamicNodeInvocation> perform_copy_insertion_for_invocation(
     DynamicValueAttrs use_value = mapped_inputs.at(slot);
     if (source_value != use_value) {
       result.insert(DynamicNodeInvocation{
-          /*inputs=*/{{slot, source_value}},
+          /*inputs=*/{
+              {
+                  DynamicTensorSlot{TensorSlotName::INPUT,
+                                    slot.slot_tensor_role},
+                  source_value,
+              },
+          },
           /*node_attrs=*/
           DynamicNodeAttrs{
               /*task_type=*/std::nullopt,
@@ -80,7 +87,14 @@ std::unordered_set<DynamicNodeInvocation> perform_copy_insertion_for_invocation(
               /*layer_guid=*/dynamic_layer_guid_t{dynamic_copy_layer_guid_t{}},
               /*per_device_op_state=*/std::nullopt,
           },
-          /*outputs=*/{{slot, use_value}},
+          /*outputs=*/
+          {
+              {
+                  DynamicTensorSlot{TensorSlotName::OUTPUT,
+                                    slot.slot_tensor_role},
+                  use_value,
+              },
+          },
       });
     }
   }
