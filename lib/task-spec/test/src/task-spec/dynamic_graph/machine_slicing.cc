@@ -1,6 +1,5 @@
 #include "task-spec/dynamic_graph/machine_slicing.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
-#include "utils/bidict/algorithms/filter_keys.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -33,33 +32,6 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
     };
 
-    auto mk_shard_binding = [&](ParallelTensorSpaceCoordinate const &c1,
-                                ParallelTensorSpaceCoordinate const &c2,
-                                ParallelTensorSpaceCoordinate const &c3,
-                                ParallelTensorSpaceCoordinate const &c4)
-        -> OperatorAtomicTaskShardBinding {
-      return OperatorAtomicTaskShardBinding{
-          /*tensor_coords=*/{
-              {
-                  TensorSlotName::INPUT,
-                  c1,
-              },
-              {
-                  TensorSlotName::WEIGHT,
-                  c2,
-              },
-              {
-                  TensorSlotName::OUTPUT_1,
-                  c3,
-              },
-              {
-                  TensorSlotName::OUTPUT_2,
-                  c4,
-              },
-          },
-      };
-    };
-
     MachineSpaceCoordinate mc1 = mk_machine_coord(0_n, 0_n);
     MachineSpaceCoordinate mc2 = mk_machine_coord(2_n, 0_n);
     MachineSpaceCoordinate mc3 = mk_machine_coord(4_n, 0_n);
@@ -82,25 +54,6 @@ TEST_SUITE(FF_TEST_SUITE) {
     ParallelTensorSpaceCoordinate mc2_output_2_coord =
         mk_pt_coord(0_n, 0_n, 0_n, 0_n);
 
-    MappedOperatorTaskGroup mapped_task_group = MappedOperatorTaskGroup{
-        bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding>{
-            {
-                mc1,
-                mk_shard_binding(mc1_input_coord,
-                                 mc1_weight_coord,
-                                 mc1_output_1_coord,
-                                 mc1_output_2_coord),
-            },
-            {
-                mc2,
-                mk_shard_binding(mc2_input_coord,
-                                 mc2_weight_coord,
-                                 mc2_output_1_coord,
-                                 mc2_output_2_coord),
-            },
-        },
-    };
-
     auto mk_slot = [](TensorSlotName const &slot_name) -> DynamicTensorSlot {
       return DynamicTensorSlot{
           /*slot_name=*/slot_name,
@@ -109,20 +62,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     auto mk_value =
-        [&](size_t src_node_id,
-            TensorSlotName src_slot_name,
-            TensorSlotName use_slot_name,
-            std::optional<ParallelTensorSpaceCoordinate> const &shard_coord)
+        [](size_t src_node_id,
+           TensorSlotName src_slot_name,
+           std::optional<ParallelTensorSpaceCoordinate> const &shard_coord)
         -> DynamicValueAttrs {
-      bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
-          tensor_binding = get_tensor_bindings_for_slot_name(mapped_task_group,
-                                                             use_slot_name);
-      if (shard_coord.has_value()) {
-        tensor_binding = filter_keys(
-            tensor_binding, [&](ParallelTensorSpaceCoordinate const &p) {
-              return p == shard_coord.value();
-            });
-      }
       return DynamicValueAttrs{
           /*tensor_guid=*/dynamic_tensor_guid_t{parallel_tensor_guid_t{
               KwargDataflowOutput<TensorSlotName>{
@@ -132,8 +75,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           }},
           /*parallel_tensor_shape=*/std::nullopt,
           /*shard_coord=*/shard_coord,
-          /*mapping=*/
-          tensor_binding,
+          /*mapping=*/std::nullopt,
           /*accessor=*/std::nullopt,
           /*role=*/std::nullopt,
       };
@@ -143,21 +85,28 @@ TEST_SUITE(FF_TEST_SUITE) {
     size_t invocation2_id = 21;
     size_t invocation3_id = 22;
 
+    DynamicValueAttrs graph_input1 =
+        mk_value(0, TensorSlotName::OUTPUT, std::nullopt);
+    DynamicValueAttrs graph_input2 =
+        mk_value(1, TensorSlotName::OUTPUT, std::nullopt);
+    DynamicValueAttrs invocation1_output1 =
+        mk_value(invocation1_id, TensorSlotName::OUTPUT_1, std::nullopt);
+    DynamicValueAttrs invocation1_output2 =
+        mk_value(invocation1_id, TensorSlotName::OUTPUT_2, std::nullopt);
+    DynamicValueAttrs invocation2_output1 =
+        mk_value(invocation2_id, TensorSlotName::OUTPUT_4, std::nullopt);
+    DynamicValueAttrs invocation3_output1 =
+        mk_value(invocation3_id, TensorSlotName::OUTPUT_1, std::nullopt);
+
     DynamicNodeInvocation invocation1 = DynamicNodeInvocation{
         /*inputs=*/{
             {
                 mk_slot(TensorSlotName::INPUT),
-                mk_value(0,
-                         TensorSlotName::OUTPUT,
-                         TensorSlotName::INPUT,
-                         std::nullopt),
+                graph_input1,
             },
             {
                 mk_slot(TensorSlotName::WEIGHT),
-                mk_value(1,
-                         TensorSlotName::OUTPUT,
-                         TensorSlotName::WEIGHT,
-                         std::nullopt),
+                graph_input2,
             },
         },
         /*node_attrs=*/
@@ -174,30 +123,18 @@ TEST_SUITE(FF_TEST_SUITE) {
         {
             {
                 mk_slot(TensorSlotName::OUTPUT_1),
-                mk_value(invocation1_id,
-                         TensorSlotName::OUTPUT_1,
-                         TensorSlotName::OUTPUT_1,
-                         std::nullopt),
+                invocation1_output1,
             },
             {
                 mk_slot(TensorSlotName::OUTPUT_2),
-                mk_value(invocation1_id,
-                         TensorSlotName::OUTPUT_2,
-                         TensorSlotName::OUTPUT_2,
-                         std::nullopt),
+                invocation1_output2,
             },
         },
     };
 
     DynamicNodeInvocation invocation2 = DynamicNodeInvocation{
         /*inputs=*/{
-            {
-                mk_slot(TensorSlotName::INPUT),
-                mk_value(invocation1_id,
-                         TensorSlotName::OUTPUT_2,
-                         TensorSlotName::INPUT,
-                         std::nullopt),
-            },
+            {mk_slot(TensorSlotName::INPUT), invocation1_output2},
         },
         /*node_attrs=*/
         DynamicNodeAttrs{
@@ -213,10 +150,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         {
             {
                 mk_slot(TensorSlotName::OUTPUT_4),
-                mk_value(invocation2_id,
-                         TensorSlotName::OUTPUT_4,
-                         TensorSlotName::OUTPUT_4,
-                         std::nullopt),
+                invocation2_output1,
             },
         },
     };
@@ -225,24 +159,15 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*inputs=*/{
             {
                 mk_slot(TensorSlotName::KEY),
-                mk_value(invocation2_id,
-                         TensorSlotName::OUTPUT_4,
-                         TensorSlotName::KEY,
-                         std::nullopt),
+                invocation2_output1,
             },
             {
                 mk_slot(TensorSlotName::QUERY),
-                mk_value(1,
-                         TensorSlotName::OUTPUT,
-                         TensorSlotName::QUERY,
-                         std::nullopt),
+                graph_input2,
             },
             {
                 mk_slot(TensorSlotName::VALUE),
-                mk_value(invocation1_id,
-                         TensorSlotName::OUTPUT_1,
-                         TensorSlotName::VALUE,
-                         std::nullopt),
+                invocation1_output1,
             },
         },
         /*node_attrs=*/
@@ -259,10 +184,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         {
             {
                 mk_slot(TensorSlotName::OUTPUT_1),
-                mk_value(invocation3_id,
-                         TensorSlotName::OUTPUT_1,
-                         TensorSlotName::OUTPUT_1,
-                         std::nullopt),
+                invocation3_output1,
             },
         },
     };
