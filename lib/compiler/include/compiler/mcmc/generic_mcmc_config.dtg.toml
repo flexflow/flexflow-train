@@ -1,0 +1,20 @@
+namespace = "FlexFlow"
+name = "GenericMCMCConfig"
+type = "struct"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h"
+]
+
+[[fields]]
+name = "temperature"
+type = "float"
+
+[[fields]]
+name = "num_iterations"
+type = "::FlexFlow::nonnegative_int"
