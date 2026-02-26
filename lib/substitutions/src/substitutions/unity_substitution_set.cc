@@ -8,8 +8,18 @@
 #include "utils/nonnegative_int/nonnegative_int.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include "utils/positive_int/positive_range.h"
+#include "utils/random_utils.h"
 
 namespace FlexFlow {
+
+std::optional<Substitution>
+    get_random_substitution(MachineComputeSpecification const &resources) {
+  std::vector<Substitution> substitutions = get_substitution_set(resources);
+  if (substitutions.empty()) {
+    return std::nullopt;
+  }
+  return select_random(substitutions);
+}
 
 std::vector<Substitution>
     get_substitution_set(MachineComputeSpecification const &resources) {

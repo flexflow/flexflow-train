@@ -1,0 +1,19 @@
+#ifndef _FLEXFLOW_LIB_COMPILER_INCLUDE_COMPILER_MCMC_MACHINE_MAPPING_MUTATION_SET_H
+#define _FLEXFLOW_LIB_COMPILER_INCLUDE_COMPILER_MCMC_MACHINE_MAPPING_MUTATION_SET_H
+
+#include "compiler/machine_mapping/machine_mapping.h"
+#include "compiler/search_result.dtg.h"
+
+namespace FlexFlow {
+std::optional<MachineMapping>
+    get_random_mapping(ParallelComputationGraph const &pcg,
+                       MachineComputeSpecification const &resources,
+                       DeviceType const &device_type);
+
+std::optional<MachineMapping>
+    get_random_mutation(SearchResult const &mapped_pcg,
+                        MachineComputeSpecification const &resource,
+                        DeviceType const &device_type);
+} // namespace FlexFlow
+
+#endif

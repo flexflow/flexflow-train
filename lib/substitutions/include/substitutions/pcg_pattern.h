@@ -12,6 +12,10 @@ namespace FlexFlow {
 
 std::unordered_set<PatternNode> get_nodes(PCGPattern const &);
 
+std::optional<PCGPatternMatch>
+    get_random_pattern_match(PCGPattern const &pattern,
+                             SubParallelComputationGraph const &pcg);
+
 /**
  * @brief Find all locations in \p pcg that match \p pattern
  */

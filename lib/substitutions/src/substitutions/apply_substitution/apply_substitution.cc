@@ -23,9 +23,20 @@ SubParallelComputationGraph
                        PCGPatternMatch const &match) {
   assert_pcg_pattern_match_is_valid_for_pattern_and_subpcg(
       match, sub.pcg_pattern, spcg);
+  std::pair<SubParallelComputationGraph, OutputExprToResultSubPCGMapping>
+      substitution_output_result =
+          evaluate_substitution_output(spcg, sub, match);
+  return apply_substitution_from_output_result(
+      substitution_output_result, spcg, sub, match);
+}
 
-  auto substitution_output_result =
-      evaluate_substitution_output(spcg, sub, match);
+SubParallelComputationGraph apply_substitution_from_output_result(
+    std::pair<SubParallelComputationGraph,
+              OutputExprToResultSubPCGMapping> const
+        &substitution_output_result,
+    SubParallelComputationGraph const &spcg,
+    Substitution const &sub,
+    PCGPatternMatch const &match) {
   SubParallelComputationGraph substitution_output_graph =
       substitution_output_result.first;
   OutputExprToResultSubPCGMapping output_expr_to_result_sub_pcg_mapping =
