@@ -10,7 +10,7 @@
 namespace FlexFlow {
 
 std::optional<MachineMapping>
-    get_random_mapping(ParallelComputationGraph &pcg,
+    get_random_mapping(ParallelComputationGraph const &pcg,
                        MachineComputeSpecification const &resources,
                        DeviceType const &device_type) {
   std::vector<parallel_layer_guid_t> layers = topological_ordering(pcg);
@@ -29,7 +29,7 @@ std::optional<MachineMapping>
 }
 
 std::optional<MachineMapping>
-    get_random_mutation(SearchResult mapped_pcg,
+    get_random_mutation(SearchResult const &mapped_pcg,
                         MachineComputeSpecification const &resources,
                         DeviceType const &device_type) {
   ParallelComputationGraph pcg = mapped_pcg.pcg;
