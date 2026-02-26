@@ -18,7 +18,8 @@ std::optional<MachineMapping>
   for (parallel_layer_guid_t layer : layers) {
     OperatorTaskSpace task = get_operator_task_space(pcg, layer);
     std::unordered_set<MachineView> allowed_machine_views =
-        get_allowed_machine_views(compute_slice_from_specification(resources), task, DeviceType::GPU);
+        get_allowed_machine_views(
+            compute_slice_from_specification(resources), task, DeviceType::GPU);
     if (allowed_machine_views.empty()) {
       return std::nullopt;
     }
@@ -44,7 +45,8 @@ std::optional<MachineMapping>
   OperatorTaskSpace task = get_operator_task_space(pcg, random_layer);
 
   std::vector<MachineView> allowed_machine_views =
-      vector_of(get_allowed_machine_views(compute_slice_from_specification(resources), task, device_type));
+      vector_of(get_allowed_machine_views(
+          compute_slice_from_specification(resources), task, device_type));
   MachineView random_new_machine_view = select_random(allowed_machine_views);
 
   machine_mapping.machine_views.at(random_layer) = random_new_machine_view;

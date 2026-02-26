@@ -7,8 +7,8 @@
 #include "utils/containers/require_only_key.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
-#include "utils/random_utils.h"
 #include "utils/positive_int/positive_range.h"
+#include "utils/random_utils.h"
 
 namespace FlexFlow {
 
