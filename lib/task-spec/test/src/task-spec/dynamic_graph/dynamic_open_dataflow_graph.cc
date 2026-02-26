@@ -15,6 +15,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         }},
         /*parallel_tensor_shape=*/std::nullopt,
         /*shard_coord=*/std::nullopt,
+        /*mapping=*/std::nullopt,
         /*accessor=*/std::nullopt,
         /*tensor_type=*/std::nullopt,
     };
@@ -28,6 +29,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         }},
         /*parallel_tensor_shape=*/std::nullopt,
         /*shard_coord=*/std::nullopt,
+        /*mapping=*/std::nullopt,
         /*accessor=*/std::nullopt,
         /*tensor_type=*/std::nullopt,
     };
@@ -41,6 +43,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         }},
         /*parallel_tensor_shape=*/std::nullopt,
         /*shard_coord=*/std::nullopt,
+        /*mapping=*/std::nullopt,
         /*accessor=*/std::nullopt,
         /*tensor_type=*/std::nullopt,
     };

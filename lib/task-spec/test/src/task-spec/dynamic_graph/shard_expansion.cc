@@ -1,4 +1,5 @@
 #include "task-spec/dynamic_graph/shard_expansion.h"
+#include "pcg/mapped_parallel_computation_graph/mapped_operator_task_group.h"
 #include "test/utils/doctest/fmt/unordered_set.h"
 #include <doctest/doctest.h>
 
@@ -107,9 +108,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     auto mk_value =
-        [](size_t src_node_id,
-           TensorSlotName src_slot_name,
-           std::optional<ParallelTensorSpaceCoordinate> const &shard_coord)
+        [&](size_t src_node_id,
+            TensorSlotName src_slot_name,
+            std::optional<ParallelTensorSpaceCoordinate> const &shard_coord)
         -> DynamicValueAttrs {
       return DynamicValueAttrs{
           /*tensor_guid=*/dynamic_tensor_guid_t{parallel_tensor_guid_t{
@@ -120,6 +121,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           }},
           /*parallel_tensor_shape=*/std::nullopt,
           /*shard_coord=*/shard_coord,
+          /*mapping=*/
+          get_tensor_bindings_for_slot_name(mapped_task_group, src_slot_name),
           /*accessor=*/std::nullopt,
           /*role=*/std::nullopt,
       };

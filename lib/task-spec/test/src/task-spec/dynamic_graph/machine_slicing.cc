@@ -32,6 +32,33 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
     };
 
+    auto mk_shard_binding = [&](ParallelTensorSpaceCoordinate const &c1,
+                                ParallelTensorSpaceCoordinate const &c2,
+                                ParallelTensorSpaceCoordinate const &c3,
+                                ParallelTensorSpaceCoordinate const &c4)
+        -> OperatorAtomicTaskShardBinding {
+      return OperatorAtomicTaskShardBinding{
+          /*tensor_coords=*/{
+              {
+                  TensorSlotName::INPUT,
+                  c1,
+              },
+              {
+                  TensorSlotName::WEIGHT,
+                  c2,
+              },
+              {
+                  TensorSlotName::OUTPUT_1,
+                  c3,
+              },
+              {
+                  TensorSlotName::OUTPUT_2,
+                  c4,
+              },
+          },
+      };
+    };
+
     MachineSpaceCoordinate mc1 = mk_machine_coord(0_n, 0_n);
     MachineSpaceCoordinate mc2 = mk_machine_coord(2_n, 0_n);
     MachineSpaceCoordinate mc3 = mk_machine_coord(4_n, 0_n);
@@ -54,6 +81,25 @@ TEST_SUITE(FF_TEST_SUITE) {
     ParallelTensorSpaceCoordinate mc2_output_2_coord =
         mk_pt_coord(0_n, 0_n, 0_n, 0_n);
 
+    MappedOperatorTaskGroup mapped_task_group = MappedOperatorTaskGroup{
+        bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding>{
+            {
+                mc1,
+                mk_shard_binding(mc1_input_coord,
+                                 mc1_weight_coord,
+                                 mc1_output_1_coord,
+                                 mc1_output_2_coord),
+            },
+            {
+                mc2,
+                mk_shard_binding(mc2_input_coord,
+                                 mc2_weight_coord,
+                                 mc2_output_1_coord,
+                                 mc2_output_2_coord),
+            },
+        },
+    };
+
     auto mk_slot = [](TensorSlotName const &slot_name) -> DynamicTensorSlot {
       return DynamicTensorSlot{
           /*slot_name=*/slot_name,
@@ -62,9 +108,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     auto mk_value =
-        [](size_t src_node_id,
-           TensorSlotName src_slot_name,
-           std::optional<ParallelTensorSpaceCoordinate> const &shard_coord)
+        [&](size_t src_node_id,
+            TensorSlotName src_slot_name,
+            std::optional<ParallelTensorSpaceCoordinate> const &shard_coord)
         -> DynamicValueAttrs {
       return DynamicValueAttrs{
           /*tensor_guid=*/dynamic_tensor_guid_t{parallel_tensor_guid_t{
@@ -75,6 +121,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           }},
           /*parallel_tensor_shape=*/std::nullopt,
           /*shard_coord=*/shard_coord,
+          /*mapping=*/
+          get_tensor_bindings_for_slot_name(mapped_task_group, src_slot_name),
           /*accessor=*/std::nullopt,
           /*role=*/std::nullopt,
       };
