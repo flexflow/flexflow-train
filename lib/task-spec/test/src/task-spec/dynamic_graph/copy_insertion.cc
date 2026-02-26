@@ -121,6 +121,15 @@ TEST_SUITE(FF_TEST_SUITE) {
             },
         },
     };
+    MappedOperatorTaskGroup input_mapping_copy1_diff_vs_use =
+        MappedOperatorTaskGroup{
+            bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding>{
+                {
+                    mc3,
+                    mk_input_shard_binding(mc2_input_coord),
+                },
+            },
+        };
     MappedOperatorTaskGroup input_mapping_copy2 = MappedOperatorTaskGroup{
         bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding>{
             {
@@ -178,6 +187,18 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
+    MappedOperatorTaskGroup invocation_mapping_diff_vs_copy1 =
+        MappedOperatorTaskGroup{
+            bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding>{
+                {
+                    mc2,
+                    mk_shard_binding(mc2_input_coord,
+                                     mc2_weight_coord,
+                                     mc2_output_1_coord,
+                                     mc2_output_2_coord),
+                },
+            },
+        };
     auto mk_slot = [](TensorSlotName const &slot_name) -> DynamicTensorSlot {
       return DynamicTensorSlot{
           /*slot_name=*/slot_name,
@@ -215,6 +236,11 @@ TEST_SUITE(FF_TEST_SUITE) {
         mk_value(0, TensorSlotName::OUTPUT, invocation_mapping, std::nullopt);
     DynamicValueAttrs graph_input1_use = mk_value(
         0, TensorSlotName::OUTPUT, invocation_mapping, TensorSlotName::INPUT);
+    DynamicValueAttrs graph_input1_use_diff_vs_copy1 =
+        mk_value(0,
+                 TensorSlotName::OUTPUT,
+                 invocation_mapping_diff_vs_copy1,
+                 TensorSlotName::INPUT);
     DynamicValueAttrs graph_input2 =
         mk_value(1, TensorSlotName::OUTPUT, invocation_mapping, std::nullopt);
     DynamicValueAttrs graph_input2_use = mk_value(
@@ -242,6 +268,11 @@ TEST_SUITE(FF_TEST_SUITE) {
         0, TensorSlotName::OUTPUT, input_mapping_same, TensorSlotName::OUTPUT);
     DynamicValueAttrs graph_input1_src_copy1 = mk_value(
         0, TensorSlotName::OUTPUT, input_mapping_copy1, TensorSlotName::OUTPUT);
+    DynamicValueAttrs graph_input1_src_copy1_diff_vs_use =
+        mk_value(0,
+                 TensorSlotName::OUTPUT,
+                 input_mapping_copy1_diff_vs_use,
+                 TensorSlotName::OUTPUT);
     DynamicValueAttrs graph_input1_src_copy2 = mk_value(
         0, TensorSlotName::OUTPUT, input_mapping_copy2, TensorSlotName::OUTPUT);
     DynamicValueAttrs graph_input2_src_same = mk_value(
@@ -360,7 +391,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       std::unordered_set<DynamicNodeInvocation> correct = {
           mapped,
-          mk_copy(graph_input1_src_copy1, graph_input1_use),
+          mk_copy(graph_input1_src_copy1_diff_vs_use,
+                  graph_input1_use_diff_vs_copy1),
       };
 
       CHECK(result.size() == correct.size());

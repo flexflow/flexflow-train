@@ -8,10 +8,13 @@
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_slot.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
+#include "utils/bidict/algorithms/bidict_from_pairs.h"
+#include "utils/bidict/algorithms/unordered_set_of.h"
+#include "utils/containers/intersection.h"
 #include "utils/containers/map_values2.h"
+#include "utils/containers/set_difference.h"
 #include "utils/containers/transform.h"
 #include "utils/optional.h"
-#include <unordered_map>
 
 namespace FlexFlow {
 
@@ -46,6 +49,33 @@ static DynamicValueAttrs map_dynamic_value_attrs_for_task_group(
   return result;
 }
 
+static std::pair<DynamicValueAttrs, DynamicValueAttrs>
+    filter_mapping_to_avoid_degenerate_copies(DynamicValueAttrs const &input,
+                                              DynamicValueAttrs const &output) {
+  std::unordered_set<
+      std::pair<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>>
+      input_mapping = unordered_set_of(assert_unwrap(input.mapping));
+  std::unordered_set<
+      std::pair<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>>
+      output_mapping = unordered_set_of(assert_unwrap(output.mapping));
+
+  // Exclude the point shared between the input and output mappings, because
+  // those will not result in actual copies once shard expansion is performed
+  std::unordered_set<
+      std::pair<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>>
+      remove = intersection(input_mapping, output_mapping);
+
+  DynamicValueAttrs filtered_input = input;
+  filtered_input.mapping =
+      bidict_from_pairs(set_difference(input_mapping, remove));
+
+  DynamicValueAttrs filtered_output = output;
+  filtered_output.mapping =
+      bidict_from_pairs(set_difference(output_mapping, remove));
+
+  return std::pair{filtered_input, filtered_output};
+}
+
 std::unordered_set<DynamicNodeInvocation> perform_copy_insertion_for_invocation(
     DynamicNodeInvocation const &i,
     std::unordered_map<DynamicValueAttrs, DynamicValueAttrs> const &sources) {
@@ -72,12 +102,14 @@ std::unordered_set<DynamicNodeInvocation> perform_copy_insertion_for_invocation(
     DynamicValueAttrs source_value = sources.at(input);
     DynamicValueAttrs use_value = mapped_inputs.at(slot);
     if (source_value != use_value) {
-      result.insert(DynamicNodeInvocation{
+      auto const &[filtered_source, filtered_use] =
+          filter_mapping_to_avoid_degenerate_copies(source_value, use_value);
+      DynamicNodeInvocation copy{
           /*inputs=*/{
               {
                   DynamicTensorSlot{TensorSlotName::INPUT,
                                     slot.slot_tensor_role},
-                  source_value,
+                  filtered_source,
               },
           },
           /*node_attrs=*/
@@ -94,10 +126,11 @@ std::unordered_set<DynamicNodeInvocation> perform_copy_insertion_for_invocation(
               {
                   DynamicTensorSlot{TensorSlotName::OUTPUT,
                                     slot.slot_tensor_role},
-                  use_value,
+                  filtered_use,
               },
           },
-      });
+      };
+      result.insert(copy);
     }
   }
 
