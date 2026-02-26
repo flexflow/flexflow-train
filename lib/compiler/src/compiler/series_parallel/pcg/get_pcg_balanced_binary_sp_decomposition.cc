@@ -17,7 +17,7 @@ std::optional<PCGBinarySPDecomposition>
     return std::nullopt;
   }
 
-  return pcg_binary_sp_decomposition_from_binary_sp_tree(
+  return pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
       balanced_binary_sp_tree_from_nary(spd.value()));
 }
 

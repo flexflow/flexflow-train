@@ -1,0 +1,13 @@
+namespace = "FlexFlow"
+name = "dynamic_loss_layer_guid_t"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+  "rapidcheck",
+]
+
+fields = []

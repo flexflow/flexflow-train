@@ -1,0 +1,26 @@
+namespace = "FlexFlow"
+name = "dynamic_tensor_guid_t"
+type = "variant"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "pcg/tensor_guid_t.dtg.h",
+  "pcg/parallel_computation_graph/parallel_tensor_guid_t.dtg.h",
+  "task-spec/dynamic_graph/dynamic_loss_tensor_guid_t.dtg.h",
+]
+
+[[values]]
+type = "::FlexFlow::tensor_guid_t"
+key = "cg_tensor"
+
+[[values]]
+type = "::FlexFlow::parallel_tensor_guid_t"
+key = "pcg_tensor"
+
+[[values]]
+type = "::FlexFlow::dynamic_loss_tensor_guid_t"
+key = "loss_tensor"

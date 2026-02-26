@@ -11,6 +11,7 @@ DynamicTensorRole dynamic_tensor_role_from_fwb_tensor_type(FwbTensorType);
 DynamicTensorRole mk_dynamic_tensor_role_fwd();
 DynamicTensorRole mk_dynamic_tensor_role_bwd();
 DynamicTensorRole mk_dynamic_tensor_role_opt(OptimizerSlotName);
+DynamicTensorRole mk_dynamic_tensor_role_loss();
 
 } // namespace FlexFlow
 

@@ -22,6 +22,9 @@ public:
 
   milliseconds_t operator+(milliseconds_t const &other) const;
 
+  milliseconds_t operator*(float rhs) const;
+  friend milliseconds_t operator*(float lhs, milliseconds_t const &rhs);
+
   float unwrap_milliseconds() const;
 
 private:

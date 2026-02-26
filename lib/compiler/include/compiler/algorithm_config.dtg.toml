@@ -1,0 +1,19 @@
+namespace = "FlexFlow"
+name = "AlgorithmConfig"
+type = "variant"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "compiler/data_parallelism/data_parallelism_config.dtg.h",
+  "compiler/unity_algorithm/unity_search_config.dtg.h",
+]
+
+[[values]]
+type = "::FlexFlow::DataParallelismConfig"
+
+[[values]]
+type = "::FlexFlow::UnitySearchConfig"

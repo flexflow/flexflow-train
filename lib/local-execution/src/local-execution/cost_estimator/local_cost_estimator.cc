@@ -1,3 +1,5 @@
+#if 0 // FIXME (Elliott): fix cost estimator
+
 #include "local-execution/cost_estimator/local_cost_estimator.h"
 #include "compiler/machine_mapping/machine_view.dtg.h"
 #include "kernels/create_local_allocator_for_device_type.h"
@@ -151,3 +153,5 @@ CostEstimator
 }
 
 } // namespace FlexFlow
+
+#endif

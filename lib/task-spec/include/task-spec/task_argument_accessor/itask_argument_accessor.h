@@ -24,8 +24,6 @@ struct ITaskArgumentAccessor {
 
   virtual ~ITaskArgumentAccessor() = default;
 
-  virtual ConcreteArgSpec const &get_concrete_arg(arg_slot_id_t) const = 0;
-
   virtual GenericTensorAccessor get_tensor(TaskTensorParameter,
                                            Permissions priv) const = 0;
 

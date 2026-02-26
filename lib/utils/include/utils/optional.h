@@ -7,6 +7,15 @@
 
 namespace FlexFlow {
 
+template <typename T, typename F, typename U = std::invoke_result_t<F, T>>
+U and_then(std::optional<T> const &o, F &&f) {
+  if (o.has_value()) {
+    return f(o.value());
+  } else {
+    return std::nullopt;
+  }
+}
+
 template <typename T, typename F>
 T or_else(std::optional<T> const &o, F &&f) {
   if (o.has_value()) {
@@ -30,6 +39,12 @@ template <typename T>
 T const &assert_unwrap(std::optional<T> const &o) {
   ASSERT(o.has_value());
   return o.value();
+}
+
+template <typename T>
+T expect(std::optional<T> const &x, std::string const &err) {
+  ASSERT(x.has_value(), err);
+  return x.value();
 }
 
 } // namespace FlexFlow

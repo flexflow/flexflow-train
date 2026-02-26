@@ -3,6 +3,7 @@
 
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
+#include "utils/graph/labelled_open_kwarg_dataflow_graph/labelled_open_kwarg_dataflow_graph.h"
 
 namespace FlexFlow {
 
@@ -31,6 +32,11 @@ std::unordered_multiset<DynamicTensorSlot>
 std::unordered_set<DynamicNodeInvocation>
     get_dynamic_invocation_set(DynamicOpenDataflowGraph const &);
 
+std::optional<DynamicValueAttrs>
+    find_output_value_attrs(DynamicOpenDataflowGraph const &,
+                            dynamic_tensor_guid_t,
+                            std::optional<DynamicTensorRole> const &);
+
 DynamicOpenDataflowGraph transform_dynamic_invocation_set(
     DynamicOpenDataflowGraph const &,
     std::function<DynamicNodeInvocation(DynamicNodeInvocation const &)> const
@@ -43,6 +49,14 @@ DynamicOpenDataflowGraph flatmap_dynamic_invocation_set(
 
 DynamicOpenDataflowGraph dynamic_open_dataflow_graph_from_invocation_set(
     std::unordered_set<DynamicNodeInvocation> const &);
+
+std::pair<LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
+                                         DynamicValueAttrs,
+                                         int,
+                                         DynamicTensorSlot>,
+          bidict<Node, DynamicNodeInvocation>>
+    labelled_open_kwarg_dataflow_graph_from_dynamic_open_dataflow_graph(
+        DynamicOpenDataflowGraph const &);
 
 bool dynamic_open_dataflow_graphs_are_isomorphic(
     DynamicOpenDataflowGraph const &, DynamicOpenDataflowGraph const &);

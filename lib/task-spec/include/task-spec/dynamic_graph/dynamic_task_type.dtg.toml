@@ -16,3 +16,6 @@ name = "BWD"
 
 [[values]]
 name = "UPD"
+
+[[values]]
+name = "LOSS"

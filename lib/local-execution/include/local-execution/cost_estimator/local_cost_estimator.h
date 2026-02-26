@@ -1,3 +1,5 @@
+#if 0 // FIXME (Elliott): fix cost estimator
+
 #ifndef _FLEXFLOW_LIB_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_COST_ESTIMATOR_LOCAL_COST_ESTIMATOR_H
 #define _FLEXFLOW_LIB_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_COST_ESTIMATOR_LOCAL_COST_ESTIMATOR_H
 
@@ -31,5 +33,7 @@ CHECK_RC_COPY_VIRTUAL_COMPLIANT(LocalCostEstimator);
 CostEstimator get_local_cost_estimator(RuntimeArgConfig const &);
 
 } // namespace FlexFlow
+
+#endif
 
 #endif
