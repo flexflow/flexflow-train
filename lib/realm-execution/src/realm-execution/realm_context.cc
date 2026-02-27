@@ -137,12 +137,13 @@ Realm::Event RealmContext::collective_spawn_task(Realm::Processor target_proc,
   return result;
 }
 
-template <int N>
-static Realm::Rect<N> rect_from_dims(TensorDims const &dims) {
+template <int N, typename T = int>
+static Realm::Rect<N, T> rect_from_dims(TensorDims const &dims) {
   std::vector<int> values{dims.ff_ordered.begin(), dims.ff_ordered.end()};
-  return Realm::Rect<N>{Realm::Point<N>::ZEROES(),
-                        Realm::Point<N>{values.data()} -
-                            Realm::Point<N>::ONES()};
+  ASSERT(values.size() == N);
+  return Realm::Rect<N, T>{Realm::Point<N, T>::ZEROES(),
+                           Realm::Point<N, T>{values.data()} -
+                               Realm::Point<N, T>::ONES()};
 }
 
 std::pair<Realm::RegionInstance, Realm::Event>
