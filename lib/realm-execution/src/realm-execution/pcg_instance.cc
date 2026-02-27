@@ -7,6 +7,7 @@
 #include "realm-execution/realm_context.h"
 #include "realm-execution/tasks/impl/op_task.h"
 #include "realm-execution/tensor_instance_backing.h"
+#include "task-spec/dynamic_graph/copy_insertion.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_task_type.dtg.h"
@@ -104,6 +105,7 @@ PCGInstance create_pcg_instance(
   }
 
   dg = perform_update_insertion(dg, optimizer_attrs);
+  dg = perform_copy_insertion(dg);
   dg = perform_shard_expansion(dg);
   TensorInstanceBacking tensor_instance_backing =
       perform_instance_allocation(dg, inputs, ctx);

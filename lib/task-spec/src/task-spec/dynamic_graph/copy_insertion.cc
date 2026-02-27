@@ -10,6 +10,8 @@
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
 #include "utils/bidict/algorithms/bidict_from_pairs.h"
 #include "utils/bidict/algorithms/unordered_set_of.h"
+#include "utils/containers/contains_key.h"
+#include "utils/containers/flatmap.h"
 #include "utils/containers/intersection.h"
 #include "utils/containers/map_values2.h"
 #include "utils/containers/set_difference.h"
@@ -34,10 +36,11 @@ bool no_part_of_graph_is_copy_inserted(DynamicOpenDataflowGraph const &g) {
 }
 
 bool graph_is_fully_copy_inserted(DynamicOpenDataflowGraph const &g) {
+  auto node_is_any = [](DynamicNodeAttrs const &) -> bool { return true; };
   auto slot_is_mapped = [](DynamicTensorSlot const &) -> bool { return true; };
 
   return full_dynamic_graph_satisfies(
-      g, node_is_copy, value_is_mapped, slot_is_mapped);
+      g, node_is_any, value_is_mapped, slot_is_mapped);
 }
 
 static DynamicValueAttrs map_dynamic_value_attrs_for_task_group(
@@ -99,6 +102,10 @@ std::unordered_set<DynamicNodeInvocation> perform_copy_insertion_for_invocation(
   }};
 
   for (auto const &[slot, input] : i.inputs) {
+    if (!contains_key(sources, input)) {
+      continue;
+    }
+
     DynamicValueAttrs source_value = sources.at(input);
     DynamicValueAttrs use_value = mapped_inputs.at(slot);
     if (source_value != use_value) {
@@ -152,10 +159,13 @@ DynamicOpenDataflowGraph
     }
   }
 
+  // Use regular flatmap here to remove duplicates (we don't want to copy the
+  // same tensor to the same place multiple times)
   DynamicOpenDataflowGraph result =
-      flatmap_dynamic_invocation_set(g, [&](DynamicNodeInvocation const &i) {
-        return perform_copy_insertion_for_invocation(i, sources);
-      });
+      dynamic_open_dataflow_graph_from_invocation_set(
+          flatmap(g.invocations, [&](DynamicNodeInvocation const &i) {
+            return perform_copy_insertion_for_invocation(i, sources);
+          }));
 
   ASSERT(graph_is_fully_copy_inserted(result));
 

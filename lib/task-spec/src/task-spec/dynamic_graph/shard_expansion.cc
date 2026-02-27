@@ -1,7 +1,10 @@
 #include "task-spec/dynamic_graph/shard_expansion.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
+#include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
 #include "utils/bidict/algorithms/filter_keys.h"
+#include "utils/containers/get_only.h"
 #include "utils/containers/map_values2.h"
+#include "utils/containers/require_same.h"
 #include "utils/containers/transform.h"
 #include "utils/optional.h"
 
@@ -82,8 +85,33 @@ static DynamicNodeInvocation shard_invocation_for_binding(
   };
 }
 
+static std::unordered_set<DynamicNodeInvocation>
+    perform_shard_expansion_for_copy(DynamicNodeInvocation const &i) {
+  auto const &[input_slot, input] = get_only(i.inputs);
+  auto const &[output_slot, output] = get_only(i.outputs);
+  bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> input_mapping =
+      assert_unwrap(input.mapping);
+  bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> output_mapping =
+      assert_unwrap(output.mapping);
+  require_same(input_mapping.left_values(), output_mapping.left_values());
+
+  return transform(
+      input_mapping.left_values(), [&](ParallelTensorSpaceCoordinate const &p) {
+        return shard_invocation_for_binding(i,
+                                            input_mapping.at_l(p),
+                                            OperatorAtomicTaskShardBinding{{
+                                                {input_slot.slot_name, p},
+                                                {output_slot.slot_name, p},
+                                            }});
+      });
+}
+
 std::unordered_set<DynamicNodeInvocation>
     perform_shard_expansion_for_invocation(DynamicNodeInvocation const &i) {
+  if (i.node_attrs.op_attrs.has_value() &&
+      i.node_attrs.op_attrs.value().is_copy()) {
+    return perform_shard_expansion_for_copy(i);
+  }
 
   MappedOperatorTaskGroup mapping = assert_unwrap(i.node_attrs.mapping);
 

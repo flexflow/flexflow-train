@@ -25,12 +25,7 @@ LossInsertionResult perform_loss_insertion(
       /*tensor_guid=*/mk_dynamic_tensor_guid_for_loss(),
       /*parallel_tensor_shape=*/logit_value.parallel_tensor_shape,
       /*shard_coord=*/logit_value.shard_coord,
-      /*mapping=*/
-      transform(loss_mapping,
-                [](MappedOperatorTaskGroup const &node_mapping) {
-                  return get_tensor_bindings_for_slot_name(
-                      node_mapping, TensorSlotName::INPUT);
-                }),
+      /*mapping=*/std::nullopt,
       /*accessor=*/std::nullopt,
       /*role=*/mk_dynamic_tensor_role_loss(),
   };
@@ -38,12 +33,7 @@ LossInsertionResult perform_loss_insertion(
       /*tensor_guid=*/logit_value.tensor_guid,
       /*parallel_tensor_shape=*/logit_value.parallel_tensor_shape,
       /*shard_coord=*/logit_value.shard_coord,
-      /*mapping=*/
-      transform(loss_mapping,
-                [](MappedOperatorTaskGroup const &node_mapping) {
-                  return get_tensor_bindings_for_slot_name(
-                      node_mapping, TensorSlotName::LOGIT);
-                }),
+      /*mapping=*/std::nullopt,
       /*accessor=*/std::nullopt,
       /*role=*/mk_dynamic_tensor_role_bwd(),
   };
