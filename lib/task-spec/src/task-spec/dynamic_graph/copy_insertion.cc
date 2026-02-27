@@ -6,6 +6,7 @@
 #include "task-spec/dynamic_graph/dynamic_node_attrs.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
+#include "task-spec/dynamic_graph/dynamic_task_type.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_slot.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
 #include "utils/bidict/algorithms/bidict_from_pairs.h"
@@ -121,7 +122,8 @@ std::unordered_set<DynamicNodeInvocation> perform_copy_insertion_for_invocation(
           },
           /*node_attrs=*/
           DynamicNodeAttrs{
-              /*task_type=*/std::nullopt,
+              /*task_type=*/transform(slot.slot_tensor_role,
+                                      decide_copy_task_type),
               /*device_coord=*/std::nullopt,
               /*mapping=*/std::nullopt,
               /*op_attrs*/ TrainingOperationAttrs{CopyAttrs{}},

@@ -1,6 +1,8 @@
 #include "task-spec/dynamic_graph/copy_insertion.h"
 #include "op-attrs/tensor_slot_name.dtg.h"
 #include "pcg/mapped_parallel_computation_graph/mapped_operator_task_group.h"
+#include "task-spec/dynamic_graph/dynamic_task_type.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_tensor_role.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
 #include "test/utils/doctest/fmt/unordered_set.h"
 #include <doctest/doctest.h>
@@ -202,7 +204,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     auto mk_slot = [](TensorSlotName const &slot_name) -> DynamicTensorSlot {
       return DynamicTensorSlot{
           /*slot_name=*/slot_name,
-          /*slot_tensor_role=*/std::nullopt,
+          /*slot_tensor_role=*/mk_dynamic_tensor_role_fwd(),
       };
     };
 
@@ -295,7 +297,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
         /*node_attrs=*/
         DynamicNodeAttrs{
-            /*task_type=*/std::nullopt,
+            /*task_type=*/DynamicTaskType::FWD,
             /*device_coord=*/std::nullopt,
             /*mapping=*/invocation_mapping,
             /*op_attrs=*/std::nullopt,
@@ -329,7 +331,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
         /*node_attrs=*/
         DynamicNodeAttrs{
-            /*task_type=*/std::nullopt,
+            /*task_type=*/DynamicTaskType::FWD,
             /*device_coord=*/std::nullopt,
             /*mapping=*/invocation_mapping,
             /*op_attrs=*/std::nullopt,
@@ -356,7 +358,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*inputs=*/{{mk_slot(TensorSlotName::INPUT), src}},
           /*node_attrs=*/
           DynamicNodeAttrs{
-              /*task_type=*/std::nullopt,
+              /*task_type=*/DynamicTaskType::FWD,
               /*device_coord=*/std::nullopt,
               /*mapping=*/std::nullopt,
               /*op_attrs*/ TrainingOperationAttrs{CopyAttrs{}},
