@@ -4,6 +4,7 @@
 #include "kernels/allocation.h"
 #include "kernels/device_handle_t.dtg.h"
 #include "kernels/managed_per_device_ff_handle.h"
+#include "op-attrs/tensor_shape.dtg.h"
 #include "pcg/device_id_t.dtg.h"
 #include "pcg/machine_space_coordinate.dtg.h"
 #include "realm-execution/realm.h"
