@@ -214,8 +214,8 @@ static Realm::Event spawn_dynamic_node_invocation(
   return op_attrs.visit<Realm::Event>(overload{
       [&](PCGOperatorAttrs const &pcg_op_attrs) {
         return pcg_op_attrs.visit<Realm::Event>(overload{
-            [&](InputAttrs const &) { return precondition; },
-            [&](WeightAttrs const &) { return precondition; },
+            [&](InputAttrs const &) { return Realm::Event::NO_EVENT; },
+            [&](WeightAttrs const &) { return Realm::Event::NO_EVENT; },
             [&](auto const &) { return spawn_task(); },
         });
       },
