@@ -19,6 +19,7 @@
 #include "task-spec/dynamic_graph/shard_expansion.h"
 #include "task-spec/dynamic_graph/training_operation_attrs.dtg.h"
 #include "task-spec/dynamic_graph/update_insertion.h"
+#include "utils/containers/get_only.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/try_at.h"
@@ -193,7 +194,18 @@ static Realm::Event spawn_dynamic_node_invocation(
                          dependencies);
   };
 
-  auto issue_copy = [&]() { return Realm::Event::NO_EVENT; };
+  auto issue_copy = [&]() {
+    DynamicValueAttrs const &input = get_only(invocation.inputs).second;
+    DynamicValueAttrs const &output = get_only(invocation.outputs).second;
+    Realm::RegionInstance src_inst =
+        tensor_instance_backing.backing.at(input).first;
+    Realm::RegionInstance dst_inst =
+        tensor_instance_backing.backing.at(output).first;
+    return ctx.issue_copy(assert_unwrap(input.parallel_tensor_shape),
+                          src_inst,
+                          assert_unwrap(output.parallel_tensor_shape),
+                          dst_inst);
+  };
 
   TrainingOperationAttrs op_attrs =
       assert_unwrap(invocation.node_attrs.op_attrs);

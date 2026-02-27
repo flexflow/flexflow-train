@@ -10,6 +10,7 @@
 #include "realm-execution/tasks/task_id_t.h"
 #include "utils/containers/contains_key.h"
 #include "utils/containers/transform.h"
+#include "utils/exception.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
 #include "utils/one_to_many/one_to_many.h"
 #include "utils/positive_int/positive_int.h"
@@ -135,6 +136,13 @@ Realm::Event RealmContext::collective_spawn_task(Realm::Processor target_proc,
                                      priority);
   this->outstanding_events.push_back(result);
   return result;
+}
+
+Realm::Event RealmContext::issue_copy(ParallelTensorShape const &src_shape,
+                                      Realm::RegionInstance src_inst,
+                                      ParallelTensorShape const &dst_shape,
+                                      Realm::RegionInstance dst_inst) {
+  NOT_IMPLEMENTED();
 }
 
 template <int N, typename T = int>
