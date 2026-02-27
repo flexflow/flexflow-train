@@ -171,7 +171,7 @@ static Realm::Event spawn_dynamic_node_invocation(
     ProfilingSettings const &profiling_settings,
     DistributedDeviceHandle const &device_handle,
     FFIterationConfig iteration_config) {
-  Realm::Event dependencies = Realm::Event::merge_events(
+  Realm::Event precondition = Realm::Event::merge_events(
       Realm::Event::merge_events(input_dependencies),
       Realm::Event::merge_events(output_dependencies));
 
@@ -191,7 +191,7 @@ static Realm::Event spawn_dynamic_node_invocation(
                          device_handle.at(target_proc),
                          iteration_config,
                          optimizer_attrs,
-                         dependencies);
+                         precondition);
   };
 
   auto issue_copy = [&]() {
@@ -204,7 +204,9 @@ static Realm::Event spawn_dynamic_node_invocation(
     return ctx.issue_copy(assert_unwrap(input.parallel_tensor_shape),
                           src_inst,
                           assert_unwrap(output.parallel_tensor_shape),
-                          dst_inst);
+                          dst_inst,
+                          Realm::ProfilingRequestSet{},
+                          precondition);
   };
 
   TrainingOperationAttrs op_attrs =
@@ -212,8 +214,8 @@ static Realm::Event spawn_dynamic_node_invocation(
   return op_attrs.visit<Realm::Event>(overload{
       [&](PCGOperatorAttrs const &pcg_op_attrs) {
         return pcg_op_attrs.visit<Realm::Event>(overload{
-            [&](InputAttrs const &) { return Realm::Event::NO_EVENT; },
-            [&](WeightAttrs const &) { return Realm::Event::NO_EVENT; },
+            [&](InputAttrs const &) { return precondition; },
+            [&](WeightAttrs const &) { return precondition; },
             [&](auto const &) { return spawn_task(); },
         });
       },
