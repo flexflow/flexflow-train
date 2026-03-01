@@ -73,7 +73,8 @@ DiGraph add_dummy_nodes(DiGraph g,
       Node prev_node = src;
       Node intermediate_node = Node{0};
 
-      for (int i = 1; i < depth_diff.int_from_positive_int(); i++) {
+      for (int _ :
+           range(1, depth_diff.int_from_positive_int())) {
         intermediate_node = g.add_node();
         node_roles[intermediate_node] = NodeRole::DUMMY;
         g.add_edge(DirectedEdge{prev_node, intermediate_node});
