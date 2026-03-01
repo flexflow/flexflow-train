@@ -11,7 +11,8 @@ namespace FlexFlow {
  *
  * @details A normalized series-parallel decomposition satisfies the following
  * invariants:
- * - No empty SeriesSplit or ParallelSplit nodes (i.e., nodes with zero children)
+ * - No empty SeriesSplit or ParallelSplit nodes (i.e., nodes with zero
+ * children)
  * - No SeriesSplit or ParallelSplit nodes with exactly one child
  *   (these are replaced by their child)
  *

@@ -2,19 +2,17 @@
 
 As a refresher, a series-parallel decomposition (SPD) is an algebraic datatype that looks as follows:
 ```haskell
-data ParallelChild = Node | Series SeriesChild SeriesChild
-data SeriesChild = Node | Parallel ParallelChild ParallelChild
-
-data SPD = Series SeriesChild SeriesChild |
-           Parallel ParallelChild ParallelChild |
-           Node
+data SPD = Series [Parallel | Node]
+         | Parallel [Series | Node]
+         | Node
 ```
+The `Series` operator is associative, and the `Parallel` operator is associative and commutative.
 
 SP-ization is the process of transforming a DAG into a series-parallel decomposition (SPD), such that the dependencies present in the original DAG are preserved in the SPD.
-Each node in the SPD may optionally have an associated cost, which is a positive scalar value.
+Costs are defined on DAG nodes as a positive scalar cost map. Any SPD produced from that DAG is evaluated against the same cost map, with duplicated SPD nodes inheriting the cost of the original DAG node they represent.
 
 Note that SP-ization is itself trivial (e.g. a topological sort of the nodes is an SPD). But we generally care about preserving as much of the structure / parallelism of the original DAG as possible. So, there are 2 properties that we care about:
-1. **Work**: the sum of cost of nodes in the SPD
+1. **(Total) Work**: the sum of cost of nodes in the SPD
 2. **Critical Path Cost**: the cost of the longest path in the SPD
 
 We have 2 main ways of achieving this:
@@ -23,18 +21,18 @@ We have 2 main ways of achieving this:
 
 ## Node (Work) Duplicating SP-ization
 
-### Naive ([work_duplicating_spization.h](work_duplicating_spization.h))
+### Naive ([work_duplicating_sp_ization.h](work_duplicating_sp_ization.h))
 
 Transforms a directed acyclic graph (DAG) into a Series Parallel (SP) graph. The critical path cost is unchanged, and the SP-ization is done solely through node duplication.
 
 The resulting graph, encoded as a SeriesParallelDecomposition, is a tree whose critical path is the same as that of the original graph. The tree is constructed as follows:
-- Denote SP(n) as the SeriesParallelDecomposition of the subgraph of g whose nodes are all the ancestors of n.
+- Denote `SP(n)` as the SeriesParallelDecomposition of the subgraph of `g` whose nodes are all the ancestors of `n`.
 - Denote the predecessors of n as M.
 - Then:
-  - SP(n) = S(n, P({SP(m) for m in M}))
-  - SP(root) = root
-  - SP(sink) = SP(g)
-Where P, S represent parallel, serial composition respectively.
+  - `SP(n) = S(n, P({SP(m) for m in M}))`
+  - `SP(root) = root`
+  - `SP(sink) = SP(g)`
+Where `P`, `S` represent parallel, serial composition respectively.
 
 Example:
 ```dot
@@ -64,11 +62,11 @@ digraph SP {
 
 We can roughly think of it as the parallel composition of all the possible paths from source to sink.
 
-### With Coalescing ([work_duplicating_spization.h](work_duplicating_spization.h))
+### With Coalescing ([work_duplicating_sp_ization.h](work_duplicating_sp_ization.h))
 
 Transforms a directed acyclic graph (DAG) into a Series Parallel (SP) graph with coalescing. The critical path cost is unchanged, and the SP-ization is done solely through node (work) duplication.
 
-This SP-ization technique, compared to the previous step, adds an additional coalescing step during parallel composition to reduce node duplication. The recursive formulation is equivalent, but the parallelization performs an additional coalescing step, where parallel strands with common heads are merged together. Example: P(S(1,2), S(1,3)) -> P(1, S(2,3)).
+This SP-ization technique, compared to the previous step, adds an additional coalescing step during parallel composition to reduce node duplication. The recursive formulation is equivalent, but the parallelization performs an additional coalescing step, where parallel strands with common heads are merged together. Example: `P(S(1,2), S(1,3)) -> P(1, S(2,3))`.
 
 Example:
 ```dot
@@ -100,9 +98,9 @@ digraph SP {
 
 ### Naive Stratum Sync ([naive_stratum_sync.h](naive_stratum_sync.h))
 
-Transforms a directed acyclic graph (DAG) into a Series Parallel (SP) graph. The total number of nodes remains unchanged, and the SP-ization is done solely through edge (dependency) addition.
+`naive_stratum_sync_sp_ization` transforms a directed acyclic graph (DAG) into a Series Parallel (SP) graph. The total number of nodes remains unchanged, and the SP-ization is done solely through edge (dependency) addition.
 
-The graph is first partitioned into strata: the i_th stratum contains all the nodes whose critical path length has length i. The nodes in a given stratum are composed in parallel, and the strata are serially composed in succession.
+The graph is first partitioned into strata: the i\_th stratum contains all the nodes whose critical path length has length i. The nodes in a given stratum are composed in parallel, and the strata are serially composed in succession.
 
 Example:
 ```dot
@@ -177,9 +175,9 @@ digraph N {
 ```
 
 Note that there are multiple valid SP-izations for this.
-1) S(P(a, b), P(c, d)) — adds edge (b, c)
-2) S(P(S(a, c), b), d) — adds edge (c, d)
-3) S(a, P(c, S(b, d))) — adds edge (a, b)
+1) `S(P(a, b), P(c, d))` — adds edge `(b, c)`
+2) `S(P(S(a, c), b), d)` — adds edge `(c, d)`
+3) `S(a, P(c, S(b, d)))` — adds edge `(a, b)`
 (you could also simply turn the graph into a straight line, but it's a strictly worse SP-ization than the others present here, so we'll ignore it)
 
 Depending on the cost map, each option can potentially be the best:

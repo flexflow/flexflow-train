@@ -15,7 +15,7 @@
 #include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
 #include "utils/graph/series_parallel/series_split.dtg.h"
 #include "utils/graph/series_parallel/sp_ization/dependencies_are_maintained.h"
-#include "utils/graph/series_parallel/sp_ization/node_role.dtg.h"
+#include "utils/graph/series_parallel/sp_ization/node_role.h"
 #include <doctest/doctest.h>
 #include <unordered_set>
 
@@ -54,6 +54,11 @@ TEST_SUITE(FF_TEST_SUITE) {
                                               NodeRole::PURE,
                                               NodeRole::DUMMY,
                                               NodeRole::DUMMY});
+
+      DiGraph restored =
+          contract_out_nodes_of_given_role(result, NodeRole::DUMMY, node_types);
+      CHECK(get_nodes(restored) == get_nodes(g));
+      CHECK(get_edges(restored) == get_edges(g));
     }
 
     SUBCASE("get_component") {
@@ -139,10 +144,10 @@ TEST_SUITE(FF_TEST_SUITE) {
             {n.at(6), NodeRole::PURE}};
 
         std::unordered_map<Node, nonnegative_int> depth_map = {{n.at(0), 0_n},
-                                                   {n.at(2), 1_n},
-                                                   {n.at(3), 1_n},
-                                                   {n.at(5), 2_n},
-                                                   {n.at(6), 2_n}};
+                                                               {n.at(2), 1_n},
+                                                               {n.at(3), 1_n},
+                                                               {n.at(5), 2_n},
+                                                               {n.at(6), 2_n}};
         SUBCASE("n.at(5)'s component") {
           std::unordered_set<Node> correct = {
               n.at(2), n.at(3), n.at(5), n.at(6)};
@@ -189,12 +194,12 @@ TEST_SUITE(FF_TEST_SUITE) {
         };
 
         std::unordered_map<Node, nonnegative_int> depth_map = {{n.at(0), 0_n},
-                                                   {n.at(2), 1_n},
-                                                   {n.at(3), 1_n},
-                                                   {n.at(4), 1_n},
-                                                   {n.at(7), 2_n},
-                                                   {n.at(8), 2_n},
-                                                   {n.at(9), 2_n}};
+                                                               {n.at(2), 1_n},
+                                                               {n.at(3), 1_n},
+                                                               {n.at(4), 1_n},
+                                                               {n.at(7), 2_n},
+                                                               {n.at(8), 2_n},
+                                                               {n.at(9), 2_n}};
         SUBCASE("n.at(7)'s component") {
           std::unordered_set<Node> correct = {n.at(2), n.at(7), n.at(8)};
           std::unordered_set<Node> result =
@@ -356,4 +361,3 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
   }
 }
-

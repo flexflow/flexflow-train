@@ -1,0 +1,14 @@
+namespace = "FlexFlow"
+name = "SpizationCombinedBenchmarkResult"
+type = "struct"
+features = []
+
+includes = [
+  "<string>",
+  "<unordered_map>",
+  "utils/graph/series_parallel/sp_ization/sp_ization_benchmark_result.dtg.h",
+]
+
+[[fields]]
+name = "by_technique"
+type = "std::unordered_map<std::string, ::FlexFlow::SpizationBenchmarkResult>"

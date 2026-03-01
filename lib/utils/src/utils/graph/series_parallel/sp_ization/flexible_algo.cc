@@ -1,6 +1,6 @@
 #include "utils/graph/series_parallel/sp_ization/flexible_algo.h"
 #include "utils/containers/all_of.h"
-#include "utils/containers/compare_by.h"
+#include "utils/containers/argmin.h"
 #include "utils/containers/contains.h"
 #include "utils/containers/filter.h"
 #include "utils/containers/generate_map.h"
@@ -11,10 +11,8 @@
 #include "utils/containers/maximum.h"
 #include "utils/containers/set_difference.h"
 #include "utils/containers/set_union.h"
-#include "utils/containers/sorted_by.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/values.h"
-#include "utils/containers/vector_of.h"
 #include "utils/graph/algorithms.h"
 #include "utils/graph/digraph/algorithms/get_ancestors.h"
 #include "utils/graph/digraph/algorithms/get_descendants.h"
@@ -80,15 +78,15 @@ static std::unordered_set<Node>
 }
 
 static UpDownPartition
-    get_up_and_down(DiGraph const &sp,
-                    std::unordered_set<Node> const &nodes,
-                    std::unordered_set<Node> const &forest,
-                    std::unordered_map<Node, float> const &cost_map,
-                    std::unordered_map<Node, NodeRole> const &node_roles) {
-  DiGraph sp_pure =
-      contract_out_nodes_of_given_role(materialize_digraph_view<AdjacencyDiGraph>(sp),
-                                       NodeRole::SYNC,
-                                       node_roles);
+    get_up_and_down_sets(DiGraph const &sp,
+                         std::unordered_set<Node> const &nodes,
+                         std::unordered_set<Node> const &forest,
+                         std::unordered_map<Node, float> const &cost_map,
+                         std::unordered_map<Node, NodeRole> const &node_roles) {
+  DiGraph sp_pure = contract_out_nodes_of_given_role(
+      materialize_digraph_view<AdjacencyDiGraph>(sp),
+      NodeRole::SYNC,
+      node_roles);
 
   std::unordered_set<Node> base_down = nodes;
   std::unordered_set<Node> base_up = intersection(
@@ -154,9 +152,7 @@ static UpDownPartition
     return std::make_tuple(up_cost + down_cost, down_cost, p.down.size());
   };
 
-  return sorted_by(valid_partitions,
-                   compare_by<UpDownPartition>(partition_cost))
-      .at(0);
+  return argmin(valid_partitions, partition_cost);
 }
 
 static std::unordered_set<DirectedEdge> edges_to_remove_flexible(
@@ -205,6 +201,15 @@ static std::unordered_set<DirectedEdge>
                    }));
 }
 
+static Node add_sync_node(DiGraph &sp,
+                          std::unordered_map<Node, NodeRole> &node_roles,
+                          std::unordered_map<Node, float> &cost_map) {
+  Node sync_node = sp.add_node();
+  node_roles[sync_node] = NodeRole::SYNC;
+  cost_map[sync_node] = 0.0f;
+  return sync_node;
+}
+
 static std::unordered_set<Node>
     get_next_nodes(DiGraph const &sp,
                    DiGraph const &g,
@@ -236,11 +241,9 @@ static std::unordered_set<Node>
         return cost_map.at(node) + max_parent_cost;
       });
 
-  Node ref_node =
-      sorted_by(candidate_nodes, compare_by<Node>([&](Node const &n) {
-                  return std::make_pair(critical_path_costs.at(n), n.raw_uid);
-                }))
-          .at(0);
+  Node ref_node = argmin(candidate_nodes, [&](Node const &n) {
+    return std::make_pair(critical_path_costs.at(n), n.raw_uid);
+  });
 
   std::unordered_set<Node> ref_preds = get_predecessors(g, ref_node);
   return filter(candidate_nodes, [&](Node const &node) {
@@ -273,12 +276,14 @@ SeriesParallelDecomposition
     std::unordered_set<Node> nodes = get_next_nodes(sp, g_reduced, cost_map);
 
     for (Node const &node : nodes) {
-      // @colin: not sure if this matches the spec, the counter for the node uid
-      // is global and since we have generated these nodes already, we are
-      // guaranteed that the uid of the sync nodes will not overlap with them.
+      // here we add node unsafe so that we don't have to keep around a mapping
+      // between the nodes in g and the nodes in sp. This is safe from having
+      // node ids colliding under the assumption that the ids are globally
+      // unique.
       sp.add_node_unsafe(node);
-      add_edges(sp, vector_of(get_incoming_edges(g_reduced, node)));
+      add_edges(sp, get_incoming_edges(g_reduced, node));
     }
+
     // TODO(@pietro): ideally optimize this by selectively removing previously
     // added edges
     sp = transitive_reduction(sp);
@@ -289,20 +294,14 @@ SeriesParallelDecomposition
         get_forest_flexible(sp, handle, component, node_roles);
 
     UpDownPartition partition =
-        get_up_and_down(sp, nodes, forest, cost_map, node_roles);
+        get_up_and_down_sets(sp, nodes, forest, cost_map, node_roles);
 
-    Node sync_node = sp.add_node();
-    node_roles[sync_node] = NodeRole::SYNC;
-    cost_map[sync_node] = 0.0f;
+    Node sync_node = add_sync_node(sp, node_roles, cost_map);
 
-    for (DirectedEdge const &e : edges_to_remove_flexible(
-             sp, partition.up, partition.down, node_roles)) {
-      sp.remove_edge(e);
-    }
-    for (DirectedEdge const &e :
-         edges_to_add_flexible(sp, partition, sync_node)) {
-      sp.add_edge(e);
-    }
+    remove_edges(
+        sp,
+        edges_to_remove_flexible(sp, partition.up, partition.down, node_roles));
+    add_edges(sp, edges_to_add_flexible(sp, partition, sync_node));
   }
 
   sp = transitive_reduction(sp);

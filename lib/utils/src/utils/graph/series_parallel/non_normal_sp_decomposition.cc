@@ -54,7 +54,9 @@ NonNormalSPDecomposition non_normal_parallel_composition(
   return NonNormalSPDecomposition(NonNormalParallelSplit{composition});
 }
 
-static Node as_non_normal(Node const &n) { return n; }
+static Node as_non_normal(Node const &n) {
+  return n;
+}
 
 static NonNormalSeriesSplit as_non_normal(SeriesSplit const &s) {
   return non_normal_series_composition(

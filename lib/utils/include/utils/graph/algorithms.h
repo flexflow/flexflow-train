@@ -6,6 +6,7 @@
 #include "utils/graph/graph_split.dtg.h"
 #include "utils/graph/node/graph.h"
 #include "utils/graph/undirected/undirected_graph.h"
+#include <initializer_list>
 
 namespace FlexFlow {
 
@@ -26,6 +27,10 @@ bool empty(GraphView const &);
 
 void add_edges(DiGraph &, std::vector<DirectedEdge> const &);
 void add_edges(UndirectedGraph &, std::vector<UndirectedEdge> const &);
+void add_edges(DiGraph &, std::initializer_list<DirectedEdge>);
+void add_edges(UndirectedGraph &, std::initializer_list<UndirectedEdge>);
+void add_edges(DiGraph &, std::unordered_set<DirectedEdge> const &);
+void add_edges(UndirectedGraph &, std::unordered_set<UndirectedEdge> const &);
 
 bool contains_node(GraphView const &, Node const &);
 
@@ -33,7 +38,8 @@ bool contains_edge(DiGraphView const &, DirectedEdge const &);
 bool contains_edge(UndirectedGraphView const &, UndirectedEdge const &);
 
 void remove_edges(DiGraph &, std::unordered_set<DirectedEdge> const &);
-void remove_edges(UndirectedGraph &, std::vector<UndirectedEdge> const &);
+void remove_edges(UndirectedGraph &,
+                  std::unordered_set<UndirectedEdge> const &);
 
 std::unordered_set<UndirectedEdge> get_edges(UndirectedGraphView const &);
 

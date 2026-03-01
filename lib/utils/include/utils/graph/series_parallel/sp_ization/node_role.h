@@ -13,8 +13,8 @@ std::unordered_map<Node, NodeRole>
 
 /**
  * @brief Contracts out nodes of a given role from the graph.
- * 
- * When a node is contracted out, all its predecessors are connected to all 
+ *
+ * When a node is contracted out, all its predecessors are connected to all
  * its successors, and then the node is removed.
  */
 DiGraph contract_out_nodes_of_given_role(

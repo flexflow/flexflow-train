@@ -19,7 +19,8 @@ DiGraph parallel_composition(std::vector<DiGraphView> const &graphs);
  * @brief Constructs a directed DiGraph from a series-parallel decomposition.
  *
  * @details The transformation is performed recursively as follows:
- * - Nodes in the decomposition remain the same in the resulting graph (but the node ids are fresh)
+ * - Nodes in the decomposition remain the same in the resulting graph (but the
+ * node ids are fresh)
  * - For serial composition between graphs, an all-to-all connection is created
  * between the terminal nodes of one graph and the initial nodes of the
  * following one.

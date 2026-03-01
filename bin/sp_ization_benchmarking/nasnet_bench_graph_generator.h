@@ -1,13 +1,14 @@
 /**
  * @brief Utilities for generating random DAGs based on the NASNet-A
- * architecture. NASNet-A is composed of a series of cells, which we randomly generate.
+ * architecture. NASNet-A is composed of a series of cells, which we randomly
+ * generate.
  *
  * For context, see:
  * - Paper: https://arxiv.org/abs/1902.09635
- * - Reference implementation: https://github.com/google-research/nasbench/blob/master/nasbench/api.py
+ * - Reference implementation:
+ * https://github.com/google-research/nasbench/blob/b94247037ee470418a3e56dcb83814e9be83f3a8/nasbench/api.py
  */
 
-#include "utils/containers.h"
 #include "utils/containers/all_of.h"
 #include "utils/containers/repeat.h"
 #include "utils/containers/transform.h"
@@ -21,17 +22,19 @@
 #include "utils/graph/instances/adjacency_digraph.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/series_parallel/digraph_generation.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 #include <optional>
 #include <vector>
 
-constexpr size_t MIN_NODES = 6;
-constexpr size_t MAX_NODES = 8;
-constexpr size_t MIN_EDGES = 8;
-constexpr size_t MAX_EDGES = 11;
-constexpr size_t NUM_CELLS = 9;
-
 using AdjacencyMatrix = std::vector<std::vector<bool>>;
 namespace FlexFlow {
+
+const nonnegative_int MIN_NODES = nonnegative_int{6};
+const nonnegative_int MAX_NODES = nonnegative_int{8};
+const nonnegative_int MIN_EDGES = nonnegative_int{8};
+const nonnegative_int MAX_EDGES = nonnegative_int{11};
+const nonnegative_int NUM_CELLS = nonnegative_int{9};
+
 struct NasNetBenchConfig {
   AdjacencyMatrix adjacency_matrix;
 };
@@ -40,7 +43,7 @@ bool is_valid_config(NasNetBenchConfig const &config) {
   AdjacencyMatrix const &matrix = config.adjacency_matrix;
   const size_t size = matrix.size();
 
-  auto is_valid_size = [](size_t s) {
+  auto is_valid_size = [](nonnegative_int s) {
     return s >= MIN_NODES && s <= MAX_NODES;
   };
 
@@ -59,24 +62,27 @@ bool is_valid_config(NasNetBenchConfig const &config) {
     return true;
   };
 
-  return is_valid_size(size) && is_square_matrix(matrix) &&
+  return is_valid_size(nonnegative_int{size}) && is_square_matrix(matrix) &&
          is_upper_triangular(matrix);
 }
 
 bool is_valid_cell(DiGraphView const &g) {
-  size_t num_edges = get_edges(g).size();
+  nonnegative_int n_edges = nonnegative_int{get_edges(g).size()};
+  nonnegative_int n_nodes = nonnegative_int{num_nodes(g)};
   return (is_acyclic(g)) && (get_initial_nodes(g).size() == 1) &&
-         (get_terminal_nodes(g).size() == 1) && (num_edges <= MAX_EDGES) &&
-         (num_edges >= MIN_EDGES) && (num_edges <= MAX_NODES) &&
-         (num_edges >= MIN_NODES) &&
-         (num_edges > num_nodes(g)); // filter linear cell and diamond cell
+         (get_terminal_nodes(g).size() == 1) && (n_edges <= MAX_EDGES) &&
+         (n_edges >= MIN_EDGES) && (n_nodes <= MAX_NODES) &&
+         (n_nodes >= MIN_NODES) &&
+         (n_edges > n_nodes); // filter linear cell and diamond cell
 }
 
 NasNetBenchConfig generate_random_config() {
-  static std::uniform_int_distribution<> size_dist(MIN_NODES, MAX_NODES);
+  static std::uniform_int_distribution<> size_dist(
+      MIN_NODES.unwrap_nonnegative(), MAX_NODES.unwrap_nonnegative());
   Binary bin = Binary(0, 1);
 
-  size_t num_nodes = Uniform(MIN_NODES, MAX_NODES)();
+  size_t num_nodes =
+      Uniform(MIN_NODES.unwrap_nonnegative(), MAX_NODES.unwrap_nonnegative())();
   std::vector<std::vector<bool>> matrix(num_nodes,
                                         std::vector<bool>(num_nodes, false));
 
@@ -129,7 +135,7 @@ DiGraph generate_nasnet_bench_cell() {
 DiGraph generate_nasnet_bench_network() {
   DiGraph g = series_composition(
       transform(repeat(NUM_CELLS, generate_nasnet_bench_cell),
-                [](auto const cell) -> DiGraphView { return cell; }));
+                [](DiGraph const &cell) -> DiGraphView { return cell; }));
   return g;
 }
 } // namespace FlexFlow

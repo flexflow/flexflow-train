@@ -5,152 +5,144 @@
 #include "utils/graph/series_parallel/parallel_split.dtg.h"
 #include "utils/graph/series_parallel/series_parallel_metrics.h"
 #include "utils/graph/series_parallel/series_split.dtg.h"
+#include "utils/graph/series_parallel/sp_ization/dependencies_are_maintained.h"
 #include <doctest/doctest.h>
 
 using namespace FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
 
-  TEST_CASE("naive_stratum_sync") {
+  TEST_CASE("naive_stratum_sync_sp_ization") {
 
-    SUBCASE("Sample Graph #1") {
+    SUBCASE("fully parallel graph becomes one parallel stratum") {
+      DiGraph g = DiGraph::create<AdjacencyDiGraph>();
+      std::vector<Node> n = add_nodes(g, 4);
+
+      std::unordered_map<Node, float> cost_map = {
+          {n.at(0), 1.0f}, {n.at(1), 5.0f}, {n.at(2), 2.0f}, {n.at(3), 3.0f}};
+
+      SeriesParallelDecomposition sp = naive_stratum_sync_sp_ization(g);
+
+      SeriesParallelDecomposition correct = SeriesParallelDecomposition{
+          ParallelSplit{{n.at(0), n.at(1), n.at(2), n.at(3)}}};
+      CHECK(sp == correct);
+      CHECK(work_cost(sp, cost_map) == work_cost(g, cost_map));
+      CHECK(critical_path_cost(sp, cost_map) ==
+            critical_path_cost(g, cost_map));
+      CHECK(dependencies_are_maintained(g, sp));
+    }
+
+    SUBCASE("fully serial chain stays fully serial") {
+      DiGraph g = DiGraph::create<AdjacencyDiGraph>();
+      std::vector<Node> n = add_nodes(g, 5);
+      add_edges(g,
+                {
+                    DirectedEdge{n.at(0), n.at(1)},
+                    DirectedEdge{n.at(1), n.at(2)},
+                    DirectedEdge{n.at(2), n.at(3)},
+                    DirectedEdge{n.at(3), n.at(4)},
+                });
+
+      std::unordered_map<Node, float> cost_map = {{n.at(0), 1.0f},
+                                                  {n.at(1), 2.0f},
+                                                  {n.at(2), 3.0f},
+                                                  {n.at(3), 4.0f},
+                                                  {n.at(4), 5.0f}};
+
+      SeriesParallelDecomposition sp = naive_stratum_sync_sp_ization(g);
+
+      SeriesParallelDecomposition correct = SeriesParallelDecomposition{
+          SeriesSplit{{n.at(0), n.at(1), n.at(2), n.at(3), n.at(4)}}};
+      CHECK(sp == correct);
+      CHECK(work_cost(sp, cost_map) == work_cost(g, cost_map));
+      CHECK(critical_path_cost(sp, cost_map) ==
+            critical_path_cost(g, cost_map));
+      CHECK(dependencies_are_maintained(g, sp));
+    }
+
+    SUBCASE("two-layer graph with all-to-all connection") {
+      DiGraph g = DiGraph::create<AdjacencyDiGraph>();
+      std::vector<Node> n = add_nodes(g, 5);
+      add_edges(g,
+                {
+                    DirectedEdge{n.at(0), n.at(2)},
+                    DirectedEdge{n.at(0), n.at(3)},
+                    DirectedEdge{n.at(0), n.at(4)},
+                    DirectedEdge{n.at(1), n.at(2)},
+                    DirectedEdge{n.at(1), n.at(3)},
+                    DirectedEdge{n.at(1), n.at(4)},
+                });
+
+      std::unordered_map<Node, float> cost_map = {{n.at(0), 2.0f},
+                                                  {n.at(1), 3.0f},
+                                                  {n.at(2), 5.0f},
+                                                  {n.at(3), 7.0f},
+                                                  {n.at(4), 11.0f}};
+
+      SeriesParallelDecomposition sp = naive_stratum_sync_sp_ization(g);
+
+      SeriesParallelDecomposition correct = SeriesParallelDecomposition{
+          SeriesSplit{{ParallelSplit{{n.at(0), n.at(1)}},
+                       ParallelSplit{{n.at(2), n.at(3), n.at(4)}}}}};
+      CHECK(sp == correct);
+      CHECK(work_cost(sp, cost_map) == work_cost(g, cost_map));
+      CHECK(critical_path_cost(sp, cost_map) ==
+            critical_path_cost(g, cost_map));
+      CHECK(dependencies_are_maintained(g, sp));
+    }
+
+    SUBCASE("barrier synchronization can increase critical path while "
+            "preserving work") {
       DiGraph g = DiGraph::create<AdjacencyDiGraph>();
       std::vector<Node> n = add_nodes(g, 6);
       add_edges(g,
                 {
-                    DirectedEdge{n[0], n[1]},
-                    DirectedEdge{n[0], n[2]},
-                    DirectedEdge{n[1], n[2]},
-                    DirectedEdge{n[1], n[3]},
-                    DirectedEdge{n[2], n[4]},
-                    DirectedEdge{n[3], n[4]},
-                    DirectedEdge{n[3], n[5]},
-                    DirectedEdge{n[4], n[5]},
+                    DirectedEdge{n.at(0), n.at(1)},
+                    DirectedEdge{n.at(0), n.at(2)},
+                    DirectedEdge{n.at(1), n.at(3)},
+                    DirectedEdge{n.at(2), n.at(5)},
+                    DirectedEdge{n.at(3), n.at(4)},
+                    DirectedEdge{n.at(4), n.at(5)},
                 });
 
-      std::unordered_map<Node, float> cost_map = {
-          {n[0], 1}, {n[1], 1}, {n[2], 2}, {n[3], 3}, {n[4], 1}, {n[5], 1}};
+      std::unordered_map<Node, float> cost_map = {{n.at(0), 1.0f},
+                                                  {n.at(1), 1.0f},
+                                                  {n.at(2), 10.0f},
+                                                  {n.at(3), 1.0f},
+                                                  {n.at(4), 1.0f},
+                                                  {n.at(5), 1.0f}};
 
-      CHECK(work_cost(g, cost_map) == 9);
-      CHECK(critical_path_cost(g, cost_map) == 7);
+      SeriesParallelDecomposition sp = naive_stratum_sync_sp_ization(g);
 
-      SeriesParallelDecomposition sp = stratum_sync_sp_ization(g);
-
-      SUBCASE("structure") {
-        SeriesParallelDecomposition correct = SeriesParallelDecomposition{
-            SeriesSplit{{n[0], n[1], ParallelSplit{{n[2], n[3]}}, n[4], n[5]}}};
-        SeriesParallelDecomposition result = sp;
-        CHECK(correct == result);
-      }
-      SUBCASE("work cost") {
-        float correct = work_cost(g, cost_map);
-        float result = work_cost(sp, cost_map);
-        CHECK(correct == result);
-      }
-
-      SUBCASE("critical path cost") {
-        float correct = 7;
-        float result = critical_path_cost(sp, cost_map);
-        CHECK(correct == result);
-      }
+      CHECK(work_cost(sp, cost_map) == work_cost(g, cost_map));
+      CHECK(critical_path_cost(sp, cost_map) > critical_path_cost(g, cost_map));
+      CHECK(critical_path_cost(g, cost_map) == 12.0f);
+      CHECK(critical_path_cost(sp, cost_map) == 14.0f);
+      CHECK(dependencies_are_maintained(g, sp));
     }
 
-    SUBCASE("Sample Graph #2") {
+    SUBCASE("diamond-with-tail stratifies into four explicit layers") {
       DiGraph g = DiGraph::create<AdjacencyDiGraph>();
       std::vector<Node> n = add_nodes(g, 6);
       add_edges(g,
                 {
-                    DirectedEdge{n[0], n[1]},
-                    DirectedEdge{n[0], n[2]},
-                    DirectedEdge{n[1], n[3]},
-                    DirectedEdge{n[2], n[5]},
-                    DirectedEdge{n[3], n[4]},
-                    DirectedEdge{n[4], n[5]},
+                    DirectedEdge{n.at(0), n.at(1)},
+                    DirectedEdge{n.at(0), n.at(2)},
+                    DirectedEdge{n.at(1), n.at(3)},
+                    DirectedEdge{n.at(2), n.at(4)},
+                    DirectedEdge{n.at(3), n.at(5)},
+                    DirectedEdge{n.at(4), n.at(5)},
                 });
 
-      std::unordered_map<Node, float> cost_map = {
-          {n[0], 1}, {n[1], 1}, {n[2], 10}, {n[3], 1}, {n[4], 1}, {n[5], 1}};
+      SeriesParallelDecomposition sp = naive_stratum_sync_sp_ization(g);
 
-      CHECK(work_cost(g, cost_map) == 15);
-      CHECK(critical_path_cost(g, cost_map) == 12);
-
-      SeriesParallelDecomposition sp = stratum_sync_sp_ization(g);
-
-      SUBCASE("structure") {
-        SeriesParallelDecomposition correct = SeriesParallelDecomposition{
-            SeriesSplit{{n[0], ParallelSplit{{n[1], n[2]}}, n[3], n[4], n[5]}}};
-        SeriesParallelDecomposition result = sp;
-        CHECK(correct == result);
-      }
-      SUBCASE("work cost") {
-        float correct = work_cost(g, cost_map);
-        float result = work_cost(sp, cost_map);
-        CHECK(correct == result);
-      }
-
-      SUBCASE("critical path cost") {
-        float correct = 14;
-        float result = critical_path_cost(sp, cost_map);
-        CHECK(correct == result);
-      }
-    }
-
-    SUBCASE("Sample Graph #3") {
-      DiGraph g = DiGraph::create<AdjacencyDiGraph>();
-      std::vector<Node> n = add_nodes(g, 9);
-      add_edges(g,
-                {
-                    DirectedEdge{n[0], n[1]},
-                    DirectedEdge{n[0], n[3]},
-                    DirectedEdge{n[1], n[2]},
-                    DirectedEdge{n[1], n[5]},
-                    DirectedEdge{n[1], n[4]},
-                    DirectedEdge{n[2], n[6]},
-                    DirectedEdge{n[3], n[4]},
-                    DirectedEdge{n[3], n[5]},
-                    DirectedEdge{n[3], n[8]},
-                    DirectedEdge{n[4], n[8]},
-                    DirectedEdge{n[5], n[7]},
-                    DirectedEdge{n[7], n[8]},
-                });
-
-      std::unordered_map<Node, float> cost_map = {{n[0], 1},
-                                                  {n[1], 1},
-                                                  {n[2], 10},
-                                                  {n[3], 10},
-                                                  {n[4], 1},
-                                                  {n[5], 1},
-                                                  {n[6], 10},
-                                                  {n[7], 10},
-                                                  {n[8], 1}};
-
-      CHECK(work_cost(g, cost_map) == 45);
-      CHECK(critical_path_cost(g, cost_map) == 23);
-
-      SeriesParallelDecomposition sp = stratum_sync_sp_ization(g);
-
-      SUBCASE("structure") {
-        SeriesParallelDecomposition correct = SeriesParallelDecomposition{
-            SeriesSplit{{n[0],
-                         ParallelSplit{{n[1], n[3]}},
-                         ParallelSplit{{n[2], n[4], n[5]}},
-                         ParallelSplit{{n[6], n[7]}},
-                         n[8]}}};
-        SeriesParallelDecomposition result = sp;
-        CHECK(correct == result);
-      }
-      SUBCASE("work cost") {
-        float correct = work_cost(g, cost_map);
-        float result = work_cost(sp, cost_map);
-        CHECK(correct == result);
-      }
-
-      SUBCASE("critical path cost") {
-        float correct = 32;
-        float result = critical_path_cost(sp, cost_map);
-        CHECK(correct == result);
-      }
+      SeriesParallelDecomposition correct = SeriesParallelDecomposition{
+          SeriesSplit{{n.at(0),
+                       ParallelSplit{{n.at(1), n.at(2)}},
+                       ParallelSplit{{n.at(3), n.at(4)}},
+                       n.at(5)}}};
+      CHECK(sp == correct);
+      CHECK(dependencies_are_maintained(g, sp));
     }
   }
 }
-

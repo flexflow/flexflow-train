@@ -99,10 +99,9 @@ bool has_no_duplicate_nodes(SeriesParallelDecomposition const &sp) {
 SeriesParallelDecomposition series_composition(
     std::vector<SeriesParallelDecomposition> const &sp_compositions) {
 
-  if (sp_compositions.empty()) {
-    throw mk_runtime_error("series_composition: cannot create series composition with zero elements");
-  }
-  
+  ASSERT(sp_compositions.size() > 0,
+         "Cannot create series composition with zero elements");
+
   if (sp_compositions.size() == 1) {
     return get_only(sp_compositions);
   }
@@ -124,10 +123,10 @@ SeriesParallelDecomposition series_composition(
 SeriesParallelDecomposition parallel_composition(
     std::unordered_multiset<SeriesParallelDecomposition> const
         &sp_compositions) {
-  if (sp_compositions.empty()) {
-    throw mk_runtime_error("parallel_composition: cannot create parallel composition with zero elements");
-  }
-  
+
+  ASSERT(sp_compositions.size() > 0,
+         "Cannot create parallel composition with zero elements");
+
   if (sp_compositions.size() == 1) {
     return get_only(sp_compositions);
   }

@@ -14,8 +14,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     Node n3 = Node{3};
 
     SUBCASE("Empty") {
-      NonNormalSPDecomposition input = NonNormalSPDecomposition{
-          NonNormalSeriesSplit{
+      NonNormalSPDecomposition input =
+          NonNormalSPDecomposition{NonNormalSeriesSplit{
               {NonNormalParallelSplit{{}}, NonNormalParallelSplit{{}}}}};
       CHECK_THROWS_AS(normalize_sp_decomposition(input), std::runtime_error);
     }
@@ -62,11 +62,11 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("Nested") {
-      NonNormalSPDecomposition input = NonNormalSPDecomposition{
-          NonNormalParallelSplit{{NonNormalSeriesSplit{
-                                      {NonNormalParallelSplit{{n1, n2}}}},
-                                  n3,
-                                  NonNormalSeriesSplit{{}}}}};
+      NonNormalSPDecomposition input =
+          NonNormalSPDecomposition{NonNormalParallelSplit{
+              {NonNormalSeriesSplit{{NonNormalParallelSplit{{n1, n2}}}},
+               n3,
+               NonNormalSeriesSplit{{}}}}};
       SeriesParallelDecomposition correct =
           SeriesParallelDecomposition{ParallelSplit{{n1, n2, n3}}};
       SeriesParallelDecomposition result = normalize_sp_decomposition(input);

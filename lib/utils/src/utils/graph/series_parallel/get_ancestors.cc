@@ -29,7 +29,7 @@ static std::unordered_set<Node> get_ancestors(SeriesSplit const &serial,
     }
     ancestors = set_union(ancestors, unordered_set_of(get_nodes(child_sp)));
   }
-  throw std::runtime_error("node not found in SeriesSplit");
+  PANIC("Node not found in SeriesSplit");
 }
 
 static std::unordered_set<Node> get_ancestors(ParallelSplit const &parallel,

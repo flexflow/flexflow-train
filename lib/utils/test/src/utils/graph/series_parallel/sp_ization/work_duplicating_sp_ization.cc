@@ -1,4 +1,4 @@
-#include "utils/graph/series_parallel/sp_ization/work_duplicating_spization.h"
+#include "utils/graph/series_parallel/sp_ization/work_duplicating_sp_ization.h"
 #include "test/utils/rapidcheck.h"
 #include "utils/containers/generate_map.h"
 #include "utils/graph/algorithms.h"
@@ -55,7 +55,7 @@ static std::pair<DiGraph, std::unordered_map<Node, float>>
 
 TEST_SUITE(FF_TEST_SUITE) {
 
-  TEST_CASE("naive_work_duplicating_spization") {
+  TEST_CASE("naive_work_duplicating_sp_ization") {
 
     SUBCASE("linear chain") {
       DiGraph g = DiGraph::create<AdjacencyDiGraph>();
@@ -66,11 +66,10 @@ TEST_SUITE(FF_TEST_SUITE) {
                     DirectedEdge{n.at(1), n.at(2)},
                 });
 
-      SeriesParallelDecomposition result =
-          naive_work_duplicating_spization(g);
+      SeriesParallelDecomposition result = naive_work_duplicating_sp_ization(g);
 
-      SeriesParallelDecomposition correct = SeriesParallelDecomposition{
-          SeriesSplit{{n.at(0), n.at(1), n.at(2)}}};
+      SeriesParallelDecomposition correct =
+          SeriesParallelDecomposition{SeriesSplit{{n.at(0), n.at(1), n.at(2)}}};
       CHECK(correct == result);
     }
 
@@ -85,12 +84,11 @@ TEST_SUITE(FF_TEST_SUITE) {
                     DirectedEdge{n.at(2), n.at(3)},
                 });
 
-      SeriesParallelDecomposition result =
-          naive_work_duplicating_spization(g);
+      SeriesParallelDecomposition result = naive_work_duplicating_sp_ization(g);
 
       SeriesParallelDecomposition correct = SeriesParallelDecomposition{
           SeriesSplit{{ParallelSplit{{SeriesSplit{{n.at(0), n.at(1)}},
-                                     SeriesSplit{{n.at(0), n.at(2)}}}},
+                                      SeriesSplit{{n.at(0), n.at(2)}}}},
                        n.at(3)}}};
       CHECK(correct == result);
     }
@@ -108,30 +106,26 @@ TEST_SUITE(FF_TEST_SUITE) {
                     DirectedEdge{n.at(4), n.at(5)},
                 });
 
-      SeriesParallelDecomposition result =
-          naive_work_duplicating_spization(g);
+      SeriesParallelDecomposition result = naive_work_duplicating_sp_ization(g);
 
-      SeriesParallelDecomposition correct = SeriesParallelDecomposition{
-          SeriesSplit{{ParallelSplit{
-                           {SeriesSplit{{n.at(0), n.at(1), n.at(3), n.at(4)}},
-                            SeriesSplit{{n.at(0), n.at(2)}}}},
-                       n.at(5)}}};
+      SeriesParallelDecomposition correct =
+          SeriesParallelDecomposition{SeriesSplit{
+              {ParallelSplit{{SeriesSplit{{n.at(0), n.at(1), n.at(3), n.at(4)}},
+                              SeriesSplit{{n.at(0), n.at(2)}}}},
+               n.at(5)}}};
       CHECK(correct == result);
     }
 
-    RC_SUBCASE("critical path cost is preserved",
-                []() {
-                  auto [g, cost_map] =
-                      generate_random_2_terminal_weighted_dag();
-                  SeriesParallelDecomposition sp =
-                      naive_work_duplicating_spization(g);
-                  float original_cost = critical_path_cost(g, cost_map);
-                  float sp_cost = critical_path_cost(sp, cost_map);
-                  RC_ASSERT(original_cost == sp_cost);
-                });
+    RC_SUBCASE("critical path cost is preserved", []() {
+      auto [g, cost_map] = generate_random_2_terminal_weighted_dag();
+      SeriesParallelDecomposition sp = naive_work_duplicating_sp_ization(g);
+      float original_cost = critical_path_cost(g, cost_map);
+      float sp_cost = critical_path_cost(sp, cost_map);
+      RC_ASSERT(original_cost == sp_cost);
+    });
   }
 
-  TEST_CASE("work_duplicating_spization_with_coalescing") {
+  TEST_CASE("work_duplicating_sp_ization_with_coalescing") {
 
     SUBCASE("diamond") {
       DiGraph g = DiGraph::create<AdjacencyDiGraph>();
@@ -145,11 +139,10 @@ TEST_SUITE(FF_TEST_SUITE) {
                 });
 
       SeriesParallelDecomposition result =
-          work_duplicating_spization_with_coalescing(g);
+          work_duplicating_sp_ization_with_coalescing(g);
 
       SeriesParallelDecomposition correct = SeriesParallelDecomposition{
-          SeriesSplit{
-              {n.at(0), ParallelSplit{{n.at(1), n.at(2)}}, n.at(3)}}};
+          SeriesSplit{{n.at(0), ParallelSplit{{n.at(1), n.at(2)}}, n.at(3)}}};
       CHECK(correct == result);
     }
 
@@ -167,14 +160,13 @@ TEST_SUITE(FF_TEST_SUITE) {
                 });
 
       SeriesParallelDecomposition result =
-          work_duplicating_spization_with_coalescing(g);
+          work_duplicating_sp_ization_with_coalescing(g);
 
       SeriesParallelDecomposition correct = SeriesParallelDecomposition{
-          SeriesSplit{
-              {n.at(0),
-               ParallelSplit{
-                   {SeriesSplit{{n.at(1), n.at(3), n.at(4)}}, n.at(2)}},
-               n.at(5)}}};
+          SeriesSplit{{n.at(0),
+                       ParallelSplit{
+                           {SeriesSplit{{n.at(1), n.at(3), n.at(4)}}, n.at(2)}},
+                       n.at(5)}}};
       CHECK(correct == result);
     }
 
@@ -194,7 +186,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                 });
 
       SeriesParallelDecomposition result =
-          work_duplicating_spization_with_coalescing(g);
+          work_duplicating_sp_ization_with_coalescing(g);
 
       SeriesParallelDecomposition correct =
           SeriesParallelDecomposition{SeriesSplit{
@@ -223,7 +215,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                 });
 
       SeriesParallelDecomposition result =
-          work_duplicating_spization_with_coalescing(g);
+          work_duplicating_sp_ization_with_coalescing(g);
 
       SeriesParallelDecomposition correct =
           SeriesParallelDecomposition{SeriesSplit{
@@ -231,15 +223,13 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(correct == result);
     }
 
-    RC_SUBCASE("critical path cost is preserved",
-                []() {
-                  auto [g, cost_map] =
-                      generate_random_2_terminal_weighted_dag();
-                  SeriesParallelDecomposition sp =
-                      work_duplicating_spization_with_coalescing(g);
-                  float original_cost = critical_path_cost(g, cost_map);
-                  float sp_cost = critical_path_cost(sp, cost_map);
-                  RC_ASSERT(original_cost == sp_cost);
-                });
+    RC_SUBCASE("critical path cost is preserved", []() {
+      auto [g, cost_map] = generate_random_2_terminal_weighted_dag();
+      SeriesParallelDecomposition sp =
+          work_duplicating_sp_ization_with_coalescing(g);
+      float original_cost = critical_path_cost(g, cost_map);
+      float sp_cost = critical_path_cost(sp, cost_map);
+      RC_ASSERT(original_cost == sp_cost);
+    });
   }
 }

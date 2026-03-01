@@ -59,13 +59,15 @@ float work_cost(DiGraphView const &g,
                        [&](Node const &node) { return cost_map.at(node); }));
 }
 
-static float critical_path_cost(Node const &node,
-                                 std::unordered_map<Node, float> const &cost_map) {
+static float
+    critical_path_cost(Node const &node,
+                       std::unordered_map<Node, float> const &cost_map) {
   return cost_map.at(node);
 }
 
-static float critical_path_cost(SeriesSplit const &serial,
-                                 std::unordered_map<Node, float> const &cost_map) {
+static float
+    critical_path_cost(SeriesSplit const &serial,
+                       std::unordered_map<Node, float> const &cost_map) {
   return sum(transform(
       serial.children, [&](std::variant<ParallelSplit, Node> const &child) {
         return critical_path_cost(widen<SeriesParallelDecomposition>(child),
@@ -73,8 +75,9 @@ static float critical_path_cost(SeriesSplit const &serial,
       }));
 }
 
-static float critical_path_cost(ParallelSplit const &parallel,
-                                 std::unordered_map<Node, float> const &cost_map) {
+static float
+    critical_path_cost(ParallelSplit const &parallel,
+                       std::unordered_map<Node, float> const &cost_map) {
   return maximum(transform(parallel.get_children(),
                            [&](std::variant<SeriesSplit, Node> const &child) {
                              return critical_path_cost(
@@ -118,7 +121,7 @@ float relative_critical_path_cost_increase(
 
 float relative_num_dependencies_increase(
     DiGraphView const &g, SeriesParallelDecomposition const &sp) {
-  return static_cast<float>(num_dependencies(sp).unwrap_nonnegative()) / 
+  return static_cast<float>(num_dependencies(sp).unwrap_nonnegative()) /
          static_cast<float>(num_dependencies(g).unwrap_nonnegative());
 }
 

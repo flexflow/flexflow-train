@@ -4,8 +4,8 @@
  *
  * @details
  * Algorithms:
- *  - work_duplicating_spization_with_coalescing
- *  - stratum_sync_sp_ization
+ *  - work_duplicating_sp_ization_with_coalescing
+ *  - naive_stratum_sync_sp_ization
  * Weight distributions:
  *  - Constant
  *  - Uniform(0, 1)
@@ -30,119 +30,143 @@
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
 #include "utils/graph/series_parallel/series_parallel_metrics.h"
-#include "utils/graph/series_parallel/sp_ization/naive_work_duplicating_spization.h"
 #include "utils/graph/series_parallel/sp_ization/naive_stratum_sync.h"
+#include "utils/graph/series_parallel/sp_ization/sp_ization_benchmark_result.dtg.h"
+#include "utils/graph/series_parallel/sp_ization/sp_ization_combined_benchmark_result.dtg.h"
+#include "utils/graph/series_parallel/sp_ization/work_duplicating_sp_ization.h"
 #include <iomanip>
 #include <iostream>
 #include <string>
-#include <tuple>
 
 constexpr size_t REPEAT = 500;
 
 using namespace FlexFlow;
-using Result = std::tuple<float, float, float>;
-using CombinedResult = std::tuple<Result, Result>;
 
 template <typename D, typename N = NoNoise>
-CombinedResult perform_benchmark_given_graph(DiGraphView const &g,
-                                             D const &Dist,
-                                             N const &Noise = NoNoise(),
-                                             size_t repeat = REPEAT) {
-  Result work_duplicating = {0, 0, 0};
-  Result barrier_sync = {0, 0, 0};
+SpizationCombinedBenchmarkResult
+    perform_benchmark_given_graph(DiGraphView const &g,
+                                  D const &Dist,
+                                  N const &Noise = NoNoise(),
+                                  size_t repeat = REPEAT) {
+  float work_dup_relative_work_increase = 0.0f;
+  float work_dup_relative_critical_path_cost_increase = 0.0f;
+  float work_dup_relative_num_dependencies_increase = 0.0f;
+
+  float barrier_sync_relative_work_increase = 0.0f;
+  float barrier_sync_relative_critical_path_cost_increase = 0.0f;
+  float barrier_sync_relative_num_dependencies_increase = 0.0f;
 
   for (int i = 0; i < repeat; i++) {
     auto cost_map = make_cost_map(get_nodes(g), Dist);
 
     SeriesParallelDecomposition sp1 =
-        work_duplicating_spization_with_coalescing(g);
-    SeriesParallelDecomposition sp2 = stratum_sync_sp_ization(g);
+        work_duplicating_sp_ization_with_coalescing(g);
+    SeriesParallelDecomposition sp2 = naive_stratum_sync_sp_ization(g);
 
     auto noisy_cost_map = add_noise_to_cost_map(cost_map, Noise);
 
-    std::get<0>(work_duplicating) +=
+    work_dup_relative_work_increase +=
         relative_work_increase(g, sp1, noisy_cost_map);
-    std::get<1>(work_duplicating) +=
+    work_dup_relative_critical_path_cost_increase +=
         relative_critical_path_cost_increase(g, sp1, noisy_cost_map);
-    std::get<2>(work_duplicating) +=
+    work_dup_relative_num_dependencies_increase +=
         relative_num_dependencies_increase(g, sp1);
 
-    std::get<0>(barrier_sync) += relative_work_increase(g, sp2, noisy_cost_map);
-    std::get<1>(barrier_sync) +=
+    barrier_sync_relative_work_increase +=
+        relative_work_increase(g, sp2, noisy_cost_map);
+    barrier_sync_relative_critical_path_cost_increase +=
         relative_critical_path_cost_increase(g, sp2, noisy_cost_map);
-    std::get<2>(barrier_sync) += relative_num_dependencies_increase(g, sp2);
+    barrier_sync_relative_num_dependencies_increase +=
+        relative_num_dependencies_increase(g, sp2);
   }
 
-  std::vector<Result> results = {
-      work_duplicating, barrier_sync};
+  SpizationBenchmarkResult work_duplicating{
+      work_dup_relative_work_increase / repeat,
+      work_dup_relative_critical_path_cost_increase / repeat,
+      work_dup_relative_num_dependencies_increase / repeat,
+  };
 
-  for (Result &r : results) {
-    std::get<0>(r) /= repeat;
-    std::get<1>(r) /= repeat;
-    std::get<2>(r) /= repeat;
-  }
+  SpizationBenchmarkResult barrier_sync{
+      barrier_sync_relative_work_increase / repeat,
+      barrier_sync_relative_critical_path_cost_increase / repeat,
+      barrier_sync_relative_num_dependencies_increase / repeat,
+  };
 
-  return {results[0], results[1]};
+  return SpizationCombinedBenchmarkResult{{
+      {"work_duplicating", work_duplicating},
+      {"naive_stratum_sync", barrier_sync},
+  }};
 }
 
 template <typename G, typename D, typename N = NoNoise>
-CombinedResult
+SpizationCombinedBenchmarkResult
     perform_benchmark_given_graph_generator(G const &graph_generator,
                                             D const &Dist,
                                             N const &Noise = NoNoise(),
                                             size_t repeat = REPEAT) {
-  Result work_duplicating = {0, 0, 0};
-  Result barrier_sync = {0, 0, 0};
+  float work_dup_relative_work_increase = 0.0f;
+  float work_dup_relative_critical_path_cost_increase = 0.0f;
+  float work_dup_relative_num_dependencies_increase = 0.0f;
+
+  float barrier_sync_relative_work_increase = 0.0f;
+  float barrier_sync_relative_critical_path_cost_increase = 0.0f;
+  float barrier_sync_relative_num_dependencies_increase = 0.0f;
 
   for (int i = 0; i < repeat; i++) {
     DiGraphView g = graph_generator();
     auto cost_map = make_cost_map(get_nodes(g), Dist);
 
     SeriesParallelDecomposition sp1 =
-        work_duplicating_spization_with_coalescing(g);
-    SeriesParallelDecomposition sp2 = stratum_sync_sp_ization(g);
+        work_duplicating_sp_ization_with_coalescing(g);
+    SeriesParallelDecomposition sp2 = naive_stratum_sync_sp_ization(g);
 
     auto noisy_cost_map = add_noise_to_cost_map(cost_map, Noise);
 
-    std::get<0>(work_duplicating) +=
+    work_dup_relative_work_increase +=
         relative_work_increase(g, sp1, noisy_cost_map);
-    std::get<1>(work_duplicating) +=
+    work_dup_relative_critical_path_cost_increase +=
         relative_critical_path_cost_increase(g, sp1, noisy_cost_map);
-    std::get<2>(work_duplicating) +=
+    work_dup_relative_num_dependencies_increase +=
         relative_num_dependencies_increase(g, sp1);
 
-    std::get<0>(barrier_sync) += relative_work_increase(g, sp2, noisy_cost_map);
-    std::get<1>(barrier_sync) +=
+    barrier_sync_relative_work_increase +=
+        relative_work_increase(g, sp2, noisy_cost_map);
+    barrier_sync_relative_critical_path_cost_increase +=
         relative_critical_path_cost_increase(g, sp2, noisy_cost_map);
-    std::get<2>(barrier_sync) += relative_num_dependencies_increase(g, sp2);
+    barrier_sync_relative_num_dependencies_increase +=
+        relative_num_dependencies_increase(g, sp2);
   }
 
-  std::vector<Result> results = {
-      work_duplicating, barrier_sync};
+  SpizationBenchmarkResult work_duplicating{
+      work_dup_relative_work_increase / repeat,
+      work_dup_relative_critical_path_cost_increase / repeat,
+      work_dup_relative_num_dependencies_increase / repeat,
+  };
 
-  for (Result &r : results) {
-    std::get<0>(r) /= repeat;
-    std::get<1>(r) /= repeat;
-    std::get<2>(r) /= repeat;
-  }
+  SpizationBenchmarkResult barrier_sync{
+      barrier_sync_relative_work_increase / repeat,
+      barrier_sync_relative_critical_path_cost_increase / repeat,
+      barrier_sync_relative_num_dependencies_increase / repeat,
+  };
 
-  return {results[0], results[1]};
+  return SpizationCombinedBenchmarkResult{{
+      {"work_duplicating", work_duplicating},
+      {"naive_stratum_sync", barrier_sync},
+  }};
 }
 
-void output_benchmark(CombinedResult const &combined_result,
+void output_benchmark(SpizationCombinedBenchmarkResult const &combined_result,
                       std::string const &title) {
-  auto [work_dup, stratum_sync] = combined_result;
   std::cout << std::fixed << std::setprecision(3);
   std::cout << "Benchmark for " << title << std::endl;
   std::cout << "Technique | Work-Increase | Critical-Path-Increase | "
                "Dependencies-Increase"
             << std::endl;
-  std::cout << "Barrier Sync    | " << std::get<0>(stratum_sync) << " | "
-            << std::get<1>(stratum_sync) << " | " << std::get<2>(stratum_sync)
-            << std::endl;
-  std::cout << "Work Duplication | " << std::get<0>(work_dup) << " | "
-            << std::get<1>(work_dup) << " | " << std::get<2>(work_dup)
-            << std::endl;
+  for (auto const &[technique, result] : combined_result.by_technique) {
+    std::cout << technique << " | " << result.relative_work_increase << " | "
+              << result.relative_critical_path_cost_increase << " | "
+              << result.relative_num_dependencies_increase << std::endl;
+  }
   std::cout << std::endl;
 }
 

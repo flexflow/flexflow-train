@@ -23,20 +23,19 @@ static SeriesParallelDecomposition
 
 static SeriesParallelDecomposition
     normalize_sp_decomposition(NonNormalSeriesSplit const &serial) {
-  std::vector<SeriesParallelDecomposition> normalized_children = transform(
-      filter_empty(serial.children),
-      [](std::variant<NonNormalParallelSplit, Node> const &child) {
-        return normalize_sp_decomposition(
-            widen<NonNormalSPDecomposition>(child));
-      });
+  std::vector<SeriesParallelDecomposition> normalized_children =
+      transform(filter_empty(serial.children),
+                [](std::variant<NonNormalParallelSplit, Node> const &child) {
+                  return normalize_sp_decomposition(
+                      widen<NonNormalSPDecomposition>(child));
+                });
 
-  if (normalized_children.empty()) {
-    throw mk_runtime_error(
-        "Cannot normalize empty SeriesSplit");
-  }
+  ASSERT(normalized_children.size() > 0, "Cannot normalize empty SeriesSplit");
+
   if (normalized_children.size() == 1) {
     return get_only(normalized_children);
   }
+
   return series_composition(normalized_children);
 }
 
@@ -49,10 +48,9 @@ static SeriesParallelDecomposition
                       widen<NonNormalSPDecomposition>(child));
                 });
 
-  if (normalized_children.empty()) {
-    throw mk_runtime_error(
-        "Cannot normalize empty ParallelSplit (should be filtered out)");
-  }
+  ASSERT(normalized_children.size() > 0,
+         "Cannot normalize empty ParallelSplit");
+
   if (normalized_children.size() == 1) {
     return get_only(normalized_children);
   }

@@ -13,7 +13,8 @@ std::unordered_set<Node> get_descendants(DiGraphView const &g,
   assert(is_acyclic(g));
   assert(contains(get_nodes(g), starting_node));
 
-  return unordered_set_of(get_bfs_ordering(g, get_successors(g, starting_node)));
+  return unordered_set_of(
+      get_bfs_ordering(g, get_successors(g, starting_node)));
 };
 
 } // namespace FlexFlow

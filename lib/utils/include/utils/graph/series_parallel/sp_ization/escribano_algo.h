@@ -18,11 +18,12 @@ std::unordered_set<Node>
                   std::unordered_map<Node, NodeRole> const &node_roles);
 
 /**
- * @brief See @ref lib/utils/include/utils/graph/series_parallel/sp_ization/README.md "README.md" for explanation.
+ * @brief See @ref
+ * lib/utils/include/utils/graph/series_parallel/sp_ization/README.md
+ * "README.md" for explanation.
  */
 SeriesParallelDecomposition escribano_sp_ization(DiGraph g);
 
 } // namespace FlexFlow
 
 #endif
-

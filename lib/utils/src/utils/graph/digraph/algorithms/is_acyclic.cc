@@ -17,8 +17,8 @@ bool is_acyclic(DiGraphView const &g) {
 
   // Recursively explore a given node and all its successors
   // A node is fully explored once we have fully explored all of its successors
-  // If, while exploring, we find a node that was already being explored, then there is a
-  // cycle
+  // If, while exploring, we find a node that was already being explored, then
+  // there is a cycle
   std::function<bool(Node)> cycle_downstream_from_node =
       [&](Node const &n) -> bool {
     status[n] = ExplorationStatus::BEING_EXPLORED;
@@ -40,7 +40,8 @@ bool is_acyclic(DiGraphView const &g) {
   };
 
   for (Node const &node : get_nodes(g)) {
-    if ((status.at(node) == ExplorationStatus::NOT_EXPLORED) && cycle_downstream_from_node(node)) {
+    if ((status.at(node) == ExplorationStatus::NOT_EXPLORED) &&
+        cycle_downstream_from_node(node)) {
       return false;
     }
   }
