@@ -64,7 +64,7 @@ static std::optional<UnlabelledKwargDataflowGraphPatternMatch>
       graph_node_inputs =
           get_incoming_open_kwarg_dataflow_values_for_node(graph, graph_node);
 
-  if (graph_node_inputs.size() != pattern_node_inputs.size()) {
+  if (keys(graph_node_inputs) != keys(pattern_node_inputs)) {
     return std::nullopt;
   }
 

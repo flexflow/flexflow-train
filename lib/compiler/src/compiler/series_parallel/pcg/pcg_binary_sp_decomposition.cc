@@ -1,9 +1,11 @@
 #include "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.h"
+#include "compiler/series_parallel/pcg/get_pcg_series_parallel_decomposition.h"
 #include "compiler/series_parallel/pcg/pcg_binary_parallel_split.h"
 #include "compiler/series_parallel/pcg/pcg_binary_series_split.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/find_paths_to_leaf.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/get_leaves.h"
 #include "utils/graph/series_parallel/binary_sp_decomposition_tree/generic_binary_sp_decomposition_tree/get_path_to_leaf_map.h"
+#include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {
@@ -80,25 +82,42 @@ BinarySPDecompositionTree
   });
 }
 
-PCGBinarySPDecomposition pcg_binary_sp_decomposition_from_binary_sp_tree(
-    BinarySPDecompositionTree const &spd_tree) {
-  return spd_tree.visit<PCGBinarySPDecomposition>(overload{
+PCGBinarySeriesSplit pcg_binary_series_split_from_binary_series_split(
+    BinarySeriesSplit const &split) {
+  return PCGBinarySeriesSplit{
+      pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
+          split.get_left_child()),
+      pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
+          split.get_right_child()),
+  };
+}
+
+PCGBinaryParallelSplit pcg_binary_parallel_split_from_binary_parallel_split(
+    BinaryParallelSplit const &split) {
+  return PCGBinaryParallelSplit{
+      pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
+          split.get_left_child()),
+      pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
+          split.get_right_child()),
+  };
+}
+
+PCGBinarySPDecomposition
+    pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
+        BinarySPDecompositionTree const &sp_tree) {
+
+  return sp_tree.visit<PCGBinarySPDecomposition>(overload{
       [](BinarySeriesSplit const &series) -> PCGBinarySPDecomposition {
         return PCGBinarySPDecomposition{
-            PCGBinarySeriesSplit{
-                pcg_binary_sp_decomposition_from_binary_sp_tree(
-                    series.get_left_child()),
-                pcg_binary_sp_decomposition_from_binary_sp_tree(
-                    series.get_right_child()),
-            },
+            pcg_binary_series_split_from_binary_series_split(series),
         };
       },
       [](BinaryParallelSplit const &parallel) -> PCGBinarySPDecomposition {
         return PCGBinarySPDecomposition{
             PCGBinaryParallelSplit{
-                pcg_binary_sp_decomposition_from_binary_sp_tree(
+                pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
                     parallel.get_left_child()),
-                pcg_binary_sp_decomposition_from_binary_sp_tree(
+                pcg_binary_sp_decomposition_from_binary_sp_decomposition_tree(
                     parallel.get_right_child()),
             },
         };

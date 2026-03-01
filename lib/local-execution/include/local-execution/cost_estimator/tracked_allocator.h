@@ -1,3 +1,5 @@
+#if 0 // FIXME (Elliott): fix cost estimator
+
 #ifndef _FLEXFLOW_LOCAL_EXECUTION_TRACKED_ALLOCATOR_H
 #define _FLEXFLOW_LOCAL_EXECUTION_TRACKED_ALLOCATOR_H
 
@@ -31,5 +33,7 @@ Allocator get_tracked_local_memory_allocator();
 size_t get_tracked_memory_usage(Allocator &wrapped_allocator);
 
 } // namespace FlexFlow
+
+#endif
 
 #endif

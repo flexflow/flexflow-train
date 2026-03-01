@@ -1,6 +1,7 @@
 #include "local-execution/tensor_allocation.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
+#include "task-spec/dynamic_graph/dynamic_tensor_accessor.dtg.h"
 #include "utils/bidict/generate_bidict.h"
 #include "utils/containers/all_are_true.h"
 #include "utils/containers/contains_key.h"
@@ -24,6 +25,13 @@ bool all_tensors_are_allocated(DynamicOpenDataflowGraph const &g) {
       }));
 }
 
+bool tensors_are_ready_for_allocation(DynamicOpenDataflowGraph const &g) {
+  return all_are_true(
+      transform(get_dynamic_values(g), [](DynamicValueAttrs const &v) -> bool {
+        return v.parallel_tensor_shape.has_value();
+      }));
+}
+
 DynamicValueAttrs
     perform_tensor_allocation_for_value(DynamicValueAttrs const &value,
                                         Allocator &allocator) {
@@ -35,16 +43,18 @@ DynamicValueAttrs
   GenericTensorAccessorW accessor = allocator.allocate_tensor(shape);
 
   DynamicValueAttrs result = value;
-  result.accessor = accessor;
+  result.accessor = DynamicTensorAccessor{accessor};
 
   return result;
 }
 
 DynamicOpenDataflowGraph perform_tensor_allocation(
     DynamicOpenDataflowGraph const &g,
-    std::unordered_map<DynamicValueAttrs, GenericTensorAccessorW> const
+    std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &preallocated,
     Allocator &allocator) {
+  ASSERT(no_tensors_are_allocated(g));
+  ASSERT(tensors_are_ready_for_allocation(g));
   for (DynamicValueAttrs const &v : keys(preallocated)) {
     ASSERT(v.accessor == std::nullopt);
   }
@@ -64,7 +74,7 @@ DynamicOpenDataflowGraph perform_tensor_allocation(
             }
           });
 
-  return transform_dynamic_invocation_set(
+  DynamicOpenDataflowGraph result = transform_dynamic_invocation_set(
       g, [&](DynamicNodeInvocation const &i) -> DynamicNodeInvocation {
         return DynamicNodeInvocation{
             /*inputs=*/map_values(
@@ -80,6 +90,10 @@ DynamicOpenDataflowGraph perform_tensor_allocation(
                        }),
         };
       });
+
+  ASSERT(all_tensors_are_allocated(result));
+
+  return result;
 }
 
 } // namespace FlexFlow

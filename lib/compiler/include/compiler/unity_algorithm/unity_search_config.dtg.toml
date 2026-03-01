@@ -1,0 +1,24 @@
+namespace = "FlexFlow"
+name = "UnitySearchConfig"
+type = "struct"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+  "json",
+]
+
+includes = [
+]
+
+[[fields]]
+name = "alpha"
+type = "float"
+
+[[fields]]
+name = "budget"
+type = "int"
+
+[[fields]]
+name = "max_num_ops"
+type = "int"

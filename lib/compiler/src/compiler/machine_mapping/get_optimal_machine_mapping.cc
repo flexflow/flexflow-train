@@ -21,9 +21,12 @@
 #include "pcg/machine_specification.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "utils/containers/contains.h"
+#include "utils/containers/contains_key.h"
 #include "utils/containers/flatmap.h"
 #include "utils/containers/generate_map.h"
 #include "utils/containers/get_all_assignments.h"
+#include "utils/containers/keys.h"
+#include "utils/containers/set_minus.h"
 #include "utils/containers/unordered_set_of.h"
 #include "utils/exception.h"
 #include "utils/overload.h"
@@ -36,6 +39,8 @@ MachineMappingResult
                                 MachineMappingProblemTree const &problem_tree,
                                 MachineComputeResourceSlice const &resources,
                                 MachineMappingConstraints const &constraints) {
+
+  ASSERT(get_all_layers(constraints) == get_all_leaf_paths(problem_tree));
 
   MachineMappingState state = MachineMappingState{
       problem_tree,
@@ -85,12 +90,21 @@ MachineMappingResult
                                     &parallel_split_transformation) {
 
   auto get_boundary_machine_view_assignments =
-      [&](MachineMappingProblemTree const &root,
-          std::unordered_set<BinaryTreePath> const &boundary_layers)
+      [&](std::unordered_set<BinaryTreePath> const &boundary_layers,
+          MachineMappingProblemTree const &root,
+          BinaryTreePathEntry const &prefix)
       -> std::unordered_set<ParallelLayerGuidObliviousMachineMapping> {
+    MachineMappingConstraints sub_constraints =
+        restrict_to_child(constraints, prefix);
+
+    ASSERT(get_all_layers(sub_constraints) == get_all_leaf_paths(root));
+
+    std::unordered_set<BinaryTreePath> unconstrained_boundary_layers =
+        set_minus(boundary_layers, get_constrained_layers(sub_constraints));
+
     std::unordered_map<BinaryTreePath, std::unordered_set<MachineView>>
         allowed = generate_map(
-            boundary_layers,
+            unconstrained_boundary_layers,
             [&](BinaryTreePath const &l) -> std::unordered_set<MachineView> {
               UnmappedRuntimeOnlyOpCostEstimateKey leaf =
                   mm_problem_tree_get_subtree_at_path(root, l)
@@ -98,8 +112,12 @@ MachineMappingResult
                       .get<UnmappedRuntimeOnlyOpCostEstimateKey>();
               return context.allowed_machine_views(leaf, resources);
             });
+
+    std::unordered_set<std::unordered_map<BinaryTreePath, MachineView>>
+        assignments = get_all_assignments(allowed);
+
     return transform(
-        get_all_assignments(allowed),
+        assignments,
         [](std::unordered_map<BinaryTreePath, MachineView> const &m) {
           return ParallelLayerGuidObliviousMachineMapping{m};
         });
@@ -143,29 +161,42 @@ MachineMappingResult
 
   for (ParallelLayerGuidObliviousMachineMapping const
            &assigned_pre_machine_views :
-       get_boundary_machine_view_assignments(series_split.get_left_child(),
-                                             get_src_layers(tensor_movement))) {
+       get_boundary_machine_view_assignments(get_src_layers(tensor_movement),
+                                             series_split.get_left_child(),
+                                             BinaryTreePathEntry::LEFT_CHILD)) {
 
     MachineMappingResult pre_result =
         eval_pre_boundary_mapping(assigned_pre_machine_views);
 
+    if (is_infeasible(pre_result)) {
+      continue;
+    }
+
     for (ParallelLayerGuidObliviousMachineMapping const
              &assigned_post_machine_views :
          get_boundary_machine_view_assignments(
-             series_split.get_right_child(), get_dst_layers(tensor_movement))) {
+             get_dst_layers(tensor_movement),
+             series_split.get_right_child(),
+             BinaryTreePathEntry::RIGHT_CHILD)) {
 
       MachineMappingResult post_result =
           eval_post_boundary_mapping(assigned_post_machine_views);
+
+      if (is_infeasible(post_result)) {
+        continue;
+      }
 
       TensorSetMovement comm_across_split =
           concretize_abstracted_tensor_set_movement(
               tensor_movement,
               /*pre_machine_stencils=*/
               get_machine_stencils_for_partially_mapped_mm_problem_tree(
-                  series_split.get_left_child(), assigned_pre_machine_views),
+                  series_split.get_left_child(),
+                  require_feasible(pre_result).machine_mapping),
               /*post_machine_stencils=*/
               get_machine_stencils_for_partially_mapped_mm_problem_tree(
-                  series_split.get_right_child(), assigned_post_machine_views));
+                  series_split.get_right_child(),
+                  require_feasible(post_result).machine_mapping));
 
       milliseconds_t cost_across_split =
           context.cost_estimator.estimate_cost(comm_across_split);

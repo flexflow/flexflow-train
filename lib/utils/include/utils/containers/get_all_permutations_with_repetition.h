@@ -22,7 +22,7 @@ std::unordered_multiset<std::vector<T>>
   std::unordered_multiset<std::vector<T>> result;
 
   if (container.empty() || n == 0) {
-    return result;
+    return {{}};
   }
 
   std::vector<T> elements(std::begin(container), std::end(container));

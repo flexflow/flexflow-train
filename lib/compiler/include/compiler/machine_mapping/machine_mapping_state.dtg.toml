@@ -9,7 +9,7 @@ features = [
 
 includes = [
   "compiler/machine_mapping/machine_mapping_constraints.dtg.h",
-  "compiler/machine_mapping/machine_compute_resource_slice.dtg.h",
+  "pcg/machine_compute_resource_slice.dtg.h",
   "compiler/machine_mapping/machine_mapping_problem_tree/machine_mapping_problem_tree.dtg.h",
 ]
 
