@@ -13,10 +13,10 @@ ff_add_library(
     local-execution
     op-attrs
     pcg
-    spdlog
+    deps::spdlog
     task-spec
     utils
-    realm
+    deps::realm
 )
 
 add_subdirectory(test)

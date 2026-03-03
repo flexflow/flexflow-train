@@ -111,6 +111,10 @@ cuda = false
 type = "bin"
 cuda = false
 
+[targets.run-model]
+type = "bin"
+cuda = false
+
 # default_build_targets = [
 #   "utils",
 # ]
@@ -124,5 +128,4 @@ cuda = false
 # ]
 
 [cmake_flags_extra]
-FF_CUDA_ARCH = "60"
 CMAKE_CUDA_ARCHITECTURES = "60"

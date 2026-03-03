@@ -13,7 +13,7 @@ ff_add_test_executable(
     src/
   DEPS
     utils
-    doctest
+    deps::doctest
     substitution-generator
     utils-test-common
 )

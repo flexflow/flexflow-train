@@ -12,7 +12,7 @@ ff_add_library(
     utils
     kernels
     pcg
-    spdlog
+    deps::spdlog
     compiler
 )
 

@@ -81,17 +81,7 @@
       devShells = rec {
         ci = mkShell {
           shellHook = ''
-            export PATH="$HOME/ff/.scripts/:$PATH"
             export RC_PARAMS="max_discard_ratio=100"
-            export CMAKE_FLAGS="-DFF_USE_EXTERNAL_NCCL=ON \
-                                -DFF_USE_EXTERNAL_JSON=ON \
-                                -DFF_USE_EXTERNAL_FMT=ON \
-                                -DFF_USE_EXTERNAL_SPDLOG=ON \
-                                -DFF_USE_EXTERNAL_DOCTEST=ON \
-                                -DFF_USE_EXTERNAL_RAPIDCHECK=ON \
-                                -DFF_USE_EXTERNAL_EXPECTED=ON \
-                                -DFF_USE_EXTERNAL_GBENCHMARK=ON \
-                                -DFF_USE_EXTERNAL_LIBASSERT=ON"
           '';
 
           buildInputs = builtins.concatLists [

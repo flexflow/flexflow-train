@@ -8,6 +8,6 @@ ff_add_test_executable(
   DEPS
     utils
     op-attrs
-    doctest
+    deps::doctest
     utils-test-common
 )
