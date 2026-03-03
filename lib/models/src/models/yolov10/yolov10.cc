@@ -114,18 +114,18 @@ YOLOv10Config get_default_yolov10_config() {
         /*module_type=*/YOLOv10Module::SCDown,
         /*module_args=*/{1024, 3, 2},
     });
-    // layers.push_back(YOLOv10LayerConfig{
-    //     /*input_tensor_index=*/{-1},
-    //     /*num_module_repeats=*/3_p,
-    //     /*module_type=*/YOLOv10Module::C2fCIB,
-    //     /*module_args=*/{1024, 1},
-    // });
-    // layers.push_back(YOLOv10LayerConfig{
-    //     /*input_tensor_index=*/{-1},
-    //     /*num_module_repeats=*/1_p,
-    //     /*module_type=*/YOLOv10Module::SPPF,
-    //     /*module_args=*/{1024, 5},
-    // });
+    layers.push_back(YOLOv10LayerConfig{
+        /*input_tensor_index=*/{-1},
+        /*num_module_repeats=*/3_p,
+        /*module_type=*/YOLOv10Module::C2fCIB,
+        /*module_args=*/{1024, 1},
+    });
+    layers.push_back(YOLOv10LayerConfig{
+        /*input_tensor_index=*/{-1},
+        /*num_module_repeats=*/1_p,
+        /*module_type=*/YOLOv10Module::SPPF,
+        /*module_args=*/{1024, 5},
+    });
     // layers.push_back(YOLOv10LayerConfig{
     //     /*input_tensor_index=*/{-1},
     //     /*num_module_repeats=*/1_p,
