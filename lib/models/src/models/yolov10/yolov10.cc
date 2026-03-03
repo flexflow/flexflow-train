@@ -96,42 +96,42 @@ YOLOv10Config get_default_yolov10_config() {
         /*module_type=*/YOLOv10Module::C2f,
         /*module_args=*/{256, 1},
     });
-    layers.push_back(YOLOv10LayerConfig{
-        /*input_tensor_index=*/{-1},
-        /*num_module_repeats=*/1_p,
-        /*module_type=*/YOLOv10Module::SCDown,
-        /*module_args=*/{512, 3, 2},
-    });
-    layers.push_back(YOLOv10LayerConfig{
-        /*input_tensor_index=*/{-1},
-        /*num_module_repeats=*/6_p,
-        /*module_type=*/YOLOv10Module::C2fCIB,
-        /*module_args=*/{512, 1},
-    });
-    layers.push_back(YOLOv10LayerConfig{
-        /*input_tensor_index=*/{-1},
-        /*num_module_repeats=*/1_p,
-        /*module_type=*/YOLOv10Module::SCDown,
-        /*module_args=*/{1024, 3, 2},
-    });
-    layers.push_back(YOLOv10LayerConfig{
-        /*input_tensor_index=*/{-1},
-        /*num_module_repeats=*/3_p,
-        /*module_type=*/YOLOv10Module::C2fCIB,
-        /*module_args=*/{1024, 1},
-    });
-    layers.push_back(YOLOv10LayerConfig{
-        /*input_tensor_index=*/{-1},
-        /*num_module_repeats=*/1_p,
-        /*module_type=*/YOLOv10Module::SPPF,
-        /*module_args=*/{1024, 5},
-    });
-    layers.push_back(YOLOv10LayerConfig{
-        /*input_tensor_index=*/{-1},
-        /*num_module_repeats=*/1_p,
-        /*module_type=*/YOLOv10Module::PSA,
-        /*module_args=*/{1024},
-    });
+    // layers.push_back(YOLOv10LayerConfig{
+    //     /*input_tensor_index=*/{-1},
+    //     /*num_module_repeats=*/1_p,
+    //     /*module_type=*/YOLOv10Module::SCDown,
+    //     /*module_args=*/{512, 3, 2},
+    // });
+    // layers.push_back(YOLOv10LayerConfig{
+    //     /*input_tensor_index=*/{-1},
+    //     /*num_module_repeats=*/6_p,
+    //     /*module_type=*/YOLOv10Module::C2fCIB,
+    //     /*module_args=*/{512, 1},
+    // });
+    // layers.push_back(YOLOv10LayerConfig{
+    //     /*input_tensor_index=*/{-1},
+    //     /*num_module_repeats=*/1_p,
+    //     /*module_type=*/YOLOv10Module::SCDown,
+    //     /*module_args=*/{1024, 3, 2},
+    // });
+    // layers.push_back(YOLOv10LayerConfig{
+    //     /*input_tensor_index=*/{-1},
+    //     /*num_module_repeats=*/3_p,
+    //     /*module_type=*/YOLOv10Module::C2fCIB,
+    //     /*module_args=*/{1024, 1},
+    // });
+    // layers.push_back(YOLOv10LayerConfig{
+    //     /*input_tensor_index=*/{-1},
+    //     /*num_module_repeats=*/1_p,
+    //     /*module_type=*/YOLOv10Module::SPPF,
+    //     /*module_args=*/{1024, 5},
+    // });
+    // layers.push_back(YOLOv10LayerConfig{
+    //     /*input_tensor_index=*/{-1},
+    //     /*num_module_repeats=*/1_p,
+    //     /*module_type=*/YOLOv10Module::PSA,
+    //     /*module_args=*/{1024},
+    // });
 
     return layers;
   };
@@ -551,12 +551,18 @@ YOLOv10LayerChannelTensor create_yolov10_bottleneck_module(
 
   bool use_shortcut = shortcut && (c1 == c2);
 
-  if (use_shortcut) {
-    return {
-        /*channels_=*/positive_int(c2),
-        /*tensor_=*/cgb.add(/*lhs=*/input_tensor, /*rhs=*/cv2.tensor_),
-    };
-  }
+  // clang-format off
+  // if (use_shortcut) {
+  //   // TODO: cgb.add doesn't work here for now because
+  //   // TODO: input_tensor has shape: <TensorShape dims=<TensorDims ff_ordered=<ff_ordered [64, 160, 13, 80]>> data_type=FLOAT>
+  //   // TODO: cv2.tensor_ has shape: <TensorShape dims=<TensorDims ff_ordered=<ff_ordered [64, 80, 13, 80]>> data_type=FLOAT>
+  //   // TODO: Not sure if we need to support broadcast
+  //   return {
+  //       /*channels_=*/positive_int(c2),
+  //       /*tensor_=*/cgb.add(/*lhs=*/input_tensor, /*rhs=*/cv2.tensor_),
+  //   };
+  // }
+  // clang-format on
 
   return cv2;
 }
@@ -1309,7 +1315,7 @@ ComputationGraph get_yolov10_computation_graph(YOLOv10Config const &config) {
   // Create the initial input tensor
   tensor_guid_t input = create_yolov10_tensor(
       cgb,
-      FFOrdered{config.batch_size, config.num_input_channels},
+      FFOrdered{config.batch_size, config.num_input_channels, 50_p, 50_p},
       DataType::FLOAT);
 
   // Cache holding layer-wise information
