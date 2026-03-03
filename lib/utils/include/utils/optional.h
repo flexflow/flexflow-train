@@ -3,6 +3,7 @@
 
 #include "utils/exception.h"
 #include "utils/fmt/optional.h"
+#include <libassert/assert.hpp>
 #include <rapidcheck.h>
 
 namespace FlexFlow {

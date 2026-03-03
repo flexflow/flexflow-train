@@ -1,24 +1,26 @@
-#if 0 // FIXME (Elliott): fix cost estimator
 #include "local-execution/cost_estimator/local_cost_estimator.h"
 #include "compiler/machine_mapping/machine_view.h"
-#include "internal/test_utils.h"
 #include "kernels/device_handle_t.h"
+#include "kernels/local_cpu_allocator.h"
+#include "kernels/local_cuda_allocator.h"
+#include "kernels/managed_ff_stream.h"
 #include "kernels/managed_per_device_ff_handle.h"
 #include "op-attrs/ops/attention.h"
 #include "op-attrs/ops/cast.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "op-attrs/tensor_slot_name.dtg.h"
 #include "pcg/computation_graph_builder.h"
-#include "task-spec/runtime_task_invocation/runtime_arg_config.h"
+#include "pcg/device_id_t.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("LocalCostEstimator") {
-    RuntimeArgConfig runtime_arg_config =
-        cpu_make_runtime_arg_config(EnableProfiling::YES,
-                                    ProfilingSettings{/*warmup_iters=*/0,
-                                                      /*measure_iters=*/1});
+    Allocator allocator = create_local_cpu_memory_allocator();
+    device_handle_t ff_handle = cpu_make_device_handle_t();
+    device_id_t device_idx =
+        make_device_id_t_from_idx(nonnegative_int{0}, DeviceType::CPU);
 
     OptimizerAttrs optimizer_attrs = OptimizerAttrs{
         SGDOptimizerAttrs{
@@ -29,7 +31,20 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    CostEstimator cost_estimator = get_local_cost_estimator(runtime_arg_config);
+    MachineInterconnectSpecification interconnect_specification{
+        /*inter_node_bandwidth=*/bytes_per_second_t{10000000},
+        /*intra_node_bandwidth=*/bytes_per_second_t{10000000000},
+    };
+
+    CostEstimator cost_estimator = get_local_cost_estimator(
+        /*interconnect_specification=*/interconnect_specification,
+        /*allocator=*/allocator,
+        /*profiling_settings=*/
+        ProfilingSettings{/*warmup_iters=*/0,
+                          /*measure_iters=*/1},
+        /*device_handle=*/ff_handle,
+        /*iteration_config=*/FFIterationConfig{1_p},
+        /*device_idx=*/device_idx);
 
     SUBCASE("estimate operator cost") {
       CastAttrs attrs = CastAttrs{
@@ -46,9 +61,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       OpCostEstimateKey op_cost_estimate_key = OpCostEstimateKey{
           /*op_attrs=*/PCGOperatorAttrs{attrs},
-          /*input_shapes=*/{input_shape},
+          /*input_shapes=*/{{TensorSlotName::INPUT, input_shape}},
           /*weight_shapes=*/{},
-          /*output_shapes=*/{output_shape},
+          /*output_shapes=*/{{TensorSlotName::OUTPUT, output_shape}},
           /*optimizer_attrs=*/optimizer_attrs,
           /*machine_view=*/
           make_1d_machine_view(
@@ -68,15 +83,17 @@ TEST_SUITE(FF_TEST_SUITE) {
 
 TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("LocalCostEstimator (CUDA)") {
+    ManagedFFStream managed_stream{};
     ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
         /*workSpaceSize=*/1024 * 1024,
         /*allowTensorOpMathConversion=*/true);
 
-    RuntimeArgConfig runtime_arg_config =
-        gpu_make_runtime_arg_config(managed_handle.raw_handle(),
-                                    EnableProfiling::YES,
-                                    ProfilingSettings{/*warmup_iters=*/0,
-                                                      /*measure_iters=*/1});
+    Allocator allocator = create_local_cuda_memory_allocator();
+
+    device_id_t device_idx =
+        make_device_id_t_from_idx(nonnegative_int{0}, DeviceType::GPU);
+    device_handle_t ff_handle =
+        gpu_make_device_handle_t(managed_handle.raw_handle());
 
     OptimizerAttrs optimizer_attrs = OptimizerAttrs{
         SGDOptimizerAttrs{
@@ -87,7 +104,20 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         },
     };
 
-    CostEstimator cost_estimator = get_local_cost_estimator(runtime_arg_config);
+    MachineInterconnectSpecification interconnect_specification{
+        /*inter_node_bandwidth=*/bytes_per_second_t{10000000},
+        /*intra_node_bandwidth=*/bytes_per_second_t{10000000000},
+    };
+
+    CostEstimator cost_estimator = get_local_cost_estimator(
+        /*interconnect_specification=*/interconnect_specification,
+        /*allocator=*/allocator,
+        /*profiling_settings=*/
+        ProfilingSettings{/*warmup_iters=*/0,
+                          /*measure_iters=*/1},
+        /*device_handle=*/ff_handle,
+        /*iteration_config=*/FFIterationConfig{1_p},
+        /*device_idx=*/device_idx);
 
     SUBCASE("estimate operator cost") {
       positive_int embed_dim = 32_p;
@@ -122,9 +152,12 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
       OpCostEstimateKey op_cost_estimate_key = OpCostEstimateKey{
           /*op_attrs=*/PCGOperatorAttrs{attrs},
-          /*input_shapes=*/{inputs_shape, inputs_shape, inputs_shape},
-          /*weight_shapes=*/{weights_shape},
-          /*output_shapes=*/{output_shape},
+          /*input_shapes=*/
+          {{TensorSlotName::QUERY, inputs_shape},
+           {TensorSlotName::KEY, inputs_shape},
+           {TensorSlotName::VALUE, inputs_shape}},
+          /*weight_shapes=*/{{TensorSlotName::WEIGHT, weights_shape}},
+          /*output_shapes=*/{{TensorSlotName::OUTPUT, output_shape}},
           /*optimizer_attrs=*/optimizer_attrs,
           /*machine_view=*/
           make_1d_machine_view(
@@ -141,4 +174,3 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     }
   }
 }
-#endif

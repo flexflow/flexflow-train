@@ -7,6 +7,9 @@
 
 namespace FlexFlow {
 
+std::optional<Substitution>
+    get_random_substitution(MachineComputeSpecification const &resources);
+
 std::vector<Substitution>
     get_substitution_set(MachineComputeSpecification const &resources);
 
