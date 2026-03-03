@@ -96,24 +96,24 @@ YOLOv10Config get_default_yolov10_config() {
         /*module_type=*/YOLOv10Module::C2f,
         /*module_args=*/{256, 1},
     });
-    // layers.push_back(YOLOv10LayerConfig{
-    //     /*input_tensor_index=*/{-1},
-    //     /*num_module_repeats=*/1_p,
-    //     /*module_type=*/YOLOv10Module::SCDown,
-    //     /*module_args=*/{512, 3, 2},
-    // });
-    // layers.push_back(YOLOv10LayerConfig{
-    //     /*input_tensor_index=*/{-1},
-    //     /*num_module_repeats=*/6_p,
-    //     /*module_type=*/YOLOv10Module::C2fCIB,
-    //     /*module_args=*/{512, 1},
-    // });
-    // layers.push_back(YOLOv10LayerConfig{
-    //     /*input_tensor_index=*/{-1},
-    //     /*num_module_repeats=*/1_p,
-    //     /*module_type=*/YOLOv10Module::SCDown,
-    //     /*module_args=*/{1024, 3, 2},
-    // });
+    layers.push_back(YOLOv10LayerConfig{
+        /*input_tensor_index=*/{-1},
+        /*num_module_repeats=*/1_p,
+        /*module_type=*/YOLOv10Module::SCDown,
+        /*module_args=*/{512, 3, 2},
+    });
+    layers.push_back(YOLOv10LayerConfig{
+        /*input_tensor_index=*/{-1},
+        /*num_module_repeats=*/6_p,
+        /*module_type=*/YOLOv10Module::C2fCIB,
+        /*module_args=*/{512, 1},
+    });
+    layers.push_back(YOLOv10LayerConfig{
+        /*input_tensor_index=*/{-1},
+        /*num_module_repeats=*/1_p,
+        /*module_type=*/YOLOv10Module::SCDown,
+        /*module_args=*/{1024, 3, 2},
+    });
     // layers.push_back(YOLOv10LayerConfig{
     //     /*input_tensor_index=*/{-1},
     //     /*num_module_repeats=*/3_p,
@@ -236,13 +236,25 @@ YOLOv10LayerChannelTensor
                                  positive_int const &channel_in,
                                  std::vector<int> const &scdown_module_args) {
 
+  // ------------------------------------------------------------
+  // conv_module_args indices:
+  //   [0]=channel_in, [1]=channel_out, [2]=kernel_size, [3]=stride,
+  //   [4]=groups, [5]=use_activation, [6]=dilation, [7]=padding
+  // ------------------------------------------------------------
   std::vector<int> conv1_module_args = scdown_module_args;
   conv1_module_args[2] = 1; // Change kernel size to 1
   conv1_module_args[3] = 1; // Change stride to 1
 
-  std::vector<int> conv2_module_args = scdown_module_args;
-  conv2_module_args.push_back(conv2_module_args[1]); // groups = channel_out
-  conv2_module_args.push_back(0);                    // use_activation = false
+  std::vector<int> conv2_module_args(/*count=*/6, /*value=*/0);
+  conv2_module_args[0] = scdown_module_args[0];
+  conv2_module_args[1] = scdown_module_args[1];
+  conv2_module_args[2] = scdown_module_args[2];
+  conv2_module_args[3] = scdown_module_args[3];
+  conv2_module_args[4] = scdown_module_args[1]; // groups = channel_out
+  conv2_module_args[5] = 0;                     // use_activation = false
+
+  // TODO: conv2d only supports groups=1 for now
+  conv2_module_args[4] = 1; // groups = 1
 
   YOLOv10LayerChannelTensor conv1 = create_yolov10_conv_module(
       /*cgb=*/cgb,
@@ -716,7 +728,7 @@ YOLOv10LayerChannelTensor
       /*idx=*/3,
       /*default_val=*/0.5f);
 
-  int c_hidden = static_cast<int>(static_cast<float>(c2) * e); // c_
+  int c_hidden = static_cast<int>(static_cast<float>(c2) * e);
 
   bool use_shortcut = shortcut && (c1 == c2);
 
@@ -735,7 +747,10 @@ YOLOv10LayerChannelTensor
   conv1_args[1] = c1;
   conv1_args[2] = 3;
   conv1_args[3] = 1;
-  conv1_args[4] = c1; // groups=c1
+  conv1_args[4] = c1; // groups = c1
+
+  // TODO: conv2d only support groups=1 for now
+  conv1_args[4] = 1; // groups = 1
 
   YOLOv10LayerChannelTensor y1 = create_yolov10_conv_module(
       /*cgb=*/cgb,
@@ -762,7 +777,10 @@ YOLOv10LayerChannelTensor
   conv3_args[1] = 2 * c_hidden;
   conv3_args[2] = 3;
   conv3_args[3] = 1;
-  conv3_args[4] = 2 * c_hidden; // groups=2*c_hidden
+  conv3_args[4] = 2 * c_hidden; // groups = 2*c_hidden
+
+  // TODO: conv2d only support groups=1 for now
+  conv3_args[4] = 1; // groups = 1
 
   YOLOv10LayerChannelTensor y3 = create_yolov10_conv_module(
       /*cgb=*/cgb,
@@ -789,7 +807,10 @@ YOLOv10LayerChannelTensor
   conv5_args[1] = c2;
   conv5_args[2] = 3;
   conv5_args[3] = 1;
-  conv5_args[4] = c2; // groups=c2
+  conv5_args[4] = c2; // groups = c2
+
+  // TODO: conv2d only support groups=1 for now
+  conv5_args[4] = 1; // groups = 1
 
   YOLOv10LayerChannelTensor y5 = create_yolov10_conv_module(
       /*cgb=*/cgb,
@@ -797,12 +818,13 @@ YOLOv10LayerChannelTensor
       /*channel_in=*/y4.channels_,
       /*conv_module_args=*/conv5_args);
 
-  if (use_shortcut) {
-    return {
-        /*channels_=*/positive_int(c2),
-        /*tensor_=*/cgb.add(/*lhs=*/input_tensor, /*rhs=*/y5.tensor_),
-    };
-  }
+  // if (use_shortcut) {
+  // TODO: cgb.add doesn't work here for now because
+  //   return {
+  //       /*channels_=*/positive_int(c2),
+  //       /*tensor_=*/cgb.add(/*lhs=*/input_tensor, /*rhs=*/y5.tensor_),
+  //   };
+  // }
 
   return y5;
 }
@@ -992,6 +1014,9 @@ YOLOv10LayerChannelTensor create_yolov10_v10detect_cls_head_one_level(
   b1_conv1_args[3] = 1;
   b1_conv1_args[4] = x;
 
+  // TODO: conv2d only support groups=1 for now
+  b1_conv1_args[4] = 1;
+
   YOLOv10LayerChannelTensor b1_1 = create_yolov10_conv_module(
       /*cgb=*/cgb,
       /*input_tensor=*/feat,
@@ -1017,6 +1042,9 @@ YOLOv10LayerChannelTensor create_yolov10_v10detect_cls_head_one_level(
   b2_conv1_args[2] = 3;
   b2_conv1_args[3] = 1;
   b2_conv1_args[4] = c3;
+
+  // TODO: conv2d only support groups=1 for now
+  b2_conv1_args[4] = 1;
 
   YOLOv10LayerChannelTensor b2_1 = create_yolov10_conv_module(
       /*cgb=*/cgb,
