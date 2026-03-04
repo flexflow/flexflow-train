@@ -25,7 +25,7 @@ target_include_directories(
 target_link_libraries(
   ${project_target}
   op-attrs
-  cublas
+  CUDA::cublas
   cudnn
   nccl
   utils

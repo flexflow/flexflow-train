@@ -11,7 +11,7 @@ ff_add_library(
     expected
     fmt
     json
-    cudart
+    CUDA::cudart
     rapidcheck
     libassert
 )
