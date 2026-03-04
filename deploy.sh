@@ -53,9 +53,9 @@ build_cmake_library zstd https://github.com/facebook/zstd.git -DCMAKE_BUILD_TYPE
 
 build_cmake_library fmt https://github.com/fmtlib/fmt/archive/refs/tags/10.2.1.tar.gz -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
 
-build_cmake_library libassert https://github.com/jeremy-rifkin/libassert/archive/refs/tags/v2.2.1.tar.gz -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
-
 build_cmake_library cpptrace https://github.com/jeremy-rifkin/cpptrace/archive/refs/tags/v1.0.4.tar.gz -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCPPTRACE_USE_EXTERNAL_ZSTD=ON
+
+build_cmake_library libassert https://github.com/jeremy-rifkin/libassert/archive/refs/tags/v2.2.1.tar.gz -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DLIBASSERT_USE_EXTERNAL_CPPTRACE=ON
 
 build_cmake_library Realm https://github.com/StanfordLegion/realm.git -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=ON -DREALM_ENABLE_CUDA=ON -DREALM_ENABLE_PREALM=ON -DREALM_ENABLE_CPPTRACE=ON -DREALM_ENABLE_HDF5=OFF -DREALM_MAX_DIM=5
 
@@ -73,16 +73,16 @@ build_cmake_library nlohmann_json https://github.com/nlohmann/json/archive/refs/
 
 build_cmake_library NCCL https://github.com/NVIDIA/nccl/archive/refs/tags/v2.29.7-1.tar.gz -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
 
-# if [[ ! -e proj ]]; then
-#     git clone -b python-install https://github.com/elliottslaughter/proj.git
-#     pushd proj
-#     uv venv
-#     uv sync
-#     popd # proj
-# fi
-# source proj/.venv/bin/activate
-# export PATH="$PATH:$PWD/proj/bin"
-# export PYTHONPATH="$PYTHONPATH:$PWD/proj"
+if [[ ! -e /tmp/$USER/proj ]]; then
+    git clone -b python-install https://github.com/elliottslaughter/proj.git /tmp/$USER/proj
+    pushd /tmp/$USER/proj
+    uv venv
+    uv sync
+    popd # /tmp/$USER/proj
+fi
+source /tmp/$USER/proj/.venv/bin/activate
+export PATH="$PATH:/tmp/$USER/proj/bin"
+export PYTHONPATH="$PYTHONPATH:/tmp/$USER/proj"
 
 popd # deploy
 
@@ -101,9 +101,10 @@ ff_cmake_flags=(
     -DFF_USE_EXTERNAL_SPDLOG=ON
 )
 
+proj dtgen
+
 mkdir build install
 pushd build
 cmake .. "${ff_cmake_flags[@]}"
-# proj dtgen
 make -j20
 popd # build
