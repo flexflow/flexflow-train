@@ -10,7 +10,5 @@ ff_add_test_executable(
     utils-test-common
     kernels
     op-attrs
-    cublas
-    cudnn
     pcg
 )
