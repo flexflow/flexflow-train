@@ -1,24 +1,12 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 project(FlexFlow)
 
-set(
-  CMAKE_MODULE_PATH 
-  ${CMAKE_MODULE_PATH} 
-  ${CMAKE_CURRENT_LIST_DIR}/cmake 
+list(
+  APPEND
+  CMAKE_MODULE_PATH
+  ${CMAKE_CURRENT_LIST_DIR}/cmake
   ${CMAKE_CURRENT_LIST_DIR}/cmake/Modules
 )
-
-# Detect OS type and Linux version (if it applies)
-set(LINUX_VERSION "")
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-  find_program(LSB_RELEASE_EXEC lsb_release)
-  if(LSB_RELEASE_EXEC)
-    execute_process(COMMAND ${LSB_RELEASE_EXEC} -r --short 
-                    OUTPUT_VARIABLE LINUX_VERSION 
-                    OUTPUT_STRIP_TRAILING_WHITESPACE)
-    message(STATUS "Linux Version: ${LINUX_VERSION}")
-  endif()
-endif()
 
 set(FF_MAX_DIM "5" CACHE STRING "Maximum tensor order")
 set(FF_MAX_OPNAME "128" CACHE STRING "Maximum op name length")
@@ -28,13 +16,12 @@ set(FF_MAX_NUM_WEIGHTS "64" CACHE STRING "Maximum number of weights (per operato
 set(FF_MAX_NUM_FUSED_OPERATORS "64" CACHE STRING "Maximum number of fused tensors")
 set(FF_MAX_NUM_FUSED_TENSORS "64" CACHE STRING "Maximum number of input and output tensors per fused op")
 set(FF_MAX_NUM_WORKERS "1024" CACHE STRING "Maximum number of GPUs")
-set(FF_MAX_NUM_TASK_REGIONS "20" CACHE STRING 
+set(FF_MAX_NUM_TASK_REGIONS "20" CACHE STRING
   "Maximum number of regions that can be passed to a task through the TaskSpec interface")
 set(FF_MAX_NUM_TASK_ARGUMENTS "5" CACHE STRING
   "Maximum number of arguments that can be declared in a TaskSignature")
 option(FF_USE_NCCL "Run FlexFlow with NCCL" OFF)
 option(FF_USE_PREALM "Build with PRealm profiling interface" ON)
-option(FF_USE_ALL_PREBUILT_LIBRARIES "Enable use of all pre-compiled libraries, if available" OFF)
 option(FF_USE_PYTHON "Enable Python" ON)
 option(FF_BUILD_FROM_PYPI "Build from pypi" OFF)
 option(FF_USE_CODE_COVERAGE "Enable code coverage" OFF)
@@ -72,15 +59,6 @@ option(FF_BUILD_VISUALIZATION_TOOL "build substitution visualization tool" ON)
 option(FF_BUILD_SP_IZATION_BENCHMARKING "build sp-ization benchmarking" ON)
 option(FF_BUILD_ARG_PARSER "build command line argument parser" OFF)
 option(FF_BUILD_BIN_EXPORT_MODEL_ARCH "build export-model-arch utility" ON)
-
-set(FF_CUDA_ARCH "autodetect" CACHE STRING "Target CUDA Arch")
-if (FF_CUDA_ARCH STREQUAL "")
-  message(FATAL_ERROR "FF_CUDA_ARCH cannot be an empty string. Set it to `autodetect`, `all`, or pass one or multiple valid CUDA archs.")
-endif()
-
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-  set(LIBEXT ".so")
-endif()
 
 include(cuda)
 include(cudnn)

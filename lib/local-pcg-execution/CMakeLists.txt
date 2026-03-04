@@ -14,7 +14,7 @@ ff_add_library(
     task-spec
     local-execution
     pcg
-    spdlog
+    spdlog::spdlog
     compiler
 )
 

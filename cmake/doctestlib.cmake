@@ -1,5 +1,5 @@
 include(aliasing)
-  
+
 if (FF_USE_EXTERNAL_DOCTEST)
   find_package(doctest REQUIRED)
   include(doctest) # import doctest_discover_tests
@@ -11,6 +11,5 @@ if (FF_USE_EXTERNAL_DOCTEST)
   )
   alias_library(doctest doctest::doctest)
 else()
-  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/deps/doctest)
-  include(${CMAKE_CURRENT_SOURCE_DIR}/deps/doctest/scripts/cmake/doctest.cmake)
+  message(FATAL_ERROR "FF_USE_EXTERNAL_DOCTEST is required")
 endif()

@@ -12,7 +12,7 @@ ff_add_library(
     utils
     json
     pcg
-    spdlog
+    spdlog::spdlog
     substitutions
 )
 

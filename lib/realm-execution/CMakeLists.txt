@@ -13,7 +13,7 @@ ff_add_library(
     local-execution
     op-attrs
     pcg
-    spdlog
+    spdlog::spdlog
     task-spec
     utils
     realm

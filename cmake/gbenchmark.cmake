@@ -5,6 +5,5 @@ if (FF_USE_EXTERNAL_GBENCHMARK)
   alias_library(gbenchmark benchmark::benchmark)
   alias_library(gbenchmark-main benchmark::benchmark_main)
 else()
-  message(FATAL_ERROR "Currently FF_USE_EXTERNAL_GBENCHMARK is required")
+  message(FATAL_ERROR "FF_USE_EXTERNAL_GBENCHMARK is required")
 endif()
-
