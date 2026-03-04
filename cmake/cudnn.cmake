@@ -1,46 +1,13 @@
-# find cudnn in CUDNN_ROOT and CUDA_ROOT
-if(CUDNN_PATH)
-  set(CUDNN_ROOT ${CUDNN_PATH})
-else()
-	# if CUDNN_PATH is not set, let's try to find it in the CUDA root
-	set(CUDNN_ROOT ${CUDA_TOOLKIT_ROOT_DIR})
-	message( "CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH}" )
-endif()
-find_library(CUDNN_LIBRARY 
-  NAMES cudnn
-  PATHS ${CUDNN_ROOT} ${CUDA_ROOT}
-  PATH_SUFFIXES lib lib64
-  DOC "CUDNN library." )
-  
-find_path(CUDNN_INCLUDE_DIR 
-    NAMES cudnn.h
-    HINTS ${CUDNN_ROOT} ${CUDA_ROOT}
-    PATH_SUFFIXES include 
-    DOC "CUDNN include directory." )
+find_path(CUDNN_INCLUDE_DIR NAMES cudnn.h HINTS ${CUDAToolkit_INCLUDE_DIRS})
+find_library(CUDNN_LIBRARY NAMES cudnn HINTS ${CUDAToolkit_LIBRARY_DIR})
 
-# find cudnn, set cudnn lib and include    
-if(CUDNN_LIBRARY AND CUDNN_INCLUDE_DIR)
-  set(CUDNN_FOUND ON)
-  set(CUDNN_LIBRARIES ${CUDNN_LIBRARY})
-  set(CUDNN_INCLUDE_DIRS ${CUDNN_INCLUDE_DIR})
-endif()
-
-# find cuda and cudnn
-if(CUDNN_FOUND)
-  list(APPEND FLEXFLOW_EXT_LIBRARIES
-    ${CUDNN_LIBRARIES})
-
-  list(APPEND FLEXFLOW_INCLUDE_DIRS
-    ${CUDNN_INCLUDE_DIR})
-endif()
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(CUDNN DEFAULT_MSG CUDNN_LIBRARY CUDNN_INCLUDE_DIR)
 
 if(CUDNN_FOUND)
-message( STATUS "CUDNN include : ${CUDNN_INCLUDE_DIR}" )
-  message( STATUS "CUDNN libraries : ${CUDNN_LIBRARIES}" )
-else()
-  message( FATAL_ERROR "CUDNN package not found -> specify search path via CUDNN_DIR variable")
+  add_library(cudnn UNKNOWN IMPORTED)
+  set_target_properties(cudnn PROPERTIES
+    IMPORTED_LOCATION "${CUDNN_LIBRARY}"
+    INTERFACE_INCLUDE_DIRECTORIES "${CUDNN_INCLUDE_DIR}"
+  )
 endif()
-
-add_library(cudnn INTERFACE)
-target_include_directories(cudnn SYSTEM INTERFACE ${CUDNN_INCLUDE_DIR})
-target_link_libraries(cudnn INTERFACE ${CUDNN_LIBRARY})

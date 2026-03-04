@@ -2,6 +2,10 @@
 
 set -e
 
+module load cuda cmake
+export CC=gcc-10
+export CXX=g++-10
+
 git submodule update --init
 
 mkdir -p deploy
@@ -12,16 +16,21 @@ function build_cmake_library {
     dep_url="$2"
     dep_args=("${@:3}")
     if [[ ! -e ${dep_name} ]]; then
-        git clone "${dep_url}" "${dep_name}"
+        if [[ ${dep_url} == *.git ]]; then
+            git clone "${dep_url}" "${dep_name}"
+        else
+            mkdir "${dep_name}"
+            tar xfz <(curl -LsSf "${dep_url}") -C "${dep_name}" --strip-components=1
+        fi
     fi
-    if [[ ! -e "${dep_name}"_install/lib ]]; then
+    if [[ ! -e "${dep_name}"_install/include ]]; then
         mkdir -p "${dep_name}"_build "${dep_name}"_install
         pushd "${dep_name}"_build
         cmake ../"${dep_name}" -DCMAKE_INSTALL_PREFIX="$PWD"/../"${dep_name}"_install "${dep_args[@]}"
         make install -j20
         popd
     fi
-    export "${dep_name}"_ROOT="$PWD"/"${dep_name}"_install
+    export CMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH:$PWD/${dep_name}_install"
 }
 
 if [[ ! -e uv ]]; then
@@ -40,17 +49,29 @@ export GASNet_ROOT="$PWD"/gasnet/release
 
 set -x
 
-build_cmake_library Realm https://github.com/StanfordLegion/realm.git -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=ON -DREALM_ENABLE_CUDA=ON -DREALM_ENABLE_PREALM=ON -DREALM_MAX_DIM=5
-
 build_cmake_library zstd https://github.com/facebook/zstd.git -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
 
-build_cmake_library benchmark https://github.com/google/benchmark.git -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DBENCHMARK_DOWNLOAD_DEPENDENCIES=ON
+build_cmake_library fmt https://github.com/fmtlib/fmt/archive/refs/tags/10.2.1.tar.gz -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
 
-build_cmake_library libassert https://github.com/jeremy-rifkin/libassert.git -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=ON
+build_cmake_library libassert https://github.com/jeremy-rifkin/libassert/archive/refs/tags/v2.2.1.tar.gz -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
 
-build_cmake_library cpptrace https://github.com/jeremy-rifkin/cpptrace.git -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=ON -DCPPTRACE_USE_EXTERNAL_ZSTD=ON
+build_cmake_library cpptrace https://github.com/jeremy-rifkin/cpptrace/archive/refs/tags/v1.0.4.tar.gz -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCPPTRACE_USE_EXTERNAL_ZSTD=ON
 
-build_cmake_library NCCL https://github.com/NVIDIA/nccl.git -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
+build_cmake_library Realm https://github.com/StanfordLegion/realm.git -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=ON -DREALM_ENABLE_CUDA=ON -DREALM_ENABLE_PREALM=ON -DREALM_ENABLE_CPPTRACE=ON -DREALM_ENABLE_HDF5=OFF -DREALM_MAX_DIM=5
+
+build_cmake_library benchmark https://github.com/google/benchmark/archive/refs/tags/v1.9.5.tar.gz -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DBENCHMARK_DOWNLOAD_DEPENDENCIES=ON
+
+build_cmake_library rapidcheck https://github.com/emil-e/rapidcheck.git -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
+
+build_cmake_library tl-expected https://github.com/TartanLlama/expected/archive/refs/tags/v1.3.1.tar.gz -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
+
+build_cmake_library doctest https://github.com/doctest/doctest/archive/refs/tags/v2.4.12.tar.gz -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
+
+build_cmake_library spdlog https://github.com/gabime/spdlog/archive/refs/tags/v1.17.0.tar.gz -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DSPDLOG_FMT_EXTERNAL=ON
+
+build_cmake_library nlohmann_json https://github.com/nlohmann/json/archive/refs/tags/v3.12.0.tar.gz -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
+
+build_cmake_library NCCL https://github.com/NVIDIA/nccl/archive/refs/tags/v2.29.7-1.tar.gz -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
 
 # if [[ ! -e proj ]]; then
 #     git clone -b python-install https://github.com/elliottslaughter/proj.git
@@ -65,9 +86,24 @@ build_cmake_library NCCL https://github.com/NVIDIA/nccl.git -DCMAKE_BUILD_TYPE=R
 
 popd # deploy
 
+ff_cmake_flags=(
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo
+    -DCMAKE_INSTALL_PREFIX=$PWD/../install
+    -DCMAKE_CUDA_ARCHITECTURES=60
+    -DFF_USE_EXTERNAL_DOCTEST=ON
+    -DFF_USE_EXTERNAL_EXPECTED=ON
+    -DFF_USE_EXTERNAL_FMT=ON
+    -DFF_USE_EXTERNAL_GBENCHMARK=ON
+    -DFF_USE_EXTERNAL_JSON=ON
+    -DFF_USE_EXTERNAL_LIBASSERT=ON
+    -DFF_USE_EXTERNAL_NCCL=ON
+    -DFF_USE_EXTERNAL_RAPIDCHECK=ON
+    -DFF_USE_EXTERNAL_SPDLOG=ON
+)
+
 mkdir build install
 pushd build
-cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=$PWD/../install -DFF_USE_EXTERNAL_GBENCHMARK=ON -DFF_USE_EXTERNAL_LIBASSERT=ON -DFF_USE_EXTERNAL_NCCL=ON
+cmake .. "${ff_cmake_flags[@]}"
 # proj dtgen
-make install -j20
+make -j20
 popd # build

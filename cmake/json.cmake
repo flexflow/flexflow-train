@@ -5,8 +5,5 @@ if (FF_USE_EXTERNAL_JSON)
 
   alias_library(json nlohmann_json)
 else()
-  set(JSON_BuildTests OFF CACHE INTERNAL "")
-  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/deps/json)
-
-  alias_library(json nlohmann_json::nlohmann_json)
+  message(FATAL_ERROR "FF_USE_EXTERNAL_JSON is required")
 endif()

@@ -11,10 +11,10 @@ ff_add_library(
     expected
     fmt
     json
-    cuda
+    cudart
     rapidcheck
     libassert
-)      
+)
 
 add_subdirectory(ffi)
 add_subdirectory(test)
