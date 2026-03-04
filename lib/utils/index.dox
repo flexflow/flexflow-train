@@ -2,6 +2,8 @@
 
 @page utils utils
 
+@brief Various utility and support libraries for the rest of the project. Particularly useful are @ref "utils-graph", @ref "utils-containers", and @ref "utils-cli".
+
 - \subpage utils-containers
 - \subpage utils-cli
 - \subpage utils-graph

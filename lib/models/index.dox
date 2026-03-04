@@ -1,6 +1,9 @@
+namespace FlexFlow {
 /**
 
 \page models models
+
+\brief Pre-built \ref ComputationGraph ""s for various models for use in testing and evalutation.
 
 \section real-models Real Models
 - \subpage bert "BERT"
@@ -13,3 +16,4 @@
 - \subpage split-test
 
 */
+}

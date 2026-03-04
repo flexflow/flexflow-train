@@ -1,8 +1,9 @@
 /**
 
-@page compiler compiler
+\page compiler compiler/
 
-Implements the core logic of the compiler.
+\brief Implements the core logic of the compiler.
+
 This includes:
 
 - \subpage unity-dp-algorithm "Unity DP Algorithm"

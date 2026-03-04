@@ -1,22 +1,18 @@
+namespace FlexFlow {
 /**
 
-\mainpage lib
+\page lib lib/
 
 This directory contains the core C++ code that underlies %FlexFlow, organized into the following libraries:
 
-- \subpage compiler "":
+- \subpage compiler "": \copybrief compiler
 - \subpage kernels "":
-- \subpage op-attrs "":
-- \subpage pcg "": Contains the definitions of \ref FlexFlow::ComputationGraph and
-  \ref FlexFlow::ParallelComputationGraph, as well as code for serializing and deserializing
-  both graphs (\ref file-format)
-- \subpage substitutions "substitutions": Contains the definitions of pcg substitutions
-  (i.e., FlexFlow::Substitution), as well as the code for serializing them
-- \subpage utils "": Various utility and support libraries for the rest of the
-  project. Particularly useful are @ref "utils-graph", @ref "utils-containers",
-  and @ref "utils-cli".
-- \subpage models "":
-- \subpage task-spec "":
+- \subpage op-attrs "": \copybrief op-attrs
+- \subpage pcg "": \copybrief pcg
+- \subpage substitutions "": \copybrief substitutions
+- \subpage utils "": \copybrief utils
+- \subpage models "": \copybrief models
+- \subpage task-spec "": \copybrief task-spec
 - \subpage local-execution "":
 - \subpage realm-execution "":
 
@@ -27,3 +23,4 @@ This directory contains the core C++ code that underlies %FlexFlow, organized in
 - \c "substitution-generator":
 - \c "runtime": Out-of-date code migrated from the old %FlexFlow codebase. Currently kept around for reference, but will eventually be removed.
 */
+}

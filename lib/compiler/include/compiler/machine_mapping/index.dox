@@ -1,12 +1,14 @@
+namespace FlexFlow {
 /**
 
 @page machine-mapping Machine Mapping
 
-Contains the representations and logic for mappings of operators to machines/devices/GPUs.
+@brief Contains the representations and logic for mappings of operators to machines/devices/GPUs.
 
 Core functionality includes:
-- \ref FlexFlow::MachineView "MachineView": the compiler-side representation of a mapping.
-  For the runtime-side representation, see \ref FlexFlow::MappedOperatorTaskGroup
+- \ref MachineView "": the compiler-side representation of a mapping.
+  For the runtime-side representation, see \ref MappedOperatorTaskGroup.
 - \ref allowed_machine_views.h
 
 */
+}
