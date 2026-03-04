@@ -5,6 +5,7 @@
 namespace FlexFlow {
 
 ComputationGraph get_split_test_computation_graph(positive_int batch_size) {
+//! [ComputationGraphBuilder example]
   ComputationGraphBuilder cgb;
 
   positive_int layer_dim1 = 256_p;
@@ -34,6 +35,7 @@ ComputationGraph get_split_test_computation_graph(positive_int batch_size) {
   t = cgb.softmax(t);
 
   return cgb.computation_graph;
+//! [ComputationGraphBuilder example]
 }
 
 } // namespace FlexFlow

@@ -31,10 +31,10 @@ CandleUnoConfig get_default_candle_uno_config();
  * map from specific data identifier in the dataset to the feature name used in
  * this model.
  *
- * @param CandleUnoConfig The config of the Candle Uno model.
- * @return ComputationGraph The PCG of a Transformer model.
+ * @param config The config of the Candle Uno model.
+ * @return The PCG of a Transformer model.
  */
-ComputationGraph get_candle_uno_computation_graph(CandleUnoConfig const &);
+ComputationGraph get_candle_uno_computation_graph(CandleUnoConfig const &config);
 
 } // namespace FlexFlow
 

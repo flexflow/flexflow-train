@@ -2,7 +2,7 @@
 
 ## Design Considerations
 
-FlexFlow's graph library very intentionally attempts to balance performance and ease of use. 
+FlexFlow's graph library very intentionally attempts to balance performance and ease of use.
 The graph library aims to have a very simple external interface that is highly decoupled from the underlying representations, so performance and internal implementations can be tuned and modified over time without breaking the code that uses the library.
 Because FlexFlow's graphs are not on the scale of machine memory or not so large that single traversals takes nontrivial time, the graph library intentionally avoids performance opportunities that would expose many of these performance aspects to user code.
 Of course, there are also some optimizations that simply have not been done due to time constraints: for example, algorithms currently are able to be specialized for the underlying representation being used, but this could be added without modifying the user-side interface.
@@ -12,7 +12,7 @@ Of course, there are also some optimizations that simply have not been done due 
 ### Core Graph Variants
 
 There is no single type of graph. Should it be directed? Allow multiple edges between nodes? Should nodes and/or edges have information attached?
-Because there is no single answer to this question, similar to [networkx](https://networkx.org/) we provide a number of different graph variants. 
+Because there is no single answer to this question, similar to [networkx](https://networkx.org/) we provide a number of different graph variants.
 At their core, they are as follows:
 
 - `UndirectedGraph`: at most one edge allowed between every pair of nodes, edges are undirected.
@@ -30,7 +30,7 @@ flowchart TD
     C(" ")
     D(" ")
     E(" ")
-    
+
     A --- B
     A --- C
     B --- C
@@ -83,9 +83,9 @@ This is the case with all of the 4 core graph classes.
 Nodes are of type `Node`, and from a user perspective are simply opaque handles, and source and destination indices should similarly be considered opaque from a user point of view.
 In addition, nodes should only be used in the context of their graph, so comparing or checking equality of nodes between different graphs (even of the same type) is undefined behavior[^1].
 
-All three core graph variants allow insertion and deletion of both edges and nodes. 
+All three core graph variants allow insertion and deletion of both edges and nodes.
 To add a node to an `UndirectedGraph g`, simply call `g.add_node()`, which will return a `Node` object.
-For semantics closer to `networkx`'s method of adding nodes, `g.add_node_unsafe(my_node)` can be used. This is useful when constructing a modified copy of an existing graph (given that it maintains node bijection), though it is not generally recommended. 
+For semantics closer to `networkx`'s method of adding nodes, `g.add_node_unsafe(my_node)` can be used. This is useful when constructing a modified copy of an existing graph (given that it maintains node bijection), though it is not generally recommended.
 The interface for node addition is identical for `DiGraph` and `MultiDiGraph`.
 To add an edge between two nodes `Node n1` and `Node n2` to an `UndirectedGraph g`, call `g.add_edge({n1, n2})`.
 In `UndirectedGraph` the order of the arguments of `add_edge` doesn't matter as edges are undirected, but the order does matter for `DiGraph`, `MultiDiGraph` and `DataflowGraph`.
@@ -93,7 +93,7 @@ In `UndirectedGraph` the order of the arguments of `add_edge` doesn't matter as 
 The last paragraph covered the base API used to write to graphs, but we also want to be able to read from graphs.
 Reading from graphs is implemented with the `query_nodes` and `query_edges` methods, which can be thought of as executing a database query over the nodes and edges of the target graph, respectively (where queries are restricted to an incredibly simple set of operations).
 The argument to `query_nodes` is a `NodeQuery` (which is simply a set of `Node`s).
-`query_nodes` then returns the intersection of the nodes in the graph and the nodes in the query. 
+`query_nodes` then returns the intersection of the nodes in the graph and the nodes in the query.
 The set of nodes in the query is actually an `optional`, so `nullopt` could also be passed, which would simply retrieve all nodes from the target graph (essentially `nullopt` acts as the set of all nodes that could ever exist).
 `query_edges` functions similarly, but as with `add_edge` its behavior is differs slightly between the three graph variants.
 `UndirectedGraph::query_edges` simply takes an optional set of nodes and returns all edges that touch any of those nodes.
@@ -103,11 +103,11 @@ In practice you will rarely ever use `query_nodes` and `query_edges` as the grap
 The layer users will most commonly interact with is the interface provided within either the `algorithms.h` header files or the `algorithms` folders, present in their respective graph class folders.
 They provide a large number of pre-implemented algorithms on graphs, ranging from as simple as `get_nodes` to as complex as `get_transitive_reduction` and `get_dominators`.
 Note that, due to the internal virtual inheritance structure, some functions for more privitive classes can be employed by the derived classes. (For example, `get_nodes` present in `node/algorithms.h` can be used by `DiGraph`).
-You may notice that the most of algorithms present take as arguments not `UndirectedGraph`, `DiGraph`, and `MultiDiGraph`, but rather `UndirectedGraphView`, `DiGraphView`, and `MultiDiGraphView`. 
+You may notice that the most of algorithms present take as arguments not `UndirectedGraph`, `DiGraph`, and `MultiDiGraph`, but rather `UndirectedGraphView`, `DiGraphView`, and `MultiDiGraphView`.
 These `GraphView` objects represent read-only (i.e., immutable) graphs.
 Similar to C++'s `const` semantics, `Graph`s can be coerced[^2] to `GraphView`s but not the other way around.
 To transform a `GraphView` to a `Graph`, we can perform an explicit copy with `materialize_view`.
-Both `Graph` and `GraphView` types follow normal value semantics. 
+Both `Graph` and `GraphView` types follow normal value semantics.
 This may seem wasteful (oftentimes graphs are large objects that are passed around via reference to avoid making additional copies), but the `Graph` and `GraphView` types internally implement copy-on-write optimizations to only perform the minimum number of actual copies while maintaining immutability and lifetime safety (if you allocate a `DiGraph` use for example `get_subgraph` to get a `DiGraphView` representing a part of this graph, modifications to the underlying `DiGraph` will not be mirrored in the `DiGraphView` and the `DiGraphView` will remain valid even after the base `DiGraph` leaves scope.
 
 At this point, however, we still have not discussed how to create a graph.
@@ -128,11 +128,11 @@ At a high level, nodes represent multivariate functions (from tuples of inputs t
 
 `DataflowGraph` is similar to `MultiDiGraph`, but with the following important differences:
   - The edges entering, exiting a given nodes have a well-defined order.
-  - The outputs of a given node also have a well-defined order. 
+  - The outputs of a given node also have a well-defined order.
   - `DataflowGraph`s are directed acyclic graphs. This is enforced by the interface used to construct them, since a node can only be added to the graph after all of its predecessor nodes have already been added.
 
 The main components of `DataflowGraph` are as follows:
-- `DataflowInput`: used to denote an entry in the ordered sequence of incoming dependencies (arguments) of a given node (operator). 
+- `DataflowInput`: used to denote an entry in the ordered sequence of incoming dependencies (arguments) of a given node (operator).
 - `DataflowOutput`: used to denote an entry in the ordered sequence of outgoing results (value uses) from a given node (operator).
 - `DataflowEdge`: wrapper around a `DataflowInput`, `DataflowOutput` pair between 2 nodes.
 - `NodeAddedResult`: returned upon adding a new node. Contains the newly generated `Node` and the vector of `DataflowOutput`s for the given node.
@@ -141,7 +141,7 @@ The main components of `DataflowGraph` are as follows:
 
 ```cpp
     auto g = DataflowGraph::create<UnorderedSetDataflowGraph>();
-    
+
     // Node with no inputs and 2 outputs
     NodeAddedResult n1_result = g.add_node({}, 2);
     Node n1 = n1_result.node;
@@ -228,7 +228,7 @@ This graph class is particularly useful for processing a sub-graph of a given gr
 ### Labelled Dataflow Variant
 
 As nice as all of the above is, graphs without labels are mostly useless--in practice, nodes and edges represent some other system and the properties of that system (or at least a way to map the result of graph algorithms back to the underlying system) are necessary.
-Thus, FlexFlow's graph library provides the ability to add labels to `DataflowGraph`, through the `LabelleledDataflowGraph` and `OpenLabelleledDataflowGraph`, which allow users to label different components of the graph. 
+Thus, FlexFlow's graph library provides the ability to add labels to `DataflowGraph`, through the `LabelleledDataflowGraph` and `OpenLabelleledDataflowGraph`, which allow users to label different components of the graph.
 - `LabelledDataflowGraph` allows for labelling of `Node`s and `DataflowOutput`s.
 - `OpenLabelledDataflowGraph` allows for labelling of `Node`s and `OpenDataflowValue`s, which is a variant describing both `DataflowOutput`s and `DataflowGraphInput`s.
 
@@ -252,7 +252,7 @@ Most of the major graph classes in the library come in sets of 4. For a given cl
 General rules which apply to most classes:
 - `ClassName` (virtually) inherits from `ClassNameView`. Similarly, `IClassName` (virtually) inherits from `IClassNameView`.
 - `ClassName` has, as a member variable, a `cow_ptr` of type `IClassName`. Same holds for `ClassNameView`.
-Thus, the bulk of the inheritance that actually extends functionality is present among `IClassNameView` classes. 
+Thus, the bulk of the inheritance that actually extends functionality is present among `IClassNameView` classes.
 
 
 ### cow_ptr and Interfaces
@@ -274,4 +274,4 @@ All member functions present in `ClassName` and `ClassNameView` delegate their c
 ### Virtual Inheritance
 Due to the complexity of the graph library, diamond-style inheritance patterns emerge.
 In the case of a diamond inheritance pattern, C++ will instantiate multiple copies of the base class whenever we instantiate a derived class.
-To address this issue, we employ [Virtual Inheritance](https://en.wikipedia.org/wiki/Virtual_inheritance), which removes the ambiguity associated with the multiple copies.
+To address this issue, we employ <a href="https://en.wikipedia.org/wiki/Virtual_inheritance">virtual inheritance</a>, which removes the ambiguity associated with the multiple copies.

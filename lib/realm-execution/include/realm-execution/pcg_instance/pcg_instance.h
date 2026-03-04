@@ -23,11 +23,22 @@
 
 namespace FlexFlow {
 
+/**
+ * @brief The main public interface for the realm backend.
+ *
+ * It takes a MappedParallelComputationGraph and lowers it through the
+ * DynamicOpenDataflowGraph to get the fully-specified execution order of tasks
+ * to be executed. Besides the usual dynamic graph passes (\ref
+ * perform_pass_expansion, \ref perform_update_insertion, \ref
+ * perform_shard_expansion), this class also tracks the allocation of realm
+ * instances for tensors.
+ */
 struct PCGInstance {
 public:
   PCGInstance() = delete;
   PCGInstance(PCGInstance const &) = delete;
   PCGInstance(PCGInstance &&) = delete;
+
   explicit PCGInstance(
       RealmContext &ctx,
       std::vector<DynamicNodeInvocation> const &execution_order,
@@ -35,7 +46,9 @@ public:
       PerDeviceOpStateBacking const &device_state_backing,
       OptimizerAttrs const &optimizer_attrs,
       std::optional<Realm::RegionInstance> logit_grad_tensor);
+
   ~PCGInstance();
+
   RealmContext &get_realm_context();
   std::vector<DynamicNodeInvocation> const &get_execution_order() const;
   TensorInstanceBacking const &get_tensor_instance_backing() const;
@@ -43,7 +56,6 @@ public:
   OptimizerAttrs const &get_optimizer_attrs() const;
   void update_optimizer_attrs_for_next_iter();
   std::optional<Realm::RegionInstance> get_loss_tensor_instance() const;
-
 private:
   RealmContext &ctx;
   std::vector<DynamicNodeInvocation> execution_order;

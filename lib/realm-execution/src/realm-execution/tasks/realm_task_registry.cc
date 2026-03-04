@@ -20,7 +20,7 @@ Realm::Event register_task(Realm::Processor::Kind target_kind,
   Realm::Processor::TaskFuncID realm_task_id =
       get_realm_task_id_for_task_id(func_id);
 #ifdef FF_USE_PREALM
-  Realm::prealm_task_name(realm_task_id, fmt::format("{}", func_id));
+  Realm::prealm_task_name(realm_task_id, fmt::to_string(func_id));
 #endif
   return Realm::Processor::register_task_by_kind(
       target_kind,

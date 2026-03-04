@@ -1,0 +1,23 @@
+/**
+
+\page pcg pcg
+
+Defines the top-level datastructures and their serialization formats, along with some helper interfaces for constructing and manipulating them.
+
+\section pcg-datastructures Key Datastructures
+
+- \ref FlexFlow::ComputationGraph "ComputationGraph": aka CG
+- \ref FlexFlow::ParallelComputationGraph "ParallelComputationGraph": aka PCG
+- \ref FlexFlow::MappedParallelComputationGraph "MappedParallelComputationGraph": aka MPCG
+
+\section serialization-formats Serialization
+
+- \subpage file-format "pcg/file_format"
+
+\section pcg-helpers Helper Functionality
+
+- \ref FlexFlow::ComputationGraphBuilder "ComputationGraphBuilder"
+- \ref FlexFlow::ParallelComputationGraphBuilder "ParallelComputationGraphBuilder"
+
+
+*/

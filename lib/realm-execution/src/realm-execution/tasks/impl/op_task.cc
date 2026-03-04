@@ -72,20 +72,25 @@ Realm::Event spawn_op_task(
     FFIterationConfig const &iteration_config,
     std::optional<OptimizerAttrs> const &optimizer_attrs,
     Realm::Event precondition) {
-  OpTaskArgs task_args{invocation,
-                       tensor_backing,
-                       device_state,
-                       profiling_settings,
-                       device_handle,
-                       iteration_config,
-                       optimizer_attrs};
-  std::string args =
+
+  OpTaskArgs task_args = OpTaskArgs{
+    invocation,
+    tensor_backing,
+    device_state,
+    profiling_settings,
+    device_handle,
+    iteration_config,
+    optimizer_attrs,
+  };
+
+  std::string serialized_args =
       serialize_task_args(op_task_args_to_serializable(task_args));
+
   return ctx.spawn_task(
       target_proc,
       assert_unwrap(get_task_id_for_op(invocation.node_attrs, optimizer_attrs)),
-      args.data(),
-      args.size(),
+      serialized_args.data(),
+      serialized_args.size(),
       Realm::ProfilingRequestSet{},
       precondition);
 }

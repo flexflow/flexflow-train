@@ -1,0 +1,15 @@
+/**
+
+\page models models
+
+\section real-models Real Models
+- \subpage bert "BERT"
+- \subpage candle-uno "Candle UNO"
+- \subpage dlrm "DLRM"
+- \subpage inception-v3 "Inception v3"
+- \subpage transformer "Transformer"
+
+\section test-models Artificial Models for Testing
+- \subpage split-test
+
+*/

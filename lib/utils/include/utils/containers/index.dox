@@ -1,0 +1,12 @@
+/**
+
+\page utils-containers utils/containers
+
+A bunch of generic functions for transforming various C++ standard library containers.
+These should generally be preferred over raw for loops in %FlexFlow code.
+Some of the most commonly-used functions are listed below, but you should ideally slowly work to familiarize yourself with everything in this directory.
+
+- \ref containers/transform.h
+- \ref containers/filter.h
+
+*/

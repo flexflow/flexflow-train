@@ -1,0 +1,9 @@
+/**
+
+\page utils-cli utils/cli
+
+A basic CLI library for use by programs in \ref bin.
+For an example of how to use it, see the following snippet from \ref export-model-arch.
+
+\snippet bin/export-model-arch/src/export-model-arch/main.cc utils/cli example
+*/

@@ -9,6 +9,12 @@
 
 namespace FlexFlow {
 
+/**
+ * @brief Manages the initialization and shutdown of the realm runtime.
+ *
+ * Provides the interface to launch the controller that runs the rest of the computation
+ * (i.e., \ref start_controller).
+ */
 struct RealmManager : private RealmContext {
 public:
   RealmManager(int *argc, char ***argv);

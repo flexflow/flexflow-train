@@ -61,19 +61,20 @@ Realm::Event spawn_device_handle_init_task(
     bool allowTensorOpMathConversion,
     DeviceSpecificManagedPerDeviceFFHandle *result_ptr,
     Realm::Event precondition) {
-  DeviceHandleInitTaskArgs task_args{
+
+  DeviceHandleInitTaskArgs task_args = DeviceHandleInitTaskArgs{
       workSpaceSize,
       allowTensorOpMathConversion,
       ctx.get_current_processor(),
       result_ptr,
   };
 
-  std::string args = serialize_task_args(
+  std::string serialized_args = serialize_task_args(
       device_handle_init_task_args_to_serializable(task_args));
   return ctx.spawn_task(target_proc,
                         task_id_t::DEVICE_HANDLE_INIT_TASK_ID,
-                        args.data(),
-                        args.size(),
+                        serialized_args.data(),
+                        serialized_args.size(),
                         Realm::ProfilingRequestSet{},
                         precondition);
 }

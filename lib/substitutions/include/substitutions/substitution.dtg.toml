@@ -15,15 +15,27 @@ includes = [
 [[fields]]
 name = "pcg_pattern"
 type = "::FlexFlow::PCGPattern"
+docstring = """
+Describes which kind of input graphs the substitution can be applied to
+"""
 
 [[fields]]
 name = "output_graph_expr"
 type = "::FlexFlow::OutputGraphExpr"
+docstring = """
+Describes how the output graph is computed from the input graph
+"""
 
 [[fields]]
 name = "inputs_mapping"
 type = "::FlexFlow::bidict<::FlexFlow::PatternInput, ::FlexFlow::OutputGraphExprInput>"
+docstring = """
+Describes how the values matched by the pattern's inputs are connected to the original ParallelComputationGraph
+"""
 
 [[fields]]
 name = "outputs_mapping"
 type = "::FlexFlow::bidict<::FlexFlow::PatternNodeOutput, ::FlexFlow::OutputGraphExprNodeOutput>"
+docstring = """
+Describes how the values matched by the pattern's outputs are connected to the original ParallelComputationGraph
+"""

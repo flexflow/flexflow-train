@@ -1,0 +1,50 @@
+/**
+
+\page utils-graph utils/graph
+
+\note This documentation is somewhat out of date and, more importantly, \c utils/graph is in rather dire need of a reorganization, so take these docs with a grain of salt.
+
+\section design-considerations Design Considerations
+
+FlexFlow's graph library very intentionally attempts to balance performance and ease of use.
+The graph library aims to have a very simple external interface that is highly decoupled from the underlying representations, so performance and internal implementations can be tuned and modified over time without breaking the code that uses the library.
+Because FlexFlow's graphs are not on the scale of machine memory or not so large that single traversals takes nontrivial time, the graph library intentionally avoids performance opportunities that would expose many of these performance aspects to user code.
+Of course, there are also some optimizations that simply have not been done due to time constraints: for example, algorithms currently are able to be specialized for the underlying representation being used, but this could be added without modifying the user-side interface.
+
+\section usage Usage
+
+\subsection core-graph-variants Core Graph Variants
+
+\subsection dataflow-graph DataflowGraph
+
+\subsection open-dataflow-variant Open Dataflow Variant
+
+\subsection labelled-dataflow-variant Labelled Dataflow Variant
+
+\section graph-internals Internals
+
+\subsection cow-ptr-and-interfaces cow_ptr and Interfaces
+
+The reason for the existence of the \c View variants has been explained in previous sections.
+The existence of the \c "I(nterface)" variants stems from C++'s approach to modeling polymorphism.
+
+C++ polymorphism is achieved at runtime through the use of <a href="https://www.learncpp.com/cpp-tutorial/virtual-functions/">virtual functions</a>, which allow for a single function defined on some superclass to also work correctly on its subclasses.
+
+To create objects with polymorphic behaviour, we use the following syntax:
+\code
+BaseClass* obj = new DerivedClass(); //or alternatives such as std::shared_ptr<BaseClass> obj = std::make_shared<DerivedClass>();
+\endcode
+Any call to \c obj 's member functions are resolved at runtime (dynamic binding), with C++ calling the most derived implementation of the function.
+
+While this pattern works nicely, the way instantiation is done leaves the burden of memory management on the user.
+To address this, graph classes store a \ref cow_ptr as a member variable, which point to instances of type equal to their corresponding interface class.
+
+All member functions present in \c ClassName and \c ClassNameView delegate their calls to their corresponding interface classes (which implement the actual logic), meaning that these classes essentially act as wrappers to their interface counterparts.
+
+\subsection virtual-inheritance Virtual Inheritance
+
+Due to the complexity of the graph library, diamond-style inheritance patterns emerge.
+In the case of a diamond inheritance pattern, C++ will instantiate multiple copies of the base class whenever we instantiate a derived class.
+To address this issue, we employ <a href="https://en.wikipedia.org/wiki/Virtual_inheritance">virtual inheritance</a>, which removes the ambiguity associated with the multiple copies.
+
+*/

@@ -8,6 +8,9 @@
 
 namespace FlexFlow {
 
+/**
+ * @brief Tracks dependencies during execution of tasks.
+ */
 struct DependencySet {
 public:
   DependencySet() = delete;
