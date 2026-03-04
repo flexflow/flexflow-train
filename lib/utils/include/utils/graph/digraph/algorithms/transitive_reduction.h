@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_DIGRAPH_ALGORITHMS_TRANSITIVE_REDUCTION_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_DIGRAPH_ALGORITHMS_TRANSITIVE_REDUCTION_H
 
+#include "utils/graph/digraph/digraph.h"
 #include "utils/graph/digraph/digraph_view.h"
 
 namespace FlexFlow {
@@ -21,7 +22,7 @@ private:
   std::unordered_set<DirectedEdge> edge_mask;
 };
 
-DiGraphView transitive_reduction(DiGraphView const &);
+DiGraph transitive_reduction(DiGraphView const &);
 
 } // namespace FlexFlow
 

@@ -15,7 +15,9 @@ TEST_SUITE(FF_TEST_SUITE) {
       return BinarySPDecompositionTree{BinaryParallelSplit{lhs, rhs}};
     };
 
-    auto make_leaf = [](int n) { return BinarySPDecompositionTree{Node{n}}; };
+    auto make_leaf = [](size_t n) {
+      return BinarySPDecompositionTree{Node{n}};
+    };
 
     SUBCASE("leaf only") {
       BinarySPDecompositionTree input = make_leaf(5);

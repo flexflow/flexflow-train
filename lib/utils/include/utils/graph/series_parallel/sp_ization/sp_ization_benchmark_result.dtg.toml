@@ -1,0 +1,16 @@
+namespace = "FlexFlow"
+name = "SpizationBenchmarkResult"
+type = "struct"
+features = []
+
+[[fields]]
+name = "relative_work_increase"
+type = "float"
+
+[[fields]]
+name = "relative_critical_path_cost_increase"
+type = "float"
+
+[[fields]]
+name = "relative_num_dependencies_increase"
+type = "float"

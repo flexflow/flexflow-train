@@ -1,5 +1,6 @@
 #include "utils/graph/digraph/algorithms/get_initial_nodes.h"
 #include "utils/containers/set_minus.h"
+#include "utils/containers/transform.h"
 #include "utils/graph/digraph/algorithms/get_edges.h"
 #include "utils/graph/node/algorithms.h"
 

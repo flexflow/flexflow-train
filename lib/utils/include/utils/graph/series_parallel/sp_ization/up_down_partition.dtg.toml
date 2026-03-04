@@ -1,0 +1,27 @@
+namespace = "FlexFlow"
+name = "UpDownPartition"
+type = "struct"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "<unordered_set>",
+  "utils/graph/node/node.dtg.h",
+]
+
+src_includes = [
+  "utils/fmt/unordered_set.h",
+  "utils/hash/unordered_set.h",
+]
+
+[[fields]]
+name = "up"
+type = "std::unordered_set<::FlexFlow::Node>"
+
+[[fields]]
+name = "down"
+type = "std::unordered_set<::FlexFlow::Node>"
+

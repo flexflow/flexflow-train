@@ -11,6 +11,7 @@
 #include "utils/graph/digraph/algorithms/get_incoming_edges.h"
 #include "utils/graph/digraph/algorithms/get_node_with_greatest_topo_rank.h"
 #include "utils/graph/digraph/algorithms/get_outgoing_edges.h"
+#include "utils/graph/digraph/algorithms/get_topological_ordering.h"
 #include "utils/graph/digraph/directed_edge_query.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/node/node_query.h"
@@ -20,8 +21,8 @@
 #include "utils/hash-utils.h"
 #include "utils/variant.h"
 #include <algorithm>
-#include <cassert>
 #include <iostream>
+#include <libassert/assert.hpp>
 #include <queue>
 
 namespace FlexFlow {
@@ -107,6 +108,28 @@ void add_edges(UndirectedGraph &g, std::vector<UndirectedEdge> const &edges) {
   }
 }
 
+void add_edges(DiGraph &g, std::initializer_list<DirectedEdge> edges) {
+  add_edges(g, std::vector<DirectedEdge>{edges});
+}
+
+void add_edges(UndirectedGraph &g,
+               std::initializer_list<UndirectedEdge> edges) {
+  add_edges(g, std::vector<UndirectedEdge>{edges});
+}
+
+void add_edges(DiGraph &g, std::unordered_set<DirectedEdge> const &edges) {
+  for (DirectedEdge const &e : edges) {
+    g.add_edge(e);
+  }
+}
+
+void add_edges(UndirectedGraph &g,
+               std::unordered_set<UndirectedEdge> const &edges) {
+  for (UndirectedEdge const &e : edges) {
+    g.add_edge(e);
+  }
+}
+
 bool contains_edge(DiGraphView const &g, DirectedEdge const &e) {
   return contains(g.query_edges(DirectedEdgeQuery{e.src, e.dst}), e);
 }
@@ -119,7 +142,8 @@ bool contains_edge(UndirectedGraphView const &g, UndirectedEdge const &e) {
 
 void remove_edges(DiGraph &g, std::unordered_set<DirectedEdge> const &edges) {
   for (DirectedEdge const &e : edges) {
-    assert(contains_edge(g, e));
+    ASSERT(contains_edge(g, e),
+           "remove_edges expected edge to exist in DiGraph");
     g.remove_edge(e);
   }
 }
@@ -127,7 +151,8 @@ void remove_edges(DiGraph &g, std::unordered_set<DirectedEdge> const &edges) {
 void remove_edges(UndirectedGraph &g,
                   std::unordered_set<UndirectedEdge> const &edges) {
   for (UndirectedEdge const &e : edges) {
-    assert(contains_edge(g, e));
+    ASSERT(contains_edge(g, e),
+           "remove_edges expected edge to exist in UndirectedGraph");
     g.remove_edge(e);
   }
 }

@@ -1,0 +1,31 @@
+namespace = "FlexFlow"
+name = "NodeRole"
+type = "enum"
+features = [
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+docstring = """\
+@brief Categorizes each node role used by SP-ization algorithms.
+
+@details Used by `escribano_sp_ization` and `flexible_sp_ization`.
+- `PURE`: original node from the input graph.
+- `SYNC`: synchronization node introduced by the algorithm. A sync node `s`
+  represents an all-to-all barrier: all `up` nodes connect to `s`, and `s`
+  connects to all `down` nodes. Sync nodes are contracted out at the end.
+- `DUMMY`: helper node used by the node-by-node Escribano variant to ensure
+  that each edge increases depth by at most 1 by splitting long edges into
+  chains. Dummy nodes are contracted out at the end.
+"""
+
+[[values]]
+name = "PURE"
+
+[[values]]
+name = "SYNC"
+
+[[values]]
+name = "DUMMY"
