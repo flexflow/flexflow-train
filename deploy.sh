@@ -74,13 +74,13 @@ build_cmake_library nlohmann_json https://github.com/nlohmann/json/archive/refs/
 build_cmake_library NCCL https://github.com/NVIDIA/nccl/archive/refs/tags/v2.29.7-1.tar.gz -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
 
 if [[ ! -e /tmp/$USER/proj ]]; then
-    git clone -b python-install https://github.com/elliottslaughter/proj.git /tmp/$USER/proj
-    pushd /tmp/$USER/proj
+    git clone -b python-install https://github.com/elliottslaughter/proj.git "/tmp/$USER/proj"
+    pushd "/tmp/$USER/proj"
     uv venv
     uv sync
     popd # /tmp/$USER/proj
 fi
-source /tmp/$USER/proj/.venv/bin/activate
+source "/tmp/$USER/proj/.venv/bin/activate"
 export PATH="$PATH:/tmp/$USER/proj/bin"
 export PYTHONPATH="$PYTHONPATH:/tmp/$USER/proj"
 
@@ -88,7 +88,7 @@ popd # deploy
 
 ff_cmake_flags=(
     -DCMAKE_BUILD_TYPE=RelWithDebInfo
-    -DCMAKE_INSTALL_PREFIX=$PWD/../install
+    -DCMAKE_INSTALL_PREFIX="$PWD/../install"
     -DCMAKE_CUDA_ARCHITECTURES=60
 )
 
