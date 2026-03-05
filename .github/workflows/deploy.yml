@@ -2,7 +2,7 @@ name: deploy
 on: [push, pull_request, workflow_dispatch]
 jobs:
   deploy:
-    name: Test Deployment Scripts
+    name: Test Deployment (GCC ${{ matrix.gcc }})
     runs-on: ubuntu-latest
     container: nvidia/cuda:12.9.1-cudnn-devel-ubuntu24.04
 
