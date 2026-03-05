@@ -17,3 +17,5 @@ jobs:
 
       - name: Run Deploy Script
         run: ./deploy.sh
+        env:
+          THREADS: 4

@@ -27,7 +27,7 @@ function build_cmake_library {
         mkdir -p "${dep_name}"_build "${dep_name}"_install
         pushd "${dep_name}"_build
         cmake ../"${dep_name}" -DCMAKE_INSTALL_PREFIX="$PWD"/../"${dep_name}"_install "${dep_args[@]}"
-        make install -j20
+        make install -j${THREADS:-20}
         popd
     fi
     export CMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH:$PWD/${dep_name}_install"
@@ -98,5 +98,5 @@ proj dtgen
 mkdir build install
 pushd build
 cmake .. "${ff_cmake_flags[@]}"
-make -j20
+make -j${THREADS:-20}
 popd # build
