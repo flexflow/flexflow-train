@@ -80,6 +80,7 @@ if [[ ! -e /tmp/$USER/proj ]]; then
     uv sync
     popd # /tmp/$USER/proj
 fi
+# shellcheck disable=SC1090 # Must be out of source to avoid: https://github.com/lockshaw/proj/issues/16
 source "/tmp/$USER/proj/.venv/bin/activate"
 export PATH="$PATH:/tmp/$USER/proj/bin"
 export PYTHONPATH="$PYTHONPATH:/tmp/$USER/proj"
