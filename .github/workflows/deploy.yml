@@ -13,7 +13,7 @@ jobs:
       - name: Install Depedencies
         run: |
           apt-get update -qq
-          apt-get install -y build-essential cmake curl git mpich libmpich-dev libibverbs-dev zlib1g-dev
+          apt-get install -y build-essential cmake curl git libibverbs-dev mpich libmpich-dev python3 zlib1g-dev
 
       - name: Run Deploy Script
         run: ./deploy.sh
