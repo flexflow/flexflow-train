@@ -4,9 +4,9 @@ set -e
 
 if [[ -z $CI ]]; then
     module load cuda cmake
+    export CC=gcc-10
+    export CXX=g++-10
 fi
-export CC=gcc-10
-export CXX=g++-10
 
 mkdir -p deploy
 pushd deploy
