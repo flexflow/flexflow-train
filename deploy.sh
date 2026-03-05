@@ -5,8 +5,8 @@ set -e
 if [[ -z $CI ]]; then
     module load cuda cmake
 fi
-export CC=gcc-10
-export CXX=g++-10
+export CC=gcc-"${GCC_VERSION:-10}"
+export CXX=g++-"${GCC_VERSION:-10}"
 export THREADS="${THREADS:-$(nproc)}"
 
 mkdir -p deploy
