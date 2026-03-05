@@ -2,11 +2,11 @@
 
 set -e
 
-module load cuda cmake
-export CC=gcc-10
-export CXX=g++-10
-
-git submodule update --init
+if [[ -z $CI ]]; then
+    module load cuda cmake
+    export CC=gcc-10
+    export CXX=g++-10
+fi
 
 mkdir -p deploy
 pushd deploy
