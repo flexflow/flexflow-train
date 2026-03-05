@@ -14,7 +14,7 @@ void controller_task_body(
     void const *, size_t, void const *, size_t, Realm::Processor);
 
 /**
- * \brief Dispatches the \ref controller task. Packages up the provided \ref std::function and
+ * \brief Dispatches the \ref term-controller task. Packages up the provided \ref std::function and
  * passes it along to \ref controller_task_body.
  */
 Realm::Event

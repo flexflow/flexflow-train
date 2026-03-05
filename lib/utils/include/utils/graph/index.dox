@@ -1,3 +1,4 @@
+namespace FlexFlow {
 /**
 
 \page utils-graph utils/graph
@@ -15,15 +16,202 @@ Of course, there are also some optimizations that simply have not been done due 
 
 \subsection core-graph-variants Core Graph Variants
 
+There is no single type of graph. Should it be directed? Allow multiple edges between nodes? Should nodes and/or edges have information attached?
+Because there is no single answer to this question, similar to <a href="https://networkx.org/">networkx</a> we provide a number of different graph variants.
+At their core, they are as follows:
+
+- \ref UndirectedGraph "": at most one edge allowed between every pair of nodes, edges are undirected.
+- \ref DiGraph "": at most one edge allowed between every ordered pair of nodes, edges are directed (i.e., have a source node and a destination node)
+- \ref MultiDiGraph "": arbitrary numbers of directed edges allowed between every pair of nodes.
+- \ref DataflowGraph "": used to model computation graphs. See the @ref dataflow-graph section for a detailed explanation.
+
+Examples of the different graph variants are shown below.
+
+Example of \ref UndirectedGraph "":
+\dot
+graph {
+    A [label=""];
+    B [label=""];
+    C [label=""];
+    D [label=""];
+    E [label=""];
+
+    A -- B
+    A -- C
+    B -- C
+    B -- B
+    D -- B
+}
+\enddot
+
+Example of \ref DiGraph "":
+\dot
+digraph {
+    A [label=""];
+    B [label=""];
+    C [label=""];
+    D [label=""];
+    E [label=""];
+    F [label=""];
+
+    A -> F
+    B -> E
+    B -> C
+    B -> B
+    D -> B
+    C -> D
+}
+\enddot
+
+Example of \ref MultiDiGraph "":
+\dot
+digraph {
+    A [label=""];
+    B [label=""];
+    C [label=""];
+    D [label=""];
+    E [label=""];
+    F [label=""];
+
+    A -> B
+    B -> C
+    C -> D
+    D -> A
+    B -> E
+    E -> B
+    D -> A
+    A -> E
+    D -> D
+    E -> E
+}
+\enddot
+
+Note that the node names are completely arbitrary: they have no apparent ordering or other meaning besides representing the topology of the graph.
+This is the case with all of the 4 core graph classes.
+Nodes are of type \ref Node, and from a user perspective are simply opaque handles, and source and destination indices should similarly be considered opaque from a user point of view.
+In addition, nodes should only be used in the context of their graph, so comparing or checking equality of nodes between different graphs (even of the same type) is undefined behavior \ref graph-footnote-1 "[1]".
+
+All three core graph variants allow insertion and deletion of both edges and nodes.
+To add a node to an \ref UndirectedGraph \c g, simply call <tt>g.add_node()</tt>, which will return a \ref Node object.
+For semantics closer to <tt>networkx</tt>'s method of adding nodes, <tt>g.add_node_unsafe(my_node)</tt> can be used. This is useful when constructing a modified copy of an existing graph (given that it maintains node bijection), though it is not generally recommended.
+The interface for node addition is identical for \ref DiGraph and \ref MultiDiGraph.
+To add an edge between two nodes \c n1 and \c n2 to an \ref UndirectedGraph \c g, call <tt>g.add_edge({n1, n2})</tt>.
+In \ref UndirectedGraph the order of the arguments of \ref UndirectedGraph::add_edge "add_edge" doesn't matter as edges are undirected, but the order does matter for \ref DiGraph, \ref MultiDiGraph and \ref DataflowGraph.
+
+The last paragraph covered the base API used to write to graphs, but we also want to be able to read from graphs.
+Reading from graphs is implemented with the \c query_nodes and \c query_edges methods, which can be thought of as executing a database query over the nodes and edges of the target graph, respectively (where queries are restricted to an incredibly simple set of operations).
+The argument to \c query_nodes is a \ref NodeQuery (which is simply a set of \ref Node ""s).
+\c query_nodes then returns the intersection of the nodes in the graph and the nodes in the query.
+The set of nodes in the query is actually a \ref std::optional, so \ref std::nullopt could also be passed, which would simply retrieve all nodes from the target graph (essentially \ref std::nullopt acts as the set of all nodes that could ever exist).
+\c query_edges functions similarly, but as with \c add_edge its behavior is differs slightly between the three graph variants.
+\ref UndirectedGraph::query_edges simply takes an optional set of nodes and returns all edges that touch any of those nodes.
+\ref DiGraph::query_edges allows separate sets for source and destination nodes, and \ref MultiDiGraph::query_edges adds the ability to filter by source and destination indices as well.
+
+In practice you will rarely ever use \c query_nodes and \c query_edges as the graph library provides a large number of algorithms that do that work for you, but it can be helpful to understand this base layer if you ever need to implement your own algorithms.
+The layer users will most commonly interact with is the interface provided within either the \c algorithms.h header files or the \c algorithms folders, present in their respective graph class folders.
+They provide a large number of pre-implemented algorithms on graphs, ranging from as simple as \ref get_nodes to as complex as \ref get_transitive_reduction and \ref get_dominators.
+Note that, due to the internal virtual inheritance structure, some functions for more privitive classes can be employed by the derived classes. (For example, `get_nodes` present in `node/algorithms.h` can be used by \ref DiGraph).
+You may notice that the most of algorithms present take as arguments not \ref UndirectedGraph, \ref DiGraph, and \ref MultiDiGraph, but rather \ref UndirectedGraphView, \ref DiGraphView, and \ref MultiDiGraphView.
+These \ref GraphView objects represent read-only (i.e., immutable) graphs.
+Similar to C++'s \c const semantics, \ref Graph ""s can be coerced \ref graph-footnote-2 "[2]" to \ref GraphView ""s but not the other way around.
+To transform a \ref GraphView to a \ref Graph, we can perform an explicit copy with \ref materialize_view.
+Both \ref Graph and \ref GraphView types follow normal value semantics.
+This may seem wasteful (oftentimes graphs are large objects that are passed around via reference to avoid making additional copies), but the \ref Graph and \ref GraphView types internally implement copy-on-write optimizations to only perform the minimum number of actual copies while maintaining immutability and lifetime safety (if you allocate a \ref DiGraph use for example \ref "get_subgraph(DiGraphView const &, std::unordered_set<Node> const *)" "get_subgraph" to get a \ref DiGraphView representing a part of this graph, modifications to the underlying \ref DiGraph will not be mirrored in the \ref DiGraphView and the \ref DiGraphView will remain valid even after the base \ref DiGraph leaves scope.
+
+At this point, however, we still have not discussed how to create a graph.
+The user-facing graph interface is intentionally separated from the underlying graph representations, so representations can be changed without requiring any user-side code modifications besides the choice of which implementation to use.
+For example, to construct a \ref DiGraph which internally uses a representation such as \ref AdjacencyDiGraph we do the following:
+
+\code
+DiGraph g = DiGraph::create<AdjacencyDiGraph>();
+\endcode
+
+Generally users will use underlying representations provided by the graph library, but advanced users can create their own implementations (see the \ref graph-internals section).
+
 \subsection dataflow-graph DataflowGraph
+
+The primary abstraction for representing computation graphs / task graphs is the \ref DataflowGraph interface (along with its variants, \ref OpenDataflowGraph, \ref LabelleledDataflowGraph and \ref OpenLabelleledDataflowGraph).
+At a high level, nodes represent multivariate functions (from tuples of inputs to tuple of outputs), while edges represent value uses of such functions.
+
+\ref DataflowGraph is similar to \ref MultiDiGraph, but with the following important differences:
+  - The edges entering, exiting a given nodes have a well-defined order.
+  - The outputs of a given node also have a well-defined order.
+  - \ref DataflowGraph ""s are directed acyclic graphs. This is enforced by the interface used to construct them, since a node can only be added to the graph after all of its predecessor nodes have already been added.
+
+The main components of \ref DataflowGraph are as follows:
+- \ref DataflowInput: used to denote an entry in the ordered sequence of incoming dependencies (arguments) of a given node (operator).
+- \ref DataflowOutput: used to denote an entry in the ordered sequence of outgoing results (value uses) from a given node (operator).
+- \ref DataflowEdge: wrapper around a \ref DataflowInput, \ref DataflowOutput pair between 2 nodes.
+- \ref NodeAddedResult "": returned upon adding a new node. Contains the newly generated \ref Node and the \ref std::vector of \ref DataflowOutput ""s for the given node.
+
+\ref DataflowGraph ""s are constructed as follows:
+
+\code
+    auto g = DataflowGraph::create<UnorderedSetDataflowGraph>();
+
+    // Node with no inputs and 2 outputs
+    NodeAddedResult n1_result = g.add_node({}, 2);
+    Node n1 = n1_result.node;
+    DataflowOutput n1_o1 = n1_result.outputs[0];
+    DataflowOutput n1_o2 = n1_result.outputs[1];
+
+    // Node with 2 inputs and 1 output
+    NodeAddedResult n2_result = g.add_node({n1_o1, n1_o2}, 1);
+    Node n2 = n2_result.node;
+    DataflowOutput n2_o1 = n2_result.outputs[0];
+
+    // Node with 1 input and 2 outputs
+    NodeAddedResult n3_result = g.add_node({n1_o2}, 1);
+    Node n3 = n3_result.node;
+    DataflowOutput n3_o1 = n3_result.outputs[0];
+    DataflowOutput n3_o2 = n3_result.outputs[1];
+
+    // Node with 2 inputs and 1 output
+    NodeAddedResult n4_result = g.add_node({n2_o1, n3_o1}, 1);
+    Node n4 = n4_result.node;
+    DataflowOutput n4_o1 = n4_result.outputs[0];
+\endcode
+
+which generates the following graph
+
+\dot
+digraph {
+    node [shape=record];
+    n1 [label="{|{<o1>|<o2>}}"];
+    n2 [label="{{<i1>|<i2>}||{<o1>}}"];
+    n3 [label="{{<i1>}||{<o1>|<o2>}}"];
+    n4 [label="{{<i1>|<i2>}||{<o1>}}"];
+
+    n1:o1 -> n2:i1
+    n1:o2 -> n2:i2
+    n1:o2 -> n3:i1:n;
+    n2:o1 -> n4:i1
+    n3:o1 -> n4:i2
+}
+\enddot
 
 \subsection open-dataflow-variant Open Dataflow Variant
 
+"Open" should be interpreted in the topological sense: that is, a graph that contains some edges where one of the edge's 2 nodes is not present in the graph itself.
+This graph class is particularly useful for processing a sub-graph of a given graph while still maintaining information regarding the edges that cross the cut.
+\ref DataflowGraphInput is used to represent the open (incoming) inputs to the graph. Note that, unlike \ref DataFlowInput, \ref DataflowGraphInput ""s are unordered (given that they are inputs to possibly several different nodes within the graph).
+
 \subsection labelled-dataflow-variant Labelled Dataflow Variant
+
+As nice as all of the above is, graphs without labels are mostly useless--in practice, nodes and edges represent some other system and the properties of that system (or at least a way to map the result of graph algorithms back to the underlying system) are necessary.
+Thus, FlexFlow's graph library provides the ability to add labels to \ref DataflowGraph, through the \ref LabelleledDataflowGraph and \ref OpenLabelleledDataflowGraph, which allow users to label different components of the graph.
+- \ref LabelledDataflowGraph allows for labelling of \ref Node ""s and \ref DataflowOutput ""s.
+- \ref OpenLabelledDataflowGraph allows for labelling of \ref Node ""s and \ref OpenDataflowValue ""s, which is a variant describing both \ref DataflowOutput ""s and \ref DataflowGraphInput ""s.
+
+While the interfaces of these graphs differ slightly from the core graph variants, they still have the corresponding \ref LabelledDataflowGraph::add_node methods, and \ref LabelledDataflowGraph::query_nodes / \ref LabelledDataflowGraph::query_edges methods. (Note that there is no \c add_edge method since, for \ref DataflowGraph, edges are implicitly added when we add a node and specify its predecessors)
+Note that all of the labelled graph types require that each element of the labelled types have a label, which is enforced via the interfaces they provide.
+Partial labelling can be implement via wrapping the label type in \ref std::optional.
+Interacting with \c Node and \c Edge objects is still necessary to use the labelled graph types: intuitively the labelled graph types can be thought of as a pair of a core graph variant and a hash map the maps nodes/edges to labels.
+As such, the labelled graph types provide the typical \ref LabelledDataflowGraph::at method (as on \ref std::unordered_map \ref graph-footnote-3 "[3]") and can be coerced to their underlying core graph variants.
 
 \section graph-internals Internals
 
-\subsection cow-ptr-and-interfaces cow_ptr and Interfaces
+\subsection cow-ptr-and-interfaces cow_ptr_t and Interfaces
 
 The reason for the existence of the \c View variants has been explained in previous sections.
 The existence of the \c "I(nterface)" variants stems from C++'s approach to modeling polymorphism.
@@ -31,13 +219,15 @@ The existence of the \c "I(nterface)" variants stems from C++'s approach to mode
 C++ polymorphism is achieved at runtime through the use of <a href="https://www.learncpp.com/cpp-tutorial/virtual-functions/">virtual functions</a>, which allow for a single function defined on some superclass to also work correctly on its subclasses.
 
 To create objects with polymorphic behaviour, we use the following syntax:
+
 \code
 BaseClass* obj = new DerivedClass(); //or alternatives such as std::shared_ptr<BaseClass> obj = std::make_shared<DerivedClass>();
 \endcode
+
 Any call to \c obj 's member functions are resolved at runtime (dynamic binding), with C++ calling the most derived implementation of the function.
 
 While this pattern works nicely, the way instantiation is done leaves the burden of memory management on the user.
-To address this, graph classes store a \ref cow_ptr as a member variable, which point to instances of type equal to their corresponding interface class.
+To address this, graph classes store a \ref cow_ptr_t as a member variable, which point to instances of type equal to their corresponding interface class.
 
 All member functions present in \c ClassName and \c ClassNameView delegate their calls to their corresponding interface classes (which implement the actual logic), meaning that these classes essentially act as wrappers to their interface counterparts.
 
@@ -47,4 +237,11 @@ Due to the complexity of the graph library, diamond-style inheritance patterns e
 In the case of a diamond inheritance pattern, C++ will instantiate multiple copies of the base class whenever we instantiate a derived class.
 To address this issue, we employ <a href="https://en.wikipedia.org/wiki/Virtual_inheritance">virtual inheritance</a>, which removes the ambiguity associated with the multiple copies.
 
+<hr/>
+
+1. \anchor graph-footnote-1 At some point we will likely add actual runtime checks on this, but for now we rely on the user not to mess up. Currently the implementation will keep going silently until the incorrectness grows so large that something breaks/crashes.
+2. \anchor graph-footnote-2 See <a href="https://en.wikipedia.org/wiki/Type_conversion">here</a> if you're not familiar with the term <em>type coercion</em>.
+3. \anchor graph-footnote-3 <tt>operator[]</tt> currently is not present because all nodes must have labels and we don't require label types to be default constructible, though some simple template programming could probably add <tt>operator[]</tt> support in the cases where the label types <em>are</em> default constructible.
+
 */
+}

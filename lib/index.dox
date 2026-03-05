@@ -1,7 +1,7 @@
 namespace FlexFlow {
 /**
 
-\page lib lib/
+\page lib lib
 
 This directory contains the core C++ code that underlies %FlexFlow, organized into the following libraries:
 

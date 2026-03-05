@@ -1,4 +1,6 @@
-# Setup Guide for sapling
+/**
+
+@page sapling-setup Setup Guide for sapling
 
 1. ssh into the sapling head node.
 
@@ -82,8 +84,10 @@ NIXPKGS_ALLOW_UNFREE=1 nix develop .#gpu --accept-flake-config --impure
 (ff) $ proj test
 ...
 ```
-You should see the additional GPU tests run. If you instead see a message like 
+You should see the additional GPU tests run. If you instead see a message like
 
 > `Error: ... Pass --skip-gpu-tests to skip running tests that require a GPU`
 
-Double check that you are correctly in the `gpu` devshell, not the `default` devshell. 
+Double check that you are correctly in the `gpu` devshell, not the `default` devshell.
+
+*/

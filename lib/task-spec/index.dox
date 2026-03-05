@@ -1,7 +1,7 @@
 namespace FlexFlow {
 /**
 
-\page task-spec task-spec/
+\page task-spec task-spec
 
 \brief An intermediate layer between the compiler and the runtime. Contains code for lowering the \ref MappedParallelComputationGraph exported from the \ref compiler down to a granularity that the runtime can actually execute. Also contains the functions that translate between logical operators (i.e., \ref op-attrs-ops) and actual calls to \ref kernels.
 

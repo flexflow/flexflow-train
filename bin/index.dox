@@ -1,6 +1,6 @@
 /**
 
-\page bin bin/
+\page bin bin
 
 This directory contains command-line interfaces for %FlexFlow %Train and associated tools (all in C++).
 

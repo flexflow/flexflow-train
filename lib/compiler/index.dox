@@ -1,6 +1,6 @@
 /**
 
-\page compiler compiler/
+\page compiler compiler
 
 \brief Implements the core logic of the compiler.
 

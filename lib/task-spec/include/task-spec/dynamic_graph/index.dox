@@ -1,7 +1,7 @@
 namespace FlexFlow {
 /**
 
-\page task-spec-dynamic-graph task-spec/dynamic_graph/
+\page task-spec-dynamic-graph task-spec/dynamic_graph
 
 \brief Contains common code for inferring and making explicit information from a \ref MappedParallelComputationGraph, lowering it into a \ref DynamicOpenDataflowGraph that can be executed by \ref realm-execution and/or \ref local-execution.
 
