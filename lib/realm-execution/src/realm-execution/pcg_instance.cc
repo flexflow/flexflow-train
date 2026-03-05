@@ -1,4 +1,4 @@
-#include "realm-execution/pcg_instance/pcg_instance.h"
+#include "realm-execution/pcg_instance.h"
 #include "op-attrs/tensor_slot_name.dtg.h"
 #include "pcg/optimizer_attrs.h"
 #include "realm-execution/dependency_set.h"
@@ -47,23 +47,29 @@ PCGInstance::~PCGInstance() {
 RealmContext &PCGInstance::get_realm_context() {
   return this->ctx;
 }
+
 std::vector<DynamicNodeInvocation> const &
     PCGInstance::get_execution_order() const {
   return this->execution_order;
 }
+
 TensorInstanceBacking const &PCGInstance::get_tensor_instance_backing() const {
   return this->tensor_instance_backing;
 }
+
 PerDeviceOpStateBacking const &PCGInstance::get_device_state_backing() const {
   return this->device_state_backing;
 }
+
 OptimizerAttrs const &PCGInstance::get_optimizer_attrs() const {
   return this->optimizer_attrs;
 }
+
 void PCGInstance::update_optimizer_attrs_for_next_iter() {
   this->optimizer_attrs =
       get_optimizer_attrs_for_next_iter(this->optimizer_attrs);
 }
+
 std::optional<Realm::RegionInstance>
     PCGInstance::get_loss_tensor_instance() const {
   return this->logit_grad_tensor;

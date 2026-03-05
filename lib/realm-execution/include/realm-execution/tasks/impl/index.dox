@@ -1,0 +1,16 @@
+namespace {
+/**
+
+\page realm-execution-tasks tasks/
+
+\c realm-execution groups tasks into four kinds:
+
+- \ref controller_task.h "Controller Tasks": At most one of these per machine. Runs the \ref term-controller.
+- \ref op_task.h "Operator Tasks":
+- \ref ff_handle_init_task.h "FF Handle Init Tasks":
+- \ref ff_handle_init_return_task.h "FF Handle Init Return Tasks":
+- \ref per_device_op_state_init_task.h "Per Device Op State Init Tasks":
+- \ref per_device_op_state_init_return_task.h "Per Device Op State Init Return Tasks":
+
+}
+*/

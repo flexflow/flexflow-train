@@ -6,6 +6,11 @@ features = [
   "fmt",
   #"hash",
 ]
+docstring = """
+@brief A simple container for mapping between DynamicValueAttrs and the corresponding realm instances/events.
+
+@note The actual logic for doing instance allocation is in @ref perform_instance_allocation.
+"""
 
 includes = [
   "<unordered_map>",

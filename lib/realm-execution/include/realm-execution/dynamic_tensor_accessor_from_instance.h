@@ -8,6 +8,9 @@
 
 namespace FlexFlow {
 
+/**
+ * @brief Turn a %Realm region instance into a GenericTensorAccessor.
+ */
 DynamicTensorAccessor dynamic_tensor_accessor_from_instance(
     Realm::RegionInstance inst,
     Realm::Event ready,

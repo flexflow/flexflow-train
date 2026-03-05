@@ -9,6 +9,11 @@ features = [
   "rapidcheck",
   "fmt",
 ]
+docstring = """
+@brief Compiler-side representation of a %Linear operator.
+
+For details on how operators are represented on the compiler side, see @ref op-attrs-ops.
+"""
 
 includes = [
   "op-attrs/datatype.dtg.h",

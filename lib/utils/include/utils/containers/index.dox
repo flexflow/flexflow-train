@@ -8,5 +8,11 @@ Some of the most commonly-used functions are listed below, but you should ideall
 
 - \ref containers/transform.h
 - \ref containers/filter.h
+- \ref containers/contains.h
+- \ref containers/generate_map.h
+- \ref containers/get_only.h
+- \ref containers/slice.h
+- \ref containers/merge_disjoint_maps.h
+- \ref containers/is_subseteq_of.h
 
 */

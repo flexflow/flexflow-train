@@ -1,9 +1,9 @@
-#include "realm-execution/tasks/impl/device_state_init_task.h"
-#include "local-execution/device_state_initialization.h"
+#include "realm-execution/tasks/impl/per_device_op_state_init_task.h"
+#include "local-execution/per_device_op_state_initialization.h"
 #include "realm-execution/dynamic_tensor_accessor_from_instance.h"
-#include "realm-execution/tasks/impl/device_state_init_return_task.h"
-#include "realm-execution/tasks/impl/device_state_init_task_args.dtg.h"
-#include "realm-execution/tasks/impl/serializable_device_state_init_task_args.h"
+#include "realm-execution/tasks/impl/per_device_op_state_init_return_task.h"
+#include "realm-execution/tasks/impl/per_device_op_state_init_task_args.dtg.h"
+#include "realm-execution/tasks/impl/serializable_per_device_op_state_init_task_args.h"
 #include "realm-execution/tasks/serializer/task_arg_serializer.h"
 #include "realm-execution/tasks/task_id_t.dtg.h"
 #include "realm-execution/tasks/task_id_t.h"
@@ -18,14 +18,14 @@
 
 namespace FlexFlow {
 
-void device_state_init_task_body(void const *args,
+void per_device_op_state_init_task_body(void const *args,
                                  size_t arglen,
                                  void const *userdata,
                                  size_t userlen,
                                  Realm::Processor proc) {
-  DeviceStateInitTaskArgs task_args =
-      device_state_init_task_args_from_serializable(
-          deserialize_task_args<SerializableDeviceStateInitTaskArgs>(args,
+  PerDeviceOpStateInitTaskArgs task_args =
+      per_device_op_state_init_task_args_from_serializable(
+          deserialize_task_args<SerializablePerDeviceOpStateInitTaskArgs>(args,
                                                                      arglen));
 
   RealmContext ctx{proc};
@@ -62,18 +62,18 @@ void device_state_init_task_body(void const *args,
   // Important: to make sure this doesn't get deallocated, we intentionally leak
   // the allocation here
   PerDeviceOpState *result_state_ptr =
-      new PerDeviceOpState{get_device_state_from_device_specific(
+      new PerDeviceOpState{get_per_device_op_state_from_device_specific(
           result_state, ctx.get_current_device_idx())};
   DeviceSpecificPtr<PerDeviceOpState> result_device_specific{
       ctx.get_current_device_idx(), result_state_ptr};
-  spawn_device_state_init_return_task(ctx,
+  spawn_per_device_op_state_init_return_task(ctx,
                                       task_args.origin_proc,
                                       result_device_specific,
                                       task_args.origin_result_ptr,
                                       Realm::Event::NO_EVENT);
 }
 
-std::optional<Realm::Event> spawn_device_state_init_task(
+std::optional<Realm::Event> spawn_per_device_op_state_init_task(
     RealmContext &ctx,
     Realm::Processor target_proc,
     DynamicNodeInvocation const &invocation,
@@ -84,7 +84,7 @@ std::optional<Realm::Event> spawn_device_state_init_task(
     OptimizerAttrs const &optimizer_attrs,
     DeviceSpecificPtr<PerDeviceOpState> *result_ptr,
     Realm::Event precondition) {
-  DeviceStateInitTaskArgs task_args{
+  PerDeviceOpStateInitTaskArgs task_args{
       invocation,
       tensor_backing,
       profiling_settings,
@@ -103,7 +103,7 @@ std::optional<Realm::Event> spawn_device_state_init_task(
                get_init_task_id_for_op_attrs);
   if (task_id.has_value()) {
     std::string args = serialize_task_args(
-        device_state_init_task_args_to_serializable(task_args));
+        per_device_op_state_init_task_args_to_serializable(task_args));
     return ctx.spawn_task(target_proc,
                           assert_unwrap(task_id),
                           args.data(),

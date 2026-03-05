@@ -1,11 +1,37 @@
+namespace FlexFlow {
 /**
 
-@page utils utils
+\page utils utils
 
-@brief Various utility and support libraries for the rest of the project. Particularly useful are @ref "utils-graph", @ref "utils-containers", and @ref "utils-cli".
+\brief Various utility and support libraries for the rest of the project. Particularly useful are \ref "utils-graph", \ref "utils-containers", and \ref "utils-cli".
 
+Major components:
 - \subpage utils-containers
 - \subpage utils-cli
 - \subpage utils-graph
+- \subpage utils-restricted-int-types
+- \subpage utils-restricted-map-types
+- \subpage utils-orthotope
 
 */
+
+/**
+
+\page utils-restricted-int-types Restricted Integer Types
+
+- \ref nonnegative_int
+- \ref positive_int
+- \ref int_ge_two
+
+*/
+
+/**
+
+\page utils-restricted-map-types Restricted Map Types
+
+- \ref bidict
+- \ref OneToMany
+- \ref ManyToOne
+
+*/
+}

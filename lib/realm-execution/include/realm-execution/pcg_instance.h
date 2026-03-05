@@ -1,5 +1,5 @@
-#ifndef _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_PCG_INSTANCE_PCG_INSTANCE_H
-#define _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_PCG_INSTANCE_PCG_INSTANCE_H
+#ifndef _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_PCG_INSTANCE_H
+#define _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_PCG_INSTANCE_H
 
 #include "kernels/accessor.h"
 #include "kernels/allocation.h"
@@ -24,14 +24,17 @@
 namespace FlexFlow {
 
 /**
- * @brief The main public interface for the realm backend.
- *
- * It takes a MappedParallelComputationGraph and lowers it through the
+ * \brief The main public interface for the realm backend.
+ * Takes a MappedParallelComputationGraph and lowers it through
  * DynamicOpenDataflowGraph to get the fully-specified execution order of tasks
- * to be executed. Besides the usual dynamic graph passes (\ref
- * perform_pass_expansion, \ref perform_update_insertion, \ref
- * perform_shard_expansion), this class also tracks the allocation of realm
- * instances for tensors.
+ * to be executed. Also tracks the allocation of realm instances for tensors
+ * through its TensorInstanceBacking.
+ *
+ * \note PCGInstance is primarily just a container for the various structs held
+ * inside it. The actual initialization and training iteration functionality is
+ * held in \ref create_pcg_instance and \ref
+ * perform_update_pass_for_pcg_instance, respectively.
+ *
  */
 struct PCGInstance {
 public:
@@ -49,13 +52,16 @@ public:
 
   ~PCGInstance();
 
+  void update_optimizer_attrs_for_next_iter();
+
+  // getters
   RealmContext &get_realm_context();
   std::vector<DynamicNodeInvocation> const &get_execution_order() const;
   TensorInstanceBacking const &get_tensor_instance_backing() const;
   PerDeviceOpStateBacking const &get_device_state_backing() const;
   OptimizerAttrs const &get_optimizer_attrs() const;
-  void update_optimizer_attrs_for_next_iter();
   std::optional<Realm::RegionInstance> get_loss_tensor_instance() const;
+
 private:
   RealmContext &ctx;
   std::vector<DynamicNodeInvocation> execution_order;
@@ -79,6 +85,14 @@ PCGInstance create_pcg_instance(
     DistributedDeviceHandle const &device_handle,
     FFIterationConfig const &iteration_config);
 
+/**
+ * \brief Dispatch a training iteration for a PCGInstance.
+ *
+ * To dispatch just a piece of a training iteration, see the following functions:
+ * - \ref perform_forward_pass_for_pcg_instance
+ * - \ref perform_backward_pass_for_pcg_instance
+ * - \ref perform_update_pass_for_pcg_instance
+ */
 std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_all_passes_for_pcg_instance(
         PCGInstance &pcg_instance,

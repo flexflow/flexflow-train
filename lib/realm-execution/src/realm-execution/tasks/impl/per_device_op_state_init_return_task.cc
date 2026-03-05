@@ -1,12 +1,12 @@
-#include "realm-execution/tasks/impl/device_state_init_return_task.h"
+#include "realm-execution/tasks/impl/per_device_op_state_init_return_task.h"
 #include "realm-execution/tasks/task_id_t.dtg.h"
 
 namespace FlexFlow {
 
-struct DeviceStateInitReturnTaskArgs {
+struct PerDeviceOpStateInitReturnTaskArgs {
 public:
-  DeviceStateInitReturnTaskArgs() = delete;
-  DeviceStateInitReturnTaskArgs(
+  PerDeviceOpStateInitReturnTaskArgs() = delete;
+  PerDeviceOpStateInitReturnTaskArgs(
       DeviceSpecificPtr<PerDeviceOpState> result,
       Realm::Processor origin_proc,
       DeviceSpecificPtr<PerDeviceOpState> *origin_result_ptr)
@@ -19,26 +19,26 @@ public:
   DeviceSpecificPtr<PerDeviceOpState> *origin_result_ptr;
 };
 
-void device_state_init_return_task_body(void const *args,
+void per_device_op_state_init_return_task_body(void const *args,
                                         size_t arglen,
                                         void const *userdata,
                                         size_t userlen,
                                         Realm::Processor proc) {
-  ASSERT(arglen == sizeof(DeviceStateInitReturnTaskArgs));
-  DeviceStateInitReturnTaskArgs task_args =
-      *reinterpret_cast<DeviceStateInitReturnTaskArgs const *>(args);
+  ASSERT(arglen == sizeof(PerDeviceOpStateInitReturnTaskArgs));
+  PerDeviceOpStateInitReturnTaskArgs task_args =
+      *reinterpret_cast<PerDeviceOpStateInitReturnTaskArgs const *>(args);
 
   ASSERT(task_args.origin_proc.address_space() == proc.address_space());
   *task_args.origin_result_ptr = task_args.result;
 }
 
-Realm::Event spawn_device_state_init_return_task(
+Realm::Event spawn_per_device_op_state_init_return_task(
     RealmContext &ctx,
     Realm::Processor origin_proc,
     DeviceSpecificPtr<PerDeviceOpState> const &result,
     DeviceSpecificPtr<PerDeviceOpState> *origin_result_ptr,
     Realm::Event precondition) {
-  DeviceStateInitReturnTaskArgs task_args{
+  PerDeviceOpStateInitReturnTaskArgs task_args{
       result, origin_proc, origin_result_ptr};
 
   return ctx.spawn_task(origin_proc,

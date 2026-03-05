@@ -16,12 +16,16 @@
 
 namespace FlexFlow {
 
+/**
+ * \brief The function registered as a %Realm task for operator-related tasks.
+ * Dispatched by \ref spawn_op_task.
+ */
 void op_task_body(void const *, size_t, void const *, size_t, Realm::Processor);
 
 /**
  * @brief Launches the task for a DynamicNodeInvocation using realm.
  *
- * @note The task launch process functions a bit differently to that used in the
+ * The task launch process functions a bit differently to that used in the
  * previous FlexFlow codebase. Rather than having a function registered with
  * realm/legion for every task_id_t, we now have only a few functions
  * registered: @ref op_task_body, @ref device_handle_init_task_body,
@@ -37,7 +41,7 @@ void op_task_body(void const *, size_t, void const *, size_t, Realm::Processor);
  * (which then uses @ref call_fwd_task_impl) to actually call the function in
  * lib/task-spec/src/task-spec/ops/impl/conv_2d.cc
  *
- * @note That the above also means that we don't have a separate
+ * The above also means that we don't have a separate
  * ITaskArgumentAccessor subclass for realm-execution. Instead we ship over the
  * information on the corresponding realm instances over to the remote node,
  * grab the corresponding pointer/GenericTensorAccessor, and then use

@@ -7,10 +7,10 @@
 
 namespace FlexFlow {
 
-void device_handle_init_return_task_body(
+void ff_handle_init_return_task_body(
     void const *, size_t, void const *, size_t, Realm::Processor);
 
-Realm::Event spawn_device_handle_init_return_task(
+Realm::Event spawn_ff_handle_init_return_task(
     RealmContext &ctx,
     Realm::Processor origin_proc,
     DeviceSpecificManagedPerDeviceFFHandle const &result,

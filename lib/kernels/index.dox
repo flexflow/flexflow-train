@@ -1,5 +1,7 @@
 /**
 
-\page kernels kernels
+\page kernels kernels/
+
+\brief %CPU and %GPU implementations of the operators, for use in the runtime and in operator profiling.
 
 */

@@ -18,7 +18,7 @@ namespace FlexFlow {
  * @brief An interface that wraps the rest of realm and protects against certain
  * classes of bugs, such as shutdown bugs.
  *
- * @note Do NOT call Realm directly unless you know what you are doing.
+ * @warn Do NOT call Realm directly unless you know what you are doing.
  */
 struct RealmContext {
 public:

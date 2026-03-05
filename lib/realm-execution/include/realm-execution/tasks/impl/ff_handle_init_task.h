@@ -1,5 +1,5 @@
-#ifndef _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_TASKS_IMPL_DEVICE_HANDLE_INIT_TASK_H
-#define _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_TASKS_IMPL_DEVICE_HANDLE_INIT_TASK_H
+#ifndef _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_TASKS_IMPL_FF_HANDLE_INIT_TASK_H
+#define _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_TASKS_IMPL_FF_HANDLE_INIT_TASK_H
 
 #include "realm-execution/device_specific_managed_per_device_ff_handle.h"
 #include "realm-execution/realm.h"
@@ -7,10 +7,10 @@
 
 namespace FlexFlow {
 
-void device_handle_init_task_body(
+void ff_handle_init_task_body(
     void const *, size_t, void const *, size_t, Realm::Processor);
 
-Realm::Event spawn_device_handle_init_task(
+Realm::Event spawn_ff_handle_init_task(
     RealmContext &ctx,
     Realm::Processor target_proc,
     size_t workSpaceSize,

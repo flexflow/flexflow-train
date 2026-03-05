@@ -6,17 +6,64 @@ namespace FlexFlow {
 This directory contains the core C++ code that underlies %FlexFlow, organized into the following libraries:
 
 - \subpage compiler "": \copybrief compiler
-- \subpage kernels "":
+- \subpage kernels "": \copybrief kernels
 - \subpage op-attrs "": \copybrief op-attrs
 - \subpage pcg "": \copybrief pcg
 - \subpage substitutions "": \copybrief substitutions
 - \subpage utils "": \copybrief utils
 - \subpage models "": \copybrief models
 - \subpage task-spec "": \copybrief task-spec
-- \subpage local-execution "":
-- \subpage realm-execution "":
+- \subpage local-execution "": \copybrief local-execution
+- \subpage realm-execution "": \copybrief realm-execution
 
-\section Deprecated
+\section runtime-vs-compiler Runtime vs. Compiler
+
+Logically, the functionality in \c lib/ be split into two conceptual categories: the \e compiler and the \e runtime:
+
+- The compiler takes in a \ref ComputationGraph provided by the end user and transforms it into an optimized \ref MappedParallelComputationGraph.
+- The runtime takes in a \ref MappedParallelComputationGraph, which can be from the compiler or from any other tool that can generate files in FlexFlow's format (see \ref file-format for more details) and executes it, i.e., performs training iterations using the (usually distributed) execution strategy specified by the \ref MappedParallelComputationGraph.
+
+The distinction between the two in terms of libraries is a bit less clear.
+A few libraries are used exclusively in the compiler (i.e., \ref compiler) or in the runtime (\ref realm-execution), but most are used to some degree in both: for example, while \ref op-attrs is specified to contain the compiler-side representations of the operators, these representations are included in the \ref MappedParallelComputationGraph that is executed by the runtime, and so the library is actually used by both.
+In practice we use the shorthands "runtime-side" and "compiler-side" to refer to the following division of libraries:
+- compiler-side: \ref utils, \ref op-attrs, \ref pcg, \ref substitutions, and \ref compiler
+- runtime-side: \ref task-spec, \ref kernels, \ref local-execution, and \ref realm-execution.
+- neither: \ref models.
+
+The full (transitively-reduced) dependency graph of the libraries is as follows:
+
+\dot
+digraph example {
+    utils          [label="utils", URL="\ref utils", color="forestgreen", fontcolor="forestgreen"];
+    opattrs        [label="op-attrs", URL="\ref op-attrs", color="forestgreen", fontcolor="forestgreen"];
+    pcg            [label="pcg-attrs", URL="\ref pcg", color="forestgreen", fontcolor="forestgreen"];
+    substitutions  [label="substitutions", URL="\ref substitutions", color="forestgreen", fontcolor="forestgreen"];
+    models         [label="models", URL="\ref models"];
+    compiler       [label="compiler", URL="\ref compiler", color="forestgreen", fontcolor="forestgreen"];
+    kernels        [label="kernels", URL="\ref kernels", color="red", fontcolor="red"];
+    taskspec       [label="task-spec", URL="\ref task-spec", color="red", fontcolor="red"];
+    localexecution [label="local-execution", URL="\ref local-execution", color="red", fontcolor="red"];
+    realmexecution [label="realm-execution", URL="\ref realm-execution", color="red", fontcolor="red"];
+    realm          [label="realm", URL="\ref realm", color="red", fontcolor="red", style="dashed"];
+
+    utils -> opattrs;
+    opattrs -> pcg;
+    pcg -> substitutions;
+    substitutions -> compiler;
+    pcg -> models;
+    pcg -> kernels;
+    localexecution -> compiler [ style="dashed" ];
+    kernels -> taskspec;
+    taskspec -> localexecution;
+    localexecution -> realmexecution;
+    realm -> realmexecution;
+    realm -> kernels [ style="dashed" ];
+}
+\enddot
+
+where solid arrows represent link-time dependencies and dashed arrows represent run-time-only dependencies.
+
+\section lib-deprecated-components Deprecated Components
 
 - \c "local-pcg-execution":
 - \c "ffi":

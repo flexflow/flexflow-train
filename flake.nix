@@ -118,6 +118,7 @@
               compdb
               gbenchmark
               libtorch-bin
+              graphviz # for documentation
             ])
             (with proj-repo.packages.${system}; [
               proj
