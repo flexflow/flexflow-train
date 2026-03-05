@@ -1,0 +1,19 @@
+name: Test Deployment
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  deploy:
+    name: test deployment scripts
+    runs-on: ubuntu-latest
+    container: nvidia/cuda:12.9.1-cudnn-devel-ubuntu24.04
+
+    steps:
+      - name: Checkout Git Repository
+        uses: actions/checkout@v3
+
+      - name: Install Depedencies
+        run: |
+          apt-get update -qq
+          apt-get install -y cmake
+
+      - name: Run Deploy Script
+        run: ./deploy.sh
