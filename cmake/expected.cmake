@@ -1,7 +1,4 @@
 include(aliasing)
-if (FF_USE_EXTERNAL_EXPECTED)
-  find_package(tl-expected REQUIRED)
-  alias_library(expected tl::expected)
-else()
-  message(FATAL_ERROR "FF_USE_EXTERNAL_EXPECTED is required")
-endif()
+
+find_package(tl-expected REQUIRED)
+alias_library(expected tl::expected)

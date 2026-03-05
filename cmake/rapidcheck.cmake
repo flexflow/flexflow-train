@@ -1,5 +1,1 @@
-if (FF_USE_EXTERNAL_RAPIDCHECK)
-  find_package(rapidcheck REQUIRED)
-else()
-  message(FATAL_ERROR "FF_USE_EXTERNAL_RAPIDCHECK is required")
-endif()
+find_package(rapidcheck REQUIRED)
