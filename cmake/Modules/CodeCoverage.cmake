@@ -161,7 +161,7 @@ foreach(LANG ${LANGUAGES})
     endif()
   elseif(NOT "${CMAKE_${LANG}_COMPILER_ID}" MATCHES "GNU"
          AND NOT "${CMAKE_${LANG}_COMPILER_ID}" MATCHES "(LLVM)?[Ff]lang")
-    message(FATAL_ERROR "Compiler is not GNU or Flang! Aborting...")
+    message(FATAL_ERROR "Compiler ${CMAKE_${LANG}_COMPILER_ID} is not GNU or Flang! Aborting...")
   endif()
 endforeach()
 
