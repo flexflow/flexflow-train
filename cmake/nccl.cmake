@@ -1,5 +1,3 @@
-include(aliasing)
-
 find_package(NCCL REQUIRED)
 
 add_library(nccl INTERFACE)

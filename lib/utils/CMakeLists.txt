@@ -8,12 +8,12 @@ ff_add_library(
   PRIVATE_INCLUDE
     src/
   DEPS
-    expected
-    fmt
+    tl::expected
+    fmt::fmt
     json
     CUDA::cudart
     rapidcheck
-    libassert
+    libassert::assert
 )
 
 add_subdirectory(ffi)

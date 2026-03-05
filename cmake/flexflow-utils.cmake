@@ -8,7 +8,7 @@ macro(ff_parse_args)
 endmacro()
 
 function(define_ff_vars target)
-  target_compile_definitions(${target} PRIVATE 
+  target_compile_definitions(${target} PRIVATE
     MAX_OPNAME=${FF_MAX_OPNAME}
     MAX_NUM_OUTPUTS=${FF_MAX_NUM_OUTPUTS}
     MAX_NUM_INPUTS=${FF_MAX_NUM_INPUTS}
@@ -41,24 +41,24 @@ function(ff_set_cxx_properties target)
       CXX_EXTENSIONS NO
   )
   target_compile_options(${target}
-    PUBLIC 
-    $<$<COMPILE_LANGUAGE:CXX>:> 
-    "-ffile-prefix-map=${CMAKE_SOURCE_DIR}=." 
-    "-fsanitize=undefined" 
+    PUBLIC
+    $<$<COMPILE_LANGUAGE:CXX>:>
+    "-ffile-prefix-map=${CMAKE_SOURCE_DIR}=."
+    "-fsanitize=undefined"
     "-fno-sanitize-recover=all"
     # add C++ compile flags here
   )
   target_link_options(${target}
-    PUBLIC 
-    $<$<COMPILE_LANGUAGE:CXX>:> 
-    "-fsanitize=undefined" 
+    PUBLIC
+    $<$<COMPILE_LANGUAGE:CXX>:>
+    "-fsanitize=undefined"
     "-fno-sanitize-recover=all"
   )
 endfunction()
 
 function(ff_add_library)
   ff_parse_args(
-    PREFIX 
+    PREFIX
       FF_LIBRARY
     ARGS
       NAME
@@ -71,10 +71,10 @@ function(ff_add_library)
     PARSE
       ${ARGN}
   )
-  
+
   project(${FF_LIBRARY_NAME})
   file(GLOB_RECURSE SRC
-       CONFIGURE_DEPENDS 
+       CONFIGURE_DEPENDS
        LIST_DIRECTORIES False
        ${FF_LIBRARY_SRC_PATTERNS})
 
@@ -103,7 +103,7 @@ endfunction()
 
 function(ff_add_test_executable)
   ff_parse_args(
-    PREFIX 
+    PREFIX
       FF_TEST_EXEC
     ARGS
       NAME
@@ -145,7 +145,7 @@ endfunction()
 
 function(ff_add_benchmark_executable)
   ff_parse_args(
-    PREFIX 
+    PREFIX
       FF_BENCHMARK_EXEC
     ARGS
       NAME
@@ -175,8 +175,8 @@ function(ff_add_benchmark_executable)
   target_link_libraries(
     ${FF_BENCHMARK_EXEC_NAME}
     ${FF_BENCHMARK_EXEC_DEPS}
-    gbenchmark
-    gbenchmark-main)
+    benchmark::benchmark
+    benchmark::benchmark_main)
 
   define_ff_vars(${FF_BENCHMARK_EXEC_NAME})
   ff_set_cxx_properties(${FF_BENCHMARK_EXEC_NAME})
@@ -184,7 +184,7 @@ endfunction()
 
 function(ff_add_executable)
   ff_parse_args(
-    PREFIX 
+    PREFIX
       FF_EXEC
     ARGS
       NAME
