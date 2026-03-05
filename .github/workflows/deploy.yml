@@ -18,8 +18,8 @@ jobs:
       - name: Run Deploy Script
         run: ./deploy.sh
         env:
-          GCC_VERSION=${{ matrix.gcc }}
+          GCC_VERSION: ${{ matrix.gcc }}
 
     strategy:
       matrix:
-        gcc: ["10", "11", "12"]
+        gcc: [10, 11, 12]
