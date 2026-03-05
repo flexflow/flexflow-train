@@ -1,8 +1,8 @@
-name: Test Deployment
+name: deploy
 on: [push, pull_request, workflow_dispatch]
 jobs:
   deploy:
-    name: test deployment scripts
+    name: Test Deployment Scripts
     runs-on: ubuntu-latest
     container: nvidia/cuda:12.9.1-cudnn-devel-ubuntu24.04
 
@@ -17,5 +17,3 @@ jobs:
 
       - name: Run Deploy Script
         run: ./deploy.sh
-        env:
-          THREADS: 4

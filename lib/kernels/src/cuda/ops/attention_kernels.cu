@@ -55,7 +55,11 @@ MHAPerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
 
   // Currently do not support adding bias to key/value projection
   assert(!add_bias_kv);
+#if CUDNN_MAJOR >= 9
+  unsigned attnMode = CUDNN_ATTN_QUERYMAP_ALL_TO_ONE;
+#else
   cudnnAttnQueryMap_t attnMode = CUDNN_ATTN_QUERYMAP_ALL_TO_ONE;
+#endif
 
   // Assume no beam search for now
   int maxBeamSize = 1;
