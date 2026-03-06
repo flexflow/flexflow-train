@@ -13,3 +13,7 @@ endif()
 if(FF_BUILD_BIN_EXPORT_MODEL_ARCH)
   add_subdirectory(export-model-arch)
 endif()
+
+if(FF_BUILD_BIN_RUN_MODEL)
+  add_subdirectory(run-model)
+endif()
