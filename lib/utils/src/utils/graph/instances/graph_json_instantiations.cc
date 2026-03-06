@@ -13,12 +13,12 @@ template class UnorderedSetKwargDataflowGraph<int>;
 
 namespace nlohmann {
 
-template struct adl_serializer<::FlexFlow::LabelledOpenDataflowGraph<int, int>>;
+template struct adl_serializer<::FlexFlow::KwargDataflowGraph<int>>;
 template struct adl_serializer<::FlexFlow::LabelledDataflowGraph<int, int>>;
 template struct adl_serializer<
-    ::FlexFlow::LabelledOpenKwargDataflowGraph<int, int, int, int>>;
-template struct adl_serializer<
     ::FlexFlow::LabelledKwargDataflowGraph<int, int, int>>;
-template struct adl_serializer<::FlexFlow::KwargDataflowGraph<int>>;
+template struct adl_serializer<::FlexFlow::LabelledOpenDataflowGraph<int, int>>;
+template struct adl_serializer<
+    ::FlexFlow::LabelledOpenKwargDataflowGraph<int, int, int, int>>;
 
 } // namespace nlohmann
