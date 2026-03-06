@@ -3,6 +3,7 @@
 
 #include "utils/containers/filtrans.h"
 #include "utils/graph/labelled_open_dataflow_graph/algorithms/labelled_open_dataflow_graph_data.dtg.h"
+#include "utils/graph/labelled_open_dataflow_graph/algorithms/with_labelling.h"
 #include "utils/graph/labelled_open_dataflow_graph/labelled_open_dataflow_graph_view.h"
 #include "utils/graph/open_dataflow_graph/algorithms/from_open_dataflow_graph_data.h"
 #include "utils/graph/open_dataflow_graph/algorithms/open_dataflow_graph_data.dtg.h"

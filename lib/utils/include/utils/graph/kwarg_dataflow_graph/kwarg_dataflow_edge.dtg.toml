@@ -6,6 +6,7 @@ features = [
   "ord",
   "hash",
   "fmt",
+  "json",
 ]
 
 template_params = [
