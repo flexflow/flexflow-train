@@ -1,0 +1,29 @@
+namespace = "FlexFlow"
+name = "V1MappedParallelComputationGraph"
+type = "struct"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+  "json",
+]
+
+includes = [
+  "<unordered_map>",
+  "pcg/file_format/v1/v1_parallel_computation_graph.dtg.h",
+  "pcg/file_format/v1/v1_mapped_operator_task_group.dtg.h",
+  "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h",
+]
+
+src_includes = [
+  "utils/hash/unordered_map.h",
+  "utils/fmt/unordered_map.h",
+]
+
+[[fields]]
+name = "pcg"
+type = "::FlexFlow::V1ParallelComputationGraph"
+
+[[fields]]
+name = "mapped_tasks"
+type = "std::unordered_map<::FlexFlow::parallel_layer_guid_t, ::FlexFlow::V1MappedOperatorTaskGroup>"
