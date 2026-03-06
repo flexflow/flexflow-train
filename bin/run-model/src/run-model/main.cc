@@ -1,3 +1,5 @@
+#include "pcg/mapped_parallel_computation_graph/mapped_parallel_computation_graph.dtg.h"
+#include "realm-execution/pcg_instance/pcg_instance.h"
 #include "realm-execution/realm_context.h"
 #include "realm-execution/realm_manager.h"
 #include "utils/cli/cli_get_help_message.h"
@@ -6,6 +8,7 @@
 #include "utils/cli/cli_spec.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
 #include "utils/positive_int/positive_int.h"
+#include <fstream>
 #include <string_view>
 
 using namespace FlexFlow;
@@ -29,7 +32,7 @@ int main(int argc, char **argv) {
 
   CLIArgumentKey arg_key_help = cli_add_help_flag(cli);
 
-  CLIArgumentKey key_mapped_pcg_json_file = cli_add_positional_argument(
+  CLIArgumentKey key_mapped_pcg_json = cli_add_positional_argument(
       cli,
       CLIPositionalArgumentSpec{
           "mapped_pcg_json",
@@ -59,13 +62,21 @@ int main(int argc, char **argv) {
     return 1;
   }
 
+  std::string mapped_pcg_json = cli_get_argument(parsed, key_mapped_pcg_json);
+
   std::vector<char *> realm_args = make_realm_args(prog_name);
   int realm_argc = realm_args.size();
   char **realm_argv = realm_args.data();
   RealmManager manager(&realm_argc, &realm_argv);
 
   FlexFlow::Realm::Event event =
-      manager.start_controller([](RealmContext &ctx) {});
+      manager.start_controller([&](RealmContext &ctx) {
+        MappedParallelComputationGraph mpcg = [&]() {
+          std::ifstream f(mapped_pcg_json);
+          nlohmann::json mpcg_json = nlohmann::json::parse(f);
+          return mpcg_json.get<MappedParallelComputationGraph>();
+        }();
+      });
   event.wait();
 
   return 0;
