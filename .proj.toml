@@ -115,6 +115,10 @@ cuda = false
 type = "bin"
 cuda = false
 
+[targets.run-model]
+type = "bin"
+cuda = false
+
 # default_build_targets = [
 #   "utils",
 # ]

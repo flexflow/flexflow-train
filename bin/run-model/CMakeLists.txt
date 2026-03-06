@@ -1,0 +1,10 @@
+ff_add_executable(
+  NAME
+    run-model
+  SRC_PATTERNS
+    src/*.cc
+  PRIVATE_INCLUDE
+    include/
+  DEPS
+    realm-execution
+)
