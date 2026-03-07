@@ -7,6 +7,7 @@
 namespace FlexFlow {
 
 V1MappedOperatorTaskGroup to_v1(MappedOperatorTaskGroup const &);
+MappedOperatorTaskGroup from_v1(V1MappedOperatorTaskGroup const &);
 
 } // namespace FlexFlow
 

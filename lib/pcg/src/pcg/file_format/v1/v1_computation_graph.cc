@@ -10,6 +10,12 @@ V1ComputationGraph to_v1(ComputationGraph const &g) {
   };
 }
 
+ComputationGraph from_v1(V1ComputationGraph const &v1) {
+  return ComputationGraph{
+      from_v1(v1.raw_graph),
+  };
+}
+
 std::pair<V1ComputationGraph, bidict<nonnegative_int, layer_guid_t>>
     to_v1_including_node_numbering(ComputationGraph const &cg) {
   std::pair<

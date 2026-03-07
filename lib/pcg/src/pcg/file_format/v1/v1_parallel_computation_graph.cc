@@ -10,4 +10,10 @@ V1ParallelComputationGraph to_v1(ParallelComputationGraph const &g) {
   };
 }
 
+ParallelComputationGraph from_v1(V1ParallelComputationGraph const &v1) {
+  return ParallelComputationGraph{
+      from_v1(v1.raw_graph),
+  };
+}
+
 } // namespace FlexFlow
