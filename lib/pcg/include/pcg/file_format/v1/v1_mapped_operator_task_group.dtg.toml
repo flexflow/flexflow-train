@@ -1,0 +1,19 @@
+namespace = "FlexFlow"
+name = "V1MappedOperatorTaskGroup"
+type = "struct"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+  "json",
+]
+
+includes = [
+  "pcg/machine_space_coordinate.dtg.h",
+  "pcg/mapped_parallel_computation_graph/operator_atomic_task_shard_binding.dtg.h",
+  "utils/bidict/bidict.h",
+]
+
+[[fields]]
+name = "shard_bindings"
+type = "::FlexFlow::bidict<::FlexFlow::MachineSpaceCoordinate, ::FlexFlow::OperatorAtomicTaskShardBinding>"
