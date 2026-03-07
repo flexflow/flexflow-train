@@ -1,6 +1,8 @@
 #include "pcg/file_format/v1/v1_parallel_computation_graph.h"
+#include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include <doctest/doctest.h>
+#include <nlohmann/json.hpp>
 
 using namespace ::FlexFlow;
 
@@ -29,6 +31,14 @@ TEST_SUITE(FF_TEST_SUITE) {
     }();
 
     V1ParallelComputationGraph v1_pcg = to_v1(pcg);
-    nlohmann::json j = v1_pcg;
+
+    SUBCASE("serializes to JSON") {
+      nlohmann::json j = v1_pcg;
+    }
+
+    SUBCASE("round-trips via from_v1") {
+      ParallelComputationGraph result = from_v1(v1_pcg);
+      CHECK(pcgs_are_isomorphic(pcg, result));
+    }
   }
 }

@@ -8,6 +8,7 @@
 namespace FlexFlow {
 
 V1ComputationGraph to_v1(ComputationGraph const &);
+ComputationGraph from_v1(V1ComputationGraph const &);
 
 std::pair<V1ComputationGraph, bidict<nonnegative_int, layer_guid_t>>
     to_v1_including_node_numbering(ComputationGraph const &);

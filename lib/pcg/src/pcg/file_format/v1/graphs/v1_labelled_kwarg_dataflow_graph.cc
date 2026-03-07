@@ -18,4 +18,7 @@ template std::pair<
 template V1LabelledKwargDataflowGraph<NodeLabel, OutputLabel, SlotName> to_v1(
     LabelledKwargDataflowGraphView<NodeLabel, OutputLabel, SlotName> const &);
 
+template LabelledKwargDataflowGraph<NodeLabel, OutputLabel, SlotName> from_v1(
+    V1LabelledKwargDataflowGraph<NodeLabel, OutputLabel, SlotName> const &);
+
 } // namespace FlexFlow
