@@ -7,6 +7,8 @@
 namespace FlexFlow {
 
 V1MappedParallelComputationGraph to_v1(MappedParallelComputationGraph const &);
+MappedParallelComputationGraph
+    from_v1(V1MappedParallelComputationGraph const &);
 
 } // namespace FlexFlow
 

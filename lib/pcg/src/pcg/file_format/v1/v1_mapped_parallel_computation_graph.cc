@@ -14,4 +14,13 @@ V1MappedParallelComputationGraph
   };
 }
 
+MappedParallelComputationGraph
+    from_v1(V1MappedParallelComputationGraph const &v1) {
+  return MappedParallelComputationGraph{
+      from_v1(v1.pcg),
+      map_values(v1.mapped_tasks,
+                 [](V1MappedOperatorTaskGroup const &g) { return from_v1(g); }),
+  };
+}
+
 } // namespace FlexFlow
