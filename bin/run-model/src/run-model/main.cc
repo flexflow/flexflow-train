@@ -1,3 +1,4 @@
+#include "pcg/file_format/v1/v1_mapped_parallel_computation_graph.h"
 #include "pcg/mapped_parallel_computation_graph/mapped_parallel_computation_graph.dtg.h"
 #include "realm-execution/pcg_instance/pcg_instance.h"
 #include "realm-execution/realm_context.h"
@@ -69,14 +70,51 @@ int main(int argc, char **argv) {
   char **realm_argv = realm_args.data();
   RealmManager manager(&realm_argc, &realm_argv);
 
-  FlexFlow::Realm::Event event =
-      manager.start_controller([&](RealmContext &ctx) {
-        MappedParallelComputationGraph mpcg = [&]() {
-          std::ifstream f(mapped_pcg_json);
-          nlohmann::json mpcg_json = nlohmann::json::parse(f);
-          return mpcg_json.get<MappedParallelComputationGraph>();
-        }();
-      });
+  FlexFlow::Realm::Event event = manager.start_controller([&](RealmContext
+                                                                  &ctx) {
+    MappedParallelComputationGraph mpcg = [&]() {
+      std::ifstream f(mapped_pcg_json);
+      nlohmann::json mpcg_json = nlohmann::json::parse(f);
+      return from_v1(mpcg_json.get<V1MappedParallelComputationGraph>());
+    }();
+
+    // instantiate computation graph
+    OptimizerAttrs optimizer_attrs =
+        OptimizerAttrs{SGDOptimizerAttrs{/*lr=*/0.001,
+                                         /*momentum=*/0.9,
+                                         /*nesterov=*/false,
+                                         /*weight_decay=*/0.001}};
+
+    std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> input_tensors;
+
+    DistributedDeviceHandle device_handle =
+        create_distributed_device_handle(ctx,
+                                         /*workSpaceSize=*/1024 * 1024,
+                                         /*allowTensorOpMathConversion=*/true);
+
+    PCGInstance pcg_instance = create_pcg_instance(
+        /*ctx=*/ctx,
+        /*mpcg=*/mpcg,
+        /*optimizer=*/optimizer_attrs,
+        /*loss=*/std::nullopt,
+        /*label_tensor=*/std::nullopt,
+        /*logit_tensor=*/std::nullopt,
+        /*loss_mapping=*/std::nullopt,
+        /*input_tensors=*/input_tensors,
+        /*profiling_settings=*/ProfilingSettings{0, 0},
+        /*device_handle=*/device_handle,
+        /*iteration_config=*/FFIterationConfig{1_p});
+
+    // begin training loop
+    int num_epochs = 5;
+    for (int i = 0; i < num_epochs; i++) {
+      perform_all_passes_for_pcg_instance(
+          /*instance=*/pcg_instance,
+          /*profiling_settings=*/ProfilingSettings{0, 0},
+          /*device_handle=*/device_handle,
+          /*iteration_config=*/FFIterationConfig{1_p});
+    }
+  });
   event.wait();
 
   return 0;
