@@ -15,7 +15,7 @@
 namespace FlexFlow {
 
 /**
- * @brief An interface that wraps the rest of realm and protects against certain
+ * @brief An interface that wraps the rest of Realm and protects against certain
  * classes of bugs, such as shutdown bugs.
  *
  * @warn Do NOT call Realm directly unless you know what you are doing.
@@ -80,7 +80,7 @@ protected:
   /**
    * \brief Compact **and clear** the outstanding event queue
    *
-   * \warning **User must block** on event or else use it, or it **will be lost**.
+   * \warning **User must block** on event or else use it, or it **will be lost** (potentially resulting in a shutdown hang).
    */
   [[nodiscard]] Realm::Event merge_outstanding_events();
 

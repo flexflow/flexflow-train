@@ -8,7 +8,7 @@ features = [
   "json",
 ]
 docstring = '''
-\brief An enum for identifying tasks for use in the realm runtime.
+\brief An enum for identifying tasks for use in the Realm runtime.
 
 \note Many of these are pulled over from the old FlexFlow codebase and are no
 longer in use. Eventually these should be pruned down to the set of tasks we're

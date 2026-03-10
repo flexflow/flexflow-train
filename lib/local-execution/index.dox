@@ -3,8 +3,9 @@ namespace FlexFlow {
 
 \page local-execution local-execution
 
-\brief Executes non-distributed \ref DynamicOpenDataflowGraph on local devices without using realm.
-       Used both for testing and (eventually by \ref realm-execution) for fusing operator task launches.
+\brief Executes non-distributed \ref DynamicOpenDataflowGraph on local devices without using Realm.
+       Used for testing and inside of Realm to execute specific operators.
+       Future uses may also include fusing operator task launches in Realm.
 
 The primary external-facing interface of local-execution.
 

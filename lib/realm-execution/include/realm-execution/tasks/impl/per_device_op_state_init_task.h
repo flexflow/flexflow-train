@@ -26,7 +26,7 @@ void per_device_op_state_init_task_body(
     void const *, size_t, void const *, size_t, Realm::Processor);
 
 /**
- * \brief Launches the task (\ref ff_handle_init_return_task_body) for starting
+ * \brief Launches the task (\ref per_device_op_state_init_task_body) for starting
  * the asynchronous initialization of the PerDeviceOpState.
  *
  * To understand how this fits into the broader structure of \ref

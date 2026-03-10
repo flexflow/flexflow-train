@@ -10,7 +10,7 @@ namespace FlexFlow {
  * \brief An IAllocator instance that performs/manages each allocation as a
  * \ref realm-instance "Realm Instance".
  *
- * \note As with the other instances of IAllocator, You generally want to use
+ * \note As with the other instances of IAllocator, you generally want to use
  * \ref get_realm_allocator rather than explicitly calling the constructor of
  * RealmAllocator.
  */

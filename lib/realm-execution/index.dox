@@ -3,7 +3,7 @@ namespace FlexFlow {
 
 \page realm-execution realm-execution
 
-\brief Executes distributed \ref MappedParallelComputationGraph ""s using realm, primarily by lowering them to distributed \ref DynamicOpenDataflowGraph ""s using \ref task-spec. Used both for testing and (eventually by \ref realm-execution) for fusing operator task launches.
+\brief Executes distributed \ref MappedParallelComputationGraph ""s using Realm, primarily by lowering them to distributed \ref DynamicOpenDataflowGraph ""s using \ref task-spec.
 
 The %Realm backend for distributed execution.
 
@@ -44,7 +44,7 @@ This is a single-controller implementation. That means the controller (the task 
 
 \subsection term-controller controller
 
-The main thread/function that, in an non-controlled implementation, processes the task graph and dispatches all of the tasks.
+The main thread/function that, in an non-controlled-replicated implementation, processes the task graph and dispatches all of the tasks. In the future this will be extend to operate in a distributed fashion.
 
 */
 }

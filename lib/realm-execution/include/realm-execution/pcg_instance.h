@@ -24,10 +24,10 @@
 namespace FlexFlow {
 
 /**
- * \brief The main public interface for the realm backend.
+ * \brief The main public interface for the Realm backend.
  * Takes a MappedParallelComputationGraph and lowers it through
  * DynamicOpenDataflowGraph to get the fully-specified execution order of tasks
- * to be executed. Also tracks the allocation of realm instances for tensors
+ * to be issued. (Note: this is a parallel execution so execution order may not match the order in which operations are issued.) Also tracks the allocation of realm instances for tensors
  * through its TensorInstanceBacking.
  *
  * \note PCGInstance is primarily just a container for the various structs held
@@ -74,7 +74,7 @@ private:
 };
 
 /**
- * \brief Creates a PCGInstance. Should generally be used instead of PCG&nstance::PCGInstance.
+ * \brief Creates a PCGInstance. Should generally be used instead of PCGInstance::PCGInstance.
  *
  * \relates PCGInstance
  */

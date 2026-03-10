@@ -23,14 +23,14 @@ namespace FlexFlow {
 void op_task_body(void const *, size_t, void const *, size_t, Realm::Processor);
 
 /**
- * \brief Launches the task (\ref op_task_body, for a DynamicNodeInvocation
+ * \brief Launches the task (\ref op_task_body), for a DynamicNodeInvocation
  * using %Realm.
  *
  * The task launch process functions a bit differently to that used in the
  * previous FlexFlow codebase. Rather than having a function registered with
  * realm/legion for every task_id_t, we now have only a few functions
- * registered: \ref op_task_body, \ref device_handle_init_task_body,
- * \ref device_state_init_return_task_body, and \ref controller_task_body (see
+ * registered: \ref op_task_body, \ref ff_handle_init_task_body,
+ * \ref per_device_op_state_init_return_task_body, and \ref controller_task_body (see
  * \ref register_all_tasks for where this list comes from), and in fact only
  * \ref op_task_body is launched by \ref spawn_op_task. Each of these registered
  * tasks use the serialized arguments sent to them to dispatch to the correct

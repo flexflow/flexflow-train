@@ -29,7 +29,7 @@ std::optional<task_id_t>
     get_update_task_id_for_optimizer_attrs(OptimizerAttrs const &);
 
 /**
- * \brief Convert a FlexFlow::task_id_t into a %Realm task id.
+ * \brief Convert a FlexFlow::task_id_t into a %Realm task ID.
  *
  * \relates task_id_t
  */

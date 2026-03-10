@@ -4,15 +4,15 @@
 
 \section contributing-setup Setup
 
-\note If you are developing on Stanford's sapling cluster, instead see the instructions \subpage sapling-setup "here". If you don't know what this means, you're not using sapling so you should just continue reading.
+\note If you are developing on Stanford's Sapling cluster, instead see the instructions \subpage sapling-setup "here". If you don't know what this means, you're not using Sapling so you should just continue reading.
 
-1. %FlexFlow %Train uses <a href="https://nix.dev/manual/nix/2.24/">nix</a> to manage dependencies and the development environment.
-   There exist a number of ways to install nix, but we recommend one of the following:
+1. %FlexFlow %Train uses <a href="https://nix.dev/manual/nix/2.24/">Nix</a> to manage dependencies and the development environment.
+   There exist a number of ways to install Nix, but we recommend one of the following:
 
    1. If you have root permissions: [DeterminateSystems/nix-installer](https://github.com/DeterminateSystems/nix-installer)
 
    2. If you don't have root permissions: [DavHau/nix-portable](https://github.com/DavHau/nix-portable).
-      Note that nix-portable does not work particularly well if the nix store is in NFS \ref contributing-footnote-1 "[1]" or other distributed file systems,
+      Note that nix-portable does not work particularly well if the Nix store is in NFS \ref contributing-footnote-1 "[1]" or other distributed file systems,
       so if you are running on an HPC cluster where the home directory is mounted via a distributed file system we recommend setting the
       <tt>NP_LOCATION</tt> environment to <tt>/tmp</tt> or some other non-NFS location.
 
@@ -118,7 +118,7 @@ with a detailed description of your platform and the commands you have run.
 
 \subsection contributing-nix-direnv nix-direnv (optional)
 
-If you installed nix system-wide (e.g., using [DeterminateSystems/nix-installer](https://github.com/DeterminateSystems/nix-installer)),
+If you installed Nix system-wide (e.g., using [DeterminateSystems/nix-installer](https://github.com/DeterminateSystems/nix-installer)),
 you can use [direnv](https://direnv.net/) to automatically enter the %FlexFlow %Train development environment when you `cd` into the repository, rather
 than having to manually run `nix develop`.
 [direnv](https://direnv.net) will also automatically exit the environment when you `cd` out of the repository, and (if configured using [nix-direnv](https://github.com/nix-community/nix-direnv)) will even automatically reload the environment if the `flake.nix` file changes.

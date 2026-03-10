@@ -3,7 +3,7 @@ namespace FlexFlow {
 
 \page substitutions substitutions
 
-\brief Contains the definitions of pcg substitutions (i.e., Substitution), as well as the code for serializing them.
+\brief Contains the definitions of PCG substitutions (i.e., Substitution), as well as the code for serializing them.
 
 \section substitution Substitution
 

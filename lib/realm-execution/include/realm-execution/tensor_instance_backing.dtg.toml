@@ -7,7 +7,7 @@ features = [
   #"hash",
 ]
 docstring = '''
-\brief A simple container for mapping between DynamicValueAttrs and the corresponding realm instances/events.
+\brief A simple container for mapping between DynamicValueAttrs and the corresponding Realm instances (along with the ready event for each instance).
 
 \note The actual logic for doing instance allocation and destruction are in \ref perform_instance_allocation
 and \ref destroy_instances, respectively.
