@@ -3,5 +3,10 @@ namespace FlexFlow {
 
 \page substitution-to-dot
 
+\brief Converts TASO-generated substitutions from the legacy JSON format ([example](../substitutions/graph_subst_3_v2.json)) into DOT for visualization.
+
+\todo
+  \@lockshaw, Add usage docs and example(s) for substitution-to-dot. See \ref export-model-arch for an example.
+
 */
 }

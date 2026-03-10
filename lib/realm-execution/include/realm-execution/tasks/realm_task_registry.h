@@ -6,6 +6,9 @@
 
 namespace FlexFlow {
 
+/**
+ * \relates task_id_t
+ */
 [[nodiscard]] Realm::Event register_task(Realm::Processor::Kind target_kind,
                                          task_id_t func_id,
                                          void (*task_body)(void const *,
@@ -14,6 +17,9 @@ namespace FlexFlow {
                                                            size_t,
                                                            Realm::Processor));
 
+/**
+ * \brief Registers all known tasks (using \ref register_task).
+ */
 [[nodiscard]] Realm::Event register_all_tasks();
 
 } // namespace FlexFlow

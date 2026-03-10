@@ -1,5 +1,5 @@
 /**
- * @file sp_ization_benchmarking.cpp
+ * @file main.cc
  * @brief Benchmarking different SP-ization techniques on various graphs.
  *
  * @details
@@ -22,9 +22,9 @@
  * run make and then ./sp_ization_benchmarking
  */
 
-#include "distributions.h"
-#include "nasnet_bench_graph_generator.h"
-#include "sample_graphs.h"
+#include "sp-ization-benchmarking/distributions.h"
+#include "sp-ization-benchmarking/nasnet_bench_graph_generator.h"
+#include "sp-ization-benchmarking/sample_graphs.h"
 #include "utils/graph/digraph/algorithms/transitive_reduction.h"
 #include "utils/graph/digraph/digraph_view.h"
 #include "utils/graph/node/algorithms.h"

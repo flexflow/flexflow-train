@@ -54,13 +54,15 @@ public:
 
   void update_optimizer_attrs_for_next_iter();
 
-  // getters
+  /** \name Getters **/
+  ///\{
   RealmContext &get_realm_context();
   std::vector<DynamicNodeInvocation> const &get_execution_order() const;
   TensorInstanceBacking const &get_tensor_instance_backing() const;
   PerDeviceOpStateBacking const &get_device_state_backing() const;
   OptimizerAttrs const &get_optimizer_attrs() const;
   std::optional<Realm::RegionInstance> get_loss_tensor_instance() const;
+  ///\}
 
 private:
   RealmContext &ctx;
@@ -71,6 +73,11 @@ private:
   std::optional<Realm::RegionInstance> logit_grad_tensor;
 };
 
+/**
+ * \brief Creates a PCGInstance. Should generally be used instead of PCG&nstance::PCGInstance.
+ *
+ * \relates PCGInstance
+ */
 PCGInstance create_pcg_instance(
     RealmContext &ctx,
     MappedParallelComputationGraph const &mpcg,
@@ -92,6 +99,8 @@ PCGInstance create_pcg_instance(
  * - \ref perform_forward_pass_for_pcg_instance
  * - \ref perform_backward_pass_for_pcg_instance
  * - \ref perform_update_pass_for_pcg_instance
+ *
+ * \relates PCGInstance
  */
 std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_all_passes_for_pcg_instance(

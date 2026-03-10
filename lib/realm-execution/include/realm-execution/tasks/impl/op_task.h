@@ -23,7 +23,8 @@ namespace FlexFlow {
 void op_task_body(void const *, size_t, void const *, size_t, Realm::Processor);
 
 /**
- * \brief Launches the task for a DynamicNodeInvocation using realm.
+ * \brief Launches the task (\ref op_task_body, for a DynamicNodeInvocation
+ * using %Realm.
  *
  * The task launch process functions a bit differently to that used in the
  * previous FlexFlow codebase. Rather than having a function registered with
@@ -47,6 +48,9 @@ void op_task_body(void const *, size_t, void const *, size_t, Realm::Processor);
  * grab the corresponding pointer/GenericTensorAccessor, and then use
  * LocalTaskArgumentAccessor for the actual argument access as, by this point,
  * everything is local.
+ *
+ * To understand how this fits into the broader structure of \ref
+ * realm-execution, see \ref realm-execution-tasks.
  */
 Realm::Event spawn_op_task(
     RealmContext &ctx,

@@ -7,11 +7,7 @@ if(FF_BUILD_VISUALIZATION_TOOL)
 endif()
 
 if(FF_BUILD_SP_IZATION_BENCHMARKING)
-  add_subdirectory(sp_ization_benchmarking)
-endif()
-
-if(FF_BUILD_ARG_PARSER)
-  add_subdirectory(arg_parser)
+  add_subdirectory(sp-ization-benchmarking)
 endif()
 
 if(FF_BUILD_BIN_EXPORT_MODEL_ARCH)

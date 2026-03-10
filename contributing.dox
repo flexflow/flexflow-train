@@ -4,7 +4,7 @@
 
 \section contributing-setup Setup
 
-\note If you are developing on Stanford's sapling cluster, instead see the instructions \ref sapling-setup "here". If you don't know what this means, you're not using sapling so you should just continue reading.
+\note If you are developing on Stanford's sapling cluster, instead see the instructions \subpage sapling-setup "here". If you don't know what this means, you're not using sapling so you should just continue reading.
 
 1. %FlexFlow %Train uses <a href="https://nix.dev/manual/nix/2.24/">nix</a> to manage dependencies and the development environment.
    There exist a number of ways to install nix, but we recommend one of the following:

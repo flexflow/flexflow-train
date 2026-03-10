@@ -6,8 +6,16 @@
 
 namespace FlexFlow {
 
+/**
+ * \brief An IAllocator instance that performs/manages each allocation as a
+ * \ref realm-instance "Realm Instance".
+ *
+ * \note As with the other instances of IAllocator, You generally want to use
+ * \ref get_realm_allocator rather than explicitly calling the constructor of
+ * RealmAllocator.
+ */
 struct RealmAllocator : public IAllocator {
-  RealmAllocator(Realm::Processor processor, Realm::Memory memory);
+  explicit RealmAllocator(Realm::Processor processor, Realm::Memory memory);
 
   RealmAllocator() = delete;
   RealmAllocator(RealmAllocator const &) = delete;
@@ -26,6 +34,11 @@ private:
 };
 CHECK_RC_COPY_VIRTUAL_COMPLIANT(RealmAllocator);
 
+/**
+ * \brief Creates a RealmAllocator instance as an Allocator.
+ *
+ * \relates RealmAllocator
+ */
 Allocator get_realm_allocator(Realm::Processor processor, Realm::Memory memory);
 
 } // namespace FlexFlow

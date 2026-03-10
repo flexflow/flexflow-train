@@ -3,8 +3,7 @@ namespace FlexFlow {
 
 \page realm-execution realm-execution
 
-\brief Executes distributed \ref MappedParallelComputationGraph ""s using realm, primarily by lowering them to distributed \ref DynamicOpenDataflowGraph ""s using \ref task-spec
-       Used both for testing and (eventually by \ref realm-execution) for fusing operator task launches.
+\brief Executes distributed \ref MappedParallelComputationGraph ""s using realm, primarily by lowering them to distributed \ref DynamicOpenDataflowGraph ""s using \ref task-spec. Used both for testing and (eventually by \ref realm-execution) for fusing operator task launches.
 
 The %Realm backend for distributed execution.
 
@@ -19,7 +18,7 @@ This is a single-controller implementation. That means the controller (the task 
 - \ref PCGInstance "": \copybrief PCGInstance
 - \ref RealmManager "": \copybrief RealmManager
 - \ref RealmContext "": \copybrief RealmContext
-- \ref "include/realm-execution/tasks": The Realm task implementations and their supporting infrastructure.
+- \subpage realm-execution-tasks "include/realm-execution/tasks": The Realm task implementations and their supporting infrastructure.
   - \ref "lib/realm-execution/include/realm-execution/tasks/impl" "impl/": the actual bodies of Realm tasks, along with interfaces to call them, and the serialization infrastructure for their arguments.
   - \ref "lib/realm-execution/include/realm-execution/tasks/serializer/" "serializer/": additional support for serializing %Realm data types.
   - \ref realm_task_registry.h: Manages the registration of %Realm tasks. All %Realm tasks go through this interface.
@@ -30,7 +29,7 @@ This is a single-controller implementation. That means the controller (the task 
   - \ref "distributed_device_state_initialization.h": performs device state initialization of dynamic graph nodes and returns the resulting PerDeviceOpStateBacking.
   - \ref "instance_allocation.h": allocates instances for tensors in the dynamic graph and returns the resulting TensorInstanceBacking.
 
-\section realm-execution-todo TODO
+\section realm-execution-todo Outstanding TODOs
 
 - external instances
 - copies

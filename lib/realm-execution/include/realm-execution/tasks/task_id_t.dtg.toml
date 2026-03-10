@@ -7,19 +7,19 @@ features = [
   "rapidcheck",
   "json",
 ]
-docstring = """
-@brief An enum for identifying tasks for use in the realm runtime.
+docstring = '''
+\brief An enum for identifying tasks for use in the realm runtime.
 
-@note Many of these are pulled over from the old FlexFlow codebase and are no
+\note Many of these are pulled over from the old FlexFlow codebase and are no
 longer in use. Eventually these should be pruned down to the set of tasks we're
 actually using.
 
-@note @ref task_id_t is used by the realm runtime (i.e., `realm-execution`),
-but not by realm directly: realm-execution uses @ref
-get_realm_task_id_for_task_id to convert every @ref task_id_t into a
+\note @ref task_id_t is used by the realm runtime (i.e., \ref realm-execution),
+but not by realm directly: realm-execution uses \ref
+get_realm_task_id_for_task_id to convert every \ref task_id_t into a
 Realm::Processor::TaskFuncID, which is what is actually used for task launches,
 etc.
-"""
+'''
 
 [[values]]
 name = "CONTROLLER_TASK_ID"

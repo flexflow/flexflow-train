@@ -3,6 +3,8 @@ namespace FlexFlow {
 
 \page utils-graph utils/graph
 
+- \subpage spization
+
 \note This documentation is somewhat out of date and, more importantly, \c utils/graph is in rather dire need of a reorganization, so take these docs with a grain of salt.
 
 \section design-considerations Design Considerations

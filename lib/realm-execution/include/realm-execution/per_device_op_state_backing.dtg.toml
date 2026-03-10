@@ -3,11 +3,9 @@ name = "PerDeviceOpStateBacking"
 type = "struct"
 features = []
 docstring = '''
-/**
- * \brief Maps each shard-expanded DynamicNodeInvocation to its corresponding PerDeviceOpState.
- *
- * PerDeviceOpStateBacking is to PerDeviceOpState as DistributedDeviceHandle is to \ref device_handle_t (i.e., FFHandle).
- */
+\brief Maps each shard-expanded DynamicNodeInvocation to its corresponding PerDeviceOpState.
+
+PerDeviceOpStateBacking is to PerDeviceOpState as DistributedDeviceHandle is to \ref device_handle_t (i.e., FFHandle).
 '''
 
 

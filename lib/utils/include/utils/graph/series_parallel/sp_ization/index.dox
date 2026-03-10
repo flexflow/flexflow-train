@@ -1,4 +1,7 @@
-# SP-ization
+namespace FlexFlow {
+/**
+
+\page spization utils/graph/series_parallel/sp_ization/
 
 As a refresher, a series-parallel decomposition (SPD) is an algebraic datatype that looks as follows:
 ```haskell
@@ -19,9 +22,11 @@ We have 2 main ways of achieving this:
 1. **Work (Node) Duplicating SP-ization**: preserves the critical path, but may duplicate nodes
 2. **Dependency (Edge) Addition SP-ization**: preserves the set of nodes, but may add edges
 
-## Node (Work) Duplicating SP-ization
+\section spization-work-duplicating Node (Work) Duplicating SP-ization
 
-### Naive ([work_duplicating_sp_ization.h](work_duplicating_sp_ization.h))
+\subsection spization-naive-work-duplicating Naive Work Duplicating
+
+Implemented in \ref work_duplicating_sp_ization.h (more specifically, \ref naive_work_duplicating_sp_ization).
 
 Transforms a directed acyclic graph (DAG) into a Series Parallel (SP) graph. The critical path cost is unchanged, and the SP-ization is done solely through node duplication.
 
@@ -62,7 +67,9 @@ digraph SP {
 
 We can roughly think of it as the parallel composition of all the possible paths from source to sink.
 
-### With Coalescing ([work_duplicating_sp_ization.h](work_duplicating_sp_ization.h))
+\subsection spization-with-coalescing With Coalescing
+
+Implemented in \ref work_duplicating_sp_ization.h (more specifically, \ref work_duplicating_sp_ization_with_coalescing).
 
 Transforms a directed acyclic graph (DAG) into a Series Parallel (SP) graph with coalescing. The critical path cost is unchanged, and the SP-ization is done solely through node (work) duplication.
 
@@ -94,11 +101,13 @@ digraph SP {
 }
 ```
 
-## Dependency Addition SP-ization
+\section spization-dependency-addition Dependency Addition SP-ization
 
-### Naive Stratum Sync ([naive_stratum_sync.h](naive_stratum_sync.h))
+\subsection spization-naive Naive Stratum Sync
 
-`naive_stratum_sync_sp_ization` transforms a directed acyclic graph (DAG) into a Series Parallel (SP) graph. The total number of nodes remains unchanged, and the SP-ization is done solely through edge (dependency) addition.
+Implemented in \ref naive_stratum_sync.h (more specifically, \ref naive_stratum_sync_sp_ization).
+
+\ref naive_stratum_sync_sp_ization transforms a directed acyclic graph (DAG) into a Series Parallel (SP) graph. The total number of nodes remains unchanged, and the SP-ization is done solely through edge (dependency) addition.
 
 The graph is first partitioned into strata: the i\_th stratum contains all the nodes whose critical path length has length i. The nodes in a given stratum are composed in parallel, and the strata are serially composed in succession.
 
@@ -127,9 +136,12 @@ digraph SP {
 }
 ```
 
-### Escribano Algorithm ([escribano_algo.h](escribano_algo.h))
+\subsection spization-escribano Escribano Algorithm
 
-Paper is present here: https://www.infor.uva.es/wp-content/uploads/2016/10/IT-DI-2002-0002.pdf.
+Implemented in \ref escribano_algo.h (more specifically, \ref escribano_sp_ization).
+
+Paper can be found <a href="https://www.infor.uva.es/wp-content/uploads/2016/10/IT-DI-2002-0002.pdf">here</a>.
+
 In the naive stratum sync algorithm, we add an all-to-all connection between all nodes in one stratum and the next. The escribano algorithm by contrast, leverages the fact that it might be possible to synchronize consecutive strata by adding smaller, more local connections that still yield a valid SP-ization graph.
 
 Example:
@@ -148,21 +160,23 @@ digraph G {
 }
 ```
 
-The strata are: {0}, {1, 2, 3}, {4, 5, 6}, {7}.
+The strata are: `{0}, {1, 2, 3}, {4, 5, 6}, {7}`.
 
 The naive stratum sync yields the following, adding an all-to-all connection between consecutive strata:
 ```
 S(0, P(1, 2, 3), P(4, 5, 6), 7)
 ```
 
-While the escribano algorithm is able to identify that strata 1 and 2 can be synced without adding an all-to-all connection: nodes {1, 2} only connect to {4, 5}, and node {3} only connects to {6}. It thus yields the following:
+While the escribano algorithm is able to identify that strata 1 and 2 can be synced without adding an all-to-all connection: nodes `{1, 2}` only connect to `{4, 5}`, and node `{3}` only connects to `{6}`. It thus yields the following:
 ```
 S(0, P(S(P(1, 2), P(4, 5)), S(3, 6)), 7)
 ```
 
 Our implementation, rather than building the SPD one stratum at a time, builds it one node at a time.
 
-### Flexible Algorithm ([flexible_algo.h](flexible_algo.h))
+\subsection spization-flexible Flexible Algorithm
+
+Implemented in \ref flexible_algo.h (more specifically, \ref flexible_sp_ization).
 
 Consider the following N-graph:
 
@@ -192,3 +206,6 @@ The flexible algorithm expands the escribano algorithm by generalizing it to suc
 In the escribano algorithm, once the sync area (the "forest") is identified, the partition into up and down sets is fixed: up is everything but the last layer, down is the last layer. But this is an arbitrary choice; there are multiple valid ways to partition the forest into an up set and a down set (across which we sync).
 
 The flexible algorithm exploits this by searching across all valid up/down partitions of the forest and selecting the one that minimizes the sum of critical path costs of the up and down subgraphs (i.e., the critical path cost of the resulting SP-ized subgraph after the sync).
+
+*/
+}
