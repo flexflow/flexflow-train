@@ -24,9 +24,13 @@ public:
   RealmManager(RealmManager &&) = delete;
 
   /**
-   * @brief Launches the the \ref term-controller. Currently there is exactly one controller for the entire machine. The controller may be a function that closes over data (i.e., a lambda).
-   * 
-   * @warn If the provided function closes over data, **the user must block on the resulting event** to ensure it remains in scope until the controller completes.
+   * @brief Launches the the \ref term-controller. Currently there is exactly
+   * one controller for the entire machine. The controller may be a function
+   * that closes over data (i.e., a lambda).
+   *
+   * @warn If the provided function closes over data, **the user must block on
+   * the resulting event** to ensure it remains in scope until the controller
+   * completes.
    */
   [[nodiscard]] Realm::Event
       start_controller(std::function<void(RealmContext &)>,

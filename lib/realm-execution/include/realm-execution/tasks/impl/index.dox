@@ -12,7 +12,7 @@ wrapper function for spawning a task (e.g., \ref collective_spawn_controller_tas
 
 \subsection tasks-controller-tasks Controller Tasks
 
-Runs the \ref term-controller. At most one of these per machine (i.e., this task is a singleton in the object-oriented sense of the word). Implemented in \ref controller_task.h.
+Runs the \ref term-controller. The current implementation uses exactly one controller (i.e., centralized control), but the intention is to expand this in the future to distributed control (one controller per node, or one per device). Implemented in \ref controller_task.h.
 
 \subsection tasks-op-task Operator Tasks
 
