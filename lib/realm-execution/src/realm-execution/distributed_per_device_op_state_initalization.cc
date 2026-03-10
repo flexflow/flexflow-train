@@ -1,4 +1,4 @@
-#include "realm-execution/distributed_device_state_initialization.h"
+#include "realm-execution/distributed_per_device_op_state_initalization.h"
 #include "local-execution/device_state_initialization.h"
 #include "realm-execution/tasks/impl/device_state_init_task.h"
 #include "realm-execution/tensor_instance_backing.dtg.h"

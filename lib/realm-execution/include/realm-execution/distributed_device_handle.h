@@ -9,8 +9,8 @@
 namespace FlexFlow {
 
 /**
- * \brief Tracks the \ref device_handle_t (i.e., FFHandle) for each GPU, both local
- * and remote. GPUs here are represented by \ref Realm::Processor ""s.
+ * \brief Tracks the \ref device_handle_t (i.e., FFHandle) for each %GPU, both local
+ * and remote. %GPUs here are represented by \ref Realm::Processor ""s.
  */
 struct DistributedDeviceHandle {
 public:
@@ -29,8 +29,8 @@ private:
 };
 
 /**
- * \brief Launch tasks (using \ref spawn_device_handle_init_task) to create the
- * \ref device_handle_t ""s for each GPU and package the results into a
+ * \brief Launches tasks (using \ref spawn_ff_handle_init_task) to create
+ * the \ref device_handle_t ""s for each %GPU and packages the results into a
  * DistributedDeviceHandle.
  *
  * \relates DistributedDeviceHandle

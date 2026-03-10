@@ -1,5 +1,5 @@
-#ifndef _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_DISTRIBUTED_PER_DEVICE_OP_STATE_BACKING_H
-#define _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_DISTRIBUTED_PER_DEVICE_OP_STATE_BACKING_H
+#ifndef _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_DISTRIBUTED_PER_DEVICE_OP_STATE_INITIALIZATION_H
+#define _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_DISTRIBUTED_PER_DEVICE_OP_STATE_INITIALIZATION_H
 
 #include "kernels/profiling_settings.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
@@ -12,6 +12,13 @@
 
 namespace FlexFlow {
 
+/**
+ * @brief Launches tasks (using \ref spawn_per_device_op_state_init_task) to
+ * create the \ref PerDeviceOpState ""s for each %GPU and packages the results
+ * into a PerDeviceOpStateBacking.
+ *
+ * \relates PerDeviceOpStateBacking
+ */
 PerDeviceOpStateBacking perform_distributed_device_state_initialization(
     RealmContext &ctx,
     DynamicOpenDataflowGraph const &dg,
