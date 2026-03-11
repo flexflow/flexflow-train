@@ -1,6 +1,6 @@
-#include "realm-execution/distributed_per_device_op_state_initalization.h"
-#include "local-execution/device_state_initialization.h"
-#include "realm-execution/tasks/impl/device_state_init_task.h"
+#include "realm-execution/distributed_per_device_op_state_initialization.h"
+#include "local-execution/per_device_op_state_initialization.h"
+#include "realm-execution/tasks/impl/per_device_op_state_init_task.h"
 #include "realm-execution/tensor_instance_backing.dtg.h"
 #include "realm-execution/tensor_instance_backing.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
@@ -16,12 +16,12 @@
 
 namespace FlexFlow {
 
-PerDeviceOpStateBacking perform_distributed_device_state_initialization(
+PerDeviceOpStateBacking perform_distributed_per_device_op_state_initialization(
     RealmContext &ctx,
     DynamicOpenDataflowGraph const &dg,
     TensorInstanceBacking const &tensor_instance_backing,
     ProfilingSettings const &profiling_settings,
-    DistributedDeviceHandle const &device_handle,
+    DistributedFfHandle const &device_handle,
     FFIterationConfig const &iteration_config,
     OptimizerAttrs const &optimizer_attrs,
     Realm::Event precondition) {
@@ -45,7 +45,7 @@ PerDeviceOpStateBacking perform_distributed_device_state_initialization(
                                                 std::nullopt};
 
     std::optional<Realm::Event> completion_event =
-        spawn_device_state_init_task(ctx,
+        spawn_per_device_op_state_init_task(ctx,
                                      target_proc,
                                      invocation,
                                      tensor_backing,

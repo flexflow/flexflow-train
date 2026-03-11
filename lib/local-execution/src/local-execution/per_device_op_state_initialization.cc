@@ -1,4 +1,4 @@
-#include "local-execution/device_state_initialization.h"
+#include "local-execution/per_device_op_state_initialization.h"
 #include "local-execution/local_task_registry.h"
 #include "local-execution/task_execution.h"
 #include "op-attrs/computation_graph_op_attrs.dtg.h"
@@ -57,7 +57,7 @@ DynamicNodeInvocation
   return result;
 }
 
-DynamicOpenDataflowGraph perform_device_state_initialization(
+DynamicOpenDataflowGraph perform_per_device_op_state_initialization(
     DynamicOpenDataflowGraph const &dg,
     Allocator &allocator,
     ProfilingSettings const &profiling_settings,

@@ -13,9 +13,9 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_tensor_guid_t.dtg.h"
-#include "realm-execution/distributed_device_handle.h"
+#include "realm-execution/distributed_ff_handle.h"
 #include "realm-execution/dynamic_tensor_accessor_from_instance.h"
-#include "realm-execution/pcg_instance/pcg_instance.h"
+#include "realm-execution/pcg_instance.h"
 #include "realm-execution/realm_context.h"
 #include "realm-execution/realm_manager.h"
 #include "task-spec/permissions.h"
@@ -205,7 +205,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor>
           input_tensors;
 
-      DistributedDeviceHandle device_handle = create_distributed_device_handle(
+      DistributedFfHandle device_handle = create_distributed_ff_handle(
           ctx,
           /*workSpaceSize=*/1024 * 1024,
           /*allowTensorOpMathConversion=*/true);
@@ -278,8 +278,6 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     TensorShape label_tensor_shape = TensorShape{
         TensorDims{FFOrdered{batch_size, output_dim}}, DataType::FLOAT};
-    GenericTensorAccessorW label_tensor =
-        allocator.allocate_tensor(label_tensor_shape);
 
     TensorShape weight_shape_1 = TensorShape{
         TensorDims{FFOrdered{hidden_dim, data_dim}}, DataType::FLOAT};
@@ -422,16 +420,19 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     RealmManager manager(&fake_argc, &fake_argv);
 
-    (void)manager.start_controller([](RealmContext &ctx) {
+    Realm::Event e = manager.start_controller([&](RealmContext &ctx) {
       Allocator allocator = ctx.get_current_device_allocator();
 
       GenericTensorAccessorW label_tensor_backing =
           allocator.allocate_tensor(output_tensor_shape);
 
+      GenericTensorAccessorW label_tensor =
+          allocator.allocate_tensor(label_tensor_shape);
+
       std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor>
           input_tensors;
 
-      DistributedDeviceHandle device_handle = create_distributed_device_handle(
+      DistributedFfHandle device_handle = create_distributed_ff_handle(
           ctx,
           /*workSpaceSize=*/1024 * 1024,
           /*allowTensorOpMathConversion=*/true);
@@ -483,6 +484,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           check_kv("last_epoch_loss",
                    format_accessor_r_contents(last_epoch_loss)));
     });
+
+    e.wait();
 //! [realm-execution example]
   }
 }

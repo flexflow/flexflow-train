@@ -10,7 +10,7 @@
 #include "pcg/mapped_parallel_computation_graph/mapped_parallel_computation_graph.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_tensor_guid_t.dtg.h"
-#include "realm-execution/distributed_device_handle.h"
+#include "realm-execution/distributed_ff_handle.h"
 #include "realm-execution/per_device_op_state_backing.dtg.h"
 #include "realm-execution/realm_context.h"
 #include "realm-execution/tensor_instance_backing.dtg.h"
@@ -25,12 +25,13 @@ namespace FlexFlow {
 
 /**
  * \brief The main public interface for the Realm backend.
- * Takes a MappedParallelComputationGraph and lowers it through
- * DynamicOpenDataflowGraph to get the fully-specified execution order of tasks
- * to be issued. (Note: this is a parallel execution so execution order may not match the order in which operations are issued.) Also tracks the allocation of realm instances for tensors
- * through its TensorInstanceBacking.
+ * Takes a \ref MappedParallelComputationGraph and lowers it through
+ * \ref DynamicOpenDataflowGraph to get the fully-specified execution order of tasks
+ * to be issued. (Note: this is a parallel execution so execution order may not
+ * match the order in which operations are issued.) Also tracks the allocation
+ * of realm instances for tensors through its \ref TensorInstanceBacking.
  *
- * \note PCGInstance is primarily just a container for the various structs held
+ * \note \ref PCGInstance is primarily just a container for the various structs held
  * inside it. The actual initialization and training iteration functionality is
  * held in \ref create_pcg_instance and \ref
  * perform_update_pass_for_pcg_instance, respectively.
@@ -74,7 +75,8 @@ private:
 };
 
 /**
- * \brief Creates a PCGInstance. Should generally be used instead of PCGInstance::PCGInstance.
+ * \brief Creates a \ref PCGInstance. Should generally be used instead of \ref
+ * PCGInstance::PCGInstance.
  *
  * \relates PCGInstance
  */
@@ -89,11 +91,11 @@ PCGInstance create_pcg_instance(
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &input_tensors,
     ProfilingSettings const &profiling_settings,
-    DistributedDeviceHandle const &device_handle,
+    DistributedFfHandle const &ff_handle,
     FFIterationConfig const &iteration_config);
 
 /**
- * \brief Dispatch a training iteration for a PCGInstance.
+ * \brief Dispatch a training iteration for a \ref PCGInstance.
  *
  * To dispatch just a piece of a training iteration, see the following functions:
  * - \ref perform_forward_pass_for_pcg_instance
@@ -106,28 +108,28 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_all_passes_for_pcg_instance(
         PCGInstance &pcg_instance,
         ProfilingSettings const &profiling_settings,
-        DistributedDeviceHandle const &device_handle,
+        DistributedFfHandle const &ff_handle,
         FFIterationConfig iteration_config);
 
 std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_forward_pass_for_pcg_instance(
         PCGInstance &pcg_instance,
         ProfilingSettings const &profiling_settings,
-        DistributedDeviceHandle const &device_handle,
+        DistributedFfHandle const &ff_handle,
         FFIterationConfig iteration_config);
 
 std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_backward_pass_for_pcg_instance(
         PCGInstance &pcg_instance,
         ProfilingSettings const &profiling_settings,
-        DistributedDeviceHandle const &device_handle,
+        DistributedFfHandle const &ff_handle,
         FFIterationConfig iteration_config);
 
 std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_update_pass_for_pcg_instance(
         PCGInstance &pcg_instance,
         ProfilingSettings const &profiling_settings,
-        DistributedDeviceHandle const &device_handle,
+        DistributedFfHandle const &ff_handle,
         FFIterationConfig iteration_config);
 
 } // namespace FlexFlow

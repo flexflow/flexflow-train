@@ -2,7 +2,7 @@
 #include "op-attrs/tensor_slot_name.dtg.h"
 #include "pcg/optimizer_attrs.h"
 #include "realm-execution/dependency_set.h"
-#include "realm-execution/distributed_device_state_initialization.h"
+#include "realm-execution/distributed_per_device_op_state_initialization.h"
 #include "realm-execution/instance_allocation.h"
 #include "realm-execution/realm_context.h"
 #include "realm-execution/tasks/impl/op_task.h"
@@ -86,7 +86,7 @@ PCGInstance create_pcg_instance(
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &input_tensors,
     ProfilingSettings const &profiling_settings,
-    DistributedDeviceHandle const &device_handle,
+    DistributedFfHandle const &device_handle,
     FFIterationConfig const &iteration_config) {
 
   DynamicOpenDataflowGraph dg =
@@ -136,7 +136,7 @@ PCGInstance create_pcg_instance(
       });
 
   PerDeviceOpStateBacking device_state_backing =
-      perform_distributed_device_state_initialization(
+      perform_distributed_per_device_op_state_initialization(
           ctx,
           dg,
           tensor_instance_backing,
@@ -169,7 +169,7 @@ static std::unordered_map<dynamic_layer_guid_t, Realm::Event>
         PerDeviceOpStateBacking const &device_state_backing,
         OptimizerAttrs const &optimizer_attrs,
         ProfilingSettings const &profiling_settings,
-        DistributedDeviceHandle const &device_handle,
+        DistributedFfHandle const &device_handle,
         FFIterationConfig iteration_config) {
   // For simplicity we'll track a dependency on all outstanding operations up to
   // this point. This will create an effective barrier between phases.
@@ -229,7 +229,7 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_all_passes_for_pcg_instance(
         PCGInstance &pcg_instance,
         ProfilingSettings const &profiling_settings,
-        DistributedDeviceHandle const &device_handle,
+        DistributedFfHandle const &device_handle,
         FFIterationConfig iteration_config) {
   std::vector<DynamicNodeInvocation> execution_order =
       pcg_instance.get_execution_order();
@@ -252,7 +252,7 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_forward_pass_for_pcg_instance(
         PCGInstance &pcg_instance,
         ProfilingSettings const &profiling_settings,
-        DistributedDeviceHandle const &device_handle,
+        DistributedFfHandle const &device_handle,
         FFIterationConfig iteration_config) {
   std::vector<DynamicNodeInvocation> execution_order =
       filter(pcg_instance.get_execution_order(),
@@ -277,7 +277,7 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_backward_pass_for_pcg_instance(
         PCGInstance &pcg_instance,
         ProfilingSettings const &profiling_settings,
-        DistributedDeviceHandle const &device_handle,
+        DistributedFfHandle const &device_handle,
         FFIterationConfig iteration_config) {
   std::vector<DynamicNodeInvocation> execution_order =
       filter(pcg_instance.get_execution_order(),
@@ -302,7 +302,7 @@ std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     perform_update_pass_for_pcg_instance(
         PCGInstance &pcg_instance,
         ProfilingSettings const &profiling_settings,
-        DistributedDeviceHandle const &device_handle,
+        DistributedFfHandle const &device_handle,
         FFIterationConfig iteration_config) {
   std::vector<DynamicNodeInvocation> execution_order =
       filter(pcg_instance.get_execution_order(),

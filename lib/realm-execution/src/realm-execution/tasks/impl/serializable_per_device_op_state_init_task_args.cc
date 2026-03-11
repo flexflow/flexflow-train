@@ -1,4 +1,4 @@
-#include "realm-execution/tasks/impl/serializable_device_state_init_task_args.h"
+#include "realm-execution/tasks/impl/serializable_per_device_op_state_init_task_args.h"
 #include "realm-execution/tasks/serializer/serializable_device_specific_ptr.h"
 #include "realm-execution/tasks/serializer/serializable_realm_processor.h"
 #include "realm-execution/tasks/serializer/serializable_tensor_instance_backing.h"
@@ -6,9 +6,9 @@
 
 namespace FlexFlow {
 
-SerializableDeviceStateInitTaskArgs device_state_init_task_args_to_serializable(
-    DeviceStateInitTaskArgs const &args) {
-  return SerializableDeviceStateInitTaskArgs{
+SerializablePerDeviceOpStateInitTaskArgs per_device_op_state_init_task_args_to_serializable(
+    PerDeviceOpStateInitTaskArgs const &args) {
+  return SerializablePerDeviceOpStateInitTaskArgs{
       /*invocation=*/dynamic_node_invocation_to_serializable(args.invocation),
       /*tensor_backing*/
       tensor_instance_backing_to_serializable(args.tensor_backing),
@@ -21,9 +21,9 @@ SerializableDeviceStateInitTaskArgs device_state_init_task_args_to_serializable(
   };
 }
 
-DeviceStateInitTaskArgs device_state_init_task_args_from_serializable(
-    SerializableDeviceStateInitTaskArgs const &args) {
-  return DeviceStateInitTaskArgs{
+PerDeviceOpStateInitTaskArgs per_device_op_state_init_task_args_from_serializable(
+    SerializablePerDeviceOpStateInitTaskArgs const &args) {
+  return PerDeviceOpStateInitTaskArgs{
       /*invocation=*/dynamic_node_invocation_from_serializable(args.invocation),
       /*tensor_backing*/
       tensor_instance_backing_from_serializable(args.tensor_backing),

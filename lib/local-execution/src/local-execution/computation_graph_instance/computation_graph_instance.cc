@@ -1,5 +1,5 @@
 #include "local-execution/computation_graph_instance/computation_graph_instance.h"
-#include "local-execution/device_state_initialization.h"
+#include "local-execution/per_device_op_state_initialization.h"
 #include "local-execution/task_execution.h"
 #include "local-execution/tensor_allocation.h"
 #include "pcg/optimizer_attrs.h"
@@ -96,7 +96,7 @@ ComputationGraphInstance create_computation_graph_instance(
         return get_loss_tensor_accessor(dg, lgv);
       });
 
-  dg = perform_device_state_initialization(dg,
+  dg = perform_per_device_op_state_initialization(dg,
                                            allocator,
                                            profiling_settings,
                                            device_handle,
@@ -134,7 +134,7 @@ static std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
             /*per_device_op_state=*/
             transform(invocation.node_attrs.per_device_op_state,
                       [&](DeviceSpecificPerDeviceOpState const &op_state) {
-                        return get_device_state_from_device_specific(
+                        return get_per_device_op_state_from_device_specific(
                             op_state, device_idx);
                       }),
             /*iteration_config=*/iteration_config,

@@ -9,8 +9,8 @@
 namespace FlexFlow {
 
 /**
- * \brief The function registered as a %Realm task for returning the
- * asynchronously-initialized PerDeviceOpState. Dispatched by \ref
+ * \brief The function registered as a Realm task for returning the
+ * asynchronously-initialized \ref PerDeviceOpState. Dispatched by \ref
  * spawn_per_device_op_state_init_return_task.
  *
  * To understand how this fits into the broader structure of \ref
@@ -21,7 +21,7 @@ void per_device_op_state_init_return_task_body(
 
 /**
  * \brief Launches the task (\ref per_device_op_state_init_return_task_body) for returning
- * the asynchronously-initialized PerDeviceOpState.
+ * the asynchronously-initialized \ref PerDeviceOpState.
  *
  * To understand how this fits into the broader structure of \ref
  * realm-execution, see \ref realm-execution-tasks.

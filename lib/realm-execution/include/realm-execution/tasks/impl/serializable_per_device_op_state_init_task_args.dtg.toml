@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "SerializableDeviceStateInitTaskArgs"
+name = "SerializablePerDeviceOpStateInitTaskArgs"
 type = "struct"
 features = [
   "eq",

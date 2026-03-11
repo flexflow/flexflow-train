@@ -1,22 +1,22 @@
-#include "realm-execution/distributed_device_handle.h"
+#include "realm-execution/distributed_ff_handle.h"
 #include "realm-execution/device_specific_managed_per_device_ff_handle.h"
-#include "realm-execution/tasks/impl/device_handle_init_task.h"
+#include "realm-execution/tasks/impl/ff_handle_init_task.h"
 #include "task-spec/device_specific.h"
 
 namespace FlexFlow {
 
-DistributedDeviceHandle::DistributedDeviceHandle(
+DistributedFfHandle::DistributedFfHandle(
     std::unordered_map<Realm::Processor,
                        DeviceSpecificManagedPerDeviceFFHandle> const &handles)
     : handles(handles) {}
 
 DeviceSpecificManagedPerDeviceFFHandle const &
-    DistributedDeviceHandle::at(Realm::Processor processor) const {
+    DistributedFfHandle::at(Realm::Processor processor) const {
   return this->handles.at(processor);
 }
 
-DistributedDeviceHandle
-    create_distributed_device_handle(RealmContext &ctx,
+DistributedFfHandle
+    create_distributed_ff_handle(RealmContext &ctx,
                                      size_t workSpaceSize,
                                      bool allowTensorOpMathConversion,
                                      Realm::Event precondition) {
@@ -35,7 +35,7 @@ DistributedDeviceHandle
   }
 
   for (auto &[proc, handle] : handles) {
-    spawn_device_handle_init_task(ctx,
+    spawn_ff_handle_init_task(ctx,
                                   proc,
                                   workSpaceSize,
                                   allowTensorOpMathConversion,
@@ -45,7 +45,7 @@ DistributedDeviceHandle
 
   ctx.get_outstanding_events().wait();
 
-  return DistributedDeviceHandle{handles};
+  return DistributedFfHandle{handles};
 }
 
 } // namespace FlexFlow

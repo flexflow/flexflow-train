@@ -1,4 +1,4 @@
-#include "realm-execution/distributed_device_handle.h"
+#include "realm-execution/distributed_ff_handle.h"
 #include "internal/realm_test_utils.h"
 #include "realm-execution/realm_manager.h"
 #include <doctest/doctest.h>
@@ -9,7 +9,7 @@ using namespace ::FlexFlow;
 namespace Realm = ::FlexFlow::Realm;
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("DistributedDeviceHandle") {
+  TEST_CASE("DistributedFfHandle") {
     std::vector<char *> fake_args =
         make_fake_realm_args(/*num_cpus=*/2_p, /*num_gpus=*/0_n);
     int fake_argc = fake_args.size();
@@ -18,7 +18,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     RealmManager manager(&fake_argc, &fake_argv);
 
     (void)manager.start_controller([](RealmContext &ctx) {
-      DistributedDeviceHandle handle = create_distributed_device_handle(
+      DistributedFfHandle handle = create_distributed_ff_handle(
           /*ctx=*/ctx,
           /*workSpaceSize=*/1024 * 1024,
           /*allowTensorOpMathConversion=*/true);
@@ -35,7 +35,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 }
 
 TEST_SUITE(FF_CUDA_TEST_SUITE) {
-  TEST_CASE("DistributedDeviceHandle (GPU)") {
+  TEST_CASE("DistributedFfHandle (GPU)") {
     std::vector<char *> fake_args =
         make_fake_realm_args(/*num_cpus=*/2_p, /*num_gpus=*/1_n);
     int fake_argc = fake_args.size();
@@ -44,7 +44,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     RealmManager manager(&fake_argc, &fake_argv);
 
     (void)manager.start_controller([](RealmContext &ctx) {
-      DistributedDeviceHandle handle = create_distributed_device_handle(
+      DistributedFfHandle handle = create_distributed_ff_handle(
           /*ctx=*/ctx,
           /*workSpaceSize=*/1024 * 1024,
           /*allowTensorOpMathConversion=*/true);

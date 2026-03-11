@@ -11,7 +11,7 @@
 namespace FlexFlow {
 
 /**
- * \brief Retrieves the \ref task_id_t for a DynamicNodeAttrs, with
+ * \brief Retrieves the \ref task_id_t for a \ref DynamicNodeAttrs, with
  * a return value of \ref std::nullopt to be treated as a no-op task.
  */
 std::optional<task_id_t>
@@ -29,7 +29,7 @@ std::optional<task_id_t>
     get_update_task_id_for_optimizer_attrs(OptimizerAttrs const &);
 
 /**
- * \brief Convert a FlexFlow::task_id_t into a %Realm task ID.
+ * \brief Convert a \ref FlexFlow::task_id_t into a Realm task ID.
  *
  * \relates task_id_t
  */

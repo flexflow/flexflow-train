@@ -1,5 +1,5 @@
-#ifndef _FLEXFLOW_LIB_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_DEVICE_STATE_INITIALIZATION_H
-#define _FLEXFLOW_LIB_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_DEVICE_STATE_INITIALIZATION_H
+#ifndef _FLEXFLOW_LIB_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_PER_DEVICE_OP_STATE_INITIALIZATION_H
+#define _FLEXFLOW_LIB_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_PER_DEVICE_OP_STATE_INITIALIZATION_H
 
 #include "kernels/allocation.h"
 #include "kernels/device_handle_t.dtg.h"
@@ -25,7 +25,7 @@ DynamicNodeInvocation
 /**
  * @brief Initialize all operators and save the per-device op state
  */
-DynamicOpenDataflowGraph perform_device_state_initialization(
+DynamicOpenDataflowGraph perform_per_device_op_state_initialization(
     DynamicOpenDataflowGraph const &,
     Allocator &allocator,
     ProfilingSettings const &profiling_settings,

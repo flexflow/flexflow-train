@@ -9,7 +9,8 @@ namespace FlexFlow {
 /**
  * \relates task_id_t
  *
- * \warning The event returned by this function <em>must be consumed</em> or else %Realm may not shut down properly.
+ * \warning The event returned by this function <em>must be consumed</em> or
+ * else Realm may not shut down properly.
  */
 [[nodiscard]] Realm::Event register_task(Realm::Processor::Kind target_kind,
                                          task_id_t func_id,
@@ -22,7 +23,8 @@ namespace FlexFlow {
 /**
  * \brief Registers all known tasks (using \ref register_task).
  *
- * \warning The event returned by this function <em>must be consumed</em> or else %Realm may not shut down properly.
+ * \warning The event returned by this function <em>must be consumed</em> or
+ * else Realm may not shut down properly.
  */
 [[nodiscard]] Realm::Event register_all_tasks();
 

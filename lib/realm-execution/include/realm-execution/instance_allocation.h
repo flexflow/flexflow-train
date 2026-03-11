@@ -8,8 +8,8 @@
 namespace FlexFlow {
 
 /**
- * @brief Allocates a (potentially remote) %Realm instance for \param value
- * on the device represented by \param device_coord.
+ * @brief Allocates a (potentially remote) Realm instance for \p value
+ * on the device represented by \p device_coord.
  */
 std::pair<Realm::RegionInstance, Realm::Event>
     perform_instance_allocation_for_value(MachineSpaceCoordinate const &device_coord,
@@ -17,8 +17,8 @@ std::pair<Realm::RegionInstance, Realm::Event>
                                           RealmContext &ctx);
 
 /**
- * @brief Allocates the (potentially remote) %Realm instances for all of the
- * values in \param g, excluding the preallocated values in \param preallocated,
+ * @brief Allocates the (potentially remote) Realm instances for all of the
+ * values in \p g, excluding the preallocated values in \p preallocated,
  * using \ref perform_instance_allocation_for_value.
  *
  * \relates TensorInstanceBacking
@@ -30,7 +30,7 @@ TensorInstanceBacking perform_instance_allocation(
     RealmContext &ctx);
 
 /**
- * @brief Destroys all of the instances held in \param instances.
+ * @brief Destroys all of the instances held in \p instances.
  */
 void destroy_instances(TensorInstanceBacking const &instances,
                        Realm::Event precondition);

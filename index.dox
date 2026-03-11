@@ -1,26 +1,26 @@
 /**
 
-\mainpage %FlexFlow %Train
+\mainpage FlexFlow Train
 
-\brief %FlexFlow Train is a deep learning framework that accelerates distributed DNN training by automatically searching for efficient parallelization strategies.
+\brief FlexFlow Train is a deep learning framework that accelerates distributed DNN training by automatically searching for efficient parallelization strategies.
 
 \section root-layout Project Layout
 
-The bulk of the %FlexFlow source code is stored in the following folders:
+The bulk of the FlexFlow source code is stored in the following folders:
 
-- \subpage lib "": The C++ code that makes up %FlexFlow's core, split up into a number of libraries. You can find a description of each library [here](./lib/README.md).
-- \subpage bin "": Command-line interfaces for %FlexFlow and associated tools (all in C++). Generally, these are just thin wrappers that parse command-line arguments and then call out to functions defined in \ref lib for the actual processing/logic. You can find a description of each binary \ref bin "here".
-- `bindings`: Python (or any additional languages added in the future) bindings for %FlexFlow %Train. Still mostly unimplemented.
+- \subpage lib "": The C++ code that makes up FlexFlow's core, split up into a number of libraries. You can find a description of each library [here](./lib/README.md).
+- \subpage bin "": Command-line interfaces for FlexFlow and associated tools (all in C++). Generally, these are just thin wrappers that parse command-line arguments and then call out to functions defined in \ref lib for the actual processing/logic. You can find a description of each binary \ref bin "here".
+- `bindings`: Python (or any additional languages added in the future) bindings for FlexFlow Train. Still mostly unimplemented.
 - `docs`: Config files for documentation generators and code for generating diagrams. The actual documentation itself is included in the source directories/files in <a href="https://www.doxygen.nl/manual/index.html">Doxygen</a> syntax either in standalone `.dox` files or inline in header files.
-- `cmake`: CMake configuration for building %FlexFlow %Train. Note that unless you're modifying the build configuration (i.e., adding a library, additional dependencies, etc.), you generally should use \ref contributing-proj "proj" instead of interacting with CMake directly.
+- `cmake`: CMake configuration for building FlexFlow Train. Note that unless you're modifying the build configuration (i.e., adding a library, additional dependencies, etc.), you generally should use \ref contributing-proj "proj" instead of interacting with CMake directly.
 
 \section root-contributing Contributing
 
 Please let us know if you encounter any bugs or have any suggestions by <a href="https://github.com/flexflow/flexflow-train/issues">submitting an issue</a>.
 
-For instructions on how to contribute code to %FlexFlow Train, see \subpage contributing.
+For instructions on how to contribute code to FlexFlow Train, see \subpage contributing.
 
-We welcome all contributions to %FlexFlow %Train from bug fixes to new features and extensions.
+We welcome all contributions to FlexFlow Train from bug fixes to new features and extensions.
 
 \section root-citations Citations
 
@@ -32,9 +32,9 @@ We welcome all contributions to %FlexFlow %Train from bug fixes to new features 
 
 \section root-team The Team
 
-%FlexFlow %Train is developed and maintained by teams at CMU, Facebook, Los Alamos National Lab, MIT, Stanford, and UCSD (alphabetically).
+FlexFlow Train is developed and maintained by teams at CMU, Facebook, Los Alamos National Lab, MIT, Stanford, and UCSD (alphabetically).
 
 \section root-license License
-%FlexFlow %Train uses Apache License 2.0.
+FlexFlow Train uses Apache License 2.0.
 
 */
