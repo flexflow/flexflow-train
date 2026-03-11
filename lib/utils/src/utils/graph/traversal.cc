@@ -6,32 +6,27 @@
 
 namespace FlexFlow {
 
-using cdi = checked_dfs_iterator;
-using udi = unchecked_dfs_iterator;
-using bfi = bfs_iterator;
-/* using bdi = BoundaryDFSView::boundary_dfs_iterator; */
-
-udi::unchecked_dfs_iterator(DiGraphView const &g,
-                            std::vector<Node> const &stack)
+unchecked_dfs_iterator::unchecked_dfs_iterator(DiGraphView const &g,
+                                               std::vector<Node> const &stack)
     : stack(stack), graph(g) {}
 
-udi::unchecked_dfs_iterator(DiGraphView const &g,
-                            std::unordered_set<Node> const &starting_points)
+unchecked_dfs_iterator::unchecked_dfs_iterator(
+    DiGraphView const &g, std::unordered_set<Node> const &starting_points)
     : graph(g) {
   for (Node const &n : starting_points) {
     this->stack.push_back(n);
   }
 }
 
-udi::reference udi::operator*() const {
+unchecked_dfs_iterator::reference unchecked_dfs_iterator::operator*() const {
   return this->stack.back();
 }
 
-udi::pointer udi::operator->() {
+unchecked_dfs_iterator::pointer unchecked_dfs_iterator::operator->() {
   return &this->operator*();
 }
 
-udi &udi::operator++() {
+unchecked_dfs_iterator &unchecked_dfs_iterator::operator++() {
   Node const last = this->operator*();
   this->stack.pop_back();
 
@@ -48,41 +43,43 @@ udi &udi::operator++() {
   return *this;
 }
 
-void udi::skip() {
+void unchecked_dfs_iterator::skip() {
   this->stack.pop_back();
 }
 
-udi udi::operator++(int) {
+unchecked_dfs_iterator unchecked_dfs_iterator::operator++(int) {
   auto tmp = *this;
   ++(*this);
   return tmp;
 }
 
-bool udi::operator==(udi const &other) const {
+bool unchecked_dfs_iterator::operator==(
+    unchecked_dfs_iterator const &other) const {
   return this->stack == other.stack;
 }
 
-bool udi::operator!=(udi const &other) const {
+bool unchecked_dfs_iterator::operator!=(
+    unchecked_dfs_iterator const &other) const {
   return this->stack != other.stack;
 }
 
-cdi::checked_dfs_iterator(DiGraphView const &g,
-                          std::vector<Node> const &stack,
-                          std::unordered_set<Node> const &seen)
+checked_dfs_iterator::checked_dfs_iterator(DiGraphView const &g,
+                                           std::vector<Node> const &stack,
+                                           std::unordered_set<Node> const &seen)
     : iter(g, stack), seen(seen) {}
 
-cdi::checked_dfs_iterator(DiGraphView const &g,
-                          std::unordered_set<Node> const &starting_points)
+checked_dfs_iterator::checked_dfs_iterator(
+    DiGraphView const &g, std::unordered_set<Node> const &starting_points)
     : iter(g, starting_points), seen{} {}
 
-cdi::reference cdi::operator*() const {
+checked_dfs_iterator::reference checked_dfs_iterator::operator*() const {
   return this->iter.operator*();
 }
-cdi::pointer cdi::operator->() {
+checked_dfs_iterator::pointer checked_dfs_iterator::operator->() {
   return this->iter.operator->();
 }
 
-cdi &cdi::operator++() {
+checked_dfs_iterator &checked_dfs_iterator::operator++() {
   this->seen.insert(*iter);
   this->iter++;
   while (contains(this->seen, *iter)) {
@@ -91,42 +88,42 @@ cdi &cdi::operator++() {
   return *this;
 }
 
-cdi cdi::operator++(int) {
+checked_dfs_iterator checked_dfs_iterator::operator++(int) {
   auto tmp = *this;
   ++(*this);
   return tmp;
 }
 
-bool cdi::operator==(cdi const &other) const {
+bool checked_dfs_iterator::operator==(checked_dfs_iterator const &other) const {
   return this->iter == other.iter && this->seen == other.seen;
 }
 
-bool cdi::operator!=(cdi const &other) const {
+bool checked_dfs_iterator::operator!=(checked_dfs_iterator const &other) const {
   return this->iter != other.iter && this->seen != other.seen;
 }
 
-bfi::bfs_iterator(DiGraphView const &g,
-                  std::queue<Node> const &q,
-                  std::optional<std::unordered_set<Node>> const &seen)
+bfs_iterator::bfs_iterator(DiGraphView const &g,
+                           std::queue<Node> const &q,
+                           std::optional<std::unordered_set<Node>> const &seen)
     : graph(g), q(q), seen(seen) {}
 
-bfi::bfs_iterator(DiGraphView const &g,
-                  std::unordered_set<Node> const &starting_points)
+bfs_iterator::bfs_iterator(DiGraphView const &g,
+                           std::unordered_set<Node> const &starting_points)
     : graph(g), seen(std::unordered_set<Node>{}) {
   for (Node const &n : starting_points) {
     this->q.push(n);
   }
 }
 
-bfi::reference bfi::operator*() const {
+bfs_iterator::reference bfs_iterator::operator*() const {
   return this->q.front();
 }
 
-bfi::pointer bfi::operator->() {
+bfs_iterator::pointer bfs_iterator::operator->() {
   return &this->operator*();
 }
 
-bfi &bfi::operator++() {
+bfs_iterator &bfs_iterator::operator++() {
   Node current = this->operator*();
   assert(this->seen.has_value());
   this->seen.value().insert(current);
@@ -147,20 +144,20 @@ bfi &bfi::operator++() {
   return *this;
 }
 
-bfi bfi::operator++(int) {
+bfs_iterator bfs_iterator::operator++(int) {
   auto tmp = *this;
   ++(*this);
   return tmp;
 }
 
-bool bfi::operator==(bfi const &other) const {
+bool bfs_iterator::operator==(bfs_iterator const &other) const {
   return this->q == other.q &&
          (!this->seen.has_value() || !other.seen.has_value() ||
           this->seen == other.seen) &&
          is_ptr_equal(this->graph, other.graph);
 }
 
-bool bfi::operator!=(bfi const &other) const {
+bool bfs_iterator::operator!=(bfs_iterator const &other) const {
   return this->q != other.q ||
          (this->seen.has_value() && other.seen.has_value() &&
           this->seen != other.seen) &&

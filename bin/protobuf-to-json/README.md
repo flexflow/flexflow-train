@@ -1,3 +1,0 @@
-# protobuf-to-json
-
-TODO

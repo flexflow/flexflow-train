@@ -76,7 +76,7 @@ std::tuple<
 }
 
 bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding> const &
-    MappedPerDeviceOpStatesGroup::get_shard_bindings() const {
+    MappedPerDeviceOpStatesGroup::get_per_device_op_states() const {
   return this->shard_bindings;
 }
 

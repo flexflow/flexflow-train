@@ -1,11 +1,11 @@
 #include "realm-execution/tasks/realm_task_registry.h"
 #include "realm-execution/tasks/impl/controller_task.h"
-#include "realm-execution/tasks/impl/device_handle_init_return_task.h"
-#include "realm-execution/tasks/impl/device_handle_init_task.h"
-#include "realm-execution/tasks/impl/device_state_init_return_task.h"
-#include "realm-execution/tasks/impl/device_state_init_task.h"
+#include "realm-execution/tasks/impl/ff_handle_init_return_task.h"
+#include "realm-execution/tasks/impl/ff_handle_init_task.h"
 #include "realm-execution/tasks/impl/op_task.h"
-#include "realm-execution/tasks/realm_task_id_t.h"
+#include "realm-execution/tasks/impl/per_device_op_state_init_return_task.h"
+#include "realm-execution/tasks/impl/per_device_op_state_init_task.h"
+#include "realm-execution/tasks/task_id_t.h"
 #include "utils/exception.h"
 
 namespace FlexFlow {
@@ -20,7 +20,7 @@ Realm::Event register_task(Realm::Processor::Kind target_kind,
   Realm::Processor::TaskFuncID realm_task_id =
       get_realm_task_id_for_task_id(func_id);
 #ifdef FF_USE_PREALM
-  Realm::prealm_task_name(realm_task_id, fmt::format("{}", func_id));
+  Realm::prealm_task_name(realm_task_id, fmt::to_string(func_id));
 #endif
   return Realm::Processor::register_task_by_kind(
       target_kind,
@@ -54,10 +54,14 @@ Realm::Event register_all_tasks() {
   };
 
   for (task_id_t task_id : init_task_ids) {
-    pending_registrations.push_back(register_task(
-        Realm::Processor::LOC_PROC, task_id, device_state_init_task_body));
-    pending_registrations.push_back(register_task(
-        Realm::Processor::TOC_PROC, task_id, device_state_init_task_body));
+    pending_registrations.push_back(
+        register_task(Realm::Processor::LOC_PROC,
+                      task_id,
+                      per_device_op_state_init_task_body));
+    pending_registrations.push_back(
+        register_task(Realm::Processor::TOC_PROC,
+                      task_id,
+                      per_device_op_state_init_task_body));
   }
 
   std::vector<task_id_t> task_ids = {
@@ -140,19 +144,19 @@ Realm::Event register_all_tasks() {
   pending_registrations.push_back(
       register_task(Realm::Processor::LOC_PROC,
                     task_id_t::DEVICE_HANDLE_INIT_TASK_ID,
-                    device_handle_init_task_body));
+                    ff_handle_init_task_body));
   pending_registrations.push_back(
       register_task(Realm::Processor::TOC_PROC,
                     task_id_t::DEVICE_HANDLE_INIT_TASK_ID,
-                    device_handle_init_task_body));
+                    ff_handle_init_task_body));
   pending_registrations.push_back(
       register_task(Realm::Processor::LOC_PROC,
                     task_id_t::DEVICE_HANDLE_INIT_RETURN_TASK_ID,
-                    device_handle_init_return_task_body));
+                    ff_handle_init_return_task_body));
   pending_registrations.push_back(
       register_task(Realm::Processor::LOC_PROC,
                     task_id_t::DEVICE_STATE_INIT_RETURN_TASK_ID,
-                    device_state_init_return_task_body));
+                    per_device_op_state_init_return_task_body));
   return Realm::Event::merge_events(pending_registrations);
 }
 

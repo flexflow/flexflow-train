@@ -8,17 +8,13 @@
 namespace FlexFlow {
 
 /**
- * @brief See @ref
- * lib/utils/include/utils/graph/series_parallel/sp_ization/README.md
- * "README.md" for explanation.
+ * \brief See \ref spization-naive-work-duplicating.
  */
 SeriesParallelDecomposition
     naive_work_duplicating_sp_ization(DiGraphView const &g);
 
 /**
- * @brief See @ref
- * lib/utils/include/utils/graph/series_parallel/sp_ization/README.md
- * "README.md" for explanation.
+ * @brief See \ref spization-with-coalescing.
  */
 SeriesParallelDecomposition
     work_duplicating_sp_ization_with_coalescing(DiGraphView const &g);

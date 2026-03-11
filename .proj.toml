@@ -2,6 +2,7 @@ project_name = "flexflow"
 testsuite_macro = "FF_TEST_SUITE"
 namespace_name = "FlexFlow"
 header_extension = ".h"
+doxygen = true
 cuda_launch_cmd = [
   "nixGL",
   "--",

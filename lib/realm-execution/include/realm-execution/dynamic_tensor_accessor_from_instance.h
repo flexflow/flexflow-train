@@ -8,6 +8,10 @@
 
 namespace FlexFlow {
 
+/**
+ * @brief Turn a Realm region instance into a \ref GenericTensorAccessor by
+ * re-wrapping the raw pointer.
+ */
 DynamicTensorAccessor dynamic_tensor_accessor_from_instance(
     Realm::RegionInstance inst,
     Realm::Event ready,

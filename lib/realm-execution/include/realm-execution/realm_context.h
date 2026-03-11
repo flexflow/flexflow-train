@@ -14,6 +14,12 @@
 
 namespace FlexFlow {
 
+/**
+ * @brief An interface that wraps the rest of Realm and protects against certain
+ * classes of bugs, such as shutdown bugs.
+ *
+ * @warning Do NOT call Realm directly unless you know what you are doing.
+ */
 struct RealmContext {
 public:
   RealmContext(Realm::Processor processor);
@@ -23,17 +29,22 @@ public:
   RealmContext(RealmContext const &) = delete;
   RealmContext(RealmContext &&) = delete;
 
-  // Device mapping
+  /** \name Device mapping */
+  ///\{
   Realm::Processor
       map_device_coord_to_processor(MachineSpaceCoordinate const &);
   static Realm::Memory get_nearest_memory(Realm::Processor);
+  ///\}
 
-  // Current device context
+  /** \name Current device context */
+  ///\{
   Realm::Processor get_current_processor() const;
   Allocator &get_current_device_allocator();
   device_id_t get_current_device_idx() const;
+  ///\}
 
-  // Task creation
+  /** \name Task creation */
+  ///\{
   Realm::Event spawn_task(Realm::Processor proc,
                           task_id_t task_id,
                           void const *args,
@@ -49,20 +60,29 @@ public:
                             size_t arglen,
                             Realm::Event wait_on = Realm::Event::NO_EVENT,
                             int priority = 0);
+  ///\}
 
-  // Instance management
+  /** \name Instance management */
+  ///\{
   std::pair<Realm::RegionInstance, Realm::Event>
       create_instance(Realm::Memory memory,
                       TensorShape const &shape,
                       Realm::ProfilingRequestSet const &prs,
                       Realm::Event wait_on = Realm::Event::NO_EVENT);
+  ///\}
 
-  // Get the current set of outstanding events
+  /**
+   * \brief Get the current set of outstanding events
+   */
   Realm::Event get_outstanding_events();
 
 protected:
-  // Compact AND CLEAR the outstanding event queue
-  // Important: USER MUST BLOCK on event or else use it, or it WILL BE LOST
+  /**
+   * \brief Compact **and clear** the outstanding event queue
+   *
+   * \warning **User must block** on event or else use it, or it **will be
+   * lost** (potentially resulting in a shutdown hang).
+   */
   [[nodiscard]] Realm::Event merge_outstanding_events();
 
   void discover_machine_topology();

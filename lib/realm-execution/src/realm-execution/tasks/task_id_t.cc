@@ -190,4 +190,9 @@ std::optional<task_id_t> get_update_task_id_for_optimizer_attrs(
   });
 }
 
+Realm::Processor::TaskFuncID get_realm_task_id_for_task_id(task_id_t task_id) {
+  return Realm::Processor::TASK_ID_FIRST_AVAILABLE +
+         static_cast<Realm::Processor::TaskFuncID>(task_id);
+}
+
 } // namespace FlexFlow

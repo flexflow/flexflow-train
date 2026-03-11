@@ -1,0 +1,13 @@
+/**
+
+\page compiler compiler
+
+\brief Implements the core logic of the compiler.
+
+This includes:
+
+- \subpage unity-dp-algorithm "Unity DP Algorithm"
+- \subpage task-graph-simulator "Task Graph Simulator"
+- \subpage machine-mapping "Machine Mapping"
+
+*/

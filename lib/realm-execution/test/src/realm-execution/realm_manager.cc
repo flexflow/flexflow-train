@@ -1,6 +1,6 @@
 #include "realm-execution/realm_manager.h"
 #include "internal/realm_test_utils.h"
-#include "realm-execution/distributed_device_handle.h"
+#include "realm-execution/distributed_ff_handle.h"
 #include <doctest/doctest.h>
 
 namespace test {

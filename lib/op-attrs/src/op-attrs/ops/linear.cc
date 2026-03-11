@@ -109,6 +109,7 @@ tl::expected<std::unordered_map<TensorSlotName, TensorShape>, std::string>
   return weight_shapes;
 }
 
+//! [parallel shape inference composition example]
 tl::expected<ParallelTensorShape, std::string>
     get_projection_shape(LinearAttrs const &attrs,
                          ParallelTensorShape const &input) {
@@ -126,6 +127,7 @@ tl::expected<ParallelTensorShape, std::string>
 
   return lift_to_parallel_with_degrees(unpar, projection_degrees);
 }
+//! [parallel shape inference composition example]
 
 tl::expected<ParallelTensorShape, std::string>
     get_bias_shape(LinearAttrs const &attrs, ParallelTensorShape const &input) {

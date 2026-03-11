@@ -133,7 +133,7 @@ PointerAlignment: Right
 PPIndentWidth:   -1
 QualifierAlignment: Right
 ReferenceAlignment: Pointer
-ReflowComments:  true
+ReflowComments:  false
 ShortNamespaceLines: 1
 SortIncludes:    CaseSensitive
 SortJavaStaticImport: Before

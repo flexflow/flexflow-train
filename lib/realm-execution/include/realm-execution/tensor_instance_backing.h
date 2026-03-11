@@ -6,8 +6,17 @@
 
 namespace FlexFlow {
 
+/**
+ * \brief Make an empty TensorInstanceBacking.
+ *
+ * \relates TensorInstanceBacking
+ */
 TensorInstanceBacking make_empty_tensor_instance_backing();
 
+/**
+ * \brief Get the subset of the given TensorInstanceBacking necessary to execute
+ * the given DynamicNodeInvocation.
+ */
 TensorInstanceBacking subset_tensor_instance_backing_for_invocation(
     TensorInstanceBacking const &, DynamicNodeInvocation const &);
 

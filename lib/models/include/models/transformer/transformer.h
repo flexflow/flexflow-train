@@ -37,10 +37,11 @@ TransformerConfig get_default_transformer_config();
 /**
  * @brief Get the Transformer computation graph.
  *
- * @param TransformerConfig The config of Transformer model.
- * @return ComputationGraph The PCG of a Transformer model.
+ * @param config The config of Transformer model.
+ * @return The PCG of a Transformer model.
  */
-ComputationGraph get_transformer_computation_graph(TransformerConfig const &);
+ComputationGraph
+    get_transformer_computation_graph(TransformerConfig const &config);
 
 } // namespace FlexFlow
 

@@ -7,6 +7,12 @@ features = [
   "fmt",
   "hash",
 ]
+docstring = """
+@brief The minimum amount of information needed to compute the cost of an
+operator (runtime and memory).
+
+For the runtime-only analogue, see RuntimeOnlyOpCostEstimateKey
+"""
 
 includes = [
   "op-attrs/pcg_operator_attrs.dtg.h",

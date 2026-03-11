@@ -1,0 +1,18 @@
+#ifndef _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_TASKS_IMPL_SERIALIZABLE_DEVICE_STATE_INIT_TASK_ARGS_H
+#define _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_TASKS_IMPL_SERIALIZABLE_DEVICE_STATE_INIT_TASK_ARGS_H
+
+#include "realm-execution/tasks/impl/per_device_op_state_init_task_args.dtg.h"
+#include "realm-execution/tasks/impl/serializable_per_device_op_state_init_task_args.dtg.h"
+
+namespace FlexFlow {
+
+SerializablePerDeviceOpStateInitTaskArgs
+    per_device_op_state_init_task_args_to_serializable(
+        PerDeviceOpStateInitTaskArgs const &);
+PerDeviceOpStateInitTaskArgs
+    per_device_op_state_init_task_args_from_serializable(
+        SerializablePerDeviceOpStateInitTaskArgs const &);
+
+} // namespace FlexFlow
+
+#endif
