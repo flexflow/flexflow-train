@@ -22,7 +22,7 @@ Implements all of the operator tasks, i.e., the tasks that are executed during t
 
 The other two types of tasks are implemented as pairs of tasks: one to begin initializing a value (e.g., \ref spawn_ff_handle_init_task), and another to return the initialized value when it's ready (e.g., \ref spawn_ff_handle_init_return_task). As with \ref tasks-one-part, they have an optional corresponding tasks argument type and a potential serializable task argument type.
 
-\todo \@Elliott why is the paired tasks structure required? Is it a performance optimization, or simply necessary given the set of primitives Realm provides?
+The paired task structure is required because Realm tasks do not return. Spawning a Realm task returns a completion event, but the event does not encode any information (other than that the task is finished). Thus, to return a value to the caller, a second task is required to send the value back, and the caller must block for this task to complete to ensure that the data is available before proceeding.
 
 \subsection tasks-ffhandle-init FFHandle Initialization Tasks
 
