@@ -19,14 +19,14 @@
 namespace FlexFlow {
 
 void per_device_op_state_init_task_body(void const *args,
-                                 size_t arglen,
-                                 void const *userdata,
-                                 size_t userlen,
-                                 Realm::Processor proc) {
+                                        size_t arglen,
+                                        void const *userdata,
+                                        size_t userlen,
+                                        Realm::Processor proc) {
   PerDeviceOpStateInitTaskArgs task_args =
       per_device_op_state_init_task_args_from_serializable(
-          deserialize_task_args<SerializablePerDeviceOpStateInitTaskArgs>(args,
-                                                                     arglen));
+          deserialize_task_args<SerializablePerDeviceOpStateInitTaskArgs>(
+              args, arglen));
 
   RealmContext ctx{proc};
   device_handle_t device_handle =
@@ -67,10 +67,10 @@ void per_device_op_state_init_task_body(void const *args,
   DeviceSpecificPtr<PerDeviceOpState> result_device_specific{
       ctx.get_current_device_idx(), result_state_ptr};
   spawn_per_device_op_state_init_return_task(ctx,
-                                      task_args.origin_proc,
-                                      result_device_specific,
-                                      task_args.origin_result_ptr,
-                                      Realm::Event::NO_EVENT);
+                                             task_args.origin_proc,
+                                             result_device_specific,
+                                             task_args.origin_result_ptr,
+                                             Realm::Event::NO_EVENT);
 }
 
 std::optional<Realm::Event> spawn_per_device_op_state_init_task(

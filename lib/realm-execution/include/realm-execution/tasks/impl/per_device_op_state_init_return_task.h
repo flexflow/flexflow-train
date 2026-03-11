@@ -20,8 +20,8 @@ void per_device_op_state_init_return_task_body(
     void const *, size_t, void const *, size_t, Realm::Processor);
 
 /**
- * \brief Launches the task (\ref per_device_op_state_init_return_task_body) for returning
- * the asynchronously-initialized \ref PerDeviceOpState.
+ * \brief Launches the task (\ref per_device_op_state_init_return_task_body) for
+ * returning the asynchronously-initialized \ref PerDeviceOpState.
  *
  * To understand how this fits into the broader structure of \ref
  * realm-execution, see \ref realm-execution-tasks.

@@ -17,9 +17,9 @@ DeviceSpecificManagedPerDeviceFFHandle const &
 
 DistributedFfHandle
     create_distributed_ff_handle(RealmContext &ctx,
-                                     size_t workSpaceSize,
-                                     bool allowTensorOpMathConversion,
-                                     Realm::Event precondition) {
+                                 size_t workSpaceSize,
+                                 bool allowTensorOpMathConversion,
+                                 Realm::Event precondition) {
   std::unordered_map<Realm::Processor, DeviceSpecificManagedPerDeviceFFHandle>
       handles;
 
@@ -36,11 +36,11 @@ DistributedFfHandle
 
   for (auto &[proc, handle] : handles) {
     spawn_ff_handle_init_task(ctx,
-                                  proc,
-                                  workSpaceSize,
-                                  allowTensorOpMathConversion,
-                                  &handle,
-                                  precondition);
+                              proc,
+                              workSpaceSize,
+                              allowTensorOpMathConversion,
+                              &handle,
+                              precondition);
   }
 
   ctx.get_outstanding_events().wait();

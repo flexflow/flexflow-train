@@ -7,15 +7,16 @@
 namespace FlexFlow {
 
 /**
- * \brief A stub function to work around Realm not allowing lambdas to be be registered as Realm tasks.
- * Takes the desired lambda to run as the \ref term-controller as an argument and immediately calls it.
+ * \brief A stub function to work around Realm not allowing lambdas to be be
+ * registered as Realm tasks. Takes the desired lambda to run as the \ref
+ * term-controller as an argument and immediately calls it.
  */
 void controller_task_body(
     void const *, size_t, void const *, size_t, Realm::Processor);
 
 /**
- * \brief Dispatches the \ref term-controller task. Packages up the provided \ref std::function and
- * passes it along to \ref controller_task_body.
+ * \brief Dispatches the \ref term-controller task. Packages up the provided \c
+ * std::function and passes it along to \ref controller_task_body.
  */
 Realm::Event
     collective_spawn_controller_task(RealmContext &ctx,

@@ -1,7 +1,7 @@
 namespace FlexFlow {
 /**
 
-@page split-test models/split_test
+\page models-inception models/inception_v3
 
 \todo
   \@lockshaw Add docs and example(s).

@@ -1,3 +1,4 @@
+namespace FlexFlow {
 /**
 
 \page op-attrs op-attrs
@@ -7,12 +8,12 @@
 Key pieces include:
 
 - Representing tensors in the compiler:
-  \ref FlexFlow::TensorShape, \ref FlexFlow::TensorDims
+  \ref TensorShape, \ref TensorDims
 - Representing parallel/sharded/distributed tensors in the compiler:
-  \ref FlexFlow::ParallelTensorShape, \ref FlexFlow::ParallelTensorDimDegrees
+  \ref ParallelTensorShape, \ref ParallelTensorDimDegrees
 - The actual operator definitions: \subpage op-attrs-ops "ops/"
 - Computing data dependencies of operators computing over parallel tensors:
-  \ref get_operator_to_parallel_tensor_space_mappings.h
-
+  \ref get_operator_space_to_parallel_tensor_space_mappings.h
 
 */
+}

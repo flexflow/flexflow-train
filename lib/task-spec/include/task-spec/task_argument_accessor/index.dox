@@ -75,7 +75,7 @@ TaskArgumentAccessor is just a thin, ref-counted wrapper around the abstract ITa
 Instances of ITaskArgumentAccessor provide access to the following arguments:
 
 - One of \ref PCGOperatorAttrs, \ref LossAttrs, or \ref OptimizerAttrs depending on whether this task is for an operator, an optimizer, or a loss function.
-- Two pieces of device-specific state: \ref device_handle_t (aka \ref term-ff-handle FF handle) and \ref term-per-device-op-state PerDeviceOpState. As both of these contain pointers and hold device-specific initialization state, in distributed execution their addresses (rather than their contents) are passed around, and they are only valid on the device they originated on. One \ref term-ff-handle should be created per device, while one \ref per-device-op-state should be create for every operator for every device it runs on.
+- Two pieces of device-specific state: \ref device_handle_t (aka \ref PerDeviceFFHandle) and \ref PerDeviceOpState. As both of these contain pointers and hold device-specific initialization state, in distributed execution their addresses (rather than their contents) are passed around, and they are only valid on the device they originated on. One \ref PerDeviceFFHandle should be created per device, while one \ref PerDeviceOpState should be create for every operator for every device it runs on.
 - A few simple value types communicating runtime-wide settings: \ref ProfilingSettings, \ref DeviceType, and \ref FFIterationConfig.
 
 */

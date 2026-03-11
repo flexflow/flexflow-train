@@ -22,8 +22,7 @@ std::string as_dot(OpenDataflowGraphView const &g) {
   return as_dot(g, get_node_label, get_input_label);
 }
 
-/**
- * WARN(@lockshaw): doing this all with string ids is ugly and error prone,
+/* WARN(@lockshaw): doing this all with string ids is ugly and error prone,
  * as it requires duplicating the stringification logic across functions.
  *
  * Fixing this is tracked in issue

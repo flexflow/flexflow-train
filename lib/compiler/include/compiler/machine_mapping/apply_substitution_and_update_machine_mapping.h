@@ -24,7 +24,7 @@ namespace FlexFlow {
  */
 SearchResult apply_substitution_and_update_machine_mapping(
     SearchResult const &mapped_pcg,
-    Substitution const &sub,
+    Substitution const &substitution,
     PCGPatternMatch const &match);
 
 } // namespace FlexFlow

@@ -3,16 +3,16 @@
 
 #include "op-attrs/pcg_operator_attrs.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
+#include "realm-execution/realm.h"
 #include "realm-execution/tasks/task_id_t.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_node_attrs.dtg.h"
 #include <optional>
-#include "realm-execution/realm.h"
 
 namespace FlexFlow {
 
 /**
  * \brief Retrieves the \ref task_id_t for a \ref DynamicNodeAttrs, with
- * a return value of \ref std::nullopt to be treated as a no-op task.
+ * a return value of \c std::nullopt to be treated as a no-op task.
  */
 std::optional<task_id_t>
     get_task_id_for_op(DynamicNodeAttrs const &,
@@ -30,11 +30,8 @@ std::optional<task_id_t>
 
 /**
  * \brief Convert a \ref FlexFlow::task_id_t into a Realm task ID.
- *
- * \relates task_id_t
  */
 Realm::Processor::TaskFuncID get_realm_task_id_for_task_id(task_id_t);
-
 
 } // namespace FlexFlow
 

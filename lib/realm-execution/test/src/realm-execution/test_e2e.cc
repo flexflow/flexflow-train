@@ -205,10 +205,10 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor>
           input_tensors;
 
-      DistributedFfHandle device_handle = create_distributed_ff_handle(
-          ctx,
-          /*workSpaceSize=*/1024 * 1024,
-          /*allowTensorOpMathConversion=*/true);
+      DistributedFfHandle device_handle =
+          create_distributed_ff_handle(ctx,
+                                       /*workSpaceSize=*/1024 * 1024,
+                                       /*allowTensorOpMathConversion=*/true);
 
       PCGInstance pcg_instance = create_pcg_instance(
           /*ctx=*/ctx,
@@ -411,8 +411,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                                          /*nesterov=*/false,
                                          /*weight_decay=*/0.001}};
 
-
-//! [realm-execution example]
+    //! [realm-execution example]
     std::vector<char *> fake_args =
         make_fake_realm_args(/*num_cpus=*/1_p, /*num_gpus=*/1_n);
     int fake_argc = fake_args.size();
@@ -432,10 +431,10 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor>
           input_tensors;
 
-      DistributedFfHandle device_handle = create_distributed_ff_handle(
-          ctx,
-          /*workSpaceSize=*/1024 * 1024,
-          /*allowTensorOpMathConversion=*/true);
+      DistributedFfHandle device_handle =
+          create_distributed_ff_handle(ctx,
+                                       /*workSpaceSize=*/1024 * 1024,
+                                       /*allowTensorOpMathConversion=*/true);
 
       PCGInstance pcg_instance = create_pcg_instance(
           /*ctx=*/ctx,
@@ -486,7 +485,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     });
 
     e.wait();
-//! [realm-execution example]
+    //! [realm-execution example]
   }
 }
 

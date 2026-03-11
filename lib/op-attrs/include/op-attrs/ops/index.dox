@@ -30,19 +30,16 @@ More specifically, this consists of the following pieces:
   \snippet lib/op-attrs/src/op-attrs/ops/linear.cc parallel shape inference composition example
 
 - A function for inferring the slot names for the incoming tensors (
-  \ref "std::unordered_map<TensorSlotName, IncomingTensorRole> get_linear_incoming_tensor_roles(LinearAttrs const &)")
+  \ref "get_linear_incoming_tensor_roles(LinearAttrs const &)")
 - Functions for computing the dependencies between shards of the parallelized input, weight, and output tensors, e.g.,
-  - \ref "OperatorSpaceToParallelTensorSpaceMapping get_operator_to_input_mapping(LinearAttrs const &, ParallelTensorDimDegrees const &input_degrees)"
-  - \ref "OperatorSpaceToParallelTensorSpaceMapping get_operator_to_projection_mapping(LinearAttrs const &, ParallelTensorDimDegrees const &input_degrees)"
-  - \ref "OperatorSpaceToParallelTensorSpaceMapping get_operator_to_output_mapping(LinearAttrs const &, ParallelTensorDimDegrees const &input_degrees)"
+  - \ref "get_operator_to_input_mapping(LinearAttrs const &, ParallelTensorDimDegrees const &input_degrees)"
+  - \ref "get_operator_to_projection_mapping(LinearAttrs const &, ParallelTensorDimDegrees const &input_degrees)"
+  - \ref "get_operator_to_output_mapping(LinearAttrs const &, ParallelTensorDimDegrees const &input_degrees)"
 
 Note that as different operators have different numbers of inputs, etc. the number and signatures of these functions may be different for different operators. While keeping the structure of the various operators similar is makes it easier to understand, it's not strictly necessary: the code that calls these functions for a generic operator allows custom behavior for each operator, which allows us to have a bit more freedom to evolve operator definitions over time:
 - \ref get_operator_to_ptensor_mappings (and associated functions in \ref get_operator_space_to_parallel_tensor_space_mappings.h)
 - \ref "get_incoming_tensor_roles(ComputationGraphOpAttrs const &)" (and associated functions in \ref get_incoming_tensor_roles.h)
 - \ref "get_output_shapes(ComputationGraphOpAttrs const &, std::unordered_map<TensorSlotName, TensorShape> const &input_shapes)" (and associated functions in \ref op-attrs/shape_inference.h)
-
-
-
 
 */
 }

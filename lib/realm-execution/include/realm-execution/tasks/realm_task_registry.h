@@ -7,7 +7,7 @@
 namespace FlexFlow {
 
 /**
- * \relates task_id_t
+ * \brief Registers a function as a Realm task.
  *
  * \warning The event returned by this function <em>must be consumed</em> or
  * else Realm may not shut down properly.

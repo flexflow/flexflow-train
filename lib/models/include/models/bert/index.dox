@@ -1,7 +1,7 @@
 namespace FlexFlow {
 /**
 
-@page split-test models/split_test
+\page models-bert models/bert
 
 \todo
   \@lockshaw Add docs and example(s).

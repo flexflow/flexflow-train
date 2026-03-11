@@ -2,9 +2,9 @@
 #include "realm-execution/tasks/impl/controller_task.h"
 #include "realm-execution/tasks/impl/ff_handle_init_return_task.h"
 #include "realm-execution/tasks/impl/ff_handle_init_task.h"
+#include "realm-execution/tasks/impl/op_task.h"
 #include "realm-execution/tasks/impl/per_device_op_state_init_return_task.h"
 #include "realm-execution/tasks/impl/per_device_op_state_init_task.h"
-#include "realm-execution/tasks/impl/op_task.h"
 #include "realm-execution/tasks/task_id_t.h"
 #include "utils/exception.h"
 
@@ -54,10 +54,14 @@ Realm::Event register_all_tasks() {
   };
 
   for (task_id_t task_id : init_task_ids) {
-    pending_registrations.push_back(register_task(
-        Realm::Processor::LOC_PROC, task_id, per_device_op_state_init_task_body));
-    pending_registrations.push_back(register_task(
-        Realm::Processor::TOC_PROC, task_id, per_device_op_state_init_task_body));
+    pending_registrations.push_back(
+        register_task(Realm::Processor::LOC_PROC,
+                      task_id,
+                      per_device_op_state_init_task_body));
+    pending_registrations.push_back(
+        register_task(Realm::Processor::TOC_PROC,
+                      task_id,
+                      per_device_op_state_init_task_body));
   }
 
   std::vector<task_id_t> task_ids = {

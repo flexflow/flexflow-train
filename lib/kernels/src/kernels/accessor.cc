@@ -299,6 +299,7 @@ namespace std {
 
 using namespace ::FlexFlow;
 
+///\cond
 size_t hash<GenericTensorAccessorR>::operator()(
     GenericTensorAccessorR const &a) const {
   return get_std_hash(a.tie());
@@ -308,5 +309,6 @@ size_t hash<GenericTensorAccessorW>::operator()(
     GenericTensorAccessorW const &a) const {
   return get_std_hash(a.tie());
 }
+///\endcond
 
 } // namespace std

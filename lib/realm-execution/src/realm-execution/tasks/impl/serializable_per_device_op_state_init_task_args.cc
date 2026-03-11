@@ -6,8 +6,9 @@
 
 namespace FlexFlow {
 
-SerializablePerDeviceOpStateInitTaskArgs per_device_op_state_init_task_args_to_serializable(
-    PerDeviceOpStateInitTaskArgs const &args) {
+SerializablePerDeviceOpStateInitTaskArgs
+    per_device_op_state_init_task_args_to_serializable(
+        PerDeviceOpStateInitTaskArgs const &args) {
   return SerializablePerDeviceOpStateInitTaskArgs{
       /*invocation=*/dynamic_node_invocation_to_serializable(args.invocation),
       /*tensor_backing*/
@@ -21,8 +22,9 @@ SerializablePerDeviceOpStateInitTaskArgs per_device_op_state_init_task_args_to_s
   };
 }
 
-PerDeviceOpStateInitTaskArgs per_device_op_state_init_task_args_from_serializable(
-    SerializablePerDeviceOpStateInitTaskArgs const &args) {
+PerDeviceOpStateInitTaskArgs
+    per_device_op_state_init_task_args_from_serializable(
+        SerializablePerDeviceOpStateInitTaskArgs const &args) {
   return PerDeviceOpStateInitTaskArgs{
       /*invocation=*/dynamic_node_invocation_from_serializable(args.invocation),
       /*tensor_backing*/

@@ -26,14 +26,15 @@ namespace FlexFlow {
 /**
  * \brief The main public interface for the Realm backend.
  * Takes a \ref MappedParallelComputationGraph and lowers it through
- * \ref DynamicOpenDataflowGraph to get the fully-specified execution order of tasks
- * to be issued. (Note: this is a parallel execution so execution order may not
- * match the order in which operations are issued.) Also tracks the allocation
- * of realm instances for tensors through its \ref TensorInstanceBacking.
+ * \ref DynamicOpenDataflowGraph to get the fully-specified execution order of
+ * tasks to be issued. (Note: this is a parallel execution so execution order
+ * may not match the order in which operations are issued.) Also tracks the
+ * allocation of realm instances for tensors through its \ref
+ * TensorInstanceBacking.
  *
- * \note \ref PCGInstance is primarily just a container for the various structs held
- * inside it. The actual initialization and training iteration functionality is
- * held in \ref create_pcg_instance and \ref
+ * \note \ref PCGInstance is primarily just a container for the various structs
+ * held inside it. The actual initialization and training iteration
+ * functionality is held in \ref create_pcg_instance and \ref
  * perform_update_pass_for_pcg_instance, respectively.
  *
  */
@@ -97,7 +98,8 @@ PCGInstance create_pcg_instance(
 /**
  * \brief Dispatch a training iteration for a \ref PCGInstance.
  *
- * To dispatch just a piece of a training iteration, see the following functions:
+ * To dispatch just a piece of a training iteration, see the following
+ * functions:
  * - \ref perform_forward_pass_for_pcg_instance
  * - \ref perform_backward_pass_for_pcg_instance
  * - \ref perform_update_pass_for_pcg_instance

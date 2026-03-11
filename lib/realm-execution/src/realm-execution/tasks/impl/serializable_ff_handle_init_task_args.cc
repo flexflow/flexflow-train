@@ -3,8 +3,7 @@
 namespace FlexFlow {
 
 SerializableFfHandleInitTaskArgs
-    ff_handle_init_task_args_to_serializable(
-        FfHandleInitTaskArgs const &args) {
+    ff_handle_init_task_args_to_serializable(FfHandleInitTaskArgs const &args) {
   return SerializableFfHandleInitTaskArgs{
       /*workSpaceSize=*/args.workSpaceSize,
       /*allowTensorOpMathConversion=*/args.allowTensorOpMathConversion,

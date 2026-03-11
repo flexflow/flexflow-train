@@ -9,7 +9,7 @@ namespace FlexFlow {
 
 /**
  * \brief The function registered as a Realm task for starting the asynchronous
- * initialization of the \ref FFHandle. Dispatched by \ref
+ * initialization of the \ref PerDeviceFFHandle. Dispatched by \ref
  * spawn_ff_handle_init_task.
  *
  * To understand how this fits into the broader structure of \ref
@@ -20,7 +20,7 @@ void ff_handle_init_task_body(
 
 /**
  * \brief Launches the task (\ref ff_handle_init_return_task_body) for starting
- * the asynchronous initialization of the \ref FFHandle.
+ * the asynchronous initialization of the \ref PerDeviceFFHandle.
  *
  * To understand how this fits into the broader structure of \ref
  * realm-execution, see \ref realm-execution-tasks.

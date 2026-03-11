@@ -46,9 +46,12 @@ std::ostream &operator<<(std::ostream &s, FwdBwdOpTaskImplFunction const &x) {
 
 } // namespace FlexFlow
 
+///\cond
 namespace std {
 size_t hash<FlexFlow::FwdBwdOpTaskImplFunction>::operator()(
     ::FlexFlow::FwdBwdOpTaskImplFunction const &x) const {
   return std::hash<decltype(x.function_ptr)>{}(x.function_ptr);
 }
+///\endcond
+
 } // namespace std

@@ -12,9 +12,10 @@ namespace FlexFlow {
  * on the device represented by \p device_coord.
  */
 std::pair<Realm::RegionInstance, Realm::Event>
-    perform_instance_allocation_for_value(MachineSpaceCoordinate const &device_coord,
-                                          DynamicValueAttrs const &value,
-                                          RealmContext &ctx);
+    perform_instance_allocation_for_value(
+        MachineSpaceCoordinate const &device_coord,
+        DynamicValueAttrs const &value,
+        RealmContext &ctx);
 
 /**
  * @brief Allocates the (potentially remote) Realm instances for all of the

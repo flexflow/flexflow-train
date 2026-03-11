@@ -20,10 +20,10 @@ public:
 };
 
 void per_device_op_state_init_return_task_body(void const *args,
-                                        size_t arglen,
-                                        void const *userdata,
-                                        size_t userlen,
-                                        Realm::Processor proc) {
+                                               size_t arglen,
+                                               void const *userdata,
+                                               size_t userlen,
+                                               Realm::Processor proc) {
   ASSERT(arglen == sizeof(PerDeviceOpStateInitReturnTaskArgs));
   PerDeviceOpStateInitReturnTaskArgs task_args =
       *reinterpret_cast<PerDeviceOpStateInitReturnTaskArgs const *>(args);

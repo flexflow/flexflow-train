@@ -6,10 +6,12 @@
 
 namespace FlexFlow {
 
-SerializablePerDeviceOpStateInitTaskArgs per_device_op_state_init_task_args_to_serializable(
-    PerDeviceOpStateInitTaskArgs const &);
-PerDeviceOpStateInitTaskArgs per_device_op_state_init_task_args_from_serializable(
-    SerializablePerDeviceOpStateInitTaskArgs const &);
+SerializablePerDeviceOpStateInitTaskArgs
+    per_device_op_state_init_task_args_to_serializable(
+        PerDeviceOpStateInitTaskArgs const &);
+PerDeviceOpStateInitTaskArgs
+    per_device_op_state_init_task_args_from_serializable(
+        SerializablePerDeviceOpStateInitTaskArgs const &);
 
 } // namespace FlexFlow
 

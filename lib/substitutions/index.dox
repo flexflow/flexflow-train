@@ -22,9 +22,9 @@ The input graph derived by this match is then defined by `values(node_assignment
 
 \section output-graph-expr OutputGraphExpr
 
-An \ref OutputGraphExpr is defined as an open graph with node label \ref OutputOperatorAttrAssignment and output label \ref std::monostate.
+An \ref OutputGraphExpr is defined as an open graph with node label \ref OutputOperatorAttrsAssignment and output label \c std::monostate.
 
-\ref OutputOperatorAttrAssignment is a collection of \ref OperatorAttributeKey and \ref OutputOperatorAttributeExpr pairs. It defines how the attributes of a single operator is calculated from the input graph. A pair \c "{operator_attribute_key, output_operator_attribute_expr}" in the collection means the value of \c output_operator_attribute_expr is assigned to the attribute named \c operator_attribute_key of the operator.
+\ref OutputOperatorAttrsAssignment is a collection of \ref OperatorAttributeKey and \ref OutputOperatorAttributeExpr pairs. It defines how the attributes of a single operator is calculated from the input graph. A pair \c "{operator_attribute_key, output_operator_attribute_expr}" in the collection means the value of \c output_operator_attribute_expr is assigned to the attribute named \c operator_attribute_key of the operator.
 
 */
 }

@@ -20,10 +20,10 @@ public:
 };
 
 void ff_handle_init_return_task_body(void const *args,
-                                         size_t arglen,
-                                         void const *userdata,
-                                         size_t userlen,
-                                         Realm::Processor proc) {
+                                     size_t arglen,
+                                     void const *userdata,
+                                     size_t userlen,
+                                     Realm::Processor proc) {
   ASSERT(arglen == sizeof(FfHandleInitReturnTaskArgs));
   FfHandleInitReturnTaskArgs task_args =
       *reinterpret_cast<FfHandleInitReturnTaskArgs const *>(args);
@@ -38,8 +38,7 @@ Realm::Event spawn_ff_handle_init_return_task(
     DeviceSpecificManagedPerDeviceFFHandle const &result,
     DeviceSpecificManagedPerDeviceFFHandle *origin_result_ptr,
     Realm::Event precondition) {
-  FfHandleInitReturnTaskArgs task_args{
-      result, origin_proc, origin_result_ptr};
+  FfHandleInitReturnTaskArgs task_args{result, origin_proc, origin_result_ptr};
 
   return ctx.spawn_task(origin_proc,
                         task_id_t::DEVICE_HANDLE_INIT_RETURN_TASK_ID,

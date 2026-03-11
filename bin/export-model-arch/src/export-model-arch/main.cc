@@ -118,7 +118,7 @@ tl::expected<JsonSPModelExport, std::string>
 }
 
 int main(int argc, char **argv) {
-//! [utils/cli example]
+  //! [utils/cli example]
   CLISpec cli = empty_cli_spec();
 
   CLIArgumentKey arg_key_help = cli_add_help_flag(cli);
@@ -183,7 +183,7 @@ int main(int argc, char **argv) {
   bool sp_decompositition = cli_get_flag(parsed, key_sp_decomposition);
   bool dot = cli_get_flag(parsed, key_dot);
   bool preprocessed_dot = cli_get_flag(parsed, key_preprocessed_dot);
-//! [utils/cli example]
+  //! [utils/cli example]
 
   auto handle_error = [](auto const &result) {
     if (!result.has_value()) {

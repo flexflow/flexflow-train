@@ -1,4 +1,4 @@
-namespace {
+namespace FlexFlow {
 /**
 
 \page realm-execution-tasks tasks/
@@ -8,7 +8,7 @@ namespace {
 \section tasks-one-part Individual Tasks
 
 Invidividual tasks are just normal Realm tasks, which are implemented in \ref realm-execution as a
-wrapper function for spawning a task (e.g., \ref collective_spawn_controller_task) and a task body which is the actual Realm task implementation (e.g., \ref controller_task_body). Each also has an optional corresponding <em>TaskArgument</em> (e.g., \ref OpTaskArgs) object to provide a structure to the arguments passed from the wrapper to the task body. In cases where the %TaskArgument object is not trivially JSON-serializable, a corresponding JSON-serializable task argument type is provided (e.g., \ref SerializeableOpTaskArgs).
+wrapper function for spawning a task (e.g., \ref collective_spawn_controller_task) and a task body which is the actual Realm task implementation (e.g., \ref controller_task_body). Each also has an optional corresponding <em>TaskArgument</em> (e.g., \ref OpTaskArgs) object to provide a structure to the arguments passed from the wrapper to the task body. In cases where the %TaskArgument object is not trivially JSON-serializable, a corresponding JSON-serializable task argument type is provided (e.g., \ref SerializableOpTaskArgs).
 
 \subsection tasks-controller-tasks Controller Tasks
 
@@ -20,13 +20,13 @@ Implements all of the operator tasks, i.e., the tasks that are executed during t
 
 \section tasks-two-part Paired Tasks
 
-The other two types of tasks are implemented as pairs of tasks: one to begin initializing a value (e.g., \ref spawn_ff_handle_init_task), and another to return the initialized value when it's ready (e.g., \ref spawn_ff_handle_init_return_task). As with \ref task-one-part, they have an optional corresponding tasks argument type and a potential serializable task argument type.
+The other two types of tasks are implemented as pairs of tasks: one to begin initializing a value (e.g., \ref spawn_ff_handle_init_task), and another to return the initialized value when it's ready (e.g., \ref spawn_ff_handle_init_return_task). As with \ref tasks-one-part, they have an optional corresponding tasks argument type and a potential serializable task argument type.
 
 \todo \@Elliott why is the paired tasks structure required? Is it a performance optimization, or simply necessary given the set of primitives Realm provides?
 
 \subsection tasks-ffhandle-init FFHandle Initialization Tasks
 
-For initializing the \ref FFHandle for each GPU. Implemented in \ref ff_handle_init_task.h and \ref ff_handle_init_return_task.h.
+For initializing the \ref PerDeviceFFHandle for each GPU. Implemented in \ref ff_handle_init_task.h and \ref ff_handle_init_return_task.h.
 
 \subsection tasks-op-state-init PerDeviceOpState Initialization Tasks
 

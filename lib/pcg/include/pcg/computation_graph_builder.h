@@ -7,9 +7,10 @@
 namespace FlexFlow {
 
 /**
- * \brief A helper interface for building ComputationGraph in a pytorch (i.e., weight-implicit) style.
+ * \brief A helper interface for building ComputationGraph in a pytorch (i.e.,
+ * weight-implicit) style.
  *
- * For an example of how to use it, see the following code from \ref models:
+ * For an example of how to use it, see the following code from \ref models "":
  * \snippet lib/models/src/models/split_test/split_test.cc ComputationGraphBuilder example
  */
 struct ComputationGraphBuilder {

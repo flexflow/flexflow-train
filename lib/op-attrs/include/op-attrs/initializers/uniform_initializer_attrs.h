@@ -4,6 +4,7 @@
 #include "op-attrs/initializers/uniform_initializer_attrs.dtg.h"
 #include <rapidcheck.h>
 
+///\cond
 namespace rc {
 
 template <>
@@ -12,5 +13,6 @@ struct Arbitrary<::FlexFlow::UniformInitializerAttrs> {
 };
 
 } // namespace rc
+///\endcond
 
 #endif

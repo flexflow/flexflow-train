@@ -7,8 +7,7 @@
 namespace FlexFlow {
 
 SerializableFfHandleInitTaskArgs
-    ff_handle_init_task_args_to_serializable(
-        FfHandleInitTaskArgs const &);
+    ff_handle_init_task_args_to_serializable(FfHandleInitTaskArgs const &);
 
 FfHandleInitTaskArgs ff_handle_init_task_args_from_serializable(
     SerializableFfHandleInitTaskArgs const &);

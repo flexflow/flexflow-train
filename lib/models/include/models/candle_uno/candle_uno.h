@@ -34,7 +34,8 @@ CandleUnoConfig get_default_candle_uno_config();
  * @param config The config of the Candle Uno model.
  * @return The PCG of a Transformer model.
  */
-ComputationGraph get_candle_uno_computation_graph(CandleUnoConfig const &config);
+ComputationGraph
+    get_candle_uno_computation_graph(CandleUnoConfig const &config);
 
 } // namespace FlexFlow
 

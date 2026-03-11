@@ -44,7 +44,7 @@ digraph example {
     taskspec       [label="task-spec", URL="\ref task-spec", color="red", fontcolor="red"];
     localexecution [label="local-execution", URL="\ref local-execution", color="red", fontcolor="red"];
     realmexecution [label="realm-execution", URL="\ref realm-execution", color="red", fontcolor="red"];
-    realm          [label="realm", URL="\ref realm", color="red", fontcolor="red", style="dashed"];
+    realm          [label="Realm", color="red", fontcolor="red", style="dashed"];
 
     utils -> opattrs;
     opattrs -> pcg;

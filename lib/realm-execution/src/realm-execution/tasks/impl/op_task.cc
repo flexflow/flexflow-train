@@ -74,13 +74,13 @@ Realm::Event spawn_op_task(
     Realm::Event precondition) {
 
   OpTaskArgs task_args = OpTaskArgs{
-    invocation,
-    tensor_backing,
-    device_state,
-    profiling_settings,
-    device_handle,
-    iteration_config,
-    optimizer_attrs,
+      invocation,
+      tensor_backing,
+      device_state,
+      profiling_settings,
+      device_handle,
+      iteration_config,
+      optimizer_attrs,
   };
 
   std::string serialized_args =

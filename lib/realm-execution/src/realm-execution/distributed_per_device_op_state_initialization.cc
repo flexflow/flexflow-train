@@ -46,15 +46,15 @@ PerDeviceOpStateBacking perform_distributed_per_device_op_state_initialization(
 
     std::optional<Realm::Event> completion_event =
         spawn_per_device_op_state_init_task(ctx,
-                                     target_proc,
-                                     invocation,
-                                     tensor_backing,
-                                     profiling_settings,
-                                     device_handle.at(target_proc),
-                                     iteration_config,
-                                     optimizer_attrs,
-                                     device_state_ptr,
-                                     precondition);
+                                            target_proc,
+                                            invocation,
+                                            tensor_backing,
+                                            profiling_settings,
+                                            device_handle.at(target_proc),
+                                            iteration_config,
+                                            optimizer_attrs,
+                                            device_state_ptr,
+                                            precondition);
 
     if (completion_event.has_value()) {
       device_state_map.insert(std::pair{invocation, device_state_ptr});

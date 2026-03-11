@@ -97,12 +97,12 @@ ComputationGraphInstance create_computation_graph_instance(
       });
 
   dg = perform_per_device_op_state_initialization(dg,
-                                           allocator,
-                                           profiling_settings,
-                                           device_handle,
-                                           iteration_config,
-                                           optimizer_attrs,
-                                           device_idx);
+                                                  allocator,
+                                                  profiling_settings,
+                                                  device_handle,
+                                                  iteration_config,
+                                                  optimizer_attrs,
+                                                  device_idx);
 
   // Compute the topological ordering of the graph
   auto [kwarg_graph, node_map] =
