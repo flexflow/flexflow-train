@@ -18,6 +18,7 @@ public:
   Realm::Processor origin_proc;
   DeviceSpecificPtr<PerDeviceOpState> *origin_result_ptr;
 };
+static_assert(std::is_trivially_copyable_v<PerDeviceOpStateInitReturnTaskArgs>);
 
 void per_device_op_state_init_return_task_body(void const *args,
                                                size_t arglen,

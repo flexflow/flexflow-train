@@ -18,6 +18,7 @@ public:
   Realm::Processor origin_proc;
   DeviceSpecificManagedPerDeviceFFHandle *origin_result_ptr;
 };
+static_assert(std::is_trivially_copyable_v<FfHandleInitReturnTaskArgs>);
 
 void ff_handle_init_return_task_body(void const *args,
                                      size_t arglen,
