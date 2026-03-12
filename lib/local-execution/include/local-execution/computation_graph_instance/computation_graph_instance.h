@@ -5,11 +5,10 @@
 #include "kernels/allocation.h"
 #include "kernels/device_handle_t.dtg.h"
 #include "kernels/profiling_settings.dtg.h"
-#include "op-attrs/ops/loss_functions/loss_attrs.dtg.h"
+#include "local-execution/loss_config.dtg.h"
 #include "pcg/computation_graph.dtg.h"
 #include "pcg/device_id_t.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
-#include "pcg/tensor_guid_t.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_layer_guid_t.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_accessor.dtg.h"
@@ -45,9 +44,7 @@ private:
 ComputationGraphInstance create_computation_graph_instance(
     ComputationGraph const &cg,
     OptimizerAttrs const &optimizer_attrs,
-    std::optional<LossAttrs> const &loss_attrs,
-    std::optional<GenericTensorAccessorR> label_tensor,
-    std::optional<tensor_guid_t> logit_tensor,
+    std::optional<LossConfig> const &loss,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &input_tensors,
     Allocator &allocator,

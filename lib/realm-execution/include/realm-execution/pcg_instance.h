@@ -1,16 +1,14 @@
 #ifndef _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_PCG_INSTANCE_H
 #define _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_PCG_INSTANCE_H
 
-#include "kernels/accessor.h"
 #include "kernels/allocation.h"
 #include "kernels/device_handle_t.dtg.h"
 #include "kernels/profiling_settings.dtg.h"
-#include "op-attrs/ops/loss_functions/loss_attrs.dtg.h"
 #include "pcg/device_id_t.dtg.h"
 #include "pcg/mapped_parallel_computation_graph/mapped_parallel_computation_graph.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
-#include "pcg/parallel_computation_graph/parallel_tensor_guid_t.dtg.h"
 #include "realm-execution/distributed_ff_handle.h"
+#include "realm-execution/parallel_loss_config.dtg.h"
 #include "realm-execution/per_device_op_state_backing.dtg.h"
 #include "realm-execution/realm_context.h"
 #include "realm-execution/tensor_instance_backing.dtg.h"
@@ -85,10 +83,7 @@ PCGInstance create_pcg_instance(
     RealmContext &ctx,
     MappedParallelComputationGraph const &mpcg,
     OptimizerAttrs const &optimizer_attrs,
-    std::optional<LossAttrs> const &loss_attrs,
-    std::optional<GenericTensorAccessorR> label_tensor,
-    std::optional<parallel_tensor_guid_t> logit_tensor,
-    std::optional<MappedOperatorTaskGroup> const &loss_mapping,
+    std::optional<ParallelLossConfig> const &loss,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &input_tensors,
     ProfilingSettings const &profiling_settings,

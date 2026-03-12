@@ -1,0 +1,22 @@
+namespace = "FlexFlow"
+name = "LossConfig"
+type = "struct"
+features = []
+
+includes = [
+  "op-attrs/ops/loss_functions/loss_attrs.dtg.h",
+  "kernels/accessor.h",
+  "pcg/tensor_guid_t.dtg.h",
+]
+
+[[fields]]
+name = "loss_attrs"
+type = "::FlexFlow::LossAttrs"
+
+[[fields]]
+name = "label_tensor"
+type = "::FlexFlow::GenericTensorAccessorR"
+
+[[fields]]
+name = "logit_tensor"
+type = "::FlexFlow::tensor_guid_t"

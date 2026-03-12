@@ -61,9 +61,7 @@ static GenericTensorAccessorW
 ComputationGraphInstance create_computation_graph_instance(
     ComputationGraph const &cg,
     OptimizerAttrs const &optimizer_attrs,
-    std::optional<LossAttrs> const &loss_attrs,
-    std::optional<GenericTensorAccessorR> label_tensor,
-    std::optional<tensor_guid_t> logit_tensor,
+    std::optional<LossConfig> const &loss,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &input_tensors,
     Allocator &allocator,
@@ -77,15 +75,13 @@ ComputationGraphInstance create_computation_graph_instance(
   std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> inputs =
       input_tensors;
   std::optional<DynamicValueAttrs> logit_grad_value;
-  if (loss_attrs.has_value()) {
+  if (loss.has_value()) {
+    auto [loss_attrs, label_tensor, logit_tensor] = assert_unwrap(loss);
     auto [loss_inserted_dg, label_v, logit_grad_v] = perform_loss_insertion(
-        dg,
-        assert_unwrap(loss_attrs),
-        dynamic_tensor_guid_t{assert_unwrap(logit_tensor)},
-        std::nullopt);
+        dg, loss_attrs, dynamic_tensor_guid_t{logit_tensor}, std::nullopt);
     dg = loss_inserted_dg;
     logit_grad_value = logit_grad_v;
-    inputs.insert(std::pair{label_v, assert_unwrap(label_tensor)});
+    inputs.insert(std::pair{label_v, label_tensor});
   }
 
   dg = perform_update_insertion(dg, optimizer_attrs);
