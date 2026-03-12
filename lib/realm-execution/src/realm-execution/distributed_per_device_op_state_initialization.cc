@@ -7,7 +7,6 @@
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
 #include "utils/containers/map_values.h"
-#include "utils/containers/transform.h"
 #include "utils/containers/values.h"
 #include "utils/optional.h"
 #include <optional>
@@ -66,12 +65,11 @@ PerDeviceOpStateBacking perform_distributed_per_device_op_state_initialization(
 
   ctx.get_outstanding_events().wait();
 
-  auto deref = [](DynamicNodeInvocation const &i,
-                  DeviceSpecificPtr<PerDeviceOpState> *const &p) {
-    return std::pair{i, *p};
+  auto deref = [](DeviceSpecificPtr<PerDeviceOpState> *const &p) {
+    return *p;
   };
   std::unordered_map<DynamicNodeInvocation, DeviceSpecificPtr<PerDeviceOpState>>
-      result = transform(device_state_map, deref);
+      result = map_values(device_state_map, deref);
 
   for (DeviceSpecificPtr<PerDeviceOpState> *device_state_ptr :
        values(device_state_map)) {

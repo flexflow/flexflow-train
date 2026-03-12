@@ -6,7 +6,7 @@ namespace FlexFlow {
 
 RealmManager::RealmManager(int *argc, char ***argv)
     : RealmContext(Realm::Processor::NO_PROC) {
-  bool ok = this->runtime.init(argc, argv);
+  bool ok = this->get_runtime().init(argc, argv);
   ASSERT(ok);
 
   // Register all tasks at initialization time so we don't need to later
@@ -15,8 +15,8 @@ RealmManager::RealmManager(int *argc, char ***argv)
 
 RealmManager::~RealmManager() {
   Realm::Event outstanding = this->merge_outstanding_events();
-  this->runtime.shutdown(outstanding);
-  this->runtime.wait_for_shutdown();
+  this->get_runtime().shutdown(outstanding);
+  this->get_runtime().wait_for_shutdown();
 }
 
 ControllerTaskResult

@@ -13,7 +13,7 @@
 #include "task-spec/dynamic_graph/dynamic_tensor_guid_t.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
 #include "task-spec/dynamic_graph/loss_insertion.h"
-#include "task-spec/dynamic_graph/make_dynamic_open_dataflow_graph_from_mpcg.h"
+#include "task-spec/dynamic_graph/make_dynamic_open_dataflow_graph_from_mapped_pcg.h"
 #include "task-spec/dynamic_graph/pass_expansion.h"
 #include "task-spec/dynamic_graph/shard_expansion.h"
 #include "task-spec/dynamic_graph/training_operation_attrs.dtg.h"
@@ -87,7 +87,7 @@ PCGInstance create_pcg_instance(
     FFIterationConfig const &iteration_config) {
 
   DynamicOpenDataflowGraph dg =
-      make_dynamic_open_dataflow_graph_from_mpcg(mpcg);
+      make_dynamic_open_dataflow_graph_from_mapped_pcg(mpcg);
   dg = perform_pass_expansion(dg);
 
   std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> inputs =

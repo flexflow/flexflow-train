@@ -6,7 +6,7 @@
 
 namespace FlexFlow {
 
-DynamicOpenDataflowGraph make_dynamic_open_dataflow_graph_from_mpcg(
+DynamicOpenDataflowGraph make_dynamic_open_dataflow_graph_from_mapped_pcg(
     MappedParallelComputationGraph const &);
 
 } // namespace FlexFlow

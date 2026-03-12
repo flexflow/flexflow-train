@@ -31,7 +31,7 @@ void *RealmAllocator::allocate(size_t requested_memory_size) {
   ready.wait();
   void *ptr =
       inst.pointer_untyped(/*offset=*/0, /*datalen=*/requested_memory_size);
-  ASSERT(ptr);
+  ASSERT(ptr != nullptr);
   this->ptr_instances.insert({ptr, inst});
   return ptr;
 }

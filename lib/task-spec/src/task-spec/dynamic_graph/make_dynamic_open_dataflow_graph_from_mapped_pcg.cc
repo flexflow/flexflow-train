@@ -1,4 +1,4 @@
-#include "task-spec/dynamic_graph/make_dynamic_open_dataflow_graph_from_mpcg.h"
+#include "task-spec/dynamic_graph/make_dynamic_open_dataflow_graph_from_mapped_pcg.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/pcg_operator_attrs.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
@@ -13,7 +13,7 @@
 
 namespace FlexFlow {
 
-DynamicOpenDataflowGraph make_dynamic_open_dataflow_graph_from_mpcg(
+DynamicOpenDataflowGraph make_dynamic_open_dataflow_graph_from_mapped_pcg(
     MappedParallelComputationGraph const &mpcg) {
   DynamicOpenDataflowGraph result = make_empty_dynamic_open_dataflow_graph();
 

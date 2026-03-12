@@ -17,7 +17,7 @@ namespace FlexFlow {
  */
 struct RealmManager : private RealmContext {
 public:
-  RealmManager(int *argc, char ***argv);
+  explicit RealmManager(int *argc, char ***argv);
   virtual ~RealmManager();
 
   RealmManager() = delete;

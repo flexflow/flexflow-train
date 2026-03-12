@@ -90,7 +90,16 @@ protected:
   static std::optional<ManagedPerDeviceFFHandle>
       make_device_handle_for_processor(Realm::Processor processor);
 
-protected:
+  /**
+   * \brief Get the raw Realm runtime
+   *
+   * \note If you use the Realm runtime directly, you are responsible for
+   * waiting on all generated events to ensure that Realm can shut down
+   * correctly.
+   */
+  Realm::Runtime get_runtime();
+
+private:
   Realm::Runtime runtime;
   Realm::Processor processor;
   Allocator allocator;

@@ -250,4 +250,8 @@ void RealmContext::discover_machine_topology() {
   }
 }
 
+Realm::Runtime RealmContext::get_runtime() {
+  return this->runtime;
+}
+
 } // namespace FlexFlow
