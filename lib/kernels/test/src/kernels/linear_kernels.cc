@@ -91,7 +91,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
       std::optional<LinearPerDeviceState> per_device_state = linear_init_kernel(
           /*device_type=*/device_type,
-          /*handle=*/device_handle_t_from_managed_handle(managed_handle),
+          /*handle=*/device_handle_t_from_managed_ff_handle(managed_handle),
           /*activation=*/attrs.activation,
           /*regularizer=*/attrs.regularizer,
           /*use_bias=*/attrs.use_bias,
@@ -203,7 +203,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
       std::optional<LinearPerDeviceState> per_device_state = linear_init_kernel(
           /*device_type=*/device_type,
-          /*handle=*/device_handle_t_from_managed_handle(managed_handle),
+          /*handle=*/device_handle_t_from_managed_ff_handle(managed_handle),
           /*activation=*/attrs.activation,
           /*regularizer=*/attrs.regularizer,
           /*use_bias=*/true,
