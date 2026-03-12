@@ -6,6 +6,7 @@
 #include "pcg/device_id_t.dtg.h"
 #include "realm-execution/realm.h"
 #include "realm-execution/realm_context.h"
+#include "realm-execution/tasks/impl/controller_task.h"
 
 namespace FlexFlow {
 
@@ -32,7 +33,7 @@ public:
    * on the resulting event** to ensure it remains in scope until the controller
    * completes.
    */
-  [[nodiscard]] Realm::Event
+  [[nodiscard]] ControllerTaskResult
       start_controller(std::function<void(RealmContext &)>,
                        Realm::Event wait_on = Realm::Event::NO_EVENT);
 };

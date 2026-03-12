@@ -419,72 +419,73 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     RealmManager manager(&fake_argc, &fake_argv);
 
-    Realm::Event e = manager.start_controller([&](RealmContext &ctx) {
-      Allocator allocator = ctx.get_current_device_allocator();
+    ControllerTaskResult result =
+        manager.start_controller([&](RealmContext &ctx) {
+          Allocator allocator = ctx.get_current_device_allocator();
 
-      GenericTensorAccessorW label_tensor_backing =
-          allocator.allocate_tensor(output_tensor_shape);
+          GenericTensorAccessorW label_tensor_backing =
+              allocator.allocate_tensor(output_tensor_shape);
 
-      GenericTensorAccessorW label_tensor =
-          allocator.allocate_tensor(label_tensor_shape);
+          GenericTensorAccessorW label_tensor =
+              allocator.allocate_tensor(label_tensor_shape);
 
-      std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor>
-          input_tensors;
+          std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor>
+              input_tensors;
 
-      DistributedFfHandle device_handle =
-          create_distributed_ff_handle(ctx,
-                                       /*workSpaceSize=*/1024 * 1024,
-                                       /*allowTensorOpMathConversion=*/true);
+          DistributedFfHandle device_handle = create_distributed_ff_handle(
+              ctx,
+              /*workSpaceSize=*/1024 * 1024,
+              /*allowTensorOpMathConversion=*/true);
 
-      PCGInstance pcg_instance = create_pcg_instance(
-          /*ctx=*/ctx,
-          /*mpcg=*/mpcg,
-          /*optimizer=*/optimizer_attrs,
-          /*loss=*/loss_attrs,
-          /*label_tensor=*/label_tensor,
-          /*logit_tensor=*/t_linear_2,
-          /*loss_mapping=*/loss_mapping,
-          /*input_tensors=*/input_tensors,
-          /*profiling_settings=*/ProfilingSettings{0, 0},
-          /*device_handle=*/device_handle,
-          /*iteration_config=*/FFIterationConfig{1_p});
+          PCGInstance pcg_instance = create_pcg_instance(
+              /*ctx=*/ctx,
+              /*mpcg=*/mpcg,
+              /*optimizer=*/optimizer_attrs,
+              /*loss=*/loss_attrs,
+              /*label_tensor=*/label_tensor,
+              /*logit_tensor=*/t_linear_2,
+              /*loss_mapping=*/loss_mapping,
+              /*input_tensors=*/input_tensors,
+              /*profiling_settings=*/ProfilingSettings{0, 0},
+              /*device_handle=*/device_handle,
+              /*iteration_config=*/FFIterationConfig{1_p});
 
-      // begin training loop
-      int num_epochs = 5;
-      std::vector<GenericTensorAccessorR> loss_values;
+          // begin training loop
+          int num_epochs = 5;
+          std::vector<GenericTensorAccessorR> loss_values;
 
-      for (int i = 0; i < num_epochs; i++) {
-        perform_all_passes_for_pcg_instance(
-            /*instance=*/pcg_instance,
-            /*profiling_settings=*/ProfilingSettings{0, 0},
-            /*device_handle=*/device_handle,
-            /*iteration_config=*/FFIterationConfig{1_p});
-        loss_values.push_back(copy_tensor_accessor_r(
-            dynamic_tensor_accessor_from_instance(
-                pcg_instance.get_loss_tensor_instance().value(),
-                Realm::Event::NO_EVENT,
-                lift_to_parallel(
-                    TensorShape{TensorDims{FFOrdered{output_dim, hidden_dim}},
-                                DataType::FLOAT}),
-                Permissions::RO,
-                ctx.get_current_processor())
-                .require_read(),
-            allocator));
-      }
+          for (int i = 0; i < num_epochs; i++) {
+            perform_all_passes_for_pcg_instance(
+                /*instance=*/pcg_instance,
+                /*profiling_settings=*/ProfilingSettings{0, 0},
+                /*device_handle=*/device_handle,
+                /*iteration_config=*/FFIterationConfig{1_p});
+            loss_values.push_back(copy_tensor_accessor_r(
+                dynamic_tensor_accessor_from_instance(
+                    pcg_instance.get_loss_tensor_instance().value(),
+                    Realm::Event::NO_EVENT,
+                    lift_to_parallel(TensorShape{
+                        TensorDims{FFOrdered{output_dim, hidden_dim}},
+                        DataType::FLOAT}),
+                    Permissions::RO,
+                    ctx.get_current_processor())
+                    .require_read(),
+                allocator));
+          }
 
-      // Assert that each sample in the batch has a lower loss in last epoch
-      // than the first epoch
-      GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
-      GenericTensorAccessorR last_epoch_loss = loss_values.back();
-      CHECK_MESSAGE(
-          did_loss_decrease(first_epoch_loss, last_epoch_loss, allocator),
-          check_kv("first_epoch_loss",
-                   format_accessor_r_contents(first_epoch_loss)),
-          check_kv("last_epoch_loss",
-                   format_accessor_r_contents(last_epoch_loss)));
-    });
+          // Assert that each sample in the batch has a lower loss in last epoch
+          // than the first epoch
+          GenericTensorAccessorR first_epoch_loss = loss_values.at(0);
+          GenericTensorAccessorR last_epoch_loss = loss_values.back();
+          CHECK_MESSAGE(
+              did_loss_decrease(first_epoch_loss, last_epoch_loss, allocator),
+              check_kv("first_epoch_loss",
+                       format_accessor_r_contents(first_epoch_loss)),
+              check_kv("last_epoch_loss",
+                       format_accessor_r_contents(last_epoch_loss)));
+        });
 
-    e.wait();
+    result.wait();
     //! [realm-execution example]
   }
 }

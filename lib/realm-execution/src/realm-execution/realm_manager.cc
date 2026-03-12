@@ -1,6 +1,5 @@
 #include "realm-execution/realm_manager.h"
 #include "realm-execution/realm_context.h"
-#include "realm-execution/tasks/impl/controller_task.h"
 #include "realm-execution/tasks/realm_task_registry.h"
 
 namespace FlexFlow {
@@ -20,7 +19,7 @@ RealmManager::~RealmManager() {
   this->runtime.wait_for_shutdown();
 }
 
-Realm::Event
+ControllerTaskResult
     RealmManager::start_controller(std::function<void(RealmContext &)> thunk,
                                    Realm::Event wait_on) {
   Realm::Processor target_proc =

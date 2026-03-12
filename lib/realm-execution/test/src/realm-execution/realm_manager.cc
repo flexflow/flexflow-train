@@ -20,13 +20,14 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     // Launch a controller
     int some_data = 123;
-    Realm::Event event = manager.start_controller([&](RealmContext &ctx) {
-      // Data is captured and retains value
-      ASSERT(some_data == 123);
-    });
-    // Need to block on the completion of the event to ensure we don't race,
+    ControllerTaskResult result =
+        manager.start_controller([&](RealmContext &ctx) {
+          // Data is captured and retains value
+          ASSERT(some_data == 123);
+        });
+    // Need to block on the completion of the task to ensure we don't race,
     // because the lambda captures the environment
-    event.wait();
+    result.wait();
   }
 }
 
