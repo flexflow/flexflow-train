@@ -65,9 +65,7 @@ PerDeviceOpStateBacking perform_distributed_per_device_op_state_initialization(
 
   ctx.get_outstanding_events().wait();
 
-  auto deref = [](DeviceSpecificPtr<PerDeviceOpState> *const &p) {
-    return *p;
-  };
+  auto deref = [](DeviceSpecificPtr<PerDeviceOpState> *const &p) { return *p; };
   std::unordered_map<DynamicNodeInvocation, DeviceSpecificPtr<PerDeviceOpState>>
       result = map_values(device_state_map, deref);
 
