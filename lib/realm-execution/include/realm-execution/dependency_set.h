@@ -9,7 +9,8 @@
 namespace FlexFlow {
 
 /**
- * @brief Tracks dependencies during execution of tasks.
+ * @brief Tracks dependencies on values during the execution of tasks, using the
+ * SWMR (single-writer, multiple-reader) algorithm.
  */
 struct DependencySet {
 public:

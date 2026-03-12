@@ -6,6 +6,10 @@
 
 namespace FlexFlow {
 
+/**
+  * \brief Tracks dependencies for a given parallel tensor shard using the SWMR
+  * (single-writer, multiple-reader) algorithm.
+  */
 struct AtomicDependencySet {
 public:
   AtomicDependencySet() = delete;
