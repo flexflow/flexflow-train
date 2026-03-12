@@ -23,4 +23,4 @@ type = "::FlexFlow::Realm::Processor"
 
 [[fields]]
 name = "origin_result_ptr"
-type = "::FlexFlow::DeviceSpecificManagedPerDeviceFFHandle *"
+type = "::FlexFlow::DeviceSpecificPtr<::FlexFlow::ManagedPerDeviceFFHandle> *"

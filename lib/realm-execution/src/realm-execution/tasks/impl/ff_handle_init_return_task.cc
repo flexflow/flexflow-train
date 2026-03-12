@@ -7,16 +7,16 @@ struct FfHandleInitReturnTaskArgs {
 public:
   FfHandleInitReturnTaskArgs() = delete;
   FfHandleInitReturnTaskArgs(
-      DeviceSpecificManagedPerDeviceFFHandle result,
+      DeviceSpecificPtr<ManagedPerDeviceFFHandle> result,
       Realm::Processor origin_proc,
-      DeviceSpecificManagedPerDeviceFFHandle *origin_result_ptr)
+      DeviceSpecificPtr<ManagedPerDeviceFFHandle> *origin_result_ptr)
       : result(result), origin_proc(origin_proc),
         origin_result_ptr(origin_result_ptr) {}
 
 public:
-  DeviceSpecificManagedPerDeviceFFHandle result;
+  DeviceSpecificPtr<ManagedPerDeviceFFHandle> result;
   Realm::Processor origin_proc;
-  DeviceSpecificManagedPerDeviceFFHandle *origin_result_ptr;
+  DeviceSpecificPtr<ManagedPerDeviceFFHandle> *origin_result_ptr;
 };
 static_assert(std::is_trivially_copyable_v<FfHandleInitReturnTaskArgs>);
 
@@ -36,8 +36,8 @@ void ff_handle_init_return_task_body(void const *args,
 Realm::Event spawn_ff_handle_init_return_task(
     RealmContext &ctx,
     Realm::Processor origin_proc,
-    DeviceSpecificManagedPerDeviceFFHandle const &result,
-    DeviceSpecificManagedPerDeviceFFHandle *origin_result_ptr,
+    DeviceSpecificPtr<ManagedPerDeviceFFHandle> const &result,
+    DeviceSpecificPtr<ManagedPerDeviceFFHandle> *origin_result_ptr,
     Realm::Event precondition) {
   FfHandleInitReturnTaskArgs task_args{result, origin_proc, origin_result_ptr};
 

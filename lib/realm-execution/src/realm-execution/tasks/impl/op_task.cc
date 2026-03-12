@@ -26,7 +26,7 @@ void op_task_body(void const *args,
 
   RealmContext ctx{proc};
   device_handle_t device_handle =
-      device_handle_t_from_device_specific_managed_handle(
+      device_handle_t_from_device_specific_managed_ff_handle(
           task_args.device_handle, ctx.get_current_device_idx());
 
   // Patch the invocation to include the provided instances
@@ -68,7 +68,7 @@ Realm::Event spawn_op_task(
     TensorInstanceBacking const &tensor_backing,
     std::optional<DeviceSpecificPtr<PerDeviceOpState>> const &device_state,
     ProfilingSettings const &profiling_settings,
-    DeviceSpecificManagedPerDeviceFFHandle const &device_handle,
+    DeviceSpecificPtr<ManagedPerDeviceFFHandle> const &device_handle,
     FFIterationConfig const &iteration_config,
     std::optional<OptimizerAttrs> const &optimizer_attrs,
     Realm::Event precondition) {

@@ -38,7 +38,7 @@ std::optional<Realm::Event> spawn_per_device_op_state_init_task(
     DynamicNodeInvocation const &invocation,
     TensorInstanceBacking const &tensor_backing,
     ProfilingSettings const &profiling_settings,
-    DeviceSpecificManagedPerDeviceFFHandle const &device_handle,
+    DeviceSpecificPtr<ManagedPerDeviceFFHandle> const &device_handle,
     FFIterationConfig const &iteration_config,
     OptimizerAttrs const &optimizer_attrs,
     DeviceSpecificPtr<PerDeviceOpState> *result_ptr,

@@ -17,14 +17,15 @@ public:
   DistributedFfHandle() = delete;
   explicit DistributedFfHandle(
       std::unordered_map<Realm::Processor,
-                         DeviceSpecificManagedPerDeviceFFHandle> const
+                         DeviceSpecificPtr<ManagedPerDeviceFFHandle>> const
           &handles);
 
-  DeviceSpecificManagedPerDeviceFFHandle const &
+  DeviceSpecificPtr<ManagedPerDeviceFFHandle> const &
       at(Realm::Processor processor) const;
 
 private:
-  std::unordered_map<Realm::Processor, DeviceSpecificManagedPerDeviceFFHandle>
+  std::unordered_map<Realm::Processor,
+                     DeviceSpecificPtr<ManagedPerDeviceFFHandle>>
       handles;
 };
 

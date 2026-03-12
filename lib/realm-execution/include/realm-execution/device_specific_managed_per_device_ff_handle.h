@@ -9,14 +9,12 @@
 
 namespace FlexFlow {
 
-using DeviceSpecificManagedPerDeviceFFHandle =
-    DeviceSpecificPtr<ManagedPerDeviceFFHandle>;
+DeviceSpecificPtr<ManagedPerDeviceFFHandle>
+    make_device_specific_managed_ff_handle(
+        device_id_t const &, std::optional<ManagedPerDeviceFFHandle *> const &);
 
-DeviceSpecificManagedPerDeviceFFHandle make_device_specific_managed_handle(
-    device_id_t const &, std::optional<ManagedPerDeviceFFHandle *> const &);
-
-device_handle_t device_handle_t_from_device_specific_managed_handle(
-    DeviceSpecificManagedPerDeviceFFHandle const &, device_id_t);
+device_handle_t device_handle_t_from_device_specific_managed_ff_handle(
+    DeviceSpecificPtr<ManagedPerDeviceFFHandle> const &, device_id_t);
 
 } // namespace FlexFlow
 

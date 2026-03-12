@@ -28,8 +28,8 @@ void ff_handle_init_return_task_body(
 Realm::Event spawn_ff_handle_init_return_task(
     RealmContext &ctx,
     Realm::Processor origin_proc,
-    DeviceSpecificManagedPerDeviceFFHandle const &result,
-    DeviceSpecificManagedPerDeviceFFHandle *origin_result_ptr,
+    DeviceSpecificPtr<ManagedPerDeviceFFHandle> const &result,
+    DeviceSpecificPtr<ManagedPerDeviceFFHandle> *origin_result_ptr,
     Realm::Event precondition);
 
 } // namespace FlexFlow

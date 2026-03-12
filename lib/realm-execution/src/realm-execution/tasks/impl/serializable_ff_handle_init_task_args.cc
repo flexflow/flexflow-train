@@ -19,7 +19,7 @@ FfHandleInitTaskArgs ff_handle_init_task_args_from_serializable(
       /*allowTensorOpMathConversion=*/args.allowTensorOpMathConversion,
       /*origin_proc=*/realm_processor_from_serializable(args.origin_proc),
       /*origin_result_ptr=*/
-      reinterpret_cast<DeviceSpecificManagedPerDeviceFFHandle *>(
+      reinterpret_cast<DeviceSpecificPtr<ManagedPerDeviceFFHandle> *>(
           args.origin_result_ptr),
   };
 }

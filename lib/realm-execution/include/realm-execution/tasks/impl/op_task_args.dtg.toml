@@ -32,7 +32,7 @@ type = "::FlexFlow::ProfilingSettings"
 
 [[fields]]
 name = "device_handle"
-type = "::FlexFlow::DeviceSpecificManagedPerDeviceFFHandle"
+type = "::FlexFlow::DeviceSpecificPtr<::FlexFlow::ManagedPerDeviceFFHandle>"
 
 [[fields]]
 name = "iteration_config"

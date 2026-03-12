@@ -30,7 +30,7 @@ Realm::Event spawn_ff_handle_init_task(
     Realm::Processor target_proc,
     size_t workSpaceSize,
     bool allowTensorOpMathConversion,
-    DeviceSpecificManagedPerDeviceFFHandle *result_ptr,
+    DeviceSpecificPtr<ManagedPerDeviceFFHandle> *result_ptr,
     Realm::Event precondition);
 
 } // namespace FlexFlow

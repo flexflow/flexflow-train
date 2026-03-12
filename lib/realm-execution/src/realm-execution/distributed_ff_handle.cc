@@ -7,10 +7,11 @@ namespace FlexFlow {
 
 DistributedFfHandle::DistributedFfHandle(
     std::unordered_map<Realm::Processor,
-                       DeviceSpecificManagedPerDeviceFFHandle> const &handles)
+                       DeviceSpecificPtr<ManagedPerDeviceFFHandle>> const
+        &handles)
     : handles(handles) {}
 
-DeviceSpecificManagedPerDeviceFFHandle const &
+DeviceSpecificPtr<ManagedPerDeviceFFHandle> const &
     DistributedFfHandle::at(Realm::Processor processor) const {
   return this->handles.at(processor);
 }
@@ -20,7 +21,8 @@ DistributedFfHandle
                                  size_t workSpaceSize,
                                  bool allowTensorOpMathConversion,
                                  Realm::Event precondition) {
-  std::unordered_map<Realm::Processor, DeviceSpecificManagedPerDeviceFFHandle>
+  std::unordered_map<Realm::Processor,
+                     DeviceSpecificPtr<ManagedPerDeviceFFHandle>>
       handles;
 
   // Allocate space for the result before launching any tasks
@@ -29,7 +31,7 @@ DistributedFfHandle
     if (proc.kind() == Realm::Processor::LOC_PROC ||
         proc.kind() == Realm::Processor::TOC_PROC) {
       handles.insert({proc,
-                      make_device_specific_managed_handle(
+                      make_device_specific_managed_ff_handle(
                           ctx.get_current_device_idx(), std::nullopt)});
     }
   }

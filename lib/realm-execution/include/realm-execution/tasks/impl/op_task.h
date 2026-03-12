@@ -59,7 +59,7 @@ Realm::Event spawn_op_task(
     TensorInstanceBacking const &tensor_backing,
     std::optional<DeviceSpecificPtr<PerDeviceOpState>> const &device_state,
     ProfilingSettings const &profiling_settings,
-    DeviceSpecificManagedPerDeviceFFHandle const &device_handle,
+    DeviceSpecificPtr<ManagedPerDeviceFFHandle> const &device_handle,
     FFIterationConfig const &iteration_config,
     std::optional<OptimizerAttrs> const &optimizer_attrs,
     Realm::Event precondition);

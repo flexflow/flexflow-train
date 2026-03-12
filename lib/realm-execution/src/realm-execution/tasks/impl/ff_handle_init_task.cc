@@ -37,8 +37,8 @@ void ff_handle_init_task_body(void const *args,
       deserialize_task_args<SerializableFfHandleInitTaskArgs>(args, arglen));
 
   RealmContext ctx{proc};
-  DeviceSpecificManagedPerDeviceFFHandle managed_handle =
-      make_device_specific_managed_handle(
+  DeviceSpecificPtr<ManagedPerDeviceFFHandle> managed_handle =
+      make_device_specific_managed_ff_handle(
           ctx.get_current_device_idx(),
           make_ff_handle_for_processor(proc,
                                        task_args.workSpaceSize,
@@ -56,7 +56,7 @@ Realm::Event spawn_ff_handle_init_task(
     Realm::Processor target_proc,
     size_t workSpaceSize,
     bool allowTensorOpMathConversion,
-    DeviceSpecificManagedPerDeviceFFHandle *result_ptr,
+    DeviceSpecificPtr<ManagedPerDeviceFFHandle> *result_ptr,
     Realm::Event precondition) {
 
   FfHandleInitTaskArgs task_args = FfHandleInitTaskArgs{
