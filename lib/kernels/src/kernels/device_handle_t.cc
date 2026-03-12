@@ -2,10 +2,19 @@
 
 namespace FlexFlow {
 
-device_handle_t device_handle_t_from_managed_handle(
+device_handle_t device_handle_t_from_managed_ff_handle(
     std::optional<ManagedPerDeviceFFHandle> const &managed_handle) {
   if (managed_handle.has_value()) {
     return gpu_make_device_handle_t(managed_handle.value().raw_handle());
+  } else {
+    return cpu_make_device_handle_t();
+  }
+}
+
+device_handle_t device_handle_t_from_managed_ff_handle_ptr(
+    std::optional<ManagedPerDeviceFFHandle *> const &managed_handle) {
+  if (managed_handle.has_value()) {
+    return gpu_make_device_handle_t(managed_handle.value()->raw_handle());
   } else {
     return cpu_make_device_handle_t();
   }

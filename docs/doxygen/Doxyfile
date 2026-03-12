@@ -42,7 +42,7 @@ DOXYFILE_ENCODING      = UTF-8
 # title of most generated pages and in a few other places.
 # The default value is: My Project.
 
-PROJECT_NAME           = FlexFlow
+PROJECT_NAME           = FlexFlow Train
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. This
 # could be handy for archiving the generated documentation or if some version
@@ -372,7 +372,7 @@ TOC_INCLUDE_HEADINGS   = 5
 # The default value is: DOXYGEN.
 # This tag requires that the tag MARKDOWN_SUPPORT is set to YES.
 
-MARKDOWN_ID_STYLE      = DOXYGEN
+MARKDOWN_ID_STYLE      = GITHUB
 
 # When enabled doxygen tries to link words that correspond to documented
 # classes, or namespaces to their corresponding documentation. Such a link can
@@ -380,7 +380,7 @@ MARKDOWN_ID_STYLE      = DOXYGEN
 # globally by setting AUTOLINK_SUPPORT to NO.
 # The default value is: YES.
 
-AUTOLINK_SUPPORT       = YES
+AUTOLINK_SUPPORT       = NO
 
 # If you use STL classes (i.e. std::string, std::vector, etc.) but do not want
 # to include (a tag file for) the STL sources as input, then you should set this
@@ -390,7 +390,7 @@ AUTOLINK_SUPPORT       = YES
 # diagrams that involve STL classes more complete and accurate.
 # The default value is: NO.
 
-BUILTIN_STL_SUPPORT    = NO
+BUILTIN_STL_SUPPORT    = YES
 
 # If you use Microsoft's C++/CLI language, you should set this option to YES to
 # enable parsing support.
@@ -636,7 +636,7 @@ CASE_SENSE_NAMES       = YES
 # scope will be hidden.
 # The default value is: NO.
 
-HIDE_SCOPE_NAMES       = NO
+HIDE_SCOPE_NAMES       = YES
 
 # If the HIDE_COMPOUND_REFERENCE tag is set to NO (default) then doxygen will
 # append additional text to a page's title, such as Class Reference. If set to
@@ -944,7 +944,11 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT                  = $(FF_HOME)/lib \
-                         $(FF_HOME)/bin
+                         $(FF_HOME)/bin \
+                         $(FF_HOME)/index.dox \
+                         $(FF_HOME)/contributing.dox \
+                         $(FF_HOME)/docs/sapling.dox \
+                         $(FF_HOME)/docs/realm-api.dox
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -990,8 +994,9 @@ FILE_PATTERNS          = *.c \
                          *.cu \
                          *.h \
                          *.hpp \
-                         *.md \
-                         *.py
+                         *.py \
+                         *.dox \
+                         *.md
 
 # The RECURSIVE tag can be used to specify whether or not subdirectories should
 # be searched for input files as well.
@@ -1006,7 +1011,9 @@ RECURSIVE              = YES
 # Note that relative paths are relative to the directory from which doxygen is
 # run.
 
-EXCLUDE                =
+EXCLUDE                = lib/realm-execution/include/realm-execution/realm.h \
+                         lib/runtime/ \
+                         lib/local-pcg-execution/
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
@@ -1022,7 +1029,7 @@ EXCLUDE_SYMLINKS       = NO
 # Note that the wildcards are matched against the file with absolute path, so to
 # exclude all test directories for example use the pattern */test/*
 
-EXCLUDE_PATTERNS       = */tl/*
+EXCLUDE_PATTERNS       = */tl/* */test/* */hip/*
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names
 # (namespaces, classes, functions, etc.) that should be excluded from the
@@ -1036,7 +1043,8 @@ EXCLUDE_SYMBOLS        =
 # that contain example code fragments that are included (see the \include
 # command).
 
-EXAMPLE_PATH           =
+EXAMPLE_PATH           = $(FF_HOME)/lib \
+                         $(FF_HOME)/bin
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and
@@ -1050,7 +1058,7 @@ EXAMPLE_PATTERNS       = *
 # irrespective of the value of the RECURSIVE tag.
 # The default value is: NO.
 
-EXAMPLE_RECURSIVE      = NO
+EXAMPLE_RECURSIVE      = YES
 
 # The IMAGE_PATH tag can be used to specify one or more files or directories
 # that contain images that are to be included in the documentation (see the
@@ -2432,7 +2440,7 @@ HIDE_UNDOC_RELATIONS   = YES
 # set to NO
 # The default value is: NO.
 
-HAVE_DOT               = NO
+HAVE_DOT               = YES
 
 # The DOT_NUM_THREADS specifies the number of dot invocations doxygen is allowed
 # to run in parallel. When set to 0 doxygen will base this on the number of
@@ -2651,7 +2659,7 @@ DOT_IMAGE_FORMAT       = png
 # The default value is: NO.
 # This tag requires that the tag HAVE_DOT is set to YES.
 
-INTERACTIVE_SVG        = NO
+INTERACTIVE_SVG        = YES
 
 # The DOT_PATH tag can be used to specify the path where the dot tool can be
 # found. If left blank, it is assumed the dot tool can be found in the path.

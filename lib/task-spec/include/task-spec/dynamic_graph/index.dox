@@ -1,0 +1,17 @@
+namespace FlexFlow {
+/**
+
+\page task-spec-dynamic-graph task-spec/dynamic_graph
+
+\brief Contains common code for inferring and making explicit information from a \ref MappedParallelComputationGraph or \ref ComputationGraph, lowering it into a \ref DynamicOpenDataflowGraph that can be executed by \ref realm-execution and/or \ref local-execution, respectively.
+
+\section task-spec-lowering-passes Lowering Passes
+
+- \ref pass_expansion.h
+- \ref shard_expansion.h
+- \ref update_insertion.h
+- \ref loss_insertion.h
+- \ref machine_slicing.h
+
+*/
+}

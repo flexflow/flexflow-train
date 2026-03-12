@@ -1,0 +1,12 @@
+/**
+
+\page bin bin
+
+This directory contains command-line interfaces for %FlexFlow %Train and associated tools (all in C++).
+
+- \subpage export-model-arch "": \copybrief export-model-arch
+- \subpage protobuf-to-json "": \copybrief protobuf-to-json
+- \subpage sp-ization-benchmarking "": \copybrief sp-ization-benchmarking
+- \subpage substitution-to-dot "": \copybrief substitution-to-dot
+
+*/

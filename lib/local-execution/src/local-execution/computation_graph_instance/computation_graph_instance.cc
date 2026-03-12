@@ -1,5 +1,5 @@
 #include "local-execution/computation_graph_instance/computation_graph_instance.h"
-#include "local-execution/device_state_initialization.h"
+#include "local-execution/per_device_op_state_initialization.h"
 #include "local-execution/task_execution.h"
 #include "local-execution/tensor_allocation.h"
 #include "pcg/optimizer_attrs.h"
@@ -61,9 +61,7 @@ static GenericTensorAccessorW
 ComputationGraphInstance create_computation_graph_instance(
     ComputationGraph const &cg,
     OptimizerAttrs const &optimizer_attrs,
-    std::optional<LossAttrs> const &loss_attrs,
-    std::optional<GenericTensorAccessorR> label_tensor,
-    std::optional<tensor_guid_t> logit_tensor,
+    std::optional<LossConfig> const &loss,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &input_tensors,
     Allocator &allocator,
@@ -77,14 +75,13 @@ ComputationGraphInstance create_computation_graph_instance(
   std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> inputs =
       input_tensors;
   std::optional<DynamicValueAttrs> logit_grad_value;
-  if (loss_attrs.has_value()) {
+  if (loss.has_value()) {
+    auto [loss_attrs, label_tensor, logit_tensor] = assert_unwrap(loss);
     auto [loss_inserted_dg, label_v, logit_grad_v] = perform_loss_insertion(
-        dg,
-        assert_unwrap(loss_attrs),
-        dynamic_tensor_guid_t{assert_unwrap(logit_tensor)});
+        dg, loss_attrs, dynamic_tensor_guid_t{logit_tensor}, std::nullopt);
     dg = loss_inserted_dg;
     logit_grad_value = logit_grad_v;
-    inputs.insert(std::pair{label_v, assert_unwrap(label_tensor)});
+    inputs.insert(std::pair{label_v, label_tensor});
   }
 
   dg = perform_update_insertion(dg, optimizer_attrs);
@@ -95,13 +92,13 @@ ComputationGraphInstance create_computation_graph_instance(
         return get_loss_tensor_accessor(dg, lgv);
       });
 
-  dg = perform_device_state_initialization(dg,
-                                           allocator,
-                                           profiling_settings,
-                                           device_handle,
-                                           iteration_config,
-                                           optimizer_attrs,
-                                           device_idx);
+  dg = perform_per_device_op_state_initialization(dg,
+                                                  allocator,
+                                                  profiling_settings,
+                                                  device_handle,
+                                                  iteration_config,
+                                                  optimizer_attrs,
+                                                  device_idx);
 
   // Compute the topological ordering of the graph
   auto [kwarg_graph, node_map] =
@@ -133,7 +130,7 @@ static std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
             /*per_device_op_state=*/
             transform(invocation.node_attrs.per_device_op_state,
                       [&](DeviceSpecificPerDeviceOpState const &op_state) {
-                        return get_device_state_from_device_specific(
+                        return get_per_device_op_state_from_device_specific(
                             op_state, device_idx);
                       }),
             /*iteration_config=*/iteration_config,

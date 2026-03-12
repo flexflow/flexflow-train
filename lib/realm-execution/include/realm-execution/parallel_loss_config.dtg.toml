@@ -1,0 +1,27 @@
+namespace = "FlexFlow"
+name = "ParallelLossConfig"
+type = "struct"
+features = []
+
+includes = [
+  "op-attrs/ops/loss_functions/loss_attrs.dtg.h",
+  "kernels/accessor.h",
+  "pcg/parallel_computation_graph/parallel_tensor_guid_t.dtg.h",
+  "pcg/mapped_parallel_computation_graph/mapped_operator_task_group.h",
+]
+
+[[fields]]
+name = "loss_attrs"
+type = "::FlexFlow::LossAttrs"
+
+[[fields]]
+name = "label_tensor"
+type = "::FlexFlow::GenericTensorAccessorR"
+
+[[fields]]
+name = "logit_tensor"
+type = "::FlexFlow::parallel_tensor_guid_t"
+
+[[fields]]
+name = "loss_mapping"
+type = "::FlexFlow::MappedOperatorTaskGroup"

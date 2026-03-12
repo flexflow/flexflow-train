@@ -1,0 +1,50 @@
+namespace FlexFlow {
+/**
+
+\page realm-execution realm-execution
+
+\brief Executes distributed \ref MappedParallelComputationGraph ""s using Realm, primarily by lowering them to distributed \ref DynamicOpenDataflowGraph ""s using \ref task-spec.
+
+The Realm backend for distributed execution.
+
+This is a single-controller implementation. That means the controller (the task that launches all other work) runs on a single node and remotely launches work onto other nodes. Aside from caveats mentioned below, this implementation is (mostly) capable of distributed execution.
+
+\section realm-execution-usage Example Usage
+
+\snippet{local} lib/realm-execution/test/src/realm-execution/test_e2e.cc realm-execution example
+
+\section realm-execution-major-components Major Components
+
+- \ref PCGInstance "": \copybrief PCGInstance
+- \ref RealmManager "": \copybrief RealmManager
+- \ref RealmContext "": \copybrief RealmContext
+- \subpage realm-execution-tasks "include/realm-execution/tasks": The Realm task implementations and their supporting infrastructure.
+  - \ref "lib/realm-execution/include/realm-execution/tasks/impl" "impl/": the actual bodies of Realm tasks, along with interfaces to call them, and the serialization infrastructure for their arguments.
+  - \ref lib/realm-execution/include/realm-execution/tasks/serializer/ "serializer/": additional support for serializing Realm data types.
+  - \ref "realm_task_registry.h": Manages the registration of Realm tasks. All Realm tasks go through this interface.
+  - \ref "task_id_t.h": Type (\ref task_id_t) to represent Realm tasks, along with an encoding to Realm's native task ID type.
+- Helper components (mainly used within \ref PCGInstance)
+  - \ref "DistributedFfHandle": represents a distributed \ref PerDeviceFFHandle (i.e., a \ref PerDeviceFFHandle on each of the GPUs in the machine), for convenience.
+  - \ref DependencySet "": tracks dependencies during execution of tasks.
+  - \ref "distributed_per_device_op_state_initialization.h": performs distributed initialization of \ref "PerDeviceOpState"s and packages the results into a \ref PerDeviceOpStateBacking.
+  - \ref "instance_allocation.h": allocates instances for tensors in the dynamic graph and returns the resulting \ref TensorInstanceBacking.
+
+\section realm-execution-todo Outstanding TODOs
+
+- external instances
+- copies
+- task fusion
+- parallel operator implementation (partition, reduce, gather, etc.)
+- and fused parallel operators (reduce + broadcast = allreduce)
+- memory-optimizing compiler integration (tensor creation/destruction, tensor reuse)
+- control replication
+- Realm subgraphs
+
+\section terminology Terminology
+
+\subsection term-controller controller
+
+The main thread/function that, in an non-controlled-replicated implementation, processes the task graph and dispatches all of the tasks. In the future this will be extend to operate in a distributed fashion.
+
+*/
+}

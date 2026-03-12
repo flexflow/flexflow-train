@@ -23,11 +23,13 @@ std::ostream &operator<<(std::ostream &s, FwdBwdOpTaskImplFunction const &x);
 
 } // namespace FlexFlow
 
+///\cond
 namespace std {
 template <>
 struct hash<::FlexFlow::FwdBwdOpTaskImplFunction> {
   size_t operator()(::FlexFlow::FwdBwdOpTaskImplFunction const &) const;
 };
 } // namespace std
+///\endcond
 
 #endif

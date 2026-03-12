@@ -1,0 +1,19 @@
+namespace FlexFlow {
+/**
+
+\page models models
+
+\brief Pre-built \ref ComputationGraph ""s for various models for use in testing and evalutation.
+
+\section real-models Real Models
+- \subpage models-bert "BERT"
+- \subpage models-candle-uno "Candle UNO"
+- \subpage models-dlrm "DLRM"
+- \subpage models-inception "Inception v3"
+- \subpage models-transformer "Transformer"
+
+\section test-models Artificial Models for Testing
+- \subpage split-test
+
+*/
+}

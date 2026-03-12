@@ -1,0 +1,37 @@
+namespace FlexFlow {
+/**
+
+@page export-model-arch export-model-arch
+
+\brief Exports the model computation graphs defined in the @ref models library as either JSON (for use outside of FlexFlow) or as DOT (for visualization). Can also optionally export the SP decompositions of the computation graphs.
+
+A tool for exporting (for details of the file format, see \ref file-format) and visualizing the model ComputationGraphs defined in @ref models.
+To build and run \c export-model-arch, run the following commands from the root of the %FlexFlow %Train repository:
+
+\verbatim
+$ proj cmake # if you haven't already
+...
+$ proj build
+...
+$ ./build/normal/bin/export-model-arch/export-model-arch -h
+\endverbatim
+
+The above should print the help message for `export-model-arch`. A few example commands are also listed below:
+
+- Export the \ref split-test model in JSON (e.g., for processing outside of %FlexFlow %Train):
+\verbatim
+$ ./build/normal/bin/export-model-arch/export-model-arch split_test
+\endverbatim
+
+- Export the \ref split-test model in JSON along with the SP decomposition of the model's ComputationGraph:
+\verbatim
+$ ./build/normal/bin/export-model-arch/export-model-arch --sp-decomposition split_test
+\endverbatim
+
+- Export the \ref split-test model as DOT (e.g., for visualization using a [local](https://github.com/jrfonseca/xdot.py) or [web-based](https://dreampuf.github.io/GraphvizOnline/) DOT viewer)
+\verbatim
+$ ./build/normal/bin/export-model-arch/export-model-arch --dot split_test
+\endverbatim
+
+*/
+}

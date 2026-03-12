@@ -122,9 +122,7 @@ OpCostMetrics LocalCostEstimator::estimate_cost(
   ComputationGraphInstance instance = create_computation_graph_instance(
       /*compgraph=*/cg,
       /*optimizer_attrs=*/optimizer_attrs,
-      /*loss_attrs=*/std::nullopt,
-      /*label_tensor=*/std::nullopt,
-      /*logit_tensor=*/std::nullopt,
+      /*loss=*/std::nullopt,
       /*input_tensors=*/{},
       /*allocator=*/allocator,
       /*profiling_settings=*/this->profiling_settings,

@@ -24,11 +24,13 @@ std::string format_as(any_value_type const &v) {
 
 } // namespace FlexFlow
 
+///\cond
 namespace std {
 
 size_t hash<::FlexFlow::any_value_type>::operator()(
     ::FlexFlow::any_value_type const &v) const {
   return v.hash(v);
 }
+///\endcond
 
 } // namespace std

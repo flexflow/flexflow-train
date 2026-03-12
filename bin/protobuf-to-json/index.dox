@@ -1,0 +1,12 @@
+namespace FlexFlow {
+/**
+
+\page protobuf-to-json
+
+\brief Converts TASO-generated substitutions from the legacy protobuf format ([example](../substitutions/graph_subst_3_v2.pb)) to the legacy JSON format ([example](../substitutions/graph_subst_3_v2.json)). Will be removed in the future once the substitution generator is integrated natively into FlexFlow Train (tracked in [#351](https://github.com/flexflow/flexflow-train/issues/351)).
+
+\todo
+  \@lockshaw Add docs and example (s) for protobuf-to-json. See \ref export-model-arch for an example.
+
+*/
+}
