@@ -2,6 +2,13 @@ namespace = "FlexFlow"
 name = "PerDeviceOpStateInitTaskArgs"
 type = "struct"
 features = []
+docstring = '''
+\brief An encapsulation of the arguments passed to \ref per_device_op_state_init_return_task_body
+       by \ref spawn_per_device_op_state_init_return_task.
+
+For the meaning of specific fields, see the parameter descriptions for
+\ref spawn_per_device_op_state_init_return_task.
+'''
 
 includes = [
   "kernels/profiling_settings.dtg.h",

@@ -29,3 +29,16 @@ src_includes = [
 [[fields]]
 name = "backing"
 type = "std::unordered_map<::FlexFlow::DynamicValueAttrs, std::pair<::FlexFlow::Realm::RegionInstance, ::FlexFlow::Realm::Event>>"
+docstring = '''
+The need to track a pair of RegionInstance and Event, rather than just a RegionInstance, is due to the fact that
+unlike in Legion, RegionInstance does not natively encode its own ready state. This gives you have a choice:
+
+1. Either block eagerly (to make sure all instances are ready and you never accidently use an instance before it becomes ready), or
+2. Carry the ready event around with the instance and block before you use it.
+
+The way Realm works, an instance always has exactly one ready event (i.e., a
+ready event is actually a unique key for the instance), so there's really only
+one semantic meaning that makes sense here. Thus, it's idiomatic Realm coding style
+to talk about any given asynchronous object handle as a pair of (Object handle,
+ready Event for Object).
+'''
