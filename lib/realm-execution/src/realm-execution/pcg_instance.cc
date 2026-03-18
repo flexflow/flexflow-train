@@ -169,7 +169,7 @@ static Realm::Event spawn_dynamic_node_invocation(
     PerDeviceOpStateBacking const &device_state_backing,
     OptimizerAttrs const &optimizer_attrs,
     ProfilingSettings const &profiling_settings,
-    DistributedDeviceHandle const &device_handle,
+    DistributedFfHandle const &device_handle,
     FFIterationConfig iteration_config) {
   Realm::Event precondition = Realm::Event::merge_events(
       Realm::Event::merge_events(input_dependencies),
