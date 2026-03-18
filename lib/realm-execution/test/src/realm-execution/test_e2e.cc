@@ -75,7 +75,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           TensorDims{FFOrdered{output_dim, hidden_dim}}, DataType::FLOAT};
 
       ParallelLayerAddedResult inputs_layer =
-          pcg_add_input_layer_with_grad(pcg, input_tensor_shape);
+          pcg_add_input_layer(pcg, input_tensor_shape);
       parallel_tensor_guid_t t_input =
           require_only_key(inputs_layer.outputs, TensorSlotName::OUTPUT);
 
@@ -288,7 +288,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         TensorDims{FFOrdered{output_dim, hidden_dim}}, DataType::FLOAT};
 
     ParallelLayerAddedResult inputs_layer =
-        pcg_add_input_layer_with_grad(pcg, input_tensor_shape);
+        pcg_add_input_layer(pcg, input_tensor_shape);
     parallel_tensor_guid_t t_input =
         require_only_key(inputs_layer.outputs, TensorSlotName::OUTPUT);
 

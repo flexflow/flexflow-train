@@ -69,7 +69,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("outputs") {
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> result =
-          get_layer_outputs(b.pcg, layer);
+          get_outgoing_tensors(b.pcg, layer);
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> correct = {
           {
               TensorSlotName::OUTPUT,
@@ -145,7 +145,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("outputs") {
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> result =
-          get_layer_outputs(b.pcg, layer);
+          get_outgoing_tensors(b.pcg, layer);
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> correct = {
           {
               TensorSlotName::OUTPUT,
@@ -200,7 +200,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("outputs") {
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> result =
-          get_layer_outputs(b.pcg, layer);
+          get_outgoing_tensors(b.pcg, layer);
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> correct = {
           {
               TensorSlotName::OUTPUT,
@@ -329,7 +329,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     CHECK(conv_bias_shape == correct_bias_shape);
 
     std::unordered_map<TensorSlotName, parallel_tensor_guid_t> conv_outputs =
-        get_layer_outputs(b.pcg, conv_guid);
+        get_outgoing_tensors(b.pcg, conv_guid);
     CHECK(conv_outputs.size() == 1);
 
     parallel_tensor_guid_t conv_output =
@@ -371,7 +371,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("outputs") {
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> result =
-          get_layer_outputs(b.pcg, layer);
+          get_outgoing_tensors(b.pcg, layer);
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> correct = {
           {
               TensorSlotName::OUTPUT,
@@ -413,7 +413,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("outputs") {
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> result =
-          get_layer_outputs(b.pcg, layer);
+          get_outgoing_tensors(b.pcg, layer);
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> correct = {
           {
               TensorSlotName::OUTPUT,
@@ -464,7 +464,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("outputs") {
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> result =
-          get_layer_outputs(b.pcg, layer);
+          get_outgoing_tensors(b.pcg, layer);
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> correct = {
           {
               TensorSlotName::OUTPUT,
@@ -508,7 +508,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("outputs") {
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> result =
-          get_layer_outputs(b.pcg, layer);
+          get_outgoing_tensors(b.pcg, layer);
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> correct = {
           {
               TensorSlotName::OUTPUT,
@@ -556,7 +556,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("outputs") {
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> result =
-          get_layer_outputs(b.pcg, layer);
+          get_outgoing_tensors(b.pcg, layer);
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> correct = {
           {
               TensorSlotName::OUTPUT,
@@ -602,7 +602,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("outputs") {
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> result =
-          get_layer_outputs(b.pcg, layer);
+          get_outgoing_tensors(b.pcg, layer);
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> correct = {
           {
               TensorSlotName::OUTPUT,
@@ -646,7 +646,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("outputs") {
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> result =
-          get_layer_outputs(b.pcg, layer);
+          get_outgoing_tensors(b.pcg, layer);
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> correct = {
           {
               TensorSlotName::OUTPUT,
@@ -695,7 +695,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("outputs") {
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> result =
-          get_layer_outputs(b.pcg, layer);
+          get_outgoing_tensors(b.pcg, layer);
       std::unordered_map<TensorSlotName, parallel_tensor_guid_t> correct = {
           {
               TensorSlotName::OUTPUT,

@@ -16,7 +16,7 @@ ff_add_library(
     spdlog
     task-spec
     utils
-    Realm::Realm
+    realm
 )
 
 add_subdirectory(test)

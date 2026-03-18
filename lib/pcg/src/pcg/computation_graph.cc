@@ -114,7 +114,8 @@ LayerAddedResult add_layer(
 }
 
 LayerAddedResult add_input_layer(ComputationGraph &cg,
-                                 TensorShape const &tensor_shape) {
+                                 TensorShape const &tensor_shape,
+                                 CreateGrad create_grad) {
   LayerAttrs layer_attrs = LayerAttrs{
       /*op_attrs=*/ComputationGraphOpAttrs{InputAttrs{tensor_shape}},
       /*name=*/std::nullopt,
@@ -126,24 +127,7 @@ LayerAddedResult add_input_layer(ComputationGraph &cg,
                    /*weights=*/{},
                    /*outputs=*/
                    std::unordered_map<TensorSlotName, CreateGrad>{
-                       {TensorSlotName::OUTPUT, CreateGrad::NO},
-                   });
-}
-
-LayerAddedResult add_input_layer_with_grad(ComputationGraph &cg,
-                                           TensorShape const &tensor_shape) {
-  LayerAttrs layer_attrs = LayerAttrs{
-      /*op_attrs=*/ComputationGraphOpAttrs{InputAttrs{tensor_shape}},
-      /*name=*/std::nullopt,
-  };
-
-  return add_layer(cg,
-                   layer_attrs,
-                   /*inputs=*/{},
-                   /*weights=*/{},
-                   /*outputs=*/
-                   std::unordered_map<TensorSlotName, CreateGrad>{
-                       {TensorSlotName::OUTPUT, CreateGrad::YES},
+                       {TensorSlotName::OUTPUT, create_grad},
                    });
 }
 

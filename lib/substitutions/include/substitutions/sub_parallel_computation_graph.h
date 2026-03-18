@@ -37,8 +37,8 @@ std::unordered_map<TensorSlotName, open_parallel_tensor_guid_t>
     get_layer_inputs(SubParallelComputationGraph const &,
                      parallel_layer_guid_t const &);
 std::unordered_map<TensorSlotName, parallel_tensor_guid_t>
-    get_layer_outputs(SubParallelComputationGraph const &,
-                      parallel_layer_guid_t const &);
+    get_outgoing_tensors(SubParallelComputationGraph const &,
+                         parallel_layer_guid_t const &);
 
 std::unordered_set<SubParallelComputationGraphEdge> get_subgraph_incoming_edges(
     SubParallelComputationGraph const &,
