@@ -24,7 +24,8 @@ UnmappedRuntimeOnlyOpCostEstimateKey
       map_values(get_incoming_weights(pcg, parallel_layer_guid),
                  get_tensor_shape),
       /*output_shapes=*/
-      map_values(get_layer_outputs(pcg, parallel_layer_guid), get_tensor_shape),
+      map_values(get_outgoing_tensors(pcg, parallel_layer_guid),
+                 get_tensor_shape),
   };
 }
 

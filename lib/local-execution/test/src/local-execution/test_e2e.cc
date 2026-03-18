@@ -21,8 +21,8 @@
 
 using namespace ::FlexFlow;
 
-bool did_loss_decrease(GenericTensorAccessorR const &first_epoch,
-                       GenericTensorAccessorR const &last_epoch) {
+static bool did_loss_decrease(GenericTensorAccessorR const &first_epoch,
+                              GenericTensorAccessorR const &last_epoch) {
   Allocator cpu_allocator = create_local_cpu_memory_allocator();
 
   return tensor_accessor_all(
@@ -61,7 +61,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         TensorDims{FFOrdered{output_dim, hidden_dim}}, DataType::FLOAT};
 
     LayerAddedResult inputs_layer =
-        add_input_layer_with_grad(computation_graph, input_tensor_shape);
+        add_input_layer(computation_graph, input_tensor_shape);
     tensor_guid_t t_input =
         require_only_key(inputs_layer.outputs, TensorSlotName::OUTPUT);
 
@@ -149,9 +149,12 @@ TEST_SUITE(FF_TEST_SUITE) {
         create_computation_graph_instance(
             /*cg=*/computation_graph,
             /*optimizer=*/optimizer_attrs,
-            /*loss=*/loss_attrs,
-            /*label_tensor=*/label_tensor,
-            /*logit_tensor=*/t_linear_2,
+            /*loss=*/
+            LossConfig{
+                /*loss_attrs=*/loss_attrs,
+                /*label_tensor=*/label_tensor,
+                /*logit_tensor=*/t_linear_2,
+            },
             /*input_tensors=*/input_tensors,
             /*allocator=*/allocator,
             /*profiling_settings=*/ProfilingSettings{0, 0},
@@ -225,7 +228,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         TensorDims{FFOrdered{hidden_dim, output_dim}}, DataType::FLOAT};
 
     LayerAddedResult inputs_layer =
-        add_input_layer_with_grad(computation_graph, input_tensor_shape);
+        add_input_layer(computation_graph, input_tensor_shape);
     tensor_guid_t t_input =
         require_only_key(inputs_layer.outputs, TensorSlotName::OUTPUT);
 
@@ -317,9 +320,12 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         create_computation_graph_instance(
             /*cg=*/computation_graph,
             /*optimizer=*/optimizer_attrs,
-            /*loss=*/loss_attrs,
-            /*label_tensor=*/label_tensor,
-            /*logit_tensor=*/t_linear_2,
+            /*loss=*/
+            LossConfig{
+                /*loss_attrs=*/loss_attrs,
+                /*label_tensor=*/label_tensor,
+                /*logit_tensor=*/t_linear_2,
+            },
             /*input_tensors=*/input_tensors,
             /*allocator=*/allocator,
             /*profiling_settings=*/ProfilingSettings{0, 0},

@@ -53,7 +53,7 @@ static std::unordered_multiset<std::tuple<
             });
 
     std::unordered_map<TensorSlotName, ParallelTensorAttrs> outputs =
-        map_values(get_layer_outputs(pcg, l),
+        map_values(get_outgoing_tensors(pcg, l),
                    [&](parallel_tensor_guid_t const &o) {
                      return get_parallel_tensor_attrs(pcg, o);
                    });

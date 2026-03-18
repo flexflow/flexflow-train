@@ -1,0 +1,23 @@
+namespace = "FlexFlow"
+name = "SerializableRealmInstance"
+type = "struct"
+features = [
+  "eq",
+  "fmt",
+  "hash",
+  "json",
+]
+
+includes = [
+  "realm-execution/realm.h",
+]
+
+src_includes = [
+  "utils/fmt/vector.h",
+  "utils/hash/vector.h",
+]
+
+[[fields]]
+name = "instance"
+# Realm::RegionInstance has hidden fields in PRealm so we need to encode it as bytes
+type = "std::vector<uint8_t>"

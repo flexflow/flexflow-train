@@ -12,9 +12,11 @@
 
 namespace FlexFlow {
 
-LossInsertionResult perform_loss_insertion(DynamicOpenDataflowGraph const &dg,
-                                           LossAttrs const &loss_attrs,
-                                           dynamic_tensor_guid_t logit_tensor) {
+LossInsertionResult perform_loss_insertion(
+    DynamicOpenDataflowGraph const &dg,
+    LossAttrs const &loss_attrs,
+    dynamic_tensor_guid_t logit_tensor,
+    std::optional<MappedOperatorTaskGroup> const &loss_mapping) {
   DynamicValueAttrs logit_value = assert_unwrap(
       find_output_value_attrs(dg, logit_tensor, mk_dynamic_tensor_role_fwd()));
 
@@ -45,7 +47,7 @@ LossInsertionResult perform_loss_insertion(DynamicOpenDataflowGraph const &dg,
       DynamicNodeAttrs{
           /*task_type=*/DynamicTaskType::LOSS,
           /*device_coord=*/std::nullopt,
-          /*mapping=*/std::nullopt,
+          /*mapping=*/loss_mapping,
           /*op_attrs=*/TrainingOperationAttrs{loss_attrs},
           /*layer_guid=*/mk_dynamic_layer_guid_for_loss(),
           /*per_device_op_state=*/std::nullopt,

@@ -1,3 +1,0 @@
-# substitution-to-dot
-
-TODO

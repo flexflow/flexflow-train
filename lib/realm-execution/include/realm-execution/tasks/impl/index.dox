@@ -1,0 +1,36 @@
+namespace FlexFlow {
+/**
+
+\page realm-execution-tasks tasks/
+
+\c realm-execution groups tasks into four kinds (\ref tasks-controller-tasks, \ref tasks-op-task, \ref tasks-ffhandle-init, and \ref tasks-op-state-init), each which is implemented using one of two patterns (\ref tasks-one-part or \ref tasks-two-part).
+
+\section tasks-one-part Individual Tasks
+
+Invidividual tasks are just normal Realm tasks, which are implemented in \ref realm-execution as a
+wrapper function for spawning a task (e.g., \ref collective_spawn_controller_task) and a task body which is the actual Realm task implementation (e.g., \ref controller_task_body). Each also has an optional corresponding <em>TaskArgument</em> (e.g., \ref OpTaskArgs) object to provide a structure to the arguments passed from the wrapper to the task body. In cases where the %TaskArgument object is not trivially JSON-serializable, a corresponding JSON-serializable task argument type is provided (e.g., \ref SerializableOpTaskArgs).
+
+\subsection tasks-controller-tasks Controller Tasks
+
+Runs the \ref term-controller. The current implementation uses exactly one controller (i.e., centralized control), but the intention is to expand this in the future to distributed control (one controller per node, or one per device). Implemented in \ref controller_task.h.
+
+\subsection tasks-op-task Operator Tasks
+
+Implements all of the operator tasks, i.e., the tasks that are executed during training (i.e., forward, backward, update/optimizer, and loss tasks). Implented in \ref op_task.h.
+
+\section tasks-two-part Paired Tasks
+
+The other two types of tasks are implemented as pairs of tasks: one to begin initializing a value (e.g., \ref spawn_ff_handle_init_task), and another to return the initialized value when it's ready (e.g., \ref spawn_ff_handle_init_return_task). As with \ref tasks-one-part, they have an optional corresponding tasks argument type and a potential serializable task argument type.
+
+The paired task structure is required because Realm tasks do not return. Spawning a Realm task returns a completion event, but the event does not encode any information (other than that the task is finished). Thus, to return a value to the caller, a second task is required to send the value back, and the caller must block for this task to complete to ensure that the data is available before proceeding.
+
+\subsection tasks-ffhandle-init FFHandle Initialization Tasks
+
+For initializing the \ref PerDeviceFFHandle for each GPU. Implemented in \ref ff_handle_init_task.h and \ref ff_handle_init_return_task.h.
+
+\subsection tasks-op-state-init PerDeviceOpState Initialization Tasks
+
+For initializing the \ref PerDeviceOpState for each shard of an operator task. Implemented in \ref per_device_op_state_init_task.h and \ref per_device_op_state_init_return_task.h.
+
+*/
+}

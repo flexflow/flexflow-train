@@ -270,13 +270,13 @@ TEST_SUITE(FF_TEST_SUITE) {
           get_parallel_tensor_attrs(
               pcg,
               open_parallel_tensor_guid_from_closed(
-                  require_only_key(get_layer_outputs(pcg, relu_match_layer),
+                  require_only_key(get_outgoing_tensors(pcg, relu_match_layer),
                                    TensorSlotName::OUTPUT)));
 
       parallel_layer_guid_t result_fused_mm_relu_node =
           result_node_map.at_r(fused_mm_relu_node);
       parallel_tensor_guid_t result_fused_mm_relu_output = require_only_key(
-          get_layer_outputs(result_graph, result_fused_mm_relu_node),
+          get_outgoing_tensors(result_graph, result_fused_mm_relu_node),
           TensorSlotName::OUTPUT);
       input_parallel_tensor_guid_t result_i_activation =
           result_input_map.at_r(output_i_activation);

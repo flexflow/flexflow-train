@@ -1,0 +1,21 @@
+namespace = "FlexFlow"
+name = "PerDeviceOpStateBacking"
+type = "struct"
+features = []
+docstring = '''
+\brief Maps each shard-expanded DynamicNodeInvocation to its corresponding PerDeviceOpState.
+
+PerDeviceOpStateBacking is to PerDeviceOpState as DistributedDeviceHandle is to \ref device_handle_t (i.e., FFHandle).
+'''
+
+
+includes = [
+  "<unordered_map>",
+  "realm-execution/device_specific_ptr.h",
+  "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h",
+  "task-spec/per_device_op_state.dtg.h",
+]
+
+[[fields]]
+name = "backing"
+type = "std::unordered_map<::FlexFlow::DynamicNodeInvocation, ::FlexFlow::DeviceSpecificPtr<::FlexFlow::PerDeviceOpState>>"

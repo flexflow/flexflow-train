@@ -45,9 +45,12 @@ std::ostream &operator<<(std::ostream &s, GenericTaskImplFunction const &x) {
 
 } // namespace FlexFlow
 
+///\cond
 namespace std {
 size_t hash<FlexFlow::GenericTaskImplFunction>::operator()(
     ::FlexFlow::GenericTaskImplFunction const &x) const {
   return std::hash<decltype(x.function_ptr)>{}(x.function_ptr);
 }
+///\endcond
+
 } // namespace std

@@ -24,7 +24,7 @@ bidict<PatternNodeOutput, parallel_tensor_guid_t>
   for (auto const &[pattern_node, matched_layer] : match.node_assignment) {
     bidict<TensorSlotName, parallel_tensor_guid_t>
         matched_layer_output_tensors =
-            bidict_from_map(get_layer_outputs(spcg, matched_layer));
+            bidict_from_map(get_outgoing_tensors(spcg, matched_layer));
     bidict<TensorSlotName, PatternNodeOutput> pattern_node_outputs =
         bidict_from_map(get_pattern_node_outputs(pattern, pattern_node));
 

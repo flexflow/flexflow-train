@@ -1,0 +1,25 @@
+#ifndef _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_TENSOR_INSTANCE_BACKING_H
+#define _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_TENSOR_INSTANCE_BACKING_H
+
+#include "realm-execution/tensor_instance_backing.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
+
+namespace FlexFlow {
+
+/**
+ * \brief Make an empty TensorInstanceBacking.
+ *
+ * \relates TensorInstanceBacking
+ */
+TensorInstanceBacking make_empty_tensor_instance_backing();
+
+/**
+ * \brief Get the subset of the given TensorInstanceBacking necessary to execute
+ * the given DynamicNodeInvocation.
+ */
+TensorInstanceBacking subset_tensor_instance_backing_for_invocation(
+    TensorInstanceBacking const &, DynamicNodeInvocation const &);
+
+} // namespace FlexFlow
+
+#endif

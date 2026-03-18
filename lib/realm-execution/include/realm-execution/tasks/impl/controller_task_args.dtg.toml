@@ -1,0 +1,13 @@
+namespace = "FlexFlow"
+name = "ControllerTaskArgs"
+type = "struct"
+features = []
+
+includes = [
+  "realm-execution/realm_context.h",
+  "functional",
+]
+
+[[fields]]
+name = "thunk"
+type = "std::function<void(::FlexFlow::RealmContext &)>"

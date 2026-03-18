@@ -6,12 +6,15 @@
 #include "task-spec/dynamic_graph/dynamic_tensor_guid_t.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
 #include "task-spec/dynamic_graph/loss_insertion_result.dtg.h"
+#include <optional>
 
 namespace FlexFlow {
 
-LossInsertionResult perform_loss_insertion(DynamicOpenDataflowGraph const &dg,
-                                           LossAttrs const &loss_attrs,
-                                           dynamic_tensor_guid_t logit_tensor);
+LossInsertionResult perform_loss_insertion(
+    DynamicOpenDataflowGraph const &dg,
+    LossAttrs const &loss_attrs,
+    dynamic_tensor_guid_t logit_tensor,
+    std::optional<MappedOperatorTaskGroup> const &loss_mapping);
 
 } // namespace FlexFlow
 

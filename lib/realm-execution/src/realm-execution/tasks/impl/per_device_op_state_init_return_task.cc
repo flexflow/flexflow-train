@@ -1,0 +1,53 @@
+#include "realm-execution/tasks/impl/per_device_op_state_init_return_task.h"
+#include "realm-execution/tasks/task_id_t.dtg.h"
+
+namespace FlexFlow {
+
+struct PerDeviceOpStateInitReturnTaskArgs {
+public:
+  PerDeviceOpStateInitReturnTaskArgs() = delete;
+  PerDeviceOpStateInitReturnTaskArgs(
+      DeviceSpecificPtr<PerDeviceOpState> result,
+      Realm::Processor origin_proc,
+      DeviceSpecificPtr<PerDeviceOpState> *origin_result_ptr)
+      : result(result), origin_proc(origin_proc),
+        origin_result_ptr(origin_result_ptr) {}
+
+public:
+  DeviceSpecificPtr<PerDeviceOpState> result;
+  Realm::Processor origin_proc;
+  DeviceSpecificPtr<PerDeviceOpState> *origin_result_ptr;
+};
+static_assert(std::is_trivially_copyable_v<PerDeviceOpStateInitReturnTaskArgs>);
+
+void per_device_op_state_init_return_task_body(void const *args,
+                                               size_t arglen,
+                                               void const *userdata,
+                                               size_t userlen,
+                                               Realm::Processor proc) {
+  ASSERT(arglen == sizeof(PerDeviceOpStateInitReturnTaskArgs));
+  PerDeviceOpStateInitReturnTaskArgs task_args =
+      *reinterpret_cast<PerDeviceOpStateInitReturnTaskArgs const *>(args);
+
+  ASSERT(task_args.origin_proc.address_space() == proc.address_space());
+  *task_args.origin_result_ptr = task_args.result;
+}
+
+Realm::Event spawn_per_device_op_state_init_return_task(
+    RealmContext &ctx,
+    Realm::Processor origin_proc,
+    DeviceSpecificPtr<PerDeviceOpState> const &result,
+    DeviceSpecificPtr<PerDeviceOpState> *origin_result_ptr,
+    Realm::Event precondition) {
+  PerDeviceOpStateInitReturnTaskArgs task_args{
+      result, origin_proc, origin_result_ptr};
+
+  return ctx.spawn_task(origin_proc,
+                        task_id_t::DEVICE_STATE_INIT_RETURN_TASK_ID,
+                        &task_args,
+                        sizeof(task_args),
+                        Realm::ProfilingRequestSet{},
+                        precondition);
+}
+
+} // namespace FlexFlow

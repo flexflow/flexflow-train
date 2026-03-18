@@ -31,10 +31,10 @@ BertConfig get_default_bert_config();
  *
  * @note This is a plain encoder-only model for pre-training.
  *
- * @param BertConfig The config of BERT model.
+ * @param config The config of BERT model.
  * @return ComputationGraph The computation graph of a BERT model.
  */
-ComputationGraph get_bert_computation_graph(BertConfig const &);
+ComputationGraph get_bert_computation_graph(BertConfig const &config);
 
 } // namespace FlexFlow
 

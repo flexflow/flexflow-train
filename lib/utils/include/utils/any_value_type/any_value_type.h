@@ -34,7 +34,9 @@ private:
   std::function<size_t(std::any const &)> hash;
   std::function<std::string(std::any const &)> to_string;
 
+  ///\cond
   friend std::hash<any_value_type>;
+  ///\endcond
 };
 
 template <typename T>
@@ -54,6 +56,7 @@ any_value_type make_any_value_type(T const &t) {
 
 } // namespace FlexFlow
 
+///\cond
 namespace std {
 
 template <>
@@ -62,5 +65,6 @@ struct hash<::FlexFlow::any_value_type> {
 };
 
 } // namespace std
+///\endcond
 
 #endif

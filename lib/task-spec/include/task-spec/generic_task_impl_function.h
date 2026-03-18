@@ -23,11 +23,13 @@ std::ostream &operator<<(std::ostream &s, GenericTaskImplFunction const &x);
 
 } // namespace FlexFlow
 
+///\cond
 namespace std {
 template <>
 struct hash<::FlexFlow::GenericTaskImplFunction> {
   size_t operator()(::FlexFlow::GenericTaskImplFunction const &) const;
 };
 } // namespace std
+///\endcond
 
 #endif

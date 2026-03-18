@@ -91,8 +91,8 @@ std::unordered_map<TensorSlotName, open_parallel_tensor_guid_t>
 }
 
 std::unordered_map<TensorSlotName, parallel_tensor_guid_t>
-    get_layer_outputs(SubParallelComputationGraph const &pcg,
-                      parallel_layer_guid_t const &layer) {
+    get_outgoing_tensors(SubParallelComputationGraph const &pcg,
+                         parallel_layer_guid_t const &layer) {
   return map_values(get_outgoing_kwarg_dataflow_outputs_for_node(
                         pcg.raw_graph, layer.raw_graph_node),
                     [](KwargDataflowOutput<TensorSlotName> const &o) {

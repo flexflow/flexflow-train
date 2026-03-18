@@ -97,9 +97,12 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           create_computation_graph_instance(
               /*cg=*/computation_graph,
               /*optimizer=*/optimizer_attrs,
-              /*loss=*/loss_attrs,
-              /*label_tensor=*/label_tensor,
-              /*logit_tensor=*/logit_tensor,
+              /*loss=*/
+              LossConfig{
+                  /*loss_attrs=*/loss_attrs,
+                  /*label_tensor=*/label_tensor,
+                  /*logit_tensor=*/logit_tensor,
+              },
               /*input_tensors=*/input_tensors,
               /*allocator=*/allocator,
               /*profiling_settings=*/ProfilingSettings{0, 1},

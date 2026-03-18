@@ -7,7 +7,7 @@
 namespace FlexFlow {
 
 /// @param[in] nb_elements : size of your for loop
-/// @param[in] functor(start, end) :
+/// @param[in] functor :
 /// your function processing a sub chunk of the for loop.
 /// "start" is the first index to process (included) until the index "end"
 /// (excluded)

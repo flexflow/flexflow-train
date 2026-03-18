@@ -1,6 +1,7 @@
 #include "utils/half.h"
 #include "utils/hash-utils.h"
 
+///\cond
 namespace std {
 
 size_t hash<half>::operator()(half h) const {
@@ -8,3 +9,4 @@ size_t hash<half>::operator()(half h) const {
 }
 
 } // namespace std
+///\endcond

@@ -1,0 +1,24 @@
+namespace FlexFlow{
+/**
+
+\page pcg pcg
+
+@brief Defines the top-level datastructures (ComputationGraph, ParallelComputationGraph, and MappedParallelComputationGraph) and their serialization formats, along with some helper interfaces for constructing and manipulating them.
+
+\section pcg-datastructures Key Datastructures
+
+- \ref ComputationGraph "": aka CG
+- \ref ParallelComputationGraph "": aka PCG
+- \ref MappedParallelComputationGraph "": aka MPCG
+
+\section serialization-formats Serialization
+
+- \subpage file-format "pcg/file_format/"
+
+\section pcg-helpers Helper Functionality
+
+- \ref ComputationGraphBuilder ""
+- \ref ParallelComputationGraphBuilder ""
+
+*/
+}

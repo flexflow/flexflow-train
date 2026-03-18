@@ -48,8 +48,8 @@ tensor_guid_t create_dlrm_interact_features(
 /**
  * @brief Get the DLRM computation graph.
  *
- * @param DLRMConfig The config of DLRM model.
- * @return ComputationGraph The computation graph of a DLRM model.
+ * @param config The config of DLRM model.
+ * @return The computation graph of a DLRM model.
  */
 ComputationGraph get_dlrm_computation_graph(DLRMConfig const &config);
 

@@ -1,5 +1,6 @@
 #include "op-attrs/initializers/uniform_initializer_attrs.h"
 
+///\cond
 namespace rc {
 
 using ::FlexFlow::UniformInitializerAttrs;
@@ -19,3 +20,4 @@ Gen<UniformInitializerAttrs> Arbitrary<UniformInitializerAttrs>::arbitrary() {
 };
 
 } // namespace rc
+///\endcond

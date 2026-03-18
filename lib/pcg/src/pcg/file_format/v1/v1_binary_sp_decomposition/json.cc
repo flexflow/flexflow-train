@@ -5,6 +5,7 @@
 
 using namespace ::FlexFlow;
 
+///\cond
 namespace nlohmann {
 
 V1BinarySPDecomposition
@@ -82,3 +83,4 @@ void adl_serializer<V1BinaryParallelSplit>::to_json(
 }
 
 } // namespace nlohmann
+///\endcond
