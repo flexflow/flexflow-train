@@ -46,7 +46,7 @@ jobs:
       - name: Deploy docs to flexflow.ai
         env:
           SSH_PRIVATE_KEY: ${{secrets.DOCS_SSH_PRIVATE_KEY}}
-        if: ${{ success() && ( github.event_name == 'push' || github.event_name == 'workflow_dispatch' ) && github.ref == 'refs/heads/auto-deploy-docs' }}
+        if: ${{ success() && ( github.event_name == 'push' || github.event_name == 'workflow_dispatch' ) && github.ref == 'refs/heads/master' }}
         run: |
           ./.github/workflows/helpers/deploy-docs.py
 
