@@ -29,9 +29,10 @@ ParallelLayerAddedResult add_parallel_layer(
     std::optional<std::unordered_map<TensorSlotName, CreateGrad>> const
         &outputs = std::nullopt);
 
-ParallelLayerAddedResult pcg_add_input_layer(ParallelComputationGraph &pcg,
-                                             TensorShape const &tensor_shape,
-                                             CreateGrad create_grad = CreateGrad::NO);
+ParallelLayerAddedResult
+    pcg_add_input_layer(ParallelComputationGraph &pcg,
+                        TensorShape const &tensor_shape,
+                        CreateGrad create_grad = CreateGrad::NO);
 
 OperatorTaskSpace get_operator_task_space(ParallelComputationGraph const &pcg,
                                           parallel_layer_guid_t const &layer);

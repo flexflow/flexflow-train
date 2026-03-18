@@ -11,13 +11,13 @@ namespace FlexFlow {
  * the memory is local on access.
  *
  * There exist per-device states (i.e., \ref PerDeviceOpState and \ref
- * FFHandle) that need to be created and managed by the central \ref
+ * PerDeviceFFHandle) that need to be created and managed by the central \ref
  * term-controller "controller task". Since these are opaque pointers they
  * can't be safely copied to and from the remote devices, so we instead
  * transfer the pointers back-and-forth between workers and the controller
  * task. To prevent accidentally accessing one of these pointers on the wrong
  * device (as the pointer is only valid in the memory where it was created), we
- * wrap them with \ref DeviceSpecificPtr, which holds the \ref device_idx_t
+ * wrap them with \ref DeviceSpecificPtr, which holds the \ref device_id_t
  * where the pointer was created, and any attempt to interact with the raw
  * pointer value (i.e., \ref DeviceSpecificPtr::get) checks that the current
  * device matches the original device, and throws a readable error message if
