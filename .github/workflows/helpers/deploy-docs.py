@@ -45,7 +45,7 @@ def deploy(ssh_private_key_path: Path, ssh_known_hosts_path: Path) -> None:
             '--verbose',
             '--human-readable',
             f'--rsh={ssh_command}',
-            str(docs_html_dir),
+            str(docs_html_dir) + '/',
             'deploy-ff-train-docs@flexflow.ai:/opt/www/ff-train-docs/',
         ],
         check=True,
