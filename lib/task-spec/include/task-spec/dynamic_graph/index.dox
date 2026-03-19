@@ -11,6 +11,7 @@ namespace FlexFlow {
 - \ref shard_expansion.h
 - \ref update_insertion.h
 - \ref loss_insertion.h
+- \ref copy_insertion.h
 - \ref machine_slicing.h
 
 */

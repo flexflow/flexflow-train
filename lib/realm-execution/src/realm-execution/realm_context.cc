@@ -171,14 +171,16 @@ Realm::Event
       /*inst=*/src_inst,
       /*field_id=*/0,
       /*size=*/
-      static_cast<size_t>(int{size_of_datatype(src_piece_shape.data_type)}),
+      static_cast<size_t>(
+          size_of_datatype(src_piece_shape.data_type).int_from_positive_int()),
       /*subfield_offset=*/0);
   Realm::CopySrcDstField dst_field;
   dst_field.set_field(
       /*inst=*/dst_inst,
       /*field_id=*/0,
       /*size=*/
-      static_cast<size_t>(int{size_of_datatype(src_piece_shape.data_type)}),
+      static_cast<size_t>(
+          size_of_datatype(src_piece_shape.data_type).int_from_positive_int()),
       /*subfield_offset=*/0);
 
   Realm::Event result;
@@ -214,8 +216,8 @@ Realm::Event
       break;
 #endif
     default:
-      PANIC("TensorShape dims greater than REALM_MAX_DIM",
-            fmt::to_string(src_piece_shape.dims.ff_ordered.num_dims()));
+      PANIC("TensorShape dims greater than REALM_MAX_DIM: {}",
+            src_piece_shape.dims.ff_ordered.num_dims());
       break;
   }
   this->outstanding_events.push_back(result);
@@ -227,8 +229,8 @@ std::pair<Realm::RegionInstance, Realm::Event>
                                   TensorShape const &shape,
                                   Realm::ProfilingRequestSet const &prs,
                                   Realm::Event wait_on) {
-  std::vector<size_t> field_sizes{
-      static_cast<size_t>(int{size_of_datatype(shape.data_type)})};
+  std::vector<size_t> field_sizes{static_cast<size_t>(
+      size_of_datatype(shape.data_type).int_from_positive_int())};
   Realm::RegionInstance inst;
   Realm::Event ready;
   switch (shape.dims.ff_ordered.num_dims()) {

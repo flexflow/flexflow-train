@@ -160,6 +160,12 @@ PCGInstance create_pcg_instance(
                      /*logit_grad_tensor=*/logit_grad_tensor};
 }
 
+/**
+ * \brief Spawn the Realm operations (tasks, copies, etc.) for a given \ref
+ * DynamicNodeInvocation, given the specified dependencies, instances, etc. Note
+ * that one \ref DynamicNodeInvocation may become multiple Realm operations
+ * (e.g., a parallel operator may turn into multiple copies).
+ */
 static Realm::Event spawn_dynamic_node_invocation(
     RealmContext &ctx,
     DynamicNodeInvocation const &invocation,

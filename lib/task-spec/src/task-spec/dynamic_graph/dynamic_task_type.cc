@@ -3,7 +3,8 @@
 
 namespace FlexFlow {
 
-DynamicTaskType decide_copy_task_type(DynamicTensorRole role) {
+DynamicTaskType
+    dynamic_task_type_from_tensor_role_for_copy(DynamicTensorRole role) {
   return role.visit<DynamicTaskType>(overload{
       [](FwbTensorType const &fwb_tensor) {
         switch (fwb_tensor) {

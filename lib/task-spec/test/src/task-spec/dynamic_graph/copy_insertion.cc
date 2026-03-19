@@ -111,39 +111,6 @@ TEST_SUITE(FF_TEST_SUITE) {
             },
         },
     };
-    MappedOperatorTaskGroup input_mapping_copy1 = MappedOperatorTaskGroup{
-        bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding>{
-            {
-                mc1,
-                mk_input_shard_binding(mc1_input_coord),
-            },
-            {
-                mc3,
-                mk_input_shard_binding(mc2_input_coord),
-            },
-        },
-    };
-    MappedOperatorTaskGroup input_mapping_copy1_diff_vs_use =
-        MappedOperatorTaskGroup{
-            bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding>{
-                {
-                    mc3,
-                    mk_input_shard_binding(mc2_input_coord),
-                },
-            },
-        };
-    MappedOperatorTaskGroup input_mapping_copy2 = MappedOperatorTaskGroup{
-        bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding>{
-            {
-                mc3,
-                mk_input_shard_binding(mc1_input_coord),
-            },
-            {
-                mc4,
-                mk_input_shard_binding(mc2_input_coord),
-            },
-        },
-    };
 
     MappedOperatorTaskGroup weight_mapping_same = MappedOperatorTaskGroup{
         bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding>{
@@ -153,18 +120,6 @@ TEST_SUITE(FF_TEST_SUITE) {
             },
             {
                 mc2,
-                mk_input_shard_binding(mc2_weight_coord),
-            },
-        },
-    };
-    MappedOperatorTaskGroup weight_mapping_copy2 = MappedOperatorTaskGroup{
-        bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding>{
-            {
-                mc4,
-                mk_input_shard_binding(mc1_weight_coord),
-            },
-            {
-                mc3,
                 mk_input_shard_binding(mc2_weight_coord),
             },
         },
@@ -268,21 +223,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     DynamicValueAttrs graph_input1_src_same = mk_value(
         0, TensorSlotName::OUTPUT, input_mapping_same, TensorSlotName::OUTPUT);
-    DynamicValueAttrs graph_input1_src_copy1 = mk_value(
-        0, TensorSlotName::OUTPUT, input_mapping_copy1, TensorSlotName::OUTPUT);
-    DynamicValueAttrs graph_input1_src_copy1_diff_vs_use =
-        mk_value(0,
-                 TensorSlotName::OUTPUT,
-                 input_mapping_copy1_diff_vs_use,
-                 TensorSlotName::OUTPUT);
-    DynamicValueAttrs graph_input1_src_copy2 = mk_value(
-        0, TensorSlotName::OUTPUT, input_mapping_copy2, TensorSlotName::OUTPUT);
     DynamicValueAttrs graph_input2_src_same = mk_value(
         1, TensorSlotName::OUTPUT, weight_mapping_same, TensorSlotName::OUTPUT);
-    DynamicValueAttrs graph_input2_src_copy2 = mk_value(1,
-                                                        TensorSlotName::OUTPUT,
-                                                        weight_mapping_copy2,
-                                                        TensorSlotName::OUTPUT);
 
     DynamicNodeInvocation input = DynamicNodeInvocation{
         /*inputs=*/{
@@ -384,6 +326,39 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("copy one tensor, one point") {
+      MappedOperatorTaskGroup input_mapping_copy1 = MappedOperatorTaskGroup{
+          bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding>{
+              {
+                  mc1,
+                  mk_input_shard_binding(mc1_input_coord),
+              },
+              {
+                  mc3,
+                  mk_input_shard_binding(mc2_input_coord),
+              },
+          },
+      };
+      MappedOperatorTaskGroup input_mapping_copy1_diff_vs_use =
+          MappedOperatorTaskGroup{
+              bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding>{
+                  {
+                      mc3,
+                      mk_input_shard_binding(mc2_input_coord),
+                  },
+              },
+          };
+
+      DynamicValueAttrs graph_input1_src_copy1 =
+          mk_value(0,
+                   TensorSlotName::OUTPUT,
+                   input_mapping_copy1,
+                   TensorSlotName::OUTPUT);
+      DynamicValueAttrs graph_input1_src_copy1_diff_vs_use =
+          mk_value(0,
+                   TensorSlotName::OUTPUT,
+                   input_mapping_copy1_diff_vs_use,
+                   TensorSlotName::OUTPUT);
+
       std::unordered_map<DynamicValueAttrs, DynamicValueAttrs> sources_copy1{
           {graph_input1, graph_input1_src_copy1},
           {graph_input2, graph_input2_src_same}};
@@ -402,6 +377,42 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("copy two tensors, two points") {
+      MappedOperatorTaskGroup input_mapping_copy2 = MappedOperatorTaskGroup{
+          bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding>{
+              {
+                  mc3,
+                  mk_input_shard_binding(mc1_input_coord),
+              },
+              {
+                  mc4,
+                  mk_input_shard_binding(mc2_input_coord),
+              },
+          },
+      };
+      MappedOperatorTaskGroup weight_mapping_copy2 = MappedOperatorTaskGroup{
+          bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding>{
+              {
+                  mc4,
+                  mk_input_shard_binding(mc1_weight_coord),
+              },
+              {
+                  mc3,
+                  mk_input_shard_binding(mc2_weight_coord),
+              },
+          },
+      };
+
+      DynamicValueAttrs graph_input1_src_copy2 =
+          mk_value(0,
+                   TensorSlotName::OUTPUT,
+                   input_mapping_copy2,
+                   TensorSlotName::OUTPUT);
+      DynamicValueAttrs graph_input2_src_copy2 =
+          mk_value(1,
+                   TensorSlotName::OUTPUT,
+                   weight_mapping_copy2,
+                   TensorSlotName::OUTPUT);
+
       std::unordered_map<DynamicValueAttrs, DynamicValueAttrs> sources_copy2{
           {graph_input1, graph_input1_src_copy2},
           {graph_input2, graph_input2_src_copy2}};

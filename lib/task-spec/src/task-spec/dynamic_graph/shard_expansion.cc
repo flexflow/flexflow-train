@@ -87,8 +87,8 @@ static DynamicNodeInvocation shard_invocation_for_binding(
 
 static std::unordered_set<DynamicNodeInvocation>
     perform_shard_expansion_for_copy(DynamicNodeInvocation const &i) {
-  auto const &[input_slot, input] = get_only(i.inputs);
-  auto const &[output_slot, output] = get_only(i.outputs);
+  auto [input_slot, input] = get_only(i.inputs);
+  auto [output_slot, output] = get_only(i.outputs);
   bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> input_mapping =
       assert_unwrap(input.mapping);
   bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> output_mapping =

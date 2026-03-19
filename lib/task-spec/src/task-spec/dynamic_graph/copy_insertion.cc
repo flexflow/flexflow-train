@@ -82,7 +82,8 @@ static std::pair<DynamicValueAttrs, DynamicValueAttrs>
 
 std::unordered_set<DynamicNodeInvocation> perform_copy_insertion_for_invocation(
     DynamicNodeInvocation const &i,
-    std::unordered_map<DynamicValueAttrs, DynamicValueAttrs> const &sources) {
+    std::unordered_map<DynamicValueAttrs, DynamicValueAttrs> const
+        &unmapped_value_to_source) {
 
   MappedOperatorTaskGroup mapping = assert_unwrap(i.node_attrs.mapping);
 
@@ -103,11 +104,11 @@ std::unordered_set<DynamicNodeInvocation> perform_copy_insertion_for_invocation(
   }};
 
   for (auto const &[slot, input] : i.inputs) {
-    if (!contains_key(sources, input)) {
+    if (!contains_key(unmapped_value_to_source, input)) {
       continue;
     }
 
-    DynamicValueAttrs source_value = sources.at(input);
+    DynamicValueAttrs source_value = unmapped_value_to_source.at(input);
     DynamicValueAttrs use_value = mapped_inputs.at(slot);
     if (source_value != use_value) {
       auto const &[filtered_source, filtered_use] =
@@ -122,8 +123,9 @@ std::unordered_set<DynamicNodeInvocation> perform_copy_insertion_for_invocation(
           },
           /*node_attrs=*/
           DynamicNodeAttrs{
-              /*task_type=*/transform(slot.slot_tensor_role,
-                                      decide_copy_task_type),
+              /*task_type=*/transform(
+                  slot.slot_tensor_role,
+                  dynamic_task_type_from_tensor_role_for_copy),
               /*device_coord=*/std::nullopt,
               /*mapping=*/std::nullopt,
               /*op_attrs*/ TrainingOperationAttrs{CopyAttrs{}},
@@ -151,10 +153,11 @@ DynamicOpenDataflowGraph
 
   ASSERT(no_part_of_graph_is_copy_inserted(g));
 
-  std::unordered_map<DynamicValueAttrs, DynamicValueAttrs> sources;
+  std::unordered_map<DynamicValueAttrs, DynamicValueAttrs>
+      unmapped_value_to_source;
   for (DynamicNodeInvocation const &i : g.invocations) {
     for (auto const &[slot, value] : i.outputs) {
-      sources.insert(
+      unmapped_value_to_source.insert(
           std::pair{value,
                     map_dynamic_value_attrs_for_task_group(
                         slot, value, assert_unwrap(i.node_attrs.mapping))});
@@ -166,7 +169,8 @@ DynamicOpenDataflowGraph
   DynamicOpenDataflowGraph result =
       dynamic_open_dataflow_graph_from_invocation_set(
           flatmap(g.invocations, [&](DynamicNodeInvocation const &i) {
-            return perform_copy_insertion_for_invocation(i, sources);
+            return perform_copy_insertion_for_invocation(
+                i, unmapped_value_to_source);
           }));
 
   ASSERT(graph_is_fully_copy_inserted(result));

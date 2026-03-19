@@ -6,7 +6,7 @@
 
 namespace FlexFlow {
 
-DynamicTaskType decide_copy_task_type(DynamicTensorRole);
+DynamicTaskType dynamic_task_type_from_tensor_role_for_copy(DynamicTensorRole);
 
 } // namespace FlexFlow
 
