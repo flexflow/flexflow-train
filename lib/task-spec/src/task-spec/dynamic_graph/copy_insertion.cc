@@ -108,7 +108,8 @@ std::unordered_set<DynamicNodeInvocation> perform_copy_insertion_for_invocation(
       continue;
     }
 
-    DynamicValueAttrs source_value = unmapped_value_to_mapped_source_value.at(input);
+    DynamicValueAttrs source_value =
+        unmapped_value_to_mapped_source_value.at(input);
     DynamicValueAttrs use_value = mapped_inputs.at(slot);
     if (source_value != use_value) {
       auto const &[filtered_source, filtered_use] =
@@ -153,7 +154,8 @@ DynamicOpenDataflowGraph
 
   ASSERT(no_part_of_graph_is_copy_inserted(g));
 
-  std::unordered_map<DynamicValueAttrs, DynamicValueAttrs> unmapped_value_to_mapped_source_value;
+  std::unordered_map<DynamicValueAttrs, DynamicValueAttrs>
+      unmapped_value_to_mapped_source_value;
   for (DynamicNodeInvocation const &i : g.invocations) {
     for (auto const &[slot, value] : i.outputs) {
       unmapped_value_to_mapped_source_value.insert(
@@ -168,8 +170,8 @@ DynamicOpenDataflowGraph
   DynamicOpenDataflowGraph result =
       dynamic_open_dataflow_graph_from_invocation_set(
           flatmap(g.invocations, [&](DynamicNodeInvocation const &i) {
-            return perform_copy_insertion_for_invocation(i,
-                                                         unmapped_value_to_mapped_source_value);
+            return perform_copy_insertion_for_invocation(
+                i, unmapped_value_to_mapped_source_value);
           }));
 
   ASSERT(graph_is_fully_copy_inserted(result));
