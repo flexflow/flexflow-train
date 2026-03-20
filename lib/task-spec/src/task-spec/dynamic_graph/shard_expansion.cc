@@ -41,7 +41,7 @@ bool graph_is_fully_shard_expanded(DynamicOpenDataflowGraph const &g) {
 }
 
 static bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
-    subset_tensor_mapping_for_coord(
+    restrict_tensor_mapping_keys_to_coord(
         bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> const
             &mapping,
         ParallelTensorSpaceCoordinate const &parallel_tensor_coord) {
@@ -66,8 +66,8 @@ static DynamicNodeInvocation shard_invocation_for_binding(
         v.mapping,
         [&](bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> const
                 &mapping) {
-          return subset_tensor_mapping_for_coord(mapping,
-                                                 parallel_tensor_coord);
+          return restrict_tensor_mapping_keys_to_coord(mapping,
+                                                       parallel_tensor_coord);
         });
     return result;
   };
@@ -91,14 +91,22 @@ static std::unordered_set<DynamicNodeInvocation>
   auto [output_slot, output] = get_only(i.outputs);
   bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> input_mapping =
       assert_unwrap(input.mapping);
-  bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> output_mapping =
-      assert_unwrap(output.mapping);
-  require_same(input_mapping.left_values(), output_mapping.left_values());
+  require_same(input_mapping.left_values(),
+               assert_unwrap(output.mapping).left_values());
 
   return transform(
       input_mapping.left_values(), [&](ParallelTensorSpaceCoordinate const &p) {
+        // The machine coord for a copy is inherently nebulous because it
+        // doesn't strictly run in any single location. Further, Realm has the
+        // flexibility to issue a copy operation from anywhere in the machine,
+        // including remotely. Here we choose machine_coord based on the input
+        // because we expect this to align with the most efficient way to issue
+        // copies in Realm, although the current Realm backend uses a
+        // centralized controller and thus issues copies all from a single node.
+        MachineSpaceCoordinate machine_coord = input_mapping.at_l(p);
+
         return shard_invocation_for_binding(i,
-                                            input_mapping.at_l(p),
+                                            machine_coord,
                                             OperatorAtomicTaskShardBinding{{
                                                 {input_slot.slot_name, p},
                                                 {output_slot.slot_name, p},

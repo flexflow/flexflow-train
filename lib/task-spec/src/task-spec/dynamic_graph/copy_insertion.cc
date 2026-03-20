@@ -83,7 +83,7 @@ static std::pair<DynamicValueAttrs, DynamicValueAttrs>
 std::unordered_set<DynamicNodeInvocation> perform_copy_insertion_for_invocation(
     DynamicNodeInvocation const &i,
     std::unordered_map<DynamicValueAttrs, DynamicValueAttrs> const
-        &unmapped_value_to_source) {
+        &mapped_source_value) {
 
   MappedOperatorTaskGroup mapping = assert_unwrap(i.node_attrs.mapping);
 
@@ -104,11 +104,11 @@ std::unordered_set<DynamicNodeInvocation> perform_copy_insertion_for_invocation(
   }};
 
   for (auto const &[slot, input] : i.inputs) {
-    if (!contains_key(unmapped_value_to_source, input)) {
+    if (!contains_key(mapped_source_value, input)) {
       continue;
     }
 
-    DynamicValueAttrs source_value = unmapped_value_to_source.at(input);
+    DynamicValueAttrs source_value = mapped_source_value.at(input);
     DynamicValueAttrs use_value = mapped_inputs.at(slot);
     if (source_value != use_value) {
       auto const &[filtered_source, filtered_use] =
@@ -153,11 +153,10 @@ DynamicOpenDataflowGraph
 
   ASSERT(no_part_of_graph_is_copy_inserted(g));
 
-  std::unordered_map<DynamicValueAttrs, DynamicValueAttrs>
-      unmapped_value_to_source;
+  std::unordered_map<DynamicValueAttrs, DynamicValueAttrs> mapped_source_value;
   for (DynamicNodeInvocation const &i : g.invocations) {
     for (auto const &[slot, value] : i.outputs) {
-      unmapped_value_to_source.insert(
+      mapped_source_value.insert(
           std::pair{value,
                     map_dynamic_value_attrs_for_task_group(
                         slot, value, assert_unwrap(i.node_attrs.mapping))});
@@ -169,8 +168,8 @@ DynamicOpenDataflowGraph
   DynamicOpenDataflowGraph result =
       dynamic_open_dataflow_graph_from_invocation_set(
           flatmap(g.invocations, [&](DynamicNodeInvocation const &i) {
-            return perform_copy_insertion_for_invocation(
-                i, unmapped_value_to_source);
+            return perform_copy_insertion_for_invocation(i,
+                                                         mapped_source_value);
           }));
 
   ASSERT(graph_is_fully_copy_inserted(result));

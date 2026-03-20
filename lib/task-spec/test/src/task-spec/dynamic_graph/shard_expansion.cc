@@ -319,36 +319,24 @@ TEST_SUITE(FF_TEST_SUITE) {
         [&](MachineSpaceCoordinate const &device_coord,
             ParallelTensorSpaceCoordinate const &tensor_shard_coord)
         -> DynamicNodeInvocation {
-      return DynamicNodeInvocation{
-          /*inputs=*/{
-              {
-                  mk_slot(TensorSlotName::INPUT),
-                  mk_value(0,
-                           TensorSlotName::OUTPUT,
-                           src_binding,
-                           tensor_shard_coord),
-              },
-          },
-          /*node_attrs=*/
-          DynamicNodeAttrs{
-              /*task_type=*/std::nullopt,
-              /*device_coord=*/device_coord,
-              /*mapping=*/std::nullopt,
-              /*op_attrs=*/TrainingOperationAttrs{CopyAttrs{}},
-              /*layer_guid=*/dynamic_layer_guid_t{dynamic_copy_layer_guid_t{}},
-              /*per_device_op_state=*/std::nullopt,
-          },
-          /*outputs=*/
+      DynamicNodeInvocation result = input;
+      result.inputs = {
           {
-              {
-                  mk_slot(TensorSlotName::OUTPUT),
-                  mk_value(20,
-                           TensorSlotName::OUTPUT,
-                           dst_binding,
-                           tensor_shard_coord),
-              },
+              mk_slot(TensorSlotName::INPUT),
+              mk_value(
+                  0, TensorSlotName::OUTPUT, src_binding, tensor_shard_coord),
           },
       };
+      // See perform_shard_expansion_for_copy in shard_expansion.cc for explanation of the choice of device placement.
+      result.node_attrs.device_coord = device_coord;
+      result.outputs = {
+          {
+              mk_slot(TensorSlotName::OUTPUT),
+              mk_value(
+                  20, TensorSlotName::OUTPUT, dst_binding, tensor_shard_coord),
+          },
+      };
+      return result;
     };
 
     std::unordered_set<DynamicNodeInvocation> correct = {
