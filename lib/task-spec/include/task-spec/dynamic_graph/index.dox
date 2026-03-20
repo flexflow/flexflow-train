@@ -11,6 +11,7 @@ namespace FlexFlow {
 - \ref shard_expansion.h
 - \ref update_insertion.h
 - \ref loss_insertion.h
+- \ref copy_insertion.h Inserts copies into the dynamic graph by inspecting the mappings of operators and inferring where tensors are used on devices other than where they were created.
 - \ref machine_slicing.h
 
 */

@@ -1,6 +1,11 @@
 #include "task-spec/dynamic_graph/shard_expansion.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
+#include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
+#include "utils/bidict/algorithms/filter_keys.h"
+#include "utils/containers/get_only.h"
 #include "utils/containers/map_values2.h"
+#include "utils/containers/require_same.h"
+#include "utils/containers/transform.h"
 #include "utils/optional.h"
 
 namespace FlexFlow {
@@ -35,6 +40,16 @@ bool graph_is_fully_shard_expanded(DynamicOpenDataflowGraph const &g) {
                                       slot_is_shard_expanded);
 }
 
+static bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
+    restrict_tensor_mapping_keys_to_coord(
+        bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> const
+            &mapping,
+        ParallelTensorSpaceCoordinate const &parallel_tensor_coord) {
+  return filter_keys(mapping, [&](ParallelTensorSpaceCoordinate const &p) {
+    return p == parallel_tensor_coord;
+  });
+}
+
 static DynamicNodeInvocation shard_invocation_for_binding(
     DynamicNodeInvocation const &i,
     MachineSpaceCoordinate const &machine_coord,
@@ -47,6 +62,13 @@ static DynamicNodeInvocation shard_invocation_for_binding(
 
     DynamicValueAttrs result = v;
     result.shard_coord = parallel_tensor_coord;
+    result.mapping = transform(
+        v.mapping,
+        [&](bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> const
+                &mapping) {
+          return restrict_tensor_mapping_keys_to_coord(mapping,
+                                                       parallel_tensor_coord);
+        });
     return result;
   };
 
@@ -63,8 +85,41 @@ static DynamicNodeInvocation shard_invocation_for_binding(
   };
 }
 
+static std::unordered_set<DynamicNodeInvocation>
+    perform_shard_expansion_for_copy(DynamicNodeInvocation const &i) {
+  auto [input_slot, input] = get_only(i.inputs);
+  auto [output_slot, output] = get_only(i.outputs);
+  bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> input_mapping =
+      assert_unwrap(input.mapping);
+  require_same(input_mapping.left_values(),
+               assert_unwrap(output.mapping).left_values());
+
+  return transform(
+      input_mapping.left_values(), [&](ParallelTensorSpaceCoordinate const &p) {
+        // The machine coord for a copy is inherently nebulous because it
+        // doesn't strictly run in any single location. Further, Realm has the
+        // flexibility to issue a copy operation from anywhere in the machine,
+        // including remotely. Here we choose machine_coord based on the input
+        // because we expect this to align with the most efficient way to issue
+        // copies in Realm, although the current Realm backend uses a
+        // centralized controller and thus issues copies all from a single node.
+        MachineSpaceCoordinate machine_coord = input_mapping.at_l(p);
+
+        return shard_invocation_for_binding(i,
+                                            machine_coord,
+                                            OperatorAtomicTaskShardBinding{{
+                                                {input_slot.slot_name, p},
+                                                {output_slot.slot_name, p},
+                                            }});
+      });
+}
+
 std::unordered_set<DynamicNodeInvocation>
     perform_shard_expansion_for_invocation(DynamicNodeInvocation const &i) {
+  if (i.node_attrs.op_attrs.has_value() &&
+      i.node_attrs.op_attrs.value().is_copy()) {
+    return perform_shard_expansion_for_copy(i);
+  }
 
   MappedOperatorTaskGroup mapping = assert_unwrap(i.node_attrs.mapping);
 

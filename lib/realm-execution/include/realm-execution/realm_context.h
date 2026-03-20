@@ -4,6 +4,7 @@
 #include "kernels/allocation.h"
 #include "kernels/device_handle_t.dtg.h"
 #include "kernels/managed_per_device_ff_handle.h"
+#include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "op-attrs/tensor_shape.dtg.h"
 #include "pcg/device_id_t.dtg.h"
 #include "pcg/machine_space_coordinate.dtg.h"
@@ -60,6 +61,17 @@ public:
                             size_t arglen,
                             Realm::Event wait_on = Realm::Event::NO_EVENT,
                             int priority = 0);
+  ///\}
+
+  /** \name Data movement */
+  ///\{
+  Realm::Event issue_copy(ParallelTensorShape const &src_shape,
+                          Realm::RegionInstance src_inst,
+                          ParallelTensorShape const &dst_shape,
+                          Realm::RegionInstance dst_inst,
+                          Realm::ProfilingRequestSet const &requests,
+                          Realm::Event wait_on = Realm::Event::NO_EVENT,
+                          int priority = 0);
   ///\}
 
   /** \name Instance management */

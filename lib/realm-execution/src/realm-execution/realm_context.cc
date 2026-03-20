@@ -2,6 +2,7 @@
 #include "kernels/device_handle_t.dtg.h"
 #include "kernels/device_handle_t.h"
 #include "op-attrs/datatype.h"
+#include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/tensor_dims.dtg.h"
 #include "pcg/device_id_t.h"
 #include "pcg/device_type.dtg.h"
@@ -10,6 +11,7 @@
 #include "realm-execution/tasks/task_id_t.h"
 #include "utils/containers/contains_key.h"
 #include "utils/containers/transform.h"
+#include "utils/exception.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
 #include "utils/one_to_many/one_to_many.h"
 #include "utils/positive_int/positive_int.h"
@@ -146,13 +148,89 @@ static Realm::Rect<N, T> rect_from_dims(TensorDims const &dims) {
                                Realm::Point<N, T>::ONES()};
 }
 
+template <int N, typename T = int>
+static Realm::IndexSpace<N, T> ispace_from_dims(TensorDims const &dims) {
+  Realm::Rect<N, T> rect = rect_from_dims<N, T>(dims);
+  return Realm::IndexSpace<N, T>{rect};
+}
+
+Realm::Event
+    RealmContext::issue_copy(ParallelTensorShape const &src_shape,
+                             Realm::RegionInstance src_inst,
+                             ParallelTensorShape const &dst_shape,
+                             Realm::RegionInstance dst_inst,
+                             Realm::ProfilingRequestSet const &requests,
+                             Realm::Event wait_on,
+                             int priority) {
+  TensorShape src_piece_shape = get_piece_shape(src_shape);
+  TensorShape dst_piece_shape = get_piece_shape(dst_shape);
+  ASSERT(src_piece_shape == dst_piece_shape); // For now, assume they match
+
+  Realm::CopySrcDstField src_field;
+  src_field.set_field(
+      /*inst=*/src_inst,
+      /*field_id=*/0,
+      /*size=*/
+      static_cast<size_t>(
+          size_of_datatype(src_piece_shape.data_type).int_from_positive_int()),
+      /*subfield_offset=*/0);
+  Realm::CopySrcDstField dst_field;
+  dst_field.set_field(
+      /*inst=*/dst_inst,
+      /*field_id=*/0,
+      /*size=*/
+      static_cast<size_t>(
+          size_of_datatype(src_piece_shape.data_type).int_from_positive_int()),
+      /*subfield_offset=*/0);
+
+  Realm::Event result;
+  switch (src_piece_shape.dims.ff_ordered.num_dims()) {
+#if REALM_MAX_DIM >= 1
+    case 1:
+      result = ispace_from_dims<1>(src_piece_shape.dims)
+                   .copy({src_field}, {dst_field}, requests, wait_on, priority);
+      break;
+#endif
+#if REALM_MAX_DIM >= 2
+    case 2:
+      result = ispace_from_dims<2>(src_piece_shape.dims)
+                   .copy({src_field}, {dst_field}, requests, wait_on, priority);
+      break;
+#endif
+#if REALM_MAX_DIM >= 3
+    case 3:
+      result = ispace_from_dims<3>(src_piece_shape.dims)
+                   .copy({src_field}, {dst_field}, requests, wait_on, priority);
+      break;
+#endif
+#if REALM_MAX_DIM >= 4
+    case 4:
+      result = ispace_from_dims<4>(src_piece_shape.dims)
+                   .copy({src_field}, {dst_field}, requests, wait_on, priority);
+      break;
+#endif
+#if REALM_MAX_DIM >= 5
+    case 5:
+      result = ispace_from_dims<5>(src_piece_shape.dims)
+                   .copy({src_field}, {dst_field}, requests, wait_on, priority);
+      break;
+#endif
+    default:
+      PANIC("TensorShape dims greater than REALM_MAX_DIM: {}",
+            src_piece_shape.dims.ff_ordered.num_dims());
+      break;
+  }
+  this->outstanding_events.push_back(result);
+  return result;
+}
+
 std::pair<Realm::RegionInstance, Realm::Event>
     RealmContext::create_instance(Realm::Memory memory,
                                   TensorShape const &shape,
                                   Realm::ProfilingRequestSet const &prs,
                                   Realm::Event wait_on) {
-  std::vector<size_t> field_sizes{
-      static_cast<size_t>(int{size_of_datatype(shape.data_type)})};
+  std::vector<size_t> field_sizes{static_cast<size_t>(
+      size_of_datatype(shape.data_type).int_from_positive_int())};
   Realm::RegionInstance inst;
   Realm::Event ready;
   switch (shape.dims.ff_ordered.num_dims()) {

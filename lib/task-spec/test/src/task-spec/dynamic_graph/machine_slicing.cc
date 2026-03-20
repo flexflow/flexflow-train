@@ -75,6 +75,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           }},
           /*parallel_tensor_shape=*/std::nullopt,
           /*shard_coord=*/shard_coord,
+          /*mapping=*/std::nullopt,
           /*accessor=*/std::nullopt,
           /*role=*/std::nullopt,
       };

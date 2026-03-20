@@ -12,6 +12,7 @@ includes = [
   "pcg/layer_guid_t.dtg.h",
   "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h",
   "task-spec/dynamic_graph/dynamic_loss_layer_guid_t.dtg.h",
+  "task-spec/dynamic_graph/dynamic_copy_layer_guid_t.dtg.h",
 ]
 
 [[values]]
@@ -25,3 +26,7 @@ key = "pcg_layer_guid"
 [[values]]
 type = "::FlexFlow::dynamic_loss_layer_guid_t"
 key = "loss_layer_guid"
+
+[[values]]
+type = "::FlexFlow::dynamic_copy_layer_guid_t"
+key = "copy_layer_guid"

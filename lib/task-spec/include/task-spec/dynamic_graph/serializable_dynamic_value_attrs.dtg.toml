@@ -13,6 +13,8 @@ includes = [
   "task-spec/dynamic_graph/dynamic_tensor_guid_t.dtg.h",
   "op-attrs/parallel_tensor_shape.dtg.h",
   "op-attrs/parallel_tensor_space_coordinate.dtg.h",
+  "pcg/machine_space_coordinate.dtg.h",
+  "utils/bidict/bidict.h",
   "task-spec/dynamic_graph/dynamic_tensor_role.dtg.h",
 ]
 
@@ -32,6 +34,10 @@ type = "std::optional<::FlexFlow::ParallelTensorShape>"
 [[fields]]
 name = "shard_coord"
 type = "std::optional<::FlexFlow::ParallelTensorSpaceCoordinate>"
+
+[[fields]]
+name = "mapping"
+type = "std::optional<::FlexFlow::bidict<::FlexFlow::ParallelTensorSpaceCoordinate, ::FlexFlow::MachineSpaceCoordinate>>"
 
 [[fields]]
 name = "role"

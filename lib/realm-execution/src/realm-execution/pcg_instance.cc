@@ -7,6 +7,7 @@
 #include "realm-execution/realm_context.h"
 #include "realm-execution/tasks/impl/op_task.h"
 #include "realm-execution/tensor_instance_backing.h"
+#include "task-spec/dynamic_graph/copy_insertion.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_task_type.dtg.h"
@@ -18,6 +19,7 @@
 #include "task-spec/dynamic_graph/shard_expansion.h"
 #include "task-spec/dynamic_graph/training_operation_attrs.dtg.h"
 #include "task-spec/dynamic_graph/update_insertion.h"
+#include "utils/containers/get_only.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/try_at.h"
@@ -104,6 +106,7 @@ PCGInstance create_pcg_instance(
   }
 
   dg = perform_update_insertion(dg, optimizer_attrs);
+  dg = perform_copy_insertion(dg);
   dg = perform_shard_expansion(dg);
   TensorInstanceBacking tensor_instance_backing =
       perform_instance_allocation(dg, inputs, ctx);
@@ -157,6 +160,76 @@ PCGInstance create_pcg_instance(
                      /*logit_grad_tensor=*/logit_grad_tensor};
 }
 
+/**
+ * \brief Spawn the Realm operations (tasks, copies, etc.) for a given \ref
+ * DynamicNodeInvocation, given the specified dependencies, instances, etc. Note
+ * that one \ref DynamicNodeInvocation may become multiple Realm operations
+ * (e.g., a parallel operator may turn into multiple copies).
+ */
+static Realm::Event spawn_dynamic_node_invocation(
+    RealmContext &ctx,
+    DynamicNodeInvocation const &invocation,
+    std::vector<Realm::Event> const &input_dependencies,
+    std::vector<Realm::Event> const &output_dependencies,
+    TensorInstanceBacking const &tensor_instance_backing,
+    PerDeviceOpStateBacking const &device_state_backing,
+    OptimizerAttrs const &optimizer_attrs,
+    ProfilingSettings const &profiling_settings,
+    DistributedFfHandle const &device_handle,
+    FFIterationConfig iteration_config) {
+  Realm::Event precondition = Realm::Event::merge_events(
+      Realm::Event::merge_events(input_dependencies),
+      Realm::Event::merge_events(output_dependencies));
+
+  TensorInstanceBacking tensor_backing =
+      subset_tensor_instance_backing_for_invocation(tensor_instance_backing,
+                                                    invocation);
+
+  auto spawn_task = [&]() {
+    Realm::Processor target_proc = ctx.map_device_coord_to_processor(
+        assert_unwrap(invocation.node_attrs.device_coord));
+    return spawn_op_task(ctx,
+                         target_proc,
+                         invocation,
+                         tensor_backing,
+                         try_at(device_state_backing.backing, invocation),
+                         profiling_settings,
+                         device_handle.at(target_proc),
+                         iteration_config,
+                         optimizer_attrs,
+                         precondition);
+  };
+
+  auto issue_copy = [&]() {
+    DynamicValueAttrs const &input = get_only(invocation.inputs).second;
+    DynamicValueAttrs const &output = get_only(invocation.outputs).second;
+    Realm::RegionInstance src_inst =
+        tensor_instance_backing.backing.at(input).first;
+    Realm::RegionInstance dst_inst =
+        tensor_instance_backing.backing.at(output).first;
+    return ctx.issue_copy(assert_unwrap(input.parallel_tensor_shape),
+                          src_inst,
+                          assert_unwrap(output.parallel_tensor_shape),
+                          dst_inst,
+                          Realm::ProfilingRequestSet{},
+                          precondition);
+  };
+
+  TrainingOperationAttrs op_attrs =
+      assert_unwrap(invocation.node_attrs.op_attrs);
+  return op_attrs.visit<Realm::Event>(overload{
+      [&](PCGOperatorAttrs const &pcg_op_attrs) {
+        return pcg_op_attrs.visit<Realm::Event>(overload{
+            [&](InputAttrs const &) { return Realm::Event::NO_EVENT; },
+            [&](WeightAttrs const &) { return Realm::Event::NO_EVENT; },
+            [&](auto const &) { return spawn_task(); },
+        });
+      },
+      [&](LossAttrs const &) { return spawn_task(); },
+      [&](CopyAttrs const &) { return issue_copy(); },
+  });
+}
+
 static std::unordered_map<dynamic_layer_guid_t, Realm::Event>
     execute_distributed_dynamic_node_invocation_set(
         RealmContext &ctx,
@@ -172,14 +245,6 @@ static std::unordered_map<dynamic_layer_guid_t, Realm::Event>
   DependencySet dependency_set{ctx.get_outstanding_events()};
   return unordered_map_from_pairs(
       transform(invocations, [&](DynamicNodeInvocation const &invocation) {
-        TrainingOperationAttrs op_attrs =
-            assert_unwrap(invocation.node_attrs.op_attrs);
-        if (op_attrs.is_pcg_op() && (op_attrs.require_pcg_op().is_input() ||
-                                     op_attrs.require_pcg_op().is_weight())) {
-          return std::pair{invocation.node_attrs.layer_guid,
-                           Realm::Event::NO_EVENT};
-        }
-
         std::vector<Realm::Event> input_dependencies =
             transform(vector_of(values(invocation.inputs)),
                       [&](DynamicValueAttrs const &value) {
@@ -190,27 +255,19 @@ static std::unordered_map<dynamic_layer_guid_t, Realm::Event>
                       [&](DynamicValueAttrs const &value) {
                         return dependency_set.get_dependency_for_writer(value);
                       });
-        Realm::Event dependencies = Realm::Event::merge_events(
-            Realm::Event::merge_events(input_dependencies),
-            Realm::Event::merge_events(output_dependencies));
-        Realm::Processor target_proc = ctx.map_device_coord_to_processor(
-            assert_unwrap(invocation.node_attrs.device_coord));
-
-        TensorInstanceBacking tensor_backing =
-            subset_tensor_instance_backing_for_invocation(
-                tensor_instance_backing, invocation);
 
         Realm::Event result =
-            spawn_op_task(ctx,
-                          target_proc,
-                          invocation,
-                          tensor_backing,
-                          try_at(device_state_backing.backing, invocation),
-                          profiling_settings,
-                          device_handle.at(target_proc),
-                          iteration_config,
-                          optimizer_attrs,
-                          dependencies);
+            spawn_dynamic_node_invocation(ctx,
+                                          invocation,
+                                          input_dependencies,
+                                          output_dependencies,
+                                          tensor_instance_backing,
+                                          device_state_backing,
+                                          optimizer_attrs,
+                                          profiling_settings,
+                                          device_handle,
+                                          iteration_config);
+
         for (DynamicValueAttrs const &value : values(invocation.inputs)) {
           dependency_set.add_reader(value, result);
         }
