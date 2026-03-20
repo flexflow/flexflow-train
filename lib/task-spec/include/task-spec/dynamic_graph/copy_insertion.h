@@ -16,7 +16,7 @@ bool graph_is_fully_copy_inserted(DynamicOpenDataflowGraph const &);
 std::unordered_set<DynamicNodeInvocation> perform_copy_insertion_for_invocation(
     DynamicNodeInvocation const &i,
     std::unordered_map<DynamicValueAttrs, DynamicValueAttrs> const
-        &mapped_source_value);
+        &unmapped_value_to_mapped_source_value);
 
 DynamicOpenDataflowGraph
     perform_copy_insertion(DynamicOpenDataflowGraph const &);

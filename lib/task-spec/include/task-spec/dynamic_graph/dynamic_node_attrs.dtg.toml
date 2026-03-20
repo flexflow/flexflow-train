@@ -28,6 +28,16 @@ type = "std::optional<::FlexFlow::DynamicTaskType>"
 [[fields]]
 name = "device_coord"
 type = "std::optional<::FlexFlow::MachineSpaceCoordinate>"
+docstring = '''
+\note Right now the \c device_coord for a copy node is sort of meaningless
+because we have one controller issuing all copies for the entire graph, no
+matter where they are. However the intention is this to be the "owner" or
+"issuer" of the copy, which matters a lot more down the road once we write the
+control replicated version of the Realm backend. At that point, you will have
+to pick one specific node to issue the copy, and the program should be correct
+no matter what you pick, but there may be performance implications to those
+choices.
+'''
 
 [[fields]]
 name = "mapping"
