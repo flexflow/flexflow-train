@@ -1,0 +1,49 @@
+namespace = "FlexFlow"
+name = "YOLOv10Config"
+type = "struct"
+
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+includes = [
+  "<vector>",
+  "<string>",
+  "models/yolov10/yolov10_module.dtg.h",
+  "models/yolov10/yolov10_layer_config.dtg.h",
+  "utils/positive_int/positive_int.h",
+]
+
+src_includes = [
+  "utils/fmt/vector.h",
+  "utils/hash/vector.h",
+]
+
+
+[[fields]]
+name = "num_input_channels"
+type = "::FlexFlow::positive_int"
+
+
+[[fields]]
+name = "num_classes"
+type = "::FlexFlow::positive_int"
+
+
+[[fields]]
+name = "model_scales"
+type = "std::vector<float>"
+
+
+[[fields]]
+name = "model_layers"
+type = "std::vector<::FlexFlow::YOLOv10LayerConfig>"
+
+[[fields]]
+name = "batch_size"
+type = "::FlexFlow::positive_int"
