@@ -92,15 +92,15 @@ LabelledKwargDataflowGraph<NodeLabel, OutputLabel, SlotName> from_v1(
 
     std::unordered_map<SlotName, KwargDataflowOutput<SlotName>> inputs;
     for (V1GraphEdge<SlotName> const &e : incoming.at(v1_idx)) {
-      inputs.emplace(
+      inputs.insert(std::pair{
           e.dstSlot,
-          KwargDataflowOutput<SlotName>{node_map.at(e.srcNode), e.srcSlot});
+          KwargDataflowOutput<SlotName>{node_map.at(e.srcNode), e.srcSlot}});
     }
 
     KwargNodeAddedResult<SlotName> result = g.add_node(
         v1.node_labels.at(v1_idx), inputs, v1.output_labels.at(v1_idx));
 
-    node_map.emplace(v1_idx, result.node);
+    node_map.insert(std::pair{v1_idx, result.node});
   }
 
   return g;
