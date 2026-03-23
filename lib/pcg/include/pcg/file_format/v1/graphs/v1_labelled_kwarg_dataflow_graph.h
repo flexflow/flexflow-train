@@ -73,12 +73,11 @@ LabelledKwargDataflowGraph<NodeLabel, OutputLabel, SlotName> from_v1(
   // Build a DiGraph with V1 indices as Node raw_uids to get topological order
   DiGraph dg = DiGraph::create<AdjacencyDiGraph>();
   for (nonnegative_int const &n : v1.graph.nodes) {
-    dg.add_node_unsafe(Node{static_cast<size_t>(n.unwrap_nonnegative())});
+    dg.add_node_unsafe(Node{n.size_t_from_nonnegative_int()});
   }
   for (V1GraphEdge<SlotName> const &e : v1.graph.edges) {
-    dg.add_edge(DirectedEdge{
-        Node{static_cast<size_t>(e.srcNode.unwrap_nonnegative())},
-        Node{static_cast<size_t>(e.dstNode.unwrap_nonnegative())}});
+    dg.add_edge(DirectedEdge{Node{e.srcNode.size_t_from_nonnegative_int()},
+                             Node{e.dstNode.size_t_from_nonnegative_int()}});
   }
 
   auto g = LabelledKwargDataflowGraph<NodeLabel, OutputLabel, SlotName>::
@@ -89,7 +88,7 @@ LabelledKwargDataflowGraph<NodeLabel, OutputLabel, SlotName> from_v1(
 
   std::unordered_map<nonnegative_int, Node> node_map;
   for (Node const &topo_node : get_topological_ordering(dg)) {
-    nonnegative_int v1_idx{static_cast<size_t>(topo_node.raw_uid)};
+    nonnegative_int v1_idx{topo_node.raw_uid};
 
     std::unordered_map<SlotName, KwargDataflowOutput<SlotName>> inputs;
     for (V1GraphEdge<SlotName> const &e : incoming.at(v1_idx)) {

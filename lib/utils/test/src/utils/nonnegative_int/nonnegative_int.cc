@@ -315,6 +315,24 @@ TEST_SUITE(FF_TEST_SUITE) {
     CHECK(result == correct);
   }
 
+  TEST_CASE("nonnegative_int::int_from_nonnegative_int()") {
+    nonnegative_int input = nonnegative_int{3};
+
+    int result = input.int_from_nonnegative_int();
+    int correct = 3;
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("nonnegative_int::size_t_from_nonnegative_int()") {
+    nonnegative_int input = nonnegative_int{3};
+
+    size_t result = input.size_t_from_nonnegative_int();
+    size_t correct = 3;
+
+    CHECK(result == correct);
+  }
+
   TEST_CASE("adl_serializer<nonnegative_int>") {
     SUBCASE("to_json") {
       nonnegative_int input = nonnegative_int{5};
