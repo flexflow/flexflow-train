@@ -6,6 +6,7 @@
 #include "utils/bidict/algorithms/bidict_from_enumerating.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/transform.h"
+#include "utils/containers/unordered_map_from_pairs.h"
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"
 #include "utils/graph/digraph/digraph.h"
 #include "utils/graph/digraph/directed_edge.dtg.h"
@@ -90,12 +91,13 @@ LabelledKwargDataflowGraph<NodeLabel, OutputLabel, SlotName> from_v1(
   for (Node const &topo_node : get_topological_ordering(dg)) {
     nonnegative_int v1_idx{topo_node.raw_uid};
 
-    std::unordered_map<SlotName, KwargDataflowOutput<SlotName>> inputs;
-    for (V1GraphEdge<SlotName> const &e : incoming.at(v1_idx)) {
-      inputs.insert(std::pair{
-          e.dstSlot,
-          KwargDataflowOutput<SlotName>{node_map.at(e.srcNode), e.srcSlot}});
-    }
+    std::unordered_map<SlotName, KwargDataflowOutput<SlotName>> inputs =
+        unordered_map_from_pairs(
+            transform(incoming.at(v1_idx), [&](V1GraphEdge<SlotName> const &e) {
+              return std::pair{e.dstSlot,
+                               KwargDataflowOutput<SlotName>{
+                                   node_map.at(e.srcNode), e.srcSlot}};
+            }));
 
     KwargNodeAddedResult<SlotName> result = g.add_node(
         v1.node_labels.at(v1_idx), inputs, v1.output_labels.at(v1_idx));
