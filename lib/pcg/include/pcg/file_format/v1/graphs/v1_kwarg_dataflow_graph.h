@@ -5,6 +5,7 @@
 #include "pcg/file_format/v1/graphs/v1_kwarg_dataflow_graph.dtg.h"
 #include "utils/bidict/algorithms/bidict_from_enumerating.h"
 #include "utils/containers/enumerate.h"
+#include "utils/containers/generate_map.h"
 #include "utils/containers/sorted.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/unordered_set_of.h"
@@ -47,15 +48,17 @@ V1KwargDataflowGraph<SlotName>
 }
 
 template <typename SlotName>
-KwargDataflowGraphView<SlotName>
-    from_v1(V1KwargDataflowGraph<SlotName> const &v1_g) {
-  std::unordered_set<Node> graph_nodes =
-      unordered_set_of(transform(v1_g.nodes, [](nonnegative_int n) {
+std::pair<KwargDataflowGraphView<SlotName>,
+          std::unordered_map<nonnegative_int, Node>>
+    from_v1(V1KwargDataflowGraph<SlotName> const &v1) {
+  std::unordered_map<nonnegative_int, Node> node_map =
+      generate_map(v1.nodes, [](nonnegative_int n) {
         return Node{n.size_t_from_nonnegative_int()};
-      }));
+      });
+  std::unordered_set<Node> node_set = unordered_set_of(values(node_map));
 
-  std::unordered_set<OpenKwargDataflowEdge<int, SlotName>> graph_edges =
-      transform(v1_g.edges, [](V1GraphEdge<SlotName> const &e) {
+  std::unordered_set<OpenKwargDataflowEdge<int, SlotName>> edges =
+      transform(v1.edges, [](V1GraphEdge<SlotName> const &e) {
         Node srcNode = Node{e.srcNode.size_t_from_nonnegative_int()};
         Node dstNode = Node{e.dstNode.size_t_from_nonnegative_int()};
         return OpenKwargDataflowEdge<int, SlotName>{KwargDataflowEdge<SlotName>{
@@ -66,12 +69,13 @@ KwargDataflowGraphView<SlotName>
 
   OpenKwargDataflowGraphData<int, SlotName> graph_data =
       OpenKwargDataflowGraphData<int, SlotName>{
-          /*nodes=*/graph_nodes,
-          /*edges=*/graph_edges,
+          /*nodes=*/node_set,
+          /*edges=*/edges,
           /*inputs=*/{},
           /*outputs=*/{},
       };
-  return view_from_open_kwarg_dataflow_graph_data(graph_data);
+  return std::pair{view_from_open_kwarg_dataflow_graph_data(graph_data),
+                   node_map};
 }
 
 } // namespace FlexFlow
