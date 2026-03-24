@@ -1,6 +1,7 @@
 #include "pcg/file_format/v1/v1_computation_graph.h"
 #include "pcg/file_format/v1/graphs/v1_labelled_kwarg_dataflow_graph.h"
 #include "utils/bidict/algorithms/transform_values.h"
+#include "utils/graph/instances/unordered_set_labelled_open_kwarg_dataflow_graph.h"
 #include "utils/graph/labelled_kwarg_dataflow_graph/labelled_kwarg_dataflow_graph.h"
 
 namespace FlexFlow {
@@ -12,14 +13,14 @@ V1ComputationGraph to_v1(ComputationGraph const &g) {
 }
 
 ComputationGraph from_v1(V1ComputationGraph const &v1) {
-  LabelledKwargDataflowGraph<LayerAttrs, TensorAttrs, TensorSlotName>
-      raw_graph =
-          LabelledKwargDataflowGraph<LayerAttrs, TensorAttrs, TensorSlotName>::
-              create_copy_of<LabelledKwargDataflowGraph<LayerAttrs,
-                                                        TensorAttrs,
-                                                        TensorSlotName>>(
-                  from_v1(v1.raw_graph).first);
-  return ComputationGraph{raw_graph};
+  return ComputationGraph{
+      LabelledKwargDataflowGraph<LayerAttrs, TensorAttrs, TensorSlotName>::
+          create_copy_of<
+              UnorderedSetLabelledOpenKwargDataflowGraph<LayerAttrs,
+                                                         TensorAttrs,
+                                                         int,
+                                                         TensorSlotName>>(
+              from_v1(v1.raw_graph).first)};
 }
 
 std::pair<V1ComputationGraph, bidict<nonnegative_int, layer_guid_t>>
