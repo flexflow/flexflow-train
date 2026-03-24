@@ -7,18 +7,10 @@
 #include "utils/containers/map_keys.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/transform.h"
-#include "utils/containers/unordered_map_from_pairs.h"
-#include "utils/graph/digraph/algorithms/get_topological_ordering.h"
-#include "utils/graph/digraph/digraph.h"
-#include "utils/graph/digraph/directed_edge.dtg.h"
-#include "utils/graph/instances/adjacency_digraph.h"
-#include "utils/graph/instances/unordered_set_labelled_open_kwarg_dataflow_graph.h"
 #include "utils/graph/kwarg_dataflow_graph/algorithms/get_outgoing_kwarg_dataflow_outputs_for_node.h"
-#include "utils/graph/kwarg_dataflow_graph/kwarg_node_added_result.dtg.h"
 #include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/kwarg_dataflow_graph_view_with_labelling.h"
 #include "utils/graph/labelled_kwarg_dataflow_graph/labelled_kwarg_dataflow_graph_view.h"
 #include "utils/graph/node/algorithms.h"
-#include "utils/nonnegative_int/nonnegative_int.h"
 
 namespace FlexFlow {
 

@@ -12,17 +12,6 @@ V1ComputationGraph to_v1(ComputationGraph const &g) {
   };
 }
 
-ComputationGraph from_v1(V1ComputationGraph const &v1) {
-  return ComputationGraph{
-      LabelledKwargDataflowGraph<LayerAttrs, TensorAttrs, TensorSlotName>::
-          create_copy_of<
-              UnorderedSetLabelledOpenKwargDataflowGraph<LayerAttrs,
-                                                         TensorAttrs,
-                                                         int,
-                                                         TensorSlotName>>(
-              from_v1(v1.raw_graph).first)};
-}
-
 std::pair<V1ComputationGraph, bidict<nonnegative_int, layer_guid_t>>
     to_v1_including_node_numbering(ComputationGraph const &cg) {
   std::pair<
@@ -36,6 +25,17 @@ std::pair<V1ComputationGraph, bidict<nonnegative_int, layer_guid_t>>
       raw.second, [](Node const &n) { return layer_guid_t{n}; });
 
   return {v1_cg, v1_node_ids};
+}
+
+ComputationGraph from_v1(V1ComputationGraph const &v1) {
+  return ComputationGraph{
+      LabelledKwargDataflowGraph<LayerAttrs, TensorAttrs, TensorSlotName>::
+          create_copy_of<
+              UnorderedSetLabelledOpenKwargDataflowGraph<LayerAttrs,
+                                                         TensorAttrs,
+                                                         int,
+                                                         TensorSlotName>>(
+              from_v1(v1.raw_graph).first)};
 }
 
 } // namespace FlexFlow
