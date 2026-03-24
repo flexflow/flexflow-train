@@ -35,7 +35,7 @@ ComputationGraph from_v1(V1ComputationGraph const &v1) {
                                                          TensorAttrs,
                                                          int,
                                                          TensorSlotName>>(
-              from_v1(v1.raw_graph).first)};
+              from_v1(v1.raw_graph))};
 }
 
 } // namespace FlexFlow

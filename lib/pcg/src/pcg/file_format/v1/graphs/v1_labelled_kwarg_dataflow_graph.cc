@@ -21,6 +21,10 @@ template V1LabelledKwargDataflowGraph<NodeLabel, OutputLabel, SlotName> to_v1(
 template std::pair<
     LabelledKwargDataflowGraphView<NodeLabel, OutputLabel, SlotName>,
     std::unordered_map<nonnegative_int, Node>>
+    from_v1_including_node_numbering(
+        V1LabelledKwargDataflowGraph<NodeLabel, OutputLabel, SlotName> const &);
+
+template LabelledKwargDataflowGraphView<NodeLabel, OutputLabel, SlotName>
     from_v1(
         V1LabelledKwargDataflowGraph<NodeLabel, OutputLabel, SlotName> const &);
 
