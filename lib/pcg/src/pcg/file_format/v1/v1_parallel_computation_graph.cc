@@ -22,7 +22,7 @@ ParallelComputationGraph from_v1(V1ParallelComputationGraph const &v1) {
                                                          ParallelTensorAttrs,
                                                          int,
                                                          TensorSlotName>>(
-              from_v1(v1.raw_graph).first)};
+              from_v1(v1.raw_graph))};
 }
 
 } // namespace FlexFlow

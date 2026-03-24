@@ -50,7 +50,7 @@ V1KwargDataflowGraph<SlotName>
 template <typename SlotName>
 std::pair<KwargDataflowGraphView<SlotName>,
           std::unordered_map<nonnegative_int, Node>>
-    from_v1(V1KwargDataflowGraph<SlotName> const &v1) {
+    from_v1_including_node_numbering(V1KwargDataflowGraph<SlotName> const &v1) {
   std::unordered_map<nonnegative_int, Node> node_map =
       generate_map(v1.nodes, [](nonnegative_int n) {
         return Node{n.size_t_from_nonnegative_int()};
@@ -76,6 +76,12 @@ std::pair<KwargDataflowGraphView<SlotName>,
       };
   return std::pair{view_from_open_kwarg_dataflow_graph_data(graph_data),
                    node_map};
+}
+
+template <typename SlotName>
+KwargDataflowGraphView<SlotName>
+    from_v1(V1KwargDataflowGraph<SlotName> const &v1) {
+  return from_v1_including_node_numbering(v1).first;
 }
 
 } // namespace FlexFlow
