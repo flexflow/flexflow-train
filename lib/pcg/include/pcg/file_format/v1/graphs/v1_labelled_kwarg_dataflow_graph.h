@@ -4,6 +4,7 @@
 #include "pcg/file_format/v1/graphs/v1_kwarg_dataflow_graph.h"
 #include "pcg/file_format/v1/graphs/v1_labelled_kwarg_dataflow_graph.dtg.h"
 #include "utils/bidict/algorithms/bidict_from_enumerating.h"
+#include "utils/containers/map_keys.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/unordered_map_from_pairs.h"
@@ -14,9 +15,10 @@
 #include "utils/graph/instances/unordered_set_labelled_open_kwarg_dataflow_graph.h"
 #include "utils/graph/kwarg_dataflow_graph/algorithms/get_outgoing_kwarg_dataflow_outputs_for_node.h"
 #include "utils/graph/kwarg_dataflow_graph/kwarg_node_added_result.dtg.h"
-#include "utils/graph/labelled_kwarg_dataflow_graph/labelled_kwarg_dataflow_graph.h"
+#include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/kwarg_dataflow_graph_view_with_labelling.h"
 #include "utils/graph/labelled_kwarg_dataflow_graph/labelled_kwarg_dataflow_graph_view.h"
 #include "utils/graph/node/algorithms.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
 
 namespace FlexFlow {
 
@@ -59,53 +61,19 @@ V1LabelledKwargDataflowGraph<NodeLabel, OutputLabel, SlotName> to_v1(
 }
 
 template <typename NodeLabel, typename OutputLabel, typename SlotName>
-LabelledKwargDataflowGraph<NodeLabel, OutputLabel, SlotName> from_v1(
-    V1LabelledKwargDataflowGraph<NodeLabel, OutputLabel, SlotName> const &v1) {
-  // Build incoming-edge map
-  std::unordered_map<nonnegative_int, std::vector<V1GraphEdge<SlotName>>>
-      incoming;
-  for (nonnegative_int const &n : v1.graph.nodes) {
-    incoming[n] = {};
-  }
-  for (V1GraphEdge<SlotName> const &e : v1.graph.edges) {
-    incoming[e.dstNode].push_back(e);
-  }
+std::pair<LabelledKwargDataflowGraphView<NodeLabel, OutputLabel, SlotName>,
+          std::unordered_map<nonnegative_int, Node>>
+    from_v1(V1LabelledKwargDataflowGraph<NodeLabel, OutputLabel, SlotName> const
+                &v1) {
+  auto [graph_view, node_map] = from_v1(v1.graph);
 
-  // Build a DiGraph with V1 indices as Node raw_uids to get topological order
-  DiGraph dg = DiGraph::create<AdjacencyDiGraph>();
-  for (nonnegative_int const &n : v1.graph.nodes) {
-    dg.add_node_unsafe(Node{n.size_t_from_nonnegative_int()});
-  }
-  for (V1GraphEdge<SlotName> const &e : v1.graph.edges) {
-    dg.add_edge(DirectedEdge{Node{e.srcNode.size_t_from_nonnegative_int()},
-                             Node{e.dstNode.size_t_from_nonnegative_int()}});
-  }
+  std::unordered_map<Node, NodeLabel> node_labels = map_keys(
+      v1.node_labels, [&](nonnegative_int n) { return node_map.at(n); });
+  std::unordered_map<KwargDataflowOutput<SlotName>, OutputLabel> value_labels;
 
-  auto g = LabelledKwargDataflowGraph<NodeLabel, OutputLabel, SlotName>::
-      template create<UnorderedSetLabelledOpenKwargDataflowGraph<NodeLabel,
-                                                                 OutputLabel,
-                                                                 int,
-                                                                 SlotName>>();
-
-  std::unordered_map<nonnegative_int, Node> node_map;
-  for (Node const &topo_node : get_topological_ordering(dg)) {
-    nonnegative_int v1_idx{topo_node.raw_uid};
-
-    std::unordered_map<SlotName, KwargDataflowOutput<SlotName>> inputs =
-        unordered_map_from_pairs(
-            transform(incoming.at(v1_idx), [&](V1GraphEdge<SlotName> const &e) {
-              return std::pair{e.dstSlot,
-                               KwargDataflowOutput<SlotName>{
-                                   node_map.at(e.srcNode), e.srcSlot}};
-            }));
-
-    KwargNodeAddedResult<SlotName> result = g.add_node(
-        v1.node_labels.at(v1_idx), inputs, v1.output_labels.at(v1_idx));
-
-    node_map.insert(std::pair{v1_idx, result.node});
-  }
-
-  return g;
+  return std::pair{kwarg_dataflow_graph_view_with_labelling(
+                       graph_view, node_labels, value_labels),
+                   node_map};
 }
 
 } // namespace FlexFlow
