@@ -9,7 +9,6 @@
 #include "pcg/optimizer_attrs.dtg.h"
 #include "pcg/optimizer_slot_name.dtg.h"
 #include "task-spec/device_specific.h"
-#include "task-spec/ff_iteration_config.dtg.h"
 #include "task-spec/per_device_op_state.dtg.h"
 #include "task-spec/task_argument_accessor/itask_argument_accessor.h"
 #include "task-spec/task_argument_accessor/task_tensor_parameter.h"
@@ -23,7 +22,6 @@ struct TaskArgumentAccessor {
   PCGOperatorAttrs get_op_attrs() const;
   LossAttrs get_loss_attrs() const;
   PerDeviceOpState get_per_device_op_state() const;
-  FFIterationConfig get_iteration_config() const;
   OptimizerAttrs get_optimizer_attrs() const;
 
   TensorShape get_tensor_shape(TensorSlotName slot) const {

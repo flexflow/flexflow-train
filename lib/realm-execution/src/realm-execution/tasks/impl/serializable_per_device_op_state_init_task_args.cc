@@ -15,7 +15,6 @@ SerializablePerDeviceOpStateInitTaskArgs
       tensor_instance_backing_to_serializable(args.tensor_backing),
       /*profiling_settings=*/args.profiling_settings,
       /*device_handle=*/device_specific_ptr_to_serializable(args.device_handle),
-      /*iteration_config=*/args.iteration_config,
       /*optimizer_attrs=*/args.optimizer_attrs,
       /*origin_proc=*/realm_processor_to_serializable(args.origin_proc),
       /*origin_result_ptr=*/reinterpret_cast<uintptr_t>(args.origin_result_ptr),
@@ -33,7 +32,6 @@ PerDeviceOpStateInitTaskArgs
       /*device_handle=*/
       device_specific_ptr_from_serializable<ManagedPerDeviceFFHandle>(
           args.device_handle),
-      /*iteration_config=*/args.iteration_config,
       /*optimizer_attrs=*/args.optimizer_attrs,
       /*origin_proc=*/realm_processor_from_serializable(args.origin_proc),
       /*origin_result_ptr=*/

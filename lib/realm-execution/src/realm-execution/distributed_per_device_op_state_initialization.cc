@@ -21,7 +21,6 @@ PerDeviceOpStateBacking perform_distributed_per_device_op_state_initialization(
     TensorInstanceBacking const &tensor_instance_backing,
     ProfilingSettings const &profiling_settings,
     DistributedFfHandle const &device_handle,
-    FFIterationConfig const &iteration_config,
     OptimizerAttrs const &optimizer_attrs,
     Realm::Event precondition) {
 
@@ -50,7 +49,6 @@ PerDeviceOpStateBacking perform_distributed_per_device_op_state_initialization(
                                             tensor_backing,
                                             profiling_settings,
                                             device_handle.at(target_proc),
-                                            iteration_config,
                                             optimizer_attrs,
                                             device_state_ptr,
                                             precondition);

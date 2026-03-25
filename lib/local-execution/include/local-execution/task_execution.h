@@ -15,7 +15,6 @@ TaskArgumentAccessor make_task_argument_accessor_for_invocation(
     ProfilingSettings const &profiling_settings,
     device_handle_t const &ff_handle,
     std::optional<PerDeviceOpState> const &per_device_op_state,
-    FFIterationConfig const &iteration_config,
     std::optional<OptimizerAttrs> const &optimizer_attrs,
     device_id_t device_idx);
 
@@ -25,7 +24,6 @@ std::optional<milliseconds_t> execute_dynamic_node_invocation(
     ProfilingSettings const &profiling_settings,
     device_handle_t const &ff_handle,
     std::optional<PerDeviceOpState> const &per_device_op_state,
-    FFIterationConfig const &iteration_config,
     std::optional<OptimizerAttrs> const &optimizer_attrs,
     device_id_t device_idx);
 

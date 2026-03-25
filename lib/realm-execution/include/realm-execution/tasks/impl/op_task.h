@@ -10,7 +10,6 @@
 #include "realm-execution/realm_context.h"
 #include "realm-execution/tensor_instance_backing.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
-#include "task-spec/ff_iteration_config.dtg.h"
 #include "task-spec/per_device_op_state.dtg.h"
 #include <optional>
 
@@ -60,7 +59,6 @@ Realm::Event spawn_op_task(
     std::optional<DeviceSpecificPtr<PerDeviceOpState>> const &device_state,
     ProfilingSettings const &profiling_settings,
     DeviceSpecificPtr<ManagedPerDeviceFFHandle> const &device_handle,
-    FFIterationConfig const &iteration_config,
     std::optional<OptimizerAttrs> const &optimizer_attrs,
     Realm::Event precondition);
 

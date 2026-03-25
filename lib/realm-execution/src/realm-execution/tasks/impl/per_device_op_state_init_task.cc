@@ -54,7 +54,6 @@ void per_device_op_state_init_task_body(void const *args,
                       ctx.get_current_device_allocator(),
                       task_args.profiling_settings,
                       device_handle,
-                      task_args.iteration_config,
                       task_args.optimizer_attrs,
                       ctx.get_current_device_idx());
   DeviceSpecificPerDeviceOpState result_state =
@@ -80,7 +79,6 @@ std::optional<Realm::Event> spawn_per_device_op_state_init_task(
     TensorInstanceBacking const &tensor_backing,
     ProfilingSettings const &profiling_settings,
     DeviceSpecificPtr<ManagedPerDeviceFFHandle> const &device_handle,
-    FFIterationConfig const &iteration_config,
     OptimizerAttrs const &optimizer_attrs,
     DeviceSpecificPtr<PerDeviceOpState> *result_ptr,
     Realm::Event precondition) {
@@ -89,7 +87,6 @@ std::optional<Realm::Event> spawn_per_device_op_state_init_task(
       tensor_backing,
       profiling_settings,
       device_handle,
-      iteration_config,
       optimizer_attrs,
       ctx.get_current_processor(),
       result_ptr,

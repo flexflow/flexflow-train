@@ -20,7 +20,6 @@ struct LocalTaskArgumentAccessor : public ITaskArgumentAccessor {
       std::optional<PCGOperatorAttrs> const &op_attrs,
       std::optional<LossAttrs> const &loss_attrs,
       std::optional<PerDeviceOpState> const &per_device_op_state,
-      FFIterationConfig const &iteration_config,
       std::optional<OptimizerAttrs> const &optimizer_attrs,
       device_id_t device_idx);
 
@@ -38,7 +37,6 @@ struct LocalTaskArgumentAccessor : public ITaskArgumentAccessor {
   PCGOperatorAttrs get_op_attrs() const override;
   LossAttrs get_loss_attrs() const override;
   PerDeviceOpState get_per_device_op_state() const override;
-  FFIterationConfig get_iteration_config() const override;
   OptimizerAttrs get_optimizer_attrs() const override;
 
   Allocator get_allocator() const override;
@@ -56,7 +54,6 @@ private:
   std::optional<PCGOperatorAttrs> op_attrs;
   std::optional<LossAttrs> loss_attrs;
   std::optional<PerDeviceOpState> per_device_op_state;
-  FFIterationConfig iteration_config;
   std::optional<OptimizerAttrs> optimizer_attrs;
 
   device_id_t device_idx;

@@ -16,7 +16,6 @@ includes = [
   "realm-execution/tasks/serializer/serializable_tensor_instance_backing.dtg.h",
   "task-spec/device_specific_per_device_op_state.dtg.h",
   "task-spec/dynamic_graph/serializable_dynamic_node_invocation.dtg.h",
-  "task-spec/ff_iteration_config.dtg.h",
 ]
 
 [[fields]]
@@ -34,10 +33,6 @@ type = "::FlexFlow::ProfilingSettings"
 [[fields]]
 name = "device_handle"
 type = "::FlexFlow::SerializableDeviceSpecificPtr"
-
-[[fields]]
-name = "iteration_config"
-type = "::FlexFlow::FFIterationConfig"
 
 [[fields]]
 name = "optimizer_attrs"
