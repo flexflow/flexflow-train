@@ -36,7 +36,7 @@ type = "std::unordered_map<::FlexFlow::nonnegative_int, NodeLabel>"
 
 [[fields]]
 name = "output_labels"
-type = "std::unordered_map<::FlexFlow::nonnegative_int, std::unordered_map<SlotName, OutputLabel>>"
+type = "std::unordered_map<::FlexFlow::V1GraphOutput<SlotName>, OutputLabel>"
 
 [[fields]]
 name = "graph"
