@@ -63,8 +63,7 @@ std::pair<LabelledKwargDataflowGraphView<NodeLabel, OutputLabel, SlotName>,
 
   std::unordered_map<KwargDataflowOutput<SlotName>, OutputLabel> value_labels =
       map_keys(v1.output_labels, [&](V1GraphOutput<SlotName> const &o) {
-        Node n = Node{o.node.size_t_from_nonnegative_int()};
-        return KwargDataflowOutput<SlotName>{n, o.slot_name};
+        return KwargDataflowOutput<SlotName>{node_map.at(o.node), o.slot_name};
       });
 
   return std::pair{kwarg_dataflow_graph_view_with_labelling(
