@@ -5,6 +5,8 @@ ff_add_executable(
     include/
   SRC_PATTERNS
     *.cc
+  PRIVATE_INCLUDE
+    include/
   DEPS
     utils
     rapidcheck
