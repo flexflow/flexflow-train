@@ -44,7 +44,7 @@ std::optional<OpenKwargDataflowGraphIsomorphism<GraphInputName>>
 
   {
     std::unordered_set<KwargDataflowGraphInput<GraphInputName>>
-        already_mapped_src_inputs = right_entries(unused_graph_inputs_mapping);
+        already_mapped_src_inputs = left_entries(unused_graph_inputs_mapping);
     std::unordered_set<KwargDataflowGraphInput<GraphInputName>>
         src_g_unused_inputs =
             get_unused_open_kwarg_dataflow_graph_inputs(src_g);
