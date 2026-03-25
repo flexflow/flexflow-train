@@ -10,10 +10,18 @@ features = [
   "fmt",
 ]
 
-[[fields]]
-name = "srcNode"
-type = "size_t"
+template_params = [
+  "SlotName",
+]
+
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h",
+]
 
 [[fields]]
-name = "srcIdx"
-type = "size_t"
+name = "node"
+type = "::FlexFlow::nonnegative_int"
+
+[[fields]]
+name = "slot_name"
+type = "SlotName"
