@@ -67,12 +67,18 @@ std::pair<KwargDataflowGraphView<SlotName>,
         }};
       });
 
+  std::unordered_set<KwargDataflowOutput<SlotName>> outputs =
+      transform(v1.edges, [](V1GraphEdge<SlotName> const &e) {
+        Node srcNode = Node{e.srcNode.size_t_from_nonnegative_int()};
+        return KwargDataflowOutput<SlotName>{srcNode, e.srcSlot};
+      });
+
   OpenKwargDataflowGraphData<int, SlotName> graph_data =
       OpenKwargDataflowGraphData<int, SlotName>{
           /*nodes=*/node_set,
           /*edges=*/edges,
           /*inputs=*/{},
-          /*outputs=*/{},
+          /*outputs=*/outputs,
       };
   return std::pair{view_from_open_kwarg_dataflow_graph_data(graph_data),
                    node_map};
