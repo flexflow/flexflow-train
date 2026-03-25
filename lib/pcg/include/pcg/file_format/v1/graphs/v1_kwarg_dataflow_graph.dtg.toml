@@ -18,6 +18,7 @@ includes = [
   "<vector>",
   "<unordered_set>",
   "pcg/file_format/v1/graphs/v1_graph_edge.dtg.h",
+  "pcg/file_format/v1/graphs/v1_graph_output.dtg.h",
   "utils/nonnegative_int/nonnegative_int.h",
 ]
 
@@ -35,3 +36,7 @@ type = "std::vector<::FlexFlow::nonnegative_int>"
 [[fields]]
 name = "edges"
 type = "std::unordered_set<::FlexFlow::V1GraphEdge<SlotName>>"
+
+[[fields]]
+name = "outputs"
+type = "std::unordered_set<::FlexFlow::V1GraphOutput<SlotName>>"
