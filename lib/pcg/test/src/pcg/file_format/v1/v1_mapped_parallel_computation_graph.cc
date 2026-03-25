@@ -66,7 +66,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("serializes to JSON") {
       nlohmann::json j = v1_mpcg;
-      V1MappedParallelComputationGraph result = j.get<V1MappedParallelComputationGraph>();
+      V1MappedParallelComputationGraph result =
+          j.get<V1MappedParallelComputationGraph>();
       CHECK(result == v1_mpcg);
     }
 
