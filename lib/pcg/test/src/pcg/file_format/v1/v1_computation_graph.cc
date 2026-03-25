@@ -30,6 +30,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("serializes to JSON") {
       nlohmann::json j = v1_cg;
+      V1ComputationGraph result = j.get<V1ComputationGraph>();
+      CHECK(result == v1_cg);
     }
 
     SUBCASE("round-trips via from_v1") {
