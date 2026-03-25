@@ -1,6 +1,7 @@
 #include "pcg/file_format/v1/v1_mapped_parallel_computation_graph.h"
 #include "pcg/mapped_parallel_computation_graph/mapped_parallel_computation_graph.dtg.h"
-#include "realm-execution/pcg_instance/pcg_instance.h"
+#include "realm-execution/distributed_ff_handle.h"
+#include "realm-execution/pcg_instance.h"
 #include "realm-execution/realm_context.h"
 #include "realm-execution/realm_manager.h"
 #include "utils/cli/cli_get_help_message.h"
@@ -70,8 +71,8 @@ int main(int argc, char **argv) {
   char **realm_argv = realm_args.data();
   RealmManager manager(&realm_argc, &realm_argv);
 
-  FlexFlow::Realm::Event event = manager.start_controller([&](RealmContext
-                                                                  &ctx) {
+  ControllerTaskResult result = manager.start_controller([&](RealmContext
+                                                                 &ctx) {
     MappedParallelComputationGraph mpcg = [&]() {
       std::ifstream f(mapped_pcg_json);
       nlohmann::json mpcg_json = nlohmann::json::parse(f);
@@ -87,19 +88,16 @@ int main(int argc, char **argv) {
 
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> input_tensors;
 
-    DistributedDeviceHandle device_handle =
-        create_distributed_device_handle(ctx,
-                                         /*workSpaceSize=*/1024 * 1024,
-                                         /*allowTensorOpMathConversion=*/true);
+    DistributedFfHandle device_handle =
+        create_distributed_ff_handle(ctx,
+                                     /*workSpaceSize=*/1024 * 1024,
+                                     /*allowTensorOpMathConversion=*/true);
 
     PCGInstance pcg_instance = create_pcg_instance(
         /*ctx=*/ctx,
         /*mpcg=*/mpcg,
         /*optimizer=*/optimizer_attrs,
         /*loss=*/std::nullopt,
-        /*label_tensor=*/std::nullopt,
-        /*logit_tensor=*/std::nullopt,
-        /*loss_mapping=*/std::nullopt,
         /*input_tensors=*/input_tensors,
         /*profiling_settings=*/ProfilingSettings{0, 0},
         /*device_handle=*/device_handle,
@@ -115,7 +113,7 @@ int main(int argc, char **argv) {
           /*iteration_config=*/FFIterationConfig{1_p});
     }
   });
-  event.wait();
+  result.wait();
 
   return 0;
 }
