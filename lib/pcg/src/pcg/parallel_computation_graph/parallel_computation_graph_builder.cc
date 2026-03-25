@@ -2,7 +2,6 @@
 #include "op-attrs/get_incoming_tensor_roles.h"
 #include "op-attrs/ops/attention.h"
 #include "op-attrs/ops/attention_attrs.dtg.h"
-#include "op-attrs/ops/batch_matmul_attrs.dtg.h"
 #include "op-attrs/ops/batch_norm.h"
 #include "op-attrs/ops/batch_norm_attrs.dtg.h"
 #include "op-attrs/ops/cast_attrs.dtg.h"
@@ -113,34 +112,6 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::add(
                                                   rhs,
                                               },
                                           },
-                                          {}),
-                          TensorSlotName::OUTPUT);
-}
-
-parallel_tensor_guid_t ParallelComputationGraphBuilder::batch_matmul(
-    parallel_tensor_guid_t const &a,
-    parallel_tensor_guid_t const &b,
-    std::optional<std::string> const &maybe_name) {
-
-  BatchMatmulAttrs attrs = BatchMatmulAttrs{
-      /*a_seq_length_dim=*/std::nullopt,
-      /*b_seq_length_dim=*/std::nullopt,
-  };
-
-  std::string name =
-      maybe_name.value_or(get_default_name(PCGOperatorAttrs{attrs}));
-
-  ParallelLayerAttrs layer = ParallelLayerAttrs{PCGOperatorAttrs{attrs}, name};
-
-  return require_only_key(this->add_layer(layer,
-                                          {{
-                                               TensorSlotName::LHS_INPUT,
-                                               a,
-                                           },
-                                           {
-                                               TensorSlotName::RHS_INPUT,
-                                               b,
-                                           }},
                                           {}),
                           TensorSlotName::OUTPUT);
 }

@@ -2,9 +2,6 @@
 
 namespace FlexFlow {
 
-OperatorType get_op_type(BatchMatmulAttrs const &) {
-  return OperatorType::BATCHMATMUL;
-}
 OperatorType get_op_type(BatchNormAttrs const &) {
   return OperatorType::BATCHNORM;
 }

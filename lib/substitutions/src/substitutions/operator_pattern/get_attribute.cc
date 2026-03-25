@@ -4,16 +4,6 @@
 
 namespace FlexFlow {
 
-std::optional<OperatorAttributeValue> get_attribute(BatchMatmulAttrs const &p,
-                                                    OperatorAttributeKey key) {
-  switch (key) {
-    case OperatorAttributeKey::OP_TYPE:
-      return OperatorAttributeValue{get_op_type(p)};
-    default:
-      return std::nullopt;
-  }
-}
-
 std::optional<OperatorAttributeValue> get_attribute(BatchNormAttrs const &p,
                                                     OperatorAttributeKey key) {
   switch (key) {
