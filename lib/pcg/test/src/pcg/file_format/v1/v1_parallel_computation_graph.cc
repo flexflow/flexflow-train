@@ -34,6 +34,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("serializes to JSON") {
       nlohmann::json j = v1_pcg;
+      V1ParallelComputationGraph result = j.get<V1ParallelComputationGraph>();
+      CHECK(result == v1_pcg);
     }
 
     SUBCASE("round-trips via from_v1") {
