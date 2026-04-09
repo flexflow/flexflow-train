@@ -6,6 +6,7 @@
 #include "realm-execution/instance_allocation.h"
 #include "realm-execution/realm_context.h"
 #include "realm-execution/tasks/impl/op_task.h"
+#include "realm-execution/tasks/realm_reduction.h"
 #include "realm-execution/tensor_instance_backing.h"
 #include "task-spec/dynamic_graph/copy_insertion.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
@@ -215,6 +216,46 @@ static Realm::Event spawn_dynamic_node_invocation(
                           precondition);
   };
 
+  // issue_replicate_bwd lambda
+  auto issue_replicate_bwd = [&]() {
+    std::optional<DynamicValueAttrs> output_grad_opt;
+    for (auto const &[slot, value] : invocation.inputs) {
+      if (slot.slot_tensor_role == DynamicTensorRole{FwbTensorType::GRADIENT}) {
+        output_grad_opt = value;
+      }
+    }
+    DynamicValueAttrs output_grad = assert_unwrap(output_grad_opt);
+    DynamicValueAttrs input_grad = get_only(invocation.outputs).second;
+    Realm::RegionInstance dst_inst =
+        tensor_instance_backing.backing.at(input_grad).first;
+
+    Realm::ReductionOpID redop_id = get_sum_reduction_op_id(
+        assert_unwrap(output_grad.parallel_tensor_shape).data_type);
+
+    // chain reductions sequentially to avoid write races on dst
+    Realm::Event e = precondition;
+    for (auto const &[p, m] : assert_unwrap(output_grad.mapping)) {
+      DynamicValueAttrs replica_key = output_grad;
+      replica_key.mapping =
+          bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>{{p, m}};
+      replica_key.shard_coord = p;
+
+      Realm::RegionInstance src_inst =
+          tensor_instance_backing.backing.at(replica_key).first;
+
+      e = ctx.issue_copy(assert_unwrap(output_grad.parallel_tensor_shape),
+                         src_inst,
+                         assert_unwrap(input_grad.parallel_tensor_shape),
+                         dst_inst,
+                         Realm::ProfilingRequestSet{},
+                         e,
+                         0,
+                         redop_id,
+                         false);
+    }
+    return e;
+  };
+
   TrainingOperationAttrs op_attrs =
       assert_unwrap(invocation.node_attrs.op_attrs);
   return op_attrs.visit<Realm::Event>(overload{
@@ -222,11 +263,24 @@ static Realm::Event spawn_dynamic_node_invocation(
         return pcg_op_attrs.visit<Realm::Event>(overload{
             [&](InputAttrs const &) { return Realm::Event::NO_EVENT; },
             [&](WeightAttrs const &) { return Realm::Event::NO_EVENT; },
+            [&](ReplicateAttrs const &) {
+              // this should never be reached since replicate
+              // goes through TrainingOperationAttrs::ReplicateAttrs
+              PANIC("unexpected replicate in PCGOperatorAttrs path");
+              return Realm::Event::NO_EVENT;
+            },
             [&](auto const &) { return spawn_task(); },
         });
       },
       [&](LossAttrs const &) { return spawn_task(); },
       [&](CopyAttrs const &) { return issue_copy(); },
+      [&](ReplicateAttrs const &) {
+        if (invocation.node_attrs.task_type.has_value() &&
+            invocation.node_attrs.task_type.value() == DynamicTaskType::BWD) {
+          return issue_replicate_bwd();
+        }
+        return issue_copy();
+      },
   });
 }
 

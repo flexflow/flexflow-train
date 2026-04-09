@@ -31,6 +31,7 @@ PerDeviceOpStateBacking perform_distributed_per_device_op_state_initialization(
   std::unordered_map<DynamicNodeInvocation,
                      DeviceSpecificPtr<PerDeviceOpState> *>
       device_state_map;
+  std::vector<Realm::Event> completion_events;
   for (DynamicNodeInvocation const &invocation : dg.invocations) {
     Realm::Processor target_proc = ctx.map_device_coord_to_processor(
         assert_unwrap(invocation.node_attrs.device_coord));
@@ -56,6 +57,7 @@ PerDeviceOpStateBacking perform_distributed_per_device_op_state_initialization(
                                             precondition);
 
     if (completion_event.has_value()) {
+      completion_events.push_back(completion_event.value());
       device_state_map.insert(std::pair{invocation, device_state_ptr});
     } else {
       // Task doesn't require initialization, clean up and don't store result
@@ -63,7 +65,9 @@ PerDeviceOpStateBacking perform_distributed_per_device_op_state_initialization(
     }
   }
 
-  ctx.get_outstanding_events().wait();
+  // wait for all init tasks — direct write to *result_ptr happens
+  // before each init task event fires so result is ready after this
+  Realm::Event::merge_events(completion_events).wait();
 
   auto deref = [](DeviceSpecificPtr<PerDeviceOpState> *const &p) { return *p; };
   std::unordered_map<DynamicNodeInvocation, DeviceSpecificPtr<PerDeviceOpState>>

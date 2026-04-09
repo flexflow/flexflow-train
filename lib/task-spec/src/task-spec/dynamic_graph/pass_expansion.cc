@@ -4,6 +4,7 @@
 #include "utils/containers/are_all_same.h"
 #include "utils/containers/merge_disjoint_maps.h"
 #include "utils/containers/transform.h"
+#include "utils/containers/get_only.h"
 
 namespace FlexFlow {
 
@@ -109,6 +110,44 @@ DynamicNodeInvocation perform_bwd_pass_expansion_for_invocation(
       transform(invocation.inputs, to_grad),
   };
 }
+static std::unordered_set<DynamicNodeInvocation>
+    perform_pass_expansion_for_replicate(
+        DynamicNodeInvocation const &invocation) {
+
+  auto const &[input_slot, input] = get_only(invocation.inputs);
+  auto const &[output_slot, output] = get_only(invocation.outputs);
+
+  // forward: INPUT/FWD → OUTPUT/FWD (copy to replicas)
+  DynamicNodeInvocation fwd{
+      /*inputs=*/{{pass_expand_slot(input_slot, FwbTensorType::FORWARD),
+                   pass_expand_value(input, FwbTensorType::FORWARD)}},
+      /*node_attrs=*/
+      pass_expand_node(invocation.node_attrs, DynamicTaskType::FWD),
+      /*outputs=*/
+      {{pass_expand_slot(output_slot, FwbTensorType::FORWARD),
+        pass_expand_value(output, FwbTensorType::FORWARD)}},
+  };
+
+  // backward: OUTPUT/FWD + OUTPUT/GRAD → INPUT/GRAD (reduce gradients)
+  // The backward node needs the mapping from the output (replicated)
+  // so it knows which replicas to reduce from
+  DynamicNodeAttrs bwd_node_attrs = invocation.node_attrs;
+  bwd_node_attrs.task_type = DynamicTaskType::BWD;
+
+  DynamicNodeInvocation bwd{
+      /*inputs=*/{
+          {pass_expand_slot(output_slot, FwbTensorType::FORWARD),
+           pass_expand_value(output, FwbTensorType::FORWARD)},
+          {pass_expand_slot(output_slot, FwbTensorType::GRADIENT),
+           pass_expand_value(output, FwbTensorType::GRADIENT)},
+      },
+      /*node_attrs=*/bwd_node_attrs,
+      /*outputs=*/
+      {{pass_expand_slot(input_slot, FwbTensorType::GRADIENT),
+        pass_expand_value(input, FwbTensorType::GRADIENT)}},
+  };
+  return {fwd, bwd};
+}
 
 DynamicOpenDataflowGraph
     perform_pass_expansion(DynamicOpenDataflowGraph const &g) {
@@ -117,6 +156,10 @@ DynamicOpenDataflowGraph
 
   DynamicOpenDataflowGraph result = flatmap_dynamic_invocation_set(
       g, [](DynamicNodeInvocation const &invocation) {
+        if (invocation.node_attrs.op_attrs.has_value() &&
+            invocation.node_attrs.op_attrs.value().is_replicate()) {
+          return perform_pass_expansion_for_replicate(invocation);
+        }
         if (invocation.inputs.empty()) {
           return std::unordered_set{
               perform_fwd_pass_expansion_for_invocation(invocation),

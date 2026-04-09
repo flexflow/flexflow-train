@@ -63,15 +63,18 @@ public:
                             int priority = 0);
   ///\}
 
-  /** \name Data movement */
+  /** \name Data movement and reduction */
   ///\{
-  Realm::Event issue_copy(ParallelTensorShape const &src_shape,
-                          Realm::RegionInstance src_inst,
-                          ParallelTensorShape const &dst_shape,
-                          Realm::RegionInstance dst_inst,
-                          Realm::ProfilingRequestSet const &requests,
-                          Realm::Event wait_on = Realm::Event::NO_EVENT,
-                          int priority = 0);
+  Realm::Event
+      issue_copy(ParallelTensorShape const &src_shape,
+                 Realm::RegionInstance src_inst,
+                 ParallelTensorShape const &dst_shape,
+                 Realm::RegionInstance dst_inst,
+                 Realm::ProfilingRequestSet const &requests,
+                 Realm::Event wait_on = Realm::Event::NO_EVENT,
+                 int priority = 0,
+                 std::optional<Realm::ReductionOpID> redop_id = std::nullopt,
+                 bool exclusive = false);
   ///\}
 
   /** \name Instance management */

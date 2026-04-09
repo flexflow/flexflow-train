@@ -62,13 +62,5 @@ TEST_SUITE(FF_TEST_SUITE) {
               SumDegree{degree}, DiscardCopyDegree{1_p}, 1_p, 1_p, 1_p)));
     }
 
-    SUBCASE("discard copy degree > 1") {
-      positive_int degree = 2_p;
-
-      CHECK_THROWS(get_output_shape(
-          attrs,
-          make_input(
-              SumDegree{1_p}, DiscardCopyDegree{degree}, 1_p, 1_p, 1_p)));
-    }
   }
 }

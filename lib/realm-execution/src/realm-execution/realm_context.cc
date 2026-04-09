@@ -161,7 +161,9 @@ Realm::Event
                              Realm::RegionInstance dst_inst,
                              Realm::ProfilingRequestSet const &requests,
                              Realm::Event wait_on,
-                             int priority) {
+                             int priority,
+                             std::optional<Realm::ReductionOpID> redop_id,
+                             bool exclusive) {
   TensorShape src_piece_shape = get_piece_shape(src_shape);
   TensorShape dst_piece_shape = get_piece_shape(dst_shape);
   ASSERT(src_piece_shape == dst_piece_shape); // For now, assume they match
@@ -182,6 +184,11 @@ Realm::Event
       static_cast<size_t>(
           size_of_datatype(src_piece_shape.data_type).int_from_positive_int()),
       /*subfield_offset=*/0);
+
+  // set reduction op on dst field if provided
+  if (redop_id.has_value()) {
+    dst_field.set_redop(redop_id.value(), /*is_fold=*/false, exclusive);
+  }
 
   Realm::Event result;
   switch (src_piece_shape.dims.ff_ordered.num_dims()) {

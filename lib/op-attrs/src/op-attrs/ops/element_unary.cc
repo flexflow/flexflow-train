@@ -35,7 +35,6 @@ ParallelTensorDimDegrees get_output_parallel_dim_degrees(
     ElementUnaryAttrs const &attrs,
     ParallelTensorDimDegrees const &input_degrees) {
   ASSERT(input_degrees.sum_degree.value == 1);
-  ASSERT(input_degrees.discard_copy_degree.value == 1);
 
   return input_degrees;
 }

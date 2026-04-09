@@ -36,8 +36,8 @@ static std::optional<milliseconds_t>
     forward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
-  ElementBinaryPerDeviceState per_device_state =
-      acc.get_per_device_op_state().require_element_binary().value();
+  std::optional<ElementBinaryPerDeviceState> per_device_state =
+      acc.get_per_device_op_state().require_element_binary();
   ElementBinaryAttrs attrs = acc.get_op_attrs().require_element_binary();
   device_handle_t handle = acc.get_ff_handle();
 
@@ -62,8 +62,8 @@ static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
-  ElementBinaryPerDeviceState per_device_state =
-      acc.get_per_device_op_state().require_element_binary().value();
+  std::optional<ElementBinaryPerDeviceState> per_device_state =
+      acc.get_per_device_op_state().require_element_binary();
   ElementBinaryAttrs attrs = acc.get_op_attrs().require_element_binary();
   device_handle_t handle = acc.get_ff_handle();
 

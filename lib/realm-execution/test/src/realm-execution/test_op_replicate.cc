@@ -56,194 +56,207 @@ TEST_SUITE(FF_TEST_SUITE) {
     char **fake_argv = fake_args.data();
 
     RealmManager manager = RealmManager{&fake_argc, &fake_argv};
-    ControllerTaskResult result = manager.start_controller([](RealmContext
-                                                                  &ctx) {
-      Allocator allocator = ctx.get_current_device_allocator();
+    ControllerTaskResult result =
+        manager.start_controller([](RealmContext &ctx) {
+          Allocator allocator = ctx.get_current_device_allocator();
 
-      positive_int batch_size = 10_p;
-      positive_int data_dim = 16_p;
-      positive_int hidden_dim = 32_p;
-      positive_int output_dim = 1_p;
+          positive_int batch_size = 10_p;
+          positive_int data_dim = 16_p;
+          positive_int hidden_dim = 32_p;
+          positive_int output_dim = 1_p;
 
-      // 10,2
-      TensorShape output_tensor_shape = TensorShape{
-          TensorDims{FFOrdered{batch_size, output_dim}}, DataType::FLOAT};
+          // 10,2
+          TensorShape output_tensor_shape = TensorShape{
+              TensorDims{FFOrdered{batch_size, output_dim}}, DataType::FLOAT};
 
-      // 10,2
-      TensorShape label_tensor_shape = TensorShape{
-          TensorDims{FFOrdered{batch_size, output_dim}}, DataType::FLOAT};
+          // 10,2
+          TensorShape label_tensor_shape = TensorShape{
+              TensorDims{FFOrdered{batch_size, output_dim}}, DataType::FLOAT};
 
-      GenericTensorAccessorW label_tensor =
-          allocator.allocate_tensor(label_tensor_shape);
+          GenericTensorAccessorW label_tensor =
+              allocator.allocate_tensor(label_tensor_shape);
 
-      // construct computation graph
-      ParallelComputationGraph pcg = empty_parallel_computation_graph();
+          // construct computation graph
+          ParallelComputationGraph pcg = empty_parallel_computation_graph();
 
-      // input tensor
-      // 10, 16
-      TensorShape input_tensor_shape = TensorShape{
-          TensorDims{FFOrdered{batch_size, data_dim}}, DataType::FLOAT};
+          // input tensor
+          // 10, 16
+          TensorShape input_tensor_shape = TensorShape{
+              TensorDims{FFOrdered{batch_size, data_dim}}, DataType::FLOAT};
 
-      // parallel layer -> input tensor
-      ParallelLayerAddedResult inputs_layer =
-          pcg_add_input_layer(pcg, input_tensor_shape);
-      parallel_tensor_guid_t t_input =
-          require_only_key(inputs_layer.outputs, TensorSlotName::OUTPUT);
+          // parallel layer -> input tensor
+          ParallelLayerAddedResult inputs_layer =
+              pcg_add_input_layer(pcg, input_tensor_shape);
+          parallel_tensor_guid_t t_input =
+              require_only_key(inputs_layer.outputs, TensorSlotName::OUTPUT);
 
-      // parallel layer -> input tensor 2
-      ParallelLayerAddedResult inputs_layer_2 =
-          pcg_add_input_layer(pcg, input_tensor_shape);
-      parallel_tensor_guid_t t_input_2 =
-          require_only_key(inputs_layer_2.outputs, TensorSlotName::OUTPUT);
+          // parallel layer -> input tensor 2
+          ParallelLayerAddedResult inputs_layer_2 =
+              pcg_add_input_layer(pcg, input_tensor_shape);
+          parallel_tensor_guid_t t_input_2 =
+              require_only_key(inputs_layer_2.outputs, TensorSlotName::OUTPUT);
 
-      // binary  ADD attribute
-      ElementBinaryAttrs add_attrs = ElementBinaryAttrs{
-          OperatorType::EW_ADD,
-          DataType::FLOAT,
-          false,
-          false,
-      };
+          // binary  ADD attribute
+          ElementBinaryAttrs add_attrs = ElementBinaryAttrs{
+              OperatorType::EW_ADD,
+              DataType::FLOAT,
+              false,
+              false,
+          };
 
-      // parallel layer -> perform add
-      ParallelLayerAddedResult add_operator_1 =
-          add_parallel_layer(pcg, make_layer_attrs(add_attrs),
-                             {
+          // parallel layer -> perform add
+          ParallelLayerAddedResult add_operator_1 =
+              add_parallel_layer(pcg,
+                                 make_layer_attrs(add_attrs),
                                  {
-                                     TensorSlotName::LHS_INPUT,
-                                     t_input,
+                                     {
+                                         TensorSlotName::LHS_INPUT,
+                                         t_input,
+                                     },
+                                     {
+                                         TensorSlotName::RHS_INPUT,
+                                         t_input_2,
+                                     },
                                  },
+                                 {/* weight */});
+
+          parallel_tensor_guid_t t_add_1 =
+              require_only_key(add_operator_1.outputs, TensorSlotName::OUTPUT);
+
+          // parallel layer -> perform replicate
+          const positive_int replicate_degree = 2_p;
+          ReplicateAttrs repl_attrs = ReplicateAttrs(replicate_degree);
+          ParallelLayerAddedResult repl_operator_1 =
+              add_parallel_layer(pcg,
+                                 make_layer_attrs(repl_attrs),
                                  {
-                                     TensorSlotName::RHS_INPUT,
-                                     t_input_2,
+                                     {
+                                         TensorSlotName::INPUT,
+                                         t_add_1,
+                                     },
                                  },
-                             },
-                             {/* weight */});
+                                 /*weight=*/{});
+          // output of replicate layer
+          parallel_tensor_guid_t t_repl_1 =
+              require_only_key(repl_operator_1.outputs, TensorSlotName::OUTPUT);
 
-      parallel_tensor_guid_t t_add_1 =
-          require_only_key(add_operator_1.outputs, TensorSlotName::OUTPUT);
-
-      // parallel layer -> perform replicate
-      const positive_int replicate_degree = 2_p;
-      ReplicateAttrs repl_attrs = ReplicateAttrs(replicate_degree);
-      ParallelLayerAddedResult repl_operator_1 =
-          add_parallel_layer(pcg, make_layer_attrs(repl_attrs),
-                             {
+          // parallel layer -> perform  RelU
+          ParallelLayerAddedResult relu_operator_1 =
+              add_parallel_layer(pcg,
+                                 make_layer_attrs(make_relu_attrs()),
+                                 /*inputs=*/
                                  {
-                                     TensorSlotName::INPUT,
-                                     t_add_1,
+                                     {
+                                         TensorSlotName::INPUT,
+                                         t_repl_1,
+                                     },
                                  },
-                             },
-                             /*weight=*/{});
-      // output of replicate layer
-      parallel_tensor_guid_t t_repl_1 =
-          require_only_key(repl_operator_1.outputs, TensorSlotName::OUTPUT);
+                                 /*weights=*/{});
+          // output of relu layer
+          parallel_tensor_guid_t t_relu_1 =
+              require_only_key(relu_operator_1.outputs, TensorSlotName::OUTPUT);
 
-      // parallel layer -> perform  RelU
-      ParallelLayerAddedResult relu_operator_1 =
-          add_parallel_layer(pcg, make_layer_attrs(make_relu_attrs()),
-                             /*inputs=*/
-                             {
-                                 {
-                                     TensorSlotName::INPUT,
-                                     t_repl_1,
-                                 },
-                             },
-                             /*weights=*/{});
-      // output of relu layer
-      parallel_tensor_guid_t t_relu_1 =
-          require_only_key(relu_operator_1.outputs, TensorSlotName::OUTPUT);
+          // machine
+          MachineSpaceCoordinate cpu0{0_n, 0_n, DeviceType::CPU};
+          MachineSpaceCoordinate cpu1{0_n, 1_n, DeviceType::CPU};
 
-      // machine
-      MachineSpaceCoordinate cpu0{0_n, 0_n, DeviceType::CPU};
-      MachineSpaceCoordinate cpu1{0_n, 1_n, DeviceType::CPU};
+          ParallelTensorSpaceCoordinate tensor_coord0{
+              /* sum_component */ 0_n,
+              /* discard_copy_component */ 0_n,
+              /*shard_component*/ FFOrdered{0_n}};
+          ParallelTensorSpaceCoordinate tensor_coord1{
+              /* sum_component */ 0_n,
+              /* discard_copy_component */ 1_n,
+              /*shard_component*/ FFOrdered{0_n}};
+          MappedParallelComputationGraph mpcg{
+              pcg,
+              {{inputs_layer.parallel_layer,
+                MappedOperatorTaskGroup{
+                    {{cpu0,
+                      OperatorAtomicTaskShardBinding{
+                          {{TensorSlotName::OUTPUT, tensor_coord0}}}}}}},
+               {inputs_layer_2.parallel_layer,
+                MappedOperatorTaskGroup{
+                    {{cpu0,
+                      OperatorAtomicTaskShardBinding{
+                          {{TensorSlotName::OUTPUT, tensor_coord0}}}}}}},
+               {add_operator_1.parallel_layer,
+                MappedOperatorTaskGroup{
+                    {{cpu0,
+                      OperatorAtomicTaskShardBinding{{
+                          {TensorSlotName::LHS_INPUT, tensor_coord0},
+                          {TensorSlotName::RHS_INPUT, tensor_coord0},
+                          {TensorSlotName::OUTPUT, tensor_coord0},
+                      }}}}}},
+               {repl_operator_1.parallel_layer,
+                MappedOperatorTaskGroup{{
+                    {cpu0,
+                     OperatorAtomicTaskShardBinding{{
+                         {TensorSlotName::OUTPUT, tensor_coord0},
+                     }}},
+                    {cpu1,
+                     OperatorAtomicTaskShardBinding{{
+                         {TensorSlotName::OUTPUT, tensor_coord1},
+                     }}},
+                }}},
+               {relu_operator_1.parallel_layer,
+                MappedOperatorTaskGroup{{
+                    {cpu0,
+                     OperatorAtomicTaskShardBinding{{
+                         {TensorSlotName::INPUT, tensor_coord0},
+                         {TensorSlotName::OUTPUT, tensor_coord0},
+                     }}},
+                    {cpu1,
+                     OperatorAtomicTaskShardBinding{{
+                         {TensorSlotName::INPUT, tensor_coord1},
+                         {TensorSlotName::OUTPUT, tensor_coord1},
+                     }}},
+                }}}},
+          };
 
-      ParallelTensorSpaceCoordinate tensor_coord0{
-          /* sum_component */ 0_n, /* discard_copy_component */ 0_n,
-          /*shard_component*/ FFOrdered{0_n}};
-      ParallelTensorSpaceCoordinate tensor_coord1{
-          /* sum_component */ 0_n, /* discard_copy_component */ 1_n,
-          /*shard_component*/ FFOrdered{0_n}};
-      MappedParallelComputationGraph mpcg{
-          pcg,
-          {{inputs_layer.parallel_layer,
-            MappedOperatorTaskGroup{
-                {{cpu0, OperatorAtomicTaskShardBinding{{{TensorSlotName::OUTPUT,
-                                                         tensor_coord0}}}}}}},
-           {inputs_layer_2.parallel_layer,
-            MappedOperatorTaskGroup{
-                {{cpu0, OperatorAtomicTaskShardBinding{{{TensorSlotName::OUTPUT,
-                                                         tensor_coord0}}}}}}},
-           {add_operator_1.parallel_layer,
-            MappedOperatorTaskGroup{
-                {{cpu0, OperatorAtomicTaskShardBinding{{
-                            {TensorSlotName::LHS_INPUT, tensor_coord0},
-                            {TensorSlotName::RHS_INPUT, tensor_coord0},
-                            {TensorSlotName::OUTPUT, tensor_coord0},
-                        }}}}}},
-           {repl_operator_1.parallel_layer,
-            MappedOperatorTaskGroup{{
-                {cpu0, OperatorAtomicTaskShardBinding{{
-                           {TensorSlotName::OUTPUT, tensor_coord0},
-                       }}},
-                {cpu1, OperatorAtomicTaskShardBinding{{
-                           {TensorSlotName::OUTPUT, tensor_coord1},
-                       }}},
-				     }}},
-	   {relu_operator_1.parallel_layer,
-                 MappedOperatorTaskGroup{{
-                     {cpu0, OperatorAtomicTaskShardBinding{{
-                                {TensorSlotName::INPUT, tensor_coord0},
-                                {TensorSlotName::OUTPUT, tensor_coord0},
-                            }}},
-                     {cpu1, OperatorAtomicTaskShardBinding{{
-                                {TensorSlotName::INPUT, tensor_coord1},
-                                {TensorSlotName::OUTPUT, tensor_coord1},
-                            }}},
-                 }}}},
-      };
+          MappedOperatorTaskGroup loss_mapping{
+              {{cpu0,
+                OperatorAtomicTaskShardBinding{{
+                    {TensorSlotName::INPUT, tensor_coord0},
+                    {TensorSlotName::LOGIT, tensor_coord0},
+                }}}}};
 
-      MappedOperatorTaskGroup loss_mapping{
-          {{cpu0, OperatorAtomicTaskShardBinding{{
-                      {TensorSlotName::INPUT, tensor_coord0},
-                      {TensorSlotName::LOGIT, tensor_coord0},
-                  }}}}};
+          // instantiate computation graph
+          LossAttrs loss_attrs = LossAttrs{
+              NonconfigurableLossAttrs{LossFunction::CATEGORICAL_CROSSENTROPY}};
+          OptimizerAttrs optimizer_attrs =
+              OptimizerAttrs{SGDOptimizerAttrs{/*lr=*/0.001,
+                                               /*momentum=*/0.9,
+                                               /*nesterov=*/false,
+                                               /*weight_decay=*/0.001}};
 
-      // instantiate computation graph
-      LossAttrs loss_attrs = LossAttrs{
-          NonconfigurableLossAttrs{LossFunction::CATEGORICAL_CROSSENTROPY}};
-      OptimizerAttrs optimizer_attrs =
-          OptimizerAttrs{SGDOptimizerAttrs{/*lr=*/0.001,
-                                           /*momentum=*/0.9,
-                                           /*nesterov=*/false,
-                                           /*weight_decay=*/0.001}};
+          std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor>
+              input_tensors;
 
-      std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor>
-          input_tensors;
+          DistributedFfHandle device_handle = create_distributed_ff_handle(
+              ctx,
+              /*workSpaceSize=*/1024 * 1024,
+              /*allowTensorOpMathConversion=*/true);
+          PCGInstance pcg_instance = create_pcg_instance(
+              /*ctx=*/ctx,
+              /*mpcg=*/mpcg,
+              /*optimizer=*/optimizer_attrs,
+              /*loss=*/std::nullopt,
+              /*input_tensors=*/input_tensors,
+              /*profiling_settings=*/ProfilingSettings{0, 0},
+              /*device_handle=*/device_handle,
+              /*iteration_config=*/FFIterationConfig{1_p});
 
-      DistributedFfHandle device_handle =
-          create_distributed_ff_handle(ctx,
-                                       /*workSpaceSize=*/1024 * 1024,
-                                       /*allowTensorOpMathConversion=*/true);
-      PCGInstance pcg_instance = create_pcg_instance(
-          /*ctx=*/ctx,
-          /*mpcg=*/mpcg,
-          /*optimizer=*/optimizer_attrs,
-          /*loss=*/std::nullopt,
-          /*input_tensors=*/input_tensors,
-          /*profiling_settings=*/ProfilingSettings{0, 0},
-          /*device_handle=*/device_handle,
-          /*iteration_config=*/FFIterationConfig{1_p});
-
-      // begin training loop
-      int num_epochs = 1;
-      for (int i = 0; i < num_epochs; i++) {
-        perform_all_passes_for_pcg_instance(
-            /*instance=*/pcg_instance,
-            /*profiling_settings=*/ProfilingSettings{0, 0},
-            /*device_handle=*/device_handle,
-            /*iteration_config=*/FFIterationConfig{1_p});
-      }
-    });
+          // begin training loop
+          int num_epochs = 1;
+          for (int i = 0; i < num_epochs; i++) {
+            perform_all_passes_for_pcg_instance(
+                /*instance=*/pcg_instance,
+                /*profiling_settings=*/ProfilingSettings{0, 0},
+                /*device_handle=*/device_handle,
+                /*iteration_config=*/FFIterationConfig{1_p});
+          }
+        });
     result.wait();
   }
 }
@@ -307,7 +320,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
           // parallel layer -> perform add
           ParallelLayerAddedResult add_operator_1 =
-              add_parallel_layer(pcg, make_layer_attrs(add_attrs),
+              add_parallel_layer(pcg,
+                                 make_layer_attrs(add_attrs),
                                  {
                                      {
                                          TensorSlotName::LHS_INPUT,
@@ -327,7 +341,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           const positive_int replicate_degree = 2_p;
           ReplicateAttrs repl_attrs = ReplicateAttrs(replicate_degree);
           ParallelLayerAddedResult repl_operator_1 =
-              add_parallel_layer(pcg, make_layer_attrs(repl_attrs),
+              add_parallel_layer(pcg,
+                                 make_layer_attrs(repl_attrs),
                                  {
                                      {
                                          TensorSlotName::INPUT,
@@ -341,7 +356,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
           // parallel layer -> perform  RelU
           ParallelLayerAddedResult relu_operator_1 =
-              add_parallel_layer(pcg, make_layer_attrs(make_relu_attrs()),
+              add_parallel_layer(pcg,
+                                 make_layer_attrs(make_relu_attrs()),
                                  /*inputs=*/
                                  {
                                      {
@@ -357,8 +373,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           // machine
           MachineSpaceCoordinate gpu0{0_n, 0_n, DeviceType::GPU};
           MachineSpaceCoordinate gpu1{0_n, 1_n, DeviceType::GPU};
-	  ParallelTensorSpaceCoordinate tensor_coord0{0_n, 0_n, FFOrdered{0_n}};
-	  ParallelTensorSpaceCoordinate tensor_coord1{0_n, 1_n, FFOrdered{0_n}};
+          ParallelTensorSpaceCoordinate tensor_coord0{0_n, 0_n, FFOrdered{0_n}};
+          ParallelTensorSpaceCoordinate tensor_coord1{0_n, 1_n, FFOrdered{0_n}};
           MappedParallelComputationGraph mpcg{
               pcg,
               {
@@ -374,38 +390,44 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                              {{TensorSlotName::OUTPUT, tensor_coord0}}}}}}},
                   {add_operator_1.parallel_layer,
                    MappedOperatorTaskGroup{
-                       {{gpu0, OperatorAtomicTaskShardBinding{{
-                                   {TensorSlotName::LHS_INPUT, tensor_coord0},
-                                   {TensorSlotName::RHS_INPUT, tensor_coord0},
-                                   {TensorSlotName::OUTPUT, tensor_coord0},
-                               }}}}}},
+                       {{gpu0,
+                         OperatorAtomicTaskShardBinding{{
+                             {TensorSlotName::LHS_INPUT, tensor_coord0},
+                             {TensorSlotName::RHS_INPUT, tensor_coord0},
+                             {TensorSlotName::OUTPUT, tensor_coord0},
+                         }}}}}},
                   {repl_operator_1.parallel_layer,
-		   MappedOperatorTaskGroup{{
-		    {gpu0, OperatorAtomicTaskShardBinding{{
-                           {TensorSlotName::OUTPUT, tensor_coord0},
-                       }}},
-                     {gpu1, OperatorAtomicTaskShardBinding{{
-                           {TensorSlotName::OUTPUT, tensor_coord1},					   
-		    }}}}}},
+                   MappedOperatorTaskGroup{
+                       {{gpu0,
+                         OperatorAtomicTaskShardBinding{{
+                             {TensorSlotName::OUTPUT, tensor_coord0},
+                         }}},
+                        {gpu1,
+                         OperatorAtomicTaskShardBinding{{
+                             {TensorSlotName::OUTPUT, tensor_coord1},
+                         }}}}}},
                   {relu_operator_1.parallel_layer,
                    MappedOperatorTaskGroup{{
-                       {gpu0, OperatorAtomicTaskShardBinding{{
-                                  {TensorSlotName::INPUT, tensor_coord0},
-                                  {TensorSlotName::OUTPUT, tensor_coord0},
-                              }}},
-                       {gpu1, OperatorAtomicTaskShardBinding{{
-                                  {TensorSlotName::INPUT, tensor_coord1},
-                                  {TensorSlotName::OUTPUT, tensor_coord1},
-                              }}},
+                       {gpu0,
+                        OperatorAtomicTaskShardBinding{{
+                            {TensorSlotName::INPUT, tensor_coord0},
+                            {TensorSlotName::OUTPUT, tensor_coord0},
+                        }}},
+                       {gpu1,
+                        OperatorAtomicTaskShardBinding{{
+                            {TensorSlotName::INPUT, tensor_coord1},
+                            {TensorSlotName::OUTPUT, tensor_coord1},
+                        }}},
                    }}},
               },
           };
 
           MappedOperatorTaskGroup loss_mapping{
-              {{gpu0, OperatorAtomicTaskShardBinding{{
-                          {TensorSlotName::INPUT, tensor_coord0},
-                          {TensorSlotName::LOGIT, tensor_coord0},
-                      }}}}};
+              {{gpu0,
+                OperatorAtomicTaskShardBinding{{
+                    {TensorSlotName::INPUT, tensor_coord0},
+                    {TensorSlotName::LOGIT, tensor_coord0},
+                }}}}};
 
           // instantiate computation graph
           LossAttrs loss_attrs = LossAttrs{
