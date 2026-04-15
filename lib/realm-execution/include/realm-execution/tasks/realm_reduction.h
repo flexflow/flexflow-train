@@ -1,23 +1,33 @@
-#pragma once
+#ifndef _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_TASKS_REALM_REDUCTION_H
+#define _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_TASKS_REALM_REDUCTION_H
 #include "op-attrs/datatype.dtg.h"
 #include <realm.h>
 
 namespace FlexFlow {
 
-// Sum reduction for float
+/**
+ * \brief Realm Sum Reduction for Float
+ * \see https://legion.stanford.edu/tutorial/realm/reductions.html
+ */
 struct SumReductionFloat {
   using LHS = float;
   using RHS = float;
-  static constexpr RHS identity = 0.0f; // ← inside struct, constexpr
 
+  /** \brief Identity element for addition (0.0) */
+  static constexpr RHS identity = 0.0f;
+
+  /**
+   * \brief Apply reduction: lhs += rhs
+   * \tparam EXCLUSIVE If true, direct addition; if false, atomic CAS loop
+   * \param lhs Left-hand side accumulator (modified in place)
+   * \param rhs Value to add
+   */
   template <bool EXCLUSIVE>
   static void apply(LHS &lhs, RHS rhs) {
     if (EXCLUSIVE) {
       lhs += rhs;
     } else {
-      // atomic add for non-exclusive
-      __sync_fetch_and_add((int *)&lhs, *(int *)&rhs);
-      // proper float atomic add — use union trick
+      // Atomic float add via CAS loop
       union {
         float f;
         int i;
@@ -30,11 +40,18 @@ struct SumReductionFloat {
     }
   }
 
+  /**
+   * \brief Fold two RHS values: rhs1 += rhs2
+   * \tparam EXCLUSIVE If true, direct addition; if false, atomic CAS loop
+   * \param rhs1 Accumulator (modified in place)
+   * \param rhs2 Value to fold in
+   */
   template <bool EXCLUSIVE>
   static void fold(RHS &rhs1, RHS rhs2) {
     if (EXCLUSIVE) {
       rhs1 += rhs2;
     } else {
+      // Atomic float add via CAS loop
       union {
         float f;
         int i;
@@ -48,17 +65,29 @@ struct SumReductionFloat {
   }
 };
 
-// Sum reduction for double
+/**
+ * \brief Realm Sum Reduction for Double
+ * \see https://legion.stanford.edu/tutorial/realm/reductions.html
+ */
 struct SumReductionDouble {
   using LHS = double;
   using RHS = double;
-  static constexpr RHS identity = 0.0; // ← inside struct, constexpr
 
+  /** \brief Identity element for addition (0.0) */
+  static constexpr RHS identity = 0.0;
+
+  /**
+   * \brief Apply reduction: lhs += rhs
+   * \tparam EXCLUSIVE If true, direct addition; if false, atomic CAS loop
+   * \param lhs Left-hand side accumulator (modified in place)
+   * \param rhs Value to add
+   */
   template <bool EXCLUSIVE>
   static void apply(LHS &lhs, RHS rhs) {
     if (EXCLUSIVE) {
       lhs += rhs;
     } else {
+      // Atomic double add via CAS loop using long long reinterpretation
       union {
         double d;
         long long i;
@@ -71,11 +100,18 @@ struct SumReductionDouble {
     }
   }
 
+  /**
+   * \brief Fold two RHS values: rhs1 += rhs2
+   * \tparam EXCLUSIVE If true, direct addition; if false, atomic CAS loop
+   * \param rhs1 Accumulator (modified in place)
+   * \param rhs2 Value to fold in
+   */
   template <bool EXCLUSIVE>
   static void fold(RHS &rhs1, RHS rhs2) {
     if (EXCLUSIVE) {
       rhs1 += rhs2;
     } else {
+      // Atomic double add via CAS loop using long long reinterpretation
       union {
         double d;
         long long i;
@@ -89,12 +125,21 @@ struct SumReductionDouble {
   }
 };
 
-// Reduction op IDs — must not conflict with other registered redops
+/**
+ * \brief Reduction op IDs for sum reductions
+ * \warning These IDs must not conflict with other registered reduction ops
+ */
 enum SumReductionOpIDs {
-  REDOP_SUM_FLOAT = 1,
-  REDOP_SUM_DOUBLE = 2,
+  REDOP_SUM_FLOAT = 1,  ///< Sum reduction op ID for float
+  REDOP_SUM_DOUBLE = 2, ///< Sum reduction op ID for double
 };
 
+/**
+ * \brief Returns the Realm reduction op ID for a sum reduction over the given datatype
+ * \param dtype The datatype to look up
+ * \return The corresponding Realm::ReductionOpID
+ * \throws PANIC if no sum reduction is registered for the given datatype
+ */
 inline Realm::ReductionOpID get_sum_reduction_op_id(DataType dtype) {
   switch (dtype) {
     case DataType::FLOAT:
@@ -105,5 +150,5 @@ inline Realm::ReductionOpID get_sum_reduction_op_id(DataType dtype) {
       PANIC("no sum reduction registered for datatype {}", dtype);
   }
 }
-
 } // namespace FlexFlow
+#endif
