@@ -116,7 +116,7 @@ static DynamicNodeInvocation
       /*task_type=*/std::nullopt,
       /*device_coord=*/std::nullopt,
       /*mapping=*/std::nullopt,
-      /*op_attrs=*/TrainingOperationAttrs{attrs.op_attrs.get<ReplicateAttrs>()},
+      /*op_attrs=*/TrainingOperationAttrs{attrs.op_attrs},
       /*pcg_layer_guid=*/dynamic_layer_guid_t{layer},
       /*per_device_op_state=*/std::nullopt,
   };

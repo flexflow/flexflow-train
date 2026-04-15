@@ -26,14 +26,11 @@ bool node_is_copy(DynamicNodeAttrs const &n) {
 }
 
 static bool is_replicate_invocation(DynamicNodeInvocation const &i) {
-  if (!i.node_attrs.op_attrs.has_value()) {
-    return false;
-  }
-  TrainingOperationAttrs const &op_attrs = i.node_attrs.op_attrs.value();
-  if (op_attrs.is_replicate()) {
-    return true;
-  }
-  return false;
+  return i.node_attrs.op_attrs.has_value() &&
+         i.node_attrs.op_attrs.value().has<PCGOperatorAttrs>() &&
+         i.node_attrs.op_attrs.value()
+             .get<PCGOperatorAttrs>()
+             .has<ReplicateAttrs>();
 }
 
 bool value_is_mapped(DynamicValueAttrs const &n) {

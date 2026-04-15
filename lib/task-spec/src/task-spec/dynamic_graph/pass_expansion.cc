@@ -2,9 +2,9 @@
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
 #include "utils/containers/are_all_same.h"
+#include "utils/containers/get_only.h"
 #include "utils/containers/merge_disjoint_maps.h"
 #include "utils/containers/transform.h"
-#include "utils/containers/get_only.h"
 
 namespace FlexFlow {
 
@@ -28,6 +28,11 @@ bool no_part_of_graph_is_pass_expanded(DynamicOpenDataflowGraph const &g) {
 bool graph_is_fully_pass_expanded(DynamicOpenDataflowGraph const &g) {
   return full_dynamic_graph_satisfies(
       g, node_is_pass_expanded, value_is_pass_expanded, slot_is_pass_expanded);
+}
+
+static bool is_replicate_attrs(DynamicNodeAttrs const &n) {
+  return n.op_attrs.has_value() && n.op_attrs.value().has<PCGOperatorAttrs>() &&
+         n.op_attrs.value().get<PCGOperatorAttrs>().has<ReplicateAttrs>();
 }
 
 DynamicTensorSlot pass_expand_slot(DynamicTensorSlot const &s,
@@ -156,8 +161,7 @@ DynamicOpenDataflowGraph
 
   DynamicOpenDataflowGraph result = flatmap_dynamic_invocation_set(
       g, [](DynamicNodeInvocation const &invocation) {
-        if (invocation.node_attrs.op_attrs.has_value() &&
-            invocation.node_attrs.op_attrs.value().is_replicate()) {
+        if (is_replicate_attrs(invocation.node_attrs)) {
           return perform_pass_expansion_for_replicate(invocation);
         }
         if (invocation.inputs.empty()) {

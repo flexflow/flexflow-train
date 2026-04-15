@@ -25,7 +25,3 @@ key = "loss"
 [[values]]
 type = "::FlexFlow::CopyAttrs"
 key = "copy"
-
-[[values]]
-type = "::FlexFlow::ReplicateAttrs"
-key = "replicate"

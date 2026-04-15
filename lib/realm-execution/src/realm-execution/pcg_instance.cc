@@ -264,23 +264,18 @@ static Realm::Event spawn_dynamic_node_invocation(
             [&](InputAttrs const &) { return Realm::Event::NO_EVENT; },
             [&](WeightAttrs const &) { return Realm::Event::NO_EVENT; },
             [&](ReplicateAttrs const &) {
-              // this should never be reached since replicate
-              // goes through TrainingOperationAttrs::ReplicateAttrs
-              PANIC("unexpected replicate in PCGOperatorAttrs path");
-              return Realm::Event::NO_EVENT;
+              if (invocation.node_attrs.task_type.has_value() &&
+                  invocation.node_attrs.task_type.value() ==
+                      DynamicTaskType::BWD) {
+                return issue_replicate_bwd();
+              }
+              return issue_copy(); // forward
             },
             [&](auto const &) { return spawn_task(); },
         });
       },
       [&](LossAttrs const &) { return spawn_task(); },
       [&](CopyAttrs const &) { return issue_copy(); },
-      [&](ReplicateAttrs const &) {
-        if (invocation.node_attrs.task_type.has_value() &&
-            invocation.node_attrs.task_type.value() == DynamicTaskType::BWD) {
-          return issue_replicate_bwd();
-        }
-        return issue_copy();
-      },
   });
 }
 

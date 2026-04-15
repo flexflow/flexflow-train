@@ -191,7 +191,6 @@ static std::unordered_set<DynamicNodeInvocation>
   return result;
 }
 
-
 static std::unordered_set<DynamicNodeInvocation>
     perform_shard_expansion_for_copy(DynamicNodeInvocation const &i) {
   auto [input_slot, input] = get_only(i.inputs);
@@ -228,18 +227,21 @@ std::unordered_set<DynamicNodeInvocation>
     return perform_shard_expansion_for_copy(i);
   }
 
+  bool const is_replicate =
+      i.node_attrs.op_attrs.has_value() &&
+      i.node_attrs.op_attrs.value().has<PCGOperatorAttrs>() &&
+      i.node_attrs.op_attrs.value()
+          .get<PCGOperatorAttrs>()
+          .has<ReplicateAttrs>();
+
   // forward replicate
-  if (i.node_attrs.op_attrs.has_value() &&
-      i.node_attrs.op_attrs.value().is_replicate() &&
-      i.node_attrs.task_type.has_value() &&
+  if (is_replicate && i.node_attrs.task_type.has_value() &&
       i.node_attrs.task_type.value() == DynamicTaskType::FWD) {
     return perform_shard_expansion_for_replicate(i);
   }
 
   // backward replicate
-  if (i.node_attrs.op_attrs.has_value() &&
-      i.node_attrs.op_attrs.value().is_replicate() &&
-      i.node_attrs.task_type.has_value() &&
+  if (is_replicate && i.node_attrs.task_type.has_value() &&
       i.node_attrs.task_type.value() == DynamicTaskType::BWD) {
     return perform_shard_expansion_for_replicate_bwd(i);
   }
