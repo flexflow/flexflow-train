@@ -127,4 +127,12 @@ TensorDims get_reduced_dims(ParallelTensorDims const &dims) {
   return TensorDims{dim_sizes};
 }
 
+TensorDims get_per_device_dims(ParallelTensorDims const &dims) {
+  FFOrdered<positive_int> dim_sizes =
+      transform(dims.shard_dims, [](ShardParallelDim const &d) {
+        return positive_int{d.size.int_from_positive_int() /
+                            d.degree.int_from_positive_int()};
+      });
+  return TensorDims{dim_sizes};
+}
 } // namespace FlexFlow

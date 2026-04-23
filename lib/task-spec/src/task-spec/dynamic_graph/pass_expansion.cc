@@ -1,6 +1,7 @@
 #include "task-spec/dynamic_graph/pass_expansion.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
+#include "task-spec/dynamic_graph/parallel_op_utils.h"
 #include "utils/containers/are_all_same.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/merge_disjoint_maps.h"
@@ -28,11 +29,6 @@ bool no_part_of_graph_is_pass_expanded(DynamicOpenDataflowGraph const &g) {
 bool graph_is_fully_pass_expanded(DynamicOpenDataflowGraph const &g) {
   return full_dynamic_graph_satisfies(
       g, node_is_pass_expanded, value_is_pass_expanded, slot_is_pass_expanded);
-}
-
-static bool is_replicate_attrs(DynamicNodeAttrs const &n) {
-  return n.op_attrs.has_value() && n.op_attrs.value().has<PCGOperatorAttrs>() &&
-         n.op_attrs.value().get<PCGOperatorAttrs>().has<ReplicateAttrs>();
 }
 
 DynamicTensorSlot pass_expand_slot(DynamicTensorSlot const &s,
@@ -115,42 +111,49 @@ DynamicNodeInvocation perform_bwd_pass_expansion_for_invocation(
       transform(invocation.inputs, to_grad),
   };
 }
+
 static std::unordered_set<DynamicNodeInvocation>
-    perform_pass_expansion_for_replicate(
+    perform_pass_expansion_for_parallel_op(
         DynamicNodeInvocation const &invocation) {
 
   auto const &[input_slot, input] = get_only(invocation.inputs);
-  auto const &[output_slot, output] = get_only(invocation.outputs);
 
-  // forward: INPUT/FWD → OUTPUT/FWD (copy to replicas)
+  auto to_fwd = [](DynamicTensorSlot const &k, DynamicValueAttrs const &v) {
+    return std::pair{
+        pass_expand_slot(k, FwbTensorType::FORWARD),
+        pass_expand_value(v, FwbTensorType::FORWARD),
+    };
+  };
+
+  auto to_grad = [](DynamicTensorSlot const &k, DynamicValueAttrs const &v) {
+    return std::pair{
+        pass_expand_slot(k, FwbTensorType::GRADIENT),
+        pass_expand_value(v, FwbTensorType::GRADIENT),
+    };
+  };
+
   DynamicNodeInvocation fwd{
       /*inputs=*/{{pass_expand_slot(input_slot, FwbTensorType::FORWARD),
                    pass_expand_value(input, FwbTensorType::FORWARD)}},
       /*node_attrs=*/
       pass_expand_node(invocation.node_attrs, DynamicTaskType::FWD),
-      /*outputs=*/
-      {{pass_expand_slot(output_slot, FwbTensorType::FORWARD),
-        pass_expand_value(output, FwbTensorType::FORWARD)}},
+      /*outputs=*/transform(invocation.outputs, to_fwd),
   };
 
-  // backward: OUTPUT/FWD + OUTPUT/GRAD → INPUT/GRAD (reduce gradients)
-  // The backward node needs the mapping from the output (replicated)
-  // so it knows which replicas to reduce from
-  DynamicNodeAttrs bwd_node_attrs = invocation.node_attrs;
-  bwd_node_attrs.task_type = DynamicTaskType::BWD;
+  DynamicNodeAttrs bwd_node = invocation.node_attrs;
+  bwd_node.task_type = DynamicTaskType::BWD;
 
   DynamicNodeInvocation bwd{
-      /*inputs=*/{
-          {pass_expand_slot(output_slot, FwbTensorType::FORWARD),
-           pass_expand_value(output, FwbTensorType::FORWARD)},
-          {pass_expand_slot(output_slot, FwbTensorType::GRADIENT),
-           pass_expand_value(output, FwbTensorType::GRADIENT)},
-      },
-      /*node_attrs=*/bwd_node_attrs,
+      /*inputs=*/merge_disjoint_maps(std::vector{
+          transform(invocation.outputs, to_fwd),
+          transform(invocation.outputs, to_grad),
+      }),
+      /*node_attrs=*/bwd_node,
       /*outputs=*/
       {{pass_expand_slot(input_slot, FwbTensorType::GRADIENT),
         pass_expand_value(input, FwbTensorType::GRADIENT)}},
   };
+
   return {fwd, bwd};
 }
 
@@ -161,8 +164,8 @@ DynamicOpenDataflowGraph
 
   DynamicOpenDataflowGraph result = flatmap_dynamic_invocation_set(
       g, [](DynamicNodeInvocation const &invocation) {
-        if (is_replicate_attrs(invocation.node_attrs)) {
-          return perform_pass_expansion_for_replicate(invocation);
+        if (is_parallel_op_attrs(invocation.node_attrs)) {
+          return perform_pass_expansion_for_parallel_op(invocation);
         }
         if (invocation.inputs.empty()) {
           return std::unordered_set{

@@ -14,15 +14,16 @@
 #include <utility>
 
 namespace FlexFlow {
+
 static bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
-    get_input_mapping_for_replicate(
+    get_input_mapping_for_parallel_op(
         MappedParallelComputationGraph const &mpcg,
-        parallel_layer_guid_t const &replicate_layer) {
+        parallel_layer_guid_t const &layer) {
 
   // get_incoming_edges returns map<TensorSlotName, ParallelComputationGraphEdge>
   // replicate has exactly one input
   auto [input_slot_name, input_edge] =
-      get_only(get_incoming_edges(mpcg.pcg, replicate_layer));
+      get_only(get_incoming_edges(mpcg.pcg, layer));
 
   parallel_layer_guid_t producer_layer = get_src_layer(input_edge);
   TensorSlotName producer_slot = get_src_layer_output_slot_name(input_edge);
@@ -49,12 +50,12 @@ static std::unordered_map<parallel_layer_guid_t, TensorSlotName>
 }
 
 static bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
-    build_replicated_output_mapping(
+    build_output_mapping_for_parallel_op(
         MappedParallelComputationGraph const &mpcg,
-        parallel_layer_guid_t const &replicate_layer) {
+        parallel_layer_guid_t const &layer) {
 
   auto [output_slot_name, output_tensor_guid] =
-      get_only(get_outgoing_tensors(mpcg.pcg, replicate_layer));
+      get_only(get_outgoing_tensors(mpcg.pcg, layer));
 
   auto consumers = get_consumers_of_tensor(mpcg, output_tensor_guid);
   ASSERT(!consumers.empty());
@@ -75,9 +76,9 @@ static bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
 }
 
 static DynamicNodeInvocation
-    build_replicate_invocation(parallel_layer_guid_t const &layer,
-                               ReplicateAttrs const &attrs,
-                               MappedParallelComputationGraph const &mpcg) {
+    build_parallel_op_invocation(parallel_layer_guid_t const &layer,
+                                 ParallelLayerAttrs const &attrs,
+                                 MappedParallelComputationGraph const &mpcg) {
   auto [input_slot_name, input_tensor_guid] =
       get_only(get_incoming_tensors(mpcg.pcg, layer));
   auto incoming = get_incoming_tensors(mpcg.pcg, layer);
@@ -87,14 +88,12 @@ static DynamicNodeInvocation
 
   ParallelTensorAttrs input_attrs =
       get_parallel_tensor_attrs(mpcg.pcg, input_tensor_guid);
-  bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> input_mapping =
-      get_input_mapping_for_replicate(mpcg, layer);
 
   DynamicValueAttrs input_value{
       /*tensor_guid=*/dynamic_tensor_guid_t{input_tensor_guid},
       /*parallel_tensor_shape=*/input_attrs.shape,
       /*shard_coord=*/std::nullopt,
-      /*mapping=*/get_input_mapping_for_replicate(mpcg, layer),
+      /*mapping=*/get_input_mapping_for_parallel_op(mpcg, layer),
       /*accessor=*/std::nullopt,
       /*role=*/std::nullopt,
   };
@@ -108,7 +107,7 @@ static DynamicNodeInvocation
       /*tensor_guid=*/dynamic_tensor_guid_t{output_tensor_guid},
       /*parallel_tensor_shape=*/output_attrs.shape,
       /*shard_coord=*/std::nullopt,
-      /*mapping=*/build_replicated_output_mapping(mpcg, layer),
+      /*mapping=*/build_output_mapping_for_parallel_op(mpcg, layer),
       /*accessor=*/std::nullopt,
       /*role=*/std::nullopt,
   };
@@ -116,7 +115,7 @@ static DynamicNodeInvocation
       /*task_type=*/std::nullopt,
       /*device_coord=*/std::nullopt,
       /*mapping=*/std::nullopt,
-      /*op_attrs=*/TrainingOperationAttrs{PCGOperatorAttrs{attrs}},
+      /*op_attrs=*/TrainingOperationAttrs{attrs.op_attrs},
       /*pcg_layer_guid=*/dynamic_layer_guid_t{layer},
       /*per_device_op_state=*/std::nullopt,
   };
@@ -138,11 +137,11 @@ DynamicOpenDataflowGraph make_dynamic_open_dataflow_graph_from_mapped_pcg(
   for (auto const &[layer, attrs] :
        get_parallel_layer_attrs_mapping(mpcg.pcg)) {
 
-    if (attrs.op_attrs.has<ReplicateAttrs>()) {
+    if (is_parallel_op(attrs.op_attrs)) {
       // build replicate invocation
-      DynamicNodeInvocation repl_inv = build_replicate_invocation(
-          layer, attrs.op_attrs.get<ReplicateAttrs>(), mpcg);
-      result.invocations.emplace(repl_inv);
+      DynamicNodeInvocation parallel_inv =
+          build_parallel_op_invocation(layer, attrs, mpcg);
+      result.invocations.emplace(parallel_inv);
       continue;
     }
 
@@ -200,7 +199,6 @@ DynamicOpenDataflowGraph make_dynamic_open_dataflow_graph_from_mapped_pcg(
 
     result.invocations.emplace(result_inputs, result_attrs, result_outputs);
   }
-
   return result;
 }
 

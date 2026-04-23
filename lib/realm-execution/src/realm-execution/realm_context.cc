@@ -15,8 +15,28 @@
 #include "utils/nonnegative_int/nonnegative_int.h"
 #include "utils/one_to_many/one_to_many.h"
 #include "utils/positive_int/positive_int.h"
+#include <realm/indexspace.h>
 
 namespace FlexFlow {
+template <int N, typename T = int>
+static Realm::Rect<N, T>
+    rect_from_dims_with_offset(TensorDims const &dims,
+                               std::vector<int> const &offsets) {
+  std::vector<int> values;
+  for (positive_int const &v : dims.ff_ordered) {
+    values.push_back(v.int_from_positive_int());
+  }
+  ASSERT((int)values.size() == N);
+  ASSERT((int)offsets.size() == N);
+
+  std::vector<int> lo(N), hi(N);
+  for (int i = 0; i < N; i++) {
+    lo[i] = offsets[i];
+    hi[i] = offsets[i] + values[i] - 1;
+  }
+  return Realm::Rect<N, T>{Realm::Point<N, T>{lo.data()},
+                           Realm::Point<N, T>{hi.data()}};
+}
 
 RealmContext::RealmContext(Realm::Processor processor)
     : processor(processor),
@@ -163,7 +183,8 @@ Realm::Event
                              Realm::Event wait_on,
                              int priority,
                              std::optional<Realm::ReductionOpID> redop_id,
-                             bool exclusive) {
+                             bool exclusive,
+                             CopyDomain domain) {
   TensorShape src_piece_shape = get_piece_shape(src_shape);
   TensorShape dst_piece_shape = get_piece_shape(dst_shape);
   ASSERT(src_piece_shape == dst_piece_shape); // For now, assume they match
@@ -190,36 +211,40 @@ Realm::Event
     dst_field.set_redop(redop_id.value(), /*is_fold=*/false, exclusive);
   }
 
+  // select which instance's index space to use as copy domain
+  Realm::RegionInstance const domain_inst =
+      (domain == CopyDomain::DST) ? dst_inst : src_inst;
+
   Realm::Event result;
   switch (src_piece_shape.dims.ff_ordered.num_dims()) {
 #if REALM_MAX_DIM >= 1
     case 1:
-      result = ispace_from_dims<1>(src_piece_shape.dims)
-                   .copy({src_field}, {dst_field}, requests, wait_on, priority);
+      result = domain_inst.get_indexspace<1, int>().copy(
+          {src_field}, {dst_field}, requests, wait_on, priority);
       break;
 #endif
 #if REALM_MAX_DIM >= 2
     case 2:
-      result = ispace_from_dims<2>(src_piece_shape.dims)
-                   .copy({src_field}, {dst_field}, requests, wait_on, priority);
+      result = domain_inst.get_indexspace<2, int>().copy(
+          {src_field}, {dst_field}, requests, wait_on, priority);
       break;
 #endif
 #if REALM_MAX_DIM >= 3
     case 3:
-      result = ispace_from_dims<3>(src_piece_shape.dims)
-                   .copy({src_field}, {dst_field}, requests, wait_on, priority);
+      result = domain_inst.get_indexspace<3, int>().copy(
+          {src_field}, {dst_field}, requests, wait_on, priority);
       break;
 #endif
 #if REALM_MAX_DIM >= 4
     case 4:
-      result = ispace_from_dims<4>(src_piece_shape.dims)
-                   .copy({src_field}, {dst_field}, requests, wait_on, priority);
+      result = domain_inst.get_indexspace<4, int>().copy(
+          {src_field}, {dst_field}, requests, wait_on, priority);
       break;
 #endif
 #if REALM_MAX_DIM >= 5
     case 5:
-      result = ispace_from_dims<5>(src_piece_shape.dims)
-                   .copy({src_field}, {dst_field}, requests, wait_on, priority);
+      result = domain_inst.get_indexspace<5, int>().copy(
+          {src_field}, {dst_field}, requests, wait_on, priority);
       break;
 #endif
     default:
@@ -230,7 +255,6 @@ Realm::Event
   this->outstanding_events.push_back(result);
   return result;
 }
-
 std::pair<Realm::RegionInstance, Realm::Event>
     RealmContext::create_instance(Realm::Memory memory,
                                   TensorShape const &shape,
@@ -308,6 +332,86 @@ std::pair<Realm::RegionInstance, Realm::Event>
   }
   this->outstanding_events.push_back(ready);
   return std::pair{inst, ready};
+}
+
+std::pair<Realm::RegionInstance, Realm::Event>
+    RealmContext::create_instance_with_offset(
+        Realm::Memory memory,
+        TensorShape const &shape,
+        std::vector<int> const &offsets,
+        Realm::ProfilingRequestSet const &prs,
+        Realm::Event wait_on) {
+  std::vector<size_t> field_sizes{static_cast<size_t>(
+      size_of_datatype(shape.data_type).int_from_positive_int())};
+  Realm::RegionInstance inst;
+  Realm::Event ready;
+  switch (shape.dims.ff_ordered.num_dims()) {
+#if REALM_MAX_DIM >= 1
+    case 1:
+      ready = Realm::RegionInstance::create_instance(
+          inst,
+          memory,
+          rect_from_dims_with_offset<1>(shape.dims, offsets),
+          field_sizes,
+          0 /*SOA*/,
+          prs,
+          wait_on);
+      break;
+#endif
+#if REALM_MAX_DIM >= 2
+    case 2:
+      ready = Realm::RegionInstance::create_instance(
+          inst,
+          memory,
+          rect_from_dims_with_offset<2>(shape.dims, offsets),
+          field_sizes,
+          0 /*SOA*/,
+          prs,
+          wait_on);
+      break;
+#endif
+#if REALM_MAX_DIM >= 3
+    case 3:
+      ready = Realm::RegionInstance::create_instance(
+          inst,
+          memory,
+          rect_from_dims_with_offset<3>(shape.dims, offsets),
+          field_sizes,
+          0 /*SOA*/,
+          prs,
+          wait_on);
+      break;
+#endif
+#if REALM_MAX_DIM >= 4
+    case 4:
+      ready = Realm::RegionInstance::create_instance(
+          inst,
+          memory,
+          rect_from_dims_with_offset<4>(shape.dims, offsets),
+          field_sizes,
+          0 /*SOA*/,
+          prs,
+          wait_on);
+      break;
+#endif
+#if REALM_MAX_DIM >= 5
+    case 5:
+      ready = Realm::RegionInstance::create_instance(
+          inst,
+          memory,
+          rect_from_dims_with_offset<5>(shape.dims, offsets),
+          field_sizes,
+          0 /*SOA*/,
+          prs,
+          wait_on);
+      break;
+#endif
+    default:
+      PANIC("TensorShape dims greater than REALM_MAX_DIM: {}",
+            shape.dims.ff_ordered.num_dims());
+  }
+  this->outstanding_events.push_back(ready);
+  return {inst, ready};
 }
 
 Realm::Event RealmContext::get_outstanding_events() {

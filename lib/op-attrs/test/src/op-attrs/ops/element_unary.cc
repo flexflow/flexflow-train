@@ -61,6 +61,5 @@ TEST_SUITE(FF_TEST_SUITE) {
           make_input(
               SumDegree{degree}, DiscardCopyDegree{1_p}, 1_p, 1_p, 1_p)));
     }
-
   }
 }

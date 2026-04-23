@@ -1,3 +1,4 @@
+
 #ifndef _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_REALM_CONTEXT_H
 #define _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_REALM_CONTEXT_H
 
@@ -14,6 +15,11 @@
 #include <unordered_map>
 
 namespace FlexFlow {
+
+enum class CopyDomain {
+  SRC, // use src instance index space as copy domain (default)
+  DST, // use dst instance index space as copy domain
+};
 
 /**
  * @brief An interface that wraps the rest of Realm and protects against certain
@@ -74,9 +80,9 @@ public:
                  Realm::Event wait_on = Realm::Event::NO_EVENT,
                  int priority = 0,
                  std::optional<Realm::ReductionOpID> redop_id = std::nullopt,
-                 bool exclusive = false);
+                 bool exclusive = false,
+                 CopyDomain domain = CopyDomain::SRC);
   ///\}
-
   /** \name Instance management */
   ///\{
   std::pair<Realm::RegionInstance, Realm::Event>
@@ -90,6 +96,50 @@ public:
    * \brief Get the current set of outstanding events
    */
   Realm::Event get_outstanding_events();
+
+  /**
+ * \brief Create a Realm region instance with an offset index space.
+ *
+ * Similar to \ref create_instance, but allocates the instance with a
+ * non-zero origin rect. This is used for sharded tensors where each
+ * shard occupies a sub-region of the full logical tensor's index space.
+ *
+ * For example, given a tensor of shape [10, 16] split along dim 0
+ * with degree 2:
+ * - Shard 0 is allocated with rect [0..4, 0..15]
+ * - Shard 1 is allocated with rect [5..9, 0..15]
+ *
+ * This allows plain Realm copies between shards and the combined tensor
+ * to work correctly — points in each shard's index space match the
+ * corresponding points in the combined tensor's index space, so Realm
+ * copies data to the correct region without needing affine indirection.
+ *
+ * \param memory The Realm memory in which to allocate the instance.
+ * \param shape The per-device tensor shape (already divided by degree).
+ *              Determines the size of the instance.
+ * \param offsets Per-dimension offsets into the full logical tensor.
+ *                \p offsets[i] is the starting index along dimension i.
+ *                For shard k along dim d with piece_size p:
+ *                \p offsets[d] = k * p.
+ * \param prs Realm profiling request set.
+ * \param wait_on Event to wait on before creating the instance.
+ * \return A pair of the created \ref Realm::RegionInstance and a
+ *         \ref Realm::Event that fires when the instance is ready.
+ *
+ * \note The instance's index space has origin at \p offsets, not at
+ *       zero. Copies to/from this instance must use its actual index
+ *       space (via \c get_indexspace()) rather than a reconstructed
+ *       zero-based index space.
+ *
+ * \see create_instance
+ * \see perform_instance_allocation_for_value
+ */
+  std::pair<Realm::RegionInstance, Realm::Event> create_instance_with_offset(
+      Realm::Memory memory,
+      TensorShape const &shape,
+      std::vector<int> const &offsets,
+      Realm::ProfilingRequestSet const &prs,
+      Realm::Event wait_on = Realm::Event::NO_EVENT);
 
 protected:
   /**

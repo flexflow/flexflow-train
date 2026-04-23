@@ -1,4 +1,5 @@
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
+#include "task-spec/dynamic_graph/parallel_op_utils.h"
 #include "utils/containers/all_of.h"
 #include "utils/containers/contains_duplicates.h"
 #include "utils/containers/flatmap.h"
@@ -149,6 +150,13 @@ std::pair<LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
   for (DynamicNodeInvocation const &invocation :
        get_dynamic_invocation_set(g)) {
     for (DynamicValueAttrs const &output : values(invocation.outputs)) {
+      // combine FWD and reduction FWD have multiple invocations producing
+      // the same output value — only register the first one to avoid
+      // ManyToOne collision while still marking the value as having a producer
+      if (is_parallel_op_attrs(invocation.node_attrs) &&
+          value_to_producer.contains_l(output)) {
+        continue;
+      }
       value_to_producer.insert({output, invocation});
     }
   }

@@ -1,4 +1,5 @@
 #include "realm-execution/pcg_instance.h"
+#include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/tensor_slot_name.dtg.h"
 #include "pcg/optimizer_attrs.h"
 #include "realm-execution/dependency_set.h"
@@ -76,6 +77,10 @@ void PCGInstance::update_optimizer_attrs_for_next_iter() {
 std::optional<Realm::RegionInstance>
     PCGInstance::get_loss_tensor_instance() const {
   return this->logit_grad_tensor;
+}
+
+static bool has_task_type(DynamicNodeAttrs const &n, DynamicTaskType t) {
+  return n.task_type.has_value() && n.task_type.value() == t;
 }
 
 PCGInstance create_pcg_instance(
@@ -216,7 +221,29 @@ static Realm::Event spawn_dynamic_node_invocation(
                           precondition);
   };
 
-  // issue_replicate_bwd lambda
+  auto issue_sum_reduction_copy =
+      [&](DynamicValueAttrs const &input,
+          DynamicValueAttrs const &output) -> Realm::Event {
+    Realm::RegionInstance src_inst =
+        tensor_instance_backing.backing.at(input).first;
+    Realm::RegionInstance dst_inst =
+        tensor_instance_backing.backing.at(output).first;
+
+    Realm::ReductionOpID redop_id = get_sum_reduction_op_id(
+        assert_unwrap(input.parallel_tensor_shape).data_type);
+
+    return ctx.issue_copy(assert_unwrap(input.parallel_tensor_shape),
+                          src_inst,
+                          assert_unwrap(output.parallel_tensor_shape),
+                          dst_inst,
+                          Realm::ProfilingRequestSet{},
+                          precondition,
+                          /*priority=*/0,
+                          /*redop_id=*/redop_id,
+                          /*exclusive=*/false);
+  };
+
+  // replicate backward — find GRADIENT slot, chain reductions sequentially
   auto issue_replicate_bwd = [&]() {
     std::optional<DynamicValueAttrs> output_grad_opt;
     for (auto const &[slot, value] : invocation.inputs) {
@@ -226,32 +253,112 @@ static Realm::Event spawn_dynamic_node_invocation(
     }
     DynamicValueAttrs output_grad = assert_unwrap(output_grad_opt);
     DynamicValueAttrs input_grad = get_only(invocation.outputs).second;
-    Realm::RegionInstance dst_inst =
-        tensor_instance_backing.backing.at(input_grad).first;
 
-    Realm::ReductionOpID redop_id = get_sum_reduction_op_id(
-        assert_unwrap(output_grad.parallel_tensor_shape).data_type);
-
-    // chain reductions sequentially to avoid write races on dst
+    // chain sequentially to avoid write races
     Realm::Event e = precondition;
     for (auto const &[p, m] : assert_unwrap(output_grad.mapping)) {
       DynamicValueAttrs replica_key = output_grad;
       replica_key.mapping =
           bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>{{p, m}};
       replica_key.shard_coord = p;
+      e = issue_sum_reduction_copy(replica_key, input_grad);
+    }
+    return e;
+  };
 
+  auto issue_reduction_fwd = [&]() {
+    DynamicValueAttrs const &output = get_only(invocation.outputs).second;
+    Realm::RegionInstance dst_inst =
+        tensor_instance_backing.backing.at(output).first;
+
+    Realm::ReductionOpID redop_id = get_sum_reduction_op_id(
+        assert_unwrap(output.parallel_tensor_shape).data_type);
+
+    // chain reductions sequentially
+    Realm::Event e = precondition;
+    for (auto const &[slot, input] : invocation.inputs) {
       Realm::RegionInstance src_inst =
-          tensor_instance_backing.backing.at(replica_key).first;
-
-      e = ctx.issue_copy(assert_unwrap(output_grad.parallel_tensor_shape),
+          tensor_instance_backing.backing.at(input).first;
+      e = ctx.issue_copy(assert_unwrap(input.parallel_tensor_shape),
                          src_inst,
-                         assert_unwrap(input_grad.parallel_tensor_shape),
+                         assert_unwrap(output.parallel_tensor_shape),
                          dst_inst,
                          Realm::ProfilingRequestSet{},
                          e,
-                         0,
-                         redop_id,
-                         false);
+                         /*priority=*/0,
+                         /*redop_id=*/redop_id,
+                         /*exclusive=*/false);
+    }
+    return e;
+  };
+  auto issue_combine_fwd = [&]() {
+    DynamicValueAttrs const &output = get_only(invocation.outputs).second;
+    Realm::RegionInstance dst_inst =
+        tensor_instance_backing.backing.at(output).first;
+
+    // chain copies sequentially — each input shard copies into the output
+    Realm::Event e = precondition;
+    for (auto const &[slot, input] : invocation.inputs) {
+      Realm::RegionInstance src_inst =
+          tensor_instance_backing.backing.at(input).first;
+      e = ctx.issue_copy(assert_unwrap(input.parallel_tensor_shape),
+                         src_inst,
+                         assert_unwrap(output.parallel_tensor_shape),
+                         dst_inst,
+                         Realm::ProfilingRequestSet{},
+                         e);
+    }
+    return e;
+  };
+
+  auto issue_parallel_op_bwd_copy = [&]() {
+    // find single GRADIENT input
+    std::optional<DynamicValueAttrs> grad_input_opt;
+    for (auto const &[slot, value] : invocation.inputs) {
+      if (slot.slot_tensor_role == DynamicTensorRole{FwbTensorType::GRADIENT}) {
+        grad_input_opt = value;
+      }
+    }
+
+    // determine copy domain based on op type
+    PCGOperatorAttrs pcg =
+        invocation.node_attrs.op_attrs.value().get<PCGOperatorAttrs>();
+    CopyDomain domain = CopyDomain::SRC;
+    // reduction BWD: same size → use SRC domain
+    if (pcg.has<RepartitionAttrs>()) {
+      // repartition BWD: src=small shard, dst=full → use SRC domain
+      domain = CopyDomain::SRC;
+    } else if (pcg.has<CombineAttrs>()) {
+      // combine BWD: src=full, dst=small shard → use DST domain
+      domain = CopyDomain::DST;
+    }
+    DynamicValueAttrs grad_input = assert_unwrap(grad_input_opt);
+    DynamicValueAttrs output = get_only(invocation.outputs).second;
+    Realm::RegionInstance dst_inst =
+        tensor_instance_backing.backing.at(output).first;
+
+    // iterate over all source coords in grad mapping
+    // chain copies sequentially into the same destination
+    Realm::Event e = precondition;
+    for (auto const &[p, m] : assert_unwrap(grad_input.mapping)) {
+      DynamicValueAttrs shard_key = grad_input;
+      shard_key.mapping =
+          bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>{{p, m}};
+      shard_key.shard_coord = p;
+
+      Realm::RegionInstance src_inst =
+          tensor_instance_backing.backing.at(shard_key).first;
+
+      e = ctx.issue_copy(assert_unwrap(grad_input.parallel_tensor_shape),
+                         src_inst,
+                         assert_unwrap(output.parallel_tensor_shape),
+                         dst_inst,
+                         Realm::ProfilingRequestSet{},
+                         e,
+                         /*priority=*/0,
+                         /*redop_id=*/std::nullopt,
+                         /*exclusive=*/false,
+                         /*domain=*/domain);
     }
     return e;
   };
@@ -270,6 +377,39 @@ static Realm::Event spawn_dynamic_node_invocation(
                 return issue_replicate_bwd();
               }
               return issue_copy(); // forward
+            },
+            [&](RepartitionAttrs const &) {
+              if (has_task_type(invocation.node_attrs, DynamicTaskType::BWD)) {
+                return issue_parallel_op_bwd_copy(); // point-to-point copy after shard expansion
+              }
+              // FWD: src=[0..9], dst=[0..4] or [5..9] — use DST domain
+              DynamicValueAttrs const &input =
+                  get_only(invocation.inputs).second;
+              DynamicValueAttrs const &output =
+                  get_only(invocation.outputs).second;
+              return ctx.issue_copy(
+                  assert_unwrap(input.parallel_tensor_shape),
+                  tensor_instance_backing.backing.at(input).first,
+                  assert_unwrap(output.parallel_tensor_shape),
+                  tensor_instance_backing.backing.at(output).first,
+                  Realm::ProfilingRequestSet{},
+                  precondition,
+                  /*priority=*/0,
+                  /*redop_id=*/std::nullopt,
+                  /*exclusive=*/false,
+                  /*domain=*/CopyDomain::DST); // ← use dst index space
+            },
+            [&](CombineAttrs const &) {
+              if (has_task_type(invocation.node_attrs, DynamicTaskType::BWD)) {
+                return issue_parallel_op_bwd_copy(); // point-to-point copy after shard expansion
+              }
+              return issue_combine_fwd(); // forward
+            },
+            [&](ReductionAttrs const &) {
+              if (has_task_type(invocation.node_attrs, DynamicTaskType::BWD)) {
+                return issue_parallel_op_bwd_copy(); // broadcast copy after shard expansion
+              }
+              return issue_reduction_fwd(); // forward needs sum reduction
             },
             [&](auto const &) { return spawn_task(); },
         });
