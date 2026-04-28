@@ -195,4 +195,158 @@ TEST_SUITE(FF_TEST_SUITE) {
     result.wait();
   }
 }
+
+TEST_SUITE(FF_CUDA_TEST_SUITE) {
+  TEST_CASE("RealmBackend e2e Training Combine Op (GPU Model Parallelism)") {
+    std::vector<char *> fake_args =
+        make_fake_realm_args(/*num_cpus=*/1_p, /*num_gpus=*/2_n);
+    int fake_argc = fake_args.size();
+    char **fake_argv = fake_args.data();
+
+    RealmManager manager = RealmManager{&fake_argc, &fake_argv};
+
+    ControllerTaskResult result =
+        manager.start_controller([](RealmContext &ctx) {
+          Allocator allocator = ctx.get_current_device_allocator();
+
+          positive_int batch_size = 10_p;
+          positive_int data_dim = 16_p;
+
+          TensorShape input_tensor_shape = TensorShape{
+              TensorDims{FFOrdered{batch_size, data_dim}}, DataType::FLOAT};
+
+          ParallelComputationGraph pcg = empty_parallel_computation_graph();
+
+          // input layer
+          ParallelLayerAddedResult inputs_layer =
+              pcg_add_input_layer(pcg, input_tensor_shape);
+          parallel_tensor_guid_t t_input =
+              require_only_key(inputs_layer.outputs, TensorSlotName::OUTPUT);
+
+          // repartition along dim 0 with degree 2
+          // needed so combine has a degree=2 sharded tensor to combine
+          RepartitionAttrs repartition_attrs{
+              /*repartition_dim=*/ff_dim_t{nonnegative_int{0}},
+              /*repartition_degree=*/2_p,
+          };
+          ParallelLayerAddedResult repartition_operator =
+              add_parallel_layer(pcg,
+                                 make_layer_attrs(repartition_attrs),
+                                 {{TensorSlotName::INPUT, t_input}},
+                                 /*weights=*/{});
+          parallel_tensor_guid_t t_repartitioned = require_only_key(
+              repartition_operator.outputs, TensorSlotName::OUTPUT);
+
+          // combine along dim 0 with degree 2
+          CombineAttrs combine_attrs{
+              /*combine_dim=*/ff_dim_t{nonnegative_int{0}},
+              /*combine_degree=*/2_p,
+          };
+          ParallelLayerAddedResult combine_operator =
+              add_parallel_layer(pcg,
+                                 make_layer_attrs(combine_attrs),
+                                 {{TensorSlotName::INPUT, t_repartitioned}},
+                                 /*weights=*/{});
+          parallel_tensor_guid_t t_combined = require_only_key(
+              combine_operator.outputs, TensorSlotName::OUTPUT);
+
+          // relu consumer
+          ParallelLayerAddedResult relu_operator =
+              add_parallel_layer(pcg,
+                                 make_layer_attrs(make_relu_attrs()),
+                                 {{TensorSlotName::INPUT, t_combined}},
+                                 /*weights=*/{});
+
+          MachineSpaceCoordinate gpu0{0_n, 0_n, DeviceType::GPU};
+          MachineSpaceCoordinate gpu1{0_n, 1_n, DeviceType::GPU};
+
+          // input: one shard on gpu0 (not yet repartitioned)
+          ParallelTensorSpaceCoordinate tensor_coord0{
+              0_n, 0_n, FFOrdered{0_n, 0_n}};
+          // after repartition: two shards along dim 0
+          ParallelTensorSpaceCoordinate tensor_coord_shard0{
+              0_n, 0_n, FFOrdered{0_n, 0_n}};
+          ParallelTensorSpaceCoordinate tensor_coord_shard1{
+              0_n, 0_n, FFOrdered{1_n, 0_n}};
+          // after combine: one shard on gpu0
+          ParallelTensorSpaceCoordinate tensor_coord_combined{
+              0_n, 0_n, FFOrdered{0_n, 0_n}};
+
+          MappedParallelComputationGraph mpcg{
+              pcg,
+              {
+                  // input: one shard on gpu0
+                  {inputs_layer.parallel_layer,
+                   MappedOperatorTaskGroup{
+                       {{gpu0,
+                         OperatorAtomicTaskShardBinding{
+                             {{TensorSlotName::OUTPUT, tensor_coord0}}}}}}},
+                  // repartition: OUTPUT only — no INPUT since all replicas
+                  // read same source coord violating bidict uniqueness
+                  {repartition_operator.parallel_layer,
+                   MappedOperatorTaskGroup{{
+                       {gpu0,
+                        OperatorAtomicTaskShardBinding{{
+                            {TensorSlotName::OUTPUT, tensor_coord_shard0},
+                        }}},
+                       {gpu1,
+                        OperatorAtomicTaskShardBinding{{
+                            {TensorSlotName::OUTPUT, tensor_coord_shard1},
+                        }}},
+                   }}},
+                  // combine: two inputs → one output on gpu0
+                  {combine_operator.parallel_layer,
+                   MappedOperatorTaskGroup{{
+                       {gpu0,
+                        OperatorAtomicTaskShardBinding{{
+                            {TensorSlotName::INPUT, tensor_coord_shard0},
+                        }}},
+                       {gpu1,
+                        OperatorAtomicTaskShardBinding{{
+                            {TensorSlotName::INPUT, tensor_coord_shard1},
+                        }}},
+                   }}},
+                  // relu: one shard on gpu0
+                  {relu_operator.parallel_layer,
+                   MappedOperatorTaskGroup{{
+                       {gpu0,
+                        OperatorAtomicTaskShardBinding{{
+                            {TensorSlotName::INPUT, tensor_coord_combined},
+                            {TensorSlotName::OUTPUT, tensor_coord_combined},
+                        }}},
+                   }}},
+              }};
+
+          OptimizerAttrs optimizer_attrs =
+              OptimizerAttrs{SGDOptimizerAttrs{/*lr=*/0.001,
+                                               /*momentum=*/0.9,
+                                               /*nesterov=*/false,
+                                               /*weight_decay=*/0.001}};
+
+          std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor>
+              input_tensors;
+
+          DistributedFfHandle device_handle = create_distributed_ff_handle(
+              ctx,
+              /*workSpaceSize=*/1024 * 1024,
+              /*allowTensorOpMathConversion=*/true);
+
+          PCGInstance pcg_instance =
+              create_pcg_instance(ctx,
+                                  mpcg,
+                                  optimizer_attrs,
+                                  std::nullopt,
+                                  input_tensors,
+                                  ProfilingSettings{0, 0},
+                                  device_handle,
+                                  FFIterationConfig{1_p});
+
+          perform_all_passes_for_pcg_instance(pcg_instance,
+                                              ProfilingSettings{0, 0},
+                                              device_handle,
+                                              FFIterationConfig{1_p});
+        });
+    result.wait();
+  }
+}
 } // namespace test

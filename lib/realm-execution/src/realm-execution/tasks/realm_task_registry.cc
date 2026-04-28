@@ -31,14 +31,6 @@ Realm::Event register_task(Realm::Processor::Kind target_kind,
       Realm::ProfilingRequestSet());
 }
 
-static void register_reductions() {
-  // register sum reduction ops
-  Realm::Runtime rt = Realm::Runtime::get_runtime();
-  rt.register_reduction<SumReductionFloat>(REDOP_SUM_FLOAT);
-  rt.register_reduction<SumReductionDouble>(REDOP_SUM_DOUBLE);
-  // register_reduction is synchronous — no event returned
-}
-
 Realm::Event register_all_tasks() {
   std::vector<Realm::Event> pending_registrations;
 

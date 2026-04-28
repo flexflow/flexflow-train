@@ -27,7 +27,11 @@ namespace FlexFlow {
  * else Realm may not shut down properly.
  */
 [[nodiscard]] Realm::Event register_all_tasks();
-
+/**
+ * \brief Registers Realm sum reduction operators for supported data types.
+ * Defined in realm_reduction_cuda.cu — compiled with CUDA for GPU atomic support.
+ */
+void register_reductions();
 } // namespace FlexFlow
 
 #endif
