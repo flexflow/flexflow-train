@@ -105,14 +105,14 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
               },
               /*input_tensors=*/input_tensors,
               /*allocator=*/allocator,
-              /*profiling_settings=*/ProfilingSettings{0, 1},
+              /*profiling_settings=*/ProfilingSettings{0_n, 1_p},
               /*device_handle=*/ff_handle,
               /*iteration_config=*/FFIterationConfig{1_p},
               /*device_idx=*/device_idx);
 
       perform_all_passes_for_computation_graph_instance(
           /*instance=*/computation_graph_instance,
-          /*profiling_settings=*/ProfilingSettings{0, 0},
+          /*profiling_settings=*/ProfilingSettings{0_n, 1_p},
           /*ff_handle=*/ff_handle,
           /*iteration_config=*/FFIterationConfig{1_p},
           /*device_idx=*/device_idx);

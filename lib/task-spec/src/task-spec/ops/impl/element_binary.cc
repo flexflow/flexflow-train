@@ -44,6 +44,11 @@ static std::optional<milliseconds_t>
   auto input_lhs = acc.get_tensor<Permissions::RO>(TensorSlotName::LHS_INPUT);
   auto input_rhs = acc.get_tensor<Permissions::RO>(TensorSlotName::RHS_INPUT);
   auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
+  // compute num_elements from output shape
+  size_t num_elements = 1;
+  for (positive_int const &dim : output.shape.dims.ff_ordered) {
+    num_elements *= static_cast<size_t>(dim.int_from_positive_int());
+  }
 
   return profile(forward_kernel,
                  profiling,
@@ -55,7 +60,8 @@ static std::optional<milliseconds_t>
                  output.get_float_ptr(),
                  attrs.type,
                  attrs.should_broadcast_lhs,
-                 handle);
+                 handle,
+                 num_elements);
 }
 
 static std::optional<milliseconds_t>
@@ -77,6 +83,11 @@ static std::optional<milliseconds_t>
   auto input_rhs_grad =
       acc.get_tensor_grad<Permissions::RW>(TensorSlotName::RHS_INPUT);
 
+  // compute num_elements from output shape
+  size_t num_elements = 1;
+  for (positive_int const &dim : output_grad.shape.dims.ff_ordered) {
+    num_elements *= static_cast<size_t>(dim.int_from_positive_int());
+  }
   return profile(backward_kernel,
                  profiling,
                  kernel_device_type,
@@ -90,7 +101,8 @@ static std::optional<milliseconds_t>
                  attrs.type,
                  attrs.should_broadcast_lhs,
                  attrs.should_broadcast_rhs,
-                 handle);
+                 handle,
+                 num_elements);
 }
 
 TaskImplFunction get_element_binary_init_task_impl() {

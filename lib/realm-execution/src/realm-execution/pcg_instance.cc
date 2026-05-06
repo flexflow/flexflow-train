@@ -17,6 +17,7 @@
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
 #include "task-spec/dynamic_graph/loss_insertion.h"
 #include "task-spec/dynamic_graph/make_dynamic_open_dataflow_graph_from_mapped_pcg.h"
+#include "task-spec/dynamic_graph/parallel_op_utils.h"
 #include "task-spec/dynamic_graph/pass_expansion.h"
 #include "task-spec/dynamic_graph/shard_expansion.h"
 #include "task-spec/dynamic_graph/training_operation_attrs.dtg.h"
@@ -157,7 +158,6 @@ PCGInstance create_pcg_instance(
   std::vector<Node> node_topo_order = get_topological_ordering(kwarg_graph);
   std::vector<DynamicNodeInvocation> invocation_topo_order = transform(
       node_topo_order, [&](Node node) { return node_map.at_l(node); });
-
   return PCGInstance{/*ctx=*/ctx,
                      /*execution_order=*/invocation_topo_order,
                      /*tensor_instance_backing=*/tensor_instance_backing,
@@ -194,16 +194,18 @@ static Realm::Event spawn_dynamic_node_invocation(
   auto spawn_task = [&]() {
     Realm::Processor target_proc = ctx.map_device_coord_to_processor(
         assert_unwrap(invocation.node_attrs.device_coord));
-    return spawn_op_task(ctx,
-                         target_proc,
-                         invocation,
-                         tensor_backing,
-                         try_at(device_state_backing.backing, invocation),
-                         profiling_settings,
-                         device_handle.at(target_proc),
-                         iteration_config,
-                         optimizer_attrs,
-                         precondition);
+    Realm::Event e =
+        spawn_op_task(ctx,
+                      target_proc,
+                      invocation,
+                      tensor_backing,
+                      try_at(device_state_backing.backing, invocation),
+                      profiling_settings,
+                      device_handle.at(target_proc),
+                      iteration_config,
+                      optimizer_attrs,
+                      precondition);
+    return e;
   };
 
   auto issue_copy = [&]() {
@@ -296,11 +298,12 @@ static Realm::Event spawn_dynamic_node_invocation(
     Realm::RegionInstance dst_inst =
         tensor_instance_backing.backing.at(output).first;
 
-    // chain copies sequentially — each input shard copies into the output
     Realm::Event e = precondition;
+    // chain copies sequentially — each input shard copies into the output
     for (auto const &[slot, input] : invocation.inputs) {
       Realm::RegionInstance src_inst =
           tensor_instance_backing.backing.at(input).first;
+
       e = ctx.issue_copy(assert_unwrap(input.parallel_tensor_shape),
                          src_inst,
                          assert_unwrap(output.parallel_tensor_shape),
@@ -382,11 +385,10 @@ static Realm::Event spawn_dynamic_node_invocation(
               if (has_task_type(invocation.node_attrs, DynamicTaskType::BWD)) {
                 return issue_parallel_op_bwd_copy(); // point-to-point copy after shard expansion
               }
-              // FWD: src=[0..9], dst=[0..4] or [5..9] — use DST domain
-              DynamicValueAttrs const &input =
-                  get_only(invocation.inputs).second;
-              DynamicValueAttrs const &output =
+              DynamicValueAttrs const output =
                   get_only(invocation.outputs).second;
+              DynamicValueAttrs const input =
+                  get_only(invocation.inputs).second;
               return ctx.issue_copy(
                   assert_unwrap(input.parallel_tensor_shape),
                   tensor_instance_backing.backing.at(input).first,
@@ -432,6 +434,7 @@ static std::unordered_map<dynamic_layer_guid_t, Realm::Event>
   // For simplicity we'll track a dependency on all outstanding operations up to
   // this point. This will create an effective barrier between phases.
   DependencySet dependency_set{ctx.get_outstanding_events()};
+
   return unordered_map_from_pairs(
       transform(invocations, [&](DynamicNodeInvocation const &invocation) {
         std::vector<Realm::Event> input_dependencies =
@@ -457,6 +460,16 @@ static std::unordered_map<dynamic_layer_guid_t, Realm::Event>
                                           device_handle,
                                           iteration_config);
 
+        // for combine/reduction FWD — wait synchronously to ensure
+        // all shards complete before consumer runs
+        if (is_parallel_op_attrs(invocation.node_attrs) &&
+            has_task_type(invocation.node_attrs, DynamicTaskType::FWD)) {
+          PCGOperatorAttrs const &pcg =
+              invocation.node_attrs.op_attrs->get<PCGOperatorAttrs>();
+          if (pcg.has<CombineAttrs>() || pcg.has<ReductionAttrs>()) {
+            result.wait();
+          }
+        }
         for (DynamicValueAttrs const &value : values(invocation.inputs)) {
           dependency_set.add_reader(value, result);
         }

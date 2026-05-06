@@ -42,15 +42,6 @@ void linear_cpu_forward_kernel(
   }
 }
 
-// template <typename T>
-static float single_element_relu_bwd(float elem) {
-  if (elem > 0) {
-    return 1;
-  } else {
-    return 0;
-  }
-}
-
 void linear_cpu_backward_kernel(
     LinearAttrs const &attrs,
     GenericTensorAccessorR const &output,
@@ -65,11 +56,26 @@ void linear_cpu_backward_kernel(
   std::optional<GenericTensorAccessorR> processed_output_grad = std::nullopt;
   if (attrs.activation.has_value()) {
     switch (attrs.activation.value()) {
-      case Activation::RELU:
+      case Activation::RELU: {
+        // relu backward: output_grad * (output > 0)
+        // output here is POST-activation (relu output)
+        // output > 0 iff pre-activation > 0 since relu(x) > 0 iff x > 0
+        GenericTensorAccessorW grad_buf =
+            cpu_allocator.allocate_tensor(output_grad.shape);
+        map_tensor_accessors2_to(
+            output_grad,
+            output,
+            output_grad.shape.data_type,
+            [](auto grad, auto out) {
+              return out > static_cast<decltype(out)>(0)
+                         ? grad
+                         : static_cast<decltype(grad)>(0);
+            },
+            grad_buf);
         processed_output_grad =
-            read_only_accessor_from_write_accessor(map_tensor_accessor(
-                output_grad, single_element_relu_bwd, cpu_allocator));
+            read_only_accessor_from_write_accessor(grad_buf);
         break;
+      }
       default:
         PANIC("Unhandled activation function", attrs.activation.value());
     }

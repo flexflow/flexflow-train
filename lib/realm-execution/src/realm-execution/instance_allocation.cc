@@ -22,6 +22,7 @@
 #include "utils/exception.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
 #include "utils/optional.h"
+#include "utils/overload.h"
 
 namespace FlexFlow {
 std::pair<Realm::RegionInstance, Realm::Event>
@@ -77,7 +78,6 @@ std::pair<Realm::RegionInstance, Realm::Event>
     return ctx.create_instance(memory, shape, Realm::ProfilingRequestSet());
   }
 }
-
 TensorInstanceBacking perform_instance_allocation(
     DynamicOpenDataflowGraph const &g,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
@@ -92,8 +92,53 @@ TensorInstanceBacking perform_instance_allocation(
   TensorInstanceBacking result = make_empty_tensor_instance_backing();
   auto allocate = [&](DynamicNodeAttrs const &n, DynamicValueAttrs const &v) {
     if (contains_key(preallocated, v)) {
-      // FIXME: Attach external instance to existing allocation and use that
-      NOT_IMPLEMENTED();
+      if (!contains_key(result.backing, v)) {
+        DynamicTensorAccessor const &accessor = preallocated.at(v);
+
+        void *ptr = accessor.visit<void *>(overload{
+            [](GenericTensorAccessorR const &a) {
+              return const_cast<void *>(a.ptr);
+            },
+            [](GenericTensorAccessorW const &a) { return a.ptr; },
+        });
+
+        MachineSpaceCoordinate device_coord = assert_unwrap(n.device_coord);
+        Realm::Processor proc = ctx.map_device_coord_to_processor(device_coord);
+        Realm::Memory memory = ctx.get_nearest_memory(proc);
+
+        ParallelTensorShape const &par_shape = v.parallel_tensor_shape.value();
+        TensorShape shape = get_per_device_shape(par_shape);
+
+        int ndims = static_cast<int>(num_shard_dims(par_shape).value);
+        std::vector<int> offsets(ndims, 0);
+        if (v.shard_coord.has_value()) {
+          ParallelTensorSpaceCoordinate const &coord = v.shard_coord.value();
+          for (int i = 0; i < ndims; i++) {
+            relative_ff_dim_t rel_dim{i};
+            if (!coord.shard_components.idx_is_valid(rel_dim)) {
+              continue;
+            }
+            ShardParallelDim shard_dim = par_shape.dims.shard_dims.at(rel_dim);
+            if (shard_dim.degree == 1_p) {
+              continue;
+            }
+            nonnegative_int piece_size =
+                shard_dim.size.nonnegative_int_from_positive_int() /
+                shard_dim.degree.nonnegative_int_from_positive_int();
+            nonnegative_int shard_idx = coord.shard_components.at(rel_dim);
+            offsets[i] = static_cast<int>(shard_idx * piece_size);
+          }
+        }
+
+        auto [inst, ready] = ctx.create_external_instance(
+            memory, shape, offsets, ptr, Realm::ProfilingRequestSet());
+        size_t num_elements = 1;
+        for (positive_int const &dim : shape.dims.ff_ordered) {
+          num_elements *= static_cast<size_t>(dim.int_from_positive_int());
+        }
+        result.backing.insert(std::make_pair(v, std::make_pair(inst, ready)));
+      }
+      return result.backing.at(v);
     } else {
       if (!contains_key(result.backing, v)) {
         MachineSpaceCoordinate device_coord = assert_unwrap(n.device_coord);
@@ -103,7 +148,6 @@ TensorInstanceBacking perform_instance_allocation(
       return result.backing.at(v);
     }
   };
-
   for (DynamicNodeInvocation const &invocation : g.invocations) {
     for (DynamicValueAttrs const &input : values(invocation.inputs)) {
       allocate(invocation.node_attrs, input);

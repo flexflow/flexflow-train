@@ -32,12 +32,13 @@ static std::optional<milliseconds_t>
   ElementUnaryAttrs attrs = acc.get_op_attrs().require_element_unary();
 
   device_handle_t handle = acc.get_ff_handle();
-
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
-  std::optional<ElementUnaryPerDeviceState> per_device_state =
-      acc.get_per_device_op_state().require_element_unary();
 
+  std::optional<ElementUnaryPerDeviceState> per_device_state = std::nullopt;
+  if (acc.has_per_device_op_state()) {
+    per_device_state = acc.get_per_device_op_state().require_element_unary();
+  }
   return profile(forward_kernel,
                  profiling,
                  kernel_device_type,
@@ -62,9 +63,11 @@ static std::optional<milliseconds_t>
 
   ProfilingSettings profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
-  std::optional<ElementUnaryPerDeviceState> per_device_state =
-      acc.get_per_device_op_state().require_element_unary();
 
+  std::optional<ElementUnaryPerDeviceState> per_device_state = std::nullopt;
+  if (acc.has_per_device_op_state()) {
+    per_device_state = acc.get_per_device_op_state().require_element_unary();
+  }
   return profile(backward_kernel,
                  profiling,
                  kernel_device_type,

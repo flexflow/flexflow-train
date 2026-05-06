@@ -38,6 +38,7 @@ struct LocalTaskArgumentAccessor : public ITaskArgumentAccessor {
   PCGOperatorAttrs get_op_attrs() const override;
   LossAttrs get_loss_attrs() const override;
   PerDeviceOpState get_per_device_op_state() const override;
+  bool has_per_device_op_state() const override;
   FFIterationConfig get_iteration_config() const override;
   OptimizerAttrs get_optimizer_attrs() const override;
 

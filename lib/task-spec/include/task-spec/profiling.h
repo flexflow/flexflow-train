@@ -14,6 +14,7 @@ std::optional<milliseconds_t> profile(F const &f,
                                       DeviceType device_type,
                                       Str s,
                                       Ts &&...ts) {
+
   std::optional<milliseconds_t> elapsed = profiling_wrapper<F, Ts...>(
       f, profiling, device_type, std::forward<Ts>(ts)...);
   if (elapsed.has_value()) {

@@ -40,8 +40,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*interconnect_specification=*/interconnect_specification,
         /*allocator=*/allocator,
         /*profiling_settings=*/
-        ProfilingSettings{/*warmup_iters=*/0,
-                          /*measure_iters=*/1},
+        ProfilingSettings{/*warmup_iters=*/0_n,
+                          /*measure_iters=*/1_p},
         /*device_handle=*/ff_handle,
         /*iteration_config=*/FFIterationConfig{1_p},
         /*device_idx=*/device_idx);
@@ -113,8 +113,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         /*interconnect_specification=*/interconnect_specification,
         /*allocator=*/allocator,
         /*profiling_settings=*/
-        ProfilingSettings{/*warmup_iters=*/0,
-                          /*measure_iters=*/1},
+        ProfilingSettings{/*warmup_iters=*/0_n,
+                          /*measure_iters=*/1_p},
         /*device_handle=*/ff_handle,
         /*iteration_config=*/FFIterationConfig{1_p},
         /*device_idx=*/device_idx);

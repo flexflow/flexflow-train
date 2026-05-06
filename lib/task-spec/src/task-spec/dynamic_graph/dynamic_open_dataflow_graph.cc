@@ -219,6 +219,13 @@ std::pair<LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
          zip_values_strict(invocation.outputs, added.outputs)) {
       DynamicValueAttrs invocation_output = v.first;
       KwargDataflowOutput<DynamicTensorSlot> graph_output = v.second;
+      // for combine/reduction FWD — multiple shards produce same output value
+      // replace previous producer in value_map so consumer depends on
+      // the latest shard (which was added after the earlier shard —
+      // topological order guaranteed by inputs_have_been_added)
+      if (value_map.contains_r(invocation_output)) {
+        value_map.erase_r(invocation_output);
+      }
       value_map.equate(
           OpenKwargDataflowValue<int, DynamicTensorSlot>{graph_output},
           invocation_output);

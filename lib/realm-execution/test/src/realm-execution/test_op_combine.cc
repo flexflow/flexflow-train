@@ -44,7 +44,8 @@ static ParallelLayerAttrs make_layer_attrs(T const &op_attrs) {
 };
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("RealmBackend e2e Training Combine Op (CPU Model Parallelism)") {
+  TEST_CASE("RealmBackend e2e Training Combine Op with External Input "
+            "Instances (CPU Model Parallelism)") {
     std::vector<char *> fake_args =
         make_fake_realm_args(/*num_cpus=*/2_p, /*num_gpus=*/0_n);
     int fake_argc = fake_args.size();
@@ -61,6 +62,16 @@ TEST_SUITE(FF_TEST_SUITE) {
           TensorShape input_tensor_shape = TensorShape{
               TensorDims{FFOrdered{batch_size, data_dim}}, DataType::FLOAT};
 
+          // allocate external input tensor and fill with known values
+          GenericTensorAccessorW input_tensor =
+              allocator.allocate_tensor(input_tensor_shape);
+          float *input_ptr = input_tensor.get_float_ptr();
+          int num_elements = batch_size.int_from_positive_int() *
+                             data_dim.int_from_positive_int();
+
+          for (int i = 0; i < num_elements; i++) {
+            input_ptr[i] = static_cast<float>(i);
+          }
           ParallelComputationGraph pcg = empty_parallel_computation_graph();
 
           // input layer
@@ -163,15 +174,34 @@ TEST_SUITE(FF_TEST_SUITE) {
                    }}},
               }};
 
+          // build DynamicValueAttrs key for the input tensor
+          // must match exactly what make_dynamic_open_dataflow_graph produces
+          ParallelTensorAttrs input_ptensor_attrs =
+              get_parallel_tensor_attrs(pcg, t_input);
+
+          bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
+              input_mapping{{tensor_coord0, cpu0}};
+
+          DynamicValueAttrs input_value_attrs{
+              /*tensor_guid=*/dynamic_tensor_guid_t{t_input},
+              /*parallel_tensor_shape=*/input_ptensor_attrs.shape,
+              /*shard_coord=*/tensor_coord0,
+              /*mapping=*/input_mapping,
+              /*accessor=*/std::nullopt,
+              /*role=*/DynamicTensorRole{FwbTensorType::FORWARD},
+          };
+
+          // pass external tensor as preallocated input
+          std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor>
+              input_tensors;
+          input_tensors.insert(
+              {input_value_attrs, DynamicTensorAccessor{input_tensor}});
+
           OptimizerAttrs optimizer_attrs =
               OptimizerAttrs{SGDOptimizerAttrs{/*lr=*/0.001,
                                                /*momentum=*/0.9,
                                                /*nesterov=*/false,
                                                /*weight_decay=*/0.001}};
-
-          std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor>
-              input_tensors;
-
           DistributedFfHandle device_handle = create_distributed_ff_handle(
               ctx,
               /*workSpaceSize=*/1024 * 1024,
@@ -183,14 +213,62 @@ TEST_SUITE(FF_TEST_SUITE) {
                                   optimizer_attrs,
                                   std::nullopt,
                                   input_tensors,
-                                  ProfilingSettings{0, 0},
+                                  ProfilingSettings{0_n, 1_p},
                                   device_handle,
                                   FFIterationConfig{1_p});
 
           perform_all_passes_for_pcg_instance(pcg_instance,
-                                              ProfilingSettings{0, 0},
+                                              ProfilingSettings{0_n, 1_p},
                                               device_handle,
                                               FFIterationConfig{1_p});
+          // wait for ALL outstanding Realm events (copies, tasks, reductions)
+          // to complete before reading back tensor values
+          TensorInstanceBacking const &backing =
+              pcg_instance.get_tensor_instance_backing();
+          ctx.get_outstanding_events().wait();
+          parallel_tensor_guid_t t_relu_output =
+              require_only_key(relu_operator.outputs, TensorSlotName::OUTPUT);
+
+          ParallelTensorAttrs relu_output_attrs =
+              get_parallel_tensor_attrs(pcg, t_relu_output);
+
+          auto make_output_key =
+              [&](parallel_tensor_guid_t guid,
+                  ParallelTensorAttrs const &attrs,
+                  ParallelTensorSpaceCoordinate const &coord,
+                  MachineSpaceCoordinate const &machine) -> DynamicValueAttrs {
+            return DynamicValueAttrs{
+                /*tensor_guid=*/dynamic_tensor_guid_t{guid},
+                /*parallel_tensor_shape=*/attrs.shape,
+                /*shard_coord=*/coord,
+                /*mapping=*/
+                bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>{
+                    {coord, machine}},
+                /*accessor=*/std::nullopt,
+                /*role=*/DynamicTensorRole{FwbTensorType::FORWARD},
+            };
+          };
+
+          DynamicValueAttrs relu0_key = make_output_key(
+              t_relu_output, relu_output_attrs, tensor_coord_combined, cpu0);
+
+          auto [relu0_inst, relu0_ready] = backing.backing.at(relu0_key);
+
+          // convert to accessors — events already waited above
+          GenericTensorAccessorR relu0_accessor =
+              dynamic_tensor_accessor_from_instance(relu0_inst,
+                                                    relu0_ready,
+                                                    relu_output_attrs.shape,
+                                                    Permissions::RO,
+                                                    ctx.get_current_processor())
+                  .get<GenericTensorAccessorR>();
+
+          // verify values match input — input was 0,1,...,159
+          // all non-negative so relu doesn't change them
+          float const *relu0_ptr = relu0_accessor.get_float_ptr();
+          for (int i = 0; i < num_elements; i++) {
+            CHECK_EQ(relu0_ptr[i], static_cast<float>(i));
+          }
         });
     result.wait();
   }
@@ -337,12 +415,12 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                                   optimizer_attrs,
                                   std::nullopt,
                                   input_tensors,
-                                  ProfilingSettings{0, 0},
+                                  ProfilingSettings{0_n, 1_p},
                                   device_handle,
                                   FFIterationConfig{1_p});
 
           perform_all_passes_for_pcg_instance(pcg_instance,
-                                              ProfilingSettings{0, 0},
+                                              ProfilingSettings{0_n, 1_p},
                                               device_handle,
                                               FFIterationConfig{1_p});
         });
