@@ -244,13 +244,13 @@ ffStatus_t
       tensor,
       CUDNN_TENSOR_NCHW,
       ff_to_cudnn_datatype(shape.data_type),
-      try_dim_at_idx(shape.dims, relative_ff_dim_t{3})
+      try_dim_at_idx(shape.dims, relative_ff_dim_t{0})
           .value_or(1_p)
           .int_from_positive_int(),
-      try_dim_at_idx(shape.dims, relative_ff_dim_t{3})
+      try_dim_at_idx(shape.dims, relative_ff_dim_t{1})
           .value_or(1_p)
           .int_from_positive_int(),
-      try_dim_at_idx(shape.dims, relative_ff_dim_t{3})
+      try_dim_at_idx(shape.dims, relative_ff_dim_t{2})
           .value_or(1_p)
           .int_from_positive_int(),
       try_dim_at_idx(shape.dims, relative_ff_dim_t{3})
