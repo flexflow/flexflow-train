@@ -93,7 +93,8 @@ PCGInstance create_pcg_instance(
         &input_tensors,
     ProfilingSettings const &profiling_settings,
     DistributedFfHandle const &device_handle,
-    FFIterationConfig const &iteration_config) {
+    FFIterationConfig const &iteration_config,
+    std::vector<ExternalTensorBinding> const &external_tensors) {
 
   DynamicOpenDataflowGraph dg =
       make_dynamic_open_dataflow_graph_from_mapped_pcg(mpcg);
@@ -115,8 +116,34 @@ PCGInstance create_pcg_instance(
   dg = perform_update_insertion(dg, optimizer_attrs);
   dg = perform_copy_insertion(dg);
   dg = perform_shard_expansion(dg);
+
+  // convert ExternalTensorBindings to preallocated_instances map
+  std::unordered_map<DynamicValueAttrs,
+                     std::pair<Realm::RegionInstance, Realm::Event>>
+      preallocated_instances;
+
+  for (ExternalTensorBinding const &binding : external_tensors) {
+    ParallelTensorAttrs ptensor_attrs =
+        get_parallel_tensor_attrs(mpcg.pcg, binding.tensor_guid);
+
+    DynamicValueAttrs key{
+        /*tensor_guid=*/dynamic_tensor_guid_t{binding.tensor_guid},
+        /*parallel_tensor_shape=*/ptensor_attrs.shape,
+        /*shard_coord=*/binding.shard_coord,
+        /*mapping=*/
+        bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>{
+            {binding.shard_coord, binding.machine_coord}},
+        /*accessor=*/std::nullopt,
+        /*role=*/DynamicTensorRole{FwbTensorType::FORWARD},
+    };
+
+    preallocated_instances.insert(
+        {key, {binding.handle.instance, binding.handle.ready}});
+  }
+
+  // preallocated_instances to perform_instance_allocation
   TensorInstanceBacking tensor_instance_backing =
-      perform_instance_allocation(dg, inputs, ctx);
+      perform_instance_allocation(dg, inputs, preallocated_instances, ctx);
 
   logit_grad_value =
       transform(logit_grad_value, [&](DynamicValueAttrs const &lgv) {

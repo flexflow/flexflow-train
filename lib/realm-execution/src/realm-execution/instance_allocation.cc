@@ -82,7 +82,11 @@ TensorInstanceBacking perform_instance_allocation(
     DynamicOpenDataflowGraph const &g,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &preallocated,
+    std::unordered_map<DynamicValueAttrs,
+                       std::pair<Realm::RegionInstance, Realm::Event>> const
+        &preallocated_instances,
     RealmContext &ctx) {
+
   ASSERT(no_tensors_are_allocated(g));
   ASSERT(tensors_are_ready_for_allocation(g));
   for (DynamicValueAttrs const &v : keys(preallocated)) {
@@ -91,6 +95,15 @@ TensorInstanceBacking perform_instance_allocation(
 
   TensorInstanceBacking result = make_empty_tensor_instance_backing();
   auto allocate = [&](DynamicNodeAttrs const &n, DynamicValueAttrs const &v) {
+    // check pre-created instances first
+    if (contains_key(preallocated_instances, v)) {
+      if (!contains_key(result.backing, v)) {
+        result.backing.insert(std::make_pair(v, preallocated_instances.at(v)));
+      }
+      return result.backing.at(v);
+    }
+
+    // then check accessor-based preallocated
     if (contains_key(preallocated, v)) {
       if (!contains_key(result.backing, v)) {
         DynamicTensorAccessor const &accessor = preallocated.at(v);
@@ -130,13 +143,10 @@ TensorInstanceBacking perform_instance_allocation(
           }
         }
 
-        auto [inst, ready] = ctx.create_external_instance(
-            memory, shape, offsets, ptr, Realm::ProfilingRequestSet());
-        size_t num_elements = 1;
-        for (positive_int const &dim : shape.dims.ff_ordered) {
-          num_elements *= static_cast<size_t>(dim.int_from_positive_int());
-        }
-        result.backing.insert(std::make_pair(v, std::make_pair(inst, ready)));
+        result.backing.insert(std::pair{
+            v,
+            ctx.create_external_instance(
+                memory, shape, offsets, ptr, Realm::ProfilingRequestSet())});
       }
       return result.backing.at(v);
     } else {
@@ -148,6 +158,7 @@ TensorInstanceBacking perform_instance_allocation(
       return result.backing.at(v);
     }
   };
+
   for (DynamicNodeInvocation const &invocation : g.invocations) {
     for (DynamicValueAttrs const &input : values(invocation.inputs)) {
       allocate(invocation.node_attrs, input);

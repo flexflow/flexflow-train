@@ -18,16 +18,22 @@ std::pair<Realm::RegionInstance, Realm::Event>
         RealmContext &ctx);
 
 /**
- * @brief Allocates the (potentially remote) Realm instances for all of the
- * values in \p g, excluding the preallocated values in \p preallocated,
- * using \ref perform_instance_allocation_for_value.
+ * \brief Perform instance allocation with pre-created Realm instances.
  *
- * \relates TensorInstanceBacking
+ * Used for ExternalTensorBinding — the Realm instance already exists
+ * (created by create_external_tensor) and should be inserted directly
+ * into the backing without re-creating it.
+ *
+ * \param preallocated_instances Map of DynamicValueAttrs to already-created
+ *        (RegionInstance, Event) pairs. Takes precedence over preallocated.
  */
 TensorInstanceBacking perform_instance_allocation(
     DynamicOpenDataflowGraph const &g,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &preallocated,
+    std::unordered_map<DynamicValueAttrs,
+                       std::pair<Realm::RegionInstance, Realm::Event>> const
+        &preallocated_instances,
     RealmContext &ctx);
 
 /**

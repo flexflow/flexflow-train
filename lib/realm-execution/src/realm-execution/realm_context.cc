@@ -542,6 +542,69 @@ std::pair<Realm::RegionInstance, Realm::Event>
   return {inst, ready};
 }
 
+Realm::Memory
+    RealmContext::get_cpu_accessible_memory(Realm::Processor const &proc) {
+  // SYSTEM_MEM — always CPU-accessible
+  Realm::Machine::MemoryQuery sys_q(Realm::Machine::get_machine());
+  sys_q.only_kind(Realm::Memory::SYSTEM_MEM);
+  ASSERT(sys_q.count() > 0, "No CPU-accessible memory found");
+  return sys_q.first();
+}
+
+ExternalTensorHandle RealmContext::create_external_tensor(
+    MachineSpaceCoordinate const &device_coord, TensorShape const &shape) {
+
+  Realm::Processor proc = this->map_device_coord_to_processor(device_coord);
+  Realm::Memory memory = this->get_cpu_accessible_memory(proc);
+
+  // create allocator for the chosen memory
+  Allocator alloc = get_realm_allocator(proc, memory);
+
+  // allocate tensor
+  GenericTensorAccessorW accessor = alloc.allocate_tensor(shape);
+
+  // zero offsets — external tensors are never sharded at creation time
+  int ndims = shape.dims.ff_ordered.num_dims();
+  std::vector<int> offsets(ndims, 0);
+
+  // create external Realm instance wrapping the allocation
+  auto [inst, ready] = this->create_external_instance(
+      memory, shape, offsets, accessor.ptr, Realm::ProfilingRequestSet{});
+
+  return ExternalTensorHandle{shape, inst, ready, alloc, accessor};
+}
+
+GenericTensorAccessorR
+    RealmContext::copy_instance_to_cpu(Realm::RegionInstance gpu_inst,
+                                       Realm::Event ready,
+                                       ParallelTensorShape const &shape) {
+
+  TensorShape per_device_shape = get_per_device_shape(shape);
+
+  // get SYSTEM_MEM
+  Realm::Machine::MemoryQuery sys_q(Realm::Machine::get_machine());
+  sys_q.only_kind(Realm::Memory::SYSTEM_MEM);
+  ASSERT(sys_q.count() > 0, "No SYSTEM_MEM found");
+  Realm::Memory sys_mem = sys_q.first();
+
+  // create CPU instance
+  auto [cpu_inst, cpu_inst_ready] = this->create_instance(
+      sys_mem, per_device_shape, Realm::ProfilingRequestSet{});
+  cpu_inst_ready.wait();
+
+  // copy GPU → CPU
+  Realm::Event copy_event = this->issue_copy(
+      shape, gpu_inst, shape, cpu_inst, Realm::ProfilingRequestSet{}, ready);
+  copy_event.wait();
+
+  // get ptr from CPU instance
+  size_t total_bytes = static_cast<size_t>(
+      static_cast<int>(get_size_in_bytes(per_device_shape).unwrap_num_bytes()));
+  void *ptr = cpu_inst.pointer_untyped(0, total_bytes);
+  ASSERT(ptr != nullptr, "CPU instance pointer is null");
+
+  return GenericTensorAccessorR{per_device_shape, ptr, DeviceType::CPU};
+}
 Realm::Runtime RealmContext::get_runtime() {
   return this->runtime;
 }

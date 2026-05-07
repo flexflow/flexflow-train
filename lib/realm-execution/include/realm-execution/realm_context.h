@@ -9,6 +9,7 @@
 #include "op-attrs/tensor_shape.dtg.h"
 #include "pcg/device_id_t.dtg.h"
 #include "pcg/machine_space_coordinate.dtg.h"
+#include "realm-execution/external_tensor_handle.h"
 #include "realm-execution/realm.h"
 #include "realm-execution/tasks/task_id_t.dtg.h"
 #include <optional>
@@ -171,6 +172,49 @@ public:
                                void *ptr,
                                Realm::ProfilingRequestSet const &prs,
                                Realm::Event wait_on = Realm::Event::NO_EVENT);
+
+  /**
+ * \brief return SYSTEM_MEM
+ * \param proc The processor to find CPU-accessible memory for.
+ * \return CPU-accessible memory suitable for external tensor buffers.
+ */
+  Realm::Memory get_cpu_accessible_memory(Realm::Processor const &proc);
+
+  /**
+ * \brief Create an external tensor handle for use as a pre-allocated
+ * input to \ref create_pcg_instance.
+ *
+ * Allocates in SYSTEM_MEM memory
+ * The buffer is always CPU-writable so callers
+ * can fill initial values before passing to create_pcg_instance.
+ *
+ * \param device_coord The target device the tensor will be used on.
+ * \param shape The per-device tensor shape.
+ * \return An ExternalTensorHandle owning the allocation and Realm instance.
+ *
+ * \note The handle must outlive the PCGInstance that uses it.
+ */
+  ExternalTensorHandle
+      create_external_tensor(MachineSpaceCoordinate const &device_coord,
+                             TensorShape const &shape);
+
+  /**
+ * \brief Copy a GPU instance to CPU memory and return a read-only accessor.
+ *
+ * Used for test verification — copies GPU_FB_MEM instance to SYSTEM_MEM
+ * so values can be read from the CPU.
+ *
+ * \param gpu_inst The GPU region instance to copy from.
+ * \param ready Event to wait on before copying.
+ * \param shape The parallel tensor shape.
+ * \return A CPU-accessible GenericTensorAccessorR with the copied data.
+ *
+ * \note The returned accessor's memory is managed by the RealmContext
+ *       allocator and valid until the context is destroyed.
+ */
+  GenericTensorAccessorR copy_instance_to_cpu(Realm::RegionInstance gpu_inst,
+                                              Realm::Event ready,
+                                              ParallelTensorShape const &shape);
 
 protected:
   /**

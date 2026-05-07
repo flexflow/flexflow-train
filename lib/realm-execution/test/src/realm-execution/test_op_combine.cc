@@ -22,6 +22,8 @@
 #include "pcg/parallel_computation_graph/parallel_tensor_guid_t.dtg.h"
 #include "realm-execution/distributed_ff_handle.h"
 #include "realm-execution/dynamic_tensor_accessor_from_instance.h"
+#include "realm-execution/external_tensor_binding.h"
+#include "realm-execution/external_tensor_handle.h"
 #include "realm-execution/pcg_instance.h"
 #include "realm-execution/realm_context.h"
 #include "realm-execution/realm_manager.h"
@@ -275,154 +277,177 @@ TEST_SUITE(FF_TEST_SUITE) {
 }
 
 TEST_SUITE(FF_CUDA_TEST_SUITE) {
-  TEST_CASE("RealmBackend e2e Training Combine Op (GPU Model Parallelism)") {
+  TEST_CASE("RealmBackend Combine Op with External Input Instance (GPU)") {
     std::vector<char *> fake_args =
         make_fake_realm_args(/*num_cpus=*/1_p, /*num_gpus=*/2_n);
     int fake_argc = fake_args.size();
     char **fake_argv = fake_args.data();
 
     RealmManager manager = RealmManager{&fake_argc, &fake_argv};
-
     ControllerTaskResult result =
         manager.start_controller([](RealmContext &ctx) {
-          Allocator allocator = ctx.get_current_device_allocator();
-
           positive_int batch_size = 10_p;
           positive_int data_dim = 16_p;
+          int num_elements = batch_size.int_from_positive_int() *
+                             data_dim.int_from_positive_int();
 
           TensorShape input_tensor_shape = TensorShape{
               TensorDims{FFOrdered{batch_size, data_dim}}, DataType::FLOAT};
 
+          MachineSpaceCoordinate gpu0{0_n, 0_n, DeviceType::GPU};
+          MachineSpaceCoordinate gpu1{0_n, 1_n, DeviceType::GPU};
+
+          // create external input
+          ExternalTensorHandle input_handle =
+              ctx.create_external_tensor(gpu0, input_tensor_shape);
+
+          float *ptr = input_handle.get_float_ptr();
+          for (int i = 0; i < num_elements; i++) {
+            ptr[i] = static_cast<float>(i);
+          }
+
+          // PCG: input → repartition(dim0,deg2) → combine(dim0,deg2) → relu
           ParallelComputationGraph pcg = empty_parallel_computation_graph();
 
-          // input layer
           ParallelLayerAddedResult inputs_layer =
               pcg_add_input_layer(pcg, input_tensor_shape);
           parallel_tensor_guid_t t_input =
               require_only_key(inputs_layer.outputs, TensorSlotName::OUTPUT);
 
-          // repartition along dim 0 with degree 2
-          // needed so combine has a degree=2 sharded tensor to combine
-          RepartitionAttrs repartition_attrs{
-              /*repartition_dim=*/ff_dim_t{nonnegative_int{0}},
-              /*repartition_degree=*/2_p,
-          };
+          RepartitionAttrs repartition_attrs{ff_dim_t{nonnegative_int{0}}, 2_p};
           ParallelLayerAddedResult repartition_operator =
               add_parallel_layer(pcg,
                                  make_layer_attrs(repartition_attrs),
                                  {{TensorSlotName::INPUT, t_input}},
-                                 /*weights=*/{});
+                                 {});
           parallel_tensor_guid_t t_repartitioned = require_only_key(
               repartition_operator.outputs, TensorSlotName::OUTPUT);
 
-          // combine along dim 0 with degree 2
-          CombineAttrs combine_attrs{
-              /*combine_dim=*/ff_dim_t{nonnegative_int{0}},
-              /*combine_degree=*/2_p,
-          };
+          CombineAttrs combine_attrs{ff_dim_t{nonnegative_int{0}}, 2_p};
           ParallelLayerAddedResult combine_operator =
               add_parallel_layer(pcg,
                                  make_layer_attrs(combine_attrs),
                                  {{TensorSlotName::INPUT, t_repartitioned}},
-                                 /*weights=*/{});
+                                 {});
           parallel_tensor_guid_t t_combined = require_only_key(
               combine_operator.outputs, TensorSlotName::OUTPUT);
 
-          // relu consumer
           ParallelLayerAddedResult relu_operator =
               add_parallel_layer(pcg,
                                  make_layer_attrs(make_relu_attrs()),
                                  {{TensorSlotName::INPUT, t_combined}},
-                                 /*weights=*/{});
+                                 {});
+          parallel_tensor_guid_t t_relu_output =
+              require_only_key(relu_operator.outputs, TensorSlotName::OUTPUT);
 
-          MachineSpaceCoordinate gpu0{0_n, 0_n, DeviceType::GPU};
-          MachineSpaceCoordinate gpu1{0_n, 1_n, DeviceType::GPU};
-
-          // input: one shard on gpu0 (not yet repartitioned)
           ParallelTensorSpaceCoordinate tensor_coord0{
               0_n, 0_n, FFOrdered{0_n, 0_n}};
-          // after repartition: two shards along dim 0
           ParallelTensorSpaceCoordinate tensor_coord_shard0{
               0_n, 0_n, FFOrdered{0_n, 0_n}};
           ParallelTensorSpaceCoordinate tensor_coord_shard1{
               0_n, 0_n, FFOrdered{1_n, 0_n}};
-          // after combine: one shard on gpu0
           ParallelTensorSpaceCoordinate tensor_coord_combined{
               0_n, 0_n, FFOrdered{0_n, 0_n}};
 
           MappedParallelComputationGraph mpcg{
               pcg,
               {
-                  // input: one shard on gpu0
                   {inputs_layer.parallel_layer,
                    MappedOperatorTaskGroup{
                        {{gpu0,
                          OperatorAtomicTaskShardBinding{
                              {{TensorSlotName::OUTPUT, tensor_coord0}}}}}}},
-                  // repartition: OUTPUT only — no INPUT since all replicas
-                  // read same source coord violating bidict uniqueness
                   {repartition_operator.parallel_layer,
                    MappedOperatorTaskGroup{{
                        {gpu0,
-                        OperatorAtomicTaskShardBinding{{
-                            {TensorSlotName::OUTPUT, tensor_coord_shard0},
-                        }}},
+                        OperatorAtomicTaskShardBinding{
+                            {{TensorSlotName::OUTPUT, tensor_coord_shard0}}}},
                        {gpu1,
-                        OperatorAtomicTaskShardBinding{{
-                            {TensorSlotName::OUTPUT, tensor_coord_shard1},
-                        }}},
+                        OperatorAtomicTaskShardBinding{
+                            {{TensorSlotName::OUTPUT, tensor_coord_shard1}}}},
                    }}},
-                  // combine: two inputs → one output on gpu0
                   {combine_operator.parallel_layer,
                    MappedOperatorTaskGroup{{
                        {gpu0,
-                        OperatorAtomicTaskShardBinding{{
-                            {TensorSlotName::INPUT, tensor_coord_shard0},
-                        }}},
+                        OperatorAtomicTaskShardBinding{
+                            {{TensorSlotName::INPUT, tensor_coord_shard0}}}},
                        {gpu1,
-                        OperatorAtomicTaskShardBinding{{
-                            {TensorSlotName::INPUT, tensor_coord_shard1},
-                        }}},
+                        OperatorAtomicTaskShardBinding{
+                            {{TensorSlotName::INPUT, tensor_coord_shard1}}}},
                    }}},
-                  // relu: one shard on gpu0
                   {relu_operator.parallel_layer,
-                   MappedOperatorTaskGroup{{
-                       {gpu0,
-                        OperatorAtomicTaskShardBinding{{
-                            {TensorSlotName::INPUT, tensor_coord_combined},
-                            {TensorSlotName::OUTPUT, tensor_coord_combined},
-                        }}},
-                   }}},
+                   MappedOperatorTaskGroup{
+                       {{gpu0,
+                         OperatorAtomicTaskShardBinding{{
+                             {TensorSlotName::INPUT, tensor_coord_combined},
+                             {TensorSlotName::OUTPUT, tensor_coord_combined},
+                         }}}}}},
               }};
 
           OptimizerAttrs optimizer_attrs =
-              OptimizerAttrs{SGDOptimizerAttrs{/*lr=*/0.001,
-                                               /*momentum=*/0.9,
-                                               /*nesterov=*/false,
-                                               /*weight_decay=*/0.001}};
+              OptimizerAttrs{SGDOptimizerAttrs{0.001, 0.9, false, 0.001}};
 
-          std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor>
-              input_tensors;
+          DistributedFfHandle device_handle =
+              create_distributed_ff_handle(ctx, 1024 * 1024, true);
 
-          DistributedFfHandle device_handle = create_distributed_ff_handle(
+          PCGInstance pcg_instance = create_pcg_instance(
               ctx,
-              /*workSpaceSize=*/1024 * 1024,
-              /*allowTensorOpMathConversion=*/true);
-
-          PCGInstance pcg_instance =
-              create_pcg_instance(ctx,
-                                  mpcg,
-                                  optimizer_attrs,
-                                  std::nullopt,
-                                  input_tensors,
-                                  ProfilingSettings{0_n, 1_p},
-                                  device_handle,
-                                  FFIterationConfig{1_p});
+              mpcg,
+              optimizer_attrs,
+              std::nullopt,
+              {},
+              ProfilingSettings{0_n, 1_p},
+              device_handle,
+              FFIterationConfig{1_p},
+              {ExternalTensorBinding{
+                  t_input, tensor_coord0, gpu0, input_handle}});
 
           perform_all_passes_for_pcg_instance(pcg_instance,
                                               ProfilingSettings{0_n, 1_p},
                                               device_handle,
                                               FFIterationConfig{1_p});
+
+          ctx.get_outstanding_events().wait();
+
+          TensorInstanceBacking const &backing =
+              pcg_instance.get_tensor_instance_backing();
+
+          ParallelTensorAttrs relu_output_attrs =
+              get_parallel_tensor_attrs(pcg, t_relu_output);
+
+          DynamicValueAttrs relu_key{
+              dynamic_tensor_guid_t{t_relu_output},
+              relu_output_attrs.shape,
+              tensor_coord_combined,
+              bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>{
+                  {tensor_coord_combined, gpu0}},
+              std::nullopt,
+              DynamicTensorRole{FwbTensorType::FORWARD},
+          };
+
+          auto [relu_inst, relu_ready] = backing.backing.at(relu_key);
+
+          Allocator cpu_allocator = ctx.get_current_device_allocator();
+
+          GenericTensorAccessorR relu_gpu =
+              dynamic_tensor_accessor_from_instance(relu_inst,
+                                                    relu_ready,
+                                                    relu_output_attrs.shape,
+                                                    Permissions::RO,
+                                                    ctx.get_current_processor())
+                  .get<GenericTensorAccessorR>();
+
+          GenericTensorAccessorR relu_cpu =
+              copy_tensor_accessor_r_to_cpu_if_necessary(relu_gpu,
+                                                         cpu_allocator);
+
+          // repartition→combine→relu should preserve all values
+          // since all are non-negative
+          float const *relu_ptr = relu_cpu.get_float_ptr();
+          for (int i = 0; i < num_elements; i++) {
+            INFO("index = ", i);
+            CHECK_EQ(relu_ptr[i], static_cast<float>(i));
+          }
         });
     result.wait();
   }

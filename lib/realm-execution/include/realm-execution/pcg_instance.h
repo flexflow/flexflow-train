@@ -8,6 +8,7 @@
 #include "pcg/mapped_parallel_computation_graph/mapped_parallel_computation_graph.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
 #include "realm-execution/distributed_ff_handle.h"
+#include "realm-execution/external_tensor_binding.h"
 #include "realm-execution/parallel_loss_config.dtg.h"
 #include "realm-execution/per_device_op_state_backing.dtg.h"
 #include "realm-execution/realm_context.h"
@@ -79,6 +80,8 @@ private:
  *
  * \relates PCGInstance
  */
+#include "realm-execution/external_tensor_binding.h"
+
 PCGInstance create_pcg_instance(
     RealmContext &ctx,
     MappedParallelComputationGraph const &mpcg,
@@ -87,8 +90,9 @@ PCGInstance create_pcg_instance(
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &input_tensors,
     ProfilingSettings const &profiling_settings,
-    DistributedFfHandle const &ff_handle,
-    FFIterationConfig const &iteration_config);
+    DistributedFfHandle const &device_handle,
+    FFIterationConfig const &iteration_config,
+    std::vector<ExternalTensorBinding> const &external_tensors = {});
 
 /**
  * \brief Dispatch a training iteration for a \ref PCGInstance.
