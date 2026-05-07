@@ -23,6 +23,7 @@ struct TaskArgumentAccessor {
   PCGOperatorAttrs get_op_attrs() const;
   LossAttrs get_loss_attrs() const;
   PerDeviceOpState get_per_device_op_state() const;
+  bool has_per_device_op_state() const;
   FFIterationConfig get_iteration_config() const;
   OptimizerAttrs get_optimizer_attrs() const;
 

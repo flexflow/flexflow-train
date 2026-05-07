@@ -16,6 +16,7 @@
 #include "utils/one_to_many/one_to_many.h"
 #include "utils/positive_int/positive_int.h"
 #include <realm/indexspace.h>
+#include <realm/inst_layout.h>
 
 namespace FlexFlow {
 template <int N, typename T = int>
@@ -36,6 +37,13 @@ static Realm::Rect<N, T>
   }
   return Realm::Rect<N, T>{Realm::Point<N, T>{lo.data()},
                            Realm::Point<N, T>{hi.data()}};
+}
+
+template <int N>
+static void make_row_major_dim_order(int (&dim_order)[N]) {
+  for (int i = 0; i < N; i++) {
+    dim_order[i] = i;
+  }
 }
 
 RealmContext::RealmContext(Realm::Processor processor)
@@ -437,6 +445,101 @@ void RealmContext::discover_machine_topology() {
     Realm::Processor::Kind kind = proc.kind();
     this->processors[std::pair{as, kind}].push_back(proc);
   }
+}
+std::pair<Realm::RegionInstance, Realm::Event>
+    RealmContext::create_external_instance(
+        Realm::Memory memory,
+        TensorShape const &shape,
+        std::vector<int> const &offsets,
+        void *ptr,
+        Realm::ProfilingRequestSet const &prs,
+        Realm::Event wait_on) {
+
+  std::vector<size_t> field_sizes{static_cast<size_t>(
+      size_of_datatype(shape.data_type).int_from_positive_int())};
+  Realm::InstanceLayoutConstraints ilc(field_sizes, /*block_size=*/0);
+
+  Realm::RegionInstance inst;
+  Realm::Event ready;
+
+  switch (shape.dims.ff_ordered.num_dims()) {
+#if REALM_MAX_DIM >= 1
+    case 1: {
+      int dim_order[1];
+      make_row_major_dim_order(dim_order);
+      Realm::Rect<1, int> rect =
+          rect_from_dims_with_offset<1>(shape.dims, offsets);
+      Realm::InstanceLayoutGeneric *layout =
+          Realm::InstanceLayoutGeneric::choose_instance_layout<1, int>(
+              Realm::IndexSpace<1, int>{rect}, ilc, dim_order);
+      ready = Realm::RegionInstance::create_external(
+          inst, memory, reinterpret_cast<uintptr_t>(ptr), layout, prs, wait_on);
+      break;
+    }
+#endif
+#if REALM_MAX_DIM >= 2
+    case 2: {
+      int dim_order[2];
+      make_row_major_dim_order(dim_order);
+      Realm::Rect<2, int> rect =
+          rect_from_dims_with_offset<2>(shape.dims, offsets);
+      Realm::InstanceLayoutGeneric *layout =
+          Realm::InstanceLayoutGeneric::choose_instance_layout<2, int>(
+              Realm::IndexSpace<2, int>{rect}, ilc, dim_order);
+      ready = Realm::RegionInstance::create_external(
+          inst, memory, reinterpret_cast<uintptr_t>(ptr), layout, prs, wait_on);
+      break;
+    }
+#endif
+#if REALM_MAX_DIM >= 3
+    case 3: {
+      int dim_order[3];
+      make_row_major_dim_order(dim_order);
+      Realm::Rect<3, int> rect =
+          rect_from_dims_with_offset<3>(shape.dims, offsets);
+      Realm::InstanceLayoutGeneric *layout =
+          Realm::InstanceLayoutGeneric::choose_instance_layout<3, int>(
+              Realm::IndexSpace<3, int>{rect}, ilc, dim_order);
+      ready = Realm::RegionInstance::create_external(
+          inst, memory, reinterpret_cast<uintptr_t>(ptr), layout, prs, wait_on);
+      break;
+    }
+#endif
+#if REALM_MAX_DIM >= 4
+    case 4: {
+      int dim_order[4];
+      make_row_major_dim_order(dim_order);
+      Realm::Rect<4, int> rect =
+          rect_from_dims_with_offset<4>(shape.dims, offsets);
+      Realm::InstanceLayoutGeneric *layout =
+          Realm::InstanceLayoutGeneric::choose_instance_layout<4, int>(
+              Realm::IndexSpace<4, int>{rect}, ilc, dim_order);
+      ready = Realm::RegionInstance::create_external(
+          inst, memory, reinterpret_cast<uintptr_t>(ptr), layout, prs, wait_on);
+      break;
+    }
+#endif
+#if REALM_MAX_DIM >= 5
+    case 5: {
+      int dim_order[5];
+      make_row_major_dim_order(dim_order);
+      Realm::Rect<5, int> rect =
+          rect_from_dims_with_offset<5>(shape.dims, offsets);
+      Realm::InstanceLayoutGeneric *layout =
+          Realm::InstanceLayoutGeneric::choose_instance_layout<5, int>(
+              Realm::IndexSpace<5, int>{rect}, ilc, dim_order);
+      ready = Realm::RegionInstance::create_external(
+          inst, memory, reinterpret_cast<uintptr_t>(ptr), layout, prs, wait_on);
+      break;
+    }
+#endif
+    default:
+      PANIC("TensorShape dims greater than REALM_MAX_DIM: {}",
+            shape.dims.ff_ordered.num_dims());
+  }
+
+  this->outstanding_events.push_back(ready);
+  return {inst, ready};
 }
 
 Realm::Runtime RealmContext::get_runtime() {

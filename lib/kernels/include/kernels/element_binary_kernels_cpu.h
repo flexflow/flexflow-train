@@ -9,7 +9,8 @@ void cpu_forward_kernel(float const *lhs_ptr,
                         float const *rhs_ptr,
                         float *out_ptr,
                         OperatorType op_type,
-                        bool broadcast_inputLHS);
+                        bool broadcast_inputLHS,
+                        size_t const num_elements);
 
 void cpu_backward_kernel(float const *out_grad_ptr,
                          float const *lhs_ptr,
@@ -18,7 +19,8 @@ void cpu_backward_kernel(float const *out_grad_ptr,
                          float *rhs_grad_ptr,
                          OperatorType op_type,
                          bool broadcast_inputLHS,
-                         bool broadcast_inputRHS);
+                         bool broadcast_inputRHS,
+                         size_t const num_elements);
 
 } // namespace FlexFlow::Kernels::ElementBinary
 

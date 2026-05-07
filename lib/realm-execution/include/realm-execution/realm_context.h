@@ -140,6 +140,37 @@ public:
       std::vector<int> const &offsets,
       Realm::ProfilingRequestSet const &prs,
       Realm::Event wait_on = Realm::Event::NO_EVENT);
+  /**
+ * \brief Create a Realm region instance wrapping an existing memory buffer.
+ *
+ * Used for external input tensors pre-allocated outside of Realm.
+ * The instance wraps the provided pointer without copying or taking
+ * ownership — the caller must ensure the buffer outlives the instance.
+ *
+ * \param memory The Realm memory containing the buffer.
+ * \param shape The per-device tensor shape.
+ * \param offsets Per-dimension offsets (for sharded tensors). Empty or
+ *                all-zero for unsharded tensors.
+ * \param ptr Raw pointer to the existing memory buffer.
+ * \param prs Realm profiling request set.
+ * \param wait_on Event to wait on before creating the instance.
+ * \return Pair of the created instance and ready event.
+ *
+ * \note Realm takes ownership of the InstanceLayoutGeneric object but
+ *       NOT of the underlying memory buffer pointed to by \p ptr.
+ * \note The caller is responsible for ensuring \p ptr remains valid
+ *       for the lifetime of the returned instance.
+ *
+ * \see create_instance
+ * \see create_instance_with_offset
+ */
+  std::pair<Realm::RegionInstance, Realm::Event>
+      create_external_instance(Realm::Memory memory,
+                               TensorShape const &shape,
+                               std::vector<int> const &offsets,
+                               void *ptr,
+                               Realm::ProfilingRequestSet const &prs,
+                               Realm::Event wait_on = Realm::Event::NO_EVENT);
 
 protected:
   /**

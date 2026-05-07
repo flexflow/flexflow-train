@@ -33,6 +33,7 @@ void op_task_body(void const *args,
   auto map_instance_to_accessor = [&](DynamicValueAttrs const &value) {
     DynamicValueAttrs result = value;
     auto const &[inst, event] = task_args.tensor_backing.backing.at(value);
+
     result.accessor = dynamic_tensor_accessor_from_instance(
         inst,
         event,
