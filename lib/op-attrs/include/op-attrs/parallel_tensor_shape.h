@@ -63,6 +63,8 @@ ParallelDim get_parallel_dim_at_idx(ParallelTensorShape const &shape,
 std::unordered_set<parallel_tensor_dim_idx_t>
     get_parallel_tensor_dim_indices(ParallelTensorShape const &shape);
 
+TensorShape get_per_device_shape(ParallelTensorShape const &s);
+
 } // namespace FlexFlow
 
 #endif

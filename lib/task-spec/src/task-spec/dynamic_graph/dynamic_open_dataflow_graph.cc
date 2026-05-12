@@ -1,4 +1,5 @@
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
+#include "task-spec/dynamic_graph/parallel_op_utils.h"
 #include "utils/containers/all_of.h"
 #include "utils/containers/contains_duplicates.h"
 #include "utils/containers/flatmap.h"
@@ -149,6 +150,13 @@ std::pair<LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
   for (DynamicNodeInvocation const &invocation :
        get_dynamic_invocation_set(g)) {
     for (DynamicValueAttrs const &output : values(invocation.outputs)) {
+      // combine FWD and reduction FWD have multiple invocations producing
+      // the same output value — only register the first one to avoid
+      // ManyToOne collision while still marking the value as having a producer
+      if (is_parallel_op_attrs(invocation.node_attrs) &&
+          value_to_producer.contains_l(output)) {
+        continue;
+      }
       value_to_producer.insert({output, invocation});
     }
   }
@@ -211,6 +219,13 @@ std::pair<LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
          zip_values_strict(invocation.outputs, added.outputs)) {
       DynamicValueAttrs invocation_output = v.first;
       KwargDataflowOutput<DynamicTensorSlot> graph_output = v.second;
+      // for combine/reduction FWD — multiple shards produce same output value
+      // replace previous producer in value_map so consumer depends on
+      // the latest shard (which was added after the earlier shard —
+      // topological order guaranteed by inputs_have_been_added)
+      if (value_map.contains_r(invocation_output)) {
+        value_map.erase_r(invocation_output);
+      }
       value_map.equate(
           OpenKwargDataflowValue<int, DynamicTensorSlot>{graph_output},
           invocation_output);

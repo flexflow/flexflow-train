@@ -1,3 +1,4 @@
+
 #ifndef _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_REALM_CONTEXT_H
 #define _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_REALM_CONTEXT_H
 
@@ -8,12 +9,18 @@
 #include "op-attrs/tensor_shape.dtg.h"
 #include "pcg/device_id_t.dtg.h"
 #include "pcg/machine_space_coordinate.dtg.h"
+#include "realm-execution/external_tensor_handle.h"
 #include "realm-execution/realm.h"
 #include "realm-execution/tasks/task_id_t.dtg.h"
 #include <optional>
 #include <unordered_map>
 
 namespace FlexFlow {
+
+enum class CopyDomain {
+  SRC, // use src instance index space as copy domain (default)
+  DST, // use dst instance index space as copy domain
+};
 
 /**
  * @brief An interface that wraps the rest of Realm and protects against certain
@@ -63,17 +70,20 @@ public:
                             int priority = 0);
   ///\}
 
-  /** \name Data movement */
+  /** \name Data movement and reduction */
   ///\{
-  Realm::Event issue_copy(ParallelTensorShape const &src_shape,
-                          Realm::RegionInstance src_inst,
-                          ParallelTensorShape const &dst_shape,
-                          Realm::RegionInstance dst_inst,
-                          Realm::ProfilingRequestSet const &requests,
-                          Realm::Event wait_on = Realm::Event::NO_EVENT,
-                          int priority = 0);
+  Realm::Event
+      issue_copy(ParallelTensorShape const &src_shape,
+                 Realm::RegionInstance src_inst,
+                 ParallelTensorShape const &dst_shape,
+                 Realm::RegionInstance dst_inst,
+                 Realm::ProfilingRequestSet const &requests,
+                 Realm::Event wait_on = Realm::Event::NO_EVENT,
+                 int priority = 0,
+                 std::optional<Realm::ReductionOpID> redop_id = std::nullopt,
+                 bool exclusive = false,
+                 CopyDomain domain = CopyDomain::SRC);
   ///\}
-
   /** \name Instance management */
   ///\{
   std::pair<Realm::RegionInstance, Realm::Event>
@@ -87,6 +97,124 @@ public:
    * \brief Get the current set of outstanding events
    */
   Realm::Event get_outstanding_events();
+
+  /**
+ * \brief Create a Realm region instance with an offset index space.
+ *
+ * Similar to \ref create_instance, but allocates the instance with a
+ * non-zero origin rect. This is used for sharded tensors where each
+ * shard occupies a sub-region of the full logical tensor's index space.
+ *
+ * For example, given a tensor of shape [10, 16] split along dim 0
+ * with degree 2:
+ * - Shard 0 is allocated with rect [0..4, 0..15]
+ * - Shard 1 is allocated with rect [5..9, 0..15]
+ *
+ * This allows plain Realm copies between shards and the combined tensor
+ * to work correctly — points in each shard's index space match the
+ * corresponding points in the combined tensor's index space, so Realm
+ * copies data to the correct region without needing affine indirection.
+ *
+ * \param memory The Realm memory in which to allocate the instance.
+ * \param shape The per-device tensor shape (already divided by degree).
+ *              Determines the size of the instance.
+ * \param offsets Per-dimension offsets into the full logical tensor.
+ *                \p offsets[i] is the starting index along dimension i.
+ *                For shard k along dim d with piece_size p:
+ *                \p offsets[d] = k * p.
+ * \param prs Realm profiling request set.
+ * \param wait_on Event to wait on before creating the instance.
+ * \return A pair of the created \ref Realm::RegionInstance and a
+ *         \ref Realm::Event that fires when the instance is ready.
+ *
+ * \note The instance's index space has origin at \p offsets, not at
+ *       zero. Copies to/from this instance must use its actual index
+ *       space (via \c get_indexspace()) rather than a reconstructed
+ *       zero-based index space.
+ *
+ * \see create_instance
+ * \see perform_instance_allocation_for_value
+ */
+  std::pair<Realm::RegionInstance, Realm::Event> create_instance_with_offset(
+      Realm::Memory memory,
+      TensorShape const &shape,
+      std::vector<int> const &offsets,
+      Realm::ProfilingRequestSet const &prs,
+      Realm::Event wait_on = Realm::Event::NO_EVENT);
+  /**
+ * \brief Create a Realm region instance wrapping an existing memory buffer.
+ *
+ * Used for external input tensors pre-allocated outside of Realm.
+ * The instance wraps the provided pointer without copying or taking
+ * ownership — the caller must ensure the buffer outlives the instance.
+ *
+ * \param memory The Realm memory containing the buffer.
+ * \param shape The per-device tensor shape.
+ * \param offsets Per-dimension offsets (for sharded tensors). Empty or
+ *                all-zero for unsharded tensors.
+ * \param ptr Raw pointer to the existing memory buffer.
+ * \param prs Realm profiling request set.
+ * \param wait_on Event to wait on before creating the instance.
+ * \return Pair of the created instance and ready event.
+ *
+ * \note Realm takes ownership of the InstanceLayoutGeneric object but
+ *       NOT of the underlying memory buffer pointed to by \p ptr.
+ * \note The caller is responsible for ensuring \p ptr remains valid
+ *       for the lifetime of the returned instance.
+ *
+ * \see create_instance
+ * \see create_instance_with_offset
+ */
+  std::pair<Realm::RegionInstance, Realm::Event>
+      create_external_instance(Realm::Memory memory,
+                               TensorShape const &shape,
+                               std::vector<int> const &offsets,
+                               void *ptr,
+                               Realm::ProfilingRequestSet const &prs,
+                               Realm::Event wait_on = Realm::Event::NO_EVENT);
+
+  /**
+ * \brief return SYSTEM_MEM
+ * \param proc The processor to find CPU-accessible memory for.
+ * \return CPU-accessible memory suitable for external tensor buffers.
+ */
+  Realm::Memory get_cpu_accessible_memory(Realm::Processor const &proc);
+
+  /**
+ * \brief Create an external tensor handle for use as a pre-allocated
+ * input to \ref create_pcg_instance.
+ *
+ * Allocates in SYSTEM_MEM memory
+ * The buffer is always CPU-writable so callers
+ * can fill initial values before passing to create_pcg_instance.
+ *
+ * \param device_coord The target device the tensor will be used on.
+ * \param shape The per-device tensor shape.
+ * \return An ExternalTensorHandle owning the allocation and Realm instance.
+ *
+ * \note The handle must outlive the PCGInstance that uses it.
+ */
+  ExternalTensorHandle
+      create_external_tensor(MachineSpaceCoordinate const &device_coord,
+                             TensorShape const &shape);
+
+  /**
+ * \brief Copy a GPU instance to CPU memory and return a read-only accessor.
+ *
+ * Used for test verification — copies GPU_FB_MEM instance to SYSTEM_MEM
+ * so values can be read from the CPU.
+ *
+ * \param gpu_inst The GPU region instance to copy from.
+ * \param ready Event to wait on before copying.
+ * \param shape The parallel tensor shape.
+ * \return A CPU-accessible GenericTensorAccessorR with the copied data.
+ *
+ * \note The returned accessor's memory is managed by the RealmContext
+ *       allocator and valid until the context is destroyed.
+ */
+  GenericTensorAccessorR copy_instance_to_cpu(Realm::RegionInstance gpu_inst,
+                                              Realm::Event ready,
+                                              ParallelTensorShape const &shape);
 
 protected:
   /**

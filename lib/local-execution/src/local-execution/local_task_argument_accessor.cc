@@ -101,6 +101,10 @@ PerDeviceOpState LocalTaskArgumentAccessor::get_per_device_op_state() const {
   return assert_unwrap(this->per_device_op_state);
 }
 
+bool LocalTaskArgumentAccessor::has_per_device_op_state() const {
+  return this->per_device_op_state.has_value();
+}
+
 FFIterationConfig LocalTaskArgumentAccessor::get_iteration_config() const {
   return this->iteration_config;
 }

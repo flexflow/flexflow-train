@@ -57,8 +57,19 @@ void per_device_op_state_init_task_body(void const *args,
                       task_args.iteration_config,
                       task_args.optimizer_attrs,
                       ctx.get_current_device_idx());
+
+  std::optional<DeviceSpecificPerDeviceOpState> maybe_result_state =
+      result_invocation.node_attrs.per_device_op_state;
+
+  if (!maybe_result_state.has_value()) {
+    // CPU op with no per-device state (e.g. element_unary on CPU)
+    // origin_result_ptr is already initialized to std::nullopt
+    return;
+  }
+
   DeviceSpecificPerDeviceOpState result_state =
-      assert_unwrap(result_invocation.node_attrs.per_device_op_state);
+      assert_unwrap(maybe_result_state);
+
   // Important: to make sure this doesn't get deallocated, we intentionally leak
   // the allocation here
   PerDeviceOpState *result_state_ptr =
@@ -66,11 +77,17 @@ void per_device_op_state_init_task_body(void const *args,
           result_state, ctx.get_current_device_idx())};
   DeviceSpecificPtr<PerDeviceOpState> result_device_specific{
       ctx.get_current_device_idx(), result_state_ptr};
-  spawn_per_device_op_state_init_return_task(ctx,
-                                             task_args.origin_proc,
-                                             result_device_specific,
-                                             task_args.origin_result_ptr,
-                                             Realm::Event::NO_EVENT);
+
+  // replace spawn_per_device_op_state_init_return_task with:
+  // NOTE: SM/TODO: direct write assumes single-node shared address space
+  // For multi-node, replace with UserEvent trigger pattern
+  *task_args.origin_result_ptr = result_device_specific;
+
+  //  spawn_per_device_op_state_init_return_task(ctx,
+  //                                             task_args.origin_proc,
+  //                                             result_device_specific,
+  //                                             task_args.origin_result_ptr,
+  //                                             Realm::Event::NO_EVENT);
 }
 
 std::optional<Realm::Event> spawn_per_device_op_state_init_task(

@@ -9,6 +9,7 @@
 #include "task-spec/dynamic_graph/dynamic_task_type.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_slot.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
+#include "task-spec/dynamic_graph/parallel_op_utils.h"
 #include "utils/bidict/algorithms/bidict_from_pairs.h"
 #include "utils/bidict/algorithms/unordered_set_of.h"
 #include "utils/containers/contains_key.h"
@@ -31,9 +32,26 @@ bool value_is_mapped(DynamicValueAttrs const &n) {
 
 bool no_part_of_graph_is_copy_inserted(DynamicOpenDataflowGraph const &g) {
   auto slot_is_mapped = [](DynamicTensorSlot const &) -> bool { return false; };
-
-  return no_part_of_dynamic_graph_satisfies(
-      g, node_is_copy, value_is_mapped, slot_is_mapped);
+  // check all non-replicate invocations
+  for (DynamicNodeInvocation const &i : g.invocations) {
+    if (is_parallel_op_attrs(i.node_attrs)) {
+      continue; // parallel tensors have mapping set by design
+    }
+    if (node_is_copy(i.node_attrs)) {
+      return false;
+    }
+    for (auto const &[slot, value] : i.inputs) {
+      if (value_is_mapped(value)) {
+        return false;
+      }
+    }
+    for (auto const &[slot, value] : i.outputs) {
+      if (value_is_mapped(value)) {
+        return false;
+      }
+    }
+  }
+  return true;
 }
 
 bool graph_is_fully_copy_inserted(DynamicOpenDataflowGraph const &g) {
@@ -85,6 +103,11 @@ std::unordered_set<DynamicNodeInvocation> perform_copy_insertion_for_invocation(
     std::unordered_map<DynamicValueAttrs, DynamicValueAttrs> const
         &unmapped_value_to_mapped_source_value) {
 
+  // parallel op nodes have no MappedOperatorTaskGroup —
+  // pass through unchanged, no copies needed
+  if (is_parallel_op_attrs(i.node_attrs)) {
+    return {i};
+  }
   MappedOperatorTaskGroup mapping = assert_unwrap(i.node_attrs.mapping);
 
   auto map_tensor = [&](DynamicTensorSlot const &slot,
@@ -157,6 +180,14 @@ DynamicOpenDataflowGraph
   std::unordered_map<DynamicValueAttrs, DynamicValueAttrs>
       unmapped_value_to_mapped_source_value;
   for (DynamicNodeInvocation const &i : g.invocations) {
+    // parallel op nodes have no MappedOperatorTaskGroup —
+    // output mapping already fully set, maps to itself
+    if (is_parallel_op_attrs(i.node_attrs)) {
+      for (auto const &[slot, value] : i.outputs) {
+        unmapped_value_to_mapped_source_value.insert(std::pair{value, value});
+      }
+      continue;
+    }
     for (auto const &[slot, value] : i.outputs) {
       unmapped_value_to_mapped_source_value.insert(
           std::pair{value,

@@ -38,7 +38,8 @@ void forward_kernel(
     float *out_ptr,
     OperatorType op_type,
     bool broadcast_inputLHS,
-    device_handle_t const &handle) {
+    device_handle_t const &handle,
+    size_t const num_elements) {
   if (stream.is_gpu()) {
     gpu_forward_kernel(
         /*stream=*/stream.require_gpu(),
@@ -53,12 +54,15 @@ void forward_kernel(
     ASSERT(stream.is_cpu());
     ASSERT(per_device_state == std::nullopt);
     ASSERT(handle.is_for_cpu());
+    ASSERT(num_elements > 0,
+           "num_elements must be provided for CPU element_binary kernel");
     cpu_forward_kernel(
         /*lhs_ptr=*/lhs_ptr,
         /*rhs_ptr=*/rhs_ptr,
         /*out_ptr=*/out_ptr,
         /*op_type=*/op_type,
-        /*broadcast_inputLHS=*/broadcast_inputLHS);
+        /*broadcast_inputLHS=*/broadcast_inputLHS,
+        /*num_elements=*/num_elements);
   }
 }
 
@@ -73,7 +77,8 @@ void backward_kernel(
     OperatorType op_type,
     bool broadcast_inputLHS,
     bool broadcast_inputRHS,
-    device_handle_t const &handle) {
+    device_handle_t const &handle,
+    size_t const num_elements) {
   if (stream.is_gpu()) {
     gpu_backward_kernel(
         /*stream=*/stream.require_gpu(),
@@ -91,6 +96,8 @@ void backward_kernel(
     ASSERT(stream.is_cpu());
     ASSERT(per_device_state == std::nullopt);
     ASSERT(handle.is_for_cpu());
+    ASSERT(num_elements > 0,
+           "num_elements must be provided for CPU element_binary kernel");
     cpu_backward_kernel(
         /*out_grad_ptr=*/out_grad_ptr,
         /*lhs_ptr=*/lhs_ptr,
@@ -99,7 +106,8 @@ void backward_kernel(
         /*rhs_grad_ptr=*/rhs_grad_ptr,
         /*op_type=*/op_type,
         /*broadcast_inputLHS=*/broadcast_inputLHS,
-        /*broadcast_inputRHS=*/broadcast_inputRHS);
+        /*broadcast_inputRHS=*/broadcast_inputRHS,
+        /*num_elements=*/num_elements);
   }
 }
 

@@ -41,7 +41,7 @@ TensorDims get_piece_dims(ParallelTensorDims const &);
 TensorDims get_tensor_dims_unsafe(ParallelTensorDims const &);
 
 TensorDims get_reduced_dims(ParallelTensorDims const &);
-
+TensorDims get_per_device_dims(ParallelTensorDims const &dims);
 } // namespace FlexFlow
 
 #endif

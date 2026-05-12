@@ -5,6 +5,7 @@
 #include "realm-execution/tasks/impl/op_task.h"
 #include "realm-execution/tasks/impl/per_device_op_state_init_return_task.h"
 #include "realm-execution/tasks/impl/per_device_op_state_init_task.h"
+#include "realm-execution/tasks/realm_reduction.h"
 #include "realm-execution/tasks/task_id_t.h"
 #include "utils/exception.h"
 
@@ -33,6 +34,7 @@ Realm::Event register_task(Realm::Processor::Kind target_kind,
 Realm::Event register_all_tasks() {
   std::vector<Realm::Event> pending_registrations;
 
+  register_reductions();
   std::vector<task_id_t> init_task_ids = {
       // Init tasks
       task_id_t::BATCHNORM_INIT_TASK_ID,

@@ -1,5 +1,6 @@
 #include "realm-execution/dynamic_tensor_accessor_from_instance.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "op-attrs/tensor_shape.h"
 #include "pcg/device_type.dtg.h"
 #include "task-spec/permissions.h"
 #include "utils/exception.h"
@@ -49,16 +50,20 @@ DynamicTensorAccessor dynamic_tensor_accessor_from_instance(
   DeviceType device_type = infer_device_type_from_memory_and_processor(
       inst.get_location(), for_processor);
 
-  size_t expected_size =
-      int{get_piece_size_in_bytes(parallel_tensor_shape).unwrap_num_bytes()};
+  TensorShape per_device_shape =
+      get_per_device_shape(parallel_tensor_shape); // ← was get_piece_shape
+
+  size_t expected_size = static_cast<size_t>(
+      static_cast<int>(get_size_in_bytes(per_device_shape).unwrap_num_bytes()));
+
   void *ptr = inst.pointer_untyped(/*offset=*/0, /*datalen=*/expected_size);
+
   if (permissions == Permissions::RO) {
     return DynamicTensorAccessor{GenericTensorAccessorR{
-        get_piece_shape(parallel_tensor_shape), ptr, device_type}};
+        per_device_shape, ptr, device_type}}; // ← was get_piece_shape
   } else {
     return DynamicTensorAccessor{GenericTensorAccessorW{
-        get_piece_shape(parallel_tensor_shape), ptr, device_type}};
+        per_device_shape, ptr, device_type}}; // ← was get_piece_shape
   }
 }
-
 } // namespace FlexFlow

@@ -35,6 +35,9 @@ struct ITaskArgumentAccessor {
   virtual PCGOperatorAttrs get_op_attrs() const = 0;
   virtual LossAttrs get_loss_attrs() const = 0;
   virtual PerDeviceOpState get_per_device_op_state() const = 0;
+  virtual bool has_per_device_op_state() const {
+    return true;
+  }
   virtual FFIterationConfig get_iteration_config() const = 0;
   virtual OptimizerAttrs get_optimizer_attrs() const = 0;
 

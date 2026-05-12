@@ -150,4 +150,11 @@ std::unordered_set<parallel_tensor_dim_idx_t>
   return indices;
 }
 
+// actual per-device allocation size
+TensorShape get_per_device_shape(ParallelTensorShape const &s) {
+  return TensorShape{
+      get_per_device_dims(s.dims),
+      s.data_type,
+  };
+}
 } // namespace FlexFlow

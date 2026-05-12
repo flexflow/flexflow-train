@@ -13,7 +13,6 @@
 #include "utils/containers/transform.h"
 #include "utils/optional.h"
 #include <type_traits>
-
 namespace FlexFlow {
 
 void op_task_body(void const *args,

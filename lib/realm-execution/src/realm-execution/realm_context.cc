@@ -15,8 +15,36 @@
 #include "utils/nonnegative_int/nonnegative_int.h"
 #include "utils/one_to_many/one_to_many.h"
 #include "utils/positive_int/positive_int.h"
+#include <realm/indexspace.h>
+#include <realm/inst_layout.h>
 
 namespace FlexFlow {
+template <int N, typename T = int>
+static Realm::Rect<N, T>
+    rect_from_dims_with_offset(TensorDims const &dims,
+                               std::vector<int> const &offsets) {
+  std::vector<int> values;
+  for (positive_int const &v : dims.ff_ordered) {
+    values.push_back(v.int_from_positive_int());
+  }
+  ASSERT((int)values.size() == N);
+  ASSERT((int)offsets.size() == N);
+
+  std::vector<int> lo(N), hi(N);
+  for (int i = 0; i < N; i++) {
+    lo[i] = offsets[i];
+    hi[i] = offsets[i] + values[i] - 1;
+  }
+  return Realm::Rect<N, T>{Realm::Point<N, T>{lo.data()},
+                           Realm::Point<N, T>{hi.data()}};
+}
+
+template <int N>
+static void make_row_major_dim_order(int (&dim_order)[N]) {
+  for (int i = 0; i < N; i++) {
+    dim_order[i] = i;
+  }
+}
 
 RealmContext::RealmContext(Realm::Processor processor)
     : processor(processor),
@@ -161,7 +189,10 @@ Realm::Event
                              Realm::RegionInstance dst_inst,
                              Realm::ProfilingRequestSet const &requests,
                              Realm::Event wait_on,
-                             int priority) {
+                             int priority,
+                             std::optional<Realm::ReductionOpID> redop_id,
+                             bool exclusive,
+                             CopyDomain domain) {
   TensorShape src_piece_shape = get_piece_shape(src_shape);
   TensorShape dst_piece_shape = get_piece_shape(dst_shape);
   ASSERT(src_piece_shape == dst_piece_shape); // For now, assume they match
@@ -183,36 +214,45 @@ Realm::Event
           size_of_datatype(src_piece_shape.data_type).int_from_positive_int()),
       /*subfield_offset=*/0);
 
+  // set reduction op on dst field if provided
+  if (redop_id.has_value()) {
+    dst_field.set_redop(redop_id.value(), /*is_fold=*/false, exclusive);
+  }
+
+  // select which instance's index space to use as copy domain
+  Realm::RegionInstance const domain_inst =
+      (domain == CopyDomain::DST) ? dst_inst : src_inst;
+
   Realm::Event result;
   switch (src_piece_shape.dims.ff_ordered.num_dims()) {
 #if REALM_MAX_DIM >= 1
     case 1:
-      result = ispace_from_dims<1>(src_piece_shape.dims)
-                   .copy({src_field}, {dst_field}, requests, wait_on, priority);
+      result = domain_inst.get_indexspace<1, int>().copy(
+          {src_field}, {dst_field}, requests, wait_on, priority);
       break;
 #endif
 #if REALM_MAX_DIM >= 2
     case 2:
-      result = ispace_from_dims<2>(src_piece_shape.dims)
-                   .copy({src_field}, {dst_field}, requests, wait_on, priority);
+      result = domain_inst.get_indexspace<2, int>().copy(
+          {src_field}, {dst_field}, requests, wait_on, priority);
       break;
 #endif
 #if REALM_MAX_DIM >= 3
     case 3:
-      result = ispace_from_dims<3>(src_piece_shape.dims)
-                   .copy({src_field}, {dst_field}, requests, wait_on, priority);
+      result = domain_inst.get_indexspace<3, int>().copy(
+          {src_field}, {dst_field}, requests, wait_on, priority);
       break;
 #endif
 #if REALM_MAX_DIM >= 4
     case 4:
-      result = ispace_from_dims<4>(src_piece_shape.dims)
-                   .copy({src_field}, {dst_field}, requests, wait_on, priority);
+      result = domain_inst.get_indexspace<4, int>().copy(
+          {src_field}, {dst_field}, requests, wait_on, priority);
       break;
 #endif
 #if REALM_MAX_DIM >= 5
     case 5:
-      result = ispace_from_dims<5>(src_piece_shape.dims)
-                   .copy({src_field}, {dst_field}, requests, wait_on, priority);
+      result = domain_inst.get_indexspace<5, int>().copy(
+          {src_field}, {dst_field}, requests, wait_on, priority);
       break;
 #endif
     default:
@@ -223,7 +263,6 @@ Realm::Event
   this->outstanding_events.push_back(result);
   return result;
 }
-
 std::pair<Realm::RegionInstance, Realm::Event>
     RealmContext::create_instance(Realm::Memory memory,
                                   TensorShape const &shape,
@@ -303,6 +342,86 @@ std::pair<Realm::RegionInstance, Realm::Event>
   return std::pair{inst, ready};
 }
 
+std::pair<Realm::RegionInstance, Realm::Event>
+    RealmContext::create_instance_with_offset(
+        Realm::Memory memory,
+        TensorShape const &shape,
+        std::vector<int> const &offsets,
+        Realm::ProfilingRequestSet const &prs,
+        Realm::Event wait_on) {
+  std::vector<size_t> field_sizes{static_cast<size_t>(
+      size_of_datatype(shape.data_type).int_from_positive_int())};
+  Realm::RegionInstance inst;
+  Realm::Event ready;
+  switch (shape.dims.ff_ordered.num_dims()) {
+#if REALM_MAX_DIM >= 1
+    case 1:
+      ready = Realm::RegionInstance::create_instance(
+          inst,
+          memory,
+          rect_from_dims_with_offset<1>(shape.dims, offsets),
+          field_sizes,
+          0 /*SOA*/,
+          prs,
+          wait_on);
+      break;
+#endif
+#if REALM_MAX_DIM >= 2
+    case 2:
+      ready = Realm::RegionInstance::create_instance(
+          inst,
+          memory,
+          rect_from_dims_with_offset<2>(shape.dims, offsets),
+          field_sizes,
+          0 /*SOA*/,
+          prs,
+          wait_on);
+      break;
+#endif
+#if REALM_MAX_DIM >= 3
+    case 3:
+      ready = Realm::RegionInstance::create_instance(
+          inst,
+          memory,
+          rect_from_dims_with_offset<3>(shape.dims, offsets),
+          field_sizes,
+          0 /*SOA*/,
+          prs,
+          wait_on);
+      break;
+#endif
+#if REALM_MAX_DIM >= 4
+    case 4:
+      ready = Realm::RegionInstance::create_instance(
+          inst,
+          memory,
+          rect_from_dims_with_offset<4>(shape.dims, offsets),
+          field_sizes,
+          0 /*SOA*/,
+          prs,
+          wait_on);
+      break;
+#endif
+#if REALM_MAX_DIM >= 5
+    case 5:
+      ready = Realm::RegionInstance::create_instance(
+          inst,
+          memory,
+          rect_from_dims_with_offset<5>(shape.dims, offsets),
+          field_sizes,
+          0 /*SOA*/,
+          prs,
+          wait_on);
+      break;
+#endif
+    default:
+      PANIC("TensorShape dims greater than REALM_MAX_DIM: {}",
+            shape.dims.ff_ordered.num_dims());
+  }
+  this->outstanding_events.push_back(ready);
+  return {inst, ready};
+}
+
 Realm::Event RealmContext::get_outstanding_events() {
   Realm::Event result = this->merge_outstanding_events();
   this->outstanding_events.push_back(result);
@@ -327,7 +446,165 @@ void RealmContext::discover_machine_topology() {
     this->processors[std::pair{as, kind}].push_back(proc);
   }
 }
+std::pair<Realm::RegionInstance, Realm::Event>
+    RealmContext::create_external_instance(
+        Realm::Memory memory,
+        TensorShape const &shape,
+        std::vector<int> const &offsets,
+        void *ptr,
+        Realm::ProfilingRequestSet const &prs,
+        Realm::Event wait_on) {
 
+  std::vector<size_t> field_sizes{static_cast<size_t>(
+      size_of_datatype(shape.data_type).int_from_positive_int())};
+  Realm::InstanceLayoutConstraints ilc(field_sizes, /*block_size=*/0);
+
+  Realm::RegionInstance inst;
+  Realm::Event ready;
+
+  switch (shape.dims.ff_ordered.num_dims()) {
+#if REALM_MAX_DIM >= 1
+    case 1: {
+      int dim_order[1];
+      make_row_major_dim_order(dim_order);
+      Realm::Rect<1, int> rect =
+          rect_from_dims_with_offset<1>(shape.dims, offsets);
+      Realm::InstanceLayoutGeneric *layout =
+          Realm::InstanceLayoutGeneric::choose_instance_layout<1, int>(
+              Realm::IndexSpace<1, int>{rect}, ilc, dim_order);
+      ready = Realm::RegionInstance::create_external(
+          inst, memory, reinterpret_cast<uintptr_t>(ptr), layout, prs, wait_on);
+      break;
+    }
+#endif
+#if REALM_MAX_DIM >= 2
+    case 2: {
+      int dim_order[2];
+      make_row_major_dim_order(dim_order);
+      Realm::Rect<2, int> rect =
+          rect_from_dims_with_offset<2>(shape.dims, offsets);
+      Realm::InstanceLayoutGeneric *layout =
+          Realm::InstanceLayoutGeneric::choose_instance_layout<2, int>(
+              Realm::IndexSpace<2, int>{rect}, ilc, dim_order);
+      ready = Realm::RegionInstance::create_external(
+          inst, memory, reinterpret_cast<uintptr_t>(ptr), layout, prs, wait_on);
+      break;
+    }
+#endif
+#if REALM_MAX_DIM >= 3
+    case 3: {
+      int dim_order[3];
+      make_row_major_dim_order(dim_order);
+      Realm::Rect<3, int> rect =
+          rect_from_dims_with_offset<3>(shape.dims, offsets);
+      Realm::InstanceLayoutGeneric *layout =
+          Realm::InstanceLayoutGeneric::choose_instance_layout<3, int>(
+              Realm::IndexSpace<3, int>{rect}, ilc, dim_order);
+      ready = Realm::RegionInstance::create_external(
+          inst, memory, reinterpret_cast<uintptr_t>(ptr), layout, prs, wait_on);
+      break;
+    }
+#endif
+#if REALM_MAX_DIM >= 4
+    case 4: {
+      int dim_order[4];
+      make_row_major_dim_order(dim_order);
+      Realm::Rect<4, int> rect =
+          rect_from_dims_with_offset<4>(shape.dims, offsets);
+      Realm::InstanceLayoutGeneric *layout =
+          Realm::InstanceLayoutGeneric::choose_instance_layout<4, int>(
+              Realm::IndexSpace<4, int>{rect}, ilc, dim_order);
+      ready = Realm::RegionInstance::create_external(
+          inst, memory, reinterpret_cast<uintptr_t>(ptr), layout, prs, wait_on);
+      break;
+    }
+#endif
+#if REALM_MAX_DIM >= 5
+    case 5: {
+      int dim_order[5];
+      make_row_major_dim_order(dim_order);
+      Realm::Rect<5, int> rect =
+          rect_from_dims_with_offset<5>(shape.dims, offsets);
+      Realm::InstanceLayoutGeneric *layout =
+          Realm::InstanceLayoutGeneric::choose_instance_layout<5, int>(
+              Realm::IndexSpace<5, int>{rect}, ilc, dim_order);
+      ready = Realm::RegionInstance::create_external(
+          inst, memory, reinterpret_cast<uintptr_t>(ptr), layout, prs, wait_on);
+      break;
+    }
+#endif
+    default:
+      PANIC("TensorShape dims greater than REALM_MAX_DIM: {}",
+            shape.dims.ff_ordered.num_dims());
+  }
+
+  this->outstanding_events.push_back(ready);
+  return {inst, ready};
+}
+
+Realm::Memory
+    RealmContext::get_cpu_accessible_memory(Realm::Processor const &proc) {
+  // SYSTEM_MEM — always CPU-accessible
+  Realm::Machine::MemoryQuery sys_q(Realm::Machine::get_machine());
+  sys_q.only_kind(Realm::Memory::SYSTEM_MEM);
+  ASSERT(sys_q.count() > 0, "No CPU-accessible memory found");
+  return sys_q.first();
+}
+
+ExternalTensorHandle RealmContext::create_external_tensor(
+    MachineSpaceCoordinate const &device_coord, TensorShape const &shape) {
+
+  Realm::Processor proc = this->map_device_coord_to_processor(device_coord);
+  Realm::Memory memory = this->get_cpu_accessible_memory(proc);
+
+  // create allocator for the chosen memory
+  Allocator alloc = get_realm_allocator(proc, memory);
+
+  // allocate tensor
+  GenericTensorAccessorW accessor = alloc.allocate_tensor(shape);
+
+  // zero offsets — external tensors are never sharded at creation time
+  int ndims = shape.dims.ff_ordered.num_dims();
+  std::vector<int> offsets(ndims, 0);
+
+  // create external Realm instance wrapping the allocation
+  auto [inst, ready] = this->create_external_instance(
+      memory, shape, offsets, accessor.ptr, Realm::ProfilingRequestSet{});
+
+  return ExternalTensorHandle{shape, inst, ready, alloc, accessor};
+}
+
+GenericTensorAccessorR
+    RealmContext::copy_instance_to_cpu(Realm::RegionInstance gpu_inst,
+                                       Realm::Event ready,
+                                       ParallelTensorShape const &shape) {
+
+  TensorShape per_device_shape = get_per_device_shape(shape);
+
+  // get SYSTEM_MEM
+  Realm::Machine::MemoryQuery sys_q(Realm::Machine::get_machine());
+  sys_q.only_kind(Realm::Memory::SYSTEM_MEM);
+  ASSERT(sys_q.count() > 0, "No SYSTEM_MEM found");
+  Realm::Memory sys_mem = sys_q.first();
+
+  // create CPU instance
+  auto [cpu_inst, cpu_inst_ready] = this->create_instance(
+      sys_mem, per_device_shape, Realm::ProfilingRequestSet{});
+  cpu_inst_ready.wait();
+
+  // copy GPU → CPU
+  Realm::Event copy_event = this->issue_copy(
+      shape, gpu_inst, shape, cpu_inst, Realm::ProfilingRequestSet{}, ready);
+  copy_event.wait();
+
+  // get ptr from CPU instance
+  size_t total_bytes = static_cast<size_t>(
+      static_cast<int>(get_size_in_bytes(per_device_shape).unwrap_num_bytes()));
+  void *ptr = cpu_inst.pointer_untyped(0, total_bytes);
+  ASSERT(ptr != nullptr, "CPU instance pointer is null");
+
+  return GenericTensorAccessorR{per_device_shape, ptr, DeviceType::CPU};
+}
 Realm::Runtime RealmContext::get_runtime() {
   return this->runtime;
 }

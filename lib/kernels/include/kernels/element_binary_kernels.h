@@ -31,7 +31,8 @@ void forward_kernel(
     float *out_ptr,
     OperatorType op_type,
     bool broadcast_inputLHS,
-    device_handle_t const &handle);
+    device_handle_t const &handle,
+    size_t const num_elements = 0); // optional only used for CPU
 
 void backward_kernel(
     device_stream_t const &stream,
@@ -44,7 +45,8 @@ void backward_kernel(
     OperatorType op_type,
     bool broadcast_inputLHS,
     bool broadcast_inputRHS,
-    device_handle_t const &handle);
+    device_handle_t const &handle,
+    size_t const num_elements = 0); // optional only used for CPU
 
 void cleanup_kernel(
     DeviceType device_type,
