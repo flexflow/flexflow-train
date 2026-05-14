@@ -10,8 +10,6 @@ features = [
 
 [[values]]
 name = "LEFT_CHILD"
-key = "left"
 
 [[values]]
 name = "RIGHT_CHILD"
-key = "right"

@@ -17,7 +17,7 @@ static void benchmark_get_computation_graph_series_parallel_decomposition(
 
 BENCHMARK_CAPTURE(benchmark_get_computation_graph_series_parallel_decomposition,
                   split_test,
-                  get_split_test_computation_graph(/*batch_size=*/8_n));
+                  get_split_test_computation_graph(/*batch_size=*/8_p));
 
 BENCHMARK_CAPTURE(
     benchmark_get_computation_graph_series_parallel_decomposition,
