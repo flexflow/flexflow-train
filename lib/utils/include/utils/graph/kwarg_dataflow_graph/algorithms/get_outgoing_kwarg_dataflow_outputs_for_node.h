@@ -10,7 +10,7 @@ std::unordered_map<SlotName, KwargDataflowOutput<SlotName>>
     get_outgoing_kwarg_dataflow_outputs_for_node(
         KwargDataflowGraphView<SlotName> const &g, Node const &n) {
   KwargDataflowOutputQuery<SlotName> query = KwargDataflowOutputQuery<SlotName>{
-      /*nodes=*/query_set{n},
+      /*nodes=*/query_set<Node>::match_single_value(n),
       /*output_idxs=*/query_set<SlotName>::matchall(),
   };
 

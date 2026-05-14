@@ -1,0 +1,30 @@
+namespace = "FlexFlow"
+name = "DotHtmlTableCell"
+type = "struct"
+features = [
+  "eq",
+  "fmt",
+]
+
+includes = [
+  "utils/dot/dot_html_table_cell_contents.h",
+  "utils/positive_int/positive_int.h",
+  "<optional>",
+  "<string>",
+]
+
+src_includes = [
+  "utils/fmt/optional.h",
+]
+
+[[fields]]
+name = "content"
+type = "::FlexFlow::DotHtmlTableCellContents"
+
+[[fields]]
+name = "port"
+type = "std::optional<std::string>"
+
+[[fields]]
+name = "colspan"
+type = "std::optional<::FlexFlow::positive_int>"

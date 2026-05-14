@@ -147,7 +147,7 @@ static std::unordered_set<Node>
   return filter_out_sync_nodes(forest, node_roles);
 }
 
-static std::pair<std::unordered_set<Node>, std::unordered_set<Node>>
+static std::pair<nonempty_unordered_set<Node>, nonempty_unordered_set<Node>>
     get_up_and_down_sets(
         DiGraph const &g,
         std::unordered_set<Node> const &forest,
@@ -155,12 +155,12 @@ static std::pair<std::unordered_set<Node>, std::unordered_set<Node>>
 
   nonnegative_int max_depth = get_max_depth(g, depth_map);
 
-  auto grouped_by_depth =
+  OneToMany<nonnegative_int, Node> grouped_by_depth =
       group_by(forest, [&](Node const &n) { return depth_map.at(n); });
 
-  return make_pair(grouped_by_depth.at_l(
-                       nonnegative_int{max_depth.unwrap_nonnegative() - 1}),
-                   grouped_by_depth.at_l(max_depth));
+  return std::make_pair(grouped_by_depth.at_l(nonnegative_int{
+                            max_depth.unwrap_nonnegative() - 1}),
+                        grouped_by_depth.at_l(max_depth));
 }
 
 static std::unordered_set<DirectedEdge>
@@ -228,7 +228,13 @@ SeriesParallelDecomposition escribano_sp_ization(DiGraph g) {
     Node handle = get_only(get_lowest_common_ancestors(sp, component).value());
     std::unordered_set<Node> forest =
         get_forest_escribano(sp, handle, component, node_roles);
-    auto [up, down] = get_up_and_down_sets(sp, forest, depth_map);
+
+    std::pair<nonempty_unordered_set<Node>, nonempty_unordered_set<Node>>
+        up_down_sets = get_up_and_down_sets(sp, forest, depth_map);
+
+    std::unordered_set<Node> up = up_down_sets.first.unwrap_as_unordered_set();
+    std::unordered_set<Node> down =
+        up_down_sets.second.unwrap_as_unordered_set();
 
     remove_edges(sp, edges_to_remove(sp, up, down));
 

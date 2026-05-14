@@ -17,14 +17,14 @@ std::unordered_map<SlotName, OpenKwargDataflowEdge<GraphInputName, SlotName>>
           /*input_edge_query=*/
           KwargDataflowInputEdgeQuery<GraphInputName, SlotName>{
               /*srcs=*/query_set<GraphInputName>::matchall(),
-              /*dst_nodes=*/query_set<Node>{n},
+              /*dst_nodes=*/query_set<Node>::match_single_value(n),
               /*dst_slots=*/query_set<SlotName>::matchall(),
           },
           /*standard_edge_query=*/
           KwargDataflowEdgeQuery<SlotName>{
               /*src_nodes=*/query_set<Node>::matchall(),
               /*src_slots=*/query_set<SlotName>::matchall(),
-              /*dst_nodes=*/query_set<Node>{n},
+              /*dst_nodes=*/query_set<Node>::match_single_value(n),
               /*dst_slots=*/query_set<SlotName>::matchall(),
           },
       };

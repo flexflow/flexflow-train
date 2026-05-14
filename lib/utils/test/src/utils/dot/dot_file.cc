@@ -1,6 +1,8 @@
-#include "utils/dot_file.h"
+#include "utils/dot/dot_file.h"
 #include <doctest/doctest.h>
 #include <sstream>
+
+using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("DotFile") {
@@ -35,7 +37,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("add_record_node") {
-      RecordFormatter rf;
+      RecordFormatter rf = mk_empty_record(Orientation::VERTICAL);
 
       rf << "Field1";
       rf << 42;

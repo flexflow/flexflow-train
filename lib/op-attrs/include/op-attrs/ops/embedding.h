@@ -11,8 +11,6 @@
 
 namespace FlexFlow {
 
-RecordFormatter as_dot(EmbeddingAttrs const &);
-
 tl::expected<TensorShape, std::string> get_output_shape(EmbeddingAttrs const &,
                                                         TensorShape const &);
 tl::expected<TensorShape, std::string> get_weights_shape(EmbeddingAttrs const &,

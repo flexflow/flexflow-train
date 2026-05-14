@@ -1,6 +1,8 @@
 #include "utils/record_formatter.h"
 #include <doctest/doctest.h>
 
+using namespace ::FlexFlow;
+
 std::string formatRecord(RecordFormatter const &formatter) {
   std::ostringstream oss;
   oss << formatter;
@@ -9,7 +11,8 @@ std::string formatRecord(RecordFormatter const &formatter) {
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("RecordFormatter") {
-    RecordFormatter formatter;
+    RecordFormatter formatter = mk_empty_record(Orientation::HORIZONTAL);
+
     SUBCASE("Appending string") {
       formatter << "Hello";
       formatter << "World";
@@ -23,11 +26,10 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("Appending another RecordFormatter") {
-      RecordFormatter subFormatter;
+      RecordFormatter subFormatter = mk_empty_record(Orientation::VERTICAL);
       subFormatter << "Sub";
       subFormatter << "Formatter";
 
-      RecordFormatter formatter;
       formatter << "Hello";
       formatter << subFormatter;
 

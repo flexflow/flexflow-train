@@ -10,7 +10,7 @@ MappedParallelComputationGraph
 
 std::string format_as(SearchResult const &r) {
   return fmt::format("<SearchResult\npcg={}\nmachine_mapping={}>",
-                     as_dot(r.pcg),
+                     pcg_as_dot(r.pcg),
                      r.machine_mapping);
 }
 

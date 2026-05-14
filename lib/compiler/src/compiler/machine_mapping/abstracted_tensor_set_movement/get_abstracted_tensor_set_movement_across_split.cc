@@ -101,13 +101,13 @@ AbstractedTensorSetMovement get_abstracted_tensor_set_movement_across_split(
   };
 
   return AbstractedTensorSetMovement{
-      transform(
-          edges_by_tensor.right_groups(),
-          [&](std::unordered_set<ParallelComputationGraphEdge> const &edges) {
-            return merge_abstracted_single_tensor_movements(
-                transform(unordered_multiset_of(edges),
-                          to_abstracted_single_tensor_movement));
-          }),
+      transform(edges_by_tensor.right_groups(),
+                [&](nonempty_unordered_set<ParallelComputationGraphEdge> const
+                        &edges) {
+                  return merge_abstracted_single_tensor_movements(transform(
+                      unordered_multiset_of(edges.unwrap_as_unordered_set()),
+                      to_abstracted_single_tensor_movement));
+                }),
   };
 }
 

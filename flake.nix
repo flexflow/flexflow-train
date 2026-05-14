@@ -5,10 +5,10 @@
     bash-prompt-prefix = "(ff) ";
     extra-substituters = [
       "https://ff.cachix.org"
-      "https://cuda-maintainers.cachix.org/"
+      #"https://cuda-maintainers.cachix.org/"
     ];
     extra-trusted-public-keys = [
-      "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
+      #"cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
       "ff.cachix.org-1:IRdsNEnht4YKGUasP6SX5DfpaOTBckhpJDEODz7wMFM="
     ];
   };
@@ -119,6 +119,7 @@
               gbenchmark
               libtorch-bin
               graphviz # for documentation
+              texliveBasic # for documentation
             ])
             (with proj-repo.packages.${system}; [
               proj
@@ -162,6 +163,8 @@
               jq
               gh
               expect
+              universal-ctags
+              ninja
             ])
             (with pkgs.python3Packages; [
               gitpython

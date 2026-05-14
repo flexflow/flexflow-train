@@ -52,7 +52,8 @@ DimCoord<R> compute_up_projection(UpProjection<L, R> const &projection,
       flatmap(coord.raw,
               [&](L const &input_dim, nonnegative_int input_dim_val) {
                 std::unordered_set<R> dst_dims =
-                    projection.dim_mapping.at_l(input_dim);
+                    projection.dim_mapping.at_l(input_dim)
+                        .unwrap_as_unordered_set();
 
                 DimDomain<R> dst_domain =
                     restrict_domain_to_dims(output_domain, dst_dims);

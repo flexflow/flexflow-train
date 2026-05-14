@@ -26,15 +26,6 @@ public:
 std::string format_as(GraphOptimizeState const &);
 std::ostream &operator<<(std::ostream &, GraphOptimizeState const &);
 
-// TODO(@lockshaw)(#pr): Delete this if still unused
-// std::optional<GraphOptimizeState>
-//   graph_optimize_state_from_machine_mapping_result(ParallelComputationGraph
-//   const &,
-//                                                    PCGBinarySPDecomposition
-//                                                    const &,
-//                                                    MachineMappingResult const
-//                                                    &);
-
 } // namespace FlexFlow
 
 namespace std {

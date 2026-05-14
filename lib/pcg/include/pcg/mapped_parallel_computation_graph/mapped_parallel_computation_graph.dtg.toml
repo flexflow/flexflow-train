@@ -6,13 +6,10 @@ features = []
 includes = [
   "pcg/mapped_parallel_computation_graph/mapped_operator_task_group.h",
   "pcg/parallel_computation_graph/parallel_computation_graph.h",
+  "pcg/mapped_parallel_computation_graph/mapped_parallel_layer_attrs.dtg.h",
   "<unordered_map>",
 ]
 
 [[fields]]
-name = "pcg"
-type = "::FlexFlow::ParallelComputationGraph"
-
-[[fields]]
-name = "mapped_tasks"
-type = "std::unordered_map<::FlexFlow::parallel_layer_guid_t, ::FlexFlow::MappedOperatorTaskGroup>"
+name = "raw_graph"
+type = "::FlexFlow::LabelledKwargDataflowGraphView<::FlexFlow::MappedParallelLayerAttrs, ::FlexFlow::ParallelTensorAttrs, ::FlexFlow::TensorSlotName>"

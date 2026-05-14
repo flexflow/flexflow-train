@@ -78,9 +78,9 @@ OpenDataflowGraphData
           query_set<nonnegative_int>::match_none(),
       },
       DataflowEdgeQuery{
-          query_set<Node>{subgraph_nodes},
+          query_set<Node>::match_values_in(set_of(subgraph_nodes)),
           query_set<nonnegative_int>::matchall(),
-          query_set<Node>{subgraph_nodes},
+          query_set<Node>::match_values_in(set_of(subgraph_nodes)),
           query_set<nonnegative_int>::matchall(),
       },
   };

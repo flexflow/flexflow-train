@@ -121,7 +121,7 @@ ParallelComputationGraph without_layer_names(ParallelComputationGraph const &);
 bool pcgs_are_isomorphic(ParallelComputationGraph const &,
                          ParallelComputationGraph const &);
 
-std::string as_dot(ParallelComputationGraph const &);
+std::string pcg_as_dot(ParallelComputationGraph const &);
 void debug_print_dot(ParallelComputationGraph const &);
 
 } // namespace FlexFlow
