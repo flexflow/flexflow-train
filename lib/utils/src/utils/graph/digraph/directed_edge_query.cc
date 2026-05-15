@@ -1,4 +1,5 @@
 #include "utils/graph/digraph/directed_edge_query.h"
+#include "utils/containers/set_of.h"
 
 namespace FlexFlow {
 
@@ -30,7 +31,10 @@ DirectedEdgeQuery query_intersection(DirectedEdgeQuery const &lhs,
     result_dsts = allowed_values(query_intersection(lhs.dsts, rhs.dsts));
   }
 
-  return DirectedEdgeQuery{result_srcs, result_dsts};
+  return DirectedEdgeQuery{
+      query_set<Node>::match_values_in(set_of(result_srcs)),
+      query_set<Node>::match_values_in(set_of(result_dsts)),
+  };
 }
 
 } // namespace FlexFlow

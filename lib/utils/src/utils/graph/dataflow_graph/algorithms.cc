@@ -26,7 +26,7 @@ std::vector<DataflowInput> get_dataflow_inputs(DataflowGraphView const &g,
 std::vector<DataflowOutput> get_outputs(DataflowGraphView const &g,
                                         Node const &n) {
   return sorted_by(g.query_outputs(DataflowOutputQuery{
-                       query_set<Node>{n},
+                       query_set<Node>::match_single_value(n),
                        query_set<nonnegative_int>::matchall(),
                    }),
                    [](DataflowOutput const &l, DataflowOutput const &r) {

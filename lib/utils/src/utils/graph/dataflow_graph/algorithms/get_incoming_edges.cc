@@ -1,4 +1,5 @@
 #include "utils/graph/dataflow_graph/algorithms/get_incoming_edges.h"
+#include "utils/containers/set_of.h"
 #include "utils/containers/sorted_by.h"
 
 namespace FlexFlow {
@@ -8,7 +9,7 @@ std::vector<DataflowEdge> get_incoming_edges(DataflowGraphView const &g,
   return sorted_by(g.query_edges(DataflowEdgeQuery{
                        query_set<Node>::matchall(),
                        query_set<nonnegative_int>::matchall(),
-                       {n},
+                       query_set<Node>::match_single_value(n),
                        query_set<nonnegative_int>::matchall(),
                    }),
                    [](DataflowEdge const &l, DataflowEdge const &r) {
@@ -22,7 +23,7 @@ std::unordered_set<DataflowEdge>
   DataflowEdgeQuery query = DataflowEdgeQuery{
       query_set<Node>::matchall(),
       query_set<nonnegative_int>::matchall(),
-      query_set<Node>{ns},
+      query_set<Node>::match_values_in(set_of(ns)),
       query_set<nonnegative_int>::matchall(),
   };
   return g.query_edges(query);

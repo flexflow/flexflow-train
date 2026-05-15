@@ -1,0 +1,15 @@
+namespace = "FlexFlow"
+name = "Orientation"
+type = "enum"
+features = [
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+[[values]]
+name = "HORIZONTAL"
+
+[[values]]
+name = "VERTICAL"

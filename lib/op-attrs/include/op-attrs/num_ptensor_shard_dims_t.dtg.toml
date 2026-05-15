@@ -9,11 +9,11 @@ features = [
   "json",
 ]
 
-doctstring = """\
-A wrapper type describing the number of shard dims (i.e., not including replia dims) in a parallel tensor, 
+docstring = """\
+A wrapper type describing the number of shard dims (i.e., not including replia dims) in a parallel tensor,
 to prevent accidentally confusing the number of shard dims and the total number of parallel dims.
 
-The conversion to/from @ref num_ptensor_parallel_dims_t is trivial, and provided by the 
+The conversion to/from @ref num_ptensor_parallel_dims_t is trivial, and provided by the
 functions @ref num_ptensor_parallel_dims_from_shard_dims and @ref num_ptensor_shard_dims_from_parallel_dims.
 """
 

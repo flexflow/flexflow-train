@@ -42,7 +42,7 @@ static std::string get_default_name(OperatorType op_type) {
 }
 
 static std::string get_default_name(PCGOperatorAttrs const &attrs) {
-  return get_default_name(get_op_type(attrs));
+  return get_default_name(pcg_op_attrs_get_op_type(attrs));
 }
 
 ParallelComputationGraphBuilder::ParallelComputationGraphBuilder()

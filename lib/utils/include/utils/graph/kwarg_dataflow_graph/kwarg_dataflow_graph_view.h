@@ -32,7 +32,7 @@ struct KwargDataflowGraphView : virtual public DiGraphView {
       std::is_base_of<IKwargDataflowGraphView<SlotName>, T>::value,
       KwargDataflowGraphView<SlotName>>::type
       create(Args &&...args) {
-    return DataflowGraphView(make_cow_ptr<T>(std::forward<Args>(args)...));
+    return KwargDataflowGraphView(make_cow_ptr<T>(std::forward<Args>(args)...));
   }
 
 protected:

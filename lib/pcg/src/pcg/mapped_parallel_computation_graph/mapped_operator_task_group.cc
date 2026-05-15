@@ -7,6 +7,7 @@
 #include "utils/bidict/generate_bidict.h"
 #include "utils/containers/are_all_distinct.h"
 #include "utils/containers/require_all_same.h"
+#include "utils/containers/sorted.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/vector_of.h"
 #include "utils/hash/tuple.h"
@@ -56,7 +57,27 @@ bool MappedOperatorTaskGroup::operator==(
 
 bool MappedOperatorTaskGroup::operator!=(
     MappedOperatorTaskGroup const &other) const {
-  return this->tie() == other.tie();
+  return this->tie() != other.tie();
+}
+
+bool MappedOperatorTaskGroup::operator<(
+    MappedOperatorTaskGroup const &other) const {
+  return this->tie() < other.tie();
+}
+
+bool MappedOperatorTaskGroup::operator>(
+    MappedOperatorTaskGroup const &other) const {
+  return this->tie() > other.tie();
+}
+
+bool MappedOperatorTaskGroup::operator<=(
+    MappedOperatorTaskGroup const &other) const {
+  return this->tie() <= other.tie();
+}
+
+bool MappedOperatorTaskGroup::operator>=(
+    MappedOperatorTaskGroup const &other) const {
+  return this->tie() >= other.tie();
 }
 
 std::tuple<
@@ -80,6 +101,20 @@ bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
                                                                      slot_name);
                           })
       .reversed();
+}
+
+nlohmann::json
+    mapped_operator_task_group_as_dot_json(MappedOperatorTaskGroup const &m) {
+
+  std::vector<MachineSpaceCoordinate> coordinates =
+      sorted(m.get_shard_bindings().left_values());
+
+  return nlohmann::json{
+      transform(coordinates,
+                [&](MachineSpaceCoordinate const &c) -> std::string {
+                  return fmt::format("({}, {})", c.node_idx, c.device_idx);
+                }),
+  };
 }
 
 std::string format_as(::FlexFlow::MappedOperatorTaskGroup const &m) {

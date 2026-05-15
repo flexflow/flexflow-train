@@ -14,19 +14,8 @@ OperatorType get_op_type(ComputationGraphOpAttrs const &attrs) {
       [](auto const &x) { return get_op_type(x); });
 }
 
-RecordFormatter as_dot(ComputationGraphOpAttrs const &attrs) {
-  RecordFormatter result = attrs.visit<RecordFormatter>(overload{
-      [](LinearAttrs const &l) { return as_dot(l); },
-      [](CastAttrs const &a) { return as_dot(a); },
-      [](EmbeddingAttrs const &a) { return as_dot(a); },
-      [](WeightAttrs const &a) { return as_dot(a); },
-      [](BroadcastAttrs const &a) { return as_dot(a); },
-      [&](auto const &) { return RecordFormatter{}; },
-  });
-
-  RecordFormatter rr;
-  rr << "Op Type" << fmt::to_string(get_op_type(attrs));
-  result << rr;
+nlohmann::json cg_op_attrs_as_dot_json(ComputationGraphOpAttrs const &attrs) {
+  nlohmann::json result = attrs;
 
   return result;
 }

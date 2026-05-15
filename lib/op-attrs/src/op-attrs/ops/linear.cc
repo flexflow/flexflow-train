@@ -40,22 +40,6 @@ std::unordered_map<TensorSlotName, IncomingTensorRole>
   return result;
 }
 
-RecordFormatter as_dot(LinearAttrs const &attrs) {
-  RecordFormatter r;
-
-  auto kv = [](std::string const &label, auto const &val) {
-    RecordFormatter rr;
-    rr << label << fmt::to_string(val);
-    return rr;
-  };
-
-  r << kv("out_channels", attrs.out_channels) << kv("use_bias", attrs.use_bias)
-    << kv("data_type", attrs.data_type) << kv("activation", attrs.activation)
-    << kv("regularizer", attrs.regularizer);
-
-  return r;
-}
-
 tl::expected<TensorShape, std::string>
     get_projection_shape(LinearAttrs const &attrs,
                          TensorShape const &input_shape) {

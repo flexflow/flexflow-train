@@ -1,5 +1,6 @@
 #include "utils/graph/views/views.h"
 #include "utils/containers/flatmap.h"
+#include "utils/containers/set_of.h"
 #include "utils/containers/transform.h"
 #include "utils/graph/algorithms.h"
 #include "utils/graph/digraph/directed_edge_query.h"
@@ -20,15 +21,19 @@ UndirectedSubgraphView *UndirectedSubgraphView::clone() const {
 
 std::unordered_set<UndirectedEdge> UndirectedSubgraphView::query_edges(
     UndirectedEdgeQuery const &query) const {
-  UndirectedEdgeQuery subgraph_query =
-      UndirectedEdgeQuery{this->subgraph_nodes};
+  UndirectedEdgeQuery subgraph_query = UndirectedEdgeQuery{
+      query_set<Node>::match_values_in(set_of(this->subgraph_nodes)),
+  };
   return this->g.query_edges(query_intersection(query, subgraph_query));
 }
 
 std::unordered_set<Node>
     UndirectedSubgraphView::query_nodes(NodeQuery const &query) const {
-  return this->g.query_nodes(
-      query_intersection(query, NodeQuery{this->subgraph_nodes}));
+  NodeQuery subgraph_query = NodeQuery{
+      query_set<Node>::match_values_in(set_of(this->subgraph_nodes)),
+  };
+
+  return this->g.query_nodes(query_intersection(query, subgraph_query));
 }
 
 DiSubgraphView::DiSubgraphView(DiGraphView const &g,
@@ -37,15 +42,20 @@ DiSubgraphView::DiSubgraphView(DiGraphView const &g,
 
 std::unordered_set<DirectedEdge>
     DiSubgraphView::query_edges(DirectedEdgeQuery const &query) const {
-  DirectedEdgeQuery subgraph_query =
-      DirectedEdgeQuery{this->subgraph_nodes, this->subgraph_nodes};
+  DirectedEdgeQuery subgraph_query = DirectedEdgeQuery{
+      query_set<Node>::match_values_in(set_of(this->subgraph_nodes)),
+      query_set<Node>::match_values_in(set_of(this->subgraph_nodes)),
+  };
   return this->g.query_edges(query_intersection(query, subgraph_query));
 }
 
 std::unordered_set<Node>
     DiSubgraphView::query_nodes(NodeQuery const &query) const {
-  return this->g.query_nodes(
-      query_intersection(query, NodeQuery{this->subgraph_nodes}));
+  NodeQuery subgraph_query = NodeQuery{
+      query_set<Node>::match_values_in(set_of(this->subgraph_nodes)),
+  };
+
+  return this->g.query_nodes(query_intersection(query, subgraph_query));
 }
 
 DiSubgraphView *DiSubgraphView::clone() const {

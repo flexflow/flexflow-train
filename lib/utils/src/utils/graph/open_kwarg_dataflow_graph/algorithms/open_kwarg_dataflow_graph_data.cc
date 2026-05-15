@@ -9,4 +9,7 @@ using SlotName = ordered_value_type<1>;
 template void require_open_kwarg_dataflow_graph_data_is_valid(
     OpenKwargDataflowGraphData<GraphInputName, SlotName> const &);
 
+template KwargDataflowGraphData<SlotName> kwarg_dataflow_graph_data_from_open(
+    OpenKwargDataflowGraphData<GraphInputName, SlotName> const &);
+
 } // namespace FlexFlow

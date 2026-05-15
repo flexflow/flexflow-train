@@ -4,7 +4,7 @@
 #include "kernels/device.h"
 #include "kernels/local_cpu_allocator.h"
 #include "kernels/local_cuda_allocator.h"
-#include "local-execution/computation_graph_instance/computation_graph_instance.h"
+#include "local-execution/computation_graph_instance.h"
 #include "local-execution/cost_estimator/tracked_allocator.h"
 #include "op-attrs/computation_graph_op_attrs.h"
 #include "op-attrs/pcg_operator_attrs.h"

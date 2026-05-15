@@ -59,7 +59,7 @@ static NonNormalSPDecomposition parallel_composition_with_coalescing(
   for (auto const &[head, strands_with_head] :
        strands_grouped_by_head.l_to_r()) {
     std::unordered_set<NonNormalSeriesSplit> tails =
-        transform(strands_with_head, cut_off_head);
+        transform(strands_with_head.unwrap_as_unordered_set(), cut_off_head);
     NonNormalSPDecomposition parallel_comp =
         parallel_composition_with_coalescing(tails);
 

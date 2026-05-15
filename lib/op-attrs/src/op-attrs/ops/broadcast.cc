@@ -6,23 +6,6 @@
 
 namespace FlexFlow {
 
-RecordFormatter as_dot(BroadcastAttrs const &attrs) {
-  RecordFormatter r;
-
-  auto kv = [](std::string const &label, auto const &val) {
-    RecordFormatter rr;
-    rr << label << fmt::to_string(val);
-    return rr;
-  };
-
-  for (ff_dim_t dim_idx : tensor_dims_range(get_num_dims(attrs.target_dims))) {
-    r << kv(fmt::format("target_dims[{}]", dim_idx.value),
-            dim_at_idx(attrs.target_dims, dim_idx));
-  }
-
-  return r;
-}
-
 tl::expected<TensorShape, std::string>
     get_output_shape(BroadcastAttrs const &attrs,
                      TensorShape const &input_shape) {

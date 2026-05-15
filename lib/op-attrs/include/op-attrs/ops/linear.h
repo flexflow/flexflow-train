@@ -20,8 +20,6 @@ namespace FlexFlow {
 std::unordered_map<TensorSlotName, IncomingTensorRole>
     get_linear_incoming_tensor_roles(LinearAttrs const &);
 
-RecordFormatter as_dot(LinearAttrs const &);
-
 tl::expected<TensorShape, std::string>
     get_projection_shape(LinearAttrs const &attrs, TensorShape const &input);
 tl::expected<TensorShape, std::string> get_bias_shape(LinearAttrs const &attrs,

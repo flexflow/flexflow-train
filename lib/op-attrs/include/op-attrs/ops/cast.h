@@ -9,8 +9,6 @@
 
 namespace FlexFlow {
 
-RecordFormatter as_dot(CastAttrs const &);
-
 tl::expected<TensorShape, std::string> get_output_shape(CastAttrs const &,
                                                         TensorShape const &);
 

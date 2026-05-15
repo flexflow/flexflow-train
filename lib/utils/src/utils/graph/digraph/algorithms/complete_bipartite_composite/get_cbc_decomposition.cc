@@ -2,6 +2,7 @@
 #include "utils/containers/are_disjoint.h"
 #include "utils/containers/extend.h"
 #include "utils/containers/set_minus.h"
+#include "utils/containers/set_of.h"
 #include "utils/containers/values.h"
 #include "utils/containers/vector_of.h"
 #include "utils/graph/algorithms.h"
@@ -53,7 +54,10 @@ std::optional<CompleteBipartiteCompositeDecomposition>
     }
 
     std::unordered_set<DirectedEdge> from_head_to_tail =
-        g.query_edges(DirectedEdgeQuery{head, tail});
+        g.query_edges(DirectedEdgeQuery{
+            query_set<Node>::match_values_in(set_of(head)),
+            query_set<Node>::match_values_in(set_of(tail)),
+        });
 
     DiGraphView subgraph = get_subgraph(g, set_union(head, tail));
     if (!is_complete_bipartite_digraph(subgraph, head)) {
