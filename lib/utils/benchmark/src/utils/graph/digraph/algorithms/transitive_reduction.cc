@@ -1,5 +1,5 @@
 #include "utils/graph/digraph/algorithms/transitive_reduction.h"
-#include "./random_dag.h"
+#include "internal/random_dag.h"
 #include <benchmark/benchmark.h>
 
 using namespace ::FlexFlow;

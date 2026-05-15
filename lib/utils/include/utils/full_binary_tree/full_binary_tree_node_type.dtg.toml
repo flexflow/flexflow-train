@@ -10,8 +10,6 @@ features = [
 
 [[values]]
 name = "PARENT"
-key = "parent"
 
 [[values]]
 name = "LEAF"
-key = "leaf"

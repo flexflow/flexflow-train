@@ -3,6 +3,7 @@
 
 #include "realm-execution/device_specific_ptr.h"
 #include "realm-execution/tasks/serializer/serializable_device_specific_ptr.dtg.h"
+#include "utils/containers/transform.h"
 
 namespace FlexFlow {
 

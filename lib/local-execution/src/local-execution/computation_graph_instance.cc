@@ -1,4 +1,4 @@
-#include "local-execution/computation_graph_instance/computation_graph_instance.h"
+#include "local-execution/computation_graph_instance.h"
 #include "local-execution/per_device_op_state_initialization.h"
 #include "local-execution/task_execution.h"
 #include "local-execution/tensor_allocation.h"
