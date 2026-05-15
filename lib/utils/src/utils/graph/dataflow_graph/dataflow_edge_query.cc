@@ -29,18 +29,18 @@ bool dataflow_edge_query_includes_dataflow_edge(DataflowEdgeQuery const &q,
 
 DataflowEdgeQuery dataflow_edge_query_for_edge(DataflowEdge const &e) {
   return DataflowEdgeQuery{
-      query_set<Node>{e.src.node},
-      query_set<nonnegative_int>{e.src.idx},
-      query_set<Node>{e.dst.node},
-      query_set<nonnegative_int>{e.dst.idx},
+      query_set<Node>::match_single_value(e.src.node),
+      query_set<nonnegative_int>::match_single_value(e.src.idx),
+      query_set<Node>::match_single_value(e.dst.node),
+      query_set<nonnegative_int>::match_single_value(e.dst.idx),
   };
 }
 
 DataflowEdgeQuery
     dataflow_edge_query_all_outgoing_from(DataflowOutput const &src) {
   return DataflowEdgeQuery{
-      query_set<Node>{src.node},
-      query_set<nonnegative_int>{src.idx},
+      query_set<Node>::match_single_value(src.node),
+      query_set<nonnegative_int>::match_single_value(src.idx),
       query_set<Node>::matchall(),
       query_set<nonnegative_int>::matchall(),
   };
@@ -51,8 +51,8 @@ DataflowEdgeQuery
   return DataflowEdgeQuery{
       query_set<Node>::matchall(),
       query_set<nonnegative_int>::matchall(),
-      query_set<Node>{dst.node},
-      query_set<nonnegative_int>{dst.idx},
+      query_set<Node>::match_single_value(dst.node),
+      query_set<nonnegative_int>::match_single_value(dst.idx),
   };
 }
 

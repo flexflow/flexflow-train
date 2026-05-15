@@ -12,7 +12,7 @@ OneToMany<SlotName, KwargDataflowEdge<SlotName>>
     get_outgoing_kwarg_dataflow_edges_for_node(
         KwargDataflowGraphView<SlotName> const &g, Node const &n) {
   KwargDataflowEdgeQuery<SlotName> query = KwargDataflowEdgeQuery<SlotName>{
-      /*src_nodes=*/query_set<Node>{n},
+      /*src_nodes=*/query_set<Node>::match_single_value(n),
       /*src_slots=*/query_set<SlotName>::matchall(),
       /*dst_nodes=*/query_set<Node>::matchall(),
       /*dst_slots=*/query_set<SlotName>::matchall(),

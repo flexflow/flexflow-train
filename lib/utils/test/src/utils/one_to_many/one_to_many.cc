@@ -31,9 +31,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("at_l") {
-      std::unordered_set<std::string> result = m.at_l(1);
+      nonempty_unordered_set<std::string> result = m.at_l(1);
 
-      std::unordered_set<std::string> correct = {"one", "One", "ONE"};
+      nonempty_unordered_set<std::string> correct = {"one", "One", "ONE"};
 
       CHECK(result == correct);
     }

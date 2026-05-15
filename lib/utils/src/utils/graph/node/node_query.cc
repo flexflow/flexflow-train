@@ -1,4 +1,5 @@
 #include "utils/graph/node/node_query.h"
+#include "utils/containers/set_of.h"
 
 namespace FlexFlow {
 
@@ -18,10 +19,9 @@ NodeQuery query_intersection(NodeQuery const &lhs, NodeQuery const &rhs) {
     nodes = allowed_values(query_intersection(lhs.nodes, rhs.nodes));
   }
 
-  NodeQuery intersection_result = node_query_all();
-  intersection_result.nodes = nodes;
-
-  return intersection_result;
+  return NodeQuery{
+      query_set<Node>::match_values_in(set_of(nodes)),
+  };
 }
 
 NodeQuery query_union(NodeQuery const &lhs, NodeQuery const &rhs) {

@@ -12,9 +12,9 @@ std::unordered_set<KwargDataflowEdge<SlotName>>
         Node const &src,
         Node const &dst) {
   KwargDataflowEdgeQuery<SlotName> query = KwargDataflowEdgeQuery<SlotName>{
-      /*src_nodes=*/query_set<Node>{src},
+      /*src_nodes=*/query_set<Node>::match_single_value(src),
       /*src_slots=*/query_set<SlotName>::matchall(),
-      /*dst_nodes=*/query_set<Node>{dst},
+      /*dst_nodes=*/query_set<Node>::match_single_value(dst),
       /*dst_slots=*/query_set<SlotName>::matchall(),
   };
 

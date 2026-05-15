@@ -1,5 +1,6 @@
 #include "utils/graph/open_dataflow_graph/algorithms/get_subgraph_incoming_edges.h"
 #include "utils/containers/set_minus.h"
+#include "utils/containers/set_of.h"
 #include "utils/graph/node/algorithms.h"
 
 namespace FlexFlow {
@@ -12,13 +13,13 @@ std::unordered_set<OpenDataflowEdge>
   OpenDataflowEdgeQuery query = OpenDataflowEdgeQuery{
       DataflowInputEdgeQuery{
           query_set<DataflowGraphInput>::matchall(),
-          query_set<Node>{ns},
+          query_set<Node>::match_values_in(set_of(ns)),
           query_set<nonnegative_int>::matchall(),
       },
       DataflowEdgeQuery{
-          query_set<Node>{nodes_not_in_ns},
+          query_set<Node>::match_values_in(set_of(nodes_not_in_ns)),
           query_set<nonnegative_int>::matchall(),
-          query_set<Node>{ns},
+          query_set<Node>::match_values_in(set_of(ns)),
           query_set<nonnegative_int>::matchall(),
       },
   };

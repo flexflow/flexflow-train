@@ -1,7 +1,10 @@
-#ifndef _DOT_FILE_H
-#define _DOT_FILE_H
+#ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_DOT_DOT_FILE_H
+#define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_DOT_DOT_FILE_H
 
-#include "record_formatter.h"
+#include "utils/containers/flatmap.h"
+#include "utils/dot/dot_file.h"
+#include "utils/dot/render_dot_html_table_to_string.h"
+#include "utils/record_formatter.h"
 #include <cassert>
 #include <fstream>
 #include <map>
@@ -12,6 +15,13 @@
 #include <unordered_set>
 #include <vector>
 
+namespace FlexFlow {
+
+/**
+ * \brief A helper interface for generating DOT/graphviz output
+ *
+ * \note This is very old code and should not be emulated stylistically
+ */
 template <typename T>
 class DotFile {
 private:
@@ -23,14 +33,17 @@ private:
   std::unordered_map<size_t, std::optional<size_t>> subgraph_parents;
   std::optional<std::ofstream> owned_fstream = std::nullopt;
   std::ostream *out = nullptr;
+
   std::string get_node_name(size_t node_id) const {
     std::ostringstream s;
     s << "node" << node_id;
     return s.str();
   }
+
   bool has_ostream() const {
     return this->owned_fstream.has_value() || this->out != nullptr;
   }
+
   std::ostream &get_ostream() {
     bool has_owned_stream = this->owned_fstream.has_value();
     bool has_stream_ref = (this->out != nullptr);
@@ -43,15 +56,18 @@ private:
       throw std::runtime_error("No ostream value set");
     }
   }
+
   void start_output() {
     this->get_ostream() << "digraph taskgraph {" << std::endl;
   }
 
 public:
   DotFile() {}
+
   DotFile(std::string const &filename) : owned_fstream(filename) {
     this->start_output();
   }
+
   DotFile(std::ostream &s) : node_id(0), out(&s) {
     this->start_output();
   }
@@ -60,11 +76,13 @@ public:
     this->owned_fstream = std::ofstream(filename);
     this->start_output();
   }
+
   void reserve_node(T const &t) {
     if (this->node_ids.find(t) == this->node_ids.end()) {
       this->node_ids[t] = this->node_id++;
     }
   }
+
   void add_node(T const &t, std::map<std::string, std::string> const &params) {
     this->reserve_node(t);
     this->get_ostream() << "  " << this->get_node_name(this->node_ids.at(t))
@@ -77,10 +95,31 @@ public:
     }
     this->get_ostream() << "];" << std::endl;
   }
+
   void add_record_node(T const &t, RecordFormatter const &rf) {
     std::ostringstream oss;
-    oss << "\"" << rf << "\"";
+
+    oss << "\"";
+    if (rf.orientation == Orientation::HORIZONTAL) {
+      oss << "{ " << rf << " }";
+    } else {
+      oss << rf;
+    }
+    oss << "\"";
+
     this->add_node(t, {{"shape", "record"}, {"label", oss.str()}});
+  }
+
+  void add_html_node(T const &t, DotHtmlTable const &table) {
+    std::ostringstream oss;
+
+    oss << "<" << render_dot_html_table_to_string(table) << ">";
+
+    this->add_node(t,
+                   {
+                       {"label", oss.str()},
+                       {"shape", "plaintext"},
+                   });
   }
 
   void dump_subgraph(size_t subgraph) {
@@ -118,6 +157,7 @@ public:
                         << " -> " << dst_name << get_field_suffix(dst_field)
                         << ";" << std::endl;
   }
+
   void close() {
     for (size_t subgraph = 0; subgraph < this->subgraph_id; subgraph++) {
       if (!this->subgraph_parents.at(subgraph).has_value()) {
@@ -157,4 +197,6 @@ public:
   }
 };
 
-#endif // _DOT_FILE_H
+} // namespace FlexFlow
+
+#endif

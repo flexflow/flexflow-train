@@ -20,6 +20,11 @@ struct MappedOperatorTaskGroup {
   [[nodiscard]] bool operator==(MappedOperatorTaskGroup const &) const;
   [[nodiscard]] bool operator!=(MappedOperatorTaskGroup const &) const;
 
+  [[nodiscard]] bool operator<(MappedOperatorTaskGroup const &) const;
+  [[nodiscard]] bool operator>(MappedOperatorTaskGroup const &) const;
+  [[nodiscard]] bool operator<=(MappedOperatorTaskGroup const &) const;
+  [[nodiscard]] bool operator>=(MappedOperatorTaskGroup const &) const;
+
   [[nodiscard]] bidict<MachineSpaceCoordinate,
                        OperatorAtomicTaskShardBinding> const &
       get_shard_bindings() const;
@@ -36,6 +41,9 @@ private:
 bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
     get_tensor_bindings_for_slot_name(MappedOperatorTaskGroup const &,
                                       TensorSlotName const &);
+
+nlohmann::json
+    mapped_operator_task_group_as_dot_json(MappedOperatorTaskGroup const &);
 
 std::string format_as(::FlexFlow::MappedOperatorTaskGroup const &);
 std::ostream &operator<<(std::ostream &,

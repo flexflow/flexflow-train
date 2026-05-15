@@ -74,30 +74,43 @@ TEST_SUITE(FF_TEST_SUITE) {
     check_state({n1, n2}, {e1, e2, e3, e4});
 
     {
-      MultiDiEdgeQuery input =
-          MultiDiEdgeQuery{{n1}, query_set<Node>::matchall()};
+      MultiDiEdgeQuery input = MultiDiEdgeQuery{
+          query_set<Node>::match_single_value(n1),
+          query_set<Node>::matchall(),
+      };
+
       std::unordered_set<MultiDiEdge> result = g.query_edges(input);
       std::unordered_set<MultiDiEdge> correct = {e1, e2, e3};
       CHECK(result == correct);
     }
 
     {
-      MultiDiEdgeQuery input =
-          MultiDiEdgeQuery{query_set<Node>::matchall(), {n1}};
+      MultiDiEdgeQuery input = MultiDiEdgeQuery{
+          query_set<Node>::matchall(),
+          query_set<Node>::match_single_value(n1),
+      };
+
       std::unordered_set<MultiDiEdge> result = g.query_edges(input);
       std::unordered_set<MultiDiEdge> correct = {e1, e2, e4};
       CHECK(result == correct);
     }
 
     {
-      MultiDiEdgeQuery input = MultiDiEdgeQuery{{n1}, {n2}};
+      MultiDiEdgeQuery input = MultiDiEdgeQuery{
+          query_set<Node>::match_single_value(n1),
+          query_set<Node>::match_single_value(n2),
+      };
       std::unordered_set<MultiDiEdge> result = g.query_edges(input);
       std::unordered_set<MultiDiEdge> correct = {e3};
       CHECK(result == correct);
     }
 
     {
-      MultiDiEdgeQuery input = MultiDiEdgeQuery{{n1}, {n1}};
+      MultiDiEdgeQuery input = MultiDiEdgeQuery{
+          query_set<Node>::match_single_value(n1),
+          query_set<Node>::match_single_value(n1),
+      };
+
       std::unordered_set<MultiDiEdge> result = g.query_edges(input);
       std::unordered_set<MultiDiEdge> correct = {e1, e2};
       CHECK(result == correct);

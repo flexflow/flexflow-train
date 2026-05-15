@@ -12,7 +12,7 @@ using R = value_type<1>;
 
 template struct OneToMany<L, R>;
 
-template std::unordered_map<L, std::unordered_set<R>>
+template std::unordered_map<L, nonempty_unordered_set<R>>
     format_as(OneToMany<L, R> const &);
 
 template std::ostream &operator<<(std::ostream &, OneToMany<L, R> const &);

@@ -2,6 +2,9 @@
 #include "compiler/machine_mapping/machine_view.h"
 #include "compiler/series_parallel/pcg/pcg_binary_sp_decomposition.h"
 #include "op-attrs/computation_graph_op_attrs.h"
+#include "op-attrs/pcg_operator_attrs.h"
+#include "pcg/machine_compute_resource_slice.h"
+#include "pcg/mapped_parallel_computation_graph/mapped_parallel_computation_graph.h"
 #include "utils/bidict/algorithms/bidict_from_map.h"
 #include "utils/containers/are_disjoint.h"
 #include "utils/containers/binary_merge_disjoint_maps.h"
@@ -15,30 +18,32 @@ MappedParallelComputationGraph
 
   std::unordered_set<parallel_layer_guid_t> pcg_layers =
       get_parallel_layers(pcg);
+
   std::unordered_set<parallel_layer_guid_t> mapped_layers =
       keys(mapping.machine_views);
-  ASSERT(pcg_layers == mapped_layers);
 
-  return MappedParallelComputationGraph{
-      /*pcg=*/pcg,
-      /*mapped_tasks=*/
-      generate_map(
-          get_parallel_layers(pcg),
-          [&](parallel_layer_guid_t l) -> MappedOperatorTaskGroup {
-            ComputationGraphOpAttrs op_attrs =
-                compgraph_op_attrs_from_pcg_op_attrs(pcg_get_op_attrs(pcg, l))
-                    .value();
+  ASSERT(mapped_layers == pcg_layers);
 
-            std::unordered_map<TensorSlotName, ParallelTensorDimDegrees>
-                inputs_dim_degrees = get_incoming_input_degrees(pcg, l);
+  auto mapping_for_layer =
+      [&](parallel_layer_guid_t l) -> MappedOperatorTaskGroup {
+    ComputationGraphOpAttrs op_attrs = assert_unwrap(
+        compgraph_op_attrs_from_pcg_op_attrs(pcg_get_op_attrs(pcg, l)));
 
-            ASSERT(contains_key(mapping.machine_views, l));
-            MachineView machine_view = mapping.machine_views.at(l);
+    std::unordered_map<TensorSlotName, ParallelTensorDimDegrees>
+        inputs_dim_degrees = get_incoming_input_degrees(pcg, l);
 
-            return mapped_operator_task_group_from_machine_view(
-                op_attrs, inputs_dim_degrees, machine_view);
-          }),
+    ASSERT(contains_key(mapping.machine_views, l));
+    MachineView machine_view = mapping.machine_views.at(l);
+
+    return mapped_operator_task_group_from_machine_view(
+        op_attrs, inputs_dim_degrees, machine_view);
   };
+
+  std::unordered_map<parallel_layer_guid_t, MappedOperatorTaskGroup>
+      mapped_op_task_groups = generate_map(mapped_layers, mapping_for_layer);
+
+  return mapped_pcg_from_pcg_and_mapped_op_task_groups(pcg,
+                                                       mapped_op_task_groups);
 }
 
 MachineMapping combine_disjoint_mappings(MachineMapping const &m1,

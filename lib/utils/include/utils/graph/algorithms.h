@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_UTILS_GRAPH_ALGORITHMS_H
 #define _FLEXFLOW_UTILS_GRAPH_ALGORITHMS_H
 
-#include "utils/dot_file.h"
+#include "utils/dot/dot_file.h"
 #include "utils/graph/digraph/digraph.h"
 #include "utils/graph/graph_split.dtg.h"
 #include "utils/graph/node/graph.h"

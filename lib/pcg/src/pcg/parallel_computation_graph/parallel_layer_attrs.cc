@@ -5,7 +5,7 @@
 namespace FlexFlow {
 
 OperatorType get_op_type(ParallelLayerAttrs const &a) {
-  return get_op_type(a.op_attrs);
+  return pcg_op_attrs_get_op_type(a.op_attrs);
 }
 
 ParallelLayerAttrs

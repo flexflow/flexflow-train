@@ -1,5 +1,5 @@
 #include "substitution-generator/legacy_rules.h"
-#include "utils/dot_file.h"
+#include "utils/dot/dot_file.h"
 #include <cassert>
 #include <iostream>
 

@@ -29,10 +29,10 @@
 #include "utils/graph/labelled_dataflow_graph/algorithms/find_isomorphism.h"
 #include "utils/graph/labelled_dataflow_graph/algorithms/rewrite_node_labels.h"
 #include "utils/graph/labelled_dataflow_graph/algorithms/view_as_labelled_open_dataflow_graph.h"
-#include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/labelled_open_kwarg_dataflow_graph_view_as_dot.h"
 #include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/rewrite_labelled_kwarg_dataflow_graph_node_labels.h"
 #include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/view_as_labelled_open_kwarg_dataflow_graph.h"
-#include "utils/graph/labelled_open_dataflow_graph/algorithms/as_dot.h"
+#include "utils/graph/labelled_open_dataflow_graph/algorithms/labelled_open_dataflow_graph_as_dot.h"
+#include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/labelled_open_kwarg_dataflow_graph_view_as_dot.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/record_formatter.h"
 
@@ -326,31 +326,31 @@ bool computation_graphs_are_isomorphic(ComputationGraph const &lhs,
 }
 
 std::string as_dot(ComputationGraph const &cg) {
-  std::function<std::string(LayerAttrs const &)> get_node_label =
-      [](LayerAttrs const &a) -> std::string {
-    RecordFormatter r = as_dot(a.op_attrs);
+  std::function<nlohmann::json(LayerAttrs const &)> get_node_label =
+      [](LayerAttrs const &a) -> nlohmann::json {
+    nlohmann::json result = a;
 
-    if (a.name.has_value()) {
-      RecordFormatter rr;
-      rr << "Name" << a.name.value();
-      r << rr;
-    }
-
-    std::ostringstream oss;
-    oss << r;
-    return oss.str();
+    return result;
   };
 
-  std::function<std::string(TensorAttrs const &)> get_input_label =
-      [](TensorAttrs const &a) -> std::string {
-    RecordFormatter r;
+  std::function<nlohmann::json(TensorAttrs const &)> get_input_label =
+      [](TensorAttrs const &a) -> nlohmann::json {
+    nlohmann::json result = a;
 
-    r << fmt::to_string(a.shape);
-
-    std::ostringstream oss;
-    oss << r;
-    return oss.str();
+    return result;
   };
+
+  std::function<nlohmann::json(TensorSlotName const &)> render_slot_name =
+      [](TensorSlotName const &s) -> nlohmann::json {
+    nlohmann::json result = fmt::to_string(s);
+
+    return result;
+  };
+
+  std::function<std::vector<TensorSlotName>(
+      std::unordered_set<TensorSlotName> const &)>
+      order_slots = [](std::unordered_set<TensorSlotName> const &unordered)
+      -> nlohmann::json { return sorted(unordered); };
 
   return labelled_open_kwarg_dataflow_graph_view_as_dot(
       view_as_labelled_open_kwarg_dataflow_graph<LayerAttrs,
@@ -358,11 +358,13 @@ std::string as_dot(ComputationGraph const &cg) {
                                                  int,
                                                  TensorSlotName>(cg.raw_graph),
       get_node_label,
-      get_input_label);
+      get_input_label,
+      render_slot_name,
+      order_slots);
 }
 
 void debug_print_dot(ComputationGraph const &cg) {
-  std::cout << as_dot(cg) << std::endl;
+  std::cerr << as_dot(cg) << std::endl;
 }
 
 } // namespace FlexFlow
