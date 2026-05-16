@@ -31,11 +31,6 @@ bool graph_is_fully_pass_expanded(DynamicOpenDataflowGraph const &g) {
       g, node_is_pass_expanded, value_is_pass_expanded, slot_is_pass_expanded);
 }
 
-static bool is_replicate_attrs(DynamicNodeAttrs const &n) {
-  return n.op_attrs.has_value() && n.op_attrs.value().has<PCGOperatorAttrs>() &&
-         n.op_attrs.value().get<PCGOperatorAttrs>().has<ReplicateAttrs>();
-}
-
 DynamicTensorSlot pass_expand_slot(DynamicTensorSlot const &s,
                                    FwbTensorType tensor_type) {
   ASSERT(!slot_is_pass_expanded(s));
