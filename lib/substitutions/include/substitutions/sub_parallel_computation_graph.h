@@ -48,7 +48,7 @@ std::unordered_set<ParallelComputationGraphEdge> get_subgraph_outgoing_edges(
     std::unordered_set<parallel_layer_guid_t> const &);
 
 std::unordered_set<parallel_tensor_use_t>
-    get_parallel_tensor_uses(SubParallelComputationGraph const &,
+    get_open_parallel_tensor_uses(SubParallelComputationGraph const &,
                              open_parallel_tensor_guid_t const &);
 
 SubParallelComputationGraphData

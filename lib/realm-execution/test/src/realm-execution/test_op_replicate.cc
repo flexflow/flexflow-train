@@ -27,6 +27,7 @@
 #include "test/utils/doctest/check_kv.h"
 #include "utils/containers/require_only_key.h"
 #include <doctest/doctest.h>
+#include "pcg/mapped_parallel_computation_graph/mapped_parallel_computation_graph.h"
 
 namespace test {
 
@@ -168,67 +169,116 @@ TEST_SUITE(FF_TEST_SUITE) {
               /* sum_component */ 0_n,
               /* discard_copy_component */ 1_n,
               /*shard_component*/ FFOrdered{0_n}};
-          MappedParallelComputationGraph mpcg{
-              pcg,
-              {{inputs_layer.parallel_layer,
-                MappedOperatorTaskGroup{
-                    {{cpu0,
-                      OperatorAtomicTaskShardBinding{
-                          {{TensorSlotName::OUTPUT, tensor_coord0}}}}}}},
-               {inputs_layer_2.parallel_layer,
-                MappedOperatorTaskGroup{
-                    {{cpu0,
-                      OperatorAtomicTaskShardBinding{
-                          {{TensorSlotName::OUTPUT, tensor_coord0}}}}}}},
-               {add_operator_1.parallel_layer,
-                MappedOperatorTaskGroup{
-                    {{cpu0,
-                      OperatorAtomicTaskShardBinding{{
-                          {TensorSlotName::LHS_INPUT, tensor_coord0},
-                          {TensorSlotName::RHS_INPUT, tensor_coord0},
+          MappedParallelComputationGraph mpcg = mapped_pcg_from_pcg_and_mapped_op_task_groups(
+              /*pcg=*/pcg,
+              /*mapped_op_task_groups=*/{
+                {
+                  inputs_layer.parallel_layer,
+                  MappedOperatorTaskGroup{
+                    {
+                      {
+                        cpu0,
+                        OperatorAtomicTaskShardBinding{{
                           {TensorSlotName::OUTPUT, tensor_coord0},
-                      }}}}}},
-               {repl_operator_1.parallel_layer,
-                MappedOperatorTaskGroup{{
-                    {cpu0,
-                     OperatorAtomicTaskShardBinding{{
-                         {TensorSlotName::OUTPUT, tensor_coord0},
-                     }}},
-                    {cpu1,
-                     OperatorAtomicTaskShardBinding{{
-                         {TensorSlotName::OUTPUT, tensor_coord1},
-                     }}},
-                }}},
-               {relu_operator_1.parallel_layer,
-                MappedOperatorTaskGroup{{
-                    {cpu0,
-                     OperatorAtomicTaskShardBinding{{
-                         {TensorSlotName::INPUT, tensor_coord0},
-                         {TensorSlotName::OUTPUT, tensor_coord0},
-                     }}},
-                    {cpu1,
-                     OperatorAtomicTaskShardBinding{{
-                         {TensorSlotName::INPUT, tensor_coord1},
-                         {TensorSlotName::OUTPUT, tensor_coord1},
-                     }}},
-                }}}},
-          };
+                        }},
+                      },
+                    },
+                  },
+                },
+                {
+                  inputs_layer_2.parallel_layer,
+                  MappedOperatorTaskGroup{
+                    {
+                      {
+                        cpu0,
+                        OperatorAtomicTaskShardBinding{{
+                          {TensorSlotName::OUTPUT, tensor_coord0},
+                        }},
+                      },
+                    },
+                  },
+                },
+                {
+                  add_operator_1.parallel_layer,
+                  MappedOperatorTaskGroup{
+                    {
+                      {
+                        cpu0,
+                        OperatorAtomicTaskShardBinding{{
+                            {TensorSlotName::LHS_INPUT, tensor_coord0},
+                            {TensorSlotName::RHS_INPUT, tensor_coord0},
+                            {TensorSlotName::OUTPUT, tensor_coord0},
+                        }},
+                      },
+                    },
+                  },
+                },
+                {
+                  repl_operator_1.parallel_layer,
+                  MappedOperatorTaskGroup{
+                    {
+                      {
+                        cpu0,
+                        OperatorAtomicTaskShardBinding{{
+                          {TensorSlotName::OUTPUT, tensor_coord0},
+                        }},
+                      },
+                      {
+                        cpu1,
+                        OperatorAtomicTaskShardBinding{{
+                           {TensorSlotName::OUTPUT, tensor_coord1},
+                        }},
+                      },
+                    },
+                  },
+                },
+                {
+                  relu_operator_1.parallel_layer,
+                  MappedOperatorTaskGroup{
+                    {
+                      {
+                        cpu0,
+                        OperatorAtomicTaskShardBinding{{
+                          {TensorSlotName::INPUT, tensor_coord0},
+                          {TensorSlotName::OUTPUT, tensor_coord0},
+                        }},
+                      },
+                      {
+                        cpu1,
+                        OperatorAtomicTaskShardBinding{{
+                          {TensorSlotName::INPUT, tensor_coord1},
+                          {TensorSlotName::OUTPUT, tensor_coord1},
+                        }},
+                      },
+                    },
+                  },
+                },
+              });
 
           MappedOperatorTaskGroup loss_mapping{
-              {{cpu0,
+            {
+              {
+                cpu0,
                 OperatorAtomicTaskShardBinding{{
-                    {TensorSlotName::INPUT, tensor_coord0},
-                    {TensorSlotName::LOGIT, tensor_coord0},
-                }}}}};
+                  {TensorSlotName::INPUT, tensor_coord0},
+                  {TensorSlotName::LOGIT, tensor_coord0},
+                }},
+              },
+            },
+          };
 
           // instantiate computation graph
           LossAttrs loss_attrs = LossAttrs{
               NonconfigurableLossAttrs{LossFunction::CATEGORICAL_CROSSENTROPY}};
           OptimizerAttrs optimizer_attrs =
-              OptimizerAttrs{SGDOptimizerAttrs{/*lr=*/0.001,
-                                               /*momentum=*/0.9,
-                                               /*nesterov=*/false,
-                                               /*weight_decay=*/0.001}};
+              OptimizerAttrs{
+                SGDOptimizerAttrs{
+                  /*lr=*/0.001,
+                  /*momentum=*/0.9,
+                  /*nesterov=*/false,
+                  /*weight_decay=*/0.001,
+                },
+              };
 
           std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor>
               input_tensors;
@@ -375,68 +425,102 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           MachineSpaceCoordinate gpu1{0_n, 1_n, DeviceType::GPU};
           ParallelTensorSpaceCoordinate tensor_coord0{0_n, 0_n, FFOrdered{0_n}};
           ParallelTensorSpaceCoordinate tensor_coord1{0_n, 1_n, FFOrdered{0_n}};
-          MappedParallelComputationGraph mpcg{
-              pcg,
+          MappedParallelComputationGraph mpcg = mapped_pcg_from_pcg_and_mapped_op_task_groups(
+            /*pcg=*/pcg,
+            /*mapped_op_task_groups=*/{
               {
-                  {inputs_layer.parallel_layer,
-                   MappedOperatorTaskGroup{
-                       {{gpu0,
-                         OperatorAtomicTaskShardBinding{
-                             {{TensorSlotName::OUTPUT, tensor_coord0}}}}}}},
-                  {inputs_layer_2.parallel_layer,
-                   MappedOperatorTaskGroup{
-                       {{gpu0,
-                         OperatorAtomicTaskShardBinding{
-                             {{TensorSlotName::OUTPUT, tensor_coord0}}}}}}},
-                  {add_operator_1.parallel_layer,
-                   MappedOperatorTaskGroup{
-                       {{gpu0,
-                         OperatorAtomicTaskShardBinding{{
-                             {TensorSlotName::LHS_INPUT, tensor_coord0},
-                             {TensorSlotName::RHS_INPUT, tensor_coord0},
-                             {TensorSlotName::OUTPUT, tensor_coord0},
-                         }}}}}},
-                  {repl_operator_1.parallel_layer,
-                   MappedOperatorTaskGroup{
-                       {{gpu0,
-                         OperatorAtomicTaskShardBinding{{
-                             {TensorSlotName::OUTPUT, tensor_coord0},
-                         }}},
-                        {gpu1,
-                         OperatorAtomicTaskShardBinding{{
-                             {TensorSlotName::OUTPUT, tensor_coord1},
-                         }}}}}},
-                  {relu_operator_1.parallel_layer,
-                   MappedOperatorTaskGroup{{
-                       {gpu0,
-                        OperatorAtomicTaskShardBinding{{
-                            {TensorSlotName::INPUT, tensor_coord0},
-                            {TensorSlotName::OUTPUT, tensor_coord0},
-                        }}},
-                       {gpu1,
-                        OperatorAtomicTaskShardBinding{{
-                            {TensorSlotName::INPUT, tensor_coord1},
-                            {TensorSlotName::OUTPUT, tensor_coord1},
-                        }}},
-                   }}},
+                inputs_layer.parallel_layer,
+                MappedOperatorTaskGroup{{
+                  {
+                    gpu0,
+                    OperatorAtomicTaskShardBinding{
+                      {{TensorSlotName::OUTPUT, tensor_coord0}}},
+                  },
+                }},
               },
-          };
+              {
+                inputs_layer_2.parallel_layer,
+                MappedOperatorTaskGroup{{
+                  {
+                    gpu0,
+                    OperatorAtomicTaskShardBinding{
+                      {{TensorSlotName::OUTPUT, tensor_coord0}}},
+                  }},
+                },
+              },
+              {
+                add_operator_1.parallel_layer,
+                MappedOperatorTaskGroup{{
+                  {
+                    gpu0,
+                    OperatorAtomicTaskShardBinding{{
+                      {TensorSlotName::LHS_INPUT, tensor_coord0},
+                      {TensorSlotName::RHS_INPUT, tensor_coord0},
+                      {TensorSlotName::OUTPUT, tensor_coord0},
+                    }},
+                  },
+                }},
+              },
+              {
+                repl_operator_1.parallel_layer,
+                MappedOperatorTaskGroup{{
+                  {
+                    gpu0,
+                    OperatorAtomicTaskShardBinding{{
+                      {TensorSlotName::OUTPUT, tensor_coord0},
+                    }},
+                  },
+                  {
+                    gpu1,
+                    OperatorAtomicTaskShardBinding{{
+                      {TensorSlotName::OUTPUT, tensor_coord1},
+                    }},
+                  },
+                }},
+              },
+              {
+                relu_operator_1.parallel_layer,
+                MappedOperatorTaskGroup{{
+                  {
+                    gpu0,
+                    OperatorAtomicTaskShardBinding{{
+                      {TensorSlotName::INPUT, tensor_coord0},
+                      {TensorSlotName::OUTPUT, tensor_coord0},
+                    }},
+                  },
+                  {
+                    gpu1,
+                    OperatorAtomicTaskShardBinding{{
+                      {TensorSlotName::INPUT, tensor_coord1},
+                      {TensorSlotName::OUTPUT, tensor_coord1},
+                    }},
+                  },
+                }},
+              },
+            });
 
-          MappedOperatorTaskGroup loss_mapping{
-              {{gpu0,
-                OperatorAtomicTaskShardBinding{{
-                    {TensorSlotName::INPUT, tensor_coord0},
-                    {TensorSlotName::LOGIT, tensor_coord0},
-                }}}}};
+          MappedOperatorTaskGroup loss_mapping{{
+            {
+              gpu0,
+              OperatorAtomicTaskShardBinding{{
+                {TensorSlotName::INPUT, tensor_coord0},
+                {TensorSlotName::LOGIT, tensor_coord0},
+              }},
+            },
+          }};
 
           // instantiate computation graph
           LossAttrs loss_attrs = LossAttrs{
               NonconfigurableLossAttrs{LossFunction::CATEGORICAL_CROSSENTROPY}};
           OptimizerAttrs optimizer_attrs =
-              OptimizerAttrs{SGDOptimizerAttrs{/*lr=*/0.001,
-                                               /*momentum=*/0.9,
-                                               /*nesterov=*/false,
-                                               /*weight_decay=*/0.001}};
+              OptimizerAttrs{
+                SGDOptimizerAttrs{
+                  /*lr=*/0.001,
+                  /*momentum=*/0.9,
+                  /*nesterov=*/false,
+                  /*weight_decay=*/0.001,
+                },
+              };
 
           std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor>
               input_tensors;

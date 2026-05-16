@@ -23,6 +23,7 @@
 #include <rapidcheck.h>
 #include <unordered_map>
 #include <unordered_set>
+#include "utils/containers/require_same.h"
 
 namespace FlexFlow {
 
@@ -112,6 +113,10 @@ public:
 
   std::unordered_map<R, L> const &r_to_l() const {
     return this->m_r_to_l;
+  }
+
+  bool empty() const {
+    return require_same(this->m_l_to_r.empty(), this->m_r_to_l.empty());
   }
 
 private:

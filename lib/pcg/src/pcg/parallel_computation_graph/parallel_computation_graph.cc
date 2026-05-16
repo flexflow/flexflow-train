@@ -36,6 +36,7 @@
 #include "utils/graph/node/node.dtg.h"
 #include "utils/record_formatter.h"
 #include <unordered_set>
+#include "utils/graph/kwarg_dataflow_graph/algorithms/get_kwarg_dataflow_value_uses.h"
 
 namespace FlexFlow {
 
@@ -205,6 +206,20 @@ std::unordered_map<TensorSlotName, ParallelComputationGraphEdge>
     return ParallelComputationGraphEdge{e};
   });
 }
+
+std::unordered_set<parallel_tensor_use_t>
+    pcg_get_parallel_tensor_uses(ParallelComputationGraph const &pcg,
+                                 parallel_tensor_guid_t const &t)
+{
+  std::unordered_set<KwargDataflowInput<TensorSlotName>> raw_uses =
+      get_kwarg_dataflow_value_uses(pcg.raw_graph,
+                                    t.raw_graph_output);
+
+  return transform(raw_uses, [](KwargDataflowInput<TensorSlotName> const &i) {
+    return parallel_tensor_use_t{i};
+  });
+}
+
 
 std::unordered_set<parallel_layer_guid_t>
     get_initial_layers(ParallelComputationGraph const &pcg) {

@@ -11,6 +11,7 @@
 #include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_tensor_guid_t.dtg.h"
 #include <unordered_set>
+#include "pcg/parallel_computation_graph/parallel_tensor_use_t.dtg.h"
 
 namespace FlexFlow {
 
@@ -52,6 +53,10 @@ std::unordered_set<ParallelComputationGraphEdge>
 std::unordered_map<TensorSlotName, ParallelComputationGraphEdge>
     get_incoming_edges(ParallelComputationGraph const &,
                        parallel_layer_guid_t const &);
+
+std::unordered_set<parallel_tensor_use_t>
+    pcg_get_parallel_tensor_uses(ParallelComputationGraph const &,
+                                 parallel_tensor_guid_t const &);
 
 std::unordered_set<parallel_layer_guid_t>
     get_initial_layers(ParallelComputationGraph const &);

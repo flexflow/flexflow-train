@@ -8,6 +8,8 @@
 #include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/labelled_kwarg_dataflow_graph_view_as_dot.h"
 #include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/materialize_labelled_kwarg_dataflow_graph_view.h"
 #include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/rewrite_labelled_kwarg_dataflow_graph_node_labels.h"
+#include "utils/bidict/algorithms/bidict_from_map.h"
+#include "utils/many_to_one/many_to_one_from_map.h"
 
 namespace FlexFlow {
 
@@ -44,6 +46,47 @@ ParallelComputationGraph
   return ParallelComputationGraph{
       raw_graph,
   };
+}
+
+parallel_layer_guid_t mpcg_get_source_layer(MappedParallelComputationGraph const &mpcg,
+                                            parallel_tensor_guid_t const &t)
+{
+  return get_source_layer(pcg_from_mpcg(mpcg), t);
+}
+
+ParallelTensorAttrs mpcg_get_parallel_tensor_attrs(MappedParallelComputationGraph const &mpcg,
+                                                   parallel_tensor_guid_t const &t) 
+{
+  return get_parallel_tensor_attrs(pcg_from_mpcg(mpcg), t);
+}
+
+std::unordered_map<TensorSlotName, ParallelComputationGraphEdge>
+  mpcg_get_incoming_edges(MappedParallelComputationGraph const &mpcg,
+                          parallel_layer_guid_t const &l) 
+{
+  return get_incoming_edges(pcg_from_mpcg(mpcg), l);
+}
+
+std::unordered_set<ParallelComputationGraphEdge>
+  mpcg_get_outgoing_edges(MappedParallelComputationGraph const &mpcg,
+                          parallel_layer_guid_t const &l) 
+{
+  return get_outgoing_edges(pcg_from_mpcg(mpcg), l);
+}
+
+ManyToOne<TensorSlotName, parallel_tensor_guid_t>
+    mpcg_get_incoming_tensors(MappedParallelComputationGraph const &mpcg,
+                              parallel_layer_guid_t const &l)
+{
+  return many_to_one_from_map(get_incoming_tensors(pcg_from_mpcg(mpcg), l));
+}
+
+
+bidict<TensorSlotName, parallel_tensor_guid_t>
+    mpcg_get_outgoing_tensors(MappedParallelComputationGraph const &mpcg,
+                              parallel_layer_guid_t const &l) 
+{
+  return bidict_from_map(get_outgoing_tensors(pcg_from_mpcg(mpcg), l));
 }
 
 MappedParallelComputationGraph mapped_pcg_from_pcg_and_mapped_op_task_groups(

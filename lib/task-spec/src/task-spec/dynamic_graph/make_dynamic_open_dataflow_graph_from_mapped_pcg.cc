@@ -23,24 +23,24 @@ static bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
   // get_incoming_edges returns map<TensorSlotName, ParallelComputationGraphEdge>
   // replicate has exactly one input
   auto [input_slot_name, input_edge] =
-      get_only(get_incoming_edges(mpcg.pcg, replicate_layer));
+      get_only(mpcg_get_incoming_edges(mpcg, replicate_layer));
 
   parallel_layer_guid_t producer_layer = get_src_layer(input_edge);
   TensorSlotName producer_slot = get_src_layer_output_slot_name(input_edge);
 
-  return get_tensor_bindings_for_slot_name(mpcg.mapped_tasks.at(producer_layer),
-                                           producer_slot);
+  return get_tensor_bindings_for_slot_name(
+    /*task_group=*/mpcg_get_mapping_for_layer(mpcg, producer_layer),
+    /*slot_name=*/producer_slot);
 }
 
 static std::unordered_map<parallel_layer_guid_t, TensorSlotName>
     get_consumers_of_tensor(MappedParallelComputationGraph const &mpcg,
                             parallel_tensor_guid_t const &tensor) {
-  parallel_layer_guid_t producer_layer = get_source_layer(mpcg.pcg, tensor);
+  parallel_layer_guid_t producer_layer = mpcg_get_source_layer(mpcg, tensor);
 
   std::unordered_map<parallel_layer_guid_t, TensorSlotName> result;
   // get_outgoing_edges returns unordered_set<ParallelComputationGraphEdge>
-  for (ParallelComputationGraphEdge const &edge :
-       get_outgoing_edges(mpcg.pcg, producer_layer)) {
+  for (ParallelComputationGraphEdge const &edge : mpcg_get_outgoing_edges(mpcg, producer_layer)) {
     if (get_parallel_tensor(edge) == tensor) {
       result.insert(
           std::pair{get_dst_layer(edge), get_dst_layer_input_slot_name(edge)});
@@ -55,7 +55,7 @@ static bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
         parallel_layer_guid_t const &replicate_layer) {
 
   auto [output_slot_name, output_tensor_guid] =
-      get_only(get_outgoing_tensors(mpcg.pcg, replicate_layer));
+      get_only(mpcg_get_outgoing_tensors(mpcg, replicate_layer));
 
   auto consumers = get_consumers_of_tensor(mpcg, output_tensor_guid);
   ASSERT(!consumers.empty());
@@ -64,8 +64,7 @@ static bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
   // (discard_copy, machine) pair since replicas are always on different machines
   bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> result;
   for (auto const &[consumer_layer, slot_name] : consumers) {
-    MappedOperatorTaskGroup consumer_mapping =
-        mpcg.mapped_tasks.at(consumer_layer);
+    MappedOperatorTaskGroup consumer_mapping = mpcg_get_mapping_for_layer(mpcg, consumer_layer);
     bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> binding =
         get_tensor_bindings_for_slot_name(consumer_mapping, slot_name);
     for (auto const &[p, m] : binding) {
@@ -80,14 +79,13 @@ static DynamicNodeInvocation
                                ReplicateAttrs const &attrs,
                                MappedParallelComputationGraph const &mpcg) {
   auto [input_slot_name, input_tensor_guid] =
-      get_only(get_incoming_tensors(mpcg.pcg, layer));
-  auto incoming = get_incoming_tensors(mpcg.pcg, layer);
-  ASSERT(!incoming.empty(),
-         "replicate layer has no incoming tensors — "
-         "check PCG edge construction in test");
+      get_only(mpcg_get_incoming_tensors(mpcg, layer).l_to_r());
+
+  auto incoming = mpcg_get_incoming_tensors(mpcg, layer);
+  ASSERT(!incoming.empty(), "Replicate layer has no incoming tensors.");
 
   ParallelTensorAttrs input_attrs =
-      get_parallel_tensor_attrs(mpcg.pcg, input_tensor_guid);
+      mpcg_get_parallel_tensor_attrs(mpcg, input_tensor_guid);
   bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> input_mapping =
       get_input_mapping_for_replicate(mpcg, layer);
 
@@ -101,9 +99,9 @@ static DynamicNodeInvocation
   };
 
   auto [output_slot_name, output_tensor_guid] =
-      get_only(get_outgoing_tensors(mpcg.pcg, layer));
+      get_only(mpcg_get_outgoing_tensors(mpcg, layer));
   ParallelTensorAttrs output_attrs =
-      get_parallel_tensor_attrs(mpcg.pcg, output_tensor_guid);
+      mpcg_get_parallel_tensor_attrs(mpcg, output_tensor_guid);
 
   DynamicValueAttrs output_value{
       /*tensor_guid=*/dynamic_tensor_guid_t{output_tensor_guid},
