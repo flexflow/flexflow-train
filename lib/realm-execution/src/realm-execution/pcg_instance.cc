@@ -216,7 +216,6 @@ static Realm::Event spawn_dynamic_node_invocation(
                           precondition);
   };
 
-  // issue_replicate_bwd lambda
   auto issue_replicate_bwd = [&]() {
 
     DynamicValueAttrs output_grad = get_only(

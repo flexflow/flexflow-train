@@ -54,22 +54,28 @@ parallel_layer_guid_t mpcg_get_source_layer(MappedParallelComputationGraph const
   return get_source_layer(pcg_from_mpcg(mpcg), t);
 }
 
+PCGOperatorAttrs mpcg_get_pcg_op_attrs(MappedParallelComputationGraph const &mpcg,
+                                       parallel_layer_guid_t const &l)
+{
+  return pcg_get_op_attrs(pcg_from_mpcg(mpcg), l);
+}
+
 ParallelTensorAttrs mpcg_get_parallel_tensor_attrs(MappedParallelComputationGraph const &mpcg,
-                                                   parallel_tensor_guid_t const &t) 
+                                                   parallel_tensor_guid_t const &t)
 {
   return get_parallel_tensor_attrs(pcg_from_mpcg(mpcg), t);
 }
 
 std::unordered_map<TensorSlotName, ParallelComputationGraphEdge>
   mpcg_get_incoming_edges(MappedParallelComputationGraph const &mpcg,
-                          parallel_layer_guid_t const &l) 
+                          parallel_layer_guid_t const &l)
 {
   return get_incoming_edges(pcg_from_mpcg(mpcg), l);
 }
 
 std::unordered_set<ParallelComputationGraphEdge>
   mpcg_get_outgoing_edges(MappedParallelComputationGraph const &mpcg,
-                          parallel_layer_guid_t const &l) 
+                          parallel_layer_guid_t const &l)
 {
   return get_outgoing_edges(pcg_from_mpcg(mpcg), l);
 }
@@ -84,9 +90,22 @@ ManyToOne<TensorSlotName, parallel_tensor_guid_t>
 
 bidict<TensorSlotName, parallel_tensor_guid_t>
     mpcg_get_outgoing_tensors(MappedParallelComputationGraph const &mpcg,
-                              parallel_layer_guid_t const &l) 
+                              parallel_layer_guid_t const &l)
 {
   return bidict_from_map(get_outgoing_tensors(pcg_from_mpcg(mpcg), l));
+}
+
+std::unordered_set<ParallelComputationGraphEdge>
+    mpcg_get_edges(MappedParallelComputationGraph const &mpcg)
+{
+  return get_edges(pcg_from_mpcg(mpcg));
+}
+
+std::unordered_set<parallel_tensor_use_t>
+    mpcg_get_parallel_tensor_uses(MappedParallelComputationGraph const &mpcg,
+                                  parallel_tensor_guid_t const &t)
+{
+  return pcg_get_parallel_tensor_uses(pcg_from_mpcg(mpcg), t);
 }
 
 MappedParallelComputationGraph mapped_pcg_from_pcg_and_mapped_op_task_groups(

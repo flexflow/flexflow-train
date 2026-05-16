@@ -213,6 +213,14 @@ struct bidict {
     return this->fwd_map;
   }
 
+  std::unordered_map<L, R> const &l_to_r() const {
+    return this->fwd_map;
+  }
+
+  std::unordered_map<R, L> const &r_to_l() const {
+    return this->bwd_map;
+  }
+
   bidict(std::unordered_map<L, R> const &fwd_map,
          std::unordered_map<R, L> const &bwd_map)
       : fwd_map(fwd_map), bwd_map(bwd_map) {}

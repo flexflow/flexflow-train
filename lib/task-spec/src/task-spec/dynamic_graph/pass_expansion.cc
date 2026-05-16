@@ -5,6 +5,7 @@
 #include "utils/containers/get_only.h"
 #include "utils/containers/merge_disjoint_maps.h"
 #include "utils/containers/transform.h"
+#include "task-spec/dynamic_graph/training_operation_attrs.h"
 
 namespace FlexFlow {
 
@@ -88,6 +89,8 @@ DynamicNodeInvocation perform_fwd_pass_expansion_for_invocation(
 DynamicNodeInvocation perform_bwd_pass_expansion_for_invocation(
     DynamicNodeInvocation const &invocation) {
 
+  TrainingOperationAttrs op_attrs = assert_unwrap(invocation.node_attrs.op_attrs);
+
   auto to_fwd = [](DynamicTensorSlot const &k, DynamicValueAttrs const &v) {
     return std::pair{
         pass_expand_slot(k, FwbTensorType::FORWARD),
@@ -102,56 +105,37 @@ DynamicNodeInvocation perform_bwd_pass_expansion_for_invocation(
     };
   };
 
-  return DynamicNodeInvocation{
-      /*inputs=*/
-      merge_disjoint_maps(std::vector{
-          transform(invocation.inputs, to_fwd),
-          transform(invocation.outputs, to_fwd),
-          transform(invocation.outputs, to_grad),
-      }),
-      /*node_attrs=*/
-      pass_expand_node(invocation.node_attrs, DynamicTaskType::BWD),
-      /*outputs=*/
-      transform(invocation.inputs, to_grad),
+  if (training_op_attrs_has_op_type(op_attrs, OperatorType::REPLICATE)) {
+    auto [input_slot, input] = get_only(invocation.inputs);
+    auto [output_slot, output] = get_only(invocation.outputs);
+
+    DynamicNodeInvocation bwd{
+        /*inputs=*/{
+          to_fwd(output_slot, output),
+          to_grad(output_slot, output),
+        },
+        /*node_attrs=*/
+        pass_expand_node(invocation.node_attrs, DynamicTaskType::BWD),
+        /*outputs=*/{
+          to_grad(input_slot, input),
+        },
+      };
+
+    return bwd;
+  } else {
+    return DynamicNodeInvocation{
+        /*inputs=*/
+        merge_disjoint_maps(std::vector{
+            transform(invocation.inputs, to_fwd),
+            transform(invocation.outputs, to_fwd),
+            transform(invocation.outputs, to_grad),
+        }),
+        /*node_attrs=*/
+        pass_expand_node(invocation.node_attrs, DynamicTaskType::BWD),
+        /*outputs=*/
+        transform(invocation.inputs, to_grad),
+    };
   };
-}
-static std::unordered_set<DynamicNodeInvocation>
-    perform_pass_expansion_for_replicate(
-        DynamicNodeInvocation const &invocation) {
-
-  auto const &[input_slot, input] = get_only(invocation.inputs);
-  auto const &[output_slot, output] = get_only(invocation.outputs);
-
-  // forward: INPUT/FWD → OUTPUT/FWD (copy to replicas)
-  DynamicNodeInvocation fwd{
-      /*inputs=*/{{pass_expand_slot(input_slot, FwbTensorType::FORWARD),
-                   pass_expand_value(input, FwbTensorType::FORWARD)}},
-      /*node_attrs=*/
-      pass_expand_node(invocation.node_attrs, DynamicTaskType::FWD),
-      /*outputs=*/
-      {{pass_expand_slot(output_slot, FwbTensorType::FORWARD),
-        pass_expand_value(output, FwbTensorType::FORWARD)}},
-  };
-
-  // backward: OUTPUT/FWD + OUTPUT/GRAD → INPUT/GRAD (reduce gradients)
-  // The backward node needs the mapping from the output (replicated)
-  // so it knows which replicas to reduce from
-  DynamicNodeAttrs bwd_node_attrs = invocation.node_attrs;
-  bwd_node_attrs.task_type = DynamicTaskType::BWD;
-
-  DynamicNodeInvocation bwd{
-      /*inputs=*/{
-          {pass_expand_slot(output_slot, FwbTensorType::FORWARD),
-           pass_expand_value(output, FwbTensorType::FORWARD)},
-          {pass_expand_slot(output_slot, FwbTensorType::GRADIENT),
-           pass_expand_value(output, FwbTensorType::GRADIENT)},
-      },
-      /*node_attrs=*/bwd_node_attrs,
-      /*outputs=*/
-      {{pass_expand_slot(input_slot, FwbTensorType::GRADIENT),
-        pass_expand_value(input, FwbTensorType::GRADIENT)}},
-  };
-  return {fwd, bwd};
 }
 
 DynamicOpenDataflowGraph
@@ -161,9 +145,6 @@ DynamicOpenDataflowGraph
 
   DynamicOpenDataflowGraph result = flatmap_dynamic_invocation_set(
       g, [](DynamicNodeInvocation const &invocation) {
-        if (is_replicate_attrs(invocation.node_attrs)) {
-          return perform_pass_expansion_for_replicate(invocation);
-        }
         if (invocation.inputs.empty()) {
           return std::unordered_set{
               perform_fwd_pass_expansion_for_invocation(invocation),

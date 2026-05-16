@@ -18,6 +18,9 @@ ParallelComputationGraph pcg_from_mpcg(MappedParallelComputationGraph const &);
 parallel_layer_guid_t mpcg_get_source_layer(MappedParallelComputationGraph const &,
                                             parallel_tensor_guid_t const &);
 
+PCGOperatorAttrs mpcg_get_pcg_op_attrs(MappedParallelComputationGraph const &,
+                                       parallel_layer_guid_t const &);
+
 ParallelTensorAttrs mpcg_get_parallel_tensor_attrs(MappedParallelComputationGraph const &,
                                                    parallel_tensor_guid_t const &);
 
@@ -39,6 +42,10 @@ bidict<TensorSlotName, parallel_tensor_guid_t>
 
 std::unordered_set<ParallelComputationGraphEdge>
     mpcg_get_edges(MappedParallelComputationGraph const &);
+
+std::unordered_set<parallel_tensor_use_t>
+    mpcg_get_parallel_tensor_uses(MappedParallelComputationGraph const &,
+                                  parallel_tensor_guid_t const &);
 
 MappedParallelComputationGraph mapped_pcg_from_pcg_and_mapped_op_task_groups(
     ParallelComputationGraph const &pcg,
