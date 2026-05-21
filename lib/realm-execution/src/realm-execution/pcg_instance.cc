@@ -228,12 +228,11 @@ static Realm::Event spawn_dynamic_node_invocation(
     Realm::RegionInstance dst_inst =
         tensor_instance_backing.backing.at(input_grad).first;
 
-    Realm::ReductionOpID redop_id =
-        get_realm_reduction_op_id_for_redop_id(get_sum_redop_id_for_data_type(
-            assert_unwrap(output_grad.parallel_tensor_shape).data_type));
+    redop_id_t redop_id = get_sum_redop_id_for_data_type(
+        assert_unwrap(output_grad.parallel_tensor_shape).data_type);
 
     // chain reductions sequentially to avoid write races on dst
-    Realm::Event e = precondition;
+    Realm::Event result = precondition;
     for (auto const &[p, m] : assert_unwrap(output_grad.mapping)) {
       DynamicValueAttrs replica_key = output_grad;
       replica_key.mapping =
@@ -243,18 +242,18 @@ static Realm::Event spawn_dynamic_node_invocation(
       Realm::RegionInstance src_inst =
           tensor_instance_backing.backing.at(replica_key).first;
 
-      e = ctx.issue_copy(
+      result = ctx.issue_reduction(
           /*src_shape=*/assert_unwrap(output_grad.parallel_tensor_shape),
           /*src_inst=*/src_inst,
           /*dst_shape=*/assert_unwrap(input_grad.parallel_tensor_shape),
           /*dst_inst=*/dst_inst,
-          /*requests=*/Realm::ProfilingRequestSet{},
-          /*wait_on=*/e,
-          /*priority=*/0,
           /*redop_id=*/redop_id,
-          /*exlusive=*/false);
+          /*is_fold=*/false,
+          /*exlusive=*/false,
+          /*requests=*/Realm::ProfilingRequestSet{},
+          /*wait_on=*/result);
     }
-    return e;
+    return result;
   };
 
   TrainingOperationAttrs op_attrs =

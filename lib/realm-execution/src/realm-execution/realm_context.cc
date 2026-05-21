@@ -7,6 +7,7 @@
 #include "pcg/device_id_t.h"
 #include "pcg/device_type.dtg.h"
 #include "realm-execution/realm_allocator.h"
+#include "realm-execution/redops/redop_id_t.h"
 #include "realm-execution/tasks/task_id_t.dtg.h"
 #include "realm-execution/tasks/task_id_t.h"
 #include "utils/containers/contains_key.h"
@@ -154,6 +155,46 @@ static Realm::IndexSpace<N, T> ispace_from_dims(TensorDims const &dims) {
   return Realm::IndexSpace<N, T>{rect};
 }
 
+[[nodiscard]] static Realm::Event
+    issue_copy_for_field(TensorDims const &dims,
+                         Realm::CopySrcDstField const &src_field,
+                         Realm::CopySrcDstField const &dst_field,
+                         Realm::ProfilingRequestSet const &requests,
+                         Realm::Event wait_on,
+                         int priority) {
+  switch (dims.ff_ordered.num_dims()) {
+#if REALM_MAX_DIM >= 1
+    case 1:
+      return ispace_from_dims<1>(dims).copy(
+          {src_field}, {dst_field}, requests, wait_on, priority);
+#endif
+#if REALM_MAX_DIM >= 2
+    case 2:
+      return ispace_from_dims<2>(dims).copy(
+          {src_field}, {dst_field}, requests, wait_on, priority);
+#endif
+#if REALM_MAX_DIM >= 3
+    case 3:
+      return ispace_from_dims<3>(dims).copy(
+          {src_field}, {dst_field}, requests, wait_on, priority);
+#endif
+#if REALM_MAX_DIM >= 4
+    case 4:
+      return ispace_from_dims<4>(dims).copy(
+          {src_field}, {dst_field}, requests, wait_on, priority);
+#endif
+#if REALM_MAX_DIM >= 5
+    case 5:
+      return ispace_from_dims<5>(dims).copy(
+          {src_field}, {dst_field}, requests, wait_on, priority);
+#endif
+    default:
+      PANIC("TensorShape dims greater than REALM_MAX_DIM: {}",
+            dims.ff_ordered.num_dims());
+      break;
+  }
+}
+
 Realm::Event
     RealmContext::issue_copy(ParallelTensorShape const &src_shape,
                              Realm::RegionInstance src_inst,
@@ -161,9 +202,7 @@ Realm::Event
                              Realm::RegionInstance dst_inst,
                              Realm::ProfilingRequestSet const &requests,
                              Realm::Event wait_on,
-                             int priority,
-                             std::optional<Realm::ReductionOpID> redop_id,
-                             bool exclusive) {
+                             int priority) {
   TensorShape src_piece_shape = get_piece_shape(src_shape);
   TensorShape dst_piece_shape = get_piece_shape(dst_shape);
   ASSERT(src_piece_shape == dst_piece_shape); // For now, assume they match
@@ -185,48 +224,48 @@ Realm::Event
           size_of_datatype(src_piece_shape.data_type).int_from_positive_int()),
       /*subfield_offset=*/0);
 
-  // set reduction op on dst field if provided
-  if (redop_id.has_value()) {
-    dst_field.set_redop(redop_id.value(), /*is_fold=*/false, exclusive);
-  }
+  Realm::Event result = issue_copy_for_field(
+      src_piece_shape.dims, src_field, dst_field, requests, wait_on, priority);
+  this->outstanding_events.push_back(result);
+  return result;
+}
 
-  Realm::Event result;
-  switch (src_piece_shape.dims.ff_ordered.num_dims()) {
-#if REALM_MAX_DIM >= 1
-    case 1:
-      result = ispace_from_dims<1>(src_piece_shape.dims)
-                   .copy({src_field}, {dst_field}, requests, wait_on, priority);
-      break;
-#endif
-#if REALM_MAX_DIM >= 2
-    case 2:
-      result = ispace_from_dims<2>(src_piece_shape.dims)
-                   .copy({src_field}, {dst_field}, requests, wait_on, priority);
-      break;
-#endif
-#if REALM_MAX_DIM >= 3
-    case 3:
-      result = ispace_from_dims<3>(src_piece_shape.dims)
-                   .copy({src_field}, {dst_field}, requests, wait_on, priority);
-      break;
-#endif
-#if REALM_MAX_DIM >= 4
-    case 4:
-      result = ispace_from_dims<4>(src_piece_shape.dims)
-                   .copy({src_field}, {dst_field}, requests, wait_on, priority);
-      break;
-#endif
-#if REALM_MAX_DIM >= 5
-    case 5:
-      result = ispace_from_dims<5>(src_piece_shape.dims)
-                   .copy({src_field}, {dst_field}, requests, wait_on, priority);
-      break;
-#endif
-    default:
-      PANIC("TensorShape dims greater than REALM_MAX_DIM: {}",
-            src_piece_shape.dims.ff_ordered.num_dims());
-      break;
-  }
+Realm::Event
+    RealmContext::issue_reduction(ParallelTensorShape const &src_shape,
+                                  Realm::RegionInstance src_inst,
+                                  ParallelTensorShape const &dst_shape,
+                                  Realm::RegionInstance dst_inst,
+                                  redop_id_t redop_id,
+                                  bool is_fold,
+                                  bool exclusive,
+                                  Realm::ProfilingRequestSet const &requests,
+                                  Realm::Event wait_on,
+                                  int priority) {
+  TensorShape src_piece_shape = get_piece_shape(src_shape);
+  TensorShape dst_piece_shape = get_piece_shape(dst_shape);
+  ASSERT(src_piece_shape == dst_piece_shape); // For now, assume they match
+
+  Realm::CopySrcDstField src_field;
+  src_field.set_field(
+      /*inst=*/src_inst,
+      /*field_id=*/0,
+      /*size=*/
+      static_cast<size_t>(
+          size_of_datatype(src_piece_shape.data_type).int_from_positive_int()),
+      /*subfield_offset=*/0);
+  Realm::CopySrcDstField dst_field;
+  dst_field.set_field(
+      /*inst=*/dst_inst,
+      /*field_id=*/0,
+      /*size=*/
+      static_cast<size_t>(
+          size_of_datatype(src_piece_shape.data_type).int_from_positive_int()),
+      /*subfield_offset=*/0);
+  dst_field.set_redop(
+      get_realm_reduction_op_id_for_redop_id(redop_id), is_fold, exclusive);
+
+  Realm::Event result = issue_copy_for_field(
+      src_piece_shape.dims, src_field, dst_field, requests, wait_on, priority);
   this->outstanding_events.push_back(result);
   return result;
 }
