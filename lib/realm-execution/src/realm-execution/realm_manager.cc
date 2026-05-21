@@ -1,6 +1,7 @@
 #include "realm-execution/realm_manager.h"
 #include "realm-execution/realm_context.h"
 #include "realm-execution/tasks/realm_task_registry.h"
+#include "realm-execution/redops/realm_redop_registry.h"
 
 namespace FlexFlow {
 
@@ -9,8 +10,9 @@ RealmManager::RealmManager(int *argc, char ***argv)
   bool ok = this->get_runtime().init(argc, argv);
   ASSERT(ok);
 
-  // Register all tasks at initialization time so we don't need to later
+  // Register all tasks and redops at initialization time so we don't need to later
   register_all_tasks().wait();
+  register_all_redops(this->get_runtime());
 }
 
 RealmManager::~RealmManager() {
