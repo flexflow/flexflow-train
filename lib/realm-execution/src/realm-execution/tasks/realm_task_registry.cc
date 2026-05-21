@@ -49,7 +49,6 @@ Realm::Event register_all_tasks() {
       task_id_t::REDUCE_INIT_TASK_ID,
       task_id_t::REDUCTION_INIT_TASK_ID,
       task_id_t::REPARTITION_INIT_TASK_ID,
-      task_id_t::REPLICATE_INIT_TASK_ID,
       task_id_t::SOFTMAX_INIT_TASK_ID,
   };
 
@@ -86,7 +85,6 @@ Realm::Event register_all_tasks() {
       task_id_t::REDUCE_FWD_TASK_ID,
       task_id_t::REDUCTION_FWD_TASK_ID,
       task_id_t::REPARTITION_FWD_TASK_ID,
-      task_id_t::REPLICATE_FWD_TASK_ID,
       task_id_t::RESHAPE_FWD_TASK_ID,
       task_id_t::REVERSE_FWD_TASK_ID,
       task_id_t::SOFTMAX_FWD_TASK_ID,
@@ -115,7 +113,6 @@ Realm::Event register_all_tasks() {
       task_id_t::REDUCE_BWD_TASK_ID,
       task_id_t::REDUCTION_BWD_TASK_ID,
       task_id_t::REPARTITION_BWD_TASK_ID,
-      task_id_t::REPLICATE_BWD_TASK_ID,
       task_id_t::RESHAPE_BWD_TASK_ID,
       task_id_t::REVERSE_BWD_TASK_ID,
       task_id_t::SOFTMAX_BWD_TASK_ID,
