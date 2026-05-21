@@ -217,14 +217,11 @@ static Realm::Event spawn_dynamic_node_invocation(
   };
 
   auto issue_replicate_bwd = [&]() {
-
-    DynamicValueAttrs output_grad = get_only(
-      values(
-        filter_keys(
-          invocation.inputs,
-          [](DynamicTensorSlot const &s) -> bool {
-            return s.slot_tensor_role == DynamicTensorRole{FwbTensorType::GRADIENT};
-          })));
+    DynamicValueAttrs output_grad = get_only(values(
+        filter_keys(invocation.inputs, [](DynamicTensorSlot const &s) -> bool {
+          return s.slot_tensor_role ==
+                 DynamicTensorRole{FwbTensorType::GRADIENT};
+        })));
 
     DynamicValueAttrs input_grad = get_only(values(invocation.outputs));
 
@@ -246,15 +243,15 @@ static Realm::Event spawn_dynamic_node_invocation(
           tensor_instance_backing.backing.at(replica_key).first;
 
       e = ctx.issue_copy(
-        /*src_shape=*/assert_unwrap(output_grad.parallel_tensor_shape),
-        /*src_inst=*/src_inst,
-        /*dst_shape=*/assert_unwrap(input_grad.parallel_tensor_shape),
-        /*dst_inst=*/dst_inst,
-        /*requests=*/Realm::ProfilingRequestSet{},
-        /*wait_on=*/e,
-        /*priority=*/0,
-        /*redop_id=*/redop_id,
-        /*exlusive=*/false);
+          /*src_shape=*/assert_unwrap(output_grad.parallel_tensor_shape),
+          /*src_inst=*/src_inst,
+          /*dst_shape=*/assert_unwrap(input_grad.parallel_tensor_shape),
+          /*dst_inst=*/dst_inst,
+          /*requests=*/Realm::ProfilingRequestSet{},
+          /*wait_on=*/e,
+          /*priority=*/0,
+          /*redop_id=*/redop_id,
+          /*exlusive=*/false);
     }
     return e;
   };

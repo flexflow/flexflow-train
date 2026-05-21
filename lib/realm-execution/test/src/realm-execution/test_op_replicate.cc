@@ -13,6 +13,7 @@
 #include "op-attrs/tensor_slot_name.dtg.h"
 #include "pcg/device_type.dtg.h"
 #include "pcg/machine_space_coordinate.dtg.h"
+#include "pcg/mapped_parallel_computation_graph/mapped_parallel_computation_graph.h"
 #include "pcg/mapped_parallel_computation_graph/operator_atomic_task_shard_binding.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
@@ -27,7 +28,6 @@
 #include "test/utils/doctest/check_kv.h"
 #include "utils/containers/require_only_key.h"
 #include <doctest/doctest.h>
-#include "pcg/mapped_parallel_computation_graph/mapped_parallel_computation_graph.h"
 
 namespace test {
 
@@ -49,7 +49,8 @@ static bool did_loss_decrease(GenericTensorAccessorR const &first_epoch,
       compare_tensor_accessors_le(last_epoch, first_epoch, allocator));
 }
 
-MappedParallelComputationGraph make_test_mpcg_for_device_type(DeviceType device_type) {
+MappedParallelComputationGraph
+    make_test_mpcg_for_device_type(DeviceType device_type) {
   positive_int batch_size = 10_p;
   positive_int data_dim = 16_p;
   positive_int hidden_dim = 32_p;
@@ -63,8 +64,8 @@ MappedParallelComputationGraph make_test_mpcg_for_device_type(DeviceType device_
 
   ParallelComputationGraph pcg = empty_parallel_computation_graph();
 
-  TensorShape input_tensor_shape = TensorShape{
-      TensorDims{FFOrdered{batch_size, data_dim}}, DataType::FLOAT};
+  TensorShape input_tensor_shape =
+      TensorShape{TensorDims{FFOrdered{batch_size, data_dim}}, DataType::FLOAT};
 
   ParallelLayerAddedResult inputs_layer =
       pcg_add_input_layer(pcg, input_tensor_shape);
@@ -144,91 +145,92 @@ MappedParallelComputationGraph make_test_mpcg_for_device_type(DeviceType device_
       /*discard_copy_component=*/1_n,
       /*shard_component=*/FFOrdered{0_n}};
 
-  MappedParallelComputationGraph mpcg = mapped_pcg_from_pcg_and_mapped_op_task_groups(
-      /*pcg=*/pcg,
-      /*mapped_op_task_groups=*/{
-        {
-          inputs_layer.parallel_layer,
-          MappedOperatorTaskGroup{
-            {
+  MappedParallelComputationGraph mpcg =
+      mapped_pcg_from_pcg_and_mapped_op_task_groups(
+          /*pcg=*/pcg,
+          /*mapped_op_task_groups=*/{
               {
-                cpu0,
-                OperatorAtomicTaskShardBinding{{
-                  {TensorSlotName::OUTPUT, tensor_coord0},
-                }},
-              },
-            },
-          },
-        },
-        {
-          inputs_layer_2.parallel_layer,
-          MappedOperatorTaskGroup{
-            {
-              {
-                cpu0,
-                OperatorAtomicTaskShardBinding{{
-                  {TensorSlotName::OUTPUT, tensor_coord0},
-                }},
-              },
-            },
-          },
-        },
-        {
-          add_operator_1.parallel_layer,
-          MappedOperatorTaskGroup{
-            {
-              {
-                cpu0,
-                OperatorAtomicTaskShardBinding{{
-                    {TensorSlotName::LHS_INPUT, tensor_coord0},
-                    {TensorSlotName::RHS_INPUT, tensor_coord0},
-                    {TensorSlotName::OUTPUT, tensor_coord0},
-                }},
-              },
-            },
-          },
-        },
-        {
-          repl_operator_1.parallel_layer,
-          MappedOperatorTaskGroup{
-            {
-              {
-                cpu0,
-                OperatorAtomicTaskShardBinding{{
-                  {TensorSlotName::OUTPUT, tensor_coord0},
-                }},
+                  inputs_layer.parallel_layer,
+                  MappedOperatorTaskGroup{
+                      {
+                          {
+                              cpu0,
+                              OperatorAtomicTaskShardBinding{{
+                                  {TensorSlotName::OUTPUT, tensor_coord0},
+                              }},
+                          },
+                      },
+                  },
               },
               {
-                cpu1,
-                OperatorAtomicTaskShardBinding{{
-                   {TensorSlotName::OUTPUT, tensor_coord1},
-                }},
-              },
-            },
-          },
-        },
-        {
-          relu_operator_1.parallel_layer,
-          MappedOperatorTaskGroup{
-            {
-              {
-                cpu0,
-                OperatorAtomicTaskShardBinding{{
-                  {TensorSlotName::INPUT, tensor_coord0},
-                  {TensorSlotName::OUTPUT, tensor_coord0},
-                }},
+                  inputs_layer_2.parallel_layer,
+                  MappedOperatorTaskGroup{
+                      {
+                          {
+                              cpu0,
+                              OperatorAtomicTaskShardBinding{{
+                                  {TensorSlotName::OUTPUT, tensor_coord0},
+                              }},
+                          },
+                      },
+                  },
               },
               {
-                cpu1,
-                OperatorAtomicTaskShardBinding{{
-                  {TensorSlotName::INPUT, tensor_coord1},
-                  {TensorSlotName::OUTPUT, tensor_coord1},
-                }},
+                  add_operator_1.parallel_layer,
+                  MappedOperatorTaskGroup{
+                      {
+                          {
+                              cpu0,
+                              OperatorAtomicTaskShardBinding{{
+                                  {TensorSlotName::LHS_INPUT, tensor_coord0},
+                                  {TensorSlotName::RHS_INPUT, tensor_coord0},
+                                  {TensorSlotName::OUTPUT, tensor_coord0},
+                              }},
+                          },
+                      },
+                  },
               },
-            },
-          },
-        },
-      });
+              {
+                  repl_operator_1.parallel_layer,
+                  MappedOperatorTaskGroup{
+                      {
+                          {
+                              cpu0,
+                              OperatorAtomicTaskShardBinding{{
+                                  {TensorSlotName::OUTPUT, tensor_coord0},
+                              }},
+                          },
+                          {
+                              cpu1,
+                              OperatorAtomicTaskShardBinding{{
+                                  {TensorSlotName::OUTPUT, tensor_coord1},
+                              }},
+                          },
+                      },
+                  },
+              },
+              {
+                  relu_operator_1.parallel_layer,
+                  MappedOperatorTaskGroup{
+                      {
+                          {
+                              cpu0,
+                              OperatorAtomicTaskShardBinding{{
+                                  {TensorSlotName::INPUT, tensor_coord0},
+                                  {TensorSlotName::OUTPUT, tensor_coord0},
+                              }},
+                          },
+                          {
+                              cpu1,
+                              OperatorAtomicTaskShardBinding{{
+                                  {TensorSlotName::INPUT, tensor_coord1},
+                                  {TensorSlotName::OUTPUT, tensor_coord1},
+                              }},
+                          },
+                      },
+                  },
+              },
+          });
 
   return mpcg;
 }
@@ -245,21 +247,20 @@ TEST_SUITE(FF_TEST_SUITE) {
         manager.start_controller([](RealmContext &ctx) {
           Allocator allocator = ctx.get_current_device_allocator();
 
-          MappedParallelComputationGraph mpcg = make_test_mpcg_for_device_type(DeviceType::CPU);
-
+          MappedParallelComputationGraph mpcg =
+              make_test_mpcg_for_device_type(DeviceType::CPU);
 
           std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor>
               input_tensors;
 
-          OptimizerAttrs optimizer_attrs =
-              OptimizerAttrs{
-                SGDOptimizerAttrs{
+          OptimizerAttrs optimizer_attrs = OptimizerAttrs{
+              SGDOptimizerAttrs{
                   /*lr=*/0.001,
                   /*momentum=*/0.9,
                   /*nesterov=*/false,
                   /*weight_decay=*/0.001,
-                },
-              };
+              },
+          };
 
           DistributedFfHandle device_handle = create_distributed_ff_handle(
               ctx,
@@ -303,17 +304,17 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         manager.start_controller([](RealmContext &ctx) {
           Allocator allocator = ctx.get_current_device_allocator();
 
-          MappedParallelComputationGraph mpcg = make_test_mpcg_for_device_type(DeviceType::GPU);
+          MappedParallelComputationGraph mpcg =
+              make_test_mpcg_for_device_type(DeviceType::GPU);
 
-          OptimizerAttrs optimizer_attrs =
-              OptimizerAttrs{
-                SGDOptimizerAttrs{
+          OptimizerAttrs optimizer_attrs = OptimizerAttrs{
+              SGDOptimizerAttrs{
                   /*lr=*/0.001,
                   /*momentum=*/0.9,
                   /*nesterov=*/false,
                   /*weight_decay=*/0.001,
-                },
-              };
+              },
+          };
 
           std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor>
               input_tensors;
