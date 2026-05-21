@@ -1,8 +1,8 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_BIDICT_ALGORITHMS_MERGE_DISJOINT_BIDICTS_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_BIDICT_ALGORITHMS_MERGE_DISJOINT_BIDICTS_H
 
-#include "utils/containers/foldl.h"
 #include "utils/bidict/algorithms/binary_merge_disjoint_bidicts.h"
+#include "utils/containers/foldl.h"
 
 namespace FlexFlow {
 
@@ -13,8 +13,7 @@ bidict<K, V> merge_disjoint_bidicts(C const &c) {
   bidict<K, V> empty = {};
   return foldl(c,
                /*init=*/empty,
-               [](bidict<K, V> const &lhs,
-                  bidict<K, V> const &rhs) {
+               [](bidict<K, V> const &lhs, bidict<K, V> const &rhs) {
                  return binary_merge_disjoint_bidicts(lhs, rhs);
                });
 }

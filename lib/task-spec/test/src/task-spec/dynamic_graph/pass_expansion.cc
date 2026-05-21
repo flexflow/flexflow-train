@@ -1,8 +1,8 @@
 #include "task-spec/dynamic_graph/pass_expansion.h"
+#include "op-attrs/ops/element_unary.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
 #include <doctest/doctest.h>
-#include "op-attrs/ops/element_unary.h"
 
 using namespace ::FlexFlow;
 
@@ -37,18 +37,17 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     dynamic_layer_guid_t layer_guid{parallel_layer_guid_t{Node{20}}};
 
-    TrainingOperationAttrs op_attrs = 
-      TrainingOperationAttrs{
+    TrainingOperationAttrs op_attrs = TrainingOperationAttrs{
         PCGOperatorAttrs{
-          LinearAttrs{
-            /*out_channels=*/8_p,
-            /*use_bias=*/true,
-            /*data_type=*/DataType::FLOAT,
-            /*activation=*/std::nullopt,
-            /*regularizer=*/std::nullopt,
-          },
+            LinearAttrs{
+                /*out_channels=*/8_p,
+                /*use_bias=*/true,
+                /*data_type=*/DataType::FLOAT,
+                /*activation=*/std::nullopt,
+                /*regularizer=*/std::nullopt,
+            },
         },
-      };
+    };
 
     DynamicNodeInvocation invocation = [&]() -> DynamicNodeInvocation {
       DynamicValueAttrs v1 = mk_value_attrs(0, std::nullopt);
@@ -157,18 +156,17 @@ TEST_SUITE(FF_TEST_SUITE) {
     DynamicValueAttrs v3_grad = mk_value_attrs(2, grad_role);
 
     SUBCASE("normal operator") {
-      TrainingOperationAttrs op_attrs = 
-        TrainingOperationAttrs{
+      TrainingOperationAttrs op_attrs = TrainingOperationAttrs{
           PCGOperatorAttrs{
-            LinearAttrs{
-              /*out_channels=*/8_p,
-              /*use_bias=*/true,
-              /*data_type=*/DataType::FLOAT,
-              /*activation=*/std::nullopt,
-              /*regularizer=*/std::nullopt,
-            },
+              LinearAttrs{
+                  /*out_channels=*/8_p,
+                  /*use_bias=*/true,
+                  /*data_type=*/DataType::FLOAT,
+                  /*activation=*/std::nullopt,
+                  /*regularizer=*/std::nullopt,
+              },
           },
-        };
+      };
 
       DynamicNodeInvocation invocation = [&]() -> DynamicNodeInvocation {
         return DynamicNodeInvocation{
@@ -227,14 +225,13 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("replicate operator optimization") {
-      TrainingOperationAttrs op_attrs = 
-        TrainingOperationAttrs{
+      TrainingOperationAttrs op_attrs = TrainingOperationAttrs{
           PCGOperatorAttrs{
-            ReplicateAttrs{
-              /*replicate_degree=*/2_p,
-            },
+              ReplicateAttrs{
+                  /*replicate_degree=*/2_p,
+              },
           },
-        };
+      };
 
       DynamicNodeInvocation invocation = [&]() -> DynamicNodeInvocation {
         return DynamicNodeInvocation{
@@ -262,7 +259,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       DynamicNodeInvocation correct = [&]() -> DynamicNodeInvocation {
         DynamicTensorRole fwd_role = DynamicTensorRole{FwbTensorType::FORWARD};
-        DynamicTensorRole grad_role = DynamicTensorRole{FwbTensorType::GRADIENT};
+        DynamicTensorRole grad_role =
+            DynamicTensorRole{FwbTensorType::GRADIENT};
 
         return DynamicNodeInvocation{
             /*inputs=*/{
@@ -324,27 +322,26 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     TrainingOperationAttrs input_op_attrs = TrainingOperationAttrs{
-      PCGOperatorAttrs{
-        InputAttrs{
-          TensorShape{
-            TensorDims{
-              FFOrdered<positive_int>{
-                4_p,
-                8_p,
-              },
+        PCGOperatorAttrs{
+            InputAttrs{
+                TensorShape{
+                    TensorDims{
+                        FFOrdered<positive_int>{
+                            4_p,
+                            8_p,
+                        },
+                    },
+                    DataType::FLOAT,
+                },
             },
-            DataType::FLOAT,
-          },
         },
-      },
     };
 
     TrainingOperationAttrs relu_op_attrs = TrainingOperationAttrs{
-      PCGOperatorAttrs{
-        make_relu_attrs(),
-      },
+        PCGOperatorAttrs{
+            make_relu_attrs(),
+        },
     };
-
 
     DynamicOpenDataflowGraph input = [&]() -> DynamicOpenDataflowGraph {
       DynamicNodeAttrs n1 = mk_node_attrs(10, input_op_attrs, std::nullopt);
@@ -396,10 +393,14 @@ TEST_SUITE(FF_TEST_SUITE) {
     DynamicOpenDataflowGraph result = perform_pass_expansion(input);
 
     DynamicOpenDataflowGraph correct = [&]() -> DynamicOpenDataflowGraph {
-      DynamicNodeAttrs n1_fwd = mk_node_attrs(10, input_op_attrs, DynamicTaskType::FWD);
-      DynamicNodeAttrs n2_fwd = mk_node_attrs(11, relu_op_attrs, DynamicTaskType::FWD);
-      DynamicNodeAttrs n1_bwd = mk_node_attrs(10, input_op_attrs, DynamicTaskType::BWD);
-      DynamicNodeAttrs n2_bwd = mk_node_attrs(11, relu_op_attrs, DynamicTaskType::BWD);
+      DynamicNodeAttrs n1_fwd =
+          mk_node_attrs(10, input_op_attrs, DynamicTaskType::FWD);
+      DynamicNodeAttrs n2_fwd =
+          mk_node_attrs(11, relu_op_attrs, DynamicTaskType::FWD);
+      DynamicNodeAttrs n1_bwd =
+          mk_node_attrs(10, input_op_attrs, DynamicTaskType::BWD);
+      DynamicNodeAttrs n2_bwd =
+          mk_node_attrs(11, relu_op_attrs, DynamicTaskType::BWD);
 
       DynamicValueAttrs v1_activation =
           mk_value_attrs(0, mk_dynamic_tensor_role_fwd());

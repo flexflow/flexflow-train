@@ -1,11 +1,11 @@
 #include "task-spec/dynamic_graph/pass_expansion.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
+#include "task-spec/dynamic_graph/training_operation_attrs.h"
 #include "utils/containers/are_all_same.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/merge_disjoint_maps.h"
 #include "utils/containers/transform.h"
-#include "task-spec/dynamic_graph/training_operation_attrs.h"
 
 namespace FlexFlow {
 
@@ -84,7 +84,8 @@ DynamicNodeInvocation perform_fwd_pass_expansion_for_invocation(
 DynamicNodeInvocation perform_bwd_pass_expansion_for_invocation(
     DynamicNodeInvocation const &invocation) {
 
-  TrainingOperationAttrs op_attrs = assert_unwrap(invocation.node_attrs.op_attrs);
+  TrainingOperationAttrs op_attrs =
+      assert_unwrap(invocation.node_attrs.op_attrs);
 
   auto to_fwd = [](DynamicTensorSlot const &k, DynamicValueAttrs const &v) {
     return std::pair{
@@ -106,15 +107,16 @@ DynamicNodeInvocation perform_bwd_pass_expansion_for_invocation(
 
     DynamicNodeInvocation bwd{
         /*inputs=*/{
-          to_fwd(output_slot, output),
-          to_grad(output_slot, output),
+            to_fwd(output_slot, output),
+            to_grad(output_slot, output),
         },
         /*node_attrs=*/
         pass_expand_node(invocation.node_attrs, DynamicTaskType::BWD),
-        /*outputs=*/{
-          to_grad(input_slot, input),
+        /*outputs=*/
+        {
+            to_grad(input_slot, input),
         },
-      };
+    };
 
     return bwd;
   } else {

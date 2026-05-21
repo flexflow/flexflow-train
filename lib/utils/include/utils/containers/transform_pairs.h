@@ -21,7 +21,8 @@ template <typename F,
           typename L,
           typename R,
           typename Out = std::invoke_result_t<F, L, R>>
-std::unordered_set<Out> transform_pairs(std::unordered_set<std::pair<L, R>> const &c, F &&f) {
+std::unordered_set<Out>
+    transform_pairs(std::unordered_set<std::pair<L, R>> const &c, F &&f) {
   auto ff = [&](std::pair<L, R> const &p) -> Out {
     return f(p.first, p.second);
   };

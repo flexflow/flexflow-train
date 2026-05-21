@@ -2,6 +2,7 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_MANY_TO_ONE_MANY_TO_ONE_H
 
 #include "utils/containers/keys.h"
+#include "utils/containers/require_same.h"
 #include "utils/containers/try_at.h"
 #include "utils/containers/unordered_set_of.h"
 #include "utils/containers/values.h"
@@ -19,7 +20,6 @@
 #include <rapidcheck.h>
 #include <unordered_map>
 #include <unordered_set>
-#include "utils/containers/require_same.h"
 
 namespace FlexFlow {
 

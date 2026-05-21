@@ -6,7 +6,7 @@ namespace FlexFlow {
 using K = value_type<0>;
 using V = value_type<1>;
 
-template
-  bidict<K, V> binary_merge_disjoint_bidicts(bidict<K, V> const &, bidict<K, V> const &);
+template bidict<K, V> binary_merge_disjoint_bidicts(bidict<K, V> const &,
+                                                    bidict<K, V> const &);
 
 } // namespace FlexFlow

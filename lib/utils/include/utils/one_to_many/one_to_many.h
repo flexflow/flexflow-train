@@ -4,6 +4,7 @@
 #include "utils/containers/generate_map.h"
 #include "utils/containers/items.h"
 #include "utils/containers/keys.h"
+#include "utils/containers/require_same.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/try_at.h"
 #include "utils/containers/unordered_set_of.h"
@@ -23,7 +24,6 @@
 #include <rapidcheck.h>
 #include <unordered_map>
 #include <unordered_set>
-#include "utils/containers/require_same.h"
 
 namespace FlexFlow {
 

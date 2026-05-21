@@ -109,9 +109,10 @@ SubParallelComputationGraph apply_substitution_from_output_result(
       input_parallel_tensor_guid_t output_graph_input =
           output_expr_to_result_sub_pcg_mapping.input_mapping.at_r(
               output_expr_input);
-      std::unordered_set<parallel_tensor_use_t> uses = get_open_parallel_tensor_uses(
-          substitution_output_graph,
-          open_parallel_tensor_guid_from_input(output_graph_input));
+      std::unordered_set<parallel_tensor_use_t> uses =
+          get_open_parallel_tensor_uses(
+              substitution_output_graph,
+              open_parallel_tensor_guid_from_input(output_graph_input));
       for (parallel_tensor_use_t const &use : uses) {
         SubParallelComputationGraphEdge new_edge =
             subpcg_edge_from_tensor_and_use(base_graph_tensor, use);

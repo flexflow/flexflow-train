@@ -2,7 +2,8 @@
 
 namespace FlexFlow {
 
-parallel_layer_guid_t parallel_tensor_use_get_layer(parallel_tensor_use_t const &u) {
+parallel_layer_guid_t
+    parallel_tensor_use_get_layer(parallel_tensor_use_t const &u) {
   return parallel_layer_guid_t{u.raw_dataflow_input.node};
 }
 

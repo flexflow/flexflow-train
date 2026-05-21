@@ -56,8 +56,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("discard copy degree > 1") {
       positive_int degree = 2_p;
 
-      ParallelTensorShape par_input = make_input(
-          SumDegree{1_p}, DiscardCopyDegree{degree}, 1_p, 1_p, 1_p);
+      ParallelTensorShape par_input =
+          make_input(SumDegree{1_p}, DiscardCopyDegree{degree}, 1_p, 1_p, 1_p);
 
       tl::expected<ParallelTensorShape, std::string> result =
           get_output_shape(attrs, par_input);
@@ -74,6 +74,5 @@ TEST_SUITE(FF_TEST_SUITE) {
           make_input(
               SumDegree{degree}, DiscardCopyDegree{1_p}, 1_p, 1_p, 1_p)));
     }
-
   }
 }
