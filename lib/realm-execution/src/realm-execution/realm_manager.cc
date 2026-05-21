@@ -1,7 +1,7 @@
 #include "realm-execution/realm_manager.h"
 #include "realm-execution/realm_context.h"
-#include "realm-execution/tasks/realm_task_registry.h"
 #include "realm-execution/redops/realm_redop_registry.h"
+#include "realm-execution/tasks/realm_task_registry.h"
 
 namespace FlexFlow {
 

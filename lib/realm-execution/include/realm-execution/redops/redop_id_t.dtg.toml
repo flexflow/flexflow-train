@@ -21,9 +21,6 @@ name = "SUM_INT32_REDOP_ID"
 name = "SUM_INT64_REDOP_ID"
 
 [[values]]
-name = "SUM_HALF_REDOP_ID"
-
-[[values]]
 name = "SUM_FLOAT_REDOP_ID"
 
 [[values]]

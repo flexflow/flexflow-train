@@ -1,4 +1,5 @@
 #include "realm-execution/redops/realm_redop_registry.h"
+#include "realm-execution/redops/redop_id_t.h"
 
 namespace FlexFlow {
 
@@ -120,6 +121,12 @@ private:
 #define __LEGION_CUDA_HD__
 #endif
 
+template <typename T>
+class SumReduction {
+  // Empty definition
+  // Specializations provided for each type
+};
+
 template <>
 class SumReduction<bool> {
 public:
@@ -127,7 +134,6 @@ public:
   typedef bool RHS;
 
   static constexpr bool identity = false;
-  static constexpr int REDOP_ID = LEGION_REDOP_OR_BOOL;
 
   template <bool EXCLUSIVE>
   __LEGION_CUDA_HD__ static void apply(LHS &lhs, RHS rhs);
@@ -142,7 +148,6 @@ public:
   typedef int32_t RHS;
 
   static constexpr int32_t identity = 0;
-  static constexpr int REDOP_ID = LEGION_REDOP_SUM_INT32;
 
   template <bool EXCLUSIVE>
   __LEGION_CUDA_HD__ static void apply(LHS &lhs, RHS rhs);
@@ -157,22 +162,6 @@ public:
   typedef int64_t RHS;
 
   static constexpr int64_t identity = 0;
-  static constexpr int REDOP_ID = LEGION_REDOP_SUM_INT64;
-
-  template <bool EXCLUSIVE>
-  __LEGION_CUDA_HD__ static void apply(LHS &lhs, RHS rhs);
-  template <bool EXCLUSIVE>
-  __LEGION_CUDA_HD__ static void fold(RHS &rhs1, RHS rhs2);
-};
-
-template <>
-class SumReduction<__half> {
-public:
-  typedef __half LHS;
-  typedef __half RHS;
-
-  static inline const __half identity = __half(0, false /*raw*/);
-  static constexpr int REDOP_ID = LEGION_REDOP_SUM_FLOAT16;
 
   template <bool EXCLUSIVE>
   __LEGION_CUDA_HD__ static void apply(LHS &lhs, RHS rhs);
@@ -187,7 +176,6 @@ public:
   typedef float RHS;
 
   static constexpr float identity = 0.f;
-  static constexpr int REDOP_ID = LEGION_REDOP_SUM_FLOAT32;
 
   template <bool EXCLUSIVE>
   __LEGION_CUDA_HD__ static void apply(LHS &lhs, RHS rhs);
@@ -202,7 +190,6 @@ public:
   typedef double RHS;
 
   static constexpr double identity = 0.0;
-  static constexpr int REDOP_ID = LEGION_REDOP_SUM_FLOAT64;
 
   template <bool EXCLUSIVE>
   __LEGION_CUDA_HD__ static void apply(LHS &lhs, RHS rhs);
@@ -383,140 +370,6 @@ __LEGION_CUDA_HD__ inline void SumReduction<int64_t>::fold<false>(RHS &rhs1,
 }
 
 template <>
-__LEGION_CUDA_HD__ inline void SumReduction<__half>::apply<true>(LHS &lhs,
-                                                                 RHS rhs) {
-  lhs = lhs + rhs;
-}
-
-template <>
-__LEGION_CUDA_HD__ inline void SumReduction<__half>::apply<false>(LHS &lhs,
-                                                                  RHS rhs) {
-#if defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)
-#if (__CUDA_ARCH__ >= 700) && (__CUDACC_VER_MAJOR__ >= 10)
-  atomicAdd(&lhs, rhs);
-#else
-  // 16-bit atomics are not supported prior to volta
-  // 32-bit GPU atomics need 4 byte alignment
-  const uintptr_t unaligned = reinterpret_cast<uintptr_t>(&lhs);
-  unsigned const offset = unaligned % sizeof(unsigned int);
-  const uintptr_t aligned = unaligned - offset;
-  unsigned int *ptr = reinterpret_cast<unsigned int *>(aligned);
-  RHS newval = lhs, oldval, other;
-  if (offset == 0) {
-    other = *((&lhs) + 1);
-    do {
-      oldval = newval;
-      newval = newval + rhs;
-      unsigned int const result = atomicCAS(
-          ptr, __hilohalf2uint(other, oldval), __hilohalf2uint(other, newval));
-      newval = __uint2lohalf(result);
-      other = __uint2hihalf(result);
-    } while (oldval != newval);
-  } else {
-    other = *((&lhs) - 1);
-    do {
-      oldval = newval;
-      newval = newval + rhs;
-      unsigned int const result = atomicCAS(
-          ptr, __hilohalf2uint(oldval, other), __hilohalf2uint(newval, other));
-      other = __uint2lohalf(result);
-      newval = __uint2hihalf(result);
-    } while (oldval != newval);
-  }
-#endif
-#else
-#if defined(__cpp_lib_atomic_ref) && (__cpp_lib_atomic_ref >= 201806L)
-  std::atomic_ref<LHS> atomic(lhs);
-  RHS oldval = atomic.load();
-  RHS newval;
-  do {
-    newval = oldval + rhs;
-  } while (!atomic.compare_exchange_weak(oldval, newval));
-#else
-  // No atomic floating point operations so use compare and swap
-  TypePunning::Alias<int32_t, std::array<short, 2>> oldval, newval;
-  TypePunning::AlignedPointer<int32_t> pointer((void *)&lhs);
-  unsigned const offset = pointer.offset() / sizeof(__half);
-  do {
-    oldval.load(pointer);
-    std::array<short, 2> next = oldval.as_two();
-    next[offset] = __convert_float_to_halfint(
-        __convert_halfint_to_float(next[offset]) + float(rhs));
-    newval = next;
-  } while (!__sync_bool_compare_and_swap(
-      (int32_t *)pointer, oldval.as_one(), newval.as_one()));
-#endif
-#endif
-}
-
-template <>
-__LEGION_CUDA_HD__ inline void SumReduction<__half>::fold<true>(RHS &rhs1,
-                                                                RHS rhs2) {
-  rhs1 = rhs1 + rhs2;
-}
-
-template <>
-__LEGION_CUDA_HD__ inline void SumReduction<__half>::fold<false>(RHS &rhs1,
-                                                                 RHS rhs2) {
-#if defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)
-#if (__CUDA_ARCH__ >= 700) && (__CUDACC_VER_MAJOR__ >= 10)
-  atomicAdd(&rhs1, rhs2);
-#else
-  // 16-bit atomics are not supported prior to volta
-  // 32-bit GPU atomics need 4 byte alignment
-  const uintptr_t unaligned = reinterpret_cast<uintptr_t>(&rhs1);
-  unsigned const offset = unaligned % sizeof(unsigned int);
-  const uintptr_t aligned = unaligned - offset;
-  unsigned int *ptr = reinterpret_cast<unsigned int *>(aligned);
-  RHS newval = rhs1, oldval, other;
-  if (offset == 0) {
-    other = *((&rhs1) + 1);
-    do {
-      oldval = newval;
-      newval = newval + rhs2;
-      unsigned int const result = atomicCAS(
-          ptr, __hilohalf2uint(other, oldval), __hilohalf2uint(other, newval));
-      newval = __uint2lohalf(result);
-      other = __uint2hihalf(result);
-    } while (oldval != newval);
-  } else {
-    other = *((&rhs1) - 1);
-    do {
-      oldval = newval;
-      newval = newval + rhs2;
-      unsigned int const result = atomicCAS(
-          ptr, __hilohalf2uint(oldval, other), __hilohalf2uint(newval, other));
-      other = __uint2lohalf(result);
-      newval = __uint2hihalf(result);
-    } while (oldval != newval);
-  }
-#endif
-#else
-#if defined(__cpp_lib_atomic_ref) && (__cpp_lib_atomic_ref >= 201806L)
-  std::atomic_ref<RHS> atomic(rhs1);
-  RHS oldval = atomic.load();
-  RHS newval;
-  do {
-    newval = oldval + rhs2;
-  } while (!atomic.compare_exchange_weak(oldval, newval));
-#else
-  // No atomic floating point operations so use compare and swap
-  TypePunning::Alias<int32_t, std::array<short, 2>> oldval, newval;
-  TypePunning::AlignedPointer<int32_t, alignof(int32_t)> pointer((void *)&rhs1);
-  unsigned const offset = pointer.offset() / sizeof(__half);
-  do {
-    oldval.load(pointer);
-    std::array<short, 2> next = oldval.as_two();
-    next[offset] = __convert_float_to_halfint(
-        __convert_halfint_to_float(next[offset]) + float(rhs2));
-    newval = next;
-  } while (!__sync_bool_compare_and_swap(
-      (int32_t *)pointer, oldval.as_one(), newval.as_one()));
-#endif
-#endif
-}
-
-template <>
 __LEGION_CUDA_HD__ inline void SumReduction<float>::apply<true>(LHS &lhs,
                                                                 RHS rhs) {
   lhs += rhs;
@@ -670,7 +523,7 @@ __LEGION_CUDA_HD__ inline void SumReduction<double>::fold<false>(RHS &rhs1,
 #endif
 }
 
-void Realm::Event register_all_redops(Realm::Runtime rt) {
+void register_all_redops(Realm::Runtime rt) {
   // Registration is synchronous, so no need to capture events here
   rt.register_reduction<SumReduction<bool>>(
       get_realm_reduction_op_id_for_redop_id(redop_id_t::SUM_BOOL_REDOP_ID));
@@ -678,8 +531,6 @@ void Realm::Event register_all_redops(Realm::Runtime rt) {
       get_realm_reduction_op_id_for_redop_id(redop_id_t::SUM_INT32_REDOP_ID));
   rt.register_reduction<SumReduction<int64_t>>(
       get_realm_reduction_op_id_for_redop_id(redop_id_t::SUM_INT64_REDOP_ID));
-  rt.register_reduction<SumReduction<__half>>(
-      get_realm_reduction_op_id_for_redop_id(redop_id_t::SUM_HALF_REDOP_ID));
   rt.register_reduction<SumReduction<float>>(
       get_realm_reduction_op_id_for_redop_id(redop_id_t::SUM_FLOAT_REDOP_ID));
   rt.register_reduction<SumReduction<double>>(

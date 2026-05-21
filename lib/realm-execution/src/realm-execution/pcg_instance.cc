@@ -5,8 +5,8 @@
 #include "realm-execution/distributed_per_device_op_state_initialization.h"
 #include "realm-execution/instance_allocation.h"
 #include "realm-execution/realm_context.h"
+#include "realm-execution/redops/redop_id_t.h"
 #include "realm-execution/tasks/impl/op_task.h"
-#include "realm-execution/tasks/realm_reduction.h"
 #include "realm-execution/tensor_instance_backing.h"
 #include "task-spec/dynamic_graph/copy_insertion.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
@@ -228,8 +228,9 @@ static Realm::Event spawn_dynamic_node_invocation(
     Realm::RegionInstance dst_inst =
         tensor_instance_backing.backing.at(input_grad).first;
 
-    Realm::ReductionOpID redop_id = get_sum_reduction_op_id(
-        assert_unwrap(output_grad.parallel_tensor_shape).data_type);
+    Realm::ReductionOpID redop_id =
+        get_realm_reduction_op_id_for_redop_id(get_sum_redop_id_for_data_type(
+            assert_unwrap(output_grad.parallel_tensor_shape).data_type));
 
     // chain reductions sequentially to avoid write races on dst
     Realm::Event e = precondition;
