@@ -8,6 +8,7 @@
 #include <doctest/doctest.h>
 #include "task-spec/dynamic_graph/dynamic_value_attrs.h"
 #include "task-spec/dynamic_graph/serializable_dynamic_node_invocation.h"
+#include "op-attrs/ops/element_unary.h"
 
 using namespace ::FlexFlow;
 
@@ -250,7 +251,11 @@ TEST_SUITE(FF_TEST_SUITE) {
               /*task_type=*/DynamicTaskType::FWD,
               /*device_coord=*/std::nullopt,
               /*mapping=*/invocation_mapping,
-              /*op_attrs=*/std::nullopt,
+              /*op_attrs=*/TrainingOperationAttrs{
+                PCGOperatorAttrs{
+                  make_relu_attrs(),
+                },
+              },
               /*layer_guid=*/
               dynamic_layer_guid_t{parallel_layer_guid_t{Node{invocation_id}}},
               /*per_device_op_state=*/std::nullopt,

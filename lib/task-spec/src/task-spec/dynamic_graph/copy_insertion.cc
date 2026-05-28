@@ -18,6 +18,7 @@
 #include "utils/containers/set_difference.h"
 #include "utils/containers/transform.h"
 #include "utils/optional.h"
+#include "task-spec/dynamic_graph/training_operation_attrs.h"
 
 namespace FlexFlow {
 
@@ -117,6 +118,12 @@ std::unordered_set<DynamicNodeInvocation> copies_for_invocation_inputs(
   DynamicNodeInvocation const &i,
   std::unordered_map<DynamicValueAttrs, DynamicValueAttrs> const &unmapped_value_to_src_mapped_value)
 {
+  if (training_op_attrs_has_op_type(assert_unwrap(i.node_attrs.op_attrs), OperatorType::REPLICATE)) {
+    // copies should not be inserted before a replicate, as the replicate
+    // implicitly includes the copy operations
+    return {};
+  }
+
   MappedOperatorTaskGroup mapping = assert_unwrap(i.node_attrs.mapping);
 
   auto map_tensor = [&](DynamicTensorSlot const &slot,
