@@ -115,10 +115,10 @@ static void check_incoming_tensor_roles(
                     set_union(input_slots, weight_slots));
   std::unordered_map<TensorSlotName, IncomingTensorRole> current =
       binary_merge_disjoint_maps(
-          generate_map(
+          generate_unordered_map(
               input_slots,
               [](TensorSlotName) { return IncomingTensorRole::INPUT; }),
-          generate_map(weight_slots, [](TensorSlotName) {
+          generate_unordered_map(weight_slots, [](TensorSlotName) {
             return IncomingTensorRole::WEIGHT;
           }));
 
@@ -134,8 +134,8 @@ std::unordered_map<TensorSlotName, tensor_guid_t>
             &weight_initializers,
         std::optional<std::unordered_map<TensorSlotName, CreateGrad>> const
             &outputs) {
-  ASSERT(are_disjoint(keys(inputs), keys(weight_initializers)));
-  check_incoming_tensor_roles(layer, keys(inputs), keys(weight_initializers));
+  ASSERT(are_disjoint(unordered_keys(inputs), unordered_keys(weight_initializers)));
+  check_incoming_tensor_roles(layer, unordered_keys(inputs), unordered_keys(weight_initializers));
 
   std::unordered_map<TensorSlotName, TensorShape> input_shapes = map_values(
       inputs, [&](tensor_guid_t const &t) { return this->get_shape(t); });

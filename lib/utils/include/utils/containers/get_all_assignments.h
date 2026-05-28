@@ -2,7 +2,7 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_GET_ALL_ASSIGNMENTS_H
 
 #include "utils/containers/cartesian_product.h"
-#include "utils/containers/keys.h"
+#include "utils/containers/unordered_keys.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/unordered_map_from_pairs.h"
 #include "utils/containers/unordered_set_of.h"
@@ -26,7 +26,7 @@ std::unordered_set<std::unordered_map<K, V>> get_all_assignments(
     return {{}};
   }
 
-  std::vector<K> ordered_keys = vector_of(keys(options_per_key));
+  std::vector<K> ordered_keys = vector_of(unordered_keys(options_per_key));
   std::vector<std::unordered_set<V>> ordered_value_option_sets = transform(
       ordered_keys, [&](K const &k) { return options_per_key.at(k); });
 

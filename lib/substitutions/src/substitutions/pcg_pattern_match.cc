@@ -76,7 +76,7 @@ void assert_pcg_pattern_match_is_valid_for_pattern_and_subpcg(
 
   std::unordered_set<PatternInput> pattern_inputs = get_inputs(pattern);
   std::unordered_set<PatternInput> match_pattern_inputs =
-      keys(match.input_assignment);
+      unordered_keys(match.input_assignment);
   ASSERT(pattern_inputs == match_pattern_inputs);
 }
 

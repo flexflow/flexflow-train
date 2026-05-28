@@ -1,12 +1,12 @@
 #include "utils/graph/instances/adjacency_multidigraph.h"
 #include "utils/containers/contains_key.h"
 #include "utils/containers/extend.h"
-#include "utils/containers/generate_map.h"
-#include "utils/containers/keys.h"
+#include "utils/containers/generate_unordered_map.h"
 #include "utils/containers/values.h"
 #include "utils/graph/multidigraph/algorithms/get_edges.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/hash/unordered_set.h"
+#include "utils/containers/unordered_keys.h"
 
 namespace FlexFlow {
 
@@ -26,8 +26,8 @@ AdjacencyMultiDiGraph::AdjacencyMultiDiGraph(
 Node AdjacencyMultiDiGraph::add_node() {
   Node new_node = this->node_source.new_node();
   std::unordered_set<Node> all_nodes =
-      set_union(keys(this->adjacency), {new_node});
-  this->adjacency[new_node] = generate_map(all_nodes, [](Node const &) {
+      set_union(unordered_keys(this->adjacency), {new_node});
+  this->adjacency[new_node] = generate_unordered_map(all_nodes, [](Node const &) {
     return std::unordered_set<MultiDiEdge>{};
   });
 
@@ -77,15 +77,15 @@ void AdjacencyMultiDiGraph::remove_edge(MultiDiEdge const &e) {
 
 std::unordered_set<Node>
     AdjacencyMultiDiGraph::query_nodes(NodeQuery const &q) const {
-  return apply_query(q.nodes, keys(this->adjacency));
+  return apply_query(q.nodes, unordered_keys(this->adjacency));
 }
 
 std::unordered_set<MultiDiEdge>
     AdjacencyMultiDiGraph::query_edges(MultiDiEdgeQuery const &q) const {
   std::unordered_set<MultiDiEdge> result;
 
-  std::unordered_set<Node> srcs = apply_query(q.srcs, keys(this->adjacency));
-  std::unordered_set<Node> dsts = apply_query(q.dsts, keys(this->adjacency));
+  std::unordered_set<Node> srcs = apply_query(q.srcs, unordered_keys(this->adjacency));
+  std::unordered_set<Node> dsts = apply_query(q.dsts, unordered_keys(this->adjacency));
   for (Node const &src : srcs) {
     for (Node const &dst : dsts) {
       extend(result, this->adjacency.at(src).at(dst));
@@ -108,8 +108,8 @@ void AdjacencyMultiDiGraph::inplace_materialize_from(
   std::unordered_set<Node> nodes = get_nodes(g);
   std::unordered_set<MultiDiEdge> edges = get_edges(g);
 
-  this->adjacency = generate_map(nodes, [&](Node const &) {
-    return generate_map(
+  this->adjacency = generate_unordered_map(nodes, [&](Node const &) {
+    return generate_unordered_map(
         nodes, [&](Node const &) { return std::unordered_set<MultiDiEdge>{}; });
   });
   this->edge_nodes.clear();

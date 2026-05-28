@@ -12,6 +12,14 @@
 #include "utils/containers/vector_of.h"
 #include "utils/hash/tuple.h"
 #include "utils/nonnegative_int/num_elements.h"
+#include "utils/containers/require_all_same1.h"
+#include "utils/containers/set_of.h"
+#include "utils/containers/keys.h"
+#include "utils/containers/contains.h"
+#include "utils/bidict/algorithms/right_entries.h"
+#include "utils/containers/map_values.h"
+#include "utils/containers/unordered_set_of.h"
+#include "utils/many_to_one/invert_many_to_one.h"
 
 namespace FlexFlow {
 
@@ -23,7 +31,7 @@ MappedOperatorTaskGroup::MappedOperatorTaskGroup(
       transform(vector_of(shard_bindings.right_values()),
                 [&](OperatorAtomicTaskShardBinding const &s)
                     -> std::unordered_set<TensorSlotName> {
-                  return keys(s.tensor_coords);
+                  return unordered_keys(s.tensor_coords);
                 });
 
   std::unordered_set<TensorSlotName> slot_names =
@@ -38,8 +46,6 @@ MappedOperatorTaskGroup::MappedOperatorTaskGroup(
         [&](OperatorAtomicTaskShardBinding const &signature) {
           return ptensor_space_coord_for_slot_name(signature, slot_name);
         });
-
-    ASSERT(are_all_distinct(coords_for_key));
 
     std::vector<num_ptensor_parallel_dims_t> coord_dims_for_key =
         transform(coords_for_key, [](ParallelTensorSpaceCoordinate const &c) {
@@ -92,15 +98,27 @@ bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding> const &
   return this->shard_bindings;
 }
 
-bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
+OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
     get_tensor_bindings_for_slot_name(MappedOperatorTaskGroup const &task_group,
                                       TensorSlotName const &slot_name) {
-  return transform_values(task_group.get_shard_bindings(),
-                          [&](OperatorAtomicTaskShardBinding const &b) {
-                            return ptensor_space_coord_for_slot_name(b,
-                                                                     slot_name);
-                          })
-      .reversed();
+  std::set<TensorSlotName> slot_names = get_slot_names_for_task_group(task_group);
+  ASSERT(contains(slot_names, slot_name));
+
+  std::unordered_map<MachineSpaceCoordinate, ParallelTensorSpaceCoordinate> m =
+    map_values(task_group.get_shard_bindings().as_unordered_map(),
+                    [&](OperatorAtomicTaskShardBinding const &b) -> ParallelTensorSpaceCoordinate {
+                      return ptensor_space_coord_for_slot_name(b, slot_name);
+                    });
+
+  return invert_many_to_one(many_to_one_from_unstructured_relation(unordered_set_of(m)));
+}
+
+std::set<TensorSlotName> get_slot_names_for_task_group(MappedOperatorTaskGroup const &g) {
+  return require_all_same1(
+    transform(vector_of(right_entries(g.get_shard_bindings())),
+              [&](OperatorAtomicTaskShardBinding const &shard_bindings) -> std::set<TensorSlotName> {
+                return keys(shard_bindings.tensor_coords);
+              }));
 }
 
 nlohmann::json

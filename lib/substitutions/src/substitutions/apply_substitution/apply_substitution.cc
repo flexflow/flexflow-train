@@ -10,7 +10,7 @@
 #include "substitutions/sub_parallel_computation_graph_data.h"
 #include "substitutions/sub_parallel_computation_graph_edge.h"
 #include "utils/containers/binary_merge_disjoint_maps.h"
-#include "utils/containers/keys.h"
+#include "utils/containers/unordered_keys.h"
 #include "utils/containers/restrict_keys.h"
 #include "utils/containers/set_minus.h"
 #include "utils/containers/values.h"
@@ -50,7 +50,7 @@ SubParallelComputationGraph apply_substitution_from_output_result(
   require_sub_parallel_computation_graph_data_is_valid(pre_data);
 
   std::unordered_set<parallel_layer_guid_t> pre_nodes =
-      keys(pre_data.node_data);
+      unordered_keys(pre_data.node_data);
   std::unordered_set<parallel_layer_guid_t> matched_nodes =
       unordered_set_of(values(match.node_assignment));
   std::unordered_set<parallel_layer_guid_t> post_nodes_from_original_graph =

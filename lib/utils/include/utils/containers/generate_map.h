@@ -5,7 +5,7 @@
 #include "utils/containers/vector_of.h"
 #include "utils/containers/vector_transform.h"
 #include "utils/type_traits_core.h"
-#include <unordered_map>
+#include <map>
 
 namespace FlexFlow {
 
@@ -13,8 +13,8 @@ template <typename F,
           typename C,
           typename K = get_element_type_t<C>,
           typename V = std::invoke_result_t<F, K>>
-std::unordered_map<K, V> generate_map(C const &c, F const &f) {
-  static_assert(is_hashable_v<K>, "Key type should be hashable (but is not)");
+std::map<K, V> generate_map(C const &c, F &&f) {
+  static_assert(is_lt_comparable_v<K>, "Key type should be ordered (but is not)");
 
   auto transformed =
       vector_transform(vector_of(c), [&](K const &k) -> std::pair<K, V> {

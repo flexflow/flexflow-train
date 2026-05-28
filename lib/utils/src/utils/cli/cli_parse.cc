@@ -2,7 +2,7 @@
 #include "utils/cli/cli_spec.h"
 #include "utils/containers/contains.h"
 #include "utils/containers/enumerate.h"
-#include "utils/containers/generate_map.h"
+#include "utils/containers/generate_unordered_map.h"
 
 namespace FlexFlow {
 
@@ -27,7 +27,7 @@ tl::expected<CLIFlagKey, std::string> cli_parse_flag(CLISpec const &cli,
 tl::expected<CLIParseResult, std::string>
     cli_parse(CLISpec const &cli, std::vector<std::string> const &args) {
   CLIParseResult result = CLIParseResult{
-      generate_map(cli_get_flag_keys(cli),
+      generate_unordered_map(cli_get_flag_keys(cli),
                    [](CLIFlagKey const &) { return false; }),
       {},
   };

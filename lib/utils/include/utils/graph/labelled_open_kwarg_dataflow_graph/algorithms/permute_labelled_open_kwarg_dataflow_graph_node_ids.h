@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_LABELLED_OPEN_KWARG_DATAFLOW_GRAPH_ALGORITHMS_PERMUTE_LABELLED_OPEN_KWARG_DATAFLOW_GRAPH_NODE_IDS_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_LABELLED_OPEN_KWARG_DATAFLOW_GRAPH_ALGORITHMS_PERMUTE_LABELLED_OPEN_KWARG_DATAFLOW_GRAPH_NODE_IDS_H
 
-#include "utils/containers/generate_map.h"
+#include "utils/containers/generate_unordered_map.h"
 #include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/open_kwarg_dataflow_graph_view_with_labelling.h"
 #include "utils/graph/labelled_open_kwarg_dataflow_graph/labelled_open_kwarg_dataflow_graph_view.h"
 #include "utils/graph/node/algorithms/new_node.dtg.h"
@@ -56,13 +56,13 @@ LabelledOpenKwargDataflowGraphView<NodeLabel,
       };
 
   std::unordered_map<Node, NodeLabel> node_labels =
-      generate_map(get_nodes(permuted), [&](Node const &new_node) {
+      generate_unordered_map(get_nodes(permuted), [&](Node const &new_node) {
         return g.at(old_node_from_new(new_node));
       });
 
   std::unordered_map<OpenKwargDataflowValue<GraphInputName, SlotName>,
                      ValueLabel>
-      value_labels = generate_map(
+      value_labels = generate_unordered_map(
           get_all_open_kwarg_dataflow_values(permuted),
           [&](OpenKwargDataflowValue<GraphInputName, SlotName> const
                   &new_value) { return g.at(old_value_from_new(new_value)); });

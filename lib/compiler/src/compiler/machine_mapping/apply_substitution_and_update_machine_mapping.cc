@@ -59,7 +59,7 @@ SearchResult apply_substitution_and_update_machine_mapping(
                                    select_random(substituted_machine_views));
   }
 
-  ASSERT(is_subseteq_of(keys(post_node_data), keys(machine_views)));
+  ASSERT(is_subseteq_of(unordered_keys(post_node_data), unordered_keys(machine_views)));
 
   std::unordered_map<parallel_layer_guid_t, MachineView>
       post_node_machine_views =

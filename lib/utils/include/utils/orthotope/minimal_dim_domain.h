@@ -4,8 +4,7 @@
 #include "utils/containers/are_disjoint.h"
 #include "utils/containers/binary_merge_disjoint_maps.h"
 #include "utils/containers/filtermap_values.h"
-#include "utils/containers/generate_map.h"
-#include "utils/containers/keys.h"
+#include "utils/containers/generate_unordered_map.h"
 #include "utils/containers/map_from_keys_and_values.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/restrict_keys.h"
@@ -16,6 +15,7 @@
 #include "utils/orthotope/dim_ordering.dtg.h"
 #include "utils/orthotope/minimal_dim_domain.dtg.h"
 #include "utils/orthotope/minimal_orthotope.dtg.h"
+#include "utils/containers/unordered_keys.h"
 
 namespace FlexFlow {
 
@@ -70,14 +70,14 @@ DimDomain<T> dim_domain_from_minimal_dim_domain(
           map_values(
               minimal_dim_domain.dims,
               [](int_ge_two x) { return x.positive_int_from_int_ge_two(); }),
-          generate_map(trivial_dims, [](T const &) { return 1_p; })),
+          generate_unordered_map(trivial_dims, [](T const &) { return 1_p; })),
   };
 }
 
 template <typename T>
 std::unordered_set<T>
     get_minimal_domain_dims(MinimalDimDomain<T> const &domain) {
-  return keys(domain.dims);
+  return unordered_keys(domain.dims);
 }
 
 template <typename T>

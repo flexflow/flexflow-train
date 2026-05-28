@@ -79,18 +79,24 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       MappedOperatorTaskGroup partition_mapping = MappedOperatorTaskGroup{
           bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding>{
-              {machine_coord(0_n),
-               OperatorAtomicTaskShardBinding{
-                   {
-                       {TensorSlotName::OUTPUT, ptensor_coord(0_n)},
-                   },
-               }},
-              {machine_coord(1_n),
-               OperatorAtomicTaskShardBinding{
-                   {
-                       {TensorSlotName::OUTPUT, ptensor_coord(1_n)},
-                   },
-               }},
+              {
+                machine_coord(0_n),
+                OperatorAtomicTaskShardBinding{
+                    {
+                        {TensorSlotName::INPUT, ptensor_coord(0_n)},
+                        {TensorSlotName::OUTPUT, ptensor_coord(0_n)},
+                    },
+                },
+              },
+              {
+                machine_coord(1_n),
+                OperatorAtomicTaskShardBinding{
+                    {
+                        {TensorSlotName::INPUT, ptensor_coord(0_n)},
+                        {TensorSlotName::OUTPUT, ptensor_coord(1_n)},
+                    },
+                },
+              },
           },
       };
 
@@ -116,20 +122,26 @@ TEST_SUITE(FF_TEST_SUITE) {
                MappedOperatorTaskGroup{
                    bidict<MachineSpaceCoordinate,
                           OperatorAtomicTaskShardBinding>{
-                       {machine_coord(0_n),
-                        OperatorAtomicTaskShardBinding{
-                            {
-                                {TensorSlotName::LHS_INPUT, ptensor_coord(0_n)},
-                                {TensorSlotName::RHS_INPUT, ptensor_coord(0_n)},
-                            },
-                        }},
-                       {machine_coord(1_n),
-                        OperatorAtomicTaskShardBinding{
-                            {
-                                {TensorSlotName::LHS_INPUT, ptensor_coord(1_n)},
-                                {TensorSlotName::RHS_INPUT, ptensor_coord(1_n)},
-                            },
-                        }},
+                       {
+                         machine_coord(0_n),
+                         OperatorAtomicTaskShardBinding{
+                             {
+                               {TensorSlotName::LHS_INPUT, ptensor_coord(0_n)},
+                               {TensorSlotName::RHS_INPUT, ptensor_coord(0_n)},
+                               {TensorSlotName::OUTPUT, ptensor_coord(0_n)},
+                             },
+                         },
+                       },
+                       {
+                         machine_coord(1_n),
+                         OperatorAtomicTaskShardBinding{
+                             {
+                               {TensorSlotName::LHS_INPUT, ptensor_coord(1_n)},
+                               {TensorSlotName::RHS_INPUT, ptensor_coord(1_n)},
+                               {TensorSlotName::OUTPUT, ptensor_coord(1_n)},
+                             },
+                         },
+                       },
                    },
                }},
           };

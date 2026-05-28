@@ -37,6 +37,7 @@
 #include "utils/graph/node/node.dtg.h"
 #include "utils/record_formatter.h"
 #include <unordered_set>
+#include "utils/containers/map_from_unordered.h"
 
 namespace FlexFlow {
 
@@ -98,7 +99,7 @@ ParallelLayerAddedResult add_parallel_layer(
 
   std::unordered_map<TensorSlotName, CreateGrad> output_flags =
       maybe_output_flags.value_or(
-          generate_map(keys(output_shapes),
+          generate_unordered_map(unordered_keys(output_shapes),
                        [](TensorSlotName const &) { return CreateGrad::YES; }));
 
   std::unordered_map<TensorSlotName, ParallelTensorAttrs> output_attrs =
@@ -164,6 +165,46 @@ OperatorTaskSpace get_operator_task_space(ParallelComputationGraph const &pcg,
       compgraph_op_attrs_from_pcg_op_attrs(op_attrs).value(), input_degrees);
 }
 
+std::set<ParallelLayerInvocationInfo>
+  pcg_get_invocation_info_set(ParallelComputationGraph const &pcg)
+{
+  return transform(set_of(get_parallel_layers(pcg)),
+                   [&](parallel_layer_guid_t l) -> ParallelLayerInvocationInfo {
+                     return pcg_get_invocation_info_for_layer(pcg, l);
+                   });
+}
+
+ParallelLayerInvocationInfo
+  pcg_get_invocation_info_for_layer(ParallelComputationGraph const &pcg,
+                                    parallel_layer_guid_t l)
+{
+  ParallelLayerAttrs l_attrs = get_parallel_layer_attrs(pcg, l);
+
+  std::map<TensorSlotName, parallel_tensor_guid_t> incoming =
+    map_from_unordered(get_incoming_tensors(pcg, l));
+
+  std::map<TensorSlotName, parallel_tensor_guid_t> outgoing =
+    map_from_unordered(get_outgoing_tensors(pcg, l));
+
+  auto get_parallel_tensor_info = [&](parallel_tensor_guid_t t) -> ParallelTensorInfo {
+    ParallelTensorAttrs t_attrs = get_parallel_tensor_attrs(pcg, t);
+
+    return ParallelTensorInfo{
+      /*guid=*/t,
+      /*attrs=*/t_attrs,
+    };
+  };
+
+  return ParallelLayerInvocationInfo{
+    /*incoming=*/map_values(incoming, get_parallel_tensor_info),
+    /*layer_info=*/ParallelLayerInfo{
+      /*guid=*/l,
+      /*attrs=*/l_attrs,
+    },
+    /*outgoing=*/map_values(outgoing, get_parallel_tensor_info),
+  };
+}
+
 std::unordered_set<ParallelComputationGraphEdge>
     get_edges(ParallelComputationGraph const &pcg) {
   return transform(get_all_kwarg_dataflow_edges(pcg.raw_graph),
@@ -188,9 +229,10 @@ std::unordered_set<ParallelComputationGraphEdge>
     get_outgoing_edges(ParallelComputationGraph const &pcg,
                        parallel_layer_guid_t const &l) {
   std::unordered_set<KwargDataflowEdge<TensorSlotName>> raw_edges =
+    unordered_set_of(
       get_outgoing_kwarg_dataflow_edges_for_node(pcg.raw_graph,
                                                  l.raw_graph_node)
-          .right_values();
+          .right_values());
   return transform(raw_edges, [](KwargDataflowEdge<TensorSlotName> const &e) {
     return ParallelComputationGraphEdge{e};
   });
@@ -308,7 +350,7 @@ static std::unordered_map<TensorSlotName, parallel_tensor_guid_t>
   ASSERT(incoming_tensors.size() == incoming_slot_roles.size());
 
   std::unordered_set<TensorSlotName> slots_with_desired_role =
-      keys(filter_values(incoming_slot_roles, [&](IncomingTensorRole role) {
+      unordered_keys(filter_values(incoming_slot_roles, [&](IncomingTensorRole role) {
         return role == desired_role;
       }));
 

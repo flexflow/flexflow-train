@@ -12,6 +12,7 @@
 #include "pcg/parallel_computation_graph/parallel_tensor_guid_t.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_tensor_use_t.dtg.h"
 #include <unordered_set>
+#include "pcg/parallel_computation_graph/parallel_layer_invocation_info.dtg.h"
 
 namespace FlexFlow {
 
@@ -37,6 +38,13 @@ ParallelLayerAddedResult
 
 OperatorTaskSpace get_operator_task_space(ParallelComputationGraph const &pcg,
                                           parallel_layer_guid_t const &layer);
+
+std::set<ParallelLayerInvocationInfo>
+  pcg_get_invocation_info_set(ParallelComputationGraph const &);
+
+ParallelLayerInvocationInfo
+  pcg_get_invocation_info_for_layer(ParallelComputationGraph const &,
+                                    parallel_layer_guid_t);
 
 std::unordered_set<ParallelComputationGraphEdge>
     get_pcg_edges_from_layer_to_layer(ParallelComputationGraph const &pcg,

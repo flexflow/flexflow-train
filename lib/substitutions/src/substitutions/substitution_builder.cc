@@ -94,7 +94,7 @@ std::unordered_map<TensorSlotName, OutputGraphExprValue>
       node_expr,
       map_values(inputs,
                  raw_open_kwarg_dataflow_value_from_output_graph_expr_value),
-      generate_map(output_slots,
+      generate_unordered_map(output_slots,
                    [](TensorSlotName) { return std::monostate{}; }));
 
   return map_values(

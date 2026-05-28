@@ -21,6 +21,18 @@ bool value_is_pass_expanded(DynamicValueAttrs const &v) {
   return v.role.has_value();
 }
 
+bool node_is_ready_for_pass_expansion(DynamicNodeAttrs const &) {
+  return true;
+}
+
+bool value_is_ready_for_pass_expansion(DynamicValueAttrs const &) {
+  return true;
+}
+
+bool slot_is_ready_for_pass_expansion(DynamicTensorSlot const &) {
+  return true;
+}
+
 bool no_part_of_graph_is_pass_expanded(DynamicOpenDataflowGraph const &g) {
   return no_part_of_dynamic_graph_satisfies(
       g, node_is_pass_expanded, value_is_pass_expanded, slot_is_pass_expanded);
@@ -29,6 +41,11 @@ bool no_part_of_graph_is_pass_expanded(DynamicOpenDataflowGraph const &g) {
 bool graph_is_fully_pass_expanded(DynamicOpenDataflowGraph const &g) {
   return full_dynamic_graph_satisfies(
       g, node_is_pass_expanded, value_is_pass_expanded, slot_is_pass_expanded);
+}
+
+bool graph_is_ready_for_pass_expansion(DynamicOpenDataflowGraph const &g) {
+  return full_dynamic_graph_satisfies(
+      g, node_is_ready_for_pass_expansion, value_is_ready_for_pass_expansion, slot_is_ready_for_pass_expansion);
 }
 
 DynamicTensorSlot pass_expand_slot(DynamicTensorSlot const &s,
@@ -139,6 +156,7 @@ DynamicOpenDataflowGraph
     perform_pass_expansion(DynamicOpenDataflowGraph const &g) {
 
   ASSERT(no_part_of_graph_is_pass_expanded(g));
+  ASSERT(graph_is_ready_for_pass_expansion(g));
 
   DynamicOpenDataflowGraph result = flatmap_dynamic_invocation_set(
       g, [](DynamicNodeInvocation const &invocation) {

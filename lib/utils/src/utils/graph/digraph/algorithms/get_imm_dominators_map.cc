@@ -1,7 +1,7 @@
 #include "utils/graph/digraph/algorithms/get_imm_dominators_map.h"
 #include "utils/containers/concat_vectors.h"
 #include "utils/containers/filter_values.h"
-#include "utils/containers/generate_map.h"
+#include "utils/containers/generate_unordered_map.h"
 #include "utils/containers/get_element_counts.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/keys.h"
@@ -27,14 +27,14 @@ std::unordered_map<Node, std::optional<Node>>
         }));
     std::unordered_map<Node, int> dominator_counts =
         get_element_counts(recursive_dominator_list);
-    std::unordered_set<Node> imm_dominators = keys(
+    std::unordered_set<Node> imm_dominators = unordered_keys(
         filter_values(dominator_counts, [](int count) { return count <= 1; }));
-    assert(imm_dominators.size() <= 1);
+    ASSERT(imm_dominators.size() <= 1);
 
     return maybe_get_only(imm_dominators);
   };
 
-  return generate_map(get_nodes(g), get_imm_dominator);
+  return generate_unordered_map(get_nodes(g), get_imm_dominator);
 }
 
 } // namespace FlexFlow

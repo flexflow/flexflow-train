@@ -147,7 +147,7 @@ static std::unordered_set<Node>
   return filter_out_sync_nodes(forest, node_roles);
 }
 
-static std::pair<nonempty_unordered_set<Node>, nonempty_unordered_set<Node>>
+static std::pair<nonempty_set<Node>, nonempty_set<Node>>
     get_up_and_down_sets(
         DiGraph const &g,
         std::unordered_set<Node> const &forest,
@@ -229,7 +229,7 @@ SeriesParallelDecomposition escribano_sp_ization(DiGraph g) {
     std::unordered_set<Node> forest =
         get_forest_escribano(sp, handle, component, node_roles);
 
-    std::pair<nonempty_unordered_set<Node>, nonempty_unordered_set<Node>>
+    std::pair<nonempty_set<Node>, nonempty_set<Node>>
         up_down_sets = get_up_and_down_sets(sp, forest, depth_map);
 
     std::unordered_set<Node> up = up_down_sets.first.unwrap_as_unordered_set();

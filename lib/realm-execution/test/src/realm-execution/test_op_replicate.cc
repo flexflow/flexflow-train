@@ -197,12 +197,14 @@ MappedParallelComputationGraph
                           {
                               cpu0,
                               OperatorAtomicTaskShardBinding{{
+                                  {TensorSlotName::INPUT, tensor_coord0},
                                   {TensorSlotName::OUTPUT, tensor_coord0},
                               }},
                           },
                           {
                               cpu1,
                               OperatorAtomicTaskShardBinding{{
+                                  {TensorSlotName::INPUT, tensor_coord0},
                                   {TensorSlotName::OUTPUT, tensor_coord1},
                               }},
                           },

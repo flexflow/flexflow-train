@@ -3,6 +3,7 @@ name = "NonNormalSPDecomposition"
 type = "variant"
 features = [
   "eq",
+  "ord",
   "hash",
   "fmt",
 ]

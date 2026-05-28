@@ -1,0 +1,27 @@
+namespace = "FlexFlow"
+name = "DynamicValueAttrsShardingInfo"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+  "json",
+]
+
+includes = [
+  "utils/one_to_many/one_to_many.h",
+  "op-attrs/parallel_tensor_space_coordinate.dtg.h",
+  "pcg/machine_space_coordinate.dtg.h",
+]
+
+src_includes = [
+]
+
+[[fields]]
+name = "shard_coord"
+type = "::FlexFlow::ParallelTensorSpaceCoordinate"
+
+[[fields]]
+name = "mapping"
+type = "::FlexFlow::OneToMany<::FlexFlow::ParallelTensorSpaceCoordinate, ::FlexFlow::MachineSpaceCoordinate>"

@@ -10,12 +10,34 @@
 #include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/materialize_labelled_kwarg_dataflow_graph_view.h"
 #include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/rewrite_labelled_kwarg_dataflow_graph_node_labels.h"
 #include "utils/many_to_one/many_to_one_from_map.h"
+#include "pcg/mapped_parallel_computation_graph/mapped_parallel_layer_invocation_info.h"
+#include "pcg/mapped_parallel_computation_graph/mapped_operator_task_group.h"
+#include "utils/containers/set_of.h"
+#include "utils/containers/set_union.h"
+#include "utils/containers/keys.h"
+#include "utils/containers/require_all_of.h"
 
 namespace FlexFlow {
 
 std::unordered_set<parallel_layer_guid_t>
     mpcg_get_parallel_layers(MappedParallelComputationGraph const &mpcg) {
   return get_parallel_layers(pcg_from_mpcg(mpcg));
+}
+
+std::set<MappedParallelLayerInvocationInfo>
+    mpcg_get_invocation_set(MappedParallelComputationGraph const &mpcg)
+{
+  auto mk_mapped_invocation = [&](ParallelLayerInvocationInfo const &invocation)
+    -> MappedParallelLayerInvocationInfo
+  {
+    MappedOperatorTaskGroup mapping = mpcg_get_mapping_for_layer(mpcg, invocation.layer_info.guid);
+
+    return mapped_parallel_layer_invocation_info_from_pcg_invocation_and_mapping(invocation, mapping);
+  };
+
+  ParallelComputationGraph pcg = pcg_from_mpcg(mpcg);
+
+  return transform(pcg_get_invocation_info_set(pcg), mk_mapped_invocation);
 }
 
 MappedOperatorTaskGroup
@@ -111,6 +133,22 @@ MappedParallelComputationGraph mapped_pcg_from_pcg_and_mapped_op_task_groups(
 
     return mapped_op_task_groups.at(l);
   };
+
+  auto slot_names_for_layer = [&](parallel_layer_guid_t l) -> std::set<TensorSlotName> {
+    return set_union(keys(get_incoming_tensors(pcg, l)), keys(get_outgoing_tensors(pcg, l)));
+  };
+
+  auto slot_names_for_layer_mapping = [&](parallel_layer_guid_t l) -> std::set<TensorSlotName> {
+    return get_slot_names_for_task_group(mapping_for_layer(l));
+  };
+
+  require_all_of(
+    get_parallel_layers(pcg),
+    [&](parallel_layer_guid_t l) -> void {
+      std::set<TensorSlotName> for_layer = slot_names_for_layer(l);
+      std::set<TensorSlotName> for_layer_mapping = slot_names_for_layer_mapping(l);
+      ASSERT(for_layer == for_layer_mapping);
+    });
 
   auto mpcg_layer_attrs_from_pcg_layer_attrs =
       [&](Node const &node, ParallelLayerAttrs const &pcg_layer_attrs)

@@ -1,5 +1,5 @@
 #include "utils/graph/series_parallel/sp_ization/node_role.h"
-#include "utils/containers/generate_map.h"
+#include "utils/containers/generate_unordered_map.h"
 #include "utils/graph/algorithms.h"
 #include "utils/graph/digraph/algorithms/get_predecessors.h"
 #include "utils/graph/digraph/algorithms/get_successors.h"
@@ -10,7 +10,7 @@ namespace FlexFlow {
 
 std::unordered_map<Node, NodeRole>
     get_initial_node_role_map(DiGraphView const &g) {
-  return generate_map(get_nodes(g),
+  return generate_unordered_map(get_nodes(g),
                       [](Node const &) { return NodeRole::PURE; });
 }
 

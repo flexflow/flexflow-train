@@ -52,7 +52,7 @@ static std::vector<T>
   std::vector<TensorSlotName> expected_slots =
       slice(slots, 0, v_num_slots.unwrap_nonnegative());
 
-  ASSERT(unordered_set_of(expected_slots) == keys(v));
+  ASSERT(unordered_set_of(expected_slots) == unordered_keys(v));
 
   return transform(expected_slots, [&](TensorSlotName const &slot_name) {
     return v.at(slot_name);

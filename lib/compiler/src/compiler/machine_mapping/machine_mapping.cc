@@ -8,7 +8,7 @@
 #include "utils/bidict/algorithms/bidict_from_map.h"
 #include "utils/containers/are_disjoint.h"
 #include "utils/containers/binary_merge_disjoint_maps.h"
-#include "utils/containers/keys.h"
+#include "utils/containers/unordered_keys.h"
 
 namespace FlexFlow {
 
@@ -20,7 +20,7 @@ MappedParallelComputationGraph
       get_parallel_layers(pcg);
 
   std::unordered_set<parallel_layer_guid_t> mapped_layers =
-      keys(mapping.machine_views);
+      unordered_keys(mapping.machine_views);
 
   ASSERT(mapped_layers == pcg_layers);
 
@@ -40,7 +40,7 @@ MappedParallelComputationGraph
   };
 
   std::unordered_map<parallel_layer_guid_t, MappedOperatorTaskGroup>
-      mapped_op_task_groups = generate_map(mapped_layers, mapping_for_layer);
+      mapped_op_task_groups = generate_unordered_map(mapped_layers, mapping_for_layer);
 
   return mapped_pcg_from_pcg_and_mapped_op_task_groups(pcg,
                                                        mapped_op_task_groups);
@@ -54,7 +54,7 @@ MachineMapping combine_disjoint_mappings(MachineMapping const &m1,
 }
 
 bool nodes_are_disjoint(MachineMapping const &m1, MachineMapping const &m2) {
-  return are_disjoint(keys(m1.machine_views), keys(m2.machine_views));
+  return are_disjoint(unordered_keys(m1.machine_views), unordered_keys(m2.machine_views));
 }
 
 std::optional<MachineMapping> get_machine_mapping_from_machine_mapping_result(

@@ -8,7 +8,7 @@
 #include "utils/containers/binary_merge_disjoint_maps.h"
 #include "utils/containers/filtermap_keys.h"
 #include "utils/containers/filtrans.h"
-#include "utils/containers/generate_map.h"
+#include "utils/containers/generate_unordered_map.h"
 #include "utils/containers/get_all_assignments.h"
 #include "utils/containers/map_keys.h"
 #include "utils/containers/map_values.h"
@@ -96,7 +96,7 @@ std::unordered_map<parallel_tensor_dim_idx_t, positive_int>
       };
 
   std::unordered_map<ff_dim_t, positive_int> shard_dim_degrees =
-      generate_map(get_idxs(degrees.shard_degrees), [&](ff_dim_t const &dim) {
+      generate_unordered_map(get_idxs(degrees.shard_degrees), [&](ff_dim_t const &dim) {
         return degrees.shard_degrees.at(dim);
       });
 
@@ -131,7 +131,7 @@ DimDomain<parallel_tensor_dim_idx_t>
         ParallelTensorDimDegrees const &dim_degrees) {
 
   return DimDomain<parallel_tensor_dim_idx_t>{
-      generate_map(get_parallel_tensor_dim_indices(dim_degrees),
+      generate_unordered_map(get_parallel_tensor_dim_indices(dim_degrees),
                    [&](parallel_tensor_dim_idx_t idx) {
                      return get_degree_for_parallel_tensor_dim_idx(dim_degrees,
                                                                    idx);

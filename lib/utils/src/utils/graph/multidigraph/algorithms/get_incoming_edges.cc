@@ -7,6 +7,7 @@
 #include "utils/graph/multidigraph/multidiedge_query.dtg.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/query_set.h"
+#include "utils/containers/unordered_map_from_map.h"
 
 namespace FlexFlow {
 
@@ -28,11 +29,11 @@ std::unordered_map<Node, std::unordered_set<MultiDiEdge>>
       query_set<Node>::match_values_in(set_of(ns)),
   };
 
-  std::unordered_map<Node, std::unordered_set<MultiDiEdge>> result = map_values(
+  std::map<Node, std::unordered_set<MultiDiEdge>> result = map_values(
       group_by(g.query_edges(query),
                [&](MultiDiEdge const &e) { return g.get_multidiedge_dst(e); })
           .l_to_r(),
-      [](nonempty_unordered_set<MultiDiEdge> const &s)
+      [](nonempty_set<MultiDiEdge> const &s)
           -> std::unordered_set<MultiDiEdge> {
         return s.unwrap_as_unordered_set();
       });
@@ -41,7 +42,7 @@ std::unordered_map<Node, std::unordered_set<MultiDiEdge>>
     result[n];
   }
 
-  return result;
+  return unordered_map_from_map(result);
 }
 
 } // namespace FlexFlow

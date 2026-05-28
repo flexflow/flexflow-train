@@ -30,10 +30,10 @@ LabelledOpenDataflowGraphView<NodeLabel, ValueLabel> permute_input_ids(
   };
 
   std::unordered_map<Node, NodeLabel> node_labels =
-      generate_map(get_nodes(permuted), [&](Node const &n) { return g.at(n); });
+      generate_unordered_map(get_nodes(permuted), [&](Node const &n) { return g.at(n); });
 
   std::unordered_map<OpenDataflowValue, ValueLabel> value_labels =
-      generate_map(get_open_dataflow_values(permuted),
+      generate_unordered_map(get_open_dataflow_values(permuted),
                    [&](OpenDataflowValue const &new_value) {
                      return g.at(old_value_from_new(new_value));
                    });

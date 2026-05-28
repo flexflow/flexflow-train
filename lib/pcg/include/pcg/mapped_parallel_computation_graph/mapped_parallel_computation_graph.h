@@ -3,11 +3,15 @@
 
 #include "pcg/mapped_parallel_computation_graph/mapped_parallel_computation_graph.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
+#include "pcg/mapped_parallel_computation_graph/mapped_parallel_layer_invocation_info.dtg.h"
 
 namespace FlexFlow {
 
 std::unordered_set<parallel_layer_guid_t>
     mpcg_get_parallel_layers(MappedParallelComputationGraph const &);
+
+std::set<MappedParallelLayerInvocationInfo>
+    mpcg_get_invocation_set(MappedParallelComputationGraph const &);
 
 MappedOperatorTaskGroup
     mpcg_get_mapping_for_layer(MappedParallelComputationGraph const &,

@@ -46,7 +46,7 @@ std::unordered_map<TensorSlotName, IncomingTensorRole>
             };
           },
           [&](ConcatAttrs const &) {
-            return generate_map(get_variadic_inputs_slot_name_sequence(),
+            return generate_unordered_map(get_variadic_inputs_slot_name_sequence(),
                                 [](TensorSlotName) -> IncomingTensorRole {
                                   return IncomingTensorRole::INPUT;
                                 });

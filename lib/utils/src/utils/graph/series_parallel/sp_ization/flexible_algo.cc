@@ -3,7 +3,7 @@
 #include "utils/containers/argmin.h"
 #include "utils/containers/contains.h"
 #include "utils/containers/filter.h"
-#include "utils/containers/generate_map.h"
+#include "utils/containers/generate_unordered_map.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/intersection.h"
 #include "utils/containers/is_subseteq_of.h"
@@ -233,7 +233,7 @@ static std::unordered_set<Node>
   ASSERT(!candidate_nodes.empty());
 
   std::unordered_map<Node, float> critical_path_costs =
-      generate_map(candidate_nodes, [&](Node const &node) {
+      generate_unordered_map(candidate_nodes, [&](Node const &node) {
         std::unordered_set<Node> preds = get_predecessors(g, node);
         float max_parent_cost = maximum(transform(preds, [&](Node const &pred) {
           return sp_longest_paths.at(pred);
@@ -253,7 +253,7 @@ static std::unordered_set<Node>
 
 static bool cost_map_is_valid(DiGraphView const &g,
                               std::unordered_map<Node, float> const &cost_map) {
-  bool has_correct_nodes = get_nodes(g) == keys(cost_map);
+  bool has_correct_nodes = (get_nodes(g) == unordered_keys(cost_map));
   bool has_nonnegative_costs =
       all_of(values(cost_map), [&](float const &cost) { return cost >= 0.0f; });
   return has_correct_nodes && has_nonnegative_costs;

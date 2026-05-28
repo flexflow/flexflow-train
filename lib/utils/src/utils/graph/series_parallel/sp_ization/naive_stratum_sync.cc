@@ -1,6 +1,5 @@
 #include "utils/graph/series_parallel/sp_ization/naive_stratum_sync.h"
 #include "utils/containers/group_by.h"
-#include "utils/containers/keys.h"
 #include "utils/containers/maximum.h"
 #include "utils/containers/range.h"
 #include "utils/containers/transform.h"
@@ -13,6 +12,7 @@
 #include "utils/graph/series_parallel/series_parallel_decomposition.h"
 #include "utils/graph/series_parallel/sp_ization/dependencies_are_maintained.h"
 #include <libassert/assert.hpp>
+#include "utils/containers/unordered_keys.h"
 
 namespace FlexFlow {
 
@@ -21,7 +21,7 @@ std::vector<std::unordered_multiset<Node>>
   std::unordered_map<Node, nonnegative_int> node_to_stratum =
       get_longest_path_lengths_from_root(g);
 
-  std::unordered_set<Node> nodes = keys(node_to_stratum);
+  std::unordered_set<Node> nodes = unordered_keys(node_to_stratum);
   OneToMany<nonnegative_int, Node> strata_to_nodes =
       group_by(nodes, [&](Node const &n) { return node_to_stratum.at(n); });
 

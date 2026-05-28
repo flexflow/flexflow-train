@@ -17,7 +17,7 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "utils/containers/contains.h"
 #include "utils/containers/flatmap.h"
-#include "utils/containers/generate_map.h"
+#include "utils/containers/generate_unordered_map.h"
 #include "utils/containers/get_all_assignments.h"
 #include "utils/containers/unordered_set_of.h"
 #include "utils/exception.h"
@@ -84,7 +84,7 @@ MachineMappingWithMemoryResult get_optimal_machine_mapping_with_memory(
           std::unordered_set<BinaryTreePath> const &boundary_layers)
       -> std::unordered_set<ParallelLayerGuidObliviousMachineMapping> {
     std::unordered_map<BinaryTreePath, std::unordered_set<MachineView>>
-        allowed = generate_map(
+        allowed = generate_unordered_map(
             boundary_layers,
             [&](BinaryTreePath const &l) -> std::unordered_set<MachineView> {
               UnmappedRuntimeOnlyOpCostEstimateKey leaf =

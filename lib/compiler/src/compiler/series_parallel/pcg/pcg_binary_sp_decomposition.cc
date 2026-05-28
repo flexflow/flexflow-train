@@ -152,7 +152,7 @@ SPDecompositionTreeNodeType
 
 std::unordered_set<BinaryTreePath>
     pcg_sp_tree_get_all_leaf_paths(PCGBinarySPDecomposition const &tree) {
-  return keys(pcg_sp_tree_get_path_to_leaf_map(tree));
+  return unordered_keys(pcg_sp_tree_get_path_to_leaf_map(tree));
 }
 
 std::unordered_set<BinaryTreePath>

@@ -3,7 +3,7 @@
 #include "op-attrs/parallel_tensor_dim_idx_t.h"
 #include "utils/containers/contains_key.h"
 #include "utils/containers/filtermap_keys.h"
-#include "utils/containers/generate_map.h"
+#include "utils/containers/generate_unordered_map.h"
 #include "utils/containers/unordered_set_of.h"
 #include "utils/nonnegative_int/num_elements.h"
 
@@ -73,7 +73,7 @@ DimCoord<parallel_tensor_dim_idx_t> dim_coord_from_parallel_tensor_space_coord(
     ParallelTensorSpaceCoordinate const &coord) {
 
   return DimCoord<parallel_tensor_dim_idx_t>{
-      generate_map(get_dim_idxs_in_ptensor_space_coord(coord),
+      generate_unordered_map(get_dim_idxs_in_ptensor_space_coord(coord),
                    [&](parallel_tensor_dim_idx_t idx) {
                      return ptensor_coord_component_for_ptensor_dim_idx(coord,
                                                                         idx);

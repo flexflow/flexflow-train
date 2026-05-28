@@ -196,7 +196,7 @@ static std::unordered_map<TensorSlotName, tensor_guid_t>
   ASSERT(incoming_tensors.size() == incoming_slot_roles.size());
 
   std::unordered_set<TensorSlotName> slots_with_desired_role =
-      keys(filter_values(incoming_slot_roles, [&](IncomingTensorRole role) {
+      unordered_keys(filter_values(incoming_slot_roles, [&](IncomingTensorRole role) {
         return role == desired_role;
       }));
 

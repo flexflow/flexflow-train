@@ -21,12 +21,12 @@ OpenKwargDataflowGraphData<GraphInputName, SlotName>
                                            SlotName> const &labelled_data) {
   OpenKwargDataflowGraphData<GraphInputName, SlotName> result =
       OpenKwargDataflowGraphData<GraphInputName, SlotName>{
-          /*nodes=*/keys(labelled_data.node_data),
+          /*nodes=*/unordered_keys(labelled_data.node_data),
           /*edges=*/labelled_data.edges,
           /*inputs=*/labelled_data.inputs,
           /*outputs=*/
           filtrans(
-              keys(labelled_data.value_data),
+              unordered_keys(labelled_data.value_data),
               [](OpenKwargDataflowValue<GraphInputName, SlotName> const &v) {
                 return v.try_require_internal();
               }),

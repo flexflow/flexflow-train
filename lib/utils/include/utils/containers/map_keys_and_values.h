@@ -1,7 +1,6 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_MAP_KEYS_AND_VALUES_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_MAP_KEYS_AND_VALUES_H
 
-#include "utils/containers/keys.h"
 #include <libassert/assert.hpp>
 #include <unordered_map>
 
@@ -21,7 +20,7 @@ std::unordered_map<K2, V2> map_keys_and_values(
     result.insert({fk(kv.first), fv(kv.second)});
   }
 
-  ASSERT(keys(m).size() == keys(result).size(),
+  ASSERT(m.size() == result.size(),
          "keys passed to map_keys must be transformed into distinct keys");
 
   return result;

@@ -19,7 +19,7 @@ std::unordered_map<K2, V> map_keys2(std::unordered_map<K, V> const &m,
     result.insert({f(kv.first, kv.second), kv.second});
   }
 
-  ASSERT(keys(m).size() == keys(result).size(),
+  ASSERT(m.size() == result.size(),
          "keys passed to map_keys must be transformed into distinct keys");
 
   return result;

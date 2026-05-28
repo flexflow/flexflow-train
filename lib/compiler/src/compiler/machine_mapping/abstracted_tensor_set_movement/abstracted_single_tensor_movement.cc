@@ -15,7 +15,7 @@ std::unordered_set<BinaryTreePath>
     abstracted_single_tensor_movement_get_dst_layers(
         AbstractedSingleTensorMovement const &m) {
   return transform(
-      keys(m.edge_to_size),
+      unordered_keys(m.edge_to_size),
       [](AbstractedSingleTensorCommunicationEdge const &e) -> BinaryTreePath {
         return e.dst.operator_tree_path;
       });

@@ -10,7 +10,7 @@
 #include "task-spec/dynamic_graph/dynamic_tensor_slot.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
 #include "utils/bidict/algorithms/bidict_from_pairs.h"
-#include "utils/bidict/algorithms/unordered_set_of.h"
+#include "utils/bidict/algorithms/bidict_unordered_set_of.h"
 #include "utils/containers/contains_key.h"
 #include "utils/containers/flatmap.h"
 #include "utils/containers/intersection.h"
@@ -25,25 +25,13 @@ bool node_is_copy(DynamicNodeAttrs const &n) {
   return n.op_attrs.has_value() && n.op_attrs.value().is_copy();
 }
 
-static bool is_replicate_invocation(DynamicNodeInvocation const &i) {
-  return i.node_attrs.op_attrs.has_value() &&
-         i.node_attrs.op_attrs.value().has<PCGOperatorAttrs>() &&
-         i.node_attrs.op_attrs.value()
-             .get<PCGOperatorAttrs>()
-             .has<ReplicateAttrs>();
-}
-
 bool value_is_mapped(DynamicValueAttrs const &n) {
   return n.mapping.has_value();
 }
 
 bool no_part_of_graph_is_copy_inserted(DynamicOpenDataflowGraph const &g) {
   auto slot_is_mapped = [](DynamicTensorSlot const &) -> bool { return false; };
-  // check all non-replicate invocations
   for (DynamicNodeInvocation const &i : g.invocations) {
-    if (is_replicate_invocation(i)) {
-      continue; // replicate tensors have mapping set by design
-    }
     if (node_is_copy(i.node_attrs)) {
       return false;
     }
@@ -69,6 +57,26 @@ bool graph_is_fully_copy_inserted(DynamicOpenDataflowGraph const &g) {
       g, node_is_any, value_is_mapped, slot_is_mapped);
 }
 
+void require_node_is_ready_for_copy_insertion(DynamicNodeAttrs const &node_attrs) {
+  ASSERT(node_attrs.mapping.has_value());
+}
+
+void require_graph_is_ready_for_copy_insertion(DynamicOpenDataflowGraph const &g) {
+  auto require_slot_is_ready_for_copy_insertion = [](DynamicTensorSlot const &slot) -> void {
+    return;
+  };
+
+  auto require_value_is_ready_for_copy_insertion = [](DynamicValueAttrs const &value_attrs) -> void {
+    return;
+  };
+
+  require_full_dynamic_graph_satisfies(
+    g,
+    require_node_is_ready_for_copy_insertion,
+    require_value_is_ready_for_copy_insertion,
+    require_slot_is_ready_for_copy_insertion);
+}
+
 static DynamicValueAttrs map_dynamic_value_attrs_for_task_group(
     DynamicTensorSlot const &slot,
     DynamicValueAttrs const &value,
@@ -83,10 +91,10 @@ static std::pair<DynamicValueAttrs, DynamicValueAttrs>
                                               DynamicValueAttrs const &output) {
   std::unordered_set<
       std::pair<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>>
-      input_mapping = unordered_set_of(assert_unwrap(input.mapping));
+      input_mapping = unstructured_relation_from_one_to_many(assert_unwrap(input.mapping));
   std::unordered_set<
       std::pair<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>>
-      output_mapping = unordered_set_of(assert_unwrap(output.mapping));
+      output_mapping = unstructured_relation_from_one_to_many(assert_unwrap(output.mapping));
 
   // Exclude the point shared between the input and output mappings, because
   // those will not result in actual copies once shard expansion is performed
@@ -96,25 +104,19 @@ static std::pair<DynamicValueAttrs, DynamicValueAttrs>
 
   DynamicValueAttrs filtered_input = input;
   filtered_input.mapping =
-      bidict_from_pairs(set_difference(input_mapping, remove));
+      one_to_many_from_unstructured_relation(set_difference(input_mapping, remove));
 
   DynamicValueAttrs filtered_output = output;
   filtered_output.mapping =
-      bidict_from_pairs(set_difference(output_mapping, remove));
+      one_to_many_from_unstructured_relation(set_difference(output_mapping, remove));
 
   return std::pair{filtered_input, filtered_output};
 }
 
-std::unordered_set<DynamicNodeInvocation> perform_copy_insertion_for_invocation(
-    DynamicNodeInvocation const &i,
-    std::unordered_map<DynamicValueAttrs, DynamicValueAttrs> const
-        &unmapped_value_to_mapped_source_value) {
-
-  // replicate nodes have no MappedOperatorTaskGroup —
-  // pass through unchanged, no copies needed
-  if (is_replicate_invocation(i)) {
-    return {i};
-  }
+std::unordered_set<DynamicNodeInvocation> copies_for_invocation_inputs(
+  DynamicNodeInvocation const &i,
+  std::unordered_map<DynamicValueAttrs, DynamicValueAttrs> const &unmapped_value_to_src_mapped_value)
+{
   MappedOperatorTaskGroup mapping = assert_unwrap(i.node_attrs.mapping);
 
   auto map_tensor = [&](DynamicTensorSlot const &slot,
@@ -124,31 +126,26 @@ std::unordered_set<DynamicNodeInvocation> perform_copy_insertion_for_invocation(
 
   std::unordered_map<DynamicTensorSlot, DynamicValueAttrs> mapped_inputs =
       map_values2(i.inputs, map_tensor);
-  std::unordered_map<DynamicTensorSlot, DynamicValueAttrs> mapped_outputs =
-      map_values2(i.outputs, map_tensor);
 
-  std::unordered_set<DynamicNodeInvocation> result{DynamicNodeInvocation{
-      /*inputs=*/mapped_inputs,
-      /*node_attrs=*/i.node_attrs,
-      /*outputs=*/mapped_outputs,
-  }};
+  std::unordered_set<DynamicNodeInvocation> result;
 
   for (auto const &[slot, input] : i.inputs) {
-    if (!contains_key(unmapped_value_to_mapped_source_value, input)) {
+    if (!contains_key(unmapped_value_to_src_mapped_value, input)) {
       continue;
     }
 
-    DynamicValueAttrs source_value =
-        unmapped_value_to_mapped_source_value.at(input);
-    DynamicValueAttrs use_value = mapped_inputs.at(slot);
-    if (source_value != use_value) {
-      auto const &[filtered_source, filtered_use] =
-          filter_mapping_to_avoid_degenerate_copies(source_value, use_value);
+    DynamicValueAttrs src_mapped_value = unmapped_value_to_src_mapped_value.at(input);
+    DynamicValueAttrs use_mapped_value = mapped_inputs.at(slot);
+
+    if (src_mapped_value != use_mapped_value) {
+      auto const &[filtered_source, filtered_use] = filter_mapping_to_avoid_degenerate_copies(src_mapped_value, use_mapped_value);
       DynamicNodeInvocation copy{
           /*inputs=*/{
               {
-                  DynamicTensorSlot{TensorSlotName::INPUT,
-                                    slot.slot_tensor_role},
+                  DynamicTensorSlot{
+                    TensorSlotName::INPUT,
+                    slot.slot_tensor_role,
+                  },
                   filtered_source,
               },
           },
@@ -179,22 +176,48 @@ std::unordered_set<DynamicNodeInvocation> perform_copy_insertion_for_invocation(
   return result;
 }
 
+std::unordered_set<DynamicNodeInvocation> perform_copy_insertion_for_invocation(
+    DynamicNodeInvocation const &i,
+    std::unordered_map<DynamicValueAttrs, DynamicValueAttrs> const
+        &unmapped_value_to_mapped_source_value) {
+
+  MappedOperatorTaskGroup mapping = assert_unwrap(i.node_attrs.mapping);
+
+  auto map_tensor = [&](DynamicTensorSlot const &slot,
+                        DynamicValueAttrs const &value) {
+    return map_dynamic_value_attrs_for_task_group(slot, value, mapping);
+  };
+
+  DynamicNodeInvocation mapped_i = [&] {
+    std::unordered_map<DynamicTensorSlot, DynamicValueAttrs> mapped_inputs =
+        map_values2(i.inputs, map_tensor);
+    std::unordered_map<DynamicTensorSlot, DynamicValueAttrs> mapped_outputs =
+        map_values2(i.outputs, map_tensor);
+
+    DynamicNodeInvocation r = i;
+    r.inputs = mapped_inputs;
+    r.outputs = mapped_outputs;
+    return r;
+  }();
+
+  std::unordered_set<DynamicNodeInvocation> result = set_union(
+    copies_for_invocation_inputs(i, unmapped_value_to_mapped_source_value),
+    std::unordered_set<DynamicNodeInvocation>{
+      mapped_i,
+    });
+
+  return result;
+}
+
 DynamicOpenDataflowGraph
     perform_copy_insertion(DynamicOpenDataflowGraph const &g) {
 
   ASSERT(no_part_of_graph_is_copy_inserted(g));
+  require_graph_is_ready_for_copy_insertion(g);
 
   std::unordered_map<DynamicValueAttrs, DynamicValueAttrs>
       unmapped_value_to_mapped_source_value;
   for (DynamicNodeInvocation const &i : g.invocations) {
-    // replicate nodes have no MappedOperatorTaskGroup —
-    // output mapping already fully set, maps to itself
-    if (is_replicate_invocation(i)) {
-      for (auto const &[slot, value] : i.outputs) {
-        unmapped_value_to_mapped_source_value.insert(std::pair{value, value});
-      }
-      continue;
-    }
     for (auto const &[slot, value] : i.outputs) {
       unmapped_value_to_mapped_source_value.insert(
           std::pair{value,

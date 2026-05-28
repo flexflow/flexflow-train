@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_INSTANCES_UNORDERED_SET_KWARG_DATAFLOW_GRAPH_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_INSTANCES_UNORDERED_SET_KWARG_DATAFLOW_GRAPH_H
 
-#include "utils/containers/generate_map.h"
+#include "utils/containers/generate_unordered_map.h"
 #include "utils/containers/set_union.h"
 #include "utils/containers/values.h"
 #include "utils/graph/kwarg_dataflow_graph/algorithms/get_all_kwarg_dataflow_edges.h"
@@ -26,7 +26,7 @@ struct UnorderedSetKwargDataflowGraph final
     Node new_node = this->node_source.new_node();
 
     std::unordered_map<SlotName, KwargDataflowOutput<SlotName>> outputs =
-        generate_map(
+        generate_unordered_map(
             output_slots,
             [&](SlotName const &output_slot) -> KwargDataflowOutput<SlotName> {
               KwargDataflowOutput<SlotName> output =

@@ -10,10 +10,9 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_edge.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_edge.h"
-#include "utils/bidict/algorithms/unordered_set_of.h"
+#include "utils/bidict/algorithms/bidict_unordered_set_of.h"
 #include "utils/containers/binary_cartesian_product.h"
 #include "utils/containers/flatmap.h"
-#include "utils/containers/generate_map.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/group_by.h"
 #include "utils/containers/map_from_pairs.h"
@@ -46,7 +45,7 @@ AbstractedSingleTensorMovement get_abstracted_single_tensor_movement_along_edge(
 
   std::unordered_map<AbstractedSingleTensorCommunicationEdge, num_bytes_t>
       single_comms = map_from_pairs(transform(
-          unordered_set_of(coord_mapping),
+          bidict_unordered_set_of(coord_mapping),
           [&](std::pair<TaskSpaceCoordinate, TaskSpaceCoordinate> const &
                   src_dst) -> std::pair<AbstractedSingleTensorCommunicationEdge,
                                         num_bytes_t> {
@@ -101,9 +100,9 @@ AbstractedTensorSetMovement get_abstracted_tensor_set_movement_across_split(
   };
 
   return AbstractedTensorSetMovement{
-      transform(edges_by_tensor.right_groups(),
-                [&](nonempty_unordered_set<ParallelComputationGraphEdge> const
-                        &edges) {
+      transform(unordered_set_of(edges_by_tensor.right_groups()),
+                [&](nonempty_set<ParallelComputationGraphEdge> const &edges) 
+                {
                   return merge_abstracted_single_tensor_movements(transform(
                       unordered_multiset_of(edges.unwrap_as_unordered_set()),
                       to_abstracted_single_tensor_movement));

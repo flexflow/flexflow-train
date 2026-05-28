@@ -45,7 +45,7 @@ std::unordered_map<BinaryTreePath, MachineSpaceStencil>
         PCGBinarySPDecomposition const &decomposition,
         ParallelLayerGuidObliviousMachineMapping const &mapping) {
   std::unordered_set<BinaryTreePath> leaf_paths = require_same(
-      pcg_sp_tree_get_all_leaf_paths(decomposition), keys(mapping.raw_mapping));
+      pcg_sp_tree_get_all_leaf_paths(decomposition), unordered_keys(mapping.raw_mapping));
 
   std::unordered_map<BinaryTreePath, OperatorTaskSpace>
       path_to_op_task_space_map =
@@ -54,7 +54,7 @@ std::unordered_map<BinaryTreePath, MachineSpaceStencil>
                        return get_operator_task_space(pcg, l);
                      });
 
-  return generate_map(
+  return generate_unordered_map(
       leaf_paths, [&](BinaryTreePath const &p) -> MachineSpaceStencil {
         return MachineSpaceStencil{
             /*operator_task_space=*/path_to_op_task_space_map.at(p),
@@ -71,12 +71,12 @@ std::unordered_map<BinaryTreePath, std::optional<MachineSpaceStencil>>
   std::unordered_map<BinaryTreePath, UnmappedRuntimeOnlyOpCostEstimateKey>
       tree_leaf_map = mm_problem_tree_get_path_to_leaf_map(tree);
 
-  std::unordered_set<BinaryTreePath> mapping_paths = keys(mapping.raw_mapping);
-  std::unordered_set<BinaryTreePath> tree_paths = keys(tree_leaf_map);
+  std::unordered_set<BinaryTreePath> mapping_paths = unordered_keys(mapping.raw_mapping);
+  std::unordered_set<BinaryTreePath> tree_paths = unordered_keys(tree_leaf_map);
 
   ASSERT(is_subseteq_of(mapping_paths, tree_paths));
 
-  return generate_map(
+  return generate_unordered_map(
       tree_paths,
       [&](BinaryTreePath const &p) -> std::optional<MachineSpaceStencil> {
         if (!contains_key(mapping.raw_mapping, p)) {

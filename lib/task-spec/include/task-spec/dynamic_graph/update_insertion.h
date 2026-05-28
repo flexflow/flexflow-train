@@ -6,6 +6,15 @@
 
 namespace FlexFlow {
 
+bool node_has_already_had_update_insertion_performed(DynamicNodeAttrs const &);
+bool value_has_already_had_update_insertion_performed(DynamicValueAttrs const &);
+
+bool node_is_ready_for_update_insertion(DynamicNodeAttrs const &);
+bool value_is_ready_for_update_insertion(DynamicValueAttrs const &);
+
+bool no_part_of_graph_has_had_update_insertion_performed(DynamicOpenDataflowGraph const &);
+bool graph_is_ready_for_update_insertion(DynamicOpenDataflowGraph const &);
+
 std::unordered_set<DynamicNodeInvocation>
     perform_update_insertion_for_invocation(DynamicNodeInvocation const &,
                                             OptimizerAttrs const &);

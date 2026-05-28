@@ -3,6 +3,7 @@ name = "DimProjection"
 type = "variant"
 features = [
   "eq",
+  "ord",
   "hash",
   "fmt",
 ]

@@ -19,6 +19,7 @@
 #include "utils/graph/open_dataflow_graph/algorithms/get_inputs.h"
 #include "utils/graph/open_kwarg_dataflow_graph/kwarg_dataflow_graph_input.dtg.h"
 #include "utils/many_to_one/many_to_one.h"
+#include "utils/containers/require_all_of.h"
 
 namespace FlexFlow {
 
@@ -55,6 +56,18 @@ bool no_part_of_dynamic_graph_satisfies(
       [&](DynamicValueAttrs const &v) -> bool { return !value_condition(v); },
       [&](DynamicTensorSlot const &s) -> bool { return !slot_condition(s); });
 }
+
+void require_full_dynamic_graph_satisfies(
+    DynamicOpenDataflowGraph const &g,
+    std::function<void(DynamicNodeAttrs const &)> const &node_condition,
+    std::function<void(DynamicValueAttrs const &)> const &value_condition,
+    std::function<void(DynamicTensorSlot const &)> const &slot_condition)
+{
+  require_all_of(get_dynamic_nodes(g), node_condition);
+  require_all_of(get_dynamic_values(g), value_condition);
+  require_all_of(get_dynamic_tensor_slots(g), slot_condition);
+}
+
 
 std::unordered_multiset<DynamicNodeAttrs>
     get_dynamic_nodes(DynamicOpenDataflowGraph const &g) {

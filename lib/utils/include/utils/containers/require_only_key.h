@@ -4,11 +4,20 @@
 #include "utils/containers/contains_key.h"
 #include <libassert/assert.hpp>
 #include <unordered_map>
+#include <map>
 
 namespace FlexFlow {
 
 template <typename K, typename V>
 V require_only_key(std::unordered_map<K, V> const &m, K const &k) {
+  ASSERT(m.size() == 1);
+  ASSERT(contains_key(m, k));
+
+  return m.at(k);
+}
+
+template <typename K, typename V>
+V require_only_key(std::map<K, V> const &m, K const &k) {
   ASSERT(m.size() == 1);
   ASSERT(contains_key(m, k));
 

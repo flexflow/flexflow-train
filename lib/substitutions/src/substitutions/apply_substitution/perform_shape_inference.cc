@@ -56,12 +56,12 @@ LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs,
     std::unordered_map<TensorSlotName, IncomingTensorRole>
         incoming_tensor_roles = get_incoming_tensor_roles(n_attrs.op_attrs);
 
-    ASSERT(is_subseteq_of(keys(incoming_shapes), keys(incoming_tensor_roles)));
+    ASSERT(is_subseteq_of(unordered_keys(incoming_shapes), unordered_keys(incoming_tensor_roles)));
 
     auto incoming_shapes_with_role = [&](IncomingTensorRole role)
         -> std::unordered_map<TensorSlotName, ParallelTensorShape> {
       std::unordered_set<TensorSlotName> slots_with_desired_role =
-          keys(filter_values(incoming_tensor_roles,
+          unordered_keys(filter_values(incoming_tensor_roles,
                              [&](IncomingTensorRole r) { return r == role; }));
 
       return restrict_keys(incoming_shapes, slots_with_desired_role);

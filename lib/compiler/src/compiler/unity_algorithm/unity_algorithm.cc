@@ -20,7 +20,7 @@
 #include "substitutions/sub_parallel_computation_graph.h"
 #include "substitutions/substitution.h"
 #include "substitutions/unity_substitution_set.h"
-#include "utils/containers/generate_map.h"
+#include "utils/containers/generate_unordered_map.h"
 #include "utils/deduplicated_priority_queue.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/optional.h"

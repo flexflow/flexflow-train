@@ -113,11 +113,13 @@ TEST_SUITE(FF_TEST_SUITE) {
     bidict<int, std::string> deserialized = bidict<int, std::string>{
         {2, "hello"},
         {3, "goodbye"},
+        {4, "yes"},
     };
 
     nlohmann::json serialized = std::vector<std::pair<int, std::string>>{
         {2, "hello"},
         {3, "goodbye"},
+        {4, "yes"},
     };
 
     SUBCASE("to_json") {

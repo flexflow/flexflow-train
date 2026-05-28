@@ -1,5 +1,5 @@
 #include "utils/graph/digraph/algorithms/is_acyclic.h"
-#include "utils/containers/generate_map.h"
+#include "utils/containers/generate_unordered_map.h"
 #include "utils/graph/digraph/algorithms/get_successors.h"
 #include "utils/graph/node/algorithms.h"
 #include <unordered_map>
@@ -11,7 +11,7 @@ enum class ExplorationStatus { NOT_EXPLORED, BEING_EXPLORED, FULLY_EXPLORED };
 bool is_acyclic(DiGraphView const &g) {
 
   std::unordered_map<Node, ExplorationStatus> status =
-      generate_map(get_nodes(g), [](Node const &n) {
+      generate_unordered_map(get_nodes(g), [](Node const &n) {
         return ExplorationStatus::NOT_EXPLORED;
       });
 

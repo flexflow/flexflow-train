@@ -190,7 +190,7 @@ bool unlabelled_pattern_does_match(
   ASSERT(left_entries(match.node_assignment) == get_pattern_nodes(pattern));
   ASSERT(
       is_subseteq_of(right_entries(match.node_assignment), get_nodes(graph)));
-  ASSERT(keys(match.input_assignment) == get_pattern_inputs(pattern));
+  ASSERT(unordered_keys(match.input_assignment) == get_pattern_inputs(pattern));
   ASSERT(is_subseteq_of(matched_by_pattern_inputs,
                         get_all_open_kwarg_dataflow_values(graph)));
 

@@ -13,6 +13,11 @@ bool value_is_mapped(DynamicValueAttrs const &);
 bool no_part_of_graph_is_copy_inserted(DynamicOpenDataflowGraph const &);
 bool graph_is_fully_copy_inserted(DynamicOpenDataflowGraph const &);
 
+std::unordered_set<DynamicNodeInvocation> copies_for_invocation_inputs(
+    DynamicNodeInvocation const &i,
+    std::unordered_map<DynamicValueAttrs, DynamicValueAttrs> const
+        &unmapped_value_to_mapped_source_value);
+
 std::unordered_set<DynamicNodeInvocation> perform_copy_insertion_for_invocation(
     DynamicNodeInvocation const &i,
     std::unordered_map<DynamicValueAttrs, DynamicValueAttrs> const

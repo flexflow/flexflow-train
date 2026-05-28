@@ -4,7 +4,7 @@
 #include "test/utils/doctest/fmt/unordered_multiset.h"
 #include "test/utils/doctest/fmt/unordered_set.h"
 #include "test/utils/doctest/fmt/vector.h"
-#include "utils/containers/keys.h"
+#include "utils/containers/unordered_keys.h"
 #include "utils/containers/unordered_multiset_of.h"
 #include "utils/containers/values.h"
 #include "utils/containers/vector_of.h"
@@ -50,7 +50,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     std::unordered_multiset<std::string> correct_values = {"A", "B", "C", "D"};
     std::map<nonnegative_int, std::string> result = enumerate(input);
 
-    CHECK(keys(result) == correct_keys);
+    CHECK(unordered_keys(result) == correct_keys);
     CHECK(unordered_multiset_of(values(result)) == correct_values);
   }
 }

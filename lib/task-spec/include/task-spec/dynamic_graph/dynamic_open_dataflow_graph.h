@@ -23,6 +23,12 @@ bool no_part_of_dynamic_graph_satisfies(
     std::function<bool(DynamicValueAttrs const &)> const &,
     std::function<bool(DynamicTensorSlot const &)> const &);
 
+void require_full_dynamic_graph_satisfies(
+    DynamicOpenDataflowGraph const &,
+    std::function<void(DynamicNodeAttrs const &)> const &,
+    std::function<void(DynamicValueAttrs const &)> const &,
+    std::function<void(DynamicTensorSlot const &)> const &);
+
 std::unordered_multiset<DynamicNodeAttrs>
     get_dynamic_nodes(DynamicOpenDataflowGraph const &);
 std::unordered_multiset<DynamicValueAttrs>

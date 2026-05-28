@@ -13,7 +13,7 @@ includes = [
   "op-attrs/parallel_tensor_shape.dtg.h",
   "op-attrs/parallel_tensor_space_coordinate.dtg.h",
   "pcg/machine_space_coordinate.dtg.h",
-  "utils/bidict/bidict.h",
+  "utils/one_to_many/one_to_many.h",
   "task-spec/dynamic_graph/dynamic_tensor_accessor.dtg.h",
   "task-spec/dynamic_graph/dynamic_tensor_role.dtg.h",
 ]
@@ -25,18 +25,38 @@ src_includes = [
 [[fields]]
 name = "tensor_guid"
 type = "::FlexFlow::dynamic_tensor_guid_t"
+docstring = '''
+\brief The \ref tensor_guid_t or \ref parallel_tensor_guid_t of the (usually parallel) tensor this value originates from. Also allows representing tensors for computing the loss that lie outside of the scope of the \ref ComputationGraph or \ref ParallelComputationGraph, e.g., the label tensor.
+
+For a \ref DynamicOpenDataflowGraph originating from a \ref MapepdParallelComputationGraph, this field is filled in by \ref make_dynamic_open_dataflow_graph_from_mapped_pcg.h.
+'''
 
 [[fields]]
 name = "parallel_tensor_shape"
 type = "std::optional<::FlexFlow::ParallelTensorShape>"
+docstring = '''
+\brief The \ref ParallelTensorShape of the parallel tensor this value originates from.
+
+For a \ref DynamicOpenDataflowGraph originating form a \ref MappedParallelComputationGraph, this field is filled in by \ref make_dynamic_open_dataflow_graph_from_mapped_pcg.h.
+'''
 
 [[fields]]
 name = "shard_coord"
 type = "std::optional<::FlexFlow::ParallelTensorSpaceCoordinate>"
+docstring = '''
+\brief The shard (i.e., \ref ParallelTensorSpaceCoordinate) of the (usually parallel) tensor represented by this value.
+
+For a \ref DynamicOpenDataflowGraph originating from a \ref MappedParallelComputationGraph, this field is filled in by \ref shard_expansion.h.
+'''
 
 [[fields]]
 name = "mapping"
-type = "std::optional<::FlexFlow::bidict<::FlexFlow::ParallelTensorSpaceCoordinate, ::FlexFlow::MachineSpaceCoordinate>>"
+type = "std::optional<::FlexFlow::OneToMany<::FlexFlow::ParallelTensorSpaceCoordinate, ::FlexFlow::MachineSpaceCoordinate>>"
+docstring = '''
+\brief The location (i.e., \ref MachineSpaceCoordinate) of each shard (i.e., \ref ParallelTensorSpaceCoordinate) of this (usually parallel) tensor.
+
+For a \ref DynamicOpenDataflowGraph originating from a \ref MappedParallelComputationGraph, this field is filled in by \ref shard_expansion.h.
+'''
 
 [[fields]]
 name = "accessor"
@@ -45,3 +65,8 @@ type = "std::optional<::FlexFlow::DynamicTensorAccessor>"
 [[fields]]
 name = "role"
 type = "std::optional<::FlexFlow::DynamicTensorRole>"
+docstring = '''
+\brief Identifies the role this tensor plays in training, e.g., a forward tensor, a gradient tensor, an optimizer buffer, a loss tensor, etc.
+
+For a \ref DynamicOpenDataflowGraph originating from a \ref MappedParallelComputationGraph, this field is filled in by \ref pass_expansion.h.
+'''
