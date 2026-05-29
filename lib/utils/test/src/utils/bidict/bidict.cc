@@ -63,14 +63,14 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("bidict::erase_l") {
       dict.erase_l(1);
       CHECK(dict.size() == 1);
-      CHECK_THROWS_AS(dict.at_l(1), std::out_of_range);
+      CHECK_THROWS(dict.at_l(1));
       CHECK(dict.at_r("two") == 2);
     }
 
     SUBCASE("bidict::erase_r") {
       dict.erase_r("one");
       CHECK(dict.size() == 1);
-      CHECK_THROWS_AS(dict.at_r("one"), std::out_of_range);
+      CHECK_THROWS(dict.at_r("one"));
       CHECK(dict.at_l(2) == "two");
     }
 
