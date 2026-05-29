@@ -131,8 +131,8 @@ std::unordered_set<SubParallelComputationGraphEdge> get_subgraph_incoming_edges(
 }
 
 std::unordered_set<parallel_tensor_use_t>
-    get_parallel_tensor_uses(SubParallelComputationGraph const &spcg,
-                             open_parallel_tensor_guid_t const &t) {
+    get_open_parallel_tensor_uses(SubParallelComputationGraph const &spcg,
+                                  open_parallel_tensor_guid_t const &t) {
   std::unordered_set<KwargDataflowInput<TensorSlotName>> raw_uses =
       get_open_kwarg_dataflow_value_uses(spcg.raw_graph,
                                          t.raw_open_dataflow_value);

@@ -3,8 +3,8 @@
 #include "utils/containers/filter_values.h"
 #include "utils/containers/filtermap_keys.h"
 #include "utils/containers/flatmap.h"
-#include "utils/containers/generate_map.h"
-#include "utils/containers/keys.h"
+#include "utils/containers/generate_unordered_map.h"
+#include "utils/containers/unordered_keys.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/restrict_keys.h"
 #include "utils/full_binary_tree/binary_tree_path.h"
@@ -14,7 +14,7 @@ namespace FlexFlow {
 MachineMappingConstraints get_unconstrained_solution_for_layers(
     std::unordered_set<BinaryTreePath> const &layers) {
   return MachineMappingConstraints{
-      generate_map(layers,
+      generate_unordered_map(layers,
                    [](BinaryTreePath const &) -> std::optional<MachineView> {
                      return std::nullopt;
                    }),
@@ -24,7 +24,7 @@ MachineMappingConstraints get_unconstrained_solution_for_layers(
 std::unordered_set<BinaryTreePath>
     get_unconstrained_layers(MachineMappingConstraints const &constraints) {
 
-  return keys(filter_values(
+  return unordered_keys(filter_values(
       constraints.machine_views,
       [](std::optional<MachineView> const &mv) { return !mv.has_value(); }));
 }
@@ -32,14 +32,14 @@ std::unordered_set<BinaryTreePath>
 std::unordered_set<BinaryTreePath>
     get_constrained_layers(MachineMappingConstraints const &constraints) {
 
-  return keys(filter_values(
+  return unordered_keys(filter_values(
       constraints.machine_views,
       [](std::optional<MachineView> const &mv) { return mv.has_value(); }));
 }
 
 std::unordered_set<BinaryTreePath>
     get_all_layers(MachineMappingConstraints const &partial_solution) {
-  return keys(partial_solution.machine_views);
+  return unordered_keys(partial_solution.machine_views);
 }
 
 std::optional<MachineView> get_machine_view_for_layer(
@@ -103,7 +103,7 @@ MachineMappingConstraints with_additional_constraints(
 
 std::optional<MachineView>
     require_only_root(MachineMappingConstraints const &constraints) {
-  ASSERT(keys(constraints.machine_views) ==
+  ASSERT(unordered_keys(constraints.machine_views) ==
              std::unordered_set{binary_tree_root_path()},
          fmt::format("require_only_root expected constraints to have only a "
                      "single key (the root path), but received {}",

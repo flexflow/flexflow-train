@@ -3,13 +3,13 @@
 
 #include <map>
 #include <unordered_map>
-#include <unordered_set>
+#include <set>
 
 namespace FlexFlow {
 
 template <typename K, typename V>
-std::unordered_set<K> keys(std::unordered_map<K, V> const &c) {
-  std::unordered_set<K> result;
+std::set<K> keys(std::unordered_map<K, V> const &c) {
+  std::set<K> result;
   for (auto const &kv : c) {
     result.insert(kv.first);
   }
@@ -17,8 +17,8 @@ std::unordered_set<K> keys(std::unordered_map<K, V> const &c) {
 }
 
 template <typename K, typename V>
-std::unordered_set<K> keys(std::map<K, V> const &c) {
-  std::unordered_set<K> result;
+std::set<K> keys(std::map<K, V> const &c) {
+  std::set<K> result;
   for (auto const &kv : c) {
     result.insert(kv.first);
   }

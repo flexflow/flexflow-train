@@ -16,9 +16,6 @@
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_incoming_open_kwarg_dataflow_values_for_node.h"
 #include "utils/many_to_one/invert_many_to_one.h"
 #include "utils/many_to_one/many_to_one_from_map.h"
-#include "utils/many_to_one/many_to_one_from_unstructured_relation.h"
-#include "utils/many_to_one/unstructured_relation_from_many_to_one.h"
-#include "utils/one_to_many/unstructured_relation_from_one_to_many.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {
@@ -46,7 +43,7 @@ static std::optional<UnlabelledKwargDataflowGraphPatternMatch>
             return OpenKwargDataflowValue<int, TensorSlotName>{o};
           });
 
-  if (keys(pattern_outputs) != keys(graph_outputs)) {
+  if (unordered_keys(pattern_outputs) != unordered_keys(graph_outputs)) {
     return std::nullopt;
   }
 
@@ -64,7 +61,7 @@ static std::optional<UnlabelledKwargDataflowGraphPatternMatch>
       graph_node_inputs =
           get_incoming_open_kwarg_dataflow_values_for_node(graph, graph_node);
 
-  if (keys(graph_node_inputs) != keys(pattern_node_inputs)) {
+  if (unordered_keys(graph_node_inputs) != unordered_keys(pattern_node_inputs)) {
     return std::nullopt;
   }
 

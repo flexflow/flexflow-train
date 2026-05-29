@@ -79,7 +79,7 @@ static DynamicNodeInvocation get_update_invocation_for_invocation(
       /*inputs=*/map_from_pairs(
           transform(tensor_roles, create_binding_for_role)),
       /*node_attrs=*/update_node_attrs,
-      /*outputs=*/std::unordered_map<DynamicTensorSlot, DynamicValueAttrs>{},
+      /*outputs=*/std::map<DynamicTensorSlot, DynamicValueAttrs>{},
   };
 }
 

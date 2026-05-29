@@ -1,0 +1,33 @@
+namespace = "FlexFlow"
+name = "MappedParallelLayerInvocationInfo"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+]
+
+includes = [
+  "pcg/mapped_parallel_computation_graph/mapped_parallel_layer_info.dtg.h",
+  "pcg/parallel_computation_graph/parallel_tensor_info.dtg.h",
+  "op-attrs/tensor_slot_name.dtg.h",
+]
+
+src_includes = [
+  "utils/fmt/map.h",
+  "utils/hash/map.h",
+]
+
+[[fields]]
+name = "incoming"
+type = "std::map<::FlexFlow::TensorSlotName, ::FlexFlow::ParallelTensorInfo>"
+
+[[fields]]
+name = "layer_info"
+type = "::FlexFlow::MappedParallelLayerInfo"
+
+[[fields]]
+name = "outgoing"
+type = "std::map<::FlexFlow::TensorSlotName, ::FlexFlow::ParallelTensorInfo>"

@@ -13,6 +13,7 @@
 #include "utils/overload.h"
 #include <functional>
 #include <optional>
+#include "utils/containers/multiset_of.h"
 
 namespace FlexFlow {
 
@@ -43,8 +44,8 @@ BinarySPDecompositionTree
           from_parallel_child(children[0]), from_parallel_child(children[1])}};
     }
 
-    auto s1 = unordered_multiset_of(slice(children, 0, children.size() / 2));
-    auto s2 = unordered_multiset_of(
+    auto s1 = multiset_of(slice(children, 0, children.size() / 2));
+    auto s2 = multiset_of(
         slice(children, children.size() / 2, std::nullopt));
 
     return BinarySPDecompositionTree{BinaryParallelSplit{

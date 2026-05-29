@@ -3,6 +3,7 @@ name = "EqProjection"
 type = "struct"
 features = [
   "eq",
+  "ord",
   "hash",
   "fmt",
   "rapidcheck",

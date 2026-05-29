@@ -20,7 +20,7 @@ std::vector<TensorUseDescription> TensorUses::at(size_t tensor_guid) const {
 }
 
 void TensorUses::remove(Layer const &layer) {
-  for (auto const &k : keys(this->uses)) {
+  for (auto const &k : unordered_keys(this->uses)) {
     inplace_filter(this->uses.at(k), [&](TensorUseDescription const &d) {
       return d.layer->layer_guid == layer.layer_guid;
     });

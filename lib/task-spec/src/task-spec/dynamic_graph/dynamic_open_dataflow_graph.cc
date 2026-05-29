@@ -19,6 +19,9 @@
 #include "utils/graph/open_dataflow_graph/algorithms/get_inputs.h"
 #include "utils/graph/open_kwarg_dataflow_graph/kwarg_dataflow_graph_input.dtg.h"
 #include "utils/many_to_one/many_to_one.h"
+#include "utils/containers/require_all_of.h"
+#include "utils/containers/unordered_map_from_map.h"
+#include "utils/containers/map_from_unordered.h"
 
 namespace FlexFlow {
 
@@ -55,6 +58,18 @@ bool no_part_of_dynamic_graph_satisfies(
       [&](DynamicValueAttrs const &v) -> bool { return !value_condition(v); },
       [&](DynamicTensorSlot const &s) -> bool { return !slot_condition(s); });
 }
+
+void require_full_dynamic_graph_satisfies(
+    DynamicOpenDataflowGraph const &g,
+    std::function<void(DynamicNodeAttrs const &)> const &node_condition,
+    std::function<void(DynamicValueAttrs const &)> const &value_condition,
+    std::function<void(DynamicTensorSlot const &)> const &slot_condition)
+{
+  require_all_of(get_dynamic_nodes(g), node_condition);
+  require_all_of(get_dynamic_values(g), value_condition);
+  require_all_of(get_dynamic_tensor_slots(g), slot_condition);
+}
+
 
 std::unordered_multiset<DynamicNodeAttrs>
     get_dynamic_nodes(DynamicOpenDataflowGraph const &g) {
@@ -203,16 +218,16 @@ std::pair<LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
       [&](DynamicNodeInvocation const &invocation) -> void {
     KwargNodeAddedResult<DynamicTensorSlot> added = result.add_node(
         invocation.node_attrs,
-        map_values(invocation.inputs,
+        map_values(unordered_map_from_map(invocation.inputs),
                    [&](DynamicValueAttrs const &input)
                        -> OpenKwargDataflowValue<int, DynamicTensorSlot> {
                      return value_map.at_r(input);
                    }),
-        invocation.outputs);
+        unordered_map_from_map(invocation.outputs));
     node_map.equate(added.node, invocation);
 
     for (auto const &[k, v] :
-         zip_values_strict(invocation.outputs, added.outputs)) {
+         zip_values_strict(invocation.outputs, map_from_unordered(added.outputs))) {
       DynamicValueAttrs invocation_output = v.first;
       KwargDataflowOutput<DynamicTensorSlot> graph_output = v.second;
       value_map.equate(

@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_LABELLED_OPEN_KWARG_DATAFLOW_GRAPH_ALGORITHMS_REWRITE_LABELLED_OPEN_KWARG_DATAFLOW_GRAPH_LABELS_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_LABELLED_OPEN_KWARG_DATAFLOW_GRAPH_ALGORITHMS_REWRITE_LABELLED_OPEN_KWARG_DATAFLOW_GRAPH_LABELS_H
 
-#include "utils/containers/generate_map.h"
+#include "utils/containers/generate_unordered_map.h"
 #include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/open_kwarg_dataflow_graph_view_with_labelling.h"
 #include "utils/graph/labelled_open_kwarg_dataflow_graph/labelled_open_kwarg_dataflow_graph.h"
 #include "utils/graph/node/algorithms.h"
@@ -39,10 +39,10 @@ LabelledOpenKwargDataflowGraphView<NewNodeLabel,
       -> NewValueLabel { return f(v, g.at(v)); };
 
   std::unordered_map<Node, NewNodeLabel> node_labels =
-      generate_map(get_nodes(g), get_new_node_label);
+      generate_unordered_map(get_nodes(g), get_new_node_label);
   std::unordered_map<OpenKwargDataflowValue<GraphInputName, SlotName>,
                      NewValueLabel>
-      value_labels = generate_map(get_all_open_kwarg_dataflow_values(g),
+      value_labels = generate_unordered_map(get_all_open_kwarg_dataflow_values(g),
                                   get_new_value_label);
   return open_kwarg_dataflow_graph_view_with_labelling(
       g, node_labels, value_labels);

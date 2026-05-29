@@ -1,10 +1,10 @@
 #include "utils/orthotope/eq_projection.h"
-#include "utils/archetypes/value_type.h"
+#include "utils/archetypes/ordered_value_type.h"
 
 namespace FlexFlow {
 
-using L = value_type<0>;
-using R = value_type<1>;
+using L = ordered_value_type<0>;
+using R = ordered_value_type<1>;
 
 template EqProjection<L, R> make_empty_eq_projection();
 
@@ -18,9 +18,9 @@ template void project_dims(EqProjection<L, R> &, L const &, R const &);
 
 template EqProjection<R, L> invert_eq_projection(EqProjection<L, R> const &);
 
-using T1 = value_type<0>;
-using T2 = value_type<1>;
-using T3 = value_type<2>;
+using T1 = ordered_value_type<0>;
+using T2 = ordered_value_type<1>;
+using T3 = ordered_value_type<2>;
 
 template EqProjection<T1, T3>
     compose_eq_projections(EqProjection<T1, T2> const &,

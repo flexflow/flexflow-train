@@ -3,6 +3,7 @@ name = "DynamicTensorAccessor"
 type = "variant"
 features = [
   "eq",
+  "ord",
   "fmt",
   "hash",
 ]

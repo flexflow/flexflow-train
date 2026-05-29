@@ -10,8 +10,13 @@ bool node_is_pass_expanded(DynamicNodeAttrs const &);
 bool value_is_pass_expanded(DynamicValueAttrs const &);
 bool slot_is_pass_expanded(DynamicTensorSlot const &);
 
+bool node_is_ready_for_pass_expansion(DynamicNodeAttrs const &);
+bool value_is_ready_for_pass_expansion(DynamicValueAttrs const &);
+bool slot_is_ready_for_pass_expansion(DynamicTensorSlot const &);
+
 bool no_part_of_graph_is_pass_expanded(DynamicOpenDataflowGraph const &);
 bool graph_is_fully_pass_expanded(DynamicOpenDataflowGraph const &);
+bool graph_is_ready_for_pass_expansion(DynamicOpenDataflowGraph const &);
 
 DynamicNodeInvocation
     perform_fwd_pass_expansion_for_invocation(DynamicNodeInvocation const &);

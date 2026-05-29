@@ -12,6 +12,7 @@ features = [
 includes = [
   "op-attrs/tensor_slot_name.dtg.h",
   "task-spec/dynamic_graph/dynamic_tensor_role.dtg.h",
+  "pcg/machine_space_coordinate.dtg.h",
   "<optional>",
 ]
 
@@ -27,3 +28,13 @@ type = "::FlexFlow::TensorSlotName"
 [[fields]]
 name = "slot_tensor_role"
 type = "std::optional<::FlexFlow::DynamicTensorRole>"
+
+[[fields]]
+name = "task_shard"
+type = "std::optional<::FlexFlow::MachineSpaceCoordinate>"
+docstring = '''
+\brief For representing parallel operators such as \ref ReplicateAttrs as a single operator with multiple outputs instead of fully shard expanding.
+
+This is done for the convenience of the runtime, as the \ref ReplicateAttrs is ultimately executed as a single NCCL task/call, so shard-expanding this operator is ultimately counter-productive.
+Since the output values, however, do need to be shard-expanded for the rest of the system to work, we make Replicate a single operator with multiple outputs, each with the same \ref TensorSlotName and \ref DynamicTensorRole, but with different \ref MachineSpaceCoordinate ""s to identify which node is ultimately producing that value.
+'''

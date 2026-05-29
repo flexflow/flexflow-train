@@ -3,6 +3,7 @@ name = "DownProjection"
 type = "struct"
 features = [
   "eq",
+  "ord",
   "hash",
   "fmt",
 ]

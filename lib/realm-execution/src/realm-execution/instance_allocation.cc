@@ -42,7 +42,7 @@ TensorInstanceBacking perform_instance_allocation(
     RealmContext &ctx) {
   ASSERT(no_tensors_are_allocated(g));
   ASSERT(tensors_are_ready_for_allocation(g));
-  for (DynamicValueAttrs const &v : keys(preallocated)) {
+  for (DynamicValueAttrs const &v : unordered_keys(preallocated)) {
     ASSERT(v.accessor == std::nullopt);
   }
 

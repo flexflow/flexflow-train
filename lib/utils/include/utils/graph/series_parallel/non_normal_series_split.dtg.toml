@@ -5,6 +5,7 @@ features = [
   "eq",
   "hash",
   "fmt",
+  "ord",
 ]
 
 fwd_decls = [
@@ -23,6 +24,7 @@ includes = [
 
 src_includes = [
   "utils/fmt/variant.h",
+  "utils/ord/vector.h",
   "utils/fmt/vector.h",
   "utils/hash/vector.h",
 ]

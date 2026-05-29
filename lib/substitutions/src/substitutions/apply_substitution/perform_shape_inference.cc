@@ -1,7 +1,6 @@
 #include "substitutions/apply_substitution/perform_shape_inference.h"
 #include "op-attrs/get_incoming_tensor_roles.h"
 #include "op-attrs/shape_inference.h"
-#include "utils/containers/binary_merge_disjoint_maps.h"
 #include "utils/containers/filter_values.h"
 #include "utils/containers/filtrans.h"
 #include "utils/containers/is_subseteq_of.h"
@@ -20,6 +19,7 @@
 #include "utils/graph/open_dataflow_graph/algorithms/get_inputs.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_incoming_open_kwarg_dataflow_values_for_node.h"
 #include "utils/nonnegative_int/num_elements.h"
+#include "utils/containers/binary_merge_disjoint_unordered_maps.h"
 
 namespace FlexFlow {
 
@@ -56,12 +56,12 @@ LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs,
     std::unordered_map<TensorSlotName, IncomingTensorRole>
         incoming_tensor_roles = get_incoming_tensor_roles(n_attrs.op_attrs);
 
-    ASSERT(is_subseteq_of(keys(incoming_shapes), keys(incoming_tensor_roles)));
+    ASSERT(is_subseteq_of(unordered_keys(incoming_shapes), unordered_keys(incoming_tensor_roles)));
 
     auto incoming_shapes_with_role = [&](IncomingTensorRole role)
         -> std::unordered_map<TensorSlotName, ParallelTensorShape> {
       std::unordered_set<TensorSlotName> slots_with_desired_role =
-          keys(filter_values(incoming_tensor_roles,
+          unordered_keys(filter_values(incoming_tensor_roles,
                              [&](IncomingTensorRole r) { return r == role; }));
 
       return restrict_keys(incoming_shapes, slots_with_desired_role);
@@ -72,7 +72,7 @@ LabelledOpenKwargDataflowGraphView<ParallelLayerAttrs,
     std::unordered_map<TensorSlotName, ParallelTensorShape> weight_shapes =
         incoming_shapes_with_role(IncomingTensorRole::WEIGHT);
 
-    ASSERT(binary_merge_disjoint_maps(input_shapes, weight_shapes) ==
+    ASSERT(binary_merge_disjoint_unordered_maps(input_shapes, weight_shapes) ==
            incoming_shapes);
 
     std::unordered_map<TensorSlotName, ParallelTensorShape>

@@ -7,6 +7,7 @@ namespace FlexFlow {
 
 \section task-spec-lowering-passes Lowering Passes
 
+- \ref make_dynamic_open_dataflow_graph_from_mapped_pcg.h: Embeds a \ref MappedParallelComputationGraph as a \ref DynamicOpenDataflowGraph. The first of the lowering passes.
 - \ref pass_expansion.h
 - \ref shard_expansion.h
 - \ref update_insertion.h

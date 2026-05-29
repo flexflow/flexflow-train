@@ -1,8 +1,11 @@
 #include "utils/one_to_many/one_to_many.h"
 #include "test/utils/doctest/fmt/multiset.h"
 #include "test/utils/doctest/fmt/unordered_set.h"
+#include "test/utils/doctest/fmt/set.h"
 #include "utils/containers/multiset_of.h"
 #include "utils/one_to_many/one_to_many_from_l_to_r_mapping.h"
+#include "test/utils/doctest/fmt/pair.h"
+#include "test/utils/doctest/fmt/unordered_set.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -31,9 +34,9 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("at_l") {
-      nonempty_unordered_set<std::string> result = m.at_l(1);
+      nonempty_set<std::string> result = m.at_l(1);
 
-      nonempty_unordered_set<std::string> correct = {"one", "One", "ONE"};
+      nonempty_set<std::string> correct = {"one", "One", "ONE"};
 
       CHECK(result == correct);
     }
@@ -47,17 +50,17 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("left_values") {
-      std::unordered_set<int> result = m.left_values();
+      std::set<int> result = m.left_values();
 
-      std::unordered_set<int> correct = {1, 2};
+      std::set<int> correct = {1, 2};
 
       CHECK(result == correct);
     }
 
     SUBCASE("right_values") {
-      std::unordered_set<std::string> result = m.right_values();
+      std::set<std::string> result = m.right_values();
 
-      std::unordered_set<std::string> correct = {"one", "One", "ONE", "two"};
+      std::set<std::string> correct = {"one", "One", "ONE", "two"};
 
       CHECK(result == correct);
     }
@@ -90,6 +93,35 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
   }
 
+  TEST_CASE("adl_serializer<OneToMany<L, R>>") {
+    OneToMany<int, std::string> deserialized = OneToMany<int, std::string>{
+        {2, {"two", "TWO"}},
+        {3, {"three"}},
+        {4, {"four"}},
+    };
+
+    nlohmann::json serialized = std::set<std::pair<int, std::string>>{
+        {2, "two"},
+        {2, "TWO"},
+        {3, "three"},
+        {4, "four"},
+    };
+
+    SUBCASE("to_json") {
+      nlohmann::json result = deserialized;
+      nlohmann::json correct = serialized;
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("from_json") {
+      OneToMany<int, std::string> result = serialized;
+      OneToMany<int, std::string> correct = deserialized;
+
+      CHECK(result == correct);
+    }
+  }
+
   TEST_CASE("fmt::to_string(OneToMany<L, R>)") {
     OneToMany<int, std::string> input =
         one_to_many_from_l_to_r_mapping<int, std::string>(
@@ -99,5 +131,68 @@ TEST_SUITE(FF_TEST_SUITE) {
     std::string correct = "{{1, {hello, world}}, {3, {HELLO}}}";
 
     CHECK(multiset_of(result) == multiset_of(correct));
+  }
+
+  TEST_CASE("unstructured_relation_from_one_to_many") {
+    OneToMany<int, std::string> input = {
+        {1, {"one", "ONE"}},
+        {2, {"two"}},
+    };
+
+    std::unordered_set<std::pair<int, std::string>> result =
+        unstructured_relation_from_one_to_many(input);
+    std::unordered_set<std::pair<int, std::string>> correct = {
+        {1, "one"},
+        {1, "ONE"},
+        {2, "two"},
+    };
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("one_to_many_from_unstructured_relation") {
+    SUBCASE("relation is one-to-many") {
+      std::unordered_set<std::pair<int, std::string>> input = {
+          {1, "one"},
+          {1, "ONE"},
+          {2, "two"},
+      };
+
+      OneToMany<int, std::string> result =
+          one_to_many_from_unstructured_relation(input);
+      OneToMany<int, std::string> correct = {
+          {1, {"one", "ONE"}},
+          {2, {"two"}},
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("relation is one-to-one") {
+      std::unordered_set<std::pair<int, std::string>> input = {
+          {1, "one"},
+          {2, "two"},
+      };
+
+      OneToMany<int, std::string> result =
+          one_to_many_from_unstructured_relation(input);
+      OneToMany<int, std::string> correct = {
+          {1, {"one"}},
+          {2, {"two"}},
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("relation is not one-to-many") {
+      std::unordered_set<std::pair<int, std::string>> input = {
+          {1, "one"},
+          {1, "ONE"},
+          {2, "two"},
+          {3, "ONE"},
+      };
+
+      CHECK_THROWS(one_to_many_from_unstructured_relation(input));
+    }
   }
 }

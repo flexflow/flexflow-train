@@ -1,28 +1,32 @@
 #include "utils/one_to_many/one_to_many.h"
 #include "utils/archetypes/jsonable_value_type.h"
 #include "utils/archetypes/rapidcheckable_value_type.h"
-#include "utils/archetypes/value_type.h"
+#include "utils/archetypes/ordered_value_type.h"
+#include "utils/archetypes/jsonable_ordered_value_type.h"
 
 using namespace ::FlexFlow;
 
 namespace FlexFlow {
 
-using L = value_type<0>;
-using R = value_type<1>;
+using L = ordered_value_type<0>;
+using R = ordered_value_type<1>;
 
 template struct OneToMany<L, R>;
 
-template std::unordered_map<L, nonempty_unordered_set<R>>
+template std::map<L, nonempty_set<R>>
     format_as(OneToMany<L, R> const &);
 
 template std::ostream &operator<<(std::ostream &, OneToMany<L, R> const &);
+
+template std::unordered_set<std::pair<L, R>>
+    unstructured_relation_from_one_to_many(OneToMany<L, R> const &);
 
 } // namespace FlexFlow
 
 namespace nlohmann {
 
-using L = ::FlexFlow::jsonable_value_type<0>;
-using R = ::FlexFlow::jsonable_value_type<1>;
+using L = ::FlexFlow::jsonable_ordered_value_type<0>;
+using R = ::FlexFlow::jsonable_ordered_value_type<1>;
 
 template struct adl_serializer<::FlexFlow::OneToMany<L, R>>;
 
@@ -40,8 +44,8 @@ template struct Arbitrary<::FlexFlow::OneToMany<int, std::string>>;
 
 namespace std {
 
-using L = ::FlexFlow::value_type<0>;
-using R = ::FlexFlow::value_type<1>;
+using L = ::FlexFlow::ordered_value_type<0>;
+using R = ::FlexFlow::ordered_value_type<1>;
 
 template struct hash<OneToMany<L, R>>;
 

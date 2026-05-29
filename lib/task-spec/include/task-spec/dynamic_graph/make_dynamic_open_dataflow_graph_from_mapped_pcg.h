@@ -3,8 +3,14 @@
 
 #include "pcg/mapped_parallel_computation_graph/mapped_parallel_computation_graph.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
+#include "pcg/mapped_parallel_computation_graph/mapped_parallel_layer_invocation_info.dtg.h"
 
 namespace FlexFlow {
+
+DynamicNodeInvocation make_dynamic_node_invocation_from_mapped(
+    MappedParallelLayerInvocationInfo const &);
+
+DynamicNodeInvocation build_replicate_invocation(MappedParallelLayerInvocationInfo const &);
 
 DynamicOpenDataflowGraph make_dynamic_open_dataflow_graph_from_mapped_pcg(
     MappedParallelComputationGraph const &);

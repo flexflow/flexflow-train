@@ -8,6 +8,10 @@ namespace FlexFlow {
 DynamicValueAttrs decide_dynamic_value_attrs_role(DynamicValueAttrs const &,
                                                   DynamicTensorRole);
 
+DynamicValueAttrs decide_dynamic_value_attrs_mapping(
+    DynamicValueAttrs const &,
+    OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> const &);
+
 } // namespace FlexFlow
 
 #endif

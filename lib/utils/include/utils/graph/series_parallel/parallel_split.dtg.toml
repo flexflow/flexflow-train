@@ -3,6 +3,7 @@ name = "ParallelSplit"
 type = "struct"
 features = [
   "eq",
+  "ord",
   "hash",
   "fmt",
 ]
@@ -16,18 +17,18 @@ post_includes = [
 ]
 
 includes = [
-  "<unordered_set>",
+  "<set>",
   "<variant>",
   "utils/graph/node/node.dtg.h",
 ]
 
 src_includes = [
   "utils/fmt/variant.h",
-  "utils/fmt/unordered_multiset.h",
-  "utils/hash/unordered_multiset.h",
+  "utils/fmt/multiset.h",
+  "utils/hash/multiset.h",
 ]
 
 [[fields]]
 name = "children"
-type = "std::unordered_multiset<std::variant<::FlexFlow::SeriesSplit, ::FlexFlow::Node>>"
+type = "std::multiset<std::variant<::FlexFlow::SeriesSplit, ::FlexFlow::Node>>"
 indirect = true

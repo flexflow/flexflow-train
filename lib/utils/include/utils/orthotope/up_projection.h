@@ -24,13 +24,13 @@ UpProjection<L, R> make_empty_up_projection() {
 template <typename L, typename R>
 std::unordered_set<L>
     input_dims_of_up_projection(UpProjection<L, R> const &projection) {
-  return projection.dim_mapping.left_values();
+  return unordered_set_of(projection.dim_mapping.left_values());
 }
 
 template <typename L, typename R>
 std::unordered_set<R>
     output_dims_of_up_projection(UpProjection<L, R> const &projection) {
-  return projection.dim_mapping.right_values();
+  return unordered_set_of(projection.dim_mapping.right_values());
 }
 
 template <typename L, typename R>

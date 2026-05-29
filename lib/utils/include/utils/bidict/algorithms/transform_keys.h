@@ -12,7 +12,7 @@ template <typename K,
 bidict<K2, V> transform_keys(bidict<K, V> const &m, F &&f) {
   bidict<K2, V> result;
   for (auto const &kv : m) {
-    result.equate(f(kv.first), kv.second);
+    result.equate_strict(f(kv.first), kv.second);
   }
   return result;
 }

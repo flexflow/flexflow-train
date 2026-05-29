@@ -4,25 +4,26 @@
 #include "utils/containers/generate_map.h"
 #include "utils/containers/items.h"
 #include "utils/containers/keys.h"
+#include "utils/containers/require_same.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/try_at.h"
-#include "utils/containers/unordered_set_of.h"
 #include "utils/containers/values.h"
 #include "utils/exception.h"
-#include "utils/fmt/unordered_map.h"
-#include "utils/fmt/unordered_set.h"
+#include "utils/fmt/map.h"
+#include "utils/fmt/set.h"
 #include "utils/hash-utils.h"
 #include "utils/hash/tuple.h"
-#include "utils/hash/unordered_map.h"
-#include "utils/hash/unordered_set.h"
+#include "utils/hash/map.h"
+#include "utils/hash/set.h"
 #include "utils/json/check_is_json_deserializable.h"
 #include "utils/json/check_is_json_serializable.h"
-#include "utils/nonempty_unordered_set/nonempty_unordered_set.h"
+#include "utils/nonempty_set/nonempty_set.h"
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
 #include <rapidcheck.h>
-#include <unordered_map>
-#include <unordered_set>
+#include <map>
+#include <set>
+#include "utils/containers/set_of.h"
 
 namespace FlexFlow {
 
@@ -53,6 +54,22 @@ public:
     return this->tie() != other.tie();
   }
 
+  bool operator<(OneToMany const &other) const {
+    return this->tie() < other.tie();
+  }
+
+  bool operator<=(OneToMany const &other) const {
+    return this->tie() <= other.tie();
+  }
+
+  bool operator>(OneToMany const &other) const {
+    return this->tie() > other.tie();
+  }
+
+  bool operator>=(OneToMany const &other) const {
+    return this->tie() >= other.tie();
+  }
+
   void insert(std::pair<L, R> const &p) {
     L l = p.first;
     R r = p.second;
@@ -65,7 +82,7 @@ public:
       if (contains_key(this->m_l_to_r, l)) {
         this->m_l_to_r.at(l).insert(r);
       } else {
-        this->m_l_to_r.insert({l, nonempty_unordered_set{{r}}});
+        this->m_l_to_r.insert({l, nonempty_set{{r}}});
       }
     } else if (found_l.value() == l) {
       return;
@@ -79,14 +96,14 @@ public:
     }
   }
 
-  std::unordered_set<std::pair<L, R>> relation() const {
+  std::set<std::pair<L, R>> relation() const {
     return transform(items(this->m_r_to_l),
                      [](std::pair<R, L> const &p) -> std::pair<L, R> {
                        return {p.second, p.first};
                      });
   }
 
-  nonempty_unordered_set<R> const &at_l(L const &l) const {
+  nonempty_set<R> const &at_l(L const &l) const {
     return this->m_l_to_r.at(l);
   }
 
@@ -94,29 +111,33 @@ public:
     return this->m_r_to_l.at(r);
   }
 
-  std::unordered_set<L> left_values() const {
+  std::set<L> left_values() const {
     return keys(this->m_l_to_r);
   }
 
-  std::unordered_set<R> right_values() const {
+  std::set<R> right_values() const {
     return keys(this->m_r_to_l);
   }
 
-  std::unordered_set<nonempty_unordered_set<R>> right_groups() const {
-    return unordered_set_of(values(this->m_l_to_r));
+  std::set<nonempty_set<R>> right_groups() const {
+    return set_of(values(this->m_l_to_r));
   }
 
-  std::unordered_map<L, nonempty_unordered_set<R>> const &l_to_r() const {
+  std::map<L, nonempty_set<R>> const &l_to_r() const {
     return this->m_l_to_r;
   }
 
-  std::unordered_map<R, L> const &r_to_l() const {
+  std::map<R, L> const &r_to_l() const {
     return this->m_r_to_l;
   }
 
+  bool empty() const {
+    return require_same(this->m_l_to_r.empty(), this->m_r_to_l.empty());
+  }
+
 private:
-  std::unordered_map<L, nonempty_unordered_set<R>> m_l_to_r;
-  std::unordered_map<R, L> m_r_to_l;
+  std::map<L, nonempty_set<R>> m_l_to_r;
+  std::map<R, L> m_r_to_l;
 
 private:
   std::tuple<decltype(m_l_to_r) const &, decltype(m_r_to_l) const &>
@@ -128,7 +149,7 @@ private:
 };
 
 template <typename L, typename R>
-std::unordered_map<L, nonempty_unordered_set<R>>
+std::map<L, nonempty_set<R>>
     format_as(OneToMany<L, R> const &m) {
   return generate_map(m.left_values(), [&](L const &l) { return m.at_l(l); });
 }
@@ -136,6 +157,25 @@ std::unordered_map<L, nonempty_unordered_set<R>>
 template <typename L, typename R>
 std::ostream &operator<<(std::ostream &s, OneToMany<L, R> const &m) {
   return (s << fmt::to_string(m));
+}
+
+template <typename L, typename R>
+std::unordered_set<std::pair<L, R>>
+    unstructured_relation_from_one_to_many(OneToMany<L, R> const &one_to_many) {
+  return transform(unordered_set_of(one_to_many.r_to_l()),
+                   [](std::pair<R, L> const &rl) -> std::pair<L, R> {
+                     return std::pair{rl.second, rl.first};
+                   });
+}
+
+template <typename L, typename R>
+OneToMany<L, R> one_to_many_from_unstructured_relation(
+    std::unordered_set<std::pair<L, R>> const &rel) {
+  OneToMany<L, R> result;
+  for (auto const &lr : rel) {
+    result.insert(lr);
+  }
+  return result;
 }
 
 } // namespace FlexFlow
@@ -148,14 +188,16 @@ struct adl_serializer<::FlexFlow::OneToMany<L, R>> {
     CHECK_IS_JSON_DESERIALIZABLE(L);
     CHECK_IS_JSON_DESERIALIZABLE(R);
 
-    NOT_IMPLEMENTED();
+    std::unordered_set<std::pair<L, R>> s = j;
+
+    return ::FlexFlow::one_to_many_from_unstructured_relation(s);
   }
 
   static void to_json(json &j, ::FlexFlow::OneToMany<L, R> const &m) {
     CHECK_IS_JSON_SERIALIZABLE(L);
     CHECK_IS_JSON_SERIALIZABLE(R);
 
-    NOT_IMPLEMENTED();
+    j = ::FlexFlow::set_of(::FlexFlow::unstructured_relation_from_one_to_many(m));
   }
 };
 

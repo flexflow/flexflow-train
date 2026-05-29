@@ -1,0 +1,27 @@
+namespace = "FlexFlow"
+name = "redop_id_t"
+type = "enum"
+features = [
+  "hash",
+  "fmt",
+  "rapidcheck",
+  "json",
+]
+docstring = '''
+\brief An enum for identifying reduction operators (redops) for use in the Realm runtime.
+'''
+
+[[values]]
+name = "SUM_BOOL_REDOP_ID"
+
+[[values]]
+name = "SUM_INT32_REDOP_ID"
+
+[[values]]
+name = "SUM_INT64_REDOP_ID"
+
+[[values]]
+name = "SUM_FLOAT_REDOP_ID"
+
+[[values]]
+name = "SUM_DOUBLE_REDOP_ID"

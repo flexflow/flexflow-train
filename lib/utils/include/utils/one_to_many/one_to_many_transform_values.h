@@ -2,7 +2,8 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_ONE_TO_MANY_ONE_TO_MANY_TRANSFORM_VALUES_H
 
 #include "utils/containers/transform.h"
-#include "utils/one_to_many/one_to_many_from_unstructured_relation.h"
+#include "utils/one_to_many/one_to_many.h"
+
 
 namespace FlexFlow {
 
@@ -13,7 +14,8 @@ template <typename L,
 OneToMany<L, R2> one_to_many_transform_values(OneToMany<L, R1> const &input,
                                               F f) {
   return one_to_many_from_unstructured_relation(transform(
-      input.relation(), [&](std::pair<L, R1> const &p) -> std::pair<L, R2> {
+      unordered_set_of(input.relation()),
+      [&](std::pair<L, R1> const &p) -> std::pair<L, R2> {
         return {p.first, f(p.second)};
       }));
 }

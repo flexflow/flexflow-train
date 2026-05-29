@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_BIDICT_BIDICT_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_BIDICT_BIDICT_H
 
-#include "utils/containers/keys.h"
+#include "utils/containers/unordered_keys.h"
 #include "utils/containers/map_from_keys_and_values.h"
 #include "utils/fmt/unordered_map.h"
 #include "utils/hash/unordered_map.h"
@@ -13,6 +13,10 @@
 #include <optional>
 #include <rapidcheck.h>
 #include <unordered_map>
+#include "utils/containers/require_same.h"
+#include "utils/containers/values.h"
+#include "utils/containers/unordered_set_of.h"
+#include "utils/containers/contains_key.h"
 
 namespace FlexFlow {
 
@@ -65,11 +69,15 @@ struct bidict {
   void equate(L const &l, R const &r) {
     fwd_map.insert({l, r});
     bwd_map.insert({r, l});
+
+    this->check_invariants();
   }
 
   void equate(std::pair<L, R> const &lr) {
     fwd_map.insert(lr);
     bwd_map.insert({lr.second, lr.first});
+
+    this->check_invariants();
   }
 
   void equate_strict(L const &l, R const &r) {
@@ -87,31 +95,35 @@ struct bidict {
   }
 
   bool operator==(bidict<L, R> const &other) const {
-    bool result = this->fwd_map == other.fwd_map;
-    assert(result == (this->bwd_map == other.bwd_map));
-    return result;
+    return require_same(
+      (this->fwd_map == other.fwd_map),
+      (this->bwd_map == other.bwd_map)
+    );
   }
 
   bool operator!=(bidict<L, R> const &other) const {
-    bool result = this->fwd_map != other.fwd_map;
-    assert(result == (this->bwd_map != other.bwd_map));
-    return result;
+    return require_same(
+      (this->fwd_map != other.fwd_map),
+      (this->bwd_map != other.bwd_map)
+    );
   }
 
   R const &at_l(L const &l) const {
+    ASSERT(contains_key(this->fwd_map, l));
     return fwd_map.at(l);
   }
 
   L const &at_r(R const &r) const {
+    ASSERT(contains_key(this->bwd_map, r));
     return bwd_map.at(r);
   }
 
   std::unordered_set<L> left_values() const {
-    return keys(this->fwd_map);
+    return unordered_keys(this->fwd_map);
   }
 
   std::unordered_set<R> right_values() const {
-    return keys(this->bwd_map);
+    return unordered_keys(this->bwd_map);
   }
 
   std::size_t size() const {
@@ -213,11 +225,34 @@ struct bidict {
     return this->fwd_map;
   }
 
+  std::unordered_map<L, R> const &l_to_r() const {
+    return this->fwd_map;
+  }
+
+  std::unordered_map<R, L> const &r_to_l() const {
+    return this->bwd_map;
+  }
+
   bidict(std::unordered_map<L, R> const &fwd_map,
          std::unordered_map<R, L> const &bwd_map)
       : fwd_map(fwd_map), bwd_map(bwd_map) {}
 
 private:
+  void check_invariants() const {
+    std::unordered_set<L> fwd_l_vals = unordered_keys(this->fwd_map);
+    std::unordered_set<L> bwd_l_vals = unordered_set_of(values(this->bwd_map));
+
+    std::unordered_set<R> bwd_r_vals = unordered_keys(this->bwd_map);
+    std::unordered_set<R> fwd_r_vals = unordered_set_of(values(this->fwd_map));
+
+    ASSERT(fwd_l_vals == bwd_l_vals);
+    ASSERT(fwd_r_vals == bwd_r_vals);
+
+    for (L const &l : fwd_l_vals) {
+      ASSERT(bwd_map.at(fwd_map.at(l)) == l);
+    }
+  }
+
   friend struct bidict<R, L>;
 
   std::unordered_map<L, R> fwd_map;

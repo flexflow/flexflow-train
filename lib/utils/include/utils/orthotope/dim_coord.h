@@ -3,10 +3,10 @@
 
 #include "utils/containers/all_of.h"
 #include "utils/containers/contains_key.h"
-#include "utils/containers/generate_map.h"
+#include "utils/containers/generate_unordered_map.h"
 #include "utils/containers/get_all_assignments.h"
 #include "utils/containers/is_subseteq_of.h"
-#include "utils/containers/keys.h"
+#include "utils/containers/unordered_keys.h"
 #include "utils/containers/map_from_keys_and_values.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/product.h"
@@ -29,7 +29,7 @@ namespace FlexFlow {
 
 template <typename T>
 std::unordered_set<T> get_coord_dims(DimCoord<T> const &coord) {
-  return keys(coord.raw);
+  return unordered_keys(coord.raw);
 }
 
 template <typename T>
@@ -65,7 +65,7 @@ DimCoord<T> lift_dim_coord(DimCoord<T> const &coord,
   ASSERT(is_subseteq_of(get_coord_dims(coord), lifted_dims));
 
   return DimCoord<T>{
-      generate_map(lifted_dims,
+      generate_unordered_map(lifted_dims,
                    [&](T const &dim) {
                      if (contains_key(coord.raw, dim)) {
                        return coord.raw.at(dim);

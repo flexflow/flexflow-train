@@ -16,6 +16,7 @@
 #include "utils/nonnegative_int/nonnegative_int.h"
 #include "utils/variant.h"
 #include <unordered_set>
+#include "utils/containers/multiset_of.h"
 
 namespace FlexFlow {
 
@@ -31,7 +32,7 @@ struct ToFinalAST {
                 .value();
           })};
     } else {
-      return ParallelSplit{unordered_multiset_of(transform(
+      return ParallelSplit{multiset_of(transform(
           node.children,
           [](std::variant<IntermediateSpDecompositionTree, Node> const &s) {
             return narrow<std::variant<SeriesSplit, Node>>(
@@ -137,7 +138,7 @@ SeriesParallelDecomposition parallel_composition(
   for (SeriesParallelDecomposition const &sp_comp : sp_compositions) {
     if (sp_comp.has<ParallelSplit>()) {
       composition = multiset_union(composition,
-                                   sp_comp.get<ParallelSplit>().get_children());
+                                   unordered_multiset_of(sp_comp.get<ParallelSplit>().get_children()));
     } else if (sp_comp.has<SeriesSplit>()) {
       composition.insert(sp_comp.get<SeriesSplit>());
     } else {
@@ -145,7 +146,7 @@ SeriesParallelDecomposition parallel_composition(
       composition.insert(sp_comp.get<Node>());
     }
   }
-  return SeriesParallelDecomposition(ParallelSplit{composition});
+  return SeriesParallelDecomposition(ParallelSplit{multiset_of(composition)});
 }
 
 } // namespace FlexFlow

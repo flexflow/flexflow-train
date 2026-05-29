@@ -64,9 +64,7 @@ std::optional<task_id_t>
       [](RepartitionAttrs const &attrs) {
         return task_id_t::REPARTITION_INIT_TASK_ID;
       },
-      [](ReplicateAttrs const &attrs) {
-        return task_id_t::REPLICATE_INIT_TASK_ID;
-      },
+      [](ReplicateAttrs const &attrs) { return std::nullopt; },
       [](ReshapeAttrs const &) { return std::nullopt; },
       [](ReverseAttrs const &) { return std::nullopt; },
       [](SoftmaxAttrs const &) { return task_id_t::SOFTMAX_INIT_TASK_ID; },
@@ -115,9 +113,7 @@ std::optional<task_id_t>
       [](RepartitionAttrs const &attrs) {
         return task_id_t::REPARTITION_FWD_TASK_ID;
       },
-      [](ReplicateAttrs const &attrs) {
-        return task_id_t::REPLICATE_FWD_TASK_ID;
-      },
+      [](ReplicateAttrs const &attrs) { return std::nullopt; },
       [](ReshapeAttrs const &) { return task_id_t::RESHAPE_FWD_TASK_ID; },
       [](ReverseAttrs const &) { return task_id_t::REVERSE_FWD_TASK_ID; },
       [](SoftmaxAttrs const &) { return task_id_t::SOFTMAX_FWD_TASK_ID; },
@@ -166,9 +162,7 @@ std::optional<task_id_t>
       [](RepartitionAttrs const &attrs) {
         return task_id_t::REPARTITION_BWD_TASK_ID;
       },
-      [](ReplicateAttrs const &attrs) {
-        return task_id_t::REPLICATE_BWD_TASK_ID;
-      },
+      [](ReplicateAttrs const &attrs) { return std::nullopt; },
       [](ReshapeAttrs const &) { return task_id_t::RESHAPE_BWD_TASK_ID; },
       [](ReverseAttrs const &) { return task_id_t::REVERSE_BWD_TASK_ID; },
       [](SoftmaxAttrs const &) { return task_id_t::SOFTMAX_BWD_TASK_ID; },

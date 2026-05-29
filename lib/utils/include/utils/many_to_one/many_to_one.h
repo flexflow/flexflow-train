@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_MANY_TO_ONE_MANY_TO_ONE_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_MANY_TO_ONE_MANY_TO_ONE_H
 
-#include "utils/containers/keys.h"
+#include "utils/containers/require_same.h"
 #include "utils/containers/try_at.h"
 #include "utils/containers/unordered_set_of.h"
 #include "utils/containers/values.h"
@@ -19,6 +19,8 @@
 #include <rapidcheck.h>
 #include <unordered_map>
 #include <unordered_set>
+#include "utils/containers/set_of.h"
+#include "utils/containers/unordered_keys.h"
 
 namespace FlexFlow {
 
@@ -87,7 +89,7 @@ public:
   }
 
   std::unordered_set<L> left_values() const {
-    return keys(this->m_l_to_r);
+    return unordered_keys(this->m_l_to_r);
   }
 
   std::unordered_set<std::unordered_set<L>> left_groups() const {
@@ -95,7 +97,7 @@ public:
   }
 
   std::unordered_set<R> right_values() const {
-    return keys(this->m_r_to_l);
+    return unordered_keys(this->m_r_to_l);
   }
 
   std::unordered_map<L, R> const &l_to_r() const {
@@ -104,6 +106,10 @@ public:
 
   std::unordered_map<R, std::unordered_set<L>> const &r_to_l() const {
     return this->m_r_to_l;
+  }
+
+  bool empty() const {
+    return require_same(this->m_l_to_r.empty(), this->m_r_to_l.empty());
   }
 
 private:
@@ -136,6 +142,22 @@ std::ostream &operator<<(std::ostream &s, ManyToOne<L, R> const &m) {
   return (s << fmt::to_string(m));
 }
 
+template <typename L, typename R>
+std::unordered_set<std::pair<L, R>>
+    unstructured_relation_from_many_to_one(ManyToOne<L, R> const &many_to_one) {
+  return unordered_set_of(many_to_one.l_to_r());
+}
+
+template <typename L, typename R>
+ManyToOne<L, R> many_to_one_from_unstructured_relation(
+    std::unordered_set<std::pair<L, R>> const &relation) {
+  ManyToOne<L, R> result;
+  for (auto const &lr : relation) {
+    result.insert(lr);
+  }
+  return result;
+}
+
 } // namespace FlexFlow
 
 namespace nlohmann {
@@ -146,14 +168,16 @@ struct adl_serializer<::FlexFlow::ManyToOne<L, R>> {
     CHECK_IS_JSON_DESERIALIZABLE(L);
     CHECK_IS_JSON_DESERIALIZABLE(R);
 
-    NOT_IMPLEMENTED();
+    std::unordered_set<std::pair<L, R>> s = j;
+
+    return ::FlexFlow::many_to_one_from_unstructured_relation(s);
   }
 
   static void to_json(json &j, ::FlexFlow::ManyToOne<L, R> const &m) {
     CHECK_IS_JSON_SERIALIZABLE(L);
     CHECK_IS_JSON_SERIALIZABLE(R);
 
-    NOT_IMPLEMENTED();
+    j = ::FlexFlow::set_of(::FlexFlow::unstructured_relation_from_many_to_one(m));
   }
 };
 

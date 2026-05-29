@@ -4,8 +4,8 @@
 #include "substitutions/unlabelled/unlabelled_graph_pattern.h"
 #include "utils/bidict/algorithms/bidict_from_keys_and_values.h"
 #include "utils/bidict/algorithms/bidict_from_map.h"
+#include "utils/bidict/algorithms/binary_merge_disjoint_bidicts.h"
 #include "utils/bidict/algorithms/exhaustive_relational_join.h"
-#include "utils/bidict/algorithms/merge_disjoint_bidicts.h"
 #include "utils/bidict/algorithms/transform_values.h"
 #include "utils/containers/is_subseteq_of.h"
 #include "utils/containers/map_values.h"
@@ -34,7 +34,7 @@ bidict<PatternNodeOutput, parallel_tensor_guid_t>
         exhaustive_relational_join(pattern_node_outputs.reversed(),
                                    matched_layer_output_tensors);
 
-    result = merge_disjoint_bidicts(result, mapping);
+    result = binary_merge_disjoint_bidicts(result, mapping);
   }
 
   return result;
@@ -76,7 +76,7 @@ void assert_pcg_pattern_match_is_valid_for_pattern_and_subpcg(
 
   std::unordered_set<PatternInput> pattern_inputs = get_inputs(pattern);
   std::unordered_set<PatternInput> match_pattern_inputs =
-      keys(match.input_assignment);
+      unordered_keys(match.input_assignment);
   ASSERT(pattern_inputs == match_pattern_inputs);
 }
 

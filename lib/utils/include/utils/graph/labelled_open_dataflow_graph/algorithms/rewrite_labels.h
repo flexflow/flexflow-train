@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_LABELLED_OPEN_DATAFLOW_GRAPH_ALGORITHMS_REWRITE_LABELS_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_LABELLED_OPEN_DATAFLOW_GRAPH_ALGORITHMS_REWRITE_LABELS_H
 
-#include "utils/containers/generate_map.h"
+#include "utils/containers/generate_unordered_map.h"
 #include "utils/graph/labelled_open_dataflow_graph/algorithms/with_labelling.h"
 #include "utils/graph/labelled_open_dataflow_graph/labelled_open_dataflow_graph_view.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_open_dataflow_values.h"
@@ -27,9 +27,9 @@ LabelledOpenDataflowGraphView<NewNodeLabel, NewValueLabel> rewrite_labels(
   };
 
   std::unordered_map<Node, NewNodeLabel> node_labels =
-      generate_map(get_nodes(g), get_new_node_label);
+      generate_unordered_map(get_nodes(g), get_new_node_label);
   std::unordered_map<OpenDataflowValue, NewValueLabel> value_labels =
-      generate_map(get_open_dataflow_values(g), get_new_value_label);
+      generate_unordered_map(get_open_dataflow_values(g), get_new_value_label);
   return with_labelling(g, node_labels, value_labels);
 }
 

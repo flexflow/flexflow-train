@@ -1,5 +1,5 @@
 #include "utils/graph/digraph/algorithms/get_dominators_map.h"
-#include "utils/containers/generate_map.h"
+#include "utils/containers/generate_unordered_map.h"
 #include "utils/containers/restrict_keys.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/values.h"
@@ -25,7 +25,7 @@ std::unordered_map<Node, std::unordered_set<Node>>
   }
 
   std::unordered_map<Node, std::unordered_set<Node>> result =
-      generate_map(get_nodes(g), [&](Node const &) { return get_nodes(g); });
+      generate_unordered_map(get_nodes(g), [&](Node const &) { return get_nodes(g); });
   while (!queue.empty()) {
     Node n = queue.front();
     queue.pop();

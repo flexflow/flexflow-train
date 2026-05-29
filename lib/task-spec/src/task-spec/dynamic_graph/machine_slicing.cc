@@ -8,9 +8,9 @@ std::unordered_set<DynamicNodeInvocation>
         DynamicNodeInvocation const &invocation,
         MachineSpaceCoordinate const &device_coord) {
 
-  ASSERT(invocation.node_attrs.device_coord.has_value());
+  ASSERT(invocation.node_attrs.device_coords.has_value());
 
-  if (invocation.node_attrs.device_coord.value() == device_coord) {
+  if (contains(invocation.node_attrs.device_coords.value(), device_coord)) {
     return {invocation};
   } else {
     return {};

@@ -34,6 +34,7 @@
 #include "utils/containers/transform.h"
 #include "utils/containers/zip_values_strict_with.h"
 #include "utils/containers/zip_with.h"
+#include "utils/containers/binary_merge_disjoint_unordered_maps.h"
 
 namespace FlexFlow {
 
@@ -678,11 +679,11 @@ static void check_incoming_tensor_roles(
   std::unordered_map<TensorSlotName, IncomingTensorRole> correct =
       get_incoming_tensor_roles(layer.op_attrs);
   std::unordered_map<TensorSlotName, IncomingTensorRole> current =
-      binary_merge_disjoint_maps(
-          generate_map(
+      binary_merge_disjoint_unordered_maps(
+          generate_unordered_map(
               input_slots,
               [](TensorSlotName) { return IncomingTensorRole::INPUT; }),
-          generate_map(weight_slots, [](TensorSlotName) {
+          generate_unordered_map(weight_slots, [](TensorSlotName) {
             return IncomingTensorRole::WEIGHT;
           }));
 
@@ -698,8 +699,8 @@ std::unordered_map<TensorSlotName, parallel_tensor_guid_t>
         std::unordered_map<TensorSlotName, InitializerAttrs> const
             &weight_initializers) {
 
-  ASSERT(are_disjoint(keys(inputs), keys(weight_initializers)));
-  check_incoming_tensor_roles(layer, keys(inputs), keys(weight_initializers));
+  ASSERT(are_disjoint(unordered_keys(inputs), unordered_keys(weight_initializers)));
+  check_incoming_tensor_roles(layer, unordered_keys(inputs), unordered_keys(weight_initializers));
 
   std::unordered_map<TensorSlotName, ParallelTensorShape> input_shapes =
       map_values(inputs, [&](parallel_tensor_guid_t const &i) {

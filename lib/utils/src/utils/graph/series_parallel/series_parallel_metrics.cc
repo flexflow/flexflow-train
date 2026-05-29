@@ -5,6 +5,7 @@
 #include "utils/containers/values.h"
 #include "utils/containers/vector_of.h"
 #include "utils/fmt/unordered_multiset.h"
+#include "utils/fmt/multiset.h"
 #include "utils/graph/digraph/algorithms/get_edges.h"
 #include "utils/graph/digraph/algorithms/get_longest_path_lengths_from_root.h"
 #include "utils/graph/digraph/digraph_view.h"
@@ -15,6 +16,7 @@
 #include "utils/nonnegative_int/nonnegative_int.h"
 #include "utils/variant.h"
 #include <unordered_map>
+
 namespace FlexFlow {
 
 static std::unordered_map<Node, nonnegative_int>

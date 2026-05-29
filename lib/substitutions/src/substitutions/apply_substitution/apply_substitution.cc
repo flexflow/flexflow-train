@@ -9,11 +9,11 @@
 #include "substitutions/sub_parallel_computation_graph_data.dtg.h"
 #include "substitutions/sub_parallel_computation_graph_data.h"
 #include "substitutions/sub_parallel_computation_graph_edge.h"
-#include "utils/containers/binary_merge_disjoint_maps.h"
-#include "utils/containers/keys.h"
+#include "utils/containers/unordered_keys.h"
 #include "utils/containers/restrict_keys.h"
 #include "utils/containers/set_minus.h"
 #include "utils/containers/values.h"
+#include "utils/containers/binary_merge_disjoint_unordered_maps.h"
 
 namespace FlexFlow {
 
@@ -50,7 +50,7 @@ SubParallelComputationGraph apply_substitution_from_output_result(
   require_sub_parallel_computation_graph_data_is_valid(pre_data);
 
   std::unordered_set<parallel_layer_guid_t> pre_nodes =
-      keys(pre_data.node_data);
+      unordered_keys(pre_data.node_data);
   std::unordered_set<parallel_layer_guid_t> matched_nodes =
       unordered_set_of(values(match.node_assignment));
   std::unordered_set<parallel_layer_guid_t> post_nodes_from_original_graph =
@@ -64,7 +64,7 @@ SubParallelComputationGraph apply_substitution_from_output_result(
         std::unordered_map<parallel_layer_guid_t, ParallelLayerAttrs>
             post_node_data_from_sub = output_graph_data.node_data;
 
-        return binary_merge_disjoint_maps(post_node_data_from_orig,
+        return binary_merge_disjoint_unordered_maps(post_node_data_from_orig,
                                           post_node_data_from_sub);
       }();
 
@@ -109,9 +109,10 @@ SubParallelComputationGraph apply_substitution_from_output_result(
       input_parallel_tensor_guid_t output_graph_input =
           output_expr_to_result_sub_pcg_mapping.input_mapping.at_r(
               output_expr_input);
-      std::unordered_set<parallel_tensor_use_t> uses = get_parallel_tensor_uses(
-          substitution_output_graph,
-          open_parallel_tensor_guid_from_input(output_graph_input));
+      std::unordered_set<parallel_tensor_use_t> uses =
+          get_open_parallel_tensor_uses(
+              substitution_output_graph,
+              open_parallel_tensor_guid_from_input(output_graph_input));
       for (parallel_tensor_use_t const &use : uses) {
         SubParallelComputationGraphEdge new_edge =
             subpcg_edge_from_tensor_and_use(base_graph_tensor, use);
@@ -167,8 +168,8 @@ SubParallelComputationGraph apply_substitution_from_output_result(
 
         std::unordered_map<open_parallel_tensor_guid_t, ParallelTensorAttrs>
             post_value_data_from_sub = output_graph_data.value_data;
-        return binary_merge_disjoint_maps(post_value_data_from_orig,
-                                          post_value_data_from_sub);
+        return binary_merge_disjoint_unordered_maps(post_value_data_from_orig,
+                                                    post_value_data_from_sub);
       }();
 
   SubParallelComputationGraphData post_data = SubParallelComputationGraphData{

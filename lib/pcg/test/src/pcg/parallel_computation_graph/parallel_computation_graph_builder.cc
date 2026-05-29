@@ -5,7 +5,7 @@
 #include "pcg/parallel_computation_graph/parallel_layer_attrs.h"
 #include "pcg/parallel_computation_graph/parallel_tensor_guid_t.h"
 #include "utils/containers/count.h"
-#include "utils/containers/generate_map.h"
+#include "utils/containers/generate_unordered_map.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/items.h"
 #include "utils/containers/require_only_key.h"
@@ -248,7 +248,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                                              /*paddingW=*/paddingW);
 
     std::unordered_map<parallel_layer_guid_t, ParallelLayerAttrs> layers =
-        generate_map(get_parallel_layers(b.pcg),
+        generate_unordered_map(get_parallel_layers(b.pcg),
                      [&](parallel_layer_guid_t const &l) {
                        return get_parallel_layer_attrs(b.pcg, l);
                      });

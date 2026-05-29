@@ -1,0 +1,30 @@
+namespace = "FlexFlow"
+name = "DynamicNodeInvocationShardingInfo"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "fmt",
+  "json",
+]
+
+includes = [
+  "pcg/machine_space_coordinate.dtg.h",
+  "task-spec/dynamic_graph/dynamic_tensor_slot.dtg.h",
+  "task-spec/dynamic_graph/dynamic_value_attrs_sharding_info.dtg.h",
+  "utils/nonempty_set/nonempty_set.h",
+]
+
+src_includes = [
+  "utils/hash/map.h",
+  "utils/fmt/map.h",
+]
+
+[[fields]]
+name = "device_coords"
+type = "::FlexFlow::nonempty_set<::FlexFlow::MachineSpaceCoordinate>"
+
+[[fields]]
+name = "value_sharding"
+type = "std::map<::FlexFlow::DynamicTensorSlot, ::FlexFlow::DynamicValueAttrsShardingInfo>"

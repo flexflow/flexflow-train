@@ -7,19 +7,19 @@ features = [
 
 includes = [
   "utils/graph/digraph/digraph_view.h",
-  "utils/bidict/bidict.h",
   "compiler/task_graph_simulator/pcg_task.dtg.h",
   "pcg/device_id_t.dtg.h",
+  "utils/many_to_one/many_to_one.h",
   "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h",
-  "<unordered_set>",
-  "<unordered_map>"
+  "<set>",
+  "<map>"
 ]
 
 src_includes = [
-  "utils/fmt/unordered_set.h",
-  "utils/hash/unordered_set.h",
-  "utils/fmt/unordered_map.h",
-  "utils/hash/unordered_map.h"
+  "utils/fmt/set.h",
+  "utils/hash/set.h",
+  "utils/fmt/map.h",
+  "utils/hash/map.h"
 ]
 
 [[fields]]
@@ -28,8 +28,8 @@ type = "::FlexFlow::DiGraphView"
 
 [[fields]]
 name = "node_to_task"
-type = "::FlexFlow::bidict<::FlexFlow::Node, ::FlexFlow::PCGTask>"
+type = "::FlexFlow::ManyToOne<::FlexFlow::Node, ::FlexFlow::PCGTask>"
 
 [[fields]]
 name = "node_to_devices"
-type = "std::unordered_map<::FlexFlow::Node, std::unordered_set<::FlexFlow::device_id_t>>"
+type = "std::map<::FlexFlow::Node, std::set<::FlexFlow::device_id_t>>"

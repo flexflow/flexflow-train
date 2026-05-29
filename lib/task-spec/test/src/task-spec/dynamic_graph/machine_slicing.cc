@@ -58,6 +58,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       return DynamicTensorSlot{
           /*slot_name=*/slot_name,
           /*slot_tensor_role=*/std::nullopt,
+          /*task_shard=*/std::nullopt,
       };
     };
 
@@ -112,7 +113,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*node_attrs=*/
         DynamicNodeAttrs{
             /*task_type=*/std::nullopt,
-            /*device_coord=*/mc2,
+            /*device_coords=*/nonempty_set{mc2},
             /*mapping=*/std::nullopt,
             /*op_attrs=*/std::nullopt,
             /*layer_guid=*/
@@ -139,7 +140,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*node_attrs=*/
         DynamicNodeAttrs{
             /*task_type=*/std::nullopt,
-            /*device_coord=*/mc1,
+            /*device_coord=*/nonempty_set{mc1},
             /*mapping=*/std::nullopt,
             /*op_attrs=*/std::nullopt,
             /*layer_guid=*/
@@ -173,7 +174,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*node_attrs=*/
         DynamicNodeAttrs{
             /*task_type=*/std::nullopt,
-            /*device_coord=*/mc2,
+            /*device_coord=*/nonempty_set{mc2},
             /*mapping=*/std::nullopt,
             /*op_attrs=*/std::nullopt,
             /*layer_guid=*/

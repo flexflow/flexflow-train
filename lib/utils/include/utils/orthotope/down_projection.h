@@ -48,7 +48,7 @@ DimCoord<R> compute_down_projection(DownProjection<L, R> const &projection,
       output_dims_of_down_projection(projection);
 
   return DimCoord<R>{
-      generate_map(
+      generate_unordered_map(
           output_dims,
           [&](R const &output_dim) {
             std::unordered_set<L> src_dims =

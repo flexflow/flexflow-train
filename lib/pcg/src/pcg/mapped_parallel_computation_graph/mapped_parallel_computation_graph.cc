@@ -2,18 +2,42 @@
 #include "op-attrs/pcg_operator_attrs.h"
 #include "pcg/mapped_parallel_computation_graph/mapped_parallel_layer_attrs.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
+#include "utils/bidict/algorithms/bidict_from_map.h"
 #include "utils/bidict/algorithms/transform_keys.h"
 #include "utils/containers/transform.h"
 #include "utils/graph/kwarg_dataflow_graph/algorithms/find_isomorphism_between_kwarg_dataflow_graphs.h"
 #include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/labelled_kwarg_dataflow_graph_view_as_dot.h"
 #include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/materialize_labelled_kwarg_dataflow_graph_view.h"
 #include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/rewrite_labelled_kwarg_dataflow_graph_node_labels.h"
+#include "utils/many_to_one/many_to_one_from_map.h"
+#include "pcg/mapped_parallel_computation_graph/mapped_parallel_layer_invocation_info.h"
+#include "pcg/mapped_parallel_computation_graph/mapped_operator_task_group.h"
+#include "utils/containers/set_of.h"
+#include "utils/containers/set_union.h"
+#include "utils/containers/keys.h"
+#include "utils/containers/require_all_of.h"
 
 namespace FlexFlow {
 
 std::unordered_set<parallel_layer_guid_t>
     mpcg_get_parallel_layers(MappedParallelComputationGraph const &mpcg) {
   return get_parallel_layers(pcg_from_mpcg(mpcg));
+}
+
+std::set<MappedParallelLayerInvocationInfo>
+    mpcg_get_invocation_set(MappedParallelComputationGraph const &mpcg)
+{
+  auto mk_mapped_invocation = [&](ParallelLayerInvocationInfo const &invocation)
+    -> MappedParallelLayerInvocationInfo
+  {
+    MappedOperatorTaskGroup mapping = mpcg_get_mapping_for_layer(mpcg, invocation.layer_info.guid);
+
+    return mapped_parallel_layer_invocation_info_from_pcg_invocation_and_mapping(invocation, mapping);
+  };
+
+  ParallelComputationGraph pcg = pcg_from_mpcg(mpcg);
+
+  return transform(pcg_get_invocation_info_set(pcg), mk_mapped_invocation);
 }
 
 MappedOperatorTaskGroup
@@ -46,6 +70,59 @@ ParallelComputationGraph
   };
 }
 
+parallel_layer_guid_t
+    mpcg_get_source_layer(MappedParallelComputationGraph const &mpcg,
+                          parallel_tensor_guid_t const &t) {
+  return get_source_layer(pcg_from_mpcg(mpcg), t);
+}
+
+PCGOperatorAttrs
+    mpcg_get_pcg_op_attrs(MappedParallelComputationGraph const &mpcg,
+                          parallel_layer_guid_t const &l) {
+  return pcg_get_op_attrs(pcg_from_mpcg(mpcg), l);
+}
+
+ParallelTensorAttrs
+    mpcg_get_parallel_tensor_attrs(MappedParallelComputationGraph const &mpcg,
+                                   parallel_tensor_guid_t const &t) {
+  return get_parallel_tensor_attrs(pcg_from_mpcg(mpcg), t);
+}
+
+std::unordered_map<TensorSlotName, ParallelComputationGraphEdge>
+    mpcg_get_incoming_edges(MappedParallelComputationGraph const &mpcg,
+                            parallel_layer_guid_t const &l) {
+  return get_incoming_edges(pcg_from_mpcg(mpcg), l);
+}
+
+std::unordered_set<ParallelComputationGraphEdge>
+    mpcg_get_outgoing_edges(MappedParallelComputationGraph const &mpcg,
+                            parallel_layer_guid_t const &l) {
+  return get_outgoing_edges(pcg_from_mpcg(mpcg), l);
+}
+
+ManyToOne<TensorSlotName, parallel_tensor_guid_t>
+    mpcg_get_incoming_tensors(MappedParallelComputationGraph const &mpcg,
+                              parallel_layer_guid_t const &l) {
+  return many_to_one_from_map(get_incoming_tensors(pcg_from_mpcg(mpcg), l));
+}
+
+bidict<TensorSlotName, parallel_tensor_guid_t>
+    mpcg_get_outgoing_tensors(MappedParallelComputationGraph const &mpcg,
+                              parallel_layer_guid_t const &l) {
+  return bidict_from_map(get_outgoing_tensors(pcg_from_mpcg(mpcg), l));
+}
+
+std::unordered_set<ParallelComputationGraphEdge>
+    mpcg_get_edges(MappedParallelComputationGraph const &mpcg) {
+  return get_edges(pcg_from_mpcg(mpcg));
+}
+
+std::unordered_set<parallel_tensor_use_t>
+    mpcg_get_parallel_tensor_uses(MappedParallelComputationGraph const &mpcg,
+                                  parallel_tensor_guid_t const &t) {
+  return pcg_get_parallel_tensor_uses(pcg_from_mpcg(mpcg), t);
+}
+
 MappedParallelComputationGraph mapped_pcg_from_pcg_and_mapped_op_task_groups(
     ParallelComputationGraph const &pcg,
     std::unordered_map<parallel_layer_guid_t, MappedOperatorTaskGroup> const
@@ -56,6 +133,22 @@ MappedParallelComputationGraph mapped_pcg_from_pcg_and_mapped_op_task_groups(
 
     return mapped_op_task_groups.at(l);
   };
+
+  auto slot_names_for_layer = [&](parallel_layer_guid_t l) -> std::set<TensorSlotName> {
+    return set_union(keys(get_incoming_tensors(pcg, l)), keys(get_outgoing_tensors(pcg, l)));
+  };
+
+  auto slot_names_for_layer_mapping = [&](parallel_layer_guid_t l) -> std::set<TensorSlotName> {
+    return get_slot_names_for_task_group(mapping_for_layer(l));
+  };
+
+  require_all_of(
+    get_parallel_layers(pcg),
+    [&](parallel_layer_guid_t l) -> void {
+      std::set<TensorSlotName> for_layer = slot_names_for_layer(l);
+      std::set<TensorSlotName> for_layer_mapping = slot_names_for_layer_mapping(l);
+      ASSERT(for_layer == for_layer_mapping);
+    });
 
   auto mpcg_layer_attrs_from_pcg_layer_attrs =
       [&](Node const &node, ParallelLayerAttrs const &pcg_layer_attrs)

@@ -1,7 +1,9 @@
 #include "task-spec/dynamic_graph/pass_expansion.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
+#include "task-spec/dynamic_graph/training_operation_attrs.h"
 #include "utils/containers/are_all_same.h"
+#include "utils/containers/get_only.h"
 #include "utils/containers/merge_disjoint_maps.h"
 #include "utils/containers/transform.h"
 
@@ -19,6 +21,18 @@ bool value_is_pass_expanded(DynamicValueAttrs const &v) {
   return v.role.has_value();
 }
 
+bool node_is_ready_for_pass_expansion(DynamicNodeAttrs const &) {
+  return true;
+}
+
+bool value_is_ready_for_pass_expansion(DynamicValueAttrs const &) {
+  return true;
+}
+
+bool slot_is_ready_for_pass_expansion(DynamicTensorSlot const &) {
+  return true;
+}
+
 bool no_part_of_graph_is_pass_expanded(DynamicOpenDataflowGraph const &g) {
   return no_part_of_dynamic_graph_satisfies(
       g, node_is_pass_expanded, value_is_pass_expanded, slot_is_pass_expanded);
@@ -27,6 +41,11 @@ bool no_part_of_graph_is_pass_expanded(DynamicOpenDataflowGraph const &g) {
 bool graph_is_fully_pass_expanded(DynamicOpenDataflowGraph const &g) {
   return full_dynamic_graph_satisfies(
       g, node_is_pass_expanded, value_is_pass_expanded, slot_is_pass_expanded);
+}
+
+bool graph_is_ready_for_pass_expansion(DynamicOpenDataflowGraph const &g) {
+  return full_dynamic_graph_satisfies(
+      g, node_is_ready_for_pass_expansion, value_is_ready_for_pass_expansion, slot_is_ready_for_pass_expansion);
 }
 
 DynamicTensorSlot pass_expand_slot(DynamicTensorSlot const &s,
@@ -82,6 +101,9 @@ DynamicNodeInvocation perform_fwd_pass_expansion_for_invocation(
 DynamicNodeInvocation perform_bwd_pass_expansion_for_invocation(
     DynamicNodeInvocation const &invocation) {
 
+  TrainingOperationAttrs op_attrs =
+      assert_unwrap(invocation.node_attrs.op_attrs);
+
   auto to_fwd = [](DynamicTensorSlot const &k, DynamicValueAttrs const &v) {
     return std::pair{
         pass_expand_slot(k, FwbTensorType::FORWARD),
@@ -96,17 +118,37 @@ DynamicNodeInvocation perform_bwd_pass_expansion_for_invocation(
     };
   };
 
-  return DynamicNodeInvocation{
-      /*inputs=*/
-      merge_disjoint_maps(std::vector{
-          transform(invocation.inputs, to_fwd),
-          transform(invocation.outputs, to_fwd),
-          transform(invocation.outputs, to_grad),
-      }),
-      /*node_attrs=*/
-      pass_expand_node(invocation.node_attrs, DynamicTaskType::BWD),
-      /*outputs=*/
-      transform(invocation.inputs, to_grad),
+  if (training_op_attrs_has_op_type(op_attrs, OperatorType::REPLICATE)) {
+    auto [input_slot, input] = get_only(invocation.inputs);
+    auto [output_slot, output] = get_only(invocation.outputs);
+
+    DynamicNodeInvocation bwd{
+        /*inputs=*/{
+            to_fwd(output_slot, output),
+            to_grad(output_slot, output),
+        },
+        /*node_attrs=*/
+        pass_expand_node(invocation.node_attrs, DynamicTaskType::BWD),
+        /*outputs=*/
+        {
+            to_grad(input_slot, input),
+        },
+    };
+
+    return bwd;
+  } else {
+    return DynamicNodeInvocation{
+        /*inputs=*/
+        merge_disjoint_maps(std::vector{
+            transform(invocation.inputs, to_fwd),
+            transform(invocation.outputs, to_fwd),
+            transform(invocation.outputs, to_grad),
+        }),
+        /*node_attrs=*/
+        pass_expand_node(invocation.node_attrs, DynamicTaskType::BWD),
+        /*outputs=*/
+        transform(invocation.inputs, to_grad),
+    };
   };
 }
 
@@ -114,6 +156,7 @@ DynamicOpenDataflowGraph
     perform_pass_expansion(DynamicOpenDataflowGraph const &g) {
 
   ASSERT(no_part_of_graph_is_pass_expanded(g));
+  ASSERT(graph_is_ready_for_pass_expansion(g));
 
   DynamicOpenDataflowGraph result = flatmap_dynamic_invocation_set(
       g, [](DynamicNodeInvocation const &invocation) {

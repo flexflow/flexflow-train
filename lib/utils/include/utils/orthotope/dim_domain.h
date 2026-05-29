@@ -2,7 +2,7 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_ORTHOTOPE_DIM_DOMAIN_H
 
 #include "utils/containers/filter.h"
-#include "utils/containers/keys.h"
+#include "utils/containers/unordered_keys.h"
 #include "utils/containers/map_from_keys_and_values.h"
 #include "utils/containers/restrict_keys.h"
 #include "utils/containers/set_minus.h"
@@ -27,7 +27,7 @@ nonnegative_int dim_domain_num_dims(DimDomain<T> const &domain) {
 
 template <typename T>
 std::unordered_set<T> get_domain_dims(DimDomain<T> const &domain) {
-  return keys(domain.dims);
+  return unordered_keys(domain.dims);
 }
 
 template <typename T>

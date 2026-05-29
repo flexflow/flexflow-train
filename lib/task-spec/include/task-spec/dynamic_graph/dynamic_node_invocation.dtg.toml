@@ -3,6 +3,7 @@ name = "DynamicNodeInvocation"
 type = "struct"
 features = [
   "eq",
+  "ord",
   "fmt",
   "hash",
 ]
@@ -15,13 +16,13 @@ includes = [
 ]
 
 src_includes = [
-  "utils/hash/unordered_map.h",
-  "utils/fmt/unordered_map.h",
+  "utils/hash/map.h",
+  "utils/fmt/map.h",
 ]
 
 [[fields]]
 name = "inputs"
-type = "std::unordered_map<::FlexFlow::DynamicTensorSlot, ::FlexFlow::DynamicValueAttrs>"
+type = "std::map<::FlexFlow::DynamicTensorSlot, ::FlexFlow::DynamicValueAttrs>"
 
 [[fields]]
 name = "node_attrs"
@@ -29,4 +30,4 @@ type = "::FlexFlow::DynamicNodeAttrs"
 
 [[fields]]
 name = "outputs"
-type = "std::unordered_map<::FlexFlow::DynamicTensorSlot, ::FlexFlow::DynamicValueAttrs>"
+type = "std::map<::FlexFlow::DynamicTensorSlot, ::FlexFlow::DynamicValueAttrs>"

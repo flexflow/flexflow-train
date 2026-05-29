@@ -4,7 +4,7 @@
 #include "utils/containers/contains_key.h"
 #include "utils/containers/enumerate.h"
 #include "utils/containers/extend.h"
-#include "utils/containers/generate_map.h"
+#include "utils/containers/generate_unordered_map.h"
 #include "utils/containers/map_values.h"
 #include "utils/graph/kwarg_dataflow_graph/algorithms/get_all_kwarg_dataflow_edges.h"
 #include "utils/graph/kwarg_dataflow_graph/algorithms/get_all_kwarg_dataflow_outputs.h"
@@ -17,6 +17,7 @@
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_all_open_kwarg_dataflow_edges.h"
 #include "utils/graph/open_kwarg_dataflow_graph/open_kwarg_dataflow_edge.h"
 #include "utils/overload.h"
+#include "utils/containers/unordered_keys.h"
 
 namespace FlexFlow {
 
@@ -68,8 +69,8 @@ public:
     }
 
     std::unordered_map<SlotName, KwargDataflowOutput<SlotName>> outputs =
-        generate_map(
-            keys(output_labels),
+        generate_unordered_map(
+            unordered_keys(output_labels),
             [&](SlotName const &output_slot) -> KwargDataflowOutput<SlotName> {
               ValueLabel value_label = output_labels.at(output_slot);
 
@@ -106,7 +107,7 @@ public:
   }
 
   std::unordered_set<Node> query_nodes(NodeQuery const &q) const override {
-    return filter(keys(this->nodes),
+    return filter(unordered_keys(this->nodes),
                   [&](Node const &n) { return includes(q.nodes, n); });
   }
 
@@ -122,7 +123,7 @@ public:
 
   std::unordered_set<KwargDataflowOutput<SlotName>> query_outputs(
       KwargDataflowOutputQuery<SlotName> const &q) const override {
-    return filter(keys(this->outputs),
+    return filter(unordered_keys(this->outputs),
                   [&](KwargDataflowOutput<SlotName> const &output) {
                     return kwarg_dataflow_output_query_includes(q, output);
                   });
@@ -130,7 +131,7 @@ public:
 
   std::unordered_set<KwargDataflowGraphInput<GraphInputName>>
       get_inputs() const override {
-    return keys(this->graph_inputs);
+    return unordered_keys(this->graph_inputs);
   }
 
   NodeLabel at(Node const &n) const override {
@@ -159,7 +160,7 @@ public:
 
     this->graph_inputs.clear();
     this->nodes =
-        generate_map(view_nodes, [&](Node const &n) { return view.at(n); });
+        generate_unordered_map(view_nodes, [&](Node const &n) { return view.at(n); });
 
     this->edges =
         transform(view_edges,
@@ -168,7 +169,7 @@ public:
                     return OpenKwargDataflowEdge<GraphInputName, SlotName>{e};
                   });
     this->outputs =
-        generate_map(view_outputs, [&](KwargDataflowOutput<SlotName> const &o) {
+        generate_unordered_map(view_outputs, [&](KwargDataflowOutput<SlotName> const &o) {
           return view.at(o);
         });
   }
@@ -186,16 +187,16 @@ public:
     std::unordered_set<KwargDataflowOutput<SlotName>> view_outputs =
         get_all_kwarg_dataflow_outputs(view);
 
-    this->graph_inputs = generate_map(
+    this->graph_inputs = generate_unordered_map(
         view_inputs, [&](KwargDataflowGraphInput<GraphInputName> const &i) {
           return view.at(OpenKwargDataflowValue<GraphInputName, SlotName>{i});
         });
     this->nodes =
-        generate_map(view_nodes, [&](Node const &n) { return view.at(n); });
+        generate_unordered_map(view_nodes, [&](Node const &n) { return view.at(n); });
 
     this->edges = view_edges;
     this->outputs =
-        generate_map(view_outputs, [&](KwargDataflowOutput<SlotName> const &o) {
+        generate_unordered_map(view_outputs, [&](KwargDataflowOutput<SlotName> const &o) {
           return view.at(OpenKwargDataflowValue<GraphInputName, SlotName>{o});
         });
   }

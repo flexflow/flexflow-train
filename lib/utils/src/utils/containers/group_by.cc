@@ -4,8 +4,8 @@
 
 namespace FlexFlow {
 
-using K = value_type<0>;
-using V = value_type<1>;
+using K = ordered_value_type<0>;
+using V = ordered_value_type<1>;
 using F = std::function<K(V)>;
 
 template OneToMany<K, V> group_by(std::unordered_set<V> const &, F &&);

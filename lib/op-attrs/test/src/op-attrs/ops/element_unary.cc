@@ -53,6 +53,19 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(result == correct);
     }
 
+    SUBCASE("discard copy degree > 1") {
+      positive_int degree = 2_p;
+
+      ParallelTensorShape par_input =
+          make_input(SumDegree{1_p}, DiscardCopyDegree{degree}, 1_p, 1_p, 1_p);
+
+      tl::expected<ParallelTensorShape, std::string> result =
+          get_output_shape(attrs, par_input);
+      tl::expected<ParallelTensorShape, std::string> correct = par_input;
+
+      CHECK(result == correct);
+    }
+
     SUBCASE("sum degree > 1") {
       positive_int degree = 2_p;
 
@@ -60,15 +73,6 @@ TEST_SUITE(FF_TEST_SUITE) {
           attrs,
           make_input(
               SumDegree{degree}, DiscardCopyDegree{1_p}, 1_p, 1_p, 1_p)));
-    }
-
-    SUBCASE("discard copy degree > 1") {
-      positive_int degree = 2_p;
-
-      CHECK_THROWS(get_output_shape(
-          attrs,
-          make_input(
-              SumDegree{1_p}, DiscardCopyDegree{degree}, 1_p, 1_p, 1_p)));
     }
   }
 }

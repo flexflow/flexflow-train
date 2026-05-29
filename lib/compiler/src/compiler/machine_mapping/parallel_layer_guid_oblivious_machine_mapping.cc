@@ -5,11 +5,11 @@
 #include "op-attrs/get_operator_task_space.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
-#include "utils/containers/binary_merge_disjoint_maps.h"
 #include "utils/containers/map_keys.h"
 #include "utils/containers/require_same.h"
 #include "utils/containers/try_at.h"
 #include "utils/full_binary_tree/binary_tree_path.h"
+#include "utils/containers/binary_merge_disjoint_unordered_maps.h"
 
 namespace FlexFlow {
 
@@ -17,7 +17,7 @@ ParallelLayerGuidObliviousMachineMapping binary_combine_mappings(
     ParallelLayerGuidObliviousMachineMapping const &lhs,
     ParallelLayerGuidObliviousMachineMapping const &rhs) {
   return ParallelLayerGuidObliviousMachineMapping{
-      binary_merge_disjoint_maps(
+      binary_merge_disjoint_unordered_maps(
           map_keys(lhs.raw_mapping, nest_inside_left_child),
           map_keys(rhs.raw_mapping, nest_inside_right_child)),
   };
@@ -45,7 +45,7 @@ std::unordered_map<BinaryTreePath, MachineSpaceStencil>
         PCGBinarySPDecomposition const &decomposition,
         ParallelLayerGuidObliviousMachineMapping const &mapping) {
   std::unordered_set<BinaryTreePath> leaf_paths = require_same(
-      pcg_sp_tree_get_all_leaf_paths(decomposition), keys(mapping.raw_mapping));
+      pcg_sp_tree_get_all_leaf_paths(decomposition), unordered_keys(mapping.raw_mapping));
 
   std::unordered_map<BinaryTreePath, OperatorTaskSpace>
       path_to_op_task_space_map =
@@ -54,7 +54,7 @@ std::unordered_map<BinaryTreePath, MachineSpaceStencil>
                        return get_operator_task_space(pcg, l);
                      });
 
-  return generate_map(
+  return generate_unordered_map(
       leaf_paths, [&](BinaryTreePath const &p) -> MachineSpaceStencil {
         return MachineSpaceStencil{
             /*operator_task_space=*/path_to_op_task_space_map.at(p),
@@ -71,12 +71,12 @@ std::unordered_map<BinaryTreePath, std::optional<MachineSpaceStencil>>
   std::unordered_map<BinaryTreePath, UnmappedRuntimeOnlyOpCostEstimateKey>
       tree_leaf_map = mm_problem_tree_get_path_to_leaf_map(tree);
 
-  std::unordered_set<BinaryTreePath> mapping_paths = keys(mapping.raw_mapping);
-  std::unordered_set<BinaryTreePath> tree_paths = keys(tree_leaf_map);
+  std::unordered_set<BinaryTreePath> mapping_paths = unordered_keys(mapping.raw_mapping);
+  std::unordered_set<BinaryTreePath> tree_paths = unordered_keys(tree_leaf_map);
 
   ASSERT(is_subseteq_of(mapping_paths, tree_paths));
 
-  return generate_map(
+  return generate_unordered_map(
       tree_paths,
       [&](BinaryTreePath const &p) -> std::optional<MachineSpaceStencil> {
         if (!contains_key(mapping.raw_mapping, p)) {

@@ -9,12 +9,12 @@ namespace FlexFlow {
 template <typename C,
           typename K = typename C::value_type::key_type,
           typename V = typename C::value_type::mapped_type>
-std::unordered_map<K, V> merge_disjoint_maps(C const &c) {
-  std::unordered_map<K, V> empty = {};
+std::map<K, V> merge_disjoint_maps(C const &c) {
+  std::map<K, V> empty = {};
   return foldl(c,
                /*init=*/empty,
-               [](std::unordered_map<K, V> const &lhs,
-                  std::unordered_map<K, V> const &rhs) {
+               [](std::map<K, V> const &lhs,
+                  std::map<K, V> const &rhs) {
                  return binary_merge_disjoint_maps(lhs, rhs);
                });
 }

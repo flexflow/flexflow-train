@@ -8,11 +8,11 @@
 #include "op-attrs/ops/weight.h"
 #include "utils/containers/filtrans.h"
 #include "utils/containers/get_only.h"
-#include "utils/containers/merge_disjoint_maps.h"
 #include "utils/containers/require_only_key.h"
 #include "utils/containers/require_two_keys.h"
 #include "utils/containers/zip_values_strict.h"
 #include "utils/overload.h"
+#include "utils/containers/merge_disjoint_unordered_maps.h"
 
 namespace FlexFlow {
 
@@ -281,7 +281,7 @@ std::unordered_map<TensorSlotName, OperatorSpaceToParallelTensorSpaceMapping>
         ComputationGraphOpAttrs const &attrs,
         std::unordered_map<TensorSlotName, ParallelTensorDimDegrees> const
             &inputs_degrees) {
-  return merge_disjoint_maps(std::vector{
+  return merge_disjoint_unordered_maps(std::vector{
       get_operator_to_input_mappings(attrs, inputs_degrees),
       get_operator_to_weight_mappings(attrs, inputs_degrees),
       get_operator_to_output_mappings(attrs, inputs_degrees),

@@ -328,15 +328,6 @@ name = "COMBINE_FWD_TASK_ID"
 name = "COMBINE_BWD_TASK_ID"
 
 [[values]]
-name = "REPLICATE_INIT_TASK_ID"
-
-[[values]]
-name = "REPLICATE_FWD_TASK_ID"
-
-[[values]]
-name = "REPLICATE_BWD_TASK_ID"
-
-[[values]]
 name = "REDUCTION_INIT_TASK_ID"
 
 [[values]]

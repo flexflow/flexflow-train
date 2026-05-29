@@ -22,10 +22,8 @@ struct formatter<
     CHECK_FMTABLE(K);
     CHECK_FMTABLE(V);
 
-    std::vector<std::pair<K, V>> items = ::FlexFlow::sorted(m);
-
     std::string result = ::FlexFlow::join_strings(
-        items.cbegin(), items.cend(), ", ", [](std::pair<K, V> const &p) {
+        m.cbegin(), m.cend(), ", ", [](std::pair<K, V> const &p) {
           return fmt::to_string(p);
         });
 

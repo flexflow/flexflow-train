@@ -14,6 +14,7 @@
 #include "utils/optional.h"
 #include "utils/overload.h"
 #include <optional>
+#include "utils/containers/unordered_map_from_map.h"
 
 namespace FlexFlow {
 
@@ -58,9 +59,9 @@ TaskArgumentAccessor make_task_argument_accessor_for_invocation(
     return assert_unwrap(value.accessor);
   };
   std::unordered_map<TaskTensorParameter, DynamicTensorAccessor>
-      tensor_slots_backing = binary_merge_disjoint_maps(
+      tensor_slots_backing = unordered_map_from_map(binary_merge_disjoint_maps(
           map_keys_and_values(invocation.inputs, make_param, get_accessor),
-          map_keys_and_values(invocation.outputs, make_param, get_accessor));
+          map_keys_and_values(invocation.outputs, make_param, get_accessor)));
 
   return TaskArgumentAccessor::create<LocalTaskArgumentAccessor>(
       /*allocator=*/allocator,

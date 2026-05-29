@@ -8,7 +8,7 @@
 namespace FlexFlow {
 
 template <typename C, typename F>
-bool all_of(C const &c, F &&f) {
+[[nodiscard]] bool all_of(C const &c, F &&f) {
   for (auto const &v : c) {
     if (!f(v)) {
       return false;
@@ -18,7 +18,7 @@ bool all_of(C const &c, F &&f) {
 }
 
 template <typename K, typename V, typename F>
-bool all_of(std::unordered_map<K, V> const &m, F &&f) {
+[[nodiscard]] bool all_of(std::unordered_map<K, V> const &m, F &&f) {
   for (auto const &[k, v] : m) {
     if (!f(k, v)) {
       return false;
@@ -29,7 +29,7 @@ bool all_of(std::unordered_map<K, V> const &m, F &&f) {
 }
 
 template <typename K, typename V, typename F>
-bool all_of(std::map<K, V> const &m, F &&f) {
+[[nodiscard]] bool all_of(std::map<K, V> const &m, F &&f) {
   for (auto const &[k, v] : m) {
     if (!f(k, v)) {
       return false;
@@ -39,7 +39,7 @@ bool all_of(std::map<K, V> const &m, F &&f) {
   return true;
 }
 
-bool all_of(std::vector<bool> const &);
+[[nodiscard]] bool all_of(std::vector<bool> const &);
 
 } // namespace FlexFlow
 

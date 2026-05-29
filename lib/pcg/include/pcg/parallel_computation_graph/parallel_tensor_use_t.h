@@ -1,0 +1,15 @@
+#ifndef _FLEXFLOW_LIB_PCG_INCLUDE_PCG_PARALLEL_COMPUTATION_GRAPH_PARALLEL_TENSOR_USE_T_H
+#define _FLEXFLOW_LIB_PCG_INCLUDE_PCG_PARALLEL_COMPUTATION_GRAPH_PARALLEL_TENSOR_USE_T_H
+
+#include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
+#include "pcg/parallel_computation_graph/parallel_tensor_use_t.dtg.h"
+
+namespace FlexFlow {
+
+parallel_layer_guid_t
+    parallel_tensor_use_get_layer(parallel_tensor_use_t const &);
+TensorSlotName parallel_tensor_use_get_slot(parallel_tensor_use_t const &);
+
+} // namespace FlexFlow
+
+#endif

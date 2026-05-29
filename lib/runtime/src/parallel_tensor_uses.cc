@@ -31,7 +31,7 @@ Op const *ParallelTensorUses::get_owner(ParallelTensor const &tensor) const {
 }
 
 void ParallelTensorUses::remove(Op const &op) {
-  for (auto const &k : keys(this->uses)) {
+  for (auto const &k : unordered_keys(this->uses)) {
     inplace_filter(this->uses.at(k),
                    [&](ParallelTensorUseDescription const &d) {
                      return d.op->op_guid == op.op_guid;

@@ -1,9 +1,9 @@
 #include "utils/orthotope/minimal_dim_domain_mapping.h"
-#include "utils/archetypes/value_type.h"
+#include "utils/archetypes/ordered_value_type.h"
 
-using ::FlexFlow::value_type;
-using L = value_type<0>;
-using R = value_type<1>;
+using ::FlexFlow::ordered_value_type;
+using L = ordered_value_type<0>;
+using R = ordered_value_type<1>;
 
 namespace FlexFlow {
 
@@ -40,9 +40,9 @@ template MinimalDimDomainMapping<L, R>
                                                DimOrdering<L> const &,
                                                DimOrdering<R> const &);
 
-using T1 = value_type<2>;
-using T2 = value_type<3>;
-using T3 = value_type<4>;
+using T1 = ordered_value_type<2>;
+using T2 = ordered_value_type<3>;
+using T3 = ordered_value_type<4>;
 
 template MinimalDimDomainMapping<T1, T3> compose_minimal_dim_domain_mappings(
     MinimalDimDomainMapping<T1, T2> const &,
