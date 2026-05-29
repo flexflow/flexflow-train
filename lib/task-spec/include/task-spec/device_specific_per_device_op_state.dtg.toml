@@ -4,6 +4,7 @@ type = "variant"
 features = [
   "eq",
   "hash",
+  "ord",
   "fmt",
 ]
 

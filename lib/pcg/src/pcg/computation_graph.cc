@@ -2,7 +2,6 @@
 #include "op-attrs/computation_graph_op_attrs.h"
 #include "op-attrs/get_incoming_tensor_roles.h"
 #include "op-attrs/shape_inference.h"
-#include "utils/containers/binary_merge_disjoint_maps.h"
 #include "utils/containers/concat_vectors.h"
 #include "utils/containers/filter_values.h"
 #include "utils/containers/filtrans.h"
@@ -35,6 +34,7 @@
 #include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/labelled_open_kwarg_dataflow_graph_view_as_dot.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/record_formatter.h"
+#include "utils/containers/binary_merge_disjoint_unordered_maps.h"
 
 namespace FlexFlow {
 
@@ -101,7 +101,7 @@ LayerAddedResult add_layer(
   KwargNodeAddedResult<TensorSlotName> added =
       computation_graph.raw_graph.add_node(
           layer_attrs,
-          binary_merge_disjoint_maps(raw_inputs, raw_weights),
+          binary_merge_disjoint_unordered_maps(raw_inputs, raw_weights),
           output_attrs);
 
   return LayerAddedResult{

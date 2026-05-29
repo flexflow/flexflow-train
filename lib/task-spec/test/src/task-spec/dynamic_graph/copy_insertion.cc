@@ -28,6 +28,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       return DynamicTensorSlot{
           /*slot_name=*/slot_name,
           /*slot_tensor_role=*/mk_dynamic_tensor_role_fwd(),
+          /*task_shard=*/std::nullopt,
       };
     };
 

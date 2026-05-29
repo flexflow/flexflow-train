@@ -20,6 +20,8 @@
 #include "utils/graph/open_kwarg_dataflow_graph/kwarg_dataflow_graph_input.dtg.h"
 #include "utils/many_to_one/many_to_one.h"
 #include "utils/containers/require_all_of.h"
+#include "utils/containers/unordered_map_from_map.h"
+#include "utils/containers/map_from_unordered.h"
 
 namespace FlexFlow {
 
@@ -216,16 +218,16 @@ std::pair<LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
       [&](DynamicNodeInvocation const &invocation) -> void {
     KwargNodeAddedResult<DynamicTensorSlot> added = result.add_node(
         invocation.node_attrs,
-        map_values(invocation.inputs,
+        map_values(unordered_map_from_map(invocation.inputs),
                    [&](DynamicValueAttrs const &input)
                        -> OpenKwargDataflowValue<int, DynamicTensorSlot> {
                      return value_map.at_r(input);
                    }),
-        invocation.outputs);
+        unordered_map_from_map(invocation.outputs));
     node_map.equate(added.node, invocation);
 
     for (auto const &[k, v] :
-         zip_values_strict(invocation.outputs, added.outputs)) {
+         zip_values_strict(invocation.outputs, map_from_unordered(added.outputs))) {
       DynamicValueAttrs invocation_output = v.first;
       KwargDataflowOutput<DynamicTensorSlot> graph_output = v.second;
       value_map.equate(

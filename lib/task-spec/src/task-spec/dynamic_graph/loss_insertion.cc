@@ -18,6 +18,7 @@ LossInsertionResult perform_loss_insertion(
     LossAttrs const &loss_attrs,
     dynamic_tensor_guid_t logit_tensor,
     std::optional<MappedOperatorTaskGroup> const &loss_mapping) {
+
   DynamicValueAttrs logit_value = assert_unwrap(
       find_output_value_attrs(dg, logit_tensor, mk_dynamic_tensor_role_fwd()));
 
@@ -29,6 +30,7 @@ LossInsertionResult perform_loss_insertion(
       /*accessor=*/std::nullopt,
       /*role=*/mk_dynamic_tensor_role_loss(),
   };
+
   DynamicValueAttrs logit_grad_value{
       /*tensor_guid=*/logit_value.tensor_guid,
       /*parallel_tensor_shape=*/logit_value.parallel_tensor_shape,
@@ -37,14 +39,25 @@ LossInsertionResult perform_loss_insertion(
       /*accessor=*/std::nullopt,
       /*role=*/mk_dynamic_tensor_role_bwd(),
   };
+
   DynamicNodeInvocation loss_invocation{
       /*inputs=*/{
-          {DynamicTensorSlot{/*slot_name=*/TensorSlotName::INPUT,
-                             /*slot_tensor_role=*/label_value.role},
-           label_value},
-          {DynamicTensorSlot{/*slot_name=*/TensorSlotName::LOGIT,
-                             /*slot_tensor_role=*/logit_value.role},
-           logit_value},
+          {
+            DynamicTensorSlot{
+              /*slot_name=*/TensorSlotName::INPUT,
+              /*slot_tensor_role=*/label_value.role,
+              /*task_shard=*/std::nullopt,
+            },
+            label_value,
+          },
+          {
+            DynamicTensorSlot{
+              /*slot_name=*/TensorSlotName::LOGIT,
+              /*slot_tensor_role=*/logit_value.role,
+              /*task_shard=*/std::nullopt,
+            },
+            logit_value,
+          },
       },
       /*node_attrs=*/
       DynamicNodeAttrs{
@@ -57,11 +70,17 @@ LossInsertionResult perform_loss_insertion(
       },
       /*outputs=*/
       {
-          {DynamicTensorSlot{/*slot_name=*/TensorSlotName::LOGIT,
-                             /*slot_tensor_role=*/logit_grad_value.role},
-           logit_grad_value},
+          {
+            DynamicTensorSlot{
+              /*slot_name=*/TensorSlotName::LOGIT,
+              /*slot_tensor_role=*/logit_grad_value.role,
+              /*task_shard=*/std::nullopt,
+            },
+            logit_grad_value,
+          },
       },
   };
+
   DynamicOpenDataflowGraph result = dg;
   result.invocations.insert(loss_invocation);
   return LossInsertionResult{result, label_value, logit_grad_value};

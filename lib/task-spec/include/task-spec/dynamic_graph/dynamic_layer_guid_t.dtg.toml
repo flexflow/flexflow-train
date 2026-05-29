@@ -3,6 +3,7 @@ name = "dynamic_layer_guid_t"
 type = "variant"
 features = [
   "eq",
+  "ord",
   "hash",
   "fmt",
   "json",

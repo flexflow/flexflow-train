@@ -7,8 +7,8 @@
 #include "pcg/mapped_parallel_computation_graph/mapped_parallel_computation_graph.h"
 #include "utils/bidict/algorithms/bidict_from_map.h"
 #include "utils/containers/are_disjoint.h"
-#include "utils/containers/binary_merge_disjoint_maps.h"
 #include "utils/containers/unordered_keys.h"
+#include "utils/containers/binary_merge_disjoint_unordered_maps.h"
 
 namespace FlexFlow {
 
@@ -49,7 +49,7 @@ MappedParallelComputationGraph
 MachineMapping combine_disjoint_mappings(MachineMapping const &m1,
                                          MachineMapping const &m2) {
   return MachineMapping{
-      binary_merge_disjoint_maps(m1.machine_views, m2.machine_views),
+      binary_merge_disjoint_unordered_maps(m1.machine_views, m2.machine_views),
   };
 }
 

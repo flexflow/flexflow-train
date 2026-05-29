@@ -1,13 +1,13 @@
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_single_tensor_movement.h"
 #include "compiler/machine_mapping/abstracted_tensor_set_movement/abstracted_single_tensor_communication_edge.h"
 #include "utils/containers/filtermap_keys.h"
-#include "utils/containers/map_from_pairs.h"
 #include "utils/containers/map_keys_with_value_merging.h"
-#include "utils/containers/merge_maps_with.h"
 #include "utils/containers/require_all_same1.h"
 #include "utils/containers/require_same.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/values.h"
+#include "utils/containers/merge_unordered_maps_with.h"
+#include "utils/containers/unordered_map_from_pairs.h"
 
 namespace FlexFlow {
 
@@ -34,7 +34,7 @@ AbstractedSingleTensorMovement merge_abstracted_single_tensor_movements(
   return AbstractedSingleTensorMovement{
       /*src_op_tree_path=*/require_all_same1(src_paths),
       /*edge_to_size=*/
-      merge_maps_with(transform(vector_of(movements),
+      merge_unordered_maps_with(transform(vector_of(movements),
                                 [](AbstractedSingleTensorMovement const &m) {
                                   return m.edge_to_size;
                                 }),
@@ -51,7 +51,7 @@ AbstractedSingleTensorMovement
   return AbstractedSingleTensorMovement{
       /*src_op_tree_path=*/src_op_tree_path,
       /*edge_to_size=*/
-      map_from_pairs(
+      unordered_map_from_pairs(
           transform(communications,
                     [](AbstractedSingleTensorCommunication const &c) {
                       return std::pair{c.edge, c.size};

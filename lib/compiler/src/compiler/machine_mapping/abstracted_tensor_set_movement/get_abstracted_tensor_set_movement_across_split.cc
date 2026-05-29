@@ -44,7 +44,7 @@ AbstractedSingleTensorMovement get_abstracted_single_tensor_movement_along_edge(
       op_to_op_get_coord_mapping(mapping);
 
   std::unordered_map<AbstractedSingleTensorCommunicationEdge, num_bytes_t>
-      single_comms = map_from_pairs(transform(
+      single_comms = unordered_map_from_pairs(transform(
           bidict_unordered_set_of(coord_mapping),
           [&](std::pair<TaskSpaceCoordinate, TaskSpaceCoordinate> const &
                   src_dst) -> std::pair<AbstractedSingleTensorCommunicationEdge,
@@ -101,7 +101,7 @@ AbstractedTensorSetMovement get_abstracted_tensor_set_movement_across_split(
 
   return AbstractedTensorSetMovement{
       transform(unordered_set_of(edges_by_tensor.right_groups()),
-                [&](nonempty_set<ParallelComputationGraphEdge> const &edges) 
+                [&](nonempty_set<ParallelComputationGraphEdge> const &edges)
                 {
                   return merge_abstracted_single_tensor_movements(transform(
                       unordered_multiset_of(edges.unwrap_as_unordered_set()),

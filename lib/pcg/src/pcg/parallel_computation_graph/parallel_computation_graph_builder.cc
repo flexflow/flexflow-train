@@ -34,6 +34,7 @@
 #include "utils/containers/transform.h"
 #include "utils/containers/zip_values_strict_with.h"
 #include "utils/containers/zip_with.h"
+#include "utils/containers/binary_merge_disjoint_unordered_maps.h"
 
 namespace FlexFlow {
 
@@ -678,7 +679,7 @@ static void check_incoming_tensor_roles(
   std::unordered_map<TensorSlotName, IncomingTensorRole> correct =
       get_incoming_tensor_roles(layer.op_attrs);
   std::unordered_map<TensorSlotName, IncomingTensorRole> current =
-      binary_merge_disjoint_maps(
+      binary_merge_disjoint_unordered_maps(
           generate_unordered_map(
               input_slots,
               [](TensorSlotName) { return IncomingTensorRole::INPUT; }),

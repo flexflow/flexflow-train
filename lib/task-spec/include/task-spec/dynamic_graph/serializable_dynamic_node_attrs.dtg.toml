@@ -3,6 +3,7 @@ name = "SerializableDynamicNodeAttrs"
 type = "struct"
 features = [
   "eq",
+  "ord",
   "hash",
   "fmt",
   "json",
@@ -15,6 +16,7 @@ includes = [
   "pcg/mapped_parallel_computation_graph/mapped_operator_task_group.h",
   "task-spec/dynamic_graph/dynamic_layer_guid_t.dtg.h",
   "task-spec/dynamic_graph/training_operation_attrs.dtg.h",
+  "utils/nonempty_set/nonempty_set.h",
 ]
 
 src_includes = [
@@ -27,8 +29,8 @@ name = "task_type"
 type = "std::optional<::FlexFlow::DynamicTaskType>"
 
 [[fields]]
-name = "device_coord"
-type = "std::optional<::FlexFlow::MachineSpaceCoordinate>"
+name = "device_coords"
+type = "std::optional<::FlexFlow::nonempty_set<::FlexFlow::MachineSpaceCoordinate>>"
 
 [[fields]]
 name = "mapping"

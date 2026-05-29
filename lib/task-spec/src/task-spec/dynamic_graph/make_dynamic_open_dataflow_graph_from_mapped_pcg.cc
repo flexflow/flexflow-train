@@ -43,6 +43,7 @@ DynamicNodeInvocation make_dynamic_node_invocation_from_mapped(
       DynamicTensorSlot{
         /*slot_name=*/slot_name,
         /*slot_tensor_role=*/std::nullopt,
+        /*task_shard=*/std::nullopt,
       },
       DynamicValueAttrs{
         /*tensor_guid=*/dynamic_tensor_guid_t{tensor.guid},
@@ -62,9 +63,9 @@ DynamicNodeInvocation make_dynamic_node_invocation_from_mapped(
     transform(invocation_info.outgoing, lift_kv_pair);
 
   DynamicNodeInvocation invocation = DynamicNodeInvocation{
-      /*inputs=*/unordered_map_from_map(result_inputs),
+      /*inputs=*/result_inputs,
       /*node_attrs=*/result_attrs,
-      /*outputs=*/unordered_map_from_map(result_outputs),
+      /*outputs=*/result_outputs,
   };
 
   return invocation;

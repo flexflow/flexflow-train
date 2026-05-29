@@ -38,6 +38,7 @@
 #include "utils/record_formatter.h"
 #include <unordered_set>
 #include "utils/containers/map_from_unordered.h"
+#include "utils/containers/binary_merge_disjoint_unordered_maps.h"
 
 namespace FlexFlow {
 
@@ -112,7 +113,7 @@ ParallelLayerAddedResult add_parallel_layer(
 
   KwargNodeAddedResult<TensorSlotName> op_added = pcg.raw_graph.add_node(
       layer_attrs,
-      binary_merge_disjoint_maps(unwrapped_inputs, unwrapped_weights),
+      binary_merge_disjoint_unordered_maps(unwrapped_inputs, unwrapped_weights),
       output_attrs);
 
   return ParallelLayerAddedResult{

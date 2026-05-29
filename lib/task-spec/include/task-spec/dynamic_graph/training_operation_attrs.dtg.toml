@@ -3,6 +3,7 @@ name = "TrainingOperationAttrs"
 type = "variant"
 features = [
   "eq",
+  "ord",
   "hash",
   "fmt",
   "json",

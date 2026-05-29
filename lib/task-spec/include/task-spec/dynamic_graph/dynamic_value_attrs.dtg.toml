@@ -3,6 +3,7 @@ name = "DynamicValueAttrs"
 type = "struct"
 features = [
   "eq",
+  "ord",
   "fmt",
   "hash",
 ]

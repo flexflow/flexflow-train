@@ -8,6 +8,8 @@
 #include "utils/fmt/set.h"
 #include "utils/positive_int/positive_int.h"
 #include "utils/containers/unordered_set_of.h"
+#include "utils/json/check_is_json_deserializable.h"
+#include "utils/json/check_is_json_serializable.h"
 
 namespace FlexFlow {
 
@@ -76,21 +78,24 @@ public:
     return unordered_set_of(this->raw);
   }
 
+  using const_iterator = typename std::set<T>::const_iterator;
   using value_type = T;
+  using reference = value_type &;
+  using const_reference = value_type const &;
 
-  typename std::set<T>::const_iterator begin() const {
+  const_iterator begin() const {
     return this->raw.cbegin();
   }
 
-  typename std::set<T>::const_iterator cbegin() const {
+  const_iterator cbegin() const {
     return this->raw.cbegin();
   }
 
-  typename std::set<T>::const_iterator end() const {
+  const_iterator end() const {
     return this->raw.cend();
   }
 
-  typename std::set<T>::const_iterator cend() const {
+  const_iterator cend() const {
     return this->raw.cend();
   }
 
@@ -121,6 +126,27 @@ std::ostream &operator<<(std::ostream &s, nonempty_set<T> const &m) {
 }
 
 } // namespace FlexFlow
+
+namespace nlohmann {
+
+template <typename T>
+struct adl_serializer<::FlexFlow::nonempty_set<T>> {
+  static ::FlexFlow::nonempty_set<T> from_json(json const &j) {
+    CHECK_IS_JSON_DESERIALIZABLE(T);
+
+    std::set<T> s = j;
+
+    return ::FlexFlow::nonempty_set<T>{s};
+  }
+
+  static void to_json(json &j, ::FlexFlow::nonempty_set<T> const &s) {
+    CHECK_IS_JSON_SERIALIZABLE(T);
+
+    j = s.unwrap_as_set();
+  }
+};
+
+} // namespace nlohmann
 
 namespace std {
 

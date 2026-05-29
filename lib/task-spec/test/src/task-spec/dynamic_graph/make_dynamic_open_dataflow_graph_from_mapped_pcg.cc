@@ -11,7 +11,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("Replicate") {
       MachineSpaceCoordinate gpu0 = MachineSpaceCoordinate{0_n, 0_n, DeviceType::GPU};
       MachineSpaceCoordinate gpu1 = MachineSpaceCoordinate{0_n, 1_n, DeviceType::GPU};
-      
+
       ParallelTensorSpaceCoordinate tensor_coord0 = ParallelTensorSpaceCoordinate{
         /*sum_component=*/0_n,
         /*discard_copy_component=*/0_n,
@@ -78,7 +78,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         KwargDataflowOutput{
           Node{0},
           TensorSlotName::OUTPUT,
-        }, 
+        },
       };
 
       MappedParallelLayerInvocationInfo input = MappedParallelLayerInvocationInfo{
@@ -124,6 +124,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             DynamicTensorSlot{
               TensorSlotName::INPUT,
               /*slot_tensor_role=*/std::nullopt,
+              /*task_shard=*/std::nullopt,
             },
             DynamicValueAttrs{
               /*tensor_guid=*/dynamic_tensor_guid_t{input_tensor_guid},
@@ -148,6 +149,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             DynamicTensorSlot{
               TensorSlotName::OUTPUT,
               /*slot_tensor_role=*/std::nullopt,
+              /*task_shard=*/std::nullopt,
             },
             DynamicValueAttrs{
               /*tensor_guid=*/dynamic_tensor_guid_t{output_tensor_guid},
@@ -165,7 +167,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     // SUBCASE("standard op") {
-    //   
+    //
     // }
   }
 

@@ -11,6 +11,7 @@
 #include <optional>
 #include <unordered_map>
 #include <utility>
+#include "utils/containers/map_from_unordered.h"
 
 namespace FlexFlow {
 
@@ -39,26 +40,7 @@ DynamicOpenDataflowGraph
                   DynamicTensorSlot{
                       /*slot_name=*/slot_name,
                       /*slot_tensor_role=*/std::nullopt,
-                  },
-                  DynamicValueAttrs{
-                      /*tensor_guid=*/dynamic_tensor_guid_t{tensor},
-                      /*parallel_tensor_shape=*/lift_to_parallel(attrs.shape),
-                      /*shard_coord=*/std::nullopt,
-                      /*mapping=*/std::nullopt,
-                      /*accessor=*/std::nullopt,
-                      /*role=*/std::nullopt,
-                  },
-              };
-            });
-    std::unordered_map<DynamicTensorSlot, DynamicValueAttrs> result_outputs =
-        transform(
-            get_outgoing_tensors(cg, layer),
-            [&](TensorSlotName const &slot_name, tensor_guid_t const &tensor) {
-              TensorAttrs attrs = get_tensor_attrs(cg, tensor);
-              return std::pair<DynamicTensorSlot, DynamicValueAttrs>{
-                  DynamicTensorSlot{
-                      /*slot_name=*/slot_name,
-                      /*slot_tensor_role=*/std::nullopt,
+                      /*task_shard=*/std::nullopt,
                   },
                   DynamicValueAttrs{
                       /*tensor_guid=*/dynamic_tensor_guid_t{tensor},
@@ -71,7 +53,29 @@ DynamicOpenDataflowGraph
               };
             });
 
-    result.invocations.emplace(result_inputs, result_attrs, result_outputs);
+    std::unordered_map<DynamicTensorSlot, DynamicValueAttrs> result_outputs =
+        transform(
+            get_outgoing_tensors(cg, layer),
+            [&](TensorSlotName const &slot_name, tensor_guid_t const &tensor) {
+              TensorAttrs attrs = get_tensor_attrs(cg, tensor);
+              return std::pair<DynamicTensorSlot, DynamicValueAttrs>{
+                  DynamicTensorSlot{
+                      /*slot_name=*/slot_name,
+                      /*slot_tensor_role=*/std::nullopt,
+                      /*task_shard=*/std::nullopt,
+                  },
+                  DynamicValueAttrs{
+                      /*tensor_guid=*/dynamic_tensor_guid_t{tensor},
+                      /*parallel_tensor_shape=*/lift_to_parallel(attrs.shape),
+                      /*shard_coord=*/std::nullopt,
+                      /*mapping=*/std::nullopt,
+                      /*accessor=*/std::nullopt,
+                      /*role=*/std::nullopt,
+                  },
+              };
+            });
+
+    result.invocations.emplace(map_from_unordered(result_inputs), result_attrs, map_from_unordered(result_outputs));
   }
 
   return result;

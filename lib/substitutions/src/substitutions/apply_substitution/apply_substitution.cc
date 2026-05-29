@@ -9,11 +9,11 @@
 #include "substitutions/sub_parallel_computation_graph_data.dtg.h"
 #include "substitutions/sub_parallel_computation_graph_data.h"
 #include "substitutions/sub_parallel_computation_graph_edge.h"
-#include "utils/containers/binary_merge_disjoint_maps.h"
 #include "utils/containers/unordered_keys.h"
 #include "utils/containers/restrict_keys.h"
 #include "utils/containers/set_minus.h"
 #include "utils/containers/values.h"
+#include "utils/containers/binary_merge_disjoint_unordered_maps.h"
 
 namespace FlexFlow {
 
@@ -64,7 +64,7 @@ SubParallelComputationGraph apply_substitution_from_output_result(
         std::unordered_map<parallel_layer_guid_t, ParallelLayerAttrs>
             post_node_data_from_sub = output_graph_data.node_data;
 
-        return binary_merge_disjoint_maps(post_node_data_from_orig,
+        return binary_merge_disjoint_unordered_maps(post_node_data_from_orig,
                                           post_node_data_from_sub);
       }();
 
@@ -168,8 +168,8 @@ SubParallelComputationGraph apply_substitution_from_output_result(
 
         std::unordered_map<open_parallel_tensor_guid_t, ParallelTensorAttrs>
             post_value_data_from_sub = output_graph_data.value_data;
-        return binary_merge_disjoint_maps(post_value_data_from_orig,
-                                          post_value_data_from_sub);
+        return binary_merge_disjoint_unordered_maps(post_value_data_from_orig,
+                                                    post_value_data_from_sub);
       }();
 
   SubParallelComputationGraphData post_data = SubParallelComputationGraphData{

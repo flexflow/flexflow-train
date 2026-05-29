@@ -3,6 +3,7 @@ name = "SerializableDynamicValueAttrs"
 type = "struct"
 features = [
   "eq",
+  "ord",
   "hash",
   "fmt",
   "json",

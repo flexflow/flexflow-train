@@ -5,7 +5,6 @@
 #include "op-attrs/parallel_tensor_dim_idx_t.dtg.h"
 #include "op-attrs/parallel_tensor_dim_idx_t.h"
 #include "op-attrs/parallel_tensor_space_coordinate.h"
-#include "utils/containers/binary_merge_disjoint_maps.h"
 #include "utils/containers/filtermap_keys.h"
 #include "utils/containers/filtrans.h"
 #include "utils/containers/generate_unordered_map.h"
@@ -19,6 +18,7 @@
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include "utils/nonnegative_int/num_elements.h"
 #include "utils/orthotope/minimal_dim_domain.h"
+#include "utils/containers/binary_merge_disjoint_unordered_maps.h"
 
 namespace FlexFlow {
 
@@ -100,7 +100,7 @@ std::unordered_map<parallel_tensor_dim_idx_t, positive_int>
         return degrees.shard_degrees.at(dim);
       });
 
-  return binary_merge_disjoint_maps(
+  return binary_merge_disjoint_unordered_maps(
       /*lhs=*/replica_dim_degrees,
       /*rhs=*/map_keys(shard_dim_degrees, [](ff_dim_t const &dim) {
         return parallel_tensor_dim_idx_t{dim};

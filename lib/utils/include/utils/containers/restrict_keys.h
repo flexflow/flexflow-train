@@ -4,6 +4,8 @@
 #include "utils/containers/contains.h"
 #include <unordered_map>
 #include <unordered_set>
+#include <map>
+#include <set>
 
 namespace FlexFlow {
 
@@ -19,6 +21,17 @@ std::unordered_map<K, V> restrict_keys(std::unordered_map<K, V> const &m,
   return result;
 }
 
+template <typename K, typename V>
+std::map<K, V> restrict_keys(std::map<K, V> const &m,
+                             std::set<K> const &mask) {
+  std::map<K, V> result;
+  for (auto const &kv : m) {
+    if (contains(mask, kv.first)) {
+      result.insert(kv);
+    }
+  }
+  return result;
+}
 } // namespace FlexFlow
 
 #endif

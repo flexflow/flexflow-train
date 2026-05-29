@@ -131,7 +131,7 @@ std::unordered_set<DynamicNodeInvocation> copies_for_invocation_inputs(
     return map_dynamic_value_attrs_for_task_group(slot, value, mapping);
   };
 
-  std::unordered_map<DynamicTensorSlot, DynamicValueAttrs> mapped_inputs =
+  std::map<DynamicTensorSlot, DynamicValueAttrs> mapped_inputs =
       map_values2(i.inputs, map_tensor);
 
   std::unordered_set<DynamicNodeInvocation> result;
@@ -152,6 +152,7 @@ std::unordered_set<DynamicNodeInvocation> copies_for_invocation_inputs(
                   DynamicTensorSlot{
                     TensorSlotName::INPUT,
                     slot.slot_tensor_role,
+                    /*task_shard=*/std::nullopt,
                   },
                   filtered_source,
               },
@@ -170,8 +171,11 @@ std::unordered_set<DynamicNodeInvocation> copies_for_invocation_inputs(
           /*outputs=*/
           {
               {
-                  DynamicTensorSlot{TensorSlotName::OUTPUT,
-                                    slot.slot_tensor_role},
+                  DynamicTensorSlot{
+                    TensorSlotName::OUTPUT,
+                    slot.slot_tensor_role,
+                    /*task_shard=*/std::nullopt,
+                  },
                   filtered_use,
               },
           },
@@ -196,9 +200,9 @@ std::unordered_set<DynamicNodeInvocation> perform_copy_insertion_for_invocation(
   };
 
   DynamicNodeInvocation mapped_i = [&] {
-    std::unordered_map<DynamicTensorSlot, DynamicValueAttrs> mapped_inputs =
+    std::map<DynamicTensorSlot, DynamicValueAttrs> mapped_inputs =
         map_values2(i.inputs, map_tensor);
-    std::unordered_map<DynamicTensorSlot, DynamicValueAttrs> mapped_outputs =
+    std::map<DynamicTensorSlot, DynamicValueAttrs> mapped_outputs =
         map_values2(i.outputs, map_tensor);
 
     DynamicNodeInvocation r = i;
