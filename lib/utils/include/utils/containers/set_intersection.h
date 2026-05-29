@@ -1,5 +1,5 @@
-#ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_INTERSECTION_H
-#define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_INTERSECTION_H
+#ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_SET_INTERSECTION_H
+#define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_SET_INTERSECTION_H
 
 #include "utils/containers/contains.h"
 #include <optional>
@@ -9,8 +9,8 @@
 namespace FlexFlow {
 
 template <typename T>
-std::unordered_set<T> intersection(std::unordered_set<T> const &l,
-                                   std::unordered_set<T> const &r) {
+std::unordered_set<T> set_intersection(std::unordered_set<T> const &l,
+                                       std::unordered_set<T> const &r) {
   std::unordered_set<T> result;
   for (T const &ll : l) {
     if (contains(r, ll)) {
@@ -21,7 +21,7 @@ std::unordered_set<T> intersection(std::unordered_set<T> const &l,
 }
 
 template <typename T>
-std::set<T> intersection(std::set<T> const &l, std::set<T> const &r) {
+std::set<T> set_intersection(std::set<T> const &l, std::set<T> const &r) {
   std::set<T> result;
   for (T const &ll : l) {
     if (contains(r, ll)) {
@@ -32,10 +32,10 @@ std::set<T> intersection(std::set<T> const &l, std::set<T> const &r) {
 }
 
 template <typename C, typename T = typename C::value_type>
-std::optional<T> intersection(C const &c) {
+std::optional<T> set_intersection(C const &c) {
   std::optional<T> result;
   for (T const &t : c) {
-    result = intersection(result.value_or(t), t);
+    result = set_intersection(result.value_or(t), t);
   }
 
   return result;

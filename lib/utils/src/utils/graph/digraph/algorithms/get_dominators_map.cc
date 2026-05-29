@@ -11,6 +11,7 @@
 #include "utils/hash/unordered_set.h"
 #include <optional>
 #include <queue>
+#include "utils/containers/set_intersection.h"
 
 namespace FlexFlow {
 
@@ -33,7 +34,7 @@ std::unordered_map<Node, std::unordered_set<Node>>
     std::unordered_set<Node> old_result_entry = result.at(n);
 
     result.at(n) =
-        intersection(transform(get_predecessors(g, n), [&](Node const &n) {
+        set_intersection(transform(get_predecessors(g, n), [&](Node const &n) {
           return result.at(n);
         })).value_or(std::unordered_set<Node>{});
     result.at(n).insert(n);

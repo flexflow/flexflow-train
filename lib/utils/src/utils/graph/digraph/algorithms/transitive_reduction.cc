@@ -9,6 +9,7 @@
 #include "utils/graph/digraph/digraph.h"
 #include "utils/graph/instances/adjacency_digraph.h"
 #include "utils/graph/node/algorithms.h"
+#include "utils/containers/set_intersection.h"
 
 namespace FlexFlow {
 
@@ -18,7 +19,7 @@ DirectedEdgeMaskView::DirectedEdgeMaskView(
 
 std::unordered_set<DirectedEdge>
     DirectedEdgeMaskView::query_edges(DirectedEdgeQuery const &q) const {
-  return intersection(g.query_edges(q), this->edge_mask);
+  return set_intersection(g.query_edges(q), this->edge_mask);
 }
 
 std::unordered_set<Node>

@@ -13,7 +13,7 @@
 #include "utils/bidict/algorithms/unordered_set_of.h"
 #include "utils/containers/contains_key.h"
 #include "utils/containers/flatmap.h"
-#include "utils/containers/intersection.h"
+#include "utils/containers/set_intersection.h"
 #include "utils/containers/map_values2.h"
 #include "utils/containers/set_difference.h"
 #include "utils/containers/transform.h"
@@ -67,7 +67,7 @@ static std::pair<DynamicValueAttrs, DynamicValueAttrs>
   // those will not result in actual copies once shard expansion is performed
   std::unordered_set<
       std::pair<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>>
-      remove = intersection(input_mapping, output_mapping);
+      remove = set_intersection(input_mapping, output_mapping);
 
   DynamicValueAttrs filtered_input = input;
   filtered_input.mapping =
