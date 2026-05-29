@@ -16,6 +16,7 @@
 #include "utils/containers/require_same.h"
 #include "utils/containers/values.h"
 #include "utils/containers/unordered_set_of.h"
+#include "utils/containers/contains_key.h"
 
 namespace FlexFlow {
 
@@ -108,10 +109,12 @@ struct bidict {
   }
 
   R const &at_l(L const &l) const {
+    ASSERT(contains_key(this->fwd_map, l));
     return fwd_map.at(l);
   }
 
   L const &at_r(R const &r) const {
+    ASSERT(contains_key(this->bwd_map, r));
     return bwd_map.at(r);
   }
 

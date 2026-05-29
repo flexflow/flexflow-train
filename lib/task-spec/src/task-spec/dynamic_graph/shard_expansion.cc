@@ -226,6 +226,10 @@ static std::set<DynamicNodeInvocationShardingInfo>
       });
 }
 
+// TODO(@lockshaw): There is a lot of code duplication between
+// generate_shard_expansion_for_fwd_replicate and
+// generate_shard_expansion_for_bwd_replicate that should eventually be
+// factored out.
 static std::set<DynamicNodeInvocationShardingInfo>
     generate_shard_expansion_for_fwd_replicate(DynamicNodeInvocation const &i) {
   ASSERT(i.node_attrs.task_type == DynamicTaskType::FWD);
@@ -341,6 +345,121 @@ static std::set<DynamicNodeInvocationShardingInfo>
   return transform(input_tensor_shards, invocation_sharding_info_for_input_tensor_shard);
 }
 
+static std::set<DynamicNodeInvocationShardingInfo>
+    generate_shard_expansion_for_bwd_replicate(DynamicNodeInvocation const &i) {
+  ASSERT(i.node_attrs.task_type == DynamicTaskType::BWD);
+
+  MappedOperatorTaskGroup node_mapping = assert_unwrap(i.node_attrs.mapping);
+
+  DynamicTensorSlot expected_output_grad_slot = DynamicTensorSlot{
+    /*slot_name=*/TensorSlotName::OUTPUT,
+    /*slot_tensor_role=*/mk_dynamic_tensor_role_bwd(),
+    /*task_shard=*/std::nullopt,
+  };
+
+  DynamicValueAttrs output_grad = require_only_key(i.inputs, expected_output_grad_slot);
+
+  DynamicTensorSlot expected_input_grad_slot = DynamicTensorSlot{
+    /*slot_name=*/TensorSlotName::INPUT,
+    /*slot_tensor_role=*/mk_dynamic_tensor_role_bwd(),
+    /*task_shard=*/std::nullopt,
+  };
+
+  DynamicValueAttrs input_grad = require_only_key(i.outputs, expected_input_grad_slot);
+
+  bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
+    output_grad_value_mapping = require_one_to_many_is_bijection(
+      assert_unwrap(output_grad.mapping));
+
+  bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
+    input_grad_value_mapping = require_one_to_many_is_bijection(
+      assert_unwrap(input_grad.mapping));
+
+  std::set<ParallelTensorSpaceCoordinate> input_grad_tensor_shards = set_of(input_grad_value_mapping.left_values());
+
+  auto get_task_shard_machine_coords_for_input_grad_tensor_shard
+    = [&](ParallelTensorSpaceCoordinate const &input_grad_tensor_shard)
+        -> nonempty_set<MachineSpaceCoordinate>
+  {
+    bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding> produce_input_grad_tensor_shard
+      = bidict_filter_values(
+          node_mapping.get_shard_bindings(),
+          [&](OperatorAtomicTaskShardBinding const &b) -> bool {
+            return ptensor_space_coord_for_slot_name(b, TensorSlotName::INPUT) == input_grad_tensor_shard;
+          });
+
+    return nonempty_set(set_of(produce_input_grad_tensor_shard.left_values()));
+  };
+
+  auto invocation_sharding_info_for_input_grad_tensor_shard = [&](ParallelTensorSpaceCoordinate const &c)
+    -> DynamicNodeInvocationShardingInfo
+  {
+    nonempty_set<MachineSpaceCoordinate> task_shard_machine_coords =
+      get_task_shard_machine_coords_for_input_grad_tensor_shard(c);
+
+    std::map<MachineSpaceCoordinate, DynamicValueAttrsShardingInfo> output_grad_sharding_infos =
+      generate_map(task_shard_machine_coords.unwrap_as_set(),
+                   [&](MachineSpaceCoordinate const &mc)
+                     -> DynamicValueAttrsShardingInfo
+                   {
+                     ParallelTensorSpaceCoordinate pc = output_grad_value_mapping.at_r(mc);
+
+                     return DynamicValueAttrsShardingInfo{
+                       /*shard_coord=*/pc,
+                       /*mapping=*/OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>{
+                         {
+                           pc,
+                           {mc},
+                         },
+                       },
+                     };
+                   });
+
+    std::map<DynamicTensorSlot, DynamicValueAttrsShardingInfo> keyed_output_grad_sharding_infos =
+      map_keys(output_grad_sharding_infos,
+               [&](MachineSpaceCoordinate const &mc) -> DynamicTensorSlot {
+                 return DynamicTensorSlot{
+                   /*slot_name=*/TensorSlotName::OUTPUT,
+                   /*slot_tensor_role=*/mk_dynamic_tensor_role_bwd(),
+                   /*task_shard=*/mc,
+                 };
+               });
+
+    DynamicTensorSlot input_grad_slot = DynamicTensorSlot{
+      /*slot_name=*/TensorSlotName::INPUT,
+      /*slot_tensor_role=*/mk_dynamic_tensor_role_bwd(),
+      /*task_shard=*/std::nullopt,
+    };
+
+    DynamicValueAttrsShardingInfo input_grad_sharding_info = DynamicValueAttrsShardingInfo{
+      /*shard_coord=*/c,
+      /*mapping=*/OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>{
+        {
+          c,
+          {input_grad_value_mapping.at_l(c)},
+        },
+      },
+    };
+
+    std::map<DynamicTensorSlot, DynamicValueAttrsShardingInfo> sharding_infos = 
+      binary_merge_disjoint_maps(
+        keyed_output_grad_sharding_infos,
+        std::map<DynamicTensorSlot, DynamicValueAttrsShardingInfo>{
+          {
+            input_grad_slot,
+            input_grad_sharding_info,
+          },
+        });
+
+    return DynamicNodeInvocationShardingInfo{
+      /*device_coords=*/task_shard_machine_coords,
+      /*value_sharding=*/sharding_infos,
+    };
+  };
+
+  return transform(input_grad_tensor_shards, invocation_sharding_info_for_input_grad_tensor_shard);
+}
+
 std::unordered_set<DynamicNodeInvocation>
     perform_shard_expansion_for_invocation(DynamicNodeInvocation const &i) {
 
@@ -433,7 +552,15 @@ std::unordered_set<DynamicNodeInvocationShardingInfo>
   }
 
   if (training_op_attrs_has_op_type(i.node_attrs.op_attrs.value(), OperatorType::REPLICATE)) {
-    return unordered_set_of(generate_shard_expansion_for_fwd_replicate(i));
+    DynamicTaskType task_type = assert_unwrap(i.node_attrs.task_type);
+    switch (task_type) {
+      case DynamicTaskType::FWD:
+        return unordered_set_of(generate_shard_expansion_for_fwd_replicate(i));
+      case DynamicTaskType::BWD:
+        return unordered_set_of(generate_shard_expansion_for_bwd_replicate(i));
+      default:
+        PANIC("Unexpected task type for Replicate: {}", task_type);
+    }
   }
 
   MappedOperatorTaskGroup mapping = assert_unwrap(i.node_attrs.mapping);
