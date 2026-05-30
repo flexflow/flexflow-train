@@ -13,14 +13,11 @@ MachineSpaceOffset get_machine_space_offset_from_coordinate(
          "The start node_idx is greater than one of the coord node_idx."
          "Are you sure you didn't swap them?");
 
-  ASSERT(start.device_type == coord.device_type);
-
   return MachineSpaceOffset{
       /*node_offset=*/coord.node_idx.unwrap_nonnegative() -
           start.node_idx.unwrap_nonnegative(),
       /*device_offset=*/coord.device_idx.unwrap_nonnegative() -
           start.device_idx.unwrap_nonnegative(),
-      /*device_type=*/coord.device_type,
   };
 }
 

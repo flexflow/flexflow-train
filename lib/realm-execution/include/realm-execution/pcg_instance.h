@@ -4,7 +4,6 @@
 #include "kernels/allocation.h"
 #include "kernels/device_handle_t.dtg.h"
 #include "kernels/profiling_settings.dtg.h"
-#include "pcg/device_id_t.dtg.h"
 #include "pcg/mapped_parallel_computation_graph/mapped_parallel_computation_graph.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
 #include "realm-execution/distributed_ff_handle.h"
@@ -12,6 +11,7 @@
 #include "realm-execution/per_device_op_state_backing.dtg.h"
 #include "realm-execution/realm_context.h"
 #include "realm-execution/tensor_instance_backing.dtg.h"
+#include "task-spec/device_id_t.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_accessor.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
@@ -86,7 +86,8 @@ PCGInstance create_pcg_instance(
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &input_tensors,
     ProfilingSettings const &profiling_settings,
-    DistributedFfHandle const &ff_handle);
+    DistributedFfHandle const &ff_handle,
+    DeviceType device_type);
 
 /**
  * \brief Dispatch a training iteration for a \ref PCGInstance.

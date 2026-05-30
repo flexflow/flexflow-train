@@ -18,15 +18,11 @@ MachineView machine_view_from_start_invariant(
 
 StartInvariantMachineView
     start_invariant_from_machine_view(MachineView const &mv) {
-  return StartInvariantMachineView{mv.dimensions, get_device_type(mv)};
+  return StartInvariantMachineView{mv.dimensions};
 }
 
 nonnegative_int num_dims(StartInvariantMachineView const &start_inv_mv) {
   return num_elements(start_inv_mv.dimensions);
-}
-
-DeviceType get_device_type(StartInvariantMachineView const &start_inv_mv) {
-  return start_inv_mv.device_type;
 }
 
 std::vector<stride_t>
@@ -45,13 +41,12 @@ std::vector<MachineSpecificationDimension>
 StartInvariantMachineView
     start_invariant_machine_view_from_strides_and_machine_spec_dimensions(
         std::vector<stride_t> const &strides,
-        std::vector<MachineSpecificationDimension> const &dims,
-        DeviceType device_type) {
+        std::vector<MachineSpecificationDimension> const &dims) {
   std::vector<MachineViewDimension> dimensions =
       transform(zip(strides, dims), [&](auto const &p) {
         return MachineViewDimension{p.first, p.second};
       });
-  return StartInvariantMachineView{dimensions, device_type};
+  return StartInvariantMachineView{dimensions};
 }
 
 MachineSpaceOffset get_machine_space_offset(
@@ -60,7 +55,7 @@ MachineSpaceOffset get_machine_space_offset(
     TaskSpaceCoordinate const &coord) {
 
   MachineSpaceCoordinate dummy_start =
-      MachineSpaceCoordinate{0_n, 0_n, get_device_type(start_inv_machine_view)};
+      MachineSpaceCoordinate{0_n, 0_n};
 
   MachineView mv =
       machine_view_from_start_invariant(start_inv_machine_view, dummy_start);

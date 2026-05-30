@@ -5,7 +5,7 @@
 #include "kernels/allocation.h"
 #include "kernels/device_handle_t.dtg.h"
 #include "kernels/profiling_settings.dtg.h"
-#include "pcg/device_id_t.dtg.h"
+#include "task-spec/device_id_t.dtg.h"
 #include "pcg/machine_interconnect_specification.dtg.h"
 
 namespace FlexFlow {

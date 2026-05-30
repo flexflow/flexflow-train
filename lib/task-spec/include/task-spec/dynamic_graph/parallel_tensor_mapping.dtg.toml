@@ -1,0 +1,22 @@
+namespace = "FlexFlow"
+name = "ParallelTensorMapping"
+type = "struct"
+features = [
+  "eq",
+  "hash",
+  "json",
+  "fmt",
+]
+
+includes = [
+  "utils/bidict/bidict.h",
+  "op-attrs/parallel_tensor_space_coordinate.dtg.h",
+  "task-spec/device_id_t.dtg.h",
+]
+
+src_includes = [
+]
+
+[[fields]]
+name = "raw"
+type = "::FlexFlow::bidict<::FlexFlow::ParallelTensorSpaceCoordinate, ::FlexFlow::device_id_t>"

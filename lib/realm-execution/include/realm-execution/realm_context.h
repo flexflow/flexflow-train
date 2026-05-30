@@ -6,10 +6,10 @@
 #include "kernels/managed_per_device_ff_handle.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "op-attrs/tensor_shape.dtg.h"
-#include "pcg/device_id_t.dtg.h"
 #include "pcg/machine_space_coordinate.dtg.h"
 #include "realm-execution/realm.h"
 #include "realm-execution/tasks/task_id_t.dtg.h"
+#include "task-spec/device_id_t.dtg.h"
 #include <optional>
 #include <unordered_map>
 
@@ -32,8 +32,8 @@ public:
 
   /** \name Device mapping */
   ///\{
-  Realm::Processor
-      map_device_coord_to_processor(MachineSpaceCoordinate const &);
+  Realm::Processor map_device_coord_to_processor(device_id_t const &) const;
+  device_id_t map_processor_to_device_coord(Realm::Processor) const;
   static Realm::Memory get_nearest_memory(Realm::Processor);
   ///\}
 
@@ -97,8 +97,6 @@ protected:
    */
   [[nodiscard]] Realm::Event merge_outstanding_events();
 
-  void discover_machine_topology();
-
   static std::optional<ManagedPerDeviceFFHandle>
       make_device_handle_for_processor(Realm::Processor processor);
 
@@ -111,14 +109,15 @@ protected:
    */
   Realm::Runtime get_runtime();
 
-private:
+  void discover_machine_topology();
+
+public:
   Realm::Runtime runtime;
   Realm::Processor processor;
   Allocator allocator;
   std::vector<Realm::Event> outstanding_events;
-  std::unordered_map<std::pair<Realm::AddressSpace, Realm::Processor::Kind>,
-                     std::vector<Realm::Processor>>
-      processors;
+  std::optional<bidict<Realm::Processor, device_id_t>> processors =
+      std::nullopt;
 };
 
 } // namespace FlexFlow

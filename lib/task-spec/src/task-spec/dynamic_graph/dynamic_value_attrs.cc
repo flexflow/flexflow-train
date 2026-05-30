@@ -13,4 +13,13 @@ DynamicValueAttrs
   return result;
 }
 
+DynamicValueAttrs
+    dynamic_value_attrs_with_mapping(DynamicValueAttrs const &v,
+                                     ParallelTensorMapping const &m) {
+  ASSERT(v.mapping == std::nullopt);
+  DynamicValueAttrs result = v;
+  result.mapping = m;
+  return result;
+}
+
 } // namespace FlexFlow

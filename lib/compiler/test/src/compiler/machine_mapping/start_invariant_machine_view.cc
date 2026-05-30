@@ -12,18 +12,11 @@ TEST_SUITE(FF_TEST_SUITE) {
         {MachineViewDimension{stride_t{2_p},
                               MachineSpecificationDimension::INTER_NODE},
          MachineViewDimension{stride_t{2_p},
-                              MachineSpecificationDimension::INTER_NODE}},
-        DeviceType::GPU};
+                              MachineSpecificationDimension::INTER_NODE}}};
 
     SUBCASE("num_dims") {
       nonnegative_int result = num_dims(simv);
       nonnegative_int correct = 2_n;
-      CHECK(result == correct);
-    }
-
-    SUBCASE("get_device_type") {
-      DeviceType result = get_device_type(simv);
-      DeviceType correct = DeviceType::GPU;
       CHECK(result == correct);
     }
 
@@ -44,7 +37,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
   TEST_CASE("StartInvariantMachineView - conversions") {
     MachineSpaceCoordinate start =
-        MachineSpaceCoordinate{1_n, 2_n, DeviceType::GPU};
+        MachineSpaceCoordinate{1_n, 2_n};
     std::vector<MachineViewDimension> dimensions = {
         MachineViewDimension{stride_t{2_p},
                              MachineSpecificationDimension::INTER_NODE},
@@ -53,7 +46,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     MachineView mv = MachineView{start, dimensions};
     StartInvariantMachineView simv =
-        StartInvariantMachineView{dimensions, DeviceType::GPU};
+        StartInvariantMachineView{dimensions};
 
     SUBCASE("start_invariant_from_machine_view") {
       StartInvariantMachineView result = start_invariant_from_machine_view(mv);
@@ -102,8 +95,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
       StartInvariantMachineView simv = StartInvariantMachineView{
           {MachineViewDimension{stride_t{2_p},
-                                MachineSpecificationDimension::INTRA_NODE}},
-          DeviceType::GPU};
+                                MachineSpecificationDimension::INTRA_NODE}}};
       MachineComputeSpecification ms = MachineComputeSpecification{
           /*num_nodes=*/1_p,
           /*num_cpus_per_node=*/6_p,
@@ -114,7 +106,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         SUBCASE("Task with TaskSpaceCoordinate = (0,)") {
           TaskSpaceCoordinate coord = make_task_space_coordinate({0_n});
           MachineSpaceOffset correct =
-              MachineSpaceOffset{0, 0, DeviceType::GPU};
+              MachineSpaceOffset{0, 0};
           MachineSpaceOffset result =
               get_machine_space_offset(task, simv, coord);
           CHECK(correct == result);
@@ -123,7 +115,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         SUBCASE("Task with TaskSpaceCoordinate = (1,)") {
           TaskSpaceCoordinate coord = make_task_space_coordinate({1_n});
           MachineSpaceOffset correct =
-              MachineSpaceOffset{0, 2, DeviceType::GPU};
+              MachineSpaceOffset{0, 2};
           MachineSpaceOffset result =
               get_machine_space_offset(task, simv, coord);
           CHECK(correct == result);
@@ -132,7 +124,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         SUBCASE("Task with TaskSpaceCoordinate = (2,)") {
           TaskSpaceCoordinate coord = make_task_space_coordinate({2_n});
           MachineSpaceOffset correct =
-              MachineSpaceOffset{0, 4, DeviceType::GPU};
+              MachineSpaceOffset{0, 4};
           MachineSpaceOffset result =
               get_machine_space_offset(task, simv, coord);
           CHECK(correct == result);
@@ -141,9 +133,9 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("get_machine_space_offsets") {
         std::unordered_set<MachineSpaceOffset> correct = {
-            MachineSpaceOffset{0, 0, DeviceType::GPU},
-            MachineSpaceOffset{0, 2, DeviceType::GPU},
-            MachineSpaceOffset{0, 4, DeviceType::GPU}};
+            MachineSpaceOffset{0, 0},
+            MachineSpaceOffset{0, 2},
+            MachineSpaceOffset{0, 4}};
         std::unordered_set<MachineSpaceOffset> result =
             get_machine_space_offsets(task, simv);
         CHECK(correct == result);
@@ -176,8 +168,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           {MachineViewDimension{stride_t{1_p},
                                 MachineSpecificationDimension::INTER_NODE},
            MachineViewDimension{stride_t{2_p},
-                                MachineSpecificationDimension::INTRA_NODE}},
-          DeviceType::GPU};
+                                MachineSpecificationDimension::INTRA_NODE}}};
       MachineComputeSpecification ms = MachineComputeSpecification{
           /*num_nodes=*/2_p,
           /*num_cpus_per_node=*/4_p,
@@ -188,7 +179,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         SUBCASE("Task with TaskSpaceCoordinate = (0,0)") {
           TaskSpaceCoordinate coord = make_task_space_coordinate({0_n, 0_n});
           MachineSpaceOffset correct =
-              MachineSpaceOffset{0, 0, DeviceType::GPU};
+              MachineSpaceOffset{0, 0};
           MachineSpaceOffset result =
               get_machine_space_offset(task, simv, coord);
           CHECK(correct == result);
@@ -197,7 +188,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         SUBCASE("Task with TaskSpaceCoordinate = (0,1)") {
           TaskSpaceCoordinate coord = make_task_space_coordinate({0_n, 1_n});
           MachineSpaceOffset correct =
-              MachineSpaceOffset{0, 2, DeviceType::GPU};
+              MachineSpaceOffset{0, 2};
           MachineSpaceOffset result =
               get_machine_space_offset(task, simv, coord);
           CHECK(correct == result);
@@ -206,7 +197,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         SUBCASE("Task with TaskSpaceCoordinate = (1,0)") {
           TaskSpaceCoordinate coord = make_task_space_coordinate({1_n, 0_n});
           MachineSpaceOffset correct =
-              MachineSpaceOffset{1, 0, DeviceType::GPU};
+              MachineSpaceOffset{1, 0};
           MachineSpaceOffset result =
               get_machine_space_offset(task, simv, coord);
           CHECK(correct == result);
@@ -215,7 +206,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         SUBCASE("Task with TaskSpaceCoordinate = (1,1)") {
           TaskSpaceCoordinate coord = make_task_space_coordinate({1_n, 1_n});
           MachineSpaceOffset correct =
-              MachineSpaceOffset{1, 2, DeviceType::GPU};
+              MachineSpaceOffset{1, 2};
           MachineSpaceOffset result =
               get_machine_space_offset(task, simv, coord);
           CHECK(correct == result);
@@ -224,10 +215,10 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("get_machine_space_offsets") {
         std::unordered_set<MachineSpaceOffset> correct = {
-            MachineSpaceOffset{0, 0, DeviceType::GPU},
-            MachineSpaceOffset{0, 2, DeviceType::GPU},
-            MachineSpaceOffset{1, 0, DeviceType::GPU},
-            MachineSpaceOffset{1, 2, DeviceType::GPU}};
+            MachineSpaceOffset{0, 0},
+            MachineSpaceOffset{0, 2},
+            MachineSpaceOffset{1, 0},
+            MachineSpaceOffset{1, 2}};
         std::unordered_set<MachineSpaceOffset> result =
             get_machine_space_offsets(task, simv);
         CHECK(correct == result);

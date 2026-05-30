@@ -14,8 +14,7 @@ bool is_valid_machine_view(MachineView const &mv,
 
 std::unordered_set<MachineView>
     get_allowed_machine_views(MachineComputeResourceSlice const &machine_spec,
-                              OperatorTaskSpace const &task,
-                              DeviceType device_type);
+                              OperatorTaskSpace const &task);
 
 } // namespace FlexFlow
 

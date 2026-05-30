@@ -7,7 +7,7 @@
 namespace FlexFlow {
 
 DynamicOpenDataflowGraph make_dynamic_open_dataflow_graph_from_mapped_pcg(
-    MappedParallelComputationGraph const &);
+    MappedParallelComputationGraph const &, DeviceType device_type);
 
 } // namespace FlexFlow
 

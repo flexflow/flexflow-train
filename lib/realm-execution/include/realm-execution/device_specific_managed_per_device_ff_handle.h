@@ -3,8 +3,8 @@
 
 #include "kernels/device_handle_t.dtg.h"
 #include "kernels/managed_per_device_ff_handle.h"
-#include "pcg/device_id_t.dtg.h"
 #include "realm-execution/device_specific_ptr.h"
+#include "task-spec/device_id_t.dtg.h"
 #include <optional>
 
 namespace FlexFlow {

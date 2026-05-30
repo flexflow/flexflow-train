@@ -68,7 +68,7 @@ SearchResult graph_optimize(ParallelComputationGraph &pcg,
             get_operator_task_space_for_runtime_only_op_cost_estimate_key(key);
 
         return get_allowed_machine_views(
-            resources, op_task_space, DeviceType::GPU);
+            resources, op_task_space);
       },
   };
 

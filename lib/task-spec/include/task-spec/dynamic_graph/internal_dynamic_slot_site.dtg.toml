@@ -1,0 +1,29 @@
+namespace = "FlexFlow"
+name = "InternalDynamicSlotSite"
+type = "struct"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h",
+  "pcg/tensor_direction.dtg.h",
+  "task-spec/dynamic_graph/dynamic_tensor_slot.h",
+]
+
+src_includes = [
+]
+
+[[fields]]
+name = "invocation"
+type = "::FlexFlow::DynamicNodeInvocation"
+
+[[fields]]
+name = "direction"
+type = "::FlexFlow::TensorDirection"
+
+[[fields]]
+name = "slot_name"
+type = "::FlexFlow::DynamicTensorSlot"

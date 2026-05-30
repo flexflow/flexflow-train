@@ -1,0 +1,26 @@
+namespace = "FlexFlow"
+name = "DynamicNodeMapping"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+]
+
+includes = [
+  "pcg/mapped_parallel_computation_graph/mapped_operator_task_group.h",
+  "pcg/device_type.dtg.h",
+]
+
+src_includes = [
+]
+
+[[fields]]
+name = "op_task_group"
+type = "::FlexFlow::MappedOperatorTaskGroup"
+
+[[fields]]
+name = "device_type"
+type = "::FlexFlow::DeviceType"

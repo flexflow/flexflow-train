@@ -14,7 +14,7 @@ LossInsertionResult perform_loss_insertion(
     DynamicOpenDataflowGraph const &dg,
     LossAttrs const &loss_attrs,
     dynamic_tensor_guid_t logit_tensor,
-    std::optional<MappedOperatorTaskGroup> const &loss_mapping);
+    std::optional<DynamicNodeMapping> const &loss_mapping);
 
 } // namespace FlexFlow
 

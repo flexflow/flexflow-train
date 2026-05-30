@@ -13,8 +13,6 @@
 #include "op-attrs/parallel_tensor_dims.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "op-attrs/parallel_tensor_shape.h"
-#include "pcg/device_id.h"
-#include "pcg/device_type.dtg.h"
 #include "pcg/machine_space_coordinate.dtg.h"
 #include "pcg/machine_specification_dimension.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
@@ -68,9 +66,9 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::vector<MachineViewDimension> dims = {};
       ParallelComputationGraph pcg = b.pcg;
       MachineView mv1 =
-          MachineView{MachineSpaceCoordinate{0_n, 0_n, DeviceType::GPU}, dims};
+          MachineView{MachineSpaceCoordinate{0_n, 0_n}, dims};
       MachineView mv2 =
-          MachineView{MachineSpaceCoordinate{0_n, 1_n, DeviceType::GPU}, dims};
+          MachineView{MachineSpaceCoordinate{0_n, 1_n}, dims};
 
       MachineMapping device_mapping = MachineMapping{{
           {layer0, mv1},
@@ -149,13 +147,13 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("all different devices") {
         MachineView mv0 = MachineView{
-            MachineSpaceCoordinate{0_n, 0_n, DeviceType::GPU}, dims};
+            MachineSpaceCoordinate{0_n, 0_n}, dims};
         MachineView mv1 = MachineView{
-            MachineSpaceCoordinate{0_n, 1_n, DeviceType::GPU}, dims};
+            MachineSpaceCoordinate{0_n, 1_n}, dims};
         MachineView mv2 = MachineView{
-            MachineSpaceCoordinate{1_n, 0_n, DeviceType::GPU}, dims};
+            MachineSpaceCoordinate{1_n, 0_n}, dims};
         MachineView mv3 = MachineView{
-            MachineSpaceCoordinate{1_n, 1_n, DeviceType::GPU}, dims};
+            MachineSpaceCoordinate{1_n, 1_n}, dims};
 
         MachineMapping device_mapping = MachineMapping{{
             {layer0, mv0},
@@ -209,7 +207,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("all the same device") {
         MachineView mv = MachineView{
-            MachineSpaceCoordinate{0_n, 0_n, DeviceType::GPU}, dims};
+            MachineSpaceCoordinate{0_n, 0_n}, dims};
         MachineMapping device_mapping = MachineMapping{{
             {layer0, mv},
             {layer1, mv},

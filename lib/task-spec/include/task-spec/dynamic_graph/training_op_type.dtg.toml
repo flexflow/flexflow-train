@@ -1,0 +1,22 @@
+namespace = "FlexFlow"
+name = "TrainingOpType"
+type = "variant"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+  "json",
+]
+
+includes = [
+  "task-spec/dynamic_graph/training_only_op_type.dtg.h",
+  "op-attrs/operator_type.dtg.h",
+]
+
+[[values]]
+type = "::FlexFlow::OperatorType"
+key = "pcg_op"
+
+[[values]]
+type = "::FlexFlow::TrainingOnlyOpType"
+key = "training_only_op"

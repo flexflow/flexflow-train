@@ -11,7 +11,6 @@
 #include "op-attrs/tensor_slot_name.dtg.h"
 #include "pcg/computation_graph.h"
 #include "pcg/computation_graph/layer_added_result.dtg.h"
-#include "pcg/device_id.h"
 #include "pcg/parallel_tensor_attrs.h"
 #include "utils/containers/concat_vectors.h"
 #include "utils/containers/map_values.h"
@@ -105,7 +104,7 @@ OpCostMetrics LocalCostEstimator::estimate_cost(
   // allocate memory
   std::shared_ptr<TrackedAllocator> tracked_allocator_ptr =
       std::make_shared<TrackedAllocator>(create_local_allocator_for_device_type(
-          get_device_type(this->device_idx)));
+          this->device_idx.device_type));
 
   layer_guid_t layer_guid = layer_guid_t{Node{0}};
 

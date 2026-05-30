@@ -6,7 +6,6 @@
 #include "op-attrs/operator_task_space.dtg.h"
 #include "op-attrs/parallel_tensor_dim_degrees.dtg.h"
 #include "op-attrs/task_space_coordinate.dtg.h"
-#include "pcg/device_id_t.dtg.h"
 #include "pcg/machine_compute_specification.dtg.h"
 #include "pcg/mapped_parallel_computation_graph/mapped_operator_task_group.h"
 #include "pcg/mapped_parallel_computation_graph/operator_atomic_task_shard_binding.dtg.h"
@@ -19,8 +18,6 @@
 namespace FlexFlow {
 
 nonnegative_int mv_get_expected_task_space_num_dims(MachineView const &mv);
-
-DeviceType get_device_type(MachineView const &mv);
 
 std::vector<stride_t> get_strides(MachineView const &mv);
 
@@ -49,11 +46,6 @@ OperatorSpaceToMachineSpaceMapping get_coordinate_mapping_for_machine_view(
 std::unordered_set<MachineSpaceCoordinate>
     get_machine_space_coordinates(OperatorTaskSpace const &task,
                                   MachineView const &mv);
-
-std::unordered_set<device_id_t>
-    get_device_ids(OperatorTaskSpace const &task,
-                   MachineView const &mv,
-                   MachineComputeSpecification const &ms);
 
 MachineView make_1d_machine_view(MachineSpaceCoordinate const &start,
                                  MachineSpecificationDimension const &dim,

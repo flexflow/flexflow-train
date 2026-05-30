@@ -1,7 +1,5 @@
 #include "local-execution/local_task_argument_accessor.h"
 #include "kernels/accessor.h"
-#include "pcg/device_id.h"
-#include "pcg/device_id_t.h"
 #include "utils/exception.h"
 #include "utils/optional.h"
 #include "utils/overload.h"
@@ -84,7 +82,7 @@ device_handle_t LocalTaskArgumentAccessor::get_ff_handle() const {
 }
 
 DeviceType LocalTaskArgumentAccessor::get_kernel_device_type() const {
-  return get_device_type(this->device_idx);
+  return this->device_idx.device_type;
 }
 
 PCGOperatorAttrs LocalTaskArgumentAccessor::get_op_attrs() const {

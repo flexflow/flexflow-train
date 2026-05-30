@@ -93,7 +93,6 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*start=*/MachineSpaceCoordinate{
             /*node_idx=*/0_n,
             /*device_idx=*/0_n,
-            /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
@@ -108,7 +107,6 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*start=*/MachineSpaceCoordinate{
             /*node_idx=*/1_n,
             /*device_idx=*/0_n,
-            /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
@@ -123,7 +121,6 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*start=*/MachineSpaceCoordinate{
             /*node_idx=*/2_n,
             /*device_idx=*/0_n,
-            /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
@@ -138,7 +135,6 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*start=*/MachineSpaceCoordinate{
             /*node_idx=*/3_n,
             /*device_idx=*/0_n,
-            /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
@@ -160,13 +156,11 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*src=*/MachineSpaceCoordinate{
               /*node_idx=*/src_mv.start.node_idx,
               /*device_idx=*/src_task_idx,
-              /*device_type=*/DeviceType::GPU,
           },
           /*dst=*/
           MachineSpaceCoordinate{
               /*node_idx=*/dst_mv.start.node_idx,
               /*device_idx=*/dst_task_idx,
-              /*device_type=*/DeviceType::GPU,
           },
       };
     };

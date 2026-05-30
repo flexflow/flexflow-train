@@ -52,7 +52,6 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*start=*/MachineSpaceCoordinate{
             /*node_idx=*/0_n,
             /*device_idx=*/0_n,
-            /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/{},
     };
@@ -61,7 +60,6 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*start=*/MachineSpaceCoordinate{
             /*node_idx=*/0_n,
             /*device_idx=*/0_n,
-            /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
@@ -76,7 +74,6 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*start=*/MachineSpaceCoordinate{
             /*node_idx=*/0_n,
             /*device_idx=*/0_n,
-            /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
@@ -91,7 +88,6 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*start=*/MachineSpaceCoordinate{
             /*node_idx=*/1_n,
             /*device_idx=*/0_n,
-            /*device_type=*/DeviceType::GPU,
         },
         /*dimensions=*/
         {
@@ -724,7 +720,6 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*start=*/MachineSpaceCoordinate{
               /*node_idx=*/2_n,
               /*device_idx=*/0_n,
-              /*device_type=*/DeviceType::GPU,
           },
           /*dimensions=*/
           {

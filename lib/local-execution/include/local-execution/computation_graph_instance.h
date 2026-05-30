@@ -7,7 +7,7 @@
 #include "kernels/profiling_settings.dtg.h"
 #include "local-execution/loss_config.dtg.h"
 #include "pcg/computation_graph.dtg.h"
-#include "pcg/device_id_t.dtg.h"
+#include "task-spec/device_id_t.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_layer_guid_t.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"

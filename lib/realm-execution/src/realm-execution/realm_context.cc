@@ -4,8 +4,7 @@
 #include "op-attrs/datatype.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/tensor_dims.dtg.h"
-#include "pcg/device_id_t.h"
-#include "pcg/device_type.dtg.h"
+#include "realm-execution/processor_kind.h"
 #include "realm-execution/realm_allocator.h"
 #include "realm-execution/tasks/task_id_t.dtg.h"
 #include "realm-execution/tasks/task_id_t.h"
@@ -14,6 +13,7 @@
 #include "utils/exception.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
 #include "utils/one_to_many/one_to_many.h"
+#include "utils/optional.h"
 #include "utils/positive_int/positive_int.h"
 
 namespace FlexFlow {
@@ -21,7 +21,11 @@ namespace FlexFlow {
 RealmContext::RealmContext(Realm::Processor processor)
     : processor(processor),
       allocator(get_realm_allocator(
-          processor, RealmContext::get_nearest_memory(processor))) {}
+          processor, RealmContext::get_nearest_memory(processor))) {
+  if (processor != Realm::Processor::NO_PROC) {
+    this->discover_machine_topology();
+  }
+}
 
 RealmContext::~RealmContext() {
   if (!this->outstanding_events.empty()) {
@@ -31,31 +35,22 @@ RealmContext::~RealmContext() {
 }
 
 static std::tuple<Realm::AddressSpace, Realm::Processor::Kind, nonnegative_int>
-    convert_machine_space_coordinate(
-        MachineSpaceCoordinate const &device_coord) {
+    convert_machine_space_coordinate(MachineSpaceCoordinate const &device_coord,
+                                     DeviceType device_type) {
   Realm::AddressSpace as = int{device_coord.node_idx};
-  Realm::Processor::Kind kind;
-  switch (device_coord.device_type) {
-    case DeviceType::CPU:
-      kind = Realm::Processor::Kind::LOC_PROC;
-      break;
-    case DeviceType::GPU:
-      kind = Realm::Processor::Kind::TOC_PROC;
-      break;
-    default:
-      PANIC("Unhandled DeviceType", fmt::to_string(device_coord.device_type));
-      break;
-  }
+  Realm::Processor::Kind kind = processor_kind_from_device_type(device_type);
   nonnegative_int proc_in_node = device_coord.device_idx;
   return std::tuple{as, kind, proc_in_node};
 }
 
 Realm::Processor RealmContext::map_device_coord_to_processor(
-    MachineSpaceCoordinate const &device_coord) {
-  this->discover_machine_topology();
-  auto [as, kind, proc_in_node] =
-      convert_machine_space_coordinate(device_coord);
-  return this->processors.at(std::pair{as, kind}).at(int{proc_in_node});
+    device_id_t const &device_id) const {
+  return assert_unwrap(this->processors).at_r(device_id);
+}
+
+device_id_t
+    RealmContext::map_processor_to_device_coord(Realm::Processor p) const {
+  return assert_unwrap(this->processors).at_l(p);
 }
 
 Realm::Memory RealmContext::get_nearest_memory(Realm::Processor proc) {
@@ -81,27 +76,7 @@ Allocator &RealmContext::get_current_device_allocator() {
 
 device_id_t RealmContext::get_current_device_idx() const {
   Realm::Processor proc = this->get_current_processor();
-
-  // FIXME: find a more efficient way to implement this than scanning the
-  // machine every time
-  Realm::Machine::ProcessorQuery pq(Realm::Machine::get_machine());
-  pq.same_address_space_as(proc);
-  nonnegative_int idx{0};
-  for (Realm::Processor p : pq) {
-    if (p == proc) {
-      break;
-    }
-    idx++;
-  }
-
-  switch (proc.kind()) {
-    case Realm::Processor::LOC_PROC:
-      return make_device_id_t_from_idx(idx, DeviceType::CPU);
-    case Realm::Processor::TOC_PROC:
-      return make_device_id_t_from_idx(idx, DeviceType::GPU);
-    default:
-      PANIC("Unhandled Realm::ProcessorKind", fmt::to_string(int{proc.kind()}));
-  }
+  return this->map_processor_to_device_coord(proc);
 }
 
 Realm::Event
@@ -316,16 +291,49 @@ Realm::Event RealmContext::merge_outstanding_events() {
 }
 
 void RealmContext::discover_machine_topology() {
-  if (!this->processors.empty()) {
+  if (this->processors.has_value()) {
     return;
   }
 
+  std::unordered_map<std::pair<nonnegative_int, DeviceType>, nonnegative_int>
+      next_device_idx;
+
+  auto fresh_device_id = [&](nonnegative_int node_idx,
+                             DeviceType device_type) -> device_id_t {
+    std::pair<nonnegative_int, DeviceType> key =
+        std::pair{node_idx, device_type};
+    if (!contains_key(next_device_idx, key)) {
+      next_device_idx.insert({key, 0_n});
+    }
+
+    nonnegative_int device_idx = next_device_idx.at(key);
+    next_device_idx.at(key)++;
+
+    return device_id_t{
+        MachineSpaceCoordinate{node_idx, device_idx},
+        device_type,
+    };
+  };
+
+  bidict<Realm::Processor, device_id_t> procs;
   Realm::Machine::ProcessorQuery pq(Realm::Machine::get_machine());
   for (Realm::Processor proc : pq) {
     Realm::AddressSpace as = proc.address_space();
     Realm::Processor::Kind kind = proc.kind();
-    this->processors[std::pair{as, kind}].push_back(proc);
+
+    nonnegative_int node_idx = nonnegative_int{static_cast<int>(as)};
+
+    if (kind != Realm::Processor::LOC_PROC &&
+        kind != Realm::Processor::TOC_PROC) {
+      continue;
+    }
+
+    DeviceType device_type = device_type_from_processor_kind(kind);
+    device_id_t coord = fresh_device_id(node_idx, device_type);
+    procs.equate_strict(proc, coord);
   }
+
+  this->processors = procs;
 }
 
 Realm::Runtime RealmContext::get_runtime() {

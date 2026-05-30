@@ -22,6 +22,7 @@ RealmManager::~RealmManager() {
 ControllerTaskResult
     RealmManager::start_controller(std::function<void(RealmContext &)> thunk,
                                    Realm::Event wait_on) {
+
   Realm::Processor target_proc =
       Realm::Machine::ProcessorQuery(Realm::Machine::get_machine())
           .only_kind(Realm::Processor::LOC_PROC)

@@ -1,9 +1,9 @@
 #ifndef _FLEXFLOW_LOCAL_EXECUTION_DEVICE_SPECIFIC_H
 #define _FLEXFLOW_LOCAL_EXECUTION_DEVICE_SPECIFIC_H
 
-#include "pcg/device_id_t.dtg.h"
-#include "task-spec/serialization.h"
+#include "task-spec/device_id_t.dtg.h"
 #include "utils/hash/tuple.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
@@ -12,7 +12,8 @@ struct DeviceSpecific {
   DeviceSpecific() = delete;
 
   template <typename... Args>
-  static DeviceSpecific<T> create(device_id_t device_idx, Args &&...args) {
+  static DeviceSpecific<T> create(device_id_t const &device_idx,
+                                  Args &&...args) {
     return DeviceSpecific<T>(std::make_shared<T>(std::forward<Args>(args)...),
                              device_idx);
   }
@@ -25,13 +26,13 @@ struct DeviceSpecific {
     return this->tie() != other.tie();
   }
 
-  T const *get(device_id_t curr_device_idx) const {
+  T const *get(device_id_t const &curr_device_idx) const {
     ASSERT(curr_device_idx == this->device_idx);
     return (T const *)this->ptr.get();
   }
 
 private:
-  DeviceSpecific(std::shared_ptr<T> ptr, device_id_t device_idx)
+  DeviceSpecific(std::shared_ptr<T> ptr, device_id_t const &device_idx)
       : ptr(ptr), device_idx(device_idx) {}
 
 private:
@@ -56,11 +57,6 @@ template <typename T>
 std::ostream &operator<<(std::ostream &s, DeviceSpecific<T> const &d) {
   return (s << fmt::to_string(d));
 }
-
-// manually force serialization to make DeviceSpecific trivially
-// serializable
-// template <typename T>
-// struct is_trivially_serializable<DeviceSpecific<T>> : std::true_type {};
 
 } // namespace FlexFlow
 

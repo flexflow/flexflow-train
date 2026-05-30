@@ -1,6 +1,8 @@
 #include "task-spec/dynamic_graph/shard_expansion.h"
+#include "task-spec/dynamic_graph/dynamic_node_mapping.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
+#include "task-spec/dynamic_graph/shard_expansion.h"
 #include "utils/bidict/algorithms/filter_keys.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/map_values2.h"
@@ -40,10 +42,9 @@ bool graph_is_fully_shard_expanded(DynamicOpenDataflowGraph const &g) {
                                       slot_is_shard_expanded);
 }
 
-static bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
+static bidict<ParallelTensorSpaceCoordinate, device_id_t>
     restrict_tensor_mapping_keys_to_coord(
-        bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> const
-            &mapping,
+        bidict<ParallelTensorSpaceCoordinate, device_id_t> const &mapping,
         ParallelTensorSpaceCoordinate const &parallel_tensor_coord) {
   return filter_keys(mapping, [&](ParallelTensorSpaceCoordinate const &p) {
     return p == parallel_tensor_coord;
@@ -52,7 +53,7 @@ static bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
 
 static DynamicNodeInvocation shard_invocation_for_binding(
     DynamicNodeInvocation const &i,
-    MachineSpaceCoordinate const &machine_coord,
+    device_id_t const &device_coord,
     OperatorAtomicTaskShardBinding const &binding) {
   auto shard_expand_value_attrs =
       [&](DynamicTensorSlot const &s,
@@ -64,17 +65,18 @@ static DynamicNodeInvocation shard_invocation_for_binding(
     result.shard_coord = parallel_tensor_coord;
     result.mapping = transform(
         v.mapping,
-        [&](bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> const
-                &mapping) {
-          return restrict_tensor_mapping_keys_to_coord(mapping,
-                                                       parallel_tensor_coord);
+        [&](ParallelTensorMapping const &mapping) -> ParallelTensorMapping {
+          return ParallelTensorMapping{
+              restrict_tensor_mapping_keys_to_coord(mapping.raw,
+                                                    parallel_tensor_coord),
+          };
         });
     return result;
   };
 
   DynamicNodeAttrs expanded_node_attrs = [&]() {
     DynamicNodeAttrs result = i.node_attrs;
-    result.device_coord = machine_coord;
+    result.device_coord = device_coord;
     return result;
   }();
 
@@ -89,10 +91,10 @@ static std::unordered_set<DynamicNodeInvocation>
     perform_shard_expansion_for_copy(DynamicNodeInvocation const &i) {
   auto [input_slot, input] = get_only(i.inputs);
   auto [output_slot, output] = get_only(i.outputs);
-  bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> input_mapping =
-      assert_unwrap(input.mapping);
+  bidict<ParallelTensorSpaceCoordinate, device_id_t> input_mapping =
+      assert_unwrap(input.mapping).raw;
   require_same(input_mapping.left_values(),
-               assert_unwrap(output.mapping).left_values());
+               assert_unwrap(output.mapping).raw.left_values());
 
   return transform(
       input_mapping.left_values(), [&](ParallelTensorSpaceCoordinate const &p) {
@@ -103,7 +105,7 @@ static std::unordered_set<DynamicNodeInvocation>
         // because we expect this to align with the most efficient way to issue
         // copies in Realm, although the current Realm backend uses a
         // centralized controller and thus issues copies all from a single node.
-        MachineSpaceCoordinate machine_coord = input_mapping.at_l(p);
+        device_id_t machine_coord = input_mapping.at_l(p);
 
         return shard_invocation_for_binding(i,
                                             machine_coord,
@@ -121,16 +123,15 @@ std::unordered_set<DynamicNodeInvocation>
     return perform_shard_expansion_for_copy(i);
   }
 
-  MappedOperatorTaskGroup mapping = assert_unwrap(i.node_attrs.mapping);
+  DynamicNodeMapping mapping = assert_unwrap(i.node_attrs.mapping);
 
-  std::unordered_set<MachineSpaceCoordinate> shard_machine_coords =
-      mapping.get_shard_bindings().left_values();
+  std::unordered_set<device_id_t> shard_machine_coords =
+      target_devices_of_dynamic_node_mapping(mapping);
 
   return transform(
-      shard_machine_coords,
-      [&](MachineSpaceCoordinate const &c) -> DynamicNodeInvocation {
+      shard_machine_coords, [&](device_id_t const &c) -> DynamicNodeInvocation {
         OperatorAtomicTaskShardBinding slot_bindings =
-            mapping.get_shard_bindings().at_l(c);
+            mapping.op_task_group.get_shard_bindings().at_l(c.coord);
 
         return shard_invocation_for_binding(i, c, slot_bindings);
       });

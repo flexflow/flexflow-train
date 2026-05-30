@@ -15,7 +15,7 @@
 namespace FlexFlow {
 
 DynamicOpenDataflowGraph make_dynamic_open_dataflow_graph_from_mapped_pcg(
-    MappedParallelComputationGraph const &mpcg) {
+    MappedParallelComputationGraph const &mpcg, DeviceType device_type) {
   DynamicOpenDataflowGraph result = make_empty_dynamic_open_dataflow_graph();
 
   ParallelComputationGraph pcg = pcg_from_mpcg(mpcg);
@@ -24,7 +24,11 @@ DynamicOpenDataflowGraph make_dynamic_open_dataflow_graph_from_mapped_pcg(
     DynamicNodeAttrs result_attrs{
         /*task_type=*/std::nullopt,
         /*device_coord=*/std::nullopt,
-        /*mapping=*/mpcg_get_mapping_for_layer(mpcg, layer),
+        /*mapping=*/
+        DynamicNodeMapping{
+            /*op_task_group=*/mpcg_get_mapping_for_layer(mpcg, layer),
+            /*device_type=*/device_type,
+        },
         /*op_attrs=*/TrainingOperationAttrs{attrs.op_attrs},
         /*pcg_layer_guid=*/dynamic_layer_guid_t{layer},
         /*per_device_op_state=*/std::nullopt,

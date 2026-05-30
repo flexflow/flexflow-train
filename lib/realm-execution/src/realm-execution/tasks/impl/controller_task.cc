@@ -48,8 +48,10 @@ ControllerTaskResult
                                                  sizeof(raw_ptr),
                                                  precondition);
 
-  return ControllerTaskResult{std::unique_ptr<ControllerTaskArgs>(raw_ptr),
-                              event};
+  return ControllerTaskResult{
+      std::unique_ptr<ControllerTaskArgs>(raw_ptr),
+      event,
+  };
 }
 
 } // namespace FlexFlow

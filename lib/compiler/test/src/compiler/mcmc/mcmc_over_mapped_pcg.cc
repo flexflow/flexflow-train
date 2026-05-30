@@ -65,8 +65,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     MCMCOverMappedPCGConfig no_search =
         MCMCOverMappedPCGConfig{/*temperature=*/1.0,
                                 /*num_iterations=*/1_n,
-                                /*substitution_frequency=*/0.2,
-                                /*device_type=*/DeviceType::GPU};
+                                /*substitution_frequency=*/0.2};
 
     SearchResult base_result =
         mcmc_over_mapped_pcg(pcg, cost_estimator, full_machine_spec, no_search);
@@ -80,8 +79,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     MCMCOverMappedPCGConfig search_config =
         MCMCOverMappedPCGConfig{/*temperature=*/1.0,
                                 /*num_iterations=*/100_n,
-                                /*substitution_frequency=*/0.2,
-                                /*device_type=*/DeviceType::GPU};
+                                /*substitution_frequency=*/0.2};
 
     SearchResult result = mcmc_over_mapped_pcg(
         pcg, cost_estimator, full_machine_spec, search_config);

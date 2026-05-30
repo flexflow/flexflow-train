@@ -8,7 +8,6 @@ ff_add_test_executable(
   DEPS
     doctest
     utils-test-common
-    # local-execution
     kernels
     task-spec
     op-attrs
