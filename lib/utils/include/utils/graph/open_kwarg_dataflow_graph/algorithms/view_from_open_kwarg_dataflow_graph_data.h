@@ -11,9 +11,9 @@
 namespace FlexFlow {
 
 template <typename GraphInputName, typename SlotName>
-struct ViewFromOpenKwargDataflowGraphView final
+struct ViewFromOpenKwargDataflowGraphData final
     : virtual public IOpenKwargDataflowGraphView<GraphInputName, SlotName> {
-  ViewFromOpenKwargDataflowGraphView(
+  ViewFromOpenKwargDataflowGraphData(
       OpenKwargDataflowGraphData<GraphInputName, SlotName> const &data)
       : data(data) {}
 
@@ -44,9 +44,9 @@ struct ViewFromOpenKwargDataflowGraphView final
                   });
   }
 
-  ViewFromOpenKwargDataflowGraphView<GraphInputName, SlotName> *
+  ViewFromOpenKwargDataflowGraphData<GraphInputName, SlotName> *
       clone() const override {
-    return new ViewFromOpenKwargDataflowGraphView<GraphInputName, SlotName>{
+    return new ViewFromOpenKwargDataflowGraphData<GraphInputName, SlotName>{
         this->data};
   }
 
@@ -61,7 +61,7 @@ OpenKwargDataflowGraphView<GraphInputName, SlotName>
   require_open_kwarg_dataflow_graph_data_is_valid(data);
 
   return OpenKwargDataflowGraphView<GraphInputName, SlotName>::template create<
-      ViewFromOpenKwargDataflowGraphView<GraphInputName, SlotName>>(data);
+      ViewFromOpenKwargDataflowGraphData<GraphInputName, SlotName>>(data);
 }
 
 } // namespace FlexFlow
