@@ -7,7 +7,6 @@
 #include "utils/containers/transform.h"
 #include "utils/graph/dataflow_graph/algorithms/dataflow_graph_data.dtg.h"
 #include "utils/graph/kwarg_dataflow_graph/algorithms/kwarg_dataflow_graph_data.dtg.h"
-#include "utils/nonempty_unordered_set/nonempty_unordered_set.h"
 #include "utils/one_to_many/one_to_many_transform_values.h"
 
 namespace FlexFlow {
@@ -26,30 +25,40 @@ DataflowGraphData dataflow_graph_data_from_kwarg_dataflow_graph_data(
   std::unordered_set<KwargDataflowOutput<SlotName>> all_outputs =
       kwarg_data.outputs;
 
-  OneToMany<Node, SlotName> incoming_slots_by_node =
-      one_to_many_transform_values(
+  std::unordered_map<Node, std::unordered_set<SlotName>>
+      incoming_slots_by_node = map_values(
           group_by(all_inputs,
                    [](KwargDataflowInput<SlotName> const &i) -> Node {
                      return i.node;
-                   }),
-          [](KwargDataflowInput<SlotName> const &i) -> SlotName {
-            return i.slot_name;
+                   })
+              .l_to_r(),
+          [](nonempty_unordered_set<KwargDataflowInput<SlotName>> const &is)
+              -> std::unordered_set<SlotName> {
+            return transform(is.unwrap_as_unordered_set(),
+                             [](KwargDataflowInput<SlotName> const &i) {
+                               return i.slot_name;
+                             });
           });
 
-  OneToMany<Node, SlotName> outgoing_slots_by_node =
-      one_to_many_transform_values(
+  std::unordered_map<Node, std::unordered_set<SlotName>>
+      outgoing_slots_by_node = map_values(
           group_by(all_outputs,
                    [](KwargDataflowOutput<SlotName> const &o) -> Node {
                      return o.node;
-                   }),
-          [](KwargDataflowOutput<SlotName> const &o) -> SlotName {
-            return o.slot_name;
+                   })
+              .l_to_r(),
+          [](nonempty_unordered_set<KwargDataflowOutput<SlotName>> const &os)
+              -> std::unordered_set<SlotName> {
+            return transform(os.unwrap_as_unordered_set(),
+                             [](KwargDataflowOutput<SlotName> const &o) {
+                               return o.slot_name;
+                             });
           });
 
   auto dataflow_input_from_kwarg_input =
       [&](KwargDataflowInput<SlotName> const &i) -> DataflowInput {
-    std::vector<SlotName> slot_ordering = order_slots(
-        incoming_slots_by_node.at_l(i.node).unwrap_as_unordered_set());
+    std::vector<SlotName> slot_ordering =
+        order_slots(incoming_slots_by_node.at(i.node));
 
     return DataflowInput{
         /*node=*/i.node,
@@ -62,8 +71,8 @@ DataflowGraphData dataflow_graph_data_from_kwarg_dataflow_graph_data(
 
   auto dataflow_output_from_kwarg_output =
       [&](KwargDataflowOutput<SlotName> const &o) -> DataflowOutput {
-    std::vector<SlotName> slot_ordering = order_slots(
-        outgoing_slots_by_node.at_l(o.node).unwrap_as_unordered_set());
+    std::vector<SlotName> slot_ordering =
+        order_slots(outgoing_slots_by_node.at(o.node));
 
     return DataflowOutput{
         /*node=*/o.node,
