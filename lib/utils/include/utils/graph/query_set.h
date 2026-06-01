@@ -5,7 +5,7 @@
 #include "utils/containers/contains.h"
 #include "utils/containers/filter.h"
 #include "utils/containers/filter_keys.h"
-#include "utils/containers/intersection.h"
+#include "utils/containers/set_intersection.h"
 #include "utils/containers/set_of.h"
 #include "utils/containers/set_union.h"
 #include "utils/containers/transform.h"
@@ -146,7 +146,7 @@ query_set<T> query_intersection(query_set<T> const &lhs,
     return lhs;
   } else {
     return query_set<T>::match_values_in(
-        set_of(intersection(allowed_values(lhs), allowed_values(rhs))));
+        set_of(set_intersection(allowed_values(lhs), allowed_values(rhs))));
   }
 }
 

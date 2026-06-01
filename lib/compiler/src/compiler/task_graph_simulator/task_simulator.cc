@@ -11,6 +11,7 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 #include "utils/containers/filtrans.h"
+#include "utils/containers/set_intersection.h"
 #include "utils/containers/set_union.h"
 #include "utils/containers/transform.h"
 #include "utils/graph/digraph/digraph.h"
@@ -63,7 +64,7 @@ milliseconds_t task_simulator_estimate_forward_pass_time(
     std::unordered_set<device_id_t> devices_occupied =
         set_union(transform(in_progress_tasks, get_devices));
     std::unordered_set<device_id_t> required_devices = get_devices(task);
-    return intersection(devices_occupied, required_devices).empty();
+    return set_intersection(devices_occupied, required_devices).empty();
   };
 
   TaskExecutionConstraint constraint =
