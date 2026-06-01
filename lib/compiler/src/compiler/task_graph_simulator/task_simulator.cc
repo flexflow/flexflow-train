@@ -11,12 +11,12 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"
 #include "utils/containers/filtrans.h"
+#include "utils/containers/set_intersection.h"
 #include "utils/containers/set_union.h"
 #include "utils/containers/transform.h"
 #include "utils/graph/digraph/digraph.h"
 #include "utils/hash/unordered_set.h"
 #include <unordered_set>
-#include "utils/containers/set_intersection.h"
 
 namespace FlexFlow {
 

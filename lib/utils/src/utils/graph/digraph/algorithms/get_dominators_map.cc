@@ -1,6 +1,7 @@
 #include "utils/graph/digraph/algorithms/get_dominators_map.h"
 #include "utils/containers/generate_map.h"
 #include "utils/containers/restrict_keys.h"
+#include "utils/containers/set_intersection.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/values.h"
 #include "utils/graph/digraph/algorithms/get_initial_nodes.h"
@@ -11,7 +12,6 @@
 #include "utils/hash/unordered_set.h"
 #include <optional>
 #include <queue>
-#include "utils/containers/set_intersection.h"
 
 namespace FlexFlow {
 

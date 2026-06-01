@@ -1,11 +1,11 @@
 #include "utils/graph/digraph/algorithms/get_dominators.h"
 #include "utils/containers/restrict_keys.h"
+#include "utils/containers/set_intersection.h"
 #include "utils/containers/values.h"
 #include "utils/graph/digraph/algorithms/get_dominators_map.h"
 #include "utils/hash/unordered_set.h"
-#include <queue>
-#include "utils/containers/set_intersection.h"
 #include "utils/optional.h"
+#include <queue>
 
 namespace FlexFlow {
 

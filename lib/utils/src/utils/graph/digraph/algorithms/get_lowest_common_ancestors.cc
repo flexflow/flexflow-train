@@ -1,7 +1,7 @@
 #include "utils/containers/filter.h"
-#include "utils/containers/set_intersection.h"
 #include "utils/containers/is_subseteq_of.h"
 #include "utils/containers/maximum.h"
+#include "utils/containers/set_intersection.h"
 #include "utils/containers/set_union.h"
 #include "utils/containers/transform.h"
 #include "utils/graph/digraph/algorithms/get_ancestors.h"
@@ -26,7 +26,8 @@ std::optional<std::unordered_set<Node>>
       transform(nodes, [&](Node const &n) {
         return set_union(get_ancestors(g, n), {n});
       });
-  std::unordered_set<Node> common_ancestors = set_intersection(ancestors).value();
+  std::unordered_set<Node> common_ancestors =
+      set_intersection(ancestors).value();
 
   if (common_ancestors.empty()) {
     return std::unordered_set<Node>{};

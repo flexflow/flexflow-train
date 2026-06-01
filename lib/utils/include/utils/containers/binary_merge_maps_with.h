@@ -2,10 +2,10 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_BINARY_MERGE_MAPS_WITH_H
 
 #include "utils/containers/generate_map.h"
-#include "utils/containers/set_intersection.h"
 #include "utils/containers/keys.h"
 #include "utils/containers/merge_maps_with_right_dominating.h"
 #include "utils/containers/restrict_keys.h"
+#include "utils/containers/set_intersection.h"
 #include "utils/containers/set_minus.h"
 #include <unordered_map>
 

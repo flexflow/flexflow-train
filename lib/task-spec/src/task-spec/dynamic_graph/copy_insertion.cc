@@ -13,9 +13,9 @@
 #include "utils/bidict/algorithms/unordered_set_of.h"
 #include "utils/containers/contains_key.h"
 #include "utils/containers/flatmap.h"
-#include "utils/containers/set_intersection.h"
 #include "utils/containers/map_values2.h"
 #include "utils/containers/set_difference.h"
+#include "utils/containers/set_intersection.h"
 #include "utils/containers/transform.h"
 #include "utils/optional.h"
 
