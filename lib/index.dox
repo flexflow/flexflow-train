@@ -65,7 +65,6 @@ where solid arrows represent link-time dependencies and dashed arrows represent 
 
 \section lib-deprecated-components Deprecated Components
 
-- \c "local-pcg-execution":
 - \c "ffi":
 - \c "substitution-generator":
 - \c "runtime": Out-of-date code migrated from the old %FlexFlow codebase. Currently kept around for reference, but will eventually be removed.
