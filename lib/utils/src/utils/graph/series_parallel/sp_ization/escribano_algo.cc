@@ -2,10 +2,10 @@
 #include "utils/containers/filter_keys.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/group_by.h"
-#include "utils/containers/intersection.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/maximum.h"
 #include "utils/containers/range.h"
+#include "utils/containers/set_intersection.h"
 #include "utils/containers/set_union.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/values.h"
@@ -137,7 +137,7 @@ static std::unordered_set<Node>
 
   auto subtrees_overlapping_with_component =
       filter(subtrees, [&](std::unordered_set<Node> subtree) {
-        return intersection(subtree, component).size() > 0;
+        return set_intersection(subtree, component).size() > 0;
       });
 
   std::unordered_set<Node> forest =

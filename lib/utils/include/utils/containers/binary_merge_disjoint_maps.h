@@ -14,7 +14,7 @@ std::unordered_map<K, V>
   std::unordered_set<K> lhs_keys = keys(lhs);
   std::unordered_set<K> rhs_keys = keys(rhs);
 
-  std::unordered_set<K> shared_keys = intersection(lhs_keys, rhs_keys);
+  std::unordered_set<K> shared_keys = set_intersection(lhs_keys, rhs_keys);
   ASSERT(shared_keys.empty());
 
   return binary_merge_maps_with(
