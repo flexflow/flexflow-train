@@ -87,6 +87,16 @@ struct int_ge_two {
   friend int_ge_two operator*(positive_int lhs, int_ge_two rhs);
   friend nonnegative_int operator*(nonnegative_int lhs, int_ge_two rhs);
 
+  friend positive_int &operator*=(positive_int &lhs, int_ge_two rhs);
+  friend nonnegative_int &operator*=(nonnegative_int &lhs, int_ge_two rhs);
+
+  nonnegative_int operator/(int_ge_two other) const;
+  friend nonnegative_int operator/(positive_int lhs, int_ge_two rhs);
+  friend nonnegative_int operator/(nonnegative_int lhs, int_ge_two rhs);
+
+  friend nonnegative_int operator%(positive_int lhs, int_ge_two rhs);
+  friend nonnegative_int operator%(nonnegative_int lhs, int_ge_two rhs);
+
   int int_from_int_ge_two() const;
   nonnegative_int nonnegative_int_from_int_ge_two() const;
   positive_int positive_int_from_int_ge_two() const;
