@@ -21,12 +21,6 @@ std::unordered_map<TensorSlotName, IncomingTensorRole>
     get_incoming_tensor_roles(PCGOperatorAttrs const &pcg_op_attrs) {
   return pcg_op_attrs
       .visit<std::unordered_map<TensorSlotName, IncomingTensorRole>>(overload{
-          [](BatchMatmulAttrs const &) {
-            return std::unordered_map<TensorSlotName, IncomingTensorRole>{
-                {TensorSlotName::LHS_INPUT, IncomingTensorRole::INPUT},
-                {TensorSlotName::RHS_INPUT, IncomingTensorRole::INPUT},
-            };
-          },
           [](BatchNormAttrs const &attrs) {
             return get_batch_norm_incoming_tensor_roles(attrs);
           },

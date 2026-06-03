@@ -2,7 +2,6 @@
 #include "op-attrs/computation_graph_op_attrs.dtg.h"
 #include "task-spec/loss_functions.h"
 #include "task-spec/ops/impl/attention.h"
-#include "task-spec/ops/impl/batch_matmul.h"
 #include "task-spec/ops/impl/batch_norm.h"
 #include "task-spec/ops/impl/broadcast.h"
 #include "task-spec/ops/impl/cast.h"
@@ -37,7 +36,6 @@ std::optional<TaskImplFunction>
     get_init_task_impl_for_op_attrs(ComputationGraphOpAttrs const &op_attrs) {
 
   return op_attrs.visit<std::optional<TaskImplFunction>>(overload{
-      [](BatchMatmulAttrs const &) { return std::nullopt; },
       [](BatchNormAttrs const &) { return get_batch_norm_init_task_impl(); },
       [](BroadcastAttrs const &) { return std::nullopt; },
       [](CastAttrs const &) { return std::nullopt; },
@@ -76,7 +74,6 @@ std::optional<TaskImplFunction>
     get_fwd_task_impl_for_op_attrs(ComputationGraphOpAttrs const &op_attrs) {
 
   return op_attrs.visit<std::optional<TaskImplFunction>>(overload{
-      [](BatchMatmulAttrs const &) { return get_batch_matmul_fwd_task_impl(); },
       [](BatchNormAttrs const &) { return get_batch_norm_fwd_task_impl(); },
       [](BroadcastAttrs const &) { return get_broadcast_fwd_task_impl(); },
       [](CastAttrs const &) { return get_cast_fwd_task_impl(); },
@@ -115,7 +112,6 @@ std::optional<TaskImplFunction>
     get_bwd_task_impl_for_op_attrs(ComputationGraphOpAttrs const &op_attrs) {
 
   return op_attrs.visit<std::optional<TaskImplFunction>>(overload{
-      [](BatchMatmulAttrs const &) { return get_batch_matmul_bwd_task_impl(); },
       [](BatchNormAttrs const &) { return get_batch_norm_bwd_task_impl(); },
       [](BroadcastAttrs const &) { return get_broadcast_bwd_task_impl(); },
       [](CastAttrs const &) { return get_cast_bwd_task_impl(); },

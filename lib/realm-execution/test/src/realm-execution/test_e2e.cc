@@ -225,8 +225,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           },
           /*input_tensors=*/input_tensors,
           /*profiling_settings=*/ProfilingSettings{0, 0},
-          /*device_handle=*/device_handle,
-          /*iteration_config=*/FFIterationConfig{1_p});
+          /*device_handle=*/device_handle);
 
       // begin training loop
       int num_epochs = 5;
@@ -236,8 +235,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         perform_all_passes_for_pcg_instance(
             /*instance=*/pcg_instance,
             /*profiling_settings=*/ProfilingSettings{0, 0},
-            /*device_handle=*/device_handle,
-            /*iteration_config=*/FFIterationConfig{1_p});
+            /*device_handle=*/device_handle);
         loss_values.push_back(copy_tensor_accessor_r(
             dynamic_tensor_accessor_from_instance(
                 pcg_instance.get_loss_tensor_instance().value(),
@@ -456,8 +454,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
               },
               /*input_tensors=*/input_tensors,
               /*profiling_settings=*/ProfilingSettings{0, 0},
-              /*device_handle=*/device_handle,
-              /*iteration_config=*/FFIterationConfig{1_p});
+              /*device_handle=*/device_handle);
 
           // begin training loop
           int num_epochs = 5;
@@ -467,8 +464,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
             perform_all_passes_for_pcg_instance(
                 /*instance=*/pcg_instance,
                 /*profiling_settings=*/ProfilingSettings{0, 0},
-                /*device_handle=*/device_handle,
-                /*iteration_config=*/FFIterationConfig{1_p});
+                /*device_handle=*/device_handle);
             loss_values.push_back(copy_tensor_accessor_r(
                 dynamic_tensor_accessor_from_instance(
                     pcg_instance.get_loss_tensor_instance().value(),

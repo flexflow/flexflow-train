@@ -8,7 +8,6 @@
 #include "realm-execution/realm_context.h"
 #include "realm-execution/tensor_instance_backing.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
-#include "task-spec/ff_iteration_config.dtg.h"
 
 namespace FlexFlow {
 
@@ -25,7 +24,6 @@ PerDeviceOpStateBacking perform_distributed_per_device_op_state_initialization(
     TensorInstanceBacking const &tensor_instance_backing,
     ProfilingSettings const &profiling_settings,
     DistributedFfHandle const &device_handle,
-    FFIterationConfig const &iteration_config,
     OptimizerAttrs const &optimizer_attrs,
     Realm::Event precondition);
 

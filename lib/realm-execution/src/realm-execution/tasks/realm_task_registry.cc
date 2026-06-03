@@ -66,7 +66,6 @@ Realm::Event register_all_tasks() {
 
   std::vector<task_id_t> task_ids = {
       // Forward tasks
-      task_id_t::BATCHMATMUL_FWD_TASK_ID,
       task_id_t::BATCHNORM_FWD_TASK_ID,
       task_id_t::BROADCAST_FWD_TASK_ID,
       task_id_t::CAST_FWD_TASK_ID,
@@ -95,7 +94,6 @@ Realm::Event register_all_tasks() {
       task_id_t::TRANSPOSE_FWD_TASK_ID,
 
       // Backward tasks
-      task_id_t::BATCHMATMUL_BWD_TASK_ID,
       task_id_t::BATCHNORM_BWD_TASK_ID,
       task_id_t::BROADCAST_BWD_TASK_ID,
       task_id_t::CAST_BWD_TASK_ID,

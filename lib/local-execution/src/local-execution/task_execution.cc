@@ -48,7 +48,6 @@ TaskArgumentAccessor make_task_argument_accessor_for_invocation(
     ProfilingSettings const &profiling_settings,
     device_handle_t const &ff_handle,
     std::optional<PerDeviceOpState> const &per_device_op_state,
-    FFIterationConfig const &iteration_config,
     std::optional<OptimizerAttrs> const &optimizer_attrs,
     device_id_t device_idx) {
   auto make_param = [&](DynamicTensorSlot const &slot) {
@@ -78,7 +77,6 @@ TaskArgumentAccessor make_task_argument_accessor_for_invocation(
                  return op_attrs.try_require_loss();
                }),
       /*per_device_op_state=*/per_device_op_state,
-      /*iteration_config=*/iteration_config,
       /*optimizer_attrs=*/optimizer_attrs,
       /*device_idx=*/device_idx);
 }
@@ -89,7 +87,6 @@ std::optional<milliseconds_t> execute_dynamic_node_invocation(
     ProfilingSettings const &profiling_settings,
     device_handle_t const &ff_handle,
     std::optional<PerDeviceOpState> const &per_device_op_state,
-    FFIterationConfig const &iteration_config,
     std::optional<OptimizerAttrs> const &optimizer_attrs,
     device_id_t device_idx) {
   TaskArgumentAccessor arg_accessor =
@@ -99,7 +96,6 @@ std::optional<milliseconds_t> execute_dynamic_node_invocation(
           /*profiling_settings=*/profiling_settings,
           /*ff_handle=*/ff_handle,
           /*per_device_op_state=*/per_device_op_state,
-          /*iteration_config=*/iteration_config,
           /*optimizer_attrs=*/optimizer_attrs,
           /*device_idx=*/device_idx);
 

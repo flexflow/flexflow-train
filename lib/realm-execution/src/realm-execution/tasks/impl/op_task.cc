@@ -56,7 +56,6 @@ void op_task_body(void const *args,
                            return d.get(ctx.get_current_device_idx());
                          }),
                 [](PerDeviceOpState *ptr) { return *ptr; }),
-      /*iteration_config=*/task_args.iteration_config,
       /*optimizer_attrs=*/task_args.optimizer_attrs,
       /*device_idx=*/ctx.get_current_device_idx());
 }
@@ -69,7 +68,6 @@ Realm::Event spawn_op_task(
     std::optional<DeviceSpecificPtr<PerDeviceOpState>> const &device_state,
     ProfilingSettings const &profiling_settings,
     DeviceSpecificPtr<ManagedPerDeviceFFHandle> const &device_handle,
-    FFIterationConfig const &iteration_config,
     std::optional<OptimizerAttrs> const &optimizer_attrs,
     Realm::Event precondition) {
 
@@ -79,7 +77,6 @@ Realm::Event spawn_op_task(
       device_state,
       profiling_settings,
       device_handle,
-      iteration_config,
       optimizer_attrs,
   };
 

@@ -23,7 +23,6 @@ DynamicNodeInvocation
                     Allocator &allocator,
                     ProfilingSettings const &profiling_settings,
                     device_handle_t const &device_handle,
-                    FFIterationConfig const &iteration_config,
                     OptimizerAttrs const &optimizer_attrs,
                     device_id_t device_idx) {
   if (!i.node_attrs.op_attrs.has_value() ||
@@ -44,7 +43,6 @@ DynamicNodeInvocation
           /*profiling_settings=*/profiling_settings,
           /*ff_handle=*/device_handle,
           /*per_device_op_state=*/std::nullopt,
-          /*iteration_config=*/iteration_config,
           /*optimizer_attrs=*/optimizer_attrs,
           /*device_idx=*/device_idx);
 
@@ -62,7 +60,6 @@ DynamicOpenDataflowGraph perform_per_device_op_state_initialization(
     Allocator &allocator,
     ProfilingSettings const &profiling_settings,
     device_handle_t const &device_handle,
-    FFIterationConfig const &iteration_config,
     OptimizerAttrs const &optimizer_attrs,
     device_id_t device_idx) {
 
@@ -73,7 +70,6 @@ DynamicOpenDataflowGraph perform_per_device_op_state_initialization(
                                allocator,
                                profiling_settings,
                                device_handle,
-                               iteration_config,
                                optimizer_attrs,
                                device_idx);
       });

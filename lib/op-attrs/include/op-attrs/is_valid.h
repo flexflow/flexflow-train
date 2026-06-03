@@ -24,9 +24,6 @@ bool is_valid(T const &t, std::vector<ParallelTensorShape> const &shapes) {
 
 bool is_valid_internal(MultiHeadAttentionAttrs const &,
                        std::vector<ParallelTensorShape> const &);
-bool is_valid_internal(BatchMatmulAttrs const &,
-                       ParallelTensorShape const &,
-                       ParallelTensorShape const &);
 bool is_valid_internal(CastAttrs const &, ParallelTensorShape const &);
 bool is_valid_internal(ConcatAttrs const &,
                        std::vector<ParallelTensorShape> const &);

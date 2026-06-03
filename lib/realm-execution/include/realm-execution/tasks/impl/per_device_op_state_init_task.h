@@ -9,7 +9,6 @@
 #include "realm-execution/realm_context.h"
 #include "realm-execution/tensor_instance_backing.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
-#include "task-spec/ff_iteration_config.dtg.h"
 #include "task-spec/per_device_op_state.dtg.h"
 
 namespace FlexFlow {
@@ -39,7 +38,6 @@ std::optional<Realm::Event> spawn_per_device_op_state_init_task(
     TensorInstanceBacking const &tensor_backing,
     ProfilingSettings const &profiling_settings,
     DeviceSpecificPtr<ManagedPerDeviceFFHandle> const &device_handle,
-    FFIterationConfig const &iteration_config,
     OptimizerAttrs const &optimizer_attrs,
     DeviceSpecificPtr<PerDeviceOpState> *result_ptr,
     Realm::Event precondition);

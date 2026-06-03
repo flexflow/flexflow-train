@@ -16,7 +16,6 @@ SerializableOpTaskArgs op_task_args_to_serializable(OpTaskArgs const &args) {
                 device_specific_ptr_to_serializable<PerDeviceOpState>),
       /*profiling_settings=*/args.profiling_settings,
       /*device_handle=*/device_specific_ptr_to_serializable(args.device_handle),
-      /*iteration_config=*/args.iteration_config,
       /*optimizer_attrs=*/args.optimizer_attrs,
   };
 }
@@ -33,7 +32,6 @@ OpTaskArgs op_task_args_from_serializable(SerializableOpTaskArgs const &args) {
       /*device_handle=*/
       device_specific_ptr_from_serializable<ManagedPerDeviceFFHandle>(
           args.device_handle),
-      /*iteration_config=*/args.iteration_config,
       /*optimizer_attrs=*/args.optimizer_attrs,
   };
 }

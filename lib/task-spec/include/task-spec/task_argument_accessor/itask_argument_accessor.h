@@ -10,7 +10,6 @@
 #include "pcg/device_id_t.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
 #include "task-spec/concrete_arg_spec.h"
-#include "task-spec/ff_iteration_config.dtg.h"
 #include "task-spec/ops/arg_slot_id_t.dtg.h"
 #include "task-spec/per_device_op_state.dtg.h"
 #include "task-spec/privilege_tensor_accessor.h"
@@ -35,7 +34,6 @@ struct ITaskArgumentAccessor {
   virtual PCGOperatorAttrs get_op_attrs() const = 0;
   virtual LossAttrs get_loss_attrs() const = 0;
   virtual PerDeviceOpState get_per_device_op_state() const = 0;
-  virtual FFIterationConfig get_iteration_config() const = 0;
   virtual OptimizerAttrs get_optimizer_attrs() const = 0;
 
   virtual Allocator get_allocator() const = 0;

@@ -1,6 +1,5 @@
 #include "op-attrs/shape_inference.h"
 #include "op-attrs/ops/attention.h"
-#include "op-attrs/ops/batch_matmul.h"
 #include "op-attrs/ops/batch_norm.h"
 #include "op-attrs/ops/cast.h"
 #include "op-attrs/ops/combine.h"
@@ -64,21 +63,6 @@ std::unordered_map<TensorSlotName, TensorShape> get_output_shapes(
     std::unordered_map<TensorSlotName, TensorShape> const &input_shapes) {
   return op_attrs.visit<std::unordered_map<TensorSlotName, TensorShape>>(
       overload{
-          [&](BatchMatmulAttrs const &attrs)
-              -> std::unordered_map<TensorSlotName, TensorShape> {
-            auto [lhs, rhs] = require_two_keys(input_shapes,
-                                               TensorSlotName::LHS_INPUT,
-                                               TensorSlotName::RHS_INPUT);
-
-            return {
-                {
-                    TensorSlotName::OUTPUT,
-                    TensorShape{
-                        throw_if_unexpected(get_output_shape(attrs, lhs, rhs)),
-                    },
-                },
-            };
-          },
           [&](BatchNormAttrs const &attrs)
               -> std::unordered_map<TensorSlotName, TensorShape> {
             TensorShape input =
@@ -294,7 +278,8 @@ std::unordered_map<TensorSlotName, TensorShape> get_output_shapes(
           [&](auto const &attrs)
               -> std::unordered_map<TensorSlotName, TensorShape> {
             NOT_IMPLEMENTED();
-          }});
+          },
+      });
 }
 
 std::unordered_map<TensorSlotName, TensorShape> get_weight_shapes(
@@ -302,14 +287,6 @@ std::unordered_map<TensorSlotName, TensorShape> get_weight_shapes(
     std::unordered_map<TensorSlotName, TensorShape> const &input_shapes) {
   return op_attrs.visit<std::unordered_map<TensorSlotName, TensorShape>>(
       overload{
-          [&](BatchMatmulAttrs const &attrs)
-              -> std::unordered_map<TensorSlotName, TensorShape> {
-            require_two_keys(input_shapes,
-                             TensorSlotName::LHS_INPUT,
-                             TensorSlotName::RHS_INPUT);
-
-            return {};
-          },
           [&](BatchNormAttrs const &attrs)
               -> std::unordered_map<TensorSlotName, TensorShape> {
             TensorShape input =
@@ -427,7 +404,8 @@ std::unordered_map<TensorSlotName, TensorShape> get_weight_shapes(
           [&](auto const &attrs)
               -> std::unordered_map<TensorSlotName, TensorShape> {
             NOT_IMPLEMENTED();
-          }});
+          },
+      });
 }
 
 std::unordered_map<TensorSlotName, ParallelTensorShape> get_output_shapes(
@@ -436,19 +414,6 @@ std::unordered_map<TensorSlotName, ParallelTensorShape> get_output_shapes(
         &input_shapes) {
   return pcg_op_attrs
       .visit<std::unordered_map<TensorSlotName, ParallelTensorShape>>(overload{
-          [&](BatchMatmulAttrs const &attrs)
-              -> std::unordered_map<TensorSlotName, ParallelTensorShape> {
-            auto [lhs, rhs] = require_two_keys(input_shapes,
-                                               TensorSlotName::LHS_INPUT,
-                                               TensorSlotName::RHS_INPUT);
-
-            return {
-                {
-                    TensorSlotName::OUTPUT,
-                    throw_if_unexpected(get_output_shape(attrs, lhs, rhs)),
-                },
-            };
-          },
           [&](BatchNormAttrs const &attrs)
               -> std::unordered_map<TensorSlotName, ParallelTensorShape> {
             ParallelTensorShape input =
@@ -707,7 +672,8 @@ std::unordered_map<TensorSlotName, ParallelTensorShape> get_output_shapes(
           [&](auto const &attrs)
               -> std::unordered_map<TensorSlotName, ParallelTensorShape> {
             NOT_IMPLEMENTED();
-          }});
+          },
+      });
 }
 
 std::unordered_map<TensorSlotName, ParallelTensorShape> get_weight_shapes(
@@ -716,14 +682,6 @@ std::unordered_map<TensorSlotName, ParallelTensorShape> get_weight_shapes(
         &input_shapes) {
   return pcg_op_attrs
       .visit<std::unordered_map<TensorSlotName, ParallelTensorShape>>(overload{
-          [&](BatchMatmulAttrs const &attrs)
-              -> std::unordered_map<TensorSlotName, ParallelTensorShape> {
-            require_two_keys(input_shapes,
-                             TensorSlotName::LHS_INPUT,
-                             TensorSlotName::RHS_INPUT);
-
-            return {};
-          },
           [&](BatchNormAttrs const &attrs)
               -> std::unordered_map<TensorSlotName, ParallelTensorShape> {
             ParallelTensorShape input =
@@ -876,7 +834,8 @@ std::unordered_map<TensorSlotName, ParallelTensorShape> get_weight_shapes(
           [&](auto const &attrs)
               -> std::unordered_map<TensorSlotName, ParallelTensorShape> {
             NOT_IMPLEMENTED();
-          }});
+          },
+      });
 }
 
 } // namespace FlexFlow

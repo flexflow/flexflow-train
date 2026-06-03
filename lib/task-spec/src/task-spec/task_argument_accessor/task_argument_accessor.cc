@@ -25,10 +25,6 @@ PerDeviceOpState TaskArgumentAccessor::get_per_device_op_state() const {
   return this->ptr->get_per_device_op_state();
 }
 
-FFIterationConfig TaskArgumentAccessor::get_iteration_config() const {
-  return this->ptr->get_iteration_config();
-}
-
 OptimizerAttrs TaskArgumentAccessor::get_optimizer_attrs() const {
   return this->ptr->get_optimizer_attrs();
 }

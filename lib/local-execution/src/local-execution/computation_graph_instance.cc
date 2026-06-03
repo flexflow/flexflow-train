@@ -67,7 +67,6 @@ ComputationGraphInstance create_computation_graph_instance(
     Allocator &allocator,
     ProfilingSettings const &profiling_settings,
     device_handle_t const &device_handle,
-    FFIterationConfig const &iteration_config,
     device_id_t device_idx) {
   DynamicOpenDataflowGraph dg = make_dynamic_open_dataflow_graph_from_cg(cg);
   dg = perform_pass_expansion(dg);
@@ -96,7 +95,6 @@ ComputationGraphInstance create_computation_graph_instance(
                                                   allocator,
                                                   profiling_settings,
                                                   device_handle,
-                                                  iteration_config,
                                                   optimizer_attrs,
                                                   device_idx);
 
@@ -118,7 +116,6 @@ static std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
         OptimizerAttrs const &optimizer_attrs,
         ProfilingSettings const &profiling_settings,
         device_handle_t const &ff_handle,
-        FFIterationConfig iteration_config,
         device_id_t device_idx) {
   return unordered_map_from_pairs(
       transform(invocations, [&](DynamicNodeInvocation const &invocation) {
@@ -133,7 +130,6 @@ static std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
                         return get_per_device_op_state_from_device_specific(
                             op_state, device_idx);
                       }),
-            /*iteration_config=*/iteration_config,
             /*optimizer_attrs=*/optimizer_attrs,
             /*device_idx=*/device_idx);
         return std::pair{invocation.node_attrs.layer_guid, timing};
@@ -145,7 +141,6 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
         ComputationGraphInstance &instance,
         ProfilingSettings const &profiling_settings,
         device_handle_t const &ff_handle,
-        FFIterationConfig iteration_config,
         device_id_t device_idx) {
   std::vector<DynamicNodeInvocation> execution_order =
       instance.get_execution_order();
@@ -156,7 +151,6 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
           /*optimizer_attrs=*/instance.get_optimizer_attrs(),
           /*profiling_settings=*/profiling_settings,
           /*ff_handle=*/ff_handle,
-          /*iteration_config=*/iteration_config,
           /*device_idx=*/device_idx);
   instance.update_optimizer_attrs_for_next_iter();
   return result;
@@ -167,7 +161,6 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
         ComputationGraphInstance const &instance,
         ProfilingSettings const &profiling_settings,
         device_handle_t const &ff_handle,
-        FFIterationConfig iteration_config,
         device_id_t device_idx) {
   std::vector<DynamicNodeInvocation> execution_order =
       filter(instance.get_execution_order(),
@@ -183,7 +176,6 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
       /*optimizer_attrs=*/instance.get_optimizer_attrs(),
       /*profiling_settings=*/profiling_settings,
       /*ff_handle=*/ff_handle,
-      /*iteration_config=*/iteration_config,
       /*device_idx=*/device_idx);
 }
 
@@ -192,7 +184,6 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
         ComputationGraphInstance const &instance,
         ProfilingSettings const &profiling_settings,
         device_handle_t const &ff_handle,
-        FFIterationConfig iteration_config,
         device_id_t device_idx) {
   std::vector<DynamicNodeInvocation> execution_order =
       filter(instance.get_execution_order(),
@@ -208,7 +199,6 @@ std::unordered_map<dynamic_layer_guid_t, std::optional<milliseconds_t>>
       /*optimizer_attrs=*/instance.get_optimizer_attrs(),
       /*profiling_settings=*/profiling_settings,
       /*ff_handle=*/ff_handle,
-      /*iteration_config=*/iteration_config,
       /*device_idx=*/device_idx);
 }
 
@@ -216,7 +206,6 @@ void perform_update_pass_for_computation_graph_instance(
     ComputationGraphInstance &instance,
     ProfilingSettings const &profiling_settings,
     device_handle_t const &ff_handle,
-    FFIterationConfig iteration_config,
     device_id_t device_idx) {
   std::vector<DynamicNodeInvocation> execution_order =
       filter(instance.get_execution_order(),
@@ -232,7 +221,6 @@ void perform_update_pass_for_computation_graph_instance(
       /*optimizer_attrs=*/instance.get_optimizer_attrs(),
       /*profiling_settings=*/profiling_settings,
       /*ff_handle=*/ff_handle,
-      /*iteration_config=*/iteration_config,
       /*device_idx=*/device_idx);
   instance.update_optimizer_attrs_for_next_iter();
 }
