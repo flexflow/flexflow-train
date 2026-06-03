@@ -1,26 +1,29 @@
 #include "pcg/file_format/v1/v1_mapped_parallel_computation_graph.h"
-#include "pcg/file_format/v1/v1_mapped_operator_task_group.h"
-#include "pcg/file_format/v1/v1_parallel_computation_graph.h"
-#include "utils/containers/map_values.h"
+#include "pcg/file_format/v1/graphs/v1_labelled_kwarg_dataflow_graph.h"
+#include "utils/graph/instances/unordered_set_labelled_open_kwarg_dataflow_graph.h"
+#include "utils/graph/labelled_kwarg_dataflow_graph/labelled_kwarg_dataflow_graph.h"
 
 namespace FlexFlow {
 
 V1MappedParallelComputationGraph
     to_v1(MappedParallelComputationGraph const &mpcg) {
   return V1MappedParallelComputationGraph{
-      to_v1(mpcg.pcg),
-      map_values(mpcg.mapped_tasks,
-                 [](MappedOperatorTaskGroup const &g) { return to_v1(g); }),
+      to_v1<MappedParallelLayerAttrs, ParallelTensorAttrs, TensorSlotName>(
+          mpcg.raw_graph),
   };
 }
 
 MappedParallelComputationGraph
     from_v1(V1MappedParallelComputationGraph const &v1) {
   return MappedParallelComputationGraph{
-      from_v1(v1.pcg),
-      map_values(v1.mapped_tasks,
-                 [](V1MappedOperatorTaskGroup const &g) { return from_v1(g); }),
-  };
+      LabelledKwargDataflowGraph<MappedParallelLayerAttrs,
+                                 ParallelTensorAttrs,
+                                 TensorSlotName>::
+          create_copy_of<UnorderedSetLabelledOpenKwargDataflowGraph<
+              MappedParallelLayerAttrs,
+              ParallelTensorAttrs,
+              int,
+              TensorSlotName>>(from_v1(v1.raw_graph))};
 }
 
 } // namespace FlexFlow

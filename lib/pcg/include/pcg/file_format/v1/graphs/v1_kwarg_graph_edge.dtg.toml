@@ -1,5 +1,5 @@
 namespace = "FlexFlow"
-name = "V1GraphOutput"
+name = "V1KwargGraphEdge"
 type = "struct"
 features = [
   "eq",
@@ -19,9 +19,17 @@ includes = [
 ]
 
 [[fields]]
-name = "node"
+name = "srcNode"
 type = "::FlexFlow::nonnegative_int"
 
 [[fields]]
-name = "slot_name"
+name = "srcSlot"
+type = "SlotName"
+
+[[fields]]
+name = "dstNode"
+type = "::FlexFlow::nonnegative_int"
+
+[[fields]]
+name = "dstSlot"
 type = "SlotName"

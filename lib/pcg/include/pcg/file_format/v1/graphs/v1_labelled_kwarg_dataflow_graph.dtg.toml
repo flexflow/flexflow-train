@@ -19,7 +19,7 @@ template_params = [
 includes = [
   "<unordered_map>",
   "pcg/file_format/v1/graphs/v1_kwarg_dataflow_graph.dtg.h",
-  "pcg/file_format/v1/graphs/v1_graph_output.dtg.h",
+  "pcg/file_format/v1/graphs/v1_kwarg_graph_output.dtg.h",
   "utils/nonnegative_int/nonnegative_int.h",
 ]
 
@@ -36,7 +36,7 @@ type = "std::unordered_map<::FlexFlow::nonnegative_int, NodeLabel>"
 
 [[fields]]
 name = "output_labels"
-type = "std::unordered_map<::FlexFlow::V1GraphOutput<SlotName>, OutputLabel>"
+type = "std::unordered_map<::FlexFlow::V1KwargGraphOutput<SlotName>, OutputLabel>"
 
 [[fields]]
 name = "graph"
