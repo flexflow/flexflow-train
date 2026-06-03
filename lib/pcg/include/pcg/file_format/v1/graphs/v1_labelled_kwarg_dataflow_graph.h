@@ -4,9 +4,12 @@
 #include "pcg/file_format/v1/graphs/v1_kwarg_dataflow_graph.h"
 #include "pcg/file_format/v1/graphs/v1_labelled_kwarg_dataflow_graph.dtg.h"
 #include "utils/bidict/algorithms/bidict_from_enumerating.h"
+#include "utils/containers/map_keys.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/transform.h"
-#include "utils/graph/kwarg_dataflow_graph/algorithms/get_outgoing_kwarg_dataflow_outputs_for_node.h"
+#include "utils/containers/unordered_map_from_pairs.h"
+#include "utils/graph/kwarg_dataflow_graph/algorithms/get_all_kwarg_dataflow_outputs.h"
+#include "utils/graph/labelled_kwarg_dataflow_graph/algorithms/kwarg_dataflow_graph_view_with_labelling.h"
 #include "utils/graph/labelled_kwarg_dataflow_graph/labelled_kwarg_dataflow_graph_view.h"
 #include "utils/graph/node/algorithms.h"
 
@@ -26,16 +29,15 @@ std::pair<V1LabelledKwargDataflowGraph<NodeLabel, OutputLabel, SlotName>,
   std::unordered_map<nonnegative_int, NodeLabel> node_labels = map_values(
       nodes.as_unordered_map(), [&](Node const &n) { return g.at(n); });
 
-  std::unordered_map<nonnegative_int, std::unordered_map<SlotName, OutputLabel>>
-      output_labels = map_values(
-          nodes.as_unordered_map(),
-          [&](Node const &n) -> std::unordered_map<SlotName, OutputLabel> {
-            return map_values(
-                get_outgoing_kwarg_dataflow_outputs_for_node(g, n),
-                [&](KwargDataflowOutput<SlotName> const &o) {
-                  return g.at(o);
-                });
-          });
+  std::unordered_map<V1KwargGraphOutput<SlotName>, OutputLabel> output_labels =
+      unordered_map_from_pairs(
+          transform(get_all_kwarg_dataflow_outputs(g),
+                    [&](KwargDataflowOutput<SlotName> const &o) {
+                      return std::pair{
+                          V1KwargGraphOutput{nodes.at_r(o.node), o.slot_name},
+                          g.at(o),
+                      };
+                    }));
 
   return {
       V1LabelledKwargDataflowGraph<NodeLabel, OutputLabel, SlotName>{
@@ -48,6 +50,35 @@ template <typename NodeLabel, typename OutputLabel, typename SlotName>
 V1LabelledKwargDataflowGraph<NodeLabel, OutputLabel, SlotName> to_v1(
     LabelledKwargDataflowGraphView<NodeLabel, OutputLabel, SlotName> const &g) {
   return to_v1_including_node_numbering(g).first;
+}
+
+template <typename NodeLabel, typename OutputLabel, typename SlotName>
+std::pair<LabelledKwargDataflowGraphView<NodeLabel, OutputLabel, SlotName>,
+          std::unordered_map<nonnegative_int, Node>>
+    from_v1_including_node_numbering(
+        V1LabelledKwargDataflowGraph<NodeLabel, OutputLabel, SlotName> const
+            &v1) {
+  auto [graph_view, node_map] = from_v1_including_node_numbering(v1.graph);
+
+  std::unordered_map<Node, NodeLabel> node_labels = map_keys(
+      v1.node_labels, [&](nonnegative_int n) { return node_map.at(n); });
+
+  std::unordered_map<KwargDataflowOutput<SlotName>, OutputLabel> value_labels =
+      map_keys(v1.output_labels, [&](V1KwargGraphOutput<SlotName> const &o) {
+        return KwargDataflowOutput<SlotName>{node_map.at(o.node), o.slot_name};
+      });
+
+  return std::pair{
+      kwarg_dataflow_graph_view_with_labelling(
+          graph_view, node_labels, value_labels),
+      node_map,
+  };
+}
+
+template <typename NodeLabel, typename OutputLabel, typename SlotName>
+LabelledKwargDataflowGraphView<NodeLabel, OutputLabel, SlotName> from_v1(
+    V1LabelledKwargDataflowGraph<NodeLabel, OutputLabel, SlotName> const &v1) {
+  return from_v1_including_node_numbering(v1).first;
 }
 
 } // namespace FlexFlow
