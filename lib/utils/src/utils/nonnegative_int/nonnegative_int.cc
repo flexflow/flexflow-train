@@ -24,6 +24,10 @@ nonnegative_int::operator int() const noexcept {
   return this->value_;
 }
 
+nonnegative_int::operator size_t() const noexcept {
+  return static_cast<size_t>(this->value_);
+}
+
 bool nonnegative_int::operator<(nonnegative_int const &other) const {
   return this->value_ < other.value_;
 }
@@ -149,6 +153,14 @@ nonnegative_int nonnegative_int::operator%(nonnegative_int const &other) const {
 nonnegative_int &nonnegative_int::operator%=(nonnegative_int const &other) {
   this->value_ %= other.value_;
   return *this;
+}
+
+int nonnegative_int::int_from_nonnegative_int() const {
+  return this->value_;
+}
+
+size_t nonnegative_int::size_t_from_nonnegative_int() const {
+  return static_cast<size_t>(this->value_);
 }
 
 std::ostream &operator<<(std::ostream &os, nonnegative_int const &n) {

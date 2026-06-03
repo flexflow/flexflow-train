@@ -17,6 +17,7 @@ public:
   explicit nonnegative_int(unsigned long long int value);
 
   explicit operator int() const noexcept;
+  explicit operator size_t() const noexcept;
 
   bool operator<(nonnegative_int const &other) const;
   bool operator==(nonnegative_int const &other) const;
@@ -55,6 +56,9 @@ public:
 
   nonnegative_int operator%(nonnegative_int const &other) const;
   nonnegative_int &operator%=(nonnegative_int const &other);
+
+  int int_from_nonnegative_int() const;
+  size_t size_t_from_nonnegative_int() const;
 
   friend std::ostream &operator<<(std::ostream &os, nonnegative_int const &n);
 

@@ -12,4 +12,11 @@ template V1KwargDataflowGraph<SlotName>
     to_v1(KwargDataflowGraphView<SlotName> const &,
           std::unordered_map<Node, nonnegative_int> const &);
 
+template std::pair<KwargDataflowGraphView<SlotName>,
+                   std::unordered_map<nonnegative_int, Node>>
+    from_v1_including_node_numbering(V1KwargDataflowGraph<SlotName> const &);
+
+template KwargDataflowGraphView<SlotName>
+    from_v1(V1KwargDataflowGraph<SlotName> const &);
+
 } // namespace FlexFlow
