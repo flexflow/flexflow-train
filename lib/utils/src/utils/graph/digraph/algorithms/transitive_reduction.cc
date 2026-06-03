@@ -2,6 +2,7 @@
 #include "utils/bidict/algorithms/bidict_from_enumerating.h"
 #include "utils/bidict/algorithms/transform_keys.h"
 #include "utils/containers/is_subseteq_of.h"
+#include "utils/containers/set_intersection.h"
 #include "utils/containers/vector_of.h"
 #include "utils/graph/digraph/algorithms/get_edges.h"
 #include "utils/graph/digraph/algorithms/materialize_digraph_view.h"
@@ -18,7 +19,7 @@ DirectedEdgeMaskView::DirectedEdgeMaskView(
 
 std::unordered_set<DirectedEdge>
     DirectedEdgeMaskView::query_edges(DirectedEdgeQuery const &q) const {
-  return intersection(g.query_edges(q), this->edge_mask);
+  return set_intersection(g.query_edges(q), this->edge_mask);
 }
 
 std::unordered_set<Node>

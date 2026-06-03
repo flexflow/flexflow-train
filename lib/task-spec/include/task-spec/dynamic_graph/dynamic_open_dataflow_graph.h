@@ -61,6 +61,11 @@ std::pair<LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
 bool dynamic_open_dataflow_graphs_are_isomorphic(
     DynamicOpenDataflowGraph const &, DynamicOpenDataflowGraph const &);
 
+std::string
+    dynamic_open_dataflow_graph_as_dot(DynamicOpenDataflowGraph const &);
+void debug_print_dynamic_open_dataflow_graph_as_dot(
+    DynamicOpenDataflowGraph const &);
+
 } // namespace FlexFlow
 
 #endif

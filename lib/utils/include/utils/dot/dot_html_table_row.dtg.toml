@@ -1,0 +1,22 @@
+namespace = "FlexFlow"
+name = "DotHtmlTableRow"
+type = "struct"
+features = [
+  "eq",
+  "fmt",
+]
+
+includes = [
+  "<vector>",
+  "utils/dot/dot_html_table_cell.dtg.h",
+]
+
+src_includes = [
+  "utils/fmt/vector.h",
+  "utils/ord/vector.h",
+  "utils/hash/vector.h",
+]
+
+[[fields]]
+name = "cells"
+type = "std::vector<::FlexFlow::DotHtmlTableCell>"

@@ -1,0 +1,34 @@
+namespace = "FlexFlow"
+name = "DotHtmlTable"
+type = "struct"
+features = [
+  "eq",
+  "fmt",
+]
+
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h",
+  "utils/dot/dot_html_table_row.dtg.h",
+]
+
+src_includes = [
+  "utils/fmt/vector.h",
+  "utils/ord/vector.h",
+  "utils/hash/vector.h",
+]
+
+[[fields]]
+name = "border"
+type = "::FlexFlow::nonnegative_int"
+
+[[fields]]
+name = "cellborder"
+type = "::FlexFlow::nonnegative_int"
+
+[[fields]]
+name = "cellspacing"
+type = "::FlexFlow::nonnegative_int"
+
+[[fields]]
+name = "rows"
+type = "std::vector<::FlexFlow::DotHtmlTableRow>"

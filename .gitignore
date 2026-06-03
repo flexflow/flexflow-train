@@ -1,3 +1,6 @@
+# tag files
+tags
+
 # gdb history
 .gdb_history
 
@@ -176,7 +179,7 @@ cython_debug/
 # IDE
 .vscode/*
 
-# Docker container 
+# Docker container
 docker/config
 
 # yarn prettier module (for linting workflows)

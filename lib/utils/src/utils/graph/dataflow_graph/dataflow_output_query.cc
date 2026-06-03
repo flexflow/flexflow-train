@@ -23,8 +23,8 @@ bool dataflow_output_query_includes_dataflow_output(
 
 DataflowOutputQuery dataflow_output_query_for_output(DataflowOutput const &o) {
   return DataflowOutputQuery{
-      query_set<Node>{o.node},
-      query_set<nonnegative_int>{o.idx},
+      query_set<Node>::match_single_value(o.node),
+      query_set<nonnegative_int>::match_single_value(o.idx),
   };
 }
 

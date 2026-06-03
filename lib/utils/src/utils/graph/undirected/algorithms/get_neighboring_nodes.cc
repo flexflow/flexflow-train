@@ -5,8 +5,8 @@ namespace FlexFlow {
 
 std::unordered_set<Node> get_neighboring_nodes(UndirectedGraphView const &g,
                                                Node const &n) {
-  std::unordered_set<UndirectedEdge> edges =
-      g.query_edges(UndirectedEdgeQuery{query_set<Node>{n}});
+  std::unordered_set<UndirectedEdge> edges = g.query_edges(
+      UndirectedEdgeQuery{query_set<Node>::match_single_value(n)});
 
   std::unordered_set<Node> result =
       set_union(transform(vector_of(edges), [](UndirectedEdge const &e) {

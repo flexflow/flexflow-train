@@ -172,6 +172,11 @@ function(ff_add_benchmark_executable)
     ${FF_BENCHMARK_EXEC_NAME}
     ${SRC})
 
+  target_include_directories(
+    ${FF_BENCHMARK_EXEC_NAME}
+    PRIVATE
+    ${FF_BENCHMARK_EXEC_PRIVATE_INCLUDE})
+
   target_link_libraries(
     ${FF_BENCHMARK_EXEC_NAME}
     ${FF_BENCHMARK_EXEC_DEPS}

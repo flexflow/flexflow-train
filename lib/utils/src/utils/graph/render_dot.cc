@@ -38,17 +38,17 @@ std::string render_node_label(
   std::vector<DataflowInput> n_inputs = get_dataflow_inputs(g, n);
   std::vector<DataflowOutput> n_outputs = get_outputs(g, n);
 
-  RecordFormatter inputs_record;
+  RecordFormatter inputs_record = mk_empty_record(Orientation::HORIZONTAL);
   for (DataflowInput const &i : n_inputs) {
     inputs_record << fmt::format("<i{}>{}", i.idx, i.idx);
   }
 
-  RecordFormatter outputs_record;
+  RecordFormatter outputs_record = mk_empty_record(Orientation::HORIZONTAL);
   for (DataflowOutput const &o : n_outputs) {
     outputs_record << fmt::format("<o{}>{}", o.idx, g.at(o));
   }
 
-  RecordFormatter rec;
+  RecordFormatter rec = mk_empty_record(Orientation::VERTICAL);
   rec << inputs_record
       << try_at(g.at(n), std::string{"label"})
              .value_or(fmt::to_string(n.raw_uid))

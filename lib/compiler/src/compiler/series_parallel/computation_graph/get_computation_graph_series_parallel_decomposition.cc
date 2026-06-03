@@ -35,23 +35,15 @@ std::string render_preprocessed_computation_graph_for_sp_decomposition(
     preprocessed_digraph.add_edge(DirectedEdge{fake_node, dst.raw_node});
   }
 
-  std::function<std::string(Node const &)> get_node_label =
-      [&](Node const &n) -> std::string {
+  std::function<nlohmann::json(Node const &)> get_node_label =
+      [&](Node const &n) -> nlohmann::json {
     if (n == fake_node) {
       return "FAKE";
     }
-    LayerAttrs a = cg.raw_graph.at(n);
-    RecordFormatter r = as_dot(a.op_attrs);
 
-    if (a.name.has_value()) {
-      RecordFormatter rr;
-      rr << "Name" << a.name.value();
-      r << rr;
-    }
+    nlohmann::json result = cg.raw_graph.at(n);
 
-    std::ostringstream oss;
-    oss << r;
-    return oss.str();
+    return result;
   };
   std::string preprocessed_dot = digraph_as_dot(
       transitive_reduction(preprocessed_digraph), get_node_label);

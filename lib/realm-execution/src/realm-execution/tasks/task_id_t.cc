@@ -32,7 +32,6 @@ std::optional<task_id_t>
     get_init_task_id_for_op_attrs(PCGOperatorAttrs const &op_attrs) {
 
   return op_attrs.visit<std::optional<task_id_t>>(overload{
-      [](BatchMatmulAttrs const &) { return std::nullopt; },
       [](BatchNormAttrs const &) { return task_id_t::BATCHNORM_INIT_TASK_ID; },
       [](BroadcastAttrs const &) { return std::nullopt; },
       [](CastAttrs const &) { return std::nullopt; },
@@ -81,9 +80,6 @@ std::optional<task_id_t>
     get_fwd_task_id_for_op_attrs(PCGOperatorAttrs const &op_attrs) {
 
   return op_attrs.visit<std::optional<task_id_t>>(overload{
-      [](BatchMatmulAttrs const &) {
-        return task_id_t::BATCHMATMUL_FWD_TASK_ID;
-      },
       [](BatchNormAttrs const &) { return task_id_t::BATCHNORM_FWD_TASK_ID; },
       [](BroadcastAttrs const &) { return task_id_t::BROADCAST_FWD_TASK_ID; },
       [](CastAttrs const &) { return task_id_t::CAST_FWD_TASK_ID; },
@@ -132,9 +128,6 @@ std::optional<task_id_t>
     get_bwd_task_id_for_op_attrs(PCGOperatorAttrs const &op_attrs) {
 
   return op_attrs.visit<std::optional<task_id_t>>(overload{
-      [](BatchMatmulAttrs const &) {
-        return task_id_t::BATCHMATMUL_BWD_TASK_ID;
-      },
       [](BatchNormAttrs const &) { return task_id_t::BATCHNORM_BWD_TASK_ID; },
       [](BroadcastAttrs const &) { return task_id_t::BROADCAST_BWD_TASK_ID; },
       [](CastAttrs const &) { return task_id_t::CAST_BWD_TASK_ID; },

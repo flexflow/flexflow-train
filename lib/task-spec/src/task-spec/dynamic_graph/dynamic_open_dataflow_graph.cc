@@ -1,5 +1,8 @@
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
+#include "task-spec/dynamic_graph/serializable_dynamic_node_attrs.h"
+#include "task-spec/dynamic_graph/serializable_dynamic_value_attrs.h"
 #include "utils/containers/all_of.h"
+#include "utils/containers/concat_vectors.h"
 #include "utils/containers/contains_duplicates.h"
 #include "utils/containers/flatmap.h"
 #include "utils/containers/multiset_union.h"
@@ -10,6 +13,7 @@
 #include "utils/graph/instances/unordered_set_labelled_open_kwarg_dataflow_graph.h"
 #include "utils/graph/labelled_open_dataflow_graph/algorithms/find_isomorphism.h"
 #include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/find_isomorphism_between_labelled_open_kwarg_dataflow_graphs.h"
+#include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/labelled_open_kwarg_dataflow_graph_view_as_dot.h"
 #include "utils/graph/labelled_open_kwarg_dataflow_graph/labelled_open_kwarg_dataflow_graph.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/open_dataflow_graph/algorithms/get_inputs.h"
@@ -260,6 +264,85 @@ bool dynamic_open_dataflow_graphs_are_isomorphic(
   return find_isomorphism_between_labelled_open_kwarg_dataflow_graphs(
              lhs_dataflow_graph, rhs_dataflow_graph)
       .has_value();
+}
+
+std::string
+    dynamic_open_dataflow_graph_as_dot(DynamicOpenDataflowGraph const &g) {
+  std::pair<LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
+                                           DynamicValueAttrs,
+                                           int,
+                                           DynamicTensorSlot>,
+            bidict<Node, DynamicNodeInvocation>>
+      labelled_result =
+          labelled_open_kwarg_dataflow_graph_from_dynamic_open_dataflow_graph(
+              g);
+
+  LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
+                                 DynamicValueAttrs,
+                                 int,
+                                 DynamicTensorSlot>
+      labelled_g = labelled_result.first;
+
+  bidict<Node, DynamicNodeInvocation> invocations = labelled_result.second;
+
+  auto dot_for_training_operation_attrs =
+      [](TrainingOperationAttrs const &training_attrs) -> nlohmann::json {
+    nlohmann::json result = training_attrs;
+
+    return result;
+  };
+
+  std::function<nlohmann::json(DynamicNodeAttrs const &)> render_node_label =
+      [](DynamicNodeAttrs const &a) -> nlohmann::json {
+    nlohmann::json result = dynamic_node_attrs_to_serializable(a);
+
+    return result;
+  };
+
+  auto render_parallel_tensor_space_coord =
+      [](ParallelTensorSpaceCoordinate const &c) -> std::string {
+    std::vector<std::string> replica_dim_entries = {
+        fmt::format("+/{}", c.sum_component),
+        fmt::format("=/{}", c.discard_copy_component),
+    };
+
+    std::vector<std::string> shard_entries = transform(
+        vector_of(c.shard_components),
+        [](nonnegative_int x) -> std::string { return fmt::to_string(x); });
+
+    return (
+        "(" +
+        join_strings(concat_vectors(replica_dim_entries, shard_entries), ", ") +
+        ")");
+  };
+
+  std::function<nlohmann::json(DynamicValueAttrs const &)> render_value_label =
+      [&](DynamicValueAttrs const &a) -> nlohmann::json {
+    nlohmann::json result = dynamic_value_attrs_to_serializable(a);
+    return result;
+  };
+
+  std::function<nlohmann::json(DynamicTensorSlot const &)> render_slot_name =
+      [](DynamicTensorSlot const &slot_name) -> nlohmann::json {
+    nlohmann::json result = slot_name;
+    return result;
+  };
+
+  std::function<std::vector<DynamicTensorSlot>(
+      std::unordered_set<DynamicTensorSlot> const &)>
+      order_slots = [](std::unordered_set<DynamicTensorSlot> const &slot_names)
+      -> std::vector<DynamicTensorSlot> { return sorted(slot_names); };
+
+  return labelled_open_kwarg_dataflow_graph_view_as_dot(labelled_g,
+                                                        render_node_label,
+                                                        render_value_label,
+                                                        render_slot_name,
+                                                        order_slots);
+}
+
+void debug_print_dynamic_open_dataflow_graph_as_dot(
+    DynamicOpenDataflowGraph const &g) {
+  std::cerr << dynamic_open_dataflow_graph_as_dot(g) << std::endl;
 }
 
 } // namespace FlexFlow

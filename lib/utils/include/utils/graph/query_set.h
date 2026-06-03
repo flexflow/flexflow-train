@@ -5,7 +5,8 @@
 #include "utils/containers/contains.h"
 #include "utils/containers/filter.h"
 #include "utils/containers/filter_keys.h"
-#include "utils/containers/intersection.h"
+#include "utils/containers/set_intersection.h"
+#include "utils/containers/set_of.h"
 #include "utils/containers/set_union.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/unordered_set_of.h"
@@ -23,18 +24,33 @@ namespace FlexFlow {
 template <typename T>
 struct query_set {
   query_set() = delete;
-  query_set(T const &t) : query(std::set<T>{t}) {}
 
-  query_set(std::unordered_set<T> const &query)
-      : query(std::set<T>{query.cbegin(), query.cend()}) {}
+  static query_set<T> matchall() {
+    std::optional<std::set<T>> query_val = std::nullopt;
+    return query_set<T>{
+        query_val,
+    };
+  }
 
-  query_set(std::optional<std::unordered_set<T>> const &query)
-      : query(transform(query, [](std::unordered_set<T> const &s) {
-          return std::set<T>{s.cbegin(), s.cend()};
-        })) {}
+  static query_set<T> match_none() {
+    std::set<T> to_match = {};
 
-  query_set(std::initializer_list<T> const &l)
-      : query_set(std::unordered_set<T>{l}) {}
+    return query_set<T>{
+        std::optional<std::set<T>>{to_match},
+    };
+  }
+
+  static query_set<T> match_values_in(std::set<T> const &values) {
+    return query_set<T>{
+        std::optional<std::set<T>>{values},
+    };
+  }
+
+  static query_set<T> match_single_value(T const &val) {
+    std::set<T> vals = {val};
+
+    return query_set<T>::match_values_in(vals);
+  }
 
   friend bool operator==(query_set const &lhs, query_set const &rhs) {
     return lhs.query == rhs.query;
@@ -58,17 +74,12 @@ struct query_set {
     return std::unordered_set<T>{query_value.begin(), query_value.end()};
   }
 
-  static query_set<T> matchall() {
-    return {std::nullopt};
-  }
-
-  static query_set<T> match_none() {
-    return {std::unordered_set<T>{}};
-  }
-
   std::optional<std::set<T>> const &value() const {
     return this->query;
   }
+
+private:
+  explicit query_set(std::optional<std::set<T>> const &query) : query(query) {}
 
 private:
   std::optional<std::set<T>> query;
@@ -134,7 +145,8 @@ query_set<T> query_intersection(query_set<T> const &lhs,
   } else if (is_matchall(rhs)) {
     return lhs;
   } else {
-    return intersection(allowed_values(lhs), allowed_values(rhs));
+    return query_set<T>::match_values_in(
+        set_of(set_intersection(allowed_values(lhs), allowed_values(rhs))));
   }
 }
 
@@ -143,7 +155,8 @@ query_set<T> query_union(query_set<T> const &lhs, query_set<T> const &rhs) {
   if (is_matchall(lhs) || is_matchall(rhs)) {
     return query_set<T>::matchall();
   } else {
-    return set_union(allowed_values(lhs), allowed_values(rhs));
+    return query_set<T>::match_values_in(
+        set_of(set_union(allowed_values(lhs), allowed_values(rhs))));
   }
 }
 

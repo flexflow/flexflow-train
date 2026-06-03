@@ -5,11 +5,11 @@
 #include "utils/containers/filter.h"
 #include "utils/containers/generate_map.h"
 #include "utils/containers/get_only.h"
-#include "utils/containers/intersection.h"
 #include "utils/containers/is_subseteq_of.h"
 #include "utils/containers/keys.h"
 #include "utils/containers/maximum.h"
 #include "utils/containers/set_difference.h"
+#include "utils/containers/set_intersection.h"
 #include "utils/containers/set_union.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/values.h"
@@ -66,7 +66,7 @@ static std::unordered_set<Node>
 
   std::unordered_set<std::unordered_set<Node>> overlapping_subtrees =
       filter(subtrees, [&](std::unordered_set<Node> const &subtree) {
-        return !intersection(subtree, component).empty();
+        return !set_intersection(subtree, component).empty();
       });
 
   std::unordered_set<Node> forest = set_union(overlapping_subtrees);
@@ -89,7 +89,7 @@ static UpDownPartition
       node_roles);
 
   std::unordered_set<Node> base_down = nodes;
-  std::unordered_set<Node> base_up = intersection(
+  std::unordered_set<Node> base_up = set_intersection(
       set_union(transform(
           nodes, [&](Node const &n) { return get_ancestors(sp_pure, n); })),
       forest);

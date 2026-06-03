@@ -10,8 +10,6 @@ namespace FlexFlow {
 
 std::optional<OperatorAttributeValue> get_attribute(PCGOperatorAttrs const &,
                                                     OperatorAttributeKey);
-std::optional<OperatorAttributeValue> get_attribute(BatchMatmulAttrs const &,
-                                                    OperatorAttributeKey);
 std::optional<OperatorAttributeValue> get_attribute(BatchNormAttrs const &,
                                                     OperatorAttributeKey);
 std::optional<OperatorAttributeValue> get_attribute(BroadcastAttrs const &,

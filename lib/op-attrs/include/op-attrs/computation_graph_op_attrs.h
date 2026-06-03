@@ -3,12 +3,13 @@
 
 #include "op-attrs/computation_graph_op_attrs.dtg.h"
 #include "op-attrs/pcg_operator_attrs.dtg.h"
-#include "utils/record_formatter.h"
 
 namespace FlexFlow {
 
 OperatorType get_op_type(ComputationGraphOpAttrs const &);
-RecordFormatter as_dot(ComputationGraphOpAttrs const &);
+
+nlohmann::json cg_op_attrs_as_dot_json(ComputationGraphOpAttrs const &);
+
 std::optional<ComputationGraphOpAttrs>
     compgraph_op_attrs_from_pcg_op_attrs(PCGOperatorAttrs const &);
 

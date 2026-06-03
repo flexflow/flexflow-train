@@ -4,6 +4,8 @@
 #include "utils/containers/filtrans.h"
 #include "utils/containers/is_subseteq_of.h"
 #include "utils/containers/transform.h"
+#include "utils/graph/kwarg_dataflow_graph/algorithms/kwarg_dataflow_graph_data.dtg.h"
+#include "utils/graph/kwarg_dataflow_graph/algorithms/kwarg_dataflow_graph_data.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/open_kwarg_dataflow_graph_data.dtg.h"
 
 namespace FlexFlow {
@@ -25,6 +27,26 @@ void require_open_kwarg_dataflow_graph_data_is_valid(
           });
 
   ASSERT(is_subseteq_of(inputs_from_edges, data.inputs));
+
+  require_kwarg_dataflow_graph_data_is_valid(
+      kwarg_dataflow_graph_data_from_open(data));
+}
+
+template <typename GraphInputName, typename SlotName>
+KwargDataflowGraphData<SlotName> kwarg_dataflow_graph_data_from_open(
+    OpenKwargDataflowGraphData<GraphInputName, SlotName> const &open_data) {
+
+  return KwargDataflowGraphData{
+      /*nodes=*/open_data.nodes,
+      /*edges=*/
+      filtrans(
+          open_data.edges,
+          [](OpenKwargDataflowEdge<GraphInputName, SlotName> const &open_edge)
+              -> std::optional<KwargDataflowEdge<SlotName>> {
+            return open_edge.try_require_internal_edge();
+          }),
+      /*outputs=*/open_data.outputs,
+  };
 }
 
 } // namespace FlexFlow

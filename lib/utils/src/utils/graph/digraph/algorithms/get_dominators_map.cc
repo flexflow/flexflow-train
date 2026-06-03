@@ -1,6 +1,7 @@
 #include "utils/graph/digraph/algorithms/get_dominators_map.h"
 #include "utils/containers/generate_map.h"
 #include "utils/containers/restrict_keys.h"
+#include "utils/containers/set_intersection.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/values.h"
 #include "utils/graph/digraph/algorithms/get_initial_nodes.h"
@@ -33,7 +34,7 @@ std::unordered_map<Node, std::unordered_set<Node>>
     std::unordered_set<Node> old_result_entry = result.at(n);
 
     result.at(n) =
-        intersection(transform(get_predecessors(g, n), [&](Node const &n) {
+        set_intersection(transform(get_predecessors(g, n), [&](Node const &n) {
           return result.at(n);
         })).value_or(std::unordered_set<Node>{});
     result.at(n).insert(n);

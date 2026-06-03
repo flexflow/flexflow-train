@@ -1,0 +1,35 @@
+namespace = "FlexFlow"
+name = "MappedParallelLayerAttrs"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+]
+
+includes = [
+  "pcg/mapped_parallel_computation_graph/mapped_operator_task_group.h",
+  "op-attrs/pcg_operator_attrs.dtg.h",
+  "utils/stack_string.h",
+  "<optional>",
+]
+
+src_includes = [
+  "utils/fmt/optional.h",
+  "utils/json/optional.h",
+  "utils/rapidcheck/optional.h",
+]
+
+[[fields]]
+name = "op_attrs"
+type = "::FlexFlow::PCGOperatorAttrs"
+
+[[fields]]
+name = "name"
+type = "std::optional<::FlexFlow::stack_string<MAX_OPNAME>>"
+
+[[fields]]
+name = "mapping"
+type = "::FlexFlow::MappedOperatorTaskGroup"

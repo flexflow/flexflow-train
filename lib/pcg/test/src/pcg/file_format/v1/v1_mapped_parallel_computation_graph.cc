@@ -6,6 +6,7 @@
 #include "pcg/machine_space_coordinate.dtg.h"
 #include "pcg/mapped_parallel_computation_graph/mapped_operator_task_group.h"
 #include "pcg/mapped_parallel_computation_graph/mapped_parallel_computation_graph.dtg.h"
+#include "pcg/mapped_parallel_computation_graph/mapped_parallel_computation_graph.h"
 #include "pcg/mapped_parallel_computation_graph/operator_atomic_task_shard_binding.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "pcg/parallel_computation_graph/parallel_layer_added_result.dtg.h"
@@ -57,10 +58,10 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    MappedParallelComputationGraph mpcg = MappedParallelComputationGraph{
-        /*pcg=*/pcg,
-        /*mapped_tasks=*/{{layer, task_group}},
-    };
+    MappedParallelComputationGraph mpcg =
+        mapped_pcg_from_pcg_and_mapped_op_task_groups(
+            /*pcg=*/pcg,
+            /*mapped_tasks=*/{{layer, task_group}});
 
     V1MappedParallelComputationGraph v1_mpcg = to_v1(mpcg);
 
@@ -78,7 +79,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     SUBCASE("MappedParallelComputationGraph round-trips via from_v1") {
       MappedParallelComputationGraph result = from_v1(v1_mpcg);
-      CHECK(pcgs_are_isomorphic(mpcg.pcg, result.pcg));
+      CHECK(mapped_pcgs_are_isomorphic(mpcg, result));
     }
   }
 }

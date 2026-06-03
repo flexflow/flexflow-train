@@ -10,8 +10,6 @@
 
 namespace FlexFlow {
 
-RecordFormatter as_dot(WeightAttrs const &);
-
 TensorShape get_output_shape(WeightAttrs const &);
 ParallelTensorShape get_output_parallel_tensor_shape(WeightAttrs const &);
 

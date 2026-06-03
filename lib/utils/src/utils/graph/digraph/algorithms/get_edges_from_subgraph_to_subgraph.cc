@@ -1,5 +1,6 @@
 #include "utils/graph/digraph/algorithms/get_edges_from_subgraph_to_subgraph.h"
 #include "utils/containers/are_disjoint.h"
+#include "utils/containers/set_of.h"
 
 namespace FlexFlow {
 
@@ -17,8 +18,8 @@ std::unordered_set<DirectedEdge> get_edges_from_subgraph_to_subgraph(
   }
 
   return g.query_edges(DirectedEdgeQuery{
-      /*srcs=*/query_set<Node>{src_subgraph},
-      /*dsts=*/query_set<Node>{dst_subgraph},
+      /*srcs=*/query_set<Node>::match_values_in(set_of(src_subgraph)),
+      /*dsts=*/query_set<Node>::match_values_in(set_of(dst_subgraph)),
   });
 }
 

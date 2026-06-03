@@ -8,7 +8,11 @@ std::unordered_set<Node> get_nodes(GraphView const &g) {
 }
 
 bool has_node(GraphView const &g, Node const &n) {
-  return !g.query_nodes(NodeQuery{{n}}).empty();
+  NodeQuery query = NodeQuery{
+      query_set<Node>::match_single_value(n),
+  };
+
+  return !g.query_nodes(query).empty();
 }
 
 size_t num_nodes(GraphView const &g) {

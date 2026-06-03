@@ -21,11 +21,6 @@ public:
           std::optional<std::string> const &name = std::nullopt);
 
   parallel_tensor_guid_t
-      batch_matmul(parallel_tensor_guid_t const &a,
-                   parallel_tensor_guid_t const &b,
-                   std::optional<std::string> const &name = std::nullopt);
-
-  parallel_tensor_guid_t
       cast(parallel_tensor_guid_t const &input,
            DataType result_type,
            std::optional<std::string> const &name = std::nullopt);

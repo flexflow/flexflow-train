@@ -30,7 +30,6 @@ std::unordered_set<OptimizerSlotName>
           -> std::unordered_set<OptimizerSlotName> {
         if (sgd_attrs.momentum > 0.0f) {
           return {OptimizerSlotName::SGD_V};
-          ;
         } else {
           return {};
         }

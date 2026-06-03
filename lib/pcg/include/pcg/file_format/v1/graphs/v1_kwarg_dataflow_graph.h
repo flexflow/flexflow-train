@@ -4,6 +4,8 @@
 #include "pcg/file_format/v1/graphs/v1_graph_edge.dtg.h"
 #include "pcg/file_format/v1/graphs/v1_graph_output.dtg.h"
 #include "pcg/file_format/v1/graphs/v1_kwarg_dataflow_graph.dtg.h"
+#include "pcg/file_format/v1/graphs/v1_kwarg_graph_edge.dtg.h"
+#include "pcg/file_format/v1/graphs/v1_kwarg_graph_output.dtg.h"
 #include "utils/bidict/algorithms/bidict_from_enumerating.h"
 #include "utils/containers/enumerate.h"
 #include "utils/containers/generate_map.h"
@@ -35,19 +37,19 @@ template <typename SlotName>
 V1KwargDataflowGraph<SlotName>
     to_v1(KwargDataflowGraphView<SlotName> const &g,
           std::unordered_map<Node, nonnegative_int> const &nodes) {
-  std::unordered_set<V1GraphEdge<SlotName>> edges =
+  std::unordered_set<V1KwargGraphEdge<SlotName>> edges =
       transform(get_all_kwarg_dataflow_edges(g),
                 [&](KwargDataflowEdge<SlotName> const &e) {
-                  return V1GraphEdge{nodes.at(e.src.node),
-                                     e.src.slot_name,
-                                     nodes.at(e.dst.node),
-                                     e.dst.slot_name};
+                  return V1KwargGraphEdge{nodes.at(e.src.node),
+                                          e.src.slot_name,
+                                          nodes.at(e.dst.node),
+                                          e.dst.slot_name};
                 });
 
-  std::unordered_set<V1GraphOutput<SlotName>> outputs =
+  std::unordered_set<V1KwargGraphOutput<SlotName>> outputs =
       transform(get_all_kwarg_dataflow_outputs(g),
                 [&](KwargDataflowOutput<SlotName> const &o) {
-                  return V1GraphOutput{nodes.at(o.node), o.slot_name};
+                  return V1KwargGraphOutput{nodes.at(o.node), o.slot_name};
                 });
 
   return V1KwargDataflowGraph<SlotName>{
@@ -68,7 +70,7 @@ std::pair<KwargDataflowGraphView<SlotName>,
   std::unordered_set<Node> node_set = unordered_set_of(values(node_map));
 
   std::unordered_set<OpenKwargDataflowEdge<int, SlotName>> edges =
-      transform(v1.edges, [](V1GraphEdge<SlotName> const &e) {
+      transform(v1.edges, [](V1KwargGraphEdge<SlotName> const &e) {
         Node srcNode = Node{e.srcNode.size_t_from_nonnegative_int()};
         Node dstNode = Node{e.dstNode.size_t_from_nonnegative_int()};
         return OpenKwargDataflowEdge<int, SlotName>{KwargDataflowEdge<SlotName>{
@@ -78,7 +80,7 @@ std::pair<KwargDataflowGraphView<SlotName>,
       });
 
   std::unordered_set<KwargDataflowOutput<SlotName>> outputs =
-      transform(v1.outputs, [](V1GraphOutput<SlotName> const &o) {
+      transform(v1.outputs, [](V1KwargGraphOutput<SlotName> const &o) {
         Node n = Node{o.node.size_t_from_nonnegative_int()};
         return KwargDataflowOutput<SlotName>{n, o.slot_name};
       });

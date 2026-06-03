@@ -18,7 +18,6 @@ includes = [
   "realm-execution/realm.h",
   "task-spec/device_specific_per_device_op_state.dtg.h",
   "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h",
-  "task-spec/ff_iteration_config.dtg.h",
   "task-spec/per_device_op_state.dtg.h",
 ]
 
@@ -37,10 +36,6 @@ type = "::FlexFlow::ProfilingSettings"
 [[fields]]
 name = "device_handle"
 type = "::FlexFlow::DeviceSpecificPtr<::FlexFlow::ManagedPerDeviceFFHandle>"
-
-[[fields]]
-name = "iteration_config"
-type = "::FlexFlow::FFIterationConfig"
 
 [[fields]]
 name = "optimizer_attrs"
