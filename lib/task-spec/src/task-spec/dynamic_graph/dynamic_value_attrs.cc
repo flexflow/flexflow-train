@@ -15,7 +15,7 @@ DynamicValueAttrs
 
 DynamicValueAttrs decide_dynamic_value_attrs_mapping(
     DynamicValueAttrs const &attrs,
-    OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> const &mapping)
+    bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> const &mapping)
 {
   ASSERT(!attrs.mapping.has_value());
 

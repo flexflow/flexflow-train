@@ -19,6 +19,8 @@
 #include "utils/containers/transform.h"
 #include "utils/optional.h"
 #include "task-spec/dynamic_graph/training_operation_attrs.h"
+#include "utils/bidict/algorithms/bidict_from_unstructured_relation.h"
+#include "utils/bidict/algorithms/unstructured_relation_from_bidict.h"
 
 namespace FlexFlow {
 
@@ -92,10 +94,10 @@ static std::pair<DynamicValueAttrs, DynamicValueAttrs>
                                               DynamicValueAttrs const &output) {
   std::unordered_set<
       std::pair<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>>
-      input_mapping = unstructured_relation_from_one_to_many(assert_unwrap(input.mapping));
+      input_mapping = unstructured_relation_from_bidict(assert_unwrap(input.mapping));
   std::unordered_set<
       std::pair<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>>
-      output_mapping = unstructured_relation_from_one_to_many(assert_unwrap(output.mapping));
+      output_mapping = unstructured_relation_from_bidict(assert_unwrap(output.mapping));
 
   // Exclude the point shared between the input and output mappings, because
   // those will not result in actual copies once shard expansion is performed
@@ -105,11 +107,11 @@ static std::pair<DynamicValueAttrs, DynamicValueAttrs>
 
   DynamicValueAttrs filtered_input = input;
   filtered_input.mapping =
-      one_to_many_from_unstructured_relation(set_difference(input_mapping, remove));
+      bidict_from_unstructured_relation(set_difference(input_mapping, remove));
 
   DynamicValueAttrs filtered_output = output;
   filtered_output.mapping =
-      one_to_many_from_unstructured_relation(set_difference(output_mapping, remove));
+      bidict_from_unstructured_relation(set_difference(output_mapping, remove));
 
   return std::pair{filtered_input, filtered_output};
 }

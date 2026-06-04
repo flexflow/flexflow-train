@@ -7,7 +7,6 @@
 #include "pcg/mapped_parallel_computation_graph/operator_atomic_task_shard_binding.dtg.h"
 #include "utils/bidict/bidict.h"
 #include <nlohmann/json.hpp>
-#include "utils/one_to_many/one_to_many.h"
 
 namespace FlexFlow {
 
@@ -39,7 +38,7 @@ private:
   friend struct ::std::hash<MappedOperatorTaskGroup>;
 };
 
-OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
+bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
     get_tensor_bindings_for_slot_name(MappedOperatorTaskGroup const &,
                                       TensorSlotName const &);
 

@@ -10,15 +10,14 @@
 #include "utils/containers/binary_merge_disjoint_maps.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.h"
 #include "utils/containers/map_from_unordered.h"
-#include "utils/one_to_many/one_to_many_filter_keys.h"
 #include "task-spec/dynamic_graph/training_operation_attrs.h"
-#include "utils/one_to_many/require_one_to_many_is_bijection.h"
 #include "pcg/mapped_parallel_computation_graph/operator_atomic_task_shard_binding.h"
 #include "utils/bidict/algorithms/bidict_filter_values.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
 #include "utils/containers/merge_disjoint_maps.h"
 #include "utils/containers/map_keys.h"
 #include "utils/containers/require_only_key.h"
+#include "utils/containers/set_of.h"
 
 namespace FlexFlow {
 
@@ -118,16 +117,6 @@ bool graph_is_fully_shard_expanded(DynamicOpenDataflowGraph const &g) {
                                       slot_is_shard_expanded);
 }
 
-static OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
-    restrict_tensor_mapping_keys_to_coord(
-        OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> const
-            &mapping,
-        ParallelTensorSpaceCoordinate const &parallel_tensor_coord) {
-  return one_to_many_filter_keys(mapping, [&](ParallelTensorSpaceCoordinate const &p) {
-    return p == parallel_tensor_coord;
-  });
-}
-
 static DynamicNodeInvocationShardingInfo invocation_sharding_info_for_binding(
     DynamicNodeInvocation const &i,
     MachineSpaceCoordinate const &machine_coord,
@@ -140,7 +129,7 @@ static DynamicNodeInvocationShardingInfo invocation_sharding_info_for_binding(
 
     return DynamicValueAttrsShardingInfo{
       /*shard_coord=*/parallel_tensor_coord,
-      /*mapping=*/restrict_tensor_mapping_keys_to_coord(v.mapping.value(), parallel_tensor_coord),
+      /*mapping=*/v.mapping.value().at_l(parallel_tensor_coord),
     };
   };
 
@@ -171,14 +160,6 @@ static DynamicNodeInvocation shard_invocation_for_binding(
 
     DynamicValueAttrs result = v;
     result.shard_coord = parallel_tensor_coord;
-    result.mapping = transform(
-        v.mapping,
-        [&](OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> const &mapping)
-          -> OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
-        {
-          return restrict_tensor_mapping_keys_to_coord(mapping,
-                                                       parallel_tensor_coord);
-        });
     return result;
   };
 
@@ -200,13 +181,13 @@ static std::set<DynamicNodeInvocationShardingInfo>
   auto [input_slot, input] = get_only(i.inputs);
   auto [output_slot, output] = get_only(i.outputs);
 
-  OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> input_mapping =
+  bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> input_mapping =
       assert_unwrap(input.mapping);
   require_same(input_mapping.left_values(),
                assert_unwrap(output.mapping).left_values());
 
   return transform(
-      input_mapping.left_values(),
+      set_of(input_mapping.left_values()),
       [&](ParallelTensorSpaceCoordinate const &p) -> DynamicNodeInvocationShardingInfo {
         // The machine coord for a copy is inherently nebulous because it
         // doesn't strictly run in any single location. Further, Realm has the
@@ -215,7 +196,7 @@ static std::set<DynamicNodeInvocationShardingInfo>
         // because we expect this to align with the most efficient way to issue
         // copies in Realm, although the current Realm backend uses a
         // centralized controller and thus issues copies all from a single node.
-        MachineSpaceCoordinate machine_coord = get_only(input_mapping.at_l(p));
+        MachineSpaceCoordinate machine_coord = input_mapping.at_l(p);
 
         return invocation_sharding_info_for_binding(i,
                                             machine_coord,
@@ -253,14 +234,12 @@ static std::set<DynamicNodeInvocationShardingInfo>
   DynamicValueAttrs output = require_only_key(i.outputs, expected_output_slot);
 
   bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
-    input_value_mapping = require_one_to_many_is_bijection(
-      assert_unwrap(input.mapping));
+    input_value_mapping = assert_unwrap(input.mapping);
 
   std::set<ParallelTensorSpaceCoordinate> input_tensor_shards = set_of(input_value_mapping.left_values());
-  
+
   bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
-    output_value_mapping = require_one_to_many_is_bijection(
-      assert_unwrap(output.mapping));
+    output_value_mapping = assert_unwrap(output.mapping);
 
   auto get_task_shard_machine_coords_for_input_tensor_shard
     = [&](ParallelTensorSpaceCoordinate const &input_tensor_shard)
@@ -291,12 +270,7 @@ static std::set<DynamicNodeInvocationShardingInfo>
 
                      return DynamicValueAttrsShardingInfo{
                        /*shard_coord=*/pc,
-                       /*mapping=*/OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>{
-                         {
-                           pc,
-                           {mc},
-                         },
-                       },
+                       /*mapping=*/mc,
                      };
                    });
 
@@ -318,15 +292,10 @@ static std::set<DynamicNodeInvocationShardingInfo>
 
     DynamicValueAttrsShardingInfo input_sharding_info = DynamicValueAttrsShardingInfo{
       /*shard_coord=*/c,
-      /*mapping=*/OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>{
-        {
-          c,
-          {input_value_mapping.at_l(c)},
-        },
-      },
+      /*mapping=*/input_value_mapping.at_l(c),
     };
 
-    std::map<DynamicTensorSlot, DynamicValueAttrsShardingInfo> sharding_infos = 
+    std::map<DynamicTensorSlot, DynamicValueAttrsShardingInfo> sharding_infos =
       binary_merge_disjoint_maps(
         keyed_output_sharding_infos,
         std::map<DynamicTensorSlot, DynamicValueAttrsShardingInfo>{
@@ -368,12 +337,10 @@ static std::set<DynamicNodeInvocationShardingInfo>
   DynamicValueAttrs input_grad = require_only_key(i.outputs, expected_input_grad_slot);
 
   bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
-    output_grad_value_mapping = require_one_to_many_is_bijection(
-      assert_unwrap(output_grad.mapping));
+    output_grad_value_mapping = assert_unwrap(output_grad.mapping);
 
   bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
-    input_grad_value_mapping = require_one_to_many_is_bijection(
-      assert_unwrap(input_grad.mapping));
+    input_grad_value_mapping = assert_unwrap(input_grad.mapping);
 
   std::set<ParallelTensorSpaceCoordinate> input_grad_tensor_shards = set_of(input_grad_value_mapping.left_values());
 
@@ -406,12 +373,7 @@ static std::set<DynamicNodeInvocationShardingInfo>
 
                      return DynamicValueAttrsShardingInfo{
                        /*shard_coord=*/pc,
-                       /*mapping=*/OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>{
-                         {
-                           pc,
-                           {mc},
-                         },
-                       },
+                       /*mapping=*/mc,
                      };
                    });
 
@@ -433,15 +395,10 @@ static std::set<DynamicNodeInvocationShardingInfo>
 
     DynamicValueAttrsShardingInfo input_grad_sharding_info = DynamicValueAttrsShardingInfo{
       /*shard_coord=*/c,
-      /*mapping=*/OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>{
-        {
-          c,
-          {input_grad_value_mapping.at_l(c)},
-        },
-      },
+      /*mapping=*/input_grad_value_mapping.at_l(c),
     };
 
-    std::map<DynamicTensorSlot, DynamicValueAttrsShardingInfo> sharding_infos = 
+    std::map<DynamicTensorSlot, DynamicValueAttrsShardingInfo> sharding_infos =
       binary_merge_disjoint_maps(
         keyed_output_grad_sharding_infos,
         std::map<DynamicTensorSlot, DynamicValueAttrsShardingInfo>{
@@ -514,7 +471,17 @@ DynamicValueAttrs apply_dynamic_value_attrs_sharding_info(
 {
   DynamicValueAttrs result = value_attrs;
   result.shard_coord = value_sharding_info.shard_coord;
-  result.mapping = value_sharding_info.mapping;
+
+  {
+    bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> value_mapping = 
+      assert_unwrap(result.mapping);
+    
+    MachineSpaceCoordinate from_mapping = value_mapping.at_l(value_sharding_info.shard_coord);
+    MachineSpaceCoordinate from_sharding_info = value_sharding_info.mapping;
+
+    ASSERT(from_mapping == from_sharding_info);
+  }
+
   return result;
 }
 

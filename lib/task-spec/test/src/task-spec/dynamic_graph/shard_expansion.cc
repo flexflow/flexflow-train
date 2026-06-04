@@ -7,8 +7,8 @@
 #include <doctest/doctest.h>
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
 #include "op-attrs/ops/element_unary.h"
-#include "utils/one_to_many/one_to_many_filter_keys.h"
-#include "utils/one_to_many/one_to_many_filter_values.h"
+#include "utils/bidict/algorithms/bidict_filter_keys.h"
+#include "utils/bidict/algorithms/bidict_filter_values.h"
 #include "utils/containers/map_from_pairs.h"
 #include "utils/containers/binary_merge_disjoint_maps.h"
 
@@ -50,16 +50,16 @@ DynamicTensorSlot mk_slot(TensorSlotName const &slot_name,
 DynamicValueAttrs
     mk_value(size_t src_node_id,
              TensorSlotName src_slot_name,
-             OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> const &tensor_binding,
+             bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> const &tensor_binding,
              std::optional<ParallelTensorSpaceCoordinate> const &shard_coord,
              std::optional<DynamicTensorRole> const &role = std::nullopt) {
 
-  OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> mapping = tensor_binding;
+  bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> mapping = tensor_binding;
   if (shard_coord.has_value()) {
-    mapping = one_to_many_filter_keys(mapping,
-                                      [&](ParallelTensorSpaceCoordinate const &p) {
-                                        return p == shard_coord.value();
-                                      });
+    mapping = bidict_filter_keys(mapping,
+                                 [&](ParallelTensorSpaceCoordinate const &p) {
+                                   return p == shard_coord.value();
+                                 });
   }
 
   return DynamicValueAttrs{
@@ -87,7 +87,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             std::optional<ParallelTensorSpaceCoordinate> const &shard_coord,
             std::optional<DynamicTensorRole> const &role = std::nullopt)
         -> DynamicValueAttrs {
-      OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
+      bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
           tensor_binding = get_tensor_bindings_for_slot_name(mapped_task_group,
                                                              use_slot_name);
       return mk_value(src_node_id, src_slot_name, tensor_binding, shard_coord, role);
@@ -95,21 +95,17 @@ TEST_SUITE(FF_TEST_SUITE) {
 
     auto mk_sharding_info = [&](TensorSlotName slot_name,
                                 ParallelTensorSpaceCoordinate const &shard_coord,
-                                MappedOperatorTaskGroup const &mapped_op_task_group,
-                                MachineSpaceCoordinate const &device_coord)
+                                MappedOperatorTaskGroup const &mapped_op_task_group)
       -> std::pair<DynamicTensorSlot, DynamicValueAttrsShardingInfo>
     {
-      OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
+      bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
           tensor_binding = get_tensor_bindings_for_slot_name(mapped_op_task_group,
                                                              slot_name);
       return std::pair{
         mk_slot(slot_name),
         DynamicValueAttrsShardingInfo{
           /*shard_coord=*/shard_coord,
-          /*mapping=*/one_to_many_filter_values(tensor_binding,
-                                                [&](MachineSpaceCoordinate const &c) -> bool {
-                                                  return device_coord == c;
-                                                }),
+          /*mapping=*/tensor_binding.at_l(shard_coord),
         },
       };
     };
@@ -251,10 +247,10 @@ TEST_SUITE(FF_TEST_SUITE) {
         return DynamicNodeInvocationShardingInfo{
           /*device_coord=*/nonempty_set{device_coord},
           /*value_sharding=*/{
-            mk_sharding_info(TensorSlotName::INPUT, input_shard_coord, mapped_task_group, device_coord),
-            mk_sharding_info(TensorSlotName::WEIGHT, weight_shard_coord, mapped_task_group, device_coord),
-            mk_sharding_info(TensorSlotName::OUTPUT_1, output_1_shard_coord, mapped_task_group, device_coord),
-            mk_sharding_info(TensorSlotName::OUTPUT_2, output_2_shard_coord, mapped_task_group, device_coord),
+            mk_sharding_info(TensorSlotName::INPUT, input_shard_coord, mapped_task_group),
+            mk_sharding_info(TensorSlotName::WEIGHT, weight_shard_coord, mapped_task_group),
+            mk_sharding_info(TensorSlotName::OUTPUT_1, output_1_shard_coord, mapped_task_group),
+            mk_sharding_info(TensorSlotName::OUTPUT_2, output_2_shard_coord, mapped_task_group),
           },
         };
       };
@@ -289,14 +285,14 @@ TEST_SUITE(FF_TEST_SUITE) {
       ParallelTensorSpaceCoordinate pt1 = mk_pt_coord(0_n, 0_n, 0_n, 0_n);
       ParallelTensorSpaceCoordinate pt2 = mk_pt_coord(0_n, 1_n, 0_n, 0_n);
 
-      OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> src_binding{
-          {pt1, {mc1}},
-          {pt2, {mc2}},
+      bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> src_binding{
+          {pt1, mc1},
+          {pt2, mc2},
       };
 
-      OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> dst_binding{
-          {pt1, {mc3}},
-          {pt2, {mc4}},
+      bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> dst_binding{
+          {pt1, mc3},
+          {pt2, mc4},
       };
 
       DynamicNodeInvocation input = DynamicNodeInvocation{
@@ -339,20 +335,14 @@ TEST_SUITE(FF_TEST_SUITE) {
               mk_slot(TensorSlotName::INPUT),
               DynamicValueAttrsShardingInfo{
                 tensor_shard_coord,
-                one_to_many_filter_keys(src_binding,
-                                        [&](ParallelTensorSpaceCoordinate const &pt_coord) -> bool {
-                                          return pt_coord == tensor_shard_coord;
-                                        }),
+                src_binding.at_l(tensor_shard_coord),
               },
             },
             {
               mk_slot(TensorSlotName::OUTPUT),
               DynamicValueAttrsShardingInfo{
                 tensor_shard_coord,
-                one_to_many_filter_keys(dst_binding,
-                                        [&](ParallelTensorSpaceCoordinate const &pt_coord) -> bool {
-                                          return pt_coord == tensor_shard_coord;
-                                        }),
+                dst_binding.at_l(tensor_shard_coord),
               },
             },
           },
@@ -418,16 +408,16 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
 
       SUBCASE("fwd") {
-        OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> src_binding{
-            {pt1, {mc1}},
-            {pt2, {mc2}},
+        bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> src_binding{
+            {pt1, mc1},
+            {pt2, mc2},
         };
 
-        OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> dst_binding{
-            {pt1, {mc1}},
-            {pt2, {mc2}},
-            {pt3, {mc3}},
-            {pt4, {mc4}},
+        bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> dst_binding{
+            {pt1, mc1},
+            {pt2, mc2},
+            {pt3, mc3},
+            {pt4, mc4},
         };
 
         DynamicNodeInvocation input = DynamicNodeInvocation{
@@ -484,10 +474,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             },
             DynamicValueAttrsShardingInfo{
               dst_binding.at_r(mc),
-              one_to_many_filter_keys(dst_binding,
-                                      [&](ParallelTensorSpaceCoordinate const &pt_coord) -> bool {
-                                        return pt_coord == dst_binding.at_r(mc);
-                                      }),
+              mc,
             },
           };
         };
@@ -511,11 +498,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                     },
                     DynamicValueAttrsShardingInfo{
                       input_shard_coord,
-                      one_to_many_filter_keys(
-                        src_binding,
-                        [&](ParallelTensorSpaceCoordinate const &pt_coord) -> bool {
-                          return pt_coord == input_shard_coord;
-                        }),
+                      src_binding.at_l(input_shard_coord),
                     },
                   },
                 },
@@ -533,16 +516,16 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SUBCASE("bwd") {
-        OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> output_grad_binding{
-            {pt1, {mc1}},
-            {pt2, {mc2}},
-            {pt3, {mc3}},
-            {pt4, {mc4}},
+        bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> output_grad_binding{
+            {pt1, mc1},
+            {pt2, mc2},
+            {pt3, mc3},
+            {pt4, mc4},
         };
 
-        OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> input_grad_binding{
-            {pt1, {mc1}},
-            {pt2, {mc2}},
+        bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate> input_grad_binding{
+            {pt1, mc1},
+            {pt2, mc2},
         };
 
         DynamicNodeInvocation input = DynamicNodeInvocation{
@@ -598,10 +581,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             },
             DynamicValueAttrsShardingInfo{
               output_grad_binding.at_r(mc),
-              one_to_many_filter_keys(output_grad_binding,
-                                      [&](ParallelTensorSpaceCoordinate const &pt_coord) -> bool {
-                                        return pt_coord == output_grad_binding.at_r(mc);
-                                      }),
+              mc,
             },
           };
         };
@@ -625,11 +605,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                     },
                     DynamicValueAttrsShardingInfo{
                       input_grad_shard_coord,
-                      one_to_many_filter_keys(
-                        input_grad_binding,
-                        [&](ParallelTensorSpaceCoordinate const &pt_coord) -> bool {
-                          return pt_coord == input_grad_shard_coord;
-                        }),
+                      input_grad_binding.at_l(input_grad_shard_coord),
                     },
                   },
                 },

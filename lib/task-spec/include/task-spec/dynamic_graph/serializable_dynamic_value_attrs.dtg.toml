@@ -15,7 +15,7 @@ includes = [
   "op-attrs/parallel_tensor_shape.dtg.h",
   "op-attrs/parallel_tensor_space_coordinate.dtg.h",
   "pcg/machine_space_coordinate.dtg.h",
-  "utils/one_to_many/one_to_many.h",
+  "utils/bidict/bidict.h",
   "task-spec/dynamic_graph/dynamic_tensor_role.dtg.h",
 ]
 
@@ -38,7 +38,7 @@ type = "std::optional<::FlexFlow::ParallelTensorSpaceCoordinate>"
 
 [[fields]]
 name = "mapping"
-type = "std::optional<::FlexFlow::OneToMany<::FlexFlow::ParallelTensorSpaceCoordinate, ::FlexFlow::MachineSpaceCoordinate>>"
+type = "std::optional<::FlexFlow::bidict<::FlexFlow::ParallelTensorSpaceCoordinate, ::FlexFlow::MachineSpaceCoordinate>>"
 
 [[fields]]
 name = "role"

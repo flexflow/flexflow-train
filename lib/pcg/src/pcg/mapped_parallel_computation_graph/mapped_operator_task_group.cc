@@ -19,7 +19,7 @@
 #include "utils/bidict/algorithms/right_entries.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/unordered_set_of.h"
-#include "utils/many_to_one/invert_many_to_one.h"
+#include "utils/bidict/algorithms/bidict_from_unstructured_relation.h"
 
 namespace FlexFlow {
 
@@ -98,7 +98,7 @@ bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding> const &
   return this->shard_bindings;
 }
 
-OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
+bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
     get_tensor_bindings_for_slot_name(MappedOperatorTaskGroup const &task_group,
                                       TensorSlotName const &slot_name) {
   std::set<TensorSlotName> slot_names = get_slot_names_for_task_group(task_group);
@@ -106,11 +106,11 @@ OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
 
   std::unordered_map<MachineSpaceCoordinate, ParallelTensorSpaceCoordinate> m =
     map_values(task_group.get_shard_bindings().as_unordered_map(),
-                    [&](OperatorAtomicTaskShardBinding const &b) -> ParallelTensorSpaceCoordinate {
-                      return ptensor_space_coord_for_slot_name(b, slot_name);
-                    });
+               [&](OperatorAtomicTaskShardBinding const &b) -> ParallelTensorSpaceCoordinate {
+                 return ptensor_space_coord_for_slot_name(b, slot_name);
+               });
 
-  return invert_many_to_one(many_to_one_from_unstructured_relation(unordered_set_of(m)));
+  return bidict_from_unstructured_relation(unordered_set_of(m)).reversed();
 }
 
 std::set<TensorSlotName> get_slot_names_for_task_group(MappedOperatorTaskGroup const &g) {

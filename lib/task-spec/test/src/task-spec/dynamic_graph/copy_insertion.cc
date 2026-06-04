@@ -452,10 +452,6 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       DynamicValueAttrs graph_input_unmapped =
           mk_value(0, TensorSlotName::OUTPUT);
-      DynamicValueAttrs graph_input_use_mapped =
-          decide_dynamic_value_attrs_mapping(
-            graph_input_unmapped,
-            get_tensor_bindings_for_slot_name(invocation_mapping, TensorSlotName::INPUT));
 
       DynamicValueAttrs invocation_output_unmapped =
           mk_value(invocation_id, TensorSlotName::OUTPUT);
@@ -502,10 +498,10 @@ TEST_SUITE(FF_TEST_SUITE) {
             graph_input_unmapped,
             decide_dynamic_value_attrs_mapping(
               graph_input_unmapped,
-              OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>{
+              bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>{
                 {
                   mc_input_coord,
-                  {mc3},
+                  mc3,
                 },
               })
           },
@@ -521,118 +517,5 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       CHECK(result_j == correct_j);
     }
-
-    // SUBCASE("reduction operator") {
-
-    //   auto mk_shard_binding = [&](ParallelTensorSpaceCoordinate const &c1,
-    //                               ParallelTensorSpaceCoordinate const &c2)
-    //       -> OperatorAtomicTaskShardBinding {
-    //     return OperatorAtomicTaskShardBinding{
-    //         /*tensor_coords=*/{
-    //             {
-    //                 TensorSlotName::INPUT,
-    //                 c1,
-    //             },
-    //             {
-    //                 TensorSlotName::OUTPUT,
-    //                 c2,
-    //             },
-    //         },
-    //     };
-    //   };
-
-    //   ParallelTensorSpaceCoordinate mc1_input_coord =
-    //       mk_pt_coord(0_n, 0_n, 0_n, 0_n);
-    //   ParallelTensorSpaceCoordinate mc2_input_coord =
-    //       mk_pt_coord(1_n, 0_n, 0_n, 0_n);
-
-    //   ParallelTensorSpaceCoordinate mc_output_coord =
-    //       mk_pt_coord(0_n, 0_n, 0_n, 0_n);
-
-    //   MappedOperatorTaskGroup invocation_mapping = MappedOperatorTaskGroup{
-    //       bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding>{
-    //           {
-    //               mc3,
-    //               mk_shard_binding(mc1_input_coord,
-    //                                mc_output_coord),
-    //           },
-    //       },
-    //   };
-
-    //   DynamicValueAttrs graph_input_unmapped =
-    //       mk_value(0, TensorSlotName::OUTPUT);
-    //   DynamicValueAttrs graph_input_use_mapped =
-    //       decide_dynamic_value_attrs_mapping(
-    //         graph_input_unmapped,
-    //         get_tensor_bindings_for_slot_name(invocation_mapping, TensorSlotName::INPUT));
-
-    //   DynamicValueAttrs invocation_output_unmapped =
-    //       mk_value(invocation_id, TensorSlotName::OUTPUT);
-    //   DynamicValueAttrs invocation_output_src_mapped =
-    //       decide_dynamic_value_attrs_mapping(
-    //         invocation_output_unmapped,
-    //         get_tensor_bindings_for_slot_name(invocation_mapping, TensorSlotName::OUTPUT));
-
-    //   DynamicNodeInvocation input = DynamicNodeInvocation{
-    //     /*inputs=*/{
-    //         {
-    //             mk_slot(TensorSlotName::INPUT),
-    //             graph_input_unmapped,
-    //         },
-    //     },
-    //     /*node_attrs=*/DynamicNodeAttrs{
-    //         /*task_type=*/DynamicTaskType::FWD,
-    //         /*device_coord=*/std::nullopt,
-    //         /*mapping=*/invocation_mapping,
-    //         /*op_attrs=*/TrainingOperationAttrs{
-    //           PCGOperatorAttrs{
-    //             ReductionAttrs{
-    //               /*reduction_degree=*/2_p,
-    //             },
-    //           },
-    //         },
-    //         /*layer_guid=*/dynamic_layer_guid_t{
-    //           parallel_layer_guid_t{
-    //             Node{invocation_id},
-    //           },
-    //         },
-    //         /*per_device_op_state=*/std::nullopt,
-    //     },
-    //     /*outputs=*/{
-    //         {
-    //             mk_slot(TensorSlotName::OUTPUT),
-    //             invocation_output_unmapped,
-    //         },
-    //     },
-    //   };
-
-    //     std::unordered_map<DynamicValueAttrs, DynamicValueAttrs> unmapped_to_mapped_source_value = {
-    //       {
-    //         graph_input_unmapped,
-    //         decide_dynamic_value_attrs_mapping(
-    //           graph_input_unmapped,
-    //           OneToMany<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>{
-    //             {
-    //               mc1_input_coord,
-    //               {mc1},
-    //             },
-    //             {
-    //               mc2_input_coord,
-    //               {mc2},
-    //             },
-    //           })
-    //       },
-    //     };
-
-    //   std::unordered_set<DynamicNodeInvocation> result = copies_for_invocation_inputs(
-    //     input, unmapped_to_mapped_source_value);
-
-    //   std::unordered_set<DynamicNodeInvocation> correct = {};
-
-    //   nlohmann::json result_j = transform(result, dynamic_node_invocation_to_serializable);
-    //   nlohmann::json correct_j = transform(correct, dynamic_node_invocation_to_serializable);
-
-    //   CHECK(result_j == correct_j);
-    // }
   }
 }
