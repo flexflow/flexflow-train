@@ -9,15 +9,6 @@ err_out() {
 
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --ci)
-      CI="yes"
-      shift
-      ;;
-    --gcc-version)
-      GCC_VERSION="$2"
-      shift
-      shift
-      ;;
     --jobs|-j)
       THREADS="$2"
       shift
@@ -32,16 +23,10 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ -z $CI ]]; then
-    module load cuda cmake
-fi
-
-: "${GCC_VERSION:=10}"
 : "${THREADS:=$(nproc)}"
+: "${CMAKE_PREFIX_PATH:=}"
 
-export CC=gcc-"$GCC_VERSION"
-export CXX=g++-"$$GCC_VERSION"
-export THREADS="$THREADS"
+export THREADS
 
 mkdir -p deploy
 pushd deploy
@@ -59,6 +44,7 @@ require_cmd tar
 require_cmd cmake
 require_cmd make
 require_cmd python3
+require_cmd nvcc
 
 function build_cmake_library {
     dep_name="$1"
@@ -66,7 +52,7 @@ function build_cmake_library {
     dep_args=("${@:3}")
     if [[ ! -e ${dep_name} ]]; then
         if [[ ${dep_url} == *.git ]]; then
-            git clone "${dep_url}" "${dep_name}"
+            git clone --depth 1 --single-branch "${dep_url}" "${dep_name}"
         else
             mkdir "${dep_name}"
             curl -LsSf -o "${dep_name}.tar.gz" "${dep_url}"
@@ -84,7 +70,7 @@ function build_cmake_library {
 }
 
 if [[ ! -e gasnet ]]; then
-    git clone https://github.com/StanfordLegion/gasnet.git
+    git clone --depth 1 --single-branch https://github.com/StanfordLegion/gasnet.git
 fi
 if [[ ! -e gasnet/release ]]; then
     make -C gasnet CONDUIT=ibv
