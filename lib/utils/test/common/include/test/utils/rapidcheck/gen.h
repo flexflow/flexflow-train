@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_UTILS_LIB_TEST_COMMON_INCLUDE_UTILS_TEST_RAPIDCHECK_GEN_H
 #define _FLEXFLOW_UTILS_LIB_TEST_COMMON_INCLUDE_UTILS_TEST_RAPIDCHECK_GEN_H
 
-#include "rapidcheck.h"
+#include <rapidcheck.h>
 #include <unordered_set>
 
 namespace rc {

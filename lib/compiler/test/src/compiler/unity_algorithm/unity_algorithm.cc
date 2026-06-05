@@ -1,6 +1,5 @@
 #include "compiler/unity_algorithm/unity_algorithm.h"
 #include "compiler/cost_estimator/runtime_only_cost_estimator_from_cost_estimator.h"
-#include "doctest/doctest.h"
 #include "internal/cost_estimator_for_test.h"
 #include "op-attrs/parallel_tensor_dims.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
@@ -10,6 +9,7 @@
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include "pcg/pcg_from_computation_graph.h"
 #include "utils/integer_conversions.h"
+#include <doctest/doctest.h>
 
 using namespace FlexFlow;
 

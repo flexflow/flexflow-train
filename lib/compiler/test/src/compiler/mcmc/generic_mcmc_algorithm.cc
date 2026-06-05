@@ -1,5 +1,5 @@
 #include "compiler/mcmc/generic_mcmc_algorithm.h"
-#include "doctest/doctest.h"
+#include <doctest/doctest.h>
 
 using namespace FlexFlow;
 
