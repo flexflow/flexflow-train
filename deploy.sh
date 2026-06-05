@@ -23,12 +23,11 @@ while [[ $# -gt 0 ]]; do
       shift
       shift
       ;;
-    -*|--*)
+    -*)
       err_out "Unknown option: $1"
       ;;
     *)
       err_out "Unknown argument: $1"
-      exit 1
       ;;
   esac
 done
@@ -37,8 +36,8 @@ if [[ -z $CI ]]; then
     module load cuda cmake
 fi
 
-: ${GCC_VERSION:=10}
-: ${THREADS:=$(nproc)}
+: "${GCC_VERSION:=10}"
+: "${THREADS:=$(nproc)}"
 
 export CC=gcc-"$GCC_VERSION"
 export CXX=g++-"$$GCC_VERSION"
@@ -123,6 +122,7 @@ if [[ ! -e proj/venv ]]; then
     python3 -m venv proj/venv
 fi
 
+# shellcheck disable=SC1091
 source proj/venv/bin/activate
 
 if ! command -v proj >/dev/null 2>&1
