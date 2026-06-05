@@ -16,9 +16,7 @@ jobs:
           apt-get install -y build-essential cmake curl gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }} git libibverbs-dev mpich libmpich-dev python3 zlib1g-dev
 
       - name: Run Deploy Script
-        run: ./deploy.sh
-        env:
-          GCC_VERSION: ${{ matrix.gcc }}
+        run: ./deploy.sh --gcc-version ${{ matrix.gcc }}
 
     strategy:
       matrix:

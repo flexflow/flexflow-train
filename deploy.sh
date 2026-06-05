@@ -1,16 +1,65 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-set -e
+set -euo pipefail
+
+err_out() {
+    >&2 echo "$@"
+    exit 1
+}
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --ci)
+      CI="yes"
+      shift
+      ;;
+    --gcc-version)
+      GCC_VERSION="$2"
+      shift
+      shift
+      ;;
+    --jobs|-j)
+      THREADS="$2"
+      shift
+      shift
+      ;;
+    -*|--*)
+      err_out "Unknown option: $1"
+      ;;
+    *)
+      err_out "Unknown argument: $1"
+      exit 1
+      ;;
+  esac
+done
 
 if [[ -z $CI ]]; then
     module load cuda cmake
 fi
-export CC=gcc-"${GCC_VERSION:-10}"
-export CXX=g++-"${GCC_VERSION:-10}"
-export THREADS="${THREADS:-$(nproc)}"
+
+: ${GCC_VERSION:=10}
+: ${THREADS:=$(nproc)}
+
+export CC=gcc-"$GCC_VERSION"
+export CXX=g++-"$$GCC_VERSION"
+export THREADS="$THREADS"
 
 mkdir -p deploy
 pushd deploy
+
+require_cmd() {
+    local cmd="$1"
+    if ! command -v "$cmd" >/dev/null 2>&1; then
+        err_out "Could not find command: $cmd"
+    fi
+}
+
+require_cmd git
+require_cmd curl
+require_cmd tar
+require_cmd cmake
+require_cmd make
+require_cmd python3
 
 function build_cmake_library {
     dep_name="$1"
@@ -21,7 +70,8 @@ function build_cmake_library {
             git clone "${dep_url}" "${dep_name}"
         else
             mkdir "${dep_name}"
-            tar xfz <(curl -LsSf "${dep_url}") -C "${dep_name}" --strip-components=1
+            curl -LsSf -o "${dep_name}.tar.gz" "${dep_url}"
+            tar xfz "${dep_name}.tar.gz" -C "${dep_name}" --strip-components=1
         fi
     fi
     if [[ ! -e "${dep_name}"_install/include ]]; then
@@ -33,12 +83,6 @@ function build_cmake_library {
     fi
     export CMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH:$PWD/${dep_name}_install"
 }
-
-if [[ ! -e uv ]]; then
-    mkdir uv
-    XDG_BIN_HOME="$PWD"/uv sh <(curl -LsSf https://astral.sh/uv/install.sh) --no-modify-path
-fi
-export PATH="$PATH:$PWD/uv"
 
 if [[ ! -e gasnet ]]; then
     git clone https://github.com/StanfordLegion/gasnet.git
@@ -74,17 +118,17 @@ build_cmake_library nlohmann_json https://github.com/nlohmann/json/archive/refs/
 
 build_cmake_library NCCL https://github.com/NVIDIA/nccl/archive/refs/tags/v2.29.7-1.tar.gz -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
 
-if [[ ! -e /tmp/$USER/proj ]]; then
-    git clone -b python-install https://github.com/elliottslaughter/proj.git "/tmp/$USER/proj"
-    pushd "/tmp/$USER/proj"
-    uv venv
-    uv sync
-    popd # /tmp/$USER/proj
+mkdir -p proj/
+if [[ ! -e proj/venv ]]; then
+    python3 -m venv proj/venv
 fi
-# shellcheck disable=SC1090 # Must be out of source to avoid: https://github.com/lockshaw/proj/issues/16
-source "/tmp/$USER/proj/.venv/bin/activate"
-export PATH="$PATH:/tmp/$USER/proj/bin"
-export PYTHONPATH="$PYTHONPATH:/tmp/$USER/proj"
+
+source proj/venv/bin/activate
+
+if ! command -v proj >/dev/null 2>&1
+then
+    pip install --require-virtualenv 'git+https://git.sr.ht/~lockshaw/proj'
+fi
 
 popd # deploy
 
