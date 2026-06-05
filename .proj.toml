@@ -8,7 +8,6 @@ cuda_launch_cmd = [
   "--",
 ]
 layout_ignore_paths = [
-  "lib/runtime",
   "lib/kernels",
   "lib/utils/test/common",
   "lib/compiler/ffi",
