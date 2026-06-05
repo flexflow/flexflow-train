@@ -13,7 +13,7 @@ ff_add_library(
     kernels
     task-spec
     pcg
-    spdlog::spdlog
+    deps::spdlog
     compiler
 )
 

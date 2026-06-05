@@ -10,7 +10,7 @@ ff_add_library(
   DEPS
     op-attrs
     utils
-    rapidcheck
+    deps::rapidcheck
 )
 
 add_subdirectory(ffi)

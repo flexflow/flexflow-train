@@ -9,6 +9,6 @@ ff_add_library(
     src/
   DEPS
     utils
-    rapidcheck
-    doctest
+    deps::rapidcheck
+    deps::doctest
 )

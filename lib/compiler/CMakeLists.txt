@@ -10,9 +10,9 @@ ff_add_library(
   DEPS
     op-attrs
     utils
-    json
+    deps::json
     pcg
-    spdlog::spdlog
+    deps::spdlog
     substitutions
 )
 

@@ -6,7 +6,7 @@ ff_add_test_executable(
   PRIVATE_INCLUDE
     src/
   DEPS
-    doctest
+    deps::doctest
     utils-test-common
     kernels
     op-attrs

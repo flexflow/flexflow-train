@@ -7,7 +7,7 @@ ff_add_test_executable(
     src/
   DEPS
     utils
-    doctest
+    deps::doctest
     utils-test-common
 )
 
