@@ -81,9 +81,7 @@
       devShells = rec {
         ci = mkShell {
           shellHook = ''
-            export PATH="$HOME/ff/.scripts/:$PATH"
             export RC_PARAMS="max_discard_ratio=100"
-            export CMAKE_FLAGS=""
           '';
 
           buildInputs = builtins.concatLists [
