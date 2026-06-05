@@ -3,7 +3,7 @@
 
 #include "op-attrs/ff_dim_t.dtg.h"
 #include "op-attrs/relative_ff_dim_t.dtg.h"
-#include "rapidcheck.h"
+#include <rapidcheck.h>
 
 namespace FlexFlow {
 

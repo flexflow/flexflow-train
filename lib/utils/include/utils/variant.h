@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_UTILS_VARIANT_H
 #define _FLEXFLOW_UTILS_VARIANT_H
 
-#include "rapidcheck.h"
+#include <rapidcheck.h>
 #include "utils/type_traits.h"
 #include <optional>
 #include <utility>

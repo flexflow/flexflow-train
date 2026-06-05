@@ -1,6 +1,6 @@
 #include "compiler/unity_algorithm/unity_algorithm.h"
 #include "compiler/cost_estimator/runtime_only_cost_estimator_from_cost_estimator.h"
-#include "doctest/doctest.h"
+#include <doctest/doctest.h>
 #include "internal/cost_estimator_for_test.h"
 #include "op-attrs/parallel_tensor_dims.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"

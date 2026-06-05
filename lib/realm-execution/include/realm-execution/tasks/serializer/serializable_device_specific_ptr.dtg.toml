@@ -10,8 +10,8 @@ features = [
 
 includes = [
   "pcg/device_id_t.dtg.h",
-  "cstdint",
-  "optional",
+  "<cstdint>",
+  "<optional>",
 ]
 
 src_includes = [

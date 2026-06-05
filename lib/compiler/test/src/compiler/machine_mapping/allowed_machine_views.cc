@@ -1,5 +1,5 @@
 #include "compiler/machine_mapping/allowed_machine_views.h"
-#include "doctest/doctest.h"
+#include <doctest/doctest.h>
 #include "utils/containers/extend.h"
 #include "utils/containers/range.h"
 #include "utils/containers/transform.h"

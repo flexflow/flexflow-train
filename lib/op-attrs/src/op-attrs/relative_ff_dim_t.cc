@@ -1,5 +1,5 @@
 #include "op-attrs/relative_ff_dim_t.h"
-#include "rapidcheck.h"
+#include <rapidcheck.h>
 
 namespace FlexFlow {
 ff_dim_t ff_dim_t_from_relative_ff_dim_t(relative_ff_dim_t ff_dim,

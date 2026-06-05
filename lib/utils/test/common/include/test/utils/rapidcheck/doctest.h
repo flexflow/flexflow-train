@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_UTILS_TEST_COMMON_INCLUDE_TEST_UTILS_RAPIDCHECK_DOCTEST_H
 #define _FLEXFLOW_UTILS_TEST_COMMON_INCLUDE_TEST_UTILS_RAPIDCHECK_DOCTEST_H
 
-#include "rapidcheck.h"
+#include <rapidcheck.h>
 #include <doctest/doctest.h>
 
 namespace FlexFlow {
