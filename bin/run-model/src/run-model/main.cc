@@ -100,8 +100,7 @@ int main(int argc, char **argv) {
         /*loss=*/std::nullopt,
         /*input_tensors=*/input_tensors,
         /*profiling_settings=*/ProfilingSettings{0, 0},
-        /*device_handle=*/device_handle,
-        /*iteration_config=*/FFIterationConfig{1_p});
+        /*device_handle=*/device_handle);
 
     // begin training loop
     int num_epochs = 5;
@@ -109,8 +108,7 @@ int main(int argc, char **argv) {
       perform_all_passes_for_pcg_instance(
           /*instance=*/pcg_instance,
           /*profiling_settings=*/ProfilingSettings{0, 0},
-          /*device_handle=*/device_handle,
-          /*iteration_config=*/FFIterationConfig{1_p});
+          /*device_handle=*/device_handle);
     }
   });
   result.wait();

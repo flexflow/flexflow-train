@@ -1,8 +1,6 @@
 #ifndef _FLEXFLOW_LIB_PCG_INCLUDE_PCG_FILE_FORMAT_V1_GRAPHS_V1_KWARG_DATAFLOW_GRAPH_H
 #define _FLEXFLOW_LIB_PCG_INCLUDE_PCG_FILE_FORMAT_V1_GRAPHS_V1_KWARG_DATAFLOW_GRAPH_H
 
-#include "pcg/file_format/v1/graphs/v1_graph_edge.dtg.h"
-#include "pcg/file_format/v1/graphs/v1_graph_output.dtg.h"
 #include "pcg/file_format/v1/graphs/v1_kwarg_dataflow_graph.dtg.h"
 #include "pcg/file_format/v1/graphs/v1_kwarg_graph_edge.dtg.h"
 #include "pcg/file_format/v1/graphs/v1_kwarg_graph_output.dtg.h"

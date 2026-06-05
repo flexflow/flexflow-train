@@ -8,7 +8,7 @@ ff_add_test_executable(
   DEPS
     utils
     compiler
-    doctest
+    deps::doctest
     utils-test-common
     models
 )

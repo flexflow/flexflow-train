@@ -8,4 +8,4 @@ target_compile_definitions(
   INTERFACE
     DOCTEST_CONFIG_REQUIRE_STRINGIFICATION_FOR_ALL_USED_TYPES
 )
-alias_library(doctest doctest::doctest)
+alias_library(deps::doctest doctest::doctest)

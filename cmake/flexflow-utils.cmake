@@ -113,8 +113,8 @@ function(ff_add_test_executable)
       DEPS
     PARSE
       ${ARGN}
-      rapidcheck
-      doctest
+      deps::rapidcheck
+      deps::doctest
   )
 
   project(${FF_TEST_EXEC_NAME})
@@ -180,8 +180,8 @@ function(ff_add_benchmark_executable)
   target_link_libraries(
     ${FF_BENCHMARK_EXEC_NAME}
     ${FF_BENCHMARK_EXEC_DEPS}
-    benchmark::benchmark
-    benchmark::benchmark_main)
+    deps::gbenchmark
+    deps::gbenchmark-main)
 
   define_ff_vars(${FF_BENCHMARK_EXEC_NAME})
   ff_set_cxx_properties(${FF_BENCHMARK_EXEC_NAME})
