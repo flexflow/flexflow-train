@@ -4,7 +4,7 @@ set -euo pipefail
 
 # These modules are specific to Sapling, if deploying to another machine
 # customize as necessary.
-if [[ -z $CI ]]; then
+if [[ ! -v CI ]]; then
     module load cuda cmake
 fi
 
