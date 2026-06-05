@@ -112,6 +112,10 @@ cuda = false
 type = "bin"
 cuda = false
 
+[targets.sp-ization-benchmarking]
+type = "bin"
+cuda = false
+
 # default_build_targets = [
 #   "utils",
 # ]

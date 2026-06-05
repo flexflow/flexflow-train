@@ -1,4 +1,5 @@
 #include "sp-ization-benchmarking/nasnet_bench_graph_generator.h"
+#include "sp-ization-benchmarking/distributions.h"
 #include "utils/containers/all_of.h"
 #include "utils/containers/repeat.h"
 #include "utils/containers/transform.h"
@@ -103,17 +104,6 @@ std::optional<DiGraph>
   }
 
   return g;
-}
-
-DiGraph generate_nasnet_bench_cell() {
-  while (true) {
-    NasNetBenchConfig config = generate_random_config();
-    std::optional<DiGraph> maybe_cell =
-        maybe_generate_nasnet_bench_cell(config);
-    if (maybe_cell) {
-      return maybe_cell.value();
-    }
-  }
 }
 
 DiGraph generate_nasnet_bench_cell() {
