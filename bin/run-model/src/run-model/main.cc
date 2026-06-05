@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
     for (int i = 0; i < num_epochs; i++) {
       perform_all_passes_for_pcg_instance(
           /*instance=*/pcg_instance,
-          /*profiling_settings=*/ProfilingSettings{0, 0},
+          /*profiling_settings=*/ProfilingSettings{0, 1},
           /*device_handle=*/device_handle);
     }
   });
