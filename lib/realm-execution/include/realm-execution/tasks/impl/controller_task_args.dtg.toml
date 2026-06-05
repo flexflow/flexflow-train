@@ -5,7 +5,7 @@ features = []
 
 includes = [
   "realm-execution/realm_context.h",
-  "functional",
+  "<functional>",
 ]
 
 [[fields]]

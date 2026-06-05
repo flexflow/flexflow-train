@@ -3,7 +3,7 @@
 #include "compiler/machine_mapping/machine_mapping.h"
 #include "compiler/machine_mapping/machine_view.dtg.h"
 #include "compiler/machine_mapping/machine_view.h"
-#include "doctest/doctest.h"
+#include <doctest/doctest.h>
 #include "pcg/mapped_parallel_computation_graph/mapped_parallel_computation_graph.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include "test/utils/doctest/check_without_stringify.h"
