@@ -2,6 +2,12 @@
 
 set -euo pipefail
 
+# These modules are specific to Sapling, if deploying to another machine
+# customize as necessary.
+if [[ -z $CI ]]; then
+    module load cuda cmake
+fi
+
 err_out() {
     >&2 echo "$@"
     exit 1
@@ -23,9 +29,15 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+: "${CC:=gcc-10}"
+: "${CXX:=g++-10}"
+: "${CUDAARCHS:=60}"
 : "${THREADS:=$(nproc)}"
 : "${CMAKE_PREFIX_PATH:=}"
 
+export CC
+export CXX
+export CUDAARCHS
 export THREADS
 
 mkdir -p deploy
@@ -38,13 +50,15 @@ require_cmd() {
     fi
 }
 
-require_cmd git
-require_cmd curl
-require_cmd tar
+require_cmd "$CC"
+require_cmd "$CXX"
 require_cmd cmake
+require_cmd curl
+require_cmd git
 require_cmd make
-require_cmd python3
 require_cmd nvcc
+require_cmd python3
+require_cmd tar
 
 function build_cmake_library {
     dep_name="$1"
@@ -65,6 +79,7 @@ function build_cmake_library {
         cmake ../"${dep_name}" -DCMAKE_INSTALL_PREFIX="$PWD"/../"${dep_name}"_install "${dep_args[@]}"
         make install -j"$THREADS"
         popd
+        rm -rf "${dep_name}"_build
     fi
     export CMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH:$PWD/${dep_name}_install"
 }
@@ -121,7 +136,6 @@ popd # deploy
 ff_cmake_flags=(
     -DCMAKE_BUILD_TYPE=RelWithDebInfo
     -DCMAKE_INSTALL_PREFIX="$PWD/../install"
-    -DCMAKE_CUDA_ARCHITECTURES=60
 )
 
 proj dtgen
