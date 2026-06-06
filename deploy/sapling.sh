@@ -40,8 +40,8 @@ export CXX
 export CUDAARCHS
 export THREADS
 
-mkdir -p deploy
-pushd deploy
+mkdir -p deploy/deps
+pushd deploy/deps
 
 require_cmd() {
     local cmd="$1"
@@ -131,7 +131,7 @@ then
     pip install --require-virtualenv 'git+https://git.sr.ht/~lockshaw/proj'
 fi
 
-popd # deploy
+popd # deploy/deps
 
 ff_cmake_flags=(
     -DCMAKE_BUILD_TYPE=RelWithDebInfo
