@@ -63,20 +63,37 @@
         ],
         "nixpkgs": [
           "nixpkgs"
-        ]
+        ],
+        "python38-nixpkgs": "python38-nixpkgs"
       },
       "locked": {
-        "lastModified": 1778104328,
-        "narHash": "sha256-bn0G8xDqBrVjp5htw1i3u8fPdPMVtoZXFzX7hJ6m9YY=",
+        "lastModified": 1780709897,
+        "narHash": "sha256-55VJWpNnt/tMEP8tadRQSI66cX1BgJS9UNy/EkaQt3A=",
         "ref": "refs/heads/master",
-        "rev": "535ac756b2674dc10051b37be978b9d2cb9f817d",
-        "revCount": 156,
+        "rev": "18d04112d94ee0a1c173a30923aac9fa2b505539",
+        "revCount": 160,
         "type": "git",
         "url": "https://git.sr.ht/~lockshaw/proj"
       },
       "original": {
         "type": "git",
         "url": "https://git.sr.ht/~lockshaw/proj"
+      }
+    },
+    "python38-nixpkgs": {
+      "locked": {
+        "lastModified": 1645131486,
+        "narHash": "sha256-AuWJe0TiqHD6L7Vzcar4QOblMGubKHsuVs3YFMCRYl0=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "7592790b9e02f7f99ddcb1bd33fd44ff8df6a9a7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "7592790b9e02f7f99ddcb1bd33fd44ff8df6a9a7",
+        "type": "github"
       }
     },
     "root": {
