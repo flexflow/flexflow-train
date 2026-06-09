@@ -1,0 +1,32 @@
+namespace = "FlexFlow"
+name = "YOLOv10Module"
+type = "enum"
+
+features = ["hash", "json", "rapidcheck", "fmt"]
+
+[[values]]
+name = "Conv"
+
+[[values]]
+name = "C2f"
+
+[[values]]
+name = "SCDown"
+
+[[values]]
+name = "C2fCIB"
+
+[[values]]
+name = "SPPF"
+
+[[values]]
+name = "PSA"
+
+[[values]]
+name = "Upsample"
+
+[[values]]
+name = "Concat"
+
+[[values]]
+name = "v10Detect"
