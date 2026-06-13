@@ -100,7 +100,8 @@ int main(int argc, char **argv) {
         /*loss=*/std::nullopt,
         /*input_tensors=*/input_tensors,
         /*profiling_settings=*/ProfilingSettings{0, 0},
-        /*device_handle=*/device_handle);
+        /*device_handle=*/device_handle,
+        /*device_type=*/DeviceType::GPU);
 
     // begin training loop
     int num_epochs = 5;
