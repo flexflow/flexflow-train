@@ -33,10 +33,6 @@ nonnegative_int mv_get_expected_task_space_num_dims(MachineView const &mv) {
   return num_elements(get_strides(mv));
 }
 
-DeviceType get_device_type(MachineView const &mv) {
-  return mv.start.device_type;
-}
-
 std::vector<stride_t> get_strides(MachineView const &mv) {
   return transform(mv.dimensions,
                    [](MachineViewDimension const &dim) { return dim.stride; });
@@ -129,8 +125,8 @@ MachineSpaceCoordinate
       compute_index(machine_view.start.node_idx, inter_dimension_indices);
   nonnegative_int device_idx =
       compute_index(machine_view.start.device_idx, intra_dimension_indices);
-  MachineSpaceCoordinate ms_coord = MachineSpaceCoordinate{
-      node_idx, device_idx, get_device_type(machine_view)};
+  MachineSpaceCoordinate ms_coord =
+      MachineSpaceCoordinate{node_idx, device_idx};
 
   return ms_coord;
 }
@@ -174,19 +170,6 @@ std::unordered_set<MachineSpaceCoordinate>
                    [&](TaskSpaceCoordinate const &coord) {
                      return get_machine_space_coordinate(
                          task_space, machine_view, coord);
-                   });
-}
-
-std::unordered_set<device_id_t>
-    get_device_ids(OperatorTaskSpace const &task_space,
-                   MachineView const &mv,
-                   MachineComputeSpecification const &ms) {
-  ASSERT(op_task_space_num_dims(task_space) ==
-         mv_get_expected_task_space_num_dims(mv));
-
-  return transform(get_machine_space_coordinates(task_space, mv),
-                   [&](MachineSpaceCoordinate const &coord) {
-                     return get_device_id(ms, coord);
                    });
 }
 

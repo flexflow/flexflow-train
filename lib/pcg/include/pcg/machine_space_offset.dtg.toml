@@ -10,9 +10,7 @@ features = [
   "fmt",
 ]
 
-includes = [ 
-  "pcg/device_type.dtg.h",
-]
+includes = []
 
 [[fields]]
 name = "node_offset"
@@ -21,7 +19,3 @@ type = "int"
 [[fields]]
 name = "device_offset"
 type = "int"
-
-[[fields]]
-name = "device_type"
-type = "::FlexFlow::DeviceType"

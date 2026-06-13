@@ -1,0 +1,21 @@
+namespace = "FlexFlow"
+name = "DynamicSlotSite"
+type = "variant"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "task-spec/dynamic_graph/external_dynamic_slot_site.dtg.h",
+  "task-spec/dynamic_graph/internal_dynamic_slot_site.dtg.h",
+]
+
+[[values]]
+type = "::FlexFlow::InternalDynamicSlotSite"
+key = "internal"
+
+[[values]]
+type = "::FlexFlow::ExternalDynamicSlotSite"
+key = "external"

@@ -12,7 +12,6 @@ features = [
 
 includes = [
   "compiler/machine_mapping/machine_view_dimension.dtg.h",
-  "pcg/device_type.dtg.h"
 ]
 
 src_includes = [
@@ -23,8 +22,3 @@ src_includes = [
 [[fields]]
 name = "dimensions"
 type = "std::vector<::FlexFlow::MachineViewDimension>"
-
-
-[[fields]]
-name = "device_type"
-type = "::FlexFlow::DeviceType"

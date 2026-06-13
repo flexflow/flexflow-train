@@ -1,0 +1,15 @@
+namespace = "FlexFlow"
+name = "TrainingOnlyOpType"
+type = "enum"
+features = [
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+[[values]]
+name = "COPY"
+
+[[values]]
+name = "LOSS"

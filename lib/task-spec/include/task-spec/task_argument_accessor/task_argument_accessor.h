@@ -58,7 +58,7 @@ struct TaskArgumentAccessor {
     return this->ptr->get_allocator();
   }
 
-  device_id_t get_device_idx() const {
+  global_device_id_t get_device_idx() const {
     return this->ptr->get_device_idx();
   }
 

@@ -1,7 +1,8 @@
 #ifndef _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_DEVICE_SPECIFIC_PTR_H
 #define _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_DEVICE_SPECIFIC_PTR_H
 
-#include "pcg/device_id_t.dtg.h"
+#include "task-spec/global_device_id_t.dtg.h"
+#include <libassert/assert.hpp>
 #include <optional>
 
 namespace FlexFlow {
@@ -17,7 +18,7 @@ namespace FlexFlow {
  * transfer the pointers back-and-forth between workers and the controller
  * task. To prevent accidentally accessing one of these pointers on the wrong
  * device (as the pointer is only valid in the memory where it was created), we
- * wrap them with \ref DeviceSpecificPtr, which holds the \ref device_id_t
+ * wrap them with \ref DeviceSpecificPtr, which holds the \ref global_device_id_t
  * where the pointer was created, and any attempt to interact with the raw
  * pointer value (i.e., \ref DeviceSpecificPtr::get) checks that the current
  * device matches the original device, and throws a readable error message if
@@ -31,15 +32,16 @@ template <typename T>
 struct DeviceSpecificPtr {
 public:
   DeviceSpecificPtr() = delete;
-  explicit DeviceSpecificPtr(device_id_t device_idx, std::optional<T *> ptr)
+  explicit DeviceSpecificPtr(global_device_id_t device_idx,
+                             std::optional<T *> ptr)
       : device_idx(device_idx), ptr(ptr) {}
 
-  std::optional<T *> get(device_id_t device_idx) const {
+  std::optional<T *> get(global_device_id_t device_idx) const {
     ASSERT(this->device_idx == device_idx);
     return this->ptr;
   }
 
-  device_id_t get_device_idx() const {
+  global_device_id_t get_device_idx() const {
     return this->device_idx;
   }
 
@@ -48,7 +50,7 @@ public:
   }
 
 private:
-  device_id_t device_idx;
+  global_device_id_t device_idx;
   std::optional<T *> ptr;
 };
 

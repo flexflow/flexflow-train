@@ -1,7 +1,5 @@
 #include "local-execution/local_task_argument_accessor.h"
 #include "kernels/accessor.h"
-#include "pcg/device_id.h"
-#include "pcg/device_id_t.h"
 #include "utils/exception.h"
 #include "utils/optional.h"
 #include "utils/overload.h"
@@ -18,7 +16,7 @@ LocalTaskArgumentAccessor::LocalTaskArgumentAccessor(
     std::optional<LossAttrs> const &loss_attrs,
     std::optional<PerDeviceOpState> const &per_device_op_state,
     std::optional<OptimizerAttrs> const &optimizer_attrs,
-    device_id_t device_idx)
+    global_device_id_t device_idx)
     : allocator(allocator), tensor_slots_backing(tensor_slots_backing),
       profiling_settings(profiling_settings), ff_handle(ff_handle),
       op_attrs(op_attrs), loss_attrs(loss_attrs),
@@ -84,7 +82,7 @@ device_handle_t LocalTaskArgumentAccessor::get_ff_handle() const {
 }
 
 DeviceType LocalTaskArgumentAccessor::get_kernel_device_type() const {
-  return get_device_type(this->device_idx);
+  return this->device_idx.device_type;
 }
 
 PCGOperatorAttrs LocalTaskArgumentAccessor::get_op_attrs() const {
@@ -107,7 +105,7 @@ Allocator LocalTaskArgumentAccessor::get_allocator() const {
   return this->allocator;
 }
 
-device_id_t LocalTaskArgumentAccessor::get_device_idx() const {
+global_device_id_t LocalTaskArgumentAccessor::get_device_idx() const {
   return this->device_idx;
 }
 

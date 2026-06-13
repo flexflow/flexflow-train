@@ -5,7 +5,6 @@
 #include "compiler/machine_mapping/machine_view.dtg.h"
 #include "compiler/machine_mapping/machine_view.h"
 #include "op-attrs/operator_task_space.h"
-#include "pcg/device_id_t.dtg.h"
 #include "pcg/machine_specification.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_edge.dtg.h"
@@ -25,7 +24,8 @@ PCGTaskGraph
   DiGraph digraph = DiGraph::create<AdjacencyDiGraph>();
   bidict<Node, PCGTask> node_to_task;
   bidict<Node, parallel_layer_guid_t> node_to_layer;
-  std::unordered_map<Node, std::unordered_set<device_id_t>> node_to_devices;
+  std::unordered_map<Node, std::unordered_set<MachineSpaceCoordinate>>
+      node_to_devices;
 
   for (parallel_layer_guid_t const &layer : get_parallel_layers(pcg)) {
     MachineView mv = machine_mapping.machine_views.at(layer);
@@ -35,9 +35,8 @@ PCGTaskGraph
     node_to_task.equate(node, PCGTask{op_key});
     node_to_layer.equate(node, layer);
     node_to_devices[node] =
-        get_device_ids(get_operator_task_space(pcg, layer),
-                       machine_mapping.machine_views.at(layer),
-                       machine_spec);
+        get_machine_space_coordinates(get_operator_task_space(pcg, layer),
+                                      machine_mapping.machine_views.at(layer));
   }
 
   for (ParallelComputationGraphEdge const &edge : get_edges(pcg)) {

@@ -1,0 +1,19 @@
+namespace = "FlexFlow"
+name = "ExternalDynamicSlotSite"
+type = "struct"
+features = [
+  "eq",
+  "hash",
+  "fmt",
+]
+
+includes = [
+  "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h",
+]
+
+src_includes = [
+]
+
+[[fields]]
+name = "value"
+type = "::FlexFlow::DynamicValueAttrs"

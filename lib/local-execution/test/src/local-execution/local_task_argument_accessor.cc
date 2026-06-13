@@ -3,7 +3,6 @@
 #include "kernels/local_cpu_allocator.h"
 #include "kernels/profiling_settings.dtg.h"
 #include "op-attrs/ops/input_attrs.dtg.h"
-#include "pcg/device_id_t.h"
 #include "task-spec/task_argument_accessor/task_tensor_parameter.h"
 #include "task-spec/task_impl_function.dtg.h"
 #include "utils/fmt/variant.h"
@@ -52,8 +51,13 @@ TEST_SUITE(FF_TEST_SUITE) {
             },
         };
 
-    device_id_t device_idx =
-        make_device_id_t_from_idx(nonnegative_int{0}, DeviceType::CPU);
+    global_device_id_t device_idx = global_device_id_t{
+        /*coord=*/MachineSpaceCoordinate{
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
+        },
+        /*device_type=*/DeviceType::CPU,
+    };
 
     LocalTaskArgumentAccessor acc = LocalTaskArgumentAccessor{
         /*allocator=*/allocator,

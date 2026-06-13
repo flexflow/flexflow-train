@@ -19,8 +19,6 @@ StartInvariantMachineView
 
 nonnegative_int num_dims(StartInvariantMachineView const &mv);
 
-DeviceType get_device_type(StartInvariantMachineView const &mv);
-
 std::vector<stride_t> get_strides(StartInvariantMachineView const &mv);
 
 std::vector<MachineSpecificationDimension>

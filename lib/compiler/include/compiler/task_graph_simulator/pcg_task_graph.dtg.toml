@@ -9,8 +9,8 @@ includes = [
   "utils/graph/digraph/digraph_view.h",
   "utils/bidict/bidict.h",
   "compiler/task_graph_simulator/pcg_task.dtg.h",
-  "pcg/device_id_t.dtg.h",
   "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h",
+  "pcg/machine_space_coordinate.dtg.h",
   "<unordered_set>",
   "<unordered_map>"
 ]
@@ -32,4 +32,4 @@ type = "::FlexFlow::bidict<::FlexFlow::Node, ::FlexFlow::PCGTask>"
 
 [[fields]]
 name = "node_to_devices"
-type = "std::unordered_map<::FlexFlow::Node, std::unordered_set<::FlexFlow::device_id_t>>"
+type = "std::unordered_map<::FlexFlow::Node, std::unordered_set<::FlexFlow::MachineSpaceCoordinate>>"

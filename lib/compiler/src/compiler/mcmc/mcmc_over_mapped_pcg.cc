@@ -21,8 +21,8 @@ SearchResult
                          MCMCOverMappedPCGConfig const &search_config) {
   MachineComputeSpecification compute_spec = machine_spec.compute_specification;
   std::vector<Substitution> substitutions = get_substitution_set(compute_spec);
-  MachineMapping random_mapping = assert_unwrap(
-      get_random_mapping(pcg, compute_spec, search_config.device_type));
+  MachineMapping random_mapping =
+      assert_unwrap(get_random_mapping(pcg, compute_spec));
   SearchResult starting_state = SearchResult{pcg, random_mapping};
 
   auto sampler = [&](SearchResult mapped_pcg) -> std::optional<SearchResult> {
@@ -42,8 +42,8 @@ SearchResult
             mapped_pcg, random_substitution, match);
       });
     } else {
-      MachineMapping new_machine_mapping = assert_unwrap(get_random_mutation(
-          mapped_pcg, compute_spec, search_config.device_type));
+      MachineMapping new_machine_mapping =
+          assert_unwrap(get_random_mutation(mapped_pcg, compute_spec));
       return SearchResult{mapped_pcg.pcg, new_machine_mapping};
     }
   };

@@ -7,7 +7,7 @@ SerializableDynamicNodeAttrs
     dynamic_node_attrs_to_serializable(DynamicNodeAttrs const &attrs) {
   return SerializableDynamicNodeAttrs{
       /*task_type=*/attrs.task_type,
-      /*device_coord=*/attrs.device_coord,
+      /*device_id=*/attrs.device_id,
       /*mapping=*/attrs.mapping,
       /*op_attrs=*/attrs.op_attrs,
       /*layer_guid=*/attrs.layer_guid,
@@ -18,7 +18,7 @@ DynamicNodeAttrs dynamic_node_attrs_from_serializable(
     SerializableDynamicNodeAttrs const &attrs) {
   return DynamicNodeAttrs{
       /*task_type=*/attrs.task_type,
-      /*device_coord=*/attrs.device_coord,
+      /*device_id=*/attrs.device_id,
       /*mapping=*/attrs.mapping,
       /*op_attrs=*/attrs.op_attrs,
       /*layer_guid=*/attrs.layer_guid,

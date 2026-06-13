@@ -16,6 +16,7 @@ includes = [
   "utils/bidict/bidict.h",
   "task-spec/dynamic_graph/dynamic_tensor_accessor.dtg.h",
   "task-spec/dynamic_graph/dynamic_tensor_role.dtg.h",
+  "task-spec/dynamic_graph/parallel_tensor_mapping.dtg.h",
 ]
 
 src_includes = [
@@ -36,7 +37,13 @@ type = "std::optional<::FlexFlow::ParallelTensorSpaceCoordinate>"
 
 [[fields]]
 name = "mapping"
-type = "std::optional<::FlexFlow::bidict<::FlexFlow::ParallelTensorSpaceCoordinate, ::FlexFlow::MachineSpaceCoordinate>>"
+type = "std::optional<::FlexFlow::ParallelTensorMapping>"
+docstring = '''
+\brief Which devices the shards of the parallel tensor are stored on.
+
+For computations originating from a \ref ParallelComputationGraph, 
+this field is usually resolved/assigned by \ref perform_copy_insertion.
+'''
 
 [[fields]]
 name = "accessor"

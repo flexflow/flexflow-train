@@ -3,7 +3,6 @@
 
 #include "compiler/cost_estimator/op_cost_estimate_key.dtg.h"
 #include "compiler/cost_estimator/runtime_only_op_cost_estimate_key.dtg.h"
-#include "pcg/device_id_t.dtg.h"
 #include "pcg/machine_specification.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_layer_guid_t.dtg.h"

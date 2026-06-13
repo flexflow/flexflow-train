@@ -39,7 +39,7 @@ void ff_handle_init_task_body(void const *args,
   RealmContext ctx{proc};
   DeviceSpecificPtr<ManagedPerDeviceFFHandle> managed_handle =
       make_device_specific_managed_ff_handle(
-          ctx.get_current_device_idx(),
+          ctx.get_current_global_device_id(),
           make_ff_handle_for_processor(proc,
                                        task_args.workSpaceSize,
                                        task_args.allowTensorOpMathConversion));

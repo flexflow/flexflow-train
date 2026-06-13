@@ -31,7 +31,7 @@ void per_device_op_state_init_task_body(void const *args,
   RealmContext ctx{proc};
   device_handle_t device_handle =
       device_handle_t_from_device_specific_managed_ff_handle(
-          task_args.device_handle, ctx.get_current_device_idx());
+          task_args.device_handle, ctx.get_current_global_device_id());
 
   // Patch the invocation to include the provided instances
   auto map_instance_to_accessor = [&](DynamicValueAttrs const &value) {
@@ -55,16 +55,16 @@ void per_device_op_state_init_task_body(void const *args,
                       task_args.profiling_settings,
                       device_handle,
                       task_args.optimizer_attrs,
-                      ctx.get_current_device_idx());
+                      ctx.get_current_global_device_id());
   DeviceSpecificPerDeviceOpState result_state =
       assert_unwrap(result_invocation.node_attrs.per_device_op_state);
   // Important: to make sure this doesn't get deallocated, we intentionally leak
   // the allocation here
   PerDeviceOpState *result_state_ptr =
       new PerDeviceOpState{get_per_device_op_state_from_device_specific(
-          result_state, ctx.get_current_device_idx())};
+          result_state, ctx.get_current_global_device_id())};
   DeviceSpecificPtr<PerDeviceOpState> result_device_specific{
-      ctx.get_current_device_idx(), result_state_ptr};
+      ctx.get_current_global_device_id(), result_state_ptr};
   spawn_per_device_op_state_init_return_task(ctx,
                                              task_args.origin_proc,
                                              result_device_specific,

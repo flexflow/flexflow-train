@@ -58,8 +58,8 @@ static DynamicNodeInvocation get_update_invocation_for_invocation(
   auto create_binding_for_role = [&](DynamicTensorRole const &role)
       -> std::pair<DynamicTensorSlot, DynamicValueAttrs> {
     DynamicTensorSlot binding_slot = tensor_slot_with_role(slot, role);
-    DynamicValueAttrs binding_attrs = dynamic_value_attrs_with_role(
-        value_attrs, mk_dynamic_tensor_role_fwd());
+    DynamicValueAttrs binding_attrs =
+        dynamic_value_attrs_with_role(value_attrs, role);
 
     return std::pair{
         binding_slot,

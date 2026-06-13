@@ -1,7 +1,6 @@
 #ifndef _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_CONCRETE_ARG_SPEC_H
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_CONCRETE_ARG_SPEC_H
 
-#include "task-spec/serialization.h"
 #include "utils/hash-utils.h"
 #include "utils/type_index.h"
 #include <fmt/format.h>

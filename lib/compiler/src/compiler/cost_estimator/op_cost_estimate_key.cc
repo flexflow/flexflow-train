@@ -4,7 +4,6 @@
 #include "compiler/machine_mapping/machine_view.dtg.h"
 #include "compiler/machine_mapping/machine_view.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
-#include "pcg/device_id_t.dtg.h"
 #include "pcg/machine_specification.dtg.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph.dtg.h"
 #include <unordered_set>
