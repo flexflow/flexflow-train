@@ -224,8 +224,6 @@ TEST_SUITE(FF_TEST_SUITE) {
     RealmManager manager = RealmManager{&fake_argc, &fake_argv};
 
     (void)manager.start_controller([](RealmContext &ctx) {
-      ASSERT(ctx.processors.has_value());
-
       E2ETrainingConfig cfg = create_e2e_test_case();
 
       Allocator allocator = ctx.get_current_device_allocator();

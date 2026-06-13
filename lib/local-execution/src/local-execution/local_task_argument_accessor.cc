@@ -16,7 +16,7 @@ LocalTaskArgumentAccessor::LocalTaskArgumentAccessor(
     std::optional<LossAttrs> const &loss_attrs,
     std::optional<PerDeviceOpState> const &per_device_op_state,
     std::optional<OptimizerAttrs> const &optimizer_attrs,
-    device_id_t device_idx)
+    global_device_id_t device_idx)
     : allocator(allocator), tensor_slots_backing(tensor_slots_backing),
       profiling_settings(profiling_settings), ff_handle(ff_handle),
       op_attrs(op_attrs), loss_attrs(loss_attrs),
@@ -105,7 +105,7 @@ Allocator LocalTaskArgumentAccessor::get_allocator() const {
   return this->allocator;
 }
 
-device_id_t LocalTaskArgumentAccessor::get_device_idx() const {
+global_device_id_t LocalTaskArgumentAccessor::get_device_idx() const {
   return this->device_idx;
 }
 

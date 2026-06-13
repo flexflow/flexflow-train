@@ -11,7 +11,7 @@
 #include "realm-execution/per_device_op_state_backing.dtg.h"
 #include "realm-execution/realm_context.h"
 #include "realm-execution/tensor_instance_backing.dtg.h"
-#include "task-spec/device_id_t.dtg.h"
+#include "task-spec/global_device_id_t.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_accessor.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"

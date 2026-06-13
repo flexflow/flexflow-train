@@ -25,8 +25,7 @@ PerDeviceOpStateBacking perform_distributed_per_device_op_state_initialization(
     ProfilingSettings const &profiling_settings,
     DistributedFfHandle const &device_handle,
     OptimizerAttrs const &optimizer_attrs,
-    Realm::Event precondition,
-    DeviceType device_type);
+    Realm::Event precondition);
 
 } // namespace FlexFlow
 

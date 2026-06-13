@@ -31,7 +31,7 @@ LocalCostEstimator::LocalCostEstimator(
     Allocator &allocator,
     ProfilingSettings const &profiling_settings,
     device_handle_t const &device_handle,
-    device_id_t device_idx)
+    global_device_id_t device_idx)
     : interconnect_specification(interconnect_specification),
       allocator(allocator), profiling_settings(profiling_settings),
       device_handle(device_handle), device_idx(device_idx) {}
@@ -181,7 +181,7 @@ CostEstimator get_local_cost_estimator(
     Allocator &allocator,
     ProfilingSettings const &profiling_settings,
     device_handle_t const &device_handle,
-    device_id_t device_idx) {
+    global_device_id_t device_idx) {
   return CostEstimator::create<LocalCostEstimator>(interconnect_specification,
                                                    allocator,
                                                    profiling_settings,

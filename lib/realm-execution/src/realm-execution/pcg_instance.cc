@@ -117,11 +117,10 @@ PCGInstance create_pcg_instance(
 
   dg = perform_update_insertion(dg, optimizer_attrs);
   dg = perform_copy_insertion(dg);
-  debug_print_dynamic_open_dataflow_graph_as_dot(dg);
   dg = perform_shard_expansion(dg);
 
   TensorInstanceBacking tensor_instance_backing =
-      perform_instance_allocation(dg, inputs, ctx, device_type);
+      perform_instance_allocation(dg, inputs, ctx);
 
   logit_grad_value =
       transform(logit_grad_value, [&](DynamicValueAttrs const &lgv) {
@@ -154,8 +153,7 @@ PCGInstance create_pcg_instance(
           profiling_settings,
           device_handle,
           optimizer_attrs,
-          ctx.get_outstanding_events(),
-          device_type);
+          ctx.get_outstanding_events());
 
   // Compute the topological ordering of the graph
   auto [kwarg_graph, node_map] =
@@ -199,8 +197,8 @@ static Realm::Event spawn_dynamic_node_invocation(
                                                     invocation);
 
   auto spawn_task = [&]() {
-    Realm::Processor target_proc = ctx.map_device_coord_to_processor(
-        assert_unwrap(invocation.node_attrs.device_coord));
+    Realm::Processor target_proc = ctx.processor_from_global_device_id(
+        assert_unwrap(invocation.node_attrs.device_id));
     return spawn_op_task(ctx,
                          target_proc,
                          invocation,

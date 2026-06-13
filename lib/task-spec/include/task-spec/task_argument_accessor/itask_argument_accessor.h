@@ -9,7 +9,7 @@
 #include "op-attrs/tensor_slot_name.dtg.h"
 #include "pcg/optimizer_attrs.dtg.h"
 #include "task-spec/concrete_arg_spec.h"
-#include "task-spec/device_id_t.dtg.h"
+#include "task-spec/global_device_id_t.dtg.h"
 #include "task-spec/ops/arg_slot_id_t.dtg.h"
 #include "task-spec/per_device_op_state.dtg.h"
 #include "task-spec/privilege_tensor_accessor.h"
@@ -37,7 +37,7 @@ struct ITaskArgumentAccessor {
   virtual OptimizerAttrs get_optimizer_attrs() const = 0;
 
   virtual Allocator get_allocator() const = 0;
-  virtual device_id_t get_device_idx() const = 0;
+  virtual global_device_id_t get_device_idx() const = 0;
 };
 CHECK_RC_COPY_VIRTUAL_COMPLIANT(ITaskArgumentAccessor);
 

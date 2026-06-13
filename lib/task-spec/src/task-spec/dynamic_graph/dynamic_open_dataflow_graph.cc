@@ -59,6 +59,15 @@ void check_dynamic_open_dataflow_graph_is_valid(
   ASSERT(values_produced_multiple_times.size() == 0,
          keys(values_produced_multiple_times));
 
+  // since DynamicOpenDataflowGraph contains a set of invocations rather than a
+  // LabelledOpenKwargDataflowGraph, some properties guaranteed by
+  // LabelledOpenKwargDataflowGraph (e.g., the graph is acyclic, all tensors
+  // originate from another operator's output unless they're a designated graph
+  // input, etc.) are not automatically guaranteed. Since
+  // LabelledOpenKwargDataflowGraph guarantees these properties, the easiest
+  // way to check them is to try to convert the DynamicOpenDataflowGraph into a
+  // LabelledOpenKwargDataflowGraph, and if a value is returned without an
+  // assertion we know the properties hold.
   labelled_open_kwarg_dataflow_graph_from_dynamic_open_dataflow_graph(g);
 }
 

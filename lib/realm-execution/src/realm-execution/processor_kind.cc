@@ -1,4 +1,5 @@
 #include "realm-execution/processor_kind.h"
+#include "realm-execution/fmt/realm_processor_kind.h"
 #include <libassert/assert.hpp>
 
 namespace FlexFlow {
@@ -11,7 +12,7 @@ DeviceType
     case Realm::Processor::Kind::TOC_PROC:
       return DeviceType::GPU;
     default:
-      PANIC("Unhandled Realm::Processor::Kind", processor_kind);
+      PANIC("Unhandled Realm::Processor::Kind", fmt::to_string(processor_kind));
   }
 }
 

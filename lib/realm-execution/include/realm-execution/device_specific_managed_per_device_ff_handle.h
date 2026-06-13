@@ -4,17 +4,17 @@
 #include "kernels/device_handle_t.dtg.h"
 #include "kernels/managed_per_device_ff_handle.h"
 #include "realm-execution/device_specific_ptr.h"
-#include "task-spec/device_id_t.dtg.h"
+#include "task-spec/global_device_id_t.dtg.h"
 #include <optional>
 
 namespace FlexFlow {
 
 DeviceSpecificPtr<ManagedPerDeviceFFHandle>
     make_device_specific_managed_ff_handle(
-        device_id_t const &, std::optional<ManagedPerDeviceFFHandle *> const &);
+        global_device_id_t const &, std::optional<ManagedPerDeviceFFHandle *> const &);
 
 device_handle_t device_handle_t_from_device_specific_managed_ff_handle(
-    DeviceSpecificPtr<ManagedPerDeviceFFHandle> const &, device_id_t);
+    DeviceSpecificPtr<ManagedPerDeviceFFHandle> const &, global_device_id_t);
 
 } // namespace FlexFlow
 

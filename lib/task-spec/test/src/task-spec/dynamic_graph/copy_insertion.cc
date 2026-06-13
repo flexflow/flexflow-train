@@ -65,8 +65,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
     };
 
-    auto mk_device_id = [&](nonnegative_int device_idx) -> device_id_t {
-      return device_id_t{
+    auto mk_device_id = [&](nonnegative_int device_idx) -> global_device_id_t {
+      return global_device_id_t{
           mk_machine_coord(device_idx),
           DeviceType::GPU,
       };
@@ -209,7 +209,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*src_slot=*/TensorSlotName::OUTPUT,
             /*mapping=*/
             ParallelTensorMapping{
-                bidict<ParallelTensorSpaceCoordinate, device_id_t>{
+                bidict<ParallelTensorSpaceCoordinate, global_device_id_t>{
                     {mk_ptensor_coord(0_n), mk_device_id(0_n)},
                     {mk_ptensor_coord(1_n), mk_device_id(1_n)},
                 },
@@ -220,7 +220,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*src_slot=*/TensorSlotName::OUTPUT,
             /*mapping=*/
             ParallelTensorMapping{
-                bidict<ParallelTensorSpaceCoordinate, device_id_t>{
+                bidict<ParallelTensorSpaceCoordinate, global_device_id_t>{
                     {mk_ptensor_coord(0_n), mk_device_id(0_n)},
                     {mk_ptensor_coord(1_n), mk_device_id(1_n)},
                 },
@@ -231,7 +231,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*src_slot=*/TensorSlotName::OUTPUT,
             /*mapping=*/
             ParallelTensorMapping{
-                bidict<ParallelTensorSpaceCoordinate, device_id_t>{
+                bidict<ParallelTensorSpaceCoordinate, global_device_id_t>{
                     {mk_ptensor_coord(0_n), mk_device_id(0_n)},
                     {mk_ptensor_coord(1_n), mk_device_id(2_n)},
                 },
@@ -242,7 +242,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*src_slot=*/TensorSlotName::OUTPUT,
             /*mapping=*/
             ParallelTensorMapping{
-                bidict<ParallelTensorSpaceCoordinate, device_id_t>{
+                bidict<ParallelTensorSpaceCoordinate, global_device_id_t>{
                     {mk_ptensor_coord(0_n), mk_device_id(0_n)},
                     {mk_ptensor_coord(1_n), mk_device_id(2_n)},
                 },
@@ -399,7 +399,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*src_slot=*/TensorSlotName::OUTPUT,
             /*mapping=*/
             ParallelTensorMapping{
-                bidict<ParallelTensorSpaceCoordinate, device_id_t>{
+                bidict<ParallelTensorSpaceCoordinate, global_device_id_t>{
                     {mk_ptensor_coord(0_n), mk_device_id(0_n)},
                     {mk_ptensor_coord(1_n), mk_device_id(1_n)},
                 },
@@ -410,7 +410,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*src_slot=*/TensorSlotName::OUTPUT,
             /*mapping=*/
             ParallelTensorMapping{
-                bidict<ParallelTensorSpaceCoordinate, device_id_t>{
+                bidict<ParallelTensorSpaceCoordinate, global_device_id_t>{
                     {mk_ptensor_coord(0_n), mk_device_id(0_n)},
                     {mk_ptensor_coord(1_n), mk_device_id(1_n)},
                 },
@@ -421,7 +421,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*src_slot=*/TensorSlotName::OUTPUT,
             /*mapping=*/
             ParallelTensorMapping{
-                bidict<ParallelTensorSpaceCoordinate, device_id_t>{
+                bidict<ParallelTensorSpaceCoordinate, global_device_id_t>{
                     {mk_ptensor_coord(0_n), mk_device_id(0_n)},
                     {mk_ptensor_coord(1_n), mk_device_id(1_n)},
                 },

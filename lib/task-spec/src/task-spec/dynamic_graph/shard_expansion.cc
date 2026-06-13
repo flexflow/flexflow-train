@@ -13,7 +13,7 @@
 namespace FlexFlow {
 
 bool node_is_shard_expanded(DynamicNodeAttrs const &n) {
-  return n.device_coord.has_value();
+  return n.device_id.has_value();
 }
 
 bool value_is_shard_expanded(DynamicValueAttrs const &n) {
@@ -42,9 +42,9 @@ bool graph_is_fully_shard_expanded(DynamicOpenDataflowGraph const &g) {
                                       slot_is_shard_expanded);
 }
 
-static bidict<ParallelTensorSpaceCoordinate, device_id_t>
+static bidict<ParallelTensorSpaceCoordinate, global_device_id_t>
     restrict_tensor_mapping_keys_to_coord(
-        bidict<ParallelTensorSpaceCoordinate, device_id_t> const &mapping,
+        bidict<ParallelTensorSpaceCoordinate, global_device_id_t> const &mapping,
         ParallelTensorSpaceCoordinate const &parallel_tensor_coord) {
   return filter_keys(mapping, [&](ParallelTensorSpaceCoordinate const &p) {
     return p == parallel_tensor_coord;
@@ -53,7 +53,7 @@ static bidict<ParallelTensorSpaceCoordinate, device_id_t>
 
 static DynamicNodeInvocation shard_invocation_for_binding(
     DynamicNodeInvocation const &i,
-    device_id_t const &device_coord,
+    global_device_id_t const &device_id,
     OperatorAtomicTaskShardBinding const &binding) {
   auto shard_expand_value_attrs =
       [&](DynamicTensorSlot const &s,
@@ -76,7 +76,7 @@ static DynamicNodeInvocation shard_invocation_for_binding(
 
   DynamicNodeAttrs expanded_node_attrs = [&]() {
     DynamicNodeAttrs result = i.node_attrs;
-    result.device_coord = device_coord;
+    result.device_id = device_id;
     return result;
   }();
 
@@ -91,7 +91,7 @@ static std::unordered_set<DynamicNodeInvocation>
     perform_shard_expansion_for_copy(DynamicNodeInvocation const &i) {
   auto [input_slot, input] = get_only(i.inputs);
   auto [output_slot, output] = get_only(i.outputs);
-  bidict<ParallelTensorSpaceCoordinate, device_id_t> input_mapping =
+  bidict<ParallelTensorSpaceCoordinate, global_device_id_t> input_mapping =
       assert_unwrap(input.mapping).raw;
   require_same(input_mapping.left_values(),
                assert_unwrap(output.mapping).raw.left_values());
@@ -105,7 +105,7 @@ static std::unordered_set<DynamicNodeInvocation>
         // because we expect this to align with the most efficient way to issue
         // copies in Realm, although the current Realm backend uses a
         // centralized controller and thus issues copies all from a single node.
-        device_id_t machine_coord = input_mapping.at_l(p);
+        global_device_id_t machine_coord = input_mapping.at_l(p);
 
         return shard_invocation_for_binding(i,
                                             machine_coord,
@@ -125,11 +125,11 @@ std::unordered_set<DynamicNodeInvocation>
 
   DynamicNodeMapping mapping = assert_unwrap(i.node_attrs.mapping);
 
-  std::unordered_set<device_id_t> shard_machine_coords =
+  std::unordered_set<global_device_id_t> shard_machine_coords =
       target_devices_of_dynamic_node_mapping(mapping);
 
   return transform(
-      shard_machine_coords, [&](device_id_t const &c) -> DynamicNodeInvocation {
+      shard_machine_coords, [&](global_device_id_t const &c) -> DynamicNodeInvocation {
         OperatorAtomicTaskShardBinding slot_bindings =
             mapping.op_task_group.get_shard_bindings().at_l(c.coord);
 

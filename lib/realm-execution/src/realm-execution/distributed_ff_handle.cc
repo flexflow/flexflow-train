@@ -32,7 +32,7 @@ DistributedFfHandle
         proc.kind() == Realm::Processor::TOC_PROC) {
       handles.insert({proc,
                       make_device_specific_managed_ff_handle(
-                          ctx.get_current_device_idx(), std::nullopt)});
+                          ctx.get_current_global_device_id(), std::nullopt)});
     }
   }
 

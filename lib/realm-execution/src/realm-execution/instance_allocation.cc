@@ -22,14 +22,14 @@
 namespace FlexFlow {
 
 std::pair<Realm::RegionInstance, Realm::Event>
-    perform_instance_allocation_for_value(device_id_t const &device_id,
+    perform_instance_allocation_for_value(global_device_id_t const &device_id,
                                           DynamicValueAttrs const &value,
                                           RealmContext &ctx) {
   ASSERT(value.accessor == std::nullopt);
 
   TensorShape shape = get_piece_shape(value.parallel_tensor_shape.value());
 
-  Realm::Processor proc = ctx.map_device_coord_to_processor(device_id);
+  Realm::Processor proc = ctx.processor_from_global_device_id(device_id);
   Realm::Memory memory = ctx.get_nearest_memory(proc);
   return ctx.create_instance(memory, shape, Realm::ProfilingRequestSet());
 }
@@ -38,8 +38,7 @@ TensorInstanceBacking perform_instance_allocation(
     DynamicOpenDataflowGraph const &g,
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> const
         &preallocated,
-    RealmContext &ctx,
-    DeviceType device_type) {
+    RealmContext &ctx) {
   ASSERT(no_tensors_are_allocated(g));
   ASSERT(tensors_are_ready_for_allocation(g));
   for (DynamicValueAttrs const &v : keys(preallocated)) {
@@ -53,7 +52,7 @@ TensorInstanceBacking perform_instance_allocation(
       NOT_IMPLEMENTED();
     } else {
       if (!contains_key(result.backing, v)) {
-        device_id_t device = assert_unwrap(n.device_coord);
+        global_device_id_t device = assert_unwrap(n.device_id);
         result.backing.insert(std::pair{
             v, perform_instance_allocation_for_value(device, v, ctx)});
       }

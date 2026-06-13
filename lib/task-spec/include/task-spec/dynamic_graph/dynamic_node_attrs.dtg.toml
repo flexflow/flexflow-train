@@ -13,7 +13,7 @@ includes = [
   "task-spec/dynamic_graph/dynamic_layer_guid_t.dtg.h",
   "task-spec/dynamic_graph/training_operation_attrs.dtg.h",
   "task-spec/device_specific_per_device_op_state.dtg.h",
-  "task-spec/device_id_t.dtg.h",
+  "task-spec/global_device_id_t.dtg.h",
   "task-spec/dynamic_graph/dynamic_node_mapping.dtg.h",
 ]
 
@@ -26,8 +26,8 @@ name = "task_type"
 type = "std::optional<::FlexFlow::DynamicTaskType>"
 
 [[fields]]
-name = "device_coord"
-type = "std::optional<::FlexFlow::device_id_t>"
+name = "device_id"
+type = "std::optional<::FlexFlow::global_device_id_t>"
 docstring = '''
 \brief The device on which this task should execute.
 

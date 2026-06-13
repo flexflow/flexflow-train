@@ -24,7 +24,7 @@ DynamicNodeInvocation
                     ProfilingSettings const &profiling_settings,
                     device_handle_t const &device_handle,
                     OptimizerAttrs const &optimizer_attrs,
-                    device_id_t device_idx) {
+                    global_device_id_t device_idx) {
   if (!i.node_attrs.op_attrs.has_value() ||
       !i.node_attrs.op_attrs.value().is_pcg_op()) {
     return i;
@@ -61,7 +61,7 @@ DynamicOpenDataflowGraph perform_per_device_op_state_initialization(
     ProfilingSettings const &profiling_settings,
     device_handle_t const &device_handle,
     OptimizerAttrs const &optimizer_attrs,
-    device_id_t device_idx) {
+    global_device_id_t device_idx) {
 
   ASSERT(no_nodes_are_initialized(dg));
   DynamicOpenDataflowGraph result = transform_dynamic_invocation_set(

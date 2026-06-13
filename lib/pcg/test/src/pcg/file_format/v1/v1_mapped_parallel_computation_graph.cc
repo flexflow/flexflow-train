@@ -36,7 +36,6 @@ TEST_SUITE(FF_TEST_SUITE) {
     MachineSpaceCoordinate coord = MachineSpaceCoordinate{
         /*node_idx=*/0_n,
         /*device_idx=*/0_n,
-        /*device_type=*/DeviceType::GPU,
     };
 
     OperatorAtomicTaskShardBinding binding = OperatorAtomicTaskShardBinding{

@@ -16,7 +16,7 @@ TaskArgumentAccessor make_task_argument_accessor_for_invocation(
     device_handle_t const &ff_handle,
     std::optional<PerDeviceOpState> const &per_device_op_state,
     std::optional<OptimizerAttrs> const &optimizer_attrs,
-    device_id_t device_idx);
+    global_device_id_t device_idx);
 
 std::optional<milliseconds_t> execute_dynamic_node_invocation(
     DynamicNodeInvocation const &invocation,
@@ -25,7 +25,7 @@ std::optional<milliseconds_t> execute_dynamic_node_invocation(
     device_handle_t const &ff_handle,
     std::optional<PerDeviceOpState> const &per_device_op_state,
     std::optional<OptimizerAttrs> const &optimizer_attrs,
-    device_id_t device_idx);
+    global_device_id_t device_idx);
 
 } // namespace FlexFlow
 

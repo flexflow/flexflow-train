@@ -44,14 +44,14 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     DeviceType device_type = DeviceType::GPU;
-    auto mk_device_id = [&](MachineSpaceCoordinate const &c) -> device_id_t {
-      return device_id_t{c, device_type};
+    auto mk_device_id = [&](MachineSpaceCoordinate const &c) -> global_device_id_t {
+      return global_device_id_t{c, device_type};
     };
 
     auto mk_value =
         [&](size_t src_node_id,
             TensorSlotName src_slot_name,
-            bidict<ParallelTensorSpaceCoordinate, device_id_t> tensor_binding,
+            bidict<ParallelTensorSpaceCoordinate, global_device_id_t> tensor_binding,
             std::optional<ParallelTensorSpaceCoordinate> const &shard_coord)
         -> DynamicValueAttrs {
       if (shard_coord.has_value()) {
@@ -155,7 +155,7 @@ TEST_SUITE(FF_TEST_SUITE) {
               TensorSlotName use_slot_name,
               std::optional<ParallelTensorSpaceCoordinate> const &shard_coord)
           -> DynamicValueAttrs {
-        bidict<ParallelTensorSpaceCoordinate, device_id_t> tensor_binding =
+        bidict<ParallelTensorSpaceCoordinate, global_device_id_t> tensor_binding =
             dynamic_node_mapping_bindings_for_slot_name(node_mapping,
                                                         use_slot_name);
         return mk_value(
@@ -212,7 +212,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           perform_shard_expansion_for_invocation(input);
 
       auto mk_invocation_shard =
-          [&](device_id_t const &device_coord,
+          [&](global_device_id_t const &device_coord,
               ParallelTensorSpaceCoordinate const &input_shard_coord,
               ParallelTensorSpaceCoordinate const &weight_shard_coord,
               ParallelTensorSpaceCoordinate const &output_1_shard_coord,
@@ -283,19 +283,19 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("for copy operator") {
-      device_id_t dev1 = mk_device_id(mk_machine_coord(0_n, 0_n));
-      device_id_t dev2 = mk_device_id(mk_machine_coord(1_n, 0_n));
-      device_id_t dev3 = mk_device_id(mk_machine_coord(2_n, 0_n));
-      device_id_t dev4 = mk_device_id(mk_machine_coord(3_n, 0_n));
+      global_device_id_t dev1 = mk_device_id(mk_machine_coord(0_n, 0_n));
+      global_device_id_t dev2 = mk_device_id(mk_machine_coord(1_n, 0_n));
+      global_device_id_t dev3 = mk_device_id(mk_machine_coord(2_n, 0_n));
+      global_device_id_t dev4 = mk_device_id(mk_machine_coord(3_n, 0_n));
 
       ParallelTensorSpaceCoordinate pt1 = mk_pt_coord(0_n, 0_n, 0_n, 0_n);
       ParallelTensorSpaceCoordinate pt2 = mk_pt_coord(0_n, 1_n, 0_n, 0_n);
 
-      bidict<ParallelTensorSpaceCoordinate, device_id_t> src_binding{
+      bidict<ParallelTensorSpaceCoordinate, global_device_id_t> src_binding{
           {pt1, dev1},
           {pt2, dev2},
       };
-      bidict<ParallelTensorSpaceCoordinate, device_id_t> dst_binding{
+      bidict<ParallelTensorSpaceCoordinate, global_device_id_t> dst_binding{
           {pt1, dev3},
           {pt2, dev4},
       };
@@ -331,7 +331,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           perform_shard_expansion_for_invocation(input);
 
       auto mk_invocation_shard =
-          [&](device_id_t const &device_coord,
+          [&](global_device_id_t const &device_id,
               ParallelTensorSpaceCoordinate const &tensor_shard_coord)
           -> DynamicNodeInvocation {
         DynamicNodeInvocation result = input;
@@ -343,7 +343,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             },
         };
         // See perform_shard_expansion_for_copy in shard_expansion.cc for explanation of the choice of device placement.
-        result.node_attrs.device_coord = device_coord;
+        result.node_attrs.device_id = device_id;
         result.outputs = {
             {
                 mk_slot(TensorSlotName::OUTPUT),

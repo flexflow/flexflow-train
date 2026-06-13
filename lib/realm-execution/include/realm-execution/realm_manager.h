@@ -6,7 +6,7 @@
 #include "realm-execution/realm.h"
 #include "realm-execution/realm_context.h"
 #include "realm-execution/tasks/impl/controller_task.h"
-#include "task-spec/device_id_t.dtg.h"
+#include "task-spec/global_device_id_t.dtg.h"
 
 namespace FlexFlow {
 

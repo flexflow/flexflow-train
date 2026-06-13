@@ -9,7 +9,7 @@ features = [
 ]
 
 includes = [
-  "pcg/device_id_t.dtg.h",
+  "task-spec/global_device_id_t.dtg.h",
   "<cstdint>",
   "<optional>",
 ]
@@ -21,7 +21,7 @@ src_includes = [
 
 [[fields]]
 name = "device_idx"
-type = "::FlexFlow::device_id_t"
+type = "::FlexFlow::global_device_id_t"
 
 [[fields]]
 name = "ptr"

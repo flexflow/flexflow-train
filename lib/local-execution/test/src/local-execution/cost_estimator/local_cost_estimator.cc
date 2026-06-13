@@ -18,7 +18,7 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("LocalCostEstimator") {
     Allocator allocator = create_local_cpu_memory_allocator();
     device_handle_t ff_handle = cpu_make_device_handle_t();
-    device_id_t device_idx = device_id_t{
+    global_device_id_t device_idx = global_device_id_t{
       /*coord=*/MachineSpaceCoordinate{
         /*node_idx=*/0_n,
         /*device_idx=*/0_n,
@@ -93,7 +93,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
     Allocator allocator = create_local_cuda_memory_allocator();
 
-    device_id_t device_idx = device_id_t{
+    global_device_id_t device_idx = global_device_id_t{
       /*coord=*/MachineSpaceCoordinate{
         /*node_idx=*/0_n,
         /*device_idx=*/0_n,

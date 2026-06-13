@@ -61,16 +61,16 @@ bool graph_is_fully_copy_inserted(DynamicOpenDataflowGraph const &g) {
 static std::pair<DynamicValueAttrs, DynamicValueAttrs>
     filter_mapping_to_avoid_degenerate_copies(DynamicValueAttrs const &input,
                                               DynamicValueAttrs const &output) {
-  std::unordered_set<std::pair<ParallelTensorSpaceCoordinate, device_id_t>>
+  std::unordered_set<std::pair<ParallelTensorSpaceCoordinate, global_device_id_t>>
       input_mapping = unordered_set_of(assert_unwrap(input.mapping).raw);
 
-  std::unordered_set<std::pair<ParallelTensorSpaceCoordinate, device_id_t>>
+  std::unordered_set<std::pair<ParallelTensorSpaceCoordinate, global_device_id_t>>
       output_mapping = unordered_set_of(assert_unwrap(output.mapping).raw);
 
   // Exclude the point shared between the input and output mappings, because
   // those will not result in actual copies once shard expansion is performed
   std::unordered_set<
-      std::pair<ParallelTensorSpaceCoordinate, device_id_t>>
+      std::pair<ParallelTensorSpaceCoordinate, global_device_id_t>>
       remove = set_intersection(input_mapping, output_mapping);
 
   DynamicValueAttrs filtered_input = input;

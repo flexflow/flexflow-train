@@ -27,7 +27,7 @@ void op_task_body(void const *args,
   RealmContext ctx{proc};
   device_handle_t device_handle =
       device_handle_t_from_device_specific_managed_ff_handle(
-          task_args.device_handle, ctx.get_current_device_idx());
+          task_args.device_handle, ctx.get_current_global_device_id());
 
   // Patch the invocation to include the provided instances
   auto map_instance_to_accessor = [&](DynamicValueAttrs const &value) {
@@ -53,11 +53,11 @@ void op_task_body(void const *args,
       /*per_device_op_state=*/
       transform(and_then(task_args.device_state,
                          [&](DeviceSpecificPtr<PerDeviceOpState> const &d) {
-                           return d.get(ctx.get_current_device_idx());
+                           return d.get(ctx.get_current_global_device_id());
                          }),
                 [](PerDeviceOpState *ptr) { return *ptr; }),
       /*optimizer_attrs=*/task_args.optimizer_attrs,
-      /*device_idx=*/ctx.get_current_device_idx());
+      /*global_device_id=*/ctx.get_current_global_device_id());
 }
 
 Realm::Event spawn_op_task(

@@ -5,7 +5,7 @@
 #include "kernels/allocation.h"
 #include "kernels/device_handle_t.dtg.h"
 #include "kernels/profiling_settings.dtg.h"
-#include "task-spec/device_id_t.dtg.h"
+#include "task-spec/global_device_id_t.dtg.h"
 #include "pcg/machine_interconnect_specification.dtg.h"
 
 namespace FlexFlow {
@@ -16,7 +16,7 @@ struct LocalCostEstimator : public ICostEstimator {
       Allocator &allocator,
       ProfilingSettings const &profiling_settings,
       device_handle_t const &device_handle,
-      device_id_t device_idx);
+      global_device_id_t device_idx);
 
   LocalCostEstimator(LocalCostEstimator const &) = delete;
   LocalCostEstimator(LocalCostEstimator &&) = delete;
@@ -31,7 +31,7 @@ private:
   Allocator allocator;
   ProfilingSettings profiling_settings;
   device_handle_t device_handle;
-  device_id_t device_idx;
+  global_device_id_t device_idx;
 };
 CHECK_RC_COPY_VIRTUAL_COMPLIANT(LocalCostEstimator);
 
@@ -40,7 +40,7 @@ CostEstimator get_local_cost_estimator(
     Allocator &allocator,
     ProfilingSettings const &profiling_settings,
     device_handle_t const &device_handle,
-    device_id_t device_idx);
+    global_device_id_t device_idx);
 
 } // namespace FlexFlow
 

@@ -15,17 +15,116 @@
 #include "utils/one_to_many/one_to_many.h"
 #include "utils/optional.h"
 #include "utils/positive_int/positive_int.h"
+#include "utils/bidict/algorithms/merge_disjoint_bidicts.h"
+#include "realm-execution/address_space.h"
+#include "utils/bidict/algorithms/bidict_from_enumerating.h"
+#include "utils/bidict/algorithms/transform_values.h"
+#include "utils/containers/group_by.h"
+#include "task-spec/global_device_id_t.h"
+#include "utils/containers/are_all_same.h"
+#include "utils/containers/set_of.h"
+#include "realm-execution/processor_query.h"
+#include "realm-execution/fmt/realm_processor.h"
+#include "realm-execution/fmt/realm_processor_kind.h"
 
 namespace FlexFlow {
+
+
+bidict<Realm::Processor, local_device_id_t>
+  build_local_machine_topology(std::set<Realm::Processor> const &local_procs) 
+{
+  {
+    bool procs_are_local = are_all_same(
+         transform(local_procs, 
+             [&](Realm::Processor p) -> Realm::AddressSpace {
+               return p.address_space();
+             }));
+    ASSERT(procs_are_local);
+  }
+
+  OneToMany<Realm::Processor::Kind, Realm::Processor> by_proc_kind = 
+    group_by(local_procs,
+             [](Realm::Processor p) -> Realm::Processor::Kind {
+                return p.kind();
+             });
+
+  auto local_machine_topology_for_proc_kind = [&](Realm::Processor::Kind k)
+    -> bidict<Realm::Processor, local_device_id_t>
+  {
+    if (!contains(by_proc_kind.left_values(), k)) {
+      return {};
+    }
+
+    bidict<Realm::Processor, nonnegative_int> enumerated = 
+      bidict_from_enumerating(set_of(by_proc_kind.at_l(k).unwrap_as_unordered_set())).reversed();
+
+    bidict<Realm::Processor, local_device_id_t> result = 
+      transform_values(
+        enumerated,
+        [&](nonnegative_int idx) -> local_device_id_t {
+          return local_device_id_t{
+            /*idx=*/device_in_node_idx_t{idx},
+            /*device_type=*/device_type_from_processor_kind(k),
+          };
+        });
+
+    return result;
+  };
+
+  return binary_merge_disjoint_bidicts(
+    local_machine_topology_for_proc_kind(Realm::Processor::Kind::LOC_PROC),
+    local_machine_topology_for_proc_kind(Realm::Processor::Kind::TOC_PROC));
+}
+
+static bidict<Realm::Processor, global_device_id_t>
+  build_global_machine_topology(std::set<Realm::Processor> const &global_procs) 
+{
+  OneToMany<node_idx_t, Realm::Processor> by_node_idx = 
+    group_by(global_procs,
+             [](Realm::Processor p) -> node_idx_t {
+                return node_idx_from_realm_address_space(p.address_space());
+             });
+
+  auto build_global_machine_topology_for_node = [&](node_idx_t const &node_idx) 
+    -> bidict<Realm::Processor, global_device_id_t> 
+  {
+    std::set<Realm::Processor> procs_for_node = set_of(by_node_idx.at_l(node_idx).unwrap_as_unordered_set());
+
+    bidict<Realm::Processor, local_device_id_t>
+      local_topology_for_node = build_local_machine_topology(procs_for_node);
+
+    return transform_values(
+      local_topology_for_node,
+      [&](local_device_id_t const &local_device_id) -> global_device_id_t {
+        return global_device_id_from_local(local_device_id, node_idx);
+      });
+  };
+
+  return merge_disjoint_bidicts(
+    transform(
+      set_of(by_node_idx.left_values()),
+      build_global_machine_topology_for_node));
+}
+
+static bidict<Realm::Processor, local_device_id_t> discover_local_machine_topology(Realm::Processor local_processor) {
+  Realm::Machine::ProcessorQuery pq(Realm::Machine::get_machine());
+  pq.same_address_space_as(local_processor);
+
+  return build_local_machine_topology(processor_set_from_query(pq));
+}
+
+static bidict<Realm::Processor, global_device_id_t> discover_global_machine_topology() {
+  Realm::Machine::ProcessorQuery pq(Realm::Machine::get_machine());
+
+  return build_global_machine_topology(processor_set_from_query(pq));
+}
 
 RealmContext::RealmContext(Realm::Processor processor)
     : processor(processor),
       allocator(get_realm_allocator(
-          processor, RealmContext::get_nearest_memory(processor))) {
-  if (processor != Realm::Processor::NO_PROC) {
-    this->discover_machine_topology();
-  }
-}
+          processor, RealmContext::get_nearest_memory(processor))),
+      local_machine_topology(discover_local_machine_topology(processor))
+{ }
 
 RealmContext::~RealmContext() {
   if (!this->outstanding_events.empty()) {
@@ -34,23 +133,28 @@ RealmContext::~RealmContext() {
   }
 }
 
-static std::tuple<Realm::AddressSpace, Realm::Processor::Kind, nonnegative_int>
-    convert_machine_space_coordinate(MachineSpaceCoordinate const &device_coord,
-                                     DeviceType device_type) {
-  Realm::AddressSpace as = int{device_coord.node_idx};
-  Realm::Processor::Kind kind = processor_kind_from_device_type(device_type);
-  nonnegative_int proc_in_node = device_coord.device_idx;
-  return std::tuple{as, kind, proc_in_node};
+Realm::Processor RealmContext::processor_from_global_device_id(
+    global_device_id_t const &global_device_id) {
+
+  return this->get_global_machine_topology().at_r(global_device_id);
 }
 
-Realm::Processor RealmContext::map_device_coord_to_processor(
-    device_id_t const &device_id) const {
-  return assert_unwrap(this->processors).at_r(device_id);
+global_device_id_t RealmContext::global_device_id_from_processor(
+    Realm::Processor processor) {
+
+  return this->get_global_machine_topology().at_l(processor);
 }
 
-device_id_t
-    RealmContext::map_processor_to_device_coord(Realm::Processor p) const {
-  return assert_unwrap(this->processors).at_l(p);
+Realm::Processor RealmContext::processor_from_local_device_id(
+    local_device_id_t const &local_device_id) const {
+
+  return this->local_machine_topology.at_r(local_device_id);
+}
+
+local_device_id_t RealmContext::local_device_id_from_processor(
+    Realm::Processor processor) const {
+
+  return this->local_machine_topology.at_l(processor);
 }
 
 Realm::Memory RealmContext::get_nearest_memory(Realm::Processor proc) {
@@ -74,9 +178,12 @@ Allocator &RealmContext::get_current_device_allocator() {
   return this->allocator;
 }
 
-device_id_t RealmContext::get_current_device_idx() const {
+global_device_id_t RealmContext::get_current_global_device_id() const {
   Realm::Processor proc = this->get_current_processor();
-  return this->map_processor_to_device_coord(proc);
+
+  return global_device_id_from_local(
+    this->local_device_id_from_processor(proc),
+    node_idx_from_realm_address_space(proc.address_space()));
 }
 
 Realm::Event
@@ -290,50 +397,12 @@ Realm::Event RealmContext::merge_outstanding_events() {
   return result;
 }
 
-void RealmContext::discover_machine_topology() {
-  if (this->processors.has_value()) {
-    return;
+bidict<Realm::Processor, global_device_id_t> const &RealmContext::get_global_machine_topology() {
+  if (!this->cached_global_machine_topology.has_value()) {
+    this->cached_global_machine_topology = discover_global_machine_topology();
   }
 
-  std::unordered_map<std::pair<nonnegative_int, DeviceType>, nonnegative_int>
-      next_device_idx;
-
-  auto fresh_device_id = [&](nonnegative_int node_idx,
-                             DeviceType device_type) -> device_id_t {
-    std::pair<nonnegative_int, DeviceType> key =
-        std::pair{node_idx, device_type};
-    if (!contains_key(next_device_idx, key)) {
-      next_device_idx.insert({key, 0_n});
-    }
-
-    nonnegative_int device_idx = next_device_idx.at(key);
-    next_device_idx.at(key)++;
-
-    return device_id_t{
-        MachineSpaceCoordinate{node_idx, device_idx},
-        device_type,
-    };
-  };
-
-  bidict<Realm::Processor, device_id_t> procs;
-  Realm::Machine::ProcessorQuery pq(Realm::Machine::get_machine());
-  for (Realm::Processor proc : pq) {
-    Realm::AddressSpace as = proc.address_space();
-    Realm::Processor::Kind kind = proc.kind();
-
-    nonnegative_int node_idx = nonnegative_int{static_cast<int>(as)};
-
-    if (kind != Realm::Processor::LOC_PROC &&
-        kind != Realm::Processor::TOC_PROC) {
-      continue;
-    }
-
-    DeviceType device_type = device_type_from_processor_kind(kind);
-    device_id_t coord = fresh_device_id(node_idx, device_type);
-    procs.equate_strict(proc, coord);
-  }
-
-  this->processors = procs;
+  return assert_unwrap(this->cached_global_machine_topology);
 }
 
 Realm::Runtime RealmContext::get_runtime() {
