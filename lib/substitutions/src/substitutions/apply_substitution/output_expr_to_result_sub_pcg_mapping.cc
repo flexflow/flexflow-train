@@ -2,9 +2,9 @@
 #include "substitutions/output_graph/output_graph_expr.h"
 #include "substitutions/sub_parallel_computation_graph.h"
 #include "utils/bidict/algorithms/bidict_from_pairs.h"
+#include "utils/bidict/algorithms/binary_merge_disjoint_bidicts.h"
 #include "utils/containers/values.h"
 #include "utils/containers/zip_values_strict.h"
-#include "utils/bidict/algorithms/binary_merge_disjoint_bidicts.h"
 
 namespace FlexFlow {
 

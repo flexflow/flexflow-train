@@ -2,7 +2,8 @@
 
 namespace FlexFlow {
 
-std::ostream &operator<<(std::ostream &s, ::FlexFlow::Realm::Processor::Kind const &k) {
+std::ostream &operator<<(std::ostream &s,
+                         ::FlexFlow::Realm::Processor::Kind const &k) {
   return (s << fmt::to_string(k));
 }
 

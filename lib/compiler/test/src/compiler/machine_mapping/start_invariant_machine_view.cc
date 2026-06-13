@@ -36,8 +36,7 @@ TEST_SUITE(FF_TEST_SUITE) {
   }
 
   TEST_CASE("StartInvariantMachineView - conversions") {
-    MachineSpaceCoordinate start =
-        MachineSpaceCoordinate{1_n, 2_n};
+    MachineSpaceCoordinate start = MachineSpaceCoordinate{1_n, 2_n};
     std::vector<MachineViewDimension> dimensions = {
         MachineViewDimension{stride_t{2_p},
                              MachineSpecificationDimension::INTER_NODE},
@@ -45,8 +44,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                              MachineSpecificationDimension::INTRA_NODE}};
 
     MachineView mv = MachineView{start, dimensions};
-    StartInvariantMachineView simv =
-        StartInvariantMachineView{dimensions};
+    StartInvariantMachineView simv = StartInvariantMachineView{dimensions};
 
     SUBCASE("start_invariant_from_machine_view") {
       StartInvariantMachineView result = start_invariant_from_machine_view(mv);
@@ -93,9 +91,9 @@ TEST_SUITE(FF_TEST_SUITE) {
               3_ge2,
           }},
       };
-      StartInvariantMachineView simv = StartInvariantMachineView{
-          {MachineViewDimension{stride_t{2_p},
-                                MachineSpecificationDimension::INTRA_NODE}}};
+      StartInvariantMachineView simv =
+          StartInvariantMachineView{{MachineViewDimension{
+              stride_t{2_p}, MachineSpecificationDimension::INTRA_NODE}}};
       MachineComputeSpecification ms = MachineComputeSpecification{
           /*num_nodes=*/1_p,
           /*num_cpus_per_node=*/6_p,
@@ -105,8 +103,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       SUBCASE("get_machine_space_offset") {
         SUBCASE("Task with TaskSpaceCoordinate = (0,)") {
           TaskSpaceCoordinate coord = make_task_space_coordinate({0_n});
-          MachineSpaceOffset correct =
-              MachineSpaceOffset{0, 0};
+          MachineSpaceOffset correct = MachineSpaceOffset{0, 0};
           MachineSpaceOffset result =
               get_machine_space_offset(task, simv, coord);
           CHECK(correct == result);
@@ -114,8 +111,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
         SUBCASE("Task with TaskSpaceCoordinate = (1,)") {
           TaskSpaceCoordinate coord = make_task_space_coordinate({1_n});
-          MachineSpaceOffset correct =
-              MachineSpaceOffset{0, 2};
+          MachineSpaceOffset correct = MachineSpaceOffset{0, 2};
           MachineSpaceOffset result =
               get_machine_space_offset(task, simv, coord);
           CHECK(correct == result);
@@ -123,8 +119,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
         SUBCASE("Task with TaskSpaceCoordinate = (2,)") {
           TaskSpaceCoordinate coord = make_task_space_coordinate({2_n});
-          MachineSpaceOffset correct =
-              MachineSpaceOffset{0, 4};
+          MachineSpaceOffset correct = MachineSpaceOffset{0, 4};
           MachineSpaceOffset result =
               get_machine_space_offset(task, simv, coord);
           CHECK(correct == result);
@@ -178,8 +173,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       SUBCASE("get_machine_space_offset") {
         SUBCASE("Task with TaskSpaceCoordinate = (0,0)") {
           TaskSpaceCoordinate coord = make_task_space_coordinate({0_n, 0_n});
-          MachineSpaceOffset correct =
-              MachineSpaceOffset{0, 0};
+          MachineSpaceOffset correct = MachineSpaceOffset{0, 0};
           MachineSpaceOffset result =
               get_machine_space_offset(task, simv, coord);
           CHECK(correct == result);
@@ -187,8 +181,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
         SUBCASE("Task with TaskSpaceCoordinate = (0,1)") {
           TaskSpaceCoordinate coord = make_task_space_coordinate({0_n, 1_n});
-          MachineSpaceOffset correct =
-              MachineSpaceOffset{0, 2};
+          MachineSpaceOffset correct = MachineSpaceOffset{0, 2};
           MachineSpaceOffset result =
               get_machine_space_offset(task, simv, coord);
           CHECK(correct == result);
@@ -196,8 +189,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
         SUBCASE("Task with TaskSpaceCoordinate = (1,0)") {
           TaskSpaceCoordinate coord = make_task_space_coordinate({1_n, 0_n});
-          MachineSpaceOffset correct =
-              MachineSpaceOffset{1, 0};
+          MachineSpaceOffset correct = MachineSpaceOffset{1, 0};
           MachineSpaceOffset result =
               get_machine_space_offset(task, simv, coord);
           CHECK(correct == result);
@@ -205,8 +197,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
         SUBCASE("Task with TaskSpaceCoordinate = (1,1)") {
           TaskSpaceCoordinate coord = make_task_space_coordinate({1_n, 1_n});
-          MachineSpaceOffset correct =
-              MachineSpaceOffset{1, 2};
+          MachineSpaceOffset correct = MachineSpaceOffset{1, 2};
           MachineSpaceOffset result =
               get_machine_space_offset(task, simv, coord);
           CHECK(correct == result);

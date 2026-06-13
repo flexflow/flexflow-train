@@ -2,7 +2,8 @@
 
 namespace FlexFlow {
 
-std::ostream &operator<<(std::ostream &s, ::FlexFlow::Realm::Processor const &m) {
+std::ostream &operator<<(std::ostream &s,
+                         ::FlexFlow::Realm::Processor const &m) {
   return s << fmt::to_string(m);
 }
 

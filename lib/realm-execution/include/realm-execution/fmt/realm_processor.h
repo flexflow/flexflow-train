@@ -8,10 +8,10 @@
 namespace fmt {
 
 template <typename Char>
-struct formatter<
-    ::FlexFlow::Realm::Processor,
-    Char,
-    std::enable_if_t<!detail::has_format_as<::FlexFlow::Realm::Processor>::value>>
+struct formatter<::FlexFlow::Realm::Processor,
+                 Char,
+                 std::enable_if_t<!detail::has_format_as<
+                     ::FlexFlow::Realm::Processor>::value>>
     : formatter<::std::string> {
   template <typename FormatContext>
   auto format(::FlexFlow::Realm::Processor const &m, FormatContext &ctx)
@@ -27,7 +27,8 @@ struct formatter<
 
 namespace FlexFlow {
 
-std::ostream &operator<<(std::ostream &s, ::FlexFlow::Realm::Processor const &m);
+std::ostream &operator<<(std::ostream &s,
+                         ::FlexFlow::Realm::Processor const &m);
 
 } // namespace FlexFlow
 

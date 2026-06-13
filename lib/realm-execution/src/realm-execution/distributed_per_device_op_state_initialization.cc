@@ -39,8 +39,8 @@ PerDeviceOpStateBacking perform_distributed_per_device_op_state_initialization(
                                                       invocation);
 
     DeviceSpecificPtr<PerDeviceOpState> *device_state_ptr =
-        new DeviceSpecificPtr<PerDeviceOpState>{ctx.get_current_global_device_id(),
-                                                std::nullopt};
+        new DeviceSpecificPtr<PerDeviceOpState>{
+            ctx.get_current_global_device_id(), std::nullopt};
 
     std::optional<Realm::Event> completion_event =
         spawn_per_device_op_state_init_task(ctx,

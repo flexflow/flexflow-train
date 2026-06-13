@@ -54,8 +54,7 @@ MachineSpaceOffset get_machine_space_offset(
     StartInvariantMachineView const &start_inv_machine_view,
     TaskSpaceCoordinate const &coord) {
 
-  MachineSpaceCoordinate dummy_start =
-      MachineSpaceCoordinate{0_n, 0_n};
+  MachineSpaceCoordinate dummy_start = MachineSpaceCoordinate{0_n, 0_n};
 
   MachineView mv =
       machine_view_from_start_invariant(start_inv_machine_view, dummy_start);

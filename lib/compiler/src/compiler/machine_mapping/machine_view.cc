@@ -125,8 +125,8 @@ MachineSpaceCoordinate
       compute_index(machine_view.start.node_idx, inter_dimension_indices);
   nonnegative_int device_idx =
       compute_index(machine_view.start.device_idx, intra_dimension_indices);
-  MachineSpaceCoordinate ms_coord = MachineSpaceCoordinate{
-      node_idx, device_idx};
+  MachineSpaceCoordinate ms_coord =
+      MachineSpaceCoordinate{node_idx, device_idx};
 
   return ms_coord;
 }

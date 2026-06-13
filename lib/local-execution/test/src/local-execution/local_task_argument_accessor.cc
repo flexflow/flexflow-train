@@ -52,11 +52,11 @@ TEST_SUITE(FF_TEST_SUITE) {
         };
 
     global_device_id_t device_idx = global_device_id_t{
-      /*coord=*/MachineSpaceCoordinate{
-        /*node_idx=*/0_n,
-        /*device_idx=*/0_n,
-      },
-      /*device_type=*/DeviceType::CPU,
+        /*coord=*/MachineSpaceCoordinate{
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
+        },
+        /*device_type=*/DeviceType::CPU,
     };
 
     LocalTaskArgumentAccessor acc = LocalTaskArgumentAccessor{

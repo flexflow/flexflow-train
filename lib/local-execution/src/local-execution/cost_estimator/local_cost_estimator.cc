@@ -103,8 +103,8 @@ OpCostMetrics LocalCostEstimator::estimate_cost(
 
   // allocate memory
   std::shared_ptr<TrackedAllocator> tracked_allocator_ptr =
-      std::make_shared<TrackedAllocator>(create_local_allocator_for_device_type(
-          this->device_idx.device_type));
+      std::make_shared<TrackedAllocator>(
+          create_local_allocator_for_device_type(this->device_idx.device_type));
 
   layer_guid_t layer_guid = layer_guid_t{Node{0}};
 

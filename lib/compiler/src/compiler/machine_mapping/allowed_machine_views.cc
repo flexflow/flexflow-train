@@ -91,13 +91,11 @@ static std::unordered_set<MachineView>
 
   auto get_candidate_starts = [](MachineComputeResourceSlice const &slice)
       -> std::unordered_set<MachineSpaceCoordinate> {
-
     std::unordered_set<MachineSpaceCoordinate> result;
     for (nonnegative_int node_idx : nonnegative_range(slice.num_nodes)) {
       for (nonnegative_int device_idx :
            nonnegative_range(slice.num_gpus_per_node)) {
-        result.insert(
-            MachineSpaceCoordinate{node_idx, device_idx});
+        result.insert(MachineSpaceCoordinate{node_idx, device_idx});
       }
     }
     return result;

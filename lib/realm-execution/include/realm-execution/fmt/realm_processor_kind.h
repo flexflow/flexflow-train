@@ -3,16 +3,13 @@
 
 #include "realm-execution/realm.h"
 #include <fmt/format.h>
-#include <utility>
 #include <libassert/assert.hpp>
+#include <utility>
 
 namespace fmt {
 
 template <typename Char>
-struct formatter<
-    ::FlexFlow::Realm::Processor::Kind,
-    Char
-    >
+struct formatter<::FlexFlow::Realm::Processor::Kind, Char>
     : formatter<::std::string> {
   template <typename FormatContext>
   auto format(::FlexFlow::Realm::Processor::Kind const &m, FormatContext &ctx)
@@ -76,7 +73,8 @@ struct formatter<
 
 namespace FlexFlow {
 
-std::ostream &operator<<(std::ostream &, ::FlexFlow::Realm::Processor::Kind const &);
+std::ostream &operator<<(std::ostream &,
+                         ::FlexFlow::Realm::Processor::Kind const &);
 
 } // namespace FlexFlow
 

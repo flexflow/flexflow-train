@@ -2,11 +2,12 @@
 
 namespace FlexFlow {
 
-node_idx_t node_idx_from_realm_address_space(Realm::AddressSpace address_space) {
+node_idx_t
+    node_idx_from_realm_address_space(Realm::AddressSpace address_space) {
   return node_idx_t{
-    nonnegative_int{
-      static_cast<size_t>(address_space),
-    },
+      nonnegative_int{
+          static_cast<size_t>(address_space),
+      },
   };
 }
 

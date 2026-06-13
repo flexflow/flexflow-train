@@ -140,13 +140,12 @@ TEST_SUITE(FF_TEST_SUITE) {
                                          /*weight_decay=*/0.001}};
     device_handle_t ff_handle = cpu_make_device_handle_t();
     global_device_id_t global_device_id = global_device_id_t{
-      /*coord=*/MachineSpaceCoordinate{
-        /*node_idx=*/0_n,
-        /*device_idx=*/0_n,
-      },
-      /*device_type=*/DeviceType::CPU,
+        /*coord=*/MachineSpaceCoordinate{
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
+        },
+        /*device_type=*/DeviceType::CPU,
     };
-
 
     std::unordered_map<DynamicValueAttrs, DynamicTensorAccessor> input_tensors;
 
@@ -313,11 +312,11 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         },
     };
     global_device_id_t device_idx = global_device_id_t{
-      /*coord=*/MachineSpaceCoordinate{
-        /*node_idx=*/0_n,
-        /*device_idx=*/0_n,
-      },
-      /*device_type=*/DeviceType::GPU,
+        /*coord=*/MachineSpaceCoordinate{
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
+        },
+        /*device_type=*/DeviceType::GPU,
     };
     device_handle_t ff_handle =
         gpu_make_device_handle_t(managed_handle.raw_handle());
@@ -434,11 +433,11 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     };
 
     global_device_id_t device_idx = global_device_id_t{
-      /*coord=*/MachineSpaceCoordinate{
-        /*node_idx=*/0_n,
-        /*device_idx=*/0_n,
-      },
-      /*device_type=*/DeviceType::GPU,
+        /*coord=*/MachineSpaceCoordinate{
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
+        },
+        /*device_type=*/DeviceType::GPU,
     };
 
     device_handle_t ff_handle =

@@ -11,7 +11,8 @@ bidict<ParallelTensorSpaceCoordinate, global_device_id_t>
       get_tensor_bindings_for_slot_name(mapping.op_task_group, slot_name);
 
   return transform_values(
-      coord_bindings, [&](MachineSpaceCoordinate const &coord) -> global_device_id_t {
+      coord_bindings,
+      [&](MachineSpaceCoordinate const &coord) -> global_device_id_t {
         return global_device_id_t{coord, mapping.device_type};
       });
 }

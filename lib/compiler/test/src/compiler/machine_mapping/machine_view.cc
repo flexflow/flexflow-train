@@ -162,8 +162,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("Task with TaskSpaceCoordinate = (0,0)") {
         TaskSpaceCoordinate coord = make_task_space_coordinate({0_n, 0_n});
-        MachineSpaceCoordinate correct = MachineSpaceCoordinate{
-            /*node_idx=*/1_n, /*device_idx=*/2_n};
+        MachineSpaceCoordinate correct =
+            MachineSpaceCoordinate{/*node_idx=*/1_n, /*device_idx=*/2_n};
         MachineSpaceCoordinate result =
             get_machine_space_coordinate(task, mv, coord);
         CHECK(correct == result);
@@ -171,8 +171,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("Task with TaskSpaceCoordinate = (0,1)") {
         TaskSpaceCoordinate coord = make_task_space_coordinate({0_n, 1_n});
-        MachineSpaceCoordinate correct = MachineSpaceCoordinate{
-            /*node_idx=*/1_n, /*device_idx=*/4_n};
+        MachineSpaceCoordinate correct =
+            MachineSpaceCoordinate{/*node_idx=*/1_n, /*device_idx=*/4_n};
         MachineSpaceCoordinate result =
             get_machine_space_coordinate(task, mv, coord);
         CHECK(correct == result);
@@ -180,8 +180,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("Task with TaskSpaceCoordinate = (1,0)") {
         TaskSpaceCoordinate coord = make_task_space_coordinate({1_n, 0_n});
-        MachineSpaceCoordinate correct = MachineSpaceCoordinate{
-            /*node_idx=*/2_n, /*device_idx=*/2_n};
+        MachineSpaceCoordinate correct =
+            MachineSpaceCoordinate{/*node_idx=*/2_n, /*device_idx=*/2_n};
         MachineSpaceCoordinate result =
             get_machine_space_coordinate(task, mv, coord);
         CHECK(correct == result);
@@ -189,8 +189,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("Task with TaskSpaceCoordinate = (1,1)") {
         TaskSpaceCoordinate coord = make_task_space_coordinate({1_n, 1_n});
-        MachineSpaceCoordinate correct = MachineSpaceCoordinate{
-            /*node_idx=*/2_n, /*device_idx=*/4_n};
+        MachineSpaceCoordinate correct =
+            MachineSpaceCoordinate{/*node_idx=*/2_n, /*device_idx=*/4_n};
         MachineSpaceCoordinate result =
             get_machine_space_coordinate(task, mv, coord);
         CHECK(correct == result);
@@ -237,8 +237,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("Task with TaskSpaceCoordinate = (0,0)") {
         TaskSpaceCoordinate coord = make_task_space_coordinate({0_n, 0_n});
-        MachineSpaceCoordinate correct = MachineSpaceCoordinate{
-            /*node_idx=*/1_n, /*device_idx=*/0_n};
+        MachineSpaceCoordinate correct =
+            MachineSpaceCoordinate{/*node_idx=*/1_n, /*device_idx=*/0_n};
         MachineSpaceCoordinate result =
             get_machine_space_coordinate(task, mv, coord);
         CHECK(correct == result);
@@ -246,8 +246,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("Task with TaskSpaceCoordinate = (0,1)") {
         TaskSpaceCoordinate coord = make_task_space_coordinate({0_n, 1_n});
-        MachineSpaceCoordinate correct = MachineSpaceCoordinate{
-            /*node_idx=*/1_n, /*device_idx=*/4_n};
+        MachineSpaceCoordinate correct =
+            MachineSpaceCoordinate{/*node_idx=*/1_n, /*device_idx=*/4_n};
         MachineSpaceCoordinate result =
             get_machine_space_coordinate(task, mv, coord);
         CHECK(correct == result);
@@ -255,8 +255,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("Task with TaskSpaceCoordinate = (1,0)") {
         TaskSpaceCoordinate coord = make_task_space_coordinate({1_n, 0_n});
-        MachineSpaceCoordinate correct = MachineSpaceCoordinate{
-            /*node_idx=*/1_n, /*device_idx=*/1_n};
+        MachineSpaceCoordinate correct =
+            MachineSpaceCoordinate{/*node_idx=*/1_n, /*device_idx=*/1_n};
         MachineSpaceCoordinate result =
             get_machine_space_coordinate(task, mv, coord);
         CHECK(correct == result);
@@ -264,8 +264,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("Task with TaskSpaceCoordinate = (1,1)") {
         TaskSpaceCoordinate coord = make_task_space_coordinate({1_n, 1_n});
-        MachineSpaceCoordinate correct = MachineSpaceCoordinate{
-            /*node_idx=*/1_n, /*device_idx=*/5_n};
+        MachineSpaceCoordinate correct =
+            MachineSpaceCoordinate{/*node_idx=*/1_n, /*device_idx=*/5_n};
         MachineSpaceCoordinate result =
             get_machine_space_coordinate(task, mv, coord);
         CHECK(correct == result);
@@ -302,8 +302,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           }},
       };
       MachineView mv = MachineView{
-          MachineSpaceCoordinate{
-              /*node_idx=*/0_n, /*device_idx=*/1_n},
+          MachineSpaceCoordinate{/*node_idx=*/0_n, /*device_idx=*/1_n},
           {MachineViewDimension{stride_t{1_p},
                                 MachineSpecificationDimension::INTER_NODE},
            MachineViewDimension{stride_t{2_p},
@@ -313,8 +312,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("Task with TaskSpaceCoordinate = (0,0,1)") {
         TaskSpaceCoordinate coord = make_task_space_coordinate({0_n, 1_n, 0_n});
-        MachineSpaceCoordinate correct = MachineSpaceCoordinate{
-            /*node_idx=*/0_n, /*device_idx=*/3_n};
+        MachineSpaceCoordinate correct =
+            MachineSpaceCoordinate{/*node_idx=*/0_n, /*device_idx=*/3_n};
         MachineSpaceCoordinate result =
             get_machine_space_coordinate(task, mv, coord);
         CHECK(correct == result);
@@ -322,8 +321,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("Task with TaskSpaceCoordinate = (1,1,0)") {
         TaskSpaceCoordinate coord = make_task_space_coordinate({1_n, 0_n, 1_n});
-        MachineSpaceCoordinate correct = MachineSpaceCoordinate{
-            /*node_idx=*/1_n, /*device_idx=*/5_n};
+        MachineSpaceCoordinate correct =
+            MachineSpaceCoordinate{/*node_idx=*/1_n, /*device_idx=*/5_n};
         MachineSpaceCoordinate result =
             get_machine_space_coordinate(task, mv, coord);
         CHECK(correct == result);
@@ -331,8 +330,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("Task with TaskSpaceCoordinate = (1,1,1)") {
         TaskSpaceCoordinate coord = make_task_space_coordinate({1_n, 1_n, 1_n});
-        MachineSpaceCoordinate correct = MachineSpaceCoordinate{
-            /*node_idx=*/1_n, /*device_idx=*/7_n};
+        MachineSpaceCoordinate correct =
+            MachineSpaceCoordinate{/*node_idx=*/1_n, /*device_idx=*/7_n};
         MachineSpaceCoordinate result =
             get_machine_space_coordinate(task, mv, coord);
         CHECK(correct == result);

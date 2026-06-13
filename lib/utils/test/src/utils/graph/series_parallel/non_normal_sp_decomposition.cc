@@ -1,6 +1,6 @@
 #include "utils/graph/series_parallel/non_normal_sp_decomposition.h"
-#include <doctest/doctest.h>
 #include "utils/graph/series_parallel/series_parallel_decomposition.dtg.h"
+#include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 

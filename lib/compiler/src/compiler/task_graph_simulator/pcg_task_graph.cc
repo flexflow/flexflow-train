@@ -24,7 +24,8 @@ PCGTaskGraph
   DiGraph digraph = DiGraph::create<AdjacencyDiGraph>();
   bidict<Node, PCGTask> node_to_task;
   bidict<Node, parallel_layer_guid_t> node_to_layer;
-  std::unordered_map<Node, std::unordered_set<MachineSpaceCoordinate>> node_to_devices;
+  std::unordered_map<Node, std::unordered_set<MachineSpaceCoordinate>>
+      node_to_devices;
 
   for (parallel_layer_guid_t const &layer : get_parallel_layers(pcg)) {
     MachineView mv = machine_mapping.machine_views.at(layer);
@@ -35,7 +36,7 @@ PCGTaskGraph
     node_to_layer.equate(node, layer);
     node_to_devices[node] =
         get_machine_space_coordinates(get_operator_task_space(pcg, layer),
-                       machine_mapping.machine_views.at(layer));
+                                      machine_mapping.machine_views.at(layer));
   }
 
   for (ParallelComputationGraphEdge const &edge : get_edges(pcg)) {

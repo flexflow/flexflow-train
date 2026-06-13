@@ -52,13 +52,15 @@ milliseconds_t task_simulator_estimate_forward_pass_time(
     }
     assert(current_task.is_operator());
 
-    auto get_devices = [&](Node const &n) -> std::unordered_set<MachineSpaceCoordinate> {
+    auto get_devices =
+        [&](Node const &n) -> std::unordered_set<MachineSpaceCoordinate> {
       return task_graph.node_to_devices.at(n);
     };
 
     std::unordered_set<MachineSpaceCoordinate> devices_occupied =
         set_union(transform(in_progress_tasks, get_devices));
-    std::unordered_set<MachineSpaceCoordinate> required_devices = get_devices(task);
+    std::unordered_set<MachineSpaceCoordinate> required_devices =
+        get_devices(task);
     return set_intersection(devices_occupied, required_devices).empty();
   };
 

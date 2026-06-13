@@ -10,9 +10,9 @@
 #include "realm-execution/realm.h"
 #include "realm-execution/tasks/task_id_t.dtg.h"
 #include "task-spec/global_device_id_t.dtg.h"
+#include "task-spec/local_device_id_t.dtg.h"
 #include <optional>
 #include <unordered_map>
-#include "task-spec/local_device_id_t.dtg.h"
 
 namespace FlexFlow {
 
@@ -35,7 +35,8 @@ public:
   ///\{
   Realm::Processor processor_from_global_device_id(global_device_id_t const &);
   global_device_id_t global_device_id_from_processor(Realm::Processor);
-  Realm::Processor processor_from_local_device_id(local_device_id_t const &) const;
+  Realm::Processor
+      processor_from_local_device_id(local_device_id_t const &) const;
   local_device_id_t local_device_id_from_processor(Realm::Processor) const;
 
   static Realm::Memory get_nearest_memory(Realm::Processor);
@@ -113,7 +114,8 @@ protected:
    */
   Realm::Runtime get_runtime();
 
-  bidict<Realm::Processor, global_device_id_t> const &get_global_machine_topology();
+  bidict<Realm::Processor, global_device_id_t> const &
+      get_global_machine_topology();
 
 private:
   Realm::Runtime runtime;
@@ -121,7 +123,8 @@ private:
   Allocator allocator;
   std::vector<Realm::Event> outstanding_events;
   bidict<Realm::Processor, local_device_id_t> local_machine_topology;
-  std::optional<bidict<Realm::Processor, global_device_id_t>> cached_global_machine_topology = std::nullopt;
+  std::optional<bidict<Realm::Processor, global_device_id_t>>
+      cached_global_machine_topology = std::nullopt;
 };
 
 } // namespace FlexFlow

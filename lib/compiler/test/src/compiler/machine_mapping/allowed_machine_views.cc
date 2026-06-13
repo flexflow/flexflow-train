@@ -1,11 +1,11 @@
 #include "compiler/machine_mapping/allowed_machine_views.h"
-#include <doctest/doctest.h>
 #include "utils/containers/extend.h"
 #include "utils/containers/range.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/unordered_set_of.h"
 #include "utils/containers/zip.h"
 #include "utils/fmt/unordered_set.h"
+#include <doctest/doctest.h>
 #include <libassert/assert.hpp>
 
 using namespace FlexFlow;

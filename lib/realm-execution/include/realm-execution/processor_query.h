@@ -5,7 +5,8 @@
 
 namespace FlexFlow {
 
-std::set<Realm::Processor> processor_set_from_query(Realm::Machine::ProcessorQuery const &);
+std::set<Realm::Processor>
+    processor_set_from_query(Realm::Machine::ProcessorQuery const &);
 
 } // namespace FlexFlow
 

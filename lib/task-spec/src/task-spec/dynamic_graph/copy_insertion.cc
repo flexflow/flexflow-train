@@ -61,10 +61,12 @@ bool graph_is_fully_copy_inserted(DynamicOpenDataflowGraph const &g) {
 static std::pair<DynamicValueAttrs, DynamicValueAttrs>
     filter_mapping_to_avoid_degenerate_copies(DynamicValueAttrs const &input,
                                               DynamicValueAttrs const &output) {
-  std::unordered_set<std::pair<ParallelTensorSpaceCoordinate, global_device_id_t>>
+  std::unordered_set<
+      std::pair<ParallelTensorSpaceCoordinate, global_device_id_t>>
       input_mapping = unordered_set_of(assert_unwrap(input.mapping).raw);
 
-  std::unordered_set<std::pair<ParallelTensorSpaceCoordinate, global_device_id_t>>
+  std::unordered_set<
+      std::pair<ParallelTensorSpaceCoordinate, global_device_id_t>>
       output_mapping = unordered_set_of(assert_unwrap(output.mapping).raw);
 
   // Exclude the point shared between the input and output mappings, because
@@ -214,8 +216,7 @@ std::unordered_map<InternalDynamicSlotSite, ParallelTensorMapping>
         [&](InternalDynamicSlotSite const &s) -> ParallelTensorMapping {
           return ParallelTensorMapping{
               dynamic_node_mapping_bindings_for_slot_name(
-                  assert_unwrap(i.node_attrs.mapping),
-                  s.slot_name.slot_name),
+                  assert_unwrap(i.node_attrs.mapping), s.slot_name.slot_name),
           };
         });
   };

@@ -44,14 +44,16 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     DeviceType device_type = DeviceType::GPU;
-    auto mk_device_id = [&](MachineSpaceCoordinate const &c) -> global_device_id_t {
+    auto mk_device_id =
+        [&](MachineSpaceCoordinate const &c) -> global_device_id_t {
       return global_device_id_t{c, device_type};
     };
 
     auto mk_value =
         [&](size_t src_node_id,
             TensorSlotName src_slot_name,
-            bidict<ParallelTensorSpaceCoordinate, global_device_id_t> tensor_binding,
+            bidict<ParallelTensorSpaceCoordinate, global_device_id_t>
+                tensor_binding,
             std::optional<ParallelTensorSpaceCoordinate> const &shard_coord)
         -> DynamicValueAttrs {
       if (shard_coord.has_value()) {
@@ -155,9 +157,9 @@ TEST_SUITE(FF_TEST_SUITE) {
               TensorSlotName use_slot_name,
               std::optional<ParallelTensorSpaceCoordinate> const &shard_coord)
           -> DynamicValueAttrs {
-        bidict<ParallelTensorSpaceCoordinate, global_device_id_t> tensor_binding =
-            dynamic_node_mapping_bindings_for_slot_name(node_mapping,
-                                                        use_slot_name);
+        bidict<ParallelTensorSpaceCoordinate, global_device_id_t>
+            tensor_binding = dynamic_node_mapping_bindings_for_slot_name(
+                node_mapping, use_slot_name);
         return mk_value(
             src_node_id, src_slot_name, tensor_binding, shard_coord);
       };

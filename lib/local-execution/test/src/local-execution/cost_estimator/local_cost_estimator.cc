@@ -19,11 +19,11 @@ TEST_SUITE(FF_TEST_SUITE) {
     Allocator allocator = create_local_cpu_memory_allocator();
     device_handle_t ff_handle = cpu_make_device_handle_t();
     global_device_id_t device_idx = global_device_id_t{
-      /*coord=*/MachineSpaceCoordinate{
-        /*node_idx=*/0_n,
-        /*device_idx=*/0_n,
-      },
-      /*device_type=*/DeviceType::CPU,
+        /*coord=*/MachineSpaceCoordinate{
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
+        },
+        /*device_type=*/DeviceType::CPU,
     };
 
     OptimizerAttrs optimizer_attrs = OptimizerAttrs{
@@ -69,10 +69,9 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*output_shapes=*/{{TensorSlotName::OUTPUT, output_shape}},
           /*optimizer_attrs=*/optimizer_attrs,
           /*machine_view=*/
-          make_1d_machine_view(
-              MachineSpaceCoordinate{0_n, 0_n},
-              MachineSpecificationDimension::INTRA_NODE,
-              stride_t{1_p}),
+          make_1d_machine_view(MachineSpaceCoordinate{0_n, 0_n},
+                               MachineSpecificationDimension::INTRA_NODE,
+                               stride_t{1_p}),
       };
 
       OpCostMetrics result = cost_estimator.estimate_cost(op_cost_estimate_key);
@@ -94,11 +93,11 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     Allocator allocator = create_local_cuda_memory_allocator();
 
     global_device_id_t device_idx = global_device_id_t{
-      /*coord=*/MachineSpaceCoordinate{
-        /*node_idx=*/0_n,
-        /*device_idx=*/0_n,
-      },
-      /*device_type=*/DeviceType::GPU,
+        /*coord=*/MachineSpaceCoordinate{
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
+        },
+        /*device_type=*/DeviceType::GPU,
     };
 
     device_handle_t ff_handle =
@@ -168,10 +167,9 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           /*output_shapes=*/{{TensorSlotName::OUTPUT, output_shape}},
           /*optimizer_attrs=*/optimizer_attrs,
           /*machine_view=*/
-          make_1d_machine_view(
-              MachineSpaceCoordinate{0_n, 0_n},
-              MachineSpecificationDimension::INTRA_NODE,
-              stride_t{1_p}),
+          make_1d_machine_view(MachineSpaceCoordinate{0_n, 0_n},
+                               MachineSpecificationDimension::INTRA_NODE,
+                               stride_t{1_p}),
       };
 
       OpCostMetrics result = cost_estimator.estimate_cost(op_cost_estimate_key);

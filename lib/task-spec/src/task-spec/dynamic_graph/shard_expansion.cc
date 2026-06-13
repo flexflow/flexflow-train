@@ -44,7 +44,8 @@ bool graph_is_fully_shard_expanded(DynamicOpenDataflowGraph const &g) {
 
 static bidict<ParallelTensorSpaceCoordinate, global_device_id_t>
     restrict_tensor_mapping_keys_to_coord(
-        bidict<ParallelTensorSpaceCoordinate, global_device_id_t> const &mapping,
+        bidict<ParallelTensorSpaceCoordinate, global_device_id_t> const
+            &mapping,
         ParallelTensorSpaceCoordinate const &parallel_tensor_coord) {
   return filter_keys(mapping, [&](ParallelTensorSpaceCoordinate const &p) {
     return p == parallel_tensor_coord;
@@ -128,13 +129,14 @@ std::unordered_set<DynamicNodeInvocation>
   std::unordered_set<global_device_id_t> shard_machine_coords =
       target_devices_of_dynamic_node_mapping(mapping);
 
-  return transform(
-      shard_machine_coords, [&](global_device_id_t const &c) -> DynamicNodeInvocation {
-        OperatorAtomicTaskShardBinding slot_bindings =
-            mapping.op_task_group.get_shard_bindings().at_l(c.coord);
+  return transform(shard_machine_coords,
+                   [&](global_device_id_t const &c) -> DynamicNodeInvocation {
+                     OperatorAtomicTaskShardBinding slot_bindings =
+                         mapping.op_task_group.get_shard_bindings().at_l(
+                             c.coord);
 
-        return shard_invocation_for_binding(i, c, slot_bindings);
-      });
+                     return shard_invocation_for_binding(i, c, slot_bindings);
+                   });
 }
 
 DynamicOpenDataflowGraph

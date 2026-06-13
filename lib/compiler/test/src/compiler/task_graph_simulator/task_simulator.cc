@@ -65,10 +65,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       std::vector<MachineViewDimension> dims = {};
       ParallelComputationGraph pcg = b.pcg;
-      MachineView mv1 =
-          MachineView{MachineSpaceCoordinate{0_n, 0_n}, dims};
-      MachineView mv2 =
-          MachineView{MachineSpaceCoordinate{0_n, 1_n}, dims};
+      MachineView mv1 = MachineView{MachineSpaceCoordinate{0_n, 0_n}, dims};
+      MachineView mv2 = MachineView{MachineSpaceCoordinate{0_n, 1_n}, dims};
 
       MachineMapping device_mapping = MachineMapping{{
           {layer0, mv1},
@@ -146,14 +144,10 @@ TEST_SUITE(FF_TEST_SUITE) {
       std::vector<MachineViewDimension> dims = {};
 
       SUBCASE("all different devices") {
-        MachineView mv0 = MachineView{
-            MachineSpaceCoordinate{0_n, 0_n}, dims};
-        MachineView mv1 = MachineView{
-            MachineSpaceCoordinate{0_n, 1_n}, dims};
-        MachineView mv2 = MachineView{
-            MachineSpaceCoordinate{1_n, 0_n}, dims};
-        MachineView mv3 = MachineView{
-            MachineSpaceCoordinate{1_n, 1_n}, dims};
+        MachineView mv0 = MachineView{MachineSpaceCoordinate{0_n, 0_n}, dims};
+        MachineView mv1 = MachineView{MachineSpaceCoordinate{0_n, 1_n}, dims};
+        MachineView mv2 = MachineView{MachineSpaceCoordinate{1_n, 0_n}, dims};
+        MachineView mv3 = MachineView{MachineSpaceCoordinate{1_n, 1_n}, dims};
 
         MachineMapping device_mapping = MachineMapping{{
             {layer0, mv0},
@@ -206,8 +200,7 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SUBCASE("all the same device") {
-        MachineView mv = MachineView{
-            MachineSpaceCoordinate{0_n, 0_n}, dims};
+        MachineView mv = MachineView{MachineSpaceCoordinate{0_n, 0_n}, dims};
         MachineMapping device_mapping = MachineMapping{{
             {layer0, mv},
             {layer1, mv},

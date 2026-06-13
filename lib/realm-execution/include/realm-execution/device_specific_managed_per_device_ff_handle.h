@@ -11,7 +11,8 @@ namespace FlexFlow {
 
 DeviceSpecificPtr<ManagedPerDeviceFFHandle>
     make_device_specific_managed_ff_handle(
-        global_device_id_t const &, std::optional<ManagedPerDeviceFFHandle *> const &);
+        global_device_id_t const &,
+        std::optional<ManagedPerDeviceFFHandle *> const &);
 
 device_handle_t device_handle_t_from_device_specific_managed_ff_handle(
     DeviceSpecificPtr<ManagedPerDeviceFFHandle> const &, global_device_id_t);
