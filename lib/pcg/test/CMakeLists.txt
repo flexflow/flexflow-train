@@ -8,6 +8,6 @@ ff_add_test_executable(
   DEPS
     utils
     pcg
-    doctest
+    deps::doctest
     utils-test-common
 )

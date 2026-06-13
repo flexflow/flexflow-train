@@ -1,6 +1,6 @@
 set(project_target kernels)
 
-project(${project_target} 
+project(${project_target}
 	LANGUAGES CXX CUDA)
 
 file(GLOB_RECURSE SRC
@@ -25,9 +25,9 @@ target_include_directories(
 target_link_libraries(
   ${project_target}
   op-attrs
-  cuda
-  cudnn
-  nccl
+  deps::cublas
+  deps::cudnn
+  deps::nccl
   utils
   pcg
 )
@@ -35,8 +35,8 @@ target_link_libraries(
 define_ff_vars(${project_target})
 
 set_target_properties(
-  ${project_target} 
-  PROPERTIES 
+  ${project_target}
+  PROPERTIES
   CUDA_STANDARD 17
 )
 
