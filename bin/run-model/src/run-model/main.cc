@@ -9,6 +9,7 @@
 #include "utils/cli/cli_parse_result.h"
 #include "utils/cli/cli_spec.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
+#include "utils/optional.h"
 #include "utils/positive_int/positive_int.h"
 #include <fstream>
 #include <string_view>
@@ -29,6 +30,43 @@ static std::vector<char *> make_realm_args(std::string_view executable_name) {
   return result;
 }
 
+static void error_out(std::string const &msg) {
+  std::cerr << "error: " << msg << std::endl;
+  exit(1);
+}
+
+static bool detect_if_gpus_are_available() {
+  FlexFlow::Realm::Machine::ProcessorQuery pq(
+      FlexFlow::Realm::Machine::get_machine());
+  pq.only_kind(FlexFlow::Realm::Processor::Kind::TOC_PROC);
+  return pq.count() > 0;
+}
+
+static DeviceType decide_and_check_device_type(
+    std::optional<DeviceType> const &cli_device_type_argument) {
+  if (cli_device_type_argument == DeviceType::CPU) {
+    return DeviceType::CPU;
+  }
+
+  bool gpus_are_available = detect_if_gpus_are_available();
+
+  if (cli_device_type_argument == DeviceType::GPU) {
+    if (gpus_are_available) {
+      return DeviceType::GPU;
+    } else {
+      error_out("could not detect gpus to execute on");
+    }
+  }
+
+  ASSERT(!cli_device_type_argument.has_value());
+
+  if (gpus_are_available) {
+    return DeviceType::CPU;
+  } else {
+    return DeviceType::GPU;
+  }
+}
+
 int main(int argc, char **argv) {
   CLISpec cli;
 
@@ -42,6 +80,16 @@ int main(int argc, char **argv) {
           "path to a file containing mappped PCG encoded as JSON",
       });
 
+  CLIArgumentKey key_device_type = cli.add_named_argument(CLINamedArgumentSpec{
+      /*long_flag=*/"device-type",
+      /*metavar=*/"DEVICE_TYPE",
+      /*choices=*/std::vector<std::string>{"cpu", "gpu", "auto"},
+      /*description=*/
+      ("type of device to execute the model on. "
+       "auto will run on gpu if available, falling back to cpu. "
+       "default is auto."),
+  });
+
   ASSERT(argc >= 1);
   std::string prog_name = argv[0];
 
@@ -52,8 +100,7 @@ int main(int argc, char **argv) {
       std::string error_msg = result.error();
       std::cerr << cli_get_help_message(prog_name, cli);
       std::cerr << std::endl;
-      std::cerr << "error: " << error_msg << std::endl;
-      return 1;
+      error_out(error_msg);
     }
 
     result.value();
@@ -67,6 +114,23 @@ int main(int argc, char **argv) {
 
   std::string mapped_pcg_json =
       cli_get_positional_argument(parsed, key_mapped_pcg_json);
+
+  auto parse_device_type_argument =
+      [&](std::string const &s) -> std::optional<DeviceType> {
+    if (s == "cpu") {
+      return DeviceType::CPU;
+    } else if (s == "gpu") {
+      return DeviceType::GPU;
+    } else if (s == "auto") {
+      return std::nullopt;
+    } else {
+      PANIC("Unexpected device type argument value");
+    }
+  };
+
+  std::optional<DeviceType> device_type_cli_argument =
+      parse_device_type_argument(
+          cli_get_named_argument(parsed, key_mapped_pcg_json).value_or("auto"));
 
   std::vector<char *> realm_args = make_realm_args(prog_name);
   int realm_argc = realm_args.size();
@@ -95,6 +159,9 @@ int main(int argc, char **argv) {
                                          /*workSpaceSize=*/1024 * 1024,
                                          /*allowTensorOpMathConversion=*/true);
 
+        DeviceType device_type =
+            decide_and_check_device_type(device_type_cli_argument);
+
         PCGInstance pcg_instance = create_pcg_instance(
             /*ctx=*/ctx,
             /*mpcg=*/mpcg,
@@ -102,7 +169,7 @@ int main(int argc, char **argv) {
             /*loss=*/std::nullopt,
             /*input_tensors=*/input_tensors,
             /*device_handle=*/device_handle,
-            /*device_type=*/DeviceType::GPU);
+            /*device_type=*/device_type);
 
         // begin training loop
         int num_epochs = 5;
