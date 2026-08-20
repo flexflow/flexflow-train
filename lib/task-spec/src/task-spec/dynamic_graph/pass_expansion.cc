@@ -39,6 +39,7 @@ void require_value_is_pass_expanded(DynamicValueAttrs const &v) {
 
 void require_value_is_not_pass_expanded(DynamicValueAttrs const &v) {
   ASSERT(!v.role.has_value(), v);
+  ASSERT(!v.subgradient_id.has_value(), v);
 }
 
 void require_invocation_is_fully_pass_expanded(
