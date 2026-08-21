@@ -55,7 +55,7 @@ type = "std::optional<::FlexFlow::subgradient_id_t>"
 docstring = '''
 \brief The unique identity of the subgradient represented by this value.
 
-This field is filled in by \ref pass_expansion.h when a value is consumed multiple times, requiring a \ref GradientReduction in the backward pass.
+This field is filled in by \ref pass_expansion.h when a value is consumed multiple times, requiring a \ref GradientReductionAttrs in the backward pass.
 '''
 
 [[fields]]
