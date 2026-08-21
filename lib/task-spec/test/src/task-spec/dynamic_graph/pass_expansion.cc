@@ -1190,9 +1190,9 @@ TEST_SUITE(FF_TEST_SUITE) {
           mk_node_attrs(12, relu_op_attrs, DynamicTaskType::FWD);
 
       DynamicNodeAttrs relu1_node_bwd =
-          mk_node_attrs(13, relu_op_attrs, DynamicTaskType::BWD);
+          mk_node_attrs(11, relu_op_attrs, DynamicTaskType::BWD);
       DynamicNodeAttrs relu2_node_bwd =
-          mk_node_attrs(14, relu_op_attrs, DynamicTaskType::BWD);
+          mk_node_attrs(12, relu_op_attrs, DynamicTaskType::BWD);
       DynamicNodeAttrs gradient_reduction_node_bwd =
           mk_gradient_node_attrs(DynamicTaskType::BWD);
 
@@ -1288,7 +1288,7 @@ TEST_SUITE(FF_TEST_SUITE) {
                       relu1_output_tensor_activation,
                   },
                   std::pair{
-                      mk_fwd_slot(TensorSlotName::OUTPUT),
+                      mk_grad_slot(TensorSlotName::OUTPUT),
                       relu1_output_tensor_gradient,
                   },
               },
@@ -1296,7 +1296,7 @@ TEST_SUITE(FF_TEST_SUITE) {
               /*outputs=*/
               std::map{
                   std::pair{
-                      mk_fwd_slot(TensorSlotName::INPUT),
+                      mk_grad_slot(TensorSlotName::INPUT),
                       input_tensor_subgradient1,
                   },
               },
@@ -1312,15 +1312,15 @@ TEST_SUITE(FF_TEST_SUITE) {
                       relu2_output_tensor_activation,
                   },
                   std::pair{
-                      mk_fwd_slot(TensorSlotName::OUTPUT),
+                      mk_grad_slot(TensorSlotName::OUTPUT),
                       relu2_output_tensor_gradient,
                   },
               },
-              /*node_attrs=*/relu1_node_bwd,
+              /*node_attrs=*/relu2_node_bwd,
               /*outputs=*/
               std::map{
                   std::pair{
-                      mk_fwd_slot(TensorSlotName::INPUT),
+                      mk_grad_slot(TensorSlotName::INPUT),
                       input_tensor_subgradient2,
                   },
               },
