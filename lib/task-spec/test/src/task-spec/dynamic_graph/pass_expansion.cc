@@ -1,15 +1,10 @@
 #include "task-spec/dynamic_graph/pass_expansion.h"
 #include "op-attrs/initializer_attrs.h"
 #include "op-attrs/ops/element_unary.h"
-#include "task-spec/dynamic_graph/dynamic_gradient_reduction_layer_guid_t.dtg.h"
-#include "task-spec/dynamic_graph/dynamic_layer_guid_t.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
-#include "task-spec/dynamic_graph/gradient_reduction_attrs.dtg.h"
 #include "task-spec/dynamic_graph/serializable_dynamic_node_invocation.h"
 #include "task-spec/dynamic_graph/serializable_dynamic_open_dataflow_graph.h"
-#include "task-spec/dynamic_graph/subgradient_id_t.dtg.h"
-#include "task-spec/dynamic_graph/training_operation_attrs.dtg.h"
 #include "test/utils/doctest/check_kv.h"
 #include <doctest/doctest.h>
 
