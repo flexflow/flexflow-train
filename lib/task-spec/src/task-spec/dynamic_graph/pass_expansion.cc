@@ -1,15 +1,33 @@
 #include "task-spec/dynamic_graph/pass_expansion.h"
+#include "op-attrs/tensor_slot_name.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_node_attrs.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
+#include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
+#include "task-spec/dynamic_graph/subgradient_id_t.dtg.h"
 #include "task-spec/dynamic_graph/training_operation_attrs.h"
 #include "utils/containers/are_all_same.h"
+#include "utils/containers/concat_vectors.h"
+#include "utils/containers/contains_duplicates.h"
+#include "utils/containers/filter.h"
 #include "utils/containers/flatmap.h"
+#include "utils/containers/generate_map.h"
 #include "utils/containers/get_only.h"
+#include "utils/containers/map_from_pairs.h"
 #include "utils/containers/map_values.h"
+#include "utils/containers/map_values2.h"
 #include "utils/containers/merge_disjoint_maps.h"
+#include "utils/containers/multiset_of.h"
+#include "utils/containers/range.h"
 #include "utils/containers/repeat_until_converged.h"
+#include "utils/containers/set_of.h"
 #include "utils/containers/transform.h"
+#include "utils/containers/zip_with.h"
+#include "utils/optional.h"
+#include <optional>
+#include <set>
 
 namespace FlexFlow {
 
@@ -27,6 +45,7 @@ void require_node_might_not_be_pass_expanded(DynamicNodeAttrs const &n) {
   }
 
   ASSERT(!n.task_type.has_value(), n);
+  ASSERT(!assert_unwrap(n.op_attrs).is_gradient_reduction());
 }
 
 void require_slot_is_not_pass_expanded(DynamicTensorSlot const &s) {
@@ -325,6 +344,144 @@ DynamicNodeInvocation perform_bwd_pass_expansion_for_invocation(
   return result;
 }
 
+static std::map<int, subgradient_id_t>
+    choose_subgradient_ids(std::set<int> const &invocations) {
+  const std::vector<TensorSlotName> slot_names = {TensorSlotName::INPUT_00,
+                                                  TensorSlotName::INPUT_01,
+                                                  TensorSlotName::INPUT_02,
+                                                  TensorSlotName::INPUT_03,
+                                                  TensorSlotName::INPUT_04,
+                                                  TensorSlotName::INPUT_05,
+                                                  TensorSlotName::INPUT_06,
+                                                  TensorSlotName::INPUT_07,
+                                                  TensorSlotName::INPUT_08,
+                                                  TensorSlotName::INPUT_09,
+                                                  TensorSlotName::INPUT_10,
+                                                  TensorSlotName::INPUT_11,
+                                                  TensorSlotName::INPUT_12,
+                                                  TensorSlotName::INPUT_13,
+                                                  TensorSlotName::INPUT_14,
+                                                  TensorSlotName::INPUT_15};
+  std::map<int, subgradient_id_t> result = map_from_pairs(
+      zip_with(vector_of(invocations),
+               slot_names,
+               [](int idx, TensorSlotName slot_name) {
+                 return std::pair{idx, subgradient_id_t{slot_name}};
+               }));
+  ASSERT(result.size() == invocations.size());
+  return result;
+}
+
+static std::vector<DynamicNodeInvocation>
+    reduce_gradients(std::vector<DynamicNodeInvocation> const &invocations) {
+  std::multiset<DynamicValueAttrs> outputs =
+      multiset_of(flatmap(invocations, [](DynamicNodeInvocation const &i) {
+        return vector_of(values(i.outputs));
+      }));
+  std::set<DynamicValueAttrs> unique_outputs = set_of(outputs);
+
+  std::map<DynamicNodeInvocation, int> invocation_index =
+      map_from_keys_and_values(invocations, range(invocations.size()));
+
+  std::map<DynamicValueAttrs, std::set<int>> output_invocation_set;
+  for (int idx : range(invocations.size())) {
+    DynamicNodeInvocation const &i = invocations[idx];
+    for (DynamicValueAttrs const &v : values(i.outputs)) {
+      if (outputs.count(v) > 1) {
+        output_invocation_set[v].insert(idx);
+      }
+    }
+  }
+  std::map<DynamicValueAttrs, std::map<int, subgradient_id_t>>
+      output_subgradient_ids =
+          map_values(output_invocation_set, choose_subgradient_ids);
+
+  std::map<DynamicValueAttrs, DynamicNodeInvocation> gradient_reductions =
+      map_values2(output_invocation_set,
+                  [&](DynamicValueAttrs const &output,
+                      std::set<int> const &invocation_set) {
+                    return DynamicNodeInvocation{
+                        /*inputs=*/map_from_pairs(transform(
+                            values(output_subgradient_ids.at(output)),
+                            [&](subgradient_id_t id) {
+                              DynamicTensorSlot slot{
+                                  /*slot_name=*/id.gradient_reduction_slot,
+                                  /*slot_tensor_role=*/
+                                  DynamicTensorRole{FwbTensorType::GRADIENT},
+                                  /*task_shard=*/std::nullopt,
+                              };
+
+                              DynamicValueAttrs input = output;
+                              input.subgradient_id = id;
+
+                              return std::pair{slot, input};
+                            })),
+                        /*node_attrs=*/
+                        DynamicNodeAttrs{
+                            /*task_type=*/DynamicTaskType::BWD,
+                            /*device_ids=*/std::nullopt,
+                            /*mapping=*/std::nullopt,
+                            /*op_attrs=*/
+                            TrainingOperationAttrs{GradientReductionAttrs{}},
+                            /*layer_guid=*/
+                            dynamic_layer_guid_t{
+                                dynamic_gradient_reduction_layer_guid_t{}},
+                            /*per_device_op_state=*/std::nullopt,
+                        },
+                        /*outputs=*/
+                        std::map<DynamicTensorSlot, DynamicValueAttrs>{
+                            {
+                                DynamicTensorSlot{
+                                    /*slot_name=*/TensorSlotName::OUTPUT,
+                                    /*slot_tensor_role=*/
+                                    DynamicTensorRole{FwbTensorType::GRADIENT},
+                                    /*task_shard=*/std::nullopt,
+                                },
+                                output,
+                            },
+                        },
+                    };
+                  });
+
+  return concat_vectors(
+      transform(range(invocations.size()),
+                [&](int idx) {
+                  DynamicNodeInvocation mapped_invocation = invocations.at(idx);
+                  mapped_invocation.outputs = map_values(
+                      mapped_invocation.outputs,
+                      [&](DynamicValueAttrs const &output) {
+                        DynamicValueAttrs mapped_output = output;
+                        if (output_subgradient_ids.count(output)) {
+                          mapped_output.subgradient_id =
+                              output_subgradient_ids.at(output).at(idx);
+                        }
+                        return mapped_output;
+                      });
+                  return mapped_invocation;
+                }),
+      vector_of(values(gradient_reductions)));
+}
+
+// Like flatmap_dynamic_invocation_set except we replace the creation of
+// duplicate values with GradientReduction
+static DynamicOpenDataflowGraph
+    flatmap_dynamic_invocation_set_with_gradient_reduction(
+        DynamicOpenDataflowGraph const &g,
+        std::function<std::set<DynamicNodeInvocation>(
+            DynamicNodeInvocation const &)> const &f) {
+  std::set<DynamicNodeInvocation> current_invocation_set =
+      get_dynamic_invocation_set(g);
+  std::vector<DynamicNodeInvocation> new_invocation_set =
+      flatmap(vector_of(current_invocation_set), f);
+
+  ASSERT(!contains_duplicates(new_invocation_set));
+
+  new_invocation_set = reduce_gradients(new_invocation_set);
+
+  return dynamic_open_dataflow_graph_from_invocation_set(
+      set_of(new_invocation_set));
+}
+
 DynamicOpenDataflowGraph
     perform_pass_expansion(DynamicOpenDataflowGraph const &g) {
 
@@ -333,22 +490,23 @@ DynamicOpenDataflowGraph
   std::set<dynamic_invocation_id_t> needed_in_bwd_pass =
       determine_invocations_needed_in_backward_pass_for_gradient_computation(g);
 
-  DynamicOpenDataflowGraph result = flatmap_dynamic_invocation_set(
-      g, [&](DynamicNodeInvocation const &invocation) {
-        dynamic_invocation_id_t invocation_id =
-            dynamic_graph_get_id_for_invocation(g, invocation);
+  DynamicOpenDataflowGraph result =
+      flatmap_dynamic_invocation_set_with_gradient_reduction(
+          g, [&](DynamicNodeInvocation const &invocation) {
+            dynamic_invocation_id_t invocation_id =
+                dynamic_graph_get_id_for_invocation(g, invocation);
 
-        if (contains(needed_in_bwd_pass, invocation_id)) {
-          return std::set{
-              perform_fwd_pass_expansion_for_invocation(invocation),
-              perform_bwd_pass_expansion_for_invocation(invocation),
-          };
-        } else {
-          return std::set{
-              perform_fwd_pass_expansion_for_invocation(invocation),
-          };
-        }
-      });
+            if (contains(needed_in_bwd_pass, invocation_id)) {
+              return std::set{
+                  perform_fwd_pass_expansion_for_invocation(invocation),
+                  perform_bwd_pass_expansion_for_invocation(invocation),
+              };
+            } else {
+              return std::set{
+                  perform_fwd_pass_expansion_for_invocation(invocation),
+              };
+            }
+          });
 
   require_graph_is_fully_pass_expanded(result);
 

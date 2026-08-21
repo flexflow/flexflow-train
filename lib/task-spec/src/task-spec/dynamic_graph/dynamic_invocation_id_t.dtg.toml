@@ -1,0 +1,20 @@
+namespace = "FlexFlow"
+name = "dynamic_invocation_id_t"
+type = "struct"
+features = [
+  "eq",
+  "ord",
+  "hash",
+  "json",
+  "fmt",
+]
+
+includes = [
+  "utils/nonnegative_int/nonnegative_int.h",
+]
+
+src_includes = []
+
+[[fields]]
+name = "idx"
+type = "::FlexFlow::nonnegative_int"
