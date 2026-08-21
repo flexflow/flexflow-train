@@ -1,19 +1,13 @@
 #include "task-spec/dynamic_graph/pass_expansion.h"
-#include "op-attrs/tensor_slot_name.dtg.h"
-#include "task-spec/dynamic_graph/dynamic_node_attrs.dtg.h"
-#include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
-#include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
-#include "task-spec/dynamic_graph/subgradient_id_t.dtg.h"
 #include "task-spec/dynamic_graph/training_operation_attrs.h"
 #include "utils/containers/are_all_same.h"
 #include "utils/containers/concat_vectors.h"
 #include "utils/containers/contains_duplicates.h"
 #include "utils/containers/filter.h"
 #include "utils/containers/flatmap.h"
-#include "utils/containers/generate_map.h"
 #include "utils/containers/get_only.h"
 #include "utils/containers/map_from_pairs.h"
 #include "utils/containers/map_values.h"
@@ -25,9 +19,6 @@
 #include "utils/containers/set_of.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/zip_with.h"
-#include "utils/optional.h"
-#include <optional>
-#include <set>
 
 namespace FlexFlow {
 
@@ -372,8 +363,8 @@ static std::map<int, subgradient_id_t>
   return result;
 }
 
-static std::vector<DynamicNodeInvocation>
-    reduce_gradients(std::vector<DynamicNodeInvocation> const &invocations) {
+static std::vector<DynamicNodeInvocation> reduce_gradients_for_invocations(
+    std::vector<DynamicNodeInvocation> const &invocations) {
   std::multiset<DynamicValueAttrs> outputs =
       multiset_of(flatmap(invocations, [](DynamicNodeInvocation const &i) {
         return vector_of(values(i.outputs));
@@ -476,7 +467,7 @@ static DynamicOpenDataflowGraph
 
   ASSERT(!contains_duplicates(new_invocation_set));
 
-  new_invocation_set = reduce_gradients(new_invocation_set);
+  new_invocation_set = reduce_gradients_for_invocations(new_invocation_set);
 
   return dynamic_open_dataflow_graph_from_invocation_set(
       set_of(new_invocation_set));
