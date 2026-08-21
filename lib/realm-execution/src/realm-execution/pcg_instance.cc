@@ -14,6 +14,7 @@
 #include "task-spec/dynamic_graph/dynamic_task_type.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_guid_t.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
+#include "task-spec/dynamic_graph/gradient_reduction.dtg.h"
 #include "task-spec/dynamic_graph/loss_insertion.h"
 #include "task-spec/dynamic_graph/make_dynamic_open_dataflow_graph_from_mapped_pcg.h"
 #include "task-spec/dynamic_graph/pass_expansion.h"
@@ -337,6 +338,7 @@ static Realm::Event spawn_dynamic_node_invocation(
       },
       [&](LossAttrs const &) { return spawn_task(); },
       [&](CopyAttrs const &) { return issue_copy(); },
+      [&](GradientReductionAttrs const &) { return issue_reduction(); },
   });
 }
 
