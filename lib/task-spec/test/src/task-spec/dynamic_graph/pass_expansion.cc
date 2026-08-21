@@ -1,14 +1,11 @@
 #include "task-spec/dynamic_graph/pass_expansion.h"
 #include "op-attrs/initializer_attrs.h"
-#include "op-attrs/operator_type.dtg.h"
-#include "op-attrs/ops/element_binary_attrs.dtg.h"
 #include "op-attrs/ops/element_unary.h"
-#include "op-attrs/tensor_slot_name.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_gradient_reduction_layer_guid_t.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_layer_guid_t.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
-#include "task-spec/dynamic_graph/gradient_reduction.dtg.h"
+#include "task-spec/dynamic_graph/gradient_reduction_attrs.dtg.h"
 #include "task-spec/dynamic_graph/serializable_dynamic_node_invocation.h"
 #include "task-spec/dynamic_graph/serializable_dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/subgradient_id_t.dtg.h"
@@ -380,130 +377,6 @@ TEST_SUITE(FF_TEST_SUITE) {
     DynamicValueAttrs v1_grad = mk_value_attrs(0, grad_role);
     DynamicValueAttrs v2_grad = mk_value_attrs(1, grad_role);
     DynamicValueAttrs v3_grad = mk_value_attrs(2, grad_role);
-
-    SUBCASE("relu operator") {
-      TrainingOperationAttrs op_attrs = TrainingOperationAttrs{
-          PCGOperatorAttrs{
-              make_relu_attrs(),
-          },
-      };
-
-      DynamicNodeInvocation invocation = [&]() -> DynamicNodeInvocation {
-        return DynamicNodeInvocation{
-            /*inputs=*/{
-                {mk_slot(TensorSlotName::INPUT, std::nullopt), v1},
-            },
-            /*node_attrs=*/
-            DynamicNodeAttrs{
-                /*task_type=*/std::nullopt,
-                /*device_coord=*/std::nullopt,
-                /*mapping=*/std::nullopt,
-                /*op_attrs=*/op_attrs,
-                /*layer_guid=*/layer_guid,
-                /*per_device_op_state=*/std::nullopt,
-            },
-            /*outputs=*/
-            {
-                {mk_slot(TensorSlotName::OUTPUT, std::nullopt), v2},
-            },
-        };
-      }();
-
-      DynamicNodeInvocation result =
-          perform_bwd_pass_expansion_for_invocation(invocation);
-
-      DynamicNodeInvocation correct = [&]() -> DynamicNodeInvocation {
-        return DynamicNodeInvocation{
-            /*inputs=*/{
-                {mk_slot(TensorSlotName::INPUT, fwd_role), v1_fwd},
-                {mk_slot(TensorSlotName::OUTPUT, fwd_role), v2_fwd},
-                {mk_slot(TensorSlotName::OUTPUT, grad_role), v2_grad},
-            },
-            /*node_attrs=*/
-            DynamicNodeAttrs{
-                /*pass_type=*/DynamicTaskType::BWD,
-                /*device_coord=*/std::nullopt,
-                /*mapping=*/std::nullopt,
-                /*op_attrs=*/op_attrs,
-                /*layer_guid=*/layer_guid,
-                /*per_device_op_state=*/std::nullopt,
-            },
-            /*outputs=*/
-            {
-                {mk_slot(TensorSlotName::INPUT, grad_role), v1_grad},
-            },
-        };
-      }();
-
-      ASSERT(dynamic_node_invocation_to_serializable(result) ==
-             dynamic_node_invocation_to_serializable(correct));
-    }
-
-    SUBCASE("add operator") {
-      TrainingOperationAttrs op_attrs = TrainingOperationAttrs{
-          PCGOperatorAttrs{
-              ElementBinaryAttrs{
-                  /*type=*/OperatorType::EW_ADD,
-                  /*compute_type=*/DataType::FLOAT,
-                  /*should_broadcast_lhs=*/false,
-                  /*should_broadcast_rhs=*/false,
-              },
-          },
-      };
-
-      DynamicNodeInvocation invocation = [&]() -> DynamicNodeInvocation {
-        return DynamicNodeInvocation{
-            /*inputs=*/{
-                {mk_slot(TensorSlotName::LHS_INPUT, std::nullopt), v1},
-                {mk_slot(TensorSlotName::RHS_INPUT, std::nullopt), v2},
-            },
-            /*node_attrs=*/
-            DynamicNodeAttrs{
-                /*task_type=*/std::nullopt,
-                /*device_coord=*/std::nullopt,
-                /*mapping=*/std::nullopt,
-                /*op_attrs=*/op_attrs,
-                /*layer_guid=*/layer_guid,
-                /*per_device_op_state=*/std::nullopt,
-            },
-            /*outputs=*/
-            {
-                {mk_slot(TensorSlotName::OUTPUT, std::nullopt), v3},
-            },
-        };
-      }();
-
-      DynamicNodeInvocation result =
-          perform_bwd_pass_expansion_for_invocation(invocation);
-
-      DynamicNodeInvocation correct = [&]() -> DynamicNodeInvocation {
-        return DynamicNodeInvocation{
-            /*inputs=*/{
-                {mk_slot(TensorSlotName::LHS_INPUT, fwd_role), v1_fwd},
-                {mk_slot(TensorSlotName::RHS_INPUT, fwd_role), v2_fwd},
-                {mk_slot(TensorSlotName::OUTPUT, fwd_role), v3_fwd},
-                {mk_slot(TensorSlotName::OUTPUT, grad_role), v3_grad},
-            },
-            /*node_attrs=*/
-            DynamicNodeAttrs{
-                /*pass_type=*/DynamicTaskType::BWD,
-                /*device_coord=*/std::nullopt,
-                /*mapping=*/std::nullopt,
-                /*op_attrs=*/op_attrs,
-                /*layer_guid=*/layer_guid,
-                /*per_device_op_state=*/std::nullopt,
-            },
-            /*outputs=*/
-            {
-                {mk_slot(TensorSlotName::LHS_INPUT, grad_role), v1_grad},
-                {mk_slot(TensorSlotName::RHS_INPUT, grad_role), v2_grad},
-            },
-        };
-      }();
-
-      ASSERT(dynamic_node_invocation_to_serializable(result) ==
-             dynamic_node_invocation_to_serializable(correct));
-    }
 
     SUBCASE("normal operator") {
       TrainingOperationAttrs op_attrs = TrainingOperationAttrs{

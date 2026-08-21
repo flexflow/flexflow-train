@@ -1,6 +1,5 @@
 #include "task-spec/dynamic_graph/training_operation_attrs.h"
 #include "op-attrs/pcg_operator_attrs.h"
-#include "task-spec/dynamic_graph/gradient_reduction.dtg.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {
