@@ -337,22 +337,24 @@ DynamicNodeInvocation perform_bwd_pass_expansion_for_invocation(
 
 static std::map<int, subgradient_id_t>
     choose_subgradient_ids(std::set<int> const &invocations) {
-  const std::vector<TensorSlotName> slot_names = {TensorSlotName::INPUT_00,
-                                                  TensorSlotName::INPUT_01,
-                                                  TensorSlotName::INPUT_02,
-                                                  TensorSlotName::INPUT_03,
-                                                  TensorSlotName::INPUT_04,
-                                                  TensorSlotName::INPUT_05,
-                                                  TensorSlotName::INPUT_06,
-                                                  TensorSlotName::INPUT_07,
-                                                  TensorSlotName::INPUT_08,
-                                                  TensorSlotName::INPUT_09,
-                                                  TensorSlotName::INPUT_10,
-                                                  TensorSlotName::INPUT_11,
-                                                  TensorSlotName::INPUT_12,
-                                                  TensorSlotName::INPUT_13,
-                                                  TensorSlotName::INPUT_14,
-                                                  TensorSlotName::INPUT_15};
+  const std::vector<TensorSlotName> slot_names = {
+      TensorSlotName::INPUT_00,
+      TensorSlotName::INPUT_01,
+      TensorSlotName::INPUT_02,
+      TensorSlotName::INPUT_03,
+      TensorSlotName::INPUT_04,
+      TensorSlotName::INPUT_05,
+      TensorSlotName::INPUT_06,
+      TensorSlotName::INPUT_07,
+      TensorSlotName::INPUT_08,
+      TensorSlotName::INPUT_09,
+      TensorSlotName::INPUT_10,
+      TensorSlotName::INPUT_11,
+      TensorSlotName::INPUT_12,
+      TensorSlotName::INPUT_13,
+      TensorSlotName::INPUT_14,
+      TensorSlotName::INPUT_15,
+  };
   std::map<int, subgradient_id_t> result = map_from_pairs(
       zip_with(vector_of(invocations),
                slot_names,
