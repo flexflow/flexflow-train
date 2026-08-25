@@ -154,31 +154,6 @@ DynamicNodeInvocation apply_mappings_for_invocation(
   return result;
 }
 
-DynamicNodeInvocation apply_mappings_for_invocation_node_only(
-    dynamic_invocation_id_t const &id,
-    DynamicNodeInvocation const &i,
-    std::map<InternalDynamicSlotSite, ParallelTensorMapping> const
-        &all_mappings) {
-
-  require_invocation_is_ready_for_copy_insertion(i);
-
-  std::map<DynamicTensorSlot, ParallelTensorMapping> i_mappings =
-      get_mappings_for_invocation_id(id, all_mappings);
-
-  DynamicNodeMapping mapping =
-      dynamic_node_mapping_from_value_mapping(i_mappings);
-
-  DynamicNodeInvocation result = DynamicNodeInvocation{
-      /*inputs=*/i.inputs,
-      /*node_attrs=*/
-      decide_dynamic_node_attrs_mapping(i.node_attrs, mapping),
-      /*outputs=*/
-      i.outputs,
-  };
-
-  return result;
-}
-
 DynamicNodeInvocation
     make_copy_invocation(DynamicValueCopyInfo const &copy_info) {
   DynamicNodeInvocation result = DynamicNodeInvocation{

@@ -6,8 +6,8 @@
 
 namespace FlexFlow {
 
-DynamicValueAttrs decide_dynamic_node_attrs_mapping(DynamicNodeAttrs const &,
-                                                    DynamicNodeMapping const &);
+DynamicNodeAttrs decide_dynamic_node_attrs_mapping(DynamicNodeAttrs const &,
+                                                   DynamicNodeMapping const &);
 
 } // namespace FlexFlow
 
