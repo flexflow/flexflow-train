@@ -11,7 +11,7 @@ namespace FlexFlow {
 
 DynamicNodeMapping dynamic_node_mapping_from_value_mapping(
     std::map<DynamicTensorSlot, ParallelTensorMapping> const &mapping) {
-  MappedOperatorTaskGroup op_task_group;
+  MappedOperatorTaskGroup op_task_group{{}};
   DeviceType device_type = assert_unwrap(require_all_same(
       transform(flatmap(values(mapping),
                         [](ParallelTensorMapping const &m) {
