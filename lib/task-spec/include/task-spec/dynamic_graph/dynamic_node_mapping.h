@@ -2,9 +2,14 @@
 #define _FLEXFLOW_LIB_TASK_SPEC_INCLUDE_TASK_SPEC_DYNAMIC_GRAPH_DYNAMIC_NODE_MAPPING_H
 
 #include "task-spec/dynamic_graph/dynamic_node_mapping.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_tensor_slot.dtg.h"
+#include "task-spec/dynamic_graph/parallel_tensor_mapping.dtg.h"
 #include "task-spec/global_device_id_t.dtg.h"
 
 namespace FlexFlow {
+
+DynamicNodeMapping dynamic_node_mapping_from_value_mapping(
+    std::map<DynamicTensorSlot, ParallelTensorMapping> const &);
 
 bidict<global_device_id_t, OperatorAtomicTaskShardBinding>
     dynamic_node_mapping_get_shard_bindings(DynamicNodeMapping const &);

@@ -15,6 +15,7 @@
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.h"
 #include "task-spec/dynamic_graph/parallel_tensor_mapping.dtg.h"
+#include "task-spec/dynamic_graph/training_only_op_type.dtg.h"
 #include "task-spec/dynamic_graph/training_operation_attrs.h"
 #include "utils/bidict/algorithms/bidict_from_unstructured_relation.h"
 #include "utils/bidict/algorithms/unstructured_relation_from_bidict.h"
@@ -42,6 +43,10 @@ bool node_is_copy(DynamicNodeAttrs const &n) {
   return n.op_attrs.has_value() && n.op_attrs.value().is_copy();
 }
 
+bool node_is_gradient_reduction(DynamicNodeAttrs const &n) {
+  return n.op_attrs.has_value() && n.op_attrs.value().is_gradient_reduction();
+}
+
 bool value_is_mapped(DynamicValueAttrs const &n) {
   return n.mapping.has_value();
 }
@@ -49,7 +54,8 @@ bool value_is_mapped(DynamicValueAttrs const &n) {
 void require_node_is_ready_for_copy_insertion(
     DynamicNodeAttrs const &node_attrs) {
   ASSERT(node_attrs.op_attrs.has_value());
-  ASSERT(node_attrs.mapping.has_value());
+  ASSERT(node_attrs.mapping.has_value() ||
+         node_is_gradient_reduction(node_attrs));
 }
 
 void require_value_is_ready_for_copy_insertion(DynamicValueAttrs const &v) {
@@ -144,6 +150,31 @@ DynamicNodeInvocation apply_mappings_for_invocation(
   };
 
   require_invocation_is_fully_copy_inserted(result);
+
+  return result;
+}
+
+DynamicNodeInvocation apply_mappings_for_invocation_node_only(
+    dynamic_invocation_id_t const &id,
+    DynamicNodeInvocation const &i,
+    std::map<InternalDynamicSlotSite, ParallelTensorMapping> const
+        &all_mappings) {
+
+  require_invocation_is_ready_for_copy_insertion(i);
+
+  std::map<DynamicTensorSlot, ParallelTensorMapping> i_mappings =
+      get_mappings_for_invocation_id(id, all_mappings);
+
+  DynamicNodeMapping mapping =
+      dynamic_node_mapping_from_value_mapping(i_mappings);
+
+  DynamicNodeInvocation result = DynamicNodeInvocation{
+      /*inputs=*/i.inputs,
+      /*node_attrs=*/
+      decide_dynamic_node_attrs_mapping(i.node_attrs, mapping),
+      /*outputs=*/
+      i.outputs,
+  };
 
   return result;
 }
@@ -269,7 +300,6 @@ std::map<InternalDynamicSlotSite, ParallelTensorMapping>
 std::map<InternalDynamicSlotSite, ParallelTensorMapping>
     resolve_partial_tensor_mappings_from_node_mappings(
         DynamicOpenDataflowGraph const &g) {
-
   require_graph_is_ready_for_copy_insertion(g);
 
   auto slots_to_map_for_replicate =
@@ -290,7 +320,7 @@ std::map<InternalDynamicSlotSite, ParallelTensorMapping>
     {
       InternalDynamicSlotSite slot_site = get_only(slot_sites);
       ASSERT(slot_site.slot_name.slot_name == TensorSlotName::OUTPUT);
-    };
+    }
 
     return slot_sites;
   };
@@ -303,7 +333,9 @@ std::map<InternalDynamicSlotSite, ParallelTensorMapping>
         dynamic_graph_get_id_for_invocation(g, invocation);
 
     std::set<InternalDynamicSlotSite> slot_sites_to_resolve = [&] {
-      if (op_type == TrainingOpType{OperatorType::REPLICATE}) {
+      if (op_type == TrainingOpType{TrainingOnlyOpType::GRADIENT_REDUCTION}) {
+        return std::set<InternalDynamicSlotSite>{};
+      } else if (op_type == TrainingOpType{OperatorType::REPLICATE}) {
         return slots_to_map_for_replicate(invocation_id, invocation);
       } else {
         return get_dynamic_slot_sites_for_invocation(invocation_id, invocation);
@@ -349,9 +381,31 @@ std::map<InternalDynamicSlotSite, ParallelTensorMapping>
     TrainingOpType op_type = dynamic_node_invocation_get_op_type(invocation);
     std::optional<DynamicTaskType> task_type = invocation.node_attrs.task_type;
 
+    TrainingOpType gradient_reduction_op_type =
+        TrainingOpType{TrainingOnlyOpType::GRADIENT_REDUCTION};
     TrainingOpType replicate_op_type = TrainingOpType{OperatorType::REPLICATE};
 
-    if (op_type == replicate_op_type && task_type == DynamicTaskType::BWD) {
+    if (op_type == gradient_reduction_op_type) {
+      if (slot_site.direction == TensorDirection::OUTPUT) {
+        InternalDynamicSlotSite slot_site_sink =
+            get_only(dynamic_graph_find_sinks_of_slot_site(g, slot_site));
+
+        ASSERT(contains_key(resolved_mappings, slot_site_sink));
+
+        return resolved_mappings.at(slot_site_sink);
+      } else {
+        ASSERT(slot_site.direction == TensorDirection::INCOMING);
+
+        InternalDynamicSlotSite slot_site_src =
+            dynamic_graph_find_source_of_slot_site(g, slot_site)
+                .require_internal();
+
+        ASSERT(contains_key(resolved_mappings, slot_site_src));
+
+        return resolved_mappings.at(slot_site_src);
+      }
+    } else if (op_type == replicate_op_type &&
+               task_type == DynamicTaskType::BWD) {
       ASSERT(slot_site.direction == TensorDirection::OUTPUT);
 
       InternalDynamicSlotSite slot_site_sink =
