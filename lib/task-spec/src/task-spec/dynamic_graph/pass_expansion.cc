@@ -1,4 +1,5 @@
 #include "task-spec/dynamic_graph/pass_expansion.h"
+#include "op-attrs/tensor_slot_name.h"
 #include "task-spec/dynamic_graph/copy_insertion.h"
 #include "task-spec/dynamic_graph/dynamic_invocation_id_t.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
@@ -6,6 +7,7 @@
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_value_attrs.h"
 #include "task-spec/dynamic_graph/subgradient_id_t.dtg.h"
 #include "task-spec/dynamic_graph/training_operation_attrs.h"
 #include "utils/containers/are_all_same.h"
@@ -15,6 +17,7 @@
 #include "utils/containers/flatmap.h"
 #include "utils/containers/generate_map.h"
 #include "utils/containers/get_only.h"
+#include "utils/containers/map_from_keys_and_values.h"
 #include "utils/containers/map_from_pairs.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/map_values2.h"
@@ -24,9 +27,11 @@
 #include "utils/containers/repeat_until_converged.h"
 #include "utils/containers/set_intersection.h"
 #include "utils/containers/set_of.h"
+#include "utils/containers/slice.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/try_at.h"
 #include "utils/containers/zip_with.h"
+#include "utils/optional.h"
 #include <optional>
 
 namespace FlexFlow {
@@ -212,32 +217,15 @@ std::set<DynamicValueAttrs> determine_values_requiring_gradient_reduction(
 static std::map<dynamic_invocation_id_t, subgradient_id_t>
     assign_subgradient_ids(
         std::set<dynamic_invocation_id_t> const &invocations) {
-  const std::vector<TensorSlotName> slot_names = {
-      TensorSlotName::INPUT_00,
-      TensorSlotName::INPUT_01,
-      TensorSlotName::INPUT_02,
-      TensorSlotName::INPUT_03,
-      TensorSlotName::INPUT_04,
-      TensorSlotName::INPUT_05,
-      TensorSlotName::INPUT_06,
-      TensorSlotName::INPUT_07,
-      TensorSlotName::INPUT_08,
-      TensorSlotName::INPUT_09,
-      TensorSlotName::INPUT_10,
-      TensorSlotName::INPUT_11,
-      TensorSlotName::INPUT_12,
-      TensorSlotName::INPUT_13,
-      TensorSlotName::INPUT_14,
-      TensorSlotName::INPUT_15,
-  };
-  std::map<dynamic_invocation_id_t, subgradient_id_t> result = map_from_pairs(
-      zip_with(vector_of(invocations),
-               slot_names,
-               [](dynamic_invocation_id_t id, TensorSlotName slot_name) {
-                 return std::pair{id, subgradient_id_t{slot_name}};
-               }));
-  ASSERT(result.size() == invocations.size());
-  return result;
+  const std::vector<TensorSlotName> slot_names =
+      get_variadic_inputs_slot_name_sequence();
+  ASSERT(invocations.size() <= slot_names.size());
+  return map_from_keys_and_values(
+      vector_of(invocations),
+      transform(slice(slot_names, 0, invocations.size()),
+                [](TensorSlotName const &slot_name) {
+                  return subgradient_id_t{slot_name};
+                }));
 }
 
 std::map<DynamicValueAttrs, std::map<dynamic_invocation_id_t, subgradient_id_t>>
@@ -264,15 +252,12 @@ DynamicTensorSlot pass_expand_slot(DynamicTensorSlot const &s,
   return result;
 }
 
-DynamicValueAttrs
-    pass_expand_value(DynamicValueAttrs const &v,
-                      FwbTensorType tensor_type,
-                      std::optional<subgradient_id_t> const &subgradient_id) {
+DynamicValueAttrs pass_expand_value(DynamicValueAttrs const &v,
+                                    FwbTensorType tensor_type) {
   require_value_is_not_pass_expanded(v);
 
   DynamicValueAttrs result = v;
   result.role = DynamicTensorRole{tensor_type};
-  result.subgradient_id = subgradient_id;
   return result;
 };
 
@@ -305,13 +290,13 @@ DynamicNodeInvocation perform_fwd_pass_expansion_for_invocation(
       assert_unwrap(invocation.node_attrs.op_attrs);
 
   auto to_fwd_value = [](DynamicValueAttrs const &v) -> DynamicValueAttrs {
-    return pass_expand_value(v, FwbTensorType::FORWARD, std::nullopt);
+    return pass_expand_value(v, FwbTensorType::FORWARD);
   };
 
   auto to_fwd = [](DynamicTensorSlot const &k, DynamicValueAttrs const &v) {
     return std::pair{
         pass_expand_slot(k, FwbTensorType::FORWARD),
-        pass_expand_value(v, FwbTensorType::FORWARD, std::nullopt),
+        pass_expand_value(v, FwbTensorType::FORWARD),
     };
   };
 
@@ -359,26 +344,37 @@ DynamicNodeInvocation perform_bwd_pass_expansion_for_invocation(
         });
   };
 
+  auto pass_expand_value_with_subgradient = [&](DynamicValueAttrs const &v,
+                                                FwbTensorType tensor_type) {
+    std::optional<subgradient_id_t> subgradient_id =
+        subgradient_id_for_value(v);
+    DynamicValueAttrs result = pass_expand_value(v, tensor_type);
+    if (subgradient_id.has_value()) {
+      result = decide_dynamic_value_attrs_subgradient_id(
+          result, assert_unwrap(subgradient_id));
+    }
+    return result;
+  };
+
   auto to_fwd = [](DynamicTensorSlot const &k, DynamicValueAttrs const &v) {
     return std::pair{
         pass_expand_slot(k, FwbTensorType::FORWARD),
-        pass_expand_value(v, FwbTensorType::FORWARD, std::nullopt),
+        pass_expand_value(v, FwbTensorType::FORWARD),
     };
   };
 
   auto to_grad_value = [](DynamicValueAttrs const &v) {
-    return pass_expand_value(v, FwbTensorType::GRADIENT, std::nullopt);
+    return pass_expand_value(v, FwbTensorType::GRADIENT);
   };
 
   auto to_grad_value_output = [&](DynamicValueAttrs const &v) {
-    return pass_expand_value(
-        v, FwbTensorType::GRADIENT, subgradient_id_for_value(v));
+    return pass_expand_value_with_subgradient(v, FwbTensorType::GRADIENT);
   };
 
   auto to_grad = [](DynamicTensorSlot const &k, DynamicValueAttrs const &v) {
     return std::pair{
         pass_expand_slot(k, FwbTensorType::GRADIENT),
-        pass_expand_value(v, FwbTensorType::GRADIENT, std::nullopt),
+        pass_expand_value(v, FwbTensorType::GRADIENT),
     };
   };
 
@@ -386,8 +382,7 @@ DynamicNodeInvocation perform_bwd_pass_expansion_for_invocation(
                             DynamicValueAttrs const &v) {
     return std::pair{
         pass_expand_slot(k, FwbTensorType::GRADIENT),
-        pass_expand_value(
-            v, FwbTensorType::GRADIENT, subgradient_id_for_value(v)),
+        pass_expand_value_with_subgradient(v, FwbTensorType::GRADIENT),
     };
   };
 
@@ -444,7 +439,7 @@ DynamicNodeInvocation create_gradient_reduction_for_value(
   auto to_grad = [](DynamicTensorSlot const &k, DynamicValueAttrs const &v) {
     return std::pair{
         pass_expand_slot(k, FwbTensorType::GRADIENT),
-        pass_expand_value(v, FwbTensorType::GRADIENT, std::nullopt),
+        pass_expand_value(v, FwbTensorType::GRADIENT),
     };
   };
 
@@ -453,7 +448,8 @@ DynamicNodeInvocation create_gradient_reduction_for_value(
                                 subgradient_id_t const &s) {
     return std::pair{
         pass_expand_slot(k, FwbTensorType::GRADIENT),
-        pass_expand_value(v, FwbTensorType::GRADIENT, s),
+        decide_dynamic_value_attrs_subgradient_id(
+            pass_expand_value(v, FwbTensorType::GRADIENT), s),
     };
   };
 
