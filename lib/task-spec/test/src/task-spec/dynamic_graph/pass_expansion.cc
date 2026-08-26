@@ -1,6 +1,7 @@
 #include "task-spec/dynamic_graph/pass_expansion.h"
 #include "op-attrs/initializer_attrs.h"
 #include "op-attrs/ops/element_unary.h"
+#include "task-spec/dynamic_graph/dynamic_invocation_id_t.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
 #include "task-spec/dynamic_graph/serializable_dynamic_node_invocation.h"
@@ -386,6 +387,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           },
       };
 
+      dynamic_invocation_id_t invocation_id{0_n};
+
       DynamicNodeInvocation invocation = [&]() -> DynamicNodeInvocation {
         return DynamicNodeInvocation{
             /*inputs=*/{
@@ -409,8 +412,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         };
       }();
 
-      DynamicNodeInvocation result =
-          perform_bwd_pass_expansion_for_invocation(invocation);
+      DynamicNodeInvocation result = perform_bwd_pass_expansion_for_invocation(
+          invocation_id, invocation, {});
 
       DynamicNodeInvocation correct = [&]() -> DynamicNodeInvocation {
         return DynamicNodeInvocation{
@@ -452,6 +455,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           },
       };
 
+      dynamic_invocation_id_t invocation_id{0_n};
+
       DynamicNodeInvocation invocation = [&]() -> DynamicNodeInvocation {
         return DynamicNodeInvocation{
             /*inputs=*/{
@@ -473,8 +478,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         };
       }();
 
-      DynamicNodeInvocation result =
-          perform_bwd_pass_expansion_for_invocation(invocation);
+      DynamicNodeInvocation result = perform_bwd_pass_expansion_for_invocation(
+          invocation_id, invocation, {});
 
       DynamicNodeInvocation correct = [&]() -> DynamicNodeInvocation {
         DynamicTensorRole fwd_role = DynamicTensorRole{FwbTensorType::FORWARD};
@@ -508,6 +513,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("copy operator") {
       TrainingOperationAttrs op_attrs = TrainingOperationAttrs{CopyAttrs{}};
 
+      dynamic_invocation_id_t invocation_id{0_n};
+
       DynamicNodeInvocation invocation = [&]() -> DynamicNodeInvocation {
         return DynamicNodeInvocation{
             /*inputs=*/{
@@ -529,8 +536,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         };
       }();
 
-      DynamicNodeInvocation result =
-          perform_bwd_pass_expansion_for_invocation(invocation);
+      DynamicNodeInvocation result = perform_bwd_pass_expansion_for_invocation(
+          invocation_id, invocation, {});
 
       DynamicNodeInvocation correct = [&]() -> DynamicNodeInvocation {
         DynamicTensorRole fwd_role = DynamicTensorRole{FwbTensorType::FORWARD};
