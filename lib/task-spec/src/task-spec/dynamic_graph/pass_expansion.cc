@@ -17,6 +17,7 @@
 #include "utils/containers/flatmap.h"
 #include "utils/containers/generate_map.h"
 #include "utils/containers/get_only.h"
+#include "utils/containers/invert_map.h"
 #include "utils/containers/map_from_keys_and_values.h"
 #include "utils/containers/map_from_pairs.h"
 #include "utils/containers/map_values.h"
@@ -424,6 +425,35 @@ DynamicNodeInvocation perform_bwd_pass_expansion_for_invocation(
 
   require_invocation_is_fully_pass_expanded(result);
 
+  return result;
+}
+
+DynamicNodeMapping
+    mapping_for_gradient_reduction(DynamicOpenDataflowGraph const &g,
+                                   DynamicValueAttrs const &value) {
+  DynamicSlotSite source_site = dynamic_graph_find_source_of_value(g, value);
+  std::set<InternalDynamicSlotSite> sink_sites =
+      dynamic_graph_find_sinks_of_value(g, value);
+
+  DynamicNodeInvocation source = dynamic_graph_get_invocation_for_id(
+      g, source_site.require_internal().invocation_id);
+  DynamicNodeMapping source_mapping = assert_unwrap(source.node_attrs.mapping);
+  DynamicTensorSlot source_slot =
+      get_only(invert_map(source.outputs).at(value));
+
+  bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
+      source_tensor_binding = get_tensor_bindings_for_slot_name(
+          source_mapping.op_task_group, source_slot.slot_name);
+
+  DynamicNodeMapping result{
+      /*op_task_group=*/MappedOperatorTaskGroup{
+          bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding>{
+              {get_only(source_tensor_binding).second,
+               OperatorAtomicTaskShardBinding{
+                   std::map<TensorSlotName, ParallelTensorSpaceCoordinate>{
+                       {source_slot.slot_name,
+                        get_only(source_tensor_binding).first}}}}}},
+      /*device_type=*/source_mapping.device_type};
   return result;
 }
 
