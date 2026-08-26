@@ -15,7 +15,6 @@
 #include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.h"
 #include "task-spec/dynamic_graph/parallel_tensor_mapping.dtg.h"
-#include "task-spec/dynamic_graph/training_only_op_type.dtg.h"
 #include "task-spec/dynamic_graph/training_operation_attrs.h"
 #include "utils/bidict/algorithms/bidict_from_unstructured_relation.h"
 #include "utils/bidict/algorithms/unstructured_relation_from_bidict.h"
