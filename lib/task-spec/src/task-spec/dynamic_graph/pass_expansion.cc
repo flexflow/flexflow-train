@@ -435,7 +435,7 @@ DynamicNodeInvocation perform_bwd_pass_expansion_for_invocation(
   return result;
 }
 
-DynamicNodeMapping mapping_for_gradient_reduction(
+std::optional<DynamicNodeMapping> mapping_for_gradient_reduction(
     DynamicOpenDataflowGraph const &g,
     DynamicValueAttrs const &value,
     std::map<dynamic_invocation_id_t, subgradient_id_t> const
@@ -446,7 +446,12 @@ DynamicNodeMapping mapping_for_gradient_reduction(
 
   DynamicNodeInvocation source = dynamic_graph_get_invocation_for_id(
       g, source_site.require_internal().invocation_id);
+
+  if (!source.node_attrs.mapping.has_value()) {
+    return std::nullopt;
+  }
   DynamicNodeMapping source_mapping = assert_unwrap(source.node_attrs.mapping);
+
   DynamicTensorSlot source_slot =
       get_only(invert_map(source.outputs).at(value));
 
