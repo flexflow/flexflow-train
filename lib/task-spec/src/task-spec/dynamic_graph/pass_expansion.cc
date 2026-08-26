@@ -12,6 +12,7 @@
 #include "task-spec/dynamic_graph/subgradient_id_t.dtg.h"
 #include "task-spec/dynamic_graph/training_operation_attrs.h"
 #include "task-spec/fwb_tensor_type.dtg.h"
+#include "utils/containers/any_of.h"
 #include "utils/containers/are_all_same.h"
 #include "utils/containers/binary_merge_disjoint_maps.h"
 #include "utils/containers/concat_vectors.h"
@@ -210,11 +211,14 @@ std::set<DynamicValueAttrs> determine_values_requiring_gradient_reduction(
   std::set<DynamicValueAttrs> internal_values =
       dynamic_graph_get_internal_values(g);
   return filter(internal_values, [&](DynamicValueAttrs const &v) {
-    dynamic_invocation_id_t source = dynamic_graph_find_source_of_value(g, v)
-                                         .require_internal()
-                                         .invocation_id;
-    return in_bwd_pass.count(source) != 0 &&
-           dynamic_graph_find_sinks_of_value(g, v).size() > 1;
+    std::set<InternalDynamicSlotSite> sinks =
+        dynamic_graph_find_sinks_of_value(g, v);
+    if (sinks.size() <= 1) {
+      return false;
+    }
+    return any_of(sinks, [&](InternalDynamicSlotSite const &sink_site) {
+      return in_bwd_pass.count(sink_site.invocation_id);
+    });
   });
 }
 
@@ -333,7 +337,7 @@ DynamicNodeInvocation perform_bwd_pass_expansion_for_invocation(
     DynamicNodeInvocation const &invocation,
     std::map<DynamicValueAttrs,
              std::map<dynamic_invocation_id_t, subgradient_id_t>> const
-        &subgradient_ids) {
+        &subgradient_ids_by_value) {
 
   require_invocation_is_ready_for_pass_expansion(invocation);
 
@@ -342,7 +346,7 @@ DynamicNodeInvocation perform_bwd_pass_expansion_for_invocation(
 
   auto subgradient_id_for_value = [&](DynamicValueAttrs const &v) {
     return transform(
-        try_at(subgradient_ids, v),
+        try_at(subgradient_ids_by_value, v),
         [&](std::map<dynamic_invocation_id_t, subgradient_id_t> const &s) {
           return s.at(invocation_id);
         });
@@ -552,7 +556,7 @@ DynamicOpenDataflowGraph
 
   std::map<DynamicValueAttrs,
            std::map<dynamic_invocation_id_t, subgradient_id_t>>
-      subgradient_ids =
+      subgradient_ids_by_value =
           compute_subgradient_ids(g, values_requiring_gradient_reduction);
 
   DynamicOpenDataflowGraph result = flatmap_dynamic_invocation_set(
@@ -560,26 +564,28 @@ DynamicOpenDataflowGraph
         dynamic_invocation_id_t invocation_id =
             dynamic_graph_get_id_for_invocation(g, invocation);
 
-        if (contains(needed_in_bwd_pass, invocation_id)) {
-          std::set<DynamicNodeInvocation> gradient_reductions =
-              transform(set_intersection(keys(subgradient_ids),
-                                         set_of(values(invocation.outputs))),
-                        [&](DynamicValueAttrs const &v) {
-                          return create_gradient_reduction_for_value(
-                              g, v, subgradient_ids.at(v));
-                        });
+        std::set<DynamicNodeInvocation> gradient_reductions =
+            transform(set_intersection(keys(subgradient_ids_by_value),
+                                       set_of(values(invocation.outputs))),
+                      [&](DynamicValueAttrs const &v) {
+                        return create_gradient_reduction_for_value(
+                            g, v, subgradient_ids_by_value.at(v));
+                      });
 
+        if (contains(needed_in_bwd_pass, invocation_id)) {
           return set_union(
               std::set{
                   perform_fwd_pass_expansion_for_invocation(invocation),
                   perform_bwd_pass_expansion_for_invocation(
-                      invocation_id, invocation, subgradient_ids),
+                      invocation_id, invocation, subgradient_ids_by_value),
               },
               gradient_reductions);
         } else {
-          return std::set{
-              perform_fwd_pass_expansion_for_invocation(invocation),
-          };
+          return set_union(
+              std::set{
+                  perform_fwd_pass_expansion_for_invocation(invocation),
+              },
+              gradient_reductions);
         }
       });
 
