@@ -510,7 +510,7 @@ DynamicNodeInvocation create_gradient_reduction_for_value(
   DynamicNodeAttrs gradient_reduction_attrs{
       /*task_type=*/DynamicTaskType::BWD,
       /*device_ids=*/std::nullopt,
-      /*mapping=*/std::nullopt,
+      /*mapping=*/mapping_for_gradient_reduction(g, value, subgradient_inputs),
       /*op_attrs=*/
       TrainingOperationAttrs{GradientReductionAttrs{}},
       /*layer_guid=*/
