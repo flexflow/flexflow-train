@@ -1,28 +1,9 @@
 #include "task-spec/dynamic_graph/dynamic_node_mapping.h"
-#include "task-spec/dynamic_graph/parallel_tensor_mapping.h"
 #include "utils/bidict/algorithms/bidict_transform_keys.h"
 #include "utils/bidict/algorithms/bidict_transform_values.h"
-#include "utils/containers/flatmap.h"
-#include "utils/containers/require_all_same.h"
 #include "utils/containers/transform.h"
-#include "utils/optional.h"
 
 namespace FlexFlow {
-
-DynamicNodeMapping dynamic_node_mapping_from_value_mapping(
-    std::map<DynamicTensorSlot, ParallelTensorMapping> const &mapping) {
-  MappedOperatorTaskGroup op_task_group{{}};
-  DeviceType device_type = assert_unwrap(require_all_same(
-      transform(flatmap(values(mapping),
-                        [](ParallelTensorMapping const &m) {
-                          return pt_mapping_get_device_set(m);
-                        }),
-                [](global_device_id_t const &id) { return id.device_type; })));
-  return DynamicNodeMapping{
-      /*op_task_group=*/op_task_group,
-      /*device_type=*/device_type,
-  };
-}
 
 bidict<global_device_id_t, OperatorAtomicTaskShardBinding>
     dynamic_node_mapping_get_shard_bindings(DynamicNodeMapping const &m) {

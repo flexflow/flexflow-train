@@ -1,4 +1,5 @@
 #include "task-spec/dynamic_graph/pass_expansion.h"
+#include "op-attrs/tensor_slot_name.dtg.h"
 #include "op-attrs/tensor_slot_name.h"
 #include "task-spec/dynamic_graph/copy_insertion.h"
 #include "task-spec/dynamic_graph/dynamic_invocation_id_t.dtg.h"
@@ -10,7 +11,9 @@
 #include "task-spec/dynamic_graph/dynamic_value_attrs.h"
 #include "task-spec/dynamic_graph/subgradient_id_t.dtg.h"
 #include "task-spec/dynamic_graph/training_operation_attrs.h"
+#include "task-spec/fwb_tensor_type.dtg.h"
 #include "utils/containers/are_all_same.h"
+#include "utils/containers/binary_merge_disjoint_maps.h"
 #include "utils/containers/concat_vectors.h"
 #include "utils/containers/contains_duplicates.h"
 #include "utils/containers/filter.h"
@@ -428,9 +431,11 @@ DynamicNodeInvocation perform_bwd_pass_expansion_for_invocation(
   return result;
 }
 
-DynamicNodeMapping
-    mapping_for_gradient_reduction(DynamicOpenDataflowGraph const &g,
-                                   DynamicValueAttrs const &value) {
+DynamicNodeMapping mapping_for_gradient_reduction(
+    DynamicOpenDataflowGraph const &g,
+    DynamicValueAttrs const &value,
+    std::map<dynamic_invocation_id_t, subgradient_id_t> const
+        &subgradient_inputs) {
   DynamicSlotSite source_site = dynamic_graph_find_source_of_value(g, value);
   std::set<InternalDynamicSlotSite> sink_sites =
       dynamic_graph_find_sinks_of_value(g, value);
@@ -441,18 +446,33 @@ DynamicNodeMapping
   DynamicTensorSlot source_slot =
       get_only(invert_map(source.outputs).at(value));
 
-  bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
-      source_tensor_binding = get_tensor_bindings_for_slot_name(
-          source_mapping.op_task_group, source_slot.slot_name);
+  std::pair<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
+      source_tensor_binding = get_only(get_tensor_bindings_for_slot_name(
+          source_mapping.op_task_group, source_slot.slot_name));
+
+  // For now we're going to map everything like the original source, both inputs
+  // and outputs. This means that in the presence of model parallelism we'll be
+  // potentially inducing extra copies that would otherwise be unnecessary.
+  std::set<subgradient_id_t> subgradient_ids =
+      set_of(values(subgradient_inputs));
+  std::map<TensorSlotName, ParallelTensorSpaceCoordinate> input_bindings =
+      map_from_pairs(transform(
+          subgradient_ids, [&](subgradient_id_t const &subgradient_id) {
+            return std::pair{subgradient_id.gradient_reduction_slot,
+                             source_tensor_binding.first};
+          }));
+  std::map<TensorSlotName, ParallelTensorSpaceCoordinate> output_bindings{
+      {TensorSlotName::OUTPUT, source_tensor_binding.first},
+  };
+  std::map<TensorSlotName, ParallelTensorSpaceCoordinate> bindings =
+      binary_merge_disjoint_maps(input_bindings, output_bindings);
 
   DynamicNodeMapping result{
       /*op_task_group=*/MappedOperatorTaskGroup{
           bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding>{
-              {get_only(source_tensor_binding).second,
-               OperatorAtomicTaskShardBinding{
-                   std::map<TensorSlotName, ParallelTensorSpaceCoordinate>{
-                       {source_slot.slot_name,
-                        get_only(source_tensor_binding).first}}}}}},
+              {source_tensor_binding.second,
+               OperatorAtomicTaskShardBinding{bindings}},
+          }},
       /*device_type=*/source_mapping.device_type};
   return result;
 }
@@ -494,18 +514,27 @@ DynamicNodeInvocation create_gradient_reduction_for_value(
       /*per_device_op_state=*/std::nullopt,
   };
 
+  DynamicTensorSlot output_slot{
+      /*slot_name=*/TensorSlotName::OUTPUT,
+      /*slot_tensor_role=*/std::nullopt,
+      /*task_shard=*/std::nullopt,
+  };
+
   return DynamicNodeInvocation{
       /*inputs=*/map_from_pairs(transform(
           values(subgradient_inputs),
           [&](subgradient_id_t const &subgradient_id) {
-            return to_grad_subgradient(source_site.require_internal().slot_name,
-                                       value,
-                                       subgradient_id);
+            DynamicTensorSlot input_slot{
+                /*slot_name=*/subgradient_id.gradient_reduction_slot,
+                /*slot_tensor_role=*/std::nullopt,
+                /*task_shard=*/std::nullopt,
+            };
+            return to_grad_subgradient(input_slot, value, subgradient_id);
           })),
       /*node_attrs=*/gradient_reduction_attrs,
       /*outputs=*/
       {
-          to_grad(source_site.require_internal().slot_name, value),
+          to_grad(output_slot, value),
       },
   };
 }

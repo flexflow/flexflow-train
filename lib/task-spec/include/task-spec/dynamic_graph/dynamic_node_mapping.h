@@ -8,9 +8,6 @@
 
 namespace FlexFlow {
 
-DynamicNodeMapping dynamic_node_mapping_from_value_mapping(
-    std::map<DynamicTensorSlot, ParallelTensorMapping> const &);
-
 bidict<global_device_id_t, OperatorAtomicTaskShardBinding>
     dynamic_node_mapping_get_shard_bindings(DynamicNodeMapping const &);
 
