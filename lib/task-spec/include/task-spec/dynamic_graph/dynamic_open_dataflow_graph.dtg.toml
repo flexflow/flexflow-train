@@ -11,6 +11,9 @@ features = [
 includes = [
   "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h",
   "<set>",
+  "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h",
+  "task-spec/dynamic_graph/dynamic_value_id_t.dtg.h",
+  "utils/bidict/bidict.h",
 ]
 
 src_includes = [
@@ -20,3 +23,7 @@ src_includes = [
 [[fields]]
 name = "invocations"
 type = "std::set<::FlexFlow::DynamicNodeInvocation>"
+
+[[fields]]
+name = "value_ids"
+type = "::FlexFlow::bidict<::FlexFlow::dynamic_value_id_t, ::FlexFlow::DynamicValueAttrs>"

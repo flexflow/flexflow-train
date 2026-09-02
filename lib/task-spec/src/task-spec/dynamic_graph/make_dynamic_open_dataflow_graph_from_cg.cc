@@ -78,7 +78,7 @@ DynamicOpenDataflowGraph
     result.invocations.emplace(result_inputs, result_attrs, result_outputs);
   }
 
-  return result;
+  return compute_value_ids_for_dynamic_open_dataflow_graph(result);
 }
 
 } // namespace FlexFlow

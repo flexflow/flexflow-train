@@ -7,14 +7,18 @@
 #include "task-spec/dynamic_graph/dynamic_slot_site.dtg.h"
 #include "task-spec/dynamic_graph/serializable_dynamic_node_attrs.h"
 #include "task-spec/dynamic_graph/serializable_dynamic_value_attrs.h"
+#include "utils/bidict/algorithms/bidict_from_map.h"
 #include "utils/containers/all_of.h"
 #include "utils/containers/at_idx.h"
 #include "utils/containers/concat_vectors.h"
 #include "utils/containers/contains_duplicates.h"
 #include "utils/containers/contains_value.h"
+#include "utils/containers/enumerate.h"
 #include "utils/containers/filter_values.h"
 #include "utils/containers/flatmap.h"
 #include "utils/containers/get_only.h"
+#include "utils/containers/invert_map.h"
+#include "utils/containers/map_keys.h"
 #include "utils/containers/multiset_of.h"
 #include "utils/containers/multiset_union.h"
 #include "utils/containers/repeat.h"
@@ -39,6 +43,7 @@ namespace FlexFlow {
 DynamicOpenDataflowGraph make_empty_dynamic_open_dataflow_graph() {
   return DynamicOpenDataflowGraph{
       std::set<DynamicNodeInvocation>{},
+      bidict<dynamic_value_id_t, DynamicValueAttrs>{},
   };
 }
 
@@ -73,6 +78,28 @@ void check_dynamic_open_dataflow_graph_is_valid(
   // LabelledOpenKwargDataflowGraph, and if a value is returned without an
   // assertion we know the properties hold.
   labelled_open_kwarg_dataflow_graph_from_dynamic_open_dataflow_graph(g);
+}
+
+DynamicOpenDataflowGraph compute_value_ids_for_dynamic_open_dataflow_graph(
+    DynamicOpenDataflowGraph const &g) {
+  std::map<dynamic_value_id_t, DynamicValueAttrs> internal_value_ids = map_keys(
+      enumerate(dynamic_graph_get_internal_values(g)), [](nonnegative_int i) {
+        return dynamic_value_id_t{dynamic_internal_value_id_t{i}};
+      });
+
+  std::map<dynamic_value_id_t, DynamicValueAttrs> external_value_ids = map_keys(
+      enumerate(dynamic_graph_get_external_values(g)), [](nonnegative_int i) {
+        return dynamic_value_id_t{dynamic_external_value_id_t{i}};
+      });
+
+  bidict<dynamic_value_id_t, DynamicValueAttrs> value_ids = bidict_from_map(
+      binary_merge_disjoint_maps(internal_value_ids, external_value_ids));
+
+  DynamicOpenDataflowGraph result{
+      /*invocations=*/g.invocations,
+      /*value_ids=*/value_ids,
+  };
+  return result;
 }
 
 nonnegative_int dynamic_graph_num_nodes(DynamicOpenDataflowGraph const &g) {
@@ -187,54 +214,13 @@ DynamicNodeInvocation
 dynamic_value_id_t
     dynamic_graph_get_id_for_value(DynamicOpenDataflowGraph const &g,
                                    DynamicValueAttrs const &value) {
-  auto idx_in_set = [](std::set<DynamicValueAttrs> const &s,
-                       DynamicValueAttrs const &v) -> nonnegative_int {
-    return nonnegative_int{assert_unwrap(index_of(s, v))};
-  };
-
-  {
-    std::set<DynamicValueAttrs> internal_values =
-        dynamic_graph_get_internal_values(g);
-    if (contains(internal_values, value)) {
-      return dynamic_value_id_t{
-          dynamic_internal_value_id_t{
-              idx_in_set(internal_values, value),
-          },
-      };
-    }
-  }
-
-  {
-    std::set<DynamicValueAttrs> external_values =
-        dynamic_graph_get_external_values(g);
-    if (contains(external_values, value)) {
-      return dynamic_value_id_t{
-          dynamic_external_value_id_t{
-              idx_in_set(external_values, value),
-          },
-      };
-    }
-  }
-
-  PANIC("Could not find id for value {}", value);
+  return g.value_ids.at_r(value);
 }
 
 DynamicValueAttrs
     dynamic_graph_get_value_for_id(DynamicOpenDataflowGraph const &g,
                                    dynamic_value_id_t const &id) {
-  return id.visit<DynamicValueAttrs>(overload{
-      [&](dynamic_internal_value_id_t const &internal_id) -> DynamicValueAttrs {
-        std::set<DynamicValueAttrs> internal_values =
-            dynamic_graph_get_internal_values(g);
-
-        return at_idx(internal_values, internal_id.idx);
-      },
-      [&](dynamic_external_value_id_t const &external_id) -> DynamicValueAttrs {
-        std::set<DynamicValueAttrs> external_values =
-            dynamic_graph_get_external_values(g);
-
-        return at_idx(external_values, external_id.idx);
-      }});
+  return g.value_ids.at_l(id);
 }
 
 std::set<DynamicGraphEdge>
@@ -455,11 +441,12 @@ DynamicOpenDataflowGraph dynamic_open_dataflow_graph_from_invocation_set(
 
   DynamicOpenDataflowGraph result = DynamicOpenDataflowGraph{
       invocation_set,
+      bidict<dynamic_value_id_t, DynamicValueAttrs>{},
   };
 
   check_dynamic_open_dataflow_graph_is_valid(result);
 
-  return result;
+  return compute_value_ids_for_dynamic_open_dataflow_graph(result);
 }
 
 std::pair<LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
