@@ -13,7 +13,7 @@ includes = [
   "<set>",
   "task-spec/dynamic_graph/serializable_dynamic_value_attrs.dtg.h",
   "task-spec/dynamic_graph/dynamic_value_id_t.dtg.h",
-  "utils/bidict/bidict.h",
+  "utils/bidict/unordered_bidict.h",
 ]
 
 src_includes = [
@@ -26,4 +26,4 @@ type = "std::set<::FlexFlow::SerializableDynamicNodeInvocation>"
 
 [[fields]]
 name = "value_ids"
-type = "::FlexFlow::bidict<::FlexFlow::dynamic_value_id_t, ::FlexFlow::SerializableDynamicValueAttrs>"
+type = "::FlexFlow::unordered_bidict<::FlexFlow::dynamic_value_id_t, ::FlexFlow::SerializableDynamicValueAttrs>"

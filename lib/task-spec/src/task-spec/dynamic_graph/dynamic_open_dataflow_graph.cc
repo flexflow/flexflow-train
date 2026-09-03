@@ -7,7 +7,7 @@
 #include "task-spec/dynamic_graph/dynamic_slot_site.dtg.h"
 #include "task-spec/dynamic_graph/serializable_dynamic_node_attrs.h"
 #include "task-spec/dynamic_graph/serializable_dynamic_value_attrs.h"
-#include "utils/bidict/algorithms/bidict_from_map.h"
+#include "utils/bidict/algorithms/unordered_bidict_from_map.h"
 #include "utils/containers/all_of.h"
 #include "utils/containers/at_idx.h"
 #include "utils/containers/concat_vectors.h"
@@ -43,7 +43,7 @@ namespace FlexFlow {
 DynamicOpenDataflowGraph make_empty_dynamic_open_dataflow_graph() {
   return DynamicOpenDataflowGraph{
       std::set<DynamicNodeInvocation>{},
-      bidict<dynamic_value_id_t, DynamicValueAttrs>{},
+      unordered_bidict<dynamic_value_id_t, DynamicValueAttrs>{},
   };
 }
 
@@ -92,8 +92,9 @@ DynamicOpenDataflowGraph compute_value_ids_for_dynamic_open_dataflow_graph(
         return dynamic_value_id_t{dynamic_external_value_id_t{i}};
       });
 
-  bidict<dynamic_value_id_t, DynamicValueAttrs> value_ids = bidict_from_map(
-      binary_merge_disjoint_maps(internal_value_ids, external_value_ids));
+  unordered_bidict<dynamic_value_id_t, DynamicValueAttrs> value_ids =
+      unordered_bidict_from_map(
+          binary_merge_disjoint_maps(internal_value_ids, external_value_ids));
 
   DynamicOpenDataflowGraph result{
       /*invocations=*/g.invocations,
@@ -441,7 +442,7 @@ DynamicOpenDataflowGraph dynamic_open_dataflow_graph_from_invocation_set(
 
   DynamicOpenDataflowGraph result = DynamicOpenDataflowGraph{
       invocation_set,
-      bidict<dynamic_value_id_t, DynamicValueAttrs>{},
+      unordered_bidict<dynamic_value_id_t, DynamicValueAttrs>{},
   };
 
   check_dynamic_open_dataflow_graph_is_valid(result);
