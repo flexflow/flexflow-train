@@ -1,13 +1,21 @@
 #include "internal/device.h"
 #include "kernels/batch_matmul_kernels_gpu.h"
+#include "op-attrs/ff_ordered/ff_ordered_slice.h"
 #include "op-attrs/tensor_dims.h"
+#include "utils/containers/product.h"
 #include "utils/containers/require_same.h"
+#include "utils/containers/vector_of.h"
 
 namespace FlexFlow {
 
 // The dimensions of a batched matmul `output[b] = input_lhs[b] * input_rhs[b]`,
 // where input_lhs is (batch_size, lhs_rows, inner), input_rhs is (batch_size,
 // inner, rhs_cols) and output is (batch_size, lhs_rows, rhs_cols).
+//
+// Inputs may have more than one leading (batch) dimension, matching
+// @ref batch_matmul_get_output_shape. Since the tensors are contiguous and
+// row-major, all leading dimensions fold into a single cuBLAS batch count
+// without any data movement.
 struct BatchMatmulDims {
   int batch_size;
   int lhs_rows;
@@ -15,11 +23,18 @@ struct BatchMatmulDims {
   int rhs_cols;
 };
 
+// The dimensions preceding the trailing (rows, cols) pair, which together make
+// up the batch of matrices being multiplied.
+static FFOrdered<positive_int> get_leading_dims(TensorShape const &shape) {
+  return ff_ordered_slice(
+      shape.dims.ff_ordered, relative_ff_dim_t{0}, relative_ff_dim_t{-2});
+}
+
 static BatchMatmulDims get_batch_matmul_dims(TensorShape const &lhs_shape,
                                              TensorShape const &rhs_shape,
                                              TensorShape const &output_shape) {
-  ASSERT(get_num_dims(lhs_shape.dims) == num_tensor_dims_t{3_n},
-         "BatchMatmul expects 3-dimensional tensors",
+  ASSERT(get_num_dims(lhs_shape.dims) >= num_tensor_dims_t{3_n},
+         "BatchMatmul expects tensors of at least 3 dimensions",
          lhs_shape);
 
   require_same(lhs_shape.data_type, rhs_shape.data_type);
@@ -29,21 +44,24 @@ static BatchMatmulDims get_batch_matmul_dims(TensorShape const &lhs_shape,
          "If you need this feature, please create an issue.",
          lhs_shape.data_type);
 
-  positive_int batch_size =
-      require_same(dim_at_idx(lhs_shape.dims, ff_dim_t{0_n}),
-                   dim_at_idx(rhs_shape.dims, ff_dim_t{0_n}),
-                   dim_at_idx(output_shape.dims, ff_dim_t{0_n}));
+  FFOrdered<positive_int> leading_dims =
+      require_same(get_leading_dims(lhs_shape),
+                   get_leading_dims(rhs_shape),
+                   get_leading_dims(output_shape));
+
+  positive_int batch_size = product(vector_of(leading_dims));
 
   positive_int lhs_rows =
-      require_same(dim_at_idx(lhs_shape.dims, ff_dim_t{1_n}),
-                   dim_at_idx(output_shape.dims, ff_dim_t{1_n}));
+      require_same(dim_at_idx(lhs_shape.dims, relative_ff_dim_t{-2}),
+                   dim_at_idx(output_shape.dims, relative_ff_dim_t{-2}));
 
-  positive_int inner = require_same(dim_at_idx(lhs_shape.dims, ff_dim_t{2_n}),
-                                    dim_at_idx(rhs_shape.dims, ff_dim_t{1_n}));
+  positive_int inner =
+      require_same(dim_at_idx(lhs_shape.dims, relative_ff_dim_t{-1}),
+                   dim_at_idx(rhs_shape.dims, relative_ff_dim_t{-2}));
 
   positive_int rhs_cols =
-      require_same(dim_at_idx(rhs_shape.dims, ff_dim_t{2_n}),
-                   dim_at_idx(output_shape.dims, ff_dim_t{2_n}));
+      require_same(dim_at_idx(rhs_shape.dims, relative_ff_dim_t{-1}),
+                   dim_at_idx(output_shape.dims, relative_ff_dim_t{-1}));
 
   return BatchMatmulDims{
       /*batch_size=*/batch_size.int_from_positive_int(),
