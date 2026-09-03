@@ -18,6 +18,7 @@
 #include "utils/bidict/algorithms/bidict_transform_values.h"
 #include "utils/bidict/algorithms/merge_disjoint_bidicts.h"
 #include "utils/containers/are_all_same.h"
+#include "utils/containers/argmax.h"
 #include "utils/containers/contains_key.h"
 #include "utils/containers/group_by.h"
 #include "utils/containers/set_of.h"
@@ -158,12 +159,16 @@ Realm::Memory RealmContext::get_nearest_memory(Realm::Processor proc) {
     return Realm::Memory::NO_MEMORY;
   }
 
-  // FIMXE: this isn't going to do what you expect until
-  // https://github.com/StanfordLegion/realm/pull/392 merges
   Realm::Machine::MemoryQuery mq(Realm::Machine::get_machine());
   mq.best_affinity_to(proc);
   ASSERT(mq.count() > 0);
-  return mq.first();
+
+  // Among the best memories, pick the one with the largest capacity
+  Realm::Memory result =
+      argmax(mq, [](Realm::Memory const &m) -> size_t { return m.capacity(); });
+
+  ASSERT(result.exists());
+  return result;
 }
 
 Realm::Processor RealmContext::get_current_processor() const {
