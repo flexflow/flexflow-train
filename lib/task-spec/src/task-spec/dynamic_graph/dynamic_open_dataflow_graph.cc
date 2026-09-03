@@ -24,7 +24,9 @@
 #include "utils/containers/multiset_union.h"
 #include "utils/containers/repeat.h"
 #include "utils/containers/require_all_of.h"
+#include "utils/containers/set_of.h"
 #include "utils/containers/transform.h"
+#include "utils/containers/vector_of.h"
 #include "utils/containers/zip_strict.h"
 #include "utils/containers/zip_values_strict.h"
 #include "utils/graph/dataflow_graph/algorithms.h"
@@ -525,14 +527,6 @@ std::pair<LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
                      graph_input);
   }
 
-  auto inputs_have_been_added =
-      [&](DynamicNodeInvocation const &invocation) -> bool {
-    return all_of(values(invocation.inputs),
-                  [&](DynamicValueAttrs const &input) -> bool {
-                    return value_map.contains_r(input);
-                  });
-  };
-
   bidict<Node, DynamicNodeInvocation> node_map;
   std::set<DynamicNodeInvocation> to_add = g.invocations;
 
@@ -560,19 +554,60 @@ std::pair<LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
     to_add.erase(invocation);
   };
 
-  auto add_next_invocation_to_graph = [&]() {
-    for (DynamicNodeInvocation const &invocation : to_add) {
-      if (inputs_have_been_added(invocation)) {
-        add_invocation_to_graph(invocation);
-        return;
+  // Add invocations in topological order using a worklist of invocations
+  // whose inputs are all available, rather than rescanning every remaining
+  // invocation after each insertion (which is quadratic in the number of
+  // invocations).
+  //
+  // Invocations are indexed by their position in g.invocations, which is
+  // ordered, and the worklist is drained lowest-index-first. This reproduces
+  // the selection made by a scan that takes the first ready invocation in
+  // that same order.
+  std::vector<DynamicNodeInvocation> invocation_by_idx =
+      vector_of(g.invocations);
+  int num_invocations = static_cast<int>(invocation_by_idx.size());
+
+  std::unordered_map<DynamicValueAttrs, std::vector<int>> consumers_of_value;
+  std::vector<int> num_unavailable_inputs(num_invocations, 0);
+
+  for (int idx = 0; idx < num_invocations; idx++) {
+    // a value consumed by several slots of one invocation only blocks it once
+    for (DynamicValueAttrs const &input :
+         set_of(values(invocation_by_idx.at(idx).inputs))) {
+      if (!value_map.contains_r(input)) {
+        num_unavailable_inputs.at(idx)++;
+        consumers_of_value[input].push_back(idx);
       }
     }
+  }
 
+  std::set<int> ready;
+  for (int idx = 0; idx < num_invocations; idx++) {
+    if (num_unavailable_inputs.at(idx) == 0) {
+      ready.insert(idx);
+    }
+  }
+
+  while (!ready.empty()) {
+    int idx = *ready.begin();
+    ready.erase(ready.begin());
+
+    DynamicNodeInvocation const &invocation = invocation_by_idx.at(idx);
+    add_invocation_to_graph(invocation);
+
+    for (DynamicValueAttrs const &output : set_of(values(invocation.outputs))) {
+      for (int consumer_idx : consumers_of_value[output]) {
+        if (--num_unavailable_inputs.at(consumer_idx) == 0) {
+          ready.insert(consumer_idx);
+        }
+      }
+    }
+  }
+
+  // any invocation still pending has an input that is never produced, or
+  // participates in a cycle
+  if (!to_add.empty()) {
     PANIC("Failed to add any invocations in to_add", to_add);
-  };
-
-  while (to_add.size() > 0) {
-    add_next_invocation_to_graph();
   }
 
   return std::pair{result, node_map};
