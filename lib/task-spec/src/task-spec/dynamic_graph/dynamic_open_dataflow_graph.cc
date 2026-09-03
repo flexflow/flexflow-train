@@ -43,6 +43,7 @@ namespace FlexFlow {
 DynamicOpenDataflowGraph make_empty_dynamic_open_dataflow_graph() {
   return DynamicOpenDataflowGraph{
       std::set<DynamicNodeInvocation>{},
+      unordered_bidict<dynamic_invocation_id_t, DynamicNodeInvocation>{},
       unordered_bidict<dynamic_value_id_t, DynamicValueAttrs>{},
   };
 }
@@ -80,6 +81,22 @@ void check_dynamic_open_dataflow_graph_is_valid(
   labelled_open_kwarg_dataflow_graph_from_dynamic_open_dataflow_graph(g);
 }
 
+DynamicOpenDataflowGraph compute_invocation_ids_for_dynamic_open_dataflow_graph(
+    DynamicOpenDataflowGraph const &g) {
+  unordered_bidict<dynamic_invocation_id_t, DynamicNodeInvocation>
+      invocation_ids = unordered_bidict_from_map(
+          map_keys(enumerate(g.invocations), [](nonnegative_int i) {
+            return dynamic_invocation_id_t{i};
+          }));
+
+  DynamicOpenDataflowGraph result{
+      /*invocations=*/g.invocations,
+      /*invocation_ids=*/invocation_ids,
+      /*value_ids=*/g.value_ids,
+  };
+  return result;
+}
+
 DynamicOpenDataflowGraph compute_value_ids_for_dynamic_open_dataflow_graph(
     DynamicOpenDataflowGraph const &g) {
   std::map<dynamic_value_id_t, DynamicValueAttrs> internal_value_ids = map_keys(
@@ -98,6 +115,7 @@ DynamicOpenDataflowGraph compute_value_ids_for_dynamic_open_dataflow_graph(
 
   DynamicOpenDataflowGraph result{
       /*invocations=*/g.invocations,
+      /*invocation_ids=*/g.invocation_ids,
       /*value_ids=*/value_ids,
   };
   return result;
@@ -201,15 +219,13 @@ std::set<DynamicValueAttrs>
 dynamic_invocation_id_t dynamic_graph_get_id_for_invocation(
     DynamicOpenDataflowGraph const &g,
     DynamicNodeInvocation const &invocation) {
-  return dynamic_invocation_id_t{
-      nonnegative_int{assert_unwrap(index_of(g.invocations, invocation))},
-  };
+  return g.invocation_ids.at_r(invocation);
 }
 
 DynamicNodeInvocation
     dynamic_graph_get_invocation_for_id(DynamicOpenDataflowGraph const &g,
                                         dynamic_invocation_id_t const &id) {
-  return at_idx(g.invocations, id.idx);
+  return g.invocation_ids.at_l(id);
 }
 
 dynamic_value_id_t
@@ -442,10 +458,15 @@ DynamicOpenDataflowGraph dynamic_open_dataflow_graph_from_invocation_set(
 
   DynamicOpenDataflowGraph result = DynamicOpenDataflowGraph{
       invocation_set,
+      unordered_bidict<dynamic_invocation_id_t, DynamicNodeInvocation>{},
       unordered_bidict<dynamic_value_id_t, DynamicValueAttrs>{},
   };
 
   check_dynamic_open_dataflow_graph_is_valid(result);
+
+  // note: invocation ids must be computed before value ids, as computing
+  // value ids requires looking up invocation ids
+  result = compute_invocation_ids_for_dynamic_open_dataflow_graph(result);
 
   return compute_value_ids_for_dynamic_open_dataflow_graph(result);
 }
