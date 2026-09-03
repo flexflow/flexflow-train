@@ -8,6 +8,7 @@
 #include "task-spec/dynamic_graph/serializable_dynamic_node_attrs.h"
 #include "task-spec/dynamic_graph/serializable_dynamic_value_attrs.h"
 #include "utils/bidict/algorithms/unordered_bidict_from_map.h"
+#include "utils/bidict/unordered_bidict.h"
 #include "utils/containers/all_of.h"
 #include "utils/containers/at_idx.h"
 #include "utils/containers/concat_vectors.h"
@@ -508,7 +509,11 @@ std::pair<LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
                                                          int,
                                                          DynamicTensorSlot>>();
 
-  bidict<OpenKwargDataflowValue<int, DynamicTensorSlot>, DynamicValueAttrs>
+  // note: unordered so that the contains_r probe in inputs_have_been_added
+  // below is a hash lookup rather than a tree descent using
+  // DynamicValueAttrs::operator<
+  unordered_bidict<OpenKwargDataflowValue<int, DynamicTensorSlot>,
+                   DynamicValueAttrs>
       value_map;
 
   for (auto const &kv : enumerate(graph_inputs)) {
