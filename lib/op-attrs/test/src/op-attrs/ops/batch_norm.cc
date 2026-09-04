@@ -15,6 +15,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*affine=*/affine,
           /*eps=*/1.0,
           /*momentum=*/0.1,
+          /*mode=*/BatchNormMode::SPATIAL_PERSISTENT,
       };
     };
 
@@ -63,6 +64,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*affine=*/true,
         /*eps=*/1.0,
         /*momentum=*/0.1,
+        /*mode=*/BatchNormMode::SPATIAL_PERSISTENT,
     };
 
     BatchNormAttrs attrs_affine_false = [&] {
@@ -143,6 +145,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*affine=*/true,
         /*eps=*/1.0,
         /*momentum=*/0.1,
+        /*mode=*/BatchNormMode::SPATIAL_PERSISTENT,
     };
 
     BatchNormAttrs attrs_affine_false = [&] {
@@ -347,6 +350,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*affine=*/true,
         /*eps=*/1.0,
         /*momentum=*/0.1,
+        /*mode=*/BatchNormMode::SPATIAL_PERSISTENT,
     };
 
     ParallelTensorShape input = ParallelTensorShape{

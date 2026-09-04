@@ -342,6 +342,7 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::batch_norm(
     std::optional<Activation> const &activation,
     float eps,
     std::optional<float> const &momentum,
+    BatchNormMode mode,
     std::optional<std::string> const &maybe_name) {
 
   if (activation.has_value() && activation.value() != Activation::RELU) {
@@ -358,6 +359,7 @@ parallel_tensor_guid_t ParallelComputationGraphBuilder::batch_norm(
       /*affine=*/affine,
       /*eps=*/eps,
       /*momentum=*/momentum,
+      /*mode=*/mode,
   };
 
   std::string name =

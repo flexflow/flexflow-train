@@ -62,10 +62,20 @@ BatchNormPerDeviceState
   checkCUDNN(cudnnCreateTensorDescriptor(&outputTensor));
   checkCUDNN(cudnnCreateTensorDescriptor(&biasTensor));
 
-  ffBatchNormMode_t mode = CUDNN_BATCHNORM_SPATIAL;
-#if CUDNN_VERSION >= 7000
-  mode = CUDNN_BATCHNORM_SPATIAL_PERSISTENT;
-#endif
+  ffBatchNormMode_t mode;
+  switch (attrs.mode) {
+    case BatchNormMode::PER_ACTIVATION:
+      mode = CUDNN_BATCHNORM_PER_ACTIVATION;
+      break;
+    case BatchNormMode::SPATIAL:
+      mode = CUDNN_BATCHNORM_SPATIAL;
+      break;
+    case BatchNormMode::SPATIAL_PERSISTENT:
+      mode = CUDNN_BATCHNORM_SPATIAL_PERSISTENT;
+      break;
+    default:
+      PANIC("Unknown BatchNormMode", attrs.mode);
+  }
 
   checkCUDNN(cudnnSetTensorDescriptorFromTensorShape(inputTensor, input_shape));
   checkCUDNN(

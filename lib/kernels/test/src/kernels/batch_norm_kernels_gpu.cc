@@ -13,6 +13,7 @@ static BatchNormAttrs make_attrs() {
       /*affine=*/true,
       /*eps=*/1e-5,
       /*momentum=*/0.1,
+      /*mode=*/BatchNormMode::SPATIAL_PERSISTENT,
   };
 }
 

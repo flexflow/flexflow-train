@@ -519,7 +519,8 @@ tensor_guid_t
       /*affine=*/true,
       /*activation=*/std::nullopt,
       /*eps=*/1e-3,
-      /*momentum=*/0.03);
+      /*momentum=*/0.03,
+      /*mode=*/BatchNormMode::SPATIAL);
 
   /**
    * https://github.com/ultralytics/ultralytics/blob/f8ad132a15b5f6818c2ce0647b40dc57e993bf0c/ultralytics/nn/modules/conv.py#L67

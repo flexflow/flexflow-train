@@ -13,6 +13,7 @@ features = [
 
 includes = [
   "<optional>",
+  "op-attrs/ops/batch_norm_mode.dtg.h",
 ]
 
 src_includes = [
@@ -36,3 +37,7 @@ type = "float"
 [[fields]]
 name = "momentum"
 type = "std::optional<float>"
+
+[[fields]]
+name = "mode"
+type = "::FlexFlow::BatchNormMode"

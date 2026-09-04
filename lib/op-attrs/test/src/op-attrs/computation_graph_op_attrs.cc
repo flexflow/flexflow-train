@@ -10,6 +10,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*affine=*/true,
         /*eps=*/1e-5,
         /*momentum=*/0.1,
+        /*mode=*/BatchNormMode::SPATIAL_PERSISTENT,
     }};
     nlohmann::json j = correct;
     auto result = j.get<ComputationGraphOpAttrs>();
