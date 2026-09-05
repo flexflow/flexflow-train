@@ -114,9 +114,13 @@ void element_unary_cpu_backward_kernel(
       case OperatorType::SILU: {
         float beta = attrs.scalar.value_or(1.0f);
         return [beta](float x, float fx) -> float {
-          float e_to_bx = expf(beta * x);
-          return (e_to_bx * (beta * x + e_to_bx + 1.0f)) /
-                 ((e_to_bx + 1) * (e_to_bx + 1));
+          // Algebraically e^bx (bx + e^bx + 1) / (e^bx + 1)^2, but written in
+          // terms of the sigmoid so that it stays finite. exp(bx) overflows to
+          // infinity once bx is much above 88, and the expanded form then
+          // evaluates infinity/infinity = NaN.
+          float bx = beta * x;
+          float sigmoid = 1.0f / (1.0f + expf(-bx));
+          return sigmoid * (1.0f + bx * (1.0f - sigmoid));
         };
       }
       case OperatorType::SIN:

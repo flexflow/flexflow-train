@@ -209,10 +209,16 @@ __global__ void elewise_scalar_unary_backward_kernel(coord_t volume,
         break;
       }
       case OperatorType::SILU: {
-        float e_to_bx = expf(scalar * input[i]);
-        input_grad[i] += (T)(output_grad[i] *
-                             (e_to_bx * (scalar * input[i] + e_to_bx + 1.0f)) /
-                             ((e_to_bx + 1.0f) * (e_to_bx + 1.0f)));
+        // Algebraically e^bx (bx + e^bx + 1) / (e^bx + 1)^2, but written in
+        // terms of the sigmoid so that it stays finite. exp(bx) overflows to
+        // infinity once bx is much above 88, and the expanded form then
+        // evaluates infinity/infinity = NaN. A zero output gradient does not
+        // rescue that, because 0 * NaN is NaN: a layer receiving no gradient
+        // at all would still poison everything upstream of it.
+        float bx = scalar * (float)input[i];
+        float sigmoid = 1.0f / (1.0f + expf(-bx));
+        input_grad[i] +=
+            (T)(output_grad[i] * sigmoid * (1.0f + bx * (1.0f - sigmoid)));
         break;
       }
       default:
