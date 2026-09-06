@@ -11,7 +11,7 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_batch_norm_incoming_tensor_roles(BatchNormAttrs)") {
     auto make_attrs = [](bool affine) {
       return BatchNormAttrs{
-          /*relu=*/false,
+          /*activation=*/std::nullopt,
           /*affine=*/affine,
           /*eps=*/1.0,
           /*momentum=*/0.1,
@@ -60,7 +60,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
   TEST_CASE("shape inference (BatchNorm)") {
     BatchNormAttrs attrs_affine_true = BatchNormAttrs{
-        /*relu=*/false,
+        /*activation=*/std::nullopt,
         /*affine=*/true,
         /*eps=*/1.0,
         /*momentum=*/0.1,
@@ -141,7 +141,7 @@ TEST_SUITE(FF_TEST_SUITE) {
 
   TEST_CASE("parallel dim degree inference (BatchNormAttrs)") {
     BatchNormAttrs attrs_affine_true = BatchNormAttrs{
-        /*relu=*/false,
+        /*activation=*/std::nullopt,
         /*affine=*/true,
         /*eps=*/1.0,
         /*momentum=*/0.1,
@@ -346,7 +346,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     // here we just do a basic check that they compose
 
     BatchNormAttrs attrs = BatchNormAttrs{
-        /*relu=*/true,
+        /*activation=*/Activation::RELU,
         /*affine=*/true,
         /*eps=*/1.0,
         /*momentum=*/0.1,

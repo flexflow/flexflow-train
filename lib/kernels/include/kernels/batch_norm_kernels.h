@@ -39,6 +39,7 @@ void batch_norm_backward_kernel(
     GenericTensorAccessorR const &input,
     GenericTensorAccessorW const &input_grad,
     GenericTensorAccessorR const &gamma,
+    GenericTensorAccessorR const &beta,
     GenericTensorAccessorW const &gamma_grad,
     GenericTensorAccessorW const &beta_grad);
 

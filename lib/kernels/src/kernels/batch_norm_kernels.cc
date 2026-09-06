@@ -65,6 +65,7 @@ void batch_norm_backward_kernel(
     GenericTensorAccessorR const &input,
     GenericTensorAccessorW const &input_grad,
     GenericTensorAccessorR const &gamma,
+    GenericTensorAccessorR const &beta,
     GenericTensorAccessorW const &gamma_grad,
     GenericTensorAccessorW const &beta_grad) {
   if (stream.is_gpu()) {
@@ -78,6 +79,7 @@ void batch_norm_backward_kernel(
         /*input=*/input,
         /*input_grad=*/input_grad,
         /*gamma=*/gamma,
+        /*beta=*/beta,
         /*gamma_grad=*/gamma_grad,
         /*beta_grad=*/beta_grad);
   } else {
@@ -91,6 +93,7 @@ void batch_norm_backward_kernel(
         /*input=*/input,
         /*input_grad=*/input_grad,
         /*gamma=*/gamma,
+        /*beta=*/beta,
         /*gamma_grad=*/gamma_grad,
         /*beta_grad=*/beta_grad);
   }

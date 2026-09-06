@@ -1,15 +1,17 @@
 #include "kernels/batch_norm_kernels_gpu.h"
 #include "internal/test_utils.h"
 #include "kernels/create_accessor_with_contents.h"
+#include "kernels/element_unary_kernels_gpu.h"
 #include "kernels/format_accessor_contents.h"
 #include "test/utils/doctest/check_kv.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 
-static BatchNormAttrs make_attrs() {
+static BatchNormAttrs
+    make_attrs(std::optional<Activation> activation = std::nullopt) {
   return BatchNormAttrs{
-      /*relu=*/false,
+      /*activation=*/activation,
       /*affine=*/true,
       /*eps=*/1e-5,
       /*momentum=*/0.1,
@@ -181,6 +183,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         /*input=*/input,
         /*input_grad=*/input_grad,
         /*gamma=*/gamma,
+        /*beta=*/beta,
         /*gamma_grad=*/gamma_grad,
         /*beta_grad=*/beta_grad);
 
@@ -222,5 +225,205 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
                   check_kv("beta_grad", format_accessor_w_contents(beta_grad)));
 
     batch_norm_gpu_cleanup_kernel(allocator, per_device_state);
+  }
+
+  // Applying an activation as part of batch norm has to compute what the two
+  // separate operators it replaces would have computed. Comparing against those
+  // operators rather than against a table of expected numbers is the point:
+  // what matters is that folding them together did not change the answer.
+  TEST_CASE("batch_norm_gpu fused activation matches the separate operators") {
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true);
+    ManagedFFStream managed_stream{};
+    Allocator allocator = create_local_cuda_memory_allocator();
+
+    ElementUnaryAttrs silu_attrs = ElementUnaryAttrs{
+        /*op_type=*/OperatorType::SILU,
+        /*scalar=*/std::nullopt,
+    };
+
+    GenericTensorAccessorR input = make_input(allocator);
+    GenericTensorAccessorR gamma = make_gamma(allocator);
+    GenericTensorAccessorR beta = make_beta(allocator);
+
+    ElementUnaryPerDeviceState silu_state =
+        element_unary_gpu_init_kernel(silu_attrs, input.shape, input.shape);
+
+    SUBCASE("forward") {
+      BatchNormAttrs separate_attrs = make_attrs();
+      BatchNormAttrs fused_attrs = make_attrs(Activation::SILU);
+
+      GenericTensorAccessorW normalized =
+          create_random_filled_accessor_w(input.shape, allocator);
+      GenericTensorAccessorW separate =
+          create_random_filled_accessor_w(input.shape, allocator);
+      GenericTensorAccessorW fused =
+          create_random_filled_accessor_w(input.shape, allocator);
+
+      BatchNormPerDeviceState separate_state =
+          batch_norm_gpu_init_kernel(allocator,
+                                     separate_attrs,
+                                     input.shape,
+                                     input.shape);
+      batch_norm_gpu_forward_kernel(managed_stream.raw_stream(),
+                                    managed_handle.raw_handle(),
+                                    separate_state,
+                                    separate_attrs,
+                                    input,
+                                    gamma,
+                                    beta,
+                                    normalized);
+      element_unary_gpu_forward_kernel(
+          managed_stream.raw_stream(),
+          managed_handle.raw_handle(),
+          silu_state,
+          silu_attrs,
+          read_only_accessor_from_write_accessor(normalized),
+          separate);
+
+      BatchNormPerDeviceState fused_state =
+          batch_norm_gpu_init_kernel(allocator,
+                                     fused_attrs,
+                                     input.shape,
+                                     input.shape);
+      batch_norm_gpu_forward_kernel(managed_stream.raw_stream(),
+                                    managed_handle.raw_handle(),
+                                    fused_state,
+                                    fused_attrs,
+                                    input,
+                                    gamma,
+                                    beta,
+                                    fused);
+
+      CHECK_MESSAGE(accessors_within_epsilon(fused, separate, 1e-5),
+                    check_kv("fused", format_accessor_w_contents(fused)),
+                    check_kv("separate", format_accessor_w_contents(separate)));
+
+      batch_norm_gpu_cleanup_kernel(allocator, separate_state);
+      batch_norm_gpu_cleanup_kernel(allocator, fused_state);
+    }
+
+    SUBCASE("backward") {
+      BatchNormAttrs separate_attrs = make_attrs();
+      BatchNormAttrs fused_attrs = make_attrs(Activation::SILU);
+
+      GenericTensorAccessorR output_grad =
+          create_random_filled_accessor_r(input.shape, allocator);
+
+      // The backward kernels accumulate into their gradients, so every
+      // gradient starts at zero for the two paths to be comparable.
+
+      // The separate path: batch norm writes the value the activation reads,
+      // and the activation's backward turns the output gradient into the
+      // gradient of that value.
+      GenericTensorAccessorW normalized =
+          create_random_filled_accessor_w(input.shape, allocator);
+      GenericTensorAccessorW activated =
+          create_random_filled_accessor_w(input.shape, allocator);
+      GenericTensorAccessorW normalized_grad =
+          create_zero_filled_accessor_w(input.shape, allocator);
+      GenericTensorAccessorW separate_input_grad =
+          create_zero_filled_accessor_w(input.shape, allocator);
+      GenericTensorAccessorW separate_gamma_grad =
+          create_zero_filled_accessor_w(gamma.shape, allocator);
+      GenericTensorAccessorW separate_beta_grad =
+          create_zero_filled_accessor_w(gamma.shape, allocator);
+
+      BatchNormPerDeviceState separate_state =
+          batch_norm_gpu_init_kernel(allocator,
+                                     separate_attrs,
+                                     input.shape,
+                                     input.shape);
+      batch_norm_gpu_forward_kernel(managed_stream.raw_stream(),
+                                    managed_handle.raw_handle(),
+                                    separate_state,
+                                    separate_attrs,
+                                    input,
+                                    gamma,
+                                    beta,
+                                    normalized);
+      element_unary_gpu_forward_kernel(
+          managed_stream.raw_stream(),
+          managed_handle.raw_handle(),
+          silu_state,
+          silu_attrs,
+          read_only_accessor_from_write_accessor(normalized),
+          activated);
+      element_unary_gpu_backward_kernel(
+          managed_stream.raw_stream(),
+          managed_handle.raw_handle(),
+          silu_state,
+          silu_attrs,
+          read_only_accessor_from_write_accessor(activated),
+          output_grad,
+          read_only_accessor_from_write_accessor(normalized),
+          normalized_grad);
+      batch_norm_gpu_backward_kernel(
+          managed_stream.raw_stream(),
+          managed_handle.raw_handle(),
+          separate_state,
+          separate_attrs,
+          read_only_accessor_from_write_accessor(normalized),
+          read_only_accessor_from_write_accessor(normalized_grad),
+          input,
+          separate_input_grad,
+          gamma,
+          beta,
+          separate_gamma_grad,
+          separate_beta_grad);
+
+      // The fused path, which never writes the value between them.
+      GenericTensorAccessorW fused_output =
+          create_random_filled_accessor_w(input.shape, allocator);
+      GenericTensorAccessorW fused_input_grad =
+          create_zero_filled_accessor_w(input.shape, allocator);
+      GenericTensorAccessorW fused_gamma_grad =
+          create_zero_filled_accessor_w(gamma.shape, allocator);
+      GenericTensorAccessorW fused_beta_grad =
+          create_zero_filled_accessor_w(gamma.shape, allocator);
+
+      BatchNormPerDeviceState fused_state =
+          batch_norm_gpu_init_kernel(allocator,
+                                     fused_attrs,
+                                     input.shape,
+                                     input.shape);
+      batch_norm_gpu_forward_kernel(managed_stream.raw_stream(),
+                                    managed_handle.raw_handle(),
+                                    fused_state,
+                                    fused_attrs,
+                                    input,
+                                    gamma,
+                                    beta,
+                                    fused_output);
+      batch_norm_gpu_backward_kernel(
+          managed_stream.raw_stream(),
+          managed_handle.raw_handle(),
+          fused_state,
+          fused_attrs,
+          read_only_accessor_from_write_accessor(fused_output),
+          output_grad,
+          input,
+          fused_input_grad,
+          gamma,
+          beta,
+          fused_gamma_grad,
+          fused_beta_grad);
+
+      CHECK_MESSAGE(
+          accessors_within_epsilon(fused_input_grad, separate_input_grad, 1e-5),
+          check_kv("fused", format_accessor_w_contents(fused_input_grad)),
+          check_kv("separate",
+                   format_accessor_w_contents(separate_input_grad)));
+      CHECK_MESSAGE(
+          accessors_within_epsilon(fused_gamma_grad, separate_gamma_grad, 1e-5),
+          check_kv("fused", format_accessor_w_contents(fused_gamma_grad)));
+      CHECK_MESSAGE(
+          accessors_within_epsilon(fused_beta_grad, separate_beta_grad, 1e-5),
+          check_kv("fused", format_accessor_w_contents(fused_beta_grad)));
+
+      batch_norm_gpu_cleanup_kernel(allocator, separate_state);
+      batch_norm_gpu_cleanup_kernel(allocator, fused_state);
+    }
   }
 }

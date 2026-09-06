@@ -6,7 +6,7 @@ using namespace ::FlexFlow;
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("ComputationGraphOpAttrs to/from json") {
     ComputationGraphOpAttrs correct = ComputationGraphOpAttrs{BatchNormAttrs{
-        /*relu=*/false,
+        /*activation=*/std::nullopt,
         /*affine=*/true,
         /*eps=*/1e-5,
         /*momentum=*/0.1,

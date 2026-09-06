@@ -87,6 +87,8 @@ static std::optional<milliseconds_t>
       acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
   GenericTensorAccessorR gamma =
       acc.get_tensor<Permissions::RO>(TensorSlotName::GAMMA);
+  GenericTensorAccessorR beta =
+      acc.get_tensor<Permissions::RO>(TensorSlotName::BETA);
   GenericTensorAccessorW gamma_grad =
       acc.get_tensor_grad<Permissions::RW>(TensorSlotName::GAMMA);
   GenericTensorAccessorW beta_grad =
@@ -104,6 +106,7 @@ static std::optional<milliseconds_t>
                  input,
                  input_grad,
                  gamma,
+                 beta,
                  gamma_grad,
                  beta_grad);
 }

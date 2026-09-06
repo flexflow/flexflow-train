@@ -10,6 +10,28 @@
 
 namespace FlexFlow {
 
+bool batch_norm_supports_fused_activation(Activation activation) {
+  switch (activation) {
+    case Activation::RELU:
+    case Activation::SIGMOID:
+    case Activation::TANH:
+    case Activation::SILU:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool batch_norm_mode_supports_fused_activation(BatchNormMode mode) {
+  switch (mode) {
+    case BatchNormMode::SPATIAL:
+    case BatchNormMode::SPATIAL_PERSISTENT:
+      return true;
+    default:
+      return false;
+  }
+}
+
 std::map<TensorSlotName, IncomingTensorRole>
     get_batch_norm_incoming_tensor_roles(BatchNormAttrs const &attrs) {
   std::map<TensorSlotName, IncomingTensorRole> result = {

@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_OP_ATTRS_INCLUDE_OP_ATTRS_OPS_BATCH_NORM_H
 #define _FLEXFLOW_OP_ATTRS_INCLUDE_OP_ATTRS_OPS_BATCH_NORM_H
 
+#include "op-attrs/activation.dtg.h"
 #include "op-attrs/incoming_tensor_role.dtg.h"
 #include "op-attrs/initializer_attrs.dtg.h"
 #include "op-attrs/ops/batch_norm_attrs.dtg.h"
@@ -11,6 +12,26 @@
 #include <tl/expected.hpp>
 
 namespace FlexFlow {
+
+/**
+ * \brief Whether a batch-norm kernel can compute \p activation itself, as part
+ * of normalizing, rather than leaving it to a separate operator.
+ *
+ * \details Both sides of that arrangement ask here: whatever writes an
+ * activation into a \ref BatchNormAttrs, to decide whether the result would be
+ * runnable, and the kernels, to check that whoever built the attrs did ask.
+ */
+bool batch_norm_supports_fused_activation(Activation);
+
+/**
+ * \brief Whether a batch-norm kernel can compute a fused activation in \p mode.
+ *
+ * \details The spatial modes take statistics per channel over the samples and
+ * both spatial dimensions, which is what the fused kernels compute.
+ * PER_ACTIVATION takes them per position over the samples alone, and would need
+ * a kernel of its own.
+ */
+bool batch_norm_mode_supports_fused_activation(BatchNormMode);
 
 std::map<TensorSlotName, IncomingTensorRole>
     get_batch_norm_incoming_tensor_roles(BatchNormAttrs const &);

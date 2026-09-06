@@ -18,6 +18,7 @@ void batch_norm_cpu_backward_kernel(BatchNormAttrs const &attrs,
                                     GenericTensorAccessorR const &input,
                                     GenericTensorAccessorW const &input_grad,
                                     GenericTensorAccessorR const &gamma,
+                                    GenericTensorAccessorR const &beta,
                                     GenericTensorAccessorW const &gamma_grad,
                                     GenericTensorAccessorW const &beta_grad);
 
