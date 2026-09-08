@@ -48,7 +48,7 @@ static std::optional<milliseconds_t>
 
   device_handle_t handle = acc.get_ff_handle();
 
-  ProfilingSettings profiling = acc.get_profiling_settings();
+  std::optional<ProfilingSettings> profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
   std::optional<SoftmaxPerDeviceState> per_device_state =
       acc.get_per_device_op_state().require_softmax();
@@ -78,7 +78,7 @@ static std::optional<milliseconds_t>
   SoftmaxAttrs attrs = acc.get_op_attrs().require_softmax();
   device_handle_t handle = acc.get_ff_handle();
 
-  ProfilingSettings profiling = acc.get_profiling_settings();
+  std::optional<ProfilingSettings> profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
   std::optional<SoftmaxPerDeviceState> per_device_state =
       acc.get_per_device_op_state().require_softmax();
