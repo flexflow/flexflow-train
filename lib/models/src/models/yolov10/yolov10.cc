@@ -355,13 +355,18 @@ tensor_guid_t
 
   /**
    * https://github.com/ultralytics/ultralytics/blob/f8ad132a15b5f6818c2ce0647b40dc57e993bf0c/ultralytics/nn/modules/conv.py#L66
+   *
+   * Note that <tt>eps</tt> and <tt>momentum</tt> are are initially set to the default pytorch values of <tt>1e-5</tt> and <tt>0.1</tt>
+   * respectively,but are later overriden in
+   * https://github.com/ultralytics/ultralytics/blob/f8ad132a15b5f6818c2ce0647b40dc57e993bf0c/ultralytics/utils/torch_utils.py#L558-L568
+   * to <tt>1e-3</tt> and <tt>0.03</tt>, as are used below.
    */
   tensor_guid_t out = cgb.batch_norm(
       /*input=*/conv,
       /*affine=*/true,
       /*activation=*/std::nullopt,
-      /*eps=*/1e-5,
-      /*momentum=*/0.1);
+      /*eps=*/1e-3,
+      /*momentum=*/0.03);
 
   /**
    * https://github.com/ultralytics/ultralytics/blob/f8ad132a15b5f6818c2ce0647b40dc57e993bf0c/ultralytics/nn/modules/conv.py#L67
