@@ -23,4 +23,4 @@ jobs:
 
     strategy:
       matrix:
-        gcc: [10, 11]
+        gcc: [10, 11, 14]
