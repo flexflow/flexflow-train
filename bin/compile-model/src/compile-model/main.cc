@@ -239,9 +239,6 @@ int main(int argc, char **argv) {
     return from_v1(cg_json.get<V1ComputationGraph>());
   }();
 
-  MachineSpecification machine_specification =
-      get_machine_specification(machine_specification_json_path);
-
   MappedParallelComputationGraph mpcg = [&]() {
     if (strategy == "passthrough") {
       return lift_cg_to_mpcg_for_single_device(cg);
@@ -249,6 +246,8 @@ int main(int argc, char **argv) {
       // Need to root this on the stack so it stays alive for the whole session
       std::optional<ManagedPerDeviceFFHandle> managed_handle =
           create_device_handle(cpu);
+      MachineSpecification machine_specification =
+          get_machine_specification(machine_specification_json_path);
       CostEstimator estimator =
           create_cost_estimator(machine_specification, cpu, managed_handle);
       AlgorithmConfig algorithm =
