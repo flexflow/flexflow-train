@@ -225,7 +225,19 @@ __device__ __forceinline__ void
  * it from \p input rather than being handed it, so it is not needed later
  * either.
  */
-template <Activation ACTIVATION>
+/**
+ * @brief How a channel's elements are walked.
+ *
+ * @details A thread loading four contiguous floats at a time keeps more loads
+ * in flight, which is what the kernels are short of, but it also divides the
+ * work by four -- so below \ref BATCH_NORM_MIN_VECTOR_SPATIAL there are no
+ * longer enough of them to go round and the scalar walk wins.
+ */
+enum class BatchNormWalk { SCALAR, VECTOR };
+
+constexpr int BATCH_NORM_MIN_VECTOR_SPATIAL = 1024;
+
+template <Activation ACTIVATION, BatchNormWalk WALK>
 __global__ void
     batch_norm_fused_forward_kernel(int num_samples,
                                     int num_channels,
@@ -245,8 +257,21 @@ __global__ void
   float count = 0.0f, mean = 0.0f, m2 = 0.0f;
   for (int sample = 0; sample < num_samples; sample++) {
     size_t base = ((size_t)sample * num_channels + channel) * spatial_size;
-    for (int i = threadIdx.x; i < spatial_size; i += BATCH_NORM_FUSED_THREADS) {
-      welford_join(count, mean, m2, 1.0f, input[base + i], 0.0f);
+    if constexpr (WALK == BatchNormWalk::VECTOR) {
+      float4 const *in4 = reinterpret_cast<float4 const *>(input + base);
+      for (int i = threadIdx.x; i < spatial_size / 4;
+           i += BATCH_NORM_FUSED_THREADS) {
+        float4 v = in4[i];
+        welford_join(count, mean, m2, 1.0f, v.x, 0.0f);
+        welford_join(count, mean, m2, 1.0f, v.y, 0.0f);
+        welford_join(count, mean, m2, 1.0f, v.z, 0.0f);
+        welford_join(count, mean, m2, 1.0f, v.w, 0.0f);
+      }
+    } else {
+      for (int i = threadIdx.x; i < spatial_size;
+           i += BATCH_NORM_FUSED_THREADS) {
+        welford_join(count, mean, m2, 1.0f, input[base + i], 0.0f);
+      }
     }
   }
   block_reduce_welford(count, mean, m2);
@@ -274,10 +299,29 @@ __global__ void
   float shift = beta[channel];
   for (int sample = 0; sample < num_samples; sample++) {
     size_t base = ((size_t)sample * num_channels + channel) * spatial_size;
-    for (int i = threadIdx.x; i < spatial_size; i += BATCH_NORM_FUSED_THREADS) {
-      float normalized = (input[base + i] - mean) * invstd;
-      output[base + i] =
-          apply_activation(ACTIVATION, scale * normalized + shift);
+    if constexpr (WALK == BatchNormWalk::VECTOR) {
+      float4 const *in4 = reinterpret_cast<float4 const *>(input + base);
+      float4 *out4 = reinterpret_cast<float4 *>(output + base);
+      for (int i = threadIdx.x; i < spatial_size / 4;
+           i += BATCH_NORM_FUSED_THREADS) {
+        float4 v = in4[i];
+        out4[i] = make_float4(
+            apply_activation(ACTIVATION,
+                             scale * ((v.x - mean) * invstd) + shift),
+            apply_activation(ACTIVATION,
+                             scale * ((v.y - mean) * invstd) + shift),
+            apply_activation(ACTIVATION,
+                             scale * ((v.z - mean) * invstd) + shift),
+            apply_activation(ACTIVATION,
+                             scale * ((v.w - mean) * invstd) + shift));
+      }
+    } else {
+      for (int i = threadIdx.x; i < spatial_size;
+           i += BATCH_NORM_FUSED_THREADS) {
+        float normalized = (input[base + i] - mean) * invstd;
+        output[base + i] =
+            apply_activation(ACTIVATION, scale * normalized + shift);
+      }
     }
   }
 }
@@ -295,7 +339,7 @@ __global__ void
  * Like the cuDNN path, accumulates into the gradients rather than overwriting
  * them.
  */
-template <Activation ACTIVATION>
+template <Activation ACTIVATION, BatchNormWalk WALK>
 __global__ void batch_norm_fused_backward_kernel(int num_samples,
                                                  int num_channels,
                                                  int spatial_size,
@@ -317,12 +361,40 @@ __global__ void batch_norm_fused_backward_kernel(int num_samples,
   float sum_grad = 0.0f, sum_grad_normalized = 0.0f;
   for (int sample = 0; sample < num_samples; sample++) {
     size_t base = ((size_t)sample * num_channels + channel) * spatial_size;
-    for (int i = threadIdx.x; i < spatial_size; i += BATCH_NORM_FUSED_THREADS) {
-      float normalized = (input[base + i] - mean) * invstd;
-      float grad = activation_backward(
-          ACTIVATION, output_grad[base + i], scale * normalized + shift);
-      sum_grad += grad;
-      sum_grad_normalized += grad * normalized;
+    if constexpr (WALK == BatchNormWalk::VECTOR) {
+      float4 const *in4 = reinterpret_cast<float4 const *>(input + base);
+      float4 const *grad4 =
+          reinterpret_cast<float4 const *>(output_grad + base);
+      for (int i = threadIdx.x; i < spatial_size / 4;
+           i += BATCH_NORM_FUSED_THREADS) {
+        float4 x = in4[i], d = grad4[i];
+        float normalized, grad;
+        normalized = (x.x - mean) * invstd;
+        grad = activation_backward(ACTIVATION, d.x, scale * normalized + shift);
+        sum_grad += grad;
+        sum_grad_normalized += grad * normalized;
+        normalized = (x.y - mean) * invstd;
+        grad = activation_backward(ACTIVATION, d.y, scale * normalized + shift);
+        sum_grad += grad;
+        sum_grad_normalized += grad * normalized;
+        normalized = (x.z - mean) * invstd;
+        grad = activation_backward(ACTIVATION, d.z, scale * normalized + shift);
+        sum_grad += grad;
+        sum_grad_normalized += grad * normalized;
+        normalized = (x.w - mean) * invstd;
+        grad = activation_backward(ACTIVATION, d.w, scale * normalized + shift);
+        sum_grad += grad;
+        sum_grad_normalized += grad * normalized;
+      }
+    } else {
+      for (int i = threadIdx.x; i < spatial_size;
+           i += BATCH_NORM_FUSED_THREADS) {
+        float normalized = (input[base + i] - mean) * invstd;
+        float grad = activation_backward(
+            ACTIVATION, output_grad[base + i], scale * normalized + shift);
+        sum_grad += grad;
+        sum_grad_normalized += grad * normalized;
+      }
     }
   }
   block_reduce_sum2(sum_grad, sum_grad_normalized);
@@ -335,15 +407,277 @@ __global__ void batch_norm_fused_backward_kernel(int num_samples,
   float count = (float)num_samples * spatial_size;
   for (int sample = 0; sample < num_samples; sample++) {
     size_t base = ((size_t)sample * num_channels + channel) * spatial_size;
-    for (int i = threadIdx.x; i < spatial_size; i += BATCH_NORM_FUSED_THREADS) {
-      float normalized = (input[base + i] - mean) * invstd;
-      float grad = activation_backward(
-          ACTIVATION, output_grad[base + i], scale * normalized + shift);
-      input_grad[base + i] +=
-          scale * invstd *
-          (grad - (sum_grad + normalized * sum_grad_normalized) / count);
+    if constexpr (WALK == BatchNormWalk::VECTOR) {
+      float4 const *in4 = reinterpret_cast<float4 const *>(input + base);
+      float4 const *grad4 =
+          reinterpret_cast<float4 const *>(output_grad + base);
+      float4 *dst4 = reinterpret_cast<float4 *>(input_grad + base);
+      for (int i = threadIdx.x; i < spatial_size / 4;
+           i += BATCH_NORM_FUSED_THREADS) {
+        float4 x = in4[i], d = grad4[i], r = dst4[i];
+        float normalized, grad;
+        normalized = (x.x - mean) * invstd;
+        grad = activation_backward(ACTIVATION, d.x, scale * normalized + shift);
+        r.x += scale * invstd *
+               (grad - (sum_grad + normalized * sum_grad_normalized) / count);
+        normalized = (x.y - mean) * invstd;
+        grad = activation_backward(ACTIVATION, d.y, scale * normalized + shift);
+        r.y += scale * invstd *
+               (grad - (sum_grad + normalized * sum_grad_normalized) / count);
+        normalized = (x.z - mean) * invstd;
+        grad = activation_backward(ACTIVATION, d.z, scale * normalized + shift);
+        r.z += scale * invstd *
+               (grad - (sum_grad + normalized * sum_grad_normalized) / count);
+        normalized = (x.w - mean) * invstd;
+        grad = activation_backward(ACTIVATION, d.w, scale * normalized + shift);
+        r.w += scale * invstd *
+               (grad - (sum_grad + normalized * sum_grad_normalized) / count);
+        dst4[i] = r;
+      }
+    } else {
+      for (int i = threadIdx.x; i < spatial_size;
+           i += BATCH_NORM_FUSED_THREADS) {
+        float normalized = (input[base + i] - mean) * invstd;
+        float grad = activation_backward(
+            ACTIVATION, output_grad[base + i], scale * normalized + shift);
+        input_grad[base + i] +=
+            scale * invstd *
+            (grad - (sum_grad + normalized * sum_grad_normalized) / count);
+      }
     }
   }
+}
+
+/**
+ * @brief The forward pass split in two, for channel counts that cannot fill the
+ * device.
+ *
+ * @details One block per channel is all the parallelism the reduction can have,
+ * but the normalization that follows it needs none of that structure. When
+ * there are fewer channels than SMs the fused kernel leaves most of the device
+ * idle for both halves; splitting lets the second half, which is two thirds of
+ * the traffic, run over a grid sized to the tensor instead of to the channel
+ * count. Measured on YOLOv10x's 80-channel sites this is worth 1.3-1.5x; above
+ * \ref BATCH_NORM_MIN_SPLIT_BLOCKS_PER_SM the fused kernel is already busy
+ * enough that the extra pass over the input costs more than the grid buys.
+ */
+constexpr int BATCH_NORM_MIN_SPLIT_BLOCKS_PER_SM = 2;
+constexpr int BATCH_NORM_MIN_SPLIT_SPATIAL = 1600;
+constexpr int BATCH_NORM_APPLY_BLOCKS = 4096;
+constexpr int BATCH_NORM_APPLY_THREADS = 256;
+
+template <BatchNormWalk WALK>
+__global__ void batch_norm_stats_kernel(int num_samples,
+                                        int num_channels,
+                                        int spatial_size,
+                                        float eps,
+                                        float exponential_average_factor,
+                                        float const *input,
+                                        float *save_mean,
+                                        float *save_invstd,
+                                        float *running_mean,
+                                        float *running_var) {
+  int channel = blockIdx.x;
+
+  float count = 0.0f, mean = 0.0f, m2 = 0.0f;
+  for (int sample = 0; sample < num_samples; sample++) {
+    size_t base = ((size_t)sample * num_channels + channel) * spatial_size;
+    if constexpr (WALK == BatchNormWalk::VECTOR) {
+      float4 const *in4 = reinterpret_cast<float4 const *>(input + base);
+      for (int i = threadIdx.x; i < spatial_size / 4;
+           i += BATCH_NORM_FUSED_THREADS) {
+        float4 v = in4[i];
+        welford_join(count, mean, m2, 1.0f, v.x, 0.0f);
+        welford_join(count, mean, m2, 1.0f, v.y, 0.0f);
+        welford_join(count, mean, m2, 1.0f, v.z, 0.0f);
+        welford_join(count, mean, m2, 1.0f, v.w, 0.0f);
+      }
+    } else {
+      for (int i = threadIdx.x; i < spatial_size;
+           i += BATCH_NORM_FUSED_THREADS) {
+        welford_join(count, mean, m2, 1.0f, input[base + i], 0.0f);
+      }
+    }
+  }
+  block_reduce_welford(count, mean, m2);
+
+  if (threadIdx.x == 0) {
+    float variance = m2 / count;
+    save_mean[channel] = mean;
+    save_invstd[channel] = rsqrtf(variance + eps);
+
+    float unbiased_variance = count > 1.0f ? m2 / (count - 1.0f) : variance;
+    running_mean[channel] =
+        (1.0f - exponential_average_factor) * running_mean[channel] +
+        exponential_average_factor * mean;
+    running_var[channel] =
+        (1.0f - exponential_average_factor) * running_var[channel] +
+        exponential_average_factor * unbiased_variance;
+  }
+}
+
+template <Activation ACTIVATION>
+__global__ void batch_norm_apply_kernel(size_t num_vectors,
+                                        int num_channels,
+                                        int spatial_size,
+                                        float const *input,
+                                        float const *gamma,
+                                        float const *beta,
+                                        float const *save_mean,
+                                        float const *save_invstd,
+                                        float *output) {
+  int vectors_per_channel = spatial_size / 4;
+  float4 const *in4 = reinterpret_cast<float4 const *>(input);
+  float4 *out4 = reinterpret_cast<float4 *>(output);
+
+  for (size_t i = blockIdx.x * (size_t)blockDim.x + threadIdx.x;
+       i < num_vectors;
+       i += (size_t)blockDim.x * gridDim.x) {
+    int channel = (int)((i / vectors_per_channel) % num_channels);
+    float mean = save_mean[channel], invstd = save_invstd[channel];
+    float scale = gamma[channel], shift = beta[channel];
+    float4 v = in4[i];
+    out4[i] = make_float4(
+        apply_activation(ACTIVATION, scale * ((v.x - mean) * invstd) + shift),
+        apply_activation(ACTIVATION, scale * ((v.y - mean) * invstd) + shift),
+        apply_activation(ACTIVATION, scale * ((v.z - mean) * invstd) + shift),
+        apply_activation(ACTIVATION, scale * ((v.w - mean) * invstd) + shift));
+  }
+}
+
+template <Activation ACTIVATION, BatchNormWalk WALK>
+__global__ void batch_norm_bwd_stats_kernel(int num_samples,
+                                            int num_channels,
+                                            int spatial_size,
+                                            float const *output_grad,
+                                            float const *input,
+                                            float const *gamma,
+                                            float const *beta,
+                                            float const *save_mean,
+                                            float const *save_invstd,
+                                            float *grad_sums,
+                                            float *gamma_grad,
+                                            float *beta_grad) {
+  int channel = blockIdx.x;
+  float mean = save_mean[channel];
+  float invstd = save_invstd[channel];
+  float scale = gamma[channel];
+  float shift = beta[channel];
+
+  float sum_grad = 0.0f, sum_grad_normalized = 0.0f;
+  for (int sample = 0; sample < num_samples; sample++) {
+    size_t base = ((size_t)sample * num_channels + channel) * spatial_size;
+    if constexpr (WALK == BatchNormWalk::VECTOR) {
+      float4 const *in4 = reinterpret_cast<float4 const *>(input + base);
+      float4 const *grad4 =
+          reinterpret_cast<float4 const *>(output_grad + base);
+      for (int i = threadIdx.x; i < spatial_size / 4;
+           i += BATCH_NORM_FUSED_THREADS) {
+        float4 x = in4[i], d = grad4[i];
+        float const xs[4] = {x.x, x.y, x.z, x.w};
+        float const ds[4] = {d.x, d.y, d.z, d.w};
+#pragma unroll
+        for (int k = 0; k < 4; k++) {
+          float normalized = (xs[k] - mean) * invstd;
+          float grad = activation_backward(
+              ACTIVATION, ds[k], scale * normalized + shift);
+          sum_grad += grad;
+          sum_grad_normalized += grad * normalized;
+        }
+      }
+    } else {
+      for (int i = threadIdx.x; i < spatial_size;
+           i += BATCH_NORM_FUSED_THREADS) {
+        float normalized = (input[base + i] - mean) * invstd;
+        float grad = activation_backward(
+            ACTIVATION, output_grad[base + i], scale * normalized + shift);
+        sum_grad += grad;
+        sum_grad_normalized += grad * normalized;
+      }
+    }
+  }
+  block_reduce_sum2(sum_grad, sum_grad_normalized);
+
+  if (threadIdx.x == 0) {
+    grad_sums[channel] = sum_grad;
+    grad_sums[num_channels + channel] = sum_grad_normalized;
+    gamma_grad[channel] += sum_grad_normalized;
+    beta_grad[channel] += sum_grad;
+  }
+}
+
+/**
+ * @brief The second half of the backward pass, reading the two per-channel sums
+ * the stats kernel left in \p grad_sums.
+ *
+ * @details The sums cannot be read back out of the parameter gradients, since
+ * those are accumulated into rather than overwritten.
+ */
+template <Activation ACTIVATION>
+__global__ void batch_norm_bwd_apply_kernel(size_t num_vectors,
+                                            int num_samples,
+                                            int num_channels,
+                                            int spatial_size,
+                                            float const *output_grad,
+                                            float const *input,
+                                            float const *gamma,
+                                            float const *beta,
+                                            float const *save_mean,
+                                            float const *save_invstd,
+                                            float const *grad_sums,
+                                            float *input_grad) {
+  int vectors_per_channel = spatial_size / 4;
+  float count = (float)num_samples * spatial_size;
+  float4 const *in4 = reinterpret_cast<float4 const *>(input);
+  float4 const *grad4 = reinterpret_cast<float4 const *>(output_grad);
+  float4 *dst4 = reinterpret_cast<float4 *>(input_grad);
+
+  for (size_t i = blockIdx.x * (size_t)blockDim.x + threadIdx.x;
+       i < num_vectors;
+       i += (size_t)blockDim.x * gridDim.x) {
+    int channel = (int)((i / vectors_per_channel) % num_channels);
+    float mean = save_mean[channel], invstd = save_invstd[channel];
+    float scale = gamma[channel], shift = beta[channel];
+    float sum_grad = grad_sums[channel];
+    float sum_grad_normalized = grad_sums[num_channels + channel];
+
+    float4 x = in4[i], d = grad4[i], r = dst4[i];
+    float const xs[4] = {x.x, x.y, x.z, x.w};
+    float const ds[4] = {d.x, d.y, d.z, d.w};
+    float rs[4];
+#pragma unroll
+    for (int k = 0; k < 4; k++) {
+      float normalized = (xs[k] - mean) * invstd;
+      float grad =
+          activation_backward(ACTIVATION, ds[k], scale * normalized + shift);
+      rs[k] = scale * invstd *
+              (grad - (sum_grad + normalized * sum_grad_normalized) / count);
+    }
+    r = make_float4(r.x + rs[0], r.y + rs[1], r.z + rs[2], r.w + rs[3]);
+    dst4[i] = r;
+  }
+}
+
+/**
+ * @brief Whether the split kernels above are the better shape for \p extents.
+ */
+bool batch_norm_should_split(BatchNormExtents const &extents) {
+  // Queried once: this runs on the launch path of every batch norm in the
+  // graph, twice per iteration.
+  static int const sm_count = []() {
+    int count;
+    checkCUDA(cudaDeviceGetAttribute(
+        &count, cudaDevAttrMultiProcessorCount, /*device=*/0));
+    return count;
+  }();
+  return extents.num_channels < BATCH_NORM_MIN_SPLIT_BLOCKS_PER_SM * sm_count &&
+         extents.spatial_size >= BATCH_NORM_MIN_SPLIT_SPATIAL &&
+         extents.spatial_size % 4 == 0;
+}
+
+bool batch_norm_should_vectorize(BatchNormExtents const &extents) {
+  return extents.spatial_size % 4 == 0 &&
+         extents.spatial_size >= BATCH_NORM_MIN_VECTOR_SPATIAL;
 }
 
 /**
@@ -440,13 +774,15 @@ BatchNormPerDeviceState
                                         /*h=*/1,
                                         /*w=*/1));
 
-  // Allocate memory for runningMean, runningVar, saveMean and saveVar as a
-  // single contiguous block (deallocated by batch_norm_gpu_cleanup_kernel).
+  // Allocate memory for runningMean, runningVar, saveMean, saveVar and
+  // gradSums (two per channel) as a single contiguous block (deallocated by
+  // batch_norm_gpu_cleanup_kernel).
   float *runningMean = static_cast<float *>(
-      allocator.allocate(sizeof(float) * num_channels * 4));
+      allocator.allocate(sizeof(float) * num_channels * 6));
   float *runningVar = runningMean + num_channels;
   float *saveMean = runningVar + num_channels;
   float *saveVar = saveMean + num_channels;
+  float *gradSums = saveVar + num_channels;
 
   // Match the PyTorch initialization of running_mean = 0 and running_var = 1.
   std::vector<float> initial_running_stats(num_channels * 2);
@@ -470,6 +806,7 @@ BatchNormPerDeviceState
       /*runningVar=*/runningVar,
       /*saveMean=*/saveMean,
       /*saveVar=*/saveVar,
+      /*gradSums=*/gradSums,
   };
 }
 
@@ -494,21 +831,59 @@ void batch_norm_gpu_forward_kernel(
     BatchNormExtents extents = get_extents(input.shape);
 
     dispatch_on_activation(attrs.activation.value(), [&](auto activation) {
-      batch_norm_fused_forward_kernel<decltype(activation)::value>
-          <<<extents.num_channels, BATCH_NORM_FUSED_THREADS, 0, stream>>>(
-              extents.num_samples,
-              extents.num_channels,
-              extents.spatial_size,
-              attrs.eps,
-              static_cast<float>(exponential_average_factor),
-              input.get_float_ptr(),
-              gamma.get_float_ptr(),
-              beta.get_float_ptr(),
-              output.get_float_ptr(),
-              per_device_state.saveMean,
-              per_device_state.saveVar,
-              per_device_state.runningMean,
-              per_device_state.runningVar);
+      constexpr Activation ACT = decltype(activation)::value;
+      size_t num_vectors = (size_t)extents.num_samples * extents.num_channels *
+                           extents.spatial_size / 4;
+
+      if (batch_norm_should_split(extents)) {
+        batch_norm_stats_kernel<BatchNormWalk::VECTOR>
+            <<<extents.num_channels, BATCH_NORM_FUSED_THREADS, 0, stream>>>(
+                extents.num_samples,
+                extents.num_channels,
+                extents.spatial_size,
+                attrs.eps,
+                static_cast<float>(exponential_average_factor),
+                input.get_float_ptr(),
+                per_device_state.saveMean,
+                per_device_state.saveVar,
+                per_device_state.runningMean,
+                per_device_state.runningVar);
+        batch_norm_apply_kernel<ACT>
+            <<<BATCH_NORM_APPLY_BLOCKS, BATCH_NORM_APPLY_THREADS, 0, stream>>>(
+                num_vectors,
+                extents.num_channels,
+                extents.spatial_size,
+                input.get_float_ptr(),
+                gamma.get_float_ptr(),
+                beta.get_float_ptr(),
+                per_device_state.saveMean,
+                per_device_state.saveVar,
+                output.get_float_ptr());
+        return;
+      }
+
+      auto launch = [&](auto walk) {
+        batch_norm_fused_forward_kernel<ACT, decltype(walk)::value>
+            <<<extents.num_channels, BATCH_NORM_FUSED_THREADS, 0, stream>>>(
+                extents.num_samples,
+                extents.num_channels,
+                extents.spatial_size,
+                attrs.eps,
+                static_cast<float>(exponential_average_factor),
+                input.get_float_ptr(),
+                gamma.get_float_ptr(),
+                beta.get_float_ptr(),
+                output.get_float_ptr(),
+                per_device_state.saveMean,
+                per_device_state.saveVar,
+                per_device_state.runningMean,
+                per_device_state.runningVar);
+      };
+      if (batch_norm_should_vectorize(extents)) {
+        launch(std::integral_constant<BatchNormWalk, BatchNormWalk::VECTOR>{});
+      } else {
+        launch(std::integral_constant<BatchNormWalk, BatchNormWalk::SCALAR>{});
+      }
     });
     return;
   }
@@ -553,20 +928,63 @@ void batch_norm_gpu_backward_kernel(
     BatchNormExtents extents = get_extents(input.shape);
 
     dispatch_on_activation(attrs.activation.value(), [&](auto activation) {
-      batch_norm_fused_backward_kernel<decltype(activation)::value>
-          <<<extents.num_channels, BATCH_NORM_FUSED_THREADS, 0, stream>>>(
-              extents.num_samples,
-              extents.num_channels,
-              extents.spatial_size,
-              output_grad.get_float_ptr(),
-              input.get_float_ptr(),
-              gamma.get_float_ptr(),
-              beta.get_float_ptr(),
-              per_device_state.saveMean,
-              per_device_state.saveVar,
-              input_grad.get_float_ptr(),
-              gamma_grad.get_float_ptr(),
-              beta_grad.get_float_ptr());
+      constexpr Activation ACT = decltype(activation)::value;
+      size_t num_vectors = (size_t)extents.num_samples * extents.num_channels *
+                           extents.spatial_size / 4;
+
+      if (batch_norm_should_split(extents)) {
+        batch_norm_bwd_stats_kernel<ACT, BatchNormWalk::VECTOR>
+            <<<extents.num_channels, BATCH_NORM_FUSED_THREADS, 0, stream>>>(
+                extents.num_samples,
+                extents.num_channels,
+                extents.spatial_size,
+                output_grad.get_float_ptr(),
+                input.get_float_ptr(),
+                gamma.get_float_ptr(),
+                beta.get_float_ptr(),
+                per_device_state.saveMean,
+                per_device_state.saveVar,
+                per_device_state.gradSums,
+                gamma_grad.get_float_ptr(),
+                beta_grad.get_float_ptr());
+        batch_norm_bwd_apply_kernel<ACT>
+            <<<BATCH_NORM_APPLY_BLOCKS, BATCH_NORM_APPLY_THREADS, 0, stream>>>(
+                num_vectors,
+                extents.num_samples,
+                extents.num_channels,
+                extents.spatial_size,
+                output_grad.get_float_ptr(),
+                input.get_float_ptr(),
+                gamma.get_float_ptr(),
+                beta.get_float_ptr(),
+                per_device_state.saveMean,
+                per_device_state.saveVar,
+                per_device_state.gradSums,
+                input_grad.get_float_ptr());
+        return;
+      }
+
+      auto launch = [&](auto walk) {
+        batch_norm_fused_backward_kernel<ACT, decltype(walk)::value>
+            <<<extents.num_channels, BATCH_NORM_FUSED_THREADS, 0, stream>>>(
+                extents.num_samples,
+                extents.num_channels,
+                extents.spatial_size,
+                output_grad.get_float_ptr(),
+                input.get_float_ptr(),
+                gamma.get_float_ptr(),
+                beta.get_float_ptr(),
+                per_device_state.saveMean,
+                per_device_state.saveVar,
+                input_grad.get_float_ptr(),
+                gamma_grad.get_float_ptr(),
+                beta_grad.get_float_ptr());
+      };
+      if (batch_norm_should_vectorize(extents)) {
+        launch(std::integral_constant<BatchNormWalk, BatchNormWalk::VECTOR>{});
+      } else {
+        launch(std::integral_constant<BatchNormWalk, BatchNormWalk::SCALAR>{});
+      }
     });
     return;
   }

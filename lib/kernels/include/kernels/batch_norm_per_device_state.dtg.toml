@@ -38,3 +38,12 @@ type = "float *"
 [[fields]]
 name = "saveVar"
 type = "float *"
+
+[[fields]]
+name = "gradSums"
+type = "float *"
+docstring = '''
+Scratch for the fused backward pass: the per-channel sums of the gradient and
+of the gradient times the normalized input, handed from the kernel that
+reduces them to the kernel that applies them.
+'''

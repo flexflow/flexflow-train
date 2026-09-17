@@ -261,11 +261,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       GenericTensorAccessorW fused =
           create_random_filled_accessor_w(input.shape, allocator);
 
-      BatchNormPerDeviceState separate_state =
-          batch_norm_gpu_init_kernel(allocator,
-                                     separate_attrs,
-                                     input.shape,
-                                     input.shape);
+      BatchNormPerDeviceState separate_state = batch_norm_gpu_init_kernel(
+          allocator, separate_attrs, input.shape, input.shape);
       batch_norm_gpu_forward_kernel(managed_stream.raw_stream(),
                                     managed_handle.raw_handle(),
                                     separate_state,
@@ -282,11 +279,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           read_only_accessor_from_write_accessor(normalized),
           separate);
 
-      BatchNormPerDeviceState fused_state =
-          batch_norm_gpu_init_kernel(allocator,
-                                     fused_attrs,
-                                     input.shape,
-                                     input.shape);
+      BatchNormPerDeviceState fused_state = batch_norm_gpu_init_kernel(
+          allocator, fused_attrs, input.shape, input.shape);
       batch_norm_gpu_forward_kernel(managed_stream.raw_stream(),
                                     managed_handle.raw_handle(),
                                     fused_state,
@@ -330,11 +324,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       GenericTensorAccessorW separate_beta_grad =
           create_zero_filled_accessor_w(gamma.shape, allocator);
 
-      BatchNormPerDeviceState separate_state =
-          batch_norm_gpu_init_kernel(allocator,
-                                     separate_attrs,
-                                     input.shape,
-                                     input.shape);
+      BatchNormPerDeviceState separate_state = batch_norm_gpu_init_kernel(
+          allocator, separate_attrs, input.shape, input.shape);
       batch_norm_gpu_forward_kernel(managed_stream.raw_stream(),
                                     managed_handle.raw_handle(),
                                     separate_state,
@@ -383,11 +374,8 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       GenericTensorAccessorW fused_beta_grad =
           create_zero_filled_accessor_w(gamma.shape, allocator);
 
-      BatchNormPerDeviceState fused_state =
-          batch_norm_gpu_init_kernel(allocator,
-                                     fused_attrs,
-                                     input.shape,
-                                     input.shape);
+      BatchNormPerDeviceState fused_state = batch_norm_gpu_init_kernel(
+          allocator, fused_attrs, input.shape, input.shape);
       batch_norm_gpu_forward_kernel(managed_stream.raw_stream(),
                                     managed_handle.raw_handle(),
                                     fused_state,
@@ -424,6 +412,173 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
 
       batch_norm_gpu_cleanup_kernel(allocator, separate_state);
       batch_norm_gpu_cleanup_kernel(allocator, fused_state);
+    }
+  }
+
+  // The case above is too small to reach the vectorized walk or the split
+  // kernels, which only run once the spatial size (and, for the split, a
+  // channel count too small to fill the device) makes them worth it. Here the
+  // gradients also start from the same non-zero values on both paths, since
+  // the fused kernels have to accumulate into them just as cuDNN does.
+  TEST_CASE("batch_norm_gpu fused activation matches the separate operators at "
+            "sizes that reach the vectorized and split kernels") {
+    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
+        /*workSpaceSize=*/1024 * 1024,
+        /*allowTensorOpMathConversion=*/true);
+    ManagedFFStream managed_stream{};
+    Allocator allocator = create_local_cuda_memory_allocator();
+
+    ffStream_t stream = managed_stream.raw_stream();
+    PerDeviceFFHandle handle = managed_handle.raw_handle();
+
+    ElementUnaryAttrs silu_attrs = ElementUnaryAttrs{
+        /*op_type=*/OperatorType::SILU,
+        /*scalar=*/std::nullopt,
+    };
+    BatchNormAttrs separate_attrs = make_attrs();
+    BatchNormAttrs fused_attrs = make_attrs(Activation::SILU);
+
+    auto check = [&](TensorShape const &input_shape) {
+      TensorShape channel_shape = TensorShape{
+          TensorDims{FFOrdered{dim_at_idx(input_shape.dims, ff_dim_t{1_n})}},
+          DataType::FLOAT,
+      };
+
+      GenericTensorAccessorR input =
+          create_random_filled_accessor_r(input_shape, allocator);
+      GenericTensorAccessorR gamma =
+          create_random_filled_accessor_r(channel_shape, allocator);
+      GenericTensorAccessorR beta =
+          create_random_filled_accessor_r(channel_shape, allocator);
+      GenericTensorAccessorR output_grad =
+          create_random_filled_accessor_r(input_shape, allocator);
+
+      auto copy_of = [&](GenericTensorAccessorW const &accessor) {
+        GenericTensorAccessorW result =
+            allocator.allocate_tensor(accessor.shape);
+        copy_accessor_data_to_l_from_r(
+            result, read_only_accessor_from_write_accessor(accessor));
+        return result;
+      };
+
+      ElementUnaryPerDeviceState silu_state =
+          element_unary_gpu_init_kernel(silu_attrs, input_shape, input_shape);
+
+      // The separate path.
+      GenericTensorAccessorW normalized =
+          create_random_filled_accessor_w(input_shape, allocator);
+      GenericTensorAccessorW separate_output =
+          create_random_filled_accessor_w(input_shape, allocator);
+      GenericTensorAccessorW normalized_grad =
+          create_zero_filled_accessor_w(input_shape, allocator);
+      GenericTensorAccessorW separate_input_grad =
+          create_random_filled_accessor_w(input_shape, allocator);
+      GenericTensorAccessorW separate_gamma_grad =
+          create_random_filled_accessor_w(channel_shape, allocator);
+      GenericTensorAccessorW separate_beta_grad =
+          create_random_filled_accessor_w(channel_shape, allocator);
+
+      // The fused path, starting from the same gradients.
+      GenericTensorAccessorW fused_output =
+          create_random_filled_accessor_w(input_shape, allocator);
+      GenericTensorAccessorW fused_input_grad = copy_of(separate_input_grad);
+      GenericTensorAccessorW fused_gamma_grad = copy_of(separate_gamma_grad);
+      GenericTensorAccessorW fused_beta_grad = copy_of(separate_beta_grad);
+
+      BatchNormPerDeviceState separate_state = batch_norm_gpu_init_kernel(
+          allocator, separate_attrs, input_shape, input_shape);
+      batch_norm_gpu_forward_kernel(stream,
+                                    handle,
+                                    separate_state,
+                                    separate_attrs,
+                                    input,
+                                    gamma,
+                                    beta,
+                                    normalized);
+      element_unary_gpu_forward_kernel(
+          stream,
+          handle,
+          silu_state,
+          silu_attrs,
+          read_only_accessor_from_write_accessor(normalized),
+          separate_output);
+      element_unary_gpu_backward_kernel(
+          stream,
+          handle,
+          silu_state,
+          silu_attrs,
+          read_only_accessor_from_write_accessor(separate_output),
+          output_grad,
+          read_only_accessor_from_write_accessor(normalized),
+          normalized_grad);
+      batch_norm_gpu_backward_kernel(
+          stream,
+          handle,
+          separate_state,
+          separate_attrs,
+          read_only_accessor_from_write_accessor(normalized),
+          read_only_accessor_from_write_accessor(normalized_grad),
+          input,
+          separate_input_grad,
+          gamma,
+          beta,
+          separate_gamma_grad,
+          separate_beta_grad);
+
+      BatchNormPerDeviceState fused_state = batch_norm_gpu_init_kernel(
+          allocator, fused_attrs, input_shape, input_shape);
+      batch_norm_gpu_forward_kernel(stream,
+                                    handle,
+                                    fused_state,
+                                    fused_attrs,
+                                    input,
+                                    gamma,
+                                    beta,
+                                    fused_output);
+      batch_norm_gpu_backward_kernel(
+          stream,
+          handle,
+          fused_state,
+          fused_attrs,
+          read_only_accessor_from_write_accessor(fused_output),
+          output_grad,
+          input,
+          fused_input_grad,
+          gamma,
+          beta,
+          fused_gamma_grad,
+          fused_beta_grad);
+
+      CHECK(accessors_within_epsilon(fused_output, separate_output, 1e-4));
+      CHECK(accessors_within_epsilon(
+          fused_input_grad, separate_input_grad, 1e-4));
+      CHECK_MESSAGE(
+          accessors_within_epsilon(fused_gamma_grad, separate_gamma_grad, 1e-3),
+          check_kv("fused", format_accessor_w_contents(fused_gamma_grad)),
+          check_kv("separate",
+                   format_accessor_w_contents(separate_gamma_grad)));
+      CHECK_MESSAGE(
+          accessors_within_epsilon(fused_beta_grad, separate_beta_grad, 1e-3),
+          check_kv("fused", format_accessor_w_contents(fused_beta_grad)),
+          check_kv("separate", format_accessor_w_contents(separate_beta_grad)));
+
+      batch_norm_gpu_cleanup_kernel(allocator, separate_state);
+      batch_norm_gpu_cleanup_kernel(allocator, fused_state);
+    };
+
+    SUBCASE("vectorized") {
+      // Enough channels to fill any current device, so not split.
+      check(TensorShape{
+          TensorDims{FFOrdered{2_p, 512_p, 32_p, 32_p}},
+          DataType::FLOAT,
+      });
+    }
+
+    SUBCASE("split") {
+      check(TensorShape{
+          TensorDims{FFOrdered{2_p, 4_p, 40_p, 40_p}},
+          DataType::FLOAT,
+      });
     }
   }
 }
