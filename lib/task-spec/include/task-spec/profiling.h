@@ -20,7 +20,7 @@ std::optional<milliseconds_t>
   } else {
     ProfilingSettings settings = assert_unwrap(profiling);
     milliseconds_t elapsed = profiling_wrapper<F, Ts...>(
-        f, profiling.value(), device_type, std::forward<Ts>(ts)...);
+        f, settings, device_type, std::forward<Ts>(ts)...);
     spdlog::debug(s, elapsed);
     return elapsed;
   }
