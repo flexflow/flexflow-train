@@ -1,0 +1,27 @@
+namespace = "FlexFlow"
+name = "YOLOv10Scale"
+type = "enum"
+features = [
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+[[values]]
+name = "NANO"
+
+[[values]]
+name = "SMALL"
+
+[[values]]
+name = "MEDIUM"
+
+[[values]]
+name = "BALANCED"
+
+[[values]]
+name = "LARGE"
+
+[[values]]
+name = "EXTRA_LARGE"

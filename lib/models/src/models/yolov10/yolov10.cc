@@ -88,6 +88,154 @@ static tensor_guid_t
 
 } // namespace
 
+YOLOv10Config get_yolov10_config(YOLOv10Scale scale,
+                                 positive_int batch_size,
+                                 bool end2end,
+                                 positive_int image_height,
+                                 positive_int image_width) {
+  auto forward_args = [&](auto const &f) -> YOLOv10Config {
+    return f(
+        /*batch_size=*/batch_size,
+        /*end2end=*/end2end,
+        /*image_height=*/image_height,
+        /*image_width=*/image_width);
+  };
+
+  switch (scale) {
+    case YOLOv10Scale::NANO:
+      return forward_args(get_yolov10n_config);
+    case YOLOv10Scale::SMALL:
+      return forward_args(get_yolov10s_config);
+    case YOLOv10Scale::MEDIUM:
+      return forward_args(get_yolov10m_config);
+    case YOLOv10Scale::BALANCED:
+      return forward_args(get_yolov10b_config);
+    case YOLOv10Scale::LARGE:
+      return forward_args(get_yolov10l_config);
+    case YOLOv10Scale::EXTRA_LARGE:
+      return forward_args(get_yolov10x_config);
+    default:
+      PANIC("Unknown scale {}", scale);
+  }
+}
+
+YOLOv10Config get_yolov10n_config(positive_int batch_size,
+                                  bool end2end,
+                                  positive_int image_height,
+                                  positive_int image_width) {
+  YOLOv10Config n_config = get_yolov10s_config(
+      /*batch_size=*/batch_size,
+      /*end2end=*/end2end,
+      /*image_height=*/image_height,
+      /*image_width=*/image_width);
+
+  n_config.scaling_config.width_scaling_factor = 0.25f;
+
+  n_config.backbone_config.at(8) = YOLOv10LayerConfig{
+      YOLOv10LayerConfigC2f{
+          /*input_tensor_idx=*/yolov10_tensor_idx_t{-1},
+          /*num_output_channels=*/1024_p,
+          /*num_cib_modules_to_stack=*/3_p,
+          /*use_shortcut_connection=*/true,
+      },
+  };
+
+  return n_config;
+}
+
+YOLOv10Config get_yolov10s_config(positive_int batch_size,
+                                  bool end2end,
+                                  positive_int image_height,
+                                  positive_int image_width) {
+  YOLOv10Config s_config = get_yolov10m_config(
+      /*batch_size=*/batch_size,
+      /*end2end=*/end2end,
+      /*image_height=*/image_height,
+      /*image_width=*/image_width);
+
+  s_config.scaling_config.depth_scaling_factor = 0.33f;
+  s_config.scaling_config.width_scaling_factor = 0.50f;
+  s_config.scaling_config.max_channels = 1024_p;
+
+  s_config.backbone_config.at(8).require_c2fcib().use_large_kernel = true;
+
+  s_config.backbone_config.at(19) = YOLOv10LayerConfig{
+      YOLOv10LayerConfigC2f{
+          /*input_tensor_idx=*/yolov10_tensor_idx_t{-1},
+          /*num_output_channels=*/512_p,
+          /*num_cib_modules_to_stack=*/3_p,
+          /*use_shortcut_connection=*/false,
+      },
+  };
+
+  s_config.backbone_config.at(22).require_c2fcib().use_large_kernel = true;
+
+  return s_config;
+}
+
+YOLOv10Config get_yolov10m_config(positive_int batch_size,
+                                  bool end2end,
+                                  positive_int image_height,
+                                  positive_int image_width) {
+  YOLOv10Config m_config = get_yolov10b_config(
+      /*batch_size=*/batch_size,
+      /*end2end=*/end2end,
+      /*image_height=*/image_height,
+      /*image_width=*/image_width);
+
+  m_config.scaling_config.width_scaling_factor = 0.75f;
+  m_config.scaling_config.max_channels = 768_p;
+
+  m_config.backbone_config.at(13) = YOLOv10LayerConfig{
+      YOLOv10LayerConfigC2f{
+          /*input_tensor_idx=*/yolov10_tensor_idx_t{-1},
+          /*num_output_channels=*/512_p,
+          /*num_cib_modules_to_stack=*/3_p,
+          /*use_shortcut_connection=*/false,
+      },
+  };
+
+  return m_config;
+}
+
+YOLOv10Config get_yolov10b_config(positive_int batch_size,
+                                  bool end2end,
+                                  positive_int image_height,
+                                  positive_int image_width) {
+  YOLOv10Config b_config = get_yolov10l_config(
+      /*batch_size=*/batch_size,
+      /*end2end=*/end2end,
+      /*image_height=*/image_height,
+      /*image_width=*/image_width);
+
+  b_config.scaling_config.depth_scaling_factor = 0.67f;
+
+  return b_config;
+}
+
+YOLOv10Config get_yolov10l_config(positive_int batch_size,
+                                  bool end2end,
+                                  positive_int image_height,
+                                  positive_int image_width) {
+  YOLOv10Config l_config = get_yolov10x_config(
+      /*batch_size=*/batch_size,
+      /*end2end=*/end2end,
+      /*image_height=*/image_height,
+      /*image_width=*/image_width);
+
+  l_config.scaling_config.width_scaling_factor = 1.0f;
+  l_config.backbone_config.at(6) = YOLOv10LayerConfig{
+      YOLOv10LayerConfigC2f{
+          /*input_tensor_idx=*/yolov10_tensor_idx_t{-1},
+          /*num_output_channels=*/512_p,
+          /*num_cib_modules_to_stack=*/6_p,
+          /*use_shortcut_connection=*/true,
+      },
+  };
+
+  return l_config;
+}
+
 YOLOv10Config get_yolov10x_config(positive_int batch_size,
                                   bool end2end,
                                   positive_int image_height,
@@ -160,6 +308,7 @@ YOLOv10Config get_yolov10x_config(positive_int batch_size,
                   /*num_output_channels=*/512_p,
                   /*num_cib_modules_to_stack=*/6_p,
                   /*use_shortcut_connection=*/true,
+                  /*use_large_kernel=*/false,
               },
           },
           YOLOv10LayerConfig{
@@ -176,6 +325,7 @@ YOLOv10Config get_yolov10x_config(positive_int batch_size,
                   /*num_output_channels=*/1024_p,
                   /*num_cib_modules_to_stack=*/3_p,
                   /*use_shortcut_connection=*/true,
+                  /*use_large_kernel=*/false,
               },
           },
           YOLOv10LayerConfig{
@@ -214,6 +364,7 @@ YOLOv10Config get_yolov10x_config(positive_int batch_size,
                   /*num_output_channels=*/512_p,
                   /*num_cib_modules_to_stack=*/3_p,
                   /*use_shortcut_connection=*/true,
+                  /*use_large_kernel=*/false,
               },
           },
 
@@ -265,6 +416,7 @@ YOLOv10Config get_yolov10x_config(positive_int batch_size,
                   /*num_output_channels=*/512_p,
                   /*num_cib_modules_to_stack=*/3_p,
                   /*use_shortcut_connection=*/true,
+                  /*use_large_kernel=*/false,
               },
           },
 
@@ -291,6 +443,7 @@ YOLOv10Config get_yolov10x_config(positive_int batch_size,
                   /*num_output_channels=*/1024_p,
                   /*num_cib_modules_to_stack=*/3_p,
                   /*use_shortcut_connection=*/true,
+                  /*use_large_kernel=*/false,
               },
           },
       },
@@ -929,12 +1082,55 @@ tensor_guid_t create_yolov10_c2f_module(
   return cv2;
 }
 
+tensor_guid_t
+    create_yolov10_rep_vggdw_module(ComputationGraphBuilder &cgb,
+                                    tensor_guid_t const &input_tensor,
+                                    positive_int const &num_channels) {
+  /**
+   * https://github.com/ultralytics/ultralytics/blob/f8ad132a15b5f6818c2ce0647b40dc57e993bf0c/ultralytics/nn/modules/block.py#L1140
+   */
+  tensor_guid_t y1 = create_yolov10_conv_module(
+      /*cgb=*/cgb,
+      /*input_tensor=*/input_tensor,
+      /*num_input_channels=*/num_channels,
+      /*num_output_channels=*/num_channels,
+      /*kernel_size=*/7_p,
+      /*stride=*/1_p,
+      /*groups=*/num_channels,
+      /*use_activation=*/false,
+      /*dilation=*/std::nullopt,
+      /*padding=*/3_n);
+
+  /**
+   * https://github.com/ultralytics/ultralytics/blob/f8ad132a15b5f6818c2ce0647b40dc57e993bf0c/ultralytics/nn/modules/block.py#L1141
+   */
+  tensor_guid_t y2 = create_yolov10_conv_module(
+      /*cgb=*/cgb,
+      /*input_tensor=*/input_tensor,
+      /*num_input_channels=*/num_channels,
+      /*num_output_channels=*/num_channels,
+      /*kernel_size=*/3_p,
+      /*stride=*/1_p,
+      /*groups=*/num_channels,
+      /*use_activation=*/false,
+      /*dilation=*/std::nullopt,
+      /*padding=*/1_n);
+
+  /**
+   * https://github.com/ultralytics/ultralytics/blob/f8ad132a15b5f6818c2ce0647b40dc57e993bf0c/ultralytics/nn/modules/block.py#L1143
+   * and 
+   * https://github.com/ultralytics/ultralytics/blob/f8ad132a15b5f6818c2ce0647b40dc57e993bf0c/ultralytics/nn/modules/block.py#L1154
+   */
+  return cgb.silu(cgb.add(y1, y2));
+}
+
 tensor_guid_t create_yolov10_cib_module(
     ComputationGraphBuilder &cgb,
     tensor_guid_t const &input_tensor,
     std::optional<positive_int> const &num_input_channels,
     std::optional<positive_int> const &num_output_channels,
     std::optional<bool> const &use_shortcut_connection,
+    std::optional<bool> const &use_large_kernel,
     std::optional<float> const &expansion_ratio) {
 
   /**
@@ -949,6 +1145,8 @@ tensor_guid_t create_yolov10_cib_module(
 
   bool resolved_use_shortcut_connection =
       use_shortcut_connection.value_or(true);
+
+  bool resolved_use_large_kernel = use_large_kernel.value_or(false);
 
   float resolved_expansion_ratio = expansion_ratio.value_or(0.5f);
 
@@ -990,18 +1188,23 @@ tensor_guid_t create_yolov10_cib_module(
   /**
    * https://github.com/ultralytics/ultralytics/blob/f8ad132a15b5f6818c2ce0647b40dc57e993bf0c/ultralytics/nn/modules/block.py#L1221
    *
-   * Conv(2*c_hidden, 2*c_hidden, 3, stride=1, groups=2*c_hidden)
+   * RepVGGDW(2 * c_) if lk else Conv(2 * c_, 2 * c_, 3, g=2 * c_)
    *
-   * We ignore the RepVGGDW option as in this model lk is always false
+   * where c_ is c_hidden
    */
-  tensor_guid_t y3 = create_yolov10_conv_module(
-      /*cgb=*/cgb,
-      /*input_tensor=*/y2,
-      /*num_input_channels=*/2_p * c_hidden,
-      /*num_output_channels=*/2_p * c_hidden,
-      /*kernel_size=*/3_p,
-      /*stride=*/1_p,
-      /*groups=*/2_p * c_hidden);
+  tensor_guid_t y3 = resolved_use_large_kernel
+                         ? create_yolov10_rep_vggdw_module(
+                               /*cgb=*/cgb,
+                               /*input_tensor=*/y2,
+                               /*num_channels=*/2_p * c_hidden)
+                         : create_yolov10_conv_module(
+                               /*cgb=*/cgb,
+                               /*input_tensor=*/y2,
+                               /*num_input_channels=*/2_p * c_hidden,
+                               /*num_output_channels=*/2_p * c_hidden,
+                               /*kernel_size=*/3_p,
+                               /*stride=*/1_p,
+                               /*groups=*/2_p * c_hidden);
 
   /**
    * https://github.com/ultralytics/ultralytics/blob/f8ad132a15b5f6818c2ce0647b40dc57e993bf0c/ultralytics/nn/modules/block.py#L1222
@@ -1047,6 +1250,7 @@ tensor_guid_t create_yolov10_c2fcib_module(
     std::optional<positive_int> const &num_output_channels,
     std::optional<positive_int> const &num_cib_modules_to_stack,
     std::optional<bool> use_shortcut_connection,
+    std::optional<bool> use_large_kernel,
     std::optional<positive_int> const &groups,
     std::optional<float> const &expansion_ratio) {
   /**
@@ -1062,6 +1266,7 @@ tensor_guid_t create_yolov10_c2fcib_module(
       num_cib_modules_to_stack.value_or(1_p);
   bool resolved_use_shortcut_connection =
       use_shortcut_connection.value_or(false);
+  bool resolved_use_large_kernel = use_large_kernel.value_or(false);
   positive_int resolved_groups = groups.value_or(1_p);
   float resolved_expansion_ratio = expansion_ratio.value_or(0.5f);
 
@@ -1117,6 +1322,7 @@ tensor_guid_t create_yolov10_c2fcib_module(
             /*num_input_channels=*/resolve_num_input_channels(cgb, t, c_hidden),
             /*num_output_channels=*/c_hidden,
             /*use_shortcut_connection=*/resolved_use_shortcut_connection,
+            /*use_large_kernel=*/resolved_use_large_kernel,
             /*expansion_ratio=*/1.0f);
 
         return bn;
@@ -1438,7 +1644,8 @@ tensor_guid_t
             handle_output_channel_scaling(config.num_output_channels),
             /*num_cib_modules_to_stack=*/
             handle_depth_scaling(config.num_cib_modules_to_stack),
-            /*use_shortcut_connection=*/config.use_shortcut_connection);
+            /*use_shortcut_connection=*/config.use_shortcut_connection,
+            /*use_large_kernel=*/config.use_large_kernel);
       },
       [&](YOLOv10LayerConfigConcat const &config) -> tensor_guid_t {
         return cgb.concat(

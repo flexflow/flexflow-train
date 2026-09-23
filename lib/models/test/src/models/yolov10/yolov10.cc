@@ -1,5 +1,6 @@
 #include "models/yolov10/yolov10.h"
 #include "pcg/computation_graph.h"
+#include "utils/containers/are_all_distinct.h"
 #include "utils/containers/filtrans.h"
 #include "utils/containers/foldl.h"
 #include "utils/containers/generate_map.h"
@@ -617,6 +618,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         /*num_input_channels=*/128_p,
         /*num_output_channels=*/48_p,
         /*use_shortcut_connection=*/true,
+        /*use_large_kernel=*/false,
         /*expansion_ratio=*/0.5f);
 
     SUBCASE("produces correct output shape") {
@@ -677,6 +679,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*num_output_channels=*/48_p,
           /*num_cib_modules_to_stack=*/3_p,
           /*use_shortcut_connection=*/true,
+          /*use_large_kernel=*/false,
           /*groups=*/1_p,
           /*expansion_ratio=*/0.5f);
 
@@ -707,6 +710,7 @@ TEST_SUITE(FF_TEST_SUITE) {
           /*num_output_channels=*/48_p,
           /*num_cib_modules_to_stack=*/6_p,
           /*use_shortcut_connection=*/true,
+          /*use_large_kernel=*/false,
           /*groups=*/1_p,
           /*expansion_ratio=*/0.5f);
 
@@ -738,6 +742,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*num_output_channels=*/48_p,
             /*num_cib_modules_to_stack=*/7_p,
             /*use_shortcut_connection=*/true,
+            /*use_large_kernel=*/false,
             /*groups=*/1_p,
             /*expansion_ratio=*/0.5f);
 
@@ -786,6 +791,7 @@ TEST_SUITE(FF_TEST_SUITE) {
             /*num_output_channels=*/48_p,
             /*num_cib_modules_to_stack=*/7_p,
             /*use_shortcut_connection=*/false,
+            /*use_large_kernel=*/false,
             /*groups=*/1_p,
             /*expansion_ratio=*/0.5f);
 
@@ -1386,187 +1392,366 @@ TEST_SUITE(FF_TEST_SUITE) {
   }
 
   TEST_CASE("get_yolov10_computation_graph") {
-    YOLOv10Config config = get_yolov10x_config(
-        /*batch_size=*/64_p,
-        /*end2end=*/false,
-        /*image_height=*/640_p,
-        /*image_width=*/640_p);
+    std::set<TensorShape> correct_output_shapes = {
+        TensorShape{
+            TensorDims{
+                FFOrdered<positive_int>{
+                    64_p,
+                    64_p,
+                    8400_p,
+                },
+            },
+            DataType::FLOAT,
+        },
+        TensorShape{
+            TensorDims{
+                FFOrdered<positive_int>{
+                    64_p,
+                    80_p,
+                    8400_p,
+                },
+            },
+            DataType::FLOAT,
+        },
+    };
 
-    ComputationGraph result = get_yolov10_computation_graph(config);
+    auto get_tensor_shapes =
+        [](ComputationGraph const &cg,
+           std::set<tensor_guid_t> const &ts) -> std::set<TensorShape> {
+      return transform(ts, [&](tensor_guid_t t) -> TensorShape {
+        return get_tensor_attrs(cg, t).shape;
+      });
+    };
 
-    SUBCASE("contains expected number of operators") {
-      std::map<OperatorType, positive_int> result_op_type_counts =
-          operator_type_counts_in_computation_graph(result);
+    SUBCASE("yolov10x") {
+      YOLOv10Config config = get_yolov10x_config(
+          /*batch_size=*/64_p,
+          /*end2end=*/false,
+          /*image_height=*/640_p,
+          /*image_width=*/640_p);
 
-      auto multiply_count =
-          [](positive_int factor,
-             std::map<OperatorType, positive_int> const &count) {
-            return map_values(count, [&](positive_int x) -> positive_int {
-              return x * factor;
-            });
-          };
+      ComputationGraph result = get_yolov10_computation_graph(config);
 
-      auto binary_add_counts =
-          [](std::map<OperatorType, positive_int> const &lhs,
-             std::map<OperatorType, positive_int> const &rhs)
-          -> std::map<OperatorType, positive_int> {
-        std::set<OperatorType> all_keys = set_union(keys(lhs), keys(rhs));
+      SUBCASE("contains expected number of operators") {
+        std::map<OperatorType, positive_int> result_op_type_counts =
+            operator_type_counts_in_computation_graph(result);
 
-        return generate_map(all_keys, [&](OperatorType o) -> positive_int {
-          nonnegative_int result = 0_n;
-          if (contains_key(lhs, o)) {
-            result += lhs.at(o);
-          };
-
-          if (contains_key(rhs, o)) {
-            result += rhs.at(o);
-          };
-
-          return positive_int{result};
-        });
-      };
-
-      auto add_counts =
-          [&](std::vector<std::map<OperatorType, positive_int>> const &counts)
-          -> std::map<OperatorType, positive_int> {
-        return foldl(
-            counts, std::map<OperatorType, positive_int>{}, binary_add_counts);
-      };
-
-      std::map<OperatorType, positive_int> correct_op_type_counts = [&]() {
-        std::map<OperatorType, positive_int> single_input_op_count = {
-            {OperatorType::INPUT, 1_p},
-        };
-
-        std::map<OperatorType, positive_int> single_ultralytics_conv_op_count =
-            {
-                {OperatorType::CONV2D, 1_p},
-                {OperatorType::BATCHNORM, 1_p},
-                {OperatorType::SILU, 1_p},
-                {OperatorType::WEIGHT, 3_p},
+        auto multiply_count =
+            [](positive_int factor,
+               std::map<OperatorType, positive_int> const &count) {
+              return map_values(count, [&](positive_int x) -> positive_int {
+                return x * factor;
+              });
             };
 
-        std::map<OperatorType, positive_int> single_scdown_op_count = {
-            {OperatorType::CONV2D, 2_p},
-            {OperatorType::BATCHNORM, 2_p},
-            {OperatorType::SILU, 1_p},
-            {OperatorType::WEIGHT, 6_p},
+        auto binary_add_counts =
+            [](std::map<OperatorType, positive_int> const &lhs,
+               std::map<OperatorType, positive_int> const &rhs)
+            -> std::map<OperatorType, positive_int> {
+          std::set<OperatorType> all_keys = set_union(keys(lhs), keys(rhs));
+
+          return generate_map(all_keys, [&](OperatorType o) -> positive_int {
+            nonnegative_int result = 0_n;
+            if (contains_key(lhs, o)) {
+              result += lhs.at(o);
+            };
+
+            if (contains_key(rhs, o)) {
+              result += rhs.at(o);
+            };
+
+            return positive_int{result};
+          });
         };
 
-        std::map<OperatorType, positive_int> single_sppf_op_count = {
-            {OperatorType::WEIGHT, 6_p},
-            {OperatorType::BATCHNORM, 2_p},
-            {OperatorType::CONV2D, 2_p},
-            {OperatorType::POOL2D, 3_p},
-            {OperatorType::CONCAT, 1_p},
-            {OperatorType::SILU, 1_p},
+        auto add_counts =
+            [&](std::vector<std::map<OperatorType, positive_int>> const &counts)
+            -> std::map<OperatorType, positive_int> {
+          return foldl(counts,
+                       std::map<OperatorType, positive_int>{},
+                       binary_add_counts);
         };
 
-        std::map<OperatorType, positive_int> single_psa_op_count = {
-            {OperatorType::CONV2D, 7_p},
-            {OperatorType::BATCHNORM, 7_p},
-            {OperatorType::WEIGHT, 21_p},
-            {OperatorType::RESHAPE, 3_p},
-            {OperatorType::SPLIT, 2_p},
-            {OperatorType::SCALAR_MULTIPLY, 1_p},
-            {OperatorType::TRANSPOSE, 2_p},
-            {OperatorType::BATCHMATMUL, 2_p},
-            {OperatorType::SOFTMAX, 1_p},
-            {OperatorType::EW_ADD, 3_p},
-            {OperatorType::CONCAT, 1_p},
-            {OperatorType::SILU, 3_p},
-        };
+        std::map<OperatorType, positive_int> correct_op_type_counts = [&]() {
+          std::map<OperatorType, positive_int> single_input_op_count = {
+              {OperatorType::INPUT, 1_p},
+          };
 
-        std::map<OperatorType, positive_int> single_upsample_op_count = {
-            {OperatorType::UPSAMPLE, 1_p},
-        };
+          std::map<OperatorType, positive_int>
+              single_ultralytics_conv_op_count = {
+                  {OperatorType::CONV2D, 1_p},
+                  {OperatorType::BATCHNORM, 1_p},
+                  {OperatorType::SILU, 1_p},
+                  {OperatorType::WEIGHT, 3_p},
+              };
 
-        std::map<OperatorType, positive_int> single_concat_op_count = {
-            {OperatorType::CONCAT, 1_p},
-        };
+          std::map<OperatorType, positive_int> single_scdown_op_count = {
+              {OperatorType::CONV2D, 2_p},
+              {OperatorType::BATCHNORM, 2_p},
+              {OperatorType::SILU, 1_p},
+              {OperatorType::WEIGHT, 6_p},
+          };
 
-        std::map<OperatorType, positive_int> single_c2f_3_t_op_count = {
-            {OperatorType::CONV2D, 8_p},
-            {OperatorType::WEIGHT, 24_p},
-            {OperatorType::BATCHNORM, 8_p},
-            {OperatorType::SILU, 8_p},
-            {OperatorType::SPLIT, 1_p},
-            {OperatorType::CONCAT, 1_p},
-            {OperatorType::EW_ADD, 3_p},
-        };
+          std::map<OperatorType, positive_int> single_sppf_op_count = {
+              {OperatorType::WEIGHT, 6_p},
+              {OperatorType::BATCHNORM, 2_p},
+              {OperatorType::CONV2D, 2_p},
+              {OperatorType::POOL2D, 3_p},
+              {OperatorType::CONCAT, 1_p},
+              {OperatorType::SILU, 1_p},
+          };
 
-        std::map<OperatorType, positive_int> single_c2f_3_f_op_count = {
-            {OperatorType::CONV2D, 8_p},
-            {OperatorType::WEIGHT, 24_p},
-            {OperatorType::BATCHNORM, 8_p},
-            {OperatorType::SILU, 8_p},
-            {OperatorType::SPLIT, 1_p},
-            {OperatorType::CONCAT, 1_p},
-        };
+          std::map<OperatorType, positive_int> single_psa_op_count = {
+              {OperatorType::CONV2D, 7_p},
+              {OperatorType::BATCHNORM, 7_p},
+              {OperatorType::WEIGHT, 21_p},
+              {OperatorType::RESHAPE, 3_p},
+              {OperatorType::SPLIT, 2_p},
+              {OperatorType::SCALAR_MULTIPLY, 1_p},
+              {OperatorType::TRANSPOSE, 2_p},
+              {OperatorType::BATCHMATMUL, 2_p},
+              {OperatorType::SOFTMAX, 1_p},
+              {OperatorType::EW_ADD, 3_p},
+              {OperatorType::CONCAT, 1_p},
+              {OperatorType::SILU, 3_p},
+          };
 
-        std::map<OperatorType, positive_int> single_c2f_6_t_op_count = {
-            {OperatorType::CONV2D, 14_p},
-            {OperatorType::WEIGHT, 42_p},
-            {OperatorType::BATCHNORM, 14_p},
-            {OperatorType::SILU, 14_p},
-            {OperatorType::SPLIT, 1_p},
-            {OperatorType::CONCAT, 1_p},
-            {OperatorType::EW_ADD, 6_p},
-        };
+          std::map<OperatorType, positive_int> single_upsample_op_count = {
+              {OperatorType::UPSAMPLE, 1_p},
+          };
 
-        std::map<OperatorType, positive_int> single_c2fcib_3_t_op_count = {
-            {OperatorType::CONV2D, 17_p},
-            {OperatorType::BATCHNORM, 17_p},
-            {OperatorType::SILU, 17_p},
-            {OperatorType::WEIGHT, 51_p},
-            {OperatorType::SPLIT, 1_p},
-            {OperatorType::CONCAT, 1_p},
-            {OperatorType::EW_ADD, 3_p},
-        };
+          std::map<OperatorType, positive_int> single_concat_op_count = {
+              {OperatorType::CONCAT, 1_p},
+          };
 
-        std::map<OperatorType, positive_int> single_c2fcib_6_t_op_count = {
-            {OperatorType::CONV2D, 32_p},
-            {OperatorType::BATCHNORM, 32_p},
-            {OperatorType::SILU, 32_p},
-            {OperatorType::WEIGHT, 96_p},
-            {OperatorType::SPLIT, 1_p},
-            {OperatorType::CONCAT, 1_p},
-            {OperatorType::EW_ADD, 6_p},
-        };
+          std::map<OperatorType, positive_int> single_c2f_3_t_op_count = {
+              {OperatorType::CONV2D, 8_p},
+              {OperatorType::WEIGHT, 24_p},
+              {OperatorType::BATCHNORM, 8_p},
+              {OperatorType::SILU, 8_p},
+              {OperatorType::SPLIT, 1_p},
+              {OperatorType::CONCAT, 1_p},
+              {OperatorType::EW_ADD, 3_p},
+          };
 
-        std::map<OperatorType, positive_int> single_v10detect_op_count = {
-            {OperatorType::CONV2D, 24_p},
-            {OperatorType::BATCHNORM, 18_p},
-            {OperatorType::WEIGHT, 66_p},
-            {OperatorType::SILU, 18_p},
-            {OperatorType::RESHAPE, 6_p},
-            {OperatorType::CONCAT, 2_p},
-        };
+          std::map<OperatorType, positive_int> single_c2f_3_f_op_count = {
+              {OperatorType::CONV2D, 8_p},
+              {OperatorType::WEIGHT, 24_p},
+              {OperatorType::BATCHNORM, 8_p},
+              {OperatorType::SILU, 8_p},
+              {OperatorType::SPLIT, 1_p},
+              {OperatorType::CONCAT, 1_p},
+          };
 
-        return add_counts(std::vector<std::map<OperatorType, positive_int>>{
-            single_input_op_count,
-            multiply_count(4_p, single_ultralytics_conv_op_count),
-            multiply_count(3_p, single_scdown_op_count),
-            single_sppf_op_count,
-            single_psa_op_count,
-            multiply_count(2_p, single_upsample_op_count),
-            multiply_count(4_p, single_concat_op_count),
-            single_c2f_3_t_op_count,
-            single_c2f_3_f_op_count,
-            single_c2f_6_t_op_count,
-            multiply_count(4_p, single_c2fcib_3_t_op_count),
-            single_c2fcib_6_t_op_count,
-            single_v10detect_op_count,
-        });
-      }();
+          std::map<OperatorType, positive_int> single_c2f_6_t_op_count = {
+              {OperatorType::CONV2D, 14_p},
+              {OperatorType::WEIGHT, 42_p},
+              {OperatorType::BATCHNORM, 14_p},
+              {OperatorType::SILU, 14_p},
+              {OperatorType::SPLIT, 1_p},
+              {OperatorType::CONCAT, 1_p},
+              {OperatorType::EW_ADD, 6_p},
+          };
 
-      CHECK(result_op_type_counts == correct_op_type_counts);
+          std::map<OperatorType, positive_int> single_c2fcib_3_t_op_count = {
+              {OperatorType::CONV2D, 17_p},
+              {OperatorType::BATCHNORM, 17_p},
+              {OperatorType::SILU, 17_p},
+              {OperatorType::WEIGHT, 51_p},
+              {OperatorType::SPLIT, 1_p},
+              {OperatorType::CONCAT, 1_p},
+              {OperatorType::EW_ADD, 3_p},
+          };
+
+          std::map<OperatorType, positive_int> single_c2fcib_6_t_op_count = {
+              {OperatorType::CONV2D, 32_p},
+              {OperatorType::BATCHNORM, 32_p},
+              {OperatorType::SILU, 32_p},
+              {OperatorType::WEIGHT, 96_p},
+              {OperatorType::SPLIT, 1_p},
+              {OperatorType::CONCAT, 1_p},
+              {OperatorType::EW_ADD, 6_p},
+          };
+
+          std::map<OperatorType, positive_int> single_v10detect_op_count = {
+              {OperatorType::CONV2D, 24_p},
+              {OperatorType::BATCHNORM, 18_p},
+              {OperatorType::WEIGHT, 66_p},
+              {OperatorType::SILU, 18_p},
+              {OperatorType::RESHAPE, 6_p},
+              {OperatorType::CONCAT, 2_p},
+          };
+
+          return add_counts(std::vector<std::map<OperatorType, positive_int>>{
+              single_input_op_count,
+              multiply_count(4_p, single_ultralytics_conv_op_count),
+              multiply_count(3_p, single_scdown_op_count),
+              single_sppf_op_count,
+              single_psa_op_count,
+              multiply_count(2_p, single_upsample_op_count),
+              multiply_count(4_p, single_concat_op_count),
+              single_c2f_3_t_op_count,
+              single_c2f_3_f_op_count,
+              single_c2f_6_t_op_count,
+              multiply_count(4_p, single_c2fcib_3_t_op_count),
+              single_c2fcib_6_t_op_count,
+              single_v10detect_op_count,
+          });
+        }();
+
+        CHECK(result_op_type_counts == correct_op_type_counts);
+      }
+
+      SUBCASE("all values except the two outputs are used") {
+        std::set<tensor_guid_t> unused_tensors = cg_get_unused_tensors(result);
+
+        ASSERT(unused_tensors.size() == 2);
+
+        SUBCASE("outputs have correct shape") {
+          std::set<TensorShape> output_shapes =
+              get_tensor_shapes(result, unused_tensors);
+
+          CHECK(output_shapes == correct_output_shapes);
+        }
+      }
     }
 
-    SUBCASE("all values except the two outputs are used") {
-      std::set<tensor_guid_t> unused_tensors = cg_get_unused_tensors(result);
+    SUBCASE("yolov10l") {
+      YOLOv10Config config = get_yolov10l_config(
+          /*batch_size=*/64_p,
+          /*end2end=*/false,
+          /*image_height=*/640_p,
+          /*image_width=*/640_p);
 
-      ASSERT(unused_tensors.size() == 2);
+      ComputationGraph result = get_yolov10_computation_graph(config);
+
+      SUBCASE("all values except the two outputs are used") {
+        std::set<tensor_guid_t> unused_tensors = cg_get_unused_tensors(result);
+
+        CHECK(unused_tensors.size() == 2);
+
+        SUBCASE("outputs have correct shape") {
+          std::set<TensorShape> output_shapes =
+              get_tensor_shapes(result, unused_tensors);
+
+          CHECK(output_shapes == correct_output_shapes);
+        }
+      }
+    }
+
+    SUBCASE("yolov10b") {
+      YOLOv10Config config = get_yolov10b_config(
+          /*batch_size=*/64_p,
+          /*end2end=*/false,
+          /*image_height=*/640_p,
+          /*image_width=*/640_p);
+
+      ComputationGraph result = get_yolov10_computation_graph(config);
+
+      SUBCASE("all values except the two outputs are used") {
+        std::set<tensor_guid_t> unused_tensors = cg_get_unused_tensors(result);
+
+        CHECK(unused_tensors.size() == 2);
+
+        SUBCASE("outputs have correct shape") {
+          std::set<TensorShape> output_shapes =
+              get_tensor_shapes(result, unused_tensors);
+
+          CHECK(output_shapes == correct_output_shapes);
+        }
+      }
+    }
+
+    SUBCASE("yolov10m") {
+      YOLOv10Config config = get_yolov10m_config(
+          /*batch_size=*/64_p,
+          /*end2end=*/false,
+          /*image_height=*/640_p,
+          /*image_width=*/640_p);
+
+      ComputationGraph result = get_yolov10_computation_graph(config);
+
+      SUBCASE("all values except the two outputs are used") {
+        std::set<tensor_guid_t> unused_tensors = cg_get_unused_tensors(result);
+
+        CHECK(unused_tensors.size() == 2);
+
+        SUBCASE("outputs have correct shape") {
+          std::set<TensorShape> output_shapes =
+              get_tensor_shapes(result, unused_tensors);
+
+          CHECK(output_shapes == correct_output_shapes);
+        }
+      }
+    }
+
+    SUBCASE("yolov10s") {
+      YOLOv10Config config = get_yolov10s_config(
+          /*batch_size=*/64_p,
+          /*end2end=*/false,
+          /*image_height=*/640_p,
+          /*image_width=*/640_p);
+
+      ComputationGraph result = get_yolov10_computation_graph(config);
+
+      SUBCASE("all values except the two outputs are used") {
+        std::set<tensor_guid_t> unused_tensors = cg_get_unused_tensors(result);
+
+        CHECK(unused_tensors.size() == 2);
+
+        SUBCASE("outputs have correct shape") {
+          std::set<TensorShape> output_shapes =
+              get_tensor_shapes(result, unused_tensors);
+
+          CHECK(output_shapes == correct_output_shapes);
+        }
+      }
+    }
+
+    SUBCASE("yolov10n") {
+      YOLOv10Config config = get_yolov10n_config(
+          /*batch_size=*/64_p,
+          /*end2end=*/false,
+          /*image_height=*/640_p,
+          /*image_width=*/640_p);
+
+      ComputationGraph result = get_yolov10_computation_graph(config);
+
+      SUBCASE("all values except the two outputs are used") {
+        std::set<tensor_guid_t> unused_tensors = cg_get_unused_tensors(result);
+
+        CHECK(unused_tensors.size() == 2);
+
+        SUBCASE("outputs have correct shape") {
+          std::set<TensorShape> output_shapes =
+              get_tensor_shapes(result, unused_tensors);
+
+          CHECK(output_shapes == correct_output_shapes);
+        }
+      }
+    }
+  }
+
+  TEST_CASE("get_yolov10_config") {
+    SUBCASE("all configs are distinct") {
+      std::set<YOLOv10Scale> scales = {
+          YOLOv10Scale::NANO,
+          YOLOv10Scale::SMALL,
+          YOLOv10Scale::MEDIUM,
+          YOLOv10Scale::BALANCED,
+          YOLOv10Scale::LARGE,
+          YOLOv10Scale::EXTRA_LARGE,
+      };
+
+      std::set<YOLOv10Config> result =
+          transform(scales, [&](YOLOv10Scale scale) -> YOLOv10Config {
+            return get_yolov10_config(
+                /*scale=*/scale,
+                /*batch_size=*/16_p,
+                /*end2end=*/false);
+          });
+
+      CHECK(are_all_distinct(result));
     }
   }
 }

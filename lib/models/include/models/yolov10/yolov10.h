@@ -9,12 +9,117 @@
 
 #include "models/yolov10/yolov10_config.dtg.h"
 #include "models/yolov10/yolov10_detect_head_outputs.dtg.h"
+#include "models/yolov10/yolov10_scale.dtg.h"
 #include "pcg/computation_graph_builder.h"
 
 namespace FlexFlow {
 
 /**
- * @brief Get the default YOLOv10 config.
+ * @brief Get the default YOLOv10 config for the provided \p scale.
+ */
+YOLOv10Config get_yolov10_config(YOLOv10Scale scale,
+                                 positive_int batch_size,
+                                 bool end2end,
+                                 positive_int image_height = 640_p,
+                                 positive_int image_width = 640_p);
+
+/**
+ * @brief Get the default YOLOv10 "Nano" config.
+ *
+ * @details The configs here refer to the example at
+ * https://github.com/ultralytics/ultralytics/blob/f8ad132a15b5f6818c2ce0647b40dc57e993bf0c/ultralytics/cfg/models/v10/yolov10n.yaml.
+ * The default values for <tt>image_height</tt> and <tt>image_width</tt> were derived from the default values
+ * in the onnx export of YOLOv10, which can be obtained by executing the following code snippet:
+ *
+ * \code{.py}
+ * from ultralytics import YOLO
+ * model = YOLO("yolov10n.yaml")
+ * model.export(format='onnx')
+ * \endcode
+ */
+YOLOv10Config get_yolov10n_config(positive_int batch_size,
+                                  bool end2end,
+                                  positive_int image_height = 640_p,
+                                  positive_int image_width = 640_p);
+
+/**
+ * @brief Get the default YOLOv10 "Small" config.
+ *
+ * @details The configs here refer to the example at
+ * https://github.com/ultralytics/ultralytics/blob/f8ad132a15b5f6818c2ce0647b40dc57e993bf0c/ultralytics/cfg/models/v10/yolov10s.yaml.
+ * The default values for <tt>image_height</tt> and <tt>image_width</tt> were derived from the default values
+ * in the onnx export of YOLOv10, which can be obtained by executing the following code snippet:
+ *
+ * \code{.py}
+ * from ultralytics import YOLO
+ * model = YOLO("yolov10s.yaml")
+ * model.export(format='onnx')
+ * \endcode
+ */
+YOLOv10Config get_yolov10s_config(positive_int batch_size,
+                                  bool end2end,
+                                  positive_int image_height = 640_p,
+                                  positive_int image_width = 640_p);
+
+/**
+ * @brief Get the default YOLOv10 "Medium" config.
+ *
+ * @details The configs here refer to the example at
+ * https://github.com/ultralytics/ultralytics/blob/f8ad132a15b5f6818c2ce0647b40dc57e993bf0c/ultralytics/cfg/models/v10/yolov10m.yaml.
+ * The default values for <tt>image_height</tt> and <tt>image_width</tt> were derived from the default values
+ * in the onnx export of YOLOv10, which can be obtained by executing the following code snippet:
+ *
+ * \code{.py}
+ * from ultralytics import YOLO
+ * model = YOLO("yolov10m.yaml")
+ * model.export(format='onnx')
+ * \endcode
+ */
+YOLOv10Config get_yolov10m_config(positive_int batch_size,
+                                  bool end2end,
+                                  positive_int image_height = 640_p,
+                                  positive_int image_width = 640_p);
+
+/**
+ * @brief Get the default YOLOv10 "Balanced" config.
+ *
+ * @details The configs here refer to the example at
+ * https://github.com/ultralytics/ultralytics/blob/f8ad132a15b5f6818c2ce0647b40dc57e993bf0c/ultralytics/cfg/models/v10/yolov10b.yaml.
+ * The default values for <tt>image_height</tt> and <tt>image_width</tt> were derived from the default values
+ * in the onnx export of YOLOv10, which can be obtained by executing the following code snippet:
+ *
+ * \code{.py}
+ * from ultralytics import YOLO
+ * model = YOLO("yolov10b.yaml")
+ * model.export(format='onnx')
+ * \endcode
+ */
+YOLOv10Config get_yolov10b_config(positive_int batch_size,
+                                  bool end2end,
+                                  positive_int image_height = 640_p,
+                                  positive_int image_width = 640_p);
+
+/**
+ * @brief Get the default YOLOv10 "Large" config.
+ *
+ * @details The configs here refer to the example at
+ * https://github.com/ultralytics/ultralytics/blob/f8ad132a15b5f6818c2ce0647b40dc57e993bf0c/ultralytics/cfg/models/v10/yolov10l.yaml.
+ * The default values for <tt>image_height</tt> and <tt>image_width</tt> were derived from the default values
+ * in the onnx export of YOLOv10, which can be obtained by executing the following code snippet:
+ *
+ * \code{.py}
+ * from ultralytics import YOLO
+ * model = YOLO("yolov10l.yaml")
+ * model.export(format='onnx')
+ * \endcode
+ */
+YOLOv10Config get_yolov10l_config(positive_int batch_size,
+                                  bool end2end,
+                                  positive_int image_height = 640_p,
+                                  positive_int image_width = 640_p);
+
+/**
+ * @brief Get the default YOLOv10 "Extra-Large" config.
  *
  * @details The configs here refer to the example at
  * https://github.com/ultralytics/ultralytics/blob/f8ad132a15b5f6818c2ce0647b40dc57e993bf0c/ultralytics/cfg/models/v10/yolov10x.yaml.
@@ -118,6 +223,13 @@ tensor_guid_t create_yolov10_c2f_module(
     std::optional<float> const &expansion_ratio = std::nullopt);
 
 /**
+ * \brief Create layers matching <a href="https://github.com/ultralytics/ultralytics/blob/f8ad132a15b5f6818c2ce0647b40dc57e993bf0c/ultralytics/nn/modules/block.py#L1130-L1192">ultralytics' <tt>RepVGGDW</tt> module</a>.
+ */
+tensor_guid_t create_yolov10_rep_vggdw_module(ComputationGraphBuilder &cgb,
+                                              tensor_guid_t const &input_tensor,
+                                              positive_int const &num_channels);
+
+/**
  * \brief Create layers matching <a href="https://github.com/ultralytics/ultralytics/blob/f8ad132a15b5f6818c2ce0647b40dc57e993bf0c/ultralytics/nn/modules/block.py#L1195-L1237">ultralytics' <tt>CIB</tt> module</a>.
  */
 tensor_guid_t create_yolov10_cib_module(
@@ -126,6 +238,7 @@ tensor_guid_t create_yolov10_cib_module(
     std::optional<positive_int> const &num_input_channels = std::nullopt,
     std::optional<positive_int> const &num_output_channels = std::nullopt,
     std::optional<bool> const &use_shortcut_connection = std::nullopt,
+    std::optional<bool> const &use_large_kernel = std::nullopt,
     std::optional<float> const &expansion_ratio = std::nullopt);
 
 /**
@@ -138,6 +251,7 @@ tensor_guid_t create_yolov10_c2fcib_module(
     std::optional<positive_int> const &num_output_channels = std::nullopt,
     std::optional<positive_int> const &num_cib_modules_to_stack = std::nullopt,
     std::optional<bool> use_shortcut_connection = std::nullopt,
+    std::optional<bool> use_large_kernel = std::nullopt,
     std::optional<positive_int> const &groups = std::nullopt,
     std::optional<float> const &expansion_ratio = std::nullopt);
 
