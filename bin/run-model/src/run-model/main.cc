@@ -61,9 +61,9 @@ static DeviceType decide_and_check_device_type(
   ASSERT(!cli_device_type_argument.has_value());
 
   if (gpus_are_available) {
-    return DeviceType::CPU;
-  } else {
     return DeviceType::GPU;
+  } else {
+    return DeviceType::CPU;
   }
 }
 
@@ -130,7 +130,7 @@ int main(int argc, char **argv) {
 
   std::optional<DeviceType> device_type_cli_argument =
       parse_device_type_argument(
-          cli_get_named_argument(parsed, key_mapped_pcg_json).value_or("auto"));
+          cli_get_named_argument(parsed, key_device_type).value_or("auto"));
 
   std::vector<char *> realm_args = make_realm_args(prog_name);
   int realm_argc = realm_args.size();
