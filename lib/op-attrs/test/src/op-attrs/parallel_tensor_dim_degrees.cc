@@ -332,4 +332,67 @@ TEST_SUITE(FF_TEST_SUITE) {
           get_degree_for_relative_ff_dim_t(degrees, relative_ff_dim_t{-5}));
     }
   }
+
+  TEST_CASE("parallel_tensor_space_contains_coord") {
+    ParallelTensorDimDegrees degrees = ParallelTensorDimDegrees{
+        /*sum_degree=*/SumDegree{2_p},
+        /*discard_copy_degree=*/DiscardCopyDegree{8_p},
+        /*shard_degrees=*/
+        FFOrdered<positive_int>{
+            3_p,
+            1_p,
+            5_p,
+        },
+    };
+
+    SUBCASE("degrees and coord do not have the same num dimensions") {
+      ParallelTensorSpaceCoordinate coord = ParallelTensorSpaceCoordinate{
+          /*sum_component=*/0_n,
+          /*discard_copy_component=*/5_n,
+          /*shard_components=*/
+          FFOrdered<nonnegative_int>{
+              2_n,
+              1_n,
+          },
+      };
+
+      CHECK_THROWS(parallel_tensor_space_contains_coord(degrees, coord));
+    }
+
+    SUBCASE("coord is in bounds for degrees") {
+      ParallelTensorSpaceCoordinate coord = ParallelTensorSpaceCoordinate{
+          /*sum_component=*/0_n,
+          /*discard_copy_component=*/5_n,
+          /*shard_components=*/
+          FFOrdered<nonnegative_int>{
+              2_n,
+              0_n,
+              1_n,
+          },
+      };
+
+      bool result = parallel_tensor_space_contains_coord(degrees, coord);
+      bool correct = true;
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("coord is out of bounds for degrees") {
+      ParallelTensorSpaceCoordinate coord = ParallelTensorSpaceCoordinate{
+          /*sum_component=*/0_n,
+          /*discard_copy_component=*/5_n,
+          /*shard_components=*/
+          FFOrdered<nonnegative_int>{
+              3_n,
+              0_n,
+              1_n,
+          },
+      };
+
+      bool result = parallel_tensor_space_contains_coord(degrees, coord);
+      bool correct = false;
+
+      CHECK(result == correct);
+    }
+  }
 }

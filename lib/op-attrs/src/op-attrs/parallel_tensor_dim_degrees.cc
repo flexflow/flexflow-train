@@ -26,6 +26,7 @@
 #include "utils/containers/transform.h"
 #include "utils/nonnegative_int/nonnegative_range.h"
 #include "utils/nonnegative_int/num_elements.h"
+#include "utils/orthotope/dim_coord.h"
 #include "utils/orthotope/dim_domain.h"
 #include "utils/orthotope/minimal_dim_domain.h"
 
@@ -158,6 +159,14 @@ std::set<ParallelTensorSpaceCoordinate> get_parallel_tensor_space_coordinates(
       [](std::map<parallel_tensor_dim_idx_t, nonnegative_int> const &m) {
         return parallel_tensor_space_coord_from_map(m);
       });
+}
+
+bool parallel_tensor_space_contains_coord(
+    ParallelTensorDimDegrees const &dim_degrees,
+    ParallelTensorSpaceCoordinate const &coord) {
+  return dim_domain_contains_coord(
+      dim_domain_from_parallel_tensor_dim_degrees(dim_degrees),
+      dim_coord_from_parallel_tensor_space_coord(coord));
 }
 
 ParallelTensorDimDegrees
