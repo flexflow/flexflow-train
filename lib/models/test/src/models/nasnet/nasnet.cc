@@ -73,8 +73,11 @@ TEST_SUITE(FF_TEST_SUITE) {
         {OperatorType::RELU, 264_p},
         {OperatorType::FLAT, 1_p},
         {OperatorType::BATCHNORM, 264_p},
-        {OperatorType::CONCAT, 26_p},
+        {OperatorType::CONCAT, 54_p},
         {OperatorType::EW_ADD, 110_p},
+        {OperatorType::SCALAR_ADD, 4_p},
+        {OperatorType::SCALAR_MULTIPLY, 42_p},
+        {OperatorType::SPLIT, 28_p},
     };
     CHECK(operator_type_counts_in_computation_graph(result) ==
           expected_operator_counts);

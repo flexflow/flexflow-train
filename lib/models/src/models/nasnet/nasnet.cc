@@ -8,16 +8,156 @@
 #include "op-attrs/tensor_shape.h"
 #include "pcg/computation_graph_builder.h"
 
+#include <algorithm>
 #include <fmt/format.h>
+#include <limits>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace FlexFlow {
 
 namespace {
 
-static nonnegative_int same_padding(positive_int kernel_size) {
-  return nonnegative_int{kernel_size.int_from_positive_int() / 2};
+struct SpatialPadding {
+  int top;
+  int bottom;
+  int left;
+  int right;
+};
+
+static std::pair<int, int>
+    get_same_padding_for_dim(int input_size, int kernel_size, int stride) {
+  int output_size = (input_size + stride - 1) / stride;
+  int total_padding =
+      std::max((output_size - 1) * stride + kernel_size - input_size, 0);
+  int padding_before = total_padding / 2;
+  return {padding_before, total_padding - padding_before};
+}
+
+static SpatialPadding get_same_padding(ComputationGraphBuilder const &cgb,
+                                       tensor_guid_t const &input,
+                                       positive_int kernel_size,
+                                       positive_int stride) {
+  TensorDims dims = cgb.get_shape(input).dims;
+  int input_height =
+      dim_at_idx(dims, relative_ff_dim_t{2}).int_from_positive_int();
+  int input_width =
+      dim_at_idx(dims, relative_ff_dim_t{3}).int_from_positive_int();
+  int kernel = kernel_size.int_from_positive_int();
+  int stride_value = stride.int_from_positive_int();
+
+  auto [top, bottom] =
+      get_same_padding_for_dim(input_height, kernel, stride_value);
+  auto [left, right] =
+      get_same_padding_for_dim(input_width, kernel, stride_value);
+  return SpatialPadding{top, bottom, left, right};
+}
+
+static tensor_guid_t create_constant_like(ComputationGraphBuilder &cgb,
+                                          tensor_guid_t const &input,
+                                          float value,
+                                          std::string const &name) {
+  tensor_guid_t result = cgb.scalar_multiply(input, 0.0f, name + ".zero");
+  if (value != 0.0f) {
+    result = cgb.scalar_add(result, value, name + ".value");
+  }
+  return result;
+}
+
+static tensor_guid_t
+    create_constant_padding_for_axis(ComputationGraphBuilder &cgb,
+                                     tensor_guid_t const &input,
+                                     relative_ff_dim_t axis,
+                                     int padding_before,
+                                     int padding_after,
+                                     float value,
+                                     std::string const &name) {
+  if (padding_before == 0 && padding_after == 0) {
+    return input;
+  }
+
+  int axis_size =
+      dim_at_idx(cgb.get_shape(input).dims, axis).int_from_positive_int();
+  ASSERT(padding_before >= 0 && padding_after >= 0);
+  ASSERT(padding_before + padding_after < axis_size);
+
+  std::vector<positive_int> split_sizes;
+  if (padding_before > 0) {
+    split_sizes.push_back(positive_int{padding_before});
+  }
+  split_sizes.push_back(
+      positive_int{axis_size - padding_before - padding_after});
+  if (padding_after > 0) {
+    split_sizes.push_back(positive_int{padding_after});
+  }
+
+  std::vector<tensor_guid_t> pieces =
+      cgb.split(input, split_sizes, axis, name + ".split");
+  std::vector<tensor_guid_t> concat_inputs;
+  if (padding_before > 0) {
+    concat_inputs.push_back(
+        create_constant_like(cgb, pieces.front(), value, name + ".before"));
+  }
+  concat_inputs.insert(concat_inputs.end(), pieces.begin(), pieces.end());
+  if (padding_after > 0) {
+    concat_inputs.push_back(
+        create_constant_like(cgb, pieces.back(), value, name + ".after"));
+  }
+  return cgb.concat(concat_inputs, axis, name + ".concat");
+}
+
+static tensor_guid_t create_constant_padding2d(ComputationGraphBuilder &cgb,
+                                               tensor_guid_t const &input,
+                                               SpatialPadding const &padding,
+                                               float value,
+                                               std::string const &name) {
+  tensor_guid_t result = create_constant_padding_for_axis(cgb,
+                                                          input,
+                                                          relative_ff_dim_t{2},
+                                                          padding.top,
+                                                          padding.bottom,
+                                                          value,
+                                                          name + ".height");
+  return create_constant_padding_for_axis(cgb,
+                                          result,
+                                          relative_ff_dim_t{3},
+                                          padding.left,
+                                          padding.right,
+                                          value,
+                                          name + ".width");
+}
+
+static tensor_guid_t
+    create_shifted_reduction_input(ComputationGraphBuilder &cgb,
+                                   tensor_guid_t const &input,
+                                   std::string const &name) {
+  TensorDims dims = cgb.get_shape(input).dims;
+  positive_int height = dim_at_idx(dims, relative_ff_dim_t{2});
+  positive_int width = dim_at_idx(dims, relative_ff_dim_t{3});
+  ASSERT(height > 1_p && width > 1_p);
+
+  std::vector<tensor_guid_t> height_parts =
+      cgb.split(input,
+                {1_p, positive_int{height.int_from_positive_int() - 1}},
+                relative_ff_dim_t{2},
+                name + ".crop_top");
+  tensor_guid_t zero_row =
+      create_constant_like(cgb, height_parts.at(0), 0.0f, name + ".pad_bottom");
+  tensor_guid_t shifted_height = cgb.concat({height_parts.at(1), zero_row},
+                                            relative_ff_dim_t{2},
+                                            name + ".shift_height");
+
+  std::vector<tensor_guid_t> width_parts =
+      cgb.split(shifted_height,
+                {1_p, positive_int{width.int_from_positive_int() - 1}},
+                relative_ff_dim_t{3},
+                name + ".crop_left");
+  tensor_guid_t zero_column =
+      create_constant_like(cgb, width_parts.at(0), 0.0f, name + ".pad_right");
+  return cgb.concat({width_parts.at(1), zero_column},
+                    relative_ff_dim_t{3},
+                    name + ".shift_width");
 }
 
 static positive_int get_num_channels(ComputationGraphBuilder const &cgb,
@@ -31,18 +171,35 @@ static tensor_guid_t create_same_pool2d(ComputationGraphBuilder &cgb,
                                         positive_int stride,
                                         PoolOp type,
                                         std::string const &name) {
-  // TODO: timm uses dynamically computed asymmetric SAME padding when stride
-  // is greater than one. ComputationGraphBuilder currently exposes only
-  // symmetric padding, which preserves the NASNet tensor shapes but differs at
-  // boundary values for even-sized inputs.
-  nonnegative_int padding = same_padding(kernel_size);
-  return cgb.pool2d(input,
+  SpatialPadding padding = get_same_padding(cgb, input, kernel_size, stride);
+  bool is_symmetric =
+      padding.top == padding.bottom && padding.left == padding.right;
+  // timm materializes padding for every stride-two SAME pool. This matters for
+  // average pooling because those explicit zeros participate in the divisor;
+  // symmetric max-pool padding is equivalent to native padding.
+  bool use_native_padding =
+      is_symmetric && (stride == 1_p || type == PoolOp::MAX);
+
+  tensor_guid_t padded_input = input;
+  nonnegative_int native_padding_h = 0_n;
+  nonnegative_int native_padding_w = 0_n;
+  if (use_native_padding) {
+    native_padding_h = nonnegative_int{padding.top};
+    native_padding_w = nonnegative_int{padding.left};
+  } else {
+    float padding_value =
+        type == PoolOp::MAX ? std::numeric_limits<float>::lowest() : 0.0f;
+    padded_input = create_constant_padding2d(
+        cgb, input, padding, padding_value, name + ".same_pad");
+  }
+
+  return cgb.pool2d(padded_input,
                     /*kernelH=*/kernel_size,
                     /*kernelW=*/kernel_size,
                     /*strideH=*/stride,
                     /*strideW=*/stride,
-                    /*paddingH=*/padding,
-                    /*paddingW=*/padding,
+                    /*paddingH=*/native_padding_h,
+                    /*paddingW=*/native_padding_w,
                     /*type=*/type,
                     /*activation=*/std::nullopt,
                     /*name=*/name);
@@ -83,19 +240,29 @@ static tensor_guid_t create_separable_conv2d(ComputationGraphBuilder &cgb,
                                              positive_int stride,
                                              std::string const &name) {
   positive_int in_channels = get_num_channels(cgb, input);
-  nonnegative_int padding = same_padding(kernel_size);
+  SpatialPadding padding = get_same_padding(cgb, input, kernel_size, stride);
+  bool is_symmetric =
+      padding.top == padding.bottom && padding.left == padding.right;
 
-  // TODO: use asymmetric SAME padding for stride-two depthwise convolutions
-  // once the graph builder can represent it. Symmetric padding gives the same
-  // output dimensions for this architecture.
-  tensor_guid_t x = cgb.conv2d(input,
+  tensor_guid_t padded_input = input;
+  nonnegative_int native_padding_h = 0_n;
+  nonnegative_int native_padding_w = 0_n;
+  if (is_symmetric) {
+    native_padding_h = nonnegative_int{padding.top};
+    native_padding_w = nonnegative_int{padding.left};
+  } else {
+    padded_input = create_constant_padding2d(
+        cgb, input, padding, 0.0f, name + ".same_pad");
+  }
+
+  tensor_guid_t x = cgb.conv2d(padded_input,
                                /*outChannels=*/in_channels,
                                /*kernelH=*/kernel_size,
                                /*kernelW=*/kernel_size,
                                /*strideH=*/stride,
                                /*strideW=*/stride,
-                               /*paddingH=*/padding,
-                               /*paddingW=*/padding,
+                               /*paddingH=*/native_padding_h,
+                               /*paddingW=*/native_padding_w,
                                /*activation=*/std::nullopt,
                                /*groups=*/in_channels,
                                /*use_bias=*/false,
@@ -187,12 +354,9 @@ static tensor_guid_t
                       /*kernel_regularizer=*/std::nullopt,
                       /*name=*/name + ".path_1.conv");
 
-  // TODO: NASNet shifts path_2 by cropping one pixel from the top and left and
-  // padding the bottom and right before pooling. FlexFlow does not currently
-  // expose tensor padding/cropping, so this path temporarily uses the
-  // unshifted activation. It has the correct shape but samples the same spatial
-  // positions as path_1.
-  tensor_guid_t path_2 = cgb.pool2d(activated,
+  tensor_guid_t shifted =
+      create_shifted_reduction_input(cgb, activated, name + ".path_2.shift");
+  tensor_guid_t path_2 = cgb.pool2d(shifted,
                                     /*kernelH=*/1_p,
                                     /*kernelW=*/1_p,
                                     /*strideH=*/2_p,
