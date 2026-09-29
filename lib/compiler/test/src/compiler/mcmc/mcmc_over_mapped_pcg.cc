@@ -1,4 +1,5 @@
 #include "compiler/mcmc/mcmc_over_mapped_pcg.h"
+#include "compiler/search_result.h"
 #include "compiler/task_graph_simulator/task_simulator.h"
 #include "internal/runtime_only_cost_estimator_for_test.h"
 #include "op-attrs/parallel_tensor_dims.h"
@@ -8,6 +9,7 @@
 #include "pcg/computation_graph_builder.h"
 #include "pcg/parallel_computation_graph/parallel_computation_graph_builder.h"
 #include "pcg/pcg_from_computation_graph.h"
+#include "substitutions/unity_substitution_set.h"
 #include "utils/integer_conversions.h"
 #include <doctest/doctest.h>
 
@@ -42,7 +44,14 @@ TEST_SUITE(FF_TEST_SUITE) {
       return b.computation_graph;
     }();
 
-    ParallelComputationGraph pcg = pcg_from_computation_graph(cg);
+    MachineSpaceCoordinate default_device = MachineSpaceCoordinate{
+        /*node_idx=*/0_n,
+        /*device_idx=*/0_n,
+    };
+
+    SearchResult lifted = trivial_search_result_for_cg(cg, default_device);
+    ParallelComputationGraph initial_pcg = lifted.pcg;
+    MachineMapping initial_mapping = lifted.machine_mapping;
 
     RuntimeOnlyCostEstimator cost_estimator =
         make_fake_constant_runtime_only_cost_estimator(
@@ -62,34 +71,42 @@ TEST_SUITE(FF_TEST_SUITE) {
         },
     };
 
-    MCMCOverMappedPCGConfig no_search =
-        MCMCOverMappedPCGConfig{/*temperature=*/1.0,
-                                /*num_iterations=*/1_n,
-                                /*substitution_frequency=*/0.2};
+    std::vector<Substitution> substitution_set =
+        get_substitution_set(full_machine_spec.compute_specification);
 
-    SearchResult base_result =
-        mcmc_over_mapped_pcg(pcg, cost_estimator, full_machine_spec, no_search);
-    float base_runtime =
-        task_simulator_estimate_forward_pass_time(base_result.pcg,
-                                                  cost_estimator,
-                                                  base_result.machine_mapping,
-                                                  full_machine_spec)
-            .unwrap_milliseconds();
+    auto search_with_config =
+        [&](MCMCOverMappedPCGConfig const &search_config) -> float {
+      SearchResult search_result = mcmc_over_mapped_pcg(initial_pcg,
+                                                        cost_estimator,
+                                                        full_machine_spec,
+                                                        search_config,
+                                                        substitution_set,
+                                                        initial_mapping);
+      float result_fwd_pass_time = task_simulator_estimate_forward_pass_time(
+                                       search_result.pcg,
+                                       cost_estimator,
+                                       search_result.machine_mapping,
+                                       full_machine_spec)
+                                       .unwrap_milliseconds();
 
-    MCMCOverMappedPCGConfig search_config =
-        MCMCOverMappedPCGConfig{/*temperature=*/1.0,
-                                /*num_iterations=*/100_n,
-                                /*substitution_frequency=*/0.2};
+      return result_fwd_pass_time;
+    };
 
-    SearchResult result = mcmc_over_mapped_pcg(
-        pcg, cost_estimator, full_machine_spec, search_config);
-    float runtime =
-        task_simulator_estimate_forward_pass_time(result.pcg,
-                                                  cost_estimator,
-                                                  result.machine_mapping,
-                                                  full_machine_spec)
-            .unwrap_milliseconds();
+    MCMCOverMappedPCGConfig no_search = MCMCOverMappedPCGConfig{
+        /*temperature=*/1.0,
+        /*num_iterations=*/1_n,
+        /*substitution_frequency=*/0.2,
+    };
 
-    CHECK(runtime < base_runtime * 0.8);
+    MCMCOverMappedPCGConfig search_config = MCMCOverMappedPCGConfig{
+        /*temperature=*/1.0,
+        /*num_iterations=*/100_n,
+        /*substitution_frequency=*/0.2,
+    };
+
+    float base_fwd_pass_time = search_with_config(no_search);
+    float optimized_fwd_pass_time = search_with_config(search_config);
+
+    CHECK(optimized_fwd_pass_time < base_fwd_pass_time * 0.8);
   }
 }

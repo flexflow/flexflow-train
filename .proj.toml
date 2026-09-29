@@ -23,6 +23,8 @@ layout_ignore_paths = [
   "bin/protobuf-to-json",
   "lib/realm-execution/src/realm-execution/redops/cuda",
 ]
+test_case_timeout_seconds = 300
+benchmark_timeout_seconds = 360
 
 [targets.utils]
 type = "lib"
@@ -120,6 +122,30 @@ cuda = false
 [targets.run-model]
 type = "bin"
 cuda = false
+
+[[benchmarks.utils]]
+name = "transitive_reduction"
+budget = 2_500_000_000
+
+[[benchmarks.utils]]
+name = "transitive_closure"
+budget = 2_000_000_000
+
+[[benchmarks.utils]]
+name = "contains_for_set"
+budget = 40_000_000
+
+[[benchmarks.compiler]]
+name = "get_computation_graph_series_parallel_decomposition_on_split_test"
+budget = 260_000_000
+
+[[benchmarks.compiler]]
+name = "get_computation_graph_series_parallel_decomposition_on_transformer"
+budget = 8_000_000_000
+
+[[benchmarks.compiler]]
+name = "get_computation_graph_series_parallel_decomposition_on_inception_v3"
+budget = 10_000_000_000
 
 # default_build_targets = [
 #   "utils",

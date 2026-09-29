@@ -5,9 +5,12 @@ using namespace FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("generic_mcmc_algorithm") {
+    std::mt19937 gen;
+    gen.seed(0);
+
     float starting_state = 0.1;
-    auto sampler = [](float x) -> std::optional<float> {
-      float new_x = x + (randf() - 0.5);
+    auto sampler = [&](float x) -> std::optional<float> {
+      float new_x = x + (randf(gen) - 0.5);
       if (new_x < 0) {
         return std::nullopt;
       }

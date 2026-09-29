@@ -10,28 +10,33 @@
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("select_random(std::vector<T>)") {
+  TEST_CASE("select_random(G &, std::vector<T>)") {
     std::vector<int> values = {1, 2, 3, 4, 5};
+
+    std::mt19937 gen;
+    gen.seed(0);
 
     SUBCASE("selected value is in container") {
       SUBCASE("equal weights") {
-        int result = select_random(values);
+        int result = select_random(gen, values);
         CHECK(contains(values, result));
       }
 
       SUBCASE("unequal weights") {
         std::vector<float> weights = {0.1f, 0.3f, 0.2f, 0.2f, 0.2f};
-        int result = select_random(values, weights);
+        int result = select_random(gen, values, weights);
         CHECK(contains(values, result));
       }
     }
 
     SUBCASE("correct distribution") {
-      auto check_probabilities = [](std::vector<int> const &values,
+      auto check_probabilities = [](std::mt19937 &gen,
+                                    std::vector<int> const &values,
                                     std::vector<float> const &weights) {
         nonnegative_int num_iterations = 10'000_n;
-        std::vector<int> trials = repeat(
-            num_iterations, [&]() { return select_random(values, weights); });
+        std::vector<int> trials = repeat(num_iterations, [&]() {
+          return select_random(gen, values, weights);
+        });
 
         for (std::pair<int, float> const &p : zip(values, weights)) {
           int v = p.first;
@@ -48,12 +53,12 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("equal weights") {
         std::vector<float> weights = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
-        check_probabilities(values, weights);
+        check_probabilities(gen, values, weights);
       }
 
       SUBCASE("unequal weights") {
         std::vector<float> weights = {0.1f, 0.2f, 0.3f, 0.2f, 0.2f};
-        check_probabilities(values, weights);
+        check_probabilities(gen, values, weights);
       }
     }
   }

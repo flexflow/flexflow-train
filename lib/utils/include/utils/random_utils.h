@@ -1,48 +1,38 @@
 #ifndef _RANDOM_UTILS_H
 #define _RANDOM_UTILS_H
 
+#include "utils/containers/all_of.h"
 #include <cstdlib>
+#include <libassert/assert.hpp>
+#include <random>
 #include <stdexcept>
 #include <vector>
 
 namespace FlexFlow {
 
-float randf();
-
-template <typename T>
-T select_random(std::vector<T> const &values) {
-  return values[std::rand() % values.size()];
+template <typename Generator>
+float randf(Generator &g) {
+  std::uniform_real_distribution<> dist(0.0, 1.0);
+  return dist(g);
 }
 
-template <typename T>
-T select_random_determistic(std::vector<T> const &values,
-                            std::vector<float> const &weights,
-                            float value) {
-  if (values.empty()) {
-    throw std::invalid_argument("Values list must not be empty.");
-  }
-  float total = 0.0f;
-  for (auto const &w : weights) {
-    if (w < 0) {
-      throw std::invalid_argument("Weights must not be negative");
-    }
-    total += w;
-  }
+template <typename Generator, typename T>
+T select_random(Generator &g, std::vector<T> const &values) {
+  ASSERT(!values.empty());
 
-  float r = value * total;
-  float curr = 0.0f;
-  int i = -1;
-  while (curr <= r && (i < 0 || i < (int)values.size() - 1)) {
-    i++;
-    curr += weights[i];
-  }
-  return values[i];
+  std::uniform_int_distribution<> dist(0, values.size() - 1);
+  return values[dist(g)];
 }
 
-template <typename T>
-T select_random(std::vector<T> const &values,
+template <typename Generator, typename T>
+T select_random(Generator &g,
+                std::vector<T> const &values,
                 std::vector<float> const &weights) {
-  return select_random_determistic<T>(values, weights, randf());
+  ASSERT(values.size() == weights.size());
+  ASSERT(all_of(weights, [](float w) -> bool { return w >= 0; }));
+
+  std::discrete_distribution<> dist(weights.cbegin(), weights.cend());
+  return values.at(dist(g));
 }
 
 } // namespace FlexFlow

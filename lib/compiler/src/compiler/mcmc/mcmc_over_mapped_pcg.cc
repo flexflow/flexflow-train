@@ -18,12 +18,15 @@ SearchResult
     mcmc_over_mapped_pcg(ParallelComputationGraph const &pcg,
                          RuntimeOnlyCostEstimator const &cost_estimator,
                          MachineSpecification const &machine_spec,
-                         MCMCOverMappedPCGConfig const &search_config) {
+                         MCMCOverMappedPCGConfig const &search_config,
+                         std::vector<Substitution> const &substitutions,
+                         MachineMapping const &initial_mapping,
+                         int seed) {
+  std::mt19937 gen;
+  gen.seed(seed);
+
   MachineComputeSpecification compute_spec = machine_spec.compute_specification;
-  std::vector<Substitution> substitutions = get_substitution_set(compute_spec);
-  MachineMapping random_mapping =
-      assert_unwrap(get_random_mapping(pcg, compute_spec));
-  SearchResult starting_state = SearchResult{pcg, random_mapping};
+  SearchResult starting_state = SearchResult{pcg, initial_mapping};
 
   auto sampler = [&](SearchResult mapped_pcg) -> std::optional<SearchResult> {
     // applies substitution with substitution_frequency probability
@@ -31,19 +34,20 @@ SearchResult
     // probability
     ASSERT(search_config.substitution_frequency >= 0 &&
            search_config.substitution_frequency <= 1);
-    if (randf() < search_config.substitution_frequency) {
+    if (randf(gen) < search_config.substitution_frequency) {
       Substitution random_substitution =
-          assert_unwrap(get_random_substitution(compute_spec));
+          assert_unwrap(get_random_substitution(gen, compute_spec));
       std::optional<PCGPatternMatch> maybe_pattern_match =
-          get_random_pattern_match(random_substitution.pcg_pattern,
+          get_random_pattern_match(gen,
+                                   random_substitution.pcg_pattern,
                                    sub_pcg_from_full_pcg(mapped_pcg.pcg));
       return transform(maybe_pattern_match, [&](PCGPatternMatch match) {
         return apply_substitution_and_update_machine_mapping(
-            mapped_pcg, random_substitution, match);
+            gen, mapped_pcg, random_substitution, match);
       });
     } else {
       MachineMapping new_machine_mapping =
-          assert_unwrap(get_random_mutation(mapped_pcg, compute_spec));
+          assert_unwrap(get_random_mutation(gen, mapped_pcg, compute_spec));
       return SearchResult{mapped_pcg.pcg, new_machine_mapping};
     }
   };
@@ -56,9 +60,10 @@ SearchResult
         .unwrap_milliseconds();
   };
 
-  GenericMCMCConfig config =
-      GenericMCMCConfig{/*temperature*/ search_config.temperature,
-                        /*num_iterations*/ search_config.num_iterations};
+  GenericMCMCConfig config = GenericMCMCConfig{
+      /*temperature=*/search_config.temperature,
+      /*num_iterations=*/search_config.num_iterations,
+  };
 
   SearchResult result = run_mcmc(starting_state, sampler, cost, config);
 

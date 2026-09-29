@@ -16,7 +16,10 @@ SearchResult
     mcmc_over_mapped_pcg(ParallelComputationGraph const &pcg,
                          RuntimeOnlyCostEstimator const &cost_estimator,
                          MachineSpecification const &machine_spec,
-                         MCMCOverMappedPCGConfig const &search_config);
+                         MCMCOverMappedPCGConfig const &search_config,
+                         std::vector<Substitution> const &substitutions,
+                         MachineMapping const &initial_mapping,
+                         int seed = 0);
 
 } // namespace FlexFlow
 

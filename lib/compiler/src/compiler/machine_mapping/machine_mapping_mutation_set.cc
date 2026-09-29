@@ -10,7 +10,8 @@
 namespace FlexFlow {
 
 std::optional<MachineMapping>
-    get_random_mapping(ParallelComputationGraph const &pcg,
+    get_random_mapping(std::mt19937 &gen,
+                       ParallelComputationGraph const &pcg,
                        MachineComputeSpecification const &resources) {
   std::vector<parallel_layer_guid_t> layers = topological_ordering(pcg);
   std::map<parallel_layer_guid_t, MachineView> machine_views;
@@ -22,20 +23,21 @@ std::optional<MachineMapping>
       return std::nullopt;
     }
     machine_views.insert(
-        {layer, select_random(vector_of(allowed_machine_views))});
+        {layer, select_random(gen, vector_of(allowed_machine_views))});
   }
   return MachineMapping{machine_views};
 }
 
 std::optional<MachineMapping>
-    get_random_mutation(SearchResult const &mapped_pcg,
+    get_random_mutation(std::mt19937 &gen,
+                        SearchResult const &mapped_pcg,
                         MachineComputeSpecification const &resources) {
   ParallelComputationGraph pcg = mapped_pcg.pcg;
   std::vector<parallel_layer_guid_t> layers = topological_ordering(pcg);
   if (layers.size() == 0) {
     return std::nullopt;
   }
-  parallel_layer_guid_t random_layer = select_random(layers);
+  parallel_layer_guid_t random_layer = select_random(gen, layers);
 
   MachineMapping machine_mapping = mapped_pcg.machine_mapping;
   MachineView machine_view = machine_mapping.machine_views.at(random_layer);
@@ -44,7 +46,8 @@ std::optional<MachineMapping>
   std::vector<MachineView> allowed_machine_views =
       vector_of(get_allowed_machine_views(
           compute_slice_from_specification(resources), task));
-  MachineView random_new_machine_view = select_random(allowed_machine_views);
+  MachineView random_new_machine_view =
+      select_random(gen, allowed_machine_views);
 
   machine_mapping.machine_views.at(random_layer) = random_new_machine_view;
   return machine_mapping;

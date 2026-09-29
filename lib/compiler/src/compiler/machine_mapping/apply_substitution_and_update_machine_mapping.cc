@@ -23,6 +23,7 @@
 namespace FlexFlow {
 
 SearchResult apply_substitution_and_update_machine_mapping(
+    std::mt19937 &gen,
     SearchResult const &mapped_pcg,
     Substitution const &sub,
     PCGPatternMatch const &match) {
@@ -54,8 +55,8 @@ SearchResult apply_substitution_and_update_machine_mapping(
       }));
 
   for (parallel_layer_guid_t layer : substitution_output_parallel_layers) {
-    machine_views.insert_or_assign(layer,
-                                   select_random(substituted_machine_views));
+    machine_views.insert_or_assign(
+        layer, select_random(gen, substituted_machine_views));
   }
 
   ASSERT(is_subseteq_of(keys(post_node_data), keys(machine_views)));

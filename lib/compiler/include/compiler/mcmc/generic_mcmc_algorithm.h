@@ -16,14 +16,18 @@ template <typename State, typename SamplingFn, typename CostFn>
 State run_mcmc(State const &starting_state,
                SamplingFn const &sampler,
                CostFn const &cost,
-               GenericMCMCConfig const &search_config) {
+               GenericMCMCConfig const &search_config,
+               int seed = 0) {
+  std::mt19937 gen;
+  gen.seed(seed);
+
   State best_state = starting_state;
   State current_state = best_state;
   for (nonnegative_int i : nonnegative_range(search_config.num_iterations)) {
     std::optional<State> maybe_new_state =
         transform(sampler(current_state), [&](State const &s) {
           float delta = cost(s) - cost(best_state);
-          if (randf() < exp(-delta / search_config.temperature)) {
+          if (randf(gen) < exp(-delta / search_config.temperature)) {
             if (delta < 0) {
               best_state = s;
             }

@@ -4,11 +4,13 @@
 #include "pcg/machine_compute_specification.dtg.h"
 #include "substitutions/substitution.dtg.h"
 #include "utils/fmt/vector.h"
+#include <random>
 
 namespace FlexFlow {
 
 std::optional<Substitution>
-    get_random_substitution(MachineComputeSpecification const &resources);
+    get_random_substitution(std::mt19937 &,
+                            MachineComputeSpecification const &resources);
 
 std::vector<Substitution>
     get_substitution_set(MachineComputeSpecification const &resources);

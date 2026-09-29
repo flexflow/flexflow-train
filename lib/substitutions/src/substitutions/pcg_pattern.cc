@@ -22,14 +22,15 @@ std::set<PatternNode> get_nodes(PCGPattern const &p) {
 }
 
 std::optional<PCGPatternMatch>
-    get_random_pattern_match(PCGPattern const &pattern,
+    get_random_pattern_match(std::mt19937 &gen,
+                             PCGPattern const &pattern,
                              SubParallelComputationGraph const &pcg) {
   std::vector<PCGPatternMatch> pattern_matches =
       find_pattern_matches(pattern, pcg);
   if (pattern_matches.empty()) {
     return std::nullopt;
   }
-  return select_random(pattern_matches);
+  return select_random(gen, pattern_matches);
 }
 
 static MatchAdditionalCriterion

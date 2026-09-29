@@ -10,6 +10,7 @@ using CostFn = std::function<float(State)>;
 template State run_mcmc(State const &starting_state,
                         SamplingFn const &sampler,
                         CostFn const &cost,
-                        GenericMCMCConfig const &search_config);
+                        GenericMCMCConfig const &search_config,
+                        int seed);
 
 } // namespace FlexFlow

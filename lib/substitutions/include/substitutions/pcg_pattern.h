@@ -7,13 +7,15 @@
 #include "substitutions/unlabelled/pattern_matching.h"
 #include "substitutions/unlabelled/pattern_node.dtg.h"
 #include "substitutions/unlabelled/pattern_value.dtg.h"
+#include <random>
 
 namespace FlexFlow {
 
 std::set<PatternNode> get_nodes(PCGPattern const &);
 
 std::optional<PCGPatternMatch>
-    get_random_pattern_match(PCGPattern const &pattern,
+    get_random_pattern_match(std::mt19937 &gen,
+                             PCGPattern const &pattern,
                              SubParallelComputationGraph const &pcg);
 
 /**

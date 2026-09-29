@@ -3,16 +3,14 @@
 
 namespace FlexFlow {
 
-float randf() {
-  return static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX);
-}
-
 using T = value_type<0>;
+using G = std::mt19937;
 
-template T select_random(std::vector<T> const &);
-template T select_random_determistic(std::vector<T> const &,
-                                     std::vector<float> const &,
-                                     float);
-template T select_random(std::vector<T> const &, std::vector<float> const &);
+template float randf(G &);
+
+template T select_random(G &, std::vector<T> const &);
+
+template T
+    select_random(G &, std::vector<T> const &, std::vector<float> const &);
 
 } // namespace FlexFlow

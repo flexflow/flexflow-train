@@ -1,4 +1,4 @@
-#include "./random_dag.h"
+#include "internal/random_dag.h"
 #include "utils/containers/vector_of.h"
 #include "utils/graph/algorithms.h"
 #include "utils/graph/instances/adjacency_digraph.h"
@@ -7,7 +7,9 @@
 
 namespace FlexFlow {
 
-DiGraphView random_dag(nonnegative_int num_nodes, float edges_fraction) {
+DiGraphView random_dag(std::mt19937 &gen,
+                       nonnegative_int num_nodes,
+                       float edges_fraction) {
   assert(edges_fraction <= 1.0);
   assert(edges_fraction >= 0.0);
 
@@ -28,8 +30,8 @@ DiGraphView random_dag(nonnegative_int num_nodes, float edges_fraction) {
 
   std::set<DirectedEdge> edges;
   while (edges.size() < num_edges) {
-    Node n1 = select_random(n);
-    Node n2 = select_random(n);
+    Node n1 = select_random(gen, n);
+    Node n2 = select_random(gen, n);
 
     if (n1 == n2) {
       continue;

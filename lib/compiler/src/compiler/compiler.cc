@@ -1,8 +1,10 @@
 #include "compiler/compiler.h"
 #include "compiler/cost_estimator/runtime_only_cost_estimator_from_cost_estimator.h"
 #include "compiler/mcmc/mcmc_over_mapped_pcg.h"
+#include "compiler/search_result.h"
 #include "compiler/unity_algorithm/unity_algorithm.h"
 #include "pcg/pcg_from_computation_graph.h"
+#include "substitutions/unity_substitution_set.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {
@@ -26,13 +28,27 @@ SearchResult optimize(ComputationGraph const &computation_graph,
             config);
       },
       [&](MCMCOverMappedPCGConfig const &config) {
-        ParallelComputationGraph pcg =
-            pcg_from_computation_graph(computation_graph);
+        MachineSpaceCoordinate default_device = MachineSpaceCoordinate{
+            /*node_idx=*/0_n,
+            /*device_idx=*/0_n,
+        };
+
+        SearchResult lifted =
+            trivial_search_result_for_cg(computation_graph, default_device);
+
+        ParallelComputationGraph initial_pcg = lifted.pcg;
+        MachineMapping initial_mapping = lifted.machine_mapping;
+
+        std::vector<Substitution> substitution_set =
+            get_substitution_set(machine_specification.compute_specification);
+
         return mcmc_over_mapped_pcg(
-            pcg,
+            initial_pcg,
             runtime_only_cost_estimator_from_cost_estimator(cost_estimator),
             machine_specification,
-            config);
+            config,
+            substitution_set,
+            initial_mapping);
       },
   });
 }

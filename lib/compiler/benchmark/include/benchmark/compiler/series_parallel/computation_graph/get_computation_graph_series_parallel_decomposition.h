@@ -1,0 +1,15 @@
+#ifndef _FLEXFLOW_LIB_COMPILER_INCLUDE_COMPILER_SERIES_PARALLEL_COMPUTATION_GRAPH_GET_COMPUTATION_GRAPH_SERIES_PARALLEL_DECOMPOSITION_H
+#define _FLEXFLOW_LIB_COMPILER_INCLUDE_COMPILER_SERIES_PARALLEL_COMPUTATION_GRAPH_GET_COMPUTATION_GRAPH_SERIES_PARALLEL_DECOMPOSITION_H
+
+namespace FlexFlow {
+
+void benchmark_get_computation_graph_series_parallel_decomposition_on_split_test(
+    bool);
+void benchmark_get_computation_graph_series_parallel_decomposition_on_transformer(
+    bool);
+void benchmark_get_computation_graph_series_parallel_decomposition_on_inception_v3(
+    bool);
+
+} // namespace FlexFlow
+
+#endif

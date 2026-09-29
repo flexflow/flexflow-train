@@ -195,9 +195,7 @@ function(ff_add_benchmark_executable)
 
   target_link_libraries(
     ${FF_BENCHMARK_EXEC_NAME}
-    ${FF_BENCHMARK_EXEC_DEPS}
-    deps::gbenchmark
-    deps::gbenchmark-main)
+    ${FF_BENCHMARK_EXEC_DEPS})
 
   define_ff_vars(${FF_BENCHMARK_EXEC_NAME})
   ff_set_cxx_properties(${FF_BENCHMARK_EXEC_NAME})

@@ -5,24 +5,29 @@
 #include "substitutions/pcg_pattern_match.dtg.h"
 #include "substitutions/sub_parallel_computation_graph.dtg.h"
 #include "substitutions/substitution.dtg.h"
+#include <random>
 
 namespace FlexFlow {
 /**
- * @brief Applies \p substitution to \p mapped_pcg at the location specified by
- * \p match, returning the resulting SearchResult (mapped pcg)
+ * \brief Applies \p substitution to \p mapped_pcg at the location specified by
+ * \p match, returning the resulting SearchResult (mapped pcg). If a new
+ * operator node is materialized by \p substitution, the new operator's machine
+ * mapping is set to a randomly chosen mapping.
  *
- * @param mapped_pcg
- * @param substitution
- * @param match The location at which to apply substitution. This location in
+ * \param gen Randomness source for choosing random mappings for new nodes
+ * \param mapped_pcg
+ * \param substitution
+ * \param match The location at which to apply substitution. This location in
  * sub_pcg should match substitution's PCGPattern. Likely created by running
  * FlexFlow::find_pattern_matches(PCGPattern const &,
  * SubParallelComputationGraph const &).
- * @return SearchResult A mapped pcg similar to mapped_pcg, but with
+ * \return SearchResult A mapped pcg similar to mapped_pcg, but with
  * the subgraph of the pcg specified by match replaced with the result of the
  * output expression of substitution and the machine mapping updated to account
  * for the new output
  */
 SearchResult apply_substitution_and_update_machine_mapping(
+    std::mt19937 &gen,
     SearchResult const &mapped_pcg,
     Substitution const &substitution,
     PCGPatternMatch const &match);
