@@ -177,6 +177,7 @@ public:
                  std::optional<Activation> const &activation = std::nullopt,
                  float eps = 1e-5f,
                  std::optional<float> const &momentum = 0.1f,
+                 BatchNormMode mode = BatchNormMode::SPATIAL_PERSISTENT,
                  std::optional<std::string> const &name = std::nullopt);
 
   tensor_guid_t

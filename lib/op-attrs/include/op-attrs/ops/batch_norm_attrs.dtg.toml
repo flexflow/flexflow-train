@@ -13,6 +13,8 @@ features = [
 
 includes = [
   "<optional>",
+  "op-attrs/activation.dtg.h",
+  "op-attrs/ops/batch_norm_mode.dtg.h",
 ]
 
 src_includes = [
@@ -22,8 +24,13 @@ src_includes = [
 ]
 
 [[fields]]
-name = "relu"
-type = "bool"
+name = "activation"
+type = "std::optional<::FlexFlow::Activation>"
+docstring = '''
+\brief An elementwise activation applied to this operator's output, computed by the same kernel rather than by a separate operator.
+
+Either written by the model author, or introduced by folding an adjacent elementwise operator into this one, so that the value between them is never materialized.
+'''
 
 [[fields]]
 name = "affine"
@@ -36,3 +43,7 @@ type = "float"
 [[fields]]
 name = "momentum"
 type = "std::optional<float>"
+
+[[fields]]
+name = "mode"
+type = "::FlexFlow::BatchNormMode"

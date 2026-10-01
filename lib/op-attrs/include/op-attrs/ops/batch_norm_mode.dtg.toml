@@ -1,0 +1,19 @@
+namespace = "FlexFlow"
+name = "BatchNormMode"
+type = "enum"
+
+features = [
+  "hash",
+  "json",
+  "rapidcheck",
+  "fmt",
+]
+
+[[values]]
+name = "PER_ACTIVATION"
+
+[[values]]
+name = "SPATIAL"
+
+[[values]]
+name = "SPATIAL_PERSISTENT"

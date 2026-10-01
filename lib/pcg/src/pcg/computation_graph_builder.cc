@@ -720,22 +720,15 @@ tensor_guid_t ComputationGraphBuilder::batch_norm(
     std::optional<Activation> const &activation,
     float eps,
     std::optional<float> const &momentum,
+    BatchNormMode mode,
     std::optional<std::string> const &maybe_name) {
 
-  if (activation.has_value() && activation.value() != Activation::RELU) {
-    PANIC(fmt::format(
-        "batch_norm currently only supports (1) no activation function, or (2) "
-        "relu activation function, but received {}. "
-        "If you need support for additional activation functions, please "
-        "create an issue.",
-        activation));
-  }
-
   BatchNormAttrs attrs = BatchNormAttrs{
-      /*relu=*/activation.has_value(),
+      /*activation=*/activation,
       /*affine=*/affine,
       /*eps=*/eps,
       /*momentum=*/momentum,
+      /*mode=*/mode,
   };
 
   std::string name =

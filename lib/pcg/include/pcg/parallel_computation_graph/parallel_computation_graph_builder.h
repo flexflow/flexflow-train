@@ -85,6 +85,7 @@ public:
                  std::optional<Activation> const &activation,
                  float eps,
                  std::optional<float> const &momentum,
+                 BatchNormMode mode = BatchNormMode::SPATIAL_PERSISTENT,
                  std::optional<std::string> const &name = std::nullopt);
 
   parallel_tensor_guid_t

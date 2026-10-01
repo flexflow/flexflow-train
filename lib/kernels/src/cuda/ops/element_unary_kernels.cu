@@ -40,10 +40,23 @@ static bool use_scalar(OperatorType op_type) {
     case OperatorType::SCALAR_SUB:
     case OperatorType::SCALAR_TRUE_DIV:
     case OperatorType::POW:
+    case OperatorType::SILU:
       return true;
     default:
       return false;
   }
+}
+
+// SILU's scalar (beta) is optional and defaults to 1, matching the CPU
+// kernel. The other scalar operators require a scalar.
+static float require_scalar(OperatorType op_type,
+                            std::optional<float> const &scalar) {
+  if (op_type == OperatorType::SILU) {
+    return scalar.value_or(1.0f);
+  }
+
+  ASSERT(scalar.has_value(), op_type);
+  return scalar.value();
 }
 
 ElementUnaryPerDeviceState
@@ -115,6 +128,10 @@ __global__ void elewise_scalar_unary_forward_kernel(
       }
       case OperatorType::POW: {
         out[i] = (T)(powf(in[i], scalar));
+        break;
+      }
+      case OperatorType::SILU: {
+        out[i] = (T)(in[i] / (1.0f + expf(-1.0f * scalar * in[i])));
         break;
       }
       default:
@@ -189,6 +206,19 @@ __global__ void elewise_scalar_unary_backward_kernel(coord_t volume,
       case OperatorType::POW: {
         input_grad[i] =
             (T)(output_grad[i] * scalar * powf(input[i], scalar - 1));
+        break;
+      }
+      case OperatorType::SILU: {
+        // Algebraically e^bx (bx + e^bx + 1) / (e^bx + 1)^2, but written in
+        // terms of the sigmoid so that it stays finite. exp(bx) overflows to
+        // infinity once bx is much above 88, and the expanded form then
+        // evaluates infinity/infinity = NaN. A zero output gradient does not
+        // rescue that, because 0 * NaN is NaN: a layer receiving no gradient
+        // at all would still poison everything upstream of it.
+        float bx = scalar * (float)input[i];
+        float sigmoid = 1.0f / (1.0f + expf(-bx));
+        input_grad[i] +=
+            (T)(output_grad[i] * sigmoid * (1.0f + bx * (1.0f - sigmoid)));
         break;
       }
       default:
@@ -266,11 +296,10 @@ struct ForwardKernel {
                                         m.outputTensor,
                                         output.get<T>()));
     } else if (use_scalar(op_type)) {
-      assert(scalar.has_value());
       elewise_scalar_unary_forward_kernel<real_type_t<T>>
           <<<GET_BLOCKS(num_elements), CUDA_NUM_THREADS, 0, stream>>>(
               num_elements,
-              static_cast<real_type_t<T>>(scalar.value()),
+              static_cast<real_type_t<T>>(require_scalar(op_type, scalar)),
               op_type,
               input.get<T>(),
               output.get<T>());
@@ -312,11 +341,10 @@ struct BackwardKernel {
                                          m.inputTensor,
                                          input_grad.get<T>()));
     } else if (use_scalar(op_type)) {
-      assert(scalar.has_value());
       elewise_scalar_unary_backward_kernel<real_type_t<T>>
           <<<GET_BLOCKS(num_elements), CUDA_NUM_THREADS, 0, stream>>>(
               num_elements,
-              static_cast<real_type_t<T>>(scalar.value()),
+              static_cast<real_type_t<T>>(require_scalar(op_type, scalar)),
               op_type,
               output.get<T>(),
               output_grad.get<T>(),
