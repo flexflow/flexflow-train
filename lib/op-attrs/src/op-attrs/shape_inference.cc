@@ -17,6 +17,7 @@
 #include "op-attrs/ops/linear.h"
 #include "op-attrs/ops/noop.h"
 #include "op-attrs/ops/pool_2d.h"
+#include "op-attrs/ops/reduce.h"
 #include "op-attrs/ops/reduction.h"
 #include "op-attrs/ops/repartition.h"
 #include "op-attrs/ops/replicate.h"
@@ -251,6 +252,17 @@ std::map<TensorSlotName, TensorShape> get_output_shapes(
             {TensorSlotName::OUTPUT, pool2d_get_output_shape(attrs, input)},
         };
       },
+      [&](ReduceAttrs const &attrs) -> std::map<TensorSlotName, TensorShape> {
+        TensorShape input =
+            require_only_key(input_shapes, TensorSlotName::INPUT);
+
+        return {
+            {
+                TensorSlotName::OUTPUT,
+                reduce_get_output_shape(attrs, input),
+            },
+        };
+      },
       [&](ReshapeAttrs const &attrs) -> std::map<TensorSlotName, TensorShape> {
         TensorShape input =
             require_only_key(input_shapes, TensorSlotName::INPUT);
@@ -423,6 +435,11 @@ std::map<TensorSlotName, TensorShape> get_weight_shapes(
         return {};
       },
       [&](Pool2DAttrs const &attrs) -> std::map<TensorSlotName, TensorShape> {
+        require_only_key(input_shapes, TensorSlotName::INPUT);
+
+        return {};
+      },
+      [&](ReduceAttrs const &attrs) -> std::map<TensorSlotName, TensorShape> {
         require_only_key(input_shapes, TensorSlotName::INPUT);
 
         return {};
@@ -683,6 +700,18 @@ std::map<TensorSlotName, ParallelTensorShape> get_output_shapes(
             },
         };
       },
+      [&](ReduceAttrs const &attrs)
+          -> std::map<TensorSlotName, ParallelTensorShape> {
+        ParallelTensorShape input =
+            require_only_key(input_shapes, TensorSlotName::INPUT);
+
+        return {
+            {
+                TensorSlotName::OUTPUT,
+                reduce_get_output_parallel_shape(attrs, input),
+            },
+        };
+      },
       [&](ReductionAttrs const &attrs)
           -> std::map<TensorSlotName, ParallelTensorShape> {
         ParallelTensorShape input =
@@ -924,6 +953,12 @@ std::map<TensorSlotName, ParallelTensorShape> get_weight_shapes(
             return {};
           },
           [&](Pool2DAttrs const &attrs)
+              -> std::map<TensorSlotName, ParallelTensorShape> {
+            require_only_key(input_shapes, TensorSlotName::INPUT);
+
+            return {};
+          },
+          [&](ReduceAttrs const &attrs)
               -> std::map<TensorSlotName, ParallelTensorShape> {
             require_only_key(input_shapes, TensorSlotName::INPUT);
 

@@ -25,7 +25,9 @@ static bool can_promote_dims_to(TensorDims const &from, TensorDims const &to) {
 GenericTensorAccessorR
     tensor_accessor_promote_dims(GenericTensorAccessorR const &accessor,
                                  TensorDims const &new_dims) {
-  ASSERT(can_promote_dims_to(accessor.shape.dims, new_dims));
+  ASSERT(can_promote_dims_to(accessor.shape.dims, new_dims),
+         accessor.shape.dims,
+         new_dims);
 
   GenericTensorAccessorR result = accessor;
   result.shape.dims = new_dims;

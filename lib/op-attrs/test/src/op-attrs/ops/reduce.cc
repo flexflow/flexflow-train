@@ -1,4 +1,9 @@
 #include "op-attrs/ops/reduce.h"
+#include "kernels/create_zero_filled_accessor.h"
+#include "kernels/emulated_parallel_tensor/shard_signature_instance_is_valid.h"
+#include "kernels/local_cpu_allocator.h"
+#include "kernels/reduce_kernels_cpu.h"
+#include "op-attrs/parallel_tensor_shape.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -267,5 +272,155 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     CHECK(result == correct);
+  }
+
+  TEST_CASE("reduce_get_task_group") {
+    Allocator cpu_allocator = create_local_cpu_memory_allocator();
+
+    auto mk_degrees = [](int sum_degree,
+                         int discard_copy_degree,
+                         int shard_dim_0_degree,
+                         int shard_dim_1_degree,
+                         int shard_dim_2_degree,
+                         int shard_dim_3_degree) -> ParallelTensorDimDegrees {
+      return ParallelTensorDimDegrees{
+          /*sum_degree=*/SumDegree{positive_int{sum_degree}},
+          /*discard_copy_degree=*/
+          DiscardCopyDegree{positive_int{discard_copy_degree}},
+          /*shard_degrees=*/
+          FFOrdered<positive_int>{
+              positive_int{shard_dim_0_degree},
+              positive_int{shard_dim_1_degree},
+              positive_int{shard_dim_2_degree},
+              positive_int{shard_dim_3_degree},
+          },
+      };
+    };
+
+    TensorShape input_shard_shape = TensorShape{
+        /*dims=*/TensorDims{
+            FFOrdered<positive_int>{
+                4_p,
+                2_p,
+                3_p,
+                3_p,
+            },
+        },
+        /*data_type=*/DataType::FLOAT,
+    };
+
+    auto run_reduce = [&](ReduceAttrs const &attrs,
+                          std::map<TensorSlotName, GenericTensorAccessorR> const
+                              &input_shards)
+        -> std::map<TensorSlotName, GenericTensorAccessorR> {
+      GenericTensorAccessorR input_shard =
+          input_shards.at(TensorSlotName::INPUT);
+
+      TensorShape output_shard_shape =
+          reduce_get_output_shape(attrs, input_shard.shape);
+      GenericTensorAccessorW output_shard =
+          create_zero_filled_accessor_w(output_shard_shape, cpu_allocator);
+
+      reduce_cpu_forward_kernel(
+          /*attrs=*/attrs,
+          /*input=*/input_shard,
+          /*output=*/output_shard);
+
+      return std::map<TensorSlotName, GenericTensorAccessorR>{
+          {
+              TensorSlotName::OUTPUT,
+              read_only_accessor_from_write_accessor(output_shard),
+          },
+      };
+    };
+
+    auto reduce_shard_signature_instance_is_valid =
+        [&](ReduceAttrs const &attrs,
+            ParallelTensorDimDegrees const &input_degrees) -> bool {
+      ParallelTensorShape input_shape =
+          lift_shape_to_parallel_with_degrees(input_shard_shape, input_degrees);
+
+      std::map<TensorSlotName, ParallelTensorShape> input_shapes = {
+          {
+              TensorSlotName::INPUT,
+              input_shape,
+          },
+      };
+
+      auto run_op = [&](std::map<TensorSlotName, GenericTensorAccessorR> const
+                            &input_shards)
+          -> std::map<TensorSlotName, GenericTensorAccessorR> {
+        return run_reduce(attrs, input_shards);
+      };
+
+      return shard_signature_instance_is_valid(
+          /*attrs=*/ComputationGraphOpAttrs{attrs},
+          /*input_shapes=*/input_shapes,
+          /*run_op=*/run_op,
+          /*seed=*/0);
+    };
+
+    auto mk_attrs = [&](ReduceOp op, bool keepdims) -> ReduceAttrs {
+      return ReduceAttrs{
+          /*axes=*/nonempty_set<ff_dim_t>{
+              ff_dim_t{1_n},
+              ff_dim_t{3_n},
+          },
+          /*op=*/op,
+          /*keepdims=*/keepdims,
+      };
+    };
+
+    SUBCASE("op = SUM") {
+      SUBCASE("keepdims = true") {
+        ReduceAttrs attrs = mk_attrs(
+            /*op=*/ReduceOp::SUM,
+            /*keepdims=*/true);
+
+        SUBCASE("data parallelism") {
+          ParallelTensorDimDegrees input_degrees = mk_degrees(1, 1, 2, 1, 1, 1);
+
+          CHECK(reduce_shard_signature_instance_is_valid(attrs, input_degrees));
+        }
+      }
+
+      SUBCASE("keepdims = false") {
+        ReduceAttrs attrs = mk_attrs(
+            /*op=*/ReduceOp::SUM,
+            /*keepdims=*/false);
+
+        SUBCASE("data parallelism") {
+          ParallelTensorDimDegrees input_degrees = mk_degrees(1, 1, 2, 1, 1, 1);
+
+          CHECK(reduce_shard_signature_instance_is_valid(attrs, input_degrees));
+        }
+      }
+    }
+
+    SUBCASE("op = AVG") {
+      SUBCASE("keepdims = true") {
+        ReduceAttrs attrs = mk_attrs(
+            /*op=*/ReduceOp::AVG,
+            /*keepdims=*/true);
+
+        SUBCASE("data parallelism") {
+          ParallelTensorDimDegrees input_degrees = mk_degrees(1, 1, 2, 1, 1, 1);
+
+          CHECK(reduce_shard_signature_instance_is_valid(attrs, input_degrees));
+        }
+      }
+
+      SUBCASE("keepdims = false") {
+        ReduceAttrs attrs = mk_attrs(
+            /*op=*/ReduceOp::AVG,
+            /*keepdims=*/false);
+
+        SUBCASE("data parallelism") {
+          ParallelTensorDimDegrees input_degrees = mk_degrees(1, 1, 2, 1, 1, 1);
+
+          CHECK(reduce_shard_signature_instance_is_valid(attrs, input_degrees));
+        }
+      }
+    }
   }
 }

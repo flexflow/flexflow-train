@@ -1,6 +1,8 @@
 #include "op-attrs/ops/reduce.h"
+#include "op-attrs/ff_ordered/ff_ordered_filtrans_with_idx.h"
 #include "op-attrs/parallel_tensor_dim_degrees.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "op-attrs/task_space_coordinate.h"
 #include "op-attrs/tensor_dims.h"
 #include "op-attrs/tensor_shape.h"
 #include "utils/containers/are_disjoint.h"
@@ -42,10 +44,12 @@ ParallelTensorDimDegrees reduce_get_output_parallel_dim_degrees(
 
   ASSERT(is_subseteq_of(attrs.axes.unwrap_as_set(), all_shard_dims));
 
-  std::set<ff_dim_t> nontrival_shard_dims = only_shard_dims(
+  std::set<ff_dim_t> nontrivial_shard_dims = only_shard_dims(
       get_nontrivial_parallel_tensor_dim_indices(input_degrees));
 
-  ASSERT(are_disjoint(attrs.axes.unwrap_as_set(), nontrival_shard_dims));
+  ASSERT(are_disjoint(attrs.axes.unwrap_as_set(), nontrivial_shard_dims),
+         attrs.axes,
+         nontrivial_shard_dims);
 
   switch (attrs.op) {
     case ReduceOp::SUM: {
@@ -80,6 +84,62 @@ ParallelTensorShape
                                              get_parallel_degrees(input_shape));
 
   return lift_shape_to_parallel_with_degrees(output_shape, output_degrees);
+}
+
+StandardOperatorTaskGroup
+    reduce_get_task_group(ReduceAttrs const &attrs,
+                          ParallelTensorDimDegrees const &input_degrees) {
+  ParallelTensorDimDegrees output_degrees =
+      reduce_get_output_parallel_dim_degrees(attrs, input_degrees);
+
+  auto output_coord_from_input_coord =
+      [&](ParallelTensorSpaceCoordinate const &input_coord)
+      -> ParallelTensorSpaceCoordinate {
+    return ParallelTensorSpaceCoordinate{
+        /*sum_component=*/input_coord.sum_component,
+        /*discard_copy_component=*/input_coord.discard_copy_component,
+        /*shard_components=*/
+        ff_ordered_filtrans_with_idx(
+            input_coord.shard_components,
+            [&](ff_dim_t idx,
+                nonnegative_int component) -> std::optional<nonnegative_int> {
+              if (!contains(attrs.axes, idx)) {
+                return component;
+              }
+
+              if (attrs.keepdims) {
+                return 0_n;
+              } else {
+                return std::nullopt;
+              }
+            }),
+    };
+  };
+
+  return StandardOperatorTaskGroup{
+      transform(get_parallel_tensor_space_coordinates(input_degrees),
+                [&](ParallelTensorSpaceCoordinate const &input_coord)
+                    -> AbstractedOperatorAtomicTaskShardBinding {
+                  ParallelTensorSpaceCoordinate output_coord =
+                      output_coord_from_input_coord(input_coord);
+
+                  return AbstractedOperatorAtomicTaskShardBinding{
+                      /*tensor_corods=*/{
+                          {
+                              TensorSlotName::INPUT,
+                              input_coord,
+                          },
+                          {
+                              TensorSlotName::OUTPUT,
+                              output_coord,
+                          },
+                      },
+                      /*task_coord=*/
+                      task_coord_matching_parallel_tensor_space_coordinate(
+                          output_coord, output_degrees),
+                  };
+                }),
+  };
 }
 
 } // namespace FlexFlow

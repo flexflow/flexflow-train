@@ -39,8 +39,16 @@ void reduce_cpu_forward_kernel(ReduceAttrs const &attrs,
       });
 
   if (attrs.keepdims) {
+    TensorDims promoted_dims = [&]() {
+      TensorDims promoted = input.shape.dims;
+      for (ff_dim_t d : attrs.axes) {
+        promoted.ff_ordered.at(d) = 1_p;
+      }
+      return promoted;
+    }();
+
     result = tensor_accessor_broadcast(
-        tensor_accessor_promote_dims(result, input.shape.dims),
+        tensor_accessor_promote_dims(result, promoted_dims),
         input.shape.dims,
         cpu_allocator);
   }
