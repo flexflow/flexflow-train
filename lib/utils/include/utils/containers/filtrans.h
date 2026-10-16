@@ -1,6 +1,7 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_FILTRANS_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_CONTAINERS_FILTRANS_H
 
+#include "utils/containers/unwrap_optional.h"
 #include "utils/type_traits_core.h"
 #include <optional>
 #include <set>
@@ -8,17 +9,6 @@
 #include <vector>
 
 namespace FlexFlow {
-
-template <typename T>
-struct unwrap_optional {
-  static_assert("T is not a std::optional!");
-};
-
-template <typename T>
-struct unwrap_optional<std::optional<T>> : type_identity<T> {};
-
-template <typename T>
-using unwrap_optional_t = typename unwrap_optional<T>::type;
 
 template <typename F,
           typename In,
