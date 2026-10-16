@@ -1,6 +1,10 @@
 #include "op-attrs/ops/pool_2d.h"
 #include "op-attrs/ff_ordered/ff_ordered_concat.h"
+#include "op-attrs/parallel_tensor_dim_degrees.h"
+#include "op-attrs/parallel_tensor_dim_idx_t.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "op-attrs/standard_operator_task_group.h"
+#include "op-attrs/task_space_coordinate.h"
 #include "op-attrs/tensor_dims.h"
 #include "op-attrs/tensor_shape.h"
 #include "utils/integer_conversions.h"
@@ -127,13 +131,14 @@ TensorShape pool2d_get_output_shape(Pool2DAttrs const &attrs,
                   "have at least two dims, but received shape {}",
                   input_shape));
 
-  TensorDims leading_dims = slice_tensor_dims(
-      input_shape.dims, relative_ff_dim_t{0}, relative_ff_dim_t{-2});
+  relative_ff_dim_t height_dim = relative_ff_dim_t{-2};
+  relative_ff_dim_t width_dim = relative_ff_dim_t{-1};
 
-  positive_int input_height =
-      dim_at_idx(input_shape.dims, relative_ff_dim_t{-2});
-  positive_int input_width =
-      dim_at_idx(input_shape.dims, relative_ff_dim_t{-1});
+  TensorDims leading_dims =
+      slice_tensor_dims(input_shape.dims, relative_ff_dim_t{0}, height_dim);
+
+  positive_int input_height = dim_at_idx(input_shape.dims, height_dim);
+  positive_int input_width = dim_at_idx(input_shape.dims, width_dim);
 
   positive_int output_height =
       calculate_output_size(/*input_size=*/input_height,
@@ -147,13 +152,13 @@ TensorShape pool2d_get_output_shape(Pool2DAttrs const &attrs,
                             /*stride_size=*/attrs.stride_w);
 
   return TensorShape{
-      TensorDims{
-          ff_ordered_concat(leading_dims.ff_ordered,
-                            FFOrdered<positive_int>{
-                                output_height,
-                                output_width,
-                            }),
-      },
+      concat_tensor_dims(leading_dims,
+                         TensorDims{
+                             FFOrdered<positive_int>{
+                                 output_height,
+                                 output_width,
+                             },
+                         }),
       input_shape.data_type,
   };
 }
@@ -188,6 +193,52 @@ ParallelTensorDimDegrees pool2d_get_output_parallel_dim_degrees(
   }
 
   return input_degrees;
+}
+
+StandardOperatorTaskGroup
+    pool2d_get_task_group(Pool2DAttrs const &attrs,
+                          ParallelTensorDimDegrees const &input_degrees) {
+  parallel_tensor_dim_idx_t batch_dim = shard_dim_idx(ff_dim_t{0_n});
+
+  for (parallel_tensor_dim_idx_t const &dim_idx :
+       get_parallel_tensor_dim_indices(input_degrees)) {
+    if (dim_idx != discard_copy_dim_idx() && dim_idx != batch_dim) {
+      positive_int degree =
+          get_degree_for_parallel_tensor_dim_idx(input_degrees, dim_idx);
+      ASSERT(
+          degree == 1_p,
+          "Currently pool2d_get_task_group only handles a limited set of types "
+          "of parallelism. "
+          "If you need support for additional types, please create an issue.");
+    }
+  }
+
+  ParallelTensorDimDegrees output_degrees =
+      pool2d_get_output_parallel_dim_degrees(attrs, input_degrees);
+
+  return StandardOperatorTaskGroup{
+      transform(get_parallel_tensor_space_coordinates(input_degrees),
+                [&](ParallelTensorSpaceCoordinate const &input_coord)
+                    -> AbstractedOperatorAtomicTaskShardBinding {
+                  ParallelTensorSpaceCoordinate output_coord = input_coord;
+
+                  return AbstractedOperatorAtomicTaskShardBinding{
+                      /*tensor_coords=*/{
+                          {
+                              TensorSlotName::INPUT,
+                              input_coord,
+                          },
+                          {
+                              TensorSlotName::OUTPUT,
+                              output_coord,
+                          },
+                      },
+                      /*task_coord=*/
+                      task_coord_matching_parallel_tensor_space_coordinate(
+                          output_coord, output_degrees),
+                  };
+                }),
+  };
 }
 
 } // namespace FlexFlow

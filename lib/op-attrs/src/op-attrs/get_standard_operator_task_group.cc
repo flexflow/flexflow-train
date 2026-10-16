@@ -8,6 +8,7 @@
 #include "op-attrs/ops/input.h"
 #include "op-attrs/ops/linear.h"
 #include "op-attrs/ops/noop.h"
+#include "op-attrs/ops/pool_2d.h"
 #include "op-attrs/ops/softmax.h"
 #include "op-attrs/ops/split.h"
 #include "op-attrs/ops/transpose.h"
@@ -103,6 +104,12 @@ StandardOperatorTaskGroup get_standard_operator_task_group(
             require_only_key(input_dim_degree_binding, TensorSlotName::INPUT);
 
         return noop_get_task_group(attrs, input_dim_degrees);
+      },
+      [&](Pool2DAttrs const &attrs) -> StandardOperatorTaskGroup {
+        ParallelTensorDimDegrees input_dim_degrees =
+            require_only_key(input_dim_degree_binding, TensorSlotName::INPUT);
+
+        return pool2d_get_task_group(attrs, input_dim_degrees);
       },
       [&](SoftmaxAttrs const &attrs) -> StandardOperatorTaskGroup {
         ParallelTensorDimDegrees input_dim_degrees =

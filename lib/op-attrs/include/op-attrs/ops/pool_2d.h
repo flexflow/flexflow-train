@@ -4,6 +4,7 @@
 #include "op-attrs/ops/pool_2d_attrs.dtg.h"
 #include "op-attrs/parallel_tensor_dim_degrees.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
+#include "op-attrs/standard_operator_task_group.h"
 #include "op-attrs/tensor_shape.dtg.h"
 
 namespace FlexFlow {
@@ -24,6 +25,10 @@ ParallelTensorShape
 ParallelTensorDimDegrees
     pool2d_get_output_parallel_dim_degrees(Pool2DAttrs const &,
                                            ParallelTensorDimDegrees const &);
+
+StandardOperatorTaskGroup
+    pool2d_get_task_group(Pool2DAttrs const &attrs,
+                          ParallelTensorDimDegrees const &input_degrees);
 
 } // namespace FlexFlow
 
