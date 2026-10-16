@@ -1,4 +1,10 @@
 #include "op-attrs/ops/flat.h"
+#include "kernels/accessor.h"
+#include "kernels/create_zero_filled_accessor.h"
+#include "kernels/emulated_parallel_tensor/shard_signature_instance_is_valid.h"
+#include "kernels/flat_kernels_cpu.h"
+#include "kernels/local_cpu_allocator.h"
+#include "op-attrs/parallel_tensor_shape.h"
 #include "utils/expected.h"
 #include "utils/fmt/expected.h"
 #include "utils/fmt/optional.h"
@@ -230,5 +236,95 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     CHECK(result == correct);
+  }
+
+  TEST_CASE("flat_get_task_group") {
+    Allocator cpu_allocator = create_local_cpu_memory_allocator();
+
+    FlatAttrs attrs = FlatAttrs{
+        /*start_dim=*/ff_dim_t{1_n},
+        /*end_dim=*/ff_dim_t{2_n},
+    };
+
+    TensorShape input_shape = TensorShape{
+        TensorDims{
+            FFOrdered{
+                8_p,
+                6_p,
+                4_p,
+                5_p,
+            },
+        },
+        DataType::FLOAT,
+    };
+
+    auto mk_dim_degrees =
+        [&](int sum_degree,
+            int discard_copy_degree,
+            int dim0_shard_degree,
+            int dim1_shard_degree,
+            int dim2_shard_degree,
+            int dim3_shard_degree) -> ParallelTensorDimDegrees {
+      return ParallelTensorDimDegrees{
+          /*sum_degree=*/SumDegree{positive_int{sum_degree}},
+          /*discard_copy_degree=*/
+          DiscardCopyDegree{positive_int{discard_copy_degree}},
+          /*shard_degrees=*/
+          FFOrdered{
+              positive_int{dim0_shard_degree},
+              positive_int{dim1_shard_degree},
+              positive_int{dim2_shard_degree},
+              positive_int{dim3_shard_degree},
+          },
+      };
+    };
+
+    auto run_flat = [&](std::map<TensorSlotName, GenericTensorAccessorR> const
+                            &incoming_shards)
+        -> std::map<TensorSlotName, GenericTensorAccessorR> {
+      GenericTensorAccessorR input_shard =
+          incoming_shards.at(TensorSlotName::INPUT);
+      TensorShape output_shard_shape = flat_get_output_shape(
+          attrs, get_tensor_shape_for_accessor_r(input_shard));
+      GenericTensorAccessorW output_shard =
+          create_zero_filled_accessor_w(output_shard_shape, cpu_allocator);
+
+      flat_cpu_forward_kernel(
+          /*input=*/input_shard,
+          /*output=*/output_shard);
+
+      return std::map<TensorSlotName, GenericTensorAccessorR>{
+          {
+              TensorSlotName::OUTPUT,
+              read_only_accessor_from_write_accessor(output_shard),
+          },
+      };
+    };
+
+    auto flat_shard_signature_instance_is_valid =
+        [&](ParallelTensorDimDegrees const &input_degrees) -> bool {
+      ParallelTensorShape input_parallel_shape =
+          lift_shape_to_parallel_with_degrees(input_shape, input_degrees);
+
+      std::map<TensorSlotName, ParallelTensorShape> input_shapes = {
+          {
+              TensorSlotName::INPUT,
+              input_parallel_shape,
+          },
+      };
+
+      return shard_signature_instance_is_valid(
+          /*attrs=*/ComputationGraphOpAttrs{attrs},
+          /*input_shapes=*/input_shapes,
+          /*run_op=*/run_flat,
+          /*seed=*/0);
+    };
+
+    SUBCASE("data parallelism") {
+      ParallelTensorDimDegrees input_dim_degrees =
+          mk_dim_degrees(1, 1, 2, 1, 1, 1);
+
+      CHECK(flat_shard_signature_instance_is_valid(input_dim_degrees));
+    }
   }
 }
