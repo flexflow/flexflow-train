@@ -1,10 +1,12 @@
 #include "op-attrs/get_standard_operator_task_group.h"
+#include "op-attrs/ops/element_binary.h"
 #include "op-attrs/ops/element_unary.h"
 #include "op-attrs/ops/input.h"
 #include "op-attrs/ops/linear.h"
 #include "op-attrs/ops/transpose.h"
 #include "op-attrs/ops/weight.h"
 #include "utils/containers/require_only_key.h"
+#include "utils/containers/require_two_keys.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {
@@ -14,6 +16,15 @@ StandardOperatorTaskGroup get_standard_operator_task_group(
     std::map<TensorSlotName, ParallelTensorDimDegrees> const
         &input_dim_degree_binding) {
   return op_attrs.visit<StandardOperatorTaskGroup>(overload{
+      [&](ElementBinaryAttrs const &attrs) -> StandardOperatorTaskGroup {
+        auto [lhs_input_dim_degrees, rhs_input_dim_degrees] =
+            require_two_keys(input_dim_degree_binding,
+                             TensorSlotName::LHS_INPUT,
+                             TensorSlotName::RHS_INPUT);
+
+        return element_binary_get_task_group(
+            attrs, lhs_input_dim_degrees, rhs_input_dim_degrees);
+      },
       [&](ElementUnaryAttrs const &attrs) -> StandardOperatorTaskGroup {
         ParallelTensorDimDegrees input_dim_degrees =
             require_only_key(input_dim_degree_binding, TensorSlotName::INPUT);
