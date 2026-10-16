@@ -15,6 +15,7 @@
 #include "op-attrs/ops/input.h"
 #include "op-attrs/ops/layer_norm.h"
 #include "op-attrs/ops/linear.h"
+#include "op-attrs/ops/noop.h"
 #include "op-attrs/ops/pool_2d.h"
 #include "op-attrs/ops/reduction.h"
 #include "op-attrs/ops/repartition.h"
@@ -231,6 +232,17 @@ std::map<TensorSlotName, TensorShape> get_output_shapes(
             },
         };
       },
+      [&](NoopAttrs const &attrs) -> std::map<TensorSlotName, TensorShape> {
+        TensorShape input =
+            require_only_key(input_shapes, TensorSlotName::INPUT);
+
+        return {
+            {
+                TensorSlotName::OUTPUT,
+                noop_get_output_shape(attrs, input),
+            },
+        };
+      },
       [&](Pool2DAttrs const &attrs) -> std::map<TensorSlotName, TensorShape> {
         TensorShape input =
             require_only_key(input_shapes, TensorSlotName::INPUT);
@@ -404,6 +416,11 @@ std::map<TensorSlotName, TensorShape> get_weight_shapes(
                                                       TensorSlotName::VALUE);
 
         return attention_get_weight_shape_map(attrs, query, key, value);
+      },
+      [&](NoopAttrs const &attrs) -> std::map<TensorSlotName, TensorShape> {
+        require_only_key(input_shapes, TensorSlotName::INPUT);
+
+        return {};
       },
       [&](Pool2DAttrs const &attrs) -> std::map<TensorSlotName, TensorShape> {
         require_only_key(input_shapes, TensorSlotName::INPUT);
@@ -639,6 +656,18 @@ std::map<TensorSlotName, ParallelTensorShape> get_output_shapes(
             {
                 TensorSlotName::OUTPUT,
                 attention_get_output_parallel_shape(attrs, query, key, value),
+            },
+        };
+      },
+      [&](NoopAttrs const &attrs)
+          -> std::map<TensorSlotName, ParallelTensorShape> {
+        ParallelTensorShape input =
+            require_only_key(input_shapes, TensorSlotName::INPUT);
+
+        return {
+            {
+                TensorSlotName::OUTPUT,
+                noop_get_output_parallel_shape(attrs, input),
             },
         };
       },
@@ -887,6 +916,12 @@ std::map<TensorSlotName, ParallelTensorShape> get_weight_shapes(
 
             return attention_get_weight_parallel_shape_map(
                 attrs, query, key, value);
+          },
+          [&](NoopAttrs const &attrs)
+              -> std::map<TensorSlotName, ParallelTensorShape> {
+            require_only_key(input_shapes, TensorSlotName::INPUT);
+
+            return {};
           },
           [&](Pool2DAttrs const &attrs)
               -> std::map<TensorSlotName, ParallelTensorShape> {
