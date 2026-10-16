@@ -359,4 +359,118 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(result == correct);
     }
   }
+
+  TEST_CASE("batch_norm_get_task_group") {
+    auto mk_attrs = [&](bool affine) -> BatchNormAttrs {
+      return BatchNormAttrs{
+          /*activation=*/std::nullopt,
+          /*affine=*/affine,
+          /*eps=*/1.0,
+          /*momentum=*/0.1,
+      };
+    };
+
+    auto mk_dim_degrees =
+        [&](int sum_degree,
+            int discard_copy_degree,
+            int dim0_shard_degree,
+            int dim1_shard_degree,
+            int dim2_shard_degree) -> ParallelTensorDimDegrees {
+      return ParallelTensorDimDegrees{
+          /*sum_degree=*/SumDegree{positive_int{sum_degree}},
+          /*discard_copy_degree=*/
+          DiscardCopyDegree{positive_int{discard_copy_degree}},
+          /*shard_degrees=*/
+          FFOrdered{
+              positive_int{dim0_shard_degree},
+              positive_int{dim1_shard_degree},
+              positive_int{dim2_shard_degree},
+          },
+      };
+    };
+
+    SUBCASE("data parallelism") {
+      ParallelTensorDimDegrees input_degrees = mk_dim_degrees(1, 1, 2, 1, 1);
+
+      SUBCASE("affine = true") {
+        BatchNormAttrs attrs = mk_attrs(/*affine=*/true);
+
+        StandardOperatorTaskGroup result =
+            batch_norm_get_task_group(attrs, input_degrees);
+
+        SUBCASE("input degrees") {
+          ParallelTensorDimDegrees result_input_degrees =
+              parallel_tensor_space_for_standard_operator_task_group_and_slot(
+                  result, TensorSlotName::INPUT);
+
+          ParallelTensorDimDegrees correct_input_degrees = input_degrees;
+
+          CHECK(result_input_degrees == correct_input_degrees);
+        }
+
+        SUBCASE("gamma weight degrees") {
+          ParallelTensorDimDegrees result_gamma_weight_degrees =
+              parallel_tensor_space_for_standard_operator_task_group_and_slot(
+                  result, TensorSlotName::GAMMA);
+
+          ParallelTensorDimDegrees correct_gamma_weight_degrees =
+              batch_norm_get_gamma_weights_parallel_dim_degrees(attrs,
+                                                                input_degrees);
+
+          CHECK(result_gamma_weight_degrees == correct_gamma_weight_degrees);
+        }
+
+        SUBCASE("beta weight degrees") {
+          ParallelTensorDimDegrees result_beta_weight_degrees =
+              parallel_tensor_space_for_standard_operator_task_group_and_slot(
+                  result, TensorSlotName::BETA);
+
+          ParallelTensorDimDegrees correct_beta_weight_degrees =
+              batch_norm_get_beta_weights_parallel_dim_degrees(attrs,
+                                                               input_degrees);
+
+          CHECK(result_beta_weight_degrees == correct_beta_weight_degrees);
+        }
+
+        SUBCASE("output degrees") {
+          ParallelTensorDimDegrees result_output_degrees =
+              parallel_tensor_space_for_standard_operator_task_group_and_slot(
+                  result, TensorSlotName::OUTPUT);
+
+          ParallelTensorDimDegrees correct_output_degrees =
+              batch_norm_get_output_parallel_dim_degrees(attrs, input_degrees);
+
+          CHECK(result_output_degrees == correct_output_degrees);
+        }
+      }
+
+      SUBCASE("affine = false") {
+        BatchNormAttrs attrs = mk_attrs(/*affine=*/false);
+
+        StandardOperatorTaskGroup result =
+            batch_norm_get_task_group(attrs, input_degrees);
+
+        SUBCASE("input degrees") {
+          ParallelTensorDimDegrees result_input_degrees =
+              parallel_tensor_space_for_standard_operator_task_group_and_slot(
+                  result, TensorSlotName::INPUT);
+
+          ParallelTensorDimDegrees correct_input_degrees = input_degrees;
+
+          CHECK(result_input_degrees == correct_input_degrees);
+        }
+
+        SUBCASE("output degrees") {
+          ParallelTensorDimDegrees result_output_degrees =
+              parallel_tensor_space_for_standard_operator_task_group_and_slot(
+                  result, TensorSlotName::OUTPUT);
+
+          ParallelTensorDimDegrees correct_output_degrees =
+              batch_norm_get_output_parallel_dim_degrees(attrs, input_degrees);
+
+          CHECK(result_output_degrees == correct_output_degrees);
+        }
+      }
+    }
+  }
 }

@@ -6,6 +6,7 @@
 #include "op-attrs/ops/batch_norm_attrs.dtg.h"
 #include "op-attrs/parallel_tensor_dim_degrees.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
+#include "op-attrs/standard_operator_task_group.h"
 #include "op-attrs/tensor_shape.dtg.h"
 #include "op-attrs/tensor_slot_name.dtg.h"
 
@@ -50,6 +51,10 @@ ParallelTensorShape
 std::map<TensorSlotName, ParallelTensorShape>
     batch_norm_get_weight_parallel_shapes(
         BatchNormAttrs const &attrs, ParallelTensorShape const &input_shape);
+
+StandardOperatorTaskGroup
+    batch_norm_get_task_group(BatchNormAttrs const &attrs,
+                              ParallelTensorDimDegrees const &input_degrees);
 
 /**
  * @brief Chosen to match pytorch

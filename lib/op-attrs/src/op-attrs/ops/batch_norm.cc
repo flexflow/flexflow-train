@@ -1,12 +1,20 @@
 #include "op-attrs/ops/batch_norm.h"
 #include "op-attrs/ff_ordered/ff_ordered_concat.h"
 #include "op-attrs/ff_ordered/ff_ordered_slice.h"
+#include "op-attrs/parallel_tensor_dim_degrees.h"
+#include "op-attrs/parallel_tensor_dim_idx_t.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "op-attrs/parallel_tensor_space_coordinate.h"
+#include "op-attrs/task_space_coordinate.h"
 #include "op-attrs/tensor_dims.h"
 #include "op-attrs/tensor_shape.h"
 #include "utils/containers/all_of.h"
 #include "utils/containers/any_of.h"
 #include "utils/containers/extend.h"
+#include "utils/expected.h"
+#include "utils/optional.h"
+#include "utils/orthotope/bounded_component.h"
+#include "utils/orthotope/orthotope_bounded_coord.h"
 
 namespace FlexFlow {
 
@@ -113,17 +121,16 @@ static void check_input_degrees(BatchNormAttrs const &,
           "Expected discard copy degree 1, but received discard copy degree {}",
           input_degrees.discard_copy_degree));
 
-  FFOrdered<positive_int> non_channel_degrees = ff_ordered_concat(
-      ff_ordered_slice(
-          input_degrees.shard_degrees, ff_dim_t{0_n}, ff_dim_t{1_n}),
-      ff_ordered_slice(
-          input_degrees.shard_degrees, ff_dim_t{2_n}, std::nullopt));
+  FFOrdered<positive_int> non_channel_or_batch_degrees = ff_ordered_slice(
+      input_degrees.shard_degrees, ff_dim_t{2_n}, std::nullopt);
 
-  ASSERT(all_of(non_channel_degrees,
-                [](positive_int degree) { return degree == 1_p; }),
-         fmt::format("Expected parallel degree of all non-channel dimensions "
-                     "to be 1, but received input with degrees {}",
-                     input_degrees));
+  ASSERT(
+      all_of(non_channel_or_batch_degrees,
+             [](positive_int degree) { return degree == 1_p; }),
+      fmt::format(
+          "Expected parallel degree of all non-channel, non-batch dimensions "
+          "to be 1, but received input with degrees {}",
+          input_degrees));
 }
 
 ParallelTensorDimDegrees batch_norm_get_output_parallel_dim_degrees(
@@ -142,12 +149,27 @@ ParallelTensorDimDegrees batch_norm_get_gamma_weights_parallel_dim_degrees(
 
   ASSERT(attrs.affine, "No gamma weights exist for attrs.affine = false");
 
-  relative_ff_dim_t channel_dim = relative_ff_dim_t{1};
+  std::set<parallel_tensor_dim_idx_t> channel_dim_idxs = {
+      shard_dim_idx(ff_dim_t{1_n}),
+  };
+
+  std::set<parallel_tensor_dim_idx_t> non_channel_dim_idxs = set_minus(
+      get_parallel_tensor_dim_indices(input_degrees), channel_dim_idxs);
+
+  DimDomain<parallel_tensor_dim_idx_t> discard_copy_degree_space =
+      dim_domain_for_ptensor_dim_idxs(input_degrees, non_channel_dim_idxs);
+
+  DimDomain<parallel_tensor_dim_idx_t> channel_dim_degree_space =
+      dim_domain_for_ptensor_dim_idxs(input_degrees, channel_dim_idxs);
 
   return ParallelTensorDimDegrees{
       SumDegree{1_p},
-      DiscardCopyDegree{1_p},
-      FFOrdered<positive_int>{input_degrees.shard_degrees.at(channel_dim)},
+      DiscardCopyDegree{
+          dim_domain_get_volume(discard_copy_degree_space),
+      },
+      FFOrdered<positive_int>{
+          dim_domain_get_volume(channel_dim_degree_space),
+      },
   };
 }
 
@@ -239,6 +261,70 @@ std::map<TensorSlotName, ParallelTensorShape>
           TensorSlotName::BETA,
           beta_shape,
       },
+  };
+}
+
+StandardOperatorTaskGroup
+    batch_norm_get_task_group(BatchNormAttrs const &attrs,
+                              ParallelTensorDimDegrees const &input_degrees) {
+  ParallelTensorDimDegrees output_degrees =
+      batch_norm_get_output_parallel_dim_degrees(attrs, input_degrees);
+
+  return StandardOperatorTaskGroup{
+      transform(
+          get_parallel_tensor_space_coordinates(input_degrees),
+          [&](ParallelTensorSpaceCoordinate const &input_coord)
+              -> AbstractedOperatorAtomicTaskShardBinding {
+            parallel_tensor_dim_idx_t channel_dim =
+                shard_dim_idx(ff_dim_t{1_n});
+
+            std::set<parallel_tensor_dim_idx_t> non_channel_dims =
+                set_minus(get_parallel_tensor_dim_indices(input_degrees),
+                          std::set{channel_dim});
+
+            BoundedComponent channel_parallelism_component =
+                bounded_component_for_ptensor_dim(
+                    input_degrees, input_coord, channel_dim);
+
+            OrthotopeBoundedCoord non_channel_parallelism_components =
+                orthotope_bounded_coord_for_ptensor_dims(
+                    input_degrees, input_coord, non_channel_dims);
+
+            ParallelTensorSpaceCoordinate weight_coord =
+                parallel_tensor_space_coordinate_from_bounded_orthotope_components(
+                    /*sum_degree=*/trivial_bounded_component(),
+                    /*discard_copy_degree=*/
+                    assert_unwrap(flatten_orthotope_bounded_coord(
+                        non_channel_parallelism_components)),
+                    /*shard_coords=*/
+                    lift_bounded_component(channel_parallelism_component));
+
+            ParallelTensorSpaceCoordinate output_coord = input_coord;
+
+            return AbstractedOperatorAtomicTaskShardBinding{
+                /*tensor_coords=*/{
+                    {
+                        TensorSlotName::INPUT,
+                        input_coord,
+                    },
+                    {
+                        TensorSlotName::GAMMA,
+                        weight_coord,
+                    },
+                    {
+                        TensorSlotName::BETA,
+                        weight_coord,
+                    },
+                    {
+                        TensorSlotName::OUTPUT,
+                        output_coord,
+                    },
+                },
+                /*task_coord=*/
+                task_coord_matching_parallel_tensor_space_coordinate(
+                    output_coord, output_degrees),
+            };
+          }),
   };
 }
 
