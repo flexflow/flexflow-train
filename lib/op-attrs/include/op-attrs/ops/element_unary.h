@@ -6,6 +6,7 @@
 #include "op-attrs/ops/element_unary_attrs.dtg.h"
 #include "op-attrs/parallel_tensor_dim_degrees.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
+#include "op-attrs/standard_operator_task_group.h"
 #include "op-attrs/tensor_shape.dtg.h"
 
 namespace FlexFlow {
@@ -21,6 +22,10 @@ ParallelTensorShape
 ParallelTensorDimDegrees element_unary_get_output_parallel_dim_degrees(
     ElementUnaryAttrs const &attrs,
     ParallelTensorDimDegrees const &input_degrees);
+
+StandardOperatorTaskGroup
+    element_unary_get_task_group(ElementUnaryAttrs const &attrs,
+                                 ParallelTensorDimDegrees const &input_degrees);
 
 OperatorTaskSpace element_unary_get_operator_task_space(
     ElementUnaryAttrs const &attrs,
