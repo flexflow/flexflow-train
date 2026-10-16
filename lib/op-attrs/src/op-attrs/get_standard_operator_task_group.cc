@@ -7,6 +7,7 @@
 #include "op-attrs/ops/input.h"
 #include "op-attrs/ops/linear.h"
 #include "op-attrs/ops/softmax.h"
+#include "op-attrs/ops/split.h"
 #include "op-attrs/ops/transpose.h"
 #include "op-attrs/ops/upsample.h"
 #include "op-attrs/ops/weight.h"
@@ -73,6 +74,12 @@ StandardOperatorTaskGroup get_standard_operator_task_group(
             require_only_key(input_dim_degree_binding, TensorSlotName::INPUT);
 
         return softmax_get_task_group(attrs, input_dim_degrees);
+      },
+      [&](SplitAttrs const &attrs) -> StandardOperatorTaskGroup {
+        ParallelTensorDimDegrees input_dim_degrees =
+            require_only_key(input_dim_degree_binding, TensorSlotName::INPUT);
+
+        return split_get_task_group(attrs, input_dim_degrees);
       },
       [&](TransposeAttrs const &attrs) -> StandardOperatorTaskGroup {
         ParallelTensorDimDegrees input_dim_degrees =

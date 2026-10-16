@@ -3,9 +3,14 @@
 #include "op-attrs/parallel_tensor_dim_idx_t.h"
 #include "op-attrs/parallel_tensor_dims.h"
 #include "op-attrs/parallel_tensor_shape.h"
+#include "op-attrs/standard_operator_task_group.h"
+#include "op-attrs/task_space_coordinate.h"
 #include "op-attrs/tensor_dims.h"
 #include "op-attrs/tensor_slot_name.h"
+#include "utils/containers/generate_map.h"
 #include "utils/containers/repeat_element.h"
+#include "utils/containers/require_all_same.h"
+#include "utils/containers/require_all_same1.h"
 #include "utils/containers/slice.h"
 #include "utils/containers/sum.h"
 #include "utils/containers/transform.h"
@@ -63,6 +68,41 @@ std::vector<TensorSlotName>
     split_get_output_slot_names(SplitAttrs const &attrs) {
   return slice(
       get_variadic_outputs_slot_name_sequence(), 0, attrs.splits.size());
+}
+
+StandardOperatorTaskGroup
+    split_get_task_group(SplitAttrs const &attrs,
+                         ParallelTensorDimDegrees const &input_degrees) {
+  ParallelTensorDimDegrees output_degrees = require_all_same1(
+      split_get_output_parallel_dim_degrees(attrs, input_degrees));
+
+  return StandardOperatorTaskGroup{
+      transform(
+          get_parallel_tensor_space_coordinates(input_degrees),
+          [&](ParallelTensorSpaceCoordinate const &input_coord)
+              -> AbstractedOperatorAtomicTaskShardBinding {
+            std::map<TensorSlotName, ParallelTensorSpaceCoordinate>
+                output_coords = generate_map(
+                    split_get_output_slot_names(attrs),
+                    [&](TensorSlotName) -> ParallelTensorSpaceCoordinate {
+                      return input_coord;
+                    });
+
+            return AbstractedOperatorAtomicTaskShardBinding{
+                /*tensor_coords=*/binary_merge_disjoint_maps(
+                    std::map<TensorSlotName, ParallelTensorSpaceCoordinate>{
+                        {
+                            TensorSlotName::INPUT,
+                            input_coord,
+                        },
+                    },
+                    output_coords),
+                /*task_coord=*/
+                task_coord_matching_parallel_tensor_space_coordinate(
+                    input_coord, output_degrees),
+            };
+          }),
+  };
 }
 
 } // namespace FlexFlow
