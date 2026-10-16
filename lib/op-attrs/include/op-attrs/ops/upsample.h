@@ -4,6 +4,8 @@
 #include "op-attrs/ops/upsample_attrs.dtg.h"
 #include "op-attrs/parallel_tensor_dim_degrees.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
+#include "op-attrs/shard_signature_instance.h"
+#include "op-attrs/standard_operator_task_group.h"
 #include "op-attrs/tensor_shape.dtg.h"
 
 namespace FlexFlow {
@@ -18,6 +20,10 @@ ParallelTensorDimDegrees upsample_get_output_parallel_dim_degrees(
 ParallelTensorShape
     upsample_get_output_parallel_shape(UpsampleAttrs const &attrs,
                                        ParallelTensorShape const &input_shape);
+
+StandardOperatorTaskGroup
+    upsample_get_task_group(UpsampleAttrs const &attrs,
+                            ParallelTensorDimDegrees const &input_degrees);
 
 } // namespace FlexFlow
 
