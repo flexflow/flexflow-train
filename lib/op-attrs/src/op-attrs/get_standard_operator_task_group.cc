@@ -1,4 +1,5 @@
 #include "op-attrs/get_standard_operator_task_group.h"
+#include "op-attrs/ops/batch_matmul.h"
 #include "op-attrs/ops/element_binary.h"
 #include "op-attrs/ops/element_unary.h"
 #include "op-attrs/ops/input.h"
@@ -16,6 +17,15 @@ StandardOperatorTaskGroup get_standard_operator_task_group(
     std::map<TensorSlotName, ParallelTensorDimDegrees> const
         &input_dim_degree_binding) {
   return op_attrs.visit<StandardOperatorTaskGroup>(overload{
+      [&](BatchMatmulAttrs const &attrs) -> StandardOperatorTaskGroup {
+        auto [lhs_input_dim_degrees, rhs_input_dim_degrees] =
+            require_two_keys(input_dim_degree_binding,
+                             TensorSlotName::LHS_INPUT,
+                             TensorSlotName::RHS_INPUT);
+
+        return batch_matmul_get_task_group(
+            attrs, lhs_input_dim_degrees, rhs_input_dim_degrees);
+      },
       [&](ElementBinaryAttrs const &attrs) -> StandardOperatorTaskGroup {
         auto [lhs_input_dim_degrees, rhs_input_dim_degrees] =
             require_two_keys(input_dim_degree_binding,
