@@ -1,4 +1,9 @@
 #include "op-attrs/ops/concat.h"
+#include "kernels/concat_kernels_cpu.h"
+#include "kernels/create_zero_filled_accessor.h"
+#include "kernels/emulated_parallel_tensor/shard_signature_instance_is_valid.h"
+#include "kernels/local_cpu_allocator.h"
+#include "op-attrs/parallel_tensor_dims.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "test/utils/doctest/fmt/expected.h"
 #include "test/utils/doctest/fmt/optional.h"
@@ -280,5 +285,158 @@ TEST_SUITE(FF_TEST_SUITE) {
     ParallelTensorShape correct = mk_input_of_size(14 + 16 + 14 + 21);
 
     CHECK(result == correct);
+  }
+
+  TEST_CASE("concat_get_task_group") {
+    Allocator cpu_allocator = create_local_cpu_memory_allocator();
+
+    ConcatAttrs attrs = ConcatAttrs{
+        /*axis=*/ff_dim_t{1_n},
+        /*num_inputs=*/3_ge2,
+    };
+
+    auto mk_tensor_shape =
+        [](int dim0_size, int dim1_size, int dim2_size) -> TensorShape {
+      return TensorShape{
+          TensorDims{
+              FFOrdered{
+                  positive_int{dim0_size},
+                  positive_int{dim1_size},
+                  positive_int{dim2_size},
+              },
+          },
+          DataType::FLOAT,
+      };
+    };
+
+    TensorShape input1_shape = mk_tensor_shape(4, 8, 6);
+    TensorShape input2_shape = mk_tensor_shape(4, 4, 6);
+    TensorShape input3_shape = mk_tensor_shape(4, 4, 6);
+
+    auto mk_dim_degrees =
+        [](int sum_degree,
+           int discard_copy_degree,
+           int dim0_shard_degree,
+           int dim1_shard_degree,
+           int dim2_shard_degree) -> ParallelTensorDimDegrees {
+      return ParallelTensorDimDegrees{
+          /*sum_degree=*/SumDegree{positive_int{sum_degree}},
+          /*discard_copy_degree=*/
+          DiscardCopyDegree{positive_int{discard_copy_degree}},
+          /*shard_degrees=*/
+          FFOrdered{
+              positive_int{dim0_shard_degree},
+              positive_int{dim1_shard_degree},
+              positive_int{dim2_shard_degree},
+          },
+      };
+    };
+
+    auto run_concat = [&](std::map<TensorSlotName, GenericTensorAccessorR> const
+                              &incoming_shards)
+        -> std::map<TensorSlotName, GenericTensorAccessorR> {
+      std::vector<GenericTensorAccessorR> input_shards =
+          transform(concat_get_input_slot_names(attrs),
+                    [&](TensorSlotName slot_name) -> GenericTensorAccessorR {
+                      return incoming_shards.at(slot_name);
+                    });
+
+      std::vector<TensorShape> input_shard_shapes = transform(
+          input_shards,
+          [&](GenericTensorAccessorR const &input_shard) -> TensorShape {
+            return input_shard.shape;
+          });
+
+      TensorShape output_shard_shape =
+          concat_get_output_shape(attrs, input_shard_shapes);
+
+      GenericTensorAccessorW output_shard =
+          create_zero_filled_accessor_w(output_shard_shape, cpu_allocator);
+
+      concat_cpu_forward_kernel(
+          /*output=*/output_shard,
+          /*inputs=*/input_shards,
+          /*axis=*/attrs.axis);
+
+      return std::map<TensorSlotName, GenericTensorAccessorR>{
+          {
+              TensorSlotName::OUTPUT,
+              read_only_accessor_from_write_accessor(output_shard),
+          },
+      };
+    };
+
+    auto concat_shard_signature_instance_is_valid =
+        [&](ParallelTensorDimDegrees const &input1_degrees,
+            ParallelTensorDimDegrees const &input2_degrees,
+            ParallelTensorDimDegrees const &input3_degrees) -> bool {
+      ParallelTensorShape input1_parallel_shape =
+          lift_shape_to_parallel_with_degrees(input1_shape, input1_degrees);
+      ParallelTensorShape input2_parallel_shape =
+          lift_shape_to_parallel_with_degrees(input2_shape, input2_degrees);
+      ParallelTensorShape input3_parallel_shape =
+          lift_shape_to_parallel_with_degrees(input3_shape, input3_degrees);
+
+      std::map<TensorSlotName, ParallelTensorShape> input_shapes = {
+          {
+              TensorSlotName::INPUT_00,
+              input1_parallel_shape,
+          },
+          {
+              TensorSlotName::INPUT_01,
+              input2_parallel_shape,
+          },
+          {
+              TensorSlotName::INPUT_02,
+              input3_parallel_shape,
+          },
+      };
+
+      return shard_signature_instance_is_valid(
+          /*attrs=*/ComputationGraphOpAttrs{attrs},
+          /*input_shapes=*/input_shapes,
+          /*run_op=*/run_concat,
+          /*seed=*/0);
+    };
+
+    SUBCASE("data parallelism") {
+      ParallelTensorDimDegrees input1_dim_degrees =
+          mk_dim_degrees(1, 1, 2, 1, 1);
+      ParallelTensorDimDegrees input2_dim_degrees = input1_dim_degrees;
+      ParallelTensorDimDegrees input3_dim_degrees = input1_dim_degrees;
+
+      CHECK(concat_shard_signature_instance_is_valid(
+          input1_dim_degrees, input2_dim_degrees, input3_dim_degrees));
+    }
+
+    SUBCASE("inner dimension parallelism") {
+      ParallelTensorDimDegrees input1_dim_degrees =
+          mk_dim_degrees(1, 1, 1, 1, 2);
+      ParallelTensorDimDegrees input2_dim_degrees = input1_dim_degrees;
+      ParallelTensorDimDegrees input3_dim_degrees = input1_dim_degrees;
+
+      CHECK(concat_shard_signature_instance_is_valid(
+          input1_dim_degrees, input2_dim_degrees, input3_dim_degrees));
+    }
+
+    SUBCASE("discard copy parallelism") {
+      ParallelTensorDimDegrees input1_dim_degrees =
+          mk_dim_degrees(1, 2, 1, 1, 1);
+      ParallelTensorDimDegrees input2_dim_degrees = input1_dim_degrees;
+      ParallelTensorDimDegrees input3_dim_degrees = input1_dim_degrees;
+
+      CHECK(concat_shard_signature_instance_is_valid(
+          input1_dim_degrees, input2_dim_degrees, input3_dim_degrees));
+    }
+
+    SUBCASE("sum parallelism") {
+      ParallelTensorDimDegrees input1_dim_degrees =
+          mk_dim_degrees(2, 1, 1, 1, 1);
+      ParallelTensorDimDegrees input2_dim_degrees = input1_dim_degrees;
+      ParallelTensorDimDegrees input3_dim_degrees = input1_dim_degrees;
+
+      CHECK(concat_shard_signature_instance_is_valid(
+          input1_dim_degrees, input2_dim_degrees, input3_dim_degrees));
+    }
   }
 }

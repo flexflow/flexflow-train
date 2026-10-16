@@ -800,7 +800,8 @@ std::map<TensorSlotName, ParallelTensorShape> get_weight_shapes(
           },
           [&](ConcatAttrs const &attrs)
               -> std::map<TensorSlotName, ParallelTensorShape> {
-            require_only_key(input_shapes, TensorSlotName::INPUT);
+            require_only_slots_sequence(
+                input_shapes, get_variadic_inputs_slot_name_sequence());
 
             return {};
           },

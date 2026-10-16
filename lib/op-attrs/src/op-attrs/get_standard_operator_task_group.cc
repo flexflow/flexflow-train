@@ -1,6 +1,7 @@
 #include "op-attrs/get_standard_operator_task_group.h"
 #include "op-attrs/ops/batch_matmul.h"
 #include "op-attrs/ops/batch_norm.h"
+#include "op-attrs/ops/concat.h"
 #include "op-attrs/ops/element_binary.h"
 #include "op-attrs/ops/element_unary.h"
 #include "op-attrs/ops/flat.h"
@@ -11,11 +12,30 @@
 #include "op-attrs/ops/transpose.h"
 #include "op-attrs/ops/upsample.h"
 #include "op-attrs/ops/weight.h"
+#include "op-attrs/tensor_slot_name.h"
 #include "utils/containers/require_only_key.h"
 #include "utils/containers/require_two_keys.h"
+#include "utils/containers/slice.h"
 #include "utils/overload.h"
 
 namespace FlexFlow {
+
+template <typename T>
+static std::vector<T>
+    require_only_slots_sequence(std::map<TensorSlotName, T> const &v,
+                                std::vector<TensorSlotName> const &slots) {
+  nonnegative_int v_num_slots = num_elements(v);
+  ASSERT(v_num_slots <= slots.size());
+
+  std::vector<TensorSlotName> expected_slots =
+      slice(slots, 0, v_num_slots.unwrap_nonnegative());
+
+  ASSERT(set_of(expected_slots) == keys(v));
+
+  return transform(expected_slots, [&](TensorSlotName const &slot_name) {
+    return v.at(slot_name);
+  });
+};
 
 StandardOperatorTaskGroup get_standard_operator_task_group(
     ComputationGraphOpAttrs const &op_attrs,
@@ -36,6 +56,14 @@ StandardOperatorTaskGroup get_standard_operator_task_group(
 
         return batch_matmul_get_task_group(
             attrs, lhs_input_dim_degrees, rhs_input_dim_degrees);
+      },
+      [&](ConcatAttrs const &attrs) -> StandardOperatorTaskGroup {
+        std::vector<ParallelTensorDimDegrees> inputs_dim_degrees =
+            require_only_slots_sequence(
+                input_dim_degree_binding,
+                get_variadic_inputs_slot_name_sequence());
+
+        return concat_get_task_group(attrs, inputs_dim_degrees);
       },
       [&](ElementBinaryAttrs const &attrs) -> StandardOperatorTaskGroup {
         auto [lhs_input_dim_degrees, rhs_input_dim_degrees] =
