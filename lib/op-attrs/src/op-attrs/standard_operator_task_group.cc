@@ -130,6 +130,83 @@ ShardSignatureInstance
   };
 }
 
+OperatorSpaceToParallelTensorSpaceMapping
+    standard_operator_task_group_get_operator_to_ptensor_mapping(
+        StandardOperatorTaskGroup const &task_group, TensorSlotName slot_name) {
+  return OperatorSpaceToParallelTensorSpaceMapping{
+      DimDomainMapping<operator_task_space_dim_idx_t,
+                       parallel_tensor_dim_idx_t>{
+          /*coord_mapping=*/
+          bidict_from_unstructured_relation(transform(
+              task_group.get_shard_bindings(),
+              [&](AbstractedOperatorAtomicTaskShardBinding const &b)
+                  -> std::pair<DimCoord<operator_task_space_dim_idx_t>,
+                               DimCoord<parallel_tensor_dim_idx_t>> {
+                ParallelTensorSpaceCoordinate pt_coord =
+                    b.tensor_coords.at(slot_name);
+                TaskSpaceCoordinate task_coord = b.task_coord;
+
+                DimCoord<parallel_tensor_dim_idx_t> pt_dim_coord =
+                    dim_coord_from_parallel_tensor_space_coord(pt_coord);
+                DimCoord<operator_task_space_dim_idx_t> task_dim_coord =
+                    dim_coord_from_task_space_coordinate(task_coord);
+
+                return std::pair{
+                    task_dim_coord,
+                    pt_dim_coord,
+                };
+              })),
+          /*l_domain=*/
+          lift_minimal_dim_domain(minimal_dim_domain_from_operator_task_space(
+              task_space_for_standard_operator_task_group(task_group))),
+          /*r_domain=*/
+          dim_domain_from_parallel_tensor_dim_degrees(
+              parallel_tensor_space_for_standard_operator_task_group_and_slot(
+                  task_group, slot_name)),
+      },
+  };
+}
+
+ParallelTensorSpaceToParallelTensorSpaceMapping
+    standard_operator_task_group_get_ptensor_to_ptensor_mapping(
+        StandardOperatorTaskGroup const &task_group,
+        TensorSlotName lhs_slot_name,
+        TensorSlotName rhs_slot_name) {
+  return ParallelTensorSpaceToParallelTensorSpaceMapping{
+      DimDomainMapping<parallel_tensor_dim_idx_t, parallel_tensor_dim_idx_t>{
+          /*coord_mapping=*/
+          bidict_from_unstructured_relation(transform(
+              task_group.get_shard_bindings(),
+              [&](AbstractedOperatorAtomicTaskShardBinding const &b)
+                  -> std::pair<DimCoord<parallel_tensor_dim_idx_t>,
+                               DimCoord<parallel_tensor_dim_idx_t>> {
+                ParallelTensorSpaceCoordinate left_pt_coord =
+                    b.tensor_coords.at(lhs_slot_name);
+                ParallelTensorSpaceCoordinate right_pt_coord =
+                    b.tensor_coords.at(rhs_slot_name);
+
+                DimCoord<parallel_tensor_dim_idx_t> left_pt_dim_coord =
+                    dim_coord_from_parallel_tensor_space_coord(left_pt_coord);
+                DimCoord<parallel_tensor_dim_idx_t> right_pt_dim_coord =
+                    dim_coord_from_parallel_tensor_space_coord(right_pt_coord);
+
+                return std::pair{
+                    left_pt_dim_coord,
+                    right_pt_dim_coord,
+                };
+              })),
+          /*l_domain=*/
+          dim_domain_from_parallel_tensor_dim_degrees(
+              parallel_tensor_space_for_standard_operator_task_group_and_slot(
+                  task_group, lhs_slot_name)),
+          /*r_domain=*/
+          dim_domain_from_parallel_tensor_dim_degrees(
+              parallel_tensor_space_for_standard_operator_task_group_and_slot(
+                  task_group, rhs_slot_name)),
+      },
+  };
+}
+
 StandardOperatorTaskGroup
     standard_operator_task_group_from_shard_signature_instance(
         ShardSignatureInstance const &shard_signature_instance,
