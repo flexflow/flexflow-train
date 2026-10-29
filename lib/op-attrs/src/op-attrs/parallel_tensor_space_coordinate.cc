@@ -8,6 +8,7 @@
 #include "utils/nonnegative_int/num_elements.h"
 #include "utils/orthotope/dim_coord.h"
 #include "utils/orthotope/dim_domain.dtg.h"
+#include "utils/orthotope/orthotope_bounded_coord.h"
 
 namespace FlexFlow {
 
@@ -58,6 +59,18 @@ nonnegative_int &ptensor_coord_component_for_ptensor_dim_idx(
   }
 }
 
+ParallelTensorSpaceCoordinate
+    parallel_tensor_space_coordinate_from_bounded_orthotope_components(
+        BoundedComponent const &sum_component,
+        BoundedComponent const &discard_copy_component,
+        OrthotopeBoundedCoord const &shard_components) {
+  return ParallelTensorSpaceCoordinate{
+      /*sum_component=*/sum_component.get_component(),
+      /*discard_copy_component=*/discard_copy_component.get_component(),
+      /*shard_components=*/ff_ordered_of(shard_components.get_coord().raw),
+  };
+}
+
 ParallelTensorDimDegrees smallest_parallel_tensor_dim_degrees_for_coord_set(
     std::set<ParallelTensorSpaceCoordinate> const &coord_set) {
   std::set<DimCoord<parallel_tensor_dim_idx_t>> dim_coord_set =
@@ -97,6 +110,30 @@ bool parallel_tensor_coord_set_is_orthotopic(
     std::set<ParallelTensorSpaceCoordinate> const &coord_set) {
   return strict_parallel_tensor_dim_degrees_for_coord_set(coord_set)
       .has_value();
+}
+
+OrthotopeBoundedCoord orthotope_bounded_coord_for_ptensor_dims(
+    ParallelTensorDimDegrees const &degrees,
+    ParallelTensorSpaceCoordinate const &coord,
+    std::set<parallel_tensor_dim_idx_t> const &desired_dims) {
+  return make_orthotope_bounded_coord_from_components(transform(
+      sorted_by(desired_dims, get_parallel_tensor_dim_ordering().lt),
+      [&](parallel_tensor_dim_idx_t dim_idx) -> BoundedComponent {
+        return bounded_component_for_ptensor_dim(degrees, coord, dim_idx);
+      }));
+}
+
+BoundedComponent bounded_component_for_ptensor_dim(
+    ParallelTensorDimDegrees const &degrees,
+    ParallelTensorSpaceCoordinate const &coord,
+    parallel_tensor_dim_idx_t const &desired_dim) {
+  ASSERT(parallel_tensor_space_contains_coord(degrees, coord));
+
+  return BoundedComponent{
+      /*component=*/ptensor_coord_component_for_ptensor_dim_idx(coord,
+                                                                desired_dim),
+      /*bound=*/get_degree_for_parallel_tensor_dim_idx(degrees, desired_dim),
+  };
 }
 
 ParallelTensorSpaceCoordinate parallel_tensor_space_coord_from_map(

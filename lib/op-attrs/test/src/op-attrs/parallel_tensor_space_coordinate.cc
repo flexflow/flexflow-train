@@ -1,4 +1,5 @@
 #include "op-attrs/parallel_tensor_space_coordinate.h"
+#include "op-attrs/parallel_tensor_dim_idx_t.h"
 #include "test/utils/doctest/fmt/optional.h"
 #include <doctest/doctest.h>
 
@@ -309,6 +310,259 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       bool result = parallel_tensor_coord_set_is_orthotopic(coord_set);
       bool correct = true;
+
+      CHECK(result == correct);
+    }
+  }
+
+  TEST_CASE(
+      "parallel_tensor_space_coordinate_from_bounded_orthotope_components") {
+    BoundedComponent sum_component = BoundedComponent{1_n, 8_p};
+    BoundedComponent discard_copy_component = BoundedComponent{2_n, 3_p};
+    OrthotopeBoundedCoord shard_components =
+        make_orthotope_bounded_coord_from_components({
+            BoundedComponent{1_n, 5_p},
+            BoundedComponent{0_n, 1_p},
+            BoundedComponent{3_n, 6_p},
+            BoundedComponent{0_n, 4_p},
+        });
+
+    ParallelTensorSpaceCoordinate result =
+        parallel_tensor_space_coordinate_from_bounded_orthotope_components(
+            sum_component, discard_copy_component, shard_components);
+
+    ParallelTensorSpaceCoordinate correct = ParallelTensorSpaceCoordinate{
+        /*sum_component=*/1_n,
+        /*discard_copy_component=*/2_n,
+        /*shard_components=*/
+        FFOrdered<nonnegative_int>{
+            1_n,
+            0_n,
+            3_n,
+            0_n,
+        },
+    };
+
+    CHECK(result == correct);
+  }
+
+  TEST_CASE("orthotope_bounded_coord_for_ptensor_dims") {
+    ParallelTensorDimDegrees dim_degrees = ParallelTensorDimDegrees{
+        /*sum_degree=*/SumDegree{8_p},
+        /*discard_copy_degree=*/DiscardCopyDegree{3_p},
+        /*shard_degrees=*/
+        FFOrdered<positive_int>{
+            5_p,
+            1_p,
+            6_p,
+            4_p,
+        },
+    };
+
+    SUBCASE("degrees and coord do not have same number of dimensions") {
+      ParallelTensorSpaceCoordinate coord = ParallelTensorSpaceCoordinate{
+          /*sum_component=*/1_n,
+          /*discard_copy_component=*/2_n,
+          /*shard_components=*/
+          FFOrdered<nonnegative_int>{
+              2_n,
+              0_n,
+              4_n,
+          },
+      };
+
+      std::set<parallel_tensor_dim_idx_t> desired_dims = {
+          shard_dim_idx(ff_dim_t{0_n}), sum_dim_idx()};
+
+      CHECK_THROWS(orthotope_bounded_coord_for_ptensor_dims(
+          dim_degrees, coord, desired_dims));
+    }
+
+    SUBCASE("coord is out of bounds") {
+      ParallelTensorSpaceCoordinate coord = ParallelTensorSpaceCoordinate{
+          /*sum_component=*/1_n,
+          /*discard_copy_component=*/2_n,
+          /*shard_components=*/
+          FFOrdered<nonnegative_int>{
+              2_n,
+              0_n,
+              6_n,
+              0_n,
+          },
+      };
+
+      std::set<parallel_tensor_dim_idx_t> desired_dims = {
+          shard_dim_idx(ff_dim_t{0_n}), sum_dim_idx()};
+
+      CHECK_THROWS(orthotope_bounded_coord_for_ptensor_dims(
+          dim_degrees, coord, desired_dims));
+    }
+
+    SUBCASE("desired dims is out of bounds") {
+      ParallelTensorSpaceCoordinate coord = ParallelTensorSpaceCoordinate{
+          /*sum_component=*/1_n,
+          /*discard_copy_component=*/2_n,
+          /*shard_components=*/
+          FFOrdered<nonnegative_int>{
+              2_n,
+              0_n,
+              4_n,
+              0_n,
+          },
+      };
+
+      std::set<parallel_tensor_dim_idx_t> desired_dims = {
+          shard_dim_idx(ff_dim_t{4_n}), sum_dim_idx()};
+
+      CHECK_THROWS(orthotope_bounded_coord_for_ptensor_dims(
+          dim_degrees, coord, desired_dims));
+    }
+
+    SUBCASE("correct usage") {
+      ParallelTensorSpaceCoordinate coord = ParallelTensorSpaceCoordinate{
+          /*sum_component=*/1_n,
+          /*discard_copy_component=*/2_n,
+          /*shard_components=*/
+          FFOrdered<nonnegative_int>{
+              2_n,
+              0_n,
+              4_n,
+              0_n,
+          },
+      };
+
+      std::set<parallel_tensor_dim_idx_t> desired_dims = {
+          shard_dim_idx(ff_dim_t{0_n}), sum_dim_idx()};
+
+      OrthotopeBoundedCoord result = orthotope_bounded_coord_for_ptensor_dims(
+          dim_degrees, coord, desired_dims);
+      OrthotopeBoundedCoord correct = OrthotopeBoundedCoord{
+          /*coord=*/OrthotopeCoord{{1_n, 2_n}},
+          /*bounds=*/
+          Orthotope{
+              {8_p, 5_p},
+          },
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("desired dims is empty") {
+      ParallelTensorSpaceCoordinate coord = ParallelTensorSpaceCoordinate{
+          /*sum_component=*/1_n,
+          /*discard_copy_component=*/2_n,
+          /*shard_components=*/
+          FFOrdered<nonnegative_int>{
+              2_n,
+              0_n,
+              4_n,
+              0_n,
+          },
+      };
+
+      std::set<parallel_tensor_dim_idx_t> desired_dims = {};
+
+      OrthotopeBoundedCoord result = orthotope_bounded_coord_for_ptensor_dims(
+          dim_degrees, coord, desired_dims);
+      OrthotopeBoundedCoord correct = OrthotopeBoundedCoord{
+          /*coord=*/OrthotopeCoord{{}},
+          /*bounds=*/Orthotope{{}},
+      };
+
+      CHECK(result == correct);
+    }
+  }
+
+  TEST_CASE("bounded_component_for_ptensor_dim") {
+    ParallelTensorDimDegrees dim_degrees = ParallelTensorDimDegrees{
+        /*sum_degree=*/SumDegree{4_p},
+        /*discard_copy_degree=*/DiscardCopyDegree{3_p},
+        /*shard_degrees=*/
+        FFOrdered<positive_int>{
+            5_p,
+            1_p,
+            6_p,
+            4_p,
+        },
+    };
+
+    SUBCASE("degrees and coord do not have same number of dimensions") {
+      ParallelTensorSpaceCoordinate coord = ParallelTensorSpaceCoordinate{
+          /*sum_component=*/1_n,
+          /*discard_copy_component=*/2_n,
+          /*shard_components=*/
+          FFOrdered<nonnegative_int>{
+              2_n,
+              0_n,
+              4_n,
+          },
+      };
+
+      parallel_tensor_dim_idx_t desired_dim = shard_dim_idx(ff_dim_t{0_n});
+
+      CHECK_THROWS(
+          bounded_component_for_ptensor_dim(dim_degrees, coord, desired_dim));
+    }
+
+    SUBCASE("coord is out of bounds") {
+      ParallelTensorSpaceCoordinate coord = ParallelTensorSpaceCoordinate{
+          /*sum_component=*/1_n,
+          /*discard_copy_component=*/2_n,
+          /*shard_components=*/
+          FFOrdered<nonnegative_int>{
+              2_n,
+              0_n,
+              6_n,
+              0_n,
+          },
+      };
+
+      parallel_tensor_dim_idx_t desired_dim = shard_dim_idx(ff_dim_t{0_n});
+
+      CHECK_THROWS(
+          bounded_component_for_ptensor_dim(dim_degrees, coord, desired_dim));
+    }
+
+    SUBCASE("desired dim is out of bounds") {
+      ParallelTensorSpaceCoordinate coord = ParallelTensorSpaceCoordinate{
+          /*sum_component=*/1_n,
+          /*discard_copy_component=*/2_n,
+          /*shard_components=*/
+          FFOrdered<nonnegative_int>{
+              2_n,
+              0_n,
+              4_n,
+              0_n,
+          },
+      };
+
+      parallel_tensor_dim_idx_t desired_dim = shard_dim_idx(ff_dim_t{4_n});
+
+      CHECK_THROWS(
+          bounded_component_for_ptensor_dim(dim_degrees, coord, desired_dim));
+    }
+
+    SUBCASE("correct usage") {
+      ParallelTensorSpaceCoordinate coord = ParallelTensorSpaceCoordinate{
+          /*sum_component=*/1_n,
+          /*discard_copy_component=*/2_n,
+          /*shard_components=*/
+          FFOrdered<nonnegative_int>{
+              2_n,
+              0_n,
+              4_n,
+              0_n,
+          },
+      };
+
+      parallel_tensor_dim_idx_t desired_dim = shard_dim_idx(ff_dim_t{0_n});
+
+      BoundedComponent result =
+          bounded_component_for_ptensor_dim(dim_degrees, coord, desired_dim);
+      BoundedComponent correct = BoundedComponent{
+          /*component=*/2_n,
+          /*bound=*/5_p,
+      };
 
       CHECK(result == correct);
     }
