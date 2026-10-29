@@ -108,6 +108,15 @@ std::tuple<std::set<OperatorAtomicTaskShardBinding> const &>
   return std::tie(this->bindings);
 }
 
+std::set<TensorSlotName> shard_signature_instance_get_slot_name_set(
+    ShardSignatureInstance const &shard_signature_instance) {
+  return require_all_same1(transform(
+      shard_signature_instance.get_shard_bindings(),
+      [&](OperatorAtomicTaskShardBinding const &b) -> std::set<TensorSlotName> {
+        return keys(b.tensor_coords);
+      }));
+}
+
 ParallelTensorDimDegrees
     parallel_tensor_space_for_shard_signature_instance_and_slot(
         ShardSignatureInstance const &shard_signature_instance,

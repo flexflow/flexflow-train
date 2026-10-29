@@ -49,6 +49,28 @@ bool shard_signature_instance_is_valid(
   ShardSignatureInstance shard_signature_instance =
       get_shard_signature_instance(attrs, input_degrees);
 
+  {
+    // TODO(@lockshaw): add additional checks for output shapes
+    std::set<TensorSlotName> incoming_slot_names = keys(incoming_shapes);
+
+    std::map<TensorSlotName, ParallelTensorDimDegrees> incoming_degrees =
+        generate_map(incoming_slot_names,
+                     [&](TensorSlotName slot_name) -> ParallelTensorDimDegrees {
+                       return get_parallel_degrees(
+                           incoming_shapes.at(slot_name));
+                     });
+
+    std::map<TensorSlotName, ParallelTensorDimDegrees>
+        incoming_degrees_according_to_signature = generate_map(
+            incoming_slot_names,
+            [&](TensorSlotName slot_name) -> ParallelTensorDimDegrees {
+              return parallel_tensor_space_for_shard_signature_instance_and_slot(
+                  shard_signature_instance, slot_name);
+            });
+
+    ASSERT(incoming_degrees == incoming_degrees_according_to_signature);
+  }
+
   std::map<TensorSlotName, EmulatedParallelTensor> incoming =
       zip_values_strict_with(incoming_shapes,
                              incoming_seeds,
