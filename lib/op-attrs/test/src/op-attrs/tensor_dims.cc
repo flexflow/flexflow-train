@@ -246,4 +246,34 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(result == correct);
     }
   }
+
+  TEST_CASE("concat_tensor_dims") {
+    SUBCASE("inputs are nonempty") {
+      TensorDims lhs = TensorDims{
+          FFOrdered{3_p, 5_p, 1_p, 2_p},
+      };
+
+      TensorDims rhs = TensorDims{
+          FFOrdered{3_p, 4_p},
+      };
+
+      TensorDims result = concat_tensor_dims(lhs, rhs);
+      TensorDims correct = TensorDims{
+          FFOrdered{3_p, 5_p, 1_p, 2_p, 3_p, 4_p},
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("inputs are empty") {
+      TensorDims lhs = TensorDims{FFOrdered<positive_int>{}};
+
+      TensorDims rhs = TensorDims{FFOrdered<positive_int>{}};
+
+      TensorDims result = concat_tensor_dims(lhs, rhs);
+      TensorDims correct = TensorDims{FFOrdered<positive_int>{}};
+
+      CHECK(result == correct);
+    }
+  }
 }

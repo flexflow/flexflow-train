@@ -1,4 +1,5 @@
 #include "op-attrs/tensor_dims.h"
+#include "op-attrs/ff_ordered/ff_ordered_concat.h"
 #include "op-attrs/ff_ordered/ff_ordered_enumerate.h"
 #include "op-attrs/ff_ordered/ff_ordered_filtrans.h"
 #include "op-attrs/ff_ordered/ff_ordered_get_idxs.h"
@@ -192,6 +193,13 @@ TensorDims tensor_dims_drop_dims(
   }
 
   return TensorDims{ff_ordered_of(result)};
+}
+
+TensorDims concat_tensor_dims(TensorDims const &leading,
+                              TensorDims const &trailing) {
+  return TensorDims{
+      ff_ordered_concat(leading.ff_ordered, trailing.ff_ordered),
+  };
 }
 
 TensorDims slice_tensor_dims(TensorDims const &dims,

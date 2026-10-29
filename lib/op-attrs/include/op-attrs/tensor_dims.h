@@ -49,6 +49,8 @@ TensorDims
     tensor_dims_drop_dims(TensorDims const &dims,
                           std::function<bool(ff_dim_t)> const &should_drop_dim);
 
+TensorDims concat_tensor_dims(TensorDims const &, TensorDims const &);
+
 TensorDims slice_tensor_dims(TensorDims const &,
                              ff_dim_t const &start,
                              std::optional<ff_dim_t> const &stop);
