@@ -10,6 +10,8 @@ namespace FlexFlow {
 parallel_tensor_dim_idx_t sum_dim_idx();
 parallel_tensor_dim_idx_t discard_copy_dim_idx();
 parallel_tensor_dim_idx_t shard_dim_idx(ff_dim_t);
+parallel_tensor_dim_idx_t shard_dim_idx_for_relative(int,
+                                                     num_ptensor_shard_dims_t);
 
 bool is_dim_idx_for_reduction_dimension(parallel_tensor_dim_idx_t);
 

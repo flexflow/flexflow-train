@@ -73,6 +73,8 @@ num_ptensor_shard_dims_t
 num_ptensor_parallel_dims_t
     num_ptensor_parallel_dims_from_num_tensor_dims(num_tensor_dims_t);
 
+bool ff_dim_is_valid_for_num_tensor_dims(ff_dim_t, num_tensor_dims_t);
+
 std::vector<ff_dim_t> tensor_dims_range(num_tensor_dims_t);
 std::vector<relative_ff_dim_t> relative_tensor_dims_range(num_tensor_dims_t);
 

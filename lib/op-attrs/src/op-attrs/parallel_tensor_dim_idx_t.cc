@@ -1,5 +1,7 @@
 #include "op-attrs/parallel_tensor_dim_idx_t.h"
 #include "op-attrs/ff_dim_t.h"
+#include "op-attrs/num_tensor_dims_t.h"
+#include "op-attrs/relative_ff_dim_t.h"
 #include "utils/containers/set_of.h"
 #include "utils/containers/transform.h"
 
@@ -11,6 +13,18 @@ parallel_tensor_dim_idx_t sum_dim_idx() {
 
 parallel_tensor_dim_idx_t discard_copy_dim_idx() {
   return parallel_tensor_dim_idx_t{ReplicaType::DISCARD_COPY};
+}
+
+parallel_tensor_dim_idx_t
+    shard_dim_idx_for_relative(int relative,
+                               num_ptensor_shard_dims_t num_shard_dims) {
+  num_tensor_dims_t num_tensor_dims =
+      num_tensor_dims_from_num_ptensor_shard_dims(num_shard_dims);
+
+  ff_dim_t non_relative = ff_dim_t_from_relative_ff_dim_t(
+      relative_ff_dim_t{relative}, num_tensor_dims);
+
+  return shard_dim_idx(non_relative);
 }
 
 parallel_tensor_dim_idx_t shard_dim_idx(ff_dim_t idx) {

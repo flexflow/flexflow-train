@@ -7,6 +7,72 @@
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
+  TEST_CASE("shard_dim_idx_for_relative") {
+    num_ptensor_shard_dims_t num_dims = num_ptensor_shard_dims_t{5_n};
+
+    SUBCASE("relative > 0") {
+      int relative = 1;
+
+      parallel_tensor_dim_idx_t result =
+          shard_dim_idx_for_relative(relative, num_dims);
+      parallel_tensor_dim_idx_t correct = shard_dim_idx(ff_dim_t{1_n});
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("relative < 0") {
+      int relative = -2;
+
+      parallel_tensor_dim_idx_t result =
+          shard_dim_idx_for_relative(relative, num_dims);
+      parallel_tensor_dim_idx_t correct = shard_dim_idx(ff_dim_t{3_n});
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("relative == 0") {
+      int relative = 0;
+
+      parallel_tensor_dim_idx_t result =
+          shard_dim_idx_for_relative(relative, num_dims);
+      parallel_tensor_dim_idx_t correct = shard_dim_idx(ff_dim_t{0_n});
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("max relative in bounds") {
+      int relative = 4;
+
+      parallel_tensor_dim_idx_t result =
+          shard_dim_idx_for_relative(relative, num_dims);
+      parallel_tensor_dim_idx_t correct = shard_dim_idx(ff_dim_t{4_n});
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("min relative in bounds") {
+      int relative = -5;
+
+      parallel_tensor_dim_idx_t result =
+          shard_dim_idx_for_relative(relative, num_dims);
+      parallel_tensor_dim_idx_t correct = shard_dim_idx(ff_dim_t{0_n});
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("relative out of bounds (too high)") {
+      int relative = 5;
+
+      CHECK_THROWS(shard_dim_idx_for_relative(relative, num_dims));
+    }
+
+    SUBCASE("relative out of bounds (too low)") {
+      int relative = -6;
+
+      CHECK_THROWS(shard_dim_idx_for_relative(relative, num_dims));
+    }
+  }
+
   TEST_CASE("get_parallel_tensor_dim_ordering") {
     DimOrdering<parallel_tensor_dim_idx_t> ordering =
         get_parallel_tensor_dim_ordering();

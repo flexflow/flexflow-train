@@ -174,6 +174,11 @@ num_ptensor_parallel_dims_t num_ptensor_parallel_dims_from_num_tensor_dims(
       num_ptensor_shard_dims_from_num_tensor_dims(num_tensor_dims));
 }
 
+bool ff_dim_is_valid_for_num_tensor_dims(ff_dim_t dim,
+                                         num_tensor_dims_t num_dims) {
+  return dim.value < num_dims.nonnegative_int_from_num_tensor_dims();
+}
+
 std::vector<ff_dim_t> tensor_dims_range(num_tensor_dims_t num_tensor_dims) {
   return transform(
       nonnegative_range(num_tensor_dims.nonnegative_int_from_num_tensor_dims()),

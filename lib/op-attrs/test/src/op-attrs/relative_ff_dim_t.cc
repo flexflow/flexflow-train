@@ -25,9 +25,8 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       SUBCASE("relative index is out of range") {
         relative_ff_dim_t relative_ff_dim = relative_ff_dim_t{10};
-        ff_dim_t ff_dim =
-            ff_dim_t_from_relative_ff_dim_t(relative_ff_dim, input_dim);
-        CHECK(ff_dim == ff_dim_t{10_n});
+        CHECK_THROWS(
+            ff_dim_t_from_relative_ff_dim_t(relative_ff_dim, input_dim));
       }
     }
 
