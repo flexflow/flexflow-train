@@ -15,6 +15,11 @@ parallel_tensor_dim_idx_t shard_dim_idx_for_relative(int,
 
 bool is_dim_idx_for_reduction_dimension(parallel_tensor_dim_idx_t);
 
+std::set<parallel_tensor_dim_idx_t> shard_dim_idxs_for_inclusive_interval(
+    int start, int stop, num_ptensor_shard_dims_t);
+std::set<parallel_tensor_dim_idx_t> shard_dim_idxs_for_exclusive_interval(
+    int start, int stop, num_ptensor_shard_dims_t);
+
 std::set<parallel_tensor_dim_idx_t>
     dim_idxs_for_num_shard_dims(num_ptensor_shard_dims_t num_shard_dims);
 

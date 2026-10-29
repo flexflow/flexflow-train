@@ -1,4 +1,5 @@
 #include "op-attrs/parallel_tensor_dim_idx_t.h"
+#include "test/utils/doctest/fmt/set.h"
 #include "test/utils/doctest/fmt/vector.h"
 #include "test/utils/rapidcheck.h"
 #include "utils/containers/sorted_by.h"
@@ -141,6 +142,482 @@ TEST_SUITE(FF_TEST_SUITE) {
       };
 
       CHECK(result == correct);
+    }
+  }
+
+  TEST_CASE("shard_dim_idxs_for_inclusive_interval") {
+    num_ptensor_shard_dims_t num_dims = num_ptensor_shard_dims_t{5_n};
+
+    SUBCASE("start >= 0, stop >= 0, start < stop") {
+      int start = 1;
+      int stop = 3;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_inclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {
+          shard_dim_idx(ff_dim_t{1_n}),
+          shard_dim_idx(ff_dim_t{2_n}),
+          shard_dim_idx(ff_dim_t{3_n}),
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start >= 0, stop >= 0, start == stop") {
+      int start = 4;
+      int stop = 4;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_inclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {
+          shard_dim_idx(ff_dim_t{4_n}),
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start >= 0, stop >= 0, start >= stop") {
+      int start = 3;
+      int stop = 1;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_inclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {};
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start < 0, stop >= 0, resolved(start) >= stop") {
+      int start = -3;
+      int stop = 3;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_inclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {
+          shard_dim_idx(ff_dim_t{2_n}),
+          shard_dim_idx(ff_dim_t{3_n}),
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start < 0, stop >= 0, resolved(start) == stop") {
+      int start = -2;
+      int stop = 3;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_inclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {
+          shard_dim_idx(ff_dim_t{3_n}),
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start < 0, stop >= 0, resolved(start) >= stop") {
+      int start = -1;
+      int stop = 3;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_inclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {};
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start >= 0, stop < 0, start >= resolved(stop)") {
+      int start = 2;
+      int stop = -2;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_inclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {
+          shard_dim_idx(ff_dim_t{2_n}),
+          shard_dim_idx(ff_dim_t{3_n}),
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start >= 0, stop < 0, start == resolved(stop)") {
+      int start = 4;
+      int stop = -1;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_inclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {
+          shard_dim_idx(ff_dim_t{4_n}),
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start >= 0, stop < 0, start >= resolved(stop)") {
+      int start = 3;
+      int stop = -3;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_inclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {};
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start < 0, stop < 0, resolved(start) >= resolved(stop)") {
+      int start = -3;
+      int stop = -1;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_inclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {
+          shard_dim_idx(ff_dim_t{2_n}),
+          shard_dim_idx(ff_dim_t{3_n}),
+          shard_dim_idx(ff_dim_t{4_n}),
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start < 0, stop < 0, resolved(start) == resolved(stop)") {
+      int start = -4;
+      int stop = -4;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_inclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {
+          shard_dim_idx(ff_dim_t{1_n}),
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start < 0, stop < 0, resolved(start) >= resolved(stop)") {
+      int start = -1;
+      int stop = -4;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_inclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {};
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("max start value in bounds") {
+      int start = 4;
+      int stop = 3;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_inclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {};
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start out of bounds (too high)") {
+      int start = 5;
+      int stop = 3;
+
+      CHECK_THROWS(
+          shard_dim_idxs_for_inclusive_interval(start, stop, num_dims));
+    }
+
+    SUBCASE("minimum start value in bounds") {
+      int start = -5;
+      int stop = 3;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_inclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {
+          shard_dim_idx(ff_dim_t{0_n}),
+          shard_dim_idx(ff_dim_t{1_n}),
+          shard_dim_idx(ff_dim_t{2_n}),
+          shard_dim_idx(ff_dim_t{3_n}),
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start out of bounds (too low)") {
+      int start = -6;
+      int stop = 3;
+
+      CHECK_THROWS(
+          shard_dim_idxs_for_inclusive_interval(start, stop, num_dims));
+    }
+
+    SUBCASE("maximum stop value in bounds") {
+      int start = 1;
+      int stop = 4;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_inclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {
+          shard_dim_idx(ff_dim_t{1_n}),
+          shard_dim_idx(ff_dim_t{2_n}),
+          shard_dim_idx(ff_dim_t{3_n}),
+          shard_dim_idx(ff_dim_t{4_n}),
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("stop out of bounds (too high)") {
+      int start = 1;
+      int stop = 5;
+
+      CHECK_THROWS(
+          shard_dim_idxs_for_inclusive_interval(start, stop, num_dims));
+    }
+
+    SUBCASE("minimum stop value in bounds") {
+      int start = 1;
+      int stop = -5;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_inclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {};
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("stop out of bounds (too low)") {
+      int start = 1;
+      int stop = -6;
+
+      CHECK_THROWS(
+          shard_dim_idxs_for_inclusive_interval(start, stop, num_dims));
+    }
+  }
+
+  TEST_CASE("shard_dim_idxs_for_exclusive_interval") {
+    num_ptensor_shard_dims_t num_dims = num_ptensor_shard_dims_t{5_n};
+
+    SUBCASE("start >= 0, stop >= 0, start < stop") {
+      int start = 1;
+      int stop = 3;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_exclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {
+          shard_dim_idx(ff_dim_t{1_n}),
+          shard_dim_idx(ff_dim_t{2_n}),
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start >= 0, stop >= 0, start == stop") {
+      int start = 4;
+      int stop = 4;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_exclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {};
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start >= 0, stop >= 0, start >= stop") {
+      int start = 3;
+      int stop = 1;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_exclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {};
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start < 0, stop >= 0, resolved(start) >= stop") {
+      int start = -3;
+      int stop = 3;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_exclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {
+          shard_dim_idx(ff_dim_t{2_n}),
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start < 0, stop >= 0, resolved(start) == stop") {
+      int start = -2;
+      int stop = 3;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_exclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {};
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start < 0, stop >= 0, resolved(start) >= stop") {
+      int start = -1;
+      int stop = 3;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_exclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {};
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start >= 0, stop < 0, start >= resolved(stop)") {
+      int start = 2;
+      int stop = -1;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_exclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {
+          shard_dim_idx(ff_dim_t{2_n}),
+          shard_dim_idx(ff_dim_t{3_n}),
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start >= 0, stop < 0, start == resolved(stop)") {
+      int start = 4;
+      int stop = -1;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_exclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {};
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start >= 0, stop < 0, start >= resolved(stop)") {
+      int start = 3;
+      int stop = -3;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_exclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {};
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start < 0, stop < 0, resolved(start) >= resolved(stop)") {
+      int start = -3;
+      int stop = -1;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_exclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {
+          shard_dim_idx(ff_dim_t{2_n}),
+          shard_dim_idx(ff_dim_t{3_n}),
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start < 0, stop < 0, resolved(start) == resolved(stop)") {
+      int start = -4;
+      int stop = -4;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_exclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {};
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start < 0, stop < 0, resolved(start) >= resolved(stop)") {
+      int start = -1;
+      int stop = -4;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_exclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {};
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("max start value in bounds") {
+      int start = 4;
+      int stop = 3;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_exclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {};
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start out of bounds (too high)") {
+      int start = 5;
+      int stop = 3;
+
+      CHECK_THROWS(
+          shard_dim_idxs_for_exclusive_interval(start, stop, num_dims));
+    }
+
+    SUBCASE("minimum start value in bounds") {
+      int start = -5;
+      int stop = 3;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_exclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {
+          shard_dim_idx(ff_dim_t{0_n}),
+          shard_dim_idx(ff_dim_t{1_n}),
+          shard_dim_idx(ff_dim_t{2_n}),
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("start out of bounds (too low)") {
+      int start = -6;
+      int stop = 3;
+
+      CHECK_THROWS(
+          shard_dim_idxs_for_exclusive_interval(start, stop, num_dims));
+    }
+
+    SUBCASE("maximum stop value in bounds") {
+      int start = 1;
+      int stop = 5;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_exclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {
+          shard_dim_idx(ff_dim_t{1_n}),
+          shard_dim_idx(ff_dim_t{2_n}),
+          shard_dim_idx(ff_dim_t{3_n}),
+          shard_dim_idx(ff_dim_t{4_n}),
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("stop out of bounds (too high)") {
+      int start = 1;
+      int stop = 6;
+
+      CHECK_THROWS(
+          shard_dim_idxs_for_exclusive_interval(start, stop, num_dims));
+    }
+
+    SUBCASE("minimum stop value in bounds") {
+      int start = 1;
+      int stop = -5;
+
+      std::set<parallel_tensor_dim_idx_t> result =
+          shard_dim_idxs_for_exclusive_interval(start, stop, num_dims);
+      std::set<parallel_tensor_dim_idx_t> correct = {};
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("stop out of bounds (too low)") {
+      int start = 1;
+      int stop = -6;
+
+      CHECK_THROWS(
+          shard_dim_idxs_for_exclusive_interval(start, stop, num_dims));
     }
   }
 }

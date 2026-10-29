@@ -13,6 +13,9 @@ ff_dim_t add_to_ff_dim(ff_dim_t ff_dim, int value);
 
 std::vector<ff_dim_t> ff_dim_range(nonnegative_int num_elements);
 
+std::vector<ff_dim_t> ff_dim_range2_inclusive(ff_dim_t start, ff_dim_t stop);
+std::vector<ff_dim_t> ff_dim_range2_exclusive(ff_dim_t start, ff_dim_t stop);
+
 } // namespace FlexFlow
 
 namespace rc {

@@ -35,6 +35,45 @@ bool is_dim_idx_for_reduction_dimension(parallel_tensor_dim_idx_t dim_idx) {
   return (dim_idx == sum_dim_idx()) || (dim_idx == discard_copy_dim_idx());
 }
 
+std::set<parallel_tensor_dim_idx_t> shard_dim_idxs_for_inclusive_interval(
+    int start, int stop, num_ptensor_shard_dims_t num_shard_dims) {
+  num_tensor_dims_t num_tensor_dims =
+      num_tensor_dims_from_num_ptensor_shard_dims(num_shard_dims);
+  ff_dim_t start_idx = ff_dim_t_from_relative_ff_dim_t(relative_ff_dim_t{start},
+                                                       num_tensor_dims);
+  ff_dim_t stop_idx =
+      ff_dim_t_from_relative_ff_dim_t(relative_ff_dim_t{stop}, num_tensor_dims);
+
+  return set_of(transform(ff_dim_range2_inclusive(start_idx, stop_idx),
+                          [](ff_dim_t d) -> parallel_tensor_dim_idx_t {
+                            return shard_dim_idx(d);
+                          }));
+}
+
+std::set<parallel_tensor_dim_idx_t> shard_dim_idxs_for_exclusive_interval(
+    int start, int stop, num_ptensor_shard_dims_t num_shard_dims) {
+  num_tensor_dims_t num_tensor_dims =
+      num_tensor_dims_from_num_ptensor_shard_dims(num_shard_dims);
+  ff_dim_t start_idx = ff_dim_t_from_relative_ff_dim_t(relative_ff_dim_t{start},
+                                                       num_tensor_dims);
+
+  ASSERT(stop <= num_shard_dims.value);
+
+  ff_dim_t stop_idx = [&]() {
+    if (stop == num_shard_dims.value) {
+      return ff_dim_t{num_shard_dims.value};
+    } else {
+      return ff_dim_t_from_relative_ff_dim_t(relative_ff_dim_t{stop},
+                                             num_tensor_dims);
+    }
+  }();
+
+  return set_of(transform(ff_dim_range2_exclusive(start_idx, stop_idx),
+                          [](ff_dim_t d) -> parallel_tensor_dim_idx_t {
+                            return shard_dim_idx(d);
+                          }));
+}
+
 std::set<parallel_tensor_dim_idx_t>
     dim_idxs_for_num_shard_dims(num_ptensor_shard_dims_t num_shard_dims) {
   std::set<parallel_tensor_dim_idx_t> result =
