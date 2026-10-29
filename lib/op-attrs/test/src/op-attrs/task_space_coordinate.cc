@@ -76,4 +76,72 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(result == correct);
     }
   }
+
+  TEST_CASE("task_coord_matching_parallel_tensor_space_coordinate") {
+    ParallelTensorDimDegrees dim_degrees = ParallelTensorDimDegrees{
+        /*sum_degree=*/SumDegree{4_p},
+        /*discard_copy_degree=*/DiscardCopyDegree{6_p},
+        /*shard_degrees=*/
+        FFOrdered<positive_int>{
+            9_p,
+            1_p,
+            8_p,
+        },
+    };
+
+    SUBCASE("coord does not match matches degrees num dims") {
+      ParallelTensorSpaceCoordinate coord = ParallelTensorSpaceCoordinate{
+          /*sum_component=*/2_n,
+          /*discard_copy_component=*/3_n,
+          /*shard_components=*/
+          FFOrdered<nonnegative_int>{
+              1_n,
+              4_n,
+          },
+      };
+
+      CHECK_THROWS(task_coord_matching_parallel_tensor_space_coordinate(
+          coord, dim_degrees));
+    }
+
+    SUBCASE("coord is out-of-bounds for degrees") {
+      ParallelTensorSpaceCoordinate coord = ParallelTensorSpaceCoordinate{
+          /*sum_component=*/2_n,
+          /*discard_copy_component=*/6_n,
+          /*shard_components=*/
+          FFOrdered<nonnegative_int>{
+              1_n,
+              0_n,
+              4_n,
+          },
+      };
+
+      CHECK_THROWS(task_coord_matching_parallel_tensor_space_coordinate(
+          coord, dim_degrees));
+    }
+
+    SUBCASE("coord is in bounds for degrees") {
+      ParallelTensorSpaceCoordinate coord = ParallelTensorSpaceCoordinate{
+          /*sum_component=*/2_n,
+          /*discard_copy_component=*/3_n,
+          /*shard_components=*/
+          FFOrdered<nonnegative_int>{
+              1_n,
+              0_n,
+              4_n,
+          },
+      };
+
+      TaskSpaceCoordinate result =
+          task_coord_matching_parallel_tensor_space_coordinate(coord,
+                                                               dim_degrees);
+      TaskSpaceCoordinate correct = TaskSpaceCoordinate{
+          OrthotopeCoord{
+              {2_n, 3_n, 1_n, 4_n},
+          },
+      };
+
+      CHECK(result == correct);
+    }
+  }
 }
