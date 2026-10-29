@@ -71,38 +71,4 @@ StandardOperatorTaskGroup element_unary_get_task_group(
   };
 }
 
-OperatorTaskSpace element_unary_get_operator_task_space(
-    ElementUnaryAttrs const &attrs,
-    ParallelTensorDimDegrees const &input_degrees) {
-
-  StandardOperatorTaskGroup op_task_group =
-      element_unary_get_task_group(attrs, input_degrees);
-
-  return task_space_for_standard_operator_task_group(op_task_group);
-}
-
-OperatorSpaceToParallelTensorSpaceMapping
-    element_unary_get_operator_to_input_mapping(
-        ElementUnaryAttrs const &attrs,
-        ParallelTensorDimDegrees const &input_degrees) {
-
-  StandardOperatorTaskGroup op_task_group =
-      element_unary_get_task_group(attrs, input_degrees);
-
-  return standard_operator_task_group_get_operator_to_ptensor_mapping(
-      op_task_group, TensorSlotName::INPUT);
-}
-
-OperatorSpaceToParallelTensorSpaceMapping
-    element_unary_get_operator_to_output_mapping(
-        ElementUnaryAttrs const &attrs,
-        ParallelTensorDimDegrees const &input_degrees) {
-
-  StandardOperatorTaskGroup op_task_group =
-      element_unary_get_task_group(attrs, input_degrees);
-
-  return standard_operator_task_group_get_operator_to_ptensor_mapping(
-      op_task_group, TensorSlotName::OUTPUT);
-}
-
 } // namespace FlexFlow

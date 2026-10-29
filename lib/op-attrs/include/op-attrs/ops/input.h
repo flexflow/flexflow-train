@@ -16,11 +16,6 @@ ParallelTensorShape input_get_output_parallel_shape(InputAttrs const &);
 
 StandardOperatorTaskGroup input_get_task_group(InputAttrs const &);
 
-OperatorTaskSpace input_get_operator_task_space(InputAttrs const &);
-
-OperatorSpaceToParallelTensorSpaceMapping
-    input_get_operator_to_output_mapping(InputAttrs const &);
-
 } // namespace FlexFlow
 
 #endif

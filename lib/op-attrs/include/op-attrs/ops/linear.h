@@ -66,26 +66,6 @@ StandardOperatorTaskGroup
     linear_get_task_group(LinearAttrs const &attrs,
                           ParallelTensorDimDegrees const &input_degrees);
 
-ShardSignatureInstance linear_get_shard_signature_instance(
-    LinearAttrs const &attrs, ParallelTensorDimDegrees const &input_degrees);
-
-OperatorTaskSpace linear_get_operator_task_space(
-    LinearAttrs const &attrs, ParallelTensorDimDegrees const &input_degrees);
-
-OperatorSpaceToParallelTensorSpaceMapping linear_get_operator_to_input_mapping(
-    LinearAttrs const &attrs, ParallelTensorDimDegrees const &input_degrees);
-
-OperatorSpaceToParallelTensorSpaceMapping
-    linear_get_operator_to_projection_mapping(
-        LinearAttrs const &attrs,
-        ParallelTensorDimDegrees const &input_degrees);
-
-OperatorSpaceToParallelTensorSpaceMapping linear_get_operator_to_bias_mapping(
-    LinearAttrs const &attrs, ParallelTensorDimDegrees const &input_degrees);
-
-OperatorSpaceToParallelTensorSpaceMapping linear_get_operator_to_output_mapping(
-    LinearAttrs const &attrs, ParallelTensorDimDegrees const &input_degrees);
-
 } // namespace FlexFlow
 
 #endif

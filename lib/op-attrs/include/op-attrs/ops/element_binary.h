@@ -25,34 +25,6 @@ StandardOperatorTaskGroup element_binary_get_task_group(
     ParallelTensorDimDegrees const &lhs_input_degrees,
     ParallelTensorDimDegrees const &rhs_input_degrees);
 
-ShardSignatureInstance element_binary_get_shard_signature_instance(
-    ElementBinaryAttrs const &attrs,
-    ParallelTensorDimDegrees const &lhs_input_degrees,
-    ParallelTensorDimDegrees const &rhs_input_degrees);
-
-OperatorTaskSpace element_binary_get_operator_task_space(
-    ElementBinaryAttrs const &attrs,
-    ParallelTensorDimDegrees const &lhs_input_degrees,
-    ParallelTensorDimDegrees const &rhs_input_degrees);
-
-OperatorSpaceToParallelTensorSpaceMapping
-    element_binary_get_operator_to_lhs_input_mapping(
-        ElementBinaryAttrs const &attrs,
-        ParallelTensorDimDegrees const &lhs_input_degrees,
-        ParallelTensorDimDegrees const &rhs_input_degrees);
-
-OperatorSpaceToParallelTensorSpaceMapping
-    element_binary_get_operator_to_rhs_input_mapping(
-        ElementBinaryAttrs const &attrs,
-        ParallelTensorDimDegrees const &lhs_input_degrees,
-        ParallelTensorDimDegrees const &rhs_input_degrees);
-
-OperatorSpaceToParallelTensorSpaceMapping
-    element_binary_get_operator_to_output_mapping(
-        ElementBinaryAttrs const &attrs,
-        ParallelTensorDimDegrees const &lhs_input_degrees,
-        ParallelTensorDimDegrees const &rhs_input_degrees);
-
 } // namespace FlexFlow
 
 #endif

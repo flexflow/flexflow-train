@@ -30,22 +30,6 @@ StandardOperatorTaskGroup
     transpose_get_task_group(TransposeAttrs const &,
                              ParallelTensorDimDegrees const &);
 
-ShardSignatureInstance transpose_get_shard_signature_instance(
-    TransposeAttrs const &attrs, ParallelTensorDimDegrees const &input_degrees);
-
-OperatorTaskSpace transpose_get_operator_task_space(
-    TransposeAttrs const &attrs, ParallelTensorDimDegrees const &input_degrees);
-
-OperatorSpaceToParallelTensorSpaceMapping
-    transpose_get_operator_to_input_mapping(
-        TransposeAttrs const &attrs,
-        ParallelTensorDimDegrees const &input_degrees);
-
-OperatorSpaceToParallelTensorSpaceMapping
-    transpose_get_operator_to_output_mapping(
-        TransposeAttrs const &attrs,
-        ParallelTensorDimDegrees const &input_degrees);
-
 } // namespace FlexFlow
 
 #endif

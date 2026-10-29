@@ -27,20 +27,6 @@ StandardOperatorTaskGroup
     element_unary_get_task_group(ElementUnaryAttrs const &attrs,
                                  ParallelTensorDimDegrees const &input_degrees);
 
-OperatorTaskSpace element_unary_get_operator_task_space(
-    ElementUnaryAttrs const &attrs,
-    ParallelTensorDimDegrees const &input_degrees);
-
-OperatorSpaceToParallelTensorSpaceMapping
-    element_unary_get_operator_to_input_mapping(
-        ElementUnaryAttrs const &attrs,
-        ParallelTensorDimDegrees const &input_degrees);
-
-OperatorSpaceToParallelTensorSpaceMapping
-    element_unary_get_operator_to_output_mapping(
-        ElementUnaryAttrs const &attrs,
-        ParallelTensorDimDegrees const &input_degrees);
-
 } // namespace FlexFlow
 
 #endif

@@ -40,14 +40,4 @@ StandardOperatorTaskGroup weight_get_task_group(WeightAttrs const &attrs) {
   };
 }
 
-OperatorTaskSpace weight_get_operator_task_space(WeightAttrs const &) {
-  return trivial_op_task_space();
-}
-
-OperatorSpaceToParallelTensorSpaceMapping
-    weight_get_operator_to_output_mapping(WeightAttrs const &attrs) {
-
-  return empty_operator_space_to_ptensor_space_map();
-}
-
 } // namespace FlexFlow
