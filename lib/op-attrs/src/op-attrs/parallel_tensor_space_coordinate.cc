@@ -12,6 +12,20 @@
 
 namespace FlexFlow {
 
+ParallelTensorSpaceCoordinate
+    trivial_parallel_tensor_space_coordinate_for_num_tensor_dims(
+        num_tensor_dims_t const &num_tensor_dims) {
+  return ParallelTensorSpaceCoordinate{
+      /*sum_component=*/0_n,
+      /*discard_copy_component=*/0_n,
+      /*shard_components=*/
+      ff_ordered_of(
+          transform(nonnegative_range(
+                        num_tensor_dims.nonnegative_int_from_num_tensor_dims()),
+                    [](nonnegative_int) -> nonnegative_int { return 0_n; })),
+  };
+}
+
 num_ptensor_parallel_dims_t
     ptensor_coord_num_dims(ParallelTensorSpaceCoordinate const &c) {
   return num_ptensor_parallel_dims_t{
