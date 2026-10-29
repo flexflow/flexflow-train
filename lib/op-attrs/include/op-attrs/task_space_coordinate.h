@@ -9,6 +9,8 @@
 
 namespace FlexFlow {
 
+TaskSpaceCoordinate trivial_task_space_coordinate();
+
 nonnegative_int task_space_coord_num_dims(TaskSpaceCoordinate const &);
 
 TaskSpaceCoordinate
