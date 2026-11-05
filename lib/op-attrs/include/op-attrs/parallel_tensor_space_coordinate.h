@@ -67,6 +67,12 @@ ParallelTensorSpaceCoordinate parallel_tensor_space_coord_from_dim_coord(
 DimCoord<parallel_tensor_dim_idx_t> dim_coord_from_parallel_tensor_space_coord(
     ParallelTensorSpaceCoordinate const &);
 
+ParallelTensorSpaceCoordinate parallel_tensor_space_coordinate_restrict_dims(
+    ParallelTensorSpaceCoordinate const &, std::set<ff_dim_t> const &);
+
+ParallelTensorSpaceCoordinate parallel_tensor_space_coordinate_without_dims(
+    ParallelTensorSpaceCoordinate const &, std::set<ff_dim_t> const &);
+
 } // namespace FlexFlow
 
 #endif

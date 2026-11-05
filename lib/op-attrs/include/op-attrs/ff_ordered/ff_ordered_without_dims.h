@@ -11,6 +11,7 @@ template <typename T>
 FFOrdered<T> ff_ordered_without_dims(FFOrdered<T> const &input,
                                      std::set<ff_dim_t> const &without) {
   std::set<ff_dim_t> input_dims = ff_ordered_get_idxs(input);
+  ASSERT(is_subseteq_of(without, input_dims));
   std::set<ff_dim_t> resulting_dims = set_minus(input_dims, without);
 
   return ff_ordered_restrict_dims_strict(input, resulting_dims);

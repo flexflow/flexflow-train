@@ -1,5 +1,7 @@
 #include "op-attrs/parallel_tensor_space_coordinate.h"
 #include "op-attrs/ff_ordered/ff_ordered_from_map.h"
+#include "op-attrs/ff_ordered/ff_ordered_restrict_dims.h"
+#include "op-attrs/ff_ordered/ff_ordered_without_dims.h"
 #include "op-attrs/parallel_tensor_dim_degrees.h"
 #include "op-attrs/parallel_tensor_dim_idx_t.h"
 #include "utils/containers/contains_key.h"
@@ -182,6 +184,28 @@ DimCoord<parallel_tensor_dim_idx_t> dim_coord_from_parallel_tensor_space_coord(
                      return ptensor_coord_component_for_ptensor_dim_idx(coord,
                                                                         idx);
                    }),
+  };
+}
+
+ParallelTensorSpaceCoordinate parallel_tensor_space_coordinate_restrict_dims(
+    ParallelTensorSpaceCoordinate const &coord,
+    std::set<ff_dim_t> const &dim_set) {
+  return ParallelTensorSpaceCoordinate{
+      /*sum_component=*/coord.sum_component,
+      /*discard_copy_component=*/coord.discard_copy_component,
+      /*shard_components=*/
+      ff_ordered_restrict_dims(coord.shard_components, dim_set),
+  };
+}
+
+ParallelTensorSpaceCoordinate parallel_tensor_space_coordinate_without_dims(
+    ParallelTensorSpaceCoordinate const &coord,
+    std::set<ff_dim_t> const &dim_set) {
+  return ParallelTensorSpaceCoordinate{
+      /*sum_component=*/coord.sum_component,
+      /*discard_copy_component=*/coord.discard_copy_component,
+      /*shard_components=*/
+      ff_ordered_without_dims(coord.shard_components, dim_set),
   };
 }
 

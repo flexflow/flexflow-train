@@ -567,4 +567,184 @@ TEST_SUITE(FF_TEST_SUITE) {
       CHECK(result == correct);
     }
   }
+
+  TEST_CASE("parallel_tensor_space_coordinate_restrict_dims") {
+    ParallelTensorSpaceCoordinate coord = ParallelTensorSpaceCoordinate{
+        /*sum_component=*/2_n,
+        /*discard_copy_component=*/0_n,
+        /*shard_components=*/
+        FFOrdered<nonnegative_int>{
+            3_n,
+            5_n,
+        },
+    };
+
+    SUBCASE("allowed_dims is a superset of the coord's dims") {
+      std::set<ff_dim_t> allowed_dims = {
+          ff_dim_t{0_n},
+          ff_dim_t{1_n},
+          ff_dim_t{2_n},
+          ff_dim_t{3_n},
+      };
+
+      ParallelTensorSpaceCoordinate result =
+          parallel_tensor_space_coordinate_restrict_dims(coord, allowed_dims);
+
+      ParallelTensorSpaceCoordinate correct = coord;
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("allowed_dims is the same as the coord's dims") {
+      std::set<ff_dim_t> allowed_dims = {
+          ff_dim_t{0_n},
+          ff_dim_t{1_n},
+      };
+
+      ParallelTensorSpaceCoordinate result =
+          parallel_tensor_space_coordinate_restrict_dims(coord, allowed_dims);
+
+      ParallelTensorSpaceCoordinate correct = coord;
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("allowed_dims overlaps the coord's dims") {
+      std::set<ff_dim_t> allowed_dims = {
+          ff_dim_t{1_n},
+          ff_dim_t{3_n},
+      };
+
+      ParallelTensorSpaceCoordinate result =
+          parallel_tensor_space_coordinate_restrict_dims(coord, allowed_dims);
+
+      ParallelTensorSpaceCoordinate correct =
+          ParallelTensorSpaceCoordinate{/*sum_component=*/2_n,
+                                        /*discard_copy_component=*/0_n,
+                                        /*shard_compoonent=*/
+                                        FFOrdered<nonnegative_int>{
+                                            5_n,
+                                        }};
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("allowed_dims is a subset of the coord's dims") {
+      std::set<ff_dim_t> allowed_dims = {ff_dim_t{0_n}};
+
+      ParallelTensorSpaceCoordinate result =
+          parallel_tensor_space_coordinate_restrict_dims(coord, allowed_dims);
+
+      ParallelTensorSpaceCoordinate correct = ParallelTensorSpaceCoordinate{
+          /*sum_component=*/2_n,
+          /*discard_copy_component=*/0_n,
+          /*shard_compoonent=*/
+          FFOrdered<nonnegative_int>{
+              3_n,
+          },
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("allowed_dims is empty") {
+      std::set<ff_dim_t> allowed_dims = {};
+
+      ParallelTensorSpaceCoordinate result =
+          parallel_tensor_space_coordinate_restrict_dims(coord, allowed_dims);
+
+      ParallelTensorSpaceCoordinate correct = ParallelTensorSpaceCoordinate{
+          /*sum_component=*/2_n,
+          /*discard_copy_component=*/0_n,
+          /*shard_compoonent=*/FFOrdered<nonnegative_int>{},
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("coord is empty") {
+      std::set<ff_dim_t> allowed_dims = {
+          ff_dim_t{0_n},
+          ff_dim_t{1_n},
+      };
+
+      ParallelTensorSpaceCoordinate empty_coord = ParallelTensorSpaceCoordinate{
+          /*sum_component=*/1_n,
+          /*discard_copy_component=*/3_n,
+          /*shard_compoonent=*/FFOrdered<nonnegative_int>{},
+      };
+
+      ParallelTensorSpaceCoordinate result =
+          parallel_tensor_space_coordinate_restrict_dims(empty_coord,
+                                                         allowed_dims);
+
+      ParallelTensorSpaceCoordinate correct = empty_coord;
+
+      CHECK(result == correct);
+    }
+  }
+
+  TEST_CASE("parallel_tensor_space_coordinate_without_dims") {
+    ParallelTensorSpaceCoordinate coord = ParallelTensorSpaceCoordinate{
+        /*sum_component=*/1_n,
+        /*discard_copy_component=*/3_n,
+        /*shard_compoonent=*/
+        FFOrdered<nonnegative_int>{
+            4_n,
+            0_n,
+            2_n,
+            1_n,
+        },
+    };
+
+    SUBCASE("coord contains all of dim set") {
+      std::set<ff_dim_t> dim_set = {
+          ff_dim_t{0_n},
+          ff_dim_t{2_n},
+      };
+
+      ParallelTensorSpaceCoordinate result =
+          parallel_tensor_space_coordinate_without_dims(coord, dim_set);
+      ParallelTensorSpaceCoordinate correct = ParallelTensorSpaceCoordinate{
+          /*sum_component=*/1_n,
+          /*discard_copy_component=*/3_n,
+          /*shard_compoonent=*/
+          FFOrdered<nonnegative_int>{
+              0_n,
+              1_n,
+          },
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("dim set is all of coord") {
+      std::set<ff_dim_t> dim_set = {
+          ff_dim_t{0_n},
+          ff_dim_t{1_n},
+          ff_dim_t{2_n},
+          ff_dim_t{3_n},
+      };
+
+      ParallelTensorSpaceCoordinate result =
+          parallel_tensor_space_coordinate_without_dims(coord, dim_set);
+      ParallelTensorSpaceCoordinate correct = ParallelTensorSpaceCoordinate{
+          /*sum_component=*/1_n,
+          /*discard_copy_component=*/3_n,
+          /*shard_compoonent=*/FFOrdered<nonnegative_int>{},
+      };
+
+      CHECK(result == correct);
+    }
+
+    SUBCASE("coord does not contain all of dim set") {
+      std::set<ff_dim_t> dim_set = {
+          ff_dim_t{2_n},
+          ff_dim_t{5_n},
+      };
+
+      CHECK_THROWS(
+          parallel_tensor_space_coordinate_without_dims(coord, dim_set));
+    }
+  }
 }

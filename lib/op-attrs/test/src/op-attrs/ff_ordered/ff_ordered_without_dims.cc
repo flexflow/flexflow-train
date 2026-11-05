@@ -11,17 +11,28 @@ TEST_SUITE(FF_TEST_SUITE) {
         3,
     };
 
-    std::set<ff_dim_t> dim_set = {
-        ff_dim_t{0_n},
-        ff_dim_t{2_n},
-        ff_dim_t{4_n},
-    };
+    SUBCASE("all dims are valid") {
+      std::set<ff_dim_t> dim_set = {
+          ff_dim_t{0_n},
+          ff_dim_t{2_n},
+      };
 
-    FFOrdered<int> result = ff_ordered_without_dims(input, dim_set);
-    FFOrdered<int> correct = FFOrdered<int>{
-        4,
-    };
+      FFOrdered<int> result = ff_ordered_without_dims(input, dim_set);
+      FFOrdered<int> correct = FFOrdered<int>{
+          4,
+      };
 
-    CHECK(result == correct);
+      CHECK(result == correct);
+    }
+
+    SUBCASE("some dims do not exist") {
+      std::set<ff_dim_t> dim_set = {
+          ff_dim_t{0_n},
+          ff_dim_t{2_n},
+          ff_dim_t{4_n},
+      };
+
+      CHECK_THROWS(ff_ordered_without_dims(input, dim_set));
+    }
   }
 }
