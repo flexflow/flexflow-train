@@ -211,7 +211,7 @@ void tensor_accessor_matmul_to(GenericTensorAccessorR const &lhs,
     }
   }
 
-  return copy_accessor_data_to_l_from_r(output, output_cpu);
+  return copy_accessor_data_to_l_from_r_strict(output, output_cpu);
 }
 
 static TensorShape get_batch_matmul_output_shape(TensorShape const &lhs,
@@ -296,7 +296,7 @@ void tensor_accessor_batch_matmul_to(GenericTensorAccessorR const &lhs,
     }
   }
 
-  return copy_accessor_data_to_l_from_r(output, output_cpu);
+  return copy_accessor_data_to_l_from_r_strict(output, output_cpu);
 }
 
 static TensorShape get_concat_output_shape(TensorShape const &lhs,
@@ -412,7 +412,7 @@ void tensor_accessor_binary_concat_to(GenericTensorAccessorR const &lhs,
   DataTypeDispatch1<CPUConcatAccessors2>{}(
       data_type, lhs_cpu, rhs_cpu, output_cpu, dim_idx);
 
-  return copy_accessor_data_to_l_from_r(output, output_cpu);
+  return copy_accessor_data_to_l_from_r_strict(output, output_cpu);
 }
 
 } // namespace FlexFlow

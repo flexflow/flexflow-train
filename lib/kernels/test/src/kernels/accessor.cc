@@ -1,6 +1,10 @@
 #include "kernels/accessor.h"
+#include "kernels/accessors_are_equal.h"
 #include "kernels/create_accessor_with_contents.h"
+#include "kernels/create_random_filled_accessor.h"
+#include "kernels/format_accessor_contents.h"
 #include "kernels/local_cpu_allocator.h"
+#include "test/utils/doctest/check_kv.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -132,6 +136,164 @@ TEST_SUITE(FF_TEST_SUITE) {
           cpu_allocator);
 
       CHECK_THROWS(accessor_get_only_value<DataType::FLOAT>(input));
+    }
+  }
+
+  TEST_CASE("copy_accessor_data_to_l_from_r") {
+    Allocator cpu_allocator = create_local_cpu_memory_allocator();
+
+    GenericTensorAccessorR input = create_2d_accessor_r_with_contents<float>(
+        {
+            {1, 3, 2, 6},
+            {2, 1, 5, 4},
+        },
+        cpu_allocator);
+
+    auto mk_output = [&](TensorShape const &shape) -> GenericTensorAccessorW {
+      return create_random_filled_accessor_w(shape, cpu_allocator);
+    };
+
+    SUBCASE("throws if the tensors are not the same size") {
+      TensorShape output_shape = TensorShape{
+          TensorDims{
+              FFOrdered<positive_int>{2_p, 5_p},
+          },
+          DataType::FLOAT,
+      };
+
+      GenericTensorAccessorW result = mk_output(output_shape);
+
+      CHECK_THROWS(copy_accessor_data_to_l_from_r(result, input));
+    }
+
+    SUBCASE("throws if the tensors do not have the same datatype") {
+      TensorShape output_shape = TensorShape{
+          TensorDims{
+              FFOrdered<positive_int>{2_p, 4_p},
+          },
+          DataType::INT32,
+      };
+
+      GenericTensorAccessorW result = mk_output(output_shape);
+
+      CHECK_THROWS(copy_accessor_data_to_l_from_r(result, input));
+    }
+
+    SUBCASE("duplicates the tensor if they are the same shape") {
+      TensorShape output_shape = TensorShape{
+          TensorDims{
+              FFOrdered<positive_int>{2_p, 4_p},
+          },
+          DataType::FLOAT,
+      };
+
+      GenericTensorAccessorW result = mk_output(output_shape);
+
+      copy_accessor_data_to_l_from_r(result, input);
+
+      GenericTensorAccessorR correct = input;
+
+      CHECK_MESSAGE(accessors_are_equal(result, correct),
+                    check_kv("result", format_accessor_w_contents(result)));
+    }
+
+    SUBCASE("allows tensors to not be the same shape in terms of dims") {
+      TensorShape output_shape = TensorShape{
+          TensorDims{
+              FFOrdered<positive_int>{4_p, 2_p},
+          },
+          DataType::FLOAT,
+      };
+
+      GenericTensorAccessorW result = mk_output(output_shape);
+
+      copy_accessor_data_to_l_from_r(result, input);
+
+      GenericTensorAccessorR correct =
+          create_2d_accessor_r_with_contents<float>(
+              {
+                  {1, 3},
+                  {2, 6},
+                  {2, 1},
+                  {5, 4},
+              },
+              cpu_allocator);
+
+      CHECK_MESSAGE(accessors_are_equal(result, correct),
+                    check_kv("result", format_accessor_w_contents(result)));
+    }
+  }
+
+  TEST_CASE("copy_accessor_data_to_l_from_r_strict") {
+    Allocator cpu_allocator = create_local_cpu_memory_allocator();
+
+    GenericTensorAccessorR input = create_2d_accessor_r_with_contents<float>(
+        {
+            {1, 3, 2, 6},
+            {2, 1, 5, 4},
+        },
+        cpu_allocator);
+
+    auto mk_output = [&](TensorShape const &shape) -> GenericTensorAccessorW {
+      return create_random_filled_accessor_w(shape, cpu_allocator);
+    };
+
+    SUBCASE("throws if the tensors are not the same size") {
+      TensorShape output_shape = TensorShape{
+          TensorDims{
+              FFOrdered<positive_int>{2_p, 5_p},
+          },
+          DataType::FLOAT,
+      };
+
+      GenericTensorAccessorW result = mk_output(output_shape);
+
+      CHECK_THROWS(copy_accessor_data_to_l_from_r_strict(result, input));
+    }
+
+    SUBCASE("throws if the tensors do not have the same datatype") {
+      TensorShape output_shape = TensorShape{
+          TensorDims{
+              FFOrdered<positive_int>{2_p, 4_p},
+          },
+          DataType::INT32,
+      };
+
+      GenericTensorAccessorW result = mk_output(output_shape);
+
+      CHECK_THROWS(copy_accessor_data_to_l_from_r_strict(result, input));
+    }
+
+    SUBCASE("duplicates the tensor if they are the same shape") {
+      TensorShape output_shape = TensorShape{
+          TensorDims{
+              FFOrdered<positive_int>{2_p, 4_p},
+          },
+          DataType::FLOAT,
+      };
+
+      GenericTensorAccessorW result = mk_output(output_shape);
+
+      copy_accessor_data_to_l_from_r_strict(result, input);
+
+      GenericTensorAccessorR correct = input;
+
+      CHECK_MESSAGE(accessors_are_equal(result, correct),
+                    check_kv("result", format_accessor_w_contents(result)));
+    }
+
+    SUBCASE("does not allow tensors with equal size and datatype but different "
+            "dims") {
+      TensorShape output_shape = TensorShape{
+          TensorDims{
+              FFOrdered<positive_int>{4_p, 2_p},
+          },
+          DataType::FLOAT,
+      };
+
+      GenericTensorAccessorW result = mk_output(output_shape);
+
+      CHECK_THROWS(copy_accessor_data_to_l_from_r_strict(result, input));
     }
   }
 }

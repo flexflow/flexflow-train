@@ -68,7 +68,7 @@ void map_tensor_accessor_to(GenericTensorAccessorR const &input,
   DataTypeDispatch1<CPUMapTensorAccessor>{}(
       input.shape.data_type, input_cpu, output_cpu, f);
 
-  copy_accessor_data_to_l_from_r(
+  copy_accessor_data_to_l_from_r_strict(
       output, read_only_accessor_from_write_accessor(output_cpu));
 }
 
@@ -139,7 +139,7 @@ void map_tensor_accessors2_to(GenericTensorAccessorR const &lhs,
                                               output_cpu,
                                               f);
 
-  return copy_accessor_data_to_l_from_r(output, output_cpu);
+  return copy_accessor_data_to_l_from_r_strict(output, output_cpu);
 }
 
 template <typename F>
@@ -219,7 +219,7 @@ void map_tensor_accessors3_to(GenericTensorAccessorR const &lhs,
                                               output_cpu,
                                               f);
 
-  return copy_accessor_data_to_l_from_r(output, output_cpu);
+  return copy_accessor_data_to_l_from_r_strict(output, output_cpu);
 }
 
 template <typename F>

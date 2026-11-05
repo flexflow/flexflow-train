@@ -47,7 +47,7 @@ void cpu_sgd_update_task(float lr,
                   cpu_allocator)),
           gt);
     } else {
-      copy_accessor_data_to_l_from_r(
+      copy_accessor_data_to_l_from_r_strict(
           gt, read_only_accessor_from_write_accessor(sgd_v.value()));
     }
   }

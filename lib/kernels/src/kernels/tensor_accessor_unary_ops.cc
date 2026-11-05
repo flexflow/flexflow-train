@@ -113,7 +113,7 @@ void tensor_accessor_broadcast_to(GenericTensorAccessorR const &input,
   DataTypeDispatch1<CPUTensorAccessorBroadcast>{}(
       input.shape.data_type, input_cpu, output_cpu);
 
-  copy_accessor_data_to_l_from_r(output, output_cpu);
+  copy_accessor_data_to_l_from_r_strict(output, output_cpu);
 }
 
 GenericTensorAccessorW
@@ -171,7 +171,7 @@ void tensor_accessor_transpose_to(GenericTensorAccessorR const &input,
   DataTypeDispatch1<CPUTensorAccessorTranspose>{}(
       input.shape.data_type, input_cpu, output_cpu, dim_permutation);
 
-  copy_accessor_data_to_l_from_r(output, output_cpu);
+  copy_accessor_data_to_l_from_r_strict(output, output_cpu);
 }
 
 GenericTensorAccessorW
@@ -314,7 +314,7 @@ void tensor_accessor_reduce_to(GenericTensorAccessorR const &input,
   DataTypeDispatch1<CPUTensorAccessorReduce>{}(
       input.shape.data_type, input_cpu, reduction_dim, output_cpu);
 
-  copy_accessor_data_to_l_from_r(output, output_cpu);
+  copy_accessor_data_to_l_from_r_strict(output, output_cpu);
 }
 
 GenericTensorAccessorW

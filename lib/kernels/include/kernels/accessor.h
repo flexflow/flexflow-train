@@ -226,6 +226,10 @@ TensorShape get_tensor_shape_for_accessor_w(GenericTensorAccessorW const &);
 void copy_accessor_data_to_l_from_r(GenericTensorAccessorW const &dst_accessor,
                                     GenericTensorAccessorR const &src_accessor);
 
+void copy_accessor_data_to_l_from_r_strict(
+    GenericTensorAccessorW const &dst_accessor,
+    GenericTensorAccessorR const &src_accessor);
+
 template <DataType DT>
 real_type_t<DT> accessor_get_only_value(GenericTensorAccessorR const &acc) {
   ASSERT(get_num_elements(acc.shape.dims) == 1);

@@ -32,7 +32,7 @@ void split_cpu_backward_kernel(
                    accum, elem, attrs.axis, cpu_allocator);
              });
 
-  copy_accessor_data_to_l_from_r(
+  copy_accessor_data_to_l_from_r_strict(
       /*dst_accessor=*/input_grad,
       /*src_accessor=*/result);
 }

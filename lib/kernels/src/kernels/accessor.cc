@@ -46,7 +46,11 @@ TensorShape
 void copy_accessor_data_to_l_from_r(
     GenericTensorAccessorW const &dst_accessor,
     GenericTensorAccessorR const &src_accessor) {
-  size_t num_bytes = get_size_in_bytes(dst_accessor.shape)
+
+  ASSERT(dst_accessor.shape.data_type == src_accessor.shape.data_type);
+
+  size_t num_bytes = require_same(get_size_in_bytes(dst_accessor.shape),
+                                  get_size_in_bytes(src_accessor.shape))
                          .unwrap_num_bytes()
                          .unwrap_nonnegative();
 
@@ -72,6 +76,14 @@ void copy_accessor_data_to_l_from_r(
                          num_bytes,
                          cudaMemcpyDeviceToDevice));
   }
+}
+
+void copy_accessor_data_to_l_from_r_strict(
+    GenericTensorAccessorW const &dst_accessor,
+    GenericTensorAccessorR const &src_accessor) {
+  ASSERT(dst_accessor.shape == src_accessor.shape);
+
+  copy_accessor_data_to_l_from_r(dst_accessor, src_accessor);
 }
 
 GenericTensorAccessorW::operator GenericTensorAccessorR() const {

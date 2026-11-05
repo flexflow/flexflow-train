@@ -20,7 +20,7 @@ void concat_cpu_forward_kernel(
         return tensor_accessor_binary_concat(accum, elem, axis, cpu_allocator);
       });
 
-  copy_accessor_data_to_l_from_r(
+  copy_accessor_data_to_l_from_r_strict(
       /*dst_accessor=*/output,
       /*src_accessor=*/result);
 }

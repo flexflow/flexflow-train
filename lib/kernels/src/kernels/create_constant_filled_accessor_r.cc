@@ -31,7 +31,7 @@ struct CreateFilledAccessorW {
       data_ptr[i] = unwrapped_value;
     }
 
-    copy_accessor_data_to_l_from_r(dst_accessor, src_accessor);
+    copy_accessor_data_to_l_from_r_strict(dst_accessor, src_accessor);
     return dst_accessor;
   }
 };
