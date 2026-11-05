@@ -2,7 +2,14 @@
 
 namespace FlexFlow {
 
-using F = std::function<int32_t(int32_t, float)>;
+struct ReduceTensorExampleF {
+  template <typename T>
+  T operator()(std::vector<T> const &) const {
+    PANIC();
+  }
+};
+
+using F = ReduceTensorExampleF;
 
 template GenericTensorAccessorW
     reduce_tensor_accessor_in_dims(GenericTensorAccessorR const &,

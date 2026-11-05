@@ -14,6 +14,7 @@
 #include "utils/containers/foldl1.h"
 #include "utils/containers/foldr1.h"
 #include "utils/containers/group_by.h"
+#include "utils/containers/reversed.h"
 #include "utils/containers/sorted.h"
 #include "utils/containers/transform.h"
 
@@ -49,14 +50,11 @@ struct CPUReduceTensorAccessorInDims {
             return input.at<DT>(input_coord);
           });
 
-      T result = foldl1(input_values, f);
+      T result = f(input_values);
 
 #ifndef NDEBUG
       {
-        T flipped_result =
-            foldr1(input_values, [&](T const &accum, T const &elem) {
-              return f(elem, accum);
-            });
+        T flipped_result = f(reversed(input_values));
 
         ASSERT(values_are_approximately_equal(result, flipped_result));
       }

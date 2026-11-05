@@ -4,7 +4,11 @@
 #include "kernels/tensor_accessor_binary_ops.h"
 #include "kernels/tensor_accessor_promote_dims.h"
 #include "kernels/tensor_accessor_unary_ops.h"
+#include "utils/containers/get_element_type.h"
+#include "utils/containers/sum.h"
 #include "utils/not_implemented.h"
+#include "utils/overload.h"
+#include <libassert/assert.hpp>
 
 namespace FlexFlow {
 
@@ -20,7 +24,12 @@ void softmax_cpu_forward_kernel(SoftmaxAttrs const &attrs,
       exponentiated,
       std::set<ff_dim_t>{attrs.dim},
       cpu_allocator,
-      [&](float accum, float x) -> float { return accum + x; });
+      overload{
+          [&](std::vector<float> const &input_values) -> float {
+            return sum(input_values);
+          },
+          [](auto const &x) -> get_element_type_t<decltype(x)> { PANIC(); },
+      });
 
   TensorDims promoted_dims = input.shape.dims;
   promoted_dims.ff_ordered.at(attrs.dim) = 1_p;

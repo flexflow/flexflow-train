@@ -3,6 +3,8 @@
 #include "kernels/create_accessor_with_contents.h"
 #include "kernels/format_accessor_contents.h"
 #include "test/utils/doctest/check_kv.h"
+#include "utils/containers/sum.h"
+#include "utils/overload.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
@@ -29,7 +31,12 @@ TEST_SUITE(FF_TEST_SUITE) {
         accessor,
         {ff_dim_t{0_n}, ff_dim_t{2_n}},
         cpu_allocator,
-        [](int32_t accum, int32_t x) { return x + accum; });
+        overload{
+            [](std::vector<int> const &input_values) {
+              return sum(input_values);
+            },
+            [](auto const &x) -> get_element_type_t<decltype(x)> { PANIC(); },
+        });
 
     GenericTensorAccessorW correct =
         create_1d_accessor_w_with_contents<int32_t>(
@@ -62,7 +69,13 @@ TEST_SUITE(FF_TEST_SUITE) {
             cpu_allocator);
 
     int32_t result = reduce_tensor_accessor_in_all_dims<DataType::INT32>(
-        accessor, [](int32_t accum, int32_t elem) { return accum + elem; });
+        accessor,
+        overload{
+            [](std::vector<int> const &input_values) {
+              return sum(input_values);
+            },
+            [](auto const &x) -> get_element_type_t<decltype(x)> { PANIC(); },
+        });
     int32_t correct = 1 + 3 + 2 + 2 + 1 + 5 + 4 + 2 + 1 + 8 + 3 + 6;
 
     CHECK(result == correct);
