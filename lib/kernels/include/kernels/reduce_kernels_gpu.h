@@ -8,24 +8,24 @@
 #include "op-attrs/ops/reduce_op.dtg.h"
 #include "op-attrs/tensor_shape.dtg.h"
 
-namespace FlexFlow::Kernels::Reduce {
+namespace FlexFlow {
 
-ReducePerDeviceState gpu_init_kernel(PerDeviceFFHandle const &,
-                                     ReduceOp const &reduce_op,
-                                     size_t const &,
-                                     TensorShape const &input_shape,
-                                     TensorShape const &output_shape);
+ReducePerDeviceState reduce_gpu_init_kernel(PerDeviceFFHandle const &,
+                                            ReduceOp const &reduce_op,
+                                            size_t const &,
+                                            TensorShape const &input_shape,
+                                            TensorShape const &output_shape);
 
-void gpu_forward_kernel(ffStream_t stream,
-                        ReducePerDeviceState const &m,
-                        float const *input_ptr,
-                        float *output_ptr);
+void reduce_gpu_forward_kernel(ffStream_t stream,
+                               ReducePerDeviceState const &m,
+                               float const *input_ptr,
+                               float *output_ptr);
 
-void gpu_backward_kernel(ffStream_t stream,
-                         ReducePerDeviceState const &m,
-                         float const *output_grad_ptr,
-                         float *input_grad_ptr);
+void reduce_gpu_backward_kernel(ffStream_t stream,
+                                ReducePerDeviceState const &m,
+                                float const *output_grad_ptr,
+                                float *input_grad_ptr);
 
-} // namespace FlexFlow::Kernels::Reduce
+} // namespace FlexFlow
 
 #endif

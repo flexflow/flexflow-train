@@ -1,12 +1,19 @@
 #ifndef _FLEXFLOW_LIB_KERNELS_INCLUDE_KERNELS_REDUCE_KERNELS_CPU_H
 #define _FLEXFLOW_LIB_KERNELS_INCLUDE_KERNELS_REDUCE_KERNELS_CPU_H
 
-namespace FlexFlow::Kernels::Reduce {
+#include "kernels/accessor.h"
+#include "op-attrs/ops/reduce_attrs.dtg.h"
 
-void cpu_forward_kernel(float const *input_ptr, float *output_ptr);
+namespace FlexFlow {
 
-void cpu_backward_kernel(float const *output_grad_ptr, float *input_grad_ptr);
+void reduce_cpu_forward_kernel(ReduceAttrs const &attrs,
+                               GenericTensorAccessorR const &input,
+                               GenericTensorAccessorW const &output);
 
-} // namespace FlexFlow::Kernels::Reduce
+void reduce_cpu_backward_kernel(ReduceAttrs const &attrs,
+                                GenericTensorAccessorR const &output_grad,
+                                GenericTensorAccessorW const &input_grad);
+
+} // namespace FlexFlow
 
 #endif

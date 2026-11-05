@@ -6,26 +6,15 @@
 
 namespace FlexFlow {
 
-using namespace FlexFlow::Kernels::Reduce;
-
 static DeviceSpecificPerDeviceOpState
     init_task_impl(TaskArgumentAccessor const &acc) {
   device_handle_t handle = acc.get_ff_handle();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
   ReduceAttrs attrs = acc.get_op_attrs().require_reduce();
-  auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
-  auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
-
-  nonnegative_int reduction_size =
-      get_num_elements(input.shape.dims) / get_num_elements(output.shape.dims);
+  TensorShape input_shape = acc.get_tensor_shape(TensorSlotName::INPUT);
 
   std::optional<ReducePerDeviceState> per_device_state =
-      init_kernel(kernel_device_type,
-                  handle,
-                  attrs.op,
-                  reduction_size.unwrap_nonnegative(),
-                  input.shape,
-                  output.shape);
+      reduce_init_kernel(kernel_device_type, handle, attrs, input_shape);
 
   return DeviceSpecificPerDeviceOpState{
       acc.make_device_specific(per_device_state),
@@ -34,27 +23,31 @@ static DeviceSpecificPerDeviceOpState
 
 static std::optional<milliseconds_t>
     forward_task_impl(TaskArgumentAccessor const &acc) {
-  ReducePerDeviceState per_device_state =
-      acc.get_per_device_op_state().require_reduce().value();
+
+  std::optional<ReducePerDeviceState> per_device_state =
+      acc.get_per_device_op_state().require_reduce();
+  ReduceAttrs attrs = acc.get_op_attrs().require_reduce();
   std::optional<ProfilingSettings> profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
 
   auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
   auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
 
-  return profile(forward_kernel,
+  return profile(reduce_forward_kernel,
                  profiling,
                  kernel_device_type,
                  "[Reduce] forward_time = {:.2lf}ms\n",
                  per_device_state,
-                 input.get_float_ptr(),
-                 output.get_float_ptr());
+                 attrs,
+                 input,
+                 output);
 }
 
 static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
-  ReducePerDeviceState per_device_state =
-      acc.get_per_device_op_state().require_reduce().value();
+  std::optional<ReducePerDeviceState> per_device_state =
+      acc.get_per_device_op_state().require_reduce();
+  ReduceAttrs attrs = acc.get_op_attrs().require_reduce();
   std::optional<ProfilingSettings> profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
 
@@ -62,13 +55,14 @@ static std::optional<milliseconds_t>
   auto output_grad =
       acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
 
-  return profile(backward_kernel,
+  return profile(reduce_backward_kernel,
                  profiling,
                  kernel_device_type,
                  "[Reduce] backward_time = {:.2lf}ms\n",
                  per_device_state,
-                 output_grad.get_float_ptr(),
-                 input_grad.get_float_ptr());
+                 attrs,
+                 output_grad,
+                 input_grad);
 }
 
 TaskImplFunction get_reduce_init_task_impl() {

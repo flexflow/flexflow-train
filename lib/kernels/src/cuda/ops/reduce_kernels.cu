@@ -17,14 +17,12 @@
 #include "kernels/reduce_kernels_gpu.h"
 
 namespace FlexFlow {
-namespace Kernels {
-namespace Reduce {
 
-ReducePerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
-                                     ReduceOp const &op_type,
-                                     size_t const &reduction_size,
-                                     TensorShape const &input_shape,
-                                     TensorShape const &output_shape) {
+ReducePerDeviceState reduce_gpu_init_kernel(PerDeviceFFHandle const &handle,
+                                            ReduceOp const &op_type,
+                                            size_t const &reduction_size,
+                                            TensorShape const &input_shape,
+                                            TensorShape const &output_shape) {
 
   ffTensorDescriptor_t inputTensor;
   ffTensorDescriptor_t outputTensor;
@@ -50,10 +48,10 @@ ReducePerDeviceState gpu_init_kernel(PerDeviceFFHandle const &handle,
   return per_device;
 }
 
-void gpu_forward_kernel(cudaStream_t stream,
-                        ReducePerDeviceState const &m,
-                        float const *input_ptr,
-                        float *output_ptr) {
+void reduce_gpu_forward_kernel(cudaStream_t stream,
+                               ReducePerDeviceState const &m,
+                               float const *input_ptr,
+                               float *output_ptr) {
   checkCUDNN(cudnnSetStream(m.handle.dnn, stream));
   float alpha = 1.0f, beta = 0.0f;
   checkCUDNN(cudnnReduceTensor(m.handle.dnn,
@@ -70,10 +68,10 @@ void gpu_forward_kernel(cudaStream_t stream,
                                output_ptr));
 };
 
-void gpu_backward_kernel(cudaStream_t stream,
-                         ReducePerDeviceState const &m,
-                         float const *output_grad_ptr,
-                         float *input_grad_ptr) {
+void reduce_gpu_backward_kernel(cudaStream_t stream,
+                                ReducePerDeviceState const &m,
+                                float const *output_grad_ptr,
+                                float *input_grad_ptr) {
   checkCUDNN(cudnnSetStream(m.handle.dnn, stream));
   float alpha = 1.0, beta = 1.0f;
   switch (m.reduce_op) {
@@ -97,6 +95,4 @@ void gpu_backward_kernel(cudaStream_t stream,
                             input_grad_ptr));
 }
 
-} // namespace Reduce
-} // namespace Kernels
 } // namespace FlexFlow

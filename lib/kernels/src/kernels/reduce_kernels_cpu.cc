@@ -1,14 +1,18 @@
 #include "kernels/reduce_kernels_cpu.h"
 #include "utils/not_implemented.h"
 
-namespace FlexFlow::Kernels::Reduce {
+namespace FlexFlow {
 
-void cpu_forward_kernel(float const *input_ptr, float *output_ptr) {
+void reduce_cpu_forward_kernel(ReduceAttrs const &attrs,
+                               GenericTensorAccessorR const &input,
+                               GenericTensorAccessorW const &output) {
   NOT_IMPLEMENTED();
 }
 
-void cpu_backward_kernel(float const *output_grad_ptr, float *input_grad_ptr) {
+void reduce_cpu_backward_kernel(ReduceAttrs const &attrs,
+                                GenericTensorAccessorR const &output_grad,
+                                GenericTensorAccessorW const &input_grad) {
   NOT_IMPLEMENTED();
 }
 
-} // namespace FlexFlow::Kernels::Reduce
+} // namespace FlexFlow
