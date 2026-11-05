@@ -1,8 +1,10 @@
 #include "kernels/fill_tensor_accessor.h"
 #include "kernels/datatype_dispatch.h"
+#include "kernels/map_tensor_accessors.h"
 #include "op-attrs/datatype_value.h"
 #include "op-attrs/tensor_shape.h"
 #include "utils/not_implemented.h"
+#include "utils/remove_cvref.h"
 
 namespace FlexFlow {
 
@@ -29,6 +31,13 @@ struct FillWithZeros {
 
 void fill_with_zeros(GenericTensorAccessorW const &accessor) {
   DataTypeDispatch1<FillWithZeros>{}(accessor.shape.data_type, accessor);
+}
+
+void fill_accessor_with_constant(GenericTensorAccessorW const &accessor,
+                                 DataTypeValue v) {
+  map_tensor_accessor_inplace(accessor, [&](auto const &x) {
+    return v.get<remove_cvref_t<decltype(x)>>();
+  });
 }
 
 GenericTensorAccessorW create_accessor_w_filled_with(
