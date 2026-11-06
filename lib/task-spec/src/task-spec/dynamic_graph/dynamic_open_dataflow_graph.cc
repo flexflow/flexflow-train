@@ -149,7 +149,7 @@ void check_dynamic_open_dataflow_graph_is_valid(
   std::map<DynamicValueAttrs, std::vector<DynamicNodeInvocation>>
       invocations_by_value_produced;
 
-  for (DynamicNodeInvocation const &i : get_dynamic_invocation_set(g)) {
+  for (DynamicNodeInvocation const &i : g.get_invocation_set()) {
     for (DynamicValueAttrs const &v : values(i.outputs)) {
       invocations_by_value_produced[v].push_back(i);
     }
@@ -209,12 +209,12 @@ void require_full_dynamic_graph_satisfies(
     DynamicOpenDataflowGraph const &g,
     std::function<void(DynamicNodeInvocation const &)> const
         &invocation_condition) {
-  require_all_of(get_dynamic_invocation_set(g), invocation_condition);
+  require_all_of(g.get_invocation_set(), invocation_condition);
 }
 
 std::multiset<DynamicNodeAttrs>
     get_dynamic_nodes(DynamicOpenDataflowGraph const &g) {
-  return transform(multiset_of(get_dynamic_invocation_set(g)),
+  return transform(multiset_of(g.get_invocation_set()),
                    [&](DynamicNodeInvocation const &i) -> DynamicNodeAttrs {
                      return i.node_attrs;
                    });
@@ -223,7 +223,7 @@ std::multiset<DynamicNodeAttrs>
 std::multiset<DynamicValueAttrs>
     get_dynamic_values(DynamicOpenDataflowGraph const &g) {
   return flatmap(
-      multiset_of(get_dynamic_invocation_set(g)),
+      multiset_of(g.get_invocation_set()),
       [&](DynamicNodeInvocation const &i) -> std::multiset<DynamicValueAttrs> {
         return multiset_union(values(i.inputs), values(i.outputs));
       });
@@ -232,7 +232,7 @@ std::multiset<DynamicValueAttrs>
 std::multiset<DynamicTensorSlot>
     get_dynamic_tensor_slots(DynamicOpenDataflowGraph const &g) {
   return flatmap(
-      multiset_of(get_dynamic_invocation_set(g)),
+      multiset_of(g.get_invocation_set()),
       [&](DynamicNodeInvocation const &i) -> std::multiset<DynamicTensorSlot> {
         return multiset_of(set_union(keys(i.inputs), keys(i.outputs)));
       });
@@ -299,7 +299,7 @@ DynamicValueAttrs
 std::set<DynamicGraphEdge>
     get_dynamic_graph_edges(DynamicOpenDataflowGraph const &g) {
   return flatmap(
-      get_dynamic_invocation_set(g),
+      g.get_invocation_set(),
       [&](DynamicNodeInvocation const &i) -> std::set<DynamicGraphEdge> {
         return get_dynamic_graph_edges_incoming_to_invocation(g, i);
       });
@@ -374,7 +374,7 @@ DynamicValueAttrs
 std::set<InternalDynamicSlotSite>
     get_internal_dynamic_slot_sites(DynamicOpenDataflowGraph const &g) {
   return flatmap(
-      get_dynamic_invocation_set(g),
+      g.get_invocation_set(),
       [&](DynamicNodeInvocation const &i) -> std::set<InternalDynamicSlotSite> {
         dynamic_invocation_id_t id = dynamic_graph_get_id_for_invocation(g, i);
 
@@ -471,8 +471,7 @@ std::optional<DynamicValueAttrs>
     find_output_value_attrs(DynamicOpenDataflowGraph const &dg,
                             dynamic_tensor_guid_t tensor_guid,
                             std::optional<DynamicTensorRole> const &role) {
-  for (DynamicNodeInvocation const &invocation :
-       get_dynamic_invocation_set(dg)) {
+  for (DynamicNodeInvocation const &invocation : dg.get_invocation_set()) {
     for (auto const &[slot, output] : invocation.outputs) {
       if (output.tensor_guid == tensor_guid && output.role == role) {
         return output;
@@ -487,7 +486,7 @@ DynamicOpenDataflowGraph transform_dynamic_invocation_set(
     std::function<DynamicNodeInvocation(DynamicNodeInvocation const &)> const
         &f) {
   std::set<DynamicNodeInvocation> current_invocation_set =
-      get_dynamic_invocation_set(g);
+      g.get_invocation_set();
   std::set<DynamicNodeInvocation> new_invocation_set =
       transform(current_invocation_set, f);
 
@@ -500,7 +499,7 @@ DynamicOpenDataflowGraph flatmap_dynamic_invocation_set(
         DynamicNodeInvocation const &)> const &f) {
 
   std::set<DynamicNodeInvocation> current_invocation_set =
-      get_dynamic_invocation_set(g);
+      g.get_invocation_set();
   std::vector<DynamicNodeInvocation> new_invocation_set =
       flatmap(vector_of(current_invocation_set), f);
 
@@ -528,8 +527,7 @@ std::pair<LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
   std::set<DynamicValueAttrs> all_values = set_of(get_dynamic_values(g));
 
   ManyToOne<DynamicValueAttrs, DynamicNodeInvocation> value_to_producer;
-  for (DynamicNodeInvocation const &invocation :
-       get_dynamic_invocation_set(g)) {
+  for (DynamicNodeInvocation const &invocation : g.get_invocation_set()) {
     for (DynamicValueAttrs const &output : values(invocation.outputs)) {
       value_to_producer.insert({output, invocation});
     }
@@ -575,7 +573,7 @@ std::pair<LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
   };
 
   bidict<Node, DynamicNodeInvocation> node_map;
-  std::set<DynamicNodeInvocation> to_add = get_dynamic_invocation_set(g);
+  std::set<DynamicNodeInvocation> to_add = g.get_invocation_set();
 
   auto add_invocation_to_graph =
       [&](DynamicNodeInvocation const &invocation) -> void {
@@ -735,7 +733,7 @@ namespace nlohmann {
 void adl_serializer<::FlexFlow::DynamicOpenDataflowGraph>::to_json(
     json &j, ::FlexFlow::DynamicOpenDataflowGraph const &v) {
   j["__type"] = "DynamicOpenDataflowGraph";
-  j["invocations"] = FlexFlow::get_dynamic_invocation_set(v);
+  j["invocations"] = v.get_invocation_set();
 }
 
 } // namespace nlohmann
