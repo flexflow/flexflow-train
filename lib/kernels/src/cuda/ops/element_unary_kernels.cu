@@ -41,10 +41,23 @@ static bool use_scalar(OperatorType op_type) {
     case OperatorType::SCALAR_SUB:
     case OperatorType::SCALAR_TRUE_DIV:
     case OperatorType::POW:
+    case OperatorType::SILU:
       return true;
     default:
       return false;
   }
+}
+
+// SILU's scalar (beta) is optional and defaults to 1, matching the CPU
+// kernel. The other scalar operators require a scalar.
+static float require_scalar(OperatorType op_type,
+                            std::optional<float> const &scalar) {
+  if (op_type == OperatorType::SILU) {
+    return scalar.value_or(1.0f);
+  }
+
+  ASSERT(scalar.has_value(), op_type);
+  return scalar.value();
 }
 
 ElementUnaryPerDeviceState
@@ -118,6 +131,10 @@ __global__ void elewise_scalar_unary_forward_kernel(
         out[i] = (T)(powf(in[i], scalar));
         break;
       }
+      case OperatorType::SILU: {
+        out[i] = (T)(in[i] / (1.0f + expf(-1.0f * scalar * in[i])));
+        break;
+      }
       default:
         assert(false);
     }
@@ -172,24 +189,31 @@ __global__ void elewise_scalar_unary_backward_kernel(coord_t volume,
   CUDA_KERNEL_LOOP(i, volume) {
     switch (type) {
       case OperatorType::SCALAR_MULTIPLY: {
-        input_grad[i] += output_grad[i] * scalar;
+        input_grad[i] = output_grad[i] * scalar;
         break;
       }
       case OperatorType::SCALAR_ADD: {
-        input_grad[i] += output_grad[i];
+        input_grad[i] = output_grad[i];
         break;
       }
       case OperatorType::SCALAR_SUB: {
-        input_grad[i] += output_grad[i];
+        input_grad[i] = output_grad[i];
         break;
       }
       case OperatorType::SCALAR_TRUE_DIV: {
-        input_grad[i] += output_grad[i] / scalar;
+        input_grad[i] = output_grad[i] / scalar;
         break;
       }
       case OperatorType::POW: {
         input_grad[i] =
             (T)(output_grad[i] * scalar * powf(input[i], scalar - 1));
+        break;
+      }
+      case OperatorType::SILU: {
+        float e_to_bx = expf(scalar * input[i]);
+        input_grad[i] = (T)(output_grad[i] *
+                            (e_to_bx * (scalar * input[i] + e_to_bx + 1.0f)) /
+                            ((e_to_bx + 1.0f) * (e_to_bx + 1.0f)));
         break;
       }
       default:
@@ -209,11 +233,11 @@ __global__ void elewise_unary_backward_kernel(coord_t volume,
     switch (type) {
       case OperatorType::EXP: {
         // TODO: change to use output instead of recomputing
-        input_grad[i] += (T)(output_grad[i] * exp((float)input[i]));
+        input_grad[i] = (T)(output_grad[i] * exp((float)input[i]));
         break;
       }
       case OperatorType::IDENTITY: {
-        input_grad[i] += output_grad[i];
+        input_grad[i] = output_grad[i];
         break;
       }
       case OperatorType::GELU: {
@@ -229,11 +253,11 @@ __global__ void elewise_unary_backward_kernel(coord_t volume,
         break;
       }
       case OperatorType::SIN: {
-        input_grad[i] += (T)(output_grad[i] * cos((float)input[i]));
+        input_grad[i] = (T)(output_grad[i] * cos((float)input[i]));
         break;
       }
       case OperatorType::COS: {
-        input_grad[i] += (T)(output_grad[i] * -sin((float)input[i]));
+        input_grad[i] = (T)(output_grad[i] * -sin((float)input[i]));
         break;
       }
       default:
@@ -267,11 +291,10 @@ struct ForwardKernel {
                                         m.outputTensor,
                                         output.get<T>()));
     } else if (use_scalar(op_type)) {
-      assert(scalar.has_value());
       elewise_scalar_unary_forward_kernel<real_type_t<T>>
           <<<GET_BLOCKS(num_elements), CUDA_NUM_THREADS, 0, stream>>>(
               num_elements,
-              static_cast<real_type_t<T>>(scalar.value()),
+              static_cast<real_type_t<T>>(require_scalar(op_type, scalar)),
               op_type,
               input.get<T>(),
               output.get<T>());
@@ -299,7 +322,7 @@ struct BackwardKernel {
         get_num_elements(input.shape.dims).int_from_positive_int();
 
     if (use_cudnn(op_type)) {
-      float alpha = 1.0f;
+      float alpha = 1.0f, beta = 0.0f;
       checkCUDNN(cudnnActivationBackward(handle.dnn,
                                          m.actiDesc,
                                          &alpha,
@@ -309,15 +332,14 @@ struct BackwardKernel {
                                          output_grad.get<T>(),
                                          m.inputTensor,
                                          input.get<T>(),
-                                         &alpha,
+                                         &beta,
                                          m.inputTensor,
                                          input_grad.get<T>()));
     } else if (use_scalar(op_type)) {
-      assert(scalar.has_value());
       elewise_scalar_unary_backward_kernel<real_type_t<T>>
           <<<GET_BLOCKS(num_elements), CUDA_NUM_THREADS, 0, stream>>>(
               num_elements,
-              static_cast<real_type_t<T>>(scalar.value()),
+              static_cast<real_type_t<T>>(require_scalar(op_type, scalar)),
               op_type,
               output.get<T>(),
               output_grad.get<T>(),

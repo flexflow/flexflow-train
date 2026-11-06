@@ -67,7 +67,7 @@ static std::optional<milliseconds_t>
   std::vector<GenericTensorAccessorW> input_grads =
       transform(input_slots,
                 [&](TensorSlotName input_slot_name) -> GenericTensorAccessorW {
-                  return acc.get_tensor_grad<Permissions::RW>(input_slot_name);
+                  return acc.get_tensor_grad<Permissions::WO>(input_slot_name);
                 });
 
   ASSERT(input_grads.size() <= MAX_NUM_INPUTS);

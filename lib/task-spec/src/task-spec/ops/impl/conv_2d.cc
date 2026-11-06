@@ -14,7 +14,7 @@ static DeviceSpecificPerDeviceOpState
   auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
   auto filter = acc.get_tensor<Permissions::RO>(TensorSlotName::FILTER);
   auto filter_grad =
-      acc.get_tensor_grad<Permissions::RW>(TensorSlotName::FILTER);
+      acc.get_tensor_grad<Permissions::WO>(TensorSlotName::FILTER);
 
   std::optional<Conv2DPerDeviceState> per_device_state = conv2d_init_kernel(
       /*device_type=*/kernel_device_type,
@@ -41,8 +41,8 @@ static std::optional<milliseconds_t>
     forward_task_impl(TaskArgumentAccessor const &acc) {
   std::optional<ProfilingSettings> profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
-  Conv2DPerDeviceState per_device_state =
-      acc.get_per_device_op_state().require_conv2d().value();
+  std::optional<Conv2DPerDeviceState> per_device_state =
+      acc.get_per_device_op_state().require_conv2d();
   Conv2DAttrs attrs = acc.get_op_attrs().require_conv2d();
 
   auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
@@ -71,8 +71,8 @@ static std::optional<milliseconds_t>
     backward_task_impl(TaskArgumentAccessor const &acc) {
   std::optional<ProfilingSettings> profiling = acc.get_profiling_settings();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
-  Conv2DPerDeviceState per_device_state =
-      acc.get_per_device_op_state().require_conv2d().value();
+  std::optional<Conv2DPerDeviceState> per_device_state =
+      acc.get_per_device_op_state().require_conv2d();
   Conv2DAttrs attrs = acc.get_op_attrs().require_conv2d();
 
   auto output = acc.get_tensor<Permissions::RO>(TensorSlotName::OUTPUT);
@@ -81,16 +81,16 @@ static std::optional<milliseconds_t>
 
   auto output_grad =
       acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
-  auto input_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::INPUT);
+  auto input_grad = acc.get_tensor_grad<Permissions::WO>(TensorSlotName::INPUT);
   auto filter_grad =
-      acc.get_tensor_grad<Permissions::RW>(TensorSlotName::FILTER);
+      acc.get_tensor_grad<Permissions::WO>(TensorSlotName::FILTER);
 
   std::optional<GenericTensorAccessorR> bias = std::nullopt;
   std::optional<GenericTensorAccessorW> bias_grad = std::nullopt;
 
   if (attrs.use_bias) {
-    bias = acc.get_tensor_grad<Permissions::RO>(TensorSlotName::BIAS);
-    bias_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::BIAS);
+    bias = acc.get_tensor<Permissions::RO>(TensorSlotName::BIAS);
+    bias_grad = acc.get_tensor_grad<Permissions::WO>(TensorSlotName::BIAS);
   }
 
   return profile(conv2d_backward_kernel,

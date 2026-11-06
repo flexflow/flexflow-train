@@ -327,8 +327,7 @@ void conv2d_gpu_backward_kernel(ffStream_t stream,
                                 std::optional<Activation> activation) {
   checkCUDNN(cudnnSetStream(m.handle.dnn, stream));
 
-  float alpha = 1.0f;
-  // float beta = 0.0f;
+  float alpha = 1.0f, beta = 0.0f;
 
   ASSERT(!activation.has_value(),
          ("Currently activation functions are unsupported for the Conv2D "
@@ -354,7 +353,6 @@ void conv2d_gpu_backward_kernel(ffStream_t stream,
   */
 
   // Compute filter gradiant
-  // NOTE: we use alpha for kernel_grad to accumulate gradients
   checkCUDNN(cudnnConvolutionBackwardFilter(m.handle.dnn,
                                             &alpha,
                                             m.inputTensor,
@@ -365,22 +363,20 @@ void conv2d_gpu_backward_kernel(ffStream_t stream,
                                             m.bwdFilterAlgo,
                                             m.handle.workSpace,
                                             m.handle.workSpaceSize,
-                                            &alpha,
+                                            &beta,
                                             m.filterDesc,
                                             filter_grad_ptr));
   // Compute bias gradiant
-  // NOTE: we use alpha for bias_grad to accumulate gradients
   if (bias_grad_ptr != NULL) {
     checkCUDNN(cudnnConvolutionBackwardBias(m.handle.dnn,
                                             &alpha,
                                             m.outputTensor,
                                             output_grad_ptr,
-                                            &alpha,
+                                            &beta,
                                             m.biasTensor,
                                             bias_grad_ptr));
   }
   // Compute data gradiant
-  // NOTE: we use alpha for input_grad to accumulate gradients
   if (input_grad_ptr != NULL) {
     checkCUDNN(cudnnConvolutionBackwardData(m.handle.dnn,
                                             &alpha,
@@ -392,14 +388,19 @@ void conv2d_gpu_backward_kernel(ffStream_t stream,
                                             m.bwdDataAlgo,
                                             m.handle.workSpace,
                                             m.handle.workSpaceSize,
-                                            &alpha,
+                                            &beta,
                                             m.inputTensor,
                                             input_grad_ptr));
   }
 }
 
 void conv2d_gpu_cleanup_kernel(Conv2DPerDeviceState &per_device_state) {
-  NOT_IMPLEMENTED();
+  checkCUDNN(cudnnDestroyTensorDescriptor(per_device_state.inputTensor));
+  checkCUDNN(cudnnDestroyTensorDescriptor(per_device_state.biasTensor));
+  checkCUDNN(cudnnDestroyTensorDescriptor(per_device_state.outputTensor));
+  checkCUDNN(cudnnDestroyFilterDescriptor(per_device_state.filterDesc));
+  checkCUDNN(cudnnDestroyActivationDescriptor(per_device_state.actiDesc));
+  checkCUDNN(cudnnDestroyConvolutionDescriptor(per_device_state.convDesc));
 }
 
 } // namespace FlexFlow

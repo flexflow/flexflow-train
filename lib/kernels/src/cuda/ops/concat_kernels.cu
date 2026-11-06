@@ -81,14 +81,14 @@ void concat_gpu_backward_kernel(
     int blocks_to_add =
         (output_blk_size == input_blk_size) ? input_num_blocks : num_blocks;
 
-    add_with_stride<<<GET_BLOCKS(input_blk_size * num_blocks),
-                      CUDA_NUM_THREADS,
-                      0,
-                      stream>>>(input_grad.get_float_ptr(),
-                                output_grad.get_float_ptr() + offset,
-                                blocks_to_add,
-                                input_blk_size,
-                                output_blk_size);
+    copy_with_stride<<<GET_BLOCKS(input_blk_size * num_blocks),
+                       CUDA_NUM_THREADS,
+                       0,
+                       stream>>>(input_grad.get_float_ptr(),
+                                 output_grad.get_float_ptr() + offset,
+                                 blocks_to_add,
+                                 input_blk_size,
+                                 output_blk_size);
 
     offset += (output_blk_size == input_blk_size)
                   ? input_blk_size * input_num_blocks

@@ -16,6 +16,7 @@
 #include "internal/device.h"
 #include "kernels/datatype_dispatch.h"
 #include "kernels/reshape_kernels_gpu.h"
+#include "op-attrs/tensor_shape.h"
 
 namespace FlexFlow {
 
@@ -25,7 +26,7 @@ __global__ void apply_add_with_scale2(DT *data_ptr,
                                       size_t size,
                                       DT scale) {
   CUDA_KERNEL_LOOP(i, size) {
-    data_ptr[i] += grad_ptr[i] * scale;
+    data_ptr[i] = grad_ptr[i] * scale;
   }
 }
 
@@ -50,7 +51,11 @@ struct BackwardKernel {
 void reshape_gpu_forward_kernel(cudaStream_t stream,
                                 GenericTensorAccessorR const &input,
                                 GenericTensorAccessorW const &output) {
-  copy_accessor_data_to_l_from_r(output, input);
+  size_t num_bytes =
+      get_size_in_bytes(output.shape).unwrap_num_bytes().unwrap_nonnegative();
+  ASSERT(get_size_in_bytes(input.shape) == get_size_in_bytes(output.shape));
+  checkCUDA(cudaMemcpyAsync(
+      output.ptr, input.ptr, num_bytes, cudaMemcpyDeviceToDevice, stream));
 }
 
 void reshape_gpu_backward_kernel(cudaStream_t stream,

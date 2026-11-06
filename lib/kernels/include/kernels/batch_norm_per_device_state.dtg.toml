@@ -69,3 +69,7 @@ type = "int"
 [[fields]]
 name = "activation"
 type = "std::optional<::FlexFlow::Activation>"
+
+[[fields]]
+name = "eps"
+type = "double"

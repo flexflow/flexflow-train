@@ -42,7 +42,7 @@ static std::optional<milliseconds_t>
   DeviceType kernel_device_type = acc.get_kernel_device_type();
   ReshapeAttrs attrs = acc.get_op_attrs().require_reshape();
 
-  auto input_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::INPUT);
+  auto input_grad = acc.get_tensor_grad<Permissions::WO>(TensorSlotName::INPUT);
   auto output_grad =
       acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
 
