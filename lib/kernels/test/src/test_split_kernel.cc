@@ -2,7 +2,6 @@
 #include "kernels/create_random_filled_accessor.h"
 #include "kernels/local_cuda_allocator.h"
 #include "kernels/managed_ff_stream.h"
-#include "kernels/managed_per_device_ff_handle.h"
 #include "kernels/split_kernels_gpu.h"
 #include "op-attrs/datatype_value.h"
 #include "utils/containers/repeat.h"
@@ -17,9 +16,6 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     int in_blk_size = 100;
     int num_blks = 1;
 
-    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
-        /*workSpaceSize=*/1024 * 1024,
-        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();

@@ -7,7 +7,6 @@
 #include "kernels/local_cpu_allocator.h"
 #include "kernels/local_cuda_allocator.h"
 #include "kernels/managed_ff_stream.h"
-#include "kernels/managed_per_device_ff_handle.h"
 #include "kernels/reverse_kernels_cpu.h"
 #include "kernels/reverse_kernels_gpu.h"
 #include "op-attrs/datatype_value.h"
@@ -22,9 +21,6 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     };
     TensorShape output_shape = input_shape;
 
-    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
-        /*workSpaceSize=*/1024 * 1024,
-        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
@@ -69,9 +65,6 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     };
     TensorShape output_shape = input_shape;
 
-    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
-        /*workSpaceSize=*/1024 * 1024,
-        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
 
     Allocator gpu_allocator = create_local_cuda_memory_allocator();

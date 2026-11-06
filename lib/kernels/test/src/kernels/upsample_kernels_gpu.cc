@@ -6,7 +6,6 @@
 #include "kernels/format_accessor_contents.h"
 #include "kernels/local_cuda_allocator.h"
 #include "kernels/managed_ff_stream.h"
-#include "kernels/managed_per_device_ff_handle.h"
 #include "test/utils/doctest/check_kv.h"
 #include <doctest/doctest.h>
 
@@ -60,9 +59,6 @@ static GenericTensorAccessorR make_output(Allocator &allocator) {
 
 TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("upsample_gpu_forward_kernel") {
-    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
-        /*workSpaceSize=*/1024 * 1024,
-        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
@@ -94,9 +90,6 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
   }
 
   TEST_CASE("upsample_gpu_backward_kernel") {
-    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
-        /*workSpaceSize=*/1024 * 1024,
-        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
@@ -172,9 +165,6 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
   }
 
   TEST_CASE("upsample_gpu_forward_kernel (scale_factor = 3)") {
-    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
-        /*workSpaceSize=*/1024 * 1024,
-        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
@@ -228,9 +218,6 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
   }
 
   TEST_CASE("upsample_gpu_backward_kernel (scale_factor = 3)") {
-    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
-        /*workSpaceSize=*/1024 * 1024,
-        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
 
     Allocator allocator = create_local_cuda_memory_allocator();
