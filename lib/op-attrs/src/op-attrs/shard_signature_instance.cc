@@ -129,7 +129,7 @@ nlohmann::json format_as(ShardSignatureInstance const &inst) {
 }
 
 std::ostream &operator<<(std::ostream &s, ShardSignatureInstance const &inst) {
-  return (s << inst);
+  return (s << fmt::to_string(inst));
 }
 
 } // namespace FlexFlow
