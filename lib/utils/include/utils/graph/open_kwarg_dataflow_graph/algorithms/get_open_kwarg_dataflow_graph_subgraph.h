@@ -1,10 +1,10 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_OPEN_KWARG_DATAFLOW_GRAPH_ALGORITHMS_GET_OPEN_KWARG_DATAFLOW_GRAPH_SUBGRAPH_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_OPEN_KWARG_DATAFLOW_GRAPH_ALGORITHMS_GET_OPEN_KWARG_DATAFLOW_GRAPH_SUBGRAPH_H
 
+#include "utils/bidict/algorithms/values.h"
 #include "utils/bidict/generate_bidict.h"
 #include "utils/containers/set_of.h"
 #include "utils/containers/set_union.h"
-#include "utils/containers/values.h"
 #include "utils/graph/kwarg_dataflow_graph/kwarg_dataflow_output_query.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_open_kwarg_dataflow_subgraph_incoming_edges.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/get_open_kwarg_dataflow_subgraph_inputs.h"
@@ -143,7 +143,7 @@ OpenKwargDataflowGraphData<GraphInputName, SlotName>
       subgraph_interior_edges = g.query_edges(subgraph_interior_edges_query);
 
   std::set<KwargDataflowGraphInput<GraphInputName>> subgraph_inputs =
-      set_of(values(full_graph_values_to_subgraph_inputs));
+      values(full_graph_values_to_subgraph_inputs);
 
   std::set<KwargDataflowOutput<SlotName>> subgraph_outputs =
       g.query_outputs(KwargDataflowOutputQuery<SlotName>{

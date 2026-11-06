@@ -177,6 +177,7 @@ cython_debug/
 *.pt
 
 # IDE
+*~
 .vscode/*
 
 # Docker container
