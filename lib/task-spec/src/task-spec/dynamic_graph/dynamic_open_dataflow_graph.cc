@@ -3,10 +3,8 @@
 #include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/pcg_operator_attrs.h"
 #include "task-spec/dynamic_graph/dynamic_graph_edge.h"
-#include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.h"
 #include "task-spec/dynamic_graph/dynamic_slot_site.dtg.h"
-#include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
 #include "task-spec/dynamic_graph/serializable_dynamic_node_attrs.h"
 #include "task-spec/dynamic_graph/serializable_dynamic_value_attrs.h"
 #include "utils/containers/all_of.h"
@@ -40,7 +38,6 @@
 #include "utils/many_to_one/many_to_one.h"
 #include "utils/nonnegative_int/nonnegative_int.h"
 #include "utils/unordered_bidict/algorithms/unordered_bidict_from_map.h"
-#include "utils/unordered_bidict/algorithms/values.h"
 
 namespace FlexFlow {
 
