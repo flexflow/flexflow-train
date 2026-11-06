@@ -18,8 +18,12 @@ struct DynamicOpenDataflowGraph {
 
   bool operator==(DynamicOpenDataflowGraph const &) const;
   bool operator!=(DynamicOpenDataflowGraph const &) const;
+  bool operator<(DynamicOpenDataflowGraph const &) const;
+  bool operator>(DynamicOpenDataflowGraph const &) const;
+  bool operator<=(DynamicOpenDataflowGraph const &) const;
+  bool operator>=(DynamicOpenDataflowGraph const &) const;
 
-  std::set<DynamicNodeInvocation> get_invocation_set() const;
+  std::set<DynamicNodeInvocation> const &get_invocation_set() const;
 
   DynamicNodeInvocation const &
       get_invocation_for_id(dynamic_invocation_id_t) const;
@@ -33,8 +37,10 @@ struct DynamicOpenDataflowGraph {
   void debug_print() const;
 
 private:
-  unordered_bidict<dynamic_invocation_id_t, DynamicNodeInvocation> invocations;
-  unordered_bidict<dynamic_value_id_t, DynamicValueAttrs> values;
+  std::set<DynamicNodeInvocation> invocations;
+  unordered_bidict<dynamic_invocation_id_t, DynamicNodeInvocation>
+      invocations_by_id;
+  unordered_bidict<dynamic_value_id_t, DynamicValueAttrs> values_by_id;
 };
 
 std::string format_as(DynamicOpenDataflowGraph const &);

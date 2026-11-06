@@ -45,11 +45,13 @@
 namespace FlexFlow {
 
 DynamicOpenDataflowGraph::DynamicOpenDataflowGraph(
-    std::set<DynamicNodeInvocation> const &invocation_set) {
-  this->invocations = unordered_bidict_from_map(
-      map_keys(enumerate(invocation_set), [](nonnegative_int idx) {
+    std::set<DynamicNodeInvocation> const &invocations)
+    : invocations(invocations) {
+  this->invocations_by_id = unordered_bidict_from_map(
+      map_keys(enumerate(this->invocations), [](nonnegative_int idx) {
         return dynamic_invocation_id_t{idx};
       }));
+
   std::map<dynamic_value_id_t, DynamicValueAttrs> internal_values =
       map_keys(enumerate(dynamic_graph_get_internal_values(*this)),
                [](nonnegative_int idx) {
@@ -62,7 +64,9 @@ DynamicOpenDataflowGraph::DynamicOpenDataflowGraph(
                });
   std::map<dynamic_value_id_t, DynamicValueAttrs> all_values =
       binary_merge_disjoint_maps(internal_values, external_values);
-  this->values = unordered_bidict_from_map(all_values);
+  this->values_by_id = unordered_bidict_from_map(all_values);
+
+  check_dynamic_open_dataflow_graph_is_valid(*this);
 }
 
 bool DynamicOpenDataflowGraph::operator==(
@@ -75,29 +79,49 @@ bool DynamicOpenDataflowGraph::operator!=(
   return std::tie(this->invocations) != std::tie(other.invocations);
 }
 
-std::set<DynamicNodeInvocation>
+bool DynamicOpenDataflowGraph::operator<(
+    DynamicOpenDataflowGraph const &other) const {
+  return std::tie(this->invocations) < std::tie(other.invocations);
+}
+
+bool DynamicOpenDataflowGraph::operator>(
+    DynamicOpenDataflowGraph const &other) const {
+  return std::tie(this->invocations) > std::tie(other.invocations);
+}
+
+bool DynamicOpenDataflowGraph::operator<=(
+    DynamicOpenDataflowGraph const &other) const {
+  return std::tie(this->invocations) <= std::tie(other.invocations);
+}
+
+bool DynamicOpenDataflowGraph::operator>=(
+    DynamicOpenDataflowGraph const &other) const {
+  return std::tie(this->invocations) >= std::tie(other.invocations);
+}
+
+std::set<DynamicNodeInvocation> const &
     DynamicOpenDataflowGraph::get_invocation_set() const {
-  return set_of(FlexFlow::values(this->invocations));
+  return this->invocations;
 }
 
 DynamicNodeInvocation const &DynamicOpenDataflowGraph::get_invocation_for_id(
     dynamic_invocation_id_t id) const {
-  return this->invocations.at_l(id);
+  return this->invocations_by_id.at_l(id);
 }
 
 dynamic_invocation_id_t DynamicOpenDataflowGraph::get_id_for_invocation(
     DynamicNodeInvocation const &invocation) const {
-  return this->invocations.at_r(invocation);
+  return this->invocations_by_id.at_r(invocation);
 }
 
 DynamicValueAttrs const &
     DynamicOpenDataflowGraph::get_value_for_id(dynamic_value_id_t id) const {
-  return this->values.at_l(id);
+  return this->values_by_id.at_l(id);
 }
 
 dynamic_value_id_t DynamicOpenDataflowGraph::get_id_for_value(
     DynamicValueAttrs const &value) const {
-  return this->values.at_r(value);
+  return this->values_by_id.at_r(value);
 }
 
 std::string DynamicOpenDataflowGraph::debug_to_string() const {
@@ -491,14 +515,9 @@ DynamicOpenDataflowGraph flatmap_dynamic_invocation_set(
 
 DynamicOpenDataflowGraph dynamic_open_dataflow_graph_from_invocation_set(
     std::set<DynamicNodeInvocation> const &invocation_set) {
-
-  DynamicOpenDataflowGraph result = DynamicOpenDataflowGraph{
+  return DynamicOpenDataflowGraph{
       invocation_set,
   };
-
-  check_dynamic_open_dataflow_graph_is_valid(result);
-
-  return result;
 }
 
 std::pair<LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
