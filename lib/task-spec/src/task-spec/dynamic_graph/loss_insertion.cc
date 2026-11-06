@@ -82,8 +82,11 @@ LossInsertionResult perform_loss_insertion(
       },
   };
 
-  DynamicOpenDataflowGraph result = dg;
-  result.invocations.insert(loss_invocation);
+  std::set<DynamicNodeInvocation> invocation_set =
+      get_dynamic_invocation_set(dg);
+  invocation_set.insert(loss_invocation);
+  DynamicOpenDataflowGraph result =
+      dynamic_open_dataflow_graph_from_invocation_set(invocation_set);
   return LossInsertionResult{result, label_value, logit_grad_value};
 }
 

@@ -60,7 +60,8 @@ TensorInstanceBacking perform_instance_allocation(
     }
   };
 
-  for (DynamicNodeInvocation const &invocation : g.invocations) {
+  for (DynamicNodeInvocation const &invocation :
+       get_dynamic_invocation_set(g)) {
     for (DynamicValueAttrs const &input : values(invocation.inputs)) {
       allocate(input);
     }

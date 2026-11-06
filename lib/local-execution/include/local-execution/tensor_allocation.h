@@ -2,7 +2,7 @@
 #define _FLEXFLOW_LIB_LOCAL_EXECUTION_INCLUDE_LOCAL_EXECUTION_TENSOR_ALLOCATION_H
 
 #include "kernels/allocation.h"
-#include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 
 namespace FlexFlow {
 

@@ -3,7 +3,7 @@
 
 #include "task-spec/dynamic_graph/dynamic_invocation_id_t.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
-#include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 
 namespace FlexFlow {
 

@@ -3,8 +3,10 @@
 #include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/pcg_operator_attrs.h"
 #include "task-spec/dynamic_graph/dynamic_graph_edge.h"
+#include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.h"
 #include "task-spec/dynamic_graph/dynamic_slot_site.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h"
 #include "task-spec/dynamic_graph/serializable_dynamic_node_attrs.h"
 #include "task-spec/dynamic_graph/serializable_dynamic_value_attrs.h"
 #include "utils/containers/all_of.h"
@@ -12,6 +14,7 @@
 #include "utils/containers/concat_vectors.h"
 #include "utils/containers/contains_duplicates.h"
 #include "utils/containers/contains_value.h"
+#include "utils/containers/enumerate.h"
 #include "utils/containers/filter_values.h"
 #include "utils/containers/flatmap.h"
 #include "utils/containers/get_only.h"
@@ -19,6 +22,8 @@
 #include "utils/containers/multiset_union.h"
 #include "utils/containers/repeat.h"
 #include "utils/containers/require_all_of.h"
+#include "utils/containers/set_of.h"
+#include "utils/containers/set_union.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/zip_strict.h"
 #include "utils/containers/zip_values_strict.h"
@@ -33,8 +38,84 @@
 #include "utils/graph/open_dataflow_graph/algorithms/get_inputs.h"
 #include "utils/graph/open_kwarg_dataflow_graph/kwarg_dataflow_graph_input.dtg.h"
 #include "utils/many_to_one/many_to_one.h"
+#include "utils/nonnegative_int/nonnegative_int.h"
+#include "utils/unordered_bidict/algorithms/unordered_bidict_from_map.h"
+#include "utils/unordered_bidict/algorithms/values.h"
 
 namespace FlexFlow {
+
+DynamicOpenDataflowGraph::DynamicOpenDataflowGraph(
+    std::set<DynamicNodeInvocation> const &invocation_set) {
+  this->invocations = unordered_bidict_from_map(
+      map_keys(enumerate(invocation_set), [](nonnegative_int idx) {
+        return dynamic_invocation_id_t{idx};
+      }));
+  std::map<dynamic_value_id_t, DynamicValueAttrs> internal_values =
+      map_keys(enumerate(dynamic_graph_get_internal_values(*this)),
+               [](nonnegative_int idx) {
+                 return dynamic_value_id_t{dynamic_internal_value_id_t{idx}};
+               });
+  std::map<dynamic_value_id_t, DynamicValueAttrs> external_values =
+      map_keys(enumerate(dynamic_graph_get_external_values(*this)),
+               [](nonnegative_int idx) {
+                 return dynamic_value_id_t{dynamic_external_value_id_t{idx}};
+               });
+  std::map<dynamic_value_id_t, DynamicValueAttrs> all_values =
+      binary_merge_disjoint_maps(internal_values, external_values);
+  this->values = unordered_bidict_from_map(all_values);
+}
+
+bool DynamicOpenDataflowGraph::operator==(
+    DynamicOpenDataflowGraph const &other) const {
+  return std::tie(this->invocations) == std::tie(other.invocations);
+}
+
+bool DynamicOpenDataflowGraph::operator!=(
+    DynamicOpenDataflowGraph const &other) const {
+  return std::tie(this->invocations) != std::tie(other.invocations);
+}
+
+std::set<DynamicNodeInvocation>
+    DynamicOpenDataflowGraph::get_invocation_set() const {
+  return set_of(FlexFlow::values(this->invocations));
+}
+
+DynamicNodeInvocation const &DynamicOpenDataflowGraph::get_invocation_for_id(
+    dynamic_invocation_id_t id) const {
+  return this->invocations.at_l(id);
+}
+
+dynamic_invocation_id_t DynamicOpenDataflowGraph::get_id_for_invocation(
+    DynamicNodeInvocation const &invocation) const {
+  return this->invocations.at_r(invocation);
+}
+
+DynamicValueAttrs const &
+    DynamicOpenDataflowGraph::get_value_for_id(dynamic_value_id_t id) const {
+  return this->values.at_l(id);
+}
+
+dynamic_value_id_t DynamicOpenDataflowGraph::get_id_for_value(
+    DynamicValueAttrs const &value) const {
+  return this->values.at_r(value);
+}
+
+std::string DynamicOpenDataflowGraph::debug_to_string() const {
+  return fmt::to_string(*this);
+}
+
+void DynamicOpenDataflowGraph::debug_print() const {
+  std::cout << this->debug_to_string() << std::endl;
+}
+
+std::string format_as(DynamicOpenDataflowGraph const &x) {
+  ::nlohmann::json j = x;
+  return j.dump();
+}
+
+std::ostream &operator<<(std::ostream &s, DynamicOpenDataflowGraph const &x) {
+  return s << fmt::to_string(x);
+}
 
 DynamicOpenDataflowGraph make_empty_dynamic_open_dataflow_graph() {
   return DynamicOpenDataflowGraph{
@@ -47,7 +128,7 @@ void check_dynamic_open_dataflow_graph_is_valid(
   std::map<DynamicValueAttrs, std::vector<DynamicNodeInvocation>>
       invocations_by_value_produced;
 
-  for (DynamicNodeInvocation const &i : g.invocations) {
+  for (DynamicNodeInvocation const &i : get_dynamic_invocation_set(g)) {
     for (DynamicValueAttrs const &v : values(i.outputs)) {
       invocations_by_value_produced[v].push_back(i);
     }
@@ -107,12 +188,12 @@ void require_full_dynamic_graph_satisfies(
     DynamicOpenDataflowGraph const &g,
     std::function<void(DynamicNodeInvocation const &)> const
         &invocation_condition) {
-  require_all_of(g.invocations, invocation_condition);
+  require_all_of(get_dynamic_invocation_set(g), invocation_condition);
 }
 
 std::multiset<DynamicNodeAttrs>
     get_dynamic_nodes(DynamicOpenDataflowGraph const &g) {
-  return transform(multiset_of(g.invocations),
+  return transform(multiset_of(get_dynamic_invocation_set(g)),
                    [&](DynamicNodeInvocation const &i) -> DynamicNodeAttrs {
                      return i.node_attrs;
                    });
@@ -121,7 +202,7 @@ std::multiset<DynamicNodeAttrs>
 std::multiset<DynamicValueAttrs>
     get_dynamic_values(DynamicOpenDataflowGraph const &g) {
   return flatmap(
-      multiset_of(g.invocations),
+      multiset_of(get_dynamic_invocation_set(g)),
       [&](DynamicNodeInvocation const &i) -> std::multiset<DynamicValueAttrs> {
         return multiset_union(values(i.inputs), values(i.outputs));
       });
@@ -130,7 +211,7 @@ std::multiset<DynamicValueAttrs>
 std::multiset<DynamicTensorSlot>
     get_dynamic_tensor_slots(DynamicOpenDataflowGraph const &g) {
   return flatmap(
-      multiset_of(g.invocations),
+      multiset_of(get_dynamic_invocation_set(g)),
       [&](DynamicNodeInvocation const &i) -> std::multiset<DynamicTensorSlot> {
         return multiset_of(set_union(keys(i.inputs), keys(i.outputs)));
       });
@@ -138,7 +219,7 @@ std::multiset<DynamicTensorSlot>
 
 std::set<DynamicNodeInvocation>
     get_dynamic_invocation_set(DynamicOpenDataflowGraph const &g) {
-  return g.invocations;
+  return g.get_invocation_set();
 }
 
 std::set<DynamicValueAttrs>
@@ -173,68 +254,25 @@ std::set<DynamicValueAttrs>
 dynamic_invocation_id_t dynamic_graph_get_id_for_invocation(
     DynamicOpenDataflowGraph const &g,
     DynamicNodeInvocation const &invocation) {
-  return dynamic_invocation_id_t{
-      nonnegative_int{assert_unwrap(index_of(g.invocations, invocation))},
-  };
+  return g.get_id_for_invocation(invocation);
 }
 
 DynamicNodeInvocation
     dynamic_graph_get_invocation_for_id(DynamicOpenDataflowGraph const &g,
                                         dynamic_invocation_id_t const &id) {
-  return at_idx(g.invocations, id.idx);
+  return g.get_invocation_for_id(id);
 }
 
 dynamic_value_id_t
     dynamic_graph_get_id_for_value(DynamicOpenDataflowGraph const &g,
                                    DynamicValueAttrs const &value) {
-  auto idx_in_set = [](std::set<DynamicValueAttrs> const &s,
-                       DynamicValueAttrs const &v) -> nonnegative_int {
-    return nonnegative_int{assert_unwrap(index_of(s, v))};
-  };
-
-  {
-    std::set<DynamicValueAttrs> internal_values =
-        dynamic_graph_get_internal_values(g);
-    if (contains(internal_values, value)) {
-      return dynamic_value_id_t{
-          dynamic_internal_value_id_t{
-              idx_in_set(internal_values, value),
-          },
-      };
-    }
-  }
-
-  {
-    std::set<DynamicValueAttrs> external_values =
-        dynamic_graph_get_external_values(g);
-    if (contains(external_values, value)) {
-      return dynamic_value_id_t{
-          dynamic_external_value_id_t{
-              idx_in_set(external_values, value),
-          },
-      };
-    }
-  }
-
-  PANIC("Could not find id for value {}", value);
+  return g.get_id_for_value(value);
 }
 
 DynamicValueAttrs
     dynamic_graph_get_value_for_id(DynamicOpenDataflowGraph const &g,
                                    dynamic_value_id_t const &id) {
-  return id.visit<DynamicValueAttrs>(overload{
-      [&](dynamic_internal_value_id_t const &internal_id) -> DynamicValueAttrs {
-        std::set<DynamicValueAttrs> internal_values =
-            dynamic_graph_get_internal_values(g);
-
-        return at_idx(internal_values, internal_id.idx);
-      },
-      [&](dynamic_external_value_id_t const &external_id) -> DynamicValueAttrs {
-        std::set<DynamicValueAttrs> external_values =
-            dynamic_graph_get_external_values(g);
-
-        return at_idx(external_values, external_id.idx);
-      }});
+  return g.get_value_for_id(id);
 }
 
 std::set<DynamicGraphEdge>
@@ -412,7 +450,8 @@ std::optional<DynamicValueAttrs>
     find_output_value_attrs(DynamicOpenDataflowGraph const &dg,
                             dynamic_tensor_guid_t tensor_guid,
                             std::optional<DynamicTensorRole> const &role) {
-  for (DynamicNodeInvocation const &invocation : dg.invocations) {
+  for (DynamicNodeInvocation const &invocation :
+       get_dynamic_invocation_set(dg)) {
     for (auto const &[slot, output] : invocation.outputs) {
       if (output.tensor_guid == tensor_guid && output.role == role) {
         return output;
@@ -520,7 +559,7 @@ std::pair<LabelledOpenKwargDataflowGraph<DynamicNodeAttrs,
   };
 
   bidict<Node, DynamicNodeInvocation> node_map;
-  std::set<DynamicNodeInvocation> to_add = g.invocations;
+  std::set<DynamicNodeInvocation> to_add = get_dynamic_invocation_set(g);
 
   auto add_invocation_to_graph =
       [&](DynamicNodeInvocation const &invocation) -> void {
@@ -674,3 +713,13 @@ void debug_print_dynamic_open_dataflow_graph_as_dot(
 }
 
 } // namespace FlexFlow
+
+namespace nlohmann {
+
+void adl_serializer<::FlexFlow::DynamicOpenDataflowGraph>::to_json(
+    json &j, ::FlexFlow::DynamicOpenDataflowGraph const &v) {
+  j["__type"] = "DynamicOpenDataflowGraph";
+  j["invocations"] = FlexFlow::get_dynamic_invocation_set(v);
+}
+
+} // namespace nlohmann

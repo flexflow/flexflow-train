@@ -4,12 +4,41 @@
 #include "task-spec/dynamic_graph/dynamic_graph_edge.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_invocation_id_t.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
-#include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_slot_site.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_value_id_t.dtg.h"
 #include "utils/graph/labelled_open_kwarg_dataflow_graph/labelled_open_kwarg_dataflow_graph.h"
+#include "utils/unordered_bidict/unordered_bidict.h"
 
 namespace FlexFlow {
+
+struct DynamicOpenDataflowGraph {
+  DynamicOpenDataflowGraph() = delete;
+  explicit DynamicOpenDataflowGraph(
+      std::set<DynamicNodeInvocation> const &invocation_set);
+
+  bool operator==(DynamicOpenDataflowGraph const &) const;
+  bool operator!=(DynamicOpenDataflowGraph const &) const;
+
+  std::set<DynamicNodeInvocation> get_invocation_set() const;
+
+  DynamicNodeInvocation const &
+      get_invocation_for_id(dynamic_invocation_id_t) const;
+  dynamic_invocation_id_t
+      get_id_for_invocation(DynamicNodeInvocation const &) const;
+
+  DynamicValueAttrs const &get_value_for_id(dynamic_value_id_t) const;
+  dynamic_value_id_t get_id_for_value(DynamicValueAttrs const &) const;
+
+  std::string debug_to_string() const;
+  void debug_print() const;
+
+private:
+  unordered_bidict<dynamic_invocation_id_t, DynamicNodeInvocation> invocations;
+  unordered_bidict<dynamic_value_id_t, DynamicValueAttrs> values;
+};
+
+std::string format_as(DynamicOpenDataflowGraph const &);
+std::ostream &operator<<(std::ostream &, DynamicOpenDataflowGraph const &);
 
 DynamicOpenDataflowGraph make_empty_dynamic_open_dataflow_graph();
 
@@ -128,5 +157,12 @@ void debug_print_dynamic_open_dataflow_graph_as_dot(
     DynamicOpenDataflowGraph const &);
 
 } // namespace FlexFlow
+
+namespace nlohmann {
+template <>
+struct adl_serializer<::FlexFlow::DynamicOpenDataflowGraph> {
+  static void to_json(json &, ::FlexFlow::DynamicOpenDataflowGraph const &);
+};
+} // namespace nlohmann
 
 #endif

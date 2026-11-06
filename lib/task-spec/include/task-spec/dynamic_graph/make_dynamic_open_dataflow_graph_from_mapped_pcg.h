@@ -3,7 +3,7 @@
 
 #include "pcg/mapped_parallel_computation_graph/mapped_parallel_computation_graph.dtg.h"
 #include "pcg/mapped_parallel_computation_graph/mapped_parallel_layer_invocation_info.dtg.h"
-#include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 
 namespace FlexFlow {
 

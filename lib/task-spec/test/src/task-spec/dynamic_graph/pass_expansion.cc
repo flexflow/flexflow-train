@@ -880,7 +880,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }();
 
     CHECK(get_dynamic_invocation_set(result).size() ==
-          correct.invocations.size());
+          get_dynamic_invocation_set(correct).size());
 
     nlohmann::json result_json =
         dynamic_open_dataflow_graph_to_serializable(result);

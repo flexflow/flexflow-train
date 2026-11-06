@@ -4,6 +4,7 @@
 #include "pcg/computation_graph.h"
 #include "pcg/tensor_attrs.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_layer_guid_t.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
 #include "task-spec/dynamic_graph/training_operation_attrs.dtg.h"
@@ -17,7 +18,7 @@ namespace FlexFlow {
 
 DynamicOpenDataflowGraph
     make_dynamic_open_dataflow_graph_from_cg(ComputationGraph const &cg) {
-  DynamicOpenDataflowGraph result = make_empty_dynamic_open_dataflow_graph();
+  std::set<DynamicNodeInvocation> invocation_set;
 
   for (auto const &[layer, attrs] : get_layer_attrs_mapping(cg)) {
     DynamicNodeAttrs result_attrs{
@@ -75,10 +76,10 @@ DynamicOpenDataflowGraph
           };
         });
 
-    result.invocations.emplace(result_inputs, result_attrs, result_outputs);
+    invocation_set.emplace(result_inputs, result_attrs, result_outputs);
   }
 
-  return result;
+  return dynamic_open_dataflow_graph_from_invocation_set(invocation_set);
 }
 
 } // namespace FlexFlow
