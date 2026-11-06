@@ -6,8 +6,8 @@
 #include "pcg/mapped_parallel_computation_graph/mapped_operator_atomic_task_shard_binding.h"
 #include "pcg/mapped_parallel_computation_graph/parallelism_operator_atomic_task_shard_binding.h"
 #include "utils/bidict/algorithms/bidict_from_unstructured_relation.h"
+#include "utils/bidict/algorithms/bidict_right_entries.h"
 #include "utils/bidict/algorithms/bidict_transform_values.h"
-#include "utils/bidict/algorithms/right_entries.h"
 #include "utils/bidict/algorithms/unstructured_relation_from_bidict.h"
 #include "utils/bidict/generate_bidict.h"
 #include "utils/binary_relation/binary_relation_is_biunique.h"
@@ -175,7 +175,7 @@ bidict<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
 std::set<TensorSlotName>
     get_slot_names_for_task_group(MappedOperatorTaskGroup const &g) {
   return require_all_same1(
-      transform(vector_of(right_entries(g.get_shard_bindings())),
+      transform(vector_of(bidict_right_entries(g.get_shard_bindings())),
                 [&](OperatorAtomicTaskShardBinding const &shard_bindings)
                     -> std::set<TensorSlotName> {
                   return keys(shard_bindings.tensor_coords);

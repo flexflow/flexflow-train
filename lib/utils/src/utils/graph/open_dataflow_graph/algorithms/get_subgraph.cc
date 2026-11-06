@@ -1,9 +1,9 @@
 #include "utils/graph/open_dataflow_graph/algorithms/get_subgraph.h"
+#include "utils/bidict/algorithms/bidict_right_entries.h"
 #include "utils/bidict/generate_bidict.h"
 #include "utils/containers/enumerate_vector.h"
 #include "utils/containers/is_subseteq_of.h"
 #include "utils/containers/set_of.h"
-#include "utils/containers/values.h"
 #include "utils/graph/dataflow_graph/dataflow_output_query.h"
 #include "utils/graph/node/algorithms.h"
 #include "utils/graph/open_dataflow_graph/algorithms/from_open_dataflow_graph_data.h"
@@ -86,7 +86,7 @@ OpenDataflowGraphData
       g.query_edges(subgraph_interior_edges_query);
 
   std::set<DataflowGraphInput> subgraph_inputs =
-      set_of(values(full_graph_values_to_subgraph_inputs));
+      bidict_right_entries(full_graph_values_to_subgraph_inputs);
   std::set<DataflowOutput> subgraph_outputs =
       filter(g.query_outputs(dataflow_output_query_all()),
              [&](DataflowOutput const &o) {

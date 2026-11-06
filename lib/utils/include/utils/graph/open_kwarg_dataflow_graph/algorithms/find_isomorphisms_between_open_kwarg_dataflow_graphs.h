@@ -2,8 +2,8 @@
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_OPEN_KWARG_DATAFLOW_GRAPH_ALGORITHMS_FIND_ISOMORPHISMS_BETWEEN_OPEN_KWARG_DATAFLOW_GRAPHS_H
 
 #include "utils/bidict/algorithms/bidict_from_keys_and_values.h"
-#include "utils/bidict/algorithms/left_entries.h"
-#include "utils/bidict/algorithms/right_entries.h"
+#include "utils/bidict/algorithms/bidict_left_entries.h"
+#include "utils/bidict/algorithms/bidict_right_entries.h"
 #include "utils/containers/get_all_permutations.h"
 #include "utils/containers/values.h"
 #include "utils/containers/vector_of.h"
@@ -30,20 +30,23 @@ std::optional<OpenKwargDataflowGraphIsomorphism<GraphInputName>>
                KwargDataflowGraphInput<GraphInputName>> const
             &unused_graph_inputs_mapping) {
   {
-    std::set<Node> already_mapped_src_nodes = left_entries(sink_node_mapping);
+    std::set<Node> already_mapped_src_nodes =
+        bidict_left_entries(sink_node_mapping);
     std::set<Node> src_g_sink_nodes = set_of(get_terminal_nodes(src_g));
     ASSERT(already_mapped_src_nodes == src_g_sink_nodes);
   }
 
   {
-    std::set<Node> already_mapped_dst_nodes = right_entries(sink_node_mapping);
+    std::set<Node> already_mapped_dst_nodes =
+        bidict_right_entries(sink_node_mapping);
     std::set<Node> dst_g_sink_nodes = set_of(get_terminal_nodes(dst_g));
     ASSERT(already_mapped_dst_nodes == dst_g_sink_nodes);
   }
 
   {
     std::set<KwargDataflowGraphInput<GraphInputName>>
-        already_mapped_src_inputs = left_entries(unused_graph_inputs_mapping);
+        already_mapped_src_inputs =
+            bidict_left_entries(unused_graph_inputs_mapping);
     std::set<KwargDataflowGraphInput<GraphInputName>> src_g_unused_inputs =
         set_of(get_unused_open_kwarg_dataflow_graph_inputs(src_g));
     ASSERT(already_mapped_src_inputs == src_g_unused_inputs);
@@ -51,7 +54,8 @@ std::optional<OpenKwargDataflowGraphIsomorphism<GraphInputName>>
 
   {
     std::set<KwargDataflowGraphInput<GraphInputName>>
-        already_mapped_dst_inputs = right_entries(unused_graph_inputs_mapping);
+        already_mapped_dst_inputs =
+            bidict_right_entries(unused_graph_inputs_mapping);
     std::set<KwargDataflowGraphInput<GraphInputName>> dst_g_unused_inputs =
         set_of(get_unused_open_kwarg_dataflow_graph_inputs(dst_g));
     ASSERT(already_mapped_dst_inputs == dst_g_unused_inputs);

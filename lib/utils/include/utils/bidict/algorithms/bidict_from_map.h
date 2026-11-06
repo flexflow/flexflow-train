@@ -10,11 +10,6 @@ bidict<L, R> bidict_from_map(std::map<L, R> const &m) {
   return bidict<L, R>{m.begin(), m.end()};
 }
 
-template <typename L, typename R>
-bidict<L, R> bidict_from_map(std::unordered_map<L, R> const &m) {
-  return bidict<L, R>{m.begin(), m.end()};
-}
-
 } // namespace FlexFlow
 
 #endif

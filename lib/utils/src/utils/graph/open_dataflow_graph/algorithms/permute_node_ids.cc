@@ -1,5 +1,5 @@
 #include "utils/graph/open_dataflow_graph/algorithms/permute_node_ids.h"
-#include "utils/bidict/algorithms/right_entries.h"
+#include "utils/bidict/algorithms/bidict_right_entries.h"
 #include "utils/bidict/bidict.h"
 #include "utils/bidict/generate_bidict.h"
 #include "utils/containers/contains_key.h"

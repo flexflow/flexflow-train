@@ -1,6 +1,6 @@
 #include "utils/graph/open_dataflow_graph/algorithms/get_subgraph.h"
 #include "test/utils/doctest/fmt/set.h"
-#include "utils/bidict/algorithms/left_entries.h"
+#include "utils/bidict/algorithms/bidict_left_entries.h"
 #include "utils/containers/contains.h"
 #include "utils/containers/get_only.h"
 #include "utils/graph/instances/unordered_set_dataflow_graph.h"
@@ -46,7 +46,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("left entries are correct") {
       std::set<OpenDataflowValue> correct = {
           v0, OpenDataflowValue{i1}, OpenDataflowValue{i2}};
-      CHECK(left_entries(full_graph_values_to_subgraph_inputs) == correct);
+      CHECK(bidict_left_entries(full_graph_values_to_subgraph_inputs) ==
+            correct);
     }
 
     SUBCASE("mapping is correct") {

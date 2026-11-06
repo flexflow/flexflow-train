@@ -2,10 +2,10 @@
 #include "op-attrs/ff_ordered/ff_ordered_from_map.h"
 #include "op-attrs/ff_ordered/map_from_ff_ordered.h"
 #include "op-attrs/tensor_dims.h"
+#include "utils/bidict/algorithms/bidict_exhaustive_relational_join.h"
 #include "utils/bidict/algorithms/bidict_from_keys_and_values.h"
-#include "utils/bidict/algorithms/exhaustive_relational_join.h"
-#include "utils/bidict/algorithms/left_entries.h"
-#include "utils/bidict/algorithms/right_entries.h"
+#include "utils/bidict/algorithms/bidict_left_entries.h"
+#include "utils/bidict/algorithms/bidict_right_entries.h"
 #include "utils/bidict/bidict.h"
 #include "utils/containers/map_keys.h"
 #include "utils/containers/maximum.h"
@@ -29,8 +29,8 @@ static void check_are_contiguous_from_one(std::set<ff_dim_t> const &idxs) {
 TensorDimPermutation::TensorDimPermutation(
     bidict<ff_dim_t, ff_dim_t> const &raw)
     : raw(raw) {
-  check_are_contiguous_from_one(right_entries(raw));
-  check_are_contiguous_from_one(left_entries(raw));
+  check_are_contiguous_from_one(bidict_right_entries(raw));
+  check_are_contiguous_from_one(bidict_left_entries(raw));
 }
 
 bool TensorDimPermutation::operator==(TensorDimPermutation const &other) const {
@@ -95,7 +95,7 @@ TensorDimPermutation
   ASSERT(lhs.num_tensor_dims() == rhs.num_tensor_dims());
 
   return TensorDimPermutation{
-      exhaustive_relational_join(lhs.as_bidict(), rhs.as_bidict()),
+      bidict_exhaustive_relational_join(lhs.as_bidict(), rhs.as_bidict()),
   };
 }
 

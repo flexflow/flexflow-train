@@ -2,11 +2,11 @@
 #include "substitutions/pcg_pattern.h"
 #include "substitutions/sub_parallel_computation_graph.h"
 #include "substitutions/unlabelled/unlabelled_graph_pattern.h"
+#include "utils/bidict/algorithms/bidict_exhaustive_relational_join.h"
 #include "utils/bidict/algorithms/bidict_from_keys_and_values.h"
 #include "utils/bidict/algorithms/bidict_from_map.h"
 #include "utils/bidict/algorithms/bidict_transform_values.h"
 #include "utils/bidict/algorithms/binary_merge_disjoint_bidicts.h"
-#include "utils/bidict/algorithms/exhaustive_relational_join.h"
 #include "utils/containers/is_subseteq_of.h"
 #include "utils/containers/map_values.h"
 #include "utils/containers/values.h"
@@ -31,8 +31,8 @@ bidict<PatternNodeOutput, parallel_tensor_guid_t>
     assert(matched_layer_output_tensors.size() == pattern_node_outputs.size());
 
     bidict<PatternNodeOutput, parallel_tensor_guid_t> mapping =
-        exhaustive_relational_join(pattern_node_outputs.reversed(),
-                                   matched_layer_output_tensors);
+        bidict_exhaustive_relational_join(pattern_node_outputs.reversed(),
+                                          matched_layer_output_tensors);
 
     result = binary_merge_disjoint_bidicts(result, mapping);
   }

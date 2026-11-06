@@ -5,8 +5,8 @@
 #include "substitutions/unlabelled/pattern_split.h"
 #include "substitutions/unlabelled/standard_pattern_edge.h"
 #include "substitutions/unlabelled/unlabelled_graph_pattern.h"
-#include "utils/bidict/algorithms/left_entries.h"
-#include "utils/bidict/algorithms/right_entries.h"
+#include "utils/bidict/algorithms/bidict_left_entries.h"
+#include "utils/bidict/algorithms/bidict_right_entries.h"
 #include "utils/containers/is_subseteq_of.h"
 #include "utils/containers/keys.h"
 #include "utils/containers/make_counter_func.h"
@@ -26,7 +26,7 @@ namespace FlexFlow {
 OpenKwargDataflowSubgraphResult<int, TensorSlotName>
     subgraph_matched(OpenKwargDataflowGraphView<int, TensorSlotName> const &g,
                      UnlabelledKwargDataflowGraphPatternMatch const &match) {
-  std::set<Node> matched_nodes = right_entries(match.node_assignment);
+  std::set<Node> matched_nodes = bidict_right_entries(match.node_assignment);
   return get_open_kwarg_dataflow_graph_subgraph(
       g, matched_nodes, make_counter_func());
 }
@@ -196,10 +196,10 @@ bool unlabelled_pattern_does_match(
     MatchAdditionalCriterion const &additional_criterion,
     std::set<StandardPatternEdge> const &hint_edges) {
 
-  DEBUG_ASSERT(left_entries(match.node_assignment) ==
+  DEBUG_ASSERT(bidict_left_entries(match.node_assignment) ==
                get_pattern_nodes(pattern));
-  DEBUG_ASSERT(
-      is_subseteq_of(right_entries(match.node_assignment), get_nodes(graph)));
+  DEBUG_ASSERT(is_subseteq_of(bidict_right_entries(match.node_assignment),
+                              get_nodes(graph)));
   DEBUG_ASSERT(keys(match.input_assignment) == get_pattern_inputs(pattern));
   DEBUG_ASSERT(is_subseteq_of(set_of(values(match.input_assignment)),
                               get_all_open_kwarg_dataflow_values(graph)));
@@ -249,10 +249,11 @@ bool unlabelled_pattern_does_match(
 #ifndef NDEBUG
   {
     std::set<OpenKwargDataflowValue<int, TensorSlotName>>
-        full_values_split_by_subgraph =
-            left_entries(subgraph_result.full_graph_values_to_subgraph_inputs);
+        full_values_split_by_subgraph = bidict_left_entries(
+            subgraph_result.full_graph_values_to_subgraph_inputs);
 
-    ASSERT(right_entries(match.node_assignment) == get_nodes(matched_subgraph));
+    ASSERT(bidict_right_entries(match.node_assignment) ==
+           get_nodes(matched_subgraph));
     ASSERT(is_subseteq_of(full_values_split_by_subgraph,
                           get_all_open_kwarg_dataflow_values(graph)),
            full_values_split_by_subgraph,

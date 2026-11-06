@@ -1,7 +1,7 @@
 #include "substitutions/unlabelled/unlabelled_graph_pattern.h"
 #include "substitutions/unlabelled/pattern_edge.h"
 #include "substitutions/unlabelled/pattern_value.h"
-#include "utils/bidict/algorithms/transform.h"
+#include "utils/bidict/algorithms/bidict_transform.h"
 #include "utils/containers/make_counter_func.h"
 #include "utils/containers/transform.h"
 #include "utils/graph/digraph/algorithms/get_topological_ordering.h"
@@ -130,13 +130,14 @@ UnlabelledGraphPatternSubgraphResult
           transform(n, [](PatternNode const &pn) { return pn.raw_node; }),
           make_counter_func());
   bidict<PatternValue, PatternInput> full_pattern_values_to_subpattern_inputs =
-      transform(raw_result.full_graph_values_to_subgraph_inputs,
-                [](OpenKwargDataflowValue<int, TensorSlotName> const &v,
-                   KwargDataflowGraphInput<int> const &i) {
-                  return std::make_pair(
-                      pattern_value_from_raw_open_kwarg_dataflow_value(v),
-                      PatternInput{i});
-                });
+      bidict_transform(
+          raw_result.full_graph_values_to_subgraph_inputs,
+          [](OpenKwargDataflowValue<int, TensorSlotName> const &v,
+             KwargDataflowGraphInput<int> const &i) {
+            return std::make_pair(
+                pattern_value_from_raw_open_kwarg_dataflow_value(v),
+                PatternInput{i});
+          });
   return UnlabelledGraphPatternSubgraphResult{
       UnlabelledGraphPattern{raw_result.graph},
       full_pattern_values_to_subpattern_inputs,

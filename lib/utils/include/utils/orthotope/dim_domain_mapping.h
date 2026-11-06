@@ -1,9 +1,9 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_ORTHOTOPE_DIM_DOMAIN_MAPPING_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_ORTHOTOPE_DIM_DOMAIN_MAPPING_H
 
-#include "utils/bidict/algorithms/exhaustive_relational_join.h"
-#include "utils/bidict/algorithms/left_entries.h"
-#include "utils/bidict/algorithms/right_entries.h"
+#include "utils/bidict/algorithms/bidict_left_entries.h"
+#include "utils/bidict/algorithms/bidict_right_entries.h"
+#include "utils/bidict/algorithms/compose_bidicts.h"
 #include "utils/bidict/bidict.h"
 #include "utils/bidict/generate_bidict.h"
 #include "utils/hash/tuple.h"
@@ -24,8 +24,10 @@ public:
       DimDomain<L> const &l_domain,
       DimDomain<R> const &r_domain)
       : coord_mapping(coord_mapping), l_domain(l_domain), r_domain(r_domain) {
-    ASSERT(get_coords_in_dim_domain(l_domain) == left_entries(coord_mapping));
-    ASSERT(get_coords_in_dim_domain(r_domain) == right_entries(coord_mapping));
+    ASSERT(get_coords_in_dim_domain(l_domain) ==
+           bidict_left_entries(coord_mapping));
+    ASSERT(get_coords_in_dim_domain(r_domain) ==
+           bidict_right_entries(coord_mapping));
   }
 
   DimCoord<R> at_l(DimCoord<L> const &l_coord) const {
@@ -131,8 +133,7 @@ DimDomainMapping<T1, T3>
   ASSERT(lhs.r_domain == rhs.l_domain);
 
   return DimDomainMapping{
-      /*coord_mapping=*/exhaustive_relational_join(lhs.coord_mapping,
-                                                   rhs.coord_mapping),
+      /*coord_mapping=*/compose_bidicts(lhs.coord_mapping, rhs.coord_mapping),
       /*l_domain=*/lhs.l_domain,
       /*r_domain=*/rhs.r_domain,
   };

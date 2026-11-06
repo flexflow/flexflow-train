@@ -14,7 +14,6 @@
 #include "utils/containers/is_subseteq_of.h"
 #include "utils/containers/keys.h"
 #include "utils/containers/set_minus.h"
-#include "utils/containers/values.h"
 #include "utils/containers/vector_of.h"
 #include "utils/random_utils.h"
 #include <libassert/assert.hpp>
@@ -46,7 +45,7 @@ SearchResult apply_substitution_and_update_machine_mapping(
       mapped_pcg.machine_mapping.machine_views;
 
   std::set<parallel_layer_guid_t> matched_nodes =
-      set_of(values(match.node_assignment));
+      match.node_assignment.right_values();
 
   std::vector<MachineView> substituted_machine_views = vector_of(
       transform(matched_nodes, [&](parallel_layer_guid_t const &node) {

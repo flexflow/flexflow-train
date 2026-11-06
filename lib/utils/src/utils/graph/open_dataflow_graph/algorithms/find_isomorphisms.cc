@@ -1,7 +1,7 @@
 #include "utils/graph/open_dataflow_graph/algorithms/find_isomorphisms.h"
 #include "utils/bidict/algorithms/bidict_from_keys_and_values.h"
-#include "utils/bidict/algorithms/left_entries.h"
-#include "utils/bidict/algorithms/right_entries.h"
+#include "utils/bidict/algorithms/bidict_left_entries.h"
+#include "utils/bidict/algorithms/bidict_right_entries.h"
 #include "utils/containers/get_all_permutations.h"
 #include "utils/containers/get_one_of.h"
 #include "utils/containers/is_subseteq_of.h"
@@ -32,20 +32,22 @@ static std::optional<OpenDataflowGraphIsomorphism>
         bidict<DataflowGraphInput, DataflowGraphInput> const
             &unused_graph_inputs_mapping) {
   {
-    std::set<Node> already_mapped_src_nodes = left_entries(sink_node_mapping);
+    std::set<Node> already_mapped_src_nodes =
+        bidict_left_entries(sink_node_mapping);
     std::set<Node> src_g_sink_nodes = set_of(get_terminal_nodes(src_g));
     ASSERT(already_mapped_src_nodes == src_g_sink_nodes);
   }
 
   {
-    std::set<Node> already_mapped_dst_nodes = right_entries(sink_node_mapping);
+    std::set<Node> already_mapped_dst_nodes =
+        bidict_right_entries(sink_node_mapping);
     std::set<Node> dst_g_sink_nodes = set_of(get_terminal_nodes(dst_g));
     ASSERT(already_mapped_dst_nodes == dst_g_sink_nodes);
   }
 
   {
     std::set<DataflowGraphInput> already_mapped_src_inputs =
-        right_entries(unused_graph_inputs_mapping);
+        bidict_right_entries(unused_graph_inputs_mapping);
     std::set<DataflowGraphInput> src_g_unused_inputs =
         set_of(get_unused_open_dataflow_graph_inputs(src_g));
     ASSERT(already_mapped_src_inputs == src_g_unused_inputs);
@@ -53,7 +55,7 @@ static std::optional<OpenDataflowGraphIsomorphism>
 
   {
     std::set<DataflowGraphInput> already_mapped_dst_inputs =
-        right_entries(unused_graph_inputs_mapping);
+        bidict_right_entries(unused_graph_inputs_mapping);
     std::set<DataflowGraphInput> dst_g_unused_inputs =
         set_of(get_unused_open_dataflow_graph_inputs(dst_g));
     ASSERT(already_mapped_dst_inputs == dst_g_unused_inputs);

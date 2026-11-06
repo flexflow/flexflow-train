@@ -1,4 +1,4 @@
-#include "benchmark/utils/bidict/try_merge_nondisjoint_bidicts.h"
+#include "benchmark/utils/bidict/algorithms/try_merge_nondisjoint_bidicts.h"
 #include "benchmark/utils/containers/contains.h"
 #include "benchmark/utils/containers/transform.h"
 #include "benchmark/utils/containers/try_at.h"
@@ -8,6 +8,7 @@
 #include "benchmark/utils/graph/open_kwarg_dataflow_graph/algorithms/get_all_open_kwarg_dataflow_edges.h"
 #include "benchmark/utils/graph/open_kwarg_dataflow_graph/algorithms/get_open_kwarg_dataflow_subgraph_incoming_edges.h"
 #include "benchmark/utils/graph/query_set.h"
+#include "benchmark/utils/unordered_bidict/algorithms/try_merge_nondisjoint_unordered_bidicts.h"
 #include "utils/benchmark_utils/benchmark_main.h"
 #include <random>
 #include <string>
@@ -40,6 +41,10 @@ int main(int argc, char **argv) {
       {
           "try_merge_nondisjoint_bidicts",
           benchmark_try_merge_nondisjoint_bidicts,
+      },
+      {
+          "try_merge_nondisjoint_unordered_bidicts",
+          benchmark_try_merge_nondisjoint_unordered_bidicts,
       },
       {
           "query_set_allowed_values",

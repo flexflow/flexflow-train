@@ -316,6 +316,24 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       CHECK(result == correct);
     }
+
+    RC_SUBCASE("json serialization -> deserialization == nop",
+               [&](bidict<int, std::string> const &input) -> bool {
+                 nlohmann::json serialized = input;
+                 bidict<int, std::string> deserialized = serialized;
+
+                 return input == deserialized;
+               });
+
+    RC_SUBCASE("json serialization -> deserialization -> serialization == "
+               "serialization",
+               [&](bidict<int, std::string> const &input) -> bool {
+                 nlohmann::json serialized = input;
+                 bidict<int, std::string> deserialized = serialized;
+                 nlohmann::json serialized_again = deserialized;
+
+                 return serialized == serialized_again;
+               });
   }
 
   TEST_CASE("rc::Arbitrary<bidict<L, R>>") {

@@ -1,9 +1,9 @@
 #include "substitutions/substitution.h"
 #include "substitutions/output_graph/output_graph_expr.h"
 #include "substitutions/pcg_pattern.h"
-#include "utils/bidict/algorithms/left_entries.h"
-#include "utils/bidict/algorithms/right_entries.h"
-#include "utils/bidict/algorithms/transform.h"
+#include "utils/bidict/algorithms/bidict_left_entries.h"
+#include "utils/bidict/algorithms/bidict_right_entries.h"
+#include "utils/bidict/algorithms/bidict_transform.h"
 #include "utils/containers/map_values.h"
 #include "utils/graph/labelled_open_kwarg_dataflow_graph/algorithms/rewrite_labelled_open_kwarg_dataflow_graph_node_labels.h"
 #include "utils/graph/open_kwarg_dataflow_graph/algorithms/find_isomorphisms_between_open_kwarg_dataflow_graphs.h"
@@ -103,26 +103,27 @@ bool is_isomorphic_to(Substitution const &l, Substitution const &r) {
       };
 
   bidict<PatternInput, OutputGraphExprInput> l_input_mapping_from_r =
-      transform(r.inputs_mapping,
-                [&](PatternInput const &r_p, OutputGraphExprInput const &r_o) {
-                  return std::pair{
-                      l_from_r_pattern_input(r_p),
-                      l_from_r_output_graph_input(r_o),
-                  };
-                });
+      bidict_transform(
+          r.inputs_mapping,
+          [&](PatternInput const &r_p, OutputGraphExprInput const &r_o) {
+            return std::pair{
+                l_from_r_pattern_input(r_p),
+                l_from_r_output_graph_input(r_o),
+            };
+          });
   if (l_input_mapping_from_r != l.inputs_mapping) {
     return false;
   }
 
   bidict<PatternNodeOutput, OutputGraphExprNodeOutput> l_output_mapping_from_r =
-      transform(r.outputs_mapping,
-                [&](PatternNodeOutput const &r_p,
-                    OutputGraphExprNodeOutput const &r_o) {
-                  return std::pair{
-                      l_from_r_pattern_output(r_p),
-                      l_from_r_output_graph_output(r_o),
-                  };
-                });
+      bidict_transform(r.outputs_mapping,
+                       [&](PatternNodeOutput const &r_p,
+                           OutputGraphExprNodeOutput const &r_o) {
+                         return std::pair{
+                             l_from_r_pattern_output(r_p),
+                             l_from_r_output_graph_output(r_o),
+                         };
+                       });
   if (l_output_mapping_from_r != l.outputs_mapping) {
     return false;
   }
@@ -133,7 +134,8 @@ bool is_isomorphic_to(Substitution const &l, Substitution const &r) {
 bool is_valid_substitution(Substitution const &sub) {
   {
     std::set<PatternInput> pattern_inputs = get_inputs(sub.pcg_pattern);
-    std::set<PatternInput> mapped_inputs = left_entries(sub.inputs_mapping);
+    std::set<PatternInput> mapped_inputs =
+        bidict_left_entries(sub.inputs_mapping);
 
     if (pattern_inputs != mapped_inputs) {
       return false;
@@ -144,7 +146,7 @@ bool is_valid_substitution(Substitution const &sub) {
     std::set<OutputGraphExprInput> output_graph_inputs =
         get_inputs(sub.output_graph_expr);
     std::set<OutputGraphExprInput> mapped_inputs =
-        right_entries(sub.inputs_mapping);
+        bidict_right_entries(sub.inputs_mapping);
 
     if (output_graph_inputs != mapped_inputs) {
       return false;

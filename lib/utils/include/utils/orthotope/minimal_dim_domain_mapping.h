@@ -1,10 +1,10 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_ORTHOTOPE_MINIMAL_DIM_DOMAIN_MAPPING_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_ORTHOTOPE_MINIMAL_DIM_DOMAIN_MAPPING_H
 
+#include "utils/bidict/algorithms/bidict_exhaustive_relational_join.h"
+#include "utils/bidict/algorithms/bidict_left_entries.h"
+#include "utils/bidict/algorithms/bidict_right_entries.h"
 #include "utils/bidict/algorithms/bidict_transform_keys_and_values.h"
-#include "utils/bidict/algorithms/exhaustive_relational_join.h"
-#include "utils/bidict/algorithms/left_entries.h"
-#include "utils/bidict/algorithms/right_entries.h"
 #include "utils/bidict/bidict.h"
 #include "utils/bidict/generate_bidict.h"
 #include "utils/hash/tuple.h"
@@ -26,9 +26,9 @@ public:
       MinimalDimDomain<R> const &r_domain)
       : coord_mapping(coord_mapping), l_domain(l_domain), r_domain(r_domain) {
     ASSERT(get_coords_in_minimal_dim_domain(l_domain) ==
-           left_entries(coord_mapping));
+           bidict_left_entries(coord_mapping));
     ASSERT(get_coords_in_minimal_dim_domain(r_domain) ==
-           right_entries(coord_mapping));
+           bidict_right_entries(coord_mapping));
   }
 
   DimCoord<R> at_l(DimCoord<L> const &l_coord) const {
@@ -188,8 +188,8 @@ MinimalDimDomainMapping<T1, T3> compose_minimal_dim_domain_mappings(
   ASSERT(lhs.r_domain == rhs.l_domain);
 
   return MinimalDimDomainMapping{
-      /*coord_mapping=*/exhaustive_relational_join(lhs.coord_mapping,
-                                                   rhs.coord_mapping),
+      /*coord_mapping=*/bidict_exhaustive_relational_join(lhs.coord_mapping,
+                                                          rhs.coord_mapping),
       /*l_domain=*/lhs.l_domain,
       /*r_domain=*/rhs.r_domain,
   };

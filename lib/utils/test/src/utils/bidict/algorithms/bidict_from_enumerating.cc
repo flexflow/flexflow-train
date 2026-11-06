@@ -1,7 +1,7 @@
 #include "utils/bidict/algorithms/bidict_from_enumerating.h"
 #include "test/utils/doctest/fmt/set.h"
-#include "utils/bidict/algorithms/left_entries.h"
-#include "utils/bidict/algorithms/right_entries.h"
+#include "utils/bidict/algorithms/bidict_left_entries.h"
+#include "utils/bidict/algorithms/bidict_right_entries.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;

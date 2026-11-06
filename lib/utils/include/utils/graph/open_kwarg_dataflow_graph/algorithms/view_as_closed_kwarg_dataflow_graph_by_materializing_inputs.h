@@ -1,7 +1,7 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_OPEN_KWARG_DATAFLOW_GRAPH_ALGORITHMS_VIEW_AS_CLOSED_KWARG_DATAFLOW_GRAPH_BY_MATERIALIZING_INPUTS_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_GRAPH_OPEN_KWARG_DATAFLOW_GRAPH_ALGORITHMS_VIEW_AS_CLOSED_KWARG_DATAFLOW_GRAPH_BY_MATERIALIZING_INPUTS_H
 
-#include "utils/bidict/algorithms/right_entries.h"
+#include "utils/bidict/algorithms/bidict_right_entries.h"
 #include "utils/bidict/generate_bidict.h"
 #include "utils/containers/set_union.h"
 #include "utils/containers/transform.h"
@@ -90,7 +90,7 @@ std::pair<KwargDataflowGraphView<std::optional<SlotName>>,
   KwargDataflowGraphData<std::optional<SlotName>> closed_g_data =
       KwargDataflowGraphData<std::optional<SlotName>>{
           /*nodes=*/
-          set_union(open_g_data.nodes, right_entries(graph_input_nodes)),
+          set_union(open_g_data.nodes, bidict_right_entries(graph_input_nodes)),
           /*edges=*/transform(open_g_data.edges, convert_edge),
           /*outputs=*/
           set_union(

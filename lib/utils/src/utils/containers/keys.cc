@@ -9,4 +9,6 @@ using V = value_type<1>;
 
 template std::set<K> keys(std::map<K, V> const &);
 
+template std::unordered_set<K> keys(std::unordered_map<K, V> const &);
+
 } // namespace FlexFlow

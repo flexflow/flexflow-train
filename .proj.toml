@@ -157,6 +157,10 @@ name = "try_merge_nondisjoint_bidicts"
 budget = 15_000_000
 
 [[benchmarks.utils]]
+name = "try_merge_nondisjoint_unordered_bidicts"
+budget = 12_000_000
+
+[[benchmarks.utils]]
 name = "query_set_allowed_values"
 budget = 40_000
 

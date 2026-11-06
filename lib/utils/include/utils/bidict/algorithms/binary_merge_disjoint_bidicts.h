@@ -1,8 +1,8 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_BIDICT_ALGORITHMS_BINARY_MERGE_DISJOINT_BIDICTS_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_BIDICT_ALGORITHMS_BINARY_MERGE_DISJOINT_BIDICTS_H
 
-#include "utils/bidict/algorithms/left_entries.h"
-#include "utils/bidict/algorithms/right_entries.h"
+#include "utils/bidict/algorithms/bidict_left_entries.h"
+#include "utils/bidict/algorithms/bidict_right_entries.h"
 #include "utils/bidict/bidict.h"
 #include "utils/containers/are_disjoint.h"
 #include <libassert/assert.hpp>
@@ -12,12 +12,12 @@ namespace FlexFlow {
 template <typename K, typename V>
 bidict<K, V> binary_merge_disjoint_bidicts(bidict<K, V> const &lhs,
                                            bidict<K, V> const &rhs) {
-  ASSERT(are_disjoint(left_entries(lhs), left_entries(rhs)),
+  ASSERT(are_disjoint(bidict_left_entries(lhs), bidict_left_entries(rhs)),
          "Left entries of {} and {} are non-disjoint",
          lhs,
          rhs);
 
-  ASSERT(are_disjoint(right_entries(lhs), right_entries(rhs)),
+  ASSERT(are_disjoint(bidict_right_entries(lhs), bidict_right_entries(rhs)),
          "Right entries of {} and {} are non-disjoint",
          lhs,
          rhs);
