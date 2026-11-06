@@ -25,5 +25,12 @@ TEST_SUITE(FF_TEST_SUITE) {
 
       CHECK(result == correct);
     }
+
+    SUBCASE("works even when magnitude is zero") {
+      bool result = values_are_approximately_equal(0.0f, 0.0f);
+      bool correct = true;
+
+      CHECK(result == correct);
+    }
   }
 }

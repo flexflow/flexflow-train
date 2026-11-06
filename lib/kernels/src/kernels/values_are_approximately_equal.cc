@@ -14,6 +14,10 @@ template bool values_are_approximately_equal(bool, bool, std::optional<double>);
 
 bool floats_are_approximately_equal(
     float l, float r, std::optional<double> relative_error_allowed) {
+  if (l == r) {
+    return true;
+  }
+
   float max_magnitude = std::max(std::fabs(l), std::fabs(r));
   return std::fabs(l - r) <
          relative_error_allowed.value_or(0.00001) * max_magnitude;
@@ -21,6 +25,10 @@ bool floats_are_approximately_equal(
 
 bool doubles_are_approximately_equal(
     double l, double r, std::optional<double> relative_error_allowed) {
+  if (l == r) {
+    return true;
+  }
+
   float max_magnitude = std::max(std::fabs(l), std::fabs(r));
   return std::fabs(l - r) <
          relative_error_allowed.value_or(0.00001) * max_magnitude;
