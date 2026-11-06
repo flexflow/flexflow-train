@@ -6,7 +6,8 @@
 namespace FlexFlow {
 
 template <typename L, typename R, typename F>
-unordered_bidict<L, R> filter_unordered_bidict(unordered_bidict<L, R> const &b, F &&f) {
+unordered_bidict<L, R> filter_unordered_bidict(unordered_bidict<L, R> const &b,
+                                               F &&f) {
   unordered_bidict<L, R> result;
 
   for (std::pair<L, R> const &p : b) {

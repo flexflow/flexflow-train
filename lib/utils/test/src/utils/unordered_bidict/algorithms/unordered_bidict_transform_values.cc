@@ -10,8 +10,9 @@ TEST_SUITE(FF_TEST_SUITE) {
         {2, "two"},
     };
 
-    unordered_bidict<int, std::string> result = unordered_bidict_transform_values(
-        dict, [](std::string const &v) { return v + "a"; });
+    unordered_bidict<int, std::string> result =
+        unordered_bidict_transform_values(
+            dict, [](std::string const &v) { return v + "a"; });
     unordered_bidict<int, std::string> correct = {
         {1, "onea"},
         {2, "twoa"},

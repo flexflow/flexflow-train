@@ -1,16 +1,17 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_UNORDERED_BIDICT_ALGORITHMS_EXHAUSTIVE_RELATIONAL_JOIN_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_UNORDERED_BIDICT_ALGORITHMS_EXHAUSTIVE_RELATIONAL_JOIN_H
 
+#include "utils/exception.h"
 #include "utils/unordered_bidict/algorithms/left_entries.h"
 #include "utils/unordered_bidict/algorithms/right_entries.h"
 #include "utils/unordered_bidict/unordered_bidict.h"
-#include "utils/exception.h"
 
 namespace FlexFlow {
 
 template <typename T1, typename T2, typename T3>
-unordered_bidict<T1, T3> exhaustive_relational_join(unordered_bidict<T1, T2> const &fst,
-                                          unordered_bidict<T2, T3> const &snd) {
+unordered_bidict<T1, T3>
+    exhaustive_relational_join(unordered_bidict<T1, T2> const &fst,
+                               unordered_bidict<T2, T3> const &snd) {
   ASSERT(right_entries(fst) == left_entries(snd));
 
   unordered_bidict<T1, T3> result;

@@ -9,7 +9,8 @@ template <typename K,
           typename V,
           typename F,
           typename V2 = typename std::invoke_result_t<F, V>::value_type>
-unordered_bidict<K, V2> unordered_bidict_filtrans_values(unordered_bidict<K, V> const &m, F &&f) {
+unordered_bidict<K, V2>
+    unordered_bidict_filtrans_values(unordered_bidict<K, V> const &m, F &&f) {
   unordered_bidict<K, V2> result;
   for (auto const &[k, v] : m) {
     std::optional<V2> new_v = f(v);

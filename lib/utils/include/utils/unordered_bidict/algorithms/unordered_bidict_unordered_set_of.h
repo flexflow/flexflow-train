@@ -1,8 +1,8 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_UNORDERED_BIDICT_ALGORITHMS_UNORDERED_BIDICT_UNORDERED_SET_OF_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_UNORDERED_BIDICT_ALGORITHMS_UNORDERED_BIDICT_UNORDERED_SET_OF_H
 
-#include "utils/unordered_bidict/unordered_bidict.h"
 #include "utils/hash/pair.h"
+#include "utils/unordered_bidict/unordered_bidict.h"
 
 namespace FlexFlow {
 

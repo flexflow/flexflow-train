@@ -21,7 +21,8 @@ TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("get_element_counts(std::unordered_multiset)") {
     std::unordered_multiset<int> input = {1, 2, 3, 2, 3, 3, 2, 3};
     std::unordered_map<int, positive_int> result = get_element_counts(input);
-    std::unordered_map<int, positive_int> correct = {{1, 1_p}, {2, 3_p}, {3, 4_p}};
+    std::unordered_map<int, positive_int> correct = {
+        {1, 1_p}, {2, 3_p}, {3, 4_p}};
     CHECK(result == correct);
   }
 }

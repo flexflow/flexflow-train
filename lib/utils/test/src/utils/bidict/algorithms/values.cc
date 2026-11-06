@@ -9,8 +9,7 @@ using namespace FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
   TEST_CASE("values(bidict)") {
-    bidict<int, std::string> m = {
-        {1, "one"}, {2, "two"}, {3, "three"}};
+    bidict<int, std::string> m = {{1, "one"}, {2, "two"}, {3, "three"}};
     std::set<std::string> result = values(m);
     std::set<std::string> correct = {"one", "two", "three"};
     CHECK(result == correct);

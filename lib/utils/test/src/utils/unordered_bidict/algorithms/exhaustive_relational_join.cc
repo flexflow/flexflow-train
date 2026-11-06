@@ -4,7 +4,8 @@
 using namespace ::FlexFlow;
 
 TEST_SUITE(FF_TEST_SUITE) {
-  TEST_CASE("exhaustive_relational_join(unordered_bidict<T1, T2>, unordered_bidict<T2, T3>)") {
+  TEST_CASE("exhaustive_relational_join(unordered_bidict<T1, T2>, "
+            "unordered_bidict<T2, T3>)") {
     SUBCASE("inputs are empty") {
       unordered_bidict<int, std::string> fst = {};
       unordered_bidict<std::string, std::pair<int, int>> snd = {};

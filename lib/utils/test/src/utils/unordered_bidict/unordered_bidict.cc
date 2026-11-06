@@ -45,7 +45,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
     }
 
-    SUBCASE("unordered_bidict::unordered_bidict(std::initializer_list<std::pair<L, R>>)") {
+    SUBCASE("unordered_bidict::unordered_bidict(std::initializer_list<std::"
+            "pair<L, R>>)") {
       SUBCASE("valid mapping") {
         unordered_bidict<int, std::string> bd{{1, "one"}, {2, "two"}};
         CHECK(bd.contains_l(1));
@@ -53,7 +54,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       }
 
       SUBCASE("invalid mapping") {
-        CHECK_THROWS(unordered_bidict<int, std::string>{{1, "one"}, {2, "one"}});
+        CHECK_THROWS(
+            unordered_bidict<int, std::string>{{1, "one"}, {2, "one"}});
       }
     }
 
@@ -69,12 +71,13 @@ TEST_SUITE(FF_TEST_SUITE) {
       SUBCASE("invalid mapping") {
         std::vector<std::pair<int, std::string>> bad_pairs = {{1, "one"},
                                                               {2, "one"}};
-        CHECK_THROWS(
-            unordered_bidict<int, std::string>{bad_pairs.begin(), bad_pairs.end()});
+        CHECK_THROWS(unordered_bidict<int, std::string>{bad_pairs.begin(),
+                                                        bad_pairs.end()});
       }
     }
 
-    SUBCASE("unordered_bidict::unordered_bidict(std::unordered_map<L, R> const &, std::unordered_map<R, L> const &)") {
+    SUBCASE("unordered_bidict::unordered_bidict(std::unordered_map<L, R> const "
+            "&, std::unordered_map<R, L> const &)") {
       SUBCASE("valid mapping") {
         std::unordered_map<int, std::string> fwd = {{1, "one"}, {2, "two"}};
         std::unordered_map<std::string, int> bwd = {{"one", 1}, {"two", 2}};
@@ -119,10 +122,11 @@ TEST_SUITE(FF_TEST_SUITE) {
 
         CHECK_FALSE(succeeded);
 
-        unordered_bidict<int, std::string> correct = unordered_bidict<int, std::string>{
-            {1, "one"},
-            {2, "two"},
-        };
+        unordered_bidict<int, std::string> correct =
+            unordered_bidict<int, std::string>{
+                {1, "one"},
+                {2, "two"},
+            };
 
         CHECK(dict == correct);
       }
@@ -132,10 +136,11 @@ TEST_SUITE(FF_TEST_SUITE) {
 
         CHECK_FALSE(succeeded);
 
-        unordered_bidict<int, std::string> correct = unordered_bidict<int, std::string>{
-            {1, "one"},
-            {2, "two"},
-        };
+        unordered_bidict<int, std::string> correct =
+            unordered_bidict<int, std::string>{
+                {1, "one"},
+                {2, "two"},
+            };
 
         CHECK(dict == correct);
       }
@@ -145,10 +150,11 @@ TEST_SUITE(FF_TEST_SUITE) {
 
         CHECK_FALSE(succeeded);
 
-        unordered_bidict<int, std::string> correct = unordered_bidict<int, std::string>{
-            {1, "one"},
-            {2, "two"},
-        };
+        unordered_bidict<int, std::string> correct =
+            unordered_bidict<int, std::string>{
+                {1, "one"},
+                {2, "two"},
+            };
 
         CHECK(dict == correct);
       }
@@ -158,10 +164,11 @@ TEST_SUITE(FF_TEST_SUITE) {
 
         CHECK(succeeded);
 
-        unordered_bidict<int, std::string> correct = unordered_bidict<int, std::string>{
-            {1, "one"},
-            {2, "two"},
-        };
+        unordered_bidict<int, std::string> correct =
+            unordered_bidict<int, std::string>{
+                {1, "one"},
+                {2, "two"},
+            };
 
         CHECK(dict == correct);
       }
@@ -171,11 +178,12 @@ TEST_SUITE(FF_TEST_SUITE) {
 
         CHECK(succeeded);
 
-        unordered_bidict<int, std::string> correct = unordered_bidict<int, std::string>{
-            {1, "one"},
-            {2, "two"},
-            {3, "three"},
-        };
+        unordered_bidict<int, std::string> correct =
+            unordered_bidict<int, std::string>{
+                {1, "one"},
+                {2, "two"},
+                {3, "three"},
+            };
 
         CHECK(dict == correct);
       }
@@ -186,7 +194,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         CHECK(dict == dict);
       }
 
-      SUBCASE("a unordered_bidict is equal to a different unordered_bidict with the same mapping") {
+      SUBCASE("a unordered_bidict is equal to a different unordered_bidict "
+              "with the same mapping") {
         unordered_bidict<int, std::string> bd{{1, "one"}, {2, "two"}};
         CHECK(dict == bd);
       }
@@ -202,7 +211,8 @@ TEST_SUITE(FF_TEST_SUITE) {
         CHECK_FALSE(dict != dict);
       }
 
-      SUBCASE("it is false that a unordered_bidict is not equal to a different unordered_bidict "
+      SUBCASE("it is false that a unordered_bidict is not equal to a different "
+              "unordered_bidict "
               "with the same mapping") {
         unordered_bidict<int, std::string> bd{{1, "one"}, {2, "two"}};
         CHECK_FALSE(dict != bd);
@@ -229,7 +239,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
 
     SUBCASE("unordered_bidict::right_values") {
-      CHECK(dict.right_values() == std::unordered_set<std::string>{"one", "two"});
+      CHECK(dict.right_values() ==
+            std::unordered_set<std::string>{"one", "two"});
     }
 
     SUBCASE("unordered_bidict::size") {
@@ -295,11 +306,12 @@ TEST_SUITE(FF_TEST_SUITE) {
   }
 
   TEST_CASE("adl_serializer<unordered_bidict<L, R>>") {
-    unordered_bidict<int, std::string> deserialized = unordered_bidict<int, std::string>{
-        {2, "hello"},
-        {3, "goodbye"},
-        {4, "yes"},
-    };
+    unordered_bidict<int, std::string> deserialized =
+        unordered_bidict<int, std::string>{
+            {2, "hello"},
+            {3, "goodbye"},
+            {4, "yes"},
+        };
 
     nlohmann::json serialized = std::vector<std::pair<int, std::string>>{
         {2, "hello"},

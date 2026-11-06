@@ -17,7 +17,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     CHECK(result == correct);
   }
   TEST_CASE("filter_values(std::unordered_map)") {
-    std::unordered_map<int, std::string> m = {{1, "one"}, {2, "two"}, {3, "blah"}};
+    std::unordered_map<int, std::string> m = {
+        {1, "one"}, {2, "two"}, {3, "blah"}};
     auto f = [](std::string const &x) { return x.size() % 2 == 1; };
     std::unordered_map<int, std::string> result = filter_values(m, f);
     std::unordered_map<int, std::string> correct = {{1, "one"}, {2, "two"}};

@@ -11,14 +11,16 @@ TEST_SUITE(FF_TEST_SUITE) {
     SUBCASE("input has no duplicates") {
       std::vector<int> input = {3, 6, 5, 2};
 
-      unordered_bidict<nonnegative_int, int> result = unordered_bidict_from_enumerating(input);
+      unordered_bidict<nonnegative_int, int> result =
+          unordered_bidict_from_enumerating(input);
 
-      unordered_bidict<nonnegative_int, int> correct = unordered_bidict<nonnegative_int, int>{
-          {0_n, 3},
-          {1_n, 6},
-          {2_n, 5},
-          {3_n, 2},
-      };
+      unordered_bidict<nonnegative_int, int> correct =
+          unordered_bidict<nonnegative_int, int>{
+              {0_n, 3},
+              {1_n, 6},
+              {2_n, 5},
+              {3_n, 2},
+          };
 
       CHECK(result == correct);
     }

@@ -6,7 +6,8 @@
 namespace FlexFlow {
 
 template <typename K, typename V, typename F>
-unordered_bidict<K, V> unordered_bidict_filter_values(unordered_bidict<K, V> const &m, F &&f) {
+unordered_bidict<K, V>
+    unordered_bidict_filter_values(unordered_bidict<K, V> const &m, F &&f) {
   unordered_bidict<K, V> result;
   for (auto const &kv : m) {
     if (f(kv.second)) {

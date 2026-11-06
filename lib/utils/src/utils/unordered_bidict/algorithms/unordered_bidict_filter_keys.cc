@@ -7,6 +7,7 @@ using K = value_type<0>;
 using V = value_type<1>;
 using F = std::function<bool(K)>;
 
-template unordered_bidict<K, V> unordered_bidict_filter_keys(unordered_bidict<K, V> const &, F &&);
+template unordered_bidict<K, V>
+    unordered_bidict_filter_keys(unordered_bidict<K, V> const &, F &&);
 
 } // namespace FlexFlow

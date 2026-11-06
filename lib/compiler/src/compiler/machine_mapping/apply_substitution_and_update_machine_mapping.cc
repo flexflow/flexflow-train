@@ -45,8 +45,7 @@ SearchResult apply_substitution_and_update_machine_mapping(
   std::map<parallel_layer_guid_t, MachineView> machine_views =
       mapped_pcg.machine_mapping.machine_views;
 
-  std::set<parallel_layer_guid_t> matched_nodes =
-      values(match.node_assignment);
+  std::set<parallel_layer_guid_t> matched_nodes = values(match.node_assignment);
 
   std::vector<MachineView> substituted_machine_views = vector_of(
       transform(matched_nodes, [&](parallel_layer_guid_t const &node) {

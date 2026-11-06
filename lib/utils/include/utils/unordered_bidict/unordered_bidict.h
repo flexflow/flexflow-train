@@ -5,8 +5,8 @@
 #include "utils/containers/contains_key.h"
 #include "utils/containers/keys.h"
 #include "utils/containers/map_from_unordered.h"
-#include "utils/containers/unordered_map_from_keys_and_values.h"
 #include "utils/containers/require_same.h"
+#include "utils/containers/unordered_map_from_keys_and_values.h"
 #include "utils/containers/unordered_set_of.h"
 #include "utils/containers/values.h"
 #include "utils/fmt/unordered_map.h"
@@ -214,7 +214,7 @@ struct unordered_bidict {
     return unordered_bidict<R, L>(bwd_map, fwd_map);
   }
 
-  operator std::map<L, R> () const {
+  operator std::map<L, R>() const {
     return map_from_unordered(this->fwd_map);
   }
 
@@ -238,7 +238,8 @@ struct unordered_bidict {
     return this->bwd_map;
   }
 
-  unordered_bidict(std::unordered_map<L, R> const &fwd_map, std::unordered_map<R, L> const &bwd_map)
+  unordered_bidict(std::unordered_map<L, R> const &fwd_map,
+                   std::unordered_map<R, L> const &bwd_map)
       : fwd_map(fwd_map), bwd_map(bwd_map) {
     this->check_invariants();
   }
@@ -314,7 +315,8 @@ struct Arbitrary<::FlexFlow::unordered_bidict<L, R>> {
           return gen::apply(
               [](std::vector<L> const &keys,
                  std::vector<R> const &values) -> std::unordered_map<L, R> {
-                return ::FlexFlow::unordered_map_from_keys_and_values(keys, values);
+                return ::FlexFlow::unordered_map_from_keys_and_values(keys,
+                                                                      values);
               },
               gen::unique<std::vector<L>>(size, gen::arbitrary<L>()),
               gen::unique<std::vector<R>>(size, gen::arbitrary<R>()));

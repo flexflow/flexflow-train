@@ -9,7 +9,8 @@ template <typename K,
           typename V,
           typename F,
           typename V2 = std::invoke_result_t<F, V>>
-unordered_bidict<K, V2> unordered_bidict_transform_values(unordered_bidict<K, V> const &m, F &&f) {
+unordered_bidict<K, V2>
+    unordered_bidict_transform_values(unordered_bidict<K, V> const &m, F &&f) {
   unordered_bidict<K, V2> result;
   for (auto const &kv : m) {
     result.equate({kv.first, f(kv.second)});

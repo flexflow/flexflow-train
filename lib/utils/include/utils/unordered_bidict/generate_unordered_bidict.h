@@ -1,9 +1,9 @@
 #ifndef _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_UNORDERED_BIDICT_GENERATE_UNORDERED_BIDICT_H
 #define _FLEXFLOW_LIB_UTILS_INCLUDE_UTILS_UNORDERED_BIDICT_GENERATE_UNORDERED_BIDICT_H
 
-#include "utils/unordered_bidict/unordered_bidict.h"
 #include "utils/containers/get_element_type.h"
 #include "utils/containers/transform.h"
+#include "utils/unordered_bidict/unordered_bidict.h"
 #include <type_traits>
 
 namespace FlexFlow {

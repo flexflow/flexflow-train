@@ -1,7 +1,7 @@
 #include "utils/unordered_bidict/unordered_bidict.h"
 #include "utils/archetypes/jsonable_ordered_value_type.h"
-#include "utils/archetypes/value_type.h"
 #include "utils/archetypes/rapidcheckable_value_type.h"
+#include "utils/archetypes/value_type.h"
 
 namespace FlexFlow {
 
@@ -12,7 +12,8 @@ template struct unordered_bidict<L, R>;
 
 template std::unordered_map<L, R> format_as(unordered_bidict<L, R> const &);
 
-template std::ostream &operator<<(std::ostream &, unordered_bidict<L, R> const &);
+template std::ostream &operator<<(std::ostream &,
+                                  unordered_bidict<L, R> const &);
 
 } // namespace FlexFlow
 

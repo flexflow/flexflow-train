@@ -39,7 +39,8 @@ std::map<T, positive_int> get_element_counts(std::multiset<T> const &v) {
 }
 
 template <typename T>
-std::unordered_map<T, positive_int> get_element_counts(std::unordered_multiset<T> const &v) {
+std::unordered_map<T, positive_int>
+    get_element_counts(std::unordered_multiset<T> const &v) {
   std::unordered_map<T, positive_int> counts;
   for (T const &t : v) {
     if (!contains_key(counts, t)) {

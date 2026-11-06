@@ -18,7 +18,8 @@ std::map<K, V> filter_values(std::map<K, V> const &m, F const &f) {
 }
 
 template <typename K, typename V, typename F>
-std::unordered_map<K, V> filter_values(std::unordered_map<K, V> const &m, F const &f) {
+std::unordered_map<K, V> filter_values(std::unordered_map<K, V> const &m,
+                                       F const &f) {
   std::unordered_map<K, V> result;
   for (auto const &kv : m) {
     if (f(kv.second)) {

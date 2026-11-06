@@ -10,7 +10,7 @@ using V2 = value_type<3>;
 using KF = std::function<K2(K const &)>;
 using VF = std::function<V2(V const &)>;
 
-template unordered_bidict<K2, V2>
-    unordered_bidict_transform_keys_and_values(unordered_bidict<K, V> const &, KF &&, VF &&);
+template unordered_bidict<K2, V2> unordered_bidict_transform_keys_and_values(
+    unordered_bidict<K, V> const &, KF &&, VF &&);
 
 } // namespace FlexFlow

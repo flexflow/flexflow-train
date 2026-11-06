@@ -20,7 +20,8 @@ TEST_SUITE(FF_TEST_SUITE) {
     std::unordered_map<int, std::string> m = {
         {1, "one"}, {2, "two"}, {3, "three"}, {33, "three"}};
     std::unordered_multiset<std::string> result = values(m);
-    std::unordered_multiset<std::string> correct = {"one", "two", "three", "three"};
+    std::unordered_multiset<std::string> correct = {
+        "one", "two", "three", "three"};
     CHECK(result == correct);
   }
 }

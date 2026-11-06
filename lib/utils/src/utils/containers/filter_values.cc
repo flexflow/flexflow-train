@@ -10,6 +10,7 @@ using F = std::function<bool(V const &)>;
 
 template std::map<K, V> filter_values(std::map<K, V> const &m, F const &f);
 
-template std::unordered_map<K, V> filter_values(std::unordered_map<K, V> const &m, F const &f);
+template std::unordered_map<K, V>
+    filter_values(std::unordered_map<K, V> const &m, F const &f);
 
 } // namespace FlexFlow

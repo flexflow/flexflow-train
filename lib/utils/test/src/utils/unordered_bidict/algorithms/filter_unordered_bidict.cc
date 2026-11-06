@@ -16,7 +16,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       return (k % 2) == 0 || v.size() == 3;
     };
 
-    unordered_bidict<int, std::string> result = filter_unordered_bidict(b, filter_func);
+    unordered_bidict<int, std::string> result =
+        filter_unordered_bidict(b, filter_func);
     unordered_bidict<int, std::string> correct = {
         {1, "one"},
         {2, "two"},

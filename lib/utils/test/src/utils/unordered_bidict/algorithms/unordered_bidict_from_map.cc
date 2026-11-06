@@ -12,7 +12,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           {3, "three"},
       };
 
-      unordered_bidict<int, std::string> result = unordered_bidict_from_map(input);
+      unordered_bidict<int, std::string> result =
+          unordered_bidict_from_map(input);
       unordered_bidict<int, std::string> correct = {
           {1, "one"},
           {2, "two"},
@@ -41,7 +42,8 @@ TEST_SUITE(FF_TEST_SUITE) {
           {3, "three"},
       };
 
-      unordered_bidict<int, std::string> result = unordered_bidict_from_map(input);
+      unordered_bidict<int, std::string> result =
+          unordered_bidict_from_map(input);
       unordered_bidict<int, std::string> correct = {
           {1, "one"},
           {2, "two"},

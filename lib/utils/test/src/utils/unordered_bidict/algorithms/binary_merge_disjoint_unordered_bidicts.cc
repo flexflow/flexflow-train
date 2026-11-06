@@ -11,7 +11,8 @@ TEST_SUITE(FF_TEST_SUITE) {
       unordered_bidict<int, std::string> bd1 = {{1, "one"}, {2, "two"}};
       unordered_bidict<int, std::string> bd2 = {{3, "three"}, {4, "four"}};
 
-      unordered_bidict<int, std::string> result = binary_merge_disjoint_unordered_bidicts(bd1, bd2);
+      unordered_bidict<int, std::string> result =
+          binary_merge_disjoint_unordered_bidicts(bd1, bd2);
       unordered_bidict<int, std::string> correct = {
           {1, "one"}, {2, "two"}, {3, "three"}, {4, "four"}};
 

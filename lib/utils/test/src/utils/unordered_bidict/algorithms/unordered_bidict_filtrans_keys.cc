@@ -11,15 +11,16 @@ TEST_SUITE(FF_TEST_SUITE) {
     };
 
     unordered_bidict<std::string, std::string> result =
-        unordered_bidict_filtrans_keys(dict, [](int k) -> std::optional<std::string> {
-          if (k == 1) {
-            return std::nullopt;
-          } else {
-            std::ostringstream oss;
-            oss << (k + 1);
-            return oss.str();
-          }
-        });
+        unordered_bidict_filtrans_keys(dict,
+                                       [](int k) -> std::optional<std::string> {
+                                         if (k == 1) {
+                                           return std::nullopt;
+                                         } else {
+                                           std::ostringstream oss;
+                                           oss << (k + 1);
+                                           return oss.str();
+                                         }
+                                       });
 
     unordered_bidict<std::string, std::string> correct = {
         {"3", "two"},

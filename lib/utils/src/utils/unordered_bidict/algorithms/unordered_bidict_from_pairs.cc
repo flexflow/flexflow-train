@@ -6,6 +6,7 @@ namespace FlexFlow {
 using L = value_type<0>;
 using R = value_type<1>;
 
-template unordered_bidict<L, R> unordered_bidict_from_pairs(std::vector<std::pair<L, R>> const &);
+template unordered_bidict<L, R>
+    unordered_bidict_from_pairs(std::vector<std::pair<L, R>> const &);
 
 } // namespace FlexFlow

@@ -7,8 +7,8 @@
 namespace FlexFlow {
 
 template <typename L, typename R>
-std::unordered_set<std::pair<L, R>>
-    unstructured_relation_from_unordered_bidict(unordered_bidict<L, R> const &b) {
+std::unordered_set<std::pair<L, R>> unstructured_relation_from_unordered_bidict(
+    unordered_bidict<L, R> const &b) {
 
   std::unordered_set<std::pair<L, R>> result;
 
