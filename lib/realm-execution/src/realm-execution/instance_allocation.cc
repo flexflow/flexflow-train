@@ -1,5 +1,7 @@
 #include "realm-execution/instance_allocation.h"
 #include "local-execution/tensor_allocation.h"
+#include "op-attrs/datatype_value.h"
+#include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "op-attrs/parallel_tensor_shape.h"
 #include "op-attrs/tensor_shape.dtg.h"
 #include "realm-execution/realm_context.h"
@@ -27,11 +29,20 @@ std::pair<Realm::RegionInstance, Realm::Event>
                                           RealmContext &ctx) {
   ASSERT(value.accessor == std::nullopt);
 
-  TensorShape shape = get_piece_shape(value.parallel_tensor_shape.value());
+  ParallelTensorShape shape = value.parallel_tensor_shape.value();
+  TensorShape piece_shape = get_piece_shape(shape);
 
   Realm::Processor proc = ctx.processor_from_global_device_id(device_id);
   Realm::Memory memory = ctx.get_nearest_memory(proc);
-  return ctx.create_instance(memory, shape, Realm::ProfilingRequestSet());
+  auto const &[inst, ready] =
+      ctx.create_instance(memory, piece_shape, Realm::ProfilingRequestSet{});
+  Realm::Event filled =
+      ctx.issue_fill(shape,
+                     inst,
+                     make_zero_data_type_value_of_type(shape.data_type),
+                     Realm::ProfilingRequestSet{},
+                     ready);
+  return std::pair{inst, filled};
 }
 
 TensorInstanceBacking perform_instance_allocation(
