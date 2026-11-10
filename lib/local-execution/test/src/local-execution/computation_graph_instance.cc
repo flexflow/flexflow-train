@@ -1,6 +1,7 @@
 #include "local-execution/computation_graph_instance.h"
 #include "kernels/compare_tensor_accessors.h"
 #include "kernels/copy_tensor_accessor.h"
+#include "kernels/create_random_filled_accessor.h"
 #include "kernels/device_handle_t.h"
 #include "kernels/format_accessor_contents.h"
 #include "kernels/local_cpu_allocator.h"
@@ -41,7 +42,7 @@ TEST_SUITE(FF_TEST_SUITE) {
         TensorDims{FFOrdered{batch_size, output_dim}}, DataType::FLOAT};
 
     GenericTensorAccessorW label_tensor_backing =
-        allocator.allocate_tensor(output_tensor_shape);
+        create_random_filled_accessor_w(output_tensor_shape, allocator);
 
     // construct computation graph
     ComputationGraph computation_graph = make_empty_computation_graph();
@@ -52,7 +53,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     TensorShape label_tensor_shape = TensorShape{
         TensorDims{FFOrdered{batch_size, output_dim}}, DataType::FLOAT};
     GenericTensorAccessorW label_tensor =
-        allocator.allocate_tensor(label_tensor_shape);
+        create_random_filled_accessor_w(label_tensor_shape, allocator);
 
     TensorShape weight_shape_1 = TensorShape{
         TensorDims{FFOrdered{hidden_dim, data_dim}}, DataType::FLOAT};
@@ -210,7 +211,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
         TensorDims{FFOrdered{batch_size, output_dim}}, DataType::FLOAT};
 
     GenericTensorAccessorW label_tensor_backing =
-        allocator.allocate_tensor(output_tensor_shape);
+        create_random_filled_accessor_w(output_tensor_shape, allocator);
 
     // construct computation graph
     ComputationGraph computation_graph = make_empty_computation_graph();
@@ -221,7 +222,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
     TensorShape label_tensor_shape = TensorShape{
         TensorDims{FFOrdered{batch_size, output_dim}}, DataType::FLOAT};
     GenericTensorAccessorW label_tensor =
-        allocator.allocate_tensor(label_tensor_shape);
+        create_random_filled_accessor_w(label_tensor_shape, allocator);
 
     TensorShape weight_shape_1 = TensorShape{
         TensorDims{FFOrdered{data_dim, hidden_dim}}, DataType::FLOAT};
@@ -472,7 +473,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       TensorShape label_tensor_shape =
           TensorShape{TensorDims{FFOrdered{batch_size, 1_p}}, DataType::FLOAT};
       GenericTensorAccessorW label_tensor =
-          allocator.allocate_tensor(label_tensor_shape);
+          create_random_filled_accessor_w(label_tensor_shape, allocator);
 
       LossAttrs loss_attrs = LossAttrs{
           SparseCategoricalCrossEntropyLossAttrs{/*replace_labels=*/false}};
@@ -484,7 +485,7 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       TensorShape label_tensor_shape = TensorShape{
           TensorDims{FFOrdered{batch_size, output_dim}}, DataType::FLOAT};
       GenericTensorAccessorW label_tensor =
-          allocator.allocate_tensor(label_tensor_shape);
+          create_random_filled_accessor_w(label_tensor_shape, allocator);
 
       SUBCASE("LossFunction::CATEGORICAL_CROSSENTROPY") {
         LossAttrs loss_attrs = LossAttrs{

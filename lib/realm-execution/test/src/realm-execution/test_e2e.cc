@@ -2,6 +2,7 @@
 #include "kernels/allocation.h"
 #include "kernels/compare_tensor_accessors.h"
 #include "kernels/copy_tensor_accessor.h"
+#include "kernels/create_random_filled_accessor.h"
 #include "kernels/format_accessor_contents.h"
 #include "kernels/tensor_accessor_reductions.h"
 #include "op-attrs/operator_atomic_task_shard_binding.dtg.h"
@@ -426,9 +427,9 @@ TEST_SUITE(FF_TEST_SUITE) {
       Allocator allocator = ctx.get_current_device_allocator();
 
       GenericTensorAccessorW output_tensor =
-          allocator.allocate_tensor(cfg.logit_shape);
+          create_random_filled_accessor_w(cfg.logit_shape, allocator);
       GenericTensorAccessorW label_tensor =
-          allocator.allocate_tensor(cfg.label_shape);
+          create_random_filled_accessor_w(cfg.label_shape, allocator);
 
       std::map<DynamicValueAttrs, DynamicTensorAccessor> input_tensors;
 
@@ -552,9 +553,9 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
           Allocator allocator = ctx.get_current_device_allocator();
 
           GenericTensorAccessorW logit_tensor =
-              allocator.allocate_tensor(cfg.logit_shape);
+              create_random_filled_accessor_w(cfg.logit_shape, allocator);
           GenericTensorAccessorW label_tensor =
-              allocator.allocate_tensor(cfg.label_shape);
+              create_random_filled_accessor_w(cfg.label_shape, allocator);
 
           std::map<DynamicValueAttrs, DynamicTensorAccessor> input_tensors;
 
