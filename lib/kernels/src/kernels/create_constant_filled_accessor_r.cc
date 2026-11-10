@@ -14,7 +14,7 @@ struct CreateFilledAccessorW {
                                     DataTypeValue val) {
     using T = real_type_t<DT>;
     if (!val.template has<T>()) {
-      PANIC("create_filed_accessor expected data type of "
+      PANIC("CreateFilledAccessorW expected data type of "
             "shape and passed-in value to match");
     }
 

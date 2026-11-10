@@ -2,8 +2,10 @@
 #define _FLEXFLOW_LIB_REALM_EXECUTION_INCLUDE_REALM_EXECUTION_REALM_CONTEXT_H
 
 #include "kernels/allocation.h"
+#include "kernels/datatype_dispatch.h"
 #include "kernels/device_handle_t.dtg.h"
 #include "kernels/managed_per_device_ff_handle.h"
+#include "op-attrs/datatype_value.dtg.h"
 #include "op-attrs/parallel_tensor_shape.dtg.h"
 #include "op-attrs/tensor_shape.dtg.h"
 #include "pcg/machine_space_coordinate.dtg.h"
@@ -71,6 +73,13 @@ public:
 
   /** \name Data movement and reduction */
   ///\{
+  Realm::Event issue_fill(ParallelTensorShape const &dst_shape,
+                          Realm::RegionInstance dst_inst,
+                          DataTypeValue value,
+                          Realm::ProfilingRequestSet const &requests,
+                          Realm::Event wait_on = Realm::Event::NO_EVENT,
+                          int priority = 0);
+
   Realm::Event issue_copy(ParallelTensorShape const &src_shape,
                           Realm::RegionInstance src_inst,
                           ParallelTensorShape const &dst_shape,

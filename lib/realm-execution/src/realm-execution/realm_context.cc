@@ -237,6 +237,104 @@ static Realm::IndexSpace<N, T> ispace_from_dims(TensorDims const &dims) {
 }
 
 [[nodiscard]] static Realm::Event
+    issue_fill_for_field(TensorDims const &dims,
+                         Realm::CopySrcDstField const &dst_field,
+                         void const *value_ptr,
+                         size_t value_size,
+                         Realm::ProfilingRequestSet const &requests,
+                         Realm::Event wait_on,
+                         int priority) {
+  switch (dims.ff_ordered.num_dims()) {
+#if REALM_MAX_DIM >= 1
+    case 1:
+      return ispace_from_dims<1>(dims).fill(
+          {dst_field}, requests, value_ptr, value_size, wait_on, priority);
+#endif
+#if REALM_MAX_DIM >= 2
+    case 2:
+      return ispace_from_dims<2>(dims).fill(
+          {dst_field}, requests, value_ptr, value_size, wait_on, priority);
+#endif
+#if REALM_MAX_DIM >= 3
+    case 3:
+      return ispace_from_dims<3>(dims).fill(
+          {dst_field}, requests, value_ptr, value_size, wait_on, priority);
+#endif
+#if REALM_MAX_DIM >= 4
+    case 4:
+      return ispace_from_dims<4>(dims).fill(
+          {dst_field}, requests, value_ptr, value_size, wait_on, priority);
+#endif
+#if REALM_MAX_DIM >= 5
+    case 5:
+      return ispace_from_dims<5>(dims).fill(
+          {dst_field}, requests, value_ptr, value_size, wait_on, priority);
+#endif
+    default:
+      PANIC("TensorShape dims greater than REALM_MAX_DIM: {}",
+            dims.ff_ordered.num_dims());
+      break;
+  }
+}
+
+template <DataType DT>
+struct IssueFillForFieldValue {
+  [[nodiscard]] Realm::Event
+      operator()(TensorDims const &dims,
+                 Realm::CopySrcDstField const &dst_field,
+                 DataTypeValue value,
+                 Realm::ProfilingRequestSet const &requests,
+                 Realm::Event wait_on,
+                 int priority) {
+    using T = real_type_t<DT>;
+    if (!value.template has<T>()) {
+      PANIC("IssueFillForFieldValue expected data type of "
+            "dims and passed-in value to match");
+    }
+
+    T unwrapped_value = value.get<T>();
+    return issue_fill_for_field(dims,
+                                dst_field,
+                                &unwrapped_value,
+                                sizeof(unwrapped_value),
+                                requests,
+                                wait_on,
+                                priority);
+  }
+};
+
+Realm::Event
+    RealmContext::issue_fill(ParallelTensorShape const &dst_shape,
+                             Realm::RegionInstance dst_inst,
+                             DataTypeValue value,
+                             Realm::ProfilingRequestSet const &requests,
+                             Realm::Event wait_on,
+                             int priority) {
+  TensorShape dst_piece_shape = get_piece_shape(dst_shape);
+
+  Realm::CopySrcDstField dst_field;
+  dst_field.set_field(
+      /*inst=*/dst_inst,
+      /*field_id=*/0,
+      /*size=*/
+      static_cast<size_t>(
+          size_of_datatype(dst_piece_shape.data_type).int_from_positive_int()),
+      /*subfield_offset=*/0);
+
+  Realm::Event result =
+      DataTypeDispatch1<IssueFillForFieldValue>{}(dst_piece_shape.data_type,
+                                                  dst_piece_shape.dims,
+                                                  dst_field,
+                                                  value,
+                                                  requests,
+                                                  wait_on,
+                                                  priority);
+
+  this->outstanding_events.push_back(result);
+  return result;
+}
+
+[[nodiscard]] static Realm::Event
     issue_copy_for_field(TensorDims const &dims,
                          Realm::CopySrcDstField const &src_field,
                          Realm::CopySrcDstField const &dst_field,
