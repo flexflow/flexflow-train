@@ -45,10 +45,10 @@ void split_gpu_backward_kernel(cudaStream_t stream,
                                int numOutputs) {
 
   for (int i = 0; i < numOutputs; i++) {
-    add_with_stride<<<GET_BLOCKS(out_blk_sizes[i] * num_blks),
-                      CUDA_NUM_THREADS,
-                      0,
-                      stream>>>(
+    copy_with_stride<<<GET_BLOCKS(out_blk_sizes[i] * num_blks),
+                       CUDA_NUM_THREADS,
+                       0,
+                       stream>>>(
         in_grad_ptr, out_grad_ptr[i], num_blks, in_blk_size, out_blk_sizes[i]);
     in_grad_ptr += out_blk_sizes[i];
   }

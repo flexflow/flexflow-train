@@ -4,16 +4,12 @@
 #include "kernels/create_zero_filled_accessor.h"
 #include "kernels/local_cuda_allocator.h"
 #include "kernels/managed_ff_stream.h"
-#include "kernels/managed_per_device_ff_handle.h"
 #include "utils/containers/repeat.h"
 #include <doctest/doctest.h>
 
 using namespace ::FlexFlow;
 TEST_SUITE(FF_CUDA_TEST_SUITE) {
   TEST_CASE("Test concat kernel forward and backward") {
-    ManagedPerDeviceFFHandle managed_handle = initialize_single_gpu_handle(
-        /*workSpaceSize=*/1024 * 1024,
-        /*allowTensorOpMathConversion=*/true);
     ManagedFFStream managed_stream{};
     Allocator allocator = create_local_cuda_memory_allocator();
 

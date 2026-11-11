@@ -55,7 +55,7 @@ static std::optional<milliseconds_t>
   GenericTensorAccessorR input =
       acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
   GenericTensorAccessorW input_grad =
-      acc.get_tensor_grad<Permissions::RW>(TensorSlotName::INPUT);
+      acc.get_tensor_grad<Permissions::WO>(TensorSlotName::INPUT);
   GenericTensorAccessorR output =
       acc.get_tensor<Permissions::RO>(TensorSlotName::OUTPUT);
   GenericTensorAccessorR output_grad =

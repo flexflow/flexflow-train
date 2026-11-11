@@ -36,7 +36,8 @@ static DeviceSpecificPerDeviceOpState
   positive_int output_c = dim_at_idx(output.shape.dims, legion_dim_t{2_n});
   positive_int output_n = dim_at_idx(output.shape.dims, legion_dim_t{3_n});
 
-  float *runningMean;
+  ASSERT(attrs.affine, "BatchNorm currently only supports attrs.affine = true");
+  float *runningMean = nullptr;
 
   std::optional<BatchNormPerDeviceState> per_device_state = init_kernel(
       /*device_type=*/kernel_device_type,
@@ -47,7 +48,8 @@ static DeviceSpecificPerDeviceOpState
       /*output_c=*/output_c.int_from_positive_int(),
       /*output_h=*/output_h.int_from_positive_int(),
       /*output_w=*/output_w.int_from_positive_int(),
-      /*activation=*/attrs.activation);
+      /*activation=*/attrs.activation,
+      /*eps=*/attrs.eps);
 
   return DeviceSpecificPerDeviceOpState{
       acc.make_device_specific(per_device_state),
@@ -63,8 +65,8 @@ static std::optional<milliseconds_t>
 
   auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
   auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
-  auto scale = acc.get_tensor<Permissions::RO>(TensorSlotName::SCALE);
-  auto bias = acc.get_tensor<Permissions::RO>(TensorSlotName::BIAS);
+  auto scale = acc.get_tensor<Permissions::RO>(TensorSlotName::GAMMA);
+  auto bias = acc.get_tensor<Permissions::RO>(TensorSlotName::BETA);
 
   return profile(forward_kernel,
                  profiling,
@@ -85,13 +87,13 @@ static std::optional<milliseconds_t>
   DeviceType kernel_device_type = acc.get_kernel_device_type();
 
   auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
-  auto input_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::INPUT);
+  auto input_grad = acc.get_tensor_grad<Permissions::WO>(TensorSlotName::INPUT);
   auto output = acc.get_tensor<Permissions::RO>(TensorSlotName::OUTPUT);
   auto output_grad =
       acc.get_tensor_grad<Permissions::RW>(TensorSlotName::OUTPUT);
-  auto scale = acc.get_tensor<Permissions::RO>(TensorSlotName::SCALE);
-  auto scale_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::SCALE);
-  auto bias_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::BIAS);
+  auto scale = acc.get_tensor<Permissions::RO>(TensorSlotName::GAMMA);
+  auto scale_grad = acc.get_tensor_grad<Permissions::WO>(TensorSlotName::GAMMA);
+  auto bias_grad = acc.get_tensor_grad<Permissions::WO>(TensorSlotName::BETA);
 
   return profile(backward_kernel,
                  profiling,

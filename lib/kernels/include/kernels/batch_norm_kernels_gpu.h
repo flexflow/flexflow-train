@@ -16,7 +16,8 @@ BatchNormPerDeviceState
                     int output_c,
                     int output_h,
                     int output_w,
-                    std::optional<Activation> const &activation);
+                    std::optional<Activation> const &activation,
+                    float eps = 1e-5f);
 
 void gpu_forward_kernel(ffStream_t stream,
                         BatchNormPerDeviceState const &per_device_statem,

@@ -27,8 +27,8 @@ static std::optional<milliseconds_t>
   std::optional<ProfilingSettings> profiling = acc.get_profiling_settings();
   Pool2DAttrs attrs = acc.get_op_attrs().require_pool2d();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
-  Pool2DPerDeviceState state =
-      acc.get_per_device_op_state().require_pool_2d().value();
+  std::optional<Pool2DPerDeviceState> state =
+      acc.get_per_device_op_state().require_pool_2d();
 
   auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
   auto output = acc.get_tensor<Permissions::WO>(TensorSlotName::OUTPUT);
@@ -48,13 +48,14 @@ static std::optional<milliseconds_t>
   std::optional<ProfilingSettings> profiling = acc.get_profiling_settings();
   Pool2DAttrs attrs = acc.get_op_attrs().require_pool2d();
   DeviceType kernel_device_type = acc.get_kernel_device_type();
-  Pool2DPerDeviceState state =
-      acc.get_per_device_op_state().require_pool_2d().value();
+  std::optional<Pool2DPerDeviceState> state =
+      acc.get_per_device_op_state().require_pool_2d();
 
   auto output = acc.get_tensor<Permissions::RO>(TensorSlotName::OUTPUT);
-  auto output_grad = acc.get_tensor<Permissions::RO>(TensorSlotName::OUTPUT);
+  auto output_grad =
+      acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
   auto input = acc.get_tensor<Permissions::RO>(TensorSlotName::INPUT);
-  auto input_grad = acc.get_tensor<Permissions::RW>(TensorSlotName::INPUT);
+  auto input_grad = acc.get_tensor_grad<Permissions::WO>(TensorSlotName::INPUT);
 
   return profile(pool2d_backward_kernel,
                  profiling,

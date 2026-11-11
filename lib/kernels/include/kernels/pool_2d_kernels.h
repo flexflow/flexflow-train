@@ -34,8 +34,9 @@ void pool2d_backward_kernel(
     GenericTensorAccessorR const &input,
     GenericTensorAccessorW const &input_grad);
 
-void cleanup_kernel(DeviceType device_type,
-                    std::optional<Pool2DPerDeviceState> &per_device_state);
+void pool2d_cleanup_kernel(
+    DeviceType device_type,
+    std::optional<Pool2DPerDeviceState> &per_device_state);
 
 } // namespace FlexFlow
 

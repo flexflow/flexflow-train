@@ -13,7 +13,8 @@ std::optional<BatchNormPerDeviceState>
                 int output_c,
                 int output_h,
                 int output_w,
-                std::optional<Activation> const &activation) {
+                std::optional<Activation> const &activation,
+                float eps) {
   if (device_type == DeviceType::GPU) {
     return gpu_init_kernel(
         /*handle=*/handle.require_for_gpu(),
@@ -23,7 +24,8 @@ std::optional<BatchNormPerDeviceState>
         /*output_c=*/output_c,
         /*output_h=*/output_h,
         /*output_w=*/output_w,
-        /*activation=*/activation);
+        /*activation=*/activation,
+        /*eps=*/eps);
   } else {
     ASSERT(device_type == DeviceType::CPU);
     ASSERT(handle.is_for_cpu());

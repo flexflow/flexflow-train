@@ -15,10 +15,12 @@
 
 #include "internal/device.h"
 #include "kernels/allocation.h"
-#include "kernels/batch_norm_kernels.h"
+#include "kernels/batch_norm_kernels_gpu.h"
 #include "kernels/ff_handle.h"
 #include "utils/integer_conversions.h"
 #include "utils/optional.h"
+#include <algorithm>
+#include <vector>
 
 namespace FlexFlow {
 namespace Kernels {
@@ -47,9 +49,19 @@ void gpu_forward_kernel(cudaStream_t stream,
                                                     1.0,
                                                     m.runningMean,
                                                     m.runningVar,
-                                                    CUDNN_BN_MIN_EPSILON,
+                                                    m.eps,
                                                     m.saveMean,
                                                     m.saveVar));
+  if (m.activation.has_value()) {
+    checkCUDNN(cudnnActivationForward(m.handle.dnn,
+                                      m.actiDesc,
+                                      &alpha,
+                                      m.outputTensor,
+                                      output_ptr,
+                                      &beta,
+                                      m.outputTensor,
+                                      output_ptr));
+  }
 }
 
 void gpu_backward_kernel(cudaStream_t stream,
@@ -64,7 +76,7 @@ void gpu_backward_kernel(cudaStream_t stream,
                          size_t numElements) {
   checkCUDNN(cudnnSetStream(m.handle.dnn, stream));
 
-  float alpha = 1.0f;
+  float alpha = 1.0f, beta = 0.0f;
   if (m.activation.has_value()) {
     switch (m.activation.value()) {
       case Activation::RELU:
@@ -80,9 +92,9 @@ void gpu_backward_kernel(cudaStream_t stream,
   checkCUDNN(cudnnBatchNormalizationBackward(m.handle.dnn,
                                              m.mode,
                                              &alpha,
+                                             &beta,
                                              &alpha,
-                                             &alpha,
-                                             &alpha,
+                                             &beta,
                                              m.inputTensor,
                                              input_ptr,
                                              m.outputTensor,
@@ -93,7 +105,7 @@ void gpu_backward_kernel(cudaStream_t stream,
                                              scale_ptr,
                                              scale_grad_ptr,
                                              bias_grad_ptr,
-                                             CUDNN_BN_MIN_EPSILON,
+                                             m.eps,
                                              m.saveMean,
                                              m.saveVar));
 }
@@ -106,11 +118,15 @@ BatchNormPerDeviceState
                     int output_c,
                     int output_h,
                     int output_w,
-                    std::optional<Activation> const &activation) {
+                    std::optional<Activation> const &activation,
+                    float eps) {
+  ASSERT(eps >= static_cast<float>(CUDNN_BN_MIN_EPSILON),
+         "cuDNN requires BatchNorm eps to be at least CUDNN_BN_MIN_EPSILON",
+         eps);
   ffTensorDescriptor_t inputTensor;
   ffTensorDescriptor_t outputTensor;
   ffTensorDescriptor_t biasTensor;
-  ffActivationDescriptor_t actiDesc;
+  ffActivationDescriptor_t actiDesc{};
   ffBatchNormMode_t mode;
   checkCUDNN(cudnnCreateTensorDescriptor(&inputTensor));
   checkCUDNN(cudnnCreateTensorDescriptor(&biasTensor));
@@ -141,13 +157,15 @@ BatchNormPerDeviceState
   float *runningVar = (float *)runningMean + output_c;
   float *saveMean = (float *)runningVar + output_c;
   float *saveVar = (float *)saveMean + output_c;
-  cudaStream_t stream;
-  checkCUDA(get_legion_stream(&stream));
-
-  assign_kernel<<<GET_BLOCKS(output_c), CUDA_NUM_THREADS, 0, stream>>>(
-      runningMean, size_t_from_int(output_c), 0.0f);
-  assign_kernel<<<GET_BLOCKS(output_c), CUDA_NUM_THREADS, 0, stream>>>(
-      runningVar, size_t_from_int(output_c), 0.0f);
+  // Initialize on the host so standalone kernels do not need a Legion stream.
+  std::vector<float> initial_running_stats(output_c * 2, 0.0f);
+  std::fill(initial_running_stats.begin() + output_c,
+            initial_running_stats.end(),
+            1.0f);
+  checkCUDA(cudaMemcpy(runningMean,
+                       initial_running_stats.data(),
+                       sizeof(float) * output_c * 2,
+                       cudaMemcpyHostToDevice));
 
   if (activation.has_value()) {
     switch (activation.value()) {
@@ -178,9 +196,10 @@ BatchNormPerDeviceState
       output_h,
       output_w,
       activation,
+      // A float epsilon of 1e-5 rounds just below cuDNN's double minimum.
+      std::max(static_cast<double>(eps), CUDNN_BN_MIN_EPSILON),
   };
 
-  checkCUDA(cudaStreamDestroy(stream));
   return per_device_state;
 }
 

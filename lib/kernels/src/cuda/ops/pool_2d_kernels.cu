@@ -124,7 +124,7 @@ void pool2d_gpu_backward_kernel(cudaStream_t stream,
 
   checkCUDNN(cudnnSetStream(m.handle.dnn, stream));
 
-  float alpha = 1.0f;
+  float alpha = 1.0f, beta = 0.0f;
   checkCUDNN(cudnnPoolingBackward(m.handle.dnn,
                                   m.poolDesc,
                                   &alpha,
@@ -134,13 +134,16 @@ void pool2d_gpu_backward_kernel(cudaStream_t stream,
                                   output_grad_ptr,
                                   m.inputTensor,
                                   input_ptr,
-                                  &alpha,
+                                  &beta,
                                   m.inputTensor,
                                   input_grad_ptr));
 }
 
 void pool2d_gpu_cleanup_kernel(Pool2DPerDeviceState &per_device_state) {
-  NOT_IMPLEMENTED();
+  checkCUDNN(cudnnDestroyTensorDescriptor(per_device_state.inputTensor));
+  checkCUDNN(cudnnDestroyTensorDescriptor(per_device_state.outputTensor));
+  checkCUDNN(cudnnDestroyActivationDescriptor(per_device_state.actiDesc));
+  checkCUDNN(cudnnDestroyPoolingDescriptor(per_device_state.poolDesc));
 }
 
 } // namespace FlexFlow

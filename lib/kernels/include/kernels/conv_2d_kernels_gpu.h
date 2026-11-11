@@ -1,6 +1,8 @@
 #ifndef _FLEXFLOW_LIB_KERNELS_INCLUDE_KERNELS_CONV_2D_KERNELS_GPU_H
 #define _FLEXFLOW_LIB_KERNELS_INCLUDE_KERNELS_CONV_2D_KERNELS_GPU_H
 
+#include "kernels/conv_2d_kernels.h"
+
 namespace FlexFlow {
 
 Conv2DPerDeviceState

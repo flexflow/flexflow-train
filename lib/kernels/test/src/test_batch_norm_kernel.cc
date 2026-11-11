@@ -83,6 +83,15 @@ TEST_SUITE(FF_CUDA_TEST_SUITE) {
       GenericTensorAccessorW bias_grad_accessor =
           create_random_filled_accessor_w(bias_shape, allocator);
 
+      GenericTensorAccessorW bias_accessor = create_constant_filled_accessor_w(
+          bias_shape, allocator, make_float_data_type_value(0));
+      Kernels::BatchNorm::gpu_forward_kernel(managed_stream.raw_stream(),
+                                             state,
+                                             input_accessor.get_float_ptr(),
+                                             output_accessor.get_float_ptr(),
+                                             scale_accessor.get_float_ptr(),
+                                             bias_accessor.get_float_ptr());
+
       Kernels::BatchNorm::gpu_backward_kernel(
           /*stream=*/managed_stream.raw_stream(),
           /*per_device_state=*/state,

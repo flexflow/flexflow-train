@@ -51,7 +51,7 @@ static std::optional<milliseconds_t>
   DeviceType kernel_device_type = acc.get_kernel_device_type();
   SplitAttrs attrs = acc.get_op_attrs().require_split();
 
-  auto input_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::INPUT);
+  auto input_grad = acc.get_tensor_grad<Permissions::WO>(TensorSlotName::INPUT);
 
   auto output_grads =
       transform(split_get_output_slot_names(attrs),

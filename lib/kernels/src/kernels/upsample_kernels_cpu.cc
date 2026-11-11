@@ -56,21 +56,25 @@ struct UpsampleCPUBackwardKernel {
   void operator()(UpsampleAttrs const &attrs,
                   GenericTensorAccessorR const &output_grad,
                   GenericTensorAccessorW const &input_grad) {
-    auto input_coord_from_output_coord =
-        [&](TensorDimsCoord const &output_coord) -> TensorDimsCoord {
-      TensorDimsCoord input_coord = output_coord;
-      tensor_dims_coord_at_rel_idx(input_coord, relative_ff_dim_t{-1}) /=
-          attrs.scale_factor;
-      tensor_dims_coord_at_rel_idx(input_coord, relative_ff_dim_t{-2}) /=
-          attrs.scale_factor;
-      return input_coord;
-    };
-
-    for (TensorDimsCoord output_coord :
-         get_tensor_dims_coord_set(output_grad.shape.dims)) {
-      TensorDimsCoord input_coord = input_coord_from_output_coord(output_coord);
-
-      input_grad.at<DT>(output_coord) += output_grad.at<DT>(input_coord);
+    for (TensorDimsCoord const &input_coord :
+         get_tensor_dims_coord_set(input_grad.shape.dims)) {
+      real_type_t<DT> sum = 0;
+      int scale = attrs.scale_factor.int_from_int_ge_two();
+      for (int h = 0; h < scale; h++) {
+        for (int w = 0; w < scale; w++) {
+          TensorDimsCoord output_coord = input_coord;
+          tensor_dims_coord_at_rel_idx(output_coord, relative_ff_dim_t{-2}) =
+              tensor_dims_coord_at_rel_idx(input_coord, relative_ff_dim_t{-2}) *
+                  attrs.scale_factor +
+              nonnegative_int{h};
+          tensor_dims_coord_at_rel_idx(output_coord, relative_ff_dim_t{-1}) =
+              tensor_dims_coord_at_rel_idx(input_coord, relative_ff_dim_t{-1}) *
+                  attrs.scale_factor +
+              nonnegative_int{w};
+          sum += output_grad.at<DT>(output_coord);
+        }
+      }
+      input_grad.at<DT>(input_coord) = sum;
     }
   }
 };

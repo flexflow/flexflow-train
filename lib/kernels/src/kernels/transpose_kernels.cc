@@ -35,7 +35,7 @@ void transpose_backward_kernel(device_stream_t const &stream,
         /*in_grad=*/in_grad);
   } else {
     ASSERT(stream.is_cpu());
-    transpose_cpu_forward_kernel(
+    transpose_cpu_backward_kernel(
         /*attrs=*/attrs,
         /*out_grad=*/out_grad,
         /*in_grad=*/in_grad);

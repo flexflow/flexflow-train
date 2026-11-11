@@ -32,7 +32,7 @@ static std::optional<milliseconds_t>
   auto output = acc.get_tensor<Permissions::RO>(TensorSlotName::OUTPUT);
   auto output_grad =
       acc.get_tensor_grad<Permissions::RO>(TensorSlotName::OUTPUT);
-  auto input_grad = acc.get_tensor_grad<Permissions::RW>(TensorSlotName::INPUT);
+  auto input_grad = acc.get_tensor_grad<Permissions::WO>(TensorSlotName::INPUT);
 
   return profile(upsample_backward_kernel,
                  profiling,
