@@ -10,9 +10,8 @@
 #include "benchmark/utils/graph/query_set.h"
 #include "benchmark/utils/unordered_bidict/algorithms/try_merge_nondisjoint_unordered_bidicts.h"
 #include "utils/benchmark_utils/benchmark_main.h"
-#include <random>
+#include <map>
 #include <string>
-#include <vector>
 
 using namespace ::FlexFlow;
 

@@ -124,7 +124,8 @@ PCGInstance create_pcg_instance(
 
   logit_grad_value =
       transform(logit_grad_value, [&](DynamicValueAttrs const &lgv) {
-        for (DynamicNodeInvocation const &invocation : dg.invocations) {
+        for (DynamicNodeInvocation const &invocation :
+             get_dynamic_invocation_set(dg)) {
           if (invocation.node_attrs.task_type != DynamicTaskType::LOSS) {
             continue;
           }

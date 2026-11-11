@@ -29,7 +29,8 @@ PerDeviceOpStateBacking perform_distributed_per_device_op_state_initialization(
 
   std::map<DynamicNodeInvocation, DeviceSpecificPtr<PerDeviceOpState> *>
       device_state_map;
-  for (DynamicNodeInvocation const &invocation : dg.invocations) {
+  for (DynamicNodeInvocation const &invocation :
+       get_dynamic_invocation_set(dg)) {
     // Nodes mapped to multiple devices are always parallel operators and don't
     // have any initialization to perform anyway
     std::optional<global_device_id_t> device_id =

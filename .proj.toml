@@ -79,7 +79,7 @@ has-cuda-benchmarks = false
 [targets.task-spec]
 type = "lib"
 has-cpu-only-tests = true
-has-cpu-only-benchmarks = false
+has-cpu-only-benchmarks = true
 has-cuda-tests = false
 has-cuda-benchmarks = false
 
@@ -215,6 +215,30 @@ budget = 4_700_000_000
 [[benchmarks.compiler]]
 name = "get_computation_graph_series_parallel_decomposition_on_inception_v3"
 budget = 7_000_000_000
+
+[[benchmarks.task-spec]]
+name = "make_empty_dynamic_open_dataflow_graph"
+budget = 90_000_000
+
+[[benchmarks.task-spec]]
+name = "dynamic_open_dataflow_graph_from_invocation_set"
+budget = 4_200_000_000
+
+[[benchmarks.task-spec]]
+name = "dynamic_graph_get_id_for_invocation"
+budget = 3_400_000
+
+[[benchmarks.task-spec]]
+name = "dynamic_graph_get_invocation_for_id"
+budget = 2_000_000
+
+[[benchmarks.task-spec]]
+name = "dynamic_graph_get_id_for_value"
+budget = 900_000
+
+[[benchmarks.task-spec]]
+name = "dynamic_graph_get_value_for_id"
+budget = 600_000
 
 # default_build_targets = [
 #   "utils",

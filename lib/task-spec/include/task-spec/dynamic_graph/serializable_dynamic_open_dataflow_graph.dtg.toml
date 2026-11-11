@@ -9,7 +9,7 @@ features = [
 ]
 
 includes = [
-  "task-spec/dynamic_graph/serializable_dynamic_node_invocation.dtg.h",
+  "task-spec/dynamic_graph/serializable_dynamic_node_invocation.h",
   "<set>",
 ]
 

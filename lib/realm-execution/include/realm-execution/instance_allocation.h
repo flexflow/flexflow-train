@@ -3,7 +3,7 @@
 
 #include "realm-execution/realm_context.h"
 #include "realm-execution/tensor_instance_backing.dtg.h"
-#include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 
 namespace FlexFlow {
 

@@ -9,7 +9,7 @@ features = [
 ]
 
 includes = [
-  "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h",
+  "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h",
   "task-spec/dynamic_graph/dynamic_value_attrs.dtg.h",
 ]
 

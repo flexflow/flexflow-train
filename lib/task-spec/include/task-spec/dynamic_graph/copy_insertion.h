@@ -3,7 +3,7 @@
 
 #include "task-spec/dynamic_graph/dynamic_node_attrs.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
-#include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
+#include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_slot_site.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_value_copy_info.dtg.h"
 #include "task-spec/dynamic_graph/internal_dynamic_slot_site.dtg.h"

@@ -7,7 +7,7 @@ SerializableDynamicOpenDataflowGraph
     dynamic_open_dataflow_graph_to_serializable(
         DynamicOpenDataflowGraph const &g) {
   return SerializableDynamicOpenDataflowGraph{
-      /*invocations=*/transform(g.invocations,
+      /*invocations=*/transform(get_dynamic_invocation_set(g),
                                 dynamic_node_invocation_to_serializable),
   };
 }
