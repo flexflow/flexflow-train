@@ -178,7 +178,7 @@ GenericTensorAccessorW create_4d_accessor_w_with_contents(
   }
 
   GenericTensorAccessorW result = allocator.allocate_tensor(shape);
-  copy_accessor_data_to_l_from_r(
+  copy_accessor_data_to_l_from_r_strict(
       result, read_only_accessor_from_write_accessor(cpu_accessor));
 
   return result;

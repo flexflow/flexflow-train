@@ -24,8 +24,7 @@ bool accessors_are_approximately_equal(
   for (TensorDimsCoord const &coord : get_tensor_dims_coord_set(shape.dims)) {
     float val_a = cpu_a.at<DataType::FLOAT>(coord);
     float val_b = cpu_b.at<DataType::FLOAT>(coord);
-    if (val_a != val_b &&
-        !values_are_approximately_equal(val_a, val_b, relative_error_allowed)) {
+    if (!values_are_approximately_equal(val_a, val_b, relative_error_allowed)) {
       return false;
     }
   }
