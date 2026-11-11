@@ -17,3 +17,4 @@ ff_add_library(
 )
 
 add_subdirectory(test)
+add_subdirectory(benchmark)

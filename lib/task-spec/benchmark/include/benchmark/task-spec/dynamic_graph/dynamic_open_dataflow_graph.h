@@ -1,0 +1,20 @@
+#ifndef _FLEXFLOW_LIB_TASK_SPEC_BENCHMARK_INCLUDE_BENCHMARK_TASK_SPEC_CONTAINERS_TRANSFORM_H
+#define _FLEXFLOW_LIB_TASK_SPEC_BENCHMARK_INCLUDE_BENCHMARK_TASK_SPEC_CONTAINERS_TRANSFORM_H
+
+namespace FlexFlow {
+
+void benchmark_make_empty_dynamic_open_dataflow_graph(bool dry_run);
+
+void benchmark_dynamic_open_dataflow_graph_from_invocation_set(bool dry_run);
+
+void benchmark_dynamic_graph_get_id_for_invocation(bool dry_run);
+
+void benchmark_dynamic_graph_get_invocation_for_id(bool dry_run);
+
+void benchmark_dynamic_graph_get_id_for_value(bool dry_run);
+
+void benchmark_dynamic_graph_get_value_for_id(bool dry_run);
+
+} // namespace FlexFlow
+
+#endif

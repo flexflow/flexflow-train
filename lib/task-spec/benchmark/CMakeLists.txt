@@ -1,0 +1,10 @@
+ff_add_benchmark_executable(
+  NAME
+    task-spec-benchmarks
+  SRC_PATTERNS
+    src/*.cc
+  PRIVATE_INCLUDE
+    include/
+  DEPS
+    task-spec
+)
