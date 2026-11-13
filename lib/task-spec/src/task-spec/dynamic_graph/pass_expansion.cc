@@ -210,7 +210,7 @@ std::set<DynamicValueAttrs> determine_values_requiring_gradient_reduction(
 static std::map<dynamic_invocation_id_t, subgradient_id_t>
     assign_subgradient_ids(
         std::set<dynamic_invocation_id_t> const &invocations) {
-  const std::vector<TensorSlotName> slot_names =
+  std::vector<TensorSlotName> slot_names =
       get_variadic_inputs_slot_name_sequence();
   ASSERT(invocations.size() <= slot_names.size());
   return map_from_keys_and_values(
@@ -420,25 +420,20 @@ DynamicNodeInvocation perform_bwd_pass_expansion_for_invocation(
   return result;
 }
 
-std::optional<DynamicNodeMapping> mapping_for_gradient_reduction(
-    DynamicOpenDataflowGraph const &g,
-    DynamicValueAttrs const &value,
+static std::optional<DynamicNodeMapping> mapping_for_gradient_reduction(
+    DynamicNodeInvocation const &source_invocation,
+    InternalDynamicSlotSite const &source_site,
+    std::set<InternalDynamicSlotSite> const &sink_sites,
     std::map<dynamic_invocation_id_t, subgradient_id_t> const
         &subgradient_inputs) {
-  DynamicSlotSite source_site = dynamic_graph_find_source_of_value(g, value);
-  std::set<InternalDynamicSlotSite> sink_sites =
-      dynamic_graph_find_sinks_of_value(g, value);
 
-  DynamicNodeInvocation source = dynamic_graph_get_invocation_for_id(
-      g, source_site.require_internal().invocation_id);
-
-  if (!source.node_attrs.mapping.has_value()) {
+  if (!source_invocation.node_attrs.mapping.has_value()) {
     return std::nullopt;
   }
-  DynamicNodeMapping source_mapping = assert_unwrap(source.node_attrs.mapping);
+  DynamicNodeMapping source_mapping =
+      assert_unwrap(source_invocation.node_attrs.mapping);
 
-  DynamicTensorSlot source_slot =
-      get_only(invert_map(source.outputs).at(value));
+  DynamicTensorSlot source_slot = source_site.slot_name;
 
   std::pair<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
       source_tensor_binding = get_only(get_tensor_bindings_for_slot_name(
@@ -476,7 +471,10 @@ DynamicNodeInvocation create_gradient_reduction_for_value(
     DynamicValueAttrs const &value,
     std::map<dynamic_invocation_id_t, subgradient_id_t> const
         &subgradient_inputs) {
-  DynamicSlotSite source_site = dynamic_graph_find_source_of_value(g, value);
+  InternalDynamicSlotSite source_site =
+      dynamic_graph_find_source_of_value(g, value).require_internal();
+  DynamicNodeInvocation source_invocation =
+      dynamic_graph_get_invocation_for_id(g, source_site.invocation_id);
   std::set<InternalDynamicSlotSite> sink_sites =
       dynamic_graph_find_sinks_of_value(g, value);
 
@@ -500,7 +498,9 @@ DynamicNodeInvocation create_gradient_reduction_for_value(
   DynamicNodeAttrs gradient_reduction_attrs{
       /*task_type=*/DynamicTaskType::BWD,
       /*device_ids=*/std::nullopt,
-      /*mapping=*/mapping_for_gradient_reduction(g, value, subgradient_inputs),
+      /*mapping=*/
+      mapping_for_gradient_reduction(
+          source_invocation, source_site, sink_sites, subgradient_inputs),
       /*op_attrs=*/
       TrainingOperationAttrs{GradientReductionAttrs{}},
       /*layer_guid=*/
