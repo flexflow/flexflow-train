@@ -1,4 +1,5 @@
 #include "task-spec/dynamic_graph/pass_expansion.h"
+#include "op-attrs/tensor_slot_name.dtg.h"
 #include "op-attrs/tensor_slot_name.h"
 #include "pcg/tensor_direction.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.h"
@@ -6,6 +7,7 @@
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
 #include "task-spec/dynamic_graph/dynamic_value_attrs.h"
 #include "task-spec/dynamic_graph/training_operation_attrs.h"
+#include "utils/bidict/algorithms/bidict_transform_values.h"
 #include "utils/containers/any_of.h"
 #include "utils/containers/binary_merge_disjoint_maps.h"
 #include "utils/containers/filter.h"
@@ -21,6 +23,7 @@
 #include "utils/containers/repeat_until_converged.h"
 #include "utils/containers/set_intersection.h"
 #include "utils/containers/set_of.h"
+#include "utils/containers/set_union.h"
 #include "utils/containers/slice.h"
 #include "utils/containers/transform.h"
 #include "utils/containers/try_at.h"
@@ -434,35 +437,30 @@ static std::optional<DynamicNodeMapping> mapping_for_gradient_reduction(
   DynamicNodeMapping source_mapping =
       assert_unwrap(source_invocation.node_attrs.mapping);
 
-  DynamicTensorSlot source_slot = source_site.slot_name;
-
-  std::pair<ParallelTensorSpaceCoordinate, MachineSpaceCoordinate>
-      source_tensor_binding = get_only(get_tensor_bindings_for_slot_name(
-          source_mapping.op_task_group, source_slot.slot_name));
-
   // For now we're going to map everything like the original source, both inputs
   // and outputs. This means that in the presence of model parallelism we'll be
   // potentially inducing extra copies that would otherwise be unnecessary.
-  std::set<subgradient_id_t> subgradient_ids =
-      set_of(values(subgradient_inputs));
-  std::map<TensorSlotName, ParallelTensorSpaceCoordinate> input_bindings =
-      map_from_pairs(transform(
-          subgradient_ids, [&](subgradient_id_t const &subgradient_id) {
-            return std::pair{subgradient_id.gradient_reduction_slot,
-                             source_tensor_binding.first};
-          }));
-  std::map<TensorSlotName, ParallelTensorSpaceCoordinate> output_bindings{
-      {TensorSlotName::OUTPUT, source_tensor_binding.first},
-  };
-  std::map<TensorSlotName, ParallelTensorSpaceCoordinate> bindings =
-      binary_merge_disjoint_maps(input_bindings, output_bindings);
+
+  std::set<TensorSlotName> gradient_slot_names =
+      set_union(std::set{source_site.slot_name.slot_name},
+                transform(set_of(values(subgradient_inputs)),
+                          [](subgradient_id_t const &subgradient_id) {
+                            return subgradient_id.gradient_reduction_slot;
+                          }));
+
+  bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding>
+      shard_bindings = bidict_transform_values(
+          source_mapping.op_task_group.get_shard_bindings(),
+          [&](OperatorAtomicTaskShardBinding const &shard_binding) {
+            ParallelTensorSpaceCoordinate coord =
+                shard_binding.tensor_coords.at(source_site.slot_name.slot_name);
+            return OperatorAtomicTaskShardBinding{
+                generate_map(gradient_slot_names,
+                             [&](TensorSlotName const &) { return coord; })};
+          });
 
   DynamicNodeMapping result{
-      /*op_task_group=*/MappedOperatorTaskGroup{
-          bidict<MachineSpaceCoordinate, OperatorAtomicTaskShardBinding>{
-              {source_tensor_binding.second,
-               OperatorAtomicTaskShardBinding{bindings}},
-          }},
+      /*op_task_group=*/MappedOperatorTaskGroup{shard_bindings},
       /*device_type=*/source_mapping.device_type};
   return result;
 }
