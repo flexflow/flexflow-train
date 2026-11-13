@@ -569,7 +569,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     }
   }
 
-  TEST_CASE("perform_pass_expansion(DynamicOpenDataflowGraph)") {
+  TEST_CASE("perform_pass_expansion") {
     auto mk_node_attrs = [](size_t layer_id,
                             TrainingOperationAttrs const &op_attrs,
                             std::optional<DynamicTaskType> const &pass_type)
@@ -906,8 +906,7 @@ TEST_SUITE(FF_TEST_SUITE) {
     CHECK(dynamic_open_dataflow_graphs_are_isomorphic(result, correct));
   }
 
-  TEST_CASE("perform_pass_expansion(DynamicOpenDataflowGraph) with multiple "
-            "consumers") {
+  TEST_CASE("perform_pass_expansion with multiple consumers") {
     auto mk_node_attrs = [](size_t layer_id,
                             TrainingOperationAttrs const &op_attrs,
                             std::optional<DynamicTaskType> const &pass_type)

@@ -1,5 +1,6 @@
 #include "task-spec/dynamic_graph/pass_expansion.h"
 #include "op-attrs/tensor_slot_name.h"
+#include "pcg/tensor_direction.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.h"
 #include "task-spec/dynamic_graph/dynamic_tensor_role.h"
@@ -467,16 +468,13 @@ static std::optional<DynamicNodeMapping> mapping_for_gradient_reduction(
 }
 
 DynamicNodeInvocation create_gradient_reduction_for_value(
-    DynamicOpenDataflowGraph const &g,
-    DynamicValueAttrs const &value,
+    DynamicNodeInvocation const &source_invocation,
+    InternalDynamicSlotSite const &source_site,
+    std::set<InternalDynamicSlotSite> const &sink_sites,
     std::map<dynamic_invocation_id_t, subgradient_id_t> const
         &subgradient_inputs) {
-  InternalDynamicSlotSite source_site =
-      dynamic_graph_find_source_of_value(g, value).require_internal();
-  DynamicNodeInvocation source_invocation =
-      dynamic_graph_get_invocation_for_id(g, source_site.invocation_id);
-  std::set<InternalDynamicSlotSite> sink_sites =
-      dynamic_graph_find_sinks_of_value(g, value);
+  ASSERT(source_site.direction == TensorDirection::OUTPUT);
+  DynamicValueAttrs value = source_invocation.outputs.at(source_site.slot_name);
 
   auto to_grad = [](DynamicTensorSlot const &k, DynamicValueAttrs const &v) {
     return std::pair{
@@ -554,13 +552,23 @@ DynamicOpenDataflowGraph
         dynamic_invocation_id_t invocation_id =
             dynamic_graph_get_id_for_invocation(g, invocation);
 
-        std::set<DynamicNodeInvocation> gradient_reductions =
-            transform(set_intersection(keys(subgradient_ids_by_value),
-                                       set_of(values(invocation.outputs))),
-                      [&](DynamicValueAttrs const &v) {
-                        return create_gradient_reduction_for_value(
-                            g, v, subgradient_ids_by_value.at(v));
-                      });
+        std::set<DynamicNodeInvocation> gradient_reductions = transform(
+            set_intersection(keys(subgradient_ids_by_value),
+                             set_of(values(invocation.outputs))),
+            [&](DynamicValueAttrs const &v) {
+              InternalDynamicSlotSite source_site =
+                  dynamic_graph_find_source_of_value(g, v).require_internal();
+              DynamicNodeInvocation source_invocation =
+                  dynamic_graph_get_invocation_for_id(
+                      g, source_site.invocation_id);
+              std::set<InternalDynamicSlotSite> sink_sites =
+                  dynamic_graph_find_sinks_of_value(g, v);
+              return create_gradient_reduction_for_value(
+                  source_invocation,
+                  source_site,
+                  sink_sites,
+                  subgradient_ids_by_value.at(v));
+            });
 
         if (contains(needed_in_bwd_pass, invocation_id)) {
           return set_union(
