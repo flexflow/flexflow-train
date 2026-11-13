@@ -4,6 +4,7 @@
 #include "task-spec/dynamic_graph/dynamic_invocation_id_t.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_node_invocation.dtg.h"
 #include "task-spec/dynamic_graph/dynamic_open_dataflow_graph.dtg.h"
+#include "task-spec/dynamic_graph/internal_dynamic_slot_site.dtg.h"
 
 namespace FlexFlow {
 
@@ -39,10 +40,20 @@ DynamicTensorSlot pass_expand_slot(DynamicTensorSlot const &, FwbTensorType);
 DynamicValueAttrs pass_expand_value(DynamicValueAttrs const &, FwbTensorType);
 DynamicNodeAttrs pass_expand_node(DynamicNodeAttrs const &, DynamicTaskType);
 
-DynamicNodeInvocation
-    perform_fwd_pass_expansion_for_invocation(DynamicNodeInvocation const &);
-DynamicNodeInvocation
-    perform_bwd_pass_expansion_for_invocation(DynamicNodeInvocation const &);
+DynamicNodeInvocation perform_fwd_pass_expansion_for_invocation(
+    DynamicNodeInvocation const &invocation);
+DynamicNodeInvocation perform_bwd_pass_expansion_for_invocation(
+    dynamic_invocation_id_t const &invocation_id,
+    DynamicNodeInvocation const &invocation,
+    std::map<DynamicValueAttrs,
+             std::map<dynamic_invocation_id_t, subgradient_id_t>> const
+        &subgradient_ids_by_value);
+DynamicNodeInvocation create_gradient_reduction_for_value(
+    DynamicNodeInvocation const &source_invocation,
+    InternalDynamicSlotSite const &source_site,
+    std::set<InternalDynamicSlotSite> const &sink_sites,
+    std::map<dynamic_invocation_id_t, subgradient_id_t> const
+        &subgradient_inputs);
 
 DynamicOpenDataflowGraph
     perform_pass_expansion(DynamicOpenDataflowGraph const &);
