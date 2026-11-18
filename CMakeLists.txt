@@ -50,6 +50,7 @@ option(FF_BUILD_SP_IZATION_BENCHMARKING "build sp-ization benchmarking" ON)
 option(FF_BUILD_ARG_PARSER "build command line argument parser" OFF)
 option(FF_BUILD_BIN_COMPILE_MODEL "build compile-model binary" ON)
 option(FF_BUILD_BIN_EXPORT_MODEL_ARCH "build export-model-arch utility" ON)
+option(FF_BUILD_BIN_IMPORT_PT2 "build import-pt2 utility" ON)
 option(FF_BUILD_BIN_RUN_MODEL "build run-model binary" ON)
 
 if (FF_USE_CODE_COVERAGE)

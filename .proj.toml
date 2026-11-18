@@ -112,6 +112,10 @@ cuda = false
 type = "bin"
 cuda = false
 
+[targets.import-pt2]
+type = "bin"
+cuda = false
+
 [targets.substitution-to-dot]
 type = "bin"
 cuda = false

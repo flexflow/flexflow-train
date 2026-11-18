@@ -1,0 +1,28 @@
+namespace FlexFlow {
+/**
+
+@page import-pt2 import-pt2
+
+\brief Imports a PyTorch model saved with <tt>torch.export.save()</tt> (a <tt>.pt2</tt> file) as a FlexFlow ComputationGraph, and outputs it as JSON (see \ref file-format) or DOT.
+
+The <tt>.pt2</tt> archive is read directly (no libtorch dependency). Each ATen op in the exported graph is rebuilt with ComputationGraphBuilder; parameters and buffers are implied by the ops that use them. Weight values are not imported.
+
+Export a model from PyTorch:
+
+\verbatim
+ep = torch.export.export(model.eval(), (example_input,))
+torch.export.save(ep, "model.pt2")
+\endverbatim
+
+Then build and run \c import-pt2 from the root of the %FlexFlow %Train repository:
+
+\verbatim
+$ proj cmake # if you haven't already
+$ proj build
+$ ./build/normal/bin/import-pt2/import-pt2 model.pt2 > model.json
+$ ./build/normal/bin/import-pt2/import-pt2 --dot model.pt2 > model.dot
+\endverbatim
+
+Unsupported ops, dynamic shapes, and unsupported op arguments are reported as errors naming the offending node.
+*/
+}

@@ -1,0 +1,11 @@
+ff_add_executable(
+  NAME
+    import-pt2
+  SRC_PATTERNS
+    src/*.cc
+  PRIVATE_INCLUDE
+    include/
+  DEPS
+    utils
+    pcg
+)
