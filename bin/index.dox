@@ -7,6 +7,7 @@ This directory contains command-line interfaces for %FlexFlow %Train and associa
 
 - \subpage compile-model "": \copybrief compile-model
 - \subpage export-model-arch "": \copybrief export-model-arch
+- \subpage import-pt2 "": \copybrief import-pt2
 - \subpage protobuf-to-json "": \copybrief protobuf-to-json
 - \subpage run-model "": \copybrief run-model
 - \subpage sp-ization-benchmarking "": \copybrief sp-ization-benchmarking
