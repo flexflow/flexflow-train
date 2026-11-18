@@ -119,10 +119,8 @@ std::map<std::string, ZipEntryLocation>
   // zip64: the locator sits immediately before the classic record.
   uint64_t eocd_abs = tail_offset + *eocd_pos;
   if (eocd_abs >= ZIP64_EOCD_LOCATOR_SIZE) {
-    std::string locator = read_range(f,
-                                     path,
-                                     eocd_abs - ZIP64_EOCD_LOCATOR_SIZE,
-                                     ZIP64_EOCD_LOCATOR_SIZE);
+    std::string locator = read_range(
+        f, path, eocd_abs - ZIP64_EOCD_LOCATOR_SIZE, ZIP64_EOCD_LOCATOR_SIZE);
     if (read_u32(locator, 0) == ZIP64_EOCD_LOCATOR_SIGNATURE) {
       uint64_t zip64_eocd_offset = read_u64(locator, 8);
       std::string zip64_eocd =
@@ -261,7 +259,8 @@ nlohmann::json read_pt2_model_json(std::string const &pt2_path,
   try {
     return nlohmann::json::parse(contents);
   } catch (nlohmann::json::parse_error const &e) {
-    fail(pt2_path, fmt::format("could not parse {}: {}", matches.at(0), e.what()));
+    fail(pt2_path,
+         fmt::format("could not parse {}: {}", matches.at(0), e.what()));
   }
 }
 

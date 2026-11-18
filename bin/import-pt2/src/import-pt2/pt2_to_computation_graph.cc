@@ -1,8 +1,8 @@
 #include "import-pt2/pt2_to_computation_graph.h"
 #include "op-attrs/tensor_dims.h"
 #include "pcg/computation_graph_builder.h"
-#include <fmt/format.h>
 #include <algorithm>
+#include <fmt/format.h>
 #include <map>
 #include <optional>
 #include <set>
@@ -33,10 +33,10 @@ DataType datatype_from_torch_scalar_type(int scalar_type,
     case 12:
       return DataType::BOOL;
     default:
-      throw Pt2ImportError(fmt::format(
-          "tensor {}: unsupported torch dtype (ScalarType {})",
-          tensor_name,
-          scalar_type));
+      throw Pt2ImportError(
+          fmt::format("tensor {}: unsupported torch dtype (ScalarType {})",
+                      tensor_name,
+                      scalar_type));
   }
 }
 
@@ -85,7 +85,8 @@ struct NodeArgs {
   std::string tensor(std::string const &name) const {
     json const &a = this->raw(name);
     if (!a.contains("as_tensor")) {
-      this->fail(fmt::format("argument '{}' is not a tensor: {}", name, a.dump()));
+      this->fail(
+          fmt::format("argument '{}' is not a tensor: {}", name, a.dump()));
     }
     return a.at("as_tensor").at("name").get<std::string>();
   }
@@ -119,17 +120,15 @@ struct NodeArgs {
     }
     json const &a = this->raw(name);
     if (!a.contains("as_int")) {
-      this->fail(fmt::format("argument '{}' is not a constant int: {}",
-                             name,
-                             a.dump()));
+      this->fail(fmt::format(
+          "argument '{}' is not a constant int: {}", name, a.dump()));
     }
     return a.at("as_int").get<int64_t>();
   }
 
-  std::vector<int64_t>
-      get_ints(std::string const &name,
-               std::optional<std::vector<int64_t>> default_value =
-                   std::nullopt) const {
+  std::vector<int64_t> get_ints(
+      std::string const &name,
+      std::optional<std::vector<int64_t>> default_value = std::nullopt) const {
     if (!this->has(name)) {
       if (default_value.has_value()) {
         return *default_value;
@@ -138,9 +137,8 @@ struct NodeArgs {
     }
     json const &a = this->raw(name);
     if (!a.contains("as_ints")) {
-      this->fail(fmt::format("argument '{}' is not a constant int list: {}",
-                             name,
-                             a.dump()));
+      this->fail(fmt::format(
+          "argument '{}' is not a constant int list: {}", name, a.dump()));
     }
     return a.at("as_ints").get<std::vector<int64_t>>();
   }
@@ -160,8 +158,8 @@ struct NodeArgs {
     if (a.contains("as_int")) {
       return static_cast<double>(a.at("as_int").get<int64_t>());
     }
-    this->fail(
-        fmt::format("argument '{}' is not a constant number: {}", name, a.dump()));
+    this->fail(fmt::format(
+        "argument '{}' is not a constant number: {}", name, a.dump()));
   }
 
   bool get_bool(std::string const &name,
@@ -191,18 +189,18 @@ struct NodeArgs {
   }
 
   // Expands 1-element int lists (e.g. stride=[2]) to 2 elements.
-  std::pair<int64_t, int64_t>
-      get_int_pair(std::string const &name,
-                   std::optional<std::vector<int64_t>> default_value =
-                       std::nullopt) const {
+  std::pair<int64_t, int64_t> get_int_pair(
+      std::string const &name,
+      std::optional<std::vector<int64_t>> default_value = std::nullopt) const {
     std::vector<int64_t> v = this->get_ints(name, default_value);
     if (v.size() == 1) {
       return {v.at(0), v.at(0)};
     }
     if (v.size() != 2) {
-      this->fail(fmt::format("argument '{}' should have 1 or 2 elements, got {}",
-                             name,
-                             to_str(v)));
+      this->fail(
+          fmt::format("argument '{}' should have 1 or 2 elements, got {}",
+                      name,
+                      to_str(v)));
     }
     return {v.at(0), v.at(1)};
   }
@@ -234,8 +232,8 @@ public:
       }
       std::string name = arg.at("as_tensor").at("name").get<std::string>();
       if (this->tensors.count(name) == 0) {
-        throw Pt2ImportError(
-            fmt::format("graph output {} was not produced by the import", name));
+        throw Pt2ImportError(fmt::format(
+            "graph output {} was not produced by the import", name));
       }
     }
     return this->cgb.computation_graph;
@@ -275,8 +273,8 @@ private:
       if (kind == "user_input") {
         json const &arg = body.at("arg");
         if (!arg.contains("as_tensor")) {
-          throw Pt2ImportError(fmt::format(
-              "unsupported non-tensor user input: {}", arg.dump()));
+          throw Pt2ImportError(
+              fmt::format("unsupported non-tensor user input: {}", arg.dump()));
         }
         std::string name = arg.at("as_tensor").at("name").get<std::string>();
         this->create_input(name);
@@ -297,7 +295,8 @@ private:
     };
     CreateGrad create_grad =
         this->requires_grad.at(name) ? CreateGrad::YES : CreateGrad::NO;
-    this->tensors.emplace(name, this->cgb.create_input(shape, create_grad, name));
+    this->tensors.emplace(name,
+                          this->cgb.create_input(shape, create_grad, name));
   }
 
   Shape const &shape_of(std::string const &name) const {
@@ -318,8 +317,8 @@ private:
     std::vector<positive_int> dims;
     for (int64_t d : shape) {
       if (d <= 0) {
-        throw Pt2ImportError(
-            fmt::format("tensor {} has a non-positive dim: {}", name, to_str(shape)));
+        throw Pt2ImportError(fmt::format(
+            "tensor {} has a non-positive dim: {}", name, to_str(shape)));
       }
       dims.push_back(positive_int{static_cast<int>(d)});
     }
@@ -352,16 +351,16 @@ private:
     return name;
   }
 
-  static positive_int pos(NodeArgs const &n, int64_t v, std::string const &what) {
+  static positive_int
+      pos(NodeArgs const &n, int64_t v, std::string const &what) {
     if (v <= 0) {
       n.fail(fmt::format("{} must be positive, got {}", what, v));
     }
     return positive_int{static_cast<int>(v)};
   }
 
-  static nonnegative_int nonneg(NodeArgs const &n,
-                                int64_t v,
-                                std::string const &what) {
+  static nonnegative_int
+      nonneg(NodeArgs const &n, int64_t v, std::string const &what) {
     if (v < 0) {
       n.fail(fmt::format("{} must be non-negative, got {}", what, v));
     }
@@ -434,9 +433,10 @@ private:
   }
 
   // Size of each output along `dim`; used for chunk/split.
-  std::vector<positive_int> output_sizes_along(NodeArgs const &n,
-                                               std::vector<std::string> const &outs,
-                                               int64_t dim) const {
+  std::vector<positive_int>
+      output_sizes_along(NodeArgs const &n,
+                         std::vector<std::string> const &outs,
+                         int64_t dim) const {
     std::vector<positive_int> sizes;
     for (std::string const &o : outs) {
       sizes.push_back(pos(n, this->shape_of(o).at(dim), "split size"));
@@ -483,7 +483,8 @@ private:
 
     // ---- convolution / normalization / linear
     if (op == "conv2d.default") {
-      Shape const &w = this->shape_of(this->constant_arg(n, n.tensor("weight")));
+      Shape const &w =
+          this->shape_of(this->constant_arg(n, n.tensor("weight")));
       if (w.size() != 4) {
         n.fail(fmt::format("expected a 4D conv weight, got {}", to_str(w)));
       }
@@ -497,21 +498,22 @@ private:
       if (bias.has_value()) {
         this->constant_arg(n, *bias);
       }
-      return single(b.conv2d(this->data_arg(n, "input"),
-                             /*outChannels=*/pos(n, w.at(0), "out_channels"),
-                             /*kernelH=*/pos(n, w.at(2), "kernel_h"),
-                             /*kernelW=*/pos(n, w.at(3), "kernel_w"),
-                             /*strideH=*/pos(n, sh, "stride_h"),
-                             /*strideW=*/pos(n, sw, "stride_w"),
-                             /*paddingH=*/nonneg(n, ph, "padding_h"),
-                             /*paddingW=*/nonneg(n, pw, "padding_w"),
-                             /*activation=*/std::nullopt,
-                             /*groups=*/pos(n, n.get_int("groups", 1), "groups"),
-                             /*use_bias=*/bias.has_value(),
-                             /*kernel_initializer=*/std::nullopt,
-                             /*bias_initializer=*/std::nullopt,
-                             /*kernel_regularizer=*/std::nullopt,
-                             name));
+      return single(
+          b.conv2d(this->data_arg(n, "input"),
+                   /*outChannels=*/pos(n, w.at(0), "out_channels"),
+                   /*kernelH=*/pos(n, w.at(2), "kernel_h"),
+                   /*kernelW=*/pos(n, w.at(3), "kernel_w"),
+                   /*strideH=*/pos(n, sh, "stride_h"),
+                   /*strideW=*/pos(n, sw, "stride_w"),
+                   /*paddingH=*/nonneg(n, ph, "padding_h"),
+                   /*paddingW=*/nonneg(n, pw, "padding_w"),
+                   /*activation=*/std::nullopt,
+                   /*groups=*/pos(n, n.get_int("groups", 1), "groups"),
+                   /*use_bias=*/bias.has_value(),
+                   /*kernel_initializer=*/std::nullopt,
+                   /*bias_initializer=*/std::nullopt,
+                   /*kernel_regularizer=*/std::nullopt,
+                   name));
     }
     if (op == "batch_norm.default" ||
         op == "_native_batch_norm_legit_no_training.default") {
@@ -536,7 +538,8 @@ private:
       return r;
     }
     if (op == "linear.default") {
-      Shape const &w = this->shape_of(this->constant_arg(n, n.tensor("weight")));
+      Shape const &w =
+          this->shape_of(this->constant_arg(n, n.tensor("weight")));
       if (w.size() != 2) {
         n.fail(fmt::format("expected a 2D linear weight, got {}", to_str(w)));
       }
@@ -545,15 +548,16 @@ private:
         this->constant_arg(n, *bias);
       }
       std::string in = n.tensor("input");
-      return single(b.dense(
-          this->data_tensor(n, in),
-          /*outDim=*/pos(n, w.at(0), "out_features"),
-          /*activation=*/std::nullopt,
-          /*use_bias=*/bias.has_value(),
-          /*data_type=*/datatype_from_torch_scalar_type(this->dtypes.at(in), in),
-          /*projection_initializer=*/std::nullopt,
-          /*bias_initializer=*/std::nullopt,
-          name));
+      return single(
+          b.dense(this->data_tensor(n, in),
+                  /*outDim=*/pos(n, w.at(0), "out_features"),
+                  /*activation=*/std::nullopt,
+                  /*use_bias=*/bias.has_value(),
+                  /*data_type=*/
+                  datatype_from_torch_scalar_type(this->dtypes.at(in), in),
+                  /*projection_initializer=*/std::nullopt,
+                  /*bias_initializer=*/std::nullopt,
+                  name));
     }
 
     // ---- element-wise unary
@@ -624,12 +628,14 @@ private:
         ts.push_back(this->data_tensor(n, t));
       }
       int64_t dim = n.get_int("dim", 0);
-      return single(b.concat(ts, relative_ff_dim_t{static_cast<int>(dim)}, name));
+      return single(
+          b.concat(ts, relative_ff_dim_t{static_cast<int>(dim)}, name));
     }
     if (op == "chunk.default" || op == "split.Tensor" ||
         op == "split_with_sizes.default") {
       std::string in = n.tensor("self");
-      int64_t dim = normalize_dim(n.get_int("dim", 0), this->shape_of(in).size());
+      int64_t dim =
+          normalize_dim(n.get_int("dim", 0), this->shape_of(in).size());
       tensor_guid_t input = this->data_tensor(n, in);
       if (outs.size() == 1) {
         return single(input);
@@ -716,7 +722,8 @@ private:
       Shape const &is = this->shape_of(in);
       Shape const &os = this->shape_of(outs.at(0));
       if (is.size() != 4 || os.size() != 4 || os.at(2) % is.at(2) != 0 ||
-          os.at(3) % is.at(3) != 0 || os.at(2) / is.at(2) != os.at(3) / is.at(3) ||
+          os.at(3) % is.at(3) != 0 ||
+          os.at(2) / is.at(2) != os.at(3) / is.at(3) ||
           os.at(2) / is.at(2) < 2) {
         n.fail(fmt::format("only equal integer scale factors >= 2 are "
                            "supported (input {}, output {})",
@@ -733,7 +740,8 @@ private:
     // ---- matmul / softmax
     if (op == "matmul.default" || op == "bmm.default") {
       std::string lhs = n.tensor("self");
-      std::string rhs = n.is_tensor("other") ? n.tensor("other") : n.tensor("mat2");
+      std::string rhs =
+          n.is_tensor("other") ? n.tensor("other") : n.tensor("mat2");
       Shape const &ls = this->shape_of(lhs);
       Shape const &rs = this->shape_of(rhs);
       if (ls.size() < 3 || ls.size() != rs.size() ||
@@ -753,9 +761,10 @@ private:
       if (n.has("dtype")) {
         n.fail("softmax with dtype= is not supported");
       }
-      return single(b.softmax(this->data_arg(n, "self"),
-                              relative_ff_dim_t{static_cast<int>(n.get_int("dim"))},
-                              name));
+      return single(
+          b.softmax(this->data_arg(n, "self"),
+                    relative_ff_dim_t{static_cast<int>(n.get_int("dim"))},
+                    name));
     }
 
     n.fail("unsupported op");

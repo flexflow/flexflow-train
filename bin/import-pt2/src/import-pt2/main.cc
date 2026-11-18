@@ -57,8 +57,8 @@ int main(int argc, char **argv) {
   ComputationGraph cg = ({
     std::optional<ComputationGraph> result;
     try {
-      result = computation_graph_from_pt2_model_json(
-          read_pt2_model_json(pt2_path));
+      result =
+          computation_graph_from_pt2_model_json(read_pt2_model_json(pt2_path));
     } catch (std::exception const &e) {
       std::cerr << "error: " << e.what() << std::endl;
       return 1;
